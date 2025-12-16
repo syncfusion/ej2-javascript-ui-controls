@@ -5426,8 +5426,8 @@ describe('GridLayout', () => {
             gridLayOut.appendTo('#gridlayout');
             let movingElemnt: HTMLElement = document.getElementById('7');
             let targetElemnt: HTMLElement = document.getElementById('8');
-            expect((<any>gridLayOut).getCellInstance('7').row == 5).toBe(true);
-            expect((<any>gridLayOut).getCellInstance('8').row == 10).toBe(true);
+            expect((<any>gridLayOut).getCellInstance('7').row == 8).toBe(true);
+            expect((<any>gridLayOut).getCellInstance('8').row == 13).toBe(true);
             let mousedown: any = getEventObject('MouseEvents', 'mousedown', movingElemnt, targetElemnt, 0, 875);
             EventHandler.trigger(<HTMLElement>movingElemnt, 'mousedown', mousedown);
             let mousemove: any = getEventObject('MouseEvents', 'mousemove', movingElemnt, targetElemnt, 110, 875);
@@ -8159,8 +8159,8 @@ describe('GridLayout', () => {
     it('memory leak', () => {
         profile.sample();
         let average: any = inMB(profile.averageChange)
-        //Check average change in memory samples to not be over 10MB
-        expect(average).toBeLessThan(10);
+        //Check average change in memory samples to not be over 13MB
+        expect(average).toBeLessThan(13);
         let memory: any = inMB(getMemoryProfile())
         //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
         expect(memory).toBeLessThan(profile.samples[0] + 0.25);

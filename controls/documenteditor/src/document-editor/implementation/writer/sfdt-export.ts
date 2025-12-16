@@ -59,6 +59,7 @@ export class SfdtExport {
      * @private
      */
     public blocks: any = [];
+
     private isContentControl: boolean = false;
     private isBlockClosed: boolean = true;
     private isWriteInlinesFootNote = false;
@@ -1007,6 +1008,7 @@ private hasSameContentControlProperties(props1: any, props2: any): boolean {
             return next;
         }
     }
+
     private writeInlines(paragraph: ParagraphWidget, line: LineWidget, inlines: any): void {
         let lineWidget: LineWidget = line;
         let isformField: boolean = false;
@@ -3401,7 +3403,9 @@ private hasSameContentControlProperties(props1: any, props2: any): boolean {
             case 'ElbowConnector':
                 return 134;
             case 'CurvedConnector':
-                return 135;     
+                return 135;
+            case 'RectangularCallout':
+                return 136;
             default:
                 return 0;
         }

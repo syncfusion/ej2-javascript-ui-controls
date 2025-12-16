@@ -26,7 +26,12 @@ export class CanvasRenderer {
         if (style.fill === 'none') { style.fill = 'transparent'; }
         if (style.stroke === 'none') { style.stroke = 'transparent'; }
         ctx.strokeStyle = style.stroke;
-        ctx.lineWidth = style.strokeWidth;
+        if (style.thickness !== undefined) {
+            ctx.lineWidth = style.thickness  * (96 / 72);
+        }
+        else {
+            ctx.lineWidth = style.strokeWidth;
+        }
         if (style.strokeWidth === 0) {
             ctx.strokeStyle = 'transparent';
         }
@@ -88,8 +93,20 @@ export class CanvasRenderer {
                 let pivotY: number = options.y + options.height * options.pivotY;
                 this.rotateContext(canvas, options.angle, pivotX, pivotY);
                 this.setStyle(canvas, options as StyleAttributes);
-                ctx.rect(options.x, options.y, options.width, options.height);
-                ctx.fillRect(options.x, options.y, options.width, options.height);
+                if (options.thickness !== undefined) {
+                    let strokeWidth = ctx.lineWidth || 1; // default to 1 if not set
+                    let halfStroke = strokeWidth / 2;
+                    let x = options.x + halfStroke;
+                    let y = options.y + halfStroke;
+                    let width = options.width - strokeWidth;
+                    let height = options.height - strokeWidth;
+                    // Draw adjusted rectangle
+                    ctx.rect(x, y, width, height);
+                    ctx.fillRect(x, y, width, height);
+                } else {
+                    ctx.rect(options.x, options.y, options.width, options.height);
+                    ctx.fillRect(options.x, options.y, options.width, options.height);
+                }
                 ctx.fill();
                 ctx.stroke();
                 ctx.closePath();
@@ -224,17 +241,29 @@ export class CanvasRenderer {
     }
 
     /**   @private  */
-    public drawText(canvas: HTMLCanvasElement, options: TextAttributes): void {
+    public drawText(canvas: HTMLCanvasElement, options: TextAttributes, maxHeight: number, isFreeTextAnnotation: boolean, zoomFactor:number): void {
         if (options.content && options.visible === true) {
             let ctx: CanvasRenderingContext2D = CanvasRenderer.getContext(canvas);
             ctx.save();
             this.setStyle(canvas, options as StyleAttributes);
 
+            this.setFontStyle(canvas, options);
+            let ascent: number = 0;
+            let lineHeight: number = 0;
+            if (options.thickness !== undefined) {
+                // Used this to get the exact text height for Freetext annotation according to the font size and font family.
+                const metrics: TextMetrics = ctx.measureText(options.content);
+                ascent = metrics.actualBoundingBoxAscent as number;
+                if (ascent == null) ascent = options.fontSize * 0.8;
+                let descent: number = metrics.actualBoundingBoxDescent;
+                if (descent == null) descent = options.fontSize * 0.2;
+                lineHeight = (ascent + descent);
+                options.height = lineHeight * options.childNodes.length;
+            }
+
             let pivotX: number = options.x + options.width * options.pivotX;
             let pivotY: number = options.y + options.height * options.pivotY;
             this.rotateContext(canvas, options.angle, pivotX, pivotY);
-
-            this.setFontStyle(canvas, options);
 
             let i: number = 0;
             let childNodes: SubTextElement[] = [];
@@ -242,7 +271,9 @@ export class CanvasRenderer {
             let wrapBounds: TextBounds = options.wrapBounds;
             ctx.fillStyle = options.color;
             if (wrapBounds) {
-                let position: PointModel = this.labelAlign(options, wrapBounds, childNodes);
+                let position: PointModel = this.labelAlign(options, wrapBounds, childNodes, lineHeight);
+                let paddingAdjustment: number = options.thickness !== undefined ? (options.thickness * (96 / 72)) * 2 : 0;
+                let textHeight: number = 0;
                 for (i = 0; i < childNodes.length; i++) {
                     let child: SubTextElement = childNodes[parseInt(i.toString(), 10)];
                     let offsetX: number;
@@ -252,11 +283,11 @@ export class CanvasRenderer {
                         if (child.text === '\n') continue;
                         let baseSpaceWidth: number = ctx.measureText(' ').width;
                         let targetWidth: number = wrapBounds.width;
-                        offsetX = position.x + child.x - wrapBounds.x;
-                        offsetY = position.y + child.dy * i + ((options.fontSize) * 0.8);
+                        offsetX = position.x + child.x - wrapBounds.x + paddingAdjustment;
+                        offsetY = position.y + child.dy * i + ((options.fontSize) * 0.8) + paddingAdjustment;
                         let isLastLine: boolean = i === childNodes.length - 1;
                         if (!isLastLine && targetWidth > 0) {
-                            let leftEdge: number = position.x + child.x;
+                            let leftEdge: number = position.x + child.x + paddingAdjustment;
                             const words: string[] = child.text.trim().split(/\s+/);
                             if (words.length <= 1) {
                                 ctx.fillText(child.text, leftEdge, offsetY);
@@ -265,7 +296,7 @@ export class CanvasRenderer {
                             const widths: number[] = words.map((w: any) => ctx.measureText(w).width);
                             const wordsTotal: any = widths.reduce((a: any, b: any) => a + b, 0);
                             const gaps: number = words.length - 1;
-                            const naturalWidth: any = wordsTotal + baseSpaceWidth * gaps;
+                            const naturalWidth: any = wordsTotal + baseSpaceWidth * gaps + paddingAdjustment * 2;
                             const extra: number = Math.max(0, targetWidth - naturalWidth);
                             const extraPerGap: number = extra / gaps;
                             let pen: number = leftEdge;
@@ -280,7 +311,7 @@ export class CanvasRenderer {
                                 || options.textDecoration === 'LineThrough') {
                                 let startX: number = leftEdge;
                                 let startY: number;
-                                let endX: number = leftEdge + targetWidth;
+                                let endX: number = leftEdge + targetWidth - paddingAdjustment * 2;
                                 let endY: number;
                                 switch (options.textDecoration) {
                                     case 'Underline':
@@ -292,8 +323,8 @@ export class CanvasRenderer {
                                         endY = (position.y + child.dy * i);
                                         break;
                                     case 'LineThrough':
-                                        startY = ((offsetY + position.y + child.dy * i) / 2) + 2;
-                                        endY = ((offsetY + position.y + child.dy * i) / 2) + 2;
+                                        startY = ((offsetY + position.y + child.dy * i) / 2) + 2 + (paddingAdjustment / 2);
+                                        endY = ((offsetY + position.y + child.dy * i) / 2) + 2 + (paddingAdjustment / 2);
                                 }
                                 ctx.beginPath();
                                 ctx.moveTo(startX, startY);
@@ -308,20 +339,34 @@ export class CanvasRenderer {
                             ctx.fillText(child.text, offsetX, offsetY);
                         }
                     }
-                    else {
-                        if (child.text !== '\n') {
-                            offsetX = position.x + child.x - wrapBounds.x;
-                            offsetY = position.y + child.dy * i + ((options.fontSize) * 0.8);
-                            // if (wrapBounds.width > options.width && options.textOverflow !== 'Wrap') {
-                            //     child.text = overFlow(child.text, options);
-                            // }
-                            ctx.fillText(child.text, offsetX, offsetY);
+                    else if (child.text !== '\n') {
+                        if (options.textAlign == "right") {
+                            offsetX = position.x + child.x - wrapBounds.x - paddingAdjustment
+                        } else if (options.textAlign == "center") {
+                            offsetX = position.x + child.x - wrapBounds.x + (paddingAdjustment / 2);
+                        } else {
+                            offsetX = position.x + child.x - wrapBounds.x + paddingAdjustment;
                         }
+                        offsetY = position.y + child.dy * i + ((options.fontSize) * 0.8) + paddingAdjustment;
+                        const tabSize: number = 7;
+                        const textWithTabs: string = child.text.replace(/\t/g, ' '.repeat(tabSize));
+                        textHeight += child.dy;
+                        if (!isFreeTextAnnotation || (maxHeight === 0 || (textHeight * zoomFactor < maxHeight && isFreeTextAnnotation))) {
+                            ctx.fillText(textWithTabs, offsetX, offsetY);
+                        }
+
+                        // if (wrapBounds.width > options.width && options.textOverflow !== 'Wrap') {
+                        //     child.text = overFlow(child.text, options);
+                        // }
+                        //ctx.fillText(child.text, offsetX, offsetY);
+                    }
+                    else if (isFreeTextAnnotation) {
+                        textHeight += child.dy;
                     }
                     if (child.text !== '\n') {
-                        if ((options.textDecoration === 'Underline'
+                        if (options.textDecoration === 'Underline'
                             || options.textDecoration === 'Overline'
-                            || options.textDecoration === 'LineThrough') && !isTextDecorationApplied) {
+                            || options.textDecoration === 'LineThrough' && !isTextDecorationApplied) {
                             let startPointX: number = offsetX;
                             let startPointY: number;
                             let textlength: number = ctx.measureText(child.text).width;
@@ -337,8 +382,8 @@ export class CanvasRenderer {
                                     endPointY = (position.y + child.dy * i);
                                     break;
                                 case 'LineThrough':
-                                    startPointY = ((offsetY + position.y + child.dy * i) / 2) + 2;
-                                    endPointY = ((offsetY + position.y + child.dy * i) / 2) + 2;
+                                    startPointY = ((offsetY + position.y + child.dy * i) / 2) + 2 + (paddingAdjustment / 2);
+                                    endPointY = ((offsetY + position.y + child.dy * i) / 2) + 2 + (paddingAdjustment / 2);
                             }
                             ctx.beginPath();
                             ctx.moveTo(startPointX, startPointY);
@@ -578,15 +623,14 @@ export class CanvasRenderer {
         }
     }
     /**   @private  */
-    public labelAlign(text: TextAttributes, wrapBounds: TextBounds, childNodes: SubTextElement[]): PointModel {
+    public labelAlign(text: TextAttributes, wrapBounds: TextBounds, childNodes: SubTextElement[], lineHeight: number): PointModel {
         let bounds: Size = new Size(wrapBounds.width, childNodes.length * (text.fontSize * 1.2));
+        const totalHeight = text.thickness !== undefined ? childNodes.length * lineHeight : 0;
         let position: PointModel = { x: 0, y: 0 };
         let labelX: number = text.x;
         let labelY: number = text.y;
-        let offsetx: number = text.width * 0.5;
-        let offsety: number = text.height * 0.5;
-        let pointx: number = offsetx;
-        let pointy: number = offsety;
+        let pointx: number = text.width * 0.5;
+        let pointy: number = text.height * 0.5;
         if (text.textAlign === 'left') {
             pointx = 0;
         } else if (text.textAlign === 'center') {
@@ -599,14 +643,22 @@ export class CanvasRenderer {
             pointx = (text.width * 1);
         }
         position.x = labelX + pointx + (wrapBounds ? wrapBounds.x : 0);
-        position.y = labelY + pointy - bounds.height / 2;
+        if (text.thickness !== undefined) {
+            position.y = labelY + (text.height * 0.5) - (totalHeight / 2);
+        } else {
+            position.y = labelY + pointy - bounds.height / 2;
+        }
         return position;
     }
 }
 
 export function refreshDiagramElements(
     canvas: HTMLCanvasElement, drawingObjects: DrawingElement[], renderer: DrawingRenderer, annotationCallback?:(annotationID: string) => boolean, annotationType?: string): void {
+    if (annotationType == "FreeText") {
+        renderer.isFreeTextAnnotation = true;
+    }
     for (let i: number = 0; i < drawingObjects.length; i++) {
         renderer.renderElement(drawingObjects[parseInt(i.toString(), 10)], canvas, undefined, undefined, undefined, undefined, undefined, undefined, annotationCallback, annotationType);
     }
+    renderer.isFreeTextAnnotation = false;
 }

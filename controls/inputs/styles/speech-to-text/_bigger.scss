@@ -1,3 +1,5 @@
+@use 'ej2-base/styles/common/mixin' as *;
+@use './theme-variables' as *;
 @include export-module('speechtotext-bigger') {
   // Speechtotext component styles
 
@@ -11,18 +13,18 @@
     min-height: $stt-bigger-min-height;
     padding: $stt-bigger-padding;
     @if ($skin-name == 'FluentUI') {
-      line-height: 0;
+      line-height: $stt-bigger-btn-line-height;
       display: inline;
     }
     &.e-round {
       width: $stt-bigger-round-width;
       height: $stt-bigger-round-height;
-      padding: 0;
+      padding: $stt-bigger-round-padding;
     }
     .e-btn-icon {
       font-size: $stt-bigger-font-size;
       @if ($skin-name == 'material' or $skin-name == 'material-dark' or $skin-name == 'Material3') {
-        line-height: 1px;
+        line-height: $stt-bigger-btn-icon-line-height;
         width: 2em;
       }
       @if ($skin-name != 'bootstrap4' or $skin-name != 'bootstrap' or $skin-name != 'bootstrap-dark') {
@@ -36,13 +38,13 @@
     .e-btn-icon {
       font-size: $stt-bigger-btn-font-size;
       @if ($skin-name == 'FluentUI') {
-        margin-top: -2px;
+        margin-top: $stt-bigger-round-btn-margin-top;
       }
       @if ($skin-name == 'fluent2'or $skin-name == 'Material3') {
-        margin-top: 0;
+        margin-top: $stt-bigger-round-btn-margin-top;
       }
       @if ($skin-name == 'material' or $skin-name == 'fabric-dark') {
-        margin-top: 1px;
+        margin-top: $stt-bigger-round-btn-margin-top;
       }
     }
   }

@@ -29,6 +29,9 @@ export class Canvas extends Container {
         if (this.hasChildren()) {
             //Measuring the children
             for (let child of this.children) {
+                if (this.thickness !== undefined) {
+                    child.thickness = this.thickness;
+                }
                 if (child instanceof TextElement) {
                     if (child.canMeasure) {
                         availableSize.width = availableSize.width || this.maxWidth || this.minWidth;

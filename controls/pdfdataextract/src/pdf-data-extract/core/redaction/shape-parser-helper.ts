@@ -179,7 +179,7 @@ export class _PdfShapeParser {
             adjusted.y = -adjusted.y;
             adjusted.height = -adjusted.height;
         } else {
-            adjusted.y = page.size[1] - adjusted.y - adjusted.height;
+            adjusted.y = page.size.height - adjusted.y - adjusted.height;
         }
         return adjusted;
     }

@@ -13213,4 +13213,345 @@ the tool bar support, it�s also customiza</p><table class="e-rte-table" style=
             }, 200);
         });
     });
+    describe('986888: Table Resizing Not Working on Mobile Devices', () => {
+        let rteObj: RichTextEditor;
+        let rteEle: HTMLElement;
+        const mobileUA: string = "Mozilla/5.0 (Linux; Android 4.3; Nexus 7 Build/JWR66Y) " +
+            "AppleWebKit/537.36 (KHTML, like Gecko) Chrome/30.0.1599.92 Safari/537.36";
+        const defaultUA: string = navigator.userAgent;
+        beforeAll(() => {
+            Browser.userAgent = mobileUA; // Simulate mobile environment
+            rteObj = renderRTE({
+                toolbarSettings: {
+                    items: ['Bold']
+                },
+                value: `
+            <table class="e-rte-table">
+                <tbody>
+                    <tr><td><br></td><td><br></td><td><br></td></tr>
+                    <tr><td><br></td><td><br></td><td><br></td></tr>
+                    <tr><td><br></td><td><br></td><td><br></td></tr>
+                </tbody>
+            </table>
+        `
+            });
+            rteEle = rteObj.element;
+        });
+        afterAll(() => {
+           Browser.userAgent = defaultUA;
+            destroy(rteObj);
+        });
+        it('should show resize icons when tapping on table cell', (done) => {
+            const table: HTMLElement = rteObj.contentModule.getEditPanel().querySelector('table') as HTMLElement;
+            expect(table).not.toBeNull();
+            const cell: HTMLElement = table.querySelector('td') as HTMLElement;
+            const touchEvent: any = {
+                type: 'touchstart',
+                target: cell,
+                touches: [{ pageX: 100, pageY: 100 }]
+            };
+            (rteObj.tableModule as any).tableObj.resizeHelper(touchEvent);
+            setTimeout(() => {
+                const resizeIcons = rteObj.contentModule.getEditPanel().querySelectorAll('.e-column-resize, .e-row-resize, .e-table-box.e-rmob');
+                expect(resizeIcons.length).toBeGreaterThan(0); // Icons should be visible
+                done();
+            }, 100);
+        });
+    });
+    describe('986888: Table Resizing Not Working on Mobile Devices', () => {
+        let rteObj: RichTextEditor;
+        let rteEle: HTMLElement;
+        const mobileUA: string = "Mozilla/5.0 (Linux; Android 4.3; Nexus 7 Build/JWR66Y) " +
+            "AppleWebKit/537.36 (KHTML, like Gecko) Chrome/30.0.1599.92 Safari/537.36";
+        const defaultUA: string = navigator.userAgent;
+        beforeAll(() => {
+            Browser.userAgent = mobileUA; // Simulate mobile environment
+            rteObj = renderRTE({
+                iframeSettings: {
+                    enable: true
+                },
+                toolbarSettings: {
+                    items: ['Bold']
+                },
+                value: `
+            <table class="e-rte-table">
+                <tbody>
+                    <tr><td><br></td><td><br></td><td><br></td></tr>
+                    <tr><td><br></td><td><br></td><td><br></td></tr>
+                    <tr><td><br></td><td><br></td><td><br></td></tr>
+                </tbody>
+            </table>
+        `
+            });
+            rteEle = rteObj.element;
+        });
+        afterAll(() => {
+           Browser.userAgent = defaultUA;
+            destroy(rteObj);
+        });
+        it('should show resize icons when tapping on table cell', (done) => {
+            const table: HTMLElement = rteObj.contentModule.getEditPanel().querySelector('table') as HTMLElement;
+            expect(table).not.toBeNull();
+            const cell: HTMLElement = table.querySelector('td') as HTMLElement;
+            const touchEvent: any = {
+                type: 'touchstart',
+                target: cell,
+                touches: [{ pageX: 100, pageY: 100 }]
+            };
+            (rteObj.tableModule as any).tableObj.resizeHelper(touchEvent);
+            setTimeout(() => {
+                const resizeIcons = rteObj.contentModule.getEditPanel().querySelectorAll('.e-column-resize, .e-row-resize, .e-table-box.e-rmob');
+                expect(resizeIcons.length).toBeGreaterThan(0); // Icons should be visible
+                done();
+            }, 100);
+        });
+    });
+    describe('975151: Table insertion inside span within a table cell', () => {
+        let rteObj: RichTextEditor;
+        let rteEle: HTMLElement;
+        beforeEach(() => {
+            rteObj = renderRTE({
+                toolbarSettings: {
+                    items: ['CreateTable']
+                },
+                value: `
+                <table>
+                    <tbody>
+                        <tr>
+                            <td>
+                                <span class="inline-node">Selma Rose</span>
+                            </td>
+                            <td>30</td>
+                        </tr>
+                    </tbody>
+                </table>
+            `
+            });
+            rteEle = rteObj.element;
+        });
+        afterEach((done: DoneFn) => {
+            destroy(rteObj);
+            done();
+        });
+        it('should insert new table after the span element, not inside the span - set cursor at the end of the span', (done: DoneFn) => {
+            rteObj.focusIn();
+            const inlineSpan: HTMLElement = rteObj.contentModule.getDocument().querySelector('.inline-node');
+            const textNode: HTMLElement = inlineSpan.firstChild as HTMLElement;
+            setCursorPoint(textNode, textNode.textContent.length);
+            // Trigger table dialog
+            (rteEle.querySelector('.e-toolbar-item button') as HTMLElement).click();
+            const popupInsertBtn = document.querySelector('.e-insert-table-btn') as HTMLElement;
+            popupInsertBtn.click();
+            const dialogInsertBtn = document.querySelector('.e-insert-table') as HTMLElement;
+            dialogInsertBtn.click();
+            setTimeout(() => {
+                const spanInsideTd: HTMLElement = rteObj.inputElement.querySelector('.inline-node');
+                expect(spanInsideTd.querySelector('table')).toBe(null);
+                expect(spanInsideTd.nextSibling.nodeName ==='TABLE').toBe(true);
+                done();
+            }, 100);
+        });
+        it('should insert new table after the span element, not inside the span - set cursor at the start of the span', (done: DoneFn) => {
+            rteObj.focusIn();
+            const inlineSpan: HTMLElement = rteObj.contentModule.getDocument().querySelector('.inline-node');
+            const textNode: HTMLElement = inlineSpan.firstChild as HTMLElement;
+            setCursorPoint(textNode, 0);
+            // Trigger table dialog
+            (rteEle.querySelector('.e-toolbar-item button') as HTMLElement).click();
+            const popupInsertBtn = document.querySelector('.e-insert-table-btn') as HTMLElement;
+            popupInsertBtn.click();
+            const dialogInsertBtn = document.querySelector('.e-insert-table') as HTMLElement;
+            dialogInsertBtn.click();
+            setTimeout(() => {
+                const spanInsideTd: HTMLElement = rteObj.inputElement.querySelector('.inline-node');
+                expect(spanInsideTd.querySelector('table')).toBe(null);
+                expect(spanInsideTd.previousSibling.nodeName ==='TABLE').toBe(true);
+                done();
+            }, 100);
+        });
+        it('should insert new table after the span element, not inside the span - set cursor at the mid of the span', (done: DoneFn) => {
+            rteObj.focusIn();
+            const inlineSpan: HTMLElement = rteObj.contentModule.getDocument().querySelector('.inline-node');
+            const textNode: HTMLElement = inlineSpan.firstChild as HTMLElement;
+            setCursorPoint(textNode, 7);
+            // Trigger table dialog
+            (rteEle.querySelector('.e-toolbar-item button') as HTMLElement).click();
+            const popupInsertBtn = document.querySelector('.e-insert-table-btn') as HTMLElement;
+            popupInsertBtn.click();
+            const dialogInsertBtn = document.querySelector('.e-insert-table') as HTMLElement;
+            dialogInsertBtn.click();
+            setTimeout(() => {
+                const spanInsideTd: HTMLElement = rteObj.inputElement.querySelector('.inline-node');
+                expect(spanInsideTd.querySelector('table')).toBe(null);
+                expect(spanInsideTd.nextSibling.nodeName ==='TABLE').toBe(true);
+                expect(spanInsideTd.nextSibling.nextSibling.nodeName === 'SPAN').toBe(true);
+                done();
+            }, 100);
+        });
+        it('should insert new table after the span element, not inside the span - selecting the span', (done: DoneFn) => {
+            rteObj.focusIn();
+            const inlineSpan: HTMLElement = rteObj.contentModule.getDocument().querySelector('.inline-node');
+            const textNode: HTMLElement = inlineSpan.firstChild as HTMLElement;
+            setSelection(textNode, 0, textNode.textContent.length);
+            // Trigger table dialog
+            (rteEle.querySelector('.e-toolbar-item button') as HTMLElement).click();
+            const popupInsertBtn = document.querySelector('.e-insert-table-btn') as HTMLElement;
+            popupInsertBtn.click();
+            const dialogInsertBtn = document.querySelector('.e-insert-table') as HTMLElement;
+            dialogInsertBtn.click();
+            setTimeout(() => {
+                const spanInsideTd: HTMLElement = rteObj.inputElement.querySelector('.inline-node');
+                expect(spanInsideTd).toBe(null);
+                expect(rteObj.inputElement.querySelector('td').querySelector('table')).not.toBe(null);
+                done();
+            }, 100);
+        });
+        it('should insert new table after the inline element - multiple inline element', (done: DoneFn) => {
+            rteObj.value = `
+                <table>
+                    <tbody>
+                        <tr>
+                            <td style="width: 23.2295%"><strong><em><span class='inline-node' style="text-decoration: underline;">Selma Rose</span></em></strong></td>
+                            <td>30</td>
+                        </tr>
+                    </tbody>
+                </table>
+            `;
+            rteObj.dataBind();
+            rteObj.focusIn();
+            const inlineSpan: HTMLElement = rteObj.contentModule.getDocument().querySelector('.inline-node');
+            const textNode: HTMLElement = inlineSpan.firstChild as HTMLElement;
+            setCursorPoint(textNode, textNode.textContent.length);
+            // Trigger table dialog
+            (rteEle.querySelector('.e-toolbar-item button') as HTMLElement).click();
+            const popupInsertBtn = document.querySelector('.e-insert-table-btn') as HTMLElement;
+            popupInsertBtn.click();
+            const dialogInsertBtn = document.querySelector('.e-insert-table') as HTMLElement;
+            dialogInsertBtn.click();
+            setTimeout(() => {
+                const spanInsideTd: HTMLElement = rteObj.inputElement.querySelector('.inline-node');
+                expect(spanInsideTd.querySelector('table')).toBe(null);
+                expect(rteObj.inputElement.querySelector('strong').nextSibling.nodeName === 'TABLE').toBe(true);
+                done();
+            }, 100);
+        });
+    });
+    
+    describe('994326: Table insertion around <p> inside a table cell', () => {
+        let rteObj: RichTextEditor;
+        let rteEle: HTMLElement;
+        beforeEach(() => {
+            rteObj = renderRTE({
+                toolbarSettings: {
+                    items: ['CreateTable']
+                },
+                value: `
+                <table>
+                    <tbody>
+                        <tr>
+                            <td>
+                                <p class="block-node">Selma Rose</p>
+                            </td>
+                            <td>30</td>
+                        </tr>
+                    </tbody>
+                </table>
+            `
+            });
+            rteEle = rteObj.element;
+        });
+
+        afterEach(() => {
+            destroy(rteObj);
+        });
+
+        it('Should insert new table after the <p> element, not inside the <p> - cursor at the end of the <p>', (done: DoneFn) => {
+            rteObj.focusIn();
+            const pNode: HTMLElement = rteObj.contentModule.getDocument().querySelector('.block-node');
+            const textNode: Text = pNode.firstChild as Text;
+            setCursorPoint(textNode, textNode.textContent.length);
+            // Trigger table dialog
+            (rteEle.querySelector('.e-toolbar-item button') as HTMLElement).click();
+            (document.querySelector('.e-insert-table-btn') as HTMLElement).click();
+            (document.querySelector('.e-insert-table') as HTMLElement).click();
+            setTimeout(() => {
+                const pInsideTd: HTMLElement = rteObj.inputElement.querySelector('.block-node');
+                // Ensure table is not inserted inside <p>
+                expect(pInsideTd.querySelector('table')).toBe(null);
+                // Table should be inserted right after the <p>
+                expect(pInsideTd.nextSibling.nodeName === 'TABLE').toBe(true);
+                done();
+            }, 100);
+        });
+
+        it('Should insert new table before the <p> element, not inside the <p> - cursor at the start of the <p>', (done: DoneFn) => {
+            rteObj.focusIn();
+            const pNode: HTMLElement = rteObj.contentModule.getDocument().querySelector('.block-node');
+            const textNode: Text = pNode.firstChild as Text;
+            setCursorPoint(textNode, 0);
+            // Trigger table dialog
+            (rteEle.querySelector('.e-toolbar-item button') as HTMLElement).click();
+            (document.querySelector('.e-insert-table-btn') as HTMLElement).click();
+            (document.querySelector('.e-insert-table') as HTMLElement).click();
+            setTimeout(() => {
+                const pInsideTd: HTMLElement = rteObj.inputElement.querySelector('.block-node');
+                expect(pInsideTd.querySelector('table')).toBe(null);
+                // Table inserted before <p> when cursor at start
+                expect(pInsideTd.previousSibling.nodeName === 'TABLE').toBe(true);
+                done();
+            }, 100);
+        });
+
+        it('Should split the <p> into two <p> blocks and insert the table between - cursor at mid of the text in <p>', (done: DoneFn) => {
+            rteObj.focusIn();
+            const pNode: HTMLElement = rteObj.contentModule.getDocument().querySelector('.block-node');
+            const textNode: Text = pNode.firstChild as Text;
+            // Cursor in the middle of "Selma Rose" (e.g., after "Selma ")
+            setCursorPoint(textNode, 6);
+            // Trigger table dialog
+            (rteEle.querySelector('.e-toolbar-item button') as HTMLElement).click();
+            (document.querySelector('.e-insert-table-btn') as HTMLElement).click();
+            (document.querySelector('.e-insert-table') as HTMLElement).click();
+            setTimeout(() => {
+                const firstP: HTMLElement = rteObj.inputElement.querySelector('.block-node');
+                expect(firstP.querySelector('table')).toBe(null);
+                // Table should be immediately after the first <p>
+                expect(firstP.nextSibling.nodeName === 'TABLE').toBe(true);
+                // A new <p> for the remaining text should follow after the table
+                expect(firstP.nextSibling.nextSibling.nodeName === 'P').toBe(true);
+                done();
+            }, 100);
+        });
+
+        it('Should insert new table after the <p> element with multiple inline wrappers inside', (done: DoneFn) => {
+            rteObj.inputElement.innerHTML = `
+            <table>
+                <tbody>
+                    <tr>
+                        <td style="width: 23.2295%">
+                            <p class="block-node"><strong><em><span style="text-decoration: underline;">Selma Rose</span></em></strong></p>
+                        </td>
+                        <td>30</td>
+                    </tr>
+                </tbody>
+            </table>
+        `;
+            rteObj.focusIn();
+            const pNode: HTMLElement = rteObj.contentModule.getDocument().querySelector('.block-node');
+            // Place cursor at end of the <p>
+            const deepestTextNode: Text = (pNode.querySelector('span')!.firstChild as Text);
+            setCursorPoint(deepestTextNode, deepestTextNode.textContent.length);
+            // Trigger table dialog
+            (rteEle.querySelector('.e-toolbar-item button') as HTMLElement).click();
+            (document.querySelector('.e-insert-table-btn') as HTMLElement).click();
+            (document.querySelector('.e-insert-table') as HTMLElement).click();
+            setTimeout(() => {
+                const pInsideTd: HTMLElement = rteObj.inputElement.querySelector('.block-node');
+                expect(pInsideTd.querySelector('table')).toBe(null);
+                // Table should be inserted after the <p>, not inside inline wrappers
+                expect(pInsideTd.nextSibling.nodeName === 'TABLE').toBe(true);
+                done();
+            }, 100);
+        });
+    });
 });

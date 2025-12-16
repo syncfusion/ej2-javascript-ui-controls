@@ -16,7 +16,7 @@ import { IFrameSettingsModel } from '../../models';
  * Link internal component
  *
  * @hidden
- * @deprecated
+ * @private
  */
 export class TableCommand {
     private parent: IEditorModel;
@@ -50,7 +50,7 @@ export class TableCommand {
      * @param {ITableModel} tableModel - specifies the table model instance
      * @param {IFrameSettingsModel} iframeSettings - specifies the table model instance
      * @hidden
-     * @deprecated
+     * @private
      */
     public constructor(parent: IEditorModel, tableModel: ITableModel, iframeSettings: IFrameSettingsModel) {
         this.parent = parent;
@@ -104,7 +104,7 @@ export class TableCommand {
         // Browser-specific event handlers for table resizing
         if (!Browser.isDevice && this.tableModel.tableSettings.resize) {
             EventHandler.remove(this.tableModel.getEditPanel(), 'mouseover', this.resizeHelper);
-            EventHandler.remove(this.tableModel.getEditPanel(), Browser.touchStartEvent, this.resizeStart);
+            this.parent.observer.off(EVENTS.touchStart, this.resizeStart);
         }
         if (this.curTable) {
             EventHandler.remove(this.curTable, 'mouseleave', this.tableMouseLeave);
@@ -3017,7 +3017,7 @@ export class TableCommand {
     public addResizeEventHandlers(): void {
         // Add touch event handlers for resizing on all devices
         if (this.tableModel.tableSettings.resize) {
-            EventHandler.add(this.tableModel.getEditPanel(), Browser.touchStartEvent, this.resizeStart, this);
+            this.parent.observer.on(EVENTS.touchStart, this.resizeStart, this);
         }
         // Add mouseover handler for non-mobile devices only
         if (!Browser.isDevice) {
@@ -3072,7 +3072,7 @@ export class TableCommand {
         }
         if (!this.isTableNode(target)) {
             const closestCell: Element = closest(target, 'td, th');
-            if (closestCell) {
+            if (closestCell && editPanel.contains(closestCell)) {
                 target = closestCell as HTMLElement;
             }
         }
@@ -3634,7 +3634,7 @@ export class TableCommand {
      */
     private createColumnResizers(columns: HTMLTableDataCellElement[], height: number, pos: OffsetPosition,
                                  allCells: HTMLElement[][]): void {
-        const nonEmptyColumns: HTMLTableDataCellElement[] = columns.filter((col : HTMLTableDataCellElement) => col != null);
+        const nonEmptyColumns: HTMLTableDataCellElement[] = columns.filter((col: HTMLTableDataCellElement) => col != null);
         const isRTL: boolean = this.tableModel.enableRtl;
         let leftOffset: number = pos.left;
         if (isRTL) {
@@ -5500,7 +5500,9 @@ export class TableCommand {
             this.curTable = closest(target, 'table') as HTMLTableElement;
         }
         this.wireTableSelectionEvents();
-        this.isTableMoveActive = true;
+        if (!Browser.isDevice) {
+            this.isTableMoveActive = true;
+        }
         this.removeResizeElement();
         if (this.helper && this.tableModel.getEditPanel().contains(this.helper)) {
             detach(this.helper);

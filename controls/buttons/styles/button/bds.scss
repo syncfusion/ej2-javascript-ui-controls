@@ -1,4 +1,4 @@
-@import 'ej2-base/styles/definition/bds.scss';
-@import 'bds-definition.scss';
-@import 'all.scss';
-@import 'bigger.scss';
+@use 'ej2-base/styles/definition/bds' as *;
+@use 'bds-definition' as *;
+@use 'all' as *;
+@use 'bigger' as *;

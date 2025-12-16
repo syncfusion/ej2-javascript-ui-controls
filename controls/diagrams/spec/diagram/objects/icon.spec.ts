@@ -29,7 +29,7 @@ describe('Diagram Control', () => {
                 this.skip(); //Skips test (in Chai)
                 return;
             }
-            ele = createElement('div', { id: 'diagram_expandicon' });
+            ele = createElement('div', { id: 'diagram_expandicon1' });
             document.body.appendChild(ele);
 
             let node1: NodeModel = {
@@ -130,12 +130,13 @@ describe('Diagram Control', () => {
                     type: 'OrganizationalChart',
                 },
             });
-            diagram.appendTo('#diagram_expandicon');
+            diagram.appendTo('#diagram_expandicon1');
         });
 
         afterAll((): void => {
             diagram.destroy();
             ele.remove();
+            (diagram as any) = null; (ele as any) = null;
         });
 
         it('Checking expand and collapse icon', (done: Function) => {
@@ -171,28 +172,28 @@ describe('Diagram Control', () => {
             let node10: Node = diagram.nodes[9] as Node;
             node10.collapseIcon.shape = 'Minus';
             diagram.dataBind();
-            setTimeout(() => {
-                let node8Icon: Canvas = node8.wrapper.children[1] as Canvas;
-                let node9Icon: Canvas = node9.wrapper.children[1] as Canvas;
-                let node10Icon: Canvas = node10.wrapper.children[1] as Canvas;
-                expect(node8.isExpanded === false && (node8Icon.children[1] as PathElement).data === 'M0,100 L50,0 L100,100 Z' &&
-                    (node9Icon.children[1] as PathElement).data === 'M0,-50 L0,50 M-50,0 L50,0' &&
-                    (node10Icon.children[1] as PathElement).data === 'M0,50 L100,50').toBe(true);
-                done();
-            }, 300);
+            // setTimeout(() => {
+            let node8Icon: Canvas = node8.wrapper.children[1] as Canvas;
+            let node9Icon: Canvas = node9.wrapper.children[1] as Canvas;
+            let node10Icon: Canvas = node10.wrapper.children[1] as Canvas;
+            expect(node8.isExpanded === false && (node8Icon.children[1] as PathElement).data === 'M0,100 L50,0 L100,100 Z' &&
+                (node9Icon.children[1] as PathElement).data === 'M0,-50 L0,50 M-50,0 L50,0' &&
+                (node10Icon.children[1] as PathElement).data === 'M0,50 L100,50').toBe(true);
+            done();
+            // }, 300);
         });
         it('Checking node with collapse icon delete', (done: Function) => {
             let mouseEvents: MouseEvents = new MouseEvents();
             let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
             let node10: NodeModel = diagram.nodes[10];
             mouseEvents.clickEvent(diagramCanvas, diagram.nodes[10].offsetX - 20, diagram.nodes[10].offsetY - 20);
-            setTimeout(() => {
-                expect(getDiagramElement(node10.id + '_icon_content_groupElement') !== null).toBe(true);
-                diagram.remove(node10);
-                expect(getDiagramElement(node10.id + '_icon_content_groupElement') === null).toBe(true);
-                diagram.add(node10);
-                done();
-            }, 300);
+            // setTimeout(() => {
+            expect(getDiagramElement(node10.id + '_icon_content_groupElement') !== null).toBe(true);
+            diagram.remove(node10);
+            expect(getDiagramElement(node10.id + '_icon_content_groupElement') === null).toBe(true);
+            diagram.add(node10);
+            done();
+            // }, 300);
         });
 
         it('Checking icon Corner radius', (done: Function) => {
@@ -216,13 +217,13 @@ describe('Diagram Control', () => {
                 isExpanded: false
             };
             diagram.add(newNode);
-            setTimeout(function () {
-                let nodeIcon: Canvas = (diagram.nodes[diagram.nodes.length - 1] as Node).wrapper.children[1] as Canvas;
-                expect((nodeIcon.children[1] as PathElement).data === 'M0,50 L100,50').toBe(true);
-                expect(nodeIcon.children[1].offsetX === 150).toBe(true);
-                expect(nodeIcon.children[1].offsetY === 185).toBe(true);
-                done();
-            }, 300);
+            // setTimeout(function () {
+            let nodeIcon: Canvas = (diagram.nodes[diagram.nodes.length - 1] as Node).wrapper.children[1] as Canvas;
+            expect((nodeIcon.children[1] as PathElement).data === 'M0,50 L100,50').toBe(true);
+            expect(nodeIcon.children[1].offsetX === 150).toBe(true);
+            expect(nodeIcon.children[1].offsetY === 185).toBe(true);
+            done();
+            // }, 300);
         });
     });
 
@@ -296,7 +297,7 @@ describe('Diagram Control', () => {
                 this.skip(); //Skips test (in Chai)
                 return;
             }
-            ele = createElement('div', { id: 'diagram_expandicon' });
+            ele = createElement('div', { id: 'diagram_expandicon2' });
             document.body.appendChild(ele);
             let items: DataManager = new DataManager(data as JSON[], new Query().take(7));
             diagram = new Diagram({
@@ -330,11 +331,12 @@ describe('Diagram Control', () => {
                     return connector;
                 }
             });
-            diagram.appendTo('#diagram_expandicon');
+            diagram.appendTo('#diagram_expandicon2');
         });
         afterAll((): void => {
             diagram.destroy();
             ele.remove();
+            (diagram as any) = null; (ele as any) = null;
         });
         it('Checking expand and collapse icon', (done: Function) => {
             expect(diagram.nodes[0].wrapper.children[1].offsetX == 355 && diagram.nodes[0].wrapper.children[1].offsetY == 477.5).toBe(true);
@@ -381,7 +383,7 @@ describe('Diagram Control', () => {
 
 });
 
-describe('Icon Apperance - EJ2-70586',()=>{
+describe('Icon Apperance - EJ2-70586', () => {
     //test the path colour and path width applies for expand & Collapse icon
     describe('Expand and Collapse Icon Appearance', () => {
         let diagram: Diagram;
@@ -399,7 +401,7 @@ describe('Icon Apperance - EJ2-70586',()=>{
                 this.skip(); //Skips test (in Chai)
                 return;
             }
-            ele = createElement('div', { id: 'diagram_expandicon' });
+            ele = createElement('div', { id: 'diagram_expandicon3' });
             document.body.appendChild(ele);
             let items: DataManager = new DataManager(data as JSON[], new Query().take(7));
             diagram = new Diagram({
@@ -431,11 +433,12 @@ describe('Icon Apperance - EJ2-70586',()=>{
                     return connector;
                 }
             });
-            diagram.appendTo('#diagram_expandicon');
+            diagram.appendTo('#diagram_expandicon3');
         });
         afterAll((): void => {
             diagram.destroy();
             ele.remove();
+            (diagram as any) = null; (ele as any) = null;
         });
 
 
@@ -454,15 +457,15 @@ describe('Icon Apperance - EJ2-70586',()=>{
             diagram.dataBind();
             var icon_content_shape = document.getElementById(diagram.nodes[0].id + "_icon_content_shape");
             expect(icon_content_shape.getAttribute('stroke')).toBe('#1a1a1a');
-        
+
             diagram.nodes[0].collapseIcon.iconColor = 'yellow';
-            
+
             diagram.dataBind();
             var icon_content_shape2 = document.getElementById(diagram.nodes[0].id + "_icon_content_shape");
             expect(diagram.nodes[0].collapseIcon.iconColor).toBe('yellow');
-            
+
             expect(icon_content_shape2.getAttribute('stroke')).toBe('yellow');
-        
+
             done();
         });
         it('Checking collapse icon content corner radius', (done: Function) => {
@@ -491,7 +494,7 @@ describe('Icon Apperance - EJ2-70586',()=>{
                 this.skip(); //Skips test (in Chai)
                 return;
             }
-            ele = createElement('div', { id: 'diagram_expandicon' });
+            ele = createElement('div', { id: 'diagram_expandicon4' });
             document.body.appendChild(ele);
             let nodes: NodeModel[] = [
                 { id: 'sample1', annotations: [{ content: 'node1' }] },
@@ -528,50 +531,48 @@ describe('Icon Apperance - EJ2-70586',()=>{
                     return connector;
                 }
             });
-            diagram.appendTo('#diagram_expandicon');
+            diagram.appendTo('#diagram_expandicon4');
             diagram.add(runtimeNode);
         });
         afterAll((): void => {
             diagram.destroy();
             ele.remove();
+            (diagram as any) = null; (ele as any) = null;
         });
 
 
         it('Checking expand icon', (done: Function) => {
-            debugger
             diagram.nodes[2].isExpanded;
             var icon_content_shape = document.getElementById(diagram.nodes[2].id + "_icon_content_shape");
             expect(icon_content_shape.getAttribute('stroke')).toBe('#1a1a1a');
-        
+
             diagram.nodes[2].expandIcon.iconColor = 'red';
-        
+
             diagram.dataBind();
             var icon_content_shape2 = document.getElementById(diagram.nodes[2].id + "_icon_content_shape");
             expect(diagram.nodes[2].expandIcon.iconColor).toBe('red');
-        
+
             expect(icon_content_shape2.getAttribute('stroke')).toBe('red');
-            
+
             done();
         });
         it('Checking collapse icon', (done: Function) => {
-            debugger
             diagram.nodes[2].isExpanded = false;
             diagram.dataBind();
             var icon_content_shape = document.getElementById(diagram.nodes[2].id + "_icon_content_shape");
             expect(icon_content_shape.getAttribute('stroke')).toBe('#1a1a1a');
-        
+
             diagram.nodes[2].collapseIcon.iconColor = 'blue';
-        
+
             diagram.dataBind();
             var icon_content_shape2 = document.getElementById(diagram.nodes[2].id + "_icon_content_shape");
             expect(diagram.nodes[2].collapseIcon.iconColor).toBe('blue');
-        
+
             expect(icon_content_shape2.getAttribute('stroke')).toBe('blue');
-        
+
             done();
         });
         it('Checking collapse icon content corner radius', (done: Function) => {
-            debugger
             var icon_content = document.getElementById(diagram.nodes[2].id + "_icon_content");
             expect(icon_content.getAttribute('rx')).toBe('0');
             expect(icon_content.getAttribute('ry')).toBe('0');
@@ -597,7 +598,7 @@ describe('Icon Apperance - EJ2-70586',()=>{
                 this.skip(); //Skips test (in Chai)
                 return;
             }
-            ele = createElement('div', { id: 'diagram_expandicon' });
+            ele = createElement('div', { id: 'diagram_expandicon5' });
             document.body.appendChild(ele);
             let nodes: NodeModel[] = [
                 { id: 'sample1', annotations: [{ content: 'node1' }] },
@@ -634,20 +635,20 @@ describe('Icon Apperance - EJ2-70586',()=>{
                     return connector;
                 }
             });
-            diagram.appendTo('#diagram_expandicon');
+            diagram.appendTo('#diagram_expandicon5');
             // diagram.add(runtimeNode);
         });
         afterAll((): void => {
             diagram.destroy();
             ele.remove();
+            (diagram as any) = null; (ele as any) = null;
         });
         it('Checking before, after, customProperties', (done: Function) => {
-            debugger
             var icon_content_shape = document.getElementById(diagram.nodes[1].id + "_icon_content_shape");
             expect(icon_content_shape.getAttribute('stroke')).toBe('#1a1a1a');
-        
+
             diagram.nodes[1].expandIcon.iconColor = 'red';
-            
+
             diagram.dataBind();
             let savedata: string = diagram.saveDiagram();
             diagram.clear();
@@ -655,7 +656,7 @@ describe('Icon Apperance - EJ2-70586',()=>{
             expect(savedata != null).toBe(true);
             var icon_content_shape2 = document.getElementById(diagram.nodes[1].id + "_icon_content_shape");
             expect(icon_content_shape2.getAttribute('stroke')).toBe('red');
-        
+
             diagram.clear();
             done();
         });
@@ -673,7 +674,7 @@ describe('Icon Apperance - EJ2-70586',()=>{
                 this.skip(); //Skips test (in Chai)
                 return;
             }
-            ele = createElement('div', { id: 'diagram_expandicon' });
+            ele = createElement('div', { id: 'diagram_expandicon6' });
             document.body.appendChild(ele);
             let nodes: NodeModel[] = [
                 { id: 'sample1', annotations: [{ content: 'node1' }] },
@@ -710,35 +711,31 @@ describe('Icon Apperance - EJ2-70586',()=>{
                     return connector;
                 }
             });
-            diagram.appendTo('#diagram_expandicon');
+            diagram.appendTo('#diagram_expandicon6');
             // diagram.add(runtimeNode);
         });
         afterAll((): void => {
             diagram.destroy();
             ele.remove();
+            (diagram as any) = null; (ele as any) = null;
         });
         it('Checking only applies to icon', (done: Function) => {
-            debugger
             var icon_shape = document.getElementById(diagram.nodes[1].id + "_icon_content_shape");
             expect(icon_shape.getAttribute('stroke')).toBe('#1a1a1a');
-            
+
             diagram.nodes[1].expandIcon.iconColor = 'red';
-        
+
             diagram.dataBind();
 
             var rect = document.getElementById(diagram.nodes[1].id + "_icon_content_rect");
             expect(rect.getAttribute('stroke')).toBe('#1a1a1a');
-        
+
             diagram.nodes[1].expandIcon.borderColor = 'cyan';
-        
+
             diagram.dataBind();
-
-
             var icon_shape2 = document.getElementById(diagram.nodes[1].id + "_icon_content_shape");
             var rect2 = document.getElementById(diagram.nodes[1].id + "_icon_content_rect");
             expect(icon_shape2.getAttribute('stroke') == rect2.getAttribute('stroke')).toBe(false);
-            
-
             done();
         });
 
@@ -755,7 +752,7 @@ describe('Icon Apperance - EJ2-70586',()=>{
                 this.skip(); //Skips test (in Chai)
                 return;
             }
-            ele = createElement('div', { id: 'diagram_expandicon' });
+            ele = createElement('div', { id: 'diagram_expandicon7' });
             document.body.appendChild(ele);
             let nodes: NodeModel[] = [
                 { id: 'sample1', annotations: [{ content: 'node1' }] },
@@ -792,20 +789,20 @@ describe('Icon Apperance - EJ2-70586',()=>{
                     return connector;
                 }
             });
-            diagram.appendTo('#diagram_expandicon');
+            diagram.appendTo('#diagram_expandicon7');
             // diagram.add(runtimeNode);
         });
         afterAll((): void => {
             diagram.destroy();
             ele.remove();
+            (diagram as any) = null; (ele as any) = null;
         });
         it('export data along with nodes', (done: Function) => {
-            debugger
             var icon_shape = document.getElementById(diagram.nodes[1].id + "_icon_content_shape");
             expect(icon_shape.getAttribute('stroke')).toBe('#1a1a1a');
-            
+
             diagram.nodes[1].expandIcon.iconColor = 'red';
-            
+
             diagram.dataBind();
             download(diagram.saveDiagram());
             //save the diagram object in json data.

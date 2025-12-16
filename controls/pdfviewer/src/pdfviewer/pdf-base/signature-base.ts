@@ -1,6 +1,6 @@
 import { isNullOrUndefined } from '@syncfusion/ej2-base';
 import { AnnotationRenderer, FormFieldsBase, Path, PointBase } from './index';
-import { PdfAnnotationFlag, PdfGraphics, PdfInkAnnotation, PdfPage, PdfPen, PdfPath } from '@syncfusion/ej2-pdf';
+import { PdfAnnotationFlag, PdfGraphics, PdfInkAnnotation, PdfPage, PdfPen, PdfPath, Point, PdfColor } from '@syncfusion/ej2-pdf';
 import { PdfViewer, PdfViewerBase } from '../index';
 import { Rect } from '@syncfusion/ej2-drawings';
 
@@ -48,16 +48,16 @@ export class SignatureBase {
                             const pageNumber: number = data.pageIndex;
                             const page: PdfPage = loadedDocument.getPage(pageNumber);
                             const rotateAngle: number = this.getRotateAngle(page.rotation.toString());
-                            const size: number[] = page.size;
-                            let pageWidth: number = size[0];
-                            let pageHeight: number = size[1];
+                            const size: any = page.size;
+                            let pageWidth: number = size.width;
+                            let pageHeight: number = size.height;
                             if (rotateAngle === 1 || rotateAngle === 3) {
-                                pageHeight = size[0];
-                                pageWidth = size[1];
+                                pageHeight = size.width;
+                                pageWidth = size.height;
                             }
                             else {
-                                pageHeight = size[1];
-                                pageWidth = size[0];
+                                pageHeight = size.height;
+                                pageWidth = size.width;
                             }
                             let bounds: Rect = JSON.parse(data.bounds);
                             bounds = this.getSignatureBounds(bounds, this.convertPointToPixel(pageHeight),
@@ -70,7 +70,7 @@ export class SignatureBase {
                             const opacity: number = data.opacity;
                             const thickness: number = data.thickness;
                             const strokeColor: any = JSON.parse(data.strokeColor);
-                            const color: number[] = [strokeColor.r, strokeColor.g, strokeColor.b];
+                            const color: PdfColor = {r: strokeColor.r, g: strokeColor.g, b: strokeColor.b};
                             let minimumX: number = -1;
                             let minimumY: number = -1;
                             let maximumX: number = -1;
@@ -109,7 +109,7 @@ export class SignatureBase {
                                 graphics = loadedPage.graphics;
                                 graphics.save();
                                 graphics.setTransparency(opacity);
-                                graphics.translateTransform(left, top);
+                                graphics.translateTransform({x: left, y: top});
                             }
                             const colors: PdfPen = new PdfPen(color, width);
                             colors._width = this.convertPixelToPoint(thickness);
@@ -129,7 +129,7 @@ export class SignatureBase {
                                         }
                                         newPoint1 = [newX, currentY];
                                         if (!isNullOrUndefined(graphics)) {
-                                            dataPath.addLine(newX, currentY, newX, currentY);
+                                            dataPath.addLine({x: newX, y: currentY}, {x: newX, y: currentY});
                                         }
                                     }
                                     else if (path === 'L') {
@@ -137,7 +137,7 @@ export class SignatureBase {
                                         if (graphics != null) {
                                             // Removed this line to fix the issue EJ2-60295
                                             // graphics.DrawLine(colors, newpoint1, newpoint2);
-                                            dataPath.addLine(newPoint1[0], newPoint1[1], newPoint2[0], newPoint2[1]);
+                                            dataPath.addLine({x: newPoint1[0], y: newPoint1[1]}, {x: newPoint2[0], y: newPoint2[1]});
                                         }
                                         newPoint1 = newPoint2;
                                     }
@@ -216,7 +216,7 @@ export class SignatureBase {
                             const cropValues: PointBase = annotationRenderer.getCropBoxValue(page, false);
                             const left: number = cropValues.x + this.convertPixelToPoint(bounds.left);
                             let top: number = this.convertPixelToPoint(bounds.top);
-                            if (!(cropValues.x === 0 && (page.cropBox[2] === page.size[0] && cropValues.y === page.size[1]))) {
+                            if (!(cropValues.x === 0 && (page.cropBox[2] === page.size.width && cropValues.y === page.size.height))) {
                                 top -= cropValues.y;
                             }
                             const width: number = this.convertPixelToPoint(bounds.width);
@@ -227,7 +227,7 @@ export class SignatureBase {
                             const opacity: number = signatureAnnotation.opacity;
                             const thickness: number = signatureAnnotation.thickness;
                             const strokeColor: any = JSON.parse(signatureAnnotation.strokeColor);
-                            const color: number[] = [strokeColor.r, strokeColor.g, strokeColor.b];
+                            const color: PdfColor = {r: strokeColor.r, g: strokeColor.g, b: strokeColor.b};
                             let minimumX: number = -1;
                             let minimumY: number = -1;
                             let maximumX: number = -1;
@@ -236,7 +236,7 @@ export class SignatureBase {
                             const drawingPath: PdfPath = new PdfPath();
                             for (let p: number = 0; p < stampObjects.length; p++) {
                                 const val: any = stampObjects[parseInt(p.toString(), 10)];
-                                drawingPath.addLine(val.x, val.y, 0, 0);
+                                drawingPath.addLine({x: val.x, y: val.y}, {x: 0, y: 0});
                             }
                             const rotatedPath: Path = annotationRenderer.getRotatedPathForMinMax(drawingPath._points, rotationAngle);
                             for (let k: number = 0; k < rotatedPath.points.length; k += 2) {
@@ -273,7 +273,7 @@ export class SignatureBase {
                                 newDifferenceY = 1;
                             }
 
-                            let linePoints: number[] = [];
+                            let linePoints: Point[] = [];
                             let isNewValues: number = 0;
                             if (rotationAngle !== 0) {
                                 for (let j: number = 0; j < stampObjects.length; j++) {
@@ -283,16 +283,19 @@ export class SignatureBase {
                                         isNewValues = j;
                                         break;
                                     }
-                                    linePoints.push((parseFloat(val['x'].toString())));
-                                    linePoints.push((parseFloat(val['y'].toString())));
+                                    linePoints.push({
+                                        x: (parseFloat(val['x'].toString())),
+                                        y: (parseFloat(val['y'].toString()))
+                                    });
                                 }
                                 const rotatedPoints: PdfPath = annotationRenderer.getRotatedPath(linePoints, rotationAngle);
                                 linePoints = [];
                                 for (let z: number = 0; z < rotatedPoints._points.length; z += 2) {
-                                    linePoints.push((rotatedPoints._points[parseInt(z.toString(), 10)][0] - minimumX)
-                                        / newDifferenceX + left);
-                                    linePoints.push(page.size[1] - (rotatedPoints._points[parseInt(z.toString(), 10)][1]
-                                        - minimumY) / newDifferenceY - top);
+                                    linePoints.push({
+                                        x: (rotatedPoints._points[parseInt(z.toString(), 10)].x - minimumX) / newDifferenceX + left,
+                                        y: page.size.height - (rotatedPoints._points[parseInt(z.toString(), 10)].y - minimumY) /
+                                        newDifferenceY - top
+                                    });
                                 }
                             }
                             else {
@@ -303,21 +306,24 @@ export class SignatureBase {
                                         isNewValues = j;
                                         break;
                                     }
-                                    linePoints.push(((val.x - minimumX) / newDifferenceX) + left);
                                     const newX: number = ((val.y - minimumY) / newDifferenceY);
-                                    linePoints.push(page.size[1] - newX - top);
+                                    linePoints.push({
+                                        x: ((val.x - minimumX) / newDifferenceX) + left,
+                                        y: page.size.height - newX - top
+                                    });
                                 }
                             }
-                            const inkAnnotation: PdfInkAnnotation = new PdfInkAnnotation([left, top, width, height], linePoints);
+                            const inkAnnotation: PdfInkAnnotation = new PdfInkAnnotation({x: left, y: top, width: width, height: height},
+                                                                                         linePoints);
                             let bound: Rect = new Rect();
-                            bound = new Rect(inkAnnotation.bounds.x, (page.size[1] - (inkAnnotation.bounds.y +
+                            bound = new Rect(inkAnnotation.bounds.x, (page.size.height - (inkAnnotation.bounds.y +
                                 inkAnnotation.bounds.height)), inkAnnotation.bounds.width, inkAnnotation.bounds.height);
                             inkAnnotation.bounds = bound;
                             inkAnnotation.color = color;
                             linePoints = [];
                             if (isNewValues > 0) {
                                 if (rotationAngle !== 0) {
-                                    const pathCollection: number[][] = [];
+                                    const pathCollection: Point[][] = [];
                                     for (let i: number = isNewValues; i < stampObjects.length; i++) {
                                         const val: any = stampObjects[parseInt(i.toString(), 10)];
                                         const path: string = val['command'].toString();
@@ -325,23 +331,27 @@ export class SignatureBase {
                                             pathCollection.push(linePoints);
                                             linePoints = [];
                                         }
-                                        linePoints.push(val['x']);
-                                        linePoints.push(val['y']);
+                                        linePoints.push({
+                                            x: val['x'],
+                                            y: val['y']
+                                        });
                                     }
                                     if (linePoints.length > 0) {
                                         pathCollection.push(linePoints);
                                     }
                                     for (let g: number = 0; g < pathCollection.length; g++) {
                                         let graphicsPoints: any = [];
-                                        const pointsCollections: number[] = pathCollection[parseInt(g.toString(), 10)];
+                                        const pointsCollections: Point[] = pathCollection[parseInt(g.toString(), 10)];
                                         if (pointsCollections.length > 0) {
                                             const rotatedPoints: PdfPath = annotationRenderer.getRotatedPath(pointsCollections,
                                                                                                              rotationAngle);
                                             for (let z: number = 0; z < rotatedPoints._points.length; z += 2) {
-                                                graphicsPoints.push((rotatedPoints._points[parseInt(z.toString(), 10)][0] - minimumX)
-                                                                   / newDifferenceX + left);
-                                                graphicsPoints.push(page.size[1] - (rotatedPoints._points[parseInt(z.toString(), 10)][1]
-                                                                   - minimumY) / newDifferenceY - top);
+                                                graphicsPoints.push({
+                                                    x: (rotatedPoints._points[parseInt(z.toString(), 10)].x - minimumX) /
+                                                    newDifferenceX + left,
+                                                    y: page.size.height - (rotatedPoints._points[parseInt(z.toString(), 10)].y - minimumY) /
+                                                    newDifferenceY - top
+                                                });
                                             }
                                             inkAnnotation.inkPointsCollection.push(graphicsPoints);
                                         }
@@ -356,9 +366,11 @@ export class SignatureBase {
                                             inkAnnotation.inkPointsCollection.push(linePoints);
                                             linePoints = [];
                                         }
-                                        linePoints.push((val['x'] - minimumX) / newDifferenceX + left);
                                         const newX: number = ((val['y'] - minimumY) / newDifferenceY);
-                                        linePoints.push(page.size[1] - newX - top);
+                                        linePoints.push({
+                                            x: (val['x'] - minimumX) / newDifferenceX + left,
+                                            y: page.size.height - newX - top
+                                        });
                                     }
                                     if (linePoints.length > 0) {
                                         inkAnnotation.inkPointsCollection.push(linePoints);

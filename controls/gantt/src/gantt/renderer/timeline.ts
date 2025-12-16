@@ -372,7 +372,7 @@ export class Timeline {
         }
         const numberOfCells: number = this.calculateNumberOfTimelineCells(newTimeline);
         const scrollHeight: number = this.parent.ganttChartModule.scrollElement.offsetHeight - 17; //17 is horizontal scrollbar width
-        const contentHeight: number = this.parent.ganttChartModule.chartBodyContent.offsetHeight;
+        const contentHeight: number = this.parent.ganttChartModule.chartBodyContent.offsetHeight - 1;
         const emptySpace: number = contentHeight <= scrollHeight ? 0 : 17;
         newTimeline.timelineUnitSize = Math.abs((chartWidth - emptySpace)) / numberOfCells;
         const args: ZoomEventArgs = {
@@ -839,8 +839,13 @@ export class Timeline {
         let tier: string = this.topTier === 'None' ? 'bottomTier' : 'topTier';
         this.topTierCollection = [];
         this.bottomTierCollection = [];
+        const isFitToWidthExport: boolean = (
+            !this.parent.pdfExportModule || (this.parent.pdfExportModule && !this.parent.pdfExportModule.isPdfExport) ||
+            (this.parent.pdfExportModule && this.parent.pdfExportModule.isPdfExport &&
+                this.parent.pdfExportModule.helper.exportProps &&
+                !this.parent.pdfExportModule.helper.exportProps.fitToWidthSettings.isFitToWidth)
+        );
         if (this.restrictRender === true) {
-            this.updateTimelineHeaderHeight();
             this.wholeTimelineWidth = this.calculateWidthBetweenTwoDate(tier, this.parent.timelineModule.timelineStartDate,
                                                                         this.parent.timelineModule.timelineEndDate);
         }
@@ -867,11 +872,14 @@ export class Timeline {
                 thead.appendChild(virtualTableDiv);
                 thead.appendChild(virtualTrackDiv);
                 table.appendChild(thead);
-                this.parent.ganttChartModule.chartTimelineContainer.appendChild(table);
+                if (isFitToWidthExport) {
+                    this.parent.ganttChartModule.chartTimelineContainer.appendChild(table);
+                }
                 tier = 'bottomTier';
                 tr = null;
                 this.restrictRender = false;
             }
+            this.updateTimelineHeaderHeight();
             this.timelineVirtualizationStyles();
         }
         else {
@@ -893,10 +901,13 @@ export class Timeline {
                 tr.appendChild(td);
                 thead.appendChild(tr);
                 table.appendChild(thead);
-                this.parent.ganttChartModule.chartTimelineContainer.appendChild(table);
+                if (isFitToWidthExport) {
+                    this.parent.ganttChartModule.chartTimelineContainer.appendChild(table);
+                }
                 tier = 'bottomTier';
                 tr = null;
             }
+            this.updateTimelineHeaderHeight();
             this.wholeTimelineWidth = this.totalTimelineWidth;
         }
     }
@@ -2333,12 +2344,26 @@ export class Timeline {
                     new Date(DataUtil.aggregates.max(filteredEndDateRecord, 'ganttProperties.endDate')) : null;
                 const validStartDate: Date = new Date(this.parent.dataOperation.checkStartDate(this.timelineStartDate).getTime());
                 const validEndDate: Date = new Date(this.parent.dataOperation.checkEndDate(this.timelineEndDate).getTime());
-                const maxStartLeft: number = isNullOrUndefined(minStartDate) ?
-                    null : this.parent.dataOperation.getTaskLeft(minStartDate, false);
-                const maxEndLeft: number = isNullOrUndefined(maxEndDate) ?
-                    null : this.parent.dataOperation.getTaskLeft(maxEndDate, false);
-                const validStartLeft: number = this.parent.dataOperation.getTaskLeft(validStartDate, false);
-                const validEndLeft: number = this.parent.dataOperation.getTaskLeft(validEndDate, false);
+                const maxStartLeft: number = isNullOrUndefined(minStartDate)
+                    ? null
+                    : this.parent.dataOperation.getTaskLeft(
+                        minStartDate,
+                        false,
+                        filteredStartDateRecord[0].ganttProperties.calendarContext
+                    );
+                const maxEndLeft: number = isNullOrUndefined(maxEndDate)
+                    ? null
+                    : this.parent.dataOperation.getTaskLeft(
+                        maxEndDate,
+                        false,
+                        filteredEndDateRecord[0].ganttProperties.calendarContext
+                    );
+                const validStartLeft: number = this.parent.dataOperation.getTaskLeft(
+                    validStartDate,
+                    false,
+                    this.parent.defaultCalendarContext
+                );
+                const validEndLeft: number = this.parent.dataOperation.getTaskLeft(validEndDate, false, this.parent.defaultCalendarContext);
                 let isChanged: string;
                 const taskbarModule: TaskbarEdit = this.parent.editModule.taskbarEditModule;
                 const startDate: number = filteredStartDateRecord.length > 0 ?

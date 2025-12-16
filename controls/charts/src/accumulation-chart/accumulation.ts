@@ -964,8 +964,8 @@ export class AccumulationChart extends Component<HTMLElement> implements INotify
         this.element.setAttribute('aria-label', this.accessibility.accessibilityDescription ? this.accessibility.accessibilityDescription : this.title + '. Syncfusion interactive chart.');
         this.element.setAttribute('class', this.element.getAttribute('class') + ' e-accumulationchart-focused');
         const loadEventData: IAccLoadedEventArgs = {
-            chart: this,
-            accumulation: this,
+            chart:  this,
+            accumulation:  this,
             theme: this.theme, name: load, cancel: false
         };
         this.trigger(load, loadEventData, () => {
@@ -1943,7 +1943,10 @@ export class AccumulationChart extends Component<HTMLElement> implements INotify
         if (isAllSeriesEmpty && !isNullOrUndefined(this.noDataTemplate)) {
             this.renderNoDataTemplate(true);
         }
+
+
         this.trigger('loaded', { accumulation: this, chart: this });
+
         this.animateSeries = false;
     }
     /**

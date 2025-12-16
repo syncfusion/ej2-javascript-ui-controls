@@ -39,10 +39,10 @@ describe('Spreadsheet Ribbon integration module ->', (): void => {
         it('Hide & show ribbon tab', (done: Function): void => {
             helper.invoke('hideRibbonTabs', [['Insert', 'View']]);
             expect(helper.getElementFromSpreadsheet('.e-ribbon .e-toolbar-items').children[3].classList).toContain('e-hide');
-            expect(helper.getElementFromSpreadsheet('.e-ribbon .e-toolbar-items').children[6].classList).toContain('e-hide');
+            expect(helper.getElementFromSpreadsheet('.e-ribbon .e-toolbar-items').children[7].classList).toContain('e-hide');
             helper.invoke('hideRibbonTabs', [['Insert', 'View'], false]);
             expect(helper.getElementFromSpreadsheet('.e-ribbon .e-toolbar-items').children[3].classList).not.toContain('e-hide');
-            expect(helper.getElementFromSpreadsheet('.e-ribbon .e-toolbar-items').children[6].classList).not.toContain('e-hide');
+            expect(helper.getElementFromSpreadsheet('.e-ribbon .e-toolbar-items').children[7].classList).not.toContain('e-hide');
             done();
         });
 
@@ -468,7 +468,7 @@ describe('Spreadsheet Ribbon integration module ->', (): void => {
             });
         });
         it('Opening Chart Theme Dropdown->', (done: Function) => {
-            helper.switchRibbonTab(6)
+            helper.switchRibbonTab(7)
             helper.getElement('#' + helper.id + '_chart_theme').click();
             helper.getElement('.e-item[aria-label="Fabric"]').click();
             setTimeout(() => {
@@ -837,38 +837,35 @@ describe('Spreadsheet Ribbon integration module ->', (): void => {
         });
         it('checking 0 of 0 in Find Dialog', (done: Function) => {
             helper.click('#' + helper.id + '_findbtn');
-            setTimeout(() => {
-                const findEditor: HTMLInputElement = helper.getElement('#' + helper.id + ' .e-text-findNext-short');
-                findEditor.value = 'ShOe';
-                findEditor.focus();
-                helper.triggerKeyNativeEvent(88, false, false, findEditor, 'keyup');
-                expect(findEditor.nextElementSibling.textContent).toBe('0 of 5');
-                findEditor.value = '';
-                helper.triggerKeyNativeEvent(88, false, false, findEditor, 'keyup');
-                expect(findEditor.nextElementSibling.textContent).toBe('0 of 0');
-                done();
-            });
+            const findEditor: HTMLInputElement = helper.getElement('#' + helper.id + ' .e-text-findNext-short');
+            findEditor.value = 'ShOe';
+            findEditor.focus();
+            helper.triggerKeyNativeEvent(88, false, false, findEditor, 'keyup');
+            expect(findEditor.nextElementSibling.textContent).toBe('0 of 5');
+            findEditor.value = '';
+            helper.triggerKeyNativeEvent(88, false, false, findEditor, 'keyup');
+            expect(findEditor.nextElementSibling.textContent).toBe('0 of 0');
+            done();
         });
         it('Choosing Format in Custom format Dialog->', (done: Function) => {
             helper.invoke('selectRange', ['E5']);
             helper.getElement('#' + helper.id + '_number_format').click();
             helper.getElement('#' + helper.id + '_Custom').click();
-            setTimeout(() => {
-                helper.setAnimationToNone('.e-custom-format-dlg.e-dialog');
-                helper.getElement('.e-custom-listview .e-list-item:nth-child(3)').click();
-                helper.click('.e-custom-format-dlg .e-dlg-content .e-btn');
-                setTimeout(() => {
-                    expect(helper.invoke('getCell', [4, 4]).textContent).toBe('20.00');
-                    done();
-                });
-            });
+            helper.setAnimationToNone('.e-custom-format-dlg.e-dialog');
+            helper.getElement('.e-custom-listview .e-list-item:nth-child(3)').click();
+            helper.click('.e-custom-format-dlg .e-dlg-content .e-btn');
+            expect(helper.invoke('getCell', [4, 4]).textContent).toBe('20.00');
+            done();
         });
         it('Hide Headers with Find Dialog->', (done: Function) => {
+            helper.click('#' + helper.id + '_findbtn');
             helper.invoke('selectRange', ['E5']);
-            helper.switchRibbonTab(5);
+            helper.switchRibbonTab(6);
             helper.click('#' + helper.id + '_headers');
             setTimeout(() => {
                 expect(helper.getElementFromSpreadsheet('.e-findtool-dlg.e-dialog')).not.toBeNull();
+                helper.click('.e-findtool-dlg.e-dialog .e-findRib-close .e-tbar-btn');
+                expect(helper.getElementFromSpreadsheet('.e-findtool-dlg.e-dialog')).toBeNull();
                 helper.invoke('selectRange', ['E5']);
                 done();
             });

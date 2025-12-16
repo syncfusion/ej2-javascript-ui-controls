@@ -441,8 +441,8 @@ export class TextLayer {
      */
     private resizeExcessDiv(textLayer: HTMLElement, textDiv: HTMLElement): void {
         // EJ2-855106- Optimize performance by eliminating unnecessary getBoundingClientRect usage in this method.
-        // const textLayerPosition: ClientRect = textLayer.getBoundingClientRect();
-        // const textDivPosition: ClientRect = textDiv.getBoundingClientRect();
+        // const textLayerPosition: DOMRect = textLayer.getBoundingClientRect();
+        // const textDivPosition: DOMRect = textDiv.getBoundingClientRect();
         //
         // if ((textDivPosition.width + textDivPosition.left) >= (textLayerPosition.width + textLayerPosition.left) || (textDivPosition.width > textLayerPosition.width)) {
         //     // 'auto' width is set to reset the size of the div to its contents.

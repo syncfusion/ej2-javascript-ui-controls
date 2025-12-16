@@ -1,3 +1,4 @@
+@use 'ej2-base/styles/common/mixin' as *;
 @include export-module('grid-bootstrap-icons') {
 
   .e-icon-check::before {
@@ -128,6 +129,14 @@
 
     .e-edit::before {
       content: '\e81e';
+    }
+
+    .e-grid-icon-pin::before {
+      content: '\e178';
+    }
+    
+    .e-grid-icon-unpin::before {
+      content: '\e179';
     }
 
     .e-responsivetoolbaritems-btn::before,

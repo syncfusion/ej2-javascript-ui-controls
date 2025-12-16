@@ -893,7 +893,7 @@ describe('Undo redo ->', () => {
         it('Apply freeze', (done: Function) => {
             sheet = helper.getInstance().getActiveSheet();
             helper.invoke('selectRange', ['E5']);
-            helper.switchRibbonTab(5);
+            helper.switchRibbonTab(6);
             helper.click('#' + helper.id + '_freezepanes');
             setTimeout((): void => {
                 expect(sheet.frozenRows).toBe(4);
@@ -1187,7 +1187,7 @@ describe('Undo redo ->', () => {
                 expect(td.textContent).toBe('Cricket Shoes');
                 expect(sheet.frozenRows).toBe(4);
                 expect(sheet.frozenColumns).toBe(4);
-                helper.switchRibbonTab(5);
+                helper.switchRibbonTab(6);
                 done();
             });
         });

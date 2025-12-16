@@ -1,7 +1,7 @@
 @use 'sass:color';
 @use 'sass:meta';
 @use 'sass:list';
-@import '../common/mixin.scss';
+@use '../common/mixin' as *;
 
 $selection-bg: #400074 !default;
 $selection-font: #fff !default;

@@ -1,3 +1,6 @@
+@use 'ej2-base/styles/common/mixin' as *;
+@use './theme-variables' as *;
+
 .e-input-group.e-multi-line-input.e-auto-width {
   width: auto;
 }
@@ -33,4 +36,232 @@
 .e-input-group:not(.e-disabled) .e-clear-icon:hover,
 .e-input-group.e-control-wrapper:not(.e-disabled) .e-clear-icon:hover {
   background: none;
+}
+
+div.e-input-group.e-multi-line-input.e-adornment-flow-horizontal.e-adornment-orientation-horizontal.e-prepend-wrapper.e-append-wrapper,
+div.e-input-group.e-multi-line-input.e-adornment-flow-horizontal.e-adornment-orientation-horizontal.e-prepend-wrapper,
+div.e-input-group.e-multi-line-input.e-adornment-flow-horizontal.e-adornment-orientation-horizontal.e-append-wrapper,
+span.e-input-group.e-multi-line-input.e-adornment-flow-horizontal.e-adornment-orientation-horizontal.e-prepend-wrapper.e-append-wrapper,
+span.e-input-group.e-multi-line-input.e-adornment-flow-horizontal.e-adornment-orientation-horizontal.e-prepend-wrapper,
+span.e-input-group.e-multi-line-input.e-adornment-flow-horizontal.e-adornment-orientation-horizontal.e-append-wrapper {
+  & .e-prepend-template,
+  & .e-append-template {
+    display: flex;
+    align-items: start;
+    flex: none;
+    flex-flow: row wrap;
+
+    & .e-input-separator {
+      padding: 15px 0 0;
+    }
+  }
+
+  @if ($skin-name == 'FluentUI') {
+    &.e-outline textarea.e-textarea {
+      padding: 4px 1px 1px;
+    }
+
+    &.e-filled textarea.e-textarea {
+      padding: 4px 1px;
+    }
+  }
+}
+
+div.e-input-group.e-multi-line-input.e-adornment-flow-vertical.e-adornment-orientation-horizontal.e-prepend-wrapper.e-append-wrapper,
+div.e-input-group.e-multi-line-input.e-adornment-flow-vertical.e-adornment-orientation-horizontal.e-prepend-wrapper,
+div.e-input-group.e-multi-line-input.e-adornment-flow-vertical.e-adornment-orientation-horizontal.e-append-wrapper,
+span.e-input-group.e-multi-line-input.e-adornment-flow-vertical.e-adornment-orientation-horizontal.e-prepend-wrapper.e-append-wrapper,
+span.e-input-group.e-multi-line-input.e-adornment-flow-vertical.e-adornment-orientation-horizontal.e-prepend-wrapper,
+span.e-input-group.e-multi-line-input.e-adornment-flow-vertical.e-adornment-orientation-horizontal.e-append-wrapper {
+  display: inline-flex;
+  flex-flow: row nowrap;
+  flex-direction: column !important; /* stylelint-disable-line declaration-no-important */
+
+  & .e-clear-icon {
+    flex-direction: row !important; /* stylelint-disable-line declaration-no-important */
+    margin: 5px;
+    justify-content: right;
+  }
+
+  &.e-rtl .e-clear-icon {
+    justify-content: left;
+  }
+
+  & .e-prepend-template .e-input-separator,
+  & .e-append-template .e-input-separator {
+    padding: 3px 0 0;
+  }
+
+  & label.e-label-top,
+  &.e-valid-input label.e-label-top {
+    margin-top: 0 !important; /* stylelint-disable-line declaration-no-important */
+  }
+
+  & textarea.e-textarea {
+    padding: $textarea-VH-textarea-padding;
+  }
+
+  &.e-outline textarea.e-textarea {
+    padding: $textarea-outline-VH-textarea-padding;
+  }
+
+  &.e-filled textarea.e-textarea {
+    padding: $textarea-filled-VH-textarea-padding;
+  }
+
+  & .e-prepend-template,
+  & .e-append-template {
+    padding: $textarea-VV-template-padding;
+  }
+}
+
+div.e-input-group.e-multi-line-input.e-adornment-flow-vertical.e-adornment-orientation-vertical.e-prepend-wrapper.e-append-wrapper,
+div.e-input-group.e-multi-line-input.e-adornment-flow-vertical.e-adornment-orientation-vertical.e-prepend-wrapper,
+div.e-input-group.e-multi-line-input.e-adornment-flow-vertical.e-adornment-orientation-vertical.e-append-wrapper,
+span.e-input-group.e-multi-line-input.e-adornment-flow-vertical.e-adornment-orientation-vertical.e-prepend-wrapper.e-append-wrapper,
+span.e-input-group.e-multi-line-input.e-adornment-flow-vertical.e-adornment-orientation-vertical.e-prepend-wrapper,
+span.e-input-group.e-multi-line-input.e-adornment-flow-vertical.e-adornment-orientation-vertical.e-append-wrapper {
+  display: inline-flex;
+  flex-flow: row nowrap;
+  flex-direction: column !important; /* stylelint-disable-line declaration-no-important */
+
+  & .e-clear-icon {
+    flex-direction: row !important; /* stylelint-disable-line declaration-no-important */
+    margin: 5px;
+    justify-content: right;
+  }
+
+  &.e-rtl .e-clear-icon {
+    justify-content: left;
+  }
+
+  & .e-prepend-template,
+  & .e-append-template {
+    display: flex;
+    align-items: start;
+    flex-flow: column wrap;
+
+    & .e-icons {
+      margin: 3px 0;
+    }
+
+    & .e-input-separator {
+      border: 1px solid $textbox-icon-template-separator-color;
+      border-width: 1px 0 0;
+      margin: 5px;
+      width: 100%;
+      margin-inline: 0;
+    }
+  }
+
+  & label.e-label-top,
+  &.e-valid-input label.e-label-top {
+    margin-top: 0 !important; /* stylelint-disable-line declaration-no-important */
+  }
+
+  & textarea.e-textarea {
+    padding: $textarea-VH-textarea-padding;
+  }
+
+  &.e-outline textarea.e-textarea {
+    padding: $textarea-outline-VH-textarea-padding;
+  }
+
+  &.e-filled textarea.e-textarea {
+    padding: $textarea-filled-VH-textarea-padding;
+  }
+
+  & .e-prepend-template,
+  & .e-append-template {
+    padding: $textarea-VV-template-padding;
+  }
+
+  &.e-outline .e-prepend-template,
+  &.e-outline .e-append-template {
+    padding: $textarea-outline-VV-template-padding;
+  }
+
+  &.e-filled .e-prepend-template,
+  &.e-filled .e-append-template {
+    padding: $textarea-filled-VV-template-padding;
+  }
+}
+
+div.e-input-group.e-multi-line-input.e-adornment-flow-horizontal.e-adornment-orientation-vertical.e-prepend-wrapper.e-append-wrapper,
+div.e-input-group.e-multi-line-input.e-adornment-flow-horizontal.e-adornment-orientation-vertical.e-prepend-wrapper,
+div.e-input-group.e-multi-line-input.e-adornment-flow-horizontal.e-adornment-orientation-vertical.e-append-wrapper,
+span.e-input-group.e-multi-line-input.e-adornment-flow-horizontal.e-adornment-orientation-vertical.e-prepend-wrapper.e-append-wrapper,
+span.e-input-group.e-multi-line-input.e-adornment-flow-horizontal.e-adornment-orientation-vertical.e-prepend-wrapper,
+span.e-input-group.e-multi-line-input.e-adornment-flow-horizontal.e-adornment-orientation-vertical.e-append-wrapper {
+  & .e-prepend-template,
+  & .e-append-template {
+    display: flex;
+    align-items: center;
+    flex: none;
+    flex-flow: column wrap;
+
+    & .e-icons {
+      margin: 3px 0;
+    }
+
+    & .e-input-separator {
+      border: 1px solid $textbox-icon-template-separator-color;
+      border-width: 1px 0 0;
+      margin: 5px;
+      width: 100%;
+      margin-inline: 0;
+    }
+  }
+
+  & textarea.e-textarea,
+  & textarea.e-textarea:focus,
+  &.e-input-focus textarea.e-textarea {
+    padding: $textarea-HV-textarea-padding;
+  }
+
+  & label.e-float-text.e-label-bottom,
+  &.e-rtl label.e-float-text.e-label-bottom {
+    top: $textarea-HV-textarea-top;
+  }
+
+  &.e-outline {
+    & textarea.e-textarea,
+    & textarea.e-textarea:focus,
+    &.e-input-focus textarea.e-textarea {
+      padding: $textarea-outline-HV-textarea-padding;
+    }
+
+    & label.e-float-text.e-label-bottom,
+    &.e-rtl label.e-float-text.e-label-bottom {
+      top: $textarea-outline-HV-label-top;
+    }
+  }
+
+  &.e-filled {
+    & textarea.e-textarea,
+    & textarea.e-textarea:focus,
+    &.e-input-focus textarea.e-textarea {
+      padding: $textarea-filled-HV-textarea-padding;
+    }
+
+    & label.e-float-text.e-label-bottom,
+    &.e-rtl label.e-float-text.e-label-bottom {
+      top: $textarea-filled-HV-label-top;
+    }
+  }
+}
+
+.e-input-group.e-multi-line-input.e-adornment-flow-vertical.e-prepend-wrapper.e-rtl .e-clear-icon,
+.e-input-group.e-multi-line-input.e-adornment-flow-vertical.e-append-wrapper.e-rtl .e-clear-icon,
+.e-input-group.e-multi-line-input.e-adornment-orientation-vertical.e-prepend-wrapper.e-rtl .e-clear-icon,
+.e-input-group.e-multi-line-input.e-adornment-orientation-vertical.e-append-wrapper.e-rtl .e-clear-icon {
+  margin-left: 10px;
+  float: left;
+}
+
+.e-input-group.e-multi-line-input.e-adornment-flow-vertical.e-adornment-orientation-vertical.e-prepend-wrapper.e-outline .e-clear-icon,
+.e-input-group.e-multi-line-input.e-adornment-flow-vertical.e-adornment-orientation-vertical.e-append-wrapper.e-outline .e-clear-icon,
+.e-input-group.e-multi-line-input.e-adornment-flow-vertical.e-adornment-orientation-vertical.e-prepend-wrapper.e-outline .e-clear-icon,
+.e-input-group.e-multi-line-input.e-adornment-flow-vertical.e-adornment-orientation-vertical.e-append-wrapper.e-outline .e-clear-icon {
+  top: -30px;
 }

@@ -3689,7 +3689,7 @@ export class Draw {
             this.errorLoading();
             parent.showDialogPopup('unsupported', fileTypeError);
             if (dropArea && !parent.isImageLoaded) {
-                dropArea.style.display = 'block';
+                dropArea.style.display = 'flex';
             }
         } else {
             if (dropArea) {

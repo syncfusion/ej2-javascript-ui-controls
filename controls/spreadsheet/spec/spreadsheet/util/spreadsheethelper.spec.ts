@@ -1,6 +1,7 @@
 import { Spreadsheet, SpreadsheetModel } from '../../../src/spreadsheet/index';
 import { TestHelper } from '../../common/helper.spec';
 import { createElement, EmitType, EventHandler, getComponent } from '@syncfusion/ej2-base';
+import { GlobalAnimationMode, setGlobalAnimation } from '@syncfusion/ej2-base';
 
 /**
  * Represents the class which contains Helper functions to test Spreadsheet component.
@@ -15,6 +16,7 @@ export class SpreadsheetHelper extends TestHelper {
     }
 
     public initializeSpreadsheet(model: SpreadsheetModel = {}, done?: Function): Spreadsheet {
+        setGlobalAnimation(GlobalAnimationMode.Disable);
         const sampleCreatedHandler: Function = model.created;
         const createdHandler: EmitType<Object> = () => {
             if (sampleCreatedHandler) {

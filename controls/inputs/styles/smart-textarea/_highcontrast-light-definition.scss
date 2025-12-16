@@ -1,3 +1,5 @@
+@use 'ej2-base/styles/definition/highcontrast-light' as *;
+@forward 'ej2-base/styles/definition/highcontrast-light';
 $sta-background-color: $hover-font !default;
 $sta-color: $selection-font !default;
 $sta-box-shadow: rgba(0, 0, 0, .4) !default;

@@ -1,3 +1,5 @@
+@use 'ej2-base/styles/definition/tailwind3' as *;
+@forward 'ej2-base/styles/definition/tailwind3';
 $theme: 'Tailwind3';
 
 //Layout Variables Start
@@ -26,6 +28,12 @@ $spin-bootstrap-stroke-color: $primary;
 $spin-tailwind-stroke-width: 4.5;
 $spin-tailwind-arc-color: $primary;
 $spin-tailwind-stroke-color: $primary-light;
+$spin-tail-margin: 0 auto !default;
+$spin-bootstrap-border-radius: $radius-full !default;
+$spinner-zero-space: 0 !default;
+$spinner-full-width: 100% !default;
+$spinner-half-width: 50% !default;
+$spinner-full-height: 100% !default;
 
 @mixin tw-spinner-rotate {
   animation: fabric-spinner-rotate 1.3s infinite cubic-bezier(.21, .21, .21, .21);

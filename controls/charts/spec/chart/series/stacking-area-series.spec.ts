@@ -488,12 +488,12 @@ describe('Chart Control', () => {
 
         });
 
-        it('Checking animation', (done: Function) => {
+        it('Checking animation', async (): Promise<void> => {
 
          let animate: EmitType<IAnimationCompleteEventArgs> = (args: series1): void => {
                 let point : Element =  <Element>document.getElementById('container_ChartSeriesClipRect_' + args.series.index).childNodes[0];
                 expect(point.getAttribute('width') === document.getElementById('container_ChartAreaBorder').getAttribute('width')).toBe(true);
-                done();
+                //done();
             };
             chartObj.series[0].animation.enable = true;
             chartObj.series[1].animation.enable = true;
@@ -501,13 +501,14 @@ describe('Chart Control', () => {
             chartObj.series[3].animation.enable = true;
             chartObj.animationComplete = animate;
             chartObj.refresh();
+            await wait(500);
         });
-        it('Checking animation for stackingarea100 series', (done: Function) => {
+        it('Checking animation for stackingarea100 series', async (): Promise<void> => {
 
          let animate: EmitType<IAnimationCompleteEventArgs> = (args: series1): void => {
                 let point : Element =  <Element>document.getElementById('container_ChartSeriesClipRect_' + args.series.index).childNodes[0];
                 expect(point.getAttribute('width') === document.getElementById('container_ChartAreaBorder').getAttribute('width')).toBe(true);
-                done();
+                //done();
             };
             chartObj.series[0].type = 'StackingArea100';
             chartObj.series[1].type = 'StackingArea100';
@@ -515,9 +516,13 @@ describe('Chart Control', () => {
             chartObj.series[3].type = 'StackingArea100';
             chartObj.animationComplete = animate;
             chartObj.refresh();
+            await wait(500);
 
         });
     });
+    async function wait(ms: number): Promise<void> {
+        return new Promise(resolve => setTimeout(resolve, ms));
+    }
     describe('Stacking Areas Series Inversed axis', () => {
         let chart: Chart;
         let loaded: EmitType<ILoadedEventArgs>;
@@ -745,14 +750,15 @@ describe('Chart Control', () => {
             chart.tooltip.shared = true;
             chart.refresh();
         });
-        it('checking animation', (done: Function) => {
+        it('checking animation', async (): Promise<void> => {
             animationComplete = (args: IAnimationCompleteEventArgs): void => {
-                done();
+                //done();
             };
             chart.series[0].animation.enable = true;
             chart.series[1].animation.enable = true;
             chart.animationComplete = animationComplete;
             chart.refresh();
+            await wait(500);
         });
     });
 

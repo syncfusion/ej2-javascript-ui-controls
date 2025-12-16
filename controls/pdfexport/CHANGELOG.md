@@ -2,8 +2,6 @@
 
 ## [Unreleased]
 
-## 31.2.18 (2025-12-09)
-
 ### Pdf Export
 
 #### Bug Fixes

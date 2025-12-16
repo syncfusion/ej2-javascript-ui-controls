@@ -1,4 +1,4 @@
-import { _PdfContentStream, _PdfCrossReference, _PdfDictionary, _PdfRecord, PdfAnnotation, PdfDocument, PdfPage, PdfRedactionAnnotation, PdfTemplate} from '@syncfusion/ej2-pdf';
+import { _PdfContentStream, _PdfCrossReference, _PdfDictionary, _PdfRecord, PdfAnnotation, PdfDocument, PdfPage, PdfRedactionAnnotation, PdfTemplate, Rectangle} from '@syncfusion/ej2-pdf';
 import { _GraphicState } from '../graphic-state';
 import { TextGlyph } from '../text-structure';
 import { _PdfContentParserHelper } from '../content-parser-helper';
@@ -18,7 +18,7 @@ import { PdfRedactionRegion } from './pdf-redaction-region';
  * // Add redactions to the collection
  * let redactions: PdfRedactionRegion[] = [];
  * redactions.push(new PdfRedactionRegion(0, {x: 10, y: 10, width: 100, height: 50}));
- * redactions.push(new PdfRedactionRegion(2, {x: 10, y: 10, width: 100, height: 50}, true, [255, 0, 0]));
+ * redactions.push(new PdfRedactionRegion(2, {x: 10, y: 10, width: 100, height: 50}, true, {r: 255, g: 0, b: 0}));
  * redactor.add(redactions);
  * // Apply redactions on the PDF document
  * redactor.redact();
@@ -48,9 +48,9 @@ export class PdfRedactor {
      * // Initialize a new instance of the `PdfRedactor` class
      * let redactor: PdfRedactor = new PdfRedactor(document);
      * // Initialize a new instance of the `PdfRedactionRegion` class.
-     * let redaction: PdfRedactionRegion = new PdfRedactionRegion(0, {x:40, y: 41.809, width: 80, height: 90});
+     * let redaction: PdfRedactionRegion = new PdfRedactionRegion(0, {x: 40, y: 41.809, width: 80, height: 90});
      * // Sets the fill color used to fill the redacted area.
-     * redaction.fillColor = [255, 0, 0];
+     * redaction.fillColor = {r: 255, g: 0, b: 0};
      * redactions.push(redaction);
      * // Add redactions with specified options.
      * redactor.add(redactions);
@@ -76,9 +76,9 @@ export class PdfRedactor {
      * // Add redactions to the collection
      * let redactions: PdfRedactionRegion[] = [];
      * // Initialize a new instance of the `PdfRedactionRegion` class.
-     * let redaction: PdfRedactionRegion = new PdfRedactionRegion(0, {x:40, y: 41.809, width: 80, height: 90});
+     * let redaction: PdfRedactionRegion = new PdfRedactionRegion(0, {x: 40, y: 41.809, width: 80, height: 90});
      * // Sets the fill color used to fill the redacted area.
-     * redaction.fillColor = [255, 0, 0];
+     * redaction.fillColor = {r: 255, g: 0, b: 0};
      * redactions.push(redaction);
      * // Initialize a new instance of the `PdfRedactor` class with redactions
      * let redactor: PdfRedactor = new PdfRedactor(document, redactions);
@@ -122,9 +122,9 @@ export class PdfRedactor {
      * // Initialize a new instance of the `PdfRedactor` class
      * let redactor: PdfRedactor = new PdfRedactor(document);
      * // Initialize a new instance of the `PdfRedactionRegion` class.
-     * let redaction: PdfRedactionRegion = new PdfRedactionRegion(0, {x:40, y: 41.809, width: 80, height: 90});
+     * let redaction: PdfRedactionRegion = new PdfRedactionRegion(0, {x: 40, y: 41.809, width: 80, height: 90});
      * // Sets the fill color used to fill the redacted area.
-     * redaction.fillColor = [255, 0, 0];
+     * redaction.fillColor = {r: 255, g: 0, b: 0};
      * redactions.push(redaction);
      * // Add redactions with specified options.
      * redactor.add(redactions);
@@ -162,9 +162,9 @@ export class PdfRedactor {
      * // Initialize a new instance of the `PdfRedactor` class
      * let redactor: PdfRedactor = new PdfRedactor(document);
      * // Initialize a new instance of the `PdfRedactionRegion` class.
-     * let redaction: PdfRedactionRegion = new PdfRedactionRegion(0, {x:40, y: 41.809, width: 80, height: 90});
+     * let redaction: PdfRedactionRegion = new PdfRedactionRegion(0, {x: 40, y: 41.809, width: 80, height: 90});
      * // Sets the fill color used to fill the redacted area.
-     * redaction.fillColor = [255, 0, 0];
+     * redaction.fillColor = {r: 255, g: 0, b: 0};
      * redactions.push(redaction);
      * // Add redactions with specified options.
      * redactor.add(redactions);
@@ -215,9 +215,8 @@ export class PdfRedactor {
                 const redactionAnnotation: PdfRedactionAnnotation = annotation as PdfRedactionAnnotation;
                 redactionAnnotation.flatten = true;
                 if (redactionAnnotation.boundsCollection && redactionAnnotation.boundsCollection.length > 1) {
-                    redactionAnnotation.boundsCollection.forEach((value: number[], index: number) => {
-                        const redact: PdfRedactionRegion = new PdfRedactionRegion(page._pageIndex, { x: value[0], y: value[1],
-                            width: value[2], height: value[3] });
+                    redactionAnnotation.boundsCollection.forEach((value: Rectangle, index: number) => {
+                        const redact: PdfRedactionRegion = new PdfRedactionRegion(page._pageIndex, value);
                         redact.appearance.normal = redactionAnnotation._createNormalAppearance(index);
                         redactRegions.push(redact);
                     });
@@ -312,11 +311,9 @@ export class PdfRedactor {
         }
         return bytes;
     }
-    _isFoundBounds(values: number[], redactionBounds: PdfRedactionRegion[]): boolean {
-        const rect: {x: number, y: number, width: number, height: number} = {x: values[0], y: values[1], width: values[2],
-            height: values[3]};
+    _isFoundBounds(values: Rectangle, redactionBounds: PdfRedactionRegion[]): boolean {
         for (const bounds of redactionBounds) {
-            if (this._contains(bounds._bounds, [rect.x, rect.y]) || this._intersectsWith(bounds._bounds, rect)) {
+            if (this._contains(bounds._bounds, [values.x, values.y]) || this._intersectsWith(bounds._bounds, values)) {
                 return true;
             }
         }

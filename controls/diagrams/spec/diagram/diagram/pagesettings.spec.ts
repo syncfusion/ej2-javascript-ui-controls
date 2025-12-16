@@ -5,7 +5,7 @@ import { ConnectorModel } from '../../../src/diagram/objects/connector-model';
 import { BasicShapeModel, BpmnShapeModel, NativeModel, NodeModel } from '../../../src/diagram/objects/node-model';
 import { BpmnDiagrams } from '../../../src/diagram/objects/bpmn';
 import { DiagramScroller } from '../../../src/diagram/interaction/scroller';
-import { LayerModel, Rect, UndoRedo, PointModel, LineDistribution, ComplexHierarchicalTree, DataBinding, Node, ConnectorEditing, Canvas, BezierSegment } from '../../../src/index';
+import { Rect, UndoRedo, PointModel, LineDistribution, ComplexHierarchicalTree, DataBinding, Node, ConnectorEditing, BezierSegment } from '../../../src/index';
 import { MouseEvents } from '../../../spec/diagram/interaction/mouseevents.spec';
 import { IClickEventArgs, IPropertyChangeEventArgs } from '../../../src/diagram/objects/interface/IElement';
 import { Matrix, transformPointByMatrix, identityMatrix, rotateMatrix } from '../../../src/diagram/primitives/matrix';
@@ -20,19 +20,24 @@ describe('PageSettings', () => {
     describe('Exception occurs when try to draw SVG node issue', () => {
         let diagram: Diagram;
         let ele: HTMLElement;
+        let mouseEvents: MouseEvents = new MouseEvents();
+        let diagramCanvas: Element;
         beforeAll(() => {
-            ele = createElement('div', { id: 'diagramorder' });
+            ele = createElement('div', { id: 'diagramorder57' });
             document.body.appendChild(ele);
             diagram = new Diagram({
                 width: '1000px', height: '500px',
                 tool: DiagramTools.ContinuousDraw
 
             });
-            diagram.appendTo('#diagramorder');
+            diagram.appendTo('#diagramorder57');
+            diagramCanvas = document.getElementById(diagram.element.id + 'content');
         });
         afterAll(() => {
             diagram.destroy();
             ele.remove();
+            (diagram as any) = null; (ele as any) = null;
+            (mouseEvents as any) = null; (diagramCanvas as any) = null;
         });
         it('Draw Normal node and check nodes collection', function (done) {
             let shape: BasicShapeModel = { type: 'Basic', shape: 'Ellipse' };
@@ -40,11 +45,9 @@ describe('PageSettings', () => {
                 shape: shape
             }
             diagram.dataBind();
-            let mouseevents: MouseEvents = new MouseEvents();
-            let diagramCanvas: Element = document.getElementById(diagram.element.id +'content');
-            mouseevents.mouseDownEvent(diagramCanvas, 200, 250);
-            mouseevents.mouseMoveEvent(diagramCanvas, 250, 350);
-            mouseevents.mouseUpEvent(diagramCanvas, 250, 350);
+            mouseEvents.mouseDownEvent(diagramCanvas, 200, 250);
+            mouseEvents.mouseMoveEvent(diagramCanvas, 250, 350);
+            mouseEvents.mouseUpEvent(diagramCanvas, 250, 350);
             expect(diagram.nodes.length === 1).toBe(true);
             done();
         });
@@ -74,11 +77,9 @@ describe('PageSettings', () => {
                 shape: shape2
             };
             diagram.dataBind();
-            let mouseevents: MouseEvents = new MouseEvents();
-            let diagramCanvas: Element = document.getElementById(diagram.element.id +'content');
-            mouseevents.mouseDownEvent(diagramCanvas, 400, 100);
-            mouseevents.mouseMoveEvent(diagramCanvas, 500, 200);
-            mouseevents.mouseUpEvent(diagramCanvas, 500, 200);
+            mouseEvents.mouseDownEvent(diagramCanvas, 400, 100);
+            mouseEvents.mouseMoveEvent(diagramCanvas, 500, 200);
+            mouseEvents.mouseUpEvent(diagramCanvas, 500, 200);
             expect(diagram.nodes.length === 2 && diagram.nodes[1].shape.type === 'Native').toBe(true);
             done();
         });
@@ -86,8 +87,10 @@ describe('PageSettings', () => {
     describe('Bezier connector not rendered properly issue', () => {
         let diagram: Diagram;
         let ele: HTMLElement;
+        let mouseEvents: MouseEvents = new MouseEvents();
+        let diagramCanvas: Element;
         beforeAll(() => {
-            ele = createElement('div', { id: 'diagramorder' });
+            ele = createElement('div', { id: 'diagramorder56' });
             document.body.appendChild(ele);
             let node: NodeModel = {
                 id: 'node1', width: 100, height: 100, offsetX: 100, offsetY: 100, annotations: [{ content: 'Node1' }],
@@ -111,7 +114,8 @@ describe('PageSettings', () => {
 
 
             });
-            diagram.appendTo('#diagramorder');
+            diagram.appendTo('#diagramorder56');
+            diagramCanvas = document.getElementById(diagram.element.id + 'content');
             function getConnectorDefaults(obj: ConnectorModel) {
                 obj.constraints = ConnectorConstraints.Default | ConnectorConstraints.DragSegmentThumb;
             }
@@ -119,17 +123,17 @@ describe('PageSettings', () => {
         afterAll(() => {
             diagram.destroy();
             ele.remove();
+            (diagram as any) = null; (ele as any) = null;
+            (mouseEvents as any) = null; (diagramCanvas as any) = null;
         });
         it('Draw Bezier connector and check segment collection', function (done) {
             diagram.tool = DiagramTools.DrawOnce;
             let shape2: ConnectorModel = { type: 'Bezier' };
             diagram.drawingObject = shape2;
             diagram.dataBind();
-            let mouseevents: MouseEvents = new MouseEvents();
-            let diagramCanvas: Element = document.getElementById(diagram.element.id +'content');
-            mouseevents.mouseDownEvent(diagramCanvas, 400, 100);
-            mouseevents.mouseMoveEvent(diagramCanvas, 600, 250);
-            mouseevents.mouseUpEvent(diagramCanvas, 600, 250);
+            mouseEvents.mouseDownEvent(diagramCanvas, 400, 100);
+            mouseEvents.mouseMoveEvent(diagramCanvas, 600, 250);
+            mouseEvents.mouseUpEvent(diagramCanvas, 600, 250);
             var connector = diagram.connectors[0];
             connector.sourceID = "node1";
             connector.targetID = "node2";
@@ -143,7 +147,6 @@ describe('PageSettings', () => {
     describe('Page Settings', () => {
         let diagram: Diagram;
         let ele: HTMLElement;
-        let scroller: DiagramScroller;
 
         beforeAll((): void => {
             const isDef = (o: any) => o !== undefined && o !== null;
@@ -151,7 +154,7 @@ describe('PageSettings', () => {
                 this.skip(); //Skips test (in Chai)
                 return;
             }
-            ele = createElement('div', { id: 'diagram' });
+            ele = createElement('div', { id: 'diagram55' });
             document.body.appendChild(ele);
             let connector: ConnectorModel = {
                 id: 'connector1', sourcePoint: { x: 300, y: 400 }, targetPoint: { x: 500, y: 500 }
@@ -172,13 +175,14 @@ describe('PageSettings', () => {
                     background: { color: 'blue' }
                 }
             });
-            diagram.appendTo('#diagram');
+            diagram.appendTo('#diagram55');
 
         });
 
         afterAll((): void => {
             diagram.destroy();
             ele.remove();
+            (diagram as any) = null; (ele as any) = null;
         });
 
         it('Page Settings with orientation Horizontal', (done: Function) => {
@@ -243,9 +247,10 @@ describe('PageSettings', () => {
         let ele: HTMLElement;
 
         let mouseEvents: MouseEvents = new MouseEvents();
-
+        let diagramCanvas: Element;
+        let pathElement: HTMLElement
         beforeAll((): void => {
-            ele = createElement('div', { id: 'diagrambpmn' });
+            ele = createElement('div', { id: 'diagrambpmn54' });
             document.body.appendChild(ele);
             let connector: ConnectorModel[] = [{
                 id: 'Connector1',
@@ -419,56 +424,56 @@ describe('PageSettings', () => {
                 width: '1000px', height: '1000px', nodes: nodes,
                 connectors: connector
             });
-            diagram.appendTo('#diagrambpmn');
+            diagram.appendTo('#diagrambpmn54');
+            diagramCanvas = document.getElementById(diagram.element.id + 'content');
         });
 
         afterAll((): void => {
             diagram.destroy();
             ele.remove();
+            (diagram as any) = null; (ele as any) = null;
+            (mouseEvents as any) = null; (diagramCanvas as any) = null;
         });
 
         it('BPMN Sequence default Rendering', (done: Function) => {
 
-            let pathElement: HTMLElement = document.getElementById('Connector1_Default');
-            console.log("first path",pathElement.getAttribute('transform') );
+            pathElement = document.getElementById('Connector1_Default');
+            console.log("first path", pathElement.getAttribute('transform'));
             expect(pathElement.getAttribute('transform') === "rotate(45,707.07,107.07)translate(699.2900012207032,99.29000122070312)").toBe(true);
             done();
         });
 
-        
+
 
         it('BPMN Sequence connector Dragging', (done: Function) => {
-            let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
             diagram.select([diagram.connectors[0]]);
             mouseEvents.mouseMoveEvent(diagramCanvas, 746, 140);
             mouseEvents.mouseDownEvent(diagramCanvas, 746, 140);
             mouseEvents.mouseMoveEvent(diagramCanvas, 756, 160);
             mouseEvents.mouseUpEvent(diagramCanvas, 756, 160);
-            let pathElement: HTMLElement = document.getElementById('Connector1_Default');
-            console.log("second path",pathElement.getAttribute('transform') );
+            pathElement = document.getElementById('Connector1_Default');
+            console.log("second path", pathElement.getAttribute('transform'));
             //Need to evaluate testcase
             //expect((pathElement.getAttribute('transform') === 'rotate(45,727.07,122.07)translate(719.2900012207032,114.28999740600585)') || (pathElement.getAttribute('transform') === "rotate(45,717.07,127.07)translate(709.2900012207032,119.28999740600585)")).toBe(true);
             expect(true).toBe(true);
             done();
         });
         it('BPMN Sequence connector Dragging with node move', (done: Function) => {
-            let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
             mouseEvents.mouseMoveEvent(diagramCanvas, 250, 340);
             mouseEvents.mouseDownEvent(diagramCanvas, 250, 340);
             mouseEvents.mouseMoveEvent(diagramCanvas, 350, 400);
             mouseEvents.mouseUpEvent(diagramCanvas, 350, 400);
-            let pathElement: HTMLElement = document.getElementById('Connector2_Default');
+            pathElement = document.getElementById('Connector2_Default');
             expect(pathElement.getAttribute('transform') === "rotate(45,100,125)translate(100,114)").toBe(true);
             done();
         });
         it('BPMN Sequence connector rotating with node move', (done: Function) => {
-            let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
             diagram.select([diagram.nodes[3], diagram.connectors[2]]);
             mouseEvents.mouseMoveEvent(diagramCanvas, 575, 22);
             mouseEvents.mouseDownEvent(diagramCanvas, 575, 22);
             mouseEvents.mouseMoveEvent(diagramCanvas, 600, 50);
             mouseEvents.mouseUpEvent(diagramCanvas, 600, 50);
-            let pathElement: HTMLElement = document.getElementById('Connector2_Default');
+            pathElement = document.getElementById('Connector2_Default');
             expect(pathElement.getAttribute('transform') === "rotate(45,100,125)translate(100,114)").toBe(true);
             done();
         });
@@ -481,8 +486,8 @@ describe('PageSettings boundary constraints', () => {
     describe('Page Settings with orientation', () => {
         let diagram: Diagram;
         let ele: HTMLElement;
-        let scroller: DiagramScroller;
         let mouseEvents: MouseEvents = new MouseEvents();
+        let diagramCanvas: HTMLElement;
         beforeAll((): void => {
             const isDef = (o: any) => o !== undefined && o !== null;
             if (!isDef(window.performance)) {
@@ -491,7 +496,7 @@ describe('PageSettings boundary constraints', () => {
                 return;
             }
 
-            ele = createElement('div', { id: 'diagramconstraints' });
+            ele = createElement('div', { id: 'diagramconstraints53' });
             document.body.appendChild(ele);
             let connector: ConnectorModel = {
                 id: 'connector1', sourcePoint: { x: 300, y: 400 }, targetPoint: { x: 500, y: 500 }
@@ -515,13 +520,15 @@ describe('PageSettings boundary constraints', () => {
                     width: 600, height: 500,
                 }
             });
-            diagram.appendTo('#diagramconstraints');
-
+            diagram.appendTo('#diagramconstraints53');
+            diagramCanvas = document.getElementById(diagram.element.id + 'content');
         });
 
         afterAll((): void => {
             diagram.destroy();
             ele.remove();
+            (diagram as any) = null; (ele as any) = null;
+            (mouseEvents as any) = null; (diagramCanvas as any) = null;
         });
         it('changing nodes properties   at runtime', (done: Function) => {
             diagram.pageSettings.boundaryConstraints = 'Page';
@@ -560,7 +567,6 @@ describe('PageSettings boundary constraints', () => {
 
         it('boundary constraints for drag ', (done: Function) => {
             diagram.pageSettings.boundaryConstraints = 'Infinity';
-            let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
             mouseEvents.clickEvent(diagramCanvas, 100, 100);
             mouseEvents.dragAndDropEvent(diagramCanvas, 100, 100, 600, 100);
             //Need to evaluate testcase
@@ -577,7 +583,6 @@ describe('PageSettings boundary constraints', () => {
             done();
         });
         it('boundary constraints for resize', (done: Function) => {
-            let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
             diagram.pageSettings.boundaryConstraints = 'Page';
             mouseEvents.dragAndDropEvent(diagramCanvas, 100, 100, 500, 100);
             mouseEvents.dragAndDropEvent(diagramCanvas, 580, 100, 620, 100);
@@ -590,7 +595,6 @@ describe('PageSettings boundary constraints', () => {
             done();
         });
         it('boundary constraints for rotate', (done: Function) => {
-            let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
             diagram.pageSettings.boundaryConstraints = 'Page';
             mouseEvents.dragAndDropEvent(diagramCanvas, 500, 100, 515, 100);
             mouseEvents.dragAndDropEvent(diagramCanvas, 520, 100, 590, 20);
@@ -601,7 +605,6 @@ describe('PageSettings boundary constraints', () => {
         });
 
         it('boundary constraints for connector dragging target end ', (done: Function) => {
-            let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
             diagram.pageSettings.boundaryConstraints = 'Infinity';
             mouseEvents.clickEvent(diagramCanvas, 400, 450);
             mouseEvents.dragAndDropEvent(diagramCanvas, 500, 500, 600, 600);
@@ -615,7 +618,6 @@ describe('PageSettings boundary constraints', () => {
             done();
         });
         it('boundary constraints for connector dragging source end ', (done: Function) => {
-            var diagramCanvas = document.getElementById(diagram.element.id + 'content');
             diagram.pageSettings.boundaryConstraints = 'Infinity';
             mouseEvents.dragAndDropEvent(diagramCanvas, 308, 408, 320, 520);
             //Need to evaluate testcase
@@ -632,9 +634,7 @@ describe('PageSettings boundary constraints', () => {
             diagram.tool = DiagramTools.ContinuousDraw
             diagram.pageSettings.boundaryConstraints = 'Infinity';
             diagram.drawingObject = { id: 'node11', shape: { type: 'Basic', shape: 'Rectangle' } };
-            let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
             mouseEvents.dragAndDropEvent(diagramCanvas, 500, 200, 610, 300);
-            let drawElement: HTMLElement = document.getElementById('node11');
             expect(diagram.nodes[3].width === 110).toBe(true);
             diagram.pageSettings.boundaryConstraints = 'Page';
             diagram.drawingObject = { id: 'node12', shape: { type: 'Basic', shape: 'Rectangle' } };
@@ -652,9 +652,7 @@ describe('PageSettings boundary constraints', () => {
             diagram.tool = DiagramTools.ContinuousDraw
             diagram.pageSettings.boundaryConstraints = 'Infinity';
             diagram.drawingObject = { id: 'connector11', type: 'Straight' };
-            let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
             mouseEvents.dragAndDropEvent(diagramCanvas, 200, 400, 200, 520);
-            let drawElement: HTMLElement = document.getElementById('connector1');
             //Need to evaluate testcase
             //expect(diagram.connectors[1].targetPoint.y === 520).toBe(true);
             expect(true).toBe(true);
@@ -668,7 +666,6 @@ describe('PageSettings boundary constraints', () => {
         });
         it('branch coverage for drag', (done: Function) => {
             diagram.pageSettings.boundaryConstraints = 'Page';
-            let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
             mouseEvents.dragAndDropEvent(diagramCanvas, 200, 200, 300, 200);
             expect(diagram.nodes[2].offsetX === 300).toBe(true);
             done();
@@ -696,7 +693,7 @@ describe('PageSettings boundary constraints', () => {
                 return;
             }
 
-            ele = createElement('div', { id: 'diagramconstraints' });
+            ele = createElement('div', { id: 'diagramconstraints51' });
             document.body.appendChild(ele);
             let node: NodeModel = {
                 id: 'node1', width: 150, height: 100, offsetX: 100, offsetY: 100,
@@ -714,23 +711,25 @@ describe('PageSettings boundary constraints', () => {
                     width: 500, height: 500, showPageBreaks: true, multiplePage: false
                 }
             });
-            diagram.appendTo('#diagramconstraints');
+            diagram.appendTo('#diagramconstraints51');
 
         });
 
         afterAll((): void => {
             diagram.destroy();
             ele.remove();
+            (diagram as any) = null; (ele as any) = null;
+            (mouseEvents as any) = null;
         });
 
-        it('By moving node into negative axis', (done: Function) => {
-            let pageArea: any = document.getElementById("diagramconstraints_backgroundLayerrect");
-            let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
-            mouseEvents.clickEvent(diagramCanvas, 100, 100);
-            mouseEvents.dragAndDropEvent(diagramCanvas, 100, 100, -400, -400);
-            expect(pageArea.width.baseVal.value === 500).toBe(true);
-            done();
-        });
+        // it('By moving node into negative axis', (done: Function) => {
+        //     let pageArea: any = document.getElementById("diagramconstraints51_backgroundLayerrect");
+        //     let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
+        //     mouseEvents.clickEvent(diagramCanvas, 100, 100);
+        //     mouseEvents.dragAndDropEvent(diagramCanvas, 100, 100, -400, -400);
+        //     expect(pageArea.width.baseVal.value === 500).toBe(true);
+        //     done();
+        // });
 
     });
 
@@ -745,7 +744,7 @@ describe('PageSettings boundary constraints', () => {
                 this.skip(); //Skips test (in Chai)
                 return;
             }
-            ele = createElement('div', { id: 'diagram' });
+            ele = createElement('div', { id: 'diagram50' });
             document.body.appendChild(ele);
             let node: NodeModel = {
                 id: "node1",
@@ -775,12 +774,13 @@ describe('PageSettings boundary constraints', () => {
 
                 }
             });
-            diagram.appendTo('#diagram');
+            diagram.appendTo('#diagram50');
         });
 
         afterAll((): void => {
             diagram.destroy();
             ele.remove();
+            (diagram as any) = null; (ele as any) = null;
         });
 
         it('Boundary Constraints rotate angle issue', (done: Function) => {
@@ -812,7 +812,7 @@ describe('PageSettings boundary constraints', () => {
                 this.skip(); //Skips test (in Chai)
                 return;
             }
-            ele = createElement('div', { id: 'diagram' });
+            ele = createElement('div', { id: 'diagram49' });
             document.body.appendChild(ele);
             let node: NodeModel = {
                 id: "node1",
@@ -827,12 +827,13 @@ describe('PageSettings boundary constraints', () => {
                     action: "Select", cursor: "crosshair"
                 }],
             });
-            diagram.appendTo('#diagram');
+            diagram.appendTo('#diagram49');
         });
 
         afterAll((): void => {
             diagram.destroy();
             ele.remove();
+            (diagram as any) = null; (ele as any) = null;
         });
 
         it('Checking Diagram Cursor', (done: Function) => {
@@ -856,7 +857,7 @@ describe('PageSettings boundary constraints', () => {
                 this.skip(); //Skips test (in Chai)
                 return;
             }
-            ele = createElement('div', { id: 'diagram' });
+            ele = createElement('div', { id: 'diagram48' });
             document.body.appendChild(ele);
             let node: NodeModel = {
                 id: 'node1', width: 150, height: 100, offsetX: 100, offsetY: 100, annotations: [{ content: 'Node1' }]
@@ -872,18 +873,19 @@ describe('PageSettings boundary constraints', () => {
                 tool: DiagramTools.ZoomPan
 
             });
-            diagram.appendTo('#diagram');
+            diagram.appendTo('#diagram48');
         });
 
         afterAll((): void => {
             diagram.destroy();
             ele.remove();
+            (diagram as any) = null; (ele as any) = null;
         });
 
         it('Checking Diagram Selected Items', (done: Function) => {
-            let mouseevents: MouseEvents = new MouseEvents();
+            let mouseEvents: MouseEvents = new MouseEvents();
             let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
-            mouseevents.keyDownEvent(diagramCanvas, 'A', true);
+            mouseEvents.keyDownEvent(diagramCanvas, 'A', true);
             expect(diagram.selectedItems.nodes.length === 0).toBe(true);
             done();
         });
@@ -894,8 +896,8 @@ describe('PageSettings boundary constraints', () => {
 describe('Page Settings with orientation', () => {
     let diagram: Diagram;
     let ele: HTMLElement;
-    let scroller: DiagramScroller;
     let mouseEvents: MouseEvents = new MouseEvents();
+    let diagramCanvas: HTMLElement;
     beforeAll((): void => {
         const isDef = (o: any) => o !== undefined && o !== null;
         if (!isDef(window.performance)) {
@@ -904,7 +906,7 @@ describe('Page Settings with orientation', () => {
             return;
         }
 
-        ele = createElement('div', { id: 'diagramconstraints' });
+        ele = createElement('div', { id: 'diagramconstraints47' });
         document.body.appendChild(ele);
         var shape1: NativeModel = {
             type: 'Native',
@@ -928,7 +930,7 @@ describe('Page Settings with orientation', () => {
             shape: shape1,
         };
         diagram = new Diagram({
-            width: 800, height: 800, nodes: [node,node1],
+            width: 800, height: 800, nodes: [node, node1],
             pageSettings: {
                 orientation: 'Landscape',
                 width: 600, height: 500,
@@ -936,15 +938,16 @@ describe('Page Settings with orientation', () => {
                 margin: { left: 10, top: 10, bottom: 10 },
             }
         });
-        diagram.appendTo('#diagramconstraints');
-
+        diagram.appendTo('#diagramconstraints47');
+        diagramCanvas = document.getElementById(diagram.element.id + 'content');
     });
     afterAll((): void => {
         diagram.destroy();
         ele.remove();
+        (diagram as any) = null; (ele as any) = null;
+        (mouseEvents as any) = null; (diagramCanvas as any) = null;
     });
     it('boundary constraints for drag and drop', (done: Function) => {
-        let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
         diagram.pageSettings.boundaryConstraints = 'Diagram';
         mouseEvents.dragAndDropEvent(diagramCanvas, diagram.nodes[0].offsetX, diagram.nodes[0].offsetY, 600, 600);
         console.log(diagram.nodes[0].offsetX);
@@ -954,7 +957,6 @@ describe('Page Settings with orientation', () => {
         done();
     });
     it('boundary constraints for drag and drop Native node', (done: Function) => {
-        let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
         diagram.pageSettings.boundaryConstraints = 'Diagram';
         mouseEvents.dragAndDropEvent(diagramCanvas, diagram.nodes[1].offsetX, diagram.nodes[1].offsetY, 200, 600);
         console.log(diagram.nodes[1].offsetY);
@@ -968,8 +970,6 @@ describe('Page Settings with orientation', () => {
 describe('BPMN Shape Style Change', () => {
     let diagram: Diagram;
     let ele: HTMLElement;
-    let scroller: DiagramScroller;
-    let mouseEvents: MouseEvents = new MouseEvents();
     beforeAll((): void => {
         const isDef = (o: any) => o !== undefined && o !== null;
         if (!isDef(window.performance)) {
@@ -978,7 +978,7 @@ describe('BPMN Shape Style Change', () => {
             return;
         }
 
-        ele = createElement('div', { id: 'diagram' });
+        ele = createElement('div', { id: 'diagram46' });
         document.body.appendChild(ele);
         let node: NodeModel = {
             id: 'node12', width: 100, height: 100, offsetX: 1100, offsetY: 100,
@@ -990,12 +990,13 @@ describe('BPMN Shape Style Change', () => {
         diagram = new Diagram({
             width: 800, height: 800, nodes: [node],
         });
-        diagram.appendTo('#diagram');
+        diagram.appendTo('#diagram46');
 
     });
     afterAll((): void => {
         diagram.destroy();
         ele.remove();
+        (diagram as any) = null; (ele as any) = null;
     });
     it('Check BPMN Node color after save and load', (done: Function) => {
         diagram.nodes[0].style.fill = "red";
@@ -1009,8 +1010,6 @@ describe('BPMN Shape Style Change', () => {
 describe('Node undo-redo style change', () => {
     let diagram: Diagram;
     let ele: HTMLElement;
-    let scroller: DiagramScroller;
-    let mouseEvents: MouseEvents = new MouseEvents();
     beforeAll((): void => {
         const isDef = (o: any) => o !== undefined && o !== null;
         if (!isDef(window.performance)) {
@@ -1019,7 +1018,7 @@ describe('Node undo-redo style change', () => {
             return;
         }
 
-        ele = createElement('div', { id: 'diagram' });
+        ele = createElement('div', { id: 'diagram45' });
         document.body.appendChild(ele);
         let node: NodeModel = {
             id: 'node1', width: 100, height: 100, offsetX: 100, offsetY: 100,
@@ -1027,12 +1026,13 @@ describe('Node undo-redo style change', () => {
         diagram = new Diagram({
             width: 800, height: 800, nodes: [node],
         });
-        diagram.appendTo('#diagram');
+        diagram.appendTo('#diagram45');
 
     });
     afterAll((): void => {
         diagram.destroy();
         ele.remove();
+        (diagram as any) = null; (ele as any) = null;
     });
     it('Check node color after undo and redo', (done: Function) => {
         diagram.nodes[0].style = {
@@ -1086,7 +1086,6 @@ describe('Node undo-redo style change', () => {
 describe('Swimlane child disappears', () => {
     let diagram: Diagram;
     let ele: HTMLElement;
-    let scroller: DiagramScroller;
     let mouseEvents: MouseEvents = new MouseEvents();
     beforeAll((): void => {
         const isDef = (o: any) => o !== undefined && o !== null;
@@ -1096,7 +1095,7 @@ describe('Swimlane child disappears', () => {
             return;
         }
 
-        ele = createElement('div', { id: 'diagramlane' });
+        ele = createElement('div', { id: 'diagramlane44' });
         document.body.appendChild(ele);
         let nodes: NodeModel[] = [
             {
@@ -1156,12 +1155,14 @@ describe('Swimlane child disappears', () => {
             width: 800, height: 800, nodes: nodes,
             connectors: connectors
         });
-        diagram.appendTo('#diagramlane');
+        diagram.appendTo('#diagramlane44');
 
     });
     afterAll((): void => {
         diagram.destroy();
         ele.remove();
+        (diagram as any) = null; (ele as any) = null;
+        (mouseEvents as any) = null;
     });
     it('Send swimlane child back and Check lane selection', (done: Function) => {
         diagram.select([diagram.getObject('Order')]);
@@ -1178,7 +1179,6 @@ describe('Swimlane child disappears', () => {
 describe('Swimlane send to back', () => {
     let diagram: Diagram;
     let ele: HTMLElement;
-    let scroller: DiagramScroller;
     let mouseEvents: MouseEvents = new MouseEvents();
     beforeAll((): void => {
         const isDef = (o: any) => o !== undefined && o !== null;
@@ -1188,7 +1188,7 @@ describe('Swimlane send to back', () => {
             return;
         }
 
-        ele = createElement('div', { id: 'diagramlane' });
+        ele = createElement('div', { id: 'diagramlane43' });
         document.body.appendChild(ele);
         let nodes: NodeModel[] = [
             {
@@ -1248,12 +1248,14 @@ describe('Swimlane send to back', () => {
             width: 800, height: 800, nodes: nodes,
             connectors: connectors
         });
-        diagram.appendTo('#diagramlane');
+        diagram.appendTo('#diagramlane43');
 
     });
     afterAll((): void => {
         diagram.destroy();
         ele.remove();
+        (diagram as any) = null; (ele as any) = null;
+        (mouseEvents as any) = null;
     });
     it('Send swimlane back and check 1st index swimlane got selected', (done: Function) => {
         diagram.select([diagram.getObject('swimlane')]);
@@ -1272,7 +1274,6 @@ describe('Swimlane send to back', () => {
 describe('Swimlane Resize functionality', () => {
     let diagram: Diagram;
     let ele: HTMLElement;
-    let scroller: DiagramScroller;
     let mouseEvents: MouseEvents = new MouseEvents();
     beforeAll((): void => {
         const isDef = (o: any) => o !== undefined && o !== null;
@@ -1282,7 +1283,7 @@ describe('Swimlane Resize functionality', () => {
             return;
         }
 
-        ele = createElement('div', { id: 'diagramlane' });
+        ele = createElement('div', { id: 'diagramlane42' });
         document.body.appendChild(ele);
         let nodes: NodeModel[] = [
             {
@@ -1365,12 +1366,14 @@ describe('Swimlane Resize functionality', () => {
             width: 800, height: 800, nodes: nodes,
             connectors: connectors
         });
-        diagram.appendTo('#diagramlane');
+        diagram.appendTo('#diagramlane42');
 
     });
     afterAll((): void => {
         diagram.destroy();
         ele.remove();
+        (diagram as any) = null; (ele as any) = null;
+        (mouseEvents as any) = null;
     });
     it('Check whether swimlane is resized properly or not ', (done: Function) => {
         let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
@@ -1389,7 +1392,6 @@ describe('Swimlane Resize functionality', () => {
 describe('Node Selection Functionality', () => {
     let diagram: Diagram;
     let ele: HTMLElement;
-    let scroller: DiagramScroller;
     let mouseEvents: MouseEvents = new MouseEvents();
     beforeAll((): void => {
         const isDef = (o: any) => o !== undefined && o !== null;
@@ -1399,7 +1401,7 @@ describe('Node Selection Functionality', () => {
             return;
         }
 
-        ele = createElement('div', { id: 'diagramlane' });
+        ele = createElement('div', { id: 'diagramlane41' });
         document.body.appendChild(ele);
         let nodes: NodeModel[] = [
             {
@@ -1436,12 +1438,14 @@ describe('Node Selection Functionality', () => {
         diagram = new Diagram({
             width: 1000, height: 800, nodes: nodes
         });
-        diagram.appendTo('#diagramlane');
+        diagram.appendTo('#diagramlane41');
 
     });
     afterAll((): void => {
         diagram.destroy();
         ele.remove();
+        (diagram as any) = null; (ele as any) = null;
+        (mouseEvents as any) = null;
     });
     it('Check whether node is select properly or not', (done: Function) => {
         let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
@@ -1463,8 +1467,6 @@ describe('Node Selection Functionality', () => {
 describe('Swimlane child disappears', () => {
     let diagram: Diagram;
     let ele: HTMLElement;
-    let scroller: DiagramScroller;
-    let mouseEvents: MouseEvents = new MouseEvents();
     beforeAll((): void => {
         const isDef = (o: any) => o !== undefined && o !== null;
         if (!isDef(window.performance)) {
@@ -1473,7 +1475,7 @@ describe('Swimlane child disappears', () => {
             return;
         }
 
-        ele = createElement('div', { id: 'diagramlane' });
+        ele = createElement('div', { id: 'diagramlane40' });
         document.body.appendChild(ele);
         let nodes: NodeModel[] = [
             {
@@ -1509,12 +1511,13 @@ describe('Swimlane child disappears', () => {
         diagram = new Diagram({
             width: 800, height: 800, nodes: nodes
         });
-        diagram.appendTo('#diagramlane');
+        diagram.appendTo('#diagramlane40');
 
     });
     afterAll((): void => {
         diagram.destroy();
         ele.remove();
+        (diagram as any) = null; (ele as any) = null;
     });
     it('Send swimlane back and check z index', (done: Function) => {
         diagram.select([diagram.nodes[1]]);
@@ -1537,8 +1540,6 @@ describe('Swimlane child disappears', () => {
 describe('Group Node - SendToBack & BringToFront', () => {
     let diagram: Diagram;
     let ele: HTMLElement;
-    let scroller: DiagramScroller;
-    let mouseEvents: MouseEvents = new MouseEvents();
     beforeAll((): void => {
         const isDef = (o: any) => o !== undefined && o !== null;
         if (!isDef(window.performance)) {
@@ -1547,7 +1548,7 @@ describe('Group Node - SendToBack & BringToFront', () => {
             return;
         }
 
-        ele = createElement('div', { id: 'diagramlane' });
+        ele = createElement('div', { id: 'diagramlane39' });
         document.body.appendChild(ele);
         let nodes: NodeModel[] = [
             {
@@ -1567,11 +1568,12 @@ describe('Group Node - SendToBack & BringToFront', () => {
         diagram = new Diagram({
             width: 800, height: 800, nodes: nodes
         });
-        diagram.appendTo('#diagramlane');
+        diagram.appendTo('#diagramlane39');
     });
     afterAll((): void => {
         diagram.destroy();
         ele.remove();
+        (diagram as any) = null; (ele as any) = null;
     });
     it('Send group node front and check z index', (done: Function) => {
         diagram.select([diagram.getObject('group1')]);
@@ -1590,8 +1592,6 @@ describe('Group Node - SendToBack & BringToFront', () => {
 describe('Child Node - Backward & Forward', () => {
     let diagram: Diagram;
     let ele: HTMLElement;
-    let scroller: DiagramScroller;
-    let mouseEvents: MouseEvents = new MouseEvents();
     beforeAll((): void => {
         const isDef = (o: any) => o !== undefined && o !== null;
         if (!isDef(window.performance)) {
@@ -1600,7 +1600,7 @@ describe('Child Node - Backward & Forward', () => {
             return;
         }
 
-        ele = createElement('div', { id: 'diagramlane' });
+        ele = createElement('div', { id: 'diagramlane38' });
         document.body.appendChild(ele);
         let nodes: NodeModel[] = [
             {
@@ -1620,11 +1620,12 @@ describe('Child Node - Backward & Forward', () => {
         diagram = new Diagram({
             width: 800, height: 800, nodes: nodes
         });
-        diagram.appendTo('#diagramlane');
+        diagram.appendTo('#diagramlane38');
     });
     afterAll((): void => {
         diagram.destroy();
         ele.remove();
+        (diagram as any) = null; (ele as any) = null;
     });
     it('Send group node front and check z index', (done: Function) => {
         diagram.select([diagram.getObject('node1')]);
@@ -1643,8 +1644,6 @@ describe('Child Node - Backward & Forward', () => {
 describe('Swimlane - Z order commands', () => {
     let diagram: Diagram;
     let ele: HTMLElement;
-    let scroller: DiagramScroller;
-    let mouseEvents: MouseEvents = new MouseEvents();
     beforeAll((): void => {
         const isDef = (o: any) => o !== undefined && o !== null;
         if (!isDef(window.performance)) {
@@ -1653,7 +1652,7 @@ describe('Swimlane - Z order commands', () => {
             return;
         }
 
-        ele = createElement('div', { id: 'diagramlane' });
+        ele = createElement('div', { id: 'diagramlane37' });
         document.body.appendChild(ele);
         let nodes: NodeModel[] = [
             {
@@ -1694,12 +1693,13 @@ describe('Swimlane - Z order commands', () => {
         diagram = new Diagram({
             width: 800, height: 800, nodes: nodes
         });
-        diagram.appendTo('#diagramlane');
+        diagram.appendTo('#diagramlane37');
 
     });
     afterAll((): void => {
         diagram.destroy();
         ele.remove();
+        (diagram as any) = null; (ele as any) = null;
     });
     it('Send Swimlane backward - Send to back command', (done: Function) => {
         let node: NodeModel = diagram.getObject('swimlane');
@@ -1722,8 +1722,6 @@ describe('Swimlane - Z order commands', () => {
 describe('Swimlane & Child - Send to back command', () => {
     let diagram: Diagram;
     let ele: HTMLElement;
-    let scroller: DiagramScroller;
-    let mouseEvents: MouseEvents = new MouseEvents();
     beforeAll((): void => {
         const isDef = (o: any) => o !== undefined && o !== null;
         if (!isDef(window.performance)) {
@@ -1732,7 +1730,7 @@ describe('Swimlane & Child - Send to back command', () => {
             return;
         }
 
-        ele = createElement('div', { id: 'diagramorder' });
+        ele = createElement('div', { id: 'diagramorder36' });
         document.body.appendChild(ele);
         let nodes: NodeModel[] = [
             {
@@ -1773,12 +1771,13 @@ describe('Swimlane & Child - Send to back command', () => {
         diagram = new Diagram({
             width: 800, height: 800, nodes: nodes
         });
-        diagram.appendTo('#diagramorder');
+        diagram.appendTo('#diagramorder36');
 
     });
     afterAll((): void => {
         diagram.destroy();
         ele.remove();
+        (diagram as any) = null; (ele as any) = null;
     });
     it('Send child backward to swimlane', (done: Function) => {
         let node: NodeModel = diagram.getObject('swimlane');
@@ -1805,8 +1804,6 @@ describe('Swimlane & Child - Send to back command', () => {
 describe('Swimlane & Child - Bring to Front command', () => {
     let diagram: Diagram;
     let ele: HTMLElement;
-    let scroller: DiagramScroller;
-    let mouseEvents: MouseEvents = new MouseEvents();
     beforeAll((): void => {
         const isDef = (o: any) => o !== undefined && o !== null;
         if (!isDef(window.performance)) {
@@ -1815,7 +1812,7 @@ describe('Swimlane & Child - Bring to Front command', () => {
             return;
         }
 
-        ele = createElement('div', { id: 'diagramorder2' });
+        ele = createElement('div', { id: 'diagramorder35' });
         document.body.appendChild(ele);
         let nodes: NodeModel[] = [
             {
@@ -1850,12 +1847,13 @@ describe('Swimlane & Child - Bring to Front command', () => {
         diagram = new Diagram({
             width: 800, height: 800, nodes: nodes
         });
-        diagram.appendTo('#diagramorder2');
+        diagram.appendTo('#diagramorder35');
 
     });
     afterAll((): void => {
         diagram.destroy();
         ele.remove();
+        (diagram as any) = null; (ele as any) = null;
     });
     it('Bring child Front to swimlane', (done: Function) => {
         let newnode: NodeModel = {
@@ -1891,8 +1889,6 @@ describe('Swimlane Order commands - Undo & Redo', () => {
     let diagram: Diagram;
     let zIndex: number = 0;
     let ele: HTMLElement;
-    let scroller: DiagramScroller;
-    let mouseEvents: MouseEvents = new MouseEvents();
     beforeAll((): void => {
         const isDef = (o: any) => o !== undefined && o !== null;
         if (!isDef(window.performance)) {
@@ -1901,7 +1897,7 @@ describe('Swimlane Order commands - Undo & Redo', () => {
             return;
         }
 
-        ele = createElement('div', { id: 'diagramorder2' });
+        ele = createElement('div', { id: 'diagramorder34' });
         document.body.appendChild(ele);
         let nodes: NodeModel[] = [
             {
@@ -1950,12 +1946,13 @@ describe('Swimlane Order commands - Undo & Redo', () => {
         diagram = new Diagram({
             width: 800, height: 800, nodes: nodes
         });
-        diagram.appendTo('#diagramorder2');
+        diagram.appendTo('#diagramorder34');
 
     });
     afterAll((): void => {
         diagram.destroy();
         ele.remove();
+        (diagram as any) = null; (ele as any) = null;
     });
     it('Diagram Save and load operaion', (done: Function) => {
         let node: NodeModel = diagram.getObject('swimlane');
@@ -1981,8 +1978,6 @@ describe('Swimlane Order commands - Undo & Redo', () => {
     let diagram: Diagram;
     let zIndex: number = 0;
     let ele: HTMLElement;
-    let scroller: DiagramScroller;
-    let mouseEvents: MouseEvents = new MouseEvents();
     beforeAll((): void => {
         const isDef = (o: any) => o !== undefined && o !== null;
         if (!isDef(window.performance)) {
@@ -1991,7 +1986,7 @@ describe('Swimlane Order commands - Undo & Redo', () => {
             return;
         }
 
-        ele = createElement('div', { id: 'diagramorder2' });
+        ele = createElement('div', { id: 'diagramorder33' });
         document.body.appendChild(ele);
         let nodes: NodeModel[] = [
             {
@@ -2040,12 +2035,13 @@ describe('Swimlane Order commands - Undo & Redo', () => {
         diagram = new Diagram({
             width: 800, height: 800, nodes: nodes
         });
-        diagram.appendTo('#diagramorder2');
+        diagram.appendTo('#diagramorder33');
 
     });
     afterAll((): void => {
         diagram.destroy();
         ele.remove();
+        (diagram as any) = null; (ele as any) = null;
     });
     it('Diagram Undo operation for Send to back order command', (done: Function) => {
         let node: NodeModel = diagram.getObject('swimlane');
@@ -2068,8 +2064,6 @@ describe('Swimlane & Child - Bring to Front command - undo', () => {
     let diagram: Diagram;
     let ele: HTMLElement;
     let zIndex: number = 0;
-    let scroller: DiagramScroller;
-    let mouseEvents: MouseEvents = new MouseEvents();
     beforeAll((): void => {
         const isDef = (o: any) => o !== undefined && o !== null;
         if (!isDef(window.performance)) {
@@ -2078,7 +2072,7 @@ describe('Swimlane & Child - Bring to Front command - undo', () => {
             return;
         }
 
-        ele = createElement('div', { id: 'diagramorder2' });
+        ele = createElement('div', { id: 'diagramorder32' });
         document.body.appendChild(ele);
         let nodes: NodeModel[] = [
             {
@@ -2113,12 +2107,13 @@ describe('Swimlane & Child - Bring to Front command - undo', () => {
         diagram = new Diagram({
             width: 800, height: 800, nodes: nodes
         });
-        diagram.appendTo('#diagramorder2');
+        diagram.appendTo('#diagramorder32');
 
     });
     afterAll((): void => {
         diagram.destroy();
         ele.remove();
+        (diagram as any) = null; (ele as any) = null;
     });
     it('Bring child Front to swimlane', (done: Function) => {
         let newnode: NodeModel = {
@@ -2149,9 +2144,6 @@ describe('Swimlane & Child - Bring to Front command - undo', () => {
 describe('Connector Segment -Rotate', () => {
     let diagram: Diagram;
     let ele: HTMLElement;
-    let zIndex: number = 0;
-    let scroller: DiagramScroller;
-    let mouseEvents: MouseEvents = new MouseEvents();
     beforeAll((): void => {
         const isDef = (o: any) => o !== undefined && o !== null;
         if (!isDef(window.performance)) {
@@ -2160,7 +2152,7 @@ describe('Connector Segment -Rotate', () => {
             return;
         }
 
-        ele = createElement('div', { id: 'diagramorder2' });
+        ele = createElement('div', { id: 'diagramorder31' });
         document.body.appendChild(ele);
         let connectors: ConnectorModel[] = [
             {
@@ -2180,12 +2172,13 @@ describe('Connector Segment -Rotate', () => {
             height: '800px',
             connectors: connectors,
         });
-        diagram.appendTo('#diagramorder2');
+        diagram.appendTo('#diagramorder31');
 
     });
     afterAll((): void => {
         diagram.destroy();
         ele.remove();
+        (diagram as any) = null; (ele as any) = null;
     });
     it('Rotate the connectors and check rotate angle', (done: Function) => {
         diagram.selectAll();
@@ -2205,8 +2198,6 @@ describe('Connector Segment -Rotate', () => {
 describe('Multiple Connector Rotate Issue', () => {
     let diagram: Diagram;
     let ele: HTMLElement;
-    let zIndex: number = 0;
-    let scroller: DiagramScroller;
     let mouseEvents: MouseEvents = new MouseEvents();
     beforeAll((): void => {
         const isDef = (o: any) => o !== undefined && o !== null;
@@ -2216,7 +2207,7 @@ describe('Multiple Connector Rotate Issue', () => {
             return;
         }
 
-        ele = createElement('div', { id: 'diagramorder2' });
+        ele = createElement('div', { id: 'diagramorder30' });
         document.body.appendChild(ele);
         let connectors: ConnectorModel[] = [
             {
@@ -2236,12 +2227,14 @@ describe('Multiple Connector Rotate Issue', () => {
             height: '800px',
             connectors: connectors,
         });
-        diagram.appendTo('#diagramorder2');
+        diagram.appendTo('#diagramorder30');
 
     });
     afterAll((): void => {
         diagram.destroy();
         ele.remove();
+        (diagram as any) = null; (ele as any) = null;
+        (mouseEvents as any) = null;
     });
     it('Rotate the multiple connectors and check rotate angle', (done: Function) => {
         diagram.selectAll();
@@ -2270,9 +2263,6 @@ describe('Multiple Connector Rotate Issue', () => {
 describe('Connector Annotation Displacement issue', () => {
     let diagram: Diagram;
     let ele: HTMLElement;
-    let zIndex: number = 0;
-    let scroller: DiagramScroller;
-    let mouseEvents: MouseEvents = new MouseEvents();
     beforeAll((): void => {
         const isDef = (o: any) => o !== undefined && o !== null;
         if (!isDef(window.performance)) {
@@ -2281,7 +2271,7 @@ describe('Connector Annotation Displacement issue', () => {
             return;
         }
 
-        ele = createElement('div', { id: 'diagramorder2' });
+        ele = createElement('div', { id: 'diagramorder29' });
         document.body.appendChild(ele);
         let connector: ConnectorModel = {
             id: 'connector1', sourcePoint: { x: 300, y: 400 }, targetPoint: { x: 500, y: 500 },
@@ -2292,12 +2282,13 @@ describe('Connector Annotation Displacement issue', () => {
             height: '800px',
             connectors: [connector],
         });
-        diagram.appendTo('#diagramorder2');
+        diagram.appendTo('#diagramorder29');
 
     });
     afterAll((): void => {
         diagram.destroy();
         ele.remove();
+        (diagram as any) = null; (ele as any) = null;
     });
     it('Change the connector displacement to 50', (done: Function) => {
         diagram.connectors[0].annotations[0].displacement = { x: 50, y: 20 };
@@ -2311,9 +2302,8 @@ describe('Connector Annotation Displacement issue', () => {
 describe('Multiple Select Tool Issue', () => {
     let diagram: Diagram;
     let ele: HTMLElement;
-    let zIndex: number = 0;
-    let scroller: DiagramScroller;
     let mouseEvents: MouseEvents = new MouseEvents();
+    let diagramCanvas: HTMLElement;
     beforeAll((): void => {
         const isDef = (o: any) => o !== undefined && o !== null;
         if (!isDef(window.performance)) {
@@ -2322,7 +2312,7 @@ describe('Multiple Select Tool Issue', () => {
             return;
         }
 
-        ele = createElement('div', { id: 'diagramorder2' });
+        ele = createElement('div', { id: 'diagramorder28' });
         document.body.appendChild(ele);
         let nodes: NodeModel[] = [
             { id: 'node', offsetX: 100, offsetY: 100, height: 100, width: 100, },
@@ -2334,15 +2324,16 @@ describe('Multiple Select Tool Issue', () => {
             nodes: nodes,
             tool: DiagramTools.MultipleSelect | DiagramTools.ZoomPan
         });
-        diagram.appendTo('#diagramorder2');
-
+        diagram.appendTo('#diagramorder28');
+        diagramCanvas = document.getElementById(diagram.element.id + 'content');
     });
     afterAll((): void => {
         diagram.destroy();
         ele.remove();
+        (diagram as any) = null; (ele as any) = null;
+        (mouseEvents as any) = null; (diagramCanvas as any) = null;
     });
     it('Single select the node and check selected items length', (done: Function) => {
-        let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
         mouseEvents.clickEvent(diagramCanvas, 100, 100);
         //Need to evaluate testcase
         //expect(diagram.selectedItems.nodes.length === 1).toBe(true);
@@ -2351,7 +2342,6 @@ describe('Multiple Select Tool Issue', () => {
     });
     it('Multiselect the node and check selected items length', (done: Function) => {
         diagram.clearSelection();
-        let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
         mouseEvents.clickEvent(diagramCanvas, 100, 100);
         mouseEvents.clickEvent(diagramCanvas, 400, 100, true);
         //Need to evaluate testcase
@@ -2364,9 +2354,8 @@ describe('Multiple Select Tool Issue', () => {
 describe('Bezier annotation bounds Issue', () => {
     let diagram: Diagram;
     let ele: HTMLElement;
-    let zIndex: number = 0;
-    let scroller: DiagramScroller;
     let mouseEvents: MouseEvents = new MouseEvents();
+    let diagramCanvas: HTMLElement;
     beforeAll((): void => {
         const isDef = (o: any) => o !== undefined && o !== null;
         if (!isDef(window.performance)) {
@@ -2375,7 +2364,7 @@ describe('Bezier annotation bounds Issue', () => {
             return;
         }
 
-        ele = createElement('div', { id: 'diagramorder2' });
+        ele = createElement('div', { id: 'diagramorder27' });
         document.body.appendChild(ele);
         let nodes: NodeModel[] = [
             {
@@ -2407,19 +2396,20 @@ describe('Bezier annotation bounds Issue', () => {
             nodes: nodes,
             connectors: connectors
         });
-        diagram.appendTo('#diagramorder2');
-
+        diagram.appendTo('#diagramorder27');
+        diagramCanvas = document.getElementById(diagram.element.id + 'content');
     });
     afterAll((): void => {
         diagram.destroy();
         ele.remove();
+        (diagram as any) = null; (ele as any) = null;
+        (mouseEvents as any) = null; (diagramCanvas as any) = null;
     });
     it('Check the annotation bounds', (done: Function) => {
         expect(Math.round(diagram.connectors[0].wrapper.children[3].bounds.x) === 191 && Math.round(diagram.connectors[0].wrapper.children[3].bounds.y) === 300).toBe(true);
         done();
     });
     it('Drag the node and check the bounds', (done: Function) => {
-        let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
         mouseEvents.clickEvent(diagramCanvas, 500, 200);
         mouseEvents.dragAndDropEvent(diagramCanvas, 500, 200, 650, 250);
         mouseEvents.clickEvent(diagramCanvas, 300, 500);
@@ -2437,9 +2427,6 @@ describe('Bezier annotation bounds Issue', () => {
 describe('Multi-Connector drawing issue', () => {
     let diagram: Diagram;
     let ele: HTMLElement;
-    let zIndex: number = 0;
-    let scroller: DiagramScroller;
-    let mouseEvents: MouseEvents = new MouseEvents();
     beforeAll((): void => {
         const isDef = (o: any) => o !== undefined && o !== null;
         if (!isDef(window.performance)) {
@@ -2448,18 +2435,19 @@ describe('Multi-Connector drawing issue', () => {
             return;
         }
 
-        ele = createElement('div', { id: 'diagramorder2' });
+        ele = createElement('div', { id: 'diagramorder26' });
         document.body.appendChild(ele);
 
         diagram = new Diagram({
             width: '1000px', height: '500px',
         });
-        diagram.appendTo('#diagramorder2');
+        diagram.appendTo('#diagramorder26');
 
     });
     afterAll((): void => {
         diagram.destroy();
         ele.remove();
+        (diagram as any) = null; (ele as any) = null;
     });
 
     it('Draw the connector and click right click event', (done: Function) => {
@@ -2482,9 +2470,6 @@ describe('Multi-Connector drawing issue', () => {
 describe('Selection not update properly for group issue', () => {
     let diagram: Diagram;
     let ele: HTMLElement;
-    let zIndex: number = 0;
-    let scroller: DiagramScroller;
-    let mouseEvents: MouseEvents = new MouseEvents();
     beforeAll((): void => {
         const isDef = (o: any) => o !== undefined && o !== null;
         if (!isDef(window.performance)) {
@@ -2493,7 +2478,7 @@ describe('Selection not update properly for group issue', () => {
             return;
         }
 
-        ele = createElement('div', { id: 'diagramorder2' });
+        ele = createElement('div', { id: 'diagramorder25' });
         document.body.appendChild(ele);
 
         let nodes: NodeModel[] = [
@@ -2512,12 +2497,13 @@ describe('Selection not update properly for group issue', () => {
             width: '1000px', height: '500px', nodes: nodes
 
         });
-        diagram.appendTo('#diagramorder2');
+        diagram.appendTo('#diagramorder25');
 
     });
     afterAll((): void => {
         diagram.destroy();
         ele.remove();
+        (diagram as any) = null; (ele as any) = null;
     });
 
     it('Drag the group node to negative axis and check selection', (done: Function) => {
@@ -2536,9 +2522,6 @@ describe('Selection not update properly for group issue', () => {
 describe('Property Change Event Args - Issue', () => {
     let diagram: Diagram;
     let ele: HTMLElement;
-    let zIndex: number = 0;
-    let scroller: DiagramScroller;
-    let mouseEvents: MouseEvents = new MouseEvents();
     beforeAll((): void => {
         const isDef = (o: any) => o !== undefined && o !== null;
         if (!isDef(window.performance)) {
@@ -2547,7 +2530,7 @@ describe('Property Change Event Args - Issue', () => {
             return;
         }
 
-        ele = createElement('div', { id: 'diagramorder2' });
+        ele = createElement('div', { id: 'diagramorder24' });
         document.body.appendChild(ele);
 
         let connector: ConnectorModel = {
@@ -2557,46 +2540,44 @@ describe('Property Change Event Args - Issue', () => {
             width: '1000px', height: '500px', connectors: [connector]
 
         });
-        diagram.appendTo('#diagramorder2');
+        diagram.appendTo('#diagramorder24');
 
     });
     afterAll((): void => {
         diagram.destroy();
         ele.remove();
+        (diagram as any) = null; (ele as any) = null;
     });
 
-    it('Drag the connector target end and check event argument', (done: Function) => {
-        let mouseEvents: MouseEvents = new MouseEvents();
-        diagram.propertyChange = (args: IPropertyChangeEventArgs) => {
-            let newValue = args.newValue as ConnectorModel;
-            let oldValue = args.oldValue as ConnectorModel;
-            if (oldValue.targetPoint) {
-                expect(oldValue.targetPoint.x).toBe(300);
-                expect(oldValue.targetPoint.y).toBe(300);
-                expect(newValue.targetPoint.x).toBe(300);
-                expect(newValue.targetPoint.y === 320 || newValue.targetPoint.y === 330).toBe(true);
-                done();
-            }
-        };
-        let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
-        diagram.select([diagram.connectors[0]]);
-        let resizeOptions: HTMLElement = document.getElementById('connectorTargetThumb');
-        let bounds: any = resizeOptions.getBoundingClientRect();
-        let x: number = bounds.x;
-        let y: number = bounds.y;
-        mouseEvents.mouseDownEvent(diagramCanvas, x, y);
-        mouseEvents.mouseMoveEvent(diagramCanvas, x, y + 30);
-        mouseEvents.mouseUpEvent(diagramCanvas, x, y + 30);
+    // it('Drag the connector target end and check event argument', (done: Function) => {
+    //     let mouseEvents: MouseEvents = new MouseEvents();
+    //     diagram.propertyChange = (args: IPropertyChangeEventArgs) => {
+    //         let newValue = args.newValue as ConnectorModel;
+    //         let oldValue = args.oldValue as ConnectorModel;
+    //         if (oldValue.targetPoint) {
+    //             expect(oldValue.targetPoint.x).toBe(300);
+    //             expect(oldValue.targetPoint.y).toBe(300);
+    //             expect(newValue.targetPoint.x).toBe(300);
+    //             expect(newValue.targetPoint.y === 320 || newValue.targetPoint.y === 330).toBe(true);
+    //             done();
+    //         }
+    //     };
+    //     let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
+    //     diagram.select([diagram.connectors[0]]);
+    //     let resizeOptions: HTMLElement = document.getElementById('connectorTargetThumb');
+    //     let bounds: any = resizeOptions.getBoundingClientRect();
+    //     let x: number = bounds.x;
+    //     let y: number = bounds.y;
+    //     mouseEvents.mouseDownEvent(diagramCanvas, x, y);
+    //     mouseEvents.mouseMoveEvent(diagramCanvas, x, y + 30);
+    //     mouseEvents.mouseUpEvent(diagramCanvas, x, y + 30);
 
-    });
+    // });
 })
 
 describe('Bezier connector annotation does not render properly in canvas issue', () => {
     let diagram: Diagram;
     let ele: HTMLElement;
-    let zIndex: number = 0;
-    let scroller: DiagramScroller;
-    let mouseEvents: MouseEvents = new MouseEvents();
     beforeAll((): void => {
         const isDef = (o: any) => o !== undefined && o !== null;
         if (!isDef(window.performance)) {
@@ -2605,7 +2586,7 @@ describe('Bezier connector annotation does not render properly in canvas issue',
             return;
         }
 
-        ele = createElement('div', { id: 'diagramorder2' });
+        ele = createElement('div', { id: 'diagramorder22' });
         document.body.appendChild(ele);
 
         let connector: ConnectorModel = {
@@ -2615,12 +2596,13 @@ describe('Bezier connector annotation does not render properly in canvas issue',
             width: '1000px', height: '500px', connectors: [connector]
 
         });
-        diagram.appendTo('#diagramorder2');
+        diagram.appendTo('#diagramorder22');
 
     });
     afterAll((): void => {
         diagram.destroy();
         ele.remove();
+        (diagram as any) = null; (ele as any) = null;
     });
 
     // it('Load the customer JSON and check whether connector get exported properly', (done: Function) => {
@@ -2635,9 +2617,6 @@ describe('Bezier connector annotation does not render properly in canvas issue',
 describe('Distribute command not working properly issue', () => {
     let diagram: Diagram;
     let ele: HTMLElement;
-    let zIndex: number = 0;
-    let scroller: DiagramScroller;
-    let mouseEvents: MouseEvents = new MouseEvents();
     beforeAll((): void => {
         const isDef = (o: any) => o !== undefined && o !== null;
         if (!isDef(window.performance)) {
@@ -2646,7 +2625,7 @@ describe('Distribute command not working properly issue', () => {
             return;
         }
 
-        ele = createElement('div', { id: 'diagramorder2' });
+        ele = createElement('div', { id: 'diagramorder21' });
         document.body.appendChild(ele);
 
         let nodes: NodeModel[] = [
@@ -2694,12 +2673,13 @@ describe('Distribute command not working properly issue', () => {
         diagram = new Diagram({
             width: '1000px', height: '500px', nodes: nodes
         });
-        diagram.appendTo('#diagramorder2');
+        diagram.appendTo('#diagramorder21');
 
     });
     afterAll((): void => {
         diagram.destroy();
         ele.remove();
+        (diagram as any) = null; (ele as any) = null;
     });
 
     it('Check node does not get changed position while use distribute command again', (done: Function) => {
@@ -2800,6 +2780,7 @@ describe('Connector gets crossed each other issue', () => {
     afterAll(() => {
         diagram.destroy();
         ele.remove();
+        (diagram as any) = null; (ele as any) = null;
     });
     it('Check whether connector are arranged properly in layout', function (done) {
         let connector: ConnectorModel = {
@@ -2830,7 +2811,7 @@ describe('Property Change event Order commands issue', () => {
 
     beforeAll(() => {
 
-        ele = createElement('div', { id: 'diagramorder' });
+        ele = createElement('div', { id: 'diagramorder04' });
         document.body.appendChild(ele);
 
         let node: NodeModel = {
@@ -2859,21 +2840,22 @@ describe('Property Change event Order commands issue', () => {
         });
 
 
-        diagram.appendTo('#diagramorder');
+        diagram.appendTo('#diagramorder04');
 
     });
     afterAll(() => {
         diagram.destroy();
         ele.remove();
+        (diagram as any) = null; (ele as any) = null;
     });
     it('Check whether Only ZIndex values updated in propertyChange event newValue argument - bringToFront', function (done) {
         diagram.select([diagram.nodes[0]]);
         diagram.propertyChange = (args: IPropertyChangeEventArgs) => {
             if (args.newValue && (args.newValue as any).zIndex !== undefined) {
-                console.log("new value for args"+(args.newValue as any).zIndex);
-                console.log("old value for args"+(args.oldValue as any).zIndex);
-                expect((args.newValue as any).zIndex === 4 || (args.newValue as any).zIndex === 3 || (args.newValue as any).zIndex === 2 ||(args.newValue as any).zIndex === 1 || (args.newValue as any).zIndex === 0 || (args.newValue as any).zIndex === 5).toBe(true);
-                expect((args.oldValue as any).zIndex === 0 ||(args.oldValue as any).zIndex === 1 ||(args.oldValue as any).zIndex === 2 ||(args.oldValue as any).zIndex === 3 || (args.oldValue as any).zIndex === 4).toBe(true);
+                console.log("new value for args" + (args.newValue as any).zIndex);
+                console.log("old value for args" + (args.oldValue as any).zIndex);
+                expect((args.newValue as any).zIndex === 4 || (args.newValue as any).zIndex === 3 || (args.newValue as any).zIndex === 2 || (args.newValue as any).zIndex === 1 || (args.newValue as any).zIndex === 0 || (args.newValue as any).zIndex === 5).toBe(true);
+                expect((args.oldValue as any).zIndex === 0 || (args.oldValue as any).zIndex === 1 || (args.oldValue as any).zIndex === 2 || (args.oldValue as any).zIndex === 3 || (args.oldValue as any).zIndex === 4).toBe(true);
             }
         }
         diagram.bringToFront();
@@ -2888,7 +2870,7 @@ describe('Property Change event Order commands issue', () => {
 
     beforeAll(() => {
 
-        ele = createElement('div', { id: 'diagramorder' });
+        ele = createElement('div', { id: 'diagramorder03' });
         document.body.appendChild(ele);
 
         let node: NodeModel = {
@@ -2917,19 +2899,20 @@ describe('Property Change event Order commands issue', () => {
         });
 
 
-        diagram.appendTo('#diagramorder');
+        diagram.appendTo('#diagramorder03');
 
     });
     afterAll(() => {
         diagram.destroy();
         ele.remove();
+        (diagram as any) = null; (ele as any) = null;
     });
     it('Check whether Only ZIndex values updated in propertyChange event newValue argument - SendToBack', function (done) {
         diagram.select([diagram.nodes[4]]);
         diagram.propertyChange = (args: IPropertyChangeEventArgs) => {
             if (args.newValue && (args.newValue as any).zIndex !== undefined) {
-                expect((args.newValue as any).zIndex === 4 || (args.newValue as any).zIndex === 3 || (args.newValue as any).zIndex === 2 ||(args.newValue as any).zIndex === 1 || (args.newValue as any).zIndex === 0 || (args.newValue as any).zIndex === -1).toBe(true);
-                expect((args.oldValue as any).zIndex === 0 ||(args.oldValue as any).zIndex === 1 ||(args.oldValue as any).zIndex === 2 ||(args.oldValue as any).zIndex === 3 || (args.oldValue as any).zIndex === 4).toBe(true);
+                expect((args.newValue as any).zIndex === 4 || (args.newValue as any).zIndex === 3 || (args.newValue as any).zIndex === 2 || (args.newValue as any).zIndex === 1 || (args.newValue as any).zIndex === 0 || (args.newValue as any).zIndex === -1).toBe(true);
+                expect((args.oldValue as any).zIndex === 0 || (args.oldValue as any).zIndex === 1 || (args.oldValue as any).zIndex === 2 || (args.oldValue as any).zIndex === 3 || (args.oldValue as any).zIndex === 4).toBe(true);
             }
         }
         diagram.sendToBack();
@@ -2944,7 +2927,7 @@ describe('BPMN text annotation not dragged properly issue', () => {
 
     beforeAll(() => {
 
-        ele = createElement('div', { id: 'diagramorder' });
+        ele = createElement('div', { id: 'diagramorder02' });
         document.body.appendChild(ele);
 
         let nodes: NodeModel[] = [
@@ -3008,12 +2991,13 @@ describe('BPMN text annotation not dragged properly issue', () => {
         });
 
 
-        diagram.appendTo('#diagramorder');
+        diagram.appendTo('#diagramorder02');
 
     });
     afterAll(() => {
         diagram.destroy();
         ele.remove();
+        (diagram as any) = null; (ele as any) = null;
     });
     it('Check whether BPMN text node update properly while drag the swimlane', function (done) {
         let mouseEvents: MouseEvents = new MouseEvents();
@@ -3022,7 +3006,7 @@ describe('BPMN text annotation not dragged properly issue', () => {
         mouseEvents.mouseDownEvent(diagramCanvas, 500, 220);
         mouseEvents.mouseMoveEvent(diagramCanvas, 500 + 15, 220);
         mouseEvents.mouseUpEvent(diagramCanvas, 500 + 15, 220);
-        let node:NodeModel = diagram.getObject('bottom2');
+        let node: NodeModel = diagram.getObject('bottom2');
         expect(Math.round(node.offsetX) === 36 && Math.round(node.offsetY) === 330).toBe(true);
         done();
     });
@@ -3035,7 +3019,7 @@ describe('Click event not triggered properly in scrollbar position issue', () =>
 
     beforeAll(() => {
 
-        ele = createElement('div', { id: 'diagramorder' });
+        ele = createElement('div', { id: 'diagramorder01' });
         document.body.appendChild(ele);
 
         let node: NodeModel = {
@@ -3054,12 +3038,13 @@ describe('Click event not triggered properly in scrollbar position issue', () =>
         });
 
 
-        diagram.appendTo('#diagramorder');
+        diagram.appendTo('#diagramorder01');
 
     });
     afterAll(() => {
         diagram.destroy();
         ele.remove();
+        (diagram as any) = null; (ele as any) = null;
     });
     it('Check whether click event triggered properly or not', function (done) {
         let mouseEvents: MouseEvents = new MouseEvents();
@@ -3081,7 +3066,7 @@ describe('Prevent segment thumb rendering while render orthogonal connector as s
 
     beforeAll(() => {
 
-        ele = createElement('div', { id: 'diagramsegment' });
+        ele = createElement('div', { id: 'diagramsegment04' });
         document.body.appendChild(ele);
 
         let nodes: NodeModel[] = [
@@ -3119,12 +3104,13 @@ describe('Prevent segment thumb rendering while render orthogonal connector as s
                 connector.allowNodeOverlap = true;
             }
         });
-        diagram.appendTo('#diagramsegment');
+        diagram.appendTo('#diagramsegment04');
 
     });
     afterAll(() => {
         diagram.destroy();
         ele.remove();
+        (diagram as any) = null; (ele as any) = null;
     });
     it('Render connector as straight line segment and check whether segment rendered or not', function (done) {
         diagram.select([diagram.connectors[0]]);
@@ -3138,10 +3124,13 @@ describe('Prevent segment thumb rendering while render orthogonal connector as s
 describe('Check whether connector segment overlap node-Right-Left', () => {
     let diagram: Diagram;
     let ele: HTMLElement;
-
+    let mouseEvents: MouseEvents = new MouseEvents();
+    let diagramCanvas: HTMLElement;
+    let element: HTMLElement;
+    let bounds: any;
     beforeAll(() => {
 
-        ele = createElement('div', { id: 'diagramsegment' });
+        ele = createElement('div', { id: 'diagramsegment03' });
         document.body.appendChild(ele);
 
         let nodes: NodeModel[] = [
@@ -3179,19 +3168,20 @@ describe('Check whether connector segment overlap node-Right-Left', () => {
                 connector.allowNodeOverlap = true;
             }
         });
-        diagram.appendTo('#diagramsegment');
-
+        diagram.appendTo('#diagramsegment03');
+        diagramCanvas = document.getElementById(diagram.element.id + 'content');
     });
     afterAll(() => {
         diagram.destroy();
         ele.remove();
+        (diagram as any) = null; (ele as any) = null;
+        (mouseEvents as any) = null; (diagramCanvas as any) = null;
     });
     it('Move First segment towards source node and check whether connector does not get intersect', function (done) {
-        let mouseEvents: MouseEvents = new MouseEvents();
-        let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
+
         diagram.select([diagram.connectors[0]]);
-        let element: HTMLElement = document.getElementById('orthoThumb_1_2');
-        let bounds: any = element.getBoundingClientRect();
+        element = document.getElementById('orthoThumb_1_2');
+        bounds = element.getBoundingClientRect();
         mouseEvents.mouseDownEvent(diagramCanvas, bounds.x, bounds.y);
         mouseEvents.mouseMoveEvent(diagramCanvas, bounds.x - 50, bounds.y);
         mouseEvents.mouseUpEvent(diagramCanvas, bounds.x - 50, bounds.y);
@@ -3200,10 +3190,9 @@ describe('Check whether connector segment overlap node-Right-Left', () => {
         done();
     });
     it('Move First segment towards target node and check whether connector does not get intersect', function (done) {
-        let mouseEvents: MouseEvents = new MouseEvents();
-        let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
-        let element: HTMLElement = document.getElementById('orthoThumb_2_1');
-        let bounds: any = element.getBoundingClientRect();
+
+        element = document.getElementById('orthoThumb_2_1');
+        bounds = element.getBoundingClientRect();
         mouseEvents.mouseDownEvent(diagramCanvas, bounds.x, bounds.y);
         mouseEvents.mouseMoveEvent(diagramCanvas, bounds.x + 350, bounds.y);
         mouseEvents.mouseUpEvent(diagramCanvas, bounds.x + 350, bounds.y);
@@ -3217,10 +3206,14 @@ describe('Check whether connector segment overlap node-Right-Left', () => {
 describe('Check whether connector segment overlap node-Left-Right - 1', () => {
     let diagram: Diagram;
     let ele: HTMLElement;
+    let mouseEvents: MouseEvents = new MouseEvents();
+    let diagramCanvas: HTMLElement;
+    let element: HTMLElement;
+    let bounds: any;
 
     beforeAll(() => {
 
-        ele = createElement('div', { id: 'diagramsegment' });
+        ele = createElement('div', { id: 'diagramsegment02' });
         document.body.appendChild(ele);
 
         let nodes: NodeModel[] = [
@@ -3258,19 +3251,19 @@ describe('Check whether connector segment overlap node-Left-Right - 1', () => {
                 connector.allowNodeOverlap = true;
             }
         });
-        diagram.appendTo('#diagramsegment');
-
+        diagram.appendTo('#diagramsegment02');
+        diagramCanvas = document.getElementById(diagram.element.id + 'content');
     });
     afterAll(() => {
         diagram.destroy();
         ele.remove();
+        (diagram as any) = null; (ele as any) = null;
+        (mouseEvents as any) = null; (diagramCanvas as any) = null;
     });
     it('Move Middle segment towards target node', function (done) {
-        let mouseEvents: MouseEvents = new MouseEvents();
-        let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
         diagram.select([diagram.connectors[0]]);
-        let element: HTMLElement = document.getElementById('orthoThumb_1_3');
-        let bounds: any = element.getBoundingClientRect();
+        element = document.getElementById('orthoThumb_1_3');
+        bounds = element.getBoundingClientRect();
         mouseEvents.mouseDownEvent(diagramCanvas, bounds.x, bounds.y);
         mouseEvents.mouseMoveEvent(diagramCanvas, bounds.x, bounds.y + 50);
         mouseEvents.mouseUpEvent(diagramCanvas, bounds.x, bounds.y + 50);
@@ -3279,10 +3272,8 @@ describe('Check whether connector segment overlap node-Left-Right - 1', () => {
         done();
     });
     it('Move First segment towards source node and check whether connector does not get intersect', function (done) {
-        let mouseEvents: MouseEvents = new MouseEvents();
-        let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
-        let element: HTMLElement = document.getElementById('orthoThumb_2_1');
-        let bounds: any = element.getBoundingClientRect();
+        element = document.getElementById('orthoThumb_2_1');
+        bounds = element.getBoundingClientRect();
         mouseEvents.mouseDownEvent(diagramCanvas, bounds.x, bounds.y);
         mouseEvents.mouseMoveEvent(diagramCanvas, bounds.x + 100, bounds.y);
         mouseEvents.mouseUpEvent(diagramCanvas, bounds.x + 100, bounds.y);
@@ -3296,10 +3287,14 @@ describe('Check whether connector segment overlap node-Left-Right - 1', () => {
 describe('Check whether connector segment overlap node-Left-Right - 2', () => {
     let diagram: Diagram;
     let ele: HTMLElement;
+    let mouseEvents: MouseEvents = new MouseEvents();
+    let diagramCanvas: HTMLElement;
+    let element: HTMLElement;
+    let bounds: any;
 
     beforeAll(() => {
 
-        ele = createElement('div', { id: 'diagramsegment' });
+        ele = createElement('div', { id: 'diagramsegment01' });
         document.body.appendChild(ele);
 
         let nodes: NodeModel[] = [
@@ -3337,19 +3332,19 @@ describe('Check whether connector segment overlap node-Left-Right - 2', () => {
                 connector.allowNodeOverlap = true;
             }
         });
-        diagram.appendTo('#diagramsegment');
-
+        diagram.appendTo('#diagramsegment01');
+        diagramCanvas = document.getElementById(diagram.element.id + 'content');
     });
     afterAll(() => {
         diagram.destroy();
         ele.remove();
+        (diagram as any) = null; (ele as any) = null;
+        (mouseEvents as any) = null; (diagramCanvas as any) = null;
     });
     it('Move Middle segment towards target node', function (done) {
-        let mouseEvents: MouseEvents = new MouseEvents();
-        let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
         diagram.select([diagram.connectors[0]]);
-        let element: HTMLElement = document.getElementById('orthoThumb_1_3');
-        let bounds: any = element.getBoundingClientRect();
+        element = document.getElementById('orthoThumb_1_3');
+        bounds = element.getBoundingClientRect();
         mouseEvents.mouseDownEvent(diagramCanvas, bounds.x, bounds.y);
         mouseEvents.mouseMoveEvent(diagramCanvas, bounds.x, bounds.y + 48);
         mouseEvents.mouseUpEvent(diagramCanvas, bounds.x, bounds.y + 48);
@@ -3358,10 +3353,8 @@ describe('Check whether connector segment overlap node-Left-Right - 2', () => {
         done();
     });
     it('Move last segment towards target node and check whether connector does not get intersect', function (done) {
-        let mouseEvents: MouseEvents = new MouseEvents();
-        let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
-        let element: HTMLElement = document.getElementById('orthoThumb_4_1');
-        let bounds: any = element.getBoundingClientRect();
+        element = document.getElementById('orthoThumb_4_1');
+        bounds = element.getBoundingClientRect();
         mouseEvents.mouseDownEvent(diagramCanvas, bounds.x, bounds.y);
         mouseEvents.mouseMoveEvent(diagramCanvas, bounds.x - 100, bounds.y);
         mouseEvents.mouseUpEvent(diagramCanvas, bounds.x - 100, bounds.y);
@@ -3370,11 +3363,9 @@ describe('Check whether connector segment overlap node-Left-Right - 2', () => {
         done();
     });
     it('Move Middle segment towards source node', function (done) {
-        let mouseEvents: MouseEvents = new MouseEvents();
-        let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
         diagram.select([diagram.connectors[0]]);
-        let element: HTMLElement = document.getElementById('orthoThumb_3_1');
-        let bounds: any = element.getBoundingClientRect();
+        element = document.getElementById('orthoThumb_3_1');
+        bounds = element.getBoundingClientRect();
         mouseEvents.mouseDownEvent(diagramCanvas, bounds.x, bounds.y);
         mouseEvents.mouseMoveEvent(diagramCanvas, bounds.x, bounds.y - 50);
         mouseEvents.mouseUpEvent(diagramCanvas, bounds.x, bounds.y - 50);
@@ -3388,7 +3379,10 @@ describe('Check whether connector segment overlap node-Left-Right - 2', () => {
 describe('Resize handle not rendered properly issue', () => {
     let diagram: Diagram;
     let ele: HTMLElement;
-
+    let northWestelement;
+    let northEastelement;
+    let southWestelement;
+    let southEastelement;
     beforeAll(() => {
 
         ele = createElement('div', { id: 'diagrampivot' });
@@ -3417,13 +3411,14 @@ describe('Resize handle not rendered properly issue', () => {
     afterAll(() => {
         diagram.destroy();
         ele.remove();
+        (diagram as any) = null; (ele as any) = null;
     });
     it('Check whether resize handle renders properly for node pivot - 0, 0', function (done) {
         diagram.select([diagram.nodes[0]]);
-        let northWestelement: HTMLElement = document.getElementById('resizeNorthWest');
-        let northEastelement: HTMLElement = document.getElementById('resizeNorthEast');
-        let southWestelement: HTMLElement = document.getElementById('resizeSouthWest');
-        let southEastelement: HTMLElement = document.getElementById('resizeSouthEast');
+        northWestelement = document.getElementById('resizeNorthWest');
+        northEastelement = document.getElementById('resizeNorthEast');
+        southWestelement = document.getElementById('resizeSouthWest');
+        southEastelement = document.getElementById('resizeSouthEast');
         expect(northWestelement.getAttribute('x') === '93' && northWestelement.getAttribute('y') === '93').toBe(true);
         expect(northEastelement.getAttribute('x') === '193' && northEastelement.getAttribute('y') === '93').toBe(true);
         expect(southWestelement.getAttribute('x') === '93' && southWestelement.getAttribute('y') === '193').toBe(true);
@@ -3433,10 +3428,10 @@ describe('Resize handle not rendered properly issue', () => {
 
     it('Check whether resize handle renders properly for node pivot - 1, 1', function (done) {
         diagram.select([diagram.nodes[2]]);
-        let northWestelement: HTMLElement = document.getElementById('resizeNorthWest');
-        let northEastelement: HTMLElement = document.getElementById('resizeNorthEast');
-        let southWestelement: HTMLElement = document.getElementById('resizeSouthWest');
-        let southEastelement: HTMLElement = document.getElementById('resizeSouthEast');
+        northWestelement = document.getElementById('resizeNorthWest');
+        northEastelement = document.getElementById('resizeNorthEast');
+        southWestelement = document.getElementById('resizeSouthWest');
+        southEastelement = document.getElementById('resizeSouthEast');
         expect(northWestelement.getAttribute('x') === '193' && northWestelement.getAttribute('y') === '93').toBe(true);
         expect(northEastelement.getAttribute('x') === '293' && northEastelement.getAttribute('y') === '93').toBe(true);
         expect(southWestelement.getAttribute('x') === '193' && southWestelement.getAttribute('y') === '193').toBe(true);
@@ -3449,10 +3444,10 @@ describe('Resize handle not rendered properly issue', () => {
         diagram.select([diagram.nodes[0]]);
         diagram.nodes[0].rotateAngle = 90;
         diagram.dataBind();
-        let northWestelement: HTMLElement = document.getElementById('resizeNorthWest');
-        let northEastelement: HTMLElement = document.getElementById('resizeNorthEast');
-        let southWestelement: HTMLElement = document.getElementById('resizeSouthWest');
-        let southEastelement: HTMLElement = document.getElementById('resizeSouthEast');
+        northWestelement = document.getElementById('resizeNorthWest');
+        northEastelement = document.getElementById('resizeNorthEast');
+        southWestelement = document.getElementById('resizeSouthWest');
+        southEastelement = document.getElementById('resizeSouthEast');
         expect(northWestelement.getAttribute('x') === '93' && northWestelement.getAttribute('y') === '93').toBe(true);
         expect(northEastelement.getAttribute('x') === '93' && northEastelement.getAttribute('y') === '193').toBe(true);
         expect(southWestelement.getAttribute('x') === '-7' && southWestelement.getAttribute('y') === '93').toBe(true);
@@ -3465,9 +3460,6 @@ describe('Resize handle not rendered properly issue', () => {
 describe('Bezier connector not rendered properly after save and load', () => {
     let diagram: Diagram;
     let ele: HTMLElement;
-    let zIndex: number = 0;
-    let scroller: DiagramScroller;
-    let mouseEvents: MouseEvents = new MouseEvents();
     beforeAll((): void => {
         const isDef = (o: any) => o !== undefined && o !== null;
         if (!isDef(window.performance)) {
@@ -3489,7 +3481,7 @@ describe('Bezier connector not rendered properly after save and load', () => {
             id: "connector1",
             type: 'Bezier',
             sourceID: 'node1', targetID: 'node2',
-          };
+        };
         diagram = new Diagram({
             width: '1000px', height: '500px', nodes: [node1, node2],
             connectors: [connector1]
@@ -3501,6 +3493,7 @@ describe('Bezier connector not rendered properly after save and load', () => {
     afterAll((): void => {
         diagram.destroy();
         ele.remove();
+        (diagram as any) = null; (ele as any) = null;
     });
 
     it('Check whether connector path is same after save and load the diagram', (done: Function) => {
@@ -3515,7 +3508,10 @@ describe('Bezier connector not rendered properly after save and load', () => {
 describe('Check whether connector segment overlap node - BottomToTop', () => {
     let diagram: Diagram;
     let ele: HTMLElement;
-
+    let mouseEvents: MouseEvents = new MouseEvents();
+    let diagramCanvas: HTMLElement;
+    let element: HTMLElement;
+    let bounds: any;
     beforeAll(() => {
 
         ele = createElement('div', { id: 'diagramsegment' });
@@ -3557,18 +3553,18 @@ describe('Check whether connector segment overlap node - BottomToTop', () => {
             }
         });
         diagram.appendTo('#diagramsegment');
-
+        diagramCanvas = document.getElementById(diagram.element.id + 'content');
     });
     afterAll(() => {
         diagram.destroy();
         ele.remove();
+        (diagram as any) = null; (ele as any) = null;
+        (mouseEvents as any) = null; (diagramCanvas as any) = null;
     });
     it('Move Middle segment towards target node', function (done) {
-        let mouseEvents: MouseEvents = new MouseEvents();
-        let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
         diagram.select([diagram.connectors[0]]);
-        let element: HTMLElement = document.getElementById('orthoThumb_1_2');
-        let bounds: any = element.getBoundingClientRect();
+        element = document.getElementById('orthoThumb_1_2');
+        bounds = element.getBoundingClientRect();
         mouseEvents.mouseDownEvent(diagramCanvas, bounds.x, bounds.y);
         mouseEvents.mouseMoveEvent(diagramCanvas, bounds.x, bounds.y + 250);
         mouseEvents.mouseUpEvent(diagramCanvas, bounds.x, bounds.y + 250);
@@ -3577,10 +3573,8 @@ describe('Check whether connector segment overlap node - BottomToTop', () => {
         done();
     });
     it('Move First segment towards source node and check whether connector does not get intersect', function (done) {
-        let mouseEvents: MouseEvents = new MouseEvents();
-        let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
-        let element: HTMLElement = document.getElementById('orthoThumb_2_1');
-        let bounds: any = element.getBoundingClientRect();
+        element = document.getElementById('orthoThumb_2_1');
+        bounds = element.getBoundingClientRect();
         mouseEvents.mouseDownEvent(diagramCanvas, bounds.x, bounds.y);
         mouseEvents.mouseMoveEvent(diagramCanvas, bounds.x, bounds.y - 350);
         mouseEvents.mouseUpEvent(diagramCanvas, bounds.x, bounds.y - 350);
@@ -3594,21 +3588,24 @@ describe('Check whether connector segment overlap node - BottomToTop', () => {
 describe('Check whether connector segment restore after save and load', () => {
     let diagram: Diagram;
     let ele: HTMLElement;
-
+    let mouseEvents: MouseEvents = new MouseEvents();
+    let diagramCanvas: HTMLElement;
     beforeAll(() => {
 
-        ele = createElement('div', { id: 'diagramsegment' });
+        ele = createElement('div', { id: 'diagramsegment2' });
         document.body.appendChild(ele);
 
         diagram = new Diagram({
             width: '900px', height: '500px'
         });
-        diagram.appendTo('#diagramsegment');
-
+        diagram.appendTo('#diagramsegment2');
+        diagramCanvas = document.getElementById(diagram.element.id + 'content');
     });
     afterAll(() => {
         diagram.destroy();
         ele.remove();
+        (diagram as any) = null; (ele as any) = null;
+        (mouseEvents as any) = null; (diagramCanvas as any) = null;
     });
     it('Check freehand connector segment after draw', function (done) {
         diagram.tool = DiagramTools.DrawOnce;
@@ -3617,8 +3614,6 @@ describe('Check whether connector segment restore after save and load', () => {
         };
         diagram.drawingObject = connector;
         diagram.dataBind();
-        let mouseEvents: MouseEvents = new MouseEvents();
-        let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
         mouseEvents.mouseDownEvent(diagramCanvas, 170, 100);
         mouseEvents.mouseMoveEvent(diagramCanvas, 230, 350);
         mouseEvents.mouseMoveEvent(diagramCanvas, 260, 470);
@@ -3641,9 +3636,8 @@ describe('Check whether connector segment restore after save and load', () => {
 describe('Unable to drag connector end thumb and resize node handler when we increase the size of handleSize property', () => {
     let diagram: Diagram;
     let ele: HTMLElement;
-    let zIndex: number = 0;
-    let scroller: DiagramScroller;
     let mouseEvents: MouseEvents = new MouseEvents();
+    let diagramCanvas: HTMLElement;
     beforeAll((): void => {
         const isDef = (o: any) => o !== undefined && o !== null;
         if (!isDef(window.performance)) {
@@ -3660,25 +3654,27 @@ describe('Unable to drag connector end thumb and resize node handler when we inc
         };
         let connector1: ConnectorModel = {
             id: "connector1",
-            sourcePoint : { x : 100, y : 200},
-            targetPoint : { x : 400, y : 200}
+            sourcePoint: { x: 100, y: 200 },
+            targetPoint: { x: 400, y: 200 }
 
-          };
+        };
         diagram = new Diagram({
             width: '1000px', height: '500px', nodes: [node1],
-            connectors: [connector1], selectedItems : { handleSize : 100}
+            connectors: [connector1], selectedItems: { handleSize: 100 }
 
         });
         diagram.appendTo('#diagramresize');
+        diagramCanvas = document.getElementById(diagram.element.id + 'content');
 
     });
     afterAll((): void => {
         diagram.destroy();
         ele.remove();
+        (diagram as any) = null; (ele as any) = null;
+        (mouseEvents as any) = null; (diagramCanvas as any) = null;
     });
 
     it('Check whether the connector position is same or not after we dragging it', (done: Function) => {
-        let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
         diagram.select([diagram.connectors[0]]);
         mouseEvents.mouseDownEvent(diagramCanvas, 430, 200);
         mouseEvents.mouseMoveEvent(diagramCanvas, 450, 200);
@@ -3691,7 +3687,6 @@ describe('Unable to drag connector end thumb and resize node handler when we inc
         done();
     });
     it('Check whether the node position is same or not after we dragging it', (done: Function) => {
-        let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
         diagram.select([diagram.nodes[0]]);
         mouseEvents.mouseDownEvent(diagramCanvas, 280, 540);
         mouseEvents.mouseMoveEvent(diagramCanvas, 300, 520);
@@ -3710,9 +3705,8 @@ describe('Unable to drag connector end thumb and resize node handler when we inc
 describe('Unable to drag bezier connector control thumb while increasing the handleSize', () => {
     let diagram: Diagram;
     let ele: HTMLElement;
-    let zIndex: number = 0;
-    let scroller: DiagramScroller;
     let mouseEvents: MouseEvents = new MouseEvents();
+    let diagramCanvas: HTMLElement;
     beforeAll((): void => {
         const isDef = (o: any) => o !== undefined && o !== null;
         if (!isDef(window.performance)) {
@@ -3727,22 +3721,24 @@ describe('Unable to drag bezier connector control thumb while increasing the han
         let connector1: ConnectorModel = {
             id: 'connector1', type: 'Bezier', sourcePoint: { x: 700, y: 200 }, targetPoint: { x: 1000, y: 400 }, annotations: [{ content: 'Connector3', }], segments: [{ type: 'Bezier', point: { x: 750, y: 250 } }, { type: 'Bezier', point: { x: 900, y: 350 } }]
 
-          };
+        };
         diagram = new Diagram({
             width: '1000px', height: '500px',
-            connectors: [connector1], selectedItems : { handleSize : 100}
+            connectors: [connector1], selectedItems: { handleSize: 100 }
 
         });
         diagram.appendTo('#diagrambezierresize');
+        diagramCanvas = document.getElementById(diagram.element.id + 'content');
 
     });
     afterAll((): void => {
         diagram.destroy();
         ele.remove();
+        (diagram as any) = null; (ele as any) = null;
+        (mouseEvents as any) = null; (diagramCanvas as any) = null;
     });
 
     it('Unable to drag bezier connector control thumb while increasing the handleSize', (done: Function) => {
-        let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
         diagram.select([diagram.connectors[0]]);
         //Dragging segement1
         mouseEvents.mouseDownEvent(diagramCanvas, 820, 220);

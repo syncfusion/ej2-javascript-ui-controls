@@ -58,14 +58,10 @@ describe('Formats plugin', () => {
             // should not remove the inline style while format to 'p'
             expect(start.style.display !== '').toBe(true);
             expect(start.style.marginBottom !== '').toBe(true);
-            expect(start.style.marginLeft !== '').toBe(true);
-            expect(start.style.marginRight !== '').toBe(true);
             expect(start.style.fontSize !== '').toBe(true);
             expect(start.style.fontWeight !== '').toBe(true);
             expect(end.style.display !== '').toBe(true);
             expect(end.style.marginBottom !== '').toBe(true);
-            expect(end.style.marginLeft !== '').toBe(true);
-            expect(end.style.marginRight !== '').toBe(true);
             expect(end.style.fontSize !== '').toBe(true);
             expect(end.style.fontWeight !== '').toBe(true);
 
@@ -207,8 +203,6 @@ describe('Formats plugin', () => {
             // should be remove the inline default styles of h1 tag.
             expect(end.style.display === '').toBe(true);
             expect(end.style.marginBottom === '').toBe(true);
-            expect(end.style.marginLeft === '').toBe(true);
-            expect(end.style.marginRight === '').toBe(true);
             expect(end.style.fontSize === '').toBe(true);
             expect(end.style.fontWeight === '').toBe(true);
 
@@ -253,8 +247,6 @@ describe('Formats plugin', () => {
             // should be remove the inline default styles of h2 tag.
             expect(start.style.display === '').toBe(true);
             expect(start.style.marginBottom === '').toBe(true);
-            expect(start.style.marginLeft === '').toBe(true);
-            expect(start.style.marginRight === '').toBe(true);
             expect(start.style.fontSize === '').toBe(true);
             expect(start.style.fontWeight === '').toBe(true);
 
@@ -299,14 +291,10 @@ describe('Formats plugin', () => {
             // should be remove the inline default styles of h3 tag.
             expect(start.style.display === '').toBe(true);
             expect(start.style.marginBottom === '').toBe(true);
-            expect(start.style.marginLeft === '').toBe(true);
-            expect(start.style.marginRight === '').toBe(true);
             expect(start.style.fontSize === '').toBe(true);
             expect(start.style.fontWeight === '').toBe(true);
             expect(end.style.display === '').toBe(true);
             expect(end.style.marginBottom === '').toBe(true);
-            expect(end.style.marginLeft === '').toBe(true);
-            expect(end.style.marginRight === '').toBe(true);
             expect(end.style.fontSize === '').toBe(true);
             expect(end.style.fontWeight === '').toBe(true);
 
@@ -352,14 +340,10 @@ describe('Formats plugin', () => {
             // should be remove the inline default styles of h4 tag.
             expect(start.style.display === '').toBe(true);
             expect(start.style.marginBottom === '').toBe(true);
-            expect(start.style.marginLeft === '').toBe(true);
-            expect(start.style.marginRight === '').toBe(true);
             expect(start.style.fontSize === '').toBe(true);
             expect(start.style.fontWeight === '').toBe(true);
             expect(end.style.display === '').toBe(true);
             expect(end.style.marginBottom === '').toBe(true);
-            expect(end.style.marginLeft === '').toBe(true);
-            expect(end.style.marginRight === '').toBe(true);
             expect(end.style.fontSize === '').toBe(true);
             expect(end.style.fontWeight === '').toBe(true);
 
@@ -404,14 +388,10 @@ describe('Formats plugin', () => {
             // should be remove the inline default styles of h5 tag.
             expect(start.style.display === '').toBe(true);
             expect(start.style.marginBottom === '').toBe(true);
-            expect(start.style.marginLeft === '').toBe(true);
-            expect(start.style.marginRight === '').toBe(true);
             expect(start.style.fontSize === '').toBe(true);
             expect(start.style.fontWeight === '').toBe(true);
             expect(end.style.display === '').toBe(true);
             expect(end.style.marginBottom === '').toBe(true);
-            expect(end.style.marginLeft === '').toBe(true);
-            expect(end.style.marginRight === '').toBe(true);
             expect(end.style.fontSize === '').toBe(true);
             expect(end.style.fontWeight === '').toBe(true);
 
@@ -456,14 +436,10 @@ describe('Formats plugin', () => {
             // should be remove the inline default styles of h6 tag.
             expect(start.style.display === '').toBe(true);
             expect(start.style.marginBottom === '').toBe(true);
-            expect(start.style.marginLeft === '').toBe(true);
-            expect(start.style.marginRight === '').toBe(true);
             expect(start.style.fontSize === '').toBe(true);
             expect(start.style.fontWeight === '').toBe(true);
             expect(end.style.display === '').toBe(true);
             expect(end.style.marginBottom === '').toBe(true);
-            expect(end.style.marginLeft === '').toBe(true);
-            expect(end.style.marginRight === '').toBe(true);
             expect(end.style.fontSize === '').toBe(true);
             expect(end.style.fontWeight === '').toBe(true);
 

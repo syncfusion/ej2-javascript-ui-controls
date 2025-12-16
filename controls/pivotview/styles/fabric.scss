@@ -1,9 +1,9 @@
-@import 'ej2-base/styles/definition/fabric.scss';
-@import 'pivotfieldlist/fabric-definition.scss';
-@import 'pivotview/fabric-definition.scss';
-@import 'pivotview/icons/fabric.scss';
-@import 'pivotview/all.scss';
-@import 'pivotview/bigger.scss';
-@import 'pivotfieldlist/icons/fabric.scss';
-@import 'pivotfieldlist/all.scss';
-@import 'pivotfieldlist/bigger.scss';
+@use 'ej2-base/styles/definition/fabric' as *;
+@use 'pivotfieldlist/fabric-definition' as *;
+@use 'pivotview/fabric-definition' as *;
+@use 'pivotview/icons/fabric' as *;
+@use 'pivotview/all' as *;
+@use 'pivotview/bigger' as *;
+@use 'pivotfieldlist/icons/fabric' as *;
+@use 'pivotfieldlist/all' as *;
+@use 'pivotfieldlist/bigger' as *;

@@ -17,7 +17,7 @@ import { PdfList } from './pdf-list';
  * // Create a new PDF ordered list
  * let list: PdfOrderedList = new PdfOrderedList(items);
  * // Draw the list items
- * list.draw(page, 0, 20);
+ * list.draw(page, {x: 0, y: 20});
  * // Save the document
  * document.save('output.pdf');
  * // Destroy the document
@@ -49,13 +49,13 @@ export class PdfListItem {
      * // Create an instance of list item collection by passing the string array
      * let items: PdfListItemCollection = new PdfListItemCollection(['Excel', 'Power', 'Point', 'Word']);
      * // Create a new list item
-     * let item: PdfListItem = new PdfListItem('PDF', {brush: new PdfBrush([255, 0, 0])});
+     * let item: PdfListItem = new PdfListItem('PDF', {brush: new PdfBrush({r: 255, g: 0, b: 0})});
      * // Add the list item into the collection
      * items.add(item);
      * // Create a new PDF ordered list
      * let list: PdfOrderedList = new PdfOrderedList(items);
      * // Draw the list items
-     * list.draw(page, 0, 20);
+     * list.draw(page, {x: 0, y: 20});
      * // Save the document
      * document.save('output.pdf');
      * // Destroy the document
@@ -94,7 +94,7 @@ export class PdfListItem {
      * // Create an instance of list item collection by passing the string array
      * let items: PdfListItemCollection = new PdfListItemCollection(['Excel', 'Power', 'Point', 'Word']);
      * // Create a new list item
-     * let item: PdfListItem = new PdfListItem('PDF', {brush: new PdfBrush([255, 0, 0])});
+     * let item: PdfListItem = new PdfListItem('PDF', {brush: new PdfBrush({r: 255, g: 0, b: 0})});
      * // Add the list item into the collection
      * items.add(item);
      * // Create a new PDF ordered list
@@ -102,7 +102,7 @@ export class PdfListItem {
      * // Access the brush from the list item
      * let brush: PdfBrush = item.brush;
      * // Draw the list items
-     * list.draw(page, 0, 20);
+     * list.draw(page, {x: 0, y: 20});
      * // Save the document
      * document.save('output.pdf');
      * // Destroy the document
@@ -130,9 +130,9 @@ export class PdfListItem {
      * // Create a new PDF ordered list
      * let list: PdfOrderedList = new PdfOrderedList(items);
      * // Set the fill color
-     * item.brush = new PdfBrush([255, 0, 0]);
+     * item.brush = new PdfBrush({r: 255, g: 0, b: 0});
      * // Draw the list items
-     * list.draw(page, 0, 20);
+     * list.draw(page, {x: 0, y: 20});
      * // Save the document
      * document.save('output.pdf');
      * // Destroy the document
@@ -154,7 +154,7 @@ export class PdfListItem {
      * // Create an instance of list item collection by passing the string array
      * let items: PdfListItemCollection = new PdfListItemCollection(['Excel', 'Power', 'Point', 'Word']);
      * // Create a new list item
-     * let item: PdfListItem = new PdfListItem('PDF', {pen: new PdfPen([255, 0, 0], 1)});
+     * let item: PdfListItem = new PdfListItem('PDF', {pen: new PdfPen({r: 255, g: 0, b: 0}, 1)});
      * // Add the list item into the collection
      * items.add(item);
      * // Create a new PDF ordered list
@@ -162,7 +162,7 @@ export class PdfListItem {
      * // Access the pen from the list item
      * let pen: PdfPen = item.pen;
      * // Draw the list items
-     * list.draw(page, 0, 20);
+     * list.draw(page, {x: 0, y: 20});
      * // Save the document
      * document.save('output.pdf');
      * // Destroy the document
@@ -190,9 +190,9 @@ export class PdfListItem {
      * // Create a new PDF ordered list
      * let list: PdfOrderedList = new PdfOrderedList(items);
      * // Set the stroke color
-     * item.pen = new PdfPen([255, 0, 0], 1);
+     * item.pen = new PdfPen({r: 255, g: 0, b: 0}, 1);
      * // Draw the list items
-     * list.draw(page, 0, 20);
+     * list.draw(page, {x: 0, y: 20});
      * // Save the document
      * document.save('output.pdf');
      * // Destroy the document
@@ -222,7 +222,7 @@ export class PdfListItem {
      * // Access the font from the list item
      * let font: PdfFont = item.font;
      * // Draw the list items
-     * list.draw(page, 0, 20);
+     * list.draw(page, {x: 0, y: 20});
      * // Save the document
      * document.save('output.pdf');
      * // Destroy the document
@@ -252,7 +252,7 @@ export class PdfListItem {
      * // Set the font
      * item.font = new PdfStandardFont(PdfFontFamily.timesRoman, 12);
      * // Draw the list items
-     * list.draw(page, 0, 20);
+     * list.draw(page, {x: 0, y: 20});
      * // Save the document
      * document.save('output.pdf');
      * // Destroy the document
@@ -282,7 +282,7 @@ export class PdfListItem {
      * // Access the string format from the list item
      * let format: PdfStringFormat = item.stringFormat;
      * // Draw the list items
-     * list.draw(page, 0, 20);
+     * list.draw(page, {x: 0, y: 20});
      * // Save the document
      * document.save('output.pdf');
      * // Destroy the document
@@ -312,7 +312,7 @@ export class PdfListItem {
      * // Set the font
      * item.font = new PdfStandardFont(PdfFontFamily.timesRoman, 12);
      * // Draw the list items
-     * list.draw(page, 0, 20);
+     * list.draw(page, {x: 0, y: 20});
      * // Save the document
      * document.save('output.pdf');
      * // Destroy the document
@@ -340,7 +340,7 @@ export class PdfListItem {
      * // Get the text content of the item
      * let text: string = item.text;
      * // Draw the list items on the specified page
-     * list.draw(page, 10, 50. 500, 700);
+     * list.draw(page, {x: 10, y: 50, width: 500, height: 700});
      * // Save the document
      * document.save('output.pdf');
      * // Destroy the document
@@ -370,7 +370,7 @@ export class PdfListItem {
      * // Set the text of the list item
      * item.text = 'PDF';
      * // Draw the list items
-     * list.draw(page, 0, 20);
+     * list.draw(page, {x: 0, y: 20});
      * // Save the document
      * document.save('output.pdf');
      * // Destroy the document
@@ -398,7 +398,7 @@ export class PdfListItem {
      * // Get the text indent of the item
      * let textIndent: number = item.textIndent;
      * // Draw the list items on the specified page
-     * list.draw(page, 10, 50. 500, 700);
+     * list.draw(page, {x: 10, y: 50, width: 500, height: 700});
      * // Save the document
      * document.save('output.pdf');
      * // Destroy the document
@@ -425,7 +425,7 @@ export class PdfListItem {
      * // Add the item to the list collection
      * list.items.add(item);
      * // Draw the list items on the specified page at position (10, 50)
-     * list.draw(page, 10, 50. 500, 700);
+     * list.draw(page, {x: 10, y: 50, width: 500, height: 700});
      * // Save the document
      * document.save('output.pdf');
      * // Destroy the document
@@ -459,7 +459,7 @@ export class PdfListItem {
      * // Get the sublist
      * let sublist: PdfList = list.items._listitem[0].sublist;
      * // Draw the list items on the specified page
-     * list.draw(page, 10, 50. 500, 700);
+     * list.draw(page, {x: 10, y: 50, width: 500, height: 700});
      * // Save the document
      * document.save('output.pdf');
      * // Destroy the document
@@ -492,7 +492,7 @@ export class PdfListItem {
      * // Set the sublist for the main list item
      * list.items._listItem[0].subList = subList;
      * // Draw the list items on the specified page
-     * list.draw(page, 10, 50. 500, 700);
+     * list.draw(page, {x: 10, y: 50, width: 500, height: 700});
      * // Save the document
      * document.save('output.pdf');
      * // Destroy the document
@@ -515,7 +515,7 @@ export class PdfListItem {
  * // Create a new PDF ordered list
  * let list: PdfOrderedList = new PdfOrderedList(items);
  * // Draw the list items
- * list.draw(page, 0, 20);
+ * list.draw(page, {x: 0, y: 20});
  * // Save the document
  * document.save('output.pdf');
  * // Destroy the document
@@ -541,7 +541,7 @@ export class PdfListItemCollection {
      * // Create a new PDF ordered list
      * let list: PdfOrderedList = new PdfOrderedList(items);
      * // Draw the list items
-     * list.draw(page, 0, 20);
+     * list.draw(page, {x: 0, y: 20});
      * // Save the document
      * document.save('output.pdf');
      * // Destroy the document
@@ -565,7 +565,7 @@ export class PdfListItemCollection {
      * // Create an instance of ordered list
      * let list: PdfOrderedList = new PdfOrderedList(items);
      * // Draw the list on the page at specified coordinates and dimensions
-     * list.draw(page,0, 10, 500, 700);
+     * list.draw(page, {x: 10, y: 50, width: 500, height: 700});
      * // Get the count of items in the list
      * let count: number = list.itemCollection.count;
      * // Save the document
@@ -601,7 +601,7 @@ export class PdfListItemCollection {
      * // Add the items to list item collection by passing the array of products
      * list.items = new PdfListCollection(products);
      * / Draw the list on the page at specified bounds
-     * list.draw(page,0, 10, 500, 700);
+     * list.draw(page, 0, {x: 10, y: 50, width: 500, height: 700});
      * // Get the count of items from the list
      * let count: number = list.items.count;
      * // Save the document
@@ -629,7 +629,7 @@ export class PdfListItemCollection {
      * // Add the item to the list
      * list.items.add(item);
      * // Draw the list on the page at specified coordinates and dimensions
-     * list.draw(page, 20, 50, 500, 700);
+     * list.draw(page, {x: 20, y: 50, width: 500, height: 700});
      * // Save the document
      * document.save('output.pdf');
      * // Destroy the document
@@ -654,7 +654,7 @@ export class PdfListItemCollection {
      * // Add the item to the list with a specified text indent
      * list.items.add(item, 40);
      * // Draw the list on the page at specified coordinates and dimensions
-     * list.draw(page, 20, 50, 500, 700);
+     * list.draw(page, {x: 20, y: 50, width: 500, height: 700});
      * // Save the document
      * document.save('output.pdf');
      * // Destroy the document
@@ -691,7 +691,7 @@ export class PdfListItemCollection {
      * // Retrieve a specific item from the list collection at a particular index
      * let item: PdflistItem = list.itemCollection.itemAt(1);
      * // Draw the list items on the page at specified coordinates and dimensions
-     * list.draw(page, 10, 50, 500, 700);
+     * list.draw(page, {x: 10, y: 50, width: 500, height: 700});
      * // Save the document
      * document.save('output.pdf');
      * // Destroy the document
@@ -731,7 +731,7 @@ export class PdfListItemCollection {
      * let itemToRemove: PdfListItem = list.items.at(0);
      * list.items.remove(itemToRemove);
      * // Draw the list on the page at specified coordinates and dimensions
-     * list.draw(page, 10, 40, 300, 500);
+     * list.draw(page, {x: 10, y: 40, width: 300, height: 500});
      * // Save the document
      * document.save('output.pdf');
      * // Destroy the document
@@ -779,7 +779,7 @@ export class PdfListItemCollection {
      * // Remove a specific item from the collection by its index
      * list.items.removeAt(1);
      * // Draw the modified list on the page at specified bounds
-     * list.draw(page, 10, 40, 300, 500);
+     * list.draw(page, {x: 10, y: 40, width: 300, height: 500});
      * // Save the document
      * document.save('output.pdf');
      * // Destroy the document
@@ -814,7 +814,7 @@ export class PdfListItemCollection {
      * // Add the items to list item collection by passing the array of products
      * let item: PdfListItemCollection = new PdfListItemCollection(products);
      * // Draw the initial list on the page at specified coordinates and dimensions
-     * list.draw(page, 10, 40, 300, 500);
+     * list.draw(page, {x: 10, y: 40, width: 300, height: 500});
      * // Clear the list item collection
      * list.items.clear();
      * // Save the document
@@ -855,7 +855,7 @@ export class PdfListItemCollection {
      * // Insert the new item into the list at index 1 with an indent of 40
      * list.items.insert(1, item, 40);
      * // Draw the updated list on the page at specified coordinates and dimensions
-     * list.draw(page, 10, 40, 300, 500);
+     * list.draw(page, {x: 10, y: 40, width: 300, height: 500});
      * // Save the document
      * document.save('output.pdf');
      * // Destroy the document
@@ -901,7 +901,7 @@ export class PdfListItemCollection {
      * // Find the index of the first item in the collection
      * let index: number = list.items.indexOf(item);
      * // Draw the list on the page at specified bounds
-     * list.draw(page, 10, 40, 300, 500);
+     * list.draw(page, {x: 10, y: 40, width: 300, height: 500});
      * // Save the document
      * document.save('output.pdf');
      * // Destroy the document

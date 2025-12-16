@@ -1,7 +1,6 @@
-@import 'ej2-base/styles/definition/bootstrap5-dark.scss';
-@import 'ej2-buttons/styles/check-box/bootstrap5-dark-definition.scss';
-@import 'list-view/bootstrap5-dark-definition.scss';
-@import 'list-view/icons/bootstrap5-dark.scss';
-@import 'list-view/all.scss';
-@import 'sortable/bootstrap5-dark-definition.scss';
-@import 'sortable/all.scss';
+@use 'ej2-buttons/styles/check-box/bootstrap5-dark-definition' as *;
+@use 'list-view/bootstrap5-dark-definition' as *;
+@use 'list-view/icons/bootstrap5-dark' as *;
+@use 'list-view/all' as *;
+@use 'sortable/bootstrap5-dark-definition' as *;
+@use 'sortable/all' as *;

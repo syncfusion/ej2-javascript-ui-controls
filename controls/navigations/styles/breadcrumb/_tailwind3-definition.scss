@@ -1,3 +1,6 @@
+@use 'ej2-base/styles/definition/tailwind3' as *;
+@forward 'ej2-base/styles/definition/tailwind3';
+
 // Size variables
 $breadcrumb-skin: 'tailwind3' !default;
 $breadcrumb-last-item-font-weight: $font-weight-medium !default;
@@ -30,10 +33,23 @@ $breadcrumb-icon-only-item-bigger-padding: 2px 4px !default;
 $breadcrumb-icon-only-item-focus-bigger-padding: 2px 4px !default;
 $breadcrumb-scroll-mode-lineheight: 30px !default;
 $breadcrumb-popup-item-padding: 0 12px !default;
-$breadcrumb-popup-border-radius: 4px !default;
+$breadcrumb-popup-border-radius: $radius-4 !default;
 $breadcrumb-popup-item-height: 32px !default;
+$breadcrumb-popup-item-line-height: 32px !default;
 $cmenu-li-hover-outline-offset: 0 !default;
 $breadcrumb-popup-item-bigger-height: 40px !default;
+$breadcrumb-popup-item-bigger-line-height: 40px !default;
+$breadcrumb-separator-font-size: $text-xs !default;
+$breadcrumb-menuitem-height: 1px !default;
+$breadcrumb-border-none: 0 !default;
+$breadcrumb-normal-line-height: normal !default;
+$breadcrumb-ol-font-weight: $font-weight-medium !default;
+$breadcrumb-text-padding: 5px !default;
+$breadcrumb-item-text-padding: 3px !default;
+$breadcrumb-padding-none: 0 !default;
+$breadcrumb-margin-none: 0 !default;
+$breadcrumb-home-icon-height: 16px !default;
+$breadcrumb-menu-item-margin: -1px !default;
 
 // Color variables
 $breadcrumb-separator-color: $content-text-color-alt4 !default;

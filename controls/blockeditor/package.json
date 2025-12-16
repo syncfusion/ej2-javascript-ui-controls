@@ -41,7 +41,13 @@
 	"keywords": [
 		"ej2",
 		"syncfusion",
-		"blockeditor"
+		"blockeditor",
+		"blocks",
+		"editor",
+		"notion",
+		"modular-editor",
+		"block-based",
+		"inline-editor"
 	],
 	"repository": {
 		"type": "git",

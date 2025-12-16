@@ -20,7 +20,9 @@ export class Workbook {
     private sharedString: string[];
     private sharedStringCount: number = 0;
     public cellStyles: Map<string, CellStyles>;
+    public csvLineSeparator: 'CRLF' | 'LF' | 'CR' | string = 'CRLF';
     public mergedCellsStyle: Map<string, { x: number, y: number, styleIndex: number }>;
+    public csvQualifier: string = '"'; // default
     private worksheets: Worksheets;
     private builtInProperties: BuiltInProperties;
     private mFonts: Font[];
@@ -133,7 +135,11 @@ export class Workbook {
                 this.parserBuiltInProperties(json.builtInProperties, this.builtInProperties);
             }
         } else {
-            this.csvHelper = new CsvHelper(json, separator);
+            if (json && json.csvQualifier != null) {
+            this.csvQualifier = String(json.csvQualifier);}
+			if (json && json.csvLineSeparator !== null) {
+            this.csvLineSeparator = json.csvLineSeparator;}
+            this.csvHelper = new CsvHelper(json, separator, this.csvQualifier, this.csvLineSeparator);
         }
     }
     /* tslint:disable:no-any */
@@ -1120,6 +1126,8 @@ export class Workbook {
         if (json.rotation !== null && json.rotation !== undefined) {
             image.rotation = json.rotation;
         }
+        if (json.firstRowOffset !== null && json.firstRowOffset !== undefined) image.firstRowOffset = json.firstRowOffset;
+        if (json.firstColumnOffset !== null && json.firstColumnOffset !== undefined) image.firstColumnOffset = json.firstColumnOffset;
         return image;
     }
     /**
@@ -1338,13 +1346,19 @@ export class Workbook {
             sheetDrawingString += pic.column - 1;
             sheetDrawingString += '</xdr:col><xdr:colOff>';
             //colOff
-            sheetDrawingString += 0;
+            const fromColOffEmu = (pic.firstColumnOffset !== undefined)
+            ? Math.round(pic.firstColumnOffset / this.unitsProportions[7])
+            : 0;
+            sheetDrawingString += fromColOffEmu;
             sheetDrawingString += '</xdr:colOff><xdr:row>';
             //row
             sheetDrawingString += pic.row - 1;
             sheetDrawingString += '</xdr:row><xdr:rowOff>';
             //rowOff
-            sheetDrawingString += 0;
+            const fromRowOffEmu = (pic.firstRowOffset !== undefined)
+            ? Math.round(pic.firstRowOffset / this.unitsProportions[7])
+            : 0;
+            sheetDrawingString += fromRowOffEmu;
             sheetDrawingString += '</xdr:rowOff></xdr:from>';
 
             sheetDrawingString += '<xdr:to><xdr:col>';
@@ -1400,7 +1414,22 @@ export class Workbook {
     private updatelastRowOffset(sheet : Worksheet, picture: Image) : void{
         let iCurHeight = picture.height;
         let iCurRow = picture.row;
-        let iCurOffset = 0;
+        // Initialize offset in the first row if provided (scale: 0..255)
+		let iCurOffset = 0;
+		{
+			let iRowHeightPx = 0;
+			if (sheet.rows !== undefined && sheet.rows[iCurRow - 1] !== undefined) {
+			iRowHeightPx = this.convertToPixels(sheet.rows[iCurRow - 1].height === undefined ? 15 : sheet.rows[iCurRow - 1].height);
+			} else {
+			iRowHeightPx = this.convertToPixels(15);
+			}
+			if (picture.firstRowOffset !== undefined && picture.firstRowOffset > 0) {
+			iCurOffset = Math.round((picture.firstRowOffset * 256) / iRowHeightPx);
+			// Reduce available height in the first cell by the starting offset
+			const consumedPx = (iCurOffset * iRowHeightPx) / 256;
+			iCurHeight = Math.max(0, iCurHeight - consumedPx);
+			}
+		}
   
         while( iCurHeight >= 0 )
         {
@@ -1436,7 +1465,22 @@ export class Workbook {
     private updatelastColumnOffSet(sheet : Worksheet, picture: Image) : void{
         let iCurWidth = picture.width;
         let iCurCol = picture.column;
-        let iCurOffset = 0;
+        // Initialize offset in the first column if provided (scale: 0..1023)
+		let iCurOffset = 0;
+		{
+			let iColWidthPx = 0;
+			if (sheet.columns !== undefined && sheet.columns[iCurCol - 1] !== undefined)
+			iColWidthPx = this.ColumnWidthToPixels(sheet.columns[iCurCol - 1].width === undefined ? 8.43 : sheet.columns[iCurCol - 1].width);
+			else
+			iColWidthPx = this.ColumnWidthToPixels(8.43);
+		
+			if (picture.firstColumnOffset !== undefined && picture.firstColumnOffset > 0) {
+			iCurOffset = Math.round((picture.firstColumnOffset * 1024) / iColWidthPx);
+			// Reduce available width in the first cell by the starting offset
+			const consumedPx = (iCurOffset * iColWidthPx) / 1024;
+			iCurWidth = Math.max(0, iCurWidth - consumedPx);
+			}
+		}
   
         while( iCurWidth >= 0 )
         {

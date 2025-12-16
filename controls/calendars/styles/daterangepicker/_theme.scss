@@ -1,3 +1,5 @@
+@use 'ej2-base/styles/common/mixin' as *;
+@use './theme-variables' as *;
 @include export-module('daterangepicker-theme') {
   .e-date-range-wrapper {
     #{if(&, '&', '*')} .e-input-group-icon.e-icons.e-active {
@@ -180,8 +182,8 @@
             border-radius: $range-selected-hover-radius;
             box-shadow: $range-value-none;
           }
-          @if $skin-name == 'tailwind3' or $skin-name == 'tailwind3' {
-            border-radius: 0;
+          @if $skin-name == 'tailwind3' {
+            border-radius: $range-radius-zero;
           }
         }
         #{if(&, '&', '*')} .e-start-date.e-selected span.e-day,
@@ -310,7 +312,7 @@
   .e-daterangepicker.e-popup .e-calendar .e-content .e-start-date.e-selected span.e-day {
     @if $skin-name == 'tailwind3' {
       background: $range-primary-color;
-      border-radius: 0;
+      border-radius: $range-radius-zero;
     }
   }
 

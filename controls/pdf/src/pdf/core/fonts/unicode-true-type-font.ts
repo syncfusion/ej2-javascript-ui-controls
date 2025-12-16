@@ -27,11 +27,13 @@ export class _UnicodeTrueTypeFont {
     _cmapBeginRange: string = 'beginbfrange' + '\r\n';
     _cmapEndRange: string = 'endbfrange' + '\r\n';
     _cmapSuffix: string = 'endbfrange\nendcmap\nCMapName currentdict ' + '/CMap defineresource pop\nend end' + '\r\n';
-    constructor(data: string | Uint8Array, size: number) {
+    constructor(data: string | Uint8Array, size?: number) {
         if (data === null || typeof data === 'undefined') {
             throw new Error('ArgumentNullException:base64String');
         }
-        this._fontSize = size;
+        if (size !== null && typeof size !== 'undefined') {
+            this._fontSize = size;
+        }
         if (typeof data === 'string') {
             this._fontData = _decode(data) as Uint8Array;
         } else {
@@ -86,14 +88,9 @@ export class _UnicodeTrueTypeFont {
     }
     _initializeMetrics(): void {
         const ttfMetrics: _TrueTypeMetrics = this._ttfReader._metrics;
-        this._metrics._ascent = ttfMetrics._macAscent;
-        this._metrics._descent = ttfMetrics._macDescent;
-        this._metrics._height = ttfMetrics._macAscent - ttfMetrics._macDescent + ttfMetrics._lineGap;
         this._metrics._name = ttfMetrics._fontFamily;
         this._metrics._postScriptName = ttfMetrics._postScriptName;
-        this._metrics._size = this._fontSize;
         this._metrics._widthTable = new _StandardWidthTable(ttfMetrics._widthTable);
-        this._metrics._lineGap = ttfMetrics._lineGap;
         this._metrics._subScriptSizeFactor = ttfMetrics._subScriptSizeFactor;
         this._metrics._superscriptSizeFactor = ttfMetrics._superscriptSizeFactor;
         this._metrics._isBold = ttfMetrics._isBold;

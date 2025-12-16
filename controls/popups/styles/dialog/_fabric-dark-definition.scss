@@ -1,3 +1,5 @@
+@use 'ej2-base/styles/definition/fabric-dark' as *;
+@forward 'ej2-base/styles/definition/fabric-dark';
 $dialog-btn-bg-bgcolor: transparent !default;
 $dialog-btn-box-shadow: none !default;
 $dialog-resize-handler-width: 15px;
@@ -32,6 +34,7 @@ $footer-content-border-radius: 0 !default;
 $dialog-overlay-opacity: .7 !default;
 $dialog-header-line-height: normal !default;
 $dialog-content-padding-top: 0 !default;
+$dialog-rtl-content-padding-top: 0 !default;
 $dialog-bigger-content-padding-top: 0 !default;
 $dialog-close-icon-button-padding: 0 16px !default;
 $dialog-bigger-close-icon-button-padding: 0 20px !default;
@@ -81,5 +84,14 @@ $dialog-hover-focus-btn-bg-color: transparent !default;
 $dialog-active-btn-bg-color: transparent !default;
 $dialog-headericon-bottom: 0 !default;
 $dialog-enable-resize-padding-bottom: 15px !default;
+$dialog-bigger-rtl-footer-btn-margin-left: 0 !default;
+$dialog-zero-padding-margin: 0 !default;
+$dialog-alert-popup-margin: 30px !default;
+$dialog-full-width: 100% !default;
+$dialog-header-width: 80% !default;
+$dialog-max-height: 98% !default;
+$dialog-full-height: 100% !default;
+$dialog-mobile-width: 600px !default;
+$dialog-auto-width: auto !default;
 
 //enddefault

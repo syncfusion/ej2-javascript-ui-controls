@@ -686,8 +686,6 @@ export class Resize {
 
     private resizeOn(e: MouseEvent): void {
         let idx: number; let actualIdx: number; const sheet: SheetModel = this.parent.getActiveSheet();
-        const activeCell: number[] = getRangeIndexes(sheet.activeCell);
-        const cell: CellModel = getCell(activeCell[0], activeCell[1], sheet);
         if (this.trgtEle.classList.contains('e-rowresize')) {
             const prevIdx: number = Number(this.trgtEle.parentElement.getAttribute('aria-rowindex')) - 2;
             if (this.isMouseMoved && isHiddenRow(sheet, prevIdx) && this.trgtEle.classList.contains('e-skip-resize') &&

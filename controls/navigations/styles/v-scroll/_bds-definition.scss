@@ -1,3 +1,6 @@
+@use 'ej2-base/styles/definition/bds' as *;
+@forward 'ej2-base/styles/definition/bds';
+
 /*! component's theme wise override definitions and variables */
 $vscroll-skin: $skin-name !default;
 $vscroll-nav-nrml-height: 38px !default;

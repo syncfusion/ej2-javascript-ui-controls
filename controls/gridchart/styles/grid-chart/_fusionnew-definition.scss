@@ -1,5 +1,6 @@
 @use 'sass:math';
-
+@use 'ej2-base/styles/definition/fusionnew' as *;
+@forward 'ej2-base/styles/definition/fusionnew';
 $grid-chart-border-color: $border-light !default;
 $grid-chart-list-hover-bg-color: $content-bg-color-hover !default;
 $grid-chart-list-hover-content-font-color: $content-text-color-hover !default;

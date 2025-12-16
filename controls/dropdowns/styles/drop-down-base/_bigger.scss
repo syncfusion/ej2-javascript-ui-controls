@@ -1,8 +1,10 @@
+@use 'ej2-base/styles/common/mixin' as *;
+@use './theme-variables' as *;
 @include export-module('dropdownbase-bigger') {
   
   .e-bigger .e-dropdownbase,
   .e-dropdownbase.e-bigger {
-    min-height: 45px;
+    min-height: $bgr-drop-base-height;
     @at-root {
       #{if(&, '&', '*')} .e-list-item {
         line-height: $ddl-line-height;
@@ -21,12 +23,7 @@
       }
 
       #{if(&, '&', '*')} .e-list-item .e-list-icon {
-        @if $skin-name == 'fluent2' {
-          font-size: 18px;
-        }
-        @else {
-          font-size: 20px;
-        }
+        font-size: $ddl-bgr-list-item-icon-font-size;
       }
     }
   }
@@ -48,14 +45,14 @@
   .e-bigger .e-dropdownbase.e-dd-group .e-list-item {
     padding-left: $ddl-group-list-bigger-padding-left;
     @if $skin-name == 'tailwind' or $skin-name == 'FluentUI' {
-      text-indent: 0;
+      text-indent: $ddl-zero-spacing;
     }
   }
 
   .e-small.e-bigger .e-dropdownbase.e-dd-group .e-list-item {
     padding-left: $ddl-group-list-bigger-small-padding-left;
     @if $skin-name == 'tailwind' or $skin-name == 'FluentUI' {
-      text-indent: 0;
+      text-indent: $ddl-zero-spacing;
     }
   }
 
@@ -167,20 +164,20 @@
 
   .e-bigger .e-dropdownbase .e-list-item .e-list-icon {
     @if $skin-name == 'tailwind' or $skin-name == 'fluent2' {
-      padding: 0 12px 0 0;
+      padding: $ddl-bgr-dropbase-list-icon-padding;
     }
   }
 
   .e-bigger.e-small .e-dropdownbase .e-list-item .e-list-icon {
     @if $skin-name == 'tailwind' or $skin-name == 'fluent2' {
-      padding: 0 8px 0 0;
+      padding: $ddl-bgr-small-dropbase-list-icon-padding;
     }
   }
 
   .e-bigger .e-dropdownbase .e-list-item .e-list-icon,
   .e-bigger.e-small .e-dropdownbase .e-list-item .e-list-icon {
     @if $skin-name == 'bootstrap-dark' or $skin-name == 'bootstrap' or $skin-name == 'bootstrap4' or $skin-name == 'bootstrap5' or $skin-name == 'bootstrap5.3' or $skin-name == 'fabric-dark' or $skin-name == 'fabric' or $skin-name == 'FluentUI' or $skin-name == 'highcontrast' or $skin-name == 'highcontrast-light' {
-      padding: 0 12px 0 0;
+      padding: $ddl-bgr-dropbase-list-icon-item-padding;
     }
   }
 
@@ -192,7 +189,7 @@
 
   .e-bigger.e-small .e-dropdownbase .e-list-item .e-list-icon {
     @if $skin-name == 'material-dark' or $skin-name == 'material' or $skin-name == 'Material3' {
-      padding: 0 16px 0 0;
+      padding: $bigger-dropdown-base-list-item-icon-padding;
     }
   }
 }

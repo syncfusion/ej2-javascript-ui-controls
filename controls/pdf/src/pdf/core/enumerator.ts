@@ -152,11 +152,11 @@ export enum PdfLineIntent {
  * // Access the first page
  * let page: PdfPage = document.getPage(0);
  * // Create a new pen
- * let pen: PdfPen = new PdfPen([0, 0, 0], 1);
+ * let pen: PdfPen = new PdfPen({r: 0, g: 0, b: 0}, 1);
  * // Create a new brush
- * let brush: PdfBrush = new PdfBrush([0, 255, 255]);
+ * let brush: PdfBrush = new PdfBrush({r: 0, g: 255, b: 255});
  * // Add path points
- * let pathPoints: Array<number[]> = [[50, 50], [100, 50], [100, 100], [50, 100], [50, 50]];
+ * let pathPoints: Array<Point> = [{x: 50, y: 50}, {x: 100, y: 50}, {x: 100, y: 100}, {x: 50, y: 100}, {x: 50, y: 50}];
  * // Add path types
  * let pathTypes: PathPointType[] = [0, 1, 1, 1, 1];
  * // Create a new PDF path
@@ -989,6 +989,761 @@ export enum PdfFormFieldsTabOrder {
     widget
 }
 /**
+ * Public enum to define the PDF document permission flags.
+ * ```typescript
+ * // Load an existing PDF document
+ * let document: PdfDocument = new PdfDocument(data, password);
+ * // Get the permission flag
+ * let permission: PdfPermissionFlag = document.permissions;
+ * // Destroy the document
+ * document.destroy();
+ * ```
+ */
+export enum PdfPermissionFlag {
+    /**
+     * Specifies the default permission flag.
+     */
+    default = 0,
+    /**
+     * Specifies the print permission flag.
+     */
+    print = 4,
+    /**
+     * Specifies the edit content permission flag.
+     */
+    editContent = 8,
+    /**
+     * Specifies the copy content permission flag.
+     */
+    copyContent = 16,
+    /**
+     * Specifies the edit annotations permission flag.
+     */
+    editAnnotations = 32,
+    /**
+     * Specifies the fill fields permission flag.
+     */
+    fillFields = 256,
+    /**
+     * Specifies the accessibility copy content permission flag.
+     */
+    accessibilityCopyContent = 512,
+    /**
+     * Specifies the assemble document permission flag.
+     */
+    assembleDocument = 1024,
+    /**
+     * Specifies the full quality print permission flag.
+     */
+    fullQualityPrint = 2048
+}
+/**
+ * Public enum to define the PDF page orientation.
+ * ```typescript
+ * // Load an existing PDF document
+ * let document: PdfDocument = new PdfDocument(data, password);
+ * // Access first page
+ * let page: PdfPage = document.getPage(0);
+ * // Get the page orientation
+ * let orientation: PdfPageOrientation = page.orientation;
+ * // Destroy the document
+ * document.destroy();
+ * ```
+ */
+export enum PdfPageOrientation {
+    /**
+     * Specifies the type of `portrait`.
+     */
+    portrait,
+    /**
+     * Specifies the type of `landscape`.
+     */
+    landscape
+}
+/**
+ * Public enum to define the text direction.
+ * ```typescript
+ * // Load an existing PDF document
+ * let document: PdfDocument = new PdfDocument(data, password);
+ * // Load the font file
+ * let font: PdfTrueTypeFont = new PdfTrueTypeFont(read('./resources/Fonts/', 'Arial.ttf'), 10);
+ * // Add a string format
+ * let format: PdfStringFormat = new PdfStringFormat();
+ * format.alignment = PdfTextAlignment.right;
+ * format.textDirection = PdfTextDirection.rightToLeft;
+ * // Draw a text with right to left direction
+ * page.graphics.drawString('Hello World مرحبا بالعالم', font, {x: 10, y: 20, width: 300, height: 200}, new PdfBrush({r: 0, g: 0, b: 255}), format);
+ * // Save the document
+ * document.save('output.pdf');
+ * // Destroy the document
+ * document.destroy();
+ * ```
+ */
+export enum PdfTextDirection {
+    /**
+     * Specifies the type of `none`.
+     */
+    none,
+    /**
+     * Specifies the type of `leftToRight`.
+     */
+    leftToRight,
+    /**
+     * Specifies the type of `rightToLeft`.
+     */
+    rightToLeft
+}
+/**
+ * Public enum to define the subscript or superscript mode.
+ * ```typescript
+ * // Load an existing PDF document
+ * let document: PdfDocument = new PdfDocument(data, password);
+ * // Gets the first page
+ * let page: PdfPage = document.getPage(0) as PdfPage;
+ * // Create a new PDF standard font
+ * let font: PdfStandardFont = document.embedFont(PdfFontFamily.helvetica, 10, PdfFontStyle.regular);
+ * // Create a new PDF string format
+ * let format: PdfStringFormat = new PdfStringFormat(PdfTextAlignment.right);
+ * // Set a new paragraph indent
+ * format.paragraphIndent = 20;
+ * // Set the subscript or superscript mode
+ * format.subSuperScript = PdfSubSuperScript.subScript;
+ * // Draw the text
+ * page.graphics.drawString('Helvetica', font, {x: 0, y: 180, width: page.size.width, height: 40}, new PdfBrush({r: 0, g: 0, b: 255}), format);
+ * // Save the document
+ * document.save('output.pdf');
+ * // Destroy the document
+ * document.destroy();
+ * ```
+ */
+export enum PdfSubSuperScript {
+    /**
+     * Specifies the type of `none`.
+     */
+    none = 0,
+    /**
+     * Specifies the type of `superScript`.
+     */
+    superScript = 1,
+    /**
+     * Specifies the type of `subScript`.
+     */
+    subScript = 2
+}
+/**
+ * Public enum to define blend mode of the PDF page.
+ * ```typescript
+ * // Load an existing PDF document
+ * let document: PdfDocument = new PdfDocument(data, password);
+ * // Access first page
+ * let page: PdfPage = document.getPage(0);
+ * // Gets the graphics of the PDF page
+ * let graphics: PdfGraphics = page.graphics;
+ * // Create a new font
+ * let font: PdfStandardFont = document.embedFont(PdfFontFamily.symbol, 10, PdfFontStyle.regular);
+ * // Set the blend mode
+ * graphics.setTransparency(0.5, 0.5, PdfBlendMode.hardLight);
+ * // Draw the text
+ * graphics.drawString('Hello World', font, {x: 10, y: 10, width: 100, height: 40}, new PdfBrush({r: 255, g: 0, b: 0}));
+ * // Save the document
+ * document.save('output.pdf');
+ * // Destroy the document
+ * document.destroy();
+ * ```
+ */
+export enum PdfBlendMode {
+    /**
+     * Specifies the type of `normal`.
+     */
+    normal,
+    /**
+     * Specifies the type of `multiply`.
+     */
+    multiply,
+    /**
+     * Specifies the type of `screen`.
+     */
+    screen,
+    /**
+     * Specifies the type of `overlay`.
+     */
+    overlay,
+    /**
+     * Specifies the type of `darken`.
+     */
+    darken,
+    /**
+     * Specifies the type of `lighten`.
+     */
+    lighten,
+    /**
+     * Specifies the type of `colorDodge`.
+     */
+    colorDodge,
+    /**
+     * Specifies the type of `colorBurn`.
+     */
+    colorBurn,
+    /**
+     * Specifies the type of `hardLight`.
+     */
+    hardLight,
+    /**
+     * Specifies the type of `softLight`.
+     */
+    softLight,
+    /**
+     * Specifies the type of `difference`.
+     */
+    difference,
+    /**
+     * Specifies the type of `exclusion`.
+     */
+    exclusion,
+    /**
+     * Specifies the type of `hue`.
+     */
+    hue,
+    /**
+     * Specifies the type of `saturation`.
+     */
+    saturation,
+    /**
+     * Specifies the type of `color`.
+     */
+    color,
+    /**
+     * Specifies the type of `luminosity`.
+     */
+    luminosity
+}
+/**
+ * Public enum to define fill mode of the PDF page.
+ * ```typescript
+ * // Load an existing PDF document
+ * let document: PdfDocument = new PdfDocument(data, password);
+ * // Access first page
+ * let page: PdfPage = document.getPage(0);
+ * // Gets the graphics of the PDF page
+ * let graphics: PdfGraphics = page.graphics;
+ * // Create a new font
+ * let font: PdfStandardFont = document.embedFont(PdfFontFamily.symbol, 10, PdfFontStyle.regular);
+ * // Set the fill mode
+ * graphics.setClip({x: 0, y: 0, width: 100, height: 100}, PdfFillMode.winding);
+ * // Draw the text
+ * graphics.drawString('Hello World', font, {x: 10, y: 10, width: 100, height: 40}, new PdfBrush({r: 255, g: 0, b: 0}));
+ * // Save the document
+ * document.save('output.pdf');
+ * // Destroy the document
+ * document.destroy();
+ * ```
+ */
+export enum PdfFillMode {
+    /**
+     * Specifies the type of `winding`.
+     */
+    winding,
+    /**
+     * Specifies the type of `alternate`.
+     */
+    alternate
+}
+/**
+ * Public enum to define the dash style.
+ * ```typescript
+ * // Load an existing PDF document
+ * let document: PdfDocument = new PdfDocument(data, password);
+ * // Access first page
+ * let page: PdfPage = document.getPage(0);
+ * // Gets the graphics of the PDF page
+ * let graphics: PdfGraphics = page.graphics;
+ * // Create a new pen
+ * let pen: PdfPen = new PdfPen({r: 0, g: 0, b: 0}, 1);
+ * // Set the dash style
+ * pen._dashStyle = PdfDashStyle.dashDot;
+ * // Draw a rectangle using pen
+ * graphics.drawRectangle({x: 150, y: 50, width: 50, height: 50}, pen);
+ * // Save the document
+ * document.save('output.pdf');
+ * // Destroy the document
+ * document.destroy();
+ * ```
+ */
+export enum PdfDashStyle {
+    /**
+     * Specifies the type of `solid`.
+     */
+    solid = 0,
+    /**
+     * Specifies the type of `dash`.
+     */
+    dash = 1,
+    /**
+     * Specifies the type of `dot`.
+     */
+    dot = 2,
+    /**
+     * Specifies the type of `dashDot`.
+     */
+    dashDot = 3,
+    /**
+     * Specifies the type of `dashDotDot`.
+     */
+    dashDotDot = 4,
+    /**
+     * Specifies the type of `custom`.
+     */
+    custom = 5
+}
+/**
+ * Public enum to define the line cap.
+ * ```typescript
+ * // Load an existing PDF document
+ * let document: PdfDocument = new PdfDocument(data, password);
+ * // Access first page
+ * let page: PdfPage = document.getPage(0);
+ * // Gets the graphics of the PDF page
+ * let graphics: PdfGraphics = page.graphics;
+ * // Create a new pen
+ * let pen: PdfPen = new PdfPen({r: 0, g: 0, b: 0}, 1);
+ * // Set the dash style
+ * pen._dashStyle = PdfDashStyle.dashDot;
+ * // Set the line cap
+ * pen._lineCap = PdfLineCap.round;
+ * // Draw a rectangle using pen
+ * graphics.drawRectangle({x: 150, y: 50, width: 50, height: 50}, pen);
+ * // Save the document
+ * document.save('output.pdf');
+ * // Destroy the document
+ * document.destroy();
+ * ```
+ */
+export enum PdfLineCap {
+    /**
+     * Specifies the type of `flat`.
+     */
+    flat = 0,
+    /**
+     * Specifies the type of `round`.
+     */
+    round = 1,
+    /**
+     * Specifies the type of `square`.
+     */
+    square = 2
+}
+/**
+ * Public enum to define the line join.
+ * ```typescript
+ * // Load an existing PDF document
+ * let document: PdfDocument = new PdfDocument(data, password);
+ * // Access first page
+ * let page: PdfPage = document.getPage(0);
+ * // Gets the graphics of the PDF page
+ * let graphics: PdfGraphics = page.graphics;
+ * // Create a new pen
+ * let pen: PdfPen = new PdfPen({r: 0, g: 0, b: 0}, 1);
+ * // Set the dash style
+ * pen._dashStyle = PdfDashStyle.dashDot;
+ * // Set the line join
+ * pen._lineJoin = PdfLineJoin.bevel;
+ * // Draw a rectangle using pen
+ * graphics.drawRectangle({x: 150, y: 50, width: 50, height: 50}, pen);
+ * // Save the document
+ * document.save('output.pdf');
+ * // Destroy the document
+ * document.destroy();
+ * ```
+ */
+export enum PdfLineJoin {
+    /**
+     * Specifies the type of `miter`.
+     */
+    miter = 0,
+    /**
+     * Specifies the type of `round`.
+     */
+    round = 1,
+    /**
+     * Specifies the type of `bevel`.
+     */
+    bevel = 2
+}
+/**
+ * Public enum to define text style.
+ * ```typescript
+ * // Load an existing PDF document
+ * let document: PdfDocument = new PdfDocument(data);
+ * // Get the bookmarks
+ * let bookmarks: PdfBookmarkBase = document.bookmarks;
+ * // Gets bookmark at the specified index
+ * let bookmark : PdfBookMark = bookmarks.at(0) as PdfBookMark;
+ * // Gets the textStyle
+ * let textStyle: PdfTextStyle = bookmark.textStyle;
+ * // Destroy the document
+ * document.destroy();
+ * ```
+ */
+export enum PdfTextStyle {
+    /**
+     * Specifies the `regular` text style.
+     */
+    regular = 0,
+    /**
+     * Specifies the `italic` text style.
+     */
+    italic = 1,
+    /**
+     * Specifies the `bold` text style.
+     */
+    bold = 2
+}
+/**
+ * Public enum type to represent the ordered list style
+ * ````typescript
+ * // Load an existing document
+ * let document: PdfDocument = new PdfDocument(data);
+ * // Access the first page
+ * let page: PdfPage = document.getPage(0);
+ * // Add each item to the item collection by passing the string array
+ * let items: PdfListitemCollection = new PdfListitemCollection(['Excel', 'Power', 'Point', 'Word', 'PDF']);
+ * // Create a new ordered list and passing the list item collection
+ * let list: PdfOrderedList = new PdfOrderedList(items);
+ * // Set the ordered list number style for the list items
+ * list.style = PdfNumberStyle.lowerLatin;
+ * // Draw the ordered list
+ * list.draw(page, {x: 0, y: 20, width: 500, height: 700});
+ * // Save the document
+ * document.save('output.pdf');
+ * // Destroy the document
+ * document.destroy();
+ * ```
+ */
+export  enum PdfNumberStyle {
+    /**
+     * No numbering at all.
+     */
+    none = 0,
+    /**
+     * Specifies the type '1'.
+     */
+    numeric,
+    /**
+     * Specifies the style 'a'.
+     */
+    lowerLatin,
+    /**
+     * Specifies the style 'i'.
+     */
+    lowerRoman,
+    /**
+     * Specifies the style 'A'.
+     */
+    upperLatin,
+    /**
+     * Specifies the style 'I'.
+     */
+    upperRoman
+}
+/**
+ * Public enum to define the style used for unordered list.
+ * ```typescript
+ * // Load an existing document
+ * let document: PdfDocument = new PdfDocument(data);
+ * // Access the first page
+ * let page: PdfPage = document.getPage(0);
+ * // Add each item to the collection by passing the string array
+ * let items: PdfListitemCollection = new PdfListitemCollection(['Excel', 'Power', 'Point', 'Word', 'PDF']);
+ * // Create a unordered list and pass the list item collection
+ * let list: PdfUnorderedList = new PdfUnorderedList(items);
+ * // Set the unordered list style for the list items
+ * list.style = PdfUnorderedListStyle.circle;
+ * // Draw the unordered list associated with items
+ * list.draw(page, {x: 0, y: 20, width: 500, height: 700});
+ * // Save the document
+ * document.save('output.pdf');
+ * // Destroy the document
+ * document.destroy();
+ * ```
+ */
+export enum PdfUnorderedListStyle {
+    /**
+     * No bulleting at all.
+     */
+    none = 0,
+    /**
+     * Specifies disk style.
+     */
+    disk = 1,
+    /**
+     * Specifies square style.
+     */
+    square = 2,
+    /**
+     * Specifies asterisk style.
+     */
+    asterisk = 3,
+    /**
+     * Specifies circle style.
+     */
+    circle = 4
+}
+/**
+ * Public enum to define a layout type for drawing
+ * ```typescript
+ * // Load an existing document
+ * let document: PdfDocument = new PdfDocument(data);
+ * // Access the first page
+ * let page: PdfPage = document.getPage(0);
+ * // Assign the array of string for items
+ * let products: string[] = ['Excel', 'Power', 'Point', 'Word', 'PDF'];
+ * // Add the items to the list item collection by passing the array
+ * let items: PdfListItemCollection = new PdfListItemCollection(products);
+ * // Create a new ordered list
+ * let list: PdfOrderedList = new PdfOrderedList(items);
+ * // Create a layout format for drawing
+ * let pageLayout: PdfLayoutFormat = new PdfLayoutFormat();
+ * // Initialize layout type for drawing
+ * pageLayout.layout = PdfLayoutType.paginate;
+ * // Draw the list on the page along with the specified layout
+ * list.draw(page, {x: 0, y: 20, width: 500, height: 700}, pageLayout);
+ * // Get the layout type used to draw the list
+ * let layoutType: PdfLayoutType = pageLayout.layout;
+ * // Save the document
+ * document.save('output.pdf');
+ * // Destroy the document
+ * document.destroy();
+ * ````
+ */
+export enum PdfLayoutType {
+    /**
+     * Specifies pagination across multiple pages based on the specified dimensions and layout options
+     */
+    paginate,
+    /**
+     * Specifies content to be laid out to fit within a single page, without pagination
+     */
+    onePage
+}
+/**
+ * Public enum to define a layout Break type for drawing
+ * ```typescript
+ * // Load an existing document
+ * let document: PdfDocument = new PdfDocument(data);
+ * // Access the first page
+ * let page: PdfPage = document.getPage(0);
+ * // Assign the array of string for items
+ * let products: string[] = ['Excel', 'Power', 'Point', 'Word', 'PDF'];
+ * // Add the item to list item collection by passing the string array
+ * let items: PdfListItemCollection = new PdfListItemCollection(products);
+ * // Create a new ordered list
+ * let list: PdfOrderedList = new PdfOrderedList(items);
+ * // Create a layout for drawing
+ * let pageLayout: PdfLayoutFormat = new PdfLayoutFormat();
+ * // Sets the layout break type for drawing
+ * pageLayout.break = PdfLayoutBreakType.fitPage;
+ * // Draw the list associated with items along with layout
+ * list.draw(page, {x: 0, y: 20, width: 500, height: 700}, pageLayout);
+ * // Save the document
+ * document.save('output.pdf');
+ * // Destroy the document
+ * document.destroy();
+ * ````
+ */
+export enum PdfLayoutBreakType {
+    /**
+     * Specifies that content should break to a new page to fit within specified dimensions.
+     */
+    fitPage,
+    /**
+     * Specifies that content should break to a new page or element to fit within specified dimensions.
+     */
+    fitElement
+}
+/**
+ * Public enum to define a list marker alignment
+ * ````typescript
+ * // Load an existing document
+ * let document: PdfDocument = new PdfDocument(data);
+ * // Access the first page
+ * let page: PdfPage = document.getPage(0);
+ * // Add each item to the item collection by passing the string array
+ * let items: PdfListitemCollection = new PdfListitemCollection(['Excel', 'Power', 'Point', 'Word', 'PDF']);
+ * // Create a new ordered list and passing the list item collection
+ * let list: PdfOrderedList = new PdfOrderedList(items);
+ * // Set the marker alignment
+ * list.alignment = PdfListMarkerAlignment.left;
+ * // Draw the ordered list
+ * list.draw(page, {x: 0, y: 20, width: 500, height: 700});
+ * // Save the document
+ * document.save('output.pdf');
+ * // Destroy the document
+ * document.destroy();
+ * ```
+ */
+export enum PdfListMarkerAlignment {
+    /**
+     * Left alignment for marker.
+     */
+    left,
+    /**
+     * Right alignment for marker.
+     */
+    right
+}
+/**
+ * Public enum to define a print state of layer
+ * ```typescript
+ * // Load an existing PDF document
+ * let document: PdfDocument = new PdfDocument(data);
+ * // Access the collection of layers in the document
+ * let layers: PdfLayerCollection = document.layers;
+ * // Retrieve the first layer from the layers collection
+ * let layer: PdfLayer = layers.at(0);
+ * // Retrieve the print state of the layer
+ * let printState: PdfPrintState = layer.printState;
+ * // Save the document
+ * document.save('output.pdf');
+ * // Destroy the document
+ * document.destroy();
+ * ````
+ */
+export enum PdfPrintState {
+    /**
+     * The PDF layers always get print
+     */
+    alwaysPrint,
+    /**
+     * The PDF layers never get print
+     */
+    neverPrint,
+    /**
+     * The visible PDF layers get print
+     */
+    printWhenVisible
+}
+/**
+ * Public enum specifies the message digest algorithm.
+ * ```typescript
+ * // Load the document
+ * let document: PdfDocument = new PdfDocument(data);
+ * // Gets the first page of the document
+ * let page: PdfPage = document.getPage(0);
+ * // Access the PDF form
+ * let form: PdfForm = document.form;
+ * // Create a new signature field
+ * let field: PdfSignatureField = new PdfSignatureField(page, 'Signature', {x: 10, y: 10, width: 100, height: 50});
+ * // Create a new PDF signature using PFX certificate data and specify SHA-256 as the digest algorithm
+ * const sign: PdfSignature = PdfSignature.create({ digestAlgorithm: DigestAlgorithm.sha256 }, certData, password);
+ * // Sets the signature to the field
+ * field.setSignature(sign);
+ * // Save the document
+ * document.save('output.pdf');
+ * // Destroy the document
+ * document.destroy();
+ * ```
+ */
+export enum DigestAlgorithm {
+    /**
+     * Specifies SHA1 message digest algorithm
+     */
+    sha1,
+    /**
+     * Specifies SHA256 message digest algorithm
+     */
+    sha256,
+    /**
+     * Specifies SHA384 message digest algorithm
+     */
+    sha384,
+    /**
+     * Specifies SHA512 message digest algorithm
+     */
+    sha512,
+    /**
+     * Specifies RIPEMD160 message digest algorithm
+     */
+    ripemd160
+}
+/**
+ * Public enum specifies the cryptographic standard.
+ * ```typescript
+ * //Load the document
+ * let document: PdfDocument = new PdfDocument(data);
+ * // Gets the first page of the document
+ * let page: PdfPage = document.getPage(0);
+ * // Access the PDF form
+ * let form: PdfForm = document.form;
+ * // Create a new signature field
+ * let field: PdfSignatureField = new PdfSignatureField(page, 'Signature', {x: 10, y: 10, width: 100, height: 50});
+ * // Create a new signature using PFX data and specify cms as the cryptographicStandard
+ * const sign: PdfSignature = PdfSignature.create({ cryptographicStandard: CryptographicStandard.cms }, certData, password);
+ * // Sets the signature to the field
+ * field.setSignature(sign);
+ * // Save the document
+ * document.save('output.pdf');
+ * // Destroy the document
+ * document.destroy();
+ * ```
+ */
+export enum CryptographicStandard {
+    /**
+     * Specifies Cryptographic Message Syntax
+     */
+    cms,
+    /**
+     * Specifies CMS Advanced Electronic Signatures
+     */
+    cades,
+}
+/**
+ * Specifies the certification flags.
+ * ```typescript
+ * //Load the document
+ * let document: PdfDocument = new PdfDocument(data);
+ * // Gets the first page of the document
+ * let page: PdfPage = document.getPage(0);
+ * // Access the PDF form
+ * let form: PdfForm = document.form;
+ * // Create a new signature field
+ * let field: PdfSignatureField = new PdfSignatureField(page, 'Signature', {x: 10, y: 10, width: 100, height: 50});
+ * // Create a new signature using PFX data and specify forbidchanges as the certification flags
+ * const sign: PdfSignature = PdfSignature.create({ documentPermissions: PdfCertificationFlags.forbidChanges }, certData, password);
+ * // Sets the signature to the field
+ * field.setSignature(sign);
+ * // Save the document
+ * document.save('output.pdf');
+ * // Destroy the document
+ * document.destroy();
+ * ```
+ */
+export enum PdfCertificationFlags {
+    /**
+     * Restrict any changes to the document.
+     */
+    forbidChanges = 1,
+    /**
+     * Only allow form fill-in actions on this document.
+     */
+    allowFormFill = 2,
+    /**
+     * Only allow commenting and form fill-in actions on this document.
+     */
+    allowComments = 3
+}
+export enum _PdfX509RevocationMode {
+    noCheck,
+    online,
+    offline
+}
+export enum _RevocationType {
+    ocsp,
+    crl,
+    ocspAndCrl,
+    ocspOrCrl
+}
+
+/**
  * Enum for PDF loaded annotation type.
  */
 export enum _PdfAnnotationType {
@@ -1199,387 +1954,6 @@ export enum _PdfCheckFieldState {
     pressedUnchecked,
     pressedChecked
 }
-/**
- * Public enum to define the PDF document permission flags.
- * ```typescript
- * // Load an existing PDF document
- * let document: PdfDocument = new PdfDocument(data, password);
- * // Get the permission flag
- * let permission: PdfPermissionFlag = document.permissions;
- * // Destroy the document
- * document.destroy();
- * ```
- */
-export enum PdfPermissionFlag {
-    /**
-     * Specifies the default permission flag.
-     */
-    default = 0,
-    /**
-     * Specifies the print permission flag.
-     */
-    print = 4,
-    /**
-     * Specifies the edit content permission flag.
-     */
-    editContent = 8,
-    /**
-     * Specifies the copy content permission flag.
-     */
-    copyContent = 16,
-    /**
-     * Specifies the edit annotations permission flag.
-     */
-    editAnnotations = 32,
-    /**
-     * Specifies the fill fields permission flag.
-     */
-    fillFields = 256,
-    /**
-     * Specifies the accessibility copy content permission flag.
-     */
-    accessibilityCopyContent = 512,
-    /**
-     * Specifies the assemble document permission flag.
-     */
-    assembleDocument = 1024,
-    /**
-     * Specifies the full quality print permission flag.
-     */
-    fullQualityPrint = 2048
-}
-/**
- * Public enum to define the PDF page orientation.
- * ```typescript
- * // Load an existing PDF document
- * let document: PdfDocument = new PdfDocument(data, password);
- * // Access first page
- * let page: PdfPage = document.getPage(0);
- * // Get the page orientation
- * let orientation: PdfPageOrientation = page.orientation;
- * // Destroy the document
- * document.destroy();
- * ```
- */
-export enum PdfPageOrientation {
-    /**
-     * Specifies the type of `portrait`.
-     */
-    portrait,
-    /**
-     * Specifies the type of `landscape`.
-     */
-    landscape
-}
-/**
- * Public enum to define the text direction.
- * ```typescript
- * // Load an existing PDF document
- * let document: PdfDocument = new PdfDocument(data, password);
- * // Load the font file
- * let font: PdfTrueTypeFont = new PdfTrueTypeFont(read('./resources/Fonts/', 'Arial.ttf'), 10);
- * // Add a string format
- * let format: PdfStringFormat = new PdfStringFormat();
- * format.alignment = PdfTextAlignment.right;
- * format.textDirection = PdfTextDirection.rightToLeft;
- * // Draw a text with right to left direction
- * page.graphics.drawString('Hello World مرحبا بالعالم', font, [10, 20, 300, 200], undefined, new PdfBrush([0, 0, 255]), format);
- * // Save the document
- * document.save('output.pdf');
- * // Destroy the document
- * document.destroy();
- * ```
- */
-export enum PdfTextDirection {
-    /**
-     * Specifies the type of `none`.
-     */
-    none,
-    /**
-     * Specifies the type of `leftToRight`.
-     */
-    leftToRight,
-    /**
-     * Specifies the type of `rightToLeft`.
-     */
-    rightToLeft
-}
-/**
- * Public enum to define the subscript or superscript mode.
- * ```typescript
- * // Load an existing PDF document
- * let document: PdfDocument = new PdfDocument(data, password);
- * // Gets the first page
- * let page: PdfPage = document.getPage(0) as PdfPage;
- * // Create a new PDF standard font
- * let font: PdfStandardFont = new PdfStandardFont(PdfFontFamily.Helvetica, 10);
- * // Create a new PDF string format
- * let format: PdfStringFormat = new PdfStringFormat(PdfTextAlignment.right);
- * // Set a new paragraph indent
- * format.paragraphIndent = 20;
- * // Set the subscript or superscript mode
- * format.subSuperScript = PdfSubSuperScript.subScript;
- * // Draw the text
- * page.graphics.drawString('Helvetica', font, [0, 180, page.size[0], 40], undefined, new PdfBrush([0, 0, 255]), format);
- * // Save the document
- * document.save('output.pdf');
- * // Destroy the document
- * document.destroy();
- * ```
- */
-export enum PdfSubSuperScript {
-    /**
-     * Specifies the type of `none`.
-     */
-    none = 0,
-    /**
-     * Specifies the type of `superScript`.
-     */
-    superScript = 1,
-    /**
-     * Specifies the type of `subScript`.
-     */
-    subScript = 2
-}
-/**
- * Public enum to define blend mode of the PDF page.
- * ```typescript
- * // Load an existing PDF document
- * let document: PdfDocument = new PdfDocument(data, password);
- * // Access first page
- * let page: PdfPage = document.getPage(0);
- * // Gets the graphics of the PDF page
- * let graphics: PdfGraphics = page.graphics;
- * // Create a new font
- * let font: PdfStandardFont = new PdfStandardFont(PdfFontFamily.symbol, 10);
- * // Set the blend mode
- * graphics.setTransparency(0.5, 0.5, PdfBlendMode.hardLight);
- * // Draw the text
- * graphics.drawString('Hello World', font, null, new PointF(10, 10));
- * // Save the document
- * document.save('output.pdf');
- * // Destroy the document
- * document.destroy();
- * ```
- */
-export enum PdfBlendMode {
-    /**
-     * Specifies the type of `normal`.
-     */
-    normal,
-    /**
-     * Specifies the type of `multiply`.
-     */
-    multiply,
-    /**
-     * Specifies the type of `screen`.
-     */
-    screen,
-    /**
-     * Specifies the type of `overlay`.
-     */
-    overlay,
-    /**
-     * Specifies the type of `darken`.
-     */
-    darken,
-    /**
-     * Specifies the type of `lighten`.
-     */
-    lighten,
-    /**
-     * Specifies the type of `colorDodge`.
-     */
-    colorDodge,
-    /**
-     * Specifies the type of `colorBurn`.
-     */
-    colorBurn,
-    /**
-     * Specifies the type of `hardLight`.
-     */
-    hardLight,
-    /**
-     * Specifies the type of `softLight`.
-     */
-    softLight,
-    /**
-     * Specifies the type of `difference`.
-     */
-    difference,
-    /**
-     * Specifies the type of `exclusion`.
-     */
-    exclusion,
-    /**
-     * Specifies the type of `hue`.
-     */
-    hue,
-    /**
-     * Specifies the type of `saturation`.
-     */
-    saturation,
-    /**
-     * Specifies the type of `color`.
-     */
-    color,
-    /**
-     * Specifies the type of `luminosity`.
-     */
-    luminosity
-}
-/**
- * Public enum to define fill mode of the PDF page.
- * ```typescript
- * // Load an existing PDF document
- * let document: PdfDocument = new PdfDocument(data, password);
- * // Access first page
- * let page: PdfPage = document.getPage(0);
- * // Gets the graphics of the PDF page
- * let graphics: PdfGraphics = page.graphics;
- * // Create a new font
- * let font: PdfStandardFont = new PdfStandardFont(PdfFontFamily.symbol, 10);
- * // Set the fill mode
- * graphics.setClip([0, 0, 100, 100], PdfFillMode.winding);
- * // Draw the text
- * graphics.drawString('Hello World', font, null, new PointF(10, 10));
- * // Save the document
- * document.save('output.pdf');
- * // Destroy the document
- * document.destroy();
- * ```
- */
-export enum PdfFillMode {
-    /**
-     * Specifies the type of `winding`.
-     */
-    winding,
-    /**
-     * Specifies the type of `alternate`.
-     */
-    alternate
-}
-/**
- * Public enum to define the dash style.
- * ```typescript
- * // Load an existing PDF document
- * let document: PdfDocument = new PdfDocument(data, password);
- * // Access first page
- * let page: PdfPage = document.getPage(0);
- * // Gets the graphics of the PDF page
- * let graphics: PdfGraphics = page.graphics;
- * // Create a new pen
- * let pen: PdfPen = new PdfPen([0, 0, 0], 1);
- * // Set the dash style
- * pen._dashStyle = PdfDashStyle.dashDot;
- * // Draw a rectangle using pen
- * graphics.drawRectangle(150, 50, 50, 50, pen);
- * // Save the document
- * document.save('output.pdf');
- * // Destroy the document
- * document.destroy();
- * ```
- */
-export enum PdfDashStyle {
-    /**
-     * Specifies the type of `solid`.
-     */
-    solid = 0,
-    /**
-     * Specifies the type of `dash`.
-     */
-    dash = 1,
-    /**
-     * Specifies the type of `dot`.
-     */
-    dot = 2,
-    /**
-     * Specifies the type of `dashDot`.
-     */
-    dashDot = 3,
-    /**
-     * Specifies the type of `dashDotDot`.
-     */
-    dashDotDot = 4,
-    /**
-     * Specifies the type of `custom`.
-     */
-    custom = 5
-}
-/**
- * Public enum to define the line cap.
- * ```typescript
- * // Load an existing PDF document
- * let document: PdfDocument = new PdfDocument(data, password);
- * // Access first page
- * let page: PdfPage = document.getPage(0);
- * // Gets the graphics of the PDF page
- * let graphics: PdfGraphics = page.graphics;
- * // Create a new pen
- * let pen: PdfPen = new PdfPen([0, 0, 0], 1);
- * // Set the dash style
- * pen._dashStyle = PdfDashStyle.dashDot;
- * // Set the line cap
- * pen._lineCap = PdfLineCap.round;
- * // Draw a rectangle using pen
- * graphics.drawRectangle(150, 50, 50, 50, pen);
- * // Save the document
- * document.save('output.pdf');
- * // Destroy the document
- * document.destroy();
- * ```
- */
-export enum PdfLineCap {
-    /**
-     * Specifies the type of `flat`.
-     */
-    flat = 0,
-    /**
-     * Specifies the type of `round`.
-     */
-    round = 1,
-    /**
-     * Specifies the type of `square`.
-     */
-    square = 2
-}
-/**
- * Public enum to define the line join.
- * ```typescript
- * // Load an existing PDF document
- * let document: PdfDocument = new PdfDocument(data, password);
- * // Access first page
- * let page: PdfPage = document.getPage(0);
- * // Gets the graphics of the PDF page
- * let graphics: PdfGraphics = page.graphics;
- * // Create a new pen
- * let pen: PdfPen = new PdfPen([0, 0, 0], 1);
- * // Set the dash style
- * pen._dashStyle = PdfDashStyle.dashDot;
- * // Set the line join
- * pen._lineJoin = PdfLineJoin.bevel;
- * // Draw a rectangle using pen
- * graphics.drawRectangle(150, 50, 50, 50, pen);
- * // Save the document
- * document.save('output.pdf');
- * // Destroy the document
- * document.destroy();
- * ```
- */
-export enum PdfLineJoin {
-    /**
-     * Specifies the type of `miter`.
-     */
-    miter = 0,
-    /**
-     * Specifies the type of `round`.
-     */
-    round = 1,
-    /**
-     * Specifies the type of `bevel`.
-     */
-    bevel = 2
-}
 export enum _PdfWordWrapType {
     /**
      * Specifies the type of `none`.
@@ -1694,262 +2068,9 @@ export enum _TokenType{
     endArray,
     eof
 }
-/**
- * Public enum to define text style.
- * ```typescript
- * // Load an existing PDF document
- * let document: PdfDocument = new PdfDocument(data);
- * // Get the bookmarks
- * let bookmarks: PdfBookmarkBase = document.bookmarks;
- * // Gets bookmark at the specified index
- * let bookmark : PdfBookMark = bookmarks.at(0) as PdfBookMark;
- * // Gets the textStyle
- * let textStyle: PdfTextStyle = bookmark.textStyle;
- * // Destroy the document
- * document.destroy();
- * ```
- */
-export enum PdfTextStyle {
-    /**
-     * Specifies the `regular` text style.
-     */
-    regular = 0,
-    /**
-     * Specifies the `italic` text style.
-     */
-    italic = 1,
-    /**
-     * Specifies the `bold` text style.
-     */
-    bold = 2
-}
 export enum _PdfColorSpace {
     rgb,
     cmyk,
     grayScale,
     indexed
-}
-/**
- * Public enum type to represent the ordered list style
- * ````typescript
- * // Load an existing document
- * let document: PdfDocument = new PdfDocument(data);
- * // Access the first page
- * let page: PdfPage = document.getPage(0);
- * // Add each item to the item collection by passing the string array
- * let items: PdfListitemCollection = new PdfListitemCollection(['Excel', 'Power', 'Point', 'Word', 'PDF']);
- * // Create a new ordered list and passing the list item collection
- * let list: PdfOrderedList = new PdfOrderedList(items);
- * // Set the ordered list number style for the list items
- * list.style = PdfNumberStyle.lowerLatin;
- * // Draw the ordered list
- * list.draw(page, 0, 20, 500, 700);
- * // Save the document
- * document.save('output.pdf');
- * // Destroy the document
- * document.destroy();
- * ```
- */
-export  enum PdfNumberStyle {
-    /**
-     * No numbering at all.
-     */
-    none = 0,
-    /**
-     * Specifies the type '1'.
-     */
-    numeric,
-    /**
-     * Specifies the style 'a'.
-     */
-    lowerLatin,
-    /**
-     * Specifies the style 'i'.
-     */
-    lowerRoman,
-    /**
-     * Specifies the style 'A'.
-     */
-    upperLatin,
-    /**
-     * Specifies the style 'I'.
-     */
-    upperRoman
-}
-/**
- * Public enum to define the style used for unordered list.
- * ```typescript
- * // Load an existing document
- * let document: PdfDocument = new PdfDocument(data);
- * // Access the first page
- * let page: PdfPage = document.getPage(0);
- * // Add each item to the collection by passing the string array
- * let items: PdfListitemCollection = new PdfListitemCollection(['Excel', 'Power', 'Point', 'Word', 'PDF']);
- * // Create a unordered list and pass the list item collection
- * let list: PdfUnorderedList = new PdfUnorderedList(items);
- * // Set the unordered list style for the list items
- * list.style = PdfUnorderedListStyle.circle;
- * // Draw the unordered list associated with items
- * list.draw(page, 0, 20, 500, 700);
- * // Save the document
- * document.save('output.pdf');
- * // Destroy the document
- * document.destroy();
- * ```
- */
-export enum PdfUnorderedListStyle {
-    /**
-     * No bulleting at all.
-     */
-    none = 0,
-    /**
-     * Specifies disk style.
-     */
-    disk = 1,
-    /**
-     * Specifies square style.
-     */
-    square = 2,
-    /**
-     * Specifies asterisk style.
-     */
-    asterisk = 3,
-    /**
-     * Specifies circle style.
-     */
-    circle = 4
-}
-/**
- * Public enum to define a layout type for drawing
- * ```typescript
- * // Load an existing document
- * let document: PdfDocument = new PdfDocument(data);
- * // Access the first page
- * let page: PdfPage = document.getPage(0);
- * // Assign the array of string for items
- * let products: string[] = ['Excel', 'Power', 'Point', 'Word', 'PDF'];
- * // Add the items to the list item collection by passing the array
- * let items: PdfListItemCollection = new PdfListItemCollection(products);
- * // Create a new ordered list
- * let list: PdfOrderedList = new PdfOrderedList(items);
- * // Create a layout format for drawing
- * let pageLayout: PdfLayoutFormat = new PdfLayoutFormat();
- * // Initialize layout type for drawing
- * pageLayout.layout = PdfLayoutType.paginate;
- * // Draw the list on the page along with the specified layout
- * list.draw(page, 0, 20, 500, 700, pageLayout);
- * // Get the layout type used to draw the list
- * let layoutType: PdfLayoutType = pageLayout.layout;
- * // Save the document
- * document.save('output.pdf');
- * // Destroy the document
- * document.destroy();
- * ````
- */
-export enum PdfLayoutType {
-    /**
-     * Specifies pagination across multiple pages based on the specified dimensions and layout options
-     */
-    paginate,
-    /**
-     * Specifies content to be laid out to fit within a single page, without pagination
-     */
-    onePage
-}
-/**
- * Public enum to define a layout Break type for drawing
- * ```typescript
- * // Load an existing document
- * let document: PdfDocument = new PdfDocument(data);
- * // Access the first page
- * let page: PdfPage = document.getPage(0);
- * // Assign the array of string for items
- * let products: string[] = ['Excel', 'Power', 'Point', 'Word', 'PDF'];
- * // Add the item to list item collection by passing the string array
- * let items: PdfListItemCollection = new PdfListItemCollection(products);
- * // Create a new ordered list
- * let list: PdfOrderedList = new PdfOrderedList(items);
- * // Create a layout for drawing
- * let pageLayout: PdfLayoutFormat = new PdfLayoutFormat();
- * // Set  the layout break type for drawing
- * pageLayout.break = PdfLayoutBreakType.fitPage;
- * // Draw the list associated with items along with layout
- * list.draw(page, 0, 20, 500, 700, pageLayout);
- * // Save the document
- * document.save('output.pdf');
- * // Destroy the document
- * document.destroy();
- * ````
- */
-export enum PdfLayoutBreakType {
-    /**
-     * Specifies that content should break to a new page to fit within specified dimensions.
-     */
-    fitPage,
-    /**
-     * Specifies that content should break to a new page or element to fit within specified dimensions.
-     */
-    fitElement
-}
-/**
- * Public enum to define a list marker alignment
- * ````typescript
- * // Load an existing document
- * let document: PdfDocument = new PdfDocument(data);
- * // Access the first page
- * let page: PdfPage = document.getPage(0);
- * // Add each item to the item collection by passing the string array
- * let items: PdfListitemCollection = new PdfListitemCollection(['Excel', 'Power', 'Point', 'Word', 'PDF']);
- * // Create a new ordered list and passing the list item collection
- * let list: PdfOrderedList = new PdfOrderedList(items);
- * // Set the marker alignment
- * list.alignment = PdfListMarkerAlignment.left;
- * // Draw the ordered list
- * list.draw(page, 0, 20, 500, 700);
- * // Save the document
- * document.save('output.pdf');
- * // Destroy the document
- * document.destroy();
- * ```
- */
-export enum PdfListMarkerAlignment {
-    /**
-     * Left alignment for marker.
-     */
-    left,
-    /**
-     * Right alignment for marker.
-     */
-    right
-}
-/**
- * Public enum to define a print state of layer
- * ```typescript
- * // Load an existing PDF document
- * let document: PdfDocument = new PdfDocument(data);
- * // Access the collection of layers in the document
- * let layers: PdfLayerCollection = document.layers;
- * // Retrieve the first layer from the layers collection
- * let layer: PdfLayer = layers.at(0);
- * // Retrieve the print state of the layer
- * let printState: PdfPrintState = layer.printState;
- * // Save the document
- * document.save('output.pdf');
- * // Destroy the document
- * document.destroy();
- * ````
- */
-export enum PdfPrintState {
-    /**
-     * The PDF layers always get print
-     */
-    alwaysPrint,
-    /**
-     * The PDF layers never get print
-     */
-    neverPrint,
-    /**
-     * The visible PDF layers get print
-     */
-    printWhenVisible
 }

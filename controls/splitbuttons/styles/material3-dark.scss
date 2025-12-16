@@ -1,19 +1,17 @@
-
-@import 'ej2-base/styles/definition/material3-dark.scss';
-
-@import 'ej2-buttons/styles/button/material3-dark-definition.scss';
-@import 'ej2-popups/styles/popup/material3-dark-definition.scss';
-@import 'drop-down-button/material3-dark-definition.scss';
-@import 'drop-down-button/icons/material3-dark.scss';
-@import 'drop-down-button/all.scss';
-@import 'drop-down-button/bigger.scss';
-@import 'split-button/material3-dark-definition.scss';
-@import 'split-button/all.scss';
-@import 'split-button/bigger.scss';
-@import 'button-group/material3-dark-definition.scss';
-@import 'button-group/all.scss';
-@import 'button-group/bigger.scss';
-@import 'ej2-popups/styles/spinner/material3-dark-definition.scss';
-@import 'progress-button/material3-dark-definition.scss';
-@import 'progress-button/all.scss';
-@import 'progress-button/bigger.scss';
+@use 'ej2-base/styles/definition/material3-dark' as *;
+@use 'ej2-buttons/styles/button/material3-dark-definition' as *;
+@use 'ej2-popups/styles/popup/material3-dark-definition' as *;
+@use 'drop-down-button/material3-dark-definition' as *;
+@use 'drop-down-button/icons/material3-dark' as *;
+@use 'drop-down-button/all' as *;
+@use 'drop-down-button/bigger' as *;
+@use 'split-button/material3-dark-definition' as *;
+@use 'split-button/all' as *;
+@use 'split-button/bigger' as *;
+@use 'button-group/material3-dark-definition' as *;
+@use 'button-group/all' as *;
+@use 'button-group/bigger' as *;
+@use 'ej2-popups/styles/spinner/material3-dark-definition' as *;
+@use 'progress-button/material3-dark-definition' as *;
+@use 'progress-button/all' as *;
+@use 'progress-button/bigger' as *;

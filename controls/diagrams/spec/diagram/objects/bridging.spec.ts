@@ -13,10 +13,6 @@ Diagram.Inject(ConnectorBridging);
  * Bridging spec
  */
 describe('Diagram Control', () => {
-    // inherit - with & without
-    // bridge direction
-    // bridge direction - straight/Orthogonal/combination
-    // property change
     describe('Connector with bridging', () => {
         let diagram: Diagram;
         let ele: HTMLElement;
@@ -68,6 +64,8 @@ describe('Diagram Control', () => {
         afterAll((): void => {
             diagram.destroy();
             ele.remove();
+            diagram = null;
+            ele = null;
         });
 
         it('Checking Straight Line with bridge direction as top', (done: Function) => {
@@ -211,6 +209,8 @@ describe('Diagram Control', () => {
         afterAll((): void => {
             diagram.destroy();
             ele.remove();
+            diagram = null;
+            ele = null;
         });
 
         it('Checking Bridging based on connector without inherit', (done: Function) => {
@@ -272,6 +272,8 @@ describe('Diagram Control', () => {
         afterAll((): void => {
             diagram.destroy();
             ele.remove();
+            diagram = null;
+            ele = null;
         });
 
         it('Checking Bridging based on diagram with inherit', (done: Function) => {
@@ -322,6 +324,8 @@ describe('Diagram Control', () => {
         afterAll((): void => {
             diagram.destroy();
             ele.remove();
+            diagram = null;
+            ele = null;
         });
 
         it('Checking Bridging corner radius straight', (done: Function) => {
@@ -371,6 +375,8 @@ describe('Diagram Control', () => {
         afterAll((): void => {
             diagram.destroy();
             ele.remove();
+            diagram = null;
+            ele = null;
         });
 
         it('Checking Bridging corner radius Orthogonal', (done: Function) => {
@@ -409,7 +415,7 @@ describe('Diagram Control', () => {
                 type: 'Straight',
                 sourcePoint: { x: 300, y: 80 },
                 targetPoint: { x: 400, y: 220 },
-                visible:false,
+                visible: false,
                 cornerRadius: 10
             };
             let connector2: ConnectorModel = {
@@ -421,7 +427,7 @@ describe('Diagram Control', () => {
             };
             diagram = new Diagram({
                 width: 1000, height: 1000,
-                connectors: [connector1, connector2], constraints: DiagramConstraints.Default |DiagramConstraints.Bridging
+                connectors: [connector1, connector2], constraints: DiagramConstraints.Default | DiagramConstraints.Bridging
             });
             diagram.appendTo('#diagram3');
         });
@@ -429,11 +435,13 @@ describe('Diagram Control', () => {
         afterAll((): void => {
             diagram.destroy();
             ele.remove();
+            diagram = null;
+            ele = null;
         });
 
         it('Checking Bridging is enabled or not for the connector visibility false', (done: Function) => {
             let element1: DiagramElement = diagram.connectors[1].wrapper.children[0];
-            console.log("Connector element"+(element1 as PathElement).data);
+            console.log("Connector element" + (element1 as PathElement).data);
             expect((element1 as PathElement).data == 'M200 100 L499.51 149.92').toBe(true);
             done();
         });
@@ -4554,6 +4562,8 @@ describe('Diagram Control', () => {
         afterAll((): void => {
             diagram.destroy();
             ele.remove();
+            diagram = null;
+            ele = null;
         });
 
         it('Connector segments not update properly', (done: Function) => {

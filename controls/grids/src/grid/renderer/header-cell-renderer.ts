@@ -69,6 +69,7 @@ export class HeaderCellRenderer extends CellRenderer implements ICellRenderer<Co
         let elementDesc: string = '';
         //Prepare innerHtml
         const innerDIV: HTMLDivElement = <HTMLDivElement>this.getGui();
+        const HeadercellContainer: HTMLElement = this.parent.createElement('div', { className: 'e-headercell-container' });
         let hValueAccer: string;
         attributes(innerDIV, {
             'data-mappinguid': column.uid,
@@ -97,10 +98,11 @@ export class HeaderCellRenderer extends CellRenderer implements ICellRenderer<Co
             }
             innerDIV.appendChild(checkAllWrap);
             innerDIV.classList.add('e-headerchkcelldiv');
+            HeadercellContainer.classList.add('e-header-checkbox');
         }
         this.buildAttributeFromCell(node as HTMLElement, cell);
-        this.appendHtml(node, innerDIV);
-        node.appendChild(this.sortEle.cloneNode());
+        HeadercellContainer.appendChild(innerDIV);
+        HeadercellContainer.appendChild(this.sortEle.cloneNode());
         if ((this.parent.allowFiltering && this.parent.filterSettings.type !== 'FilterBar') &&
             (column.allowFiltering && !isNullOrUndefined(column.field)) &&
             !(this.parent.showColumnMenu && column.showColumnMenu)) {
@@ -124,9 +126,9 @@ export class HeaderCellRenderer extends CellRenderer implements ICellRenderer<Co
                     }
                 }
             }
-            node.appendChild(fltrMenuEle.cloneNode());
+            HeadercellContainer.appendChild(fltrMenuEle.cloneNode());
         }
-
+        this.appendHtml(node, HeadercellContainer);
         if (cell.className) {
             node.classList.add(cell.className);
         }
@@ -159,17 +161,25 @@ export class HeaderCellRenderer extends CellRenderer implements ICellRenderer<Co
             const isReactChild: boolean = this.parent.parentDetails && this.parent.parentDetails.parentInstObj &&
                 this.parent.parentDetails.parentInstObj.isReact;
             const isReactPrintGrid: boolean = this.parent.printGridParent && this.parent.printGridParent.isReact;
+            const templateHeaderText: HTMLElement = this.parent.createElement('div', { className: 'e-headertext' });
+            const headerElement: Element = node.querySelector('.e-headercelldiv');
             if (isReactCompiler || isReactChild || isReactPrintGrid) {
                 const copied: Object = { 'index': colIndex };
-                node.firstElementChild.innerHTML = '';
+                node.querySelector('.e-headertext').remove();
+                headerElement.appendChild(templateHeaderText);
                 column.getHeaderTemplate()(
-                    extend(copied, col), gridObj, 'headerTemplate', headerTempID, this.parent[`${str}`], null, node.firstElementChild);
+                    extend(copied, col), gridObj, 'headerTemplate', headerTempID, this.parent[`${str}`], null, headerElement.querySelector('.e-headertext'));
                 this.parent.renderTemplates();
             } else {
                 result = column.getHeaderTemplate()(
                     extend({ 'index': colIndex }, col), gridObj, 'headerTemplate', headerTempID, this.parent[`${str}`], undefined, undefined, this.parent['root']);
-                node.firstElementChild.innerHTML = '';
-                appendChildren(node.firstElementChild, result);
+                headerElement.innerHTML = '';
+                if (!isNullOrUndefined(result) && result[0] && result[0].classList && result[0].classList.contains('e-headertext')) {
+                    appendChildren(headerElement, result);
+                } else {
+                    appendChildren(templateHeaderText, result);
+                    headerElement.appendChild(templateHeaderText);
+                }
             }
         }
         this.ariaService.setOptions(<HTMLElement>node, ariaAttr);
@@ -195,7 +205,7 @@ export class HeaderCellRenderer extends CellRenderer implements ICellRenderer<Co
         if (elementDesc) {
             const titleElem: HTMLElement = (this.parent.createElement('span', { id: 'headerTitle-' + column.uid , innerHTML: elementDesc }));
             titleElem.style.display = 'none';
-            node.appendChild(titleElem);
+            HeadercellContainer.appendChild(titleElem);
             node.setAttribute('aria-describedby', titleElem.id);
         }
         node.setAttribute('aria-rowspan', (!isNullOrUndefined(cell.rowSpan) ? cell.rowSpan : 1).toString());
@@ -208,6 +218,12 @@ export class HeaderCellRenderer extends CellRenderer implements ICellRenderer<Co
             // eslint-disable-next-line @typescript-eslint/no-this-alias
             const thisRef: HeaderCellRenderer = this;
             thisRef.parent.renderTemplates(function(): void {
+                const headertexts: NodeList = node.querySelectorAll('.e-headertext');
+                if (headertexts) {
+                    for (let i: number = 1; i < headertexts.length; i++) {
+                        (headertexts[parseInt(i.toString(), 10)] as HTMLElement).classList.remove('e-headertext');
+                    }
+                }
                 thisRef.parent.trigger(headerCellInfo, {cell, node});
             });
         }
@@ -240,7 +256,8 @@ export class HeaderCellRenderer extends CellRenderer implements ICellRenderer<Co
                 }
             }
             node.classList.add('e-fltr-icon');
-            node.appendChild(element);
+            const HeadercellContainer: Element = node.querySelector('.e-headercell-container');
+            HeadercellContainer.appendChild(element);
         }
 
         if (this.parent.allowResizing) {

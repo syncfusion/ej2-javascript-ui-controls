@@ -3,7 +3,7 @@ import { SaveFormat, DisplayLayoutOptions, ActionOnScroll } from '../common/type
 import { ToolbarItems, ToolbarConfigItems, ColorModeType } from '../common/enum';
 import { ToolbarType } from '../common/enum';
 import { IToolbarItems, IDropDownItemModel, ICodeBlockLanguageModel, IToolsItemConfigs, IListDropDownModel } from '../common/interface';
-import { backgroundColor, fontColor, fontFamily, fontSize, formatItems, predefinedItems, TableStyleItems, numberFormatList, bulletFormatList, codeBlockList } from '../models/items';
+import { backgroundColor, fontColor, fontFamily, fontSize, formatItems, predefinedItems, TableStyleItems, numberFormatList, bulletFormatList, codeBlockList, lineHeight } from '../models/items';
 import { ToolbarPosition } from '../editor-manager/base/enum';
 
 /**
@@ -711,6 +711,35 @@ export class FontSize extends ChildProperty<FontSize> {
      */
     @Property(fontSize)
     public items: IDropDownItemModel[];
+}
+
+/**
+ * Configures the line height settings of the RichTextEditor.
+ */
+export class LineHeight extends ChildProperty<LineHeight> {
+    /**
+     * Specifies the default line height applied to the selected block element.
+     *
+     * @default null
+     */
+    @Property(null)
+    public default: string;
+
+    /**
+     * Specifies the set of line height options displayed in the dropdown.
+     *
+     * @default lineHeight
+     */
+    @Property(lineHeight)
+    public items: IDropDownItemModel[];
+
+    /**
+     * When enabled, the editor retains any numeric line height values found in pasted or imported content, even if they are not in the predefined lineHeight.items list.
+     * These values appear as "Custom: {value}" options in the dropdown.
+     * @default false
+     */
+    @Property(false)
+    public supportAllValues: boolean;
 }
 
 /**

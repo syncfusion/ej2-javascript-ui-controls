@@ -1,3 +1,5 @@
+@use 'ej2-base/styles/definition/fabric-dark' as *;
+@forward 'ej2-base/styles/definition/fabric-dark';
 $rating-li-font-size: 20px !default;
 $rating-li-padding: 4px !default;
 $rating-li-line-height: 13px !default;
@@ -10,7 +12,7 @@ $rating-label-left-margin: 8px !default;
 $rating-label-font-size: 12px !default;
 $rating-label-line-height: 18px !default;
 $rating-reset-font-size : 16px !default;
-$rating-tooltip-tip-bottom-height: 8px !default;
+$rating-tooltip-tip-bottom-height: -8px !default;
 $rating-border-width: 1px !default;
 
 $rating-small-li-font-size: 16px !default;
@@ -45,3 +47,14 @@ $rating-li-focus: $neutral-primary !default;
 $rating-reset-icon-color: $neutral-primary !default;
 $rating-reset-hover-icon-color: $neutral-secondary !default;
 $rating-reset-disabled-icon-color: $neutral-quintenary !default;
+
+$rating-item-list-padding: 0 !default;
+$rating-item-list-margin: 4px !default;
+$rating-reset-padding: 2px !default;
+$rating-reset-margin: auto 2px 6px !default;
+$rating-label-left-width: 50px !default;
+$rating-label-bottom-width: 0 !default;
+$rating-arrow-tip-bottom-top: -6px !default;
+$rating-auto-width: auto;
+$rating-half-width: 50% !default;
+$rating-full-width: 100% !default;

@@ -1,6 +1,6 @@
 import { Browser, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { Rect, Size } from '@syncfusion/ej2-drawings';
-import { PdfAnnotationBorder, PdfDocument, PdfPage, PdfRotationAngle, PdfSquareAnnotation, PdfAnnotationFlag, _PdfDictionary, _PdfName, PdfBorderEffectStyle, PdfBorderEffect, PdfAnnotationState, PdfAnnotationStateModel, PdfCircleAnnotation, PdfPopupAnnotation, PdfLineAnnotation, PdfLineEndingStyle, PdfFont, PdfFontStyle, PdfFontFamily, PdfStandardFont, PdfStringFormat, PdfTextAlignment, PdfRubberStampAnnotation, PdfPen, PdfBrush, PdfGraphics, PdfVerticalAlignment, PdfGraphicsState, PdfPath, PdfRubberStampAnnotationIcon, PdfBitmap, PdfImage, PdfPolyLineAnnotation, PdfCircleMeasurementType, PdfPopupIcon, PdfFreeTextAnnotation, PdfBorderStyle, PdfAnnotationCollection, PdfRectangleAnnotation, PdfPolygonAnnotation, PdfEllipseAnnotation, PdfTextMarkupAnnotation, PdfAnnotation, PdfInkAnnotation, PdfLineIntent, PdfAppearance, PdfTemplate, PdfTextMarkupAnnotationType, PdfLineCaptionType, PdfMeasurementUnit, PdfAnnotationIntent, PdfTrueTypeFont, _decode, _PdfBaseStream, _annotationFlagsToString, _RtlRenderer, _UnicodeLine, _TrueTypeReader, _UnicodeTrueTypeFont, _TrueTypeGlyph} from '@syncfusion/ej2-pdf';
+import { PdfAnnotationBorder, PdfDocument, PdfPage, PdfRotationAngle, PdfSquareAnnotation, PdfAnnotationFlag, _PdfDictionary, _PdfName, PdfBorderEffectStyle, PdfBorderEffect, PdfAnnotationState, PdfAnnotationStateModel, PdfCircleAnnotation, PdfPopupAnnotation, PdfLineAnnotation, PdfLineEndingStyle, PdfFont, PdfFontStyle, PdfFontFamily, PdfStandardFont, PdfStringFormat, PdfTextAlignment, PdfRubberStampAnnotation, PdfPen, PdfBrush, PdfGraphics, PdfVerticalAlignment, PdfGraphicsState, PdfPath, PdfRubberStampAnnotationIcon, PdfBitmap, PdfImage, PdfPolyLineAnnotation, PdfCircleMeasurementType, PdfPopupIcon, PdfFreeTextAnnotation, PdfBorderStyle, PdfAnnotationCollection, PdfRectangleAnnotation, PdfPolygonAnnotation, PdfEllipseAnnotation, PdfTextMarkupAnnotation, PdfAnnotation, PdfInkAnnotation, PdfLineIntent, PdfAppearance, PdfTemplate, PdfTextMarkupAnnotationType, PdfLineCaptionType, PdfMeasurementUnit, PdfAnnotationIntent, PdfTrueTypeFont, _decode, _PdfBaseStream, _annotationFlagsToString, _RtlRenderer, _UnicodeLine, _TrueTypeReader, _UnicodeTrueTypeFont, _TrueTypeGlyph, PdfRedactionAnnotation, Rectangle, Point, PdfColor} from '@syncfusion/ej2-pdf';
 import { PdfViewer, PdfViewerBase, SizeBase, PageRenderer, getArialFontData } from '../index';
 import { PdfViewerUtils } from '../base/pdfviewer-utlis';
 
@@ -47,8 +47,10 @@ export class AnnotationRenderer {
         const isLock: boolean = this.checkAnnotationLock(shapeAnnotation);
         if (!isNullOrUndefined(shapeAnnotation.shapeAnnotationType) && shapeAnnotation.shapeAnnotationType === 'Line') {
             const points: any = JSON.parse(shapeAnnotation.vertexPoints);
-            const linePoints: number[] = this.getSaveVertexPoints(points, page);
-            const lineAnnotation: PdfLineAnnotation = new PdfLineAnnotation(linePoints);
+            const linePoints: any = this.getSaveVertexPoints(points, page);
+            const startPoint: Point = {x: linePoints[0].x, y: linePoints[0].y};
+            const endPoint: Point =  {x: linePoints[1].x, y: linePoints[1].y};
+            const lineAnnotation: PdfLineAnnotation = new PdfLineAnnotation(startPoint, endPoint);
             if (!isNullOrUndefined(shapeAnnotation.note)) {
                 lineAnnotation.text = shapeAnnotation.note.toString();
             }
@@ -59,14 +61,14 @@ export class AnnotationRenderer {
             }
             if (!isNullOrUndefined(shapeAnnotation.strokeColor)) {
                 const strokeColor: any = JSON.parse(shapeAnnotation.strokeColor);
-                const color: number[] = [strokeColor.r, strokeColor.g, strokeColor.b];
+                const color: PdfColor = {r: strokeColor.r, g: strokeColor.g, b: strokeColor.b};
                 lineAnnotation.color = color;
             }
             if (!isNullOrUndefined(shapeAnnotation.fillColor)) {
                 const fillColor: any = JSON.parse(shapeAnnotation.fillColor);
                 if (!isNullOrUndefined(fillColor.r) && !isNullOrUndefined(fillColor.g) && !isNullOrUndefined(fillColor.b) &&
                     !isNullOrUndefined(fillColor.a) && fillColor.a > 0) {
-                    const innerColor: number[] = [fillColor.r, fillColor.g, fillColor.b];
+                    const innerColor: PdfColor = {r: fillColor.r, g: fillColor.g, b: fillColor.b};
                     lineAnnotation.innerColor = innerColor;
                 }
             }
@@ -129,11 +131,12 @@ export class AnnotationRenderer {
                 cropY = cropValues.y;
             }
 
-            else if (cropValues.x === 0 && page.cropBox[2] === page.size[0] && cropValues.y === page.size[1]) {
+            else if (cropValues.x === 0 && page.cropBox[2] === page.size.width && cropValues.y === page.size.height) {
                 cropX = cropValues.x;
                 cropY = cropValues.y;
             }
-            const squareAnnotation: PdfSquareAnnotation = new PdfSquareAnnotation(cropX + left, cropY + top, width, height);
+            const squareAnnotation: PdfSquareAnnotation = new PdfSquareAnnotation(
+                {x: cropX + left, y: cropY + top, width: width, height: height});
             if (!isNullOrUndefined(shapeAnnotation.note)) {
                 squareAnnotation.text = shapeAnnotation.note.toString();
             }
@@ -144,13 +147,13 @@ export class AnnotationRenderer {
             }
             if (!isNullOrUndefined(shapeAnnotation.strokeColor)) {
                 const strokeColor: any = JSON.parse(shapeAnnotation.strokeColor);
-                const color: number[] = [strokeColor.r, strokeColor.g, strokeColor.b];
+                const color: PdfColor = {r: strokeColor.r, g: strokeColor.g, b: strokeColor.b};
                 squareAnnotation.color = color;
             }
             if (!isNullOrUndefined(shapeAnnotation.fillColor)) {
                 const fillColor: any = JSON.parse(shapeAnnotation.fillColor);
-                if (!this.isTransparentColor(fillColor)){
-                    const innerColor: number[] = [fillColor.r, fillColor.g, fillColor.b];
+                if (!this.isTransparentColor(fillColor)) {
+                    const innerColor: PdfColor = {r: fillColor.r, g: fillColor.g, b: fillColor.b};
                     squareAnnotation.innerColor = innerColor;
                 }
                 if (fillColor.a < 1 && fillColor.a > 0) {
@@ -218,11 +221,12 @@ export class AnnotationRenderer {
                 cropX = cropValues.x;
                 cropY = cropValues.y;
             }
-            else if (cropValues.x === 0 && page.cropBox[2] === page.size[0] && cropValues.y === page.size[1]) {
+            else if (cropValues.x === 0 && page.cropBox[2] === page.size.width && cropValues.y === page.size.height) {
                 cropX = cropValues.x;
                 cropY = cropValues.y;
             }
-            const circleAnnotation: PdfCircleAnnotation = new PdfCircleAnnotation(cropX + left, cropY + top, width, height);
+            const circleAnnotation: PdfCircleAnnotation = new PdfCircleAnnotation(
+                {x: cropX + left, y: cropY + top, width: width, height: height});
             if (!isNullOrUndefined(shapeAnnotation.note)) {
                 circleAnnotation.text = shapeAnnotation.note.toString();
             }
@@ -233,13 +237,13 @@ export class AnnotationRenderer {
             }
             if (!isNullOrUndefined(shapeAnnotation.strokeColor)) {
                 const strokeColor: any = JSON.parse(shapeAnnotation.strokeColor);
-                const color: number[] = [strokeColor.r, strokeColor.g, strokeColor.b];
+                const color: PdfColor = {r: strokeColor.r, g: strokeColor.g, b: strokeColor.b};
                 circleAnnotation.color = color;
             }
             if (!isNullOrUndefined(shapeAnnotation.fillColor)) {
                 const fillColor: any = JSON.parse(shapeAnnotation.fillColor);
-                if (!this.isTransparentColor(fillColor)){
-                    const innerColor: number[] = [fillColor.r, fillColor.g, fillColor.b];
+                if (!this.isTransparentColor(fillColor)) {
+                    const innerColor: PdfColor = {r: fillColor.r, g: fillColor.g, b: fillColor.b};
                     circleAnnotation.innerColor = innerColor;
                 }
                 if (fillColor.a < 1 && fillColor.a > 0) {
@@ -296,7 +300,7 @@ export class AnnotationRenderer {
         }
         else if (!isNullOrUndefined(shapeAnnotation.shapeAnnotationType) && shapeAnnotation.shapeAnnotationType === 'Polygon') {
             const points: any = JSON.parse(shapeAnnotation.vertexPoints);
-            const linePoints: number[] = this.getSaveVertexPoints(points, page);
+            const linePoints: Point[] = this.getSaveVertexPoints(points, page);
             const bounds: Rect = JSON.parse(shapeAnnotation.bounds);
             if (isNullOrUndefined(bounds.left)) {
                 shapeAnnotation.bounds.left = 0;
@@ -320,13 +324,13 @@ export class AnnotationRenderer {
             polygonAnnotation._dictionary.set('NM', shapeAnnotation.annotName.toString());
             if (!isNullOrUndefined(shapeAnnotation.strokeColor)) {
                 const strokeColor: any = JSON.parse(shapeAnnotation.strokeColor);
-                const color: number[] = [strokeColor.r, strokeColor.g, strokeColor.b];
+                const color: PdfColor = {r: strokeColor.r, g: strokeColor.g, b: strokeColor.b};
                 polygonAnnotation.color = color;
             }
             if (!isNullOrUndefined(shapeAnnotation.fillColor)) {
                 const fillColor: any = JSON.parse(shapeAnnotation.fillColor);
                 if (!this.isTransparentColor(fillColor)){
-                    const innerColor: number[] = [fillColor.r, fillColor.g, fillColor.b];
+                    const innerColor: PdfColor = {r: fillColor.r, g: fillColor.g, b: fillColor.b};
                     polygonAnnotation.innerColor = innerColor;
                 }
                 if (fillColor.a < 1 && fillColor.a > 0) {
@@ -383,7 +387,7 @@ export class AnnotationRenderer {
         }
         else if (!isNullOrUndefined(shapeAnnotation.shapeAnnotationType) && shapeAnnotation.shapeAnnotationType === 'Polyline') {
             const points: any = JSON.parse(shapeAnnotation.vertexPoints);
-            const linePoints: number[] = this.getSaveVertexPoints(points, page);
+            const linePoints: Point[] = this.getSaveVertexPoints(points, page);
             const bounds: Rect = JSON.parse(shapeAnnotation.bounds);
             const polylineAnnotation: PdfPolyLineAnnotation = new PdfPolyLineAnnotation(linePoints);
             polylineAnnotation.bounds = new Rect(
@@ -402,13 +406,13 @@ export class AnnotationRenderer {
             polylineAnnotation._dictionary.set('NM', shapeAnnotation.annotName.toString());
             if (!isNullOrUndefined(shapeAnnotation.strokeColor)) {
                 const strokeColor: any = JSON.parse(shapeAnnotation.strokeColor);
-                const color: number[] = [strokeColor.r, strokeColor.g, strokeColor.b];
+                const color: PdfColor = {r: strokeColor.r, g: strokeColor.g, b: strokeColor.b};
                 polylineAnnotation.color = color;
             }
             if (!isNullOrUndefined(shapeAnnotation.fillColor)) {
                 const fillColor: any = JSON.parse(shapeAnnotation.fillColor);
                 if (!this.isTransparentColor(fillColor)){
-                    const innerColor: number[] = [fillColor.r, fillColor.g, fillColor.b];
+                    const innerColor: PdfColor = {r: fillColor.r, g: fillColor.g, b: fillColor.b};
                     polylineAnnotation.innerColor = innerColor;
                 }
                 if (fillColor.a < 1 && fillColor.a > 0) {
@@ -474,7 +478,7 @@ export class AnnotationRenderer {
             }
             const labelWidth: number = this.convertPixelToPoint(labelBounds.width);
             const labelHeight: number = this.convertPixelToPoint(labelBounds.height);
-            const annotation: PdfFreeTextAnnotation = new PdfFreeTextAnnotation(top, left, labelWidth, labelHeight);
+            const annotation: PdfFreeTextAnnotation = new PdfFreeTextAnnotation({x: top, y: left, width: labelWidth, height: labelHeight});
             annotation.author = shapeAnnotation.author;
             let dateValue: Date;
             if (!isNullOrUndefined(shapeAnnotation.modifiedDate) && !isNaN(Date.parse(shapeAnnotation.modifiedDate))) {
@@ -515,13 +519,13 @@ export class AnnotationRenderer {
                 }
             }
             const color: { [key: string]: number } = JSON.parse(shapeAnnotation.labelBorderColor);
-            const color1: number[] = [color.r, color.g, color.b];
+            const color1: PdfColor = {r: color.r, g: color.g, b: color.b};
             annotation.borderColor = color1;
             const fillColor: { [key: string]: number } = JSON.parse(shapeAnnotation.labelFillColor);
-            const color2: number[] = [fillColor.r, fillColor.g, fillColor.b];
+            const color2: PdfColor = {r: fillColor.r, g: fillColor.g, b: fillColor.b};
             annotation.color = color2;
             const textMarkupColor: { [key: string]: number } = JSON.parse(shapeAnnotation.fontColor);
-            const color3: number[] = [textMarkupColor.r, textMarkupColor.g, textMarkupColor.b];
+            const color3: PdfColor = {r: textMarkupColor.r, g: textMarkupColor.g, b: textMarkupColor.b};
             annotation.textMarkUpColor = color3;
             const commentsDetails: any = annotation.comments;
             if (commentsDetails.length > 0) {
@@ -534,6 +538,176 @@ export class AnnotationRenderer {
             }
             page.annotations.add(annotation);
         }
+    }
+
+    /**
+     * @param {any} details - details
+     * @param {PdfPage} page - page
+     * @param {boolean} canRedact - canRedact
+     * @private
+     * @returns {void}
+     */
+    public addRedact(details: any, page: PdfPage, canRedact: boolean): void {
+        const redactionAnnotation: any = details;
+        const isLock: boolean = this.checkAnnotationLock(redactionAnnotation);
+        let bounds: any = JSON.parse(redactionAnnotation.bounds);
+        let left: number;
+        let top: number;
+        let width: number;
+        let height: number;
+        // const bounds: {[key: string]: number}[] = JSON.parse(markupAnnotation.bounds);
+        const boundsCollection: Rect[] = [];
+        if (bounds.length > 1) {
+            for (let i: number = 0; i < bounds.length; i++){
+                const bound:  {[key: string]: number} = bounds[parseInt(i.toString(), 10)];
+                const cropValues: PointBase = this.getCropBoxValue(page, true);
+                if (!isNullOrUndefined(bound['left']) || !isNullOrUndefined(bound['x'])){
+                    const left: any = bound['left'] ? bound['left'] : bound['x'];
+                    const top: any = bound['top'] ? bound['top'] : bound['y'];
+                    boundsCollection.push(new Rect(cropValues.x + this.convertPixelToPoint(left), cropValues.y + this.convertPixelToPoint(top), Object.prototype.hasOwnProperty.call(bound, 'width') ? this.convertPixelToPoint(bound['width']) : 0, Object.prototype.hasOwnProperty.call(bound, 'height') ? this.convertPixelToPoint(bound['height']) : 0));
+                }
+            }
+            left = this.convertPixelToPoint(boundsCollection[0].left);
+            top = this.convertPixelToPoint(boundsCollection[0].top);
+            width = this.convertPixelToPoint(boundsCollection[0].width);
+            height = this.convertPixelToPoint(boundsCollection[0].height);
+        } else {
+            if (isNullOrUndefined(bounds.width)) {
+                bounds = bounds[0];
+            }
+            left = this.convertPixelToPoint(bounds.left);
+            top = this.convertPixelToPoint(bounds.top);
+            width = this.convertPixelToPoint(bounds.width);
+            height = this.convertPixelToPoint(bounds.height);
+        }
+        const cropValues : PointBase = this.getCropBoxValue(page, false);
+        let cropX : number = 0;
+        let cropY : number = 0;
+        if (cropValues.x !== 0 && cropValues.y !== 0 && cropValues.x === left) {
+            cropX = cropValues.x;
+            cropY = cropValues.y;
+        }
+        else if (cropValues.x === 0 && page.cropBox[2] === page.size.width && cropValues.y === page.size.height) {
+            cropX = cropValues.x;
+            cropY = cropValues.y;
+        }
+        const redactAnnotation: PdfRedactionAnnotation = new PdfRedactionAnnotation({x: 0, y: 0, width: 0, height: 0});
+        if (boundsCollection.length > 0) {
+            redactAnnotation.bounds = { x: boundsCollection[0].x, y: boundsCollection[0].y,
+                width: boundsCollection[0].width, height: boundsCollection[0].height };
+        } else {
+            redactAnnotation.bounds = { x: cropX + left, y: cropY + top,
+                width: width, height: height };
+        }
+        if (!isNullOrUndefined(redactionAnnotation.note)) {
+            redactAnnotation.text = redactionAnnotation.note.toString();
+        }
+        redactAnnotation.author = !isNullOrUndefined(redactionAnnotation.author) &&
+        redactionAnnotation.author.toString() !== '' ? redactionAnnotation.author.toString() : 'Guest';
+        redactAnnotation._dictionary.set('NM', redactionAnnotation.annotName.toString());
+        if (!isNullOrUndefined(redactionAnnotation.subject)) {
+            redactAnnotation.subject = redactionAnnotation.subject.toString();
+        }
+
+        // Redaction-specific properties
+        redactAnnotation.opacity = canRedact ? 1 : redactionAnnotation.markerOpacity;
+        if (!isNullOrUndefined(redactionAnnotation.fillColor)) {
+            const fillColor: any = JSON.parse(redactionAnnotation.fillColor);
+            if (!this.isTransparentColor(fillColor)) {
+                const innerColor: PdfColor = {r: fillColor.r, g: fillColor.g, b: fillColor.b};
+                redactAnnotation.innerColor = innerColor;
+            }
+            if (fillColor.a < 1 && fillColor.a > 0) {
+                redactAnnotation._dictionary.update('FillOpacity', fillColor.a);
+                fillColor.a = 1;
+            }
+            else {
+                redactAnnotation._dictionary.update('FillOpacity', fillColor.a);
+            }
+        }
+        if (!isNullOrUndefined(redactionAnnotation.markerFillColor)) {
+            const markerFillColor: any = JSON.parse(redactionAnnotation.markerFillColor);
+            if (!this.isTransparentColor(markerFillColor)) {
+                const innerColor: PdfColor = {r: markerFillColor.r, g: markerFillColor.g, b: markerFillColor.b};
+                redactAnnotation.appearanceFillColor = innerColor;
+            }
+            if (markerFillColor.a < 1 && markerFillColor.a > 0) {
+                redactAnnotation._dictionary.update('FillOpacity', markerFillColor.a);
+                markerFillColor.a = 1;
+            }
+            else {
+                redactAnnotation._dictionary.update('FillOpacity', markerFillColor.a);
+            }
+        }
+        if (!isNullOrUndefined(redactionAnnotation.markerBorderColor) && !canRedact) {
+            const markerBorderColor: any = JSON.parse(redactionAnnotation.markerBorderColor);
+            const color: PdfColor = {r: markerBorderColor.r, g: markerBorderColor.g, b: markerBorderColor.b};
+            redactAnnotation.borderColor = color;
+        }
+        redactAnnotation.overlayText = redactionAnnotation.overlayText + ' ';
+        redactAnnotation.repeatText = redactionAnnotation.isRepeat;
+        // Font properties
+        if (!isNullOrUndefined(redactionAnnotation.fontColor)) {
+            const fontColor: any = JSON.parse(redactionAnnotation.fontColor);
+            const color: PdfColor = {r: fontColor.r, g: fontColor.g, b: fontColor.b};
+            redactAnnotation.textColor = color;
+        }
+        const fontFamily: PdfFontFamily = this.getFontFamily(redactionAnnotation.fontFamily);
+        redactAnnotation.font = new PdfStandardFont(fontFamily, (redactionAnnotation.fontSize) * 72 / 96);
+        redactAnnotation.textAlignment = this.getPdfTextAlignment(redactionAnnotation.textAlign.toString().toLowerCase());
+        const lineBorder: PdfAnnotationBorder = new PdfAnnotationBorder();
+        lineBorder.width = redactionAnnotation.thickness;
+        lineBorder.style = redactionAnnotation.borderStyle;
+        lineBorder.dash = redactionAnnotation.borderDashArray;
+        redactAnnotation.border = lineBorder;
+        redactAnnotation.rotationAngle = this.getRotateAngle(redactionAnnotation.rotateAngle);
+        if (boundsCollection.length > 0){
+            // Don't need to set bounds explicitly for text markup annotation
+            const boundArrayCollection: Rectangle[] = [];
+            for (let i: number = 0; i < boundsCollection.length; i++) {
+                const { x, y, width, height } = boundsCollection[parseInt(i.toString(), 10)];
+                if (x !== 0 && y !== 0 && width !== 0 && height !== 0) {
+                    boundArrayCollection.push({x: x, y: y, width: width, height: height});
+                }
+            }
+            redactAnnotation.boundsCollection = boundArrayCollection;
+        }
+        let dateValue: Date;
+        if (!isNullOrUndefined(redactionAnnotation.modifiedDate) && !isNaN(Date.parse(redactionAnnotation.modifiedDate))) {
+            dateValue = new Date(Date.parse(redactionAnnotation.modifiedDate));
+            redactAnnotation.modifiedDate = dateValue;
+        }
+        const commentsDetails: any = redactionAnnotation.comments;
+        if (commentsDetails.length > 0) {
+            for (let i: number = 0; i < commentsDetails.length; i++) {
+                redactAnnotation.comments.add(this.addCommentsCollection(commentsDetails[parseInt(i.toString(), 10)],
+                                                                         redactAnnotation.bounds));
+            }
+        }
+        const reviewDetails: any = redactionAnnotation.review;
+        redactAnnotation.reviewHistory.add(this.addReviewCollections(reviewDetails, redactAnnotation.bounds));
+        if (!isNullOrUndefined(redactionAnnotation.isCloudShape) && redactionAnnotation.isCloudShape) {
+            const borderEffect: PdfBorderEffect = new PdfBorderEffect();
+            borderEffect.style = PdfBorderEffectStyle.cloudy;
+            borderEffect.intensity = redactionAnnotation.cloudIntensity;
+            const rectDifferences: string[] = JSON.parse(redactionAnnotation.rectangleDifference);
+            if (rectDifferences.length > 0) {
+                const rd: number[] = this.getRDValues(rectDifferences);
+                redactAnnotation._dictionary.update('RD', rd);
+            }
+        }
+        this.preserveIsLockProperty(redactionAnnotation, redactAnnotation);
+        if (!isNullOrUndefined(redactionAnnotation.customData)) {
+            redactAnnotation.setValues('CustomData', JSON.stringify(redactionAnnotation.customData));
+        }
+        if (redactionAnnotation.allowedInteractions && redactionAnnotation['allowedInteractions'] != null){
+            redactAnnotation.setValues('AllowedInteractions', JSON.stringify(redactionAnnotation['allowedInteractions']));
+        }
+        if (!isNullOrUndefined(redactionAnnotation.annotType)) {
+            redactAnnotation.setValues('RedactionType', (redactionAnnotation.annotType));
+        }
+        redactAnnotation.setAppearance(true);
+        page.annotations.add(redactAnnotation);
     }
 
     /**
@@ -555,7 +729,7 @@ export class AnnotationRenderer {
         const thickness: number = parseInt(inkSignatureAnnotation.thickness.toString(), 10);
         if (!isNullOrUndefined(inkSignatureAnnotation.strokeColor)) {
             const strokeColor: any = JSON.parse(inkSignatureAnnotation.strokeColor);
-            const color: number[] = [strokeColor.r, strokeColor.g, strokeColor.b];
+            const color: PdfColor = {r: strokeColor.r, g: strokeColor.g, b: strokeColor.b};
             inkSignatureAnnotation.color = color;
         }
         let minimumX: number = -1;
@@ -565,7 +739,7 @@ export class AnnotationRenderer {
         const drawingPath: PdfPath = new PdfPath();
         for (let p: number = 0; p < stampObjects.length; p++) {
             const val: any = stampObjects[parseInt(p.toString(), 10)];
-            drawingPath.addLine(val.x, val.y, 0, 0);
+            drawingPath.addLine({x: val.x, y: val.y}, {x: 0, y: 0});
         }
         const rotatedPath: Path = this.getRotatedPathForMinMax(drawingPath._points, rotationAngle);
         for (let k: number = 0; k < rotatedPath.points.length; k += 2) {
@@ -601,7 +775,7 @@ export class AnnotationRenderer {
         else if (newDifferenceY === 0) {
             newDifferenceY = 1;
         }
-        let linePoints: number[] = [];
+        let linePoints: Point[] = [];
         let isNewValues: number = 0;
         if (rotationAngle !== 0) {
             for (let j: number = 0; j < stampObjects.length; j++) {
@@ -611,14 +785,15 @@ export class AnnotationRenderer {
                     isNewValues = j;
                     break;
                 }
-                linePoints.push((parseFloat(val['x'].toString())));
-                linePoints.push((parseFloat(val['y'].toString())));
+                linePoints.push({x: (parseFloat(val['x'].toString())), y: (parseFloat(val['y'].toString()))});
             }
             const rotatedPoints: PdfPath = this.getRotatedPath(linePoints, rotationAngle);
             linePoints = [];
             for (let z: number = 0; z < rotatedPoints._points.length; z += 2) {
-                linePoints.push((rotatedPoints._points[parseInt(z.toString(), 10)][0] - minimumX) / newDifferenceX + left);
-                linePoints.push(page.size[1] - (rotatedPoints._points[parseInt(z.toString(), 10)][1] - minimumY) / newDifferenceY - top);
+                linePoints.push({
+                    x: (rotatedPoints._points[parseInt(z.toString(), 10)].x - minimumX) / newDifferenceX + left,
+                    y: page.size.height - (rotatedPoints._points[parseInt(z.toString(), 10)].y - minimumY) / newDifferenceY - top
+                });
             }
         }
         else {
@@ -629,22 +804,22 @@ export class AnnotationRenderer {
                     isNewValues = j;
                     break;
                 }
-                linePoints.push(((val.x - minimumX) / newDifferenceX) + left);
                 const newX: number = ((val.y - minimumY) / newDifferenceY);
-                linePoints.push(page.size[1] - newX - top);
+                linePoints.push({x: ((val.x - minimumX) / newDifferenceX) + left, y: page.size.height - newX - top});
             }
         }
-        const colors: number[] = [inkSignatureAnnotation.color[0], inkSignatureAnnotation.color[1], inkSignatureAnnotation.color[2]];
-        const inkAnnotation: PdfInkAnnotation = new PdfInkAnnotation([left, top, width, height], linePoints);
+        const colors: PdfColor = {r: inkSignatureAnnotation.color.r, g: inkSignatureAnnotation.color.g,
+            b: inkSignatureAnnotation.color.b};
+        const inkAnnotation: PdfInkAnnotation = new PdfInkAnnotation({x: left, y: top, width: width, height: height}, linePoints);
         let bound: Rect = new Rect();
-        bound = new Rect(inkAnnotation.bounds.x, (page.size[1] - (inkAnnotation.bounds.y + inkAnnotation.bounds.height)),
+        bound = new Rect(inkAnnotation.bounds.x, (page.size.height - (inkAnnotation.bounds.y + inkAnnotation.bounds.height)),
                          inkAnnotation.bounds.width, inkAnnotation.bounds.height);
         inkAnnotation.bounds = bound;
         inkAnnotation.color = colors;
         linePoints = [];
         if (isNewValues > 0) {
             if (rotationAngle !== 0) {
-                const pathCollection: number[][] = [];
+                const pathCollection: Point[][] = [];
                 for (let i: number = isNewValues; i < stampObjects.length; i++) {
                     const val: any = stampObjects[parseInt(i.toString(), 10)];
                     const path: string = val['command'].toString();
@@ -652,21 +827,22 @@ export class AnnotationRenderer {
                         pathCollection.push(linePoints);
                         linePoints = [];
                     }
-                    linePoints.push(val['x']);
-                    linePoints.push(val['y']);
+                    linePoints.push({x: val['x'], y: val['y']});
                 }
                 if (linePoints.length > 0) {
                     pathCollection.push(linePoints);
                 }
                 for (let g: number = 0; g < pathCollection.length; g++) {
                     let graphicsPoints: any = [];
-                    const pointsCollections: number[] = pathCollection[parseInt(g.toString(), 10)];
+                    const pointsCollections: Point[] = pathCollection[parseInt(g.toString(), 10)];
                     if (pointsCollections.length > 0) {
                         const rotatedPoints: PdfPath = this.getRotatedPath(pointsCollections, rotationAngle);
                         for (let z: number = 0; z < rotatedPoints._points.length; z += 2) {
-                            graphicsPoints.push((rotatedPoints._points[parseInt(z.toString(), 10)][0] - minimumX) / newDifferenceX + left);
-                            graphicsPoints.push(page.size[1] - (rotatedPoints._points[parseInt(z.toString(), 10)][1]
-                                               - minimumY) / newDifferenceY - top);
+                            graphicsPoints.push({
+                                x: (rotatedPoints._points[parseInt(z.toString(), 10)].x - minimumX) / newDifferenceX + left,
+                                y: page.size.height - (rotatedPoints._points[parseInt(z.toString(), 10)].y - minimumY) /
+                                newDifferenceY - top
+                            });
                         }
                         inkAnnotation.inkPointsCollection.push(graphicsPoints);
                     }
@@ -681,9 +857,8 @@ export class AnnotationRenderer {
                         inkAnnotation.inkPointsCollection.push(linePoints);
                         linePoints = [];
                     }
-                    linePoints.push((val['x'] - minimumX) / newDifferenceX + left);
                     const newX: number = ((val['y'] - minimumY) / newDifferenceY);
-                    linePoints.push(page.size[1] - newX - top);
+                    linePoints.push({x: (val['x'] - minimumX) / newDifferenceX + left, y: page.size.height - newX - top});
                 }
                 if (linePoints.length > 0) {
                     inkAnnotation.inkPointsCollection.push(linePoints);
@@ -740,12 +915,12 @@ export class AnnotationRenderer {
      * @param {number} rotationAngle - rotateAngle
      * @returns {PdfPath} - graphicsPath
      */
-    public getRotatedPath(linePoints: number[], rotationAngle: number): PdfPath {
+    public getRotatedPath(linePoints: Point[], rotationAngle: number): PdfPath {
         const docPath: Path = this.getRotatedPoints(linePoints, rotationAngle);
         const graphicsPath: PdfPath = new PdfPath();
         for (let j: number = 0; j < docPath.points.length; j += 2) {
-            graphicsPath.addLine(docPath.points[parseInt(j.toString(), 10)][0], docPath.points[parseInt(j.toString(), 10)][1],
-                                 docPath.points[parseInt((j + 1).toString(), 10)][0], docPath.points[j + 1][1]);
+            graphicsPath.addLine({x: docPath.points[parseInt(j.toString(), 10)][0], y: docPath.points[parseInt(j.toString(), 10)][1]},
+                                 {x: docPath.points[parseInt((j + 1).toString(), 10)][0], y: docPath.points[j + 1][1]});
         }
         return graphicsPath;
     }
@@ -761,10 +936,10 @@ export class AnnotationRenderer {
         ];
     }
 
-    private getRotatedPoints(pointsCollection: any, rotationAngle: any): Path {
+    private getRotatedPoints(pointsCollection: Point[], rotationAngle: any): Path {
         const graphicsPath: Path = new Path();
-        for (let j: number = 0; j < pointsCollection.length; j += 2) {
-            graphicsPath.moveTo(pointsCollection[parseInt(j.toString(), 10)], pointsCollection[parseInt((j + 1).toString(), 10)]);
+        for (let j: number = 0; j < pointsCollection.length; j++) {
+            graphicsPath.moveTo(pointsCollection[parseInt(j.toString(), 10)].x, pointsCollection[parseInt((j).toString(), 10)].y);
             graphicsPath.lineTo(0, 0);
         }
         const rotationMatrix: [number, number, number][] = this.getRotationMatrix(rotationAngle);
@@ -774,17 +949,17 @@ export class AnnotationRenderer {
 
     /**
      * Rotates a path based on the provided points collection and rotation angle.
-     * @param {number[]} pointsCollection - The collection of points to be rotated.
+     * @param {Point[]} pointsCollection - The collection of points to be rotated.
      * @param {number} rotationAngle - The angle to rotate the points, in degrees.
      * @returns {Path} - The rotated graphics path.
      * @private
      */
-    public getRotatedPathForMinMax(pointsCollection: number[][], rotationAngle: number): Path {
+    public getRotatedPathForMinMax(pointsCollection: Point[], rotationAngle: number): Path {
         const graphicsPath: Path = new Path();
         for (let j: number = 0; j < pointsCollection.length; j += 2) {
-            graphicsPath.moveTo(pointsCollection[parseInt(j.toString(), 10)][0], pointsCollection[parseInt(j.toString(), 10)][1]);
-            graphicsPath.lineTo(pointsCollection[parseInt((j + 1).toString(), 10)][0],
-                                pointsCollection[parseInt((j + 1).toString(), 10)][1]);
+            graphicsPath.moveTo(pointsCollection[parseInt(j.toString(), 10)].x, pointsCollection[parseInt(j.toString(), 10)].y);
+            graphicsPath.lineTo(pointsCollection[parseInt((j + 1).toString(), 10)].x,
+                                pointsCollection[parseInt((j + 1).toString(), 10)].y);
         }
         const rotationMatrix: [number, number, number][] = this.getRotationMatrix(rotationAngle);
         graphicsPath.transform(rotationMatrix);
@@ -825,7 +1000,7 @@ export class AnnotationRenderer {
                 boundsCollection.push(new Rect(cropValues.x + this.convertPixelToPoint(bound['left']), cropValues.y + this.convertPixelToPoint(bound['top']), Object.prototype.hasOwnProperty.call(bound, 'width') ? this.convertPixelToPoint(bound['width']) : 0, Object.prototype.hasOwnProperty.call(bound, 'height') ? this.convertPixelToPoint(bound['height']) : 0));
             }
         }
-        const annotation: PdfTextMarkupAnnotation = new PdfTextMarkupAnnotation(null, 0, 0, 0, 0);
+        const annotation: PdfTextMarkupAnnotation = new PdfTextMarkupAnnotation(null, {x: 0, y: 0, width: 0, height: 0});
         if (boundsCollection.length > 0) {
             annotation.bounds = { x: boundsCollection[0].x, y: boundsCollection[0].y,
                 width: boundsCollection[0].width, height: boundsCollection[0].height };
@@ -855,7 +1030,7 @@ export class AnnotationRenderer {
         annotation._dictionary.set('NM', markupAnnotation.annotName.toString());
         if (!isNullOrUndefined(markupAnnotation.color)) {
             const annotColor: any = JSON.parse(markupAnnotation.color);
-            const color: number[] = [annotColor.r, annotColor.g, annotColor.b];
+            const color: PdfColor = {r: annotColor.r, g: annotColor.g, b: annotColor.b};
             annotation.color = color;
         }
         if (!isNullOrUndefined(markupAnnotation.opacity)) {
@@ -863,11 +1038,11 @@ export class AnnotationRenderer {
         }
         if (boundsCollection.length > 0){
             // Don't need to set bounds explicitly for text markup annotation
-            const boundArrayCollection: number[][] = [];
+            const boundArrayCollection: Rectangle[] = [];
             for (let i: number = 0; i < boundsCollection.length; i++) {
                 const { x, y, width, height } = boundsCollection[parseInt(i.toString(), 10)];
                 if (x !== 0 && y !== 0 && width !== 0 && height !== 0) {
-                    boundArrayCollection.push([x, y, width, height]);
+                    boundArrayCollection.push({x: x, y: y, width: width, height: height});
                 }
             }
             annotation.boundsCollection = boundArrayCollection;
@@ -882,7 +1057,7 @@ export class AnnotationRenderer {
         annotation.reviewHistory.add(this.addReviewCollections(reviewDetails, annotation.bounds));
         if (!isNullOrUndefined(markupAnnotation.color)) {
             const annotColor: any = JSON.parse(markupAnnotation.color);
-            const color: number[] = [annotColor.r, annotColor.g, annotColor.b];
+            const color: PdfColor = {r: annotColor.r, g: annotColor.g, b: annotColor.b};
             annotation.textMarkUpColor = color;
         }
         this.preserveIsLockProperty(markupAnnotation, annotation);
@@ -990,7 +1165,7 @@ export class AnnotationRenderer {
             cropX = cropValues.x;
             cropY = cropValues.y;
         }
-        else if (cropValues.x === 0 && page.cropBox[2] === page.size[0] && cropValues.y === page.size[1]) {
+        else if (cropValues.x === 0 && page.cropBox[2] === page.size.width && cropValues.y === page.size.height) {
             cropX = cropValues.x;
             cropY = cropValues.y;
         }
@@ -1014,7 +1189,8 @@ export class AnnotationRenderer {
             }
         }
         if (!isNullOrUndefined(stampAnnotation.stampAnnotationType) && (stampAnnotation.stampAnnotationType === 'image') && (stampAnnotation.stampAnnotationPath !== ' ') || isTemplate) {
-            const rubberStampAnnotation: PdfRubberStampAnnotation = new PdfRubberStampAnnotation(left, top, width, height);
+            const rubberStampAnnotation: PdfRubberStampAnnotation = new PdfRubberStampAnnotation(
+                {x: left, y: top, width: width, height: height});
             page.annotations.add(rubberStampAnnotation);
             if (isTemplate) {
                 const appearance: PdfTemplate = rubberStampAnnotation.appearance.normal;
@@ -1025,7 +1201,7 @@ export class AnnotationRenderer {
                 template._isExported = true;
                 template._appearance = stampAnnotation.template;
                 template._crossReference = dictionary._crossReference;
-                template._size = [stampAnnotation.templateSize[0], stampAnnotation.templateSize[1]];
+                template._size = {width: stampAnnotation.templateSize.width, height: stampAnnotation.templateSize.height};
                 const bounds: any = {x: 0, y: 0, width: width, height: height };
                 appearance.graphics.drawTemplate(template, bounds);
                 appearance.graphics.restore(state);
@@ -1041,7 +1217,13 @@ export class AnnotationRenderer {
                         const appearance: PdfTemplate = rubberStampAnnotation.appearance.normal;
                         const state: PdfGraphicsState = appearance.graphics.save();
                         appearance.graphics.setTransparency(opacity);
-                        appearance.graphics.drawImage(bitmap, 0, 0, width, height);
+                        const bounds: Rectangle = {
+                            x: 0,
+                            y: 0,
+                            width: width,
+                            height: height
+                        };
+                        appearance.graphics.drawImage(bitmap, bounds);
                         appearance.graphics.restore(state);
                     }
                     else {
@@ -1094,28 +1276,28 @@ export class AnnotationRenderer {
             const stampColor: string = stampAnnotation.stampFillcolor.toString();
             const fillColor: string = !isNullOrUndefined(stampAnnotation.fillColor) ? stampAnnotation.fillColor.toString() : '#192760';
             const isDynamic: string = stampAnnotation.isDynamicStamp.toString();
-            let textBrush: PdfBrush = new PdfBrush([0, 0, 0]);
-            let colors: number[] = [];
+            let textBrush: PdfBrush = new PdfBrush({r: 0, g: 0, b: 0});
+            let colors: PdfColor;
             if (fillColor === '#192760') {
-                colors = [25, 39, 96];
+                colors = {r: 25, g: 39, b: 96};
             }
             else if (fillColor === '#516c30') {
-                colors = [81, 108, 48];
+                colors = {r: 81, g: 108, b: 48};
             }
             else if (fillColor === '#8a251a') {
-                colors = [138, 37, 26];
+                colors = {r: 138, g: 37, b: 26};
             }
             textBrush = new PdfBrush(colors);
-            let stampBrush: PdfBrush = new PdfBrush([0, 0, 0]);
-            let stampcolors: number[] = [];
+            let stampBrush: PdfBrush = new PdfBrush({r: 0, g: 0, b: 0});
+            let stampcolors: PdfColor;
             if (stampColor === '#e6eddf') {
-                stampcolors = [230, 237, 223];
+                stampcolors = {r: 230, g: 237, b: 223};
             }
             else if (stampColor === '#f6dedd') {
-                stampcolors = [246, 222, 221];
+                stampcolors = {r: 246, g: 222, b: 221};
             }
             else if (stampColor === '#dce3ef') {
-                stampcolors = [220, 227, 239];
+                stampcolors = {r: 220, g: 227, b: 239};
             }
             textBrush = new PdfBrush(colors);
             stampBrush = new PdfBrush(stampcolors);
@@ -1184,7 +1366,8 @@ export class AnnotationRenderer {
             page.annotations.add(rubberStampAnnotation);
             if (!isIconExists) {
                 const appearance: PdfTemplate = rubberStampAnnotation.appearance.normal;
-                appearance.graphics.drawRoundedRectangle(0, 0, rectangle.width, rectangle.height, 10, pens, stampBrush);
+                appearance.graphics.drawRoundedRectangle({x: 0, y: 0, width: rectangle.width,
+                    height: rectangle.height}, 10, pens, stampBrush);
                 if (isDynamic === 'true') {
                     const text: string = stampAnnotation.dynamicText.toString();
                     const state: PdfGraphicsState = appearance.graphics.save();
@@ -1228,8 +1411,10 @@ export class AnnotationRenderer {
         const measureShapeAnnotation: any = details;
         if (!isNullOrUndefined(measureShapeAnnotation.shapeAnnotationType) && measureShapeAnnotation.shapeAnnotationType === 'Line') {
             const points: any = JSON.parse(measureShapeAnnotation.vertexPoints);
-            const linePoints: number[] = this.getSaveVertexPoints(points, page);
-            const lineAnnotation: PdfLineAnnotation = new PdfLineAnnotation(linePoints);
+            const linePoints: any = this.getSaveVertexPoints(points, page);
+            const startPoint: Point = {x: linePoints[0].x, y: linePoints[0].y};
+            const endPoint: Point =  {x: linePoints[1].x, y: linePoints[1].y};
+            const lineAnnotation: PdfLineAnnotation = new PdfLineAnnotation(startPoint, endPoint);
             if (!isNullOrUndefined(measureShapeAnnotation.note)) {
                 lineAnnotation.text = measureShapeAnnotation.note.toString();
             }
@@ -1243,12 +1428,12 @@ export class AnnotationRenderer {
             }
             if (!isNullOrUndefined(measureShapeAnnotation.strokeColor)) {
                 const strokeColor: any = JSON.parse(measureShapeAnnotation.strokeColor);
-                lineAnnotation.color = [strokeColor.r, strokeColor.g, strokeColor.b];
+                lineAnnotation.color = {r: strokeColor.r, g: strokeColor.g, b: strokeColor.b};
             }
             if (!isNullOrUndefined(measureShapeAnnotation.fillColor)) {
                 const fillColor: any = JSON.parse(measureShapeAnnotation.fillColor);
-                if (!this.isTransparentColor(fillColor)){
-                    const innerColor: number[] = [fillColor.r, fillColor.g, fillColor.b];
+                if (!this.isTransparentColor(fillColor)) {
+                    const innerColor: PdfColor = {r: fillColor.r, g: fillColor.g, b: fillColor.b};
                     lineAnnotation.innerColor = innerColor;
                 }
                 if (fillColor.a < 1 && fillColor.a > 0) {
@@ -1314,7 +1499,7 @@ export class AnnotationRenderer {
         }
         else if (!isNullOrUndefined(measureShapeAnnotation.shapeAnnotationType) && measureShapeAnnotation.shapeAnnotationType === 'Polyline') {
             const points: any = JSON.parse(measureShapeAnnotation.vertexPoints);
-            const linePoints: number[] = this.getSaveVertexPoints(points, page);
+            const linePoints: Point[] = this.getSaveVertexPoints(points, page);
             const polylineAnnotation: PdfPolyLineAnnotation = new PdfPolyLineAnnotation(linePoints);
             polylineAnnotation.author = !isNullOrUndefined(measureShapeAnnotation.author) && measureShapeAnnotation.author.toString() !== '' ? measureShapeAnnotation.author.toString() : 'Guest';
             if (!isNullOrUndefined(measureShapeAnnotation.note)) {
@@ -1326,13 +1511,13 @@ export class AnnotationRenderer {
             }
             if (!isNullOrUndefined(measureShapeAnnotation.strokeColor)) {
                 const strokeColor: any = JSON.parse(measureShapeAnnotation.strokeColor);
-                const color: number[] = [strokeColor.r, strokeColor.g, strokeColor.b];
+                const color: PdfColor = {r: strokeColor.r, g: strokeColor.g, b: strokeColor.b};
                 polylineAnnotation.color = color;
             }
             if (!isNullOrUndefined(measureShapeAnnotation.fillColor)) {
                 const fillColor: any = JSON.parse(measureShapeAnnotation.fillColor);
-                if (!this.isTransparentColor(fillColor)){
-                    const innerColor: number[] = [fillColor.r, fillColor.g, fillColor.b];
+                if (!this.isTransparentColor(fillColor)) {
+                    const innerColor: PdfColor = {r: fillColor.r, g: fillColor.g, b: fillColor.b};
                     polylineAnnotation.innerColor = innerColor;
                 }
                 if (fillColor.a < 1 && fillColor.a > 0) {
@@ -1405,7 +1590,7 @@ export class AnnotationRenderer {
             page.annotations.add(circleMeasurementAnnotation);
         } else if (!isNullOrUndefined(measureShapeAnnotation.shapeAnnotationType) && (measureShapeAnnotation.shapeAnnotationType === 'Polygon') && measureShapeAnnotation.indent !== 'PolygonRadius') {
             const points: any = JSON.parse(measureShapeAnnotation.vertexPoints);
-            const linePoints: number[] = this.getSaveVertexPoints(points, page);
+            const linePoints: Point[] = this.getSaveVertexPoints(points, page);
             const polygonAnnotation: PdfPolygonAnnotation = new PdfPolygonAnnotation(linePoints);
             polygonAnnotation.author = !isNullOrUndefined(measureShapeAnnotation.author) && measureShapeAnnotation.author.toString() !== '' ? measureShapeAnnotation.author.toString() : 'Guest';
             if (!isNullOrUndefined(measureShapeAnnotation.note)) {
@@ -1419,12 +1604,12 @@ export class AnnotationRenderer {
             }
             if (!isNullOrUndefined(measureShapeAnnotation.strokeColor)) {
                 const strokeColor: any = JSON.parse(measureShapeAnnotation.strokeColor);
-                polygonAnnotation.color = [strokeColor.r, strokeColor.g, strokeColor.b];
+                polygonAnnotation.color = {r: strokeColor.r, g: strokeColor.g, b: strokeColor.b};
             }
             if (!isNullOrUndefined(measureShapeAnnotation.fillColor)) {
                 const fillColor: any = JSON.parse(measureShapeAnnotation.fillColor);
-                if (!this.isTransparentColor(fillColor)){
-                    const innerColor: number[] = [fillColor.r, fillColor.g, fillColor.b];
+                if (!this.isTransparentColor(fillColor)) {
+                    const innerColor: PdfColor = {r: fillColor.r, g: fillColor.g, b: fillColor.b};
                     polygonAnnotation.innerColor = innerColor;
                 }
                 if (fillColor.a < 1 && fillColor.a > 0) {
@@ -1514,11 +1699,12 @@ export class AnnotationRenderer {
             cropX = cropValues.x;
             cropY = cropValues.y;
         }
-        else if (cropValues.x === 0 && page.cropBox[2] === page.size[0] && cropValues.y === page.size[1]) {
+        else if (cropValues.x === 0 && page.cropBox[2] === page.size.width && cropValues.y === page.size.height) {
             cropX = cropValues.x;
             cropY = cropValues.y;
         }
-        const annotation: PdfPopupAnnotation = new PdfPopupAnnotation(null, cropX + left, cropY + top, width, height);
+        const annotation: PdfPopupAnnotation = new PdfPopupAnnotation(null,
+                                                                      {x: cropX + left, y: cropY + top, width: width, height: height});
         if (popUpAnnotation['author'] === null) {
             popUpAnnotation['author'] = 'Guest';
         }
@@ -1543,7 +1729,7 @@ export class AnnotationRenderer {
         }
         const reviewDetails: any = popUpAnnotation.review;
         annotation.reviewHistory.add(this.addReviewCollections(reviewDetails, annotation.bounds));
-        const color: number[] = [255, 255, 51];
+        const color: PdfColor = {r: 255, g: 255, b: 51};
         annotation.color = color;
         annotation.opacity = popUpAnnotation.opacity;
         annotation.icon = PdfPopupIcon.comment;
@@ -1594,11 +1780,12 @@ export class AnnotationRenderer {
             cropX = cropValues.x;
             cropY = cropValues.y;
         }
-        else if (cropValues.x === 0 && page.cropBox[2] === page.size[0] && cropValues.y === page.size[1]) {
+        else if (cropValues.x === 0 && page.cropBox[2] === page.size.width && cropValues.y === page.size.height) {
             cropX = cropValues.x;
             cropY = cropValues.y;
         }
-        const annotation: PdfFreeTextAnnotation = new PdfFreeTextAnnotation(cropX + left, cropY + top, width, height);
+        const annotation: PdfFreeTextAnnotation = new PdfFreeTextAnnotation(
+            {x: cropX + left, y: cropY + top, width: width, height: height});
         annotation.setAppearance(true);
         if (isNullOrUndefined(freeTextAnnotation['author'])) {
             freeTextAnnotation['author'] = 'Guest';
@@ -1675,7 +1862,7 @@ export class AnnotationRenderer {
         annotation.opacity = !isNullOrUndefined(freeTextAnnotation.opacity) ? freeTextAnnotation.opacity : 1;
         if (!isNullOrUndefined(freeTextAnnotation.strokeColor)) {
             const strokeColor: any = JSON.parse(freeTextAnnotation.strokeColor);
-            const color: number[] = [strokeColor.r, strokeColor.g, strokeColor.b];
+            const color: PdfColor = {r: strokeColor.r, g: strokeColor.g, b: strokeColor.b};
             annotation.borderColor = color;
             // Modified Implementation for setting border width for transparent border
             if (!this.isTransparentColor(strokeColor)) {
@@ -1685,7 +1872,7 @@ export class AnnotationRenderer {
         if (!isNullOrUndefined(freeTextAnnotation.fillColor)) {
             const fillColor: any = JSON.parse(freeTextAnnotation.fillColor);
             if (!this.isTransparentColor(fillColor)){
-                const color: number[] = [fillColor.r, fillColor.g, fillColor.b];
+                const color: PdfColor = {r: fillColor.r, g: fillColor.g, b: fillColor.b};
                 if (freeTextAnnotation.isTransparentSet) {
                     annotation.color = undefined;
                 }
@@ -1704,7 +1891,7 @@ export class AnnotationRenderer {
         if (!isNullOrUndefined(freeTextAnnotation.fontColor)) {
             const textMarkupColor: any = JSON.parse(freeTextAnnotation.fontColor);
             if (!this.isTransparentColor(textMarkupColor)){
-                const fontColor: number[] = [textMarkupColor.r, textMarkupColor.g, textMarkupColor.b];
+                const fontColor: PdfColor = {r: textMarkupColor.r, g: textMarkupColor.g, b: textMarkupColor.b};
                 annotation.textMarkUpColor = fontColor;
             }
         }
@@ -1745,30 +1932,48 @@ export class AnnotationRenderer {
         }
         point1 = [(this.defaultWidth / 2 + 1), 15, 0, 0];
         point2 = [0, 0];
-        drawingPath.addLine(point1[0], point1[1], point2[0], point2[1]);
-        const pointValues: number[] = [drawingPath._points[0][0], drawingPath._points[0][1], 0, 0];
+        drawingPath.addLine({x: point1[0], y: point1[1]}, {x: point2[0], y: point2[1]});
+        const pointValues: number[] = [drawingPath._points[0].x, drawingPath._points[0].y, 0, 0];
+        const pointsval: Rectangle = this.convertNumberToRectangle(pointValues);
         if (graphicsPath) {
             let minX: number = Number.MAX_VALUE;
             let minY: number = Number.MAX_VALUE;
             let maxX: number = Number.MIN_VALUE;
             let maxY: number = Number.MIN_VALUE;
             for (let i: number = 0; i < graphicsPath._points.length; i++) {
-                const point: number[] = graphicsPath._points[parseInt(i.toString(), 10)];
-                minX = Math.min(minX, point[0]);
-                minY = Math.min(minY, point[1]);
-                maxX = Math.max(maxX, point[0]);
-                maxY = Math.max(maxY, point[1]);
+                const point: Point = graphicsPath._points[parseInt(i.toString(), 10)];
+                minX = Math.min(minX, point.x);
+                minY = Math.min(minY, point.y);
+                maxX = Math.max(maxX, point.x);
+                maxY = Math.max(maxY, point.y);
             }
             const offsetX: number = (rectangle.width - (maxX - minX)) / 2 - minX;
             const offsetY: number = (rectangle.height - (maxY - minY)) / 2 - minY;
             for (let i: number = 0; i < graphicsPath._points.length; i++) {
-                graphicsPath._points[parseInt(i.toString(), 10)][0] += offsetX;
-                graphicsPath._points[parseInt(i.toString(), 10)][1] += offsetY;
+                graphicsPath._points[parseInt(i.toString(), 10)].x += offsetX;
+                graphicsPath._points[parseInt(i.toString(), 10)].y += offsetY;
             }
             rubberStampAnnotation.appearance.normal.graphics.drawPath(graphicsPath, pens, textBrush);
         } else {
-            appearance.graphics.drawString(icon.toUpperCase(), font, pointValues, pens, textBrush, stringFormat);
+            appearance.graphics.drawString(icon.toUpperCase(), font, pointsval, pens, textBrush, stringFormat);
         }
+    }
+
+    /**
+     * Converts a number array into an array of Point arrays.
+     *
+     * @private
+     * @param {number[]} pointValues - Array of arrays containing numeric coordinates.
+     * @returns {Rectangle} Array of Rectangle arrays.
+     */
+    private convertNumberToRectangle(pointValues: number[]): Rectangle {
+        const pointsval: Rectangle = {
+            x: pointValues[0],
+            y: pointValues[1],
+            width: pointValues[2],
+            height: pointValues[3]
+        };
+        return pointsval;
     }
 
     private retriveDefaultWidth(subject: string): void {
@@ -1831,12 +2036,14 @@ export class AnnotationRenderer {
         const drawingPath: PdfPath = new PdfPath();
         point1 = [5, (rectangle.height / 3)];
         point2 = [5, (rectangle.height - (detailsFont.size * 2))];
-        drawingPath.addLine(point1[0], point1[1], point2[0], point2[1]);
-        const stampTypeBounds: number[] = [drawingPath._points[0][0], drawingPath._points[0][1], 0, 0];
-        const stampTimeStampbounds: number[] = [drawingPath._points[1][0], drawingPath._points[1][1],
-            (rectangle.width - drawingPath._points[1][0]), (rectangle.height - drawingPath._points[1][1])];
-        appearance.graphics.drawString(icon.toUpperCase(), stampFont, stampTypeBounds, pens, textBrush, stringFormat);
-        appearance.graphics.drawString(text, detailsFont, stampTimeStampbounds, null, textBrush, stringFormat);
+        drawingPath.addLine({x: point1[0], y: point1[1]}, {x: point2[0], y: point2[1]});
+        const stampTypeBounds: number[] = [drawingPath._points[0].x, drawingPath._points[0].y, 0, 0];
+        const stampTypeBoundsVal: Rectangle = this.convertNumberToRectangle(stampTypeBounds);
+        const stampTimeStampbounds: number[] = [drawingPath._points[1].x, drawingPath._points[1].y,
+            (rectangle.width - drawingPath._points[1].x), (rectangle.height - drawingPath._points[1].y)];
+        const stampTimeStampboundsVal: Rectangle = this.convertNumberToRectangle(stampTimeStampbounds);
+        appearance.graphics.drawString(icon.toUpperCase(), stampFont, stampTypeBoundsVal, pens, textBrush, stringFormat);
+        appearance.graphics.drawString(text, detailsFont, stampTimeStampboundsVal, null, textBrush, stringFormat);
     }
 
     private calculateBoundsXY(wrapperBounds: any, bounds: Rect, pageNo: number, pdfPageBase: any): Rect {
@@ -1987,9 +2194,8 @@ export class AnnotationRenderer {
                 const array1: PointBase[] = [
                     { x: array[0].x, y: array[0].y }, { x: array[1].x, y: array[1].y }
                 ];
-                graphicsPath.addLine(this.convertPixelToPoint(array1[0].x),
-                                     this.convertPixelToPoint(array1[0].y), this.convertPixelToPoint(array1[1].x),
-                                     this.convertPixelToPoint(array1[1].y));
+                graphicsPath.addLine({x: this.convertPixelToPoint(array1[0].x), y: this.convertPixelToPoint(array1[0].y)},
+                                     {x: this.convertPixelToPoint(array1[1].x), y: this.convertPixelToPoint(array1[1].y)});
                 currentPoint = { x: val.x, y: val.y };
             }
             if (path === 'C') {
@@ -2006,11 +2212,10 @@ export class AnnotationRenderer {
                     { x: array2[2].x, y: array2[2].y },
                     { x: array2[3].x, y: array2[3].y }
                 ];
-                graphicsPath.addBezier(this.convertPixelToPoint(array21[0].x),
-                                       this.convertPixelToPoint(array21[0].y),
-                                       this.convertPixelToPoint(array21[1].x), this.convertPixelToPoint(array21[1].y),
-                                       this.convertPixelToPoint(array21[2].x), this.convertPixelToPoint(array21[2].y),
-                                       this.convertPixelToPoint(array21[3].x), this.convertPixelToPoint(array21[3].y));
+                graphicsPath.addBezier({x: this.convertPixelToPoint(array21[0].x), y: this.convertPixelToPoint(array21[0].y)},
+                                       {x: this.convertPixelToPoint(array21[1].x), y: this.convertPixelToPoint(array21[1].y)},
+                                       {x: this.convertPixelToPoint(array21[2].x), y: this.convertPixelToPoint(array21[2].y)},
+                                       {x: this.convertPixelToPoint(array21[3].x), y: this.convertPixelToPoint(array21[3].y)});
                 currentPoint = { x: val.x, y: val.y };
             }
             if (path === 'Z' || path === 'z') {
@@ -2100,11 +2305,12 @@ export class AnnotationRenderer {
             cropX = cropValues.x;
             cropY = cropValues.y;
         }
-        else if (cropValues.x === 0 && page.cropBox[2] === page.size[0] && cropValues.y === page.size[1]) {
+        else if (cropValues.x === 0 && page.cropBox[2] === page.size.width && cropValues.y === page.size.height) {
             cropX = cropValues.x;
             cropY = cropValues.y;
         }
-        const circleAnnotation: PdfCircleAnnotation = new PdfCircleAnnotation(cropX + left, cropY + top, width, height);
+        const circleAnnotation: PdfCircleAnnotation = new PdfCircleAnnotation(
+            {x: cropX + left, y: cropY + top, width: width, height: height});
         if (!isNullOrUndefined(measureShapeAnnotation.note)) {
             circleAnnotation.text = measureShapeAnnotation.note.toString();
         }
@@ -2115,13 +2321,13 @@ export class AnnotationRenderer {
         }
         if (!isNullOrUndefined(measureShapeAnnotation.strokeColor)) {
             const strokeColor: any = JSON.parse(measureShapeAnnotation.strokeColor);
-            const color: number[] = [strokeColor.r, strokeColor.g, strokeColor.b];
+            const color: PdfColor = {r: strokeColor.r, g: strokeColor.g, b: strokeColor.b};
             circleAnnotation.color = color;
         }
         if (!isNullOrUndefined(measureShapeAnnotation.fillColor)) {
             const fillColor: any = JSON.parse(measureShapeAnnotation.fillColor);
             if (!this.isTransparentColor(fillColor)){
-                const innerColor: number[] = [fillColor.r, fillColor.g, fillColor.b];
+                const innerColor: PdfColor = {r: fillColor.r, g: fillColor.g, b: fillColor.b};
                 circleAnnotation.innerColor = innerColor;
             }
             if (fillColor.a < 1 && fillColor.a > 0) {
@@ -2235,14 +2441,14 @@ export class AnnotationRenderer {
         return isLock;
     }
 
-    private getSaveVertexPoints(points: any, page: PdfPage): number[] {
-        const pageHeight: number = page.size[1];
-        const pointList: number[] = [];
+    private getSaveVertexPoints(points: any, page: PdfPage): Point[] {
+        const pageHeight: number = page.size.height;
+        const pointList: Point[] = [];
         for (let index: number = 0; index < points.length; index++) {
             const x: number = this.convertPixelToPoint(points[parseInt(index.toString(), 10)].x);
-            pointList.push(x);
+            // pointList.push(x);
             const y: number = pageHeight - this.convertPixelToPoint(points[parseInt(index.toString(), 10)].y);
-            pointList.push(y);
+            pointList.push({x: x, y: y});
         }
         return pointList;
     }
@@ -2298,7 +2504,9 @@ export class AnnotationRenderer {
     }
 
     private addReviewCollections(popupAnnotation: any, bounds: any): PdfPopupAnnotation {
-        const annotation: PdfPopupAnnotation = new PdfPopupAnnotation(null, bounds.x, bounds.y, bounds.width, bounds.height);
+        const annotation: PdfPopupAnnotation = new PdfPopupAnnotation(null,
+                                                                      {x: bounds.x, y: bounds.y, width: bounds.width,
+                                                                          height: bounds.height});
         if (popupAnnotation['state'] != null) {
             annotation.state = this.getReviewState(popupAnnotation['state'].toString());
             annotation.stateModel = PdfAnnotationStateModel.review;
@@ -2435,25 +2643,25 @@ export class AnnotationRenderer {
         let outputstring: string = '';
         if (!isNullOrUndefined(inkAnnot.inkPointsCollection)) {
             for (let index: number = 0; index < inkAnnot.inkPointsCollection.length; index++) {
-                const inkList: number[] = inkAnnot.inkPointsCollection[parseInt(index.toString(), 10)];
-                for (let j: number = 0; j < inkList.length; j += 2) {
+                const inkList: Point[] = inkAnnot.inkPointsCollection[parseInt(index.toString(), 10)];
+                for (let j: number = 0; j < inkList.length; j++) {
                     let x: number;
                     let y: number;
                     if (inkAnnot._page.rotation === PdfRotationAngle.angle90) {
-                        x = inkList[j + 1];
-                        y = inkList[parseInt(j.toString(), 10)];
+                        x = inkList[j as number].y;
+                        y = inkList[j as number].x;
                     }
                     else if (inkAnnot._page.rotation === PdfRotationAngle.angle180) {
-                        x = inkAnnot._page.size[0] - inkList[parseInt(j.toString(), 10)];
-                        y = inkList[j + 1];
+                        x = inkAnnot._page.size.width - inkList[j as number].x;
+                        y = inkList[j as number].y;
                     }
                     else if (inkAnnot._page.rotation === PdfRotationAngle.angle270) {
-                        x = inkAnnot._page.size[0] - inkList[j + 1];
-                        y = inkAnnot._page.size[1] - inkList[parseInt(j.toString(), 10)];
+                        x = inkAnnot._page.size.width - inkList[j as number].y;
+                        y = inkAnnot._page.size.height - inkList[j as number].x;
                     }
                     else {
-                        x = inkList[parseInt(j.toString(), 10)];
-                        y = inkAnnot._page.size[1] - inkList[j + 1];
+                        x = inkList[j as number].x;
+                        y = inkAnnot._page.size.height - inkList[j as number].y;
                     }
                     if (j === 0) {
                         outputstring += 'M' + x + ',' + y + ' ';
@@ -2469,7 +2677,7 @@ export class AnnotationRenderer {
         signature.Opacity = inkAnnot.opacity;
         signature.Thickness = inkAnnot.border.width;
         signature.PathData = outputstring;
-        signature.StrokeColor = 'rgba(' + inkAnnot.color[0] + ',' + inkAnnot.color[1] + ',' + inkAnnot.color[2] + ',' + (inkAnnot.color[3] ? inkAnnot.color[3] : 1) + ')';
+        signature.StrokeColor = 'rgba(' + inkAnnot.color.r + ',' + inkAnnot.color.g + ',' + inkAnnot.color.b + ',' + this.getTransparentValue(inkAnnot.color) + ')';
         signature.PageNumber = pageNumber;
         signature.SignatureName = inkAnnot.name;
         return signature;
@@ -2491,25 +2699,25 @@ export class AnnotationRenderer {
         let outputstring: string = '';
         if (!isNullOrUndefined(inkAnnot.inkPointsCollection)) {
             for (let index: number = 0; index < inkAnnot.inkPointsCollection.length; index++) {
-                const inkList: number[] = inkAnnot.inkPointsCollection[parseInt(index.toString(), 10)];
-                for (let j: number = 0; j < inkList.length; j += 2) {
+                const inkList: Point[] = inkAnnot.inkPointsCollection[parseInt(index.toString(), 10)];
+                for (let j: number = 0; j < inkList.length; j++) {
                     let x: number;
                     let y: number;
                     if (inkAnnot._page.rotation === PdfRotationAngle.angle90) {
-                        x = inkList[j + 1];
-                        y = inkList[parseInt(j.toString(), 10)];
+                        x = inkList[j as number].y;
+                        y = inkList[j as number].x;
                     }
                     else if (inkAnnot._page.rotation === PdfRotationAngle.angle180) {
-                        x = inkAnnot._page.size[0] - inkList[parseInt(j.toString(), 10)];
-                        y = inkList[j + 1];
+                        x = inkAnnot._page.size.width - inkList[j as number].x;
+                        y = inkList[j as number].y;
                     }
                     else if (inkAnnot._page.rotation === PdfRotationAngle.angle270) {
-                        x = inkAnnot._page.size[0] - inkList[j + 1];
-                        y = inkAnnot._page.size[1] - inkList[parseInt(j.toString(), 10)];
+                        x = inkAnnot._page.size.width - inkList[j as number].y;
+                        y = inkAnnot._page.size.height - inkList[j as number].x;
                     }
                     else {
-                        x = inkList[parseInt(j.toString(), 10)];
-                        y = inkAnnot._page.size[1] - inkList[j + 1];
+                        x = inkList[j as number].x;
+                        y = inkAnnot._page.size.height - inkList[j as number].y;
                     }
                     if (j === 0) {
                         outputstring += 'M' + x + ',' + y + ' ';
@@ -2554,7 +2762,7 @@ export class AnnotationRenderer {
         signature.Opacity = inkAnnot.opacity;
         signature.Thickness = inkAnnot.border.width;
         signature.PathData = outputstring;
-        signature.StrokeColor = 'rgba(' + inkAnnot.color[0] + ',' + inkAnnot.color[1] + ',' + inkAnnot.color[2] + ',' + (inkAnnot.color[3] ? inkAnnot.color[3] : 1) + ')';
+        signature.StrokeColor = 'rgba(' + inkAnnot.color.r + ',' + inkAnnot.color.g + ',' + inkAnnot.color.b + ',' + this.getTransparentValue(inkAnnot.color) + ')';
         signature.PageNumber = pageNumber;
         signature.AnnotName = inkAnnot.name;
         if (inkAnnot._dictionary.has('CustomData') && !isNullOrUndefined(inkAnnot._dictionary.get('CustomData'))) {
@@ -2638,21 +2846,21 @@ export class AnnotationRenderer {
             const text: any = allowedInteractions[0];
             shapeAnnotation.AllowedInteractions = JSON.parse(text);
         }
-        shapeAnnotation.StrokeColor = !isNullOrUndefined(squareAnnot.color) ? 'rgba(' + squareAnnot.color[0] + ',' + squareAnnot.color[1] + ',' + squareAnnot.color[2] + ',' + (squareAnnot.color[3] ? squareAnnot.color[3] : 1) + ')' : 'rgba(0,0,0,1)';
-        let fillOpacity: number = (!isNullOrUndefined(squareAnnot.color) && squareAnnot.color[3]) ? squareAnnot.color[3] : 1;
+        shapeAnnotation.StrokeColor = !isNullOrUndefined(squareAnnot.color) ? 'rgba(' + squareAnnot.color.r + ',' + squareAnnot.color.g + ',' + squareAnnot.color.b + ',' + this.getTransparentValue(squareAnnot.color) + ')' : 'rgba(0,0,0,1)';
+        let fillOpacity: number = this.getTransparentValue(squareAnnot.color);
         if (squareAnnot._dictionary.has('FillOpacity') && !isNullOrUndefined(squareAnnot._dictionary.get('FillOpacity'))) {
             fillOpacity = parseInt(squareAnnot._dictionary.get('FillOpacity').toString(), 10);
         }
         fillOpacity = squareAnnot.innerColor ? fillOpacity : 0;
-        squareAnnot.innerColor = squareAnnot.innerColor ? squareAnnot.innerColor : [255, 255, 255];
-        shapeAnnotation.FillColor = 'rgba(' + squareAnnot.innerColor[0] + ',' + squareAnnot.innerColor[1] + ',' + squareAnnot.innerColor[2] + ',' + fillOpacity + ')';
+        squareAnnot.innerColor = squareAnnot.innerColor ? squareAnnot.innerColor : {r: 255, g: 255, b: 255};
+        shapeAnnotation.FillColor = 'rgba(' + squareAnnot.innerColor.r + ',' + squareAnnot.innerColor.g + ',' + squareAnnot.innerColor.b + ',' + fillOpacity + ')';
         shapeAnnotation.EnableShapeLabel = false;
         if (shapeFreeText != null) {
             shapeAnnotation.EnableShapeLabel = true;
             shapeAnnotation.LabelContent = shapeFreeText.text;
-            shapeAnnotation.LabelFillColor = 'rgba(' + shapeFreeText.color[0] + ',' + shapeFreeText.color[1] + ',' + shapeFreeText.color[2] + ',' + (shapeFreeText.color[3] ? shapeFreeText.color[3] : 1) + ')';
-            shapeAnnotation.FontColor = 'rgba(' + shapeFreeText.textMarkUpColor[0] + ',' + shapeFreeText.textMarkUpColor[1] + ',' + shapeFreeText.textMarkUpColor[2] + ',' + (shapeFreeText.textMarkUpColor[3] ? shapeFreeText.textMarkUpColor[3] : 1) + ')';
-            shapeAnnotation.LabelBorderColor = 'rgba(' + shapeFreeText.borderColor[0] + ',' + shapeFreeText.borderColor[1] + ',' + shapeFreeText.borderColor[2] + ',' + (shapeFreeText.borderColor[3] ? shapeFreeText.borderColor[3] : 1) + ')';
+            shapeAnnotation.LabelFillColor = 'rgba(' + shapeFreeText.color.r + ',' + shapeFreeText.color.g + ',' + shapeFreeText.color.b + ',' + this.getTransparentValue(shapeFreeText.color) + ')';
+            shapeAnnotation.FontColor = 'rgba(' + shapeFreeText.textMarkUpColor.r + ',' + shapeFreeText.textMarkUpColor.g + ',' + shapeFreeText.textMarkUpColor.b + ',' + this.getTransparentValue(shapeFreeText.textMarkUpColor) + ')';
+            shapeAnnotation.LabelBorderColor = 'rgba(' + shapeFreeText.borderColor.r + ',' + shapeFreeText.borderColor.g + ',' + shapeFreeText.borderColor.b + ',' + this.getTransparentValue(shapeFreeText.borderColor) + ')';
             shapeAnnotation.FontSize = shapeFreeText.font.size;
         }
         if (squareAnnot._dictionary.has('CustomData') && !isNullOrUndefined(squareAnnot._dictionary.get('CustomData'))) {
@@ -2662,6 +2870,128 @@ export class AnnotationRenderer {
             }
         }
         return shapeAnnotation;
+    }
+
+    /**
+     * @param {PdfRedactionAnnotation} redactAnnot - squareAnnot
+     * @param {number} height - height
+     * @param {number} width - width
+     * @param {number} pageRotation - pageRotation
+     * @param {PdfPage} page - page
+     * @private
+     * @returns {void}
+     */
+    public loadRedactionAnnotation(redactAnnot: PdfRedactionAnnotation, height: number,
+                                   width: number, pageRotation: number, page: PdfPage): RedactionAnnotationBase {
+        const redactionAnnotation: RedactionAnnotationBase = new RedactionAnnotationBase();
+        redactionAnnotation.ShapeAnnotationType = 'Redaction';
+        redactionAnnotation.Author = redactAnnot.author;
+        redactionAnnotation.AnnotName = redactAnnot.name;
+        redactionAnnotation.Subject = redactAnnot.subject;
+        if (!isNullOrUndefined(redactAnnot.modifiedDate)) {
+            redactionAnnotation.ModifiedDate = this.formatDate(redactAnnot.modifiedDate);
+        }
+        else {
+            redactionAnnotation.ModifiedDate = this.formatDate(new Date());
+        }
+        redactionAnnotation.Note = this.getValidNoteContent(redactAnnot.text);
+        redactionAnnotation.Thickness = redactAnnot.border.width;
+        redactionAnnotation.BorderStyle = this.getBorderStylesString(redactAnnot.border.style);
+        redactionAnnotation.BorderDashArray = redactAnnot.border.dash ? redactAnnot.border.dash[0] ? redactAnnot.border.dash[0] : 0 : 0;
+        redactionAnnotation.MarkerOpacity = redactAnnot.opacity;
+        redactionAnnotation.RotateAngle = this.getRotateAngleString(redactAnnot.rotate);
+        redactionAnnotation.AnnotType = 'redaction';
+        redactionAnnotation.RedactionType = 'redaction';
+        if ((redactAnnot._dictionary.has('RedactionType') || redactAnnot._dictionary.has('redactiontype')) &&
+        (!isNullOrUndefined(redactAnnot._dictionary.get('RedactionType')) ||
+        !isNullOrUndefined(redactAnnot._dictionary.get('redactiontype'))))
+        {
+            const customData: any = redactAnnot._dictionary.get('RedactionType') ?
+                redactAnnot._dictionary.get('RedactionType') : redactAnnot._dictionary.get('redactiontype');
+            if (customData != null && customData === 'TextRedaction')
+            {
+                redactionAnnotation.RedactionType = 'textRedact';
+            }
+        }
+        for (let i: number = 0; i < redactAnnot.reviewHistory.count; i++) {
+            redactionAnnotation.State = this.getStateString(redactAnnot.reviewHistory.at(parseInt(i.toString(), 10)).state);
+            redactionAnnotation.StateModel = this.getStateModelString(redactAnnot.reviewHistory.at(parseInt(i.toString(), 10)).stateModel);
+        }
+        if (isNullOrUndefined(redactionAnnotation.State) || isNullOrUndefined(redactionAnnotation.StateModel)) {
+            redactionAnnotation.State = 'Unmarked';
+            redactionAnnotation.StateModel = 'None';
+        }
+
+        redactionAnnotation.Comments = new Array<PopupAnnotationBase>();
+        for (let i: number = 0; i < redactAnnot.comments.count; i++) {
+            const annot: PopupAnnotationBase = this.loadPopupAnnotation(redactAnnot.comments.at(i), height, width, pageRotation);
+            redactionAnnotation.Comments.push(annot);
+        }
+        if (redactionAnnotation.RedactionType === 'textRedact') {
+            const quadPoints: string[] = redactAnnot._dictionary.has('QuadPoints') ? redactAnnot._dictionary.get('QuadPoints') : [];
+            let bounds: AnnotBounds[] = [];
+            if (pageRotation === 0) {
+                for (let i: number = 0; i < redactAnnot.boundsCollection.length; i++) {
+                    const boundsObject: any = redactAnnot.boundsCollection[parseInt(i.toString(), 10)];
+                    bounds.push(this.getBounds(boundsObject, height, width, pageRotation));
+                }
+            } else {
+                bounds = this.getTextMarkupBounds(quadPoints, height, width, pageRotation, page);
+            }
+            if (redactAnnot.boundsCollection && redactAnnot.boundsCollection.length === 0 && redactAnnot.bounds) {
+                const boundsObject: any = {
+                    x: redactAnnot.bounds.x, y: redactAnnot.bounds.y,
+                    width: redactAnnot.bounds.width, height: redactAnnot.bounds.height
+                };
+                bounds.push(this.getBounds(boundsObject, height, width, pageRotation));
+            }
+            redactionAnnotation.Bounds = bounds;
+        } else {
+            redactionAnnotation.Bounds = this.getBounds(redactAnnot.bounds, height, width, pageRotation);
+        }
+        redactionAnnotation.LineHeadStart = 'None';
+        redactionAnnotation.LineHeadEnd = 'None';
+        redactionAnnotation.IsCloudShape = false;
+        redactionAnnotation.CloudIntensity = 0;
+        if (redactAnnot._dictionary.has('RD') && !isNullOrUndefined(redactAnnot._dictionary.get('RD'))) {
+            redactionAnnotation.RectangleDifference = redactAnnot._dictionary.get('RD');
+        }
+        else {
+            redactionAnnotation.RectangleDifference = new Array<string>();
+        }
+        this.updateIsLockProperty(redactionAnnotation, redactAnnot);
+        if (redactAnnot._dictionary.has('AllowedInteractions')) {
+            const allowedInteractions: string[] = redactAnnot.getValues('AllowedInteractions');
+            const text: any = allowedInteractions[0];
+            redactionAnnotation.AllowedInteractions = JSON.parse(text);
+        }
+        redactionAnnotation.MarkerBorderColor = !isNullOrUndefined(redactAnnot.borderColor) ? 'rgba(' + redactAnnot.borderColor.r + ',' + redactAnnot.borderColor.g + ',' + redactAnnot.borderColor.b + ',' + this.getTransparentValue(redactAnnot.borderColor) + ')' : 'rgba(0,0,0,1)';
+        let fillOpacity: number = this.getTransparentValue(redactAnnot.color);
+        if (redactAnnot._dictionary.has('FillOpacity') && !isNullOrUndefined(redactAnnot._dictionary.get('FillOpacity'))) {
+            fillOpacity = parseInt(redactAnnot._dictionary.get('FillOpacity').toString(), 10);
+        }
+        fillOpacity = redactAnnot.innerColor ? fillOpacity : 0;
+        redactAnnot.innerColor = redactAnnot.innerColor ? redactAnnot.innerColor : {r: 255, g: 255, b: 255};
+        redactAnnot.appearanceFillColor = redactAnnot.appearanceFillColor ? redactAnnot.appearanceFillColor : {r: 255, g: 255, b: 255};
+        redactionAnnotation.MarkerFillColor = 'rgba(' + redactAnnot.appearanceFillColor.r + ',' + redactAnnot.appearanceFillColor.g + ',' + redactAnnot.appearanceFillColor.b + ',' + fillOpacity + ')';
+        redactionAnnotation.FillColor = 'rgba(' + redactAnnot.innerColor.r + ',' + redactAnnot.innerColor.g + ',' + redactAnnot.innerColor.b + ',' + 1 + ')';
+        redactionAnnotation.FontColor = 'rgba(' + redactAnnot.textColor.r + ',' + redactAnnot.textColor.g + ',' + redactAnnot.textColor.b + ',' + this.getTransparentValue(redactAnnot.textColor) + ')';
+        redactionAnnotation.FontSize = redactAnnot.font ? redactAnnot.font.size : 12;
+        if (redactAnnot.font) {
+            redactionAnnotation.FontFamily = this.getFontFamilyString((redactAnnot.font as PdfStandardFont)._fontFamily);
+        } else {
+            redactionAnnotation.FontFamily = redactAnnot._obtainFontDetails().name;
+        }
+        redactionAnnotation.OverlayText = redactAnnot.overlayText;
+        redactionAnnotation.IsRepeat = redactAnnot.repeatText;
+        redactionAnnotation.TextAlignment = this.getTextAlignmentString(redactAnnot.textAlignment);
+        if (redactAnnot._dictionary.has('CustomData') && !isNullOrUndefined(redactAnnot._dictionary.get('CustomData'))) {
+            const customData: any = redactAnnot._dictionary.get('CustomData');
+            if (customData != null) {
+                redactionAnnotation.ExistingCustomData = customData;
+            }
+        }
+        return redactionAnnotation;
     }
 
     /**
@@ -2697,9 +3027,9 @@ export class AnnotationRenderer {
         if (shapeFreeText != null) {
             shapeAnnotation.EnableShapeLabel = true;
             shapeAnnotation.LabelContent = shapeFreeText.text;
-            shapeAnnotation.LabelFillColor = 'rgba(' + shapeFreeText.color[0] + ',' + shapeFreeText.color[1] + ',' + shapeFreeText.color[2] + ',' + (shapeFreeText.color[3] ? shapeFreeText.color[3] : 1) + ')';
-            shapeAnnotation.FontColor = 'rgba(' + shapeFreeText.textMarkUpColor[0] + ',' + shapeFreeText.textMarkUpColor[1] + ',' + shapeFreeText.textMarkUpColor[2] + ',' + (shapeFreeText.textMarkUpColor[3] ? shapeFreeText.textMarkUpColor[3] : 1) + ')';
-            shapeAnnotation.LabelBorderColor = 'rgba(' + shapeFreeText.borderColor[0] + ',' + shapeFreeText.borderColor[1] + ',' + shapeFreeText.borderColor[2] + ',' + (shapeFreeText.borderColor[3] ? shapeFreeText.borderColor[3] : 1) + ')';
+            shapeAnnotation.LabelFillColor = 'rgba(' + shapeFreeText.color.r + ',' + shapeFreeText.color.g + ',' + shapeFreeText.color.b + ',' + this.getTransparentValue(shapeFreeText.color) + ')';
+            shapeAnnotation.FontColor = 'rgba(' + shapeFreeText.textMarkUpColor.r + ',' + shapeFreeText.textMarkUpColor.g + ',' + shapeFreeText.textMarkUpColor.b + ',' + this.getTransparentValue(shapeFreeText.textMarkUpColor) + ')';
+            shapeAnnotation.LabelBorderColor = 'rgba(' + shapeFreeText.borderColor.r + ',' + shapeFreeText.borderColor.g + ',' + shapeFreeText.borderColor.b + ',' + this.getTransparentValue(shapeFreeText.borderColor) + ')';
             shapeAnnotation.FontSize = shapeFreeText.font.size;
             shapeAnnotation.FontFamily = this.getFontFamilyString((shapeFreeText.font as PdfStandardFont)._fontFamily);
         }
@@ -2744,15 +3074,15 @@ export class AnnotationRenderer {
             const text: any = allowedInteractions[0];
             shapeAnnotation.AllowedInteractions = JSON.parse(text);
         }
-        const color: number[] = !isNullOrUndefined(lineAnnot.color) ? lineAnnot.color : [0, 0, 0];
-        shapeAnnotation.StrokeColor = 'rgba(' + color[0] + ',' + color[1] + ',' + color[2] + ',' + (color[3] ? color[3] : 1) + ')';
-        let fillOpacity: number = lineAnnot.color && lineAnnot.color[3] ? lineAnnot.color[3] : 1;
+        const color: PdfColor = !isNullOrUndefined(lineAnnot.color) ? lineAnnot.color : {r: 0, g: 0, b: 0};
+        shapeAnnotation.StrokeColor = 'rgba(' + color.r + ',' + color.g + ',' + color.b + ',' + this.getTransparentValue(color) + ')';
+        let fillOpacity: number = this.getTransparentValue(lineAnnot.color);
         if (lineAnnot._dictionary.has('FillOpacity') && !isNullOrUndefined(lineAnnot._dictionary.get('FillOpacity'))) {
             fillOpacity = parseInt(lineAnnot._dictionary.get('FillOpacity').toString(), 10);
         }
         fillOpacity = lineAnnot.innerColor ? fillOpacity : 0;
-        lineAnnot.innerColor = lineAnnot.innerColor ? lineAnnot.innerColor : [255, 255, 255];
-        shapeAnnotation.FillColor = 'rgba(' + lineAnnot.innerColor[0] + ',' + lineAnnot.innerColor[1] + ',' + lineAnnot.innerColor[2] + ',' + fillOpacity + ')';
+        lineAnnot.innerColor = lineAnnot.innerColor ? lineAnnot.innerColor : {r: 255, g: 255, b: 255};
+        shapeAnnotation.FillColor = 'rgba(' + lineAnnot.innerColor.r + ',' + lineAnnot.innerColor.g + ',' + lineAnnot.innerColor.b + ',' + fillOpacity + ')';
         if (lineAnnot._dictionary.has('CustomData') && !isNullOrUndefined(lineAnnot._dictionary.get('CustomData'))) {
             const customData: any = lineAnnot._dictionary.get('CustomData');
             if (customData != null) {
@@ -2795,31 +3125,40 @@ export class AnnotationRenderer {
         }
     }
 
-    private getLinePoints(points: number[], pageHeight: number, pageWidth: number, pageRotation: number, page: PdfPage): AnnotPoint[] {
+    private getTransparentValue(color: PdfColor): number {
+        if (color.isTransparent && color.isTransparent === true) {
+            return 0;
+        } else {
+            return 1;
+        }
+    }
+
+    private getLinePoints(points: Point[], pageHeight: number, pageWidth: number, pageRotation: number, page: PdfPage): AnnotPoint[] {
         const linePoints: AnnotPoint[] = [];
-        let startingPoint: AnnotPoint = new AnnotPoint(points[0], points[1]);
-        let endingPoint: AnnotPoint = new AnnotPoint(points[2], points[3]);
+        let startingPoint: AnnotPoint = new AnnotPoint(points[0].x, points[0].y);
+        let endingPoint: AnnotPoint = new AnnotPoint(points[1].x, points[1].y);
         const cropBox: number[] = this.getBothCropBoxValue(page);
         let cropBoxX: number = 0;
         let cropBoxY: number = 0;
-        if (!(cropBox[0] === 0 && (page as PdfPage).cropBox[2] === page.size[2] && cropBox[1] === page.size[3])) {
+        if (!(cropBox[0] === 0 && (page as PdfPage).cropBox[2] === page.size.width && cropBox[1] === page.size.height)) {
             cropBoxX = cropBox[0];
             cropBoxY = cropBox[1];
         }
         if (pageRotation === 0) {
-            startingPoint = { X: this.convertPointToPixel(points[0]) - this.convertPointToPixel(cropBoxX),
-                Y: (pageHeight - this.convertPointToPixel(points[1])) + this.convertPointToPixel(cropBoxY) };
-            endingPoint = { X: this.convertPointToPixel(points[2]) - this.convertPointToPixel(cropBoxX),
-                Y: (pageHeight - this.convertPointToPixel(points[3])) + this.convertPointToPixel(cropBoxY) };
+            startingPoint = { X: this.convertPointToPixel(points[0].x) - this.convertPointToPixel(cropBoxX),
+                Y: (pageHeight - this.convertPointToPixel(points[0].y)) + this.convertPointToPixel(cropBoxY) };
+            endingPoint = { X: this.convertPointToPixel(points[1].x) - this.convertPointToPixel(cropBoxX),
+                Y: (pageHeight - this.convertPointToPixel(points[1].y)) + this.convertPointToPixel(cropBoxY) };
         } else if (pageRotation === 1) {
-            startingPoint = { X: this.convertPointToPixel(points[1]), Y: this.convertPointToPixel(points[0]) };
-            endingPoint = { X: this.convertPointToPixel(points[3]), Y: this.convertPointToPixel(points[2]) };
+            startingPoint = { X: this.convertPointToPixel(points[0].y), Y: this.convertPointToPixel(points[0].x) };
+            endingPoint = { X: this.convertPointToPixel(points[1].y), Y: this.convertPointToPixel(points[1].x) };
         } else if (pageRotation === 2) {
-            startingPoint = { X: pageWidth - this.convertPointToPixel(points[0]), Y: this.convertPointToPixel(points[1]) };
-            endingPoint = { X: pageWidth - this.convertPointToPixel(points[2]), Y: this.convertPointToPixel(points[3]) };
+            startingPoint = { X: pageWidth - this.convertPointToPixel(points[0].x), Y: this.convertPointToPixel(points[0].y) };
+            endingPoint = { X: pageWidth - this.convertPointToPixel(points[1].x), Y: this.convertPointToPixel(points[1].y) };
         } else if (pageRotation === 3) {
-            startingPoint = { X: (pageWidth - this.convertPointToPixel(points[1])), Y: (pageHeight - this.convertPointToPixel(points[0])) };
-            endingPoint = { X: pageWidth - this.convertPointToPixel(points[3]), Y: pageHeight - this.convertPointToPixel(points[2]) };
+            startingPoint = { X: (pageWidth - this.convertPointToPixel(points[0].y)),
+                Y: (pageHeight - this.convertPointToPixel(points[0].x)) };
+            endingPoint = { X: pageWidth - this.convertPointToPixel(points[1].y), Y: pageHeight - this.convertPointToPixel(points[1].x) };
         }
         linePoints.push(startingPoint);
         linePoints.push(endingPoint);
@@ -2897,21 +3236,21 @@ export class AnnotationRenderer {
             const text: any = allowedInteractions[0];
             shapeAnnotation.AllowedInteractions = JSON.parse(text);
         }
-        shapeAnnotation.StrokeColor = 'rgba(' + ellipseAnnot.color[0] + ',' + ellipseAnnot.color[1] + ',' + ellipseAnnot.color[2] + ',' + (ellipseAnnot.color[3] ? ellipseAnnot.color[3] : 1) + ')';
-        let fillOpacity: number = ellipseAnnot.color[3] ? ellipseAnnot.color[3] : 1;
+        shapeAnnotation.StrokeColor = 'rgba(' + ellipseAnnot.color.r + ',' + ellipseAnnot.color.g + ',' + ellipseAnnot.color.b + ',' + this.getTransparentValue(ellipseAnnot.color) + ')';
+        let fillOpacity: number = this.getTransparentValue(ellipseAnnot.color);
         if (ellipseAnnot._dictionary.has('FillOpacity') && !isNullOrUndefined(ellipseAnnot._dictionary.get('FillOpacity'))) {
             fillOpacity = parseInt(ellipseAnnot._dictionary.get('FillOpacity').toString(), 10);
         }
         fillOpacity = ellipseAnnot.innerColor ? fillOpacity : 0;
-        ellipseAnnot.innerColor = ellipseAnnot.innerColor ? ellipseAnnot.innerColor : [255, 255, 255];
-        shapeAnnotation.FillColor = 'rgba(' + ellipseAnnot.innerColor[0] + ',' + ellipseAnnot.innerColor[1] + ',' + ellipseAnnot.innerColor[2] + ',' + fillOpacity + ')';
+        ellipseAnnot.innerColor = ellipseAnnot.innerColor ? ellipseAnnot.innerColor : {r: 255, g: 255, b: 255};
+        shapeAnnotation.FillColor = 'rgba(' + ellipseAnnot.innerColor.r + ',' + ellipseAnnot.innerColor.g + ',' + ellipseAnnot.innerColor.b + ',' + fillOpacity + ')';
         shapeAnnotation.EnableShapeLabel = false;
         if (shapeFreeText != null) {
             shapeAnnotation.EnableShapeLabel = true;
             shapeAnnotation.LabelContent = shapeFreeText.text;
-            shapeAnnotation.LabelFillColor = 'rgba(' + shapeFreeText.color[0] + ',' + shapeFreeText.color[1] + ',' + shapeFreeText.color[2] + ',' + (shapeFreeText.color[3] ? shapeFreeText.color[3] : 1) + ')';
-            shapeAnnotation.FontColor = 'rgba(' + shapeFreeText.textMarkUpColor[0] + ',' + shapeFreeText.textMarkUpColor[1] + ',' + shapeFreeText.textMarkUpColor[2] + ',' + (shapeFreeText.textMarkUpColor[3] ? shapeFreeText.textMarkUpColor[3] : 1) + ')';
-            shapeAnnotation.LabelBorderColor = 'rgba(' + shapeFreeText.borderColor[0] + ',' + shapeFreeText.borderColor[1] + ',' + shapeFreeText.borderColor[2] + ',' + (shapeFreeText.borderColor[3] ? shapeFreeText.borderColor[3] : 1) + ')';
+            shapeAnnotation.LabelFillColor = 'rgba(' + shapeFreeText.color.r + ',' + shapeFreeText.color.g + ',' + shapeFreeText.color.b + ',' + this.getTransparentValue(shapeFreeText.color) + ')';
+            shapeAnnotation.FontColor = 'rgba(' + shapeFreeText.textMarkUpColor.r + ',' + shapeFreeText.textMarkUpColor.g + ',' + shapeFreeText.textMarkUpColor.b + ',' + this.getTransparentValue(shapeFreeText.textMarkUpColor) + ')';
+            shapeAnnotation.LabelBorderColor = 'rgba(' + shapeFreeText.borderColor.r + ',' + shapeFreeText.borderColor.g + ',' + shapeFreeText.borderColor.b + ',' + this.getTransparentValue(shapeFreeText.borderColor) + ')';
             shapeAnnotation.FontSize = shapeFreeText.font.size;
         }
         if (ellipseAnnot._dictionary.has('CustomData') && !isNullOrUndefined(ellipseAnnot._dictionary.get('CustomData'))) {
@@ -2921,7 +3260,7 @@ export class AnnotationRenderer {
             }
         }
         if (ellipseAnnot._dictionary.has('Measure')) {
-            shapeAnnotation.FillColor = 'rgba(' + ellipseAnnot.innerColor[0] + ',' + ellipseAnnot.innerColor[1] + ',' + ellipseAnnot.innerColor[2] + ',' + fillOpacity + ')';
+            shapeAnnotation.FillColor = 'rgba(' + ellipseAnnot.innerColor.r + ',' + ellipseAnnot.innerColor.g + ',' + ellipseAnnot.innerColor.b + ',' + fillOpacity + ')';
             const measureShapeAnnotation: MeasureShapeAnnotationBase = new MeasureShapeAnnotationBase(shapeAnnotation);
             measureShapeAnnotation.Calibrate = this.getMeasureObject(ellipseAnnot as PdfAnnotation);
             if (ellipseAnnot._dictionary.has('IT')) {
@@ -3010,23 +3349,23 @@ export class AnnotationRenderer {
         JSON.stringify(shapeAnnotation.VertexPoints[shapeAnnotation.VertexPoints.length - 1])){
             shapeAnnotation.VertexPoints.push(shapeAnnotation.VertexPoints[0]);
         }
-        shapeAnnotation.StrokeColor = 'rgba(' + polygonAnnot.color[0] + ',' + polygonAnnot.color[1] + ',' + polygonAnnot.color[2] + ',' + (polygonAnnot.color[3] ? polygonAnnot.color[3] : 1) + ')';
-        let fillOpacity: number = polygonAnnot.color[3] ? polygonAnnot.color[3] : 1;
+        shapeAnnotation.StrokeColor = 'rgba(' + polygonAnnot.color.r + ',' + polygonAnnot.color.g + ',' + polygonAnnot.color.b + ',' + this.getTransparentValue(polygonAnnot.color) + ')';
+        let fillOpacity: number = this.getTransparentValue(polygonAnnot.color);
         if (polygonAnnot._dictionary.has('FillOpacity') && !isNullOrUndefined(polygonAnnot._dictionary.get('FillOpacity'))) {
             fillOpacity = parseInt(polygonAnnot._dictionary.get('FillOpacity').toString(), 10);
         }
         fillOpacity = polygonAnnot.innerColor ? fillOpacity : 0;
-        polygonAnnot.innerColor = polygonAnnot.innerColor ? polygonAnnot.innerColor : [255, 255, 255];
-        shapeAnnotation.FillColor = 'rgba(' + polygonAnnot.innerColor[0] + ',' + polygonAnnot.innerColor[1] + ',' + polygonAnnot.innerColor[2] + ',' + fillOpacity + ')';
+        polygonAnnot.innerColor = polygonAnnot.innerColor ? polygonAnnot.innerColor : {r: 255, g: 255, b: 255};
+        shapeAnnotation.FillColor = 'rgba(' + polygonAnnot.innerColor.r + ',' + polygonAnnot.innerColor.g + ',' + polygonAnnot.innerColor.b + ',' + fillOpacity + ')';
         shapeAnnotation.LineHeadStart = 'None';
         shapeAnnotation.LineHeadEnd = 'None';
         shapeAnnotation.EnableShapeLabel = false;
         if (shapeFreeText != null){
             shapeAnnotation.EnableShapeLabel = true;
             shapeAnnotation.LabelContent = shapeFreeText.text;
-            shapeAnnotation.LabelFillColor = 'rgba(' + shapeFreeText.color[0] + ',' + shapeFreeText.color[1] + ',' + shapeFreeText.color[2] + ',' + (shapeFreeText.color[3] ? shapeFreeText.color[3] : 1) + ')';
-            shapeAnnotation.FontColor = 'rgba(' + shapeFreeText.textMarkUpColor[0] + ',' + shapeFreeText.textMarkUpColor[1] + ',' + shapeFreeText.textMarkUpColor[2] + ',' + (shapeFreeText.textMarkUpColor[3] ? shapeFreeText.textMarkUpColor[3] : 1) + ')';
-            shapeAnnotation.LabelBorderColor = 'rgba(' + shapeFreeText.borderColor[0] + ',' + shapeFreeText.borderColor[1] + ',' + shapeFreeText.borderColor[2] + ',' + (shapeFreeText.borderColor[3] ? shapeFreeText.borderColor[3] : 1) + ')';
+            shapeAnnotation.LabelFillColor = 'rgba(' + shapeFreeText.color.r + ',' + shapeFreeText.color.g + ',' + shapeFreeText.color.b + ',' + this.getTransparentValue(shapeFreeText.color) + ')';
+            shapeAnnotation.FontColor = 'rgba(' + shapeFreeText.textMarkUpColor.r + ',' + shapeFreeText.textMarkUpColor.g + ',' + shapeFreeText.textMarkUpColor.b + ',' + this.getTransparentValue(shapeFreeText.textMarkUpColor) + ')';
+            shapeAnnotation.LabelBorderColor = 'rgba(' + shapeFreeText.borderColor.r + ',' + shapeFreeText.borderColor.g + ',' + shapeFreeText.borderColor.b + ',' + this.getTransparentValue(shapeFreeText.borderColor) + ')';
             shapeAnnotation.FontSize = shapeFreeText.font.size;
         }
         if (!isNullOrUndefined(polygonAnnot.borderEffect)){
@@ -3155,23 +3494,23 @@ export class AnnotationRenderer {
         if (!isNullOrUndefined(polyLineAnnot._dictionary.get('Vertices'))){
             shapeAnnotation.VertexPoints = this.getVertexPoints(polyLineAnnot._dictionary.get('Vertices'), width, height, pageRotation, polyLineAnnot._page);
         }
-        shapeAnnotation.StrokeColor = 'rgba(' + polyLineAnnot.color[0] + ',' + polyLineAnnot.color[1] + ',' + polyLineAnnot.color[2] + ',' + (polyLineAnnot.color[3] ? polyLineAnnot.color[3] : 1) + ')';
-        let fillOpacity: number = polyLineAnnot.color[3] ? polyLineAnnot.color[3] : 1;
+        shapeAnnotation.StrokeColor = 'rgba(' + polyLineAnnot.color.r + ',' + polyLineAnnot.color.g + ',' + polyLineAnnot.color.b + ',' + this.getTransparentValue(polyLineAnnot.color) + ')';
+        let fillOpacity: number = this.getTransparentValue(polyLineAnnot.color);
         if (polyLineAnnot._dictionary.has('FillOpacity') && !isNullOrUndefined(polyLineAnnot._dictionary.get('FillOpacity'))) {
             fillOpacity = parseInt(polyLineAnnot._dictionary.get('FillOpacity').toString(), 10);
         }
         fillOpacity = polyLineAnnot.innerColor ? fillOpacity : 0;
-        polyLineAnnot.innerColor = polyLineAnnot.innerColor ? polyLineAnnot.innerColor : [255, 255, 255];
-        shapeAnnotation.FillColor = 'rgba(' + polyLineAnnot.innerColor[0] + ',' + polyLineAnnot.innerColor[1] + ',' + polyLineAnnot.innerColor[2] + ',' + fillOpacity + ')';
+        polyLineAnnot.innerColor = polyLineAnnot.innerColor ? polyLineAnnot.innerColor : {r: 255, g: 255, b: 255};
+        shapeAnnotation.FillColor = 'rgba(' + polyLineAnnot.innerColor.r + ',' + polyLineAnnot.innerColor.g + ',' + polyLineAnnot.innerColor.b + ',' + fillOpacity + ')';
         shapeAnnotation.LineHeadStart = this.getLineEndingStyleString(polyLineAnnot.beginLineStyle);
         shapeAnnotation.LineHeadEnd = this.getLineEndingStyleString(polyLineAnnot.endLineStyle);
         shapeAnnotation.EnableShapeLabel = false;
         if (shapeFreeText != null){
             shapeAnnotation.EnableShapeLabel = true;
             shapeAnnotation.LabelContent = shapeFreeText.text;
-            shapeAnnotation.LabelFillColor = 'rgba(' + shapeFreeText.color[0] + ',' + shapeFreeText.color[1] + ',' + shapeFreeText.color[2] + ',' + (shapeFreeText.color[3] ? shapeFreeText.color[3] : 1) + ')';
-            shapeAnnotation.FontColor = 'rgba(' + shapeFreeText.textMarkUpColor[0] + ',' + shapeFreeText.textMarkUpColor[1] + ',' + shapeFreeText.textMarkUpColor[2] + ',' + (shapeFreeText.textMarkUpColor[3] ? shapeFreeText.textMarkUpColor[3] : 1) + ')';
-            shapeAnnotation.LabelBorderColor = 'rgba(' + shapeFreeText.borderColor[0] + ',' + shapeFreeText.borderColor[1] + ',' + shapeFreeText.borderColor[2] + ',' + (shapeFreeText.borderColor[3] ? shapeFreeText.borderColor[3] : 1) + ')';
+            shapeAnnotation.LabelFillColor = 'rgba(' + shapeFreeText.color.r + ',' + shapeFreeText.color.g + ',' + shapeFreeText.color.b + ',' + this.getTransparentValue(shapeFreeText.color) + ')';
+            shapeAnnotation.FontColor = 'rgba(' + shapeFreeText.textMarkUpColor.r + ',' + shapeFreeText.textMarkUpColor.g + ',' + shapeFreeText.textMarkUpColor.b + ',' + this.getTransparentValue(shapeFreeText.textMarkUpColor) + ')';
+            shapeAnnotation.LabelBorderColor = 'rgba(' + shapeFreeText.borderColor.r + ',' + shapeFreeText.borderColor.g + ',' + shapeFreeText.borderColor.b + ',' + this.getTransparentValue(shapeFreeText.borderColor) + ')';
             shapeAnnotation.FontSize = shapeFreeText.font.size;
         }
         if (!isNullOrUndefined(polyLineAnnot._borderEffect)){
@@ -3209,7 +3548,7 @@ export class AnnotationRenderer {
             shapeAnnotation.AllowedInteractions = JSON.parse(text);
         }
         if (polyLineAnnot._dictionary.has('Measure')) {
-            shapeAnnotation.FillColor = 'rgba(' + polyLineAnnot.innerColor[0] + ',' + polyLineAnnot.innerColor[1] + ',' + polyLineAnnot.innerColor[2] + ',' + fillOpacity + ')';
+            shapeAnnotation.FillColor = 'rgba(' + polyLineAnnot.innerColor.r + ',' + polyLineAnnot.innerColor.g + ',' + polyLineAnnot.innerColor.b + ',' + fillOpacity + ')';
             const measureShapeAnnotation: MeasureShapeAnnotationBase = new MeasureShapeAnnotationBase(shapeAnnotation);
             measureShapeAnnotation.Calibrate = this.getMeasureObject(polyLineAnnot as PdfAnnotation);
             if (polyLineAnnot._dictionary.has('IT')) {
@@ -3271,7 +3610,7 @@ export class AnnotationRenderer {
         formsFields.AnnotationType = 'SignatureImage';
         formsFields.PageNumber = pageNumber;
         formsFields.Opacity = stampAnnotation.opacity;
-        formsFields.StrokeColor = 'rgba(' + stampAnnotation.color + ',' + stampAnnotation.color[1] + ',' + stampAnnotation.color[2] + ',' + (stampAnnotation.color[3] ? stampAnnotation.color[3] : 1) + ')';
+        formsFields.StrokeColor = 'rgba(' + stampAnnotation.color.r + ',' + stampAnnotation.color.g + ',' + stampAnnotation.color.b + ',' + this.getTransparentValue(stampAnnotation.color) + ')';
         return formsFields;
     }
 
@@ -3361,7 +3700,7 @@ export class AnnotationRenderer {
         const cropBox: number[] = this.getBothCropBoxValue(page);
         let cropBoxX: number = 0;
         let cropBoxY: number = 0;
-        if (!(cropBox[0] === 0 && (page as PdfPage).cropBox[2] === page.size[2] && cropBox[1] === page.size[3])) {
+        if (!(cropBox[0] === 0 && (page as PdfPage).cropBox[2] === page.size.width && cropBox[1] === page.size.height)) {
             cropBoxX = cropBox[0];
             cropBoxY = cropBox[1];
         }
@@ -3558,8 +3897,8 @@ export class AnnotationRenderer {
         popupAnnotation.State = this.getStateString(popupAnnot.state);
         popupAnnotation.StateModel = this.getStateModelString(popupAnnot.stateModel);
         popupAnnotation.Size = new SizeBase(popupAnnot.bounds.width, popupAnnot.bounds.height);
-        popupAnnot.color = popupAnnot.color ? popupAnnot.color : [0, 0, 0];
-        popupAnnotation.Color = new AnnotColor(popupAnnot.color[0], popupAnnot.color[1], popupAnnot.color[2]);
+        popupAnnot.color = popupAnnot.color ? popupAnnot.color : {r: 0, g: 0, b: 0};
+        popupAnnotation.Color = new AnnotColor(popupAnnot.color.r, popupAnnot.color.g, popupAnnot.color.b);
         popupAnnotation.Opacity = popupAnnot.opacity;
         popupAnnotation.AnnotType = 'sticky';
         popupAnnotation.StrokeColor = 'rgba(' + popupAnnotation.Color.R + ',' + popupAnnotation.Color.G + ',' + popupAnnotation.Color.B + ',' + 1 + ')';
@@ -3607,19 +3946,19 @@ export class AnnotationRenderer {
         freeTextAnnotation.AnnotType = 'Text Box';
         freeTextAnnotation.FreeTextAnnotationType = 'Text Box';
         if (freeTextAnnot.borderColor) {
-            freeTextAnnotation.BorderColor = new AnnotColor(freeTextAnnot.borderColor[0], freeTextAnnot.borderColor[1],
-                                                            freeTextAnnot.borderColor[2]);
+            freeTextAnnotation.BorderColor = new AnnotColor(freeTextAnnot.borderColor.r, freeTextAnnot.borderColor.g,
+                                                            freeTextAnnot.borderColor.b);
         }
         else {
             freeTextAnnotation.BorderColor = new AnnotColor(255, 255, 255);
         }
         const points: AnnotPoint[] = [{X: 100, Y: 400}, {X: 200, Y: 400}];
         freeTextAnnotation.CalloutLines = points;
-        const backgroundColor: number[] = freeTextAnnot.color ? freeTextAnnot.color : [0, 0, 0];
+        const backgroundColor: PdfColor = freeTextAnnot.color ? freeTextAnnot.color : {r: 0, g: 0, b: 0};
         if (isNullOrUndefined(freeTextAnnot.color)) {
             freeTextAnnotation.IsTransparentSet = true;
         }
-        freeTextAnnotation.Color = new AnnotColor(backgroundColor[0], backgroundColor[1], backgroundColor[2]);
+        freeTextAnnotation.Color = new AnnotColor(backgroundColor.r, backgroundColor.g, backgroundColor.b);
         freeTextAnnotation.Flatten = freeTextAnnot.flatten;
         freeTextAnnotation.FlattenPopups = !isNullOrUndefined(freeTextAnnot.flattenPopups) ? freeTextAnnot.flattenPopups : false; // returns undefined
         if ((freeTextAnnot.font as PdfStandardFont)._fontFamily === 2) {
@@ -3631,7 +3970,7 @@ export class AnnotationRenderer {
         freeTextAnnotation.Font = new FontBase(freeTextAnnot.font, freeTextAnnotation.FontFamily); // need to be checked
         freeTextAnnotation.Thickness = freeTextAnnot.border.width;
         if (freeTextAnnot.borderColor) {
-            freeTextAnnotation.StrokeColor = 'rgba(' + freeTextAnnot.borderColor[0] + ',' + freeTextAnnot.borderColor[1] + ',' + freeTextAnnot.borderColor[2] + ',' + (freeTextAnnot.borderColor[3] ? freeTextAnnot.borderColor[3] : 1) + ')';
+            freeTextAnnotation.StrokeColor = 'rgba(' + freeTextAnnot.borderColor.r + ',' + freeTextAnnot.borderColor.g + ',' + freeTextAnnot.borderColor.b + ',' + this.getTransparentValue(freeTextAnnot.borderColor) + ')';
         }
         else {
             freeTextAnnotation.StrokeColor = 'rgba(255, 255, 255, 1)';
@@ -3641,7 +3980,7 @@ export class AnnotationRenderer {
             fillOpacity = parseInt(freeTextAnnot._dictionary.get('FillOpacity').toString(), 10);
         }
         fillOpacity = freeTextAnnot.color ? (!isNullOrUndefined(fillOpacity) ? fillOpacity : 1) : 0;
-        freeTextAnnotation.FillColor = 'rgba(' + backgroundColor[0] + ',' + backgroundColor[1] + ',' + backgroundColor[2] + ',' + fillOpacity + ')';
+        freeTextAnnotation.FillColor = 'rgba(' + backgroundColor.r + ',' + backgroundColor.g + ',' + backgroundColor.b + ',' + fillOpacity + ')';
         freeTextAnnotation.Layer = freeTextAnnot._dictionary.has('Layer') ? freeTextAnnot._dictionary.get('Layer') : null;
         // freeTextAnnotation.Location = freeTextAnnot._dictionary.has('Location') ? freeTextAnnot._dictionary.get('Location') : JSON.stringify({X: freeTextAnnot.bounds.x ,Y: freeTextAnnot.bounds.y});
         freeTextAnnotation.Location = freeTextAnnot._dictionary.has('Location') ? freeTextAnnot._dictionary.get('Location') : '{X=' + freeTextAnnot.bounds.x + ',Y=' + freeTextAnnot.bounds.y + '}';
@@ -3673,7 +4012,7 @@ export class AnnotationRenderer {
             freeTextAnnotation.State = 'Unmarked';
             freeTextAnnotation.StateModel = 'None';
         }
-        freeTextAnnotation.FontColor = !isNullOrUndefined(freeTextAnnot.textMarkUpColor) ? 'rgba(' + freeTextAnnot.textMarkUpColor[0] + ',' + freeTextAnnot.textMarkUpColor[1] + ',' + freeTextAnnot.textMarkUpColor[2] + ',' + (freeTextAnnot.textMarkUpColor[3] ? freeTextAnnot.textMarkUpColor[3] : 1) + ')' : 'rgba(0, 0, 0, 1)';
+        freeTextAnnotation.FontColor = !isNullOrUndefined(freeTextAnnot.textMarkUpColor) ? 'rgba(' + freeTextAnnot.textMarkUpColor.r + ',' + freeTextAnnot.textMarkUpColor.g + ',' + freeTextAnnot.textMarkUpColor.b + ',' + this.getTransparentValue(freeTextAnnot.textMarkUpColor) + ')' : 'rgba(0, 0, 0, 1)';
         for (let i: number = 0; i < freeTextAnnot.reviewHistory.count; i++) {
             freeTextAnnotation.State = this.getStateString(freeTextAnnot.reviewHistory.at(parseInt(i.toString(), 10)).state);
             freeTextAnnotation.StateModel = this.getStateModelString(freeTextAnnot.reviewHistory.at(parseInt(i.toString(), 10)).stateModel);
@@ -3739,7 +4078,7 @@ export class AnnotationRenderer {
         formFields.FontSize = this.convertPointToPixel(inkAnnot.font.size);
         formFields.PathData = inkAnnot.text;
         formFields.PageNumber = pageNumber;
-        formFields.StrokeColor = 'rgba(' + inkAnnot.textMarkUpColor[0] + ',' + inkAnnot.textMarkUpColor[1] + ',' + inkAnnot.textMarkUpColor[2] + ',' + (inkAnnot.textMarkUpColor[3] ? inkAnnot.textMarkUpColor[3] : 1) + ')';
+        formFields.StrokeColor = 'rgba(' + inkAnnot.textMarkUpColor.r + ',' + inkAnnot.textMarkUpColor.g + ',' + inkAnnot.textMarkUpColor.b + ',' + this.getTransparentValue(inkAnnot.textMarkUpColor) + ')';
         formFields.Opacity = inkAnnot.opacity;
         formFields.Thickness = 1;
         return formFields;
@@ -3910,7 +4249,8 @@ export class AnnotationRenderer {
                             annotation instanceof PdfEllipseAnnotation ||
                             annotation instanceof PdfPolygonAnnotation ||
                             annotation instanceof PdfRectangleAnnotation ||
-                            annotation instanceof PdfPolyLineAnnotation
+                            annotation instanceof PdfPolyLineAnnotation ||
+                            annotation instanceof PdfRedactionAnnotation
                         ) {
                             oldPageAnnotations.remove(annotation);
                         }
@@ -4001,9 +4341,8 @@ export class AnnotationRenderer {
                                                   textMarkup.bounds.width + textMarkup.bounds.x,
                                                   textMarkup.bounds.height + textMarkup.bounds.y);
         markupAnnotation.Opacity = textMarkup.opacity;
-        // markupAnnotation.Color = 'rgba(' + textMarkup.color[0] + ',' + textMarkup.color[1] + ',' + textMarkup.color[2] + ',' + (textMarkup.color[3] ? textMarkup.color[3] : 1) + ')';
-        markupAnnotation.Color = '#' + (1 << 24 | textMarkup.color[0] << 16 | textMarkup.color[1] << 8 | textMarkup.color[2]).toString(16).slice(1);
-        if (!isNullOrUndefined(textMarkup.modifiedDate)){
+        markupAnnotation.Color = '#' + (1 << 24 | textMarkup.color.r << 16 | textMarkup.color.g << 8 | textMarkup.color.b).toString(16).slice(1);
+        if (!isNullOrUndefined(textMarkup.modifiedDate)) {
             markupAnnotation.ModifiedDate = this.formatDate(textMarkup.modifiedDate);
         }
         else{
@@ -4014,9 +4353,8 @@ export class AnnotationRenderer {
         let bounds: AnnotBounds[] = [];
         if (pageRotation === 0) {
             for (let i: number = 0; i < textMarkup.boundsCollection.length; i++) {
-                const [x, y, width, height]: any = textMarkup.boundsCollection[parseInt(i.toString(), 10)];
-                const boundsObject: any = { x, y, width, height };
-                bounds.push(this.getBounds(boundsObject, height, width, pageRotation));
+                const boundsObject: any = textMarkup.boundsCollection[parseInt(i.toString(), 10)];
+                bounds.push(this.getBounds(boundsObject, boundsObject.height, boundsObject.width, pageRotation));
             }
         } else {
             bounds = this.getTextMarkupBounds(quadPoints, height, width, pageRotation, page);
@@ -4333,6 +4671,74 @@ export class ShapeAnnotationBase {
         this.LabelFillColor = null;
         this.LabelBorderColor = null;
         this.LabelSettings = null;
+        this.FontColor = null;
+        this.FontSize = 0;
+        this.FontFamily = null;
+        this.AnnotationSettings = null;
+        this.AnnotationSelectorSettings = null;
+        this.VertexPoints = null;
+        this.CustomData = null;
+        this.ExistingCustomData = null;
+        this.IsPrint = true;
+        this.AllowedInteractions = null;
+        this.AnnotationRotation = 0;
+    }
+}
+
+/**
+ *
+ * @hidden
+ */
+export class RedactionAnnotationBase {
+    public ShapeAnnotationType: string;
+    public Author: string;
+    public AnnotationSelectorSettings: any;
+    public ModifiedDate: string;
+    public Subject: string;
+    public Note: string;
+    public IsCommentLock: boolean;
+    public Bounds: any; // Use 'any' for compatibility with System.Drawing.RectangleF or Syncfusion.Drawing.RectangleF
+    public Thickness: number;
+    public BorderStyle: string;
+    public BorderDashArray: number;
+    public RotateAngle: string;
+    public IsCloudShape: boolean;
+    public CloudIntensity: number;
+    public RectangleDifference: string[];
+    public VertexPoints: AnnotPoint[]; // for line, polyline, and polygon annotations
+    public LineHeadStart: string; // only for line and polyline annotations
+    public LineHeadEnd: string; // only for line and polyline annotations
+    public IsLocked: boolean;
+    public AnnotName: string;
+    public Comments: PopupAnnotationBase[];
+    public State: string;
+    public StateModel: string;
+    public AnnotType: string;
+    public CustomData: { [key: string]: any };
+    public AnnotationSettings: any;
+    public AllowedInteractions: string[];
+    public IsPrint: boolean;
+    public ExistingCustomData: string;
+    public AnnotationRotation: number;
+    public FontColor: string;
+    public FontSize: number;
+    public FontFamily: string;
+    public TextAlignment: string;
+    public MarkerOpacity: number;
+    public MarkerFillColor: string;
+    public MarkerBorderColor: string;
+    public FillColor: string;
+    public IsRepeat: boolean;
+    public OverlayText: string;
+    public RedactionType: string;
+    constructor() {
+        this.TextAlignment = null;
+        this.MarkerOpacity = 1;
+        this.MarkerBorderColor = null;
+        this.MarkerFillColor = null;
+        this.FillColor = null;
+        this.IsRepeat = false;
+        this.OverlayText = null;
         this.FontColor = null;
         this.FontSize = 0;
         this.FontFamily = null;

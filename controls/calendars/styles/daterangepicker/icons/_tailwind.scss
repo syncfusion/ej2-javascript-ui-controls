@@ -1,3 +1,5 @@
+@use 'ej2-base/styles/common/mixin' as *;
+@use '../tailwind-definition' as *;
 @include export-module('daterangepicker-tailwind-icons') {
 
   /*! component icons */

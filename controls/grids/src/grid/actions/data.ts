@@ -24,6 +24,8 @@ export class Data implements IDataProcessor {
     public dataManager: DataManager;
     /** @hidden */
     public isQueryInvokedFromData: boolean;
+    /** @hidden */
+    public pinnedData: DataManager;
 
     //Module declarations
     protected parent: IGrid;
@@ -135,6 +137,18 @@ export class Data implements IDataProcessor {
      * @returns {Query} - returns the query
      * @hidden
      */
+    public pinnedDataQuery(query: Query): Query {
+        this.filterQuery(query);
+        this.searchQuery(query);
+        this.sortQuery(query);
+        return query;
+    }
+
+    /**
+     * @param {Query} query - specifies the query
+     * @returns {Query} - returns the query
+     * @hidden
+     */
     public aggregateQuery(query: Query): Query {
         const rows: AggregateRowModel[] = this.parent.aggregates;
         for (let i: number = 0; i < rows.length; i++) {
@@ -237,12 +251,12 @@ export class Data implements IDataProcessor {
                 }
                 let fn: Function | string = columns[parseInt(i.toString(), 10)].direction;
                 if (col.sortComparer) {
-                    this.parent.log('grid_sort_comparer');
-                    fn = !this.isRemote() ? (col.sortComparer as Function).bind(col) : columns[parseInt(i.toString(), 10)].direction;
+                    fn = (col.sortComparer as Function).bind(col);
                 }
                 if (gObj.groupSettings.columns.indexOf(columns[parseInt(i.toString(), 10)].field) === -1) {
                     if (col.isForeignColumn() || col.sortComparer) {
-                        query.sortByForeignKey(col.field, fn, undefined, columns[parseInt(i.toString(), 10)].direction.toLowerCase());
+                        query.sortByForeignKey(col.field, fn, undefined, columns[parseInt(i.toString(), 10)].direction.toLowerCase(),
+                                               col.foreignKeyValue);
                     } else {
                         query.sortBy(col.field, fn);
                     }
@@ -256,7 +270,8 @@ export class Data implements IDataProcessor {
                 } else {
                     const col: Column = this.getColumnByField(sortGrp[parseInt(i.toString(), 10)].field);
                     query.sortByForeignKey(sortGrp[parseInt(i.toString(), 10)].field,
-                                           sortGrp[parseInt(i.toString(), 10)].direction, undefined, col.getSortDirection().toLowerCase());
+                                           sortGrp[parseInt(i.toString(), 10)].direction, undefined,
+                                           col.getSortDirection().toLowerCase(), col.foreignKeyValue);
                 }
             }
         }

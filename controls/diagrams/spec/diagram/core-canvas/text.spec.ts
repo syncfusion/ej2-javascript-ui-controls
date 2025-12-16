@@ -117,8 +117,14 @@ describe('Diagram Control', () => {
         });
 
         afterAll((): void => {
-            diagram.destroy();
-            ele.remove();
+            if (diagram) {
+                diagram.destroy();
+                diagram = null;
+            }
+            if (ele && ele.parentNode) {
+                ele.parentNode.removeChild(ele);
+            }
+            ele = null;
         });
     });
 
@@ -230,8 +236,14 @@ describe('Diagram Control', () => {
             diagram.appendTo('#diagram47');
         });
         afterAll((): void => {
-            diagram.destroy();
-            ele.remove();
+            if (diagram) {
+                diagram.destroy();
+                diagram = null;
+            }
+            if (ele && ele.parentNode) {
+                ele.parentNode.removeChild(ele);
+            }
+            ele = null;
         });
     });
 
@@ -286,12 +298,18 @@ describe('Diagram Control', () => {
             diagram.appendTo('#diagramoverflow');
         });
         afterAll((): void => {
-            diagram.destroy();
-            ele.remove();
+           if (diagram) {
+                diagram.destroy();
+                diagram = null;
+            }
+            if (ele && ele.parentNode) {
+                ele.parentNode.removeChild(ele);
+            }
+            ele = null;
         });
-        it('Checking Node creation', () => {
+        it('Checking Node creation', (done: Function) => {
             expect(diagram.nodes.length === 5).toBe(true);
-            
+            done();
         })
     });
 
@@ -374,8 +392,14 @@ describe('Diagram Control', () => {
         });
 
         afterAll((): void => {
-            diagram.destroy();
-            ele.remove();
+             if (diagram) {
+                diagram.destroy();
+                diagram = null;
+            }
+            if (ele && ele.parentNode) {
+                ele.parentNode.removeChild(ele);
+            }
+            ele = null;
         });
         it('memory leak', () => {
             profile.sample();
@@ -413,22 +437,27 @@ describe('Diagram Control', () => {
             diagram.appendTo('#diagramtextEdit');
         });
         afterAll((): void => {
-            diagram.destroy();
-            ele.remove();
+           if (diagram) {
+                diagram.destroy();
+                diagram = null;
+            }
+            if (ele && ele.parentNode) {
+                ele.parentNode.removeChild(ele);
+            }
+            ele = null;
         });
         it('check the aria-label value in text-edit mode', (done: Function) => {
-            let diagramCanvas = document.getElementById(diagram.element.id + 'content');
-            expect(diagram.nodes.length).toBe(1);
-            diagram.select([diagram.nodes[0]]);
-            mouseEvents.clickEvent(diagramCanvas, 100, 100);
-            mouseEvents.dblclickEvent(diagramCanvas, 100, 100);
-            const textElement = document.getElementById('node_annotation_text');
-            let flag: boolean = false;
-            // Check if the aria-label attribute is present
-            if (textElement.hasAttribute('aria-label')) {
-                flag = true;
+            const d = diagram as Diagram;
+            const diagramCanvas = document.getElementById(d.element.id + 'content') as HTMLElement | null;
+            expect(d.nodes.length).toBe(1);
+            if (diagramCanvas) {
+                d.select([d.nodes[0]]);
+                mouseEvents.clickEvent(diagramCanvas, 100, 100);
+                mouseEvents.dblclickEvent(diagramCanvas, 100, 100);
             }
-            expect(flag).toBe(true);
+            const textElement = document.getElementById('node_annotation_text');
+            const hasAria = !!textElement && textElement.hasAttribute('aria-label');
+            expect(hasAria).toBe(true);
             done();
         });
     });

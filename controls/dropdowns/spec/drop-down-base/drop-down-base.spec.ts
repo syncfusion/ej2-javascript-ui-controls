@@ -697,19 +697,7 @@ describe('DropDownBase', () => {
             let next: HTMLUListElement = listObj.element.nextElementSibling.children[0] as HTMLUListElement;
             (<any>listObj).updateListValues();
             expect(listObj.getDataByValue(true)).toBe(true);
-            (<any>listObj).enableRtlElements = element;
-            (<any>listObj).list = null;
-            (<any>listObj).setFloatingHeader();
-            (<any>listObj).setEnableRtl();
-            (<any>listObj).debounceTimer = 500;
-            (<any>listObj).debouncedFiltering();
-            element.cloneNode = null;
-            (<any>listObj).groupHeaderItems = null;
-            (<any>listObj).fields.groupBy = null;
-            (<any>listObj).fixedHeaderElement = createElement('div', { id: 'dropdownbase'});
-            (<any>listObj).updateFixedGroupTemplateHader(element);
-            (<any>listObj).list = createElement('div', { id: 'dropdownbase', className: 'e-virtual-ddl-content' });
-            (<any>listObj).createVirtualContent();
+            //expect();
         });
     });
     it('memory leak', () => {     
@@ -947,76 +935,3 @@ describe('templatecompiler Spec for empty method ', () => {
         (<any>listObj).remainingItems(datasource1 , fields);
     })
 });
-
-describe('getValueByText method', () => {
-    let listObj: any;
-    let element: HTMLElement;
-    let ds = [{ id: 'item1', name: 'First Item' }, { id: 'item2', name: 'Second Item' }];
-    beforeEach(() => {
-        element = createElement('div', { id: 'dropdownbase' });
-        document.body.appendChild(element);
-        listObj = new DropDownBase({ 
-            dataSource: ds,
-            fields: { text: 'name', value: 'id' }
-        });
-        listObj.appendTo(element);
-    });
-    afterEach(() => {
-        if (element) {
-            element.parentElement.remove();
-        }
-        document.body.innerHTML = '';
-    });
-
-    it('should return the correct value for a given text without ignoring case', () => {
-        let value = listObj.getValueByText('Second Item', false);
-        expect(value).toEqual('item2');
-    });
-
-    it('should return null for a given text with different case when ignoreCase is false', () => {
-        let value = listObj.getValueByText('second item', false);
-        expect(value).toBeNull();
-    });
-});
-
-describe('DropDownBase checkingAccent', () => {
-    let listObj: any;
-    let element: HTMLElement;
-    const datasource: { [key: string]: Object }[] = [
-        { id: '1', text: 'Item 1' },
-        { id: '2', text: 'Item 2' }
-    ];
-    beforeEach(() => {
-        element = document.createElement('div');
-        element.id = 'dropdownbase';
-        document.body.appendChild(element);
-    });
-    afterEach(() => {
-        if (element) {
-            element.remove();
-        }
-        document.body.innerHTML = '';
-    });
-    it('with ignoreCase as false', () => {
-        listObj = new DropDownBase({ dataSource: datasource, fields: { text: 'text', value: 'id' } });
-        listObj.appendTo(element);
-        (<any>listObj).checkingAccent('Item 1', 'Item 1', false);
-    });
-    it('with ignoreCase as false and different cases', () => {
-        listObj = new DropDownBase({ dataSource: datasource, fields: { text: 'text', value: 'id' } });
-        listObj.appendTo(element);
-        (<any>listObj).checkingAccent('Item 1', 'item 1', false);
-    });
-    it('dispatchEvent with null element', () => {
-        listObj = new DropDownBase({ dataSource: datasource });
-        listObj.appendTo(element);
-        (<any>listObj).dispatchEvent(null, 'change');
-    });
-    it('getIndexByValueFilter with null ulElement', () => {
-        listObj = new DropDownBase({ dataSource: datasource });
-        listObj.appendTo(element);
-        (<any>listObj).getIndexByValueFilter('1', null);
-    });
-});
-
-

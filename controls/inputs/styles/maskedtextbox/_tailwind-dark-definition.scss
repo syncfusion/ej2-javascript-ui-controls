@@ -1,1 +1,24 @@
-@import './tailwind-definition.scss';
+@use 'ej2-base/styles/definition/tailwind-dark' as *;
+@forward 'ej2-base/styles/definition/tailwind-dark';
+$mask-font-family: $font-family !default;
+$mask-font-size: $text-sm !default;
+$mask-bigger-font-size: $text-base !default;
+
+// color
+
+$mask-error-color: $danger !default;
+$mask-bigger-min-height: 40px !default;
+$mask-min-height: 33px !default;
+
+$mask-prepend-label-bottom-top: 18px !default;
+$mask-prepend-label-top-top: 14px !default;
+$mask-prepend-outline-label-bottom-top: 17px !default;
+$mask-prepend-outline-label-top-top: 18px !default;
+$mask-prepend-filled-label-bottom-top: 18px !default;
+$mask-prepend-filled-label-top-top: 15px !default;
+$mask-bigger-prepend-label-bottom-top: 21px !default;
+$mask-bigger-prepend-label-top-top: 14px !default;
+$mask-bigger-prepend-outline-label-bottom-top: 20px !default;
+$mask-bigger-prepend-outline-label-top-top: 15px !default;
+$mask-bigger-prepend-filled-label-bottom-top: 21px !default;
+$mask-bigger-prepend-filled-label-top-top: 15px !default;

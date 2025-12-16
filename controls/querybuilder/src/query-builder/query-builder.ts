@@ -3678,7 +3678,7 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
                             selVal = (length > 1) ? rule.value[i as number] as string : rule.value as string;
                             selectedValue = this.parseDate(selVal, format) || new Date();
                         }
-                        if ( !isNullOrUndefined(itemData) && itemData.value && !isTemplate){
+                        if (!isNullOrUndefined(itemData) && itemData.value && !isTemplate) {
                             const parsedDate: Date = this.parseDate(itemData.value.toString(), itemData.format);
                             if (parsedDate && !isNaN(parsedDate.getTime())) {
                                 selectedValue = parsedDate;

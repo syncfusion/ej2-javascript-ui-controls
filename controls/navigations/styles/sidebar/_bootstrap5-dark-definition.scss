@@ -1,1 +1,11 @@
-@import './bootstrap5-definition.scss';
+@use 'ej2-base/styles/definition/bootstrap5-dark' as *;
+@forward 'ej2-base/styles/definition/bootstrap5-dark';
+$sidebar-box-shadow: $shadow !default;
+
+//color variables
+$sidebar-background: $content-bg-color-alt1 !default;
+$sidebar-border: $transparent !default;
+$sidebar-overlay: $overlay-bg-color !default;
+$sidebar-height: 100% !default;
+$sidebar-border-width: 0 !default;
+$sidebar-margin-none: 0 !default;

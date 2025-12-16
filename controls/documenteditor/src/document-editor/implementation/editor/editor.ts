@@ -18707,6 +18707,16 @@ export class Editor {
         this.updateHistoryForComments(commentStartToInsert);
         this.handledEnter = false;
     }
+    private removeHeadingFormat(paragraphAdv: ParagraphWidget, paragraph: ParagraphWidget): void {
+        if (paragraphAdv.paragraphFormat.baseStyle && paragraphAdv.paragraphFormat.baseStyle.name != 'Normal' && paragraphAdv.paragraphFormat.baseStyle.name != 'Header' && paragraphAdv.paragraphFormat.baseStyle.name != 'Footer') {
+            paragraph.paragraphFormat.copyFormat(paragraphAdv.paragraphFormat);
+            paragraph.characterFormat.copyFormat(paragraphAdv.characterFormat);
+            paragraph.characterFormat.removedIds = [];
+            paragraphAdv.paragraphFormat.clearFormat();
+            paragraphAdv.characterFormat.clearFormat();
+            this.documentHelper.layout.reLayoutParagraph(paragraphAdv, 0, 0);
+        }
+    }
     private splitParagraphInternal(selection: Selection, paragraphAdv: ParagraphWidget, currentLine: LineWidget, offset: number, characterFormat: WCharacterFormat, isInsertParaBeforeTable?: boolean, isInsertAfterCurrentPara?: boolean): ParagraphWidget {
         let insertIndex: number = 0;
         let blockIndex: number = paragraphAdv.index;
@@ -18757,6 +18767,7 @@ export class Editor {
                     if (!this.retrieveRevisionByType(paragraphAdv.characterFormat, 'Deletion')) {
                         paragraphAdv = paragraphAdv.combineWidget(this.owner.viewer) as ParagraphWidget;
                         this.moveInlines(paragraphAdv, paragraph, 0, 0, paragraphAdv.firstChild as LineWidget, offset, paragraphAdv.lastChild as LineWidget);
+                        this.removeHeadingFormat(paragraphAdv, paragraph);
                     }
                     //As per MS Word behaviour when the current paragraph's para mark has an delete revision, we need to insert the new revision in the next paragraph.
                     else {
@@ -18768,6 +18779,7 @@ export class Editor {
                 if (paragraphAdv.characterFormat.revisionLength > 0) {
                     paragraphAdv = paragraphAdv.combineWidget(this.owner.viewer) as ParagraphWidget;
                     this.moveInlines(paragraphAdv, paragraph, 0, 0, paragraphAdv.firstChild as LineWidget, offset, paragraphAdv.lastChild as LineWidget);
+                    this.removeHeadingFormat(paragraphAdv, paragraph);
                 } else {
                     insertIndex++;
                     blockIndex++;
@@ -24981,7 +24993,7 @@ export class Editor {
             return String.fromCharCode(9745);
         }
     }
-
+    
     private getDefaultText(formField: FormField): string {
         let defaultText: string = '';
         if (formField instanceof CheckBoxFormField) {

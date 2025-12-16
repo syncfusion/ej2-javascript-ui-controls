@@ -1,3 +1,5 @@
+@use 'ej2-base/styles/common/mixin' as *;
+@use './theme-variables' as *;
 @mixin multicolumn-combobox-styles($margin-top-value) {
   &.e-multicolumn-list {
     margin-top: $margin-top-value;
@@ -7,14 +9,14 @@
 @include export-module('multicolumn-combobox-layout') {
   .e-multicolumn-list-icon .e-spinner-pane .e-spinner-inner svg {
     /* stylelint-disable declaration-no-important */
-    height: 20px !important;
-    width: 20px !important;
+    height: $multicolumn-spin-pane-height !important;
+    width: $multicolumn-spinner-width !important;
     transform-origin: 10px 10px 10px !important;
     /* stylelint-enable declaration-no-important */
   }
   .e-multicolumn-grid tr.e-groupcaptionrow {
     position: sticky;
-    top: 0;
+    top: $padding-zero;
     .e-groupcaption {
       font-weight: 600;
     }
@@ -34,7 +36,7 @@
   .e-multicolumn-grid.e-rtl .e-gridheader {
     @if ($skin-name == 'highcontrast') {
       .e-headercelldiv {
-        margin: 0;
+        margin: $padding-zero;
       }
     }
   }
@@ -46,24 +48,24 @@
     vertical-align: middle;
     border-style: solid;
     border-width: $footer-border-width;
-    font-size: 14px;
+    font-size: $multicolumn-font-size;
     height: $multicolumn-grid-height;
     display: flex;
     align-items: center;
-    border-radius: 0 0 $multicolumn-popup-border-radius $multicolumn-popup-border-radius;
+    border-radius: $multicolumn-zero-border-radius $multicolumn-zero-border-radius $multicolumn-popup-border-radius $multicolumn-popup-border-radius;
   }
   .e-multicolumn-list .e-multicolumn-list-hidden {
     border: 0;
-    height: 0;
-    padding: 0;
+    height: $multicolumn-zero-height;
+    padding: $padding-zero;
     visibility: hidden;
-    width: 0;
+    width: $multicolumn-zero-width;
   }
   .e-multicolumn-grid.e-grid {
     border-width: $grid-border-width;
     border-radius: $multicolumn-popup-border-radius;
     .e-gridcontent {
-      border-radius: 0 0 $multicolumn-popup-border-radius $multicolumn-popup-border-radius;
+      border-radius: $multicolumn-zero-border-radius $multicolumn-zero-border-radius $multicolumn-popup-border-radius $multicolumn-popup-border-radius;
     }
   }
   .e-input-group.e-multicolumn-list {
@@ -74,9 +76,9 @@
   .e-multicolumn-list {
     &:has(.e-popup-footer) {
       .e-multicolumn-grid.e-grid {
-        border-radius: $multicolumn-popup-border-radius $multicolumn-popup-border-radius 0 0;
+        border-radius: $multicolumn-popup-border-radius $multicolumn-popup-border-radius $multicolumn-zero-border-radius $multicolumn-zero-border-radius;
         .e-gridcontent {
-          border-radius: 0;
+          border-radius: $multicolumn-zero-border-radius;
         }
       }
     }
@@ -107,8 +109,8 @@
     .e-nodata {
       cursor: default;
       font-family: inherit;
-      font-size: 14px;
-      padding: 14px 16px;
+      font-size: $multicolumn-font-size;
+      padding: $multicolumn-nodata-padding;
       text-align: center;
       border-radius: inherit;
     }
@@ -117,7 +119,7 @@
     }
     .e-gridheader {
       position: sticky;
-      top: 0;
+      top: $padding-zero;
       z-index: 1;
       border-radius: $multicolumn-popup-border-radius $multicolumn-popup-border-radius 0 0;
     }
@@ -145,7 +147,7 @@
     .e-multicolumn-grid .e-headercelldiv,
     .e-multicolumn-grid .e-rowcell,
     &.e-multicolumn-list .e-popup-footer {
-      font-size: 12px;
+      font-size: $multicolumn-small-grid-footer-font-size;
     }
     &.e-multicolumn-list .e-popup-footer,
     .e-multicolumn-grid .e-row,

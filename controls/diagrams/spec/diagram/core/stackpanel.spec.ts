@@ -35,8 +35,9 @@ describe('Diagram Control', () => {
             diagram.appendTo('#diagram35');
         });
         afterAll((): void => {
-            diagram.destroy();
-            ele.remove();
+            if (diagram) { diagram.destroy(); diagram = null; }
+            if (ele && ele.parentNode) ele.parentNode.removeChild(ele);
+            ele = null;
         });
 
         it('Checking stack panel without children', (done: Function) => {
@@ -69,8 +70,9 @@ describe('Diagram Control', () => {
             diagram.appendTo('#diagram36');
         });
         afterAll((): void => {
-            diagram.destroy();
-            ele.remove();
+            if (diagram) { diagram.destroy(); diagram = null; }
+            if (ele && ele.parentNode) ele.parentNode.removeChild(ele);
+            ele = null;
         });
 
         it('Checking stack panel with empty children', (done: Function) => {
@@ -111,8 +113,9 @@ describe('Diagram Control', () => {
             diagram.appendTo('#diagram37');
         });
         afterAll((): void => {
-            diagram.destroy();
-            ele.remove();
+            if (diagram) { diagram.destroy(); diagram = null; }
+            if (ele && ele.parentNode) ele.parentNode.removeChild(ele);
+            ele = null;
         });
 
         it('Checking default orientation', (done: Function) => {
@@ -177,8 +180,9 @@ describe('Diagram Control', () => {
         });
 
         afterAll((): void => {
-            diagram.destroy();
-            ele.remove();
+            if (diagram) { diagram.destroy(); diagram = null; }
+            if (ele && ele.parentNode) ele.parentNode.removeChild(ele);
+            ele = null;
         });
 
         it('Checking horizontal panel', (done: Function) => {
@@ -244,8 +248,9 @@ describe('Diagram Control', () => {
         });
 
         afterAll((): void => {
-            diagram.destroy();
-            ele.remove();
+            if (diagram) { diagram.destroy(); diagram = null; }
+            if (ele && ele.parentNode) ele.parentNode.removeChild(ele);
+            ele = null;
         });
 
         it('Checking vertical panel', (done: Function) => {
@@ -290,8 +295,9 @@ describe('Diagram Control', () => {
             diagram.appendTo('#diagram40');
         });
         afterAll((): void => {
-            diagram.destroy();
-            ele.remove();
+            if (diagram) { diagram.destroy(); diagram = null; }
+            if (ele && ele.parentNode) ele.parentNode.removeChild(ele);
+            ele = null;
         });
 
         it('Checking horizontal panel with padding', (done: Function) => {
@@ -336,8 +342,9 @@ describe('Diagram Control', () => {
             diagram.appendTo('#diagram41');
         });
         afterAll((): void => {
-            diagram.destroy();
-            ele.remove();
+            if (diagram) { diagram.destroy(); diagram = null; }
+            if (ele && ele.parentNode) ele.parentNode.removeChild(ele);
+            ele = null;
         });
 
         it('Checking vertical stack panel with padding', (done: Function) => {
@@ -383,8 +390,9 @@ describe('Diagram Control', () => {
             diagram.appendTo('#diagram42');
         });
         afterAll((): void => {
-            diagram.destroy();
-            ele.remove();
+            if (diagram) { diagram.destroy(); diagram = null; }
+            if (ele && ele.parentNode) ele.parentNode.removeChild(ele);
+            ele = null;
         });
 
         it('Checking horizontal panel with margin', (done: Function) => {
@@ -430,8 +438,9 @@ describe('Diagram Control', () => {
             diagram.appendTo('#diagram43');
         });
         afterAll((): void => {
-            diagram.destroy();
-            ele.remove();
+            if (diagram) { diagram.destroy(); diagram = null; }
+            if (ele && ele.parentNode) ele.parentNode.removeChild(ele);
+            ele = null;
         });
 
         it('Checking vertical stack panel with margin', (done: Function) => {
@@ -519,8 +528,9 @@ describe('Diagram Control', () => {
         });
 
         afterAll((): void => {
-            diagram.destroy();
-            ele.remove();
+            if (diagram) { diagram.destroy(); diagram = null; }
+            if (ele && ele.parentNode) ele.parentNode.removeChild(ele);
+            ele = null;
         });
 
         it('Checking rotated vertical stack panel', (done: Function) => {
@@ -608,8 +618,9 @@ describe('Diagram Control', () => {
         });
 
         afterAll((): void => {
-            diagram.destroy();
-            ele.remove();
+            if (diagram) { diagram.destroy(); diagram = null; }
+            if (ele && ele.parentNode) ele.parentNode.removeChild(ele);
+            ele = null;
         });
 
         it('Checking rotated horizontal stack panel', (done: Function) => {

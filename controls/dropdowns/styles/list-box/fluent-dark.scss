@@ -1,6 +1,6 @@
-@import 'ej2-base/styles/definition/fluent-dark.scss';
-@import '../drop-down-base/fluent-dark-definition.scss';
-@import 'fluent-dark-definition.scss';
-@import 'icons/fluent-dark.scss';
-@import 'all.scss';
-@import 'bigger.scss';
+@use 'ej2-base/styles/definition/fluent-dark' as *;
+@use '../drop-down-base/fluent-dark-definition' as *;
+@use 'fluent-dark-definition' as *;
+@use 'icons/fluent-dark' as *;
+@use 'all' as *;
+@use 'bigger' as *;

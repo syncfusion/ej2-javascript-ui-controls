@@ -4,6 +4,7 @@ import { _GraphicState, _TextState } from './graphic-state';
 import { _TextProcessingMode } from './enum';
 import { _PdfContentParserHelper } from './content-parser-helper';
 import { PdfDataExtractor } from './pdf-data-extractor';
+import { _ImageStructure } from './image-extraction/image-structure';
 
 /**
  * Removes escape sequences from a text string and returns the cleaned text.
@@ -53,16 +54,21 @@ export function _addFontResources(dictionary: _PdfDictionary, crossReference: _P
  *
  * @param {_PdfDictionary} resources - The resources dictionary from a PDF page.
  * @param {_PdfCrossReference} crossReference - The cross-reference of the PDF document.
+ * @param { boolean } isImageExtraction - Optional flag to indicate if image-specific processing is required.
+ * @param { PdfPage } page - The current PDF page, used when constructing image structures.
  * @returns {Map<string, any>} A map of XObject resources.
  */
-export function _getXObjectResources(resources: _PdfDictionary, crossReference: _PdfCrossReference): Map<string, any> { //eslint-disable-line
+export function _getXObjectResources(resources: _PdfDictionary, crossReference: _PdfCrossReference, isImageExtraction?: boolean, page?: PdfPage): Map<string, any> { //eslint-disable-line
     const xObjectCollection: Map<string, any> = new Map<string, any>(); //eslint-disable-line
     if (resources && resources.has('XObject')) {
         const xObjects: _PdfDictionary = resources.get('XObject') as _PdfDictionary;
         xObjects.forEach((key: any, value: any) => { //eslint-disable-line
             if (value instanceof _PdfReference) {
-                const xobject: _PdfDictionary = crossReference._fetch(value) as _PdfDictionary;
-                if (xobject instanceof _PdfBaseStream && xobject.dictionary.has('Subtype') && xobject.dictionary.get('Subtype').name === 'Form') {
+                const xobject: any = crossReference._fetch(value) as _PdfDictionary; //eslint-disable-line
+                if (typeof(isImageExtraction) !== 'undefined' && xobject instanceof _PdfBaseStream && xobject.dictionary.has('Subtype') && xobject.dictionary.get('Subtype').name === 'Image') {
+                    const imageStruct: _ImageStructure = new _ImageStructure(xobject, crossReference, page);
+                    xObjectCollection.set(key, imageStruct);
+                } else if (typeof(isImageExtraction) === 'undefined' && xobject instanceof _PdfBaseStream && xobject.dictionary.has('Subtype') && xobject.dictionary.get('Subtype').name === 'Form') {
                     xObjectCollection.set(key, xobject);
                 }
             }
@@ -624,3 +630,16 @@ export function _isArrayEqual(arr1: number[], arr2: number[]): boolean {
     }
     return true;
 }
+
+/**
+ * Represents a callback function that returns a canvas element.
+ *
+ * @returns {any} canvas instance.
+ *
+ * ```typescript
+ * const canvasRenderCallback: canvasRenderCallback = () => {
+ *   return document.createElement('canvas');
+ * };
+ * ```
+ */
+export type canvasRenderCallback = () => any; // eslint-disable-line

@@ -469,6 +469,11 @@ export class Toolbar {
             gID + '_update', gID + '_cancel', gID + '_indent', gID + '_outdent'];
         const isResouceParent: boolean = (this.parent.viewType === 'ResourceView' && getValue('data.level', args) !== 0
             || this.parent.viewType === 'ProjectView');
+        // eslint-disable-next-line
+        gObj.pdfExportModule && gObj.allowPdfExport ? enableItems.push(gID + '_pdfexport') : disableItems.push(gID + '_pdfexport');
+        // eslint-disable-next-line
+        gObj.excelExportModule && gObj.allowExcelExport ? enableItems.push(gID + '_excelexport', gID + '_csvexport') :
+            disableItems.push(gID + '_excelexport', gID + '_csvexport');
         if (!isNullOrUndefined(this.parent.editModule)) {
             const touchEdit: boolean = gObj.editModule.taskbarEditModule ?
                 gObj.editModule.taskbarEditModule.touchEdit : false;

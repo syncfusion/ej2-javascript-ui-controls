@@ -1,8 +1,8 @@
-@import 'ej2-base/styles/definition/highcontrast-light.scss';
-@import 'ej2-navigations/styles/toolbar/highcontrast-light-definition.scss';
-@import 'ej2-inputs/styles/textarea/highcontrast-light-definition.scss';
-@import 'ej2-notifications/styles/skeleton/highcontrast-light-definition.scss';
-@import 'highcontrast-light-definition.scss';
-@import 'icons/highcontrast-light.scss';
-@import 'all.scss';
-@import 'bigger.scss';
+@use 'ej2-base/styles/definition/highcontrast-light' as *;
+@use 'ej2-navigations/styles/toolbar/highcontrast-light-definition' as *;
+@use 'ej2-inputs/styles/textarea/highcontrast-light-definition' as *;
+@use 'ej2-notifications/styles/skeleton/highcontrast-light-definition' as *;
+@use 'highcontrast-light-definition' as *;
+@use 'icons/highcontrast-light' as *;
+@use 'all' as *;
+@use 'bigger' as *;

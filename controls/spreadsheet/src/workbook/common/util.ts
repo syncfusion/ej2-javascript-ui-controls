@@ -5,7 +5,7 @@ import { isHiddenCol, isHiddenRow, VisibleMergeIndexArgs, checkDateFormat, check
 import { isUndefined, getNumberDependable, getNumericObject, Internationalization, defaultCurrencyCode, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { parseThousandSeparator } from './internalization';
 import { AutoDetectGeneralFormatArgs, isNumber, NumberFormatArgs, getFormattedCellObject, LocaleNumericSettings } from './../index';
-import { ExtendedWorkbook } from './index';
+import { ExtendedWorkbook, ExtendedNoteModel } from './index';
 import { DataManager, Query, Predicate } from '@syncfusion/ej2-data';
 import { BeforeActionData } from '../../spreadsheet';
 
@@ -537,6 +537,21 @@ export function updateCell(context: Workbook, sheet: SheetModel, prop: CellUpdat
             if (args.cell && args.cell.style) {
                 cleanEmptyBorderProperties(cell.style);
             }
+            const isPaste: boolean = prop.requestType === 'paste';
+            if (isPaste) {
+                if (prevCell && prevCell.notes) {
+                    context.notify('processSheetNotes', { sheet: sheet, id: (prevCell.notes as ExtendedNoteModel).id, isDelete: true });
+                }
+                if (args.cell && args.cell.notes) {
+                    const note: ExtendedNoteModel = {};
+                    Object.assign(note, <ExtendedNoteModel>args.cell.notes);
+                    delete note.id;
+                    note.rowIdx = args.rowIndex;
+                    note.colIdx = args.colIndex;
+                    context.notify('processSheetNotes', { sheet: sheet, note: note });
+                    args.cell.notes = note;
+                }
+            }
             const evtArgs: { [key: string]: string | boolean | number[] | number | BeforeActionData } = {
                 action: 'updateCellValue',
                 address: [args.rowIndex, args.colIndex], sheetIndex: getSheetIndex(context, sheet.name), value:
@@ -545,7 +560,7 @@ export function updateCell(context: Workbook, sheet: SheetModel, prop: CellUpdat
                 skipFormatCheck: prop.skipFormatCheck, isRandomFormula: prop.isRandomFormula,
                 isDelete: prop.isDelete, deletedRange: prop.deletedRange, fillType: prop.fillType,
                 cellInformation: actionData, isRedo: !isUndo, actionName: prop.fillType,
-                isPaste: prop.requestType === 'paste'
+                isPaste: isPaste
             };
             context.notify(workbookEditOperation, evtArgs);
             prop.isFormulaDependent = <boolean>evtArgs.isFormulaDependent;

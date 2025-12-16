@@ -1,4 +1,4 @@
-import { Component, EventHandler, Property, Event, Browser, L10n, EmitType, getUniqueID } from '@syncfusion/ej2-base';import { NotifyPropertyChanges, INotifyPropertyChanged, BaseEventArgs } from '@syncfusion/ej2-base';import { attributes, addClass, removeClass, detach, closest } from '@syncfusion/ej2-base';import { isNullOrUndefined, getValue, formatUnit, setValue, merge } from '@syncfusion/ej2-base';import { Internationalization, NumberFormatOptions, getNumericObject } from '@syncfusion/ej2-base';import { Input, InputObject, FloatLabelType } from '../input/input';
+import { Component, EventHandler, Property, Event, Browser, L10n, EmitType, getUniqueID, append, compile, select, selectAll } from '@syncfusion/ej2-base';import { NotifyPropertyChanges, INotifyPropertyChanged, BaseEventArgs } from '@syncfusion/ej2-base';import { attributes, addClass, removeClass, detach, closest } from '@syncfusion/ej2-base';import { isNullOrUndefined, getValue, formatUnit, setValue, merge } from '@syncfusion/ej2-base';import { Internationalization, NumberFormatOptions, getNumericObject } from '@syncfusion/ej2-base';import { Input, InputObject, FloatLabelType } from '../input/input';
 import {ChangeEventArgs,NumericFocusEventArgs,NumericBlurEventArgs} from "./numerictextbox";
 import {ComponentModel} from '@syncfusion/ej2-base';
 
@@ -174,6 +174,18 @@ export interface NumericTextBoxModel extends ComponentModel{
     validateDecimalOnType?: boolean;
 
     /**
+     * Gets or sets a value indicating whether the mouse wheel interaction is enabled
+     * for incrementing or decrementing the value in the NumericTextBox component.
+     *
+     * @default true
+     * @remarks
+     * - When `allowMouseWheel` is set to `true`, scrolling the mouse wheel while the input is focused
+     *   will increment or decrement the value based on the step value.
+     * - When `allowMouseWheel` is set to `false`, mouse wheel scrolling will be ignored.
+     */
+    allowMouseWheel?: boolean;
+
+    /**
      * The <b><a href="#placeholder" target="_blank">placeholder</a></b> acts as a label
      * and floats above the NumericTextBox based on the below values.
      * Possible values are:
@@ -184,6 +196,30 @@ export interface NumericTextBoxModel extends ComponentModel{
      * @default Never
      */
     floatLabelType?: FloatLabelType;
+
+    /**
+     * Specifies the HTML template string for custom elements to prepend to the NumericTextBox input.
+     * Supports icons, buttons, or any valid HTML. Updates dynamically on property change.
+     *
+     * @default null
+     * @angularType string | object
+     * @reactType string | function | JSX.Element
+     * @vueType string | function
+     * @aspType string
+     */
+    prependTemplate?: string | Function;
+
+    /**
+     * Specifies the HTML template string for custom elements to append to the NumericTextBox input.
+     * Supports icons, buttons, or any valid HTML. Updates dynamically on property change.
+     *
+     * @default null
+     * @angularType string | object
+     * @reactType string | function | JSX.Element
+     * @vueType string | function
+     * @aspType string
+     */
+    appendTemplate?: string | Function;
 
     /**
      * Triggers when the NumericTextBox component is created.

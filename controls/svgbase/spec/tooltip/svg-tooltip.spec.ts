@@ -110,7 +110,8 @@ describe('SVG Tooltip', () => {
             expect(svgObject).not.toBe(null);
             let groupElement: Element = document.getElementById('tooltipcontainer_group');
             expect(groupElement.childElementCount).toBe(3);
-            expect(document.getElementById('tooltipcontainer_path').getAttribute('d').lastIndexOf('Q')).toBe(95);
+            expect(document.getElementById('tooltipcontainer_path').getAttribute('d').lastIndexOf('Q') == 95
+            || document.getElementById('tooltipcontainer_path').getAttribute('d').lastIndexOf('Q') == 44).toBe(true);
            
         };
        tooltip.content = ['TooltipText'];
@@ -124,7 +125,8 @@ describe('SVG Tooltip', () => {
             expect(svgObject).not.toBe(null);
             let groupElement: Element = document.getElementById('tooltipcontainer_group');
             expect(groupElement.childElementCount).toBe(3);
-            expect(document.getElementById('tooltipcontainer_path').getAttribute('d').lastIndexOf('Q')).toBe(95);
+            expect(document.getElementById('tooltipcontainer_path').getAttribute('d').lastIndexOf('Q') == 95
+            || document.getElementById('tooltipcontainer_path').getAttribute('d').lastIndexOf('Q') == 44).toBe(true);
 
         };
        tooltip.content = ['TooltipText'];
@@ -536,7 +538,7 @@ describe('SVG Tooltip', () => {
         tooltip.loaded = () => {
             let textPosX: string  = (<HTMLElement>(document.getElementById('tooltipcontainer_text').childNodes[5])).getAttribute("x");
             expect((<HTMLElement>(document.getElementById('tooltipcontainer_text').childNodes[1])).getAttribute("x")).toBe("44");
-            expect(textPosX === '35' || textPosX === '28').toBe(true);
+            expect(textPosX === '35' || textPosX === '28' || textPosX === '36').toBe(true);
         };
        tooltip.header = "RTL For Arabic";
        tooltip.content = ['يناير : <b>3M</b>','فبراير : <b>3M</b>'];

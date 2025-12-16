@@ -212,18 +212,6 @@ describe('Diagram Control for shadow properties', () => {
                 shape: shape3, style: { gradient: gradient2 }
             };
 
-            let stopscol21: StopModel[] = [];
-            let stops31: StopModel = { color: 'white', offset: 50 };
-            stopscol21.push(stops3);
-            let stops41: StopModel = { color: 'red', offset: 0 };
-            stopscol21.push(stops4);
-            let gradient21: GradientModel = { stops: stopscol21, type: undefined };
-            let shape31: PathModel = { type: 'Path', data: 'M 0,0 L 100,0 L100,100 L0,100 Z' };
-            let node31: NodeModel = {
-                id: 'node3', width: 100, height: 100, offsetX: 400, offsetY: 200,
-                shape: shape3, style: { gradient: gradient21 }
-            };
-
             diagram = new Diagram({ mode: 'SVG', width: 1000, height: 1000, nodes: [node1, node2, node3] });
             diagram.appendTo('#diagramh');
         });

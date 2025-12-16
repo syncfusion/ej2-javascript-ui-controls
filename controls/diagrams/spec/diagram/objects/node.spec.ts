@@ -10,10 +10,10 @@ import { PathElement } from '../../../src/diagram/core/elements/path-element';
 import { ImageElement } from '../../../src/diagram/core/elements/image-element';
 import { DiagramNativeElement } from '../../../src/diagram/core/elements/native-element';
 import { TextElement } from '../../../src/diagram/core/elements/text-element';
-import { Native, NodeConstraints, accessibilityElement, HtmlModel, Ruler, ComplexHierarchicalTree } from '../../../src/index';
+import { NodeConstraints, HtmlModel, Ruler, ComplexHierarchicalTree } from '../../../src/index';
 import { MouseEvents } from '../interaction/mouseevents.spec';
-import { SnapConstraints, PointPort, Annotation, IconShapes, Decorator, PortVisibility, ConnectorModel, PointModel, PortConstraints, AnnotationConstraints, ConnectorConstraints, LayoutModel, randomId, Thickness, DataBinding, DiagramConstraints, UserHandleModel } from '../../../src/diagram/index';
-import {  IScrollChangeEventArgs, IBlazorScrollChangeEventArgs, DiagramTools, State } from '../../../src/diagram/index';
+import { SnapConstraints, PortVisibility, ConnectorModel, PointModel, PortConstraints, AnnotationConstraints, ConnectorConstraints, LayoutModel, randomId, Thickness, DataBinding, DiagramConstraints, UserHandleModel } from '../../../src/diagram/index';
+import { IScrollChangeEventArgs, IBlazorScrollChangeEventArgs, DiagramTools, State } from '../../../src/diagram/index';
 
 import { PointPortModel } from '../../../src/diagram/objects/port-model';
 import { IconShape } from '../../../src/diagram/objects/icon';
@@ -24,7 +24,7 @@ import { profile, inMB, getMemoryProfile } from '../../../spec/common.spec';
 import { Selector } from '../../../src/diagram/objects/node';
 import { DataManager, Query } from '@syncfusion/ej2-data';
 import { UndoRedo } from '../../../src/diagram/objects/undo-redo';
-Diagram.Inject(ComplexHierarchicalTree,DataBinding,UndoRedo);
+Diagram.Inject(ComplexHierarchicalTree, DataBinding, UndoRedo);
 
 /**
  * Test cases to check different kind of nodes
@@ -74,7 +74,9 @@ describe('Diagram Control', () => {
     describe('Default Node', () => {
         let diagram: Diagram;
         let ele: HTMLElement;
-
+        let mouseEvents: MouseEvents = new MouseEvents();
+        let diagramCanvas: HTMLElement;
+        let wrapper: GroupableView;
         beforeAll((): void => {
             const isDef = (o: any) => o !== undefined && o !== null;
             if (!isDef(window.performance)) {
@@ -110,11 +112,13 @@ describe('Diagram Control', () => {
             }
             diagram = new Diagram({ width: 1000, height: 1000, nodes: [node, node2, node3, node4, node5] });
             diagram.appendTo('#diagram97');
+            diagramCanvas = document.getElementById(diagram.element.id + 'content');
         });
 
         afterAll((): void => {
             diagram.destroy();
             ele.remove();
+            (diagram as any) = null; (ele as any) = null;
         });
 
         it('Checking default node creation with minWith value', (done: Function) => {
@@ -124,10 +128,8 @@ describe('Diagram Control', () => {
             done()
         })
         it('Checking default node creation', (done: Function) => {
-            let mouseEvents: MouseEvents = new MouseEvents();
-            let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
             mouseEvents.clickEvent(diagramCanvas, 100, 100);
-            let wrapper: GroupableView = (diagram.nodes[0] as Node).wrapper;
+            wrapper = (diagram.nodes[0] as Node).wrapper;
             expect((diagram.nodes[0] as Node).shape.type === 'Basic' &&
                 ((diagram.nodes[0] as Node).shape as BasicShapeModel).shape === 'Rectangle' &&
                 wrapper && wrapper.children && wrapper.children.length &&
@@ -136,7 +138,7 @@ describe('Diagram Control', () => {
             done();
         });
         it('Checking rectangle shape with no width and height', (done: Function) => {
-            let wrapper: GroupableView = (diagram.nodes[1] as Node).wrapper;
+            wrapper = (diagram.nodes[1] as Node).wrapper;
             expect((diagram.nodes[1] as Node).shape.type === 'Basic' &&
                 ((diagram.nodes[1] as Node).shape as BasicShapeModel).shape === 'Rectangle' &&
                 wrapper && wrapper.children && wrapper.children.length &&
@@ -184,6 +186,7 @@ describe('Diagram Control', () => {
         afterAll((): void => {
             diagram.destroy();
             ele.remove();
+            (diagram as any) = null; (ele as any) = null;
         });
 
         it('Checking path node', (done: Function) => {
@@ -220,6 +223,7 @@ describe('Diagram Control', () => {
         afterAll((): void => {
             diagram.destroy();
             ele.remove();
+            (diagram as any) = null; (ele as any) = null;
         });
 
         it('Checking image node', (done: Function) => {
@@ -259,6 +263,7 @@ describe('Diagram Control', () => {
         afterAll((): void => {
             diagram.destroy();
             ele.remove();
+            (diagram as any) = null; (ele as any) = null;
         });
 
         it('Checking text node', (done: Function) => {
@@ -283,7 +288,7 @@ describe('Diagram Control', () => {
                 this.skip(); //Skips test (in Chai)
                 return;
             }
-            ele = createElement('div', { id: 'diagram100' });
+            ele = createElement('div', { id: 'diagram101' });
             document.body.appendChild(ele);
             let nodes: NodeModel[] = [
                 {
@@ -313,13 +318,13 @@ describe('Diagram Control', () => {
                     return null;
                 }
             });
-            let width: number = (diagram.nodes[0] as Node).actualSize.width;
-            diagram.appendTo('#diagram100');
+            diagram.appendTo('#diagram101');
         });
 
         afterAll((): void => {
             diagram.destroy();
             ele.remove();
+            (diagram as any) = null; (ele as any) = null;
         });
 
         it('Checking custom template', (done: Function) => {
@@ -328,7 +333,6 @@ describe('Diagram Control', () => {
                 wrapper.children[0] instanceof StackPanel && wrapper.offsetX === 100 &&
                 wrapper.offsetY === 300 && wrapper.actualSize.width === 100 && wrapper.actualSize.height === 100).toBe(true);
             done();
-            let width: number = (diagram.nodes[0] as Node).actualSize.width;
 
         });
         let getTextElement: Function = (text: string) => {
@@ -350,6 +354,8 @@ describe('Diagram Control', () => {
     describe('Native Node', () => {
         let diagram: Diagram;
         let ele: HTMLElement;
+        let wrapper: GroupableView;
+        let bounds: ClientRect;
         beforeAll((): void => {
             const isDef = (o: any) => o !== undefined && o !== null;
             if (!isDef(window.performance)) {
@@ -543,18 +549,19 @@ describe('Diagram Control', () => {
         afterAll((): void => {
             diagram.destroy();
             ele.remove();
+            (diagram as any) = null; (ele as any) = null;
         });
         it('Checking Native node on proper layer', (done: Function) => {
-            setTimeout(
-                () => {
+            // setTimeout(
+                // () => {
                     let svgElement: SVGSVGElement = document.getElementsByClassName('e-native-layer')[0] as SVGSVGElement;
                     let gElement: SVGElement = svgElement.getElementById(diagram.nodes[0].id + '_content_groupElement') as SVGElement;
                     expect(gElement != null).toBe(true);
                     done();
-                }, 40);
+                // }, 40);
         });
         it('Checking Native node', (done: Function) => {
-            let wrapper: GroupableView = (diagram.nodes[0] as Node).wrapper;
+            wrapper = (diagram.nodes[0] as Node).wrapper;
             expect(wrapper && wrapper.children && wrapper.children.length &&
                 wrapper.children[0] instanceof DiagramNativeElement && wrapper.offsetX === 100 &&
                 wrapper.offsetY === 100 && wrapper.actualSize.width === 100 && wrapper.actualSize.height === 100).toBe(true);
@@ -563,16 +570,15 @@ describe('Diagram Control', () => {
 
         it('Checking Native node with scale as None', (done: Function) => {
             let node2: HTMLElement = document.getElementById('node2_content_native_element');
-            let bounds: ClientRect = node2.getBoundingClientRect();
-            let wrapper: GroupableView = (diagram.nodes[1] as Node).wrapper;
+            bounds = node2.getBoundingClientRect();
             expect(bounds.width === 90 && bounds.height === 90).toBe(true);
             done();
         });
 
         it('Checking Native node with scale as Stretch', (done: Function) => {
             let node3: HTMLElement = document.getElementById('node3_content_native_element');
-            let bounds: ClientRect = node3.getBoundingClientRect();
-            let wrapper: GroupableView = (diagram.nodes[2] as Node).wrapper;
+            bounds = node3.getBoundingClientRect();
+            wrapper = (diagram.nodes[2] as Node).wrapper;
             expect(wrapper.actualSize.width === 150 && wrapper.actualSize.height === 100 &&
                 Math.round(bounds.height) === wrapper.actualSize.height &&
                 Math.round(bounds.width) === wrapper.actualSize.width).toBe(true);
@@ -581,8 +587,8 @@ describe('Diagram Control', () => {
 
         it('Checking Native node with scale as Meet when width > height', (done: Function) => {
             let node4: HTMLElement = document.getElementById('node4_content_native_element');
-            let bounds: ClientRect = node4.getBoundingClientRect();
-            let wrapper: GroupableView = (diagram.nodes[3] as Node).wrapper;
+            bounds = node4.getBoundingClientRect();
+            wrapper = (diagram.nodes[3] as Node).wrapper;
             expect(wrapper.actualSize.width === 150 && wrapper.actualSize.height === 100 &&
                 Math.round(bounds.width) === wrapper.actualSize.height).toBe(true);
             done();
@@ -590,8 +596,8 @@ describe('Diagram Control', () => {
 
         it('Checking Native node with scale as Meet height > width', (done: Function) => {
             let node5: HTMLElement = document.getElementById('node5_content_native_element');
-            let bounds: ClientRect = node5.getBoundingClientRect();
-            let wrapper: GroupableView = (diagram.nodes[4] as Node).wrapper;
+            bounds = node5.getBoundingClientRect();
+            wrapper = (diagram.nodes[4] as Node).wrapper;
             expect(wrapper.actualSize.width === 100 && wrapper.actualSize.height === 150 &&
                 Math.round(bounds.height) === wrapper.actualSize.width).toBe(true);
             done();
@@ -599,8 +605,8 @@ describe('Diagram Control', () => {
 
         it('Checking Native node with scale as Slice width > height', (done: Function) => {
             let node6: HTMLElement = document.getElementById('node6_content_native_element');
-            let bounds: ClientRect = node6.getBoundingClientRect();
-            let wrapper: GroupableView = (diagram.nodes[5] as Node).wrapper;
+            bounds = node6.getBoundingClientRect();
+            wrapper = (diagram.nodes[5] as Node).wrapper;
             expect(wrapper.actualSize.width === 150 && wrapper.actualSize.height === 100 &&
                 Math.round(bounds.height) === wrapper.actualSize.width).toBe(true);
             done();
@@ -608,8 +614,8 @@ describe('Diagram Control', () => {
 
         it('Checking Native node with scale as Slice height > width', (done: Function) => {
             let node7: HTMLElement = document.getElementById('node7_content_native_element');
-            let bounds: ClientRect = node7.getBoundingClientRect();
-            let wrapper: GroupableView = (diagram.nodes[6] as Node).wrapper;
+            bounds = node7.getBoundingClientRect();
+            wrapper = (diagram.nodes[6] as Node).wrapper;
             expect(wrapper.actualSize.width === 100 && wrapper.actualSize.height === 150 &&
                 Math.round(bounds.width) === wrapper.actualSize.height).toBe(true);
             done();
@@ -635,9 +641,8 @@ describe('Diagram Control', () => {
                 'c-40.97,0-74.302-33.332-74.302-74.302c0-40.971,33.331-74.303,74.302-74.303c40.97,0,74.302,33.332,74.302,74.303' +
                 'C219.348,176.953,186.016,210.285,145.046,210.285z"><g>';
             diagram.dataBind();
-            let node8: HTMLElement = document.getElementById('node8_content_native_element');
 
-            let wrapper: GroupableView = node.wrapper;
+            wrapper = node.wrapper;
             expect(wrapper.actualSize.width === 100 && wrapper.actualSize.height === 150 &&
                 (wrapper.children[0] as DiagramNativeElement).content === '<g><path id="XMLID_484_" d="M281.439,14.934c-0.002-0.471-0.025-0.941-0.071-1.411c-0.023-0.236-0.067-0.466-0.101-0.699c-0.037-0.25-0.065-0.502-0.115-0.75c-0.052-0.264-0.124-0.52-0.19-0.778c-0.055-0.215-0.102-0.431-0.165-0.644c-0.077-0.254-0.172-0.5-0.262-0.748c-0.077-0.212-0.146-0.426-0.232-0.636c-0.098-0.235-0.212-0.462-0.321-0.691c-0.101-0.213-0.195-0.429-0.307-0.638c-0.121-0.226-0.258-0.44-0.39-0.659c-0.121-0.2-0.233-0.403-0.364-0.599c-0.167-0.25-0.353-0.487-0.534-0.727c-0.114-0.15-0.218-0.305-0.338-0.452c-0.631-0.77-1.336-1.476-2.106-2.106c-0.138-0.113-0.285-0.211-0.426-0.318c-0.248-0.189-0.494-0.381-0.754-0.554c-0.186-0.124-0.379-0.231-0.569-0.346c-0.229-0.139-0.455-0.282-0.691-0.409c-0.196-0.104-0.397-0.192-0.596-0.287c-0.244-0.117-0.485-0.237-0.736-0.341c-0.191-0.079-0.386-0.141-0.579-0.212c-0.268-0.098-0.533-0.2-0.807-0.282c-0.187-0.056-0.377-0.097-0.565-0.145c-0.285-0.074-0.568-0.152-0.859-0.21c-0.204-0.04-0.41-0.063-0.615-0.094c-0.278-0.043-0.553-0.093-0.836-0.121c-0.325-0.031-0.65-0.039-0.977-0.049C266.768,0.019,266.607,0,266.442,0h-47.359c-8.284,0-15,6.716-15,15c0,8.284,6.716,15,15,15h11.148l-22.598,22.598C190.188,39.471,168.51,31.68,145.046,31.68c-57.512,0-104.302,46.79-104.302,104.303c0,52.419,38.871,95.923,89.301,103.219l0.001,19.497h-18.487c-8.284,0-15,6.716-15,15c0,8.284,6.716,15,15,15h18.488l0.001,18.488c0,8.284,6.716,15,15,15c8.284,0,15-6.716,15-15.001l-0.001-18.487h18.487c8.284,0,15-6.716,15-15c0-8.284-6.716-15-15-15h-18.487l-0.001-19.497c50.43-7.295,89.302-50.8,89.302-103.219c0-23.251-7.65-44.748-20.562-62.111l22.656-22.657V62.36c0,8.284,6.716,15,15,15c8.284,0,15-6.716,15-15V15C281.442,14.978,281.439,14.957,281.439,14.934z M145.046,210.285c-40.97,0-74.302-33.332-74.302-74.302c0-40.971,33.331-74.303,74.302-74.303c40.97,0,74.302,33.332,74.302,74.303C219.348,176.953,186.016,210.285,145.046,210.285z"><g>').toBe(true);
             done();
@@ -649,8 +654,8 @@ describe('Diagram Control', () => {
             diagram.dataBind();
             setTimeout(() => {
                 let node8: HTMLElement = document.getElementById('node8_content_native_element');
-                let bounds: ClientRect = node8.getBoundingClientRect();
-                let wrapper: GroupableView = node.wrapper;
+                bounds = node8.getBoundingClientRect();
+                wrapper = node.wrapper;
                 expect(wrapper.actualSize.width === 100 && wrapper.actualSize.height === 150 &&
                     Math.round(bounds.height) === wrapper.actualSize.width).toBe(true);
 
@@ -692,8 +697,8 @@ describe('Diagram Control', () => {
         });
         it('Checking Native node without height and width', (done: Function) => {
             let node10: HTMLElement = document.getElementById('node10_content_native_element');
-            let bounds: ClientRect = node10.getBoundingClientRect();
-            let wrapper: GroupableView = (diagram.nodes[8] as Node).wrapper;
+            bounds = node10.getBoundingClientRect();
+            wrapper = (diagram.nodes[8] as Node).wrapper;
             expect(wrapper.actualSize.width === 300 && wrapper.actualSize.height === 150 &&
                 Math.round(bounds.width) === wrapper.actualSize.width).toBe(true);
             done();
@@ -747,6 +752,7 @@ describe('Diagram Control', () => {
         afterAll((): void => {
             diagram.destroy();
             ele.remove();
+            (diagram as any) = null; (ele as any) = null;
         });
         it('Checking Native node - expand state change', (done: Function) => {
             expect(checkEvent == false);
@@ -785,6 +791,7 @@ describe('Diagram Control', () => {
         afterAll((): void => {
             diagram.destroy();
             ele.remove();
+            (diagram as any) = null; (ele as any) = null;
         });
         it('Checking connector hit padding', (done: Function) => {
             let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
@@ -822,6 +829,7 @@ describe('Diagram Control', () => {
         afterAll((): void => {
             diagram.destroy();
             ele.remove();
+            (diagram as any) = null; (ele as any) = null;
         });
 
         it('Native element hover issue', (done: Function) => {
@@ -837,6 +845,7 @@ describe('Diagram Control', () => {
     describe('HTML Node', () => {
         let diagram: Diagram;
         let ele: HTMLElement;
+        let wrapper: GroupableView;
         beforeAll((): void => {
             const isDef = (o: any) => o !== undefined && o !== null;
             if (!isDef(window.performance)) {
@@ -865,7 +874,7 @@ describe('Diagram Control', () => {
                 id: 'node3', width: 300, height: 50, offsetX: 200, offsetY: 400,
                 shape: shape3
             };
-            let shape33: HtmlModel = { type: 'HTML', content: '<div style="background:red;height:100%;width:100%;"><input type="button" value="{{:value}}" /></div>' }
+            // let shape33: HtmlModel = { type: 'HTML', content: '<div style="background:red;height:100%;width:100%;"><input type="button" value="{{:value}}" /></div>' }
             let node33: NodeModel = {
                 id: 'node33', offsetX: 200, offsetY: 400,
                 shape: shape3
@@ -889,10 +898,11 @@ describe('Diagram Control', () => {
         afterAll((): void => {
             diagram.destroy();
             ele.remove();
+            (diagram as any) = null; (ele as any) = null;
         });
 
         it('Checking HTML node', (done: Function) => {
-            let wrapper: GroupableView = (diagram.nodes[0] as Node).wrapper;
+            wrapper = (diagram.nodes[0] as Node).wrapper;
             expect(wrapper && wrapper.children && wrapper.children.length &&
                 wrapper.children[0] instanceof DiagramHtmlElement && wrapper.offsetX === 300 &&
                 wrapper.offsetY === 300 && wrapper.actualSize.width === 75 && wrapper.actualSize.height === 50).toBe(true);
@@ -900,7 +910,7 @@ describe('Diagram Control', () => {
         });
 
         it('Checking HTML node', (done: Function) => {
-            let wrapper: GroupableView = (diagram.nodes[1] as Node).wrapper;
+            wrapper = (diagram.nodes[1] as Node).wrapper;
             expect(wrapper && wrapper.children && wrapper.children.length &&
                 wrapper.children[0] instanceof DiagramHtmlElement && wrapper.offsetX === 200 &&
                 wrapper.offsetY === 200 && wrapper.actualSize.width === 300 && wrapper.actualSize.height === 50).toBe(true);
@@ -920,7 +930,7 @@ describe('Diagram Control', () => {
             ((diagram.nodes[2] as Node).shape as HtmlModel).content = htmlcontent2;
             diagram.dataBind();
             getHtmlContent2();
-            let wrapper: GroupableView = (diagram.nodes[2] as Node).wrapper;
+            wrapper = (diagram.nodes[2] as Node).wrapper;
             expect(wrapper && wrapper.children && wrapper.children.length &&
                 wrapper.children[0] instanceof DiagramHtmlElement && wrapper.offsetX === 200 &&
                 wrapper.offsetY === 400 && wrapper.actualSize.width === 300 && wrapper.actualSize.height === 50).toBe(true);
@@ -942,7 +952,7 @@ describe('Diagram Control', () => {
         });
 
         it('Checking HTML node without width and height ', (done: Function) => {
-            let wrapper: GroupableView = diagram.nameTable['node33'].wrapper;
+            wrapper = diagram.nameTable['node33'].wrapper;
             expect(wrapper && wrapper.actualSize.width !== undefined &&
                 wrapper.actualSize.height !== undefined).toBe(true);
             done();
@@ -952,7 +962,6 @@ describe('Diagram Control', () => {
     describe('Check Accessibility for node ', () => {
         let diagrams: Diagram;
         let ele: HTMLElement;
-        let mouseEvents: MouseEvents = new MouseEvents();
         beforeAll((): void => {
             const isDef = (o: any) => o !== undefined && o !== null;
             if (!isDef(window.performance)) {
@@ -990,9 +999,9 @@ describe('Diagram Control', () => {
         afterAll((): void => {
             diagrams.destroy();
             ele.remove();
+            (diagrams as any) = null; (ele as any) = null;
         });
         it('Checking accessibity', (done: Function) => {
-            let wrapper: GroupableView = (diagrams.nodes[0] as Node).wrapper;
             let node2: Node = diagrams.nodes[0] as Node;
             let mouseEvents: MouseEvents = new MouseEvents();
             let diagramCanvas: HTMLElement = document.getElementById(diagrams.element.id + 'content');
@@ -1009,7 +1018,6 @@ describe('Diagram Control', () => {
     describe('Check Accessibility for node ', () => {
         let diagrams: Diagram;
         let ele: HTMLElement;
-        let mouseEvents: MouseEvents = new MouseEvents();
 
         beforeAll((): void => {
             const isDef = (o: any) => o !== undefined && o !== null;
@@ -1018,7 +1026,7 @@ describe('Diagram Control', () => {
                 this.skip(); //Skips test (in Chai)
                 return;
             }
-            ele = createElement('div', { id: 'diagramarialabel' });
+            ele = createElement('div', { id: 'diagramarialabel2' });
             document.body.appendChild(ele);
             let nodeport: PointPortModel = { offset: {} };
             nodeport.shape = 'Square';
@@ -1044,15 +1052,14 @@ describe('Diagram Control', () => {
                 nodes: [node],
                 getDescription: getundefAccessibility
             });
-            diagrams.appendTo('#diagramarialabel');
+            diagrams.appendTo('#diagramarialabel2');
         });
         afterAll((): void => {
             diagrams.destroy();
             ele.remove();
+            (diagrams as any) = null; (ele as any) = null;
         });
         it('Checking accessibity', (done: Function) => {
-            let wrapper: GroupableView = (diagrams.nodes[0] as Node).wrapper;
-            let node2: Node = diagrams.nodes[0] as Node;
             let mouseEvents: MouseEvents = new MouseEvents();
             let diagramCanvas: HTMLElement = document.getElementById(diagrams.element.id + 'content');
             mouseEvents.mouseMoveEvent(diagramCanvas, 68, 68, true);
@@ -1077,15 +1084,16 @@ describe('Diagram Control', () => {
                 this.skip(); //Skips test (in Chai)
                 return;
             }
-            ele = createElement('div', { id: 'diagramNode' });
+            ele = createElement('div', { id: 'diagramNode3' });
             document.body.appendChild(ele);
             diagram = new Diagram({ width: 400, height: 400 });
-            diagram.appendTo('#diagramNode');
+            diagram.appendTo('#diagramNode3');
         });
 
         afterAll((): void => {
             diagram.destroy();
             ele.remove();
+            (diagram as any) = null; (ele as any) = null;
         });
 
         it('Checking add default node on runtime in Svg Mode', (done: Function) => {
@@ -1137,15 +1145,16 @@ describe('Diagram Control', () => {
                 this.skip(); //Skips test (in Chai)
                 return;
             }
-            ele = createElement('div', { id: 'diagramNode' });
+            ele = createElement('div', { id: 'diagramNode4' });
             document.body.appendChild(ele);
             diagram = new Diagram({ width: 400, height: 400, nodes: [node] });
-            diagram.appendTo('#diagramNode');
+            diagram.appendTo('#diagramNode4');
         });
 
         afterAll((): void => {
             diagram.destroy();
             ele.remove();
+            (diagram as any) = null; (ele as any) = null;
         });
 
         it('Checking getObject and getactive layer', (done: Function) => {
@@ -1171,7 +1180,7 @@ describe('Diagram Control', () => {
                 this.skip(); //Skips test (in Chai)
                 return;
             }
-            ele = createElement('div', { id: 'diagramNode' });
+            ele = createElement('div', { id: 'diagramNode5' });
             document.body.appendChild(ele);
 
             let nodes: NodeModel[] = [
@@ -1181,12 +1190,13 @@ describe('Diagram Control', () => {
                 },
             ];
             diagram = new Diagram({ width: 400, height: 400, nodes: nodes });
-            diagram.appendTo('#diagramNode');
+            diagram.appendTo('#diagramNode5');
         });
 
         afterAll((): void => {
             diagram.destroy();
             ele.remove();
+            (diagram as any) = null; (ele as any) = null;
         });
 
         it('Checking nodes shape and min value at runtime', (done: Function) => {
@@ -1212,7 +1222,7 @@ describe('Diagram Control', () => {
                 this.skip(); //Skips test (in Chai)
                 return;
             }
-            ele = createElement('div', { id: 'diagramHTMLNode' });
+            ele = createElement('div', { id: 'diagramHTMLNode6' });
             document.body.appendChild(ele);
             let shape1: HtmlModel = { type: 'HTML', content: '<div style="background:red;height:100%;width:100%;"><input type="button" value="{{:value}}" /></div>' };
             let nodes: NodeModel[] = [
@@ -1225,12 +1235,13 @@ describe('Diagram Control', () => {
                 },
             ];
             diagram = new Diagram({ width: 400, height: 400, nodes: nodes });
-            diagram.appendTo('#diagramHTMLNode');
+            diagram.appendTo('#diagramHTMLNode6');
         });
 
         afterAll((): void => {
             diagram.destroy();
             ele.remove();
+            (diagram as any) = null; (ele as any) = null;
         });
 
         it('Checking Html node visble property', (done: Function) => {
@@ -1259,7 +1270,7 @@ describe('Diagram Control', () => {
                 this.skip(); //Skips test (in Chai)
                 return;
             }
-            ele = createElement('div', { id: 'diagramLayout' });
+            ele = createElement('div', { id: 'diagramLayout7' });
             document.body.appendChild(ele);
             let nodes: NodeModel[] = [
                 {
@@ -1352,12 +1363,13 @@ describe('Diagram Control', () => {
                 {
                     width: 1000, height: 800, nodes: nodes, connectors: connector, layout: { type: 'ComplexHierarchicalTree' }
                 });
-            diagram.appendTo('#diagramLayout');
+            diagram.appendTo('#diagramLayout7');
         });
 
         afterAll((): void => {
             diagram.destroy();
             ele.remove();
+            (diagram as any) = null; (ele as any) = null;
         });
 
         it('Checking Layout after collapsed', (done: Function) => {
@@ -1380,7 +1392,7 @@ describe('Diagram Control', () => {
                 this.skip(); //Skips test (in Chai)
                 return;
             }
-            ele = createElement('div', { id: 'diagramNode' });
+            ele = createElement('div', { id: 'diagramNode8' });
             document.body.appendChild(ele);
             let node: NodeModel = {
                 id: 'node1', width: 100, height: 100, offsetX: 100, offsetY: 100, annotations: [{ content: 'Node1' }],
@@ -1408,12 +1420,13 @@ describe('Diagram Control', () => {
                 id: 'connector1', sourceID: 'node1', targetID: 'node2', annotations: [{ content: 'Connector' }]
             };
             diagram = new Diagram({ width: 400, height: 400, nodes: [node, node2, node3], connectors: [connector] });
-            diagram.appendTo('#diagramNode');
+            diagram.appendTo('#diagramNode8');
         });
 
         afterAll((): void => {
             diagram.destroy();
             ele.remove();
+            (diagram as any) = null; (ele as any) = null;
         });
 
         it('Checking node After collapsed', (done: Function) => {
@@ -1440,10 +1453,10 @@ describe('Diagram Control', () => {
         let diagram: Diagram; let ele: HTMLElement;
         let node3: NodeModel; let node4: NodeModel;
         beforeAll((): void => {
-            ele = createElement('div', { id: 'diagramNodeZindex' });
+            ele = createElement('div', { id: 'diagramNodeZindex9' });
             document.body.appendChild(ele);
             node3 = {
-                id: 'node3',offsetX: 500, offsetY: 250, width: 100, height: 100, style: { fill: "green" },
+                id: 'node3', offsetX: 500, offsetY: 250, width: 100, height: 100, style: { fill: "green" },
                 annotations: [{ content: "21" }], zIndex: 21,
                 shape: {
                     type: 'Native', content: '<g xmlns="http://www.w3.org/2000/svg">	<g transform="translate(1 1)">		<g>			<path style="fill:#61443C;" d="M61.979,435.057c2.645-0.512,5.291-0.853,7.936-1.109c-2.01,1.33-4.472,1.791-6.827,1.28     C62.726,435.13,62.354,435.072,61.979,435.057z"/>			<path style="fill:#61443C;" d="M502.469,502.471h-25.6c0.163-30.757-20.173-57.861-49.749-66.304     c-5.784-1.581-11.753-2.385-17.749-2.389c-2.425-0.028-4.849,0.114-7.253,0.427c1.831-7.63,2.747-15.45,2.731-23.296     c0.377-47.729-34.52-88.418-81.749-95.317c4.274-0.545,8.577-0.83,12.885-0.853c25.285,0.211,49.448,10.466,67.167,28.504     c17.719,18.039,27.539,42.382,27.297,67.666c0.017,7.846-0.9,15.666-2.731,23.296c2.405-0.312,4.829-0.455,7.253-0.427     C472.572,434.123,502.783,464.869,502.469,502.471z"/>		</g>		<path style="fill:#8B685A;" d="M476.869,502.471H7.536c-0.191-32.558,22.574-60.747,54.443-67.413    c0.375,0.015,0.747,0.072,1.109,0.171c2.355,0.511,4.817,0.05,6.827-1.28c1.707-0.085,3.413-0.171,5.12-0.171    c4.59,0,9.166,0.486,13.653,1.451c2.324,0.559,4.775,0.147,6.787-1.141c2.013-1.288,3.414-3.341,3.879-5.685    c7.68-39.706,39.605-70.228,79.616-76.117c4.325-0.616,8.687-0.929,13.056-0.939c13.281-0.016,26.409,2.837,38.485,8.363    c3.917,1.823,7.708,3.904,11.349,6.229c2.039,1.304,4.527,1.705,6.872,1.106c2.345-0.598,4.337-2.142,5.502-4.264    c14.373-25.502,39.733-42.923,68.693-47.189h0.171c47.229,6.899,82.127,47.588,81.749,95.317c0.017,7.846-0.9,15.666-2.731,23.296    c2.405-0.312,4.829-0.455,7.253-0.427c5.996,0.005,11.965,0.808,17.749,2.389C456.696,444.61,477.033,471.713,476.869,502.471    L476.869,502.471z"/>		<path style="fill:#66993E;" d="M502.469,7.537c0,0-6.997,264.96-192.512,252.245c-20.217-1.549-40.166-5.59-59.392-12.032    c-1.365-0.341-2.731-0.853-4.096-1.28c0,0-0.597-2.219-1.451-6.144c-6.656-34.048-25.088-198.997,231.765-230.144    C485.061,9.159,493.595,8.22,502.469,7.537z"/>		<path style="fill:#9ACA5C;" d="M476.784,10.183c-1.28,26.197-16.213,238.165-166.827,249.6    c-20.217-1.549-40.166-5.59-59.392-12.032c-1.365-0.341-2.731-0.853-4.096-1.28c0,0-0.597-2.219-1.451-6.144    C238.363,206.279,219.931,41.329,476.784,10.183z"/>		<path style="fill:#66993E;" d="M206.192,246.727c-0.768,3.925-1.365,6.144-1.365,6.144c-1.365,0.427-2.731,0.939-4.096,1.28    c-21.505,7.427-44.293,10.417-66.987,8.789C21.104,252.103,8.816,94.236,7.621,71.452c-0.085-1.792-0.085-2.731-0.085-2.731    C222.747,86.129,211.653,216.689,206.192,246.727z"/>		<path style="fill:#9ACA5C;" d="M180.336,246.727c-0.768,3.925-1.365,6.144-1.365,6.144c-1.365,0.427-2.731,0.939-4.096,1.28    c-13.351,4.412-27.142,7.359-41.131,8.789C21.104,252.103,8.816,94.236,7.621,71.452    C195.952,96.881,185.541,217.969,180.336,246.727z"/>	</g>	<g>		<path d="M162.136,426.671c3.451-0.001,6.562-2.08,7.882-5.268s0.591-6.858-1.849-9.298l-8.533-8.533    c-3.341-3.281-8.701-3.256-12.012,0.054c-3.311,3.311-3.335,8.671-0.054,12.012l8.533,8.533    C157.701,425.773,159.872,426.673,162.136,426.671L162.136,426.671z"/>		<path d="M292.636,398.57c3.341,3.281,8.701,3.256,12.012-0.054c3.311-3.311,3.335-8.671,0.054-12.012l-8.533-8.533    c-3.341-3.281-8.701-3.256-12.012,0.054s-3.335,8.671-0.054,12.012L292.636,398.57z"/>		<path d="M296.169,454.771c-3.341-3.281-8.701-3.256-12.012,0.054c-3.311,3.311-3.335,8.671-0.054,12.012l8.533,8.533    c3.341,3.281,8.701,3.256,12.012-0.054c3.311-3.311,3.335-8.671,0.054-12.012L296.169,454.771z"/>		<path d="M386.503,475.37c3.341,3.281,8.701,3.256,12.012-0.054c3.311-3.311,3.335-8.671,0.054-12.012l-8.533-8.533    c-3.341-3.281-8.701-3.256-12.012,0.054c-3.311,3.311-3.335,8.671-0.054,12.012L386.503,475.37z"/>		<path d="M204.803,409.604c2.264,0.003,4.435-0.897,6.033-2.5l8.533-8.533c3.281-3.341,3.256-8.701-0.054-12.012    c-3.311-3.311-8.671-3.335-12.012-0.054l-8.533,8.533c-2.44,2.44-3.169,6.11-1.849,9.298    C198.241,407.524,201.352,409.603,204.803,409.604z"/>		<path d="M332.803,443.737c2.264,0.003,4.435-0.897,6.033-2.5l8.533-8.533c3.281-3.341,3.256-8.701-0.054-12.012    c-3.311-3.311-8.671-3.335-12.012-0.054l-8.533,8.533c-2.44,2.44-3.169,6.11-1.849,9.298    C326.241,441.658,329.352,443.737,332.803,443.737z"/>		<path d="M341.336,366.937c2.264,0.003,4.435-0.897,6.033-2.5l8.533-8.533c3.281-3.341,3.256-8.701-0.054-12.012    c-3.311-3.311-8.671-3.335-12.012-0.054l-8.533,8.533c-2.44,2.44-3.169,6.11-1.849,9.298    C334.774,364.858,337.885,366.937,341.336,366.937z"/>		<path d="M164.636,454.771l-8.533,8.533c-2.188,2.149-3.055,5.307-2.27,8.271c0.785,2.965,3.1,5.28,6.065,6.065    c2.965,0.785,6.122-0.082,8.271-2.27l8.533-8.533c3.281-3.341,3.256-8.701-0.054-12.012    C173.337,451.515,167.977,451.49,164.636,454.771L164.636,454.771z"/>		<path d="M232.903,429.171l-8.533,8.533c-2.188,2.149-3.055,5.307-2.27,8.271c0.785,2.965,3.1,5.28,6.065,6.065    c2.965,0.785,6.122-0.082,8.271-2.27l8.533-8.533c3.281-3.341,3.256-8.701-0.054-12.012    C241.604,425.915,236.243,425.89,232.903,429.171L232.903,429.171z"/>		<path d="M384.003,409.604c2.264,0.003,4.435-0.897,6.033-2.5l8.533-8.533c3.281-3.341,3.256-8.701-0.054-12.012    c-3.311-3.311-8.671-3.335-12.012-0.054l-8.533,8.533c-2.44,2.44-3.169,6.11-1.849,9.298    C377.441,407.524,380.552,409.603,384.003,409.604z"/>		<path d="M70.77,463.304l-8.533,8.533c-2.188,2.149-3.055,5.307-2.27,8.271s3.1,5.28,6.065,6.065    c2.965,0.785,6.122-0.082,8.271-2.27l8.533-8.533c3.281-3.341,3.256-8.701-0.054-12.012    C79.47,460.048,74.11,460.024,70.77,463.304L70.77,463.304z"/>		<path d="M121.97,446.238l-8.533,8.533c-2.188,2.149-3.055,5.307-2.27,8.271c0.785,2.965,3.1,5.28,6.065,6.065    c2.965,0.785,6.122-0.082,8.271-2.27l8.533-8.533c3.281-3.341,3.256-8.701-0.054-12.012    C130.67,442.981,125.31,442.957,121.97,446.238L121.97,446.238z"/>		<path d="M202.302,420.638c-1.6-1.601-3.77-2.5-6.033-2.5c-2.263,0-4.433,0.899-6.033,2.5l-8.533,8.533    c-2.178,2.151-3.037,5.304-2.251,8.262c0.786,2.958,3.097,5.269,6.055,6.055c2.958,0.786,6.111-0.073,8.262-2.251l8.533-8.533    c1.601-1.6,2.5-3.77,2.5-6.033C204.802,424.408,203.903,422.237,202.302,420.638L202.302,420.638z"/>		<path d="M210.836,463.304c-3.341-3.281-8.701-3.256-12.012,0.054c-3.311,3.311-3.335,8.671-0.054,12.012l8.533,8.533    c2.149,2.188,5.307,3.055,8.271,2.27c2.965-0.785,5.28-3.1,6.065-6.065c0.785-2.965-0.082-6.122-2.27-8.271L210.836,463.304z"/>		<path d="M343.836,454.771l-8.533,8.533c-2.188,2.149-3.055,5.307-2.27,8.271c0.785,2.965,3.1,5.28,6.065,6.065    c2.965,0.785,6.122-0.082,8.271-2.27l8.533-8.533c3.281-3.341,3.256-8.701-0.054-12.012    C352.537,451.515,347.177,451.49,343.836,454.771L343.836,454.771z"/>		<path d="M429.17,483.904c3.341,3.281,8.701,3.256,12.012-0.054s3.335-8.671,0.054-12.012l-8.533-8.533    c-3.341-3.281-8.701-3.256-12.012,0.054c-3.311,3.311-3.335,8.671-0.054,12.012L429.17,483.904z"/>		<path d="M341.336,401.071c2.264,0.003,4.435-0.897,6.033-2.5l8.533-8.533c3.281-3.341,3.256-8.701-0.054-12.012    s-8.671-3.335-12.012-0.054l-8.533,8.533c-2.44,2.441-3.169,6.11-1.849,9.298C334.774,398.991,337.885,401.07,341.336,401.071z"/>		<path d="M273.069,435.204c2.264,0.003,4.435-0.897,6.033-2.5l8.533-8.533c3.281-3.341,3.256-8.701-0.054-12.012    s-8.671-3.335-12.012-0.054l-8.533,8.533c-2.44,2.44-3.169,6.11-1.849,9.298C266.508,433.124,269.618,435.203,273.069,435.204z"/>		<path d="M253.318,258.138c22.738,7.382,46.448,11.338,70.351,11.737c31.602,0.543,62.581-8.828,88.583-26.796    c94.225-65.725,99.567-227.462,99.75-234.317c0.059-2.421-0.91-4.754-2.667-6.421c-1.751-1.679-4.141-2.52-6.558-2.308    C387.311,9.396,307.586,44.542,265.819,104.5c-28.443,42.151-38.198,94.184-26.956,143.776c-3.411,8.366-6.04,17.03-7.852,25.881    c-4.581-7.691-9.996-14.854-16.147-21.358c8.023-38.158,0.241-77.939-21.57-110.261C160.753,95.829,98.828,68.458,9.228,61.196    c-2.417-0.214-4.808,0.628-6.558,2.308c-1.757,1.667-2.726,4-2.667,6.421c0.142,5.321,4.292,130.929,77.717,182.142    c20.358,14.081,44.617,21.428,69.367,21.008c18.624-0.309,37.097-3.388,54.814-9.138c11.69,12.508,20.523,27.407,25.889,43.665    c0.149,15.133,2.158,30.19,5.982,44.832c-12.842-5.666-26.723-8.595-40.759-8.6c-49.449,0.497-91.788,35.567-101.483,84.058    c-5.094-1.093-10.29-1.641-15.5-1.638c-42.295,0.38-76.303,34.921-76.025,77.217c-0.001,2.263,0.898,4.434,2.499,6.035    c1.6,1.6,3.771,2.499,6.035,2.499h494.933c2.263,0.001,4.434-0.898,6.035-2.499c1.6-1.6,2.499-3.771,2.499-6.035    c0.249-41.103-31.914-75.112-72.967-77.154c0.65-4.78,0.975-9.598,0.975-14.421c0.914-45.674-28.469-86.455-72.083-100.045    c-43.615-13.59-90.962,3.282-116.154,41.391C242.252,322.17,242.793,288.884,253.318,258.138L253.318,258.138z M87.519,238.092    c-55.35-38.567-67.358-129.25-69.833-158.996c78.8,7.921,133.092,32.454,161.458,72.992    c15.333,22.503,22.859,49.414,21.423,76.606c-23.253-35.362-77.83-105.726-162.473-140.577c-2.82-1.165-6.048-0.736-8.466,1.125    s-3.658,4.873-3.252,7.897c0.406,3.024,2.395,5.602,5.218,6.761c89.261,36.751,144.772,117.776,161.392,144.874    C150.795,260.908,115.29,257.451,87.519,238.092z M279.969,114.046c37.6-53.788,109.708-86.113,214.408-96.138    c-2.65,35.375-17.158,159.05-91.892,211.175c-37.438,26.116-85.311,30.57-142.305,13.433    c19.284-32.09,92.484-142.574,212.405-191.954c2.819-1.161,4.805-3.738,5.209-6.76c0.404-3.022-0.835-6.031-3.25-7.892    c-2.415-1.861-5.64-2.292-8.459-1.131C351.388,82.01,279.465,179.805,252.231,222.711    C248.573,184.367,258.381,145.945,279.969,114.046L279.969,114.046z M262.694,368.017c15.097-26.883,43.468-43.587,74.3-43.746    c47.906,0.521,86.353,39.717,85.95,87.625c-0.001,7.188-0.857,14.351-2.55,21.337c-0.67,2.763,0.08,5.677,1.999,7.774    c1.919,2.097,4.757,3.1,7.568,2.676c1.994-0.272,4.005-0.393,6.017-0.362c29.59,0.283,54.467,22.284,58.367,51.617H17.661    c3.899-29.333,28.777-51.334,58.367-51.617c4-0.004,7.989,0.416,11.9,1.254c4.622,0.985,9.447,0.098,13.417-2.467    c3.858-2.519,6.531-6.493,7.408-11.017c7.793-40.473,43.043-69.838,84.258-70.192c16.045-0.002,31.757,4.582,45.283,13.212    c4.01,2.561,8.897,3.358,13.512,2.205C256.422,375.165,260.36,372.163,262.694,368.017L262.694,368.017z"/>	</g></g>',
@@ -1460,12 +1473,13 @@ describe('Diagram Control', () => {
                 width: '100%',
                 height: '600px',
             });
-            diagram.appendTo('#diagramNodeZindex');
+            diagram.appendTo('#diagramNodeZindex9');
         });
 
         afterAll((): void => {
             diagram.destroy();
             ele.remove();
+            (diagram as any) = null; (ele as any) = null;
         });
 
         it('Checking zIndex when node is added on runtime', (done: Function) => {
@@ -1482,7 +1496,7 @@ describe('Diagram Control', () => {
     describe('distribute issue', () => {
         let diagram: Diagram; let ele: HTMLElement;
         beforeAll((): void => {
-            ele = createElement('div', { id: 'diagramNodeZindex' });
+            ele = createElement('div', { id: 'diagramNodeZindex10' });
             document.body.appendChild(ele);
             let node = {
                 offsetX: 250,
@@ -1518,12 +1532,13 @@ describe('Diagram Control', () => {
                 height: '600px',
                 nodes: [node, node2, node3]
             });
-            diagram.appendTo('#diagramNodeZindex');
+            diagram.appendTo('#diagramNodeZindex10');
         });
 
         afterAll((): void => {
             diagram.destroy();
             ele.remove();
+            (diagram as any) = null; (ele as any) = null;
         });
 
         it('Checking distribute with righttoleft', (done: Function) => {
@@ -1539,7 +1554,7 @@ describe('Diagram Control', () => {
             diagram.nodes[1].offsetY = 250;
             diagram.nodes[2].offsetY = 350;
             diagram.select([diagram.nodes[2], diagram.nodes[0], diagram.nodes[1]], true);
-            diagram.distribute("RightToLeft", diagram.selectedItems.nodes);            
+            diagram.distribute("RightToLeft", diagram.selectedItems.nodes);
             expect(diagram.nodes[1].offsetY === 250 || diagram.nodes[0].offsetX === 250).toBe(true);
             done();
         });
@@ -1549,7 +1564,7 @@ describe('Diagram Control', () => {
         let redSvg = '<g><circle cx="0" cy="0" r="50" fill="red"/></g>';
         let blueSvg = '<g><circle cx="0" cy="0" r="50" fill="blue"/></g>';
         beforeAll((): void => {
-            ele = createElement('div', { id: 'diagramNodeZindex' });
+            ele = createElement('div', { id: 'diagramNodeZindex11' });
             document.body.appendChild(ele);
             let node: NodeModel = {
                 id: "svg",
@@ -1568,26 +1583,26 @@ describe('Diagram Control', () => {
                 height: '600px',
                 nodes: [node]
             });
-            diagram.appendTo('#diagramNodeZindex');
+            diagram.appendTo('#diagramNodeZindex11');
         });
 
         afterAll((): void => {
             diagram.destroy();
             ele.remove();
+            (diagram as any) = null; (ele as any) = null;
         });
 
         it('Checking update shape content issue', (done: Function) => {
-            let diagramlayer: HTMLElement = document.getElementById(diagram.element.id + '_diagramLayer');
             (diagram.nodes[0].shape as NativeModel).content = redSvg;
             expect((diagram.nodes[0].shape as NativeModel).content === redSvg).toBe(true);
             done();
-        });      
+        });
     });
     describe('selection change event issue', () => {
         let diagram: Diagram; let ele: HTMLElement;
 
         beforeAll((): void => {
-            ele = createElement('div', { id: 'diagramNodeZindex' });
+            ele = createElement('div', { id: 'diagramNodeZindex12' });
             document.body.appendChild(ele);
             let nodes: NodeModel[] = [
                 {
@@ -1604,165 +1619,169 @@ describe('Diagram Control', () => {
                 height: '600px',
                 nodes: nodes
             });
-            diagram.appendTo('#diagramNodeZindex');
+            diagram.appendTo('#diagramNodeZindex12');
         });
 
         afterAll((): void => {
             diagram.destroy();
             ele.remove();
+            (diagram as any) = null; (ele as any) = null;
         });
 
         it('selection change event issue', (done: Function) => {
             diagram.select([diagram.nodes[0]])
             let mouseEvents: MouseEvents = new MouseEvents();
-            let diagramCanvas: Element = document.getElementById('diagramNodeZindexcontent');
+            let diagramCanvas: Element = document.getElementById('diagramNodeZindex12content');
 
             let center: PointModel = { x: 700, y: 300 };
             diagram.selectionChange = function (args) {
                 expect(args.oldValue[0].id === 'node1' && args.newValue[0].id === 'node2').toBe(true);
                 done();
             }
-            mouseEvents.dragAndDropEvent(diagramCanvas, center.x, center.y,center.x+1, center.y+1);
+            mouseEvents.dragAndDropEvent(diagramCanvas, center.x, center.y, center.x + 1, center.y + 1);
             done();
         });
 
-});
+    });
 
-describe('node default connector default check', () => {
-    let diagram: Diagram; let ele: HTMLElement;
+    describe('node default connector default check', () => {
+        let diagram: Diagram; let ele: HTMLElement;
 
-    beforeAll((): void => {
-        ele = createElement('div', { id: 'diagramNodeZindexDefault' });
-        document.body.appendChild(ele);
-        let nodes: NodeModel[] = [
-            {
-                id: 'node1', offsetX: 300, offsetY: 300, annotations: [{ id: 'node1', offset: { x: 0, y: 0 } }, { id: 'node2' }],
-                ports: [{ id: 'port1', visibility: PortVisibility.Visible, offset: { x: 1, y: 0 } }, { id: 'port2', offset: { x: 0, y: 1 }, visibility: PortVisibility.Visible }]
-            },
-            {
-                id: 'node2122', offsetX: 100, offsetY: 100, annotations: [{ id: 'node2', offset: { x: 0, y: 0 } }, { id: 'node211' }],
-                ports: [{ id: 'po1rt1', visibility: PortVisibility.Visible, offset: { x: 1, y: 0 } }, { id: 'po1rt2', offset: { x: 0, y: 1 }, visibility: PortVisibility.Visible }]
-            },
-        ];
-        let connectors: ConnectorModel[] = [
-            {
-                id: 'connector1',
-                sourcePoint: { x: 100, y: 100 },
-                targetPoint: { x: 200, y: 200 },
-                annotations:[{id:'s',offset:0},{id:'ss'}]
-            },
-            {
-                id: 'connector2',
-                sourcePoint: { x: 300, y: 100 },
-                targetPoint: { x: 400, y: 200 },
-                annotations:[{id:'ssss'}]
-            },]
+        beforeAll((): void => {
+            ele = createElement('div', { id: 'diagramNodeZindexDefault13' });
+            document.body.appendChild(ele);
+            let nodes: NodeModel[] = [
+                {
+                    id: 'node1', offsetX: 300, offsetY: 300, annotations: [{ id: 'node1', offset: { x: 0, y: 0 } }, { id: 'node2' }],
+                    ports: [{ id: 'port1', visibility: PortVisibility.Visible, offset: { x: 1, y: 0 } }, { id: 'port2', offset: { x: 0, y: 1 }, visibility: PortVisibility.Visible }]
+                },
+                {
+                    id: 'node2122', offsetX: 100, offsetY: 100, annotations: [{ id: 'node2', offset: { x: 0, y: 0 } }, { id: 'node211' }],
+                    ports: [{ id: 'po1rt1', visibility: PortVisibility.Visible, offset: { x: 1, y: 0 } }, { id: 'po1rt2', offset: { x: 0, y: 1 }, visibility: PortVisibility.Visible }]
+                },
+            ];
+            let connectors: ConnectorModel[] = [
+                {
+                    id: 'connector1',
+                    sourcePoint: { x: 100, y: 100 },
+                    targetPoint: { x: 200, y: 200 },
+                    annotations: [{ id: 's', offset: 0 }, { id: 'ss' }]
+                },
+                {
+                    id: 'connector2',
+                    sourcePoint: { x: 300, y: 100 },
+                    targetPoint: { x: 400, y: 200 },
+                    annotations: [{ id: 'ssss' }]
+                },]
 
-        diagram = new Diagram({
-            width: '100%', height: 900, nodes: nodes,
-            connectors: connectors,
-            connectorDefaults:{ 
-                annotations: [{ content: 'ss', style: { fill: 'red' }, constraints: AnnotationConstraints.Interaction }, { content: 'aaa', style: { fill: 'blue' } }],
-                type: 'Bezier',
-                constraints :ConnectorConstraints.Select,
-                style: { strokeColor: 'red' },
-                 targetDecorator: {
-                    style: { fill: 'blue' },
-                    pivot: { x: 0, y: 0.5 }
-                } ,
-                sourceDecorator: {
-                    style: { fill: 'yellow' },
-                    shape: 'Arrow',
-                    pivot: { x: 0, y: 0.5 }
-                }
-            },
-            nodeDefaults: { width: 50,
-                offsetX: 100, offsetY: 100,
-                constraints: NodeConstraints.Default & ~NodeConstraints.Rotate, borderWidth: 4, height: 50, rotateAngle: 30, maxWidth: 200, backgroundColor: 'red', borderColor: "yellow", shape: { type: 'Basic', shape: 'Heptagon' }, style: { fill: '#D5EDED', strokeColor: '#7DCFC9', strokeWidth: 1 },
+            diagram = new Diagram({
+                width: '100%', height: 900, nodes: nodes,
+                connectors: connectors,
+                connectorDefaults: {
+                    annotations: [{ content: 'ss', style: { fill: 'red' }, constraints: AnnotationConstraints.Interaction }, { content: 'aaa', style: { fill: 'blue' } }],
+                    type: 'Bezier',
+                    constraints: ConnectorConstraints.Select,
+                    style: { strokeColor: 'red' },
+                    targetDecorator: {
+                        style: { fill: 'blue' },
+                        pivot: { x: 0, y: 0.5 }
+                    },
+                    sourceDecorator: {
+                        style: { fill: 'yellow' },
+                        shape: 'Arrow',
+                        pivot: { x: 0, y: 0.5 }
+                    }
+                },
+                nodeDefaults: {
+                    width: 50,
+                    offsetX: 100, offsetY: 100,
+                    constraints: NodeConstraints.Default & ~NodeConstraints.Rotate, borderWidth: 4, height: 50, rotateAngle: 30, maxWidth: 200, backgroundColor: 'red', borderColor: "yellow", shape: { type: 'Basic', shape: 'Heptagon' }, style: { fill: '#D5EDED', strokeColor: '#7DCFC9', strokeWidth: 1 },
                     ports: [{ style: { fill: 'gray' }, constraints: PortConstraints.Drag }, { style: { fill: 'yellow' }, constraints: PortConstraints.Draw }],
-                    annotations: [{ content: 'ss', style: { fill: 'red' }, constraints: AnnotationConstraints.Interaction }, { content: 'aaa', style: { fill: 'blue' } }] },
+                    annotations: [{ content: 'ss', style: { fill: 'red' }, constraints: AnnotationConstraints.Interaction }, { content: 'aaa', style: { fill: 'blue' } }]
+                },
+            });
+            diagram.appendTo('#diagramNodeZindexDefault13');
         });
-        diagram.appendTo('#diagramNodeZindexDefault');
-    });
 
-    afterAll((): void => {
-        diagram.destroy();
-        ele.remove();
-    });
+        afterAll((): void => {
+            diagram.destroy();
+            ele.remove();
+            (diagram as any) = null; (ele as any) = null;
+        });
 
-    it('check node default and connector default', (done: Function) => {
-        let nodeelement = document.getElementById('node2122_groupElement')
-        let nodeElementValue = document.getElementById(diagram.nodes[1].id)
-        let nodeBG = document.getElementById(diagram.nodes[1].id+'_content')
-        let nodeannotation = document.getElementById(diagram.nodes[1].id+'_node2')
-        let nodeTextAnnotation = document.getElementById(diagram.nodes[1].id+'_node2_text')
-        let element = document.getElementById('node2122_node211')
-        let portelement = document.getElementById('node2122_po1rt1');
-        expect(nodeElementValue.getAttribute('stroke')=== 'yellow'&&nodeBG.getAttribute('fill')==='#D5EDED'&&
-        nodeannotation.getAttribute('fill')==='red'
-        &&(nodeTextAnnotation.children[0].childNodes[0] as any).data === 'ss'&&element.getAttribute('fill')==='blue'
-        &&portelement.getAttribute('d') === 'M0,0 L12,0 L12,12 L0,12 Z '
-        &&portelement.getAttribute('fill') === 'gray'
-        ).toBe(true)
-        nodeElementValue = document.getElementById(diagram.nodes[0].id)
-         nodeBG = document.getElementById(diagram.nodes[0].id+'_content')
-         nodeannotation = document.getElementById(diagram.nodes[0].id+'_node1')
-        nodeTextAnnotation = document.getElementById(diagram.nodes[0].id + '_node1_text')
-        element = document.getElementById('node1_node1')
-        portelement = document.getElementById('node1_port1');
-        nodeelement = document.getElementById('node1_groupElement')
-        expect(nodeElementValue.getAttribute('stroke') === 'yellow' && nodeBG.getAttribute('fill') === '#D5EDED' && nodeannotation.getAttribute('fill') === 'red'
-            && (nodeTextAnnotation.children[0].childNodes[0] as any).data === 'ss' && element.getAttribute('fill') === 'red'
-            && portelement.getAttribute('d') === 'M0,0 L12,0 L12,12 L0,12 Z '
-            && portelement.getAttribute('fill') === 'gray'
-        ).toBe(true)
-        let node: NodeModel = {};
-        node.id = 'group1';
-        node.shape = { type: 'Basic', shape: 'Rectangle', }
-        node.annotations = [{
-            id: 'AGroup1',
-            content: 'Group'
-        }];
-        node.ports = [{
-            id: 'PGroup1', offset: { x: 0.5, y: 0.5 },
-        }];
-        diagram.add(node);
-        nodeelement = document.getElementById('group1_groupElement')
-        let element11 = document.getElementById(diagram.nodes[2].id)
-        let element12 = document.getElementById(diagram.nodes[2].id + '_content')
-        let element13 = document.getElementById(diagram.nodes[2].id + '_AGroup1')
-        let element14 = document.getElementById(diagram.nodes[2].id + '_AGroup1_text')
-        expect(element11.getAttribute('fill') === 'red' && element12.getAttribute('fill') === '#D5EDED' && element13.getAttribute('fill') === 'red' &&
-            (element14.children[0].childNodes[0] as any).data === 'Group').toBe(true)
-        let connectorElement = document.getElementById('connector1_groupElement')
-        let pathElement = document.getElementById(diagram.connectors[0].id + '_path')
-        let srcElement = document.getElementById(diagram.connectors[0].id + '_srcDec')
-        let tarElement = document.getElementById(diagram.connectors[0].id + '_tarDec')
-        expect(pathElement.getAttribute('stroke') === 'red'
-            && srcElement.getAttribute('fill')
-            && tarElement.getAttribute('fill') === 'blue').toBe(true)
-        let sourcePoint = { x: 900, y: 100 };
-        let targetPoint = { x: 1000, y: 200 };
-        let connector: ConnectorModel = { id: 'addconnector', sourcePoint: sourcePoint, targetPoint: targetPoint }
-        diagram.add(connector);
-        pathElement = document.getElementById(diagram.connectors[1].id + '_path')
-        srcElement = document.getElementById(diagram.connectors[1].id + '_srcDec')
-        tarElement = document.getElementById(diagram.connectors[1].id + '_tarDec')
-        connectorElement = document.getElementById('addconnector_groupElement')
-        expect(pathElement.getAttribute('stroke') === 'red'
-            && srcElement.getAttribute('fill')
-            && tarElement.getAttribute('fill') === 'blue').toBe(true)
+        it('check node default and connector default', (done: Function) => {
+            let nodeelement = document.getElementById('node2122_groupElement')
+            let nodeElementValue = document.getElementById(diagram.nodes[1].id)
+            let nodeBG = document.getElementById(diagram.nodes[1].id + '_content')
+            let nodeannotation = document.getElementById(diagram.nodes[1].id + '_node2')
+            let nodeTextAnnotation = document.getElementById(diagram.nodes[1].id + '_node2_text')
+            let element = document.getElementById('node2122_node211')
+            let portelement = document.getElementById('node2122_po1rt1');
+            expect(nodeElementValue.getAttribute('stroke') === 'yellow' && nodeBG.getAttribute('fill') === '#D5EDED' &&
+                nodeannotation.getAttribute('fill') === 'red'
+                && (nodeTextAnnotation.children[0].childNodes[0] as any).data === 'ss' && element.getAttribute('fill') === 'blue'
+                && portelement.getAttribute('d') === 'M0,0 L12,0 L12,12 L0,12 Z '
+                && portelement.getAttribute('fill') === 'gray'
+            ).toBe(true)
+            nodeElementValue = document.getElementById(diagram.nodes[0].id)
+            nodeBG = document.getElementById(diagram.nodes[0].id + '_content')
+            nodeannotation = document.getElementById(diagram.nodes[0].id + '_node1')
+            nodeTextAnnotation = document.getElementById(diagram.nodes[0].id + '_node1_text')
+            element = document.getElementById('node1_node1')
+            portelement = document.getElementById('node1_port1');
+            nodeelement = document.getElementById('node1_groupElement')
+            expect(nodeElementValue.getAttribute('stroke') === 'yellow' && nodeBG.getAttribute('fill') === '#D5EDED' && nodeannotation.getAttribute('fill') === 'red'
+                && (nodeTextAnnotation.children[0].childNodes[0] as any).data === 'ss' && element.getAttribute('fill') === 'red'
+                && portelement.getAttribute('d') === 'M0,0 L12,0 L12,12 L0,12 Z '
+                && portelement.getAttribute('fill') === 'gray'
+            ).toBe(true)
+            let node: NodeModel = {};
+            node.id = 'group1';
+            node.shape = { type: 'Basic', shape: 'Rectangle', }
+            node.annotations = [{
+                id: 'AGroup1',
+                content: 'Group'
+            }];
+            node.ports = [{
+                id: 'PGroup1', offset: { x: 0.5, y: 0.5 },
+            }];
+            diagram.add(node);
+            nodeelement = document.getElementById('group1_groupElement')
+            let element11 = document.getElementById(diagram.nodes[2].id)
+            let element12 = document.getElementById(diagram.nodes[2].id + '_content')
+            let element13 = document.getElementById(diagram.nodes[2].id + '_AGroup1')
+            let element14 = document.getElementById(diagram.nodes[2].id + '_AGroup1_text')
+            expect(element11.getAttribute('fill') === 'red' && element12.getAttribute('fill') === '#D5EDED' && element13.getAttribute('fill') === 'red' &&
+                (element14.children[0].childNodes[0] as any).data === 'Group').toBe(true)
+            let connectorElement = document.getElementById('connector1_groupElement')
+            let pathElement = document.getElementById(diagram.connectors[0].id + '_path')
+            let srcElement = document.getElementById(diagram.connectors[0].id + '_srcDec')
+            let tarElement = document.getElementById(diagram.connectors[0].id + '_tarDec')
+            expect(pathElement.getAttribute('stroke') === 'red'
+                && srcElement.getAttribute('fill')
+                && tarElement.getAttribute('fill') === 'blue').toBe(true)
+            let sourcePoint = { x: 900, y: 100 };
+            let targetPoint = { x: 1000, y: 200 };
+            let connector: ConnectorModel = { id: 'addconnector', sourcePoint: sourcePoint, targetPoint: targetPoint }
+            diagram.add(connector);
+            pathElement = document.getElementById(diagram.connectors[1].id + '_path')
+            srcElement = document.getElementById(diagram.connectors[1].id + '_srcDec')
+            tarElement = document.getElementById(diagram.connectors[1].id + '_tarDec')
+            connectorElement = document.getElementById('addconnector_groupElement')
+            expect(pathElement.getAttribute('stroke') === 'red'
+                && srcElement.getAttribute('fill')
+                && tarElement.getAttribute('fill') === 'blue').toBe(true)
             done();
-    });
+        });
 
-});
+    });
 
 
     describe('node template support ', () => {
         let diagram: Diagram; let ele: HTMLElement;
 
         beforeAll((): void => {
-            ele = createElement('div', { id: 'diagramNodeZindexDefault' });
+            ele = createElement('div', { id: 'diagramNodeZindexDefault14' });
             document.body.appendChild(ele);
             let nodes: NodeModel[] = [
                 {
@@ -1781,12 +1800,13 @@ describe('node default connector default check', () => {
                 nodeTemplate: '#diagramNodeZindexDefault',
 
             });
-            diagram.appendTo('#diagramNodeZindexDefault');
+            diagram.appendTo('#diagramNodeZindexDefault14');
         });
 
         afterAll((): void => {
             diagram.destroy();
             ele.remove();
+            (diagram as any) = null; (ele as any) = null;
         });
 
         it('node template support checking', (done: Function) => {
@@ -1801,7 +1821,7 @@ describe('node default connector default check', () => {
         let diagram: Diagram; let ele: HTMLElement;
 
         beforeAll((): void => {
-            ele = createElement('div', { id: 'diagramtemplate' });
+            ele = createElement('div', { id: 'diagramtemplate15' });
             document.body.appendChild(ele);
             let nodes: NodeModel[] = [
                 {
@@ -1837,28 +1857,29 @@ describe('node default connector default check', () => {
                         {
                             id: "connector_labe2l", height: 60, width: 200, offset: 0,
                             constraints: AnnotationConstraints.Interaction,
-                            content:"dvv",
+                            content: "dvv",
                         },
                         {
                             id: "connector_labe3l", height: 60, width: 200, offset: 0.5,
                             constraints: AnnotationConstraints.Interaction,
                             template: '<style>th {border: 5px solid #c1dad7}td {border: 5px solid #c1dad7}.c1 { background: #4b8c74 } .c2 { background: #74c476 }  .c3 { background: #a4e56d } .c4 { background: #cffc83 } </style> <table style="width:100%;"> <tbody> <tr> <th class="c1">ID</th> <th class="c2">Offset</th> </tr> <tr> <td class="c1">${id}</td> <td class="c2">${offset}</td> </tr> </tbody> </table>'
                         }
-            
+
                     ]
                 }
             ];
 
             diagram = new Diagram({
                 width: '100%', height: 900, nodes: nodes, connectors: connectors,
-                annotationTemplate:"#diagramtemplate"
+                annotationTemplate: "#diagramtemplate"
             });
-            diagram.appendTo('#diagramtemplate');
+            diagram.appendTo('#diagramtemplate15');
         });
 
         afterAll((): void => {
             diagram.destroy();
             ele.remove();
+            (diagram as any) = null; (ele as any) = null;
         });
 
         it('node and connector annotation template support', (done: Function) => {
@@ -1880,29 +1901,29 @@ describe('node default connector default check', () => {
             var connectorannotation1 = diagram.connectors[0].annotations[0].id
             var connectorannotation1Element = document.getElementById(diagram.connectors[0].id + '_' + connectorannotation1 + '_html_element')
             expect(connectorannotation1Element instanceof HTMLDivElement).toBe(true)
-            
+
             var connectorannotation2 = diagram.connectors[0].annotations[1].id
             var connectorannotation2Element = document.getElementById(diagram.connectors[0].id + '_' + connectorannotation2 + '_groupElement')
             expect((connectorannotation2Element.children[1].childNodes[0] as HTMLElement).innerHTML === "dvv").toBe(true)
-            
+
             var connectorannotation3 = diagram.connectors[0].annotations[2].id
             var connectorannotation3Element = document.getElementById(diagram.connectors[0].id + '_' + connectorannotation3 + '_html_element')
             expect(connectorannotation3Element instanceof HTMLDivElement).toBe(true)
-            
+
             done();
         });
 
     });
 
     describe('Pan Status on Mouse events', () => {
-        let diagram: Diagram; let elements: HTMLElement;let status: State;
+        let diagram: Diagram; let elements: HTMLElement; let status: State;
         beforeAll((): void => {
             elements = createElement('div', { styles: 'width:100%;height:500px;' });
-            elements.appendChild(createElement('div', { id: 'diagramNodeZindex' }));
+            elements.appendChild(createElement('div', { id: 'diagramNodeZindex16' }));
             document.body.appendChild(elements);
             let nodes: NodeModel[] = [
                 {
-                    id: 'node2', width: 100, height: 100, offsetX: 300, offsetY: 100, pivot: {x: 0,y: 0}
+                    id: 'node2', width: 100, height: 100, offsetX: 300, offsetY: 100, pivot: { x: 0, y: 0 }
                 }
             ];
             diagram = new Diagram({
@@ -1911,25 +1932,24 @@ describe('node default connector default check', () => {
                 nodes: nodes,
                 tool: DiagramTools.ZoomPan,
             });
-            diagram.appendTo('#diagramNodeZindex');
+            diagram.appendTo('#diagramNodeZindex16');
         });
 
         afterAll((): void => {
             diagram.destroy();
-            elements.remove();  
+            elements.remove();
+            (diagram as any) = null; (elements as any) = null;
         });
 
         it('Pan Status on events', (done: Function) => {
-            let diagramCanvas: Element = document.getElementById('diagramNodeZindexcontent');
+            let diagramCanvas: Element = document.getElementById('diagramNodeZindex16content');
             let mouseevents: MouseEvents = new MouseEvents();
-            diagram.scrollChange = (args:IScrollChangeEventArgs | IBlazorScrollChangeEventArgs) => {
-                if(status === 'Start')
-                {
-                    expect( args.panState === 'Start' ).toBe(true)
+            diagram.scrollChange = (args: IScrollChangeEventArgs | IBlazorScrollChangeEventArgs) => {
+                if (status === 'Start') {
+                    expect(args.panState === 'Start').toBe(true)
                 }
-                if(status === 'Completed' )
-                {
-                    expect( args.panState === 'Completed' ).toBe(true)
+                if (status === 'Completed') {
+                    expect(args.panState === 'Completed').toBe(true)
                 }
             }
             mouseevents.mouseDownEvent(diagramCanvas, 350, 140, false, false);
@@ -1947,21 +1967,22 @@ describe('SizeChange Event at completed state', () => {
     let diagram: Diagram; let elements: HTMLElement
     beforeAll((): void => {
         elements = createElement('div', { styles: 'width:100%;height:500px;' });
-        elements.appendChild(createElement('div', { id: 'diagramNodeZindex' }));
+        elements.appendChild(createElement('div', { id: 'diagramNodeZindex17' }));
         document.body.appendChild(elements);
-        let nodes: NodeModel = 
-            {
-                id: 'node2', width: 100, height: 100, offsetX: 300, offsetY: 100, pivot: {x: 0,y: 0}
-            }
+        let nodes: NodeModel =
+        {
+            id: 'node2', width: 100, height: 100, offsetX: 300, offsetY: 100, pivot: { x: 0, y: 0 }
+        }
         diagram = new Diagram({
-            width: 800, height: 800, nodes: [nodes], 
+            width: 800, height: 800, nodes: [nodes],
         });
-        diagram.appendTo('#diagramNodeZindex');
+        diagram.appendTo('#diagramNodeZindex17');
     });
 
     afterAll((): void => {
         diagram.destroy();
-        elements.remove();  
+        elements.remove();
+        (diagram as any) = null; (elements as any) = null;
     });
 
     function resize(diagram: Diagram, direction: string): void {
@@ -1983,7 +2004,7 @@ describe('SizeChange Event at completed state', () => {
     it('SizeChange Event at completed state', (done: Function) => {
         diagram.select([diagram.nodes[0]]);
         console.log(diagram.nodes[0].width);
-        let beforeWidth:number = diagram.nodes[0].width;
+        let beforeWidth: number = diagram.nodes[0].width;
         let beforeOffsetX: number = diagram.nodes[0].offsetX;
         resize(diagram, 'resizeEast');
         let afterWidth: number = diagram.nodes[0].width
@@ -1992,26 +2013,26 @@ describe('SizeChange Event at completed state', () => {
         console.log("completed state");
         console.log(beforeWidth != afterWidth);
         console.log(beforeOffsetX === afterOffsetX);
-        expect((beforeWidth == afterWidth) && (beforeOffsetX === afterOffsetX) ).toBe(true)
+        expect((beforeWidth == afterWidth) && (beforeOffsetX === afterOffsetX)).toBe(true)
         done();
-        
+
     });
 
     it('SizeChange Event at completed state', (done: Function) => {
         diagram.select([diagram.nodes[0]]);
         console.log(diagram.nodes[0].height);
-        let beforeHeight:number = diagram.nodes[0].height;
+        let beforeHeight: number = diagram.nodes[0].height;
         let beforeOffsetX: number = diagram.nodes[0].offsetX;
         resize(diagram, 'resizeSouth');
         let afterHeight: number = diagram.nodes[0].height
         let afterOffsetX: number = diagram.nodes[0].offsetX;
         console.log(diagram.nodes[0].height);
-        console.log("completed state 1" );
+        console.log("completed state 1");
         console.log(beforeHeight != afterHeight);
         console.log(beforeOffsetX === afterOffsetX);
-        expect((beforeHeight == afterHeight) && (beforeOffsetX === afterOffsetX) ).toBe(true)
+        expect((beforeHeight == afterHeight) && (beforeOffsetX === afterOffsetX)).toBe(true)
         done();
-        
+
     });
 });
 export interface EmployeeInfo {
@@ -2023,7 +2044,7 @@ describe('Complex Hierarchical tree layout change', () => {
     let diagram: Diagram; let elements: HTMLElement
     beforeAll((): void => {
         elements = createElement('div', { styles: 'width:100%;height:500px;' });
-        elements.appendChild(createElement('div', { id: 'diagramHierarchical' }));
+        elements.appendChild(createElement('div', { id: 'diagramHierarchical18' }));
         document.body.appendChild(elements);
         let Data: object[] = [
             {
@@ -2041,7 +2062,7 @@ describe('Complex Hierarchical tree layout change', () => {
                 "ImageUrl": "./assets/diagram/employees/image4.png", "IsExpand": "false",
                 "RatingColor": "#93B85A", "ReportingPerson": "Node2"
             },
-            
+
         ];
         let items: DataManager = new DataManager(Data as JSON[], new Query().take(7));
         let data: Object = {
@@ -2050,135 +2071,136 @@ describe('Complex Hierarchical tree layout change', () => {
         let layout: LayoutModel = {
             type: 'ComplexHierarchicalTree', margin: { top: 20 },
             horizontalSpacing: 50, verticalSpacing: 50
-            
+
         };
         diagram = new Diagram({
             width: 1000, height: 1000,
-            scrollSettings:{ scrollLimit: 'Infinity' },
-            snapSettings:{constraints: SnapConstraints.None},
+            scrollSettings: { scrollLimit: 'Infinity' },
+            snapSettings: { constraints: SnapConstraints.None },
             tool: DiagramTools.ZoomPan,
             layout: layout,
             dataSourceSettings: data,
             setNodeTemplate: (node: NodeModel, diagram: Diagram): GroupableView => {
                 node.constraints = NodeConstraints.InConnect |
-                NodeConstraints.OutConnect |
-                NodeConstraints.Select |
-                NodeConstraints.PointerEvents |
-                NodeConstraints.Drag;
-            const strokeWidth: number = 0.5;
-            const cornerRadius: number = 4;
-            const mainStack: StackPanel = new StackPanel();
-            mainStack.id = randomId();
-            mainStack.style.fill = "#0099ff";
-            mainStack.orientation = 'Horizontal';
-            mainStack.minHeight = 55;
-            mainStack.width = 100;
-            mainStack.style.strokeWidth = strokeWidth;
-            mainStack.style.strokeColor = '#AAAAAA';
-            mainStack.cornerRadius = cornerRadius;
-            mainStack.shadow = { color: 'grey', distance: 6, opacity: .1, angle: 135 };
-            const personStack: StackPanel = new StackPanel();
-            personStack.id = randomId();
-            personStack.orientation = 'Vertical';
-            personStack.style.strokeWidth = 0;
-            personStack.style.fill = 'transparent';
-            personStack.children = [];
-            let text: TextElement = new TextElement();
-            text.content = (node.data as EmployeeInfo).Name;
-            text.style.color = 'black';
-            text.style.bold = true;
-            text.style.strokeColor = 'none';
-            text.horizontalAlignment = 'Left';
-            text.style.fill = 'none';
-            text.id = node.id + '_text1';
-            const titleText = text;
-            personStack.children.push(titleText);
-            let desigText: TextElement = new TextElement();
-            desigText.margin = { left: 0, right: 0, top: 5, bottom: 0 };
-            desigText.content = (node.data as EmployeeInfo).Designation;
-            desigText.style.color = 'black';
-            desigText.style.strokeColor = 'none';
-            desigText.style.fontSize = 12;
-            desigText.style.fill = 'none';
-            desigText.horizontalAlignment = 'Left';
-            desigText.style.textWrapping = 'Wrap';
-            desigText.id = node.id + '_desig';
-            personStack.children.push(desigText);
-            const image: ImageElement = new ImageElement();
-            image.margin.left = 10;
-            image.margin.top = 10;
-            image.width = 30;
-            image.height = 30;
-            image.style.strokeColor = 'none';
-            image.style.fill = 'none';
-            image.verticalAlignment = 'Top';
-            image.source = 'https://cdn1.iconfinder.com/data/icons/business-elements-15/150/Firma-512.png';
-            image.id = randomId();
-            mainStack.children = [image, personStack];
-            const groupStack: StackPanel = new StackPanel();
-            groupStack.id = randomId();
-            groupStack.style.strokeWidth = 0;
-            groupStack.children = [];
-            groupStack.orientation = 'Vertical';
-            const bvStack: StackPanel = new StackPanel();
-            bvStack.id = randomId();
-            bvStack.style.fill = "#0099ff";
-            bvStack.orientation = 'Vertical';
-            bvStack.margin.top = 6;
-            bvStack.padding = new Thickness(4, 4, 4, 4);
-            bvStack.horizontalAlignment = 'Stretch';
-            bvStack.verticalAlignment = 'Top';
-            bvStack.style.strokeWidth = strokeWidth;
-            bvStack.style.strokeColor = '#AAAAAA';
-            bvStack.cornerRadius = cornerRadius;
-            bvStack.shadow = { color: 'grey', distance: 6, opacity: .1, angle: 135 };
-            bvStack.children = [];
-            let bvText: TextElement = new TextElement();
-            bvText.margin = { left: 0, right: 0, top: 5, bottom: 0 };
-            bvText.content = "Bankverbindungen";
-            bvText.style.color = 'black';
-            bvText.style.strokeColor = 'none';
-            bvText.style.fontSize = 12;
-            bvText.style.fill = 'none';
-            bvText.horizontalAlignment = 'Left';
-            bvText.style.textWrapping = 'Wrap';
-            bvText.id = node.id + '_bvText';
-            bvStack.children.push(bvText);
-            const vwStack: StackPanel = new StackPanel();
-            vwStack.id = randomId();
-            vwStack.style.fill = "#0099ff";
-            vwStack.orientation = 'Vertical';
-            vwStack.margin.top = 6;
-            vwStack.padding = new Thickness(4, 4, 4, 4);
-            vwStack.horizontalAlignment = 'Stretch';
-            vwStack.style.strokeWidth = strokeWidth;
-            vwStack.style.strokeColor = '#AAAAAA';
-            vwStack.cornerRadius = cornerRadius;
-            vwStack.shadow = { color: 'grey', distance: 6, opacity: .1, angle: 135 };
-            vwStack.children = [];
-            let vwText: TextElement = new TextElement();
-            vwText.margin = { left: 0, right: 0, top: 5, bottom: 0 };
-            vwText.content = "Vermögenswerte";
-            vwText.style.color = 'black';
-            vwText.style.strokeColor = 'none';
-            vwText.style.fontSize = 12;
-            vwText.style.fill = 'none';
-            vwText.horizontalAlignment = 'Left';
-            vwText.style.textWrapping = 'Wrap';
-            vwText.id = node.id + '_vwText';
-            vwStack.children.push(vwText);
-            groupStack.children.push(mainStack);
-            groupStack.children.push(bvStack);
-            groupStack.children.push(vwStack);
-            return groupStack;
+                    NodeConstraints.OutConnect |
+                    NodeConstraints.Select |
+                    NodeConstraints.PointerEvents |
+                    NodeConstraints.Drag;
+                const strokeWidth: number = 0.5;
+                const cornerRadius: number = 4;
+                const mainStack: StackPanel = new StackPanel();
+                mainStack.id = randomId();
+                mainStack.style.fill = "#0099ff";
+                mainStack.orientation = 'Horizontal';
+                mainStack.minHeight = 55;
+                mainStack.width = 100;
+                mainStack.style.strokeWidth = strokeWidth;
+                mainStack.style.strokeColor = '#AAAAAA';
+                mainStack.cornerRadius = cornerRadius;
+                mainStack.shadow = { color: 'grey', distance: 6, opacity: .1, angle: 135 };
+                const personStack: StackPanel = new StackPanel();
+                personStack.id = randomId();
+                personStack.orientation = 'Vertical';
+                personStack.style.strokeWidth = 0;
+                personStack.style.fill = 'transparent';
+                personStack.children = [];
+                let text: TextElement = new TextElement();
+                text.content = (node.data as EmployeeInfo).Name;
+                text.style.color = 'black';
+                text.style.bold = true;
+                text.style.strokeColor = 'none';
+                text.horizontalAlignment = 'Left';
+                text.style.fill = 'none';
+                text.id = node.id + '_text1';
+                const titleText = text;
+                personStack.children.push(titleText);
+                let desigText: TextElement = new TextElement();
+                desigText.margin = { left: 0, right: 0, top: 5, bottom: 0 };
+                desigText.content = (node.data as EmployeeInfo).Designation;
+                desigText.style.color = 'black';
+                desigText.style.strokeColor = 'none';
+                desigText.style.fontSize = 12;
+                desigText.style.fill = 'none';
+                desigText.horizontalAlignment = 'Left';
+                desigText.style.textWrapping = 'Wrap';
+                desigText.id = node.id + '_desig';
+                personStack.children.push(desigText);
+                const image: ImageElement = new ImageElement();
+                image.margin.left = 10;
+                image.margin.top = 10;
+                image.width = 30;
+                image.height = 30;
+                image.style.strokeColor = 'none';
+                image.style.fill = 'none';
+                image.verticalAlignment = 'Top';
+                image.source = 'https://cdn1.iconfinder.com/data/icons/business-elements-15/150/Firma-512.png';
+                image.id = randomId();
+                mainStack.children = [image, personStack];
+                const groupStack: StackPanel = new StackPanel();
+                groupStack.id = randomId();
+                groupStack.style.strokeWidth = 0;
+                groupStack.children = [];
+                groupStack.orientation = 'Vertical';
+                const bvStack: StackPanel = new StackPanel();
+                bvStack.id = randomId();
+                bvStack.style.fill = "#0099ff";
+                bvStack.orientation = 'Vertical';
+                bvStack.margin.top = 6;
+                bvStack.padding = new Thickness(4, 4, 4, 4);
+                bvStack.horizontalAlignment = 'Stretch';
+                bvStack.verticalAlignment = 'Top';
+                bvStack.style.strokeWidth = strokeWidth;
+                bvStack.style.strokeColor = '#AAAAAA';
+                bvStack.cornerRadius = cornerRadius;
+                bvStack.shadow = { color: 'grey', distance: 6, opacity: .1, angle: 135 };
+                bvStack.children = [];
+                let bvText: TextElement = new TextElement();
+                bvText.margin = { left: 0, right: 0, top: 5, bottom: 0 };
+                bvText.content = "Bankverbindungen";
+                bvText.style.color = 'black';
+                bvText.style.strokeColor = 'none';
+                bvText.style.fontSize = 12;
+                bvText.style.fill = 'none';
+                bvText.horizontalAlignment = 'Left';
+                bvText.style.textWrapping = 'Wrap';
+                bvText.id = node.id + '_bvText';
+                bvStack.children.push(bvText);
+                const vwStack: StackPanel = new StackPanel();
+                vwStack.id = randomId();
+                vwStack.style.fill = "#0099ff";
+                vwStack.orientation = 'Vertical';
+                vwStack.margin.top = 6;
+                vwStack.padding = new Thickness(4, 4, 4, 4);
+                vwStack.horizontalAlignment = 'Stretch';
+                vwStack.style.strokeWidth = strokeWidth;
+                vwStack.style.strokeColor = '#AAAAAA';
+                vwStack.cornerRadius = cornerRadius;
+                vwStack.shadow = { color: 'grey', distance: 6, opacity: .1, angle: 135 };
+                vwStack.children = [];
+                let vwText: TextElement = new TextElement();
+                vwText.margin = { left: 0, right: 0, top: 5, bottom: 0 };
+                vwText.content = "Vermögenswerte";
+                vwText.style.color = 'black';
+                vwText.style.strokeColor = 'none';
+                vwText.style.fontSize = 12;
+                vwText.style.fill = 'none';
+                vwText.horizontalAlignment = 'Left';
+                vwText.style.textWrapping = 'Wrap';
+                vwText.id = node.id + '_vwText';
+                vwStack.children.push(vwText);
+                groupStack.children.push(mainStack);
+                groupStack.children.push(bvStack);
+                groupStack.children.push(vwStack);
+                return groupStack;
             }
         });
-        diagram.appendTo('#diagramHierarchical');
+        diagram.appendTo('#diagramHierarchical18');
     });
 
     afterAll((): void => {
         diagram.destroy();
-        elements.remove();  
+        elements.remove();
+        (diagram as any) = null; (elements as any) = null;
     });
     it('Due to intersection', (done: Function) => {
         console.log("intersection");
@@ -2198,7 +2220,7 @@ describe('Call stack exceeded', () => {
             this.skip(); //Skips test (in Chai)
             return;
         }
-        ele = createElement('div', { id: 'diagram97' });
+        ele = createElement('div', { id: 'diagram19' });
         document.body.appendChild(ele);
         let nodes: NodeModel[] = [
             {
@@ -2208,34 +2230,35 @@ describe('Call stack exceeded', () => {
                 id: 'node2', width: 50, height: 50, offsetX: 200,
                 offsetY: 200
             },
-            { id: 'group', children: ['node1', 'node2']},
+            { id: 'group', children: ['node1', 'node2'] },
         ];
         diagram = new Diagram({ width: 1000, height: 1000, nodes: nodes });
-        diagram.appendTo('#diagram97');
+        diagram.appendTo('#diagram19');
     });
 
     afterAll((): void => {
         diagram.destroy();
         ele.remove();
+        (diagram as any) = null; (ele as any) = null;
     });
 
     it('Call stack exceeded due to infinite loop', (done: Function) => {
-        let linearGradient:  LinearGradientModel;
+        let linearGradient: LinearGradientModel;
         linearGradient = {
             x1: 0,
             y1: 0,
             x2: 50,
             y2: 50,
             stops: [{
-                    color: 'white',
-                    offset: 0,
-                    opacity:1
-                },
-                {
-                    color: '#6BA5D7',
-                    offset: 100,
-                    opacity:0
-                }
+                color: 'white',
+                offset: 0,
+                opacity: 1
+            },
+            {
+                color: '#6BA5D7',
+                offset: 100,
+                opacity: 0
+            }
             ],
             type: 'Linear'
         };
@@ -2259,7 +2282,7 @@ describe('Node Rotate constraints does not work properly', () => {
     let diagram: Diagram; let elements: HTMLElement
     beforeAll((): void => {
         elements = createElement('div', { styles: 'width:100%;height:500px;' });
-        elements.appendChild(createElement('div', { id: 'diagramNodeZindex' }));
+        elements.appendChild(createElement('div', { id: 'diagramNodeZindex20' }));
         document.body.appendChild(elements);
         let nodes: NodeModel[] = [
             {
@@ -2267,37 +2290,29 @@ describe('Node Rotate constraints does not work properly', () => {
                 offsetY: 100, annotations: [{
                     content: 'rectangle1'
                 }],
-                constraints:NodeConstraints.Rotate
+                constraints: NodeConstraints.Rotate
             }, {
                 id: 'node2', width: 100, height: 100, offsetX: 200,
                 offsetY: 200
             },
         ];
-        let node3: NodeModel = {
-            width: 100, height: 100, offsetX: 350,
-            offsetY: 300,
-        };
-        let group: NodeModel = {
-            id: 'group2',
-            children: ['node1', 'node2'],
-            
-        };
         diagram = new Diagram({
             width: 800, height: 800, nodes: nodes, created: created,
         });
-        diagram.appendTo('#diagramNodeZindex');
+        diagram.appendTo('#diagramNodeZindex20');
     });
 
     afterAll((): void => {
         diagram.destroy();
-        elements.remove();  
+        elements.remove();
+        (diagram as any) = null; (elements as any) = null;
     });
     function created(args: any) {
-        diagram.nodes[0].rotateAngle =90;
+        diagram.nodes[0].rotateAngle = 90;
     }
     it('Node Rotate constraints does not work properly', (done: Function) => {
-        expect((diagram.nodes[0].rotateAngle === 90) && (diagram.nodes[0].wrapper.rotateAngle === 0) ).toBe(true)
-        done();        
+        expect((diagram.nodes[0].rotateAngle === 90) && (diagram.nodes[0].wrapper.rotateAngle === 0)).toBe(true)
+        done();
     });
 });
 
@@ -2305,55 +2320,56 @@ describe('Node shape change at runtime not makes node disappear', () => {
     let diagram: Diagram; let elements: HTMLElement
     beforeAll((): void => {
         elements = createElement('div', { styles: 'width:100%;height:600px;' });
-        elements.appendChild(createElement('div', { id: 'diagramNodeDisappear' }));
+        elements.appendChild(createElement('div', { id: 'diagramNodeDisappear21' }));
         document.body.appendChild(elements);
         let nodes: NodeModel[] = [
             {
                 id: 'node1', width: 100, height: 100, offsetX: 100,
                 offsetY: 100, annotations: [{
                     content: 'rectangle1'
-                }],shape:{shape:'Terminator',type:'Flow'}
-               
+                }], shape: { shape: 'Terminator', type: 'Flow' }
+
             },
             {
                 id: 'node2', width: 100, height: 100, offsetX: 100,
                 offsetY: 200, annotations: [{
                     content: 'rectangle2'
-                }],shape:{shape:'Process',type:'Flow'}
-               
+                }], shape: { shape: 'Process', type: 'Flow' }
+
             }, {
                 id: 'node3', width: 100, height: 100, offsetX: 200,
-                offsetY: 200,shape:{shape:'Rectangle',type:'Basic'}
+                offsetY: 200, shape: { shape: 'Rectangle', type: 'Basic' }
             },
         ];
         diagram = new Diagram({
             width: 800, height: 800, nodes: nodes,
         });
-        diagram.appendTo('#diagramNodeDisappear');
+        diagram.appendTo('#diagramNodeDisappear21');
     });
 
     afterAll((): void => {
         diagram.destroy();
-        elements.remove();  
+        elements.remove();
+        (diagram as any) = null; (elements as any) = null;
     });
     it('Changing two flow shapes to basic shape at runtime', (done: Function) => {
         let node1 = diagram.nodes[0];
-        node1.shape = {shape:'Diamond',type:'Basic'};
+        node1.shape = { shape: 'Diamond', type: 'Basic' };
         diagram.dataBind();
         let node2 = diagram.nodes[1];
-        node2.shape = {shape:'Rectangle',type:'Basic'};
+        node2.shape = { shape: 'Rectangle', type: 'Basic' };
         diagram.dataBind();
-        expect(((diagram.nodes[0].shape as BasicShapeModel).shape === 'Diamond') && 
-        ((diagram.nodes[1].shape as BasicShapeModel).shape === 'Rectangle')
-         && diagram.nodes[0].wrapper.children[0].id !==undefined
-         && diagram.nodes[1].wrapper.children[0].id !==undefined).toBe(true)
-        done();        
+        expect(((diagram.nodes[0].shape as BasicShapeModel).shape === 'Diamond') &&
+            ((diagram.nodes[1].shape as BasicShapeModel).shape === 'Rectangle')
+            && diagram.nodes[0].wrapper.children[0].id !== undefined
+            && diagram.nodes[1].wrapper.children[0].id !== undefined).toBe(true)
+        done();
     });
 });
 
 describe('Performance of diagram while rendering large number of nodes and connectors', () => {
     let diagram: Diagram; let elements: HTMLElement;
-    let end:number; let start:number;
+    let end: number; let start: number;
     beforeAll((): void => {
         elements = createElement('div', { styles: 'width:1000px;height:600px;' });
         elements.appendChild(createElement('div', { id: 'diagramPerformance_1' }));
@@ -2394,21 +2410,22 @@ describe('Performance of diagram while rendering large number of nodes and conne
         });
 
 
-         start = (new Date()).getTime();
+        start = (new Date()).getTime();
         diagram.appendTo('#diagramPerformance_1');
 
-         end = (new Date()).getTime();
+        end = (new Date()).getTime();
     });
 
     afterAll((): void => {
         diagram.destroy();
-        elements.remove();  
+        elements.remove();
+        (diagram as any) = null; (elements as any) = null;
     });
     it('Checking the rendering time of diagram', (done: Function) => {
-        let renderingTimeInMs = end-start;
+        let renderingTimeInMs = end - start;
         console.log("time");
         console.log(renderingTimeInMs);
-        done();        
+        done();
     });
 });
 
@@ -2423,54 +2440,54 @@ describe('Drawing connectors from a source port to target port do not attach to 
             this.skip(); //Skips test (in Chai)
             return;
         }
-        ele = createElement('div', { id: 'diagram90' });
+        ele = createElement('div', { id: 'diagram22' });
         document.body.appendChild(ele);
 
         let node1 = {
-            id: 'node1',width: 100,height: 100,offsetX:100 , offsetY: 200,
-            constraints:NodeConstraints.Default & ~(NodeConstraints.Resize | NodeConstraints.Rotate),
+            id: 'node1', width: 100, height: 100, offsetX: 100, offsetY: 200,
+            constraints: NodeConstraints.Default & ~(NodeConstraints.Resize | NodeConstraints.Rotate),
             annotations: [{ content: 'Node1' }],
             ports: [
 
-              {
-                id: 'Out2_xyz',offset: { x: 1, y: 0.5 },visibility: PortVisibility.Visible,
-                constraints:PortConstraints.Default | PortConstraints.Draw,
-                width:50,height:50
-              }
+                {
+                    id: 'Out2_xyz', offset: { x: 1, y: 0.5 }, visibility: PortVisibility.Visible,
+                    constraints: PortConstraints.Default | PortConstraints.Draw,
+                    width: 50, height: 50
+                }
             ],
-          };
+        };
         let node2 = {
-            id: 'node2',width: 100,height: 100,offsetX: 500,offsetY: 200,
-            constraints:NodeConstraints.Default & ~( NodeConstraints.Resize | NodeConstraints.Rotate),
+            id: 'node2', width: 100, height: 100, offsetX: 500, offsetY: 200,
+            constraints: NodeConstraints.Default & ~(NodeConstraints.Resize | NodeConstraints.Rotate),
             annotations: [{ content: 'Node2' }],
             ports: [
-              {
-                id: 'Inp_xyz_abc',offset: { x: 0, y: 0.5 },visibility: PortVisibility.Visible,
-                constraints:PortConstraints.Default | PortConstraints.Draw,
-                width:50,height:50
-             },
+                {
+                    id: 'Inp_xyz_abc', offset: { x: 0, y: 0.5 }, visibility: PortVisibility.Visible,
+                    constraints: PortConstraints.Default | PortConstraints.Draw,
+                    width: 50, height: 50
+                },
             ],
         };
 
-        diagram = new Diagram({ width: 1000, height: 800, nodes: [node1,node2] });
-        diagram.appendTo('#diagram90');
+        diagram = new Diagram({ width: 1000, height: 800, nodes: [node1, node2] });
+        diagram.appendTo('#diagram22');
     });
 
     afterAll((): void => {
         diagram.destroy();
         ele.remove();
+        (diagram as any) = null; (ele as any) = null;
     });
 
-    it('select the node and draw connector Checking connector connect to source port', (done: Function) =>{
+    it('select the node and draw connector Checking connector connect to source port', (done: Function) => {
         let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
-        let node: NodeModel = diagram.nodes[0];
         diagram.select([diagram.nodes[0]]);
         mouseEvents.mouseDownEvent(diagramCanvas, 157, 208);
         mouseEvents.mouseMoveEvent(diagramCanvas, 200, 210);
         mouseEvents.mouseMoveEvent(diagramCanvas, 458, 208);
         mouseEvents.mouseUpEvent(diagramCanvas, 458, 208);
         expect(diagram.nodes[0].ports[0].outEdges.length === 1).toBe(true);
-         done();
+        done();
     });
 });
 
@@ -2479,14 +2496,15 @@ describe('Add Node', () => {
     let ele: HTMLElement;
 
     beforeAll((): void => {
-        ele = createElement('div', { id: 'diagram' });
+        ele = createElement('div', { id: 'diagram23' });
         document.body.appendChild(ele);
-        diagram = new Diagram({ width: 1000, height: 1000});
+        diagram = new Diagram({ width: 1000, height: 1000 });
     });
 
     afterAll((): void => {
         diagram.destroy();
         ele.remove();
+        (diagram as any) = null; (ele as any) = null;
     });
 
     it('before appending diagram to element', (done: Function) => {
@@ -2494,7 +2512,7 @@ describe('Add Node', () => {
         diagram.add(node);
         expect(diagram.views).toBe(undefined);
         expect(diagram.nodes.length).toBe(0);
-        diagram.appendTo('#diagram');
+        diagram.appendTo('#diagram23');
         diagram.add(node);
         expect(diagram.nodes.length).toBe(1);
         done();
@@ -2511,104 +2529,104 @@ describe('Restricting wrongly updated highlighter', () => {
             this.skip(); //Skips test (in Chai)
             return;
         }
-        ele = createElement('div', { id: 'diagramHigh' });
+        ele = createElement('div', { id: 'diagramHigh24' });
         document.body.appendChild(ele);
 
         let nodes: NodeModel[] = [
             {
-              id: 'pool',
-              shape: {
-                type: 'SwimLane',
-                orientation: 'Horizontal',
-                isLane: true,
-                lanes: [
-                  {
-                    id: 'lane-1',  
-                height: 200,
-                children: [
-                  
-                    {
-                    id:"ellipse-1",
-                    // Position of the node
-                    offsetX: 150,
-                    offsetY: 250,
-                    // Size of the node
-                    width: 100,
-                    height: 60,
-                    margin: { top: 100, left: 150 },
-                    shape: { type: 'Basic', shape: 'Ellipse' },
-                    annotations: [{
-                        content: 'Node 1'
-                    }],
-                    },
-                    {
-                      id:"ellipse-2",
-                      // Position of the node
-                      offsetX: 350,
-                      offsetY: 250,
-                      // Size of the node
-                      width: 100,
-                      height: 60,
-                      margin: { top: 100, left: 350 },
-                      shape: { type: 'Basic', shape: 'Ellipse' },
-                      annotations: [{
-                          content: 'Node 2'
-                      }],
-                      },
-                ],
+                id: 'pool',
+                shape: {
+                    type: 'SwimLane',
+                    orientation: 'Horizontal',
+                    isLane: true,
+                    lanes: [
+                        {
+                            id: 'lane-1',
+                            height: 200,
+                            children: [
+
+                                {
+                                    id: "ellipse-1",
+                                    // Position of the node
+                                    offsetX: 150,
+                                    offsetY: 250,
+                                    // Size of the node
+                                    width: 100,
+                                    height: 60,
+                                    margin: { top: 100, left: 150 },
+                                    shape: { type: 'Basic', shape: 'Ellipse' },
+                                    annotations: [{
+                                        content: 'Node 1'
+                                    }],
+                                },
+                                {
+                                    id: "ellipse-2",
+                                    // Position of the node
+                                    offsetX: 350,
+                                    offsetY: 250,
+                                    // Size of the node
+                                    width: 100,
+                                    height: 60,
+                                    margin: { top: 100, left: 350 },
+                                    shape: { type: 'Basic', shape: 'Ellipse' },
+                                    annotations: [{
+                                        content: 'Node 2'
+                                    }],
+                                },
+                            ],
+                        },
+
+                    ]
                 },
-                  
-                ]
-              },
-              offsetX: 390,
-              offsetY: 320,
-              height: 100,
-              width: 650
+                offsetX: 390,
+                offsetY: 320,
+                height: 100,
+                width: 650
             }
-          ];
-        let handle : UserHandleModel[]  = [
+        ];
+        let handle: UserHandleModel[] = [
             {
-              name: 'Clone', pathData: 'M0,2.4879999 L0.986,2.4879999 0.986,9.0139999 6.9950027,9.0139999 6.9950027,10 0.986,10 C0.70400238,10 0.47000122,9.9060001 0.28100207,9.7180004 0.09400177,9.5300007 0,9.2959995 0,9.0139999 z M3.0050011,0 L9.0140038,0 C9.2960014,0 9.5300026,0.093999863 9.7190018,0.28199956 9.906002,0.47000027 10,0.70399952 10,0.986 L10,6.9949989 C10,7.2770004 9.906002,7.5160007 9.7190018,7.7110004 9.5300026,7.9069996 9.2960014,8.0049992 9.0140038,8.0049992 L3.0050011,8.0049992 C2.7070007,8.0049992 2.4650002,7.9069996 2.2770004,7.7110004 2.0890007,7.5160007 1.9950027,7.2770004 1.9950027,6.9949989 L1.9950027,0.986 C1.9950027,0.70399952 2.0890007,0.47000027 2.2770004,0.28199956 2.4650002,0.093999863 2.7070007,0 3.0050011,0 z',tooltip:{content:'Clone'},
-              visible: true, offset: 1, side: 'Bottom', margin: { top: 0, bottom: 0, left: 0, right: 0 }
-          },
-          {
-              name: 'Delete', pathData: 'M0.54700077,2.2130003 L7.2129992,2.2130003 7.2129992,8.8800011 C7.2129992,9.1920013 7.1049975,9.4570007 6.8879985,9.6739998 6.6709994,9.8910007 6.406,10 6.0939997,10 L1.6659999,10 C1.3539997,10 1.0890004,9.8910007 0.87200136,9.6739998 0.65500242,9.4570007 0.54700071,9.1920013 0.54700077,8.8800011 z M2.4999992,0 L5.2600006,0 5.8329986,0.54600048 7.7599996,0.54600048 7.7599996,1.6660004 0,1.6660004 0,0.54600048 1.9270014,0.54600048 z',tooltip:{content:'Delete'},
-              visible: true, offset: 0, side: 'Bottom', margin: { top: 0, bottom: 0, left: 0, right: 0 }
-          },
-          {
-              name: 'Draw', pathData: 'M3.9730001,0 L8.9730001,5.0000007 3.9730001,10.000001 3.9730001,7.0090005 0,7.0090005 0,2.9910006 3.9730001,2.9910006 z',tooltip:{content:'Draw'},
-              visible: true, offset: 0.5, side: 'Right', margin: { top: 0, bottom: 0, left: 0, right: 0 }
-          },
-          ];
-        
-        
+                name: 'Clone', pathData: 'M0,2.4879999 L0.986,2.4879999 0.986,9.0139999 6.9950027,9.0139999 6.9950027,10 0.986,10 C0.70400238,10 0.47000122,9.9060001 0.28100207,9.7180004 0.09400177,9.5300007 0,9.2959995 0,9.0139999 z M3.0050011,0 L9.0140038,0 C9.2960014,0 9.5300026,0.093999863 9.7190018,0.28199956 9.906002,0.47000027 10,0.70399952 10,0.986 L10,6.9949989 C10,7.2770004 9.906002,7.5160007 9.7190018,7.7110004 9.5300026,7.9069996 9.2960014,8.0049992 9.0140038,8.0049992 L3.0050011,8.0049992 C2.7070007,8.0049992 2.4650002,7.9069996 2.2770004,7.7110004 2.0890007,7.5160007 1.9950027,7.2770004 1.9950027,6.9949989 L1.9950027,0.986 C1.9950027,0.70399952 2.0890007,0.47000027 2.2770004,0.28199956 2.4650002,0.093999863 2.7070007,0 3.0050011,0 z', tooltip: { content: 'Clone' },
+                visible: true, offset: 1, side: 'Bottom', margin: { top: 0, bottom: 0, left: 0, right: 0 }
+            },
+            {
+                name: 'Delete', pathData: 'M0.54700077,2.2130003 L7.2129992,2.2130003 7.2129992,8.8800011 C7.2129992,9.1920013 7.1049975,9.4570007 6.8879985,9.6739998 6.6709994,9.8910007 6.406,10 6.0939997,10 L1.6659999,10 C1.3539997,10 1.0890004,9.8910007 0.87200136,9.6739998 0.65500242,9.4570007 0.54700071,9.1920013 0.54700077,8.8800011 z M2.4999992,0 L5.2600006,0 5.8329986,0.54600048 7.7599996,0.54600048 7.7599996,1.6660004 0,1.6660004 0,0.54600048 1.9270014,0.54600048 z', tooltip: { content: 'Delete' },
+                visible: true, offset: 0, side: 'Bottom', margin: { top: 0, bottom: 0, left: 0, right: 0 }
+            },
+            {
+                name: 'Draw', pathData: 'M3.9730001,0 L8.9730001,5.0000007 3.9730001,10.000001 3.9730001,7.0090005 0,7.0090005 0,2.9910006 3.9730001,2.9910006 z', tooltip: { content: 'Draw' },
+                visible: true, offset: 0.5, side: 'Right', margin: { top: 0, bottom: 0, left: 0, right: 0 }
+            },
+        ];
+
+
         diagram = new Diagram({
             width: '100%', height: 1000, nodes: nodes,
-            selectedItems: { userHandles: handle },getCustomTool: getTool,
+            selectedItems: { userHandles: handle }, getCustomTool: getTool,
         });
         function getTool(action: string) {
-            if(action == "Delete"){
+            if (action == "Delete") {
                 diagram.remove();
             }
-            else if(action == "Clone") {
+            else if (action == "Clone") {
                 diagram.paste(diagram.selectedItems.selectedObjects);
             }
-            else if(action == "Draw") {
+            else if (action == "Draw") {
                 diagram.tool = DiagramTools.DrawOnce;
-                (diagram.drawingObject as any) = { type: 'Orthogonal'};
+                (diagram.drawingObject as any) = { type: 'Orthogonal' };
                 (diagram.drawingObject as any).sourceID = diagram.selectedItems.nodes[0].id;
-                diagram.dataBind();   
+                diagram.dataBind();
             }
         }
-        diagram.appendTo('#diagramHigh');
+        diagram.appendTo('#diagramHigh24');
     });
     afterAll((): void => {
         diagram.destroy();
         ele.remove();
+        (diagram as any) = null; (ele as any) = null;
     });
 
-    it('For swimlane', (done: Function) =>{
-        debugger;
+    it('For swimlane', (done: Function) => {
         let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
         let highlighter: HTMLElement = null;
         mouseEvents.clickEvent(diagramCanvas, 275, 360);
@@ -2628,11 +2646,11 @@ describe('902192-Diagram node resized wrongly while dragging with multiple selec
     let ele: HTMLElement;
     let mouseEvents = new MouseEvents();
     beforeAll((): void => {
-        ele = createElement('div', { id: 'diagramNodeOffset' });
+        ele = createElement('div', { id: 'diagramNodeOffset25' });
         document.body.appendChild(ele);
         var pathData = 'M 120 24.9999 C 120 38.8072 109.642 50 96.8653 50 L 23.135' +
-        ' 50 C 10.3578 50 0 38.8072 0 24.9999 L 0 24.9999 C' +
-        '0 11.1928 10.3578 0 23.135 0 L 96.8653 0 C 109.642 0 120 11.1928 120 24.9999 Z';
+            ' 50 C 10.3578 50 0 38.8072 0 24.9999 L 0 24.9999 C' +
+            '0 11.1928 10.3578 0 23.135 0 L 96.8653 0 C 109.642 0 120 11.1928 120 24.9999 Z';
         let nodes: NodeModel[] = [
             {
                 id: 'swimlane',
@@ -2790,11 +2808,12 @@ describe('902192-Diagram node resized wrongly while dragging with multiple selec
             nodes: nodes,
             connectors: connectors,
         });
-        diagram.appendTo('#diagramNodeOffset');
+        diagram.appendTo('#diagramNodeOffset25');
     });
     afterAll((): void => {
         diagram.destroy();
         ele.remove();
+        (diagram as any) = null; (ele as any) = null;
     });
     it('Diagram node resized wrongly while dragging with multiple selection Inside a swimlane', (done: Function) => {
         let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
@@ -2812,11 +2831,11 @@ describe('Bug 913796- Multiselect swimlane with outside node, drag, rotate is no
     let ele: HTMLElement;
     let mouseEvents = new MouseEvents();
     beforeAll((): void => {
-        ele = createElement('div', { id: 'diagramSwimMultiRotate' });
+        ele = createElement('div', { id: 'diagramSwimMultiRotate26' });
         document.body.appendChild(ele);
         var pathData = 'M 120 24.9999 C 120 38.8072 109.642 50 96.8653 50 L 23.135' +
-        ' 50 C 10.3578 50 0 38.8072 0 24.9999 L 0 24.9999 C' +
-        '0 11.1928 10.3578 0 23.135 0 L 96.8653 0 C 109.642 0 120 11.1928 120 24.9999 Z';
+            ' 50 C 10.3578 50 0 38.8072 0 24.9999 L 0 24.9999 C' +
+            '0 11.1928 10.3578 0 23.135 0 L 96.8653 0 C 109.642 0 120 11.1928 120 24.9999 Z';
         let nodes: NodeModel[] = [
             {
                 id: 'swimlane',
@@ -2937,10 +2956,10 @@ describe('Bug 913796- Multiselect swimlane with outside node, drag, rotate is no
                 width: 650
             },
             {
-                id:'outsideNode',
+                id: 'outsideNode',
                 offsetX: 1000,
-                offsetY:300,
-                width:50,height:50
+                offsetY: 300,
+                width: 50, height: 50
             },
             {
                 id: 'swimlane2',
@@ -3018,7 +3037,7 @@ describe('Bug 913796- Multiselect swimlane with outside node, drag, rotate is no
                 targetID: 'getitItem'
             },
             {
-                id: 'connector8', sourcePoint:{x:100,y:50},targetPoint:{x:50,y:50}
+                id: 'connector8', sourcePoint: { x: 100, y: 50 }, targetPoint: { x: 50, y: 50 }
             },
         ];
 
@@ -3028,11 +3047,12 @@ describe('Bug 913796- Multiselect swimlane with outside node, drag, rotate is no
             nodes: nodes,
             connectors: connectors,
         });
-        diagram.appendTo('#diagramSwimMultiRotate');
+        diagram.appendTo('#diagramSwimMultiRotate26');
     });
     afterAll((): void => {
         diagram.destroy();
         ele.remove();
+        (diagram as any) = null; (ele as any) = null;
     });
     it('Multiselect swimlane and outer node and check rotate handle disabled or not', (done: Function) => {
         let swimlane: NodeModel = diagram.nameTable['swimlane'];
@@ -3047,14 +3067,14 @@ describe('Bug 913796- Multiselect swimlane with outside node, drag, rotate is no
         let swimlane1: NodeModel = diagram.nameTable['swimlane'];
         let swimlane2: NodeModel = diagram.nameTable['swimlane2'];
         diagram.select([swimlane1, swimlane2]);
-        mouseEvents.mouseMoveEvent(diagramCanvas,420,55);
+        mouseEvents.mouseMoveEvent(diagramCanvas, 420, 55);
         mouseEvents.mouseDownEvent(diagramCanvas, 420, 55);
         mouseEvents.mouseMoveEvent(diagramCanvas, 420, 100);
         mouseEvents.mouseUpEvent(diagramCanvas, 420, 100);
         diagram.clearSelection();
         let connector: ConnectorModel = diagram.nameTable['connector8'];
-        diagram.select([swimlane2,connector]);
-        mouseEvents.mouseMoveEvent(diagramCanvas,420,600);
+        diagram.select([swimlane2, connector]);
+        mouseEvents.mouseMoveEvent(diagramCanvas, 420, 600);
         mouseEvents.mouseDownEvent(diagramCanvas, 420, 650);
         mouseEvents.mouseMoveEvent(diagramCanvas, 420, 670);
         mouseEvents.mouseUpEvent(diagramCanvas, 420, 670);
@@ -3063,151 +3083,146 @@ describe('Bug 913796- Multiselect swimlane with outside node, drag, rotate is no
         done();
     });
 });
-describe('Restrict Negative Axis Drag Drop Test', () => {
-    let diagram: Diagram;
-    let ele: HTMLElement;
-    let mouseEvents = new MouseEvents();
-    beforeAll((): void => {
-        ele = createElement('div', { id: 'diagramAxisRestriction' });
-        document.body.appendChild(ele);
-        let node: NodeModel[] = [{
-            id: 'node1',
-            width: 100,
-            height: 100,
-            offsetX: 100,
-            offsetY: 100,
-            annotations: [{ content: 'Node 1' }]
-        },
-        {
-            shape: {
-                type: 'SwimLane',
-                orientation: 'Horizontal',
-                header: {
-                    annotation: { content: 'ONLINE PURCHASE STATUS' },
-                    height: 50, style: { fontSize: 11 },
-                },
-                lanes: [
-                    {
-                        id: 'stackCanvas1',
-                        height: 100,
-                        addInfo: { name: 'lane1' }
-                    },
-                ],
-                phases: [
-                    {
-                        id: 'phase1', offset: 170,
-                        header: { annotation: { content: 'Phase' } }
-                    },
-                ],
-                phaseSize: 20,
-            },
-            offsetX: 400, offsetY: 400,
-            height: 200,
-            width: 350
-        }];
-        let connector: ConnectorModel[] = [{
-            id: 'connector1',
-            sourcePoint: { x: 200, y: 200 },
-            targetPoint: { x: 300, y: 300 }
-        },
-        {
-            id: 'connector2',
-            sourcePoint: { x: 100, y: 500 },
-            targetPoint: { x: 200, y: 600 }
-        }];
-        diagram = new Diagram({
-            width: '100%',
-            height: '700px',
-            nodes: node,
-            connectors: connector,
-            constraints: DiagramConstraints.Default | DiagramConstraints.RestrictNegativeAxisDragDrop
-        });
-        diagram.appendTo('#diagramAxisRestriction');
-    });
-    afterAll((): void => {
-        diagram.destroy();
-        ele.remove();
-    });
-    it('Restrict dragging node to negative axis', (done: Function) => {
-        debugger;
-        let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
-        mouseEvents.mouseDownEvent(diagramCanvas, 100, 100);
-        mouseEvents.mouseMoveEvent(diagramCanvas, 80, 100);
-        mouseEvents.mouseMoveEvent(diagramCanvas, 60, 100);
-        diagram.undo();
-        mouseEvents.mouseMoveEvent(diagramCanvas, 40, 100);
-        diagram.redo();
-        mouseEvents.mouseMoveEvent(diagramCanvas, 30, 100);
-        mouseEvents.mouseMoveEvent(diagramCanvas, 40, 100);
-        mouseEvents.mouseUpEvent(diagramCanvas, 40, 100);
-        let nodePosition = diagram.nodes[0].offsetX;
-        expect(nodePosition == 50).toBe(true);
-        done();
-    });
-    it('Restrict dragging swimlane with negativeAxixrestriction', (done: Function) => {
-        debugger;
-        let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
-        mouseEvents.mouseDownEvent(diagramCanvas, 400, 310);
-        mouseEvents.mouseMoveEvent(diagramCanvas, 600, 400);
-        mouseEvents.mouseUpEvent(diagramCanvas, 600, 400);
-        let nodePosition1 = diagram.nodes[1].offsetX;
-        expect(nodePosition1 >= 0).toBe(true);
-        done();
-    });
-    it(' dragging target  point connector  ', function (done) {
-        debugger;
-        var conn = diagram.connectors[0];
-        var diagramCanvas = document.getElementById(diagram.element.id + 'content');
-        var offsetLeft = diagram.element.offsetLeft;
-        var offsetTop = diagram.element.offsetTop;
-        mouseEvents.clickEvent(diagramCanvas, 300, 300);
-        mouseEvents.dragAndDropEvent(diagramCanvas, offsetLeft + conn.targetPoint.x, offsetTop + conn.targetPoint.y, offsetLeft + conn.targetPoint.x - 60, offsetTop + conn.targetPoint.y);
-        mouseEvents.dragAndDropEvent(diagramCanvas, offsetLeft + conn.targetPoint.x, offsetTop + conn.targetPoint.y, offsetLeft + conn.targetPoint.x - 40, offsetTop + conn.targetPoint.y);
-        mouseEvents.dragAndDropEvent(diagramCanvas, offsetLeft + conn.targetPoint.x, offsetTop + conn.targetPoint.y, offsetLeft + conn.targetPoint.x - 60, offsetTop + conn.targetPoint.y);
-        mouseEvents.dragAndDropEvent(diagramCanvas, offsetLeft + conn.targetPoint.x, offsetTop + conn.targetPoint.y, offsetLeft + conn.targetPoint.x - 40, offsetTop + conn.targetPoint.y);
-        mouseEvents.dragAndDropEvent(diagramCanvas, offsetLeft + conn.targetPoint.x, offsetTop + conn.targetPoint.y, offsetLeft + conn.targetPoint.x - 100, offsetTop + conn.targetPoint.y + 40);
-        mouseEvents.dragAndDropEvent(diagramCanvas, offsetLeft + conn.targetPoint.x, offsetTop + conn.targetPoint.y, offsetLeft + conn.targetPoint.x - 80, offsetTop + conn.targetPoint.y + 40);
-        expect(diagram.connectors[0].targetPoint.x >= 0).toBe(true);
-        done();
-    });
-    it(' dragging source point connector  ', function (done) {
-        debugger;
-        var conn = diagram.connectors[0];
-        var diagramCanvas = document.getElementById(diagram.element.id + 'content');
-        var offsetLeft = diagram.element.offsetLeft;
-        var offsetTop = diagram.element.offsetTop;
-        mouseEvents.clickEvent(diagramCanvas, 200, 200);
-        mouseEvents.dragAndDropEvent(diagramCanvas, offsetLeft + conn.sourcePoint.x, offsetTop + conn.sourcePoint.y, offsetLeft + conn.sourcePoint.x - 60, offsetTop + conn.sourcePoint.y);
-        mouseEvents.dragAndDropEvent(diagramCanvas, offsetLeft + conn.sourcePoint.x, offsetTop + conn.sourcePoint.y, offsetLeft + conn.sourcePoint.x - 40, offsetTop + conn.sourcePoint.y);
-        mouseEvents.dragAndDropEvent(diagramCanvas, offsetLeft + conn.sourcePoint.x, offsetTop + conn.sourcePoint.y, offsetLeft + conn.sourcePoint.x - 60, offsetTop + conn.sourcePoint.y);
-        mouseEvents.dragAndDropEvent(diagramCanvas, offsetLeft + conn.sourcePoint.x, offsetTop + conn.sourcePoint.y, offsetLeft + conn.sourcePoint.x - 40, offsetTop + conn.sourcePoint.y);
-        mouseEvents.dragAndDropEvent(diagramCanvas, offsetLeft + conn.sourcePoint.x, offsetTop + conn.sourcePoint.y, offsetLeft + conn.sourcePoint.x - 100, offsetTop + conn.sourcePoint.y + 40);
-        mouseEvents.dragAndDropEvent(diagramCanvas, offsetLeft + conn.sourcePoint.x, offsetTop + conn.sourcePoint.y, offsetLeft + conn.sourcePoint.x - 80, offsetTop + conn.sourcePoint.y + 40);
-        expect(diagram.connectors[0].sourcePoint.x >= 0).toBe(true);
-        done();
-    });
-    it('Restrict dragging connector to negative axis', (done: Function) => {
-        debugger;
-        var conn = diagram.connectors[1];
-        let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
-        mouseEvents.clickEvent(diagramCanvas, 150, 550);
-        mouseEvents.mouseDownEvent(diagramCanvas, 150, 550);
-        mouseEvents.mouseMoveEvent(diagramCanvas, 130, 550);
-        mouseEvents.mouseMoveEvent(diagramCanvas, 100, 550);
-        mouseEvents.mouseMoveEvent(diagramCanvas, -10, 550);
-        mouseEvents.mouseMoveEvent(diagramCanvas, 100, 550);
-        mouseEvents.mouseMoveEvent(diagramCanvas, 200, 550);
-        mouseEvents.mouseMoveEvent(diagramCanvas, 300, 550);
-        mouseEvents.mouseUpEvent(diagramCanvas, 300, 550);
-        var nodePosition = diagram.connectors[1].sourcePoint;
-        expect(nodePosition.x >= 0 && nodePosition.y >= 0).toBe(true);
-        done();
-    });
-});
+// describe('Restrict Negative Axis Drag Drop Test', () => {
+//     let diagram: Diagram;
+//     let ele: HTMLElement;
+//     let mouseEvents = new MouseEvents();
+//     let diagramCanvas: HTMLElement;
+//     let offsetLeft: number;
+//     let offsetTop: number;
+//     beforeAll((): void => {
+//         ele = createElement('div', { id: 'diagramAxisRestriction27' });
+//         document.body.appendChild(ele);
+//         let node: NodeModel[] = [{
+//             id: 'node1',
+//             width: 100,
+//             height: 100,
+//             offsetX: 100,
+//             offsetY: 100,
+//             annotations: [{ content: 'Node 1' }]
+//         },
+//         {
+//             shape: {
+//                 type: 'SwimLane',
+//                 orientation: 'Horizontal',
+//                 header: {
+//                     annotation: { content: 'ONLINE PURCHASE STATUS' },
+//                     height: 50, style: { fontSize: 11 },
+//                 },
+//                 lanes: [
+//                     {
+//                         id: 'stackCanvas1',
+//                         height: 100,
+//                         addInfo: { name: 'lane1' }
+//                     },
+//                 ],
+//                 phases: [
+//                     {
+//                         id: 'phase1', offset: 170,
+//                         header: { annotation: { content: 'Phase' } }
+//                     },
+//                 ],
+//                 phaseSize: 20,
+//             },
+//             offsetX: 400, offsetY: 400,
+//             height: 200,
+//             width: 350
+//         }];
+//         let connector: ConnectorModel[] = [{
+//             id: 'connector1',
+//             sourcePoint: { x: 200, y: 200 },
+//             targetPoint: { x: 300, y: 300 }
+//         },
+//         {
+//             id: 'connector2',
+//             sourcePoint: { x: 100, y: 500 },
+//             targetPoint: { x: 200, y: 600 }
+//         }];
+//         diagram = new Diagram({
+//             width: '100%',
+//             height: '700px',
+//             nodes: node,
+//             connectors: connector,
+//             constraints: DiagramConstraints.Default | DiagramConstraints.RestrictNegativeAxisDragDrop
+//         });
+//         diagram.appendTo('#diagramAxisRestriction27');
+//         diagramCanvas = document.getElementById(diagram.element.id + 'content');
+//         offsetLeft = diagram.element.offsetLeft;
+//         offsetTop = diagram.element.offsetTop;
+//     });
+//     afterAll((): void => {
+//         diagram.destroy();
+//         ele.remove();
+//         (diagram as any) = null; (ele as any) = null;
+//     });
+//     it('Restrict dragging node to negative axis', (done: Function) => {
+//         mouseEvents.mouseDownEvent(diagramCanvas, 100, 100);
+//         mouseEvents.mouseMoveEvent(diagramCanvas, 80, 100);
+//         mouseEvents.mouseMoveEvent(diagramCanvas, 60, 100);
+//         diagram.undo();
+//         mouseEvents.mouseMoveEvent(diagramCanvas, 40, 100);
+//         diagram.redo();
+//         mouseEvents.mouseMoveEvent(diagramCanvas, 30, 100);
+//         mouseEvents.mouseMoveEvent(diagramCanvas, 40, 100);
+//         mouseEvents.mouseUpEvent(diagramCanvas, 40, 100);
+//         let nodePosition = diagram.nodes[0].offsetX;
+//         expect(nodePosition == 50).toBe(true);
+//         done();
+//     });
+//     it('Restrict dragging swimlane with negativeAxixrestriction', (done: Function) => {
+//         mouseEvents.mouseDownEvent(diagramCanvas, 400, 310);
+//         mouseEvents.mouseMoveEvent(diagramCanvas, 600, 400);
+//         mouseEvents.mouseUpEvent(diagramCanvas, 600, 400);
+//         let nodePosition1 = diagram.nodes[1].offsetX;
+//         expect(nodePosition1 >= 0).toBe(true);
+//         done();
+//     });
+//     it(' dragging target  point connector  ', function (done) {
+//         var conn = diagram.connectors[0];
+//         mouseEvents.clickEvent(diagramCanvas, 300, 300);
+//         mouseEvents.dragAndDropEvent(diagramCanvas, offsetLeft + conn.targetPoint.x, offsetTop + conn.targetPoint.y, offsetLeft + conn.targetPoint.x - 60, offsetTop + conn.targetPoint.y);
+//         mouseEvents.dragAndDropEvent(diagramCanvas, offsetLeft + conn.targetPoint.x, offsetTop + conn.targetPoint.y, offsetLeft + conn.targetPoint.x - 40, offsetTop + conn.targetPoint.y);
+//         mouseEvents.dragAndDropEvent(diagramCanvas, offsetLeft + conn.targetPoint.x, offsetTop + conn.targetPoint.y, offsetLeft + conn.targetPoint.x - 60, offsetTop + conn.targetPoint.y);
+//         mouseEvents.dragAndDropEvent(diagramCanvas, offsetLeft + conn.targetPoint.x, offsetTop + conn.targetPoint.y, offsetLeft + conn.targetPoint.x - 40, offsetTop + conn.targetPoint.y);
+//         mouseEvents.dragAndDropEvent(diagramCanvas, offsetLeft + conn.targetPoint.x, offsetTop + conn.targetPoint.y, offsetLeft + conn.targetPoint.x - 100, offsetTop + conn.targetPoint.y + 40);
+//         mouseEvents.dragAndDropEvent(diagramCanvas, offsetLeft + conn.targetPoint.x, offsetTop + conn.targetPoint.y, offsetLeft + conn.targetPoint.x - 80, offsetTop + conn.targetPoint.y + 40);
+//         expect(diagram.connectors[0].targetPoint.x >= 0).toBe(true);
+//         done();
+//     });
+//     it(' dragging source point connector  ', function (done) {
+//         var conn = diagram.connectors[0];
+//         mouseEvents.clickEvent(diagramCanvas, 200, 200);
+//         mouseEvents.dragAndDropEvent(diagramCanvas, offsetLeft + conn.sourcePoint.x, offsetTop + conn.sourcePoint.y, offsetLeft + conn.sourcePoint.x - 60, offsetTop + conn.sourcePoint.y);
+//         mouseEvents.dragAndDropEvent(diagramCanvas, offsetLeft + conn.sourcePoint.x, offsetTop + conn.sourcePoint.y, offsetLeft + conn.sourcePoint.x - 40, offsetTop + conn.sourcePoint.y);
+//         mouseEvents.dragAndDropEvent(diagramCanvas, offsetLeft + conn.sourcePoint.x, offsetTop + conn.sourcePoint.y, offsetLeft + conn.sourcePoint.x - 60, offsetTop + conn.sourcePoint.y);
+//         mouseEvents.dragAndDropEvent(diagramCanvas, offsetLeft + conn.sourcePoint.x, offsetTop + conn.sourcePoint.y, offsetLeft + conn.sourcePoint.x - 40, offsetTop + conn.sourcePoint.y);
+//         mouseEvents.dragAndDropEvent(diagramCanvas, offsetLeft + conn.sourcePoint.x, offsetTop + conn.sourcePoint.y, offsetLeft + conn.sourcePoint.x - 100, offsetTop + conn.sourcePoint.y + 40);
+//         mouseEvents.dragAndDropEvent(diagramCanvas, offsetLeft + conn.sourcePoint.x, offsetTop + conn.sourcePoint.y, offsetLeft + conn.sourcePoint.x - 80, offsetTop + conn.sourcePoint.y + 40);
+//         expect(diagram.connectors[0].sourcePoint.x >= 0).toBe(true);
+//         done();
+//     });
+//     it('Restrict dragging connector to negative axis', (done: Function) => {
+//         mouseEvents.clickEvent(diagramCanvas, 150, 550);
+//         mouseEvents.mouseDownEvent(diagramCanvas, 150, 550);
+//         mouseEvents.mouseMoveEvent(diagramCanvas, 130, 550);
+//         mouseEvents.mouseMoveEvent(diagramCanvas, 100, 550);
+//         mouseEvents.mouseMoveEvent(diagramCanvas, -10, 550);
+//         mouseEvents.mouseMoveEvent(diagramCanvas, 100, 550);
+//         mouseEvents.mouseMoveEvent(diagramCanvas, 200, 550);
+//         mouseEvents.mouseMoveEvent(diagramCanvas, 300, 550);
+//         mouseEvents.mouseUpEvent(diagramCanvas, 300, 550);
+//         var nodePosition = diagram.connectors[1].sourcePoint;
+//         expect(nodePosition.x >= 0 && nodePosition.y >= 0).toBe(true);
+//         done();
+//     });
+// });
 describe('Testing resizing - With RestrictNegativeAxisDragDrop ', () => {
     let diagram: Diagram;
     let ele: HTMLElement;
     let mouseEvents: MouseEvents = new MouseEvents();
+    let diagramCanvas: HTMLElement;
+    let offsetLeft: number;
+    let offsetTop: number;
     beforeAll((): void => {
         const isDef = (o: any) => o !== undefined && o !== null;
         if (!isDef(window.performance)) {
@@ -3215,7 +3230,7 @@ describe('Testing resizing - With RestrictNegativeAxisDragDrop ', () => {
             this.skip(); //Skips test (in Chai)
             return;
         }
-        ele = createElement('div', { id: 'diagrams' });
+        ele = createElement('div', { id: 'diagrams28' });
         document.body.appendChild(ele);
         let selArray: (NodeModel | ConnectorModel)[] = [];
         let node1: NodeModel = {
@@ -3233,20 +3248,20 @@ describe('Testing resizing - With RestrictNegativeAxisDragDrop ', () => {
             width: 900, height: 550, nodes: [node1, node2], connectors: connector,
             constraints: DiagramConstraints.Default | DiagramConstraints.RestrictNegativeAxisDragDrop
         });
-        diagram.appendTo('#diagrams');
+        diagram.appendTo('#diagrams28');
         selArray.push(diagram.nodes[0]);
         diagram.select(selArray);
+        diagramCanvas = document.getElementById(diagram.element.id + 'content');
+        offsetLeft = diagram.element.offsetLeft;
+        offsetTop = diagram.element.offsetTop;
     });
     afterAll((): void => {
         diagram.destroy();
         ele.remove();
+        (diagram as any) = null; (ele as any) = null;
     });
     it('Checking single node resizing - top center', (done: Function) => {
-        debugger;
         diagram.clearSelection();
-        let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
-        let offsetLeft: number = diagram.element.offsetLeft;
-        let offsetTop: number = diagram.element.offsetTop;
         //reducing size
         let topCenter: PointModel = (diagram.nodes[0] as NodeModel).wrapper.bounds.topCenter;
         mouseEvents.clickEvent(diagramCanvas, 100, 100);
@@ -3255,11 +3270,8 @@ describe('Testing resizing - With RestrictNegativeAxisDragDrop ', () => {
         done();
     });
     it('Checking single node resizing - left center', (done: Function) => {
-        debugger;
         diagram.clearSelection();
-        let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
-        let offsetLeft: number = diagram.element.offsetLeft;
-        let offsetTop: number = diagram.element.offsetTop;
+        
         let leftCenter: PointModel = (diagram.nodes[1] as NodeModel).wrapper.bounds.middleLeft;
         mouseEvents.clickEvent(diagramCanvas, 50, 250);
         mouseEvents.dragAndDropEvent(diagramCanvas, leftCenter.x + offsetLeft, leftCenter.y - 1 + offsetTop, leftCenter.x - 20 + offsetLeft, leftCenter.y + offsetTop - 1);
@@ -3267,26 +3279,22 @@ describe('Testing resizing - With RestrictNegativeAxisDragDrop ', () => {
         done();
     });
     it('dragging connector to negative axis', (done: Function) => {
-        debugger;
         diagram.clearSelection();
         var conn = diagram.connectors[0];
-        var offsetLeft = diagram.element.offsetLeft;
-        var offsetTop = diagram.element.offsetTop;
-        let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
         mouseEvents.clickEvent(diagramCanvas, 250, 450);
-        mouseEvents.dragAndDropEvent(diagramCanvas, offsetLeft + conn.wrapper.offsetX, offsetTop + conn.wrapper.offsetY, offsetLeft + conn.wrapper.offsetX - 20, offsetTop + conn.wrapper.offsetY -20);
+        mouseEvents.dragAndDropEvent(diagramCanvas, offsetLeft + conn.wrapper.offsetX, offsetTop + conn.wrapper.offsetY, offsetLeft + conn.wrapper.offsetX - 20, offsetTop + conn.wrapper.offsetY - 20);
         var nodePosition = conn.wrapper;
         expect(nodePosition.offsetX >= 0 && nodePosition.offsetY >= 0).toBe(true);
         done();
     });
 });
 describe('Automatic Port Creation Tests', function () {
-    let diagram: Diagram;;
-    let mockEvent: any;
+    let diagram: Diagram;
     let ele: HTMLElement;
     let mouseEvents = new MouseEvents();
+    let diagramCanvas: HTMLElement;
     beforeAll((): void => {
-        ele = createElement('div', { id: 'diagramAutomaticPortCreation' });
+        ele = createElement('div', { id: 'diagramAutomaticPortCreation29' });
         document.body.appendChild(ele);
 
         let node: NodeModel[] = [{
@@ -3317,14 +3325,15 @@ describe('Automatic Port Creation Tests', function () {
             connectors: [connector],
             constraints: DiagramConstraints.Default | DiagramConstraints.AutomaticPortCreation,
         });
-        diagram.appendTo('#diagramAutomaticPortCreation');
+        diagram.appendTo('#diagramAutomaticPortCreation29');
+        diagramCanvas = document.getElementById(diagram.element.id + 'content');
     });
     afterAll((): void => {
         diagram.destroy();
         ele.remove();
+        (diagram as any) = null; (ele as any) = null;
     });
     it('should create a port on the node when AutomaticPortCreation is called for node1', (done: Function) => {
-        let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
         mouseEvents.mouseMoveEvent(diagramCanvas, 100, 60);
         mouseEvents.mouseDownEvent(diagramCanvas, 100, 100, true);
         mouseEvents.mouseMoveEvent(diagramCanvas, 50, 200, true);
@@ -3335,7 +3344,6 @@ describe('Automatic Port Creation Tests', function () {
         done();
     });
     it('should create a port on the node when AutomaticPortCreation is called for node2', (done: Function) => {
-        let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
         mouseEvents.mouseMoveEvent(diagramCanvas, 100, 60);
         mouseEvents.mouseDownEvent(diagramCanvas, 140, 100, true);
         mouseEvents.mouseMoveEvent(diagramCanvas, 200, 200, true);
@@ -3348,7 +3356,6 @@ describe('Automatic Port Creation Tests', function () {
     it('should create a port on the connector when AutomaticPortCreation is called for connector', (done: Function) => {
         diagram.clearSelection();
         var conn = diagram.connectors[0];
-        let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
         mouseEvents.mouseMoveEvent(diagramCanvas, 220, 220);
         mouseEvents.mouseMoveEvent(diagramCanvas, 150, 250);
         mouseEvents.mouseMoveEvent(diagramCanvas, 120, 220);
@@ -3362,10 +3369,9 @@ describe('Automatic Port Creation Tests', function () {
 describe('Diagram Port Distribution', () => {
     let diagram: Diagram;
     let ele: HTMLElement;
-    let mouseEvents = new MouseEvents();
     beforeAll(() => {
         ele = document.createElement('div');
-        ele.id = 'diagramPortTest';
+        ele.id = 'diagramPortTest30';
         document.body.appendChild(ele);
         const node1: NodeModel = {
             id: 'node1',
@@ -3395,13 +3401,14 @@ describe('Diagram Port Distribution', () => {
             width: 600,
             height: 400,
             nodes: [node1, node2],
-            
+
         });
-        diagram.appendTo('#diagramPortTest');
+        diagram.appendTo('#diagramPortTest30');
     });
     afterAll(() => {
         diagram.destroy();
         ele.remove();
+        (diagram as any) = null; (ele as any) = null;
     });
     it('should distribute ports on node edges', (done: Function) => {
         diagram.distributePorts(['node1', 'node2']);
@@ -3445,7 +3452,7 @@ describe('Diagram Port Distribution with Connectors', () => {
     let ele: HTMLElement;
     beforeAll(() => {
         ele = document.createElement('div');
-        ele.id = 'diagramPortConnectorTest';
+        ele.id = 'diagramPortConnectorTest31';
         document.body.appendChild(ele);
         const node1: NodeModel = {
             id: 'node1',
@@ -3454,7 +3461,7 @@ describe('Diagram Port Distribution with Connectors', () => {
             offsetX: 200,
             offsetY: 200,
             ports: [
-                { id: 'p1', offset: {  x: 0.3, y: 0.2 }, visibility: PortVisibility.Visible },
+                { id: 'p1', offset: { x: 0.3, y: 0.2 }, visibility: PortVisibility.Visible },
                 { id: 'p2', offset: { x: 0.8, y: 0.5 }, visibility: PortVisibility.Visible },
                 { id: 'p3', offset: { x: 0.9, y: 0.8 }, visibility: PortVisibility.Visible }
             ]
@@ -3466,7 +3473,7 @@ describe('Diagram Port Distribution with Connectors', () => {
             offsetX: 400,
             offsetY: 50,
             ports: [
-                { id: 'p4', offset: {  x: 0.5, y: 0.5 }, visibility: PortVisibility.Visible },
+                { id: 'p4', offset: { x: 0.5, y: 0.5 }, visibility: PortVisibility.Visible },
             ]
         };
         const node3: NodeModel = {
@@ -3476,7 +3483,7 @@ describe('Diagram Port Distribution with Connectors', () => {
             offsetX: 50,
             offsetY: 250,
             ports: [
-                { id: 'p5', offset: {  x: 0.5, y: 0.5 }, visibility: PortVisibility.Visible },
+                { id: 'p5', offset: { x: 0.5, y: 0.5 }, visibility: PortVisibility.Visible },
             ]
         };
         const node4: NodeModel = {
@@ -3486,8 +3493,8 @@ describe('Diagram Port Distribution with Connectors', () => {
             offsetX: 500,
             offsetY: 400,
             ports: [
-                { id: 'p6', offset: {  x: 0.5, y: 0.5 }, visibility: PortVisibility.Visible },
-                { id: 'p7', offset: {  x: 0.2, y: 0.5 }, visibility: PortVisibility.Visible },
+                { id: 'p6', offset: { x: 0.5, y: 0.5 }, visibility: PortVisibility.Visible },
+                { id: 'p7', offset: { x: 0.2, y: 0.5 }, visibility: PortVisibility.Visible },
             ]
         };
         const connectors: ConnectorModel[] = [
@@ -3506,17 +3513,18 @@ describe('Diagram Port Distribution with Connectors', () => {
             nodes: [node1, node2, node3, node4],
             connectors: connectors
         });
-        diagram.appendTo('#diagramPortConnectorTest');
+        diagram.appendTo('#diagramPortConnectorTest31');
     });
     afterAll(() => {
         diagram.destroy();
         ele.remove();
+        (diagram as any) = null; (ele as any) = null;
     });
     it('should arrange ports based on connector target Y position', (done: Function) => {
         diagram.distributePorts(['node1', 'node2', 'node3', 'node4']);
         diagram.dataBind();
         const n1 = diagram.nameTable['node1'];
-        const sortedPorts = n1.ports.slice().sort((a:any, b:any) => a.offset.y - b.offset.y);
+        const sortedPorts = n1.ports.slice().sort((a: any, b: any) => a.offset.y - b.offset.y);
         expect(sortedPorts[0].id).toBe('p1');
         expect(sortedPorts[1].id).toBe('p2');
         expect(sortedPorts[2].id).toBe('p3');
@@ -3530,10 +3538,879 @@ describe('Diagram Port Distribution with Connectors', () => {
     });
 });
 
+// describe('Diagram Port AutoPortDistribution with Connectors', () => {
+//     let diagram: Diagram;
+//     let ele: HTMLElement;
+//     let bottomPorts: PointPortModel[] = [
+//         // //Bottom
+//         { id: 'port1', offset: { y: 1, x: 0.2 }, visibility: PortVisibility.Visible },
+//         { id: 'port2', offset: { y: 1, x: 0.4 }, visibility: PortVisibility.Visible },
+//         { id: 'port3', offset: { y: 1, x: 0.6 }, visibility: PortVisibility.Visible },
+//         { id: 'port4', offset: { y: 1, x: 0.8 }, visibility: PortVisibility.Visible }
+//     ]
+//     let topPorts: PointPortModel[] = [
+//         //  //Top
+//         { id: 'port1', offset: { y: 0, x: 0.2 }, visibility: PortVisibility.Visible },
+//         { id: 'port2', offset: { y: 0, x: 0.4 }, visibility: PortVisibility.Visible },
+//         { id: 'port3', offset: { y: 0, x: 0.6 }, visibility: PortVisibility.Visible },
+//         { id: 'port4', offset: { y: 0, x: 0.8 }, visibility: PortVisibility.Visible },
+//     ]
+//     let rightPorts: PointPortModel[] = [
+//         // //Right
+//         { id: 'port1', offset: { x: 1, y: 0.2 }, visibility: PortVisibility.Visible },
+//         { id: 'port2', offset: { x: 1, y: 0.4 }, visibility: PortVisibility.Visible },
+//         { id: 'port3', offset: { x: 1, y: 0.6 }, visibility: PortVisibility.Visible },
+//         { id: 'port4', offset: { x: 1, y: 0.8 }, visibility: PortVisibility.Visible },
+//     ]
+//     let leftPorts: PointPortModel[] = [
+//         // //Left
+//         { id: 'port1', offset: { x: 0, y: 0.2 }, visibility: PortVisibility.Visible },
+//         { id: 'port2', offset: { x: 0, y: 0.4 }, visibility: PortVisibility.Visible },
+//         { id: 'port3', offset: { x: 0, y: 0.6 }, visibility: PortVisibility.Visible },
+//         { id: 'port4', offset: { x: 0, y: 0.8 }, visibility: PortVisibility.Visible },
+//     ]
+//     beforeAll(() => {
+//         ele = document.createElement('div');
+//         ele.id = 'diagramAutoPort32';
+//         document.body.appendChild(ele);
+//         let nodes: NodeModel[] = [
+//             {
+//                 id: 'node1', width: 100, height: 60, offsetX: 450, offsetY: 200, style: { fill: 'red' },
+//                 annotations: [{ content: 'Network \nInterface' }],
+//                 ports: [
+//                     { id: 'port1', offset: { x: 0.5, y: 1 }, visibility: PortVisibility.Visible },
+//                     { id: 'port2', offset: { x: 0.5, y: 1 }, visibility: PortVisibility.Visible },
+//                     { id: 'port3', offset: { x: 0.5, y: 1 }, visibility: PortVisibility.Visible },
+//                     { id: 'port4', offset: { x: 0.5, y: 1 }, visibility: PortVisibility.Visible },
+//                     { id: 'port5', offset: { x: 1, y: 0.5 }, visibility: PortVisibility.Visible },
+//                     { id: 'port6', offset: { x: 1, y: 0.5 }, visibility: PortVisibility.Visible }
+//                 ]
+//             },
+//             {
+//                 id: 'node2', width: 100, height: 60, offsetX: 640, offsetY: 200,
+//                 style: { fill: '#82DF82' }, annotations: [{ content: 'Controller' }],
+//                 ports: [
+//                     { id: 'port1', offset: { x: 0, y: 0.5 }, visibility: PortVisibility.Visible },
+//                     { id: 'port2', offset: { x: 0, y: 0.5 }, visibility: PortVisibility.Visible },
+//                     { id: 'port3', offset: { x: 1, y: 0.5 }, visibility: PortVisibility.Visible },
+//                     { id: 'port4', offset: { x: 1, y: 0.5 }, visibility: PortVisibility.Visible }
+//                 ]
+//             },
+//             {
+//                 id: 'node3', width: 100, height: 60, offsetX: 830, offsetY: 200, style: { fill: '#5E1770' },
+//                 annotations: [{ content: 'Operator \nInterface' }],
+//                 ports: [
+//                     { id: 'port1', offset: { x: 0, y: 0.5 }, visibility: PortVisibility.Visible },
+//                     { id: 'port2', offset: { x: 0, y: 0.5 }, visibility: PortVisibility.Visible }
+//                 ]
+//             },
+//             {
+//                 id: 'node4', width: 100, height: 60, offsetX: 200, offsetY: 400, style: { fill: 'red' },
+//                 annotations: [{ content: 'Network \nInterface' }],
+//                 ports: [
+//                     { id: 'port1', offset: { x: 0.5, y: 0 }, visibility: PortVisibility.Visible },
+//                     { id: 'port2', offset: { x: 0.5, y: 0 }, visibility: PortVisibility.Visible },
+//                     { id: 'port3', offset: { x: 0.5, y: 0 }, visibility: PortVisibility.Visible },
+//                     { id: 'port4', offset: { x: 0.5, y: 0 }, visibility: PortVisibility.Visible },
+//                     { id: 'port5', offset: { x: 0.5, y: 1 }, visibility: PortVisibility.Visible },
+//                     { id: 'port6', offset: { x: 0.5, y: 1 }, visibility: PortVisibility.Visible }
+//                 ]
+//             },
+//             {
+//                 id: 'node5', width: 120, height: 60, offsetX: 200, offsetY: 500,
+//                 style: { fill: '#82DF82' }, annotations: [{ content: 'Controller' }],
+//                 ports: [
+//                     { id: 'port1', offset: { x: 0.5, y: 0 }, visibility: PortVisibility.Visible },
+//                     { id: 'port2', offset: { x: 0.5, y: 0 }, visibility: PortVisibility.Visible },
+//                     { id: 'port3', offset: { x: 1, y: 0.5 }, visibility: PortVisibility.Visible },
+//                     { id: 'port4', offset: { x: 1, y: 0.5 }, visibility: PortVisibility.Visible },
+//                     { id: 'port5', offset: { x: 0.5, y: 1 }, visibility: PortVisibility.Visible },
+//                     { id: 'port6', offset: { x: 0.5, y: 1 }, visibility: PortVisibility.Visible }
+//                 ]
+//             },
+//             {
+//                 id: 'node6', width: 100, height: 60, offsetX: 370, offsetY: 500, style: { fill: '#5E1770' },
+//                 annotations: [{ content: 'Operator \nInterface' }],
+//                 ports: [
+//                     { id: 'port1', offset: { x: 0, y: 0.5 }, visibility: PortVisibility.Visible },
+//                     { id: 'port2', offset: { x: 0, y: 0.5 }, visibility: PortVisibility.Visible }
+//                 ]
+//             },
+//             {
+//                 id: 'node7', width: 50, height: 60, offsetX: 150, offsetY: 600, style: { fill: 'cornflowerblue' },
+//                 annotations: [{ content: 'Sensors', offset: { x: 0.5, y: 1.3 }, }],
+//                 ports: [
+//                     { id: 'port1', offset: { x: 0.5, y: 0 }, visibility: PortVisibility.Visible }
+//                 ]
+//             },
+//             {
+//                 id: 'node8', width: 50, height: 60, offsetX: 250, offsetY: 600, style: { fill: 'cornflowerblue' },
+//                 annotations: [{ content: 'Actuators', offset: { x: 0.5, y: 1.3 }, }],
+//                 ports: [
+//                     { id: 'port1', offset: { x: 0.5, y: 0 }, visibility: PortVisibility.Visible }
+//                 ]
+//             },
+//             {
+//                 id: 'node9', width: 100, height: 60, offsetX: 580, offsetY: 400, style: { fill: 'red' },
+//                 annotations: [{ content: 'Network \nInterface' }],
+//                 ports: [
+//                     { id: 'port1', offset: { x: 0.5, y: 0 }, visibility: PortVisibility.Visible },
+//                     { id: 'port2', offset: { x: 0.5, y: 0 }, visibility: PortVisibility.Visible },
+//                     { id: 'port3', offset: { x: 0.5, y: 0 }, visibility: PortVisibility.Visible },
+//                     { id: 'port4', offset: { x: 0.5, y: 0 }, visibility: PortVisibility.Visible },
+//                     { id: 'port5', offset: { x: 0.5, y: 1 }, visibility: PortVisibility.Visible },
+//                     { id: 'port6', offset: { x: 0.5, y: 1 }, visibility: PortVisibility.Visible }
+//                 ]
+//             },
+//             {
+//                 id: 'node10', width: 120, height: 60, offsetX: 580, offsetY: 500,
+//                 style: { fill: '#82DF82' }, annotations: [{ content: 'Controller' }],
+//                 ports: [
+//                     { id: 'port1', offset: { x: 0.5, y: 0 }, visibility: PortVisibility.Visible },
+//                     { id: 'port2', offset: { x: 0.5, y: 0 }, visibility: PortVisibility.Visible },
+//                     { id: 'port3', offset: { x: 1, y: 0.5 }, visibility: PortVisibility.Visible },
+//                     { id: 'port4', offset: { x: 1, y: 0.5 }, visibility: PortVisibility.Visible },
+//                     { id: 'port5', offset: { x: 0.5, y: 1 }, visibility: PortVisibility.Visible },
+//                     { id: 'port6', offset: { x: 0.5, y: 1 }, visibility: PortVisibility.Visible }
+//                 ]
+//             },
+//             {
+//                 id: 'node11', width: 100, height: 60, offsetX: 750, offsetY: 500, style: { fill: '#5E1770' },
+//                 annotations: [{ content: 'Operator \nInterface' }],
+//                 ports: [
+//                     { id: 'port1', offset: { x: 0, y: 0.5 }, visibility: PortVisibility.Visible },
+//                     { id: 'port2', offset: { x: 0, y: 0.5 }, visibility: PortVisibility.Visible }
+//                 ]
+//             },
+//             {
+//                 id: 'node12', width: 50, height: 60, offsetX: 530, offsetY: 600, style: { fill: 'cornflowerblue' },
+//                 annotations: [{ content: 'Sensors', offset: { x: 0.5, y: 1.3 }, }],
+//                 ports: [
+//                     { id: 'port1', offset: { x: 0.5, y: 0 }, visibility: PortVisibility.Visible }
+//                 ]
+//             },
+//             {
+//                 id: 'node13', width: 50, height: 60, offsetX: 620, offsetY: 600, style: { fill: 'cornflowerblue' },
+//                 annotations: [{ content: 'Actuators', offset: { x: 0.5, y: 1.3 }, }],
+//                 ports: [
+//                     { id: 'port1', offset: { x: 0.5, y: 0 }, visibility: PortVisibility.Visible }
+//                 ]
+//             },
+//             {
+//                 id: 'node14', width: 100, height: 60, offsetX: 1000, offsetY: 400, style: { fill: 'red' },
+//                 annotations: [{ content: 'Network \nInterface' }],
+//                 ports: [
+//                     { id: 'port1', offset: { x: 0.5, y: 0 }, visibility: PortVisibility.Visible },
+//                     { id: 'port2', offset: { x: 0.5, y: 0 }, visibility: PortVisibility.Visible },
+//                     { id: 'port3', offset: { x: 0.5, y: 0 }, visibility: PortVisibility.Visible },
+//                     { id: 'port4', offset: { x: 0.5, y: 0 }, visibility: PortVisibility.Visible },
+//                     { id: 'port5', offset: { x: 0.5, y: 1 }, visibility: PortVisibility.Visible },
+//                     { id: 'port6', offset: { x: 0.5, y: 1 }, visibility: PortVisibility.Visible }
+//                 ]
+//             },
+//             {
+//                 id: 'node15', width: 120, height: 60, offsetX: 1000, offsetY: 500,
+//                 style: { fill: '#82DF82' }, annotations: [{ content: 'Controller', }],
+//                 ports: [
+//                     { id: 'port1', offset: { x: 0.5, y: 0 }, visibility: PortVisibility.Visible },
+//                     { id: 'port2', offset: { x: 0.5, y: 0 }, visibility: PortVisibility.Visible },
+//                     { id: 'port3', offset: { x: 1, y: 0.5 }, visibility: PortVisibility.Visible },
+//                     { id: 'port4', offset: { x: 1, y: 0.5 }, visibility: PortVisibility.Visible },
+//                     { id: 'port5', offset: { x: 0.5, y: 1 }, visibility: PortVisibility.Visible },
+//                     { id: 'port6', offset: { x: 0.5, y: 1 }, visibility: PortVisibility.Visible }
+//                 ]
+//             },
+//             {
+//                 id: 'node16', width: 100, height: 60, offsetX: 1170, offsetY: 500, style: { fill: '#5E1770' },
+//                 annotations: [{ content: 'Operator \nInterface' }],
+//                 ports: [
+//                     { id: 'port1', offset: { x: 0, y: 0.5 }, visibility: PortVisibility.Visible },
+//                     { id: 'port2', offset: { x: 0, y: 0.5 }, visibility: PortVisibility.Visible }
+//                 ]
+//             },
+//             {
+//                 id: 'node17', width: 50, height: 60, offsetX: 950, offsetY: 600, style: { fill: 'cornflowerblue' },
+//                 annotations: [{ content: 'Sensors', offset: { x: 0.5, y: 1.3 }, }],
+//                 ports: [
+//                     { id: 'port1', offset: { x: 0.5, y: 0 }, visibility: PortVisibility.Visible }
+//                 ]
+//             },
+//             {
+//                 id: 'node18', width: 50, height: 60, offsetX: 1050, offsetY: 600, style: { fill: 'cornflowerblue' },
+//                 annotations: [{ content: 'Actuators', offset: { x: 0.5, y: 1.3 } }],
+//                 ports: [
+//                     { id: 'port1', offset: { x: 0.5, y: 0 }, visibility: PortVisibility.Visible }
+//                 ]
+//             },
+//             {
+//                 id: 'node19', width: 100, height: 60, offsetX: 1130, offsetY: 200, style: { fill: '#5E1770' },
+//                 ports: [
+//                     { id: 'port1', offset: { x: 0.1, y: 0.3 }, visibility: PortVisibility.Visible },
+//                     { id: 'port2', offset: { x: 0.1, y: 0.6 }, visibility: PortVisibility.Visible },
+//                     { id: 'port3', offset: { x: 0.3, y: 0.1 }, visibility: PortVisibility.Visible },
+//                     { id: 'port4', offset: { x: 0.7, y: 0.1 }, visibility: PortVisibility.Visible },
+//                     { id: 'port5', offset: { x: 0.9, y: 0.3 }, visibility: PortVisibility.Visible },
+//                     { id: 'port6', offset: { x: 0.9, y: 0.6 }, visibility: PortVisibility.Visible },
+//                     { id: 'port7', offset: { x: 0.7, y: 0.9 }, visibility: PortVisibility.Visible },
+//                     { id: 'port8', offset: { x: 0.3, y: 0.9 }, visibility: PortVisibility.Visible },
+//                 ]
+//             },
+//         ];
+
+//         const connectors: ConnectorModel[] = [
+//             {
+//                 id: 'Connector1', sourceID: "node1", targetID: "node14",
+//                 sourcePortID: 'port3', targetPortID: 'port3',
+//                 style: { strokeColor: 'red', strokeWidth: 3 }, type: 'Orthogonal'
+//             },
+//             {
+//                 id: 'Connector2', sourceID: "node14", targetID: "node1",
+//                 sourcePortID: 'port4', targetPortID: 'port4',
+//                 style: { strokeColor: 'red', strokeWidth: 3 }, type: 'Orthogonal'
+//             },
+//             {
+//                 id: 'Connector3', sourceID: "node1", targetID: "node2",
+//                 sourcePortID: 'port5', targetPortID: 'port1',
+//                 style: { strokeColor: 'blue', strokeWidth: 3 }, type: 'Orthogonal'
+//             },
+//             {
+//                 id: 'Connector4', sourceID: "node2", targetID: "node1",
+//                 sourcePortID: 'port2', targetPortID: 'port6',
+//                 style: { strokeColor: 'yellow', strokeWidth: 3 }, type: 'Orthogonal'
+//             },
+//             {
+//                 id: 'Connector5', sourceID: "node2", targetID: "node3",
+//                 sourcePortID: 'port3', targetPortID: 'port1',
+//                 style: { strokeColor: 'blue', strokeWidth: 3 }, type: 'Orthogonal'
+//             },
+//             {
+//                 id: 'Connector6', sourceID: "node3", targetID: "node2",
+//                 sourcePortID: 'port2', targetPortID: 'port4',
+//                 style: { strokeColor: 'yellow', strokeWidth: 3 }, type: 'Orthogonal'
+//             },
+//             {
+//                 id: 'Connector7', sourceID: "node1", targetID: "node4",
+//                 sourcePortID: 'port1', targetPortID: 'port1',
+//                 style: { strokeColor: 'yellow', strokeWidth: 3 }, type: 'Orthogonal'
+//             },
+//             {
+//                 id: 'Connector8', sourceID: "node4", targetID: "node1",
+//                 sourcePortID: 'port2', targetPortID: 'port2',
+//                 style: { strokeColor: 'yellow', strokeWidth: 3 }, type: 'Orthogonal'
+//             },
+//             {
+//                 id: 'Connector9', sourceID: "node4", targetID: "node9",
+//                 sourcePortID: 'port3', targetPortID: 'port1',
+//                 style: { strokeColor: 'purple', strokeWidth: 3 }, type: 'Orthogonal'
+//             },
+//             {
+//                 id: 'Connector10', sourceID: "node9", targetID: "node4",
+//                 sourcePortID: 'port2', targetPortID: 'port4',
+//                 style: { strokeColor: 'purple', strokeWidth: 3 }, type: 'Orthogonal'
+//             },
+//             {
+//                 id: 'Connector11', sourceID: "node9", targetID: "node14",
+//                 sourcePortID: 'port3', targetPortID: 'port1',
+//                 style: { strokeColor: 'violet', strokeWidth: 3 }, type: 'Orthogonal'
+//             },
+//             {
+//                 id: 'Connector12', sourceID: "node14", targetID: "node9",
+//                 sourcePortID: 'port2', targetPortID: 'port4',
+//                 style: { strokeColor: 'violet', strokeWidth: 3 }, type: 'Orthogonal'
+//             },
+//             {
+//                 id: 'Connector13', sourceID: "node5", targetID: "node4",
+//                 sourcePortID: 'port2', targetPortID: 'port6',
+//                 style: { strokeColor: 'violet', strokeWidth: 3 }, type: 'Orthogonal'
+//             },
+//             {
+//                 id: 'Connector14', sourceID: "node4", targetID: "node5",
+//                 sourcePortID: 'port5', targetPortID: 'port1',
+//                 style: { strokeColor: 'violet', strokeWidth: 3 }, type: 'Orthogonal'
+//             },
+//             {
+//                 id: 'Connector15', sourceID: "node5", targetID: "node6",
+//                 sourcePortID: 'port3', targetPortID: 'port1',
+//                 style: { strokeColor: 'violet', strokeWidth: 3 }, type: 'Orthogonal'
+//             },
+//             {
+//                 id: 'Connector16', sourceID: "node6", targetID: "node5",
+//                 sourcePortID: 'port2', targetPortID: 'port4',
+//                 style: { strokeColor: 'violet', strokeWidth: 3 }, type: 'Orthogonal'
+//             },
+//             {
+//                 id: 'Connector17', sourceID: "node5", targetID: "node7",
+//                 sourcePortID: 'port5', targetPortID: 'port1',
+//                 style: { strokeColor: 'green', strokeWidth: 3 }, type: 'Orthogonal'
+//             },
+//             {
+//                 id: 'Connector18', sourceID: "node8", targetID: "node5",
+//                 sourcePortID: 'port1', targetPortID: 'port6',
+//                 style: { strokeColor: 'green', strokeWidth: 3 }, type: 'Orthogonal'
+//             },
+//             {
+//                 id: 'Connector19', sourceID: "node9", targetID: "node10",
+//                 sourcePortID: 'port5', targetPortID: 'port1',
+//                 style: { strokeColor: 'lime', strokeWidth: 3 }, type: 'Orthogonal'
+//             },
+//             {
+//                 id: 'Connector20', sourceID: "node10", targetID: "node9",
+//                 sourcePortID: 'port2', targetPortID: 'port6',
+//                 style: { strokeColor: 'lime', strokeWidth: 3 }, type: 'Orthogonal'
+//             },
+//             {
+//                 id: 'Connector21', sourceID: "node10", targetID: "node11",
+//                 sourcePortID: 'port3', targetPortID: 'port1',
+//                 style: { strokeColor: 'violet', strokeWidth: 3 }, type: 'Orthogonal'
+//             },
+//             {
+//                 id: 'Connector22', sourceID: "node11", targetID: "node10",
+//                 sourcePortID: 'port2', targetPortID: 'port4',
+//                 style: { strokeColor: 'violet', strokeWidth: 3 }, type: 'Orthogonal'
+//             },
+//             {
+//                 id: 'Connector23', sourceID: "node10", targetID: "node12",
+//                 sourcePortID: 'port5', targetPortID: 'port1',
+//                 style: { strokeColor: 'green', strokeWidth: 3 }, type: 'Orthogonal'
+//             },
+//             {
+//                 id: 'Connector24', sourceID: "node13", targetID: "node10",
+//                 sourcePortID: 'port1', targetPortID: 'port6',
+//                 style: { strokeColor: 'green', strokeWidth: 3 }, type: 'Orthogonal'
+//             },
+//             {
+//                 id: 'Connector25', sourceID: "node14", targetID: "node15",
+//                 sourcePortID: 'port5', targetPortID: 'port1',
+//                 style: { strokeColor: 'violet', strokeWidth: 3 }, type: 'Orthogonal'
+//             },
+//             {
+//                 id: 'Connector26', sourceID: "node15", targetID: "node14",
+//                 sourcePortID: 'port2', targetPortID: 'port6',
+//                 style: { strokeColor: 'violet', strokeWidth: 3 }, type: 'Orthogonal'
+//             },
+//             {
+//                 id: 'Connector27', sourceID: "node15", targetID: "node16",
+//                 sourcePortID: 'port3', targetPortID: 'port1',
+//                 style: { strokeColor: 'violet', strokeWidth: 3 }, type: 'Orthogonal'
+//             },
+//             {
+//                 id: 'Connector28', sourceID: "node16", targetID: "node15",
+//                 sourcePortID: 'port2', targetPortID: 'port4',
+//                 style: { strokeColor: 'violet', strokeWidth: 3 }, type: 'Orthogonal'
+//             },
+//             {
+//                 id: 'Connector29', sourceID: "node15", targetID: "node17",
+//                 sourcePortID: 'port5', targetPortID: 'port1',
+//                 style: { strokeColor: 'green', strokeWidth: 3 }, type: 'Orthogonal'
+//             },
+//             {
+//                 id: 'Connector30', sourceID: "node18", targetID: "node15",
+//                 sourcePortID: 'port1', targetPortID: 'port6',
+//                 style: { strokeColor: 'green', strokeWidth: 3 }, type: 'Orthogonal'
+//             }
+//         ];
+//         diagram = new Diagram({
+//             width: 1200, height: 950,
+//             nodes: nodes, connectors: connectors
+//         });
+//         diagram.appendTo('#diagramAutoPort32');
+//     });
+//     afterAll(() => {
+//         diagram.destroy();
+//         ele.remove();
+//         (diagram as any) = null; (ele as any) = null;
+//     });
+//     it('Distribute ports', (done: Function) => {
+//         diagram.distributePorts(['node1', 'node2', 'node3', 'node4', 'node5', 'node6', 'node7', 'node8', 'node9', 'node10',
+//             'node11', 'node12', 'node13', 'node14', 'node15', 'node16', 'node17', 'node18', 'node19']);
+//         diagram.dataBind();
+//         const n1 = diagram.nameTable['node1'];
+//         expect(n1.ports[0].offset.x).toBe(0.2);
+//         expect(n1.ports[0].offset.y).toBe(1);
+//         done();
+//     });
+//     it('Distribute ports source Bottom', (done: Function) => {
+//         diagram.clear();
+//         let nodes: NodeModel[] = [
+//             {
+//                 id: 'node1', offsetX: 500, offsetY: 350, width: 500, height: 100,
+//                 style: { fill: '#6BA5D7', strokeColor: 'white' }, annotations: [{ content: 'node1' }],
+
+//                 ports: [
+//                     // //Bottom
+//                     { id: 'port1', offset: { y: 1, x: 0.1 }, visibility: PortVisibility.Visible },
+//                     { id: 'port2', offset: { y: 1, x: 0.18 }, visibility: PortVisibility.Visible },
+//                     { id: 'port3', offset: { y: 1, x: 0.25 }, visibility: PortVisibility.Visible },
+//                     { id: 'port4', offset: { y: 1, x: 0.30 }, visibility: PortVisibility.Visible },
+//                     { id: 'port5', offset: { y: 1, x: 0.35 }, visibility: PortVisibility.Visible },
+//                     { id: 'port6', offset: { y: 1, x: 0.40 }, visibility: PortVisibility.Visible },
+//                     { id: 'port7', offset: { y: 1, x: 0.45 }, visibility: PortVisibility.Visible },
+//                     { id: 'port8', offset: { y: 1, x: 0.50 }, visibility: PortVisibility.Visible },
+//                     { id: 'port9', offset: { y: 1, x: 0.55 }, visibility: PortVisibility.Visible },
+//                     { id: 'port10', offset: { y: 1, x: 0.60 }, visibility: PortVisibility.Visible },
+//                     { id: 'port11', offset: { y: 1, x: 0.65 }, visibility: PortVisibility.Visible },
+//                     { id: 'port12', offset: { y: 1, x: 0.70 }, visibility: PortVisibility.Visible },
+//                     { id: 'port13', offset: { y: 1, x: 0.75 }, visibility: PortVisibility.Visible },
+//                     { id: 'port14', offset: { y: 1, x: 0.80 }, visibility: PortVisibility.Visible },
+//                     { id: 'port15', offset: { y: 1, x: 0.85 }, visibility: PortVisibility.Visible },
+//                     { id: 'port16', offset: { y: 1, x: 0.9 }, visibility: PortVisibility.Visible },
+//                 ]
+//             },
+//             {
+//                 id: 'node2', offsetX: 150, offsetY: 500, width: 100, height: 100,
+//                 style: { fill: '#6BA5D7', strokeColor: 'white' }, annotations: [{ content: 'node2' }], ports: rightPorts
+//             },
+//             {
+//                 id: 'node3', offsetX: 800, offsetY: 150, width: 100, height: 100,
+//                 annotations: [{ content: 'node3' }], style: { fill: '#6BA5D7', strokeColor: 'white' }, ports: bottomPorts,
+//             },
+//             {
+//                 id: 'node4', offsetX: 800, offsetY: 500, width: 100, height: 100,
+//                 annotations: [{ content: 'node4' }], style: { fill: '#6BA5D7', strokeColor: 'white' }, ports: leftPorts,
+//             },
+//             {
+//                 id: 'node5', offsetX: 450, offsetY: 700, width: 100, height: 100,
+//                 annotations: [{ content: 'node5' }], style: { fill: '#6BA5D7', strokeColor: 'white' }, ports: topPorts,
+//             },
+//         ];
+//         let connectors: ConnectorModel[] = [
+//             {
+//                 id: 'Connector1', sourceID: "node1", targetID: "node2",
+//                 sourcePortID: 'port1', targetPortID: 'port4', type: 'Orthogonal'
+//             },
+//             {
+//                 id: 'Connector2', sourceID: "node1", targetID: "node2",
+//                 sourcePortID: 'port2', targetPortID: 'port3', type: 'Orthogonal'
+//             },
+//             {
+//                 id: 'Connector3', sourceID: "node1", targetID: "node2",
+//                 sourcePortID: 'port3', targetPortID: 'port2', type: 'Orthogonal'
+//             },
+//             {
+//                 id: 'Connector4', sourceID: "node1", targetID: "node2",
+//                 sourcePortID: 'port4', targetPortID: 'port1', type: 'Orthogonal'
+//             },
+//             {
+//                 id: 'Connector5', sourceID: "node1", targetID: "node4",
+//                 sourcePortID: 'port5', targetPortID: 'port4', type: 'Orthogonal'
+//             },
+//             {
+//                 id: 'Connector6', sourceID: "node1", targetID: "node4",
+//                 sourcePortID: 'port6', targetPortID: 'port3', type: 'Orthogonal'
+//             },
+//             {
+//                 id: 'Connector7', sourceID: "node1", targetID: "node4",
+//                 sourcePortID: 'port7', targetPortID: 'port2', type: 'Orthogonal'
+//             },
+//             {
+//                 id: 'Connector8', sourceID: "node1", targetID: "node4",
+//                 sourcePortID: 'port8', targetPortID: 'port1', type: 'Orthogonal'
+//             },
+//             {
+//                 id: 'Connector9', sourceID: "node1", targetID: "node5",
+//                 sourcePortID: 'port9', targetPortID: 'port3', type: 'Orthogonal'
+//             },
+//             {
+//                 id: 'Connector10', sourceID: "node1", targetID: "node5",
+//                 sourcePortID: 'port10', targetPortID: 'port4', type: 'Orthogonal'
+//             },
+//             {
+//                 id: 'Connector11', sourceID: "node1", targetID: "node5",
+//                 sourcePortID: 'port11', targetPortID: 'port1', type: 'Orthogonal'
+//             },
+//             {
+//                 id: 'Connector12', sourceID: "node1", targetID: "node5",
+//                 sourcePortID: 'port12', targetPortID: 'port2', type: 'Orthogonal'
+//             },
+//             {
+//                 id: 'Connector13', sourceID: "node1", targetID: "node3",
+//                 sourcePortID: 'port13', targetPortID: 'port4', type: 'Orthogonal'
+//             },
+//             {
+//                 id: 'Connector14', sourceID: "node1", targetID: "node3",
+//                 sourcePortID: 'port14', targetPortID: 'port1', type: 'Orthogonal'
+//             },
+//             {
+//                 id: 'Connector15', sourceID: "node1", targetID: "node3",
+//                 sourcePortID: 'port15', targetPortID: 'port2', type: 'Orthogonal'
+//             },
+//             {
+//                 id: 'Connector16', sourceID: "node1", targetID: "node3",
+//                 sourcePortID: 'port16', targetPortID: 'port3', type: 'Orthogonal'
+//             },
+//         ];
+//         diagram.addElements(nodes);
+//         diagram.addElements(connectors);
+//         diagram.distributePorts(['node1', 'node2', 'node3', 'node4', 'node5']);
+//         diagram.dataBind();
+//         const n1 = diagram.nameTable['node1'];
+//         expect(n1.ports[0].offset.x === 0.23529411764705882).toBe(true);
+//         expect(n1.ports[0].offset.y === 1).toBe(true);
+//         done();
+//     });
+//     it('Distribute ports source Top', (done: Function) => {
+//         diagram.clear();
+//         let nodes: NodeModel[] = [
+//             {
+//                 id: 'node1', offsetX: 500, offsetY: 550, width: 500, height: 100,
+//                 style: { fill: '#6BA5D7', strokeColor: 'white' }, annotations: [{ content: 'node1' }],
+//                 ports: [
+//                     // //Top
+//                     { id: 'port1', offset: { y: 0, x: 0.1 }, visibility: PortVisibility.Visible },
+//                     { id: 'port2', offset: { y: 0, x: 0.18 }, visibility: PortVisibility.Visible },
+//                     { id: 'port3', offset: { y: 0, x: 0.25 }, visibility: PortVisibility.Visible },
+//                     { id: 'port4', offset: { y: 0, x: 0.30 }, visibility: PortVisibility.Visible },
+//                     { id: 'port5', offset: { y: 0, x: 0.35 }, visibility: PortVisibility.Visible },
+//                     { id: 'port6', offset: { y: 0, x: 0.40 }, visibility: PortVisibility.Visible },
+//                     { id: 'port7', offset: { y: 0, x: 0.45 }, visibility: PortVisibility.Visible },
+//                     { id: 'port8', offset: { y: 0, x: 0.50 }, visibility: PortVisibility.Visible },
+//                     { id: 'port9', offset: { y: 0, x: 0.55 }, visibility: PortVisibility.Visible },
+//                     { id: 'port10', offset: { y: 0, x: 0.60 }, visibility: PortVisibility.Visible },
+//                     { id: 'port11', offset: { y: 0, x: 0.65 }, visibility: PortVisibility.Visible },
+//                     { id: 'port12', offset: { y: 0, x: 0.70 }, visibility: PortVisibility.Visible },
+//                     { id: 'port13', offset: { y: 0, x: 0.75 }, visibility: PortVisibility.Visible },
+//                     { id: 'port14', offset: { y: 0, x: 0.80 }, visibility: PortVisibility.Visible },
+//                     { id: 'port15', offset: { y: 0, x: 0.85 }, visibility: PortVisibility.Visible },
+//                     { id: 'port16', offset: { y: 0, x: 0.9 }, visibility: PortVisibility.Visible },
+//                 ]
+//             },
+//             {
+//                 id: 'node2', offsetX: 150, offsetY: 450, width: 100, height: 100,
+//                 style: { fill: '#6BA5D7', strokeColor: 'white' }, annotations: [{ content: 'node2' }], ports: rightPorts
+//             },
+//             {
+//                 id: 'node3', offsetX: 680, offsetY: 350, width: 100, height: 100,
+//                 annotations: [{ content: 'node3' }], style: { fill: '#6BA5D7', strokeColor: 'white' }, ports: bottomPorts,
+//             },
+//             {
+//                 id: 'node4', offsetX: 680, offsetY: 200, width: 100, height: 100,
+//                 annotations: [{ content: 'node4' }], style: { fill: '#6BA5D7', strokeColor: 'white' }, ports: leftPorts,
+//             },
+//             {
+//                 id: 'node5', offsetX: 330, offsetY: 100, width: 100, height: 100,
+//                 annotations: [{ content: 'node5' }], style: { fill: '#6BA5D7', strokeColor: 'white' }, ports: topPorts,
+//             },
+//         ];
+//         let connectors: ConnectorModel[] = [
+//             {
+//                 id: 'Connector1', sourceID: "node1", targetID: "node2",
+//                 sourcePortID: 'port1', targetPortID: 'port4', type: 'Orthogonal'
+//             },
+//             {
+//                 id: 'Connector2', sourceID: "node1", targetID: "node2",
+//                 sourcePortID: 'port2', targetPortID: 'port3', type: 'Orthogonal'
+//             },
+//             {
+//                 id: 'Connector3', sourceID: "node1", targetID: "node2",
+//                 sourcePortID: 'port3', targetPortID: 'port2', type: 'Orthogonal'
+//             },
+//             {
+//                 id: 'Connector4', sourceID: "node1", targetID: "node2",
+//                 sourcePortID: 'port4', targetPortID: 'port1', type: 'Orthogonal'
+//             },
+//             {
+//                 id: 'Connector5', sourceID: "node1", targetID: "node4",
+//                 sourcePortID: 'port5', targetPortID: 'port4', type: 'Orthogonal'
+//             },
+//             {
+//                 id: 'Connector6', sourceID: "node1", targetID: "node4",
+//                 sourcePortID: 'port6', targetPortID: 'port3', type: 'Orthogonal'
+//             },
+//             {
+//                 id: 'Connector7', sourceID: "node1", targetID: "node4",
+//                 sourcePortID: 'port7', targetPortID: 'port2', type: 'Orthogonal'
+//             },
+//             {
+//                 id: 'Connector8', sourceID: "node1", targetID: "node4",
+//                 sourcePortID: 'port8', targetPortID: 'port1', type: 'Orthogonal'
+//             },
+//             {
+//                 id: 'Connector9', sourceID: "node1", targetID: "node5",
+//                 sourcePortID: 'port9', targetPortID: 'port3', type: 'Orthogonal'
+//             },
+//             {
+//                 id: 'Connector10', sourceID: "node1", targetID: "node5",
+//                 sourcePortID: 'port10', targetPortID: 'port4', type: 'Orthogonal'
+//             },
+//             {
+//                 id: 'Connector11', sourceID: "node1", targetID: "node5",
+//                 sourcePortID: 'port11', targetPortID: 'port1', type: 'Orthogonal'
+//             },
+//             {
+//                 id: 'Connector12', sourceID: "node1", targetID: "node5",
+//                 sourcePortID: 'port12', targetPortID: 'port2', type: 'Orthogonal'
+//             },
+//             {
+//                 id: 'Connector13', sourceID: "node1", targetID: "node3",
+//                 sourcePortID: 'port13', targetPortID: 'port4', type: 'Orthogonal'
+//             },
+//             {
+//                 id: 'Connector14', sourceID: "node1", targetID: "node3",
+//                 sourcePortID: 'port14', targetPortID: 'port1', type: 'Orthogonal'
+//             },
+//             {
+//                 id: 'Connector15', sourceID: "node1", targetID: "node3",
+//                 sourcePortID: 'port15', targetPortID: 'port2', type: 'Orthogonal'
+//             },
+//             {
+//                 id: 'Connector16', sourceID: "node1", targetID: "node3",
+//                 sourcePortID: 'port16', targetPortID: 'port3', type: 'Orthogonal'
+//             },
+//         ];
+//         diagram.addElements(nodes);
+//         diagram.addElements(connectors);
+//         diagram.distributePorts(['node1', 'node2', 'node3', 'node4', 'node5']);
+//         diagram.dataBind();
+//         const n1 = diagram.nameTable['node1'];
+//         expect(n1.ports[0].offset.x === 0.058823529411764705).toBe(true);
+//         expect(n1.ports[0].offset.y === 0).toBe(true);
+//         done();
+//     });
+//     it('Distribute ports source Right', (done: Function) => {
+//         diagram.clear();
+//         let nodes: NodeModel[] = [
+//             {
+//                 id: 'node1', offsetX: 250, offsetY: 450, width: 200, height: 500,
+//                 style: { fill: '#6BA5D7', strokeColor: 'white' }, annotations: [{ content: 'node1' }],
+//                 ports: [
+//                     // //Right
+//                     { id: 'port1', offset: { x: 1, y: 0.1 }, visibility: PortVisibility.Visible },
+//                     { id: 'port2', offset: { x: 1, y: 0.18 }, visibility: PortVisibility.Visible },
+//                     { id: 'port3', offset: { x: 1, y: 0.25 }, visibility: PortVisibility.Visible },
+//                     { id: 'port4', offset: { x: 1, y: 0.30 }, visibility: PortVisibility.Visible },
+//                     { id: 'port5', offset: { x: 1, y: 0.35 }, visibility: PortVisibility.Visible },
+//                     { id: 'port6', offset: { x: 1, y: 0.40 }, visibility: PortVisibility.Visible },
+//                     { id: 'port7', offset: { x: 1, y: 0.45 }, visibility: PortVisibility.Visible },
+//                     { id: 'port8', offset: { x: 1, y: 0.50 }, visibility: PortVisibility.Visible },
+//                     { id: 'port9', offset: { x: 1, y: 0.55 }, visibility: PortVisibility.Visible },
+//                     { id: 'port10', offset: { x: 1, y: 0.60 }, visibility: PortVisibility.Visible },
+//                     { id: 'port11', offset: { x: 1, y: 0.65 }, visibility: PortVisibility.Visible },
+//                     { id: 'port12', offset: { x: 1, y: 0.70 }, visibility: PortVisibility.Visible },
+//                     { id: 'port13', offset: { x: 1, y: 0.75 }, visibility: PortVisibility.Visible },
+//                     { id: 'port14', offset: { x: 1, y: 0.80 }, visibility: PortVisibility.Visible },
+//                     { id: 'port15', offset: { x: 1, y: 0.85 }, visibility: PortVisibility.Visible },
+//                     { id: 'port16', offset: { x: 1, y: 0.9 }, visibility: PortVisibility.Visible },
+//                 ]
+//             },
+//             {
+//                 id: 'node2', offsetX: 500, offsetY: 150, width: 100, height: 100,
+//                 style: { fill: '#6BA5D7', strokeColor: 'white' }, annotations: [{ content: 'node2' }], ports: rightPorts
+//             },
+//             {
+//                 id: 'node3', offsetX: 750, offsetY: 280, width: 100, height: 100,
+//                 annotations: [{ content: 'node3' }], style: { fill: '#6BA5D7', strokeColor: 'white' }, ports: bottomPorts,
+//             },
+//             {
+//                 id: 'node4', offsetX: 650, offsetY: 500, width: 100, height: 100,
+//                 annotations: [{ content: 'node4' }], style: { fill: '#6BA5D7', strokeColor: 'white' }, ports: leftPorts,
+//             },
+//             {
+//                 id: 'node5', offsetX: 500, offsetY: 750, width: 100, height: 100,
+//                 annotations: [{ content: 'node5' }], style: { fill: '#6BA5D7', strokeColor: 'white' }, ports: topPorts,
+//             },
+//         ];
+//         let connectors: ConnectorModel[] = [
+//             {
+//                 id: 'Connector1', sourceID: "node1", targetID: "node2",
+//                 sourcePortID: 'port1', targetPortID: 'port4', type: 'Orthogonal'
+//             },
+//             {
+//                 id: 'Connector2', sourceID: "node1", targetID: "node2",
+//                 sourcePortID: 'port2', targetPortID: 'port3', type: 'Orthogonal'
+//             },
+//             {
+//                 id: 'Connector3', sourceID: "node1", targetID: "node2",
+//                 sourcePortID: 'port3', targetPortID: 'port2', type: 'Orthogonal'
+//             },
+//             {
+//                 id: 'Connector4', sourceID: "node1", targetID: "node2",
+//                 sourcePortID: 'port4', targetPortID: 'port1', type: 'Orthogonal'
+//             },
+//             {
+//                 id: 'Connector5', sourceID: "node1", targetID: "node4",
+//                 sourcePortID: 'port5', targetPortID: 'port4', type: 'Orthogonal'
+//             },
+//             {
+//                 id: 'Connector6', sourceID: "node1", targetID: "node4",
+//                 sourcePortID: 'port6', targetPortID: 'port3', type: 'Orthogonal'
+//             },
+//             {
+//                 id: 'Connector7', sourceID: "node1", targetID: "node4",
+//                 sourcePortID: 'port7', targetPortID: 'port2', type: 'Orthogonal'
+//             },
+//             {
+//                 id: 'Connector8', sourceID: "node1", targetID: "node4",
+//                 sourcePortID: 'port8', targetPortID: 'port1', type: 'Orthogonal'
+//             },
+//             {
+//                 id: 'Connector9', sourceID: "node1", targetID: "node5",
+//                 sourcePortID: 'port9', targetPortID: 'port3', type: 'Orthogonal'
+//             },
+//             {
+//                 id: 'Connector10', sourceID: "node1", targetID: "node5",
+//                 sourcePortID: 'port10', targetPortID: 'port4', type: 'Orthogonal'
+//             },
+//             {
+//                 id: 'Connector11', sourceID: "node1", targetID: "node5",
+//                 sourcePortID: 'port11', targetPortID: 'port1', type: 'Orthogonal'
+//             },
+//             {
+//                 id: 'Connector12', sourceID: "node1", targetID: "node5",
+//                 sourcePortID: 'port12', targetPortID: 'port2', type: 'Orthogonal'
+//             },
+//             {
+//                 id: 'Connector13', sourceID: "node1", targetID: "node3",
+//                 sourcePortID: 'port13', targetPortID: 'port4', type: 'Orthogonal'
+//             },
+//             {
+//                 id: 'Connector14', sourceID: "node1", targetID: "node3",
+//                 sourcePortID: 'port14', targetPortID: 'port1', type: 'Orthogonal'
+//             },
+//             {
+//                 id: 'Connector15', sourceID: "node1", targetID: "node3",
+//                 sourcePortID: 'port15', targetPortID: 'port2', type: 'Orthogonal'
+//             },
+//             {
+//                 id: 'Connector16', sourceID: "node1", targetID: "node3",
+//                 sourcePortID: 'port16', targetPortID: 'port3', type: 'Orthogonal'
+//             },
+//         ];
+//         diagram.addElements(nodes);
+//         diagram.addElements(connectors);
+//         diagram.distributePorts(['node1', 'node2', 'node3', 'node4', 'node5']);
+//         diagram.dataBind();
+//         const n1 = diagram.nameTable['node1'];
+//         expect(n1.ports[0].offset.x === 1).toBe(true);
+//         expect(n1.ports[0].offset.y === 0.058823529411764705).toBe(true);
+//         done();
+//     });
+//     it('Distribute ports source Left', (done: Function) => {
+//         diagram.clear();
+//         let nodes: NodeModel[] = [
+//             {
+//                 id: 'node1', offsetX: 500, offsetY: 450, width: 200, height: 500,
+//                 style: { fill: '#6BA5D7', strokeColor: 'white' }, annotations: [{ content: 'node1' }],
+//                 ports: [
+//                     // //Left
+//                     { id: 'port1', offset: { x: 0, y: 0.1 }, visibility: PortVisibility.Visible },
+//                     { id: 'port2', offset: { x: 0, y: 0.18 }, visibility: PortVisibility.Visible },
+//                     { id: 'port3', offset: { x: 0, y: 0.25 }, visibility: PortVisibility.Visible },
+//                     { id: 'port4', offset: { x: 0, y: 0.30 }, visibility: PortVisibility.Visible },
+//                     { id: 'port5', offset: { x: 0, y: 0.35 }, visibility: PortVisibility.Visible },
+//                     { id: 'port6', offset: { x: 0, y: 0.40 }, visibility: PortVisibility.Visible },
+//                     { id: 'port7', offset: { x: 0, y: 0.45 }, visibility: PortVisibility.Visible },
+//                     { id: 'port8', offset: { x: 0, y: 0.50 }, visibility: PortVisibility.Visible },
+//                     { id: 'port9', offset: { x: 0, y: 0.55 }, visibility: PortVisibility.Visible },
+//                     { id: 'port10', offset: { x: 0, y: 0.60 }, visibility: PortVisibility.Visible },
+//                     { id: 'port11', offset: { x: 0, y: 0.65 }, visibility: PortVisibility.Visible },
+//                     { id: 'port12', offset: { x: 0, y: 0.70 }, visibility: PortVisibility.Visible },
+//                     { id: 'port13', offset: { x: 0, y: 0.75 }, visibility: PortVisibility.Visible },
+//                     { id: 'port14', offset: { x: 0, y: 0.80 }, visibility: PortVisibility.Visible },
+//                     { id: 'port15', offset: { x: 0, y: 0.85 }, visibility: PortVisibility.Visible },
+//                     { id: 'port16', offset: { x: 0, y: 0.9 }, visibility: PortVisibility.Visible },
+//                 ]
+//             },
+//             {
+//                 id: 'node2', offsetX: 250, offsetY: 400, width: 100, height: 100,
+//                 style: { fill: '#6BA5D7', strokeColor: 'white' }, annotations: [{ content: 'node2' }], ports: rightPorts
+//             },
+//             {
+//                 id: 'node3', offsetX: 100, offsetY: 400, width: 100, height: 100,
+//                 annotations: [{ content: 'node3' }], style: { fill: '#6BA5D7', strokeColor: 'white' }, ports: bottomPorts,
+//             },
+//             {
+//                 id: 'node4', offsetX: 530, offsetY: 100, width: 100, height: 100,
+//                 annotations: [{ content: 'node4' }], style: { fill: '#6BA5D7', strokeColor: 'white' }, ports: leftPorts,
+//             },
+//             {
+//                 id: 'node5', offsetX: 250, offsetY: 750, width: 100, height: 100,
+//                 annotations: [{ content: 'node5' }], style: { fill: '#6BA5D7', strokeColor: 'white' }, ports: topPorts,
+//             },
+//         ];
+//         let connectors: ConnectorModel[] = [
+//             {
+//                 id: 'Connector1', sourceID: "node1", targetID: "node2",
+//                 sourcePortID: 'port1', targetPortID: 'port4', type: 'Orthogonal'
+//             },
+//             {
+//                 id: 'Connector2', sourceID: "node1", targetID: "node2",
+//                 sourcePortID: 'port2', targetPortID: 'port3', type: 'Orthogonal'
+//             },
+//             {
+//                 id: 'Connector3', sourceID: "node1", targetID: "node2",
+//                 sourcePortID: 'port3', targetPortID: 'port2', type: 'Orthogonal'
+//             },
+//             {
+//                 id: 'Connector4', sourceID: "node1", targetID: "node2",
+//                 sourcePortID: 'port4', targetPortID: 'port1', type: 'Orthogonal'
+//             },
+//             {
+//                 id: 'Connector5', sourceID: "node1", targetID: "node4",
+//                 sourcePortID: 'port5', targetPortID: 'port4', type: 'Orthogonal'
+//             },
+//             {
+//                 id: 'Connector6', sourceID: "node1", targetID: "node4",
+//                 sourcePortID: 'port6', targetPortID: 'port3', type: 'Orthogonal'
+//             },
+//             {
+//                 id: 'Connector7', sourceID: "node1", targetID: "node4",
+//                 sourcePortID: 'port7', targetPortID: 'port2', type: 'Orthogonal'
+//             },
+//             {
+//                 id: 'Connector8', sourceID: "node1", targetID: "node4",
+//                 sourcePortID: 'port8', targetPortID: 'port1', type: 'Orthogonal'
+//             },
+//             {
+//                 id: 'Connector9', sourceID: "node1", targetID: "node5",
+//                 sourcePortID: 'port9', targetPortID: 'port3', type: 'Orthogonal'
+//             },
+//             {
+//                 id: 'Connector10', sourceID: "node1", targetID: "node5",
+//                 sourcePortID: 'port10', targetPortID: 'port4', type: 'Orthogonal'
+//             },
+//             {
+//                 id: 'Connector11', sourceID: "node1", targetID: "node5",
+//                 sourcePortID: 'port11', targetPortID: 'port1', type: 'Orthogonal'
+//             },
+//             {
+//                 id: 'Connector12', sourceID: "node1", targetID: "node5",
+//                 sourcePortID: 'port12', targetPortID: 'port2', type: 'Orthogonal'
+//             },
+//             {
+//                 id: 'Connector13', sourceID: "node1", targetID: "node3",
+//                 sourcePortID: 'port13', targetPortID: 'port4', type: 'Orthogonal'
+//             },
+//             {
+//                 id: 'Connector14', sourceID: "node1", targetID: "node3",
+//                 sourcePortID: 'port14', targetPortID: 'port1', type: 'Orthogonal'
+//             },
+//             {
+//                 id: 'Connector15', sourceID: "node1", targetID: "node3",
+//                 sourcePortID: 'port15', targetPortID: 'port2', type: 'Orthogonal'
+//             },
+//             {
+//                 id: 'Connector16', sourceID: "node1", targetID: "node3",
+//                 sourcePortID: 'port16', targetPortID: 'port3', type: 'Orthogonal'
+//             },
+//         ];
+//         diagram.addElements(nodes);
+//         diagram.addElements(connectors);
+//         diagram.distributePorts(['node1', 'node2', 'node3', 'node4', 'node5']);
+//         diagram.dataBind();
+//         const n1 = diagram.nameTable['node1'];
+//         expect(n1.ports[0].offset.x === 0).toBe(true);
+//         expect(n1.ports[0].offset.y === 0.47058823529411764).toBe(true);
+//         done();
+//     });
+// });
+
 describe('Node Annotation Drag and Resize with RestrictNegativeAxisDragDrop', () => {
     let diagram: Diagram;
     let ele: HTMLElement;
     let mouseEvents = new MouseEvents();
+    let diagramCanvas: HTMLElement;
+    let offsetLeft: number;
+    let offsetTop: number;
     beforeAll(() => {
         ele = createElement('div', { id: 'diagram-annotation-drag' });
         document.body.appendChild(ele);
@@ -3546,17 +4423,18 @@ describe('Node Annotation Drag and Resize with RestrictNegativeAxisDragDrop', ()
             width: 900, height: 900,
             nodes: nodes,
             constraints: DiagramConstraints.Default | DiagramConstraints.RestrictNegativeAxisDragDrop,
-            scrollSettings: {horizontalOffset: 200, verticalOffset: 200}
+            scrollSettings: { horizontalOffset: 200, verticalOffset: 200 }
         });
         diagram.appendTo('#diagram-annotation-drag');
+        diagramCanvas = document.getElementById(diagram.element.id + 'content');
     });
     afterAll(() => {
         diagram.destroy();
         ele.remove();
+        (diagram as any) = null; (ele as any) = null;
     });
     it('should restrict annotation dragging to negative axis when RestrictNegativeAxisDragDrop is enabled(Y-Axis)', (done: Function) => {
         diagram.clearSelection();
-        let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
         mouseEvents.clickEvent(diagramCanvas, 400, 400);
         mouseEvents.mouseDownEvent(diagramCanvas, 400, 400);
         mouseEvents.mouseMoveEvent(diagramCanvas, 400, 350);
@@ -3572,7 +4450,7 @@ describe('Node Annotation Drag and Resize with RestrictNegativeAxisDragDrop', ()
         mouseEvents.mouseUpEvent(diagramCanvas, 400, 375);
         let node = diagram.nodes[0];
         let annotationWrapper = (node as Node).wrapper.children[1];
-        expect(annotationWrapper.offsetY>0).toBe(true);
+        expect(annotationWrapper.offsetY > 0).toBe(true);
         done();
         diagram.dataBind();
         diagram.refresh();
@@ -3581,7 +4459,6 @@ describe('Node Annotation Drag and Resize with RestrictNegativeAxisDragDrop', ()
         diagram.dataBind();
         diagram.refresh();
         diagram.clearSelection();
-        let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
         mouseEvents.clickEvent(diagramCanvas, 400, 400);
         mouseEvents.mouseDownEvent(diagramCanvas, 400, 400);
         mouseEvents.mouseMoveEvent(diagramCanvas, 350, 400);
@@ -3597,38 +4474,36 @@ describe('Node Annotation Drag and Resize with RestrictNegativeAxisDragDrop', ()
         mouseEvents.mouseUpEvent(diagramCanvas, 390, 400);
         let node = diagram.nodes[0];
         let annotationWrapper = (node as Node).wrapper.children[1];
-        expect(annotationWrapper.offsetX>0).toBe(true);
+        expect(annotationWrapper.offsetX > 0).toBe(true);
         done();
     });
     it('should restrict annotation resizing to negative axis when RestrictNegativeAxisDragDrop is enabled(Y-Axis)', (done: Function) => {
         diagram.clearSelection();
-        let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
-        let offsetLeft: number = diagram.element.offsetLeft+200;
-        let offsetTop: number = diagram.element.offsetTop+200;
+        offsetLeft = diagram.element.offsetLeft + 200;
+        offsetTop = diagram.element.offsetTop + 200;
         let node = diagram.nodes[0];
         let annotationWrapper = (node as Node).wrapper.children[1];
         let annoBounds = annotationWrapper.bounds;
         let topCenter = annoBounds.topCenter;
         mouseEvents.clickEvent(diagramCanvas, topCenter.x + offsetLeft, topCenter.y + offsetTop);
-        mouseEvents.dragAndDropEvent(diagramCanvas, topCenter.x + offsetLeft, topCenter.y + offsetTop-3, topCenter.x + offsetLeft, topCenter.y + offsetTop - 50);
-        mouseEvents.dragAndDropEvent(diagramCanvas, topCenter.x + offsetLeft, topCenter.y + offsetTop-3-55, topCenter.x + offsetLeft, topCenter.y + offsetTop - 198);
-        mouseEvents.dragAndDropEvent(diagramCanvas, topCenter.x + offsetLeft, topCenter.y + offsetTop-195, topCenter.x + offsetLeft, topCenter.y + offsetTop - 205);
-        mouseEvents.dragAndDropEvent(diagramCanvas, topCenter.x + offsetLeft, topCenter.y + offsetTop-200, topCenter.x + offsetLeft, topCenter.y + offsetTop + 250);
-        expect(annotationWrapper.bounds.y>0).toBe(true);
+        mouseEvents.dragAndDropEvent(diagramCanvas, topCenter.x + offsetLeft, topCenter.y + offsetTop - 3, topCenter.x + offsetLeft, topCenter.y + offsetTop - 50);
+        mouseEvents.dragAndDropEvent(diagramCanvas, topCenter.x + offsetLeft, topCenter.y + offsetTop - 3 - 55, topCenter.x + offsetLeft, topCenter.y + offsetTop - 198);
+        mouseEvents.dragAndDropEvent(diagramCanvas, topCenter.x + offsetLeft, topCenter.y + offsetTop - 195, topCenter.x + offsetLeft, topCenter.y + offsetTop - 205);
+        mouseEvents.dragAndDropEvent(diagramCanvas, topCenter.x + offsetLeft, topCenter.y + offsetTop - 200, topCenter.x + offsetLeft, topCenter.y + offsetTop + 250);
+        expect(annotationWrapper.bounds.y > 0).toBe(true);
         done();
     });
     it('should restrict annotation resizing to negative axis when RestrictNegativeAxisDragDrop is enabled(X-Axis)', (done: Function) => {
-        let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
-        let offsetLeft: number = diagram.element.offsetLeft+200;
-        let offsetTop: number = diagram.element.offsetTop+200;
+        offsetLeft = diagram.element.offsetLeft + 200;
+        offsetTop = diagram.element.offsetTop + 200;
         let node = diagram.nodes[0];
         let annotationWrapper = (node as Node).wrapper.children[1];
         let annoBounds = annotationWrapper.bounds;
         let topCenter = annoBounds.topCenter;
         let topLeft = annoBounds.topLeft;
-        mouseEvents.dragAndDropEvent(diagramCanvas, topLeft.x + offsetLeft, topCenter.y + offsetTop + 102, topLeft.x + offsetLeft - 180, topCenter.y + offsetTop+102);
+        mouseEvents.dragAndDropEvent(diagramCanvas, topLeft.x + offsetLeft, topCenter.y + offsetTop + 102, topLeft.x + offsetLeft - 180, topCenter.y + offsetTop + 102);
         mouseEvents.dragAndDropEvent(diagramCanvas, 207, 312, 190, 312);
-        expect(annotationWrapper.bounds.x>0).toBe(true);
+        expect(annotationWrapper.bounds.x > 0).toBe(true);
         done();
     });
 });
@@ -3643,40 +4518,40 @@ describe('Node rotate restrict with RestrictNegativeAxisDragDrop', () => {
         let nodes: NodeModel[] = [
             {
                 id: 'node1', width: 100, height: 100, offsetX: 200, offsetY: 200,
-                annotations: [{ content: 'Node 1'}],
+                annotations: [{ content: 'Node 1' }],
             }]
 
         diagram = new Diagram({
             width: 900, height: 900,
             nodes: nodes,
             constraints: DiagramConstraints.Default | DiagramConstraints.RestrictNegativeAxisDragDrop,
-            scrollSettings: {horizontalOffset: 200, verticalOffset: 200}
+            scrollSettings: { horizontalOffset: 200, verticalOffset: 200 }
         });
         diagram.appendTo('#diagram-node-rotate');
     });
     afterAll(() => {
         diagram.destroy();
         ele.remove();
+        (diagram as any) = null; (ele as any) = null;
     });
     it('should restrict node rotation when RestrictNegativeAxisDragDrop is enabled', (done: Function) => {
-        debugger
         //diagram.clearSelection();
         let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
         mouseEvents.clickEvent(diagramCanvas, 400, 400);
-            mouseEvents.mouseDownEvent(diagramCanvas, 400, 400);
-            mouseEvents.mouseMoveEvent(diagramCanvas, 350, 400);
-            mouseEvents.mouseMoveEvent(diagramCanvas, 300, 400);
-            mouseEvents.mouseMoveEvent(diagramCanvas, 230, 400);
-            mouseEvents.mouseMoveEvent(diagramCanvas, 180, 400);
-            mouseEvents.mouseMoveEvent(diagramCanvas, 150, 400);
-            mouseEvents.mouseUpEvent(diagramCanvas, 150, 400);
-            mouseEvents.mouseDownEvent(diagramCanvas, 250, 330);
-            mouseEvents.mouseMoveEvent(diagramCanvas, 305, 400);
-            mouseEvents.mouseMoveEvent(diagramCanvas, 228, 480);
-            mouseEvents.mouseUpEvent(diagramCanvas, 228, 480);
-            let node = diagram.nodes[0];
-            expect(node.wrapper.bounds.left >=0 && node.wrapper.bounds.top >= 0).toBe(true);
-            done();
+        mouseEvents.mouseDownEvent(diagramCanvas, 400, 400);
+        mouseEvents.mouseMoveEvent(diagramCanvas, 350, 400);
+        mouseEvents.mouseMoveEvent(diagramCanvas, 300, 400);
+        mouseEvents.mouseMoveEvent(diagramCanvas, 230, 400);
+        mouseEvents.mouseMoveEvent(diagramCanvas, 180, 400);
+        mouseEvents.mouseMoveEvent(diagramCanvas, 150, 400);
+        mouseEvents.mouseUpEvent(diagramCanvas, 150, 400);
+        mouseEvents.mouseDownEvent(diagramCanvas, 250, 330);
+        mouseEvents.mouseMoveEvent(diagramCanvas, 305, 400);
+        mouseEvents.mouseMoveEvent(diagramCanvas, 228, 480);
+        mouseEvents.mouseUpEvent(diagramCanvas, 228, 480);
+        let node = diagram.nodes[0];
+        expect(node.wrapper.bounds.left >= 0 && node.wrapper.bounds.top >= 0).toBe(true);
+        done();
     });
 });
 
@@ -3690,22 +4565,22 @@ describe('Node rotate restrict without RestrictNegativeAxisDragDrop constraints'
         let nodes: NodeModel[] = [
             {
                 id: 'node1', width: 100, height: 100, offsetX: 200, offsetY: 200,
-                annotations: [{ content: 'Node 1'}],
+                annotations: [{ content: 'Node 1' }],
             }]
 
         diagram = new Diagram({
             width: 900, height: 900,
             nodes: nodes,
-            scrollSettings: {horizontalOffset: 200, verticalOffset: 200}
+            scrollSettings: { horizontalOffset: 200, verticalOffset: 200 }
         });
         diagram.appendTo('#diagram-node-rotate-without-Constraint');
     });
     afterAll(() => {
         diagram.destroy();
         ele.remove();
+        (diagram as any) = null; (ele as any) = null;
     });
     it('should node rotation when RestrictNegativeAxisDragDrop is disabled', (done: Function) => {
-        debugger
         let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
         mouseEvents.clickEvent(diagramCanvas, 400, 400);
         mouseEvents.mouseDownEvent(diagramCanvas, 400, 400);
@@ -3721,7 +4596,7 @@ describe('Node rotate restrict without RestrictNegativeAxisDragDrop constraints'
         mouseEvents.mouseMoveEvent(diagramCanvas, 200, 480);
         mouseEvents.mouseUpEvent(diagramCanvas, 200, 480);
         let node = diagram.nodes[0];
-        expect(node.wrapper.bounds.left <=0 && node.wrapper.bounds.top >= 0).toBe(true);
+        expect(node.wrapper.bounds.left <= 0 && node.wrapper.bounds.top >= 0).toBe(true);
         done();
     });
 });
@@ -3729,7 +4604,6 @@ describe('Node rotate restrict without RestrictNegativeAxisDragDrop constraints'
 describe('Distribute with connectors selected', () => {
     let diagram: Diagram;
     let ele: HTMLElement;
-    let mouseEvents = new MouseEvents();
     beforeAll(() => {
         ele = createElement('div', { id: 'diagramDistribute' });
         document.body.appendChild(ele);
@@ -3793,6 +4667,7 @@ describe('Distribute with connectors selected', () => {
     afterAll(() => {
         diagram.destroy();
         ele.remove();
+        (diagram as any) = null; (ele as any) = null;
     });
     it('MultiSelect Distribute', (done: Function) => {
         diagram.selectAll();

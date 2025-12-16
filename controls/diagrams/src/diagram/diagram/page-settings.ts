@@ -5,6 +5,7 @@ import { MarginModel } from '../core/appearance-model';
 import { Margin } from '../core/appearance';
 import { Rect } from '../primitives/rect';
 import { BackgroundModel, FitOptionsModel } from './page-settings-model';
+import { ScrollValues } from '../objects/interface/IElement';
 
 
 /**
@@ -337,6 +338,7 @@ export class ScrollSettings extends ChildProperty<ScrollSettings> {
      */
     @Property(0.2)
     public zoomFactor: number;
+
 }
 
 

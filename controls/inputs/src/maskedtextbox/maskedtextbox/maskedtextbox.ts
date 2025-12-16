@@ -1,4 +1,4 @@
-import { Component, Event, Property, EmitType, NotifyPropertyChanges, INotifyPropertyChanged, BaseEventArgs } from '@syncfusion/ej2-base';
+import { Component, Event, Property, EmitType, NotifyPropertyChanges, INotifyPropertyChanged, BaseEventArgs, selectAll, compile, select, append } from '@syncfusion/ej2-base';
 import { isNullOrUndefined, formatUnit, getValue, setValue, addClass, detach } from '@syncfusion/ej2-base';
 import { removeClass , Browser, closest} from '@syncfusion/ej2-base';
 import { Input, InputObject, FloatLabelType } from '../../input/input';
@@ -56,6 +56,9 @@ export class MaskedTextBox extends Component<HTMLInputElement> implements INotif
     private preventChange: boolean = false;
     private isClicked: boolean = false;
     private clearButton: HTMLElement;
+    private prependedElement: HTMLElement;
+    private appendedElement: HTMLElement;
+    private iconTemplateFunction: Function;
 
     /**
      * Gets or sets the CSS classes to root element of the MaskedTextBox which helps to customize the
@@ -191,6 +194,32 @@ export class MaskedTextBox extends Component<HTMLInputElement> implements INotif
      */
     @Property(null)
     public customCharacters: { [x: string]: Object };
+
+    /**
+     * Specifies the HTML template string for custom elements to prepend to the MaskedTextBox input.
+     * Supports icons, buttons, or any valid HTML. Updates dynamically on property change.
+     *
+     * @default null
+     * @angularType string | object
+     * @reactType string | function | JSX.Element
+     * @vueType string | function
+     * @aspType string
+     */
+    @Property(null)
+    public prependTemplate: string | Function;
+
+    /**
+     * Specifies the HTML template string for custom elements to append to the MaskedTextBox input.
+     * Supports icons, buttons, or any valid HTML. Updates dynamically on property change.
+     *
+     * @default null
+     * @angularType string | object
+     * @reactType string | function | JSX.Element
+     * @vueType string | function
+     * @aspType string
+     */
+    @Property(null)
+    public appendTemplate: string | Function;
 
     /**
      * Triggers when the MaskedTextBox component is created.
@@ -352,6 +381,8 @@ export class MaskedTextBox extends Component<HTMLInputElement> implements INotif
                 this.element.setAttribute('aria-label', 'maskedtextbox');
             }
             this.updateFloatLabelOverflowWidth();
+            this.createPrependTemplate();
+            this.createAppendTemplate();
             this.renderComplete();
         }
     }
@@ -538,6 +569,7 @@ export class MaskedTextBox extends Component<HTMLInputElement> implements INotif
                 break;
             case 'enableRtl':
                 Input.setEnableRtl(newProp.enableRtl, [this.inputObj.container]);
+                this.handleFloatLabel();
                 break;
             case 'customCharacters':
                 this.customCharacters = newProp.customCharacters;
@@ -556,6 +588,12 @@ export class MaskedTextBox extends Component<HTMLInputElement> implements INotif
                 this.updateHTMLAttrToElement();
                 this.updateHTMLAttrToWrapper();
                 this.checkHtmlAttributes(true);
+                break;
+            case 'prependTemplate':
+                this.updatePrependTemplate();
+                break;
+            case 'appendTemplate':
+                this.updateAppendTemplate();
                 break;
             case 'mask': {
                 const strippedValue: string = this.value;
@@ -588,6 +626,102 @@ export class MaskedTextBox extends Component<HTMLInputElement> implements INotif
             }
         }
         this.preventChange = this.isAngular && this.preventChange ? !this.preventChange : this.preventChange;
+    }
+
+    private updatePrependTemplate(): void {
+        this.removePrependTemplate();
+        this.createPrependTemplate();
+    }
+
+    private updateAppendTemplate(): void {
+        this.removeAppendTemplate();
+        this.createAppendTemplate();
+    }
+
+    private templateComplier(iconTemplate: string | Function): Function {
+        if (iconTemplate) {
+            try {
+                if (typeof iconTemplate !== 'function' && selectAll(iconTemplate, document).length) {
+                    return compile(select(iconTemplate, document).innerHTML.trim());
+                } else {
+                    return compile(iconTemplate);
+                }
+            } catch (exception) {
+                return compile(iconTemplate);
+            }
+        }
+        return undefined;
+    }
+
+    private createPrependTemplate(): void {
+        if (!isNullOrUndefined(this.prependTemplate)) {
+            const container: HTMLElement = this.inputObj.container;
+            this.prependedElement = this.createElement('div', { className: 'e-prepend-template' });
+            this.iconTemplateFunction = this.templateComplier(this.prependTemplate);
+            const iconTemplateCompiler: Function = this.iconTemplateFunction(null, this, 'template', this.element.id + 'Template', this.isStringTemplate, null, this.prependedElement);
+            if (iconTemplateCompiler) {
+                const fromElements: HTMLElement[] = [].slice.call(iconTemplateCompiler);
+                append(fromElements, this.prependedElement);
+            }
+            const inputElement: HTMLElement = container.querySelector('input');
+            container.classList.add('e-prepend-wrapper');
+            if (inputElement) {
+                container.insertBefore(this.prependedElement, inputElement);
+            } else {
+                container.insertBefore(this.prependedElement, container.firstChild);
+            }
+            this.handleFloatLabel();
+            this.renderReactTemplates();
+        }
+    }
+
+    private createAppendTemplate(): void {
+        if (!isNullOrUndefined(this.appendTemplate)) {
+            const container: HTMLElement = this.inputObj.container;
+            this.appendedElement = this.createElement('div', { className: 'e-append-template' });
+            this.iconTemplateFunction = this.templateComplier(this.appendTemplate);
+            const iconTemplateCompiler: Function = this.iconTemplateFunction(null, this, 'template', this.element.id + 'Template', this.isStringTemplate, null, this.appendedElement);
+            if (iconTemplateCompiler) {
+                const fromElements: HTMLElement[] = [].slice.call(iconTemplateCompiler);
+                append(fromElements, this.appendedElement);
+            }
+            container.classList.add('e-append-wrapper');
+            container.appendChild(this.appendedElement);
+            this.handleFloatLabel();
+            this.renderReactTemplates();
+        }
+    }
+
+    private handleFloatLabel(): void {
+        const floatLabelElement: HTMLElement = this.inputObj.container.querySelector('.e-float-text');
+        if (floatLabelElement && this.floatLabelType === 'Auto') {
+            setTimeout(function(): void {
+                if (floatLabelElement && this.prependedElement && !this.enableRtl) {
+                    floatLabelElement.style.marginLeft = `${this.prependedElement.offsetWidth}px`;
+                    floatLabelElement.style.marginRight = '0';
+                } else if (floatLabelElement && this.prependedElement && this.enableRtl) {
+                    floatLabelElement.style.marginRight = `${this.prependedElement.offsetWidth}px`;
+                    floatLabelElement.style.marginLeft = '0';
+                }
+                if (floatLabelElement && floatLabelElement.classList.contains('e-label-bottom')) {
+                    floatLabelElement.style.width = this.element.offsetWidth + 'px';
+                }
+            }.bind(this), 5);
+        }
+    }
+
+    private removePrependTemplate(): void {
+        if (!isNullOrUndefined(this.prependedElement)) {
+            detach(this.prependedElement);
+            this.prependedElement = null;
+        }
+    }
+
+    private removeAppendTemplate(): void {
+        if (!isNullOrUndefined(this.appendedElement)) {
+            detach(this.appendedElement);
+            this.appendedElement = null;
+        }
     }
 
     private updateValue(strippedVal: string): void {
@@ -659,6 +793,9 @@ export class MaskedTextBox extends Component<HTMLInputElement> implements INotif
      */
     public destroy(): void {
         unwireEvents.call(this);
+        this.removePrependTemplate();
+        this.removeAppendTemplate();
+        this.clearTemplate();
         if (this.showClearButton) {
             this.clearButton = document.getElementsByClassName('e-clear-icon')[0] as HTMLElement;
         }

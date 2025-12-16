@@ -1,5 +1,5 @@
-@import 'ej2-base/styles/definition/tailwind3.scss';
-@import 'tailwind3-definition.scss';
-@import 'icons/tailwind3.scss';
-@import 'all.scss';
-@import 'bigger.scss';
+@use 'ej2-base/styles/definition/tailwind3' as *;
+@use 'tailwind3-definition' as *;
+@use 'icons/tailwind3' as *;
+@use 'all' as *;
+@use 'bigger' as *;

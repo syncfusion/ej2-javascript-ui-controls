@@ -1,5 +1,8 @@
 @use 'sass:color';
-
+@use 'ej2-base/styles/common/mixin' as *;
+@use './theme-variables' as *;
+@use 'ej2-buttons/styles/button/theme-variables' as button-vars;
+@use 'ej2-navigations/styles/toolbar/theme-variables' as tbar-vars;
 @include export-module('image-editor-theme') {
   .e-image-editor {
     background: $image-editor-background;
@@ -11,17 +14,30 @@
       & .e-toolbar-item.e-selected .filterwrapper canvas,
       & .e-toolbar-item:hover .filter-wrapper canvas,
       & .e-toolbar-item.e-selected .filter-wrapper canvas {
-        border-color: $btn-active-bgcolor !important; /* stylelint-disable-line declaration-no-important */
+        border-color: button-vars.$btn-active-bgcolor !important; /* stylelint-disable-line declaration-no-important */
       }
 
       & .e-toolbar-item.e-selected .filterwrapper:focus canvas,
       & .e-toolbar-item.e-selected .filter-wrapper:focus canvas {
-        border-color: $btn-active-bgcolor !important; /* stylelint-disable-line declaration-no-important */
+        border-color: button-vars.$btn-active-bgcolor !important; /* stylelint-disable-line declaration-no-important */
       }
     }
 
     & .e-toolbar {
       & .e-toolbar-items {
+        & .e-toolbar-item {
+          &.e-ie-resize-height,
+          &.e-ie-resize-width,
+          &.e-stroke,
+          &.e-frame-stroke,
+          &.e-size,
+          &.e-ie-straighten-span,
+          &.e-ie-straighten-value-span {
+            @if $skin-name == 'tailwind3' {
+              color: $ie-content-text-color;
+            }
+          }
+        }
         & .e-tbar-btn.e-btn {
           & .e-icons {
             @if $skin-name != 'bootstrap4' and $skin-name != 'bootstrap5' and $skin-name != 'bootstrap5.3' and $skin-name != 'bootstrap5-dark' and $skin-name != 'fluent2' {
@@ -44,8 +60,8 @@
           border: none;
           margin-top: $image-editor-ddbtn-margin-top;
           @if $skin-name == 'bootstrap4' or $skin-name == 'bootstrap5' or $skin-name == 'bootstrap5.3' or $skin-name == 'bootstrap5-dark' {
-            background: $tbar-default-bg;
-            color: $tbar-default-icon-color;
+            background: tbar-vars.$tbar-default-bg;
+            color: tbar-vars.$tbar-default-icon-color;
           }
           @if $skin-name == 'highcontrast' or $skin-name == 'highcontrast-light' {
             border: 2px solid #000;
@@ -59,20 +75,20 @@
           }
 
           &:hover {
-            background: $tbar-hover-bg;
+            background: tbar-vars.$tbar-hover-bg;
             box-shadow: none;
             @if $skin-name == 'bootstrap5' or $skin-name == 'bootstrap5.3' {
               color: $secondary-text-color;
             }
             @else {
-              color: $tbar-hover-font;
+              color: tbar-vars.$tbar-hover-font;
             }
           }
 
           &:focus {
-            background: $btn-focus-bgcolor;
+            background: button-vars.$btn-focus-bgcolor;
             box-shadow: none;
-            color: $btn-focus-color;
+            color: button-vars.$btn-focus-color;
             @if $skin-name == 'FluentUI' {
               outline: none !important; /* stylelint-disable-line declaration-no-important */
               box-shadow: inset 0 0 0 1px !important; /* stylelint-disable-line declaration-no-important */
@@ -106,9 +122,9 @@
           }
 
           &:active {
-            background: $btn-active-bgcolor;
+            background: button-vars.$btn-active-bgcolor;
             box-shadow: none;
-            color: $btn-active-color;
+            color: button-vars.$btn-active-color;
           }
         }
 
@@ -149,6 +165,38 @@
             }
           }
         }
+      }
+    }
+
+    & .e-ie-drop-area {
+      & .e-ie-drop-content,
+      & .e-ie-min-drop-content {
+        @if $skin-name == 'tailwind3' {
+          color: $ie-content-text-color;
+        }
+      }
+      .e-ie-drop-browse {
+        @if $skin-name == 'tailwind3' {
+          color: $ie-browse-text-color;
+        }
+      }
+      .e-ie-drop-info {
+        @if $skin-name == 'tailwind3' {
+          color: $ie-drop-info-text-color;
+        }
+      }
+    }
+
+    & .e-ie-finetune-slider-label,
+    & .e-ie-finetune-value-span {
+      @if $skin-name == 'tailwind3' {
+        color: $ie-content-text-color;
+      }
+    }
+
+    & .filter-wrapper {
+      @if $skin-name == 'tailwind3' {
+        color: $ie-content-text-color-alt1;
       }
     }
   }

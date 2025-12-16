@@ -1,3 +1,5 @@
+@use 'ej2-base/styles/common/mixin' as *;
+@use '../fabric-dark-definition' as *;
 @include export-module('pdfviewer-fabric-icons') {
   .e-pdfviewer {
     .e-pv-icon::before {
@@ -103,7 +105,6 @@
     .e-pv-annotation-tools-close-icon::before,
     .e-pv-annotation-popup-close::before {
       content: '\ebe8';
-      font-size: $pv-title-close-font-size;
     }
 
     .e-pv-resize-icon::before {
@@ -558,6 +559,10 @@
     content: '\e20a';
     font-family: 'e-icons';
   }
+  .e-pv-text-redact-icon::before {
+    content: '\e1be';
+    font-family: 'e-icons';
+  }
   .e-pv-redact-pages-icon::before {
     content: '\e93d';
     font-family: 'e-icons';
@@ -576,6 +581,10 @@
   }
   .e-pv-multiple-comment::before {
     content: '\e97e';
+    font-family: 'e-icons';
+  }
+  .e-pv-extract-page-icon::before {
+    content: '\e1c9';
     font-family: 'e-icons';
   }
 }

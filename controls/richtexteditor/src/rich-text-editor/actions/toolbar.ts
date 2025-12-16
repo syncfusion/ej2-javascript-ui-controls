@@ -20,6 +20,7 @@ import { IToolbarStatus, IToolbarItemModel, IToolsItems, IColorPickerRenderArgs 
 import { RichTextEditorModel } from '../base/rich-text-editor-model';
 import { ColorPickerInput } from './color-picker';
 import { ToolbarType, ToolbarItems } from '../../common/enum';
+import { MenuButton } from './menu';
 /**
  * `Toolbar` module is used to handle Toolbar actions.
  */
@@ -39,6 +40,7 @@ export class Toolbar {
     private contentRenderer: IRenderer;
     public dropDownModule: DropDownButtons;
     public colorPickerModule: ColorPickerInput;
+    public menuModule: MenuButton;
     private toolbarActionModule: ToolbarAction;
     protected renderFactory: RendererFactory;
     private keyBoardModule: KeyboardEvents;
@@ -190,6 +192,7 @@ export class Toolbar {
             containerType: ((this.parent.inlineMode.enable) ? 'quick' : 'toolbar'),
             items: this.parent.toolbarSettings.items
         } as IDropDownRenderArgs);
+        this.menuModule.renderMenu(this.parent.toolbarSettings.items, ele, this.parent.inlineMode.enable ? 'Inline' : 'Toolbar');
         this.renderColorPicker({
             container: this.tbElement, containerType: ((this.parent.inlineMode.enable) ? 'quick' : 'toolbar'), items:
                 this.parent.toolbarSettings.items
@@ -266,6 +269,7 @@ export class Toolbar {
                 items: this.parent.toolbarSettings.items
             } as IDropDownRenderArgs);
             this.renderColorPicker({ container: this.tbElement, containerType: 'toolbar', items: this.parent.toolbarSettings.items } as IColorPickerRenderArgs);
+            this.menuModule.renderMenu(this.parent.toolbarSettings.items, this.tbElement, this.parent.inlineMode.enable ? 'Inline' : 'Toolbar');
             this.refreshToolbarOverflow();
         }
         if (this.parent.rootContainer && this.parent.rootContainer.classList.contains('e-source-code-enabled')) {
@@ -515,6 +519,8 @@ export class Toolbar {
             }
             this.dropDownModule = null;
             this.colorPickerModule.destroy();
+            this.menuModule.destroy();
+            this.menuModule = null;
             this.colorPickerModule = null;
             if (this.keyBoardModule) {
                 this.keyBoardModule.destroy();
@@ -618,6 +624,7 @@ export class Toolbar {
         this.dropDownModule = new DropDownButtons(this.parent, this.locator);
         this.toolbarActionModule = new ToolbarAction(this.parent);
         this.colorPickerModule = new ColorPickerInput(this.parent, this.locator);
+        this.menuModule = new MenuButton(this.parent, this.locator);
         this.parent.on(events.initialEnd, this.renderToolbar, this);
         this.parent.on(events.bindOnEnd, this.toolbarBindEvent, this);
         this.parent.on(events.toolbarUpdated, this.updateToolbarStatus, this);

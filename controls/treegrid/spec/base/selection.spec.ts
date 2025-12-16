@@ -1500,3 +1500,73 @@ describe('Check getCheckedRecords after the searching', () => {
         destroy(gridObj);
     });
 });
+
+describe('Bug-980135: Need to check the selection of checkbox when frozen rows are enabled', () => {
+    let gridObj: TreeGrid;
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: sampleData,
+                childMapping: 'subtasks',
+                treeColumnIndex: 1,
+                height: '410',
+                allowSelection: true,
+                frozenRows: 2,
+                selectionSettings: { type: 'Multiple', checkboxOnly: true, persistSelection: true },
+                columns: [
+                    { field: 'taskID', headerText: 'Order ID', isPrimaryKey: true, width: 120, showCheckbox: true },
+                    { field: 'taskName', headerText: 'Customer ID', width: 150 },
+                    { field: 'duration', headerText: 'Freight', type: 'number', width: 150 }
+                ]
+            },
+            done
+        );
+    });
+    it('should select checkbox in one frozen row and one movable row', (done) => {
+        (gridObj.element.querySelectorAll('.e-row')[1].querySelector('input[type="checkbox"]') as any).click();
+        (gridObj.element.querySelectorAll('.e-row')[4].querySelector('input[type="checkbox"]') as any).click();
+        expect(gridObj.getCheckedRecords().length === 2).toBe(true);
+        expect((gridObj.getCheckedRecords() as any)[0].taskID === 2).toBe(true);
+        expect((gridObj.getCheckedRecords() as any)[1].taskID === 5).toBe(true);
+        done();
+    });
+
+    afterAll(() => {
+        destroy(gridObj);
+    });
+});
+
+describe('Bug-980640: Script error on repeated expand/collapse actions', () => {
+    let gridObj: TreeGrid;
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: sampleData,
+                childMapping: 'subtasks',
+                treeColumnIndex: 1,
+                height: '410',
+                allowSelection: true,
+                selectionSettings: { mode: 'Cell' },
+                enableAutoFill: true,
+                columns: [
+                    { field: 'taskID', headerText: 'Order ID', isPrimaryKey: true, width: 120 },
+                    { field: 'taskName', headerText: 'Customer ID', width: 150 },
+                    { field: 'duration', headerText: 'Freight', type: 'number', width: 150 }
+                ]
+            },
+            done
+        );
+    });
+    it('should not throw script error on expand/collapse', (done) => {
+        const errorSpy = spyOn(console, 'error');
+        gridObj.selectCell({ cellIndex: 1, rowIndex: 1 });
+        (gridObj.getRows()[0].getElementsByClassName('e-treegridexpand')[0] as HTMLElement).click();
+        (gridObj.getRows()[0].getElementsByClassName('e-treegridcollapse')[0] as HTMLElement).click();
+        expect(errorSpy).not.toHaveBeenCalled();
+        done();
+    });
+
+    afterAll(() => {
+        destroy(gridObj);
+    });
+});

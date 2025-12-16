@@ -478,6 +478,7 @@ export class Magnification {
                 }
                 if (!this.isInitialLoading) {
                     if (this.previousZoomFactor !== this.zoomFactor) {
+                        this.pdfViewerBase.isSkipZoomValue = true;
                         this.pdfViewer.zoomValue = parseInt((this.zoomFactor * 100).toString(), 10);
                         this.pdfViewer.fireZoomChange();
                     }
@@ -488,6 +489,7 @@ export class Magnification {
             }
             if (!this.isInitialLoading) {
                 if (this.previousZoomFactor !== this.zoomFactor) {
+                    this.pdfViewerBase.isSkipZoomValue = true;
                     this.pdfViewer.zoomValue = parseInt((this.zoomFactor * 100).toString(), 10);
                     this.pdfViewer.fireZoomChange();
                 }
@@ -544,8 +546,10 @@ export class Magnification {
                 this.pdfViewerBase.showPageLoadingIndicator(i, false);
             }
         }
-        for (let i: number = startPageElement; i <= endPageElement; i++) {
-            this.pdfViewerBase.showPageLoadingIndicator(i, true);
+        if (this.zoomFactor >= 1) {
+            for (let i: number = startPageElement; i <= endPageElement; i++) {
+                this.pdfViewerBase.showPageLoadingIndicator(i, true);
+            }
         }
         this.isWaitingPopupUpdated = true;
         if (!this.isPagesZoomed) {
@@ -566,6 +570,11 @@ export class Magnification {
         }
         this.updatePageLocation();
         this.resizeCanvas(this.reRenderPageNumber);
+        if (this.zoomFactor < 1) {
+            for (let i: number = startPageElement; i <= endPageElement; i++) {
+                this.pdfViewerBase.showPageLoadingIndicator(i, true);
+            }
+        }
         this.calculateScrollValuesOnMouse(scrollValue);
         if (this.pdfViewer.textSelectionModule) {
             this.pdfViewer.textSelectionModule.resizeTouchElements();
@@ -727,7 +736,7 @@ export class Magnification {
             this.pdfViewer.textSelectionModule.clearTextSelection();
         }
         if (this.pdfViewer.textSearchModule) {
-            this.pdfViewer.textSearchModule.clearAllOccurrences();
+            this.pdfViewerBase.clearAllTextSearchOccurrences();
         }
         const scrollValue: number = this.pdfViewerBase.viewerContainer.scrollTop;
         this.isAutoZoom = false;
@@ -759,7 +768,7 @@ export class Magnification {
         const currentPageCanvas: HTMLElement = this.pdfViewerBase.getElement('_pageDiv_' + pageIndex);
         if (currentPageCanvas) {
             let pointInViewer: any;
-            const currentPageBounds: ClientRect = currentPageCanvas.getBoundingClientRect();
+            const currentPageBounds: DOMRect = currentPageCanvas.getBoundingClientRect() as DOMRect;
             if (this.pdfViewer.enableRtl && !this.isDoubleTapZoom) {
                 pointInViewer = this.positionInViewer(currentPageBounds.right, currentPageBounds.top);
             }
@@ -796,7 +805,7 @@ export class Magnification {
         const currentPageCanvas: HTMLElement = this.pdfViewerBase.getElement('_pageDiv_' + pageIndex);
         if (currentPageCanvas) {
             let pointInViewer: any;
-            const currentPageBounds: ClientRect = currentPageCanvas.getBoundingClientRect();
+            const currentPageBounds: DOMRect = currentPageCanvas.getBoundingClientRect() as DOMRect;
             if (this.pdfViewer.enableRtl) {
                 pointInViewer = this.positionInViewer(currentPageBounds.right, currentPageBounds.top);
             }
@@ -997,7 +1006,12 @@ export class Magnification {
         });
     }
 
-    private designNewCanvas(currentPageIndex: number): void {
+    /**
+     * @param {number} currentPageIndex - It describes about the current page index
+     * @private
+     * @returns {void}
+     */
+    public designNewCanvas(currentPageIndex: number): void {
         if (this.pdfViewerBase.textLayer) {
             this.pdfViewerBase.textLayer.clearTextLayers();
         }
@@ -1333,8 +1347,9 @@ export class Magnification {
      * @returns {void}
      */
     public magnifyBehaviorKeyDown(event: KeyboardEvent): void {
-        const isMac: boolean = navigator.platform.match(/(Mac|iPhone|iPod|iPad)/i) ? true : false;
+        const isMac: boolean = /ipad|iphone|ipod|mac/.test(navigator.userAgent.toLowerCase()) ? true : false;
         const isCommandKey: boolean = isMac ? event.metaKey : false;
+        const keyCode: number = this.pdfViewerBase.getLegacyKeyCode(event);
         if (event.ctrlKey || isCommandKey) {
             if (event.code === 'Equal') {
                 event.preventDefault();
@@ -1347,13 +1362,13 @@ export class Magnification {
                 this.zoomOut();
             }
         }
-        switch (event.keyCode) {
+        switch (keyCode) {
         case 37: // left arrow
             if (event.ctrlKey || isCommandKey) {
                 event.preventDefault();
                 this.pdfViewerBase.updateScrollTop(0);
             }
-            else if (this.focusOnViewerContainer() && this.formElementcheck() ){
+            else if (this.focusOnViewerContainer() && this.formElementcheck(event) ){
                 event.preventDefault();
                 this.upwardScrollFitPage(this.pdfViewerBase.currentPageNumber - 1);
             }
@@ -1374,7 +1389,7 @@ export class Magnification {
                 event.preventDefault();
                 this.pdfViewerBase.updateScrollTop(this.pdfViewerBase.pageCount - 1);
             }
-            else if (this.focusOnViewerContainer() && this.formElementcheck() ){
+            else if (this.focusOnViewerContainer() && this.formElementcheck(event) ){
                 event.preventDefault();
                 this.downwardScrollFitPage(this.pdfViewerBase.currentPageNumber - 1);
             }
@@ -1406,7 +1421,7 @@ export class Magnification {
             break;
         }
     }
-    private formElementcheck(): boolean {
+    private formElementcheck(event: KeyboardEvent ): boolean {
         const target: HTMLElement = event.target as HTMLElement;
         return (target.offsetParent && target.offsetParent.classList.length > 0 && !target.offsetParent.classList.contains('foreign-object'));
     }

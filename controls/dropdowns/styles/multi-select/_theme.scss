@@ -1,3 +1,6 @@
+@use 'ej2-base/styles/common/mixin' as *;
+@use './theme-variables' as *;
+
 .e-multi-select-wrapper .e-chips.e-chip-selected .e-chips-close::before {
   color: $ddl-sel-chip-close;
 }

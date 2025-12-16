@@ -1,6 +1,6 @@
-@import 'ej2-base/styles/definition/fluent.scss';
-@import '../document-editor/fluent-definition.scss';
-@import 'fluent-definition.scss';
-@import 'icons/fluent.scss';
-@import 'all.scss';
-@import 'bigger.scss';
+@use 'ej2-base/styles/definition/fluent' as *;
+@use '../document-editor/fluent-definition' as *;
+@use 'fluent-definition' as *;
+@use 'icons/fluent' as *;
+@use 'all' as *;
+@use 'bigger' as *;

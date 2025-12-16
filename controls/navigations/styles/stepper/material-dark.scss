@@ -1,6 +1,6 @@
-@import 'ej2-base/styles/definition/material-dark.scss';
-@import 'ej2-popups/styles/tooltip/material-dark-definition.scss';
-@import 'material-dark-definition.scss';
-@import 'icons/material-dark.scss';
-@import 'all.scss';
-@import 'bigger.scss';
+@use 'ej2-base/styles/definition/material-dark' as *;
+@use 'ej2-popups/styles/tooltip/material-dark-definition' as *;
+@use 'material-dark-definition' as *;
+@use 'icons/material-dark' as *;
+@use 'all' as *;
+@use 'bigger' as *;

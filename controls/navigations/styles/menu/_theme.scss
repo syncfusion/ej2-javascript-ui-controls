@@ -1,5 +1,7 @@
 @use 'sass:color';
-@import '../context-menu/theme-mixin.scss';
+@use 'ej2-base/styles/common/mixin' as *;
+@use './theme-variables' as *;
+@use '../context-menu/theme-mixin' as *;
 @include export-module('menu-theme') {
   .e-menu-wrapper,
   .e-menu-container {
@@ -70,10 +72,10 @@
               @include focused-icon-color;
               background: $menu-li-bgcolor;
               @if $skin-name == 'Material3' {
-                border-radius: 2px;
+                border-radius: $menu-foucused-border-radius;
               }
               @if $skin-name == 'fluent2' {
-                border-radius: 4px;
+                border-radius: $menu-foucused-border-radius;
                 &:focus-visible {
                   color: $content-text-color;
                   & .e-caret,
@@ -100,10 +102,10 @@
               background: $menu-li-selection-bgcolor;
             }
             @if $skin-name == 'Material3' {
-              border-radius: 2px;
+              border-radius: $menu-foucused-border-radius;
             }
             @if $skin-name == 'fluent2' {
-              border-radius: 4px;
+              border-radius: $menu-foucused-border-radius;
             }
 
             & .e-caret {
@@ -132,7 +134,7 @@
           &:focus-visible {
             @if $skin-name == 'fluent2' {
               &:not(.e-selected) {
-                border-radius: 4px;
+                border-radius: $menu-foucused-border-radius;
                 background-color: $content-bg-color;
                 box-shadow: $shadow-focus-ring1;
               }
@@ -140,7 +142,7 @@
             @if $skin-name == 'tailwind3' {
               box-shadow: $shadow-focus-ring2;
               background: transparent;
-              border-radius: 4px;
+              border-radius: $menu-li-border-radius;
             }
           }
         }
@@ -178,7 +180,7 @@
             }
             @if $skin-name == 'fluent2' {
               background-color: $flyout-bg-color-hover;
-              border-radius: 4px;
+              border-radius: $menu-foucused-border-radius;
             }
             @if $skin-name == 'tailwind3' {
               & .e-caret,
@@ -228,7 +230,7 @@
             @if $skin-name == 'fluent2' {
               background-color: $flyout-bg-color-focus;
               box-shadow: $shadow-focus-ring1;
-              border-radius: 4px;
+              border-radius: $menu-foucused-border-radius;
             }
             @if $skin-name == 'tailwind3' {
               box-shadow: $shadow-focus-ring2;
@@ -287,7 +289,7 @@
           }
         }
         @else if $skin-name == 'Material3' {
-          border-radius: 2px;
+          border-radius: $menu-foucused-border-radius;
         }
         @else {
           background: $menu-li-bgcolor;
@@ -371,7 +373,7 @@
     }
 
     &.e-inherit {
-      border: 0;
+      border: $menu-border-none;
 
       & .e-menu,
       & .e-menu .e-menu-item .e-menu-icon,

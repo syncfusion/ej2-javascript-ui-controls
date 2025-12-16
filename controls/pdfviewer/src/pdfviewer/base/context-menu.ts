@@ -30,12 +30,29 @@ export class ContextMenu implements IContextMenu {
     private defaultPasteId: string;
     private defaultDeleteId: string;
     private defaultCommentId: string;
-    private defaultUnderlineId: string;
-    private defaultHighlightId: string;
-    private defaultStrikethroughId: string;
-    private defaultSquigglyId: string;
+    /**
+     * @private
+     */
+    public defaultUnderlineId: string;
+    /**
+     * @private
+     */
+    public defaultHighlightId: string;
+    /**
+     * @private
+     */
+    public defaultStrikethroughId: string;
+    /**
+     * @private
+     */
+    public defaultSquigglyId: string;
     private defaultScaleratioId: string;
     private defaultPropertiesId: string;
+    /**
+     * @private
+     */
+    public redactTextId: string;
+    private applyRedactionsId: string;
     private copyShowCustomContextMenuBottom: any;
     public currentTarget: any;
     /**
@@ -62,6 +79,8 @@ export class ContextMenu implements IContextMenu {
         this.defaultSquigglyId = this.pdfViewer.element.id + '_contextmenu_squiggly';
         this.defaultScaleratioId = this.pdfViewer.element.id + '_contextmenu_scaleratio';
         this.defaultPropertiesId = this.pdfViewer.element.id + '_contextmenu_properties';
+        this.redactTextId = this.pdfViewer.element.id + '_contextmenu_redactText';
+        this.applyRedactionsId = this.pdfViewer.element.id + '_contextmenu_redact';
         this.copyContextMenu = [
             { text: this.pdfViewer.localeObj.getConstant('Cut'), iconCss: 'e-pv-cut-icon', id: this.defaultCutId },
             { text: this.pdfViewer.localeObj.getConstant('Copy'), iconCss: 'e-pv-copy-icon', id: this.defaultCopyId },
@@ -69,6 +88,8 @@ export class ContextMenu implements IContextMenu {
             { text: this.pdfViewer.localeObj.getConstant('Underline context'), iconCss: 'e-pv-underline-icon', id: this.defaultUnderlineId },
             { text: this.pdfViewer.localeObj.getConstant('Strikethrough context'), iconCss: 'e-pv-strikethrough-icon', id: this.defaultStrikethroughId },
             { text: this.pdfViewer.localeObj.getConstant('Squiggly context'), iconCss: 'e-pv-squiggly-icon', id: this.defaultSquigglyId },
+            { text: this.pdfViewer.localeObj.getConstant('Redact Text'), iconCss: 'e-pv-text-redact-icon', id: this.redactTextId },
+            { text: this.pdfViewer.localeObj.getConstant('Apply Redactions'), iconCss: 'e-pv-redaction-icon', id: this.applyRedactionsId },
             { text: this.pdfViewer.localeObj.getConstant('Paste'), iconCss: 'e-pv-paste-icon', id: this.defaultPasteId },
             { text: this.pdfViewer.localeObj.getConstant('Delete Context'), iconCss: 'e-pv-delete-icon', id: this.defaultDeleteId },
             { text: this.pdfViewer.localeObj.getConstant('Scale Ratio'), iconCss: 'e-pv-scale-ratio-icon', id: this.defaultScaleratioId },
@@ -84,8 +105,15 @@ export class ContextMenu implements IContextMenu {
      * @returns {void}
      */
     public createContextMenu(): void {
+        if (this.contextMenuElement) {
+            this.contextMenuElement = null;
+        }
         this.contextMenuElement = createElement('ul', { id: this.pdfViewer.element.id + '_context_menu', className: 'e-pv-context-menu' });
         this.pdfViewer.element.appendChild(this.contextMenuElement);
+        if (this.contextMenuObj) {
+            this.contextMenuObj.destroy();
+            this.contextMenuObj = null;
+        }
         this.contextMenuObj = new Context({
             target: '#' + this.pdfViewerBase.viewerContainer.id, items: this.copyContextMenu,
             beforeOpen: this.contextMenuOnBeforeOpen.bind(this), select: this.onMenuItemSelect.bind(this),
@@ -102,9 +130,19 @@ export class ContextMenu implements IContextMenu {
         }
     }
 
+    /**
+     * @param {string[]} items - It describes about the items
+     * @param {boolean} isEnable - It describes about the isEnable boolean
+     * @private
+     * @returns {void}
+     */
+    public updateContextMenuItems(items: string[], isEnable: boolean): void {
+        this.contextMenuObj.enableItems(items, isEnable, true);
+    }
+
     private contextMenuOnCreated(args: Event): void {
         const items: string[] = [this.defaultHighlightId, this.defaultUnderlineId,
-            this.defaultStrikethroughId, this.defaultSquigglyId];
+            this.defaultStrikethroughId, this.defaultSquigglyId, this.redactTextId];
         if (this.pdfViewer.annotationModule) {
             if (!this.pdfViewer.annotationModule.textMarkupAnnotationModule) {
                 this.contextMenuObj.enableItems(items, false, true);
@@ -149,7 +187,8 @@ export class ContextMenu implements IContextMenu {
             this.pdfViewerBase.isFreeTextContextMenu = true;
         }
         this.defaultContextMenuItems = [this.pdfViewer.localeObj.getConstant('Cut'), this.pdfViewer.localeObj.getConstant('Copy'), this.pdfViewer.localeObj.getConstant('Highlight context'),
-            this.pdfViewer.localeObj.getConstant('Underline context'), this.pdfViewer.localeObj.getConstant('Strikethrough context'), this.pdfViewer.localeObj.getConstant('Squiggly context'), this.pdfViewer.localeObj.getConstant('Paste'),
+            this.pdfViewer.localeObj.getConstant('Underline context'), this.pdfViewer.localeObj.getConstant('Strikethrough context'), this.pdfViewer.localeObj.getConstant('Squiggly context'),
+            this.pdfViewer.localeObj.getConstant('Redact Text'), this.pdfViewer.localeObj.getConstant('Paste'),
             this.pdfViewer.localeObj.getConstant('Delete Context'), this.pdfViewer.localeObj.getConstant('Scale Ratio'), this.pdfViewer.localeObj.getConstant('Comment'), this.pdfViewer.localeObj.getConstant('Properties')
         ];
         const customItems: string[] = this.customMenuItems.length > 0 ?
@@ -189,7 +228,7 @@ export class ContextMenu implements IContextMenu {
                 if (this.pdfViewerBase.isFreeTextContextMenu) {
                     this.contextMenuObj.hideItems([this.defaultHighlightId, this.defaultUnderlineId, this.defaultStrikethroughId,
                         this.defaultSquigglyId, this.defaultPropertiesId, this.defaultCommentId,
-                        this.defaultScaleratioId, this.defaultDeleteId], true);
+                        this.defaultScaleratioId, this.defaultDeleteId, this.redactTextId, this.applyRedactionsId], true);
                     this.pdfViewerBase.getElement('_context_menu_separator').classList.add('e-menu-hide');
                     this.pdfViewerBase.getElement('_context_menu_comment_separator').classList.add('e-menu-hide');
                     if (this.pdfViewer.annotation.freeTextAnnotationModule &&
@@ -215,7 +254,10 @@ export class ContextMenu implements IContextMenu {
                         args.cancel = true;
                     }
                     this.contextMenuObj.hideItems([this.defaultCutId, this.defaultPasteId, this.defaultDeleteId,
-                        this.defaultScaleratioId, this.defaultCommentId, this.defaultPropertiesId], true);
+                        this.defaultScaleratioId, this.defaultCommentId, this.defaultPropertiesId, this.applyRedactionsId], true);
+                    if (!this.pdfViewerBase.clientSideRendering) {
+                        this.contextMenuObj.hideItems([this.redactTextId], true);
+                    }
                     this.pdfViewerBase.getElement('_context_menu_separator').classList.add('e-menu-hide');
                     this.pdfViewerBase.getElement('_context_menu_comment_separator').classList.add('e-menu-hide');
                 } else if (this.pdfViewer.selectedItems.annotations.length !== 0 && (this.pdfViewer.selectedItems.annotations[0].shapeAnnotationType === 'HandWrittenSignature' || this.pdfViewer.selectedItems.annotations[0].shapeAnnotationType === 'SignatureText' || this.pdfViewer.selectedItems.annotations[0].shapeAnnotationType === 'SignatureImage' || this.pdfViewer.selectedItems.annotations[0].shapeAnnotationType === 'Path')) {
@@ -251,24 +293,37 @@ export class ContextMenu implements IContextMenu {
                     } else if (this.pdfViewerBase.isCalibrateAnnotationModule() &&
                      this.pdfViewer.annotationModule.measureAnnotationModule.currentAnnotationMode && !currentAnnotSettings) {
                         this.contextMenuObj.hideItems([this.defaultHighlightId, this.defaultUnderlineId,
-                            this.defaultStrikethroughId, this.defaultSquigglyId, this.defaultPropertiesId], true);
+                            this.defaultStrikethroughId, this.defaultSquigglyId, this.defaultPropertiesId,
+                            this.redactTextId, this.applyRedactionsId], true);
                         this.pdfViewerBase.getElement('_context_menu_separator').classList.add('e-menu-hide');
                         this.pdfViewerBase.getElement('_context_menu_comment_separator').classList.remove('e-menu-hide');
                         this.contextMenuObj.enableItems([this.defaultCutId, this.defaultCopyId, this.defaultPasteId,
                             this.defaultDeleteId, this.defaultCommentId], false, true);
                     } else if (annotationModule && annotationModule.textMarkupAnnotationModule &&
                          annotationModule.textMarkupAnnotationModule.currentTextMarkupAnnotation &&
+                         annotationModule.textMarkupAnnotationModule.currentTextMarkupAnnotation.shapeAnnotationType === 'Redaction' &&
+                          !annotationModule.textMarkupAnnotationModule.currentTextMarkupAnnotation.annotationSettings.isLock) {
+                        this.contextMenuObj.hideItems([this.defaultHighlightId, this.defaultUnderlineId, this.defaultStrikethroughId,
+                            this.defaultSquigglyId, this.defaultCutId,
+                            this.defaultCopyId, this.defaultPasteId, this.defaultScaleratioId, this.redactTextId], true);
+                        this.pdfViewerBase.getElement('_context_menu_separator').classList.add('e-menu-hide');
+                        this.pdfViewerBase.getElement('_context_menu_comment_separator').classList.remove('e-menu-hide');
+                        this.contextMenuObj.showItems([this.defaultDeleteId, this.defaultCommentId, this.defaultPropertiesId,
+                            this.applyRedactionsId], true);
+                    } else if (annotationModule && annotationModule.textMarkupAnnotationModule &&
+                         annotationModule.textMarkupAnnotationModule.currentTextMarkupAnnotation &&
                           !annotationModule.textMarkupAnnotationModule.currentTextMarkupAnnotation.annotationSettings.isLock) {
                         this.contextMenuObj.hideItems([this.defaultHighlightId, this.defaultUnderlineId, this.defaultStrikethroughId,
                             this.defaultSquigglyId, this.defaultPropertiesId, this.defaultCutId,
-                            this.defaultCopyId, this.defaultPasteId, this.defaultScaleratioId], true);
+                            this.defaultCopyId, this.defaultPasteId, this.defaultScaleratioId, this.redactTextId,
+                            this.applyRedactionsId], true);
                         this.pdfViewerBase.getElement('_context_menu_separator').classList.add('e-menu-hide');
                         this.pdfViewerBase.getElement('_context_menu_comment_separator').classList.remove('e-menu-hide');
                         this.contextMenuObj.showItems([this.defaultDeleteId, this.defaultCommentId], true);
                     } else if (args.items && args.items.length > 0 && this.pdfViewer.textSelectionModule &&
                          this.pdfViewer.textSelectionModule.isTextSelection && isClickWithinSelectionBounds) {
                         this.contextMenuObj.hideItems([this.defaultCutId, this.defaultPasteId, this.defaultDeleteId,
-                            this.defaultScaleratioId, this.defaultCommentId, this.defaultPropertiesId], true);
+                            this.defaultScaleratioId, this.defaultCommentId, this.defaultPropertiesId, this.applyRedactionsId], true);
                         this.pdfViewerBase.getElement('_context_menu_separator').classList.add('e-menu-hide');
                         this.pdfViewerBase.getElement('_context_menu_comment_separator').classList.add('e-menu-hide');
                     } else {
@@ -277,7 +332,7 @@ export class ContextMenu implements IContextMenu {
                 }
             } else if (this.pdfViewer.textSelectionModule && (this.pdfViewer.contextMenuOption === 'MouseUp')) {
                 this.contextMenuObj.hideItems([this.defaultCutId, this.defaultPasteId, this.defaultDeleteId,
-                    this.defaultScaleratioId, this.defaultCommentId, this.defaultPropertiesId], true);
+                    this.defaultScaleratioId, this.defaultCommentId, this.defaultPropertiesId, this.applyRedactionsId], true);
                 this.pdfViewerBase.getElement('_context_menu_separator').classList.add('e-menu-hide');
                 this.pdfViewerBase.getElement('_context_menu_comment_separator').classList.add('e-menu-hide');
             } else {
@@ -403,7 +458,7 @@ export class ContextMenu implements IContextMenu {
 
     private contextMenuCollection(): MenuItemModel[] {
         return this.contextMenuList = [{ text: 'Cut' }, { text: 'Copy' }, { text: 'Highlight' }, { text: 'Underline' }, { text: 'Strikethrough' },
-            { text: 'Squiggly' }, { text: 'Paste' }, { text: 'Delete' }, { text: 'ScaleRatio' }, { text: 'Comment' }, { text: 'Properties' }];
+            { text: 'Squiggly' }, { text: 'Text Redact' }, { text: 'Paste' }, { text: 'Delete' }, { text: 'ScaleRatio' }, { text: 'Comment' }, { text: 'Properties' }];
     }
     private getEnabledItemCount(ul: HTMLElement): number {
         let enabledItemCount: number = this.copyContextMenu.length;
@@ -445,7 +500,7 @@ export class ContextMenu implements IContextMenu {
             this.contextMenuObj.enableItems([this.defaultPasteId], false, true);
         }
         this.contextMenuObj.hideItems([this.defaultHighlightId, this.defaultUnderlineId, this.defaultStrikethroughId,
-            this.defaultSquigglyId, this.defaultScaleratioId], true);
+            this.defaultSquigglyId, this.defaultScaleratioId, this.redactTextId, this.applyRedactionsId], true);
         if (isProp) {
             if (this.pdfViewer.selectedItems.annotations.length !== 0 && (this.pdfViewer.selectedItems.annotations[0].shapeAnnotationType === 'Distance' || this.pdfViewer.selectedItems.annotations[0].measureType === 'Perimeter' ||
                 this.pdfViewer.selectedItems.annotations[0].subject === 'Perimeter calculation')) {
@@ -454,8 +509,14 @@ export class ContextMenu implements IContextMenu {
                 this.pdfViewer.selectedItems.annotations[0].shapeAnnotationType === 'Radius')) {
                 this.contextMenuObj.showItems([this.defaultScaleratioId], true);
                 this.contextMenuObj.hideItems([this.defaultPropertiesId], true);
-            } else if (this.pdfViewer.selectedItems.annotations.length !== 0 && (this.pdfViewer.selectedItems.annotations[0].shapeAnnotationType === 'Line' || this.pdfViewer.selectedItems.annotations[0].shapeAnnotationType === 'LineWidthArrowHead')) {
+            } else if (this.pdfViewer.selectedItems.annotations.length !== 0 &&
+                (this.pdfViewer.selectedItems.annotations[0].shapeAnnotationType === 'Redaction' ||
+                    this.pdfViewer.selectedItems.annotations[0].shapeAnnotationType === 'Line' ||
+                    this.pdfViewer.selectedItems.annotations[0].shapeAnnotationType === 'LineWidthArrowHead')) {
                 this.contextMenuObj.showItems([this.defaultPropertiesId], true);
+                if (this.pdfViewer.selectedItems.annotations[0].shapeAnnotationType === 'Redaction') {
+                    this.contextMenuObj.showItems([this.applyRedactionsId], true);
+                }
             } else if (this.pdfViewer.selectedItems.formFields.length !== 0 &&
                 this.pdfViewer.selectedItems.formFields[0].formFieldAnnotationType) {
                 this.contextMenuObj.hideItems([this.defaultCommentId], true);
@@ -529,6 +590,7 @@ export class ContextMenu implements IContextMenu {
         this.defaultCommentId = null;
         this.defaultUnderlineId = null;
         this.defaultHighlightId = null;
+        this.redactTextId = null;
         this.defaultStrikethroughId = null;
         this.defaultScaleratioId = null;
         this.defaultPropertiesId = null;

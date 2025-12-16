@@ -1,5 +1,5 @@
-@import 'ej2-base/styles/definition/fluent2.scss';
-@import 'blockeditor/fluent2-definition.scss';
-@import 'blockeditor/icons/fluent2.scss';
-@import 'blockeditor/all.scss';
-@import 'blockeditor/bigger.scss';
+@use 'ej2-base/styles/definition/fluent2' as *;
+@use 'blockeditor/fluent2-definition' as *;
+@use 'blockeditor/icons/fluent2' as *;
+@use 'blockeditor/all' as *;
+@use 'blockeditor/bigger' as *;

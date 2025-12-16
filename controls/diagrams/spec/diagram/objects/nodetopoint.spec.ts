@@ -2,7 +2,6 @@ import { createElement } from '@syncfusion/ej2-base';
 import { Diagram } from '../../../src/diagram/diagram';
 import { NodeModel } from '../../../src/diagram/objects/node-model';
 import { ConnectorModel } from '../../../src/diagram/objects/connector-model';
-import { Segments } from '../../../src/diagram/enum/enum';
 import { Connector } from '../../../src/diagram/index';
 import { profile, inMB, getMemoryProfile } from '../../../spec/common.spec';
 
@@ -60,13 +59,6 @@ describe('Diagram Control', () => {
         { source: { x: 330, y: 270 }, target: { x: 300, y: 250 } },
         { source: { x: 330, y: 330 }, target: { x: 350, y: 300 } },
         { source: { x: 270, y: 330 }, target: { x: 300, y: 350 } }];
-    let fromSourcePort: object = [
-        { source: { x: 0, y: 0 }, target: { x: 250, y: 275 } },
-        { source: { x: 0, y: 0 }, target: { x: 250, y: 300 } },
-        { source: { x: 0, y: 0 }, target: { x: 250, y: 325 } },
-        { source: { x: 0, y: 0 }, target: { x: 275, y: 350 } },
-        { source: { x: 0, y: 0 }, target: { x: 300, y: 350 } },
-        { source: { x: 0, y: 0 }, target: { x: 350, y: 325 } }];
     let fromTargetPort: object = [
         { source: { x: 400, y: 270 }, target: { x: 250, y: 275 } },
         { source: { x: 200, y: 270 }, target: { x: 250, y: 300 } },

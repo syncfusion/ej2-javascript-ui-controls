@@ -308,9 +308,6 @@ export class ToolbarModule {
         case 'getToolbarHeight':
             args.value['obj']['toolbarHeight'] = this.toolbarHeight;
             break;
-        case 'getcurrentImageQuality':
-            args.value['obj']['currentImageQuality'] = this.currentQuality;
-            break;
         case 'setToolbarHeight':
             if (isNullOrUndefined(parent.toolbar) || (parent.toolbar && parent.toolbar.length > 0 && parent.toolbar.indexOf('Open') > -1)) {
                 this.toolbarHeight = args.value['height'];
@@ -4835,9 +4832,9 @@ export class ToolbarModule {
                     isDisabled = order > orderObj['order'] ? true : false;
                 }
                 if (isDisabled) {
-                    document.getElementById(parent.element.id + '_bringToFront').classList.add('e-overlay');
+                    document.getElementById(parent.element.id + '_bringToFront').parentElement.classList.add('e-overlay');
                 } else {
-                    document.getElementById(parent.element.id + '_bringToFront').classList.remove('e-overlay');
+                    document.getElementById(parent.element.id + '_bringToFront').parentElement.classList.remove('e-overlay');
                 }
                 parent.notify('undo-redo', { prop: 'updateUndoRedoStack', onPropertyChange: false});
                 break;
@@ -5723,28 +5720,24 @@ export class ToolbarModule {
         }
         hdrWrapper = canvasWrapper.appendChild(parent.createElement('div', {
             id: id + '_headWrapper',
+            className: 'e-ie-head-wrapper',
             styles: 'position: relative'
         }));
         if (type === 'transparency') {
             labelWrapper = hdrWrapper.appendChild(parent.createElement('label', {
                 id: id + '_labelWrapper',
-                className: 'e-ie-finetune-slider-label',
-                styles: Browser.isDevice ? 'position: absolute; top: 31%; left: calc(50% - 150px); font-size: 15px; text-transform: capitalize; font-weight: 400;'
-                    : 'position: absolute; top: 31%; left: calc(50% - 220px); font-size: 15px; text-transform: capitalize; font-weight: 400;'
+                className: 'e-ie-finetune-slider-label'
             }));
         } else {
             labelWrapper = hdrWrapper.appendChild(parent.createElement('label', {
                 id: id + '_labelWrapper',
-                className: 'e-ie-finetune-slider-label',
-                styles: Browser.isDevice ? ('position: absolute; top: 31%; left: calc(50% - 160px); font-size: 15px; text-transform: capitalize; font-weight: 400;')
-                    : 'position: absolute; top: 25%; left: calc(50% - 226px); font-size: 15px; text-transform: capitalize; font-weight: 400;'
+                className: 'e-ie-finetune-slider-label'
             }));
         }
         labelWrapper.textContent = this.l10n.getConstant(parent.toPascalCase(type === 'transparency' ? 'opacity' : type));
         const sliderWrapper: HTMLElement = hdrWrapper.appendChild(parent.createElement('div', {
             id: id + '_sliderWrapper',
-            className: 'e-ie-finetune-slider-wrap',
-            styles: 'position: absolute'
+            className: 'e-ie-finetune-slider-wrap'
         }));
         let value: number = parent.getCurrAdjustmentValue(type);
         if (isSelect && type === 'straighten' && Browser.isDevice) {
@@ -5797,8 +5790,7 @@ export class ToolbarModule {
         if (type === 'straighten' && Browser.isDevice) {
             const sLabelWrapper: HTMLElement = hdrWrapper.appendChild(parent.createElement('label', {
                 id: id + '_sLabelWrapper',
-                className: 'e-ie-straighten-value-span e-ie-finetune-value-span',
-                styles: 'position: absolute; top: 31%; margin-left: 20px; font-size: 15px; text-transform: capitalize; font-weight: 400;'
+                className: 'e-ie-straighten-value-span e-ie-finetune-value-span'
             }));
             sLabelWrapper.innerHTML = parent.transform.straighten.toString() + '&#176';
             sliderWrapper.parentElement.classList.add('e-straighten-slider');
@@ -5806,9 +5798,7 @@ export class ToolbarModule {
         if (type !== 'straighten') {
             hdrWrapper.appendChild(parent.createElement('label', {
                 id: id + '_finetuneSpan',
-                className: 'e-ie-finetune-value-span',
-                styles: Browser.isDevice ? ('position: absolute; top: 25%; margin-left: 20px; font-size: 15px; text-transform: capitalize; font-weight: 400;') :
-                    'position: absolute; top: 25%; left: calc(50% + 190px); font-size: 15px; text-transform: capitalize; font-weight: 400;'
+                className: 'e-ie-finetune-value-span'
             }));
             sliderWrapper.parentElement.classList.add('e-finetune-slider');
             if (type === 'transparency' && Browser.isDevice) {
@@ -6295,26 +6285,22 @@ export class ToolbarModule {
         }
         hdrWrapper = canvasWrapper.appendChild(parent.createElement('div', {
             id: id + '_headWrapper',
+            className: 'e-ie-head-wrapper',
             styles: 'position: relative'
         }));
         labelWrapper = hdrWrapper.appendChild(parent.createElement('label', {
             id: id + '_labelWrapper',
-            className: 'e-ie-finetune-slider-label',
-            styles: Browser.isDevice ? ('position: absolute; top: 31%; left: calc(50% - 160px); font-size: 15px; text-transform: capitalize; font-weight: 400;')
-                : 'position: absolute; top: 25%; left: calc(50% - 226px); font-size: 15px; text-transform: capitalize; font-weight: 400;'
+            className: 'e-ie-finetune-slider-label'
         }));
         const text: string = type === 'blur' ? this.l10n.getConstant('Blur') : this.l10n.getConstant('PixelSize');
         labelWrapper.textContent = text;
         const sliderWrapper: HTMLElement = hdrWrapper.appendChild(parent.createElement('div', {
             id: id + '_sliderWrapper',
-            className: 'e-ie-finetune-slider-wrap',
-            styles: 'position: absolute'
+            className: 'e-ie-finetune-slider-wrap'
         }));
         hdrWrapper.appendChild(parent.createElement('label', {
             id: id + '_redactSpan',
-            className: 'e-ie-redact-value-span',
-            styles: Browser.isDevice ? ('position: absolute; top: 30%; margin-left: 20px; font-size: 15px; text-transform: capitalize; font-weight: 400;') :
-                'position: absolute; top: 30%; left: calc(50% + 190px); font-size: 15px; text-transform: capitalize; font-weight: 400;'
+            className: 'e-ie-redact-value-span'
         }));
         sliderWrapper.parentElement.classList.add('e-finetune-slider');
         const value: number = parent.activeObj.redactType === 'blur' ? parent.activeObj.redactBlur :
@@ -6352,6 +6338,8 @@ export class ToolbarModule {
             }
             const ht: number = (parent.element.querySelector('#' + id + '_canvasWrapper') as HTMLElement).offsetHeight;
             (contextualToolbarArea as HTMLElement).style.top = this.toolbarHeight + 1 + ht - cHt + 'px';
+        } else {
+            (contextualToolbarArea as HTMLElement).style.top = parent.element.querySelector('#' + parent.element.id + '_toolbarArea').clientHeight + 'px';
         }
     }
 }

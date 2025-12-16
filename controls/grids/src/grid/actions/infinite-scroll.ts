@@ -626,8 +626,17 @@ export class InfiniteScroll implements IAction {
     }
 
     private getEditedRowObject(): Row<Column> {
-        const rowObjects: Row<Column>[] = this.parent.getRowsObject();
+        let rowObjects: Row<Column>[] = this.parent.getRowsObject();
         let editedrow: Row<Column>;
+        if (this.parent.pinnedTopRowModels.length && this.editRowIndex < this.parent.pinnedTopRowModels.length) {
+            rowObjects = this.parent.pinnedTopRowModels;
+            for (let i: number = 0; i < rowObjects.length; i++) {
+                if (rowObjects[parseInt(i.toString(), 10)].index === this.editRowIndex) {
+                    editedrow = rowObjects[parseInt(i.toString(), 10)];
+                    return editedrow;
+                }
+            }
+        }
         for (let i: number = 0; i < rowObjects.length; i++) {
             if (rowObjects[parseInt(i.toString(), 10)].index === this.editRowIndex) {
                 editedrow = rowObjects[parseInt(i.toString(), 10)];

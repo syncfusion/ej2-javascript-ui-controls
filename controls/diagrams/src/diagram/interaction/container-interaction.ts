@@ -396,10 +396,10 @@ export function addChildToContainer(diagram: Diagram, parent: NodeModel, node: N
         }
         const child: string | NodeModel = (diagram.nodes.indexOf(node) !== -1) ? node.id : node;
         if (parent.container.type === 'Canvas' && !historyAction) {
-            const left: number = (node.wrapper.offsetX - node.wrapper.actualSize.width / 2) -
-                (parent.wrapper.offsetX - parent.wrapper.actualSize.width / 2);
-            const top: number = (node.wrapper.offsetY - node.wrapper.actualSize.height / 2) -
-                (parent.wrapper.offsetY - parent.wrapper.actualSize.height / 2);
+            const left: number = (node.wrapper.offsetX - node.wrapper.actualSize.width * node.pivot.x) -
+                (parent.wrapper.offsetX - parent.wrapper.actualSize.width * parent.wrapper.pivot.x);
+            const top: number = (node.wrapper.offsetY - node.wrapper.actualSize.height * node.pivot.y) -
+                (parent.wrapper.offsetY - parent.wrapper.actualSize.height * parent.wrapper.pivot.y);
             node.margin.left = left; node.margin.top = top;
         } else if (swimlane) {
             const swimLaneBounds: Rect = swimlane.wrapper.bounds;

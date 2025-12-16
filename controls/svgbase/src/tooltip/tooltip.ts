@@ -372,6 +372,14 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
     public shapes: TooltipShape[];
 
     /**
+     * imageUrl for marker.
+     *
+     * @private
+     */
+    @Property('')
+    public markerImage: string;
+
+    /**
      * Location for Tooltip.
      *
      * @private
@@ -745,7 +753,7 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
                         : '';
                     markerGroup.appendChild(drawSymbol(
                         new TooltipLocation(x, this.markerPoint[count as number] - this.padding + (isBottom ? this.arrowPadding : padding)),
-                        shape, new Size(size, size), '', shapeOption, 'img', tooltipContent));
+                        shape, new Size(size, size), this.markerImage, shapeOption, 'img', tooltipContent));
                 }
                 count++;
             }
@@ -772,7 +780,7 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
                 const height: number = this.elementSize.height + (2 * this.marginY);
                 rect = new Rect(location.x, location.y, width, height);
             }
-            else if (this.content.length > 1) {
+            else if (this.content.length > 1 || this.element.id.indexOf('stripline_tooltip') > -1) {
                 rect = this.sharedTooltipLocation(areaBounds, this.location.x, this.location.y);
                 isTop = true;
             } else {
@@ -1185,7 +1193,7 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
             tooltipRect.y = Math.max((bounds.y + bounds.height) - (tooltipRect.height + 2 * this.padding), bounds.y);
         }
         if (tooltipRect.x + tooltipRect.width > bounds.x + bounds.width) {
-            tooltipRect.x = (bounds.x + this.location.x) - (tooltipRect.width + 4 * this.padding);
+            tooltipRect.x = (bounds.x + bounds.width) - (tooltipRect.width + 4 * this.padding);
         }
         if (tooltipRect.x < bounds.x) {
             tooltipRect.x = bounds.x;
@@ -1255,6 +1263,8 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
 
         const clipX: number = this.clipBounds.x;
         const clipY: number = this.clipBounds.y;
+        const clipWidth: number = (this.clipBounds as Rect).width;
+        const clipHeight: number = (this.clipBounds as Rect).height;
         const boundsX: number = bounds.x;
         const boundsY: number = bounds.y;
         this.outOfBounds = false;
@@ -1354,6 +1364,9 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
                 location.x = (symbolLocation.x > bounds.width + bounds.x ? bounds.width : symbolLocation.x)
                     + clipX - markerHeight - (width + this.arrowPadding);
             }
+            if (symbolLocation.x > clipWidth) {
+                location.x = clipWidth + clipX - (width + this.arrowPadding);
+            }
             if (location.x < boundsX) {
                 location.x = (symbolLocation.x < 0 ? 0 : symbolLocation.x) + clipX + markerHeight;
             }
@@ -1371,7 +1384,7 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
                 tipLocation.y += ((location.y + height) - (boundsY + bounds.height));
                 location.y -= ((location.y + height) - (boundsY + bounds.height));
             }
-            if (location.x + width >= boundsX + bounds.width) {
+            if (location.x + width >= boundsX + bounds.width && this.controlName === 'Chart') {
                 arrowLocation.x += ((location.x + width) - (boundsX + bounds.width));
                 tipLocation.x += ((location.x + width) - (boundsX + bounds.width));
                 location.x -= ((location.x + width) - (boundsX + bounds.width));
@@ -1502,7 +1515,7 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
         const tooltipDiv: HTMLElement = <HTMLElement>getElement(this.element.id);
         if (tooltipElement) {
             let tooltipGroup: HTMLElement = tooltipElement.firstChild as HTMLElement;
-            if (tooltipGroup.nodeType !== Node.ELEMENT_NODE) {
+            if (tooltipGroup && tooltipGroup.nodeType !== Node.ELEMENT_NODE) {
                 tooltipGroup = tooltipElement.firstElementChild as HTMLElement;
             }
             if (this.isCanvas && !this.template) {
@@ -1589,4 +1602,3 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
     }
 
 }
-

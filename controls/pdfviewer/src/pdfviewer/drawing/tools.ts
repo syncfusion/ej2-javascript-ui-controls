@@ -11,7 +11,7 @@ import { findActiveElement } from './action';
 import { PdfViewer, PdfViewerBase, MeasureAnnotation, AnnotationSelectorSettingsModel, AnnotationDrawingOptions } from '../index';
 import { PdfAnnotationBaseModel, PdfFormFieldBaseModel } from './pdf-annotation-model';
 import { PdfAnnotationBase } from './pdf-annotation';
-import { cloneObject, isLineShapes } from './drawing-util';
+import { cloneObject, isLineShapes, updateColorWithOpacity } from './drawing-util';
 import { isNullOrUndefined } from '@syncfusion/ej2-base';
 import { updatePerimeterLabel } from './connector-util';
 import { Browser } from '@syncfusion/ej2-base';
@@ -510,6 +510,10 @@ export class SelectTool extends ToolBase {
                             this.commandHandler.toolbarModule.showToolbar(true);
                         }
                         this.commandHandler.fireAnnotationUnSelect(annotation.annotName, annotation.pageIndex, annotation);
+                        if (annotation && annotation.shapeAnnotationType === 'Redaction' &&
+                            this.commandHandler.toolbar && this.commandHandler.toolbar.redactionToolbarModule) {
+                            this.commandHandler.toolbar.redactionToolbarModule.showHideDeleteIcon(false);
+                        }
                     }
                     if (selectedObject.annotations.length === 0 && annotation && (annotation.shapeAnnotationType === 'HandWrittenSignature' || annotation.shapeAnnotationType === 'SignatureText' || annotation.shapeAnnotationType === 'SignatureImage' || annotation.shapeAnnotationType === 'Path' || annotation.signatureType)) {
                         this.commandHandler.fireSignatureUnselect(annotation.signatureName, annotation.pageIndex, annotation);
@@ -836,6 +840,14 @@ export class MoveTool extends ToolBase {
                     cobject.strokeColor = 'red';
                     cobject.borderDashArray = '5,5';
                     cobject.fillColor = 'transparent';
+                    cobject.thickness = 2;
+                    cobject.opacity = 1;
+                    cobject.data = '';
+                } else if (cobject.shapeAnnotationType === 'Redaction') {
+                    cobject.strokeColor = cobject.markerBorderColor;
+                    const fillColor: any = updateColorWithOpacity(cobject.fillColor, cobject.markerOpacity);
+                    cobject.borderDashArray = '0,0';
+                    cobject.fillColor = fillColor;
                     cobject.thickness = 2;
                     cobject.opacity = 1;
                     cobject.data = '';
@@ -1915,6 +1927,11 @@ export class NodeDrawingTool extends ToolBase {
                 if (this.commandHandler && !this.isFormDesign) {
 
                     this.commandHandler.annotation.addAction((this as any).pageIndex, null, this.drawingObject, 'Addition', '', this.drawingObject as any, this.drawingObject);
+                    if (this.drawingObject && this.drawingObject.shapeAnnotationType === 'Redaction' &&
+                        this.commandHandler.toolbar && this.commandHandler.toolbar.redactionToolbarModule) {
+                        this.commandHandler.toolbar.redactionToolbarModule.showHideDeleteIcon(true);
+                        this.commandHandler.toolbar.redactionToolbarModule.showHideRedactIcon(true);
+                    }
                 }
                 this.dragging = false;
                 super.mouseUp(args);
@@ -2132,7 +2149,7 @@ export class PolygonDrawingTool extends ToolBase {
                 if (this.inAction) {
                     this.inAction = false;
                     if (this.drawingObject) {
-                        if (!isMouseLeave) {
+                        if (!isMouseLeave && isDoubleClineck) {
                             if (this.drawingObject.vertexPoints.length > 2 && !args.isTouchMode) {
                                 this.drawingObject.vertexPoints.splice(this.drawingObject.vertexPoints.length - 1, 1);
                             }

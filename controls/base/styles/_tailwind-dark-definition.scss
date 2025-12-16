@@ -1,14 +1,15 @@
 @use 'sass:meta';
-@import 'definition/tailwind-dark.scss';
+@use 'definition/tailwind-dark' as *;
+@forward 'definition/tailwind-dark';
 
 @if not meta.variable-exists('is-inter-loaded') {
   //sass-lint:disable no-url-protocols,no-url-domains
   @import url('https://fonts.googleapis.com/css2?family=Inter:wght@100;200;300;400;500;600;700;800;900&display=swap');// stylelint-disable-line no-invalid-position-at-import-rule
 }
 
-$font-family: 'Inter' !default;
-$font-size: 12px !default;
-$font-weight: normal !default;
+$font-family: $font-family !default;
+$font-size: $text-base !default;
+$font-weight: $font-weight-normal !default;
 $error-font-color: $danger !default;
 $overlay-bg-color: rgba($cool-gray-500, .75) !default;
 $warning-font-color: $orange-700 !default;

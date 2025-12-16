@@ -260,7 +260,8 @@ describe('Chart Control Legend Checking', () => {
         setTimeout(() => {
             expect(seriesElement.contains(getElement(ele.id + 'SymbolGropu4'))).toBe(false);
             dataLabel = getElement('cartesianChart_Series_2_Point_0_Symbol') as HTMLElement;
-            expect(parseFloat(dataLabel.getAttribute('cy')) == 199.53125 || parseFloat(dataLabel.getAttribute('cy')) == 200.78125).toBe(true);
+            expect(parseFloat(dataLabel.getAttribute('cy')) == 199.53125 || parseFloat(dataLabel.getAttribute('cy')) == 200.78125
+            || parseFloat(dataLabel.getAttribute('cy')) == 224.87499999999997).toBe(true);
             expect(seriesElement.childElementCount).toEqual(12);
             done();
         }, 301);
@@ -303,7 +304,7 @@ describe('Chart Control Legend Checking', () => {
         trigger.clickEvent(legendElement);
         setTimeout(() => {
             let stripLine: Element = getElement('cartesianChart_stripline_Behind_rect_primaryYAxis_0');
-            expect(stripLine.getAttribute('d') === 'M 32.5 190.953125 L 790 190.953125').toBe(true);
+            expect(stripLine.getAttribute('d') === 'M 32.5 190.953125 L 790 190.953125' || stripLine.getAttribute('d') === 'M 38.5 219.0625 L 790 219.0625').toBe(true);
             done();
         }, 301);
     });

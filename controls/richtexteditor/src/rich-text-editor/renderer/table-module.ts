@@ -933,12 +933,6 @@ export class Table {
         if (proxy.editdlgObj) {
             proxy.editdlgObj.hide();
         }
-        if (!isNullOrUndefined(proxy.parent)) {
-            if (proxy.parent.element.querySelector('.e-content')) {
-                //focusing the content editable div
-                (proxy.parent.element.querySelector('.e-content') as HTMLElement).focus();
-            }
-        }
     }
 
     /*
@@ -1200,7 +1194,12 @@ export class Table {
                     return;
                 }
             }
-            this.tableObj.removeResizeElement();
+            const target: HTMLElement = e && e.target as HTMLElement;
+            if (this.tableObj && target && target.classList && !target.classList.contains(EVENTS.CLS_TB_COL_RES) &&
+                !target.classList.contains(EVENTS.CLS_TB_ROW_RES) && !target.classList.contains(EVENTS.CLS_TB_BOX_RES) &&
+                !(Browser.isDevice && target.nodeName !== '#text' && target.closest('.e-cell-select'))) {
+                this.tableObj.removeResizeElement();
+            }
         }
     }
 
@@ -1263,7 +1262,8 @@ export class Table {
             }
         }
         if (this.tableObj && target && target.classList && !target.classList.contains(EVENTS.CLS_TB_COL_RES) &&
-            !target.classList.contains(EVENTS.CLS_TB_ROW_RES) && !target.classList.contains(EVENTS.CLS_TB_BOX_RES)) {
+            !target.classList.contains(EVENTS.CLS_TB_ROW_RES) && !target.classList.contains(EVENTS.CLS_TB_BOX_RES) &&
+            !(Browser.isDevice && target.nodeName !== '#text' && target.closest('.e-cell-select'))) {
             this.tableObj.removeResizeElement();
         }
     }
@@ -1471,6 +1471,7 @@ export class Table {
             target: (Browser.isDevice) ? document.body : this.parent.element,
             animationSettings: { effect: 'None' },
             close: (event: { [key: string]: object }) => {
+                (event as any).preventFocus = true;
                 this.parent.isBlur = false;
                 if (this.editdlgObj.element.querySelector('.e-rte-edit-table-content') && (event.closedBy.toString() === 'escape' || event.closedBy.toString() === 'close icon')) {
                     for (const property in this.tableStyles) {

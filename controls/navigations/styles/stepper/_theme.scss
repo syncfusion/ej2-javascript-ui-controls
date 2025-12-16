@@ -1,3 +1,5 @@
+@use 'ej2-base/styles/common/mixin' as *;
+@use './theme-variables' as *;
 @mixin stepper-text-label-colors($step-label-text-color) {
   .e-text,
   .e-label {

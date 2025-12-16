@@ -54,7 +54,21 @@ export class FormDesignerToolbar {
 
     public initializeFormDesignerToolbar(): void {
         this.toolbarElement = createElement('div', { id: this.pdfViewer.element.id + '_formdesigner_toolbar', className: 'e-pv-formdesigner-toolbar' });
-        this.pdfViewerBase.viewerMainContainer.appendChild(this.toolbarElement);
+        if (this.pdfViewer.isInsertBefore) {
+            let toolbarContainer: HTMLElement;
+            toolbarContainer = document.getElementById(this.pdfViewer.element.id + '_redaction_toolbar') as HTMLElement;
+            if (isNullOrUndefined(toolbarContainer)) {
+                toolbarContainer = document.getElementById(this.pdfViewer.element.id + '_annotation_toolbar') as HTMLElement;
+                if (isNullOrUndefined(toolbarContainer)) {
+                    toolbarContainer = document.getElementById(this.pdfViewer.element.id + 'toolbarContainer') as HTMLElement;
+                }
+            }
+            if (toolbarContainer && toolbarContainer.parentNode === this.pdfViewerBase.viewerMainContainer) {
+                this.pdfViewerBase.viewerMainContainer.insertBefore(this.toolbarElement, toolbarContainer.nextSibling);
+            }
+        } else {
+            this.pdfViewerBase.viewerMainContainer.appendChild(this.toolbarElement);
+        }
         this.toolbar = new Tool({
             width: '', height: '', overflowMode: 'Popup',
             items: this.createToolbarItems(), clicked: this.onToolbarClicked.bind(this)
@@ -76,7 +90,7 @@ export class FormDesignerToolbar {
      * @returns {void}
      */
     public resetFormDesignerToolbar(): void {
-        if (this.pdfViewer.isFormDesignerToolbarVisible) {
+        if (this.pdfViewer.isFormDesignerToolbarVisible && this.pdfViewer.enableFormDesignerToolbar) {
             this.pdfViewer.designerMode = true;
             this.pdfViewer.formDesignerModule.setMode('designer');
             this.adjustViewer(false);
@@ -89,7 +103,7 @@ export class FormDesignerToolbar {
         else {
             this.toolbarElement.style.display = 'none';
             this.isToolbarHidden = true;
-            if (!this.pdfViewer.isAnnotationToolbarVisible) {
+            if (!this.pdfViewer.isAnnotationToolbarVisible && !this.pdfViewer.isRedactionToolbarVisible) {
                 this.adjustViewer(true);
             }
             this.primaryToolbar.deSelectItem(this.primaryToolbar.formDesignerItem);
@@ -126,16 +140,20 @@ export class FormDesignerToolbar {
                 });
             }
             this.toolbarElement.style.display = 'none';
-            this.pdfViewer.formDesignerModule.setMode('edit');
-            this.pdfViewer.designerMode = false;
+            if (!isNullOrUndefined(this.pdfViewer.formDesignerModule)) {
+                this.pdfViewer.formDesignerModule.setMode('edit');
+            }
             if (!isInitialLoading) {
+                this.pdfViewer.designerMode = false;
                 this.pdfViewer.isFormDesignerToolbarVisible = false;
             }
         } else {
             const toolBarInitialStatus: string = this.toolbarElement.style.display;
             this.toolbarElement.style.display = 'block';
             this.pdfViewer.designerMode = true;
-            this.pdfViewer.formDesignerModule.setMode('designer');
+            if (!isNullOrUndefined(this.pdfViewer.formDesignerModule)) {
+                this.pdfViewer.formDesignerModule.setMode('edit');
+            }
             if (!isInitialLoading) {
                 this.pdfViewer.isFormDesignerToolbarVisible = true;
             }
@@ -280,7 +298,7 @@ export class FormDesignerToolbar {
         } else {
             formDesignerToolbarHeight = this.getToolbarHeight(this.toolbarElement);
         }
-        const sideBarClientRect: ClientRect = this.pdfViewerBase.navigationPane.sideBarContentContainer.getBoundingClientRect();
+        const sideBarClientRect: DOMRect = this.pdfViewerBase.navigationPane.sideBarContentContainer.getBoundingClientRect() as DOMRect;
         if (sideBarClientRect.height !== 0) {
             if (isAdjust) {
                 this.pdfViewerBase.navigationPane.sideBarContentContainer.style.height = sideBarClientRect.height - formDesignerToolbarHeight + 'px';
@@ -419,7 +437,7 @@ export class FormDesignerToolbar {
     }
 
     private onToolbarClicked(args: ClickEventArgs): void {
-        if (args && (args as IToolbarClick).item) {
+        if (args && (args as IToolbarClick).item && this.pdfViewer.formDesignerModule) {
             if ((args as IToolbarClick).item.id.indexOf('textbox') !== -1) {
                 this.pdfViewer.formDesignerModule.setFormFieldMode('Textbox');
             } else if ((args as IToolbarClick).item.id.indexOf('passwordfield') !== -1) {

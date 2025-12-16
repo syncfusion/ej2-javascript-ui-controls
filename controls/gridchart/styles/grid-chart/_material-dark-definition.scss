@@ -1,4 +1,6 @@
 @use 'sass:math';
+@use 'ej2-base/styles/definition/material-dark' as *;
+@forward 'ej2-base/styles/definition/material-dark';
 
 $grid-chart-border-color: $grey-700 !default;
 $grid-chart-list-hover-bg-color: rgba($grey-white, .1) !default;

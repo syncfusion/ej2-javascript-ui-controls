@@ -10,6 +10,8 @@ import { Row, Column } from '@syncfusion/ej2-grids';
 import { TaskFieldsModel } from '../models/models';
 import { CObject } from '../base/enum';
 import { CriticalPath } from '../actions/critical-path';
+import { CalendarContext } from '../base/calendar-context';
+import { TreeGrid } from '@syncfusion/ej2-treegrid';
 /**
  * To render the chart rows in Gantt
  */
@@ -148,7 +150,7 @@ export class ChartRows extends DateProcessor {
      */
     public getIndicatorleft(date: Date | string): number {
         date = this.parent.dateValidationModule.getDateFromFormat(date);
-        const left: number = this.parent.dataOperation.getTaskLeft(date, false);
+        const left: number = this.parent.dataOperation.getTaskLeft(date, false, this.parent.defaultCalendarContext);
         return left;
     }
 
@@ -613,6 +615,7 @@ export class ChartRows extends DateProcessor {
         this.dropSplit = false;
         let segmentIndex: number = -1;
         let segments: ITaskSegment[] = ganttProp.segments;
+        const calendarContext: CalendarContext = ganttProp.calendarContext;
         if (isNullOrUndefined((splitDates as Date[]).length) || (splitDates as Date[]).length < 0) {
             const splitStartDate: Date = this.parent.dataOperation.checkStartDate(splitDate, ganttProp, false);
             if (splitStartDate.getTime() !== ganttProp.startDate.getTime()) {
@@ -629,7 +632,8 @@ export class ChartRows extends DateProcessor {
                         const endDate: Date = segmentIndex !== -1 ?
                             segments[segmentIndex as number].endDate : new Date(ganttProp.endDate.getTime());
                         const segmentDuration: number = this.parent.dataOperation.getDuration(
-                            startDate, endDate, ganttProp.durationUnit, ganttProp.isAutoSchedule, ganttProp.isMilestone
+                            startDate, endDate, ganttProp.durationUnit, ganttProp.isAutoSchedule,
+                            ganttProp.isMilestone, undefined, calendarContext
                         );
                         this.parent.setRecordValue(
                             'segments', this.splitSegmentedTaskbar(
@@ -687,7 +691,8 @@ export class ChartRows extends DateProcessor {
                 : new Date(dates[i as number].getTime()) : taskData.endDate;
             endDate = this.parent.dataOperation.checkEndDate(endDate, taskData, false);
             duration = this.parent.dataOperation.getDuration(
-                startDate, endDate, taskData.durationUnit, taskData.isAutoSchedule, taskData.isMilestone
+                startDate, endDate, taskData.durationUnit, taskData.isAutoSchedule,
+                taskData.isMilestone, undefined, taskData.calendarContext
             );
             if (endDate.getTime() >= startDate.getTime()) {
                 segment = {
@@ -710,9 +715,10 @@ export class ChartRows extends DateProcessor {
         startDate: Date, endDate: Date, splitDate: Date, segmentIndex: number, segments: ITaskSegment[], ganttData: IGanttData,
         segmentDuration: number): ITaskSegment[] {
         const ganttProp: ITaskData = ganttData.ganttProperties;
+        const calendarContext: CalendarContext = ganttProp.calendarContext;
         let checkClickState: number;
         let endDateState: number;
-        if (this.parent.includeWeekend) {
+        if (this.parent.includeWeekend || calendarContext.exceptionsRanges.length > 0) {
             checkClickState = -1;
         } else {
             checkClickState = this.parent.nonWorkingDayIndex.indexOf(splitDate.getDay());
@@ -731,10 +737,10 @@ export class ChartRows extends DateProcessor {
                 endDate: segmentEndDate,
                 duration: this.parent.dataOperation.getDuration(
                     startDate, segmentEndDate, ganttProp.durationUnit,
-                    ganttProp.isAutoSchedule, ganttProp.isMilestone),
+                    ganttProp.isAutoSchedule, ganttProp.isMilestone, undefined, calendarContext),
                 offsetDuration: 1
             };
-            if (this.parent.includeWeekend) {
+            if (this.parent.includeWeekend || calendarContext.exceptionsRanges.length > 0) {
                 endDateState = -1;
             } else {
                 endDateState = this.parent.nonWorkingDayIndex.indexOf(segmentEndDate.getDay());
@@ -770,14 +776,14 @@ export class ChartRows extends DateProcessor {
                 if (segmentEndDate < startDate) {
                     segmentEndDate.setDate(segmentEndDate.getDate() + 1);
                 }
-                if (this.isOnHolidayOrWeekEnd(segmentEndDate, true)) {
+                if (this.isOnHolidayOrWeekEnd(segmentEndDate, true, calendarContext)) {
                     do {
                         segmentEndDate.setDate(segmentEndDate.getDate() + 1);
                     }
-                    while (this.isOnHolidayOrWeekEnd(segmentEndDate, true));
+                    while (this.isOnHolidayOrWeekEnd(segmentEndDate, true, calendarContext));
                 }
-                if (!this.parent.includeWeekend) {
-                    segmentEndDate = this.getNextWorkingDay(segmentEndDate);
+                if (!this.parent.includeWeekend || calendarContext.exceptionsRanges.length === 0) {
+                    segmentEndDate = this.getNextWorkingDay(segmentEndDate, calendarContext);
                 }
             }
             if (endDateState !== -1) {
@@ -1137,7 +1143,7 @@ export class ChartRows extends DateProcessor {
             parentTaskbarNode = data.ganttProperties.isMilestone ?
                 this.createDivElement(data.ganttProperties.isAutoSchedule ? milestoneTemplate : '') : template;
         }
-        if (this.parent.enableRtl && parentTaskbarNode[0] && (parentTaskbarNode[0] as Element).querySelector('.e-task-label')) {
+        if (this.parent.enableRtl && !isNullOrUndefined(parentTaskbarNode) && parentTaskbarNode[0] && (parentTaskbarNode[0] as Element).querySelector('.e-task-label')) {
             ((parentTaskbarNode[0] as Element).querySelector('.e-task-label') as HTMLElement).style.marginLeft = '15px';
             ((parentTaskbarNode[0] as Element).querySelector('.e-task-label') as HTMLElement).style.marginRight = '8px';
             if ((parentTaskbarNode[0] as Element).querySelector('.e-gantt-parent-progressbar')) {
@@ -1570,8 +1576,8 @@ export class ChartRows extends DateProcessor {
             if (!this.parent.allowUnscheduledTasks) {
                 left = ganttProp.autoStartDate.getTime() < ganttProp.startDate.getTime() ? ganttProp.autoLeft : ganttProp.left;
                 endLeft = ganttProp.autoEndDate.getTime() < ganttProp.endDate.getTime() ?
-                    this.parent.dataOperation.getTaskLeft(ganttProp.endDate, ganttProp.isMilestone) :
-                    this.parent.dataOperation.getTaskLeft(ganttProp.autoEndDate, ganttProp.isMilestone);
+                    this.parent.dataOperation.getTaskLeft(ganttProp.endDate, ganttProp.isMilestone, ganttProp.calendarContext) :
+                    this.parent.dataOperation.getTaskLeft(ganttProp.autoEndDate, ganttProp.isMilestone, ganttProp.calendarContext);
                 width = endLeft - left;
             } else {
                 left = ganttProp.left < ganttProp.autoLeft ? ganttProp.autoLeft : ganttProp.left;
@@ -1670,7 +1676,9 @@ export class ChartRows extends DateProcessor {
                 const data: IGanttData = this.parent.currentViewData[i as number];
                 if (data.childRecords.length > 0) {
                     this.parent.setRecordValue('workTimelineRanges', this.parent.dataOperation.mergeRangeCollections(data.ganttProperties.workTimelineRanges, true), data.ganttProperties, true);
-                    this.parent.dataOperation.calculateRangeLeftWidth(data.ganttProperties.workTimelineRanges);
+                    this.parent.dataOperation.calculateRangeLeftWidth(
+                        data.ganttProperties.workTimelineRanges, data.ganttProperties.calendarContext
+                    );
                 }
             }
             this.parent.ganttChartModule.renderRangeContainer(this.parent.currentViewData);
@@ -2496,6 +2504,17 @@ export class ChartRows extends DateProcessor {
             document.getElementsByClassName('e-chart-rows-container')[0]['style'].height = this.parent.contentHeight + 'px';
         }
     }
+    private setRowHeight(index: number, rowHeight: number, treeGrid: TreeGrid, isExpandOrCollapse: boolean, tr?: Node): void {
+        const row: Element = isExpandOrCollapse
+            ? treeGrid.getRowByIndex(index)
+            : treeGrid.getRows()[index as number];
+        if (row) {
+            row['style'].height = rowHeight + 'px';
+        }
+        if (tr) {
+            tr['style'].height = rowHeight + 'px';
+        }
+    }
 
     /**
      * To refresh edited TR
@@ -2518,11 +2537,17 @@ export class ChartRows extends DateProcessor {
         if (index !== -1 && selectedItem) {
             const data: IGanttData = selectedItem;
             if (!this.parent.allowTaskbarOverlap && data.expanded) {
-                if (this.parent.ganttChartModule.isExpandAll || this.parent.ganttChartModule.isCollapseAll) {
-                    tr['style'].height = this.parent.treeGrid.getRowByIndex(index as number)['style'].height = this.parent.rowHeight + 'px';
-                }
-                else {
-                    tr['style'].height = this.parent.treeGrid.getRows()[index as number]['style'].height = this.parent.rowHeight + 'px';
+                const isExpandOrCollapse: boolean = this.parent.ganttChartModule.isExpandAll || this.parent.ganttChartModule.isCollapseAll;
+                this.setRowHeight(index, this.parent.rowHeight, this.parent.treeGrid, isExpandOrCollapse, tr);
+                if (this.parent['freezeModule'] && data.hasChildRecords) {
+                    let childIndex: number;
+                    const key: string = this.parent.viewType === 'ResourceView' ? 'rowUniqueID' : 'taskId';
+                    for (const child of data.childRecords) {
+                        const childIndex: number = isUndoRedo
+                            ? this.parent.ids.indexOf(child.ganttProperties[key as string].toString())
+                            : this.parent.currentViewData.indexOf(child);
+                        this.setRowHeight(childIndex, this.parent.rowHeight, this.parent.treeGrid, isExpandOrCollapse);
+                    }
                 }
             }
             if (data.hasChildRecords && !data.expanded && this.parent.enableMultiTaskbar) {

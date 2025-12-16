@@ -162,7 +162,9 @@ describe('Diagram Control', () => {
 
         afterAll((): void => {
             diagram.destroy();
+            diagram = null;
             ele.remove();
+            ele = null;
         });
 
         it('Checking flow shapes', (done: Function) => {

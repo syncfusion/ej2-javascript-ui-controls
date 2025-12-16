@@ -1,1 +1,5 @@
-@import './fluent-definition.scss';
+@use 'ej2-base/styles/definition/fluent-dark' as *;
+@forward 'ej2-base/styles/definition/fluent-dark';
+$sta-background-color: $content-bg-color !default;
+$sta-color: $content-text-color !default;
+$sta-box-shadow: $shadow-xl !default;

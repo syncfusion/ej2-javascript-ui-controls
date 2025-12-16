@@ -43,7 +43,7 @@ export class HtmlEditor {
     private deleteOldRangeElement: Element;
     private isImageDelete: boolean = false;
     private isMention: boolean = false;
-    private saveSelection: NodeSelection;
+    public saveSelection: NodeSelection;
     public xhtmlValidation: XhtmlValidation;
     private clickTimeout: number;
     private isCopyAll: boolean;
@@ -456,8 +456,9 @@ export class HtmlEditor {
             const editorValue: string = currentRange.startContainer.textContent.slice(0, currentRange.startOffset);
             const orderedList: boolean = this.isOrderedList(editorValue);
             const unOrderedList: boolean =  this.isUnOrderedList(editorValue);
+            const checkList: boolean = this.isCheckList(editorValue);
             let hasSplitedText: boolean = false;
-            if (orderedList || unOrderedList) {
+            if (orderedList || unOrderedList || checkList) {
                 hasSplitedText = this.hasMultipleTextNode(currentRange);
                 if (hasSplitedText && !this.isMention) {
                     let element: HTMLElement = currentRange.startContainer as HTMLElement;
@@ -467,7 +468,8 @@ export class HtmlEditor {
                     }
                 }
             }
-            if (!hasSplitedText && (orderedList && !unOrderedList || unOrderedList && !orderedList)) {
+            if (!hasSplitedText && ((orderedList && !unOrderedList && !checkList)
+                 || (unOrderedList && !orderedList && !checkList) || (checkList && !orderedList && !unOrderedList))) {
                 const eventArgs: IHtmlKeyboardEvent = {
                     callBack: null,
                     event: ((e as NotifyArgs).args as KeyboardEventArgs),
@@ -524,7 +526,6 @@ export class HtmlEditor {
         const selectionLength: number = this.parent.getSelection().length;
         return maxLength === -1 || (currentLength - selectionLength + tabSpaceLength) <= maxLength;
     }
-
     private isOrderedList(editorValue: string): boolean {
         editorValue = editorValue.replace(/\u200B/g, '');
         const olListStartRegex: RegExp[] = [/^[1]+[.]+$/, /^[i]+[.]+$/, /^[a]+[.]+$/];
@@ -540,6 +541,19 @@ export class HtmlEditor {
     private isUnOrderedList(editorValue: string): boolean {
         editorValue = editorValue.replace(/\u200B/g, '');
         const ulListStartRegex: RegExp[] = [/^[*]$/, /^[-]$/ ];
+        if (!isNullOrUndefined(editorValue)) {
+            for (let i: number = 0; i < ulListStartRegex.length; i++) {
+                if (ulListStartRegex[i as number].test(editorValue)) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+    private isCheckList(editorValue: string): boolean {
+        editorValue = editorValue.replace(/\u200B/g, '');
+        // Updated regex to match checkbox patterns with at most one space: [], [x], [ ], [x ], [ x], [ x ]
+        const ulListStartRegex: RegExp[] = [/^\[\s?\]$/, /^\[\s?x\s?\]$/i];
         if (!isNullOrUndefined(editorValue)) {
             for (let i: number = 0; i < ulListStartRegex.length; i++) {
                 if (ulListStartRegex[i as number].test(editorValue)) {
@@ -642,6 +656,11 @@ export class HtmlEditor {
             if ((!this.parent.formatter.editorManager.domNode.isBlockNode(checkNode as Element) &&
                 !isNOU(checkNode.previousSibling) && checkNode.previousSibling.nodeName === 'BR') ||
                 (!isNOU(currentRange.startContainer.previousSibling) && currentRange.startContainer.previousSibling.nodeName === 'BR')) {
+                return;
+            }
+            const isRangeCollapsed: boolean = currentRange.startOffset === currentRange.endOffset &&
+                currentRange.startContainer === currentRange.endContainer;
+            if (isRangeCollapsed && this.shouldPreventListRemoval()) {
                 return;
             }
             const immediateBlockNode: Node = this.parent.formatter.editorManager.domNode.
@@ -792,7 +811,8 @@ export class HtmlEditor {
                 (currentRange.startContainer.childNodes[index as number] &&
                     currentRange.startContainer.childNodes[index as number].textContent.trim() === '')) {
                 const node: Node = checkNode && checkNode.textContent.trim() === '' ? checkNode : currentRange.startContainer.childNodes[index as number];
-                if (hasAnyFormatting(node) && node.previousSibling && node.previousSibling.textContent.trim() === '') {
+                if (hasAnyFormatting(node) && node.previousSibling && node.previousSibling.textContent.trim() === '' &&
+                    node !== this.parent.inputElement) {
                     this.parent.formatter.editorManager.nodeSelection.setCursorPoint(
                         this.parent.contentModule.getDocument(), node.previousSibling as HTMLElement, 0);
                     detach(node);
@@ -800,6 +820,28 @@ export class HtmlEditor {
                 }
             }
         }
+    }
+
+    private shouldPreventListRemoval(): boolean {
+        const findBlockElements: Node[] = this.parent.formatter.editorManager.domNode.blockNodes();
+        if (findBlockElements[0] && findBlockElements[0].previousSibling) {
+            const prevSiblings: HTMLElement = findBlockElements[0].previousSibling as HTMLElement;
+            if (prevSiblings.nodeType === Node.ELEMENT_NODE) {
+                const listElement: Element = prevSiblings.matches('ol, ul') ? prevSiblings
+                    : prevSiblings.querySelector('ol, ul');
+                if (listElement) {
+                    const liTags: NodeListOf<HTMLLIElement> = listElement.querySelectorAll('li');
+                    // The list is empty if it has no <li> tags
+                    if (liTags.length === 0) {
+                        return true;
+                    }
+                    // The list is considered removable if only the last item is empty
+                    const lastLi: HTMLLIElement = liTags[liTags.length - 1];
+                    return lastLi && lastLi.textContent.trim() === '';
+                }
+            }
+        }
+        return false;
     }
 
     private findPreviousElementSibling(element: HTMLElement): HTMLElement {
@@ -1278,6 +1320,10 @@ export class HtmlEditor {
                     break;
                 case 'ExportPdf':
                     this.parent.notify(events.onExport, { member: 'ExportPdf', args: args });
+                    break;
+                case 'AICommands':
+                case 'AIQuery':
+                    this.parent.notify(events.onAIAssistant, { member : 'AIAssistant', args: args, selection: save});
                     break;
                 default:
                     this.parent.formatter.process(this.parent, args, args.originalEvent, null);

@@ -6382,6 +6382,7 @@ describe('Splitter Control', () => {
             element.appendChild(child1);
             element.appendChild(child2);
             document.body.appendChild(element);
+
             splitterObj = new Splitter({
                 width: '400px',
                 height: '200px',

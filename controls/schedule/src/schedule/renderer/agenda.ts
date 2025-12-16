@@ -241,7 +241,7 @@ export class Agenda extends AgendaBase implements IRenderer {
         const tBody: Element = target.querySelector('tbody');
         const emptyTBody: Element = createElement('tbody');
         const topElement: Element = this.getElementFromScrollerPosition(event);
-        if (!topElement) {
+        if (!topElement){
             return;
         }
         const scrollDate: Date = this.parent.getDateFromElement(topElement);
@@ -302,9 +302,10 @@ export class Agenda extends AgendaBase implements IRenderer {
                 filterElement = closest(li, '.' + cls.AGENDA_CELLS_CLASS);
             } else {
                 for (let a: number = 0, length: number = liCollection.length; a < length; a++) {
+                    const targetRect: ClientRect = target.getBoundingClientRect();
                     li = liCollection[parseInt(a.toString(), 10)];
                     liDetails = li.getBoundingClientRect();
-                    if (liDetails.top >= 0) {
+                    if (targetRect.top < liDetails.top) {
                         filterElement = closest(li, '.' + cls.AGENDA_CELLS_CLASS);
                         break;
                     }

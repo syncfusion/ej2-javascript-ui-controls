@@ -1664,12 +1664,10 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
         const dropAreaElement: HTMLElement = this.createElement('div', { id: this.element.id + '_dropArea', className: 'e-ie-drop-area' });
         dropAreaElement.style.position = 'relative';
         const dropIconElement: HTMLElement = this.createElement('span', { className: 'e-ie-drop-icon e-icons e-image' });
-        dropIconElement.style.position = 'absolute';
         const dropContentElement: HTMLElement = this.createElement('span', { className: 'e-ie-drop-content' });
-        dropContentElement.style.cssText = 'position: absolute; display: none;';
+        dropContentElement.style.cssText = 'display: none;';
         dropContentElement.textContent = dragObj['value'] + ' ';
         const minDropContentElem: HTMLElement = this.createElement('span', { className: 'e-ie-min-drop-content' });
-        minDropContentElem.style.position = 'absolute';
         minDropContentElem.textContent = dropObj['value'] + ' ';
         const dropAnchorElement: HTMLElement = this.createElement('a', { id: this.element.id + '_dropBrowse',  className: 'e-ie-drop-browse'});
         dropAnchorElement.textContent = browseObj['value'];
@@ -1677,7 +1675,7 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
         minDropAnchorElem.textContent = browseObj['value'];
         dropContentElement.appendChild(dropAnchorElement); minDropContentElem.appendChild(minDropAnchorElem);
         (dropAnchorElement as HTMLAnchorElement).href = ''; (minDropAnchorElem as HTMLAnchorElement).href = '';
-        const dropInfoElement: HTMLElement = this.createElement('span', { className: 'e-ie-drop-info', attrs: { position: 'absolute' }});
+        const dropInfoElement: HTMLElement = this.createElement('span', { className: 'e-ie-drop-info'});
         this.updateDropInfoContent(dropInfoElement);
         const dropUploader: HTMLElement = dropAreaElement.appendChild(this.createElement('input', {
             id: this.element.id + '_dropfileUpload', className: 'e-fileUpload e-image-upload'
@@ -2524,9 +2522,6 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
      *
      */
     public updateShape(setting: ShapeSettings, isSelected?: boolean): boolean {
-        if (setting.type.toLowerCase() === 'text') {
-            this.notify('shape', { prop: 'setPublicUpdateShape', onPropertyChange: false, value: { isPublicUpdateShape: true } });
-        }
         const obj: Object = {isSelected: false}; let isTextArea: boolean = false;
         const freehandObj: Object = {bool: false };
         if (isNullOrUndefined(setting.id)) {
@@ -2586,9 +2581,6 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
                     this.selectShape(setting.id);
                 }
             }
-        }
-        if (setting.type.toLowerCase() === 'text') {
-            this.notify('shape', { prop: 'setPublicUpdateShape', onPropertyChange: false, value: { isPublicUpdateShape: false } });
         }
         return obj['isSelected'];
     }
@@ -3222,7 +3214,7 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
         this.notify('toolbar', { prop: 'create-contextual-toolbar', onPropertyChange: false });
         const dropArea: HTMLElement = document.getElementById(this.element.id + '_dropArea');
         if (dropArea) {
-            dropArea.style.display = 'block';
+            dropArea.style.display = 'flex';
         }
     }
 

@@ -1,6 +1,9 @@
+@use 'ej2-base/styles/definition/tailwind3' as *;
+@forward 'ej2-base/styles/definition/tailwind3';
+
 //Layout Variables Start
-$card-img-brdr-radious: 50% !default;
-$card-brdr-radious: 4px !default;
+$card-img-brdr-radious: $border-radius-50p !default;
+$card-brdr-radious: $radius-4 !default;
 $card-action-btn-txt-transform: none !default;
 
 // Font
@@ -38,6 +41,8 @@ $card-image-title-mheight: 30px !default;
 $card-action-nrml-vertical-padding: 12px !default;
 $card-action-nrml-btn-vertical-margin: 0 0 0 8px !default;
 $card-action-btn-nrml-height: 30px !default;
+$card-action-btn-nrml-line-height: 30px !default;
+$card-action-btn-nrml-min-height: 30px !default;
 $card-action-btn-nrml-margin: 0 0 0 8px !default;
 $card-action-btn-nrml-padding: 0 6px !default;
 $card-nrml-content-padding: 16px !default;
@@ -46,6 +51,14 @@ $card-header-txt-nrml-subtitle-font: $text-sm !default;
 $card-image-title-font: $text-base !default;
 $card-action-btn-icon-width: 24px !default;
 $card-action-btn-icon-height: 24px !default;
+$card-nrml-font-size: 15px !default;
+$card-normal-line-height: normal !default;
+$card-corner-border-radius:$border-radius-50p !default;
+$card-header-title-font-weight: 600 !default;
+$card-sub-title-font-weight: normal !default;
+$card-action-line-height: 30px !default;
+$card-btn-border-radius: $radius-2 !default;
+$card-font-family: $font-family !default;
 
 // Touch
 $card-bigger-lheight: 48px !default;
@@ -72,7 +85,9 @@ $card-action-bigger-padding: 16px 24px !default;
 $card-action-bigger-vertical-padding: 16px 20px !default;
 $card-action-bigger-btn-vertical-margin: 0 0 7px 0 !default;
 $card-action-btn-bigger-height: 38px !default;
-$card-action-btn-bigger-margin: 0 0 0 13px !default;
+$card-action-btn-bigger-line-height: 38px !default;
+$card-action-btn-bigger-min-height: 38px !default;
+$card-action-btn-bigger-margin: 0  0 0 13px !default;
 $card-action-btn-bigger-padding: 0 8px !default;
 $card-bigger-content-padding: 24px !default;
 $card-header-txt-bigger-title-font: 16px !default;
@@ -82,6 +97,12 @@ $card-action-btn-bigger-icon-width: 24px !default;
 $card-action-btn-bigger-icon-height: 24px !default;
 $card-image-title-nrml-padding: 12px 16px !default;
 $card-action-nrml-padding: 12px 16px !default;
+$card-action-bigger-content-font-size: 16px !default;
+$card-action-bigger-content-line-height: 24px !default;
+
+$card-padding-none: 0 !default;
+$card-margin-none: 0 !default;
+$card-horizontal-padding: 2px !default;
 
 //Layout Variables End
 

@@ -1,1 +1,16 @@
-@import './material3-definition.scss';
+@use 'ej2-base/styles/definition/material3-dark' as *;
+@forward 'ej2-base/styles/definition/material3-dark';
+
+$textarea-VH-textarea-padding: 3px 0 3px !default;
+$textarea-outline-VH-textarea-padding: 3px 14px 3px 14px !default;
+$textarea-filled-VH-textarea-padding: 3px 14px 3px 14px !default;
+$textarea-VV-template-padding: 7px 0 7px 0 !default;
+$textarea-outline-VV-template-padding: 11px 12px 11px 12px !default;
+$textarea-filled-VV-template-padding: 4px 12px 5px 12px !default;
+$textarea-HV-textarea-padding: 9px 5px 5px 5px !default;
+$textarea-HV-textarea-top: -8px !default;
+$textarea-outline-HV-textarea-padding: 7px 5px 5px 5px !default;
+$textarea-outline-HV-label-top: 0 !default;
+$textarea-filled-HV-textarea-padding: 6px 5px 5px 5px !default;
+$textarea-filled-HV-label-top: 21px !default;
+$textbox-icon-template-separator-color: rgba($border-light);

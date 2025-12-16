@@ -1,3 +1,6 @@
+@use 'ej2-base/styles/definition/bootstrap4' as *;
+@forward 'ej2-base/styles/definition/bootstrap4';
+
 // Avatar Base
 $avatar-base-border-radius: 4px !default;
 $avatar-base-font-size: 1.05em !default;
@@ -7,6 +10,7 @@ $avatar-base-background-color: $gray-200 !default;
 $avatar-base-text-color: $gray-900 !default;
 $avatar-base-font-weight: 400 !default;
 $avatar-base-img-height: 100% !default;
+$avatar-font-family: $font-family !default;
 
 // Circle Avatar
 $avatar-circle-border-radius: 50% !default;

@@ -1,4 +1,6 @@
 @use 'sass:color';
+@use 'ej2-base/styles/definition/fabric' as *;
+@forward 'ej2-base/styles/definition/fabric';
 
 $schedule-skin: $skin-name !default;
 $schedule-header-bg-color: $neutral-white !default;
@@ -62,6 +64,8 @@ $schedule-appointment-selected-border: 1px solid rgba($neutral-black, .5) !defau
 $schedule-appointment-active-border-color: #000 !default;
 $schedule-month-agenda-app-indicator-color: $schedule-appointment-bg-color !default;
 $schedule-month-appointment-height: 22px !default;
+$schedule-recurrence-icon-line-height: $schedule-month-appointment-height !default;
+$schedule-agenda-recurrence-icon-line-height: 21px !default;
 $schedule-month-appointment-text-line-height: 18px !default;
 $schedule-month-event-clone-line-height-subject: 1.4 !default;
 $schedule-appointment-text-line-height: 20px !default;
@@ -115,6 +119,7 @@ $schedule-tbar-border-bottom-size: 1px solid $schedule-header-border-color !defa
 $schedule-tbar-box-shadow: none !default;
 $schedule-tbar-box-shadow-bottom-margin: 0 !default;
 $schedule-tbar-min-height: 43px !default;
+$schedule-tbar-height: $schedule-tbar-min-height !default;
 $schedule-tbar-down-arrow-font-size: 12px !default;
 $schedule-tbar-down-arrow-margin-top: 4px !default;
 $schedule-tbar-default-icon-color: $default-icon-color !default;
@@ -219,6 +224,8 @@ $schedule-timeline-work-cells-border: 0 0 1px 1px !default;
 $schedule-rtl-timeline-work-cells-border: 0 1px 1px 0 !default;
 $schedule-timeline-resources-width: 200px !default;
 $schedule-timeline-appointment-height: 38px !default;
+$schedule-timeline-recurrence-icon-line-height: $schedule-timeline-appointment-height !default;
+$schedule-timescale-recurrence-icon-line-height: $schedule-timescale-appointment-height !default;
 $schedule-timeline-year-work-cells-height: 75px !default;
 $schedule-timeline-year-work-cells-width: 100px !default;
 $schedule-timeline-year-resource-text-padding: 4px 15px !default;
@@ -265,6 +272,104 @@ $schedule-bgr-more-event-close-icon-padding: unset !default;
 $schedule-bgr-tbar-btn-text-font-size: $schedule-header-nrml-font-size !default;
 $schedule-calendar-width: 300px !default;
 $schedule-bgr-calendar-width: 345px !default;
+$schedule-agenda-date-line-height: unset !default;
+
+$schedule-font-icon-size-8: 8px !default;
+$schedule-font-icon-size-10: 10px !default;
+$schedule-font-icon-size-12: 12px !default;
+$schedule-font-icon-size-14: 14px !default;
+
+$schedule-border-0: 0 !default;
+$schedule-border-1: 1px !default;
+$schedule-border-3: 3px !default;
+$schedule-border-8: 8px !default;
+
+$schedule-border-radius-5: 5px !default;
+$schedule-border-radius-50: 50% !default;
+$schedule-border-radius-full: 100% !default;
+
+$schedule-font-weight-normal: 400 !default;
+$schedule-font-weight-medium: 500 !default;
+
+$schedule-line-height-1: 1 !default;
+$schedule-line-height-1-2: 1.2 !default;
+$schedule-line-height-1-4: 1.4 !default;
+$schedule-line-height-1-5: 1.5 !default;
+$schedule-line-height-2-25: 2.25 !default;
+$schedule-line-height-11: 11px !default;
+$schedule-line-height-15: 15px !default;
+$schedule-line-height-18: 18px !default;
+$schedule-line-height-20: 20px !default;
+$schedule-line-height-23: 23px !default;
+$schedule-line-height-24-5: 24.5px !default;
+$schedule-line-height-25: 25px !default;
+$schedule-line-height-26: 26px !default;
+$schedule-line-height-52: 52px !default;
+$schedule-line-height-normal: normal !default;
+$schedule-line-height-inherit: inherit !default;
+
+$schedule-font-size-9: 9px !default;
+$schedule-font-size-11: 11px !default;
+$schedule-font-size-12: 12px !default;
+$schedule-font-size-13: 13px !default;
+$schedule-font-size-14: 14px !default;
+$schedule-font-size-15: 15px !default;
+$schedule-font-size-16: 16px !default;
+$schedule-font-size-18: 18px !default;
+$schedule-font-size-20: 20px !default;
+$schedule-font-size-22: 22px !default;
+$schedule-font-size-24: 24px !default;
+
+$schedule-height-0: 0 !default;
+$schedule-height-1: 1px !default;
+$schedule-height-5: 5px !default;
+$schedule-height-6: 6px !default;
+$schedule-height-10: 10px !default;
+$schedule-height-20: 20px !default;
+$schedule-height-24: 24px !default;
+$schedule-height-25: 25px !default;
+$schedule-height-35: 35px !default;
+$schedule-height-38: 38px !default;
+$schedule-height-40: 40px !default;
+$schedule-height-42: 42px !default;
+$schedule-height-50: 50px !default;
+$schedule-height-60: 60px !default;
+$schedule-height-100: 100px !default;
+
+$schedule-height-p20: 20% !default;
+$schedule-height-p100: 100% !default;
+$schedule-height-2-5: 2.5em !default;
+$schedule-height-inherit: inherit !default;
+$schedule-height-auto: auto !default;
+
+$schedule-spacing-0: 0 !default;
+$schedule-spacing-1: 1px !default;
+$schedule-spacing-1-5: 1.5px !default;
+$schedule-spacing-2: 2px !default;
+$schedule-spacing-3: 3px !default;
+$schedule-spacing-4: 4px !default;
+$schedule-spacing-5: 5px !default;
+$schedule-spacing-6: 6px !default;
+$schedule-spacing-7: 7px !default;
+$schedule-spacing-8: 8px !default;
+$schedule-spacing-10: 10px !default;
+$schedule-spacing-11: 11px !default;
+$schedule-spacing-12: 12px !default;
+$schedule-spacing-14: 14px !default;
+$schedule-spacing-15: 15px !default;
+$schedule-spacing-16: 16px !default;
+$schedule-spacing-18: 18px !default;
+$schedule-spacing-20: 20px !default;
+$schedule-spacing-24: 24px !default;
+$schedule-spacing-35: 35px !default;
+
+$schedule-spacing-percentage-5: 5% !default;
+$schedule-spacing-percentage-45: 45% !default;
+
+$schedule-negative-spacing-3: -3px !default;
+$schedule-negative-spacing-6: -6px !default;
+$schedule-negative-spacing-8: -8px !default;
+$schedule-negative-spacing-20: -20px !default;
 
 @mixin tbar-btn-animation {
   content: '';

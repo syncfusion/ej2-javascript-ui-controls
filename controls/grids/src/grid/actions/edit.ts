@@ -344,6 +344,12 @@ export class Edit implements IAction {
             }
         }
         this.endEditing();
+        if (!this.parent.isEdit && !this.parent.isPersistSelection) {
+            const checkedAllTarget: HTMLElement = this.parent.getHeaderContent().querySelector('.e-checkselectall');
+            if (checkedAllTarget) {
+                checkedAllTarget.parentElement.classList.remove('e-checkbox-disabled');
+            }
+        }
     }
 
     /**
@@ -911,8 +917,8 @@ export class Edit implements IAction {
             this.addRecord();
             break;
         case 'delete':
-            if (((e.target as HTMLElement).tagName !== 'INPUT' || (e.target as HTMLElement).classList.contains('e-checkselect'))
-                && !document.querySelector('.e-popup-open.e-edit-dialog')) {
+            if (((e.target as HTMLElement).tagName !== 'INPUT' || (e.target as HTMLElement).classList.contains('e-checkselect')
+                || (e.target as HTMLElement).classList.contains('e-checkselectall')) && !document.querySelector('.e-popup-open.e-edit-dialog')) {
                 this.deleteRecord();
             }
             break;
@@ -921,7 +927,8 @@ export class Edit implements IAction {
             break;
         case 'enter':
             if (!parentsUntil(e.target as HTMLElement, 'e-unboundcelldiv') && this.parent.editSettings.mode !== 'Batch' &&
-                    (parentsUntil(e.target as HTMLElement, literals.gridContent) || ((this.parent.frozenRows ||
+                    (parentsUntil(e.target as HTMLElement, literals.gridContent)
+                    || (((this.parent.frozenRows || this.parent.pinnedTopRowModels.length) ||
                     (this.parent.editSettings.showAddNewRow && (this.parent.enableVirtualization || this.parent.enableInfiniteScrolling)))
                     && parentsUntil(e.target as HTMLElement, literals.headerContent)))
                     && (!document.getElementsByClassName('e-popup-open').length || (document.querySelectorAll('.e-popup-open .e-editcell').length &&
@@ -977,7 +984,7 @@ export class Edit implements IAction {
                     const rows: Element[] = this.parent.allowGrouping ? (!isNullOrUndefined(this.parent.getContent()) ?
                         [].slice.call(this.parent.getContent().querySelectorAll('tr')) : []) : this.parent.getRows();
                     let rowIndex: number = rows.map((m: HTMLTableRowElement) => m.getAttribute('data-uid')).indexOf(uid);
-                    if (this.parent.frozenRows) {
+                    if (this.parent.frozenRows || this.parent.pinnedTopRowModels.length) {
                         if (parentsUntil(editedRow, 'e-gridheader')) {
                             rowIndex = (editedRow as HTMLTableRowElement).rowIndex;
                         } else if (parentsUntil(editedRow, 'e-gridcontent')) {
@@ -1195,6 +1202,9 @@ export class Edit implements IAction {
             parseInt(this.parent.height as string, 10) : gcontent.offsetHeight;
         div.style.bottom = ((gHeight as number) - gcontent.querySelector('table').offsetHeight
             - scrollWidth) + inputClient.height + 9 + 'px';
+        if (this.parent.pinnedTopRowModels.length) {
+            div.style.bottom = inputClient.height + 9 + 'px';
+        }
     }
 
     private setPositionStyles(isAddNewRow: boolean, rows: Element[], div: HTMLElement): void {
@@ -1232,7 +1242,7 @@ export class Edit implements IAction {
             }
         }
         if (isInline) {
-            if (this.parent.frozenRows || isAddNewRow) {
+            if (this.parent.frozenRows || this.parent.pinnedTopRowModels.length || isAddNewRow) {
                 const headerRows: string = this.parent.editSettings.showAddNewRow ? '.e-row:not(.e-hiddenrow.e-addedrow)' :
                     '.e-row:not(.e-hiddenrow)';
                 const fHearderRows: HTMLCollection = [].slice.call(
@@ -1290,14 +1300,14 @@ export class Edit implements IAction {
         }
         div.appendChild(content);
         div.appendChild(arrow);
-        if (!customForm && (this.parent.frozenRows || isAddNewRow) && this.parent.editSettings.mode !== 'Dialog') {
+        if (!customForm && (this.parent.frozenRows || this.parent.pinnedTopRowModels.length || isAddNewRow) && this.parent.editSettings.mode !== 'Dialog') {
             const getEditCell: HTMLElement = this.parent.editSettings.mode === 'Normal' ?
                 closest(element, '.e-editcell') as HTMLElement : closest(element, '.' + literals.table) as HTMLElement;
             getEditCell.style.position = 'relative';
             div.style.position = 'absolute';
             if (this.parent.editSettings.mode === 'Batch' ||
                 (closest(element, '.' + literals.frozenContent) || closest(element, '.' + literals.frozenHeader))
-                || (this.parent.frozenRows || isAddNewRow)) {
+                || (this.parent.frozenRows || this.parent.pinnedTopRowModels.length || isAddNewRow)) {
                 if (this.parent.isFrozenGrid()) {
                     if (td.classList.contains('e-unfreeze')) {
                         addClass([div], 'e-unfreeze');
@@ -1346,7 +1356,7 @@ export class Edit implements IAction {
         const lineHeight: number = parseInt(
             document.defaultView.getComputedStyle(div, null).getPropertyValue('font-size'), 10
         );
-        if ((this.parent.frozenRows || isAddNewRow) && this.parent.editSettings.mode !== 'Dialog') {
+        if ((this.parent.frozenRows || this.parent.pinnedTopRowModels.length || isAddNewRow) && this.parent.editSettings.mode !== 'Dialog') {
             div.style.left = input.offsetLeft + (input.offsetWidth / 2 - div.offsetWidth / 2) + 'px';
         } else {
             div.style.left = (parseInt(div.style.left, 10) - div.offsetWidth / 2) + 'px';
@@ -1355,13 +1365,14 @@ export class Edit implements IAction {
             div.querySelector('label').getBoundingClientRect().height / (lineHeight * 1.2) >= 2) {
             div.style.width = div.style.maxWidth;
         }
-        if (isInline && !isScroll && !this.parent.allowPaging || (this.parent.frozenRows || isAddNewRow)) {
+        if (isInline && !isScroll && !this.parent.allowPaging
+            || (this.parent.frozenRows || this.parent.pinnedTopRowModels.length || isAddNewRow)) {
             // gcontent.style.position = 'static';
             const pos: OffsetPosition = calculateRelativeBasedPosition(input, div);
             div.style.top = pos.top + inputClient.height + 9 + 'px';
         }
         if (validationForBottomRowPos) {
-            if (isScroll && this.parent.height !== 'auto' && (!this.parent.frozenRows || !isAddNewRow)
+            if (isScroll && this.parent.height !== 'auto' && (!this.parent.frozenRows || !this.parent.pinnedTopRowModels.length || !isAddNewRow)
                 && !this.parent.enableVirtualization && !this.parent.enableInfiniteScrolling && !(div.classList.contains('e-freezeerror')
              && div.classList.contains('e-fixederror'))) {
                 this.setBottomStyles(div, gcontent, inputClient);

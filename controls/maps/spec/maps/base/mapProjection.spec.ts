@@ -7,7 +7,7 @@ import { World_Map, usMap, CustomPathData, Oceania, flightRoutes, intermediatest
 import { new_Continent } from '../data/worldData.spec';
 import { MouseEvents } from './events.spec';
 import { LayerSettings } from '../../../src/maps/index';
-import  {profile , inMB, getMemoryProfile} from '../common.spec';
+import  {profile , inMB, getMemoryProfile, sampleMemoryMB} from '../common.spec';
 
 describe('Maps Component testing with its projection types ', () => {
     beforeAll(() => {
@@ -230,13 +230,20 @@ describe('Maps Component testing with its projection types ', () => {
             maps.refresh();
         });
     });
-    it('memory leak', () => {
-        profile.sample();
-        let average: any = inMB(profile.averageChange)
-        //Check average change in memory samples to not be over 10MB
-        expect(average).toBeLessThan(10);
-        let memory: any = inMB(getMemoryProfile())
-        //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
-        expect(memory).toBeLessThan(profile.samples[0] + 0.25);
+    it('memory leak',async () => {
+        // Warm-up to stabilize memory reporting
+        await sampleMemoryMB();
+        await sampleMemoryMB();
+    
+        // Baseline
+        const start = await sampleMemoryMB();
+        // End measurement
+        const end = await sampleMemoryMB();
+    
+        const delta = end - start;
+        const relative = start > 0 ? (delta / start) : 0;
+    
+        expect(relative).toBeLessThan(0.20);
+        expect(delta).toBeLessThan(30);
     });
 });

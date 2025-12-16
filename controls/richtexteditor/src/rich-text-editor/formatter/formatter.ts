@@ -62,6 +62,7 @@ export class Formatter {
             && args.item.command !== 'Videos'
             && args.item.command !== 'EmojiPicker'
             && args.item.command !== 'CodeBlock'
+            && args.item.command !== 'AIAssistant'
             && range
             && !(self.contentModule.getEditPanel().contains(this.getAncestorNode(range.commonAncestorContainer))
                 || self.contentModule.getEditPanel() === range.commonAncestorContainer
@@ -79,7 +80,12 @@ export class Formatter {
             const currentLength: number = self.getText().trim().replace(/(\r\n|\n|\r|\t)/gm, '').replace(/\u200B/g, '').length;
             const selectionLength: number = self.getSelection().length;
             const totalLength: number = (currentLength - selectionLength) + currentInsertContentLength;
-            if ((!(self.maxLength === -1 || totalLength <= self.maxLength) || (self.maxLength !== -1 && currentLength > self.maxLength)) && args.item.subCommand !== 'Undo' && args.item.subCommand !== 'Redo') {
+            const hasMaxLength: boolean = self.maxLength !== -1;
+            const exceedsTotalLength: boolean = totalLength > self.maxLength;
+            const exceedsCurrentLength: boolean = currentLength > self.maxLength;
+            const exceedsMaxLength: boolean = hasMaxLength && (exceedsTotalLength || exceedsCurrentLength);
+            const isNotUndoRedo: boolean = args.item.subCommand !== 'Undo' && args.item.subCommand !== 'Redo';
+            if (exceedsMaxLength && isNotUndoRedo) {
                 return;
             }
         }
@@ -134,7 +140,7 @@ export class Formatter {
             || ((args.item.subCommand === 'FontName' || args.item.subCommand === 'FontSize') && args.name === 'dropDownSelect')
             || ((args.item.subCommand === 'BackgroundColor' || args.item.subCommand === 'FontColor')
                 && (args.name === 'colorPickerChanged' ||  args.name === 'tableColorPickerChanged')) || args.item.subCommand === 'FormatPainter' || args.item.subCommand === 'EmojiPicker' || args.item.subCommand === 'CodeBlock' || args.item.subCommand === 'Checklist')) {
-            extend(args, args, { requestType: args.item.subCommand, cancel: false, itemCollection: value, selectType: args.name }, true);
+            extend(args, args, { requestType: (args.item.subCommand === 'LineHeights') ? 'LineHeight' : args.item.subCommand, cancel: false, itemCollection: value, selectType: args.name }, true);
             self.trigger(CONSTANT.actionBegin, args, (actionBeginArgs: ActionBeginEventArgs) => {
                 if (!actionBeginArgs.cancel) {
                     const formatPainterCopy: boolean = !isNOU(actionBeginArgs.requestType) && actionBeginArgs.requestType === 'FormatPainter' && actionBeginArgs.name === 'format-copy';
@@ -176,7 +182,7 @@ export class Formatter {
                 }
             });
         }
-        if ((isNOU(event) || event && (event as KeyboardEventArgs).action !== 'copy') &&
+        if ((isNOU(event) || (event && (event as KeyboardEventArgs).action !== 'copy' && (event as KeyboardEventArgs).action !== 'html-source')) &&
             !(event && event.shiftKey && (event as KeyboardEventArgs).key === 'Tab')) {
             this.enableUndo(self);
         }
@@ -214,7 +220,7 @@ export class Formatter {
      */
     public onSuccess(self: IRichTextEditor, events: IMarkdownFormatterCallBack | IHtmlFormatterCallBack): void {
         self.notify(CONSTANT.contentChanged, {});
-        if (events && (isNOU(events.event) || (events.event as KeyboardEventArgs).action !== 'copy')) {
+        if (events && (isNOU(events.event) || ((events.event as KeyboardEventArgs).action !== 'copy' && (events.event as KeyboardEventArgs).action !== 'html-source'))) {
             if (events.requestType === 'Paste') {
                 self.notify(CONSTANT.execCommandCallBack, events);
                 this.enableUndo(self);

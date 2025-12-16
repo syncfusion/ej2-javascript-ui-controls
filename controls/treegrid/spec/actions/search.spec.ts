@@ -6,13 +6,14 @@ import { Page } from '../../src/treegrid/actions/page';
 import { Sort } from '../../src/treegrid/actions/sort';
 import { Edit } from '../../src/treegrid/actions/edit';
 import { Toolbar } from '../../src/treegrid/actions/toolbar';
+import { VirtualScroll } from '../../src/treegrid/actions/virtual-scroll';
 import { profile, inMB, getMemoryProfile } from '../common.spec';
 import { SaveEventArgs, ActionEventArgs } from '@syncfusion/ej2-grids';
 
 /**
  * Grid base spec 
  */
-TreeGrid.Inject(Filter, Toolbar, Page, Edit, Sort);
+TreeGrid.Inject(Filter, Toolbar, Page, Edit, Sort, VirtualScroll);
 describe('Search module', () => {
   beforeAll(() => {
     const isDef = (o: any) => o !== undefined && o !== null;
@@ -810,11 +811,10 @@ describe('Bug 993665: ExpandstateMapping in virtualization is not working to mai
     }
     gridObj.grid.actionComplete = actionComplete;
     gridObj.search("Child task 5");
-
   });
-
   afterAll(() => {
     destroy(gridObj);
     gridObj = null;
   });
 });
+

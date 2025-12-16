@@ -1,11 +1,11 @@
 import { Toolbar as tool, ClickEventArgs, MenuItemModel, Menu } from '@syncfusion/ej2-navigations';
 import { ItemModel, BeforeOpenCloseMenuEventArgs, MenuEventArgs } from '@syncfusion/ej2-navigations';
-import { remove, createElement, formatUnit, getInstance, addClass, removeClass, select, SanitizeHtmlHelper, setValue } from '@syncfusion/ej2-base';
+import { remove, createElement, formatUnit, getInstance, addClass, removeClass, select, SanitizeHtmlHelper, setValue, isNullOrUndefined } from '@syncfusion/ej2-base';
 import * as events from '../../common/base/constant';
 import { Dialog } from '@syncfusion/ej2-popups';
 import { SaveReportArgs, FetchReportArgs, LoadReportArgs, RemoveReportArgs, RenameReportArgs, ToolbarArgs, PivotActionInfo } from '../base/interface';
 import { BeforeExportEventArgs } from '../base/interface';
-import { DropDownList, ChangeEventArgs } from '@syncfusion/ej2-dropdowns';
+import { DropDownList, ChangeEventArgs, FieldSettingsModel } from '@syncfusion/ej2-dropdowns';
 import * as cls from '../../common/base/css-constant';
 import { DisplayOption, PivotView } from '../../pivotview/base/pivotview';
 import { ToolbarItems, ChartSeriesType, MultipleAxisMode } from '../base/enum';
@@ -14,6 +14,7 @@ import { CheckBox, ChangeEventArgs as StateChange } from '@syncfusion/ej2-button
 import { ChartSettingsModel } from '../../pivotview/model/chartsettings-model';
 import { ChartSettings } from '../../pivotview/model/chartsettings';
 import { GridSettings } from '../../pivotview/model/gridsettings';
+import { AccumulationChart, Chart } from '@syncfusion/ej2-charts';
 
 /**
  * Module for Toolbar
@@ -286,10 +287,10 @@ export class Toolbar {
     private reportLoad(args: ChangeEventArgs): void {
         if (this.action !== 'Save' && this.action !== 'Rename' && this.action !== 'New') {
             const loadArgs: LoadReportArgs = {
-                reportName: args.itemData.value as string
+                reportName: (args.itemData as FieldSettingsModel).value as string
             };
             const actionInfo: PivotActionInfo = {
-                reportName: args.itemData.value as string
+                reportName: (args.itemData as FieldSettingsModel).value as string
             };
             this.parent.actionObj.actionInfo = actionInfo;
             this.parent.trigger(events.loadReport, loadArgs, (observedArgs: LoadReportArgs) => {
@@ -1119,7 +1120,6 @@ export class Toolbar {
             const reports: FetchReportArgs = this.fetchReports();
             const reportList: DropDownList = new DropDownList({
                 dataSource: reports.reportName,
-                width: '150px',
                 popupHeight: '200px',
                 placeholder: this.currentReport === '' ? this.parent.localeObj.getConstant('reportList') : '',
                 enableRtl: this.parent.enableRtl,
@@ -1360,10 +1360,13 @@ export class Toolbar {
         }
         try {
             switch (args.item.id) {
-            case (this.parent.element.id + 'grid'):
-                if (this.parent.grid && this.parent.chart) {
+            case (this.parent.element.id + 'grid'): {
+                const emptyChartElement: HTMLElement = select('#' + this.parent.element.id + '_chart', this.parent.element);
+                let chartInstance: Chart | AccumulationChart = getInstance(emptyChartElement, Chart) as Chart;
+                chartInstance = !isNullOrUndefined(chartInstance) ? chartInstance : this.parent.chart;
+                if (this.parent.grid && chartInstance) {
                     this.parent.grid.element.style.display = '';
-                    this.parent.chart.element.style.display = 'none';
+                    chartInstance.element.style.display = 'none';
                     if (this.parent.chartSettings.enableMultipleAxis && this.parent.chartSettings.enableScrollOnMultiAxis) {
                         (this.parent.element.querySelector('.e-pivotchart') as HTMLElement).style.display = 'none';
                     }
@@ -1387,6 +1390,7 @@ export class Toolbar {
                     this.parent.layoutRefresh();
                 }
                 break;
+            }
             case (this.parent.element.id + 'pdf'):
                 if (this.parent.currentView === 'Table') {
                     this.parent.pdfExport({ fileName: 'Export.pdf' }, false, undefined, false);
@@ -1584,7 +1588,6 @@ export class Toolbar {
             locale: this.parent.locale,
             enableHtmlSanitizer: this.parent.enableHtmlSanitizer,
             width: 'auto',
-            height: 'auto',
             position: { X: 'center', Y: 'center' },
             buttons: [
                 {
@@ -1611,9 +1614,13 @@ export class Toolbar {
         const chartType: ChartSeriesType = (getInstance(select('#' + this.parent.element.id + '_ChartTypeOption'), DropDownList) as DropDownList).value as ChartSeriesType;
         const checked: boolean = (getInstance(select('#' + this.parent.element.id + '_DialogMultipleAxis'), CheckBox) as CheckBox).checked;
         const checkedShow: boolean = (getInstance(select('#' + this.parent.element.id + '_DialogShowLabel'), CheckBox) as CheckBox).checked;
-        this.parent.chart.legendSettings.visible = checkedShow;
-        if (this.chartLableState) {
+        if (this.parent.chart && this.parent.chart.legendSettings) {
             this.parent.chart.legendSettings.visible = checkedShow;
+        }
+        if (this.chartLableState) {
+            if (this.parent.chart && this.parent.chart.legendSettings) {
+                this.parent.chart.legendSettings.visible = checkedShow;
+            }
             if (this.parent.chartSettings.legendSettings) {
                 this.parent.chartSettings.legendSettings.visible = checkedShow;
             } else {
@@ -1629,14 +1636,19 @@ export class Toolbar {
     }
     private updateChartType(type: ChartSeriesType, isMultiAxis: boolean): void {
         if (this.getAllChartItems().indexOf(type) > -1) {
-            if (this.parent.chart) {
+            const emptyChartElement: HTMLElement = select('#' + this.parent.element.id + '_chart', this.parent.element);
+            let chartInstance: Chart | AccumulationChart = getInstance(emptyChartElement, Chart) as Chart;
+            chartInstance = !isNullOrUndefined(chartInstance) ? chartInstance : this.parent.chart;
+            if (chartInstance) {
+                this.parent.grid.element.style.display = 'none';
+                chartInstance.element.style.display = '';
                 this.parent.currentView = 'Chart';
                 this.parent.setProperties({ displayOption: { primary: 'Chart' } }, true);
                 if (this.parent.chartSettings.enableScrollOnMultiAxis && this.parent.chartSettings.enableMultipleAxis) {
                     (this.parent.element.querySelector('.' + cls.PIVOTCHART) as HTMLElement).style.width = formatUnit(this.parent.grid ? this.parent.getGridWidthAsNumber() : this.parent.getWidthAsNumber());
                     (this.parent.element.querySelector('.' + cls.PIVOTCHART) as HTMLElement).style.height = formatUnit(this.parent.pivotChartModule.getChartHeight());
                 }
-                this.parent.chart.setProperties({
+                chartInstance.setProperties({
                     width: formatUnit(this.parent.grid ? this.parent.getGridWidthAsNumber() : this.parent.getWidthAsNumber()),
                     height: formatUnit(this.parent.pivotChartModule.getChartHeight())
                 }, true);
@@ -1649,7 +1661,7 @@ export class Toolbar {
                 };
                 this.parent.actionObj.actionInfo = actionInfo;
                 if (this.parent.chartSettings.chartSeries.type === type && !isMultiAxis) {
-                    this.parent.chart.refresh();
+                    chartInstance.refresh();
                 }
             }
         }

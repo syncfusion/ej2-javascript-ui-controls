@@ -1,6 +1,6 @@
 {
 	"name": "@syncfusion/ej2",
-	"version": "31.2.16",
+	"version": "31.745.0",
 	"description": "A modern JavaScript UI toolkit that has been built from the ground up to be lightweight, responsive, modular and touch friendly. It is written in TypeScript and has no external dependencies.",
 	"author": "Syncfusion Inc.",
 	"license": "SEE LICENSE IN license",
@@ -35,6 +35,7 @@
 		"@syncfusion/ej2-lineargauge": "*",
 		"@syncfusion/ej2-lists": "*",
 		"@syncfusion/ej2-maps": "*",
+		"@syncfusion/ej2-markdown-converter": "*",
 		"@syncfusion/ej2-multicolumn-combobox": "*",
 		"@syncfusion/ej2-navigations": "*",
 		"@syncfusion/ej2-notifications": "*",
@@ -54,7 +55,8 @@
 		"@syncfusion/ej2-spreadsheet": "*",
 		"@syncfusion/ej2-svg-base": "*",
 		"@syncfusion/ej2-treegrid": "*",
-		"@syncfusion/ej2-treemap": "*"
+		"@syncfusion/ej2-treemap": "*",
+		"gulp-replace": "^1.1.4"
 	},
 	"devDependencies": {
 		"@syncfusion/ej2-staging": "^1.0.1",

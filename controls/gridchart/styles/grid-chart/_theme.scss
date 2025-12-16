@@ -1,3 +1,6 @@
+@use 'ej2-base/styles/common/mixin' as *;
+@use './theme-variables' as *;
+@use 'ej2-grids/styles/grid/theme-variables' as grid-theme-vars;
 @include export-module('grid-chart-theme') {
 
   #{&}.e-grid-context-menu-dialog {
@@ -24,7 +27,7 @@
       }
     }
 
-    @if $grid-skin =='fluent2' {
+    @if grid-theme-vars.$grid-skin =='fluent2' {
       .e-accordion .e-acrdn-item.e-select {
         border-bottom: 1px solid $grid-chart-border-color;
       }

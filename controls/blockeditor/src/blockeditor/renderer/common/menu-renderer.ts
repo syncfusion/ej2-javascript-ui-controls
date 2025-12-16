@@ -1,6 +1,6 @@
 import { Menu, ContextMenu } from '@syncfusion/ej2-navigations';
 import { BlockEditor } from '../../base/index';
-import { IMenubarRenderOptions } from '../../base/interface';
+import { IMenubarRenderOptions } from '../../../common/interface';
 
 /**
  * `Menu renderer` module is used to render menus in BlockEditor.
@@ -8,7 +8,7 @@ import { IMenubarRenderOptions } from '../../base/interface';
  * @hidden
  */
 export class MenuBarRenderer {
-    protected editor: BlockEditor;
+    private editor: BlockEditor;
 
     constructor(editor?: BlockEditor) {
         this.editor = editor;
@@ -26,10 +26,12 @@ export class MenuBarRenderer {
             items: args.items,
             template: args.template,
             orientation: args.orientation,
-            enablePersistence: this.editor.enablePersistence,
-            enableRtl: this.editor.enableRtl,
             fields: args.fields,
-            select: args.select
+            select: args.select,
+            locale: this.editor.locale,
+            cssClass: (args.cssClass + (this.editor.cssClass ? (' ' + this.editor.cssClass) : '')),
+            enableRtl: this.editor.enableRtl,
+            enablePersistence: this.editor.enablePersistence
         }, args.element);
     }
 
@@ -46,8 +48,10 @@ export class MenuBarRenderer {
             items: args.items,
             showItemOnClick: args.showItemOnClick,
             itemTemplate: args.itemTemplate,
-            enablePersistence: this.editor.enablePersistence,
+            locale: this.editor.locale,
+            cssClass: (args.cssClass + (this.editor.cssClass ? (' ' + this.editor.cssClass) : '')),
             enableRtl: this.editor.enableRtl,
+            enablePersistence: this.editor.enablePersistence,
             fields: args.fields,
             select: args.select,
             beforeOpen: args.beforeOpen,

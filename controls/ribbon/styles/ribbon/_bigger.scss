@@ -1,3 +1,5 @@
+@use 'ej2-base/styles/common/mixin' as *;
+@use './theme-variables' as *;
 @mixin ribbon-font-props($font-size, $line-height) {
   font-size: $font-size;
   line-height: $line-height;
@@ -49,7 +51,7 @@
         }
 
         .e-toolbar-item {
-          margin-right: 0;
+          margin-right: $ribbon-bigger-tab-header-tbar-margin-right;
 
           .e-tab-text {
             @include ribbon-font-props($ribbon-bigger-tab-text-size, $ribbon-bigger-tab-text-height);
@@ -68,7 +70,7 @@
       &.e-tab {
         &.e-focused .e-tab-header .e-toolbar-item .e-tab-wrap:focus,
         .e-tab-header .e-toolbar-item .e-text-wrap {
-          height: auto;
+          height: $ribbon-text-wrap-bigger-height;
         }
       }
     }
@@ -116,7 +118,7 @@
         height: $ribbon-bigger-gallery-wrapper-height;
       }
       &:has(.e-ribbon-gallery-container) {
-        padding: 0;
+        padding: $ribbon-bigger-gallery-container-padding;
       }
 
       .e-ribbon-gallery-wrapper .e-ribbon-gallery-container .e-ribbon-gallery-item {
@@ -158,11 +160,11 @@
         &:not(:has(.e-ribbon-template)) {
           .e-btn {
             &:not(.e-icon-btn, .e-dropdown-btn) {
-              padding: 0 12px 0 1px;
+              padding: $ribbon-bigger-group-overflow-ddb-btn-padding;
             }
           }
           .e-dropdown-btn.e-btn {
-            padding: 0 4px 0 1px;
+            padding: $ribbon-bigger-group-overflow-dropdown-btn-padding;
           }
         }
       }
@@ -171,11 +173,11 @@
         &:not(:has(.e-ribbon-template)) {
           .e-btn {
             &:not(.e-icon-btn, .e-dropdown-btn) {
-              padding: 0 1px 0 12px;
+              padding: $ribbon-bigger-rtl-ddb-btn-padding;
             }
           }
           .e-dropdown-btn.e-btn {
-            padding: 0 1px 0 4px;
+            padding: $ribbon-bigger-rtl-dropdown-btn-padding;
           }
         }
       }
@@ -191,11 +193,11 @@
 
     &.e-ribbon-simplified-mode {
       .e-ribbon-group {
-        height: auto;
+        height: $ribbon-simplified-group-bigger-height;
       }
 
       .e-input-group {
-        margin-bottom: 0;
+        margin-bottom: $ribbon-bigger-simplified-group-margin-bottom;
       }
 
       .e-ribbon-group-content {
@@ -221,7 +223,7 @@
 
       input.e-input {
         @include ribbon-font-props($ribbon-bigger-input-items-size, $ribbon-bigger-input-items-height);
-        height: auto;
+        height: $ribbon-input-bigger-height;
       }
 
       &.e-control-wrapper {
@@ -296,8 +298,8 @@
         }
 
         .e-split-colorpicker.e-split-btn {
-          padding: 0;
-          border: none;
+          padding: $ribbon-bigger-colorpicker-split-btn-padding;
+          border: $ribbon-bigger-colorpicker-split-btn-border;
 
           .e-btn-icon {
             height: $ribbon-bigger-color-picker-height;
@@ -312,7 +314,7 @@
         .e-dropdown-btn .e-caret {
           @include ribbon-font-props($ribbon-bigger-dropdown-caret-btn-size, $ribbon-bigger-dropdown-caret-btn-height);
           padding: $ribbon-bigger-dropdown-caret-btn-padding;
-          margin: 0;
+          margin: $ribbon-bigger-dropdown-caret-btn-margin;
         }
       }
     }
@@ -322,7 +324,7 @@
   .e-bigger.e-ribbon-group-overflow-ddb {
     &.e-dropdown-popup:has(.e-ribbon-overflow-target) {
       @if ($skin-name == 'fluent2') {
-        padding: 6px;
+        padding: $ribbon-bigger-overflow-target-padding;
       }
     }
     .e-ribbon-overflow-target {
@@ -349,7 +351,7 @@
               min-height: $ribbon-bigger-overflow-items-min-width-height;
             }
             &.e-icon-left {
-              margin: 0;
+              margin: $ribbon-bigger-overflow-items-icon-left-margin;
             }
           }
           &:has(.e-colorpicker-wrapper) {
@@ -368,7 +370,7 @@
       }
       .e-ribbon-item:not(:has(.e-ribbon-template)) > .e-checkbox-wrapper {
         margin: $ribbon-bigger-checkbox-margin;
-        padding: 0;
+        padding: $ribbon-bigger-checkbox-padding;
       }
     }
 
@@ -453,11 +455,11 @@
     height: $ribbon-bigger-ddb-popup-height;
 
     &.e-separator {
-      height: auto;
+      height: $ribbon-separator-height;
     }
 
     .e-menu-icon {
-      @include ribbon-font-props(20px, 20px);
+      @include ribbon-font-props($ribbon-bigger-menu-icon-font-size, $ribbon-bigger-menu-icon-line-height);
       min-height: 20px;
       min-width: 20px;
     }

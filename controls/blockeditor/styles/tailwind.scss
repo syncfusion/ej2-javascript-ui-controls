@@ -1,5 +1,5 @@
-@import 'ej2-base/styles/definition/tailwind.scss';
-@import 'blockeditor/tailwind-definition.scss';
-@import 'blockeditor/icons/tailwind.scss';
-@import 'blockeditor/all.scss';
-@import 'blockeditor/bigger.scss';
+@use 'ej2-base/styles/definition/tailwind' as *;
+@use 'blockeditor/tailwind-definition' as *;
+@use 'blockeditor/icons/tailwind' as *;
+@use 'blockeditor/all' as *;
+@use 'blockeditor/bigger' as *;

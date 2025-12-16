@@ -7,7 +7,7 @@ import { Toolbar } from '../../src/treegrid/actions/toolbar';
 import { Filter } from '../../src/treegrid/actions/filter';
 import { DetailRow } from '../../src/treegrid/actions/detail-row';
 import { isNullOrUndefined } from '@syncfusion/ej2-base';
-import { CellSaveEventArgs, actionComplete } from '../../src';
+import { CellSaveEventArgs, actionComplete, RowCollapsedEventArgs } from '../../src';
 import { VirtualScroll } from '../../src/treegrid/actions/virtual-scroll';
 import { CellEditArgs, dataBound } from '@syncfusion/ej2-grids';
 import { Freeze } from '../../src/treegrid/actions/freeze-column';
@@ -824,6 +824,48 @@ describe('Detail template with virtualization', () => {
     it('actionFailure testing', () => {
         expect(actionFailedFunction).toHaveBeenCalled();
     });
+    afterAll(() => {
+        destroy(gridObj);
+    });
+});
+
+describe('EJ2-966612 - last row border of detail template is not visible when collapse the parent row', () => {
+    let gridObj: TreeGrid;
+
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: employeeData3,
+                childMapping: 'Children',
+                treeColumnIndex: 0,
+                detailTemplate: template,
+                width: 'auto',
+                columns: [
+                    { field: 'Name', headerText: 'First Name', width: '160' },
+                    { field: 'DOB', headerText: 'DOB', width: '85', type: 'date', format: 'yMd', textAlign: 'Right' },
+                    { field: 'Designation', headerText: 'Designation', width: '147' },
+                    { field: 'EmpID', headerText: 'EmployeeID', width: '125' },
+                    { field: 'Country', headerText: 'Country', width: '148' },
+                ],
+            },
+            done
+        );
+    });
+
+    it('checking the last row border of detail template', (done: Function) => {
+        gridObj.collapsed = function(args: RowCollapsedEventArgs): void {
+            setTimeout(() => {
+                const nextRow = args.row.nextElementSibling as HTMLTableRowElement;
+                if (nextRow && nextRow.cells && nextRow.cells.length > 0) {
+                    const firstCell = nextRow.cells[0];
+                    expect(firstCell.classList.contains('e-lastrowcell')).toBe(true);
+                }
+                done();
+            }, 100);
+        };
+        gridObj.collapseAll();
+    });
+
     afterAll(() => {
         destroy(gridObj);
     });

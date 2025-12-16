@@ -2,7 +2,7 @@
  * MarkdownSelection internal module
  *
  * @hidden
- * @deprecated
+ * @private
  */
 export class MarkdownSelection {
     public selectionStart: number;
@@ -14,7 +14,7 @@ export class MarkdownSelection {
      * @param {number} point - specifies the number value
      * @returns {number} - returns the value
      * @hidden
-     * @deprecated
+     * @private
      */
     public getLineNumber(textarea: HTMLTextAreaElement, point: number): number {
         return textarea.value.substr(0, point).split('\n').length;
@@ -26,7 +26,7 @@ export class MarkdownSelection {
      * @param {HTMLTextAreaElement} textarea - specifies the text area element
      * @returns {string} - specifies the string value
      * @hidden
-     * @deprecated
+     * @private
      */
     public getSelectedText(textarea: HTMLTextAreaElement): string {
         const start: number = textarea.selectionStart;
@@ -40,7 +40,7 @@ export class MarkdownSelection {
      * @param {string} value - specifies the string value
      * @returns {string[]} - returns the string value
      * @hidden
-     * @deprecated
+     * @private
      */
     public getAllParents(value: string): string[] {
         return value.split('\n');
@@ -52,7 +52,7 @@ export class MarkdownSelection {
      * @param {HTMLTextAreaElement} textarea - specifies the text area element
      * @returns {string} - returns the string value
      * @hidden
-     * @deprecated
+     * @private
      */
     public getSelectedLine(textarea: HTMLTextAreaElement): string {
         const lines: string[] = this.getAllParents(textarea.value);
@@ -66,7 +66,7 @@ export class MarkdownSelection {
      * @param {number} index - specifies the number value
      * @returns {string} - returns the string value
      * @hidden
-     * @deprecated
+     * @private
      */
     public getLine(textarea: HTMLTextAreaElement, index: number): string {
         const lines: string[] = this.getAllParents(textarea.value);
@@ -79,7 +79,7 @@ export class MarkdownSelection {
      * @param {HTMLTextAreaElement} textarea - specifies the text area element
      * @returns {string} - returns the string value
      * @hidden
-     * @deprecated
+     * @private
      */
     public getSelectedParentPoints(textarea: HTMLTextAreaElement): { [key: string]: string | number }[] {
         const lines: string[] = this.getAllParents(textarea.value);
@@ -123,7 +123,7 @@ export class MarkdownSelection {
      * @param {number} end - specifies the end value
      * @returns {void}
      * @hidden
-     * @deprecated
+     * @private
      */
     public setSelection(textarea: HTMLTextAreaElement, start: number, end: number): void {
         textarea.setSelectionRange(start, end);
@@ -137,7 +137,7 @@ export class MarkdownSelection {
      * @param {number} end - specifies the end value
      * @returns {void}
      * @hidden
-     * @deprecated
+     * @private
      */
     public save(start: number, end: number): void {
         this.selectionStart = start;
@@ -150,7 +150,7 @@ export class MarkdownSelection {
      * @param {HTMLTextAreaElement} textArea - specifies the text area element
      * @returns {void}
      * @hidden
-     * @deprecated
+     * @private
      */
     public restore(textArea: HTMLTextAreaElement): void {
         this.setSelection(textArea, this.selectionStart, this.selectionEnd);
@@ -163,7 +163,7 @@ export class MarkdownSelection {
      * @param {string} command - specifies the string value
      * @returns {boolean} - returns the boolean value
      * @hidden
-     * @deprecated
+     * @private
      */
     public isStartWith(line: string, command: string): boolean {
         let isStart: boolean = false;
@@ -182,7 +182,7 @@ export class MarkdownSelection {
      * @param {string} value - specifies the string value
      * @returns {string} - returns the value
      * @hidden
-     * @deprecated
+     * @private
      */
     public replaceSpecialChar(value: string): string {
         // eslint-disable-next-line
@@ -195,7 +195,7 @@ export class MarkdownSelection {
      * @param {string} regex - specifies the regex value
      * @returns {boolean} - returns the boolean value
      * @hidden
-     * @deprecated
+     * @private
      */
     public isClear(parents: { [key: string]: string | number }[], regex: string): boolean {
         const isClear: boolean = false;
@@ -213,7 +213,7 @@ export class MarkdownSelection {
      * @param {HTMLTextAreaElement} textarea - specifies the text area
      * @returns {void}
      * @hidden
-     * @deprecated
+     * @private
      */
     public getSelectedInlinePoints(textarea: HTMLTextAreaElement): { [key: string]: string | number } {
         const start: number = textarea.selectionStart;

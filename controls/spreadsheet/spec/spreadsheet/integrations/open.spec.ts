@@ -1,7 +1,7 @@
 import { SpreadsheetHelper } from "../util/spreadsheethelper.spec";
 import { defaultData } from '../util/datasource.spec';
 import { BeforeOpenEventArgs, DialogBeforeOpenEventArgs, ICellRenderer, setCell, SheetModel, Spreadsheet } from '../../../src/index';
-import { BeforeSaveEventArgs, saveCompleted } from '../../../src/index';
+import { BeforeSaveEventArgs, saveCompleted, CellModel, getCell } from '../../../src/index';
 
 describe('Open & Save ->', () => {
     const helper: SpreadsheetHelper = new SpreadsheetHelper('spreadsheet');
@@ -611,5 +611,54 @@ describe('Opening document using chunk processing', () => {
                 }
             });
         });
+    });
+});
+
+describe('EJ2-976393: Excel file is not rendered properly if it contains merged cell with maximum row span and column span values.', () => {
+    let helper: SpreadsheetHelper = new SpreadsheetHelper('spreadsheet');
+    const json = {
+        Workbook: {
+            sheets: [{
+                colCount: 100, rowCount: 100,
+                rows: [
+                    { cells: [{  value: '123' }] }, { cells: [{ value: '124' }] }, { cells: [{ value: '125' }] },
+                    { cells: [{ value: '126' }] }, { cells: [{ value: '127' }] }, { cells: [{ value: '121' }] },
+                    { cells: [{ value: '10' }] }, { cells: [{ value: '12' }] }, { cells: [{ value: '18' }] }
+                ],
+                mergedCells: [{ address: [0, 15], colSpan: 16369, rowSpan: 1048576 }, { address: [15, 0], colSpan: 10, rowSpan: 1048561 }],
+                usedRange: { colIndex: 20, rowIndex: 8 }
+            },
+            {
+                colCount: 100, rowCount: 100,
+                mergedCells: [{ address: [15, 0], colSpan: 16384, rowSpan: 1048576 }]
+            }]
+        }
+    };
+    beforeAll((done: Function) => {
+        helper.initializeSpreadsheet({}, done);
+    });
+    afterAll(() => {
+        helper.invoke('destroy');
+    });
+    it('rowSpan and colSpan with Excel maximum row and column count should cutoff to our default count -> ', (done: Function) => {
+        const spreadsheet = helper.getInstance();
+        spreadsheet.openComplete = (): void => {
+            let sheet: SheetModel = spreadsheet.getActiveSheet();
+            let cell: CellModel = getCell(0, 15, sheet);
+            expect(cell.rowSpan).toBe(100);
+            expect(cell.colSpan).toBe(85);
+            cell = getCell(15, 0, sheet);
+            expect(cell.rowSpan).toBe(85);
+            expect(cell.colSpan).toBe(10);
+            sheet = spreadsheet.sheets[1];
+            cell = getCell(15, 0, sheet);
+            expect(cell.rowSpan).toBe(85);
+            expect(cell.colSpan).toBe(100);
+            spreadsheet.openComplete = undefined;
+            spreadsheet.dataBind();
+            done();
+        };
+        spreadsheet.dataBind();
+        spreadsheet.openFromJson({ file: json, triggerEvent: true });
     });
 });

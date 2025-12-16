@@ -793,7 +793,6 @@ export class QuickToolbar implements IQuickToolbar {
             }
         }
     }
-
     // This method called when the image quicktoolbar properties got changed
     private refreshImageQTbar(): void {
         if (this.parent.quickToolbarSettings.enable) {
@@ -805,7 +804,6 @@ export class QuickToolbar implements IQuickToolbar {
             }
         }
     }
-
     // This method called when the audio quicktoolbar properties got changed
     private refreshAudioQTbar(): void {
         if (this.parent.quickToolbarSettings.enable) {
@@ -817,7 +815,6 @@ export class QuickToolbar implements IQuickToolbar {
             }
         }
     }
-
     // This method called when the video quicktoolbar properties got changed
     private refreshVideoQTbar(): void {
         if (this.parent.quickToolbarSettings.enable) {
@@ -829,7 +826,6 @@ export class QuickToolbar implements IQuickToolbar {
             }
         }
     }
-
     // This method called when the Link quicktoolbar properties got changed
     private refreshLinkQTbar(): void {
         if (this.parent.quickToolbarSettings.enable) {
@@ -841,7 +837,6 @@ export class QuickToolbar implements IQuickToolbar {
             }
         }
     }
-
     // This method called when the table quicktoolbar properties got changed
     private refreshTableQTbar(): void {
         if (this.parent.quickToolbarSettings.enable) {

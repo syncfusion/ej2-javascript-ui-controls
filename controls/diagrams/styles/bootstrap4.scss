@@ -1,3 +1,2 @@
-@import 'ej2-base/styles/definition/bootstrap4.scss';
-@import 'diagram/bootstrap4-definition.scss';
-@import 'diagram/all.scss';
+@use 'diagram/bootstrap4-definition' as *;
+@use 'diagram/all' as *;

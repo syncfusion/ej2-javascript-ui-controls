@@ -1,4 +1,6 @@
 @use 'sass:color';
+@use 'ej2-base/styles/definition/material' as *;
+@forward 'ej2-base/styles/definition/material';
 
 $tbar-skin: 'material' !default;
 $tbar-pop-icon-bgr-padding: 0;
@@ -40,7 +42,9 @@ $tbar-border-nav-type: solid !default;
 $tbar-btn-box-shadow: none !default;
 $tbar-active-bg: $grey-400 !default;
 $tbar-nrml-size: 42px !default;
+$tbar-nrml-height: 42px !default;
 $tbar-bgr-size: 56px !default;
+$tbar-bgr-height: 56px !default;
 $tbar-nrml-items-size: 42px !default;
 $tbar-bgr-items-size: 56px !default;
 $tbar-nrml-item-size: 42px !default;
@@ -104,6 +108,7 @@ $tbar-popup-vertical-border-width: $border-size 0 0 0 !default;
 $tbar-popup-vertical-rtl-border-width: 0 0 $border-size 0 !default;
 $tbar-item-pop-bg-color: transparent !default;
 $tbar-btn-font-size: 14px !default;
+$tbar-btn-icon-font-size: 14px !default;
 $tbar-btn-txt-font-size: $tbar-btn-font-size !default;
 $tbar-hover-bg: rgba($grey-black, .12) !default;
 $tbar-hover-border-color: rgba($grey-black, .12) !default;
@@ -189,6 +194,17 @@ $tbar-popup-btn-hover-border-size: $tbar-zero-value !default;
 $tbar-ribble-animation-border-frame: rgba(255, 255, 255, .5) !default;
 $tbar-ribble-animation-shadow-frame: 0 0 0 0 $tbar-ribble-animation-border-frame !default;
 $tbar-ribble-animation-shadow-frame-end: 0 0 0 200px rgba(255, 255, 255, .12) !default;
+$tbar-popup-btn-icon-font-size: 14px !default;
+$tbar-margin-zero: 0 !default;
+$tbar-padding-zero: 0 !default;
+$tbar-border-zero: 0 !default;
+$tbar-radius-zero: 0 !default;
+$tbar-multirow-items-btm-mrgn-small: 1px !default;
+$tbar-extended-left-mrgn: -1px !default;
+$tbar-auto-height: auto !default;
+$tbar-inherit-height: inherit !default;
+$tbar-items-height: 100% !default;
+$tbar-margin-auto: auto !default;
 
 @mixin tbar-btn-animation {
   background-color: transparent;

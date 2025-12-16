@@ -1,7 +1,7 @@
 import { Component, EmitType, L10n } from '@syncfusion/ej2-base';
 import { Dialog, ButtonPropsModel } from '@syncfusion/ej2-popups';
 import { FileManagerModel } from '../base/file-manager-model';
-import { ToolbarSettingsModel, AjaxSettingsModel, ToolbarItemModel } from '../models/index';
+import { ToolbarSettingsModel, AjaxSettingsModel, ToolbarItemModel, UploadSettingsModel } from '../models/index';
 import { DetailsViewSettingsModel } from '../models/details-view-settings-model';
 import { TreeView, ContextMenu, MenuItemModel, ItemModel } from '@syncfusion/ej2-navigations';
 import { DetailsView } from '../layout/details-view';
@@ -906,6 +906,9 @@ export interface IFileManager extends Component<HTMLElement> {
     isMac: boolean;
     oldView: string;
     oldPath: string;
+    navigationPaneTemplate: string | Function;
+    largeIconsTemplate: string | Function;
+    uploadSettings: UploadSettingsModel;
 }
 
 /** @hidden */

@@ -153,6 +153,13 @@ export interface PdfAnnotationBaseModel {
     author?: string;
 
     /**
+     * Represents the overlayText value of the annotation
+     *
+     * @default ''
+     */
+    overlayText?: string;
+
+    /**
      * Represents the modified date of the annotation
      *
      * @default ''
@@ -193,6 +200,48 @@ export interface PdfAnnotationBaseModel {
      * @default 'tranparent'
      */
     fillColor?: string;
+
+    /**
+     * Represents the isRepeat of the annotation.
+     *
+     * @default false
+     */
+    isRepeat?: boolean;
+
+    /**
+     * Represents the useOverlayText of the annotation.
+     *
+     * @default false
+     */
+    useOverlayText?: boolean;
+
+    /**
+     * Represents the opacity of the fill color (0-100).
+     *
+     * @default 1
+     */
+    markerOpacity?: number;
+
+    /**
+     * Represents the outline color of the redaction.
+     *
+     * @default 'rgba(255, 0, 0, 1)'
+     */
+    markerBorderColor?: string;
+
+    /**
+     * Represents the outline color of the redaction.
+     *
+     * @default 'rgba(0, 0, 0, 1)'
+     */
+    originalFillColor?: string;
+
+    /**
+     * Represents the outline color of the redaction.
+     *
+     * @default 'rgba(255, 255, 255, 1)'
+     */
+    markerFillColor?: string;
 
     /**
      * Represents the fill color of the annotation

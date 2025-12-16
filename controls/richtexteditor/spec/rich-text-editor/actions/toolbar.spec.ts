@@ -293,7 +293,7 @@ import { ARROWRIGHT_EVENT_INIT, TOOLBAR_FOCUS_SHORTCUT_EVENT_INIT } from "../../
         let items: any = document.querySelectorAll('#' + controlId + '_toolbar_BulletFormatList_dropdownbtn-popup .e-item');
         items[2].click();
         expect(rteObj.inputElement.querySelector('#rte').parentElement.style.listStyleType === 'circle').toBe(true);
-        expect(rteObj.element.querySelector('#rte').parentElement.tagName === 'UL').toBe(true)
+        expect(rteObj.element.querySelector('#rte').parentElement.tagName === 'UL').toBe(true);
         done();
     });
     it(' Check the bulletFormatList items 3', (done) => {
@@ -692,7 +692,7 @@ describe("Toolbar - Actions Module", () => {
     });
 
     afterAll(() => {
-        document.head.getElementsByClassName('toolbar-style')[0].remove();
+        document.head.querySelectorAll('#toolbar-style')[0].remove();
     });
 
     describe("ToolbarSettings property testing", () => {
@@ -1732,6 +1732,7 @@ describe("Toolbar - Actions Module", () => {
             rteEle = rteObj.element;
             rteEle.style.height = 300 + 'px';
         });
+
         afterAll(() => {
             destroy(rteObj);
         });
@@ -1744,6 +1745,75 @@ describe("Toolbar - Actions Module", () => {
                 expect(currentToolbarHeight).toBeGreaterThan(toolbarHeight);
                 done();
             }, 400);
+        });
+    });
+
+    describe("993811 - Toolbar popup open state testing while clicking NumberFormatList and BulletFormatList dropdown", () => {
+        let rteObj: any;
+        let rteEle: HTMLElement;
+        let controlId: string;
+        beforeEach(() => {
+            rteObj = renderRTE({
+                width: '200px',
+                toolbarSettings: {
+                    type: ToolbarType.Popup,
+                    items: ['Undo', 'Redo', '|',
+                    'Bold', 'Italic', 'Underline', 'StrikeThrough', '|',
+                    'FontName', 'FontSize', 'FontColor', 'LineHeight', 'BackgroundColor', '|',
+                    'SubScript', 'SuperScript', '|',
+                    'LowerCase', 'UpperCase', '|', 
+                    'Formats', 'Alignments', 'Blockquote', 'HorizontalLine', '|', 'OrderedList', 'UnorderedList', '|',
+                    'Indent', 'Outdent', '|',
+                    'CreateLink', '|', 'Image', '|', 'CreateTable', '|',
+                    'SourceCode', '|', 'FormatPainter', '|', 'ClearFormat', '|', 'EmojiPicker', '|', 'Print', 'InsertCode', 'Audio', 'Video', 'NumberFormatList', 'BulletFormatList']
+                }
+            });
+            rteEle = rteObj.element;
+            rteEle.style.height = 300 + 'px';
+            controlId = rteEle.id;
+        });
+        afterEach(() => {
+            destroy(rteObj);
+        });
+        it('opens toolbar popup via nav, then opens NumberFormatList dropdown', (done: DoneFn) => {
+            const navBtn = document.getElementById(controlId + '_toolbar_nav') as HTMLElement;
+            expect(navBtn).not.toBeNull();
+            navBtn.click();
+            setTimeout(() => {
+                const tbPopup = document.getElementById(controlId + '_toolbar_popup') as HTMLElement;
+                expect(tbPopup).not.toBeNull();
+                expect(tbPopup.classList.contains('e-popup-open')).toBe(true);
+                const nfItem = tbPopup.querySelector('#' + controlId + '_toolbar_NumberFormatList') as HTMLElement;
+                const nfSplitBtn = nfItem.nextElementSibling as HTMLElement;
+                expect(nfSplitBtn).not.toBeNull();
+                dispatchEvent(nfSplitBtn, 'mousedown');
+                dispatchEvent(nfSplitBtn, 'mouseup');
+                nfSplitBtn.click();
+                const nfDrop = document.getElementById(controlId + '_toolbar_NumberFormatList_dropdownbtn-popup') as HTMLElement;
+                expect(nfDrop).not.toBeNull();
+                expect(nfDrop.classList.contains('e-popup-open')).toBe(true);
+                expect(tbPopup.classList.contains('e-popup-open')).toBe(true);
+                done();
+            }, 200);
+        });
+        it('opens toolbar popup via nav, then opens BulletFormatList dropdown', (done: DoneFn) => {
+            const navBtn = document.getElementById(controlId + '_toolbar_nav') as HTMLElement;
+            navBtn.click();
+            setTimeout(() => {
+                const tbPopup = document.getElementById(controlId + '_toolbar_popup') as HTMLElement;
+                expect(tbPopup.classList.contains('e-popup-open')).toBe(true);
+                const bfItem = tbPopup.querySelector('#' + controlId + '_toolbar_BulletFormatList') as HTMLElement;
+                const bfSplitBtn = bfItem.nextElementSibling as HTMLElement;
+                expect(bfSplitBtn).not.toBeNull();
+                dispatchEvent(bfSplitBtn, 'mousedown');
+                dispatchEvent(bfSplitBtn, 'mouseup');
+                bfSplitBtn.click();
+                const bfDrop = document.getElementById(controlId + '_toolbar_BulletFormatList_dropdownbtn-popup') as HTMLElement;
+                expect(bfDrop).not.toBeNull();
+                expect(bfDrop.classList.contains('e-popup-open')).toBe(true);
+                expect(tbPopup.classList.contains('e-popup-open')).toBe(true);
+                done();
+            }, 200);
         });
     });
 
@@ -2552,31 +2622,31 @@ describe('865043 - In toolbar settings, enable floating set to false the tooltip
 });
 
 describe('982113 - Dynamic Property changes for tooltip and Enable Floating Toolbar Offset', () => {
-    let rteObj: RichTextEditor;
-    beforeAll(() => {
-        rteObj = renderRTE({
-            toolbarSettings: {
-                items: ['NumberFormatList', 'BulletFormatList'
-                ]
-            },
+        let rteObj: RichTextEditor;
+        beforeAll(() => {
+            rteObj = renderRTE({
+                toolbarSettings: {
+                    items: [ 'NumberFormatList', 'BulletFormatList'
+                    ]
+                },
+            });
+        });
+        afterAll(() => {
+            destroy(rteObj);
+        });
+        it('check the tooltip', () => {
+            expect(document.querySelectorAll('.e-toolbar-item.e-template').length).toEqual(2);
+            expect(document.querySelectorAll('.e-toolbar-item.e-template')[0].getAttribute('title')).toEqual('Number Format List (Ctrl+Shift+O)');
+            expect(document.querySelectorAll('.e-toolbar-item.e-template')[1].getAttribute('title')).toEqual('Bullet Format List (Ctrl+Alt+O)');
+            expect(document.querySelector(".e-richtexteditor .e-toolbar").parentElement.style.top).toBe('0px');
+            rteObj.showTooltip = false;
+            rteObj.floatingToolbarOffset = 200;
+            rteObj.dataBind();
+            expect(document.querySelectorAll('.e-toolbar-item.e-template')[0].getAttribute('title')).toEqual('Number Format List');
+            expect(document.querySelectorAll('.e-toolbar-item.e-template')[1].getAttribute('title')).toEqual('Bullet Format List');
+            expect(document.querySelector(".e-richtexteditor .e-toolbar").parentElement.style.top).toBe('200px');
         });
     });
-    afterAll(() => {
-        destroy(rteObj);
-    });
-    it('check the tooltip', () => {
-        expect(document.querySelectorAll('.e-toolbar-item.e-template').length).toEqual(2);
-        expect(document.querySelectorAll('.e-toolbar-item.e-template')[0].getAttribute('title')).toEqual('Number Format List (Ctrl+Shift+O)');
-        expect(document.querySelectorAll('.e-toolbar-item.e-template')[1].getAttribute('title')).toEqual('Bullet Format List (Ctrl+Alt+O)');
-        expect(document.querySelector(".e-richtexteditor .e-toolbar").parentElement.style.top).toBe('0px');
-        rteObj.showTooltip = false;
-        rteObj.floatingToolbarOffset = 200;
-        rteObj.dataBind();
-        expect(document.querySelectorAll('.e-toolbar-item.e-template')[0].getAttribute('title')).toEqual('Number Format List');
-        expect(document.querySelectorAll('.e-toolbar-item.e-template')[1].getAttribute('title')).toEqual('Bullet Format List');
-        expect(document.querySelector(".e-richtexteditor .e-toolbar").parentElement.style.top).toBe('200px');
-    });
-});
 
 describe('821312: Bullet list does not reverted after click on the bullet list icon', () => {
     let rteObj: RichTextEditor;
@@ -2639,9 +2709,11 @@ describe("Bold and Italic actions for Nested List types", () => {
         selection.addRange(range);
         let bold = document.getElementById(rteObj.getID() + '_toolbar_Bold');
         bold.click();
-        expect(rteObj.inputElement.innerHTML).toBe('<ol><li id="list1" style="font-weight: bold;"><strong>Syncfusion</strong><ol><li style="font-weight: bold;"><strong>RTE</strong><ol><li id="list2" style="font-weight: bold;"><strong>Bold Action</strong></li></ol></li></ol></li></ol>');        let italic = document.getElementById(rteObj.getID() + '_toolbar_Italic');
+        expect(rteObj.inputElement.innerHTML).toBe('<ol><li id="list1" style="font-weight: bold;"><strong>Syncfusion</strong><ol><li style="font-weight: bold;"><strong>RTE</strong><ol><li id="list2" style="font-weight: bold;"><strong>Bold Action</strong></li></ol></li></ol></li></ol>');
+        let italic = document.getElementById(rteObj.getID() + '_toolbar_Italic');
         italic.click();
-        expect(rteObj.inputElement.innerHTML).toBe('<ol><li id="list1" style="font-weight: bold; font-style: italic;"><strong><em>Syncfusion</em></strong><ol><li style="font-weight: bold; font-style: italic;"><strong><em>RTE</em></strong><ol><li id="list2" style="font-weight: bold; font-style: italic;"><strong><em>Bold Action</em></strong></li></ol></li></ol></li></ol>');    });
+        expect(rteObj.inputElement.innerHTML).toBe('<ol><li id="list1" style="font-weight: bold; font-style: italic;"><strong><em>Syncfusion</em></strong><ol><li style="font-weight: bold; font-style: italic;"><strong><em>RTE</em></strong><ol><li id="list2" style="font-weight: bold; font-style: italic;"><strong><em>Bold Action</em></strong></li></ol></li></ol></li></ol>');
+    });
 });
 
 describe("962380 - Applying Bold to Main Bullet Also Affects Sub-Bullets in Rich Text Editor", () => {

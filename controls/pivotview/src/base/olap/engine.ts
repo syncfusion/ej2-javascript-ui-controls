@@ -3991,7 +3991,10 @@ export class OlapEngine {
                     const formatString: string = field.formatString;
                     const calcField: IOlapField = {
                         hasChildren: false,
-                        isSelected: false,
+                        isSelected: (this.dataSourceSettings && this.dataSourceSettings.values &&
+                            this.dataSourceSettings.values.length > 0) ? (this.dataSourceSettings.values.some(
+                                (value: IFieldOptions) => value.name === field.name
+                            )) : false,
                         id: field.name,
                         pid: '[Calculated Members].[_0]',
                         name: field.name,

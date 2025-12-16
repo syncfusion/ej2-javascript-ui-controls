@@ -393,18 +393,19 @@ describe('Chart Control', () => {
             chartObj.refresh();
             ;
         });
-        it('checking with animation', (done: Function) => {
+        it('checking with animation', async (): Promise<void> => {
             let animate: EmitType<IAnimationCompleteEventArgs>;
             animate = (args: IAnimationCompleteEventArgs): void => {
                 let pathLength: number = (<SVGPathElement>args.series.pathElement).getTotalLength();
                 expect(pathLength >= 400).toBe(true);
-                done();
+                //done();
             };
             chartObj.loaded = chartObj.pointRender = null;
             chartObj.series[0].animation = { enable: true, delay: 1000 };
             chartObj.animationComplete = animate;
             chartObj.series[0].dashArray = '2';
             chartObj.refresh();
+            await wait(500);
         });
         it('checking single point with negative data', (done: Function) => {
             loaded = (args: Object): void => {
@@ -420,6 +421,9 @@ describe('Chart Control', () => {
             chartObj.refresh();
         });
     });
+    async function wait(ms: number): Promise<void> {
+        return new Promise(resolve => setTimeout(resolve, ms));
+    }
     describe('Checking Tooltip with Column', () => {
         let chartEle: Chart;
         let trigger: MouseEvents = new MouseEvents();

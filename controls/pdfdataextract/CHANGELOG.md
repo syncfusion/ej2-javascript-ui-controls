@@ -2,7 +2,27 @@
 
 ## [Unreleased]
 
-## 31.2.18 (2025-12-09)
+### PDF Data Extract
+
+#### Key Features
+
+- Added support for parsing accessibility tags from PDF documents to enhance content accessibility.
+- Introduced image extraction capability, allowing users to retrieve images directly from PDF documents.
+
+#### Breaking Changes
+
+Improved API architecture to ensure type safety and maintainability.
+
+Replaced inline object literals and primitive arrays with strongly typed classes:
+
+| Types        | Description                                                                                           |
+|--------------|-------------------------------------------------------------------------------------------------------|
+| Rectangle    | Represents a bounding box with `x`, `y`, `width`, and `height` values for position and size.          |
+| PdfColor     | Encapsulates color data with properties `r`, `g`, `b`, and an optional `isTransparent` flag.          |
+| Point        | Represents a coordinate with `x` and `y` values, providing a clear abstraction for location data.     |
+| Size         | Represents dimensions with `width` and `height` values, offering improved clarity and expressiveness. |
+
+## 31.1.23 (2025-10-07)
 
 ### PDF Data Extract
 
@@ -10,7 +30,7 @@
 
 - Resolved an issue where redaction annotation with bounds collection were not preserved correctly.
 
-## 31.1.17 (2025-09-05)
+## 30.1.37 (2025-06-25)
 
 ### PDF Data Extract
 

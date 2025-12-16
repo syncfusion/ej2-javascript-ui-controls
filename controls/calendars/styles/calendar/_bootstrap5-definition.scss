@@ -1,4 +1,6 @@
 @use 'sass:color';
+@use 'ej2-base/styles/definition/bootstrap5' as *;
+@forward 'ej2-base/styles/definition/bootstrap5';
 
 /*! calendar bootstrap5 theme variables */
 //month view
@@ -12,6 +14,7 @@ $calendar-bigger-month-view-padding: 0 !default;
 $calendar-bigger-month-view-height: 38px !default;
 $calendar-bigger-month-view-line-height: $calendar-bigger-month-view-height !default;
 $calendar-bigger-month-view-width: 38px !default;
+$border-zero: 0;
 
 //header dimension
 $calendar-header-font-size: $text-sm !default;
@@ -258,3 +261,12 @@ $today-button-text-hover-color: $primary-text-hover !default;
 $today-button-active-bg: $primary-bg-color-pressed !default;
 $today-button-bg-border-active-color: $primary-border-color-pressed !default;
 $today-button-text-active-color: $primary-text-pressed !default;
+
+$line-height: 14px;
+$margin-zero: 0;
+$padding-zero: 0;
+$calendar-bigger-rtl-header-text-indent: 6px !default;
+$calendar-zero-border-radius: 0 !default;
+$calendar-bigger-header-width: 60% !default;
+$calendar-bigger-placeholder-min-height: 392px !default;
+$calendar-small-min-height: 220px !default;

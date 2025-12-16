@@ -1,3 +1,5 @@
+@use 'ej2-base/styles/common/mixin' as *;
+@use './theme-variables' as *;
 @mixin size($height, $width) {
   height: $height;
   width: $width;
@@ -26,8 +28,8 @@
     @else {
       &.e-slider-tooltip.e-tooltip-wrap.e-popup {
         .e-tip-content {
-          font-size: 11px;
-          line-height: 16px;
+          font-size: $slider-tooltip-wrap-popup-font-size;
+          line-height: $slider-tooltip-wrap-popup-line-height;
         }
       }
     }
@@ -53,7 +55,7 @@
             margin-top: $slider-touch-btn-center-align;
 
             .e-button-icon::before {
-              font-size: 17px;
+              font-size: $slider-button-icon-size;
             }
           }
         }
@@ -64,7 +66,7 @@
             margin-right: $slider-touch-btn-center-align;
 
             .e-button-icon::before {
-              font-size: 17px;
+              font-size: $slider-button-icon-size;
             }
           }
         }
@@ -77,29 +79,19 @@
 
         &.e-vertical {
           &.e-slider-btn {
-            @if ($skin-name == 'bootstrap5' or $skin-name == 'bootstrap5.3') {
-              padding: 36px 0;
-            }
-            @else {
-              padding: 34px 0;
-            }
+            padding: $slider-vertical-btn-padding;
           }
 
           .e-first-button,
           .e-second-button {
-            @if ($skin-name == 'bootstrap5' or $skin-name == 'Material3' or $skin-name == 'bootstrap5.3') {
-              margin-right: -12px;
-            }
-            @else {
-              margin-right: -9px;
-            }
+            margin-right: $slider-vertical-button-margin-right;
           }
 
           .e-slider {
             .e-slider-track {
               @include alignment(8px, calc(50% - 4px), 'vertical');
               @if $skin-name == 'fluent2' {
-                border-radius: 8px;
+                border-radius: $slider-touch-track-border-radius;
               }
             }
 
@@ -108,7 +100,7 @@
                 margin-top: $slider-touch-center-align;
               }
               &.e-v-scale {
-                left: calc(50% - 14px);
+                left: $slider-touch-evscale-left;
               }
             }
 
@@ -143,23 +135,22 @@
         &.e-vertical {
           .e-slider-button.e-first-button,
           .e-slider-button.e-second-button {
-            border-radius: 12px;
+            border-radius: $slider-ver-hori-button-border-radius;
             @include size(24px, 24px);
             @if $skin-name == 'Material3' {
-              padding: 0;
+              padding: $slider-zero-padding-margin;
             }
 
             .e-button-icon::before {
-              font-size: 14px;
+              font-size: $slider-vertical-horizontal-button-icon-size;
             }
           }
         }
 
         &.e-horizontal {
-
           .e-slider-button.e-first-button,
           .e-slider-button.e-second-button {
-            margin-top: -12px;
+            margin-top: $slider-horizontal-slider-button-margin-top;
           }
 
           .e-tick-both {
@@ -267,11 +258,10 @@
         &.e-vertical {
           .e-slider-button.e-first-button,
           .e-slider-button.e-second-button {
-            border-radius: 12px;
+            border-radius: $slider-horizontal-button-radius;
             @include size(24px, 24px);
-
             .e-button-icon::before {
-              font-size: 22px;
+              font-size: $slider-horizontal-button-icon-size;
             }
           }
         }
@@ -280,21 +270,16 @@
 
           &.e-scale-both .e-range,
           .e-limits {
-            height: 6px;
+            height: $slider-scale-range-height;
           }
 
           .e-slider-track {
-            @if ($skin-name == 'bootstrap5.3') {
-              border-radius: 4px;
-            }
-            @else {
-              border-radius: 6px;
-            }
+            border-radius: $slider-track-border-radius;
           }
 
           .e-first-button,
           .e-second-button {
-            margin-top: -14px;
+            margin-top: $slider-first-second-button-margin-top;
           }
 
           .e-tick-both {
@@ -341,16 +326,11 @@
 
           &.e-scale-both .e-range,
           .e-range {
-            width: 6px;
+            width: $slider-range-width;
           }
 
           .e-slider-track {
-            @if ($skin-name == 'bootstrap5.3') {
-              border-radius: 4px;
-            }
-            @else {
-              border-radius: 6px;
-            }
+            border-radius: $slider-track-border-radius;
           }
 
           &.e-slider-btn {
@@ -358,7 +338,7 @@
           }
 
           .e-slider-button {
-            margin-right: -15px;
+            margin-right: $slider-button-margin-right;
           }
 
           .e-tick-both {
@@ -396,7 +376,7 @@
       &.e-horizontal {
         @if ($skin-name == 'bootstrap5' or $skin-name == 'bootstrap5.3') {
           &.e-slider-btn {
-            padding: 0 36px;
+            padding: $slider-bgr-hor-btn-padding;
           }
         }
         @if ($skin-name == 'bootstrap4') {
@@ -426,14 +406,8 @@
           }
 
           .e-handle {
-            @if ($skin-name == 'bootstrap4' or $skin-name == 'bootstrap5' or $skin-name == 'bootstrap5.3' or $skin-name == 'FluentUI' or $skin-name == 'Material3') {
-              margin-left: $slider-handle-mobile-margin-left;
-              top: $slider-handle-mobile-handle-top;
-            }
-            @else {
-              margin-left: -9px;
-              top: calc(50% - 9px);
-            }
+            margin-left: $slider-handle-mobile-margin-left;
+            top: $slider-handle-mobile-handle-top;
           }
         }
 
@@ -452,25 +426,13 @@
       &.e-vertical {
         .e-slider {
           .e-handle {
-            @if ($skin-name == 'tailwind') {
-              left: calc(50% - 5px);
-            }
-            @else if $skin-name == 'Material3' {
-              left: calc(50% - 14px);
-            }
-            @else {
-              left: calc(50% - 9px);
-            }
-            margin-bottom: -9px;
-            @if ($skin-name == 'bootstrap4' or $skin-name == 'bootstrap5' or $skin-name == 'bootstrap5.3' or $skin-name == 'FluentUI') {
-              left: calc(50% - 8px);
-              margin-bottom: -8px;
-            }
+            left: $slider-vertical-handle-left;
+            margin-bottom: $slider-vertical-handle-margin-bottom;
           }
 
           @if ($skin-name == 'tailwind') {
             .e-range {
-              width: 6px;
+              width: $slider-range-width;
             }
           }
         }
@@ -493,7 +455,7 @@
         @if ($skin-name == 'tailwind' or $skin-name == 'bootstrap5' or $skin-name == 'bootstrap5.3') {
           .e-slider-track,
           .e-range {
-            width: 6px;
+            width: $slider-range-width;
           }
         }
       }
@@ -503,7 +465,7 @@
           .e-slider {
             .e-handle {
               @if ($skin-name == 'tailwind' or $skin-name == 'bootstrap5' or $skin-name == 'bootstrap5.3') {
-                margin: 0 -8px 0 0;
+                margin: $slider-rtl-handle-margin;
               }
             }
           }

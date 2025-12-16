@@ -10,6 +10,7 @@ import { ConnectorModel } from '../connector-model';
 import { BasicShapeModel, FlowShapeModel, NodeModel, PathModel } from '../node-model';
 import { Thickness } from '../../core/appearance';
 import { Size } from '../../primitives/size';
+import { Overview } from '../../../overview';
 
 
 /**
@@ -345,4 +346,9 @@ export interface ChildTextElement {
     desiredSize: Size;
     inversedAlignment: boolean;
     pivot: PointModel;
+}
+
+export interface OverviewObject {
+    id: string;
+    view: Overview;
 }

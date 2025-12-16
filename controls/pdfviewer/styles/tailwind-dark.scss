@@ -1,5 +1,5 @@
-@import 'ej2-base/styles/definition/tailwind-dark.scss';
-@import 'pdfviewer/tailwind-dark-definition.scss';
-@import 'pdfviewer/icons/tailwind-dark.scss';
-@import 'pdfviewer/all.scss';
-@import 'pdfviewer/bigger.scss';
+@use 'ej2-base/styles/definition/tailwind-dark' as *;
+@use 'pdfviewer/tailwind-dark-definition' as *;
+@use 'pdfviewer/icons/tailwind-dark' as *;
+@use 'pdfviewer/all' as *;
+@use 'pdfviewer/bigger' as *;

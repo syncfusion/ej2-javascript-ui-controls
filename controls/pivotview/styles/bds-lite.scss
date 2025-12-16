@@ -1,7 +1,6 @@
-@import 'ej2-base/styles/definition/bds.scss';
-@import 'pivotfieldlist/bds-definition.scss';
-@import 'pivotview/bds-definition.scss';
-@import 'pivotview/icons/bds.scss';
-@import 'pivotview/all.scss';
-@import 'pivotfieldlist/icons/bds.scss';
-@import 'pivotfieldlist/all.scss';
+@use 'pivotfieldlist/bds-definition' as *;
+@use 'pivotview/bds-definition' as *;
+@use 'pivotview/icons/bds' as *;
+@use 'pivotview/all' as *;
+@use 'pivotfieldlist/icons/bds' as *;
+@use 'pivotfieldlist/all' as *;

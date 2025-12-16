@@ -11,7 +11,7 @@ import { IEditorModel } from '../../common/interface';
  * Audio internal component
  *
  * @hidden
- * @deprecated
+ * @private
  */
 export class AudioCommand {
     private parent: IEditorModel;
@@ -20,7 +20,7 @@ export class AudioCommand {
      *
      * @param {IEditorModel} parent - specifies the parent element
      * @hidden
-     * @deprecated
+     * @private
      */
     public constructor(parent: IEditorModel) {
         this.parent = parent;
@@ -40,7 +40,7 @@ export class AudioCommand {
      * @param {IHtmlItem} e - specifies the element
      * @returns {void}
      * @hidden
-     * @deprecated
+     * @private
      */
     public audioCommand(e: IHtmlItem): void {
         let selectNode: HTMLElement;
@@ -117,7 +117,7 @@ export class AudioCommand {
             const selectedNode: Node = this.parent.nodeSelection.getSelectedNodes(this.parent.currentDocument)[0];
             const audioElm: Element = (e.value === 'AudioReplace' || isReplaced) ? (((e.item.selectParent[0] as Element).tagName.toLowerCase() === 'audio') ? e.item.selectParent[0] as Element : (e.item.selectParent[0] as Element).querySelector('audio'))
                 : (Browser.isIE ? (selectedNode as Element) : (selectedNode as Element).querySelector('audio'));
-            audioElm.addEventListener('loadeddata', () => {
+            const onAudioLoadEvent: () => void = () => {
                 if (e.value !== 'AudioReplace' || !isReplaced) {
                     if (!isNOU(this.parent.currentDocument)) {
                         if (this.parent.userAgentData.isSafari()) {
@@ -132,7 +132,9 @@ export class AudioCommand {
                         });
                     }
                 }
-            });
+                audioElm.removeEventListener('loadeddata', onAudioLoadEvent);
+            };
+            audioElm.addEventListener('loadeddata', onAudioLoadEvent);
             if (isReplaced) {
                 (audioElm as HTMLAudioElement).load();
             }

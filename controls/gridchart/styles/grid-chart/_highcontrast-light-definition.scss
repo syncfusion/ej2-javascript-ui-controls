@@ -1,5 +1,8 @@
 @use 'sass:math';
-
+@use 'ej2-base/styles/definition/highcontrast-light' as *;
+@use 'ej2-grids/styles/grid/highcontrast-light-definition' as *;
+@forward 'ej2-base/styles/definition/highcontrast-light';
+@forward 'ej2-grids/styles/grid/highcontrast-light-definition';
 $grid-chart-border-color: $grid-cell-border-color !default;
 $grid-chart-list-hover-bg-color: $group-header-hover-bg-color !default;
 $grid-chart-list-hover-content-font-color: $hover-font !default;

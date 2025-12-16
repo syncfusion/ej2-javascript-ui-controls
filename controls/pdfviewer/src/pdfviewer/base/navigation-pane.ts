@@ -253,6 +253,23 @@ export class NavigationPane {
      * @private
      * @returns {void}
      */
+    public showBookmarksPaneMobile(): void {
+        if (this.isBookmarkOpenProgrammatically || this.isBookmarkOpen || this.isBookmarkListOpen) {
+            return;
+        }
+        if (this.pdfViewer.toolbar) {
+            this.pdfViewer.toolbar.showToolbar(false);
+        }
+        this.createNavigationPaneMobile('bookmarks');
+        this.isBookmarkOpen = true;
+        this.isBookmarkOpenProgrammatically = true;
+        this.pdfViewer.isBookmarkPanelOpen = true;
+    }
+
+    /**
+     * @private
+     * @returns {void}
+     */
     public adjustPane(): void {
         if (isBlazor()) {
             const splitterElement: HTMLElement = this.pdfViewer.element.querySelector('.e-pv-sidebar-toolbar-splitter');
@@ -555,6 +572,9 @@ export class NavigationPane {
                         this.pdfViewer.toolbarModule.annotationToolbarModule.propertyToolbar.element.style.display = 'block';
                     }
                 }
+                if (this.pdfViewer.toolbarModule.redactionToolbarModule && this.pdfViewer.toolbarModule.redactionToolbarModule.toolbar) {
+                    this.pdfViewer.toolbarModule.redactionToolbarModule.toolbar.element.style.display = 'block';
+                }
             }
         }
     }
@@ -578,7 +598,7 @@ export class NavigationPane {
                 <span class="e-pv-search-count" id="${this.pdfViewer.element.id}_search_count"></span>
             `;
             items = [
-                { prefixIcon: 'e-pv-backward-icon e-pv-icon', tooltipText: this.pdfViewer.localeObj.getConstant('Go Back'), id: this.pdfViewer.element.id + '_backward', click: this.goBackToToolbar.bind(this) },
+                { prefixIcon: 'e-pv-backward-icon e-pv-icon', tooltipText: this.pdfViewer.localeObj.getConstant('Go Back'), id: this.pdfViewer.element.id + '_backward', click: this.goBackToToolbar.bind(this, null) },
                 { template: searchTemplate },
                 {
                     prefixIcon: 'e-pv-search-icon e-pv-icon', id: this.pdfViewer.element.id + '_search_box-icon',
@@ -609,7 +629,7 @@ export class NavigationPane {
             ];
         } else {
             items = [
-                { prefixIcon: 'e-pv-backward-icon e-pv-icon', id: this.pdfViewer.element.id + '_backward', click: this.goBackToToolbar.bind(this) },
+                { prefixIcon: 'e-pv-backward-icon e-pv-icon', id: this.pdfViewer.element.id + '_backward', click: this.closeBookmarkPane.bind(this, null) },
                 { text: this.pdfViewer.localeObj.getConstant('Bookmarks') }
             ];
         }
@@ -640,7 +660,8 @@ export class NavigationPane {
         this.searchInput.addEventListener('keyup', (event: KeyboardEvent) => {
             this.enableSearchItems(true);
             const searchString: string = (this.searchInput as HTMLInputElement).value;
-            if (event.which === 13) {
+            const isEnter: boolean = event.key === 'Enter' || event.code === 'Enter';
+            if (isEnter) {
                 this.initiateTextSearch();
                 this.setSearchInputWidth();
             } else {
@@ -691,18 +712,24 @@ export class NavigationPane {
 
     /**
      * @private
+     * @param {boolean} closeBookmarkView - tells whether to close the entire bookmark view
      * @returns {void}
      */
-    public goBackToToolbar(): void {
+    public goBackToToolbar(closeBookmarkView?: boolean): void {
         this.isNavigationToolbarVisible = false;
         if (isBlazor() && (!Browser.isDevice || this.pdfViewer.enableDesktopMode) || !isBlazor()) {
-            this.pdfViewer.textSearchModule.cancelTextSearch();
+            if (this.pdfViewer.textSearchModule) {
+                this.pdfViewer.textSearchModule.cancelTextSearch();
+            }
         }
         this.searchInput = null;
-        if (this.pdfViewer.bookmarkViewModule.childNavigateCount !== 0) {
+        if (this.pdfViewer.bookmarkViewModule.childNavigateCount !== 0 && !closeBookmarkView) {
             this.pdfViewer.bookmarkViewModule.bookmarkList.back();
             this.pdfViewer.bookmarkViewModule.childNavigateCount--;
         } else {
+            if (closeBookmarkView) {
+                this.pdfViewer.bookmark.childNavigateCount = 0;
+            }
             if (this.toolbar != null) {
                 this.toolbar.destroy();
                 this.toolbar = null;
@@ -719,6 +746,8 @@ export class NavigationPane {
             }
             this.pdfViewerBase.viewerContainer.style.display = 'block';
             this.isBookmarkListOpen = false;
+            this.isBookmarkOpenProgrammatically = false;
+            this.isBookmarkOpen = false;
             if (!isBlazor()) {
                 if (!this.pdfViewer.toolbar.annotationToolbarModule.isMobileAnnotEnabled) {
                     this.pdfViewer.toolbarModule.showToolbar(true);
@@ -726,6 +755,7 @@ export class NavigationPane {
             } else {
                 this.pdfViewerBase.onWindowResize();
             }
+            this.pdfViewer.isBookmarkPanelOpen = false;
         }
     }
 
@@ -824,7 +854,7 @@ export class NavigationPane {
 
     private createSidebarToolBar(): void {
         if (!isBlazor()) {
-            const isMac: boolean = navigator.platform.match(/(Mac|iPhone|iPod|iPad)/i) ? true : false;
+            const isMac: boolean = /ipad|iphone|ipod|mac/.test(navigator.userAgent.toLowerCase()) ? true : false;
             this.thumbnailButton = createElement('button', { id: this.pdfViewer.element.id + '_thumbnail-view', attrs: { 'disabled': 'disabled', 'aria-label': 'Page Thumbnails', 'tabindex': '-1' } });
             this.thumbnailButton.className = 'e-pv-tbar-btn e-pv-thumbnail-view-button e-btn';
             this.thumbnailButton.setAttribute('type', 'button');
@@ -843,6 +873,30 @@ export class NavigationPane {
                 function (): string { return this.pdfViewer.localeObj.getConstant('Bookmarks') + (isMac ? ' (⌘+⌥+2)' : ' (Ctrl+Alt+2)'); }, this
             ), opensOn: 'Hover', beforeOpen: this.onTooltipBeforeOpen.bind(this) });
             bookMarkTooltip.appendTo(this.bookmarkButton);
+            this.sideBarToolbar.appendChild(this.thumbnailButton);
+            this.sideBarToolbar.appendChild(this.bookmarkButton);
+            this.addOrganizePageButton(this.pdfViewer.enablePageOrganizer);
+        } else {
+            this.thumbnailButton = this.pdfViewer.element.querySelector('.e-pv-thumbnail-view-button');
+            this.bookmarkButton = this.pdfViewer.element.querySelector('.e-pv-bookmark-button');
+        }
+        this.thumbnailButton.addEventListener('click', this.sideToolbarOnClick);
+        this.bookmarkButton.addEventListener('click', this.bookmarkButtonOnClick);
+        if (this.organizePageButton) {
+            this.organizePageButton.addEventListener('click', this.organizeButtonOnClick);
+        }
+    }
+    /**
+     * @private
+     * @param {boolean} enablePageOrganizer - indicates whether page organizer is enabled
+     * @returns {void}
+     */
+    public addOrganizePageButton(enablePageOrganizer: boolean): void {
+        if (!isNullOrUndefined(this.organizePageButton)) {
+            this.organizePageButton.remove();
+        }
+        if (enablePageOrganizer) {
+            const isMac: boolean = /ipad|iphone|ipod|mac/.test(navigator.userAgent.toLowerCase()) ? true : false;
             this.organizePageButton = createElement('button', { id: this.pdfViewer.element.id + '_organize-view', attrs: { 'disabled': 'disabled', 'aria-label': 'Organize Pages', 'tabindex': '-1' } });
             this.organizePageButton.className = 'e-pv-tbar-btn e-pv-organize-view-button e-btn';
             this.organizePageButton.setAttribute('type', 'button');
@@ -854,18 +908,12 @@ export class NavigationPane {
                 ), opensOn: 'Hover', beforeOpen: this.onTooltipBeforeOpen.bind(this)
             });
             organizeButtonTooltip.appendTo(this.organizePageButton);
-            this.sideBarToolbar.appendChild(this.thumbnailButton);
-            this.sideBarToolbar.appendChild(this.bookmarkButton);
-            if (!isNullOrUndefined(this.pdfViewer.pageOrganizer)) {
-                this.sideBarToolbar.appendChild(this.organizePageButton);
-            }
-        } else {
-            this.thumbnailButton = this.pdfViewer.element.querySelector('.e-pv-thumbnail-view-button');
-            this.bookmarkButton = this.pdfViewer.element.querySelector('.e-pv-bookmark-button');
+            this.sideBarToolbar.appendChild(this.organizePageButton);
+            this.organizePageButton.addEventListener('click', this.organizeButtonOnClick);
         }
-        this.thumbnailButton.addEventListener('click', this.sideToolbarOnClick);
-        this.bookmarkButton.addEventListener('click', this.bookmarkButtonOnClick);
-        this.organizePageButton.addEventListener('click', this.organizeButtonOnClick);
+        else {
+            this.organizePageButton = null;
+        }
     }
 
     private onTooltipBeforeOpen(args: TooltipEventArgs): void {
@@ -971,7 +1019,7 @@ export class NavigationPane {
      * @returns {void}
      */
     private resizeIconMouseOver = (event: MouseEvent): void => {
-        (event.srcElement as HTMLElement).style.cursor = 'e-resize';
+        (event.target as HTMLElement).style.cursor = 'e-resize';
     };
     /**
      * @param {MouseEvent} event - The event.
@@ -1155,6 +1203,9 @@ export class NavigationPane {
         proxy.isBookmarkOpenProgrammatically = false;
         proxy.isThumbnail = false;
         proxy.isBookmarkOpen = false;
+        proxy.isThumbnailOpen = false;
+        proxy.pdfViewer.isBookmarkPanelOpen = false;
+        proxy.pdfViewer.isThumbnailViewOpen = false;
     };
     /**
      * @private
@@ -1282,12 +1333,14 @@ export class NavigationPane {
                     proxy.updateViewerContainerOnExpand();
                     (document.getElementById(proxy.pdfViewer.element.id + '_thumbnail_image_' + (proxy.pdfViewerBase.currentPageNumber - 1)) as any).focus();
                     proxy.isThumbnailAddedProgrammatically = true;
+                    proxy.pdfViewer.isThumbnailViewOpen = true;
                 } else {
                     proxy.isThumbnailOpen = false;
                     proxy.removeThumbnailSelectionIconTheme();
                     proxy.updateViewerContainerOnClose();
                     proxy.isThumbnailAddedProgrammatically = false;
                     proxy.isThumbnail = false;
+                    proxy.pdfViewer.isThumbnailViewOpen = false;
                 }
             } else {
                 proxy.sideBarContent.focus();
@@ -1299,6 +1352,7 @@ export class NavigationPane {
                     (document.getElementById(proxy.pdfViewer.element.id + '_thumbnail_image_' + (proxy.pdfViewerBase.currentPageNumber - 1)) as any).focus();
                 }
                 proxy.isThumbnailAddedProgrammatically = true;
+                proxy.pdfViewer.isThumbnailViewOpen = true;
             }
         }
         proxy.isBookmarkOpen = false;
@@ -1307,6 +1361,7 @@ export class NavigationPane {
             const currentPageNumber: number = parseInt(this.pdfViewer.annotationModule.inkAnnotationModule.currentPageNumber, 10);
             this.pdfViewer.annotationModule.inkAnnotationModule.drawInkAnnotation(currentPageNumber);
         }
+        proxy.pdfViewer.isBookmarkPanelOpen = false;
     };
 
     /**
@@ -1314,6 +1369,12 @@ export class NavigationPane {
      * @returns {void}
      */
     public openThumbnailPane = (): void => {
+        if (Browser.isDevice && !this.pdfViewer.enableDesktopMode) {
+            return;
+        }
+        if (this.isThumbnailOpen || this.isThumbnail || this.isThumbnailAddedProgrammatically) {
+            return;
+        }
         let proxy: NavigationPane = null;
         // eslint-disable-next-line
         proxy = this;
@@ -1322,7 +1383,6 @@ export class NavigationPane {
         const viewerContainer: HTMLElement = document.getElementById(this.pdfViewer.element.id + '_viewerContainer');
         const pageContainer: HTMLElement = document.getElementById(this.pdfViewer.element.id + '_pageViewContainer');
         document.getElementById(this.pdfViewer.element.id + '_thumbnail_view').style.display = 'block';
-        document.getElementById(this.pdfViewer.element.id + '_sideBarResizer').style.display = 'none';
         proxy.sideBarTitle.textContent = this.pdfViewer.localeObj.getConstant('Page Thumbnails');
         proxy.sideBarContent.setAttribute('aria-label', 'Thumbnail View Panel');
         proxy.sideBarContent.setAttribute('tabindex', '0');
@@ -1340,6 +1400,7 @@ export class NavigationPane {
                 proxy.pdfViewerBase.updateZoomValue();
                 proxy.removeThumbnailSelectionIconTheme();
                 proxy.isThumbnail = false;
+                proxy.pdfViewer.isThumbnailViewOpen = false;
             } else {
                 sideBarContent.focus();
                 proxy.setThumbnailSelectionIconTheme();
@@ -1353,6 +1414,8 @@ export class NavigationPane {
                 proxy.isThumbnailOpen = true;
                 proxy.isBookmarkOpen = false;
                 proxy.isBookmarkOpenProgrammatically = false;
+                proxy.pdfViewer.isBookmarkPanelOpen = false;
+                proxy.pdfViewer.isThumbnailViewOpen = true;
             }
         }
         if (this.pdfViewer.annotationModule && this.pdfViewer.annotationModule.inkAnnotationModule) {
@@ -1366,16 +1429,20 @@ export class NavigationPane {
      * @returns {void}
      */
     public closeThumbnailPane  = (): void => {
+        if (Browser.isDevice && !this.pdfViewer.enableDesktopMode) {
+            return;
+        }
         let proxy : NavigationPane = null;
         // eslint-disable-next-line
         proxy = this;
-        if (proxy.isThumbnail || proxy.isThumbnailAddedProgrammatically ||  proxy.pdfViewer.isThumbnailViewOpen) {
+        if (proxy.isThumbnail || proxy.isThumbnailAddedProgrammatically || proxy.isThumbnailOpen) {
             proxy.sideBarContent.removeAttribute('tabindex');
             proxy.removeThumbnailSelectionIconTheme();
             proxy.isThumbnailOpen = false;
             proxy.updateViewerContainerOnClose();
             proxy.isThumbnailAddedProgrammatically = false;
             proxy.isThumbnail = false;
+            proxy.pdfViewer.isThumbnailViewOpen = false;
         }
     }
 
@@ -1476,6 +1543,12 @@ export class NavigationPane {
     public openBookmarkcontentInitially(isSideToolbarOnClick?: boolean): void {
         // eslint-disable-next-line
         const proxy: NavigationPane = this;
+        if (!(proxy.pdfViewer.bookmark && proxy.pdfViewer.bookmark.bookmarks)) {
+            return;
+        }
+        if (!isSideToolbarOnClick && this.isBookmarkOpen) {
+            return;
+        }
         if (document.getElementById(proxy.pdfViewer.element.id + '_thumbnail_view')) {
             document.getElementById(proxy.pdfViewer.element.id + '_thumbnail_view').style.display = 'none';
         }
@@ -1487,18 +1560,20 @@ export class NavigationPane {
         if (proxy.sideBarContentContainer && (isSideToolbarOnClick || !proxy.isBookmarkOpenProgrammatically)) {
             if (proxy.sideBarContentContainer.style.display !== 'none') {
                 if (proxy.isThumbnailOpen) {
+                    proxy.pdfViewer.isThumbnailViewOpen = false;
                     proxy.setBookmarkSelectionIconTheme();
                     proxy.isBookmarkOpen = true;
                     proxy.updateViewerContainerOnExpand();
                     proxy.isThumbnail = false;
                     proxy.isThumbnailAddedProgrammatically = false;
                     proxy.isBookmarkOpenProgrammatically = true;
-                    proxy.pdfViewer.isThumbnailViewOpen = false;
+                    proxy.pdfViewer.isBookmarkPanelOpen = true;
                 } else {
                     proxy.removeBookmarkSelectionIconTheme();
                     proxy.isBookmarkOpen = false;
                     proxy.updateViewerContainerOnClose();
                     proxy.isBookmarkOpenProgrammatically = false;
+                    proxy.pdfViewer.isBookmarkPanelOpen = false;
                 }
             } else {
                 proxy.sideBarContent.focus();
@@ -1507,6 +1582,7 @@ export class NavigationPane {
                 proxy.updateViewerContainerOnExpand();
                 proxy.isBookmarkOpenProgrammatically = true;
                 proxy.pdfViewer.isThumbnailViewOpen = false;
+                proxy.pdfViewer.isBookmarkPanelOpen = true;
             }
         }
         proxy.isThumbnailOpen = false;
@@ -1521,18 +1597,25 @@ export class NavigationPane {
 
     /**
      * @private
+     * @param {boolean} isAPI - indicates whether the method is called from closeBookmarkPane API
      * @returns {void}
      */
 
-    public closeBookmarkPane  = (): void => {
+    public closeBookmarkPane  = (isAPI?: boolean): void => {
         // eslint-disable-next-line
         const proxy : NavigationPane = this;
-        if (proxy.isBookmarkOpen || proxy.isBookmarkOpenProgrammatically) {
-            proxy.removeBookmarkSelectionIconTheme();
-            proxy.isBookmarkOpen = false;
-            proxy.updateViewerContainerOnClose();
-            proxy.isBookmarkOpenProgrammatically = false;
-            proxy.isBookmarkListOpen = false;
+        if (proxy.isBookmarkOpen || proxy.isBookmarkOpenProgrammatically || proxy.isBookmarkListOpen) {
+            if (Browser.isDevice && !this.pdfViewer.enableDesktopMode) {
+                proxy.goBackToToolbar(isAPI);
+            }
+            else {
+                proxy.removeBookmarkSelectionIconTheme();
+                proxy.updateViewerContainerOnClose();
+                proxy.isBookmarkOpen = false;
+                proxy.isBookmarkListOpen = false;
+                proxy.isBookmarkOpenProgrammatically = false;
+                proxy.pdfViewer.isBookmarkPanelOpen = false;
+            }
         }
     }
 
@@ -1697,7 +1780,8 @@ export class NavigationPane {
             this.searchInput.removeEventListener('keyup', (event: KeyboardEvent) => {
                 this.enableSearchItems(true);
                 const searchString: string = (this.searchInput as HTMLInputElement).value;
-                if (event.which === 13) {
+                const isEnter: boolean = event.key === 'Enter' || event.code === 'Enter';
+                if (isEnter) {
                     this.initiateTextSearch();
                     this.setSearchInputWidth();
                 } else {

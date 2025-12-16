@@ -1,3 +1,6 @@
+@use 'ej2-base/styles/definition/material' as *;
+@forward 'ej2-base/styles/definition/material';
+
 // Speechtotext component styles
 
 $stt-box-shadow: 0 3px 5px -1px rgba(0, 0, 0, .2), 0 6px 10px rgba(0, 0, 0, .14), 0 1px 18px rgba(0, 0, 0, .12) !default;
@@ -12,6 +15,9 @@ $stt-min-height: 40px !default;
 $stt-min-width: 40px !default;
 $stt-padding: 0 14px !default;
 $stt-margin-top: 1px !default;
+$stt-round-padding: 0 !default;
+$stt-round-btn-margin-top: 1px !default;
+$stt-btn-icon-line-height: 2px !default;
 
 $stt-bigger-border-radius: $stt-border-radius !default;
 $stt-bigger-font-weight: 600 !default;
@@ -24,3 +30,6 @@ $stt-bigger-min-height: 52px !default;
 $stt-bigger-min-width: 52px !default;
 $stt-bigger-padding: 0 20px !default;
 $stt-bigger-margin-top: -1px !default;
+$stt-bigger-round-padding: 0 !default;
+$stt-bigger-round-btn-margin-top: 1px !default;
+$stt-bigger-btn-icon-line-height: 1px !default;

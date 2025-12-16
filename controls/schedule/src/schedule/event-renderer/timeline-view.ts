@@ -309,10 +309,11 @@ export class TimelineEvent extends MonthEvent {
             if (!isNullOrUndefined(groupIndex)) {
                 moreIndicatorElement.setAttribute('data-group-index', groupIndex);
             }
-            moreIndicatorElement.style.top = top + appArea + 'px';
+            moreIndicatorElement.style.top = top + this.cellHeight + 'px';
             moreIndicatorElement.style.width = this.cellWidth + 'px';
             moreIndicatorElement.style.left = (Math.floor(appLeft / this.cellWidth) * this.cellWidth) + 'px';
             moreIndicatorElement.style.right = (Math.floor(appRight / this.cellWidth) * this.cellWidth) + 'px';
+            moreIndicatorElement.style.transform = 'translateY(-100%)';
             this.renderElement(cellTd, moreIndicatorElement);
             EventHandler.add(moreIndicatorElement, 'click', this.moreIndicatorClick, this);
         }

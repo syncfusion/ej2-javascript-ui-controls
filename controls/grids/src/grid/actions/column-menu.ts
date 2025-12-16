@@ -242,7 +242,7 @@ export class ColumnMenu implements IAction {
         if (e.action === 'altDownArrow' && !this.parent.enableAdaptiveUI) {
             const element: HTMLElement = gObj.focusModule.currentInfo.element;
             if (element && element.classList.contains('e-headercell')) {
-                const column: Column = gObj.getColumnByUid(element.firstElementChild.getAttribute('data-mappinguid'));
+                const column: Column = gObj.getColumnByUid(element.querySelector('.e-headercelldiv').getAttribute('data-mappinguid'));
                 this.openColumnMenuByField(column.field);
             }
         }

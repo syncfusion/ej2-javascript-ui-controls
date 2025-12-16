@@ -193,7 +193,7 @@ export class Formula {
     }
 
     private onSelect(e: SelectEventArgs): void {
-        let updatedFormulaValue: string = '=' + e.itemData.value + '(';
+        let updatedFormulaValue: string = '=' + (e.itemData as { value: string }).value + '(';
         if (this.isSubFormula) {
             const editValue: string = this.getEditingValue();
             let parseIndex: number = editValue.lastIndexOf(this.parent.listSeparator);
@@ -205,7 +205,7 @@ export class Formula {
                     updatedFormulaValue = editValue.slice(0, parseIndex + 1);
                 }
             }
-            updatedFormulaValue += e.itemData.value + '(';
+            updatedFormulaValue += (e.itemData as { value: string }).value + '(';
         }
         this.parent.notify(
             editOperation, {

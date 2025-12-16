@@ -575,6 +575,7 @@ export class AccumulationLegend extends BaseLegend {
                         chart.redraw = chart.enableAnimation;
                         this.sliceVisibility(pointIndex, point.visible);
                         chart.removeSvg();
+                        //To remove the blazor templates
                         (<AccumulationChart>this.chart).refreshPoints(currentSeries.points);
                         (<AccumulationChart>this.chart).calculateBounds();
                         const borderElement: Element = document.getElementById(this.chart.element.id + 'PointHover_Border');

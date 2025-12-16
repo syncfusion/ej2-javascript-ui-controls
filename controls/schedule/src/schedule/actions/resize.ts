@@ -249,10 +249,7 @@ export class Resize extends ActionBase {
     }
 
     private yearEventsRendering(event: Record<string, any>): void {
-        const eventWrappers: HTMLElement[] = [].slice.call(this.parent.element.querySelectorAll('.' + cls.CLONE_ELEMENT_CLASS));
-        for (const wrapper of eventWrappers) {
-            remove(wrapper);
-        }
+        this.removeDragResizeClones();
         let endDate: Date = new Date(event[this.parent.eventFields.endTime] as Date);
         let monthDiff: number = 0;
         if (this.parent.activeViewOptions.group.resources.length === 0) {
@@ -308,6 +305,7 @@ export class Resize extends ActionBase {
         this.actionObj.action = null;
         this.removeCloneElementClasses();
         this.removeCloneElement();
+        this.removeDragResizeClones();
         this.actionClass('removeClass');
         this.parent.uiStateValues.action = this.parent.uiStateValues.isTapHold = false;
         const resizeArgs: ResizeEventArgs = { cancel: false, data: this.getChangedData(), element: this.actionObj.element, event: e };
@@ -333,7 +331,7 @@ export class Resize extends ActionBase {
         if (!isTop) {
             offsetValue += this.actionObj.clone.offsetHeight;
         }
-        const minutes: number = (offsetValue / Math.round(this.actionObj.cellHeight)) * this.actionObj.slotInterval;
+        const minutes: number = Math.round((offsetValue / Math.round(this.actionObj.cellHeight)) * this.actionObj.slotInterval);
         const element: Element = this.actionObj.clone.offsetParent;
         if (isNullOrUndefined(element)) {
             return;

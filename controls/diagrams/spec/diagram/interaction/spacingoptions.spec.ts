@@ -52,6 +52,8 @@ describe('SpacingOptions Commands', () => {
         afterAll((): void => {
             diagram.destroy();
             ele.remove();
+            diagram = null;
+            ele = null;
         });
 
         it('Checking diagram instance creation', (done: Function) => {
@@ -101,6 +103,8 @@ describe('SpacingOptions Commands', () => {
         afterAll((): void => {
             diagram.destroy();
             ele.remove();
+            diagram = null;
+            ele = null;
         });
 
         it('Checking diagram instance creation', (done: Function) => {
@@ -148,6 +152,8 @@ describe('SpacingOptions Commands', () => {
         afterAll((): void => {
             diagram.destroy();
             ele.remove();
+            diagram = null;
+            ele = null;
         });
 
         it('Checking diagram instance creation', (done: Function) => {
@@ -195,6 +201,8 @@ describe('SpacingOptions Commands', () => {
         afterAll((): void => {
             diagram.destroy();
             ele.remove();
+            diagram = null;
+            ele = null;
         });
 
         it('Checking diagram instance creation', (done: Function) => {
@@ -245,6 +253,8 @@ describe('SpacingOptions Commands', () => {
         afterAll((): void => {
             diagram.destroy();
             ele.remove();
+            diagram = null;
+            ele = null;
         });
 
         it('Checking diagram instance creation', (done: Function) => {
@@ -291,9 +301,11 @@ describe('SpacingOptions Commands', () => {
 
         });
 
-        afterAll((): void => {
+         afterAll((): void => {
             diagram.destroy();
             ele.remove();
+            diagram = null;
+            ele = null;
         });
 
         it('Checking diagram instance creation', (done: Function) => {
@@ -339,9 +351,11 @@ describe('SpacingOptions Commands', () => {
 
         });
 
-        afterAll((): void => {
+         afterAll((): void => {
             diagram.destroy();
             ele.remove();
+            diagram = null;
+            ele = null;
         });
 
         it('Checking diagram instance creation', (done: Function) => {
@@ -398,6 +412,8 @@ describe('SpacingOptions Commands', () => {
         afterAll((): void => {
             diagram.destroy();
             ele.remove();
+            diagram = null;
+            ele = null;
         });
 
         it('Checking diagram instance creation', (done: Function) => {

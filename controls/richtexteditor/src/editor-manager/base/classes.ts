@@ -4,7 +4,7 @@
 
 /**
  * @hidden
- * @deprecated
+ * @private
  */
 export const CLASS_IMAGE_RIGHT: string = 'e-imgright';
 

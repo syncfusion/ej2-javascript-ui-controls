@@ -1,12 +1,25 @@
 import { PdfViewer, PdfViewerBase, AjaxHandler, ISize, PageOrganizerSettingsModel } from '../index';
-import { createElement, Browser, initializeCSPTemplate, isNullOrUndefined, getComponent, Draggable, DragEventArgs, Droppable, DropEventArgs } from '@syncfusion/ej2-base';
-import { Tooltip, TooltipEventArgs, Dialog } from '@syncfusion/ej2-popups';
+import { Browser, isNullOrUndefined, Draggable, DragEventArgs, Droppable, DropEventArgs } from '@syncfusion/ej2-base';
+import { Dialog } from '@syncfusion/ej2-popups';
 import { CheckBox } from '@syncfusion/ej2-buttons';
-import { DropDownButton, OpenCloseMenuEventArgs } from '@syncfusion/ej2-splitbuttons';
-import { Toolbar, ClickEventArgs, ContextMenu, MenuItemModel, BeforeOpenCloseMenuEventArgs, ItemModel, EventArgs } from '@syncfusion/ej2-navigations';
-import { createSpinner, showSpinner, hideSpinner } from '../base/spinner';
-import { TaskPriorityLevel } from '../base/pdfviewer-utlis';
-import { ChangeEventArgs, Slider } from '@syncfusion/ej2-inputs';
+import { DropDownButton } from '@syncfusion/ej2-splitbuttons';
+import { Toolbar, ContextMenu, MenuItemModel } from '@syncfusion/ej2-navigations';
+import { ChangeEventArgs, Slider, TextBox } from '@syncfusion/ej2-inputs';
+import { addSelectionRingStyle, applyElementStyles, clear, createOrganizeWindow, createOrganizeWindowForMobile, handleImageResizerVisibility, removeSelectionRingStyle, setPageOrganizerSettings, showOrganizeLoadingIndicator, switchPageOrganizer } from './organize-core/organize-initialization';
+import { deletePageElement, isHoveredOnSelectedPages } from './organize-core/tile-interaction';
+import { updateToolbarItemState } from './organize-core/organize-toolbar';
+import { getImageZoomMax, getImageZoomMin, handleImageSizeBoundsChange, handlePageZoomChange, updateOrganizePageImageSize } from './organize-core/slider-zoomaction';
+import { pageDragDrop } from './organize-core/organizepages-editor';
+import { addOrganizeAction, redo, undo } from './organize-core/organize-undoredo';
+import { getImageZoomValue, processRotation, rotateClockwise, rotateCounterclockwise, sorting } from './organize-core/organize-math-utils';
+import { rotateAllPages } from './organize-core/organize-utils';
+import { createRequestForPreview, getData, previewOnMessage, requestPreviewCreation, updatePreviewCollection } from './organize-core/organize-preview';
+import { thumbnailMouseOver, tileImageRender } from './organize-core/organize-thumbnail';
+import { autoScroll, handlePageMove } from './organize-core/organize-event-handler';
+import { clonedCollection } from './organize-core/organize-undoredoutils';
+import { importDocuments, loadImportDoc } from './organize-core/organize-importaction';
+import { onSaveasClicked, onSaveClicked, updateOrganizePageActions } from './organize-core/organize-saveaction';
+import { showHideExtractIcon, showRemoveExtractIcon } from './organize-core/organize-extract';
 
 interface IActionOrganizeElements {
     action: string;
@@ -26,8 +39,14 @@ interface IActionOrganizeElements {
  */
 
 export class PageOrganizer {
-    private pdfViewer: PdfViewer;
-    private pdfViewerBase: PdfViewerBase;
+    /**
+     * @private
+     */
+    public pdfViewer: PdfViewer;
+    /**
+     * @private
+     */
+    public pdfViewerBase: PdfViewerBase;
     private rotateRightButton: HTMLButtonElement;
     private rotateLeftButton: HTMLButtonElement;
     private insertRightButton: HTMLButtonElement;
@@ -41,8 +60,14 @@ export class PageOrganizer {
     private pageZoomIncreaseButton: HTMLButtonElement;
     private pageZoomContainer: HTMLElement;
     private toolbar: Toolbar;
-    private importDocInputElement: HTMLElement;
-    private importedDocumentName: string;
+    /**
+     * @private
+     */
+    public importDocInputElement: HTMLElement;
+    /**
+     * @private
+     */
+    public importedDocumentName: string;
     private previewLimit: number = 5;
     private lastRequestedPageIndex: number = 0;
     private pageZoomSliderStep: number = 0.25;
@@ -66,9 +91,18 @@ export class PageOrganizer {
     public waitingPopup: HTMLElement
     private thumbnail: HTMLElement;
     private imageContainer: HTMLElement;
-    private organizeDialog: Dialog;
-    private tileAreaWrapper: HTMLElement;
-    private tileAreaDiv: HTMLElement;
+    /**
+     * @private
+     */
+    public organizeDialog: Dialog;
+    /**
+     * @private
+     */
+    public tileAreaWrapper: HTMLElement;
+    /**
+     * @private
+     */
+    public tileAreaDiv: HTMLElement;
     private thumbnailImage: HTMLImageElement;
     private importImageWrapper: HTMLElement;
     private pageLink: HTMLElement;
@@ -79,21 +113,42 @@ export class PageOrganizer {
      * @private
      */
     public organizePagesCollection: OrganizeDetails[] = [];
-    private tempOrganizePagesCollection: OrganizeDetails[] = [];
+    /**
+     * @private
+     */
+    public tempOrganizePagesCollection: OrganizeDetails[] = [];
     private isSkipRevert: boolean = false;
     private isAllImagesReceived: boolean = false;
     private selectAllCheckBox: CheckBox;
-    private totalCheckedCount: number;
-    private selectedPageIndexes: number[] = [];
+    /**
+     * @private
+     */
+    public totalCheckedCount: number;
+    /**
+     * @private
+     */
+    public selectedPageIndexes: number[] = [];
     private dragEndIndex: number;
-    private dragHoveredIndex: number;
+    /**
+     * @private
+     */
+    public dragHoveredIndex: number;
     private dragObj: Draggable;
     private dropObj: Droppable;
-    private virtualEle: HTMLElement;
+    /**
+     * @private
+     */
+    public virtualEle: HTMLElement;
     private previousClientY: number;
-    private autoScrollInterval: number = null;
+    /**
+     * @private
+     */
+    public autoScrollInterval: number = null;
     private isRightInsertion: boolean;
-    private gapBetweenDivs: number = 48;
+    /**
+     * @private
+     */
+    public gapBetweenDivs: number = 48;
     private previousImageZoom: number = 1;
     private currentImageZoom: number;
     /**
@@ -129,11 +184,43 @@ export class PageOrganizer {
     private boundPageZoomChange: (event: ChangeEventArgs) => void;
     private boundIncreasePageZoom: () => void;
     private boundDecreasePageZoom: () => void;
+    private boundImportDocument: () => void;
+    private boundExtractInputChange: () => void;
+    private extractButtonClickHandler: () => void;
+
+    /**
+     * @private
+     */
+    public extractButtonElement: HTMLElement;
+
     /**
      * @private
      */
     public isOrganizeWindowOpen: boolean = false;
+    /**
+     * @private
+     */
     public isPageZoomPopupOpen: boolean = false;
+    /**
+     * @private
+     */
+    public extractDialog: Dialog;
+    /**
+     * @private
+     */
+    public extractPagesInput: TextBox;
+    /**
+     * @private
+     */
+    public isExtractToolbarVisible: boolean = false;
+    /**
+     * @private
+     */
+    public deleteExtractValue: string = '';
+    /**
+     * @private
+     */
+    public extractSecondaryToolbar: Toolbar;
 
     /**
      * @param {PdfViewer} pdfViewer - It describes about the pdfviewer
@@ -154,82 +241,7 @@ export class PageOrganizer {
      * @returns {void}
      */
     public createOrganizeWindow(isReConstruct?: boolean): void {
-        const elementID: string = this.pdfViewer.element.id;
-        if (!isNullOrUndefined(document.getElementById(elementID + '_organize_window')) && !isNullOrUndefined(this.organizeDialog)) {
-            this.organizeDialog.show(true);
-            this.isOrganizeWindowOpen = true;
-            return;
-        }
-        this.dialogDivElement = createElement('div', { id: elementID + '_organize_window', className: 'e-pv-organize-window' });
-        const dialogDiv: HTMLElement = this.dialogDivElement;
-        const contentRegion: HTMLElement = this.createContentArea();
-        this.pdfViewerBase.mainContainer.appendChild(dialogDiv);
-        this.organizeDialog = new Dialog({
-            showCloseIcon: true,
-            closeOnEscape: true,
-            isModal: true,
-            header: this.pdfViewer.localeObj.getConstant('Organize Pages'),
-            target: this.pdfViewerBase.mainContainer,
-            content: contentRegion,
-            visible: false,
-            open : () => {
-                this.organizeWindowFocus();
-            },
-            close: (args: any) => {
-                if (!this.isSkipRevert) {
-                    this.tempOrganizePagesCollection = JSON.parse(JSON.stringify(this.organizePagesCollection));
-                    this.undoOrganizeCollection = [];
-                    this.redoOrganizeCollection = [];
-                    this.isDocumentModified = false;
-                    this.pdfViewerBase.isImportDoc = false;
-                    this.startTile = null;
-                    this.ctrlKey = false;
-                    this.shiftKey = false;
-                    this.isTouchEvent = false;
-                    this.isClickedOnCheckBox = false;
-                    this.totalCheckedCount = 0;
-                    this.isOrganizeWindowOpen = false;
-                    this.destroyDialogWindow();
-                    this.createOrganizeWindow(true);
-                }
-                else {
-                    this.isSkipRevert = false;
-                }
-            },
-            created: (args: any) => {
-                if (this.pdfViewer.pageOrganizerSettings.showImageZoomingSlider) {
-                    this.createPageZoomDropDown();
-                }
-            }
-        });
-        if (!Browser.isDevice || this.pdfViewer.enableDesktopMode) {
-            const pagecount: number = this.pdfViewerBase.pageCount;
-            this.organizeDialog.buttons = [
-                { buttonModel: { content: this.pdfViewer.localeObj.getConstant('Save As'), isPrimary: true }, click: this.onSaveasClicked.bind(this) },
-                { buttonModel: { content: this.pdfViewer.localeObj.getConstant('Save'), isPrimary: true }, click: this.onSaveClicked.bind(this) },
-                { buttonModel: { content: this.pdfViewer.localeObj.getConstant('Total') + ' ' + pagecount.toString() + ' ' + this.pdfViewer.localeObj.getConstant('Pages'), cssClass: 'e-pv-organize-total-page-button', disabled: true } }
-            ];
-        }
-        // Listen to window resize events to update the dialog size dynamically
-        window.addEventListener('resize', () => {
-            this.updateOrganizeDialogSize();
-        });
-        if (this.pdfViewer.enableRtl) {
-            this.organizeDialog.enableRtl = true;
-        }
-        this.waitingPopup = createElement('div', { id: elementID + '_organizeLoadingIndicator' });
-        dialogDiv.appendChild(this.waitingPopup);
-        createSpinner({ target: this.waitingPopup, cssClass: 'e-spin-center' });
-        this.pdfViewerBase.setLoaderProperties(this.waitingPopup);
-        this.organizeDialog.appendTo(dialogDiv);
-        if (!isReConstruct) {
-            this.organizeDialog.show(true);
-            this.isOrganizeWindowOpen = true;
-        }
-        this.disableTileDeleteButton();
-        this.enableDisableToolbarItems();
-        this.updateUndoRedoButtons();
-        this.initEventListeners();
+        createOrganizeWindow.call(this, isReConstruct);
     }
 
     /**
@@ -238,807 +250,43 @@ export class PageOrganizer {
      * @returns {void}
      */
     public createOrganizeWindowForMobile(isReConstruct?: boolean): void {
-        const elementID: string = this.pdfViewer.element.id;
-        if (!isNullOrUndefined(document.getElementById(elementID + '_organize_window')) && !isNullOrUndefined(this.organizeDialog)) {
-            this.organizeDialog.show(true);
-            this.isOrganizeWindowOpen = true;
-            return;
-        }
-        this.dialogDivElement = createElement('div', { id: elementID + '_organize_window', className: 'e-pv-organize-window' });
-        const dialogDiv: HTMLElement = this.dialogDivElement;
-        const contentRegion: HTMLElement = this.createContentArea();
-        this.pdfViewerBase.mainContainer.appendChild(dialogDiv);
-        this.organizeDialog = new Dialog({
-            showCloseIcon: true,
-            closeOnEscape: true,
-            isModal: true,
-            header: this.pdfViewer.localeObj.getConstant('Organize Pages'),
-            target: this.pdfViewerBase.mainContainer,
-            content: contentRegion,
-            visible: false,
-            animationSettings: { effect: 'None' },
-            created: () => {
-                if (this.pdfViewer.pageOrganizerSettings.showImageZoomingSlider) {
-                    this.createPageZoomDropDown();
-                }
-            },
-            open: () => {
-                this.toolbar.refreshOverflow();
-                if (this.pdfViewer.pageOrganizerSettings.showImageZoomingSlider) {
-                    this.handlePageZoomPopupMobile();
-                }
-            },
-            close: () => {
-                if (!this.isSkipRevert) {
-                    this.tempOrganizePagesCollection = JSON.parse(JSON.stringify(this.organizePagesCollection));
-                    this.undoOrganizeCollection = [];
-                    this.redoOrganizeCollection = [];
-                    this.isDocumentModified = false;
-                    this.pdfViewerBase.isImportDoc = false;
-                    this.startTile = null;
-                    this.ctrlKey = false;
-                    this.shiftKey = false;
-                    this.isTouchEvent = false;
-                    this.isClickedOnCheckBox = false;
-                    this.isOrganizeWindowOpen = false;
-                    this.totalCheckedCount = 0;
-                    this.destroyDialogWindow();
-                    this.createOrganizeWindowForMobile(true);
-                }
-                else {
-                    this.isSkipRevert = false;
-                }
-            }
-        });
-        if (!Browser.isDevice || this.pdfViewer.enableDesktopMode) {
-            const pagecount: number = this.pdfViewerBase.pageCount;
-            this.organizeDialog.buttons = [
-                { buttonModel: { content: this.pdfViewer.localeObj.getConstant('Save As'), isPrimary: true }, click: this.onSaveasClicked.bind(this) },
-                { buttonModel: { content: this.pdfViewer.localeObj.getConstant('Save'), isPrimary: true }, click: this.onSaveClicked.bind(this) },
-                { buttonModel: { content: this.pdfViewer.localeObj.getConstant('Total') + ' ' + pagecount.toString() + ' ' + this.pdfViewer.localeObj.getConstant('Pages'), cssClass: 'e-pv-organize-total-page-button', disabled: true } }
-            ];
-        }
-        // Listen to window resize events to update the dialog size dynamically
-        window.addEventListener('resize', () => {
-            this.updateOrganizeDialogSize();
-        });
-        if (this.pdfViewer.enableRtl) {
-            this.organizeDialog.enableRtl = true;
-        }
-        this.waitingPopup = createElement('div', { id: elementID + '_organizeLoadingIndicator' });
-        dialogDiv.appendChild(this.waitingPopup);
-        createSpinner({ target: this.waitingPopup, cssClass: 'e-spin-center' });
-        this.pdfViewerBase.setLoaderProperties(this.waitingPopup);
-        this.organizeDialog.appendTo(dialogDiv);
-        if (!isReConstruct) {
-            this.organizeDialog.show(true);
-            this.isOrganizeWindowOpen = true;
-        }
-        this.createMobileContextMenu();
-        this.disableTileDeleteButton();
-        this.enableDisableToolbarItems();
-        this.updateUndoRedoButtons();
-        this.initEventListeners();
+        createOrganizeWindowForMobile.call(this, isReConstruct);
     }
 
     /**
      * @private
-     * @param {PageOrganizerSettingsModel} pageOrganizerSettings new page organizer settings object
+     * @param {PageOrganizerSettingsModel} pageOrganizerSettings - new page organizer settings object
+     * @param {oldpageOrganizerSettings} oldPageOrganizerSettings - old page organizer settings object
      * @returns {void}
      */
-    public setPageOrganizerSettings(pageOrganizerSettings: PageOrganizerSettingsModel): void {
-        if (!isNullOrUndefined(pageOrganizerSettings)) {
-            if (isNullOrUndefined(pageOrganizerSettings.canDelete)){
-                this.pdfViewer.pageOrganizerSettings.canDelete = true;
-            }
-            if (isNullOrUndefined(pageOrganizerSettings.canRotate)){
-                this.pdfViewer.pageOrganizerSettings.canRotate = true;
-            }
-            if (isNullOrUndefined(pageOrganizerSettings.canInsert)){
-                this.pdfViewer.pageOrganizerSettings.canInsert = true;
-            }
-            if (isNullOrUndefined(pageOrganizerSettings.canCopy)){
-                this.pdfViewer.pageOrganizerSettings.canCopy = true;
-            }
-            if (isNullOrUndefined(pageOrganizerSettings.canRearrange)){
-                this.pdfViewer.pageOrganizerSettings.canRearrange = true;
-            }
-            if (isNullOrUndefined(pageOrganizerSettings.canImport)){
-                this.pdfViewer.pageOrganizerSettings.canImport = true;
-            }
-            if (isNullOrUndefined(pageOrganizerSettings.showImageZoomingSlider)) {
-                this.pdfViewer.pageOrganizerSettings.showImageZoomingSlider = false;
-            }
-            if (isNullOrUndefined(pageOrganizerSettings.imageZoomMin)) {
-                this.pdfViewer.pageOrganizerSettings.imageZoomMin = 1;
-            }
-            if (isNullOrUndefined(pageOrganizerSettings.imageZoomMax)) {
-                this.pdfViewer.pageOrganizerSettings.imageZoomMax = 5;
-            }
-            if (this.pdfViewer.pageOrganizerSettings.imageZoomMin >= this.pdfViewer.pageOrganizerSettings.imageZoomMax) {
-                this.pdfViewer.pageOrganizerSettings.imageZoomMin = 1;
-                this.pdfViewer.pageOrganizerSettings.imageZoomMax = 5;
-            }
-            if (this.pdfViewer.pageOrganizerSettings.imageZoomMin < 1 || this.pdfViewer.pageOrganizerSettings.imageZoomMin >= 5) {
-                this.pdfViewer.pageOrganizerSettings.imageZoomMin = 1;
-            }
-            if (this.pdfViewer.pageOrganizerSettings.imageZoomMax > 5 || this.pdfViewer.pageOrganizerSettings.imageZoomMax <= 1) {
-                this.pdfViewer.pageOrganizerSettings.imageZoomMax = 5;
-            }
-            const range: number = this.pdfViewer.pageOrganizerSettings.imageZoomMax - this.pdfViewer.pageOrganizerSettings.imageZoomMin;
-            this.pageZoomSliderStep = range / 100;
-            if (isNullOrUndefined(pageOrganizerSettings.imageZoom)) {
-                this.pdfViewer.pageOrganizerSettings.imageZoom = this.pdfViewer.pageOrganizerSettings.imageZoomMin;
-            }
-            if (this.pdfViewer.pageOrganizerSettings.imageZoom > this.pdfViewer.pageOrganizerSettings.imageZoomMax) {
-                this.pdfViewer.pageOrganizerSettings.imageZoom = this.pdfViewer.pageOrganizerSettings.imageZoomMax;
-            }
-            else if (this.pdfViewer.pageOrganizerSettings.imageZoom < this.pdfViewer.pageOrganizerSettings.imageZoomMin) {
-                this.pdfViewer.pageOrganizerSettings.imageZoom = this.pdfViewer.pageOrganizerSettings.imageZoomMin;
-            }
-        }
+    public setPageOrganizerSettings(pageOrganizerSettings: PageOrganizerSettingsModel,
+                                    oldPageOrganizerSettings?: PageOrganizerSettingsModel): void {
+        setPageOrganizerSettings.call(this, pageOrganizerSettings, oldPageOrganizerSettings);
     }
 
-    private initEventListeners(): void {
-        this.boundOnTileAreaMouseDown = this.onTileAreaMouseDown.bind(this);
-        this.boundOnTileAreaKeyDown = this.onTileAreaKeyDown.bind(this);
-        this.boundOnTileAreaKeyUp = this.onTileAreaKeyUp.bind(this);
-        this.boundPageOrganizerOnScroll = this.pageOrganizerOnScroll.bind(this);
-
-        this.dialogDivElement.addEventListener('wheel', this.boundPageOrganizerOnScroll);
-        this.tileAreaDiv.addEventListener('mousedown', this.boundOnTileAreaMouseDown);
-        document.addEventListener('keydown', this.boundOnTileAreaKeyDown);
-        document.addEventListener('keyup', this.boundOnTileAreaKeyUp);
+    /**
+     * @private
+     * @param {string} property - new toolbar item in organize toolbar.
+     * @returns {void}
+     */
+    public updateToolbarItemState(property?: string): void {
+        updateToolbarItemState.call(this, property);
     }
 
-    private removeEventListeners(): void {
-        if (!isNullOrUndefined(this.dialogDivElement)) {
-            this.dialogDivElement.removeEventListener('wheel', this.boundPageOrganizerOnScroll);
-        }
-        if (!isNullOrUndefined(this.tileAreaDiv)) {
-            this.tileAreaDiv.removeEventListener('mousedown', this.boundOnTileAreaMouseDown);
-        }
-        document.removeEventListener('keydown', this.boundOnTileAreaKeyDown);
-        document.removeEventListener('keyup', this.boundOnTileAreaKeyUp);
-    }
-
-    private pageOrganizerOnScroll(event: WheelEvent): void {
-        if (this.ctrlKey) {
-            event.preventDefault();
-            const imageZoom: number = this.getImageZoomValue();
-            const imageZoomMin: number = this.getImageZoomMin();
-            const imageZoomMax: number = this.getImageZoomMax();
-            if (event.deltaY < 0 && (imageZoom < imageZoomMax)) {
-                if (imageZoom + this.pageZoomSliderStep < imageZoomMax) {
-                    this.handlePageZoomChange(imageZoom + this.pageZoomSliderStep, imageZoom);
-                }
-                else if (imageZoom + this.pageZoomSliderStep > imageZoomMax && imageZoom !== imageZoomMax) {
-                    this.handlePageZoomChange(imageZoomMax, imageZoom);
-                }
-            }
-            else if (event.deltaY > 0 && (imageZoom > imageZoomMin)) {
-                if (imageZoom - this.pageZoomSliderStep > imageZoomMin) {
-                    this.handlePageZoomChange(imageZoom - this.pageZoomSliderStep, imageZoom);
-                }
-                else if (imageZoom - this.pageZoomSliderStep < imageZoomMin && imageZoom !== imageZoomMin) {
-                    this.handlePageZoomChange(imageZoomMin, imageZoom);
-                }
-            }
-        }
-    }
-
-    private onTileAreaMouseDown(event: MouseEvent): void {
-        if (event.target && (event.target as HTMLElement).parentElement && (event.target as HTMLElement).parentElement.firstElementChild &&
-            (event.target as HTMLElement).parentElement.firstElementChild.classList.contains('e-pv-organize-tile-checkbox')) {
-            this.isClickedOnCheckBox = true;
-        } else {
-            this.isClickedOnCheckBox = false;
-        }
-
-        if ((event.target as HTMLElement).closest('.e-pv-organize-anchor-node')){
-            const targetTile: HTMLElement = event.target as HTMLElement;
-            const tiles: any = Array.from(this.tileAreaDiv.children);
-            if (this.shiftKey && this.startTile) {
-                // Shift key selection logic
-                const currentIndex: number = Array.from(this.tileAreaDiv.children).indexOf(targetTile.closest('.e-pv-organize-anchor-node'));
-                if (this.startTile) {
-                    const startIndex: number = Array.from(this.tileAreaDiv.children).indexOf(this.startTile.closest('.e-pv-organize-anchor-node'));
-                    this.selectRange(startIndex, currentIndex);
-                    tiles.forEach((tile: HTMLElement, index: number) => {
-                        if (index < Math.min(startIndex, currentIndex) || index > Math.max(startIndex, currentIndex)) {
-                            this.deselectTile(tile);
-                        }
-                    });
-                }
-            } else if (!this.ctrlKey){
-                this.startTile = targetTile;
-            }
-        } else {
-            if (!this.ctrlKey && !this.shiftKey){
-                this.clearSelection();
-                this.startTile = null;
-            }
-        }
-        this.updateSelectAllCheckbox();
-        this.enableDisableToolbarItems();
-    }
-
-    private onTileAreaKeyDown(event: KeyboardEvent): void {
-        if ((event.ctrlKey || event.metaKey) && !event.shiftKey){
-            this.ctrlKey = true;
-            if (this.isOrganizeWindowOpen){
-                if (event.keyCode === 65) {
-                    event.preventDefault();
-                    this.selectAllTiles();
-                }
-                if (event.keyCode === 90) {
-                    event.preventDefault();
-                    this.undo();
-                }
-                else if (event.keyCode === 89) {
-                    event.preventDefault();
-                    this.redo();
-                }
-            }
-        }
-        if (event.shiftKey) {
-            this.shiftKey = true;
-        }
-    }
-
-    private onTileAreaKeyUp(event: KeyboardEvent): void {
-        if (!(event.ctrlKey || event.metaKey)){
-            this.ctrlKey = false;
-        }
-        if (!event.shiftKey) {
-            this.shiftKey = false;
-        }
-    }
-
-    private onSelectAllClick(event: any): void {
-        if (event.checked) {
-            this.selectAllTiles();
-        } else {
-            this.clearSelection();
-        }
-    }
-
-    private selectRange(startIndex: number, endIndex: number): void {
-        const minIndex: number = Math.min(startIndex, endIndex);
-        const maxIndex: number = Math.max(startIndex, endIndex);
-        for (let i: number = minIndex; i <= maxIndex; i++) {
-            const tile: HTMLElement = this.tileAreaDiv.children[parseInt(i.toString(), 10)] as HTMLElement;
-            this.selectTile(tile);
-        }
-    }
-
-    private selectTile(tile: HTMLElement): void {
-        if  (!isNullOrUndefined(tile)){
-            const checkbox: HTMLInputElement = tile.closest('.e-pv-organize-anchor-node').querySelector('.e-pv-organize-tile-checkbox') as HTMLInputElement;
-            if (checkbox) {
-                checkbox.checked = true;
-                this.setSelectionRingStyle(checkbox, tile);
-            }
-        }
-    }
-
-    private deselectTile(tile: HTMLElement): void {
-        if  (!isNullOrUndefined(tile)){
-            const checkbox: HTMLInputElement = tile.closest('.e-pv-organize-anchor-node').querySelector('.e-pv-organize-tile-checkbox') as HTMLInputElement;
-            if (checkbox) {
-                checkbox.checked = false;
-                this.setSelectionRingStyle(checkbox, tile);
-            }
-        }
-    }
-
-    private clearSelection(): void {
-        const selectedTiles: NodeListOf<Element> = document.querySelectorAll('.e-pv-organize-node-selection-ring');
-        selectedTiles.forEach((tile: Element) => {
-            const checkbox: HTMLInputElement = tile.closest('.e-pv-organize-anchor-node').querySelector('.e-pv-organize-tile-checkbox') as HTMLInputElement;
-            checkbox.checked = false;
-            this.setSelectionRingStyle(checkbox, tile as HTMLElement);
-        });
-        this.updateSelectAllCheckbox();
-        this.enableDisableToolbarItems();
-    }
-
-    private selectAllTiles(): void {
-        Array.from(this.tileAreaDiv.children).forEach((tile: Element) => {
-            this.selectTile(tile as HTMLElement);
-        });
-        this.updateSelectAllCheckbox();
-        this.enableDisableToolbarItems();
-    }
-
-    private updateOrganizeDialogSize(): void {
-        // Update the dialog size based on the viewer container size
-        const dialogWidth: number = this.pdfViewer.element.getBoundingClientRect().width;
-        const dialogHeight: number = this.pdfViewer.element.getBoundingClientRect().height;
-        if (!isNullOrUndefined(this.organizeDialog)) {
-            this.organizeDialog.width = `${dialogWidth}px`;
-            this.organizeDialog.height = `${dialogHeight}px`;
-        }
-    }
-
-    private createContentArea(): any {
-        const elementID: string = this.pdfViewer.element.id;
-        const contentDiv: HTMLElement = createElement('div', { id: elementID + '_content_appearance', className: 'e-pv-organize-content-apperance' });
-        const toolbarDiv: HTMLElement = createElement('div', { id: elementID + '_toolbar_appearance', className: 'e-pv-organize-toolbar-apperance' });
-        this.tileAreaWrapper = createElement('div', { id: this.pdfViewer.element.id + '_organize_tile_view_wrapper', className: 'e-pv-organize-tile-view-wrapper' });
-        this.tileAreaDiv = createElement('div', { id: this.pdfViewer.element.id + '_organize_tile_view', className: 'e-pv-organize-tile-view e-pv-thumbnail-row' });
-        this.tileAreaWrapper.style.width = '100%';
-        this.tileAreaWrapper.style.height = 'calc(100% - 48px)';
-        this.tileAreaWrapper.style.position = 'relative';
-        contentDiv.style.width = '100%';
-        contentDiv.style.height = '100%';
-        toolbarDiv.style.height = '48px';
-        this.tileAreaDiv.style.height = '100%';
-        this.selectAllCheckBox = new CheckBox(
-            { label: Browser.isDevice && !this.pdfViewer.enableDesktopMode ? '' : this.pdfViewer.localeObj.getConstant('Select All'), cssClass: 'e-pv-organize-select-all', checked: false, change: this.onSelectAllClick.bind(this) });
-        const toolbarItems: ItemModel[] = [];
-        const toolbarItemsForDesktop: ItemModel[] = [
-            { type: 'Input', template: this.selectAllCheckBox, id: 'selectAllCheckbox', align: 'Left' },
-            { type: 'Separator', align: 'Left' },
-            {
-                prefixIcon: 'e-pv-undo-icon e-pv-icon', visible: true, cssClass: 'e-pv-undo-container', id: this.pdfViewer.element.id + '_undo_organize_Pages', align: 'Left', click: (args: ClickEventArgs) => {
-                    this.undo();
-                }
-            },
-            {
-                prefixIcon: 'e-pv-redo-icon e-pv-icon', visible: true, cssClass: 'e-pv-redo-container', id: this.pdfViewer.element.id + '_redo_organize_Pages', align: 'Left', click: (args: ClickEventArgs) => {
-                    this.redo();
-                }
-            },
-            {
-                prefixIcon: 'e-pv-rotate-left-icon e-pv-icon', visible: true, cssClass: 'e-pv-toolbar-rotate-left', id: this.pdfViewer.element.id + '_rotate_page_left', align: 'Center', click: (args: ClickEventArgs) => {
-                    this.onToolbarLeftButtonClick();
-                }
-            },
-            {
-                prefixIcon: 'e-pv-rotate-right-icon e-pv-icon', visible: true, cssClass: 'e-pv-toolbar-rotate-right', id: this.pdfViewer.element.id + '_rotate_page_right', align: 'Center', click: (args: ClickEventArgs) => {
-                    this.onToolbarRightButtonClick();
-                }
-            },
-            { type: 'Separator', align: 'Center' },
-            { prefixIcon: 'e-pv-copy-icon e-pv-icon', visible: true, cssClass: 'e-pv-toolbar-rotate-right', id: this.pdfViewer.element.id + '_copy_page', align: 'Center', click: (args: ClickEventArgs) => {
-                this.onToolbarCopyButtonClick();
-            } },
-            { type: 'Separator', align: 'Center' },
-            {
-                prefixIcon: 'e-pv-delete-icon e-pv-icon', visible: true, cssClass: 'e-pv-delete-selected', id: this.pdfViewer.element.id + '_delete_selected', align: 'Center', click: (args: ClickEventArgs) => {
-                    this.onToolbarDeleteButtonClick();
-                }
-            },
-            {
-                prefixIcon: 'e-pv-import-icon e-pv-icon', text: this.pdfViewer.localeObj.getConstant('Import Document'), visible: true, cssClass: 'e-pv-import-pages', id: this.pdfViewer.element.id + '_import_pages', align: 'Right', click: (args: ClickEventArgs) => {
-                    this.bindImportDocEvent();
-                }
-            }
-        ];
-        if (this.pdfViewer.pageOrganizerSettings.showImageZoomingSlider) {
-            this.addPageZoomDropDown(true, toolbarItemsForDesktop);
-        }
-        const toolbarItemsForMobile: ItemModel[] = [
-            { type: 'Input', template: this.selectAllCheckBox, id: 'selectAllCheckbox', align: 'Left' },
-            { type: 'Separator', align: 'Left' },
-            {
-                prefixIcon: 'e-pv-undo-icon e-pv-icon', visible: true, cssClass: 'e-pv-undo-container', id: this.pdfViewer.element.id + '_undo_organize_Pages', align: 'Left', click: (args: ClickEventArgs) => {
-                    this.undo();
-                }
-            },
-            {
-                prefixIcon: 'e-pv-redo-icon e-pv-icon', visible: true, cssClass: 'e-pv-redo-container', id: this.pdfViewer.element.id + '_redo_organize_Pages', align: 'Left', click: (args: ClickEventArgs) => {
-                    this.redo();
-                }
-            },
-            {
-                prefixIcon: 'e-pv-rotate-left-icon e-pv-icon', visible: true, cssClass: 'e-pv-toolbar-rotate-left', id: this.pdfViewer.element.id + '_rotate_page_left', align: 'Right', click: (args: ClickEventArgs) => {
-                    this.onToolbarLeftButtonClick();
-                }
-            },
-            {
-                prefixIcon: 'e-pv-rotate-right-icon e-pv-icon', visible: true, cssClass: 'e-pv-toolbar-rotate-right', id: this.pdfViewer.element.id + '_rotate_page_right', align: 'Right', click: (args: ClickEventArgs) => {
-                    this.onToolbarRightButtonClick();
-                }
-            },
-            {
-                prefixIcon: 'e-pv-delete-icon e-pv-icon', visible: true, cssClass: 'e-pv-delete-selected', id: this.pdfViewer.element.id + '_delete_selected', align: 'Right', click: (args: ClickEventArgs) => {
-                    this.onToolbarDeleteButtonClick();
-                }
-            },
-            { type: 'Separator', align: 'Right' },
-            {
-                prefixIcon: 'e-pv-more-icon e-pv-icon', visible: true, cssClass: 'e-pv-toolbar-rotate-right', id: this.pdfViewer.element.id + '_organize_more_button', align: 'Right',
-                click: this.openContextMenu.bind(this)
-            }
-        ];
-        if (this.pdfViewer.pageOrganizerSettings.showImageZoomingSlider) {
-            this.addPageZoomDropDown(true, toolbarItemsForMobile);
-        }
-        if (Browser.isDevice && !this.pdfViewer.enableDesktopMode) {
-            toolbarItems.push(...toolbarItemsForMobile);
-        }
-        else {
-            toolbarItems.push(...toolbarItemsForDesktop);
-        }
-        this.toolbar = new Toolbar({
-            items: toolbarItems
-        });
-        this.toolbar.cssClass = 'e-pv-organize-toolbar';
-        this.toolbar.height = '48px';
-        this.toolbar.width = 'auto';
-        if (Browser.isDevice && !this.pdfViewer.enableDesktopMode) {
-            this.toolbar.overflowMode = 'Popup';
-        }
-        this.toolbar.appendTo(toolbarDiv);
-        contentDiv.appendChild(toolbarDiv);
-        this.renderThumbnailImage();
-        this.tileAreaWrapper.appendChild(this.tileAreaDiv);
-        contentDiv.appendChild(this.tileAreaWrapper);
-        this.createImportDocElement(toolbarDiv);
-        this.organizeWireEvent();
-        const rotateRightToolbarButton: HTMLElement = toolbarDiv.querySelector('#' + this.pdfViewer.element.id + '_rotate_page_right');
-        if (!isNullOrUndefined(rotateRightToolbarButton)) {
-            this.createTooltip(rotateRightToolbarButton, this.pdfViewer.localeObj.getConstant('Rotate Right'));
-        }
-        const rotateLeftToolbarButton: HTMLElement = toolbarDiv.querySelector('#' + this.pdfViewer.element.id + '_rotate_page_left');
-        if (!isNullOrUndefined(rotateLeftToolbarButton)) {
-            this.createTooltip(rotateLeftToolbarButton, this.pdfViewer.localeObj.getConstant('Rotate Left'));
-        }
-        const copyToolbarButton: HTMLElement = toolbarDiv.querySelector('#' + this.pdfViewer.element.id + '_copy_page');
-        if (!isNullOrUndefined(copyToolbarButton)) {
-            this.createTooltip(copyToolbarButton, this.pdfViewer.localeObj.getConstant('Copy Pages'));
-        }
-        const deleteToolbarButton: HTMLElement = toolbarDiv.querySelector('#' + this.pdfViewer.element.id + '_delete_selected');
-        if (!isNullOrUndefined(deleteToolbarButton)) {
-            this.createTooltip(deleteToolbarButton, this.pdfViewer.localeObj.getConstant('Delete Pages'));
-        }
-        const undoToolbarButton: HTMLElement = toolbarDiv.querySelector('#' + this.pdfViewer.element.id + '_undo_organize_Pages');
-        if (!isNullOrUndefined(undoToolbarButton)) {
-            this.createTooltip(undoToolbarButton, this.pdfViewer.localeObj.getConstant('Undo'));
-        }
-        const redoToolbarButton: HTMLElement = toolbarDiv.querySelector('#' + this.pdfViewer.element.id + '_redo_organize_Pages');
-        if (!isNullOrUndefined(redoToolbarButton)) {
-            this.createTooltip(redoToolbarButton, this.pdfViewer.localeObj.getConstant('Redo'));
-        }
-        return contentDiv;
-    }
-
-    private updatePageZoomPopup(): void {
-        if (this.isPageZoomPopupOpen && (this.pageZoomSlider.value !== this.currentPageZoomSliderValue)) {
-            this.pageZoomSlider.value = this.currentPageZoomSliderValue;
-            this.pageZoomSlider.reposition();
-        }
-        this.handlePageZoomButtonsVisibility(this.currentPageZoomSliderValue);
-    }
-
+    /**
+     * @private
+     * @returns {number} - number
+     */
     public getImageZoomMin(): number {
-        let currentMinSize: number = this.pdfViewer.pageOrganizerSettings.imageZoomMin;
-        if (isNullOrUndefined(currentMinSize)) {
-            this.pdfViewer.pageOrganizerSettings.imageZoomMin = 1;
-            currentMinSize = 1;
-        }
-        const possibleMinSize: number = 1;
-        if (!Number.isInteger(currentMinSize)) {
-            currentMinSize = Math.floor(currentMinSize);
-            this.pdfViewer.pageOrganizerSettings.imageZoomMin = currentMinSize;
-        }
-        if (currentMinSize < possibleMinSize) {
-            this.pdfViewer.pageOrganizerSettings.imageZoomMin = possibleMinSize;
-        }
-        return this.pdfViewer.pageOrganizerSettings.imageZoomMin;
+        return getImageZoomMin.call(this);
     }
 
+    /**
+     * @private
+     * @returns {number} - number
+     */
     public getImageZoomMax(): number {
-        let currentMaxSize: number = this.pdfViewer.pageOrganizerSettings.imageZoomMax;
-        if (isNullOrUndefined(currentMaxSize)) {
-            this.pdfViewer.pageOrganizerSettings.imageZoomMax = 5;
-            currentMaxSize = 5;
-        }
-        const possibleMaxSize: number = 5;
-        if (!Number.isInteger(currentMaxSize)) {
-            currentMaxSize = Math.floor(currentMaxSize);
-            this.pdfViewer.pageOrganizerSettings.imageZoomMax = currentMaxSize;
-        }
-        if (currentMaxSize > possibleMaxSize) {
-            this.pdfViewer.pageOrganizerSettings.imageZoomMax = possibleMaxSize;
-        }
-        return this.pdfViewer.pageOrganizerSettings.imageZoomMax;
-    }
-
-    private isOrganizeDialogRendered(): boolean {
-        if (!isNullOrUndefined(document.getElementById(this.pdfViewer.element.id + '_organize_window')) && !isNullOrUndefined(this.organizeDialog)) {
-            return true;
-        }
-        return false;
-    }
-
-    private modifyThumbnailContainer(): void {
-        /* eslint-disable security/detect-object-injection */
-        const organizeNodes: HTMLCollection = this.tileAreaDiv.children;
-        const imageSizeFactor: number = this.getImageZoomFactor(organizeNodes[0].cloneNode(true) as HTMLDivElement);
-        for (let index: number = 0; index < organizeNodes.length; index++) {
-            const imageContainer: HTMLDivElement = organizeNodes[index] as HTMLDivElement;
-            imageContainer.style.width = 140 * imageSizeFactor + 'px';
-            imageContainer.style.height = 140 * imageSizeFactor + 'px';
-            this.blurImageContainer(true, imageContainer);
-        }
-        /* eslint-enable security/detect-object-injection */
-    }
-
-    private setThumbnailImage(): void {
-        /* eslint-disable security/detect-object-injection */
-        const organizeNodes: HTMLCollection = this.tileAreaDiv.children;
-        for (let index: number = 0; index < organizeNodes.length; index++) {
-            const imageContainer: HTMLDivElement = organizeNodes[index] as HTMLDivElement;
-            const imageElement: HTMLImageElement = imageContainer.querySelector('.e-pv-organize-image');
-            imageElement.src = this.dataDetails[parseInt(index.toString(), 10)].image;
-            this.blurImageContainer(false, imageContainer);
-        }
-        /* eslint-enable security/detect-object-injection */
-    }
-
-    private handlePageZoomPopupMobile(): void {
-        const pageZoomButton: HTMLElement = this.pdfViewerBase.getElement('_page_zoom');
-        if (pageZoomButton && pageZoomButton.parentElement.classList.contains('e-toolbar-popup')) {
-            (pageZoomButton.children[0] as HTMLElement).style.padding = '0 5px';
-            (pageZoomButton.children[0] as HTMLElement).style.minWidth = '0';
-        }
-    }
-
-    private addPageZoomDropDown(isInitialCreation: boolean, toolbarItems?: ItemModel[]): void {
-        if (isInitialCreation) {
-            if (Browser.isDevice && !this.pdfViewer.enableDesktopMode) {
-                const insertIndex: number = toolbarItems.findIndex((item: ItemModel) => item.id === this.pdfViewer.element.id + '_organize_more_button');
-                toolbarItems.splice(insertIndex - 1, 0,
-                // eslint-disable-next-line @typescript-eslint/indent
-                    { visible: true, cssClass: 'e-pv-page-zoom', id: this.pdfViewer.element.id + '_page_zoom', align: 'Right' });
-            }
-            else {
-                const insertIndex: number = toolbarItems.findIndex((item: ItemModel) => item.cssClass === 'e-pv-import-pages');
-                toolbarItems.splice(insertIndex, 0, { type: 'Separator', align: 'Center' },
-                // eslint-disable-next-line @typescript-eslint/indent
-                    { visible: true, cssClass: 'e-pv-page-zoom', id: this.pdfViewer.element.id + '_page_zoom', align: 'Center' });
-            }
-        }
-        else {
-            if (Browser.isDevice && !this.pdfViewer.enableDesktopMode) {
-                const insertIndex: number = this.toolbar.items.findIndex((item: ItemModel) => item.id === this.pdfViewer.element.id + '_page_zoom');
-                if (insertIndex !== -1) {
-                    this.toolbar.hideItem(this.pdfViewerBase.getElement('_page_zoom').parentElement, false);
-                }
-            }
-            else {
-                const insertIndex: number = this.toolbar.items.findIndex((item: ItemModel) => item.cssClass === 'e-pv-import-pages');
-                if (this.toolbar.items[insertIndex - 1].type !== 'Separator') {
-                    this.toolbar.addItems([{ type: 'Separator', align: 'Center' },
-                        { visible: true, cssClass: 'e-pv-page-zoom', id: this.pdfViewer.element.id + '_page_zoom', align: 'Center' }], insertIndex);
-                }
-                else {
-                    this.toolbar
-                        .addItems([{ visible: true, cssClass: 'e-pv-page-zoom', id: this.pdfViewer.element.id + '_page_zoom', align: 'Center' }], insertIndex);
-                }
-            }
-            // Removes the margin left or margin right property of center group in page organizer toolbar
-            this.toolbar.element.children[0].children[1].removeAttribute('style');
-        }
-    }
-
-    private createPageZoomDropDown(): void {
-        this.pageZoomElement = this.pdfViewerBase.getElement('_page_zoom');
-        this.pageZoomContainer = this.createPageZoomSlider(this.pageZoomElement.id);
-        const dropDownButton: DropDownButton = new DropDownButton({ iconCss: 'e-pv-page-zoom-icon' + ' e-pv-icon e-icons', target: this.pageZoomContainer });
-        if (this.pdfViewer.enableRtl) {
-            dropDownButton.enableRtl = true;
-        }
-        dropDownButton.appendTo(this.pageZoomElement);
-        this.createTooltip(this.pageZoomElement, this.pdfViewer.localeObj.getConstant('Change Page Zoom'));
-        this.pageZoomElement.setAttribute('aria-label', this.pdfViewer.localeObj.getConstant('Change Page Zoom'));
-        this.pageZoomDropDown = dropDownButton;
-        this.pageZoomWireEvents();
-        this.pageZoomSliderWireEvents();
-    }
-
-    private shrinkElement(element: HTMLElement): void {
-        const pdfViewerRect: DOMRect = this.pdfViewer.element.getBoundingClientRect() as DOMRect;
-        const actualWidth: number = element.clientWidth;
-        const decreasePercent: number = (actualWidth - pdfViewerRect.width) / actualWidth;
-        const newHeight: number = element.clientHeight * (1 - decreasePercent);
-        const newWidth: number = actualWidth * (1 - decreasePercent);
-        element.style.width = newWidth + 'px';
-        element.style.height = newHeight + 'px';
-    }
-
-    private pageZoomDropDownOpen(args: OpenCloseMenuEventArgs): void {
-        if (Browser.isDevice && !this.pdfViewer.enableDesktopMode) {
-            const pageZoomButton: HTMLElement = this.pdfViewerBase.getElement('_page_zoom');
-            args.element.parentElement.style.left = '0px';
-            if (args.element.parentElement.clientWidth > this.pdfViewer.element.getBoundingClientRect().width) {
-                this.shrinkElement(args.element.parentElement as HTMLElement);
-            }
-            const pageZoomContainerRect: DOMRect = args.element.parentElement.getBoundingClientRect() as  DOMRect;
-            if (pageZoomButton && pageZoomButton.parentElement.classList.contains('e-toolbar-popup')) {
-                args.element.parentElement.style.left = (this.pdfViewer.element.getBoundingClientRect().left +
-                // eslint-disable-next-line @typescript-eslint/indent
-                    Math.max(((this.pdfViewer.element.getBoundingClientRect().width - pageZoomContainerRect.width) / 2), 0)) + 'px';
-            }
-            else {
-                const pageZoomButtonRect: DOMRect = pageZoomButton.getBoundingClientRect() as DOMRect;
-                args.element.parentElement.style.left = Math.max((pageZoomButtonRect.right - pageZoomContainerRect.width),
-                // eslint-disable-next-line @typescript-eslint/indent
-                    this.pdfViewer.element.getBoundingClientRect().left) + 'px';
-            }
-            args.element.parentElement.style.top = this.pdfViewerBase.getElement('_toolbar_appearance').getBoundingClientRect().bottom + 'px';
-        }
-        else {
-            if (args.element && args.element.parentElement) {
-                const leftValue: number = parseFloat(args.element.parentElement.style.left);
-                const width: number = args.element.parentElement.offsetWidth;
-                if ((leftValue + width) > (this.pdfViewer.element.getBoundingClientRect().left +
-                    this.pdfViewer.element.offsetWidth + 10)) {
-                    args.element.parentElement.style.left = (leftValue - width) + 'px';
-                }
-            }
-        }
-        this.isPageZoomPopupOpen = true;
-        this.updatePageZoomPopup();
-        requestAnimationFrame(() => {
-            if (this.pageZoomDecreaseButton.disabled) {
-                (this.pageZoomSlider.element.querySelector('.e-handle') as HTMLElement).focus();
-            }
-            else {
-                this.pageZoomDecreaseButton.focus();
-            }
-        });
-    }
-
-    private pageZoomDropDownClose(): void {
-        requestAnimationFrame(() => {
-            this.pageZoomDropDown.focusIn();
-        });
-        this.isPageZoomPopupOpen = false;
-    }
-
-    private pageZoomChange(args: ChangeEventArgs): void {
-        if (args.isInteracted && args.previousValue !== args.value) {
-            this.pageZoomSlider.element.querySelector('.e-handle').classList.remove('e-large-thumb-size');
-            this.handlePageZoomChange(args.value, args.previousValue);
-        }
-    }
-
-    private blurImageContainer(canBlur: boolean, container: HTMLElement): void {
-        if (!isNullOrUndefined(container)) {
-            container.style.filter = canBlur ? 'blur(5px)' : '';
-        }
-    }
-
-    private createPageZoomSlider(idString: string): HTMLElement {
-        const outerContainer: HTMLElement = createElement('div', { className: 'e-pv-page-zoom-popup-container' });
-        document.body.appendChild(outerContainer);
-        this.pageZoomDecreaseButton = createElement('button', { id: idString + '_decrease', attrs:
-            { 'aria-label': this.pdfViewer.localeObj.getConstant('Decrease Page Zoom'), 'tabindex': '0' } }) as HTMLButtonElement;
-        this.pageZoomDecreaseButton.className = 'e-btn e-pv-page-zoom-decrease e-flat';
-        this.pageZoomDecreaseButton.setAttribute('type', 'button');
-        const pageZoomDecreaseButtonSpan: HTMLSpanElement = createElement('span', { id: idString + '_decrease_icon',
-            className: 'e-pv-page-zoom-decrease-icon e-btn-icon e-icons e-pv-icon' }) as HTMLSpanElement;
-        this.pageZoomDecreaseButton.appendChild(pageZoomDecreaseButtonSpan);
-        this.pageZoomIncreaseButton = createElement('button', { id: idString + '_increase', attrs:
-            { 'aria-label': this.pdfViewer.localeObj.getConstant('Increase Page Zoom'), 'tabindex': '0' } }) as HTMLButtonElement;
-        this.pageZoomIncreaseButton.className = 'e-btn e-pv-page-zoom-increase e-flat';
-        this.pageZoomIncreaseButton.setAttribute('type', 'button');
-        const pageZoomIncreaseButtonSpan: HTMLSpanElement = createElement('span', { id: idString + '_decrease_icon',
-            className: 'e-pv-page-zoom-increase-icon e-btn-icon e-icons e-pv-icon' }) as HTMLSpanElement;
-        this.pageZoomIncreaseButton.appendChild(pageZoomIncreaseButtonSpan);
-        const sliderElement: HTMLElement = createElement('div', { id: idString + '_slider' });
-        this.pageZoomSlider = new Slider({ type: 'MinRange', cssClass: 'e-pv-page-zoom-slider', max: this.getImageZoomMax(), min: this.getImageZoomMin(), step: this.pageZoomSliderStep });
-        if (!this.pdfViewer.enableRtl) {
-            outerContainer.appendChild(this.pageZoomDecreaseButton);
-            outerContainer.appendChild(sliderElement);
-            this.pageZoomSlider.appendTo(sliderElement);
-            outerContainer.appendChild(this.pageZoomIncreaseButton);
-        } else {
-            outerContainer.appendChild(this.pageZoomIncreaseButton);
-            outerContainer.appendChild(sliderElement);
-            this.pageZoomSlider.enableRtl = true;
-            this.pageZoomSlider.appendTo(sliderElement);
-            outerContainer.appendChild(this.pageZoomDecreaseButton);
-        }
-        this.pageZoomSlider.element.parentElement.classList.add('e-pv-page-zoom-slider-container');
-        return outerContainer;
-    }
-
-    private createMobileContextMenu(): void {
-        this.mobileContextMenu = [
-            { text: this.pdfViewer.localeObj.getConstant('Save') , iconCss: 'e-icons e-pv-save-icon e-pv-icon' },
-            { text: this.pdfViewer.localeObj.getConstant('Save As') , iconCss: 'e-icons e-pv-save-as-icon e-pv-icon' },
-            {
-                separator: true
-            },
-            { text: this.pdfViewer.localeObj.getConstant('Copy'), iconCss: 'e-pv-copy-icon e-pv-icon' },
-            {
-                separator: true
-            },
-            { text: this.pdfViewer.localeObj.getConstant('Import Document'), id: this.pdfViewer.element.id + '_import_pages', iconCss: 'e-pv-import-icon e-pv-icon' }
-        ];
-        const contextMenuElement: HTMLElement = createElement('ul', { id: this.pdfViewer.element.id + '_organize_context_menu' });
-        this.pdfViewer.element.appendChild(contextMenuElement);
-        if (isNullOrUndefined(this.contextMenuObj)) {
-            this.contextMenuObj = new ContextMenu({
-                target: '#' + this.pdfViewer.element.id + '_organize_more_button', items: this.mobileContextMenu,
-                beforeOpen: this.contextMenuBeforeOpen.bind(this),
-                select: this.contextMenuItemSelect.bind(this)
-            });
-            if (this.pdfViewer.enableRtl) {
-                this.contextMenuObj.enableRtl = true;
-            }
-            this.contextMenuObj.appendTo(contextMenuElement);
-        }
-        if (Browser.isDevice && !this.pdfViewer.enableDesktopMode) {
-            this.contextMenuObj.animationSettings.effect = 'ZoomIn';
-        }
-        else {
-            this.contextMenuObj.animationSettings.effect = 'SlideDown';
-        }
-    }
-
-    private contextMenuBeforeOpen(args: BeforeOpenCloseMenuEventArgs): void {
-        this.contextMenuObj.enableItems(['Save', 'Save As'], true);
-        this.contextMenuObj.enableItems(['Copy'], false);
-        this.contextMenuObj.enableItems(['Import Document'], true);
-        const isCopyDisabled: boolean = false;
-        const isCopyRotateDisabled: boolean = false;
-        if ((this.selectAllCheckBox.checked || this.selectAllCheckBox.indeterminate) &&
-        this.pdfViewer.pageOrganizerSettings.canCopy && !this.getCopiedItems(isCopyDisabled) &&
-        !this.getImportedItems(isCopyRotateDisabled)){
-            this.contextMenuObj.enableItems(['Copy'], true);
-        }
-    }
-    private getCopiedItems(isCopyDisabled: boolean): boolean {
-        const selectedNodes: NodeListOf<Element> = this.tileAreaDiv.querySelectorAll('.e-pv-organize-node-selection-ring');
-        selectedNodes.forEach((selectedElements: HTMLElement) => {
-            const mainTileElement: HTMLElement = selectedElements.closest('.e-pv-organize-anchor-node') as HTMLElement;
-            const pageOrder: number = parseInt(mainTileElement.getAttribute('data-page-order'), 10);
-            const currentPageDetails : OrganizeDetails = this.tempOrganizePagesCollection.
-                find((item: OrganizeDetails) => { return item.currentPageIndex === pageOrder; });
-            if (currentPageDetails.isInserted && !currentPageDetails.isDeleted)
-            {
-                isCopyDisabled = true;
-            }
-        });
-        return isCopyDisabled;
-    }
-    private getImportedItems(isCopyRotateDisabled: boolean): boolean {
-        const selectedNodes: NodeListOf<Element> = this.tileAreaDiv.querySelectorAll('.e-pv-organize-node-selection-ring');
-        selectedNodes.forEach((selectedElements: HTMLElement) => {
-            const mainTileElement: HTMLElement = selectedElements.closest('.e-pv-organize-anchor-node') as HTMLElement;
-            const pageOrder: number = parseInt(mainTileElement.getAttribute('data-page-order'), 10);
-            const currentPageDetails : OrganizeDetails = this.tempOrganizePagesCollection.
-                find((item: OrganizeDetails) => { return item.currentPageIndex === pageOrder; });
-            if (currentPageDetails.isImportedDoc && !currentPageDetails.isDeleted)
-            {
-                isCopyRotateDisabled = true;
-            }
-        });
-        return isCopyRotateDisabled;
-    }
-    private contextMenuItemSelect(args: any): void {
-        switch (args.item.text) {
-        case 'Save':
-            this.onSaveClicked();
-            break;
-        case 'Save As':
-            this.onSaveasClicked();
-            break;
-        case 'Copy':
-            this.onToolbarCopyButtonClick();
-            break;
-        case 'Import Document':
-            this.bindImportDocEvent();
-            break;
-        default:
-            break;
-        }
+        return getImageZoomMax.call(this);
     }
 
     /**
@@ -1046,94 +294,16 @@ export class PageOrganizer {
      * @returns {void}
      */
     public createRequestForPreview(): any {
-        // eslint-disable-next-line
-        const proxy: PageOrganizer = this;
-        const isIE: boolean = !!(document as any).documentMode;
-        if (!isIE) {
-            return new Promise<any>(
-                function (renderPreviewImage: any, reject: any): any {
-                    proxy.requestPreviewCreation(proxy);
-                });
-        } else {
-            this.requestPreviewCreation(proxy);
-            return null;
-        }
+        return createRequestForPreview.call(this);
     }
 
-    private requestPreviewCreation(proxy: PageOrganizer): void {
-        // Removed the condition to skip multiple request for thumbnail image.
-        const startIndex: number = this.lastRequestedPageIndex;
-        const endIndex: number = (startIndex + this.previewLimit) >= this.pdfViewer.pageCount ?
-            this.pdfViewer.pageCount : (startIndex + this.previewLimit);
-        let digitalSignaturePresent: boolean = false;
-        for (let i: number = startIndex; i < endIndex; i++) {
-            if (proxy.pdfViewerBase.digitalSignaturePresent(i)) {
-                digitalSignaturePresent = true;
-            }
-        }
-        let digitalSignatureList: string = '';
-        if (digitalSignaturePresent) {
-            digitalSignatureList = proxy.pdfViewerBase.digitalSignaturePages.toString();
-        }
-        const jsonObject: object = { startPage: startIndex.toString(), endPage: endIndex.toString(), sizeX: '99.7', sizeY: '141', hashId: proxy.pdfViewerBase.hashId, action: 'RenderThumbnailImages', elementId: proxy.pdfViewer.element.id, uniqueId: proxy.pdfViewerBase.documentId, digitalSignaturePresent: digitalSignaturePresent, digitalSignaturePageList: digitalSignatureList };
-        if (this.pdfViewerBase.jsonDocumentId) {
-            (jsonObject as any).documentId = this.pdfViewerBase.jsonDocumentId;
-        }
-        if (!this.pdfViewerBase.clientSideRendering) {
-            const imageSize: number = this.previouslyRequestedImageZoom;
-            (jsonObject as any).imageSize = imageSize;
-            (jsonObject as any).initialLoad = this.isInitialLoading;
-            this.previewRequestHandler = new AjaxHandler(this.pdfViewer);
-            this.previewRequestHandler.url = proxy.pdfViewer.serviceUrl + '/' + proxy.pdfViewer.serverActionSettings.renderThumbnail;
-            this.previewRequestHandler.responseType = 'json';
-            if (endIndex > 0 && !isNullOrUndefined(proxy.pdfViewerBase.hashId) && !this.isAllImagesReceived) {
-                this.previewRequestHandler.send(jsonObject);
-            }
-            this.previewRequestHandler.onSuccess = function (result: any): void {
-                const data: any = result.data;
-                const redirect: boolean = (proxy as any).pdfViewerBase.checkRedirection(data);
-                if (!redirect) {
-                    proxy.updatePreviewCollection(data);
-                }
-            };
-            this.previewRequestHandler.onFailure = function (result: any): void {
-                proxy.pdfViewer.fireAjaxRequestFailed(result.status, result.statusText,
-                                                      proxy.pdfViewer.serverActionSettings.renderThumbnail);
-            };
-            this.previewRequestHandler.onError = function (result: any): void {
-                proxy.pdfViewerBase.openNotificationPopup();
-                proxy.pdfViewer.fireAjaxRequestFailed(result.status, result.statusText,
-                                                      proxy.pdfViewer.serverActionSettings.renderThumbnail);
-            };
-        } else {
-            const start: number = 0;
-            const limit: number = this.pdfViewer.pageCount;
-            const jsonObject: object = { documentId: proxy.pdfViewerBase.getDocumentId(), hashId: proxy.pdfViewerBase.hashId,
-                elementId: proxy.pdfViewer.element.id, uniqueId: proxy.pdfViewerBase.documentId };
-            const isTextNeed: boolean = proxy.pdfViewer.textSearch ? true : false;
-            const initialLoad: boolean = this.isInitialLoading;
-            const imageSize: number = proxy.getImageZoomValue(true);
-            for (let pageIndex: number = start; pageIndex < limit; pageIndex++) {
-                /* eslint-disable security/detect-object-injection */
-                if (!isNullOrUndefined(this.dataDetails[pageIndex] &&
-                    this.dataDetails[pageIndex].imageSize === imageSize)) {
-                    continue;
-                }
-                /* eslint-enable security/detect-object-injection */
-                this.pdfViewerBase.pdfViewerRunner.addTask({
-                    startIndex: start,
-                    endIndex: limit,
-                    pageIndex: pageIndex,
-                    message: 'renderPreviewTileImage',
-                    isTextNeed: isTextNeed,
-                    jsonObject: jsonObject,
-                    isRenderText: isTextNeed,
-                    requestType: isTextNeed ? 'pdfTextSearchRequest' : '',
-                    imageSize: imageSize,
-                    initialLoad: initialLoad
-                }, TaskPriorityLevel.Medium);
-            }
-        }
+    /**
+     * @private
+     * @param {PageOrganizer} proxy It describes about the page organizer
+     * @returns {void}
+     */
+    public requestPreviewCreation(proxy: PageOrganizer): void {
+        requestPreviewCreation.call(this, proxy);
     }
 
     /**
@@ -1142,22 +312,7 @@ export class PageOrganizer {
      * @returns {void}
      */
     public updatePreviewCollection(data: any): void {
-        if (data) {
-            // eslint-disable-next-line
-            const proxy: PageOrganizer = this;
-            if (typeof data !== 'object') {
-                try {
-                    data = JSON.parse(data);
-                } catch (error) {
-                    proxy.pdfViewerBase.onControlError(500, data, proxy.pdfViewer.serverActionSettings.renderThumbnail);
-                    data = null;
-                }
-            }
-            if (data && data.uniqueId === proxy.pdfViewerBase.documentId) {
-                proxy.pdfViewer.fireAjaxRequestSuccess(proxy.pdfViewer.serverActionSettings.renderThumbnail, data);
-                this.getData(data, proxy.pdfViewerBase.clientSideRendering);
-            }
-        }
+        updatePreviewCollection.call(this, data);
     }
 
     /**
@@ -1166,27 +321,7 @@ export class PageOrganizer {
      * @returns {void}
      */
     public previewOnMessage(event: any): void {
-        if (event.data.message === 'renderPreviewTileImage') {
-            const canvas: HTMLCanvasElement = document.createElement('canvas');
-            const { value, width, height, pageIndex, startIndex, endIndex, imageSize } = event.data;
-            canvas.width = width;
-            canvas.height = height;
-            const canvasContext: CanvasRenderingContext2D = canvas.getContext('2d');
-            const imageData: ImageData = canvasContext.createImageData(width, height);
-            imageData.data.set(value);
-            canvasContext.putImageData(imageData, 0, 0);
-            const imageUrl: string = canvas.toDataURL();
-            this.pdfViewerBase.releaseCanvas(canvas);
-            const data: any = ({
-                thumbnailImage: imageUrl,
-                startPage: startIndex,
-                endPage: endIndex,
-                uniqueId: this.pdfViewerBase.documentId,
-                pageIndex: pageIndex,
-                imageSize: imageSize
-            });
-            this.updatePreviewCollection(data);
-        }
+        previewOnMessage.call(this, event);
     }
 
 
@@ -1197,231 +332,16 @@ export class PageOrganizer {
      * @returns {void}
      */
     public getData(data: any, isClientRender: boolean): void {
-        if (!this.dataDetails) {
-            this.dataDetails = [];
-        }
-        if (data.imageSize !== this.previouslyRequestedImageZoom) {
-            return;
-        }
-        if (this.dataDetails.length === this.pdfViewer.pageCount) {
-            return;
-        }
-        if (isClientRender) {
-            this.dataDetails.push({ pageId: data.pageIndex, image: data.thumbnailImage, imageSize: data.imageSize });
-        }
-        else {
-            const startPage: number = data.startPage;
-            const endPage: number = data.endPage;
-            for (let i: number = startPage; i < endPage; i++) {
-                const thumbnailImage: any = data.thumbnailImage[parseInt(i.toString(), 10)];
-                const pageId: number = i;
-                this.dataDetails.push({ pageId: pageId, image: thumbnailImage, imageSize: data.imageSize });
-            }
-        }
-        this.dataDetails.sort((a: { pageId: number }, b: { pageId: number }) => a.pageId - b.pageId);
-        if (this.dataDetails.length === this.pdfViewer.pageCount) {
-            if (!isNullOrUndefined(this.pdfViewerBase.navigationPane)) {
-                this.pdfViewerBase.navigationPane.enableOrganizeButton(true);
-            }
-            if (!isNullOrUndefined(this.pdfViewer.toolbar)) {
-                this.pdfViewer.toolbar.enableToolbarItem(['OrganizePagesTool'], true);
-            }
-            if (this.isInitialLoading && this.pdfViewer.isPageOrganizerOpen) {
-                if (!Browser.isDevice || this.pdfViewer.enableDesktopMode) {
-                    this.createOrganizeWindow();
-                }
-                else {
-                    this.createOrganizeWindowForMobile();
-                }
-            }
-            if (this.isPageZoomChanged) {
-                if (this.isOrganizeWindowOpen || this.isOrganizeDialogRendered()) {
-                    this.restorePagesBeforeZoom();
-                    this.setThumbnailImage();
-                    this.restorePagesAfterZoom();
-                }
-                if (this.isOrganizeWindowOpen) {
-                    this.showOrganizeLoadingIndicator(false);
-                }
-                this.isPageZoomChanged = false;
-                this.currentImageZoom = this.getImageZoomValue();
-                if (this.previousImageZoom !== this.currentImageZoom) {
-                    this.pdfViewer.firePageOrganizerZoomChanged(this.previousImageZoom, this.currentImageZoom);
-                }
-            }
-            this.isAllImagesReceived = true;
-            this.isInitialLoading = false;
-            this.lastRequestedPageIndex = 0;
-        }
-        else {
-            if (!this.pdfViewerBase.clientSideRendering) {
-                if (!this.isInitialLoading || (Browser.isDevice && !this.pdfViewer.enableDesktopMode) ||
-                    (this.isInitialLoading && (!this.pdfViewer.enableThumbnail || isNullOrUndefined(this.pdfViewer.thumbnailViewModule)))) {
-                    this.lastRequestedPageIndex = parseInt(data.endPage, 10);
-                    const isIE: boolean = !!(document as any).documentMode;
-                    if (!isIE) {
-                        Promise.all([this.createRequestForPreview()]);
-                    } else {
-                        this.createRequestForPreview();
-                    }
-                }
-            }
-        }
+        return getData.call(this, data, isClientRender);
     }
 
-    private createImportDocElement(toolbarElement: HTMLElement): void {
-        if (this.pdfViewer.pageOrganizerSettings.canImport)
-        {
-            if (toolbarElement) {
-                this.importDocInputElement = createElement('input', { id: this.pdfViewer.element.id + '_importDocElement', styles: 'position:fixed; left:-100em', attrs: { 'type': 'file' } });
-                this.importDocInputElement.setAttribute('accept', '.pdf');
-                this.importDocInputElement.setAttribute('aria-label', 'import document element');
-                this.importDocInputElement.setAttribute('tabindex', '-1');
-                toolbarElement.appendChild(this.importDocInputElement);
-            }
-        }
-    }
-
-    private pageDragDrop = (event: any) : void => {
-        const mainTileElement: HTMLElement = event.target.closest('.e-pv-organize-anchor-node') as HTMLElement;
-        const pageOrder: number = parseInt(mainTileElement.getAttribute('data-page-order'), 10);
-        this.dragEndIndex = pageOrder;
-        this.movePDFpages(this.selectedPageIndexes, this.dragEndIndex, this.isRightInsertion);
-    }
-
-    private movePDFpages(selectedPagesIndexes: number[], dropIndex: number, isRightInsertion: boolean): void {
-        // Checking if the dropIndex is equal to any of the selected pages indexes
-        let isDropIndexSelected: boolean = false;
-        for (const index of selectedPagesIndexes) {
-            if (index === dropIndex) {
-                isDropIndexSelected = true;
-                break;
-            }
-        }
-        // If the dropIndex is one of the selected pages, return early
-        if (isDropIndexSelected) {
-            return;
-        }
-        const clonedCollection : OrganizeDetails[] = [];
-        for (let i: number = 0; i < this.selectedPageIndexes.length; i++) {
-            clonedCollection.push(this.clonedCollection(this.tempOrganizePagesCollection.
-                find((item: OrganizeDetails) => { return item.currentPageIndex ===
-                    this.selectedPageIndexes[parseInt(i.toString(), 10)]; })));
-        }
-        const cloneSelectedIndexes: number[] = [];
-        cloneSelectedIndexes.push(...this.selectedPageIndexes);
-        this.addOrganizeAction(clonedCollection, 'Move Pages', [], cloneSelectedIndexes, this.dragEndIndex, this.isRightInsertion);
-        this.rearrangePages(selectedPagesIndexes, dropIndex, isRightInsertion);
-    }
-
-    private rearrangePages(selectedPagesIndexes: number[], dropIndex: number, isRightInsertion: boolean): void {
-        // eslint-disable-next-line
-        const proxy: any = this;
-        this.tempOrganizePagesCollection =
-        this.updateCollection(this.tempOrganizePagesCollection, selectedPagesIndexes, dropIndex, isRightInsertion);
-        const pages: any = Array.from(this.tileAreaDiv.children);
-        selectedPagesIndexes.sort((a: number, b: number): number => a - b);
-        const draggedElements: any = selectedPagesIndexes.map((index: number) => pages[parseInt(index.toString(), 10)]);
-        let adjustedDropIndex: number = isRightInsertion ? dropIndex + 1 : dropIndex;
-        draggedElements.forEach((element: any) => {
-            pages.splice(adjustedDropIndex, 0, element);
-            adjustedDropIndex += 1;
-        });
-        for (let i: number = 0; i < selectedPagesIndexes.length; i++) {
-            if (selectedPagesIndexes[parseInt(i.toString(), 10)] >= dropIndex) {
-                selectedPagesIndexes[parseInt(i.toString(), 10)] += draggedElements.length;
-            }
-        }
-        selectedPagesIndexes.sort((a: number, b: number): number => b - a).forEach((index: number) => {
-            pages.splice(index, 1);
-        });
-        this.tileAreaDiv.innerHTML = '';
-        pages.forEach((page: any, index: number) => {
-            proxy.tileAreaDiv.appendChild(page);
-            page.setAttribute('data-page-order', index.toString());
-        });
-        this.updatePageNumber();
-    }
-
-    private updateCollection(collection: OrganizeDetails[], selectedIndexes: number[],
-                             dropIndex: number, isRightInsertion: boolean): OrganizeDetails[] {
-        const collectionCopy: OrganizeDetails[] = [];
-        let index: number = 0;
-        const isAlreadyAdded: OrganizeDetails[] = [];
-        selectedIndexes.sort();
-        dropIndex = isRightInsertion ? dropIndex + 1 : dropIndex;
-        let selectedIndexesUnderDropIndexCount: number = 0;
-        selectedIndexes.forEach((index: number) => {
-            if (index < dropIndex) {
-                selectedIndexesUnderDropIndexCount++;
-            }
-        });
-        const sortedCollection: OrganizeDetails[] = collection.sort((a: any, b: any) => this.sorting(a['currentPageIndex'], b['currentPageIndex']));
-        const nullCurrentPageIndexCount: number = sortedCollection.filter((item: OrganizeDetails) => item.currentPageIndex === null).length;
-        sortedCollection.forEach(function (item: OrganizeDetails): void {
-            if (item.currentPageIndex === null) {
-                collectionCopy.push({...item});
-            }
-        });
-        //Updated currentPageIndex for the pages before drop index
-        for (let i: number = 0; i < sortedCollection.length; i++) {
-            // checking the given Currentpageindex exists in the selected indexes
-            let isCurrentPageIndexInSelectedIndexes: boolean = false;
-            for (let j: number = 0; j < selectedIndexes.length; j++) {
-                if (sortedCollection[parseInt(i.toString(), 10)].currentPageIndex === selectedIndexes[parseInt(j.toString(), 10)]) {
-                    isCurrentPageIndexInSelectedIndexes = true;
-                    break;
-                }
-            }
-            if (index === dropIndex - selectedIndexesUnderDropIndexCount) {
-                break;
-            }
-            if (!isCurrentPageIndexInSelectedIndexes &&
-                !this.containsPageDetails(sortedCollection[parseInt(i.toString(), 10)], isAlreadyAdded)) {
-                if (!isNullOrUndefined(sortedCollection[parseInt(i.toString(), 10)].currentPageIndex)) {
-                    collectionCopy.push({ ...sortedCollection[parseInt(i.toString(), 10)] });
-                    isAlreadyAdded.push(sortedCollection[parseInt(i.toString(), 10)]);
-                    collectionCopy[collectionCopy.length - 1].currentPageIndex = index;
-                    index = index + 1;
-                }
-            }
-        }
-        //Updated currentPageIndex for the selected pages in the drop index
-        for (let i: number = 0; i < sortedCollection.length; i++) {
-            let isCurrentPageIndexInSelectedIndexes: boolean = false;
-            for (let j: number = 0; j < selectedIndexes.length; j++) {
-                if (sortedCollection[parseInt(i.toString(), 10)].currentPageIndex === selectedIndexes[parseInt(j.toString(), 10)]) {
-                    isCurrentPageIndexInSelectedIndexes = true;
-                    break;
-                }
-            }
-            if (isCurrentPageIndexInSelectedIndexes &&
-                !this.containsPageDetails(sortedCollection[parseInt(i.toString(), 10)], isAlreadyAdded)) {
-                collectionCopy.push({ ...sortedCollection[parseInt(i.toString(), 10)] });
-                isAlreadyAdded.push(sortedCollection[parseInt(i.toString(), 10)]);
-                collectionCopy[collectionCopy.length - 1].currentPageIndex = index;
-                index = index + 1;
-            }
-        }
-        //Updated currentPageIndex for the pages after drop index
-        for (let i: number = nullCurrentPageIndexCount; i < sortedCollection.length; i++) {
-            // checking the given Currentpageindex exists in the selected indexes
-            let isCurrentPageIndexInSelectedIndexes: boolean = false;
-            for (let j: number = 0; j < selectedIndexes.length; j++) {
-                if (sortedCollection[parseInt(i.toString(), 10)].currentPageIndex === selectedIndexes[parseInt(j.toString(), 10)]) {
-                    isCurrentPageIndexInSelectedIndexes = true;
-                    break;
-                }
-            }
-            if (!isCurrentPageIndexInSelectedIndexes &&
-                !this.containsPageDetails(sortedCollection[parseInt(i.toString(), 10)], isAlreadyAdded)) {
-                collectionCopy.push({ ...sortedCollection[parseInt(i.toString(), 10)] });
-                isAlreadyAdded.push(sortedCollection[parseInt(i.toString(), 10)]);
-                collectionCopy[collectionCopy.length - 1].currentPageIndex = index;
-                index = index + 1;
-            }
-        }
-        return collectionCopy;
+    /**
+     * @param {any} event - It describes about the event
+     * @private
+     * @returns {void}
+     */
+    public pageDragDrop(event: any): void {
+        pageDragDrop.call(this, event);
     }
 
     /**
@@ -1431,52 +351,7 @@ export class PageOrganizer {
      * @returns {number} - number
      */
     public sorting (a: any, b: any): number {
-        a = !isNullOrUndefined(a) ? parseInt(a.toString(), 10) : -1;
-        b = !isNullOrUndefined(b) ? parseInt(b.toString(), 10) : -1;
-        if (a > b){
-            return 1;
-        }
-        if (a < b){
-            return -1;
-        }
-        return 0;
-    }
-
-    private containsPageDetails(value: OrganizeDetails, array: OrganizeDetails []): boolean {
-        let pageIndexFound: boolean = false;
-        let currentPageIndexFound: boolean = false;
-        for (let i: number = 0; i < array.length; i++) {
-            if (array[parseInt(i.toString(), 10)].pageIndex === value.pageIndex) {
-                pageIndexFound = true;
-            }
-            if (array[parseInt(i.toString(), 10)].currentPageIndex === value.currentPageIndex) {
-                currentPageIndexFound = true;
-            }
-        }
-        return pageIndexFound && currentPageIndexFound;
-    }
-
-    private renderThumbnailImage(): void {
-        this.organizePagesCollection = [];
-        for (let i: number = 0; i < this.pdfViewer.pageCount; i++) {
-            this.tileImageRender(i);
-            this.organizePagesCollection.
-                push(new OrganizeDetails(i, i, null, false,
-                                         false, false, false, false, false,
-                                         this.getRotatedAngle(this.pdfViewerBase.pageSize[parseInt(i.toString(), 10)].rotation.toString()),
-                                         this.pdfViewerBase.pageSize[parseInt(i.toString(), 10)], false, null, null, null));
-        }
-        this.tempOrganizePagesCollection = JSON.parse(JSON.stringify(this.organizePagesCollection));
-    }
-
-    private bindImportDocEvent(): void {
-        if (this.pdfViewer.pageOrganizerSettings.canImport)
-        {
-            const importDocElement: HTMLElement = document.getElementById(this.pdfViewer.element.id + '_import_pages');
-            if (importDocElement) {
-                this.importDocInputElement.click();
-            }
-        }
+        return sorting.call(this, a, b);
     }
 
     /**
@@ -1495,552 +370,56 @@ export class PageOrganizer {
     public tileImageRender(pageIndex: number, subIndex?: number, pageOrder?: number, targetElement?: HTMLElement,
                            isNewPage?: boolean, isBefore?: boolean, isEmptyPage?: boolean, isImportedPage?: boolean ,
                            documentName?: string): void {
-        const base64Image: string = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAAAXNSR0IArs4c6QAAAERlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAA6ABAAMAAAABAAEAAKACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAAD5Ip3+AAAAC0lEQVQIHWP4DwQACfsD/Qy7W+cAAAAASUVORK5CYII=';
-        this.pageLink = createElement('div', { id: 'anchor_page_' + pageIndex, className: 'e-pv-organize-anchor-node' }) as HTMLElement;
-        const imageZoomFactor: number = this.getImageZoomFactor(this.pageLink.cloneNode(true) as HTMLDivElement);
-        if (isNewPage) {
-            this.pageLink.id = this.pageLink.id + '_' + subIndex;
-            this.pageLink.setAttribute('data-page-order', pageOrder.toString());
-        }
-        else {
-            this.pageLink.setAttribute('data-page-order', pageIndex.toString());
-        }
-        this.pageLink.style.width = 140 * imageZoomFactor + 'px';
-        this.pageLink.style.height = 140 * imageZoomFactor + 'px';
-        this.thumbnail = createElement('div', { id: this.pdfViewer.element.id + '_organize_page_' + pageIndex, className: 'e-pv-organize-tile e-pv-thumbnail-column' });
-        if (isNewPage) {
-            this.thumbnail.id = this.thumbnail.id + '_' + subIndex;
-        }
-        this.imageContainer = createElement('div', { id: this.pdfViewer.element.id + '_container_image_' + pageIndex, className: 'e-pv-image-container' });
-        if (isNewPage) {
-            this.imageContainer.id = this.imageContainer.id + '_' + subIndex;
-        }
-        let pageSize: ISize;
-        if (!isNewPage && !isEmptyPage) {
-            pageSize = this.pdfViewerBase.pageSize[parseInt(pageIndex.toString(), 10)];
-        }
-        else {
-            pageSize = this.tempOrganizePagesCollection.find((item: OrganizeDetails) =>
-            { return item.currentPageIndex === pageOrder; }).pageSize;
-            if (isBefore && pageOrder - 1 >= 0) {
-                pageSize = this.tempOrganizePagesCollection.find(function (item: OrganizeDetails): boolean
-                { return item.currentPageIndex === pageOrder - 1; }).pageSize;
-            }
-        }
-        this.thumbnailImage = createElement('img', { id: this.pdfViewer.element.id + '_organize_image_' + pageIndex, className: 'e-pv-organize-image' }) as HTMLImageElement;
-        if (isNewPage) {
-            this.thumbnailImage.id = this.thumbnailImage.id + '_' + subIndex;
-        }
-        let width: number;
-        let height: number;
-        if (pageSize.height > pageSize.width) {
-            width = 100 * pageSize.width / pageSize.height;
-            height = 100;
-        }
-        else {
-            width = 100;
-            height = 100 * pageSize.height / pageSize.width;
-        }
-        this.thumbnailImage.style.width = width + '%';
-        this.thumbnailImage.style.height = height + '%';
-        if (isEmptyPage) {
-            this.thumbnailImage.src = base64Image;
-        }
-        else if (pageOrder && pageOrder !== null) {
-            const pageDetail: OrganizeDetails = this.tempOrganizePagesCollection.find((item: OrganizeDetails) =>
-            { return item.currentPageIndex === pageOrder; });
-            if (pageDetail && pageDetail.pageIndex !== -1) {
-                this.thumbnailImage.src = this.dataDetails[parseInt(pageDetail.pageIndex.toString(), 10)].image;
-            }
-            else if (pageDetail && pageDetail.copiedPageIndex !== null && pageDetail.copiedPageIndex >= 0){
-                this.thumbnailImage.src = this.dataDetails[parseInt(pageDetail.copiedPageIndex.toString(), 10)].image;
-            }
-            else {
-                this.thumbnailImage.src = base64Image;
-            }
-        }
-        else {
-            this.thumbnailImage.src = this.dataDetails[parseInt(pageIndex.toString(), 10)].image;
-        }
-        this.imageContainer.addEventListener('click', (e: any) => {
-            this.handleImageContainerClick(e);
-        });
-        this.thumbnailImage.alt = this.pdfViewer.element.id + '_organize_page_' + pageIndex;
-        if (isNewPage) {
-            this.thumbnailImage.alt = this.pdfViewer.element.id + '_organize_page_' + pageOrder;
-        }
-        if (isImportedPage) {
-            const importDownloadIcon: HTMLElement = createElement('span', { id: this.pdfViewer.element.id + '_organize_import_download_icon_' + pageIndex, className: 'e-pv-organize-import-download-icon e-pv-import-icon e-pv-icon' });
-            this.importImageWrapper = createElement('div', { id: this.pdfViewer.element.id + '_organize_import_image_wrapper_' + pageIndex, className: 'e-pv-organize-import-image-wrapper' });
-            this.importImageWrapper.appendChild(importDownloadIcon);
-            this.imageContainer.appendChild(this.importImageWrapper);
-        } else {
-            this.imageContainer.appendChild(this.thumbnailImage);
-        }
-        let rotateAngle: number = 0;
-        if (isNewPage && !isNullOrUndefined(this.tempOrganizePagesCollection.find((item: OrganizeDetails): boolean =>
-        { return item.currentPageIndex === pageOrder; }))) {
-            rotateAngle = this.tempOrganizePagesCollection.find((item: OrganizeDetails): boolean =>
-            { return item.currentPageIndex === pageOrder; }).rotateAngle;
-            this.imageContainer.style.transform = 'rotate(' + rotateAngle + 'deg)';
-        }
-        this.thumbnail.appendChild(this.imageContainer);
-        const thumbnailPageNumber: HTMLElement = createElement('div', { id: this.pdfViewer.element.id + '_tile_pagenumber_' + pageIndex, className: 'e-pv-tile-number' });
-        if (isNewPage) {
-            thumbnailPageNumber.id = thumbnailPageNumber.id + '_' + subIndex;
-        }
-        if (isImportedPage){
-            thumbnailPageNumber.textContent = documentName;
-        }
-        else if (isNewPage){
-            thumbnailPageNumber.textContent = (pageOrder + 1).toString();
-        }
-        else{
-            thumbnailPageNumber.textContent = (pageIndex + 1).toString();
-        }
-        const input: HTMLInputElement = document.createElement('input');
-        input.type = 'checkbox';
-        input.className = 'e-pv-organize-tile-checkbox';
-        input.id = 'checkboxdiv_page_' + pageIndex;
-        if (isNewPage) {
-            input.id = input.id + '_' + subIndex;
-        }
-        this.thumbnail.appendChild(input);
-        const checkBoxObj: CheckBox = new CheckBox({ disabled: false, checked: false, change: this.onSelectClick.bind(this) });
-        checkBoxObj.appendTo(input);
-        input.parentElement.style.height = '100%';
-        input.parentElement.style.width = '100%';
-        input.parentElement.style.display = 'none';
-        const buttondiv: any = createElement('div', { id: this.pdfViewer.element.id + '_organize_buttondiv_' + pageIndex, className: 'e-pv-organize-buttondiv' });
-        if (isNewPage) {
-            buttondiv.id = buttondiv.id + '_' + subIndex;
-        }
-        this.deleteButton = createElement('button', { id: this.pdfViewer.element.id + '_delete_page_' + pageIndex, attrs: { 'aria-label': this.pdfViewer.localeObj.getConstant('Delete Page'), 'tabindex': '-1' } }) as HTMLButtonElement;
-        if (isNewPage) {
-            this.deleteButton.id = this.deleteButton.id + '_' + subIndex;
-        }
-        this.deleteButton.className = 'e-pv-tbar-btn e-pv-delete-button e-btn e-pv-organize-pdf-tile-btn';
-        this.deleteButton.setAttribute('type', 'button');
-        const deleteButtonSpan: HTMLElement = createElement('span', { id: this.pdfViewer.element.id + '_delete' + '_icon', className: 'e-pv-delete-icon e-pv-icon' });
-        this.deleteButton.appendChild(deleteButtonSpan);
-        const deleteButtonTooltip: Tooltip = new Tooltip({
-            content: initializeCSPTemplate(
-                function (): string { return this.pdfViewer.localeObj.getConstant('Delete Page'); }, this
-            ), opensOn: 'Hover', beforeOpen: this.onTooltipBeforeOpen.bind(this)
-        });
-        deleteButtonTooltip.appendTo(this.deleteButton);
-        this.rotateRightButton = createElement('button', { id: this.pdfViewer.element.id + '_rotate_page_' + pageIndex, attrs: { 'aria-label': this.pdfViewer.localeObj.getConstant('Rotate Right'), 'tabindex': '-1' } }) as HTMLButtonElement;
-        if (isNewPage) {
-            this.rotateRightButton.id = this.rotateRightButton.id + '_' + subIndex;
-        }
-        this.rotateRightButton.className = 'e-pv-tbar-btn e-pv-rotate-right-button e-btn e-pv-organize-pdf-tile-btn';
-        this.rotateRightButton.setAttribute('type', 'button');
-        const rotateButtonSpan: HTMLElement = createElement('span', { id: this.pdfViewer.element.id + '_rotate-right' + '_icon', className: 'e-pv-rotate-right-icon e-pv-icon' });
-        this.rotateRightButton.appendChild(rotateButtonSpan);
-        const rotateButtonTooltip: Tooltip = new Tooltip({
-            content: initializeCSPTemplate(
-                function (): string { return this.pdfViewer.localeObj.getConstant('Rotate Right'); }, this
-            ), opensOn: 'Hover', beforeOpen: this.onTooltipBeforeOpen.bind(this)
-        });
-        rotateButtonTooltip.appendTo(this.rotateRightButton);
-        this.rotateLeftButton = createElement('button', { id: this.pdfViewer.element.id + '_rotate_page_' + pageIndex, attrs: { 'aria-label': this.pdfViewer.localeObj.getConstant('Rotate Left'), 'tabindex': '-1' } }) as HTMLButtonElement;
-        if (isNewPage) {
-            this.rotateLeftButton.id = this.rotateLeftButton.id + '_' + subIndex;
-        }
-        this.rotateLeftButton.className = 'e-pv-tbar-btn e-pv-rotate-left-button e-btn e-pv-organize-pdf-tile-btn';
-        this.rotateLeftButton.setAttribute('type', 'button');
-        const rotateLeftButtonSpan: HTMLElement = createElement('span', { id: this.pdfViewer.element.id + '_rotate_left' + '_icon', className: 'e-pv-rotate-left-icon e-pv-icon' });
-        this.rotateLeftButton.appendChild(rotateLeftButtonSpan);
-        const rotateLeftButtonTooltip: Tooltip = new Tooltip({
-            content: initializeCSPTemplate(
-                function (): string { return this.pdfViewer.localeObj.getConstant('Rotate Left'); }, this
-            ), opensOn: 'Hover', beforeOpen: this.onTooltipBeforeOpen.bind(this)
-        });
-        rotateLeftButtonTooltip.appendTo(this.rotateLeftButton);
-        this.copyButton = createElement('button', { id: this.pdfViewer.element.id + '_copy_page_' + pageIndex, attrs: { 'aria-label': this.pdfViewer.localeObj.getConstant('Copy Page') , 'tabindex': '-1'} }) as HTMLButtonElement;
-        if (isNewPage){
-            this.copyButton.id = this.copyButton.id + '_' + subIndex;
-        }
-        this.copyButton.className = 'e-pv-tbar-btn e-pv-copy-button e-btn e-pv-organize-pdf-tile-btn';
-        this.copyButton.setAttribute('type', 'button');
-        const copyButtonSpan: HTMLElement = createElement('span', { id: this.pdfViewer.element.id + '_copy' + '_icon', className: 'e-pv-copy-icon e-pv-icon' });
-        this.copyButton.appendChild(copyButtonSpan);
-        const copyButtonTooltip: Tooltip = new Tooltip({
-            content: initializeCSPTemplate(
-                function (): string { return this.pdfViewer.localeObj.getConstant('Copy Page'); }, this
-            ), opensOn: 'Hover', beforeOpen: this.onTooltipBeforeOpen.bind(this)
-        });
-        copyButtonTooltip.appendTo(this.copyButton);
-        this.insertRightButton = createElement('button', { id: this.pdfViewer.element.id + '_insert_page_' + pageIndex, attrs: { 'aria-label': this.pdfViewer.localeObj.getConstant('Insert Right'), 'tabindex': '-1' } }) as HTMLButtonElement;
-        if (isNewPage) {
-            this.insertRightButton.id = this.insertRightButton.id + '_' + subIndex;
-        }
-        this.insertRightButton.className = 'e-pv-tbar-btn e-pv-insert-right-button e-btn e-pv-organize-pdf-tile-btn';
-        this.insertRightButton.setAttribute('type', 'button');
-        const insertRightButtonSpan: HTMLElement = createElement('span', { id: this.pdfViewer.element.id + '_insert_right' + '_icon', className: 'e-icons e-plus' });
-        this.insertRightButton.appendChild(insertRightButtonSpan);
-        const insertRightButtonTooltip: Tooltip = new Tooltip({
-            content: initializeCSPTemplate(function (): any { return this.pdfViewer.localeObj.getConstant('Insert Right'); }, this), opensOn: 'Hover', beforeOpen: this.onTooltipBeforeOpen.bind(this)
-        });
-        insertRightButtonTooltip.appendTo(this.insertRightButton);
-        this.insertLeftButton = createElement('button', { id: this.pdfViewer.element.id + '_insert_page_' + pageIndex, attrs: { 'aria-label': this.pdfViewer.localeObj.getConstant('Insert Left'), 'tabindex': '-1' } }) as HTMLButtonElement;
-        if (isNewPage) {
-            this.insertLeftButton.id = this.insertLeftButton.id + '_' + subIndex;
-        }
-        this.insertLeftButton.className = 'e-pv-tbar-btn e-pv-insert-left-button e-btn e-pv-organize-pdf-tile-btn';
-        this.insertLeftButton.setAttribute('type', 'button');
-        const insertLeftButtonSpan: HTMLElement = createElement('span', { id: this.pdfViewer.element.id + '_insert_left' + '_icon', className: 'e-icons e-plus' });
-        this.insertLeftButton.appendChild(insertLeftButtonSpan);
-        const insertLeftButtonTooltip: Tooltip = new Tooltip({
-            content: initializeCSPTemplate(function (): any { return this.pdfViewer.localeObj.getConstant('Insert Left'); }, this), opensOn: 'Hover', beforeOpen: this.onTooltipBeforeOpen.bind(this)
-        });
-        insertLeftButtonTooltip.appendTo(this.insertLeftButton);
-        if (!this.pdfViewer.pageOrganizerSettings.canInsert) {
-            this.insertLeftButton.setAttribute('disabled', 'disabled');
-            this.insertLeftButton.firstElementChild.classList.add('e-disabled');
-            this.insertRightButton.setAttribute('disabled', 'disabled');
-            this.insertRightButton.firstElementChild.classList.add('e-disabled');
-        }
-        if (!this.pdfViewer.pageOrganizerSettings.canRotate) {
-            this.rotateLeftButton.setAttribute('disabled', 'disabled');
-            this.rotateLeftButton.firstElementChild.classList.add('e-disabled');
-            this.rotateRightButton.setAttribute('disabled', 'disabled');
-            this.rotateRightButton.firstElementChild.classList.add('e-disabled');
-        }
-        if (!this.pdfViewer.pageOrganizerSettings.canDelete) {
-            this.deleteButton.setAttribute('disabled', 'disabled');
-            this.deleteButton.firstElementChild.classList.add('e-disabled');
-        }
-        if (!this.pdfViewer.pageOrganizerSettings.canCopy){
-            this.copyButton.setAttribute('disabled', 'disabled');
-            this.copyButton.firstElementChild.classList.add('e-disabled');
-        }
-        buttondiv.appendChild(this.insertLeftButton);
-        if (!isImportedPage) {
-            buttondiv.appendChild(this.rotateLeftButton);
-            buttondiv.appendChild(this.rotateRightButton);
-            buttondiv.appendChild(this.copyButton);
-        }
-        buttondiv.appendChild(this.deleteButton);
-        buttondiv.appendChild(this.insertRightButton);
-        this.thumbnail.appendChild(buttondiv);
-        buttondiv.style.display = 'none';
-        this.pageLink.appendChild(this.thumbnail);
-        this.tileAreaDiv.appendChild(this.pageLink);
-        this.pageLink.appendChild(thumbnailPageNumber);
-        this.rotateRightButton.addEventListener('click', this.rotateButtonClick);
-        this.rotateLeftButton.addEventListener('click', this.rotateLeftButtonClick);
-        this.insertRightButton.addEventListener('click', this.insertRightButtonClick);
-        this.insertLeftButton.addEventListener('click', this.insertLeftButtonClick);
-        this.deleteButton.addEventListener('click', this.deleteButtonClick);
-        this.copyButton.addEventListener('click', this.copyButtonClick);
-        this.pageLink.addEventListener('mouseover', this.thumbnailMouseOver);
-        this.pageLink.addEventListener('mouseleave', this.thumbnailMouseLeave);
-        this.movePages();
-        if (isNewPage) {
-            if (isBefore) {
-                this.tileAreaDiv.insertBefore(this.pageLink, targetElement);
-            }
-            else {
-                this.tileAreaDiv.insertBefore(this.pageLink, targetElement.nextSibling);
-            }
-        }
+        tileImageRender.call(this, pageIndex, subIndex, pageOrder, targetElement, isNewPage, isBefore,
+                             isEmptyPage, isImportedPage, documentName);
     }
 
-    private handleImageContainerClick(event: MouseEvent | TouchEvent): void {
-        const anchorNode: any = (event.target as HTMLElement).closest('.e-pv-organize-anchor-node');
-        const nearestCheckBox: any = anchorNode.querySelector('.e-pv-organize-tile-checkbox.e-control.e-checkbox.e-lib');
-        if (event instanceof PointerEvent) {
-            if (event.pointerType === 'touch') {
-                this.isTouchEvent = true;
-            } else if (event.pointerType === 'mouse') {
-                this.isTouchEvent = false;
-            }
-        } else if (!(this.pdfViewerBase.isMacSafari) && event instanceof TouchEvent) {
-            this.isTouchEvent = true;
-        } else if (event instanceof MouseEvent) {
-            this.isTouchEvent = false;
-        }
-        if (nearestCheckBox && !isNullOrUndefined(nearestCheckBox) &&
-            !isNullOrUndefined((nearestCheckBox as any).ej2_instances) && (nearestCheckBox as any).ej2_instances.length > 0) {
-            (nearestCheckBox as any).ej2_instances[0].click();
-        }
+    /**
+     * @param {DragEventArgs} e - It describes about the event
+     * @private
+     * @returns {void}
+     */
+    public autoScroll(e: DragEventArgs): void {
+        autoScroll.call(this, e);
     }
 
-    private movePages(): void {
-        // eslint-disable-next-line
-        const proxy: PageOrganizer = this;
-        const draggableElement: HTMLElement = this.imageContainer;
-        this.dragObj = new Draggable(draggableElement, {
-            dragArea: this.tileAreaDiv,
-            isDragScroll: true,
-            enableTapHold: true,
-            tapHoldThreshold: Browser.isDevice ? 50 : 750,
-            helper: (e: { sender: MouseEvent & TouchEvent, element: HTMLElement }) => {
-                if (this.pdfViewer.pageOrganizerSettings.canRearrange) {
-                    // Return a clone or another element as the drag avatar
-                    const cloneTargetEle: HTMLElement = e.element.querySelector('.e-pv-organize-image, .e-pv-organize-import-image-wrapper');
-                    const clone: HTMLElement = cloneTargetEle.cloneNode(true) as HTMLElement;
-                    clone.style.width = cloneTargetEle.clientWidth + 'px';
-                    clone.style.height = cloneTargetEle.clientHeight + 'px';
-                    this.virtualEle = createElement('div', { className: 'e-pv-virtual-image-container' });
-                    this.virtualEle.appendChild(clone);
-                    this.tileAreaWrapper.appendChild(this.virtualEle);
-                    return this.virtualEle;
-                }
-                return null;
-            },
-            drag: (e: DragEventArgs) => {
-                e.event.preventDefault();
-                if (proxy.pdfViewer.pageOrganizerSettings.canRearrange) {
-                    proxy.autoScroll(e);
-                    proxy.addSelectionRingStyle();
-                    const mainTileElement: HTMLElement = !isNullOrUndefined(e.target) && e.target instanceof Element ? (e.target.closest('.e-pv-organize-anchor-node') as HTMLElement) : null;
-                    if (!isNullOrUndefined(mainTileElement)) {
-                        const pageOrder: number = parseInt(mainTileElement.getAttribute('data-page-order'), 10);
-                        proxy.dragHoveredIndex = pageOrder;
-                        const tileRect: DOMRect = mainTileElement.getBoundingClientRect() as DOMRect;
-                        let outerBorder: HTMLElement = document.querySelector('.e-pv-organize-outer-border');
-                        // If the outerBorder does not exist's, creating it
-                        if (isNullOrUndefined(outerBorder)) {
-                            outerBorder = createElement('div', { className: 'e-pv-organize-outer-border' });
-                            proxy.tileAreaWrapper.appendChild(outerBorder);
-                        }
-                        outerBorder.style.display = 'block';
-                        const isHoveredOnSelected: boolean = proxy.isHoveredOnSelectedPages(proxy.selectedPageIndexes,
-                                                                                            proxy.dragHoveredIndex);
-                        if (isHoveredOnSelected && !isNullOrUndefined(e.target) && (e.target.classList.contains('e-pv-organize-image') || e.target.classList.contains('e-pv-organize-import-image-wrapper') || e.target.classList.contains('e-pv-image-container'))) {
-                            outerBorder.classList.add('e-pv-selected');
-                            outerBorder.classList.remove('e-pv-not-selected');
-                        } else if (!isNullOrUndefined(e.target) && (e.target.classList.contains('e-pv-organize-image') || e.target.classList.contains('e-pv-organize-import-image-wrapper') || e.target.classList.contains('e-pv-image-container'))) {
-                            outerBorder.classList.add('e-pv-not-selected');
-                            outerBorder.classList.remove('e-pv-selected');
-                        }
-                        proxy.handlePageMove(e, tileRect, proxy.gapBetweenDivs, outerBorder);
-                    }
-                }
-            },
-            dragStart: (e: DragEventArgs) => {
-                proxy.selectedPageIndexes = [];
-                if (proxy.pdfViewer.pageOrganizerSettings.canRearrange) {
-                    if ((e.element.parentElement.querySelector('.e-pv-organize-tile-checkbox') as HTMLInputElement).checked) {
-                        const checkedElements: any = proxy.tileAreaDiv.querySelectorAll('.e-pv-organize-node-selection-ring');
-                        for (let i: number = 0; i < checkedElements.length; i++) {
-                            proxy.selectedPageIndexes.push(parseInt(checkedElements[parseInt(i.toString(), 10)].getAttribute('data-page-order'), 10));
-                            checkedElements[parseInt(i.toString(), 10)].classList.add('e-pv-organize-tile-draggedEle');
-                            const imageElement: any = checkedElements[parseInt(i.toString(), 10)].querySelector('.e-pv-organize-image, .e-pv-organize-import-image-wrapper');
-                            if (imageElement) {
-                                imageElement.classList.add('e-pv-organize-tile-draggedEle');
-                            }
-                        }
-                    }
-                    else {
-                        const anchorElement: any = e.element.closest('.e-pv-organize-anchor-node');
-                        if (anchorElement) {
-                            proxy.selectedPageIndexes.push(parseInt(anchorElement.getAttribute('data-page-order'), 10));
-                            anchorElement.classList.add('e-pv-organize-tile-draggedEle');
-                            const imageElement: any = anchorElement.querySelector('.e-pv-organize-image, .e-pv-organize-import-image-wrapper');
-                            if (imageElement) {
-                                imageElement.classList.add('e-pv-organize-tile-draggedEle');
-                            }
-                        }
-                    }
-                    const notification: any = createElement('span', {
-                        className: 'e-badge e-badge-primary e-badge-overlap e-badge-notification',
-                        innerHTML: '' + this.selectedPageIndexes.length
-                    });
-                    notification.classList.add('e-pv-notification');
-                    proxy.virtualEle.append(notification);
-                    proxy.addSelectionRingStyle();
-                }
-            },
-            dragStop: (e: DragEventArgs) => {
-                const clearDraggedElements: any = () => {
-                    proxy.virtualEle.parentNode.removeChild(proxy.virtualEle);
-                    const draggedElements: any = proxy.tileAreaDiv.querySelectorAll('.e-pv-organize-tile-draggedEle');
-                    draggedElements.forEach((element: any) => {
-                        element.classList.remove('e-pv-organize-tile-draggedEle');
-                    });
-                    const outerBorder: HTMLElement = document.querySelector('.e-pv-organize-outer-border');
-                    if (!isNullOrUndefined(outerBorder)) {
-                        outerBorder.classList.remove('e-pv-selected', 'e-pv-not-selected');
-                        proxy.selectedPageIndexes = [];
-                    }
-                };
-                if (proxy.autoScrollInterval !== null) {
-                    clearInterval(proxy.autoScrollInterval);
-                    proxy.autoScrollInterval = null;
-                }
-                proxy.removeSelectionRingStyle();
-                if (e.target instanceof Element && e.target.classList) {
-                    if (e.target == null || !(e.target.classList.contains('e-pv-organize-image') || e.target.classList.contains('e-pv-organize-import-image-wrapper') || e.target.classList.contains('e-pv-image-container'))) {
-                        clearDraggedElements();
-                    }
-                }
-                else {
-                    clearDraggedElements();
-                }
-            }
-        });
-        const droppableElement: HTMLElement = this.thumbnail;
-        this.dropObj = new Droppable(droppableElement, {
-            drop: (e: DropEventArgs) => {
-                if (proxy.autoScrollInterval !== null) {
-                    clearInterval(proxy.autoScrollInterval);
-                    proxy.autoScrollInterval = null;
-                }
-                proxy.removeSelectionRingStyle();
-                const outerBorder: any = document.querySelector('.e-pv-organize-outer-border');
-                // Remove the element from the DOM
-                if (outerBorder) {
-                    outerBorder.classList.remove('e-pv-selected', 'e-pv-not-selected');
-                    outerBorder.parentNode.removeChild(outerBorder);
-                }
-                if (proxy.virtualEle && proxy.virtualEle.parentNode) {
-                    proxy.virtualEle.parentNode.removeChild(proxy.virtualEle);
-                    proxy.virtualEle = null;
-                }
-                proxy.pageDragDrop(e);
-                const draggedElements: any = proxy.tileAreaDiv.querySelectorAll('.e-pv-organize-tile-draggedEle');
-                draggedElements.forEach((element: any) => {
-                    element.classList.remove('e-pv-organize-tile-draggedEle');
-                });
-                proxy.selectedPageIndexes = [];
-            },
-            // eslint-disable-next-line @typescript-eslint/no-empty-function
-            over: function (e: DropEventArgs): void {
-            },
-            out: function (e: DropEventArgs): void {
-                const outerBorder: HTMLElement = document.querySelector('.e-pv-organize-outer-border');
-                if (!isNullOrUndefined(outerBorder)) {
-                    outerBorder.classList.remove('e-pv-selected', 'e-pv-not-selected');
-                }
-            }
-        });
+    /**
+     * @param {DragEventArgs} e - It describes about the event
+     * @param {DOMRect} tileRect - It describes about rect
+     * @param {number} gapBetweenDivs - It describes about div gap
+     * @param {HTMLElement} outerBorder - It describes about border
+     * @private
+     * @returns {void}
+     */
+    public handlePageMove(e: DropEventArgs, tileRect: DOMRect, gapBetweenDivs: number,
+                          outerBorder: HTMLElement): void {
+        handlePageMove.call(this, e, tileRect, gapBetweenDivs, outerBorder);
     }
 
-    private autoScroll(e: DragEventArgs): void {
-        // eslint-disable-next-line
-        const proxy = this;
-        const viewportY: any = e.event.type === 'touchmove' ? e.event.touches[0].clientY : e.event.clientY;
-        const edgeSize: number = 10;
-        this.autoScrollInterval = null;
-        const viewportHeight: number = window.innerHeight;
-        let edgeTop: number = edgeSize;
-        let edgeBottom: number = (viewportHeight - edgeSize);
-        const toolbarBottom: number = document.getElementById(this.pdfViewer.element.id + '_toolbar_appearance').getBoundingClientRect().bottom + edgeSize;
-        const footer: any = this.organizeDialog.element.getElementsByClassName('e-footer-content');
-        let footerBounds: any;
-        if (!isNullOrUndefined(footer) && footer.length > 0) {
-            footerBounds = footer[0].getBoundingClientRect();
-        }
-        const footerTop: number = !isNullOrUndefined(footerBounds) ? (footerBounds.top - edgeSize) :
-            (this.tileAreaDiv.getBoundingClientRect().bottom - edgeSize);
-        edgeTop = parseFloat(Math.max(edgeTop, toolbarBottom).toFixed(2));
-        edgeBottom = Math.min(edgeBottom, footerTop);
-        if (this.virtualEle.getBoundingClientRect().height >= this.tileAreaDiv.getBoundingClientRect().height) {
-            clearTimeout(this.autoScrollInterval);
-            proxy.autoScrollInterval = null;
-            return;
-        }
-        const isInTopEdge: boolean = (parseFloat(this.virtualEle.getBoundingClientRect().top.toFixed(2)) <= edgeTop);
-        const isInBottomEdge: boolean = (this.virtualEle.getBoundingClientRect().bottom >= edgeBottom);
-        // If the mouse is not in the viewport edge, there's no need to calculate anything else.
-        if (!(isInTopEdge || isInBottomEdge)) {
-            clearTimeout(this.autoScrollInterval);
-            proxy.autoScrollInterval = null;
-            return;
-        }
-        const maxScrollY: number = (this.tileAreaDiv.scrollHeight - this.tileAreaDiv.clientHeight);
-        (function checkForWindowScroll(): void {
-            clearTimeout(proxy.autoScrollInterval);
-            proxy.autoScrollInterval = null;
-            if (adjustWindowScroll()) {
-                proxy.autoScrollInterval = window.setTimeout(checkForWindowScroll, 30);
-            }
-        // eslint-disable-next-line
-        })();
-        function adjustWindowScroll(): boolean {
-            proxy.tileAreaDiv.onscroll = function (): void {
-                const outerBorder: HTMLElement = document.querySelector('.e-pv-organize-outer-border') as HTMLElement;
-                if (!isNullOrUndefined(outerBorder)) {
-                    outerBorder.style.display = 'none';
-                }
-            };
-            const elementBounds: any = proxy.virtualEle.getBoundingClientRect();
-            const dragDownDiffrence: number = elementBounds.bottom - (proxy.previousClientY + elementBounds.height);
-            const dragUpDiffrence: number = elementBounds.top - proxy.previousClientY;
-            proxy.previousClientY = elementBounds.top;
-            const currentScrollY: number = proxy.tileAreaDiv.scrollTop;
-            const canScrollUp: boolean = (currentScrollY > 0 && dragUpDiffrence <= 0);
-            const canScrollDown: boolean = (currentScrollY < maxScrollY && dragDownDiffrence >= 0);
-            let nextScrollY: number = currentScrollY;
-            const maxStep: number = 10;
-            // Should we scroll up?
-            if (isInTopEdge && canScrollUp) {
-                const intensity: number = ((edgeTop - proxy.virtualEle.getBoundingClientRect().top) / edgeSize);
-                nextScrollY = (nextScrollY - (maxStep * intensity));
-                // Should we scroll down?
-            } else if (isInBottomEdge && canScrollDown) {
-                const intensity: number = ((proxy.virtualEle.getBoundingClientRect().bottom - edgeBottom) / edgeSize);
-                nextScrollY = (nextScrollY + (maxStep * intensity));
-            }
-            nextScrollY = Math.max(0, Math.min(maxScrollY, nextScrollY));
-            if (nextScrollY !== currentScrollY) {
-                proxy.tileAreaDiv.scrollTop = nextScrollY;
-                return (true);
-            } else {
-                return (false);
-            }
-        }
+    /**
+     * @private
+     * @returns {void}
+     */
+    public addSelectionRingStyle(): void {
+        addSelectionRingStyle.call(this);
     }
 
-    private handlePageMove(e: DropEventArgs, tileRect: DOMRect, gapBetweenDivs: number,
-                           outerBorder: HTMLElement): void {
-        const isRightInsertion: boolean = this.isTileRightInsertion(e);
-        if (!isNullOrUndefined(this.isTileRightInsertion)) {
-            const offset: number = isRightInsertion ? (tileRect['width'] + gapBetweenDivs / 2) : (-gapBetweenDivs / 2);
-            const parentBound: DOMRect = outerBorder.parentElement.getBoundingClientRect() as DOMRect;
-            outerBorder.style.left = (tileRect['x'] + offset - parentBound.x) + 'px';
-            outerBorder.style.top = (tileRect['top'] - parentBound.y) + 'px';
-            outerBorder.style.height = tileRect['height'] + 'px';
-            this.isRightInsertion = isRightInsertion;
-        }
+    /**
+     * @private
+     * @returns {void}
+     */
+    public removeSelectionRingStyle(): void {
+        removeSelectionRingStyle.call(this);
     }
 
-    private isTileRightInsertion(e: DropEventArgs): boolean {
-        const mainTileElement: HTMLElement = !isNullOrUndefined(e.target) ? (e.target.closest('.e-pv-organize-anchor-node') as HTMLElement) : null;
-        if (!isNullOrUndefined(mainTileElement)) {
-            const tileRect: DOMRect = mainTileElement.getBoundingClientRect() as DOMRect;
-            const virtualElementClientX: number = e.event.type === 'mousemove' ? e.event.clientX : e.event.touches[0].clientX;
-            return virtualElementClientX > tileRect['x'] + (tileRect['width'] / 2);
-        }
-        return null;
-    }
-
-    private addSelectionRingStyle(): void {
-        const anchorElements: any = this.tileAreaDiv.querySelectorAll('.e-pv-organize-anchor-node');
-        for (let i: number = 0; i < this.selectedPageIndexes.length; i++) {
-            anchorElements[this.selectedPageIndexes[parseInt(i.toString(), 10)]].classList.add('e-pv-dragging-style');
-        }
-    }
-
-    private removeSelectionRingStyle(): void {
-        const anchorElements: any = this.tileAreaDiv.querySelectorAll('.e-pv-organize-anchor-node');
-        for (let i: number = 0; i < this.selectedPageIndexes.length; i++) {
-            anchorElements[this.selectedPageIndexes[parseInt(i.toString(), 10)]].classList.remove('e-pv-dragging-style');
-        }
-    }
-
-    private isHoveredOnSelectedPages(selectedPageIndexes: number[], hoveredIndex: number): boolean {
-        let isHoveredOnSelectedPageIndex: boolean = false;
-        for (let i: number = 0; i < selectedPageIndexes.length; i++) {
-            if (selectedPageIndexes[parseInt(i.toString(), 10)] === hoveredIndex) {
-                isHoveredOnSelectedPageIndex = true;
-                break;
-            }
-        }
-        return isHoveredOnSelectedPageIndex;
+    /**
+     * @param {number[]} selectedPageIndexes - It describes about the selected page index
+     * @param {number} hoveredIndex - It describes about hovered index
+     * @private
+     * @returns {boolean} - Returns boolean value
+     */
+    public isHoveredOnSelectedPages(selectedPageIndexes: number[], hoveredIndex: number): boolean {
+        return isHoveredOnSelectedPages.call(this, selectedPageIndexes, hoveredIndex);
     }
 
     /**
@@ -2049,45 +428,7 @@ export class PageOrganizer {
      * @returns {void}
      */
     public thumbnailMouseOver = (event: MouseEvent): void => {
-        // eslint-disable-next-line
-        const proxy: PageOrganizer = this;
-        if (event.currentTarget instanceof HTMLElement) {
-            // Convert HTMLCollection to an array
-            const childrenArray: Element[] = Array.from(event.currentTarget.children);
-            // Iterate over the array
-            for (const subchild of childrenArray) {
-                const childArray: any[] = Array.from(subchild.children);
-                for (const child of childArray) {
-                    // Exclude the image by checking its type
-                    if (!(child.classList.contains('e-pv-image-container'))) {
-                        // Set the display style property to "none" for other children
-                        (child as HTMLElement).style.display = 'flex';
-                        if (child.classList.contains('e-checkbox-wrapper')) {
-                            (child.children[0] as HTMLElement).style.display = 'block';
-                        }
-                        else if (child.classList.contains('e-pv-organize-buttondiv') && child.childElementCount > 0) {
-                            const childelementArray: Element[] = Array.from(child.children);
-                            for (const childelement of childelementArray) {
-                                if (proxy.totalCheckedCount > 1) {
-                                    if (childelement.id.split('_')[1] === 'insert') {
-                                        (childelement as HTMLElement).style.display = 'flex';
-                                    }
-                                    else {
-                                        (childelement as HTMLElement).style.display = 'none';
-                                    }
-                                } else {
-                                    (childelement as HTMLElement).style.display = 'flex';
-                                }
-                                const targetClassList: DOMTokenList = childelement.classList;
-                                if (targetClassList.contains('e-pv-insert-left-button') || targetClassList.contains('e-pv-insert-right-button')) {
-                                    (childelement as HTMLElement).style.top = '-' + (parseFloat(this.pageLink.style.height.replace('px', '')) / 2) + 'px';
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        }
+        thumbnailMouseOver.call(this, event);
     };
 
     /**
@@ -2136,590 +477,17 @@ export class PageOrganizer {
     public addOrganizeAction(
         UndoRedoTileActions: OrganizeDetails[], actionString: string,
         toolbarActions: OrganizeDetails[], selectedPageIndexes: number[], dropIndex: number, isRightInsertion: boolean): void {
-        const action: IActionOrganizeElements = {
-            UndoRedoTileActions: UndoRedoTileActions, action: actionString, toolbarActions: toolbarActions,
-            selectedPagesIndexes: selectedPageIndexes, dropIndex: dropIndex,
-            isRightInsertion: isRightInsertion
-
-        };
-        this.undoOrganizeCollection.push(action);
-        this.redoOrganizeCollection = [];
-        this.updateUndoRedoButtons();
+        addOrganizeAction.call(this, UndoRedoTileActions, actionString, toolbarActions, selectedPageIndexes, dropIndex, isRightInsertion);
     }
 
-    private updateUndoRedoButtons(): void {
-        this.toolbar.items.forEach((item: ItemModel) => {
-            if (item.id === this.pdfViewer.element.id + '_undo_organize_Pages') {
-                this.enableToolbarItem(item.id, (this.undoOrganizeCollection.length > 0));
-            }
-            else if (item.id === this.pdfViewer.element.id + '_redo_organize_Pages') {
-                this.enableToolbarItem(item.id, (this.redoOrganizeCollection.length > 0));
-            }
-        });
+    /**
+     * @private
+     * @returns {void}
+     */
+    public onSaveClicked(): void {
+        onSaveClicked.call(this);
     }
 
-    private handlePageZoomButtonsVisibility(currentZoomValue: number): void {
-        if (currentZoomValue === this.getImageZoomMin()) {
-            this.enablePageZoomButtons(false, false);
-            this.enablePageZoomButtons(true, true);
-        }
-        else if (currentZoomValue === this.getImageZoomMax()) {
-            this.enablePageZoomButtons(false, true);
-            this.enablePageZoomButtons(true, false);
-        }
-        else {
-            this.enablePageZoomButtons(true, true);
-            this.enablePageZoomButtons(true, false);
-        }
-    }
-
-    private enablePageZoomButtons(isEnable: boolean, isIncrease: boolean): void {
-        let buttonToModify: HTMLButtonElement;
-        if (isIncrease) {
-            buttonToModify = this.pageZoomIncreaseButton;
-        }
-        else {
-            buttonToModify = this.pageZoomDecreaseButton;
-        }
-        if (!isNullOrUndefined(buttonToModify)) {
-            if (isEnable) {
-                buttonToModify.removeAttribute('disabled');
-                buttonToModify.firstElementChild.classList.remove('e-disabled');
-            }
-            else {
-                buttonToModify.setAttribute('disabled', 'disabled');
-                buttonToModify.firstElementChild.classList.add('e-disabled');
-            }
-        }
-    }
-
-    private enableDisableToolbarItems(): void {
-        const isCopyDisabled: boolean = false;
-        const isCopyRotateDisabled: boolean = false;
-        this.toolbar.items.forEach((item: ItemModel) => {
-            if (item.id === this.pdfViewer.element.id + '_rotate_page_left') {
-                this.enableToolbarItem(item.id, ((this.selectAllCheckBox.checked || this.selectAllCheckBox.indeterminate) &&
-                this.pdfViewer.pageOrganizerSettings.canRotate) && !this.getImportedItems(isCopyRotateDisabled));
-            }
-            else if (item.id === this.pdfViewer.element.id + '_rotate_page_right') {
-                this.enableToolbarItem(item.id, ((this.selectAllCheckBox.checked || this.selectAllCheckBox.indeterminate) &&
-                this.pdfViewer.pageOrganizerSettings.canRotate) && !this.getImportedItems(isCopyRotateDisabled));
-            }
-            else if (item.id === this.pdfViewer.element.id + '_copy_page' ){
-                this.enableToolbarItem(item.id, ((this.selectAllCheckBox.checked || this.selectAllCheckBox.indeterminate)
-                && this.pdfViewer.pageOrganizerSettings.canCopy && !this.getCopiedItems(isCopyDisabled) &&
-                !this.getImportedItems(isCopyRotateDisabled)));
-            }
-            else if (item.id === this.pdfViewer.element.id + '_delete_selected') {
-                this.enableToolbarItem(item.id, this.selectAllCheckBox.indeterminate && this.pdfViewer.pageOrganizerSettings.canDelete);
-            }
-            else if (item.id === this.pdfViewer.element.id + '_import_pages') {
-                this.enableToolbarItem(item.id, this.pdfViewer.pageOrganizerSettings.canImport);
-            }
-        });
-    }
-
-    private enableToolbarItem(elementID: string, isEnable: boolean): void {
-        const element: HTMLElement = document.getElementById(elementID);
-        if (!isNullOrUndefined(element) && !isNullOrUndefined(element.parentElement)) {
-            this.toolbar.enableItems(element.parentElement, isEnable);
-            element.setAttribute('tabindex', isEnable ? '0' : '-1');
-            element.setAttribute('data-tabindex', isEnable ? '0' : '-1');
-        }
-    }
-
-    private disableTileDeleteButton(): void {
-        if (this.tileAreaDiv.childElementCount === 1) {
-            const mainTileElement: HTMLElement = this.tileAreaDiv.querySelector('.e-pv-organize-anchor-node') as HTMLElement;
-            const deleteButton: HTMLButtonElement = mainTileElement.querySelector('.e-pv-delete-button') as HTMLButtonElement;
-            if (!isNullOrUndefined(deleteButton)) {
-                deleteButton.setAttribute('disabled', 'disabled');
-                deleteButton.firstElementChild.classList.add('e-disabled');
-            }
-        }
-        else {
-            for (let i: number = 0; i < this.tileAreaDiv.childElementCount; i++) {
-                let mainTileElement: HTMLElement;
-                if ((this.tileAreaDiv.childNodes[parseInt(i.toString(), 10)] as HTMLElement).classList.contains('e-pv-organize-anchor-node')) {
-                    mainTileElement = this.tileAreaDiv.childNodes[parseInt(i.toString(), 10)] as HTMLElement;
-                }
-                else {
-                    mainTileElement = (this.tileAreaDiv.childNodes[parseInt(i.toString(), 10)] as HTMLElement).querySelector('.e-pv-organize-anchor-node') as HTMLElement;
-                }
-                const deleteButton: HTMLButtonElement = mainTileElement.querySelector('.e-pv-delete-button') as HTMLButtonElement;
-                if (!isNullOrUndefined(deleteButton) && this.pdfViewer.pageOrganizerSettings.canDelete) {
-                    deleteButton.removeAttribute('disabled');
-                    deleteButton.firstElementChild.classList.remove('e-disabled');
-                }
-            }
-        }
-    }
-
-    private disableTileCopyRotateButton(): void{
-        for (let i: number = 0; i < this.tempOrganizePagesCollection.length; i++) {
-            const pageInfo: OrganizeDetails = this.tempOrganizePagesCollection[parseInt(i.toString(), 10)];
-            if (pageInfo.isImportedDoc && !pageInfo.isDeleted && !pageInfo.currentPageIndex != null) {
-                const mainTileElement: HTMLElement  = this.tileAreaDiv.querySelector(`[data-page-order="${pageInfo.currentPageIndex.toString()}"]`);
-                const rotateLeftButton: HTMLButtonElement = mainTileElement.querySelector('.e-pv-rotate-left-button') as HTMLButtonElement;
-                const rotateRightButton: HTMLButtonElement = mainTileElement.querySelector('.e-pv-rotate-right-button') as HTMLButtonElement;
-                const copyButton: HTMLButtonElement = mainTileElement.querySelector('.e-pv-copy-button') as HTMLButtonElement;
-                if (!isNullOrUndefined(rotateLeftButton)) {
-                    rotateLeftButton.setAttribute('disabled', 'disabled');
-                    rotateLeftButton.firstElementChild.classList.add('e-disabled');
-                }
-                if (!isNullOrUndefined(rotateRightButton)) {
-                    rotateRightButton.setAttribute('disabled', 'disabled');
-                    rotateRightButton.firstElementChild.classList.add('e-disabled');
-                }
-                if (!isNullOrUndefined(copyButton)) {
-                    copyButton.setAttribute('disabled', 'disabled');
-                    copyButton.firstElementChild.classList.add('e-disabled');
-                }
-            }
-        }
-    }
-    private disableTileCopyButton(): void {
-        for (let i: number = 0; i < this.tempOrganizePagesCollection.length; i++) {
-            const pageInfo: OrganizeDetails = this.tempOrganizePagesCollection[parseInt(i.toString(), 10)];
-            if (pageInfo.isInserted && !pageInfo.isDeleted && !pageInfo.currentPageIndex != null) {
-                const mainTileElement: HTMLElement  = this.tileAreaDiv.querySelector(`[data-page-order="${pageInfo.currentPageIndex.toString()}"]`);
-                const copyButton: HTMLButtonElement = mainTileElement.querySelector('.e-pv-copy-button') as HTMLButtonElement;
-                if (!isNullOrUndefined(copyButton)) {
-                    copyButton.setAttribute('disabled', 'disabled');
-                    copyButton.firstElementChild.classList.add('e-disabled');
-                }
-            }
-        }
-    }
-
-    private onSelectClick = (args: any): void => {
-        const checkboxElement: HTMLInputElement = (event.currentTarget as HTMLElement).querySelector('.e-pv-organize-tile-checkbox') as HTMLInputElement;
-        const pageElement: HTMLElement = checkboxElement.closest('.e-pv-organize-anchor-node') as HTMLElement;
-        if (args.event.pointerType === 'mouse' || (!this.isTouchEvent && !(Browser.isDevice && !this.pdfViewer.enableDesktopMode))) {
-            if (this.isClickedOnCheckBox && !isNullOrUndefined(checkboxElement) && !isNullOrUndefined(pageElement)){
-                if (pageElement) {
-                    this.setSelectionRingStyle(checkboxElement, pageElement);
-                }
-            }
-            else if (!isNullOrUndefined(checkboxElement) && !isNullOrUndefined(pageElement)) {
-                if (!(this.ctrlKey || this.shiftKey)){
-                    const previouslySelectedTiles: NodeListOf<HTMLElement> = document.querySelectorAll('.e-pv-organize-node-selection-ring') as NodeListOf<HTMLElement>;
-                    if (previouslySelectedTiles.length > 0) {
-                        for (let i: number = 0; i < previouslySelectedTiles.length; i++) {
-                            const previousCheckbox: HTMLInputElement = previouslySelectedTiles[parseInt(i.toString(), 10)].closest('.e-pv-organize-anchor-node').querySelector('.e-pv-organize-tile-checkbox') as HTMLInputElement;
-                            previousCheckbox.checked = false;
-                            this.setSelectionRingStyle(previousCheckbox, previouslySelectedTiles[parseInt(i.toString(), 10)]);
-                        }
-                    }
-                    if (!this.isClickedOnCheckBox){
-                        checkboxElement.checked = true;
-                    }
-                }
-                if (this.shiftKey){
-                    checkboxElement.checked = true;
-                }
-                this.setSelectionRingStyle(checkboxElement, pageElement);
-            }
-        }
-        else if (args.event.pointerType === 'touch' || this.isTouchEvent || (Browser.isDevice && !this.pdfViewer.enableDesktopMode)) {
-            if (!isNullOrUndefined(checkboxElement) && !isNullOrUndefined(pageElement)) {
-                if (pageElement) {
-                    this.setSelectionRingStyle(checkboxElement, pageElement);
-                }
-            }
-        }
-        this.updateSelectAllCheckbox();
-        this.enableDisableToolbarItems();
-        if (this.totalCheckedCount > 1) {
-            for (let i: number = 0; i < pageElement.querySelector('.e-pv-organize-buttondiv').childElementCount; i++) {
-                const id: string = pageElement.querySelector('.e-pv-organize-buttondiv').children[parseInt(i.toString(), 10)].id;
-                if (id.split('_')[1] === 'insert') {
-                    (pageElement.querySelector('.e-pv-organize-buttondiv').children[parseInt(i.toString(), 10)] as HTMLElement).style.display = 'flex';
-                }
-                else {
-                    (pageElement.querySelector('.e-pv-organize-buttondiv').children[parseInt(i.toString(), 10)] as HTMLElement).style.display = 'none';
-                }
-            }
-        }
-    }
-
-    private updateSelectAllCheckbox(): void {
-        const totalCheckboxCount: number = this.tileAreaDiv.childElementCount;
-        this.totalCheckedCount = this.tileAreaDiv.querySelectorAll('.e-pv-organize-node-selection-ring').length;
-        if (this.selectAllCheckBox) {
-            if (this.totalCheckedCount === 0) {
-                this.selectAllCheckBox.indeterminate = false;
-                this.selectAllCheckBox.checked = false;
-            }
-            else if (totalCheckboxCount === this.totalCheckedCount) {
-                this.selectAllCheckBox.indeterminate = false;
-                this.selectAllCheckBox.checked = true;
-            }
-            else {
-                this.selectAllCheckBox.indeterminate = true;
-            }
-        }
-    }
-
-    private setSelectionRingStyle(checkbox: HTMLInputElement, anchornode: HTMLElement): void {
-        if (!checkbox.checked) {
-            anchornode.classList.remove('e-pv-organize-node-selection-ring');
-        } else {
-            anchornode.classList.add('e-pv-organize-node-selection-ring');
-        }
-        const childrenArray: Element[] = Array.from(anchornode.children);
-        for (const child of childrenArray) {
-            const childArray: Element[] = Array.from(child.children);
-            for (const subchild of childArray) {
-                if (subchild.classList.contains('e-checkbox-wrapper')) {
-                    const id: any = ((subchild.getElementsByClassName('e-control e-checkbox e-lib')[0] as HTMLInputElement)).id;
-                    const cbObj: any = getComponent(document.getElementById(id), 'checkbox');
-                    if (checkbox.checked) {
-                        (subchild as HTMLElement).style.display = 'block';
-                        ((subchild as HTMLElement).children[0] as HTMLElement).style.display = 'block';
-                        (cbObj as CheckBox).checked = true;
-                    }
-                    else {
-                        (subchild as HTMLElement).style.display = 'none';
-                        ((subchild as HTMLElement).children[0] as HTMLElement).style.display = 'none';
-                        (cbObj as CheckBox).checked = false;
-                        if (!isNullOrUndefined((subchild as HTMLElement).parentElement) && !isNullOrUndefined((subchild as HTMLElement).parentElement.lastElementChild) && (subchild as HTMLElement).parentElement.lastElementChild.classList.contains('e-pv-organize-buttondiv')) {
-                            ((subchild as HTMLElement).parentElement.lastElementChild as HTMLElement).style.display = 'none';
-                        }
-                    }
-                }
-            }
-        }
-    }
-
-    private onTooltipBeforeOpen(args: TooltipEventArgs): void {
-        if (!this.pdfViewer.toolbarSettings.showTooltip) {
-            args.cancel = true;
-        }
-    }
-
-    private rotateButtonClick = (event: MouseEvent): void => {
-        if (this.pdfViewer.pageOrganizerSettings.canRotate) {
-            const rotateButton: HTMLElement = event.currentTarget as HTMLElement;
-            const mainTileElement: HTMLElement = rotateButton.closest('.e-pv-organize-anchor-node') as HTMLElement;
-            const imageContainer: HTMLElement = mainTileElement.querySelector('.e-pv-organize-image') as HTMLElement;
-            const pageOrder: number = parseInt(mainTileElement.getAttribute('data-page-order'), 10);
-            if (imageContainer) {
-                // Get the current rotation angle of the image container (if any)
-                let currentRotation: number = parseFloat(imageContainer.style.transform.replace('rotate(', '').replace('deg)', '')) || 0;
-                // Calculate the new rotation angle (add 90 degrees)
-                currentRotation += 90;
-                // Ensure that the rotation stays within the desired range (0, 90, 180, 270, 360)
-                if (currentRotation >= 360) {
-                    currentRotation = 0;
-                }
-                // Apply the rotation to the image container
-                imageContainer.style.transform = `rotate(${currentRotation}deg)`;
-                // Update the rotation value in the pageDetails collection
-                this.updateTempRotationDetail(pageOrder, 90);
-                const clonedCollection : OrganizeDetails[] = [];
-                clonedCollection.push(this.clonedCollection(this.tempOrganizePagesCollection.
-                    find((item: OrganizeDetails) => { return item.currentPageIndex === pageOrder; })));
-                this.addOrganizeAction(clonedCollection, 'Rotate Right', [], [], null, false);
-            }
-        }
-    };
-
-    private openContextMenu(event: any): void {
-        const contextMenu: HTMLElement = document.getElementById(this.pdfViewer.element.id + '_organize_context_menu');
-        if (!isNullOrUndefined(contextMenu) && contextMenu.style.display !== 'block') {
-            this.contextMenuObj.open(event.originalEvent.clientY, event.originalEvent.clientX, event.originalEvent.currentTarget);
-        }
-    }
-
-    private rotateLeftButtonClick = (event: MouseEvent): void => {
-        if (this.pdfViewer.pageOrganizerSettings.canRotate) {
-            const rotateButton: HTMLElement = event.currentTarget as HTMLElement;
-            const mainTileElement: HTMLElement = rotateButton.closest('.e-pv-organize-anchor-node') as HTMLElement;
-            const imageContainer: HTMLElement = mainTileElement.querySelector('.e-pv-organize-image') as HTMLElement;
-            const pageOrder: number = parseInt(mainTileElement.getAttribute('data-page-order'), 10);
-            if (imageContainer) {
-                // Get the current rotation angle of the image container (if any)
-                let currentRotation: number = parseFloat(imageContainer.style.transform.replace('rotate(', '').replace('deg)', '')) || 0;
-                // Calculate the new rotation angle (add 90 degrees)
-                currentRotation -= 90;
-                // Ensure that the rotation stays within the desired range (0, 90, 180, 270, 360)
-                if (currentRotation >= 360) {
-                    currentRotation = 0;
-                }
-                if (currentRotation === -90) {
-                    currentRotation = 270;
-                }
-                // Apply the rotation to the image container
-                imageContainer.style.transform = `rotate(${currentRotation}deg)`;
-                // Update the rotation value in the pageDetails collection
-                this.updateTempRotationDetail(pageOrder, -90);
-                const clonedCollection : OrganizeDetails[] = [];
-                clonedCollection.push(this.clonedCollection(this.tempOrganizePagesCollection.
-                    find((item: OrganizeDetails) => { return item.currentPageIndex === pageOrder; })));
-                this.addOrganizeAction(clonedCollection, 'Rotate Left', [], [], null, false);
-            }
-        }
-    };
-
-    private onToolbarRightButtonClick = (): void => {
-        if (this.pdfViewer.pageOrganizerSettings.canRotate) {
-            // eslint-disable-next-line
-            const proxy: PageOrganizer = this;
-            for (let i: number = 0; i < proxy.tileAreaDiv.childElementCount; i++) {
-                const mainTileElement: any = proxy.tileAreaDiv.childNodes[parseInt(i.toString(), 10)];
-                // Type assertion to HTMLElement
-                if (mainTileElement instanceof HTMLElement && mainTileElement.classList.contains('e-pv-organize-node-selection-ring')) {
-                    const imageContainer: HTMLElement = mainTileElement.querySelector('.e-pv-organize-image') as HTMLElement;
-                    const pageOrder: number = parseInt(mainTileElement.getAttribute('data-page-order'), 10);
-                    if (imageContainer) {
-                        // Get the current rotation angle of the image container (if any)
-                        let currentRotation: number = parseFloat(imageContainer.style.transform.replace('rotate(', '').replace('deg)', '')) || 0;
-                        // Calculate the new rotation angle (add 90 degrees)
-                        currentRotation += 90;
-                        // Ensure that the rotation stays within the desired range (0, 90, 180, 270, 360)
-                        if (currentRotation >= 360) {
-                            currentRotation = 0;
-                        }
-                        // Apply the rotation to the image container
-                        imageContainer.style.transform = `rotate(${currentRotation}deg)`;
-                        // Update the rotation value in the pageDetails collection
-                        this.updateTempRotationDetail(pageOrder, 90);
-                        this.toolbarUndoRedoCollection.
-                            push(this.clonedCollection(this.tempOrganizePagesCollection.
-                                find((item: OrganizeDetails) => { return item.currentPageIndex === pageOrder; })));
-                    }
-                }
-            }
-            this.addOrganizeAction(null, 'Toolbar Rotate Right', this.toolbarUndoRedoCollection, [], null, false);
-            this.toolbarUndoRedoCollection = [];
-        }
-    };
-
-    private onToolbarLeftButtonClick = (): void => {
-        // eslint-disable-next-line
-        const proxy: PageOrganizer = this;
-        for (let i: number = 0; i < proxy.tileAreaDiv.childElementCount; i++) {
-            const mainTileElement: any = proxy.tileAreaDiv.childNodes[parseInt(i.toString(), 10)];
-            // Type assertion to HTMLElement
-            if (mainTileElement instanceof HTMLElement && mainTileElement.classList.contains('e-pv-organize-node-selection-ring')) {
-                const imageContainer: HTMLElement = mainTileElement.querySelector('.e-pv-organize-image') as HTMLElement;
-                const pageOrder: number = parseInt(mainTileElement.getAttribute('data-page-order'), 10);
-                if (imageContainer) {
-                    // Get the current rotation angle of the image container (if any)
-                    let currentRotation: number = parseFloat(imageContainer.style.transform.replace('rotate(', '').replace('deg)', '')) || 0;
-                    // Calculate the new rotation angle (add 90 degrees)
-                    currentRotation -= 90;
-                    // Ensure that the rotation stays within the desired range (0, 90, 180, 270, 360)
-                    if (currentRotation >= 360) {
-                        currentRotation = 0;
-                    }
-                    if (currentRotation === -90) {
-                        currentRotation = 270;
-                    }
-                    // Apply the rotation to the image container
-                    imageContainer.style.transform = `rotate(${currentRotation}deg)`;
-                    // Update the rotation value in the pageDetails collection
-                    this.updateTempRotationDetail(pageOrder, -90);
-                    this.toolbarUndoRedoCollection.
-                        push(this.clonedCollection(this.tempOrganizePagesCollection.
-                            find((item: OrganizeDetails) => { return item.currentPageIndex === pageOrder; })));
-                }
-            }
-        }
-        this.addOrganizeAction(null, 'Toolbar Rotate Left', this.toolbarUndoRedoCollection, [], null, false);
-        this.toolbarUndoRedoCollection = [];
-    };
-
-    private onToolbarCopyButtonClick = (): void => {
-        if (this.pdfViewer.pageOrganizerSettings.canCopy) {
-            // eslint-disable-next-line
-            const proxy: PageOrganizer = this;
-            for (let i: number = 0; i < proxy.tileAreaDiv.childElementCount; i++) {
-                const mainTileElement: HTMLElement = proxy.tileAreaDiv.childNodes[parseInt(i.toString(), 10)] as HTMLElement;
-                if (mainTileElement instanceof HTMLElement && mainTileElement.classList.contains('e-pv-organize-node-selection-ring')) {
-                    const pageId: string = mainTileElement.id.split('anchor_page_')[mainTileElement.id.split('anchor_page_').length - 1];
-                    const pageOrder: number = parseInt(mainTileElement.getAttribute('data-page-order'), 10);
-                    const pageIdlist: string[] = pageId.split('_');
-                    let subIndex: number = 0;
-                    let pageIndex: number = parseInt(pageIdlist[parseInt((pageIdlist.length - 1).toString(), 10)], 10);
-                    if (pageIdlist.length > 1) {
-                        pageIndex = parseInt(pageIdlist[parseInt((pageIdlist.length - 2).toString(), 10)], 10);
-                    }
-                    subIndex = this.getNextSubIndex(mainTileElement.parentElement, pageIndex);
-                    this.copyPage(pageOrder, mainTileElement);
-                    this.tileImageRender(pageIndex, subIndex, pageOrder + 1, mainTileElement, true, false, false);
-                    this.updatePageNumber();
-                    this.toolbarUndoRedoCollection.
-                        push(this.clonedCollection(this.tempOrganizePagesCollection.
-                            find((item: OrganizeDetails) => { return item.currentPageIndex === (pageOrder + 1); })));
-                }
-            }
-            this.updateTotalPageCount();
-            this.disableTileDeleteButton();
-            this.addOrganizeAction(null, 'Toolbar Copy', this.toolbarUndoRedoCollection, [], null, false);
-            this.toolbarUndoRedoCollection = [];
-        }
-    };
-    private onToolbarDeleteButtonClick = (): void => {
-        if (this.pdfViewer.pageOrganizerSettings.canDelete) {
-            // eslint-disable-next-line
-            const proxy: PageOrganizer = this;
-            const selectedNodes: NodeListOf<Element> = proxy.tileAreaDiv.querySelectorAll('.e-pv-organize-node-selection-ring');
-            selectedNodes.forEach((selectedElements: HTMLElement) => {
-                const mainTileElement: HTMLElement = selectedElements.closest('.e-pv-organize-anchor-node') as HTMLElement;
-                const pageOrder: number = parseInt(mainTileElement.getAttribute('data-page-order'), 10);
-                this.toolbarUndoRedoCollection.
-                    push(this.clonedCollection(this.tempOrganizePagesCollection.
-                        find((item: OrganizeDetails) => { return item.currentPageIndex === pageOrder; })));
-            });
-            selectedNodes.forEach((selectedElement: HTMLElement) => {
-                const mainTileElement: HTMLElement = selectedElement.closest('.e-pv-organize-anchor-node') as HTMLElement;
-                proxy.deletePageElement(mainTileElement);
-            });
-        }
-        this.enableDisableToolbarItems();
-        this.addOrganizeAction(null, 'Toolbar Delete', this.toolbarUndoRedoCollection, [], null, false);
-        this.toolbarUndoRedoCollection = [];
-    };
-
-    private updateTempRotationDetail(currentPageIndex: number, currentRotation: number): void {
-        if (this.pdfViewer.pageOrganizerSettings.canRotate) {
-            const tempIndex: number =
-            this.tempOrganizePagesCollection.findIndex((item: OrganizeDetails) => item.currentPageIndex === currentPageIndex);
-            if (tempIndex !== -1) {
-                let rotateAngle: number = this.tempOrganizePagesCollection[parseInt(tempIndex.toString(), 10)].rotateAngle +
-                currentRotation;
-                if (rotateAngle === -90) {
-                    rotateAngle = 0;
-                }
-                // If the pageIndex is found in the array
-                this.tempOrganizePagesCollection[parseInt(tempIndex.toString(), 10)].rotateAngle =
-                Math.abs((this.tempOrganizePagesCollection[parseInt(tempIndex.toString(), 10)].rotateAngle +
-                currentRotation + 360) % 360);
-            }
-        }
-        this.organizeWindowFocus();
-    }
-
-    private organizeWindowFocus(): void {
-        const elementID: string = this.pdfViewer.element.id;
-        document.getElementById(elementID + '_organize_window').focus();
-    }
-
-    private getRotatedAngle(rotate: string): number {
-        switch (rotate.trim()) {
-        case '0':
-            return 0;
-        case '90':
-        case '1':
-            return 90;
-        case '180':
-        case '2':
-            return 180;
-        case '270':
-        case '3':
-            return 270;
-        case '360':
-        case '4':
-            return 0;
-        default:
-            return 0;
-        }
-    }
-
-    private getRotation(rotateAngle: string): number {
-        switch (rotateAngle.trim()) {
-        case '0':
-            return 0;
-        case '90':
-            return 1;
-        case '180':
-            return 2;
-        case '270':
-            return 3;
-        case '360':
-            return 0;
-        default:
-            return 0;
-        }
-    }
-
-    private updateRotationDetailCollection(): void {
-        for (let i: number = 0; i < this.tempOrganizePagesCollection.length; i++) {
-            const tempPageDetail: OrganizeDetails = this.tempOrganizePagesCollection[parseInt(i.toString(), 10)];
-            if (tempPageDetail.pageIndex !== -1) {
-                const pageDetails: ISize = this.pdfViewerBase.pageSize[parseInt(tempPageDetail.pageIndex.toString(), 10)];
-                if (Math.abs(this.getRotation(pageDetails.rotation.toString()) - tempPageDetail.rotateAngle) % 180 === 90) {
-                    this.updatePageSize(tempPageDetail.pageIndex, pageDetails.height, pageDetails.width);
-                }
-            }
-        }
-    }
-
-    private updatePageSize(pageIndex: number, pageWidth: number, pageHeight: number): void {
-        if (this.pdfViewerBase.pageSize[parseInt(pageIndex.toString(), 10)]) {
-            this.pdfViewerBase.pageSize[parseInt(pageIndex.toString(), 10)].width = pageWidth;
-            this.pdfViewerBase.pageSize[parseInt(pageIndex.toString(), 10)].height = pageHeight;
-            if (this.pdfViewerBase.highestWidth < pageWidth) {
-                this.pdfViewerBase.highestWidth = pageWidth;
-            }
-            this.pdfViewerBase.isMixedSizeDocument = true;
-        }
-        for (let i: number = pageIndex; i < this.pdfViewerBase.pageSize.length; i++) {
-            if (!this.pdfViewerBase.pageSize[parseInt((i - 1).toString(), 10)] && i - 1 < 0) {
-                this.pdfViewerBase.pageSize[parseInt(i.toString(), 10)].top = this.pdfViewerBase.pageGap;
-            }
-            else {
-                this.pdfViewerBase.pageSize[parseInt(i.toString(), 10)].top =
-                this.pdfViewerBase.pageSize[parseInt((i - 1).toString(), 10)].top +
-                this.pdfViewerBase.pageSize[parseInt((i - 1).toString(), 10)].height + this.pdfViewerBase.pageGap;
-            }
-
-        }
-    }
-
-    private onSaveClicked(): void {
-        this.isSkipRevert = true;
-        this.showOrganizeLoadingIndicator(true);
-        if ((JSON.stringify(this.tempOrganizePagesCollection) !== JSON.stringify(this.organizePagesCollection)) ||
-        this.isDocumentModified) {
-            this.updateOrganizePageCollection();
-            this.totalCheckedCount = 0;
-            this.isDocumentModified = true;
-            let pdfBlob: Blob;
-            this.pdfViewer.saveAsBlob().then((blob: Blob) => {
-                pdfBlob = blob;
-                this.pdfViewerBase.blobToBase64(pdfBlob).then((base64: string) => {
-                    if (!isNullOrUndefined(base64) && base64 !== '') {
-                        const fileName: string = this.pdfViewer.fileName;
-                        const downloadFileName: string = this.pdfViewer.downloadFileName;
-                        const jsonDocumentId: string = this.pdfViewerBase.jsonDocumentId;
-                        this.showOrganizeLoadingIndicator(false);
-                        this.organizeDialog.hide();
-                        this.undoOrganizeCollection = [];
-                        this.redoOrganizeCollection = [];
-                        this.pdfViewer.loadDocInternally(base64, null, false);
-                        this.pdfViewerBase.updateDocumentEditedProperty(true);
-                        this.pdfViewer.fileName = fileName;
-                        if (!isNullOrUndefined(downloadFileName)) {
-                            this.pdfViewer.downloadFileName = downloadFileName;
-                        }
-                        else {
-                            this.pdfViewer.downloadFileName = fileName;
-                        }
-                        this.pdfViewerBase.jsonDocumentId = jsonDocumentId;
-                    }
-                });
-            });
-        }
-        else{
-            this.showOrganizeLoadingIndicator(false);
-            this.organizeDialog.hide();
-            this.undoOrganizeCollection = [];
-            this.redoOrganizeCollection = [];
-        }
-    }
 
     /**
      * @param {boolean} isShow - specifies the isShow boolean.
@@ -2727,411 +495,7 @@ export class PageOrganizer {
      * @private
      */
     public showOrganizeLoadingIndicator(isShow: boolean): void {
-        const waitingPopup: HTMLElement = document.getElementById(this.pdfViewer.element.id + '_organizeLoadingIndicator');
-        if (waitingPopup) {
-            if (isShow) {
-                waitingPopup.style.display = 'block';
-                showSpinner(waitingPopup);
-            } else {
-                waitingPopup.style.display = 'none';
-                hideSpinner(waitingPopup);
-            }
-        }
-    }
-
-    private updateOrganizePageDetailsInViewer(): void {
-        for (const pageDetail of this.organizePagesCollection) {
-            const pageIndex: number = pageDetail.pageIndex;
-            const rotateAngle: number = pageDetail.rotateAngle;
-            let pageSizeDetails: any;
-            if (pageIndex !== -1) {
-                pageSizeDetails = this.pdfViewerBase.pageSize[parseInt(pageIndex.toString(), 10)];
-            }
-            else {
-                pageSizeDetails = this.pdfViewerBase.pageSize[parseInt(pageDetail.copiedPageIndex.toString(), 10)];
-            }
-            const pageWidth: any = pageSizeDetails.width * this.pdfViewerBase.getZoomFactor();
-            const pageHeight: any = pageSizeDetails.height * this.pdfViewerBase.getZoomFactor();
-            const pageTop: number = pageSizeDetails.top * this.pdfViewerBase.getZoomFactor();
-            // Find the corresponding pageDiv using pageIndex
-            const pageDiv: HTMLElement = this.pdfViewerBase.getElement('_pageDiv_' + pageIndex);
-            const pageCanvas: HTMLImageElement = this.pdfViewerBase.getElement('_pageCanvas_' + pageIndex) as HTMLImageElement;
-            if (pageDiv && pageCanvas) {
-                pageDiv.style.width = pageWidth + 'px';
-                pageDiv.style.height = pageHeight + 'px';
-                if (this.pdfViewer.enableRtl) {
-                    pageDiv.style.right = this.pdfViewerBase.updateLeftPosition(pageIndex) + 'px';
-                } else {
-                    pageDiv.style.left = this.pdfViewerBase.updateLeftPosition(pageIndex) + 'px';
-                }
-                pageDiv.style.top = pageTop + 'px';
-                this.pdfViewerBase.pageContainer.style.width = (this.pdfViewerBase.isMixedSizeDocument && (this.pdfViewerBase.highestWidth * this.pdfViewerBase.getZoomFactor()) > this.pdfViewerBase.viewerContainer.clientWidth) ? (this.pdfViewerBase.highestWidth * this.pdfViewerBase.getZoomFactor()) + 'px' : this.pdfViewerBase.viewerContainer.clientWidth + 'px';
-                // Update the width and height for div
-                if (rotateAngle === 90 || rotateAngle === 270) {
-                    const swapWidth: string = pageDiv.style.width;
-                    pageDiv.style.width = pageDiv.style.height;
-                    pageDiv.style.height = swapWidth;
-                } else {
-                    pageDiv.style.width = '';
-                    pageDiv.style.height = '';
-                }
-                pageDiv.style.left = (this.pdfViewerBase.viewerContainer.clientWidth - (parseInt(pageDiv.style.width, 10) * this.pdfViewerBase.getZoomFactor())) / 2 + 'px';
-
-                // Apply rotation to the canvas
-                pageCanvas.style.transform = `rotate(${rotateAngle}deg)`;
-                if (rotateAngle === 90 || rotateAngle === 270) {
-                    const swap: number = pageCanvas.width;
-                    pageCanvas.style.width = `${pageCanvas.height}px`;
-                    pageCanvas.width = pageCanvas.height;
-                    pageCanvas.style.height = `${swap}px`;
-                    pageCanvas.height = swap;
-                    pageCanvas.style.margin = '0px';
-                    // Adjust margins to center the rotated canvas
-                    pageCanvas.style.marginLeft = `${(pageCanvas.height - pageCanvas.width) / 2}px`;
-                    pageCanvas.style.marginTop = `${(pageCanvas.width - pageCanvas.height) / 2}px`;
-                }
-                else {
-                    // Reset margins if not rotated by 90 or 270 degrees
-                    pageCanvas.style.margin = '0px';
-                }
-                this.applyElementStyles(pageCanvas, pageIndex);
-            }
-        }
-    }
-
-    private getNextSubIndex(parentElement: HTMLElement, parentPageIndex: number): number {
-        const elementsWithAnchorId: any = parentElement.querySelectorAll(`[id^='anchor_page_${parentPageIndex}']`);
-        // Find the largest subindex among the existing elements
-        let maxSubIndex: number = -1;
-        elementsWithAnchorId.forEach((element: any) => {
-            const [pageIndex, subIndex] = element.id.split('_').slice(2);
-            if (Number(subIndex) > maxSubIndex) {
-                maxSubIndex = Number(subIndex);
-            }
-        });
-        return maxSubIndex + 1;
-    }
-
-    private restorePagesBeforeZoom = (): void => {
-        const undoCollectionLength: number = this.undoOrganizeCollection.length;
-        if (undoCollectionLength > 0) {
-            /* eslint-disable security/detect-object-injection */
-            for (let index: number = undoCollectionLength - 1; index >= 0; index--) {
-                const undoActionObject: IActionOrganizeElements = this.undoOrganizeCollection[index];
-                this.undoActionHandler(undoActionObject);
-            }
-            /* eslint-enable security/detect-object-injection */
-        }
-    }
-
-    private restorePagesAfterZoom = (): void => {
-        const undoCollectionLength: number = this.undoOrganizeCollection.length;
-        if (undoCollectionLength > 0) {
-            /* eslint-disable security/detect-object-injection */
-            for (let index: number = 0; index < undoCollectionLength; index++) {
-                const redoActionObject: IActionOrganizeElements = this.undoOrganizeCollection[index];
-                this.redoActionHandler(redoActionObject);
-            }
-            /* eslint-enable security/detect-object-injection */
-        }
-    }
-
-    private undoActionHandler = (undoActionObject: IActionOrganizeElements): void => {
-        if (undoActionObject) {
-            const actionObject: IActionOrganizeElements = JSON.parse(JSON.stringify(undoActionObject));
-            switch (actionObject.action) {
-            case 'Insert Right':
-            case 'Insert Left':
-            case 'Import Pages':
-            case 'Copy':
-                this.removePage(actionObject.UndoRedoTileActions[0].currentPageIndex);
-                break;
-            case 'Rotate Right':
-                this.rotateImage(actionObject.UndoRedoTileActions[0].currentPageIndex, -90);
-                break;
-            case 'Rotate Left':
-                this.rotateImage(actionObject.UndoRedoTileActions[0].currentPageIndex, 90);
-                break;
-            case 'Delete':
-                {
-                    const mainTileElement: HTMLElement =
-                            this.tileAreaDiv.childNodes[parseInt(actionObject.UndoRedoTileActions[0].
-                                currentPageIndex.toString(), 10)] as HTMLElement;
-                    if (actionObject.UndoRedoTileActions[0].isCopied) {
-                        this.insertRemovedPages(actionObject.UndoRedoTileActions[0],
-                                                actionObject.UndoRedoTileActions[0].currentPageIndex,
-                                                mainTileElement);
-                        this.tileImageRender(actionObject.UndoRedoTileActions[0].copiedPageIndex, 0,
-                                             actionObject.UndoRedoTileActions[0].currentPageIndex, mainTileElement,
-                                             true, true, false);
-                    }
-                    else if (actionObject.UndoRedoTileActions[0].isInserted) {
-                        this.insertRemovedPages(actionObject.UndoRedoTileActions[0],
-                                                actionObject.UndoRedoTileActions[0].currentPageIndex,
-                                                mainTileElement);
-                        this.tileImageRender(actionObject.UndoRedoTileActions[0].copiedPageIndex, 0,
-                                             actionObject.UndoRedoTileActions[0].currentPageIndex, mainTileElement,
-                                             true, true, true);
-                    }
-                    else if (actionObject.UndoRedoTileActions[0].isImportedDoc) {
-                        this.insertRemovedPages(actionObject.UndoRedoTileActions[0],
-                                                actionObject.UndoRedoTileActions[0].currentPageIndex,
-                                                mainTileElement);
-                        this.tileImageRender(actionObject.UndoRedoTileActions[0].copiedPageIndex, 0,
-                                             actionObject.UndoRedoTileActions[0].currentPageIndex, mainTileElement,
-                                             true, true, false, true, actionObject.UndoRedoTileActions[0].documentName);
-                    }
-                    else if (!actionObject.UndoRedoTileActions[0].isCopied && !actionObject.UndoRedoTileActions[0].isInserted
-                        && !actionObject.UndoRedoTileActions[0].isImportedDoc) {
-                        this.undoDeletedPage(actionObject.UndoRedoTileActions[0].currentPageIndex,
-                                             actionObject.UndoRedoTileActions[0].pageIndex,
-                                             actionObject.UndoRedoTileActions[0].rotateAngle, mainTileElement);
-                        this.tileImageRender(actionObject.UndoRedoTileActions[0].pageIndex, 0,
-                                             actionObject.UndoRedoTileActions[0].currentPageIndex, mainTileElement, true, true, false);
-                    }
-                    this.updatePageDetail();
-                }
-                break;
-            case 'Move Pages':
-            {
-                const dropIndex: number = actionObject.dropIndex;
-                const beforeDropIndex: { currentPageIndex: number, selectedIndexes: number[] }[] = [];
-                const afterDropIndex: { currentPageIndex: number, selectedIndexes: number[] }[] = [];
-                const processedIndexes: Set<number> = new Set();
-                // Helper function to check if index is in range
-                const isInRange: any = (start: number, end: number, value: number): boolean => value >= start && value <= end;
-
-                // Collect all selected indexes
-                for (let i: number = 0; i < actionObject.UndoRedoTileActions.length; i++) {
-                    const action: OrganizeDetails = actionObject.UndoRedoTileActions[parseInt(i.toString(), 10)];
-                    const selectedItem: OrganizeDetails = this.tempOrganizePagesCollection
-                        .find((item: OrganizeDetails) => {
-                            if (action.isCopied) {
-                                return item.copiedPageIndex === action.copiedPageIndex && isInRange(
-                                    dropIndex - actionObject.selectedPagesIndexes.length,
-                                    dropIndex + actionObject.selectedPagesIndexes.length,
-                                    item.currentPageIndex
-                                ) && !processedIndexes.has(item.currentPageIndex);
-                            } else if (action.isInserted) {
-                                return item.copiedPageIndex === action.copiedPageIndex && item.isInserted && isInRange(
-                                    dropIndex - actionObject.selectedPagesIndexes.length,
-                                    dropIndex + actionObject.selectedPagesIndexes.length,
-                                    item.currentPageIndex
-                                ) && !processedIndexes.has(item.currentPageIndex);
-                            }
-                            else if (action.isImportedDoc) {
-                                return item.copiedPageIndex === action.copiedPageIndex && item.isImportedDoc && isInRange(
-                                    dropIndex - actionObject.selectedPagesIndexes.length,
-                                    dropIndex + actionObject.selectedPagesIndexes.length,
-                                    item.currentPageIndex
-                                ) && !processedIndexes.has(item.currentPageIndex);
-                            } else {
-                                return item.pageIndex === action.pageIndex;
-                            }
-                        });
-                    if (selectedItem) {
-                        const selectedIndexes: number[] = [selectedItem.currentPageIndex];
-                        processedIndexes.add(selectedItem.currentPageIndex);
-                        if (dropIndex < action.currentPageIndex) {
-                            afterDropIndex.push({ currentPageIndex: action.currentPageIndex, selectedIndexes: selectedIndexes });
-                        } else {
-                            beforeDropIndex.push({ currentPageIndex: action.currentPageIndex, selectedIndexes: selectedIndexes });
-                        }
-                    }
-                }
-                // Sort and rearrange for beforeDropIndex
-                if (beforeDropIndex.length > 0) {
-                    // Sort in descending order based on selectedIndexes and rearrange
-                    beforeDropIndex.sort((a: any, b: any) => a.currentPageIndex - b.currentPageIndex);
-                    for (let j: number = 0; j < beforeDropIndex.length; j++) {
-                        // eslint-disable-next-line max-len
-                        this.rearrangePages(beforeDropIndex[parseInt(j.toString(), 10)].selectedIndexes, beforeDropIndex[parseInt(j.toString(), 10)].currentPageIndex, beforeDropIndex[parseInt(j.toString(), 10)].currentPageIndex > beforeDropIndex[parseInt(j.toString(), 10)].selectedIndexes[0]);
-                    }
-                }
-                // Sort and rearrange for afterDropIndex
-                if (afterDropIndex.length > 0) {
-                    // Sort in ascending order based on currentPageIndex and rearrange
-                    afterDropIndex.sort((a: any, b: any) => b.currentPageIndex - a.currentPageIndex);
-                    for (let j: number = 0; j < afterDropIndex.length; j++) {
-                        this.rearrangePages(afterDropIndex[parseInt(j.toString(), 10)].selectedIndexes,
-                                            afterDropIndex[parseInt(j.toString(), 10)].currentPageIndex,
-                                            afterDropIndex[parseInt(j.toString(), 10)].currentPageIndex >
-                        afterDropIndex[parseInt(j.toString(), 10)].selectedIndexes[0]);
-                    }
-                }
-                break;
-            }
-            case 'Toolbar Rotate Right':
-                this.rotateImages(actionObject, -90);
-                break;
-            case 'Toolbar Rotate Left':
-                this.rotateImages(actionObject, 90);
-                break;
-            case 'Toolbar Copy':
-                if (actionObject.toolbarActions.length > 0) {
-                    for (let i: number = actionObject.toolbarActions.length - 1; i >= 0; i--) {
-                        const mainTileElement: HTMLElement =
-                                this.tileAreaDiv.childNodes[parseInt(actionObject.toolbarActions[parseInt(i.toString(), 10)].
-                                    currentPageIndex.toString(), 10)] as HTMLElement;
-                        this.deleteTempPage(actionObject.toolbarActions[parseInt(i.toString(), 10)].currentPageIndex, mainTileElement);
-                        this.tileAreaDiv.removeChild(mainTileElement);
-                        this.updatePageDetail();
-                    }
-                }
-                this.disableTileDeleteButton();
-                break;
-            case 'Toolbar Delete':
-                {
-                    if (actionObject.toolbarActions.length > 0) {
-                        for (let i: number = 0; i < actionObject.toolbarActions.length; i++) {
-                            const mainTileElement: HTMLElement =
-                                    this.tileAreaDiv.childNodes[parseInt(actionObject.toolbarActions[parseInt(i.toString(), 10)].
-                                        currentPageIndex.toString(), 10)] as HTMLElement;
-                            if (actionObject.toolbarActions[parseInt(i.toString(), 10)].isCopied) {
-                                this.insertRemovedPages(actionObject.toolbarActions[parseInt(i.toString(), 10)],
-                                                        actionObject.toolbarActions[parseInt(i.toString(), 10)].currentPageIndex,
-                                                        mainTileElement);
-                                this.tileImageRender(actionObject.toolbarActions[parseInt(i.toString(), 10)].copiedPageIndex, 0,
-                                                     actionObject.toolbarActions[parseInt(i.toString(), 10)].currentPageIndex,
-                                                     mainTileElement, true, true, false);
-                            }
-                            else if (actionObject.toolbarActions[parseInt(i.toString(), 10)].isInserted) {
-                                this.insertRemovedPages(actionObject.toolbarActions[parseInt(i.toString(), 10)],
-                                                        actionObject.toolbarActions[parseInt(i.toString(), 10)].currentPageIndex,
-                                                        mainTileElement);
-                                this.tileImageRender(actionObject.toolbarActions[parseInt(i.toString(), 10)].copiedPageIndex, 0,
-                                                     actionObject.toolbarActions[parseInt(i.toString(), 10)].currentPageIndex,
-                                                     mainTileElement,
-                                                     true, true, true);
-                            }
-                            else if (actionObject.toolbarActions[parseInt(i.toString(), 10)].isImportedDoc) {
-                                this.insertRemovedPages(actionObject.toolbarActions[parseInt(i.toString(), 10)],
-                                                        actionObject.toolbarActions[parseInt(i.toString(), 10)].currentPageIndex,
-                                                        mainTileElement);
-                                this.tileImageRender(actionObject.toolbarActions[parseInt(i.toString(), 10)].copiedPageIndex, 0,
-                                                     actionObject.toolbarActions[parseInt(i.toString(), 10)].currentPageIndex,
-                                                     mainTileElement, true, true, false, true,
-                                                     actionObject.toolbarActions[parseInt(i.toString(), 10)].documentName);
-                            }
-                            else if (!actionObject.toolbarActions[parseInt(i.toString(), 10)].isCopied &&
-                                    !actionObject.toolbarActions[parseInt(i.toString(), 10)].isInserted &&
-                                    !actionObject.toolbarActions[parseInt(i.toString(), 10)].isImportedDoc) {
-                                this.undoDeletedPage(actionObject.toolbarActions[parseInt(i.toString(), 10)].currentPageIndex,
-                                                     actionObject.toolbarActions[parseInt(i.toString(), 10)].pageIndex,
-                                                     actionObject.toolbarActions[parseInt(i.toString(), 10)].rotateAngle, mainTileElement);
-                                this.tileImageRender(actionObject.toolbarActions[parseInt(i.toString(), 10)].pageIndex, 0,
-                                                     actionObject.toolbarActions[parseInt(i.toString(), 10)].currentPageIndex,
-                                                     mainTileElement, true, true, false);
-                            }
-                            this.updatePageDetail();
-                        }
-                    }
-                    this.disableTileDeleteButton();
-                }
-                break;
-            }
-        }
-    }
-
-    private redoActionHandler = (redoActionObject: IActionOrganizeElements): void => {
-        if (redoActionObject) {
-            const actionObject: IActionOrganizeElements = JSON.parse(JSON.stringify(redoActionObject));
-            switch (actionObject.action) {
-            case 'Insert Right':
-            case 'Insert Left':
-                {
-                    const mainTileElement: HTMLElement =
-                    this.tileAreaDiv.childNodes[parseInt(actionObject.UndoRedoTileActions[0].
-                        currentPageIndex.toString(), 10)] as HTMLElement;
-                    this.insertRemovedPages(actionObject.UndoRedoTileActions[0],
-                                            actionObject.UndoRedoTileActions[0].currentPageIndex,
-                                            mainTileElement);
-                    this.tileImageRender(actionObject.UndoRedoTileActions[0].copiedPageIndex, 0,
-                                         actionObject.UndoRedoTileActions[0].currentPageIndex, mainTileElement, true, true, true);
-                    this.disableTileCopyButton();
-                    this.updatePageDetail();
-                }
-                break;
-            case 'Rotate Right':
-                this.rotateImage(actionObject.UndoRedoTileActions[0].currentPageIndex, 90);
-                break;
-            case 'Rotate Left':
-                this.rotateImage(actionObject.UndoRedoTileActions[0].currentPageIndex, -90);
-                break;
-            case 'Copy':
-                {
-                    const mainTileElement: HTMLElement =
-                        this.tileAreaDiv.childNodes[parseInt(actionObject.UndoRedoTileActions[0].
-                            currentPageIndex.toString(), 10)] as HTMLElement;
-                    this.insertRemovedPages(actionObject.UndoRedoTileActions[0],
-                                            actionObject.UndoRedoTileActions[0].currentPageIndex,
-                                            mainTileElement);
-                    this.tileImageRender(actionObject.UndoRedoTileActions[0].copiedPageIndex, 0,
-                                         actionObject.UndoRedoTileActions[0].currentPageIndex, mainTileElement, true, true, false);
-                    this.updatePageDetail();
-                }
-                break;
-            case 'Import Pages':
-                {
-                    const mainTileElement: HTMLElement =
-                    this.tileAreaDiv.childNodes[parseInt(actionObject.UndoRedoTileActions[0].
-                        currentPageIndex.toString(), 10)] as HTMLElement;
-                    this.insertRemovedPages(actionObject.UndoRedoTileActions[0],
-                                            actionObject.UndoRedoTileActions[0].currentPageIndex,
-                                            mainTileElement);
-                    this.tileImageRender(actionObject.UndoRedoTileActions[0].copiedPageIndex, 0,
-                                         actionObject.UndoRedoTileActions[0].currentPageIndex, mainTileElement,
-                                         true, true, false, true, actionObject.UndoRedoTileActions[0].documentName);
-                    this.disableTileCopyRotateButton();
-                    this.updatePageDetail();
-                }
-                break;
-            case 'Delete':
-                this.removePage(actionObject.UndoRedoTileActions[0].currentPageIndex);
-                break;
-            case 'Move Pages':
-                this.rearrangePages(actionObject.selectedPagesIndexes, actionObject.dropIndex, actionObject.isRightInsertion);
-                break;
-            case 'Toolbar Rotate Right':
-                this.rotateImages(actionObject, 90);
-                break;
-            case 'Toolbar Rotate Left':
-                this.rotateImages(actionObject, -90);
-                break;
-            case 'Toolbar Copy':
-                {
-                    if (actionObject.toolbarActions.length > 0) {
-                        for (let i: number = 0; i < actionObject.toolbarActions.length; i++) {
-                            const mainTileElement: HTMLElement =
-                            this.tileAreaDiv.childNodes[parseInt(actionObject.toolbarActions[parseInt(i.toString(), 10)].
-                                currentPageIndex.toString(), 10)] as HTMLElement;
-                            this.insertRemovedPages(actionObject.toolbarActions[parseInt(i.toString(), 10)],
-                                                    actionObject.toolbarActions[parseInt(i.toString(), 10)].currentPageIndex,
-                                                    mainTileElement);
-                            this.tileImageRender(actionObject.toolbarActions[parseInt(i.toString(), 10)].copiedPageIndex, 0,
-                                                 actionObject.toolbarActions[parseInt(i.toString(), 10)].currentPageIndex,
-                                                 mainTileElement, true, true, false);
-                            this.updatePageDetail();
-                        }
-                    }
-                    this.disableTileDeleteButton();
-                }
-                break;
-            case 'Toolbar Delete':
-                if (actionObject.toolbarActions.length > 0) {
-                    for (let i: number = actionObject.toolbarActions.length - 1; i >= 0; i--) {
-                        const mainTileElement: HTMLElement =
-                        this.tileAreaDiv.childNodes[parseInt(actionObject.toolbarActions[parseInt(i.toString(), 10)].
-                            currentPageIndex.toString(), 10)] as HTMLElement;
-                        this.deleteTempPage(actionObject.toolbarActions[parseInt(i.toString(), 10)].currentPageIndex, mainTileElement);
-                        this.tileAreaDiv.removeChild(mainTileElement);
-                        this.updatePageDetail();
-                    }
-                }
-                this.disableTileDeleteButton();
-                break;
-            }
-        }
+        showOrganizeLoadingIndicator.call(this, isShow);
     }
 
     /**
@@ -3139,11 +503,7 @@ export class PageOrganizer {
      * @returns {void}
      */
     public undo = (): void => {
-        const undoActionObject: IActionOrganizeElements = this.undoOrganizeCollection.pop();
-        this.undoActionHandler(undoActionObject);
-        this.redoOrganizeCollection.push(undoActionObject);
-        this.enableDisableToolbarItems();
-        this.updateUndoRedoButtons();
+        undo.call(this);
     }
 
     /**
@@ -3151,539 +511,20 @@ export class PageOrganizer {
      * @returns {void}
      */
     public redo = (): void => {
-        const redoActionObject: IActionOrganizeElements = this.redoOrganizeCollection.pop();
-        this.redoActionHandler(redoActionObject);
-        this.undoOrganizeCollection.push(redoActionObject);
-        this.enableDisableToolbarItems();
-        this.updateUndoRedoButtons();
+        redo.call(this);
     }
 
-    private removePage(pageOrder: number): void {
-        const mainTileElement: HTMLElement = this.tileAreaDiv.childNodes[parseInt(pageOrder.toString(), 10)] as HTMLElement;
-        this.deleteTempPage(pageOrder, mainTileElement);
-        this.tileAreaDiv.removeChild(mainTileElement);
-        this.updatePageDetail();
-    }
-    private rotateImages = (actionObject: IActionOrganizeElements, rotationAngle: number) => {
-        if (actionObject.toolbarActions.length > 0) {
-            for (let i: number = 0; i < actionObject.toolbarActions.length; i++) {
-                const mainTileElement: HTMLElement =
-                    this.tileAreaDiv.childNodes[parseInt(actionObject.toolbarActions[parseInt(i.toString(), 10)].
-                        currentPageIndex.toString(), 10)] as HTMLElement;
-                const imageContainer: HTMLElement = mainTileElement.querySelector('.e-pv-organize-image') as HTMLElement;
-                if (imageContainer) {
-                    let currentRotation: number = parseFloat(imageContainer.style.transform.replace('rotate(', '').replace('deg)', '')) || 0;
-                    currentRotation = (currentRotation + rotationAngle + 360) % 360;
-                    imageContainer.style.transform = `rotate(${currentRotation}deg)`;
-                    this.updateTempRotationDetail(actionObject.toolbarActions[parseInt(i.toString(), 10)].currentPageIndex, rotationAngle);
-                }
-            }
-        }
-    };
-
-    private rotateImage(currentPageIndex: number, rotationAngle: number): void {
-        const mainTileElement: HTMLElement = this.tileAreaDiv.childNodes[parseInt(currentPageIndex.toString(), 10)] as HTMLElement;
-        const imageContainer: HTMLElement = mainTileElement.querySelector('.e-pv-organize-image') as HTMLElement;
-        if (imageContainer) {
-            let currentRotation: number = parseFloat(imageContainer.style.transform.replace('rotate(', '').replace('deg)', '')) || 0;
-            currentRotation = (currentRotation + rotationAngle + 360) % 360;
-            imageContainer.style.transform = `rotate(${currentRotation}deg)`;
-            this.updateTempRotationDetail(currentPageIndex, rotationAngle);
-        }
-    }
-
-    private updatePageDetail(): void {
-        this.updateTotalPageCount();
-        this.updatePageNumber();
-    }
-
-    private insertRightButtonClick = (event: MouseEvent): void => {
-        if (this.pdfViewer.pageOrganizerSettings.canInsert) {
-            const insertRightButton: HTMLElement = event.currentTarget as HTMLElement;
-            const buttonId: string = insertRightButton.id.split('_insert_page_')[insertRightButton.id.split('_insert_page_').length - 1];
-            const mainTileElement: HTMLElement = insertRightButton.closest('.e-pv-organize-anchor-node') as HTMLElement;
-            const pageOrder: number = parseInt(mainTileElement.getAttribute('data-page-order'), 10);
-            const buttonIdlist: string[] = buttonId.split('_');
-            let subIndex: number = 0;
-            let buttonIndex: number = parseInt(buttonIdlist[parseInt((buttonIdlist.length - 1).toString(), 10)], 10);
-            if (buttonIdlist.length > 1) {
-                buttonIndex = parseInt(buttonIdlist[parseInt((buttonIdlist.length - 2).toString(), 10)], 10);
-            }
-            subIndex = this.getNextSubIndex(mainTileElement.parentElement, buttonIndex);
-            this.insertTempPage(pageOrder, false, mainTileElement);
-            this.tileImageRender(buttonIndex, subIndex, pageOrder + 1, mainTileElement, true, false, true);
-            this.updateTotalPageCount();
-            this.updatePageNumber();
-            this.disableTileDeleteButton();
-            this.disableTileCopyButton();
-            this.updateSelectAllCheckbox();
-            this.enableDisableToolbarItems();
-            const clonedCollection : OrganizeDetails[] = [];
-            clonedCollection.push(this.clonedCollection(this.tempOrganizePagesCollection.
-                find((item: OrganizeDetails) => { return item.currentPageIndex === (pageOrder + 1); })));
-            this.addOrganizeAction(clonedCollection, 'Insert Right', [], [], null, false);
-        }
-    }
-
-    private insertLeftButtonClick = (event: MouseEvent): void => {
-        if (this.pdfViewer.pageOrganizerSettings.canInsert) {
-            const insetLeftButton: HTMLElement = event.currentTarget as HTMLElement;
-            const buttonId: string = insetLeftButton.id.split('_insert_page_')[insetLeftButton.id.split('_insert_page_').length - 1];
-            const mainTileElement: HTMLElement = insetLeftButton.closest('.e-pv-organize-anchor-node') as HTMLElement;
-            const pageOrder: number = parseInt(mainTileElement.getAttribute('data-page-order'), 10);
-            const buttonIdlist: string[] = buttonId.split('_');
-            let subIndex: number = 0;
-            let buttonIndex: number = parseInt(buttonIdlist[parseInt((buttonIdlist.length - 1).toString(), 10)], 10);
-            if (buttonIdlist.length > 1) {
-                buttonIndex = parseInt(buttonIdlist[parseInt((buttonIdlist.length - 2).toString(), 10)], 10);
-            }
-            subIndex = this.getNextSubIndex(mainTileElement.parentElement, buttonIndex);
-            this.insertTempPage(pageOrder, true, mainTileElement);
-            this.tileImageRender(buttonIndex, subIndex, pageOrder, mainTileElement, true, true, true);
-            this.updateTotalPageCount();
-            this.updatePageNumber();
-            this.disableTileDeleteButton();
-            this.disableTileCopyButton();
-            this.updateSelectAllCheckbox();
-            this.enableDisableToolbarItems();
-            const clonedCollection : OrganizeDetails[] = [];
-            clonedCollection.push(this.clonedCollection(this.tempOrganizePagesCollection.
-                find((item: OrganizeDetails) => { return item.currentPageIndex === pageOrder; })));
-            this.addOrganizeAction(clonedCollection, 'Insert Left', [], [], null, false);
-        }
-    }
-
-    private copyButtonClick = (event: MouseEvent): void => {
-        if (this.pdfViewer.pageOrganizerSettings.canCopy)
-        {
-            const copyButton: HTMLElement = event.currentTarget as HTMLElement;
-            const buttonId: string = copyButton.id.split('_copy_page_')[copyButton.id.split('_copy_page_').length - 1];
-            const mainTileElement: HTMLElement = copyButton.closest('.e-pv-organize-anchor-node') as HTMLElement;
-            const pageOrder: number = parseInt(mainTileElement.getAttribute('data-page-order'), 10);
-            const buttonIdlist: string[] = buttonId.split('_');
-            let subIndex: number = 0;
-            let buttonIndex: number = parseInt(buttonIdlist[parseInt((buttonIdlist.length - 1).toString(), 10)], 10);
-            if (buttonIdlist.length > 1){
-                buttonIndex = parseInt(buttonIdlist[parseInt((buttonIdlist.length - 2).toString(), 10)], 10);
-            }
-            subIndex = this.getNextSubIndex(mainTileElement.parentElement, buttonIndex);
-            this.copyPage(pageOrder, mainTileElement);
-            this.tileImageRender(buttonIndex, subIndex, pageOrder + 1, mainTileElement, true, false, false);
-            this.updateTotalPageCount();
-            this.updatePageNumber();
-            this.disableTileDeleteButton();
-            const clonedCollection : OrganizeDetails[] = [];
-            clonedCollection.push(this.clonedCollection(this.tempOrganizePagesCollection.
-                find((item: OrganizeDetails) => { return item.currentPageIndex === (pageOrder + 1); })));
-            this.addOrganizeAction(clonedCollection, 'Copy', [], [], null, false);
-        }
-    }
-
-    private deleteButtonClick = (event: MouseEvent): void => {
-        if (this.pdfViewer.pageOrganizerSettings.canDelete) {
-            const deleteButton: HTMLElement = event.currentTarget as HTMLElement;
-            const mainTileElement: HTMLElement = deleteButton.closest('.e-pv-organize-anchor-node') as HTMLElement;
-            const pageOrder: number = parseInt(mainTileElement.getAttribute('data-page-order'), 10);
-            const clonedCollection : OrganizeDetails[] = [];
-            clonedCollection.push(this.clonedCollection(this.tempOrganizePagesCollection.
-                find((item: OrganizeDetails) => { return item.currentPageIndex === pageOrder; })));
-            this.addOrganizeAction(clonedCollection, 'Delete', [], [], null, false);
-            this.deletePageElement(mainTileElement);
-        }
-        this.updateSelectAllCheckbox();
-        this.enableDisableToolbarItems();
-
-    }
-
-    private deletePageElement(mainTileElement: HTMLElement): void {
-        if (this.pdfViewer.pageOrganizerSettings.canDelete && this.tileAreaDiv.childElementCount > 1) {
-            const pageOrder: number = parseInt(mainTileElement.getAttribute('data-page-order'), 10);
-            this.deleteTempPage(pageOrder, mainTileElement);
-            const deleteButton: HTMLButtonElement = mainTileElement.querySelector('.e-pv-delete-button') as HTMLButtonElement;
-            if (!isNullOrUndefined(deleteButton) && !isNullOrUndefined((deleteButton as any).ej2_instances) &&
-            (deleteButton as any).ej2_instances.length > 0) {
-                // We are destroying the button component to remove tooltip
-                (deleteButton as any).ej2_instances[0].destroy();
-            }
-            this.tileAreaDiv.removeChild(mainTileElement);
-            this.updateTotalPageCount();
-            this.updatePageNumber();
-            this.updateSelectAllCheckbox();
-            this.disableTileDeleteButton();
-        }
-    }
-
-    private deleteTempPage(currentPageIndex: number, tileDiv: HTMLElement): void {
-        if (this.pdfViewer.pageOrganizerSettings.canDelete &&
-            (this.tempOrganizePagesCollection.filter((item: OrganizeDetails) => item.isDeleted === false).length > 0)) {
-            const index: number =
-            this.tempOrganizePagesCollection.findIndex((item: OrganizeDetails) => item.currentPageIndex === currentPageIndex);
-            const delCurrentIndex: number = this.tempOrganizePagesCollection[parseInt(index.toString(), 10)].currentPageIndex;
-            if ( index !== -1 && !this.tempOrganizePagesCollection[parseInt(index.toString(), 10)].isInserted &&
-            !this.tempOrganizePagesCollection[parseInt(index.toString(), 10)].isCopied &&
-            !this.tempOrganizePagesCollection[parseInt(index.toString(), 10)].isImportedDoc) {
-                this.tempOrganizePagesCollection[parseInt(index.toString(), 10)].isDeleted = true;
-                this.tempOrganizePagesCollection[parseInt(index.toString(), 10)].currentPageIndex = null;
-            }
-            else {
-                this.tempOrganizePagesCollection.splice(index, 1);
-            }
-            this.tempOrganizePagesCollection = this.tempOrganizePagesCollection.map((item: OrganizeDetails) => {
-                if (delCurrentIndex < item.currentPageIndex && !item.isDeleted) {
-                    item.currentPageIndex = item.currentPageIndex - 1;
-                }
-                return item;
-            });
-
-            while (!isNullOrUndefined(tileDiv.nextElementSibling)) {
-                const nextTileDiv: HTMLElement = tileDiv.nextElementSibling as HTMLElement;
-                let nextTileIndex: number = parseInt(nextTileDiv.getAttribute('data-page-order'), 10);
-                nextTileIndex = nextTileIndex - 1;
-                nextTileDiv.setAttribute('data-page-order', nextTileIndex.toString());
-                tileDiv = nextTileDiv;
-            }
-        }
-    }
-
-    private undoDeletedPage(deletedPageIndex: number, pageIndex: number, rotateAngle: number, tileDiv: HTMLElement): void {
-        if (this.tempOrganizePagesCollection.some((item: OrganizeDetails) => item.isDeleted)) {
-            const deletedItem: OrganizeDetails = this.tempOrganizePagesCollection.find((item: OrganizeDetails) =>
-                item.currentPageIndex === null && item.isDeleted && item.pageIndex !== -1 && item.pageIndex === pageIndex &&
-                item.copiedPageIndex === null);
-            if (deletedItem) {
-                deletedItem.currentPageIndex = deletedPageIndex;
-                deletedItem.rotateAngle = rotateAngle;
-            }
-        }
-        this.tempOrganizePagesCollection = this.tempOrganizePagesCollection.map((item: OrganizeDetails) => {
-            if (item.currentPageIndex >= deletedPageIndex && !item.isDeleted) {
-                item.currentPageIndex += 1;
-            }
-            else if (item.currentPageIndex === deletedPageIndex && item.isDeleted) {
-                item.isDeleted = false;
-            }
-            return item;
-        });
-        this.tempOrganizePagesCollection.sort(function (a: any, b: any): any {
-            return a.currentPageIndex - b.currentPageIndex;
-        });
-        if (tileDiv) {
-            tileDiv.setAttribute('data-page-order', (deletedPageIndex + 1).toString());
-        }
-        while (tileDiv && !isNullOrUndefined(tileDiv.nextElementSibling)) {
-            const nextTileDiv: HTMLElement = tileDiv.nextElementSibling as HTMLElement;
-            let nextTileIndex: number = parseInt(nextTileDiv.getAttribute('data-page-order'), 10);
-            nextTileIndex += 1;
-            nextTileDiv.setAttribute('data-page-order', nextTileIndex.toString());
-            tileDiv = nextTileDiv;
-        }
-    }
-
-    private insertRemovedPages(toolbarActions: OrganizeDetails, currentPageIndex: number, tileDiv: HTMLElement): void{
-        let deleteCount: number = 0;
-        const index: number = this.tempOrganizePagesCollection.findIndex((item: OrganizeDetails) => {
-            return item.currentPageIndex === currentPageIndex; });
-        if (index !== -1){
-            for (let i: number = 0; i < index; i++) {
-                if (this.tempOrganizePagesCollection[parseInt(i.toString(), 10)].isDeleted) {
-                    deleteCount++;
-                }
-            }
-        }
-        else{
-            for (let i: number = 0; i < currentPageIndex; i++) {
-                if (this.tempOrganizePagesCollection[parseInt(i.toString(), 10)].isDeleted) {
-                    deleteCount++;
-                }
-            }
-        }
-        this.tempOrganizePagesCollection = this.tempOrganizePagesCollection.slice(0, currentPageIndex + deleteCount).
-            concat(toolbarActions,
-                   this.tempOrganizePagesCollection.slice(currentPageIndex + deleteCount));
-        this.tempOrganizePagesCollection = this.tempOrganizePagesCollection.map((item: OrganizeDetails, mapIndex: number) => {
-            if (mapIndex > currentPageIndex + deleteCount && !item.isDeleted) {
-                item.currentPageIndex += 1;
-            }
-            return item;
-        });
-        if (tileDiv) {
-            tileDiv.setAttribute('data-page-order', (currentPageIndex + 1).toString());
-        }
-        while (tileDiv && !isNullOrUndefined(tileDiv.nextElementSibling)) {
-            const nextTileDiv: HTMLElement = tileDiv.nextElementSibling as HTMLElement;
-            let nextTileIndex: number = parseInt(nextTileDiv.getAttribute('data-page-order'), 10);
-            nextTileIndex = nextTileIndex + 1;
-            nextTileDiv.setAttribute('data-page-order', nextTileIndex.toString());
-            tileDiv = nextTileDiv;
-        }
+    /**
+     * @param {HTMLElement} mainTileElement - It describes about tile element
+     * @private
+     * @returns {void}
+     */
+    public deletePageElement(mainTileElement: HTMLElement): void {
+        deletePageElement.call(this, mainTileElement);
     }
 
     private clonedCollection(tempCollecion: OrganizeDetails): OrganizeDetails{
-        const clonedCollection: OrganizeDetails = JSON.parse(JSON.stringify(tempCollecion));
-        return clonedCollection;
-    }
-
-    private updateTotalPageCount(): void {
-        const totalPages: number = document.querySelectorAll('.e-pv-organize-anchor-node').length;
-        const totalPageNumberElement: Element = document.querySelector('.e-pv-organize-total-page-button');
-        if (!isNullOrUndefined(totalPageNumberElement)) {
-            (totalPageNumberElement as HTMLElement).textContent = this.pdfViewer.localeObj.getConstant('Total') + ' ' + totalPages.toString() + ' ' + this.pdfViewer.localeObj.getConstant('Pages');
-        }
-    }
-
-    private updatePageNumber(): void {
-        const totalPages: any = document.querySelectorAll('.e-pv-organize-anchor-node');
-        totalPages.forEach((element: any) => {
-            const pageOrder: number = parseInt(element.getAttribute('data-page-order'), 10);
-            const thumbnailPageNumber: HTMLElement = element.querySelector('.e-pv-tile-number') as HTMLElement;
-            if (thumbnailPageNumber){
-                const currentPageNumber: OrganizeDetails = this.tempOrganizePagesCollection.
-                    find((item: OrganizeDetails) => { return item.currentPageIndex === pageOrder; });
-                if (currentPageNumber.isImportedDoc){
-                    thumbnailPageNumber.textContent = currentPageNumber.documentName;
-                    const pageNumberTooltip: Tooltip = new Tooltip({
-                        content: initializeCSPTemplate(function (): any { return thumbnailPageNumber.textContent; }, this), opensOn: 'Hover', beforeOpen: this.onTooltipBeforeOpen.bind(this)
-                    });
-                    pageNumberTooltip.appendTo(thumbnailPageNumber);
-                }
-                else{
-                    thumbnailPageNumber.textContent = (pageOrder + 1).toString();
-                }
-            }
-        });
-        this.organizeWindowFocus();
-    }
-
-    private insertTempPage(currentPageIndex: number, isBefore: boolean, tileDiv: HTMLElement): void {
-        if (this.pdfViewer.pageOrganizerSettings.canInsert) {
-            const index: number =
-            this.tempOrganizePagesCollection.findIndex((item: OrganizeDetails) => item.currentPageIndex === currentPageIndex);
-            let beforeIndex: number;
-            if (currentPageIndex !== 0) {
-                beforeIndex =
-                this.tempOrganizePagesCollection.findIndex((item: OrganizeDetails) => item.currentPageIndex === currentPageIndex - 1);
-            }
-            else {
-                beforeIndex = index;
-            }
-            let pageIndex: number;
-            let pageSize: any;
-            if (isBefore) {
-                pageIndex = this.tempOrganizePagesCollection[parseInt(beforeIndex.toString(), 10)].pageIndex;
-                if (index - 1 >= 0 && !this.tempOrganizePagesCollection[parseInt((index - 1).toString(), 10)].isInserted) {
-                    this.tempOrganizePagesCollection[parseInt((index - 1).toString(), 10)].hasEmptyPageAfter = true;
-                }
-                if (index <= this.tempOrganizePagesCollection.length - 1 &&
-                     !this.tempOrganizePagesCollection[parseInt(index.toString(), 10)].isInserted) {
-                    this.tempOrganizePagesCollection[parseInt(index.toString(), 10)].hasEmptyPageBefore = true;
-                }
-                pageSize = JSON.parse(JSON.stringify(this.tempOrganizePagesCollection[parseInt(beforeIndex.toString(), 10)].pageSize));
-                if (pageIndex !== -1) {
-                    if (!isNullOrUndefined(pageSize.rotation) &&
-                     (this.getRotatedAngle(pageSize.rotation.toString()) === 90 ||
-                     this.getRotatedAngle(pageSize.rotation.toString()) === 270)) {
-                        const swapWidth: any = pageSize.width;
-                        pageSize.width = pageSize.height;
-                        pageSize.height = swapWidth;
-                    }
-                }
-                this.tempOrganizePagesCollection = [...this.tempOrganizePagesCollection.slice(0, index),
-                    new OrganizeDetails(currentPageIndex, -1,
-                                        this.tempOrganizePagesCollection[parseInt(index.toString(), 10)].pageIndex,
-                                        true, false, false, false, false, false,
-                                        this.tempOrganizePagesCollection[parseInt(beforeIndex.toString(), 10)].rotateAngle,
-                                        pageSize, false, null, null, null),
-                    ...this.tempOrganizePagesCollection.slice(index)];
-                this.tempOrganizePagesCollection = this.tempOrganizePagesCollection.map((item: OrganizeDetails, mapIndex: number) => {
-                    if ((mapIndex !== index && item.currentPageIndex >= currentPageIndex) && item.currentPageIndex != null) {
-                        item.currentPageIndex = item.currentPageIndex + 1;
-                    }
-                    return item;
-                });
-                tileDiv.setAttribute('data-page-order', (currentPageIndex + 1).toString());
-            }
-            else {
-                pageIndex = this.tempOrganizePagesCollection[parseInt(index.toString(), 10)].pageIndex;
-                if (index >= 0 && !this.tempOrganizePagesCollection[parseInt(index.toString(), 10)].isInserted) {
-                    this.tempOrganizePagesCollection[parseInt(index.toString(), 10)].hasEmptyPageAfter = true;
-                }
-                if (index + 1 <= this.tempOrganizePagesCollection.length - 1 &&
-                    !this.tempOrganizePagesCollection[parseInt((index + 1).toString(), 10)].isInserted) {
-                    this.tempOrganizePagesCollection[parseInt((index + 1).toString(), 10)].hasEmptyPageBefore = true;
-                }
-                pageSize = JSON.parse(JSON.stringify(this.tempOrganizePagesCollection[parseInt(index.toString(), 10)].pageSize));
-                if (pageIndex !== -1) {
-                    if (!isNullOrUndefined(pageSize.rotation) &&
-                    (this.getRotatedAngle(pageSize.rotation.toString()) === 90 ||
-                    this.getRotatedAngle(pageSize.rotation.toString()) === 270)) {
-                        const swapWidth: any = pageSize.width;
-                        pageSize.width = pageSize.height;
-                        pageSize.height = swapWidth;
-                    }
-                }
-                this.tempOrganizePagesCollection = [...this.tempOrganizePagesCollection.slice(0, index + 1),
-                    new OrganizeDetails(currentPageIndex + 1, -1,
-                                        this.tempOrganizePagesCollection[parseInt(index.toString(), 10)].pageIndex, true, false,
-                                        false, false, false, false,
-                                        this.tempOrganizePagesCollection[parseInt(index.toString(), 10)].rotateAngle,
-                                        pageSize, false, null, null, null),
-                    ...this.tempOrganizePagesCollection.slice(index + 1)];
-                this.tempOrganizePagesCollection = this.tempOrganizePagesCollection.map((item: OrganizeDetails, mapIndex: number) => {
-                    if ((mapIndex !== index + 1 && item.currentPageIndex >= currentPageIndex + 1) && item.currentPageIndex != null) {
-                        item.currentPageIndex = item.currentPageIndex + 1;
-                    }
-                    return item;
-                });
-            }
-            while (!isNullOrUndefined(tileDiv.nextElementSibling)) {
-                const nextTileDiv: HTMLElement = tileDiv.nextElementSibling as HTMLElement;
-                let nextTileIndex: number = parseInt(nextTileDiv.getAttribute('data-page-order'), 10);
-                nextTileIndex = nextTileIndex + 1;
-                nextTileDiv.setAttribute('data-page-order', nextTileIndex.toString());
-                tileDiv = nextTileDiv;
-            }
-        }
-    }
-
-    private copyPage(currentPageIndex: number, tileDiv: HTMLElement): void {
-        if (this.pdfViewer.pageOrganizerSettings.canCopy) {
-            const index: number = this.tempOrganizePagesCollection.findIndex((item: OrganizeDetails) => {
-                return item.currentPageIndex === currentPageIndex; });
-            let pageIndex: number;
-            let pageSize: any;
-            if (index !== -1) {
-                pageIndex = this.tempOrganizePagesCollection[parseInt(index.toString(), 10)].pageIndex;
-                pageSize = JSON.parse(JSON.stringify(this.tempOrganizePagesCollection[parseInt(index.toString(), 10)].pageSize));
-                if (pageIndex !== -1) {
-                    // eslint-disable-next-line
-                    if (!isNullOrUndefined(pageSize.rotation) && (this.getRotatedAngle(pageSize.rotation.toString()) == 90 ||
-                    this.getRotatedAngle(pageSize.rotation.toString()) === 270)) {
-                        const swapWidth: any = pageSize.width;
-                        pageSize.width = pageSize.height;
-                        pageSize.height = swapWidth;
-                    }
-                }
-
-                if (pageIndex === -1 && this.tempOrganizePagesCollection[parseInt(index.toString(), 10)].isCopied){
-                    this.tempOrganizePagesCollection = this.tempOrganizePagesCollection.slice(0, index + 1).
-                        concat([new OrganizeDetails(currentPageIndex + 1, -1,
-                                                    this.tempOrganizePagesCollection[parseInt(index.toString(), 10)].copiedPageIndex,
-                                                    false, false, true, false, false, false,
-                                                    this.tempOrganizePagesCollection[parseInt(index.toString(), 10)].
-                                                        rotateAngle, pageSize, false, null, null, null)],
-                               this.tempOrganizePagesCollection.slice(index + 1));
-                }
-                else{
-                    this.tempOrganizePagesCollection = this.tempOrganizePagesCollection.slice(0, index + 1).
-                        concat([new OrganizeDetails(currentPageIndex + 1, -1, pageIndex,
-                                                    false, false, true, false, false, false,
-                                                    this.tempOrganizePagesCollection[parseInt(index.toString(), 10)].
-                                                        rotateAngle, pageSize, false, null, null, null)],
-                               this.tempOrganizePagesCollection.slice(index + 1));
-                }
-                this.tempOrganizePagesCollection[parseInt(index.toString(), 10)].istargetCopied = true;
-                this.tempOrganizePagesCollection = this.tempOrganizePagesCollection.map((item: OrganizeDetails, mapIndex: number) => {
-                    if (mapIndex > index + 1 && item.currentPageIndex != null) {
-                        item.currentPageIndex = item.currentPageIndex + 1;
-                    }
-                    return item;
-                });
-                while (!isNullOrUndefined(tileDiv.nextElementSibling)) {
-                    const nextTileDiv: HTMLElement = tileDiv.nextElementSibling as HTMLElement;
-                    let nextTileIndex: number = parseInt(nextTileDiv.getAttribute('data-page-order'), 10);
-                    nextTileIndex = nextTileIndex + 1;
-                    nextTileDiv.setAttribute('data-page-order', nextTileIndex.toString());
-                    tileDiv = nextTileDiv;
-                }
-            }
-        }
-    }
-
-    private importPage(currentPageIndex: number, tileDiv: HTMLElement,
-                       password: string, documentName: string, isBefore: boolean, documentData: string): void {
-        if (this.pdfViewer.pageOrganizerSettings.canImport)
-        {
-            const index: number = this.tempOrganizePagesCollection.findIndex((item: OrganizeDetails) => {
-                return item.currentPageIndex === currentPageIndex; });
-            let pageIndex: number;
-            let pageSize: any;
-            if (index !== -1) {
-                pageIndex = this.tempOrganizePagesCollection[parseInt(index.toString(), 10)].pageIndex;
-                pageSize = JSON.parse(JSON.stringify(this.tempOrganizePagesCollection[parseInt(index.toString(), 10)].pageSize));
-
-                if (isBefore){
-                    this.tempOrganizePagesCollection = [...this.tempOrganizePagesCollection.slice(0, index),
-                        new OrganizeDetails(currentPageIndex, -1,
-                                            pageIndex, false, false, false, false, false, false,
-                                            0, pageSize, true, documentName , password, documentData),
-                        ...this.tempOrganizePagesCollection.slice(index)];
-                    this.tempOrganizePagesCollection = this.tempOrganizePagesCollection.map((item: OrganizeDetails, mapIndex: number) => {
-                        if ((mapIndex !== index && item.currentPageIndex >= currentPageIndex) && item.currentPageIndex != null) {
-                            item.currentPageIndex = item.currentPageIndex + 1;
-                        }
-                        return item;
-                    });
-                    tileDiv.setAttribute('data-page-order', (currentPageIndex + 1).toString());
-                }
-                else{
-                    this.tempOrganizePagesCollection = this.tempOrganizePagesCollection.slice(0, index + 1).
-                        concat([new OrganizeDetails(currentPageIndex + 1, -1, pageIndex,
-                                                    false, false, false, false, false, false,
-                                                    0, pageSize, true, documentName , password, documentData)],
-                               this.tempOrganizePagesCollection.slice(index + 1));
-                    this.tempOrganizePagesCollection = this.tempOrganizePagesCollection.map((item: OrganizeDetails, mapIndex: number) => {
-                        if (mapIndex > index + 1 && item.currentPageIndex != null) {
-                            item.currentPageIndex = item.currentPageIndex + 1;
-                        }
-                        return item;
-                    });
-                }
-                while (!isNullOrUndefined(tileDiv.nextElementSibling)) {
-                    const nextTileDiv: HTMLElement = tileDiv.nextElementSibling as HTMLElement;
-                    // eslint-disable-next-line @typescript-eslint/indent
-                        let nextTileIndex: number = parseInt(nextTileDiv.getAttribute('data-page-order'), 10);
-                    nextTileIndex = nextTileIndex + 1;
-                    nextTileDiv.setAttribute('data-page-order', nextTileIndex.toString());
-                    tileDiv = nextTileDiv;
-                }
-            }
-        }
-    }
-
-    private organizeWireEvent(): void {
-        if (this.importDocInputElement) {
-            this.importDocInputElement.addEventListener('change', this.importDocument.bind(this));
-        }
-    }
-
-    private organizeUnWireEvent(): void {
-        if (this.importDocInputElement) {
-            this.importDocInputElement.removeEventListener('change', this.importDocument.bind(this));
-        }
-    }
-
-    private importDocument(args: any): void {
-        if (this.pdfViewer.pageOrganizerSettings.canImport)
-        {
-            // eslint-disable-next-line
-            const proxy: PageOrganizer = this;
-            const upoadedFiles: any = args.target.files;
-            if (args.target.files[0] !== null) {
-                const uploadedFile: File = upoadedFiles[0];
-                if (uploadedFile) {
-                    this.importedDocumentName = uploadedFile.name;
-                    const reader: FileReader = new FileReader();
-                    reader.readAsDataURL(uploadedFile);
-                    reader.onload = (e: any): void => {
-                        const uploadedFileUrl: string = e.currentTarget.result;
-                        proxy.loadImportDoc(uploadedFileUrl, null, false);
-                        if (!isNullOrUndefined(proxy.importDocInputElement)) {
-                            (proxy.importDocInputElement as any).value = '';
-                        }
-                    };
-                }
-            }
-        }
+        return clonedCollection.call(this, tempCollecion);
     }
 
     /**
@@ -3694,178 +535,25 @@ export class PageOrganizer {
      * @private
      */
     public loadImportDoc(documentData: string, password: string, isPasswordCorrect: boolean): void{
-        if (this.pdfViewer.pageOrganizerSettings.canImport)
-        {
-            let proxy: PageOrganizer = null;
-            // eslint-disable-next-line
-            proxy = this;
-            let isEncrypted: boolean = false;
-            this.importedDocumentData = documentData;
-            const documentId: string = this.pdfViewerBase.createGUID();
-            const isbase64: boolean = documentData.includes('pdf;base64,');
-            const base64DocumentData: string = documentData;
-            documentData = this.pdfViewerBase.checkDocumentData(documentData, false);
-            const jsonObject: any = this.pdfViewerBase.constructJsonObject(documentData, password, isbase64);
-            if (this.pdfViewer.serverActionSettings) {
-                this.pdfViewerBase.loadRequestHandler = new AjaxHandler(this.pdfViewer);
-                this.pdfViewerBase.loadRequestHandler.url = this.pdfViewer.serviceUrl + '/' + this.pdfViewer.serverActionSettings.validatePassword;
-                this.pdfViewerBase.loadRequestHandler.responseType = 'json';
-                this.pdfViewerBase.loadRequestHandler.mode = true;
-                jsonObject['action'] = 'ValidatePassword';
-                jsonObject['elementId'] = this.pdfViewer.element.id;
-                jsonObject['isFileName'] = 'false';
-                if (this.pdfViewerBase.clientSideRendering) {
-                    this.pdfViewerBase.getPdfByteArray(base64DocumentData).then((pdfbytearray: any) => {
-                        let data: any = this.pdfViewer.pdfRendererModule.loadImportDocument(pdfbytearray, documentId, password, jsonObject);
-                        if (data) {
-                            if (typeof data !== 'object') {
-                                try {
-                                    data = JSON.parse(data);
-                                } catch (error) {
-                                    this.pdfViewerBase.onControlError(500, data, this.pdfViewer.serverActionSettings.load);
-                                    data = null;
-                                }
-                            }
-                            if (data) {
-                                while (typeof data !== 'object') {
-                                    data = JSON.parse(data);
-                                    if (typeof parseInt(data, 10) === 'number' && !isNaN(parseInt(data, 10))) {
-                                        data = parseInt(data, 10);
-                                        break;
-                                    }
-                                }
-                                if (data.uniqueId === documentId || (typeof parseInt(data, 10) === 'number' && !isNaN(parseInt(data, 10)))) {
-                                    if (data === 4) {
-                                        // 4 is error code for encrypted document.
-                                        this.pdfViewerBase.isImportDoc = true;
-                                        isEncrypted = true;
-                                        this.pdfViewerBase.renderPasswordPopup(documentData, password, this.pdfViewerBase.isImportDoc);
-                                    } else if (data === 3) {
-                                        // 3 is error code for corrupted document.
-                                        this.pdfViewerBase.isImportDoc = true;
-                                        this.pdfViewerBase.renderCorruptPopup(this.pdfViewerBase.isImportDoc);
-                                    }
-                                }
-                            }
-                            if (isPasswordCorrect && data !== 4)
-                            {
-                                this.pdfViewerBase.passwordDialogReset();
-                                if (this.pdfViewerBase.passwordPopup) {
-                                    this.pdfViewerBase.passwordPopup.hide();
-                                }
-                            }
-                            if ((!isEncrypted || (isPasswordCorrect && data !== 4)) && (data !== 3)){
-                                this.importDocuments(password, this.importedDocumentName, documentData);
-                            }
-                        }
-                    });
-                }
-                else {
-                    this.pdfViewerBase.loadRequestHandler.send(jsonObject);
-                    this.pdfViewerBase.loadRequestHandler.onSuccess = function (result: any): void {
-                        let data: any = result.data;
-                        if (data) {
-                            if (typeof data !== 'object') {
-                                try {
-                                    data = JSON.parse(data);
-                                } catch (error) {
-                                    proxy.pdfViewerBase.onControlError(500, data, proxy.pdfViewer.serverActionSettings.load);
-                                    data = null;
-                                }
-                            }
-                            if (data) {
-                                while (typeof data !== 'object') {
-                                    data = JSON.parse(data);
-                                    if (typeof parseInt(data, 10) === 'number' && !isNaN(parseInt(data, 10))) {
-                                        data = parseInt(data, 10);
-                                        break;
-                                    }
-                                }
-                                if (data.uniqueId === documentId || (typeof parseInt(data, 10) === 'number' && !isNaN(parseInt(data, 10)))) {
-                                    if (data === 4) {
-                                        // 4 is error code for encrypted document.
-                                        proxy.pdfViewerBase.isImportDoc = true;
-                                        isEncrypted = true;
-                                        proxy.pdfViewerBase.renderPasswordPopup(documentData, password, proxy.pdfViewerBase.isImportDoc);
-                                    } else if (data === 3) {
-                                        // 3 is error code for corrupted document.
-                                        proxy.pdfViewerBase.isImportDoc = true;
-                                        proxy.pdfViewerBase.renderCorruptPopup(proxy.pdfViewerBase.isImportDoc);
-                                    }
-                                }
-                            }
-                            if (isPasswordCorrect && data !== 4)
-                            {
-                                proxy.pdfViewerBase.passwordDialogReset();
-                                if (proxy.pdfViewerBase.passwordPopup) {
-                                    proxy.pdfViewerBase.passwordPopup.hide();
-                                }
-                            }
-                            if ((!isEncrypted || (isPasswordCorrect && data !== 4)) && (data !== 3)){
-                                proxy.importDocuments(password, proxy.importedDocumentName, documentData);
-                            }
-                        }
-                    };
-                }
-            }
-        }
+        loadImportDoc.call(this, documentData, password, isPasswordCorrect);
     }
 
-    private importDocuments(password: string, documentName: string, documentData: string): void {
-        if (this.pdfViewer.pageOrganizerSettings.canImport)
-        {
-            // eslint-disable-next-line
-            const proxy: PageOrganizer = this;
-            if (this.tileAreaDiv.querySelectorAll('.e-pv-organize-node-selection-ring').length === 1)
-            {
-                for (let i: number = 0; i < proxy.tileAreaDiv.childElementCount; i++) {
-                    const mainTileElement: HTMLElement = proxy.tileAreaDiv.childNodes[parseInt(i.toString(), 10)] as HTMLElement;
-                    if (mainTileElement instanceof HTMLElement && mainTileElement.classList.contains('e-pv-organize-node-selection-ring')) {
-                        const pageId: string = mainTileElement.id.split('anchor_page_')[mainTileElement.id.split('anchor_page_').length - 1];
-                        const pageOrder: number = parseInt(mainTileElement.getAttribute('data-page-order'), 10);
-                        const pageIdlist: string[] = pageId.split('_');
-                        let subIndex: number = 0;
-                        let pageIndex: number = parseInt(pageIdlist[parseInt((pageIdlist.length - 1).toString(), 10)], 10);
-                        if (pageIdlist.length > 1) {
-                            pageIndex = parseInt(pageIdlist[parseInt((pageIdlist.length - 2).toString(), 10)], 10);
-                        }
-                        subIndex = this.getNextSubIndex(mainTileElement.parentElement, pageIndex);
-                        this.importPage(pageOrder, mainTileElement, password, documentName, false, documentData);
-                        this.tileImageRender(pageIndex, subIndex, pageOrder + 1, mainTileElement, true, false, false, true, documentName);
-                        const clonedCollection : OrganizeDetails[] = [];
-                        clonedCollection.push(this.clonedCollection(this.tempOrganizePagesCollection.
-                            find((item: OrganizeDetails) => { return item.currentPageIndex === (pageOrder + 1); })));
-                        this.addOrganizeAction(clonedCollection, 'Import Pages', [], [], null, false);
-                    }
-                }
-            }
-            else{
-                const mainTileElement: HTMLElement = proxy.tileAreaDiv.childNodes[0] as HTMLElement;
-                const pageId: string = mainTileElement.id.split('anchor_page_')[mainTileElement.id.split('anchor_page_').length - 1];
-                const pageOrder: number = parseInt(mainTileElement.getAttribute('data-page-order'), 10);
-                const pageIdlist: string[] = pageId.split('_');
-                let subIndex: number = 0;
-                let pageIndex: number = parseInt(pageIdlist[parseInt((pageIdlist.length - 1).toString(), 10)], 10);
-                if (pageIdlist.length > 1) {
-                    pageIndex = parseInt(pageIdlist[parseInt((pageIdlist.length - 2).toString(), 10)], 10);
-                }
-                subIndex = this.getNextSubIndex(mainTileElement.parentElement, pageIndex);
-                this.importPage(pageOrder, mainTileElement, password, documentName, true, documentData);
-                this.tileImageRender(pageIndex, subIndex, pageOrder, mainTileElement, true, true, false, true, documentName);
-                const clonedCollection : OrganizeDetails[] = [];
-                clonedCollection.push(this.clonedCollection(this.tempOrganizePagesCollection.
-                    find((item: OrganizeDetails) => { return item.currentPageIndex === pageOrder; })));
-                this.addOrganizeAction(clonedCollection, 'Import Pages', [], [], null, false);
-            }
-            this.updatePageNumber();
-            this.updateTotalPageCount();
-            this.enableDisableToolbarItems();
-            this.disableTileCopyRotateButton();
-            this.disableTileDeleteButton();
-        }
+    /**
+     * @param {string} password - specifies the password.
+     * @param {string} documentName - specifies the documentName.
+     * @param {string} documentData - specifies the documentData.
+     * @returns {void}
+     * @private
+     */
+    public importDocuments(password: string, documentName: string, documentData: string): void {
+        importDocuments.call(this, password, documentName, documentData);
     }
 
-    private updateOrganizePageCollection(): void {
+    /**
+     * @private
+     * @returns {void}
+     */
+    public updateOrganizePageCollection(): void {
         this.organizePagesCollection = JSON.parse(JSON.stringify(this.tempOrganizePagesCollection));
     }
 
@@ -3877,58 +565,23 @@ export class PageOrganizer {
      * @returns {void}
      */
     public applyElementStyles(pageCanvas: any, pageNumber: number): void {
-        if (pageCanvas) {
-            const canvasElement: HTMLElement = document.getElementById(this.pdfViewer.element.id + '_pageCanvas_' + pageNumber);
-            const oldCanvas: HTMLElement = document.getElementById(this.pdfViewer.element.id + '_oldCanvas_' + pageNumber);
-            if (canvasElement && canvasElement.offsetLeft > 0) {
-                // Update marginLeft, marginRight, and top positions
-                const offsetLeft: number = canvasElement.offsetLeft;
-                const offsetTop: number = canvasElement.offsetTop;
-                pageCanvas.style.marginLeft = offsetLeft + 'px';
-                pageCanvas.style.marginRight = offsetLeft + 'px';
-                pageCanvas.style.top = offsetTop + 'px';
-            } else if (oldCanvas && oldCanvas.offsetLeft > 0) {
-                // Update marginLeft, marginRight, and top positions using oldCanvas
-                const offsetLeft: number = oldCanvas.offsetLeft;
-                const offsetTop: number = oldCanvas.offsetTop;
-                pageCanvas.style.marginLeft = offsetLeft + 'px';
-                pageCanvas.style.marginRight = offsetLeft + 'px';
-                pageCanvas.style.top = offsetTop + 'px';
-            } else {
-                // Reset the positions
-                pageCanvas.style.marginLeft = 'auto';
-                pageCanvas.style.marginRight = 'auto';
-                pageCanvas.style.top = 'auto';
-            }
-        }
+        applyElementStyles.call(this, pageCanvas, pageNumber);
     }
 
-    private onSaveasClicked(): void {
-        if (JSON.stringify(this.tempOrganizePagesCollection) !== JSON.stringify(this.organizePagesCollection)) {
-            this.updateOrganizePageCollection();
-            this.totalCheckedCount = 0;
-            this.isDocumentModified = true;
-            this.pdfViewerBase.updateDocumentEditedProperty(true);
-        }
-        const fileName: string = this.pdfViewer.fileName;
-        let pdfBlob: Blob;
-        let canDownload: boolean = false;
-        const temp: any = JSON.parse(JSON.stringify(this.organizePagesCollection));
-        this.pdfViewer.saveAsBlob().then((blob: Blob) => {
-            pdfBlob = blob;
-            const conversionPromise: any = this.pdfViewerBase.clientSideRendering
-                ? this.pdfViewerBase.blobToByteArray(pdfBlob)
-                : this.pdfViewerBase.blobToBase64(pdfBlob);
-            conversionPromise.then((result: any) => {
-                if (!isNullOrUndefined(result) && result !== '') {
-                    canDownload = this.pdfViewer.firePageOrganizerSaveAsEventArgs(fileName, result);
-                    if (canDownload) {
-                        this.pdfViewerBase.fileDownload(result, this.pdfViewerBase, true);
-                        this.organizePagesCollection = JSON.parse(JSON.stringify(temp));
-                    }
-                }
-            });
-        });
+    /**
+     * @private
+     * @returns {void}
+     */
+    public onSaveasClicked(): void {
+        onSaveasClicked.call(this);
+    }
+
+    /**
+     * @private
+     * @returns {void}
+     */
+    public updateOrganizePageActions(): void {
+        updateOrganizePageActions.call(this);
     }
 
     /**
@@ -3941,14 +594,7 @@ export class PageOrganizer {
      * @private
      */
     public rotateAllPages(pageRotateAngle: PdfPageRotateAngle): void {
-        if (this.pdfViewer.pageOrganizerSettings.canRotate) {
-            const rotateAngle: PdfPageRotateAngle = pageRotateAngle as PdfPageRotateAngle;
-            // Get the total page count
-            const totalPages: number = this.pdfViewer.pageCount;
-            // Generate an array of page indexes
-            const pageIndexes : number[] = Array.from({ length: totalPages }, (_: any, index: number) => index);
-            this.processRotation(pageIndexes, rotateAngle);
-        }
+        rotateAllPages.call(this, pageRotateAngle);
     }
 
     /**
@@ -3987,12 +633,12 @@ export class PageOrganizer {
                 if (arg2 !== undefined && typeof arg2 === 'number') {
                     const pageIndexes: number[] = arg1 as number[];
                     const rotateAngle: PdfPageRotateAngle = arg2 as PdfPageRotateAngle;
-                    this.processRotation(pageIndexes, rotateAngle);
+                    processRotation(pageIndexes, rotateAngle);
                 } else {
                     // Handle case: RotatePages(pageRotations: PageRotation[])
                     const pageRotations: PageRotation[] = arg1 as PageRotation[];
                     for (const pageRotation of pageRotations) {
-                        this.processRotation([pageRotation.pageIndex], pageRotation.rotationAngle);
+                        processRotation([pageRotation.pageIndex], pageRotation.rotationAngle);
                     }
                 }
             }
@@ -4002,61 +648,13 @@ export class PageOrganizer {
                 const pageEndIndex: number = arg2 as number;
                 // eslint-disable-next-line
                 const rotateAngle: PdfPageRotateAngle = arguments[2] as PdfPageRotateAngle;
-                this.processRotation(this.generateRange(pageStartIndex, pageEndIndex), rotateAngle);
-            }
-        }
-    }
-
-    private processRotation(pageIndexes: number[], pageRotateAngle: PdfPageRotateAngle): void {
-        if (this.pdfViewer.pageOrganizerSettings.canRotate) {
-            // Iterate through the provided page numbers
-            for (const pageIndex of pageIndexes) {
-                const rotateAngle: number = this.pdfRotateAngle(pageRotateAngle);
-                // Find the index of the page in the rotationDetail array
-                const index: number = this.organizePagesCollection.findIndex((item: PageDetails) => item.pageIndex === pageIndex);
-                // Check if the page is already in the rotationDetail array
-                if (index !== -1) {
-                    // If the pageIndex is found in the array, update the rotation angle
-                    this.organizePagesCollection[parseInt(index.toString(), 10)].rotateAngle =
-                    (this.organizePagesCollection[parseInt(index.toString(), 10)].rotateAngle + rotateAngle + 360) % 360;
-                }
+                processRotation(this.generateRange(pageStartIndex, pageEndIndex), rotateAngle);
             }
         }
     }
 
     private generateRange(start: number, end: number): number[] {
         return Array.from({ length: end - start + 1 }, (_: any, index: number) => start + index);
-    }
-
-    private pdfRotateAngle(rotateAngle: PdfPageRotateAngle): number {
-        let angle: number = 0;
-        if (rotateAngle === PdfPageRotateAngle.RotateAngle0) {
-            angle = 0;
-        }
-        else if (rotateAngle === PdfPageRotateAngle.RotateAngle90) {
-            angle = 90;
-        }
-        else if (rotateAngle === PdfPageRotateAngle.RotateAngle180) {
-            angle = 180;
-        }
-        else if (rotateAngle === PdfPageRotateAngle.RotateAngle270) {
-            angle = 270;
-        }
-        else if (rotateAngle === PdfPageRotateAngle.RotateAngle360) {
-            angle = 0;
-        }
-        return angle;
-    }
-
-    private createTooltip(toolbarItem: HTMLElement, tooltipText: string): void {
-        if (tooltipText !== null) {
-            const tooltip: Tooltip = new Tooltip({
-                content: initializeCSPTemplate(
-                    function (): string { return tooltipText; }
-                ), opensOn: 'Hover', beforeOpen: this.onTooltipBeforeOpen.bind(this)
-            });
-            tooltip.appendTo(toolbarItem);
-        }
     }
 
     /**
@@ -4066,37 +664,7 @@ export class PageOrganizer {
      * @returns {void}
      */
     public updateOrganizePageImageSize(newSize: number, oldSize?: number): void {
-        if (!isNullOrUndefined(oldSize)) {
-            if (oldSize === newSize) {
-                return;
-            }
-        }
-        if (this.pdfViewerBase.clientSideRendering) {
-            this.pdfViewerBase.pdfViewerRunner.removePreviewImageTasks(newSize);
-        }
-        this.lastRequestedPageIndex = 0;
-        this.dataDetails = [];
-        this.isPageZoomChanged = true;
-        if (!this.isOrganizeWindowOpen) {
-            if (!isNullOrUndefined(this.pdfViewerBase.navigationPane)) {
-                this.pdfViewerBase.navigationPane.enableOrganizeButton(false);
-            }
-            if (!isNullOrUndefined(this.toolbar)) {
-                this.pdfViewer.toolbar.enableToolbarItem(['OrganizePagesTool'], false);
-            }
-            if (this.isOrganizeDialogRendered()) {
-                this.modifyThumbnailContainer();
-            }
-        }
-        else {
-            this.showOrganizeLoadingIndicator(true);
-            this.modifyThumbnailContainer();
-            if (this.isPageZoomPopupOpen) {
-                this.updatePageZoomPopup();
-            }
-        }
-        this.isAllImagesReceived = false;
-        this.createRequestForPreview();
+        updateOrganizePageImageSize.call(this, newSize, oldSize);
     }
 
     /**
@@ -4107,19 +675,7 @@ export class PageOrganizer {
      * @returns {void}
      */
     public rotateClockwise(pageNumbers: number[]): void {
-        if (this.pdfViewer.pageOrganizerSettings.canRotate) {
-            // Iterate through the provided page numbers
-            for (const pageIndex of pageNumbers) {
-                // Find the index of the page in the rotationDetail array
-                const index: number = this.organizePagesCollection.findIndex((item: PageDetails) => item.pageIndex === pageIndex);
-                // Check if the page is already in the rotationDetail array
-                if (index !== -1) {
-                    // If the pageIndex is found in the array, update the rotation angle
-                    this.organizePagesCollection[parseInt(index.toString(), 10)].rotateAngle =
-                    (this.organizePagesCollection[parseInt(index.toString(), 10)].rotateAngle + 90 + 360) % 360;
-                }
-            }
-        }
+        rotateClockwise.call(this, pageNumbers);
     }
 
     /**
@@ -4130,19 +686,7 @@ export class PageOrganizer {
      * @returns {void}
      */
     public rotateCounterclockwise(pageNumbers: number[]): void {
-        if (this.pdfViewer.pageOrganizerSettings.canRotate) {
-            // Iterate through the provided page numbers
-            for (const pageIndex of pageNumbers) {
-                // Find the index of the page in the rotationDetail array
-                const index: number = this.organizePagesCollection.findIndex((item: PageDetails) => item.pageIndex === pageIndex);
-                // Check if the page is already in the rotationDetail array
-                if (index !== -1) {
-                    // If the pageIndex is found in the array, update the rotation angle
-                    this.organizePagesCollection[parseInt(index.toString(), 10)].rotateAngle =
-                     (this.organizePagesCollection[parseInt(index.toString(), 10)].rotateAngle - 90 + 360) % 360;
-                }
-            }
-        }
+        rotateCounterclockwise.call(this, pageNumbers);
     }
 
     /**
@@ -4195,7 +739,7 @@ export class PageOrganizer {
      */
     public closePageOrganizer(): void {
         if (!isNullOrUndefined(this.pdfViewer.pageOrganizer)) {
-            if (!isNullOrUndefined(this.organizeDialog)) {
+            if (!isNullOrUndefined(this.organizeDialog) && this.isOrganizeWindowOpen) {
                 this.organizeDialog.hide();
             }
         }
@@ -4210,16 +754,7 @@ export class PageOrganizer {
      * @returns {void}
      */
     public handleImageSizeBoundsChange(newProp: PageOrganizerSettingsModel): void {
-        if (!isNullOrUndefined(newProp.imageZoomMin)) {
-            this.pdfViewer.pageOrganizerSettings.imageZoomMin = newProp.imageZoomMin;
-        }
-        if (!isNullOrUndefined(newProp.imageZoomMax)) {
-            this.pdfViewer.pageOrganizerSettings.imageZoomMax = newProp.imageZoomMax;
-        }
-        if (!isNullOrUndefined(this.pageZoomSlider)) {
-            this.pageZoomSlider.min = this.getImageZoomMin();
-            this.pageZoomSlider.max = this.getImageZoomMax();
-        }
+        handleImageSizeBoundsChange.call(this, newProp);
     }
 
     /**
@@ -4228,53 +763,7 @@ export class PageOrganizer {
      * @returns {void}
      */
     public handleImageResizerVisibility(showImageZoomingSlider: boolean): void {
-        if (!this.isOrganizeDialogRendered()) {
-            return;
-        }
-        if (isNullOrUndefined(showImageZoomingSlider) || !showImageZoomingSlider) {
-            const resizerIndex: number = this.toolbar.items.findIndex(
-                (item: ItemModel) => item.id === this.pdfViewer.element.id + '_page_zoom');
-            if (resizerIndex !== -1) {
-                if (Browser.isDevice && !this.pdfViewer.enableDesktopMode) {
-                    this.toolbar.hideItem(this.pdfViewerBase.getElement('_page_zoom').parentElement, true);
-                }
-                else {
-                    this.toolbar.removeItems(this.pdfViewerBase.getElement('_page_zoom').parentElement);
-                }
-                if (!isNullOrUndefined(this.pageZoomSlider)) {
-                    this.pageZoomSliderUnwireEvents();
-                    this.pageZoomSlider.destroy();
-                    this.pageZoomSlider = null;
-                }
-                if (!isNullOrUndefined(this.pageZoomDropDown)) {
-                    this.pageZoomUnWireEvents();
-                    this.pageZoomDropDown.destroy();
-                    this.pageZoomDropDown = null;
-                }
-                if (!isNullOrUndefined(this.pageZoomIncreaseButton)) {
-                    this.pageZoomIncreaseButton = null;
-                }
-                if (!isNullOrUndefined(this.pageZoomDecreaseButton)) {
-                    this.pageZoomDecreaseButton = null;
-                }
-                // Removes the margin left or margin right property of center group in page organizer toolbar
-                this.toolbar.element.children[0].children[1].removeAttribute('style');
-            }
-        }
-        else {
-            const pageZoomIndex: number = this.toolbar.items.findIndex(
-                (item: ItemModel) => item.id === this.pdfViewer.element.id + '_page_zoom');
-            if (pageZoomIndex === -1 || (Browser.isDevice && !this.pdfViewer.enableDesktopMode)) {
-                this.addPageZoomDropDown(false);
-                this.createPageZoomDropDown();
-            }
-        }
-        if (this.isOrganizeWindowOpen) {
-            if ((Browser.isDevice && !this.pdfViewer.enableDesktopMode) && showImageZoomingSlider) {
-                this.toolbar.refreshOverflow();
-                this.handlePageZoomPopupMobile();
-            }
-        }
+        handleImageResizerVisibility.call(this, showImageZoomingSlider);
     }
 
     /**
@@ -4282,13 +771,7 @@ export class PageOrganizer {
      * @returns {void}
      */
     public switchPageOrganizer(): void {
-        if (!isNullOrUndefined(this.pdfViewer.pageOrganizer)) {
-            if (!isNullOrUndefined(this.organizeDialog) && this.organizeDialog.visible) {
-                this.closePageOrganizer();
-            } else {
-                this.openPageOrganizer();
-            }
-        }
+        switchPageOrganizer.call(this);
     }
 
     /**
@@ -4300,204 +783,41 @@ export class PageOrganizer {
     }
 
     /**
-     * @param {HTMLDivElement} imageContainer Div element whose margin is to be calculated
-     * @private
-     * @returns {number} imageZoom factor according to screen size
-     */
-    private getImageZoomFactor(imageContainer: HTMLDivElement): number {
-        const minValue: number = this.getImageZoomMin();
-        if (!this.pdfViewer.enablePageOrganizer || isNullOrUndefined(this.pdfViewer.pageOrganizerSettings)) {
-            return minValue;
-        }
-        const size: number = this.getImageZoomValue();
-        if (isNullOrUndefined(size)) {
-            return minValue;
-        }
-        const maxValue: number = this.getImageZoomMax();
-        if (!Browser.isDevice || this.pdfViewer.enableDesktopMode) {
-            return this.getImageZoomValue();
-        }
-        else {
-            const viewportWidth: number = this.pdfViewer.element.clientWidth;
-            const imageContainerWidth: number = 140;
-            imageContainer.style.position = 'absolute';
-            document.body.appendChild(imageContainer);
-            const computedStyle: CSSStyleDeclaration = window.getComputedStyle(imageContainer);
-            const margin: number = parseFloat(computedStyle.marginLeft) + parseFloat(computedStyle.marginRight);
-            document.body.removeChild(imageContainer);
-            if ((imageContainerWidth * maxValue) <= (viewportWidth - margin)) {
-                return this.getImageZoomValue();
-            }
-            else {
-                const maxFactor: number = (viewportWidth - margin) / imageContainerWidth;
-                const factor: number = (maxFactor - minValue) / (maxValue - minValue);
-                if (size < minValue) {
-                    return minValue;
-                }
-                if (size > maxValue) {
-                    return (minValue + ((maxValue - minValue) * factor));
-                }
-                return (minValue + ((size - minValue) * factor));
-            }
-        }
-    }
-
-    /**
      * @private
      * @param {boolean} isImageRequest defines if the function is called for image request
      * @param {number} size optional size can be sent to check valid page zoom value
      * @returns {number} imageZoom value
      */
     public getImageZoomValue(isImageRequest?: boolean, size?: number): number {
-        const minValue: number = this.getImageZoomMin();
-        if (!this.pdfViewer.enablePageOrganizer || isNullOrUndefined(this.pdfViewer.pageOrganizerSettings)) {
-            return minValue;
-        }
-        if (isNullOrUndefined(size)) {
-            size = this.pdfViewer.pageOrganizerSettings.imageZoom;
-            if (isNullOrUndefined(size)) {
-                return minValue;
-            }
-        }
-        const maxValue: number = this.getImageZoomMax();
-        if (size < minValue) {
-            return minValue;
-        }
-        if (size > maxValue) {
-            return maxValue;
-        }
-        if (isImageRequest) {
-            return Math.round(size);
-        }
-        return size;
+        return getImageZoomValue.call(this, isImageRequest, size);
     }
 
-    private destroyDialogWindow(): void {
-        this.removeEventListeners();
-        this.isOrganizeWindowOpen = false;
-        if (!isNullOrUndefined(this.pageZoomSlider)) {
-            this.pageZoomSliderUnwireEvents();
-            this.pageZoomSlider.destroy();
-            this.pageZoomSlider = null;
-        }
-        if (!isNullOrUndefined(this.pageZoomDropDown)) {
-            this.pageZoomUnWireEvents();
-            this.pageZoomDropDown.destroy();
-            this.pageZoomDropDown = null;
-        }
-        if (!isNullOrUndefined(this.organizeDialog)) {
-            this.organizeUnWireEvent();
-            this.organizeDialog.destroy();
-            this.organizeDialog = null;
-        }
-        const dialogElement: HTMLElement = this.pdfViewerBase.getElement('_organize_window');
-        if (!isNullOrUndefined(dialogElement)) {
-            dialogElement.parentElement.removeChild(dialogElement);
-        }
-        const pageZoomPopup: HTMLElement = this.pdfViewerBase.getElement('_page_zoom-popup');
-        if (!isNullOrUndefined(pageZoomPopup)) {
-            pageZoomPopup.parentElement.removeChild(pageZoomPopup);
-        }
-    }
-
-    private pageZoomWireEvents(): void {
-        if (!isNullOrUndefined(this.pageZoomDropDown)) {
-            this.boundPageZoomDropDownOpen = this.pageZoomDropDownOpen.bind(this);
-            this.boundPageZoomDropDownClose = this.pageZoomDropDownClose.bind(this);
-
-            this.pageZoomDropDown.open = this.boundPageZoomDropDownOpen;
-            this.pageZoomDropDown.close = this.boundPageZoomDropDownClose;
-        }
-        if (!isNullOrUndefined(this.pageZoomDecreaseButton)) {
-            this.boundDecreasePageZoom = this.decreasePageZoom.bind(this);
-            this.pageZoomDecreaseButton.addEventListener('click', this.boundDecreasePageZoom);
-        }
-        if (!isNullOrUndefined(this.pageZoomIncreaseButton)) {
-            this.boundIncreasePageZoom = this.increasePageZoom.bind(this);
-            this.pageZoomIncreaseButton.addEventListener('click', this.boundIncreasePageZoom);
-        }
-    }
-
-    private increasePageZoom(): void {
-        if (this.pageZoomSlider.value as number + this.pageZoomSliderStep <= this.getImageZoomMax()) {
-            this.handlePageZoomChange(
-                this.pageZoomSlider.value as number + this.pageZoomSliderStep, this.pageZoomSlider.value as number);
-        }
-        else {
-            if (this.pageZoomSlider.value as number !== this.getImageZoomMax()) {
-                this.handlePageZoomChange(this.getImageZoomMax(), this.pageZoomSlider.value as number);
-            }
-        }
-    }
-
-    private decreasePageZoom(): void {
-        if (this.pageZoomSlider.value as number - this.pageZoomSliderStep >= this.getImageZoomMin()) {
-            this.handlePageZoomChange(
-                this.pageZoomSlider.value as number - this.pageZoomSliderStep, this.pageZoomSlider.value as number);
-        }
-        else {
-            if (this.pageZoomSlider.value as number !== this.getImageZoomMin()) {
-                this.handlePageZoomChange(this.getImageZoomMin(), this.pageZoomSlider.value as number);
-            }
-        }
-    }
-
+    /**
+     * @private
+     * @param {number} currentValue - It describes about current value.
+     * @param {number} previousValue - It describes about previous value.
+     * @returns {void}
+     */
     public handlePageZoomChange(currentValue: number, previousValue: number): void {
-        this.currentPageZoomSliderValue = currentValue;
-        this.pdfViewer.pageOrganizerSettings.imageZoom = currentValue;
-        this.updatePageZoomPopup();
-        if (this.previouslyRequestedImageZoom < Math.round(currentValue)) {
-            this.previouslyRequestedImageZoom = Math.round(currentValue);
-            this.updateOrganizePageImageSize(Math.round(currentValue));
-            this.previousImageZoom = previousValue;
-        }
-        else {
-            const organizeNodes: HTMLCollection = this.tileAreaDiv.children;
-            const imageSizeFactor: number = this.getImageZoomFactor(organizeNodes[0].cloneNode(true) as HTMLDivElement);
-            /* eslint-disable security/detect-object-injection */
-            for (let index: number = 0; index < organizeNodes.length; index++) {
-                const imageContainer: HTMLDivElement = organizeNodes[index] as HTMLDivElement;
-                imageContainer.style.width = 140 * imageSizeFactor + 'px';
-                imageContainer.style.height = 140 * imageSizeFactor + 'px';
-            }
-            /* eslint-enable security/detect-object-injection */
-            if (this.pdfViewerBase.getElement('_organizeLoadingIndicator').style.display !== 'block') {
-                this.currentImageZoom = currentValue;
-                this.previousImageZoom = previousValue;
-                if (this.currentImageZoom !== this.previousImageZoom) {
-                    this.pdfViewer.firePageOrganizerZoomChanged(this.previousImageZoom, this.currentImageZoom);
-                }
-            }
-        }
-        this.handlePageZoomButtonsVisibility(currentValue);
+        handlePageZoomChange.call(this, currentValue, previousValue);
     }
 
-    private pageZoomUnWireEvents(): void {
-        if (!isNullOrUndefined(this.pageZoomDropDown)) {
-            this.pageZoomDropDown.removeEventListener('open', this.boundPageZoomDropDownOpen);
-            this.pageZoomDropDown.removeEventListener('close', this.boundPageZoomDropDownClose);
-        }
-        if (!isNullOrUndefined(this.pageZoomDecreaseButton)) {
-            this.pageZoomDecreaseButton.removeEventListener('click', this.boundDecreasePageZoom);
-        }
-        if (!isNullOrUndefined(this.pageZoomIncreaseButton)) {
-            this.pageZoomIncreaseButton.removeEventListener('click', this.boundIncreasePageZoom);
-        }
+    /**
+     * @private
+     * @param {boolean} isShowRemove - It describes about show or remove the extract icon in organize window toolbar.
+     * @returns {void}
+     */
+    public showRemoveExtractIcon(isShowRemove: boolean): void {
+        showRemoveExtractIcon.call(this, isShowRemove);
     }
 
-    private pageZoomSliderWireEvents(): void {
-        if (!isNullOrUndefined(this.pageZoomSlider)) {
-            this.boundPageZoomChange = this.pageZoomChange.bind(this);
-            this.pageZoomSlider.change = this.boundPageZoomChange;
-            this.pageZoomSlider.changed = this.boundPageZoomChange;
-        }
-    }
-
-    private pageZoomSliderUnwireEvents(): void {
-        if (!isNullOrUndefined(this.pageZoomSlider)) {
-            this.pageZoomSlider.removeEventListener('change', this.boundPageZoomChange);
-            this.pageZoomSlider.removeEventListener('changed', this.boundPageZoomChange);
-        }
+    /**
+     * @private
+     * @param {boolean} canExtractPages - It describes about show or hide the extract icon in organize window toolbar.
+     * @returns {void}
+     */
+    public showHideExtractIcon(canExtractPages: boolean): void {
+        showHideExtractIcon.call(this, canExtractPages);
     }
 
     /**
@@ -4505,33 +825,15 @@ export class PageOrganizer {
      * @returns {void}
      */
     public clear(): void {
-        if (!isNullOrUndefined(this.pdfViewerBase.navigationPane)) {
-            this.pdfViewerBase.navigationPane.enableOrganizeButton(false);
-        }
-        if (!isNullOrUndefined(this.pdfViewer.toolbar)) {
-            this.pdfViewer.toolbar.enableToolbarItem(['OrganizePagesTool'], false);
-        }
-        this.destroyDialogWindow();
-        this.organizePagesCollection = [];
-        this.tempOrganizePagesCollection = [];
-        this.undoOrganizeCollection = [];
-        this.redoOrganizeCollection = [];
-        this.isDocumentModified = false;
-        this.pdfViewerBase.isImportDoc = false;
-        this.mobileContextMenu = [];
-        this.dataDetails = [];
-        this.isInitialLoading = true;
-        this.isPageZoomPopupOpen = false;
-        this.lastRequestedPageIndex = 0;
-        this.previouslyRequestedImageZoom = Math.round(this.currentPageZoomSliderValue);
+        clear.call(this);
     }
 
     /**
      * @private
      * @returns {void}
      */
-    public destroy(): boolean {
-        return true;
+    public destroy(): void {
+        this.clear();
     }
 
 }

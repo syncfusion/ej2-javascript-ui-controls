@@ -1,3 +1,5 @@
+@use 'ej2-base/styles/common/mixin' as *;
+@use './theme-variables' as *;
 @mixin avatar-padding($left, $right) {
   padding-left: $left;
   padding-right: $right;
@@ -105,7 +107,7 @@
 
     &.e-list-template {
       .e-list-wrapper {
-        height: inherit;
+        height: $listview-template-height;
         position: relative;
 
         &:not(.e-list-multi-line) {
@@ -132,19 +134,19 @@
             font-size: $listview-template-multiline-header-font-size;
             @if ($skin-name == 'tailwind' or $skin-name == 'FluentUI' or $skin-name == 'bootstrap5' or $skin-name == 'Material3') {
               font-weight: $font-weight-normal;
-              line-height: 22px;
+              line-height: $listview-item-header-line-height;
             }
             @else if $skin-name == 'fluent2' {
               font-weight: $font-weight-normal;
-              line-height: 20px;
+              line-height: $listview-item-header-line-height;
             }
             @else {
-              font-weight: 500;
+              font-weight: $listitem-header-font-weight;
             }
             @if ($skin-name == 'tailwind3') {
-              line-height: 20px;
+              line-height: $listview-header-line-height;
             }
-            margin: 0;
+            margin: $listview-margin-none;
             overflow: hidden;
             padding: $listview-template-multiline-header-padding;
             text-overflow: ellipsis;
@@ -158,19 +160,19 @@
             @if ($skin-name == 'tailwind' or $skin-name == 'FluentUI' or $skin-name == 'bootstrap5' or $skin-name == 'Material3') {
               font-weight: $font-weight-normal;
               @if ($skin-name == 'FluentUI') {
-                line-height: 18px;
+                line-height: $listview-list-content-line-height;
               }
               @else {
-                line-height: 22px;
+                line-height: $listview-list-content-line-height;
               }
             }
             @if ($skin-name == 'fluent2') {
-              line-height: 16px;
+              line-height: $listview-list-content-line-height;
             }
             @if ($skin-name == 'tailwind3') {
-              line-height: 20px;
+              line-height: $listview-header-line-height;
             }
-            margin: 0;
+            margin: $listview-margin-none;
             padding: $listview-template-multiline-content-padding;
             word-wrap: break-word;
           }
@@ -228,11 +230,11 @@
             font-size: $listview-template-badge-font-size;
             @include avatar-size($listview-template-badge-height, $listview-template-badge-width, 50%, null, $listview-template-badge-right);
             line-height: $listview-template-badge-line-height;
-            padding: 0;
+            padding: $listview-padding-none;
             position: absolute;
             transform: translateY(-50%);
             @if ($skin-name == 'tailwind' or $skin-name == 'FluentUI' or $skin-name == 'bootstrap5' or $skin-name == 'Material3'  or $skin-name == 'fluent2') {
-              border-radius: 10px;
+              border-radius: $listview-list-badge-border-radius;
             }
           }
         }
@@ -248,7 +250,7 @@
         &:not(.e-list-multi-line) {
           .e-list-content {
             display: block;
-            margin: 0;
+            margin: $listview-margin-none;
             overflow: hidden;
             padding: $listview-template-item-padding;
             text-overflow: ellipsis;

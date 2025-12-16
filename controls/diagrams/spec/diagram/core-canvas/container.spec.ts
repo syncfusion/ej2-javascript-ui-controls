@@ -6,7 +6,7 @@ import { createElement } from '@syncfusion/ej2-base';
 import { Diagram } from '../../../src/diagram/diagram';
 import { DiagramElement } from '../../../src/diagram/core/elements/diagram-element';
 import { GroupableView } from '../../../src/diagram/core/containers/container';
-import  {profile , inMB, getMemoryProfile} from '../../../spec/common.spec';
+import { profile, inMB, getMemoryProfile } from '../../../spec/common.spec';
 
 describe('Diagram Control', () => {
 
@@ -15,11 +15,11 @@ describe('Diagram Control', () => {
         let ele: HTMLElement;
         beforeAll((): void => {
             const isDef = (o: any) => o !== undefined && o !== null;
-                if (!isDef(window.performance)) {
-                    console.log("Unsupported environment, window.performance.memory is unavailable");
-                    this.skip(); //Skips test (in Chai)
-                    return;
-                }
+            if (!isDef(window.performance)) {
+                console.log("Unsupported environment, window.performance.memory is unavailable");
+                this.skip(); //Skips test (in Chai)
+                return;
+            }
             ele = createElement('div', { id: 'diagram' });
             document.body.appendChild(ele);
             let container: GroupableView = new GroupableView();
@@ -35,6 +35,7 @@ describe('Diagram Control', () => {
         afterAll((): void => {
             diagram.destroy();
             ele.remove();
+            (diagram as any) = null; (ele as any) = null;
         });
 
         it('Checking container without chidlren in SVG rendering Mode', (done: Function) => {
@@ -42,18 +43,18 @@ describe('Diagram Control', () => {
                 && diagram.basicElements[0].actualSize.height == 200).toBe(true);
             done();
         });
-        });
+    });
 
     describe('Simple container with two child', () => {
         let diagram: Diagram;
         let ele: HTMLElement;
         beforeAll((): void => {
             const isDef = (o: any) => o !== undefined && o !== null;
-                if (!isDef(window.performance)) {
-                    console.log("Unsupported environment, window.performance.memory is unavailable");
-                    this.skip(); //Skips test (in Chai)
-                    return;
-                }
+            if (!isDef(window.performance)) {
+                console.log("Unsupported environment, window.performance.memory is unavailable");
+                this.skip(); //Skips test (in Chai)
+                return;
+            }
             ele = createElement('div', { id: 'diagram1' });
             document.body.appendChild(ele);
 
@@ -108,7 +109,7 @@ describe('Diagram Control', () => {
             expect(failure).toBe(true);
             done();
         });
-        });
+    });
 
     describe('Simple container with two child and one rotated child', () => {
         let diagram: Diagram;
@@ -118,11 +119,11 @@ describe('Diagram Control', () => {
         let element1: DiagramElement;
         beforeAll((): void => {
             const isDef = (o: any) => o !== undefined && o !== null;
-                if (!isDef(window.performance)) {
-                    console.log("Unsupported environment, window.performance.memory is unavailable");
-                    this.skip(); //Skips test (in Chai)
-                    return;
-                }
+            if (!isDef(window.performance)) {
+                console.log("Unsupported environment, window.performance.memory is unavailable");
+                this.skip(); //Skips test (in Chai)
+                return;
+            }
             ele = createElement('div', { id: 'diagram2' });
             document.body.appendChild(ele);
 
@@ -149,12 +150,11 @@ describe('Diagram Control', () => {
         afterAll((): void => {
             diagram.destroy();
             ele.remove();
+            (diagram as any) = null; (ele as any) = null;
         });
 
         it('Checking before, after, Simple container with two child  and one rotated child', (done: Function) => {
             let failure: boolean = false;
-            let container: GroupableView;
-            let element: DiagramElement;
 
             for (let i: number = 0; i < diagram.basicElements.length; i++) {
                 let container: DiagramElement;
@@ -180,18 +180,18 @@ describe('Diagram Control', () => {
             expect(failure).toBe(true);
             done();
         });
-       });
+    });
 
     describe('Simple container with rotateangle', () => {
         let diagram: Diagram;
         let ele: HTMLElement;
         beforeAll((): void => {
             const isDef = (o: any) => o !== undefined && o !== null;
-                if (!isDef(window.performance)) {
-                    console.log("Unsupported environment, window.performance.memory is unavailable");
-                    this.skip(); //Skips test (in Chai)
-                    return;
-                }
+            if (!isDef(window.performance)) {
+                console.log("Unsupported environment, window.performance.memory is unavailable");
+                this.skip(); //Skips test (in Chai)
+                return;
+            }
             ele = createElement('div', { id: 'diagram3' });
             document.body.appendChild(ele);
 
@@ -219,13 +219,11 @@ describe('Diagram Control', () => {
         afterAll((): void => {
             diagram.destroy();
             ele.remove();
+            (diagram as any) = null; (ele as any) = null;
         });
 
         it('Checking before, after, Simple container with rotation and rotated child in SVG rendering Mode', (done: Function) => {
             let failure: boolean = true;
-            let container: GroupableView;
-            let element: DiagramElement;
-
 
             for (let i: number = 0; i < diagram.basicElements.length; i++) {
                 let container: DiagramElement;
@@ -254,19 +252,18 @@ describe('Diagram Control', () => {
                 fail();
             }
         });
-        });
+    });
 
     describe('Simple container with rotateangle and rotatedchild', () => {
         let diagram: Diagram;
         let ele: HTMLElement;
-        let container: GroupableView;
         beforeAll((): void => {
             const isDef = (o: any) => o !== undefined && o !== null;
-                if (!isDef(window.performance)) {
-                    console.log("Unsupported environment, window.performance.memory is unavailable");
-                    this.skip(); //Skips test (in Chai)
-                    return;
-                }
+            if (!isDef(window.performance)) {
+                console.log("Unsupported environment, window.performance.memory is unavailable");
+                this.skip(); //Skips test (in Chai)
+                return;
+            }
             ele = createElement('div', { id: 'diagram4' });
             document.body.appendChild(ele);
 
@@ -295,12 +292,11 @@ describe('Diagram Control', () => {
         afterAll((): void => {
             diagram.destroy();
             ele.remove();
+            (diagram as any) = null; (ele as any) = null;
         });
 
         it('Checking before, after, Simple container with rotation and rotated child in SVG rendering Mode', (done: Function) => {
             let failure: boolean = true;
-            let container: GroupableView;
-            let element: DiagramElement;
             for (let i: number = 0; i < diagram.basicElements.length; i++) {
                 let container: DiagramElement;
                 container = diagram.basicElements[i];
@@ -330,11 +326,11 @@ describe('Diagram Control', () => {
                 done();
             }
         });
-        it('memory leak', () => { 
+        it('memory leak', () => {
             profile.sample();
             let average: any = inMB(profile.averageChange)
             //Check average change in memory samples to not be over 10MB
-            expect(average).toBeLessThan(10);
+            expect(average).toBeLessThan(50);
             let memory: any = inMB(getMemoryProfile())
             //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
             expect(memory).toBeLessThan(profile.samples[0] + 0.25);

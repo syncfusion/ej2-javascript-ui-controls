@@ -1,4 +1,4 @@
-@import 'ej2-base/styles/definition/highcontrast.scss';
-@import 'blockeditor/highcontrast-definition.scss';
-@import 'blockeditor/icons/highcontrast.scss';
-@import 'blockeditor/all.scss';
+@use 'ej2-base/styles/definition/highcontrast' as *;
+@use 'blockeditor/highcontrast-definition' as *;
+@use 'blockeditor/icons/highcontrast' as *;
+@use 'blockeditor/all' as *;

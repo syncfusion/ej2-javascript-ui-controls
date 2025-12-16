@@ -1,3 +1,5 @@
+@use 'ej2-base/styles/common/mixin' as *;
+@use './theme-variables' as *;
 @include export-module('breadcrumb-theme') {
   .e-breadcrumb {
     .e-breadcrumb-item {
@@ -8,7 +10,7 @@
         &:focus {
           @if $skin-name == 'Material3' {
             background: $breadcrumb-item-hover-color;
-            border-radius: 4px;
+            border-radius: $breadcrumb-item-text-hover-border-radius;
           }
           @else if $skin-name != 'bootstrap5.3' {
             color: $breadcrumb-item-hover-color;
@@ -16,7 +18,7 @@
           @if $skin-name == 'fluent2' {
             background-color: $content-bg-color-hover;
             color: $breadcrumb-item-hover-color !important; /* stylelint-disable-line declaration-no-important */
-            border-radius: 4px;
+            border-radius: $breadcrumb-item-text-hover-border-radius;
 
             & .e-breadcrumb-icon {
               color: $toolbar-icon-color;
@@ -33,7 +35,7 @@
         &:active {
           @if $skin-name == 'Material3' {
             background: $breadcrumb-item-active-color;
-            border-radius: 4px;
+            border-radius: $breadcrumb-item-text-active-border-radius;
           }
           @else if $skin-name != 'bootstrap5.3' {
             color: $breadcrumb-item-active-color;
@@ -86,7 +88,7 @@
       @if $breadcrumb-skin == 'bootstrap5.3' {
         .e-breadcrumb-text:focus {
           box-shadow: $keyboard-focus-shadow;
-          border-radius: 4px;
+          border-radius: $breadcrumb-item-text-focus-border-radius;
         }
       }
 

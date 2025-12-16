@@ -1,3 +1,5 @@
+@use 'ej2-base/styles/common/mixin' as *;
+@use './theme-variables' as *;
 @mixin ribbon-colors($bg-color, $color, $border-color) {
   background: $bg-color;
   color: $color;
@@ -524,7 +526,7 @@
 
   .e-ribbon-group-overflow-ddb.e-dropdown-popup {
     box-shadow: $ribbon-grp-overflow-popup-box-shadow;
-    border: 1px solid $ribbon-grp-overflow-border-color;
+    border: $dropdown-popup-border solid $ribbon-grp-overflow-border-color;
   }
   .e-ribbon-menu {
     &.e-menu-wrapper,

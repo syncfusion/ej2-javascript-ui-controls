@@ -2,14 +2,6 @@
 
 ## [Unreleased]
 
-## 31.1.22 (2025-10-01)
-
-### Ribbon
-
-#### Bug Fixes
-
-`#I769183` - Now the issue with `beforeOpen` event was not triggered and multiple instances of the Color Picker popup were rendered after the page resizing in the Ribbon has been resolved.
-
 ## 25.1.35 (2024-03-15)
 
 ### Ribbon

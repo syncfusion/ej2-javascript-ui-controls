@@ -1,7 +1,5 @@
-
-@import 'ej2-base/styles/definition/material3.scss';
-
-@import 'pdfviewer/material3-definition.scss';
-@import 'pdfviewer/icons/material3.scss';
-@import 'pdfviewer/all.scss';
-@import 'pdfviewer/bigger.scss';
+@use 'ej2-base/styles/definition/material3' as *;
+@use 'pdfviewer/material3-definition' as *;
+@use 'pdfviewer/icons/material3' as *;
+@use 'pdfviewer/all' as *;
+@use 'pdfviewer/bigger' as *;

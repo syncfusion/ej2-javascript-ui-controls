@@ -1387,10 +1387,11 @@ export class Parser {
         }
         return text;
     }
+
     private isValidDotFormulaName(formulaName: string): boolean {
         formulaName = formulaName.toUpperCase();
         const dotFormulaNames: string[] = ['STDEV.P', 'STDEV.S', 'VAR.S', 'VAR.P', 'T.TEST', 'F.TEST', 'Z.TEST', 'CHISQ.TEST',
-            'COVARIANCE.S','COVARIANCE.P','CHISQ.DIST', 'F.DIST', 'T.DIST'];
+            'COVARIANCE.S', 'COVARIANCE.P', 'CHISQ.DIST', 'F.DIST', 'T.DIST'];
         return dotFormulaNames.some((formula: string) => formulaName === formula);
     }
 }

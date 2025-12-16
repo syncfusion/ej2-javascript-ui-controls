@@ -1,3 +1,6 @@
+@use 'ej2-base/styles/definition/fabric-dark' as *;
+@forward 'ej2-base/styles/definition/fabric-dark';
+
 /*! component's theme wise override fabric-definitions and variables */
 
 // Generic
@@ -100,4 +103,5 @@ $element-width-complete: 100% !important !default;
 //gridlines
 $gridline-background: #191919 !default;
 $gridline-border: #3A3A3A !default;
+$gridline-border-width: 1px !default;
 

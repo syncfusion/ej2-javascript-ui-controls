@@ -3233,7 +3233,7 @@ export class MultiSelect extends DropDownBase implements IInput {
     private addChipSelection(element: Element, e?: MouseEvent | KeyboardEventArgs): void {
         addClass([element], CHIP_SELECTED);
         if (element) {
-            element.setAttribute('id',  this.element.id + '_chip_item');
+            element.setAttribute('id', this.element.id + '_chip_item');
             if (!isNullOrUndefined(this.inputElement) && element.id && !this.inputElement.hasAttribute('aria-activedescendant')) {
                 this.inputElement.setAttribute('aria-activedescendant', element.id);
             }
@@ -5822,6 +5822,12 @@ export class MultiSelect extends DropDownBase implements IInput {
                         },
                         0
                     );
+                } else if (this.virtualSelectAllData && this.virtualSelectAllData.length > 0) {
+                    setTimeout((): void => {
+                        if (this.value && this.value.length && this.viewWrapper && !this.viewWrapper.querySelector('.' + REMAIN_WRAPPER)) {
+                            this.updatedataValueItems(event);
+                        }
+                    }, 0);
                 }
             }
         }
@@ -6651,6 +6657,7 @@ export class MultiSelect extends DropDownBase implements IInput {
         this.isSelectAll = true;
         this.selectAllItems(state);
     }
+
     private getRightIconsWidth(): number {
         const container: HTMLElement = this.overAllWrapper;
         let width: number = 0;
@@ -6669,6 +6676,7 @@ export class MultiSelect extends DropDownBase implements IInput {
             label.style.width = calculateWidth + 'px';
         }
     }
+
     /**
      * Return the module name of this component.
      *

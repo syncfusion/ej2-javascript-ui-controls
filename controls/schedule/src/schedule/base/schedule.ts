@@ -2040,7 +2040,7 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
         addClass(cells, cls.SELECTED_CELL_CLASS);
         if (focusCell) {
             focusCell.setAttribute('tabindex', '0');
-            focusCell.focus({ preventScroll: isPreventScroll || false });
+            focusCell.focus({ preventScroll: isPreventScroll || focusCell.classList.contains('e-all-day-cells') && this.enableAllDayScroll });
         }
     }
 
@@ -3318,8 +3318,8 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
      * Scrolls the Schedule content area to the specified time.
      *
      * @function scrollTo
-     * @param {string} hour Accepts the time value in the skeleton format of 'Hm'.
-     * @param {Date} scrollDate Accepts the date object value.
+     * @param {string} hour Accepts the time value in the skeleton format of 'Hm'. This parameter specifies the hour and minute to scroll to within the schedule.
+     * @param {Date} scrollDate Accepts a Date object value that represents the specific date to scroll to in the schedule.
      * @returns {void}
      */
     public scrollTo(hour: string, scrollDate?: Date): void {

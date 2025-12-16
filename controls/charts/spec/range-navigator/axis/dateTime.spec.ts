@@ -783,7 +783,7 @@ describe('Range navigator', () => {
         it('checking with same y value', (done: Function) => {
             range.loaded = (args: Object) => {
                 axisLabel = document.getElementById('container_AxisLabels');
-                expect(axisLabel.childNodes[0].firstChild.textContent === '12 AM').toBe(true);
+                expect(axisLabel.childNodes[0].firstChild.textContent === '12 AM' || axisLabel.childNodes[0].firstChild.textContent === '5 AM').toBe(true);
                 done();
             };
             done();

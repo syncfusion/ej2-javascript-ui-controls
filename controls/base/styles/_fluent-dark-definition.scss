@@ -1,4 +1,5 @@
-@import 'definition/fluent-dark.scss';
+@use 'definition/fluent-dark' as *;
+@forward 'definition/fluent-dark';
 
 $font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, 'Roboto', 'Helvetica Neue', sans-serif !default;
 $font-size: 12px !default;

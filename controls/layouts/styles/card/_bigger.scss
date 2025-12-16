@@ -1,3 +1,5 @@
+@use 'ej2-base/styles/common/mixin' as *;
+@use './theme-variables' as *;
 @include export-module('card-bigger') {
 
   .e-bigger .e-card,
@@ -23,8 +25,8 @@
       }
 
       + :not(.e-card-header-title) {
-        margin-top: 0;
-        padding-top: 0;
+        margin-top: $card-margin-none;
+        padding-top: $card-padding-none;
       }
     }
 
@@ -33,8 +35,8 @@
       padding: $card-title-bigger-margin;
 
       + :not(.e-card-title) {
-        margin-top: 0;
-        padding-top: 0;
+        margin-top: $card-margin-none;
+        padding-top: $card-padding-none;
       }
     }
 
@@ -55,22 +57,22 @@
       }
 
       .e-card-content {
-        padding-left: 0;
-        padding-right: 0;
+        padding-left: $card-padding-none;
+        padding-right: $card-padding-none;
       }
 
       .e-card-header-caption {
         padding: $card-header-txt-bigger-padding;
 
         &:first-child {
-          padding: 0;
+          padding: $card-padding-none;
         }
 
         .e-card-header-title {
           font-size: $card-header-txt-bigger-title-font;
           line-height: $card-header-txt-title-bigger-lheight;
           @if $skin-name == 'fluent2' {
-            font-weight: 600;
+            font-weight: $card-header-title-font-weight;
           }
         }
 
@@ -103,7 +105,7 @@
         min-height: $card-image-title-bigger-mheight;
         padding: $card-img-title-bigger-padding;
         @if $skin-name == 'fluent2' {
-          font-weight: 600;
+          font-weight: $card-header-title-font-weight;
         }
       }
     }
@@ -119,7 +121,7 @@
           margin: $card-action-bigger-btn-vertical-margin;
 
           &:last-child {
-            margin-bottom: 0;
+            margin-bottom: $card-margin-none;
           }
         }
       }
@@ -132,13 +134,13 @@
 
       .e-card-btn,
       a {
-        line-height: $card-action-btn-bigger-height;
+        line-height: $card-action-btn-bigger-line-height;
         margin: $card-action-btn-bigger-margin;
-        min-height: $card-action-btn-bigger-height;
+        min-height: $card-action-btn-bigger-min-height;
         padding: $card-action-btn-bigger-padding;
 
         &:first-child {
-          margin-left: 0;
+          margin-left: $card-margin-none;
         }
       }
     }
@@ -146,18 +148,18 @@
     .e-card-content {
       padding: $card-bigger-content-padding;
       @if $skin-name == 'fluent2' {
-        font-size: 16px;
+        font-size: $card-bigger-content-font-size;
       }
       @if $skin-name == 'tailwind3' {
-        font-size: 16px;
-        line-height: 24px;
+        font-size: $card-action-bigger-content-font-size;
+        line-height: $card-action-bigger-content-line-height;
       }
 
       + :not(.e-card-content),
       + .e-card-actions.e-card-vertical {
         @if $skin-name != 'tailwind3' {
-          margin-top: 0;
-          padding-top: 0;
+          margin-top: $card-margin-none;
+          padding-top: $card-padding-none;
         }
       }
 

@@ -1,9 +1,11 @@
+@use 'ej2-base/styles/definition/material3' as *;
+@forward 'ej2-base/styles/definition/material3';
 $header-font-weight: 500 !default;
 $multicolumn-grid-height: 32px !default;
 $multicolumn-margin-top-value: 1px !default;
 $footer-border-width: 0 1px 0 1px !default;
 $grid-border-width: 1px !default;
-$multicolumn-popup-border-radius: 4px !default;
+$multicolumn-popup-border-radius: $radius-4 !default;
 
 $multicolumn-grid-small-height: 26px !default;
 $multicolumn-margin-top-small-value: 1px !default;
@@ -30,3 +32,18 @@ $altrow-bg-color: $content-bg-color-alt1 !default;
 $popup-box-shadow: $shadow-md !default;
 $nodata-bg-color: $flyout-bg-color !default;
 $nodata-border-color: $flyout-bg-color !default;
+
+$padding-zero: 0;
+$multicolumn-nodata-padding: 14px 16px;
+$multicolumn-bigger-spin-pane-height: 26px !default;
+$multicolumn-bgr-small-font-size: 14px !default;
+$multicolumn-spin-pane-height: 20px !default;
+$multicolumn-grid-cation-font-weight: 600 !default;
+$multicolumn-font-size: 14px !default;
+$multicolumn-zero-height: 0 !default;
+$multicolumn-zero-border-radius: $radius-0 !default;
+$multicolumn-small-grid-footer-font-size: 12px !default;
+$multicolumn-bigger-spinner-width: 26px !default;
+$multicolumn-spinner-width: 20px !default;
+$multicolumn-zero-width: 0 !default;
+$multicolumn-bigger-popup-footer-font-size: 16px !default;

@@ -1,3 +1,5 @@
+@use 'ej2-base/styles/common/mixin' as *;
+@use './theme-variables' as *;
 @mixin ribbon-backstage-border($width) {
   border-style: solid;
   border-width: $width;
@@ -19,10 +21,10 @@
     }
     @if ($skin-name == 'fluent2') {
       .e-dropdown-btn.e-btn {
-        padding: 0 4px;
+        padding: $dropdown-btn-padding;
       }
       .e-split-btn-wrapper .e-dropdown-btn.e-btn {
-        padding: 0;
+        padding: $split-btn-wrapper-padding;
       }
     }
   }
@@ -81,17 +83,17 @@
           min-width: 120px;
 
           .e-ribbon-skeleton {
-            height: 20px;
+            height: $ribbon-skeleton-height;
           }
         }
       }
   
       .e-ribbon-skeleton {
-        border-radius: 4px;
+        border-radius: $ribbon-skeleton-border-radius;
 
         @if ($skin-name == 'highcontrast-light' or $skin-name == 'highcontrast') {
-          border-radius: 0;
-          border: 1px solid;
+          border-radius: $ribbon-skeleton-border-radius;
+          border: $ribbon-skeleton-border solid;
         }
       }
   
@@ -99,11 +101,11 @@
         display: flex;
         align-items: center;
         position: absolute;
-        gap: 30px;
+        gap: $ribbon-overlay-gap;
         width: 100%;
-        height: 100%;
+        height: $ribbon-overlay-height;
         z-index: 4;
-        padding: 10px;
+        padding: $ribbon-overlay-padding;
         overflow: hidden;
       }
     }
@@ -162,7 +164,7 @@
         }
 
         &::before {
-          border-width: 0;
+          border-width: $ribbon-tab-header-border-width;
         }
 
         
@@ -185,15 +187,15 @@
           &:not(.e-tbar-pos) {
             .e-toolbar-item:first-child,
             .e-toolbar-item:last-child {
-              margin: 0;
+              margin: $ribbon-tbar-child-margin;
             }
           }
         }
 
         .e-toolbar-item {
           vertical-align: unset;
-          margin: 0;
-          border: none;
+          margin: $ribbon-tbar-item-margin;
+          border: $ribbon-tbar-item-border;
           border-radius: $ribbon-tab-border-radius;
 
           &:not(.e-separator) {
@@ -201,7 +203,7 @@
           }
 
           &.e-active {
-            border: none;
+            border: $ribbon-tbar-active-border;
 
             @if ($skin-name == 'fluent2') {
               &::before {
@@ -216,20 +218,20 @@
           }
 
           .e-tab-wrap {
-            padding: 0;
-            height: auto;
-            border: none;
+            padding: $ribbon-tab-wrap-padding;
+            height: $ribbon-tab-wrap-height;
+            border: $ribbon-tab-wrap-border;
           }
 
           .e-tab-text {
             @include ribbon-font-styles($ribbon-tab-text-size, $ribbon-tab-text-weight, $ribbon-tab-text-height);
             padding: $ribbon-tab-text-padding;
             text-transform: none;
-            margin: 0;
+            margin: $ribbon-tab-text-margin;
           }
 
           .e-text-wrap {
-            height: auto;
+            height: $ribbon-text-wrap-height;
           }
 
           &.e-active .e-text-wrap {
@@ -266,11 +268,11 @@
 
           .e-nav-arrow {
             @include ribbon-font-styles($ribbon-nav-arrow-size, $ribbon-hscroll-nav-arrow-weight, $ribbon-nav-arrow-height);
-            height: auto;
+            height: $ribbon-hscroll-nav-arrow-height;
             transform: none;
             padding: $ribbon-hscroll-nav-arrow-padding;
             width: auto;
-            letter-spacing: unset;
+            letter-spacing: $ribbon-nav-arrow-letter-spacing;
           }
 
           .e-nav-arrow::before {
@@ -323,12 +325,12 @@
         padding: $ribbon-overflow-btn-padding;
         border: $ribbon-items-border;
         height: $ribbon-overflow-btn-height;
-        margin: auto;
+        margin: $ribbon-overflow-items-margin;
         box-shadow: none;
 
         .e-btn-icon {
-          font-size: 16px;
-          line-height: 16px;
+          font-size: $ribbon-overflow-btn-icon-size;
+          line-height: $ribbon-overflow-btn-icon-line-height;
           padding: $ribbon-overflow-btn-icon-padding;
           margin: $ribbon-overflow-btn-margin;
           width: auto;
@@ -383,7 +385,7 @@
             }
   
             .e-ribbon-gallery-text {
-              font-size: 12px;
+              font-size: $ribbon-gallery-text-font-size;
             }
           }
         }
@@ -394,12 +396,12 @@
       }
 
       .e-input-group {
-        margin-bottom: 0;
+        margin-bottom: $input-group-margin-bottom;
       }
 
       .e-ribbon-group {
         padding-top: $ribbon-simplified-group-padding;
-        height: auto;
+        height: $ribbon-simplified-group-height;
 
         &.e-ribbon-emptyCollection::after {
           display: none;
@@ -407,7 +409,7 @@
 
         &.e-ribbon-emptyCollection {
           .e-ribbon-group-container {
-            padding: 0;
+            padding: $ribbon-group-container-padding;
           }
         }
       }
@@ -424,13 +426,13 @@
       }
 
       .e-ribbon-group-content {
-        padding: 0;
+        padding: $ribbon-simplified-mode-group-content-padding;
         height: $ribbon-simplified-group-content-height;
         align-items: center;
       }
 
       .e-ribbon-overlay {
-        gap: 16px;
+        gap: $ribbon-simplified-overlay-gap;
       }
     }
 
@@ -458,9 +460,9 @@
     }
 
     .e-ribbon-group::after {
-      border-right: 1px solid;
+      border-right: $ribbon-group-border-right solid;
       content: '';
-      height: calc(100% - 16px);
+      height: $ribbon-group-after-height;
       position: absolute;
       top: 8px;
     }
@@ -482,11 +484,11 @@
       }
 
       .e-tab-header {
-        left: var(--fileMenuWidth);
+        left: $ribbon-tab-header-left;
       }
 
       .e-ribbon-tab .e-hscroll.e-scroll-device {
-        padding-right: 30px;
+        padding-right: $ribbon-scroll-device-padding-right;
       }
     }
 
@@ -511,7 +513,7 @@
       }
 
       .e-ribbon-tab .e-hscroll.e-scroll-device {
-        padding-left: 30px;
+        padding-left: $ribbon-rtl-scroll-device-padding-left;
       }
     }
     .e-ribbon-content-height {
@@ -532,14 +534,14 @@
       .e-ribbon-backstage-items-wrapper {
         @include ribbon-display(flex, column);
         justify-content: space-between;
-        height: 100%;
+        height: $ribbon-backstage-items-wrapper-height;
       }
 
       .e-btn {
-        border: none;
-        border-radius: unset;
+        border: $ribbon-backstage-btn-border;
+        border-radius: $ribbon-backstage-btn-border-radius;
         box-shadow: none;
-        padding: unset;
+        padding: $ribbon-backstage-btn-padding;
         text-align: start;
         width: 100%;
         height: $ribbon-backstage-btn-height;
@@ -548,7 +550,7 @@
         .e-btn-icon {
           @include ribbon-font-props($ribbon-backstage-btn-icon-font-size, $ribbon-backstage-btn-icon-line-height);
           width: auto;
-          margin: 0;
+          margin: $ribbon-backstage-btn-icon-margin;
           padding: $ribbon-backstage-btn-icon-padding;
         }
 
@@ -564,33 +566,33 @@
           @include ribbon-backstage-border($ribbon-backstage-btn-focus-border);
         }
         @if ($skin-name == 'tailwind3' or $theme-name == 'tailwind3-dark' or $skin-name == 'tailwind' or $theme-name == 'tailwind-dark') {
-          @include ribbon-backstage-border(2px);
+          @include ribbon-backstage-border($ribbon-backstage-wrapper-btn-icon-border);
         }
         &:focus,
         &:hover,
         &:focus:hover {
           @if ($skin-name == 'tailwind3' or $theme-name == 'tailwind3-dark' or $skin-name == 'tailwind' or $theme-name == 'tailwind-dark') {
-            @include ribbon-backstage-border(2px);
+            @include ribbon-backstage-border($ribbon-backstage-wrapper-btn-icon-focus-border);
           }
         }
       }
 
       .e-ribbon-backstage-menu {
-        border: unset;
-        border-radius: unset;
+        border: $ribbon-backstage-menu-border;
+        border-radius: $ribbon-backstage-menu-border-radius;
 
         &.e-menu-wrapper ul.e-vertical,
         &.e-menu-wrapper ul.e-ul {
           min-width: 135px;
 
           &.e-menu .e-menu-item.e-separator {
-            margin: 4px 20px;
+            margin: $ribbon-backstage-menu-item-margin;
           }
 
           .e-menu-item:not(.e-separator) {
             height: $ribbon-backstage-menu-item-height;
             line-height: $ribbon-backstage-menu-item-height;
-            padding: 0;
+            padding: $ribbon-backstage-menu-item-padding;
 
             &:focus {
               @include ribbon-backstage-border($ribbon-backstage-menu-hover-border);
@@ -605,21 +607,21 @@
               @include ribbon-backstage-border($ribbon-backstage-menu-hover-border);
             }
             @if ($skin-name == 'tailwind3' or $theme-name == 'tailwind3-dark' or $skin-name == 'tailwind' or $theme-name == 'tailwind-dark') {
-              @include ribbon-backstage-border(2px);
+              @include ribbon-backstage-border($ribbon-backstage-menu-item-border);
             }
             &:focus,
             &.e-selected,
             &:hover,
             &.e-selected:focus {
               @if ($skin-name == 'tailwind3' or $theme-name == 'tailwind3-dark' or $skin-name == 'tailwind' or $theme-name == 'tailwind-dark') {
-                @include ribbon-backstage-border(2px);
+                @include ribbon-backstage-border($ribbon-backstage-menu-selected-focus-border);
               }
             }
             .e-menu-icon {
               @include ribbon-font-props($ribbon-backstage-menu-icon-font-size, $ribbon-backstage-menu-icon-line-height);
               @include ribbon-items-icon-images($ribbon-backstage-menu-icon-font-size);
               width: auto;
-              margin-right: unset;
+              margin-right: $ribbon-backstage-menu-icon-margin-right;
               margin: $ribbon-backstage-menu-icon-padding;
             }
 
@@ -632,7 +634,7 @@
         &.e-rtl {
           ul.e-vertical .e-menu-item:not(.e-separator).e-blankicon,
           ul.e-ul .e-menu-item:not(.e-separator).e-blankicon {
-            padding-left: 0 !important; /* stylelint-disable-line declaration-no-important */
+            padding-left: $ribbon-backstage-menu-blank-icon-padding-left !important; /* stylelint-disable-line declaration-no-important */
             padding-right: $ribbon-backstage-menu-blank-icon-padding !important; /* stylelint-disable-line declaration-no-important */
           }
         }
@@ -668,10 +670,10 @@
           @include ribbon-font-styles($ribbon-input-icon-size, $ribbon-input-icon-weight, $ribbon-input-icon-height);
           @include ribbon-items-height(auto, auto);
           padding: $ribbon-input-icon-padding;
-          margin: 0;
-          border: none;
+          margin: $ribbon-input-icon-margin;
+          border: $ribbon-input-icon-border;
           min-width: auto;
-          border-radius: unset;
+          border-radius: $ribbon-input-icon-border-radius;
 
           &.e-ddl-icon {
             font-size: $ribbon-input-icon-size;
@@ -681,7 +683,7 @@
         .e-clear-icon {
           min-width: auto;
           min-height: auto;
-          border-radius: unset;
+          border-radius: $ribbon-clear-icon-border-radius;
         }
       }
 
@@ -748,7 +750,7 @@
     .e-ribbon-group-overflow,
     .e-ribbon-item {
       display: flex;
-      padding: 1px;
+      padding: $ribbon-item-padding;
       vertical-align: middle;
 
       .e-ribbon-gallery-wrapper {
@@ -764,8 +766,8 @@
 
       .e-ribbon-gallery-button {
         padding: $ribbon-gallery-button-icon-padding;
-        border-width: 0 0 0 1px;
-        border-radius: 0 4px 4px 0;
+        border-width: $ribbon-gallery-btn-icon-border-width;
+        border-radius: $ribbon-gallery-btn-icon-border-radius;
         line-height: $ribbon-gallery-button-icon-line-height;
         font-weight: $ribbon-gallery-button-icon-font-weight;
         font-size: $ribbon-gallery-button-icon-font-size;
@@ -818,7 +820,7 @@
           }
 
           .e-icon-top {
-            height: 50%;
+            height: $icon-top-height;
           }
 
           &.e-top-icon-btn {
@@ -828,10 +830,10 @@
 
         & > .e-split-btn-wrapper.e-vertical .e-btn {
           justify-content: space-evenly;
-          height: 50%;
+          height: $split-btn-wrapper-height;
 
           .e-icon-top {
-            height: unset;
+            height: $split-btn-wrapper-icon-top-height;
           }
         }
 
@@ -852,9 +854,9 @@
       padding: $ribbon-items-padding;
 
       &:has(.e-ribbon-gallery-container) {
-        padding: 0;
+        padding: $ribbon-gallery-container-padding;
         border-style: solid;
-        border-width: 1px;
+        border-width: $ribbon-gallery-container-border-width;
       }
       &:has(.e-ribbon-gallery-container:not(.e-hidden)) {
         height: $ribbon-gallery-wrapper-height;
@@ -866,8 +868,8 @@
       }
 
       .e-checkbox-wrapper {
-        height: fit-content;
-        margin: auto 0;
+        height: $ribbon-items-checkbox-height;
+        margin: $ribbon-items-checkbox-margin;
         width: max-content;
         padding: $ribbon-items-checkbox-padding;
 
@@ -887,11 +889,11 @@
 
       .e-colorpicker-wrapper,
       .e-colorpicker-container {
-        border: 1px solid transparent;
+        border: $ribbon-items-colorpicker-border solid transparent;
         border-radius: $ribbon-items-border-radius;
 
         .e-split-btn-wrapper.e-rtl .e-split-colorpicker.e-split-btn {
-          padding: 0;
+          padding: $ribbon-split-btn-padding;
         }
         .e-colorpicker-popup.e-ribbon-control
         {
@@ -900,12 +902,12 @@
       }
 
       .e-split-btn-wrapper {
-        border: 1px solid transparent;
+        border: $ribbon-split-btn-wrapper-border solid transparent;
         border-radius: $ribbon-items-border-radius;
         box-shadow: none;
 
         .e-btn {
-          border-radius: 0;
+          border-radius: $ribbon-split-btn-border-radius;
         }
 
         .e-dropdown-btn .e-caret {
@@ -918,10 +920,10 @@
         min-height: 100%;
 
         .e-split-btn-wrapper.e-vertical {
-          height: 100%;
+          height: $split-btn-wrapper-vertical-height;
 
           .e-dropdown-btn {
-            margin: auto;
+            margin: $ribbon-dropdown-btn-margin;
           }
         }
       }
@@ -930,11 +932,11 @@
       &.e-ribbon-medium-item {
         .e-btn {
           white-space: nowrap;
-          padding: 0;
+          padding: $ribbon-small-medium-item-padding;
           line-height: $ribbon-items-height;
 
           .e-btn-icon {
-            @include ribbon-font-props(16px, 16px);
+            @include ribbon-font-props($ribbon-medium-item-font-size, $ribbon-medium-item-line-height);
             margin: $ribbon-items-margin;
             &:not(.e-caret) {
               @include ribbon-items-icon-images($ribbon-items-min-width-height);
@@ -943,17 +945,17 @@
         }
 
         .e-colorpicker-wrapper .e-split-btn-wrapper {
-          border: none;
+          border: $ribbon-colorpicker-split-btn-wrapper-border;
         }
 
         .e-split-colorpicker.e-split-btn {
           .e-btn-icon {
-            height: 16px;
-            width: 16px;
+            height: $ribbon-split-btn-icon-height;
+            width: $ribbon-split-btn-icon-width;
           }
 
           .e-split-preview {
-            border-radius: unset;
+            border-radius: $ribbon-split-preview-border-radius;
           }
         }
 
@@ -964,12 +966,12 @@
         .e-dropdown-btn .e-caret {
           @include ribbon-font-props($ribbon-dropdown-caret-btn-size, $ribbon-dropdown-caret-btn-height);
           padding: $ribbon-dropdown-caret-btn-padding;
-          margin: 0;
+          margin: $ribbon-dropdown-caret-btn-margin;
           width: auto;
         }
 
         .e-split-btn-wrapper .e-btn {
-          margin: 0;
+          margin: $ribbon-split-btn-wrapper-margin;
         }
       }
 
@@ -989,22 +991,22 @@
 
           &.e-dropdown-btn:not(.e-icon-btn) .e-caret {
             margin: $ribbon-items-margin;
-            padding: 0;
+            padding: $ribbon-items-dropdown-btn-padding;
           }
         }
       }
     }
 
     &:not(.e-rtl) .e-ribbon-item:not(:has(.e-ribbon-template)) {
-      @include ribbon-item-padding($ribbon-items-btn-padding, 0 2px 0 0);
+      @include ribbon-item-padding($ribbon-items-btn-padding, $ribbon-items-icons-padding);
     }
 
     &.e-rtl .e-ribbon-item:not(:has(.e-ribbon-template)) {
-      @include ribbon-item-padding($ribbon-items-btn-rtl-padding, 0 0 0 2px);
+      @include ribbon-item-padding($ribbon-items-btn-rtl-padding, $ribbon-rtl-items-icons-padding);
 
       .e-ribbon-gallery-button {
-        border-width: 0 1px 0 0;
-        border-radius: 4px 0 0 4px;
+        border-width: $ribbon-gallery-button-border-width;
+        border-radius: $ribbon-gallery-button-border-radius;
       }
     }
   }
@@ -1013,7 +1015,7 @@
     &.e-dropdown-popup:has(.e-ribbon-overflow-target) {
       min-width: 190px;
       @if ($skin-name == 'fluent2') {
-        padding: 4px;
+        padding: $ribbon-group-overflow-ddb-padding;
       }
     }
     .e-ribbon-of-tab:not(.e-ribbon-active) {
@@ -1022,26 +1024,26 @@
 
     .e-ribbon-overflow-target {
       .e-ribbon-item:has(.e-ribbon-gallery-container) {
-        border: 0;
+        border: $ribbon-overflow-target-border;
       }
       @if ($skin-name == 'fluent2') {
         .e-ribbon-item.e-ribbon-medium-item:not(:has(.e-ribbon-template)) .e-dropdown-btn.e-btn {
-          padding: 0;
+          padding: $ribbon-overflow-target-padding;
         }
       }
       
       .e-ribbon-item:has(.e-input-group) {
-        margin: 5px 0;
+        margin: $ribbon-item-input-group-margin;
       }
 
       .e-ribbon-gallery-dropdown.e-btn {
-        padding: 0;
+        padding: $ribbon-gallery-dropdown-btn-padding;
         display: flex;
         align-items: center;
         justify-content: flex-start;
         width: 100%;
         .e-btn-icon {
-          margin: 0;
+          margin: $ribbon-gallery-dropdown-btn-margin;
         }
       }
       .e-ribbon-gallery-wrapper.e-hidden,
@@ -1090,9 +1092,9 @@
 
       .e-ribbon-item > .e-checkbox-wrapper {
         margin: $ribbon-checkbox-margin;
-        padding: 0;
+        padding: $ribbon-checkbox-wrapper-padding;
         .e-frame {
-          margin: unset;
+          margin: $ribbon-checkbox-wrapper-frame-margin;
         }
       }
 
@@ -1109,7 +1111,7 @@
           }
 
           .e-btn .e-btn-icon.e-icon-left {
-            margin: 0;
+            margin: $ribbon-btn-icon-left-margin;
           }
 
           > .e-split-btn-wrapper .e-btn,
@@ -1143,7 +1145,7 @@
       @if ($skin-name == 'fluent2') {
         &.e-ribbon-medium-item .e-btn {
           &:not(.e-icon-btn, .e-dropdown-btn) {
-            padding: 0 4px 0 0;
+            padding: $ribbon-medium-item-padding;
           }
         }
       }
@@ -1176,7 +1178,7 @@
         .e-icons.e-caret {
           transform: rotate(-90deg);
           padding: $ribbon-caret-icon-padding;
-          margin: 0 0 0 auto;
+          margin: $ribbon-caret-icon-margin;
         }
       }
     }
@@ -1191,7 +1193,7 @@
         @if ($skin-name == 'fluent2') {
           &.e-ribbon-medium-item .e-btn {
             &:not(.e-icon-btn, .e-dropdown-btn) {
-              padding: 0 0 0 4px;
+              padding: $ribbon-rtl-medium-item-padding;
             }
           }
         }
@@ -1223,7 +1225,7 @@
           .e-icons.e-caret {
             transform: rotate(90deg);
             padding: $ribbon-rtl-caret-icon-padding;
-            margin: 0 auto 0 0;
+            margin: $ribbon-rtl-caret-icon-margin;
           }
         }
       }
@@ -1255,16 +1257,16 @@
         }
         &:has(.e-ribbon-group-button-content) .e-btn.e-ribbon-group-button {
           &:first-of-type {
-            border-top-right-radius: 4px;
-            border-top-left-radius: 4px;
-            border-bottom-right-radius: 0;
-            border-bottom-left-radius: 0;
+            border-top-right-radius: $ribbon-group-btn-first-border-top-right-radius;
+            border-top-left-radius: $ribbon-group-btn-first-border-top-left-radius;
+            border-bottom-right-radius: $ribbon-group-btn-first-border-bottom-right-radius;
+            border-bottom-left-radius: $ribbon-group-btn-first-border-bottom-left-radius;
           }
           &:last-of-type {
-            border-top-right-radius: 0;
-            border-top-left-radius: 0;
-            border-bottom-right-radius: 4px;
-            border-bottom-left-radius: 4px;
+            border-top-right-radius: $ribbon-group-btn-last-border-top-right-radius;
+            border-top-left-radius: $ribbon-group-btn-last-border-top-left-radius;
+            border-bottom-right-radius: $ribbon-group-btn-last-border-bottom-right-radius;
+            border-bottom-left-radius: $ribbon-group-btn-last-border-bottom-left-radius;
           }
         }
         &:not(.e-icon-btn) {
@@ -1278,7 +1280,7 @@
       border-radius: $ribbon-group-button-ddb-border-radius;
       
       .e-btn-icon {
-        @include ribbon-font-styles(16px, $ribbon-items-font-weight, 16px);
+        @include ribbon-font-styles($ribbon-group-button-icon-font-size, $ribbon-items-font-weight, $ribbon-group-button-icon-line-height);
         @include ribbon-items-icon-images(16px);
         margin: $ribbon-group-button-icon-margin;
         width: auto;
@@ -1288,7 +1290,7 @@
         }
       }
       .e-btn.e-ribbon-group-button {
-        padding: 0;
+        padding: $ribbon-group-button-item-padding;
         font-weight: $ribbon-items-font-weight;
         font-size: $ribbon-items-btn-size;
         border: $ribbon-group-button-item-border;
@@ -1310,12 +1312,12 @@
   .e-ribbon-gallery-popup.e-popup,
   .e-ribbon-gallery-dropdown.e-popup {
     .e-ribbon-popup-container .e-ribbon-gallery-header:first-child {
-      padding-top: 0;
+      padding-top: $ribbon-gallery-header-padding-top;
     }
   }
   .e-ribbon-gallery-popup.e-popup,
   .e-ribbon-gallery-dropdown.e-popup {
-    border-radius: 4px;
+    border-radius: $ribbon-gallery-popup-border-radius;
     padding: $ribbon-gallery-popup-padding;
     overflow: auto;
 
@@ -1324,8 +1326,8 @@
       padding: $ribbon-gallery-header-padding;
     }
     .e-ribbon-gallery-container .e-ribbon-gallery-item {
-      margin: 2px;
-      height: 54px;
+      margin: $ribbon-gallery-item-margin;
+      height: $ribbon-gallery-popup-items-height;
       width: $ribbon-gallery-popup-items-width;
     }
   }
@@ -1339,8 +1341,8 @@
   .e-ribbon-group-overflow,
   .e-ribbon-item {
     .e-ribbon-gallery-container {
-      padding: 0;
-      margin: 0;
+      padding: $ribbon-overflow-gallery-container-padding;
+      margin: $ribbon-overflow-gallery-container-margin;
       display: flex;
       align-content: space-around;
 
@@ -1352,9 +1354,9 @@
         list-style-type: none;
         padding: $ribbon-gallery-popup-items-padding;
         cursor: pointer;
-        border-width: 2px;
+        border-width: $ribbon-gallery-popup-items-border-width;
         border-style: solid;
-        border-radius: 4px;
+        border-radius: $ribbon-gallery-popup-items-border-radius;
 
         &.e-disabled {
           pointer-events: none;
@@ -1366,7 +1368,7 @@
 
         .e-ribbon-gallery-icons {
           @include ribbon-font-styles($ribbon-gallery-icons-size, $ribbon-gallery-icons-weight, $ribbon-gallery-icons-height);
-          padding: 3px;
+          padding: $ribbon-gallery-icons-padding;
           background-size: cover;
           min-width: $ribbon-gallery-icons-size;
           min-height: $ribbon-gallery-icons-size;
@@ -1375,7 +1377,7 @@
         }
         &:hover,
         &.e-ribbon-gallery-selected {
-          border-radius: 4px;
+          border-radius: $ribbon-gallery-selected-border-radius;
         }
       }
     }
@@ -1416,7 +1418,7 @@
         }
   
         .e-menu-item {
-          border-radius: unset;
+          border-radius: $ribbon-menu-item-border-radius;
           font-weight: $ribbon-text-font-weight;
           .e-menu-icon {
             @include ribbon-items-icon-images($ribbon-file-menu-min-width-height);
@@ -1441,31 +1443,31 @@
     }
 
     .e-menu-icon {
-      @include ribbon-font-props(16px, 16px);
+      @include ribbon-font-props($ribbon-menu-icon-font-size, $ribbon-menu-icon-line-height);
       @include ribbon-items-icon-images(16px);
     }
   }
 
   .e-ribbon-tooltip {
     .e-tip-content {
-      padding: 4px;
+      padding: $ribbon-tooltip-padding;
 
       .e-ribbon-tooltip-title {
-        @include ribbon-font-props(12px, 18px);
-        padding: 4px 4px 0;
+        @include ribbon-font-props($ribbon-tooltip-title-font-size, $ribbon-tooltip-title-line-height);
+        padding: $ribbon-tooltip-title-padding;
       }
 
       .e-ribbon-text-container {
-        padding: 4px;
+        padding: $ribbon-text-container-padding;
         display: flex;
 
         .e-ribbon-tooltip-content {
-          @include ribbon-font-props(10px, 15px);
+          @include ribbon-font-props($ribbon-tooltip-content-font-size, $ribbon-tooltip-content-line-height);
         }
 
         .e-ribbon-tooltip-icon {
-          @include ribbon-font-props(32px, 32px);
-          padding-right: 8px;
+          @include ribbon-font-props($ribbon-tooltip-icon-font-size, $ribbon-tooltip-icon-line-height);
+          padding-right: $ribbon-tooltip-icon-padding-right;
         }
       }
     }

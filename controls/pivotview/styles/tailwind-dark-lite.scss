@@ -1,7 +1,7 @@
-@import 'ej2-base/styles/definition/tailwind-dark.scss';
-@import 'pivotview/tailwind-dark-definition.scss';
-@import 'pivotview/icons/tailwind-dark.scss';
-@import 'pivotview/all.scss';
-@import 'pivotfieldlist/tailwind-dark-definition.scss';
-@import 'pivotfieldlist/icons/tailwind-dark.scss';
-@import 'pivotfieldlist/all.scss';
+@use 'ej2-base/styles/definition/tailwind-dark' as *;
+@use 'pivotfieldlist/tailwind-dark-definition' as *;
+@use 'pivotview/tailwind-dark-definition' as *;
+@use 'pivotview/icons/tailwind-dark' as *;
+@use 'pivotview/all' as *;
+@use 'pivotfieldlist/icons/tailwind-dark' as *;
+@use 'pivotfieldlist/all' as *;

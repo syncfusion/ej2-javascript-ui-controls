@@ -13,7 +13,7 @@ import { TablePasting } from './table-pasting';
  * This InsertHtml class contains methods to insert HTML nodes or text into a document.
  *
  * @hidden
- * @deprecated
+ * @private
  */
 export class InsertHtml {
     public static inlineNode: string[] = ['a', 'abbr', 'acronym', 'audio', 'b', 'bdi', 'bdo', 'big', 'br', 'button',
@@ -34,7 +34,7 @@ export class InsertHtml {
      * @param {EditorManager} [editorManager] - Represents the EditorManager instance. Optional.
      * @returns {void}
      * @hidden
-     * @deprecated
+     * @private
      */
     public static Insert(
         docElement: Document, insertNode: Node | string,
@@ -114,7 +114,7 @@ export class InsertHtml {
                 nodeCutter, isCollapsed, closestParentNode, insertedNode, nodes, insertNode, isCursor, enterAction);
         } else {
             this.handleContentInsertionInsideRange(
-                docElement, range, nodeSelection,
+                docElement, range, nodeSelection, nodeCutter,
                 closestParentNode, insertedNode, isCursor);
         }
         // Scroll to cursor if needed for the image
@@ -155,6 +155,7 @@ export class InsertHtml {
             }
         }
     }
+
     //Unwraps span elements that contain block-level elements within them.
     private static unwrapSpansAroundBlocks(node: Node): void {
         if (node.nodeType !== Node.ELEMENT_NODE) {
@@ -458,7 +459,7 @@ export class InsertHtml {
 
     // Manages insertion operations when nodes are intended to be placed within the current range selection.
     private static handleContentInsertionInsideRange(
-        docElement: Document, range: Range, nodeSelection: NodeSelection,
+        docElement: Document, range: Range, nodeSelection: NodeSelection, nodeCutter: NodeCutter,
         closestParentNode: Node, insertedNode: Node, isCursor: boolean
     ): void {
         const liElement: HTMLElement = !isNOU(closestParentNode) ?
@@ -468,7 +469,7 @@ export class InsertHtml {
             liElement.appendChild(insertedNode);
             this.removeEmptyNextLI(liElement);
         } else {
-            this.insertWithRangeHandling(docElement, range, insertedNode, isCursor);
+            this.insertWithRangeHandling(docElement, range, nodeCutter, insertedNode, isCursor);
         }
         this.setCursorAfterInsertion(docElement, insertedNode, nodeSelection);
     }
@@ -484,7 +485,7 @@ export class InsertHtml {
 
     // Handles direct node insertions by accounting for document structure and browser compatibility factors.
     private static insertWithRangeHandling(
-        docElement: Document, range: Range,
+        docElement: Document, range: Range, nodeCutter: NodeCutter,
         insertedNode: Node, isCursor: boolean
     ): void {
         range.deleteContents();
@@ -498,7 +499,7 @@ export class InsertHtml {
         } else if (this.isHrElement(range)) {
             this.insertAfterHrElement(range, insertedNode);
         } else {
-            this.insertBasedOnStartContainer(range, insertedNode);
+            this.insertBasedOnStartContainer(range, insertedNode, nodeCutter);
         }
     }
 
@@ -521,9 +522,38 @@ export class InsertHtml {
     }
 
     // Inserts content based on the start container properties and current text structure.
-    private static insertBasedOnStartContainer(range: Range, insertedNode: Node): void {
+    private static insertBasedOnStartContainer(range: Range, insertedNode: Node, nodeCutter: NodeCutter): void {
+        let container: HTMLElement = range.startContainer as HTMLElement;
         if (range.startContainer.nodeName === 'BR') {
             range.startContainer.parentElement.insertBefore(insertedNode, range.startContainer);
+        } else if (insertedNode.nodeName === 'TABLE' && (CONSTANT.ALLOWED_TABLE_BLOCK_TAGS.indexOf(container.nodeName.toLowerCase()) === -1
+            && CONSTANT.TABLE_BLOCK_TAGS.indexOf(container.nodeName.toLowerCase()) === -1)) {
+            while ((CONSTANT.ALLOWED_TABLE_BLOCK_TAGS.indexOf(container.parentNode.nodeName.toLowerCase()) === -1
+                && CONSTANT.TABLE_BLOCK_TAGS.indexOf(container.parentNode.nodeName.toLowerCase()) === -1)) {
+                container = container.parentNode as HTMLElement;
+            }
+            // Case 1: If cursor is at the start of the inline element
+            if (range.startOffset === 0 && range.endOffset === 0 && container) {
+                container.parentNode.insertBefore(insertedNode, container);
+                const hasText: boolean = container.textContent.length > 0;
+                const hasMediaElements: boolean = container.nodeName !== '#text' && container.querySelector('img, video, audio, table') !== null;
+                const hasContent: boolean = hasText || hasMediaElements;
+                if (!hasContent) {
+                    detach(container);
+                }
+            } else if (range.startOffset === range.startContainer.textContent.length && range.endOffset ===
+                range.startContainer.textContent.length &&
+                container && container.parentNode) {
+                // Case 2: If cursor is at the end of the inline element
+                const nextSibling: Node = container.nextSibling;
+                container.parentNode.insertBefore(insertedNode, nextSibling);
+            } else {
+                // Case 3: Handling middle insertion
+                const spliceNode: Node = nodeCutter.GetSpliceNode(range, container);
+                const nextNode: Node | null = spliceNode.nextSibling;
+                container.parentNode.insertBefore(insertedNode, nextNode);
+                detach(spliceNode);
+            }
         } else {
             range.insertNode(insertedNode);
         }
@@ -771,11 +801,12 @@ export class InsertHtml {
                 range.setStart(startContainerParent, startIndex);
                 range.setEnd(startContainerParent, startIndex);
             }
-            if (!isNOU(lasNode) && lasNode !== editNode) {
+            if (!isNOU(lasNode) && lasNode !== editNode &&
+                editNode.childNodes.length > 0 && editNode.childNodes[0] !== lasNode) {
                 detach(lasNode);
                 this.removeEmptyElements(editNode as HTMLElement, true);
             }
-            if (!isNOU(sibNode)) {
+            if (!isNOU(sibNode) && sibNode.parentNode !== editNode.parentNode) {
                 if (sibNode.parentNode === editNode) {
                     sibNode.appendChild(fragment);
                 } else {
@@ -812,7 +843,7 @@ export class InsertHtml {
             fragment.appendChild(insertedNode.firstChild);
         }
         return this.insertFragmentOrReplaceNode(
-            tempSpan, fragment, range, nodeSelection, document, lastSelectionNode, editNode
+            tempSpan, fragment, lastSelectionNode, editNode
         );
     }
 
@@ -846,17 +877,12 @@ export class InsertHtml {
 
     // Inserts a document fragment at a temporary span position or replaces a specific node.
     private static insertFragmentOrReplaceNode(
-        tempSpan: HTMLElement, fragment: DocumentFragment,
-        range: Range, nodeSelection: NodeSelection,
-        docElement: Document, lastSelectionNode: Node, editNode: Element
+        tempSpan: HTMLElement, fragment: DocumentFragment, lastSelectionNode: Node, editNode: Element
     ): Node {
         const matchedElement: HTMLElement = this.getClosestMatchingElement(tempSpan.parentNode as HTMLElement, fragment, editNode);
         const hasMultipleChildNodes: boolean = fragment.firstChild && fragment.firstChild.childNodes.length > 1;
         if (fragment.childNodes.length === 1 && fragment.firstChild && !hasMultipleChildNodes && matchedElement) {
-            return this.replaceWithMatchedContent(
-                tempSpan, matchedElement, fragment,
-                range, nodeSelection, docElement, lastSelectionNode
-            );
+            return this.replaceWithMatchedContent(tempSpan, fragment, lastSelectionNode);
         } else {
             tempSpan.parentNode.replaceChild(fragment, tempSpan);
             return lastSelectionNode;
@@ -864,36 +890,16 @@ export class InsertHtml {
     }
 
     // Replaces the temporary node with matched content, adjusting text nodes if required.
-    private static replaceWithMatchedContent(
-        tempSpan: HTMLElement, matchedElement: HTMLElement,
-        fragment: DocumentFragment, range: Range,
-        nodeSelection: NodeSelection, docElement: Document,
-        lastSelectionNode: Node
-    ): Node {
+    private static replaceWithMatchedContent(tempSpan: HTMLElement, fragment: DocumentFragment, lastSelectionNode: Node): Node {
         const wrapperDiv: HTMLElement = document.createElement('div');
-        const text: string = fragment.firstChild.textContent || '';
         wrapperDiv.innerHTML = (fragment.firstChild as HTMLElement).innerHTML || '';
-        const replacementNode: Node = wrapperDiv.firstChild;
-        let result: Node = lastSelectionNode;
-        if (replacementNode) {
-            matchedElement.replaceChild(replacementNode, tempSpan);
-            if (matchedElement.parentNode &&
-                replacementNode.nodeType === Node.TEXT_NODE &&
-                this.shouldNormalizeTextNodes(replacementNode)) {
-                matchedElement.parentNode.normalize();
-                const startOffset: number = range.startOffset + text.length;
-                nodeSelection.setCursorPoint(docElement, matchedElement.firstChild as HTMLElement, startOffset);
-                result = null;
-            }
+        const result: Node = lastSelectionNode;
+        if (!isNOU(wrapperDiv.firstChild)) {
+            this.addCursorMarker(wrapperDiv, true);
+            tempSpan.outerHTML = wrapperDiv.innerHTML;
         }
         wrapperDiv.remove();
         return result;
-    }
-
-    // Determines if text node normalization is necessary after a paste operation.
-    private static shouldNormalizeTextNodes(node: Node): boolean {
-        return (node.previousSibling && node.previousSibling.nodeType === Node.TEXT_NODE) ||
-               (node.nextSibling && node.nextSibling.nodeType === Node.TEXT_NODE);
     }
 
     // Manages block node insertion during paste operations to align with document structure.
@@ -1126,16 +1132,18 @@ export class InsertHtml {
     private static handleListElementCursor(insertedNode: Node, editNode: Element,
                                            nodeSelection: NodeSelection, docElement: Document): void {
         const cursorElm: HTMLElement = editNode.querySelector('.paste-cursor');
+        const nodeList: NodeListOf<HTMLElement> = editNode.querySelectorAll('.pasteContent_RTE');
+        const brElement: HTMLBRElement | null = editNode.querySelector('br.rte-temp-br');
         if (!isNOU(cursorElm)) {
             nodeSelection.setCursorPoint(docElement, cursorElm, 0);
             cursorElm.remove();
         }
-        else {
-            const nodeList: NodeListOf<HTMLElement> = editNode.querySelectorAll('.pasteContent_RTE');
-            if (nodeList.length > 0) {
-                const lastElement: HTMLElement = nodeList[nodeList.length - 1];
-                this.cursorPos(lastElement, insertedNode, nodeSelection, docElement, editNode);
-            }
+        else if (nodeList.length > 0) {
+            const lastElement: HTMLElement = nodeList[nodeList.length - 1];
+            this.cursorPos(lastElement, insertedNode, nodeSelection, docElement, editNode);
+        }
+        else if (!isNOU(brElement)) {
+            nodeSelection.setCursorPoint(docElement, brElement, 0);
         }
     }
 
@@ -1500,10 +1508,11 @@ export class InsertHtml {
             this.insertInTableCell(range, insertedNode, blockNode, nodeCutter);
             return lastSelectionNode;
         }
+        const emptyBlockEle: HTMLElement | null = this.isHorizontalRuleInEmptyBlock(lastSelectionNode, range);
         // When inserting HR and selection is in a P/DIV with only BR
-        if (this.isHorizontalRuleInEmptyBlock(lastSelectionNode, range)) {
-            const containerParent: Node = range.startContainer.parentNode;
-            containerParent.replaceChild(insertedNode, range.startContainer);
+        if (!isNOU(emptyBlockEle)) {
+            const containerParent: Node = emptyBlockEle.parentNode;
+            containerParent.replaceChild(insertedNode, emptyBlockEle);
             return lastSelectionNode;
         }
         // Handle media elements
@@ -1670,7 +1679,13 @@ export class InsertHtml {
         else {
             splitedElm = this.getSplitElementForInsertion(range, nodeCutter, blockNode);
         }
-        if (splitedElm && splitedElm.nodeType === Node.ELEMENT_NODE && range.toString() === '' &&
+        if (!isNOU(splitedElm) && splitedElm === editNode) {
+            range.deleteContents();
+            this.removeEmptyElements(editNode as HTMLElement);
+            range.insertNode(insertedNode);
+            this.contentsDeleted = true;
+        }
+        else if (splitedElm && splitedElm.nodeType === Node.ELEMENT_NODE && range.toString() === '' &&
             (splitedElm as Element).querySelector('img, video, audio') !== null) {
             splitedElm.parentNode.insertBefore(insertedNode, splitedElm);
         }
@@ -1713,7 +1728,7 @@ export class InsertHtml {
                 this.insertBlockNodesInLI(insertNodes, range);
             } else {
                 const startContainerParent: HTMLElement = range.startContainer.parentElement;
-                const nextSibling: Element =  startContainerParent.nextElementSibling;
+                const nextSibling: Element = startContainerParent.nextElementSibling;
                 if (range.startContainer.nodeName === 'DIV' && startContainerParent &&
                     startContainerParent.nodeName === 'LI' && startContainerParent.parentNode) {
                     startContainerParent.parentNode.insertBefore(insertedNode, nextSibling);
@@ -1903,8 +1918,7 @@ export class InsertHtml {
             this.pasteLI(insertedNode, parentLi, mergeNode, blockNode, range, nodeCutter);
         } else if (!isCollapsed && startLi && endLi && filteredChildNodes.length > 0) {
             this.nonCollapsedInsertion(insertedNode, cloneRange, nodeCutter, endLi);
-        }
-        else if (isCollapsed && ((insertedNode.firstChild.nodeName === 'UL' ||
+        } else if (isCollapsed && ((insertedNode.firstChild.nodeName === 'UL' ||
             insertedNode.firstChild.nodeName === 'OL') && currentNode.parentElement && currentNode.parentElement.nodeName === 'DIV')) {
             // Case 1: If cursor is at the start of the list item
             if (range.startOffset === 0 && range.endOffset === 0 && startContainerparentElement) {
@@ -2149,6 +2163,9 @@ export class InsertHtml {
             parentList.insertBefore(fragment, parentLi.nextSibling);
         } else if (lastNewLi) {
             this.moveSiblingsToLiAndInsert(startContainer.nextSibling, lastNewLi, fragment, parentLi, parentList);
+        } else {
+            // nextSibling exists → insert before it
+            parentList.insertBefore(fragment, startContainer.nextSibling);
         }
         if (parentLi.textContent === '' && parentLi.parentNode) {
             parentLi.parentNode.removeChild(parentLi);
@@ -2167,16 +2184,26 @@ export class InsertHtml {
         if (parentLi.contains(mergeNode) && mergeNode.previousSibling && mergeNode.previousSibling.textContent.trim().length !== 0) {
             isCursorAtStart = false;
         }
-        if (parentLi.contains(mergeNode) && (isNOU(mergeNode.nextSibling) || mergeNode.nextSibling && ['LI', 'UL', 'OL'].indexOf(mergeNode.nextSibling.nodeName) !== -1) && range.startOffset === mergeNode.textContent.length) {
-            let previousSib: Node = mergeNode.previousSibling;
-            let textLength: number = range.startOffset;
-            while (previousSib && previousSib.nodeName !== 'LI') {
-                textLength += previousSib.textContent.length;
-                previousSib = previousSib.previousSibling;
-            }
-            isCursorAtEnd = textLength === blockNodeLength;
-        }
         const isAtStart: boolean = range.startOffset === 0 && isCursorAtStart;
+        if (!isAtStart) {
+            let parentLiLastChild: Node | null = parentLi.lastChild;
+            while (!isNOU(parentLiLastChild) && parentLiLastChild.nodeType === Node.ELEMENT_NODE &&
+                !this.isBlockElement(parentLiLastChild) && !isNOU(parentLiLastChild.lastChild)) {
+                parentLiLastChild = parentLiLastChild.lastChild;
+            }
+            if (range.startContainer === parentLiLastChild &&
+                range.startContainer.textContent.length === range.startOffset) {
+                isCursorAtEnd = true;
+            } else if (parentLi.contains(mergeNode) && (isNOU(mergeNode.nextSibling) || mergeNode.nextSibling && ['LI', 'UL', 'OL'].indexOf(mergeNode.nextSibling.nodeName) !== -1) && range.startOffset === mergeNode.textContent.length) {
+                let previousSib: Node = mergeNode.previousSibling;
+                let textLength: number = range.startOffset;
+                while (previousSib && previousSib.nodeName !== 'LI') {
+                    textLength += previousSib.textContent.length;
+                    previousSib = previousSib.previousSibling;
+                }
+                isCursorAtEnd = textLength === blockNodeLength;
+            }
+        }
         const isAtEnd: boolean = range.startOffset === blockNodeLength || isCursorAtEnd;
         if (isAtStart) {
             this.handlePasteAtStart(children, parentLi, mergeNode, parentList);
@@ -2212,9 +2239,17 @@ export class InsertHtml {
         }
         const fragment: DocumentFragment = this.createLiFragment(children, 1, children.length); // exclude first
         const lastNewLi: HTMLLIElement = fragment.lastChild as HTMLLIElement | null;
-        if (isNOU(hasNestedList) && (isNOU(mergeNode.nextSibling) || mergeNode.nodeName === 'LI')) {
-            parentList.insertBefore(fragment, parentLi.nextSibling);
-        } else if (lastNewLi) {
+        let cursorNode: Node = parentLi;
+        if (isNOU(lastNewLi)) {
+            cursorNode = parentLi;
+        } else {
+            cursorNode = lastNewLi;
+        }
+        while (!isNOU(cursorNode.lastChild) && cursorNode.lastChild.nodeName !== '#text') {
+            cursorNode = cursorNode.lastChild;
+        }
+        this.addCursorMarker(cursorNode, true);
+        if (lastNewLi) {
             const movedNodes: Node[] = this.collectAndRemoveFollowingNodes(parentLi, hasNestedList ? hasNestedList : mergeNode.nextSibling);
             movedNodes.forEach((node: Node) => lastNewLi.appendChild(node));
             this.insertFragmentAfterLi(fragment, parentLi, parentList);
@@ -2338,10 +2373,24 @@ export class InsertHtml {
     // Creates a fragment of list items
     private static createLiFragment(nodes: Node[], start: number, end: number): DocumentFragment {
         const fragment: DocumentFragment = document.createDocumentFragment();
-        for (let i: number = start; i < end; i++) {
-            const li: HTMLLIElement = createElement('li') as HTMLLIElement;
-            li.appendChild(nodes[i as number]);
-            fragment.appendChild(li);
+        if (nodes.length === 2 && start === 1 &&
+            (nodes[1].nodeName === 'UL' || nodes[1].nodeName === 'OL')) {
+            // execute this code only for nested list paste use case.
+            fragment.appendChild(nodes[1]);
+        } else {
+            for (let i: number = start; i < end; i++) {
+                if (nodes[i as number].nodeName === 'UL' || nodes[i as number].nodeName === 'OL') {
+                    for (let j: number = 0; j < (nodes[i as number] as HTMLElement).childNodes.length; j++) {
+                        if (this.isBlockElement(nodes[i as number].childNodes[j as number])) {
+                            fragment.appendChild(nodes[i as number].childNodes[j as number]);
+                        }
+                    }
+                } else {
+                    const li: HTMLLIElement = createElement('li') as HTMLLIElement;
+                    li.appendChild(nodes[i as number]);
+                    fragment.appendChild(li);
+                }
+            }
         }
         return fragment;
     }
@@ -2353,7 +2402,9 @@ export class InsertHtml {
         while (current) {
             const next: Node = current.nextSibling;
             nodes.push(current);
-            parentLi.removeChild(current);
+            if (parentLi.contains(current)) {
+                parentLi.removeChild(current);
+            }
             current = next as ChildNode;
         }
         return nodes;
@@ -2656,15 +2707,18 @@ export class InsertHtml {
     }
 
     // Check if we're inserting a horizontal rule in an empty block element
-    private static isHorizontalRuleInEmptyBlock(node: Node, range: Range): boolean {
+    private static isHorizontalRuleInEmptyBlock(node: Node, range: Range): HTMLElement | null {
         if (node.nodeName !== 'HR') {
-            return false;
+            return null;
         }
-        const container: Element = range.startContainer as Element;
-        return container.nodeType === Node.ELEMENT_NODE &&
-            (container.nodeName === 'P' || container.nodeName === 'DIV') &&
-            container.childNodes.length === 1 && container.firstChild &&
-            container.firstChild.nodeName === 'BR';
+        let container: HTMLElement = range.startContainer as HTMLElement;
+        while (!this.isBlockElement(container) && !isNOU(container.parentElement)) {
+            container = container.parentElement;
+        }
+        const isTextContentPresent: boolean = container.textContent.trim() !== '';
+        const isMediaElementPresent: boolean = !isNOU(container.querySelector('video')) ||
+            !isNOU(container.querySelector('audio')) || !isNOU(container.querySelector('img'));
+        return !(isTextContentPresent || isMediaElementPresent) ? container : null;
     }
 
     // Check if the node is a media element

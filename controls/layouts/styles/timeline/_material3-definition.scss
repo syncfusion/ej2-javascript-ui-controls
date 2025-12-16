@@ -1,3 +1,5 @@
+@use 'ej2-base/styles/definition/material3' as *;
+@forward 'ej2-base/styles/definition/material3';
 $timeline-dot-size: 16px !default;
 $timeline-content-font-size: 14px !default;
 $timeline-dot-font-size: 16px !default;
@@ -9,6 +11,7 @@ $timeline-bigger-content-font-size: 16px !default;
 $timeline-bigger-opposite-content-font-size: 14px !default;
 $timeline-bigger-dot-font-size: 18px !default;
 $timeline-bigger-dot-icon-size: 40px !default;
+$timeline-content-font-weight: 500 !default;
 
 $timeline-dot-color: rgba($content-text-color) !default;
 $timeline-dot-background-color: rgba($content-bg-color) !default;
@@ -16,3 +19,10 @@ $timeline-dot-border-color: rgba($border-light) !default;
 $timeline-content-font-color: $content-text-color !default;
 $timeline-opposite-content-font-color: $content-text-color-alt1 !default;
 $timeline-item-disabled-color: $content-text-color-disabled !default;
+
+$timeline-dot-border: 1px !default;
+$timeline-dot-radius: $border-radius-50p !default;
+$timeline-list-padding: 0 !default;
+$timeline-inherit-height: inherit !default;
+$timeline-auto-height: auto !default;
+$timeline-height-none: 0 !default;

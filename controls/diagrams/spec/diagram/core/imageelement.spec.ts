@@ -40,8 +40,9 @@ describe('Diagram Control', () => {
         });
 
         afterAll((): void => {
-            diagram.destroy();
-            ele.remove();
+            if (diagram) { diagram.destroy(); diagram = null; }
+            if (ele && ele.parentNode) ele.parentNode.removeChild(ele);
+            ele = null;
         });
 
         it('Checking with width and height in SVG rendering Mode', (done: Function) => {
@@ -75,8 +76,9 @@ describe('Diagram Control', () => {
         });
 
         afterAll((): void => {
-            diagram.destroy();
-            ele.remove();
+            if (diagram) { diagram.destroy(); diagram = null; }
+            if (ele && ele.parentNode) ele.parentNode.removeChild(ele);
+            ele = null;
         });
 
         it('Checking without width and height in SVG rendering Mode', (done: Function) => {
@@ -85,7 +87,7 @@ describe('Diagram Control', () => {
             //     diagram.basicElements[0].actualSize.height == 142).toBe(true);
             done();
         });
-        });
+    });
 
     describe('Image Element ', () => {
         let diagram: Diagram;
@@ -110,8 +112,9 @@ describe('Diagram Control', () => {
         });
 
         afterAll((): void => {
-            diagram.destroy();
-            ele.remove();
+            if (diagram) { diagram.destroy(); diagram = null; }
+            if (ele && ele.parentNode) ele.parentNode.removeChild(ele);
+            ele = null;
         });
 
         it('Checking without width and height with stretch in SVG rendering Mode', (done: Function) => {
@@ -148,8 +151,9 @@ describe('Diagram Control', () => {
         });
 
         afterAll((): void => {
-            diagram.destroy();
-            ele.remove();
+            if (diagram) { diagram.destroy(); diagram = null; }
+            if (ele && ele.parentNode) ele.parentNode.removeChild(ele);
+            ele = null;
         });
 
         it('Checking without size and with stretch in SVG rendering Mode', (done: Function) => {
@@ -186,8 +190,9 @@ describe('Diagram Control', () => {
         });
 
         afterAll((): void => {
-            diagram.destroy();
-            ele.remove();
+            if (diagram) { diagram.destroy(); diagram = null; }
+            if (ele && ele.parentNode) ele.parentNode.removeChild(ele);
+            ele = null;
         });
 
         it('Checking with size and meet in SVG rendering Mode', (done: Function) => {
@@ -222,8 +227,9 @@ describe('Diagram Control', () => {
         });
 
         afterAll((): void => {
-            diagram.destroy();
-            ele.remove();
+            if (diagram) { diagram.destroy(); diagram = null; }
+            if (ele && ele.parentNode) ele.parentNode.removeChild(ele);
+            ele = null;
         });
 
         it('Checking with size and slice in SVG rendering Mode', (done: Function) => {
@@ -260,8 +266,9 @@ describe('Diagram Control', () => {
         });
 
         afterAll((): void => {
-            diagram.destroy();
-            ele.remove();
+            if (diagram) { diagram.destroy(); diagram = null; }
+            if (ele && ele.parentNode) ele.parentNode.removeChild(ele);
+            ele = null;
         });
 
         it('Checking with size and Stretch.None in SVG rendering Mode', (done: Function) => {
@@ -295,8 +302,9 @@ describe('Diagram Control', () => {
         });
 
         afterAll((): void => {
-            diagram.destroy();
-            ele.remove();
+            if (diagram) { diagram.destroy(); diagram = null; }
+            if (ele && ele.parentNode) ele.parentNode.removeChild(ele);
+            ele = null;
         });
 
         it('Checking without size and with meet in SVG rendering Mode', (done: Function) => {
@@ -330,8 +338,9 @@ describe('Diagram Control', () => {
         });
 
         afterAll((): void => {
-            diagram.destroy();
-            ele.remove();
+            if (diagram) { diagram.destroy(); diagram = null; }
+            if (ele && ele.parentNode) ele.parentNode.removeChild(ele);
+            ele = null;
         });
 
         it('Checking without size and with slice', (done: Function) => {
@@ -363,8 +372,9 @@ describe('Diagram Control', () => {
         });
 
         afterAll((): void => {
-            diagram.destroy();
-            ele.remove();
+            if (diagram) { diagram.destroy(); diagram = null; }
+            if (ele && ele.parentNode) ele.parentNode.removeChild(ele);
+            ele = null;
         });
 
         it('Checking without size and with stretch.none in SVG rendering Mode', (done: Function) => {
@@ -395,8 +405,9 @@ describe('Diagram Control', () => {
             diagram.appendTo('#diagram33');
         });
         afterAll((): void => {
-            diagram.destroy();
-            ele.remove();
+            if (diagram) { diagram.destroy(); diagram = null; }
+            if (ele && ele.parentNode) ele.parentNode.removeChild(ele);
+            ele = null;
         });
 
         it('change of image element at run time', (done: Function) => {

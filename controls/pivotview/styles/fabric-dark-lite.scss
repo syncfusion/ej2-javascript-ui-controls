@@ -1,7 +1,7 @@
-@import 'ej2-base/styles/definition/fabric-dark.scss';
-@import 'pivotfieldlist/fabric-dark-definition.scss';
-@import 'pivotview/fabric-dark-definition.scss';
-@import 'pivotview/icons/fabric-dark.scss';
-@import 'pivotview/all.scss';
-@import 'pivotfieldlist/icons/fabric-dark.scss';
-@import 'pivotfieldlist/all.scss';
+@use 'ej2-base/styles/definition/fabric-dark' as *;
+@use 'pivotfieldlist/fabric-dark-definition' as *;
+@use 'pivotview/fabric-dark-definition' as *;
+@use 'pivotview/icons/fabric-dark' as *;
+@use 'pivotview/all' as *;
+@use 'pivotfieldlist/icons/fabric-dark' as *;
+@use 'pivotfieldlist/all' as *;

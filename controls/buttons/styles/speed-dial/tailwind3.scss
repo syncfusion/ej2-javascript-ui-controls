@@ -1,6 +1,6 @@
-@import 'ej2-base/styles/definition/tailwind3.scss';
-@import '../button/tailwind3-definition.scss';
-@import '../floating-action-button/tailwind3-definition.scss';
-@import 'tailwind3-definition.scss';
-@import 'all.scss';
-@import 'bigger.scss';
+@use 'ej2-base/styles/definition/tailwind3' as *;
+@use '../button/tailwind3-definition' as *;
+@use '../floating-action-button/tailwind3-definition' as *;
+@use 'tailwind3-definition' as *;
+@use 'all' as *;
+@use 'bigger' as *;

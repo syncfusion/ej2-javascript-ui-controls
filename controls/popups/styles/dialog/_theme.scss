@@ -1,3 +1,5 @@
+@use 'ej2-base/styles/common/mixin' as *;
+@use './theme-variables' as *;
 @include export-module('dialog-theme') {
   .e-dialog {
     background-color: $dialog-bg-color;

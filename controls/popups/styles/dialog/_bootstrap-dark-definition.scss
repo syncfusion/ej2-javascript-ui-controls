@@ -1,3 +1,5 @@
+@use 'ej2-base/styles/definition/bootstrap-dark' as *;
+@forward 'ej2-base/styles/definition/bootstrap-dark';
 $dialog-btn-bg-bgcolor: transparent !default;
 $dialog-btn-box-shadow: none !default;
 $dialog-resize-handler-width: 15px;
@@ -50,6 +52,7 @@ $dialog-content-font-size: 14px !default;
 $dialog-header-line-height: 1.25 !default;
 $dialog-content-line-height: 1.25 !default;
 $dialog-content-padding-top: 15px !default;
+$dialog-rtl-content-padding-top: -15px !default;
 $dialog-bigger-content-padding-top: 18.75px !default;
 $dialog-content-font-weight: 300 !default;
 $dialog-device-content-font-size: 15px !default;
@@ -84,5 +87,14 @@ $dialog-bigger-close-button-left: -7px !default;
 $dialog-bigger-close-button-width: 25px !default;
 $dialog-headericon-bottom: 5px !default;
 $dialog-enable-resize-padding-bottom: 15px !default;
+$dialog-bigger-rtl-footer-btn-margin-left: 0 !default;
+$dialog-zero-padding-margin: 0 !default;
+$dialog-alert-popup-margin: 30px !default;
+$dialog-full-width: 100% !default;
+$dialog-header-width: 80% !default;
+$dialog-max-height: 98% !default;
+$dialog-full-height: 100% !default;
+$dialog-mobile-width: 600px !default;
+$dialog-auto-width: auto !default;
 
 //endstart

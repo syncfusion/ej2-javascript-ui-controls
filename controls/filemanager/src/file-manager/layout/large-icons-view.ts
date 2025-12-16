@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { ListBase, ListBaseOptions, ItemCreatedArgs } from '@syncfusion/ej2-lists';
 import { createElement, select, selectAll, EventHandler, KeyboardEvents, closest, DragEventArgs, Draggable, Fetch } from '@syncfusion/ej2-base';
 import { isNullOrUndefined as isNOU, addClass, removeClass, Touch, TapEventArgs, isVisible } from '@syncfusion/ej2-base';
@@ -137,6 +138,10 @@ export class LargeIconsView {
                 itemCreated: this.onItemCreated.bind(this),
                 enableHtmlSanitizer: this.parent.enableHtmlSanitizer
             };
+            if (this.parent.largeIconsTemplate) {
+                this.listObj.template = this.parent.largeIconsTemplate;
+                this.listObj.templateID = this.parent.element.id + '_largeIconsTemplate';
+            }
             this.items = [];
             this.items = this.renderList(args);
             if (this.parent.sortComparer && this.parent.sortBy !== 'None'){
@@ -146,9 +151,17 @@ export class LargeIconsView {
             if (this.parent.enableVirtualization && this.allItems.length > 0 && !isNOU(this.parent.virtualizationModule)) {
                 this.parent.virtualizationModule.setUIVirtualization();
             }
-            this.listElements = ListBase.createListFromJson(createElement, <{ [key: string]: Object; }[]>this.items, this.listObj);
+            this.listElements = ListBase.createListFromJson(
+                createElement,
+                <{ [key: string]: Object; }[]>this.items,
+                this.listObj,
+                null,
+                null,
+                this.parent
+            );
             this.itemList = Array.prototype.slice.call(selectAll('.' + CLS.LIST_ITEM, this.listElements));
             this.element.appendChild(this.listElements);
+            (this.parent as any).renderReactTemplates();
             if (this.imageEventArgsMap.size > 0) {
                 this.loadImages();
             }
@@ -328,15 +341,17 @@ export class LargeIconsView {
 
     private onItemCreated(args: ItemCreatedArgs): void {
         args.item.removeAttribute('aria-level');
-        if (!this.parent.showFileExtension && getValue('isFile', args.curData)) {
-            const textEle: Element = args.item.querySelector('.' + CLS.LIST_TEXT);
-            const txt: string = getValue('name', args.curData);
-            const type: string = getValue('type', args.curData);
-            if (txt.indexOf(type) !== -1) {
-                textEle.innerHTML = txt.substr(0, txt.length - type.length);
+        if (!this.parent.largeIconsTemplate) {
+            if (!this.parent.showFileExtension && getValue('isFile', args.curData)) {
+                const textEle: Element = args.item.querySelector('.' + CLS.LIST_TEXT);
+                const txt: string = getValue('name', args.curData);
+                const type: string = getValue('type', args.curData);
+                if (txt.indexOf(type) !== -1) {
+                    textEle.innerHTML = txt.substr(0, txt.length - type.length);
+                }
             }
+            this.renderCheckbox(args);
         }
-        this.renderCheckbox(args);
         const eventArgs: FileLoadEventArgs = {
             element: args.item,
             fileDetails: args.curData,
@@ -985,8 +1000,7 @@ export class LargeIconsView {
     }
 
     private updateType(item: Element): void {
-        const folder: Element = select('.' + CLS.FOLDER, item);
-        this.parent.isFile = isNOU(folder) ? true : false;
+        this.parent.isFile = getValue('isFile', this.getItemObject(item));
     }
 
     /* istanbul ignore next */

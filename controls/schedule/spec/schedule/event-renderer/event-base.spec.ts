@@ -777,8 +777,8 @@ describe('Event Base Module', () => {
         it('CR issue - EJ2-60349 - To check occurrences before dst date in eastern timezone', (done: DoneFn) => {
             schObj.dataBound = () => {
                 const app: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
-                expect(app.length).toBe(33);
-                expect(app[32].querySelector('.e-time').innerHTML).toEqual('9:00 PM');
+                expect(app.length).toBe(32);
+                expect(app[31].querySelector('.e-time').innerHTML).toEqual('9:00 PM');
                 done();
             };
             schObj.selectedDate = new Date(2022, 11, 30);

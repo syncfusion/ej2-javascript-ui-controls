@@ -1099,11 +1099,6 @@ export class FreehandDrawing {
         /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
         const parent: ImageEditor = this.parent; const point: any = parent.pointColl[this.fhdSelIdx];
         parent.trigger('shapeChanging', shapeChangingArgs);
-        if (shapeChangingArgs.cancel) {
-            parent.editCompleteArgs = shapeChangingArgs;
-            this.cancelFhd();
-            return;
-        }
         if (parent.element.getAttribute('data-value') === 'mask-drawing' && !this.isMasking) {
             this.isMasking = true;
             parent.upperCanvas.style.cursor = 'crosshair';

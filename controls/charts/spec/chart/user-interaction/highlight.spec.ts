@@ -487,7 +487,7 @@ describe('Chart Control Highlight ', () => {
         chartObj.highlightPattern = 'HorizontalStripe';
         chartObj.refresh();
     });
-   it('Patterns with Bubble',  (done: Function) => {
+    it('Patterns with Bubble',  (done: Function) => {
         loaded = () => {
             element = document.getElementById(id + '_Series_1_Point_' + 5 + '_Symbol');
             let chartArea: Element = document.getElementById(id + '_ChartAreaBorder');
@@ -506,7 +506,7 @@ describe('Chart Control Highlight ', () => {
         chartObj.series[1].marker.shape = 'Circle';
         chartObj.refresh();
     });
-    it('Line series with enable highlight and mode as Series with group element',  (done: Function) => {
+    it('Line series with enable highlight and mode as Series with group element', (done: Function) => {
         loaded = () => {
             element = document.getElementById(id + '_Series_1');
             let element1 = document.getElementById(id + 'SeriesGroup2');

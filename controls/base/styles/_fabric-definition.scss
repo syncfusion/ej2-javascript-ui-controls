@@ -1,4 +1,5 @@
-@import 'definition/fabric.scss';
+@use 'definition/fabric' as *;
+@forward 'definition/fabric';
 
 $font-family: 'Segoe UI', 'GeezaPro', 'DejaVu Serif', sans-serif, '-apple-system', 'BlinkMacSystemFont' !default;
 $font-size: 14px !default;

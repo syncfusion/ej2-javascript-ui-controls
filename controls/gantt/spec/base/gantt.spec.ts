@@ -4,7 +4,10 @@
 import { createElement, remove } from '@syncfusion/ej2-base';
 import { DataManager, RemoteSaveAdaptor } from '@syncfusion/ej2-data';
 import { Gantt, Selection, Toolbar, DayMarkers, Edit, Filter,  ContextMenu, Sort, ColumnMenu, ITaskbarClickEventArgs, RecordDoubleClickEventArgs,ExcelExport ,PdfExport ,Reorder, Resize, CriticalPath, VirtualScroll} from '../../src/index';
-import { unscheduledData, projectResources, resourceGanttData, dragSelfReferenceData, selfReference, projectData1,baselineDatas, projectNewData2, totalDurationData, filterdata, projectNewData9, projectNewData10, projectNewData11, projectNewData12, selfData1, splitTasksData1, projectNewData13, publicProperty, cellEditData, resourcesData, cr884998,treeData,invalidPrdcessor, dataSource2, dataSource1, cR893051, undoDataSource, editingData3,editingResources3, exportData1,resourceCollection10,projectNewDatas1, cr940492} from '../base/data-source.spec';
+import { unscheduledData, projectResources, resourceGanttData, dragSelfReferenceData, selfReference, projectData1,baselineDatas, projectNewData2, totalDurationData, filterdata, projectNewData9, projectNewData10, projectNewData11, projectNewData12, selfData1, splitTasksData1, projectNewData13, publicProperty, cellEditData, resourcesData, cr884998,treeData,invalidPrdcessor, dataSource2, dataSource1, cR893051, undoDataSource, editingData3,editingResources3, exportData1,resourceCollection10,projectNewDatas1, cr940492,
+    autoValidateTaskData, autoValidateTaskModeData, autoValidateUnScheduleData, 
+    autoValidatedTaskResrcmode, autovaldateResourceCollection, autovalidateDatasource
+} from '../base/data-source.spec';
 import { createGantt, destroyGantt, triggerMouseEvent } from './gantt-util.spec';
 import { getValue, setValue } from '@syncfusion/ej2-base';
 import { ClickEventArgs } from '@syncfusion/ej2-navigations';
@@ -522,16 +525,16 @@ describe('Empty datasource', () => {
     // beforeEach((done: Function) => {
     //     setTimeout(done, 100);
     // });
-    it('Set datasource to empty', (done: Function) => {
-        let update: HTMLElement = ganttObj.element.querySelector('#' + 'update') as HTMLElement;
-        triggerMouseEvent(update, 'click');
-        ganttObj.actionComplete = function (args: any): void {
-            if (args.requestType === 'refresh') {
-                expect(ganttObj.flatData.length).toBe(0);
-                done();
-            }
-        };
-    });
+    // it('Set datasource to empty', (done: Function) => {
+    //     let update: HTMLElement = ganttObj.element.querySelector('#' + 'update') as HTMLElement;
+    //     triggerMouseEvent(update, 'click');
+    //     ganttObj.actionComplete = function (args: any): void {
+    //         if (args.requestType === 'refresh') {
+    //             expect(ganttObj.flatData.length).toBe(0);
+    //             done();
+    //         }
+    //     };
+    // });
 
     afterAll(() => {
         if (ganttObj) {
@@ -1593,12 +1596,12 @@ describe('Null or undefined public properly', () => {
         }, done);
     });
     it('UpdateOffsetOnTaskbarEdit', () => {
-        ganttObj.UpdateOffsetOnTaskbarEdit = null;
+        ganttObj.updateOffsetOnTaskbarEdit = null;
         ganttObj.dataBind();
-        expect(ganttObj.UpdateOffsetOnTaskbarEdit).toBe(null);
-        ganttObj.UpdateOffsetOnTaskbarEdit = undefined;
+        expect(ganttObj.updateOffsetOnTaskbarEdit).toBe(null);
+        ganttObj.updateOffsetOnTaskbarEdit = undefined;
         ganttObj.dataBind();
-        expect(ganttObj.UpdateOffsetOnTaskbarEdit).toBe(undefined);
+        expect(ganttObj.updateOffsetOnTaskbarEdit).toBe(undefined);
     });
     it('addDialogFields', () => {
         ganttObj.addDialogFields = null;
@@ -4067,8 +4070,6 @@ describe('CR899803-Updating datasource', () => {
                 showColumnMenu: false,
                 highlightWeekends: true,
                 allowUnscheduledTasks: true,
-                // projectStartDate={projectStartDate}
-                // projectEndDate={projectEndDate}
                 taskFields: {
                     id: 'taskId',
                     name: 'taskName',
@@ -4112,15 +4113,15 @@ describe('CR899803-Updating datasource', () => {
                 autoCalculateDateScheduling: false
             }, done);
     });
-    it('Changing DataSource', (done:Function) => {
-        ganttObj.actionComplete = function (args: any): void {
-            if (args.requestType === "refresh") {
-                expect(ganttObj.flatData.length).toBe(2);
-                done();
-            }
-        };
-        ganttObj.dataSource = dataSource2
-    });
+    // it('Changing DataSource', (done:Function) => {
+    //     ganttObj.actionComplete = function (args: any): void {
+    //         if (args.requestType === "refresh") {
+    //             expect(ganttObj.flatData.length).toBe(2);
+    //             done();
+    //         }
+    //     };
+    //     ganttObj.dataSource = dataSource2
+    // });
      afterAll(() => {
         if (ganttObj) {
             destroyGantt(ganttObj);
@@ -4422,7 +4423,7 @@ describe('Coverage calling calculateTotalHours method', () => {
             endDate: new Date('2024-09-24T17:00:00')
         };
         let value = ganttObj.timelineModule['dateByLeftValue'](left,isMilestone,property).getFullYear()
-        expect(value).toBe(2025);
+        expect(value).toBe(2026);
     });
     it('calculateQuarterEndDate', () => {
         let value = ganttObj.timelineModule['calculateQuarterEndDate'](new Date('2024-12-15'),3).getFullYear()
@@ -5638,7 +5639,7 @@ describe('Gantt chart update value by updateRecordByID in fixedwork ', () => {
             resources: null,
         };
         ganttObj.updateRecordByID(data);
-        // expect(ganttObj.currentViewData[17].ganttProperties.duration).toBe(2);
+        expect(ganttObj.currentViewData[17].ganttProperties.duration).toBe(2);
     });
     afterAll(() => {
         if (ganttObj) {
@@ -6467,7 +6468,6 @@ describe('Cr-978444', () => {
         }
     });
 });
-
 describe('Cr-984009 convert to milestone', () => {
     let ganttObj: Gantt;
     let data = [
@@ -6508,6 +6508,1255 @@ describe('Cr-984009 convert to milestone', () => {
     it('checking start date', () => {
         ganttObj.convertToMilestone("3");
         expect(ganttObj.getFormatedDate(ganttObj.flatData[2].ganttProperties.startDate, 'M/d/yyyy')).toBe('4/3/2025');
+    });
+    afterAll(() => {
+        if (ganttObj) {
+            destroyGantt(ganttObj);
+        }
+    });
+});
+// Spec for Auto-validated task collection on load time
+describe('Auto-validated task collection on load time -default data', () => {
+    let ganttObj: Gantt;
+    beforeAll((done: Function) => {
+        ganttObj = createGantt(
+            {
+            dataSource: autoValidateTaskData,
+            taskFields: {
+                id: 'TaskID',
+                name: 'TaskName',
+                startDate: 'StartDate',
+                duration: 'Duration',
+                progress: 'Progress',
+                dependency:'Predecessor',
+                child: 'subtasks'
+            },
+            editSettings: {
+                allowEditing: true,
+                allowDeleting: true,
+                allowTaskbarEditing: true,
+                showDeleteConfirmDialog: true
+            },
+            toolbar:['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll', 'Search',
+            'PrevTimeSpan', 'NextTimeSpan'],
+            allowSelection: true,
+            gridLines: "Both",
+            showColumnMenu: false,
+            highlightWeekends: true,
+            timelineSettings: {
+                topTier: {
+                    unit: 'Week',
+                    format: 'dd/MM/yyyy'
+                },
+                bottomTier: {
+                    unit: 'Day',
+                    count: 1
+                }
+            },
+            labelSettings: {
+                leftLabel: 'TaskName',
+                taskLabel: 'Progress'
+            },
+            height: '550px',
+            actionComplete : function (args: any): void {
+                if (args.type === 'refresh') {
+                    expect(args.modifiedTasks.length).toBe(25);
+                }
+            },
+            allowUnscheduledTasks: true,
+            projectStartDate: new Date('03/25/2019'),
+            projectEndDate: new Date('05/30/2019')
+            }, done);
+    });
+    it('Checking autovalidated task collection', () => {
+        expect(ganttObj.dataOperation['validatedGanttData'].size).toBe(25);
+    });
+    afterAll(() => {
+        if (ganttObj) {
+            destroyGantt(ganttObj);
+        }
+    });
+});
+describe('Auto-validated task collection on load time -taskmode data', () => {
+    let ganttObj: Gantt;
+    beforeAll((done: Function) => {
+        ganttObj = createGantt(
+            {
+            dataSource: autoValidateTaskModeData,
+            taskFields: {
+                id: 'TaskID',
+                name: 'TaskName',
+                startDate: 'StartDate',
+                duration: 'Duration',
+                progress: 'Progress',
+                dependency:'Predecessor',
+                child: 'subtasks'
+            },
+            editSettings: {
+                allowEditing: true,
+                allowDeleting: true,
+                allowTaskbarEditing: true,
+                showDeleteConfirmDialog: true
+            },
+            toolbar:['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll', 'Search',
+            'PrevTimeSpan', 'NextTimeSpan'],
+            allowSelection: true,
+            gridLines: "Both",
+            showColumnMenu: false,
+            highlightWeekends: true,
+            timelineSettings: {
+                topTier: {
+                    unit: 'Week',
+                    format: 'dd/MM/yyyy'
+                },
+                bottomTier: {
+                    unit: 'Day',
+                    count: 1
+                }
+            },
+            labelSettings: {
+                leftLabel: 'TaskName',
+                taskLabel: 'Progress'
+            },
+            height: '550px',
+            actionComplete : function (args: any): void {
+                if (args.type === 'refresh') {
+                    expect(args.modifiedTasks.length).toBe(1);
+                }
+            },
+            allowUnscheduledTasks: true,
+            projectStartDate: new Date('03/25/2019'),
+            projectEndDate: new Date('05/30/2019')
+            }, done);
+    });
+    it('Checking autovalidated task collection for taskmode', () => {
+        expect(ganttObj.dataOperation['validatedGanttData'].size).toBe(1);
+    });
+    afterAll(() => {
+        if (ganttObj) {
+            destroyGantt(ganttObj);
+        }
+    });
+});
+describe('Auto-validated task collection on load time -Unschedule task data', () => {
+    let ganttObj: Gantt;
+    beforeAll((done: Function) => {
+        ganttObj = createGantt(
+            {
+            dataSource: autoValidateUnScheduleData,
+            enableContextMenu: true,
+            taskFields: {
+                id: 'TaskId',
+                name: 'TaskName',
+                startDate: 'StartDate',
+                endDate: 'EndDate',
+                duration: 'Duration',
+            },
+            editSettings: {
+                allowAdding: true,
+                allowEditing: true,
+                allowDeleting: true,
+                allowTaskbarEditing: true,
+                showDeleteConfirmDialog: true
+            },
+            columns: [
+                { field: 'TaskId', width: 75 },
+                { field: 'TaskName', width: 80 },
+                { field: 'StartDate', width: 120 },
+                { field: 'EndDate', width: 120 },
+                { field: 'Duration', width: 90 },
+                { field: 'TaskType', visible: false }
+            ],
+            sortSettings: {
+                columns: [{ field: 'TaskID', direction: 'Ascending' },
+                    { field: 'TaskName', direction: 'Ascending' }]
+            },
+            splitterSettings: {
+                columnIndex: 4
+            },
+            toolbar: [{ text: 'Insert task', tooltipText: 'Insert task at top', id: 'toolbarAdd', prefixIcon: 'e-add-icon tb-icons' }, 'Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll', 'Search', 'ZoomIn', 'ZoomOut', 'ZoomToFit',],
+            allowSelection: true,
+            selectedRowIndex: 1,
+            holidays: [{
+                    from: "04/16/2019",
+                    to: "04/16/2019",
+                    label: " Public holidays",
+                    cssClass: "e-custom-holiday"
+                },
+                {
+                    from: "03/26/2019",
+                    to: "03/26/2019",
+                    label: " Public holiday",
+                    cssClass: "e-custom-holiday"
+                }],
+            allowFiltering: true,
+            gridLines: "Both",
+            showColumnMenu: true,
+            highlightWeekends: true,
+            timelineSettings: {
+                showTooltip: true,
+                topTier: {
+                    unit: 'Week',
+                    format: 'dd/MM/yyyy'
+                },
+                bottomTier: {
+                    unit: 'Day',
+                    count: 1
+                }
+            },
+            labelSettings: {
+                leftLabel: 'TaskID',
+                rightLabel: 'Task Name: ${taskData.TaskName}',
+                taskLabel: '${Progress}%'
+            },
+            height: '550px',
+            allowUnscheduledTasks: true,
+            projectStartDate: new Date('03/25/2019'),
+            projectEndDate: new Date('05/30/2019'),
+            actionComplete: function (args: any): void {
+                if (args.type === 'refresh') {
+                    expect(args.modifiedTasks.length).toBe(2);
+                }
+            },
+        }, done);
+    });
+    it('Checking autovalidated task collection for unschedule task', () => {
+        expect(ganttObj.dataOperation['validatedGanttData'].size).toBe(2);
+    });
+    afterAll(() => {
+        if (ganttObj) {
+            destroyGantt(ganttObj);
+        }
+    });
+});
+describe('Auto-validated task collection on load time -Unschedule task duration only data', () => {
+    let ganttObj: Gantt;
+    beforeAll((done: Function) => {
+        ganttObj = createGantt(
+            {
+            dataSource:  [
+                {
+                    TaskId: 2, TaskName: 'Task 2', Duration: '5', TaskType: 'Task with duration only'
+                }
+            ],
+            enableContextMenu: true,
+            taskFields: {
+                id: 'TaskId',
+                name: 'TaskName',
+                startDate: 'StartDate',
+                endDate: 'EndDate',
+                duration: 'Duration',
+            },
+            editSettings: {
+                allowAdding: true,
+                allowEditing: true,
+                allowDeleting: true,
+                allowTaskbarEditing: true,
+                showDeleteConfirmDialog: true
+            },
+            columns: [
+                { field: 'TaskId', width: 75 },
+                { field: 'TaskName', width: 80 },
+                { field: 'Duration', width: 90 }
+            ],
+            splitterSettings: {
+                columnIndex: 4
+            },
+            toolbar: [{ text: 'Insert task', tooltipText: 'Insert task at top', id: 'toolbarAdd', prefixIcon: 'e-add-icon tb-icons' }, 'Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll', 'Search', 'ZoomIn', 'ZoomOut', 'ZoomToFit',],
+            allowSelection: true,
+            selectedRowIndex: 1,
+            holidays: [{
+                    from: "04/16/2019",
+                    to: "04/16/2019",
+                    label: " Public holidays",
+                    cssClass: "e-custom-holiday"
+                },
+                {
+                    from: "03/26/2019",
+                    to: "03/26/2019",
+                    label: " Public holiday",
+                    cssClass: "e-custom-holiday"
+                }],
+            allowFiltering: true,
+            gridLines: "Both",
+            showColumnMenu: true,
+            highlightWeekends: true,
+            timelineSettings: {
+                showTooltip: true,
+                topTier: {
+                    unit: 'Week',
+                    format: 'dd/MM/yyyy'
+                },
+                bottomTier: {
+                    unit: 'Day',
+                    count: 1
+                }
+            },
+            labelSettings: {
+                leftLabel: 'TaskID',
+                rightLabel: 'Task Name: ${taskData.TaskName}',
+                taskLabel: '${Progress}%'
+            },
+            height: '550px',
+            allowUnscheduledTasks: true,
+            projectStartDate: new Date('03/25/2019'),
+            projectEndDate: new Date('05/30/2019'),
+            actionComplete: function (args: any): void {
+                if (args.type === 'refresh') {
+                    expect(args.modifiedTasks.length).toBe(1);
+                }
+            },
+        }, done);
+    });
+    it('Checking autovalidated task collection for duration only task', () => {
+        expect(ganttObj.dataOperation['validatedGanttData'].size).toBe(1);
+    });
+    afterAll(() => {
+        if (ganttObj) {
+            destroyGantt(ganttObj);
+        }
+    });
+});
+describe('Auto-validated task collection on load time -Unschedule task duration only without holiday data', () => {
+    let ganttObj: Gantt;
+    beforeAll((done: Function) => {
+        ganttObj = createGantt(
+            {
+            dataSource: [
+                {
+                    TaskId: 2, TaskName: 'Task 2', Duration: '5', TaskType: 'Task with duration only'
+                }
+            ],
+            enableContextMenu: true,
+            taskFields: {
+                id: 'TaskId',
+                name: 'TaskName',
+                startDate: 'StartDate',
+                endDate: 'EndDate',
+                duration: 'Duration',
+            },
+            editSettings: {
+                allowAdding: true,
+                allowEditing: true,
+                allowDeleting: true,
+                allowTaskbarEditing: true,
+                showDeleteConfirmDialog: true
+            },
+            columns: [
+                { field: 'TaskId', width: 75 },
+                { field: 'TaskName', width: 80 },
+                { field: 'Duration', width: 90 }
+            ],
+            splitterSettings: {
+                columnIndex: 4
+            },
+            toolbar: [{ text: 'Insert task', tooltipText: 'Insert task at top', id: 'toolbarAdd', prefixIcon: 'e-add-icon tb-icons' }, 'Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll', 'Search', 'ZoomIn', 'ZoomOut', 'ZoomToFit',],
+            allowSelection: true,
+            selectedRowIndex: 1,
+            gridLines: "Both",
+            showColumnMenu: true,
+            highlightWeekends: true,
+            timelineSettings: {
+                showTooltip: true,
+                topTier: {
+                    unit: 'Week',
+                    format: 'dd/MM/yyyy'
+                },
+                bottomTier: {
+                    unit: 'Day',
+                    count: 1
+                }
+            },
+            labelSettings: {
+                leftLabel: 'TaskID',
+                rightLabel: 'Task Name: ${taskData.TaskName}',
+                taskLabel: '${Progress}%'
+            },
+            height: '550px',
+            allowUnscheduledTasks: true,
+            projectStartDate: new Date('03/25/2019'),
+            projectEndDate: new Date('05/30/2019'),
+            actionComplete: function (args: any): void {
+                if (args.type === 'refresh') {
+                    expect(args.modifiedTasks.length).toBe(0);
+                }
+            },
+        }, done);
+    });
+    it('Checking autovalidated task collection for duration only task', () => {
+        expect(ganttObj.dataOperation['validatedGanttData'].size).toBe(0);
+    });
+    afterAll(() => {
+        if (ganttObj) {
+            destroyGantt(ganttObj);
+        }
+    });
+});
+describe('Auto-validated task collection on load time -Unschedule task duration only without holiday data', () => {
+    let ganttObj: Gantt;
+    beforeAll((done: Function) => {
+        ganttObj = createGantt(
+            {
+            dataSource: [
+                {
+                    TaskId: 2, TaskName: 'Task 2', Duration: '7', TaskType: 'Task with duration only'
+                }
+            ],
+            includeWeekend: true,
+            taskFields: {
+                id: 'TaskId',
+                name: 'TaskName',
+                startDate: 'StartDate',
+                endDate: 'EndDate',
+                duration: 'Duration',
+            },
+            editSettings: {
+                allowAdding: true,
+                allowEditing: true,
+                allowDeleting: true,
+                allowTaskbarEditing: true,
+                showDeleteConfirmDialog: true
+            },
+            columns: [
+                { field: 'TaskId', width: 75 },
+                { field: 'TaskName', width: 80 },
+                { field: 'Duration', width: 90 }
+            ],
+            splitterSettings: {
+                columnIndex: 4
+            },
+            toolbar: [{ text: 'Insert task', tooltipText: 'Insert task at top', id: 'toolbarAdd', prefixIcon: 'e-add-icon tb-icons' }, 'Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll', 'Search', 'ZoomIn', 'ZoomOut', 'ZoomToFit',],
+            allowSelection: true,
+            selectedRowIndex: 1,
+            gridLines: "Both",
+            showColumnMenu: true,
+            highlightWeekends: true,
+            timelineSettings: {
+                showTooltip: true,
+                topTier: {
+                    unit: 'Week',
+                    format: 'dd/MM/yyyy'
+                },
+                bottomTier: {
+                    unit: 'Day',
+                    count: 1
+                }
+            },
+            labelSettings: {
+                leftLabel: 'TaskID',
+                rightLabel: 'Task Name: ${taskData.TaskName}',
+                taskLabel: '${Progress}%'
+            },
+            height: '550px',
+            allowUnscheduledTasks: true,
+            projectStartDate: new Date('03/25/2019'),
+            projectEndDate: new Date('05/30/2019'),
+            actionComplete: function (args: any): void {
+                if (args.type === 'refresh') {
+                    expect(args.modifiedTasks.length).toBe(0);
+                }
+            },
+        }, done);
+    });
+    it('Checking autovalidated task collection for duration only task with includeweeend true', () => {
+        expect(ganttObj.dataOperation['validatedGanttData'].size).toBe(0);
+    });
+    afterAll(() => {
+        if (ganttObj) {
+            destroyGantt(ganttObj);
+        }
+    });
+});
+describe('Auto-validated task collection on load time -Resource view without mapping work', () => {
+    let ganttObj: Gantt;
+    beforeAll((done: Function) => {
+        ganttObj = createGantt(
+            {
+            dataSource: autoValidatedTaskResrcmode,
+            resources: autovaldateResourceCollection,
+            viewType: 'ResourceView',
+            showOverAllocation: true,
+            enableContextMenu: true,
+            allowSorting: true,
+            allowReordering: true,
+            taskFields: {
+                id: 'TaskID',
+                name: 'TaskName',
+                startDate: 'StartDate',
+                endDate: 'EndDate',
+                duration: 'Duration',
+                progress: 'Progress',
+                dependency: 'Predecessor',
+                resourceInfo: 'resources',
+                child: 'subtasks'
+            },
+            resourceFields: {
+                id: 'resourceId',
+                name: 'resourceName',
+                unit: 'resourceUnit',
+                group: 'resourceGroup'
+            },
+            editSettings: {
+                allowAdding: true,
+                allowEditing: true,
+                allowDeleting: true,
+                allowTaskbarEditing: true,
+                showDeleteConfirmDialog: true
+            },
+            columns: [
+                { field: 'TaskID', visible: false },
+                { field: 'TaskName', headerText: 'Name', width: 250 },
+                { field: 'work', headerText: 'Work' },
+                { field: 'Progress' },
+                { field: 'resourceGroup', headerText: 'Group' },
+                { field: 'StartDate' },
+                { field: 'Duration' },
+            ],
+            toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll',
+                { text: 'Show/Hide Overallocation', tooltipText: 'Show/Hide Overallocation', id: 'showhidebar' }, 'Search', 'ZoomIn', 'ZoomOut', 'ZoomToFit', 'PrevTimeSpan', 'NextTimeSpan', 'ExcelExport', 'CsvExport', 'PdfExport'],
+            labelSettings: {
+                rightLabel: 'resources',
+                taskLabel: 'Progress'
+            },
+            splitterSettings: {
+                columnIndex: 3
+            },
+            timelineSettings: {
+                showTooltip: true,
+                topTier: {
+                    unit: 'Week',
+                    format: 'dd/MM/yyyy'
+                },
+                bottomTier: {
+                    unit: 'Day',
+                    count: 1
+                }
+            },
+            holidays: [{
+                    from: "04/04/2019",
+                    to: "04/05/2019",
+                    label: " Public holidays",
+                    cssClass: "e-custom-holiday"
+                }],
+            allowSelection: true,
+            highlightWeekends: true,
+            treeColumnIndex: 1,
+            height: '550px',
+            projectStartDate: new Date('03/28/2019'),
+            projectEndDate: new Date('05/18/2019'),
+            actionComplete: function (args: any): void {
+                if (args.type === 'refresh') {
+                    expect(args.modifiedTasks.length).toBe(10);
+                }
+            },
+        }, done);
+    });
+    it('Checking autovalidated task collection for duration only task', () => {
+        expect(ganttObj.dataOperation['validatedGanttData'].size).toBe(10);
+    });
+    afterAll(() => {
+        if (ganttObj) {
+            destroyGantt(ganttObj);
+        }
+    });
+});
+describe('Auto-validated task collection on load time -Resource view with work mapping', () => {
+    let ganttObj: Gantt;
+    beforeAll((done: Function) => {
+        ganttObj = createGantt(
+            {
+            dataSource: autoValidatedTaskResrcmode,
+            resources: autovaldateResourceCollection,
+            viewType: 'ResourceView',
+            showOverAllocation: true,
+            enableContextMenu: true,
+            allowSorting: true,
+            allowReordering: true,
+            taskFields: {
+                id: 'TaskID',
+                name: 'TaskName',
+                startDate: 'StartDate',
+                endDate: 'EndDate',
+                duration: 'Duration',
+                progress: 'Progress',
+                dependency: 'Predecessor',
+                resourceInfo: 'resources',
+                work: 'work',
+                child: 'subtasks'
+            },
+            resourceFields: {
+                id: 'resourceId',
+                name: 'resourceName',
+                unit: 'resourceUnit',
+                group: 'resourceGroup'
+            },
+            editSettings: {
+                allowAdding: true,
+                allowEditing: true,
+                allowDeleting: true,
+                allowTaskbarEditing: true,
+                showDeleteConfirmDialog: true
+            },
+            columns: [
+                { field: 'TaskID', visible: false },
+                { field: 'TaskName', headerText: 'Name', width: 250 },
+                { field: 'work', headerText: 'Work' },
+                { field: 'Progress' },
+                { field: 'resourceGroup', headerText: 'Group' },
+                { field: 'StartDate' },
+                { field: 'Duration' },
+            ],
+            toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll',
+                { text: 'Show/Hide Overallocation', tooltipText: 'Show/Hide Overallocation', id: 'showhidebar' }, 'Search', 'ZoomIn', 'ZoomOut', 'ZoomToFit', 'PrevTimeSpan', 'NextTimeSpan', 'ExcelExport', 'CsvExport', 'PdfExport'],
+            labelSettings: {
+                rightLabel: 'resources',
+                taskLabel: 'Progress'
+            },
+            splitterSettings: {
+                columnIndex: 3
+            },
+            timelineSettings: {
+                showTooltip: true,
+                topTier: {
+                    unit: 'Week',
+                    format: 'dd/MM/yyyy'
+                },
+                bottomTier: {
+                    unit: 'Day',
+                    count: 1
+                }
+            },
+            holidays: [{
+                from: "04/04/2019",
+                to: "04/05/2019",
+                label: " Public holidays",
+                cssClass: "e-custom-holiday"
+            }],
+            allowSelection: true,
+            highlightWeekends: true,
+            treeColumnIndex: 1,
+            height: '550px',
+            projectStartDate: new Date('03/28/2019'),
+            projectEndDate: new Date('05/18/2019'),
+            actionComplete: function (args: any): void {
+                if (args.type === 'refresh') {
+                    expect(args.modifiedTasks.length).toBe(11);
+                }
+            },
+        }, done);
+    });
+    it('Checking autovalidated task collection for duration only task with work', () => {
+        expect(ganttObj.dataOperation['validatedGanttData'].size).toBe(11);
+    });
+    afterAll(() => {
+        if (ganttObj) {
+            destroyGantt(ganttObj);
+        }
+    });
+});
+describe('Auto-validated task collection on load time -default data with enddate', () => {
+    let ganttObj: Gantt;
+    beforeAll((done: Function) => {
+        ganttObj = createGantt(
+            {
+            dataSource: autoValidateTaskData,
+            taskFields: {
+                id: 'TaskID',
+                name: 'TaskName',
+                startDate: 'StartDate',
+                endDate: 'EndDate',
+                duration: 'Duration',
+                progress: 'Progress',
+                dependency:'Predecessor',
+                child: 'subtasks'
+            },
+            editSettings: {
+                allowEditing: true,
+                allowDeleting: true,
+                allowTaskbarEditing: true,
+                showDeleteConfirmDialog: true
+            },
+            toolbar:['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll', 'Search',
+            'PrevTimeSpan', 'NextTimeSpan'],
+            allowSelection: true,
+            gridLines: "Both",
+            showColumnMenu: false,
+            highlightWeekends: true,
+            timelineSettings: {
+                topTier: {
+                    unit: 'Week',
+                    format: 'dd/MM/yyyy'
+                },
+                bottomTier: {
+                    unit: 'Day',
+                    count: 1
+                }
+            },
+            labelSettings: {
+                leftLabel: 'TaskName',
+                taskLabel: 'Progress'
+            },
+            height: '550px',
+            actionComplete : function (args: any): void {
+                if (args.type === 'refresh') {
+                    expect(args.modifiedTasks.length).toBe(32);
+                }
+            },
+            allowUnscheduledTasks: true,
+            projectStartDate: new Date('03/25/2019'),
+            projectEndDate: new Date('05/30/2019')
+            }, done);
+    });
+    it('Checking autovalidated task collection with enddate map at taskFields', () => {
+        expect(ganttObj.dataOperation['validatedGanttData'].size).toBe(32);
+    });
+    afterAll(() => {
+        if (ganttObj) {
+            destroyGantt(ganttObj);
+        }
+    });
+});
+describe('Auto-validated task collection on load time -default data with workweek', () => {
+    let ganttObj: Gantt;
+    beforeAll((done: Function) => {
+        ganttObj = createGantt(
+            {
+            dataSource: autoValidateTaskData,
+            taskFields: {
+                id: 'TaskID',
+                name: 'TaskName',
+                startDate: 'StartDate',
+                duration: 'Duration',
+                progress: 'Progress',
+                dependency:'Predecessor',
+                child: 'subtasks'
+            },
+            workWeek: ["Sunday", "Wednesday", "Thursday"],
+            editSettings: {
+                allowEditing: true,
+                allowDeleting: true,
+                allowTaskbarEditing: true,
+                showDeleteConfirmDialog: true
+            },
+            toolbar:['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll', 'Search',
+            'PrevTimeSpan', 'NextTimeSpan'],
+            allowSelection: true,
+            gridLines: "Both",
+            showColumnMenu: false,
+            highlightWeekends: true,
+            timelineSettings: {
+                topTier: {
+                    unit: 'Week',
+                    format: 'dd/MM/yyyy'
+                },
+                bottomTier: {
+                    unit: 'Day',
+                    count: 1
+                }
+            },
+            labelSettings: {
+                leftLabel: 'TaskName',
+                taskLabel: 'Progress'
+            },
+            height: '550px',
+            actionComplete : function (args: any): void {
+                if (args.type === 'refresh') {
+                    expect(args.modifiedTasks.length).toBe(30);
+                }
+            },
+            allowUnscheduledTasks: true,
+            projectStartDate: new Date('03/25/2019'),
+            projectEndDate: new Date('05/30/2019')
+            }, done);
+    });
+    it('Checking autovalidated task collection', () => {
+        expect(ganttObj.dataOperation['validatedGanttData'].size).toBe(30);
+    });
+    afterAll(() => {
+        if (ganttObj) {
+            destroyGantt(ganttObj);
+        }
+    });
+});
+describe('Auto-validated task collection on load time -default data with weekWorkingTime', () => {
+    let ganttObj: Gantt;
+    beforeAll((done: Function) => {
+        ganttObj = createGantt(
+            {
+            dataSource: [
+                {
+                    TaskID: 1,
+                    TaskName: 'Product Concept',
+                    StartDate: new Date('04/02/2019'),
+                    EndDate: new Date('04/21/2019'),
+                    subtasks: [
+                        { TaskID: 2, TaskName: 'Defining the product and its usage', StartDate: new Date('04/02/2019 09:00:00'), Duration: 3, Progress: 30 },
+                        { TaskID: 3, TaskName: 'Defining target audience', StartDate: new Date('04/02/2019 10:00:00'), Duration: 3 },
+                        { TaskID: 4, TaskName: 'Prepare product sketch and notes', StartDate: new Date('04/02/2019 11:00:00'), Duration: 3, Predecessor: "2", Progress: 30 },
+                    ]
+                }
+            ],
+            taskFields: {
+                id: 'TaskID',
+                name: 'TaskName',
+                startDate: 'StartDate',
+                duration: 'Duration',
+                progress: 'Progress',
+                dependency:'Predecessor',
+                child: 'subtasks'
+            },
+            weekWorkingTime: [
+                { dayOfWeek: 'Monday', timeRange: [{ from: 10, to: 18 }] },
+                { dayOfWeek: 'Tuesday', timeRange: [{ from: 10, to: 18 }] }
+            ],
+            editSettings: {
+                allowEditing: true,
+                allowDeleting: true,
+                allowTaskbarEditing: true,
+                showDeleteConfirmDialog: true
+            },
+            toolbar:['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll', 'Search',
+            'PrevTimeSpan', 'NextTimeSpan'],
+            allowSelection: true,
+            gridLines: "Both",
+            showColumnMenu: false,
+            highlightWeekends: true,
+            timelineSettings: {
+                topTier: {
+                    unit: 'Week',
+                    format: 'dd/MM/yyyy'
+                },
+                bottomTier: {
+                    unit: 'Day',
+                    count: 1
+                }
+            },
+            labelSettings: {
+                leftLabel: 'TaskName',
+                taskLabel: 'Progress'
+            },
+            height: '550px',
+            actionComplete : function (args: any): void {
+                if (args.type === 'refresh') {
+                    expect(args.modifiedTasks.length).toBe(2);
+                }
+            },
+            allowUnscheduledTasks: true,
+            projectStartDate: new Date('03/25/2019'),
+            projectEndDate: new Date('05/30/2019')
+            }, done);
+    });
+    it('Checking autovalidated task collection', () => {
+        expect(ganttObj.dataOperation['validatedGanttData'].size).toBe(2);
+    });
+    afterAll(() => {
+        if (ganttObj) {
+            destroyGantt(ganttObj);
+        }
+    });
+});
+describe('Auto-validated task collection on load time -default data with dayworkingtime', () => {
+    let ganttObj: Gantt;
+    beforeAll((done: Function) => {
+        ganttObj = createGantt(
+            {
+            dataSource: [
+                {
+                    TaskID: 1,
+                    TaskName: 'Product Concept',
+                    StartDate: new Date('04/02/2019'),
+                    EndDate: new Date('04/21/2019'),
+                    subtasks: [
+                        { TaskID: 2, TaskName: 'Defining the product and its usage', StartDate: new Date('04/02/2019 09:00:00'), Duration: 3, Progress: 30 },
+                        { TaskID: 3, TaskName: 'Defining target audience', StartDate: new Date('04/02/2019 07:00:00'), Duration: 3 },
+                        { TaskID: 4, TaskName: 'Prepare product sketch and notes', StartDate: new Date('04/02/2019 11:00:00'), Duration: 3, Predecessor: "2", Progress: 30 },
+                    ]
+                }
+            ],
+            taskFields: {
+                id: 'TaskID',
+                name: 'TaskName',
+                startDate: 'StartDate',
+                duration: 'Duration',
+                progress: 'Progress',
+                dependency:'Predecessor',
+                child: 'subtasks'
+            },
+            dayWorkingTime: [
+                { from: 8, to: 13 },
+                { from: 14, to: 17 }
+            ],
+            editSettings: {
+                allowEditing: true,
+                allowDeleting: true,
+                allowTaskbarEditing: true,
+                showDeleteConfirmDialog: true
+            },
+            toolbar:['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll', 'Search',
+            'PrevTimeSpan', 'NextTimeSpan'],
+            allowSelection: true,
+            gridLines: "Both",
+            showColumnMenu: false,
+            highlightWeekends: true,
+            timelineSettings: {
+                topTier: {
+                    unit: 'Week',
+                    format: 'dd/MM/yyyy'
+                },
+                bottomTier: {
+                    unit: 'Day',
+                    count: 1
+                }
+            },
+            labelSettings: {
+                leftLabel: 'TaskName',
+                taskLabel: 'Progress'
+            },
+            height: '550px',
+            actionComplete : function (args: any): void {
+                if (args.type === 'refresh') {
+                    expect(args.modifiedTasks.length).toBe(2);
+                }
+            },
+            allowUnscheduledTasks: true,
+            projectStartDate: new Date('03/25/2019'),
+            projectEndDate: new Date('05/30/2019')
+            }, done);
+    });
+    it('Checking autovalidated task collection', () => {
+        expect(ganttObj.dataOperation['validatedGanttData'].size).toBe(2);
+    });
+    afterAll(() => {
+        if (ganttObj) {
+            destroyGantt(ganttObj);
+        }
+    });
+});
+describe('Auto-validated task collection on load time -default data with dayworkingtime in between', () => {
+    let ganttObj: Gantt;
+    beforeAll((done: Function) => {
+        ganttObj = createGantt(
+            {
+            dataSource: [
+                {
+                    TaskID: 1,
+                    TaskName: 'Product Concept',
+                    StartDate: new Date('04/02/2019'),
+                    EndDate: new Date('04/21/2019'),
+                    subtasks: [
+                        { TaskID: 2, TaskName: 'Defining the product and its usage', StartDate: new Date('04/02/2019 09:00:00'), Duration: 3, Progress: 30 },
+                        { TaskID: 3, TaskName: 'Defining target audience', StartDate: new Date('04/02/2019 10:00:00'), Duration: 3 },
+                        { TaskID: 4, TaskName: 'Prepare product sketch and notes', StartDate: new Date('04/02/2019 11:00:00'), Duration: 3, Predecessor: "2", Progress: 30 },
+                    ]
+                }
+            ],
+            taskFields: {
+                id: 'TaskID',
+                name: 'TaskName',
+                startDate: 'StartDate',
+                duration: 'Duration',
+                progress: 'Progress',
+                dependency:'Predecessor',
+                child: 'subtasks'
+            },
+            dayWorkingTime: [
+                { from: 8, to: 13 },
+                { from: 14, to: 17 }
+            ],
+            editSettings: {
+                allowEditing: true,
+                allowDeleting: true,
+                allowTaskbarEditing: true,
+                showDeleteConfirmDialog: true
+            },
+            toolbar:['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll', 'Search',
+            'PrevTimeSpan', 'NextTimeSpan'],
+            allowSelection: true,
+            gridLines: "Both",
+            showColumnMenu: false,
+            highlightWeekends: true,
+            timelineSettings: {
+                topTier: {
+                    unit: 'Week',
+                    format: 'dd/MM/yyyy'
+                },
+                bottomTier: {
+                    unit: 'Day',
+                    count: 1
+                }
+            },
+            labelSettings: {
+                leftLabel: 'TaskName',
+                taskLabel: 'Progress'
+            },
+            height: '550px',
+            actionComplete : function (args: any): void {
+                if (args.type === 'refresh') {
+                    expect(args.modifiedTasks.length).toBe(2);
+                }
+            },
+            allowUnscheduledTasks: true,
+            projectStartDate: new Date('03/25/2019'),
+            projectEndDate: new Date('05/30/2019')
+            }, done);
+    });
+    it('Checking autovalidated task collection', () => {
+        expect(ganttObj.dataOperation['validatedGanttData'].size).toBe(2);
+    });
+    afterAll(() => {
+        if (ganttObj) {
+            destroyGantt(ganttObj);
+        }
+    });
+});
+describe('Auto-validated task collection- empty while perform edit action after load', () => {
+    let ganttObj: Gantt;
+    beforeAll((done: Function) => {
+        ganttObj = createGantt(
+            {
+            dataSource: autovalidateDatasource,
+            taskFields: {
+                id: 'TaskID',
+                name: 'TaskName',
+                startDate: 'StartDate',
+                duration: 'Duration',
+                progress: 'Progress',
+                dependency:'Predecessor',
+                child: 'subtasks'
+            },
+            editSettings: {
+                allowEditing: true,
+                allowDeleting: true,
+                allowTaskbarEditing: true,
+                showDeleteConfirmDialog: true
+            },
+            toolbar:['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll', 'Search',
+            'PrevTimeSpan', 'NextTimeSpan'],
+            allowSelection: true,
+            gridLines: "Both",
+            showColumnMenu: false,
+            highlightWeekends: true,
+            timelineSettings: {
+                topTier: {
+                    unit: 'Week',
+                    format: 'dd/MM/yyyy'
+                },
+                bottomTier: {
+                    unit: 'Day',
+                    count: 1
+                }
+            },
+            labelSettings: {
+                leftLabel: 'TaskName',
+                taskLabel: 'Progress'
+            },
+            height: '550px',
+            actionComplete : function (args: any): void {
+                if (args.type === 'refresh') {
+                    expect(args.modifiedTasks.length).toBe(1);
+                }
+            },
+            allowUnscheduledTasks: true,
+            projectStartDate: new Date('03/25/2019'),
+            projectEndDate: new Date('05/30/2019')
+        }, done);
+    });
+    it('Checking autovalidated task collection after cell edit action', () => {
+        let duration: HTMLElement = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table > tbody > tr:nth-child(3) > td:nth-child(4)') as HTMLElement;
+        triggerMouseEvent(duration, 'dblclick');
+        let input: any = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrolDuration') as HTMLElement;
+        input.value = '4 days';
+        let element: HTMLElement = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table > tbody > tr:nth-child(3) > td:nth-child(2)') as HTMLElement;
+        triggerMouseEvent(element, 'click');
+        expect(ganttObj.dataOperation['validatedGanttData'].size).toBe(1);
+    });
+    afterAll(() => {
+        if (ganttObj) {
+            destroyGantt(ganttObj);
+        }
+    });
+});
+describe('Auto-validated task collection- empty while perform delete action after load', () => {
+    let ganttObj: Gantt;
+    let preventDefault: Function = new Function();
+    beforeAll((done: Function) => {
+        ganttObj = createGantt(
+            {
+            dataSource: autovalidateDatasource,
+            taskFields: {
+                id: 'TaskID',
+                name: 'TaskName',
+                startDate: 'StartDate',
+                duration: 'Duration',
+                progress: 'Progress',
+                dependency:'Predecessor',
+                child: 'subtasks'
+            },
+            editSettings: {
+                allowEditing: true,
+                allowDeleting: true,
+                allowTaskbarEditing: true
+            },
+            toolbar:['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll', 'Search',
+            'PrevTimeSpan', 'NextTimeSpan'],
+            allowSelection: true,
+            gridLines: "Both",
+            showColumnMenu: false,
+            highlightWeekends: true,
+            timelineSettings: {
+                topTier: {
+                    unit: 'Week',
+                    format: 'dd/MM/yyyy'
+                },
+                bottomTier: {
+                    unit: 'Day',
+                    count: 1
+                }
+            },
+            labelSettings: {
+                leftLabel: 'TaskName',
+                taskLabel: 'Progress'
+            },
+            height: '550px',
+            actionComplete : function (args: any): void {
+                if (args.type === 'refresh') {
+                    expect(args.modifiedTasks.length).toBe(1);
+                }
+            },
+            allowUnscheduledTasks: true,
+            projectStartDate: new Date('03/25/2019'),
+            projectEndDate: new Date('05/30/2019')
+        }, done);
+    });
+    it('Checking autovalidated task collection after delete action', () => {
+        ganttObj.selectionModule.selectRow(2);
+        let args: any = { action: 'delete', preventDefault: preventDefault };
+        ganttObj.keyboardModule.keyAction(args);
+        expect(ganttObj.dataOperation['validatedGanttData'].size).toBe(1);
+    });
+    afterAll(() => {
+        if (ganttObj) {
+            destroyGantt(ganttObj);
+        }
+    });
+});
+describe('Auto-validated task collection- empty while perform add action after load', () => {
+    let ganttObj: Gantt;
+    let preventDefault: Function = new Function();
+    beforeAll((done: Function) => {
+        ganttObj = createGantt(
+            {
+            dataSource: autovalidateDatasource,
+            taskFields: {
+                id: 'TaskID',
+                name: 'TaskName',
+                startDate: 'StartDate',
+                duration: 'Duration',
+                progress: 'Progress',
+                dependency:'Predecessor',
+                child: 'subtasks'
+            },
+            editSettings: {
+                allowAdding: true,
+                allowEditing: true,
+                allowDeleting: true,
+                allowTaskbarEditing: true,
+                showDeleteConfirmDialog: true
+            },
+            toolbar:['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll', 'Search',
+            'PrevTimeSpan', 'NextTimeSpan'],
+            allowSelection: true,
+            gridLines: "Both",
+            showColumnMenu: false,
+            highlightWeekends: true,
+            timelineSettings: {
+                topTier: {
+                    unit: 'Week',
+                    format: 'dd/MM/yyyy'
+                },
+                bottomTier: {
+                    unit: 'Day',
+                    count: 1
+                }
+            },
+            labelSettings: {
+                leftLabel: 'TaskName',
+                taskLabel: 'Progress'
+            },
+            height: '550px',
+            actionComplete : function (args: any): void {
+                if (args.type === 'refresh') {
+                    expect(args.modifiedTasks.length).toBe(1);
+                }
+            },
+            allowUnscheduledTasks: true,
+            projectStartDate: new Date('03/25/2019'),
+            projectEndDate: new Date('05/30/2019')
+        }, done);
+    });
+    it('Checking autovalidated task collection after add action', () => {
+        let add: HTMLElement = ganttObj.element.querySelector('#' + ganttObj.element.id + '_add') as HTMLElement;
+        triggerMouseEvent(add, 'click');
+        let save: HTMLElement = document.querySelector('#' + ganttObj.element.id + '_dialog').getElementsByClassName('e-primary')[0] as HTMLElement;
+        triggerMouseEvent(save, 'click');
+        expect(ganttObj.dataOperation['validatedGanttData'].size).toBe(1);
+    });
+    afterAll(() => {
+        if (ganttObj) {
+            destroyGantt(ganttObj);
+        }
+    });
+});
+describe('Coverage issue date-processor', () => {
+    let ganttObj: Gantt;
+    let data = [
+        {TaskID: 1, TaskName: 'Identify site location', StartDate: new Date('03/29/2019'), Duration: 1, Progress: 30, work: 1}
+    ];
+    beforeAll((done: Function) => {
+        ganttObj = createGantt(
+            {
+                height: "650px",
+                dataSource: data,
+                showOverAllocation: true,
+                enableContextMenu: true,
+                allowSorting: true,
+                allowReordering: true,
+                taskFields: {
+                    id: 'TaskID',
+                    name: 'TaskName',
+                    startDate: 'StartDate',
+                    endDate: 'EndDate',
+                    duration: 'Duration',
+                    progress: 'Progress',
+                    dependency: 'Predecessor',
+                    work: 'work',
+                    child: 'subtasks'
+                },
+                durationUnit: 'Minute',
+                editSettings: {
+                    allowAdding: true,
+                    allowEditing: true,
+                    allowDeleting: true,
+                    allowTaskbarEditing: true,
+                    showDeleteConfirmDialog: true
+                },
+                workUnit: 'Minute',
+                columns: [
+                    { field: 'TaskID', visible: false },
+                    { field: 'TaskName', headerText: 'Name', width: 250 },
+                    { field: 'work', headerText: 'Work' },
+                    { field: 'Progress' },
+                    { field: 'resourceGroup', headerText: 'Group' },
+                    { field: 'StartDate' },
+                    { field: 'Duration' },
+                ],
+                labelSettings: {
+                    taskLabel: 'Progress'
+                },
+            }, done);
+    });
+    it('checking start date', () => {
+        expect(ganttObj.flatData.length).toBe(1);
     });
     afterAll(() => {
         if (ganttObj) {

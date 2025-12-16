@@ -1,3 +1,5 @@
+@use 'ej2-base/styles/definition/material3' as *;
+@forward 'ej2-base/styles/definition/material3';
 $signature-border: 1px solid !default;
 $signature-border-color: rgba($border-light) !default;
 $signature-background-color: rgba($white) !default;

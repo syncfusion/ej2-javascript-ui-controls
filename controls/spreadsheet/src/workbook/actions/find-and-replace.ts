@@ -1,7 +1,7 @@
 import { Workbook, SheetModel, RowModel, CellModel, getCell, getSheet, isHiddenRow, isHiddenCol, getColumn, getRow } from '../base/index';
 import { getCellIndexes, FindOptions, getCellAddress, find, count, getRangeIndexes, getSheetIndexFromAddress, isReadOnly, workbookReadonlyAlert } from '../common/index';
 import { goto, replace, replaceAll, showFindAlert, replaceAllDialog, ReplaceAllEventArgs, ExtendedRowModel, FindArgs } from '../common/index';
-import { isNullOrUndefined, isUndefined, getNumericObject } from '@syncfusion/ej2-base';
+import { isNullOrUndefined, isUndefined, getNumericObject, animationMode } from '@syncfusion/ej2-base';
 import { findAllValues, FindAllArgs, workBookeditAlert, BeforeReplaceEventArgs, updateCell, beginAction } from '../common/index';
 import { isLocked, findToolDlg, getFormattedCellObject, FindOptionsArgs, NumberFormatArgs, LocaleNumericSettings } from '../common/index';
 import { isNumber, isCustomDateTime } from '../index';
@@ -392,10 +392,10 @@ export class WorkbookFindAndReplace {
         const triggerEvent: boolean = args.isAction;
         const activeCellIdx: number[] = getCellIndexes(sheet.activeCell);
         const eventArgs: ReplaceAllEventArgs & FindOptions = { addressCollection: addressCollection, cancel: false, ...args };
-        let replaceCount: number = 0;
+        let replaceCount: number = 0; const isAnimationEnabled: boolean = animationMode !== 'Disable';
         const updateAsync: (val: string, index: number, cell: CellModel) => void = (val: string, index: number, cell: CellModel): void => {
             if (requestAnimationFrame) {
-                requestAnimationFrame(() => {
+                const updateFn: Function = (): void => {
                     if (!eventArgs.cancel && eventArgs.addressCollection[index as number]) {
                         const indexes: number[] = getCellIndexes(eventArgs.addressCollection[index as number].substring(
                             eventArgs.addressCollection[index as number].lastIndexOf('!') + 1));
@@ -413,7 +413,12 @@ export class WorkbookFindAndReplace {
                             this.parent.notify('actionComplete', { action: 'replaceAll', eventArgs: eventArgs });
                         }
                     }
-                });
+                };
+                if (isAnimationEnabled) {
+                    requestAnimationFrame(<FrameRequestCallback>updateFn);
+                } else {
+                    setTimeout(updateFn);
+                }
             } else {
                 this.parent.updateCellDetails(
                     { value: val }, eventArgs.addressCollection[index as number], undefined, undefined, true);

@@ -1,3 +1,8 @@
+@use 'ej2-base/styles/definition/material-dark' as *;
+@forward 'ej2-base/styles/definition/material-dark';
+
 //default
 //undefined
 //enddefault
+$popup-width: auto !default;
+$popup-height: auto !default;

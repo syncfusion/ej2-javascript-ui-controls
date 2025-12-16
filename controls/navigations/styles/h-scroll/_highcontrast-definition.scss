@@ -1,3 +1,5 @@
+@use 'ej2-base/styles/definition/highcontrast' as *;
+@forward 'ej2-base/styles/definition/highcontrast';
 $hscroll-skin: 'highcontrast' !default;
 $hscroll-border-type: solid !default;
 $hscroll-hover-font: $hover-font-color !default;
@@ -9,6 +11,8 @@ $hscroll-nav-nrml-minheight: 40px !default;
 $hscroll-nav-bgr-minheight: 50px !default;
 $hscroll-mob-nav-nrml-width: 50px !default;
 $hscroll-nav-nrml-width: 40px !default;
+$hscroll-nav-bgr-left: 50px !default;
+$hscroll-nav-bgr-right: 50px !default;
 $hscroll-nav-bgr-width: 50px !default;
 $hscroll-nrml-padding: 0 $hscroll-nav-nrml-width !default;
 $hscroll-bgr-padding: 0 $hscroll-nav-bgr-width !default;
@@ -42,6 +46,9 @@ $hscroll-device-arrow-size: 14px !default;
 $hscroll-device-arrow-icon-size: 12px !default;
 $hscroll-device-arrow-size-bigger: 18px !default;
 $hscroll-device-arrow-width: 52px !default;
+$hscroll-border-none: 0 !default;
+$hscroll-item-height: inherit !default;
+$hscroll-item-line-height: normal !default;
 
 $hscroll-nav-hover-press-bg: $hscroll-press-bg !default;
 $hscroll-nav-hover-icons-color: $hscroll-default-icon-color !default;

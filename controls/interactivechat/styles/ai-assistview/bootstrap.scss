@@ -1,8 +1,8 @@
-@import 'ej2-base/styles/definition/bootstrap.scss';
-@import 'ej2-navigations/styles/toolbar/bootstrap-definition.scss';
-@import 'ej2-inputs/styles/textarea/bootstrap-definition.scss';
-@import 'ej2-notifications/styles/skeleton/bootstrap-definition.scss';
-@import 'bootstrap-definition.scss';
-@import 'icons/bootstrap.scss';
-@import 'all.scss';
-@import 'bigger.scss';
+@use 'ej2-base/styles/definition/bootstrap' as *;
+@use 'ej2-navigations/styles/toolbar/bootstrap-definition' as *;
+@use 'ej2-inputs/styles/textarea/bootstrap-definition' as *;
+@use 'ej2-notifications/styles/skeleton/bootstrap-definition' as *;
+@use 'bootstrap-definition' as *;
+@use 'icons/bootstrap' as *;
+@use 'all' as *;
+@use 'bigger' as *;

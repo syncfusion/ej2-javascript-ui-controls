@@ -214,7 +214,7 @@ export abstract class Component<ElementType extends HTMLElement> extends Base<El
                 diagram: 'all',
                 PdfViewer: 'all',
                 grid: ['logger'],
-                richtexteditor: ['link', 'table', 'image', 'audio', 'video', 'formatPainter', 'emojiPicker', 'pasteCleanup', 'htmlEditor', 'toolbar', 'importExport', 'codeBlock'],
+                richtexteditor: ['link', 'table', 'image', 'audio', 'video', 'formatPainter', 'emojiPicker', 'pasteCleanup', 'htmlEditor', 'toolbar', 'importExport', 'codeBlock', 'clipBoardCleanup', 'aiAssistant', 'autoFormat'],
                 treegrid: ['filter'],
                 gantt: ['tooltip'],
                 chart: ['Export', 'Zoom'],

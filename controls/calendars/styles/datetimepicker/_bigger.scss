@@ -1,3 +1,5 @@
+@use 'ej2-base/styles/common/mixin' as *;
+@use './theme-variables' as *;
 @include export-module('datetimepicker-bigger') {
 
   .e-bigger.e-datetime-wrapper,
@@ -30,10 +32,10 @@
   #{if(&, '&', '*')}.e-bigger#{&}.e-datetimepicker.e-popup {
     #{if(&, '&', '*')} .e-list-parent.e-ul {
       @if $skin-name != 'Material3' {
-        padding: $datetime-list-bigger-padding 0;
+        padding: $datetime-list-parent-bigger-padding;
       }
       @else {
-        padding: 0;
+        padding: $margin-zero;
       }
       
       #{if(&, '&', '*')} .e-list-item {
@@ -48,7 +50,7 @@
   .e-bigger .e-content-placeholder.e-datetimepicker.e-placeholder-datetimepicker,
   .e-bigger.e-content-placeholder.e-datetimepicker.e-placeholder-datetimepicker {
     background-size: 250px 40px;
-    min-height: 40px;
+    min-height: $datetime-bigger-content-place-min-height;
   }
 
   .e-small.e-bigger.e-datetime-wrapper,

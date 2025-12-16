@@ -130,7 +130,7 @@ export class StackingStepAreaSeries extends LineBase {
                 if (j !== 0 && !visiblePoint[j - 1].visible) {
                     index = this.getNextVisiblePointIndex(visiblePoint, j);
                 }
-                if (j !== 0) {
+                if (j !== 0  && visiblePoint[j as number].visible) {
                     validIndex = index ? index : j - 1;
                     pointIndex = index ? visiblePoint[index as number].index : visiblePoint[j - 1].index;
                     point3 = getPoint(

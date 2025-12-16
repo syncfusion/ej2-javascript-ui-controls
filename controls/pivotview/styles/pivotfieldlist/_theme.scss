@@ -1,3 +1,5 @@
+@use 'ej2-base/styles/common/mixin' as *;
+@use './theme-variables' as *;
 @mixin wrap-styles {
   float: right;
   height: $field-list-adaptive-btn-size;
@@ -21,7 +23,7 @@
 
     .e-select-table {
       background: $field-list-toggle-bg-color;
-      border: .5px $field-list-border-type $field-list-toggle-border-color;
+      border: $field-list-border-1 $field-list-border-type $field-list-toggle-border-color;
       box-shadow: $field-list-toggle-shadow-color;
       color: $field-list-toggle-font-color;
       font-size: $field-list-toggle-icon-size;
@@ -37,7 +39,7 @@
 
       @if ($skin-name =='Material3') {
         border: none;
-        border-radius: 4px;
+        border-radius: $field-list-radius-4;
         top: 1px;
       }
 
@@ -80,15 +82,15 @@
   #{if(&, "&", "*")}.e-rtl {
 
     .e-select-table {
-      padding: 8px 5px;
+      padding: $field-list-spacing-8 $field-list-spacing-5;
     }
   }
 
   .e-pivotfieldlist-container {
     font-family: $field-list-font-family;
     font-size: $field-list-content-font-size;
-    max-width: 700px;
-    min-width: 300px;
+    max-width: $field-list-width-700;
+    min-width: $field-list-width-300;
 
     &.sf-pivotfieldlist-container {
       .e-field-list-container .e-field-table .e-field-list {
@@ -97,7 +99,7 @@
 
         &.e-olap-field-list-tree.e-treeview {
           ul:first-child {
-            padding-right: 0;
+            padding-right: $field-list-spacing-0;
           }
 
           li {
@@ -109,8 +111,8 @@
 
             &.e-rtl {
               ul:first-child {
-                padding-left: 0;
-                padding-right: 10px;
+                padding-left: $field-list-spacing-0;
+                padding-right: $field-list-spacing-10;
               }
             }
           }
@@ -120,8 +122,8 @@
           .e-drag {
             padding: revert !important;
             margin: revert !important;
-            width: auto !important;
-            height: auto !important;
+            width: $field-list-width-auto !important;
+            height: $field-list-height-auto !important;
           }
 
           .e-draggable {
@@ -140,7 +142,7 @@
           .e-list-text {
             text-overflow: ellipsis;
             overflow-x: hidden;
-            width: 100%;
+            width: $field-list-width-100p;
             white-space: nowrap;
           }
         }
@@ -171,14 +173,14 @@
 
     .e-layout-footer {
       display: flex;
-      padding: 10px 2px 2px;
+      padding: $field-list-spacing-10 $field-list-spacing-2 $field-list-spacing-2;
 
       .e-button-layout {
         flex: auto;
         text-align: end;
 
         .e-defer-apply-button {
-          margin-right: 10px;
+          margin-right: $field-list-spacing-10;
         }
 
         .e-cancel-btn,
@@ -190,39 +192,39 @@
       .e-cancel-btn,
       .e-defer-apply-button,
       .e-checkbox-layout {
-        max-width: 25%;
+        max-width: $field-list-width-25p;
         overflow: hidden;
         text-overflow: ellipsis;
         white-space: nowrap;
       }
 
       .e-checkbox-layout .e-label {
-        padding-right: 10px;
+        padding-right: $field-list-spacing-10;
         overflow: hidden;
         text-overflow: ellipsis !important;
         white-space: unset;
       }
 
       .e-checkbox-layout {
-        max-width: 45%;
+        max-width: $field-list-width-45p;
         overflow: visible;
       }
     }
 
     .e-checkbox-layout {
       float: left;
-      margin-top: 6px;
+      margin-top: $field-list-spacing-6;
 
       @if ($skin-name =='tailwind') or ($skin-name =='FluentUI') {
-        margin-left: 0 !important;
-        margin-right: 0 !important;
+        margin-left: $field-list-spacing-0 !important;
+        margin-right: $field-list-spacing-0 !important;
       }
     }
 
     &.e-rtl {
       .e-layout-footer {
         .e-defer-apply-button {
-          margin-left: 10px;
+          margin-left: $field-list-spacing-10;
         }
       }
 
@@ -232,25 +234,25 @@
     }
 
     &.e-dialog {
-      max-height: 550px !important;
+      max-height: $field-list-height-550 !important;
 
       .e-layout-footer {
-        padding: 0;
+        padding: $field-list-spacing-0;
       }
 
       .e-checkbox-layout {
-        margin-left: 10px;
+        margin-left: $field-list-spacing-10;
       }
 
       .e-button-layout {
         @if ($skin-name !='tailwind3') {
-          margin-right: 10px;
+          margin-right: $field-list-spacing-10;
         }
       }
 
       .e-dlg-content ul li .e-text-content .e-checkbox-wrapper {
         @if ($skin-name =='Material3') {
-          margin: 0 !important;
+          margin: $field-list-spacing-0 !important;
           /* stylelint-enable */
         }
 
@@ -264,12 +266,12 @@
 
     .e-dlg-header-content,
     .e-footer-content {
-      border: 0;
+      border: $field-list-border-0;
     }
 
     .e-dlg-header-content {
       @if ($skin-name =='bootstrap5') {
-        border-bottom: 1px solid $field-list-border;
+        border-bottom: $field-list-border-1 solid $field-list-border;
       }
 
       .e-dlg-header {
@@ -284,16 +286,16 @@
 
     .e-footer-content {
       @if ($skin-name =='bootstrap5') {
-        border-top: 1px solid $field-list-border;
+        border-top: $field-list-border-1 solid $field-list-border;
       }
     }
 
     .e-field-list-title {
       display: flex;
       font-size: $field-list-title-font-size;
-      min-height: 25px;
-      padding: 0 2px $field-list-title-padding-size;
-      width: 100%;
+      min-height: $field-list-height-25;
+      padding: $field-list-spacing-0 $field-list-spacing-2 $field-list-title-padding-size;
+      width: $field-list-width-100p;
 
       .e-title-content {
         flex: auto;
@@ -302,8 +304,8 @@
 
     .e-title-header {
       display: flex;
-      padding: 2px;
-      width: 100%;
+      padding: $field-list-spacing-2;
+      width: $field-list-width-100p;
 
       @if ($skin-name =='bootstrap5' or $skin-name =='bootstrap5.3' or $skin-name == 'tailwind3')
       {
@@ -322,8 +324,8 @@
 
     .e-field-list-container {
       display: flex;
-      height: 342px;
-      padding: 1px;
+      height: $field-list-height-342;
+      padding: $field-list-spacing-1;
       position: relative;
 
       .e-field-table {
@@ -331,7 +333,7 @@
         border-radius: $field-list-default-border-radius;
         display: inline-block;
         overflow: hidden;
-        width: 30%;
+        width: $field-list-width-30p;
 
         .e-field-list-tree {
           .e-sibling {
@@ -341,7 +343,7 @@
 
         .e-field-header,
         .e-field-list {
-          width: 100%;
+          width: $field-list-width-100p;
         }
 
         .e-field-header {
@@ -379,8 +381,8 @@
             color: $field-list-default-header-icon-font-color;
             cursor: pointer;
             font-size: $field-list-header-icon-size;
-            padding: 0 0 0 $field-list-icon-to-icon-padding;
-            width: 20px;
+            padding: $field-list-spacing-0 $field-list-spacing-0 $field-list-spacing-0 $field-list-icon-to-icon-padding;
+            width: $field-list-width-20;
 
             &.e-selected::before {
               color: $field-list-active-color;
@@ -388,14 +390,14 @@
 
             &:hover,
             &:focus {
-              font-weight: bold;
+              font-weight: $field-list-font-weight-bold;
             }
           }
 
           /* stylelint-disable */
           @if ($skin-name =='FluentUI') or ($skin-name =='fluent2') {
             .e-sort-none {
-              padding-right: 2px !important;
+              padding-right: $field-list-spacing-2 !important;
             }
           }
           /* stylelint-enable */
@@ -405,14 +407,14 @@
           display: inline-block;
           height: $field-list-tree-outer-div-height;
           overflow: auto;
-          width: 100%;
+          width: $field-list-width-100p;
         }
 
         .e-field-list {
           display: inline-table;
-          height: 100%;
-          padding-left: 2px;
-          width: 100%;
+          height: $field-list-height-100p;
+          padding-left: $field-list-spacing-2;
+          width: $field-list-width-100p;
 
           @if ($skin-name == 'fluent2' or $skin-name =='tailwind3'){
             border: none;
@@ -424,11 +426,11 @@
 
               li.e-pivot-parent {
                 @if ($skin-name =='bootstrap5') {
-                  padding-left: 10px;
+                  padding-left: $field-list-spacing-10;
                 }
 
                 @if ($skin-name =='FluentUI') {
-                  padding-left: 9px;
+                  padding-left: $field-list-spacing-9;
                 }
               }
 
@@ -453,26 +455,26 @@
                 cursor: move;
                 display: inline-block;
                 font-size: $field-list-icon-size;
-                height: 20px;
+                height: $field-list-height-20;
                 margin-bottom: $field-list-treeview-drag-margin;
-                margin-right: 6px;
+                margin-right: $field-list-spacing-6;
                 pointer-events: all;
                 text-align: center;
                 vertical-align: bottom;
-                width: 20px;
+                width: $field-list-width-20;
 
                 @if ($skin-name =='fluent2') {
-                  font-size: 16px;
-                  margin-right: 0;
+                  font-size: $field-list-font-icon-16;
+                  margin-right: $field-list-spacing-0;
                 }
 
                 @if ($skin-name =='bootstrap5') or ($skin-name =='FluentUI') {
-                  margin-right: 4px;
-                  padding-left: 8px;
+                  margin-right: $field-list-spacing-4;
+                  padding-left: $field-list-spacing-8;
                 }
 
                 @if ($skin-name =='tailwind3') {
-                  margin-right: 0;
+                  margin-right: $field-list-spacing-0;
                 }
 
                 &.e-disable-drag {
@@ -486,7 +488,7 @@
                 @if ($skin-name !='fluent2'){
                   color: $field-list-tree-icon-color;
                 }
-                margin: 0;
+                margin: $field-list-spacing-0;
               }
 
               /* stylelint-disable */
@@ -501,7 +503,7 @@
               .e-kpiStatus-icon,
               .e-kpiTrend-icon,
               .e-kpiValue-icon {
-                margin-left: 10px;
+                margin-left: $field-list-spacing-10;
               }
 
               /* stylelint-enable */
@@ -530,8 +532,8 @@
             ul {
               .e-list-icon {
                 font-size: $field-list-icon-size;
-                height: auto;
-                width: auto;
+                height: $field-list-height-auto;
+                width: $field-list-width-auto;
 
                 @if ($skin-name =='fluent2'){
                   &:hover {
@@ -542,8 +544,8 @@
             }
 
             &.e-treeview ul:first-child {
-              padding-left: 10px;
-              padding-right: 10px;
+              padding-left: $field-list-spacing-10;
+              padding-right: $field-list-spacing-10;
             }
 
             &.e-rtl {
@@ -557,19 +559,19 @@
         }
 
         &.e-olap-field-table {
-          width: 40%;
+          width: $field-list-width-40p;
         }
       }
 
       .e-axis-table {
         display: flex;
         overflow: hidden;
-        width: 70%;
+        width: $field-list-width-70p;
 
         .e-left-axis-fields,
         .e-right-axis-fields {
           padding-left: $field-list-default-padding-size;
-          width: 50%;
+          width: $field-list-width-50p;
         }
 
         .e-left-axis-fields .e-field-list-filters,
@@ -580,13 +582,13 @@
           border: $field-list-border-size $field-list-border-type $field-list-default-border-color;
           border-radius: $field-list-default-border-radius;
           fill: $field-list-default-fill-color;
-          font-weight: normal;
-          min-height: 165px;
+          font-weight: $field-list-font-weight-normal;
+          min-height: $field-list-height-165;
           position: relative;
-          width: 100%;
+          width: $field-list-width-100p;
 
           @if ($skin-name =='tailwind3') {
-            font-weight: 500;
+            font-weight: $field-list-font-weight-medium;
           }
 
           .e-axis-container {
@@ -596,7 +598,7 @@
             color: $field-list-default-header-font-color;
             display: flex;
             height: $field-list-header-height;
-            padding: 0 $field-list-header-padding 0;
+            padding: $field-list-spacing-0 $field-list-header-padding $field-list-spacing-0;
 
             @if ($skin-name =='Material3') {
               border-bottom: none;
@@ -605,7 +607,7 @@
             .e-axis-icon-container {
               display: flex;
               height: $field-list-header-icon-size;
-              width: 20px;
+              width: $field-list-width-20;
 
               .e-axis-rows,
               .e-axis-columns,
@@ -622,11 +624,11 @@
             font-size: $field-list-header-font-size;
             line-height: $field-list-header-content-line-height;
             overflow: hidden;
-            padding: 0 8px;
+            padding: $field-list-spacing-0 $field-list-spacing-8;
             text-overflow: ellipsis;
             text-transform: $field-list-text-transform;
             white-space: nowrap;
-            width: 100%;
+            width: $field-list-width-100p;
 
             @if ($skin-name =='Material3') {
               font-weight: $field-list-table-header-font-weight;
@@ -638,7 +640,7 @@
             height: $field-list-axis-content-height;
             overflow: auto;
             scroll-behavior: smooth;
-            width: 100%;
+            width: $field-list-width-100p;
 
             &.e-drag-restrict {
               cursor: no-drop;
@@ -650,14 +652,14 @@
               .e-drop-indicator {
                 display: block;
                 pointer-events: none;
-                width: 100%;
+                width: $field-list-width-100p;
 
                 &.e-drop-hover {
-                  border-top: 2px dashed $field-list-drop-hover-color;
-                  margin-top: -2px;
+                  border-top: $field-list-border-2 dashed $field-list-drop-hover-color;
+                  margin-top: $field-list-spacing--2;
 
                   @if ($skin-name =='tailwind') or ($skin-name =='bootstrap5') {
-                    border-top: 2px solid $field-list-drop-hover-color;
+                    border-top: $field-list-border-2 solid $field-list-drop-hover-color;
                   }
                 }
               }
@@ -673,19 +675,19 @@
               .e-pivot-button {
                 background: $field-list-button-color;
                 border-bottom: $field-list-border-size $field-list-border-type $field-list-button-border-color;
-                border-left: 0;
-                border-radius: 0;
-                border-right: 0;
-                border-top: 0;
+                border-left: $field-list-border-0;
+                border-radius: $field-list-border-0;
+                border-right: $field-list-border-0;
+                border-top: $field-list-border-0;
                 box-shadow: none;
                 cursor: default;
                 display: flex;
-                font-weight: normal;
+                font-weight: $field-list-font-weight-normal;
                 height: $field-list-button-height;
-                line-height: 1em;
+                line-height: $field-list-line-height-100p;
                 padding: $field-list-button-padding;
                 text-transform: none;
-                width: 100%;
+                width: $field-list-width-100p;
 
                 @if ($field-list-skin =='bootstrap4') or ($skin-name =='bootstrap5') or ($skin-name =='bootstrap5.3') {
                   color: $field-list-button-font-color;
@@ -719,7 +721,7 @@
                     /* stylelint-disable */
                     background-color: $field-list-default-fill-color !important;
                     /* stylelint-enable */
-                    border: 1px Solid $field-list-active-color;
+                    border: $field-list-border-1 Solid $field-list-active-color;
                   }
                 }
                 
@@ -751,13 +753,12 @@
                   background: transparent;
                   flex: auto;
                   font-size: $field-list-button-font-size;
-                  height: 16px;
-                  line-height: 1em;
+                  height: $field-list-height-16;
                   overflow: hidden;
-                  padding: 0 8px;
+                  padding: $field-list-spacing-0 $field-list-spacing-8;
                   text-align: left;
                   text-overflow: ellipsis;
-                  width: 70%;
+                  width: $field-list-width-70p;
 
                   @if ($skin-name =='tailwind') {
                     line-height: 1.2em;
@@ -765,16 +766,16 @@
                 }
 
                 .e-draggable {
-                  height: 20px;
-                  width: 20px;
+                  height: $field-list-height-20;
+                  width: $field-list-width-20;
                 }
 
                 .e-drag {
                   color: $field-list-drag-icon-color;
                   cursor: move;
                   font-size: $field-list-icon-size;
-                  height: 20px;
-                  width: 20px;
+                  height: $field-list-height-20;
+                  width: $field-list-width-20;
 
                   @if ($skin-name =='fluent2') {
                     font-size: 16px;
@@ -796,9 +797,9 @@
                   cursor: pointer;
                   display: inline-block;
                   font-size: $field-list-icon-size;
-                  height: 20px;
+                  height: $field-list-height-20;
                   padding-left: $field-list-icon-to-icon-padding;
-                  width: 20px;
+                  width: $field-list-width-20;
 
                   &:hover {
                     color: $field-list-icon-hover-color;
@@ -828,7 +829,7 @@
                   .e-remove,
                   .e-dropdown-icon,
                   .e-edit {
-                    padding-left: 0;
+                    padding-left: $field-list-spacing-0;
                     padding-right: $field-list-icon-to-icon-padding;
                   }
                 }
@@ -850,11 +851,11 @@
             bottom: 32%;
             color: $field-list-default-prompt-color;
             font-size: $field-list-content-font-size;
-            height: 25px;
+            height: $field-list-height-25;
             pointer-events: none;
             position: absolute;
             text-align: center;
-            width: 100%;
+            width: $field-list-width-100p;
 
             &.e-disable {
               display: none;
@@ -868,14 +869,14 @@
         }
 
         &.e-olap-axis-table {
-          width: 60%;
+          width: $field-list-width-60p;
         }
       }
     }
 
     &.e-search-mode {
       &.e-static {
-        max-height: 750px;
+        max-height: $field-list-height-750;
 
         .e-field-list-container .e-field-table {
           height: $field-list-search-static-field-table-height;
@@ -886,7 +887,7 @@
         min-height: $field-list-search-popup-min-height;
 
         .e-field-list-container {
-          height: 369px;
+          height: $field-list-height-369;
 
           @if ($skin-name =='FluentUI') {
             height: 394px;
@@ -908,7 +909,7 @@
           }
 
           .e-axis-table {
-            height: 392px;
+            height: $field-list-height-392;
 
             .e-axis-content {
               height: $field-list-search-popup-axis-content-height !important;
@@ -922,7 +923,7 @@
         color: $field-list-drag-icon-color;
         padding: $field-list-member-prompt-padding-size;
         text-align: center;
-        width: 100%;
+        width: $field-list-width-100p;
 
         &.e-disable {
           display: none;
@@ -942,7 +943,7 @@
           /* stylelint-disable */
           .e-input-group .e-input-group-icon,
           .e-input-group.e-control-wrapper .e-input-group-icon {
-            border-width: 0 !important;
+            border-width: $field-list-border-0 !important;
             cursor: text !important;
           }
 
@@ -964,8 +965,7 @@
       color: $field-list-cal-button-text-color;
       font-size: $field-list-button-font-size;
       font-weight: $field-list-button-font-weight;
-      max-width: 160px;
-      min-width: 145px;
+      min-width: $field-list-width-145;
 
       @if ($skin-name =='Material3') {
         border: $field-list-calculated-field-border;
@@ -987,8 +987,8 @@
     &.e-rtl {
       .e-field-table {
         .e-field-list {
-          padding-left: 0;
-          padding-right: 2px;
+          padding-left: $field-list-spacing-0;
+          padding-right: $field-list-spacing-2;
 
           &:not(.e-olap-field-list-tree) {
             ul {
@@ -996,11 +996,11 @@
 
               li.e-pivot-parent {
                 @if ($skin-name =='bootstrap5') {
-                  padding-right: 5px;
+                  padding-right: $field-list-spacing-5;
                 }
 
                 @if ($skin-name =='FluentUI') {
-                  padding-right: 9px;
+                  padding-right: $field-list-spacing-9;
                 }
               }
 
@@ -1020,11 +1020,11 @@
             }
 
             .e-drag {
-              margin-left: 6px !important;
-              margin-right: 0 !important;
+              margin-left: $field-list-spacing-6 !important;
+              margin-right: $field-list-spacing-0 !important;
 
               @if ($skin-name =='bootstrap5') or ($skin-name =='FluentUI') {
-                padding-right: 8px;
+                padding-right: $field-list-spacing-8;
               }
             }
 
@@ -1039,8 +1039,8 @@
             .e-kpiStatus-icon,
             .e-kpiTrend-icon,
             .e-kpiValue-icon {
-              margin-left: 0;
-              margin-right: 10px;
+              margin-left: $field-list-spacing-0;
+              margin-right: $field-list-spacing-10;
             }
 
             /* stylelint-enable */
@@ -1048,7 +1048,7 @@
         }
 
         .e-field-header {
-          padding-left: 0;
+          padding-left: $field-list-spacing-0;
           padding-right: $field-list-header-padding;
           text-align: right;
 
@@ -1059,12 +1059,12 @@
 
         .e-field-header-container {
           padding-left: $field-list-header-padding;
-          padding-right: 0;
+          padding-right: $field-list-spacing-0;
 
           .e-sort-none,
           .e-sort-ascend,
           .e-sort-descend {
-            padding: 0 $field-list-icon-to-icon-padding 0 0;
+            padding: $field-list-spacing-0 $field-list-icon-to-icon-padding $field-list-spacing-0 $field-list-spacing-0;
           }
         }
       }
@@ -1073,7 +1073,7 @@
 
         .e-left-axis-fields,
         .e-right-axis-fields {
-          padding-left: 0;
+          padding-left: $field-list-spacing-0;
           padding-right: $field-list-default-padding-size;
         }
 
@@ -1091,7 +1091,7 @@
     &.e-static {
       background-color: $field-list-default-bg-color;
       border: $field-list-border-size $field-list-border-type $field-list-default-border-color;
-      max-height: 700px;
+      max-height: $field-list-height-700;
       padding: $field-list-static-padding-size;
       position: relative;
 
@@ -1101,12 +1101,12 @@
 
       .e-field-list-container {
         display: inline-block;
-        height: 100%;
-        width: 100%;
+        height: $field-list-height-100p;
+        width: $field-list-width-100p;
 
         .e-field-table {
           height: $field-list-static-field-table-height;
-          width: 100%;
+          width: $field-list-width-100p;
 
           .e-field-list-tree-outer-div {
             height: $field-list-static-field-table-outer-div-height;
@@ -1120,18 +1120,18 @@
         .e-center-title {
           color: $field-list-default-header-font-color;
           font-size: $field-list-header-font-size;
-          height: 25px;
-          margin-top: 5px;
+          height: $field-list-height-25;
+          margin-top: $field-list-spacing-5;
           overflow: hidden;
           text-align: left;
           text-overflow: ellipsis;
         }
 
         .e-axis-table {
-          width: 100%;
+          width: $field-list-width-100p;
 
           .e-left-axis-fields {
-            padding: 0;
+            padding: $field-list-spacing-0;
           }
 
           .e-right-axis-fields {
@@ -1156,7 +1156,7 @@
           }
 
           .e-right-axis-fields {
-            padding: 0;
+            padding: $field-list-spacing-0;
           }
         }
       }
@@ -1165,15 +1165,15 @@
         .e-checkbox-layout {
           align-items: center;
           display: flex;
-          margin-top: 0;
+          margin-top: $field-list-spacing-0;
           overflow: hidden;
-          width: 100%;
+          width: $field-list-width-100p;
 
           .e-checkbox-wrapper {
-            width: 100%;
+            width: $field-list-width-100p;
 
             label {
-              width: 100%;
+              width: $field-list-width-100p;
 
               .e-label {
                 overflow: hidden;
@@ -1181,7 +1181,7 @@
                 text-overflow: ellipsis !important;
                 /* stylelint-enable */
                 white-space: unset;
-                width: calc(100% - 20px);
+                width: calc($field-list-width-100p - $field-list-width-20);
               }
             }
           }
@@ -1195,22 +1195,22 @@
     }
 
     &.e-device {
-      height: 100%;
+      height: $field-list-height-100p;
       /* stylelint-disable */
-      max-height: 100% !important;
-      max-width: 100% !important;
+      max-height: $field-list-height-100p !important;
+      max-width: $field-list-width-100p !important;
       /* stylelint-enable */
-      min-height: 500px;
-      width: 100%;
+      min-height: $field-list-height-500;
+      width: $field-list-width-100p;
 
       .e-dlg-header-content {
         background-color: $field-list-mobile-header-color;
         color: $field-list-mobile-header-font-color;
-        font-size: 14px;
+        font-size: $field-list-font-size-14;
 
         @if ($skin-name =='tailwind') {
-          padding-left: 16px;
-          padding-right: 16px;
+          padding-left: $field-list-spacing-16;
+          padding-right: $field-list-spacing-16;
         }
       }
 
@@ -1223,7 +1223,7 @@
         }
 
         .e-dlg-content .e-field-list-tree-outer-div {
-          height: 210px;
+          height: $field-list-height-210;
           overflow: auto;
 
           @if ($skin-name == 'fluent2') {
@@ -1239,12 +1239,12 @@
 
       .e-field-list-back-icon {
         color: $field-list-back-font-color;
-        font-size: 16px;
+        font-size: $field-list-font-icon-16;
         height: auto;
-        margin-left: 0;
-        margin-right: 12px;
+        margin-left: $field-list-spacing-0;
+        margin-right: $field-list-spacing-12;
         text-align: center;
-        width: 24px;
+        width: $field-list-width-24;
       }
 
       .e-disable {
@@ -1252,7 +1252,7 @@
       }
 
       .e-adaptive-container {
-        height: 100%;
+        height: $field-list-height-100p;
         position: relative;
 
         .e-tab-header {
@@ -1267,11 +1267,11 @@
           .e-field-list-columns,
           .e-field-list-values {
             display: inline-block;
-            height: 100%;
-            min-height: 250px;
+            height: $field-list-height-100p;
+            min-height: $field-list-height-250;
             padding-top: $field-list-adaptive-content-padding-size;
             position: relative;
-            width: 100%;
+            width: $field-list-width-100p;
 
             .e-axis-content {
               overflow: auto;
@@ -1287,20 +1287,20 @@
               .e-pivot-button {
                 align-items: center;
                 border: $field-list-border-size $field-list-border-type $field-list-button-border-color;
-                border-left: 0;
-                border-radius: 0;
-                border-right: 0;
-                border-top: 0;
-                border-width: 1px 0;
+                border-left: $field-list-border-0;
+                border-radius: $field-list-radius-0;
+                border-right: $field-list-border-0;
+                border-top: $field-list-border-0;
+                border-width: $field-list-border-1 $field-list-border-0;
                 box-shadow: none;
                 display: flex;
                 font-size: $field-list-bigger-button-font-size;
-                font-weight: normal;
+                font-weight: $field-list-font-weight-normal;
                 height: $field-list-adaptive-pivot-button-height;
-                line-height: normal;
+                line-height: $field-list-line-height-normal;
                 padding: $field-list-adaptive-pivot-button-padding;
                 text-transform: none;
-                width: 100%;
+                width: $field-list-width-100p;
 
                 @if ($skin-name =='bootstrap5') or ($skin-name =='bootstrap5.3') {
                   background-color: $field-list-default-bg-color;
@@ -1317,7 +1317,7 @@
                   overflow: hidden;
                   text-align: left;
                   text-overflow: ellipsis;
-                  width: 70%;
+                  width: $field-list-width-70p;
                 }
 
                 .e-drag {
@@ -1335,9 +1335,9 @@
                   cursor: pointer;
                   display: inline-block;
                   font-size: $field-list-bigger-icon-size;
-                  padding-left: 10px;
-                  width: 24px;
-                  font-size: 14px !important;
+                  padding-left: $field-list-spacing-10;
+                  width: $field-list-width-24;
+                  font-size: $field-list-font-icon-14 !important;
 
                   @if ($field-list-skin =='bootstrap4') {
                     color: $white;
@@ -1345,7 +1345,7 @@
 
                   @if ($skin-name =='bootstrap5') {
                     color: $field-list-button-icon-color;
-                    padding-left: 8px;
+                    padding-left: $field-list-spacing-8;
                   }
 
                   &:hover {
@@ -1383,16 +1383,16 @@
                   .e-remove,
                   .e-dropdown-icon,
                   .e-edit {
-                    padding-left: 0;
-                    padding-right: 10px;
+                    padding-left: $field-list-spacing-0;
+                    padding-right: $field-list-spacing-10;
 
                     @if ($skin-name =='tailwind') {
-                      margin-right: 8px;
-                      padding-right: 0;
+                      margin-right: $field-list-spacing-8;
+                      padding-right: $field-list-spacing-0;
                     }
 
                     @if ($skin-name =='bootstrap5') {
-                      padding-right: 8px;
+                      padding-right: $field-list-spacing-8;
                     }
                   }
                 }
@@ -1400,23 +1400,23 @@
             }
 
             .e-axis-content {
-              height: 100%;
-              width: 100%;
+              height: $field-list-height-100p;
+              width: $field-list-width-100p;
             }
 
             .e-draggable-prompt {
-              border: 1px dashed $field-list-header-background-color;
+              border: $field-list-border-1 dashed $field-list-header-background-color;
               color: $field-list-header-background-color;
               font-size: $field-list-drag-clone-font-size;
               height: $field-list-adaptive-drag-prompt-height;
               left: 15%;
-              line-height: $field-list-adaptive-drag-prompt-height;
+              line-height: $field-list-line-height-16;
               pointer-events: none;
               position: absolute;
               text-align: center;
               top: 25%;
               vertical-align: middle;
-              width: 70%;
+              width: $field-list-width-70p;
 
               @if ($skin-name =='bootstrap5') or ($skin-name =='fluent2') or ($skin-name =='fluent') or ($skin-name =='bootstrap5.3') or ($skin-name =='tailwind') or ($skin-name =='tailwind3') {
                 color: $field-list-default-font-color;
@@ -1427,31 +1427,31 @@
           .e-pivot-calc-outer-div {
             .e-pivot-formula {
               background-color: $pivot-formula-background;
-              border: 1px solid $pivot-formula-border;
+              border: $field-list-border-1 solid $pivot-formula-border;
               border-radius: $field-list-default-border-radius;
               color: $field-list-default-font-color;
-              height: 200px;
-              margin-left: 20px;
-              margin-right: 20px;
-              margin-top: 25px;
-              padding: 2px 3px;
+              height: $field-list-height-200;
+              margin-left: $field-list-spacing-20;
+              margin-right: $field-list-spacing-20;
+              margin-top: $field-list-spacing-25;
+              padding: $field-list-spacing-2 $field-list-spacing-3;
               resize: none;
-              width: 90%;
+              width: $field-list-width-90p;
             }
 
             /* stylelint-disable */
             .e-pivot-calc-input-div,
             .e-member-options,
             .e-pivot-calc-custom-format-div {
-              margin-left: 20px;
-              margin-right: 20px;
-              margin-top: 20px;
-              width: 90% !important;
+              margin-left: $field-list-spacing-20;
+              margin-right: $field-list-spacing-20;
+              margin-top: $field-list-spacing-20;
+              width: $field-list-width-90p !important;
             }
 
             /* stylelint-enable */
             .e-accordion {
-              margin-top: 20px;
+              margin-top: $field-list-spacing-20;
               overflow: auto;
 
               .e-acrdn-header {
@@ -1460,28 +1460,28 @@
 
                 .e-acrdn-header-icon {
                   display: table;
-                  font-size: 12px;
-                  min-width: 28px;
-                  padding: 0;
+                  font-size: $field-list-font-icon-12;
+                  min-width: $field-list-width-28;
+                  padding: $field-list-spacing-0;
                   position: absolute;
                   right: 16px;
 
                   .e-list-icon {
                     cursor: pointer;
                     display: table-cell;
-                    padding-right: 6px;
+                    padding-right: $field-list-spacing-6;
                     text-align: center;
                     vertical-align: middle;
 
                     &.e-remove-report.e-icons {
-                      padding-left: 10px;
+                      padding-left: $field-list-spacing-10;
                     }
                   }
                 }
               }
 
               .e-icons.e-frame {
-                margin-right: 12px;
+                margin-right: $field-list-spacing-12;
               }
 
               .e-acrdn-item.e-select.e-selected.e-expand-state > .e-acrdn-header:hover .e-icons {
@@ -1498,16 +1498,16 @@
 
                 /* stylelint-disable */
                 .e-icons.e-frame {
-                  margin-left: 12px !important;
-                  margin-right: 0 !important;
+                  margin-left: $field-list-spacing-12 !important;
+                  margin-right: $field-list-spacing-0 !important;
                 }
                 /* stylelint-enable */
               }
             }
 
             .e-radio-wrapper {
-              margin-bottom: 24px;
-              margin-right: 20px;
+              margin-bottom: $field-list-spacing-24;
+              margin-right: $field-list-spacing-20;
 
               .e-label {
                 color: $field-list-default-font-color;
@@ -1520,8 +1520,8 @@
             .e-pivot-add-button,
             .e-pivot-cancel-button {
               float: right;
-              margin-right: calc(10% - 20px);
-              margin-top: 32px;
+              margin-right: calc($field-list-spacing-10p - $field-list-width-20);
+              margin-top: $field-list-spacing-32;
             }
 
             .e-pivot-ok-button {
@@ -1530,7 +1530,7 @@
             }
 
             .e-pivot-accord {
-              max-height: 290px;
+              max-height: $field-list-height-290;
               overflow: auto;
 
               ul {
@@ -1542,15 +1542,15 @@
                 .e-calcfieldmember .e-list-text {
                   overflow: hidden;
                   text-overflow: ellipsis;
-                  width: 53%;
+                  width: $field-list-width-53p;
                 }
 
                 .e-list-header-icon {
                   display: table;
-                  height: 30px;
-                  min-height: 30px;
-                  min-width: 24px;
-                  padding: 0;
+                  height: $field-list-height-30;
+                  min-height: $field-list-height-30;
+                  min-width: $field-list-width-24;
+                  padding: $field-list-spacing-0;
                   position: absolute;
                   right: 16px;
                   top: 0;
@@ -1559,7 +1559,7 @@
                   .e-remove-report.e-icons {
                     color: $field-list-tree-icon-color;
                     display: table-cell;
-                    padding: 5px;
+                    padding: $field-list-spacing-5;
                     pointer-events: all;
                     text-align: center;
                     vertical-align: middle;
@@ -1582,7 +1582,7 @@
             }
 
             &.e-olap-calc-outer-div {
-              max-height: 575px;
+              max-height: $field-list-height-575;
               overflow: hidden;
               overflow-y: auto;
             }
@@ -1594,12 +1594,12 @@
           display: inline-block;
           position: absolute;
           vertical-align: bottom;
-          width: 100%;
+          width: $field-list-width-100p;
 
           .e-field-list-footer-content {
             display: inline-block;
             padding: $field-list-adaptive-footer-padding-size;
-            width: 100%;
+            width: $field-list-width-100p;
 
             .e-field-list-btn,
             .e-calculated-field-btn {
@@ -1617,7 +1617,7 @@
         pointer-events: none;
         position: absolute;
         vertical-align: bottom;
-        width: 100%;
+        width: $field-list-width-100p;
 
         .e-field-list-btn,
         .e-calculated-field-btn,
@@ -1639,35 +1639,35 @@
         .e-cancel-btn,
         .e-defer-apply-button,
         .e-checkbox-layout {
-          max-width: 20%;
+          max-width: $field-list-width-20p;
           overflow: hidden;
           text-overflow: ellipsis;
           white-space: nowrap;
         }
 
         .e-checkbox-layout {
-          max-width: 45%;
+          max-width: $field-list-width-45p;
         }
       }
 
       &.e-static {
-        border: 0;
-        padding: 0;
+        border: $field-list-border-0;
+        padding: $field-list-spacing-0;
 
         .e-field-list-filters,
         .e-field-list-rows,
         .e-field-list-columns,
         .e-field-list-values {
           .e-axis-content {
-            max-height: 600px;
+            max-height: $field-list-height-600;
           }
         }
       }
 
       &.e-rtl {
         .e-field-list-back-icon {
-          margin-left: 12px;
-          margin-right: 0;
+          margin-left: $field-list-spacing-12;
+          margin-right: $field-list-spacing-0;
           transform: rotateY(180deg);
         }
 
@@ -1691,7 +1691,7 @@
           .e-pivot-add-button,
           .e-pivot-cancel-button {
             float: left !important;
-            margin-left: 20px;
+            margin-left: $field-list-spacing-20;
           }
         }
         /* stylelint-enable */

@@ -1,3 +1,6 @@
+@use 'ej2-base/styles/common/mixin' as *;
+@use '../bootstrap-definition' as *;
+@use '../../document-editor/bootstrap-definition' as *;
 @include export-module('document-editor-container-bootstrap-icons') {
   .e-de-ctnr-linespacing::before {
     content: '\eb30';

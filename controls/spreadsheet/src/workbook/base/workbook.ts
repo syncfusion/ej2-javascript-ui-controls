@@ -1,4 +1,4 @@
-import { Component, Property, NotifyPropertyChanges, INotifyPropertyChanged, Collection, Complex, EmitType } from '@syncfusion/ej2-base';
+import { Component, Property, NotifyPropertyChanges, INotifyPropertyChanged, Collection, Complex, EmitType, getUniqueID } from '@syncfusion/ej2-base';
 import { initSheet, getSheet, getSheetIndexFromId, getSheetIndex, Sheet, moveSheet, duplicateSheet } from './sheet';
 import { Event, ModuleDeclaration, merge, L10n, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { WorkbookModel } from './workbook-model';
@@ -10,7 +10,7 @@ import { BorderType, getSheetIndexFromAddress, CalculationMode } from '../common
 import * as events from '../common/event';
 import { CellStyleModel, DefineNameModel, HyperlinkModel, insertModel, InsertDeleteModelArgs, getAddressInfo } from '../common/index';
 import { setCellFormat, sheetCreated, deleteModel, ModelType, ProtectSettingsModel, ValidationModel, setLockCells } from '../common/index';
-import { BeforeSaveEventArgs, SaveCompleteEventArgs, BeforeCellFormatArgs, UnprotectArgs, ExtendedRange, SerializationOptions } from '../common/interface';
+import { BeforeSaveEventArgs, SaveCompleteEventArgs, BeforeCellFormatArgs, UnprotectArgs, ExtendedRange, SerializationOptions, ExtendedThreadedCommentModel, ExtendedNoteModel, ExtendedSheet } from '../common/interface';
 import { SaveOptions, SetCellFormatArgs, ClearOptions, AutoFillSettings, AutoFillDirection, AutoFillType, dateToInt } from '../common/index';
 import { SortOptions, BeforeSortEventArgs, SortEventArgs, FindOptions, CellInfoEventArgs, ConditionalFormatModel } from '../common/index';
 import { FilterEventArgs, FilterOptions, BeforeFilterEventArgs, ChartModel, getCellIndexes, getCellAddress } from '../common/index';
@@ -24,7 +24,7 @@ import { WorkbookEdit, WorkbookCellFormat, WorkbookHyperlink, WorkbookInsert, Wo
 import { WorkbookDataValidation, WorkbookMerge, addListValidationDropdown, checkColumnValidation } from '../index';
 import { ServiceLocator } from '../services/index';
 import { setLinkModel, setImage, setChart, setAutoFill, BeforeCellUpdateArgs, updateCell, isNumber } from '../common/index';
-import { deleteChart, finiteAlert, formulaBarOperation } from '../../spreadsheet/common/event';
+import { deleteChart, finiteAlert, formulaBarOperation, processSheetComments, processSheetNotes } from '../../spreadsheet/common/event';
 import { beginAction, WorkbookFindAndReplace, getRangeIndexes, workbookEditOperation, clearCFRule, CFArgs, setCFRule } from '../index';
 import { WorkbookConditionalFormat } from '../actions/conditional-formatting';
 import { AutoFillSettingsModel } from '../..';
@@ -45,6 +45,15 @@ export class Workbook extends Component<HTMLElement> implements INotifyPropertyC
      */
     @Collection<SheetModel>([], Sheet)
     public sheets: SheetModel[];
+
+    /**
+     * Defines the display name of the author used for new notes, comments, or replies in the spreadsheet.
+     * If the author is not set, comments or notes will appear without an author label.
+     *
+     * @default null
+     */
+    @Property(null)
+    public author: string;
 
     /**
      * Specifies the active sheet index in the workbook.
@@ -1599,11 +1608,61 @@ export class Workbook extends Component<HTMLElement> implements INotifyPropertyC
             this.notify(finiteAlert, null);
             return;
         }
+        const cellModel: CellModel = getCell(range[0], range[1], sheet, false, true);
+        if (cell && cell.comment) {
+            if (cellModel.comment) {
+                this.notify(processSheetComments, {
+                    sheet: sheet, id: (cell.comment as ExtendedThreadedCommentModel).id, isDelete: true });
+            }
+            const comment: ExtendedThreadedCommentModel = cell.comment;
+            if (!comment.address) {
+                comment.address = [range[0], range[1]];
+                if ((sheet as ExtendedSheet).comments && (sheet as ExtendedSheet).comments.length > 0) {
+                    (sheet as ExtendedSheet).comments = (sheet as ExtendedSheet).comments.filter(
+                        (c: ExtendedThreadedCommentModel) => !(c.address && c.address[0] === range[0] && c.address[1] === range[1]));
+                }
+            }
+            this.notify(processSheetComments, {
+                sheet: sheet as ExtendedSheet, comment: comment,
+                isDelete: false, isRefresh: true, sheetIdx: sheetIdx
+            });
+        }
+        if (cell && cell.notes) {
+            if (cellModel.notes) {
+                this.notify(processSheetNotes, { sheet: sheet, id: (cellModel.notes as ExtendedNoteModel).id, isDelete: true });
+            }
+            let note: ExtendedNoteModel;
+            if (typeof cell.notes === 'string') {
+                note = {
+                    id: getUniqueID('e_note'),
+                    text: cell.notes,
+                    rowIdx: range[0],
+                    colIdx: range[1],
+                    isVisible: false
+                } as ExtendedNoteModel;
+                cell.notes = note;
+            } else {
+                note = cell.notes as ExtendedNoteModel;
+                if (!note.id) {
+                    note.id = getUniqueID('e_note');
+                }
+                if (isNullOrUndefined(note.rowIdx)) {
+                    note.rowIdx = range[0];
+                }
+                if (isNullOrUndefined(note.colIdx)) {
+                    note.colIdx = range[1];
+                }
+                if (isNullOrUndefined(note.isVisible)) {
+                    note.isVisible = false;
+                }
+            }
+            this.notify(
+                processSheetNotes, { sheet: sheet as ExtendedSheet, note: note, isDelete: false, isRefresh: true, sheetIdx: sheetIdx });
+        }
         updateCell(this, sheet, { cell: cell, rowIdx: range[0], colIdx: range[1], preventEvt: true });
         const val: string = isPublic ? cell.formula || (isNullOrUndefined(cell.value) ? null : cell.value) :
             isNullOrUndefined(cell.value) ? (cell.formula || null) : cell.value;
         const valChange: boolean = val !== null;
-        const cellModel: CellModel = getCell(range[0], range[1], sheet, false, true);
         if (cellInformation && cellInformation.format && isRedo) {
             cellModel.format = cellInformation.format;
         }

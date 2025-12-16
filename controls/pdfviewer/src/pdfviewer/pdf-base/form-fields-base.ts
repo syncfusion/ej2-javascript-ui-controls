@@ -1,5 +1,5 @@
 import { isNullOrUndefined } from '@syncfusion/ej2-base';
-import { PdfDocument, PdfPage, PdfForm, PdfTextBoxField, PdfFormFieldVisibility, PdfTextAlignment, PdfSignatureField, PdfField, PdfFreeTextAnnotation, PdfFontFamily, PdfStandardFont, PdfAnnotationFlag, PdfRubberStampAnnotation, PdfImage, PdfBitmap, PdfGraphics, PdfGraphicsState, PdfFontStyle as FontStyle, PdfCheckBoxField, PdfComboBoxField, PdfListBoxField, PdfListFieldItem, PdfRadioButtonListField, PdfRadioButtonListItem, PdfRotationAngle, PdfFontStyle, PdfFont, PdfTemplate, PdfInkAnnotation, PdfTrueTypeFont, PdfAnnotationCollection, PdfAnnotation, _PdfReference, _PdfDictionary, PdfPath} from '@syncfusion/ej2-pdf';
+import { PdfDocument, PdfPage, PdfForm, PdfTextBoxField, PdfFormFieldVisibility, PdfTextAlignment, PdfSignatureField, PdfField, PdfFreeTextAnnotation, PdfFontFamily, PdfStandardFont, PdfAnnotationFlag, PdfRubberStampAnnotation, PdfImage, PdfBitmap, PdfGraphics, PdfGraphicsState, PdfFontStyle as FontStyle, PdfCheckBoxField, PdfComboBoxField, PdfListBoxField, PdfListFieldItem, PdfRadioButtonListField, PdfRadioButtonListItem, PdfRotationAngle, PdfFontStyle, PdfFont, PdfTemplate, PdfInkAnnotation, PdfTrueTypeFont, PdfAnnotationCollection, PdfAnnotation, _PdfReference, _PdfDictionary, PdfPath, Rectangle, Size, Point} from '@syncfusion/ej2-pdf';
 import { PdfViewer, PdfViewerBase, PageRenderer, PageRotation } from '../index';
 import { getArialFontData } from '../pdf-base/fontData';
 import { Rect } from '@syncfusion/ej2-drawings';
@@ -64,7 +64,7 @@ export class FormFieldsBase {
             const top: number = this.convertPixelToPoint(boundsObject.top);
             const width: number = this.convertPixelToPoint(boundsObject.width);
             const height: number = this.convertPixelToPoint(boundsObject.height);
-            const annotation: PdfFreeTextAnnotation = new PdfFreeTextAnnotation(left, top, width, height);
+            const annotation: PdfFreeTextAnnotation = new PdfFreeTextAnnotation({x: left, y: top, width: width, height: height});
             annotation._dictionary.set('NM', textSignature.signatureName.toString());
             let fontSize: number = textSignature.fontSize;
             annotation.border.width = 0;
@@ -89,7 +89,7 @@ export class FormFieldsBase {
             const fontStyle: FontStyle = FontStyle.regular;
             annotation.font = new PdfStandardFont(fontFamilyEnum, fontSize, fontStyle);
             annotation.text = textData;
-            annotation.borderColor = [0, 0, 0];
+            annotation.borderColor = {r: 0, g: 0, b: 0};
             annotation.textAlignment = PdfTextAlignment.center;
             annotation._annotFlags = PdfAnnotationFlag.print;
             if (isAnnotationFlattern) {
@@ -158,23 +158,30 @@ export class FormFieldsBase {
             if (page.rotation === PdfRotationAngle.angle90 || page.rotation === PdfRotationAngle.angle270) {
                 [width, height] = [height, width];
             }
-            const rubberStampAnnotation: PdfRubberStampAnnotation = new PdfRubberStampAnnotation(left, top, width, height);
+            const rubberStampAnnotation: PdfRubberStampAnnotation = new PdfRubberStampAnnotation(
+                {x: left, y: top, width: width, height: height});
             const bitmap: PdfImage = new PdfBitmap(imageUrl);
             const graphics: PdfGraphics = page.graphics;
             const appearance: PdfTemplate = rubberStampAnnotation.appearance.normal;
             rubberStampAnnotation._dictionary.set('NM', signatureImage.signatureName.toString());
             const rotationAngle: number = this.getRotateAngle(page.rotation);
             rubberStampAnnotation.rotationAngle = Math.abs(rotationAngle);
+            const bounds: Rectangle = {
+                x: 0,
+                y: 0,
+                width: width,
+                height: height
+            };
             if (isAnnotationFlattern) {
                 rubberStampAnnotation.flatten = true;
             }
             if (!isAnnotationFlattern) {
                 const state: PdfGraphicsState = graphics.save();
-                appearance.graphics.drawImage(bitmap, 0, 0, width, height);
+                appearance.graphics.drawImage(bitmap, bounds);
                 appearance.graphics.restore(state);
             }
             else {
-                appearance.graphics.drawImage(bitmap, 0, 0, width, height);
+                appearance.graphics.drawImage(bitmap, bounds);
             }
             page.annotations.add(rubberStampAnnotation);
         }
@@ -388,7 +395,7 @@ export class FormFieldsBase {
                                     currentField.readOnly = table['isReadOnly'] === 'true' ? true : false;
                                 }
                             }
-                            fieldName = JSON.parse(fieldName) [0].replace(/[^0-9a-zA-Z]+/g, '');
+                            fieldName = !isNullOrUndefined(JSON.parse(fieldName) [0]) ? JSON.parse(fieldName) [0].replace(/[^0-9a-zA-Z]+/g, '') : '';
                             const selectedIndexes: number[] = [];
                             for (let k: number = 0; k < count; k++) {
                                 const text: string = currentField.itemAt(k).text;
@@ -571,16 +578,17 @@ export class FormFieldsBase {
         if (formFieldAttributes.rotation !== 0) {
             isFieldRotated = true;
         }
-        const fieldBounds: any = this.getBounds(textBounds, loadedPage.size[1], loadedPage.size[0], rotationAngle, isFieldRotated);
+        const fieldBounds: any = this.getBounds(textBounds, loadedPage.size.height, loadedPage.size.width, rotationAngle, isFieldRotated);
         const bound: any = { x: fieldBounds.X, y: fieldBounds.Y, width: fieldBounds.Width, height: fieldBounds.Height };
         //Create a new text box field
         const textbox: PdfTextBoxField = new PdfTextBoxField(loadedPage, textboxName, bound);
-        textbox.backColor = [formFieldAttributes.backgroundColor.r, formFieldAttributes.backgroundColor.g,
-            formFieldAttributes.backgroundColor.b];
+        const isTransparentBg: boolean = formFieldAttributes.backgroundColor.a === 0 ? true : false;
+        textbox.backColor = {r: formFieldAttributes.backgroundColor.r, g: formFieldAttributes.backgroundColor.g,
+            b: formFieldAttributes.backgroundColor.b};
         if (formFieldAttributes.backgroundColor.r === 0 && formFieldAttributes.backgroundColor.g === 0 &&
             formFieldAttributes.backgroundColor.b === 0 && formFieldAttributes.backgroundColor.a === 0) {
-            textbox.backColor = [formFieldAttributes.backgroundColor.r, formFieldAttributes.backgroundColor.g,
-                formFieldAttributes.backgroundColor.b, formFieldAttributes.backgroundColor.a];
+            textbox.backColor = {r: formFieldAttributes.backgroundColor.r, g: formFieldAttributes.backgroundColor.g,
+                b: formFieldAttributes.backgroundColor.b, isTransparent: isTransparentBg};
         }
         textbox.maxLength = formFieldAttributes.maxLength;
         textbox.insertSpaces = formFieldAttributes.insertSpaces;
@@ -590,14 +598,16 @@ export class FormFieldsBase {
         textbox.visibility = this.getFormFieldsVisibility(formFieldAttributes.visibility);
         textbox.text = isNullOrUndefined(formFieldAttributes.value) ? '' : formFieldAttributes.value;
         textbox.toolTip = isNullOrUndefined(formFieldAttributes.tooltip) ? '' : formFieldAttributes.tooltip;
-        textbox.color = [formFieldAttributes.fontColor.r, formFieldAttributes.fontColor.g, formFieldAttributes.fontColor.b];
-        textbox.borderColor = [formFieldAttributes.borderColor.r, formFieldAttributes.borderColor.g, formFieldAttributes.borderColor.b];
+        textbox.color = {r: formFieldAttributes.fontColor.r, g: formFieldAttributes.fontColor.g, b: formFieldAttributes.fontColor.b};
+        textbox.borderColor = {r: formFieldAttributes.borderColor.r, g: formFieldAttributes.borderColor.g,
+            b: formFieldAttributes.borderColor.b};
+        const isTransparent: boolean = formFieldAttributes.borderColor.a === 0 ? true : false;
         // eslint-disable-next-line
         if (formFieldAttributes.borderColor.r == 0 && formFieldAttributes.borderColor.g == 0 &&
              // eslint-disable-next-line
              formFieldAttributes.borderColor.b == 0 && formFieldAttributes.borderColor.a == 0) {
-            textbox.borderColor = [formFieldAttributes.borderColor.r, formFieldAttributes.borderColor.g,
-                formFieldAttributes.borderColor.b, formFieldAttributes.borderColor.a];
+            textbox.borderColor = {r: formFieldAttributes.borderColor.r, g: formFieldAttributes.borderColor.g,
+                b: formFieldAttributes.borderColor.b, isTransparent: isTransparent};
         }
         textbox.border.width = formFieldAttributes.thickness;
         textbox.multiLine = formFieldAttributes.Multiline;
@@ -634,7 +644,8 @@ export class FormFieldsBase {
         if (formFieldAttributes.rotation !== 0) {
             isFieldRotated = true;
         }
-        const fieldBounds: any = this.getBounds(dropDownListbounds, loadedPage.size[1], loadedPage.size[0], rotationAngle, isFieldRotated);
+        const fieldBounds: any = this.getBounds(dropDownListbounds, loadedPage.size.height,
+                                                loadedPage.size.width, rotationAngle, isFieldRotated);
         const bound: any = { x: fieldBounds.X, y: fieldBounds.Y, width: fieldBounds.Width, height: fieldBounds.Height };
         const comboBox: PdfComboBoxField = new PdfComboBoxField(loadedPage, dropdownListName, bound);
         let hasUnicode: boolean = false;
@@ -674,23 +685,26 @@ export class FormFieldsBase {
         comboBox.required = formFieldAttributes.isRequired;
         comboBox.readOnly = formFieldAttributes.isReadonly;
         comboBox.visibility = this.getFormFieldsVisibility(formFieldAttributes.visibility);
-        comboBox.backColor = [formFieldAttributes.backgroundColor.r, formFieldAttributes.backgroundColor.g,
-            formFieldAttributes.backgroundColor.b];
+        comboBox.backColor = {r: formFieldAttributes.backgroundColor.r, g: formFieldAttributes.backgroundColor.g,
+            b: formFieldAttributes.backgroundColor.b};
+        const isTransparentBg: boolean = formFieldAttributes.backgroundColor.a === 0 ? true : false;
         if (formFieldAttributes.backgroundColor.r === 0 && formFieldAttributes.backgroundColor.g === 0 &&
             formFieldAttributes.backgroundColor.b === 0 && formFieldAttributes.backgroundColor.a === 0) {
-            comboBox.backColor = [formFieldAttributes.backgroundColor.r, formFieldAttributes.backgroundColor.g,
-                formFieldAttributes.backgroundColor.b, formFieldAttributes.backgroundColor.a];
+            comboBox.backColor = {r: formFieldAttributes.backgroundColor.r, g: formFieldAttributes.backgroundColor.g,
+                b: formFieldAttributes.backgroundColor.b, isTransparent: isTransparentBg};
         }
-        comboBox.borderColor = [formFieldAttributes.borderColor.r, formFieldAttributes.borderColor.g, formFieldAttributes.borderColor.b];
+        comboBox.borderColor = {r: formFieldAttributes.borderColor.r, g: formFieldAttributes.borderColor.g,
+            b: formFieldAttributes.borderColor.b};
+        const isTransparent: boolean = formFieldAttributes.borderColor.a === 0 ? true : false;
         // eslint-disable-next-line
         if (formFieldAttributes.borderColor.r == 0 && formFieldAttributes.borderColor.g == 0 &&
             // eslint-disable-next-line
             formFieldAttributes.borderColor.b == 0 && formFieldAttributes.borderColor.a == 0) {
-            comboBox.borderColor = [formFieldAttributes.borderColor.r, formFieldAttributes.borderColor.g,
-                formFieldAttributes.borderColor.b, formFieldAttributes.borderColor.a];
+            comboBox.borderColor = {r: formFieldAttributes.borderColor.r, g: formFieldAttributes.borderColor.g,
+                b: formFieldAttributes.borderColor.b, isTransparent: isTransparent};
         }
         comboBox.border.width = formFieldAttributes.thickness;
-        comboBox.color = [formFieldAttributes.fontColor.r, formFieldAttributes.fontColor.g, formFieldAttributes.fontColor.b];
+        comboBox.color = {r: formFieldAttributes.fontColor.r, g: formFieldAttributes.fontColor.g, b: formFieldAttributes.fontColor.b};
         if (!isFieldRotated) {
             comboBox.rotate = this.getFormfieldRotation(loadedPage.rotation);
         }
@@ -710,7 +724,7 @@ export class FormFieldsBase {
         if (formFieldAttributes.rotation !== 0) {
             isFieldRotated = true;
         }
-        const fieldBounds: any = this.getBounds(checkBounds, loadedPage.size[1], loadedPage.size[0], rotationAngle, isFieldRotated);
+        const fieldBounds: any = this.getBounds(checkBounds, loadedPage.size.height, loadedPage.size.width, rotationAngle, isFieldRotated);
         const bound: any = { x: fieldBounds.X, y: fieldBounds.Y, width: fieldBounds.Width, height: fieldBounds.Height };
         //Create a new Check box field
         const checkBoxField: PdfCheckBoxField = new PdfCheckBoxField(checkboxFieldName, bound, loadedPage);
@@ -719,19 +733,19 @@ export class FormFieldsBase {
         checkBoxField.checked = formFieldAttributes.isChecked;
         checkBoxField.visibility = this.getFormFieldsVisibility(formFieldAttributes.visibility);
         checkBoxField._dictionary.set('ExportValue', formFieldAttributes.value);
-        checkBoxField.backColor = [formFieldAttributes.backgroundColor.r, formFieldAttributes.backgroundColor.g,
-            formFieldAttributes.backgroundColor.b];
+        checkBoxField.backColor = {r: formFieldAttributes.backgroundColor.r, g: formFieldAttributes.backgroundColor.g,
+            b: formFieldAttributes.backgroundColor.b};
         if (formFieldAttributes.backgroundColor.r === 0 && formFieldAttributes.backgroundColor.g === 0 &&
             formFieldAttributes.backgroundColor.b === 0 && formFieldAttributes.backgroundColor.a === 0) {
-            checkBoxField.backColor = [formFieldAttributes.backgroundColor.r, formFieldAttributes.backgroundColor.g,
-                formFieldAttributes.backgroundColor.b, formFieldAttributes.backgroundColor.a];
+            checkBoxField.backColor = {r: formFieldAttributes.backgroundColor.r, g: formFieldAttributes.backgroundColor.g,
+                b: formFieldAttributes.backgroundColor.b, isTransparent: true};
         }
-        checkBoxField.borderColor = [formFieldAttributes.borderColor.r, formFieldAttributes.borderColor.g,
-            formFieldAttributes.borderColor.b];
+        checkBoxField.borderColor = {r: formFieldAttributes.borderColor.r, g: formFieldAttributes.borderColor.g,
+            b: formFieldAttributes.borderColor.b};
         if (formFieldAttributes.borderColor.r === 0 && formFieldAttributes.borderColor.g === 0 && formFieldAttributes.borderColor.b === 0
              && formFieldAttributes.borderColor.a === 0) {
-            checkBoxField.borderColor = [formFieldAttributes.borderColor.r, formFieldAttributes.borderColor.g,
-                formFieldAttributes.borderColor.b, formFieldAttributes.borderColor.a];
+            checkBoxField.borderColor = {r: formFieldAttributes.borderColor.r, g: formFieldAttributes.borderColor.g,
+                b: formFieldAttributes.borderColor.b, isTransparent: true};
         }
         checkBoxField.border.width = formFieldAttributes.thickness;
         checkBoxField.toolTip = isNullOrUndefined(formFieldAttributes.tooltip) ? '' : formFieldAttributes.tooltip;
@@ -753,7 +767,7 @@ export class FormFieldsBase {
         if (formFieldAttributes.rotation !== 0) {
             isFieldRotated = true;
         }
-        const fieldBounds: any = this.getBounds(listBounds, loadedPage.size[1], loadedPage.size[0], rotationAngle, isFieldRotated);
+        const fieldBounds: any = this.getBounds(listBounds, loadedPage.size.height, loadedPage.size.width, rotationAngle, isFieldRotated);
         const bound: any = { x: fieldBounds.X, y: fieldBounds.Y, width: fieldBounds.Width, height: fieldBounds.Height };
         const listBox: PdfListBoxField = new PdfListBoxField(loadedPage, listBoxName, bound);
         let flag: boolean = false;
@@ -791,20 +805,21 @@ export class FormFieldsBase {
         }
         listBox.textAlignment = this.getTextAlignment(formFieldAttributes.textAlign);
         listBox.multiSelect = true;
-        listBox.backColor = [formFieldAttributes.backgroundColor.r, formFieldAttributes.backgroundColor.g,
-            formFieldAttributes.backgroundColor.b];
+        listBox.backColor = {r: formFieldAttributes.backgroundColor.r, g: formFieldAttributes.backgroundColor.g,
+            b: formFieldAttributes.backgroundColor.b};
         if (formFieldAttributes.backgroundColor.r === 0 && formFieldAttributes.backgroundColor.g === 0 &&
             formFieldAttributes.backgroundColor.b === 0 && formFieldAttributes.backgroundColor.a === 0) {
-            listBox.backColor = [formFieldAttributes.backgroundColor.r, formFieldAttributes.backgroundColor.g,
-                formFieldAttributes.backgroundColor.b, formFieldAttributes.backgroundColor.a];
+            listBox.backColor = {r: formFieldAttributes.backgroundColor.r, g: formFieldAttributes.backgroundColor.g,
+                b: formFieldAttributes.backgroundColor.b, isTransparent: true};
         }
-        listBox.borderColor = [formFieldAttributes.borderColor.r, formFieldAttributes.borderColor.g, formFieldAttributes.borderColor.b];
+        listBox.borderColor = {r: formFieldAttributes.borderColor.r, g: formFieldAttributes.borderColor.g,
+            b: formFieldAttributes.borderColor.b};
         // eslint-disable-next-line
         if (formFieldAttributes.borderColor.r == 0 && formFieldAttributes.borderColor.g == 0 &&
             // eslint-disable-next-line
             formFieldAttributes.borderColor.b == 0 && formFieldAttributes.borderColor.a == 0) {
-            listBox.borderColor = [formFieldAttributes.borderColor.r, formFieldAttributes.borderColor.g,
-                formFieldAttributes.borderColor.b, formFieldAttributes.borderColor.a];
+            listBox.borderColor = {r: formFieldAttributes.borderColor.r, g: formFieldAttributes.borderColor.g,
+                b: formFieldAttributes.borderColor.b, isTransparent: true};
         }
         listBox.border.width = formFieldAttributes.thickness;
         const pdfFontStyle: PdfFontStyle = this.getFontStyle(formFieldAttributes);
@@ -853,7 +868,7 @@ export class FormFieldsBase {
             if (formFieldAttributes.rotation !== 0) {
                 isFieldRotated = true;
             }
-            const fieldBounds: any = this.getBounds(bounds, page.size[1], page.size[0], rotationAngle, isFieldRotated);
+            const fieldBounds: any = this.getBounds(bounds, page.size.height, page.size.width, rotationAngle, isFieldRotated);
             const bound: any = { x: fieldBounds.X, y: fieldBounds.Y, width: fieldBounds.Width, height: fieldBounds.Height };
             const radioButtonItem: PdfRadioButtonListItem = new PdfRadioButtonListItem(radioButtonName, bound, page);
             if (!isFieldRotated) {
@@ -865,21 +880,22 @@ export class FormFieldsBase {
             if (radiobuttonItem.isRequired) {
                 isRequired = true;
             }
-            radioButtonItem.borderColor = [radiobuttonItem.borderColor.r, radiobuttonItem.borderColor.g, radiobuttonItem.borderColor.b];
+            radioButtonItem.borderColor = {r: radiobuttonItem.borderColor.r, g: radiobuttonItem.borderColor.g,
+                b: radiobuttonItem.borderColor.b};
             // eslint-disable-next-line
             if (radiobuttonItem.borderColor.r == 0 && radiobuttonItem.borderColor.g == 0 &&
                 // eslint-disable-next-line
                 radiobuttonItem.borderColor.b == 0 && radiobuttonItem.borderColor.a == 0) {
-                radioButtonItem.borderColor = [radiobuttonItem.borderColor.r, radiobuttonItem.borderColor.g,
-                    radiobuttonItem.borderColor.b, radiobuttonItem.borderColor.a];
+                radioButtonItem.borderColor = {r: radiobuttonItem.borderColor.r, g: radiobuttonItem.borderColor.g,
+                    b: radiobuttonItem.borderColor.b, isTransparent: true};
             }
             radioButtonItem.border.width = radiobuttonItem.thickness;
-            radioButtonItem.backColor = [radiobuttonItem.backgroundColor.r, radiobuttonItem.backgroundColor.g,
-                radiobuttonItem.backgroundColor.b];
+            radioButtonItem.backColor = {r: radiobuttonItem.backgroundColor.r, g: radiobuttonItem.backgroundColor.g,
+                b: radiobuttonItem.backgroundColor.b};
             if (radiobuttonItem.backgroundColor.r === 0 && radiobuttonItem.backgroundColor.g === 0 &&
                  radiobuttonItem.backgroundColor.b === 0 && radiobuttonItem.backgroundColor.a === 0) {
-                radioButtonItem.backColor = [radiobuttonItem.backgroundColor.r, radiobuttonItem.backgroundColor.g,
-                    radiobuttonItem.backgroundColor.b, radiobuttonItem.backgroundColor.a];
+                radioButtonItem.backColor = {r: radiobuttonItem.backgroundColor.r, g: radiobuttonItem.backgroundColor.g,
+                    b: radiobuttonItem.backgroundColor.b, isTransparent: true};
             }
             radioButtonItem.visibility = this.getFormFieldsVisibility(radiobuttonItem.visibility);
             field.add(radioButtonItem);
@@ -913,7 +929,7 @@ export class FormFieldsBase {
         if (formFieldAttributes.rotation !== 0) {
             isFieldRotated = true;
         }
-        const fieldBounds: any = this.getBounds(signatureFieldBounds, loadedPage.size[1], loadedPage.size[0],
+        const fieldBounds: any = this.getBounds(signatureFieldBounds, loadedPage.size.height, loadedPage.size.width,
                                                 rotationAngle, isFieldRotated);
         const bound: any = { x: fieldBounds.X, y: fieldBounds.Y, width: fieldBounds.Width, height: fieldBounds.Height };
         const signatureField: PdfSignatureField = new PdfSignatureField(loadedPage, signatureFieldName, bound);
@@ -924,21 +940,23 @@ export class FormFieldsBase {
         if (formFieldAttributes.formFieldAnnotationType === 'InitialField') {
             signatureField._dictionary.set('InitialField', true);
         }
+        const isTransparentBG: boolean = formFieldAttributes.backgroundColor.a === 0 ? true : false;
         if (formFieldAttributes.value === '') {
-            signatureField.backColor = [formFieldAttributes.backgroundColor.r, formFieldAttributes.backgroundColor.g,
-                formFieldAttributes.backgroundColor.b];
+            signatureField.backColor = {r: formFieldAttributes.backgroundColor.r, g: formFieldAttributes.backgroundColor.g,
+                b: formFieldAttributes.backgroundColor.b};
             if (formFieldAttributes.backgroundColor.r === 0 && formFieldAttributes.backgroundColor.g === 0 &&
                 formFieldAttributes.backgroundColor.b === 0 && formFieldAttributes.backgroundColor.a === 0) {
-                signatureField.backColor = [formFieldAttributes.backgroundColor.r, formFieldAttributes.backgroundColor.g,
-                    formFieldAttributes.backgroundColor.b, formFieldAttributes.backgroundColor.a];
+                signatureField.backColor = {r: formFieldAttributes.backgroundColor.r, g: formFieldAttributes.backgroundColor.g,
+                    b: formFieldAttributes.backgroundColor.b, isTransparent: isTransparentBG};
             }
         }
-        signatureField.borderColor = [formFieldAttributes.borderColor.r, formFieldAttributes.borderColor.g,
-            formFieldAttributes.borderColor.b];
+        signatureField.borderColor = {r: formFieldAttributes.borderColor.r, g: formFieldAttributes.borderColor.g,
+            b: formFieldAttributes.borderColor.b};
+        const isTransparent: boolean = formFieldAttributes.borderColor.a === 0 ? true : false;
         if (formFieldAttributes.borderColor.r === 0 && formFieldAttributes.borderColor.g === 0 &&
             formFieldAttributes.borderColor.b === 0 && formFieldAttributes.borderColor.a === 0) {
-            signatureField.borderColor = [formFieldAttributes.borderColor.r, formFieldAttributes.borderColor.g,
-                formFieldAttributes.borderColor.b, formFieldAttributes.borderColor.a];
+            signatureField.borderColor = {r: formFieldAttributes.borderColor.r, g: formFieldAttributes.borderColor.g,
+                b: formFieldAttributes.borderColor.b, isTransparent: isTransparent};
         }
         signatureField.border.width = formFieldAttributes.thickness;
         if (formFieldAttributes.visibility === 'hidden') {
@@ -981,14 +999,14 @@ export class FormFieldsBase {
         if (formFieldAttributes.rotation !== 0) {
             isFieldRotated = true;
         }
-        signBounds = this.getBounds(signBounds, page.size[1], page.size[0], pageRotationAngle, isFieldRotated);
+        signBounds = this.getBounds(signBounds, page.size.height, page.size.width, pageRotationAngle, isFieldRotated);
         if (!isNullOrUndefined(formFieldAttributes)) {
             const left: number = signBounds.X;
             const top: number = signBounds.Y;
             const width: number = signBounds.Width;
             const height: number = signBounds.Height;
             const freeTextBounds: any = { X: left, Y: top, Width: width, Height: height };
-            const annotation: PdfFreeTextAnnotation = new PdfFreeTextAnnotation(left, top, width, height);
+            const annotation: PdfFreeTextAnnotation = new PdfFreeTextAnnotation({x: left, y: top, width: width, height: height});
             annotation.setAppearance(true);
             annotation._dictionary.set('T', currentFieldName);
             const font: number = formFieldAttributes.fontSize;
@@ -1036,16 +1054,23 @@ export class FormFieldsBase {
         if (formFieldAttributes.rotation !== 0) {
             isFieldRotated = true;
         }
-        signBounds = this.getBounds(signBounds, page.size[1], page.size[0], pageRotationAngle, isFieldRotated);
+        signBounds = this.getBounds(signBounds, page.size.height, page.size.width, pageRotationAngle, isFieldRotated);
         if (!isNullOrUndefined(formFieldAttributes)) {
             const left: number = signBounds.X;
             const top: number = signBounds.Y;
             const width: number = signBounds.Width;
             const height: number = signBounds.Height;
             const imageUrl: string = (formFieldAttributes.value.toString()).split(',')[1];
-            const rubberStampAnnotation: PdfRubberStampAnnotation = new PdfRubberStampAnnotation(left, top, width, height);
+            const rubberStampAnnotation: PdfRubberStampAnnotation = new PdfRubberStampAnnotation(
+                {x: left, y: top, width: width, height: height});
             const bitmap: PdfImage = new PdfBitmap(imageUrl);
-            rubberStampAnnotation.appearance.normal.graphics.drawImage(bitmap, 0, 0, width, height);
+            const bounds: Rectangle = {
+                x: 0,
+                y: 0,
+                width: width,
+                height: height
+            };
+            rubberStampAnnotation.appearance.normal.graphics.drawImage(bitmap, bounds);
             if (!isFieldRotated) {
                 rubberStampAnnotation.rotationAngle = Math.abs(this.getRotateAngle(page.rotation));
             }
@@ -1068,7 +1093,7 @@ export class FormFieldsBase {
         let signBounds: any = { X: this.convertPixelToPoint(boundsObjects.X / zoomvalue),
             Y: this.convertPixelToPoint(boundsObjects.Y / zoomvalue), Width: this.convertPixelToPoint(boundsObjects.Width / zoomvalue),
             Height: this.convertPixelToPoint(boundsObjects.Height / zoomvalue) };
-        signBounds = this.getBounds(signBounds, page.size[1], page.size[0], pageRotationAngle, false);
+        signBounds = this.getBounds(signBounds, page.size.height, page.size.width, pageRotationAngle, false);
         let pageNumber: number = 0;
         for (let k: number = 0; k < this.formFieldLoadedDocument.pageCount; k++) {
             if (page === this.formFieldLoadedDocument.getPage(k)) {
@@ -1089,19 +1114,19 @@ export class FormFieldsBase {
             const drawingPath: PdfPath = new PdfPath();
             for (let p: number = 0; p < stampObjects.length; p++) {
                 const val: any = stampObjects[parseInt(p.toString(), 10)];
-                drawingPath.addLine(val.x, val.y, 0, 0);
+                drawingPath.addLine({x: val.x, y: val.y}, {x: 0, y: 0});
             }
             for (let p: number = 0; p <  drawingPath._points.length; p += 2) {
-                const value: number[] = drawingPath._points[parseInt(p.toString(), 10)];
+                const value: Point = drawingPath._points[parseInt(p.toString(), 10)];
                 if (minimumX === -1) {
-                    minimumX = value[0];
-                    minimumY = value[1];
-                    maximumX = value[0];
-                    maximumY = value[1];
+                    minimumX = value.x;
+                    minimumY = value.y;
+                    maximumX = value.x;
+                    maximumY = value.y;
                 }
                 else {
-                    const point1: number = value[0];
-                    const point2: number = value[1];
+                    const point1: number = value.x;
+                    const point2: number = value.y;
                     if (minimumX >= point1) {
                         minimumX = point1;
                     }
@@ -1119,7 +1144,7 @@ export class FormFieldsBase {
             }
             const newDifferenceX: number = (maximumX - minimumX) / width;
             const newDifferenceY: number = (maximumY - minimumY) / height;
-            let linePoints: number[] = [];
+            let linePoints: Point[] = [];
             let isNewValues: number = 0;
             if (pageRotationAngle !== 0) {
                 for (let j: number = 0; j < stampObjects.length; j++) {
@@ -1129,15 +1154,16 @@ export class FormFieldsBase {
                         isNewValues = j;
                         break;
                     }
-                    linePoints.push(parseFloat(value.x));
-                    linePoints.push(parseFloat(value.y));
+                    linePoints.push({x: parseFloat(value.x), y: parseFloat(value.y)});
                 }
                 linePoints = [];
                 for (let z: number = 0; z < stampObjects.length; z++) {
                     const value: any = stampObjects[parseInt(z.toString(), 10)];
-                    linePoints.push(((parseFloat(value.x) - minimumX) / newDifferenceX) + left);
-                    linePoints.push(this.formFieldLoadedDocument.getPage(pageNumber).size[1] - ((parseFloat(value.y) - minimumY) /
-                    newDifferenceY) - top);
+                    linePoints.push({
+                        x: ((parseFloat(value.x) - minimumX) / newDifferenceX) + left,
+                        y: this.formFieldLoadedDocument.getPage(pageNumber).size.height -
+                        ((parseFloat(value.y) - minimumY) / newDifferenceY) - top
+                    });
                 }
             } else {
                 for (let k: number = 0; k < stampObjects.length; k++) {
@@ -1147,20 +1173,22 @@ export class FormFieldsBase {
                         isNewValues = k;
                         break;
                     }
-                    linePoints.push(((parseFloat(value.x) - minimumX) / newDifferenceX) + left);
                     const newX: number = ((parseFloat(value.y) - minimumY) / newDifferenceY);
-                    linePoints.push(this.formFieldLoadedDocument.getPage(pageNumber).size[1] - newX - top);
+                    linePoints.push({
+                        x: ((parseFloat(value.x) - minimumX) / newDifferenceX) + left,
+                        y: this.formFieldLoadedDocument.getPage(pageNumber).size.height - newX - top
+                    });
 
                 }
             }
-            const inkAnnotation: PdfInkAnnotation = new PdfInkAnnotation([left, top, width, height], linePoints);
+            const inkAnnotation: PdfInkAnnotation = new PdfInkAnnotation({x: left, y: top, width: width, height: height}, linePoints);
             inkAnnotation.flags = PdfAnnotationFlag.print;
             if (formFieldAttributes.visibility === 'hidden') {
                 inkAnnotation.flags = PdfAnnotationFlag.hidden;
             }
             inkAnnotation.bounds = { x: signBounds.X, y: signBounds.Y, width: signBounds.Width, height: signBounds.Height };
             inkAnnotation.border.width = 0;
-            inkAnnotation.color = [0, 0, 0];
+            inkAnnotation.color = {r: 0, g: 0, b: 0};
             inkAnnotation.setValues('annotationSignature', 'annotationSignature');
             linePoints = [];
             if (pageRotationAngle !== 0) {
@@ -1172,8 +1200,10 @@ export class FormFieldsBase {
                         pathCollection.push(linePoints);
                         linePoints = [];
                     }
-                    linePoints.push(parseFloat(value.x));
-                    linePoints.push(parseFloat(value.y));
+                    linePoints.push({
+                        x: parseFloat(value.x),
+                        y: parseFloat(value.y)
+                    });
                 }
                 if (linePoints.length > 0) {
                     pathCollection.push(linePoints);
@@ -1184,9 +1214,11 @@ export class FormFieldsBase {
                     if (pointsCollections.length > 0) {
                         for (let z: number = 0; z < stampObjects.length; z++) {
                             const value: any = stampObjects[parseInt(z.toString(), 10)];
-                            linePoints.push(((parseFloat(value.x) - minimumX) / newDifferenceX) + left);
-                            linePoints.push(this.formFieldLoadedDocument.getPage(pageNumber).size[1] - ((parseFloat(value.y) -
-                            minimumY) / newDifferenceY) - top);
+                            linePoints.push({
+                                x: ((parseFloat(value.x) - minimumX) / newDifferenceX) + left,
+                                y: this.formFieldLoadedDocument.getPage(pageNumber).size.height -
+                                ((parseFloat(value.y) - minimumY) / newDifferenceY) - top
+                            });
                         }
                         inkAnnotation.inkPointsCollection.push(linePoints);
                     }
@@ -1200,9 +1232,11 @@ export class FormFieldsBase {
                         inkAnnotation.inkPointsCollection.push(linePoints);
                         linePoints = [];
                     }
-                    linePoints.push(((parseFloat(value.x) - minimumX) / newDifferenceX) + left);
                     const newX: number = ((parseFloat(value.y) - minimumY) / newDifferenceY);
-                    linePoints.push(this.formFieldLoadedDocument.getPage(pageNumber).size[1] - newX - top);
+                    linePoints.push({
+                        x: ((parseFloat(value.x) - minimumX) / newDifferenceX) + left,
+                        y: this.formFieldLoadedDocument.getPage(pageNumber).size.height - newX - top
+                    });
                 }
                 if (linePoints.length > 0) {
                     inkAnnotation.inkPointsCollection.push(linePoints);
@@ -1226,8 +1260,8 @@ export class FormFieldsBase {
                 font._size = minimumFontSize;
                 break;
             }
-            const sizeF: number[] = font.measureString(text);
-            if (sizeF[0] < freeTextBounds.Width && sizeF[1] < freeTextBounds.height) {
+            const sizeF: Size = font.measureString(text);
+            if (sizeF.width < freeTextBounds.Width && sizeF.height < freeTextBounds.height) {
                 font._size = fontSize;
                 break;
             }
@@ -1534,7 +1568,7 @@ export class FormFieldsBase {
         formFields.BorderWidth = textBox.border.width;
         formFields.BorderStyle = textBox.border.style;
         if (!isNullOrUndefined(textBox.backColor)) {
-            formFields.BackColor = { R: textBox.backColor[0], G: textBox.backColor[1], B: textBox.backColor[2] };
+            formFields.BackColor = { R: textBox.backColor.r, G: textBox.backColor.g, B: textBox.backColor.b };
         }
         else {
             formFields.IsTransparent = true;
@@ -1556,10 +1590,10 @@ export class FormFieldsBase {
         formFields.IsReadonly = textBox.readOnly;
         formFields.IsRequired = textBox.required;
         if (!isNullOrUndefined(textBox.color)) {
-            formFields.FontColor = { R: textBox.color[0], G: textBox.color[1], B: textBox.color[2] };
+            formFields.FontColor = { R: textBox.color.r, G: textBox.color.g, B: textBox.color.b };
         }
         if (!isNullOrUndefined(textBox.borderColor)) {
-            formFields.BorderColor = { R: textBox.borderColor[0], G: textBox.borderColor[1], B: textBox.borderColor[2] };
+            formFields.BorderColor = { R: textBox.borderColor.r, G: textBox.borderColor.g, B: textBox.borderColor.b };
         }
         else {
             formFields.IsTransparent = true;
@@ -1600,7 +1634,7 @@ export class FormFieldsBase {
         formFields.TabIndex = comboBoxField.tabIndex;
         formFields.PageIndex = pageNumber;
         if (!isNullOrUndefined(comboBoxField.backColor)) {
-            formFields.BackColor = { R: comboBoxField.backColor[0], G: comboBoxField.backColor[1], B: comboBoxField.backColor[2] };
+            formFields.BackColor = { R: comboBoxField.backColor.r, G: comboBoxField.backColor.g, B: comboBoxField.backColor.b };
         }
         else {
             formFields.IsTransparent = true;
@@ -1608,12 +1642,12 @@ export class FormFieldsBase {
         formFields.BorderWidth = comboBoxField.border.width;
         formFields.BorderStyle = comboBoxField.border.style;
         if (!isNullOrUndefined(comboBoxField.borderColor)) {
-            formFields.BorderColor = { R: comboBoxField.borderColor[0], G: comboBoxField.borderColor[1], B: comboBoxField.borderColor[2] };
+            formFields.BorderColor = { R: comboBoxField.borderColor.r, G: comboBoxField.borderColor.g, B: comboBoxField.borderColor.b };
         }
         else {
             formFields.IsTransparent = true;
         }
-        formFields.FontColor = { R: comboBoxField.color[0], G: comboBoxField.color[1], B: comboBoxField.color[2] };
+        formFields.FontColor = { R: comboBoxField.color.r, G: comboBoxField.color.g, B: comboBoxField.color.b };
         formFields.Rotation = comboBoxField.rotationAngle;
         formFields.IsRequired = comboBoxField.required;
         formFields.IsReadonly = comboBoxField.readOnly;
@@ -1687,14 +1721,14 @@ export class FormFieldsBase {
         formFields.PageIndex = index;
         formFields.BorderWidth = chkField.border.width;
         if (!isNullOrUndefined(chkField.backColor)) {
-            formFields.BackColor = { R: chkField.backColor[0], G: chkField.backColor[1], B: chkField.backColor[2] };
+            formFields.BackColor = { R: chkField.backColor.r, G: chkField.backColor.g, B: chkField.backColor.b };
         }
         else {
             formFields.IsTransparent = true;
         }
         formFields.BorderStyle = chkField.border.style;
         if (!isNullOrUndefined(chkField.borderColor)) {
-            formFields.BorderColor = { R: chkField.borderColor[0], G: chkField.borderColor[1], B: chkField.borderColor[2] };
+            formFields.BorderColor = { R: chkField.borderColor.r, G: chkField.borderColor.g, B: chkField.borderColor.b };
         }
         else {
             formFields.IsTransparent = true;
@@ -1759,14 +1793,14 @@ export class FormFieldsBase {
         formFields.BorderWidth = listBoxField.border.width;
         formFields.BorderStyle = listBoxField.border.style;
         if (!isNullOrUndefined(listBoxField.backColor)) {
-            formFields.BackColor = { R: listBoxField.backColor[0], G: listBoxField.backColor[1], B: listBoxField.backColor[2] };
+            formFields.BackColor = { R: listBoxField.backColor.r, G: listBoxField.backColor.g, B: listBoxField.backColor.b };
         }
         else {
             formFields.IsTransparent = true;
         }
-        formFields.FontColor = { R: listBoxField.color[0], G: listBoxField.color[1], B: listBoxField.color[2] };
+        formFields.FontColor = { R: listBoxField.color.r, G: listBoxField.color.g, B: listBoxField.color.b };
         if (!isNullOrUndefined(listBoxField.borderColor)) {
-            formFields.BorderColor = { R: listBoxField.borderColor[0], G: listBoxField.borderColor[1], B: listBoxField.borderColor[2] };
+            formFields.BorderColor = { R: listBoxField.borderColor.r, G: listBoxField.borderColor.g, B: listBoxField.borderColor.b };
         }
         formFields.Rotation = listBoxField.rotationAngle;
         formFields.IsReadonly = listBoxField.readOnly;
@@ -1814,14 +1848,14 @@ export class FormFieldsBase {
         formFields.Value = item.value;
         formFields.PageIndex = index;
         if (!isNullOrUndefined(item.backColor)) {
-            formFields.BackColor = { R: item.backColor[0], G: item.backColor[1], B: item.backColor[2] };
+            formFields.BackColor = { R: item.backColor.r, G: item.backColor.g, B: item.backColor.b };
         }
         else {
             formFields.IsTransparent = true;
         }
         formFields.BorderWidth = item.border.width;
         formFields.BorderStyle = item.border.style;
-        formFields.BorderColor =  { R: parent.borderColor[0], G: parent.borderColor[1], B: parent.borderColor[2] };
+        formFields.BorderColor =  { R: parent.borderColor.r, G: parent.borderColor.g, B: parent.borderColor.b };
         formFields.Rotation = parent.rotationAngle;
         formFields.IsRequired = parent.required;
         formFields.IsReadonly = parent.readOnly;
@@ -1878,7 +1912,7 @@ export class FormFieldsBase {
             const top: number = this.convertPixelToPoint(boundsObjects['y']);
             const width: number = this.convertPixelToPoint(boundsObjects['width']);
             const height: number = this.convertPixelToPoint(boundsObjects['height']);
-            const annotation: PdfFreeTextAnnotation = new PdfFreeTextAnnotation(left, top, width, height);
+            const annotation: PdfFreeTextAnnotation = new PdfFreeTextAnnotation({x: left, y: top, width: width, height: height});
             annotation.setAppearance(true);
             annotation._dictionary.set('T', currentFieldName);
             const fontSize: number = fontSizes > 0 ? fontSizes : height / 2;
@@ -1925,9 +1959,16 @@ export class FormFieldsBase {
             const top: number = this.convertPixelToPoint(boundsObjects['y']);
             const width: number = this.convertPixelToPoint(boundsObjects['width']);
             const height: number = this.convertPixelToPoint(boundsObjects['height']);
-            const rubberStampAnnotation: PdfRubberStampAnnotation = new PdfRubberStampAnnotation(left, top, width, height);
+            const rubberStampAnnotation: PdfRubberStampAnnotation = new PdfRubberStampAnnotation(
+                {x: left, y: top, width: width, height: height});
             const bitmap: PdfImage = new PdfBitmap(imageUrl);
-            rubberStampAnnotation.appearance.normal.graphics.drawImage(bitmap, 0, 0, width, height);
+            const bounds: Rectangle = {
+                x: 0,
+                y: 0,
+                width: width,
+                height: height
+            };
+            rubberStampAnnotation.appearance.normal.graphics.drawImage(bitmap, bounds);
             rubberStampAnnotation.rotationAngle = this.getRotateAngle(page.rotation);
             rubberStampAnnotation._dictionary.set('T', currentFieldName);
             rubberStampAnnotation.flags = PdfAnnotationFlag.print;
@@ -1991,7 +2032,7 @@ export class FormFieldsBase {
             }
             const newDifferenceX: number = (maximumX - minimumX) / width;
             const newDifferenceY: number = (maximumY - minimumY) / height;
-            let linePoints: number[] = [];
+            let linePoints: Point[] = [];
             let isNewValues: number = 0;
             if (rotationAngle !== 0) {
                 for (let j: number = 0; j < stampObjects.length; j++) {
@@ -2001,15 +2042,19 @@ export class FormFieldsBase {
                         isNewValues = j;
                         break;
                     }
-                    linePoints.push(parseFloat(value.x));
-                    linePoints.push(parseFloat(value.y));
+                    linePoints.push({
+                        x: parseFloat(value.x),
+                        y: parseFloat(value.y)
+                    });
                 }
                 linePoints = [];
                 for (let z: number = 0; z < stampObjects.length; z++) {
                     const value: any = stampObjects[parseInt(z.toString(), 10)];
-                    linePoints.push(((parseFloat(value.x) - minimumX) / newDifferenceX) + left);
-                    linePoints.push(this.formFieldLoadedDocument.getPage(pageNumber).size[1] - ((parseFloat(value.y) - minimumY) /
-                     newDifferenceY) - top);
+                    linePoints.push({
+                        x: ((parseFloat(value.x) - minimumX) / newDifferenceX) + left,
+                        y: this.formFieldLoadedDocument.getPage(pageNumber).size.height -
+                        ((parseFloat(value.y) - minimumY) / newDifferenceY) - top
+                    });
                 }
             } else {
                 for (let k: number = 0; k < stampObjects.length; k++) {
@@ -2019,15 +2064,16 @@ export class FormFieldsBase {
                         isNewValues = k;
                         break;
                     }
-                    linePoints.push(((parseFloat(value.x) - minimumX) / newDifferenceX) + left);
                     const newX: number = ((parseFloat(value.y) - minimumY) / newDifferenceY);
-                    linePoints.push(this.formFieldLoadedDocument.getPage(pageNumber).size[1] - newX - top);
-
+                    linePoints.push({
+                        x: ((parseFloat(value.x) - minimumX) / newDifferenceX) + left,
+                        y: this.formFieldLoadedDocument.getPage(pageNumber).size.height - newX - top
+                    });
                 }
             }
-            const inkAnnotation: PdfInkAnnotation = new PdfInkAnnotation([left, top, width, height], linePoints);
+            const inkAnnotation: PdfInkAnnotation = new PdfInkAnnotation({x: left, y: top, width: width, height: height}, linePoints);
             inkAnnotation.flags = PdfAnnotationFlag.print;
-            const bounds: any = { x: inkAnnotation.bounds.x, y: (page.size[1] -
+            const bounds: any = { x: inkAnnotation.bounds.x, y: (page.size.height -
                 (inkAnnotation.bounds.y + inkAnnotation.bounds.height)), width: inkAnnotation.bounds.width,
             height: inkAnnotation.bounds.height};
             inkAnnotation.bounds = bounds;
@@ -2042,8 +2088,7 @@ export class FormFieldsBase {
                         pathCollection.push(linePoints);
                         linePoints = [];
                     }
-                    linePoints.push(parseFloat(value.x));
-                    linePoints.push(parseFloat(value.y));
+                    linePoints.push({x: parseFloat(value.x), y: parseFloat(value.y)});
                 }
                 if (linePoints.length > 0) {
                     pathCollection.push(linePoints);
@@ -2054,9 +2099,11 @@ export class FormFieldsBase {
                     if (pointsCollections.length > 0) {
                         for (let z: number = 0; z < stampObjects.length; z++) {
                             const value: any = stampObjects[parseInt(z.toString(), 10)];
-                            linePoints.push(((parseFloat(value.x) - minimumX) / newDifferenceX) + left);
-                            linePoints.push(this.formFieldLoadedDocument.getPage(pageNumber).size[1] -
-                            ((parseFloat(value.y) - minimumY) / newDifferenceY) - top);
+                            linePoints.push({
+                                x: ((parseFloat(value.x) - minimumX) / newDifferenceX) + left,
+                                y: this.formFieldLoadedDocument.getPage(pageNumber).size.height -
+                                ((parseFloat(value.y) - minimumY) / newDifferenceY) - top
+                            });
                         }
                         inkAnnotation.inkPointsCollection.push(linePoints);
                     }
@@ -2070,9 +2117,11 @@ export class FormFieldsBase {
                         inkAnnotation.inkPointsCollection.push(linePoints);
                         linePoints = [];
                     }
-                    linePoints.push(((parseFloat(value.x) - minimumX) / newDifferenceX) + left);
                     const newX: number = ((parseFloat(value.y) - minimumY) / newDifferenceY);
-                    linePoints.push(this.formFieldLoadedDocument.getPage(pageNumber).size[1] - newX - top);
+                    linePoints.push({
+                        x: ((parseFloat(value.x) - minimumX) / newDifferenceX) + left,
+                        y: this.formFieldLoadedDocument.getPage(pageNumber).size.height - newX - top
+                    });
                 }
                 if (linePoints.length > 0) {
                     inkAnnotation.inkPointsCollection.push(linePoints);
@@ -2126,7 +2175,7 @@ export class FormFieldsBase {
         formFields.IsRequired = signatureField.required;
         formFields.Visible = signatureField.visibility;
         if (!isNullOrUndefined(signatureField.backColor)) {
-            formFields.BackColor = { R: signatureField.backColor[0], G: signatureField.backColor[1], B: signatureField.backColor[2] };
+            formFields.BackColor = { R: signatureField.backColor.r, G: signatureField.backColor.g, B: signatureField.backColor.b };
         }
         else if (formFields.IsReadonly) {
             formFields.IsTransparent = true;
@@ -2160,22 +2209,22 @@ export class FormFieldsBase {
                     if (inkAnnot._dictionary.has('T') && !inkAnnot._dictionary.has('NM')) {
                         if (!isNullOrUndefined(inkAnnot.inkPointsCollection)) {
                             for (let m: number = 0; m < inkAnnot.inkPointsCollection.length; m++) {
-                                const inkList: number[] = inkAnnot.inkPointsCollection[parseInt(m.toString(), 10)];
-                                for (let k: number = 0; k < inkList.length; k += 2) {
+                                const inkList: Point[] = inkAnnot.inkPointsCollection[parseInt(m.toString(), 10)];
+                                for (let k: number = 0; k < inkList.length; k++) {
                                     let x: number;
                                     let y: number;
                                     if (loadedPage.rotation === PdfRotationAngle.angle90) {
-                                        x = inkList[k + 1];
-                                        y = inkList[parseInt(k.toString(), 10)];
+                                        x = inkList[k as number].y;
+                                        y = inkList[k as number].x;
                                     } else if (loadedPage.rotation === PdfRotationAngle.angle180) {
-                                        x = loadedPage.size[0] - inkList[k + 1];
-                                        y = inkList[k + 1];
+                                        x = loadedPage.size.width - inkList[k as number].x;
+                                        y = inkList[k as number].y;
                                     } else if (loadedPage.rotation === PdfRotationAngle.angle270) {
-                                        x = loadedPage.size[0] - inkList[k + 1];
-                                        y = loadedPage.size[1] - inkList[parseInt(k.toString(), 10)];
+                                        x = loadedPage.size.width - inkList[k as number].y;
+                                        y = loadedPage.size.height - inkList[k as number].x;
                                     } else {
-                                        x = inkList[parseInt(k.toString(), 10)];
-                                        y = loadedPage.size[1] - inkList[k + 1];
+                                        x = inkList[k as number].x;
+                                        y = loadedPage.size.height - inkList[k as number].y;
                                     }
                                     if (k === 0) {
                                         outputstring += 'M' + x + ',' + y + ' ';
@@ -2200,12 +2249,12 @@ export class FormFieldsBase {
                         }
                         const bounds: any = {X: inkAnnot.bounds.x, Y: inkAnnot.bounds.y, Width: inkAnnot.bounds.width,
                             Height: inkAnnot.bounds.height};
-                        formFields.LineBounds = this.getBounds(bounds, loadedPage.size[1], loadedPage.size[0], rotationAngle,
+                        formFields.LineBounds = this.getBounds(bounds, loadedPage.size.height, loadedPage.size.width, rotationAngle,
                                                                !isFieldRotated);
                         formFields.Value = outputstring;
                         formFields.PageIndex = i;
                         formFields.BorderColor = !isNullOrUndefined(inkAnnot.color) ?
-                            [inkAnnot.color[0], inkAnnot.color[1], inkAnnot.color[2]] : { R: 0, G: 0, B: 0 };
+                            {r: inkAnnot.color.r, g: inkAnnot.color.g, b: inkAnnot.color.b} : { R: 0, G: 0, B: 0 };
                         formFields.Rotation = annotation.rotationAngle;
                         this.PdfRenderedFormFields.push(formFields);
                         count++;
@@ -2262,7 +2311,7 @@ export class FormFieldsBase {
                             }
                         } else if (dictionary.has('N')) {
                             const template: PdfTemplate = annotation.createTemplate();
-                            if (template.size[0] === 0 || template.size[1] === 0 || isNullOrUndefined(template._appearance)) {
+                            if (template.size.width === 0 || template.size.height === 0 || isNullOrUndefined(template._appearance)) {
                                 pageRender.findStampImage(annotation);
                             }
                             else {

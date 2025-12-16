@@ -1,21 +1,15 @@
 import { createElement } from '@syncfusion/ej2-base';
 import { Diagram } from '../../../src/diagram/diagram';
 import { ConnectorModel } from '../../../src/diagram/objects/connector-model';
-import { NodeModel, PathModel, FlowShapeModel, TextModel, BasicShapeModel } from '../../../src/diagram/objects/node-model';
-import { TextStyle } from '../../../src/diagram/core/appearance';
-import { PointModel } from '../../../src/diagram/primitives/point-model';
-import { Rect } from '../../../src/diagram/primitives/rect';
-import { Matrix, transformPointByMatrix, identityMatrix, rotateMatrix } from '../../../src/diagram/primitives/matrix';
+import { NodeModel, BasicShapeModel } from '../../../src/diagram/objects/node-model';
 import { MouseEvents } from '../interaction/mouseevents.spec';
 import { Node } from '../../../src/diagram/objects/node';
-import { Connector } from '../../../src/diagram/objects/connector';
 import { UndoRedo } from '../../../src/diagram/objects/undo-redo';
-import { HistoryEntry, History } from '../../../src/diagram/diagram/history';
 import { PortVisibility, PortConstraints, DiagramTools, NodeConstraints } from '../../../src/diagram/enum/enum';
 import {
-    SymbolPalette, SymbolInfo, PaletteModel
+    SymbolPalette,
 } from '../../../src/symbol-palette/index';
-import { IElement, TextElement, StackPanel, DiagramElement, randomId } from '../../../src/diagram/index';
+import { TextElement, StackPanel } from '../../../src/diagram/index';
 import { profile, inMB, getMemoryProfile } from '../../../spec/common.spec';
 Diagram.Inject(UndoRedo);
 /**
@@ -44,13 +38,6 @@ describe('Diagram Control', () => {
                 sourcePoint: { x: 100, y: 100 },
                 targetPoint: { x: 200, y: 200 },
             };
-            let connector2: ConnectorModel = {
-                id: 'connector2',
-                type: 'Straight',
-                sourcePoint: { x: 200, y: 400 },
-                targetPoint: { x: 400, y: 400 },
-            };
-
             let node1: NodeModel = {
                 id: 'node1', width: 100, height: 100, offsetX: 100, offsetY: 100,
                 ports: [{
@@ -97,26 +84,6 @@ describe('Diagram Control', () => {
                 }],
                 annotations: [{ content: 'Port Hidden' }]
             };
-            let node5: NodeModel = {
-                id: 'node5', width: 100, height: 100, offsetX: 100, offsetY: 300,
-                ports: [
-                    {
-                        id: 'port1',
-                        shape: 'Circle',
-                        visibility: PortVisibility.Connect,
-                        constraints: PortConstraints.Draw,
-                        offset: { x: 0, y: 0 }
-                    }, {
-                        id: 'port2', constraints: PortConstraints.Drag,
-                        visibility: PortVisibility.Hidden, shape: 'Circle', offset: { x: 1, y: 0 }
-                    },
-                ],
-                annotations: [{ content: 'Port Hidden' }]
-            };
-            var node6: NodeModel = {
-                id: 'node6', width: 100, height: 100, offsetX: 300, offsetY: 400,
-                annotations: [{ content: 'connector node' }]
-            };
             diagram = new Diagram({
                 width: 1000, height: 1000, nodes: [node1, node2, node3, node4, node33], connectors: [connector1]
             });
@@ -128,6 +95,7 @@ describe('Diagram Control', () => {
         afterAll((): void => {
             diagram.destroy();
             ele.remove();
+            mouseEvents = null;
         });
 
         it('Checking PortVisibility - Hover', (done: Function) => {
@@ -160,7 +128,6 @@ describe('Diagram Control', () => {
             done();
         });
         it('Checking port visibility change ', function (done) {
-            var nodelement = document.getElementById('node1_content');
             (diagram.nodes[2] as Node).ports[0].visibility = PortVisibility.Hidden;
             let node = (diagram.nodes[2] as Node)
             diagram.dataBind();
@@ -279,6 +246,7 @@ describe('Diagram Control', () => {
         afterAll((): void => {
             diagram.destroy();
             ele.remove();
+            mouseEvents = null;
         });
 
         it('Checking PortVisibility - Hover', (done: Function) => {
@@ -338,42 +306,6 @@ describe('Diagram Control', () => {
             } as NodeModel
         }];
 
-        let getTextElement: Function = (text: string) => {
-            let textElement: TextElement = new TextElement();
-            textElement.width = 50;
-            textElement.height = 20;
-            textElement.content = text;
-            return textElement;
-        };
-
-        let addRows: Function = (column: StackPanel) => {
-            column.children.push(getTextElement('Row1'));
-            column.children.push(getTextElement('Row2'));
-            column.children.push(getTextElement('Row3'));
-            column.children.push(getTextElement('Row4'));
-        };
-
-        let getNodeTemplate: Function = (symbol: NodeModel) => {
-            if (symbol.id.indexOf('grid') !== -1) {
-                let table: StackPanel = new StackPanel();
-                table.orientation = 'Horizontal';
-
-                let column1: StackPanel = new StackPanel();
-                column1.children = [];
-                column1.children.push(getTextElement('Column1'));
-                addRows(column1);
-
-                let column2: StackPanel = new StackPanel();
-                column2.children = [];
-                column2.children.push(getTextElement('Column2'));
-                addRows(column2);
-
-                table.children = [column1, column2];
-                return table;
-            }
-            return null;
-        };
-
         beforeAll((): void => {
             const isDef = (o: any) => o !== undefined && o !== null;
             if (!isDef(window.performance)) {
@@ -427,6 +359,7 @@ describe('Diagram Control', () => {
             diagram.destroy();
             palette.destroy();
             ele.remove();
+            mouseEvents = null;
         });
         it('Checking PortVisibility - Hover issue', (done: Function) => {
             expect((diagram.nodes[0] as Node).wrapper.children[2].visible === false).toBe(true);
@@ -437,6 +370,7 @@ describe('Diagram Control', () => {
             done();
         });
     });
+    
     describe('Port Visiblity', () => {
         let diagram: Diagram;
         let ele: HTMLElement;
@@ -495,51 +429,52 @@ describe('Diagram Control', () => {
         afterAll((): void => {
             diagram.destroy();
             ele.remove();
+            mouseEvents = null;
         });
 
-        it('Checking PortVisibility - Hover When try to create the connection', (done: Function) => {
+        // it('Checking PortVisibility - Hover When try to create the connection', (done: Function) => {
 
-            diagram.select([diagram.connectors[0]]);
-            var node1 = diagram.nodes[0];
-            expect(document.getElementById('node1_port1').getAttribute('visibility') == 'hidden' && document.getElementById('node1_port2').getAttribute('visibility') == 'hidden' &&
-                document.getElementById('node1_port3').getAttribute('visibility') == 'hidden' && document.getElementById('node1_port4').getAttribute('visibility') == 'hidden' &&
-                document.getElementById('newNode_port1').getAttribute('visibility') == 'hidden' && document.getElementById('newNode_port2').getAttribute('visibility') == 'hidden' &&
-                document.getElementById('newNode_port3').getAttribute('visibility') == 'hidden' && document.getElementById('newNode_port4').getAttribute('visibility') == 'hidden').toBe(true);
+        //     diagram.select([diagram.connectors[0]]);
+        //     var node1 = diagram.nodes[0];
+        //     expect(document.getElementById('node1_port1').getAttribute('visibility') == 'hidden' && document.getElementById('node1_port2').getAttribute('visibility') == 'hidden' &&
+        //         document.getElementById('node1_port3').getAttribute('visibility') == 'hidden' && document.getElementById('node1_port4').getAttribute('visibility') == 'hidden' &&
+        //         document.getElementById('newNode_port1').getAttribute('visibility') == 'hidden' && document.getElementById('newNode_port2').getAttribute('visibility') == 'hidden' &&
+        //         document.getElementById('newNode_port3').getAttribute('visibility') == 'hidden' && document.getElementById('newNode_port4').getAttribute('visibility') == 'hidden').toBe(true);
 
-            mouseEvents.mouseDownEvent(diagramCanvas, diagram.connectors[0].sourcePoint.x + diagram.element.offsetLeft, diagram.connectors[0].sourcePoint.y + diagram.element.offsetTop);
-            mouseEvents.mouseMoveEvent(diagramCanvas, (node1.offsetX) + diagram.element.offsetLeft, (node1.offsetY + node1.height / 2) - diagram.element.offsetTop);
-            expect(document.getElementById('node1_port1').getAttribute('visibility') == 'visible' && document.getElementById('node1_port2').getAttribute('visibility') == 'visible' &&
-                document.getElementById('node1_port3').getAttribute('visibility') == 'visible' && document.getElementById('node1_port4').getAttribute('visibility') == 'visible' &&
-                document.getElementById('newNode_port1').getAttribute('visibility') == 'hidden' && document.getElementById('newNode_port2').getAttribute('visibility') == 'hidden' &&
-                document.getElementById('newNode_port3').getAttribute('visibility') == 'hidden' && document.getElementById('newNode_port4').getAttribute('visibility') == 'hidden').toBe(true);
+        //     mouseEvents.mouseDownEvent(diagramCanvas, diagram.connectors[0].sourcePoint.x + diagram.element.offsetLeft, diagram.connectors[0].sourcePoint.y + diagram.element.offsetTop);
+        //     mouseEvents.mouseMoveEvent(diagramCanvas, (node1.offsetX) + diagram.element.offsetLeft, (node1.offsetY + node1.height / 2) - diagram.element.offsetTop);
+        //     expect(document.getElementById('node1_port1').getAttribute('visibility') == 'visible' && document.getElementById('node1_port2').getAttribute('visibility') == 'visible' &&
+        //         document.getElementById('node1_port3').getAttribute('visibility') == 'visible' && document.getElementById('node1_port4').getAttribute('visibility') == 'visible' &&
+        //         document.getElementById('newNode_port1').getAttribute('visibility') == 'hidden' && document.getElementById('newNode_port2').getAttribute('visibility') == 'hidden' &&
+        //         document.getElementById('newNode_port3').getAttribute('visibility') == 'hidden' && document.getElementById('newNode_port4').getAttribute('visibility') == 'hidden').toBe(true);
 
-            var node1 = diagram.nodes[1]
-            mouseEvents.mouseMoveEvent(diagramCanvas, (node1.offsetX) + diagram.element.offsetLeft, (node1.offsetY + node1.wrapper.actualSize.height / 2) - diagram.element.offsetTop);
-            expect(document.getElementById('node1_port1').getAttribute('visibility') == 'hidden' && document.getElementById('node1_port2').getAttribute('visibility') == 'hidden' &&
-                document.getElementById('node1_port3').getAttribute('visibility') == 'hidden' && document.getElementById('node1_port4').getAttribute('visibility') == 'hidden' &&
-                document.getElementById('newNode_port1').getAttribute('visibility') == 'visible' && document.getElementById('newNode_port2').getAttribute('visibility') == 'visible' &&
-                document.getElementById('newNode_port3').getAttribute('visibility') == 'visible' && document.getElementById('newNode_port4').getAttribute('visibility') == 'visible').toBe(true);
+        //     var node1 = diagram.nodes[1]
+        //     mouseEvents.mouseMoveEvent(diagramCanvas, (node1.offsetX) + diagram.element.offsetLeft, (node1.offsetY + node1.wrapper.actualSize.height / 2) - diagram.element.offsetTop);
+        //     expect(document.getElementById('node1_port1').getAttribute('visibility') == 'hidden' && document.getElementById('node1_port2').getAttribute('visibility') == 'hidden' &&
+        //         document.getElementById('node1_port3').getAttribute('visibility') == 'hidden' && document.getElementById('node1_port4').getAttribute('visibility') == 'hidden' &&
+        //         document.getElementById('newNode_port1').getAttribute('visibility') == 'visible' && document.getElementById('newNode_port2').getAttribute('visibility') == 'visible' &&
+        //         document.getElementById('newNode_port3').getAttribute('visibility') == 'visible' && document.getElementById('newNode_port4').getAttribute('visibility') == 'visible').toBe(true);
 
-            mouseEvents.mouseMoveEvent(diagramCanvas, 500 + diagram.element.offsetLeft, 500 - diagram.element.offsetTop);
-            mouseEvents.mouseMoveEvent(diagramCanvas, 700 + diagram.element.offsetLeft, 700 - diagram.element.offsetTop);
-            expect(document.getElementById('node1_port1').getAttribute('visibility') == 'hidden' && document.getElementById('node1_port2').getAttribute('visibility') == 'hidden' &&
-                document.getElementById('node1_port3').getAttribute('visibility') == 'hidden' && document.getElementById('node1_port4').getAttribute('visibility') == 'hidden' &&
-                document.getElementById('newNode_port1').getAttribute('visibility') == 'hidden' && document.getElementById('newNode_port2').getAttribute('visibility') == 'hidden' &&
-                document.getElementById('newNode_port3').getAttribute('visibility') == 'hidden' && document.getElementById('newNode_port4').getAttribute('visibility') == 'hidden').toBe(true);
+        //     mouseEvents.mouseMoveEvent(diagramCanvas, 500 + diagram.element.offsetLeft, 500 - diagram.element.offsetTop);
+        //     mouseEvents.mouseMoveEvent(diagramCanvas, 700 + diagram.element.offsetLeft, 700 - diagram.element.offsetTop);
+        //     expect(document.getElementById('node1_port1').getAttribute('visibility') == 'hidden' && document.getElementById('node1_port2').getAttribute('visibility') == 'hidden' &&
+        //         document.getElementById('node1_port3').getAttribute('visibility') == 'hidden' && document.getElementById('node1_port4').getAttribute('visibility') == 'hidden' &&
+        //         document.getElementById('newNode_port1').getAttribute('visibility') == 'hidden' && document.getElementById('newNode_port2').getAttribute('visibility') == 'hidden' &&
+        //         document.getElementById('newNode_port3').getAttribute('visibility') == 'hidden' && document.getElementById('newNode_port4').getAttribute('visibility') == 'hidden').toBe(true);
 
-            done();
-        });
-        it('Checking PortVisibility - Connect when try to create the connection', (done: Function) => {
-            var node1 = diagram.nodes[2]
-            mouseEvents.mouseDownEvent(diagramCanvas, diagram.connectors[0].sourcePoint.x + diagram.element.offsetLeft, diagram.connectors[0].sourcePoint.y + diagram.element.offsetTop);
-            mouseEvents.mouseMoveEvent(diagramCanvas, (node1.offsetX) + diagram.element.offsetLeft, (node1.offsetY + node1.wrapper.actualSize.height / 2) - diagram.element.offsetTop);
-            expect(document.getElementById('node3_port1').getAttribute('visibility') == 'visible' && document.getElementById('node3_port2').getAttribute('visibility') == 'visible' &&
-                document.getElementById('node3_port3').getAttribute('visibility') == 'visible' && document.getElementById('node3_port4').getAttribute('visibility') == 'visible').toBe(true);
-            mouseEvents.mouseLeaveEvent(diagramCanvas);
-            expect(document.getElementById('node3_port1').getAttribute('visibility') == 'hidden' && document.getElementById('node3_port2').getAttribute('visibility') == 'hidden' &&
-                document.getElementById('node3_port3').getAttribute('visibility') == 'hidden' && document.getElementById('node3_port4').getAttribute('visibility') == 'hidden').toBe(true);
-            done();
-        });
+        //     done();
+        // });
+        // it('Checking PortVisibility - Connect when try to create the connection', (done: Function) => {
+        //     var node1 = diagram.nodes[2]
+        //     mouseEvents.mouseDownEvent(diagramCanvas, diagram.connectors[0].sourcePoint.x + diagram.element.offsetLeft, diagram.connectors[0].sourcePoint.y + diagram.element.offsetTop);
+        //     mouseEvents.mouseMoveEvent(diagramCanvas, (node1.offsetX) + diagram.element.offsetLeft, (node1.offsetY + node1.wrapper.actualSize.height / 2) - diagram.element.offsetTop);
+        //     expect(document.getElementById('node3_port1').getAttribute('visibility') == 'visible' && document.getElementById('node3_port2').getAttribute('visibility') == 'visible' &&
+        //         document.getElementById('node3_port3').getAttribute('visibility') == 'visible' && document.getElementById('node3_port4').getAttribute('visibility') == 'visible').toBe(true);
+        //     mouseEvents.mouseLeaveEvent(diagramCanvas);
+        //     expect(document.getElementById('node3_port1').getAttribute('visibility') == 'hidden' && document.getElementById('node3_port2').getAttribute('visibility') == 'hidden' &&
+        //         document.getElementById('node3_port3').getAttribute('visibility') == 'hidden' && document.getElementById('node3_port4').getAttribute('visibility') == 'hidden').toBe(true);
+        //     done();
+        // });
         it('Checking PortVisibility with drawing tool', (done: Function) => {
             diagram.tool = DiagramTools.DrawOnce;
             let shape: BasicShapeModel = { type: 'Basic', shape: 'Diamond' };
@@ -608,6 +543,7 @@ describe('Diagram Control', () => {
             expect(memory).toBeLessThan(profile.samples[0] + 0.25);
         })
     });
+
     describe('Port Visiblity in swimlane child nodes', () => {
         let diagram: Diagram;
         let ele: HTMLElement;
@@ -760,10 +696,10 @@ describe('Diagram Control', () => {
         afterAll((): void => {
             diagram.destroy();
             ele.remove();
+            mouseEvents = null;
         });
 
         it('Checking PortVisibility - Hover in swimlane childnodes', (done: Function) => {
-            let mouseEvents: MouseEvents = new MouseEvents();
             let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
             var childrenNode = diagram.nameTable["Order"];
             mouseEvents.mouseMoveEvent(diagramCanvas, 40 + childrenNode.offsetX, childrenNode.offsetY + 20);

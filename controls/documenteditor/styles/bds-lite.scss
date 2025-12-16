@@ -1,7 +1,6 @@
-@import 'ej2-base/styles/definition/bds.scss';
-@import 'document-editor/bds-definition.scss';
-@import 'document-editor/icons/bds.scss';
-@import 'document-editor/all.scss';
-@import 'document-editor-container/bds-definition.scss';
-@import 'document-editor-container/icons/bds.scss';
-@import 'document-editor-container/all.scss';
+@use 'document-editor/bds-definition' as *;
+@use 'document-editor/icons/bds' as *;
+@use 'document-editor/all' as *;
+@use 'document-editor-container/bds-definition' as *;
+@use 'document-editor-container/icons/bds' as *;
+@use 'document-editor-container/all' as *;

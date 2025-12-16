@@ -1,3 +1,5 @@
+@use 'ej2-base/styles/definition/bds' as *;
+@forward 'ej2-base/styles/definition/bds';
 $sd-offset: 16px !default;
 $sd-ul-margin: 0 !default;
 $sd-li-text-padding: 0 5px !default;
@@ -64,3 +66,17 @@ $sd-hover-font-color: $secondary-text-color-hover !default;
 $sd-active-li-bg: $secondary-bg-color-pressed !default;
 $sd-active-li-border-color: $secondary-border-color-pressed !default;
 $sd-active-font-color: $secondary-text-color !default;
+
+$sd-li-text-border-radius: 2px !default;
+$sd-border-normal-width: 1px !default;
+$sd-top-bottom-border-radius: 100% !default;
+$sd-zero-padding-margin: 0 !default;
+
+//fluent 2
+$spdl-text-border-radius: 20px !default;
+$spdl-text-font-size: 12px !default;
+$spdl-text-line-height: 16px !default;
+$spdl-text-padding: 8px 16px !default;
+
+//common
+$spdl-border-width: 1px !default;

@@ -4,9 +4,10 @@ import { valueToCoefficient, inside, isOverlap, textTrim } from '../../common/ut
 import { appendChildElement } from '../../common/utils/helper';
 import { CircleOption } from '../../common/utils/helper';
 import { Size, measureText, TextOption, PathOption, Rect } from '@syncfusion/ej2-svg-base';
+import { createElement } from '@syncfusion/ej2-base';
 import { LineBase } from '../series/line-base';
-import { textElement, ChartLocation, valueToPolarCoefficient, CoefficientToVector, getElement } from '../../common/utils/helper';
-import { BorderModel } from '../../index';
+import { textElement, ChartLocation, valueToPolarCoefficient, CoefficientToVector, getElement, createTemplate } from '../../common/utils/helper';
+import { AccPoints, BorderModel, Points } from '../../index';
 import { AxisPosition } from '../utils/enum';
 import { LabelIntersectAction } from '../../common/utils/enum';
 import { VisibleRangeModel } from '../../common/model/interface';
@@ -258,7 +259,16 @@ export class PolarRadarPanel extends LineBase {
         const intersectType: LabelIntersectAction = axis.labelIntersectAction;
         const labelElement: Element = chart.renderer.createGroup({ id: chart.element.id + 'AxisLabels' + index });
         const vector: ChartLocation = CoefficientToVector(valueToPolarCoefficient(axis.visibleLabels[0].value, axis), this.startAngle);
+        //Initializing the label template for yAxis
+        if (axis.labelTemplate) {
+            const templateId: string = chart.element.id + '_YAxisLabelTemplate_Collection';
+            chart.yAxisLabelTemplate = createElement('div', {
+                id: templateId
+            });
+        }
+        const labelTemplateHeight: number = chart.radius / axis.visibleLabels.length;
         for (let i: number = 0, len: number = axis.visibleLabels.length; i < len; i++) {
+            const label: VisibleLabels = axis.visibleLabels[i as number];
             isIntersect = false;
             radius = chart.radius * valueToCoefficient(axis.visibleLabels[i as number].value, axis);
             elementSize = axis.visibleLabels[i as number].size;
@@ -269,7 +279,10 @@ export class PolarRadarPanel extends LineBase {
                 * (Math.sin(angle * Math.PI / 180)) * (axis.labelPosition === 'Inside' && chart.enableRtl ? - 1 : axis.labelPosition === 'Inside' ? 1 : axis.labelPosition === 'Outside' && chart.enableRtl ? 1 : -1));
             pointY += (elementSize.height / 4);
             labelRegions[i as number] = this.getLabelRegion(pointX, pointY, axis.visibleLabels[i as number], anchor);
-            if (i !== 0 && intersectType === 'Hide') {
+            if (!axis.labelTemplate) {
+                labelRegions[i as number] = this.getLabelRegion(pointX, pointY, label, anchor);
+            }
+            if (i !== 0 && intersectType === 'Hide' && !axis.labelTemplate) {
                 for (let j: number = i; j >= 0; j--) {
                     j = (j === 0) ? 0 : (j === i) ? (j - 1) : j;
                     if (isLabelVisible[j as number] && isOverlap(labelRegions[i as number], labelRegions[j as number])) {
@@ -294,16 +307,51 @@ export class PolarRadarPanel extends LineBase {
             if (isIntersect) {
                 continue;
             }
-            this.visibleAxisLabelRect.push(labelRegions[i as number]);
+            if (!axis.labelTemplate) {
+                this.visibleAxisLabelRect.push(labelRegions[i as number]);
+            }
             options = new TextOption(chart.element.id + index + '_AxisLabel_' + i, pointX, pointY,
-                                     anchor, axis.visibleLabels[i as number].text);
+                                     anchor, label.text);
+            if (axis.labelTemplate) {
+                const templateSize: Size = new Size(label.size.width, label.size.height);
+                let templatePointX: number;
+                let templatePointY: number;
+                const isOutside: boolean = axis.labelPosition === 'Outside';
+                const cosAngle: number = Math.cos(angle * Math.PI / 180);
+                const sinAngle: number = Math.sin(angle * Math.PI / 180);
+                const tickOffsetX: number = axis.majorTickLines.height + templateSize.width + 4.5;
+                const tickOffsetY: number = axis.majorTickLines.height + (templateSize.height / 2);
+                const baseX: number = this.centerX + (radius * vector.x);
+                const baseY: number = this.centerY + (radius * vector.y);
+                templatePointX = baseX + (isOutside ? -tickOffsetX : tickOffsetX) * cosAngle;
+                templatePointY = baseY + (isOutside ? -tickOffsetY : tickOffsetY) * sinAngle;
+                const horizontalShift: number = templateSize.width * 0.5 * (isOutside ? (1 - cosAngle) : (1 + cosAngle));
+                templatePointX -= horizontalShift;
+                const chartAreaX: number = this.chart.border.width * 0.5;
+                if (templatePointX < chartAreaX) {
+                    const overflow: number = chartAreaX - templatePointX;
+                    templateSize.width = Math.max(0, label.size.width - overflow);
+                    templatePointX = chartAreaX;
+                }
+                templatePointY -= templateSize.height > labelTemplateHeight ? labelTemplateHeight / 2 : templateSize.height / 2;
+                const labelTemplateId: string = chart.element.id + '_YAxisLabelTemplate_' + index + '_' + i;
+                // Create a container div for template
+                const labelDiv: HTMLElement = createElement('div', {
+                    id: labelTemplateId,
+                    styles: `position:absolute; pointer-events:none; z-index:1;left:${templatePointX}px; top:${templatePointY}px;width:${templateSize.width}px; height:${templateSize.height}px;`
+                });
+                // Create the template element
+                const templateElement: HTMLElement = createTemplate(labelDiv, i, axis.labelTemplate, chart, label);
+                chart.yAxisLabelTemplate.appendChild(templateElement);
 
-            textElement(
-                chart.renderer, options, axis.labelStyle, axis.labelStyle.color || chart.themeStyle.axisLabelFont.color, labelElement,
-                false, chart.redraw, true, true, null, null, null, null, chart.enableCanvas, null, chart.themeStyle.axisLabelFont
-            );
+            } else {
+                textElement(
+                    chart.renderer, options, axis.labelStyle, axis.labelStyle.color || chart.themeStyle.axisLabelFont.color, labelElement,
+                    false, chart.redraw, true, true, null, null, null, null, chart.enableCanvas, null, chart.themeStyle.axisLabelFont
+                );
+            }
         }
-        if (!this.chart.enableCanvas) {
+        if (!this.chart.enableCanvas && !axis.labelTemplate) {
             chart.yAxisElements.appendChild(labelElement);
         }
     }
@@ -524,7 +572,13 @@ export class PolarRadarPanel extends LineBase {
         const ticksbwtLabel: number = axis.valueType === 'Category' && axis.labelPlacement === 'BetweenTicks' ? 0.5 : 0;
         let radius: number = chart.radius + axis.majorTickLines.height;
         radius = (islabelInside) ? -radius : radius;
-
+        //Initializing the label template for xAxis
+        if (axis.labelTemplate) {
+            const templateId: string = chart.element.id + '_XAxisLabelTemplate_Collection';
+            chart.xAxisLabelTemplate = createElement('div', {
+                id: templateId
+            });
+        }
         for (let i: number = 0, len: number = axis.visibleLabels.length; i < len; i++) {
             isIntersect = false;
             vector = CoefficientToVector(valueToPolarCoefficient(axis.visibleLabels[i as number].value + ticksbwtLabel, axis),
@@ -538,7 +592,7 @@ export class PolarRadarPanel extends LineBase {
             label = axis.visibleLabels[i as number];
             labelText = <string>label.text;
             // to trim axis labels based on available size
-            if ((axis.enableTrim || intersectType === 'Trim') && !axis.enableWrap) {
+            if ((axis.enableTrim || intersectType === 'Trim') && !axis.enableWrap && !axis.labelTemplate) {
                 const originalText: string = axis.visibleLabels[i as number].originalText;
                 let trimText: string;
                 let size: number;
@@ -560,17 +614,19 @@ export class PolarRadarPanel extends LineBase {
                 }
             }
             // fix for label style not working in axisLabelRender event issue
-            labelRegions[i as number] = this.getLabelRegion(pointX, pointY, label, textAnchor);
+            if (!axis.labelTemplate) {
+                labelRegions[i as number] = this.getLabelRegion(pointX, pointY, label, textAnchor);
+            }
             if (i === 0) {
                 firstLabelX = pointX;
-            } else if (i === axis.visibleLabels.length - 1 && axis.valueType !== 'Category') {
+            } else if (i === axis.visibleLabels.length - 1 && axis.valueType !== 'Category' && !axis.labelTemplate) {
                 lastLabelX = measureText(labelText, axis.labelStyle, this.chart.themeStyle.axisLabelFont).height;
                 lastLabelX += pointX;
                 labelText = (lastLabelX > firstLabelX) ? '' : labelText;
             }
 
             // Label intersect action (Hide) perform here
-            if (i !== 0 && intersectType === 'Hide') {
+            if (i !== 0 && intersectType === 'Hide' && !axis.labelTemplate) {
                 for (let j: number = i; j >= 0; j--) {
                     j = (j === 0) ? 0 : ((j === i) ? (j - 1) : j);
                     if (isLabelVisible[j as number] && isOverlap(labelRegions[i as number], labelRegions[j as number])) {
@@ -582,7 +638,7 @@ export class PolarRadarPanel extends LineBase {
                     }
                 }
             }
-            if (!isIntersect && legendRect) {
+            if (!isIntersect && legendRect && !axis.labelTemplate) {
                 isIntersect = isOverlap(labelRegions[i as number], legendRect);
                 if (isIntersect) {
                     const width: number = this.getAvailableSpaceToTrim(legendRect, labelRegions[i as number]);
@@ -597,13 +653,56 @@ export class PolarRadarPanel extends LineBase {
             if (isIntersect) {
                 continue; // If the label is intersect, the label render is ignored.
             }
-            this.visibleAxisLabelRect.push(labelRegions[i as number]);
-            textElement(
-                chart.renderer, options, label.labelStyle, label.labelStyle.color || chart.themeStyle.axisLabelFont.color, labelElement,
-                false, chart.redraw, true, true, null, null, null, null, chart.enableCanvas, null, chart.themeStyle.axisLabelFont
-            );
+            if (!axis.labelTemplate) {
+                this.visibleAxisLabelRect.push(labelRegions[i as number]);
+            }
+            if (axis.labelTemplate) {
+                const chartBorderStartX: number = chart.border.width * 0.5;
+                const chartBorderEndX: number = chartBorderStartX + (chart.availableSize.width - chart.border.width);
+                let templateX: number = options.x;
+                let templateY: number = options.y;
+                const templateSize: Size = new Size(label.size.width, label.size.height);
+                // Horizontal alignment
+                if (textAnchor === 'middle') {
+                    templateX -= templateSize.width / 2;
+                } else if (textAnchor === 'end') {
+                    templateX -= templateSize.width;
+                }
+                // Boundary checks
+                if (templateX < chartBorderStartX) {
+                    const overflow: number = chartBorderStartX - templateX;
+                    templateSize.width = Math.max(0, templateSize.width - overflow);
+                    templateX = chartBorderStartX;
+                } else if (textAnchor === 'start' && (templateX + templateSize.width > chartBorderEndX)) {
+                    const overflow: number = (templateX + templateSize.width) - chartBorderEndX;
+                    templateSize.width = Math.max(0, templateSize.width - overflow);
+                }
+                // Vertical alignment
+                if (vector.y < -0.5) { // Top
+                    templateY -= templateSize.height;
+                } else if (vector.y > 0.5) { // Bottom
+                    // No adjustment needed
+                } else { // Sides
+                    templateY -= templateSize.height / 2;
+                }
+                const labelTemplateId: string = chart.element.id + '_XAxisLabelTemplate_' + index + '_' + i;
+                // Create a container div for template
+                const labelDiv: HTMLElement = createElement('div', {
+                    id: labelTemplateId,
+                    styles: `position:absolute; pointer-events:none; z-index:1; left:${templateX}px; top:${templateY}px; width:${templateSize.width}px; height:${templateSize.height}px;`
+                });
+                // Create the template element
+                const templateElement: HTMLElement = createTemplate(labelDiv, i, axis.labelTemplate, chart, label);
+
+                chart.xAxisLabelTemplate.appendChild(templateElement);
+            } else {
+                textElement(
+                    chart.renderer, options, label.labelStyle, label.labelStyle.color || chart.themeStyle.axisLabelFont.color, labelElement,
+                    false, chart.redraw, true, true, null, null, null, null, chart.enableCanvas, null, chart.themeStyle.axisLabelFont
+                );
+            }
         }
-        if (!this.chart.enableCanvas) {
+        if (!this.chart.enableCanvas && !axis.labelTemplate) {
             this.element.appendChild(labelElement);
         }
     }

@@ -1,3 +1,5 @@
+@use 'ej2-base/styles/common/mixin' as *;
+@use './theme-variables' as *;
 @mixin bigger-rtl-blank-icon {
   padding-left: $cmenu-caret-blank-icon;
 
@@ -14,37 +16,37 @@
 
 @mixin bigger-li-size {
   height: $cmenu-bigger-li-height;
-  line-height: $cmenu-bigger-li-height;
+  line-height: $cmenu-bigger-li-line-height;
   @if $skin-name == 'fluent2' {
-    height: 40px;
-    line-height: 21px;
-    padding: 9px;
+    height: $cmenu-bigger-li-size-height;
+    line-height: $cmenu-bigger-li-size-line-height;
+    padding: $cmenu-bigger-li-size-padding;
   }
 
   &.e-menu-caret-icon {
     @if $skin-name == 'fluent2' {
-      padding: 9px 36px 9px 9px;
+      padding: $cmenu-caret-icon-padding;
     }
   }
 
   & .e-menu-icon {
     font-size: $cmenu-icon-bigger-font-size;
-    line-height: $cmenu-bigger-li-height;
+    line-height: $cmenu-bigger-li-line-height;
     @if $skin-name == 'tailwind' {
       margin-right: $cmenu-icon-bigger-margin-right;
     }
   }
 
   & .e-caret {
-    line-height: $cmenu-bigger-li-height;
+    line-height: $cmenu-bigger-li-line-height;
     @if $skin-name == 'fluent2' {
-      margin: 3px 0;
+      margin: $cmenu-bigger-caret-icon-margin;
     }
   }
 
   &.e-separator {
-    height: auto;
-    line-height: normal;
+    height: $menu-auto-height;
+    line-height: $menu-normal-line-height;
   }
 }
 
@@ -56,16 +58,16 @@
     font-size: $menu-bigger-font-size;
 
     &.e-menu .e-menu-item {
-      line-height: $menu-bigger-li-height;
+      line-height: $menu-bigger-li-line-height;
       padding: $menu-bigger-li-padding;
       height: $menu-bigger-li-height;
 
       & .e-menu-icon {
         font-size: $menu-icon-bigger-font-size;
-        line-height: $menu-bigger-li-height;
+        line-height: $menu-bigger-li-line-height;
         margin-right: $menu-bigger-icon-margin-right;
         @if $skin-name == 'fluent2' {
-          margin-bottom: 3px;
+          margin-bottom: $menu-bigger-icon-item-margin-bottom;
         }
       }
 
@@ -75,7 +77,7 @@
           line-height: $menu-bigger-li-icon-height;
         }
         @else {
-          line-height: $menu-bigger-li-height;
+          line-height: $menu-bigger-li-line-height;
         }
         right: $menu-bigger-caret-right;
       }
@@ -93,8 +95,8 @@
       &.e-vertical {
         & .e-menu-item {
           &.e-separator {
-            height: auto;
-            line-height: normal;
+            height: $menu-auto-height;
+            line-height: $menu-normal-line-height;
           }
         }
       }
@@ -104,7 +106,7 @@
       @include bigger-ul-size;
       min-width: $cmenu-bigger-min-width;
       @if $skin-name == 'tailwind3' {
-        font-weight: $font-weight-normal;
+        font-weight: $menu-ul-font-weight;
       }
 
       & .e-menu-item  {
@@ -151,7 +153,7 @@
   .e-bigger .e-menu-container,
   .e-bigger.e-menu-container {
     & .e-menu-hscroll.e-hscroll:not(.e-scroll-device) {
-      padding: 0 $menu-bigger-hscroll-nav-size;
+      padding: $menu-padding-none $menu-bigger-hscroll-nav-size;
 
       & .e-scroll-nav {
         width: $menu-bigger-hscroll-nav-size;
@@ -163,11 +165,11 @@
 
     & .e-menu-vscroll.e-vscroll {
       &:not(.e-scroll-device) {
-        padding: $menu-bigger-vscroll-nav-size 0;
+        padding: $menu-bigger-vscroll-nav-padding $menu-padding-none;
       }
 
       & .e-scroll-nav {
-        height: $menu-bigger-vscroll-nav-size;
+        height: $menu-bigger-vscroll-nav-height;
       }
     }
 
@@ -189,12 +191,12 @@
 
       & .e-menu-icon {
         margin-left: $menu-bigger-icon-margin-right;
-        margin-right: 0;
+        margin-right: $menu-bigger-icon-mrg-right;
       }
 
       & .e-caret {
         left: $menu-bigger-caret-right;
-        margin-left: 0;
+        margin-left: $menu-bigger-icon-margin-left;
         right: auto;
       }
 
@@ -217,7 +219,7 @@
         &.e-menu-caret-icon {
           padding-left: $cmenu-caret-li-padding;
           @if $skin-name == 'fluent2' {
-            padding-right: 9px;
+            padding-right: $menu-bigger-caret-icon-padding-right;
           }
           @else {
             padding-right: $cmenu-li-right-padding;
@@ -248,9 +250,9 @@
       max-width: 100%;
 
       & .e-menu-item {
-        height: auto;
-        line-height: $menu-bigger-li-height;
-        padding: 0;
+        height: $menu-auto-height;
+        line-height: $menu-bigger-li-line-height;
+        padding: $menu-padding-none;
       }
     }
   }
@@ -262,7 +264,7 @@
     & .e-menu-header {
       font-size: $menu-icon-bigger-font-size;
       height: $menu-bigger-li-height;
-      line-height: $menu-bigger-li-height;
+      line-height: $menu-bigger-li-line-height;
     }
 
     & ul.e-menu {
@@ -281,7 +283,7 @@
           text-indent: inherit;
 
           &.e-menu-caret-icon {
-            padding-right: 0 !important; /* stylelint-disable-line declaration-no-important */
+            padding-right: $menu-padding-none !important; /* stylelint-disable-line declaration-no-important */
           }
 
           & .e-caret {
@@ -308,7 +310,7 @@
         }
       }
       .e-ul {
-        font-weight: $font-weight-medium;
+        font-weight: $menu-container-ul-font-weight;
       }
     }
   }
@@ -319,7 +321,7 @@
   .e-bigger.e-rtl.e-menu-container.e-hamburger {
     & ul.e-menu {
       & .e-menu-item {
-        padding: 0;
+        padding: $menu-padding-none;
         text-indent: $menu-bigger-li-text-indent;
 
         &.e-blankicon {
@@ -327,13 +329,13 @@
         }
 
         & .e-menu-icon {
-          margin-left: 0;
+          margin-left: $menu-bigger-icon-margin-left;
           text-indent: inherit;
         }
 
         &.e-menu-caret-icon {
-          padding-left: 0;
-          padding-right: 0;
+          padding-left: $menu-padding-none;
+          padding-right: $menu-padding-none;
         }
 
         & .e-caret {
@@ -352,14 +354,14 @@
 
   .e-bigger .e-menu-container .e-ul .e-menu-item .e-caret {
     @if $skin-name == 'fluent2' {
-      padding: 9px 0;
+      padding: $menu-container-caret-padding;
     }
   }
 
   .e-bigger .e-menu-wrapper:not(.e-hamburger) ul.e-ul .e-menu-item:not(.e-separator),
   .e-bigger .e-menu-container:not(.e-hamburger) ul.e-ul .e-menu-item:not(.e-separator) {
     @if $skin-name == 'fluent2' {
-      height: 40px;
+      height: $menu-bigger-ul-item-height;
     }
     @else {
       height: $cmenu-bigger-li-height;
@@ -375,7 +377,7 @@
 
   .e-bigger .e-menu-wrapper.e-hamburger ul.e-menu .e-menu-item,
   .e-bigger .e-menu-container.e-hamburger ul.e-menu .e-menu-item {
-    padding: 0 !important; /* stylelint-disable-line declaration-no-important */
-    height: auto !important; /* stylelint-disable-line declaration-no-important */
+    padding: $menu-padding-none !important; /* stylelint-disable-line declaration-no-important */
+    height: $menu-auto-height !important; /* stylelint-disable-line declaration-no-important */
   }
 }

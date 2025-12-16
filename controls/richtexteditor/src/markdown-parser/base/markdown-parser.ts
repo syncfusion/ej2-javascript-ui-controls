@@ -19,7 +19,7 @@ import { MDInsertText } from './../plugin/insert-text';
  * MarkdownParser internal component
  *
  * @hidden
- * @deprecated
+ * @private
  */
 export class MarkdownParser {
     public observer: Observer;
@@ -41,7 +41,7 @@ export class MarkdownParser {
      *
      * @param {IMarkdownParserModel} options - specifies the options
      * @hidden
-     * @deprecated
+     * @private
      */
     public constructor(options: IMarkdownParserModel) {
         this.initialize();
@@ -94,7 +94,7 @@ export class MarkdownParser {
      * @param {T} exeValue - specifies the value
      * @returns {void}
      * @hidden
-     * @deprecated
+     * @private
      */
     /* eslint-enable */
     public execCommand<T>(command: MarkdownExecCommand, value: T, event?: Event, callBack?: Function, text?: string, exeValue?: T): void {

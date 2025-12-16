@@ -1,12 +1,15 @@
+@use 'ej2-base/styles/definition/bootstrap5.3' as *;
+@forward 'ej2-base/styles/definition/bootstrap5.3';
+
 // layout variables
 $chip-list-padding: 0 !default;
 $chip-height: 24px !default;
-$chip-border-radius: 4px !default;
+$chip-border-radius: $radius-4 !default;
 $chip-box-shadow: none !default;
-$chip-avatar-wrapper-border-radius: 0 !default;
-$chip-avatar-border-radius: 0 !default;
-$chip-leading-icon-border-radius: 50% !default;
-$chip-delete-icon-border-radius: 50% !default;
+$chip-avatar-wrapper-border-radius: $radius-0 !default;
+$chip-avatar-border-radius: $radius-0 !default;
+$chip-leading-icon-border-radius: $radius-full !default;
+$chip-delete-icon-border-radius: $radius-full !default;
 $chip-padding: 0 8px 2px 8px !default;
 $chip-margin: 4px !default;
 $chip-overflow: hidden !default;
@@ -28,14 +31,14 @@ $chip-delete-icon-margin: 4px -4px 4px 4px !default;
 $drag-indicator-width: 2px !default;
 
 //RTL
-$chip-rtl-avatar-wrapper-border-radius: 0 !default;
+$chip-rtl-avatar-wrapper-border-radius: $radius-0 !default;
 $chip-rtl-avatar-margin: 0 -9px 0 3px !default;
 $chip-rtl-leading-icon-margin: 0 -4px 0 8px !default;
 $chip-rtl-delete-icon-margin: 0 4px 0 -4px !default;
 
 //Touch
-$chip-touch-border-radius: 4px !default;
-$chip-touch-avatar-wrapper-border-radius: 0 !default;
+$chip-touch-border-radius: $radius-4 !default;
+$chip-touch-avatar-wrapper-border-radius: $radius-0 !default;
 $chip-touch-font-size: $text-base !default;
 $chip-touch-height: 32px !default;
 $chip-touch-text-line-height: $leading-none !default;
@@ -53,7 +56,7 @@ $chip-touch-delete-icon-size: 24px !default;
 $chip-touch-delete-icon-margin: 0 -4px 0 8px !default;
 
 //Touch-RTL
-$chip-touch-rtl-avatar-wrapper-border-radius: 0 !default;
+$chip-touch-rtl-avatar-wrapper-border-radius: $radius-0 !default;
 $chip-touch-rtl-avatar-margin: 0 -13px 0 8px !default;
 $chip-touch-rtl-leading-icon-margin: 0 -4px 0 8px !default;
 $chip-touch-rtl-delete-icon-margin: 0 8px 0 -4px !default;
@@ -592,6 +595,9 @@ $chip-outline-danger-active-border-color: $danger-bg-color-pressed !default;
 $chip-outline-danger-focus-active-border-color: $danger-bg-color-pressed !default;
 $chip-outline-danger-pressed-border-color: $danger-bg-color-pressed !default;
 $chip-outline-danger-disabled-border-color: $content-bg-color-alt3 !default;
+$chip-align-line-height: 12px !default;
+$chip-touch-text-margin-top: -3px !default;
+$chip-zero-width: 0 !default;
 
 // box shadows
 // primary

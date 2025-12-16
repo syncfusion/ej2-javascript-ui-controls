@@ -1,11 +1,9 @@
-
-@import 'ej2-base/styles/definition/material3.scss';
-
-@import 'pivotfieldlist/material3-definition.scss';
-@import 'pivotview/material3-definition.scss';
-@import 'pivotview/icons/material3.scss';
-@import 'pivotview/all.scss';
-@import 'pivotview/bigger.scss';
-@import 'pivotfieldlist/icons/material3.scss';
-@import 'pivotfieldlist/all.scss';
-@import 'pivotfieldlist/bigger.scss';
+@use 'ej2-base/styles/definition/material3' as *;
+@use 'pivotfieldlist/material3-definition' as *;
+@use 'pivotview/material3-definition' as *;
+@use 'pivotview/icons/material3' as *;
+@use 'pivotview/all' as *;
+@use 'pivotview/bigger' as *;
+@use 'pivotfieldlist/icons/material3' as *;
+@use 'pivotfieldlist/all' as *;
+@use 'pivotfieldlist/bigger' as *;

@@ -33,6 +33,11 @@ require.config({
       main: 'ej2-pdf.umd.min.js'
     },
     {
+      name: '@syncfusion/ej2-pdf-data-extract',
+      location: 'node_modules/@syncfusion/ej2-pdf-data-extract/dist',
+      main: 'ej2-pdf-data-extract.umd.min.js'
+    },
+    {
       name: '@syncfusion/ej2-data',
       location: 'node_modules/@syncfusion/ej2-data/dist',
       main: 'ej2-data.umd.min.js'
@@ -91,6 +96,16 @@ require.config({
       name: '@syncfusion/ej2-richtexteditor',
       location: 'node_modules/@syncfusion/ej2-richtexteditor/dist',
       main: 'ej2-richtexteditor.umd.min.js'
+    },
+    {
+      name: "@syncfusion/ej2-interactive-chat",
+      location: "node_modules/@syncfusion/ej2-interactive-chat/dist",
+      main: "ej2-interactive-chat.umd.min.js",
+    },
+    {
+      name: "@syncfusion/ej2-markdown-converter",
+      location: "node_modules/@syncfusion/ej2-markdown-converter/dist",
+      main: "ej2-markdown-converter.umd.min.js",
     },
     {
       name: '@syncfusion/ej2-filemanager',

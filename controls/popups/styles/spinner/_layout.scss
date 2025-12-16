@@ -1,16 +1,18 @@
+@use 'ej2-base/styles/common/mixin' as *;
+@use './theme-variables' as *;
 @include export-module('spinner-layout') {
   .e-spinner-pane {
     align-items: center;
     display: inline-flex;
-    height: 100%;
+    height: $spinner-full-height;
     justify-content: center;
-    left: 0;
+    left: $spinner-zero-space;
     position: absolute;
     text-align: center;
-    top: 0;
+    top: $spinner-zero-space;
     user-select: none;
     vertical-align: middle;
-    width: 100%;
+    width: $spinner-full-width;
     z-index: 1000;
 
     &::after {
@@ -22,7 +24,7 @@
       /* stylelint-disable property-no-vendor-prefix */
       .e-spinner-inner {
         -webkit-transform: translateX(0%) translateY(-50%);
-        left: 0;
+        left: $spinner-zero-space;
         padding-left: $spin-padding;
         transform: translateX(0%) translateY(-50%);
       }
@@ -31,7 +33,7 @@
     &.e-spin-right {
       .e-spinner-inner {
         -webkit-transform: translateX(-100%) translateY(-50%);
-        left: 100%;
+        left: $spinner-full-width;
         padding-right: $spin-padding;
         transform: translateX(-100%) translateY(-50%);
       }
@@ -40,7 +42,7 @@
     &.e-spin-center {
       .e-spinner-inner {
         -webkit-transform: translateX(-50%) translateY(-50%);
-        left: 50%;
+        left: $spinner-half-width;
         transform: translateX(-50%) translateY(-50%);
       }
     }
@@ -55,11 +57,11 @@
 
     .e-spinner-inner {
       -webkit-transform: translateX(-50%) translateY(-50%);
-      left: 50%;
-      margin: 0;
+      left: $spinner-half-width;
+      margin: $spinner-zero-space;
       position: absolute;
       text-align: center;
-      top: 50%;
+      top: $spinner-half-width;
       transform: translateX(-50%) translateY(-50%);
       z-index: 1000;
 
@@ -75,7 +77,7 @@
       .e-spin-tailwind3 {
         @include mat-spinner-rotate;
         display: block;
-        margin: 0 auto;
+        margin: $spin-tail-margin;
 
         .e-path-circle {
           fill: none;
@@ -85,9 +87,9 @@
 
       .e-spin-bootstrap4 {
         @include boot4-spinner-rotate;
-        border-radius: 50%;
+        border-radius: $spin-bootstrap-border-radius;
         display: block;
-        margin: 0 auto;
+        margin: $spin-tail-margin;
 
         .e-path-circle {
           fill: none;
@@ -101,7 +103,7 @@
       .e-spin-fabric {
         @include fb-spinner-rotate;
         display: block;
-        margin: 0 auto;
+        margin: $spin-tail-margin;
         overflow: visible;
 
         .e-path-arc,
@@ -114,7 +116,7 @@
       .e-spin-tailwind {
         @include tw-spinner-rotate;
         display: block;
-        margin: 0 auto;
+        margin: $spin-tail-margin;
         overflow: visible;
 
         .e-path-arc,
@@ -127,9 +129,9 @@
       .e-spin-bootstrap5,
       .e-spin-bootstrap5v3 {
         @include boot5-spinner-rotate;
-        border-radius: 50%;
+        border-radius: $spin-bootstrap-border-radius;
         display: block;
-        margin: 0 auto;
+        margin: $spin-tail-margin;
 
         .e-path-circle {
           fill: none;
@@ -140,13 +142,13 @@
 
       .e-spin-bootstrap {
         display: block;
-        margin: 0 auto;
+        margin: $spin-tail-margin;
       }
 
       .e-spin-high-contrast {
         @include fb-spinner-rotate;
         display: block;
-        margin: 0 auto;
+        margin: $spin-tail-margin;
         overflow: visible;
 
         .e-path-arc,

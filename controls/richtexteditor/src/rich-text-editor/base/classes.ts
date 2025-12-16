@@ -428,6 +428,11 @@ export const CLS_ALIGN_TB_BTN: string = 'e-alignment-tbar-btn';
  * @hidden
  * @deprecated
  */
+export const CLS_LINE_HEIGHT_TB_BTN: string = 'e-line-height-tbar-btn';
+/**
+ * @hidden
+ * @deprecated
+ */
 export const CLS_BORDER_STYLE_BTN: string = 'e-border-style-btn';
 /**
  * @hidden
@@ -631,3 +636,9 @@ export const CLS_RTE_VIDEO_UPLOAD_POPUP: string = 'e-video-upload-popup';
  * @deprecated
  */
 export const CLS_RTE_AUDIO_UPLOAD_POPUP: string = 'e-audio-upload-popup';
+
+/**
+ * @hidden
+ * @deprecated
+ */
+export const CLS_AI_COMMANDS_TBAR_BTN: string = 'e-ai-commands-tbar-btn';

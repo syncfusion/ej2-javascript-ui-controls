@@ -1,13 +1,13 @@
 import { NodeSelection } from './../../selection/index';
 import { KeyboardEventArgs } from '@syncfusion/ej2-base';
-import { IHtmlFormatterCallBack, IAdvanceListItem } from '../../common/interface';
+import { IHtmlFormatterCallBack, IAdvanceListItem, IDropDownItemModel } from '../../common/interface';
 import { IFormatPainterActionValue } from './enum';
 
 /**
  * Specifies  Command models interfaces.
  *
  * @hidden
- * @deprecated
+ * @private
  */
 export interface ICommandModel {
     /**
@@ -26,7 +26,7 @@ export interface ICommandModel {
  * Specifies IHtmlSubCommands interfaces.
  *
  * @hidden
- * @deprecated
+ * @private
  */
 export interface IHtmlSubCommands {
     /**
@@ -64,7 +64,7 @@ export interface IHtmlSubCommands {
  * Specifies  IKeyboardActionArgs interfaces for command line.
  *
  * @hidden
- * @deprecated
+ * @private
  */
 export interface IKeyboardActionArgs extends KeyboardEvent {
     /**
@@ -74,7 +74,7 @@ export interface IKeyboardActionArgs extends KeyboardEvent {
 }
 
 /**
- * @deprecated
+ * @private
  */
 export interface IHtmlItem {
     module?: string
@@ -90,8 +90,20 @@ export interface IHtmlItem {
     callBack(args: IHtmlFormatterCallBack): () => void,
     enterAction?: string
 }
+
 /**
- * @deprecated
+ * @private
+ */
+export interface IAIAssistantActionItem {
+    command: string
+    subCommand: string
+    callBack?: Function
+    value?: string
+    enterAction: string
+}
+
+/**
+ * @private
  */
 export interface IHtmlItemArgs {
     selection?: NodeSelection
@@ -119,7 +131,7 @@ export interface IHtmlItemArgs {
     ariaLabel?: string
 }
 /**
- * @deprecated
+ * @private
  */
 export interface IHtmlUndoRedoData {
     text?: DocumentFragment
@@ -130,7 +142,7 @@ export interface IHtmlUndoRedoData {
  * Specifies IHtmlKeyboardEvent interfaces.
  *
  * @hidden
- * @deprecated
+ * @private
  */
 export interface IHtmlKeyboardEvent {
     /**
@@ -169,7 +181,7 @@ export interface IHtmlKeyboardEvent {
 
 /**
  *
- * @deprecated
+ * @private
  * @hidden
  *
  */
@@ -180,7 +192,7 @@ export interface IFormatPainterSettings {
 
 /**
  *
- * @deprecated
+ * @private
  * @hidden
  *
  */
@@ -188,6 +200,18 @@ export interface IFormatPainterAction {
     formatPainterAction: IFormatPainterActionValue
 }
 
+/**
+ * @private
+ */
+export interface ILineHeightProperties {
+    default?: string
+    items?: IDropDownItemModel[]
+    supportAllValues?: boolean
+    /**
+     * @internal
+     */
+    selectedValue?: string;
+}
 
 /**
  * @private

@@ -2,117 +2,17 @@
 
 ## [Unreleased]
 
-## 31.2.16 (2025-12-02)
-
-### Grid
-
-#### Bug Fixes
-
-- `#I783563` - The issue where `Add Current Selection to Filter` in Excel style filtering was not working when no existing filter was applied to the grid has been resolved.
-- `#I786132` - Resolved a script error that occurred when opening the filter dialog in a grid with `enableInfiniteScrolling` enabled in `filterSettings` while using the `RemoteSaveAdaptor`.
-- `#I788372` - Fixed a script error that occurred when the grid was rendered with `CheckBox` filtering and one column configured with `Menu` filtering, when the filtering action was cancelled in the `actionBegin` event.
-- `#I786004` - The issue where changing the page size via the pager dropdown did not update the page size correctly when the `enableCache` property was set in the `DataManager` within the grid has been resolved.
-
-## 31.2.15 (2025-11-25)
-
-### Grid
-
-#### Bug Fixes
-
-- `#I782616` - The issue where the header was not refreshed after updating the `sortSettings` in the grid has been resolved.
-- `#I783105` - The issue where `currentViewData` was not updated properly after row reordering with remote data has been resolved.
-- `#I780338` - Resolved an issue where the `hierarchyExportMode` was not working in a hierarchy grid with pagination enabled.
-- `#I782594` - Resolved an issue where the filter value was not updated properly when filtering was performed immediately in the custom filter dialog on a string column.
-
-## 31.2.10 (2025-11-13)
-
 ### Grid
 
 #### Features
 
-- The Grid now enables conditional row selection through the `isRowSelectable` callback. This enhancement applies dynamic business logic, ensuring that users can only select rows that satisfy the specified conditions.
+- `#FB63036` - The Data Grid now supports row pinning through the `isRowPinned` callback function. This enables important rows to remain fixed at the top and stay visible during all data operations.
+- `#FB6422` - Added support for performing data operations (sorting, filtering, searching) based on foreign key values when using the URL Adaptor in Data Grid.
+- `#I780354` - Introduced `detailExpand` and `detailCollapse` events, which are triggered before a detail row is expanded or collapsed. These events provide greater control over detail row rendering.
 
-#### Bug Fixes
+#### Breaking Changes
 
-- `#I778061` - Resolved an issue where the `aria-describedby` label for `EllipsisWithTooltip` columns was not properly removed upon mouse leave.
-- `#FB70791` - Resolved an issue where the `AdaptiveUI` search functionality was not operating correctly on mobile devices.
-
-## 31.2.5 (2025-11-04)
-
-### Grid
-
-#### Bug Fixes
-
-- `#I762462` - Fixed a scrolling issue in Safari for grids using frozen columns and column `virtualization`.
-- `#I777595` - Fixed focus border styling problem in the column chooser's search input for the Fluent 2 theme.
-
-## 31.2.4 (2025-10-28)
-
-### Grid
-
-#### Bug Fixes
-
-- `#FB70538` - Resolved an issue where the custom filter for a date column did not function correctly with the AND operator in column filtering.
-- `#I775824` - Fixed a script error that occurred when adding a record with both `virtualization` and a foreign key column enabled.
-
-## 31.2.3 (2025-10-22)
-
-### Grid
-
-#### Bug Fixes
-
-- `#I772904` - Resolved an issue causing the selection event to trigger multiple times when saving an editable row with checkbox selection.
-- `#I773677` - Resolved a script error that occurred when opening the filter dialog for `null` type columns.
-- `#I771544` - Fixed an issue that caused a maximum call stack size exceeded error when parsing `stringify` data using `DataUtil.parseJson` method.
-- `#I771958` - Resolved an issue where filtering a `DateOnly` column caused the filter `popup` of another column to display no matches found.
-
-## 31.2.2 (2025-10-15)
-
-### Grid
-
-#### Bug Fixes
-
-- `#I764198` - Fixed the issue where selection events were triggered twice after updating a record with persist selection enabled.
-
-## 31.1.23 (2025-10-07)
-
-### Grid
-
-#### Bug Fixes
-
-- `#I770531` - Resolved the issue where the grid displayed empty data upon manual refresh after filtering on the last page with `virtualization` enabled.
-- `#I770944` - The issue where the filter input is not disabled when opening the filter menu with the operators `IsNull`, `NotNull`, `IsEmpty`, and `IsNotEmpty` across different locale has been resolved.
-
-## 31.1.22 (2025-10-01)
-
-### Grid
-
-#### Bug Fixes
-
-- `#I766660` - Resolved a script error that occurred when grouping with frozen columns enabled and column width not specified.
-- `#I766004` - Fixed an issue where the first visible column displayed a thicker left border when the actual first column was hidden.
-
-## 31.1.21 (2025-09-23)
-
-### Grid
-
-#### Bug Fixes
-
-- `#I759048` - Fixed aggregate calculation issue during edit and save operations in `VirtualScrolling`.
-- `#FB69913` - Fixed the script error that occurs when opening the custom filter dialog on a device in an adaptive grid with `adaptiveUIMode` set to Desktop.
-- `#FB70042` - Added native event details into the `recordClick` and `recordDoubleClick` events.
-
-## 31.1.17 (2025-09-05)
-
-### Grid
-
-#### Bug Fixes
-
-- `#I754033` - Fixed a problem where column resizing didn't work properly if the total column width was more than 100%.
-- `#I762851` - Resolved an issue where clearing the filter caused the pagination dropdown to incorrectly show `All`.
-- `#I750250` - Resolved a memory leak issue in the Grid component that occurred during the column reordering process.
-- `#I762476` - Removed the `aria-selected` attribute from the detail row's expand and collapse icon cell to resolve an issue with screen reader compatibility.
-- `#I761478` - Added clear type definitions to the `IFilterMUI` interface in the Grid component to improve type safety.
+- `#FB69807` - Fixed alignment issues with filter, sort, and menu icons in the grid header caused by the text wrap feature by adding an additional container and styles to the header element. This update improves icon alignment but may introduce minor differences in header text and icon positioning compared to previous versions.
 
 ### Grid
 

@@ -3552,3 +3552,37 @@ describe('MaskedTextBox Null or undefined value testing', function (){
         maskedObj.destroy();
      });
 });
+describe('Icon template rendering', () => {
+    let maskedtextbox: any;
+    beforeEach(():void =>{
+        let ele: HTMLInputElement = <HTMLInputElement>createElement('input', {id: 'numeric'});
+        document.body.appendChild(ele);
+        maskedtextbox = new MaskedTextBox({ placeholder: 'Enter the value', floatLabelType: 'Auto',
+            prependTemplate: '<span class="e-icons e-user"></span>',
+            appendTemplate: '<span class="e-icons e-search"></span>'
+        });
+        maskedtextbox.appendTo('#numeric');
+    });
+    afterEach((): void =>{
+        if (maskedtextbox) {
+            maskedtextbox.destroy();
+        }
+        document.body.innerHTML = '';
+    });
+    it('prependTemplate rendering', () => {
+        expect(maskedtextbox.inputObj.container.querySelector('.e-user')).not.toBe(null);
+    });
+    it('appendTemplate rendering', () => {
+        expect(maskedtextbox.inputObj.container.querySelector('.e-search')).not.toBe(null);
+    });
+    it('Dynamic prependTemplate rendering', () => {
+        maskedtextbox.prependTemplate = '<span class="e-icons e-home"></span>';
+        maskedtextbox.dataBind();
+        expect(maskedtextbox.inputObj.container.querySelector('.e-home')).not.toBe(null);
+    });
+    it('Dynamic appendTemplate rendering', () => {
+        maskedtextbox.appendTemplate = '<span class="e-icons e-close"></span>';
+        maskedtextbox.dataBind();
+        expect(maskedtextbox.inputObj.container.querySelector('.e-close')).not.toBe(null);
+    });
+});

@@ -1,13 +1,13 @@
-@import 'ej2-base/styles/definition/highcontrast-light.scss';
-@import 'avatar/highcontrast-light-definition.scss';
-@import 'avatar/all.scss';
+@use 'ej2-base/styles/definition/highcontrast-light' as *;
+@use 'avatar/highcontrast-light-definition' as *;
+@use 'avatar/all' as *;
 
-@import 'card/highcontrast-light-definition.scss';
-@import 'card/all.scss';
-@import 'splitter/highcontrast-light-definition.scss';
-@import 'splitter/icons/highcontrast-light.scss';
-@import 'splitter/all.scss';
-@import 'dashboard-layout/highcontrast-light-definition.scss';
-@import 'dashboard-layout/all.scss';
-@import 'timeline/highcontrast-light-definition.scss';
-@import 'timeline/all.scss';
+@use 'card/highcontrast-light-definition' as *;
+@use 'card/all' as *;
+@use 'splitter/highcontrast-light-definition' as *;
+@use 'splitter/icons/highcontrast-light' as *;
+@use 'splitter/all' as *;
+@use 'dashboard-layout/highcontrast-light-definition' as *;
+@use 'dashboard-layout/all' as *;
+@use 'timeline/highcontrast-light-definition' as *;
+@use 'timeline/all' as *;

@@ -447,9 +447,11 @@ describe('Chart Control', () => {
                 let label: HTMLElement = document.getElementById('containerAxisLabels0');
                 expect(label.childElementCount == 5).toBe(true);
                 label = document.getElementById('container0_AxisLabel_2');
-                expect(label.childElementCount == 1).toBe(true);               
-                expect(label.childNodes[0].textContent === 'Southhhhhhhhhhhhhhhh...' || label.childNodes[0].textContent === 'Southhhhhhhhhhhhhhhhhhh...').toBe(true);
-                expect(label.childNodes[1].textContent === 'Koreaaaaaaaaaaaaaaaaaa...' || label.childNodes[1].textContent === 'Koreaaaaaaaaaaaaaaaaaaaaa...').toBe(true);
+                expect(label.childElementCount == 1).toBe(true);
+                expect(label.childNodes[0].textContent === 'Southhhhhhhhhhhhhhhh...' || label.childNodes[0].textContent === 'Southhhhhhhhhhhhhhhhhhh...'
+                    || label.childNodes[0].textContent === 'Southhhhhhhhhhhhhhhhh...' || label.childNodes[0].textContent === 'Southhhhhhhhhhhhhhhhhh...').toBe(true);
+                expect(label.childNodes[1].textContent === 'Koreaaaaaaaaaaaaaaaaaa...' || label.childNodes[1].textContent === 'Koreaaaaaaaaaaaaaaaaaaaaa...'
+                    || label.childNodes[1].textContent === 'Koreaaaaaaaaaaaaaaaaaaa...' || label.childNodes[1].textContent === 'Koreaaaaaaaaaaaaaaaaaaaa...').toBe(true);
                 done();
             };
             chart.loaded = loaded;
@@ -464,9 +466,12 @@ describe('Chart Control', () => {
                 expect(label.childElementCount == 5).toBe(true);
                 label = document.getElementById('container0_AxisLabel_2');
                 expect(label.childElementCount == 2).toBe(true);
-                expect(label.childNodes[0].textContent == 'Southhhhhhhhhhhhhhhh...' || label.childNodes[0].textContent == 'Southhhhhhhhhhhhhhhhhhh...').toBe(true);
-                expect(label.childNodes[1].textContent == 'testhhhhhhhhhhhhhhhh...'|| label.childNodes[1].textContent == 'testhhhhhhhhhhhhhhhhhhh...').toBe(true);
-                expect(label.childNodes[2].textContent == 'Koreaaaaaaaaaaaaaaaaaa...'|| label.childNodes[2].textContent == 'Koreaaaaaaaaaaaaaaaaaaaaa...').toBe(true);
+                expect(label.childNodes[0].textContent == 'Southhhhhhhhhhhhhhhh...' || label.childNodes[0].textContent == 'Southhhhhhhhhhhhhhhhhhh...'
+                    || label.childNodes[0].textContent == 'Southhhhhhhhhhhhhhhhh...' || label.childNodes[0].textContent == 'Southhhhhhhhhhhhhhhhhh...').toBe(true);
+                expect(label.childNodes[1].textContent == 'testhhhhhhhhhhhhhhhh...' || label.childNodes[1].textContent == 'testhhhhhhhhhhhhhhhhhhh...'
+                    || label.childNodes[1].textContent == 'testhhhhhhhhhhhhhhhhhh...' || label.childNodes[1].textContent == 'testhhhhhhhhhhhhhhhhhhh...').toBe(true);
+                expect(label.childNodes[2].textContent == 'Koreaaaaaaaaaaaaaaaaaa...' || label.childNodes[2].textContent == 'Koreaaaaaaaaaaaaaaaaaaaaa...'
+                    || label.childNodes[2].textContent == 'Koreaaaaaaaaaaaaaaaaaaa...' || label.childNodes[2].textContent == 'Koreaaaaaaaaaaaaaaaaaaaa...').toBe(true);
                 done();
             };
             chart.loaded = loaded;

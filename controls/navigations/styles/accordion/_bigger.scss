@@ -1,3 +1,5 @@
+@use 'ej2-base/styles/common/mixin' as *;
+@use './theme-variables' as *;
 @include export-module('accordion-bigger') {
   .e-bigger .e-accordion,
   .e-accordion.e-bigger {
@@ -27,10 +29,10 @@
           }
 
           > .e-acrdn-content {
-            padding: 0;
+            padding: $acrdn-padding-none;
 
             > .e-accordion {
-              border: 0;
+              border: $acrdn-border-none;
             }
 
             .e-accordion .e-acrdn-panel.e-nested .e-acrdn-content .e-acrdn-header {
@@ -54,7 +56,7 @@
         padding: $acrdn-bgr-header-padding;
 
         .e-toggle-icon {
-          height: $acrdn-bgr-header-minheight;
+          height: $acrdn-bgr-header-height;
           min-height: $acrdn-bgr-header-minheight;
           min-width: $acrdn-bgr-icn-minwidth;
           right: $acrdn-bgr-header-paddingpix;
@@ -63,7 +65,7 @@
 
         .e-acrdn-header-icon {
           display: inline-block;
-          padding: 0 $acrdn-bgr-header-icon-padding 0 0;
+          padding: $acrdn-padding-none $acrdn-bgr-header-icon-padding $acrdn-padding-none $acrdn-padding-none;
 
           .e-acrdn-icons.e-icons {
             font-size: $acrdn-bgr-arrow-icon-font-size;
@@ -112,7 +114,7 @@
           }
 
           .e-acrdn-header-icon {
-            padding: 0 0 0 $acrdn-bgr-header-icon-padding;
+            padding: $acrdn-padding-none $acrdn-padding-none $acrdn-padding-none $acrdn-bgr-header-icon-padding;
           }
         }
       }

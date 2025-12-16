@@ -1,3 +1,5 @@
+@use 'ej2-base/styles/common/mixin' as *;
+@use './theme-variables' as *;
 @mixin bigger-style($height, $width, $margin) {
   height: $height;
   width: $width;
@@ -30,7 +32,7 @@
       }
       @if $skin-name == 'tailwind3' {
         line-height: $chip-touch-text-line-height;
-        margin-top: -3px;
+        margin-top: $chip-touch-text-margin-top;
       }
     }
   
@@ -73,7 +75,7 @@
       }
       @else if ($skin-name == 'fluent2' or $skin-name == 'tailwind3') {
         &.e-dlt-btn::before {
-          font-size: 16px;
+          font-size: $text-base;
         }
       }
     }

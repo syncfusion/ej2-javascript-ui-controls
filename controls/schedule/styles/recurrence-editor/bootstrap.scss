@@ -1,9 +1,9 @@
-@import 'ej2-base/styles/definition/bootstrap.scss';
-@import 'ej2-inputs/styles/numerictextbox/bootstrap-definition.scss';
-@import 'ej2-buttons/styles/button/bootstrap-definition.scss';
-@import 'ej2-buttons/styles/radio-button/bootstrap-definition.scss';
-@import 'ej2-calendars/styles/datepicker/bootstrap-definition.scss';
-@import 'ej2-dropdowns/styles/drop-down-list/bootstrap-definition.scss';
-@import 'bootstrap-definition.scss';
-@import 'all.scss';
-@import 'bigger.scss';
+@use 'ej2-base/styles/definition/bootstrap' as *;
+@use 'ej2-inputs/styles/numerictextbox/bootstrap-definition' as *;
+@use 'ej2-buttons/styles/button/bootstrap-definition' as *;
+@use 'ej2-buttons/styles/radio-button/bootstrap-definition' as *;
+@use 'ej2-calendars/styles/datepicker/bootstrap-definition' as *;
+@use 'ej2-dropdowns/styles/drop-down-list/bootstrap-definition' as *;
+@use 'bootstrap-definition' as *;
+@use 'all' as *;
+@use 'bigger' as *;

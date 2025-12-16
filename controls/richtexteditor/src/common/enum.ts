@@ -13,7 +13,7 @@ export declare type CommandName = 'bold' | 'italic' | 'underline' | 'strikeThrou
 'insertParagraph' | 'outdent' | 'redo' | 'removeFormat' | 'insertText' | 'insertImage' | 'insertAudio' | 'insertVideo' |
 'insertHorizontalRule' | 'insertBrOnReturn' | 'insertCode' | 'insertTable' | 'editImage' | 'editLink' | 'applyFormatPainter' |
 'copyFormatPainter' | 'escapeFormatPainter' | 'emojiPicker' | 'InlineCode' | 'importWord' | 'insertCodeBlock'| 'numberFormatList' |
-'bulletFormatList' | 'checklist';
+'bulletFormatList' | 'checklist' | 'lineHeight';
 
 
 /**
@@ -32,7 +32,7 @@ export type ToolbarItems = 'alignments' | 'justifyLeft' | 'justifyCenter' | 'jus
 | 'sourceCode' | 'preview' | 'viewSide' | 'insertCode' | 'blockquote' | 'tableHeader'
 | 'tableRemove' | 'tableRows' | 'tableColumns' | 'tableCellBackground'
 | 'tableCellHorizontalAlign' | 'tableCellVerticalAlign' | 'tableEditProperties'
-| 'styles' | 'removeLink' | 'merge' | 'inlineCode' | 'horizontalLine';
+| 'styles' | 'removeLink' | 'merge' | 'inlineCode' | 'horizontalLine' | 'aiquery' | 'aicommands' | 'lineHeight';
 
 /**
  * Specifies the configuration items available for the toolbar settings.
@@ -45,7 +45,7 @@ export type ToolbarConfigItems = 'Alignments' | 'JustifyLeft' | 'JustifyCenter' 
 | 'CreateLink' | 'Image' | 'CreateTable' | 'InsertLink' | 'FullScreen' | 'LowerCase'
 | 'UpperCase' | 'Print' | 'Formats' | 'FormatPainter' | 'EmojiPicker' | 'UnderLine' | 'ZoomOut' | 'ZoomIn'
 | 'SourceCode' | 'Preview' | 'ViewSide' | 'InsertCode' | 'Blockquote' | 'Audio' | 'Video' | 'NumberFormatList'
-| 'BulletFormatList' | 'FileManager' | '|' | '-' | 'InlineCode' | 'HorizontalLine';
+| 'BulletFormatList' | 'FileManager' | '|' | '-' | 'InlineCode' | 'HorizontalLine' | 'AIQuery' | 'AICommands' ;
 
 /**
  * Defines types to be used as colorMode for color selection in the RichTextEditor.

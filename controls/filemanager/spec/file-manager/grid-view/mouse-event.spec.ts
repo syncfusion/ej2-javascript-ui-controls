@@ -680,7 +680,7 @@ describe('FileManager control Grid view', () => {
             expect((feObj.detailsViewSettings.columns[1] as any).textAlign).toEqual("Left");
             expect(document.getElementById('file_grid').classList.contains('e-grid')).toEqual(true);
             let headerText: any = document.getElementById('file_grid').querySelectorAll('.e-headertext')
-            expect(headerText[3].innerText).toBe("Has Children");
+            expect(headerText[3].innerText).toBe("Size");
             expect(document.getElementById('file_grid').classList.contains('e-resize-lines')).toEqual(true);
             expect(document.getElementById('file_grid').querySelectorAll('.e-rhandler').length).toBe(5);
             done();

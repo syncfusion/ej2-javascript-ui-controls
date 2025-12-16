@@ -1,4 +1,8 @@
 @use 'sass:color';
+@use 'ej2-base/styles/definition/tailwind' as *;
+@use 'ej2-navigations/styles/toolbar/tailwind-definition' as *;
+@forward 'ej2-base/styles/definition/tailwind';
+@forward 'ej2-navigations/styles/toolbar/tailwind-definition';
 
 $sheet-skin: 'tailwind' !default;
 $spreadsheet-border-width: 1px;
@@ -33,6 +37,9 @@ $define-name-input-height: 23px !default;
 $define-name-input-padding: 0 0 0 8px !default;
 $define-name-input-padding-rtl: 0 8px 0 0 !default;
 $cfmain-header-font-size: $text-sm !default;
+$spread-border-radius-0: 0 !default;
+$spread-border-radius-3: 3px !default;
+$spread-border-radius-4: 4px !default;
 
 //selection
 $selection-bg-color: rgba($primary, .12) !default;
@@ -173,6 +180,7 @@ $find-popup-border-top-color: $border-light !default;
 $find-popup-border-color: $border-light !default;
 $find-popup-box-shadow: none !default;
 $find-dlg-alert-span-font-size: $text-xs !default;
+$find-dlg-alert-span-font-weight: bold !default;
 $bigger-find-dlg-btn-font-size: $text-xs !default;
 $find-dlg-header-font-weight: $font-weight-medium !default;
 $find-dlg-exactmatchcheckbox-padding: 12px 0 !default;
@@ -233,6 +241,7 @@ $custom-listview-color: $border-light;
 $custom-format-dlg-input-margin-right: 2.8% !default;
 $custom-format-dlg-sample-margin: 10px 10px 10px 0 !default;
 $expand-icon-color: $icon-color !default;
+$spread-dialog-listview-border-radius: 3px !default;
 
 //File Name Dialog
 $open-dlg-width: 360px !default;
@@ -285,6 +294,7 @@ $bigger-spread-ribbon-tab-text-wrap-height: 41px !default;
 $bigger-spread-ribbon-tab-menu-items-height: 41px !default;
 $bigger-spread-ribbon-tab-menu-items-line-height: 41px !default;
 $spreadsheet-ribbon-toolbar-btn-hover-color: $tbar-hover-bg !default;
+$spread-toolbar-btn-font-weight: normal !default;
 
 //Name Manager Dialog
 $spreadsheet-namerange-header-font-size: 22px !default;
@@ -366,9 +376,50 @@ $bigger-spreadsheet-protection-sheet-option-font-size: 16px !default;
 $bigger-spreadsheet-protection-sheet-option-padding-top: 13px !default;
 $bigger-spreadsheet-protection-sheet-option-padding-bottom:4px !default;
 
+//Blazor Namemanager
+$spreadsheet-name-manager-form-group-padding-top: 0 !default;
+
 //Blazor typography and spacing
+$spreadsheet-ribbon-simplified-mode-btn-font-weight: normal !default;
+$spreadsheet-name-dlg-header-mobile-font-weight: 600 !default;
+$spreadsheet-name-dlg-header-mobile-font-size: 16px !default;
+$spreadsheet-custom-close-btn-font-size: 18px !default;
+$spreadsheet-name-error-message-font-size: 12px !default;
+$spreadsheet-name-delete-warning-font-size: 16px !default;
+$spreadsheet-formula-suggession-containter-font-size: 10px !default;
+$bigger-spreadsheet-ribbonoverflow-font-size: 20px !default;
+$spreadsheet-overlay-resizer-border-radius: 4px !default;
+$spreadsheet-ribbon-simplified-mode-border-radius: 0 !default;
 $spreadsheet-font-weight-bold: bold !default;
 $spreadsheet-font-size-16: 16px !default;
 $spreadsheet-font-size-18: 18px !default;
 $spreadsheet-margin-10: 10px !default;
 $spreadsheet-padding-20: 20px !default;
+$spreadsheet-autofill-menuoption-min-width: 68px !default;
+$spreadsheet-border-menu-min-width: 270px !default;
+$spreadsheet-border-preview-line-width: 135px !default;
+$spreadsheet-border-auto-width: auto !default;
+$ids: 'LineStyleThin' 'LineStyleMedium' 'LineStyleThick' 'LineStyleDotted' 'LineStyleDashed' 'LineStyleDouble';
+$border-style-collection: solid solid solid dotted dashed double;
+$border-width-collection: thin medium thick thin thin medium;
+$spreadsheet-border-radius-50p: 50%;
+$spreadsheet-numformat-text-width: 100% !default;
+$spreadsheet-padding-5: 5px !default;
+
+// Threaded Comment
+$spread-comment-indicator-color: $primary !default;
+$spread-comment-background-color: $flyout-bg-color !default;
+$spread-comment-resolved-background-color: $spreadsheet-border-color !default;
+$spread-comment-review-pane-background-color: $content-bg-color-alt1 !default;
+$spread-comment-review-title-color: $content-text-color !default;
+$spread-comment-title-color: $content-text-color !default;
+$spread-comment-text-color: $content-text-color !default;
+$spread-comment-timestamp-color: $content-text-color-alt2 !default;
+$spread-comment-input-height: 30px !default;
+$spread-comment-input-border-bottom: 2px solid #616161 !default;
+$spread-comment-input-border-bottom-focused: 2px solid $primary !default;
+$spread-comment-border: 1px solid $border-light !default;
+$spread-comment-menu-height: 24px !default;
+$spread-comment-menu-width: 24px !default;
+$spread-comment-postbtn-padding: 4px 12px !default;
+$spread-comment-header-wrap-gap: 12px !default;

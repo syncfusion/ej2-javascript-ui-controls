@@ -990,7 +990,6 @@ export class HelperMethods {
             format.outlineLevel = paragraphFormat.outlineLevel;
         }
     }
-
     /// <summary>
     /// To check whether the font name is theme font or not.
     /// </summary>

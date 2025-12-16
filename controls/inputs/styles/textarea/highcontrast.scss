@@ -1,5 +1,5 @@
-@import 'ej2-base/styles/definition/highcontrast.scss';
-@import '../input/highcontrast-definition.scss';
-@import '../textbox/highcontrast-definition.scss';
-@import 'highcontrast-definition.scss';
-@import 'all.scss';
+@use 'ej2-base/styles/definition/highcontrast' as *;
+@use '../input/highcontrast-definition' as *;
+@use '../textbox/highcontrast-definition' as *;
+@use 'highcontrast-definition' as *;
+@use 'all' as *;

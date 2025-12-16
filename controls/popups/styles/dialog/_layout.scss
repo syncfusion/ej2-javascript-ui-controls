@@ -1,3 +1,5 @@
+@use 'ej2-base/styles/common/mixin' as *;
+@use './theme-variables' as *;
 @include export-module('dialog-layout') {
   /* stylelint-disable property-no-vendor-prefix */
   .e-dialog {
@@ -10,10 +12,10 @@
     }
     border-radius: $dialog-border-radius;
     flex-direction: column;
-    width: 100%;
+    width: $dialog-full-width;
 
     &.e-popup {
-      width: 100%;
+      width: $dialog-full-width;
     }
 
     &.e-dlg-resizable {
@@ -55,12 +57,9 @@
       user-select: none;
       vertical-align: top;
       white-space: nowrap;
-      width: 80%;
-      @if $skin-name == 'Material3' {
-        line-height: 30px;
-      }
-      @if $skin-name == 'fluent2' {
-        line-height: 32px;
+      width: $dialog-header-width;
+      @if $skin-name == 'Material3' or $skin-name == 'fluent2' {
+        line-height: $dialog-normal-header-line-height;
       }
 
       &.e-hide {
@@ -98,10 +97,10 @@
       @if $skin-name != 'tailwind3' {
         border-top: $dialog-footer-content-border-top;
       }
-      bottom: 0;
+      bottom: $dialog-zero-padding-margin;
       display: block;
-      right: 0;
-      width: 100%;
+      right: $dialog-zero-padding-margin;
+      width: $dialog-full-width;
 
       &.e-hide {
         display: none;
@@ -166,7 +165,7 @@
     }
 
     &.e-blazor-hidden {
-      left: 0;
+      left: $dialog-zero-padding-margin;
       position: absolute;
     }
   }
@@ -220,14 +219,14 @@
   }
 
   .e-dialog {
-    max-height: 98%;
-    max-width: 100%;
+    max-height: $dialog-max-height;
+    max-width: $dialog-full-width;
     min-width: 240px;
     position: absolute;
   }
 
   .e-rtl .e-footer-content .e-btn {
-    margin-left: 0;
+    margin-left: $dialog-zero-padding-margin;
   }
 
   .e-rtl .e-footer-content {
@@ -240,8 +239,15 @@
 
   .e-dialog.e-rtl .e-dlg-header-content .e-btn.e-dlg-closeicon-btn {
     float: left;
-    left: 0;
+    left: $dialog-zero-padding-margin;
     right: $dialog-close-button-left;
+
+    & .e-icon-dlg-close {
+      @if ($skin-name == 'bootstrap5') {
+        top: -5px;
+        left: 5px;
+      }
+    }
   }
 
   .e-dialog .e-dlg-header-content .e-btn.e-dlg-closeicon-btn {
@@ -261,7 +267,7 @@
       padding: $zero-value;
     }
     @if $skin-name == 'bootstrap5' or $skin-name == 'bootstrap5.3' {
-      line-height: 1;
+      line-height: $dialog-one-line-height;
     }
   }
 
@@ -286,13 +292,13 @@
   }
   /* stylelint-enable declaration-no-important */
   .e-dlg-overlay {
-    height: 100%;
-    left: 0;
+    height: $dialog-full-height;
+    left: $dialog-zero-padding-margin;
     opacity: $dialog-overlay-opacity;
     position: fixed;
-    top: 0;
+    top: $dialog-zero-padding-margin;
     transition: opacity .15s linear;
-    width: 100%;
+    width: $dialog-full-width;
 
     &.e-fade {
       opacity: 0;
@@ -305,9 +311,9 @@
 
   /* stylelint-disable declaration-no-important */
   .e-dlg-fullscreen {
-    height: 100% !important;
-    left: 0 !important;
-    width: 100% !important;
+    height: $dialog-full-height !important;
+    left: $dialog-zero-padding-margin !important;
+    width: $dialog-full-width !important;
   }
   /* stylelint-enable declaration-no-important */
 
@@ -318,11 +324,11 @@
   .e-dlg-container {
     align-items: flex-start;
     display: none;
-    height: 100%;
-    left: 0;
+    height: $dialog-full-height;
+    left: $dialog-zero-padding-margin;
     position: fixed;
-    top: 0;
-    width: 100%;
+    top: $dialog-zero-padding-margin;
+    width: $dialog-full-width;
   }
 
   .e-dlg-center-center {
@@ -428,32 +434,32 @@
 @media (min-width: 768px) {
   .e-alert-dialog.e-dialog.e-popup,
   .e-confirm-dialog.e-dialog.e-popup {
-    margin: 30px;
-    width: 600px;
+    margin: $dialog-alert-popup-margin;
+    width: $dialog-mobile-width;
   }
 }
 
 @media (max-width: 768px) {
   .e-alert-dialog.e-dialog.e-popup,
   .e-confirm-dialog.e-dialog.e-popup {
-    margin: 30px;
-    width: auto;
+    margin: $dialog-alert-popup-margin;
+    width: $dialog-auto-width;
   }
 }
 
 @media (max-width: 768px) {
   .e-prompt-dialog.e-dialog.e-popup,
   .e-prompt-dialog.e-dialog.e-popup {
-    margin: 30px;
-    width: auto;
+    margin: $dialog-alert-popup-margin;
+    width: $dialog-auto-width;
   }
 }
 
 @media (min-width: 768px) {
   .e-prompt-dialog.e-dialog.e-popup,
   .e-prompt-dialog.e-dialog.e-popup {
-    margin: 30px;
-    width: 600px;
+    margin: $dialog-alert-popup-margin;
+    width: $dialog-mobile-width;
   }
 }
 
@@ -467,6 +473,6 @@
 
 @if $skin-name == 'bootstrap' or $skin-name == 'bootstrap4' or $skin-name == 'bootstrap5' or $skin-name == 'bootstrap5.3' or $skin-name == 'tailwind' {
   .e-dialog .e-dlg-content .e-richtexteditor .e-rte-container .e-rte-tb-float {
-    top: -$dialog-content-padding-top !important; /* stylelint-disable-line declaration-no-important */
+    top: $dialog-rtl-content-padding-top !important; /* stylelint-disable-line declaration-no-important */
   }
 }

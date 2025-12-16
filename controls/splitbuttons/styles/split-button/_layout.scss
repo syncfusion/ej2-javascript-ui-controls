@@ -1,16 +1,18 @@
+@use 'ej2-base/styles/common/mixin' as *;
+@use './theme-variables' as *;
 @include export-module('split-button-layout') {
   .e-split-btn-wrapper {
     display: inline-flex;
     white-space: nowrap;
     width: min-content;
     @if $skin-name == 'Material3' {
-      border-radius: 4px;
+      border-radius: $split-bgr-btn-border-radius;
       box-shadow: $btn-box-shadow;
     }
 
     .e-split-btn {
-      border-bottom-right-radius: 0;
-      border-top-right-radius: 0;
+      border-bottom-right-radius: $drop-down-zero-border-radius;
+      border-top-right-radius: $drop-down-zero-border-radius;
       text-transform: none;
       @if $skin-name == 'bootstrap4' {
         padding-left: $split-btn-icon-btn-padding;
@@ -20,8 +22,8 @@
         padding: 3px 7px;
       }
       @if $skin-name == 'Material3' or $skin-name == 'Material3-dark' {
-        padding: 7px 16px;
-        line-height: 1.28572em;
+        padding: $split-nrml-btn-padding;
+        line-height: $split-nrml-btn-line-height;
         box-shadow: none;
         z-index: 1;
       }
@@ -29,11 +31,11 @@
         border: 0;
       }
       @if $skin-name == 'bootstrap5' or $skin-name == 'fluent2' or $skin-name == 'tailwind3' or $skin-name == 'tailwind3-dark' or $skin-name == 'tailwind' or $skin-name == 'tailwind-dark' {
-        padding: 3.75px 11px;
+        padding: $split-btn-wrapper-btn-padding;
       }
       @else {
-        padding-left: 10px;
-        padding-right: 10px;
+        padding-left: $split-btn-padding-left;
+        padding-right: $split-btn-padding-right;
       }
 
       &:focus {
@@ -75,28 +77,23 @@
       }
 
       &.e-top-icon-btn {
-        padding-bottom: 10px;
-        padding-top: 10px;
+        padding-bottom: $split-btn-top-icon-padding-bottom;
+        padding-top: $split-btn-top-icon-padding-top;
       }
 
       .e-btn-icon {
         font-size: $drop-down-btn-icon-font-size;
-        margin-left: 0;
-        @if $skin-name == 'FluentUI' {
-          padding-right: 4px;
-        }
-        @else {
-          padding-right: 8px;
-        }
-        width: auto;
+        margin-left: $drop-down-zero-padding-margin;
+        padding-right: $split-btn-icon-padding-right;
+        width: $split-auto-width;
         @if $skin-name == 'Material3' {
           border-radius: $btn-border-radius;
         }
       }
 
       .e-icon-top {
-        padding-bottom: 4px;
-        padding-right: 0;
+        padding-bottom: $split-btn-icon-top-padding-bottom;
+        padding-right: $drop-down-zero-padding-margin;
       }
 
       &.e-icon-btn {
@@ -106,14 +103,14 @@
           padding: 3.75px 11px;
         }
         .e-btn-icon {
-          padding-right: 0;
+          padding-right: $drop-down-zero-padding-margin;
         }
       }
     }
 
     .e-dropdown-btn {
-      border-bottom-left-radius: 0;
-      border-top-left-radius: 0;
+      border-bottom-left-radius: $drop-down-zero-border-radius;
+      border-top-left-radius: $drop-down-zero-border-radius;
       margin-left: $split-btn-sec-btn-margin-left;
       @if $skin-name == 'Material3' {
         box-shadow: none;
@@ -126,8 +123,8 @@
         padding: 4px;
       }
       @else {
-        padding-left: 4px;
-        padding-right: 4px;
+        padding-left: $drop-down-btn-padding-left;
+        padding-right: $drop-down-btn-padding-right;
       }
 
       &:focus,
@@ -156,7 +153,7 @@
 
       &.e-btn:focus-visible { // only for keybord
         @if $skin-name == 'fluent2' {
-          margin-left: 0 !important; /* stylelint-disable-line declaration-no-important */
+          margin-left: $drop-down-zero-padding-margin !important; /* stylelint-disable-line declaration-no-important */
           box-shadow: $btn-keyboard-focus-box-shadow;
         }
       }
@@ -214,43 +211,34 @@
 
     &.e-rtl {
       .e-split-btn {
-        border-bottom-left-radius: 0;
+        border-bottom-left-radius: $drop-down-zero-border-radius;
         border-bottom-right-radius: $split-btn-border-radius;
-        border-top-left-radius: 0;
+        border-top-left-radius: $drop-down-zero-border-radius;
         border-top-right-radius: $split-btn-border-radius;
         margin-left: $split-btn-sec-btn-margin-left;
         @if $skin-name == 'bootstrap4' or $skin-name == 'FluentUI' {
           padding-left: $split-btn-icon-btn-padding;
           padding-right: $split-btn-icon-btn-padding;
         }
-        @else if $skin-name == 'tailwind' or $skin-name == 'tailwind-dark' {
-          padding-left: 12px;
-          padding-right: 12px;
+        @else {
+          padding-left: $split-rtl-btn-padding-left;
+          padding-right: $split-rtl-btn-padding-right;
         }
         @if $skin-name == 'Material3' {
-          border-radius: 4px;
-        }
-        @else {
-          padding-left: 4px;
-          padding-right: 10px;
+          border-radius: $split-bgr-btn-border-radius;
         }
 
         .e-btn-icon {
-          margin-right: 0;
-          @if $skin-name == 'FluentUI' {
-            padding-left: 4px;
-          }
-          @else {
-            padding-left: 8px;
-          }
-          padding-right: 0;
+          margin-right: $drop-down-zero-padding-margin;
+          padding-left: $split-rtl-btn-icon-padding-left;
+          padding-right: $drop-down-zero-padding-margin;
           @if $skin-name == 'Material3' {
             border-radius: $btn-border-radius;
           }
         }
 
         .e-icon-top {
-          padding-left: 0;
+          padding-left: $drop-down-zero-padding-margin;
         }
 
         &.e-icon-btn {
@@ -258,19 +246,19 @@
           padding-right: $split-btn-icon-btn-padding;
 
           .e-btn-icon {
-            padding-left: 0;
+            padding-left: $drop-down-zero-padding-margin;
           }
         }
       }
 
       .e-dropdown-btn {
         border-bottom-left-radius: $split-btn-border-radius;
-        border-bottom-right-radius: 0;
+        border-bottom-right-radius: $drop-down-zero-border-radius;
         border-top-left-radius: $split-btn-border-radius;
-        border-top-right-radius: 0;
-        margin-left: 0;
+        border-top-right-radius: $drop-down-zero-border-radius;
+        margin-left: $drop-down-zero-padding-margin;
         @if $skin-name == 'Material3' {
-          border-radius: 4px;
+          border-radius: $split-bgr-btn-border-radius;
           box-shadow: none;
         }
       }
@@ -282,65 +270,65 @@
       .e-split-btn,
       .e-dropdown-btn {
         display: block;
-        width: 100%;
+        width: $split-full-width;
       }
 
       .e-split-btn {
-        border-bottom-left-radius: 0;
+        border-bottom-left-radius: $drop-down-zero-border-radius;
         border-top-right-radius: $split-btn-border-radius;
-        line-height: 1;
+        line-height: $split-btn-line-height;
         @if $skin-name == 'bootstrap4'or $skin-name == 'tailwind' {
           padding-bottom: $split-btn-icon-btn-padding;
           padding-right: $split-btn-icon-btn-padding;
         }
-        @if $skin-name == 'Material3' {
-          border-radius: 4px;
-          box-shadow: none;
-        }
         @else {
-          padding-bottom: 4px;
-          padding-right: 10px;
+          padding-bottom: $split-btn-vertical-padding-bottom;
+          padding-right: $split-btn-vertical-padding-right;
+        }
+        @if $skin-name == 'Material3' {
+          border-radius: $split-bgr-btn-border-radius;
+          box-shadow: none;
         }
 
         .e-icon-top {
-          padding-bottom: 4px;
+          padding-bottom: $split-btn-vertical-icon-top-padding;
         }
       }
 
       .e-dropdown-btn {
         border-bottom-left-radius: $split-btn-border-radius;
-        border-top-right-radius: 0;
+        border-top-right-radius: $drop-down-zero-border-radius;
         line-height: $split-btn-vertical-secondary-icon-line-height;
-        margin-left: 0;
+        margin-left: $drop-down-zero-padding-margin;
         margin-top: $split-btn-sec-btn-margin-left;
         @if $skin-name == 'bootstrap4' {
           padding-bottom: $split-btn-icon-btn-padding;
           padding-top: $split-btn-icon-btn-padding;
         }
-        @if $skin-name == 'Material3' {
-          border-radius: 4px;
-          box-shadow: none;
-        }
         @else {
-          padding-bottom: 4px;
-          padding-top: 4px;
+          padding-bottom: $drop-down-btn-vertical-padding-bottom;
+          padding-top: $drop-down-btn-vertical-padding-top;
+        }
+        @if $skin-name == 'Material3' {
+          border-radius: $split-bgr-btn-border-radius;
+          box-shadow: none;
         }
 
         .e-icon-bottom {
-          padding-top: 0;
+          padding-top: $drop-down-zero-padding-margin;
         }
       }
 
       &.e-rtl {
         .e-split-btn {
-          border-bottom-right-radius: 0;
+          border-bottom-right-radius: $drop-down-zero-border-radius;
           border-top-left-radius: $split-btn-border-radius;
-          margin-left: 0;
+          margin-left: $drop-down-zero-padding-margin;
         }
 
         .e-dropdown-btn {
           border-bottom-right-radius: $split-btn-border-radius;
-          border-top-left-radius: 0;
+          border-top-left-radius: $drop-down-zero-border-radius;
         }
       }
     }

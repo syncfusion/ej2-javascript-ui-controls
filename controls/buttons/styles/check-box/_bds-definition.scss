@@ -1,3 +1,6 @@
+@use 'ej2-base/styles/definition/bds' as *;
+@forward 'ej2-base/styles/definition/bds';
+
 $cbox-bigger-check-fontsize: 12px !default;
 $cbox-bigger-font-size: 16px !default;
 $cbox-bigger-height: 20px !default;
@@ -81,3 +84,29 @@ $cbox-focussed-checkmark-bgcolor: $primary-lighter !default;
 $cbox-focussed-checkmark-border-color: $primary !default;
 $cbox-focussed-checkmark-color: $primary !default;
 $cbox-border-style: solid !default;
+$cbox-zero-margin: 0 !default;
+$cbox-wrapper-line-height: 1 !default;
+$cbox-label-line-height: 0 !default;
+$cbox-ripple-container-border-radius: 50% !default;
+$cbox-nrml-height: 1px !default;
+$cbox-nrml-width: 1px !default;
+
+//fluent2
+$cbox-bgr-css-margin: 8.2px 8px !default;
+$cbox-bgr-css-label-margin: 7.2px 8px 7.2px 4px !default;
+$cbox-bgr-checkbox-label-margin: 9px 6px 9px 8px !default;
+$cbox-bgr-checkbox-label-frame-margin: 9.2px 8px !default;
+$cbox-bigger-label-margin: 9px 8px 9px 6px !default;
+$cbox-nrml-checkbox-border-radius: 4px !default;
+$cbox-border: 1px !default;
+$cbox-nrml-label-margin: 6px 4px 6px 8px !default;
+$cbox-nrml-frame-margin: 7.2px 8px !default;
+$cbox-nrml-label-frame-margin: 6px 8px 6px 4px !default;
+$cbox-small-frame-margin: 6.2px 8px !default;
+
+//material3
+$cbox-disabled-line-height: 18px !default;
+$cbox-mat3-check-line-height: 14px !default;
+
+// all
+$cbox-auto-width: auto;

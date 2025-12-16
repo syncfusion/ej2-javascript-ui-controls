@@ -1,3 +1,6 @@
+@use 'ej2-base/styles/definition/bds' as *;
+@forward 'ej2-base/styles/definition/bds';
+
 // color
 $gantt-header-bg-color: $content-bg-color-alt1 !default;
 $gantt-header-border-color: $border-light !default;
@@ -101,7 +104,6 @@ $event-marker-label-font-size: $text-xs !default;
 $event-marker-label-padding: 4px 8px !default;
 $event-marker-label-height: 26px !default;
 $event-marker-label-arrow-top: 58px !default;
-$gantt-connector-point-margin-top: 7.5px !default;
 $gantt-connector-point-margin-radius: 4px !default;
 $gantt-connector-point-left: 8px !default;
 $gantt-unscheduled-taskbar-left: 3px !default;
@@ -169,7 +171,7 @@ $gantt-bigger-dialog-input-field-height: 36px !important;
 $gantt-bigger-dialog-input-icon: 18px !important;
 $gantt-dialog-bigger-border-radius: 6px !important;
 $gantt-bigger-dialog-tab-padding-left: 12px !important;
-$gantt-bigger-dialog-border-radius: 6px 6px 0px 0px !default;
+$gantt-bigger-dialog-content-border-radius: 6px 6px 0px 0px !default;
 $gantt-bigger-dialog-edit-form-scroll-padding: 16px 18px 0 9px !default;
 $gantt-dialog-close-button-top: 3px !important;
 $gantt-dialog-dependent-height: 157px !default;
@@ -191,14 +193,14 @@ $gantt-timeline-top-headercell-font-size: $text-xxs !default;
 $gantt-timeline-top-headercell-font-weight: $font-weight-medium !default;
 $gantt-active-color-opacity: 0.9 !default;
 $gantt-child-progress-margin-left: 0.5px !default;
-$gantt-timeline-single-header-outer-div: 45px !default;
+$gantt-timeline-single-header-outer-div: 46px !default;
 $gantt-chart-timeline-single-header-outer-div: 46px !default;
 $gantt-header-border-height: 49px !default;
 $gantt-bigger-header-border-height: 64px !default;
-$gantt-treegrid-header-border-height: 48px !default;
-$gantt-bigger-treegrid-header-border-height: 63px !default;
-$gantt-header-border-bottom-width: 0px !default;
-$gantt-timeline-top-header-cell-height: 24px !default;
+$gantt-treegrid-header-border-height: 50px !default;
+$gantt-bigger-treegrid-header-border-height: 64px !default;
+$gantt-header-border-bottom-width: 1px !default;
+$gantt-timeline-top-header-cell-height: 25px !default;
 $gantt-bigger-timeline-top-header-cell-height: 32px !default;
 $gantt-header-border-radius: 0px !default;
 $gantt-splitter-border-top-right-radius: 0px !default;
@@ -226,3 +228,11 @@ $gantt-masked-table-background-color: rgb(225,223,221);
 $gantt-rowdd-topbottom-border: 2px solid #4f46e5 !default;
 $gantt-rowdd-boxshadow: $primary !default;
 $gantt-rowdd-childborder-width: 2px 0 0 !default;
+$gantt-virtualtrack-contanier-height: 0 !important;
+$gantt-event-markers-border-right: 0 !important;
+
+// Typography variables
+$gantt-bigger-dialog-border-radius: 6px;
+$gantt-manual-parent-taskbar-border-radius: 50%;
+$gantt-baseline-bar-border-radius: 2px;
+$gantt-label-border-radius: 3px;

@@ -1,3 +1,5 @@
+@use 'ej2-base/styles/common/mixin' as *;
+@use './theme-variables' as *;
 @mixin ddt-rotate($position) {
   transform: rotate($position);
   transition: transform 300ms ease;
@@ -21,7 +23,7 @@
   &::before {
     font-size: $font-size;
     @if ($ddt-skin-name == 'fluent2') {
-      padding: 3px;
+      padding: $ddt-chip-close-before-padding;
     }
   }
 }
@@ -69,8 +71,8 @@
     }
 
     .e-ddt-hidden {
-      border: 0;
-      height: 0;
+      border: $ddt-nrml-border-none;
+      height: $ddt-height-none;
       visibility: hidden;
       width: 0;
     }
@@ -90,17 +92,17 @@
         }
         @if $ddt-skin-name == 'fluent2' {
           min-width: $ddt-close-icon-min-height;
-          margin: 5px 3px 5px 6px;
+          margin: $ddt-close-icon-margin;
           align-items: center;
           &::before {
-            font-size: 14px;
-            padding: 3px;
+            font-size: $ddt-nrml-close-icon-font-size;
+            padding: $ddt-nrml-close-icon-padding;
           }
         }
       }
 
       .e-input-group-icon.e-ddt-icon {
-        border: 0;
+        border: $ddt-nrml-border-none;
 
         @if $ddt-skin-name == 'bootstrap4' {
           font-size: 8px;
@@ -109,15 +111,15 @@
           font-size: 20px;
         }
         @else if $ddt-skin-name == 'fluent2' {
-          font-size: 14px;
-          margin: 5px 9px 5px 3px;
-          padding: 0;
+          font-size: $ddt-nrml-icon-font-size;
+          margin: $ddt-nrml-icon-margin;
+          padding: $ddt-nrml-padding-none;
           min-height: 20px;
           min-width: 20px;
         }
 
         @if $ddt-skin-name == 'Material3' {
-          font-size: $ddt-chip-icon-line-height;
+          font-size: $ddt-chip-icon-font-size;
           margin: $ddt-dd-icon-margin;
           line-height: $ddt-chip-icon-line-height;
         }
@@ -138,7 +140,7 @@
           }
           @include position(absolute, 0);
           @if $ddt-skin-name == 'Material3' {
-            margin: 0;
+            margin: $ddt-nrml-margin-none;
           }
         }
 
@@ -163,8 +165,8 @@
 
         &.e-input-focus input.e-dropdowntree.e-chip-input,
         input.e-dropdowntree.e-chip-input {
-          padding-left: 0;
-          padding-right: 0;
+          padding-left: $ddt-nrml-padding-none;
+          padding-right: $ddt-nrml-padding-none;
         }
       }
 
@@ -176,7 +178,7 @@
     .e-chips-wrapper {
       width: 100%;
       @if ($ddt-skin-name =='tailwind3') {
-        margin: 2px 0 2px 6px;
+        margin: $ddt-chips-wrapper-margin;
       }
     }
 
@@ -201,7 +203,7 @@
       .e-chips {
         align-items: center;
         @if $theme-name =='fluent2-highcontrast' {
-          border-radius: 4px;
+          border-radius: $ddt-show-chip-border-radius;
         }
         @else {
           border-radius: $ddt-chip-radius;
@@ -218,7 +220,7 @@
         white-space: nowrap;
 
         @if ($ddt-skin-name == 'tailwind3') {
-          border: 1px solid $border-light;
+          border: $ddt-nrml-chip-border solid $border-light;
         }
 
         & > .e-chipcontent {
@@ -233,9 +235,9 @@
             line-height: $ddt-chip-text-line-height;
           }
           @if ($ddt-skin-name == 'tailwind3') {
-            font-size: 12px;
-            line-height: 16px;
-            font-weight: 500;
+            font-size: $ddt-nrml-chipcontent-font-size;
+            line-height: $ddt-nrml-chipcontent-line-height;
+            font-weight: $ddt-nrml-chipcontent-font-weight;
           }
         }
       }
@@ -481,7 +483,7 @@
     }
 
     &.e-show-dd-icon {
-      @include chip-last($ddt-dd-icon-width, $ddt-chip-ddi-width);
+      @include chip-last($ddt-dd-icon-margin-right, $ddt-chip-ddi-width);
     }
 
     &.e-show-clear {
@@ -505,16 +507,16 @@
 
     &.e-popup {
       @if $skin-name != 'material' and $skin-name != 'FluentUI' and $skin-name != 'Material3' {
-        border: 1px solid $ddt-popup-border-color;
+        border: $ddt-popup-border solid $ddt-popup-border-color;
       }
       @if $ddt-skin-name == 'tailwind' or $ddt-skin-name == 'bootstrap5' or $ddt-skin-name == 'tailwind3' {
-        margin-top: 4px;
+        margin-top: $ddt-nrml-popup-margin-top;
       }
       @else if $skin-name == 'Material3' {
-        margin-top: 2px;
+        margin-top: $ddt-nrml-popup-margin-top;
       }
       @else if $skin-name == 'fluent2' {
-        margin-top: 1px;
+        margin-top: $ddt-nrml-popup-margin-top;
       }
       @if $skin-name == 'bootstrap4' or $skin-name == 'Material3' or $ddt-skin-name == 'tailwind' or $ddt-skin-name == 'bootstrap5' or $skin-name == 'FluentUI' or $skin-name == 'fluent2' or $ddt-skin-name == 'tailwind3' {
         border-radius: $ddt-popup-radius;
@@ -539,7 +541,7 @@
       }
 
       .e-selectall-parent {
-        border-bottom: 1px solid;
+        border-bottom: $ddt-nrml-popup-selectall-border-bottom solid;
         cursor: pointer;
         display: block;
         @if $ddt-skin-name != 'tailwind' and $ddt-skin-name != 'FluentUI' {
@@ -610,7 +612,7 @@
         }
 
         .e-input-group {
-          margin-bottom: 0;
+          margin-bottom: $ddt-nrml-margin-none;
   
           @if $ddt-skin-name == 'tailwind' {
             border: 1px solid $border;
@@ -653,16 +655,16 @@
         &.e-no-data {
           cursor: default;
           font-family: inherit;
-          font-size: 14px;
+          font-size: $ddt-nrml-nodata-font-size;
           text-align: center;
           @if $ddt-skin-name == 'tailwind' {
-            padding: 8px 16px;
+            padding: $ddt-nrml-nodata-padding;
           }
           @else if $ddt-skin-name == 'bootstrap5' {
-            padding: 7px 16px;
+            padding: $ddt-nrml-nodata-padding;
           }
           @else {
-            padding: 14px 16px;
+            padding: $ddt-nrml-nodata-padding;
           }
 
           .e-treeview {
@@ -682,16 +684,16 @@
         display: inline-table;
         width: 100%;
         @if $ddt-skin-name == 'tailwind3' {
-          border: none;
+          border: $ddt-treeview-border-none;
         }
 
         .e-list-item {
           @if $ddt-skin-name != 'fluent2' {
-            padding: 0;
+            padding: $ddt-nrml-padding-none;
 
             .e-ul {
-              margin: 0;
-              padding: 0 0 0 14px;
+              margin: $ddt-nrml-margin-none;
+              padding: $ddt-list-item-ul-padding;
             }
           }
         }
@@ -873,28 +875,28 @@
 
       &.e-show-dd-icon {
         @if $ddt-skin-name == 'tailwind' or $ddt-skin-name == 'bootstrap5' or $ddt-skin-name == 'FluentUI' {
-          @include chip-last-margin(4px, 18px);
+          @include chip-last-margin($ddt-nrml-show-dd-icon-margin, 18px);
         }
         @else {
-          @include chip-last-margin(1px, $ddt-dd-icon-width);
+          @include chip-last-margin($ddt-nrml-show-dd-icon-margin, $ddt-nrml-show-dd-icon-margin-left);
         }
       }
 
       &.e-show-clear {
         @if $ddt-skin-name == 'tailwind' or $ddt-skin-name == 'bootstrap5' or $ddt-skin-name == 'FluentUI' {
-          @include chip-last-margin(4px, 18px);
+          @include chip-last-margin($ddt-nrml-show-dd-icon-margin, 18px);
         }
         @else {
-          @include chip-last-margin(1px, $ddt-close-icon-width);
+          @include chip-last-margin($ddt-nrml-show-dd-icon-margin, $ddt-close-icon-width);
         }
       }
 
       &.e-show-clear.e-show-dd-icon {
         @if $ddt-skin-name == 'tailwind' or $ddt-skin-name == 'bootstrap5' or $ddt-skin-name == 'FluentUI' {
-          @include chip-last-margin(4px, $ddt-last-chip-right-margin);
+          @include chip-last-margin($ddt-nrml-show-dd-icon-margin, $ddt-last-chip-right-margin);
         }
         @else {
-          @include chip-last-margin(1px, $ddt-last-chip-right-margin);
+          @include chip-last-margin($ddt-nrml-show-dd-icon-margin, $ddt-last-chip-right-margin);
         }
       }
 
@@ -923,7 +925,7 @@
 
       &.e-popup {
         .e-treeview .e-list-item .e-ul {
-          padding: 0 14px 0 0;
+          padding: $ddt-nrml-popup-ul-padding;
         }
 
         .e-selectall-parent {
@@ -950,7 +952,7 @@
         .e-list-item {
           .e-ul {
             @if $ddt-skin-name == 'fluent2' {
-              padding: 0 0 0 14px;
+              padding: $ddt-list-item-ul-padding;
             }
           }
         }

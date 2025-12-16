@@ -180,7 +180,7 @@ export interface TaskFieldsModel {
      * The value can be provided either as a number (e.g., `constraintType: 0`) or a stringified number (e.g., `constraintType: "0"`),
      * and it is used to assign the appropriate constraint type for the task.
      *
-     * Refer to the [`ConstraintType`](../constraintType) enumeration for the list of supported constraint types.
+     * Refer to the [`ConstraintType`](./constrainttype) enumeration for the list of supported constraint types.
      *
      * @default null
      */
@@ -195,5 +195,15 @@ export interface TaskFieldsModel {
      * @default null
      */
     constraintDate?: string;
+
+    /**
+     * Maps the calendar field from the data source to assign custom calendars to tasks.
+     *
+     * This property allows each task to reference a specific calendar by its ID, enabling support for non-working days,
+     * holidays, and custom working time configurations per task.
+     *
+     * @default null
+     */
+    calendarId?: string;
 
 }

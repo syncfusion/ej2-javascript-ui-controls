@@ -1,5 +1,3 @@
-[![coverage](http://ej2.syncfusion.com/badges/ej2-lists/coverage.svg)](http://ej2.syncfusion.com/badges/ej2-lists)
-
 # ej2-lists
 
 The listview control allows you to select an item or multiple items from a list-like interface and represents the data in interactive hierarchical structure across different layouts or views. Lists are used for displaying data, data navigation, and data entry.

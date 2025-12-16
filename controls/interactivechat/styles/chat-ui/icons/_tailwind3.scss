@@ -1,3 +1,4 @@
+@use 'ej2-base/styles/common/mixin' as *;
 @include export-module('chatui-tailwind3-icons') {
   .e-chat-send::before {
     content: '\e71d';
@@ -50,7 +51,7 @@
   .e-chat-attachment-icon::before {
     content: '\e940';
   }
-  .e-chat-file-format-icon::before {
+  .e-chat-file-icon::before {
     content: '\e941';
   }
   .e-chat-upload::before {
@@ -61,5 +62,11 @@
   }
   .e-chat-download::before {
     content: '\e7a1';
+  }
+  .e-chat-circle-close::before {
+    content: '\e878';
+  }
+  .e-chat-back-icon::before {
+    content: '\e773';
   }
 }

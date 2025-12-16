@@ -1,3 +1,5 @@
+@use 'ej2-base/styles/common/mixin' as *;
+@use './theme-variables' as *;
 @mixin tab-mob-last-item-margin {
   @media screen and (max-width: 480px) {
     margin: $tab-mob-last-item-margin;
@@ -14,10 +16,10 @@
 
     .e-tab-header {
       height: $tab-big-height;
-      min-height: $tab-big-height;
+      min-height: $tab-big-min-height;
 
       .e-toolbar-items {
-        height: auto;
+        height: $tab-auto-height;
         min-height: auto;
 
         &:not(.e-tbar-pos) .e-toolbar-item:first-child,
@@ -60,7 +62,7 @@
         &:not(.e-separator) {
           height: $tab-big-height;
           margin: $tab-big-item-margin;
-          min-height: $tab-big-height;
+          min-height: $tab-big-min-height;
           min-width: auto;
           padding: $tab-big-item-padding;
 
@@ -72,7 +74,7 @@
         &:not(.e-separator).e-itop,
         &:not(.e-separator).e-ibottom {
           height: $tab-big-icon-top-bottom-item-height;
-          min-height: $tab-big-icon-top-bottom-item-height;
+          min-height: $tab-big-icon-top-bottom-item-min-height;
         }
 
         .e-tab-wrap {
@@ -138,9 +140,9 @@
         }
 
         .e-icons.e-tab-icon {
-          height: $tab-big-icon-container-size;
+          height: $tab-big-icon-container-height;
           min-width: $tab-big-icon-container-size;
-          width: $tab-big-icon-container-size;
+          width: $tab-big-icon-container-width;
           line-height: $tab-bgr-icon-line-height;
         }
 
@@ -157,7 +159,7 @@
         }
 
         .e-icon-right {
-          margin: 0 0 0 12px;
+          margin: $tab-bgr-icon-right-margin;
 
           @media screen and (max-width: 480px) {
             margin: $tab-bgr-mob-item-iconright-margin;
@@ -180,7 +182,7 @@
             height: $tab-big-icon-top-bottom-item-height;
 
             &:focus .e-text-wrap {
-              height: auto;
+              height: $tab-auto-height;
             }
           }
 
@@ -188,7 +190,7 @@
             height: $tab-big-icon-top-bottom-item-height;
 
             &:focus .e-text-wrap {
-              height: auto;
+              height: $tab-auto-height;
             }
           }
 
@@ -218,11 +220,11 @@
 
         .e-toolbar-item {
           height: $tab-big-pop-item-height;
-          min-height: $tab-big-pop-item-height;
+          min-height: $tab-big-pop-item-min-height;
 
           @if ($skin-name == 'fluent2') {
             &:not(.e-separator) {
-              margin: 1px 6px;
+              margin: $tbar-bgr-item-margin;
             }
           }
 
@@ -243,12 +245,12 @@
             padding-right: $tab-big-pop-text-padding-right;
 
             @media screen and (max-width: 480px) {
-              padding-right: 0;
+              padding-right: $tab-padding-none;
             }
           }
 
           .e-close-icon {
-            margin: 0 0 0 8px;
+            margin: $tab-close-icon-margin;
           }
 
           .e-close-icon::before {
@@ -265,10 +267,10 @@
 
           &.e-itop:not(.e-separator),
           &.e-ibottom:not(.e-separator) {
-            min-height: $tab-pop-big-icon-top-bottom-item-height;
+            min-height: $tab-pop-big-icon-top-bottom-item-min-height;
 
             @media screen and (max-width: 480px) {
-              min-height: $tab-pop-big-icon-top-bottom-item-height;
+              min-height: $tab-pop-big-icon-top-bottom-item-min-height;
             }
           }
 
@@ -285,14 +287,14 @@
 
           &.e-itop .e-tab-text,
           &.e-ibottom .e-tab-text {
-            margin: 0;
-            padding-left: 0;
-            padding-right: 12px;
+            margin: $tab-margin-none;
+            padding-left: $tab-padding-none;
+            padding-right: $tab-popup-text-padding-right;
 
             @media screen and (max-width: 480px) {
-              margin: 0;
-              padding-left: 0;
-              padding-right: 0;
+              margin: $tab-margin-none;
+              padding-left: $tab-padding-none;
+              padding-right: $tab-padding-none;
             }
           }
         }
@@ -300,7 +302,7 @@
 
       .e-scroll-nav {
         height: $tab-big-height;
-        min-height: $tab-big-height;
+        min-height: $tab-big-min-height;
         padding: $tab-big-nav-right-icon-padding;
 
         @media screen and (max-width: 480px) {
@@ -317,14 +319,14 @@
 
         .e-nav-arrow {
           font-size: $tab-big-nav-icon-size;
-          height: $tab-big-nav-icon-container-size;
-          line-height: $tab-big-nav-icon-container-size;
+          height: $tab-big-nav-icon-container-height;
+          line-height: $tab-big-nav-icon-container-line-height;
           width: $tab-big-nav-icon-container-size;
 
           @media screen and (max-width: 480px) {
             font-size: $tab-big-nav-icon-size;
-            height: $tab-big-nav-icon-container-size;
-            line-height: $tab-big-nav-icon-container-size;
+            height: $tab-big-nav-icon-container-height;
+            line-height: $tab-big-nav-icon-container-line-height;
             width: $tab-big-nav-icon-container-size;
           }
         }
@@ -334,7 +336,7 @@
 
           &::before {
             font-size: $tab-big-nav-icon-size;
-            line-height: $tab-big-nav-icon-container-size;
+            line-height: $tab-big-nav-icon-container-line-height;
             top: $tab-bgr-scroll-nav-arrow-before-top;
             vertical-align: initial;
           }
@@ -353,7 +355,7 @@
 
       .e-hor-nav {
         height: $tab-big-height;
-        min-height: $tab-big-height;
+        min-height: $tab-big-min-height;
         padding: $tab-big-nav-right-icon-padding;
 
         @media screen and (max-width: 480px) {
@@ -363,20 +365,20 @@
         .e-popup-up-icon,
         .e-popup-down-icon {
           font-size: $tab-big-nav-icon-size;
-          height: $tab-big-nav-icon-container-size;
-          line-height: $tab-big-nav-icon-container-size;
+          height: $tab-big-nav-icon-container-height;
+          line-height: $tab-big-nav-icon-container-line-height;
           width: $tab-big-nav-icon-container-size;
 
           @media screen and (max-width: 480px) {
             font-size: $tab-big-nav-icon-size;
-            height: $tab-big-nav-icon-container-size;
-            line-height: $tab-big-nav-icon-container-size;
+            height: $tab-big-nav-icon-container-height;
+            line-height: $tab-big-nav-icon-container-line-height;
             width: $tab-big-nav-icon-container-size;
           }
 
           &::before {
             font-size: $tab-big-nav-icon-size;
-            line-height: $tab-big-nav-icon-container-size;
+            line-height: $tab-big-nav-icon-container-line-height;
             top: 0;
             vertical-align: initial;
 
@@ -438,7 +440,7 @@
 
           &.e-active {
             margin: $tab-big-even-boot-item-margin;
-            padding-bottom: 0;
+            padding-bottom: $tab-padding-none;
 
             @media screen and (max-width: 480px) {
               margin: $tab-mob-even-boot-item-margin;
@@ -460,7 +462,7 @@
 
           &.e-active:last-child {
             margin: $tab-big-even-last-item-margin;
-            padding-bottom: 0;
+            padding-bottom: $tab-padding-none;
 
             @media screen and (max-width: 480px) {
               margin: $tab-mob-even-last-item-margin;
@@ -477,8 +479,8 @@
 
           &.e-itop,
           &.e-ibottom {
-            padding-bottom: 0;
-            padding-top: 0;
+            padding-bottom: $tab-padding-none;
+            padding-top: $tab-padding-none;
           }
 
           &.e-ileft.e-active .e-text-wrap {
@@ -487,12 +489,12 @@
 
           &.e-active .e-text-wrap {
             height: $tab-big-even-active-text-container-height;
-            padding: 0;
+            padding: $tab-padding-none;
           }
 
           &.e-itop.e-active .e-text-wrap,
           &.e-ibottom.e-active .e-text-wrap {
-            height: initial;
+            height: $tab-initial-height;
           }
 
           &.e-ileft.e-active {
@@ -515,12 +517,12 @@
         }
 
         .e-toolbar-items {
-          height: inherit;
+          height: $tab-inherit-height;
 
           &:not(.e-tbar-pos) {
 
             .e-toolbar-item:last-child {
-              margin: 0;
+              margin: $tab-margin-none;
             }
           }
         }
@@ -550,13 +552,13 @@
         }
 
         .e-scroll-nav {
-          height: $tab-big-vertical-nav-arrow-size;
+          height: $tab-big-vertical-nav-arrow-height;
           min-height: $tab-big-vertical-nav-arrow-size;
 
           .e-nav-arrow {
             font-size: $tab-big-vertical-nav-arrow-font-size;
-            height: $tab-big-vertical-nav-arrow-size;
-            line-height: $tab-big-vertical-nav-arrow-size;
+            height: $tab-big-vertical-nav-arrow-height;
+            line-height: $tab-big-vertical-nav-arrow-line-height;
             width: $tab-big-vertical-nav-arrow-size;
           }
         }
@@ -588,7 +590,7 @@
         &.e-toolpop {
 
           .e-toolbar-items {
-            height: auto;
+            height: $tab-auto-height;
           }
         }
       }
@@ -598,7 +600,7 @@
 
       > .e-tab-header {
         height: $tab-big-tb-icon-height;
-        min-height: $tab-big-tb-icon-height;
+        min-height: $tab-big-tb-icon-min-height;
 
         > .e-toolbar-items {
           height: $tab-big-tb-icon-height;
@@ -626,11 +628,11 @@
         .e-tab-header.e-vertical {
 
           .e-toolbar-items {
-            height: inherit;
+            height: $tab-inherit-height;
           }
 
           .e-scroll-nav {
-            height: $tab-big-vertical-nav-arrow-size;
+            height: $tab-big-vertical-nav-arrow-height;
           }
         }
       }
@@ -657,12 +659,12 @@
               height: $tab-big-focus-icon-top-bottom-item-height;
 
               .e-text-wrap {
-                height: auto;
+                height: $tab-auto-height;
               }
             }
 
             &.e-active .e-tab-wrap:focus .e-text-wrap {
-              height: auto;
+              height: $tab-auto-height;
             }
           }
         }
@@ -694,7 +696,7 @@
 
               .e-tab-wrap:focus .e-text-wrap {
                 height: $tab-bgr-item-textwrap-height;
-                padding: 0;
+                padding: $tab-padding-none;
               }
 
               &.e-ileft {
@@ -782,19 +784,19 @@
 
       .e-tab-header {
         height: $tab-big-fill-height;
-        min-height: $tab-big-fill-height;
+        min-height: $tab-big-fill-min-height;
 
         @media screen and (max-width: 480px) {
           height: $tab-mob-fill-height;
-          min-height: $tab-mob-fill-height;
+          min-height: $tab-mob-fill-min-height;
         }
 
         .e-toolbar-items {
-          height: auto;
-          min-height: $tab-big-fill-height;
+          height: $tab-auto-height;
+          min-height: $tab-big-fill-min-height;
 
           @media screen and (max-width: 480px) {
-            min-height: $tab-mob-fill-height;
+            min-height: $tab-mob-fill-min-height;
           }
         }
 
@@ -809,19 +811,19 @@
           &:not(.e-separator) {
             height: $tab-big-fill-height;
             margin: $tab-alt-item-margin;
-            min-height: $tab-big-fill-height;
+            min-height: $tab-big-fill-min-height;
             padding: $tab-bgr-fill-active-item-padding;
 
             @media screen and (max-width: 480px) {
               height: $tab-mob-fill-height;
-              min-height: $tab-mob-fill-height;
+              min-height: $tab-mob-fill-min-height;
             }
           }
 
           &:not(.e-separator).e-itop,
           &:not(.e-separator).e-ibottom {
             height: $tab-big-fill-icon-top-bottom-item-height;
-            min-height: $tab-big-fill-icon-top-bottom-item-height;
+            min-height: $tab-big-fill-icon-top-bottom-item-min-height;
           }
 
           .e-tab-wrap {
@@ -877,7 +879,7 @@
 
           .e-toolbar-item.e-itop:not(.e-separator),
           .e-toolbar-item.e-ibottom:not(.e-separator) {
-            height: auto;
+            height: $tab-auto-height;
           }
         }
 
@@ -902,7 +904,7 @@
 
           .e-toolbar-item.e-itop .e-text-wrap,
           .e-toolbar-item.e-ibottom .e-text-wrap {
-            height: auto;
+            height: $tab-auto-height;
           }
 
           .e-toolbar-item.e-itop .e-tab-wrap:focus .e-text-wrap,
@@ -938,10 +940,10 @@
               height: $tab-big-focus-fill-icon-top-bottom-item-height;
 
               .e-text-wrap {
-                height: auto;
+                height: $tab-auto-height;
 
                 @media screen and (max-width: 480px) {
-                  height: auto;
+                  height: $tab-auto-height;
                 }
               }
             }
@@ -959,8 +961,8 @@
       &.e-vertical-icon {
 
         > .e-tab-header {
-          height: $tab-big-tb-icon-height - 2;
-          min-height: $tab-big-tb-icon-height - 2;
+          height: $tab-big-tb-icon-height - $tab-big-tb-icon-height-calc;
+          min-height: $tab-big-tb-icon-min-height - 2;
         }
       }
     }
@@ -1071,14 +1073,14 @@
         .e-toolbar-pop {
 
           .e-toolbar-item {
-            margin: 0;
+            margin: $tab-margin-none;
 
             .e-tab-text {
               padding-left: $tab-rtl-big-pop-text-padding-left;
-              padding-right: 0;
+              padding-right: $tab-padding-none;
 
               @media screen and (max-width: 480px) {
-                padding-left: 0;
+                padding-left: $tab-padding-none;
               }
             }
 
@@ -1097,14 +1099,14 @@
 
             &.e-itop .e-tab-text,
             &.e-ibottom .e-tab-text {
-              margin: 0;
-              padding-left: 12px;
-              padding-right: 0;
+              margin: $tab-margin-none;
+              padding-left: $tab-popup-text-padding-right;
+              padding-right: $tab-padding-none;
 
               @media screen and (max-width: 480px) {
-                margin: 0;
-                padding-left: 0;
-                padding-right: 0;
+                margin: $tab-margin-none;
+                padding-left: $tab-padding-none;
+                padding-right: $tab-padding-none;
               }
             }
           }
@@ -1124,7 +1126,7 @@
           .e-toolbar-item {
 
             &:not(.e-separator) {
-              margin: 0;
+              margin: $tab-margin-none;
             }
 
             &.e-itop,
@@ -1157,7 +1159,7 @@
     &:not(.e-separator) {
       height: $tab-big-height;
       margin: $tab-big-item-margin;
-      min-height: $tab-big-height;
+      min-height: $tab-big-min-height;
       min-width: auto;
       padding: $tab-big-item-padding;
 
@@ -1169,7 +1171,7 @@
     &:not(.e-separator).e-itop,
     &:not(.e-separator).e-ibottom {
       height: $tab-big-icon-top-bottom-item-height;
-      min-height: $tab-big-icon-top-bottom-item-height;
+      min-height: $tab-big-icon-top-bottom-item-min-height;
     }
 
     .e-tab-wrap {
@@ -1206,9 +1208,9 @@
     }
 
     .e-icons.e-tab-icon {
-      height: $tab-big-icon-container-size;
+      height: $tab-big-icon-container-height;
       min-width: $tab-big-icon-container-size;
-      width: $tab-big-icon-container-size;
+      width: $tab-big-icon-container-width;
       line-height: $tab-bgr-icon-line-height;
     }
 
@@ -1225,7 +1227,7 @@
     }
 
     .e-icon-right {
-      margin: 0 0 0 12px;
+      margin: $tab-bgr-icon-right-margin;
 
       @media screen and (max-width: 480px) {
         margin: $tab-bgr-mob-item-iconright-margin;
@@ -1248,7 +1250,7 @@
         height: $tab-big-icon-top-bottom-item-height;
 
         &:focus .e-text-wrap {
-          height: auto;
+          height: $tab-auto-height;
         }
       }
 
@@ -1256,7 +1258,7 @@
         height: $tab-big-icon-top-bottom-item-height;
 
         &:focus .e-text-wrap {
-          height: auto;
+          height: $tab-auto-height;
         }
       }
 

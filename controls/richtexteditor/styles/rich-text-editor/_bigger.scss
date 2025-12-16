@@ -1,3 +1,6 @@
+@use 'ej2-base/styles/common/mixin' as *;
+@use './theme-variables' as *;
+
 .e-bigger .e-richtexteditor,
 .e-richtexteditor.e-bigger {
   &.e-rte-full-screen {
@@ -39,7 +42,7 @@
       min-height: $rte-big-dialog-min-height;
     }
     @if $theme-name == 'fluent2-highcontrast' {
-      min-height: 350px;
+      min-height: $rte-big-dialog-fluent-min-height;
     }
   }
   .e-rte-content .e-content {
@@ -64,77 +67,77 @@
 
 .e-bigger {
   .e-rte-emojipicker-popup.e-popup.e-popup-open {
-    min-width: 120px;
-    height: 337px;
-    width: 335px;
+    // min-width: 120px; //Not affecting the UI after removal
+    min-height: $rte-big-emoji-popup-open-min-height;
+    min-width: $rte-big-emoji-popup-open-width;
 
     .e-toolbar .e-toolbar-item .e-tbar-btn {
-      border-radius: 4px;
-      padding: 0;
+      border-radius: $rte-big-emojipicker-tbar-btn-border-radius;
+      padding: $rte-big-toolbar-tbar-btn-padding;
       @if $skin-name =='material' or $skin-name =='material-dark' {
-        padding: 3px 7px;
+        padding: $rte-big-toolbar-tbar-btn-small-padding;
       }
       @else {
-        padding: 2px 5px;
+        padding: $rte-big-toolbar-tbar-btn-large-padding;
       }
       
       &:hover {
-        padding: 0;
+        padding: $rte-big-toolbar-tbar-btn-hover-padding;
       }
 
       &:active {
-        padding: 0;
+        padding: $rte-big-toolbar-tbar-btn-active-padding;
       }
 
       .e-tbar-btn-text {
         @if $skin-name =='fluent2' {
-          font-size: 18px;
+          font-size: $rte-big-emoji-popup-small-font-size;
         }
         @else {
-          font-size: 26px;
+          font-size: $rte-big-emoji-popup-large-font-size;
         }
-        padding: 9px 5px;
+        padding: $rte-big-emoji-popup-padding;
       }
     }
 
     .e-rte-emojipicker-btn {
-      gap: 10px;
+      gap: $rte-big-emoji-btn-gap;
       height: $rte-big-emoji-btn-height;
-      padding: 12px;
+      padding: $rte-big-emoji-btn-padding;
 
       .e-rte-emojipicker-group .e-rte-emojipickerbtn-group {
-        gap: 8px;
+        gap: $rte-big-emoji-btn-group-gap;
 
         .e-btn.e-control {
-          padding: 8px 0;
-          width: 42px;
-          height: 42px;
-          line-height: 0;
+          padding: $rte-big-emoji-btn-group-padding;
+          // width: 42px; //2. emoji picker dynamic issue
+          // height: 42px;//2. emoji picker dynamic issue
+          // line-height: 0;//No UI affected so removed
           @if $skin-name =='fluent2' {
-            font-size: 18px;
+            font-size: $rte-big-emoji-btn-group-small-font-size;
           }
           @else {
-            font-size: 26px;
+            font-size: $rte-big-emoji-btn-group-large-font-size;
           }
         }
       }
 
       .e-rte-emojisearch-btn {
-        gap: 6px;
+        gap: $rte-big-emoji-search-btn-gap;
 
         .e-btn.e-control {
-          font-size: 26px;
-          padding: 8px 0;
-          width: 40px;
-          height: 40px;
-          border: none;
-          line-height: 0;
+          font-size: $rte-big-emoji-picker-group-font-size;
+          padding: $rte-big-emoji-picker-group-padding;
+          // width: 40px; //2. emoji picker dynamic issue
+          // height: 40px; //2. emoji picker dynamic issue
+          border: $rte-emoji-grp-btn-border;
+          // line-height: 0;//No UI affected so removed
         }
       }
 
       .e-rte-emojipicker-group .e-rte-emojipicker-name {
-        font-weight: 500;
-        font-size: 16px;
+        font-weight: $rte-big-emoji-picker-name-font-weight;
+        font-size: $rte-big-emoji-picker-name-font-size;
       }
     }
   }
@@ -166,16 +169,16 @@
 .e-bigger {
   .e-rte-quick-popup.e-rte-elements {
     .e-rte-quick-toolbar.e-rte-toolbar.e-toolbar {
-      min-height: auto;
-      min-width: auto;
+      min-height: $rte-big-quick-toolbar-min-height;
+      min-width: $rte-big-quick-toolbar-min-width;
       .e-toolbar-items:not(.e-tbar-pos) {
-        min-height: auto;
-        min-width: auto;
+        min-height: $rte-big-quick-toolbar-items-not-tbar-pos-min-height;
+        min-width: $rte-big-quick-toolbar-items-not-tbar-pos-min-width;
         margin: $rte-quick-big-popup-outer-margin;
         .e-toolbar-item {
-          margin: 0;
-          min-height: auto;
-          min-width: auto;
+          margin: $rte-big-quick-toolbar-item-margin;
+          min-height: $rte-big-popup-toolbar-item-min-height;
+          min-width: $rte-big-popup-toolbar-item-min-width;
           padding: $rte-quick-big-popup-inner-padding;
         }
       }
@@ -270,24 +273,24 @@
   .e-bigger .e-richtexteditor,
   .e-richtexteditor.e-bigger {
     .e-dialog {
-      border-radius: 16px;
+      border-radius: $rte-big-dialog-border-radius;
     }
   }
 
   .e-bigger {
     .e-rte-container{
-      border-radius: 4px;
+      border-radius: $rte-big-container-border-radius;
     }
     .e-richtexteditor{
       .e-toolbar .e-hor-nav {
-        border-radius: 0 4px 0 0;
+        border-radius: $rte-big-toolbar-border-radius;
       }
       .e-rte-content {
-        border-radius: 0 0 4px 4px;
+        border-radius: $rte-big-toolbar-container-border-radius;
       }
     }
     .e-richtexteditor .e-toolbar-wrapper{
-      border-radius: 4px 4px 0 0;
+      border-radius: $rte-big-toolbar-wrapper-border-radius;
     }
   }
 }
@@ -312,16 +315,16 @@
     .e-tbar-btn.e-btn {
       min-height: $rte-big-split-btn-height;
       min-width: $rte-big-split-btn-height;
-      padding: 0;
+      padding: $rte-big-split-tbar-btn-padding; //4.toolbar tbar-btn padding need to confirm and remove
       &:hover,
       &:active,
       &:focus,
       &.e-active {
         border: $rte-hover-split-btn-border;
-        padding: 0;
+        padding: $rte-big-split-tbar-btn-hover-padding; //4.toolbar tbar-btn padding need to confirm and remove
       }
       .e-icons {
-        padding: 0;
+        padding: $rte-big-split-tbar-btn-icons-padding; //4.toolbar tbar-btn padding need to confirm and remove
       }
     }
     .e-tbar-btn:not(:hover):not(:focus):not(:active):not(.e-active) {
@@ -341,32 +344,125 @@
 //Layout styles
 @if $skin-name == 'Material3' {
   .e-bigger .e-richtexteditor.e-rte-tb-expand {
-    border-radius: 8px;
+    border-radius: $rte-big-tb-expand-border-radius;
   }
   .e-bigger .e-richtexteditor .e-toolbar-wrapper {
-    border-top-left-radius: $rte-border-top-left-radius;
-    border-top-right-radius: $rte-border-top-right-radius;
+    border-top-left-radius: $rte-top-left-border-radius;
+    border-top-right-radius: $rte-top-right-border-radius;
   }
   .e-bigger .e-richtexteditor.e-rte-tb-expand .e-rte-toolbar.e-extended-toolbar,
   .e-bigger .e-richtexteditor.e-rte-tb-expand .e-rte-toolbar .e-toolbar-extended {
-    border-top-left-radius: $rte-border-top-left-radius;
-    border-top-right-radius: $rte-border-top-right-radius;
+    border-top-left-radius: $rte-top-left-border-radius;
+    border-top-right-radius: $rte-top-right-border-radius;
   }
   .e-bigger .e-rte-toolbar .e-toolbar-items {
-    border-top-left-radius: $rte-border-top-left-radius;
+    border-top-left-radius: $rte-toolbar-items-top-left-border-radius;
   }
   .e-bigger .e-rte-toolbar .e-hor-nav {
-    border-top-right-radius: $rte-border-top-right-radius;
+    border-top-right-radius: $rte-top-right-border-radius;
   }
   .e-bigger .e-rtl .e-rte-toolbar .e-hor-nav {
-    border-top-left-radius: $rte-border-top-left-radius;
-    border-top-right-radius: 0;
+    border-top-left-radius: $rte-top-left-border-radius;
+    border-top-right-radius: $rte-top-right-border-radius;
   }
   .e-bigger .e-rtl .e-rte-toolbar .e-toolbar-items {
-    border-top-right-radius: $rte-border-top-right-radius;
+    border-top-right-radius: $rte-toolbar-items-top-left-border-radius;
   }
 }
 
 .e-bigger .e-rte-elements.e-popup-open.e-rte-slashmenu .e-list-parent > li {
-  padding-left: 0;
+  padding-left: $rte-big-slashmenu-li-padding-left;
+}
+
+.e-bigger {
+  .e-richtexteditor {
+
+    .e-rte-toolbar .e-hor-nav.e-expended-nav {
+      height: $rte-big-expended-nav-min-height; //used toolbar component nav default min-height
+      min-height: $rte-big-expended-nav-min-height; //used toolbar component nav default min-height
+    }
+
+    .e-rte-content,
+    .e-source-content,
+    .e-rte-iframe-content {
+      .e-content {
+        line-height: $rte-big-content-height;
+
+        blockquote {
+          font-size: $rte-big-content-font-size;
+        }
+
+        h1 {
+          font-size: $rte-big-content-h1-font-size;
+          line-height: $rte-big-content-h1-line-height;
+        }
+
+        h2 {
+          font-size: $rte-big-content-h2-font-size;
+          line-height: $rte-big-content-h2-line-height;
+        }
+
+        h3 {
+          font-size: $rte-big-content-h3-font-size;
+          line-height: $rte-big-content-h3-line-height;
+        }
+
+        h4 {
+          font-size: $rte-big-content-h4-font-size;
+          line-height: $rte-big-content-h4-line-height;
+        }
+
+        h5 {
+          font-size: $rte-big-content-h5-font-size;
+          line-height: $rte-big-content-h5-line-height;
+        }
+
+        h6 {
+          font-size: $rte-big-content-h6-font-size;
+          line-height: $rte-big-content-h6-line-height;
+        }
+
+        h3 + h4 {
+          margin-top: $rte-big-content-h3-h4-tag-margin-top;
+        }
+
+        h4 + h5 {
+          margin-top: $rte-big-content-h4-h5-tag-margin-top;
+        }
+
+        h5 + h6 {
+          margin-top: $rte-big-content-h5-h6-tag-margin-top;
+        }
+      }
+    }
+  }
+  .e-rte-dropdown-popup {
+    ul {
+      .e-item {
+        &.e-h1 {
+          font-size: $rte-big-content-ul-h1-font-size;
+        }
+
+        &.e-h2 {
+          font-size: $rte-big-content-ul-h2-font-size;
+        }
+
+        &.e-h3 {
+          font-size: $rte-big-content-ul-h3-font-size;
+        }
+
+        &.e-h4 {
+          font-size: $rte-big-content-ul-h4-font-size;
+        }
+
+        &.e-h5 {
+          font-size: $rte-big-content-ul-h5-font-size;
+        }
+
+        &.e-h6 {
+          font-size: $rte-big-content-ul-h6-font-size;
+        }
+      }
+    }
+  }
 }

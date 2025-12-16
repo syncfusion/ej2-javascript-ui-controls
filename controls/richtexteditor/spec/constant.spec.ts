@@ -96,6 +96,22 @@ export const ENTERKEY_EVENT_INIT: KeyboardEventInit = {
     repeat: false
 } as EventInit;
 
+export const ALT_ENTERKEY_EVENT_INIT: KeyboardEventInit = {
+    bubbles: true,
+    key: "Enter",
+    cancelable: true,
+    view: window,
+    keyCode: 13,
+    which: 13,
+    code: "Enter",
+    location: 0,
+    altKey: true,
+    ctrlKey: false,
+    metaKey: false,
+    shiftKey: false,
+    repeat: false
+} as EventInit;
+
 export const BACKSPACE_EVENT_INIT: KeyboardEventInit = {
     bubbles: true,
     key: "Backspace",
@@ -141,6 +157,67 @@ export const SPACE_EVENT_INIT: KeyboardEventInit = {
     ctrlKey: false,
     metaKey: false,
     shiftKey: false,
+    repeat: false,
+} as EventInit;
+
+export const ASTERISK_EVENT_INIT: KeyboardEventInit = {
+    bubbles: true,
+    key: "*",
+    cancelable: true,
+    view: window,
+    keyCode: 56,
+    which: 56,
+    code: "Digit8",
+    location: 0,
+    altKey: false,
+    ctrlKey: false,
+    metaKey: false,
+    shiftKey: true,
+    repeat: false,
+} as EventInit;
+export const BACKTICK_EVENT_INIT: KeyboardEventInit = {
+    bubbles: true,
+    key: "`",
+    cancelable: true,
+    view: window,
+    keyCode: 192,
+    which: 192,
+    code: "Backquote",
+    location: 0,
+    altKey: false,
+    ctrlKey: false,
+    metaKey: false,
+    shiftKey: false,
+    repeat: false,
+} as EventInit;
+export const UNDERSCORE_EVENT_INIT: KeyboardEventInit = {
+    bubbles: true,
+    key: "_",
+    cancelable: true,
+    view: window,
+    keyCode: 189,
+    which: 189,
+    code: "Minus",
+    location: 0,
+    altKey: false,
+    ctrlKey: false,
+    metaKey: false,
+    shiftKey: true,
+    repeat: false,
+} as EventInit;
+export const TILDE_EVENT_INIT: KeyboardEventInit = {
+    bubbles: true,
+    key: "~",
+    cancelable: true,
+    view: window,
+    keyCode: 192,
+    which: 192,
+    code: "Backquote",
+    location: 0,
+    altKey: false,
+    ctrlKey: false,
+    metaKey: false,
+    shiftKey: true,
     repeat: false,
 } as EventInit;
 

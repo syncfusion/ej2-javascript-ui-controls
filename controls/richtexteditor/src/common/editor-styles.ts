@@ -197,11 +197,10 @@ hr.e-rte-hr-focus {
 .e-content ol ol ul {
     list-style-type: square;
 }
-
-.e-content p:last-child,
-.e-content pre:last-child,
-.e-content blockquote:last-child {
-    margin-bottom: 0;
+	
+.e-content pre:last-child,		
+.e-content blockquote:last-child {		
+    margin-bottom: 0;		
 }
 
 .e-content h3 + h4,

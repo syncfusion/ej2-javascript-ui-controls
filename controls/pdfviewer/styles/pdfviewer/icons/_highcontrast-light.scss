@@ -1,3 +1,5 @@
+@use 'ej2-base/styles/common/mixin' as *;
+@use '../highcontrast-light-definition' as *;
 @include export-module('pdfviewer-highcontrast-icons') {
   .e-pdfviewer {
     .e-pv-icon::before {
@@ -550,6 +552,10 @@
     content: '\e93d';
     font-family: 'e-icons';
   }
+  .e-pv-text-redact-icon::before {
+    content: '\e1c1';
+    font-family: 'e-icons';
+  }
   .e-pv-redaction-panel-icon::before {
     content: '\e1b3';
     font-family: 'e-icons';
@@ -564,6 +570,10 @@
   }
   .e-pv-multiple-comment::before {
     content: '\e97a';
+    font-family: 'e-icons';
+  }
+  .e-pv-extract-page-icon::before {
+    content: '\e1cc';
     font-family: 'e-icons';
   }
 }

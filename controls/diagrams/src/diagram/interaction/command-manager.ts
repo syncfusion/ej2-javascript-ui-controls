@@ -1357,17 +1357,24 @@ export class CommandHandler {
                                                                                    b: NodeModel | ConnectorModel): number {
             return a.zIndex - b.zIndex;
         });
+        const childzIndexTable: Record<string, number> = {};
         for (let i: number = 0; i < order.length; i++) {
             // 942207: Group two bpmn nodes, when grouped and perform resize in side subprocess
             if (!(order[parseInt(i.toString(), 10)] as Node).parentId &&
                 !(order[parseInt(i.toString(), 10)] as Node).processId) {
                 obj.children.push(order[parseInt(i.toString(), 10)].id);
+                childzIndexTable[order[parseInt(i.toString(), 10)].id] = order[parseInt(i.toString(), 10)].zIndex;
             }
         }
         //867606 - Exception throws while grouping the existing group nodes.
         if (obj.children.length > 0) {
             this.diagram.itemType = 'Group';
             const group: Node | Connector = this.diagram.add(obj as IElement);
+            // Bug 983122: Exception Thrown When Using "Bring Forward" After Ungrouping Nodes.
+            // Get the current layer and refresh its z-index table based on the newly updated zIndex of group and child nodes.
+            // To avoid issue with order commands.
+            const layer: LayerModel = this.getObjectLayer(group.id);
+            this.updateGroupInZindexTable(group as NodeModel, childzIndexTable, layer);
             if (group) {
                 this.select(group);
             }
@@ -1381,6 +1388,28 @@ export class CommandHandler {
             this.diagram.diagramActions = this.diagram.diagramActions & ~DiagramAction.Group;
             this.diagram.protectPropertyChange(protectedChange);
             // this.updateBlazorSelector();
+        }
+    }
+
+    private updateGroupInZindexTable(group: NodeModel, childZindexTable: {}, layer: LayerModel): void {
+        const table: {} = (layer as Layer).zIndexTable;
+        // 1) Remove old zIndex entries of the children
+        for (const childId in childZindexTable) {
+            if (Object.prototype.hasOwnProperty.call(childZindexTable, childId)) {
+                const oldIndex: number = childZindexTable[`${childId}`];
+                if (table[parseInt(oldIndex.toString(), 10)] === childId) {
+                    delete table[parseInt(oldIndex.toString(), 10)];
+                }
+            }
+        }
+        // 2) Insert children with their current zIndex
+        if (group.children && group.children.length) {
+            for (const childId of group.children) {
+                const child: NodeModel = this.diagram.nameTable[`${childId}`];
+                if (child) {
+                    table[child.zIndex] = child.id;
+                }
+            }
         }
     }
 
@@ -1399,7 +1428,12 @@ export class CommandHandler {
         this.diagram.diagramActions = this.diagram.diagramActions | DiagramAction.Group;
         let selectedItems: NodeModel[] = [];
         if (obj) {
-            selectedItems.push(obj);
+            // Bug 983769: "Select All" fails after undoing a group action in the diagram.
+            // When undoing a group, the passed `obj` may be a different instance than the one in the diagram's nameTable.
+            // In such cases, deleting children via `deleteChild` only affects the nameTable's node, leaving `obj`'s children uncleared.
+            // To ensure proper cleanup, retrieve the node from the diagram's nameTable before passing it to `removeNode`.
+            const nameTableNode: NodeModel = this.diagram.nameTable[obj.id];
+            selectedItems.push(nameTableNode);
         } else {
             selectedItems = this.diagram.selectedItems.nodes;
         }
@@ -4272,6 +4306,7 @@ export class CommandHandler {
             this.clearSelection();
             connector = this.diagram.currentDrawingObject as Connector;
         }
+        //989130- Port random exception due to incorrect tool args change
         if (connector && connector instanceof Connector) {
             if (endPoint === 'BezierSourceThumb' || endPoint === 'BezierTargetThumb') {
                 checkBezierThumb = true;
@@ -7018,6 +7053,23 @@ Remove terinal segment in initial
             this.state.backup.pivot = pivot;
         }
         obj = renderContainerHelper(this.diagram, obj) || obj;
+        const minSize = 10;
+        if (isNaN(sx) || !isFinite(sx)) {
+            sx = 1;
+        }
+        if (isNaN(sy) || !isFinite(sy)) {
+            sy = 1;
+        }
+        if (obj && (obj as Selector).connectors && (obj as Selector).connectors.length > 0 && obj.wrapper && obj.wrapper.actualSize) {
+            const currentWidth = obj.wrapper.actualSize.width || (obj as Selector).width || 0;
+            const currentHeight = obj.wrapper.actualSize.height || (obj as Selector).height || 0;
+            if (currentWidth > 0 && currentWidth * sx < minSize) {
+                sx = minSize / currentWidth;
+            }
+            if (currentHeight > 0 && currentHeight * sy < minSize) {
+                sy = minSize / currentHeight;
+            }
+        }
         return this.diagram.scale(obj, sx, sy, pivot);
 
     }
@@ -7452,8 +7504,9 @@ Remove terinal segment in initial
 
     /** @private */
     public isDroppable(source: IElement, targetNodes: IElement): boolean {
-        let node: Node = this.diagram.nameTable[(source as Node).id] || (source as SelectorModel).nodes[0];
-        if (node instanceof Node) {
+        let node: Node | Connector = this.diagram.nameTable[(source as Node).id]
+            || (source as SelectorModel).nodes[0] || (source as SelectorModel).connectors[0];
+        if (node instanceof Node || node instanceof Connector) {
             if ((!isBlazor() && (node.shape as BpmnShape).shape === 'TextAnnotation')
                 // ||(isBlazor() && (node.shape as DiagramShape).bpmnShape === 'TextAnnotation')
             ) {
@@ -7465,7 +7518,7 @@ Remove terinal segment in initial
             }
             if (node && node.shape.type === 'Bpmn') {
                 //905238 - Exception thrown while dropping BPMN shapes over a BPMN connector
-                if ((node.processId === (targetNodes as Node).id) || (node.id === (targetNodes as Node).processId) ||
+                if (((node as Node).processId === (targetNodes as Node).id) || (node.id === (targetNodes as Node).processId) ||
                     (targetNodes as Node).shape.type === 'Bpmn' && !(targetNodes instanceof Connector)
                     && ((targetNodes as Node).shape as BpmnShape).activity && ((targetNodes as Node).shape as BpmnShape).activity.subProcess
                     && ((targetNodes as Node).shape as BpmnShape).activity.subProcess.collapsed) {
@@ -7572,25 +7625,27 @@ Remove terinal segment in initial
         //drop
         if (this.diagram.bpmnModule && (target as NodeModel).shape.type !== 'Container') {
             const nodesToProcess: NodeModel[] = (source instanceof Node) ? [source] : (source as Selector).nodes;
-            for (let i = 0; i < nodesToProcess.length; i++) {
-                const node: NodeModel = nodesToProcess[i];
-                //905238 - Exception thrown while dropping BPMN shapes over a BPMN connector
-                if (node && node.shape.type === 'Bpmn' && target instanceof Node && (target as Node).shape.type === 'Bpmn'
-                    && !(target instanceof Connector)) {
-                    this.diagram.bpmnModule.dropBPMNchild(target as Node, node as Node, this.diagram);
-                    //937215 - Add bpmn node with text annotation to subprocess node.
-                    if ((node as BpmnNode).hasTextAnnotation) {
-                        for (let i = 0; i < (node as Node).outEdges.length; i++) {
-                            const connector = this.diagram.nameTable[(node as Node).outEdges[parseInt(i.toString(), 10)]];
-                            if ((connector as BpmnAnnotationConnector).isBpmnAnnotationConnector) {
-                                const annotationNode = this.diagram.nameTable[connector.targetID];
-                                this.diagram.bpmnModule.dropBPMNchild(target as Node, annotationNode, this.diagram);
+            if (nodesToProcess) {
+                for (let i = 0; i < nodesToProcess.length; i++) {
+                    const node: NodeModel = nodesToProcess[i];
+                    //905238 - Exception thrown while dropping BPMN shapes over a BPMN connector
+                    if (node && node.shape.type === 'Bpmn' && target instanceof Node && (target as Node).shape.type === 'Bpmn'
+                        && !(target instanceof Connector)) {
+                        this.diagram.bpmnModule.dropBPMNchild(target as Node, node as Node, this.diagram);
+                        //937215 - Add bpmn node with text annotation to subprocess node.
+                        if ((node as BpmnNode).hasTextAnnotation) {
+                            for (let i = 0; i < (node as Node).outEdges.length; i++) {
+                                const connector = this.diagram.nameTable[(node as Node).outEdges[parseInt(i.toString(), 10)]];
+                                if ((connector as BpmnAnnotationConnector).isBpmnAnnotationConnector) {
+                                    const annotationNode = this.diagram.nameTable[connector.targetID];
+                                    this.diagram.bpmnModule.dropBPMNchild(target as Node, annotationNode, this.diagram);
+                                }
                             }
                         }
                     }
                 }
+                this.diagram.refreshDiagramLayer();
             }
-            this.diagram.refreshDiagramLayer();
         } else if ((target as NodeModel).shape.type === 'Container') {
             var children: any = (source instanceof Node) ? [source] : (source as Selector).nodes;
             for (var i = 0; i < children.length; i++) {
@@ -7798,14 +7853,23 @@ Remove terinal segment in initial
         } else {
             this.diagram.dataBind();
             const diagramScrollSettings = this.diagram.scrollSettings;
+            const initialValues = this.diagram.initialScrollValues;
             this.diagram.realActions = this.diagram.realActions & ~RealAction.PanInProgress;
+            // 974407 - Issue with ScrollChange Event Properties
+            const oldValues: ScrollValues = {
+                VerticalOffset: initialValues ? initialValues.VerticalOffset : diagramScrollSettings.verticalOffset,
+                HorizontalOffset: initialValues ? initialValues.HorizontalOffset : diagramScrollSettings.horizontalOffset,
+                ViewportHeight: initialValues ? initialValues.ViewportHeight : diagramScrollSettings.viewPortHeight,
+                ViewportWidth: initialValues ? initialValues.ViewportWidth : diagramScrollSettings.viewPortWidth,
+                CurrentZoom: initialValues ? initialValues.CurrentZoom : diagramScrollSettings.currentZoom
+            };
             const Values: ScrollValues = {
                 VerticalOffset: diagramScrollSettings.verticalOffset, HorizontalOffset: diagramScrollSettings.horizontalOffset,
                 ViewportHeight: diagramScrollSettings.viewPortHeight, ViewportWidth: diagramScrollSettings.viewPortWidth,
                 CurrentZoom: diagramScrollSettings.currentZoom
             };
             const arg: IScrollChangeEventArgs | IBlazorScrollChangeEventArgs = {
-                oldValue: Values as ScrollValues,
+                oldValue: oldValues,
                 newValue: Values, source: this.diagram, panState: 'Completed'
             };
             this.triggerEvent(DiagramEvent.scrollChange, arg);

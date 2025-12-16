@@ -3283,7 +3283,6 @@ describe('EJ2-981209: Script Error When Grouping with Frozen Columns Enabled and
                 actionComplete: actionComplete,
             }, done);
     });
-
     it('Group the column', (done: Function) => {
         actionComplete = (): void => {
             done();
@@ -3291,7 +3290,6 @@ describe('EJ2-981209: Script Error When Grouping with Frozen Columns Enabled and
         gridObj.actionComplete = actionComplete;
         gridObj.groupColumn('CustomerID');
     });
-
     afterAll(() => {
         destroy(gridObj);
         gridObj = actionComplete = null;

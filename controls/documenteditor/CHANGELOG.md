@@ -2,24 +2,14 @@
 
 ## [Unreleased]
 
-## 31.2.18 (2025-12-09)
-
 ### DocumentEditor
 
 #### Bug Fixes
 
-`#I785670` - Resolved the resize issue in web layout.
-
-## 31.2.16 (2025-12-02)
-
-### DocumentEditor
-
-#### Bug Fixes
-
-`#I775851` - Fixed issue with exporting nested inline content controls.
-`#I773456`, `#I783927`, `#I781201` - Addressed table resizing problems by enabling resizing via the page ruler.
-`#I771705` - Corrected behaviour where the TOC was inserted multiple times when updating in Track Changes mode.
-`#I772957` - Resolved text positioning errors when selecting and inserting text inside a bookmark.
+`#I781421` - Fixed the issue where paragraph formatting was lost after pressing Enter when Track Changes was enabled.
+`#I779125` - Fixed a script error that occurred while exporting the document as DOCX.
+`#I775775` - Fixed the issue where white space appeared when opening the attached document.
+`#I778025` - Fixed a script error that occurred when opening a document containing chart elements.
 
 ## 31.2.15 (2025-11-25)
 

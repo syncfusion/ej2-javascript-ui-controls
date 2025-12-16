@@ -1,3 +1,5 @@
+@use 'ej2-base/styles/common/mixin' as *;
+@use './theme-variables' as *;
 @include export-module('chatui-theme') {
   .e-chat-ui {
     border-color: $chat-border-color;
@@ -19,6 +21,11 @@
     .e-pinned-dropdown-popup {
       @if ($skin-name == 'bootstrap4') {
         color: $black;
+      }
+      &:hover {
+        @if ($theme-name == 'fluent2-highcontrast') {
+          color: unset;
+        }
       }
     }
     .e-right .e-message-content {
@@ -86,8 +93,8 @@
         background: $chat-scrollbar-color;
       }
       @if ($skin-name == 'Material3' or $skin-name == 'fluent2' or $skin-name == 'material' or $skin-name == 'material-dark') {
-        &.focus-wave-effect::before,
-        &.focus-wave-effect::after {
+        &.e-footer-focus-wave-effect::before,
+        &.e-footer-focus-wave-effect::after {
           background-color: $chat-footer-wave-color;
         }
       }
@@ -95,9 +102,10 @@
         color: $chat-placeholder-color;
       }
       &:not(.e-footer-template) {
-        border: 1px solid $chat-footer-border-color;
+        border: $footer-template-border solid $chat-footer-border-color;
         border-bottom-color: $chat-footer-border-btm-color;
-        &.focused {
+        &.e-footer-focused,
+        &.e-upload-drag-hover {
           border: $chat-focused-border-width solid $chat-footer-focus-bdr-color;
           @if ($skin-name == 'fluent2') {
             border-bottom-color: $chat-footer-border-btm-color;
@@ -171,7 +179,7 @@
         &:not(:focus),
         &:not(:active),
         &:not(:hover) {
-          border: 1px solid rgba(150, 150, 150, 1);
+          border: $message-content-border solid rgba(150, 150, 150, 1);
         }
       }
     }
@@ -241,13 +249,20 @@
 
     .e-reply-wrapper {
       background: $reply-wrapper-bg-color;
+      @if $theme-name == 'fluent2-highcontrast' {
+        background-color: rgba(0, 0, 0, 1);
+        border: 1px solid rgba(255, 255, 255, 1);
+      }
       .e-reply-content {
-        border-left: 2px solid $reply-wrapper-border-bg-color;
+        border-left: $reply-content-border-left solid $reply-wrapper-border-bg-color;
+        @if $theme-name == 'fluent2-highcontrast' {
+          border-color: rgba(255, 255, 255, 1);
+        }
       }
     }
 
     .e-chat-message-toolbar:has(.e-toolbar-item) {
-      border: 1px solid $message-toolbar-border-color;
+      border: $message-toolbar-border solid $message-toolbar-border-color;
     }
 
     .e-forwarded-indicator {
@@ -283,34 +298,30 @@
         color: $chat-error-color;
       }
     }
-    .e-img-preview-overlay {
+    .e-preview-overlay {
       background: $image-preview-overlay-bg;
-      .e-img-preview-header {
+      .e-preview-header {
         background: $image-preview-header-bg-color;
         color: $image-preview-header-text-color;
         .e-icons {
           color: $file-download-icon-color;
         }
       }
-    }
-    .e-attached-file {
-      .e-image-wrapper,
-      .e-video-wrapper {
-        .e-progress-wrapper {
-          background-color: $progress-wrapper-bg;
-          .e-chat-progress-ring {
-            .e-progress-bg {
-              stroke: $progress-wrapper-bg;
-            }
-          }
-          .e-chat-close {
-            color: $stop-icon-color;
-          }
-          .e-chat-upload {
-            color: $retry-icon-color;
-          }
+      .e-file-preview {
+        background: $preview-file-bg-color;
+        border-color: $preview-file-border-color;
+        .e-preview-file-text {
+          color: $preview-file-text-color;
+        }
+        .e-file-details {
+          color: $preview-file-details-color;
+        }
+        .e-file-document {
+          color: $preview-header-text-color;
         }
       }
+    }
+    .e-attached-file {
       .e-video-wrapper {
         .e-play-icon-wrapper {
           background-color: $video-play-background-color;
@@ -319,47 +330,72 @@
           color: $video-play-icon-color;
         }
       }
-      .e-progress-wrapper {
-        .e-chat-progress-ring {
-          .e-progress-bg {
-            stroke: $progress-track-color;
-          }
-          .e-progress-fill {
-            stroke: $progress-fill-color;
-          }
-        }
+    }
+
+    .e-upload-failure-alert {
+      background-color: $file-failure-bg-color;
+      border: $file-failure-border;
+      .e-chat-circle-close {
+        color: $file-failure-circle-close-icon-color;
       }
-      .e-show-spinner {
-        .e-image-overlay,
-        .e-video-play-overlay {
-          background-color: $video-overlay-bg-color;
+      .e-failure-message {
+        color: $file-failure-font-color;
+      }
+      .e-chat-close {
+        color: $file-failure-close-icon-color;
+      }
+    }
+
+    .e-footer .e-chat-drop-area,
+    .e-attached-file {
+      .e-chat-uploaded-file-item,
+      .e-file-wrapper {
+        border: $file-wrapper-border-width solid $file-wrapper-border;
+        background-color: $file-wrapper-bg;
+      }
+
+      .e-chat-file-icon {
+        color: $file-download-icon-color;
+      }
+
+      .e-chat-file-size {
+        color: $file-size-text-color;
+      }
+
+      .e-chat-file-name {
+        color: $file-name-text-color;
+      }
+    }
+
+    .e-footer .e-chat-uploaded-file-item {
+      &:hover {
+        background-color: $file-hover-bg;
+      }
+      &:active {
+        background-color: $file-pressed-bg;
+      }
+      .e-chat-close {
+        &:hover {
+          background: $file-close-icon-hover-bg;
+          color: $file-close-icon-hover-color;
+        }
+        &:active {
+          background-color: $file-close-icon-pressed-bg;
+          color: $file-close-icon-pressed-color;
         }
       }
     }
-    .e-file-wrapper {
-      border: 1px solid $file-wrapper-border;
-      background-color: $file-wrapper-bg;
-      .e-chat-file-format-icon {
-        color: $file-download-icon-color;
+
+    .e-footer .e-chat-drop-area,
+    .e-footer .e-attachment-template {
+      .e-chat-progress-bar {
+        background-color: $file-progress-bar-bg-color;
       }
-      .e-file-data-wrapper {
-        .e-file-name {
-          color: $file-name-text-color;
-        }
-        .e-file-size {
-          color: $file-size-text-color;
-        }
+      .e-chat-progress-fill {
+        background-color: $file-progress-bar-success-color;
       }
-      .e-chat-download {
-        color: $file-download-icon-color;
-      }
-      .e-progress-wrapper {
-        .e-chat-close {
-          color: $file-download-icon-color;
-        }
-        .e-chat-upload {
-          color: $file-download-icon-color;
-        }
+      .e-chat-progress-fill.failed {
+        background-color: $file-progress-bar-failure-color;
       }
     }
   }
@@ -367,7 +403,7 @@
   // Mention popup related styles for @mention support in chat ui
   .e-chat-mention .e-chat-mention-user-icon,
   .e-chat-mention .e-chat-mention-user-icon img {
-    border-radius: 50%;
+    border-radius: $chat-mention-user-icon-radius;
     background-repeat: no-repeat;
     background-position: center center;
     background-size: cover;
@@ -375,12 +411,12 @@
 
   .e-chat-mention.e-mention.e-popup {
     box-shadow: unset;
-    border-radius: 4px;
+    border-radius: $mention-popup-border-radius;
     @if ($skin-name == 'Material3' or $skin-name == 'material' or $skin-name == 'material-dark' or $skin-name == 'FluentUI') {
       border: unset;
     }
     @else {
-      border: 1px solid $mention-popup-border-color;
+      border: $mention-popup-border solid $mention-popup-border-color;
     }
     @if ($skin-name == 'Material3') {
       box-shadow: 0 1px 2px 0 rgba(0, 0, 0, .3), 0 2px 6px 2px rgba(0, 0, 0, .15);

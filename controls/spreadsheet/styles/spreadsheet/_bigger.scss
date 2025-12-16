@@ -1,22 +1,25 @@
+@use 'ej2-base/styles/common/mixin' as *;
+@use './theme-variables' as *;
+@use '../spreadsheet-ribbon/theme-variables' as ribbon-vars;
 @mixin bigger-tab-header-layout {
   & .e-tab .e-tab-header {
-    height: $bigger-spread-ribbon-tab-text-wrap-height;
-    min-height: $bigger-spread-ribbon-tab-text-wrap-height;
+    height: ribbon-vars.$bigger-spread-ribbon-tab-text-wrap-height;
+    min-height: ribbon-vars.$bigger-spread-ribbon-tab-text-wrap-height;
     @if $skin-name == 'Material3' {
       height: 47px;
       min-height: 47px;
     }
 
     & .e-toolbar-item:not(.e-separator) {
-      height: $bigger-spread-ribbon-tab-text-wrap-height;
-      min-height: $bigger-spread-ribbon-tab-text-wrap-height;
+      height: ribbon-vars.$bigger-spread-ribbon-tab-text-wrap-height;
+      min-height: ribbon-vars.$bigger-spread-ribbon-tab-text-wrap-height;
       @if $skin-name == 'Material3' {
         height: 48px;
         min-height: 48px;
       }
 
       & .e-tab-wrap {
-        height: $bigger-spread-ribbon-tab-text-wrap-height;
+        height: ribbon-vars.$bigger-spread-ribbon-tab-text-wrap-height;
         @if $skin-name == 'Material3' {
           height: 48px;
         }
@@ -29,7 +32,7 @@
       }
       @else {
         & .e-text-wrap {
-          height: $bigger-spread-ribbon-tab-text-wrap-height;
+          height: ribbon-vars.$bigger-spread-ribbon-tab-text-wrap-height;
           @if $skin-name == 'Material3' {
             height: 48px;
           }
@@ -38,16 +41,16 @@
     }
 
     & .e-toolbar-items {
-      height: $bigger-spread-ribbon-tab-text-wrap-height;
-      min-height: $bigger-spread-ribbon-tab-text-wrap-height;
+      height: ribbon-vars.$bigger-spread-ribbon-tab-text-wrap-height;
+      min-height: ribbon-vars.$bigger-spread-ribbon-tab-text-wrap-height;
       @if $skin-name == 'Material3' {
         height: 48px;
         min-height: 48px;
       }
 
       & .e-scroll-nav {
-        height: $bigger-spread-ribbon-tab-text-wrap-height;
-        min-height: $bigger-spread-ribbon-tab-text-wrap-height;
+        height: ribbon-vars.$bigger-spread-ribbon-tab-text-wrap-height;
+        min-height: ribbon-vars.$bigger-spread-ribbon-tab-text-wrap-height;
         @if $skin-name == 'Material3' {
           height: 48px;
           min-height: 48px;
@@ -55,7 +58,7 @@
         @if $skin-name == 'fluent2' or $skin-name == 'bootstrap5.3' or $skin-name == 'tailwind3' {
           & .e-nav-left-arrow::before,
           & .e-nav-right-arrow::before {
-            font-size: $bigger-spread-sheet-tab-nav-arrow-font;
+            font-size: ribbon-vars.$bigger-spread-sheet-tab-nav-arrow-font;
           }
         }
       }
@@ -89,19 +92,19 @@
       & .e-tab-wrap:focus .e-text-wrap,
       &:not(.e-separator) .e-text-wrap {
         @if $skin-name == 'bootstrap5.3' {
-          height: $bigger-spread-ribbon-tab-text-wrap-height;
+          height: ribbon-vars.$bigger-spread-ribbon-tab-text-wrap-height;
         }
       }
       &:not(.e-separator) .e-tab-wrap {
         @if $skin-name == 'bootstrap5.3' {
-          height: $bigger-spread-ribbon-tab-text-wrap-height;
+          height: ribbon-vars.$bigger-spread-ribbon-tab-text-wrap-height;
         }
       }
     }
 
     & .e-sheet-tab-panel {
       @if $skin-name == 'bootstrap5.3' {
-        height: $bigger-spread-ribbon-tab-text-wrap-height;
+        height: ribbon-vars.$bigger-spread-ribbon-tab-text-wrap-height;
       }
     }
 
@@ -244,8 +247,8 @@
           }
           @if $skin-name == 'tailwind3' {
             font-size: $bigger-spreadsheet-chart-icon-size !important; /* stylelint-disable-line declaration-no-important */
-            margin-right: 12px;
-            padding: 0 10px;
+            margin-right: $bigger-spreadsheet-chart-icon-margin-right;
+            padding: $bigger-spreadsheet-chart-icon-padding;
           }
         }
       }
@@ -324,7 +327,7 @@
     & .e-sheets-list.e-dropdown-btn {
       @if $skin-name == 'Material3' or $skin-name == 'fluent2' or $skin-name == 'bootstrap5.3' or $skin-name == 'tailwind3' {
         height: $bigger-spreadsheet-sheet-tab-icon-height;
-        padding: 0;
+        padding: $bigger-spreadsheet-sheet-tab-icon-padding;
         width: $bigger-spreadsheet-sheet-tab-icon-height;
       }
       @else {
@@ -511,14 +514,14 @@
         margin-top: 6px;
       }
       @if $skin-name == 'bootstrap5.3' or $skin-name == 'tailwind3' {
-        margin-bottom: 4px;
-        margin-top: 4px;
+        margin-bottom: $bigger-find-dlg-btn-footer-btn-margin-bottom;
+        margin-top: $bigger-find-dlg-btn-footer-btn-margin-top;
       }
     }
 
     & .e-find-dlg .e-dlg-content {
       @if $skin-name == 'bootstrap5.3' or $skin-name == 'tailwind3' {
-        padding-top: 0;
+        padding-top: $bigger-find-dlg-content-padding-top;
       }
     }
 
@@ -709,8 +712,8 @@
         @if $skin-name == 'tailwind3' {
           font-size: $bigger-spreadsheet-dlg-label-font-size;
           line-height: $bigger-spread-dlg-header-content-line-height;
-          margin: 0;
-          padding-bottom: 8px;
+          margin: $bigger-spread-dlg-header-content-margin;
+          padding-bottom: $bigger-spread-dlg-header-content-padding-bottom;
         }
       }
 
@@ -771,7 +774,7 @@
             & input.e-input.e-sheet-rename {
               height: 48px;
               line-height: 48px;
-              margin-bottom: 0;
+              margin-bottom: $bigger-spreadsheet-sheet-tab-rename-margin-bottom;
             }
           }
         }
@@ -811,7 +814,7 @@
             font-size: $bigger-spreadsheet-dlg-label-font-size;
             @if $skin-name == 'bootstrap5.3'or $skin-name == 'tailwind3' {
               line-height: $bigger-spread-dlg-header-content-line-height;
-              padding-bottom: 8px;
+              padding-bottom: $bigger-spread-dlg-header-content-padding-bottom;
             }
           }
         }
@@ -960,7 +963,7 @@
                     margin: 0 16px 0 0;
                   }
                   @if $skin-name == 'bootstrap5.3' or $skin-name == 'tailwind3' {
-                    margin: $bigger-spreadsheet-dlg-label-padding-bottom 0 0 0;
+                    margin: $bigger-spreadsheet-dlg-label-padding-bottom $bigger-spreadsheet-dlg-label-margin $bigger-spreadsheet-dlg-label-margin $bigger-spreadsheet-dlg-label-margin;
                   }
                 }
               }
@@ -975,7 +978,7 @@
             padding: 4px 0 0;
             @if $skin-name == 'bootstrap5.3' or $skin-name == 'tailwind3' {
               line-height: $bigger-spread-dlg-header-content-line-height;
-              margin: 0 0 $bigger-spread-dlg-header-label-bottom;
+              margin: $bigger-spread-dlg-header-content-margin $bigger-spread-dlg-header-content-margin $bigger-spread-dlg-header-label-bottom;
             }
           }
 
@@ -1235,6 +1238,15 @@
       }
     }
 
+    .e-ribbon .e-tab .e-tab-header .e-toolbar-item {
+      & .e-tab-wrap:focus .e-text-wrap,
+      &:not(.e-separator) .e-text-wrap {
+        @if $skin-name =='fabric' or $skin-name == 'fabric-dark' {
+          height: 39px;
+        }
+      }
+    }
+
     .e-spreadsheet-ribbon .e-ribbon-simplified-mode {
       .e-ribbon-file-menu {
         @if $skin-name == 'tailwind3'{
@@ -1249,7 +1261,7 @@
       .e-ribbon-tab .e-tab-header .e-toolbar-item {
         & .e-tab-text {
           @if $skin-name == 'tailwind3' or $skin-name == 'fluent2' {
-            padding-top: 18px;
+            padding-top: $bigger-spreadsheet-ribbon-tab-header-padding;
           }
         }
 
@@ -1433,8 +1445,8 @@
         padding-right: 10px;
       }
       @else if $skin-name == 'bootstrap5' or $skin-name == 'tailwind3' {
-        padding-left: 12px;
-        padding-right: 12px;
+        padding-left: $bigger-spreadsheet-ribbon-simplified-btn-wrap;
+        padding-right: $bigger-spreadsheet-ribbon-simplified-btn-wrap;
       }
       @else if $skin-name == 'FluentUI' {
         padding-left: 10px;
@@ -1444,7 +1456,7 @@
 
     .e-dropdown-btn .e-caret {
       @if $skin-name != 'fluent2' {
-        font-size: 20px;
+        font-size: $bigger-spreadsheet-ribbonoverflow-font-size;
       }
       @else {
         font-size: 16px;

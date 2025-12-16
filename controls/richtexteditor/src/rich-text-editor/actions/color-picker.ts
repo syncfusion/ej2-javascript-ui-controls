@@ -63,7 +63,7 @@ export class ColorPickerInput {
                     options = {
                         cssClass: classes.CLS_RTE_ELEMENTS + ' ' + classes.CLS_DROPDOWN + ' ' + classes.CLS_FONT_COLORPICKER + ' ' +
                                 this.tools[item.toLocaleLowerCase() as ToolbarItems].icon
-                                + ' ' + classes.CLS_ICONS + this.parent.getCssClass(true),
+                                + ' ' + classes.CLS_ICONS,
                         value: this.tools[item.toLocaleLowerCase() as ToolbarItems].value,
                         command: this.tools[item.toLocaleLowerCase() as ToolbarItems].command,
                         subCommand: this.tools[item.toLocaleLowerCase() as ToolbarItems].subCommand,
@@ -80,7 +80,7 @@ export class ColorPickerInput {
                     options = {
                         cssClass: classes.CLS_RTE_ELEMENTS + ' ' + classes.CLS_DROPDOWN + ' ' + classes.CLS_BACKGROUND_COLORPICKER + ' ' +
                                 this.tools[item.toLocaleLowerCase() as ToolbarItems].icon + ' ' +
-                                classes.CLS_ICONS + this.parent.getCssClass(true),
+                                classes.CLS_ICONS,
                         value: this.tools[item.toLocaleLowerCase() as ToolbarItems].value,
                         command: this.tools[item.toLocaleLowerCase() as ToolbarItems].command,
                         subCommand: this.tools[item.toLocaleLowerCase() as ToolbarItems].subCommand,
@@ -104,7 +104,7 @@ export class ColorPickerInput {
                         bdrColor = hex;
                     }
                     options = {
-                        cssClass: classes.CLS_RTE_ELEMENTS + ' ' + classes.CLS_DROPDOWN + ' ' + classes.CLS_BORDERCOLOR_COLORPICKER + this.parent.getCssClass(true),
+                        cssClass: classes.CLS_RTE_ELEMENTS + ' ' + classes.CLS_DROPDOWN + ' ' + classes.CLS_BORDERCOLOR_COLORPICKER,
                         value: bdrColor ? bdrColor : this.tools[item.toLocaleLowerCase() as ToolbarItems].value,
                         command: this.tools[item.toLocaleLowerCase() as ToolbarItems].command,
                         subCommand: this.tools[item.toLocaleLowerCase() as ToolbarItems].subCommand,
@@ -124,7 +124,7 @@ export class ColorPickerInput {
                         bgColor = hex;
                     }
                     options = {
-                        cssClass: classes.CLS_RTE_ELEMENTS + ' ' + classes.CLS_DROPDOWN + ' ' + classes.CLS_TABLE_BGCOLOR_COLORPICKER + this.parent.getCssClass(true),
+                        cssClass: classes.CLS_RTE_ELEMENTS + ' ' + classes.CLS_DROPDOWN + ' ' + classes.CLS_TABLE_BGCOLOR_COLORPICKER,
                         value: bgColor ? bgColor : this.tools[item.toLocaleLowerCase() as ToolbarItems].value,
                         command: this.tools[item.toLocaleLowerCase() as ToolbarItems].command,
                         subCommand: this.tools[item.toLocaleLowerCase() as ToolbarItems].subCommand,

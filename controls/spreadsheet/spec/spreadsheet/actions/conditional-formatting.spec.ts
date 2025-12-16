@@ -1,6 +1,6 @@
 import { SpreadsheetHelper } from '../util/spreadsheethelper.spec';
 import { defaultData, InventoryList } from '../util/datasource.spec';
-import { Spreadsheet, UsedRangeModel, clearViewer, DialogBeforeOpenEventArgs, CellModel, ConditionalFormatEventArgs } from '../../../src/index';
+import { Spreadsheet, UsedRangeModel, clearViewer, DialogBeforeOpenEventArgs, CellModel, ConditionalFormatEventArgs, NoteModel } from '../../../src/index';
 import { EmitType, getComponent } from '@syncfusion/ej2-base';
 
 
@@ -2573,7 +2573,7 @@ describe('Conditional formatting ->', () => {
         it('Added Note to H2 cell', (done: Function) => {
             helper.invoke('selectRange', ['H2']);
             helper.setAnimationToNone('#spreadsheet_contextmenu');
-            helper.openAndClickCMenuItem(0, 4, [9]);
+            helper.openAndClickCMenuItem(1, 7, [10]);
             setTimeout(() => {
                 helper.getElements('.e-addNoteContainer')[0].value = 'Note Added';
                 let td: HTMLElement = helper.invoke('getCell', [4, 4]);
@@ -2581,17 +2581,17 @@ describe('Conditional formatting ->', () => {
                 helper.triggerMouseAction('mousedown', { x: coords.left + 3, y: coords.top + 2 }, null, td);
                 helper.triggerMouseAction('mouseup', { x: coords.left + 3, y: coords.top + 2 }, document, td);
                 spreadsheet = helper.getInstance();
-                expect(spreadsheet.sheets[0].rows[1].cells[7].notes).toBe('Note Added');
+                expect((spreadsheet.sheets[0].rows[1].cells[7].notes as NoteModel).text).toBe('Note Added');
                 expect(helper.invoke('getCell', [1, 7]).style.backgroundColor).toBe('rgb(248, 105, 107)');
                 done();
             });
         });
         it('Notes with undo/redo->', (done: Function) => {
             helper.getElement('#' + helper.id + '_undo').click();
-            expect(spreadsheet.sheets[0].rows[1].cells[7].notes).toBeUndefined();
+            expect((spreadsheet.sheets[0].rows[1].cells[7].notes as NoteModel)).toBeUndefined();
             expect(helper.invoke('getCell', [1, 7]).style.backgroundColor).toBe('rgb(248, 105, 107)');
             helper.getElement('#' + helper.id + '_redo').click();
-            expect(spreadsheet.sheets[0].rows[1].cells[7].notes).toBe('Note Added');
+            expect((spreadsheet.sheets[0].rows[1].cells[7].notes as NoteModel).text).toBe('Note Added');
             expect(helper.invoke('getCell', [1, 7]).style.backgroundColor).toBe('rgb(248, 105, 107)');
             done();
         });
@@ -2606,17 +2606,17 @@ describe('Conditional formatting ->', () => {
                 helper.triggerMouseAction('mousedown', { x: coords.left + 3, y: coords.top + 2 }, null, td);
                 helper.triggerMouseAction('mouseup', { x: coords.left + 3, y: coords.top + 2 }, document, td);
                 spreadsheet = helper.getInstance();
-                expect(spreadsheet.sheets[0].rows[1].cells[7].notes).toBe('Note Edited');
+                expect((spreadsheet.sheets[0].rows[1].cells[7].notes as NoteModel).text).toBe('Note Edited');
                 expect(helper.invoke('getCell', [1, 7]).style.backgroundColor).toBe('rgb(248, 105, 107)');
                 done();
             });
         });
         it('Edited notes with undo/redo->', (done: Function) => {
             helper.getElement('#' + helper.id + '_undo').click();
-            expect(spreadsheet.sheets[0].rows[1].cells[7].notes).toBe('Note Added');
+            expect((spreadsheet.sheets[0].rows[1].cells[7].notes as NoteModel).text).toBe('Note Added');
             expect(helper.invoke('getCell', [1, 7]).style.backgroundColor).toBe('rgb(248, 105, 107)');
             helper.getElement('#' + helper.id + '_redo').click();
-            expect(spreadsheet.sheets[0].rows[1].cells[7].notes).toBe('Note Edited');
+            expect((spreadsheet.sheets[0].rows[1].cells[7].notes as NoteModel).text).toBe('Note Edited');
             expect(helper.invoke('getCell', [1, 7]).style.backgroundColor).toBe('rgb(248, 105, 107)');
             done();
         });
@@ -2729,7 +2729,7 @@ describe('Conditional formatting ->', () => {
         it('Add Note to cell', (done: Function) => {
             helper.invoke('selectRange', ['F2']);
             helper.setAnimationToNone('#spreadsheet_contextmenu');
-            helper.openAndClickCMenuItem(0, 4, [9]);
+            helper.openAndClickCMenuItem(0, 4, [10]);
             setTimeout(() => {
                 helper.getElements('.e-addNoteContainer')[0].value = 'Added Note';
                 let td: HTMLElement = helper.invoke('getCell', [4, 4]);
@@ -2737,7 +2737,7 @@ describe('Conditional formatting ->', () => {
                 helper.triggerMouseAction('mousedown', { x: coords.left + 3, y: coords.top + 2 }, null, td);
                 helper.triggerMouseAction('mouseup', { x: coords.left + 3, y: coords.top + 2 }, document, td);
                 spreadsheet = helper.getInstance();
-                expect(spreadsheet.sheets[0].rows[1].cells[5].notes).toBe('Added Note');
+                expect((spreadsheet.sheets[0].rows[1].cells[5].notes as NoteModel).text).toBe('Added Note');
                 done();
             });
         });
@@ -2749,7 +2749,7 @@ describe('Conditional formatting ->', () => {
             helper.triggerMouseAction('mouseover', { x: target.getBoundingClientRect().left + 5, y: target.getBoundingClientRect().top + 5 }, document, target);
             setTimeout(() => {
                 helper.getElement('#RedDataBar').click();
-                expect(spreadsheet.sheets[0].rows[1].cells[5].notes).toBe('Added Note');
+                expect((spreadsheet.sheets[0].rows[1].cells[5].notes as NoteModel).text).toBe('Added Note');
                 expect(helper.invoke('getCell', [1, 5]).getElementsByClassName('e-databar')[1].style.backgroundColor).toBe('rgb(248, 105, 107)');
                 done();
             });
@@ -2759,11 +2759,11 @@ describe('Conditional formatting ->', () => {
             helper.click('#spreadsheet_clear');
             helper.click('#spreadsheet_clear-popup ul li:nth-child(3)');
             setTimeout(() => {
-                expect(spreadsheet.sheets[0].rows[1].cells[5].notes).toBe('Added Note');
+                expect((spreadsheet.sheets[0].rows[1].cells[5].notes as NoteModel).text).toBe('Added Note');
                 expect(helper.invoke('getCell', [1, 5]).querySelector('.e-databar')).toBeNull();
                 expect(helper.invoke('getCell', [1, 5]).textContent).toBe('');
                 helper.getElement('#' + helper.id + '_undo').click();
-                expect(spreadsheet.sheets[0].rows[1].cells[5].notes).toBe('Added Note');
+                expect((spreadsheet.sheets[0].rows[1].cells[5].notes as NoteModel).text).toBe('Added Note');
                 expect(helper.invoke('getCell', [1, 5]).getElementsByClassName('e-databar')[1].style.backgroundColor).toBe('rgb(248, 105, 107)');
                 done();
             });
@@ -2771,7 +2771,7 @@ describe('Conditional formatting ->', () => {
         it('Edit with notes and Dbars->', (done: Function) => {
             helper.invoke('selectRange', ['F2']);
             helper.edit('F2', '180');
-            expect(spreadsheet.sheets[0].rows[1].cells[5].notes).toBe('Added Note');
+            expect((spreadsheet.sheets[0].rows[1].cells[5].notes as NoteModel).text).toBe('Added Note');
             done();
         });
         it('Hide and show row with note and cf', function (done) {
@@ -2786,10 +2786,10 @@ describe('Conditional formatting ->', () => {
             helper.triggerMouseAction('mousemove', { x: offset.left - 1, y: offset.top + 60, offsetY: 7 }, spreadsheet.element, rowHdr);
             helper.triggerMouseAction('mouseup', { x: offset.left - 1, y: offset.top + 60, offsetY: 7 }, document, rowHdr);
             setTimeout(function () {
-                expect(spreadsheet.sheets[0].rows[1].cells[5].notes).toBe('Added Note');
+                expect((spreadsheet.sheets[0].rows[1].cells[5].notes as NoteModel).text).toBe('Added Note');
                 helper.invoke('selectRange', ['F2']);
                 helper.edit('F2', '');
-                expect(spreadsheet.sheets[0].rows[1].cells[5].notes).toBe('Added Note');
+                expect((spreadsheet.sheets[0].rows[1].cells[5].notes as NoteModel).text).toBe('Added Note');
                 done();
             });
         });
@@ -2915,9 +2915,9 @@ describe('Conditional formatting ->', () => {
                         { type: "ThreeArrows", range: 'G1:G11' }
                     ],
                     ranges: [{ dataSource: defaultData }],
-                    rows: [{ index: 0, cells: [{ index: 7, notes: 'Note Added' }] },
-                    { index: 3, cells: [{ index: 7, notes: 'Note Added' }] },
-                    { index: 4, cells: [{ index: 6, notes: 'Note Added' }] }]
+                    rows: [{ index: 0, cells: [{ index: 7, notes: { text: 'Note Added' } }] },
+                    { index: 3, cells: [{ index: 7, notes: { text: 'Note Added' } }] },
+                    { index: 4, cells: [{ index: 6, notes: { text: 'Note Added' } }] }]
                 }, {}]
             }, done);
         });
@@ -2929,10 +2929,10 @@ describe('Conditional formatting ->', () => {
             spreadsheet = helper.getInstance();
             helper.invoke('applyFilter');
             expect(helper.invoke('getCell', [0, 7]).children[0].classList).toContain('e-filter-btn');
-            expect(spreadsheet.sheets[0].rows[0].cells[7].notes).toBe('Note Added');
+            expect((spreadsheet.sheets[0].rows[0].cells[7].notes as NoteModel).text).toBe('Note Added');
             expect(helper.invoke('getCell', [3, 7]).getElementsByClassName('e-databar')[1].style.backgroundColor).toBe('rgb(90, 138, 198)');
-            expect(spreadsheet.sheets[0].rows[3].cells[7].notes).toBe('Note Added');
-            expect(spreadsheet.sheets[0].rows[4].cells[6].notes).toBe('Note Added');
+            expect((spreadsheet.sheets[0].rows[3].cells[7].notes as NoteModel).text).toBe('Note Added');
+            expect((spreadsheet.sheets[0].rows[4].cells[6].notes as NoteModel).text).toBe('Note Added');
             expect(helper.invoke('getCell', [4, 6]).children[0].classList).toContain('e-3arrows-1');
             helper.edit('H1', 'Edited');
             expect(spreadsheet.sheets[0].rows[0].cells[7].value).toBe('Edited');

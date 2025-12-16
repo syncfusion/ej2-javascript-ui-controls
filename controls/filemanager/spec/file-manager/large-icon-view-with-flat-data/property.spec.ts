@@ -1019,7 +1019,6 @@ describe('FileManager control large icon view', () => {
                 }, 500);
             }, 500);
         });
-
         it('should show error when renaming to original name after paste conflict, then allow rename to unique name', function (done) {
             feObj = new FileManager({
                 fileSystemData: flatData,
@@ -1094,6 +1093,5 @@ describe('FileManager control large icon view', () => {
                 }, 500);
             }, 500);
         })
-
     });
 });

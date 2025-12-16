@@ -1,3 +1,6 @@
+@use 'ej2-base/styles/definition/bootstrap-dark' as *;
+@forward 'ej2-base/styles/definition/bootstrap-dark';
+
 //default
 $hscroll-skin: 'bootstrap' !default;
 $hscroll-default-bg: $grey-darker !default;
@@ -25,10 +28,15 @@ $hscroll-border-type: solid !default;
 $hscroll-hover-font: $hover-font-color !default;
 $hscroll-active-font-color: $active-font-color !default;
 $hscroll-nav-nrml-width: 40px !default;
+$hscroll-nav-bgr-left: 50px !default;
+$hscroll-nav-bgr-right: 50px !default;
 $hscroll-nav-bgr-width: 50px !default;
 $hscroll-nrml-padding: 0 $hscroll-nav-nrml-width !default;
 $hscroll-bgr-padding: 0 $hscroll-nav-bgr-width !default;
 $hscroll-box-shadow: none !default;
+$hscroll-border-none: 0 !default;
+$hscroll-item-height: inherit !default;
+$hscroll-item-line-height: normal !default;
 
 $hscroll-default-icon-color: $grey-dark-font !default;
 $hscroll-hover-bg: $grey-light !default;

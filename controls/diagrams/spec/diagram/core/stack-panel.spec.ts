@@ -4,9 +4,7 @@
 
 import { createElement } from '@syncfusion/ej2-base';
 import { Diagram } from '../../../src/diagram/diagram';
-import { DiagramElement } from '../../../src/diagram/core/elements/diagram-element';
-import { GroupableView } from '../../../src/diagram/core/containers/container';
-import { DiagramModel, NodeModel, NodeConstraints } from '../../../src/diagram/index';
+import {NodeModel, NodeConstraints } from '../../../src/diagram/index';
 import { MouseEvents } from '../../../spec/diagram/interaction/mouseevents.spec'
 import { profile, inMB, getMemoryProfile } from '../../../spec/common.spec';
 
@@ -58,8 +56,9 @@ describe('Diagram Control', () => {
             diagram.appendTo('#diagram');
         });
         afterAll((): void => {
-            diagram.destroy();
-            ele.remove();
+            if (diagram) { diagram.destroy(); diagram = null; }
+            if (ele && ele.parentNode) ele.parentNode.removeChild(ele);
+            ele = null;
         });
 
         it('Checking stack panel without streatc', (done: Function) => {
@@ -184,8 +183,9 @@ describe('Diagram Control', () => {
             diagram.appendTo('#diagram');
         });
         afterAll((): void => {
-            diagram.destroy();
-            ele.remove();
+            if (diagram) { diagram.destroy(); diagram = null; }
+            if (ele && ele.parentNode) ele.parentNode.removeChild(ele);
+            ele = null;
         });
 
         it('Checking stack panel without streatc', (done: Function) => {
@@ -237,8 +237,9 @@ describe('Diagram Control', () => {
             diagram.appendTo('#diagram');
         });
         afterAll((): void => {
-            diagram.destroy();
-            ele.remove();
+            if (diagram) { diagram.destroy(); diagram = null; }
+            if (ele && ele.parentNode) ele.parentNode.removeChild(ele);
+            ele = null;
         });
 
         it('Checking stack panel without streatc', (done: Function) => {
@@ -301,8 +302,9 @@ describe('Diagram Control', () => {
             diagram.appendTo('#diagram');
         });
         afterAll((): void => {
-            diagram.destroy();
-            ele.remove();
+            if (diagram) { diagram.destroy(); diagram = null; }
+            if (ele && ele.parentNode) ele.parentNode.removeChild(ele);
+            ele = null;
         });
 
         it('Checking stack panel without streatc', (done: Function) => {

@@ -1,8 +1,8 @@
 import { Spreadsheet } from '../base/index';
-import { ICellRenderer, CellRenderEventArgs, inView, CellRenderArgs, renderFilterCell, deleteNote, showNote, PreviousCellDetails } from '../common/index';
+import { ICellRenderer, CellRenderEventArgs, inView, CellRenderArgs, renderFilterCell, deleteNote, showNote, PreviousCellDetails, createCommentIndicator, deleteComment } from '../common/index';
 import { createHyperlinkElement, checkPrevMerge, createImageElement, IRenderer, createNoteIndicator } from '../common/index';
 import { removeAllChildren, setRowEleHeight } from '../common/index';
-import { getColumnHeaderText, CellStyleModel, CellFormatArgs, getRangeIndexes, getRangeAddress, ExtendedImageModel } from '../../workbook/common/index';
+import { getColumnHeaderText, CellStyleModel, CellFormatArgs, getRangeIndexes, getRangeAddress, ExtendedImageModel, NoteModel, ExtendedNoteModel } from '../../workbook/common/index';
 import { CellStyleExtendedModel, setChart, refreshChart, getCellAddress, ValidationModel, MergeArgs } from '../../workbook/common/index';
 import { CellModel, SheetModel, skipDefaultValue, isHiddenRow, RangeModel, isHiddenCol, isImported } from '../../workbook/index';
 import { getRowHeight, getCell, getColumnWidth, getSheet, setCell, ColumnModel, checkColumnValidation } from '../../workbook/base/index';
@@ -172,9 +172,18 @@ export class CellRenderer implements ICellRenderer {
             }
             if (args.cell && args.td.children.length > 0 &&
                 args.td.children[args.td.childElementCount - 1].className.indexOf('e-addNoteIndicator') > -1) {
-                const noteIndicator: Element = args.td.querySelector('.e-addNoteIndicator');
-                if (noteIndicator) {
-                    detach(noteIndicator);
+                if (!(args.cell.notes && (args.cell.notes as NoteModel).isVisible)) {
+                    const noteIndicator: Element = args.td.querySelector('.e-addNoteIndicator');
+                    if (noteIndicator) {
+                        detach(noteIndicator);
+                    }
+                }
+            }
+            if (args.cell && args.td.children.length > 0 &&
+                args.td.children[args.td.childElementCount - 1].className.indexOf('e-comment-indicator') > -1) {
+                const commentIndicator: Element = args.td.querySelector('.e-comment-indicator');
+                if (commentIndicator) {
+                    detach(commentIndicator);
                 }
             }
             if ((!args.cell || !this.parent.allowWrap) && args.td.classList.contains('e-wraptext')) {
@@ -242,18 +251,37 @@ export class CellRenderer implements ICellRenderer {
                 }
             }
             if (!isNullOrUndefined(args.cell.notes) && !args.fillType) {
-                this.parent.notify(createNoteIndicator, { targetElement: args.td, rowIndex: args.rowIdx, columnIndex: args.colIdx });
+                this.parent.notify(
+                    createNoteIndicator, { targetElement: args.td, rowIndex: args.rowIdx, columnIndex: args.colIdx, cell: args.cell });
             } else if (!isNullOrUndefined(args.td) && args.td.children.length > 0 && args.td.children[args.td.childElementCount - 1].className.indexOf('e-addNoteIndicator') > -1) {
                 this.parent.notify(deleteNote, { rowIndex: args.rowIdx, columnIndex: args.colIdx });
             }
-            if (args.cell.isNoteEditable) {
-                this.parent.notify(showNote,
-                                   {rowIndex: args.rowIdx, columnIndex: args.colIdx, isNoteEditable: true,
-                                       isScrollWithNote: true, cellElement: args.td});
+            if (args.cell.notes && (args.cell.notes as ExtendedNoteModel).isVisible) {
+                if (args.visibleNotes) {
+                    args.visibleNotes.push(args.cell.notes as ExtendedNoteModel);
+                } else if (args.isRefresh) {
+                    this.parent.notify(
+                        showNote, { rowIndex: args.rowIdx, columnIndex: args.colIdx, isNoteEditable: args.cell.isNoteEditable,
+                            isScrollWithNote: true, cellElement: args.td });
+                }
+            } else if (args.cell.isNoteEditable) {
+                this.parent.notify(
+                    showNote, { rowIndex: args.rowIdx, columnIndex: args.colIdx, isNoteEditable: true, isScrollWithNote: true,
+                        cellElement: args.td });
+            }
+            if (!isNullOrUndefined(args.cell.comment) && !args.fillType) {
+                this.parent.notify(createCommentIndicator, { targetEle: args.td, rIdx: args.rowIdx, cIdx: args.colIdx });
+            } else if (!isNullOrUndefined(args.td) && args.td.children.length > 0 && args.td.children[args.td.childElementCount - 1].className.indexOf('e-comment-indicator') > -1) {
+                this.parent.notify(deleteComment, { rowIndex: args.rowIdx, columnIndex: args.colIdx });
             }
         }
-        if (args.isRefresh && isNullOrUndefined(args.cell) && !isNullOrUndefined(args.td) && args.td.children.length > 0 && args.td.children[args.td.childElementCount - 1].className.indexOf('e-addNoteIndicator') > -1) {
-            this.parent.notify(deleteNote, {rowIndex: args.rowIdx, columnIndex: args.colIdx});
+        if (args.isRefresh && (isNullOrUndefined(args.cell) || !args.cell.notes) && !isNullOrUndefined(args.td) &&
+            args.td.querySelector('.e-addNoteIndicator')) {
+            this.parent.notify(deleteNote, { rowIndex: args.rowIdx, columnIndex: args.colIdx });
+        }
+        if (args.isRefresh && (isNullOrUndefined(args.cell) || !args.cell.comment) && !isNullOrUndefined(args.td) &&
+            args.td.querySelector('.e-comment-indicator')) {
+            this.parent.notify(deleteComment, {rowIndex: args.rowIdx, columnIndex: args.colIdx});
         }
         if (args.isRefresh) { this.removeStyle(args.td, args.rowIdx, args.colIdx); }
         if (args.lastCell && (this.isFormulaCell || args.isRefresh) && this.parent.chartColl && this.parent.chartColl.length) {

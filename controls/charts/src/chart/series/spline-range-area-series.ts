@@ -183,7 +183,7 @@ export class SplineRangeAreaSeries extends SplineBase {
 
                 const lowPtCoordinate: ChartLocation = getPoint(point.xValue, low, xAxis, yAxis, inverted);
                 const highPtCoordinate : ChartLocation = getPoint(point.xValue, high, xAxis, yAxis, inverted);
-                if (firstPoint){
+                if (firstPoint && series.lowDrawPoints[j as number]){
                     lowControlPt1 = series.lowDrawPoints[j as number].controlPoint1;
                     lowControlPt2 = series.lowDrawPoints[j as number].controlPoint2;
                     pt = getPoint(point.xValue, point.low < point.high ? (point.low as number) : (point.high as number),

@@ -1534,7 +1534,8 @@ export class FormFields {
             currentTarget.style.width = '' + font + 'px';
             this.isKeyDownCheck = true;
         }
-        if (event.which === 9 && currentTarget && (currentTarget.className === 'e-pdfviewer-formFields' || currentTarget.className === 'e-pdfviewer-signatureformfields e-pv-signature-focus' || currentTarget.className === 'e-pdfviewer-signatureformfields-signature')) {
+        const isTab: boolean = (event as KeyboardEvent).key === 'Tab' || (event as KeyboardEvent).code === 'Tab';
+        if (isTab && currentTarget && (currentTarget.className === 'e-pdfviewer-formFields' || currentTarget.className === 'e-pdfviewer-signatureformfields e-pv-signature-focus' || currentTarget.className === 'e-pdfviewer-signatureformfields-signature')) {
             const id: any = currentTarget.id.split('input_')[1].split('_')[0];
             const textLayer: HTMLElement = document.getElementById(this.pdfViewer.element.id + '_textLayer_' + parseInt(id, 10));
             const currentFields: any = textLayer.getElementsByClassName('e-pdfviewer-formFields');
@@ -2529,9 +2530,11 @@ export class FormFields {
                 const elementId: string = data.id;
                 const signatureFieldElement: HTMLElement = document.getElementById(elementId + '_content_html_element');
                 const signatureField: PdfAnnotationBase = (this.pdfViewer.nameTable as any)[`${elementId}`];
-                annot.id = signatureField.id + '_content';
-                const obj: PdfAnnotationBaseModel = this.pdfViewer.add(annot as PdfAnnotationBase);
-                signatureField.wrapper.children.push(obj.wrapper);
+                if (signatureField) {
+                    annot.id = signatureField.id + '_content';
+                    const obj: PdfAnnotationBaseModel = this.pdfViewer.add(annot as PdfAnnotationBase);
+                    signatureField.wrapper.children.push(obj.wrapper);
+                }
                 if (!isNullOrUndefined(signatureFieldElement) && this.isSignatureField) {
                     const inputField: any = signatureFieldElement.children[0].children[0];
                     inputField.style.pointerEvents = 'none';

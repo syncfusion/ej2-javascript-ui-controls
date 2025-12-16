@@ -1,9 +1,11 @@
 import { IRichTextEditor } from '../base/interface';
 import * as events from '../base/constant';
-import { SuccessEventArgs, Uploader } from '@syncfusion/ej2-inputs';
+import { SuccessEventArgs, Uploader, UploadingEventArgs } from '@syncfusion/ej2-inputs';
 import { RichTextEditor } from '../base';
-import { NotifyArgs, ActionBeginEventArgs } from '../../common/interface';
+import { NotifyArgs, ActionBeginEventArgs, ExportingEventArgs } from '../../common/interface';
 import { EXPORT_STYLES } from '../../common/export-styles';
+import { isNullOrUndefined } from '@syncfusion/ej2-base';
+import { ExportDocumentType } from '../../common/types';
 /**
  * ImportExport module called when import and export content in RichTextEditor
  */
@@ -27,16 +29,23 @@ export class ImportExport {
         };
         this.parent.trigger(events.actionBegin, actionBegin, (actionBeginArgs: ActionBeginEventArgs) => {
             if (!actionBeginArgs.cancel) {
-                this.uploaderObj = new Uploader({
-                    allowedExtensions: '.doc,.docx,.rtf,.dot,.dotx,.docm,.dotm',
-                    asyncSettings: {
-                        saveUrl: this.parent.importWord.serviceUrl
-                    },
-                    success: (args: SuccessEventArgs) => {
-                        (this.parent as RichTextEditor).executeCommand('importWord', ((args.e as MouseEvent).currentTarget as XMLHttpRequest).response, { undo: true });
-                        this.parent.trigger(events.actionComplete, { requestType: 'Import' });
-                    }
-                });
+                if (isNullOrUndefined(this.uploaderObj)) {
+                    this.uploaderObj = new Uploader({
+                        allowedExtensions: '.doc,.docx,.rtf,.dot,.dotx,.docm,.dotm',
+                        asyncSettings: {
+                            saveUrl: this.parent.importWord.serviceUrl
+                        },
+                        uploading: (e: UploadingEventArgs) => {
+                            if (!this.parent.isServerRendered) {
+                                this.parent.trigger(events.wordImporting, e);
+                            }
+                        },
+                        success: (args: SuccessEventArgs) => {
+                            (this.parent as RichTextEditor).executeCommand('importWord', ((args.e as MouseEvent).currentTarget as XMLHttpRequest).response, { undo: true });
+                            this.parent.trigger(events.actionComplete, { requestType: 'Import' });
+                        }
+                    });
+                }
                 this.parent.setProperties({ enableXhtml: true }, true);
                 const uploadParentEle: HTMLElement = this.parent.createElement('div', { className: 'e-import-uploadwrap e-droparea' + this.parent.getCssClass(true) });
                 const uploadEle: HTMLInputElement | HTMLElement = this.parent.createElement('input', {
@@ -73,12 +82,25 @@ export class ImportExport {
         };
         this.parent.trigger(events.actionBegin, actionBegin, (actionBeginArgs: ActionBeginEventArgs) => {
             if (!actionBeginArgs.cancel) {
+                const exportArgs: ExportingEventArgs = {
+                    exportType: (args.member === 'ExportPdf' ? 'PDF' : 'Word') as ExportDocumentType
+                };
+                this.parent.trigger(events.documentExporting, exportArgs);
+                const headers: { [key: string]: string; } = {
+                    'Content-Type': 'application/json'
+                };
+                if (exportArgs.currentRequest) {
+                    for (const h of exportArgs.currentRequest) {
+                        Object.assign(headers, h);
+                    }
+                }
+                const payload: { html: string; formData?: { [key: string]: Object; }[] } = exportArgs.customFormData
+                    ? { html: actionBeginArgs.exportValue, formData: exportArgs.customFormData }
+                    : { html: actionBeginArgs.exportValue };
                 fetch(serviceUrl, {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({ html: actionBeginArgs.exportValue })
+                    headers: headers,
+                    body: JSON.stringify(payload)
                 })
                     .then((response: Response) => {
                         if (!response.ok) {

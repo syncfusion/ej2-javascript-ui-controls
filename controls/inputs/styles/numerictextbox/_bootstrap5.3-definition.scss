@@ -1,3 +1,22 @@
+@use 'ej2-base/styles/definition/bootstrap5.3' as *;
+@forward 'ej2-base/styles/definition/bootstrap5.3';
 $numeric-skin-name: $skin-name !default;
 $numeric-input-icon-size: 14px !default;
 $numeric-input-bigger-icon-size: 16px !default;
+$numric-zero-padding-margin: 0 !default;
+$numeric-bigger-min-height: 40px !default;
+$numeric-min-height: 33px !default;
+$numeric-zero-height: 0 !default;
+
+$numeric-prepend-label-bottom-top: 15px !default;
+$numeric-prepend-label-top-top: 15px !default;
+$numeric-prepend-outline-label-bottom-top: 15px !default;
+$numeric-prepend-outline-label-top-top: 15px !default;
+$numeric-prepend-filled-label-bottom-top: 15px !default;
+$numeric-prepend-filled-label-top-top: 17px !default;
+$numeric-bigger-prepend-label-bottom-top: 18px !default;
+$numeric-bigger-prepend-label-top-top: 15px !default;
+$numeric-bigger-prepend-outline-label-bottom-top: 18px !default;
+$numeric-bigger-prepend-outline-label-top-top: 15px !default;
+$numeric-bigger-prepend-filled-label-bottom-top: 18px !default;
+$numeric-bigger-prepend-filled-label-top-top: 17px !default;

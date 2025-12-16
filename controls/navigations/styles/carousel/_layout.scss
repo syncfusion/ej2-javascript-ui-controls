@@ -1,16 +1,18 @@
+@use 'ej2-base/styles/common/mixin' as *;
+@use './theme-variables' as *;
 @include export-module('carousel-layout') {
   .e-carousel {
     display: block;
-    margin: 0;
-    padding: 0;
+    margin: $carousel-margin-none;
+    padding: $carousel-padding-none;
     position: relative;
 
     .e-carousel-items,
     .e-carousel-slide-container {
-      height: 100%;
-      margin: 0;
+      height: $carousel-items-height;
+      margin: $carousel-margin-none;
       overflow: hidden;
-      padding: 0;
+      padding: $carousel-padding-none;
       position: relative;
       width: 100%;
     }
@@ -21,14 +23,14 @@
 
     &.e-partial {
       .e-carousel-slide-container {
-        padding: 0 100px;
+        padding: $carousel-partial-horizontal-padding;
 
         @media screen and (max-width: 480px) {
-          padding: 0 75px;
+          padding: $carousel-partial-horizontal-padding-small;
         }
 
         @media screen and (max-width: 320px) {
-          padding: 0 50px;
+          padding: $carousel-partial-horizontal-padding-extra-small;
         }
       }
     }
@@ -42,9 +44,9 @@
       transition-timing-function: $carousel-animation-timing-function;
 
       .e-carousel-item {
-        height: 100%;
+        height: $carousel-items-height;
         overflow: hidden;
-        padding: 0;
+        padding: $carousel-padding-none;
         position: relative;
         width: calc(100% / var(--carousel-items-count));
       }
@@ -94,7 +96,7 @@
     &.e-carousel-custom-animation:not(.e-partial) {
       .e-carousel-item {
         display: block;
-        height: 100%;
+        height: $carousel-items-height;
         left: 0;
         opacity: 0;
         pointer-events: none;
@@ -110,7 +112,7 @@
     .e-carousel-navigators {
       align-items: center;
       display: flex;
-      height: 100%;
+      height: $carousel-items-height;
       justify-content: space-between;
       pointer-events: none;
       position: absolute;
@@ -121,11 +123,11 @@
       .e-play-pause,
       .e-previous,
       .e-next {
-        padding: .5em;
+        padding: $carousel-navigator-btn-padding;
         pointer-events: auto;
 
         .e-btn {
-          border: 0;
+          border: $carousel-border-none;
           box-shadow: none;
 
           &:hover {
@@ -137,8 +139,8 @@
           }
 
           .e-play-icon {
-            line-height: 1;
-            padding-left: 3px;
+            line-height: $carousel-play-icon-line-height;
+            padding-left: $carousel-navigator-play-icon-padding-left;
           }
         }
 
@@ -154,7 +156,7 @@
       display: flex;
       justify-content: center;
       min-height: $carousel-indicator-height;
-      padding: 0;
+      padding: $carousel-padding-none;
       pointer-events: none;
       position: absolute;
       width: 100%;
@@ -167,7 +169,7 @@
         pointer-events: auto;
 
         .e-indicator-bar {
-          padding: 0;
+          padding: $carousel-padding-none;
 
           .e-indicator {
             align-items: center;
@@ -203,11 +205,11 @@
           width: 80px;
 
           .e-indicator-bar {
-            border-radius: 50%;
+            border-radius: $carousel-indicator-border-radius;
             display: inline-block;
-            height: 8px;
+            height: $carousel-dynamic-indicator-bar-height;
             left: calc(32px - calc(16px * var(--carousel-items-current)));
-            margin: 0 4px;
+            margin: $carousel-dynamic-indicator-bar-margin;
             opacity: 1;
             position: relative;
             transform: scale(.33);
@@ -241,7 +243,7 @@
           width: 100%;
 
           .e-indicator-bar {
-            height: 100%;
+            height: $carousel-indicator-progressbar-height;
             left: 0;
             position: absolute;
             top: 0;

@@ -1,3 +1,6 @@
+@use 'ej2-base/styles/common/mixin' as *;
+@use '../highcontrast-definition' as *;
+@use '../../document-editor/highcontrast-definition' as *;
 @include export-module('document-editor-container-highcontrast-icons') {
   .e-de-ctnr-linespacing::before {
     content: '\eb8a';

@@ -37,6 +37,9 @@ export class Edit {
     private editedRowIndex: number;
     private isScrollByFocus : boolean;
     private isIndexUndefined : boolean = false;
+    public isAddedMultipleRowsByMethod : boolean = false;
+    private multipleRowIndex: number;
+    private updatedRecords : BatchChanges;
     /**
      * Constructor for Edit module
      *
@@ -698,7 +701,8 @@ export class Edit {
                 }
             }
         }
-        if (this.parent.editSettings.mode === 'Batch' && !isNullOrUndefined(this.addRowIndex) && this.addRowIndex !== -1 && this['isAddedRowByMethod'] && !this.isAddedRowByContextMenu) {
+        if (this.parent.editSettings.mode === 'Batch' && !isNullOrUndefined(this.addRowIndex) && this.addRowIndex !== -1 &&
+        !this.isAddedMultipleRowsByMethod && this['isAddedRowByMethod'] && !this.isAddedRowByContextMenu) {
             index = this.batchEditModule.getAddRowIndex();
             this.selectedIndex = this.batchEditModule.getSelectedIndex();
             const batchAddedRecords: ITreeData[] = this.parent.getBatchChanges()['addedRecords'];
@@ -719,6 +723,27 @@ export class Edit {
             this.beginAddEdit(args);
             this.batchEditModule['batchAddRowRecord'].push(this.batchEditModule['addRowRecord']);
             this.batchEditModule['batchAddedRecords'].push(args['data']);
+        } else if (this.parent.editSettings.mode === 'Batch' && this.isAddedMultipleRowsByMethod && (this.parent.editSettings.newRowPosition === 'Above' || this.parent.editSettings.newRowPosition === 'Below')) {
+            index = this.multipleRowIndex;
+            this.selectedIndex = this.multipleRowIndex;
+            const batchAddedRecords: ITreeData[] = this.updatedRecords.addedRecords;
+            let newlyAddedRecord : ITreeData;
+            if (batchAddedRecords.length) {
+                for (let i: number = 0; i < batchAddedRecords.length; i++) {
+                    if (isNullOrUndefined((batchAddedRecords[parseInt(i.toString(), 10)] as any).uniqueID)) {
+                        newlyAddedRecord = batchAddedRecords[parseInt(i.toString(), 10)];
+                    }
+                    const args: Object = {
+                        action: 'add',
+                        data: newlyAddedRecord,
+                        index: index,
+                        seletedRow: 0
+                    };
+                    this.beginAddEdit(args);
+                    this.batchEditModule['batchAddRowRecord'].push(this.batchEditModule['addRowRecord']);
+                    this.batchEditModule['batchAddedRecords'].push(args['data']);
+                }
+            }
         }
     }
     // private beforeDataBound(args: BeforeDataBoundArgs): void {
@@ -824,7 +849,7 @@ export class Edit {
             this.addRowRecord = this.parent.flatData[args.index];
             this.addRowIndex = args.index;
         }
-        if (this.parent.editSettings.newRowPosition === 'Child' && ( this.isIndexUndefined || this.isAddedRowByMethod) &&
+        if (this.parent.editSettings.newRowPosition === 'Child'  && ( this.isIndexUndefined || this.isAddedRowByMethod) &&
             !isNullOrUndefined(this.parent.getSelectedRecords()[0])) {
             this.addRowRecord = this.parent.getSelectedRecords()[0];
             this.isIndexUndefined = false;
@@ -985,22 +1010,48 @@ export class Edit {
      * @returns {void}
      */
 
-    public addRecord(data?: Object, index?: number, position?: RowPosition): void {
+    public addRecord(data?: Object | Object[], index?: number, position?: RowPosition): void {
         if (this.parent.editSettings.newRowPosition === this.previousNewRowPosition || this.previousNewRowPosition === null) {
             this.previousNewRowPosition = this.parent.editSettings.newRowPosition;
         }
         if (isNullOrUndefined(index)) {
             this.isIndexUndefined = true;
         }
-        if (!this.isSelfReference && !isNullOrUndefined(data) && Object.hasOwnProperty.call(data, this.parent.childMapping)) {
-            const addRecords: ITreeData[] = [];
+        if (!isNullOrUndefined(data) && Array.isArray(data)) {
+            let addRecords: ITreeData[] | Object[] | Object | any = [];
+            const previousEditMode: string = this.parent.editSettings.mode;
+            const previousGridEditMode: string = this.parent.grid.editSettings.mode;
+            if (!this.isSelfReference && !isNullOrUndefined(data) && Object.hasOwnProperty.call(data, this.parent.childMapping)) {
+                addRecords.push(data);
+            } else if (Array.isArray(data)) {
+                addRecords = data;
+            }
+            this.parent.setProperties({ editSettings: { mode: 'Batch' } }, true);
+            this.parent.grid.setProperties({ editSettings: { mode: 'Batch' } }, true);
+            if (!isNullOrUndefined(position)) { this.parent.setProperties({ editSettings: { newRowPosition: position } }, true); }
+            this.updatedRecords = { addedRecords: addRecords, changedRecords: [], deletedRecords: [] };
+            if ((position === 'Above' || position === 'Below') && this.isSelfReference) {
+                this.isAddedMultipleRowsByMethod = true;
+                this.multipleRowIndex = index;
+                this.addRowIndex = index;
+                this.parent.notify(events.batchAdd, { updatedRecords: this.updatedRecords, index: index });
+            }
+            const updatedRecords : BatchChanges = this.updatedRecords;
+            this.parent.notify(events.batchSave, { updatedRecords, index });
+            this.parent.setProperties({ editSettings: { mode: previousEditMode } }, true);
+            this.parent.grid.setProperties({ editSettings: { mode: previousGridEditMode } }, true);
+            this.parent.refresh();
+        }
+        else if (!this.isSelfReference && !isNullOrUndefined(data) && Object.hasOwnProperty.call(data, this.parent.childMapping)) {
+            const addRecords: ITreeData[]  | Object[] | Object | any = [];
             const previousEditMode: string = this.parent.editSettings.mode;
             const previousGridEditMode: string = this.parent.grid.editSettings.mode;
             addRecords.push(data);
             this.parent.setProperties({ editSettings: { mode: 'Batch' } }, true);
             this.parent.grid.setProperties({ editSettings: { mode: 'Batch' } }, true);
             if (!isNullOrUndefined(position)) { this.parent.setProperties({ editSettings: { newRowPosition: position } }, true); }
-            const updatedRecords: BatchChanges = { addedRecords: addRecords, changedRecords: [], deletedRecords: [] };
+            this.updatedRecords = { addedRecords: addRecords, changedRecords: [], deletedRecords: [] };
+            const updatedRecords: BatchChanges = this.updatedRecords;
             this.parent.notify(events.batchSave, { updatedRecords, index });
             this.parent.setProperties({ editSettings: { mode: previousEditMode } }, true);
             this.parent.grid.setProperties({ editSettings: { mode: previousGridEditMode } }, true);

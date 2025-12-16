@@ -1,4 +1,4 @@
-@import 'ej2-base/styles/definition/fabric-dark.scss';
-@import 'pdfviewer/fabric-dark-definition.scss';
-@import 'pdfviewer/icons/fabric-dark.scss';
-@import 'pdfviewer/all.scss';
+@use 'ej2-base/styles/definition/fabric-dark' as *;
+@use 'pdfviewer/fabric-dark-definition' as *;
+@use 'pdfviewer/icons/fabric-dark' as *;
+@use 'pdfviewer/all' as *;

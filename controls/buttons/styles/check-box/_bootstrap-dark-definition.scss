@@ -1,3 +1,5 @@
+@use 'ej2-base/styles/definition/bootstrap-dark' as *;
+@forward 'ej2-base/styles/definition/bootstrap-dark';
 $cbox-bgcolor: $grey-base !default;
 $cbox-bigger-check-fontsize: 14px !default;
 $cbox-bigger-font-size: 15px !default;
@@ -81,3 +83,10 @@ $cbox-focussed-checkmark-bgcolor: $cbox-checkmark-hover-bgcolor !default;
 $cbox-focussed-checkmark-border-color: $cbox-checkmark-hover-border-color !default;
 $cbox-focussed-checkmark-color: $cbox-checkmark-hover-color !default;
 $cbox-border-style: solid !default;
+$cbox-zero-margin: 0 !default;
+$cbox-wrapper-line-height: 1 !default;
+$cbox-label-line-height: 0 !default;
+$cbox-ripple-container-border-radius: 50% !default;
+$cbox-nrml-height: 1px !default;
+$cbox-nrml-width: 1px !default;
+$cbox-auto-width: auto;

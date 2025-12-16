@@ -1,6 +1,9 @@
-import { createElement } from '@syncfusion/ej2-base';
-import { BaseStylesProp, BlockEditor, BlockModel, BlockType, BuiltInToolbar, CollapsibleProps, ContentType, getBlockContentElement, HeadingProps, LinkContentProps } from '../../src/index';
+import { Base, createElement } from '@syncfusion/ej2-base';
+import { BaseStylesProp, BlockModel, ICodeBlockSettings, ICollapsibleBlockSettings, IHeadingBlockSettings, IImageBlockSettings, ILinkContentSettings, IMentionContentSettings, ITableBlockSettings, ITextContentSettings } from '../../src/models/index';
 import { createEditor } from '../common/util.spec';
+import { BlockEditor } from '../../src/index';
+import { BlockType, CommandName, ContentType } from '../../src/models/enums';
+import { getBlockContentElement } from '../../src/common/utils/index';
 
 describe('BlockEditor Methods', () => {
     let editor: BlockEditor;
@@ -13,9 +16,9 @@ describe('BlockEditor Methods', () => {
             blocks: [
                 {
                     id: 'paragraph1',
-                    type: BlockType.Paragraph,
+                    blockType: BlockType.Paragraph,
                     content: [
-                        { id: 'content1', type: ContentType.Text, content: 'Initial content' }
+                        { id: 'content1', contentType: ContentType.Text, content: 'Initial content' }
                     ]
                 }
             ]
@@ -35,11 +38,11 @@ describe('BlockEditor Methods', () => {
             const initialBlockCount = editor.blocks.length;
 
             // Create a new block to add
-            const newBlock: BlockModel= {
+            const newBlock: BlockModel = {
                 id: 'paragraph2',
-                type: BlockType.Paragraph,
+                blockType: BlockType.Paragraph,
                 content: [
-                    { id: 'content2', type: ContentType.Text, content: 'New content' }
+                    { id: 'content2', contentType: ContentType.Text, content: 'New content' }
                 ]
             };
 
@@ -64,12 +67,12 @@ describe('BlockEditor Methods', () => {
         it('should add block at the beginning when isAfter is false', (done) => {
             const newBlock: BlockModel = {
                 id: 'heading1',
-                type: BlockType.Heading,
-                props: {
+                blockType: BlockType.Heading,
+                properties: {
                     level: 1
                 },
                 content: [
-                    { id: 'headingContent', type: ContentType.Text, content: 'New Heading' }
+                    { id: 'headingContent', contentType: ContentType.Text, content: 'New Heading' }
                 ]
             };
 
@@ -77,8 +80,8 @@ describe('BlockEditor Methods', () => {
                 editor.addBlock(newBlock, 'paragraph1', false);
                 expect(editor.blocks.length).toBe(2);
                 expect(editor.blocks[0].id).toBe('heading1');
-                expect(editor.blocks[0].type).toBe(BlockType.Heading);
-                expect((editor.blocks[0].props as HeadingProps).level).toBe(1);
+                expect(editor.blocks[0].blockType).toBe(BlockType.Heading);
+                expect((editor.blocks[0].properties as IHeadingBlockSettings).level).toBe(1);
                 const addedElement = editorElement.querySelector('#heading1') as HTMLElement;
 
                 expect(addedElement.id).toBe('heading1');
@@ -95,9 +98,9 @@ describe('BlockEditor Methods', () => {
             // Add another block to remove
             const newBlock: BlockModel = {
                 id: 'paragraph2',
-                type: BlockType.Paragraph,
+                blockType: BlockType.Paragraph,
                 content: [
-                    { id: 'content2', type: ContentType.Text, content: 'Block to remove' }
+                    { id: 'content2', contentType: ContentType.Text, content: 'Block to remove' }
                 ]
             };
             setTimeout(() => {
@@ -125,7 +128,7 @@ describe('BlockEditor Methods', () => {
 
             expect(block).not.toBeNull();
             expect(block.id).toBe('paragraph1');
-            expect(block.type).toBe(BlockType.Paragraph);
+            expect(block.blockType).toBe(BlockType.Paragraph);
             expect(block.content[0].content).toBe('Initial content');
         });
 
@@ -142,17 +145,17 @@ describe('BlockEditor Methods', () => {
                 // Add blocks to test moving
                 editor.addBlock({
                     id: 'heading1',
-                    type: BlockType.Heading,
-                    props: {
+                    blockType: BlockType.Heading,
+                    properties: {
                         level: 1
                     },
-                    content: [{ id: 'headingContent', type: ContentType.Text, content: 'Heading' }]
+                    content: [{ id: 'headingContent', contentType: ContentType.Text, content: 'Heading' }]
                 }, 'paragraph1', false);
 
                 editor.addBlock({
                     id: 'paragraph2',
-                    type: BlockType.Paragraph,
-                    content: [{ id: 'content2', type: ContentType.Text, content: 'Last paragraph' }]
+                    blockType: BlockType.Paragraph,
+                    content: [{ id: 'content2', contentType: ContentType.Text, content: 'Last paragraph' }]
                 }, 'paragraph1', true);
 
                 // Initial order should be: heading1, paragraph1, paragraph2
@@ -193,7 +196,7 @@ describe('BlockEditor Methods', () => {
             expect(updatedBlock.indent).toBe(2);
 
             //DOM
-            const blockElement = editor.getBlockElementById('paragraph1');
+            const blockElement = editor.blockManager.getBlockElementById('paragraph1');
             const contentElement = getBlockContentElement(blockElement);
             expect(blockElement.classList.contains('new-class')).toBe(true);
             expect(blockElement.style.getPropertyValue('--block-indent')).toBe('40');
@@ -203,14 +206,14 @@ describe('BlockEditor Methods', () => {
             setTimeout(() => {
                 const parentBlock: BlockModel = {
                     id: 'parentBlock',
-                    type: BlockType.CollapsibleParagraph,
-                    content: [{ id: 'parentContent', type: ContentType.Text, content: 'Toggle header' }],
-                    props: {
+                    blockType: BlockType.CollapsibleParagraph,
+                    content: [{ id: 'parentContent', contentType: ContentType.Text, content: 'Toggle header' }],
+                    properties: {
                         children: [{
                             id: 'childBlock',
-                            type: BlockType.Paragraph,
+                            blockType: BlockType.Paragraph,
                             parentId: 'parentBlock',
-                            content: [{ id: 'childContent', type: ContentType.Text, content: 'Child content' }],
+                            content: [{ id: 'childContent', contentType: ContentType.Text, content: 'Child content' }],
                             indent: 0
                         }]
                     }
@@ -218,10 +221,10 @@ describe('BlockEditor Methods', () => {
                 editor.addBlock(parentBlock);
 
                 editor.updateBlock('parentBlock', {
-                    props: { isExpanded: true }
+                    properties: { isExpanded: true }
                 });
-                expect((editor.getBlock('parentBlock').props as CollapsibleProps).isExpanded).toBe(true);
-                const parentBlockElement = editor.getBlockElementById('parentBlock');
+                expect((editor.getBlock('parentBlock').properties as ICollapsibleBlockSettings).isExpanded).toBe(true);
+                const parentBlockElement = editor.blockManager.getBlockElementById('parentBlock');
                 const toggleContent = parentBlockElement.querySelector('.e-toggle-content') as HTMLElement;
                 expect(toggleContent.style.display).toBe('block');
 
@@ -238,7 +241,7 @@ describe('BlockEditor Methods', () => {
                 expect(updatedBlock.indent).toBe(2);
 
                 //DOM
-                const blockElement = editor.getBlockElementById('childBlock');
+                const blockElement = editor.blockManager.getBlockElementById('childBlock');
                 const contentElement = getBlockContentElement(blockElement);
                 expect(blockElement.classList.contains('new-class')).toBe(true);
                 expect(blockElement.style.getPropertyValue('--block-indent')).toBe('40');
@@ -261,7 +264,7 @@ describe('BlockEditor Methods', () => {
             expect(updatedBlock.content[0].content).toBe('Updated content');
 
             //DOM
-            const blockElement = editor.getBlockElementById('paragraph1');
+            const blockElement = editor.blockManager.getBlockElementById('paragraph1');
             const contentElement = getBlockContentElement(blockElement);
             expect(contentElement.textContent).toBe('Updated content');
         });
@@ -270,7 +273,7 @@ describe('BlockEditor Methods', () => {
             // Update content of paragraph1
             const result = editor.updateBlock('paragraph1', {
                 content: [
-                    { content: 'Updated content', type: ContentType.Link, props: { url: 'http://example.com' } }
+                    { content: 'Updated content', contentType: ContentType.Link, properties: { url: 'http://example.com' } }
                 ]
             });
 
@@ -280,11 +283,11 @@ describe('BlockEditor Methods', () => {
             const updatedBlock = editor.getBlock('paragraph1');
             expect(updatedBlock.content[0].id).not.toBe('');
             expect(updatedBlock.content[0].content).toBe('Updated content');
-            expect(updatedBlock.content[0].type).toBe(ContentType.Link); // Should have updated type
-            expect((updatedBlock.content[0].props as LinkContentProps).url).toBe('http://example.com');
+            expect(updatedBlock.content[0].contentType).toBe(ContentType.Link); // Should have updated type
+            expect((updatedBlock.content[0].properties as ILinkContentSettings).url).toBe('http://example.com');
 
             //DOM
-            const blockElement = editor.getBlockElementById('paragraph1');
+            const blockElement = editor.blockManager.getBlockElementById('paragraph1');
             const contentElement = getBlockContentElement(blockElement);
             expect(contentElement.querySelector('a').id).toBe(updatedBlock.content[0].id);
             expect(contentElement.querySelector('a').textContent).toBe('Updated content');
@@ -295,7 +298,7 @@ describe('BlockEditor Methods', () => {
             // Update styles of paragraph1's content
             const result = editor.updateBlock('paragraph1', {
                 content: [
-                    { id: 'content1', props: { styles: { bold: true, italic: false }  }}
+                    { id: 'content1', properties: { styles: { bold: true, italic: false } } }
                 ]
             });
 
@@ -303,11 +306,11 @@ describe('BlockEditor Methods', () => {
 
             // Verify blocks array was updated
             const updatedBlock = editor.getBlock('paragraph1');
-            expect((updatedBlock.content[0].props as BaseStylesProp).styles.bold).toBe(true);
-            expect((updatedBlock.content[0].props as BaseStylesProp).styles.italic).toBeUndefined();
+            expect((updatedBlock.content[0].properties as BaseStylesProp).styles.bold).toBe(true);
+            expect((updatedBlock.content[0].properties as BaseStylesProp).styles.italic).toBeUndefined();
 
             //DOM
-            const blockElement = editor.getBlockElementById('paragraph1');
+            const blockElement = editor.blockManager.getBlockElementById('paragraph1');
             const contentElement = getBlockContentElement(blockElement);
             expect(contentElement.querySelector('strong').id).toBe('content1');
             expect(contentElement.querySelector('strong').textContent).toBe('Initial content');
@@ -323,8 +326,9 @@ describe('BlockEditor Methods', () => {
             const result2 = editor.updateBlock('paragraph1', undefined);
             expect(result2).toBe(false);
 
-            const result3 = editor.updateBlock('nonExistentId', { type: BlockType.Heading, 
-                props: {
+            const result3 = editor.updateBlock('nonExistentId', {
+                blockType: BlockType.Heading,
+                properties: {
                     level: 1
                 },
             });
@@ -337,15 +341,15 @@ describe('BlockEditor Methods', () => {
             // Select the content
             const blockElement = editorElement.querySelector('#paragraph1') as HTMLElement;
             const contentElement = getBlockContentElement(blockElement);
-            editor.setFocusToBlock(blockElement);
+            editor.blockManager.setFocusToBlock(blockElement);
 
             editor.setSelection(contentElement.id, 0, 15);
 
             // Execute bold command
-            editor.executeToolbarAction(BuiltInToolbar.Bold);
+            editor.executeToolbarAction(CommandName.Bold);
 
             // Check if formatting is applied in the model
-            expect((editor.blocks[0].content[0].props as BaseStylesProp).styles.bold).toBe(true);
+            expect((editor.blocks[0].content[0].properties as BaseStylesProp).styles.bold).toBe(true);
 
             // Check DOM update (should have wrapped content in <strong> tag)
             const strongElement = contentElement.querySelector('strong');
@@ -355,12 +359,12 @@ describe('BlockEditor Methods', () => {
 
         it('executeToolbarAction should handle invalid values', () => {
             // Select the content
-            spyOn(editor.formattingAction, 'execCommand').and.callThrough();
+            spyOn(editor.blockManager.formattingAction, 'execCommand').and.callThrough();
 
             // Execute bold command
             (editor.executeToolbarAction as any)('invalid');
 
-            expect(editor.formattingAction.execCommand).not.toHaveBeenCalled();
+            expect(editor.blockManager.formattingAction.execCommand).not.toHaveBeenCalled();
         });
 
         it('enableDisableToolbarItems method - DISABLE', () => {
@@ -442,8 +446,8 @@ describe('BlockEditor Methods', () => {
                 // Add an extra block
                 editor.addBlock({
                     id: 'paragraph2',
-                    type: BlockType.Paragraph,
-                    content: [{ id: 'content2', type: ContentType.Text, content: 'Second paragraph' }]
+                    blockType: BlockType.Paragraph,
+                    content: [{ id: 'content2', contentType: ContentType.Text, content: 'Second paragraph' }]
                 }, 'paragraph1', true);
 
                 // Create a range to select both blocks
@@ -472,21 +476,21 @@ describe('BlockEditor Methods', () => {
             setTimeout(() => {
                 const parentBlock: BlockModel = {
                     id: 'toggle-block',
-                    type: BlockType.CollapsibleParagraph,
-                    content: [{ type: ContentType.Text, content: 'Click here to expand' }],
-                    props: {
+                    blockType: BlockType.CollapsibleParagraph,
+                    content: [{ contentType: ContentType.Text, content: 'Click here to expand' }],
+                    properties: {
                         isExpanded: true,
                         children: [
                             {
                                 id: 'toggleChild1',
                                 parentId: 'toggle-block',
-                                type: BlockType.BulletList,
-                                content: [{ id: 'toggleChildContent', type: ContentType.Text, content: 'toggle content' }],
+                                blockType: BlockType.BulletList,
+                                content: [{ id: 'toggleChildContent', contentType: ContentType.Text, content: 'toggle content' }],
                             },
                             {
                                 id: 'toggleChild2',
-                                type: BlockType.Paragraph,
-                                content: [{ id: 'content2', type: ContentType.Text, content: 'Second paragraph' }]
+                                blockType: BlockType.Paragraph,
+                                content: [{ id: 'content2', contentType: ContentType.Text, content: 'Second paragraph' }]
                             }
                         ]
                     }
@@ -520,8 +524,8 @@ describe('BlockEditor Methods', () => {
                 // Add an extra block
                 editor.addBlock({
                     id: 'paragraph2',
-                    type: BlockType.Paragraph,
-                    content: [{ id: 'content2', type: ContentType.Text, content: 'Second paragraph' }]
+                    blockType: BlockType.Paragraph,
+                    content: [{ id: 'content2', contentType: ContentType.Text, content: 'Second paragraph' }]
                 }, 'paragraph1', true);
 
                 // Create a range to select both blocks
@@ -555,8 +559,8 @@ describe('BlockEditor Methods', () => {
                 // Add an extra block
                 editor.addBlock({
                     id: 'paragraph2',
-                    type: BlockType.Paragraph,
-                    content: [{ id: 'content2', type: ContentType.Text, content: 'Second paragraph' }]
+                    blockType: BlockType.Paragraph,
+                    content: [{ id: 'content2', contentType: ContentType.Text, content: 'Second paragraph' }]
                 }, 'paragraph1', true);
 
                 // Select the first block
@@ -574,8 +578,8 @@ describe('BlockEditor Methods', () => {
                 // Add an extra block
                 editor.addBlock({
                     id: 'paragraph2',
-                    type: BlockType.Paragraph,
-                    content: [{ id: 'content2', type: ContentType.Text, content: 'Second paragraph' }]
+                    blockType: BlockType.Paragraph,
+                    content: [{ id: 'content2', contentType: ContentType.Text, content: 'Second paragraph' }]
                 }, 'paragraph1', true);
 
                 // Select all blocks
@@ -599,26 +603,17 @@ describe('BlockEditor Methods', () => {
     describe('focusIn and focusOut methods', () => {
         it('should focus in and out of the editor', () => {
             const blockElement = editorElement.querySelector('#paragraph1') as HTMLElement;
-            editor.setFocusToBlock(blockElement);
-            // Focus out first
-            editor.focusOut();
-
-            // Check that editor doesn't have focus
-            expect(document.activeElement).not.toBe(editor.blockWrapper);
-
             // Focus in
             editor.focusIn();
 
             // Check that editor has focus
-            expect(document.activeElement).toBe(editor.blockWrapper);
-
-            editor.setFocusToBlock(blockElement);
+            expect(editor.blockManager.currentFocusedBlock.id).toBe(blockElement.id);
 
             // Focus out again
             editor.focusOut();
 
             // Check that editor doesn't have focus
-            expect(document.activeElement).not.toBe(editor.blockWrapper);
+            expect(editor.blockManager.currentFocusedBlock).toBeNull();
         });
     });
 
@@ -630,8 +625,8 @@ describe('BlockEditor Methods', () => {
                 // Add a new block
                 editor.addBlock({
                     id: 'paragraph2',
-                    type: BlockType.Paragraph,
-                    content: [{ id: 'content2', type: ContentType.Text, content: 'New paragraph' }]
+                    blockType: BlockType.Paragraph,
+                    content: [{ id: 'content2', contentType: ContentType.Text, content: 'New paragraph' }]
                 }, 'paragraph1', true);
 
                 expect(editor.getBlockCount()).toBe(2);
@@ -651,14 +646,14 @@ describe('BlockEditor Methods', () => {
                 // Add another block
                 editor.addBlock({
                     id: 'heading1',
-                    type: BlockType.Heading,
-                    props: {
+                    blockType: BlockType.Heading,
+                    properties: {
                         level: 1
                     },
-                    content: [{ id: 'headingContent', type: ContentType.Text, content: 'Heading' }]
+                    content: [{ id: 'headingContent', contentType: ContentType.Text, content: 'Heading' }]
                 }, 'paragraph1', false);
 
-                const json = editor.getDataAsJson();
+                const json: BlockModel[] = editor.getDataAsJson() as BlockModel[];
 
                 expect(Array.isArray(json)).toBe(true);
                 expect(json.length).toBe(2);
@@ -669,11 +664,11 @@ describe('BlockEditor Methods', () => {
         });
 
         it('should return a specific block as JSON when blockId is provided', () => {
-            const json = editor.getDataAsJson('paragraph1');
+            const json: BlockModel = editor.getDataAsJson('paragraph1') as BlockModel;
 
             expect(json).not.toBeNull();
             expect(json.id).toBe('paragraph1');
-            expect(json.type).toBe(BlockType.Paragraph);
+            expect(json.blockType).toBe(BlockType.Paragraph);
             expect(json.content[0].content).toBe('Initial content');
         });
 
@@ -689,11 +684,11 @@ describe('BlockEditor Methods', () => {
             setTimeout(function () {
                 editor.addBlock({
                     id: 'heading1',
-                    type: BlockType.Heading,
-                    props: {
+                    blockType: BlockType.Heading,
+                    properties: {
                         level: 1
                     },
-                    content: [{ id: 'headingContent', type: ContentType.Text, content: 'Heading' }]
+                    content: [{ id: 'headingContent', contentType: ContentType.Text, content: 'Heading' }]
                 }, 'paragraph1', false);
                 const html = editor.getDataAsHtml();
                 expect(html).toBe('<h1>Heading</h1><p>Initial content</p>');
@@ -716,8 +711,8 @@ describe('BlockEditor Methods', () => {
             setTimeout(function () {
                 editor.addBlock({
                     id: 'quote1',
-                    type: BlockType.Quote,
-                    content: [{ id: 'quoteContent', type: ContentType.Text, content: 'Important quote' }]
+                    blockType: BlockType.Quote,
+                    content: [{ id: 'quoteContent', contentType: ContentType.Text, content: 'Important quote' }]
                 }, 'paragraph1', true);
 
                 const html = editor.getDataAsHtml('quote1');
@@ -730,7 +725,7 @@ describe('BlockEditor Methods', () => {
             setTimeout(function () {
                 editor.addBlock({
                     id: 'divider1',
-                    type: BlockType.Divider
+                    blockType: BlockType.Divider
                 }, 'paragraph1', true);
 
                 const html = editor.getDataAsHtml('divider1');
@@ -743,8 +738,8 @@ describe('BlockEditor Methods', () => {
             setTimeout(function () {
                 editor.addBlock({
                     id: 'code1',
-                    type: BlockType.Code,
-                    content: [{ id: 'codeContent', type: ContentType.Text, content: 'function test() { return true; }' }]
+                    blockType: BlockType.Code,
+                    content: [{ id: 'codeContent', contentType: ContentType.Text, content: 'function test() { return true; }' }]
                 }, 'paragraph1', true);
 
                 const html = editor.getDataAsHtml('code1');
@@ -757,8 +752,8 @@ describe('BlockEditor Methods', () => {
             setTimeout(function () {
                 editor.addBlock({
                     id: 'image1',
-                    type: BlockType.Image,
-                    props: {
+                    blockType: BlockType.Image,
+                    properties: {
                         src: 'https://example.com/image.jpg',
                         altText: 'Sample image'
                     }
@@ -774,8 +769,8 @@ describe('BlockEditor Methods', () => {
             setTimeout(function () {
                 editor.addBlock({
                     id: 'emptyImage',
-                    type: BlockType.Image,
-                    props: {
+                    blockType: BlockType.Image,
+                    properties: {
                         src: '',
                         altText: 'Empty image'
                     }
@@ -791,13 +786,13 @@ describe('BlockEditor Methods', () => {
             setTimeout(function () {
                 const calloutBlock: BlockModel = {
                     id: 'callout1',
-                    type: BlockType.Callout,
-                    content: [{ id: 'calloutTitle', type: ContentType.Text, content: 'Callout Title' }],
-                    props: {
+                    blockType: BlockType.Callout,
+                    content: [{ id: 'calloutTitle', contentType: ContentType.Text, content: 'Callout Title' }],
+                    properties: {
                         children: [{
                             id: 'calloutPara',
-                            type: BlockType.Paragraph,
-                            content: [{ id: 'calloutContent', type: ContentType.Text, content: 'Callout content' }]
+                            blockType: BlockType.Paragraph,
+                            content: [{ id: 'calloutContent', contentType: ContentType.Text, content: 'Callout content' }]
                         }]
                     }
                 };
@@ -814,13 +809,13 @@ describe('BlockEditor Methods', () => {
             setTimeout(function () {
                 const toggleBlock: BlockModel = {
                     id: 'toggle1',
-                    type: BlockType.CollapsibleParagraph,
-                    content: [{ id: 'toggleTitle', type: ContentType.Text, content: 'Toggle Title' }],
-                    props: {
+                    blockType: BlockType.CollapsibleParagraph,
+                    content: [{ id: 'toggleTitle', contentType: ContentType.Text, content: 'Toggle Title' }],
+                    properties: {
                         children: [{
                             id: 'togglePara',
-                            type: BlockType.Paragraph,
-                            content: [{ id: 'toggleContent', type: ContentType.Text, content: 'Toggle content' }]
+                            blockType: BlockType.Paragraph,
+                            content: [{ id: 'toggleContent', contentType: ContentType.Text, content: 'Toggle content' }]
                         }]
                     }
                 };
@@ -837,14 +832,14 @@ describe('BlockEditor Methods', () => {
             setTimeout(function () {
                 const toggleHeadingBlock: BlockModel = {
                     id: 'toggleHeading1',
-                    type: BlockType.CollapsibleHeading,
-                    content: [{ id: 'toggleHeadingTitle', type: ContentType.Text, content: 'Toggle Heading' }],
-                    props: {
+                    blockType: BlockType.CollapsibleHeading,
+                    content: [{ id: 'toggleHeadingTitle', contentType: ContentType.Text, content: 'Toggle Heading' }],
+                    properties: {
                         level: 1,
                         children: [{
                             id: 'toggleHeadingPara',
-                            type: BlockType.Paragraph,
-                            content: [{ id: 'toggleHeadingContent', type: ContentType.Text, content: 'Toggle heading content' }]
+                            blockType: BlockType.Paragraph,
+                            content: [{ id: 'toggleHeadingContent', contentType: ContentType.Text, content: 'Toggle heading content' }]
                         }]
                     },
                 };
@@ -861,14 +856,13 @@ describe('BlockEditor Methods', () => {
             setTimeout(function () {
                 const linkBlock: BlockModel = {
                     id: 'link1',
-                    type: BlockType.Paragraph,
+                    blockType: BlockType.Paragraph,
                     content: [{
                         id: 'linkContent',
-                        type: ContentType.Link,
+                        contentType: ContentType.Link,
                         content: 'Link text',
-                        props: {
-                            url: 'https://example.com',
-                            openInNewWindow: true
+                        properties: {
+                            url: 'https://example.com'
                         }
                     }]
                 };
@@ -885,14 +879,14 @@ describe('BlockEditor Methods', () => {
             setTimeout(function () {
                 editor.addBlock({
                     id: 'bulletlist1',
-                    type: BlockType.BulletList,
-                    content: [{ id: 'bulletContent1', type: ContentType.Text, content: 'Bullet item 1' }]
+                    blockType: BlockType.BulletList,
+                    content: [{ id: 'bulletContent1', contentType: ContentType.Text, content: 'Bullet item 1' }]
                 }, 'paragraph1', true);
 
                 editor.addBlock({
                     id: 'bulletlist2',
-                    type: BlockType.BulletList,
-                    content: [{ id: 'bulletContent2', type: ContentType.Text, content: 'Bullet item 2' }]
+                    blockType: BlockType.BulletList,
+                    content: [{ id: 'bulletContent2', contentType: ContentType.Text, content: 'Bullet item 2' }]
                 }, 'bulletlist1', true);
 
                 const html = editor.getDataAsHtml();
@@ -903,19 +897,20 @@ describe('BlockEditor Methods', () => {
 
         it('should render numbered list blocks correctly', function (done) {
             setTimeout(function () {
-                editor.removeBlock('paragraph1');
 
                 editor.addBlock({
                     id: 'numberedlist1',
-                    type: BlockType.NumberedList,
-                    content: [{ id: 'numberedContent1', type: ContentType.Text, content: 'Number item 1' }]
+                    blockType: BlockType.NumberedList,
+                    content: [{ id: 'numberedContent1', contentType: ContentType.Text, content: 'Number item 1' }]
                 });
 
                 editor.addBlock({
                     id: 'numberedlist2',
-                    type: BlockType.NumberedList,
-                    content: [{ id: 'numberedContent2', type: ContentType.Text, content: 'Number item 2' }]
+                    blockType: BlockType.NumberedList,
+                    content: [{ id: 'numberedContent2', contentType: ContentType.Text, content: 'Number item 2' }]
                 }, 'numberedlist1', true);
+
+                editor.removeBlock('paragraph1');
 
                 const html = editor.getDataAsHtml();
                 expect(html).toBe('<ol><li>Number item 1</li><li>Number item 2</li></ol>');
@@ -927,12 +922,12 @@ describe('BlockEditor Methods', () => {
             setTimeout(function () {
                 const formattedBlock: BlockModel = {
                     id: 'formatted1',
-                    type: BlockType.Paragraph,
+                    blockType: BlockType.Paragraph,
                     content: [{
                         id: 'formattedContent',
-                        type: ContentType.Text,
+                        contentType: ContentType.Text,
                         content: 'Formatted text',
-                        props: {
+                        properties: {
                             styles: { bold: true, italic: true, underline: true }
                         }
                     }]
@@ -951,19 +946,19 @@ describe('BlockEditor Methods', () => {
         it('should return the current focused block model', (done) => {
             setTimeout(() => {
                 const blockElement = editorElement.querySelector('#paragraph1') as HTMLElement;
-                editor.setFocusToBlock(blockElement);
+                editor.blockManager.setFocusToBlock(blockElement);
 
                 const focusedBlockModel = editor.getCurrentFocusedBlockModel();
                 expect(focusedBlockModel).not.toBeNull();
                 expect(focusedBlockModel.id).toBe('paragraph1');
-                expect(focusedBlockModel.type).toBe(BlockType.Paragraph);
+                expect(focusedBlockModel.blockType).toBe(BlockType.Paragraph);
                 done();
             });
         });
 
         it('should return null when no block is focused', (done) => {
             setTimeout(() => {
-                editor.currentFocusedBlock = null;
+                editor.blockManager.currentFocusedBlock = null;
                 const focusedBlockModel = editor.getCurrentFocusedBlockModel();
                 expect(focusedBlockModel).toBeNull();
                 done();
@@ -976,12 +971,12 @@ describe('BlockEditor Methods', () => {
             setTimeout(() => {
                 const parentBlock: BlockModel = {
                     id: 'callout1',
-                    type: BlockType.Callout,
-                    props: {
+                    blockType: BlockType.Callout,
+                    properties: {
                         children: [{
                             id: 'calloutChild1',
-                            type: BlockType.Paragraph,
-                            content: [{ id: 'calloutChildContent', type: ContentType.Text, content: 'Callout content' }],
+                            blockType: BlockType.Paragraph,
+                            content: [{ id: 'calloutChildContent', contentType: ContentType.Text, content: 'Callout content' }],
                             parentId: 'callout1'
                         }]
                     }
@@ -989,7 +984,7 @@ describe('BlockEditor Methods', () => {
                 editor.addBlock(parentBlock);
 
                 const updateResult = editor.updateBlock('calloutChild1', {
-                    content: [{ id: 'calloutChildContent', type: ContentType.Text, content: 'Updated callout content' }]
+                    content: [{ id: 'calloutChildContent', contentType: ContentType.Text, content: 'Updated callout content' }]
                 });
 
                 expect(updateResult).toBe(true);
@@ -1010,14 +1005,14 @@ describe('BlockEditor Methods', () => {
             setTimeout(() => {
                 const parentBlock: BlockModel = {
                     id: 'toggle-block',
-                    type: BlockType.CollapsibleParagraph,
-                    content: [{ type: ContentType.Text, content: 'Click here to expand' }],
-                    props: {
+                    blockType: BlockType.CollapsibleParagraph,
+                    content: [{ contentType: ContentType.Text, content: 'Click here to expand' }],
+                    properties: {
                         children: [{
                             id: 'toggleChild1',
                             parentId: 'toggle-block',
-                            type: BlockType.BulletList,
-                            content: [{ id: 'toggleChildContent', type: ContentType.Text, content: 'toggle content' }],
+                            blockType: BlockType.BulletList,
+                            content: [{ id: 'toggleChildContent', contentType: ContentType.Text, content: 'toggle content' }],
                         }]
                     }
                 };
@@ -1045,7 +1040,7 @@ describe('BlockEditor Methods', () => {
         it('should get and set the range properly', (done) => {
             setTimeout(() => {
                 const blockElement = editorElement.querySelector('#paragraph1') as HTMLElement;
-                editor.setFocusToBlock(blockElement);
+                editor.blockManager.setFocusToBlock(blockElement);
                 editor.setSelection('content1', 0, 5);
 
                 const range = editor.getRange();
@@ -1081,7 +1076,7 @@ describe('BlockEditor Methods', () => {
             setTimeout(() => {
                 const customBlock: BlockModel = {
                     id: 'templateBlock',
-                    type: 'Template',
+                    blockType: 'Template',
                     template: '<div class="custom-template">Template content</div>'
                 };
 
@@ -1132,21 +1127,21 @@ describe('BlockEditor Methods', () => {
     describe('renderBlocksFromJson method', () => {
 
         it('should render blocks from JSON array', () => {
-            editor.setFocusToBlock(editorElement.querySelector('.e-block'));
+            editor.blockManager.setFocusToBlock(editorElement.querySelector('.e-block'));
             // Setup - JSON array of blocks
             const jsonBlocks = [
                 {
                     id: 'heading1',
-                    type: BlockType.Heading,
-                    props: {
+                    blockType: BlockType.Heading,
+                    properties: {
                         level: 1
                     },
-                    content: [{ type: ContentType.Text, content: 'New Heading' }]
+                    content: [{ contentType: ContentType.Text, content: 'New Heading' }]
                 },
                 {
                     id: 'paragraph1',
-                    type: BlockType.Paragraph,
-                    content: [{ type: ContentType.Text, content: 'New Paragraph' }]
+                    blockType: BlockType.Paragraph,
+                    content: [{ contentType: ContentType.Text, content: 'New Paragraph' }]
                 }
             ];
 
@@ -1156,10 +1151,10 @@ describe('BlockEditor Methods', () => {
             // Assert
             expect(result).toBe(true);
             expect(editor.blocks.length).toBe(3); // Initial + 2 new blocks
-            expect(editor.blocks[1].type).toBe(BlockType.Heading);
-            expect((editor.blocks[1].props as HeadingProps).level).toBe(1);
+            expect(editor.blocks[1].blockType).toBe(BlockType.Heading);
+            expect((editor.blocks[1].properties as IHeadingBlockSettings).level).toBe(1);
             expect(editor.blocks[1].content[0].content).toBe('New Heading');
-            expect(editor.blocks[2].type).toBe(BlockType.Paragraph);
+            expect(editor.blocks[2].blockType).toBe(BlockType.Paragraph);
             expect(editor.blocks[2].content[0].content).toBe('New Paragraph');
 
             // Check DOM update
@@ -1170,16 +1165,16 @@ describe('BlockEditor Methods', () => {
         });
 
         it('should render blocks from JSON string', () => {
-            editor.setFocusToBlock(editorElement.querySelector('.e-block'));
+            editor.blockManager.setFocusToBlock(editorElement.querySelector('.e-block'));
             // Setup - JSON string
             const jsonString = JSON.stringify([
                 {
                     id: 'heading1',
-                    type: BlockType.Heading,
-                    props: {
+                    blockType: BlockType.Heading,
+                    properties: {
                         level: 1
                     },
-                    content: [{ type: ContentType.Text, content: 'New Heading' }]
+                    content: [{ contentType: ContentType.Text, content: 'New Heading' }]
                 }
             ]);
 
@@ -1187,8 +1182,8 @@ describe('BlockEditor Methods', () => {
 
             expect(result).toBe(true);
             expect(editor.blocks.length).toBe(2); // Initial + new block
-            expect(editor.blocks[1].type).toBe(BlockType.Heading);
-        expect((editor.blocks[1].props as HeadingProps).level).toBe(1);
+            expect(editor.blocks[1].blockType).toBe(BlockType.Heading);
+            expect((editor.blocks[1].properties as IHeadingBlockSettings).level).toBe(1);
 
             const headingBlock = editorElement.querySelector('#heading1');
             expect(headingBlock).not.toBeNull();
@@ -1196,14 +1191,14 @@ describe('BlockEditor Methods', () => {
         });
 
         it('should render blocks from object with blocks property', () => {
-            editor.setFocusToBlock(editorElement.querySelector('.e-block'));
+            editor.blockManager.setFocusToBlock(editorElement.querySelector('.e-block'));
             // Setup - Object with blocks property
             const jsonObject = {
                 blocks: [
                     {
                         id: 'bulletlist',
-                        type: BlockType.BulletList,
-                        content: [{ type: ContentType.Text, content: 'List Item' }]
+                        blockType: BlockType.BulletList,
+                        content: [{ contentType: ContentType.Text, content: 'List Item' }]
                     }
                 ]
             };
@@ -1212,7 +1207,7 @@ describe('BlockEditor Methods', () => {
 
             expect(result).toBe(true);
             expect(editor.blocks.length).toBe(2); // Initial + new block
-            expect(editor.blocks[1].type).toBe(BlockType.BulletList);
+            expect(editor.blocks[1].blockType).toBe(BlockType.BulletList);
 
             const listBlock = editorElement.querySelector('#bulletlist');
             expect(listBlock).not.toBeNull();
@@ -1220,10 +1215,10 @@ describe('BlockEditor Methods', () => {
         });
 
         it('should render a single block object', () => {
-            editor.setFocusToBlock(editorElement.querySelector('.e-block'));
+            editor.blockManager.setFocusToBlock(editorElement.querySelector('.e-block'));
             // Setup - Single block object
             const singleBlock = {
-                type: BlockType.Divider
+                blockType: BlockType.Divider
             };
 
             // Execute
@@ -1232,7 +1227,7 @@ describe('BlockEditor Methods', () => {
             // Assert
             expect(result).toBe(true);
             expect(editor.blocks.length).toBe(2); // Initial + divider
-            expect(editor.blocks[1].type).toBe(BlockType.Divider);
+            expect(editor.blocks[1].blockType).toBe(BlockType.Divider);
 
             // Check DOM update
             const dividerBlock = editorElement.querySelector('.e-divider-block');
@@ -1240,16 +1235,16 @@ describe('BlockEditor Methods', () => {
         });
 
         it('should replace all blocks when replace is true', (done) => {
-            editor.setFocusToBlock(editorElement.querySelector('.e-block'));
+            editor.blockManager.setFocusToBlock(editorElement.querySelector('.e-block'));
             // Setup
             const newBlocks = [
                 {
                     id: 'heading1',
-                    type: BlockType.Heading,
-                    props: {
+                    blockType: BlockType.Heading,
+                    properties: {
                         level: 1
                     },
-                    content: [{ type: ContentType.Text, content: 'Replace All' }]
+                    content: [{ contentType: ContentType.Text, content: 'Replace All' }]
                 }
             ];
 
@@ -1260,8 +1255,8 @@ describe('BlockEditor Methods', () => {
                 // Assert
                 expect(result).toBe(true);
                 expect(editor.blocks.length).toBe(1); // Only the new block
-                expect(editor.blocks[0].type).toBe(BlockType.Heading);
-                expect((editor.blocks[0].props as HeadingProps).level).toBe(1);
+                expect(editor.blocks[0].blockType).toBe(BlockType.Heading);
+                expect((editor.blocks[0].properties as IHeadingBlockSettings).level).toBe(1);
                 expect(editor.blocks[0].content[0].content).toBe('Replace All');
 
                 // Check DOM update - only new block should exist
@@ -1273,42 +1268,42 @@ describe('BlockEditor Methods', () => {
         });
 
         it('should replace with default empty block when empty array provided with replace=true', () => {
-            editor.setFocusToBlock(editorElement.querySelector('.e-block'));
+            editor.blockManager.setFocusToBlock(editorElement.querySelector('.e-block'));
             // Setup - Empty blocks array
             const emptyBlocks: any = [];
 
             // Spy on internal methods
-            spyOn(editor.blockCommandManager, 'createDefaultEmptyBlock').and.callThrough();
+            spyOn(editor.blockManager.blockCommand, 'createDefaultEmptyBlock').and.callThrough();
 
             // Execute
             const result = editor.renderBlocksFromJson(emptyBlocks, true);
 
             // Assert
             expect(result).toBe(true);
-            expect(editor.blockCommandManager.createDefaultEmptyBlock).toHaveBeenCalledWith(true);
+            expect(editor.blockManager.blockCommand.createDefaultEmptyBlock).toHaveBeenCalledWith(true);
             expect(editor.blocks.length).toBe(1); // Default empty block
-            expect(editor.blocks[0].type).toBe(BlockType.Paragraph);
+            expect(editor.blocks[0].blockType).toBe(BlockType.Paragraph);
 
             expect(editorElement.querySelectorAll('.e-block').length).toBe(1);
         });
 
         it('should insert blocks at specified target block', () => {
             // Setup - Add a second block to insert between
-            editor.setFocusToBlock(editorElement.querySelector('.e-block') as HTMLElement);
+            editor.blockManager.setFocusToBlock(editorElement.querySelector('.e-block') as HTMLElement);
             editor.addBlock({
                 id: 'paragraph2',
-                type: BlockType.Paragraph,
+                blockType: BlockType.Paragraph,
                 content: [
-                    { id: 'content2', type: ContentType.Text, content: 'Second paragraph' }
+                    { id: 'content2', contentType: ContentType.Text, content: 'Second paragraph' }
                 ]
             }, 'paragraph1', true);
 
             const newBlocks = [
                 {
                     id: 'heading2',
-                    type: BlockType.Heading,
-                    props: { level: 2 },
-                    content: [{ type: ContentType.Text, content: 'Inserted Heading' }]
+                    blockType: BlockType.Heading,
+                    properties: { level: 2 },
+                    content: [{ contentType: ContentType.Text, content: 'Inserted Heading' }]
                 }
             ];
 
@@ -1318,8 +1313,8 @@ describe('BlockEditor Methods', () => {
             // Assert
             expect(result).toBe(true);
             expect(editor.blocks.length).toBe(3); // Two original + one inserted
-            expect(editor.blocks[1].type).toBe(BlockType.Heading);
-            expect((editor.blocks[1].props as HeadingProps).level).toBe(2);
+            expect(editor.blocks[1].blockType).toBe(BlockType.Heading);
+            expect((editor.blocks[1].properties as IHeadingBlockSettings).level).toBe(2);
 
             // Check DOM order
             const blockElements = editorElement.querySelectorAll('.e-block');
@@ -1329,22 +1324,22 @@ describe('BlockEditor Methods', () => {
         });
 
         it('should insert blocks after focused block if no target provided', () => {
-            editor.setFocusToBlock(editorElement.querySelector('.e-block') as HTMLElement);
+            editor.blockManager.setFocusToBlock(editorElement.querySelector('.e-block') as HTMLElement);
             // Setup - Add a second block and focus it
             editor.addBlock({
                 id: 'paragraph2',
-                type: BlockType.Paragraph,
+                blockType: BlockType.Paragraph,
                 content: [
-                    { id: 'content2', type: ContentType.Text, content: 'Second paragraph' }
+                    { id: 'content2', contentType: ContentType.Text, content: 'Second paragraph' }
                 ]
             }, 'paragraph1', true);
 
             const newBlocks = [
                 {
                     id: 'heading2',
-                    type: BlockType.Heading,
-                    props: { level: 2 },
-                    content: [{ type: ContentType.Text, content: 'After Focused' }]
+                    blockType: BlockType.Heading,
+                    properties: { level: 2 },
+                    content: [{ contentType: ContentType.Text, content: 'After Focused' }]
                 }
             ];
 
@@ -1354,8 +1349,8 @@ describe('BlockEditor Methods', () => {
             // Assert
             expect(result).toBe(true);
             expect(editor.blocks.length).toBe(3);
-            expect(editor.blocks[2].type).toBe(BlockType.Heading);
-            expect((editor.blocks[2].props as HeadingProps).level).toBe(2);
+            expect(editor.blocks[2].blockType).toBe(BlockType.Heading);
+            expect((editor.blocks[2].properties as IHeadingBlockSettings).level).toBe(2);
 
             // Check DOM order
             const blockElements = editorElement.querySelectorAll('.e-block');
@@ -1366,14 +1361,14 @@ describe('BlockEditor Methods', () => {
 
         it('should insert blocks at the end if no focus and no target', () => {
             // Setup - Clear focus
-            editor.currentFocusedBlock = null;
+            editor.blockManager.currentFocusedBlock = null;
 
             const newBlocks = [
                 {
                     id: 'heading2',
-                    type: BlockType.Heading,
-                    props: { level: 2 },
-                    content: [{ type: ContentType.Text, content: 'At End' }]
+                    blockType: BlockType.Heading,
+                    properties: { level: 2 },
+                    content: [{ contentType: ContentType.Text, content: 'At End' }]
                 }
             ];
 
@@ -1383,15 +1378,15 @@ describe('BlockEditor Methods', () => {
             // Assert
             expect(result).toBe(true);
             expect(editor.blocks.length).toBe(2);
-            expect(editor.blocks[1].type).toBe(BlockType.Heading)
-            expect((editor.blocks[1].props as HeadingProps).level).toBe(2);
+            expect(editor.blocks[1].blockType).toBe(BlockType.Heading)
+            expect((editor.blocks[1].properties as IHeadingBlockSettings).level).toBe(2);
 
             // Check DOM order
             expect(editorElement.querySelector('#heading2')).not.toBeNull();
         });
 
         it('should handle error when invalid JSON string is provided', () => {
-            editor.setFocusToBlock(editorElement.querySelector('.e-block'));
+            editor.blockManager.setFocusToBlock(editorElement.querySelector('.e-block'));
             // Setup - Invalid JSON string
             const invalidJson = '{ this is not valid JSON }';
 
@@ -1410,7 +1405,7 @@ describe('BlockEditor Methods', () => {
         });
 
         it('should handle error when providing unsupported object format', () => {
-            editor.setFocusToBlock(editorElement.querySelector('.e-block'));
+            editor.blockManager.setFocusToBlock(editorElement.querySelector('.e-block'));
             // Setup - Object without type or blocks property
             const invalidObject: any = {
                 something: 'else',
@@ -1426,20 +1421,20 @@ describe('BlockEditor Methods', () => {
         });
 
         it('should set focus to last inserted block', () => {
-            editor.setFocusToBlock(editorElement.querySelector('.e-block'));
+            editor.blockManager.setFocusToBlock(editorElement.querySelector('.e-block'));
             // Setup
             const newBlocks = [
                 {
-                    type: BlockType.Heading,
-                    props: {
+                    blockType: BlockType.Heading,
+                    properties: {
                         level: 1
                     },
-                    content: [{ type: ContentType.Text, content: 'First' }]
+                    content: [{ contentType: ContentType.Text, content: 'First' }]
                 },
                 {
-                    type: BlockType.Heading,
-                    props: { level: 2 },
-                    content: [{ type: ContentType.Text, content: 'Second' }]
+                    blockType: BlockType.Heading,
+                    properties: { level: 2 },
+                    content: [{ contentType: ContentType.Text, content: 'Second' }]
                 }
             ];
 
@@ -1451,7 +1446,7 @@ describe('BlockEditor Methods', () => {
         });
 
         it('should return false when rendering empty blocks array without replace', () => {
-            editor.setFocusToBlock(editorElement.querySelector('.e-block'));
+            editor.blockManager.setFocusToBlock(editorElement.querySelector('.e-block'));
             // Setup - Empty blocks array
             const emptyBlocks: any = [];
 
@@ -1461,6 +1456,382 @@ describe('BlockEditor Methods', () => {
             // Assert
             expect(result).toBe(false);
             expect(editor.blocks.length).toBe(1); // Original block remains
+        });
+    });
+
+    describe('parseHtmlToBlocks method', () => {
+
+        it('should parse a simple paragraph block (P)', () => {
+            const html = '<p>This is a plain paragraph.</p>';
+            const blocks = editor.parseHtmlToBlocks(html);
+
+            expect(blocks.length).toBe(1);
+            expect(blocks[0].blockType).toBe(BlockType.Paragraph);
+            expect(blocks[0].content.length).toBe(1);
+            expect(blocks[0].content[0].contentType).toBe(ContentType.Text);
+            expect(blocks[0].content[0].content).toBe('This is a plain paragraph.');
+        });
+
+        it('should parse an H1 heading block', () => {
+            const html = '<h1>Main Heading</h1>';
+            const blocks = editor.parseHtmlToBlocks(html);
+
+            expect(blocks.length).toBe(1);
+            expect(blocks[0].blockType).toBe(BlockType.Heading); // Generic Heading type
+            const props = blocks[0].properties as IHeadingBlockSettings;
+            expect(props).toBeDefined();
+            expect(props.level).toBe(1);
+            expect(blocks[0].content[0].content).toBe('Main Heading');
+        });
+
+        it('should parse multiple paragraph blocks', () => {
+            const html = '<p>First para.</p><p>Second para.</p>';
+            const blocks = editor.parseHtmlToBlocks(html);
+
+            expect(blocks.length).toBe(2);
+            expect(blocks[0].blockType).toBe(BlockType.Paragraph);
+            expect(blocks[0].content[0].content).toBe('First para.');
+            expect(blocks[1].blockType).toBe(BlockType.Paragraph);
+            expect(blocks[1].content[0].content).toBe('Second para.');
+        });
+
+        it('should parse a paragraph with bold and italic text', () => {
+            const html = '<p>This is <strong>bold</strong> and <em>italic</em> text.</p>';
+            const blocks = editor.parseHtmlToBlocks(html);
+
+            expect(blocks.length).toBe(1);
+            expect(blocks[0].blockType).toBe(BlockType.Paragraph);
+            expect(blocks[0].content.length).toBe(5); // "This is ", "bold", " and ", "italic", " text."
+            expect(blocks[0].content[1].contentType).toBe(ContentType.Text);
+            expect((blocks[0].content[1].properties as ITextContentSettings).styles).toEqual({ bold: true });
+            expect(blocks[0].content[1].content).toBe('bold');
+            expect(blocks[0].content[3].contentType).toBe(ContentType.Text);
+            expect((blocks[0].content[3].properties as ITextContentSettings).styles).toEqual({ italic: true });
+            expect(blocks[0].content[3].content).toBe('italic');
+        });
+
+        it('should parse a paragraph with a hyperlink', () => {
+            const html = '<p>Visit <a href="https://example.com" target="_blank">Example</a> site.</p>';
+            const blocks = editor.parseHtmlToBlocks(html);
+
+            expect(blocks.length).toBe(1);
+            expect(blocks[0].blockType).toBe(BlockType.Paragraph);
+            expect(blocks[0].content.length).toBe(3);
+            expect(blocks[0].content[1].contentType).toBe(ContentType.Link);
+            expect(blocks[0].content[1].content).toBe('Example');
+            const linkProps = blocks[0].content[1].properties as ILinkContentSettings;
+            expect(linkProps.url).toBe('https://example.com');
+        });
+
+        it('should parse an image block with src, altText', () => {
+            const html = '<img src="/assets/image.png" alt="A test image" width="100px" height="50px">';
+            const blocks = editor.parseHtmlToBlocks(html);
+
+            expect(blocks.length).toBe(1);
+            expect(blocks[0].blockType).toBe(BlockType.Image);
+            const imgProps = blocks[0].properties as IImageBlockSettings;
+            expect(imgProps.src).toContain('/assets/image.png');
+            expect(imgProps.altText).toBe('A test image');
+        });
+
+        it('should parse a blockquote block', () => {
+            const html = '<blockquote>This is a quote.</blockquote>';
+            const blocks = editor.parseHtmlToBlocks(html);
+
+            expect(blocks.length).toBe(1);
+            expect(blocks[0].blockType).toBe(BlockType.Quote);
+            expect(blocks[0].content[0].content).toBe('This is a quote.');
+        });
+
+        it('should parse an unordered list (BulletList)', () => {
+            const html = '<ul><li>Item 1</li><li>Item 2</li></ul>';
+            const blocks = editor.parseHtmlToBlocks(html);
+
+            expect(blocks.length).toBe(2);
+            expect(blocks[0].blockType).toBe(BlockType.BulletList);
+            expect(blocks[1].blockType).toBe(BlockType.BulletList);
+
+            expect(blocks[0].content[0].content).toBe('Item 1');
+            expect(blocks[1].content[0].content).toBe('Item 2');
+        });
+
+        it('should parse an ordered list (NumberedList)', () => {
+            const html = '<ol><li>First item</li><li>Second item</li></ol>';
+            const blocks = editor.parseHtmlToBlocks(html);
+
+            expect(blocks.length).toBe(2);
+            expect(blocks[0].blockType).toBe(BlockType.NumberedList);
+            expect(blocks[1].blockType).toBe(BlockType.NumberedList);
+
+            expect(blocks[0].content[0].content).toBe('First item');
+            expect(blocks[1].content[0].content).toBe('Second item');
+        });
+
+        it('should parse a code block (PRE element)', () => {
+            const html = '<pre><code class="language-javascript">console.log("Hello, World!");</code></pre>';
+            const blocks = editor.parseHtmlToBlocks(html);
+
+            expect(blocks.length).toBe(1);
+            expect(blocks[0].blockType).toBe(BlockType.Code);
+            const codeProps = blocks[0].properties as ICodeBlockSettings;
+            expect(codeProps.language).toBe('javascript');
+            expect(blocks[0].content[0].contentType).toBe(ContentType.Text);
+            expect(blocks[0].content[0].content).toBe('console.log("Hello, World!");');
+        });
+
+        it('should parse a divider block (HR element)', () => {
+            const html = '<hr>';
+            const blocks = editor.parseHtmlToBlocks(html);
+
+            expect(blocks.length).toBe(1);
+            expect(blocks[0].blockType).toBe(BlockType.Divider);
+        });
+
+        it('should parse a paragraph with an inline code snippet (CODE ContentType)', () => {
+            const html = '<p>This is some <code class="e-content-code">inline code</code> in a paragraph.</p>';
+            const blocks = editor.parseHtmlToBlocks(html);
+
+            expect(blocks.length).toBe(1);
+            expect(blocks[0].blockType).toBe(BlockType.Paragraph);
+            expect(blocks[0].content.length).toBe(3);
+            expect(blocks[0].content[1].contentType).toBe(ContentType.Text);
+            expect((blocks[0].content[1].properties as ITextContentSettings).styles.inlineCode).toBe(true);
+            expect(blocks[0].content[1].content).toBe('inline code');
+        });
+
+        it('should parse a paragraph with text color and background color', () => {
+            const html = '<p><span style="color:red; background-color:yellow;">Colored Text</span></p>';
+            const blocks = editor.parseHtmlToBlocks(html);
+
+            expect(blocks.length).toBe(1);
+            expect(blocks[0].blockType).toBe(BlockType.Paragraph);
+            expect(blocks[0].content[0].contentType).toBe(ContentType.Text);
+            expect(blocks[0].content[0].content).toBe('Colored Text');
+            const textProps = blocks[0].content[0].properties as ITextContentSettings;
+            expect(textProps.styles).toEqual({ color: 'red', backgroundColor: 'yellow' });
+        });
+
+        it('should parse a complex structure with mixed block types and nested inline styles', () => {
+            const html = `
+            <h2>Section Title</h2>
+            <p>A paragraph with <strong>bold and <em style="color:blue;">blue italic</em> text</strong></p>
+            <hr>
+            <ul class="my-list">
+                <li>Item one</li>
+                <li>Item two</li>
+            </ul>
+        `;
+            const blocks = editor.parseHtmlToBlocks(html);
+
+            expect(blocks.length).toBe(5);
+            expect(blocks[0].blockType).toBe(BlockType.Heading);
+            expect((blocks[0].properties as IHeadingBlockSettings).level).toBe(2);
+            expect(blocks[0].content[0].content).toBe('Section Title');
+
+            expect(blocks[1].blockType).toBe(BlockType.Paragraph);
+            expect(blocks[1].content.length).toBe(4); // "A paragraph with ", "bold and ", "blue italic", " text."
+            expect(blocks[1].content[1].content).toBe('bold and ');
+            expect((blocks[1].content[1].properties as ITextContentSettings).styles).toEqual({ bold: true });
+            expect(blocks[1].content[2].content).toBe('blue italic');
+            expect((blocks[1].content[2].properties as ITextContentSettings).styles).toEqual({ bold: true, italic: true, color: 'blue' });
+
+            expect(blocks[2].blockType).toBe(BlockType.Divider);
+
+            expect(blocks[3].blockType).toBe(BlockType.BulletList);
+            expect(blocks[3].content[0].content).toBe('Item one');
+            expect(blocks[4].blockType).toBe(BlockType.BulletList);
+            expect(blocks[4].content[0].content).toBe('Item two');
+        });
+
+        it('should parse an empty HTML string as an empty array', () => {
+            const html = '';
+            const blocks = editor.parseHtmlToBlocks(html);
+
+            expect(blocks.length).toBe(0);
+        });
+
+        it('should parse HTML with only whitespace as an empty array', () => {
+            const html = '   \n  \t   ';
+            const blocks = editor.parseHtmlToBlocks(html);
+
+            expect(blocks.length).toBe(0);
+        });
+
+        it('should handle special characters and HTML entities in text content', () => {
+            const html = '<p>&#x2014; Special &amp; characters &lt; here &#x201C;quoted&#x201D;</p>';
+            const blocks = editor.parseHtmlToBlocks(html);
+
+            expect(blocks.length).toBe(1);
+            expect(blocks[0].blockType).toBe(BlockType.Paragraph);
+            expect(blocks[0].content[0].content).toBe('— Special & characters < here “quoted”'); // Expected decoded output
+        });
+    });
+
+    describe('parseHtmlToBlocks method - Table Block', () => {
+
+        it('should parse a basic table without header', () => {
+            const html = `
+            <table>
+                <tr><td>Cell 1</td><td>Cell 2</td></tr>
+                <tr><td>Cell 3</td><td>Cell 4</td></tr>
+            </table>`;
+            const blocks = editor.parseHtmlToBlocks(html);
+
+            expect(blocks.length).toBe(1);
+            expect(blocks[0].blockType).toBe(BlockType.Table);
+
+            const props = blocks[0].properties as ITableBlockSettings;
+            expect(props.enableHeader).toBe(false);
+            expect(props.enableRowNumbers).toBe(true);
+            expect(props.columns.length).toBe(2);
+            expect(props.rows.length).toBe(2);
+
+            expect(props.rows[0].cells[0].blocks[0].content[0].content).toBe('Cell 1');
+            expect(props.rows[1].cells[1].blocks[0].content[0].content).toBe('Cell 4');
+        });
+
+        it('should parse table with <thead> as header row', () => {
+            const html = `
+            <table>
+                <thead><tr><th>Header A</th><th>Header B</th></tr></thead>
+                <tbody>
+                    <tr><td>Data 1</td><td>Data 2</td></tr>
+                </tbody>
+            </table>`;
+            const blocks = editor.parseHtmlToBlocks(html);
+
+            const props = blocks[0].properties as ITableBlockSettings;
+            expect(props.enableHeader).toBe(true);
+            expect(props.columns[0].headerText).toBe('Header A');
+            expect(props.columns[1].headerText).toBe('Header B');
+            expect(props.rows.length).toBe(1); // only body rows
+            expect(props.rows[0].cells[0].blocks[0].content[0].content).toBe('Data 1');
+        });
+
+        it('should handle empty cells gracefully', () => {
+            const html = `<table><tr><td></td><td>   </td><td>Content</td></tr></table>`;
+            const blocks = editor.parseHtmlToBlocks(html);
+
+            const cellBlocks = (blocks[0].properties as ITableBlockSettings).rows[0].cells;
+            expect(cellBlocks[0].blocks.length).toBe(1);
+            expect(cellBlocks[0].blocks[0].blockType).toBe(BlockType.Paragraph);
+            expect(cellBlocks[0].blocks[0].content.length).toBe(0); // empty paragraph
+            expect(cellBlocks[2].blocks[0].content[0].content).toBe('Content');
+        });
+
+        it('should normalize irregular row lengths by padding with empty cells', () => {
+            const html = `
+            <table>
+                <tr><td>A1</td><td>A2</td></tr>
+                <tr><td>B1</td></tr>
+                <tr><td>C1</td><td>C2</td><td>C3</td></tr>
+            </table>`;
+            const blocks = editor.parseHtmlToBlocks(html);
+
+            const props = blocks[0].properties as ITableBlockSettings;
+            expect(props.columns.length).toBe(3);
+            expect(props.rows.length).toBe(3);
+            expect(props.rows[1].cells.length).toBe(3); // padded
+            expect(props.rows[1].cells[1].blocks[0].content.length).toBe(0); // empty
+        });
+
+        it('should parse nested blocks inside table cells (paragraphs, lists, etc.)', () => {
+            const html = `
+            <table>
+                <tr>
+                    <td><p>First para</p><ul><li>Item 1</li></ul></td>
+                    <td>Simple text</td>
+                </tr>
+            </table>`;
+            const blocks = editor.parseHtmlToBlocks(html);
+
+            const cellBlocks = (blocks[0].properties as ITableBlockSettings).rows[0].cells[0].blocks;
+            expect(cellBlocks.length).toBe(2);
+            expect(cellBlocks[0].blockType).toBe(BlockType.Paragraph);
+            expect(cellBlocks[1].blockType).toBe(BlockType.BulletList);
+        });
+
+        it('should convert inline formatting inside cells (bold, italic, links)', () => {
+            const html = `<table><tr><td>This is <strong>bold</strong> and <a href="https://example.com">link</a></td></tr></table>`;
+            const blocks = editor.parseHtmlToBlocks(html);
+
+            const content = (blocks[0].properties as ITableBlockSettings).rows[0].cells[0].blocks[0].content;
+            expect(content[0].content).toBe('This is ');
+            expect(content[1].contentType).toBe(ContentType.Text);
+            expect((content[1].properties as BaseStylesProp).styles.bold).toBe(true);
+            expect(content[2].content).toBe(' and ');
+            expect(content[3].contentType).toBe(ContentType.Link);
+            expect((content[3].properties as ILinkContentSettings).url).toBe('https://example.com');
+        });
+
+        it('should ignore row-number column if class e-row-number is present', () => {
+            const html = `
+            <table>
+                <tr><td class="e-row-number">1</td><td>Real Data</td></tr>
+            </table>`;
+            const blocks = editor.parseHtmlToBlocks(html);
+
+            const props = blocks[0].properties as ITableBlockSettings;
+            expect(props.columns.length).toBe(1); // only real column
+            expect(props.rows[0].cells[0].blocks[0].content[0].content).toBe('Real Data');
+        });
+
+        it('should return with no Table Block if no table found', function () {
+            const html = "<div>No table here</div>";
+            const blocks = editor.parseHtmlToBlocks(html);
+            expect(blocks[0].blockType).not.toBe(BlockType.Table);
+        });
+
+        it('should handle table wrapped in div', () => {
+            const html = `<div><table><tr><td>Hello</td></tr></table></div>`;
+            const blocks = editor.parseHtmlToBlocks(html);
+            expect(blocks.length).toBe(1);
+            expect(blocks[0].blockType).toBe(BlockType.Table);
+        });
+
+        it('should handle colspan gracefully (flattened to single cell)', () => {
+            const html = `<table><tr><td colspan="2">Wide Cell</td></tr><tr><td>A</td><td>B</td></tr></table>`;
+            const blocks = editor.parseHtmlToBlocks(html);
+
+            const props = blocks[0].properties as ITableBlockSettings;
+            expect(props.columns.length).toBe(2);
+            expect(props.rows[0].cells[0].blocks[0].content[0].content).toBe('Wide Cell');
+            expect(props.rows[1].cells.length).toBe(2);
+        });
+
+        it('should handle rowspan gracefully (cell duplicated in matrix)', () => {
+            const html = `<table><tr><td rowspan="2">Tall</td><td>Top</td></tr><tr><td>Bottom</td></tr></table>`;
+            const blocks = editor.parseHtmlToBlocks(html);
+
+            const props = blocks[0].properties as ITableBlockSettings;
+            expect(props.rows.length).toBe(2);
+            expect(props.rows[0].cells[0].blocks[0].content[0].content).toBe('Tall');
+            expect(props.rows[1].cells[0].blocks[0].content[0].content).toBe('Bottom');
+        });
+
+        it('should parse table with mixed <th> and <td> in body', () => {
+            const html = `<table><tr><td>Normal</td><th>Header-like in body</th></tr></table>`;
+            const blocks = editor.parseHtmlToBlocks(html);
+
+            const props = blocks[0].properties as ITableBlockSettings;
+            expect(props.enableHeader).toBe(false); // no real header
+            expect(props.rows[0].cells[1].blocks[0].content[0].content).toBe('Header-like in body');
+        });
+
+        it('should handle table with only header row', () => {
+            const html = `<table><thead><tr><th>Only Header</th></tr></thead></table>`;
+            const blocks = editor.parseHtmlToBlocks(html);
+
+            const props = blocks[0].properties as ITableBlockSettings;
+            expect(props.enableHeader).toBe(true);
+            expect(props.columns[0].headerText).toBe('Only Header');
+            expect(props.rows.length).toBe(0); // no body rows
+        });
+
+        it('should handle completely empty table', () => {
+            const html = `<table></table>`;
+            const blocks = editor.parseHtmlToBlocks(html);
+            expect(blocks.length).toBe(0);
         });
     });
 });

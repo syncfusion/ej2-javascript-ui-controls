@@ -6,8 +6,9 @@ import { MenuSelectEventArgs, removeSheetTab, cMenuBeforeOpen, renameSheetTab, c
 import { addContextMenuItems, removeContextMenuItems, enableContextMenuItems, initiateCustomSort, hideSheet } from '../common/index';
 import { openHyperlink, initiateHyperlink, editHyperlink, HideShowEventArgs, addNote, editNote, deleteNote } from '../common/index';
 import { filterByCellValue, reapplyFilter, clearFilter, getFilteredColumn, applySort, locale, removeHyperlink } from '../common/index';
+import { showHideNote, deleteComment, initiateComment, replyToComment } from '../common/index';
 import { getRangeIndexes, getColumnHeaderText, getCellIndexes, InsertDeleteModelArgs, insertModel, SortCollectionModel, getDataRange, isReadOnlyCells, updateSortCollection} from '../../workbook/common/index';
-import { RowModel, ColumnModel, SheetModel, getSwapRange, getSheetIndex, moveSheet, duplicateSheet, hideShow, getRow, getColumn, getSheet } from '../../workbook/index';
+import { RowModel, ColumnModel, SheetModel, getSwapRange, getSheetIndex, moveSheet, duplicateSheet, hideShow, getRow, getColumn, getSheet, CellModel, getCell } from '../../workbook/index';
 import { toggleProtect } from '../common/index';
 
 /**
@@ -233,6 +234,18 @@ export class ContextMenu {
             case id + '_deleteNote':
                 this.parent.notify(deleteNote, {rowIndex: null, columnIndex: null, isDeleteFromMenu: true});
                 break;
+            case id + '_showHideNote':
+                this.parent.notify(showHideNote, null);
+                break;
+            case id + '_newComment':
+                this.parent.notify(initiateComment, null);
+                break;
+            case id + '_newReply':
+                this.parent.notify(replyToComment, null);
+                break;
+            case id + '_deleteComment':
+                this.parent.notify(deleteComment, { rowIndex: range[0], columnIndex: range[1] });
+                break;
             case id + '_hyperlink':
                 this.parent.notify(initiateHyperlink, null);
                 break;
@@ -428,10 +441,11 @@ export class ContextMenu {
             this.setFilterItems(items, id);
             this.setSortItems(items, id);
             items.push({ separator: true });
+            this.setCommentsMenu(items, id);
             if (this.parent.enableNotes) {
                 this.setNotesMenu(items, id);
-                items.push({ separator: true });
             }
+            items.push({ separator: true });
             this.setHyperLink(items, id);
         } else if (target === 'RowHeader') {
             this.setClipboardData(items, l10n, id);
@@ -568,18 +582,42 @@ export class ContextMenu {
     private setNotesMenu(items: MenuItemModel[], id: string): void {
         if (this.parent.enableNotes) {
             const l10n: L10n = this.parent.serviceLocator.getService(locale);
-            const cellIndexes: number[] = getCellIndexes(this.parent.getActiveSheet().activeCell);
+            const sheet: SheetModel = this.parent.getActiveSheet();
+            const cellIndexes: number[] = getCellIndexes(sheet.activeCell);
             const targetElement: HTMLElement = this.parent.getCell(cellIndexes[0], cellIndexes[1]);
+            const cell: CellModel = getCell(cellIndexes[0], cellIndexes[1], sheet);
             if (!isNullOrUndefined(targetElement) && targetElement.children.length > 0 && targetElement.children[(targetElement.children.length - 1) as number].className.indexOf('addNoteIndicator') > -1) {
                 items.push(
                     { text: l10n.getConstant('EditNote'), iconCss: 'e-icons e-edit-notes', id: id + '_editNote' },
-                    { text: l10n.getConstant('DeleteNote'), iconCss: 'e-icons e-delete-notes', id: id + '_deleteNote' }
+                    { text: l10n.getConstant('DeleteNote'), iconCss: 'e-icons e-delete-notes', id: id + '_deleteNote' },
+                    { text: l10n.getConstant('ShowHideNote'), iconCss: 'e-icons e-notes', id: id + '_showHideNote' }
                 );
-            } else {
+            } else if (!cell || (cell && !cell.comment)) {
                 items.push({
                     text: l10n.getConstant('AddNote'), iconCss: 'e-icons e-add-notes', id: id + '_addNote'
                 });
             }
+        }
+    }
+
+    private setCommentsMenu(items: MenuItemModel[], id: string): void {
+        const l10n: L10n = this.parent.serviceLocator.getService(locale);
+        const sheet: SheetModel = this.parent.getActiveSheet();
+        const indexes: number[] = getCellIndexes(sheet.activeCell);
+        const targetElement: HTMLElement = this.parent.getCell(indexes[0], indexes[1]);
+        const cell: CellModel = getCell(indexes[0], indexes[1], sheet);
+        if (!isNullOrUndefined(targetElement) && targetElement.children.length > 0 &&
+            targetElement.children[(targetElement.children.length - 1)].className.indexOf('e-comment-indicator') > -1
+            && cell && cell.comment) {
+            const commentItems: MenuItemModel[] = [
+                { text: l10n.getConstant('DeleteComment'), iconCss: 'e-icons e-close-comment', id: id + '_deleteComment' }
+            ];
+            if (!cell.comment.isResolved) {
+                commentItems.push({ text: l10n.getConstant('NewReply'), iconCss: 'e-icons e-comment-reopen', id: id + '_newReply' });
+            }
+            items.push({ text: l10n.getConstant('Comment'), id: id + '_comment', iconCss: '', items: commentItems });
+        } else if (!cell || (cell && !cell.notes)) {
+            items.push({ text: l10n.getConstant('NewComment'), iconCss: 'e-icons e-comment-add', id: id + '_newComment' });
         }
     }
 

@@ -231,7 +231,6 @@ describe('Assign the paragraph formatting', () => {
         expect(sourceFormat.widowControl).toBe(true);
     });
 });
-
 describe('container document paragraph format validation', () => {
     let container: DocumentEditorContainer;
     let element: HTMLElement;
@@ -257,7 +256,6 @@ describe('container document paragraph format validation', () => {
         element = undefined;
         container = undefined;
     });
-
     it('Set document defalut paragraph format API validation', () => {
         console.log('Set paragraph format API validation');
         container.documentEditor.openBlank();
@@ -299,7 +297,6 @@ describe('container document default paragraph format validation', () => {
         element = undefined;
         container = undefined;
     });
-
     it('Set document defalut paragraph format API validation', () => {
         console.log('Set paragraph format API validation');
         container.documentEditor.openBlank();

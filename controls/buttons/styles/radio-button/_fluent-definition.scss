@@ -1,3 +1,5 @@
+@use 'ej2-base/styles/definition/fluent' as *;
+@forward 'ej2-base/styles/definition/fluent';
 $radio-btn-border: 1px solid !default;
 $radio-btn-bigger-font-size: $text-base !default;
 $radio-btn-bigger-height: 24px !default;
@@ -73,5 +75,16 @@ $radio-btn-focus-outline: $radio-btn-background-color 0 solid !default;
 // fluent theme
 $radio-btn-uncheck-background-color: $icon-color !default;
 $radio-btn-uncheck-color: $icon-color !default;
+$radio-btn-zero-padding: 0 !default;
+$radio-button-border-radius: 50% !default;
+$radio-label-font-weight: normal !default;
+$radio-btn-after-border: 1px solid !default;
+$radio-btn-wrapper-line-height: 1 !default;
+$radio-btn-radio-height: 1px !default;
+$radio-btn-radio-width: 1px !default;
+$radio-ripple-left: -10px !default;
+$radio-auto-position: auto !default;
+$radio-ripple-rtl-container-left: -12px !default;
+$radio-nrml-ripple-rtl-container-left: -8px !default;
 
 $radio-btn-border-error-color: $border-error;

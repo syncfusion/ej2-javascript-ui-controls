@@ -1,3 +1,5 @@
+@use 'ej2-base/styles/common/mixin' as *;
+@use './theme-variables' as *;
 @include export-module('timepicker-theme') {
   .e-time-wrapper {
     #{if(&, '&', '*')} .e-input-group-icon.e-icons.e-active {
@@ -93,7 +95,7 @@
         }
         color: $timepicker-list-active-font-color;
         @if $skin-name == 'tailwind3' {
-          font-weight: 500;
+          font-weight: $font-weight-medium;
         }
       }
 
@@ -127,7 +129,7 @@
 
       #{if(&, '&', '*')} .e-popup-close {
         color: $modal-header-text-color;
-        font-weight: 500;
+        font-weight: $timepicker-model-title-font-weight;
       }
     }
   }

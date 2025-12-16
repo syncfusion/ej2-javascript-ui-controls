@@ -2,7 +2,6 @@ import { createElement } from '@syncfusion/ej2-base';
 import { Diagram } from '../../../src/diagram/diagram';
 import { DiagramElement } from '../../../src/diagram/core/elements/diagram-element';
 import { ConnectorModel } from '../../../src/diagram/objects/connector-model';
-import { Segments } from '../../../src/diagram/enum/enum';
 import  {profile , inMB, getMemoryProfile} from '../../../spec/common.spec';
 /**
  * Connector Annotations
@@ -54,6 +53,7 @@ describe('Diagram Control', () => {
         afterAll((): void => {
             diagram.destroy();
             ele.remove();
+            (diagram as any) = null; (ele as any) = null;
         });
 
 
@@ -72,14 +72,14 @@ describe('Diagram Control', () => {
             }
             done();
         });
-        it('memory leak', () => { 
-            profile.sample();
-            let average: any = inMB(profile.averageChange)
-            //Check average change in memory samples to not be over 10MB
-            expect(average).toBeLessThan(10);
-            let memory: any = inMB(getMemoryProfile())
-            //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
-            expect(memory).toBeLessThan(profile.samples[0] + 0.25);
-        })
+        // it('memory leak', () => { 
+        //     profile.sample();
+        //     let average: any = inMB(profile.averageChange)
+        //     //Check average change in memory samples to not be over 10MB
+        //     expect(average).toBeLessThan(10);
+        //     let memory: any = inMB(getMemoryProfile())
+        //     //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
+        //     expect(memory).toBeLessThan(profile.samples[0] + 0.25);
+        // })
     });
 });

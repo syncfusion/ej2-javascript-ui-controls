@@ -1,3 +1,6 @@
+@use 'ej2-base/styles/common/mixin' as *;
+@use '../bootstrap4-definition' as *;
+
 /*! component's theme wise override definitions and variables */
 
 @include export-module('richtexteditor-bootstrap4-icons') {
@@ -24,6 +27,10 @@
     }
     .e-justify-left::before {
       content: '\e76f';
+    }
+
+    .e-lineHeight::before {
+      content: '\e784';
     }
 
     .e-justify-center::before {

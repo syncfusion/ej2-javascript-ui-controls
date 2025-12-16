@@ -5,12 +5,13 @@ import { IGanttData, ITaskData, IPredecessor, IConnectorLineObject, ITaskSegment
 import { TaskFieldsModel } from '../models/models';
 import { DateProcessor } from '../base/date-processor';
 import { Gantt } from '../base/gantt';
-import { getIndex, isScheduledTask } from '../base/utils';
+import {getIndex, isScheduledTask } from '../base/utils';
 import { getValue, isNullOrUndefined, extend } from '@syncfusion/ej2-base';
 import { TaskbarEdit } from './taskbar-edit';
 import { PdfExport } from './pdf-export';
 import { ConstraintType, ExportType, ViolationType } from '../base/enum';
 import { Edit } from './edit';
+import { CalendarContext } from '../base/calendar-context';
 
 export class Dependency {
 
@@ -475,21 +476,6 @@ export class Dependency {
         return Array.from(seen.values());
     }
 
-    private generatePredecessorValue(currentValue: IPredecessor, temp: string): string {
-        if (currentValue.offset !== 0) {
-            temp += currentValue.offset > 0 ? ('+' + currentValue.offset + ' ') : (currentValue.offset + ' ');
-            const multiple: boolean = currentValue.offset !== 1;
-            if (currentValue.offsetUnit === 'day') {
-                temp += multiple ? this.parent.localeObj.getConstant('days') : this.parent.localeObj.getConstant('day');
-            } else if (currentValue.offsetUnit === 'hour') {
-                temp += multiple ? this.parent.localeObj.getConstant('hours') : this.parent.localeObj.getConstant('hour');
-            } else {
-                temp += multiple ? this.parent.localeObj.getConstant('minutes') : this.parent.localeObj.getConstant('minute');
-            }
-        }
-        return temp;
-    }
-
     /**
      * Get predecessor value as string with offset values
      *
@@ -519,7 +505,17 @@ export class Dependency {
                         temp1 = temp;
                     }
                     temp = temp1;
-                    temp = this.generatePredecessorValue(currentValue, temp);
+                    if (currentValue.offset !== 0) {
+                        temp += currentValue.offset > 0 ? ('+' + currentValue.offset + ' ') : (currentValue.offset + ' ');
+                        const multiple: boolean = currentValue.offset !== 1;
+                        if (currentValue.offsetUnit === 'day') {
+                            temp += multiple ? this.parent.localeObj.getConstant('days') : this.parent.localeObj.getConstant('day');
+                        } else if (currentValue.offsetUnit === 'hour') {
+                            temp += multiple ? this.parent.localeObj.getConstant('hours') : this.parent.localeObj.getConstant('hour');
+                        } else {
+                            temp += multiple ? this.parent.localeObj.getConstant('minutes') : this.parent.localeObj.getConstant('minute');
+                        }
+                    }
                     if (resultString.length > 0) {
                         resultString = resultString + ',' + temp;
                     } else {
@@ -781,12 +777,29 @@ export class Dependency {
         const predecessor: IPredecessor = predecessors[0];
         let parentGanttRecord: IGanttData;
         let record: IGanttData;
+        let originalStartDate: Date | null = null;
+        let originalEndDate: Date | null = null;
         if (hasValidFlatData) {
             parentGanttRecord = flatDataCollection.get(predecessor.from);
             record = flatDataCollection.get(predecessor.to);
         } else {
             parentGanttRecord = this.parent.connectorLineModule.getRecordByID(predecessor.from);
             record = this.parent.connectorLineModule.getRecordByID(predecessor.to);
+        }
+        const taskFields: TaskFieldsModel = this.parent.taskFields;
+        if (this.parent.autoCalculateDateScheduling && this.parent.isLoad) {
+            // Resolve and store original start date with working time applied
+            if (record && record[taskFields.startDate]) {
+                const naiveStartDate: Date = record[taskFields.startDate];
+                this.parent.dataOperation['resolveAndApplyWorkingTimes'](naiveStartDate);
+                originalStartDate = new Date(naiveStartDate.getTime());
+            }
+            // Resolve and store original end date with working time applied
+            if (record && record[taskFields.endDate]) {
+                const naiveEndDate: Date = record[taskFields.endDate];
+                this.parent.dataOperation['resolveAndApplyWorkingTimes'](null, naiveEndDate);
+                originalEndDate = new Date(naiveEndDate.getTime());
+            }
         }
         if (allowParentDependency && parentGanttRecord && parentGanttRecord.hasChildRecords) {
             this.parent.dataOperation.updateParentItems(parentGanttRecord);
@@ -811,6 +824,18 @@ export class Dependency {
         }
         if (record && (record.ganttProperties.isAutoSchedule || validateManualTasks)) {
             this.validateChildGanttRecord(parentGanttRecord, record, flatDataCollection, predecessors);
+        }
+        // Auto-schedule validation: check if dates were adjusted due to working time rules
+        if (this.parent.autoCalculateDateScheduling && this.parent.isLoad &&
+            isNullOrUndefined(record[taskFields.constraintDate]) &&
+            (
+                (record[taskFields.startDate] && originalStartDate &&
+                originalStartDate.getTime() !== record[taskFields.startDate].getTime()) ||
+                (record[taskFields.endDate] && originalEndDate &&
+                originalEndDate.getTime() !== record[taskFields.endDate].getTime())
+            )
+        ) {
+            this.parent.dataOperation['validatedGanttData'].set(record.ganttProperties.taskId, record);
         }
     }
     private getConstraintDate(
@@ -929,6 +954,10 @@ export class Dependency {
             const endDate: Date = childRecordProperty.endDate;
             const constraintDate: Date = this.getConstraintDate(constraintType, startDate, endDate, childRecordProperty.constraintDate);
             this.parent.setRecordValue('constraintDate', constraintDate, childRecordProperty, true);
+            if (this.parent.autoCalculateDateScheduling && this.parent.isLoad && childRecordProperty.constraintDate &&
+                startDate.getTime() !== childRecordProperty.constraintDate.getTime()) {
+                this.parent.dataOperation['validatedGanttData'].set(childGanttRecord.ganttProperties.taskId, childGanttRecord);
+            }
             this.parent.dataOperation.updateMappingData(childGanttRecord, 'constraintDate');
         }
     }
@@ -1050,6 +1079,7 @@ export class Dependency {
         const offset: number = predecessor.offset;
         let tempDate: Date;
         let returnStartDate: Date;
+        const calendarContext: CalendarContext = ganttProperty.calendarContext;
         switch (type) {
         case 'FS':
             tempDate = this.dateValidateModule.getValidEndDate(parentRecordProperty);
@@ -1085,7 +1115,7 @@ export class Dependency {
             if (ganttProperty.segments && ganttProperty.segments.length !== 0) {
                 const duration: number = this.dateValidateModule.getDuration(ganttProperty.startDate, ganttProperty.endDate,
                                                                              ganttProperty.durationUnit, ganttProperty.isAutoSchedule,
-                                                                             ganttProperty.isMilestone);
+                                                                             ganttProperty.isMilestone, undefined, calendarContext);
                 returnStartDate = this.dateValidateModule.getStartDate(
                     tempDate, duration, ganttProperty.durationUnit, ganttProperty);
             } else {
@@ -1358,7 +1388,6 @@ export class Dependency {
             return false;
         }
     }
-
     /**
      * Handles the update logic for a task's dependency and validates whether child tasks should be updated.
      * It retrieves the previous start and end dates from the stored records to determine if dependency validation is required.
@@ -1642,6 +1671,7 @@ export class Dependency {
      * @returns {void} .
      */
     private updateChildItems(ganttRecord: IGanttData): void {
+        const calendarContext: CalendarContext = ganttRecord.ganttProperties.calendarContext;
         if (ganttRecord.childRecords.length > 0 && this.validatedChildItems && this.validatedChildItems.length > 0) {
             let isPresent: boolean = true;
             isPresent = !ganttRecord.childRecords.some((record: IGanttData) => {
@@ -1686,8 +1716,9 @@ export class Dependency {
         if (!isNullOrUndefined(validStartDate) && !isNullOrUndefined(validEndDate) && validStartDate.getTime() >= validEndDate.getTime()) {
             durationDiff = 0;
         } else {
-            durationDiff = this.parent.dateValidationModule.getDuration(validStartDate, validEndDate,
-                                                                        ganttRecord.ganttProperties.durationUnit, true, false);
+            durationDiff = this.parent.dateValidationModule.getDuration(
+                validStartDate, validEndDate, ganttRecord.ganttProperties.durationUnit, true, false, undefined, calendarContext
+            );
         }
         for (let i: number = 0; i < childRecords.length; i++) {
             if (childRecords[i as number].ganttProperties.isAutoSchedule) {
@@ -1864,7 +1895,7 @@ export class Dependency {
 
             if (tempStartDate.getTime() < tempEndDate.getTime()) {
                 tempDuration = this.dateValidateModule.getDuration(
-                    tempStartDate, tempEndDate, predecessor.offsetUnit, true, false);
+                    tempStartDate, tempEndDate, predecessor.offsetUnit, true, false, undefined, record.ganttProperties.calendarContext);
 
                 if (this.parent.durationUnit === predecessor.offsetUnit &&
                     ((parentTask.ganttProperties.startDate && isNullOrUndefined(parentTask.ganttProperties.endDate)) ||
@@ -1903,12 +1934,12 @@ export class Dependency {
                         prevPredecessor[preIndex as number].offset = offset;
                     }
                     // Update predecessor in predecessor task
-                    const parentTaskPredecessors: IPredecessor = extend([], parentTask.ganttProperties.predecessor, [], true);
-                    const parentPreIndex: number = getIndex(predecessor, 'from', parentTaskPredecessors, 'to');
+                    const parentPredecessors: IPredecessor = extend([], parentTask.ganttProperties.predecessor, [], true);
+                    const parentPreIndex: number = getIndex(predecessor, 'from', parentPredecessors, 'to');
                     if (parentPreIndex !== -1) {
-                        parentTaskPredecessors[parentPreIndex as number].offset = offset;
+                        parentPredecessors[parentPreIndex as number].offset = offset;
                     }
-                    parentTask.ganttProperties.predecessor = parentTaskPredecessors as IPredecessor[];
+                    this.parent.setRecordValue('predecessor', parentPredecessors, parentTask.ganttProperties, true);
                 }
             } else {
                 const validPredecessor: IPredecessor[] = record.ganttProperties.predecessor;

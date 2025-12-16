@@ -1,4 +1,7 @@
-@import 'definition.scss';
+@use 'ej2-base/styles/common/mixin' as *;
+@use 'definition' as *;
+@use 'ej2-base/styles/definition/fabric' as *;
+@forward 'ej2-base/styles/definition/fabric';
 
 $diagram-endpoint-handle-color: $theme-primary-font;
 $diagram-endpoint-handle-connected-border: $theme-primary-font;

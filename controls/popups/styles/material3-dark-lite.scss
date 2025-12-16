@@ -1,13 +1,13 @@
-@import 'ej2-base/styles/definition/material3-dark.scss';
-@import 'ej2-buttons/styles/button/material3-dark-definition.scss';
-@import 'dialog/material3-dark-definition.scss';
-@import 'dialog/icons/material3-dark.scss';
-@import 'dialog/all.scss';
-@import 'popup/material3-dark-definition.scss';
-@import 'popup/all.scss';
+@use 'ej2-base/styles/definition/material3-dark' as *;
+@use 'ej2-buttons/styles/button/material3-dark-definition' as *;
+@use 'popup/material3-dark-definition' as *;
+@use 'dialog/material3-dark-definition' as *;
+@use 'dialog/icons/material3-dark' as *;
+@use 'dialog/all' as *;
+@use 'popup/all' as *;
 
-@import 'tooltip/material3-dark-definition.scss';
-@import 'tooltip/icons/material3-dark.scss';
-@import 'tooltip/all.scss';
-@import 'spinner/material3-dark-definition.scss';
-@import 'spinner/all.scss';
+@use 'tooltip/material3-dark-definition' as *;
+@use 'tooltip/icons/material3-dark' as *;
+@use 'tooltip/all' as *;
+@use 'spinner/material3-dark-definition' as *;
+@use 'spinner/all' as *;

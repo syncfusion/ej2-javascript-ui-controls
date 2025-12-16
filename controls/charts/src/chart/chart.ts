@@ -1720,6 +1720,7 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
 
     /** @private */
     public isLegendClicked: boolean = false;
+
     public isZoomed: boolean = false;
     private previousTargetId: string = '';
     private currentPointIndex: number = 0;
@@ -1734,6 +1735,10 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
     public pointsAdded: boolean = false;
     /** @private */
     public zoomRedraw: boolean = false;
+    /** @private */
+    public xAxisLabelTemplate: Element;
+    /** @private */
+    public yAxisLabelTemplate: Element;
 
     /**
      * Constructor for the chart component.
@@ -1804,6 +1809,7 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
 
     protected preRender(): void {
         this.element.id = this.isIdHasSpecialCharacter(this.element.id);
+
         this.allowServerDataBinding = false;
         this.markerIndex = 0;
         this.unWireEvents();
@@ -2118,6 +2124,14 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
 
         this.setSecondaryElementPosition();
 
+        if (this.xAxisLabelTemplate || this.yAxisLabelTemplate) {
+            if (this.xAxisLabelTemplate) {
+                appendChildElement(false, getElement(this.element.id + '_Secondary_Element'), this.xAxisLabelTemplate, this.redraw);
+            }
+            if (this.yAxisLabelTemplate) {
+                appendChildElement(false, getElement(this.element.id + '_Secondary_Element'), this.yAxisLabelTemplate, this.redraw);
+            }
+        }
         this.renderAnnotation();
         if (this.stackLabels.visible && this.visibleSeries.some((series: Series) => series.type && series.type.indexOf('Stacking') > -1) && this.dataLabelModule) {
             this.dataLabelModule.renderStackLabels();
@@ -3175,6 +3189,8 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
         this.dataLabelElements = null;
         this.lastValueLabelCollections = null;
         this.lastValueLabelElements = null;
+        this.xAxisLabelTemplate = null;
+        this.yAxisLabelTemplate = null;
         this.yAxisElements = null;
         const element: HTMLElement = document.getElementById(this.element.id + 'Keyboard_chart_focus');
         if (element) { element.remove(); }
@@ -4601,6 +4617,7 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
             this.svgObject.appendChild(this.zoomModule.pinchTarget);
             removeLength = 1;
         }
+        // Fix for blazor resize issue
 
         if (this.svgObject) {
             while (this.svgObject.childNodes.length > removeLength) {
@@ -4684,6 +4701,16 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
         this.refreshDefinition(<Row[]>this.rows);
         this.calculateVisibleAxis();
         this.processData(false);
+        if (this.enableCanvas) {
+            this.createChartSvg();
+        }
+        else {
+            this.removeSvg();
+        }
+        // this.enableCanvas ? this.createChartSvg() : this.removeSvg();
+        this.refreshAxis();
+        this.refreshBound();
+        this.trigger('loaded', { chart: this });
     }
 
     /**

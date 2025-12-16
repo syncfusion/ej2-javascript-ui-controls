@@ -1,3 +1,6 @@
+@use 'ej2-base/styles/definition/bootstrap5.3' as *;
+@forward 'ej2-base/styles/definition/bootstrap5.3';
+
 //layout variables
 $listbox-font-family: $font-family !default;
 $listbox-icon-margin-right: 16px !default;
@@ -41,6 +44,14 @@ $listbox-checkbox-right-margin: -2px 0 0 8px !default;
 $listbox-checkbox-left-margin: -2px 8px 0 0 !default;
 $listbox-rtl-checkbox-left-margin: -2px 0 0 8px !default;
 $listbox-rtl-checkbox-right-margin: -2px 8px 0 0 !default;
+$list-item-grp-padding: 9px 16px !default;
+
+$listbox-bigger-wrapper-padding: 12px !default;
+$listbox-zero-margin-padding: 0 !default;
+$listbox-input-grp-padding: 4px 8px !default;
+$listbox-input-focus-padding: 4px 4px 4px 8px !default;
+$listbox-tool-padding: 8px !default;
+$listbox-template-multiline-header-font-weight: 500 !default;
 
 //ListView In-built template variables
 $listbox-template-padding: 8px 16px !default;
@@ -122,3 +133,44 @@ $listbox-ej2-filterselect-bigger-height: calc(100% - 104px) !default;
 $listbox-dragged-item-bg-color: $content-bg-color-dragged !default;
 $listbox-dragged-item-text-color: $content-text-color-dragged !default;
 $listbox-icon-padding: 1px !default;
+$listbox-group-item-font-weight: 600 !default;
+$listbox-icon-collapsible-font-size: 12px !default;
+$listbox-zero-padding-margin: 0 !default;
+$listbox-list-icon-margin-left: 16px !default;
+$listbox-list-badge-border-radius: $radius-full !default;
+$listbox-list-badge-font-size: 12px !default;
+$listbox-wrapper-right-left-margin: 15px !default;
+$listbox-tool-btn-margin-bottom: 10px !default;
+
+$listbox-full-height: 100% !default;
+$listbox-list-icon-height: 30px !default;
+$listbox-hidden-select-height: 1px !default;
+$listbox-placeholder-height: 2px !default;
+$list-border-width: 1px !default;
+$list-badge-height: 22px !default;
+$list-icon-width: auto !default;
+$list-icon-height: auto !default;
+$list-badge-width: 22px !default;
+$listbox-list-icon-width: 30px !default;
+$listbox-full-width: 100% !default;
+$list-box-header-view-top: 45px !default;
+$list-box-half-width: 50% !default;
+$checkbox-wrapper-top: 30% !default;
+$list-box-list-item-height: 38px !default;
+$list-box-list-badge-right: -10px !default;
+$list-box-list-badge-top: -10px !default;
+$list-text-checkbox-width: calc(100% - 40px);
+$list-box-checkbox-icon-width: calc(100% - 90px);
+$list-checkbox-right-icon-width: calc(100% - 80px);
+$list-box-icon-child-width: calc(100% - 92px);
+$list-box-text-width: calc(100% - 60px);
+$list-box-bgr-border-radius: $radius-6 !default;
+$list-box-bgr-list-item-font-size: 16px !default;
+$list-tool-box-wrap-width: calc(100% - 20px);
+$list-box-nrml-border-radius: $radius-4 !default;
+$list-group-item-padding: 7px 12px !default;
+$list-tool-nrml-box-wrap-width: calc(100% - 16%);
+$list-box-full-height: 100% !default;
+$list-border: 1px !default;
+$zero-border: 0 !default;
+$zero-width: 0% !default;

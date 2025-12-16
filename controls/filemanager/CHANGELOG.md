@@ -2,22 +2,6 @@
 
 ## [Unreleased]
 
-## 31.2.18 (2025-12-09)
-
-### FileManager
-
-`#F197650` - The issue with incorrect validation message in File Manager component with flat data configuration has been resolved.
-
-## 31.1.21 (2025-09-23)
-
-### FileManager
-
-#### Bug Fixes
-
-- `#I756413` - The issue with the sorting icon is not updated correctly when the sort order is set to `none` in the File Manager component has been resolved.
-
-## 31.1.17 (2025-09-05)
-
 ### FileManager
 
 #### Bug Fixes

@@ -1,3 +1,6 @@
+@use 'ej2-base/styles/definition/bds' as *;
+@forward 'ej2-base/styles/definition/bds';
+
 //layout variables
 $btn-font-size: $text-sm !default;
 $btn-border: 1px solid !default;
@@ -61,6 +64,7 @@ $btn-small-icon-padding: 3px 7px !default;
 $btn-bigger-icon-padding: 7px 15px !default;
 $btn-bigger-small-icon-padding: 6px 13px !default;
 $btn-bigger-font-weight: $font-weight-semibold !default;
+$btn-zero-padding: 0 !default;
 
 //normal
 $btn-color: $secondary-text-color !default;
@@ -358,6 +362,27 @@ $btn-success-focus-box-shadow: $success-shadow-focus !default;
 $btn-danger-focus-box-shadow: $danger-shadow-focus !default;
 $btn-info-focus-box-shadow: $info-shadow-focus !default;
 $btn-warning-focus-box-shadow: $warning-shadow-focus !default;
+
+$btn-top-bottom-icon-line-height: 1 !default;
+$btn-round-line-height: 1 !default;
+$btn-round-border-radius: 50% !default;
+
+$btn-auto-width: auto !default;
+$btn-width-full: 100% !default;
+
+$btn-zero-border: 0 !default;
+$btn-zero-line-height: 0 !default;
+$btn-bgr-icon-line-height: 16px !default;
+$btn-icon-bgr-line-height: 1.352em !default;
+$btn-bgr-icon-font-size: 16px !default;
+$btn-icon-btn-line-height: 14px !default;
+$btn-small-flu2-font-size: 14px !default;
+$btn-small-flu2-line-height: 13px !default;
+$btn-bgr-mat3-border-radius: 4px !default;
+$btn-bgr-mat3-round-border-radius: 25px !default;
+$btn-icon-bgr-line-height: 1.2 !default;
+$btn-css-letter-spacing: .15px !default;
+$btn-bgr-tail-border-radius: 4px !default;
 
 /* stylelint-disable */
 .e-btn.e-primary:focus{

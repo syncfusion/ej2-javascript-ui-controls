@@ -1,1 +1,651 @@
-@import './material3-definition.scss';
+@use 'sass:color';
+@use 'ej2-base/styles/common/mixin' as *;
+@use 'ej2-base/styles/definition/material3-dark' as *;
+@forward 'ej2-base/styles/definition/material3-dark';
+
+$ddl-chip-mobile-close-font: 16px !default;
+$ddl-multiselect-skin-name: 'Material3' !default;
+$ddl-delim-font-size: $text-sm !default;
+$ddl-rtl-wrapper: 0 2px 0 32px !default;
+$ddl-chip-mobile-bg: rgba($primary) !default;
+$ddl-chip-mobile-font: $grey-white !default;
+$ddl-list-box-shadow-color: rgba(0, 0, 0, .21) !default;
+$ddl-chip-bg-color:  $transparent !default;
+$ddl-chip-hover-bg-color: ($content-bg-color-hover, .05) !default;
+$ddl-chip-hover-font-color: rgba($content-text-color-alt1) !default;
+$ddl-sel-hover-chip-bg-color: ($content-bg-color-hover, .05) !default;
+$ddl-sel-chip-hover-font-color: rgba($content-text-color-alt1) !default;
+$ddl-chip-font-color: rgba($content-text-color-alt1) !default;
+$ddl-chip-close: rgba($icon-color) !default;
+$ddl-sel-chip-font-color: rgba($content-text-color-alt1) !default;
+$ddl-sel-chip-close: rgba($icon-color) !default;
+$ddl-sel-chip-color: rgba($icon-color) !default;
+$ddl-sel-chip-bg-color: $transparent !default;
+$ddl-search-wrapper-width: calc(100% - 32px) !default;
+$ddl-bigger-search-wrapper-width: calc(100% - 38px) !default;
+$ddl-bigger-small-search-wrapper-width: calc(100% - 32px) !default;
+$ddl-small-search-wrapper-width: calc(100% - 30px) !default;
+$ddl-chip-selected-shadow-value: 0 2px 3px 1px $ddl-list-box-shadow-color !default;
+$ddl-popup-shadow-value: $shadow-md !default;
+$ddl-remains-font-color: rgba($content-text-color) !default;
+$ddl-remains-padding-left: 16px !default;
+$ddl-chip-margin: 0 8px 4px 0 !default;
+$ddl-chip-margin-bigger: 0 8px 5px 0 !default;
+$ddl-chip-radius: $radius-8 !default;
+$ddl-chip-content-padding: 2px 6px 2px 2px !default;
+$ddl-chip-mobile-content-padding: 8px 4px 8px 0 !default;
+$ddl-rtl-chip-mobile-content-padding: 8px 0 8px 4px !default;
+$ddl-chip-padding: 0 4px 0 8px !default;
+$ddl-chip-close-top: 0 !default;
+$ddl-chip-close-left: 0 !default;
+$ddl-chip-close-margin: 0 0 0 !default;
+$ddl-chip-close-rtl-margin: 0 0 0 !default;
+$ddl-chip-close-square: 13px !default;
+$ddl-chip-close-width: 16px !default;
+$ddl-chip-hooker-square: 30px !default;
+$ddl-chip-hooker-width: 30px !default;
+$ddl-chip-close-font: 13px !default;
+$ddl-chip-height: 24px !default;
+$ddl-chip-mobile-height: 32px !default;
+$ddl-close-icon-small-right: 22px !default;
+$ddl-chip-collection-top: 0 !default;
+$ddl-input-height: 28px !default;
+$ddl-input-bigger-height: 34px !default;
+$ddl-input-mob-height: 30px !default;
+$ddl-control-height: 30px !default;
+$ddl-control-bigger-height: 37px !default;
+$ddl-delimviewheight: 28px !default;
+$ddl-delimviewheight-bigger: 34px !default;
+$ddl-closer-hooker-font: 16px !default;
+$ddl-chip-font-family: inherit !default;
+$ddl-closer-margin-top: -1.8em !default;
+$ddl-closer-margin-top-bigger: -2.5em !default;
+$ddl-small-close-hooker-margin-top: -1.7em !default;
+$ddl-icon-margin-top: -2em !default;
+$ddl-clear-margin-top: -2em !default;
+$ddl-icon-margin-top-bigger: -2.5em !default;
+$ddl-chip-mobile-radius: $radius-2 !default;
+$ddl-chip-sel-mobile-height: 40px !default;
+$ddl-chip-selected-padding: 12px 4px 11px 0 !default;
+$ddl-chip-mobile-close-margin: 3px 0 0 !default;
+$ddl-chip-close-mob-margin: 8px 0 0 !default;
+$ddl-closer-hooker-top: 100% !default;
+$ddl-closer-hooker-top-margin: 100% !default;
+$ddl-bigger-chip-down-icon-font: 16px !default;
+$ddl-chip-hooker-right: 5px !default;
+$ddl-chip-hooker-bigger-small-right: 34px !default;
+$ddl-chip-mob-left: 0 !default;
+$ddl-chip-mob-padding: 0 0 0 16px !default;
+$ddl-chip-font-size: 13px !default;
+$ddl-rtl-chip-close-left: 0 !default;
+$ddl-rtl-chip-content-padding: 5px 4px !default;
+$ddl-rtl-mob-chip-content-padding: 8px 4px !default;
+$ddl-rtl-mob-chip-content-margin: 0 0 8px 8px !default;
+$ddl-rtl-mob-sel-chip-content-padding: 12px 4px !default;
+$ddl-rtl-chip-padding: 0 8px 0 4px !default;
+$ddl-rtl-mob-sel-chip-padding: 0 8px 0 4px !default;
+$ddl-rtl-mob-chip-padding: 0 4px 0 8px !default;
+$ddl-rtl-hooker-left: -4px !default;
+$ddl-chip-close-mob-top: 0 !default;
+$ddl-chip-close-mobile-top: 0 !default;
+$ddl-control-placholder-padding: 4px 32px 0 0 !default;
+$ddl-overall-close-top: 7px !default;
+$ddl-overall-close-left: 8px !default;
+$ddl-sel-chip-close-mobile-top: 0 !default;
+$ddl-sel-chip-close-mobile-left: 12px !default;
+$ddl-chip-sel-mobile-close-height: 40px !default;
+$ddl-chip-sel-mobile-close-margin: 0 0 0 0 !default;
+$ddl-input-text-indent: 0 !default;
+$ddl-input-placeholder-padding: 4px 0 4px 0 !default;
+$ddl-rtl-chip-sel-close-left: -12px !default;
+$ddl-popup-active-focus-bg-color: $flyout-bg-color-selected !default;
+$ddl-popup-focus-bg-color: $flyout-bg-color-focus !default;
+$ddl-popup-active-focus-font-color: rgba($flyout-text-color-selected) !default;
+$ddl-popup-active-focus-border-color: $transparent !default;
+$ddl-popup-active-focus-border-width: 1px !default;
+$ddl-popup-active-focus-shadow-item: none !default;
+$ddl-input-placeholder: rgba($border) !default;
+$ddl-popup-active-border-color: rgba($primary) !default;
+$ddl-popup-active-border-width: 1px !default;
+$ddl-delim-text-indent: 0 !default;
+$ddl-delimview-bigger-padding-left: $ddl-delim-text-indent !default;
+$ddl-popup-normal-border-width: 1px !default;
+$ddl-check-right: 17px !default;
+$ddl-check-left: 12px !default;
+$ddl-bigger-select-all-height: 48px !default;
+$ddl-select-all-height: 36px !default;
+$ddl-back-icon-margin: 2.5px 10px 0 -52px !default;
+$ddl-back-icon-padding: 0 8px !default;
+$ddl-filterbar-padding: 4px 12px 4px !default;
+$ddl-bigger-filterbar-padding: 4px 0 !default;
+$ddl-delimviewheight-check-bigger: 34px !default;
+$ddl-popup-reorder-border: rgba($flyout-border) !default;
+$ddl-check-right-margin: 10px !default;
+$ddl-bigger-check-right-margin: 12px !default;
+$ddl-selectall-font-size: 14px !default;
+$ddl-close-icon-left: 30px !default;
+$ddl-close-icon-bigger-right: 38px !default;
+$ddl-close-icon-bigger-small-right: 34px !default;
+$ddl-check-icon-top: 6px !default;
+$ddl-bigger-check-right: 17px !default;
+$ddl-multi-list-default-font-color: rgba($flyout-text-color) !default;
+$ddl-multi-list-hover-bg-color: ($flyout-bg-color-hover, .05) !default;
+$ddl-delim-text-padding-right: 6px !default;
+$ddl-list-rtl-padding-right: 15px !default;
+$ddl-close-rtl-icon-left: 30px !default;
+$ddl-chip-close-rtl-left: 0 !default;
+$ddl-delim-font-color: rgba($content-text-color) !default;
+$ddl-close-icon-color: rgba($icon-color) !default;
+$ddl-chip-border: 1px solid rgba($border) !default;
+$ddl-multiselect-group-list-item-rtl-padding-right: 25px !default;
+$ddl-bigger-multiselect-group-list-item-rtl-padding-right: 25px !default;
+$ddl-multiselect-group-list-group-item-padding-left: 16px !default;
+$ddl-multiselect-group-checkbox-wrapper-padding-left: 14px !default;
+$ddl-bigger-multiselect-group-checkbox-wrapper-padding-left: $ddl-multiselect-group-checkbox-wrapper-padding-left !default;
+$ddl-multiselect-group-list-group-item-rtl-padding-right: 16px !default;
+$ddl-multiselect-label-position: 15px !default;
+$ddl-multiselect-filled-floatlabel-fontsize: 14px !default;
+$ddl-multiselect-filled-float-input-min-height: 28px !default;
+$ddl-multiselect-filled-input-min-height: 39px !default;
+$ddl-multiselect-filled-float-input-chip-clear-icon-size: 12px !default;
+$ddl-multiselect-filled-chip-clear-icon-size: 14px !default;
+$multiselect-disable-font-color: rgba($content-text-color, .38) !default;
+$ddl-bigger-closer-hooker-bg-color: rgba($content-text-color, .08) !default;
+$ddl-bigger-closer-hooker-border-radius: $radius-20 !default;
+$ddl-bigger-closer-hooker-width: 38px !default;
+$ddl-bigger-closer-hooker-height: 38px !default;
+$ddl-bigger-small-closer-hooker-height: 34px !default;
+$ddl-bigger-small-closer-hooker-width: 34px !default;
+$ddl-select-all-height-small: 26px !default;
+$ddl-small-chip-height: 20px !default;
+$ddl-chip-small-font-size: 12px !default;
+$ddl-small-chip-close-square: 14px !default;
+$ddl-small-chip-close-width: 14px !default;
+$ddl-small-chip-close-hooker-height: 22px !default;
+$ddl-small-chip-close-hooker-width: 22px !default;
+$ddl-small-chip-close-font: 14px !default;
+$ddl-control-small-height: 24px !default;
+$ddl-small-input-height: 26px !default;
+$ddl-delim-small-font-size: 12px !default;
+$ddl-small-closer-margin-top: -1.5em !default;
+$ddl-chip-close-hooker-small-left: 0 !default;
+$ddl-chip-close-hooker-small-bigger-left: 0 !default;
+$ddl-delimviewheight-small: 26px !default;
+$ddl-multiselect-filled-input-min-height-small: 32px !default;
+$ddl-multiselect-filled-float-input-min-height-small: 22px !default;
+$ddl-multiselect-filled-floatlabel-fontsize-small: 10px !default;
+$ddl-multiselect-filled-chip-clear-icon-size-small: 10px !default;
+$ddl-small-clear-icon-height: 22px !default;
+$ddl-small-clear-icon-width: 22px !default;
+$ddl-closer-hooker-font-small: 14px !default;
+$ddl-small-ddl-icon-top: -1.4em !default;
+$ddl-multiselect-filled-input-min-height-bigger: 52px !default;
+$ddl-multiselect-filled-float-input-min-height-bigger: 36px !default;
+$ddl-multiselect-filled-floatlabel-fontsize-bigger: 12px !default;
+$ddl-select-all-height-bigger-small: 40px !default;
+$ddl-bigger-small-chip-height: 28px !default;
+$ddl-chip-bigger-small-font-size: 13px !default;
+$ddl-bigger-small-chip-close-square: 16px !default;
+$ddl-bigger-small-chip-close-width: 16px !default;
+$ddl-bigger-small-close-hooker-height: 34px !default;
+$ddl-bigger-small-close-hooker-width: 34px !default;
+$ddl-bigger-small-chip-close-font: 16px !default;
+$ddl-control-bigger-small-height: 28px !default;
+$ddl-bigger-small-input-height: 28px !default;
+$ddl-delim-bigger-small-font-size: 13px !default;
+$ddl-delimviewheight-bigger-small: 28px !default;
+$ddl-closer-margin-top-bigger-small: -2.4em !default;
+$ddl-bigger-small-ddl-icon-top: -1.7em !default;
+$ddl-outline-multiselect-height: 34px !default;
+$outline-multiselect-bigger-height: 40px !default;
+$outline-multiselect-small-height: 30px !default;
+$outline-multiselect-inner-input-height: $ddl-outline-multiselect-height !default;
+$outline-multiselect-bigger-inner-input-height: $outline-multiselect-bigger-height !default;
+$outline-multiselect-small-inner-input-height: $outline-multiselect-small-height !default;
+$outline-multiselect-delimeter-padding: 0 0 0 12px !default;
+$outline-multiselect-bigger-delimeter-padding: 0 0 0 16px !default;
+$outline-multiselect-small-delimeter-padding: 0 0 0 8px !default;
+$outline-rtl-multiselect-delimeter-padding: 0 12px 0 0 !default;
+$outline-rtl-multiselect-bigger-delimeter-padding: 0 16px 0 0 !default;
+$outline-rtl-multiselect-small-delimeter-padding: 0 8px 0 0 !default;
+$outline-multiselect-chip-height: 26px !default;
+$outline-multiselect-bigger-chip-height: 32px !default;
+$outline-multiselect-small-chip-height: 24px !default;
+$outline-multiselect-chip-padding: 0 8px !default;
+$outline-multiselect-bigger-chip-padding: 0 12px !default;
+$outline-multiselect-overall-padding: 3px 38px 1px 0 !default;
+$outline-multiselect-bigger-overall-padding: 7px 42px 7px 0 !default;
+$outline-rtl-multiselect-overall-padding: 3px 0 1px 38px !default;
+$outline-rtl-multiselect-bigger-overall-padding: 7px 0 7px 42px !default;
+$outline-multiselect-chip-margin: 4px 0 4px 8px !default;
+$outline-rtl-multiselect-chip-margin: 4px 8px 4px 0 !default;
+$outline-multiselect-chip-font-size: 13px !default;
+$outline-multiselect-small-chip-font-size: 12px !default;
+$outline-multiselect-bigger-chip-font-size: 14px !default;
+$outline-multiselect-chip-bg-color: transparent !default;
+$outline-multiselect-chip-hover-bg-color: ($content-bg-color-hover, 5%) !default;
+$outline-multiselect-sel-chip-bg-color: transparent !default;
+$outline-multiselect-sel-hover-chip-bg-color: ($content-bg-color-hover, 5%) !default;
+$outline-multiselect-close-icon-bg-color: rgba($icon-color) !default;
+$outline-multiselect-close-icon-hover-bg-color: rgba($icon-color-hover, .87) !default;
+$outline-multiselect-remains-font-color: rgba($content-text-color, .6) !default;
+$outline-multiselect-disabled-font-color: rgba($content-text-color, .38) !default;
+$outline-multiselect-disabled-chip-bg-color: transparent !default;
+$filled-multiselect-chip-bg-color: color.adjust($grey-300, $lightness: -7%) !default;
+$filled-multiselect-chip-hover-bg-color: color.adjust($grey-300, $lightness: -7%) !default;
+$ddl-chip-bigger-content-padding: 0 !default;
+
+$ddl-bigger-filled-wrapper-chip-padding: 0 12px !default;
+$ddl-rtl-bigger-small-wrapper-chips-padding: 0 0 0 4px !default;
+$ddl-bigger-small-filled-float-wrapper-chip-padding: 0 4px 0 0 !default;
+$ddl-bigger-filled-float-wrapper-chip-padding-right: 8px !default;
+$ddl-bgr-filled-float-wrapper-chip-font-size: 13px !default;
+$ddl-bigger-small-filled-float-wrapper-chip-font-size: 12px !default;
+$ddl-bgr-small-filled-wrapper-chip-padding: 0 8px 0 0 !default;
+$ddl-bgr-small-filled-wrapper-chip-font-size: 13px !default;
+$ddl-small-bgr-filled-float-chip-padding-left: 8px !default;
+$ddl-rtl-bgr-small-filled-chip-padding: 0 8px !default;
+$ddl-rtl-bgr-small-filled-chip-margin: 8px 0 0 8px !default;
+$ddl-bgr-small-filled-wrapper-chip-margin: 8px 8px 0 0 !default;
+$ddl-bgr-small-filled-wrapper-chip-padding: 0 8px !default;
+$ddl-bigger-filled-float-wrapper-delimiter-input-padding: 5px 0 !default;
+$ddl-bigger-filled-wrapper-padding-top: 3px !default;
+$ddl-bgr-filled-float-input-wrapper-padding: 19px 12px 0 16px !default;
+$ddl-bgr-small-filled-float-wrapper-padding: 11px 12px 0 !default;
+$ddl-multiselect-zero-padding-margin: 0 !default;
+$ddl-small-float-input-wrapper: 3px 12px 0 4px !default;
+
+$ddl-multi-wrapper-down-icon-padding: 0 48px 0 0 !default;
+$ddl-wrapper-down-icon-padding: 0 0 0 48px !default;
+$ddl-rtl-filled-wrapper-input: 5px !default;
+$ddl-popup-multi-filter-padding-left: 8px !default;
+$ddl-filled-wrapper-padding: 0 12px 0 8px !default;
+$ddl-filled-float-wrapper-padding: 11px 12px 0 !default;
+$ddl-small-filled-float-wrapper-padding: 12px 12px 0 8px !default;
+$ddl-filled-float-wrapper-chip-margin: 8px 8px 0 0 !default;
+$ddl-filled-float-wrapper-chip-padding: 0 8px !default;
+$ddl-rtl-filled-float-wrapper-chip-margin: 8px 0 0 8px !default;
+$ddl-small-filled-wrapper-chip-margin: 4px 4px 0 0 !default;
+$ddl-small-filled-wrapper-chip-padding-right: 8px !default;
+$ddl-rtl-small-filled-float-chip-margin: 4px 0 0 4px !default;
+$ddl-filled-chipcontent-font-size: 13px !default;
+$ddl-filled-chipcontent-padding: 0 8px 0 0 !default;
+$ddl-small-filled-chipcontent-font-size: 12px !default;
+$ddl-filled-float-chipcontent-font-size: 12px !default;
+$ddl-filled-float-chipcontent-padding: 0 4px 0 0 !default;
+$ddl-rtl-filled-chipcontent-padding: 0 0 0 4px !default;
+$ddl-small-filled-float-chiupcontent-font-size: 10px !default;
+$ddl-filled-float-mob-chipcontent-font-size: 13px !default;
+$ddl-filled-float-mob-chipcontent-padding-right: 4px !default;
+$ddl-filled-wrapper-chip-close-margin-top: -38px !default;
+
+$ddl-bigger-small-filled-chip-height: 28px !default;
+$ddl-bigger-filled-chip-height: 24px !default;
+$ddl-bigger-filled-not-chip-height: 32px !default;
+$ddl-bigger-small-filled-input-chip-height: 18px !default;
+$ddl-delimiter-height: 27px !default;
+$ddl-full-height: 100% !default;
+$ddl-zero-margin-padding: 0 !default;
+$multi-input-down-icon-margin-right: 30px !default;
+$multi-zero-height: 0 !default;
+$popup-multi-rtl-margin-left: 12px !default;
+$ddl-checkbox-delim-line-height: 20px !default;
+$ddl-checkbox-delim-padding-left: 10px !default;
+$multi-wrapper-chip-height: 28px !default;
+$multi-small-chip-height: 24px !default;
+$multi-filled-float-chip-height: 18px !default;
+$multi-small-filled-chip-height: 16px !default;
+$multi-filled-clear-icon-height: 38px !default;
+$multi-filled-clear-icon-margin-top: -38px !default;
+$popup-multi-resize-height: 15px !default;
+$multi-zero-width: 0 !default;
+$multi-auto-width: auto !default;
+$multi-filled-clear-icon-width: 16px !default;
+$popup-multi-resize-width: 15px !default;
+$multi-bgr-list-wrapper-padding-left: 8px !default;
+$multi-full-width: 100% !default;
+$multi-searcher-height: 1px !default;
+$multi-filled-close-right: 12px !default;
+
+$multi-bigger-down-icon-close-right: 41px !default;
+$multi-bgr-chip-close-hooker-line-height: 28px !default;
+$ddl-multi-bgr-small-outline-input-padding: 8px 12px 9px !default;
+$ddl-multi-bigger-delim-value-font-size: 16px !default;
+$ddl-multi-bigger-small-delim-value-font-size: 14px !default;
+$ddl-multi-bgr-small-filled-padding-right: 10px !default;
+$bigger-small-multi-float-font-size: 13px !default;
+$bigger-small-multi-filled-float-font-size: 14px !default;
+$multi-bgr-filled-delim-value-font-size: 16px !default;
+$multi-bgr-small-close-height: 38px !default;
+$multi-bgr-small-close-margin-top: -55px !default;
+$multi-bgr-small-close-right: 12px !default;
+$multi-bgr-small-close-width: 18px !default;
+$ddl-multi-select-bgr-small-down-icon-right: 48px !default;
+$bigger-multi-select-mat-right: 60px !default;
+$multi-bgr-small-rtl-filled-left: 48px !default;
+$multi-bigger-close-hooker-font-size: 20px !default;
+$multi-bigger-close-hooker-height: 20px !default;
+$multi-bigger-close-hooker-margin-top: -10px !default;
+$multi-half-width: 50%;
+$multi-bigger-small-close-hooker-font-size: 18px !default;
+$multi-bigger-small-close-hooker-height: 18px !default;
+$multi-bigger-small-close-hooker-margin-top: -9px !default;
+$multiselect-bgr-ddl-icon-margin: 10px 16px 10px 0 !default;
+$multiselect-bgr-small-ddl-icon-margin: 6px 12px 8px 0 !default;
+$multiselect-rtl-bgr-ddl-icon-margin: 10px 0 10px 16px !default;
+$multiselect-rtl-bgr-small-ddl-icon-margin: 6px 0 8px 12px !default;
+$multi-mat-bgr-small-close-hooker-height: 20px !default;
+$multi-mat-bgr-small-close-hooker-margin-top: -33px !default;
+$multi-mat-bgr-small-close-hooker-right: 18px !default;
+$multi-mat-bgr-small-close-hooker-width: 20px !default;
+$multi-mat-bgr-small-filled-close-hooker-margin-top: -35px !default;
+$multi-mat-bgr-small-filled-close-hooker-right: 45px !default;
+$multi-mat-bgr-small-float-input-margin-top: -32px !default;
+$multi-mat-bgr-filled-close-hooker-height: 24px !default;
+$multi-mat-bgr-filled-close-hooker-width: 24px !default;
+$ddl-multi-mat-bgr-float-close-margin-top: -40px !default;
+$multi-ddl-bgr-small-close-icon-margin-top: -32px !default;
+$multi-ddl-bgr-small-close-icon-right: 40px !default;
+$ddl-multi-filled-icon-close-margin-top: -44px !default;
+$ddl-multi-chips-height: 16px !default;
+$ddl-multi-chips-width: 16px !default;
+$ddl-multi-mat-filled-before-font-size: 20px !default;
+$ddl-multi-mat-filled-before-height: 20px !default;
+$ddl-multi-mat-filled-before-width: 20px !default;
+$ddl-mat-bigger-rtl-close-left: 10px !default;
+$ddl-mat-bigger-rtl-close-hooker-left: 12px !default;
+$ddl-multi-select-icon-margin: 12px -4px 8px -1px !default;
+$mat-multi-bgr-small-margin: 0 0 8px !default;
+$multi-mat-bigger-small-filled-ddl-icon-margin: 7px -4px 8px -1px !default;
+$multi-select-wrapper-padding: 8px 12px 9px !default;
+$small-multi-input-padding: 7px 10px !default;
+$multiselect-wrapper-chips-padding: 0 8px 0 0 !default;
+$multiselect-wrapper-rtl-chips-padding: 0 0 0 8px !default;
+$small-multiselect-filled-input-padding: 2px !default;
+$multi-one-width: 1px !default;
+$multi-select-wrapper-chip-width: 92%;
+$multi-bgr-chip-close-hooker-margin-top: -2.3em;
+$multi-small-drow-down-icon-mat3-right: 30px !default;
+$multi-popup-list-item-left: 4px !default;
+$small-multi-group-ddl-icon-top: 6px !default;
+$multi-small-down-icon-close-right: 24px !default;
+
+@include export-module('multiselect-Material3') {
+  .e-bigger.e-small .e-multiselect .e-input-group-icon.e-ddl-icon {
+    @if $ddl-multiselect-skin-name == 'Material3' {
+      top: 3px;
+    }
+  }
+  .e-bigger.e-small.e-multiselect.e-outline .e-multi-select-wrapper .e-chips-close.e-close-hooker,
+  .e-bigger.e-small .e-multiselect.e-outline .e-multi-select-wrapper .e-chips-close.e-close-hooker,
+  .e-bigger .e-small.e-multiselect.e-outline .e-multi-select-wrapper .e-chips-close.e-close-hooker,
+  .e-small .e-bigger.e-multiselect.e-outline .e-multi-select-wrapper .e-chips-close.e-close-hooker {
+    height: 38px;
+    margin-top: -55px;
+    right: 12px;
+    top: $multi-full-width;
+    width: 18px;
+  }
+  .e-bigger.e-small.e-multiselect.e-outline .e-multi-select-wrapper.e-down-icon .e-chips-close.e-close-hooker,
+  .e-bigger.e-small .e-multiselect.e-outline .e-multi-select-wrapper.e-down-icon .e-chips-close.e-close-hooker,
+  .e-bigger .e-small.e-multiselect.e-outline .e-multi-select-wrapper.e-down-icon .e-chips-close.e-close-hooker,
+  .e-small .e-bigger.e-multiselect.e-outline .e-multi-select-wrapper.e-down-icon .e-chips-close.e-close-hooker,
+  .e-bigger.e-small.e-multiselect.e-filled .e-multi-select-wrapper.e-down-icon .e-chips-close.e-close-hooker,
+  .e-bigger.e-small .e-multiselect.e-filled .e-multi-select-wrapper.e-down-icon .e-chips-close.e-close-hooker,
+  .e-bigger .e-small.e-multiselect.e-filled .e-multi-select-wrapper.e-down-icon .e-chips-close.e-close-hooker,
+  .e-small .e-bigger.e-multiselect.e-filled .e-multi-select-wrapper.e-down-icon .e-chips-close.e-close-hooker {
+    right: 48px;
+  }
+  
+  .e-bigger.e-multiselect.e-outline .e-multi-select-wrapper .e-chips-close.e-close-hooker,
+  .e-bigger .e-multiselect.e-outline .e-multi-select-wrapper .e-chips-close.e-close-hooker {
+    height: 40px;
+    margin-top: -55px;
+    right: 6px;
+    top: $multi-full-width;
+    width: 40px;
+  }
+  .e-bigger.e-multiselect.e-outline .e-multi-select-wrapper.e-down-icon .e-chips-close.e-close-hooker,
+  .e-bigger .e-multiselect.e-outline .e-multi-select-wrapper.e-down-icon .e-chips-close.e-close-hooker {
+    right: 60px;
+  }
+
+  .e-rtl.e-bigger.e-small.e-multiselect.e-outline .e-multi-select-wrapper .e-chips-close.e-close-hooker,
+  .e-rtl.e-bigger.e-small .e-multiselect.e-outline .e-multi-select-wrapper .e-chips-close.e-close-hooker,
+  .e-rtl .e-bigger.e-small.e-multiselect.e-outline .e-multi-select-wrapper .e-chips-close.e-close-hooker,
+  .e-bigger.e-small .e-rtl.e-multiselect.e-outline .e-multi-select-wrapper .e-chips-close.e-close-hooker,
+  .e-rtl.e-bigger .e-small.e-multiselect.e-outline .e-multi-select-wrapper .e-chips-close.e-close-hooker,
+  .e-rtl .e-bigger .e-small.e-multiselect.e-outline .e-multi-select-wrapper .e-chips-close.e-close-hooker,
+  .e-bigger .e-rtl.e-small.e-multiselect.e-outline .e-multi-select-wrapper .e-chips-close.e-close-hooker,
+  .e-bigger .e-rtl .e-small.e-multiselect.e-outline .e-multi-select-wrapper .e-chips-close.e-close-hooker,
+  .e-rtl.e-small .e-bigger.e-multiselect.e-outline .e-multi-select-wrapper .e-chips-close.e-close-hooker,
+  .e-rtl .e-small .e-bigger.e-multiselect.e-outline .e-multi-select-wrapper .e-chips-close.e-close-hooker,
+  .e-small .e-rtl .e-bigger.e-multiselect.e-outline .e-multi-select-wrapper .e-chips-close.e-close-hooker,
+  .e-small .e-rtl.e-bigger.e-multiselect.e-outline .e-multi-select-wrapper .e-chips-close.e-close-hooker,
+  .e-rtl.e-bigger.e-small.e-multiselect.e-filled .e-multi-select-wrapper.e-down-icon .e-chips-close.e-close-hooker,
+  .e-rtl.e-bigger.e-small .e-multiselect.e-filled .e-multi-select-wrapper.e-down-icon .e-chips-close.e-close-hooker,
+  .e-rtl .e-bigger.e-small.e-multiselect.e-filled .e-multi-select-wrapper.e-down-icon .e-chips-close.e-close-hooker,
+  .e-bigger.e-small .e-rtl.e-multiselect.e-filled .e-multi-select-wrapper.e-down-icon .e-chips-close.e-close-hooker,
+  .e-rtl.e-bigger .e-small.e-multiselect.e-filled .e-multi-select-wrapper.e-down-icon .e-chips-close.e-close-hooker,
+  .e-rtl .e-bigger .e-small.e-multiselect.e-filled .e-multi-select-wrapper.e-down-icon .e-chips-close.e-close-hooker,
+  .e-bigger .e-rtl.e-small.e-multiselect.e-filled .e-multi-select-wrapper.e-down-icon .e-chips-close.e-close-hooker,
+  .e-bigger .e-rtl .e-small.e-multiselect.e-filled .e-multi-select-wrapper.e-down-icon .e-chips-close.e-close-hooker,
+  .e-rtl.e-small .e-bigger.e-multiselect.e-filled .e-multi-select-wrapper.e-down-icon .e-chips-close.e-close-hooker,
+  .e-rtl .e-small .e-bigger.e-multiselect.e-filled .e-multi-select-wrapper.e-down-icon .e-chips-close.e-close-hooker,
+  .e-small .e-rtl .e-bigger.e-multiselect.e-filled .e-multi-select-wrapper.e-down-icon .e-chips-close.e-close-hooker,
+  .e-small .e-rtl.e-bigger.e-multiselect.e-filled .e-multi-select-wrapper.e-down-icon .e-chips-close.e-close-hooker {
+    left: 48px;
+    right: auto;
+  }
+  .e-rtl.e-bigger.e-multiselect.e-outline .e-multi-select-wrapper .e-chips-close.e-close-hooker,
+  .e-rtl.e-bigger .e-multiselect.e-outline .e-multi-select-wrapper .e-chips-close.e-close-hooker,
+  .e-rtl .e-bigger.e-multiselect.e-outline .e-multi-select-wrapper .e-chips-close.e-close-hooker,
+  .e-rtl .e-bigger .e-multiselect.e-outline .e-multi-select-wrapper .e-chips-close.e-close-hooker,
+  .e-bigger .e-rtl.e-multiselect.e-outline .e-multi-select-wrapper .e-chips-close.e-close-hooker,
+  .e-bigger .e-rtl .e-multiselect.e-outline .e-multi-select-wrapper .e-chips-close.e-close-hooker,
+  .e-rtl.e-bigger.e-multiselect.e-filled .e-multi-select-wrapper.e-down-icon .e-chips-close.e-close-hooker,
+  .e-rtl.e-bigger .e-multiselect.e-filled .e-multi-select-wrapper.e-down-icon .e-chips-close.e-close-hooker,
+  .e-rtl .e-bigger.e-multiselect.e-filled .e-multi-select-wrapper.e-down-icon .e-chips-close.e-close-hooker,
+  .e-rtl .e-bigger .e-multiselect.e-filled .e-multi-select-wrapper.e-down-icon .e-chips-close.e-close-hooker,
+  .e-bigger .e-rtl.e-multiselect.e-filled .e-multi-select-wrapper.e-down-icon .e-chips-close.e-close-hooker,
+  .e-bigger .e-rtl .e-multiselect.e-filled .e-multi-select-wrapper.e-down-icon .e-chips-close.e-close-hooker {
+    left: 60px;
+    right: auto;
+  }
+
+  .e-bigger.e-multiselect.e-outline .e-multi-select-wrapper .e-close-hooker::before,
+  .e-bigger .e-multiselect.e-outline .e-multi-select-wrapper .e-close-hooker::before {
+    content: '\e208';
+    font-size: 20px;
+    height: 20px;
+    left: 0;
+    margin-top: -10px;
+    top: 50%;
+  }
+  .e-bigger.e-small.e-multiselect.e-outline .e-multi-select-wrapper .e-close-hooker::before,
+  .e-bigger.e-small .e-multiselect.e-outline .e-multi-select-wrapper .e-close-hooker::before,
+  .e-bigger .e-small.e-multiselect.e-outline .e-multi-select-wrapper .e-close-hooker::before,
+  .e-small .e-bigger.e-multiselect.e-outline .e-multi-select-wrapper .e-close-hooker::before {
+    content: '\e208';
+    font-size: 18px;
+    height: 18px;
+    left: 0;
+    margin-top: -9px;
+    top: 50%;
+  }
+
+  .e-bigger .e-multiselect.e-outline .e-multi-select-wrapper .e-chips .e-chips-close::before,
+  .e-bigger.e-multiselect.e-outline .e-multi-select-wrapper .e-chips .e-chips-close::before {
+    font-size: 16px;
+  }
+  
+  .e-bigger.e-small .e-multiselect.e-outline .e-multi-select-wrapper .e-chips .e-chips-close::before,
+  .e-bigger.e-small.e-multiselect.e-outline .e-multi-select-wrapper .e-chips .e-chips-close::before,
+  .e-bigger .e-small.e-multiselect.e-outline .e-multi-select-wrapper .e-chips .e-chips-close::before,
+  .e-small .e-bigger.e-multiselect.e-outline .e-multi-select-wrapper .e-chips .e-chips-close::before {
+    font-size: 14px;
+  }
+  .e-multiselect.e-input-group.e-outline.e-bigger .e-multi-select-wrapper .e-input-group-icon.e-ddl-icon,
+  .e-bigger .e-multiselect.e-input-group.e-outline .e-multi-select-wrapper .e-input-group-icon.e-ddl-icon,
+  .e-multiselect.e-input-group.e-outline.e-control-wrapper.e-bigger .e-multi-select-wrapper .e-input-group-icon.e-ddl-icon,
+  .e-bigger .e-multiselect.e-input-group.e-outline.e-control-wrapper .e-multi-select-wrapper .e-input-group-icon.e-ddl-icon {
+    margin: 10px 16px 10px 0;
+  }
+
+  .e-multiselect.e-input-group.e-outline.e-small.e-bigger .e-multi-select-wrapper .e-input-group-icon.e-ddl-icon,
+  .e-bigger.e-small .e-multiselect.e-input-group.e-outline .e-multi-select-wrapper .e-input-group-icon.e-ddl-icon,
+  .e-multiselect.e-input-group.e-outline.e-control-wrapper.e-small.e-bigger .e-multi-select-wrapper .e-input-group-icon.e-ddl-icon,
+  .e-small.e-bigger .e-multiselect.e-input-group.e-outline.e-control-wrapper .e-multi-select-wrapper .e-input-group-icon.e-ddl-icon,
+  .e-bigger .e-multiselect.e-input-group.e-outline.e-small .e-multi-select-wrapper .e-input-group-icon.e-ddl-icon,
+  .e-bigger .e-multiselect.e-input-group.e-outline.e-control-wrapper.e-small .e-multi-select-wrapper .e-input-group-icon.e-ddl-icon,
+  .e-small .e-multiselect.e-input-group.e-outline.e-bigger .e-multi-select-wrapper .e-input-group-icon.e-ddl-icon,
+  .e-small .e-multiselect.e-input-group.e-outline.e-control-wrapper.e-bigger .e-multi-select-wrapper .e-input-group-icon.e-ddl-icon {
+    margin: 6px 12px 8px 0;
+  }
+  .e-multiselect.e-input-group.e-outline.e-bigger .e-multi-select-wrapper .e-input-group-icon.e-ddl-icon,
+  .e-bigger .e-multiselect.e-input-group.e-outline .e-multi-select-wrapper .e-input-group-icon.e-ddl-icon,
+  .e-multiselect.e-input-group.e-outline.e-control-wrapper.e-bigger .e-multi-select-wrapper .e-input-group-icon.e-ddl-icon,
+  .e-bigger .e-multiselect.e-input-group.e-outline.e-control-wrapper .e-multi-select-wrapper .e-input-group-icon.e-ddl-icon {
+    margin: 10px 16px 10px 0;
+  }
+
+  .e-multiselect.e-input-group.e-outline.e-small.e-bigger .e-multi-select-wrapper .e-input-group-icon.e-ddl-icon,
+  .e-bigger.e-small .e-multiselect.e-input-group.e-outline .e-multi-select-wrapper .e-input-group-icon.e-ddl-icon,
+  .e-multiselect.e-input-group.e-outline.e-control-wrapper.e-small.e-bigger .e-multi-select-wrapper .e-input-group-icon.e-ddl-icon,
+  .e-small.e-bigger .e-multiselect.e-input-group.e-outline.e-control-wrapper .e-multi-select-wrapper .e-input-group-icon.e-ddl-icon,
+  .e-bigger .e-multiselect.e-input-group.e-outline.e-small .e-multi-select-wrapper .e-input-group-icon.e-ddl-icon,
+  .e-bigger .e-multiselect.e-input-group.e-outline.e-control-wrapper.e-small .e-multi-select-wrapper .e-input-group-icon.e-ddl-icon,
+  .e-small .e-multiselect.e-input-group.e-outline.e-bigger .e-multi-select-wrapper .e-input-group-icon.e-ddl-icon,
+  .e-small .e-multiselect.e-input-group.e-outline.e-control-wrapper.e-bigger .e-multi-select-wrapper .e-input-group-icon.e-ddl-icon {
+    margin: 6px 12px 8px 0;
+  }
+  .e-rtl.e-multiselect.e-input-group.e-outline.e-bigger .e-multi-select-wrapper .e-input-group-icon.e-ddl-icon,
+  .e-bigger .e-rtl.e-multiselect.e-input-group.e-outline .e-multi-select-wrapper .e-input-group-icon.e-ddl-icon,
+  .e-rtl.e-multiselect.e-input-group.e-outline.e-control-wrapper.e-bigger .e-multi-select-wrapper .e-input-group-icon.e-ddl-icon,
+  .e-bigger .e-rtl.e-multiselect.e-input-group.e-outline.e-control-wrapper .e-multi-select-wrapper .e-input-group-icon.e-ddl-icon,
+  .e-rtl .e-multiselect.e-input-group.e-outline.e-bigger .e-multi-select-wrapper .e-input-group-icon.e-ddl-icon,
+  .e-bigger.e-rtl .e-multiselect.e-input-group.e-outline .e-multi-select-wrapper .e-input-group-icon.e-ddl-icon,
+  .e-rtl .e-multiselect.e-input-group.e-outline.e-control-wrapper.e-bigger .e-multi-select-wrapper .e-input-group-icon.e-ddl-icon,
+  .e-bigger.e-rtl .e-multiselect.e-input-group.e-outline.e-control-wrapper .e-multi-select-wrapper .e-input-group-icon.e-ddl-icon {
+    margin: 10px 0 10px 16px;
+  }
+
+  .e-rtl.e-multiselect.e-input-group.e-outline.e-small.e-bigger .e-multi-select-wrapper .e-input-group-icon.e-ddl-icon,
+  .e-bigger.e-small .e-rtl.e-multiselect.e-input-group.e-outline .e-multi-select-wrapper .e-input-group-icon.e-ddl-icon,
+  .e-rtl.e-multiselect.e-input-group.e-outline.e-control-wrapper.e-small.e-bigger .e-multi-select-wrapper .e-input-group-icon.e-ddl-icon,
+  .e-small.e-bigger .e-rtl.e-multiselect.e-input-group.e-outline.e-control-wrapper .e-multi-select-wrapper .e-input-group-icon.e-ddl-icon,
+  .e-bigger .e-rtl.e-multiselect.e-input-group.e-outline.e-small .e-multi-select-wrapper .e-input-group-icon.e-ddl-icon,
+  .e-bigger .e-rtl.e-multiselect.e-input-group.e-outline.e-control-wrapper.e-small .e-multi-select-wrapper .e-input-group-icon.e-ddl-icon,
+  .e-small .e-rtl.e-multiselect.e-input-group.e-outline.e-bigger .e-multi-select-wrapper .e-input-group-icon.e-ddl-icon,
+  .e-small .e-rtl.e-multiselect.e-input-group.e-outline.e-control-wrapper.e-bigger .e-multi-select-wrapper .e-input-group-icon.e-ddl-icon,
+  .e-rtl .e-multiselect.e-input-group.e-outline.e-small.e-bigger .e-multi-select-wrapper .e-input-group-icon.e-ddl-icon,
+  .e-rtl.e-bigger.e-small .e-multiselect.e-input-group.e-outline .e-multi-select-wrapper .e-input-group-icon.e-ddl-icon,
+  .e-rtl .e-multiselect.e-input-group.e-outline.e-control-wrapper.e-small.e-bigger .e-multi-select-wrapper .e-input-group-icon.e-ddl-icon,
+  .e-rtl.e-small.e-bigger .e-multiselect.e-input-group.e-outline.e-control-wrapper .e-multi-select-wrapper .e-input-group-icon.e-ddl-icon,
+  .e-rtl.e-bigger .e-multiselect.e-input-group.e-outline.e-small .e-multi-select-wrapper .e-input-group-icon.e-ddl-icon,
+  .e-rtl.e-bigger .e-multiselect.e-input-group.e-outline.e-control-wrapper.e-small .e-multi-select-wrapper .e-input-group-icon.e-ddl-icon,
+  .e-rtl.e-small .e-multiselect.e-input-group.e-outline.e-bigger .e-multi-select-wrapper .e-input-group-icon.e-ddl-icon,
+  .e-rtl.e-small .e-multiselect.e-input-group.e-outline.e-control-wrapper.e-bigger .e-multi-select-wrapper .e-input-group-icon.e-ddl-icon {
+    margin: 6px 0 8px 12px;
+  }
+
+  .e-bigger.e-filled.e-multiselect.e-float-input .e-multi-select-wrapper .e-chips:not(.e-mob-chip) .e-chips-close,
+  .e-bigger .e-filled.e-multiselect.e-float-input .e-multi-select-wrapper .e-chips:not(.e-mob-chip) .e-chips-close {
+    height: $ddl-multiselect-filled-chip-clear-icon-size;
+    width: $ddl-multiselect-filled-chip-clear-icon-size;
+  }
+
+  .e-bigger.e-small.e-multiselect.e-filled.e-float-input .e-multi-select-wrapper .e-chips .e-chips-close::before,
+  .e-bigger.e-small .e-multiselect.e-filled.e-float-input .e-multi-select-wrapper .e-chips .e-chips-close::before,
+  .e-bigger .e-small.e-multiselect.e-filled.e-float-input .e-multi-select-wrapper .e-chips .e-chips-close::before,
+  .e-small.e-bigger.e-multiselect.e-filled.e-float-input .e-multi-select-wrapper .e-chips .e-chips-close::before {
+    font-size: $ddl-multiselect-filled-float-input-chip-clear-icon-size;
+    height: $ddl-multiselect-filled-float-input-chip-clear-icon-size;
+    width: $ddl-multiselect-filled-float-input-chip-clear-icon-size;
+  }
+
+  .e-bigger.e-filled.e-float-input .e-multi-select-wrapper .e-chips .e-chips-close::before,
+  .e-bigger .e-filled.e-float-input .e-multi-select-wrapper .e-chips .e-chips-close::before,
+  .e-bigger.e-small.e-multiselect.e-filled:not(.e-float-input) .e-multi-select-wrapper .e-chips .e-chips-close::before,
+  .e-bigger.e-small .e-multiselect.e-filled:not(.e-float-input) .e-multi-select-wrapper .e-chips .e-chips-close::before,
+  .e-bigger .e-small.e-multiselect.e-filled:not(.e-float-input) .e-multi-select-wrapper .e-chips .e-chips-close::before,
+  .e-small .e-bigger.e-multiselect.e-filled:not(.e-float-input) .e-multi-select-wrapper .e-chips .e-chips-close::before {
+    font-size: $ddl-multiselect-filled-chip-clear-icon-size;
+    height: $ddl-multiselect-filled-chip-clear-icon-size;
+    width: $ddl-multiselect-filled-chip-clear-icon-size;
+  }
+
+  .e-bigger.e-small.e-rtl.e-multiselect.e-filled .e-multi-select-wrapper .e-chips-close.e-close-hooker,
+  .e-bigger.e-small .e-rtl .e-multiselect.e-filled .e-multi-select-wrapper .e-chips-close.e-close-hooker {
+    left: 10px;
+    right: auto;
+  }
+
+  .e-bigger.e-rtl.e-multiselect.e-filled .e-multi-select-wrapper .e-chips-close.e-close-hooker,
+  .e-rtl .e-bigger.e-multiselect.e-filled .e-multi-select-wrapper .e-chips-close.e-close-hooker,
+  .e-bigger .e-rtl.e-multiselect.e-filled .e-multi-select-wrapper .e-chips-close.e-close-hooker,
+  .e-rtl.e-bigger .e-multiselect.e-filled .e-multi-select-wrapper .e-chips-close.e-close-hooker {
+    left: 12px;
+    right: auto;
+  }
+
+  .e-bigger.e-multiselect.e-input-group.e-filled .e-multi-select-wrapper .e-input-group-icon.e-ddl-icon,
+  .e-bigger .e-multiselect.e-filled.e-input-group.e-control-wrapper .e-multi-select-wrapper .e-input-group-icon.e-ddl-icon {
+    height: 24px;
+    margin: 12px -4px 8px -1px;
+    padding: 0;
+    width: 24px;
+  }
+
+  .e-bigger.e-multiselect.e-input-group.e-filled.e-float-input .e-multi-select-wrapper .e-input-group-icon.e-ddl-icon,
+  .e-bigger .e-multiselect.e-filled.e-input-group.e-control-wrapper.e-float-input .e-multi-select-wrapper .e-input-group-icon.e-ddl-icon {
+    margin: 0;
+  }
+  
+  .e-bigger.e-small.e-multiselect.e-input-group.e-float-input.e-filled .e-multi-select-wrapper .e-input-group-icon.e-ddl-icon,
+  .e-bigger.e-small .e-multiselect.e-input-group.e-float-input.e-filled .e-multi-select-wrapper .e-input-group-icon.e-ddl-icon,
+  .e-bigger .e-small.e-multiselect.e-input-group.e-float-input.e-filled .e-multi-select-wrapper .e-input-group-icon.e-ddl-icon,
+  .e-small .e-bigger.e-multiselect.e-input-group.e-float-input.e-filled .e-multi-select-wrapper .e-input-group-icon.e-ddl-icon {
+    height: 20px;
+    margin: 0 0 8px;
+    padding: 0;
+    width: 20px;
+  }
+
+  .e-bigger.e-multiselect.e-input-group.e-filled .e-multi-select-wrapper .e-input-group-icon.e-ddl-icon::before,
+  .e-bigger .e-multiselect.e-filled.e-input-group.e-control-wrapper .e-multi-select-wrapper .e-input-group-icon.e-ddl-icon::before {
+    font-size: 20px;
+    height: 20px;
+    width: 20px;
+  }
+
+  .e-bigger.e-small.e-multiselect.e-filled.e-input-group.e-control-wrapper .e-multi-select-wrapper .e-input-group-icon.e-ddl-icon::before,
+  .e-bigger .e-small .e-multiselect.e-filled.e-input-group.e-control-wrapper .e-multi-select-wrapper .e-input-group-icon.e-ddl-icon::before,
+  .e-small.e-bigger.e-multiselect.e-filled.e-input-group.e-control-wrapper .e-multi-select-wrapper .e-input-group-icon.e-ddl-icon::before,
+  .e-small .e-bigger.e-multiselect.e-filled.e-input-group.e-control-wrapper .e-multi-select-wrapper .e-input-group-icon.e-ddl-icon::before {
+    font-size: 18px;
+    height: 18px;
+    width: 18px;
+  }
+  
+  .e-bigger.e-small.e-multiselect.e-filled.e-input-group.e-control-wrapper:not(.e-float-input) .e-multi-select-wrapper .e-input-group-icon.e-ddl-icon,
+  .e-bigger .e-small .e-multiselect.e-filled.e-input-group.e-control-wrapper:not(.e-float-input) .e-multi-select-wrapper .e-input-group-icon.e-ddl-icon,
+  .e-small.e-bigger.e-multiselect.e-filled.e-input-group.e-control-wrapper:not(.e-float-input) .e-multi-select-wrapper .e-input-group-icon.e-ddl-icon,
+  .e-small .e-bigger.e-multiselect.e-filled.e-input-group.e-control-wrapper:not(.e-float-input) .e-multi-select-wrapper .e-input-group-icon.e-ddl-icon {
+    height: 24px;
+    margin: 7px -4px 8px -1px;
+    padding: 0;
+    width: 24px;
+  }
+
+  .e-small.e-bigger.e-multiselect.e-outline .e-multi-select-wrapper .e-close-hooker.e-ddl-disable-icon::before,
+  .e-small.e-bigger .e-multiselect.e-outline .e-multi-select-wrapper .e-close-hooker.e-ddl-disable-icon::before,
+  .e-small .e-bigger.e-multiselect.e-outline .e-multi-select-wrapper .e-close-hooker.e-ddl-disable-icon::before,
+  .e-bigger.e-small.e-multiselect.e-outline .e-multi-select-wrapper .e-close-hooker.e-ddl-disable-icon::before,
+  .e-bigger.e-small .e-multiselect.e-outline .e-multi-select-wrapper .e-close-hooker.e-ddl-disable-icon::before,
+  .e-bigger .e-small.e-multiselect.e-outline .e-multi-select-wrapper .e-close-hooker.e-ddl-disable-icon::before,
+  .e-bigger.e-multiselect.e-outline .e-multi-select-wrapper .e-close-hooker.e-ddl-disable-icon::before,
+  .e-bigger .e-multiselect.e-outline .e-multi-select-wrapper .e-close-hooker.e-ddl-disable-icon::before {
+    content: '';
+  }
+}

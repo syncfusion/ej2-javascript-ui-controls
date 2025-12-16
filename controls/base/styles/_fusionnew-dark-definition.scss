@@ -1,4 +1,5 @@
-@import 'definition/fusionnew-dark.scss';
+@use 'definition/fusionnew-dark' as *;
+@forward 'definition/fusionnew-dark';
 
 $font-size: 12px !default;
 $font-weight: 400 !default;

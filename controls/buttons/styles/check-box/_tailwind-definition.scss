@@ -1,3 +1,5 @@
+@use 'ej2-base/styles/definition/tailwind' as *;
+@forward 'ej2-base/styles/definition/tailwind';
 $cbox-bigger-check-fontsize: 12px !default;
 $cbox-bigger-font-size: $text-base !default;
 $cbox-bigger-height: 18px !default;
@@ -81,3 +83,10 @@ $cbox-focussed-checkmark-bgcolor: $primary !default;
 $cbox-focussed-checkmark-border-color: $primary !default;
 $cbox-focussed-checkmark-color: $primary-text-color !default;
 $cbox-border-style: solid !default;
+$cbox-zero-margin: 0 !default;
+$cbox-wrapper-line-height: 1 !default;
+$cbox-label-line-height: 0 !default;
+$cbox-ripple-container-border-radius: 50% !default;
+$cbox-nrml-height: 1px !default;
+$cbox-nrml-width: 1px !default;
+$cbox-auto-width: auto;

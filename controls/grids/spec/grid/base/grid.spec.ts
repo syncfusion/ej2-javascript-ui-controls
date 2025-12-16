@@ -756,7 +756,6 @@ describe('Grid base module', () => {
         });
     });
 
-    
     describe('EJ2-985936 - setRowData Breaks Frozen Border Styling with Fixed Freeze Direction =>', () => {
         let gridObj: Grid;
         beforeAll((done: Function) => {
@@ -792,6 +791,7 @@ describe('Grid base module', () => {
             gridObj = null;
         });
     });
+
     // describe('media columns testing', () => {
     //     let gridObj: Grid;
     //     let elem: HTMLElement = createElement('div', { id: 'Grid' });

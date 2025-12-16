@@ -1,6 +1,6 @@
-@import 'ej2-base/styles/definition/material.scss';
-@import 'ej2-popups/styles/popup/material-definition.scss';
-@import 'ej2-popups/styles/tooltip/material-definition.scss';
-@import 'material-definition.scss';
-@import 'all.scss';
-@import 'bigger.scss';
+@use 'ej2-base/styles/definition/material' as *;
+@use 'ej2-popups/styles/popup/material-definition' as *;
+@use 'ej2-popups/styles/tooltip/material-definition' as *;
+@use 'material-definition' as *;
+@use 'all' as *;
+@use 'bigger' as *;

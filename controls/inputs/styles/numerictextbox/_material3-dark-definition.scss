@@ -1,1 +1,23 @@
-@import './material3-definition.scss';
+@use 'ej2-base/styles/definition/material3-dark' as *;
+@forward 'ej2-base/styles/definition/material3-dark';
+$numeric-skin-name: 'Material3' !default;
+$numeric-input-icon-size: 16px !default;
+$numeric-input-bigger-icon-size: 18px !default;
+$numeric-input-icon-padding: 8px !default;
+$numric-zero-padding-margin: 0 !default;
+$numeric-bigger-min-height: 40px !default;
+$numeric-min-height: 33px !default;
+$numeric-zero-height: 0 !default;
+
+$numeric-prepend-label-bottom-top: -3px !default;
+$numeric-prepend-label-top-top: -6px !default;
+$numeric-prepend-outline-label-bottom-top: -2px !default;
+$numeric-prepend-outline-label-top-top: -6px !default;
+$numeric-prepend-filled-label-bottom-top: 20px !default;
+$numeric-prepend-filled-label-top-top: 10px !default;
+$numeric-bigger-prepend-label-bottom-top: -7px !default;
+$numeric-bigger-prepend-label-top-top: -6px !default;
+$numeric-bigger-prepend-outline-label-bottom-top: 0 !default;
+$numeric-bigger-prepend-outline-label-top-top: -6px !default;
+$numeric-bigger-prepend-filled-label-bottom-top: 24px !default;
+$numeric-bigger-prepend-filled-label-top-top: 10px !default;

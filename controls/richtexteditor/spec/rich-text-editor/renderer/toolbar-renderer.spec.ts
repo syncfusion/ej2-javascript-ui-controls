@@ -1298,7 +1298,6 @@ describe('963682: Incorrect list style highlighted in dropdown after applying nu
         expect(numberDropdownItems.classList.contains('e-active')).toBe(true);
     });
 });
-
 describe("NumberFormat and BulletFormat list dropdown wiith zero drop down items ", () => {
     let rteEle: HTMLElement;
     let rteObj: any;
@@ -1312,10 +1311,12 @@ describe("NumberFormat and BulletFormat list dropdown wiith zero drop down items
         rteEle = rteObj.element;
         done();
     });
+
     afterEach((done: Function) => {
         destroy(rteObj);
         done();
     });
+
     it("Dropdown element testing", () => {
         let dropDowButton: HTMLElement = (rteEle.querySelectorAll(".e-toolbar-item")[0].querySelector('.e-dropdown-btn')) as HTMLElement;
         (dropDowButton as HTMLButtonElement) .click();

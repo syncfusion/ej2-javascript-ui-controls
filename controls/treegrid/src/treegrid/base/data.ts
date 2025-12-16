@@ -74,6 +74,7 @@ export class DataManipulation {
      */
     public destroy(): void {
         this.removeEventListener();
+        this.hierarchyData = null;
     }
 
     /**
@@ -679,7 +680,7 @@ export class DataManipulation {
                 this.parent.parentData.push(currentData);
             }
             currentData.uniqueID = getUid(this.parent.element.id + '_data_');
-            setValue('uniqueIDCollection.' + currentData.uniqueID, currentData, this.parent);
+            this.parent.uniqueIDCollection[currentData.uniqueID] = currentData;
             if (!isNullOrUndefined(parentRecords)) {
                 const parentData: ITreeData = extend({}, parentRecords);
                 delete parentData.childRecords;

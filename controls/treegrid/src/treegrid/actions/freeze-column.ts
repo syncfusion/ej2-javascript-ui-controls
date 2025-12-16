@@ -75,7 +75,7 @@ export class Freeze {
             }
             const queryselector: string = args.action === 'e-childrow-hidden' ? '.e-treecolumn-container .e-treegridcollapse'
                 : '.e-treecolumn-container .e-treegridexpand';
-            if (frozenrows[row.rowIndex].querySelector(queryselector)) {
+            if (frozenrows[parseInt(row.getAttribute('aria-rowindex'), 10) - 1].querySelector(queryselector)) {
                 const cRow: HTMLTableRowElement[] = [];
                 for (let i: number = 0; i < movableRows.length; i++) {
                     if (movableRows[parseInt(i.toString(), 10)].querySelector('.e-gridrowindex' + rData.index + 'level' + (rData.level + 1))) {

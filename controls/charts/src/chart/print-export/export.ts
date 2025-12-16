@@ -209,7 +209,9 @@ export class Export {
                     this.axisCollection.push(null);
                 }
                 else {
-                    this.axisCollection = controls[i as number].getModuleName() === 'stockChart' ? (controls[i as number] as StockChart).chart.horizontalAxes : (controls[i as number] as Chart).isTransposed ? (controls[i as number] as Chart).verticalAxes : (controls[i as number] as Chart).horizontalAxes;
+                    this.axisCollection = controls[i as number].getModuleName() === 'stockChart' ? (controls[i as number] as
+                        StockChart).chart.horizontalAxes : (controls[i as number] as Chart).isTransposed ? (controls[i as number] as
+                            Chart).verticalAxes : (controls[i as number] as Chart).horizontalAxes;
                 }
                 //To get the number of columns for the excel.
                 requiredValues = this.getRequiredValues(isRangeNavigator);
@@ -553,7 +555,7 @@ export class Export {
                             index++;
                         }
                         if (this.series[seriesCount as number].type === 'BoxAndWhisker') {
-                            cells.push({index: index, value: (this.series[seriesCount as number] as Series).points[dataCount as number]['outliers'][0], colSpan: 1, rowSpan: 1, style: {}});
+                            cells.push({ index: index, value: (this.series[seriesCount as number] as Series).points[dataCount as number]['outliers'][0], colSpan: 1, rowSpan: 1, style: {} });
                             index++;
                         }
                         this.rows.push({ index: this.actualRowCount, cells: cells });

@@ -13,7 +13,7 @@ export const markerClassName: { [key: string]: string } = {
  * DOMNode internal plugin
  *
  * @hidden
- * @deprecated
+ * @private
  */
 export class DOMNode {
     private parent: Element;
@@ -26,7 +26,7 @@ export class DOMNode {
      * @param {Element} parent - specifies the parent element
      * @param {Document} currentDocument - specifies the current document.
      * @hidden
-     * @deprecated
+     * @private
      */
     public constructor(parent: Element, currentDocument: Document) {
         this.parent = parent;
@@ -41,7 +41,7 @@ export class DOMNode {
      * @param {Element} element - specifies the element.
      * @returns {void}
      * @hidden
-     * @deprecated
+     * @private
      */
     public contents(element: Element): Node[] {
         return (element && 'IFRAME' !== element.tagName ? Array.prototype.slice.call(element.childNodes || []) : []);
@@ -53,7 +53,7 @@ export class DOMNode {
      * @param {Element} element - specifies the node element.
      * @returns {boolean} - sepcifies the boolean value
      * @hidden
-     * @deprecated
+     * @private
      */
     public isBlockNode(element: Element): boolean {
         return (!!element && (element.nodeType === Node.ELEMENT_NODE && CONSTANT.BLOCK_TAGS.indexOf(element.tagName.toLowerCase()) >= 0));
@@ -65,7 +65,7 @@ export class DOMNode {
      * @param {Element} element - specifies the element
      * @returns {boolean} -  specifies the boolean value
      * @hidden
-     * @deprecated
+     * @private
      */
     public isLink(element: Element): boolean {
         return (!!element && (element.nodeType === Node.ELEMENT_NODE && 'a' === element.tagName.toLowerCase()));
@@ -77,7 +77,7 @@ export class DOMNode {
      * @param {Element} element - specifies the element
      * @returns {Element} - returns the element value
      * @hidden
-     * @deprecated
+     * @private
      */
     public blockParentNode(element: Element): Element {
         for (; element && element.parentNode !== this.parent && ((!element.parentNode ||
@@ -96,7 +96,7 @@ export class DOMNode {
      * @param {Element} element - specifies the element
      * @returns {string} - returns the string value
      * @hidden
-     * @deprecated
+     * @private
      */
     public rawAttributes(element: Element): { [key: string]: string } {
         const rawAttr: { [key: string]: string } = {};
@@ -116,7 +116,7 @@ export class DOMNode {
      * @param {Element} element - sepcifies the element.
      * @returns {string} - returns the string value.
      * @hidden
-     * @deprecated
+     * @private
      */
     public attributes(element?: Element): string {
         if (!element) {
@@ -148,7 +148,7 @@ export class DOMNode {
      * @param {Element} element - specifies the element
      * @returns {void}
      * @hidden
-     * @deprecated
+     * @private
      */
     public clearAttributes(element: Element): void {
         for (let attr: NamedNodeMap = element.attributes, c: number = attr.length - 1; c >= 0; c--) {
@@ -163,7 +163,7 @@ export class DOMNode {
      * @param {Element} element - specifies the element.
      * @returns {string} - returns the string
      * @hidden
-     * @deprecated
+     * @private
      */
     public openTagString(element: Element): string {
         return '<' + element.tagName.toLowerCase() + this.attributes(element) + '>';
@@ -175,7 +175,7 @@ export class DOMNode {
      * @param {Element} element - specifies the element
      * @returns {string} - returns the string value
      * @hidden
-     * @deprecated
+     * @private
      */
     public closeTagString(element: Element): string {
         return '</' + element.tagName.toLowerCase() + '>';
@@ -189,7 +189,7 @@ export class DOMNode {
      * @param {string} innerHTML - specifies the string value
      * @returns {string} - returns the string value.
      * @hidden
-     * @deprecated
+     * @private
      */
     public createTagString(tagName: string, relativeElement: Element, innerHTML: string): string {
         return '<' + tagName.toLowerCase() + this.attributes(relativeElement) + '>' + innerHTML + '</' + tagName.toLowerCase() + '>';
@@ -201,7 +201,7 @@ export class DOMNode {
      * @param {Element} element - specifes the element.
      * @returns {boolean} - returns the boolean value
      * @hidden
-     * @deprecated
+     * @private
      */
     public isList(element: Element): boolean {
         return !!element && ['UL', 'OL'].indexOf(element.tagName) >= 0;
@@ -213,7 +213,7 @@ export class DOMNode {
      * @param {Element} element - specifes the element.
      * @returns {boolean} - returns the boolean value
      * @hidden
-     * @deprecated
+     * @private
      */
     public isElement(element: Element): boolean {
         return element === this.parent;
@@ -225,7 +225,7 @@ export class DOMNode {
      * @param {Element} element - specifes the element.
      * @returns {boolean} - returns the boolean value
      * @hidden
-     * @deprecated
+     * @private
      */
     public isEditable(element: Element): boolean {
         return ((!element.getAttribute || element.getAttribute('contenteditable') === 'true')
@@ -239,7 +239,7 @@ export class DOMNode {
      * @param {string} className - specifies the class name value
      * @returns {boolean} - returns the boolean value
      * @hidden
-     * @deprecated
+     * @private
      */
     public hasClass(element: Element, className: string): boolean {
         return element && element.classList && element.classList.contains(className);
@@ -252,7 +252,7 @@ export class DOMNode {
      * @param {string} value - specifies the string value
      * @returns {void}
      * @hidden
-     * @deprecated
+     * @private
      */
     public replaceWith(element: Element, value: string): void {
         const parentNode: Element = element.parentNode as Element;
@@ -268,7 +268,7 @@ export class DOMNode {
      * @param {string} value - specifies the string value
      * @returns {Element} - returns the element
      * @hidden
-     * @deprecated
+     * @private
      */
     public parseHTMLFragment(value: string): Element {
         /* eslint-disable */
@@ -289,7 +289,7 @@ export class DOMNode {
      * @param {Element} wrapper - specifies the element.
      * @returns {Element} - returns the element
      * @hidden
-     * @deprecated
+     * @private
      */
     public wrap(element: Element, wrapper: Element): Element {
         element.parentNode.insertBefore(wrapper, element);
@@ -305,7 +305,7 @@ export class DOMNode {
      * @param {Element} referenceNode - specifies the referenece node
      * @returns {void}
      * @hidden
-     * @deprecated
+     * @private
      */
     public insertAfter(newNode: Element, referenceNode: Element): void {
         referenceNode.parentNode.insertBefore(newNode, referenceNode.nextSibling);
@@ -318,7 +318,7 @@ export class DOMNode {
      * @param {Element} wrapper - specifies the wrapper element.
      * @returns {Element} - returns the element
      * @hidden
-     * @deprecated
+     * @private
      */
     public wrapInner(parent: Element, wrapper: Element): Element {
         parent.appendChild(wrapper);
@@ -339,7 +339,7 @@ export class DOMNode {
      * @param {Element} element - specifies the element.
      * @returns {Element} - returns the element.
      * @hidden
-     * @deprecated
+     * @private
      */
     public unWrap(element: Element): Element[] {
         const parent: Element = element && element.parentNode as Element;
@@ -363,7 +363,7 @@ export class DOMNode {
      * @param {number} index - specifies the index value.
      * @returns {Element} - returns the element
      * @hidden
-     * @deprecated
+     * @private
      */
     public getSelectedNode(element: Element, index: number): Element {
         if (element.nodeType === Node.ELEMENT_NODE && element.childNodes.length > 0 &&
@@ -387,7 +387,7 @@ export class DOMNode {
      * @param {Element[]} elements - specifies the array of elements
      * @returns {Element[]} - returnts the array elements
      * @hidden
-     * @deprecated
+     * @private
      */
     public nodeFinds(element: Element, elements: Element[]): Element[] {
         const existNodes: Element[] = [];
@@ -404,7 +404,7 @@ export class DOMNode {
      *
      * @returns {boolean} - returns the boolean value
      * @hidden
-     * @deprecated
+     * @private
      */
     public isEditorArea(): boolean {
         const range: Range = <Range>this.getRangePoint(0);
@@ -421,7 +421,7 @@ export class DOMNode {
      * @param {number} point - specifies the number value.
      * @returns {Range} - returns the range.
      * @hidden
-     * @deprecated
+     * @private
      */
     public getRangePoint(point?: number): Range | Range[] {
         const selection: Selection = this.getSelection();
@@ -447,7 +447,7 @@ export class DOMNode {
      * @param {Element} element - specifies the element
      * @returns {Element} - returns the element
      * @hidden
-     * @deprecated
+     * @private
      */
     public getPreviousNode(element: Element): Element {
         element = element.previousElementSibling  as Element;
@@ -463,7 +463,7 @@ export class DOMNode {
      * @param {string} value - specifies the string value
      * @returns {string} - specifies the string value
      * @hidden
-     * @deprecated
+     * @private
      */
     public encode(value: string): string {
         const divNode: HTMLDivElement = document.createElement('div');
@@ -478,7 +478,7 @@ export class DOMNode {
      * @param {NodeSelection} save - specifies the node selection,
      * @returns {NodeSelection} - returns the value
      * @hidden
-     * @deprecated
+     * @private
      */
     public saveMarker(save: NodeSelection): NodeSelection {
         let start: Element = this.parent.querySelector('.' + markerClassName.startSelection);
@@ -518,7 +518,7 @@ export class DOMNode {
      * @param {NodeSelection} save - specifies the node selection.
      * @returns {void}
      * @hidden
-     * @deprecated
+     * @private
      */
     public setMarker(save: NodeSelection): void {
         const range: Range = save.range;
@@ -594,7 +594,7 @@ export class DOMNode {
      * @param {Range} range - specifies the range value
      * @returns {void}
      * @hidden
-     * @deprecated
+     * @private
      */
     public ensureSelfClosingTag(start: Element, className: string, range: Range): void {
         let isTable: boolean = false;
@@ -651,7 +651,7 @@ export class DOMNode {
      * @param {Element} element - specifies the element.
      * @returns {Element} - returns the element
      * @hidden
-     * @deprecated
+     * @private
      */
     public createTempNode(element: Element): Element {
         const textContent: string = element.textContent;
@@ -692,7 +692,7 @@ export class DOMNode {
      *
      * @returns {void}
      * @hidden
-     * @deprecated
+     * @private
      */
     public getImageTagInSelection(): NodeListOf<HTMLImageElement> {
         const selection: Selection = this.getSelection();
@@ -708,7 +708,7 @@ export class DOMNode {
      * @param {string} wrapperElement - specifies which block nodes to wrap around.
      * @returns {HTMLElement} - returns the wrapped element.
      * @hidden
-     * @deprecated
+     * @private
      */
     public gatherElementsAround(node: HTMLElement, wrapperElement: string): HTMLElement {
         const newWrapElem: HTMLElement = createElement(wrapperElement);
@@ -757,7 +757,7 @@ export class DOMNode {
      * @param {boolean} fromList - specifies if the method is called from list module.
      * @returns {Node[]} - returns the selected list of elements as block nodes.
      * @hidden
-     * @deprecated
+     * @private
      */
     public convertToBlockNodes(selectedNodes: Node[], fromList: boolean): Node[] {
         if (selectedNodes.length > 1) {
@@ -810,7 +810,7 @@ export class DOMNode {
      * @param {boolean} action - Optional Boolean that specifies the action is whether performed.
      * @returns {Node[]} - returns the node array values
      * @hidden
-     * @deprecated
+     * @private
      */
     public blockNodes(action?: boolean): Node[] {
         const collectionNodes: Element[] = [];

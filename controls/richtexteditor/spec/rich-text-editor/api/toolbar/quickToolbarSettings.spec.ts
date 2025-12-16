@@ -27,10 +27,6 @@ describe('RTE TOOLBAR - quickToolbarSettings - ', () => {
 
         it(' Test - not hide the quick toolbar while scrolling ', (done) => {
             rteObj.inputElement.dispatchEvent(INIT_MOUSEDOWN_EVENT);
-            rteObj.quickToolbarSettings = {
-                actionOnScroll: 'none'
-            };
-            rteObj.dataBind();
             setTimeout(() => {
                 let image: HTMLElement = rteObj.element.querySelector("#image");
                 setCursorPoint(image, 0);
@@ -53,7 +49,7 @@ describe('RTE TOOLBAR - quickToolbarSettings - ', () => {
             rteObj = renderRTE({
                 value: `<p><img id="image" alt="Logo" src="https://js.syncfusion.com/demos/web/content/images/accordion/baked-chicken-and-cheese.png" style="width: 300px;">`,
                 height: 800,
-                quickToolbarSettings: { actionOnScroll: 'none' }
+                quickToolbarSettings: { actionOnScroll: 'hide' }
             });
         });
         afterAll(() => {
@@ -62,8 +58,6 @@ describe('RTE TOOLBAR - quickToolbarSettings - ', () => {
         });
         it(' Test - hide the quick toolbar while scrolling ', (done) => {
             rteObj.inputElement.dispatchEvent(INIT_MOUSEDOWN_EVENT);
-            rteObj.quickToolbarSettings = { actionOnScroll: 'hide' };
-            rteObj.dataBind();
             setTimeout(() => {
                 let image: HTMLElement = rteObj.element.querySelector("#image");
                 setCursorPoint(image, 0);

@@ -1,8 +1,8 @@
 import { createElement, remove } from '@syncfusion/ej2-base';
-import { BlockType, ContentType } from '../../src/blockeditor/base/enums';
-import { BlockModel } from '../../src/blockeditor/models';
+import { BlockType, ContentType } from '../../src/models/enums';
+import { BlockModel } from '../../src/models/index';
+import { BlockDragEventArgs } from '../../src/models/eventargs';
 import { BlockEditor } from '../../src/index';
-import { BlockDragEventArgs } from '../../src/blockeditor/base/eventargs';
 
 describe('DragAndDrop', () => {
     let editor: BlockEditor;
@@ -23,9 +23,9 @@ describe('DragAndDrop', () => {
             editorElement = createElement('div', { id: 'editor' });
             document.body.appendChild(editorElement);
             const blocks: BlockModel[] = [
-                { id: 'block1', type: BlockType.BulletList, content: [{ id: 'content1', type: ContentType.Text, content: 'Block 1 content' }] },
-                { id: 'block2', type: BlockType.BulletList, content: [{ id: 'content2', type: ContentType.Text, content: 'Block 2 content' }] },
-                { id: 'block3', type: BlockType.Paragraph, content: [{ id: 'content3', type: ContentType.Text, content: 'Block 3 content' }] }
+                { id: 'block1', blockType: BlockType.BulletList, content: [{ id: 'content1', contentType: ContentType.Text, content: 'Block 1 content' }] },
+                { id: 'block2', blockType: BlockType.BulletList, content: [{ id: 'content2', contentType: ContentType.Text, content: 'Block 2 content' }] },
+                { id: 'block3', blockType: BlockType.Paragraph, content: [{ id: 'content3', contentType: ContentType.Text, content: 'Block 3 content' }] }
             ];
     
             editor = new BlockEditor({ 
@@ -49,7 +49,7 @@ describe('DragAndDrop', () => {
     
         it('should correctly reorder blocks after drag-and-drop', (done) => {
             triggerMouseMove(block1, 10, 10);
-            const dragIcon = editor.floatingIconContainer.querySelector('.e-block-drag-icon') as HTMLElement;
+            const dragIcon = editor.floatingIconRenderer.floatingIconContainer.querySelector('.e-block-drag-icon') as HTMLElement;
             expect(dragIcon).not.toBeNull();
     
             const dataTransfer = new DataTransfer();
@@ -68,7 +68,12 @@ describe('DragAndDrop', () => {
                     expect(updatedBlocks[0].textContent).toContain('Block 2 content');
                     expect(updatedBlocks[1].textContent).toContain('Block 3 content');
                     expect(updatedBlocks[2].textContent).toContain('Block 1 content');
-                    expect(editor.element.querySelector('.dragging-clone') as HTMLElement).toBeNull();
+                    expect(editor.element.querySelector('.e-be-dragging-clone') as HTMLElement).toBeNull();
+
+                    expect(editor.blocks.length).toBe(3);
+                    expect(editor.blocks[0].content[0].content).toContain('Block 2 content');
+                    expect(editor.blocks[1].content[0].content).toContain('Block 3 content');
+                    expect(editor.blocks[2].content[0].content).toContain('Block 1 content');
                     done();
                 }, 50);
             }, 100);
@@ -76,7 +81,7 @@ describe('DragAndDrop', () => {
     
         it('drag the block down and drop on the second block', (done) => {
             triggerMouseMove(block1, 10, 10);
-            const dragIcon = editor.floatingIconContainer.querySelector('.e-block-drag-icon') as HTMLElement;
+            const dragIcon = editor.floatingIconRenderer.floatingIconContainer.querySelector('.e-block-drag-icon') as HTMLElement;
             expect(dragIcon).not.toBeNull();
     
             const dataTransfer = new DataTransfer();
@@ -96,7 +101,15 @@ describe('DragAndDrop', () => {
                     expect(updatedBlocks[0].textContent).toContain('Block 2 content');
                     expect(updatedBlocks[1].textContent).toContain('Block 1 content');
                     expect(updatedBlocks[2].textContent).toContain('Block 3 content');
-                    expect(editor.element.querySelector('.dragging-clone') as HTMLElement).toBeNull();
+                    expect(editor.element.querySelector('.e-be-dragging-clone') as HTMLElement).toBeNull();
+
+                    expect(editor.blocks.length).toBe(3);
+                    expect(editor.blocks[0].id).toBe('block2');
+                    expect(editor.blocks[1].id).toBe('block1');
+                    expect(editor.blocks[2].id).toBe('block3');
+                    expect(editor.blocks[0].content[0].content).toContain('Block 2 content');
+                    expect(editor.blocks[1].content[0].content).toContain('Block 1 content');
+                    expect(editor.blocks[2].content[0].content).toContain('Block 3 content');
                     done();
                 }, 50);
             }, 100);
@@ -104,7 +117,7 @@ describe('DragAndDrop', () => {
     
         it('drag the block down and dropping on the last block', (done) => {
             triggerMouseMove(block1, 10, 10);
-            const dragIcon = editor.floatingIconContainer.querySelector('.e-block-drag-icon') as HTMLElement;
+            const dragIcon = editor.floatingIconRenderer.floatingIconContainer.querySelector('.e-block-drag-icon') as HTMLElement;
             expect(dragIcon).not.toBeNull();
     
             const dataTransfer = new DataTransfer();
@@ -124,7 +137,15 @@ describe('DragAndDrop', () => {
                     expect(updatedBlocks[0].textContent).toContain('Block 2 content');
                     expect(updatedBlocks[1].textContent).toContain('Block 3 content');
                     expect(updatedBlocks[2].textContent).toContain('Block 1 content');
-                    expect(editor.element.querySelector('.dragging-clone') as HTMLElement).toBeNull();
+                    expect(editor.element.querySelector('.e-be-dragging-clone') as HTMLElement).toBeNull();
+
+                    expect(editor.blocks.length).toBe(3);
+                    expect(editor.blocks[0].id).toBe('block2');
+                    expect(editor.blocks[1].id).toBe('block3');
+                    expect(editor.blocks[2].id).toBe('block1');
+                    expect(editor.blocks[0].content[0].content).toContain('Block 2 content');
+                    expect(editor.blocks[1].content[0].content).toContain('Block 3 content');
+                    expect(editor.blocks[2].content[0].content).toContain('Block 1 content');
                     done();
                 }, 100);
             }, 100);
@@ -132,7 +153,7 @@ describe('DragAndDrop', () => {
 
         it('drag the block towards up and dropping on the second block', (done) => {
             triggerMouseMove(block3, 10, 10);
-            const dragIcon = editor.floatingIconContainer.querySelector('.e-block-drag-icon') as HTMLElement;
+            const dragIcon = editor.floatingIconRenderer.floatingIconContainer.querySelector('.e-block-drag-icon') as HTMLElement;
             expect(dragIcon).not.toBeNull();
     
             const dataTransfer = new DataTransfer();
@@ -152,14 +173,22 @@ describe('DragAndDrop', () => {
                     expect(updatedBlocks[0].textContent).toContain('Block 1 content');
                     expect(updatedBlocks[1].textContent).toContain('Block 3 content');
                     expect(updatedBlocks[2].textContent).toContain('Block 2 content');
-                    expect(editor.element.querySelector('.dragging-clone') as HTMLElement).toBeNull();
+                    expect(editor.element.querySelector('.e-be-dragging-clone') as HTMLElement).toBeNull();
+
+                    expect(editor.blocks.length).toBe(3);
+                    expect(editor.blocks[0].id).toBe('block1');
+                    expect(editor.blocks[1].id).toBe('block3');
+                    expect(editor.blocks[2].id).toBe('block2');
+                    expect(editor.blocks[0].content[0].content).toContain('Block 1 content');
+                    expect(editor.blocks[1].content[0].content).toContain('Block 3 content');
+                    expect(editor.blocks[2].content[0].content).toContain('Block 2 content');
                     done();
                 }, 100);
             }, 100);
         });
         it('drag the block towards up and dropping on the first block', (done) => {
             triggerMouseMove(block3, 10, 10);
-            const dragIcon = editor.floatingIconContainer.querySelector('.e-block-drag-icon') as HTMLElement;
+            const dragIcon = editor.floatingIconRenderer.floatingIconContainer.querySelector('.e-block-drag-icon') as HTMLElement;
             expect(dragIcon).not.toBeNull();
     
             const dataTransfer = new DataTransfer();
@@ -179,14 +208,22 @@ describe('DragAndDrop', () => {
                     expect(updatedBlocks[0].textContent).toContain('Block 3 content');
                     expect(updatedBlocks[1].textContent).toContain('Block 1 content');
                     expect(updatedBlocks[2].textContent).toContain('Block 2 content');
-                    expect(editor.element.querySelector('.dragging-clone') as HTMLElement).toBeNull();
+                    expect(editor.element.querySelector('.e-be-dragging-clone') as HTMLElement).toBeNull();
+
+                    expect(editor.blocks.length).toBe(3);
+                    expect(editor.blocks[0].id).toBe('block3');
+                    expect(editor.blocks[1].id).toBe('block1');
+                    expect(editor.blocks[2].id).toBe('block2');
+                    expect(editor.blocks[0].content[0].content).toContain('Block 3 content');
+                    expect(editor.blocks[1].content[0].content).toContain('Block 1 content');
+                    expect(editor.blocks[2].content[0].content).toContain('Block 2 content');
                     done();
                 }, 100);
             }, 100);
         });
         it('drag and drop on the same block', (done) => {
             triggerMouseMove(block1, 10, 10);
-            const dragIcon = editor.floatingIconContainer.querySelector('.e-block-drag-icon') as HTMLElement;
+            const dragIcon = editor.floatingIconRenderer.floatingIconContainer.querySelector('.e-block-drag-icon') as HTMLElement;
             expect(dragIcon).not.toBeNull();
     
             const dataTransfer = new DataTransfer();
@@ -206,7 +243,15 @@ describe('DragAndDrop', () => {
                     expect(updatedBlocks[0].textContent).toContain('Block 1 content');
                     expect(updatedBlocks[1].textContent).toContain('Block 2 content');
                     expect(updatedBlocks[2].textContent).toContain('Block 3 content');
-                    expect(editor.element.querySelector('.dragging-clone') as HTMLElement).toBeNull();
+                    expect(editor.element.querySelector('.e-be-dragging-clone') as HTMLElement).toBeNull();
+
+                    expect(editor.blocks.length).toBe(3);
+                    expect(editor.blocks[0].id).toBe('block1');
+                    expect(editor.blocks[1].id).toBe('block2');
+                    expect(editor.blocks[2].id).toBe('block3');
+                    expect(editor.blocks[0].content[0].content).toContain('Block 1 content');
+                    expect(editor.blocks[1].content[0].content).toContain('Block 2 content');
+                    expect(editor.blocks[2].content[0].content).toContain('Block 3 content');
                     done();
                 }, 100);
             }, 100);
@@ -214,7 +259,7 @@ describe('DragAndDrop', () => {
 
         it('Check drag clone when dragging outside and inside of the editor', (done) => {
             triggerMouseMove(block1, 10, 10);
-            const dragIcon = editor.floatingIconContainer.querySelector('.e-block-drag-icon') as HTMLElement;
+            const dragIcon = editor.floatingIconRenderer.floatingIconContainer.querySelector('.e-block-drag-icon') as HTMLElement;
             expect(dragIcon).not.toBeNull();
     
             const dataTransfer = new DataTransfer();
@@ -224,7 +269,7 @@ describe('DragAndDrop', () => {
             triggerDragEvent(block3, 'dragover', 75, block3.offsetTop + 10, dataTransfer);
             // drag the block out of editor
             triggerDragEvent(dragIcon, 'drag', 0, block3.offsetTop + (block3.offsetHeight / 2) + 10, dataTransfer);
-            const dragClone: HTMLElement = editor.element.querySelector('.dragging-clone');
+            const dragClone: HTMLElement = editor.element.querySelector('.e-be-dragging-clone');
             expect(dragClone.style.opacity).toBe('0');
             // drag the block inside the editor
             triggerDragEvent(dragIcon, 'drag', 75, block3.offsetTop + (block3.offsetHeight/2) + 10, dataTransfer);
@@ -238,7 +283,12 @@ describe('DragAndDrop', () => {
                     expect(updatedBlocks[0].textContent).toContain('Block 2 content');
                     expect(updatedBlocks[1].textContent).toContain('Block 3 content');
                     expect(updatedBlocks[2].textContent).toContain('Block 1 content');
-                    expect(editor.element.querySelector('.dragging-clone') as HTMLElement).toBeNull();
+                    expect(editor.element.querySelector('.e-be-dragging-clone') as HTMLElement).toBeNull();
+
+                    expect(editor.blocks.length).toBe(3);
+                    expect(editor.blocks[0].content[0].content).toContain('Block 2 content');
+                    expect(editor.blocks[1].content[0].content).toContain('Block 3 content');
+                    expect(editor.blocks[2].content[0].content).toContain('Block 1 content');
                     done();
                 }, 50);
             }, 100);
@@ -247,7 +297,7 @@ describe('DragAndDrop', () => {
         it('dragging check with change in current hovered', (done) => {
             // for assigning current hovered block as null
             triggerMouseMove(editorElement, 10, 10);
-            const dragIcon = editor.floatingIconContainer.querySelector('.e-block-drag-icon') as HTMLElement;
+            const dragIcon = editor.floatingIconRenderer.floatingIconContainer.querySelector('.e-block-drag-icon') as HTMLElement;
             expect(dragIcon).not.toBeNull();
     
             const dataTransfer = new DataTransfer();
@@ -268,7 +318,12 @@ describe('DragAndDrop', () => {
                     expect(updatedBlocks[0].textContent).toContain('Block 2 content');
                     expect(updatedBlocks[1].textContent).toContain('Block 3 content');
                     expect(updatedBlocks[2].textContent).toContain('Block 1 content');
-                    expect(editor.element.querySelector('.dragging-clone') as HTMLElement).toBeNull();
+                    expect(editor.element.querySelector('.e-be-dragging-clone') as HTMLElement).toBeNull();
+
+                    expect(editor.blocks.length).toBe(3);
+                    expect(editor.blocks[0].content[0].content).toContain('Block 2 content');
+                    expect(editor.blocks[1].content[0].content).toContain('Block 3 content');
+                    expect(editor.blocks[2].content[0].content).toContain('Block 1 content');
                     done();
                 }, 50);
             }, 100);
@@ -276,10 +331,10 @@ describe('DragAndDrop', () => {
         });
 
         it('should return when hovered block is null', function (done) {
-            editor.currentHoveredBlock = null;
-            expect((editor.dragAndDropAction as any).handleDragMove()).toBeUndefined();
+            editor.blockManager.currentHoveredBlock = null;
+            expect((editor.blockManager.dragAndDropAction as any).handleDragMove()).toBeUndefined();
 
-            expect((editor.dragAndDropAction as any).handleDragStop()).toBeUndefined();
+            expect((editor.blockManager.dragAndDropAction as any).handleDragStop()).toBeUndefined();
             done();
         });
     });
@@ -298,8 +353,8 @@ describe('DragAndDrop', () => {
         });
         it('dynamic prop handling enableDragAndDrop', (done) => {
             const blocks: BlockModel[] = [
-                { id: 'block1', type: BlockType.Paragraph, content: [{ id: 'content1', type: ContentType.Text, content: 'Block 1 content' }] },
-                { id: 'block2', type: BlockType.Paragraph, content: [{ id: 'content2', type: ContentType.Text, content: 'Block 2 content' }] }
+                { id: 'block1', blockType: BlockType.Paragraph, content: [{ id: 'content1', contentType: ContentType.Text, content: 'Block 1 content' }] },
+                { id: 'block2', blockType: BlockType.Paragraph, content: [{ id: 'content2', contentType: ContentType.Text, content: 'Block 2 content' }] }
             ];
     
             editor = new BlockEditor({ 
@@ -317,7 +372,7 @@ describe('DragAndDrop', () => {
     
             // Attempt to reorder blocks
             triggerMouseMove(block1, 10, 10);
-            const dragIcon = editor.floatingIconContainer.querySelector('.e-block-drag-icon') as HTMLElement;
+            const dragIcon = editor.floatingIconRenderer.floatingIconContainer.querySelector('.e-block-drag-icon') as HTMLElement;
             expect(dragIcon).not.toBeNull();
     
             const dataTransfer = new DataTransfer();
@@ -333,15 +388,18 @@ describe('DragAndDrop', () => {
                     // Ensure no reordering happened
                     expect(updatedBlocks[0].id).toBe('block1');
                     expect(updatedBlocks[1].id).toBe('block2');
-                    expect(editor.element.querySelector('.dragging-clone') as HTMLElement).toBeNull();
+                    expect(editor.element.querySelector('.e-be-dragging-clone') as HTMLElement).toBeNull();
+
+                    expect(editor.blocks[0].id).toBe('block1');
+                    expect(editor.blocks[1].id).toBe('block2');
                     done();
                 }, 50);
             }, 100);
         });
         it('dynamic prop handling enableDragAndDrop false to true', (done) => {
             const blocks: BlockModel[] = [
-                { id: 'block1', type: BlockType.Paragraph, content: [{ id: 'content1', type: ContentType.Text, content: 'Block 1 content' }] },
-                { id: 'block2', type: BlockType.Paragraph, content: [{ id: 'content2', type: ContentType.Text, content: 'Block 2 content' }] }
+                { id: 'block1', blockType: BlockType.Paragraph, content: [{ id: 'content1', contentType: ContentType.Text, content: 'Block 1 content' }] },
+                { id: 'block2', blockType: BlockType.Paragraph, content: [{ id: 'content2', contentType: ContentType.Text, content: 'Block 2 content' }] }
             ];
     
             editor = new BlockEditor({ 
@@ -359,7 +417,7 @@ describe('DragAndDrop', () => {
     
             // Attempt to reorder blocks
             triggerMouseMove(block1, 10, 10);
-            const dragIcon = editor.floatingIconContainer.querySelector('.e-block-drag-icon') as HTMLElement;
+            const dragIcon = editor.floatingIconRenderer.floatingIconContainer.querySelector('.e-block-drag-icon') as HTMLElement;
             expect(dragIcon).not.toBeNull();
     
             const dataTransfer = new DataTransfer();
@@ -375,15 +433,18 @@ describe('DragAndDrop', () => {
                     // Ensure reordering happened
                     expect(updatedBlocks[1].id).toBe('block1');
                     expect(updatedBlocks[0].id).toBe('block2');
-                    expect(editor.element.querySelector('.dragging-clone') as HTMLElement).toBeNull();
+                    expect(editor.element.querySelector('.e-be-dragging-clone') as HTMLElement).toBeNull();
+
+                    expect(editor.blocks[1].id).toBe('block1');
+                    expect(editor.blocks[0].id).toBe('block2');
                     done();
                 }, 50);
             }, 100);
         });
         it('should cancel drag operation on blockDragStart if event args.cancel is true', (done) => {
             const blocks: BlockModel[] = [
-                { id: 'block1', type: BlockType.Paragraph, content: [{ id: 'content1', type: ContentType.Text, content: 'Block 1 content' }] },
-                { id: 'block2', type: BlockType.Paragraph, content: [{ id: 'content2', type: ContentType.Text, content: 'Block 2 content' }] }
+                { id: 'block1', blockType: BlockType.Paragraph, content: [{ id: 'content1', contentType: ContentType.Text, content: 'Block 1 content' }] },
+                { id: 'block2', blockType: BlockType.Paragraph, content: [{ id: 'content2', contentType: ContentType.Text, content: 'Block 2 content' }] }
             ];
             editor = new BlockEditor({ 
                 blocks: blocks,
@@ -395,7 +456,7 @@ describe('DragAndDrop', () => {
             block1 = document.getElementById('block1');
             block2 = document.getElementById('block2');
             triggerMouseMove(block1, 10, 10);
-            const dragIcon = editor.floatingIconContainer.querySelector('.e-block-drag-icon') as HTMLElement;
+            const dragIcon = editor.floatingIconRenderer.floatingIconContainer.querySelector('.e-block-drag-icon') as HTMLElement;
             expect(dragIcon).not.toBeNull();
     
             const dataTransfer = new DataTransfer();
@@ -408,21 +469,24 @@ describe('DragAndDrop', () => {
     
                 setTimeout(() => {
                     // Ensure no reordering happened
-                        const updatedBlocks = editor.element.querySelectorAll('.e-block');
-                        expect(updatedBlocks[0].id).toBe('block1');
-                        expect(updatedBlocks[1].id).toBe('block2');
+                    const updatedBlocks = editor.element.querySelectorAll('.e-block');
+                    expect(updatedBlocks[0].id).toBe('block1');
+                    expect(updatedBlocks[1].id).toBe('block2');
+
+                    expect(editor.blocks[0].id).toBe('block1');
+                    expect(editor.blocks[1].id).toBe('block2');
                     done();
                 }, 50);
             }, 100);
         });
         it('should cancel drop operation on blockDrag if event args.cancel is true', (done) => {
             const blocks: BlockModel[] = [
-                { id: 'block1', type: BlockType.Paragraph, content: [{ id: 'content1', type: ContentType.Text, content: 'Block 1 content' }] },
-                { id: 'block2', type: BlockType.Paragraph, content: [{ id: 'content2', type: ContentType.Text, content: 'Block 2 content' }] }
+                { id: 'block1', blockType: BlockType.Paragraph, content: [{ id: 'content1', contentType: ContentType.Text, content: 'Block 1 content' }] },
+                { id: 'block2', blockType: BlockType.Paragraph, content: [{ id: 'content2', contentType: ContentType.Text, content: 'Block 2 content' }] }
             ];
             editor = new BlockEditor({ 
                 blocks: blocks,
-                blockDrag: function (args: BlockDragEventArgs) {
+                blockDragging: function (args: BlockDragEventArgs) {
                     args.cancel = true
                 }
             });
@@ -430,7 +494,7 @@ describe('DragAndDrop', () => {
             block1 = document.getElementById('block1');
             block2 = document.getElementById('block2');
             triggerMouseMove(block1, 10, 10);
-            const dragIcon = editor.floatingIconContainer.querySelector('.e-block-drag-icon') as HTMLElement;
+            const dragIcon = editor.floatingIconRenderer.floatingIconContainer.querySelector('.e-block-drag-icon') as HTMLElement;
             expect(dragIcon).not.toBeNull();
             const dataTransfer = new DataTransfer();
             triggerDragEvent(dragIcon, 'dragstart', 10, 10, dataTransfer);
@@ -442,6 +506,9 @@ describe('DragAndDrop', () => {
                     const updatedBlocks = editor.element.querySelectorAll('.e-block');
                     expect(updatedBlocks[0].id).toBe('block1'); // Ensure no reordering happened
                     expect(updatedBlocks[1].id).toBe('block2');
+
+                    expect(editor.blocks[0].id).toBe('block1'); // Ensure no reordering happened
+                    expect(editor.blocks[1].id).toBe('block2');
                     done();
                 }, 50);
             }, 100);
@@ -454,11 +521,11 @@ describe('DragAndDrop', () => {
             editorElement = createElement('div', { id: 'editor' });
             document.body.appendChild(editorElement);
             const blocks: BlockModel[] = [
-                { id: 'block1', type: BlockType.Paragraph, content: [{ id: 'content1', type: ContentType.Text, content: 'Block 1 content' }] },
-                { id: 'block2', type: BlockType.Paragraph, content: [{ id: 'content2', type: ContentType.Text, content: 'Block 2 content' }] },
-                { id: 'block3', type: BlockType.Paragraph, content: [{ id: 'content3', type: ContentType.Text, content: 'Block 3 content' }] },
-                { id: 'block4', type: BlockType.Paragraph, content: [{ id: 'content4', type: ContentType.Text, content: 'Block 4 content' }] },
-                { id: 'block5', type: BlockType.Paragraph, content: [{ id: 'content5', type: ContentType.Text, content: 'Block 5 content' }] }
+                { id: 'block1', blockType: BlockType.Paragraph, content: [{ id: 'content1', contentType: ContentType.Text, content: 'Block 1 content' }] },
+                { id: 'block2', blockType: BlockType.Paragraph, content: [{ id: 'content2', contentType: ContentType.Text, content: 'Block 2 content' }] },
+                { id: 'block3', blockType: BlockType.Paragraph, content: [{ id: 'content3', contentType: ContentType.Text, content: 'Block 3 content' }] },
+                { id: 'block4', blockType: BlockType.Paragraph, content: [{ id: 'content4', contentType: ContentType.Text, content: 'Block 4 content' }] },
+                { id: 'block5', blockType: BlockType.Paragraph, content: [{ id: 'content5', contentType: ContentType.Text, content: 'Block 5 content' }] }
             ];
 
             editor = new BlockEditor({ 
@@ -498,7 +565,7 @@ describe('DragAndDrop', () => {
             const endBlockId = endBlock.id;
             
             // Get all blocks between start and end blocks inclusive
-            const allBlocks = editor.getEditorBlocks();
+            const allBlocks = editor.blockManager.getEditorBlocks();
             const startIdx = allBlocks.findIndex(b => b.id === startBlockId);
             const endIdx = allBlocks.findIndex(b => b.id === endBlockId);
             const selectedBlocks = allBlocks.slice(
@@ -514,7 +581,7 @@ describe('DragAndDrop', () => {
             simulateMultiBlockSelection(block1, block2);
             
             triggerMouseMove(block1, 10, 10);
-            const dragIcon = editor.floatingIconContainer.querySelector('.e-block-drag-icon') as HTMLElement;
+            const dragIcon = editor.floatingIconRenderer.floatingIconContainer.querySelector('.e-block-drag-icon') as HTMLElement;
             expect(dragIcon).not.toBeNull();
 
             const dataTransfer = new DataTransfer();
@@ -533,7 +600,14 @@ describe('DragAndDrop', () => {
                     expect(updatedBlocks[2].id).toBe('block2');
                     expect(updatedBlocks[3].id).toBe('block4');
                     expect(updatedBlocks[4].id).toBe('block5');
-                    expect(editor.element.querySelector('.dragging-clone') as HTMLElement).toBeNull();
+                    expect(editor.element.querySelector('.e-be-dragging-clone') as HTMLElement).toBeNull();
+
+                    expect(editor.blocks.length).toBe(5);
+                    expect(editor.blocks[0].id).toBe('block3');
+                    expect(editor.blocks[1].id).toBe('block1');
+                    expect(editor.blocks[2].id).toBe('block2');
+                    expect(editor.blocks[3].id).toBe('block4');
+                    expect(editor.blocks[4].id).toBe('block5');
                     done();
                 }, 100);
             }, 100);
@@ -543,7 +617,7 @@ describe('DragAndDrop', () => {
             simulateMultiBlockSelection(block2, block3);
             
             triggerMouseMove(block2, 10, 10);
-            const dragIcon = editor.floatingIconContainer.querySelector('.e-block-drag-icon') as HTMLElement;
+            const dragIcon = editor.floatingIconRenderer.floatingIconContainer.querySelector('.e-block-drag-icon') as HTMLElement;
             expect(dragIcon).not.toBeNull();
 
             const dataTransfer = new DataTransfer();
@@ -562,7 +636,14 @@ describe('DragAndDrop', () => {
                     expect(updatedBlocks[2].id).toBe('block2');
                     expect(updatedBlocks[3].id).toBe('block3');
                     expect(updatedBlocks[4].id).toBe('block5');
-                    expect(editor.element.querySelector('.dragging-clone') as HTMLElement).toBeNull();
+                    expect(editor.element.querySelector('.e-be-dragging-clone') as HTMLElement).toBeNull();
+
+                    expect(editor.blocks.length).toBe(5);
+                    expect(editor.blocks[0].id).toBe('block1');
+                    expect(editor.blocks[1].id).toBe('block4');
+                    expect(editor.blocks[2].id).toBe('block2');
+                    expect(editor.blocks[3].id).toBe('block3');
+                    expect(editor.blocks[4].id).toBe('block5');
                     done();
                 }, 100);
             }, 100);
@@ -572,7 +653,7 @@ describe('DragAndDrop', () => {
             simulateMultiBlockSelection(block3, block4);
             
             triggerMouseMove(block3, 10, 10);
-            const dragIcon = editor.floatingIconContainer.querySelector('.e-block-drag-icon') as HTMLElement;
+            const dragIcon = editor.floatingIconRenderer.floatingIconContainer.querySelector('.e-block-drag-icon') as HTMLElement;
             expect(dragIcon).not.toBeNull();
 
             const dataTransfer = new DataTransfer();
@@ -591,7 +672,14 @@ describe('DragAndDrop', () => {
                     expect(updatedBlocks[2].id).toBe('block5');
                     expect(updatedBlocks[3].id).toBe('block3');
                     expect(updatedBlocks[4].id).toBe('block4');
-                    expect(editor.element.querySelector('.dragging-clone') as HTMLElement).toBeNull();
+                    expect(editor.element.querySelector('.e-be-dragging-clone') as HTMLElement).toBeNull();
+
+                    expect(editor.blocks.length).toBe(5);
+                    expect(editor.blocks[0].id).toBe('block1');
+                    expect(editor.blocks[1].id).toBe('block2');
+                    expect(editor.blocks[2].id).toBe('block5');
+                    expect(editor.blocks[3].id).toBe('block3');
+                    expect(editor.blocks[4].id).toBe('block4');
                     done();
                 }, 100);
             }, 100);
@@ -601,7 +689,7 @@ describe('DragAndDrop', () => {
             simulateMultiBlockSelection(block3, block4);
             
             triggerMouseMove(block3, 10, 10);
-            const dragIcon = editor.floatingIconContainer.querySelector('.e-block-drag-icon') as HTMLElement;
+            const dragIcon = editor.floatingIconRenderer.floatingIconContainer.querySelector('.e-block-drag-icon') as HTMLElement;
             expect(dragIcon).not.toBeNull();
 
             const dataTransfer = new DataTransfer();
@@ -620,7 +708,14 @@ describe('DragAndDrop', () => {
                     expect(updatedBlocks[2].id).toBe('block1');
                     expect(updatedBlocks[3].id).toBe('block2');
                     expect(updatedBlocks[4].id).toBe('block5');
-                    expect(editor.element.querySelector('.dragging-clone') as HTMLElement).toBeNull();
+                    expect(editor.element.querySelector('.e-be-dragging-clone') as HTMLElement).toBeNull();
+
+                    expect(editor.blocks.length).toBe(5);
+                    expect(editor.blocks[0].id).toBe('block3');
+                    expect(editor.blocks[1].id).toBe('block4');
+                    expect(editor.blocks[2].id).toBe('block1');
+                    expect(editor.blocks[3].id).toBe('block2');
+                    expect(editor.blocks[4].id).toBe('block5');
                     done();
                 }, 100);
             }, 100);
@@ -630,7 +725,7 @@ describe('DragAndDrop', () => {
             simulateMultiBlockSelection(block3, block4);
             
             triggerMouseMove(block3, 10, 10);
-            const dragIcon = editor.floatingIconContainer.querySelector('.e-block-drag-icon') as HTMLElement;
+            const dragIcon = editor.floatingIconRenderer.floatingIconContainer.querySelector('.e-block-drag-icon') as HTMLElement;
             expect(dragIcon).not.toBeNull();
 
             const dataTransfer = new DataTransfer();
@@ -649,7 +744,14 @@ describe('DragAndDrop', () => {
                     expect(updatedBlocks[2].id).toBe('block4');
                     expect(updatedBlocks[3].id).toBe('block2');
                     expect(updatedBlocks[4].id).toBe('block5');
-                    expect(editor.element.querySelector('.dragging-clone') as HTMLElement).toBeNull();
+                    expect(editor.element.querySelector('.e-be-dragging-clone') as HTMLElement).toBeNull();
+
+                    expect(editor.blocks.length).toBe(5);
+                    expect(editor.blocks[0].id).toBe('block1');
+                    expect(editor.blocks[1].id).toBe('block3');
+                    expect(editor.blocks[2].id).toBe('block4');
+                    expect(editor.blocks[3].id).toBe('block2');
+                    expect(editor.blocks[4].id).toBe('block5');
                     done();
                 }, 100);
             }, 100);
@@ -659,7 +761,7 @@ describe('DragAndDrop', () => {
             simulateMultiBlockSelection(block4, block5);
             
             triggerMouseMove(block4, 10, 10);
-            const dragIcon = editor.floatingIconContainer.querySelector('.e-block-drag-icon') as HTMLElement;
+            const dragIcon = editor.floatingIconRenderer.floatingIconContainer.querySelector('.e-block-drag-icon') as HTMLElement;
             expect(dragIcon).not.toBeNull();
 
             const dataTransfer = new DataTransfer();
@@ -678,7 +780,14 @@ describe('DragAndDrop', () => {
                     expect(updatedBlocks[2].id).toBe('block1');
                     expect(updatedBlocks[3].id).toBe('block2');
                     expect(updatedBlocks[4].id).toBe('block3');
-                    expect(editor.element.querySelector('.dragging-clone') as HTMLElement).toBeNull();
+                    expect(editor.element.querySelector('.e-be-dragging-clone') as HTMLElement).toBeNull();
+
+                    expect(editor.blocks.length).toBe(5);
+                    expect(editor.blocks[0].id).toBe('block4');
+                    expect(editor.blocks[1].id).toBe('block5');
+                    expect(editor.blocks[2].id).toBe('block1');
+                    expect(editor.blocks[3].id).toBe('block2');
+                    expect(editor.blocks[4].id).toBe('block3');
                     done();
                 }, 100);
             }, 100);
@@ -688,7 +797,7 @@ describe('DragAndDrop', () => {
             simulateMultiBlockSelection(block4, block5);
             
             triggerMouseMove(block4, 10, 10);
-            const dragIcon = editor.floatingIconContainer.querySelector('.e-block-drag-icon') as HTMLElement;
+            const dragIcon = editor.floatingIconRenderer.floatingIconContainer.querySelector('.e-block-drag-icon') as HTMLElement;
             expect(dragIcon).not.toBeNull();
 
             const dataTransfer = new DataTransfer();
@@ -707,7 +816,14 @@ describe('DragAndDrop', () => {
                     expect(updatedBlocks[2].id).toBe('block4');
                     expect(updatedBlocks[3].id).toBe('block5');
                     expect(updatedBlocks[4].id).toBe('block3');
-                    expect(editor.element.querySelector('.dragging-clone') as HTMLElement).toBeNull();
+                    expect(editor.element.querySelector('.e-be-dragging-clone') as HTMLElement).toBeNull();
+
+                    expect(editor.blocks.length).toBe(5);
+                    expect(editor.blocks[0].id).toBe('block1');
+                    expect(editor.blocks[1].id).toBe('block2');
+                    expect(editor.blocks[2].id).toBe('block4');
+                    expect(editor.blocks[3].id).toBe('block5');
+                    expect(editor.blocks[4].id).toBe('block3');
                     done();
                 }, 100);
             }, 100);

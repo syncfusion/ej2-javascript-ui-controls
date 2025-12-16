@@ -47,6 +47,7 @@ export class Resize {
             }
         }
     }
+
     private renderResizable(): void {
         const enableRtlClass : string = (this.parent.enableRtl) ? classes.CLS_RTE_RES_WEST : classes.CLS_RTE_RES_EAST;
         this.resizer = this.parent.createElement('div', {
@@ -190,8 +191,8 @@ export class Resize {
 
     private removeEventListener(): void {
         this.parent.off(events.initialEnd, this.renderResizable);
-        this.parent.element.classList.remove(classes.CLS_RTE_RES_CNT);
         this.parent.off(events.modelChanged, this.onPropertyChanged);
+        this.parent.element.classList.remove(classes.CLS_RTE_RES_CNT);
         if (this.parent && this.parent.rootContainer && this.parent.rootContainer.classList.contains('e-resize-enabled')) {
             this.parent.rootContainer.classList.remove('e-resize-enabled');
         }

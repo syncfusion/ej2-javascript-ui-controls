@@ -244,13 +244,13 @@ describe('Ribbon ->', () => {
         it('addRibbonTab->', (done: Function) => {
             document.getElementsByTagName("span")[0].click();
             const ribbon: HTMLElement = document.getElementById(helper.id + '_ribbon');
-            expect(ribbon.querySelectorAll('.e-tab-header .e-toolbar-items .e-toolbar-item').length).toBe(6);
+            expect(ribbon.querySelectorAll('.e-tab-header .e-toolbar-items .e-toolbar-item').length).toBe(7);
             let spreadsheet: Spreadsheet = helper.getInstance();
             spreadsheet.addRibbonTabs(
                 [{ header: { text: 'Custom' }, content: [{ text: 'Custom', tooltipText: 'Custom Btn', cssClass: 'e-custom-btn' }] }], 'Data');
             helper.switchRibbonTab(4);
             const tabItems: NodeListOf<Element> = ribbon.querySelectorAll('.e-tab-header .e-toolbar-items .e-toolbar-item');
-            expect(tabItems.length).toBe(7);
+            expect(tabItems.length).toBe(8);
             expect(tabItems[4].classList.contains('e-active')).toBeTruthy();
             expect(tabItems[4].querySelector('.e-tab-text').textContent).toBe('Custom');
             expect(ribbon.querySelector('.e-content .e-toolbar-item.e-custom-btn')).not.toBeNull();

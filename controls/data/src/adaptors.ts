@@ -552,8 +552,14 @@ export class UrlAdaptor extends Adaptor {
         // Sorting
         for (let i: number = 0; i < queries.sorts.length; i++) {
             temp = DataUtil.getValue(queries.sorts[i].e.fieldName, query) as QueryOptions;
-            request.sorts.push(DataUtil.callAdaptorFunction(
-                this, 'onEachSort', { name: temp, direction: queries.sorts[i].e.direction }, query));
+            if (!isNullOrUndefined(queries.sorts[i].e.foreignKeyValue)) {
+                request.sorts.push(DataUtil.callAdaptorFunction(
+                    this, 'onEachSort', { name: temp, comparer: queries.sorts[i].e.comparer,
+                    foreignKeyValue: queries.sorts[i].e.foreignKeyValue, direction: queries.sorts[i].e.direction }, query));
+            } else {
+                request.sorts.push(DataUtil.callAdaptorFunction(
+                    this, 'onEachSort', { name: temp, direction: queries.sorts[i].e.direction }, query));
+            }
         }
         // hierarchy
         if (hierarchyFilters) {

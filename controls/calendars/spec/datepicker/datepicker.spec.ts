@@ -3399,7 +3399,7 @@ describe('Datepicker', () => {
             (<HTMLElement>(document.getElementsByClassName(' e-input-group-icon e-date-icon e-icons')[0])).dispatchEvent(clickEvent);
             datepicker.element.value = "11/1/2017 14:00";
             datepicker.inputBlurHandler();
-            //expect(datepicker.value.valueOf()).toBe(new Date('11/1/2017 14:00').valueOf());
+            // expect(datepicker.value.valueOf()).toBe(new Date('11/1/2017 14:00').valueOf());
         });
         it('min value with time (strictMode true)', () => {
             datepicker = new DatePicker({ value: new Date('11/3/2017 14:00'), strictMode: true, format: 'MM/dd/yyyy h:mm', min: new Date('11/1/2017 16:00') });

@@ -1,4 +1,4 @@
-import { extend, Property, ChildProperty, Complex, Collection } from '@syncfusion/ej2-base';import { SheetModel } from './index';import { CellStyleModel, HyperlinkModel, CellStyle, wrapEvent, ValidationModel, Chart, ChartModel, ExtendedWorkbook } from '../common/index';import { ImageModel, Image, updateCell } from '../common/index';import { getRow } from './index';import { RowModel } from './row-model';import { Workbook } from './workbook';import { getSheet } from './sheet';
+import { extend, Property, ChildProperty, Complex, Collection } from '@syncfusion/ej2-base';import { SheetModel } from './index';import { CellStyleModel, HyperlinkModel, CellStyle, wrapEvent, ValidationModel, Chart, ChartModel, ExtendedWorkbook, ThreadedComment } from '../common/index';import { ImageModel, Image, updateCell, ThreadedCommentModel, NoteModel } from '../common/index';import { getRow } from './index';import { RowModel } from './row-model';import { Workbook } from './workbook';import { getSheet } from './sheet';
 
 /**
  * Interface for a class Cell
@@ -10,7 +10,21 @@ export interface CellModel {
      *
      * @default ''
      */
-    notes?: string;
+    notes?: string | NoteModel;
+
+    /**
+     * Represents the threaded comment associated with the cell.
+     * A threaded comment allows users to add a main comment and maintain a discussion through replies.
+     * Each cell supports a single comment thread, which includes:
+     * - **author**: The name of the person who created the comment.
+     * - **text**: The main content of the comment.
+     * - **createdTime**: The timestamp indicating when the comment was added.
+     * - **isResolved**: Indicates whether the thread is marked as resolved.
+     * - **replies**: A collection of reply comments, each with its own `author`, `text`, and `createdTime`.
+     *
+     * @default null
+     */
+    comment?: ThreadedCommentModel;
 
     /**
      * Specifies the image of the cell.

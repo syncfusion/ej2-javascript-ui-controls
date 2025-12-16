@@ -8,7 +8,7 @@ import { InsertMethods } from './insert-methods';
  * PasteCleanup for MsWord content
  *
  * @hidden
- * @deprecated
+ * @private
  */
 export class MsWordPaste {
     private parent: EditorManager;

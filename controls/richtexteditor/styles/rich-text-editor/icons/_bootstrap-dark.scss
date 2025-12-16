@@ -1,3 +1,6 @@
+@use 'ej2-base/styles/common/mixin' as *;
+@use '../bootstrap-dark-definition' as *;
+
 /*! component's theme wise override definitions and variables */
 
 @include export-module('richtexteditor-bootstrap-dark-icons') {
@@ -25,6 +28,10 @@
 
     .e-justify-left::before {
       content: '\e33a';
+    }
+
+    .e-lineHeight::before {
+      content: '\eb30';
     }
 
     .e-justify-center::before {

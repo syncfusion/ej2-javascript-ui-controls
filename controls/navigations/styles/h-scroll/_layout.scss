@@ -1,3 +1,5 @@
+@use 'ej2-base/styles/common/mixin' as *;
+@use './theme-variables' as *;
 @include export-module('h-scroll') {
 
   /*! h-scroll layout */
@@ -81,13 +83,13 @@
     }
 
     > * {
-      height: inherit;
-      line-height: normal;
+      height: $hscroll-item-height;
+      line-height: $hscroll-item-line-height;
     }
 
     .e-hscroll-content {
       display: inline-block;
-      height: inherit;
+      height: $hscroll-item-height;
       position: relative;
 
       > * {

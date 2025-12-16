@@ -7,7 +7,7 @@ import { isHiddenRow, setRow, ColumnModel, beginAction, ActionEventArgs, getSwap
 import { CellFormatArgs, DefineNameModel, ExtendedRange, getData, isCellReference, parseLocaleNumber } from '../../workbook/index';
 import { ValidationModel, ValidationType, CellStyleModel, getSheet, getSheetIndex, checkIsFormula, isReadOnly } from '../../workbook/index';
 import { getColumn, isLocked, updateHighlight, ValidationOperator, formulaInValidation, InvalidFormula } from '../../workbook/index';
-import { dialog, locale, initiateDataValidation, invalidData, editOperation, keyUp, focus, removeElements } from '../common/index';
+import { dialog, locale, initiateDataValidation, invalidData, editOperation, keyUp, focus, removeElements, createCommentIndicator } from '../common/index';
 import { formulaBarOperation, removeDataValidation, CellValidationEventArgs } from '../common/index';
 import { L10n, EventHandler, remove, closest, isNullOrUndefined, select, Browser, getNumericObject } from '@syncfusion/ej2-base';
 import { parseThousandSeparator } from '../../workbook/common/internalization';
@@ -137,11 +137,16 @@ export class DataValidation {
         }
     }
 
-    private updateNoteIndicator(td: HTMLElement, rowIndex: number, columnIndex: number): void {
+    private updateIndicator(td: HTMLElement, rowIndex: number, columnIndex: number): void {
         const noteIndicator: HTMLElement = td.querySelector('.e-addNoteIndicator');
         if (noteIndicator) {
             remove(noteIndicator);
             this.parent.notify(createNoteIndicator, { targetElement: td, rowIndex: rowIndex, columnIndex: columnIndex, skipEvent: true });
+        }
+        const commentIndicator: HTMLElement = td.querySelector('.e-comment-indicator');
+        if (commentIndicator) {
+            remove(commentIndicator);
+            this.parent.notify(createCommentIndicator, { targetEle: td, rIdx: rowIndex, cIdx: columnIndex, skipEvent: true });
         }
     }
 
@@ -219,11 +224,11 @@ export class DataValidation {
                     const pervActiveCellIdx: number[] = getCellIndexes(this.parent.selectionModule.previousActiveCell);
                     const pervActiveCellEle: HTMLElement = this.parent.getCell(pervActiveCellIdx[0], pervActiveCellIdx[1]);
                     if (pervActiveCellEle) {
-                        this.updateNoteIndicator(pervActiveCellEle, pervActiveCellIdx[0], pervActiveCellIdx[1]);
+                        this.updateIndicator(pervActiveCellEle, pervActiveCellIdx[0], pervActiveCellIdx[1]);
                     }
                 }
             } else if (validationArgs.isRefresh) {
-                this.updateNoteIndicator(validationArgs.td, validationArgs.rowIdx, validationArgs.colIdx);
+                this.updateIndicator(validationArgs.td, validationArgs.rowIdx, validationArgs.colIdx);
             }
         }
     }
@@ -306,7 +311,7 @@ export class DataValidation {
                 }
             });
             this.listObj.appendTo(ddlEle);
-            this.updateNoteIndicator(tdEle, args.rowIdx, args.colIdx);
+            this.updateIndicator(tdEle, args.rowIdx, args.colIdx);
         }
     }
 

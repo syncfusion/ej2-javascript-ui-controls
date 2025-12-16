@@ -4,9 +4,10 @@ import { _PdfDictionary, _PdfName, _PdfReference } from './../pdf-primitives';
 import { _PdfStringLayouter, _PdfStringLayoutResult } from './string-layouter';
 import { _UnicodeTrueTypeFont } from './unicode-true-type-font';
 import { _fromRectangle } from './../utils';
-import { PdfTextDirection } from './../../core/enumerator';
-import { _TrueTypeReader, _TrueTypeGlyph } from './ttf-reader';
+import { PdfSubSuperScript, PdfTextDirection } from './../../core/enumerator';
+import { _TrueTypeReader, _TrueTypeGlyph, _TrueTypeMetrics } from './ttf-reader';
 import { _RtlRenderer } from './../graphics/rightToLeft/text-renderer';
+import { Size } from './../pdf-type';
 /**
  * Represents the base class for font objects.`
  * ```typescript
@@ -15,11 +16,11 @@ import { _RtlRenderer } from './../graphics/rightToLeft/text-renderer';
  * // Gets the first page
  * let page: PdfPage = document.getPage(0) as PdfPage;
  * // Create a new PDF standard font
- * let font: PdfStandardFont = new PdfStandardFont(PdfFontFamily.Helvetica, 10);
+ * let font: PdfStandardFont = document.embedFont(PdfFontFamily.helvetica, 10, PdfFontStyle.regular);
  * // Create a new PDF string format
  * let format: PdfStringFormat = new PdfStringFormat(PdfTextAlignment.right, PdfVerticalAlignment.bottom);
  * // Draw the text
- * page.graphics.drawString('Helvetica', font, [0, 180, page.size[0], 40], undefined, new PdfBrush([0, 0, 255]), format);
+ * page.graphics.drawString('Helvetica', font, {x: 0, y: 180, width: page.size.width, height: 40}, new PdfBrush({r: 0, g: 0, b: 255}), format);
  * // Save the document
  * document.save('output.pdf');
  * // Destroy the document
@@ -34,6 +35,10 @@ export abstract class PdfFont {
     _fontMetrics: _PdfFontMetrics;
     _reference: _PdfReference;
     _key: string;
+    _ascent: number;
+    _descent: number;
+    _lineGap: number = 0;
+    _height: number;
     /**
      * Gets the size of the PDF font.
      *
@@ -45,7 +50,7 @@ export abstract class PdfFont {
      * // Gets the first page
      * let page: PdfPage = document.getPage(0) as PdfPage;
      * // Create a new PDF standard font
-     * let font: PdfStandardFont = new PdfStandardFont(PdfFontFamily.Helvetica, 10);
+     * let font: PdfStandardFont = document.embedFont(PdfFontFamily.helvetica, 12, PdfFontStyle.regular);
      * // Gets the font size
      * let size: number = font.size;
      * // Destroy the document
@@ -66,7 +71,7 @@ export abstract class PdfFont {
      * // Gets the first page
      * let page: PdfPage = document.getPage(0) as PdfPage;
      * // Create a new PDF standard font
-     * let font: PdfStandardFont = new PdfStandardFont(PdfFontFamily.Helvetica, 10, PdfFontStyle.italic);
+     * let font: PdfStandardFont = document.embedFont(PdfFontFamily.helvetica, 12, PdfFontStyle.regular);
      * // Gets the font style
      * let style: PdfFontStyle = font.style;
      * // Destroy the document
@@ -87,7 +92,7 @@ export abstract class PdfFont {
      * // Gets the first page
      * let page: PdfPage = document.getPage(0) as PdfPage;
      * // Create a new PDF standard font
-     * let font: PdfStandardFont = new PdfStandardFont(PdfFontFamily.Helvetica, 10);
+     * let font: PdfStandardFont = document.embedFont(PdfFontFamily.helvetica, 12, PdfFontStyle.regular);
      * // Sets the font style
      * font.style = PdfFontStyle.italic;
      * // Destroy the document
@@ -108,7 +113,7 @@ export abstract class PdfFont {
      * // Gets the first page
      * let page: PdfPage = document.getPage(0) as PdfPage;
      * // Create a new PDF standard font
-     * let font: PdfStandardFont = new PdfStandardFont(PdfFontFamily.Helvetica, 10, PdfFontStyle.underline);
+     * let font: PdfStandardFont = document.embedFont(PdfFontFamily.helvetica, 12, PdfFontStyle.underline);
      * // Gets the boolean flag indicating whether the font has underline style or not.
      * let underline: boolean = font.isUnderline;
      * // Destroy the document
@@ -129,7 +134,7 @@ export abstract class PdfFont {
      * // Gets the first page
      * let page: PdfPage = document.getPage(0) as PdfPage;
      * // Create a new PDF standard font
-     * let font: PdfStandardFont = new PdfStandardFont(PdfFontFamily.Helvetica, 10, PdfFontStyle.strikeout);
+     * let font: PdfStandardFont = document.embedFont(PdfFontFamily.helvetica, 12, PdfFontStyle.strikeout);
      * // Gets the boolean flag indicating whether the font has strike out style or not.
      * let strikeout: boolean = font.isStrikeout;
      * // Destroy the document
@@ -156,7 +161,7 @@ export abstract class PdfFont {
      * // Gets the first page
      * let page: PdfPage = document.getPage(0) as PdfPage;
      * // Create a new PDF standard font
-     * let font: PdfStandardFont = new PdfStandardFont(PdfFontFamily.Helvetica, 10, PdfFontStyle.bold);
+     * let font: PdfStandardFont = document.embedFont(PdfFontFamily.helvetica, 12, PdfFontStyle.bold);
      * // Gets the boolean flag indicating whether the font has bold style or not.
      * let bold: boolean = font.isBold;
      * // Destroy the document
@@ -177,7 +182,7 @@ export abstract class PdfFont {
      * // Gets the first page
      * let page: PdfPage = document.getPage(0) as PdfPage;
      * // Create a new PDF standard font
-     * let font: PdfStandardFont = new PdfStandardFont(PdfFontFamily.Helvetica, 10, PdfFontStyle.italic);
+     * let font: PdfStandardFont = document.embedFont(PdfFontFamily.helvetica, 12, PdfFontStyle.italic);
      * // Gets the boolean flag indicating whether the font has italic style or not.
      * let italic: boolean = font.isItalic;
      * // Destroy the document
@@ -198,7 +203,7 @@ export abstract class PdfFont {
      * // Gets the first page
      * let page: PdfPage = document.getPage(0) as PdfPage;
      * // Create a new PDF standard font
-     * let font: PdfStandardFont = new PdfStandardFont(PdfFontFamily.Helvetica, 10, PdfFontStyle.italic);
+     * let font: PdfStandardFont = document.embedFont(PdfFontFamily.helvetica, 12, PdfFontStyle.italic);
      * // Gets the font height
      * let height: number = font.height;
      * // Destroy the document
@@ -206,7 +211,7 @@ export abstract class PdfFont {
      * ```
      */
     get height(): number {
-        return this._metrics._getHeight();
+        return this._getHeight();
     }
     constructor(size: number)
     constructor(size: number, style: PdfFontStyle)
@@ -245,11 +250,48 @@ export abstract class PdfFont {
             return count;
         }
     }
+    _getSize(format: PdfStringFormat): number {
+        let size: number = this._size;
+        if (format !== null && typeof format !== 'undefined') {
+            switch (format.subSuperScript) {
+            case PdfSubSuperScript.subScript:
+                size /= this._metrics._subScriptSizeFactor;
+                break;
+            case PdfSubSuperScript.superScript:
+                size /= this._metrics._superscriptSizeFactor;
+                break;
+            }
+        }
+        return size;
+    }
+    _getHeight(): number
+    _getHeight(format: PdfStringFormat): number
+    _getHeight(format?: PdfStringFormat): number {
+        let height: number;
+        const clearTypeFonts: string[] = [ 'cambria', 'candara', 'constantia', 'corbel', 'cariadings' ];
+        const clearTypeFontCollection: string[] = [];
+        clearTypeFontCollection.push(...clearTypeFonts);
+        if (this._getDescent(format) < 0) {
+            height = (this._getAscent(format) - this._getDescent(format) + this._getLineGap(format));
+        } else {
+            height = (this._getAscent(format) + this._getDescent(format) + this._getLineGap(format));
+        }
+        return height;
+    }
+    _getAscent(format: PdfStringFormat): number {
+        return this._ascent * 0.001 * this._getSize(format);
+    }
+    _getDescent(format: PdfStringFormat): number {
+        return this._descent * 0.001 * this._getSize(format);
+    }
+    _getLineGap(format: PdfStringFormat): number {
+        return this._lineGap * 0.001 * this._getSize(format);
+    }
     /**
      * Measures the size of a given text string when rendered using this PDF font.
      *
      * @param {string} text Text.
-     * @returns {number[]} actualSize.
+     * @returns {Size} actualSize.
      *
      * ```typescript
      * // Load an existing PDF document
@@ -257,24 +299,24 @@ export abstract class PdfFont {
      * // Gets the first page
      * let page: PdfPage = document.getPage(0) as PdfPage;
      * // Create a new PDF standard font
-     * let font: PdfStandardFont = new PdfStandardFont(PdfFontFamily.Helvetica, 10, PdfFontStyle.regular);
+     * let font: PdfStandardFont = document.embedFont(PdfFontFamily.helvetica, 10, PdfFontStyle.regular);
      * // Create a new PDF string format
      * let format: PdfStringFormat = new PdfStringFormat(PdfTextAlignment.right, PdfVerticalAlignment.bottom);
      * // Measure the size of the text
-     * let size: number[] = font.measureString('Syncfusion');
+     * let size: Size = font.measureString('Syncfusion');
      * // Save the document
      * document.save('output.pdf');
      * // Destroy the document
      * document.destroy();
      * ```
      */
-    public measureString(text: string): number[]
+    public measureString(text: string): Size
     /**
      * Measures the size of a given text string when rendered using this PDF font with respect to the string format.
      *
      * @param {string} text Text.
      * @param {PdfStringFormat} format String format.
-     * @returns {number[]} actualSize.
+     * @returns {Size} actualSize.
      *
      * ```typescript
      * // Load an existing PDF document
@@ -282,18 +324,18 @@ export abstract class PdfFont {
      * // Gets the first page
      * let page: PdfPage = document.getPage(0) as PdfPage;
      * // Create a new PDF standard font
-     * let font: PdfStandardFont = new PdfStandardFont(PdfFontFamily.Helvetica, 10, PdfFontStyle.regular);
+     * let font: PdfStandardFont = document.embedFont(PdfFontFamily.helvetica, 10, PdfFontStyle.regular);
      * // Create a new PDF string format
      * let format: PdfStringFormat = new PdfStringFormat(PdfTextAlignment.right, PdfVerticalAlignment.bottom);
      * // Measure the size of the text
-     * let size: number[] = font.measureString('Syncfusion', format);
+     * let size: Size = font.measureString('Syncfusion', format);
      * // Save the document
      * document.save('output.pdf');
      * // Destroy the document
      * document.destroy();
      * ```
      */
-    public measureString(text: string, format: PdfStringFormat): number[]
+    public measureString(text: string, format: PdfStringFormat): Size
     /**
      * Measures the size of a given text string when rendered using this PDF font.
      *
@@ -301,7 +343,7 @@ export abstract class PdfFont {
      * @param {PdfStringFormat} format String format.
      * @param {number} charactersFitted Characters fitted.
      * @param {number} linesFilled Lines filled.
-     * @returns {number[]} actualSize.
+     * @returns {size} actualSize.
      *
      * ```typescript
      * // Load an existing PDF document
@@ -309,24 +351,24 @@ export abstract class PdfFont {
      * // Gets the first page
      * let page: PdfPage = document.getPage(0) as PdfPage;
      * // Create a new PDF standard font
-     * let font: PdfStandardFont = new PdfStandardFont(PdfFontFamily.Helvetica, 10, PdfFontStyle.regular);
+     * let font: PdfStandardFont = document.embedFont(PdfFontFamily.helvetica, 10, PdfFontStyle.regular);
      * // Create a new PDF string format
      * let format: PdfStringFormat = new PdfStringFormat(PdfTextAlignment.right, PdfVerticalAlignment.bottom);
      * // Measure the size of the text
-     * let size: number[] = font.measureString('Syncfusion', format, 10, 10);
+     * let size: Size = font.measureString('Syncfusion', format, 10, 10);
      * // Save the document
      * document.save('output.pdf');
      * // Destroy the document
      * document.destroy();
      * ```
      */
-    public measureString(text: string, format: PdfStringFormat, charactersFitted: number, linesFilled: number): number[]
+    public measureString(text: string, format: PdfStringFormat, charactersFitted: number, linesFilled: number): Size
     /**
      * Measures the size of a given text string when rendered using this PDF font with respect to the maximum line width.
      *
      * @param {string} text Text.
      * @param {number} width width.
-     * @returns {number[]} actualSize.
+     * @returns {Size} actualSize.
      *
      * ```typescript
      * // Load an existing PDF document
@@ -334,25 +376,25 @@ export abstract class PdfFont {
      * // Gets the first page
      * let page: PdfPage = document.getPage(0) as PdfPage;
      * // Create a new PDF standard font
-     * let font: PdfStandardFont = new PdfStandardFont(PdfFontFamily.Helvetica, 10, PdfFontStyle.regular);
+     * let font: PdfStandardFont = document.embedFont(PdfFontFamily.helvetica, 10, PdfFontStyle.regular);
      * // Create a new PDF string format
      * let format: PdfStringFormat = new PdfStringFormat(PdfTextAlignment.right, PdfVerticalAlignment.bottom);
      * // Measure the size of the text
-     * let size: number[] = font.measureString('Syncfusion', 50);
+     * let size: Size = font.measureString('Syncfusion', 50);
      * // Save the document
      * document.save('output.pdf');
      * // Destroy the document
      * document.destroy();
      * ```
      */
-    public measureString(text: string, width: number): number[]
+    public measureString(text: string, width: number): Size
     /**
      * Measures the size of a given text string when rendered using this PDF font  with respect to the string format and maximum line width.
      *
      * @param {string} text Text.
      * @param {number} width width.
      * @param {PdfStringFormat} format String format.
-     * @returns {number[]} actualSize.
+     * @returns {Size} actualSize.
      *
      * ```typescript
      * // Load an existing PDF document
@@ -360,18 +402,18 @@ export abstract class PdfFont {
      * // Gets the first page
      * let page: PdfPage = document.getPage(0) as PdfPage;
      * // Create a new PDF standard font
-     * let font: PdfStandardFont = new PdfStandardFont(PdfFontFamily.Helvetica, 10, PdfFontStyle.regular);
+     * let font: PdfStandardFont = document.embedFont(PdfFontFamily.helvetica, 10, PdfFontStyle.regular);
      * // Create a new PDF string format
      * let format: PdfStringFormat = new PdfStringFormat(PdfTextAlignment.right, PdfVerticalAlignment.bottom);
      * // Measure the size of the text
-     * let size: number[] = font.measureString('Syncfusion', 50, format);
+     * let size: Size = font.measureString('Syncfusion', 50, format);
      * // Save the document
      * document.save('output.pdf');
      * // Destroy the document
      * document.destroy();
      * ```
      */
-    public measureString(text: string, width: number, format: PdfStringFormat): number[]
+    public measureString(text: string, width: number, format: PdfStringFormat): Size
     /**
      * Measures the size of a given text string when rendered using this PDF font.
      *
@@ -380,7 +422,7 @@ export abstract class PdfFont {
      * @param {PdfStringFormat} format String format.
      * @param {number} charactersFitted Characters fitted.
      * @param {number} linesFilled Lines filled.
-     * @returns {number[]} actualSize.
+     * @returns {Size} actualSize.
      *
      * ```typescript
      * // Load an existing PDF document
@@ -388,11 +430,11 @@ export abstract class PdfFont {
      * // Gets the first page
      * let page: PdfPage = document.getPage(0) as PdfPage;
      * // Create a new PDF standard font
-     * let font: PdfStandardFont = new PdfStandardFont(PdfFontFamily.Helvetica, 10, PdfFontStyle.regular);
+     * let font: PdfStandardFont = document.embedFont(PdfFontFamily.helvetica, 10, PdfFontStyle.regular);
      * // Create a new PDF string format
      * let format: PdfStringFormat = new PdfStringFormat(PdfTextAlignment.right, PdfVerticalAlignment.bottom);
      * // Measure the size of the text
-     * let size: number[] = font.measureString('Syncfusion', 50, format, 10, 10);
+     * let size: Size = font.measureString('Syncfusion', 50, format, 10, 10);
      * // Save the document
      * document.save('output.pdf');
      * // Destroy the document
@@ -400,13 +442,13 @@ export abstract class PdfFont {
      * ```
      */
     public measureString(text: string, width: number, format: PdfStringFormat,
-        charactersFitted: number, linesFilled: number): number[]
+        charactersFitted: number, linesFilled: number): Size
     /**
      * Measures the size of a given text string when rendered using this PDF font with respect to the layout area.
      *
      * @param {string} text Text.
-     * @param {number []} layoutArea Layout area.
-     * @returns {number[]} actualSize.
+     * @param {Size} layoutArea Layout area.
+     * @returns {Size} actualSize.
      *
      * ```typescript
      * // Load an existing PDF document
@@ -414,25 +456,25 @@ export abstract class PdfFont {
      * // Gets the first page
      * let page: PdfPage = document.getPage(0) as PdfPage;
      * // Create a new PDF standard font
-     * let font: PdfStandardFont = new PdfStandardFont(PdfFontFamily.Helvetica, 10, PdfFontStyle.regular);
+     * let font: PdfStandardFont = document.embedFont(PdfFontFamily.helvetica, 10, PdfFontStyle.regular);
      * // Create a new PDF string format
      * let format: PdfStringFormat = new PdfStringFormat(PdfTextAlignment.right, PdfVerticalAlignment.bottom);
      * // Measure the size of the text
-     * let size: number[] = font.measureString('Syncfusion', [100, 100]);
+     * let size: Size = font.measureString('Syncfusion', {width: 100, height: 100});
      * // Save the document
      * document.save('output.pdf');
      * // Destroy the document
      * document.destroy();
      * ```
      */
-    public measureString(text: string, layoutArea: number[]): number[]
+    public measureString(text: string, layoutArea: Size): Size
     /**
      * Measures the size of a given text string when rendered using this PDF font with respect to the layout area and string format.
      *
      * @param {string} text Text.
      * @param {PdfStringFormat} format String format.
-     * @param {number []} layoutArea Layout area.
-     * @returns {number[]} actualSize.
+     * @param {Size} layoutArea Layout area.
+     * @returns {Size} actualSize.
      *
      * ```typescript
      * // Load an existing PDF document
@@ -440,27 +482,27 @@ export abstract class PdfFont {
      * // Gets the first page
      * let page: PdfPage = document.getPage(0) as PdfPage;
      * // Create a new PDF standard font
-     * let font: PdfStandardFont = new PdfStandardFont(PdfFontFamily.Helvetica, 10, PdfFontStyle.regular);
+     * let font: PdfStandardFont = document.embedFont(PdfFontFamily.helvetica, 10, PdfFontStyle.regular);
      * // Create a new PDF string format
      * let format: PdfStringFormat = new PdfStringFormat(PdfTextAlignment.right, PdfVerticalAlignment.bottom);
      * // Measure the size of the text
-     * let size: number[] = font.measureString('Syncfusion', [100, 100], format);
+     * let size: Size = font.measureString('Syncfusion', {width: 100, height: 100}, format);
      * // Save the document
      * document.save('output.pdf');
      * // Destroy the document
      * document.destroy();
      * ```
      */
-    public measureString(text: string, layoutArea: number[], format: PdfStringFormat): number[]
+    public measureString(text: string, layoutArea: Size, format: PdfStringFormat): Size
     /**
      * Measures the size of a given text string when rendered using this PDF font.
      *
      * @param {string} text Text.
      * @param {PdfStringFormat} format String format.
-     * @param {number []} layoutArea Layout area.
+     * @param {Size} layoutArea Layout area.
      * @param {number} charactersFitted Characters fitted.
      * @param {number} linesFilled Lines filled.
-     * @returns {number[]} actualSize.
+     * @returns {Size} actualSize.
      *
      * ```typescript
      * // Load an existing PDF document
@@ -468,21 +510,21 @@ export abstract class PdfFont {
      * // Gets the first page
      * let page: PdfPage = document.getPage(0) as PdfPage;
      * // Create a new PDF standard font
-     * let font: PdfStandardFont = new PdfStandardFont(PdfFontFamily.Helvetica, 10, PdfFontStyle.regular);
+     * let font: PdfStandardFont = document.embedFont(PdfFontFamily.helvetica, 10, PdfFontStyle.regular);
      * // Create a new PDF string format
      * let format: PdfStringFormat = new PdfStringFormat(PdfTextAlignment.right, PdfVerticalAlignment.bottom);
      * // Measure the size of the text
-     * let size: number[] = font.measureString('Syncfusion', format, [0, 0], 0, 0);
+     * let size: Size = font.measureString('Syncfusion', format, {width: 0, height: 0}, 0, 0);
      * // Save the document
      * document.save('output.pdf');
      * // Destroy the document
      * document.destroy();
      * ```
      */
-    public measureString(text: string, layoutArea: number[], format: PdfStringFormat,
-        charactersFitted: number, linesFilled: number): number[]
-    public measureString(text: string, arg2 ?: PdfStringFormat|number|number[],
-                         arg3 ?: number|PdfStringFormat, arg4 ?: number, arg5 ?: number): number[] {
+    public measureString(text: string, layoutArea: Size, format: PdfStringFormat,
+        charactersFitted: number, linesFilled: number): Size
+    public measureString(text: string, arg2 ?: PdfStringFormat|number|Size,
+                         arg3 ?: number|PdfStringFormat, arg4 ?: number, arg5 ?: number): Size {
         if (typeof text === 'string' && typeof arg2 === 'undefined') {
             return this.measureString(text, null);
         } else if (typeof text === 'string' && (arg2 instanceof PdfStringFormat || arg2 === null) &&
@@ -497,14 +539,13 @@ export abstract class PdfFont {
             return this.measureString(text, 0, temparg2, arg3, arg4);
         } else if (typeof text === 'string' && typeof arg2 === 'number'
                   && (arg3 instanceof PdfStringFormat || arg3 === null) && typeof arg4 === 'number' && typeof arg5 === 'number') {
-            const layoutArea: number[] = [arg2, 0];
             const temparg3: PdfStringFormat = arg3 as PdfStringFormat;
-            return this.measureString(text, layoutArea, temparg3, arg4, arg5);
+            return this.measureString(text, {width: arg2, height: 0}, temparg3, arg4, arg5);
         } else {
-            const temparg2: number[] = arg2 as number[];
             const temparg3: PdfStringFormat = arg3 as PdfStringFormat;
             const layouter: _PdfStringLayouter = new _PdfStringLayouter();
-            const result: _PdfStringLayoutResult = layouter._layout(text, this, temparg3, temparg2);
+            const size: Size = arg2 as Size;
+            const result: _PdfStringLayoutResult = layouter._layout(text, this, temparg3, [size.width, size.height]);
             arg4 = text.length;
             arg5 = (result._empty) ? 0 : result._lines.length;
             return result._actualSize;
@@ -533,11 +574,11 @@ export abstract class PdfFont {
  * // Gets the first page
  * let page: PdfPage = document.getPage(0) as PdfPage;
  * // Create a new PDF standard font
- * let font: PdfStandardFont = new PdfStandardFont(PdfFontFamily.Helvetica, 10);
+ * let font: PdfStandardFont = document.embedFont(PdfFontFamily.helvetica, 10, PdfFontStyle.regular);
  * // Create a new PDF string format
  * let format: PdfStringFormat = new PdfStringFormat(PdfTextAlignment.right, PdfVerticalAlignment.bottom);
  * // Draw the text
- * page.graphics.drawString('Helvetica', font, [0, 180, page.size[0], 40], undefined, new PdfBrush([0, 0, 255]), format);
+ * page.graphics.drawString('Helvetica', font, {x: 0, y: 180, width: page.size.width, height: 40}, new PdfBrush({r: 0, g: 0, b: 255}), format);
  * // Save the document
  * document.save('output.pdf');
  * // Destroy the document
@@ -546,27 +587,6 @@ export abstract class PdfFont {
  */
 export class PdfStandardFont extends PdfFont {
     _fontFamily: PdfFontFamily;
-    /**
-     * Gets the font family of the PDF standard font.
-     *
-     * @returns {PdfFontFamily} fontFamily.
-     *
-     * ```typescript
-     * // Load an existing PDF document
-     * let document: PdfDocument = new PdfDocument(data, password);
-     * // Gets the first page
-     * let page: PdfPage = document.getPage(0) as PdfPage;
-     * // Create a new PDF standard font
-     * let font: PdfStandardFont = new PdfStandardFont(PdfFontFamily.Helvetica, 10, PdfFontStyle.strikeout);
-     * // Gets the font family
-     * let fontFamily: PdfFontFamily = font.fontFamily;
-     * // Destroy the document
-     * document.destroy();
-     * ```
-     */
-    get fontFamily(): PdfFontFamily {
-        return this._fontFamily;
-    }
     /**
      * Initializes a new instance of the `PdfStandardFont` class.
      *
@@ -578,11 +598,11 @@ export class PdfStandardFont extends PdfFont {
      * // Gets the first page
      * let page: PdfPage = document.getPage(0) as PdfPage;
      * // Create a new PDF standard font
-     * let font: PdfStandardFont = new PdfStandardFont(PdfFontFamily.Helvetica, 10);
+     * let font: PdfStandardFont = new PdfStandardFont(PdfFontFamily.helvetica, 10);
      * // Create a new PDF string format
      * let format: PdfStringFormat = new PdfStringFormat(PdfTextAlignment.right, PdfVerticalAlignment.bottom);
      * // Draw the text
-     * page.graphics.drawString('Helvetica', font, [0, 180, page.size[0], 40], undefined, new PdfBrush([0, 0, 255]), format);
+     * page.graphics.drawString('Helvetica', font, {x: 0, y: 180, width: page.size.width, height: 40}, new PdfBrush({r: 0, g: 0, b: 255}), format);
      * // Save the document
      * document.save('output.pdf');
      * // Destroy the document
@@ -602,11 +622,11 @@ export class PdfStandardFont extends PdfFont {
      * // Gets the first page
      * let page: PdfPage = document.getPage(0) as PdfPage;
      * // Create a new PDF standard font
-     * let font: PdfStandardFont = new PdfStandardFont(PdfFontFamily.Helvetica, 10, PdfFontStyle.regular);
+     * let font: PdfStandardFont = new PdfStandardFont(PdfFontFamily.helvetica, 10, PdfFontStyle.regular);
      * // Create a new PDF string format
      * let format: PdfStringFormat = new PdfStringFormat(PdfTextAlignment.right, PdfVerticalAlignment.bottom);
      * // Draw the text
-     * page.graphics.drawString('Helvetica', font, [0, 180, page.size[0], 40], undefined, new PdfBrush([0, 0, 255]), format);
+     * page.graphics.drawString('Helvetica', font, {x: 0, y: 180, width: page.size.width, height: 40}, new PdfBrush({r: 0, g: 0, b: 255}), format);
      * // Save the document
      * document.save('output.pdf');
      * // Destroy the document
@@ -614,16 +634,42 @@ export class PdfStandardFont extends PdfFont {
      * ```
      */
     constructor(fontFamily: PdfFontFamily, size: number, style: PdfFontStyle)
-    constructor(fontFamily: PdfFontFamily, size: number, style?: PdfFontStyle) {
+    /**
+     * Initializes a new instance of the `PdfStandardFont` class.
+     *
+     * @private
+     * @param {PdfFontFamily} fontFamily The Font data as byte array.
+     * @param {number} size The Font size.
+     * @param {PdfFontStyle} style The Font style.
+     * @param {_PdfFontPrimitive} primitive The Font primitive.
+     */
+    constructor(fontFamily: PdfFontFamily, size: number, style: PdfFontStyle, primitive: _PdfFontPrimitive)
+    constructor(fontFamily: PdfFontFamily, size: number, style?: PdfFontStyle, primitive?: _PdfFontPrimitive) {
         super(size, (typeof style === 'undefined') ? PdfFontStyle.regular : style);
         this._fontFamily = fontFamily;
         this._checkStyle();
-        this._initializeInternals();
+        this._initializeInternals(primitive);
     }
-    _checkStyle(): void {
-        if (this._fontFamily === PdfFontFamily.symbol || this._fontFamily === PdfFontFamily.zapfDingbats) {
-            this._style &= ~(PdfFontStyle.bold |  PdfFontStyle.italic);
-        }
+    /**
+     * Gets the font family of the PDF standard font.
+     *
+     * @returns {PdfFontFamily} fontFamily.
+     *
+     * ```typescript
+     * // Load an existing PDF document
+     * let document: PdfDocument = new PdfDocument(data, password);
+     * // Gets the first page
+     * let page: PdfPage = document.getPage(0) as PdfPage;
+     * // Create a new PDF standard font
+     * let font: PdfStandardFont = document.embedFont(PdfFontFamily.helvetica, 10, PdfFontStyle.regular);
+     * // Gets the font family
+     * let fontFamily: PdfFontFamily = font.fontFamily;
+     * // Destroy the document
+     * document.destroy();
+     * ```
+     */
+    get fontFamily(): PdfFontFamily {
+        return this._fontFamily;
     }
     /**
      * Gets the line width.
@@ -638,7 +684,7 @@ export class PdfStandardFont extends PdfFont {
      * // Gets the first page
      * let page: PdfPage = document.getPage(0) as PdfPage;
      * // Create a new PDF standard font
-     * let font: PdfStandardFont = new PdfStandardFont(PdfFontFamily.Helvetica, 10, PdfFontStyle.regular);
+     * let font: PdfStandardFont = document.embedFont(PdfFontFamily.helvetica, 10, PdfFontStyle.regular);
      * // Create a new PDF string format
      * let format: PdfStringFormat = new PdfStringFormat(PdfTextAlignment.right, PdfVerticalAlignment.bottom);
      * // Get the text width
@@ -654,13 +700,111 @@ export class PdfStandardFont extends PdfFont {
         line.split('').forEach((char: string) => {
             width += this._getCharacterWidthInternal(char);
         });
-        width *= (0.001 * this._metrics._size);
+        width *= (0.001 * this._size);
         width = this._applyFormatSettings(line, format, width);
         return width;
     }
-    _initializeInternals(): void {
-        this._metrics = _PdfStandardFontMetricsFactory._getMetrics(this._fontFamily, this._style, this._size);
-        this._dictionary = this._createInternals();
+    _checkStyle(): void {
+        if (this._fontFamily === PdfFontFamily.symbol || this._fontFamily === PdfFontFamily.zapfDingbats) {
+            this._style &= ~(PdfFontStyle.bold |  PdfFontStyle.italic);
+        }
+    }
+    _initializeInternals(primitive?: _PdfFontPrimitive): void {
+        if (primitive !== null && typeof primitive !== 'undefined') {
+            this._metrics = primitive.metrices;
+            this._handleMetrics();
+            this._dictionary = primitive.dictionary;
+        } else {
+            this._metrics = _PdfStandardFontMetricsFactory._getMetrics(this._fontFamily, this._style);
+            this._handleMetrics();
+            this._dictionary = this._createInternals();
+        }
+    }
+    _handleMetrics(): void {
+        switch (this._fontFamily) {
+        case 0:
+            this._handleHelveticaMetrics();
+            break;
+        case 1:
+            this._handleCourierMetrics();
+            break;
+        case 2:
+            this._handleTimesMetrics();
+            break;
+        case 3:
+            this._handleSymbolMetrics();
+            break;
+        case 4:
+            this._handleZapfDingbatsMetrics();
+            break;
+        }
+    }
+    _handleHelveticaMetrics(): void {
+        if ((this._style & PdfFontStyle.bold) > 0 && (this._style & PdfFontStyle.italic) > 0) {
+            this._ascent = _PdfStandardFontMetricsFactory._helveticaBoldItalicAscent;
+            this._descent = _PdfStandardFontMetricsFactory._helveticaBoldItalicDescent;
+            this._height = this._ascent - this._descent;
+        } else if ((this._style & PdfFontStyle.bold) > 0) {
+            this._ascent = _PdfStandardFontMetricsFactory._helveticaBoldAscent;
+            this._descent = _PdfStandardFontMetricsFactory._helveticaBoldDescent;
+            this._height = this._ascent - this._descent;
+        } else if ((this._style & PdfFontStyle.italic) > 0) {
+            this._ascent = _PdfStandardFontMetricsFactory._helveticaItalicAscent;
+            this._descent = _PdfStandardFontMetricsFactory._helveticaItalicDescent;
+            this._height = this._ascent - this._descent;
+        } else {
+            this._ascent = _PdfStandardFontMetricsFactory._helveticaAscent;
+            this._descent = _PdfStandardFontMetricsFactory._helveticaDescent;
+            this._height = this._ascent - this._descent;
+        }
+    }
+    _handleCourierMetrics(): void {
+        if ((this._style & PdfFontStyle.bold) > 0 && (this._style & PdfFontStyle.italic) > 0) {
+            this._ascent = _PdfStandardFontMetricsFactory._courierBoldItalicAscent;
+            this._descent = _PdfStandardFontMetricsFactory._courierBoldItalicDescent;
+            this._height = this._ascent - this._descent;
+        } else if ((this._style & PdfFontStyle.bold) > 0) {
+            this._ascent = _PdfStandardFontMetricsFactory._courierBoldAscent;
+            this._descent = _PdfStandardFontMetricsFactory._courierBoldDescent;
+            this._height = this._ascent - this._descent;
+        } else if ((this._style & PdfFontStyle.italic) > 0) {
+            this._ascent = _PdfStandardFontMetricsFactory._courierItalicAscent;
+            this._descent = _PdfStandardFontMetricsFactory._courierItalicDescent;
+            this._height = this._ascent - this._descent;
+        } else {
+            this._ascent = _PdfStandardFontMetricsFactory._courierAscent;
+            this._descent = _PdfStandardFontMetricsFactory._courierDescent;
+            this._height = this._ascent - this._descent;
+        }
+    }
+    _handleTimesMetrics(): void {
+        if ((this._style & PdfFontStyle.bold) > 0 && (this._style & PdfFontStyle.italic) > 0) {
+            this._ascent = _PdfStandardFontMetricsFactory._timesBoldItalicAscent;
+            this._descent = _PdfStandardFontMetricsFactory._timesBoldItalicDescent;
+            this._height = this._ascent - this._descent;
+        } else if ((this._style & PdfFontStyle.bold) > 0) {
+            this._ascent = _PdfStandardFontMetricsFactory._timesBoldAscent;
+            this._descent = _PdfStandardFontMetricsFactory._timesBoldDescent;
+            this._height = this._ascent - this._descent;
+        } else if ((this._style & PdfFontStyle.italic) > 0) {
+            this._ascent = _PdfStandardFontMetricsFactory._timesItalicAscent;
+            this._descent = _PdfStandardFontMetricsFactory._timesItalicDescent;
+            this._height = this._ascent - this._descent;
+        } else {
+            this._ascent = _PdfStandardFontMetricsFactory._timesAscent;
+            this._descent = _PdfStandardFontMetricsFactory._timesDescent;
+            this._height = this._ascent - this._descent;
+        }
+    }
+    _handleSymbolMetrics(): void {
+        this._ascent = _PdfStandardFontMetricsFactory._symbolAscent;
+        this._descent = _PdfStandardFontMetricsFactory._symbolDescent;
+        this._height = this._ascent - this._descent;
+    }
+    _handleZapfDingbatsMetrics(): void {
+        this._ascent = _PdfStandardFontMetricsFactory._zapfDingbatsAscent;
+        this._descent = _PdfStandardFontMetricsFactory._zapfDingbatsDescent;
+        this._height = this._ascent - this._descent;
     }
     _createInternals(): _PdfDictionary {
         const dictionary: _PdfDictionary = new _PdfDictionary();
@@ -694,11 +838,11 @@ export class PdfStandardFont extends PdfFont {
  * // Gets the first page
  * let page: PdfPage = document.getPage(0) as PdfPage;
  * // Create a new PDF CJK standard font
- * let font: PdfCjkStandardFont = new PdfCjkStandardFont(PdfCjkFontFamily.heiseiMinchoW3, 20);
+ * let font: PdfCjkStandardFont = document.embedFont(PdfCjkFontFamily.heiseiMinchoW3, 20, PdfFontStyle.regular, true);
  * // Create a new PDF string format
  * let format: PdfStringFormat = new PdfStringFormat(PdfTextAlignment.right, PdfVerticalAlignment.bottom);
  * // Draw the text
- * page.graphics.drawString('こんにちは世界', font, [0, 180, page.size[0], 40], undefined, new PdfBrush([0, 0, 255]), format);
+ * page.graphics.drawString('こんにちは世界', font, {x: 0, y: 180, width: page.size.width, height: 40}, new PdfBrush({r: 0, g: 0, b: 255}), format);
  * // Save the document
  * document.save('output.pdf');
  * // Destroy the document
@@ -718,7 +862,7 @@ export class PdfCjkStandardFont extends PdfFont {
      * // Gets the first page
      * let page: PdfPage = document.getPage(0) as PdfPage;
      * // Create a new PDF CJK standard font
-     * let font: PdfCjkStandardFont = new PdfCjkStandardFont(PdfCjkFontFamily.heiseiMinchoW3, 20);
+     * let font: PdfCjkStandardFont = document.embedFont(PdfCjkFontFamily.heiseiMinchoW3, 20, PdfFontStyle.regular, true);
      * // Gets the font family
      * let fontFamily: PdfCjkFontFamily = font.fontFamily;
      * // Destroy the document
@@ -743,7 +887,7 @@ export class PdfCjkStandardFont extends PdfFont {
      * // Create a new PDF string format
      * let format: PdfStringFormat = new PdfStringFormat(PdfTextAlignment.right, PdfVerticalAlignment.bottom);
      * // Draw the text
-     * page.graphics.drawString('こんにちは世界', font, [0, 180, page.size[0], 40], undefined, new PdfBrush([0, 0, 255]), format);
+     * page.graphics.drawString('こんにちは世界', font, {x: 0, y: 180, width: page.size.width, height: 40}, new PdfBrush({r: 0, g: 0, b: 255}), format);
      * // Save the document
      * document.save('output.pdf');
      * // Destroy the document
@@ -767,7 +911,7 @@ export class PdfCjkStandardFont extends PdfFont {
      * // Create a new PDF string format
      * let format: PdfStringFormat = new PdfStringFormat(PdfTextAlignment.right, PdfVerticalAlignment.bottom);
      * // Draw the text
-     * page.graphics.drawString('こんにちは世界', font, [0, 180, page.size[0], 40], undefined, new PdfBrush([0, 0, 255]), format);
+     * page.graphics.drawString('こんにちは世界', font, {x: 0, y: 180, width: page.size.width, height: 40}, new PdfBrush({r: 0, g: 0, b: 255}), format);
      * // Save the document
      * document.save('output.pdf');
      * // Destroy the document
@@ -775,15 +919,94 @@ export class PdfCjkStandardFont extends PdfFont {
      * ```
      */
     constructor(fontFamily: PdfCjkFontFamily, size: number, style: PdfFontStyle)
-    constructor(fontFamily: PdfCjkFontFamily, size: number, style?: PdfFontStyle) {
+    /**
+     * Initializes a new instance of the `PdfCjkStandardFont` class.
+     *
+     * @private
+     * @param {PdfCjkFontFamily} fontFamily The Font data as byte array.
+     * @param {number} size The Font size.
+     * @param {PdfFontStyle} style The Font style.
+     * @param {_PdfFontPrimitive} primitive The Font primitive.
+     */
+    constructor(fontFamily: PdfCjkFontFamily, size: number, style: PdfFontStyle, primitive: _PdfFontPrimitive)
+    constructor(fontFamily: PdfCjkFontFamily, size: number, style?: PdfFontStyle, primitive?: _PdfFontPrimitive) {
         super(size, (typeof style === 'undefined') ? PdfFontStyle.regular : style);
         this._fontFamily = fontFamily;
         this._size = size;
-        this._initializeInternals();
+        if (primitive !== null && typeof primitive !== 'undefined') {
+            this._initializeInternals(primitive);
+        } else {
+            this._initializeInternals();
+        }
     }
-    _initializeInternals(): void {
-        this._metrics = _PdfCjkStandardFontMetricsFactory._getMetrics(this._fontFamily, this._style, this._size);
-        this._dictionary = this._createInternals();
+    /**
+     * Gets the line width.
+     *
+     * @param {string} line Line.
+     * @param {PdfStringFormat} format String format.
+     * @returns {number} width.
+     *
+     * ```typescript
+     * // Load an existing PDF document
+     * let document: PdfDocument = new PdfDocument(data, password);
+     * // Gets the first page
+     * let page: PdfPage = document.getPage(0) as PdfPage;
+     * // Create a new PDF CJK standard font
+     * let font: PdfCjkStandardFont = document.embedFont(PdfCjkFontFamily.heiseiMinchoW3, 20, PdfFontStyle.bold, true);
+     * // Create a new PDF string format
+     * let format: PdfStringFormat = new PdfStringFormat(PdfTextAlignment.right, PdfVerticalAlignment.bottom);
+     * // Get the text width
+     * let width: number = font.getLineWidth('Syncfusion', format);
+     * // Save the document
+     * document.save('output.pdf');
+     * // Destroy the document
+     * document.destroy();
+     * ```
+     */
+    getLineWidth(line: string, format: PdfStringFormat): number {
+        let width: number = 0;
+        for (let i: number = 0; i < line.length; i++) {
+            width += this._getCharacterWidthInternal(line.charCodeAt(i));
+        }
+        width *= (0.001 * this._size);
+        width = this._applyFormatSettings(line, format, width);
+        return width;
+    }
+    _initializeInternals(primitive?: _PdfFontPrimitive): void {
+        if (primitive) {
+            this._metrics = primitive.metrices;
+            this._handleMetric();
+            this._dictionary = primitive.dictionary;
+            const descentDictionary: _PdfDictionary[] = this._dictionary.get('DescendantFonts');
+            descentDictionary[0].set('FontDescriptor', _PdfCjkFontDescriptorFactory._getFontDescriptor(this._fontFamily,
+                                                                                                       this._style,
+                                                                                                       this._metrics,
+                                                                                                       this._ascent,
+                                                                                                       this._descent));
+        } else {
+            this._metrics = _PdfCjkStandardFontMetricsFactory._getMetrics(this._fontFamily, this._style);
+            this._handleMetric();
+            this._dictionary = this._createInternals();
+        }
+    }
+    _handleMetric(): void {
+        switch (this._fontFamily) {
+        case 0:
+            this._ascent = 857;
+            this._descent = -125;
+            this._height = this._ascent - this._descent;
+            break;
+        case 1:
+            this._ascent = 857;
+            this._descent = -143;
+            this._height = this._ascent - this._descent;
+            break;
+        default:
+            this._ascent = 880;
+            this._descent = -120;
+            this._height = this._ascent - this._descent;
+            break;
+        }
     }
     _createInternals(): _PdfDictionary {
         const dictionary: _PdfDictionary = new _PdfDictionary();
@@ -824,7 +1047,8 @@ export class PdfCjkStandardFont extends PdfFont {
         dictionary.set('BaseFont', new _PdfName(this._metrics._postScriptName));
         dictionary.set('DW', (this._metrics._widthTable as _CjkWidthTable)._defaultWidth);
         dictionary.set('W', this._metrics._widthTable._toArray());
-        dictionary.set('FontDescriptor', _PdfCjkFontDescriptorFactory._getFontDescriptor(this._fontFamily, this._style, this._metrics));
+        dictionary.set('FontDescriptor', _PdfCjkFontDescriptorFactory._getFontDescriptor(this._fontFamily, this._style,
+                                                                                         this._metrics, this._ascent, this._descent));
         dictionary.set('CIDSystemInfo', this._getSystemInformation());
         return [dictionary];
     }
@@ -855,39 +1079,6 @@ export class PdfCjkStandardFont extends PdfFont {
         }
         return systemInformation;
     }
-    /**
-     * Gets the line width.
-     *
-     * @param {string} line Line.
-     * @param {PdfStringFormat} format String format.
-     * @returns {number} width.
-     *
-     * ```typescript
-     * // Load an existing PDF document
-     * let document: PdfDocument = new PdfDocument(data, password);
-     * // Gets the first page
-     * let page: PdfPage = document.getPage(0) as PdfPage;
-     * // Create a new PDF CJK standard font
-     * let font: PdfCjkStandardFont = new PdfCjkStandardFont(PdfCjkFontFamily.heiseiMinchoW3, 20, PdfFontStyle.bold);
-     * // Create a new PDF string format
-     * let format: PdfStringFormat = new PdfStringFormat(PdfTextAlignment.right, PdfVerticalAlignment.bottom);
-     * // Get the text width
-     * let width: number = font.getLineWidth('Syncfusion', format);
-     * // Save the document
-     * document.save('output.pdf');
-     * // Destroy the document
-     * document.destroy();
-     * ```
-     */
-    getLineWidth(line: string, format: PdfStringFormat): number {
-        let width: number = 0;
-        for (let i: number = 0; i < line.length; i++) {
-            width += this._getCharacterWidthInternal(line.charCodeAt(i));
-        }
-        width *= (0.001 * this._metrics._size);
-        width = this._applyFormatSettings(line, format, width);
-        return width;
-    }
     _getCharacterWidthInternal(charCode: number): number {
         charCode = (charCode >= 0) ? charCode : 0;
         return this._metrics._widthTable._itemAt(charCode);
@@ -901,11 +1092,11 @@ export class PdfCjkStandardFont extends PdfFont {
  * // Gets the first page
  * let page: PdfPage = document.getPage(0) as PdfPage;
  * // Create a new PDF truetype font
- * let font: PdfTrueTypeFont = new PdfTrueTypeFont(base64String, 10);
+ * let font: PdfTrueTypeFont = document.embedFont(fontData, 14, { shouldUnderline: true });
  * // Create a new PDF string format
  * let format: PdfStringFormat = new PdfStringFormat(PdfTextAlignment.right, PdfVerticalAlignment.bottom);
  * // Draw the text
- * page.graphics.drawString('Helvetica', font, [0, 180, page.size[0], 40], undefined, new PdfBrush([0, 0, 255]), format);
+ * page.graphics.drawString('Hello world', font, {x: 0, y: 180, width: page.size.width, height: 40},, new PdfBrush({r: 0, g: 0, b: 255}), format);
  * // Save the document
  * document.save('output.pdf');
  * // Destroy the document
@@ -927,7 +1118,7 @@ export class PdfTrueTypeFont extends PdfFont {
      * // Gets the first page
      * let page: PdfPage = document.getPage(0) as PdfPage;
      * // Create a new PDF truetype font
-     * let font: PdfTrueTypeFont = new PdfTrueTypeFont(base64String, 10);
+     * let font: PdfTrueTypeFont = document.embedFont(fontData, 14, { shouldUnderline: true });
      * // Gets the boolean flag indicating whether the font has or not.
      * let isUnicode: boolean = font.isUnicode;
      * // Destroy the document
@@ -948,7 +1139,7 @@ export class PdfTrueTypeFont extends PdfFont {
      * // Gets the first page
      * let page: PdfPage = document.getPage(0) as PdfPage;
      * // Create a new PDF truetype font
-     * let font: PdfTrueTypeFont = new PdfTrueTypeFont(base64String, 10);
+     * let font: PdfTrueTypeFont = document.embedFont(fontData, 14, { shouldUnderline: true });
      * // Gets the boolean flag indicating whether the font is embedded or not.
      * let isEmbed: boolean = font.isEmbed;
      * // Destroy the document
@@ -973,7 +1164,7 @@ export class PdfTrueTypeFont extends PdfFont {
      * // Create a new PDF string format
      * let format: PdfStringFormat = new PdfStringFormat(PdfTextAlignment.right, PdfVerticalAlignment.bottom);
      * // Draw the text
-     * page.graphics.drawString('Syncfusion', font, [0, 180, page.size[0], 40], undefined, new PdfBrush([0, 0, 255]), format);
+     * page.graphics.drawString('Hello world', font, {x: 0, y: 180, width: page.size.width, height: 40},, new PdfBrush({r: 0, g: 0, b: 255}), format);
      * // Save the document
      * document.save('output.pdf');
      * // Destroy the document
@@ -996,7 +1187,7 @@ export class PdfTrueTypeFont extends PdfFont {
      * // Create a new PDF string format
      * let format: PdfStringFormat = new PdfStringFormat(PdfTextAlignment.right, PdfVerticalAlignment.bottom);
      * // Draw the text
-     * page.graphics.drawString('Syncfusion', font, [0, 180, page.size[0], 40], undefined, new PdfBrush([0, 0, 255]), format);
+     * page.graphics.drawString('Hello world', font, {x: 0, y: 180, width: page.size.width, height: 40},, new PdfBrush({r: 0, g: 0, b: 255}), format);
      * // Save the document
      * document.save('output.pdf');
      * // Destroy the document
@@ -1020,8 +1211,7 @@ export class PdfTrueTypeFont extends PdfFont {
      * // Create a new PDF string format
      * let format: PdfStringFormat = new PdfStringFormat(PdfTextAlignment.right, PdfVerticalAlignment.bottom);
      * // Draw the text
-     * page.graphics.drawString('Syncfusion', font, [0, 180, page.size[0], 40], undefined, new PdfBrush([0, 0, 255]), format);
-     * // Save the document
+     * page.graphics.drawString('Hello world', font, {x: 0, y: 180, width: page.size.width, height: 40},, new PdfBrush({r: 0, g: 0, b: 255}), format);
      * document.save('output.pdf');
      * // Destroy the document
      * document.destroy();
@@ -1052,29 +1242,23 @@ export class PdfTrueTypeFont extends PdfFont {
      * ```
      */
     public constructor(data: Uint8Array, size: number, style: PdfFontStyle)
-    public constructor(data: string | Uint8Array, size: number, style?: PdfFontStyle) {
+    /**
+     * Initializes a new instance of the `PdfTrueTypeFont` class.
+     *
+     * @private
+     * @param {Uint8Array} data The Font data as byte array.
+     * @param {number} size The Font size.
+     * @param {PdfFontStyle} style The Font style.
+     * @param {_PdfFontPrimitive} primitive The Font primitive.
+     */
+    constructor(data: Uint8Array, size: number, style: PdfFontStyle, primitive: _PdfFontPrimitive)
+    public constructor(data: string | Uint8Array, size: number, style?: PdfFontStyle, primitive?: _PdfFontPrimitive) {
         super(size, (typeof style === 'undefined') ? PdfFontStyle.regular : style);
         if (style !== undefined) {
-            this._createFontInternal(data, style);
+            this._createFontInternal(data, style, primitive);
         } else {
-            this._createFontInternal(data, PdfFontStyle.regular);
+            this._createFontInternal(data, PdfFontStyle.regular, primitive);
         }
-    }
-    _createFontInternal(data: string | Uint8Array, style: PdfFontStyle): void {
-        this._fontInternal  = new _UnicodeTrueTypeFont(data, this._size);
-        this.style = style;
-        this._initializeInternals();
-    }
-    _initializeInternals(): void {
-        let internals: _PdfDictionary = null;
-        if (this._fontInternal instanceof _UnicodeTrueTypeFont) {
-            (this._fontInternal as _UnicodeTrueTypeFont)._isEmbed = this._isEmbedFont;
-        }
-        this._fontInternal._createInternals();
-        internals = this._fontInternal._getInternals();
-        this._metrics = this._fontInternal._metrics;
-        this._metrics._isUnicodeFont = true;
-        this._setInternals(internals);
     }
     /**
      * Gets the line width.
@@ -1089,7 +1273,7 @@ export class PdfTrueTypeFont extends PdfFont {
      * // Gets the first page
      * let page: PdfPage = document.getPage(0) as PdfPage;
      * // Create a new PDF truetype font
-     * let font: PdfTrueTypeFont = new PdfTrueTypeFont(base64String, 10, PdfFontStyle.regular);
+     * let font: PdfTrueTypeFont = document.embedFont(fontData, 14, { shouldUnderline: true });
      * // Create a new PDF string format
      * let format: PdfStringFormat = new PdfStringFormat(PdfTextAlignment.right, PdfVerticalAlignment.bottom);
      * // Get the text width
@@ -1112,9 +1296,41 @@ export class PdfTrueTypeFont extends PdfFont {
         if (isNaN(width)) {
             width = 0;
         }
-        width *= (0.001 * this._metrics._size);
+        width *= (0.001 * this._size);
         width = this._applyFormatSettings(line, format, width);
         return width;
+    }
+    _createFontInternal(data: string | Uint8Array, style: PdfFontStyle, primitive?: _PdfFontPrimitive): void {
+        this.style = style;
+        if (primitive !== null && typeof primitive !== 'undefined') {
+            this._fontInternal = primitive.fontInternal;
+            this._fontInternal._fontSize = this._size;
+            this._metrics = primitive.metrices;
+            this._handleMetrics();
+            this._setInternals(primitive.dictionary);
+        } else {
+            this._fontInternal = new _UnicodeTrueTypeFont(data, this._size);
+            this._initializeInternals();
+        }
+    }
+    _initializeInternals(): void {
+        let internals: _PdfDictionary = null;
+        if (this._fontInternal instanceof _UnicodeTrueTypeFont) {
+            (this._fontInternal as _UnicodeTrueTypeFont)._isEmbed = this._isEmbedFont;
+        }
+        this._fontInternal._createInternals();
+        this._handleMetrics();
+        internals = this._fontInternal._getInternals();
+        this._metrics = this._fontInternal._metrics;
+        this._metrics._isUnicodeFont = true;
+        this._setInternals(internals);
+    }
+    _handleMetrics(): void {
+        const ttfMetrics: _TrueTypeMetrics = this._fontInternal._ttfMetrics;
+        this._ascent = ttfMetrics._macAscent;
+        this._descent = ttfMetrics._macDescent;
+        this._height = ttfMetrics._macAscent - ttfMetrics._macDescent + ttfMetrics._lineGap;
+        this._lineGap = ttfMetrics._lineGap;
     }
     _getUnicodeLineWidth(line: string, width: number): number {
         width = 0;
@@ -1139,7 +1355,7 @@ export class PdfTrueTypeFont extends PdfFont {
     }
     _getCharacterWidth(charCode: string, format: PdfStringFormat): number {
         let codeWidth: number = this._fontInternal._getCharacterWidth(charCode);
-        const size: number = this._metrics._getSize(format);
+        const size: number = this._getSize(format);
         codeWidth *= (0.001 * size);
         return codeWidth;
     }
@@ -1359,170 +1575,112 @@ export class _PdfStandardFontMetricsFactory {
         836, 867, 867, 696, 696, 874, 874, 760, 946, 771, 865, 771, 888, 967,
         888, 831, 873, 927, 970, 918
     ];
-    static _getMetrics(fontFamily: PdfFontFamily, fontStyle: PdfFontStyle, size: number): _PdfFontMetrics {
+    static _getMetrics(fontFamily: PdfFontFamily, fontStyle: PdfFontStyle): _PdfFontMetrics {
         let metrics: _PdfFontMetrics = null;
         switch (fontFamily) {
         case PdfFontFamily.helvetica:
-            metrics = this._getHelveticaMetrics(fontStyle, size);
+        {
+            metrics = this._getHelveticaMetrics(fontStyle);
             metrics._name = 'Helvetica';
             break;
+        }
         case PdfFontFamily.courier:
-            metrics = this._getCourierMetrics(fontStyle, size);
+            metrics = this._getCourierMetrics(fontStyle);
             metrics._name = 'Courier';
             break;
         case PdfFontFamily.timesRoman:
-            metrics = this._getTimesMetrics(fontStyle, size);
+            metrics = this._getTimesMetrics(fontStyle);
             metrics._name = 'TimesRoman';
             break;
         case PdfFontFamily.symbol:
-            metrics = this._getSymbolMetrics(size);
+            metrics = this._getSymbolMetrics();
             metrics._name = 'Symbol';
             break;
         case PdfFontFamily.zapfDingbats:
-            metrics = this._getZapfDingbatsMetrics(size);
+            metrics = this._getZapfDingbatsMetrics();
             metrics._name = 'ZapfDingbats';
             break;
         default:
-            metrics = this._getHelveticaMetrics(fontStyle, size);
+            metrics = this._getHelveticaMetrics(fontStyle);
             metrics._name = 'Helvetica';
             break;
         }
-        metrics._subScriptSizeFactor = this._subSuperScriptFactor;
-        metrics._superscriptSizeFactor = this._subSuperScriptFactor;
+        metrics._subScriptSizeFactor = _PdfStandardFontMetricsFactory._subSuperScriptFactor;
+        metrics._superscriptSizeFactor = _PdfStandardFontMetricsFactory._subSuperScriptFactor;
         return metrics;
     }
-    static _getHelveticaMetrics(fontStyle: PdfFontStyle, size: number): _PdfFontMetrics {
+    static _getHelveticaMetrics(fontStyle: PdfFontStyle): _PdfFontMetrics {
         const metrics: _PdfFontMetrics = new _PdfFontMetrics();
         if ((fontStyle & PdfFontStyle.bold) > 0 && (fontStyle & PdfFontStyle.italic) > 0) {
-            metrics._ascent = this._helveticaBoldItalicAscent;
-            metrics._descent = this._helveticaBoldItalicDescent;
             metrics._postScriptName = this._helveticaBoldItalicName;
-            metrics._size = size;
             metrics._widthTable = new _StandardWidthTable(this._arialBoldWidth);
-            metrics._height = metrics._ascent - metrics._descent;
         } else if ((fontStyle & PdfFontStyle.bold) > 0) {
-            metrics._ascent = this._helveticaBoldAscent;
-            metrics._descent = this._helveticaBoldDescent;
             metrics._postScriptName = this._helveticaBoldName;
-            metrics._size = size;
             metrics._widthTable = new _StandardWidthTable(this._arialBoldWidth);
-            metrics._height = metrics._ascent - metrics._descent;
         } else if ((fontStyle & PdfFontStyle.italic) > 0) {
-            metrics._ascent = this._helveticaItalicAscent;
-            metrics._descent = this._helveticaItalicDescent;
             metrics._postScriptName = this._helveticaItalicName;
-            metrics._size = size;
             metrics._widthTable = new _StandardWidthTable(this._arialWidth);
-            metrics._height = metrics._ascent - metrics._descent;
         } else {
-            metrics._ascent = this._helveticaAscent;
-            metrics._descent = this._helveticaDescent;
             metrics._postScriptName = this._helveticaName;
-            metrics._size = size;
             metrics._widthTable = new _StandardWidthTable(this._arialWidth);
-            metrics._height = metrics._ascent - metrics._descent;
         }
         return metrics;
     }
-    static _getCourierMetrics(fontStyle: PdfFontStyle, size: number): _PdfFontMetrics {
+    static _getCourierMetrics(fontStyle: PdfFontStyle): _PdfFontMetrics {
         const metrics: _PdfFontMetrics = new _PdfFontMetrics();
         if ((fontStyle & PdfFontStyle.bold) > 0 && (fontStyle & PdfFontStyle.italic) > 0) {
-            metrics._ascent = this._courierBoldItalicAscent;
-            metrics._descent = this._courierBoldItalicDescent;
             metrics._postScriptName = this._courierBoldItalicName;
-            metrics._size = size;
             metrics._widthTable = new _StandardWidthTable(this._fixedWidth);
-            metrics._height = metrics._ascent - metrics._descent;
         } else if ((fontStyle & PdfFontStyle.bold) > 0) {
-            metrics._ascent = this._courierBoldAscent;
-            metrics._descent = this._courierBoldDescent;
             metrics._postScriptName = this._courierBoldName;
-            metrics._size = size;
             metrics._widthTable = new _StandardWidthTable(this._fixedWidth);
-            metrics._height = metrics._ascent - metrics._descent;
         } else if ((fontStyle & PdfFontStyle.italic) > 0) {
-            metrics._ascent = this._courierItalicAscent;
-            metrics._descent = this._courierItalicDescent;
             metrics._postScriptName = this._courierItalicName;
-            metrics._size = size;
             metrics._widthTable = new _StandardWidthTable(this._fixedWidth);
-            metrics._height = metrics._ascent - metrics._descent;
         } else {
-            metrics._ascent = this._courierAscent;
-            metrics._descent = this._courierDescent;
             metrics._postScriptName = this._courierName;
-            metrics._size = size;
             metrics._widthTable = new _StandardWidthTable(this._fixedWidth);
-            metrics._height = metrics._ascent - metrics._descent;
         }
         return metrics;
     }
-    static _getTimesMetrics(fontStyle: PdfFontStyle, size: number): _PdfFontMetrics {
+    static _getTimesMetrics(fontStyle: PdfFontStyle): _PdfFontMetrics {
         const metrics: _PdfFontMetrics = new _PdfFontMetrics();
         if ((fontStyle & PdfFontStyle.bold) > 0 && (fontStyle & PdfFontStyle.italic) > 0) {
-            metrics._ascent = this._timesBoldItalicAscent;
-            metrics._descent = this._timesBoldItalicDescent;
             metrics._postScriptName = this._timesBoldItalicName;
-            metrics._size = size;
             metrics._widthTable = new _StandardWidthTable(this._timesRomanBoldItalicWidths);
-            metrics._height = metrics._ascent - metrics._descent;
         } else if ((fontStyle & PdfFontStyle.bold) > 0) {
-            metrics._ascent = this._timesBoldAscent;
-            metrics._descent = this._timesBoldDescent;
             metrics._postScriptName = this._timesBoldName;
-            metrics._size = size;
             metrics._widthTable = new _StandardWidthTable(this._timesRomanBoldWidth);
-            metrics._height = metrics._ascent - metrics._descent;
         } else if ((fontStyle & PdfFontStyle.italic) > 0) {
-            metrics._ascent = this._timesItalicAscent;
-            metrics._descent = this._timesItalicDescent;
             metrics._postScriptName = this._timesItalicName;
-            metrics._size = size;
             metrics._widthTable = new _StandardWidthTable(this._timesRomanItalicWidth);
-            metrics._height = metrics._ascent - metrics._descent;
         } else {
-            metrics._ascent = this._timesAscent;
-            metrics._descent = this._timesDescent;
             metrics._postScriptName = this._timesName;
-            metrics._size = size;
             metrics._widthTable = new _StandardWidthTable(this._timesRomanWidth);
-            metrics._height = metrics._ascent - metrics._descent;
         }
         return metrics;
     }
-    static _getSymbolMetrics(size: number): _PdfFontMetrics {
+    static _getSymbolMetrics(): _PdfFontMetrics {
         const metrics: _PdfFontMetrics = new _PdfFontMetrics();
-        metrics._ascent = this._symbolAscent;
-        metrics._descent = this._symbolDescent;
         metrics._postScriptName = this._symbolName;
-        metrics._size = size;
         metrics._widthTable = new _StandardWidthTable(this._symbolWidth);
-        metrics._height = metrics._ascent - metrics._descent;
         return metrics;
     }
-    static _getZapfDingbatsMetrics(size: number): _PdfFontMetrics {
+    static _getZapfDingbatsMetrics(): _PdfFontMetrics {
         const metrics: _PdfFontMetrics = new _PdfFontMetrics();
-        metrics._ascent = this._zapfDingbatsAscent;
-        metrics._descent = this._zapfDingbatsDescent;
         metrics._postScriptName = this._zapfDingbatsName;
-        metrics._size = size;
         metrics._widthTable = new _StandardWidthTable(this._zapfDingbatsWidth);
-        metrics._height = metrics._ascent - metrics._descent;
         return metrics;
     }
 }
 export class _PdfCjkStandardFontMetricsFactory {
     static readonly _subSuperScriptFactor: number = 1.52;
-    static _getHanyangSystemsGothicMedium(fontStyle: PdfFontStyle, size: number): _PdfFontMetrics {
+    static _getHanyangSystemsGothicMedium(fontStyle: PdfFontStyle): _PdfFontMetrics {
         const metrics: _PdfFontMetrics = new _PdfFontMetrics();
         const widthTable: _CjkWidthTable = new _CjkWidthTable(1000);
         widthTable._add(new _CjkSameWidth(1, 127, 500));
         widthTable._add(new _CjkSameWidth(8094, 8190, 500));
         metrics._widthTable = widthTable;
-        metrics._ascent = 880;
-        metrics._descent = -120;
-        metrics._size = size;
-        metrics._height = metrics._ascent - metrics._descent;
         if ((fontStyle & PdfFontStyle.bold) !== 0 && (fontStyle & PdfFontStyle.italic) !== 0) {
             metrics._postScriptName = 'HYGoThic-Medium,BoldItalic';
         } else if ((fontStyle & PdfFontStyle.bold) !== 0) {
@@ -1534,16 +1692,12 @@ export class _PdfCjkStandardFontMetricsFactory {
         }
         return metrics;
     }
-    static _getHanyangSystemsShinMyeongJoMedium(fontStyle: PdfFontStyle, size: number): _PdfFontMetrics {
+    static _getHanyangSystemsShinMyeongJoMedium(fontStyle: PdfFontStyle): _PdfFontMetrics {
         const metrics: _PdfFontMetrics = new _PdfFontMetrics();
         const widthTable: _CjkWidthTable = new _CjkWidthTable(1000);
         widthTable._add(new _CjkSameWidth(1, 95, 500));
         widthTable._add(new _CjkSameWidth(8094, 8190, 500));
         metrics._widthTable = widthTable;
-        metrics._ascent = 880;
-        metrics._descent = -120;
-        metrics._size = size;
-        metrics._height = metrics._ascent - metrics._descent;
         if ((fontStyle & PdfFontStyle.bold) !== 0 && (fontStyle & PdfFontStyle.italic) !== 0) {
             metrics._postScriptName = 'HYSMyeongJo-Medium,BoldItalic';
         } else if ((fontStyle & PdfFontStyle.bold) !== 0) {
@@ -1555,16 +1709,12 @@ export class _PdfCjkStandardFontMetricsFactory {
         }
         return metrics;
     }
-    static _getHeiseiKakuGothicW5(fontStyle: PdfFontStyle, size: number): _PdfFontMetrics {
+    static _getHeiseiKakuGothicW5(fontStyle: PdfFontStyle): _PdfFontMetrics {
         const metrics: _PdfFontMetrics = new _PdfFontMetrics();
         const widthTable: _CjkWidthTable = new _CjkWidthTable(1000);
         widthTable._add(new _CjkSameWidth(1, 95, 500));
         widthTable._add(new _CjkSameWidth(231, 632, 500));
         metrics._widthTable = widthTable;
-        metrics._ascent = 857;
-        metrics._descent = -125;
-        metrics._size = size;
-        metrics._height = metrics._ascent - metrics._descent;
         if ((fontStyle & PdfFontStyle.bold) !== 0 && (fontStyle & PdfFontStyle.italic) !== 0) {
             metrics._postScriptName = 'HeiseiKakuGo-W5,BoldItalic';
         } else if ((fontStyle & PdfFontStyle.bold) !== 0) {
@@ -1576,16 +1726,12 @@ export class _PdfCjkStandardFontMetricsFactory {
         }
         return metrics;
     }
-    static _getHeiseiMinchoW3(fontStyle: PdfFontStyle, size: number): _PdfFontMetrics {
+    static _getHeiseiMinchoW3(fontStyle: PdfFontStyle): _PdfFontMetrics {
         const metrics: _PdfFontMetrics = new _PdfFontMetrics();
         const widthTable: _CjkWidthTable = new _CjkWidthTable(1000);
         widthTable._add(new _CjkSameWidth(1, 95, 500));
         widthTable._add(new _CjkSameWidth(231, 632, 500));
         metrics._widthTable = widthTable;
-        metrics._ascent = 857;
-        metrics._descent = -143;
-        metrics._size = size;
-        metrics._height = metrics._ascent - metrics._descent;
         if ((fontStyle & PdfFontStyle.bold) !== 0 && (fontStyle & PdfFontStyle.italic) !== 0){
             metrics._postScriptName = 'HeiseiMin-W3,BoldItalic';
         } else if ((fontStyle & PdfFontStyle.bold) !== 0) {
@@ -1597,16 +1743,12 @@ export class _PdfCjkStandardFontMetricsFactory {
         }
         return metrics;
     }
-    static _getMonotypeHeiMedium(fontStyle: PdfFontStyle, size: number): _PdfFontMetrics {
+    static _getMonotypeHeiMedium(fontStyle: PdfFontStyle): _PdfFontMetrics {
         const metrics: _PdfFontMetrics = new _PdfFontMetrics();
         const widthTable: _CjkWidthTable = new _CjkWidthTable(1000);
         widthTable._add(new _CjkSameWidth(1, 95, 500));
         widthTable._add(new _CjkSameWidth(13648, 13742, 500));
         metrics._widthTable = widthTable;
-        metrics._ascent = 880;
-        metrics._descent = -120;
-        metrics._size = size;
-        metrics._height = metrics._ascent - metrics._descent;
         if ((fontStyle & PdfFontStyle.bold) !== 0 && (fontStyle & PdfFontStyle.italic) !== 0) {
             metrics._postScriptName = 'MHei-Medium,BoldItalic';
         } else if ((fontStyle & PdfFontStyle.bold) !== 0) {
@@ -1618,16 +1760,12 @@ export class _PdfCjkStandardFontMetricsFactory {
         }
         return metrics;
     }
-    static _getMonotypeSungLight(fontStyle: PdfFontStyle, size: number): _PdfFontMetrics {
+    static _getMonotypeSungLight(fontStyle: PdfFontStyle): _PdfFontMetrics {
         const metrics: _PdfFontMetrics = new _PdfFontMetrics();
         const widthTable: _CjkWidthTable = new _CjkWidthTable(1000);
         widthTable._add(new _CjkSameWidth(1, 95, 500));
         widthTable._add(new _CjkSameWidth(13648, 13742, 500));
         metrics._widthTable = widthTable;
-        metrics._ascent = 880;
-        metrics._descent = -120;
-        metrics._size = size;
-        metrics._height = metrics._ascent - metrics._descent;
         if ((fontStyle & PdfFontStyle.bold) !== 0 && (fontStyle & PdfFontStyle.italic) !== 0) {
             metrics._postScriptName = 'MSung-Light,BoldItalic';
         } else if ((fontStyle & PdfFontStyle.bold) !== 0) {
@@ -1639,17 +1777,13 @@ export class _PdfCjkStandardFontMetricsFactory {
         }
         return metrics;
     }
-    static _getSinoTypeSongLight(fontStyle: PdfFontStyle, size: number): _PdfFontMetrics {
+    static _getSinoTypeSongLight(fontStyle: PdfFontStyle): _PdfFontMetrics {
         const metrics: _PdfFontMetrics = new _PdfFontMetrics();
         const widthTable: _CjkWidthTable = new _CjkWidthTable(1000);
         widthTable._add(new _CjkSameWidth(1, 95, 500));
         widthTable._add(new _CjkSameWidth(814, 939, 500));
         widthTable._add(new _CjkDifferentWidth(7712, [500]));
         widthTable._add(new _CjkDifferentWidth(7716, [500]));
-        metrics._ascent = 880;
-        metrics._descent = -120;
-        metrics._size = size;
-        metrics._height = metrics._ascent - metrics._descent;
         if ((fontStyle & PdfFontStyle.bold) !== 0 && (fontStyle & PdfFontStyle.italic) !== 0) {
             metrics._postScriptName = 'STSong-Light,BoldItalic';
         } else if ((fontStyle & PdfFontStyle.bold) !== 0) {
@@ -1662,35 +1796,35 @@ export class _PdfCjkStandardFontMetricsFactory {
         metrics._widthTable = widthTable;
         return metrics;
     }
-    static _getMetrics(fontFamily: PdfCjkFontFamily, fontStyle: PdfFontStyle, size: number): _PdfFontMetrics {
+    static _getMetrics(fontFamily: PdfCjkFontFamily, fontStyle: PdfFontStyle): _PdfFontMetrics {
         let metrics: _PdfFontMetrics;
         switch (fontFamily) {
         case PdfCjkFontFamily.hanyangSystemsGothicMedium:
-            metrics = this._getHanyangSystemsGothicMedium(fontStyle, size);
+            metrics = this._getHanyangSystemsGothicMedium(fontStyle);
             metrics._name = 'HanyangSystemsGothicMedium';
             break;
         case PdfCjkFontFamily.hanyangSystemsShinMyeongJoMedium:
-            metrics = this._getHanyangSystemsShinMyeongJoMedium(fontStyle, size);
+            metrics = this._getHanyangSystemsShinMyeongJoMedium(fontStyle);
             metrics._name = 'HanyangSystemsShinMyeongJoMedium';
             break;
         case PdfCjkFontFamily.heiseiKakuGothicW5:
-            metrics = this._getHeiseiKakuGothicW5(fontStyle, size);
+            metrics = this._getHeiseiKakuGothicW5(fontStyle);
             metrics._name = 'HeiseiKakuGothicW5';
             break;
         case PdfCjkFontFamily.heiseiMinchoW3:
-            metrics = this._getHeiseiMinchoW3(fontStyle, size);
+            metrics = this._getHeiseiMinchoW3(fontStyle);
             metrics._name = 'HeiseiMinchoW3';
             break;
         case PdfCjkFontFamily.monotypeHeiMedium:
-            metrics = this._getMonotypeHeiMedium(fontStyle, size);
+            metrics = this._getMonotypeHeiMedium(fontStyle);
             metrics._name = 'MonotypeHeiMedium';
             break;
         case PdfCjkFontFamily.monotypeSungLight:
-            metrics = this._getMonotypeSungLight(fontStyle, size);
+            metrics = this._getMonotypeSungLight(fontStyle);
             metrics._name = 'MonotypeSungLight';
             break;
         case PdfCjkFontFamily.sinoTypeSongLight:
-            metrics = this._getSinoTypeSongLight(fontStyle, size);
+            metrics = this._getSinoTypeSongLight(fontStyle);
             metrics._name = 'SinoTypeSongLight';
             break;
         }
@@ -1700,10 +1834,11 @@ export class _PdfCjkStandardFontMetricsFactory {
     }
 }
 export class _PdfCjkFontDescriptorFactory {
-    static _fillMonotypeSungLight(fontDescriptor: _PdfDictionary, fontFamily: PdfCjkFontFamily, fontMetrics: _PdfFontMetrics): void {
+    static _fillMonotypeSungLight(fontDescriptor: _PdfDictionary, fontFamily: PdfCjkFontFamily, fontMetrics: _PdfFontMetrics,
+                                  ascent: number, descent: number): void {
         const fontBox: {x: number, y: number, width: number, height: number} = {x: -160, y: -249, width: 1175, height: 1137};
         this._fillFontBox(fontDescriptor, fontBox);
-        this._fillKnownInformation(fontDescriptor, fontFamily, fontMetrics);
+        this._fillKnownInformation(fontDescriptor, fontFamily, fontMetrics, ascent, descent);
         fontDescriptor.set('StemV', 93);
         fontDescriptor.set('StemH', 93);
         fontDescriptor.set('AvgWidth', 1000);
@@ -1715,7 +1850,8 @@ export class _PdfCjkFontDescriptorFactory {
     static _fillHeiseiKakuGothicW5(fontDescriptor: _PdfDictionary,
                                    fontStyle: PdfFontStyle,
                                    fontFamily: PdfCjkFontFamily,
-                                   fontMetrics: _PdfFontMetrics): void {
+                                   fontMetrics: _PdfFontMetrics,
+                                   ascent: number, descent: number): void {
         const fontBox: {x: number, y: number, width: number, height: number} = {x: -92, y: -250, width: 1102, height: 1172};
         const fontBoxItalic: {x: number, y: number, width: number, height: number} = {x: -92, y: -250, width: 1102, height: 1932};
         if ((fontStyle & (PdfFontStyle.italic | PdfFontStyle.bold)) !== PdfFontStyle.italic) {
@@ -1723,7 +1859,7 @@ export class _PdfCjkFontDescriptorFactory {
         } else {
             this._fillFontBox(fontDescriptor, fontBoxItalic);
         }
-        this._fillKnownInformation(fontDescriptor, fontFamily, fontMetrics);
+        this._fillKnownInformation(fontDescriptor, fontFamily, fontMetrics, ascent, descent);
         fontDescriptor.set('StemV', 93);
         fontDescriptor.set('StemH', 93);
         fontDescriptor.set('AvgWidth', 689);
@@ -1734,10 +1870,11 @@ export class _PdfCjkFontDescriptorFactory {
     }
     static _fillHanyangSystemsShinMyeongJoMedium(fontDescriptor: _PdfDictionary,
                                                  fontFamily: PdfCjkFontFamily,
-                                                 fontMetrics: _PdfFontMetrics): void {
+                                                 fontMetrics: _PdfFontMetrics,
+                                                 ascent: number, descent: number): void {
         const fontBox: {x: number, y: number, width: number, height: number} = {x: 0, y: -148, width: 1001, height: 1028};
         this._fillFontBox(fontDescriptor, fontBox);
-        this._fillKnownInformation(fontDescriptor, fontFamily, fontMetrics);
+        this._fillKnownInformation(fontDescriptor, fontFamily, fontMetrics, ascent, descent);
         fontDescriptor.set('StemV', 93);
         fontDescriptor.set('StemH', 93);
         fontDescriptor.set('AvgWidth', 1000);
@@ -1746,10 +1883,11 @@ export class _PdfCjkFontDescriptorFactory {
         fontDescriptor.set('XHeight', 616);
         fontDescriptor.set('Leading', 250);
     }
-    static _fillHeiseiMinchoW3(fontDescriptor: _PdfDictionary, fontFamily: PdfCjkFontFamily, fontMetrics: _PdfFontMetrics): void {
+    static _fillHeiseiMinchoW3(fontDescriptor: _PdfDictionary, fontFamily: PdfCjkFontFamily, fontMetrics: _PdfFontMetrics,
+                               ascent: number, descent: number): void {
         const fontBox: {x: number, y: number, width: number, height: number} = {x: -123, y: -257, width: 1124, height: 1167};
         this._fillFontBox(fontDescriptor, fontBox);
-        this._fillKnownInformation(fontDescriptor, fontFamily, fontMetrics);
+        this._fillKnownInformation(fontDescriptor, fontFamily, fontMetrics, ascent, descent);
         fontDescriptor.set('StemV', 93);
         fontDescriptor.set('StemH', 93);
         fontDescriptor.set('AvgWidth', 702);
@@ -1758,10 +1896,11 @@ export class _PdfCjkFontDescriptorFactory {
         fontDescriptor.set('XHeight', 500);
         fontDescriptor.set('Leading', 250);
     }
-    static _fillSinoTypeSongLight(fontDescriptor: _PdfDictionary, fontFamily: PdfCjkFontFamily, fontMetrics: _PdfFontMetrics): void {
+    static _fillSinoTypeSongLight(fontDescriptor: _PdfDictionary, fontFamily: PdfCjkFontFamily, fontMetrics: _PdfFontMetrics,
+                                  ascent: number, descent: number): void {
         const fontBox: {x: number, y: number, width: number, height: number} = {x: -25, y: -254, width: 1025, height: 1134};
         this._fillFontBox(fontDescriptor, fontBox);
-        this._fillKnownInformation(fontDescriptor, fontFamily, fontMetrics);
+        this._fillKnownInformation(fontDescriptor, fontFamily, fontMetrics, ascent, descent);
         fontDescriptor.set('StemV', 93);
         fontDescriptor.set('StemH', 93);
         fontDescriptor.set('AvgWidth', 1000);
@@ -1770,10 +1909,11 @@ export class _PdfCjkFontDescriptorFactory {
         fontDescriptor.set('XHeight', 616);
         fontDescriptor.set('Leading', 250);
     }
-    static _fillMonotypeHeiMedium(fontDescriptor: _PdfDictionary, fontFamily: PdfCjkFontFamily, fontMetrics: _PdfFontMetrics): void {
+    static _fillMonotypeHeiMedium(fontDescriptor: _PdfDictionary, fontFamily: PdfCjkFontFamily, fontMetrics: _PdfFontMetrics,
+                                  ascent: number, descent: number): void {
         const fontBox: {x: number, y: number, width: number, height: number} = {x: -45, y: -250, width: 1060, height: 1137};
         this._fillFontBox(fontDescriptor, fontBox);
-        this._fillKnownInformation(fontDescriptor, fontFamily, fontMetrics);
+        this._fillKnownInformation(fontDescriptor, fontFamily, fontMetrics, ascent, descent);
         fontDescriptor.set('StemV', 93);
         fontDescriptor.set('StemH', 93);
         fontDescriptor.set('AvgWidth', 1000);
@@ -1784,10 +1924,11 @@ export class _PdfCjkFontDescriptorFactory {
     }
     static _fillHanyangSystemsGothicMedium(fontDescriptor: _PdfDictionary,
                                            fontFamily: PdfCjkFontFamily,
-                                           fontMetrics: _PdfFontMetrics): void {
+                                           fontMetrics: _PdfFontMetrics,
+                                           ascent: number, descent: number): void {
         const fontBox: {x: number, y: number, width: number, height: number} = {x: -6, y: -145, width: 1009, height: 1025};
         this._fillFontBox(fontDescriptor, fontBox);
-        this._fillKnownInformation(fontDescriptor, fontFamily, fontMetrics);
+        this._fillKnownInformation(fontDescriptor, fontFamily, fontMetrics, ascent, descent);
         fontDescriptor.set('Flags', 4);
         fontDescriptor.set('StemV', 93);
         fontDescriptor.set('StemH', 93);
@@ -1800,13 +1941,14 @@ export class _PdfCjkFontDescriptorFactory {
     static _fillFontBox(fontDescriptor: _PdfDictionary, fontBox: {x: number, y: number, width: number, height: number}): void {
         fontDescriptor.set('FontBBox', _fromRectangle(fontBox));
     }
-    static _fillKnownInformation(fontDescriptor: _PdfDictionary, fontFamily: PdfCjkFontFamily, fontMetrics: _PdfFontMetrics): void {
+    static _fillKnownInformation(fontDescriptor: _PdfDictionary, fontFamily: PdfCjkFontFamily, fontMetrics: _PdfFontMetrics,
+                                 ascent: number, descent: number): void {
         fontDescriptor.set('FontName' , _PdfName.get(fontMetrics._postScriptName));
         fontDescriptor.set('Type' , _PdfName.get('FontDescriptor'));
         fontDescriptor.set('ItalicAngle' , 0);
         fontDescriptor.set('MissingWidth' , (fontMetrics._widthTable as _CjkWidthTable)._defaultWidth);
-        fontDescriptor.set('Ascent', fontMetrics._ascent);
-        fontDescriptor.set('Descent', fontMetrics._descent);
+        fontDescriptor.set('Ascent', ascent);
+        fontDescriptor.set('Descent', descent);
         switch (fontFamily) {
         case PdfCjkFontFamily.monotypeHeiMedium:
         case PdfCjkFontFamily.hanyangSystemsGothicMedium:
@@ -1821,36 +1963,37 @@ export class _PdfCjkFontDescriptorFactory {
             break;
         }
     }
-    static _getFontDescriptor(fontFamily: PdfCjkFontFamily, fontStyle: PdfFontStyle, fontMetrics: _PdfFontMetrics): _PdfDictionary {
+    static _getFontDescriptor(fontFamily: PdfCjkFontFamily, fontStyle: PdfFontStyle, fontMetrics: _PdfFontMetrics,
+                              ascent: number, descent: number): _PdfDictionary {
         const fontDescriptor: _PdfDictionary = new _PdfDictionary();
         fontDescriptor._updated = true;
         switch (fontFamily) {
         case PdfCjkFontFamily.hanyangSystemsGothicMedium:
-            this._fillHanyangSystemsGothicMedium(fontDescriptor, fontFamily, fontMetrics);
+            this._fillHanyangSystemsGothicMedium(fontDescriptor, fontFamily, fontMetrics, ascent, descent);
             break;
 
         case PdfCjkFontFamily.hanyangSystemsShinMyeongJoMedium:
-            this._fillHanyangSystemsShinMyeongJoMedium(fontDescriptor, fontFamily, fontMetrics);
+            this._fillHanyangSystemsShinMyeongJoMedium(fontDescriptor, fontFamily, fontMetrics, ascent, descent);
             break;
 
         case PdfCjkFontFamily.heiseiKakuGothicW5:
-            this._fillHeiseiKakuGothicW5(fontDescriptor, fontStyle, fontFamily, fontMetrics);
+            this._fillHeiseiKakuGothicW5(fontDescriptor, fontStyle, fontFamily, fontMetrics, ascent, descent);
             break;
 
         case PdfCjkFontFamily.heiseiMinchoW3:
-            this._fillHeiseiMinchoW3(fontDescriptor, fontFamily, fontMetrics);
+            this._fillHeiseiMinchoW3(fontDescriptor, fontFamily, fontMetrics, ascent, descent);
             break;
 
         case PdfCjkFontFamily.monotypeHeiMedium:
-            this._fillMonotypeHeiMedium(fontDescriptor, fontFamily, fontMetrics);
+            this._fillMonotypeHeiMedium(fontDescriptor, fontFamily, fontMetrics, ascent, descent);
             break;
 
         case PdfCjkFontFamily.monotypeSungLight:
-            this._fillMonotypeSungLight(fontDescriptor, fontFamily, fontMetrics);
+            this._fillMonotypeSungLight(fontDescriptor, fontFamily, fontMetrics, ascent, descent);
             break;
 
         case PdfCjkFontFamily.sinoTypeSongLight:
-            this._fillSinoTypeSongLight(fontDescriptor, fontFamily, fontMetrics);
+            this._fillSinoTypeSongLight(fontDescriptor, fontFamily, fontMetrics, ascent, descent);
             break;
         default:
             break;
@@ -1866,11 +2009,11 @@ export class _PdfCjkFontDescriptorFactory {
  * // Gets the first page
  * let page: PdfPage = document.getPage(0) as PdfPage;
  * // Create a new PDF standard font
- * let font: PdfStandardFont = new PdfStandardFont(PdfFontFamily.Helvetica, 10, PdfFontStyle.regular);
+ * let font: PdfStandardFont = document.embedFont(PdfFontFamily.helvetica, 10, PdfFontStyle.regular);
  * // Create a new PDF string format
  * let format: PdfStringFormat = new PdfStringFormat(PdfTextAlignment.right, PdfVerticalAlignment.bottom);
  * // Draw the text
- * page.graphics.drawString('Helvetica', font, [0, 180, page.size[0], 40], undefined, new PdfBrush([0, 0, 255]), format);
+ * page.graphics.drawString('Helvetica', font, {x: 0, y: 180, width: page.size.width, height: 40}, new PdfBrush({r: 0, g: 0, b: 255}), format);
  * // Save the document
  * document.save('output.pdf');
  * // Destroy the document
@@ -1907,11 +2050,11 @@ export enum PdfFontStyle {
  * // Gets the first page
  * let page: PdfPage = document.getPage(0) as PdfPage;
  * // Create a new PDF standard font
- * let font: PdfStandardFont = new PdfStandardFont(PdfFontFamily.Helvetica, 10, PdfFontStyle.regular);
+ * let font: PdfStandardFont = document.embedFont(PdfFontFamily.helvetica, 10, PdfFontStyle.regular);
  * // Create a new PDF string format
  * let format: PdfStringFormat = new PdfStringFormat(PdfTextAlignment.right, PdfVerticalAlignment.bottom);
  * // Draw the text
- * page.graphics.drawString('Helvetica', font, [0, 180, page.size[0], 40], undefined, new PdfBrush([0, 0, 255]), format);
+ * page.graphics.drawString('Helvetica', font, {x: 0, y: 180, width: page.size.width, height: 40}, new PdfBrush({r: 0, g: 0, b: 255}), format);
  * // Save the document
  * document.save('output.pdf');
  * // Destroy the document
@@ -1948,11 +2091,11 @@ export enum PdfFontFamily {
  * // Gets the first page
  * let page: PdfPage = document.getPage(0) as PdfPage;
  * // Create a new PDF CJK standard font
- * let font: PdfCjkStandardFont = new PdfCjkStandardFont(PdfCjkFontFamily.heiseiMinchoW3, 20);
+ * let font: PdfCjkStandardFont = document.embedFont(PdfCjkFontFamily.heiseiMinchoW3, 20, PdfFontStyle.regular, true);
  * // Create a new PDF string format
  * let format: PdfStringFormat = new PdfStringFormat(PdfTextAlignment.right, PdfVerticalAlignment.bottom);
  * // Draw the text
- * page.graphics.drawString('こんにちは世界', font, [0, 180, page.size[0], 40], undefined, new PdfBrush([0, 0, 255]), format);
+ * page.graphics.drawString('こんにちは世界', font, {x: 0, y: 180, width: page.size.width, height: 40}, new PdfBrush({r: 0, g: 0, b: 255}), format);
  * // Save the document
  * document.save('output.pdf');
  * // Destroy the document
@@ -1993,3 +2136,12 @@ export class _UnicodeLine {
     _result: boolean = false;
     _glyphIndex: number[] = [];
 }
+export type _FontData =
+  | { type: 'standard'; family: PdfFontFamily; style: PdfFontStyle }
+  | { type: 'cjk'; family: PdfCjkFontFamily; style: PdfFontStyle }
+  | { type: 'ttf'; data: Uint8Array };
+export type _PdfFontPrimitive = {
+    dictionary: _PdfDictionary,
+    metrices: _PdfFontMetrics,
+    fontInternal?: _UnicodeTrueTypeFont
+};

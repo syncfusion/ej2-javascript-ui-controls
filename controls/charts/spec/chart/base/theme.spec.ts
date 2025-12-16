@@ -362,7 +362,7 @@ describe('Chart Control', () => {
         it('Checking chart PNG export with height and width', (done: Function): void => {
             chartObj.loaded = (args: ILoadedEventArgs): void => {
                 chartObj.loaded = null;
-                args.chart.exportModule.export('PNG', 'png', null, null, null, 300);
+                args.chart.exportModule.export('PNG', 'png');
                 expect(args !== null).toBe(true);
                 done();
             };
@@ -372,7 +372,7 @@ describe('Chart Control', () => {
             chartObj.loaded = (args: ILoadedEventArgs): void => {
                 chartObj.loaded = null;
                 const exportChart: ExportUtils = new ExportUtils(args.chart);
-                args.chart.exportModule.export('PNG', 'png', null, [args.chart], null, null, false);
+                args.chart.exportModule.export('PNG', 'png');
                 exportChart.exportImage([], null, null, null);
                 expect(args !== null).toBe(true);
                 done();

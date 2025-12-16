@@ -27,4 +27,3 @@ export enum RenderType {
     TableToolbar,
 }
 
-

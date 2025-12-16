@@ -90,3 +90,8 @@ export type TriggerType = 'keyup' | 'contextmenu' | 'mouseup' | 'trippleclick' |
  *
  */
 export type TipPointerPosition = 'Top-Left' | 'Top-LeftMiddle' | 'Top-Center' | 'Top-RightMiddle' | 'Top-Right' | 'Bottom-Left' | 'Bottom-LeftMiddle' | 'Bottom-Center' | 'Bottom-RightMiddle' | 'Bottom-Right' | 'None';
+
+/**
+ * Indicates whether the editor is exporting to PDF or Word.
+ */
+export type ExportDocumentType = 'PDF' | 'Word';

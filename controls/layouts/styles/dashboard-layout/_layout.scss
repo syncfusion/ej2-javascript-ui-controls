@@ -1,3 +1,5 @@
+@use 'ej2-base/styles/common/mixin' as *;
+@use './theme-variables' as *;
 @include export-module('dashboardlayout-layout') {
   .e-dashboardlayout.e-control {
 
@@ -9,10 +11,10 @@
 
       td.e-dashboard-gridline {
         @if ($skin-name == 'tailwind' or $skin-name == 'tailwind3' or $skin-name == 'bootstrap5' or $skin-name == 'Material3') {
-          border: 1px dashed $gridline-border;
+          border: $gridline-border-width dashed $gridline-border;
         }
         @else {
-          border: 1px dotted $gridline-border;
+          border: $gridline-border-width dotted $gridline-border;
         }
   
         @if ($skin-name == 'bootstrap5' or $skin-name == 'fluent2') {
@@ -186,7 +188,7 @@
         cursor: $panel-dragging-cursor;
         z-index: $panel-dragging-zindex;
         @if $skin-name == 'fluent2' {
-          border: none;
+          border: $panel-drgging-item-moving-border;
         }
       }
 

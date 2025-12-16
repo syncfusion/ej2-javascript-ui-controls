@@ -1,11 +1,13 @@
-@mixin stepper-styles($step-width, $icon-size, $text-size, $optional-size) {
+@use 'ej2-base/styles/common/mixin' as *;
+@use './theme-variables' as *;
+@mixin stepper-styles($step-font-size, $step-height, $step-width, $icon-size, $text-size, $optional-size) {
   &.e-step-type-indicator .e-step-container:not(.e-step-item.e-step-label.e-step-text) {
     .e-icons.e-step-indicator {
-      font-size: $step-width;
+      font-size: $step-font-size;
     }
     &.e-step-notstarted .e-icons.e-step-indicator {
       width: $step-width;
-      height: $step-width;
+      height: $step-height;
     }
   }
 
@@ -66,7 +68,7 @@
     &.e-step-type-indicator .e-step-container {
       &:not(.e-step-item.e-step-label.e-step-text) {
         .e-icons.e-step-indicator {
-          font-size: $stepper-step-width;
+          font-size: $stepper-step-font-size;
           border-radius: $stepper-step-radius;
         }
       }
@@ -74,7 +76,7 @@
 
     &.e-step-type-indicator .e-step-content,
     &.e-step-type-label .e-step-content {
-      padding: 0 8px;
+      padding: $step-content-padding;
     }
 
     //For Blazor Stepper Tooltip
@@ -118,8 +120,8 @@
     }
     .e-stepper-steps {
       display: flex;
-      padding: 0;
-      margin: 0;
+      padding: $step-padding-none;
+      margin: $step-margin-none;
       justify-content: space-between;
       position: relative;
       align-items: flex-start;
@@ -154,7 +156,7 @@
       }
       .e-step-content {
         font-size: $stepper-icon-size;
-        line-height: 0;
+        line-height: $stepper-content-line-height;
       }
       .e-indicator {
         font-size: $stepper-icon-size;
@@ -165,7 +167,7 @@
       &.e-step-text-only .e-step-text-container,
       &.e-step-label-only .e-step-label-container {
         padding: $stepper-text-padding;
-        padding-block: 5px;
+        padding-block: $step-container-padding-block;
       }
       &.e-step-text-only.e-step-error .e-step-text-container,
       &.e-step-text-only.e-step-valid .e-step-text-container,
@@ -197,7 +199,7 @@
       &.e-label-after {
         &:has(.e-step-item.e-step-label:not(.e-step-text)) .e-stepper-progressbar {
           margin-left: var(--progress-left-position);
-          top: var(--progress-top-position);
+          top: $stepper-progress-top-position;
           width: var(--progress-bar-width);
         }
       }
@@ -205,11 +207,11 @@
       &.e-label-after.e-rtl {
         &:has(.e-step-item.e-step-label:not(.e-step-text)) .e-stepper-progressbar {
           margin-right: var(--progress-left-position);
-          margin-left: unset;
+          margin-left: $stepper-margin-unset;
         }
       }
       .e-step-item.e-step-label {
-        gap: 1em;
+        gap: $stepper-horizontal-label-gap;
         flex-direction: column;
       }
       .e-step-item.e-step-label .e-step-label-container {
@@ -224,16 +226,16 @@
       .e-step-item.e-step-text:not(.e-step-label) .e-step-label-optional {
         position: absolute;
         top: 2.5em;
-        margin-left: 2.5em;
+        margin-left: $stepper-horizontal-label-optional-margin;
       }
       &.e-label-start .e-step-item.e-step-text:not(.e-step-label) .e-step-label-optional,
       &.e-rtl .e-step-item.e-step-text:not(.e-step-label) .e-step-label-optional {
-        margin-right: 2.5em;
-        margin-left: unset;
+        margin-right: $stepper-horizontal-label-optional-margin;
+        margin-left: $stepper-margin-unset;
       }
       &.e-label-start.e-rtl .e-step-item.e-step-text:not(.e-step-label) .e-step-label-optional {
-        margin-right: unset;
-        margin-left: 2.5em;
+        margin-right: $stepper-margin-unset;
+        margin-left: $stepper-horizontal-label-optional-margin;
       }
       &.e-label-before .e-stepper-steps {
         &:has(.e-step-label-optional) {
@@ -241,7 +243,7 @@
         }
         .e-step-label-container.e-label-before:has(.e-step-label-optional) {
           flex-direction: column;
-          gap: .5em;
+          gap: $stepper-label-before-optional-gap;
         }
       }
       .e-text,
@@ -259,15 +261,15 @@
         flex-wrap: wrap;
       }
       .e-step-item:not(.e-step-label):not(.e-step-text) .e-step-label-optional {
-        margin-top: .5em;
+        margin-top: $stepper-horizontal-optional-margin-top;
       }
       &.e-label-after .e-step-item.e-step-label:not(.e-step-text) .e-step-label-optional {
-        margin-top: .2em;
+        margin-top: $stepper-horizontal-label-after-optional-margin-top;
       }
     }
     &.e-vertical {
       min-height: inherit;
-      height: inherit;
+      height: $stepper-inherit-height;
       display: inline-block;
       .e-step-label.e-step-label-only,
       .e-step-template {
@@ -278,16 +280,16 @@
       }
       &:not(.e-label-bottom):not(.e-label-top) .e-step-item.e-step-text:not(.e-step-label) .e-step-label-optional {
         margin-top: $stepper-label-optional;
-        margin-left: 4em;
+        margin-left: $stepper-vertical-optional-margin-right;
       }
       &.e-rtl:not(.e-label-bottom):not(.e-label-top) .e-step-item.e-step-text:not(.e-step-label) .e-step-label-optional {
-        margin-left: unset;
-        margin-right: 4em;
+        margin-left: $stepper-margin-unset;
+        margin-right: $stepper-vertical-optional-margin-right;
       }
       .e-stepper-steps {
         flex-direction: column;
         min-height: inherit;
-        height: inherit;
+        height: $stepper-inherit-height;
         float: left;
         align-items: start;
         margin: $stepper-ol-padding;
@@ -310,7 +312,7 @@
       &.e-rtl {
         .e-step-item.e-step-text:not(.e-step-label) .e-step-text-container,
         .e-step-item.e-step-label:not(.e-step-text) .e-step-label-container.e-label-after {
-          margin-left: unset;
+          margin-left: $stepper-margin-unset;
           margin-right: $stepper-text-postion;
         }
       }
@@ -325,14 +327,14 @@
       }
       .e-step-item:not(.e-step-label):not(.e-step-text):has(.e-step-label-optional),
       &.e-label-before .e-step-label-container.e-label-before:has(.e-step-label-optional) {
-        gap: .5em;
+        gap: $stepper-label-before-optional-gap;
       }
       &.e-label-before .e-step-item.e-step-label,
       &.e-label-after .e-step-item.e-step-label {
         .e-step-label-container.e-label-after:has(.e-step-label-optional) {
           flex-direction: column;
           .e-label {
-            line-height: 2em;
+            line-height: $stepper-label-line-height;
           }
         }
         .e-step-label-optional {
@@ -353,8 +355,8 @@
           width: var(--label-width);
         }
         &:not(.e-step-text-only) .e-step-text-container {
-          border: none;
-          border-radius: unset;
+          border: $stepper-text-container-border-none;
+          border-radius: $stepper-text-container-border-radius;
           padding: $stepper-text-vert-padding;
         }
         &.e-step-text-only .e-step-text-container,
@@ -363,7 +365,7 @@
         }
       }
       &.e-label-top .e-step-label-optional {
-        padding-bottom: 6px;
+        padding-bottom: $step-label-optional-padding;
       }
     }
     &.e-vertical.e-label-top,
@@ -387,8 +389,8 @@
     .e-stepper-progressbar {
       height: $stepper-progress-bar-height;
       position: absolute;
-      top: var(--progress-top-position);
-      width: $stepper-progress-value-height;
+      top: $stepper-progress-top-position;
+      width: $stepper-progress-value-width;
 
       >.e-progressbar-value {
         height: $stepper-progress-value-height;
@@ -400,18 +402,18 @@
     }
     &.e-vertical .e-stepper-progressbar {
       min-height: inherit;
-      width: $stepper-progress-bar-height;
+      width: $stepper-progress-bar-width;
       top: $stepper-ol-padding;
-      left: var(--progress-position);
+      left: $stepper-vertical-progress-position;
 
       >.e-progressbar-value {
-        width: $stepper-progress-value-height;
+        width: $stepper-progress-value-width;
         height: var(--progress-value);
         transition-property: height;
       }
     }
     &.e-vertical.e-rtl .e-stepper-progressbar {
-      right: var(--progress-position);
+      right: $stepper-vertical-progress-position;
       left: unset;
     }
     &:not(.e-steps-focus):not(.e-step-type-label):not(.e-step-type-indicator) .e-step-container .e-indicator,
@@ -429,6 +431,6 @@
   }
   .e-small.e-stepper,
   .e-small .e-stepper {
-    @include stepper-styles($stepper-small-step-width, $stepper-small-icon-size, $stepper-small-text-size, $stepper-small-optional-size);
+    @include stepper-styles($stepper-small-step-font-size, $stepper-small-step-height, $stepper-small-step-width, $stepper-small-icon-size, $stepper-small-text-size, $stepper-small-optional-size);
   }
 }

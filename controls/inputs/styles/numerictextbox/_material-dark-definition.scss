@@ -1,6 +1,26 @@
+@use 'ej2-base/styles/definition/material-dark' as *;
+@forward 'ej2-base/styles/definition/material-dark';
+
 //default
 $numeric-skin-name: 'material' !default;
 $numeric-input-icon-size: 12px !default;
 $numeric-input-bigger-icon-size: 12px !default;
+$numric-zero-padding-margin: 0 !default;
 
 //enddefault
+$numeric-bigger-min-height: 40px !default;
+$numeric-min-height: 33px !default;
+$numeric-zero-height: 0 !default;
+
+$numeric-prepend-label-bottom-top: -6px !default;
+$numeric-prepend-label-top-top: -6px !default;
+$numeric-prepend-outline-label-bottom-top: -6px !default;
+$numeric-prepend-outline-label-top-top: -6px !default;
+$numeric-prepend-filled-label-bottom-top: 12px !default;
+$numeric-prepend-filled-label-top-top: 10px !default;
+$numeric-bigger-prepend-label-bottom-top: 1px !default;
+$numeric-bigger-prepend-label-top-top: -6px !default;
+$numeric-bigger-prepend-outline-label-bottom-top: -6px !default;
+$numeric-bigger-prepend-outline-label-top-top: -6px !default;
+$numeric-bigger-prepend-filled-label-bottom-top: 18px !default;
+$numeric-bigger-prepend-filled-label-top-top: 10px !default;

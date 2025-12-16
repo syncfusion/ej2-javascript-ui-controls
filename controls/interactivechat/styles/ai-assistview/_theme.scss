@@ -1,3 +1,5 @@
+@use 'ej2-base/styles/common/mixin' as *;
+@use './theme-variables' as *;
 @include export-module('e-aiassistview-theme') {
   .e-aiassistview {
     border-color: $assist-view-border-color;
@@ -79,16 +81,16 @@
         color: $suggested-content-text-color;
         box-shadow: $suggestion-li-box-shadow;
         @if ($skin-name == 'bootstrap5.3') {
-          border: none;
+          border: $suggestion-li-border;
         }
         @else {
-          border: 1px solid $suggestion-li-border-color;
+          border: $suggestion-li-border solid $suggestion-li-border-color;
         }
       }
     }
     .e-prompt-icon,
     .e-output-icon {
-      border: 1px solid $icon-border-color;
+      border: $prompt-output-icon-border solid $icon-border-color;
       color: $user-logo-color;
       @if ($skin-name == 'Material3' or $skin-name == 'Material3-dark') {
         background: $user-logo-bg-color;
@@ -101,10 +103,10 @@
       background: $suggested-content-bg-color;
       color: $suggested-content-text-color;
       @if ($skin-name == 'bootstrap5.3') {
-        border: none;
+        border: $prompt-text-border;
       }
       @else {
-        border: 1px solid $prompt-text-border-color;
+        border: $prompt-text-border solid $prompt-text-border-color;
       }
     }
     .e-views {
@@ -127,10 +129,10 @@
         th,
         thead,
         tr {
-          border: 1px solid $assist-view-border-color;
+          border: $assist-view-border solid $assist-view-border-color;
         }
         blockquote {
-          border-left: 4px solid $suggested-content-bg-color;
+          border-left: $assist-blockquote-border solid $suggested-content-bg-color;
         }
         img,
         svg {
@@ -148,11 +150,15 @@
         }
       }
     }
-    .e-stop-response {
-      border-color: $response-stopper-border-color;
-      color: $response-stopper-item-color;
-      background-color: $response-stopper-bg-color;
-      box-shadow: $response-stopper-box-shadow;
+    .e-footer {
+      .e-assist-stop.e-icons {
+        border-color: $response-stopper-border-color;
+        color: $response-stopper-item-color;
+        background-color: $response-stopper-bg-color;
+        @if ($theme-name == 'fluent2-highcontrast') {
+          color: rgba(27, 26, 25, 1);
+        }
+      }
     }
     .e-views,
     .e-custom-view,
@@ -166,8 +172,8 @@
         background: $scrollbar-color;
       }
       @if ($skin-name == 'Material3' or $skin-name == 'fluent2' or $skin-name == 'material' or $skin-name == 'material-dark') {
-        &.focus-wave-effect::before,
-        &.focus-wave-effect::after {
+        &.e-footer-focus-wave-effect::before,
+        &.e-footer-focus-wave-effect::after {
           background-color: $assist-footer-wave-color;
         }
       }
@@ -175,9 +181,9 @@
         color: $assist-placeholder-color;
       }
       &:not(.e-footer-template) {
-        border: 1px solid $assist-footer-border-color;
+        border: $assist-footer-border solid $assist-footer-border-color;
         border-bottom-color: $assist-footer-border-btm-color;
-        &.focused {
+        &.e-footer-focused {
           border: $assist-focused-border-width solid $assist-footer-focus-bdr-color;
           @if ($skin-name == 'fluent2') {
             border-bottom-color: $assist-footer-border-btm-color;
@@ -189,6 +195,45 @@
           color: $send-icon-color;
           &.disabled {
             color: $send-icon-disabled-color;
+          }
+        }
+      }
+      .e-footer-icons-wrapper {
+        .e-toolbar-item::after {
+          background-color: transparent;
+        }
+        .e-toolbar,
+        .e-toolbar-items,
+        .e-tbar-btn {
+          background: transparent;
+        }
+        .e-toolbar .e-toolbar-item {
+          .e-tbar-btn {
+            &:focus {
+              box-shadow: none;
+            }
+            &:hover:not(:focus-visible),
+            &:active {
+              background: transparent;
+              box-shadow: none;
+              .e-icons {
+                color: $send-icon-color;
+              }
+              .e-icons.disabled {
+                color: $send-icon-disabled-color;
+              }
+              .e-assist-stop {
+                color: $response-stopper-item-color;
+                @if ($theme-name == 'fluent2-highcontrast') {
+                  color: rgba(27, 26, 25, 1);
+                }
+              }
+            }
+            &:focus:not(:focus-visible) {
+              outline: none;
+              box-shadow: none;
+              background: transparent;
+            }
           }
         }
       }
@@ -220,7 +265,7 @@
       .e-views {
         .e-content-body {
           blockquote {
-            border-right: 4px solid $suggested-content-bg-color;
+            border-right: $suggested-content-border solid $suggested-content-bg-color;
           }
         }
       }
@@ -246,7 +291,7 @@
     .e-footer .e-assist-drop-area,
     .e-prompt-content .e-prompt-uploaded-files {
       .e-assist-uploaded-file-item {
-        border: 1px solid $attached-file-border-color;
+        border: $attached-file-border solid $attached-file-border-color;
         background-color: $attached-file-bg-color;
       }
 
@@ -282,7 +327,7 @@
     }
     .e-toolbar {
       box-shadow: unset;
-      border: unset;
+      border: $assist-view-toolbar-border;
     }
   }
   .e-aiassist-view-toolbar-item .e-tbar-btn:not(:hover),

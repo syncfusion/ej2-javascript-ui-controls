@@ -561,8 +561,9 @@ export class MonthEvent extends EventBase {
                             if (!isNullOrUndefined(groupIndex)) {
                                 moreIndicatorElement.setAttribute('data-group-index', groupIndex);
                             }
-                            moreIndicatorElement.style.top = (this.cellHeight - this.monthHeaderHeight - this.moreIndicatorHeight) + 'px';
+                            moreIndicatorElement.style.top = (this.cellHeight - this.monthHeaderHeight) + 'px';
                             moreIndicatorElement.style.width = this.cellWidth - 2 + 'px';
+                            moreIndicatorElement.style.transform = 'translateY(-100%)';
                             this.renderElement(this.workCells[day + i], moreIndicatorElement);
                             EventHandler.add(moreIndicatorElement, 'click', this.moreIndicatorClick, this);
                         }

@@ -1,3 +1,5 @@
+@use 'ej2-base/styles/common/mixin' as *;
+@use '../highcontrast-definition' as *;
 @include export-module('multiselect-highcontrast-icons') {
   .e-multiselect.e-input-group .e-ddl-icon::before {
     content: '\e966';
@@ -13,7 +15,6 @@
   }
 
   .e-multi-select-wrapper .e-close-hooker::before {
-    font-size: 12px;
     content: '\e7a7';
     cursor: pointer;
     left: $ddl-overall-close-left;

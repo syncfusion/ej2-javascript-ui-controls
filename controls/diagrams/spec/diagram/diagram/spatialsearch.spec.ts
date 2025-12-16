@@ -13,6 +13,7 @@ describe('Diagram Control', () => {
     describe('Spatial Search ', () => {
         let diagram: Diagram;
         let ele: HTMLElement;
+        let bounds: Rect;
         beforeAll((): void => {
             const isDef = (o: any) => o !== undefined && o !== null;
             if (!isDef(window.performance)) {
@@ -20,7 +21,7 @@ describe('Diagram Control', () => {
                 this.skip(); //Skips test (in Chai)
                 return;
             }
-            ele = createElement('div', { id: 'diagram' });
+            ele = createElement('div', { id: 'diagram1' });
             document.body.appendChild(ele);
             diagram = new Diagram({
                 nodes: [
@@ -37,21 +38,22 @@ describe('Diagram Control', () => {
                 width: '1000px',
                 height: '600px'
             });
-            diagram.appendTo('#diagram');
+            diagram.appendTo('#diagram1');
         });
         afterAll((): void => {
             diagram.destroy();
             ele.remove();
+            (diagram as any) = null; (ele as any) = null; 
         });
         it('Checking the page bounds', (done: Function) => {
-            let bounds: Rect = diagram.spatialSearch.getPageBounds();
+            bounds = diagram.spatialSearch.getPageBounds();
             expect(bounds.left == -1050 && bounds.right == 1050 && bounds.top == -1050 && bounds.bottom == 1050).toBe(true);
             done();
         });
 
         it('Removing nodes at intermediate layer', (done: Function) => {
             diagram.remove(diagram.nodes[1]);
-            let bounds: Rect = diagram.spatialSearch.getPageBounds();
+            bounds = diagram.spatialSearch.getPageBounds();
             expect(bounds.left == -1050 && bounds.right == 1050 && bounds.top == -1050 && bounds.bottom == 1050).toBe(true);
 
             diagram.remove(diagram.nodes[1]);
@@ -72,7 +74,7 @@ describe('Diagram Control', () => {
 
         it('Removing nodes at outer layer', (done: Function) => {
             diagram.remove(diagram.nodes[1]);
-            let bounds: Rect = diagram.spatialSearch.getPageBounds();
+            bounds = diagram.spatialSearch.getPageBounds();
 
             expect(bounds.left == -1050 && bounds.right == 1050 && bounds.top == -1050 && bounds.bottom == 1050).toBe(true);
 
@@ -95,7 +97,7 @@ describe('Diagram Control', () => {
 
         it('Removing all nodes', (done: Function) => {
             diagram.remove(diagram.nodes[0]);
-            let bounds: Rect = diagram.spatialSearch.getPageBounds();
+            bounds = diagram.spatialSearch.getPageBounds();
 
             expect(bounds.left == 0 && bounds.right == 0 && bounds.top == 0 && bounds.bottom == 0).toBe(true);
             done();
@@ -116,7 +118,7 @@ describe('Diagram Control', () => {
                 this.skip(); //Skips test (in Chai)
                 return;
             }
-            ele = createElement('div', { id: 'diagram' });
+            ele = createElement('div', { id: 'diagram2' });
             document.body.appendChild(ele);
 
             let nodes: NodeModel[] = [{
@@ -175,11 +177,12 @@ describe('Diagram Control', () => {
                 width: 1000, height: 1000,
                 nodes: nodes, connectors: connectors
             });
-            diagram.appendTo('#diagram');
+            diagram.appendTo('#diagram2');
         });
         afterAll((): void => {
             diagram.destroy();
             ele.remove();
+            (diagram as any) = null; (ele as any) = null; 
         });
         it('Checking the page bounds', (done: Function) => {
             let bounds: Rect = diagram.spatialSearch.getPageBounds();

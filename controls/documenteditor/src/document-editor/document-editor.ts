@@ -18,7 +18,7 @@ import { OptionsPane } from './index';
 import { XmlPane } from './index';
 import { WordExport } from './index';
 import { TextExport } from './index';
-import { FormatType, PageFitType, DialogType, FormattingExceptions, CompatibilityMode } from './index';
+import { FormatType, PageFitType, DialogType, FormattingExceptions, CheckboxSymbolOptions, CompatibilityMode } from './index';
 import { ContextMenu } from './index';
 import { ImageResizer } from './index';
 import { SfdtExport } from './index';
@@ -33,7 +33,7 @@ import { PasteOptions } from './index';
 import { CommentReviewPane, CheckBoxFormFieldDialog, DropDownFormField, TextFormField, CheckBoxFormField, FieldElementBox, TextFormFieldInfo, CheckBoxFormFieldInfo, DropDownFormFieldInfo, ContextElementInfo, CollaborativeEditing, CollaborativeEditingEventArgs, Operation, ProtectionInfo, HistoryInfo, BaseHistoryInfo, WParagraphStyle, WList, WCharacterStyle, CollaborativeEditingHandler, ActionInfo, ExternalFontInfo } from './implementation/index';
 import { TextFormFieldDialog } from './implementation/dialogs/form-field-text-dialog';
 import { DropDownFormFieldDialog } from './implementation/dialogs/form-field-drop-down-dialog';
-import { FormFillingMode, TrackChangeEventArgs, ServiceFailureArgs, ImageFormat, ProtectionType, ContentControlInfo, ServerActionType, CommentInfo, CommentProperties, CheckboxSymbolOptions } from './base';
+import { FormFillingMode, TrackChangeEventArgs, ServiceFailureArgs, ImageFormat, ProtectionType, ContentControlInfo, ServerActionType, CommentInfo, CommentProperties } from './base';
 import { TrackChangesPane } from './implementation/track-changes/track-changes-pane';
 import { Revision, RevisionCollection } from './implementation/track-changes/track-changes';
 import { NotesDialog } from './implementation/dialogs/notes-dialog';
@@ -4258,7 +4258,6 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
                 } else if (contentControl.contentControlProperties.type === 'ComboBox' || contentControl.contentControlProperties.type === 'DropDownList') {
                     contentControlData.value = this.getContentControlValue(element as TextElementBox);
                 } else {
-                    this.selection.selectContentControlInternal(contentControl);
                     if (isExportRichTextData && contentControl.contentControlProperties.type === 'RichText') {
                         this.selection.selectContentControlInternal(contentControl);
                         let sfdtString: string = '';

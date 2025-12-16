@@ -1,3 +1,5 @@
+@use 'ej2-base/styles/definition/fabric' as *;
+@forward 'ej2-base/styles/definition/fabric';
 $treegrid-right-arrow-icon: '\e22e' !default;
 $treegrid-toolbar-expand-icon: '\e555' !default;
 $treegrid-toolbar-collapse-icon: '\e559' !default;

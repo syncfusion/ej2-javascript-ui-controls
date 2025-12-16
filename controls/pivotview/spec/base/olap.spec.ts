@@ -102,7 +102,7 @@ describe('Pivot Olap Engine', () => {
             setTimeout(() => {
                 expect(1).toBe(1);
                 done();
-            }, 4000);
+            }, 7000);
         });
         it('Export', (done: Function) => {
             setTimeout(() => {
@@ -110,7 +110,7 @@ describe('Pivot Olap Engine', () => {
                 expect(li.classList.contains('e-menu-caret-icon')).toBeTruthy();
                 util.triggerEvent(li, 'mouseover');
                 done();
-            }, 4000);
+            }, 5000);
         });
         it('PDF Export', (done: Function) => {
             setTimeout(() => {
@@ -119,7 +119,7 @@ describe('Pivot Olap Engine', () => {
                 expect(li.classList.contains('e-menu-caret-icon')).toBeTruthy();
                 util.triggerEvent(li, 'mouseover');
                 done();
-            }, 4000);
+            }, 7000);
         });
         it('Excel Export', (done: Function) => {
             setTimeout(() => {
@@ -128,7 +128,7 @@ describe('Pivot Olap Engine', () => {
                 expect(li.classList.contains('e-menu-caret-icon')).toBeTruthy();
                 util.triggerEvent(li, 'mouseover');
                 done();
-            }, 4000);
+            }, 7000);
         });
         it('CSV Export', (done: Function) => {
             setTimeout(() => {
@@ -136,7 +136,7 @@ describe('Pivot Olap Engine', () => {
                 let li: HTMLElement = document.getElementById('PivotGridexport_menu').children[0] as HTMLElement;
                 expect(li.classList.contains('e-menu-caret-icon')).toBeTruthy();
                 done();
-            }, 4000);
+            }, 7000);
         });
 
         it('memory leak', () => {

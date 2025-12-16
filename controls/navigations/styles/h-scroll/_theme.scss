@@ -1,3 +1,5 @@
+@use 'ej2-base/styles/common/mixin' as *;
+@use './theme-variables' as *;
 @include export-module('h-scroll-theme') {
 
   /*! h-scroll theme */
@@ -52,11 +54,11 @@
 
         &.e-scroll-left-nav {
           border-left: $hscroll-border-size $hscroll-border-type $hscroll-default-border;
-          border-right: 0;
+          border-right: $hscroll-border-none;
         }
 
         &.e-scroll-right-nav {
-          border-left: 0;
+          border-left: $hscroll-border-none;
           border-right: $hscroll-border-size $hscroll-border-type $hscroll-default-border;
         }
 
@@ -115,8 +117,8 @@
           &.e-scroll-left-nav,
           &.e-scroll-right-nav {
             opacity: inherit;
-            border-right: 0;
-            border-left: 0;
+            border-right: $hscroll-border-none;
+            border-left: $hscroll-border-none;
             .e-nav-arrow {
               &.e-icons {
                 color: $icon-color-disabled !important; /* stylelint-disable-line declaration-no-important */

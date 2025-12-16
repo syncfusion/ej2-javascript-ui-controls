@@ -1,8 +1,8 @@
-@import 'ej2-base/styles/definition/bootstrap5-dark.scss';
-@import 'ej2-navigations/styles/toolbar/bootstrap5-dark-definition.scss';
-@import 'ej2-inputs/styles/textarea/bootstrap5-dark-definition.scss';
-@import 'ej2-notifications/styles/skeleton/bootstrap5-dark-definition.scss';
-@import 'bootstrap5-dark-definition.scss';
-@import 'icons/bootstrap5-dark.scss';
-@import 'all.scss';
-@import 'bigger.scss';
+@use 'ej2-base/styles/definition/bootstrap5-dark' as *;
+@use 'ej2-navigations/styles/toolbar/bootstrap5-dark-definition' as *;
+@use 'ej2-inputs/styles/textarea/bootstrap5-dark-definition' as *;
+@use 'ej2-notifications/styles/skeleton/bootstrap5-dark-definition' as *;
+@use 'bootstrap5-dark-definition' as *;
+@use 'icons/bootstrap5-dark' as *;
+@use 'all' as *;
+@use 'bigger' as *;

@@ -89,7 +89,7 @@ export class TimelineSettings extends ChildProperty<TimelineSettings> {
     @Property(0)
     public weekStartDay: number;
     /**
-     * Defines background color of weekend cell in week - day timeline mode.
+     * Defines the background color for weekend cells when the timeline shows day-level units (i.e., timelineViewMode is 'Day' or 'Week' and bottomTier.unit is 'Day').
      *
      * @default null
      */

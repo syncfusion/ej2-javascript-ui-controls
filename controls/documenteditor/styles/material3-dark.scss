@@ -1,11 +1,9 @@
-
-@import 'ej2-base/styles/definition/material3-dark.scss';
-
-@import 'document-editor/material3-dark-definition.scss';
-@import 'document-editor/icons/material3-dark.scss';
-@import 'document-editor/all.scss';
-@import 'document-editor/bigger.scss';
-@import 'document-editor-container/material3-dark-definition.scss';
-@import 'document-editor-container/icons/material3-dark.scss';
-@import 'document-editor-container/all.scss';
-@import 'document-editor-container/bigger.scss';
+@use 'ej2-base/styles/definition/material3-dark' as *;
+@use 'document-editor/material3-dark-definition' as *;
+@use 'document-editor/icons/material3-dark' as *;
+@use 'document-editor/all' as *;
+@use 'document-editor/bigger' as *;
+@use 'document-editor-container/material3-dark-definition' as *;
+@use 'document-editor-container/icons/material3-dark' as *;
+@use 'document-editor-container/all' as *;
+@use 'document-editor-container/bigger' as *;

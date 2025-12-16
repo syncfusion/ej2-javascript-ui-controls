@@ -1,10 +1,5 @@
 import { createElement } from '@syncfusion/ej2-base';
 import { Diagram } from '../../../src/diagram/diagram';
-import { NodeModel } from '../../../src/diagram/objects/node-model';
-import { ConnectorModel } from '../../../src/diagram/objects/connector-model';
-import { Segments } from '../../../src/diagram/enum/enum';
-import { Point } from '../../../src/diagram/primitives/point';
-import { PointModel } from '../../../src/diagram/primitives/point-model';
 import { Connector } from '../../../src/diagram/index';
 import { profile, inMB, getMemoryProfile } from '../../../spec/common.spec';
 /**
@@ -42,6 +37,8 @@ describe('Diagram Control', () => {
         afterAll((): void => {
             diagram.destroy();
             ele.remove();
+            diagram = null;
+            ele = null;
         });
 
         it('Checking left to bottom direction', (done: Function) => {
@@ -115,6 +112,8 @@ describe('Diagram Control', () => {
         afterAll((): void => {
             diagram.destroy();
             ele.remove();
+            diagram = null;
+            ele = null;
         });
 
         it('Checking port to port connection- same source and target node', (done: Function) => {
@@ -174,6 +173,8 @@ describe('Diagram Control', () => {
         afterAll((): void => {
             diagram.destroy();
             ele.remove();
+            diagram = null;
+            ele = null;
         });
 
         it('Checking port to port source node offsetX less than target node offsetX(Overlapping)', (done: Function) => {
@@ -224,6 +225,8 @@ describe('Diagram Control', () => {
         afterAll((): void => {
             diagram.destroy();
             ele.remove();
+            diagram = null;
+            ele = null;
         });
 
         it('Checking port to port(right to right)', (done: Function) => {
@@ -289,6 +292,8 @@ describe('Diagram Control', () => {
         afterAll((): void => {
             diagram.destroy();
             ele.remove();
+            diagram = null;
+            ele = null;
         });
 
         it('Checking port to port (Bottom to Right connection)', (done: Function) => {
@@ -347,6 +352,8 @@ describe('Diagram Control', () => {
         afterAll((): void => {
             diagram.destroy();
             ele.remove();
+            diagram = null;
+            ele = null;
         });
 
         it('Checking port to node (Bottom to Top connection) - Port position(0.51, 0.51)', (done: Function) => {

@@ -1,5 +1,5 @@
-import { NotifyPropertyChanges, Property, INotifyPropertyChanged, getUniqueID, isNullOrUndefined as isNOU, EventHandler, L10n } from '@syncfusion/ej2-base';import { Internationalization, ChildProperty, Collection, removeClass, Event, EmitType, BaseEventArgs, Complex } from '@syncfusion/ej2-base';import { InterActiveChatBase, ToolbarSettings, ToolbarItemClickedEventArgs, TextState, ToolbarItem } from '../interactive-chat-base/interactive-chat-base';import { ToolbarItemModel, ToolbarSettingsModel } from '../interactive-chat-base/interactive-chat-base-model';import { ClickEventArgs, ItemModel, Toolbar } from '@syncfusion/ej2-navigations';import { createSpinner, showSpinner, hideSpinner } from '@syncfusion/ej2-popups';import { Fab } from '@syncfusion/ej2-buttons';import { DropDownButton, MenuEventArgs } from '@syncfusion/ej2-splitbuttons';import { FieldSettingsModel, Mention, SelectEventArgs } from '@syncfusion/ej2-dropdowns';import { SanitizeHtmlHelper } from '@syncfusion/ej2-base';
-import {MessageToolbarItemClickedEventArgs,MessageSendEventArgs,TypingEventArgs,MentionSelectEventArgs} from "./chat-ui";
+import { NotifyPropertyChanges, Property, INotifyPropertyChanged, getUniqueID, isNullOrUndefined as isNOU, EventHandler, L10n, remove } from '@syncfusion/ej2-base';import { Internationalization, ChildProperty, Collection, removeClass, Event, EmitType, BaseEventArgs, Complex } from '@syncfusion/ej2-base';import { InterActiveChatBase, ToolbarSettings, ToolbarItemClickedEventArgs, TextState, ToolbarItem } from '../interactive-chat-base/interactive-chat-base';import { ToolbarItemModel, ToolbarSettingsModel } from '../interactive-chat-base/interactive-chat-base-model';import { ClickEventArgs, ItemModel, Toolbar } from '@syncfusion/ej2-navigations';import { createSpinner, showSpinner, hideSpinner } from '@syncfusion/ej2-popups';import { Fab } from '@syncfusion/ej2-buttons';import { DropDownButton, MenuEventArgs } from '@syncfusion/ej2-splitbuttons';import { FieldSettingsModel, Mention, SelectEventArgs } from '@syncfusion/ej2-dropdowns';import { BeforeUploadEventArgs, FailureEventArgs, FileInfo, RemovingEventArgs, SuccessEventArgs, Uploader, UploadingEventArgs } from '@syncfusion/ej2-inputs';import { SanitizeHtmlHelper } from '@syncfusion/ej2-base';
+import {MessageToolbarItemClickedEventArgs,SaveFormat,ChatAttachmentClickEventArgs,MessageSendEventArgs,TypingEventArgs,MentionSelectEventArgs} from "./chat-ui";
 import {InterActiveChatBaseModel} from "../interactive-chat-base/interactive-chat-base-model";
 
 /**
@@ -185,6 +185,14 @@ export interface MessageReplyModel {
      */
     timestampFormat?: string;
 
+    /**
+     * Represents the attached files of the message sent by a user in the Chat UI component.
+     *
+     * @type {FileInfo}
+     * @default null
+     */
+    attachedFile?: FileInfo;
+
 }
 
 /**
@@ -271,6 +279,16 @@ export interface MessageModel {
     isForwarded?: boolean;
 
     /**
+     * Specifies the list of files attached within the Chat UI.
+     * This property accepts an array of FileInfo objects that represent the files to be attached.
+     * By providing these files, they will be rendered during the initial rendering of the component.
+     *
+     * @type {FileInfo}
+     * @default null
+     */
+    attachedFile?: FileInfo;
+
+    /**
      * Represents an array of users mentioned in the message.
      * This field contains the list of users referenced via the @mention feature in the message text, populated when mentions are selected from the suggestion popup.
      * The field is optional and defaults to an empty array if no mentions are included in the message.
@@ -279,6 +297,117 @@ export interface MessageModel {
      * @default []
      */
     mentionUsers?: UserModel[];
+
+}
+
+/**
+ * Interface for a class FileAttachmentSettings
+ */
+export interface FileAttachmentSettingsModel {
+
+    /**
+     * Specifies the URL to save the uploaded files.
+     *
+     * @type {string}
+     * @default ''
+     */
+    saveUrl?: string;
+
+    /**
+     * Specifies the URL to remove the files from the server.
+     *
+     * @type {string}
+     * @default ''
+     */
+    removeUrl?: string;
+
+    /**
+     * Specifies the path for storing and displaying images.
+     * If both `saveFormat` and `path` are configured, the `path` property takes priority.
+     *
+     * @type {string}
+     * @default ''
+     */
+    path?: string;
+
+    /**
+     *  Specifies the format in which the attachment will be saved.
+     *  Accepts values such as 'Blob' or other supported formats.
+     *
+     * @type {SaveFormat}
+     * @default 'Blob'
+     */
+    saveFormat?: SaveFormat
+
+    /**
+     * Specifies the allowed file types for attachments.
+     * Accepts a comma-separated string (e.g., ".jpg,.png").
+     *
+     * @type {string}
+     * @default ''
+     */
+    allowedFileTypes?: string;
+
+    /**
+     * Specifies the maximum file size (in bytes) for attachments.
+     * Prevents uploading files larger than this size.
+     *
+     * @type {number}
+     * @default 30000000
+     */
+    maxFileSize?: number;
+
+    /**
+     * Specifies whether drag and drop is enabled for attachments.
+     * Allows users to drag files into the upload area.
+     *
+     * @type {boolean}
+     * @default true
+     */
+    enableDragAndDrop?: boolean;
+
+    /**
+     * Specifies the maximum number of attachments allowed per message.
+     * Limits the number of files that can be uploaded and attached to a single message.
+     * Must be a positive integer.
+     *
+     * @type {number}
+     * @default 10
+     */
+    maximumCount?: number;
+
+    /**
+     * Specifies a custom template for rendering attachment previews.
+     * Accepts a string or function to define the HTML structure or rendering logic for attachment previews (e.g., thumbnails, icons, file metadata).
+     * If not provided, the default preview will be rendered.
+     *
+     * @default ''
+     * @angularType string | object | HTMLElement
+     * @reactType string | function | JSX.Element | HTMLElement
+     * @vueType string | function | HTMLElement
+     * @aspType string
+     */
+    previewTemplate?: string | Function;
+
+    /**
+     * Specifies a custom template for rendering attachments in footer.
+     * Accepts a string or function to define the HTML structure or rendering logic for attachments (e.g., thumbnails, icons, file metadata).
+     * If not provided, the default attachments will be rendered.
+     *
+     * @default ''
+     * @angularType string | object | HTMLElement
+     * @reactType string | function | JSX.Element | HTMLElement
+     * @vueType string | function | HTMLElement
+     * @aspType string
+     */
+    attachmentTemplate?: string | Function;
+
+    /**
+     * Event raised when a attachment item is clicked in the Chat UI component wither before sending or after the attachment is sent.
+     *
+     * @event attachmentClick
+     */
+    attachmentClick?: EmitType<ChatAttachmentClickEventArgs>;
 
 }
 
@@ -587,5 +716,59 @@ export interface ChatUIModel extends InterActiveChatBaseModel{
      * @event mentionSelect
      */
     mentionSelect?: EmitType<MentionSelectEventArgs>;
+
+    /**
+     * Specifies whether the attachments is enabled in the Chat UI component.
+     *
+     * @type {boolean}
+     * @default false
+     */
+    enableAttachments?: boolean;
+
+    /**
+     * Specifies the configuration options for attachment handling.
+     *  Includes save URL, allowed file types, and maximum file size.
+     *
+     *
+     * @default null
+     */
+    attachmentSettings?: FileAttachmentSettingsModel;
+
+    /**
+     *  Fires before an attachment upload begins.
+     *  Allows inspection or cancellation of the upload process.
+     *
+     * @event beforeAttachmentUpload
+     *
+     * @param {BeforeUploadEventArgs} args - Details about the file to be uploaded.
+     */
+    beforeAttachmentUpload?: EmitType<BeforeUploadEventArgs>;
+
+    /**
+     * Fires when an attachment is uploaded successfully.
+     *
+     * @event attachmentUploadSuccess
+     *
+     *  @param {object} args - Details about the uploaded file.
+     */
+    attachmentUploadSuccess?: EmitType<SuccessEventArgs>;
+
+    /**
+     * Fires when an attachment upload fails.
+     *
+     * @event attachmentUploadFailure
+     *
+     * @param {object} args - Details about the failed file and error information.
+     */
+    attachmentUploadFailure?: EmitType<FailureEventArgs>;
+
+    /**
+     * Fires when an attachment is removed.
+     *
+     * @event attachmentRemoved
+     *
+     * @param {object} args - Details about the removed file.
+     */
+    attachmentRemoved?: EmitType<RemovingEventArgs>;
 
 }

@@ -1,8 +1,8 @@
-@import 'ej2-base/styles/definition/bootstrap.scss';
-@import '../h-scroll/bootstrap-definition.scss';
-@import '../v-scroll/bootstrap-definition.scss';
-@import 'ej2-popups/styles/popup/bootstrap-definition.scss';
-@import 'bootstrap-definition.scss';
-@import 'icons/bootstrap.scss';
-@import 'all.scss';
-@import 'bigger.scss';
+@use 'ej2-base/styles/definition/bootstrap' as *;
+@use '../h-scroll/bootstrap-definition' as *;
+@use '../v-scroll/bootstrap-definition' as *;
+@use 'ej2-popups/styles/popup/bootstrap-definition' as *;
+@use 'bootstrap-definition' as *;
+@use 'icons/bootstrap' as *;
+@use 'all' as *;
+@use 'bigger' as *;

@@ -1,3 +1,3 @@
-@import 'ej2-base/styles/definition/highcontrast.scss';
-@import 'drawing/highcontrast-definition.scss';
-@import 'drawing/all.scss';
+@use 'ej2-base/styles/definition/highcontrast' as *;
+@use 'drawing/highcontrast-definition' as *;
+@use 'drawing/all' as *;

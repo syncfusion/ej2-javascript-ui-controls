@@ -8,3 +8,4 @@ export * from './font-utils';
 export * from './glyph';
 export * from './matrix-helper';
 export * from './metrics';
+export * from './enumerator';

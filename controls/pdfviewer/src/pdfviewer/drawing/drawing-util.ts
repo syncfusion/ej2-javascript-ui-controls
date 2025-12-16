@@ -34,8 +34,13 @@ export function setElementStype(obj: PdfAnnotationBaseModel | PdfFormFieldBaseMo
                 element.style.strokeWidth = 0;
             }
         } else {
-            const fillColor: string = ((obj as PdfAnnotationBaseModel).fillColor === '#ffffff00' ? 'transparent' : (obj as PdfAnnotationBaseModel).fillColor);
+            let fillColor: string = ((obj as PdfAnnotationBaseModel).fillColor === '#ffffff00' ? 'transparent' : (obj as PdfAnnotationBaseModel).fillColor);
             element.style.fill = fillColor ? fillColor : 'white';
+            if ((obj as PdfAnnotationBaseModel).shapeAnnotationType === 'Redaction') {
+                fillColor = updateColorWithOpacity((obj as PdfAnnotationBaseModel).markerFillColor as string,
+                                                   (obj as PdfAnnotationBaseModel).markerOpacity as number);
+                element.style.fill = fillColor;
+            }
             element.style.strokeColor = (obj as PdfAnnotationBaseModel).strokeColor ?
                 (obj as PdfAnnotationBaseModel).strokeColor : (obj as PdfFormFieldBaseModel).borderColor;
             (element as TextElement).style.color = (obj as PdfAnnotationBaseModel).strokeColor ?
@@ -48,6 +53,22 @@ export function setElementStype(obj: PdfAnnotationBaseModel | PdfFormFieldBaseMo
             element.style.opacity = obj.opacity;
         }
     }
+}
+
+
+/**
+ * Updates the alpha component of an RGBA color string to the specified opacity.
+ *
+ * @param {string} color - The RGBA color string to modify, formatted as 'rgba(r, g, b, a)'.
+ * @param {number} opacity - The new opacity level to apply to the color, a number
+ *                           between 0 and 1.
+ * @returns {string} - The updated RGBA color string with the new opacity.
+ */
+export function updateColorWithOpacity(color: string, opacity: number): string {
+    return color.replace(
+        /rgba\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)\s*,\s*[\d.]+\s*\)/,
+        (_match: string, r: string, g: string, b: string) => `rgba(${r},${g},${b},${opacity})`
+    );
 }
 
 /**

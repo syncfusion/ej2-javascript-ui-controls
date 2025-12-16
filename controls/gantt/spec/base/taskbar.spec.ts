@@ -1405,7 +1405,7 @@ describe('manual parent right resizing ', () => {
         };
         ganttObj.taskbarEdited = (args: any) => {
             expect(args.taskBarEditAction).toBe('ParentResizing');
-            expect(ganttObj.currentViewData[1].taskData['Duration']).toBe(5);
+            expect(ganttObj.currentViewData[1].ganttProperties.duration).toBe(5);
         };
         let dragElement: HTMLElement = ganttObj.element.querySelector('#' + ganttObj.element.id + 'GanttTaskTableBody > tr:nth-child(1) > td > div.e-taskbar-main-container > div.e-manualparent-main-container >div.e-gantt-manualparenttaskbar-right') as HTMLElement;
         triggerMouseEvent(dragElement, 'mousedown', dragElement.offsetLeft, dragElement.offsetTop);

@@ -465,7 +465,6 @@ describe('Chart', () => {
             chartObj.export('XLSX', 'Chart');
             chartObj.refresh();
         });
-
     });
     it('memory leak', () => {
         profile.sample();

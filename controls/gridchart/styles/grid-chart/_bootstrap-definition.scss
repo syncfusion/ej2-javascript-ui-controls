@@ -1,4 +1,6 @@
 @use 'sass:math';
+@use 'ej2-base/styles/definition/bootstrap' as *;
+@forward 'ej2-base/styles/definition/bootstrap';
 
 $grid-chart-border-color: $grey-dd !default;
 $grid-chart-list-hover-bg-color: $grey-white !default;

@@ -2,7 +2,6 @@ import { createElement } from '@syncfusion/ej2-base';
 import { Diagram } from '../../../src/diagram/diagram';
 import { NodeModel } from '../../../src/diagram/objects/node-model';
 import { ConnectorModel } from '../../../src/diagram/objects/connector-model';
-import { Segments } from '../../../src/diagram/enum/enum';
 import { Point } from '../../../src/diagram/primitives/point';
 import { PointModel } from '../../../src/diagram/primitives/point-model';
 import { Connector } from '../../../src/diagram/index';
@@ -123,7 +122,6 @@ describe('Diagram Control', () => {
             done();
         });
     });
-
 
     describe('Node to port docking', () => {
         let diagram: Diagram;

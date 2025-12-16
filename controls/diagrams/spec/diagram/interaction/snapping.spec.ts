@@ -4,7 +4,6 @@ import { ConnectorModel } from '../../../src/diagram/objects/connector-model';
 import { NodeModel } from '../../../src/diagram/objects/node-model';
 import { GridlinesModel, SnapSettingsModel } from '../../../src/diagram/diagram/grid-lines-model';
 import { SnapConstraints, NodeConstraints } from '../../../src/diagram/enum/enum';
-import { DiagramScroller } from '../../../src/diagram/interaction/scroller';
 import { Snapping } from '../../../src/diagram/objects/snapping';
 import { Rect } from '../../../src/index';
 import { PointModel } from '../../../src/diagram/primitives/point-model';
@@ -22,7 +21,6 @@ describe('SnapSettings', () => {
     describe('Snap Settings', () => {
         let diagram: Diagram;
         let ele: HTMLElement;
-        let scroller: DiagramScroller;
         let mouseEvents: MouseEvents = new MouseEvents();
         let horizontalGridlines: GridlinesModel = { lineColor: 'black', lineDashArray: '1,1' };
         let verticalGridlines: GridlinesModel = { lineColor: 'black', lineDashArray: '1,1' };
@@ -39,7 +37,7 @@ describe('SnapSettings', () => {
                     this.skip(); //Skips test (in Chai)
                     return;
                 }
-            ele = createElement('div', { id: 'diagram' });
+            ele = createElement('div', { id: 'diagramSnap' });
             document.body.appendChild(ele);
             let node: NodeModel = {
                 id: 'node1', width: 60, height: 60, offsetX: 100, offsetY: 100,
@@ -75,13 +73,14 @@ describe('SnapSettings', () => {
                 connectors: [connector], snapSettings: { constraints: SnapConstraints.ShowLines },
                 selectedItems: { constraints: SelectorConstraints.All & ~SelectorConstraints.ToolTip }
             });
-            diagram.appendTo('#diagram');
+            diagram.appendTo('#diagramSnap');
 
         });
 
         afterAll((): void => {
             diagram.destroy();
             ele.remove();
+            mouseEvents = null;
         });
         it('Snap to object false', (done: Function) => {
             let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
@@ -1465,6 +1464,7 @@ describe('SnapSettings', () => {
         afterAll((): void => {
             diagram.destroy();
             ele.remove();
+            mouseEvents = null;
         });
 
         it('Checking snap lines between seleted nodes - multiple selection', (done: Function) => {
@@ -1490,15 +1490,7 @@ describe('SnapSettings', () => {
     describe('Snap Settings with zoom in and out', () => {
         let diagram: Diagram;
         let ele: HTMLElement;
-        let scroller: DiagramScroller;
         let mouseEvents: MouseEvents = new MouseEvents();
-        let horizontalGridlines: GridlinesModel = { lineColor: 'black', lineDashArray: '1,1' };
-        let verticalGridlines: GridlinesModel = { lineColor: 'black', lineDashArray: '1,1' };
-        let snapSettings: SnapSettingsModel = {
-            snapObjectDistance: 5,
-            constraints: (SnapConstraints.ShowLines & SnapConstraints.SnapToLines) | SnapConstraints.SnapToObject,
-            horizontalGridlines, verticalGridlines
-        };
 
         beforeAll((): void => {
             const isDef = (o: any) => o !== undefined && o !== null;
@@ -1553,6 +1545,7 @@ describe('SnapSettings', () => {
         afterAll((): void => {
             diagram.destroy();
             ele.remove();
+            mouseEvents = null;
         });
         it('Resize Node - Snapping', (done: Function) => {
             let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
@@ -1625,15 +1618,7 @@ describe('SnapSettings', () => {
     describe('Swimlane with snap settings', () => {
         let diagram: Diagram;
         let ele: HTMLElement;
-        let scroller: DiagramScroller;
         let mouseEvents: MouseEvents = new MouseEvents();
-        let horizontalGridlines: GridlinesModel = { lineColor: 'black', lineDashArray: '1,1' };
-        let verticalGridlines: GridlinesModel = { lineColor: 'black', lineDashArray: '1,1' };
-        let snapSettings: SnapSettingsModel = {
-            snapObjectDistance: 5,
-            constraints: (SnapConstraints.ShowLines & SnapConstraints.SnapToLines) | SnapConstraints.SnapToObject,
-            horizontalGridlines, verticalGridlines
-        };
 
         beforeAll((): void => {
             const isDef = (o: any) => o !== undefined && o !== null;
@@ -1891,6 +1876,7 @@ describe('SnapSettings', () => {
         afterAll((): void => {
             diagram.destroy();
             ele.remove();
+            mouseEvents = null;
         });
         it('Lane Child Node - Snapping to vertical', (done: Function) => {
             var node = diagram.getObject('node1');

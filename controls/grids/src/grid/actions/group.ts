@@ -406,7 +406,7 @@ export class Group implements IAction {
             const elem: HTMLElement = gObj.focusModule.currentInfo.element;
             if (elem && elem.classList.contains('e-headercell')) {
                 e.preventDefault();
-                const column: Column = gObj.getColumnByUid(elem.firstElementChild.getAttribute('data-mappinguid'));
+                const column: Column = gObj.getColumnByUid(elem.querySelector('.e-headercelldiv').getAttribute('data-mappinguid'));
                 if (column.field && gObj.groupSettings.columns.indexOf(column.field) < 0) {
                     this.groupColumn(column.field);
                 } else {
@@ -791,6 +791,23 @@ export class Group implements IAction {
         this.wireEvent();
     }
 
+    /**
+     * The function is used to refresh drop area.
+     *
+     * @returns {void}
+     * @hidden
+     */
+    public refreshDropArea(): void {
+        const groupElem: Element = this.parent.element.querySelector('.e-groupdroparea');
+        if (isNullOrUndefined(groupElem)) {
+            return;
+        }
+        this.updateGroupDropArea(true);
+        for (let i: number = 0; i < this.groupSettings.columns.length; i++) {
+            this.addColToGroupDrop(this.groupSettings.columns[parseInt(i.toString(), 10)]);
+        }
+    }
+
     private renderGroupDropArea(): void {
         const groupElem: Element = this.parent.element.querySelector('.e-groupdroparea');
         if (groupElem) {
@@ -958,7 +975,14 @@ export class Group implements IAction {
         this.colName = null;
     }
 
-    private groupAddSortingQuery(colName: string): void {
+    /**
+     * Adds sort query on grouping.
+     *
+     * @param  {string} colName - Defines the column name.
+     * @returns {void}
+     * @hidden
+     */
+    public groupAddSortingQuery(colName: string): void {
         let i: number = 0;
         while (i < this.parent.sortSettings.columns.length) {
             if (this.parent.sortSettings.columns[parseInt(i.toString(), 10)].field === colName) {
@@ -1043,7 +1067,7 @@ export class Group implements IAction {
     private addColToGroupDrop(field: string): void {
         const groupElem: Element = isComplexField(field) ? this.parent.element.querySelector('.e-groupdroparea div[ej-complexname=' +
             getParsedFieldID(getComplexFieldID(field)) + ']') : this.parent.element.querySelector('.e-groupdroparea div[data-mappingname=' + getParsedFieldID(field) + ']');
-        if (this.groupSettings.allowReordering && groupElem) {
+        if (groupElem && (this.groupSettings.allowReordering || (groupElem.getAttribute('data-mappingname') === field))) {
             return;
         }
         const column: Column = this.parent.getColumnByField(field);

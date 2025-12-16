@@ -644,6 +644,22 @@ export interface TreeGridModel extends ComponentModel{
     allowPdfExport?: boolean;
 
     /**
+     * Enables or disables column spanning for adjacent cells with similar data.
+     * When enabled, the treegrid merges adjacent cells with identical data between columns into a single cell, spanning multiple columns to enhance data presentation.
+     *
+     * @default false
+     */
+    enableColumnSpan?: boolean;
+
+    /**
+     * Enables or disables row spanning for adjacent cells with similar data.
+     * When enabled, the treegrid merges adjacent cells with identical data between rows into a single cell, spanning multiple rows to improve readability.
+     *
+     * @default false
+     */
+    enableRowSpan?: boolean;
+
+    /**
      * Triggers when the component is created.
      *
      * @event created

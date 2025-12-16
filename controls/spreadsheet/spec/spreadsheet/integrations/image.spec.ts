@@ -3,7 +3,7 @@ import { defaultData } from '../util/datasource.spec';
 import { Overlay } from '../../../src/spreadsheet/services/index';
 import { Spreadsheet } from '../../../src/spreadsheet/index';
 import { EventHandler } from '@syncfusion/ej2-base';
-import { ExtendedImageModel, ExtendedSheet, ImageModel, setImage } from '../../../src/index';
+import { CellModel ,ExtendedImageModel, ExtendedSheet, ImageModel, setImage } from '../../../src/index';
 
 describe('Image ->', () => {
     const helper: SpreadsheetHelper = new SpreadsheetHelper('spreadsheet');
@@ -348,19 +348,19 @@ describe('Image ->', () => {
             done();
         });
     });
-
     describe('983493-Image Positioning Not Maintained Properly after set standart Height ->', () => {
         beforeAll((done: Function) => {
             helper.initializeSpreadsheet({
                 sheets: [{
                     ranges: [{ dataSource: defaultData }],
+                    columns: [{ width: 130 }, { width: 92 }, { width: 96 }],
                     standardHeight: 30,
                     rows: [{
                         index: 3,
                         cells: [
                             {
                                 index: 1,
-                                image : [ <ExtendedImageModel>{ src: 'https://www.w3schools.com/images/w3schools_green.jpg', height: 150, width: 180, top: 62, left: 70, preservePos: true }],
+                                image: [<ExtendedImageModel>{ src: 'https://www.w3schools.com/images/w3schools_green.jpg', height: 150, width: 180, top: 62, left: 70, preservePos: true }],
                             }]
                     }]
                 }]
@@ -373,7 +373,84 @@ describe('Image ->', () => {
             const spreadsheet: Spreadsheet = helper.getInstance();
             const image: ExtendedImageModel = spreadsheet.sheets[0].rows[3].cells[1].image[0];
             expect(image.top).toBe(90);
-            expect(image.left).toBe(70);
+            expect(image.left).toBe(130);
+            const overlay: HTMLElement = helper.getElementFromSpreadsheet('#' + image.id);
+            expect(overlay.style.top).not.toBe('62');
+            expect(overlay.style.left).not.toBe('70');
+            done();
+        });
+        it('Drag and drop chart from B4 to D8 cell', (done: Function) => {
+            const spreadsheet: Spreadsheet = helper.getInstance();
+            const image: HTMLElement = helper.getElement().querySelector('.e-ss-overlay');
+            helper.triggerMouseAction('mousedown', { x: image.getBoundingClientRect().left + 1, y: image.getBoundingClientRect().top + 1 }, image, image);
+            const targetCell = helper.invoke('getCell', [7, 3]);
+            const targetRect = targetCell.getBoundingClientRect();
+            helper.triggerMouseAction('mousemove', { x: targetRect.left + 10, y: targetRect.top + 10 }, image, image);
+            helper.triggerMouseAction('mouseup', { x: targetRect.left + 10, y: targetRect.top + 10 }, document, image);
+            setTimeout(() => {
+                const cell: CellModel = spreadsheet.sheets[0].rows[7].cells[3];
+                expect(spreadsheet.sheets[0].rows[3].cells[1].image.length).toBe(0);
+                expect(cell.image).toBeDefined();
+                expect(cell.image.length).toBe(1);
+                done();
+            });
+        });
+        it('Drag and drop chart from D8 to E12 cell', (done: Function) => {
+            const spreadsheet: Spreadsheet = helper.getInstance();
+            const image: HTMLElement = helper.getElement().querySelector('.e-ss-overlay');
+            helper.triggerMouseAction('mousedown', { x: image.getBoundingClientRect().left + 1, y: image.getBoundingClientRect().top + 1 }, image, image);
+            const targetCell = helper.invoke('getCell', [11, 4]);
+            const targetRect = targetCell.getBoundingClientRect();
+            helper.triggerMouseAction('mousemove', { x: targetRect.left + 10, y: targetRect.top + 10 }, image, image);
+            helper.triggerMouseAction('mouseup', { x: targetRect.left + 10, y: targetRect.top + 10 }, document, image);
+            setTimeout(() => {
+                const cell: CellModel = spreadsheet.sheets[0].rows[11].cells[4];
+                expect(spreadsheet.sheets[0].rows[7].cells[3].image.length).toBe(0);
+                expect(cell.image).toBeDefined();
+                expect(cell.image.length).toBe(1);
+                done();
+            });
+        });
+        it('Perform all undo operations in sequence', (done: Function) => {
+            const spreadsheet: Spreadsheet = helper.getInstance();
+            let cell: CellModel;
+            helper.switchRibbonTab(1);
+            helper.click('#spreadsheet_undo');
+            cell = spreadsheet.sheets[0].rows[7].cells[3];
+            expect(spreadsheet.sheets[0].rows[11].cells[4].image.length).toBe(0);
+            expect(cell.image).toBeDefined();
+            expect(cell.image.length).toBe(1);
+            done();
+        });
+        it('Add chart and verify address and position update across sheet navigation', (done: Function) => {
+            const spreadsheet: Spreadsheet = helper.getInstance();
+            let cell: CellModel;
+            helper.click('.e-add-sheet-tab');
+            helper.click('.e-add-sheet-tab');
+            setTimeout(() => {
+                (document.querySelectorAll('.e-sheet-tab .e-toolbar-item')[0] as HTMLElement).click();
+                helper.click('#spreadsheet_undo');
+                cell = spreadsheet.sheets[0].rows[3].cells[1];
+                expect(spreadsheet.sheets[0].rows[7].cells[3].image.length).toBe(0);
+                expect(cell.image).toBeDefined();
+                expect(cell.image.length).toBe(1);
+                done();
+            }, 500);
+        });
+        it('Perform all redo operations in sequence', (done: Function) => {
+            const spreadsheet: Spreadsheet = helper.getInstance();
+            let cell: CellModel;
+            helper.switchRibbonTab(1);
+            helper.click('#spreadsheet_redo');
+            cell = spreadsheet.sheets[0].rows[7].cells[3];
+            expect(spreadsheet.sheets[0].rows[3].cells[1].image.length).toBe(0);
+            expect(cell.image).toBeDefined();
+            expect(cell.image.length).toBe(1);
+            helper.click('#spreadsheet_redo');
+            cell = spreadsheet.sheets[0].rows[11].cells[4];
+            expect(spreadsheet.sheets[0].rows[7].cells[3].image.length).toBe(0);
+            expect(cell.image).toBeDefined();
+            expect(cell.image.length).toBe(1);
             done();
         });
     });

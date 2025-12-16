@@ -2,30 +2,6 @@
 
 ## [Unreleased]
 
-## 31.2.18 (2025-12-09)
-
-### Dashboard Layout
-
-#### Bug Fixes
-
-- `#I780152` - The issue with the panel overlapping issue in the Dashboard component has been resolved.
-
-## 31.2.2 (2025-10-15)
-
-### Timeline
-
-#### Bug Fixes
-
-- `#I770847` - Resolved an issue that occurred when including layout packages in the React NextJs sample.
-
-## 31.1.22 (2025-10-01)
-
-### Splitter
-
-#### Bug Fixes
-
-- `#I764336` - An issue with Splitter component while adapting itself to min and max values in specific browser has been resolved.
-
 ## 25.1.35 (2024-03-15)
 
 ### Timeline

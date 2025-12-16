@@ -2,38 +2,6 @@
 
 ## [Unreleased]
 
-## 31.2.18 (2025-12-09)
-
-### Dialog
-
-#### Bug Fixes
-
-- `#I779528` - Fixed an issue where focus was not retained within the `Dialog` when a `Grid` component was embedded in its content.
-
-## 31.2.5 (2025-11-04)
-
-### Dialog
-
-#### Bug Fixes
-
-- `#F70075` - Fixed a miscalculation of the dialog's z-index caused by DOM elements injected by extensions.
-
-## 31.2.2 (2025-10-15)
-
-### Dialog
-
-#### Bug Fixes
-
-- `#I766282` - Resolved an issue where `keydown` focus was not retained in the modal popup when the footer button was disabled.
-
-## 31.1.20 (2025-09-10)
-
-### Dialog
-
-#### New Features
-
-- `#695711` - Provided the `preventFocus` property to the Dialog component to prevent focus from returning to the previously active element after the dialog is closed. This enhancement helps avoid unintended page scrolls that may occur due to automatic focus behaviour in scrollable containers.
-
 ## 21.1.35 (2023-03-23)
 
 ### Tooltip

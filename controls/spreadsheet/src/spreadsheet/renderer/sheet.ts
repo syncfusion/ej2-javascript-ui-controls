@@ -1,8 +1,8 @@
 import { formatUnit, detach, attributes, isNullOrUndefined, Browser, L10n } from '@syncfusion/ej2-base';
 import { Spreadsheet } from '../base/index';
-import { getCellIndexes, getRangeIndexes, skipHiddenIdx, applyCF, ApplyCFArgs, updateMergeBorder } from './../../workbook/common/index';
+import { getCellIndexes, getRangeIndexes, skipHiddenIdx, applyCF, ApplyCFArgs, updateMergeBorder, ExtendedNoteModel } from './../../workbook/common/index';
 import { getColumnsWidth, getColumnWidth, ConditionalFormat } from '../../workbook/index';
-import { contentLoaded, editOperation, getUpdateUsingRaf, IRowRenderer, removeAllChildren, SheetRenderArgs } from '../common/index';
+import { contentLoaded, editOperation, getUpdateUsingRaf, IRowRenderer, removeAllChildren, SheetRenderArgs, showNote } from '../common/index';
 import { IRenderer, beforeContentLoaded, getColGroupWidth, virtualContentLoaded, setAriaOptions, dataBound } from '../common/index';
 import { CellRenderArgs, ICellRenderer, created, spreadsheetDestroyed, getDPRValue, spreadsheetCreated } from '../common/index';
 import { checkMerge, forRefSelRender, initiateEdit, chartRangeSelection, rowHeightChanged } from '../common/index';
@@ -225,6 +225,7 @@ export class SheetRender implements IRenderer {
     public renderTable(args: SheetRenderArgs): void {
         let indexes: number[]; let row: Element; let hRow: Element; const sheet: SheetModel = this.parent.getActiveSheet();
         let cell: Element; let cellArgs: CellRenderArgs; const mergeBorderRows: number[] = [];
+        const visibleNotes: ExtendedNoteModel[] = [];
         const frag: DocumentFragment = document.createDocumentFragment();
         frag.appendChild(this.headerPanel); frag.appendChild(this.contentPanel);
         if (this.parent.allowScrolling) {
@@ -297,7 +298,7 @@ export class SheetRender implements IRenderer {
             }
             cellArgs = <CellRenderArgs>{colIdx: indexes[1], rowIdx: indexes[0], cell: value, mergeBorderRows: mergeBorderRows,
                 address: key, lastCell: indexes[1] === args.indexes[3], isHeightCheckNeeded: true, row: row, hRow: hRow,
-                pRow: row.previousSibling, pHRow: hRow.previousSibling, isRefreshing: args.isRefreshing,
+                pRow: row.previousSibling, pHRow: hRow.previousSibling, isRefreshing: args.isRefreshing, visibleNotes: visibleNotes,
                 first: layout ? (layout.includes('Row') ? (indexes[0] === args.indexes[0] ? 'Row' : (layout.includes('Column') ? (
                     indexes[1] === args.indexes[1] ? 'Column' : '') : '')) : (indexes[1] === args.indexes[1] ? 'Column' : '')) : '' };
             cell = this.cellRenderer.render(cellArgs);
@@ -356,6 +357,15 @@ export class SheetRender implements IRenderer {
             }
             if (sheet.conditionalFormats && sheet.conditionalFormats.length) {
                 this.parent.notify(applyCF, <ApplyCFArgs>{ indexes: args.indexes });
+            }
+            if (visibleNotes.length) {
+                setTimeout((): void => {
+                    visibleNotes.forEach((notes: ExtendedNoteModel) => {
+                        this.parent.notify(
+                            showNote, { rowIndex: notes.rowIdx, columnIndex: notes.colIdx, isNoteEditable: false, isScrollWithNote: true,
+                                isRender: true });
+                    });
+                });
             }
             this.checkRowHeightChanged(args, sheet);
             if (args.top) {

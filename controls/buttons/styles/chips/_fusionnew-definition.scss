@@ -1,3 +1,6 @@
+@use 'ej2-base/styles/definition/fusionnew' as *;
+@forward 'ej2-base/styles/definition/fusionnew';
+
 // layout variables
 $chip-list-padding: 0 !default;
 $chip-height: 24px !default;
@@ -592,6 +595,9 @@ $chip-outline-danger-active-border-color: $danger-bg-color-pressed !default;
 $chip-outline-danger-focus-active-border-color: $danger-bg-color-pressed !default;
 $chip-outline-danger-pressed-border-color: $danger-bg-color-pressed !default;
 $chip-outline-danger-disabled-border-color: $content-bg-color-alt3 !default;
+$chip-touch-text-margin-top: -3px !default;
+$chip-align-line-height: 1 !default;
+$chip-zero-width: 0 !default;
 
 // box shadows
 // primary

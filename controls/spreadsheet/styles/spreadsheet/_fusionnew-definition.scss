@@ -20,6 +20,9 @@ $spreadsheet-cpicker-fill-color-font-size: 14px !default;
 $aggregate-list-font-size: 16px !default;
 $bigger-spreadsheet-tbar-btn-icon-font-size: 18px !default;
 $spreadsheet-drop-icon-font-size: 12px !default;
+$spread-border-radius-0: 0 !default;
+$spread-border-radius-3: 3px !default;
+$spread-border-radius-4: 4px !default;
 
 //selection
 $selection-bg-color: rgba($primary, .12) !default;
@@ -144,6 +147,8 @@ $find-popup-border-top-color: $border-light !default;
 $find-popup-border-color: $border-light !default;
 $find-dlg-exactmatchcheckbox-padding: 12px 0 !default;
 $find-dlg-header-padding-top: 12px !default;
+$find-dlg-alert-span-font-size: 12px !default;
+$find-dlg-alert-span-font-weight: bold !default;
 
 //Protect Sheet
 $protect-dlg-height: 470px !default;
@@ -180,6 +185,7 @@ $custom-listview-color: $border-light;
 $custom-format-dlg-input-margin-right: 4.8% !default;
 $custom-format-dlg-sample-margin: 10px 10px 10px 0 !default;
 $expand-icon-color: $icon-color !default;
+$spread-dialog-listview-border-radius: 3px !default;
 
 //File Name Dialog
 $open-dlg-width: 340px !default;
@@ -222,6 +228,7 @@ $spreadsheet-ribbon-toolbar-btn-hover-color: $tbar-hover-bg !default;
 $validation-dlg-content-margin-bottom: 24px !default;
 $bigger-protectworkbook-dlg-pwd-content-line-height: 28px !default;
 $bigger-protectworkbook-dlg-pwd-content-margin-bottom: 4px !default;
+$spread-toolbar-btn-font-weight: normal !default;
 
 //Name Manager Dialog
 $spreadsheet-namerange-header-font-size: 22px !default;
@@ -304,8 +311,46 @@ $bigger-spreadsheet-protection-sheet-option-padding-top: 13px !default;
 $bigger-spreadsheet-protection-sheet-option-padding-bottom:4px !default;
 
 //Blazor typography and spacing
+$spreadsheet-ribbon-simplified-mode-btn-font-weight: normal !default;
+$spreadsheet-name-dlg-header-mobile-font-weight: 600 !default;
+$spreadsheet-name-dlg-header-mobile-font-size: 16px !default;
+$spreadsheet-custom-close-btn-font-size: 18px !default;
+$spreadsheet-name-error-message-font-size: 12px !default;
+$spreadsheet-name-delete-warning-font-size: 16px !default;
+$spreadsheet-formula-suggession-containter-font-size: 10px !default;
+$bigger-spreadsheet-ribbonoverflow-font-size: 20px !default;
+$spreadsheet-overlay-resizer-border-radius: 4px !default;
+$spreadsheet-ribbon-simplified-mode-border-radius: 0 !default;
 $spreadsheet-font-weight-bold: bold !default;
 $spreadsheet-font-size-16: 16px !default;
 $spreadsheet-font-size-18: 18px !default;
 $spreadsheet-margin-10: 10px !default;
 $spreadsheet-padding-20: 20px !default;
+$spreadsheet-autofill-menuoption-min-width: 57px !default;
+$spreadsheet-border-menu-min-width: 270px !default;
+$spreadsheet-border-preview-line-width: 135px !default;
+$spreadsheet-border-auto-width: auto !default;
+$ids: 'LineStyleThin' 'LineStyleMedium' 'LineStyleThick' 'LineStyleDotted' 'LineStyleDashed' 'LineStyleDouble';
+$border-style-collection: solid solid solid dotted dashed double;
+$border-width-collection: thin medium thick thin thin medium;
+$spreadsheet-border-radius-50p: 50%;
+$spreadsheet-numformat-text-width: 100% !default;
+$spreadsheet-padding-5: 5px !default;
+
+// Threaded Comment
+$spread-comment-indicator-color: $primary !default;
+$spread-comment-background-color: $white !default;
+$spread-comment-resolved-background-color: $content-bg-color-alt2 !default;
+$spread-comment-review-pane-background-color: $content-bg-color !default;
+$spread-comment-review-title-color: rgba(66, 66, 66, 1) !default;
+$spread-comment-title-color: rgba(66, 66, 66, 1) !default;
+$spread-comment-text-color: rgba(36, 36, 36, 1) !default;
+$spread-comment-timestamp-color: rgba(112, 112, 112, 1) !default;
+$spread-comment-input-height: 32px !default;
+$spread-comment-input-border-bottom: 2px solid rgba(97, 97, 97, 1) !default;
+$spread-comment-input-border-bottom-focused: 2px solid rgba(15, 108, 189, 1) !default;
+$spread-comment-border: 1px solid rgba(224, 224, 224, 1) !default;
+$spread-comment-menu-height: 32px !default;
+$spread-comment-menu-width: 32px !default;
+$spread-comment-postbtn-padding: 6px 12px !default;
+$spread-comment-header-wrap-gap: 8px !default;

@@ -1,8 +1,9 @@
-@import 'definition/fluent2-dark.scss';
+@use 'definition/fluent2-dark' as *;
+@forward 'definition/fluent2-dark';
 
-$font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, 'Roboto', 'Helvetica Neue', sans-serif !default;
-$font-size: 12px !default;
-$font-weight: 400 !default;
+$font-family: $font-family !default;
+$font-size: $text-xs !default;
+$font-weight: $font-weight-normal !default;
 $error-font-color: $danger !default;
 $warning-font-color: $orange20 !default;
 $success-font-color: $green20 !default;

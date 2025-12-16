@@ -1,3 +1,6 @@
+@use 'ej2-base/styles/definition/fabric' as *;
+@forward 'ej2-base/styles/definition/fabric';
+
 // Avatar Base
 $avatar-base-border-radius: 5px !default;
 $avatar-base-font-size: 1em !default;
@@ -7,6 +10,7 @@ $avatar-base-background-color: #bcbcbc !default;
 $avatar-base-text-color: #fff !default;
 $avatar-base-font-weight: 400 !default;
 $avatar-base-img-height: 100% !default;
+$avatar-font-family: $font-family !default;
 
 // Circle Avatar
 $avatar-circle-border-radius: 50% !default;
@@ -16,3 +20,9 @@ $avatar-xsmall-font-size: .6em !default;
 $avatar-small-font-size: .8em !default;
 $avatar-large-font-size: 1.2em !default;
 $avatar-xlarge-font-size: 1.4em !default;
+
+//Avatar Width
+$avatar-base-xsmall-width: 24px !default;
+$avatar-base-small-width: 32px !default;
+$avatar-base-large-width: 48px !default;
+$avatar-base-xlarge-width: 56px !default;

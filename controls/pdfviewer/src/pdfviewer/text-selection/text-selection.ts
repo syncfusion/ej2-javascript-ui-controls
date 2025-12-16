@@ -91,10 +91,11 @@ export class TextSelection {
      * @param {number} x - It describes about the X value
      * @param {number} y - It describes about the Y value
      * @param {boolean} isExtended - It describes about the isExtended boolean value
+     * @param {boolean} isLast - It describes about the isLast boolean value
      * @private
      * @returns {void}
      */
-    public textSelectionOnMouseMove(target: EventTarget, x: number, y: number, isExtended?: boolean): void {
+    public textSelectionOnMouseMove(target: EventTarget, x: number, y: number, isExtended?: boolean, isLast?: boolean): void {
         const targetElement: HTMLElement = target as HTMLElement;
         this.isTextSearched = true;
         if (targetElement.nodeType === targetElement.TEXT_NODE) {
@@ -117,7 +118,7 @@ export class TextSelection {
             while (currentPosition < endPosition) {
                 range.setStart(targetElement, currentPosition);
                 range.setEnd(targetElement, currentPosition + 1);
-                const rangeBounds: ClientRect = range.getBoundingClientRect();
+                const rangeBounds: DOMRect = range.getBoundingClientRect() as DOMRect;
                 let rightBounds: number = rangeBounds.right;
                 if (isExtended) {
                     rightBounds = parseInt(rangeBounds.right.toString(), 10);
@@ -182,13 +183,21 @@ export class TextSelection {
             for (let i: number = 0; i < targetElement.childNodes.length; i++) {
                 if (targetElement.childNodes[parseInt(i.toString(), 10)].nodeType === targetElement.TEXT_NODE) {
                     const range: Range = this.getSelectionRange(i, targetElement);
-                    const rangeBounds: ClientRect = range.getBoundingClientRect();
-                    if (rangeBounds.left <= x && rangeBounds.right >= parseInt(x.toString(), 10) &&
-                    parseInt(rangeBounds.top.toString(), 10) <= y && rangeBounds.bottom >= y) {
-                        range.detach();
-                        this.textSelectionOnMouseMove(targetElement.childNodes[parseInt(i.toString(), 10)], x, y, isExtended);
-                    } else {
-                        range.detach();
+                    const rangeBounds: DOMRect = range.getBoundingClientRect() as DOMRect;
+                    const annotationModule: Annotation = this.pdfViewer.annotationModule;
+                    if (annotationModule && annotationModule.textMarkupAnnotationModule &&
+                    annotationModule.textMarkupAnnotationModule.
+                        isEnableTextMarkupResizer(annotationModule.textMarkupAnnotationModule.currentTextMarkupAddMode) && isLast) {
+                        this.pdfViewer.annotation.textMarkupAnnotationModule.updatePosition(x, y);
+                    }
+                    else {
+                        if (rangeBounds.left <= x && rangeBounds.right >= parseInt(x.toString(), 10) &&
+                            parseInt(rangeBounds.top.toString(), 10) <= y && rangeBounds.bottom >= y) {
+                            range.detach();
+                            this.textSelectionOnMouseMove(targetElement.childNodes[parseInt(i.toString(), 10)], x, y, isExtended);
+                        } else {
+                            range.detach();
+                        }
                     }
                 }
             }
@@ -222,7 +231,7 @@ export class TextSelection {
             while (currentPosition < endPosition) {
                 range.setStart(targetElement, currentPosition);
                 range.setEnd(targetElement, currentPosition + 1);
-                const rangeBounds: ClientRect = range.getBoundingClientRect();
+                const rangeBounds: DOMRect = range.getBoundingClientRect() as DOMRect;
                 if (rangeBounds.left <= x && rangeBounds.right >= x && parseInt(rangeBounds.top.toString(), 10) <= y &&
                 rangeBounds.bottom >= y) {
                     if (isforward) {
@@ -259,7 +268,7 @@ export class TextSelection {
             for (let i: number = 0; i < targetElement.childNodes.length; i++) {
                 if (targetElement.childNodes[parseInt(i.toString(), 10)].nodeType === targetElement.TEXT_NODE) {
                     const range: Range = this.getSelectionRange(i, targetElement);
-                    const rangeBounds: ClientRect = range.getBoundingClientRect();
+                    const rangeBounds: DOMRect = range.getBoundingClientRect() as DOMRect;
                     if (rangeBounds.left <= x && rangeBounds.right >= x && parseInt(rangeBounds.top.toString(), 10) <= y &&
                     rangeBounds.bottom >= y) {
                         range.detach();
@@ -425,7 +434,7 @@ export class TextSelection {
             while (currentPosition < endPosition) {
                 range.setStart(element, currentPosition);
                 range.setEnd(element, currentPosition + 1);
-                const rangeBounds: ClientRect = range.getBoundingClientRect();
+                const rangeBounds: DOMRect = range.getBoundingClientRect() as DOMRect;
                 if (rangeBounds.left <= x + padding && rangeBounds.right >= x - padding &&
                     rangeBounds.top <= y + padding && rangeBounds.bottom >= y - padding) {
                     const textContent: string = element.textContent;
@@ -486,7 +495,7 @@ export class TextSelection {
         } else {
             for (let i: number = 0; i < element.childNodes.length; i++) {
                 const range: Range = this.getSelectionRange(i, element);
-                const rangeBounds: ClientRect = range.getBoundingClientRect();
+                const rangeBounds: DOMRect = range.getBoundingClientRect() as DOMRect;
                 if (rangeBounds.left <= x + padding && rangeBounds.right >= x - padding &&
                     rangeBounds.top <= y + padding && rangeBounds.bottom >= y - padding) {
                     range.detach();
@@ -512,14 +521,14 @@ export class TextSelection {
     public selectEntireLine(event: MouseEvent): void {
         const textIds: string[] = [];
         const targetElement: HTMLElement = event.target as HTMLElement;
-        const targetRect: ClientRect = targetElement.getBoundingClientRect();
+        const targetRect: DOMRect = targetElement.getBoundingClientRect() as DOMRect;
         const targetcentre: number = parseInt((targetRect.top + (targetRect.height / 2)).toString(), 10);
         const pageNumber: number = parseInt((event.target as HTMLElement).id.split('_text_')[1], 10);
         const textDivs: NodeList = document.querySelectorAll('div[id*="' + this.pdfViewer.element.id + '_text_' + pageNumber + '"]');
         if (targetElement.classList.contains('e-pv-text')) {
             this.pdfViewer.fireTextSelectionStart(pageNumber + 1);
             for (let i: number = 0; i < textDivs.length; i++) {
-                const rect: ClientRect = (textDivs[parseInt(i.toString(), 10)] as HTMLElement).getBoundingClientRect();
+                const rect: DOMRect = (textDivs[parseInt(i.toString(), 10)] as HTMLElement).getBoundingClientRect() as DOMRect;
                 const topValue: number = parseInt(rect.top.toString(), 10);
                 const bottomValue: number = parseInt(rect.bottom.toString(), 10);
                 if ((topValue <= targetcentre && bottomValue > targetcentre) && (targetRect.bottom + 10 > bottomValue)) {
@@ -625,9 +634,9 @@ export class TextSelection {
     public resizeTouchElements(): void {
         const viewerContainerLeft: number = this.pdfViewerBase.viewerContainer.getBoundingClientRect().left;
         if (this.dropDivElementLeft) {
-            const elementClientRect: ClientRect = this.dropDivElementLeft.getBoundingClientRect();
+            const elementClientRect: DOMRect = this.dropDivElementLeft.getBoundingClientRect() as DOMRect;
             let dropElementHeight: number = 0;
-            const leftCurrentPagePosition: ClientRect = this.pdfViewerBase.getElement('_pageDiv_' + this.topStoreLeft.pageNumber).getBoundingClientRect();
+            const leftCurrentPagePosition: DOMRect = this.pdfViewerBase.getElement('_pageDiv_' + this.topStoreLeft.pageNumber).getBoundingClientRect() as DOMRect;
             this.dropDivElementLeft.style.left = parseFloat(this.topStoreLeft.left.toString()) * this.pdfViewerBase.getZoomFactor() + leftCurrentPagePosition.left - viewerContainerLeft - (elementClientRect.width / 2) + 'px';
             if (this.topStoreLeft.isHeightNeeded) {
                 dropElementHeight = (elementClientRect.height / 2) * this.pdfViewerBase.getZoomFactor();
@@ -635,9 +644,9 @@ export class TextSelection {
             this.dropDivElementLeft.style.top = parseFloat(this.topStoreLeft.pageTop.toString()) * this.pdfViewerBase.getZoomFactor() + parseFloat(this.topStoreLeft.topClientValue.toString()) * this.pdfViewerBase.getZoomFactor() + dropElementHeight + 'px';
         }
         if (this.dropDivElementRight) {
-            const elementClientRect: ClientRect = this.dropDivElementRight.getBoundingClientRect();
+            const elementClientRect: DOMRect = this.dropDivElementRight.getBoundingClientRect() as DOMRect;
             let dropElementHeight: number = 0;
-            const rightCurrentPagePosition: ClientRect = this.pdfViewerBase.getElement('_pageDiv_' + this.topStoreRight.pageNumber).getBoundingClientRect();
+            const rightCurrentPagePosition: DOMRect = this.pdfViewerBase.getElement('_pageDiv_' + this.topStoreRight.pageNumber).getBoundingClientRect() as DOMRect;
             this.dropDivElementRight.style.left = parseFloat(this.topStoreRight.left.toString()) * this.pdfViewerBase.getZoomFactor() + rightCurrentPagePosition.left - viewerContainerLeft - (elementClientRect.width / 2) + 'px';
             if (this.topStoreRight.isHeightNeeded) {
                 dropElementHeight = (elementClientRect.height / 2) * this.pdfViewerBase.getZoomFactor();
@@ -1328,9 +1337,9 @@ export class TextSelection {
             const newStartRange: Range = document.createRange();
             const startRange: Range = this.createRangeForSelection(range.startContainer, range.endContainer,
                                                                    range.startOffset, range.endOffset, newStartRange);
-            bounds = this.normalizeBounds(startRange.getBoundingClientRect(), pageNumber);
+            bounds = this.normalizeBounds((startRange.getBoundingClientRect() as DOMRect), pageNumber);
         } else {
-            bounds = this.normalizeBounds(range.getBoundingClientRect(), pageNumber);
+            bounds = this.normalizeBounds((range.getBoundingClientRect() as DOMRect), pageNumber);
         }
         return bounds;
     }
@@ -1378,7 +1387,7 @@ export class TextSelection {
                     }
                     let boundingRect: IRectangle;
                     if (this.pdfViewerBase.clientSideRendering) {
-                        boundingRect = this.normalizeBounds(newRange.getBoundingClientRect(), pageNumber);
+                        boundingRect = this.normalizeBounds((newRange.getBoundingClientRect() as DOMRect), pageNumber);
                         let textRotate: number = 0;
                         if (textElement && textElement.style.transform !== '') {
                             if (textElement.style.transform.startsWith('rotate(90deg)')) {
@@ -1393,7 +1402,7 @@ export class TextSelection {
                         }
                         boundingRect.rotation = textRotate;
                     } else {
-                        boundingRect = this.normalizeBounds(newRange.getBoundingClientRect(), pageNumber);
+                        boundingRect = this.normalizeBounds((newRange.getBoundingClientRect() as DOMRect), pageNumber);
                     }
                     selectionBounds.push(boundingRect);
                     const textselection: string = newRange.toString();
@@ -1424,7 +1433,7 @@ export class TextSelection {
             }
         }
         else {
-            bounds = this.normalizeBounds(range.getBoundingClientRect(), pageNumber);
+            bounds = this.normalizeBounds((range.getBoundingClientRect() as DOMRect), pageNumber);
             if (this.pdfViewerBase.clientSideRendering) {
                 let textRotate: number = 0;
                 if (startElement && startElement.style.transform !== '') {
@@ -1473,7 +1482,7 @@ export class TextSelection {
         return parseInt(divId, 10);
     }
 
-    private normalizeBounds(bound: ClientRect, pageNumber: number): IRectangle {
+    private normalizeBounds(bound: DOMRect, pageNumber: number): IRectangle {
         let newBounds: IRectangle = null;
         let currentPageElement: HTMLElement = this.pdfViewerBase.getElement('_pageDiv_' + pageNumber);
         if (this.pdfViewerBase.isMixedSizeDocument) {
@@ -1482,7 +1491,7 @@ export class TextSelection {
                 currentPageElement = currentTextElement;
             }
         }
-        const currentPageRect: ClientRect = currentPageElement.getBoundingClientRect();
+        const currentPageRect: DOMRect = currentPageElement.getBoundingClientRect() as DOMRect;
         newBounds = {
             bottom: this.getMagnifiedValue(bound.bottom - currentPageRect.top), height: this.getMagnifiedValue(bound.height),
             left: this.getMagnifiedValue(bound.left - currentPageRect.left), top: this.getMagnifiedValue(bound.top - currentPageRect.top),
@@ -1678,7 +1687,7 @@ export class TextSelection {
             while (currentPosition < endPosition) {
                 rangeObject.setStart(element, currentPosition);
                 rangeObject.setEnd(element, currentPosition + 1);
-                const rangeBounds: ClientRect = rangeObject.getBoundingClientRect();
+                const rangeBounds: DOMRect = rangeObject.getBoundingClientRect() as DOMRect;
                 if (rangeBounds.left <= x && rangeBounds.right >= x && rangeBounds.top <= y && rangeBounds.bottom >= y) {
                     if (selection.anchorNode !== null) {
                         if (isForwardSelection) {
@@ -1700,7 +1709,7 @@ export class TextSelection {
             for (let i: number = 0; i < element.childNodes.length; i++) {
                 const range: Range = element.childNodes[parseInt(i.toString(), 10)].ownerDocument.createRange();
                 range.selectNodeContents(element.childNodes[parseInt(i.toString(), 10)]);
-                const rangeBounds: ClientRect = range.getBoundingClientRect();
+                const rangeBounds: DOMRect = range.getBoundingClientRect() as DOMRect;
                 if (rangeBounds.left <= x && rangeBounds.right >= x && rangeBounds.top <= y && rangeBounds.bottom >= y) {
                     range.detach();
                     return (this.selectTextByTouch(element.childNodes[parseInt(i.toString(), 10)], x, y, isForwardSelection,
@@ -1816,8 +1825,8 @@ export class TextSelection {
             this.pdfViewerBase.pageContainer.appendChild(this.dropDivElementLeft);
             this.pdfViewerBase.pageContainer.appendChild(this.dropDivElementRight);
             const range: Range = selection.getRangeAt(0);
-            const rangePosition: ClientRect = range.getBoundingClientRect();
-            const dropElementRect: ClientRect = this.dropDivElementLeft.getBoundingClientRect();
+            const rangePosition: DOMRect = range.getBoundingClientRect() as DOMRect;
+            const dropElementRect: DOMRect = this.dropDivElementLeft.getBoundingClientRect() as DOMRect;
             const pageTopValue: number = this.pdfViewerBase.pageSize[this.pdfViewerBase.currentPageNumber - 1].top;
             const viewerLeftPosition: number = this.pdfViewerBase.viewerContainer.getBoundingClientRect().left;
             const topClientValue: number = this.getClientValueTop(rangePosition.top, this.pdfViewerBase.currentPageNumber - 1);
@@ -1986,7 +1995,7 @@ export class TextSelection {
         const rightElement: HTMLElement = this.dropDivElementRight;
         const isTouchedWithinViewerContainer: boolean = this.isTouchedWithinContainer(event);
         if (rightElement && isTouchedWithinViewerContainer) {
-            const dropBounds: ClientRect = rightElement.getBoundingClientRect();
+            const dropBounds: DOMRect = rightElement.getBoundingClientRect() as DOMRect;
             const xTouch: number = event.changedTouches[0].clientX;
             const yTouch: number = event.changedTouches[0].clientY;
             (event.target as HTMLElement).style.zIndex = '1000';
@@ -2013,7 +2022,7 @@ export class TextSelection {
                     isTextSelected = this.selectTextByTouch(nodeElement.parentElement, xTouch, yTouch, true, 'left', isCloserMovement);
                 }
                 if (isTextSelected) {
-                    const elementClientRect: ClientRect = this.dropDivElementLeft.getBoundingClientRect();
+                    const elementClientRect: DOMRect = this.dropDivElementLeft.getBoundingClientRect() as DOMRect;
                     const pageTopValue: number = this.pdfViewerBase.pageSize[this.pdfViewerBase.currentPageNumber - 1].top;
                     const topClientValue: number = this.getClientValueTop(yTouch, this.pdfViewerBase.currentPageNumber - 1);
                     const currentPageLeft: number = this.pdfViewerBase.getElement('_pageDiv_' + (this.pdfViewerBase.currentPageNumber - 1)).getBoundingClientRect().left;
@@ -2041,7 +2050,7 @@ export class TextSelection {
         const leftElement: HTMLElement = this.dropDivElementLeft;
         const isTouchedWithinViewerContainer: boolean = this.isTouchedWithinContainer(event);
         if (leftElement && isTouchedWithinViewerContainer) {
-            const dropPosition: ClientRect = leftElement.getBoundingClientRect();
+            const dropPosition: DOMRect = leftElement.getBoundingClientRect() as DOMRect;
             const touchX: number = event.changedTouches[0].clientX;
             const touchY: number = event.changedTouches[0].clientY;
             (event.target as HTMLElement).style.zIndex = '1000';
@@ -2069,7 +2078,7 @@ export class TextSelection {
                 if (isTextSelected) {
                     const pageTopValue: number = this.pdfViewerBase.pageSize[this.pdfViewerBase.currentPageNumber - 1].top;
                     const topClientValue: number = this.getClientValueTop(touchY, this.pdfViewerBase.currentPageNumber - 1);
-                    const elementClientRect: ClientRect = this.dropDivElementRight.getBoundingClientRect();
+                    const elementClientRect: DOMRect = this.dropDivElementRight.getBoundingClientRect() as DOMRect;
                     this.dropDivElementRight.style.top = pageTopValue * this.pdfViewerBase.getZoomFactor() + topClientValue + 'px';
                     const currentPageLeft: number = this.pdfViewerBase.getElement('_pageDiv_' + (this.pdfViewerBase.currentPageNumber - 1)).getBoundingClientRect().left;
                     const currentRangeLeft: number = touchX - currentPageLeft;
@@ -2084,16 +2093,20 @@ export class TextSelection {
     };
 
     private getNodeElement(range: Range, touchX: number, touchY: number, event: TouchEvent, nodeElement: Node): Node {
-        if (document.caretRangeFromPoint) {
-            range = document.caretRangeFromPoint(touchX, touchY);
-            nodeElement = this.onTouchElementScroll(range, nodeElement, touchY, event);
-        } else if ((document as any).caretPositionFromPoint) {
+        if ((document as any).caretPositionFromPoint) {
             const start: any = (document as any).caretPositionFromPoint(touchX, touchY);
             const end: any = (document as any).caretPositionFromPoint(touchX, touchY);
             range = document.createRange();
             range.setStart(start.offsetNode, start.offset);
             range.setEnd(end.offsetNode, end.offset);
             nodeElement = this.onTouchElementScroll(range, nodeElement, touchY, event);
+        } else {
+            const element: Element = document.elementFromPoint(touchX, touchY);
+            if (element) {
+                range = document.createRange();
+                range.selectNodeContents(element);
+                nodeElement = this.onTouchElementScroll(range, nodeElement, touchY, event);
+            }
         }
         return nodeElement;
     }

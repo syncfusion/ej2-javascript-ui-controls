@@ -1,3 +1,5 @@
+@use 'ej2-base/styles/common/mixin' as *;
+@use './theme-variables' as *;
 @include export-module('accordion-layout') {
   .e-accordion {
     display: block;
@@ -16,12 +18,12 @@
       margin-top: $acrdn-item-margin-top;
 
       &:first-child {
-        margin-top: 0;
+        margin-top: $acrdn-margin-none;
       }
       
       &:not(.e-select) + .e-acrdn-item:not(.e-select) {
-        margin-bottom: 0;
-        margin-top: 0;
+        margin-bottom: $acrdn-margin-none;
+        margin-top: $acrdn-margin-none;
       }
 
       .e-acrdn-panel.e-nested .e-acrdn-item.e-select {
@@ -33,7 +35,7 @@
       }
 
       &.e-selected {
-        padding-top: 0;
+        padding-top: $acrdn-padding-none;
 
         > .e-acrdn-header .e-acrdn-header-content {
           font-weight: $acrdn-slct-header-font-weight;
@@ -41,7 +43,7 @@
       }
 
       &.e-overlay {
-        height: auto;
+        height: $acrdn-auto-height;
       }
     }
 
@@ -96,7 +98,7 @@
         .e-toggle-icon {
           display: $acrdn-item-tgl-icon-display;
           font-size: $acrdn-icon-font-size;
-          height: $acrdn-nrml-header-minheight;
+          height: $acrdn-nrml-header-height;
           min-height: $acrdn-nrml-header-minheight;
           min-width: $acrdn-nrml-icn-minwidth;
           position: absolute;
@@ -116,7 +118,7 @@
 
         .e-acrdn-header-icon {
           display: inline-block;
-          padding: 0 $acrdn-nrml-header-icon-padding 0 0;
+          padding: $acrdn-padding-none $acrdn-nrml-header-icon-padding $acrdn-padding-none $acrdn-padding-none;
 
           .e-acrdn-icons.e-icons {
             font-size: $acrdn-item-arrow-icon-font-size;
@@ -145,14 +147,14 @@
           }
 
           > .e-acrdn-content {
-            padding: 0;
+            padding: $acrdn-padding-none;
 
             .e-acrdn-panel.e-nested > .e-acrdn-content {
-              padding: 0;
+              padding: $acrdn-padding-none;
             }
 
             > .e-accordion {
-              border: 0;
+              border: $acrdn-border-none;
             }
 
             .e-accordion .e-acrdn-panel.e-nested .e-acrdn-content .e-acrdn-header {
@@ -169,7 +171,7 @@
           }
 
           .e-nested .e-accordion .e-acrdn-item .e-acrdn-header .e-acrdn-header-content {
-            font-weight: normal;
+            font-weight: $acrdn-nested-header-content-font-weight;
           }
         }
 
@@ -227,7 +229,7 @@
           }
 
           .e-acrdn-header-icon {
-            padding: 0 0 0 $acrdn-nrml-header-icon-padding;
+            padding: $acrdn-padding-none $acrdn-padding-none $acrdn-padding-none $acrdn-nrml-header-icon-padding;
           }
         }
       }

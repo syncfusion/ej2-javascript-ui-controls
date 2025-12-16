@@ -1,3 +1,6 @@
+@use 'ej2-base/styles/common/mixin' as *;
+@use '../fabric-definition' as *;
+@use '../../document-editor/fabric-definition' as *;
 @include export-module('document-editor-container-fabric-icons') {
   .e-de-ctnr-linespacing::before {
     content: '\eb8a';

@@ -1,9 +1,9 @@
-@import 'ej2-base/styles/definition/material.scss';
-@import 'ej2-inputs/styles/input/material-definition.scss';
-@import 'ej2-popups/styles/popup/material-definition.scss';
-@import 'ej2-buttons/styles/button/material-definition.scss';
-@import '../datepicker/material-definition.scss';
-@import 'material-definition.scss';
-@import 'icons/material.scss';
-@import 'all.scss';
-@import 'bigger.scss';
+@use 'ej2-base/styles/definition/material' as *;
+@use 'ej2-inputs/styles/input/material-definition' as *;
+@use 'ej2-popups/styles/popup/material-definition' as *;
+@use 'ej2-buttons/styles/button/material-definition' as *;
+@use '../datepicker/material-definition' as *;
+@use 'material-definition' as *;
+@use 'icons/material' as *;
+@use 'all' as *;
+@use 'bigger' as *;

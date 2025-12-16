@@ -1,25 +1,27 @@
 import { createElement } from '@syncfusion/ej2-base';
-import { BlockType, ContentType } from '../../src/blockeditor/base/enums';
+import { BlockType, ContentType } from '../../src/models/enums';
 import {
     convertHtmlElementToBlocks,
     convertInlineElementsToContentModels,
     extractStylesFromElement,
     getBlockDataAsHTML,
     renderContentAsHTML
-} from '../../src/blockeditor/utils/html-parser';
-import { BaseStylesProp, BlockModel, ContentModel, HeadingProps, ImageProps } from '../../src/blockeditor/models/index';
-import { cleanCheckmarkElement, getAdjacentBlock, getBlockIndexById, getContentElementBasedOnId, isAtEndOfBlock, isAtStartOfBlock, isNonContentEditableBlock, normalizeBlockIntoContentElement, removeEmptyTextNodes } from '../../src/blockeditor/utils/block';
+} from '../../src/common/utils/html-parser';
+import { BaseStylesProp, BlockModel, ContentModel, IHeadingBlockSettings, IImageBlockSettings, ITableBlockSettings } from '../../src/models/index';
+import { cleanCheckmarkElement, findCellById, getAdjacentBlock, getBlockIndexById, getBlockModelById, getClosestContentElementInDocument, getContainerInfo, getContentElementBasedOnId, isAtEndOfBlock, isAtStartOfBlock, isNonContentEditableBlock, normalizeIntoContentElement, removeEmptyTextNodes } from '../../src/common/utils/block';
 import {
     getTemplateFunction, 
     normalizeRange, 
     denormalizeUrl,
     isNodeAroundSpecialElements, 
     getAccessibleTextColor
-} from '../../src/blockeditor/utils/common';
-import { unWrapContainer } from '../../src/blockeditor/utils/clipboard-utils';
+} from '../../src/common/utils/common';
+import { unWrapContainer } from '../../src/common/utils/clipboard-utils';
 
-import * as DataUtils from '../../src/blockeditor/utils/data';
-import { decode, encode } from '../../src/blockeditor/utils/security';
+import * as DataUtils from '../../src/common/utils/data';
+import * as BlockUtils from '../../src/common/utils/block';
+import { decode, encode } from '../../src/common/utils/security';
+import { IBlocksContainerInfo } from '../../src/common/interface';
 
 describe('Utility functions', () => {
     describe('HTML Parser Utils', () => {
@@ -32,10 +34,10 @@ describe('Utility functions', () => {
             it('should convert paragraph block to HTML', () => {
                 const blocks: BlockModel[] = [{
                     id: 'para1',
-                    type: BlockType.Paragraph,
+                    blockType: BlockType.Paragraph,
                     content: [{
                         id: 'content1',
-                        type: ContentType.Text,
+                        contentType: ContentType.Text,
                         content: 'Test paragraph'
                     }]
                 }];
@@ -47,27 +49,27 @@ describe('Utility functions', () => {
                 const blocks: BlockModel[] = [
                     {
                         id: 'heading1',
-                        type: BlockType.Heading,
-                        props: { level: 1 },
-                        content: [{ id: 'h1', type: ContentType.Text, content: 'Heading 1' }]
+                        blockType: BlockType.Heading,
+                        properties: { level: 1 },
+                        content: [{ id: 'h1', contentType: ContentType.Text, content: 'Heading 1' }]
                     },
                     {
                         id: 'heading2',
-                        type: BlockType.Heading,
-                        props: { level: 2 },
-                        content: [{ id: 'h2', type: ContentType.Text, content: 'Heading 2' }]
+                        blockType: BlockType.Heading,
+                        properties: { level: 2 },
+                        content: [{ id: 'h2', contentType: ContentType.Text, content: 'Heading 2' }]
                     },
                     {
                         id: 'heading3',
-                        type: BlockType.Heading,
-                        props: { level: 3 },
-                        content: [{ id: 'h3', type: ContentType.Text, content: 'Heading 3' }]
+                        blockType: BlockType.Heading,
+                        properties: { level: 3 },
+                        content: [{ id: 'h3', contentType: ContentType.Text, content: 'Heading 3' }]
                     },
                     {
                         id: 'heading4',
-                        type: BlockType.Heading,
-                        props: { level: 4 },
-                        content: [{ id: 'h4', type: ContentType.Text, content: 'Heading 4' }]
+                        blockType: BlockType.Heading,
+                        properties: { level: 4 },
+                        content: [{ id: 'h4', contentType: ContentType.Text, content: 'Heading 4' }]
                     }
                 ];
 
@@ -80,13 +82,13 @@ describe('Utility functions', () => {
                 const blocks: BlockModel[] = [
                     {
                         id: 'list1',
-                        type: BlockType.BulletList,
-                        content: [{ id: 'l1', type: ContentType.Text, content: 'Item 1' }]
+                        blockType: BlockType.BulletList,
+                        content: [{ id: 'l1', contentType: ContentType.Text, content: 'Item 1' }]
                     },
                     {
                         id: 'list2',
-                        type: BlockType.BulletList,
-                        content: [{ id: 'l2', type: ContentType.Text, content: 'Item 2' }]
+                        blockType: BlockType.BulletList,
+                        content: [{ id: 'l2', contentType: ContentType.Text, content: 'Item 2' }]
                     }
                 ];
 
@@ -97,13 +99,13 @@ describe('Utility functions', () => {
                 const blocks: BlockModel[] = [
                     {
                         id: 'list1',
-                        type: BlockType.NumberedList,
-                        content: [{ id: 'l1', type: ContentType.Text, content: 'Item 1' }]
+                        blockType: BlockType.NumberedList,
+                        content: [{ id: 'l1', contentType: ContentType.Text, content: 'Item 1' }]
                     },
                     {
                         id: 'list2',
-                        type: BlockType.NumberedList,
-                        content: [{ id: 'l2', type: ContentType.Text, content: 'Item 2' }]
+                        blockType: BlockType.NumberedList,
+                        content: [{ id: 'l2', contentType: ContentType.Text, content: 'Item 2' }]
                     }
                 ];
 
@@ -114,26 +116,26 @@ describe('Utility functions', () => {
                 const blocks: BlockModel[] = [
                     {
                         id: 'list1',
-                        type: BlockType.BulletList,
-                        content: [{ id: 'l1', type: ContentType.Text, content: 'Item 1' }],
+                        blockType: BlockType.BulletList,
+                        content: [{ id: 'l1', contentType: ContentType.Text, content: 'Item 1' }],
                         indent: 0
                     },
                     {
                         id: 'list2',
-                        type: BlockType.BulletList,
-                        content: [{ id: 'l2', type: ContentType.Text, content: 'Item 1.1' }],
+                        blockType: BlockType.BulletList,
+                        content: [{ id: 'l2', contentType: ContentType.Text, content: 'Item 1.1' }],
                         indent: 1
                     },
                     {
                         id: 'list3',
-                        type: BlockType.BulletList,
-                        content: [{ id: 'l3', type: ContentType.Text, content: 'Item 1.2' }],
+                        blockType: BlockType.BulletList,
+                        content: [{ id: 'l3', contentType: ContentType.Text, content: 'Item 1.2' }],
                         indent: 1
                     },
                     {
                         id: 'list4',
-                        type: BlockType.BulletList,
-                        content: [{ id: 'l4', type: ContentType.Text, content: 'Item 2' }],
+                        blockType: BlockType.BulletList,
+                        content: [{ id: 'l4', contentType: ContentType.Text, content: 'Item 2' }],
                         indent: 0
                     }
                 ];
@@ -146,14 +148,14 @@ describe('Utility functions', () => {
                 const blocks: BlockModel[] = [
                     {
                         id: 'list1',
-                        type: BlockType.BulletList,
-                        content: [{ id: 'l1', type: ContentType.Text, content: 'Bullet 1' }],
+                        blockType: BlockType.BulletList,
+                        content: [{ id: 'l1', contentType: ContentType.Text, content: 'Bullet 1' }],
                         indent: 0
                     },
                     {
                         id: 'list2',
-                        type: BlockType.NumberedList,
-                        content: [{ id: 'l2', type: ContentType.Text, content: 'Number 1' }],
+                        blockType: BlockType.NumberedList,
+                        content: [{ id: 'l2', contentType: ContentType.Text, content: 'Number 1' }],
                         indent: 0
                     }
                 ];
@@ -164,8 +166,8 @@ describe('Utility functions', () => {
             it('should convert image blocks to HTML', () => {
                 const blocks: BlockModel[] = [{
                     id: 'img1',
-                    type: BlockType.Image,
-                    props: {
+                    blockType: BlockType.Image,
+                    properties: {
                         src: 'https://example.com/image.jpg',
                         altText: 'Test image'
                     }
@@ -177,8 +179,8 @@ describe('Utility functions', () => {
             it('should handle empty image src', () => {
                 const blocks: BlockModel[] = [{
                     id: 'img1',
-                    type: BlockType.Image,
-                    props: {
+                    blockType: BlockType.Image,
+                    properties: {
                         src: '',
                         altText: 'Empty image'
                     }
@@ -190,10 +192,10 @@ describe('Utility functions', () => {
             it('should convert code blocks to HTML', () => {
                 const blocks: BlockModel[] = [{
                     id: 'code1',
-                    type: BlockType.Code,
+                    blockType: BlockType.Code,
                     content: [{
                         id: 'c1',
-                        type: ContentType.Text,
+                        contentType: ContentType.Text,
                         content: 'const x = 10;'
                     }]
                 }];
@@ -204,10 +206,10 @@ describe('Utility functions', () => {
             it('should convert quote blocks to HTML', () => {
                 const blocks: BlockModel[] = [{
                     id: 'quote1',
-                    type: BlockType.Quote,
+                    blockType: BlockType.Quote,
                     content: [{
                         id: 'q1',
-                        type: ContentType.Text,
+                        contentType: ContentType.Text,
                         content: 'This is a quote'
                     }]
                 }];
@@ -218,12 +220,12 @@ describe('Utility functions', () => {
             it('should convert callout blocks to HTML', () => {
                 const blocks: BlockModel[] = [{
                     id: 'callout1',
-                    type: BlockType.Callout,
-                    props: {
+                    blockType: BlockType.Callout,
+                    properties: {
                         children: [{
                             id: 'para1',
-                            type: BlockType.Paragraph,
-                            content: [{ id: 'p1', type: ContentType.Text, content: 'Callout text' }]
+                            blockType: BlockType.Paragraph,
+                            content: [{ id: 'p1', contentType: ContentType.Text, content: 'Callout text' }]
                         }]
                     }
                 }];
@@ -234,13 +236,13 @@ describe('Utility functions', () => {
             it('should convert collapsible blocks to HTML', () => {
                 const blocks: BlockModel[] = [{
                     id: 'toggle1',
-                    type: BlockType.CollapsibleParagraph,
-                    content: [{ id: 't1', type: ContentType.Text, content: 'Collapsible header' }],
-                    props: {
+                    blockType: BlockType.CollapsibleParagraph,
+                    content: [{ id: 't1', contentType: ContentType.Text, content: 'Collapsible header' }],
+                    properties: {
                         children: [{
                             id: 'para1',
-                            type: BlockType.Paragraph,
-                            content: [{ id: 'p1', type: ContentType.Text, content: 'Collapsible content' }]
+                            blockType: BlockType.Paragraph,
+                            content: [{ id: 'p1', contentType: ContentType.Text, content: 'Collapsible content' }]
                         }]
                     }
                 }];
@@ -251,7 +253,7 @@ describe('Utility functions', () => {
             it('should convert divider block to HTML', () => {
                 const blocks: BlockModel[] = [{
                     id: 'div1',
-                    type: BlockType.Divider
+                    blockType: BlockType.Divider
                 }];
 
                 expect(getBlockDataAsHTML(blocks)).toBe('<hr />');
@@ -260,19 +262,19 @@ describe('Utility functions', () => {
             it('should convert blocks with styled content to HTML', () => {
                 const blocks: BlockModel[] = [{
                     id: 'styled1',
-                    type: BlockType.Paragraph,
+                    blockType: BlockType.Paragraph,
                     content: [{
                         id: 'style1',
-                        type: ContentType.Text,
+                        contentType: ContentType.Text,
                         content: 'Styled text',
-                        props: {
+                        properties: {
                             styles: {
                                 bold: true,
                                 italic: true,
                                 underline: true,
                                 strikethrough: true,
                                 color: '#ff0000',
-                                bgColor: '#00ff00'
+                                backgroundColor: '#00ff00'
                             }
                         }
                     }]
@@ -291,14 +293,13 @@ describe('Utility functions', () => {
             it('should convert link content to HTML', () => {
                 const blocks: BlockModel[] = [{
                     id: 'link1',
-                    type: BlockType.Paragraph,
+                    blockType: BlockType.Paragraph,
                     content: [{
                         id: 'l1',
-                        type: ContentType.Link,
+                        contentType: ContentType.Link,
                         content: 'Link text',
-                        props: {
+                        properties: {
                             url: 'https://example.com',
-                            openInNewWindow: true
                         }
                     }]
                 }];
@@ -315,7 +316,7 @@ describe('Utility functions', () => {
             it('should render plain text content', () => {
                 const content: ContentModel[] = [{
                     id: 'c1',
-                    type: ContentType.Text,
+                    contentType: ContentType.Text,
                     content: 'Plain text'
                 }];
 
@@ -325,9 +326,9 @@ describe('Utility functions', () => {
             it('should render bold text content', () => {
                 const content: ContentModel[] = [{
                     id: 'c1',
-                    type: ContentType.Text,
+                    contentType: ContentType.Text,
                     content: 'Bold text',
-                    props: { styles: { bold: true } }
+                    properties: { styles: { bold: true } }
                 }];
 
                 expect(renderContentAsHTML(content)).toBe('<strong>Bold text</strong>');
@@ -336,9 +337,9 @@ describe('Utility functions', () => {
             it('should render italic text content', () => {
                 const content: ContentModel[] = [{
                     id: 'c1',
-                    type: ContentType.Text,
+                    contentType: ContentType.Text,
                     content: 'Italic text',
-                    props: { styles: { italic: true } }
+                    properties: { styles: { italic: true } }
                 }];
 
                 expect(renderContentAsHTML(content)).toBe('<em>Italic text</em>');
@@ -347,9 +348,9 @@ describe('Utility functions', () => {
             it('should render underlined text content', () => {
                 const content: ContentModel[] = [{
                     id: 'c1',
-                    type: ContentType.Text,
+                    contentType: ContentType.Text,
                     content: 'Underlined text',
-                    props: { styles: { underline: true } }
+                    properties: { styles: { underline: true } }
                 }];
 
                 expect(renderContentAsHTML(content)).toBe('<u>Underlined text</u>');
@@ -358,9 +359,9 @@ describe('Utility functions', () => {
             it('should render strikethrough text content', () => {
                 const content: ContentModel[] = [{
                     id: 'c1',
-                    type: ContentType.Text,
+                    contentType: ContentType.Text,
                     content: 'Strikethrough text',
-                    props: { styles: { strikethrough: true } }
+                    properties: { styles: { strikethrough: true } }
                 }];
 
                 expect(renderContentAsHTML(content)).toBe('<s>Strikethrough text</s>');
@@ -369,9 +370,9 @@ describe('Utility functions', () => {
             it('should render superscript text content', () => {
                 const content: ContentModel[] = [{
                     id: 'c1',
-                    type: ContentType.Text,
+                    contentType: ContentType.Text,
                     content: 'Superscript text',
-                    props: { styles: { superscript: true } }
+                    properties: { styles: { superscript: true } }
                 }];
 
                 expect(renderContentAsHTML(content)).toBe('<sup>Superscript text</sup>');
@@ -380,9 +381,9 @@ describe('Utility functions', () => {
             it('should render subscript text content', () => {
                 const content: ContentModel[] = [{
                     id: 'c1',
-                    type: ContentType.Text,
+                    contentType: ContentType.Text,
                     content: 'Subscript text',
-                    props: { styles: { subscript: true } }
+                    properties: { styles: { subscript: true } }
                 }];
 
                 expect(renderContentAsHTML(content)).toBe('<sub>Subscript text</sub>');
@@ -391,9 +392,9 @@ describe('Utility functions', () => {
             it('should render uppercase text content', () => {
                 const content: ContentModel[] = [{
                     id: 'c1',
-                    type: ContentType.Text,
+                    contentType: ContentType.Text,
                     content: 'Uppercase text',
-                    props: { styles: { uppercase: true } }
+                    properties: { styles: { uppercase: true } }
                 }];
 
                 expect(renderContentAsHTML(content)).toBe('<span style="text-transform: uppercase;">Uppercase text</span>');
@@ -402,9 +403,9 @@ describe('Utility functions', () => {
             it('should render lowercase text content', () => {
                 const content: ContentModel[] = [{
                     id: 'c1',
-                    type: ContentType.Text,
+                    contentType: ContentType.Text,
                     content: 'Lowercase text',
-                    props: { styles: { lowercase: true } }
+                    properties: { styles: { lowercase: true } }
                 }];
 
                 expect(renderContentAsHTML(content)).toBe('<span style="text-transform: lowercase;">Lowercase text</span>');
@@ -413,9 +414,9 @@ describe('Utility functions', () => {
             it('should render colored text content', () => {
                 const content: ContentModel[] = [{
                     id: 'c1',
-                    type: ContentType.Text,
+                    contentType: ContentType.Text,
                     content: 'Colored text',
-                    props: { styles: { color: '#ff0000' } }
+                    properties: { styles: { color: '#ff0000' } }
                 }];
 
                 expect(renderContentAsHTML(content)).toBe('<span style="color: #ff0000;">Colored text</span>');
@@ -424,31 +425,20 @@ describe('Utility functions', () => {
             it('should render background-colored text content', () => {
                 const content: ContentModel[] = [{
                     id: 'c1',
-                    type: ContentType.Text,
+                    contentType: ContentType.Text,
                     content: 'BG-Colored text',
-                    props: { styles: { bgColor: '#00ff00' } }
+                    properties: { styles: { backgroundColor: '#00ff00' } }
                 }];
 
                 expect(renderContentAsHTML(content)).toBe('<span style="background-color: #00ff00;">BG-Colored text</span>');
             });
 
-            it('should render custom-styled text content', () => {
-                const content: ContentModel[] = [{
-                    id: 'c1',
-                    type: ContentType.Text,
-                    content: 'Custom text',
-                    props: { styles: { custom: 'font-family: Arial' } }
-                }];
-
-                expect(renderContentAsHTML(content)).toBe('<span style="font-family: Arial;">Custom text</span>');
-            });
-
             it('should render multiple styles in the correct order', () => {
                 const content: ContentModel[] = [{
                     id: 'c1',
-                    type: ContentType.Text,
+                    contentType: ContentType.Text,
                     content: 'Multi-styled text',
-                    props: {
+                    properties: {
                         styles: {
                             bold: true,
                             italic: true,
@@ -463,25 +453,23 @@ describe('Utility functions', () => {
             it('should render link content', () => {
                 const content: ContentModel[] = [{
                     id: 'c1',
-                    type: ContentType.Link,
+                    contentType: ContentType.Link,
                     content: 'Link text',
-                    props: {
+                    properties: {
                         url: 'https://example.com',
-                        openInNewWindow: false
                     }
                 }];
 
-                expect(renderContentAsHTML(content)).toBe('<a href="https://example.com" >Link text</a>');
+                expect(renderContentAsHTML(content)).toBe('<a href="https://example.com" target="_blank">Link text</a>');
             });
 
             it('should render link content with new window target', () => {
                 const content: ContentModel[] = [{
                     id: 'c1',
-                    type: ContentType.Link,
+                    contentType: ContentType.Link,
                     content: 'Link text',
-                    props: {
+                    properties: {
                         url: 'https://example.com',
-                        openInNewWindow: true
                     }
                 }];
 
@@ -491,7 +479,7 @@ describe('Utility functions', () => {
             it('should escape HTML in content', () => {
                 const content: ContentModel[] = [{
                     id: 'c1',
-                    type: ContentType.Text,
+                    contentType: ContentType.Text,
                     content: '<script>alert("XSS")</script>'
                 }];
 
@@ -509,7 +497,7 @@ describe('Utility functions', () => {
 
                 const blocks = convertHtmlElementToBlocks(container, true);
                 expect(blocks.length).toBe(1);
-                expect(blocks[0].type).toBe(BlockType.Paragraph);
+                expect(blocks[0].blockType).toBe(BlockType.Paragraph);
                 expect(blocks[0].content[0].content).toBe('Test paragraph');
             });
 
@@ -520,14 +508,14 @@ describe('Utility functions', () => {
 
                 const blocks = convertHtmlElementToBlocks(container, true);
                 expect(blocks.length).toBe(4);
-                expect(blocks[0].type).toBe(BlockType.Heading);
-                expect((blocks[0].props as HeadingProps).level).toBe(1);
-                expect(blocks[1].type).toBe(BlockType.Heading);
-                expect((blocks[1].props as HeadingProps).level).toBe(2);
-                expect(blocks[2].type).toBe(BlockType.Heading);
-                expect((blocks[2].props as HeadingProps).level).toBe(3);
-                expect(blocks[3].type).toBe(BlockType.Heading);
-                expect((blocks[3].props as HeadingProps).level).toBe(4);
+                expect(blocks[0].blockType).toBe(BlockType.Heading);
+                expect((blocks[0].properties as IHeadingBlockSettings).level).toBe(1);
+                expect(blocks[1].blockType).toBe(BlockType.Heading);
+                expect((blocks[1].properties as IHeadingBlockSettings).level).toBe(2);
+                expect(blocks[2].blockType).toBe(BlockType.Heading);
+                expect((blocks[2].properties as IHeadingBlockSettings).level).toBe(3);
+                expect(blocks[3].blockType).toBe(BlockType.Heading);
+                expect((blocks[3].properties as IHeadingBlockSettings).level).toBe(4);
             });
 
             it('should convert blockquote elements to blocks', () => {
@@ -537,7 +525,7 @@ describe('Utility functions', () => {
 
                 const blocks = convertHtmlElementToBlocks(container, true);
                 expect(blocks.length).toBe(2);
-                expect(blocks[0].type).toBe(BlockType.Quote);
+                expect(blocks[0].blockType).toBe(BlockType.Quote);
                 expect(blocks[0].content[0].content).toBe('Test quote');
             });
 
@@ -548,7 +536,7 @@ describe('Utility functions', () => {
 
                 const blocks = convertHtmlElementToBlocks(container, true);
                 expect(blocks.length).toBe(1);
-                expect(blocks[0].type).toBe(BlockType.Divider);
+                expect(blocks[0].blockType).toBe(BlockType.Divider);
             });
 
             it('should convert img elements to image blocks', () => {
@@ -558,9 +546,9 @@ describe('Utility functions', () => {
 
                 const blocks = convertHtmlElementToBlocks(container, true);
                 expect(blocks.length).toBe(1);
-                expect(blocks[0].type).toBe(BlockType.Image);
-                expect((blocks[0].props as ImageProps).src).toContain('test.jpg');
-                expect((blocks[0].props as ImageProps).altText).toBe('Test image');
+                expect(blocks[0].blockType).toBe(BlockType.Image);
+                expect((blocks[0].properties as IImageBlockSettings).src).toContain('test.jpg');
+                expect((blocks[0].properties as IImageBlockSettings).altText).toBe('Test image');
             });
 
             it('should convert pre code elements to code blocks', () => {
@@ -570,7 +558,7 @@ describe('Utility functions', () => {
 
                 const blocks = convertHtmlElementToBlocks(container, true);
                 expect(blocks.length).toBe(1);
-                expect(blocks[0].type).toBe(BlockType.Code);
+                expect(blocks[0].blockType).toBe(BlockType.Code);
                 expect(blocks[0].content[0].content).toBe('const x = 10;');
             });
 
@@ -581,8 +569,8 @@ describe('Utility functions', () => {
 
                 const blocks = convertHtmlElementToBlocks(container, true);
                 expect(blocks.length).toBe(2);
-                expect(blocks[0].type).toBe(BlockType.BulletList);
-                expect(blocks[1].type).toBe(BlockType.BulletList);
+                expect(blocks[0].blockType).toBe(BlockType.BulletList);
+                expect(blocks[1].blockType).toBe(BlockType.BulletList);
                 expect(blocks[0].content[0].content).toBe('Item 1');
                 expect(blocks[1].content[0].content).toBe('Item 2');
             });
@@ -594,8 +582,8 @@ describe('Utility functions', () => {
 
                 const blocks = convertHtmlElementToBlocks(container, true);
                 expect(blocks.length).toBe(2);
-                expect(blocks[0].type).toBe(BlockType.NumberedList);
-                expect(blocks[1].type).toBe(BlockType.NumberedList);
+                expect(blocks[0].blockType).toBe(BlockType.NumberedList);
+                expect(blocks[1].blockType).toBe(BlockType.NumberedList);
                 expect(blocks[0].content[0].content).toBe('Item 1');
                 expect(blocks[1].content[0].content).toBe('Item 2');
             });
@@ -653,7 +641,7 @@ describe('Utility functions', () => {
                     styles: 'background-color: #00ff00'
                 });
                 const styles = extractStylesFromElement(element);
-                expect(styles.bgColor).toBe('rgb(0, 255, 0)');
+                expect(styles.backgroundColor).toBe('rgb(0, 255, 0)');
             });
 
             it('should merge with existing styles', () => {
@@ -675,7 +663,7 @@ describe('Utility functions', () => {
                 
                 expect(contentModels.length).toBe(1);
                 expect(contentModels[0].content).toBe('Bold and italic text');
-                expect(Object.keys((contentModels[0].props as BaseStylesProp).styles).length).toBe(0);
+                expect(Object.keys((contentModels[0].properties as BaseStylesProp).styles).length).toBe(0);
             });
             
             it('should handle empty element correctly', () => {
@@ -697,7 +685,7 @@ describe('Utility functions', () => {
                 const contentModels = convertInlineElementsToContentModels(element, true);
                 expect (contentModels.length).toBe(2);
                 expect(contentModels[0].content).toBe('Text with ');
-                expect(contentModels[1].type).toBe(ContentType.Link);
+                expect(contentModels[1].contentType).toBe(ContentType.Link);
 
             });
             it('should handle code elements correctly', () => {
@@ -709,7 +697,7 @@ describe('Utility functions', () => {
                 
                 expect(contentModels.length).toBe(2);
                 expect(contentModels[0].content).toBe('Text with ');
-                expect(contentModels[1].type).toBe(BlockType.Code);
+                expect(contentModels[1].contentType).toBe(ContentType.Text);
                 expect(contentModels[1].content).toBe('inline code');
             });
             
@@ -722,8 +710,8 @@ describe('Utility functions', () => {
                 
                 expect(contentModels.length).toBe(1);
                 expect(contentModels[0].content).toBe('Bold and italic');
-                expect((contentModels[0].props as BaseStylesProp).styles.bold).toBe(true);
-                expect((contentModels[0].props as BaseStylesProp).styles.italic).toBe(true);
+                expect((contentModels[0].properties as BaseStylesProp).styles.bold).toBe(true);
+                expect((contentModels[0].properties as BaseStylesProp).styles.italic).toBe(true);
             });
             
             it('should ignore UL/OL elements in the content', () => {
@@ -742,10 +730,10 @@ describe('Utility functions', () => {
 
         describe('HTML conversion edge cases', () => {
             it('should handle null or empty content in renderContentAsHTML', () => {
-                const nullContent: ContentModel[] = [{ id: 'c1', type: ContentType.Text }];
+                const nullContent: ContentModel[] = [{ id: 'c1', contentType: ContentType.Text }];
                 expect(renderContentAsHTML(nullContent)).toBe('');
                 
-                const emptyContent: ContentModel[] = [{ id: 'c1', type: ContentType.Text, content: '' }];
+                const emptyContent: ContentModel[] = [{ id: 'c1', contentType: ContentType.Text, content: '' }];
                 expect(renderContentAsHTML(emptyContent)).toBe('');
             });
             
@@ -756,7 +744,7 @@ describe('Utility functions', () => {
                 
                 const blocks = convertHtmlElementToBlocks(container, true);
                 expect(blocks.length).toBe(1);
-                expect(blocks[0].type).toBe(BlockType.Paragraph);
+                expect(blocks[0].blockType).toBe(BlockType.Paragraph);
                 expect(blocks[0].content[0].content).toBe('Just a text node');
             });
             
@@ -776,7 +764,7 @@ describe('Utility functions', () => {
                 
                 const blocks = convertHtmlElementToBlocks(container, true);
                 expect(blocks.length).toBe(1);
-                expect(blocks[0].type).toBe(BlockType.Paragraph);
+                expect(blocks[0].blockType).toBe(BlockType.Paragraph);
                 expect(blocks[0].content[0].content).toBe('Simple div text');
             });
             
@@ -787,9 +775,9 @@ describe('Utility functions', () => {
                 
                 const blocks = convertHtmlElementToBlocks(container, true);
                 expect(blocks.length).toBe(2);
-                expect(blocks[0].type).toBe(BlockType.BulletList);
+                expect(blocks[0].blockType).toBe(BlockType.BulletList);
                 expect(blocks[0].indent).toBe(0);
-                expect(blocks[1].type).toBe(BlockType.BulletList);
+                expect(blocks[1].blockType).toBe(BlockType.BulletList);
                 expect(blocks[1].indent).toBe(1);
             });
             
@@ -799,18 +787,19 @@ describe('Utility functions', () => {
                 });
                 
                 const blocks = convertHtmlElementToBlocks(container, true);
-                expect(blocks.length).toBe(2);
-                expect(blocks[0].type).toBe(BlockType.Paragraph);
-                expect(blocks[0].content[0].content).toBe('Cell 1');
-                expect(blocks[1].type).toBe(BlockType.Paragraph);
-                expect(blocks[1].content[0].content).toBe('Cell 2');
+                expect(blocks.length).toBe(1);
+                expect(blocks[0].blockType).toBe(BlockType.Table);
+                const cell1 = (blocks[0].properties as ITableBlockSettings).rows[0].cells[0];
+                const cell2 = (blocks[0].properties as ITableBlockSettings).rows[1].cells[0];
+                expect(cell1.blocks[0].content[0].content).toBe('Cell 1');
+                expect(cell2.blocks[0].content[0].content).toBe('Cell 2');
             });
             
             it('should handle different block types in getBlockDataAsHTML', () => {
                 const blocks: BlockModel[] = [{
                     id: 'unknown',
-                    type: 'UnknownType' as BlockType,
-                    content: [{ id: 'uc1', type: ContentType.Text, content: 'Unknown content' }]
+                    blockType: 'UnknownType' as BlockType,
+                    content: [{ id: 'uc1', contentType: ContentType.Text, content: 'Unknown content' }]
                 }];
                 
                 expect(getBlockDataAsHTML(blocks)).toBe('<div>Unknown content</div>');
@@ -821,8 +810,8 @@ describe('Utility functions', () => {
                     null, 
                     {
                         id: 'para',
-                        type: BlockType.Paragraph,
-                        content: [{ id: 'c1', type: ContentType.Text, content: 'Valid content' }]
+                        blockType: BlockType.Paragraph,
+                        content: [{ id: 'c1', contentType: ContentType.Text, content: 'Valid content' }]
                     }
                 ];
                 
@@ -831,12 +820,112 @@ describe('Utility functions', () => {
         });
     });
     describe('block utils', () => {
+        describe('getBlockModelById function', () => {
+            it('should get the model of a block by id', () => {
+                const blocks: BlockModel[] = [
+                    { id: 'block1', blockType: BlockType.Paragraph },
+                    { id: 'block2', blockType: BlockType.Paragraph },
+                    { id: 'block3', blockType: BlockType.Paragraph }
+                ];
+                
+                expect((getBlockModelById('block1', blocks) as BlockModel).id).toBe('block1');
+                expect((getBlockModelById('block2', blocks) as BlockModel).id).toBe('block2');
+                expect((getBlockModelById('block3', blocks) as BlockModel).id).toBe('block3');
+            });
+            
+            it('should get the model of a child block within its parent', () => {
+                const blocks: BlockModel[] = [
+                    {
+                        id: 'parent1', 
+                        blockType: BlockType.Callout,
+                        properties: {
+                            children: [
+                                { id: 'child1', blockType: BlockType.Paragraph, parentId: 'parent1' },
+                                { id: 'child2', blockType: BlockType.Paragraph, parentId: 'parent1' }
+                            ]
+                        }
+                    }
+                ];
+                
+                expect((getBlockModelById('child1', blocks) as BlockModel).id).toBe('child1');
+                expect((getBlockModelById('child2', blocks) as BlockModel).id).toBe('child2');
+            });
+
+            it('should get the model of a nested table cell block within its cell', () => {
+                const tableProps: ITableBlockSettings = {
+                    columns: [ { id: 'col1' }, { id: 'col2' } ],
+                    rows: [
+                        { cells: [
+                            { columnId: 'col1', blocks: [{ id: 'b1', blockType: BlockType.Paragraph, content: [{ id: 't1', contentType: ContentType.Text, content: 'Cell 1' }] }] },
+                            { columnId: 'col2', blocks: [{ id: 'b2', blockType: BlockType.Paragraph, content: [{ id: 't2', contentType: ContentType.Text, content: 'Cell 2' }] }] }
+                        ]},
+                        { cells: [
+                            { columnId: 'col1', blocks: [{ id: 'b3', blockType: BlockType.Paragraph, content: [{ id: 't3', contentType: ContentType.Text, content: 'Cell 3' }] }] },
+                            { columnId: 'col2', blocks: [{ id: 'b4', blockType: BlockType.Paragraph, content: [{ id: 't4', contentType: ContentType.Text, content: 'Cell 4' }] }] }
+                        ]}
+                    ]
+                };
+                const blocks: BlockModel[] = [{ id: 'table_block', blockType: BlockType.Table, properties: tableProps }];
+
+                expect((getBlockModelById('b1', blocks) as BlockModel).id).toBe('b1');
+                expect((getBlockModelById('b4', blocks) as BlockModel).id).toBe('b4');
+            });
+
+            it('should return null if table rows are undefined', () => {
+                const tableProps: ITableBlockSettings = {
+                    columns: [ { id: 'col1' }, { id: 'col2' } ],
+                    rows: undefined
+                };
+                const blocks: BlockModel[] = [{ id: 'table_block', blockType: BlockType.Table, properties: tableProps }];
+
+                expect((getBlockModelById('b1', blocks) as BlockModel)).toBeNull();
+            });
+        });
+
+        describe('table block utils', () => {
+            it('getContainerInfo should return its parent cell info properly', () => {
+                const tableProps: ITableBlockSettings = {
+                    columns: [ { id: 'col1' }, { id: 'col2' } ],
+                    rows: [
+                        { cells: [
+                            { id: 'cell1', columnId: 'col1', blocks: [{ id: 'b1', parentId: 'cell1', blockType: BlockType.Paragraph, content: [{ id: 't1', contentType: ContentType.Text, content: 'Cell 1' }] }] },
+                            { id: 'cell2', columnId: 'col2', blocks: [{ id: 'b2', parentId: 'cell2', blockType: BlockType.Paragraph, content: [{ id: 't2', contentType: ContentType.Text, content: 'Cell 2' }] }] }
+                        ]},
+                        { cells: [
+                            { id: 'cell3', columnId: 'col1', blocks: [{ id: 'b3', parentId: 'cell3', blockType: BlockType.Paragraph, content: [{ id: 't3', contentType: ContentType.Text, content: 'Cell 3' }] }] },
+                            { id: 'cell4', columnId: 'col2', blocks: [{ id: 'b4', parentId: 'cell4', blockType: BlockType.Paragraph, content: [{ id: 't4', contentType: ContentType.Text, content: 'Cell 4' }] }] }
+                        ]}
+                    ]
+                };
+                const blocks: BlockModel[] = [{ id: 'table_block', blockType: BlockType.Table, properties: tableProps }];
+
+                const block1Info = getContainerInfo('b1', blocks) as IBlocksContainerInfo;
+                const block2Info = getContainerInfo('b2', blocks) as IBlocksContainerInfo;
+
+                expect(block1Info.containerType).toBe('cell');
+                expect(block1Info.array.length).toBe(1);
+                expect(block1Info.containerId).toBe('cell1');
+
+                expect(block2Info.containerType).toBe('cell');
+                expect(block2Info.array.length).toBe(1);
+                expect(block2Info.containerId).toBe('cell2');
+            });
+
+            it('findCellBlocksArray should return null for invalid cell id', () => {
+                expect(findCellById('invalid', [])).toBeNull();
+            });
+
+            it('getContainerInfo should return null for invalid block id', () => {
+                expect(getContainerInfo('invalid', [])).toBeNull();
+            });
+        });
+
         describe('getBlockIndexById function', () => {
             it('should get the index of a block by id', () => {
                 const blocks: BlockModel[] = [
-                    { id: 'block1', type: BlockType.Paragraph },
-                    { id: 'block2', type: BlockType.Paragraph },
-                    { id: 'block3', type: BlockType.Paragraph }
+                    { id: 'block1', blockType: BlockType.Paragraph },
+                    { id: 'block2', blockType: BlockType.Paragraph },
+                    { id: 'block3', blockType: BlockType.Paragraph }
                 ];
                 
                 expect(getBlockIndexById('block1', blocks)).toBe(0);
@@ -846,8 +935,8 @@ describe('Utility functions', () => {
             
             it('should return -1 when block id is not found', () => {
                 const blocks: BlockModel[] = [
-                    { id: 'block1', type: BlockType.Paragraph },
-                    { id: 'block2', type: BlockType.Paragraph }
+                    { id: 'block1', blockType: BlockType.Paragraph },
+                    { id: 'block2', blockType: BlockType.Paragraph }
                 ];
                 
                 expect(getBlockIndexById('', blocks)).toBe(-1);
@@ -856,11 +945,30 @@ describe('Utility functions', () => {
             it('should return -1 for empty blocks array', () => {
                 expect(getBlockIndexById('block1', [])).toBe(-1);
             });
+
+            it('getBlockIndexById edge case for invalid id', () => {
+                const tableProps: ITableBlockSettings = {
+                    columns: [ { id: 'col1' }, { id: 'col2' } ],
+                    rows: [
+                        { cells: [
+                            { id: 'cell1', columnId: 'col1', blocks: [{ id: 'b1', blockType: BlockType.Paragraph, content: [{ id: 't1', contentType: ContentType.Text, content: 'Cell 1' }] }] },
+                            { id: 'cell2', columnId: 'col2', blocks: [{ id: 'b2', blockType: BlockType.Paragraph, content: [{ id: 't2', contentType: ContentType.Text, content: 'Cell 2' }] }] }
+                        ]},
+                        { cells: [
+                            { id: 'cell3', columnId: 'col1', blocks: [{ id: 'b3', blockType: BlockType.Paragraph, content: [{ id: 't3', contentType: ContentType.Text, content: 'Cell 3' }] }] },
+                            { id: 'cell4', columnId: 'col2', blocks: [{ id: 'b4', blockType: BlockType.Paragraph, content: [{ id: 't4', contentType: ContentType.Text, content: 'Cell 4' }] }] }
+                        ]}
+                    ]
+                };
+                const blocks: BlockModel[] = [{ id: 'table_block', blockType: BlockType.Table, properties: tableProps }];
+                spyOn(BlockUtils, 'getContainerInfo').and.returnValue(null);
+                expect(getBlockIndexById('b1', blocks)).toBe(-1);
+            });
             
             it('should return -1 for empty id', () => {
                 const blocks: BlockModel[] = [
-                    { id: 'block1', type: BlockType.Paragraph },
-                    { id: 'block2', type: BlockType.Paragraph }
+                    { id: 'block1', blockType: BlockType.Paragraph },
+                    { id: 'block2', blockType: BlockType.Paragraph }
                 ];
                 
                 expect(getBlockIndexById('', blocks)).toBe(-1);
@@ -870,11 +978,11 @@ describe('Utility functions', () => {
                 const blocks: BlockModel[] = [
                     { 
                         id: 'parent1', 
-                        type: BlockType.Callout,
-                        props: {
+                        blockType: BlockType.Callout,
+                        properties: {
                             children: [
-                                { id: 'child1', type: BlockType.Paragraph, parentId: 'parent1' },
-                                { id: 'child2', type: BlockType.Paragraph, parentId: 'parent1' }
+                                { id: 'child1', blockType: BlockType.Paragraph, parentId: 'parent1' },
+                                { id: 'child2', blockType: BlockType.Paragraph, parentId: 'parent1' }
                             ]
                         }
                     }
@@ -1016,7 +1124,7 @@ describe('Utility functions', () => {
                 
                 const content: ContentModel = {
                     id: 'content1',
-                    type: ContentType.Text,
+                    contentType: ContentType.Text,
                     content: 'Content'
                 };
                 
@@ -1030,7 +1138,7 @@ describe('Utility functions', () => {
                 
                 const content: ContentModel = {
                     id: 'content1',
-                    type: ContentType.Text,
+                    contentType: ContentType.Text,
                     content: 'Content'
                 };
                 
@@ -1048,11 +1156,16 @@ describe('Utility functions', () => {
             it('should return null when wrapper is null', () => {
                 const content: ContentModel = {
                     id: 'content1',
-                    type: ContentType.Text,
+                    contentType: ContentType.Text,
                     content: 'Content'
                 };
                 
                 const element = getContentElementBasedOnId(content.id, null);
+                expect(element).toBeNull();
+            });
+
+            it('getClosestContentElementInDocument should return null for invalid node', () => {
+                const element = getClosestContentElementInDocument(document.createDocumentFragment());
                 expect(element).toBeNull();
             });
         });
@@ -1083,7 +1196,7 @@ describe('Utility functions', () => {
             });
         });
         
-        describe('normalizeBlockIntoContentElement function', () => {
+        describe('normalizeIntoContentElement function', () => {
             let container: HTMLElement;
             
             beforeEach(() => {
@@ -1105,15 +1218,31 @@ describe('Utility functions', () => {
                 const blockElement = document.getElementById('block1');
                 const contentElement = document.getElementById('content1');
                 
-                const result = normalizeBlockIntoContentElement(blockElement);
+                const result = normalizeIntoContentElement(blockElement);
                 expect(result).toBe(contentElement);
             });
             
             it('should return the element itself if not a block element', () => {
                 const element = createElement('div', { id: 'notBlock' });
                 
-                const result = normalizeBlockIntoContentElement(element);
+                const result = normalizeIntoContentElement(element);
                 expect(result).toBe(element);
+            });
+
+            it('should return content element when br node is passed(table cell)', () => {
+                container.innerHTML = `
+                    <div id="block1" class="e-block">
+                        <div id="content1" class="e-block-content">
+                        <br>
+                        </div>
+                    </div>
+                `;
+                
+                const contentElement = document.getElementById('content1');
+                const brNode: Node = document.querySelector('br') as Node;
+                
+                const result = normalizeIntoContentElement(brNode);
+                expect(result).toBe(contentElement);
             });
         });
         

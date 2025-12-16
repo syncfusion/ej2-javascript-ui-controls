@@ -9,6 +9,7 @@ import { DOMNode } from './../plugin/dom-node';
 import { Formats } from './../plugin/formats';
 import { LinkCommand } from './../plugin/link';
 import { Alignments } from './../plugin/alignments';
+import { LineHeight } from './../plugin/lineHeight';
 import { Indents } from './../plugin/indents';
 import { ImageCommand } from './../plugin/image';
 import { AudioCommand } from './../plugin/audio';
@@ -28,12 +29,13 @@ import { TableSelection } from '../plugin/table-selection';
 import { DOMMethods } from '../plugin/dom-tree';
 import { CustomUserAgentData } from '../../common/user-agent';
 import { CodeBlockPlugin } from '../plugin/code-block';
+import { AutoFormatPlugin } from '../plugin/autoformat';
 
 /**
  * EditorManager internal component
  *
  * @hidden
- * @deprecated
+ * @private
  */
 export class EditorManager {
     public currentDocument: HTMLDocument;
@@ -45,6 +47,7 @@ export class EditorManager {
     public formatObj: Formats;
     public linkObj: LinkCommand;
     public alignmentObj: Alignments;
+    public lineheightObj: LineHeight;
     public indentsObj: Indents;
     public imgObj: ImageCommand;
     public audioObj: AudioCommand;
@@ -55,6 +58,7 @@ export class EditorManager {
     public inserthtmlObj: InsertHtmlExec;
     public insertTextObj: InsertTextExec;
     public clearObj: ClearFormatExec;
+    public autoFormatObj: AutoFormatPlugin;
     public undoRedoManager: UndoRedoManager;
     public msWordPaste: MsWordPaste;
     public formatPainterEditor: IFormatPainterEditor;
@@ -71,7 +75,7 @@ export class EditorManager {
      * Constructor for creating the component
      *
      * @hidden
-     * @deprecated
+     * @private
      * @param {ICommandModel} options - specifies the command Model
      */
     public constructor(options: ICommandModel) {
@@ -85,6 +89,7 @@ export class EditorManager {
         this.listObj = new Lists(this);
         this.formatObj = new Formats(this);
         this.alignmentObj = new Alignments(this);
+        this.lineheightObj = new LineHeight(this);
         this.indentsObj = new Indents(this);
         this.selectionObj = new SelectionBasedExec(this);
         this.inserthtmlObj = new InsertHtmlExec(this);
@@ -106,6 +111,9 @@ export class EditorManager {
         this.observer.on(EVENTS.ON_BEGIN, this.onBegin, this);
         this.observer.on(EVENTS.MOUSE_DOWN, this.editorMouseDown, this);
         this.observer.on(EVENTS.DESTROY, this.destroy, this);
+        this.observer.on(EVENTS.dragEnter, this.dragEnterHandler, this);
+        this.observer.on(EVENTS.dragOver, this.dragOverHandler, this);
+        this.observer.on(EVENTS.dropEvent, this.dropHandler, this);
     }
     private unwireEvents(): void {
         this.observer.off(EVENTS.KEY_DOWN, this.editorKeyDown);
@@ -116,6 +124,9 @@ export class EditorManager {
         this.observer.off(EVENTS.ON_BEGIN, this.onBegin);
         this.observer.off(EVENTS.MOUSE_DOWN, this.editorMouseDown);
         this.observer.off(EVENTS.DESTROY, this.destroy);
+        this.observer.off(EVENTS.dragEnter, this.dragEnterHandler);
+        this.observer.off(EVENTS.dragOver, this.dragOverHandler);
+        this.observer.off(EVENTS.dropEvent, this.dropHandler);
     }
     private onWordPaste(e: NotifyArgs): void {
         this.observer.notify(EVENTS.MS_WORD_CLEANUP_PLUGIN, e);
@@ -132,6 +143,15 @@ export class EditorManager {
     private onBegin(e: IHtmlKeyboardEvent): void {
         this.observer.notify(EVENTS.SPACE_ACTION, e);
     }
+    private dragEnterHandler(e: MouseEvent | KeyboardEvent): void {
+        this.observer.notify(EVENTS.dragEnterEvent, e);
+    }
+    private dragOverHandler(e: MouseEvent | KeyboardEvent): void {
+        this.observer.notify(EVENTS.dragOverEvent, e);
+    }
+    private dropHandler(e: MouseEvent | KeyboardEvent): void {
+        this.observer.notify(EVENTS.dropEventHandler, e);
+    }
     /* eslint-disable */
     /**
      * execCommand
@@ -145,7 +165,7 @@ export class EditorManager {
      * @param {string} selector - specifies the selector values
      * @returns {void}
      * @hidden
-     * @deprecated
+     * @private
      */
     /* eslint-enable */
     public execCommand<T>(
@@ -171,6 +191,12 @@ export class EditorManager {
             break;
         case 'alignments':
             this.observer.notify(CONSTANT.ALIGNMENT_TYPE, {
+                subCommand: value, event: event, callBack: callBack,
+                selector: selector, value: exeValue, enterAction: enterAction
+            });
+            break;
+        case 'lineheight':
+            this.observer.notify(CONSTANT.LINE_HEIGHT_TYPE, {
                 subCommand: value, event: event, callBack: callBack,
                 selector: selector, value: exeValue, enterAction: enterAction
             });
@@ -278,6 +304,17 @@ export class EditorManager {
         case 'emojipicker':
             this.observer.notify(EVENTS.EMOJI_PICKER_ACTIONS, { item: exeValue, subCommand: value, value: text,
                 event : event, callBack: callBack });
+            break;
+        case 'autoformat':
+            this.observer.notify(EVENTS.AUTO_FORMAT_ACTIONS, {subCommand: value, event: event, callBack: callBack,
+                enterAction: enterAction });
+            break;
+        case 'aiassistant':
+            this.observer.notify(
+                EVENTS.AI_ASSISTANT_ACTIONS, { command: command, subCommand: value , callBack: callBack, value: text,
+                    enteraction: enterAction }
+            );
+            break;
         }
     }
 
@@ -297,6 +334,7 @@ export class EditorManager {
                 this.clickCount = 0;
             }
         }
+        this.observer.notify(EVENTS.touchStart, e.args);
     }
 
     private tripleClickSelection(e: MouseEvent): void {
@@ -352,6 +390,7 @@ export class EditorManager {
         if (this.listObj) { this.listObj = null; }
         if (this.formatObj) { this.formatObj = null; }
         if (this.alignmentObj) { this.alignmentObj = null; }
+        if (this.lineheightObj) { this.lineheightObj = null; }
         if (this.indentsObj) {  this.indentsObj = null; }
         if (this.linkObj) { this.linkObj = null; }
         if (this.imgObj) { this.imgObj = null; }

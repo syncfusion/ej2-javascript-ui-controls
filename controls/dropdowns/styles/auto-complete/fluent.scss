@@ -1,4 +1,4 @@
-@import 'ej2-base/styles/definition/fluent.scss';
-@import '../drop-down-list/fluent-definition.scss';
-@import 'fluent-definition.scss';
-@import 'all.scss';
+@use 'ej2-base/styles/definition/fluent' as *;
+@use '../drop-down-list/fluent-definition' as *;
+@use 'fluent-definition' as *;
+@use 'all' as *;

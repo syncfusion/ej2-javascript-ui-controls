@@ -15,6 +15,7 @@ import { _TrueTypeReader } from './../fonts/ttf-reader';
 import { _RtlRenderer } from './../graphics/rightToLeft/text-renderer';
 import { PdfImage } from './images/pdf-image';
 import { PdfLayer } from '../layers/layer';
+import { Rectangle, Point, Size, PdfColor } from '../pdf-type';
 /**
  * Represents a graphics from a PDF page.
  * ```typescript
@@ -25,9 +26,9 @@ import { PdfLayer } from '../layers/layer';
  * // Gets the graphics of the PDF page
  * let graphics: PdfGraphics = page.graphics;
  * //Create a new pen.
- * let pen: PdfPen = new PdfPen([0, 0, 0], 1);
+ * let pen: PdfPen = new PdfPen({r: 0, g: 0, b: 0}, 1);
  * //Draw line on the page graphics.
- * graphics.drawLine(pen, 10, 10, 100, 100);
+ * graphics.drawLine(pen, {x: 10, y: 10}, {x: 100, y: 100});
  * // Save the document
  * document.save('output.pdf');
  * // Destroy the document
@@ -45,7 +46,7 @@ export class PdfGraphics {
     _textScaling: number;
     _textRenderingMode: _TextRenderingMode;
     _graphicsState: PdfGraphicsState[];
-    _size: number[];
+    _size: Size;
     _clipBounds: number[];
     _resourceObject: _PdfDictionary;
     _resourceMap: Map<_PdfReference, _PdfName>;
@@ -65,74 +66,6 @@ export class PdfGraphics {
     _isItalic: boolean = false;
     _isEmptyLayer: boolean;
     _layer: PdfLayer;
-    /**
-     * Initializes a new instance of the `PdfGraphics` class.
-     *
-     * @param {number[]} size The graphics client size.
-     * @param {_PdfContentStream} content Content stream.
-     * @param {_PdfCrossReference} xref Cross reference.
-     * @param {PdfPage | PdfTemplate} source Source object of the graphics.
-     * @private
-     */
-    constructor(size: number[], content: _PdfContentStream, xref: _PdfCrossReference, source: PdfPage | PdfTemplate) {
-        this._hasResourceReference = false;
-        if (source instanceof PdfPage) {
-            this._source = source._pageDictionary;
-            this._page = source;
-        } else if (source instanceof PdfTemplate) {
-            this._source = source._content.dictionary;
-            this._template = source;
-        }
-        if (this._source) {
-            let obj: any; // eslint-disable-line
-            if (this._source.has('Resources')) {
-                obj = this._source.getRaw('Resources');
-            } else if (this._source.has('Parent')) {
-                const parentPage: _PdfDictionary = this._source.get('Parent');
-                if (parentPage && parentPage.has('Resources')) {
-                    obj = parentPage.getRaw('Resources');
-                    if (obj && obj instanceof _PdfDictionary) {
-                        this._source.update('Resources', obj);
-                    }
-                }
-            }
-            if (obj && obj instanceof _PdfReference) {
-                this._hasResourceReference = true;
-                this._resourceObject = xref._fetch(obj);
-            } else if (obj && obj instanceof _PdfDictionary) {
-                this._resourceObject = obj;
-            } else {
-                this._resourceObject = new _PdfDictionary();
-                this._source.update('Resources', this._resourceObject);
-            }
-        }
-        this._crossReference = xref;
-        this._sw = new _PdfStreamWriter(content);
-        this._size = size;
-        _addProcSet('PDF', this._resourceObject);
-        this._initialize();
-    }
-    /**
-     * Gets the size of the canvas reduced by margins and page templates (Read only).
-     *
-     * @returns {number[]} The width and height of the client area as number array.
-     *
-     * ```typescript
-     * // Load an existing PDF document
-     * let document: PdfDocument = new PdfDocument(data);
-     * // Access first page
-     * let page: PdfPage = document.getPage(0);
-     * // Gets the graphics client size.
-     * let size: number[] = page.graphics.clientSize;
-     * // Save the document
-     * document.save('output.pdf');
-     * // Destroy the document
-     * document.destroy();
-     * ```
-     */
-    get clientSize(): number[] {
-        return [this._clipBounds[2], this._clipBounds[3]];
-    }
     get _matrix(): _PdfTransformationMatrix {
         if (typeof this._m === 'undefined') {
             this._m = new _PdfTransformationMatrix();
@@ -179,6 +112,74 @@ export class PdfGraphics {
         return this._resourceMap;
     }
     /**
+     * Gets the size of the canvas reduced by margins and page templates (Read only).
+     *
+     * @returns {Size} The width and height of the client area as number array.
+     *
+     * ```typescript
+     * // Load an existing PDF document
+     * let document: PdfDocument = new PdfDocument(data);
+     * // Access first page
+     * let page: PdfPage = document.getPage(0);
+     * // Gets the graphics client size.
+     * let size: Size = page.graphics.clientSize;
+     * // Save the document
+     * document.save('output.pdf');
+     * // Destroy the document
+     * document.destroy();
+     * ```
+     */
+    get clientSize(): Size {
+        return {width: this._clipBounds[2], height: this._clipBounds[3]};
+    }
+    /**
+     * Initializes a new instance of the `PdfGraphics` class.
+     *
+     * @param {Size} size The graphics client size.
+     * @param {_PdfContentStream} content Content stream.
+     * @param {_PdfCrossReference} xref Cross reference.
+     * @param {PdfPage | PdfTemplate} source Source object of the graphics.
+     * @private
+     */
+    constructor(size: Size, content: _PdfContentStream, xref: _PdfCrossReference, source: PdfPage | PdfTemplate) {
+        this._hasResourceReference = false;
+        if (source instanceof PdfPage) {
+            this._source = source._pageDictionary;
+            this._page = source;
+        } else if (source instanceof PdfTemplate) {
+            this._source = source._content.dictionary;
+            this._template = source;
+        }
+        if (this._source) {
+            let obj: any; // eslint-disable-line
+            if (this._source.has('Resources')) {
+                obj = this._source.getRaw('Resources');
+            } else if (this._source.has('Parent')) {
+                const parentPage: _PdfDictionary = this._source.get('Parent');
+                if (parentPage && parentPage.has('Resources')) {
+                    obj = parentPage.getRaw('Resources');
+                    if (obj && obj instanceof _PdfDictionary) {
+                        this._source.update('Resources', obj);
+                    }
+                }
+            }
+            if (obj && obj instanceof _PdfReference) {
+                this._hasResourceReference = true;
+                this._resourceObject = xref._fetch(obj);
+            } else if (obj && obj instanceof _PdfDictionary) {
+                this._resourceObject = obj;
+            } else {
+                this._resourceObject = new _PdfDictionary();
+                this._source.update('Resources', this._resourceObject);
+            }
+        }
+        this._crossReference = xref;
+        this._sw = new _PdfStreamWriter(content);
+        this._size = size;
+        _addProcSet('PDF', this._resourceObject);
+        this._initialize();
+    }
+    /**
      * Save the current graphics state.
      *
      * @returns {PdfGraphicsState} graphics state.
@@ -190,13 +191,13 @@ export class PdfGraphics {
      * // Gets the graphics of the PDF page
      * let graphics: PdfGraphics = page.graphics;
      * // Create a new font
-     * let font: PdfFont = new PdfStandardFont(PdfFontFamily.Helvetica, 20);
+     * let font: PdfFont = document.embedFont(PdfFontFamily.helvetica, 20, PdfFontStyle.regular);
      * // Save the graphics
      * let state: PdfGraphicsState = graphics.save();
      * //Set graphics translate transform.
-     * graphics.translateTransform(100, 100);
+     * graphics.translateTransform({x: 100, y: 100});
      * //Draws the String.
-     * graphics.drawString("Hello world!", font, [10, 20, 100, 200], undefined, new PdfBrush([0, 0, 255]));
+     * graphics.drawString('Hello world!', font, {x: 10, y: 20, width: 100, height: 200}, new PdfBrush({r: 0, g: 0, b: 255}));
      * //Restore the graphics.
      * graphics.restore(state);
      * // Save the document
@@ -231,13 +232,13 @@ export class PdfGraphics {
      * // Gets the graphics of the PDF page
      * let graphics: PdfGraphics = page.graphics;
      * // Create a new font
-     * let font: PdfFont = new PdfStandardFont(PdfFontFamily.Helvetica, 20);
+     * let font: PdfFont = document.embedFont(PdfFontFamily.helvetica, 20, PdfFontStyle.regular);
      * // Save the graphics
      * let state: PdfGraphicsState = graphics.save();
      * //Set graphics translate transform.
-     * graphics.translateTransform(100, 100);
+     * graphics.translateTransform({x: 100, y: 100});
      * //Draws the String.
-     * graphics.drawString("Hello world!", font, [10, 20, 100, 200], undefined, new PdfBrush([0, 0, 255]));
+     * graphics.drawString('Hello world!', font, {x: 10, y: 20, width: 100, height: 200}, new PdfBrush({r: 0, g: 0, b: 255}));
      * //Restore the graphics.
      * graphics.restore(state);
      * // Save the document
@@ -261,26 +262,325 @@ export class PdfGraphics {
             }
         }
     }
-    _doRestore(): PdfGraphicsState {
-        const state: PdfGraphicsState = this._graphicsState.pop();
-        this._m = state._transformationMatrix;
-        this._currentBrush = state._currentBrush;
-        this._currentPen = state._currentPen;
-        this._currentFont = state._currentFont;
-        this._characterSpacing = state._charSpacing;
-        this._wordSpacing = state._wordSpacing;
-        this._textScaling = state._textScaling;
-        this._textRenderingMode = state._textRenderingMode;
-        this._sw._restoreGraphicsState();
-        return state;
+    /**
+     * Represents a scale transform of the graphics.
+     *
+     * @param {number} scaleX Scale factor in the x direction.
+     * @param {number} scaleY Scale factor in the y direction.
+     * @returns {void} Nothing.
+     *
+     * ```typescript
+     * // Load an existing PDF document
+     * let document: PdfDocument = new PdfDocument(data, password);
+     * // Access the first page
+     * let page: PdfPage = document.getPage(0);
+     * // Gets the graphics of the PDF page
+     * let graphics: PdfGraphics = page.graphics;
+     * // Create a new font
+     * let font: PdfFont = document.embedFont(PdfFontFamily.helvetica, 20, PdfFontStyle.regular);
+     * // Save the current graphics state
+     * let state: PdfGraphicsState = graphics.save();
+     * // Apply scale transform
+     * graphics.scaleTransform(0.5, 0.5);
+     * // Draw a string with the scaled transformation
+     * graphics.drawString('Hello world!', font, {x: 10, y: 20, width: 100, height: 200}, new PdfBrush({r: 0, g: 0, b: 255}));
+     * // Restore the graphics to its previous state
+     * graphics.restore(state);
+     * // Save the document
+     * document.save('output.pdf');
+     * // Destroy the document
+     * document.destroy();
+     * ```
+     */
+    scaleTransform(scaleX: number, scaleY: number): void {
+        const matrix: _PdfTransformationMatrix = new _PdfTransformationMatrix();
+        matrix._scale(scaleX, scaleY);
+        this._sw._modifyCtm(matrix);
+        this._matrix._multiply(matrix);
+    }
+    /**
+     * Represents a translate transform of the graphics.
+     *
+     * @param {Point} location (x, y) coordinates of the translation.
+     * @returns {void} Nothing.
+     *
+     * ```typescript
+     * // Load an existing PDF document
+     * let document: PdfDocument = new PdfDocument(data, password);
+     * // Access the first page
+     * let page: PdfPage = document.getPage(0);
+     * // Gets the graphics of the PDF page
+     * let graphics: PdfGraphics = page.graphics;
+     * // Create a new font
+     * let font: PdfFont = document.embedFont(PdfFontFamily.helvetica, 20, PdfFontStyle.regular);
+     * // Save the current graphics state
+     * let state: PdfGraphicsState = graphics.save();
+     * // Apply translate transform
+     * graphics.translateTransform({x: 100, y: 100});
+     * // Draw a string with the translation applied
+     * graphics.drawString('Hello world!', font, {x: 10, y: 20, width: 100, height: 200}, new PdfBrush({r: 0, g: 0, b: 255}));
+     * // Restore the graphics to its previous state
+     * graphics.restore(state);
+     * // Save the document
+     * document.save('output.pdf');
+     * // Destroy the document
+     * document.destroy();
+     * ```
+     */
+    translateTransform(location: Point): void {
+        const matrix: _PdfTransformationMatrix = new _PdfTransformationMatrix();
+        matrix._translate(location.x, -location.y);
+        this._sw._modifyCtm(matrix);
+        this._matrix._multiply(matrix);
+    }
+    /**
+     * Represents a rotate transform of the graphics.
+     *
+     * @param {number} angle Angle of rotation in degrees.
+     * @returns {void} Nothing.
+     *
+     * ```typescript
+     * // Load an existing PDF document
+     * let document: PdfDocument = new PdfDocument(data, password);
+     * // Access the first page
+     * let page: PdfPage = document.getPage(0);
+     * // Gets the graphics of the PDF page
+     * let graphics: PdfGraphics = page.graphics;
+     * // Create a new font
+     * let font: PdfFont = document.embedFont(PdfFontFamily.helvetica, 20, PdfFontStyle.regular);
+     * // Save the current graphics state
+     * let state: PdfGraphicsState = graphics.save();
+     * // Apply rotate transform
+     * graphics.rotateTransform(-90);
+     * // Draw a string with the rotation applied
+     * graphics.drawString('Hello world!', font, {x: 10, y: 20, width: 100, height: 200}, new PdfBrush({r: 0, g: 0, b: 255}));
+     * // Restore the graphics to its previous state
+     * graphics.restore(state);
+     * // Save the document
+     * document.save('output.pdf');
+     * // Destroy the document
+     * document.destroy();
+     * ```
+     */
+    rotateTransform(angle: number): void {
+        const matrix: _PdfTransformationMatrix = new _PdfTransformationMatrix();
+        matrix._rotate(-angle);
+        this._sw._modifyCtm(matrix);
+        this._matrix._multiply(matrix);
+    }
+    /**
+     * Represents a clipping region of this graphics.
+     *
+     * @param {Rectangle} bounds Rectangle structure that represents the new clip region.
+     * @param {PdfFillMode} mode Member of the PdfFillMode enumeration that specifies the filling operation to use.
+     * @returns {void} Nothing.
+     *
+     * ```typescript
+     * // Load an existing PDF document
+     * let document: PdfDocument = new PdfDocument(data, password);
+     * // Access the first page
+     * let page: PdfPage = document.getPage(0);
+     * // Gets the graphics of the PDF page
+     * let graphics: PdfGraphics = page.graphics;
+     * // Create a new font
+     * let font: PdfFont = document.embedFont(PdfFontFamily.helvetica, 20, PdfFontStyle.regular);
+     * // Set clipping region
+     * graphics.setClip({x: 0, y: 0, width: 50, height: 12}, PdfFillMode.alternate);
+     * // Draw a string within the clipping region
+     * graphics.drawString('Hello world!', font, {x: 0, y: 0, width: 100, height: 200}, new PdfBrush({r: 0, g: 0, b: 255}));
+     * // Save the document
+     * document.save('output.pdf');
+     * // Destroy the document
+     * document.destroy();
+     * ```
+     */
+    setClip(bounds: Rectangle, mode?: PdfFillMode): void {
+        if (typeof mode === 'undefined') {
+            mode = PdfFillMode.winding;
+        }
+        this._sw._appendRectangle(bounds.x, bounds.y, bounds.width, bounds.height);
+        this._sw._clipPath(mode === PdfFillMode.alternate);
+    }
+    /**
+     * Represents a transparency of this graphics.
+     *
+     * @param {number} stroke The transparency value for the stroke.
+     * @returns {void} Nothing.
+     *
+     * ```typescript
+     * // Load an existing PDF document
+     * let document: PdfDocument = new PdfDocument(data, password);
+     * // Access the first page
+     * let page: PdfPage = document.getPage(0);
+     * // Gets the graphics of the PDF page
+     * let graphics: PdfGraphics = page.graphics;
+     * // Create a new font
+     * let font: PdfFont = document.embedFont(PdfFontFamily.helvetica, 20, PdfFontStyle.regular);
+     * // Set transparency
+     * graphics.setTransparency(0.5);
+     * // Draw a string with transparency
+     * graphics.drawString('Hello world!', font, {x: 0, y: 0, width: 100, height: 200}, new PdfBrush({r: 0, g: 0, b: 255}));
+     * // Save the document
+     * document.save('output.pdf');
+     * // Destroy the document
+     * document.destroy();
+     * ```
+     */
+    setTransparency(stroke: number): void
+    /**
+     * Represents a transparency setting for the graphics.
+     *
+     * @param {number} stroke The transparency value for strokes.
+     * @param {number} fill The transparency value for fills.
+     * @param {PdfBlendMode} mode The blend mode to use.
+     * @returns {void} Nothing.
+     *
+     * ```typescript
+     * // Load an existing PDF document
+     * let document: PdfDocument = new PdfDocument(data, password);
+     * // Access the first page
+     * let page: PdfPage = document.getPage(0);
+     * // Gets the graphics of the PDF page
+     * let graphics: PdfGraphics = page.graphics;
+     * // Create a new font
+     * let font: PdfFont = document.embedFont(PdfFontFamily.helvetica, 20, PdfFontStyle.regular);
+     * // Set transparency
+     * graphics.setTransparency(0.5, 0.5, PdfBlendMode.multiply);
+     * // Draw the string
+     * graphics.drawString('Hello world!', font, {x: 0, y: 0, width: 100, height: 200}, new PdfBrush({r: 0, g: 0, b: 255}));
+     * // Save the document
+     * document.save('output.pdf');
+     * // Destroy the document
+     * document.destroy();
+     * ```
+     */
+    setTransparency(stroke: number, fill: number, mode: PdfBlendMode): void
+    /**
+     * Sets the transparency for the graphics.
+     *
+     * @param {number} stroke The transparency value for strokes.
+     * @param {number} fill The transparency value for fills.
+     * @param {PdfBlendMode} mode The blend mode to use.
+     * @returns {void} Nothing.
+     *
+     * ```typescript
+     * // Load an existing PDF document
+     * let document: PdfDocument = new PdfDocument(data, password);
+     * // Access the first page
+     * let page: PdfPage = document.getPage(0);
+     * // Gets the graphics of the PDF page
+     * let graphics: PdfGraphics = page.graphics;
+     * // Create a new font
+     * let font: PdfFont = document.embedFont(PdfFontFamily.helvetica, 20, PdfFontStyle.regular);
+     * // Set transparency
+     * graphics.setTransparency(0.5, 0.5, PdfBlendMode.multiply);
+     * // Draw the string
+     * graphics.drawString('Hello world!', font, {x: 0, y: 0, width: 100, height: 200}, new PdfBrush({r: 0, g: 0, b: 255}));
+     * // Save the document
+     * document.save('output.pdf');
+     * // Destroy the document
+     * document.destroy();
+     * ```
+     */
+    setTransparency(stroke: number, fill?: number, mode?: PdfBlendMode): void {
+        if (typeof fill === 'undefined') {
+            fill = stroke;
+        }
+        if (typeof mode === 'undefined') {
+            mode = PdfBlendMode.normal;
+        }
+        if (typeof this._transparencies === 'undefined') {
+            this._transparencies = new Map<_TransparencyData, string>();
+        }
+        const transparencyKey: string = 'CA:' + stroke.toString() + '_ca:' + fill.toString() + '_BM:' + (mode as number).toString();
+        let transparencyData: _TransparencyData;
+        if (this._transparencies.size > 0) {
+            this._transparencies.forEach((value: string, key: _TransparencyData) => {
+                if (value === transparencyKey) {
+                    transparencyData = key;
+                }
+            });
+        }
+        if (!transparencyData) {
+            transparencyData = new _TransparencyData();
+            const transparencyDict: _PdfDictionary = new _PdfDictionary();
+            transparencyDict.update('CA', stroke);
+            transparencyDict.update('ca', fill);
+            transparencyDict.update('BM', _reverseMapBlendMode(mode));
+            transparencyData._dictionary = transparencyDict;
+            transparencyData._key = transparencyKey;
+            transparencyData._name = _PdfName.get(_getNewGuidString());
+            let dictionary: _PdfDictionary;
+            let isReference: boolean = false;
+            if (this._resourceObject.has('ExtGState')) {
+                const obj: any = this._resourceObject.getRaw('ExtGState'); // eslint-disable-line
+                if (obj !== null && typeof obj !== 'undefined') {
+                    if (obj instanceof _PdfReference) {
+                        isReference = true;
+                        dictionary = this._crossReference._fetch(obj);
+                    } else if (obj instanceof _PdfDictionary) {
+                        dictionary = obj;
+                    }
+                }
+            } else {
+                dictionary = new _PdfDictionary(this._crossReference);
+                this._resourceObject.update('ExtGState', dictionary);
+            }
+            if (this._crossReference) {
+                const ref: _PdfReference = this._crossReference._getNextReference();
+                this._crossReference._cacheMap.set(ref, transparencyDict);
+                transparencyData._reference = ref;
+                dictionary.update(transparencyData._name.name, ref);
+            } else {
+                this._pendingResource.push({'resource': transparencyDict, 'key': transparencyData._name, 'source': dictionary});
+            }
+            if (isReference) {
+                this._resourceObject._updated = true;
+            }
+            if (this._hasResourceReference) {
+                this._source._updated = true;
+            }
+        }
+        this._sw._setGraphicsState(transparencyData._name);
+    }
+    /**
+     * Draws a line on the page graphics.
+     *
+     * @param {PdfPen} pen The pen that determines the stroke color, width, and style of the line.
+     * @param {Point} start The (x, y) coordinates of the starting point of the line.
+     * @param {Point} end The (x, y) coordinates of the ending point of the line.
+     * @returns {void} Nothing.
+     *
+     * ```typescript
+     * // Load an existing PDF document
+     * let document: PdfDocument = new PdfDocument(data, password);
+     * // Access the first page
+     * let page: PdfPage = document.getPage(0);
+     * // Gets the graphics of the PDF page
+     * let graphics: PdfGraphics = page.graphics;
+     * // Create a new pen
+     * let pen: PdfPen = new PdfPen({r: 0, g: 0, b: 0}, 1);
+     * // Draw a line on the page graphics
+     * graphics.drawLine(pen, {x: 10, y: 10}, {x: 100, y: 100});
+     * // Save the document
+     * document.save('output.pdf');
+     * // Destroy the document
+     * document.destroy();
+     * ```
+     */
+    drawLine(pen: PdfPen, start: Point, end: Point): void {
+        this._beginMarkContent();
+        this._stateControl(pen);
+        this._sw._beginPath(start.x, start.y);
+        this._sw._appendLineSegment(end.x, end.y);
+        this._sw._strokePath();
+        _addProcSet('PDF', this._resourceObject);
+        this._endMarkContent();
     }
     /**
      * Draw a rectangle on the page graphics.
      *
-     * @param {number} x The x-coordinate of the upper-left corner of the rectangular region.
-     * @param {number} y The y-coordinate of the upper-left corner of the rectangular region.
-     * @param {number} width The width of the rectangular region.
-     * @param {number} height The height of the rectangular region.
+     * @param {Rectangle} bounds The bounds of the rectangular region.
      * @param {PdfPen} pen Pen that determines the stroke color, width, and style of the rectangle.
      *
      * ```typescript
@@ -291,23 +591,20 @@ export class PdfGraphics {
      * // Gets the graphics of the PDF page
      * let graphics: PdfGraphics = page.graphics;
      * // Create a new pen.
-     * let pen: PdfPen = new PdfPen([0, 0, 0], 1);
+     * let pen: PdfPen = new PdfPen({r: 0, g: 0, b: 0}, 1);
      * // Draw a rectangle on the page graphics.
-     * graphics.drawRectangle(10, 20, 100, 200, pen);
+     * graphics.drawRectangle({x: 10, y: 20, width: 100, height: 200}, pen);
      * // Save the document
      * document.save('output.pdf');
      * // Destroy the document
      * document.destroy();
      * ```
      */
-    drawRectangle(x: number, y: number, width: number, height: number, pen: PdfPen): void
+    drawRectangle(bounds: Rectangle, pen: PdfPen): void
     /**
      * Draw a rectangle on the page graphics.
      *
-     * @param {number} x The x-coordinate of the upper-left corner of the rectangular region.
-     * @param {number} y The y-coordinate of the upper-left corner of the rectangular region.
-     * @param {number} width The width of the rectangular region.
-     * @param {number} height The height of the rectangular region.
+     * @param {Rectangle} bounds The bounds of the rectangular region.
      * @param {PdfBrush} brush Brush that determines the fill color and texture of the rectangle.
      * @returns {void} Nothing
      *
@@ -319,23 +616,20 @@ export class PdfGraphics {
      * // Gets the graphics of the PDF page
      * let graphics: PdfGraphics = page.graphics;
      * // Create a new brush.
-     * let brush: PdfBrush = new PdfBrush([0, 0, 255]);
+     * let brush: PdfBrush = new PdfBrush({r: 0, g: 0, b: 255});
      * // Draw a filled rectangle on the page graphics.
-     * graphics.drawRectangle(10, 20, 100, 200, brush);
+     * graphics.drawRectangle({x: 10, y: 20, width: 100, height: 200}, brush);
      * // Save the document
      * document.save('output.pdf');
      * // Destroy the document
      * document.destroy();
      * ```
      */
-    drawRectangle(x: number, y: number, width: number, height: number, brush: PdfBrush): void
+    drawRectangle(bounds: Rectangle, brush: PdfBrush): void
     /**
      * Draw a rectangle on the page graphics.
      *
-     * @param {number} x The x-coordinate of the upper-left corner of the rectangular region.
-     * @param {number} y The y-coordinate of the upper-left corner of the rectangular region.
-     * @param {number} width The width of the rectangular region.
-     * @param {number} height The height of the rectangular region.
+     * @param {Rectangle} bounds The bounds of the rectangular region.
      * @param {PdfPen} pen Pen that determines the stroke color, width, and style of the rectangle.
      * @param {PdfBrush} brush Brush that determines the fill color and texture of the rectangle.
      * @returns {void} Nothing
@@ -348,36 +642,32 @@ export class PdfGraphics {
      * // Gets the graphics of the PDF page
      * let graphics: PdfGraphics = page.graphics;
      * // Create a new pen.
-     * let pen: PdfPen = new PdfPen([0, 0, 0], 1);
+     * let pen: PdfPen = new PdfPen({r: 0, g: 0, b: 0}, 1);
      * // Create a new brush.
-     * let brush: PdfBrush = new PdfBrush([0, 0, 255]);
+     * let brush: PdfBrush = new PdfBrush({r: 0, g: 0, b: 255});
      * // Draw a rectangle with both stroke and fill on the page graphics.
-     * graphics.drawRectangle(10, 20, 100, 200, pen, brush);
+     * graphics.drawRectangle({x: 10, y: 20, width: 100, height: 200}, pen, brush);
      * // Save the document
      * document.save('output.pdf');
      * // Destroy the document
      * document.destroy();
      * ```
      */
-    drawRectangle(x: number, y: number, width: number, height: number, pen: PdfPen, brush: PdfBrush): void
-    drawRectangle(x: number, y: number, width: number, height: number, first?: PdfPen| PdfBrush, second?: PdfBrush): void {
+    drawRectangle(bounds: Rectangle, pen: PdfPen, brush: PdfBrush): void
+    drawRectangle(bounds?: Rectangle, first?: PdfPen| PdfBrush, second?: PdfBrush): void {
         this._beginMarkContent();
         const result: {pen: PdfPen, brush: PdfBrush} = this._setPenBrush(first, second);
-        this._sw._appendRectangle(x, y, width, height);
+        this._sw._appendRectangle(bounds.x, bounds.y, bounds.width, bounds.height);
         this._drawGraphicsPath(result.pen, result.brush);
         this._endMarkContent();
     }
     /**
      * Draws a Bezier curve using a specified pen and coordinates for the start point, two control points, and end point.
      *
-     * @param {number} startX The x-coordinate of the starting point of the Bezier curve.
-     * @param {number} startY The y-coordinate of the starting point of the Bezier curve.
-     * @param {number} firstX The x-coordinate of the first control point of the Bezier curve.
-     * @param {number} firstY The y-coordinate of the first control point of the Bezier curve.
-     * @param {number} secondX The x-coordinate of the second control point of the Bezier curve.
-     * @param {number} secondY The y-coordinate of the second control point of the Bezier curve.
-     * @param {number} endX The x-coordinate of the ending point of the Bezier curve.
-     * @param {number} endY The y-coordinate of the ending point of the Bezier curve.
+     * @param {Point} start The (x, y) coordinates of the starting point of the Bezier curve.
+     * @param {Point} first The (x, y) coordinates of the first control point of the Bezier curve.
+     * @param {Point} second The (x, y) coordinates of the second control point of the Bezier curve.
+     * @param {Point} end The (x, y) coordinates of the ending point of the Bezier curve.
      * @param {PdfPen} pen The pen that determines the stroke color, width, and style of the Bezier curve.
      * @returns {void} Nothing
      *
@@ -389,31 +679,27 @@ export class PdfGraphics {
      * // Gets the graphics of the PDF page
      * let graphics: PdfGraphics = page.graphics;
      * // Create a new pen
-     * let pen: PdfPen = new PdfPen([0, 0, 0], 1);
+     * let pen: PdfPen = new PdfPen({r: 0, g: 0, b: 0}, 1);
      * // Draw a Bezier curve on the page graphics
-     * graphics.drawBezier(50, 100, 200, 50, 100, 150, 150, 100, pen);
+     * graphics.drawBezier({x: 50, y: 100}, {x: 200, y: 50}, {x: 100, y: 150}, {x: 150, y: 100}, pen);
      * // Save the document
      * document.save('output.pdf');
      * // Destroy the document
      * document.destroy();
      * ```
      */
-    drawBezier(startX: number, startY: number, firstX: number, firstY: number, secondX: number,
-               secondY: number, endX: number, endY: number, pen: PdfPen): void {
+    drawBezier(start: Point, first: Point, second: Point, end: Point, pen: PdfPen): void {
         this._beginMarkContent();
         this._stateControl(pen, null, null);
-        this._sw._beginPath(startX, startY);
-        this._sw._appendBezierSegment(firstX, firstY, secondX, secondY, endX, endY);
+        this._sw._beginPath(start.x, start.y);
+        this._sw._appendBezierSegment(first.x, first.y, second.x, second.y, end.x, end.y);
         this._drawGraphicsPath(pen);
         this._endMarkContent();
     }
     /**
      * Draws a pie slice on a PDF graphics.
      *
-     * @param {number} x The x-coordinate of the upper-left corner of the bounding rectangle.
-     * @param {number} y The y-coordinate of the upper-left corner of the bounding rectangle.
-     * @param {number} width The width of the bounding rectangle.
-     * @param {number} height The height of the bounding rectangle.
+     * @param {Rectangle} bounds The bounding rectangle.
      * @param {number} startAngle The angle in degrees measured clockwise from the x-axis to the start of the pie slice.
      * @param {number} sweepAngle The angle in degrees measured clockwise from the startAngle to the end of the pie slice.
      * @param {PdfPen} pen The pen that determines the stroke color, width, and style of the pie slice.
@@ -427,23 +713,20 @@ export class PdfGraphics {
      * // Gets the graphics of the PDF page
      * let graphics: PdfGraphics = page.graphics;
      * // Create a new pen
-     * let pen: PdfPen = new PdfPen([0, 0, 0], 1);
+     * let pen: PdfPen = new PdfPen({r: 0, g: 0, b: 0}, 1);
      * // Draw a pie slice on the page graphics
-     * graphics.drawPie(10, 50, 200, 200, 180, 60, pen);
+     * graphics.drawPie({x: 10, y: 50, width: 200, height: 200}, 180, 60, pen);
      * // Save the document
      * document.save('output.pdf');
      * // Destroy the document
      * document.destroy();
      * ```
      */
-    drawPie(x: number, y: number, width: number, height: number, startAngle: number, sweepAngle: number, pen: PdfPen): void
+    drawPie(bounds: Rectangle, startAngle: number, sweepAngle: number, pen: PdfPen): void
     /**
      * Draws a pie slice on PDF graphics.
      *
-     * @param {number} x The x-coordinate of the upper-left corner of the bounding rectangle.
-     * @param {number} y The y-coordinate of the upper-left corner of the bounding rectangle.
-     * @param {number} width The width of the bounding rectangle.
-     * @param {number} height The height of the bounding rectangle.
+     * @param {Rectangle} bounds The bounding rectangle.
      * @param {number} startAngle The angle in degrees, measured clockwise from the x-axis to the start of the pie slice.
      * @param {number} sweepAngle The angle in degrees, measured clockwise from the startAngle to the end of the pie slice.
      * @param {PdfBrush} brush The brush that determines the fill color and texture of the pie slice.
@@ -457,23 +740,20 @@ export class PdfGraphics {
      * // Gets the graphics of the PDF page
      * let graphics: PdfGraphics = page.graphics;
      * // Create a new brush
-     * let brush: PdfBrush = new PdfBrush([0, 255, 255]);
+     * let brush: PdfBrush = new PdfBrush({r: 0, g: 255, b: 255});
      * // Draw a pie slice on the page graphics
-     * graphics.drawPie(10, 50, 200, 200, 180, 60, brush);
+     * graphics.drawPie({x: 10, y: 50, width: 200, height: 200}, 180, 60, brush);
      * // Save the document
      * document.save('output.pdf');
      * // Destroy the document
      * document.destroy();
      * ```
      */
-    drawPie(x: number, y: number, width: number, height: number, startAngle: number, sweepAngle: number, brush: PdfBrush): void
+    drawPie(bounds: Rectangle, startAngle: number, sweepAngle: number, brush: PdfBrush): void
     /**
      * Draws a pie slice on PDF graphics.
      *
-     * @param {number} x The x-coordinate of the upper-left corner of the bounding rectangle.
-     * @param {number} y The y-coordinate of the upper-left corner of the bounding rectangle.
-     * @param {number} width The width of the bounding rectangle.
-     * @param {number} height The height of the bounding rectangle.
+     * @param {Rectangle} bounds The bounding rectangle.
      * @param {number} startAngle The angle in degrees, measured clockwise from the x-axis to the start of the pie slice.
      * @param {number} sweepAngle The angle in degrees, measured clockwise from the startAngle to the end of the pie slice.
      * @param {PdfPen} pen The pen that determines the stroke color, width, and style of the pie slice.
@@ -488,31 +768,30 @@ export class PdfGraphics {
      * // Gets the graphics of the PDF page
      * let graphics: PdfGraphics = page.graphics;
      * // Create a new brush
-     * let brush: PdfBrush = new PdfBrush([0, 255, 255]);
+     * let brush: PdfBrush = new PdfBrush({r: 0, g: 255, b: 255});
      * // Create a new pen
-     * let pen: PdfPen = new PdfPen([0, 0, 0], 1);
+     * let pen: PdfPen = new PdfPen({r: 0, g: 0, b: 0}, 1);
      * // Draw a pie slice on the page graphics
-     * graphics.drawPie(10, 50, 200, 200, 180, 60, pen, brush);
+     * graphics.drawPie({x: 10, y: 50, width: 200, height: 200}, 180, 60, pen, brush);
      * // Save the document
      * document.save('output.pdf');
      * // Destroy the document
      * document.destroy();
      * ```
      */
-    drawPie(x: number, y: number, width: number, height: number, startAngle: number, sweepAngle: number, pen: PdfPen, brush: PdfBrush): void
-    drawPie(x: number, y: number, width: number, height: number, startAngle: number,
-            sweepAngle: number, first?: PdfPen | PdfBrush, second?: PdfBrush): void {
+    drawPie(bounds: Rectangle, startAngle: number, sweepAngle: number, pen: PdfPen, brush: PdfBrush): void
+    drawPie(bounds: Rectangle, startAngle: number, sweepAngle: number, first?: PdfPen | PdfBrush, second?: PdfBrush): void {
         this._beginMarkContent();
         const result: {pen: PdfPen, brush: PdfBrush} = this._setPenBrush(first, second);
-        this._constructPiePath(x, y, x + width, y + height, startAngle, sweepAngle);
-        this._sw._appendLineSegment(x + width / 2, y + height / 2);
+        this._constructPiePath(bounds.x, bounds.y, bounds.x + bounds.width, bounds.y + bounds.height, startAngle, sweepAngle);
+        this._sw._appendLineSegment(bounds.x + bounds.width / 2, bounds.y + bounds.height / 2);
         this._drawGraphicsPath(result.pen, result.brush, null, true);
         this._endMarkContent();
     }
     /**
      * Draw polygon on the page graphics.
      *
-     * @param {Array<number[]>} points The points of the polygon.
+     * @param {Point[]} points The points of the polygon.
      * @param {PdfPen} pen Pen that determines the stroke color, width, and style of the polygon.
      * @returns {void} Nothing.
      *
@@ -524,9 +803,9 @@ export class PdfGraphics {
      * // Get the graphics of the PDF page
      * let graphics: PdfGraphics = page.graphics;
      * // Create a new pen
-     * let pen: PdfPen = new PdfPen([0, 0, 0], 1);
+     * let pen: PdfPen = new PdfPen({r: 0, g: 0, b: 0}, 1);
      * // Define the polygon points
-     * let points: number[][] = [[10, 100], [10, 200], [100, 100], [100, 200], [55, 150]];
+     * let points: Point[] = [{x: 10, y: 100}, {x: 10, y: 200}, {x: 100, y: 100}, {x: 100, y: 200}, {x: 55, y: 150}];
      * // Draw the polygon on the page graphics
      * graphics.drawPolygon(points, pen);
      * // Save the document
@@ -535,11 +814,11 @@ export class PdfGraphics {
      * document.destroy();
      * ```
      */
-    drawPolygon(points: Array<number[]>, pen: PdfPen): void
+    drawPolygon(points: Point[], pen: PdfPen): void
     /**
      * Draw polygon on the page graphics.
      *
-     * @param {Array<number[]>} points The points of the polygon.
+     * @param {Point[]} points The points of the polygon.
      * @param {PdfBrush} brush Brush that determines the fill color and texture of the polygon.
      * @returns {void} Nothing
      *
@@ -551,9 +830,9 @@ export class PdfGraphics {
      * // Gets the graphics of the PDF page
      * let graphics: PdfGraphics = page.graphics;
      * // Create a new brush
-     * let brush: PdfBrush = new PdfBrush([0, 255, 255]);
+     * let brush: PdfBrush = new PdfBrush({r: 0, g: 255, b: 255});
      * // Define the polygon points
-     * let points: number[][] = [[10, 100], [10, 200], [100, 100], [100, 200], [55, 150]];
+     * let points: Point[] =[{x: 10, y: 100}, {x: 10, y: 200}, {x: 100, y: 100}, {x: 100, y: 200}, {x: 55, y: 150}];
      * // Draw the polygon on the page graphics
      * graphics.drawPolygon(points, brush);
      * // Save the document
@@ -562,11 +841,11 @@ export class PdfGraphics {
      * document.destroy();
      * ```
      */
-    drawPolygon(points: Array<number[]>, brush: PdfBrush): void
+    drawPolygon(points: Point[], brush: PdfBrush): void
     /**
      * Draw polygon on the page graphics.
      *
-     * @param {Array<number[]>} points The points of the polygon.
+     * @param {Point[]} points The points of the polygon.
      * @param {PdfPen} pen Pen that determines the stroke color, width, and style of the polygon.
      * @param {PdfBrush} brush Brush that determines the fill color and texture of the polygon.
      * @returns {void} Nothing.
@@ -579,11 +858,11 @@ export class PdfGraphics {
      * // Gets the graphics of the PDF page
      * let graphics: PdfGraphics = page.graphics;
      * // Create a new pen
-     * let pen: PdfPen = new PdfPen([0, 0, 0], 1);
+     * let pen: PdfPen = new PdfPen({r: 0, g: 0, b: 0}, 1);
      * // Create a new brush
-     * let brush: PdfBrush = new PdfBrush([0, 255, 255]);
+     * let brush: PdfBrush = new PdfBrush({r: 0, g: 255, b: 255});
      * // Define the polygon points
-     * let points: number[][] = [[10, 100], [10, 200], [100, 100], [100, 200], [55, 150]];
+     * let points: Point[] = [{x: 10, y: 100}, {x: 10, y: 200}, {x: 100, y: 100}, {x: 100, y: 200}, {x: 55, y: 150}];
      * // Draw the polygon on the page graphics
      * graphics.drawPolygon(points, pen, brush);
      * // Save the document
@@ -592,15 +871,15 @@ export class PdfGraphics {
      * document.destroy();
      * ```
      */
-    drawPolygon(points: Array<number[]>, pen: PdfPen, brush: PdfBrush): void
-    drawPolygon(points: Array<number[]>, first?: PdfPen| PdfBrush, second?: PdfBrush): void {
+    drawPolygon(points: Point[], pen: PdfPen, brush: PdfBrush): void
+    drawPolygon(points: Point[], first?: PdfPen| PdfBrush, second?: PdfBrush): void {
         this._beginMarkContent();
         if (points.length > 0) {
             const result: {pen: PdfPen, brush: PdfBrush} = this._setPenBrush(first, second);
-            this._sw._beginPath(points[0][0], points[0][1]);
-            points.forEach((point: number[], index: number) => {
+            this._sw._beginPath(points[0].x, points[0].y);
+            points.forEach((point: Point, index: number) => {
                 if (index > 0) {
-                    this._sw._appendLineSegment(point[0], point[1]);
+                    this._sw._appendLineSegment(point.x, point.y);
                 }
             });
             this._drawGraphicsPath(result.pen, result.brush, PdfFillMode.winding, true);
@@ -610,10 +889,7 @@ export class PdfGraphics {
     /**
      * Draw ellipse on the page graphics.
      *
-     * @param {number} x The x-coordinate of the upper-left corner of the bounding rectangle that defines the ellipse.
-     * @param {number} y The y-coordinate of the upper-left corner of the bounding rectangle that defines ellipse.
-     * @param {number} width The width of the bounding rectangle that defines ellipse.
-     * @param {number} height The height of the bounding rectangle that defines ellipse.
+     * @param {Rectangle} bounds The bounding rectangle that defines the ellipse.
      * @param {PdfPen} pen Pen that determines the stroke color, width, and style of the ellipse.
      * @returns {void} Nothing.
      *
@@ -625,23 +901,20 @@ export class PdfGraphics {
      * // Gets the graphics of the PDF page
      * let graphics: PdfGraphics = page.graphics;
      * // Create a new pen
-     * let pen: PdfPen = new PdfPen([0, 0, 0], 1);
+     * let pen: PdfPen = new PdfPen({r: 0, g: 0, b: 0}, 1);
      * // Draw an ellipse on the page graphics
-     * graphics.drawEllipse(10, 20, 100, 200, pen);
+     * graphics.drawEllipse({x: 10, y: 20, width: 100, height: 200}, pen);
      * // Save the document
      * document.save('output.pdf');
      * // Destroy the document
      * document.destroy();
      * ```
      */
-    drawEllipse(x: number, y: number, width: number, height: number, pen: PdfPen): void
+    drawEllipse(bounds: Rectangle, pen: PdfPen): void
     /**
      * Draw ellipse on the page graphics.
      *
-     * @param {number} x The x-coordinate of the upper-left corner of the bounding rectangle that defines the ellipse.
-     * @param {number} y The y-coordinate of the upper-left corner of the bounding rectangle that defines the ellipse.
-     * @param {number} width The width of the bounding rectangle that defines ellipse.
-     * @param {number} height The height of the bounding rectangle that defines ellipse.
+     * @param {Rectangle} bounds The bounding rectangle that defines the ellipse.
      * @param {PdfBrush} brush Brush that determines the fill color and texture of the ellipse.
      * @returns {void} Nothing.
      *
@@ -653,23 +926,20 @@ export class PdfGraphics {
      * // Gets the graphics of the PDF page
      * let graphics: PdfGraphics = page.graphics;
      * // Create a new brush
-     * let brush: PdfBrush = new PdfBrush([0, 255, 255]);
+     * let brush: PdfBrush = new PdfBrush({r: 0, g: 255, b: 255});
      * // Draw an ellipse on the page graphics
-     * graphics.drawEllipse(10, 20, 100, 200, brush);
+     * graphics.drawEllipse({x: 10, y: 20, width: 100, height: 200}, brush);
      * // Save the document
      * document.save('output.pdf');
      * // Destroy the document
      * document.destroy();
      * ```
      */
-    drawEllipse(x: number, y: number, width: number, height: number, brush: PdfBrush): void
+    drawEllipse(bounds: Rectangle, brush: PdfBrush): void
     /**
      * Draw ellipse on the page graphics.
      *
-     * @param {number} x The x-coordinate of the upper-left corner of the bounding rectangle that defines the ellipse.
-     * @param {number} y The y-coordinate of the upper-left corner of the bounding rectangle that defines the ellipse.
-     * @param {number} width The width of the bounding rectangle that defines ellipse.
-     * @param {number} height The height of the bounding rectangle that defines ellipse.
+     * @param {Rectangle} bounds The bounding rectangle that defines the ellipse.
      * @param {PdfPen} pen Pen that determines the stroke color, width, and style of the ellipse.
      * @param {PdfBrush} brush Brush that determines the fill color and texture of the ellipse.
      * @returns {void} Nothing.
@@ -682,32 +952,29 @@ export class PdfGraphics {
      * // Gets the graphics of the PDF page
      * let graphics: PdfGraphics = page.graphics;
      * // Create a new pen
-     * let pen: PdfPen = new PdfPen([0, 0, 0], 1);
+     * let pen: PdfPen = new PdfPen({r: 0, g: 0, b: 0}, 1);
      * // Create a new brush
-     * let brush: PdfBrush = new PdfBrush([0, 255, 255]);
+     * let brush: PdfBrush = new PdfBrush({r: 0, g: 255, b: 255});
      * // Draw an ellipse on the page graphics
-     * graphics.drawEllipse(10, 20, 100, 200, pen, brush);
+     * graphics.drawEllipse({x: 10, y: 20, width: 100, height: 200}, pen, brush);
      * // Save the document
      * document.save('output.pdf');
      * // Destroy the document
      * document.destroy();
      * ```
      */
-    drawEllipse(x: number, y: number, width: number, height: number, pen: PdfPen, brush: PdfBrush): void
-    drawEllipse(x: number, y: number, width: number, height: number, first?: PdfPen| PdfBrush, second?: PdfBrush): void {
+    drawEllipse(bounds: Rectangle, pen: PdfPen, brush: PdfBrush): void
+    drawEllipse(bounds: Rectangle, first?: PdfPen| PdfBrush, second?: PdfBrush): void {
         this._beginMarkContent();
         const result: {pen: PdfPen, brush: PdfBrush} = this._setPenBrush(first, second);
-        this._constructArcPath(x, y, x + width, y + height, 0, 360);
+        this._constructArcPath(bounds.x, bounds.y, bounds.x + bounds.width, bounds.y + bounds.height, 0, 360);
         this._drawGraphicsPath(result.pen, result.brush, PdfFillMode.winding, true);
         this._endMarkContent();
     }
     /**
      * Draw arc on the page graphics.
      *
-     * @param {number} x The x-coordinate of the upper-left corner of the bounding rectangle that defines the ellipse from which the arc shape comes.
-     * @param {number} y The y-coordinate of the upper-left corner of the bounding rectangle that defines the ellipse from which the arc shape comes.
-     * @param {number} width Width of the bounding rectangle that defines the ellipse from which the arc shape comes.
-     * @param {number} height Height of the bounding rectangle that defines the ellipse from which the arc shape comes.
+     * @param {Rectangle} bounds The bounding rectangle that defines the ellipse from which the arc shape comes.
      * @param {number} startAngle Angle measured in degrees clockwise from the x-axis to the first side of the arc shape.
      * @param {number} sweepAngle Angle measured in degrees clockwise from the startAngle parameter to the second side of the arc shape.
      * @param {PdfPen} pen Pen that determines the stroke color, width, and style of the arc.
@@ -721,47 +988,29 @@ export class PdfGraphics {
      * // Gets the graphics of the PDF page
      * let graphics: PdfGraphics = page.graphics;
      * // Create a new pen
-     * let pen: PdfPen = new PdfPen([0, 0, 0], 1);
+     * let pen: PdfPen = new PdfPen({r: 0, g: 0, b: 0}, 1);
      * // Draw an arc on the page graphics
-     * graphics.drawArc(10, 20, 100, 200, 20, 30, pen);
+     * graphics.drawArc({x: 10, y: 20, width: 100, height: 200}, 20, 30, pen);
      * // Save the document
      * document.save('output.pdf');
      * // Destroy the document
      * document.destroy();
      * ```
      */
-    drawArc(x: number, y: number, width: number, height: number, startAngle: number, sweepAngle: number, pen: PdfPen): void {
+    drawArc(bounds: Rectangle, startAngle: number, sweepAngle: number, pen: PdfPen): void {
         if (sweepAngle !== 0) {
             this._beginMarkContent();
             this._stateControl(pen);
-            this._constructArcPath(x, y, x + width, y + height, startAngle, sweepAngle);
+            this._constructArcPath(bounds.x, bounds.y, bounds.x + bounds.width, bounds.y + bounds.height, startAngle, sweepAngle);
             this._drawGraphicsPath(pen, null, PdfFillMode.winding, false);
             this._endMarkContent();
-        }
-    }
-    private _beginMarkContent(): void {
-        if (this._layer) {
-            this._layer._beginLayer(this);
-        }
-    }
-    private _endMarkContent(): void {
-        if (this._layer) {
-            if (this._layer._isEndState && this._layer._parentLayer.length !== 0) {
-                for (let i: number = 0; i < this._layer._parentLayer.length; i++) {
-                    this._sw._write('EMC');
-                }
-            }
-            if (this._layer._isEndState) {
-                this._sw._write('EMC');
-            }
         }
     }
     /**
      * Draws an image on the page graphics.
      *
      * @param {PdfImage} image The image to be drawn on the page.
-     * @param {number} x The x-coordinate of the upper-left corner where the image will be drawn.
-     * @param {number} y The y-coordinate of the upper-left corner where the image will be drawn.
+     * @param {Point} location The (x, y) coordinates of the upper-left corner where the image will be drawn.
      * @returns {void} Nothing.
      *
      * ```typescript
@@ -774,22 +1023,19 @@ export class PdfGraphics {
      * // Create a new image object using JPEG image data as a Base64 string
      * let image: PdfImage = new PdfBitmap('/9j/4AAQSkZJRgABAQEAkACQAAD/4....QB//Z');
      * // Draw the image on the page graphics
-     * graphics.drawImage(image, 10, 20);
+     * graphics.drawImage(image, {x: 10, y: 20});
      * // Save the document
      * document.save('output.pdf');
      * // Destroy the document
      * document.destroy();
      * ```
      */
-    drawImage(image: PdfImage, x: number, y: number) : void
+    drawImage(image: PdfImage, location: Point) : void
     /**
      * Draws an image on the page graphics.
      *
      * @param {PdfImage} image The image to be drawn on the page.
-     * @param {number} x The x-coordinate of the upper-left corner where the image will be drawn.
-     * @param {number} y The y-coordinate of the upper-left corner where the image will be drawn.
-     * @param {number} width The width of the image to be drawn.
-     * @param {number} height The height of the image to be drawn.
+     * @param {Rectangle} bounds The bounding rectangle that defines where the image will be drawn.
      * @returns {void} Nothing.
      *
      * ```typescript
@@ -802,24 +1048,21 @@ export class PdfGraphics {
      * // Create a new image object using JPEG image data as a Base64 string
      * let image: PdfImage = new PdfBitmap('/9j/4AAQSkZJRgABAQEAkACQAAD/4....QB//Z');
      * // Draw the image on the page graphics with specified width and height
-     * graphics.drawImage(image, 10, 20, 400, 400);
+     * graphics.drawImage(image, {x: 10, y: 20, width: 400, height: 400});
      * // Save the document
      * document.save('output.pdf');
      * // Destroy the document
      * document.destroy();
      * ```
      */
-    drawImage(image: PdfImage, x: number, y: number, width: number, height: number) : void
-    drawImage(arg1: PdfImage, arg2: number, arg3: number, arg4?: number, arg5?: number) : void {
+    drawImage(image: PdfImage, bounds: Rectangle) : void
+    drawImage(arg1: PdfImage, arg2: Point | Rectangle) : void {
         this._beginMarkContent();
-        if (typeof arg2 === 'number' && typeof arg3 === 'number' && typeof arg4 === 'undefined') {
-            const size: number[] = arg1.physicalDimension;
-            this.drawImage(arg1, arg2, arg3, size[0], size[1]);
-        } else {
+        if (arg2 && this._isRectangle(arg2)) {
             arg1._save();
             const matrix: _PdfTransformationMatrix = new _PdfTransformationMatrix();
-            this._getTranslateTransform(arg2, (arg3 + arg5), matrix);
-            this._getScaleTransform(arg4, arg5, matrix);
+            this._getTranslateTransform(arg2.x, (arg2.y + arg2.height), matrix);
+            this._getScaleTransform(arg2.width, arg2.height, matrix);
             this._sw._write('q');
             this._sw._modifyCtm(matrix);
             let sourceDictionary: _PdfDictionary;
@@ -860,6 +1103,9 @@ export class PdfGraphics {
             _addProcSet('ImageC', this._resourceObject);
             _addProcSet('ImageI', this._resourceObject);
             _addProcSet('Text', this._resourceObject);
+        } else {
+            const size: Size = arg1.physicalDimension;
+            this.drawImage(arg1, {x: arg2.x, y: arg2.y, width: size.width, height: size.height});
         }
         this._endMarkContent();
     }
@@ -867,11 +1113,7 @@ export class PdfGraphics {
      * Draws a PDF template onto the page graphics.
      *
      * @param {PdfTemplate} template The PDF template to be drawn.
-     * @param {{x: number, y: number, width: number, height: number}} bounds The bounds of the template.
-     * @param {number} bounds.x The x-coordinate of the upper-left corner where the template will be drawn.
-     * @param {number} bounds.y The y-coordinate of the upper-left corner where the template will be drawn.
-     * @param {number} bounds.width The width of the area where the template will be drawn.
-     * @param {number} bounds.height The height of the area where the template will be drawn.
+     * @param {Rectangle} bounds The bounds of the template.
      * @returns {void} Nothing.
      *
      * ```typescript
@@ -886,14 +1128,14 @@ export class PdfGraphics {
      * // Get the graphics of the PDF page
      * let graphics: PdfGraphics = page.graphics;
      * // Draw the template on the page graphics within the specified bounds
-     * graphics.drawTemplate(template, { x: 10, y: 20, width: template.size[0], height: template.size[1] });
+     * graphics.drawTemplate(template, { x: 10, y: 20, width: template.size.width, height: template.size.height });
      * // Save the document
      * document.save('output.pdf');
      * // Destroy the document
      * document.destroy();
      * ```
      */
-    drawTemplate(template: PdfTemplate, bounds: {x: number, y: number, width: number, height: number}): void {
+    drawTemplate(template: PdfTemplate, bounds: Rectangle): void {
         this._beginMarkContent();
         let hasPendingTemplate: boolean = true;
         if (typeof template !== 'undefined') {
@@ -912,15 +1154,15 @@ export class PdfGraphics {
             if (this._page &&
                 this._page.rotation &&
                 template._isSignature &&
-                this._page._size[0] > this._page._size[1] &&
+                this._page._size.width > this._page._size.height &&
                 this._page.rotation === PdfRotationAngle.angle270 && template._content &&
                 template._content.dictionary &&
                 template._content.dictionary.has('Matrix')) {
-                scaleX = (template && template._size[0] > 0) ? bounds.width / template._size[1] : 1;
-                scaleY = (template && template._size[1] > 0) ? bounds.height / template._size[0] : 1;
+                scaleX = (template && template._size.width > 0) ? bounds.width / template._size.height : 1;
+                scaleY = (template && template._size.height > 0) ? bounds.height / template._size.width : 1;
             } else {
-                scaleX = (template && template._size[0] > 0) ? bounds.width / template._size[0] : 1;
-                scaleY = (template && template._size[1] > 0) ? bounds.height / template._size[1] : 1;
+                scaleX = (template && template._size.width > 0) ? bounds.width / template._size.width : 1;
+                scaleY = (template && template._size.height > 0) ? bounds.height / template._size.height : 1;
             }
             const needScale: boolean = !(Math.trunc(scaleX * 1000) / 1000 === 1 && Math.trunc(scaleY * 1000) / 1000 === 1);
             let cropBox: number[];
@@ -930,7 +1172,7 @@ export class PdfGraphics {
                 mediaBox = this._page.mediaBox;
                 if (this._page._pageDictionary.has('CropBox') && this._page._pageDictionary.has('MediaBox')) {
                     if (cropBox[0] > 0 && cropBox[1] > 0 && mediaBox[0] < 0 && mediaBox[1] < 0) {
-                        this.translateTransform(cropBox[0], -cropBox[1]);
+                        this.translateTransform({x: cropBox[0], y: -cropBox[1]});
                         bounds.x = -cropBox[0];
                         bounds.y = cropBox[1];
                     }
@@ -960,8 +1202,8 @@ export class PdfGraphics {
                         const roundScaleY: number = Number.parseFloat(_numberToString(scaleY));
                         if (roundScaleX === templateScaleX &&
                             roundScaleY === templateScaleY &&
-                            templateBox[2] === template._size[0] &&
-                            templateBox[3] === template._size[1] && template._isAnnotationTemplate
+                            templateBox[2] === template._size.width &&
+                            templateBox[3] === template._size.height && template._isAnnotationTemplate
                             && template._needScale && needScale) {
                             matrix = new _PdfTransformationMatrix();
                             matrix._translate(bounds.x - templateMatrix[4], -(bounds.y + templateMatrix[5]));
@@ -969,7 +1211,7 @@ export class PdfGraphics {
                             scaleApplied = true;
                         } else if (templateBox[0] !== 0 && templateBox[1] !== 0 && templateBox[0] === bounds.x &&
                                    this._page && template._isSignature) {
-                            matrix._translate(bounds.x - templateBox[0], -this._page.size[1]);
+                            matrix._translate(bounds.x - templateBox[0], -this._page.size.height);
                             matrix._scale(scaleX, scaleY);
                             scaleApplied = true;
                         }
@@ -1053,6 +1295,436 @@ export class PdfGraphics {
             _addProcSet('Text', this._resourceObject);
         }
         this._endMarkContent();
+    }
+    /**
+     * Draws a graphics path defined by a pen and path.
+     *
+     * @param {PdfPath} path The path to be drawn.
+     * @param {PdfPen} pen The pen that determines the stroke color, width, and style of the path.
+     * @returns {void} Nothing.
+     *
+     * ```typescript
+     * // Load an existing PDF document
+     * let document: PdfDocument = new PdfDocument(data, password);
+     * // Access the first page
+     * let page: PdfPage = document.getPage(0);
+     * // Create a new path
+     * let path: PdfPath = new PdfPath();
+     * // Gets the graphics of the PDF page
+     * let graphics: PdfGraphics = page.graphics;
+     * // Create a new pen
+     * let pen: PdfPen = new PdfPen({r: 0, g: 0, b: 0}, 1);
+     * // Add lines to the path
+     * path.addLine({x: 10, y: 100}, {x: 50, y: 100});
+     * path.addLine({x: 50, y: 100}, {x: 50, y: 150});
+     * path.addLine({x: 50, y: 150}, {x: 10, y: 100});
+     * // Draw the path on the page graphics
+     * graphics.drawPath(path, pen);
+     * // Save the document
+     * document.save('output.pdf');
+     * // Destroy the document
+     * document.destroy();
+     * ```
+     */
+    drawPath(path: PdfPath, pen: PdfPen): void
+    /**
+     * Draws a graphics path defined by a brush and path.
+     *
+     * @param {PdfPath} path The path to be drawn.
+     * @param {PdfBrush} brush The brush that determines the fill color and texture of the path.
+     * @returns {void} Nothing.
+     *
+     * ```typescript
+     * // Load an existing PDF document
+     * let document: PdfDocument = new PdfDocument(data, password);
+     * // Access the first page
+     * let page: PdfPage = document.getPage(0);
+     * // Create a new path
+     * let path: PdfPath = new PdfPath();
+     * // Gets the graphics of the PDF page
+     * let graphics: PdfGraphics = page.graphics;
+     * // Create a new brush
+     * let brush: PdfBrush = new PdfBrush({r: 0, g: 255, b: 255});
+     * // Add an ellipse to the path
+     * path.addEllipse({x: 200, y: 200, width: 100, height: 50});
+     * // Draw the path on the page graphics
+     * graphics.drawPath(path, brush);
+     * // Save the document
+     * document.save('output.pdf');
+     * // Destroy the document
+     * document.destroy();
+     * ```
+     */
+    drawPath(path: PdfPath, brush: PdfBrush): void
+    /**
+     * Draws a graphics path defined by a pen, brush, and path.
+     *
+     * @param {PdfPath} path The path to be drawn.
+     * @param {PdfPen} pen The pen that determines the stroke color, width, and style of the path.
+     * @param {PdfBrush} brush The brush that determines the fill color and texture of the path.
+     * @returns {void} Nothing.
+     *
+     * ```typescript
+     * // Load an existing PDF document
+     * let document: PdfDocument = new PdfDocument(data, password);
+     * // Access the first page
+     * let page: PdfPage = document.getPage(0);
+     * // Create a new path
+     * let path: PdfPath = new PdfPath();
+     * // Gets the graphics of the PDF page
+     * let graphics: PdfGraphics = page.graphics;
+     * // Create a new pen
+     * let pen: PdfPen = new PdfPen({r: 0, g: 0, b: 0}, 1);
+     * // Create a new brush
+     * let brush: PdfBrush = new PdfBrush({r: 0, g: 255, b: 255});
+     * // Add an ellipse to the path
+     * path.addEllipse({x: 200, y: 200, width: 100, height: 50});
+     * // Draw the path on the page graphics with both pen and brush
+     * graphics.drawPath(path, pen, brush);
+     * // Save the document
+     * document.save('output.pdf');
+     * // Destroy the document
+     * document.destroy();
+     * ```
+     */
+    drawPath(path: PdfPath, pen: PdfPen, brush: PdfBrush): void
+    drawPath(path: PdfPath, first?: PdfPen | PdfBrush, second?: PdfBrush): void {
+        this._beginMarkContent();
+        const result: {pen: PdfPen, brush: PdfBrush} = this._setPenBrush(first, second);
+        if (result.pen || result.brush) {
+            this._buildUpPath(path._points, path._pathTypes);
+            this._drawGraphicsPath(result.pen, result.brush, path.fillMode, false);
+        }
+        this._endMarkContent();
+    }
+    /**
+     * Draws a rounded rectangle on the page graphics.
+     *
+     * @param {Rectangle} bounds The bounding rectangle of the rounded rectangle.
+     * @param {number} radius The radius of the rounded corners of the rectangle.
+     * @param {PdfPen} pen The pen that determines the stroke color, width, and style of the rectangle.
+     * @param {PdfBrush} brush The brush that determines the fill color and texture of the rectangle.
+     * @returns {void} Nothing.
+     *
+     * ```typescript
+     * // Load an existing PDF document
+     * let document: PdfDocument = new PdfDocument(data, password);
+     * // Access the first page
+     * let page: PdfPage = document.getPage(0);
+     * // Gets the graphics of the PDF page
+     * let graphics: PdfGraphics = page.graphics;
+     * // Create a new pen
+     * let pen: PdfPen = new PdfPen({r: 0, g: 0, b: 0}, 1);
+     * // Create a new brush
+     * let brush: PdfBrush = new PdfBrush({r: 0, g: 0, b: 255});
+     * // Draw a rounded rectangle on the page graphics
+     * graphics.drawRoundedRectangle({x: 10, y: 20, width: 100, height: 200}, 5, pen, brush);
+     * // Save the document
+     * document.save('output.pdf');
+     * // Destroy the document
+     * document.destroy();
+     * ```
+     */
+    drawRoundedRectangle(bounds: Rectangle, radius: number, pen: PdfPen, brush: PdfBrush): void {
+        if (pen === null || typeof pen === 'undefined') {
+            throw new Error('Pen cannot be null or undefined');
+        }
+        if (brush === null || typeof brush === 'undefined') {
+            throw new Error('Brush cannot be null or undefined');
+        }
+        const diameter: number = radius * 2;
+        const size: number[] = [diameter, diameter];
+        const arc: number[] = [bounds.x, bounds.y, size[0], size[1]];
+        const path: PdfPath = new PdfPath();
+        if (radius === 0) {
+            path.addRectangle(bounds);
+            this.drawPath(path, pen, brush);
+        } else {
+            path._isRoundedRectangle = true;
+            path.addArc({x: arc[0], y: arc[1], width: arc[2], height: arc[3]}, 180, 90);
+            arc[0] = (bounds.x + bounds.width) - diameter;
+            path.addArc({x: arc[0], y: arc[1], width: arc[2], height: arc[3]}, 270, 90);
+            arc[1] = (bounds.y + bounds.height) - diameter;
+            path.addArc({x: arc[0], y: arc[1], width: arc[2], height: arc[3]}, 0, 90);
+            arc[0] = bounds.x;
+            path.addArc({x: arc[0], y: arc[1], width: arc[2], height: arc[3]}, 90, 90);
+            path.closeFigure();
+            this.drawPath(path, pen, brush);
+        }
+    }
+    /**
+     * Draw text on the page graphics.
+     *
+     * @param {string} value The string to be drawn.
+     * @param {PdfFont} font The font used to draw the string.
+     * @param {Rectangle} bounds The rectangle specifying the bounds where the string will be drawn.
+     * @param {PdfBrush} brush The brush that determines the fill color and texture of the string.
+     * @returns {void} Nothing.
+     *
+     * ```typescript
+     * // Load an existing PDF document
+     * let document: PdfDocument = new PdfDocument(data, password);
+     * // Access the first page
+     * let page: PdfPage = document.getPage(0);
+     * // Gets the graphics of the PDF page
+     * let graphics: PdfGraphics = page.graphics;
+     * // Create a new font
+     * let font: PdfStandardFont = document.embedFont(PdfFontFamily.helvetica, 12, PdfFontStyle.regular);
+     * // Draw text on the page graphics
+     * graphics.drawString('Hello World', font, {x: 10, y: 20, width: 100, height: 200}, new PdfBrush({r: 0, g: 0, b: 255}));
+     * // Save the document
+     * document.save('output.pdf');
+     * // Destroy the document
+     * document.destroy();
+     * ```
+     */
+    drawString(value: string, font: PdfFont, bounds: Rectangle, brush: PdfBrush): void;
+    /**
+     * Draw text on the page graphics.
+     *
+     * @param {string} value The string to be drawn.
+     * @param {PdfFont} font The font used to draw the string.
+     * @param {Rectangle} bounds The rectangle specifying the bounds where the string will be drawn.
+     * @param {PdfBrush} brush The brush that determines the fill color and texture of the string.
+     * @param {PdfStringFormat} format The format that specifies text layout information such as alignment, line spacing, and trimming.
+     * @returns {void} Nothing.
+     *
+     * ```typescript
+     * // Load an existing PDF document
+     * let document: PdfDocument = new PdfDocument(data, password);
+     * // Access the first page
+     * let page: PdfPage = document.getPage(0);
+     * // Gets the graphics of the PDF page
+     * let graphics: PdfGraphics = page.graphics;
+     * // Create a new font
+     * let font: PdfStandardFont = document.embedFont(PdfFontFamily.helvetica, 12, PdfFontStyle.regular);
+     * // Create a new string format
+     * let format: PdfStringFormat = new PdfStringFormat();
+     * format.alignment = PdfTextAlignment.center;
+     * // Draw text on the page graphics
+     * graphics.drawString('Hello World', font, {x: 10, y: 20, width: 100, height: 200}, new PdfBrush({r: 0, g: 0, b: 255}), format);
+     * // Save the document
+     * document.save('output.pdf');
+     * // Destroy the document
+     * document.destroy();
+     * ```
+     */
+    drawString(value: string, font: PdfFont, bounds: Rectangle, brush: PdfBrush, format: PdfStringFormat): void
+    /**
+     * Draw text on the page graphics.
+     *
+     * @param {string} value The string to be drawn.
+     * @param {PdfFont} font The font used to draw the string.
+     * @param {Rectangle} bounds The rectangle specifying the bounds where the string will be drawn.
+     * @param {PdfPen} pen The pen that determines the stroke color, width, and style of the string.
+     * @returns {void} Nothing.
+     *
+     * ```typescript
+     * // Load an existing PDF document
+     * let document: PdfDocument = new PdfDocument(data, password);
+     * // Access the first page
+     * let page: PdfPage = document.getPage(0);
+     * // Gets the graphics of the PDF page
+     * let graphics: PdfGraphics = page.graphics;
+     * // Create a new pen
+     * let pen: PdfPen = new PdfPen({r: 0, g: 0, b: 0}, 1);
+     * // Create a new font
+     * let font: PdfStandardFont = document.embedFont(PdfFontFamily.helvetica, 12, PdfFontStyle.regular);
+     * // Draw text on the page graphics
+     * graphics.drawString('Hello World', font, {x: 10, y: 20, width: 100, height: 200}, pen);
+     * // Save the document
+     * document.save('output.pdf');
+     * // Destroy the document
+     * document.destroy();
+     * ```
+     */
+    drawString(value: string, font: PdfFont, bounds: Rectangle, pen: PdfPen): void
+    /**
+     * Draw text on the page graphics.
+     *
+     * @param {string} value The string to be drawn.
+     * @param {PdfFont} font The font used to draw the string.
+     * @param {Rectangle} bounds The rectangle specifying the bounds where the string will be drawn.
+     * @param {PdfPen} pen The pen that determines the stroke color, width, and style of the string.
+     * @param {PdfStringFormat} format The format that specifies text layout information such as alignment, line spacing, and trimming.
+     * @returns {void} Nothing.
+     *
+     * ```typescript
+     * // Load an existing PDF document
+     * let document: PdfDocument = new PdfDocument(data, password);
+     * // Access the first page
+     * let page: PdfPage = document.getPage(0);
+     * // Gets the graphics of the PDF page
+     * let graphics: PdfGraphics = page.graphics;
+     * // Create a new pen
+     * let pen: PdfPen = new PdfPen({r: 0, g: 0, b: 0}, 1);
+     * // Create a new font
+     * let font: PdfStandardFont = document.embedFont(PdfFontFamily.helvetica, 12, PdfFontStyle.regular);
+     * // Create a new string format
+     * let format: PdfStringFormat = new PdfStringFormat();
+     * format.alignment = PdfTextAlignment.center;
+     * // Draw text on the page graphics
+     * graphics.drawString('Hello World', font, {x: 10, y: 20, width: 100, height: 200}, pen, format);
+     * // Save the document
+     * document.save('output.pdf');
+     * // Destroy the document
+     * document.destroy();
+     * ```
+     */
+    drawString(value: string, font: PdfFont, bounds: Rectangle, pen: PdfPen, format: PdfStringFormat): void
+    /**
+     * Draw text on the page graphics.
+     *
+     * @param {string} value The string to be drawn.
+     * @param {PdfFont} font The font used to draw the string.
+     * @param {Rectangle} bounds The rectangle specifying the bounds where the string will be drawn.
+     * @param {PdfPen} pen The pen that determines the stroke color, width, and style of the string.
+     * @param {PdfBrush} brush The brush that determines the fill color and texture of the string.
+     * @returns {void} Nothing.
+     *
+     * ```typescript
+     * // Load an existing PDF document
+     * let document: PdfDocument = new PdfDocument(data, password);
+     * // Access the first page
+     * let page: PdfPage = document.getPage(0);
+     * // Gets the graphics of the PDF page
+     * let graphics: PdfGraphics = page.graphics;
+     * // Create a new pen
+     * let pen: PdfPen = new PdfPen({r: 0, g: 0, b: 0}, 1);
+     * // Create a new font
+     * let font: PdfStandardFont = document.embedFont(PdfFontFamily.helvetica, 12, PdfFontStyle.regular);
+     * // Draw text on the page graphics
+     * graphics.drawString('Hello World', font, {x: 10, y: 20, width: 100, height: 200}, pen, new PdfBrush({r: 0, g: 0, b: 255}));
+     * // Save the document
+     * document.save('output.pdf');
+     * // Destroy the document
+     * document.destroy();
+     * ```
+     */
+    drawString(value: string, font: PdfFont, bounds: Rectangle, pen: PdfPen, brush: PdfBrush): void
+    /**
+     * Draw text on the page graphics.
+     *
+     * @param {string} value The string to be drawn.
+     * @param {PdfFont} font The font used to draw the string.
+     * @param {Rectangle} bounds The rectangle specifying the bounds where the string will be drawn.
+     * @param {PdfPen} pen The pen that determines the stroke color, width, and style of the string.
+     * @param {PdfBrush} brush The brush that determines the fill color and texture of the string.
+     * @param {PdfStringFormat} format The format that specifies text layout information such as alignment, line spacing, and trimming.
+     * @returns {void} Nothing.
+     *
+     * ```typescript
+     * // Load an existing PDF document
+     * let document: PdfDocument = new PdfDocument(data, password);
+     * // Access the first page
+     * let page: PdfPage = document.getPage(0);
+     * // Gets the graphics of the PDF page
+     * let graphics: PdfGraphics = page.graphics;
+     * // Create a new pen
+     * let pen: PdfPen = new PdfPen({r: 0, g: 0, b: 0}, 1);
+     * // Create a new font
+     * let font: PdfStandardFont = document.embedFont(PdfFontFamily.helvetica, 12, PdfFontStyle.regular);
+     * // Create a new string format
+     * let format: PdfStringFormat = new PdfStringFormat();
+     * format.alignment = PdfTextAlignment.center;
+     * // Draw text on the page graphics
+     * graphics.drawString('Hello World', font, {x: 10, y: 20, width: 100, height: 200}, pen, new PdfBrush({r: 0, g: 0, b: 255}), format);
+     * // Save the document
+     * document.save('output.pdf');
+     * // Destroy the document
+     * document.destroy();
+     * ```
+     */
+    drawString(value: string, font: PdfFont, bounds: Rectangle, pen: PdfPen, brush: PdfBrush, format: PdfStringFormat): void
+    drawString(value: string,
+               font: PdfFont,
+               bounds: Rectangle,
+               arg1?: PdfPen | PdfBrush,
+               arg2?: PdfBrush | PdfStringFormat,
+               arg3?: PdfStringFormat): void {
+        let pen: PdfPen;
+        let brush: PdfBrush;
+        let format: PdfStringFormat;
+        if (arg1 instanceof PdfPen) {
+            pen = arg1;
+            if (arg2 instanceof PdfBrush) {
+                brush = arg2;
+                if (arg3 instanceof PdfStringFormat) {
+                    format = arg3;
+                }
+            } else if (arg2 instanceof PdfStringFormat) {
+                format = arg2;
+            }
+        } else if (arg1 instanceof PdfBrush) {
+            brush = arg1;
+            if (arg2 instanceof PdfStringFormat) {
+                format = arg2;
+            }
+        } else if (arg2 instanceof PdfBrush) {
+            brush = arg2;
+        }
+        if (arg2 && arg2 instanceof PdfStringFormat) {
+            format = arg2;
+        }
+        if (arg3 && arg3 instanceof PdfStringFormat) {
+            format = arg3;
+        }
+        this._beginMarkContent();
+        const layouter: _PdfStringLayouter = new _PdfStringLayouter();
+        if (!format) {
+            format = new PdfStringFormat();
+        }
+        if (value) {
+            value = this._normalizeText(font, value);
+        }
+        if (this._isRectangle(bounds)) {
+            const result: _PdfStringLayoutResult = layouter._layout(value, font, format, [bounds.width, bounds.height]);
+            if (!result._empty) {
+                const rect: number[] = this._checkCorrectLayoutRectangle([result._actualSize.width, result._actualSize.height],
+                                                                         bounds.x, bounds.y, format);
+                if (bounds.width <= 0) {
+                    bounds.x = rect[0];
+                    bounds.width = rect[2];
+                }
+                if (bounds.height <= 0) {
+                    bounds.y = rect[1];
+                    bounds.height = rect[3];
+                }
+                this._drawStringLayoutResult(result, font, pen, brush, [bounds.x, bounds.y, bounds.width, bounds.height], format);
+            }
+        }
+        _addProcSet('Text', this._resourceObject);
+        this._endMarkContent();
+    }
+    _doRestore(): PdfGraphicsState {
+        const state: PdfGraphicsState = this._graphicsState.pop();
+        this._m = state._transformationMatrix;
+        this._currentBrush = state._currentBrush;
+        this._currentPen = state._currentPen;
+        this._currentFont = state._currentFont;
+        this._characterSpacing = state._charSpacing;
+        this._wordSpacing = state._wordSpacing;
+        this._textScaling = state._textScaling;
+        this._textRenderingMode = state._textRenderingMode;
+        this._sw._restoreGraphicsState();
+        return state;
+    }
+    private _beginMarkContent(): void {
+        if (this._layer) {
+            this._layer._beginLayer(this);
+        }
+    }
+    private _endMarkContent(): void {
+        if (this._layer) {
+            if (this._layer._isEndState && this._layer._parentLayer.length !== 0) {
+                for (let i: number = 0; i < this._layer._parentLayer.length; i++) {
+                    this._sw._write('EMC');
+                }
+            }
+            if (this._layer._isEndState) {
+                this._sw._write('EMC');
+            }
+        }
     }
     _processResources(crossReference: _PdfCrossReference): void {
         this._crossReference = crossReference;
@@ -1142,169 +1814,9 @@ export class PdfGraphics {
             }
         }
     }
-    /**
-     * Draws a graphics path defined by a pen and path.
-     *
-     * @param {PdfPath} path The path to be drawn.
-     * @param {PdfPen} pen The pen that determines the stroke color, width, and style of the path.
-     * @returns {void} Nothing.
-     *
-     * ```typescript
-     * // Load an existing PDF document
-     * let document: PdfDocument = new PdfDocument(data, password);
-     * // Access the first page
-     * let page: PdfPage = document.getPage(0);
-     * // Create a new path
-     * let path: PdfPath = new PdfPath();
-     * // Gets the graphics of the PDF page
-     * let graphics: PdfGraphics = page.graphics;
-     * // Create a new pen
-     * let pen: PdfPen = new PdfPen([0, 0, 0], 1);
-     * // Add lines to the path
-     * path.addLine(10, 100, 50, 100);
-     * path.addLine(50, 100, 50, 150);
-     * path.addLine(50, 150, 10, 100);
-     * // Draw the path on the page graphics
-     * graphics.drawPath(path, pen);
-     * // Save the document
-     * document.save('output.pdf');
-     * // Destroy the document
-     * document.destroy();
-     * ```
-     */
-    drawPath(path: PdfPath, pen: PdfPen): void
-    /**
-     * Draws a graphics path defined by a brush and path.
-     *
-     * @param {PdfPath} path The path to be drawn.
-     * @param {PdfBrush} brush The brush that determines the fill color and texture of the path.
-     * @returns {void} Nothing.
-     *
-     * ```typescript
-     * // Load an existing PDF document
-     * let document: PdfDocument = new PdfDocument(data, password);
-     * // Access the first page
-     * let page: PdfPage = document.getPage(0);
-     * // Create a new path
-     * let path: PdfPath = new PdfPath();
-     * // Gets the graphics of the PDF page
-     * let graphics: PdfGraphics = page.graphics;
-     * // Create a new brush
-     * let brush: PdfBrush = new PdfBrush([0, 255, 255]);
-     * // Add an ellipse to the path
-     * path.addEllipse(200, 200, 100, 50);
-     * // Draw the path on the page graphics
-     * graphics.drawPath(path, brush);
-     * // Save the document
-     * document.save('output.pdf');
-     * // Destroy the document
-     * document.destroy();
-     * ```
-     */
-    drawPath(path: PdfPath, brush: PdfBrush): void
-    /**
-     * Draws a graphics path defined by a pen, brush, and path.
-     *
-     * @param {PdfPath} path The path to be drawn.
-     * @param {PdfPen} pen The pen that determines the stroke color, width, and style of the path.
-     * @param {PdfBrush} brush The brush that determines the fill color and texture of the path.
-     * @returns {void} Nothing.
-     *
-     * ```typescript
-     * // Load an existing PDF document
-     * let document: PdfDocument = new PdfDocument(data, password);
-     * // Access the first page
-     * let page: PdfPage = document.getPage(0);
-     * // Create a new path
-     * let path: PdfPath = new PdfPath();
-     * // Gets the graphics of the PDF page
-     * let graphics: PdfGraphics = page.graphics;
-     * // Create a new pen
-     * let pen: PdfPen = new PdfPen([0, 0, 0], 1);
-     * // Create a new brush
-     * let brush: PdfBrush = new PdfBrush([0, 255, 255]);
-     * // Add an ellipse to the path
-     * path.addEllipse(200, 200, 100, 50);
-     * // Draw the path on the page graphics with both pen and brush
-     * graphics.drawPath(path, pen, brush);
-     * // Save the document
-     * document.save('output.pdf');
-     * // Destroy the document
-     * document.destroy();
-     * ```
-     */
-    drawPath(path: PdfPath, pen: PdfPen, brush: PdfBrush): void
-    drawPath(path: PdfPath, first?: PdfPen | PdfBrush, second?: PdfBrush): void {
-        this._beginMarkContent();
-        const result: {pen: PdfPen, brush: PdfBrush} = this._setPenBrush(first, second);
-        if (result.pen || result.brush) {
-            this._buildUpPath(path._points, path._pathTypes);
-            this._drawGraphicsPath(result.pen, result.brush, path.fillMode, false);
-        }
-        this._endMarkContent();
-    }
-    /**
-     * Draws a rounded rectangle on the page graphics.
-     *
-     * @param {number} x The x-coordinate of the upper-left corner of the rounded rectangle.
-     * @param {number} y The y-coordinate of the upper-left corner of the rounded rectangle.
-     * @param {number} width The width of the rounded rectangle.
-     * @param {number} height The height of the rounded rectangle.
-     * @param {number} radius The radius of the rounded corners of the rectangle.
-     * @param {PdfPen} pen The pen that determines the stroke color, width, and style of the rectangle.
-     * @param {PdfBrush} brush The brush that determines the fill color and texture of the rectangle.
-     * @returns {void} Nothing.
-     *
-     * ```typescript
-     * // Load an existing PDF document
-     * let document: PdfDocument = new PdfDocument(data, password);
-     * // Access the first page
-     * let page: PdfPage = document.getPage(0);
-     * // Gets the graphics of the PDF page
-     * let graphics: PdfGraphics = page.graphics;
-     * // Create a new pen
-     * let pen: PdfPen = new PdfPen([0, 0, 0], 1);
-     * // Create a new brush
-     * let brush: PdfBrush = new PdfBrush([0, 0, 255]);
-     * // Draw a rounded rectangle on the page graphics
-     * graphics.drawRoundedRectangle(10, 20, 100, 200, 5, pen, brush);
-     * // Save the document
-     * document.save('output.pdf');
-     * // Destroy the document
-     * document.destroy();
-     * ```
-     */
-    drawRoundedRectangle(x: number, y: number, width: number, height: number, radius: number, pen: PdfPen, brush: PdfBrush): void {
-        if (pen === null) {
-            throw new Error('pen');
-        }
-        if (brush === null) {
-            throw new Error('brush');
-        }
-        const bounds: number[] = [x, y, width, height];
-        const diameter: number = radius * 2;
-        const size: number[] = [diameter, diameter];
-        const arc: number[] = [bounds[0], bounds[1], size[0], size[1]];
-        const path: PdfPath = new PdfPath();
-        if (radius === 0) {
-            path.addRectangle(bounds[0], bounds[1], bounds[2], bounds[3]);
-            this.drawPath(path, pen, brush);
-        } else {
-            path._isRoundedRectangle = true;
-            path.addArc(arc[0], arc[1], arc[2], arc[3], 180, 90);
-            arc[0] = (bounds[0] + bounds[2]) - diameter;
-            path.addArc(arc[0], arc[1], arc[2], arc[3], 270, 90);
-            arc[1] = (bounds[1] + bounds[3]) - diameter;
-            path.addArc(arc[0], arc[1], arc[2], arc[3], 0, 90);
-            arc[0] = bounds[0];
-            path.addArc(arc[0], arc[1], arc[2], arc[3], 90, 90);
-            path.closeFigure();
-            this.drawPath(path, pen, brush);
-        }
-    }
     _constructArcPath(x1: number, y1: number, x2: number, y2: number, start: number, sweep: number): void {
         const points: number[] = _getBezierArc(x1, y1, x2, y2, start, sweep);
-        if (points.length === 8) {
+        if (points.length === 0) {
             return;
         }
         let point: number[] = [points[0], points[1], points[2], points[3], points[4], points[5], points[6], points[7]];
@@ -1349,70 +1861,10 @@ export class PdfGraphics {
         if (pen._miterLimit > 0) {
             this._sw._setMiterLimit(pen._miterLimit);
         }
-        this._sw._setColor(pen._color, true);
+        this._sw._setColor([pen._color.r, pen._color.g, pen._color.b], true);
     }
-    /**
-     * Draw text on the page graphics.
-     *
-     * @param {string} value The string to be drawn.
-     * @param {PdfFont} font The font used to draw the string.
-     * @param {number[]} bounds An array specifying the bounds [x, y, width, height] where the string will be drawn.
-     * @param {PdfPen} pen The pen that determines the stroke color, width, and style of the string.
-     * @param {PdfBrush} brush The brush that determines the fill color and texture of the string.
-     * @param {PdfStringFormat} format The format that specifies text layout information such as alignment, line spacing, and trimming.
-     * @returns {void} Nothing.
-     *
-     * ```typescript
-     * // Load an existing PDF document
-     * let document: PdfDocument = new PdfDocument(data, password);
-     * // Access the first page
-     * let page: PdfPage = document.getPage(0);
-     * // Gets the graphics of the PDF page
-     * let graphics: PdfGraphics = page.graphics;
-     * // Create a new pen
-     * let pen: PdfPen = new PdfPen([0, 0, 0], 1);
-     * // Create a new font
-     * let font: PdfStandardFont = new PdfStandardFont(PdfFontFamily.helvetica, 12);
-     * // Create a new string format
-     * let format: PdfStringFormat = new PdfStringFormat();
-     * format.alignment = PdfTextAlignment.center;
-     * // Draw text on the page graphics
-     * graphics.drawString('Hello World', font, [10, 20, 100, 200], pen, new PdfBrush([0, 0, 255]), format);
-     * // Save the document
-     * document.save('output.pdf');
-     * // Destroy the document
-     * document.destroy();
-     * ```
-     */
-    drawString(value: string,
-               font: PdfFont,
-               bounds: number[],
-               pen?: PdfPen,
-               brush?: PdfBrush,
-               format?: PdfStringFormat): void {
-        this._beginMarkContent();
-        const layouter: _PdfStringLayouter = new _PdfStringLayouter();
-        if (!format) {
-            format = new PdfStringFormat();
-        }
-        if (value) {
-            value = this._normalizeText(font, value);
-        }
-        const result: _PdfStringLayoutResult = layouter._layout(value, font, format, [bounds[2], bounds[3]]);
-        if (!result._empty) {
-            const rect: number[] = this._checkCorrectLayoutRectangle(result._actualSize, bounds[0], bounds[1], format);
-            if (bounds[2] <= 0) {
-                bounds[0] = rect[0];
-                bounds[2] = rect[2];
-            }
-            if (bounds[3] <= 0) {
-                bounds[1] = rect[1];
-                bounds[3] = rect[3];
-            }
-            this._drawStringLayoutResult(result, font, pen, brush, bounds, format);
-        }
-        _addProcSet('Text', this._resourceObject);
-        this._endMarkContent();
+    _isRectangle(bounds: Rectangle | Point): bounds is Rectangle {
+        return 'width' in bounds && 'height' in bounds;
     }
     _normalizeText(font: PdfFont, value: string): string {
         let resultantValue: string = '';
@@ -1438,25 +1890,25 @@ export class PdfGraphics {
         }
         return resultantValue;
     }
-    _buildUpPath(points: Array<number[]>, types: PathPointType[]): void {
+    _buildUpPath(points: Point[], types: PathPointType[]): void {
         for (let i: number = 0; i < points.length; i++) {
-            const point: number[] = points[<number>i];
+            const point: Point = points[<number>i];
             let type: PathPointType = types[<number>i];
             switch (type & 0xf) {
             case PathPointType.start:
-                this._sw._beginPath(point[0], point[1]);
+                this._sw._beginPath(point.x, point.y);
                 break;
             case PathPointType.bezier:
-                let result: { index: number, point: number[] } = this._getBezierPoint(points, types, i); // eslint-disable-line
+                let result: { index: number, point: Point } = this._getBezierPoint(points, types, i); // eslint-disable-line
                 i = result.index;
-                const first: number[] = result.point; // eslint-disable-line
+                const first: Point = result.point; // eslint-disable-line
                 result = this._getBezierPoint(points, types, i);
                 i = result.index;
-                const second: number[] = result.point; // eslint-disable-line
-                this._sw._appendBezierSegment(point[0], point[1], first[0], first[1], second[0], second[1]);
+                const second: Point = result.point; // eslint-disable-line
+                this._sw._appendBezierSegment(point.x, point.y, first.x, first.y, second.x, second.y);
                 break;
             case PathPointType.line:
-                this._sw._appendLineSegment(point[0], point[1]);
+                this._sw._appendLineSegment(point.x, point.y);
                 break;
             default:
                 throw new Error('Incorrect path formation.');
@@ -1467,7 +1919,7 @@ export class PdfGraphics {
             }
         }
     }
-    _getBezierPoint(points: Array<number[]>, types: PathPointType[], index: number): { index: number, point: number[] } {
+    _getBezierPoint(points: Point[], types: PathPointType[], index: number): { index: number, point: Point } {
         if (types[index as number] !== PathPointType.bezier) {
             throw new Error('Malforming path.');
         }
@@ -1481,7 +1933,7 @@ export class PdfGraphics {
         this._textScaling = -100;
         this._textRenderingMode = -1;
         this._graphicsState = [];
-        this._clipBounds = [0, 0, this._size[0], this._size[1]];
+        this._clipBounds = [0, 0, this._size.width, this._size.height];
         this._colorSpaceInitialized = false;
         this._startCutIndex = -1;
     }
@@ -1493,7 +1945,7 @@ export class PdfGraphics {
         }
     }
     _brushControl(brush: PdfBrush): void {
-        this._sw._setColor(brush._color, false);
+        this._sw._setColor([brush._color.r, brush._color.g, brush._color.b], false);
         this._currentBrush = brush;
     }
     _penControl(pen: PdfPen): void {
@@ -1502,7 +1954,7 @@ export class PdfGraphics {
         this._currentPen = pen;
     }
     _fontControl(font: PdfFont, format: PdfStringFormat): void {
-        const size: number = font._metrics._getSize(format);
+        const size: number = font._getSize(format);
         this._currentFont = font;
         let sourceDictionary: _PdfDictionary;
         let isReference: boolean = false;
@@ -1527,7 +1979,8 @@ export class PdfGraphics {
                         if (key !== null && typeof key !== 'undefined') {
                             const dictionary: _PdfDictionary = this._crossReference._fetch(key);
                             if (dictionary && ((font instanceof PdfStandardFont && dictionary === font._dictionary) ||
-                                (font instanceof PdfTrueTypeFont && dictionary === font._fontInternal._fontDictionary))) {
+                                (font instanceof PdfTrueTypeFont && dictionary === font._fontInternal._fontDictionary) ||
+                                (font instanceof PdfCjkStandardFont && dictionary === font._dictionary))) {
                                 keyName = value;
                                 ref = key;
                                 hasResource = true;
@@ -1631,7 +2084,7 @@ export class PdfGraphics {
             let state: PdfGraphicsState;
             if (clipRegion) {
                 state = this.save();
-                const clipBounds: number[] = [layoutRectangle[0], layoutRectangle[1], result._actualSize[0], result._actualSize[1]];
+                const clipBounds: number[] = [layoutRectangle[0], layoutRectangle[1], result._actualSize.width, result._actualSize.height];
                 if (layoutRectangle[2] > 0) {
                     clipBounds[2] = layoutRectangle[2];
                 }
@@ -1640,7 +2093,7 @@ export class PdfGraphics {
                 } else if (format.lineAlignment === PdfVerticalAlignment.bottom) {
                     clipBounds[1] += (layoutRectangle[3] - clipBounds[3]);
                 }
-                this.setClip(clipBounds);
+                this.setClip({x: clipBounds[0], y: clipBounds[1], width: clipBounds[2], height: clipBounds[3]});
             }
             if (font && font instanceof PdfTrueTypeFont && font._fontInternal &&
                 font._fontInternal instanceof _UnicodeTrueTypeFont && font.isItalic) {
@@ -1655,46 +2108,46 @@ export class PdfGraphics {
                 this._sw._setTextScaling(textScaling);
                 this._textScaling = textScaling;
             }
-            let verticalAlignShift: number = this._getTextVerticalAlignShift(result._actualSize[1], layoutRectangle[3], format);
+            let verticalAlignShift: number = this._getTextVerticalAlignShift(result._actualSize.height, layoutRectangle[3], format);
             const height: number = (typeof format === 'undefined' || format === null || format.lineSpacing === 0) ?
-                font._metrics._getHeight(format) :
-                format.lineSpacing + font._metrics._getHeight(format);
+                font._getHeight(format) :
+                format.lineSpacing + font._getHeight(format);
             const script: boolean = (format !== null && typeof format !== 'undefined' &&
                 format.subSuperScript === PdfSubSuperScript.subScript);
             let shift: number = 0;
-            shift = (script) ? height - (font.height + font._metrics._getDescent(format)) : (height - font._metrics._getAscent(format));
+            shift = (script) ? height - (font.height + font._getDescent(format)) : (height - font._getAscent(format));
             if (format && format.lineAlignment === PdfVerticalAlignment.bottom) {
                 const layoutStr: string = _numberToString(layoutRectangle[3]);
-                const fontHeightStr: string = _numberToString(font._metrics._getHeight(format));
-                if (layoutRectangle[3] - result._actualSize[1] !== 0 &&
-                    (layoutRectangle[3] - result._actualSize[1]) < (font._metrics._size / 2) - 1) {
+                const fontHeightStr: string = _numberToString(font._getHeight(format));
+                if (layoutRectangle[3] - result._actualSize.height !== 0 &&
+                    (layoutRectangle[3] - result._actualSize.height) < (font._size / 2) - 1) {
                     const layoutNum: number = +layoutStr;
                     const fontHeightNum: number = +fontHeightStr;
                     if (layoutNum <= fontHeightNum) {
-                        shift = -(height / font._metrics._size);
+                        shift = -(height / font._size);
                     }
                 }
             }
             const matrix: _PdfTransformationMatrix = new _PdfTransformationMatrix();
             if (this._isItalic) {
-                this.translateTransform(layoutRectangle[0] + font.size / 5, layoutRectangle[1] - shift + verticalAlignShift);
+                this.translateTransform({x: layoutRectangle[0] + font.size / 5, y: layoutRectangle[1] - shift + verticalAlignShift});
                 this._skewTransform(0, -11);
             } else {
-                matrix._translate(layoutRectangle[0], (-(layoutRectangle[1] + font._metrics._getHeight(format)) -
-                (font._metrics._getDescent(format) > 0 ? -font._metrics._getDescent(format) : font._metrics._getDescent(format))) -
+                matrix._translate(layoutRectangle[0], (-(layoutRectangle[1] + font._getHeight(format)) -
+                (font._getDescent(format) > 0 ? -font._getDescent(format) : font._getDescent(format))) -
                 verticalAlignShift);
                 this._sw._modifyTM(matrix);
             }
-            if (layoutRectangle[3] < font._metrics._size) {
-                if ((result._actualSize[1] - layoutRectangle[3]) < (font._metrics._size / 2) - 1) {
+            if (layoutRectangle[3] < font._size) {
+                if ((result._actualSize.height - layoutRectangle[3]) < (font._size / 2) - 1) {
                     verticalAlignShift = 0;
                 }
             }
             if (verticalAlignShift !== 0) {
                 if (format !== null && format.lineAlignment === PdfVerticalAlignment.bottom) {
-                    if (layoutRectangle[3] - result._actualSize[1] !== 0 &&
-                        (layoutRectangle[3] - result._actualSize[1]) > (font._metrics._size / 2) - 1) {
-                        verticalAlignShift -= (shift - (height - font._metrics._size)) / 2;
+                    if (layoutRectangle[3] - result._actualSize.height !== 0 &&
+                        (layoutRectangle[3] - result._actualSize.height) > (font._size / 2) - 1) {
+                        verticalAlignShift -= (shift - (height - font._size)) / 2;
                     }
                 }
             }
@@ -1790,8 +2243,8 @@ export class PdfGraphics {
     }
     _drawLayoutResult(result: _PdfStringLayoutResult, font: PdfFont, format: PdfStringFormat, layoutRectangle: number[]): void {
         const height: number = (typeof format === 'undefined' || format === null || format.lineSpacing === 0) ?
-            font._metrics._getHeight(format) :
-            format.lineSpacing + font._metrics._getHeight(format);
+            font._getHeight(format) :
+            format.lineSpacing + font._getHeight(format);
         const lines: _LineInfo[] = result._lines;
         const ttfFont: PdfTrueTypeFont = font as PdfTrueTypeFont;
         const unicode: boolean = (ttfFont !== null && ttfFont.isUnicode);
@@ -1811,10 +2264,10 @@ export class PdfGraphics {
                 this._drawAsciiLine(lineInfo, layoutRectangle[2], format, font);
             }
             if (i + 1 !== len) {
-                const vAlignShift: number = this._getTextVerticalAlignShift(result._actualSize[1], layoutRectangle[3], format);
+                const vAlignShift: number = this._getTextVerticalAlignShift(result._actualSize.height, layoutRectangle[3], format);
                 const matrix: _PdfTransformationMatrix = new _PdfTransformationMatrix();
-                const baseline: number = ((-(layoutRectangle[1] + font._metrics._getHeight(format)) -
-                    font._metrics._getDescent(format)) -
+                const baseline: number = ((-(layoutRectangle[1] + font._getHeight(format)) -
+                    font._getDescent(format)) -
                     vAlignShift) -
                     (height * (i + 1));
                 matrix._translate(layoutRectangle[0], baseline);
@@ -1929,7 +2382,7 @@ export class PdfGraphics {
                         this._sw._startNextLine(x, 0);
                     }
                     if (word.length > 0) {
-                        tokenWidth += font.measureString(word, format)[0];
+                        tokenWidth += font.measureString(word, format).width;
                         tokenWidth += characterSpacing;
                         this._sw._showText(token);
                     }
@@ -2065,9 +2518,9 @@ export class PdfGraphics {
         if (font.isUnderline || font.isStrikeout) {
             const linePen: PdfPen = this._createUnderlineStrikeoutPen(brush, font);
             if (typeof linePen !== 'undefined' && linePen !== null) {
-                const shift: number = this._getTextVerticalAlignShift(result._actualSize[1], layoutRectangle[3], format);
-                let underlineYOffset: number = layoutRectangle[1] + shift + font._metrics._getAscent(format) + 1.5 * linePen._width;
-                let strikeoutYOffset: number = layoutRectangle[1] + shift + font._metrics._getHeight(format) / 2 + 1.5 * linePen._width;
+                const shift: number = this._getTextVerticalAlignShift(result._actualSize.height, layoutRectangle[3], format);
+                let underlineYOffset: number = layoutRectangle[1] + shift + font._getAscent(format) + 1.5 * linePen._width;
+                let strikeoutYOffset: number = layoutRectangle[1] + shift + font._getHeight(format) / 2 + 1.5 * linePen._width;
                 const lines: _LineInfo[] = result._lines;
                 lines.forEach((lineInfo: _LineInfo, i: number) => {
                     const lineWidth: number = lineInfo._width;
@@ -2078,55 +2531,20 @@ export class PdfGraphics {
                         x1 + lineWidth - lineIndent :
                         x1 + layoutRectangle[2] - lineIndent;
                     if (font.isUnderline) {
-                        this.drawLine(linePen, x1, underlineYOffset, x2, underlineYOffset);
+                        this.drawLine(linePen, {x: x1, y: underlineYOffset}, {x: x2, y: underlineYOffset});
                         underlineYOffset += result._lineHeight;
                     }
                     if (font.isStrikeout) {
-                        this.drawLine(linePen, x1, strikeoutYOffset, x2, strikeoutYOffset);
+                        this.drawLine(linePen, {x: x1, y: strikeoutYOffset}, {x: x2, y: strikeoutYOffset});
                         strikeoutYOffset += result._lineHeight;
                     }
                 });
             }
         }
     }
-    /**
-     * Draws a line on the page graphics.
-     *
-     * @param {PdfPen} pen The pen that determines the stroke color, width, and style of the line.
-     * @param {number} x1 The x-coordinate of the starting point of the line.
-     * @param {number} y1 The y-coordinate of the starting point of the line.
-     * @param {number} x2 The x-coordinate of the ending point of the line.
-     * @param {number} y2 The y-coordinate of the ending point of the line.
-     * @returns {void} Nothing.
-     *
-     * ```typescript
-     * // Load an existing PDF document
-     * let document: PdfDocument = new PdfDocument(data, password);
-     * // Access the first page
-     * let page: PdfPage = document.getPage(0);
-     * // Gets the graphics of the PDF page
-     * let graphics: PdfGraphics = page.graphics;
-     * // Create a new pen
-     * let pen: PdfPen = new PdfPen([0, 0, 0], 1);
-     * // Draw a line on the page graphics
-     * graphics.drawLine(pen, 10, 10, 100, 100);
-     * // Save the document
-     * document.save('output.pdf');
-     * // Destroy the document
-     * document.destroy();
-     * ```
-     */
-    drawLine(pen: PdfPen, x1: number, y1: number, x2: number, y2: number): void {
-        this._beginMarkContent();
-        this._stateControl(pen);
-        this._sw._beginPath(x1, y1);
-        this._sw._appendLineSegment(x2, y2);
-        this._sw._strokePath();
-        _addProcSet('PDF', this._resourceObject);
-        this._endMarkContent();
-    }
     _createUnderlineStrikeoutPen(brush: PdfBrush, font: PdfFont): PdfPen{
-        return new PdfPen(brush._color, font._metrics._size / 20);
+        const brushColor: PdfColor = brush ? brush._color : undefined;
+        return new PdfPen(brushColor, font._size / 20);
     }
     _checkCorrectLayoutRectangle(textSize: number[], x: number, y: number, format: PdfStringFormat): number[] {
         const layoutedRectangle: number[] = [x, y, textSize[0], textSize[0]];
@@ -2191,7 +2609,7 @@ export class PdfGraphics {
                     needTransformation = true;
                 }
                 if (cbox[0] > 0 && cbox[3] > 0 && mbox[0] < 0 && mbox[1] < 0) {
-                    this.translateTransform(cbox[0], -cbox[3]);
+                    this.translateTransform({x: cbox[0], y: -cbox[3]});
                     location[0] = -cbox[0];
                     location[1] = cbox[3];
                 } else if (!page._pageDictionary.has('CropBox')) {
@@ -2200,321 +2618,39 @@ export class PdfGraphics {
                 if (needTransformation) {
                     this._sw._writeComment('Change co-ordinate system to left/top.');
                     if (this._cropBox) {
-                        this.translateTransform(this._cropBox[0], -this._cropBox[3]);
+                        this.translateTransform({x: this._cropBox[0], y: -this._cropBox[3]});
                     } else {
                         if (-(page._origin[1]) < this._mediaBoxUpperRightBound || this._mediaBoxUpperRightBound === 0) {
-                            this.translateTransform(0, -this._size[1]);
+                            this.translateTransform({x: 0, y: -this._size.height});
                         } else {
-                            this.translateTransform(0, -this._mediaBoxUpperRightBound);
+                            this.translateTransform({x: 0, y: -this._mediaBoxUpperRightBound});
                         }
                     }
                 }
             }
         } else {
             this._sw._writeComment('Change co-ordinate system to left/top.');
-            if (this._mediaBoxUpperRightBound !== (-this._size[1])) {
+            if (this._mediaBoxUpperRightBound !== (-this._size.height)) {
                 if (this._cropBox) {
                     cbox = this._cropBox;
-                    if (cbox[0] > 0 || cbox[1] > 0 || this._size[0] === cbox[2] || this._size[1] === cbox[3]) {
-                        this.translateTransform(cbox[0], -cbox[3]);
+                    if (cbox[0] > 0 || cbox[1] > 0 || this._size.width === cbox[2] || this._size.height === cbox[3]) {
+                        this.translateTransform({x: cbox[0], y: -cbox[3]});
                     } else {
-                        if (this._mediaBoxUpperRightBound === this._size[1] || this._mediaBoxUpperRightBound === 0) {
-                            this.translateTransform(0, -this._size[1]);
+                        if (this._mediaBoxUpperRightBound === this._size.height || this._mediaBoxUpperRightBound === 0) {
+                            this.translateTransform({x: 0, y: -this._size.height});
                         } else {
-                            this.translateTransform(0, -this._mediaBoxUpperRightBound);
+                            this.translateTransform({x: 0, y: -this._mediaBoxUpperRightBound});
                         }
                     }
                 } else {
-                    if (this._mediaBoxUpperRightBound === this._size[1] || this._mediaBoxUpperRightBound === 0) {
-                        this.translateTransform(0, -this._size[1]);
+                    if (this._mediaBoxUpperRightBound === this._size.height || this._mediaBoxUpperRightBound === 0) {
+                        this.translateTransform({x: 0, y: -this._size.height});
                     } else {
-                        this.translateTransform(0, -this._mediaBoxUpperRightBound);
+                        this.translateTransform({x: 0, y: -this._mediaBoxUpperRightBound});
                     }
                 }
             }
         }
-    }
-    /**
-     * Represents a scale transform of the graphics.
-     *
-     * @param {number} scaleX Scale factor in the x direction.
-     * @param {number} scaleY Scale factor in the y direction.
-     * @returns {void} Nothing.
-     *
-     * ```typescript
-     * // Load an existing PDF document
-     * let document: PdfDocument = new PdfDocument(data, password);
-     * // Access the first page
-     * let page: PdfPage = document.getPage(0);
-     * // Gets the graphics of the PDF page
-     * let graphics: PdfGraphics = page.graphics;
-     * // Create a new font
-     * let font: PdfFont = new PdfStandardFont(PdfFontFamily.Helvetica, 20);
-     * // Save the current graphics state
-     * let state: PdfGraphicsState = graphics.save();
-     * // Apply scale transform
-     * graphics.scaleTransform(0.5, 0.5);
-     * // Draw a string with the scaled transformation
-     * graphics.drawString("Hello world!", font, [10, 20, 100, 200], undefined, new PdfBrush([0, 0, 255]));
-     * // Restore the graphics to its previous state
-     * graphics.restore(state);
-     * // Save the document
-     * document.save('output.pdf');
-     * // Destroy the document
-     * document.destroy();
-     * ```
-     */
-    scaleTransform(scaleX: number, scaleY: number): void {
-        const matrix: _PdfTransformationMatrix = new _PdfTransformationMatrix();
-        matrix._scale(scaleX, scaleY);
-        this._sw._modifyCtm(matrix);
-        this._matrix._multiply(matrix);
-    }
-    /**
-     * Represents a translate transform of the graphics.
-     *
-     * @param {number} x x-coordinate of the translation.
-     * @param {number} y y-coordinate of the translation.
-     * @returns {void} Nothing.
-     *
-     * ```typescript
-     * // Load an existing PDF document
-     * let document: PdfDocument = new PdfDocument(data, password);
-     * // Access the first page
-     * let page: PdfPage = document.getPage(0);
-     * // Gets the graphics of the PDF page
-     * let graphics: PdfGraphics = page.graphics;
-     * // Create a new font
-     * let font: PdfFont = new PdfStandardFont(PdfFontFamily.Helvetica, 20);
-     * // Save the current graphics state
-     * let state: PdfGraphicsState = graphics.save();
-     * // Apply translate transform
-     * graphics.translateTransform(100, 100);
-     * // Draw a string with the translation applied
-     * graphics.drawString("Hello world!", font, [10, 20, 100, 200], undefined, new PdfBrush([0, 0, 255]));
-     * // Restore the graphics to its previous state
-     * graphics.restore(state);
-     * // Save the document
-     * document.save('output.pdf');
-     * // Destroy the document
-     * document.destroy();
-     * ```
-     */
-    translateTransform(x: number, y: number): void {
-        const matrix: _PdfTransformationMatrix = new _PdfTransformationMatrix();
-        matrix._translate(x, -y);
-        this._sw._modifyCtm(matrix);
-        this._matrix._multiply(matrix);
-    }
-    /**
-     * Represents a rotate transform of the graphics.
-     *
-     * @param {number} angle Angle of rotation in degrees.
-     * @returns {void} Nothing.
-     *
-     * ```typescript
-     * // Load an existing PDF document
-     * let document: PdfDocument = new PdfDocument(data, password);
-     * // Access the first page
-     * let page: PdfPage = document.getPage(0);
-     * // Gets the graphics of the PDF page
-     * let graphics: PdfGraphics = page.graphics;
-     * // Create a new font
-     * let font: PdfFont = new PdfStandardFont(PdfFontFamily.Helvetica, 20);
-     * // Save the current graphics state
-     * let state: PdfGraphicsState = graphics.save();
-     * // Apply rotate transform
-     * graphics.rotateTransform(-90);
-     * // Draw a string with the rotation applied
-     * graphics.drawString("Hello world!", font, [10, 20, 100, 200], undefined, new PdfBrush([0, 0, 255]));
-     * // Restore the graphics to its previous state
-     * graphics.restore(state);
-     * // Save the document
-     * document.save('output.pdf');
-     * // Destroy the document
-     * document.destroy();
-     * ```
-     */
-    rotateTransform(angle: number): void {
-        const matrix: _PdfTransformationMatrix = new _PdfTransformationMatrix();
-        matrix._rotate(-angle);
-        this._sw._modifyCtm(matrix);
-        this._matrix._multiply(matrix);
-    }
-    /**
-     * Represents a clipping region of this graphics.
-     *
-     * @param {number[]} bounds Rectangle structure that represents the new clip region, specified as [x, y, width, height].
-     * @param {PdfFillMode} mode Member of the PdfFillMode enumeration that specifies the filling operation to use.
-     * @returns {void} Nothing.
-     *
-     * ```typescript
-     * // Load an existing PDF document
-     * let document: PdfDocument = new PdfDocument(data, password);
-     * // Access the first page
-     * let page: PdfPage = document.getPage(0);
-     * // Gets the graphics of the PDF page
-     * let graphics: PdfGraphics = page.graphics;
-     * // Create a new font
-     * let font: PdfFont = new PdfStandardFont(PdfFontFamily.Helvetica, 20);
-     * // Set clipping region
-     * graphics.setClip([0, 0, 50, 12], PdfFillMode.alternate);
-     * // Draw a string within the clipping region
-     * graphics.drawString("Hello world!", font, [0, 0, 100, 200], undefined, new PdfBrush([0, 0, 255]));
-     * // Save the document
-     * document.save('output.pdf');
-     * // Destroy the document
-     * document.destroy();
-     * ```
-     */
-    setClip(bounds: number[], mode?: PdfFillMode): void {
-        if (typeof mode === 'undefined') {
-            mode = PdfFillMode.winding;
-        }
-        this._sw._appendRectangle(bounds[0], bounds[1], bounds[2], bounds[3]);
-        this._sw._clipPath(mode === PdfFillMode.alternate);
-    }
-    /**
-     * Represents a transparency of this graphics.
-     *
-     * @param {number} stroke The transparency value for the stroke.
-     * @returns {void} Nothing.
-     *
-     * ```typescript
-     * // Load an existing PDF document
-     * let document: PdfDocument = new PdfDocument(data, password);
-     * // Access the first page
-     * let page: PdfPage = document.getPage(0);
-     * // Gets the graphics of the PDF page
-     * let graphics: PdfGraphics = page.graphics;
-     * // Create a new font
-     * let font: PdfFont = new PdfStandardFont(PdfFontFamily.Helvetica, 20);
-     * // Set transparency
-     * graphics.setTransparency(0.5);
-     * // Draw a string with transparency
-     * graphics.drawString("Hello world!", font, [0, 0, 100, 200], undefined, new PdfBrush([0, 0, 255]));
-     * // Save the document
-     * document.save('output.pdf');
-     * // Destroy the document
-     * document.destroy();
-     * ```
-     */
-    setTransparency(stroke: number): void
-    /**
-     * Represents a transparency setting for the graphics.
-     *
-     * @param {number} stroke The transparency value for strokes.
-     * @param {number} fill The transparency value for fills.
-     * @param {PdfBlendMode} mode The blend mode to use.
-     * @returns {void} Nothing.
-     *
-     * ```typescript
-     * // Load an existing PDF document
-     * let document: PdfDocument = new PdfDocument(data, password);
-     * // Access the first page
-     * let page: PdfPage = document.getPage(0);
-     * // Gets the graphics of the PDF page
-     * let graphics: PdfGraphics = page.graphics;
-     * // Create a new font
-     * let font: PdfFont = new PdfStandardFont(PdfFontFamily.Helvetica, 20);
-     * // Set transparency
-     * graphics.setTransparency(0.5, 0.5, PdfBlendMode.multiply);
-     * // Draw the string
-     * graphics.drawString("Hello world!", font, [0, 0, 100, 200], undefined, new PdfBrush([0, 0, 255]));
-     * // Save the document
-     * document.save('output.pdf');
-     * // Destroy the document
-     * document.destroy();
-     * ```
-     */
-    setTransparency(stroke: number, fill: number, mode: PdfBlendMode): void
-    /**
-     * Sets the transparency for the graphics.
-     *
-     * @param {number} stroke The transparency value for strokes.
-     * @param {number} fill The transparency value for fills.
-     * @param {PdfBlendMode} mode The blend mode to use.
-     * @returns {void} Nothing.
-     *
-     * ```typescript
-     * // Load an existing PDF document
-     * let document: PdfDocument = new PdfDocument(data, password);
-     * // Access the first page
-     * let page: PdfPage = document.getPage(0);
-     * // Gets the graphics of the PDF page
-     * let graphics: PdfGraphics = page.graphics;
-     * // Create a new font
-     * let font: PdfFont = new PdfStandardFont(PdfFontFamily.Helvetica, 20);
-     * // Set transparency
-     * graphics.setTransparency(0.5, 0.5, PdfBlendMode.multiply);
-     * // Draw the string
-     * graphics.drawString("Hello world!", font, [0, 0, 100, 200], undefined, new PdfBrush([0, 0, 255]));
-     * // Save the document
-     * document.save('output.pdf');
-     * // Destroy the document
-     * document.destroy();
-     * ```
-     */
-    setTransparency(stroke: number, fill?: number, mode?: PdfBlendMode): void {
-        if (typeof fill === 'undefined') {
-            fill = stroke;
-        }
-        if (typeof mode === 'undefined') {
-            mode = PdfBlendMode.normal;
-        }
-        if (typeof this._transparencies === 'undefined') {
-            this._transparencies = new Map<_TransparencyData, string>();
-        }
-        const transparencyKey: string = 'CA:' + stroke.toString() + '_ca:' + fill.toString() + '_BM:' + (mode as number).toString();
-        let transparencyData: _TransparencyData;
-        if (this._transparencies.size > 0) {
-            this._transparencies.forEach((value: string, key: _TransparencyData) => {
-                if (value === transparencyKey) {
-                    transparencyData = key;
-                }
-            });
-        }
-        if (!transparencyData) {
-            transparencyData = new _TransparencyData();
-            const transparencyDict: _PdfDictionary = new _PdfDictionary();
-            transparencyDict.update('CA', stroke);
-            transparencyDict.update('ca', fill);
-            transparencyDict.update('BM', _reverseMapBlendMode(mode));
-            transparencyData._dictionary = transparencyDict;
-            transparencyData._key = transparencyKey;
-            transparencyData._name = _PdfName.get(_getNewGuidString());
-            let dictionary: _PdfDictionary;
-            let isReference: boolean = false;
-            if (this._resourceObject.has('ExtGState')) {
-                const obj: any = this._resourceObject.getRaw('ExtGState'); // eslint-disable-line
-                if (obj !== null && typeof obj !== 'undefined') {
-                    if (obj instanceof _PdfReference) {
-                        isReference = true;
-                        dictionary = this._crossReference._fetch(obj);
-                    } else if (obj instanceof _PdfDictionary) {
-                        dictionary = obj;
-                    }
-                }
-            } else {
-                dictionary = new _PdfDictionary(this._crossReference);
-                this._resourceObject.update('ExtGState', dictionary);
-            }
-            if (this._crossReference) {
-                const ref: _PdfReference = this._crossReference._getNextReference();
-                this._crossReference._cacheMap.set(ref, transparencyDict);
-                transparencyData._reference = ref;
-                dictionary.update(transparencyData._name.name, ref);
-            } else {
-                this._pendingResource.push({'resource': transparencyDict, 'key': transparencyData._name, 'source': dictionary});
-            }
-            if (isReference) {
-                this._resourceObject._updated = true;
-            }
-            if (this._hasResourceReference) {
-                this._source._updated = true;
-            }
-        }
-        this._sw._setGraphicsState(transparencyData._name);
     }
     _setTransparencyData(ref: _PdfReference, name: _PdfName): void {
         this._resourceMap.set(ref, name);
@@ -2562,7 +2698,7 @@ export class PdfGraphics {
         this._sw._closePath();
         this._sw._clipPath(false);
         this._sw._writeComment('Translate co-ordinate system.');
-        this.translateTransform(clipBounds[0], clipBounds[1]);
+        this.translateTransform({x: clipBounds[0], y: clipBounds[1]});
     }
     _skewTransform(angleX: number, angleY: number): void {
         const matrix: _PdfTransformationMatrix = new _PdfTransformationMatrix();
@@ -2642,12 +2778,12 @@ export class _Matrix {
         this._elements[4] = x;
         this._elements[5] = y;
     }
-    public _transform(points: number[]): number[] {
-        const x: number = points[0];
-        const y: number = points[1];
+    public _transform(points: Point): Point {
+        const x: number = points.x;
+        const y: number = points.y;
         const x2: number = x * this._elements[0] + y * this._elements[2] + this._offsetX;
         const y2: number = x * this._elements[1] + y * this._elements[3] + this._offsetY;
-        return [x2, y2];
+        return {x: x2, y: y2};
     }
     public _multiply(matrix: _Matrix): void {
         this._elements = [(this._elements[0] * matrix._elements[0] + this._elements[1] * matrix._elements[2]),
@@ -2669,13 +2805,13 @@ export class _Matrix {
  * // Gets the graphics of the PDF page
  * let graphics: PdfGraphics = page.graphics;
  * // Create a new font
- * let font: PdfFont = new PdfStandardFont(PdfFontFamily.Helvetica, 20);
+ * let font: PdfFont = document.embedFont(PdfFontFamily.helvetica, 20, PdfFontStyle.regular);
  * // Save the graphics state
  * let state: PdfGraphicsState = graphics.save();
  * // Set graphics translate transform
- * graphics.translateTransform(100, 100);
+ * graphics.translateTransform({x: 100, y: 100});
  * // Draw the string
- * graphics.drawString("Hello world!", font, [10, 20, 100, 200], undefined, new PdfBrush([0, 0, 255]));
+ * graphics.drawString('Hello world!', font, {x: 10, y: 20, width: 100, height: 200}, new PdfBrush({r: 0, g: 0, b: 255}));
  * // Restore the graphics state
  * graphics.restore(state);
  * // Save the document
@@ -2741,9 +2877,9 @@ export enum _TextRenderingMode {
  * // Gets the graphics of the PDF page
  * let graphics: PdfGraphics = page.graphics;
  * // Create a new brush
- * let brush: PdfBrush = new PdfBrush([0, 255, 255]);
+ * let brush: PdfBrush = new PdfBrush({r: 0, g: 255, b: 255});
  * // Draw a rectangle using brush
- * graphics.drawRectangle(10, 10, 100, 100, brush);
+ * graphics.drawRectangle({x: 10, y: 10, width: 100, height: 100}, brush);
  * // Save the document
  * document.save('output.pdf');
  * // Destroy the document
@@ -2751,7 +2887,7 @@ export enum _TextRenderingMode {
  * ```
  */
 export class PdfBrush {
-    _color: number[];
+    _color: PdfColor;
     /**
      * Initializes a new instance of the `PdfBrush` class.
      *
@@ -2765,7 +2901,7 @@ export class PdfBrush {
      * // Create a new brush
      * let brush: PdfBrush = new PdfBrush();
      * // Draw a rectangle using brush
-     * graphics.drawRectangle(10, 10, 100, 100, brush);
+     * graphics.drawRectangle({x: 10, y: 10, width: 100, height: 100}, brush);
      * // Save the document
      * document.save('output.pdf');
      * // Destroy the document
@@ -2776,7 +2912,7 @@ export class PdfBrush {
     /**
      * Initializes a new instance of the `PdfBrush` class.
      *
-     * @param {number[]} color Color.
+     * @param {PdfColor} color Color.
      *
      * ```typescript
      * // Load an existing PDF document
@@ -2786,40 +2922,18 @@ export class PdfBrush {
      * // Gets the graphics of the PDF page
      * let graphics: PdfGraphics = page.graphics;
      * // Create a new brush
-     * let brush: PdfBrush = new PdfBrush([0, 255, 255]);
+     * let brush: PdfBrush = new PdfBrush({r: 0, g: 255, b: 255});
      * // Draw a rectangle using brush
-     * graphics.drawRectangle(10, 10, 100, 100, brush);
+     * graphics.drawRectangle({x: 10, y: 10, width: 100, height: 100}, brush);
      * // Save the document
      * document.save('output.pdf');
      * // Destroy the document
      * document.destroy();
      * ```
      */
-    constructor(color: number[])
-    /**
-     * Initializes a new instance of the `PdfBrush` class.
-     *
-     * @param {number[]} color Color.
-     *
-     * ```typescript
-     * // Load an existing PDF document
-     * let document: PdfDocument = new PdfDocument(data, password);
-     * // Access first page
-     * let page: PdfPage = document.getPage(0);
-     * // Gets the graphics of the PDF page
-     * let graphics: PdfGraphics = page.graphics;
-     * // Create a new brush
-     * let brush: PdfBrush = new PdfBrush([0, 255, 255]);
-     * // Draw a rectangle using brush
-     * graphics.drawRectangle(10, 10, 100, 100, brush);
-     * // Save the document
-     * document.save('output.pdf');
-     * // Destroy the document
-     * document.destroy();
-     * ```
-     */
-    constructor(color?: number[]) {
-        this._color = typeof color !== 'undefined' ? color : [0, 0, 0];
+    constructor(color: PdfColor)
+    constructor(color?: PdfColor) {
+        this._color = typeof color !== 'undefined' ? color : {r: 0, g: 0, b: 0};
     }
 }
 /**
@@ -2833,17 +2947,17 @@ export class PdfBrush {
  * // Gets the graphics of the PDF page
  * let graphics: PdfGraphics = page.graphics;
  * // Create a new pen
- * let pen: PdfPen = new PdfPen([0, 0, 0], 1);
+ * let pen: PdfPen = new PdfPen({r: 0, g: 0, b: 0}, 1);
  * // Draw a rectangle using pen
- * graphics.drawRectangle(150, 50, 50, 50, pen);
+ * graphics.drawRectangle({x: 150, y: 50, width: 50, height: 50}, pen);
  * // Save the document
  * document.save('output.pdf');
  * // Destroy the document
  * document.destroy();
  * ```
  */
-export class PdfPen{
-    _color: number[];
+export class PdfPen {
+    _color: PdfColor;
     _width: number;
     _dashOffset: number;
     _dashPattern: number[];
@@ -2854,7 +2968,7 @@ export class PdfPen{
     /**
      * Initializes a new instance of the `PdfPen` class.
      *
-     * @param {number[]} color Color.
+     * @param {PdfColor} color Color.
      * @param {number} width Width.
      *
      * ```typescript
@@ -2865,16 +2979,16 @@ export class PdfPen{
      * // Gets the graphics of the PDF page
      * let graphics: PdfGraphics = page.graphics;
      * // Create a new pen
-     * let pen: PdfPen = new PdfPen([0, 0, 0], 1);
+     * let pen: PdfPen = new PdfPen({r: 0, g: 0, b: 0}, 1);
      * // Draw a rectangle using pen
-     * graphics.drawRectangle(150, 50, 50, 50, pen);
+     * graphics.drawRectangle({x: 150, y: 50, width: 50, height: 50}, pen);
      * // Save the document
      * document.save('output.pdf');
      * // Destroy the document
      * document.destroy();
      * ```
      */
-    constructor(color: number[], width: number) {
+    constructor(color: PdfColor, width: number) {
         this._color = color;
         this._width = width;
         this._dashOffset = 0;

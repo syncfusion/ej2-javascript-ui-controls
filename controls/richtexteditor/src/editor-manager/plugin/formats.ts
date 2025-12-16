@@ -11,7 +11,7 @@ import { ImageOrTableCursor } from '../../common';
  * Formats internal component
  *
  * @hidden
- * @deprecated
+ * @private
  */
 export class Formats {
     private parent: EditorManager;
@@ -21,7 +21,7 @@ export class Formats {
      *
      * @param {EditorManager} parent - specifies the parent element.
      * @hidden
-     * @deprecated
+     * @private
      */
     public constructor(parent: EditorManager) {
         this.parent = parent;
@@ -213,7 +213,7 @@ export class Formats {
         if (range.startContainer.nodeType === Node.TEXT_NODE &&
             range.startContainer.textContent === '\u200B' && preElem.lastChild.nodeType === 3 && preElem.lastChild.textContent === '') {
             isEnd = (range.startContainer as HTMLElement).previousElementSibling.textContent ===
-                (preElem.lastChild as HTMLElement).previousElementSibling.textContent;
+            (preElem.lastChild as HTMLElement).previousElementSibling.textContent;
         } else {
             isEnd = range.startOffset === preElem.lastChild.textContent.length &&
                 preElem.lastChild.textContent === range.startContainer.textContent;
@@ -644,7 +644,7 @@ export class Formats {
     }
 
     private cleanFormats(element: Element, tagName: string): void {
-        const ignoreAttr: string[] = ['display', 'font-size', 'margin-top', 'margin-bottom', 'margin-left', 'margin-right', 'font-weight'];
+        const ignoreAttr: string[] = ['display', 'font-size', 'margin-top', 'margin-bottom', 'font-weight'];
         tagName = tagName.toLowerCase();
         for (let i: number = 0; i < ignoreAttr.length && (tagName !== 'p' && tagName !== 'blockquote' && tagName !== 'pre'); i++) {
             (element as HTMLElement).style.removeProperty(ignoreAttr[i as number]);

@@ -242,6 +242,37 @@ export class Scroll implements IAction {
         (<HTMLElement>(<Grid>this.parent).getHeaderContent().querySelector('.' + literals.headerContent)).scrollLeft = this.previousValues.left;
     }
 
+    /**
+     *
+     * @param {HTMLElement} content - specifies the grid content element.
+     * @returns {void}
+     */
+    public updateFrozenShadow(content?: HTMLElement): void {
+        const gridContent: HTMLElement = this.parent.getContent().firstElementChild as HTMLElement;
+        if (isNullOrUndefined(gridContent) && isNullOrUndefined(gridContent)) {
+            return;
+        }
+        const target: HTMLElement = content ? content : gridContent;
+        const scrollLeft: number = this.parent.enableRtl ? Math.abs(target.scrollLeft) : target.scrollLeft;
+        const isStartOfScroll: boolean = scrollLeft <= 1;
+        if (this.parent.getVisibleFrozenLeftCount() && !isStartOfScroll) {
+            addClass([this.parent.element], 'e-left-shadow');
+        } else {
+            removeClass([this.parent.element], 'e-left-shadow');
+        }
+        const scrollRight: number = this.parent.enableRtl ? Math.abs(target.scrollLeft) : target.scrollLeft;
+        const isEndOfScroll: boolean = Math.round(scrollRight + target.clientWidth) >= target.scrollWidth - 1;
+        if (this.parent.getVisibleFrozenRightCount()) {
+            if (isEndOfScroll) {
+                removeClass([this.parent.element], 'e-right-shadow');
+            } else {
+                addClass([this.parent.element], 'e-right-shadow');
+            }
+        } else {
+            removeClass([this.parent.element], 'e-right-shadow');
+        }
+    }
+
     private onContentScroll(scrollTarget: HTMLElement): Function {
         const element: HTMLElement = scrollTarget;
         const isHeader: boolean = element.classList.contains(literals.headerContent);
@@ -260,20 +291,7 @@ export class Scroll implements IAction {
             if (this.parent.element.querySelectorAll('.e-leftfreeze,.e-fixedfreeze,.e-rightfreeze').length) {
                 const errorFreeze: NodeListOf<Element> = this.parent.getContent().querySelectorAll('.e-freezeerror:not([style*="display: none"])');
                 const errorFixed: NodeListOf<Element> = this.parent.getContent().querySelectorAll('.e-fixederror:not([style*="display: none"])');
-                const scrollLeft: number =  this.parent.enableRtl ? Math.abs(target.scrollLeft) : target.scrollLeft;
-                const isStartOfScroll: boolean = scrollLeft <= 1;
-                if (!isStartOfScroll && this.parent.getVisibleFrozenLeftCount()) {
-                    addClass([this.parent.element], 'e-left-shadow');
-                } else {
-                    removeClass([this.parent.element], 'e-left-shadow');
-                }
-                const scrollRight: number = this.parent.enableRtl ? Math.abs(target.scrollLeft) : target.scrollLeft;
-                const isEndOfScroll: boolean = Math.round(scrollRight + target.clientWidth) >= target.scrollWidth - 1;
-                if (isEndOfScroll && this.parent.getVisibleFrozenRightCount()) {
-                    removeClass([this.parent.element], 'e-right-shadow');
-                } else {
-                    addClass([this.parent.element], 'e-right-shadow');
-                }
+                this.updateFrozenShadow(target);
                 const rows: Element[] = [].slice.call(this.parent.getContent().querySelectorAll('.e-row:not(.e-hiddenrow)'));
                 if (((rows.length === 1 && errorFreeze.length) ||
                     (this.parent.element.querySelector('.e-freeze-autofill:not([style*="display: none"])')) ||
@@ -430,7 +448,7 @@ export class Scroll implements IAction {
             this.content = <HTMLDivElement>this.parent.getContent().querySelector('.' + literals.content);
             this.header = <HTMLDivElement>this.parent.getHeaderContent().querySelector('.' + literals.headerContent);
             const mScrollBar: HTMLElement = this.parent.getContent().querySelector('.e-movablescrollbar');
-            if (this.parent.frozenRows && this.header && this.content) {
+            if ((this.parent.frozenRows || this.parent.isRowPinned) && this.header && this.content) {
                 EventHandler.add(this.header, 'touchstart pointerdown', this.setPageXY(), this);
                 EventHandler.add(this.header, 'touchmove pointermove', this.onTouchScroll( this.content), this);
             }
@@ -476,8 +494,15 @@ export class Scroll implements IAction {
                     this.setLastRowCell();
                     this.parent.notify(lastRowCellBorderUpdated, args);
                 }
-                if (this.parent.frozenRows) {
+                if (this.parent.frozenRows || this.parent.pinnedTopRowModels.length) {
                     this.resizeFrozenRowBorder();
+                }
+                if (this.parent.element.querySelector('.e-frozenrow-border')) {
+                    if ((this.parent.pinnedTopRowModels.length || this.parent.frozenRows) && this.parent.currentViewData.length) {
+                        this.parent.element.querySelector('.e-frozenrow-border').classList.remove('e-frozenrow-empty');
+                    } else {
+                        this.parent.element.querySelector('.e-frozenrow-border').classList.add('e-frozenrow-empty');
+                    }
                 }
                 if (!this.parent.enableVirtualization && !this.parent.enableInfiniteScrolling) {
                     if (!args.cancel) {

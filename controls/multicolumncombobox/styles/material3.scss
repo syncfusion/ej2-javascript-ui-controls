@@ -1,14 +1,12 @@
-
-@import 'ej2-base/styles/definition/material3.scss';
-
-@import 'ej2-buttons/styles/button/material3-definition.scss';
-@import 'ej2-splitbuttons/styles/drop-down-button/material3-definition.scss';
-@import 'ej2-dropdowns/styles/drop-down-base/material3-definition.scss';
-@import 'ej2-dropdowns/styles/drop-down-list/material3-definition.scss';
-@import 'ej2-dropdowns/styles/combo-box/material3-definition.scss';
-@import 'ej2-grids/styles/grid/material3-definition.scss';
-@import 'ej2-popups/styles/spinner/material3-definition.scss';
-@import 'multicolumn-combobox/material3-definition.scss';
-@import 'multicolumn-combobox/icons/material3.scss';
-@import 'multicolumn-combobox/all.scss';
-@import 'multicolumn-combobox/bigger.scss';
+@use 'ej2-base/styles/definition/material3' as *;
+@use 'ej2-buttons/styles/button/material3-definition' as *;
+@use 'ej2-splitbuttons/styles/drop-down-button/material3-definition' as *;
+@use 'ej2-dropdowns/styles/drop-down-base/material3-definition' as *;
+@use 'ej2-dropdowns/styles/drop-down-list/material3-definition' as *;
+@use 'ej2-dropdowns/styles/combo-box/material3-definition' as *;
+@use 'ej2-grids/styles/grid/material3-definition' as *;
+@use 'ej2-popups/styles/spinner/material3-definition' as *;
+@use 'multicolumn-combobox/material3-definition' as *;
+@use 'multicolumn-combobox/icons/material3' as *;
+@use 'multicolumn-combobox/all' as *;
+@use 'multicolumn-combobox/bigger' as *;

@@ -280,6 +280,9 @@ export class VirtualTreeContentRenderer extends VirtualContentRenderer {
         super.renderTable();
         if (!(this.parent.dataSource instanceof DataManager && (this.parent.dataSource as DataManager).dataSource.url !== undefined
         && (this.parent.dataSource as DataManager).dataSource.offline && (this.parent.dataSource as DataManager).dataSource.url !== '') || !isCountRequired(this.parent)) {
+            if (this.observers) {
+                this.observers.disconnect();
+            }
             getValue('observer', this).options.debounceEvent = false;
             this.observers = new TreeInterSectionObserver(getValue('observer', this).element,
                                                           getValue('observer', this).options);
@@ -1008,6 +1011,9 @@ export class VirtualTreeContentRenderer extends VirtualContentRenderer {
         this.parent.off('refresh-virtual-editform-cells', this.refreshCell);
         this.parent.off('virtaul-cell-focus', this.cellFocus);
         this.parent.off('virtual-scroll-edit', this.restoreEditState);
+        if (this.observers) {
+            this.observers.disconnect();
+        }
     }
 
 }
@@ -1017,6 +1023,10 @@ export class TreeInterSectionObserver extends InterSectionObserver {
     private newPos: number = 0;
     private lastPos: number = 0;
     private timer: number = 0;
+    private containerEl: HTMLElement;
+    private movableContainerEl: HTMLElement;
+    private containerScrollHandler: Function;
+    private movableScrollHandler: Function;
 
     /**
      * Sets up observers to monitor scroll events on a given container
@@ -1030,12 +1040,29 @@ export class TreeInterSectionObserver extends InterSectionObserver {
     public observes(callback: Function, onEnterCallback: Function, instance: IGrid): void {
         const containerRect: string = 'containerRect';
         super[`${containerRect}`] = getValue('options', this).container.getBoundingClientRect();
-        EventHandler.add(getValue('options', this).container, 'scroll', this.virtualScrollHandlers(callback, onEnterCallback, instance), this);
+        this.containerEl = getValue('options', this).container as HTMLElement;
+        this.containerScrollHandler = this.virtualScrollHandlers(callback, onEnterCallback, instance);
+        EventHandler.add(this.containerEl, 'scroll', this.containerScrollHandler, this);
         if (getValue('options', this).movableContainer) {
             const movableContainerRect: string = 'movableContainerRect';
             super[`${movableContainerRect}`] = getValue('options', this).movableContainer.getBoundingClientRect();
-            EventHandler.add(getValue('options', this).movableContainer, 'scroll', this.virtualScrollHandlers(callback, onEnterCallback, instance), this);
+            this.movableContainerEl = getValue('options', this).movableContainer as HTMLElement;
+            this.movableScrollHandler = this.virtualScrollHandlers(callback, onEnterCallback, instance);
+            EventHandler.add(this.movableContainerEl, 'scroll', this.movableScrollHandler, this);
         }
+    }
+
+    public disconnect(): void {
+        if (this.containerEl && this.containerScrollHandler) {
+            EventHandler.remove(this.containerEl, 'scroll', this.containerScrollHandler);
+            this.containerScrollHandler = null;
+        }
+        if (this.movableContainerEl && this.movableScrollHandler) {
+            EventHandler.remove(this.movableContainerEl, 'scroll', this.movableScrollHandler);
+            this.movableScrollHandler = null;
+        }
+        this.containerEl = null;
+        this.movableContainerEl = null;
     }
 
     /**

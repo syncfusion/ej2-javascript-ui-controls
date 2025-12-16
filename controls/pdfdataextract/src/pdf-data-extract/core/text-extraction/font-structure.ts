@@ -842,39 +842,41 @@ export class _FontHelper {
             if (cmap instanceof _PdfIdentityCharacterMap) {
                 return new _PdfIdentityToUnicodeMap(0, 0xffff);
             }
-            return new _ToUnicodeMap(cmap.getMap());
+            return new _UnicodeMap(cmap.getMap());
         }
         if (cmapObj instanceof _PdfBaseStream) {
-            try {
-                const cmap : any = cMap._create(cmapObj, null, null); //eslint-disable-line
-                if (cmap instanceof _PdfIdentityCharacterMap) {
-                    return new _PdfIdentityToUnicodeMap(0, 0xffff);
-                }
-                const map: any = new Array(cmap._map.length); //eslint-disable-line
-                cmap._forEach((charCode: any, token: any) => { //eslint-disable-line
-                    if (typeof token === 'number') {
-                        map[Number.parseInt(charCode.toString(), 10)] = String.fromCodePoint(token);
-                        return;
+            const cmap : any = cMap._create(cmapObj, null, null); //eslint-disable-line
+            if (cmap) {
+                try {
+                    if (cmap instanceof _PdfIdentityCharacterMap) {
+                        return new _PdfIdentityToUnicodeMap(0, 0xffff);
                     }
-                    if (token.length % 2 !== 0) {
-                        token = '\u0000' + token;
-                    }
-                    const str: any = []; //eslint-disable-line
-                    for (let k: number = 0; k < token.length; k += 2) {
-                        const w1: any = (token.charCodeAt(k) << 8) | token.charCodeAt(k + 1); //eslint-disable-line
-                        if ((w1 & 0xf800) !== 0xd800) {
-                            str.push(w1);
-                            continue;
+                    const map: any = new Array(cmap._map.length); //eslint-disable-line
+                    cmap._forEach((charCode: any, token: any) => { //eslint-disable-line
+                        if (typeof token === 'number') {
+                            map[Number.parseInt(charCode.toString(), 10)] = String.fromCodePoint(token);
+                            return;
                         }
-                        k += 2;
-                        const w2: any = (token.charCodeAt(k) << 8) | token.charCodeAt(k + 1); //eslint-disable-line
-                        str.push(((w1 & 0x3ff) << 10) + (w2 & 0x3ff) + 0x10000);
-                    }
-                    map[charCode] = String.fromCodePoint(...str); //eslint-disable-line
-                });
-                return new _ToUnicodeMap(map);
-            } catch (reason) {
-                throw new FormatError(reason.toString());
+                        if (token.length % 2 !== 0) {
+                            token = '\u0000' + token;
+                        }
+                        const str: number[] = [];
+                        for (let k: number = 0; k < token.length; k += 2) {
+                            const w1: number = (token.charCodeAt(k) << 8) | token.charCodeAt(k + 1);
+                            if ((w1 & 0xf800) !== 0xd800) {
+                                str.push(w1);
+                                continue;
+                            }
+                            k += 2;
+                            const w2: any = (token.charCodeAt(k) << 8) | token.charCodeAt(k + 1); //eslint-disable-line
+                            str.push(((w1 & 0x3ff) << 10) + (w2 & 0x3ff) + 0x10000);
+                        }
+                        map[charCode] = String.fromCodePoint.apply(String, str); //eslint-disable-line
+                    });
+                    return new _UnicodeMap(map);
+                } catch (reason) {
+                    throw new FormatError(reason.toString());
+                }
             }
         }
         return null;
@@ -888,7 +890,7 @@ export class _FontHelper {
             return toUnicode;
         }
         if (!this._fontStructure._composite) {
-            return new _ToUnicodeMap(this._simpleFontToUnicode(this._baseEncodingName));
+            return new _UnicodeMap(this._simpleFontToUnicode(this._baseEncodingName));
         }
         if (this._fontStructure._composite && ((this._fontStructure._characterMap.builtInCMap &&
             !(this._fontStructure._characterMap instanceof _PdfIdentityCharacterMap)) ||
@@ -914,7 +916,7 @@ export class _FontHelper {
                     toUnicode[charcode] = String.fromCharCode(...buf); //eslint-disable-line
                 }
             });
-            return new _ToUnicodeMap(toUnicode);
+            return new _UnicodeMap(toUnicode);
         }
         return new _PdfIdentityToUnicodeMap(this._firstChar, this._lastChar);
     }
@@ -1261,7 +1263,7 @@ export class _FontHelper {
                 });
             }
             this._fontStructure._toFontChar = map;
-            this._fontStructure._toUnicode = new _ToUnicodeMap(map);
+            this._fontStructure._toUnicode = new _UnicodeMap(map);
         } else if (/Symbol/i.test(fontName)) {
             this._fontStructure._toFontChar = this._buildToFontChar(_symbolSetEncoding, _getGlyphsUnicode(),
                                                                     this._fontStructure._differences);
@@ -1758,7 +1760,7 @@ export class _Glyph {
         this._isInFont = isInFont;
     }
 }
-class _ToUnicodeMap {
+class _UnicodeMap {
     _map: (number | string)[];
     constructor(cmap: any) { //eslint-disable-line
         this._map = cmap;

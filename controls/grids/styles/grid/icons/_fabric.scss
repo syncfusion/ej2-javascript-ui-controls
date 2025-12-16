@@ -1,3 +1,4 @@
+@use 'ej2-base/styles/common/mixin' as *;
 @include export-module('grid-fabric-icons') {
 
   .e-icon-check::before {
@@ -123,6 +124,14 @@
 
     .e-edit::before {
       content: '\e97c';
+    }
+
+    .e-grid-icon-pin::before {
+      content: '\e9f6';
+    }
+    
+    .e-grid-icon-unpin::before {
+      content: '\e9f7';
     }
 
     .e-responsivetoolbaritems-btn::before,

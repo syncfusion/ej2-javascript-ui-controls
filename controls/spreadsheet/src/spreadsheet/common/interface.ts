@@ -3,8 +3,8 @@ import { ValidationType, ValidationOperator, MergeArgs, InsertDeleteEventArgs, H
 import { Spreadsheet, RefreshType } from '../index';
 import { MenuEventArgs } from '@syncfusion/ej2-navigations';
 import { BaseEventArgs, KeyboardEventArgs } from '@syncfusion/ej2-base';
-import { CellInfoEventArgs, CFColor, ChartTheme, RowModel, CellStyleModel, WorkbookOpen } from './../../workbook/index';
-import { SortCollectionModel, ValidationModel, WorkbookParseOptions } from './../../workbook/index';
+import { ValidationModel, CellInfoEventArgs, CFColor, ChartTheme, CellStyleModel, WorkbookOpen, NoteModel } from './../../workbook/index';
+import { SortCollectionModel, WorkbookParseOptions, RowModel, ThreadedCommentModel, ExtendedNoteModel } from './../../workbook/index';
 import { PredicateModel } from '@syncfusion/ej2-grids';
 
 
@@ -186,6 +186,7 @@ export interface OpenArgs extends OpenOptions {
     orginalFile?: File;
     triggerEvent?: boolean;
     jsonObject?: string;
+    isThresholdLimitConfirmed?: boolean;
 }
 
 /** @hidden */
@@ -204,13 +205,23 @@ export interface BeforeOpenEventArgs {
     /** Defines the file. */
     file: FileList | string | File;
     /** Defines the cancel option. */
-    cancel: boolean;
+    cancel?: boolean;
     /** Defines the request data. */
     requestData: object;
     /** Defines the password. */
     password?: string;
     /** Defines the parsing options that control how the Excel file is loaded. */
     parseOptions?: WorkbookParseOptions;
+    /**
+     * Specifies the type of open request that triggered the `beforeOpen` event.
+     * The possible values are:
+     * - 'initial' - Default open fetch request.
+     * - 'chunk' - A follow-up request to fetch a workbook chunk. Occurs only when chunking
+     *   is enabled by the app, and the server returns a chunk plan from the initial request.
+     * - 'thresholdLimitConfirmed' - A request sent after the user confirms a threshold warning
+     *   (e.g., maximumDataLimit or maximumFileSizeLimit) and chooses to continue.
+     */
+    requestType?: string;
 }
 
 export interface DialogBeforeOpenEventArgs {
@@ -319,6 +330,7 @@ export interface CellRenderArgs {
     rowHeight?: number;
     col?: ColumnModel;
     mergeBorderRows?: number[];
+    visibleNotes?: ExtendedNoteModel[];
 }
 /** @hidden */
 export interface IAriaOptions<T> {
@@ -382,7 +394,7 @@ export interface CellSaveEventArgs {
  */
 export interface NoteSaveEventArgs {
     /** Defines the note text. */
-    notes: string;
+    notes: string | NoteModel;
     /** Defines the address. */
     address: string;
     /** Defines the type of Event. */
@@ -444,7 +456,8 @@ export interface UndoRedoEventArgs extends CellSaveEventArgs, BeforeSortEventArg
     sheetIndex?: number;
     oldWidth?: string;
     oldHeight?: string;
-    notes?: string;
+    notes?: string | NoteModel;
+    comment?: ThreadedCommentModel;
     isCol?: boolean;
     hide?: boolean;
     index?: number;
@@ -532,7 +545,7 @@ export interface PreviousCellDetails {
     style?: object;
     format?: string;
     value?: string;
-    notes?: string;
+    notes?: string | NoteModel;
     formula?: string;
     wrap?: boolean;
     rowSpan?: number;
@@ -540,6 +553,7 @@ export interface PreviousCellDetails {
     hyperlink?: string | HyperlinkModel;
     image?: ImageModel[];
     chart?: ChartModel[];
+    comment?: ThreadedCommentModel;
     isLocked?: boolean;
     validation?: CellValidationEventArgs;
     isReadOnly?: boolean;

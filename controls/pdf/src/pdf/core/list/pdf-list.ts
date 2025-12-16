@@ -1,12 +1,15 @@
 import { PdfListMarkerAlignment, PdfLayoutType, PdfNumberStyle, PdfTextAlignment, PdfUnorderedListStyle } from '../enumerator';
-import { PdfFont, PdfFontFamily, PdfStandardFont, PdfStringFormat, _PdfStringLayoutResult, _PdfStringLayouter } from '../fonts';
+import { _PdfStringLayoutResult, _PdfStringLayouter } from '../fonts/string-layouter';
+import { PdfFont, PdfFontFamily, PdfStandardFont } from '../fonts/pdf-standard-font';
+import { PdfStringFormat } from '../fonts/pdf-string-format';
 import { PdfBrush, PdfGraphics, PdfPen } from '../graphics/pdf-graphics';
 import { PdfTemplate } from '../graphics/pdf-template';
-import { PdfLayoutResult, PdfLayoutFormat, _PdfLayoutParameters, _PageLayoutResult } from '../graphics';
+import { PdfLayoutResult, PdfLayoutFormat, _PdfLayoutParameters, _PageLayoutResult } from '../graphics/pdf-layouter';
 import { PdfPage } from '../pdf-page';
 import { PdfListItem, PdfListItemCollection } from './pdf-list-item';
 import { PdfDocument } from '../pdf-document';
 import { _convertNumber } from './../utils';
+import { Point, Size, Rectangle } from './../pdf-type';
 
 /**
  * Represents base class for lists.
@@ -18,13 +21,13 @@ import { _convertNumber } from './../utils';
  * // Assign the array of string items
  * let products: string[] = ['Excel', 'Power', 'Point', 'Word', 'PDF'];
  * // Initialize a new brush
- * let brush: PdfBrush =  new PdfBrush([0, 255, 255])
+ * let brush: PdfBrush =  new PdfBrush({r: 0, g: 255, b: 255})
  * // Add an item to item collection by passing the string array
  * let items: PdfListItemCollection = new PdfListItemCollection(products);
  * // Create a new instance of ordered list
  * let list: PdfList = new PdfOrderedList(items);
  * // Draw the ordered list with specified items
- * list.draw(page, 0, 20, 500, 700);
+ * list.draw(page, {x: 0, y: 20, width: 500, height: 700});
  * // Get the brush associated with the ordered list
  * let listBrush: PdfBrush = list.brush;
  * // Save the document
@@ -63,13 +66,13 @@ export abstract class PdfList {
      * // Assign the array of string items
      * let products: string[] = ['Excel', 'Power', 'Point', 'Word', 'PDF'];
      * // Initialize a new brush
-     * let brush: PdfBrush =  new PdfBrush([0, 255, 255]);
+     * let brush: PdfBrush =  new PdfBrush({r: 0, g: 255, b: 255});
      * // Add an item to item collection by passing the string array
      * let items: PdfListItemCollection = new PdfListItemCollection(products);
      * // Create a new instance of ordered list
      * let list: PdfOrderedList = new PdfOrderedList(items);
      * // Draw the ordered list with specified items
-     * list.draw(page, 0, 20, 500, 700);
+     * list.draw(page, {x: 0, y: 20, width: 500, height: 700});
      * // Get the brush associated with the ordered list
      * let listBrush: PdfBrush = list.brush;
      * // Save the document
@@ -95,11 +98,11 @@ export abstract class PdfList {
      * // Add an item to item collection by passing the string array
      * let items: PdfListItemCollection = new PdfListItemCollection(products);
      * // Create a new Ordered list and set the brush
-     * let list: PdfOrderedList = new PdfOrderedList(items, {brush: new PdfBrush([255, 0, 0])});
+     * let list: PdfOrderedList = new PdfOrderedList(items, {brush: new PdfBrush({r: 255, g: 0, b: 0})});
      * // Set fill color to the list
      * list.brush = brush;
      * // Draw the ordered list with specified items
-     * list.draw(page, 0, 20, 500, 700);
+     * list.draw(page, {x: 0, y: 20, width: 500, height: 700});
      * // Save the document
      * document.save('output.pdf');
      * // Destroy the document
@@ -123,8 +126,8 @@ export abstract class PdfList {
      * // Create an instance of item collection and add the list item
      * let items: PdfListItemCollection = new PdfListItemCollection(products);
      * // create a new ordered list and draw the list
-     * let list: PdfOrderedList = new PdfOrderedList(items, {pen: new PdfPen([0, 255, 255], 1)});
-     * list.draw(page, 0, 20, 500, 700);
+     * let list: PdfOrderedList = new PdfOrderedList(items, {pen: new PdfPen({r: 0, g: 255, b: 255}, 1)});
+     * list.draw(page, {x: 0, y: 20, width: 500, height: 700});
      * // Retrieve the pen associated with the ordered list
      * let itemPen: PdfPen = list.pen;
      * // Save the document
@@ -149,13 +152,13 @@ export abstract class PdfList {
      * // Create an instance of item collection and add the list item
      * let items: PdfListItemCollection = new PdfListItemCollection(products);
      * // Create a new pen
-     * let pen: PdfPen =  new PdfPen([0, 255, 255], 1);
+     * let pen: PdfPen =  new PdfPen({r: 0, g: 255, b: 255}, 1);
      * // Create a new ordered list
      * let list: PdfOrderedList = new PdfOrderedList(items);
      * // Set the pen for the ordered list
      * list.pen = pen;
      * // Draw the list associated with items
-     * list.draw(page, 0, 20, 500, 700);
+     * list.draw(page, {x: 0, y: 20, width: 500, height: 700});
      * // Save the document
      * document.save('output.pdf');
      * // Destroy the document
@@ -181,7 +184,7 @@ export abstract class PdfList {
      * // Create a new ordered list
      * let list: PdfOrderedList = new PdfOrderedList(items);
      * // Draw the items on the page
-     * list.draw(page, 0, 20, 500, 700);
+     * list.draw(page, {x: 0, y: 20, width: 500, height: 700});
      * /// Retrieve the font used for the list items
      * let itemPen: PdfFont = list.font;
      * // Save the document
@@ -212,7 +215,7 @@ export abstract class PdfList {
      * let list: PdfOrderedList = new PdfOrderedList(items);
      * list.font = font;
      * // Draw the items on the page
-     * list.draw(page, 0, 20, 500, 700);
+     * list.draw(page, {x: 0, y: 20, width: 500, height: 700});
      * // Save the document
      * document.save('output.pdf');
      * // Destroy the document
@@ -238,7 +241,7 @@ export abstract class PdfList {
      * // Create a new ordered list with items
      * let list: PdfOrderedList = new PdfOrderedList(items);
      * // Draw the items on the page
-     * list.draw(page, 0, 20, 500, 700);
+     * list.draw(page, {x: 0, y: 20, width: 500, height: 700});
      * // Getting the text layout format used by the list items
      * let itemFormat: PdfStringFormat = list.stringFormat;
      * // Save the document
@@ -272,7 +275,7 @@ export abstract class PdfList {
      * // Set the text layout format for the list
      * list.stringFormat = itemFormat;
      * // Draw the items on the page with the updated format
-     * list.draw(page, 0, 20, 500, 700);
+     * list.draw(page, {x: 0, y: 20, width: 500, height: 700});
      * // Save the document
      * document.save('output.pdf');
      * // Destroy the document
@@ -298,7 +301,7 @@ export abstract class PdfList {
      * // Create a of ordered list
      * let list: PdfOrderedList = new PdfOrderedList(items);
      * // Draw the list on the page associated with items
-     * list.draw(page, 0, 20, 500, 700);
+     * list.draw(page, {x: 0, y: 20, width: 500, height: 700});
      * // Get the current indent value used by the list
      * let itemIndent: number = list.indent;
      * // Save the document
@@ -328,7 +331,7 @@ export abstract class PdfList {
      * // Set the indent value for the list
      * list.indent = 40;
      * // Draw the items on the page with the specified indent
-     * list.draw(page, 0, 20, 500, 700);
+     * list.draw(page, {x: 0, y: 20, width: 500, height: 700});
      * // Save the document
      * document.save('output.pdf');
      * // Destroy the document
@@ -354,7 +357,7 @@ export abstract class PdfList {
      * // Create an new ordered list
      * let list: PdfOrderedList = new PdfOrderedList(items);
      * // Draw the list on the page associated with items
-     * list.draw(page, 0, 20, 500, 700);
+     * list.draw(page, {x: 0, y: 20, width: 500, height: 700});
      * // Get the current text indent value of the list
      * let textIndent: number = list.textIndent;
      * // Save the document
@@ -384,7 +387,7 @@ export abstract class PdfList {
      * // Set the text indent value for the list
      * list.textIndent = 40;
      * // Draw the items on the page with the updated text indent
-     * list.draw(page, 0, 20, 500, 700);
+     * list.draw(page, {x: 0, y: 20, width: 500, height: 700});
      * // Save the document
      * document.save('output.pdf');
      * // Destroy the document
@@ -410,7 +413,7 @@ export abstract class PdfList {
      * // Create a new ordered list
      * let list: PdfOrderedList = new PdfOrderedList(items);
      * // Draw the list on the page associated with items
-     * list.draw(page, 0, 20, 500, 700);
+     * list.draw(page, {x: 0, y: 20, width: 500, height: 700});
      * // Get the delimiter used in the list
      * let delimiter: string = list.delimiter;
      * // Save the document
@@ -440,7 +443,7 @@ export abstract class PdfList {
      * // Set the delimiter for the list
      * list.delimiter = ')';
      * // Draw the list on the page associated with items
-     * list.draw(page, 0, 20, 500, 700);
+     * list.draw(page, {x: 0, y: 20, width: 500, height: 700});
      * // Save the document
      * document.save('output.pdf');
      * // Destroy the document
@@ -471,7 +474,7 @@ export abstract class PdfList {
      * // Create a new ordered list
      * let list: PdfOrderedList = new PdfOrderedList(items);
      * // Draw the items associated with the items
-     * list.draw(page, 0, 20, 500, 700);
+     * list.draw(page, {x: 0, y: 20, width: 500, height: 700});
      * // Get the hierarchical structure status
      * let enableHierarchy: boolean = list.enableHierarchy;
      * // Save the document
@@ -501,7 +504,7 @@ export abstract class PdfList {
      * // Set the hierarchical structure status
      * list.enableHierarchy = true;
      * / Draw the list on the page associated with items
-     * list.draw(page, 0, 20, 500, 700);
+     * list.draw(page, {x: 0, y: 20, width: 500, height: 700});
      * // Save the document
      * document.save('output.pdf');
      * // Destroy the document
@@ -526,7 +529,7 @@ export abstract class PdfList {
      * // Create a new ordered list
      * let list: PdfOrderedList = new PdfOrderedList(items);
      * // Draw the list on the page associated with items
-     * list.draw(page, 0, 20, 500, 700);
+     * list.draw(page, {x: 0, y: 20, width: 500, height: 700});
      * // Get the alignment of the list
      * let listAlignment: PdfTextAlignment = list.alignment;
      * // Save the document
@@ -556,7 +559,7 @@ export abstract class PdfList {
      * // Set the alignment for the list
      * list.alignment = PdfTextAlignment.left;
      * // Draw the items on the page
-     * list.draw(page, 0, 20, 500, 700);
+     * list.draw(page, {x: 0, y: 20, width: 500, height: 700});
      * // Save the document
      * document.save('output.pdf');
      * // Destroy the document
@@ -584,7 +587,7 @@ export abstract class PdfList {
      * // Get the item collection
      * let collection: PdfListItemCollection = list.items;
      * // Draw the list on the page associated with item collection
-     * list.draw(page, 0, 20, 500, 700);
+     * list.draw(page, {x: 0, y: 20, width: 500, height: 700});
      * // Save the document
      * document.save('output.pdf');
      * // Destroy the document
@@ -608,7 +611,7 @@ export abstract class PdfList {
      * // Sets the item collection
      * list.items = new PdfListItemCollection(['Excel', 'Power', 'Point', 'Word', 'PDF']);
      * // Draw the list on the page associated with item collection
-     * list.draw(page, 0, 20, 500, 700);
+     * list.draw(page, {x: 0, y: 20, width: 500, height: 700});
      * // Save the document
      * document.save('output.pdf');
      * // Destroy the document
@@ -622,36 +625,10 @@ export abstract class PdfList {
         return this._alignment === PdfListMarkerAlignment.right;
     }
     /**
-     * Draws the content on the specified `PdfPage` at the given coordinates.
-     *
-     * @param {PdfPage} page The PDF page on which to draw the content.
-     * @param {number} x The x-coordinate where the list will be drawn.
-     * @param {number} y The y-coordinate where the list will be drawn.
-     * @returns {PdfLayoutResult} A layout result object indicating the outcome of the drawing operation.
-     * ```typescript
-     * // Load an existing document
-     * let document: PdfDocument = new PdfDocument(data);
-     * // Access the first page
-     * let page: PdfPage = document.getPage(0);
-     * // Create a new item collection
-     * let items: PdfListItemCollection = new PdfListItemCollection(['Excel', 'Power', 'Point', 'Word', 'PDF']);
-     * // Create a new ordered list
-     * let list: PdfOrderedList = new PdfOrderedList(items);
-     * // Draw the list on the page associated with item collection
-     * list.draw(page, 0, 20);
-     * // Save the document
-     * document.save('output.pdf');
-     * // Destroy the document
-     * document.destroy();
-     * ````
-     */
-    draw(page: PdfPage, x: number, y: number): PdfLayoutResult
-    /**
      * Draws the `PdfList` at the specified coordinates on the `PdfGraphics` context.
      *
      * @param {PdfGraphics} graphics The graphics context on which to draw the list.
-     * @param {number} x The x-coordinate where the list will be drawn.
-     * @param {number} y The y-coordinate where the list will be drawn.
+     * @param {Point} location The (x, y) coordinates where the list will be drawn.
      * @returns Nothing.
      * ```typescript
      * // Load an existing document
@@ -663,20 +640,43 @@ export abstract class PdfList {
      * // Create a new ordered list
      * let list: PdfOrderedList = new PdfOrderedList(items);
      * // Draw the list on the graphics of the page
-     * list.draw(page.graphics, 0, 20);
+     * list.draw(page.graphics, {x: 0, y: 20});
      * // Save the document
      * document.save('output.pdf');
      * // Destroy the document
      * document.destroy();
      * ````
      */
-    draw(graphics: PdfGraphics, x: number, y: number): void
+    draw(graphics: PdfGraphics, location: Point): void
+    /**
+     * Draws the content on the specified `PdfPage` at the given coordinates.
+     *
+     * @param {PdfPage} page The PDF page on which to draw the content.
+     * @param {Point} location The (x, Y) coordinates where the list will be drawn.
+     * @returns {PdfLayoutResult} A layout result object indicating the outcome of the drawing operation.
+     * ```typescript
+     * // Load an existing document
+     * let document: PdfDocument = new PdfDocument(data);
+     * // Access the first page
+     * let page: PdfPage = document.getPage(0);
+     * // Create a new item collection
+     * let items: PdfListItemCollection = new PdfListItemCollection(['Excel', 'Power', 'Point', 'Word', 'PDF']);
+     * // Create a new ordered list
+     * let list: PdfOrderedList = new PdfOrderedList(items);
+     * // Draw the list on the page associated with item collection
+     * list.draw(page, {x: 0, y: 20});
+     * // Save the document
+     * document.save('output.pdf');
+     * // Destroy the document
+     * document.destroy();
+     * ````
+     */
+    draw(page: PdfPage, location: Point): PdfLayoutResult
     /**
      * Draws the content on the specified `PdfPage` at the given coordinates with the specified layout format.
      *
      * @param {PdfPage} page The PDF page on which to draw the content.
-     * @param {number} x The x-coordinate where the list will be drawn.
-     * @param {number} y The y-coordinate where the list will be drawn.
+     * @param {Point} location The (x, y) coordinates where the list will be drawn.
      * @param {PdfLayoutFormat} format The layout format options for drawing.
      * @returns {PdfLayoutResult} A layout result object indicating the outcome of the drawing operation.
      * ```typescript
@@ -694,22 +694,19 @@ export abstract class PdfList {
      * layout.break = PdfLayoutBreakType.fitPage;
      * layout.layout = pdfLayoutType.paginate;
      * // Draw the list on the page associated with item collection
-     * list.draw(page, 0, 20, layout);
+     * list.draw(page, {x: 0, y: 20}, layout);
      * // Save the document
      * document.save('output.pdf');
      * // Destroy the document
      * document.destroy();
      * ````
      */
-    draw(page: PdfPage, x: number, y: number, format: PdfLayoutFormat): PdfLayoutResult
+    draw(page: PdfPage, location: Point, format: PdfLayoutFormat): PdfLayoutResult
     /**
      * Draws the content on the specified `PdfPage` within the specified bounds.
      *
      * @param {PdfPage} page The PDF page on which to draw the content.
-     * @param {number} x The x-coordinate where the list will be drawn.
-     * @param {number} y The y-coordinate where the list will be drawn.
-     * @param {number} width The width of the area to draw within.
-     * @param {number} height The height of the area to draw within.
+     * @param {Rectangle} bounds The bounding rectangle where the list will be drawn.
      * @returns {PdfLayoutResult} A layout result object indicating the outcome of the drawing operation.
      * ```typescript
      * // Load an existing document
@@ -728,15 +725,12 @@ export abstract class PdfList {
      * document.destroy();
      * ````
      */
-    draw(page: PdfPage, x: number, y: number, width: number, height: number): PdfLayoutResult
+    draw(page: PdfPage, bounds: Rectangle): PdfLayoutResult
     /**
      * Draws the content on the specified `PdfPage` at the given bounds with the specified layout format.
      *
      * @param {PdfPage} page The PDF page on which to draw the content.
-     * @param {number} x The x-coordinate where the list will be drawn.
-     * @param {number} y The y-coordinate where the list will be drawn.
-     * @param {number} width The width of the area to draw within.
-     * @param {number} height The height of the area to draw within.
+     * @param {Rectangle} bounds The bounding rectangle where the list will be drawn.
      * @param {PdfLayoutFormat} format The layout format options for drawing.
      * @returns {PdfLayoutResult} A layout result object indicating the outcome of the drawing operation.
      * ```typescript
@@ -761,21 +755,22 @@ export abstract class PdfList {
      * document.destroy();
      * ````
      */
-    draw(page: PdfPage, x: number, y: number, width: number, height: number, format: PdfLayoutFormat): PdfLayoutResult
+    draw(page: PdfPage, bounds: Rectangle, format: PdfLayoutFormat): PdfLayoutResult
     draw(arg1: PdfPage | PdfGraphics,
-         arg2: number,
-         arg3: number,
-         arg4 ?: number | PdfLayoutFormat,
-         arg5 ?: number,
-         arg6 ?: PdfLayoutFormat): PdfLayoutResult | void {
+         arg2: Point | Rectangle,
+         arg3 ?: PdfLayoutFormat): PdfLayoutResult | void {
         if (arg1 instanceof PdfPage) {
             if (arg1._isNew) {
-                return this._drawInternal(arg1, arg2, arg3, arg4, arg5, arg6);
+                if ('width' in arg2 && typeof arg2.width !== 'undefined' && 'height' in arg2 && typeof arg2.height !== 'undefined') {
+                    return this._drawInternal(arg1, arg2.x, arg2.y, arg2.width, arg2.height, arg3);
+                } else {
+                    return this._drawInternal(arg1, arg2.x, arg2.y, 0, 0, arg3);
+                }
             } else {
-                (new _PdfListLayouter(this)).layout(arg1.graphics, [arg2, arg3, 0, 0]);
+                (new _PdfListLayouter(this)).layout(arg1.graphics, [arg2.x, arg2.y, 0, 0]);
             }
         } else {
-            (new _PdfListLayouter(this)).layout(arg1, [arg2, arg3, 0, 0]);
+            (new _PdfListLayouter(this)).layout(arg1, [arg2.x, arg2.y, 0, 0]);
         }
     }
     _drawInternal(arg1: PdfPage,
@@ -847,7 +842,7 @@ export class PdfOrderedList extends PdfList {
      * // Set the item collection
      * list.items = items;
      * // Draw the ordered list on the page
-     * list.draw(page, 0, 20, 500, 700);
+     * list.draw(page, {x: 0, y: 20, width: 500, height: 700});
      * // Save the document
      * document.save('output.pdf');
      * // Destroy the document
@@ -872,7 +867,7 @@ export class PdfOrderedList extends PdfList {
      * // Initialize the instance of ordered list and pass the item collection
      * let list: PdfOrderedList = new PdfOrderedList(items);
      * // Draw the ordered list on the page
-     * list.draw(page, 0, 20, 500, 700);
+     * list.draw(page, {x: 0, y: 20, width: 500, height: 700});
      * // Save the document
      * document.save('output.pdf');
      * // Destroy the document
@@ -896,13 +891,13 @@ export class PdfOrderedList extends PdfList {
      * // Assign the array of string items
      * let products: string[] = ['Excel', 'Power', 'Point', 'Word', 'PDF'];
      * // Create a new font for list
-     * let itemFont: PdfStandardFont = new PdfStandardFont(PdfFontFamily.Helvetica, 10);
+     * let itemFont: PdfStandardFont = new PdfStandardFont(PdfFontFamily.helvetica, 10);
      * // Create a new brush for list
-     * let itemBrush: PdfBrush = new PdfBrush([0, 255, 255]);
+     * let itemBrush: PdfBrush = new PdfBrush({r: 0, g: 255, b: 255});
      * // Create a new format for list
      * let itemFormat: PdfStringFormat = new PdfStringFormat(PdfTextAlignment.center);
      * // Create a new pen for list
-     * let itemPen: PdfPen = new PdfPen([0, 255, 0], 1);
+     * let itemPen: PdfPen = new PdfPen({r: 0, g: 255, b: 0}, 1);
      * // Initialize a PdfNumberStyle for items
      * let itemStyle: PdfNumberStyle = PdfNumberStyle.numeric.
      * // Initialize a delimiter for the items
@@ -922,7 +917,7 @@ export class PdfOrderedList extends PdfList {
      *     delimiter: itemDelimiter
      * });
      * // Draw the ordered list on the page
-     * list.draw(page, 0, 20, 500, 700);
+     * list.draw(page, {x: 0, y: 20, width: 500, height: 700});
      * // Save the document
      * document.save('output.pdf');
      * // Destroy the document
@@ -1012,7 +1007,7 @@ export class PdfOrderedList extends PdfList {
      * // Get the numbering style used for the ordered list
      * let style: PdfNumberStyle = list.style;
      * // Draw the ordered list on the page
-     * list.draw(page, 0, 20, 500, 700);
+     * list.draw(page, {x: 0, y: 20, width: 500, height: 700});
      * // Save the document
      * document.save('output.pdf');
      * // Destroy the document
@@ -1042,7 +1037,7 @@ export class PdfOrderedList extends PdfList {
      * // Set the numbering style for the list items
      * list.style = style;
      * // Draw the ordered list on the page
-     * list.draw(page, 0, 20, 500, 700);
+     * list.draw(page, {x: 0, y: 20, width: 500, height: 700});
      * // Save the document
      * document.save('output.pdf');
      * // Destroy the document
@@ -1070,7 +1065,7 @@ export class PdfOrderedList extends PdfList {
      * // Get the starting number used for the ordered list
      * let startnumber: number = list.startNumber;
      * // Draw the ordered list on the page
-     * list.draw(page, 0, 20, 500, 700);
+     * list.draw(page, {x: 0, y: 20, width: 500, height: 700});
      * // Save the document
      * document.save('output.pdf');
      * // Destroy the document
@@ -1098,7 +1093,7 @@ export class PdfOrderedList extends PdfList {
      * // Set the starting number for the ordered list
      * list.startNumber = 5;
      * // Draw the ordered list on the page
-     * list.draw(page, 0, 20, 500, 700);
+     * list.draw(page, {x: 0, y: 20, width: 500, height: 700});
      * // Save the document
      * document.save('output.pdf');
      * // Destroy the document
@@ -1129,7 +1124,7 @@ export class PdfOrderedList extends PdfList {
  * // Create an instance of PdfUnorderedList
  * let list: PdfUnorderedList = new PdfUnorderedList();
  * // Draw the unordered list on the page
- * list.draw(page, 0, 20, layout);
+ * list.draw(page, {x: 0, y: 20, width: 500, height: 700});
  * // Save the document
  * document.save('output.pdf');
  * // Destroy the document
@@ -1154,7 +1149,7 @@ export class PdfUnorderedList extends PdfList {
      * // Create a unordered list
      * let list: PdfUnorderedList = new PdfUnorderedList(items);
      * // Draw the unordered list on the page
-     * list.draw(page, 0, 20, 500, 700);
+     * list.draw(page, {x: 0, y: 20, width: 500, height: 700});
      * // Save the document
      * document.save('output.pdf');
      * // Destroy the document
@@ -1176,13 +1171,13 @@ export class PdfUnorderedList extends PdfList {
      * // Define the items in the unordered list
      * let products: string[] = ['Excel', 'Power', 'Point', 'Word', 'PDF'];
      * // Create a new font for list
-     * let itemFont: PdfStandardFont = new PdfStandardFont(PdfFontFamily.Helvetica, 10);
+     * let itemFont: PdfStandardFont = new PdfStandardFont(PdfFontFamily.helvetica, 10);
      * // Create a new brush for list
-     * let itemBrush: PdfBrush = new PdfBrush([0, 255, 255]);
+     * let itemBrush: PdfBrush = new PdfBrush({r: 0, g: 255, b: 255});
      * // Create a new format for list
      * let itemFormat: PdfStringFormat = new PdfStringFormat(PdfTextAlignment.center);
      * // Create a new pen for list
-     * let itemPen: PdfPen = new PdfPen([0, 255, 0],1);
+     * let itemPen: PdfPen = new PdfPen({r: 0, g: 255, b: 0},1);
      * // Initialise a PdfUnorderedListStyle
      * let itemStyle: PdfNumberStyle = PdfUnorderedListStyle.square.
      * // Initialize a delimiter for the items
@@ -1201,7 +1196,7 @@ export class PdfUnorderedList extends PdfList {
      *     delimiter: itemDelimiter
      * });
      * // Draw the unordered list on the page
-     * list.draw(page, 0, 20, 500, 700);
+     * list.draw(page, {x: 0, y: 20, width: 500, height: 700});
      * // Save the document
      * document.save('output.pdf');
      * // Destroy the document
@@ -1291,7 +1286,7 @@ export class PdfUnorderedList extends PdfList {
      * // Get the style used for the unordered list
      * let style: PdfUnorderedListStyle = list.style;
      * // Draw the unordered list on the page
-     * list.draw(page, 0, 20, 500, 700);
+     * list.draw(page, {x: 0, y: 20, width: 500, height: 700});
      * // Save the document
      * document.save('output.pdf');
      * // Destroy the document
@@ -1321,7 +1316,7 @@ export class PdfUnorderedList extends PdfList {
      * // Set the style for the unordered list items
      * list.style = style;
      * // Draw the unordered list on the page
-     * list.draw(page, 0, 20, 500, 700);
+     * list.draw(page, {x: 0, y: 20, width: 500, height: 700});
      * // Save the document
      * document.save('output.pdf');
      * // Destroy the document
@@ -1347,13 +1342,13 @@ export class PdfUnorderedList extends PdfList {
     }
     _draw(graphics: PdfGraphics, x: number, y: number, brush: PdfBrush, pen: PdfPen): void {
         const template: PdfTemplate = new PdfTemplate([0, 0, this._size[0], this._size[1]], graphics._crossReference);
-        const bounds: number[] = [0, 0, 0, 0];
+        const bounds: Rectangle = {x: 0, y: 0, width: 0, height: 0};
         if (pen) {
-            bounds[0] = bounds[0] + pen._width;
-            bounds[1] = bounds[1] + pen._width;
+            bounds.x = bounds.x + pen._width;
+            bounds.y = bounds.y + pen._width;
         }
         template.graphics.drawString(this._getStyledText(), this._unicodeFont, bounds, pen, brush);
-        graphics.drawTemplate(template, {x: x, y: y, width: template.size[0], height: template.size[1]});
+        graphics.drawTemplate(template, {x: x, y: y, width: template.size.width, height: template.size.height});
     }
 }
 export class _PdfListInfo {
@@ -1405,9 +1400,9 @@ export class _PdfListLayouter {
         this._bounds = parameter._bounds.slice();
         if (this._currentPage) {
             if (parameter._bounds[2] === 0 && parameter._bounds[3] === 0) {
-                const pageSize: number[] = this._currentPage.graphics.clientSize;
-                this._bounds[2] = pageSize[0] - this._bounds[0];
-                this._bounds[3] = pageSize[1] - this._bounds[1];
+                const pageSize: Size = this._currentPage.graphics.clientSize;
+                this._bounds[2] = pageSize.width - this._bounds[0];
+                this._bounds[3] = pageSize.height - this._bounds[1];
             }
             this._graphics = this._currentPage.graphics;
         }
@@ -1418,7 +1413,7 @@ export class _PdfListLayouter {
         this._indent = this._curList.indent;
         this._setCurrentParameters(this._curList);
         if (!this._curList.brush) {
-            this._currentBrush = new PdfBrush([0, 0, 0]);
+            this._currentBrush = new PdfBrush({r: 0, g: 0, b: 0});
         }
         if (!this._curList.font) {
             this._currentFont = this._curList._defaultFont;
@@ -1438,16 +1433,17 @@ export class _PdfListLayouter {
             }
             this._graphics = this._currentPage.graphics;
             if (parameter._bounds[2] === 0 && parameter._bounds[3] === 0) {
-                const pageSize: number[] = this._currentPage.graphics.clientSize;
-                this._bounds[2] = pageSize[0] - this._bounds[0];
-                this._bounds[3] = pageSize[1] - this._bounds[1];
+                const pageSize: Size = this._currentPage.graphics.clientSize;
+                this._bounds[2] = pageSize.width - this._bounds[0];
+                this._bounds[3] = pageSize.height - this._bounds[1];
             }
             if (parameter._format && parameter._format.usePaginateBounds && this._usePaginateBounds) {
-                this._bounds = parameter._format._paginateBounds;
+                const paginateBounds: Rectangle = parameter._format._paginateBounds;
+                this._bounds = [paginateBounds.x, paginateBounds.y, paginateBounds.width, paginateBounds.height];
             }
         }
         this._information = [];
-        const finalBounds: number[] = [this._bounds[0], pageResult.y, this._bounds[2], this._resultHeight];
+        const finalBounds: Rectangle = {x: this._bounds[0], y: pageResult.y, width: this._bounds[2], height: this._resultHeight};
         const result: PdfLayoutResult = new PdfLayoutResult(this._currentPage, finalBounds);
         if (this._currentFormat) {
             this._currentFormat._isList = false;
@@ -1578,10 +1574,10 @@ export class _PdfListLayouter {
                 posX += this._markerMaxWidth;
                 pageResult.markerWidth = this._markerMaxWidth;
             } else {
-                posX += markerResult._actualSize[0];
-                pageResult.markerWidth = markerResult._actualSize[0];
+                posX += markerResult._actualSize.width;
+                pageResult.markerWidth = markerResult._actualSize.width;
             }
-            markerHeight = markerResult._actualSize[1];
+            markerHeight = markerResult._actualSize.height;
             if (this._currentPage) {
                 canDrawMarker = (markerHeight < this._size[1]);
             }
@@ -1631,7 +1627,7 @@ export class _PdfListLayouter {
             const rect: number[] = [itemX, posY, itemSize[0], itemSize[1]];
             this._graphics._drawStringLayoutResult(result, itemFont, itemPen, itemBrush, rect, itemFormat);
             y = posY;
-            itemHeight = result._actualSize[1];
+            itemHeight = result._actualSize.height;
         }
         height = (itemHeight < markerHeight) ? markerHeight : itemHeight;
         if ((result && result._remainder && result._remainder !== '') ||
@@ -1667,16 +1663,16 @@ export class _PdfListLayouter {
             if (itemFormat) {
                 switch (itemFormat.alignment) {
                 case PdfTextAlignment.right:
-                    pageResult.markerX = posX + itemSize[0] - result._actualSize[0];
+                    pageResult.markerX = posX + itemSize[0] - result._actualSize.width;
                     break;
 
                 case PdfTextAlignment.center:
-                    pageResult.markerX = posX + (itemSize[0] / 2) - (result._actualSize[0] / 2);
+                    pageResult.markerX = posX + (itemSize[0] / 2) - (result._actualSize.width / 2);
                     break;
                 }
             }
             if (curList._markerRightToLeft) {
-                pageResult.markerX += result._actualSize[0];
+                pageResult.markerX += result._actualSize.width;
                 if (item.textIndent === 0) {
                     pageResult.markerX += textIndent;
                 } else {
@@ -1690,7 +1686,7 @@ export class _PdfListLayouter {
         if (canDrawMarker && !pageResult.markerWrote) {
             pageResult.markerWrote = this._drawMarker(curList, item, markerResult, posY, pageResult.markerX);
             if (curList instanceof PdfOrderedList) {
-                pageResult.markerWidth = markerResult._actualSize[0];
+                pageResult.markerWidth = markerResult._actualSize.width;
             } else {
                 pageResult.markerWidth = curList._size[0];
             }
@@ -1707,17 +1703,17 @@ export class _PdfListLayouter {
     private _drawMarker(curList: PdfList, item: PdfListItem, markerResult: _PdfStringLayoutResult, posY: number, posX: number): boolean {
         if (curList instanceof PdfOrderedList) {
             if (curList.font && markerResult) {
-                if (curList.font.size > markerResult._actualSize[1]) {
-                    posY += (curList.font.size / 2) - (markerResult._actualSize[1] / 2);
-                    markerResult._actualSize[1] = markerResult._actualSize[1] + posY;
+                if (curList.font.size > markerResult._actualSize.height) {
+                    posY += (curList.font.size / 2) - (markerResult._actualSize.height / 2);
+                    markerResult._actualSize.height = markerResult._actualSize.height + posY;
                 }
                 this._drawOrderedMarker(curList, markerResult, item, posX, posY);
             }
         } else {
             if (curList.font && markerResult) {
-                if (curList.font.size > markerResult._actualSize[1]) {
-                    posY += (curList.font.size / 2) - (markerResult._actualSize[1] / 2);
-                    markerResult._actualSize[1] = markerResult._actualSize[1] + posY;
+                if (curList.font.size > markerResult._actualSize.height) {
+                    posY += (curList.font.size / 2) - (markerResult._actualSize.height / 2);
+                    markerResult._actualSize.height = markerResult._actualSize.height + posY;
                 }
             }
             this._drawUnorderedMarker(curList as PdfUnorderedList, markerResult, item, posX, posY);
@@ -1733,9 +1729,9 @@ export class _PdfListLayouter {
         const markerPen: PdfPen = this._getMarkerPen(curList, item);
         const markerBrush: PdfBrush = this._getMarkerBrush(curList, item);
         if (markerResult) {
-            curList._size = markerResult._actualSize;
+            curList._size = [markerResult._actualSize.width, markerResult._actualSize.height];
             curList._unicodeFont = new PdfStandardFont(PdfFontFamily.zapfDingbats, markerFont.size);
-            curList._draw(this._graphics, posX - markerResult._actualSize[0], posY, markerBrush, markerPen);
+            curList._draw(this._graphics, posX - markerResult._actualSize.width, posY, markerBrush, markerPen);
         } else {
             curList._size = [markerFont.size, markerFont.size];
             curList._draw(this._graphics, posX - markerFont.size, posY, markerBrush, markerPen);
@@ -1749,7 +1745,7 @@ export class _PdfListLayouter {
         const markerFont: PdfFont = this._getMarkerFont(curList, item);
         const markerPen: PdfPen = this._getMarkerPen(curList, item);
         const markerBrush: PdfBrush = this._getMarkerBrush(curList, item);
-        const rect: number[] = [posX - this._markerMaxWidth, posY, this._markerMaxWidth, markerResult._actualSize[1]];
+        const rect: number[] = [posX - this._markerMaxWidth, posY, this._markerMaxWidth, markerResult._actualSize.height];
         const markerFormat: PdfStringFormat = this._setMarkerStringFormat(curList, this._getMarkerFormat(curList, item));
         this._graphics._drawStringLayoutResult(markerResult, markerFont, markerPen, markerBrush, rect, markerFormat);
     }
@@ -1778,8 +1774,8 @@ export class _PdfListLayouter {
                                                                                    i + list.startNumber,
                                                                                    infromation,
                                                                                    true);
-            if (width < result._actualSize[0]) {
-                width = result._actualSize[0];
+            if (width < result._actualSize.width) {
+                width = result._actualSize.width;
             }
         }
         return width;
@@ -1789,9 +1785,9 @@ export class _PdfListLayouter {
         const layouter: _PdfStringLayouter = new _PdfStringLayouter();
         const uFont: PdfStandardFont = new PdfStandardFont(PdfFontFamily.zapfDingbats, markerFont.size);
         const result: _PdfStringLayoutResult = layouter._layout(list._getStyledText(), uFont, null, this._size);
-        list._size = result._actualSize;
+        list._size = [result._actualSize.width, result._actualSize.height];
         if (list.pen) {
-            result._size = [result._actualSize[0] + 2 * list.pen._width, result._actualSize[1] + 2 * list.pen._width];
+            result._size = {width: result._actualSize.width + 2 * list.pen._width, height: result._actualSize.height + 2 * list.pen._width};
         }
         return result;
     }

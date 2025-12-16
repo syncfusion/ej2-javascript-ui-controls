@@ -1,3 +1,6 @@
+@use 'ej2-base/styles/definition/fluent' as *;
+@forward 'ej2-base/styles/definition/fluent';
+
 /*! calendar bootstrap5 theme variables */
 //month view
 $calendar-normal-month-view-height: 28px !default;
@@ -10,6 +13,7 @@ $calendar-bigger-month-view-padding: 0 !default;
 $calendar-bigger-month-view-height: 32px !default;
 $calendar-bigger-month-view-line-height: 29px !default;
 $calendar-bigger-month-view-width: 32px !default;
+$border-zero: 0;
 
 //header dimension
 $calendar-header-font-size: $text-xs !default;
@@ -262,3 +266,12 @@ $today-button-bg-border-active-color: $primary-border-color-pressed !default;
 $today-button-text-active-color: $primary !default;
 $calendar-selected-month-bg-color: $primary-light !default;
 $calendar-week-number-border: 1px solid $content-text-color-alt3 !default;
+
+$line-height: 14px;
+$margin-zero: 0;
+$padding-zero: 0;
+$calendar-bigger-rtl-header-text-indent: 6px !default;
+$calendar-zero-border-radius: 0 !default;
+$calendar-bigger-header-width: 60% !default;
+$calendar-bigger-placeholder-min-height: 392px !default;
+$calendar-small-min-height: 220px !default;

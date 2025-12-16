@@ -1,1 +1,6 @@
+@use 'ej2-base/styles/definition/tailwind3' as *;
+@forward 'ej2-base/styles/definition/tailwind3';
+
 /* stylelint-disable-line no-empty-source */
+$popup-width: auto !default;
+$popup-height: auto !default;

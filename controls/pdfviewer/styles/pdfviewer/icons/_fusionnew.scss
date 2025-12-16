@@ -1,3 +1,5 @@
+@use 'ej2-base/styles/common/mixin' as *;
+@use '../fusionnew-definition' as *;
 @include export-module('pdfviewer-fusion-icons') {
   .e-pdfviewer {
     .e-pv-icon::before {
@@ -551,6 +553,10 @@
   }
   .e-pv-redact-pages-icon::before {
     content: '\e893';
+    font-family: 'e-icons';
+  }
+  .e-pv-text-redact-icon::before {
+    content: '\e94f';
     font-family: 'e-icons';
   }
   .e-pv-redaction-panel-icon::before {

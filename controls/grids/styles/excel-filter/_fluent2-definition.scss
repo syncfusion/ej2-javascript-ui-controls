@@ -1,3 +1,5 @@
+@use 'ej2-base/styles/definition/fluent2' as *;
+@forward 'ej2-base/styles/definition/fluent2';
 $grid-columnchooser-search-border-color: $border-light !default;
 $grid-columnchooser-search-border-fcolor: $primary !default;
 $grid-columnchooser-footer-border-opacity: 1 !default;
@@ -43,7 +45,7 @@ $grid-bigger-xlfltable-border-spacing: 0 !default;
 $grid-bigger-xlfltd-padding: 15px !default;
 $grid-bigger-xlfl-radio-margin-left: 18px !default;
 $grid-bigger-xlfl-dropdown-padding-right: 15px !default;
-$grid-bigger-xlfl-radiodiv-width: 141px !default;
+$grid-bigger-xlfl-radiodiv-width: 175px !default;
 $grid-xlfl-radio-margin-left: 2px !default;
 $grid-xl-radio-padding-right: 9px !default;
 $grid-bigger-xl-radio-padding-left: 27px !default;
@@ -70,3 +72,5 @@ $grid-xlfl-li-icon-margin-arrow-icon: 8px !default;
 $grid-bigger-xlfl-li-icon-margin-arrow-icon: 12px !default;
 $grid-xl-radio-margin-top: 0 !default;
 $grid-xlfl-skin: $skin-name !default;
+
+$grid-border-radius-0: 0 !default;

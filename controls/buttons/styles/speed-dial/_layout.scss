@@ -1,3 +1,5 @@
+@use 'ej2-base/styles/common/mixin' as *;
+@use './theme-variables' as *;
 @mixin speeddial-popup-styles($padding, $li-margin, $li-text-margin, $speeddial-li-text-height, $li-icon-height, $li-icon-width, $li-icon-font-size, $ul-padding, $sd-li-margin, $speeddial-text-li-padding) {
   .e-speeddial-ul {
     padding: $padding;
@@ -18,8 +20,8 @@
       padding: $speeddial-text-li-padding;
     }
     @if ($skin-name == 'tailwind3') {
-      height: 12px;
-      line-height: 12px;
+      height: $sd-li-text-li-tail-height;
+      line-height: $sd-li-text-li-tail-line-height;
     }
   }
 
@@ -152,34 +154,34 @@
 
       &.e-speeddial-text-li .e-speeddial-li-text {
         @if ($skin-name == 'fluent2') {
-          border: 1px solid;
-          border-radius: 20px;
-          font-size: 12px;
-          line-height: 16px;
-          padding: 8px 16px;
+          border: $spdl-border-width solid;
+          border-radius: $spdl-text-border-radius;
+          font-size: $spdl-text-font-size;
+          line-height: $spdl-text-line-height;
+          padding: $spdl-text-padding;
           box-sizing: content-box;
         }
         @if ($skin-name == 'tailwind3') {
-          height: 26px;
-          line-height: 26px;
+          height: $speed-dial-text-li-tail-height;
+          line-height: $speed-dial-text-li-tail-line-height;
           border: 1px solid;
-          border-radius: 20px;
-          padding: 0 12px;
+          border-radius: $speed-dial-text-li-tail-radius;
+          padding: $speed-dial-text-li-tail-padding;
         }
       }
     }
 
     .e-speeddial-li-text {
-      border-radius: 2px;
+      border-radius: $sd-li-text-border-radius;
       padding: $sd-li-text-padding;
       white-space: nowrap;
       height: $sd-li-text-height;
       line-height: $sd-li-text-height;
       @if ($skin-name == 'fluent2' or $skin-name == 'tailwind3') {
-        border: none;
+        border: $border-none;
       }
       @else {
-        border: 1px solid;
+        border: $spdl-border-width solid;
       }
       @if ($skin-name == 'tailwind3') {
         font-weight: $font-weight-medium;
@@ -188,7 +190,7 @@
 
     .e-speeddial-li-icon {
       border-radius: $sd-li-icon-border-radius;
-      border: 1px solid;
+      border: $sd-border-normal-width solid;
       font-size: $sd-li-icon-font-size;
       height: $sd-li-icon-height;
       width: $sd-li-icon-width;
@@ -268,25 +270,25 @@
       }
 
       &.e-speeddial-top-left {
-        border-bottom-right-radius: 100%;
+        border-bottom-right-radius: $sd-top-bottom-border-radius;
       }
 
       &.e-speeddial-top-right {
-        border-bottom-left-radius: 100%;
+        border-bottom-left-radius: $sd-top-bottom-border-radius;
       }
 
       &.e-speeddial-bottom-left {
-        border-top-right-radius: 100%;
+        border-top-right-radius: $sd-top-bottom-border-radius;
       }
 
       &.e-speeddial-bottom-right {
-        border-top-left-radius: 100%;
+        border-top-left-radius: $sd-top-bottom-border-radius;
       }
 
       .e-speeddial-ul {
         @include speeddial-styles(inherit, inherit, relative);
         border-radius: inherit;
-        padding: 0;
+        padding: $sd-zero-padding-margin;
       }
 
       .e-speeddial-li {
@@ -312,8 +314,8 @@
 
   .e-speeddial-overlay {
     @include speeddial-styles(100%, 100%, absolute);
-    left: 0;
-    top: 0;
+    left: $sd-zero-padding-margin;
+    top: $sd-zero-padding-margin;
     z-index: 99998;
 
     &.e-speeddial-fixed {

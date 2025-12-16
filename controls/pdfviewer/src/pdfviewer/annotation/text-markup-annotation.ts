@@ -227,8 +227,8 @@ export class TextMarkupAnnotation {
      */
     public textSelect(target: any, x: any, y: any): void {
         if (this.isLeftDropletClicked) {
-            const leftElement: ClientRect = this.dropDivAnnotationRight.getBoundingClientRect();
-            const rightElement: ClientRect = this.dropDivAnnotationLeft.getBoundingClientRect();
+            const leftElement: DOMRect = this.dropDivAnnotationRight.getBoundingClientRect();
+            const rightElement: DOMRect = this.dropDivAnnotationLeft.getBoundingClientRect();
             const clientX: number = x;
             const clientY: number = y;
             if (target.classList.contains('e-pv-text')) {
@@ -240,7 +240,7 @@ export class TextMarkupAnnotation {
                 this.updateLeftposition(clientX, clientY);
             }
         } else if (this.isRightDropletClicked) {
-            const leftElement: ClientRect = this.dropDivAnnotationLeft.getBoundingClientRect();
+            const leftElement: DOMRect = this.dropDivAnnotationLeft.getBoundingClientRect();
             const clientX: number = x;
             const clientY: number = y;
             if (target.classList.contains('e-pv-text')) {
@@ -412,7 +412,7 @@ export class TextMarkupAnnotation {
                                                                                 false);
                     if ((annotation.bounds.length - 1) === k) {
                         this.pdfViewer.textSelectionModule.textSelectionOnMouseMove(element, x + boundingRect.left + width,
-                                                                                    y + boundingRect.top, false);
+                                                                                    y + boundingRect.top, false, true);
                     }
                 }
             }
@@ -437,6 +437,7 @@ export class TextMarkupAnnotation {
             rightDivElement.style.top = topClientValue + pageTopValue * this.pdfViewerBase.getZoomFactor() + 'px';
         }
         rightDivElement.style.left = x + this.pdfViewerBase.viewerContainer.scrollLeft - this.pdfViewerBase.viewerContainer.getBoundingClientRect().left + 'px';
+        this.setDropletVisualRotation(this.pdfViewerBase.currentPageNumber - 1);
     }
 
     /**
@@ -459,6 +460,23 @@ export class TextMarkupAnnotation {
             leftDivElement.style.top = topClientValue + pageTopValue * this.pdfViewerBase.getZoomFactor() + 'px';
         }
         leftDivElement.style.left = x + this.pdfViewerBase.viewerContainer.scrollLeft - this.pdfViewerBase.viewerContainer.getBoundingClientRect().left - (this.dropletHeight * this.pdfViewerBase.getZoomFactor()) + 'px';
+        this.setDropletVisualRotation(this.pdfViewerBase.currentPageNumber - 1);
+    }
+
+    private setDropletVisualRotation(pageNumber: number): void {
+        const pageDetails: ISize = this.pdfViewerBase.pageSize[parseInt(pageNumber.toString(), 10)];
+        const pageRotation: number = this.pdfViewerBase.getAngle(pageDetails.rotation);
+        if (pageRotation === 90 || pageRotation === 270) {
+            const divRotation: string = pageRotation === 90 ? 'rotate(90deg)' : 'rotate(-90deg)';
+            if (this.dropElementLeft && this.dropDivAnnotationLeft) {
+                this.dropDivAnnotationLeft.style.transform = divRotation;
+                this.dropElementLeft.style.transform = 'rotate(0deg)';
+            }
+            if (this.dropElementRight && this.dropDivAnnotationRight) {
+                this.dropDivAnnotationRight.style.transform = divRotation;
+                this.dropElementRight.style.transform = 'rotate(270deg)';
+            }
+        }
     }
 
     private getClientValueTop(clientValue: number, pageNumber: number): number {
@@ -652,30 +670,33 @@ export class TextMarkupAnnotation {
                     }
                 }
             }
-            let isMaintainedSelector: boolean = false;
-            if (this.currentTextMarkupAnnotation && this.currentTextMarkupAnnotation.annotpageNumbers) {
-                for (let m: number = 0; m < this.currentTextMarkupAnnotation.annotpageNumbers.length; m++) {
-                    if (pageNumber === this.currentTextMarkupAnnotation.annotpageNumbers[parseInt(m.toString(), 10)]) {
-                        isMaintainedSelector = true;
-                        this.isAnnotationSelect = false;
-                        break;
+            if (isNullOrUndefined(this.currentTextMarkupAnnotation) || (this.currentTextMarkupAnnotation && (this.currentTextMarkupAnnotation.ShapeAnnotationType !== 'Redaction' &&
+                this.currentTextMarkupAnnotation.shapeAnnotationType !== 'Redaction'))) {
+                let isMaintainedSelector: boolean = false;
+                if (this.currentTextMarkupAnnotation && this.currentTextMarkupAnnotation.annotpageNumbers) {
+                    for (let m: number = 0; m < this.currentTextMarkupAnnotation.annotpageNumbers.length; m++) {
+                        if (pageNumber === this.currentTextMarkupAnnotation.annotpageNumbers[parseInt(m.toString(), 10)]) {
+                            isMaintainedSelector = true;
+                            this.isAnnotationSelect = false;
+                            break;
+                        }
                     }
                 }
-            }
-            if ((pageNumber === this.selectTextMarkupCurrentPage) || isMaintainedSelector) {
-                if (!this.isAnnotationSelect) {
-                    this.maintainAnnotationSelection();
-                } else {
-                    this.isAnnotationSelect = false;
+                if ((pageNumber === this.selectTextMarkupCurrentPage) || isMaintainedSelector) {
+                    if (!this.isAnnotationSelect) {
+                        this.maintainAnnotationSelection();
+                    } else {
+                        this.isAnnotationSelect = false;
+                    }
                 }
-            }
-            if (this.pdfViewerBase.isPrint) {
-                const annotImg: string = (canvas as HTMLCanvasElement).toDataURL();
-                let highlightImg: string;
-                if (highlightCanvasContext) {
-                    highlightImg = (highlightCanvasContext.canvas as HTMLCanvasElement).toDataURL();
+                if (this.pdfViewerBase.isPrint) {
+                    const annotImg: string = (canvas as HTMLCanvasElement).toDataURL();
+                    let highlightImg: string;
+                    if (highlightCanvasContext) {
+                        highlightImg = (highlightCanvasContext.canvas as HTMLCanvasElement).toDataURL();
+                    }
+                    return { annotImg, highlightImg };
                 }
-                return { annotImg, highlightImg };
             }
         }
     }
@@ -1022,7 +1043,7 @@ export class TextMarkupAnnotation {
         }
     }
 
-    private modifyMultiPageAnnotations(annotation: any, property: string, value: any): void {
+    private modifyMultiPageAnnotations(annotation: any, property: string, value: any, status?: string): void {
         for (let k: number = 0; k < annotation.annotNameCollection.length; k++) {
             const currentAnnot: any = annotation.annotNameCollection[parseInt(k.toString(), 10)];
             if (currentAnnot !== annotation.annotName) {
@@ -1731,11 +1752,12 @@ export class TextMarkupAnnotation {
      * @param {any} stickyData - It describes about the sticky data
      * @param {any} freeTextData - It describes about the free text data
      * @param {any} inkData - It describes about the ink data
+     * @param {any} redactionData - It describes about the redaction data
      * @private
      * @returns {string} - string
      */
     public printAnnotationsInCanvas(textMarkupAnnotations: any, pageIndex: number, stampData: any, shapeData: any,
-                                    measureShapeData: any, stickyData: any, freeTextData: any, inkData: any): string[] {
+                                    measureShapeData: any, stickyData: any, freeTextData: any, inkData: any, redactionData: any): string[] {
         const canvas: HTMLCanvasElement = createElement('canvas', { id: this.pdfViewer.element.id + '_print_annotation_layer_' + pageIndex }) as HTMLCanvasElement;
         canvas.style.width = 816 + 'px';
         canvas.style.height = 1056 + 'px';
@@ -1750,14 +1772,18 @@ export class TextMarkupAnnotation {
         const stampAnnotation: any = this.getAnnotations(pageIndex, null, '_annotations_stamp');
         const stickyNoteAnnotation: any = this.getAnnotations(pageIndex, null, '_annotations_sticky');
         const inkAnnotation: any = this.getAnnotations(pageIndex, null, '_annotations_ink');
-        if (inkAnnotation || stampAnnotation || shapeAnnotation || stickyNoteAnnotation || measureShapeAnnotation) {
+        const redactionAnnotation: any = this.getAnnotations(pageIndex, null, '_annotations_redaction');
+        if (inkAnnotation || stampAnnotation || shapeAnnotation || stickyNoteAnnotation || measureShapeAnnotation || redactionAnnotation) {
             this.pdfViewer.renderDrawing(canvas, pageIndex);
             this.pdfViewer.annotation.renderAnnotations(pageIndex, null, null, null, canvas, null, null, freeTextData, inkData);
         } else {
             this.pdfViewer.annotation.renderAnnotations(pageIndex, shapeData, measureShapeData, null, canvas, null, null, freeTextData,
-                                                        inkData);
+                                                        inkData, null, redactionData);
             this.pdfViewer.annotation.stampAnnotationModule.renderStampAnnotations(stampData, pageIndex, canvas);
             this.pdfViewer.annotation.stickyNotesAnnotationModule.renderStickyNotesAnnotations(stickyData, pageIndex, canvas);
+        }
+        if (redactionAnnotation && this.pdfViewer.annotationModule && this.pdfViewer.annotationModule.redactionAnnotationModule) {
+            this.pdfViewer.annotation.redactionAnnotationModule.renderTextRedactAnnotations(null, pageIndex, canvas, zoom);
         }
         return this.renderTextMarkupAnnotations(null, pageIndex, canvas, zoom);
     }
@@ -1999,7 +2025,7 @@ export class TextMarkupAnnotation {
         const annotation: any = this.currentTextMarkupAnnotation;
         this.pdfViewer.annotationModule.isFormFieldShape = false;
         if (annotation.isMultiSelect && annotation.annotNameCollection) {
-            this.modifyMultiPageAnnotations(annotation, property, value);
+            this.modifyMultiPageAnnotations(annotation, property, value, status);
         }
         const pageAnnotations: ITextMarkupAnnotation[] = this.getAnnotations(this.selectTextMarkupCurrentPage, null);
         if (pageAnnotations) {
@@ -2155,7 +2181,11 @@ export class TextMarkupAnnotation {
         this.pdfViewerBase.updateDocumentEditedProperty(true);
     }
 
-    private clearCurrentAnnotation(): void {
+    /**
+     * @private
+     * @returns {void}
+     */
+    public clearCurrentAnnotation(): void {
         if (!this.isExtended) {
             if (!(this.pdfViewer.isMaintainSelection && !this.pdfViewer.textSelectionModule.isTextSelection)) {
                 this.selectTextMarkupCurrentPage = null;
@@ -2244,7 +2274,11 @@ export class TextMarkupAnnotation {
         return { a: textMarkupA, r: textMarkupR, g: textMarkupG, b: textMarkupB };
     }
 
-    private getDrawnBounds(): IPageAnnotationBounds[] {
+    /**
+     * @private
+     * @returns {any} - any
+     */
+    public getDrawnBounds(): IPageAnnotationBounds[] {
         const pageBounds: IPageAnnotationBounds[] = [];
         const selection: Selection = window.getSelection();
         if (selection.anchorNode !== null) {
@@ -2255,9 +2289,9 @@ export class TextMarkupAnnotation {
                 let startIndex: number = 0;
                 let endIndex: number = 0;
                 if (!isNaN(pageId)) {
-                    let pageRect: ClientRect = this.pdfViewerBase.getElement('_pageDiv_' + pageId).getBoundingClientRect();
+                    let pageRect: DOMRect = this.pdfViewerBase.getElement('_pageDiv_' + pageId).getBoundingClientRect() as DOMRect;
                     if (this.pdfViewerBase.isMixedSizeDocument) {
-                        pageRect = this.pdfViewerBase.getElement('_textLayer_' + pageId).getBoundingClientRect();
+                        pageRect = this.pdfViewerBase.getElement('_textLayer_' + pageId).getBoundingClientRect() as DOMRect;
                     }
                     if (isBackWardSelection) {
                         range.setStart(selection.focusNode, selection.focusOffset);
@@ -2275,7 +2309,7 @@ export class TextMarkupAnnotation {
                             range.setEnd(selection.anchorNode, selection.anchorOffset);
                         }
                     }
-                    const boundingRect: ClientRect = range.getBoundingClientRect();
+                    const boundingRect: DOMRect = range.getBoundingClientRect() as DOMRect;
                     let annotationRotate: number = 0;
                     if (this.pdfViewerBase.clientSideRendering) {
                         const pageDetails: any = this.pdfViewerBase.pageSize[parseInt(pageId.toString(), 10)];
@@ -2335,9 +2369,9 @@ export class TextMarkupAnnotation {
                     const selectionRects: IRectangle[] = [];
                     let pageStartId: number; let pageEndId: number; let pageStartOffset: number; let pageEndOffset: number;
                     const textDivs: NodeList = this.pdfViewerBase.getElement('_textLayer_' + i).childNodes;
-                    let pageRect: ClientRect = this.pdfViewerBase.getElement('_pageDiv_' + i).getBoundingClientRect();
+                    let pageRect: DOMRect = this.pdfViewerBase.getElement('_pageDiv_' + i).getBoundingClientRect() as DOMRect;
                     if (this.pdfViewerBase.isMixedSizeDocument) {
-                        pageRect = this.pdfViewerBase.getElement('_textLayer_' + i).getBoundingClientRect();
+                        pageRect = this.pdfViewerBase.getElement('_textLayer_' + i).getBoundingClientRect() as DOMRect;
                     }
                     if (i === anchorPageId) {
                         currentId = anchorTextId;
@@ -2368,7 +2402,7 @@ export class TextMarkupAnnotation {
                             range.setStart(node, startOffset);
                             range.setEnd(node, endOffset);
                         }
-                        const boundingRect: ClientRect = range.getBoundingClientRect();
+                        const boundingRect: DOMRect = range.getBoundingClientRect() as DOMRect;
                         let annotationRotate: number = 0;
                         if (this.pdfViewerBase.clientSideRendering) {
                             const pageDetails: any = this.pdfViewerBase.pageSize[parseInt(i.toString(), 10)];
@@ -2407,7 +2441,7 @@ export class TextMarkupAnnotation {
                     const pageRange: Range = document.createRange();
                     pageRange.setStart(startElementNode, pageStartOffset);
                     pageRange.setEnd(endElementNode, pageEndOffset);
-                    const pageRectBounds: ClientRect = pageRange.getBoundingClientRect();
+                    const pageRectBounds: DOMRect = pageRange.getBoundingClientRect() as DOMRect;
                     const textValue: string = pageRange.toString();
                     const indexes: any = this.getIndexNumbers(i, textValue);
                     const pageRectangle: IRectangle = { left: this.getDefaultValue(pageRectBounds.left - pageRect.left),
@@ -2426,7 +2460,14 @@ export class TextMarkupAnnotation {
         return pageBounds;
     }
 
-    private getIndexNumbers(pageNumber: number, content: string, parentText?: string): any {
+    /**
+     * @param {number} pageNumber - It describes about the page number
+     * @param {string} content - It describes about the content
+     * @param {string} parentText - It describes about the parent text
+     * @private
+     * @returns {any} - any
+     */
+    public getIndexNumbers(pageNumber: number, content: string, parentText?: string): any {
         const storedData: any = this.pdfViewerBase.clientSideRendering ?
             this.pdfViewerBase.getLinkInformation(pageNumber) : this.pdfViewerBase.getStoredData(pageNumber);
         let startIndex: number;
@@ -2436,18 +2477,18 @@ export class TextMarkupAnnotation {
             const pageText: string = storedData.pageText;
             for (let p: number = 0; p < pageNumber; p++) {
                 if (this.pdfViewer.isExtractText) {
-                    const documentIndex: any = this.pdfViewer.textSearchModule.
+                    const documentIndex: any = this.pdfViewerBase.
                         documentTextCollection[parseInt(p.toString(), 10)][parseInt(p.toString(), 10)];
                     const pageTextData: string = documentIndex.pageText ? documentIndex.pageText : documentIndex.PageText;
-                    if (this.pdfViewer.textSearchModule && this.pdfViewer.
-                        textSearchModule.documentTextCollection && this.pdfViewer.textSearchModule.isTextRetrieved) {
-                        if (this.pdfViewer.textSearchModule.documentTextCollection[parseInt(p.toString(), 10)]) {
+                    if (this.pdfViewer.textSearchModule && this.pdfViewerBase.
+                        documentTextCollection && this.pdfViewer.textSearchModule.isTextRetrieved) {
+                        if (this.pdfViewerBase.documentTextCollection[parseInt(p.toString(), 10)]) {
                             previousIndex = previousIndex + pageTextData.length;
                         }
                     } else {
-                        if (this.pdfViewer.textSearchModule && this.pdfViewer.textSearchModule.documentTextCollection) {
-                            if (pageNumber <= this.pdfViewer.textSearchModule.documentTextCollection.length) {
-                                if (this.pdfViewer.textSearchModule.documentTextCollection[parseInt(p.toString(), 10)]) {
+                        if (this.pdfViewer.textSearchModule && this.pdfViewerBase.documentTextCollection) {
+                            if (pageNumber <= this.pdfViewerBase.documentTextCollection.length) {
+                                if (this.pdfViewerBase.documentTextCollection[parseInt(p.toString(), 10)]) {
                                     previousIndex = previousIndex + pageTextData.length;
                                 }
                             } else {
@@ -2589,7 +2630,7 @@ export class TextMarkupAnnotation {
             }
         }
         if (!isLock) {
-            const canvasParentPosition: ClientRect = canvas.parentElement.getBoundingClientRect();
+            const canvasParentPosition: DOMRect = canvas.parentElement.getBoundingClientRect() as DOMRect;
             const leftClickPosition: number = event.clientX - canvasParentPosition.left;
             const topClickPosition: number = event.clientY - canvasParentPosition.top;
             this.annotationClickPosition = { x: leftClickPosition, y: topClickPosition };
@@ -2617,6 +2658,14 @@ export class TextMarkupAnnotation {
             }
             if (!isBlazor()) {
                 if (this.pdfViewer.toolbarModule && this.pdfViewer.enableAnnotationToolbar) {
+                    if (this.pdfViewer.isRedactionToolbarVisible) {
+                        if ((!Browser.isDevice || this.pdfViewer.enableDesktopMode) &&
+                        this.pdfViewer.toolbarModule.redactionToolbarModule) {
+                            this.pdfViewer.toolbarModule.redactionToolbarModule.isToolbarHidden = false;
+                            this.pdfViewer.toolbarModule.redactionToolbarModule.showRedactionToolbar(
+                                this.pdfViewer.toolbarModule.redactionItem);
+                        }
+                    }
                     this.pdfViewer.toolbarModule.annotationToolbarModule.isToolbarHidden = true;
                     this.pdfViewer.toolbarModule.annotationToolbarModule.
                         showAnnotationToolbar(this.pdfViewer.toolbarModule.annotationItem);
@@ -2674,7 +2723,7 @@ export class TextMarkupAnnotation {
             isLock = currentAnnot.annotationSettings.isLock;
         }
         if (!isLock) {
-            const canvasParentPosition: ClientRect = touchCanvas.parentElement.getBoundingClientRect();
+            const canvasParentPosition: DOMRect = touchCanvas.parentElement.getBoundingClientRect() as DOMRect;
             const leftClickPosition: number = event.touches[0].clientX - canvasParentPosition.left;
             const topClickPosition: number = event.touches[0].clientY - canvasParentPosition.top;
             this.annotationClickPosition = { x: leftClickPosition, y: topClickPosition };
@@ -2709,7 +2758,6 @@ export class TextMarkupAnnotation {
             this.clearAnnotationSelection(this.selectTextMarkupCurrentPage);
             const currentAnnot: any = this.currentTextMarkupAnnotation;
             this.pdfViewer.fireAnnotationUnSelect(currentAnnot.annotName, currentAnnot.pageNumber, currentAnnot);
-            this.currentTextMarkupAnnotation = null;
             this.clearCurrentAnnotation();
         }
     }
@@ -2767,9 +2815,9 @@ export class TextMarkupAnnotation {
     private getCurrentMarkupAnnotation(clientX: number, clientY: number, pageNumber: number, canvas: HTMLElement): ITextMarkupAnnotation {
         const currentTextMarkupAnnotations: ITextMarkupAnnotation[] = [];
         if (canvas) {
-            let canvasParentPosition: ClientRect = canvas.parentElement.getBoundingClientRect();
+            let canvasParentPosition: DOMRect = canvas.parentElement.getBoundingClientRect() as DOMRect;
             if (canvas.clientWidth !== canvas.parentElement.clientWidth) {
-                canvasParentPosition = canvas.getBoundingClientRect();
+                canvasParentPosition = canvas.getBoundingClientRect() as DOMRect;
             }
             const leftClickPosition: number = clientX - canvasParentPosition.left;
             const topClickPosition: number = clientY - canvasParentPosition.top;
@@ -2863,7 +2911,7 @@ export class TextMarkupAnnotation {
     }
 
     /**
-     * @param {ITextMarkupAnnotation} annotation - It describes about the annotation
+     * @param {any} annotation - It describes about the annotation
      * @param {HTMLElement} canvas - It describes about the canvas
      * @param {number} pageNumber - It describes about the page number
      * @param {MouseEvent} event - It describes about the event
@@ -2871,7 +2919,7 @@ export class TextMarkupAnnotation {
      * @private
      * @returns {void}
      */
-    public selectAnnotation(annotation: ITextMarkupAnnotation, canvas: HTMLElement, pageNumber?: number,
+    public selectAnnotation(annotation: any, canvas: HTMLElement, pageNumber?: number,
                             event?: MouseEvent | TouchEvent, isProgrammaticSelection?: boolean): void {
         if (this.pdfViewer.selectedItems.annotations[0]) {
             this.pdfViewer.clearSelection(this.pdfViewer.selectedItems.annotations[0].pageIndex);
@@ -2983,7 +3031,8 @@ export class TextMarkupAnnotation {
                 context.stroke();
                 context.save();
             } else {
-                let lineDash: number[] = (annotation.annotationSelectorSettings).selectorLineDashArray.length === 0 ? [4] :
+                let lineDash: number[] = (isNullOrUndefined((annotation.annotationSelectorSettings).selectorLineDashArray) ||
+                ((annotation.annotationSelectorSettings).selectorLineDashArray.length === 0)) ? [4] :
                     (annotation.annotationSelectorSettings).selectorLineDashArray;
                 if (lineDash.length > 2) {
                     lineDash = [lineDash[0], lineDash[1]];
@@ -3218,7 +3267,13 @@ export class TextMarkupAnnotation {
         return isPrint;
     }
 
-    private annotationDivSelect(annotation: any, pageNumber: number): any {
+    /**
+     * @param {any} annotation - It describes about the annotation
+     * @param {number} pageNumber - It describes about the page number
+     * @private
+     * @returns {any} - any
+     */
+    public annotationDivSelect(annotation: any, pageNumber: number): any {
         const canvasId: string = annotation.textMarkupAnnotationType === 'Highlight' ? '_blendAnnotationsIntoCanvas_' : '_annotationCanvas_';
         const canvas: HTMLElement = (canvasId === '_blendAnnotationsIntoCanvas_') ? this.pdfViewerBase.getElement(canvasId + pageNumber) :
             this.pdfViewerBase.getAnnotationCanvas(canvasId, pageNumber);
@@ -3380,7 +3435,6 @@ export class TextMarkupAnnotation {
         this.selectTextMarkupCurrentPage = null;
         this.currentTextMarkupAnnotation = null;
         this.annotationClickPosition = null;
-        this.pdfViewer.annotationsCollection.delete(this.pdfViewerBase.documentId + '_annotations_textMarkup');
         this.isTextMarkupAnnotationMode = null;
         this.currentTextMarkupAddMode = null;
         this.highlightColor = null;
@@ -3407,7 +3461,6 @@ export class TextMarkupAnnotation {
         this.multiPageCollection = null;
         this.triggerAddEvent = null;
         this.isSelectedAnnotation = null;
-        this.dropletHeight = null;
         this.strikeoutDifference = null;
         this.underlineDifference = null;
     }

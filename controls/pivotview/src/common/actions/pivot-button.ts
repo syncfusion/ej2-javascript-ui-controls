@@ -1383,8 +1383,20 @@ export class PivotButton implements IAction {
         } else {
             for (const item of this.parent.pivotCommon.searchTreeItems) {
                 if (item.isSelected) {
-                    if (this.parent.pivotCommon.isDateField) {
+                    let isGroupedField: boolean = false;
+                    let isDateField: boolean = false;
+                    if (this.parent) {
+                        if (this.parent.engineModule instanceof PivotEngine) {
+                            isGroupedField = fieldName in this.parent.engineModule.groupingFields;
+                        }
+                        if (!isNullOrUndefined(this.parent.pivotCommon)) {
+                            isDateField = this.parent.pivotCommon.isDateField;
+                        }
+                    }
+                    if (isDateField && !isGroupedField) {
                         filterItem.items.push(item.actualText as string);
+                    } else if (isGroupedField && isDateField) {
+                        filterItem.items.push(this.parent.dataSourceSettings.mode === 'Server' ? item.actualText as string : item.name as string);
                     } else {
                         filterItem.items.push((item.htmlAttributes as { [key: string]: string })['data-memberId'] as string);
                     }

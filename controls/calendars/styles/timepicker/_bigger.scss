@@ -1,3 +1,5 @@
+@use 'ej2-base/styles/common/mixin' as *;
+@use './theme-variables' as *;
 @include export-module('timepicker-bigger') {
 
   .e-bigger .e-time-wrapper,
@@ -20,7 +22,7 @@
   .e-bigger #{&}.e-timepicker.e-popup,
   #{if(&, '&', '*')}.e-bigger#{&}.e-timepicker.e-popup {
     #{if(&, '&', '*')} .e-list-parent.e-ul {
-      padding: $timepicker-list-bigger-padding 0;
+      padding: $timepicker-list-parent-bigger-padding;
 
       #{if(&, '&', '*')} .e-list-item {
         font-size: $timepicker-list-bigger-font-size;
@@ -33,7 +35,7 @@
   .e-bigger .e-content-placeholder.e-timepicker.e-placeholder-timepicker,
   .e-bigger.e-content-placeholder.e-timepicker.e-placeholder-timepicker {
     background-size: 250px 40px;
-    min-height: 40px;
+    min-height: $timepicker-bigger-content-placeholder-min-height;
   }
 
   .e-small.e-bigger #{&}.e-timepicker.e-popup,

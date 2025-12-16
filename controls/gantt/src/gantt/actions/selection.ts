@@ -443,34 +443,36 @@ export class Selection {
         if (typeof(records) == 'number') {
             records = [records];
         }
-        const ganttRow: HTMLElement[] = [].slice.call(this.parent.ganttChartModule.chartBodyContent.querySelector('tbody').children);
-        for (let i: number = 0; i < records.length; i++) {
-            const selectedRow: HTMLElement = ganttRow.filter((e: HTMLElement) =>
-                parseInt(e.getAttribute('aria-rowindex'), 10) - 1 === records[parseInt(i.toString(), 10)])[0];
-            if (!isNullOrUndefined(selectedRow)) {
-                let persist: boolean = false;
-                const index: number = this.getSelectedRowIndexes().indexOf(records[parseInt(i.toString(), 10)]);
-                const selectedRecordLen: number = this.getSelectedRecords().length;
-                if (this.parent.selectionSettings.persistSelection && this.parent.selectionSettings.enableToggle &&
-                    !isNullOrUndefined(request) && this.parent.selectionSettings.type !== 'Multiple' &&
-                    selectedRecordLen > 0) {
-                    persist = true;
-                }
-                if (this.parent.selectionSettings.enableToggle && this.parent.selectionSettings.persistSelection &&
-                    (index > -1 && this.parent.selectionSettings.type === 'Single' && persist) ||
-                    (index > -1 && ((!isNullOrUndefined(request) && this.parent.selectionSettings.type === 'Multiple')))) {
-                    this.addClass(selectedRow);
-                }
-                else if (isNullOrUndefined(request)) {
-                    this.removeClass(selectedRow);
-                }
-                else if (index > -1) {
-                    this.addClass(selectedRow);
-                }
-                if (this.parent.selectionSettings.enableToggle &&  index > -1 && (this.parent.selectionSettings.type === 'Single' ||
-                    (!this.isMultiCtrlRequest && !this.isMultiShiftRequest)) && this.parent.selectionSettings.persistSelection &&
-                    request === 'chartMouseUp' && this.isSelectionFromChart) {
-                    this.removeClass(selectedRow);
+        if (this.parent.ganttChartModule.chartBodyContent) {
+            const ganttRow: HTMLElement[] = [].slice.call(this.parent.ganttChartModule.chartBodyContent.querySelector('tbody').children);
+            for (let i: number = 0; i < records.length; i++) {
+                const selectedRow: HTMLElement = ganttRow.filter((e: HTMLElement) =>
+                    parseInt(e.getAttribute('aria-rowindex'), 10) - 1 === records[parseInt(i.toString(), 10)])[0];
+                if (!isNullOrUndefined(selectedRow)) {
+                    let persist: boolean = false;
+                    const index: number = this.getSelectedRowIndexes().indexOf(records[parseInt(i.toString(), 10)]);
+                    const selectedRecordLen: number = this.getSelectedRecords().length;
+                    if (this.parent.selectionSettings.persistSelection && this.parent.selectionSettings.enableToggle &&
+                        !isNullOrUndefined(request) && this.parent.selectionSettings.type !== 'Multiple' &&
+                        selectedRecordLen > 0) {
+                        persist = true;
+                    }
+                    if (this.parent.selectionSettings.enableToggle && this.parent.selectionSettings.persistSelection &&
+                        (index > -1 && this.parent.selectionSettings.type === 'Single' && persist) ||
+                        (index > -1 && ((!isNullOrUndefined(request) && this.parent.selectionSettings.type === 'Multiple')))) {
+                        this.addClass(selectedRow);
+                    }
+                    else if (isNullOrUndefined(request)) {
+                        this.removeClass(selectedRow);
+                    }
+                    else if (index > -1) {
+                        this.addClass(selectedRow);
+                    }
+                    if (this.parent.selectionSettings.enableToggle &&  index > -1 && (this.parent.selectionSettings.type === 'Single' ||
+                        (!this.isMultiCtrlRequest && !this.isMultiShiftRequest)) && this.parent.selectionSettings.persistSelection &&
+                        request === 'chartMouseUp' && this.isSelectionFromChart) {
+                        this.removeClass(selectedRow);
+                    }
                 }
             }
         }

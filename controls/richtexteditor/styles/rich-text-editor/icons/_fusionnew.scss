@@ -1,3 +1,6 @@
+@use 'ej2-base/styles/common/mixin' as *;
+@use '../fusionnew-definition' as *;
+
 /*! component's theme wise override definitions and variables */
 @include export-module('richtexteditor-material-icons') {
 
@@ -13,6 +16,10 @@
     }
     .e-alignments::before {
       content: '\e7b8';
+    }
+
+    .e-lineHeight::before {
+      content: '\e78d';
     }
 
     .e-justify-left::before {

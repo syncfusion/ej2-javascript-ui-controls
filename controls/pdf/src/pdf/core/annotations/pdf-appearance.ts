@@ -2,7 +2,8 @@ import { _PdfCrossReference } from './../pdf-cross-reference';
 import { _PdfDictionary } from './../pdf-primitives';
 import { PdfTemplate } from './../graphics/pdf-template';
 import { PdfAnnotation } from './annotation';
-import { _isNullOrUndefined, Rectangle } from '../utils';
+import { _isNullOrUndefined } from '../utils';
+import { Rectangle } from './../pdf-type';
 /**
  * `PdfAppearance` class represents the appearance of the annotation.
  * ```typescript
@@ -11,13 +12,13 @@ import { _isNullOrUndefined, Rectangle } from '../utils';
  * // Get the first page
  * let page: PdfPage = document.getPage(0) as PdfPage;
  * // Create a new rubber stamp annotation
- * const annotation: PdfRubberStampAnnotation = new PdfRubberStampAnnotation(50, 100, 100, 50);
+ * const annotation: PdfRubberStampAnnotation = new PdfRubberStampAnnotation({x: 50, y: 100, width: 100, height: 50});
  * // Get the appearance of the annotation
  * let appearance: PdfAppearance = annotation.appearance;
  * // Create new image object by using JPEG image data as Base64 string format
  * let image: PdfImage = new PdfBitmap('/9j/4AAQSkZJRgABAQEAkACQAAD/4....QB//Z');
  * // Draw the image as the custom appearance for the annotation
- * appearance.normal.graphics.drawImage(image, 0, 0, 100, 50);
+ * appearance.normal.graphics.drawImage(image, {x: 0, y: 0, width: 100, height: 50});
  * // Add annotation to the page
  * page.annotations.add(annotation);
  * // Save the document
@@ -64,7 +65,7 @@ export class PdfAppearance {
      * // Get the first page
      * let page: PdfPage = document.getPage(0) as PdfPage;
      * // Create a new rubber stamp annotation
-     * const annotation: PdfRubberStampAnnotation = new PdfRubberStampAnnotation(50, 100, 100, 50);
+     * const annotation: PdfRubberStampAnnotation = new PdfRubberStampAnnotation({x: 50, y: 100, width: 100, height: 50});
      * // Get the appearance of the annotation
      * let appearance: PdfAppearance = annotation.appearance;
      * // Access the normal template of the appearance
@@ -72,7 +73,7 @@ export class PdfAppearance {
      * // Create new image object by using JPEG image data as Base64 string format
      * let image: PdfImage = new PdfBitmap('/9j/4AAQSkZJRgABAQEAkACQAAD/4....QB//Z');
      * // Draw the image as the custom appearance for the annotation
-     * template.graphics.drawImage(image, 0, 0, 100, 50);
+     * template.graphics.drawImage(image, {x: 0, y: 0, width: 100, height: 50});
      * // Add annotation to the page
      * page.annotations.add(annotation);
      * // Save the document
@@ -97,7 +98,7 @@ export class PdfAppearance {
      * // Get the first page
      * let page: PdfPage = document.getPage(0) as PdfPage;
      * // Create a new rubber stamp annotation
-     * const annotation: PdfRubberStampAnnotation = new PdfRubberStampAnnotation(50, 100, 100, 50);
+     * const annotation: PdfRubberStampAnnotation = new PdfRubberStampAnnotation({x: 50, y: 100, width: 100, height: 50});
      * // Get the appearance of the annotation
      * let appearance: PdfAppearance = annotation.appearance;
      * // Access the normal template of the appearance
@@ -105,11 +106,11 @@ export class PdfAppearance {
      * // Create new image object by using JPEG image data as Base64 string format
      * let image: PdfImage = new PdfBitmap('/9j/4AAQSkZJRgABAQEAkACQAAD/4....QB//Z');
      * // Draw the image as the custom appearance for the annotation
-     * template.graphics.drawImage(image, 0, 0, 100, 50);
+     * template.graphics.drawImage(image, {x: 0, y: 0, width: 100, height: 50});
      * // Add annotation to the page
      * page.annotations.add(annotation);
      * // Add a new rubber stamp annotation to the page
-     * const annotation2: PdfRubberStampAnnotation = new PdfRubberStampAnnotation(50, 200, 100, 50);
+     * const annotation2: PdfRubberStampAnnotation = new PdfRubberStampAnnotation({x: 50, y: 200, width: 100, height: 50});
      * // Set the normal appearance of the annotation
      * annotation2.appearance.normal = annotation.appearance.normal;
      * // Add annotation to the page

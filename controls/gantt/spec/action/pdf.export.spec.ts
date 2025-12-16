@@ -16156,3 +16156,107 @@ describe('CR972134:Label customization using pdfQueryTaskbarInfo event not worki
         }
     });
 });
+
+describe('Coverage for getIndexByTaskBar method', () => {
+
+    let ganttObj: Gantt;
+    beforeAll((done: Function) => {
+        ganttObj = createGantt(
+            {
+                dataSource: [
+                    {
+                        TaskID: 1,
+                        TaskName: 'Product Concept',
+                        StartDate: new Date('04/02/2019'),
+                        EndDate: new Date('04/21/2019'),
+                        subtasks: [
+                            { TaskID: 2, TaskName: 'Defining the product and its usage', BaselineStartDate: new Date('04/02/2019'), BaselineEndDate: new Date('04/06/2019'), StartDate: new Date('04/02/2019'), Duration: 3, Progress: 30 },
+                            {
+                                TaskID: 3, TaskName: 'Defining target audience', StartDate: new Date('04/02/2019'), Duration: 3,
+                                Indicators: [
+                                    {
+                                        'date': '04/10/2019',
+                                        'iconClass': 'e-btn-icon e-notes-info e-icons e-icon-left e-gantt e-notes-info::before',
+                                        'name': 'Indicator title',
+                                        'tooltip': 'tooltip'
+                                    }
+                                ]
+                            },
+                            { TaskID: 4, TaskName: 'Prepare product sketch and notes', StartDate: new Date('04/02/2019'), Duration: 3, Predecessor: "2", Progress: 30 },
+                        ]
+                    }],
+                allowPdfExport: true,
+                taskFields: {
+                    id: 'TaskID',
+                    name: 'TaskName',
+                    startDate: 'StartDate',
+                    endDate: 'EndDate',
+                    duration: 'Duration',
+                    progress: 'Progress',
+                    child: 'subtasks',
+                    baselineStartDate: "BaselineStartDate",
+                    baselineEndDate: "BaselineEndDate",
+                    dependency: 'Predecessor'
+                },
+                renderBaseline: true,
+                baselineColor: 'red',
+                toolbar: ['PdfExport'],
+                projectStartDate: new Date('03/25/2019'),
+                projectEndDate: new Date('05/30/2019'),
+                rowHeight: 40,
+                taskbarHeight: 20,
+                columns: [
+                    { field: 'TaskID', visible: false },
+                    {
+                        field: 'TaskName',
+                        headerText: 'Task Name',
+                        width: '250',
+                        clipMode: 'EllipsisWithTooltip',
+                    },
+                    { field: 'StartDate', headerText: 'Start Date', format: 'dd-MMM-yy' },
+                    { field: 'Duration', headerText: 'Duration' },
+                    { field: 'EndDate', headerText: 'End Date' },
+                    { field: 'Predecessor', headerText: 'Predecessor' },
+                ],
+                eventMarkers: [
+                    {
+                        day: '04/02/2019',
+                        cssClass: 'e-custom-event-marker',
+
+                    }
+                ],
+                holidays: [{
+                    from: "04/04/2019",
+                    to: "04/05/2019",
+                    label: " Public holidays",
+                    cssClass: "e-custom-holiday"
+
+                },
+                {
+                    from: "04/12/2019",
+                    to: "04/12/2019",
+                    label: " Public holiday",
+                    cssClass: "e-custom-holiday"
+
+                }],
+                treeColumnIndex: 0,
+                height: '450px',
+            }, done);
+    });
+    afterAll(() => {
+        if (ganttObj) {
+            destroyGantt(ganttObj);
+        }
+    });
+    it('coverage', () => {
+        var exportProperties = {
+            fitToWidthSettings: {
+                isFitToWidth: true,
+            }
+        };
+        ganttObj.pdfExport(exportProperties);
+        let taskbarElement: HTMLElement = ganttObj.element.querySelector('#' + ganttObj.element.id + 'GanttTaskTableBody > tr:nth-child(2) > td > div.e-taskbar-main-container > div.e-gantt-child-taskbar-inner-div.e-gantt-child-taskbar') as HTMLElement;
+        ganttObj.pdfExportModule.isPdfExport=true;
+        triggerMouseEvent(taskbarElement, 'mouseover', 50);
+    });
+});

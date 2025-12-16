@@ -1,3 +1,5 @@
+@use 'ej2-base/styles/common/mixin' as *;
+@use './theme-variables' as *;
 @include export-module('splitter-bigger') {
 
   .e-bigger.e-splitter {
@@ -8,7 +10,7 @@
     .e-split-bar {
       &.e-split-bar-horizontal {
         .e-resize-handler {
-          height: $bigger-splitbar-icon-gap;
+          height: $bigger-splitbar-icon-height;
         }
       }
 
@@ -19,12 +21,12 @@
 
         .e-navigate-arrow:not(.e-arrow-down)::before,
         .e-navigate-arrow:not(.e-arrow-down)::after {
-          margin-top: -2px;
+          margin-top: $split-bar-vertical-navigate-arrow-margin-top;
         }
 
         .e-navigate-arrow {
           &.e-arrow-down::after {
-            margin-top: 2px;
+            margin-top: $split-bar-vertical-navigate-arrow-down-margin-top;
           }
         }
       }
@@ -40,7 +42,7 @@
 
       &.e-split-bar-horizontal {
         .e-resize-handler {
-          height: $bigger-splitbar-icon-gap;
+          height: $bigger-splitbar-icon-height;
         }
       }
 

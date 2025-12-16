@@ -40,6 +40,14 @@ export class AnnotationToolbar {
     private fontStyleStrikethroughItem: HTMLElement;
     private fontStyleUnderlineItem: HTMLElement;
     private deleteItem: HTMLElement;
+    /**
+     * @private
+     */
+    public isRedactAnnotSelected: boolean = false;
+    /**
+     * @private
+     */
+    public isnewlyAddedAnnot: boolean = false;
     private isSignatureIteam: boolean;
     /**
      * @private
@@ -242,7 +250,14 @@ export class AnnotationToolbar {
      */
     public initializeAnnotationToolbar(): void {
         this.toolbarElement = createElement('div', { id: this.pdfViewer.element.id + '_annotation_toolbar', className: 'e-pv-annotation-toolbar' });
-        this.pdfViewerBase.viewerMainContainer.appendChild(this.toolbarElement);
+        if (this.pdfViewer.isInsertBefore) {
+            const toolbarContainer: HTMLElement = document.getElementById(this.pdfViewer.element.id + '_toolbarContainer') as HTMLElement;
+            if (toolbarContainer && toolbarContainer.parentNode === this.pdfViewerBase.viewerMainContainer) {
+                this.pdfViewerBase.viewerMainContainer.insertBefore(this.toolbarElement, toolbarContainer.nextSibling);
+            }
+        } else {
+            this.pdfViewerBase.viewerMainContainer.appendChild(this.toolbarElement);
+        }
         this.toolbar = new Tool({
             width: '', height: '', overflowMode: 'Popup', cssClass: 'e-pv-toolbar-scroll',
             items: this.createToolbarItems(), clicked: this.onToolbarClicked.bind(this),
@@ -1053,6 +1068,7 @@ export class AnnotationToolbar {
                 this.applyMobileAnnotationToolbarSettings();
                 this.toolbarCreated = true;
                 this.adjustMobileViewer();
+                this.updateToolbarItems();
             }
             if (!this.pdfViewerBase.isTextSelectionDisabled) {
                 if (this.isMobileHighlightEnabled) {
@@ -1530,7 +1546,7 @@ export class AnnotationToolbar {
         }
     }
 
-    private hoverSignatureDelete(): void {
+    private hoverSignatureDelete(event?: MouseEvent): void {
         const eventTarget: HTMLElement = event.target as HTMLElement;
         if (eventTarget.id === 'sign_' + eventTarget.id.split('_')[1] || eventTarget.classList.contains('e-pv-delete')) {
             eventTarget.classList.add('e-pv-signaturehover');
@@ -1561,7 +1577,7 @@ export class AnnotationToolbar {
         }
     }
 
-    private hoverSignatureImage(): void {
+    private hoverSignatureImage(event?: MouseEvent): void {
         const eventTarget: HTMLElement = event.target as HTMLElement;
         if (eventTarget.id === 'sign_' + eventTarget.id.split('_')[1] || eventTarget.classList.contains('e-pv-delete')) {
             eventTarget.classList.add('e-pv-signaturehover');
@@ -1570,7 +1586,7 @@ export class AnnotationToolbar {
         }
     }
 
-    private leaveSignatureDelete(): void {
+    private leaveSignatureDelete(event?: MouseEvent): void {
         const eventTarget: HTMLElement = event.target as HTMLElement;
         if (eventTarget.id === 'sign_' + eventTarget.id.split('_')[1] || eventTarget.classList.contains('e-pv-delete')) {
             eventTarget.classList.remove('e-pv-signaturehover');
@@ -1591,7 +1607,7 @@ export class AnnotationToolbar {
         this.addSignature();
     }
 
-    private leaveSignatureImage(): void {
+    private leaveSignatureImage(event: MouseEvent): void {
         const eventTarget: HTMLElement = event.target as HTMLElement;
         if (eventTarget.id === 'sign_' + eventTarget.id.split('_')[1] || eventTarget.classList.contains('e-pv-delete')) {
             eventTarget.classList.remove('e-pv-signaturehover');
@@ -1615,10 +1631,10 @@ export class AnnotationToolbar {
         this.deselectAllItemsForMobile();
     }
 
-    public renderAddedSignature(): void {
+    public renderAddedSignature(event?: MouseEvent): void {
         this.pdfViewerBase.isAddedSignClicked = true;
         this.isSavedSignatureClicked = true;
-        this.pdfViewerBase.signatureModule.RenderSavedSignature();
+        this.pdfViewerBase.signatureModule.RenderSavedSignature(event);
     }
 
     public deleteSavedSign(event: any): void {
@@ -3188,6 +3204,7 @@ export class AnnotationToolbar {
         }
     }
 
+
     private onShapeDrawSelection(isShape: boolean): void {
         if (!Browser.isDevice || this.pdfViewer.enableDesktopMode) {
             this.updateInteractionTools();
@@ -3200,6 +3217,49 @@ export class AnnotationToolbar {
         }
         this.pdfViewer.annotation.triggerAnnotationUnselectEvent();
         this.pdfViewer.annotation.triggerSignatureUnselectEvent();
+    }
+
+    /**
+     * @private
+     * @returns {void}
+     */
+    public onRedactionDrawSelection(event?: MouseEvent | TouchEvent): void {
+        if (!Browser.isDevice) {
+            this.updateInteractionTools();
+            this.enableAnnotationPropertiesTools(true);
+        }
+        if (this.isRedactAnnotSelected && !this.isCommentsSelected() && !this.isRedactionPanelSelected(event) &&
+            !this.isnewlyAddedAnnot && !this.pdfViewer.toolbarModule.redactionToolbarModule.isPropertyDialogOpen &&
+            (this.pdfViewerBase.contextMenuModule && this.pdfViewerBase.contextMenuModule.contextMenuElement &&
+            event && !this.pdfViewerBase.contextMenuModule.contextMenuElement.contains(event.target as HTMLElement))) {
+            this.pdfViewer.annotation.triggerAnnotationUnselectEvent();
+            this.pdfViewer.annotation.triggerSignatureUnselectEvent();
+            this.isRedactAnnotSelected = false;
+        } else {
+            this.isRedactAnnotSelected = true;
+        }
+    }
+
+    private isRedactionPanelSelected(event?: MouseEvent | TouchEvent): boolean {
+        if (event && (event.target as HTMLElement) &&
+            ((event.target as HTMLElement).id === this.pdfViewer.element.id + '_redactionPanel' ||
+            (event.target as HTMLElement).id === this.pdfViewer.element.id + '_redactionPanelIcon' ||
+            (event.target as HTMLElement).id === this.pdfViewer.element.id + '_redactionPanelContainer')) {
+            return true;
+        }
+        else {
+            return false;
+        }
+    }
+
+    private isCommentsSelected(): boolean {
+        if (this.pdfViewer.annotationModule && this.pdfViewer.annotationModule.stickyNotesAnnotationModule &&
+            this.pdfViewer.annotationModule.stickyNotesAnnotationModule.isCommentsSelected) {
+            return true;
+        }
+        else {
+            return false;
+        }
     }
 
     private afterCalibrateToolbarCreationForMobile(): void {
@@ -3239,7 +3299,7 @@ export class AnnotationToolbar {
     }
 
     private afterMobileToolbarCreation(): void {
-        const isMac: boolean = navigator.platform.match(/(Mac|iPhone|iPod|iPad)/i) ? true : false;
+        const isMac: boolean = /ipad|iphone|ipod|mac/.test(navigator.userAgent.toLowerCase()) ? true : false;
         this.highlightItem = this.primaryToolbar.addClassToolbarItem('_highlight', 'e-pv-highlight', this.pdfViewer.localeObj.getConstant('Highlight'));
         this.underlineItem = this.primaryToolbar.addClassToolbarItem('_underline', 'e-pv-underline', this.pdfViewer.localeObj.getConstant('Underline'));
         this.strikethroughItem = this.primaryToolbar.addClassToolbarItem('_strikethrough', 'e-pv-strikethrough', this.pdfViewer.localeObj.getConstant('Strikethrough'));
@@ -3251,6 +3311,8 @@ export class AnnotationToolbar {
         this.commentItem = this.primaryToolbar.addClassToolbarItem('_annotation_commentPanel', 'e-pv-annotation-comment-panel', this.pdfViewer.localeObj.getConstant('Comment Panel') + (isMac ? ' (⌘+⌥+0)' : ' (Ctrl+Alt+0)'));
         this.inkAnnotationItem = this.primaryToolbar.addClassToolbarItem('_annotation_ink', 'e-pv-annotation-ink', this.pdfViewer.localeObj.getConstant('Draw Ink'));
         this.selectAnnotationDeleteItem(false);
+        this.enableCalibrateAnnotationTool(this.pdfViewer.enableMeasureAnnotation);
+        this.enableShapeAnnotationTool(this.pdfViewer.enableShapeAnnotation);
         this.enableCommentPanelTool(this.pdfViewer.enableCommentPanel);
     }
 
@@ -3559,7 +3621,7 @@ export class AnnotationToolbar {
     }
 
     private afterToolbarCreation(): void {
-        const isMac: boolean = navigator.platform.match(/(Mac|iPhone|iPod|iPad)/i) ? true : false;
+        const isMac: boolean = /ipad|iphone|ipod|mac/.test(navigator.userAgent.toLowerCase()) ? true : false;
         this.highlightItem = this.primaryToolbar.addClassToolbarItem('_highlight', 'e-pv-highlight', this.pdfViewer.localeObj.getConstant('Highlight'));
         this.underlineItem = this.primaryToolbar.addClassToolbarItem('_underline', 'e-pv-underline', this.pdfViewer.localeObj.getConstant('Underline'));
         this.strikethroughItem = this.primaryToolbar.addClassToolbarItem('_strikethrough', 'e-pv-strikethrough', this.pdfViewer.localeObj.getConstant('Strikethrough'));
@@ -3571,7 +3633,7 @@ export class AnnotationToolbar {
         this.pdfViewerBase.getElement('_annotation_calibrate').setAttribute('aria-label', this.pdfViewer.localeObj.getConstant('Calibrate'));
         this.pdfViewerBase.getElement('_comment').setAttribute('aria-label', this.pdfViewer.localeObj.getConstant('Add Comments'));
         this.commentItem = this.primaryToolbar.addClassToolbarItem('_annotation_commentPanel', 'e-pv-annotation-comment-panel', this.pdfViewer.localeObj.getConstant('Comment Panel') + (isMac ? ' (⌘+⌥+0)' : ' (Ctrl+Alt+0)'));
-        this.closeItem = this.primaryToolbar.addClassToolbarItem('_annotation_close', 'e-pv-annotation-tools-close', null);
+        this.closeItem = this.primaryToolbar.addClassToolbarItem('_annotation_close', 'e-pv-annotation-tools-close', this.pdfViewer.localeObj.getConstant('Close'));
         this.pdfViewerBase.getElement('_annotation_close').setAttribute('aria-label', 'Close Annotation Toolbar');
         this.selectAnnotationDeleteItem(false);
         this.enableTextMarkupAnnotationPropertiesTools(false);
@@ -3753,6 +3815,9 @@ export class AnnotationToolbar {
             } else {
                 this.pdfViewer.annotationModule.setAnnotationMode('FreeText');
                 this.FreeTextForMobile();
+            }
+            if (this.pdfViewer.annotationModule && this.pdfViewer.annotation.freeTextAnnotationModule) {
+                this.pdfViewer.annotation.freeTextAnnotationModule.previousText = this.pdfViewer.freeTextSettings.defaultText;
             }
             break;
         case this.pdfViewer.element.id + '_annotation_signature':
@@ -4044,6 +4109,30 @@ export class AnnotationToolbar {
         }
     }
 
+    /**
+     * @param {boolean} isRedaction - It describes about the isRedaction boolean value
+     * @private
+     * @returns {void}
+     */
+    public manageRedcationToolbarShow(isRedaction: boolean): void {
+        if (this.pdfViewer.isAnnotationToolbarVisible) {
+            this.isToolbarHidden = false;
+            this.showAnnotationToolbar(this.pdfViewer.toolbarModule.annotationItem);
+            if (isRedaction) {
+                this.pdfViewer.toolbarModule.redactionToolbarModule.showRedactionToolbar(this.pdfViewer.toolbarModule.redactionItem);
+            }
+        } else if (this.pdfViewer.isFormDesignerToolbarVisible && this.pdfViewer.toolbarModule) {
+            if (this.pdfViewer.toolbarModule.formDesignerToolbarModule) {
+                this.pdfViewer.toolbarModule.formDesignerToolbarModule.isToolbarHidden = false;
+                this.pdfViewer.toolbarModule.formDesignerToolbarModule.showFormDesignerToolbar(
+                    this.pdfViewer.toolbarModule.formDesignerItem);
+            }
+            if (isRedaction) {
+                this.pdfViewer.toolbarModule.redactionToolbarModule.showRedactionToolbar(this.pdfViewer.toolbarModule.redactionItem);
+            }
+        }
+    }
+
     private enablePropertiesTool(annotationModule: any): void {
         this.isHighlightEnabled = false;
         this.isUnderlineEnabled = false;
@@ -4072,7 +4161,10 @@ export class AnnotationToolbar {
     }
 
     private getToolbarIndexByPrefixIcon(prefixIcon: string): number {
-        return this.toolbar.items.findIndex((item: any): boolean => item.prefixIcon === prefixIcon);
+        if (this.toolbar) {
+            return this.toolbar.items.findIndex((item: any): boolean => item.prefixIcon === prefixIcon);
+        }
+        return -1;
     }
 
     private getPropertyIndexByClassName(className: string): number {
@@ -4289,7 +4381,7 @@ export class AnnotationToolbar {
                 this.showCalibrateAnnotationTool(false, calibrateIndex, calibrateIndex);
             }
             const toolbarItems: any = this.pdfViewer.toolbarSettings.toolbarItems;
-            if (toolbarItems && toolbarItems.indexOf('CommentTool') !== -1) {
+            if (toolbarItems && toolbarItems.indexOf('CommentTool') !== -1 && this.pdfViewer.enableStickyNotesAnnotation) {
                 this.showStickyNoteToolInMobile(true);
             } else {
                 this.showStickyNoteToolInMobile(false);
@@ -4333,7 +4425,12 @@ export class AnnotationToolbar {
         }
     }
 
-    private showStickyNoteToolInMobile(isShow: boolean): void {
+    /**
+     * @param {boolean} isShow - It describes about the isShow boolean value
+     * @private
+     * @returns {void}
+     */
+    public showStickyNoteToolInMobile(isShow: boolean): void {
         this.isCommentBtnVisible = isShow;
         const commentSeparator: number = this.getIndexByClassName('e-pv-comment-container');
         this.applyHideToToolbar(isShow, commentSeparator, commentSeparator);
@@ -4664,7 +4761,7 @@ export class AnnotationToolbar {
         } else {
             annotationToolbarHeight = this.getToolbarHeight(this.toolbarElement);
         }
-        const sideBarClientRect: ClientRect = this.pdfViewerBase.navigationPane.sideBarContentContainer.getBoundingClientRect();
+        const sideBarClientRect: DOMRect = this.pdfViewerBase.navigationPane.sideBarContentContainer.getBoundingClientRect() as DOMRect;
         if (sideBarClientRect.height !== 0) {
             if (isAdjust) {
                 this.pdfViewerBase.navigationPane.sideBarContentContainer.style.height = sideBarClientRect.height - annotationToolbarHeight + 'px';
@@ -4919,9 +5016,16 @@ export class AnnotationToolbar {
         if (this.pdfViewer.annotationModule) {
             this.pdfViewer.annotationModule.freeTextAnnotationModule.isNewFreeTextAnnot = false;
         }
+        if (this.pdfViewer.toolbarModule.redactionToolbarModule) {
+            this.pdfViewer.toolbarModule.redactionToolbarModule.clear();
+        }
     }
 
-    private updateInteractionTools(): void {
+    /**
+     * @private
+     * @returns {void}
+     */
+    public updateInteractionTools(): void {
         if (this.pdfViewer.enableTextSelection) {
             this.pdfViewerBase.initiateTextSelectMode();
             if (!Browser.isDevice) {
@@ -4989,7 +5093,7 @@ export class AnnotationToolbar {
      * @returns {void}
      */
     public enableTextMarkupAnnotationPropertiesTools(isEnable: boolean): void {
-        if (!Browser.isDevice) {
+        if (!Browser.isDevice || this.pdfViewer.enableDesktopMode) {
             if (!isBlazor()) {
                 this.enableItems(this.colorDropDownElement.parentElement, isEnable);
                 this.enableItems(this.opacityDropDownElement.parentElement, isEnable);
@@ -5024,8 +5128,8 @@ export class AnnotationToolbar {
             const fontColorIndex: number = this.getIndexByCssClass('e-pv-text-color-container');
             const textSeparator: number = this.getIndexByCssClass('e-pv-text-separator-container');
             const propertiesSeparator: number = this.getIndexByCssClass('e-pv-opacity-separator-container');
-            if (annotProperty === 'line' && (this.pdfViewer.lineSettings.lineHeadStartStyle === 'None' ||
-                this.pdfViewer.lineSettings.lineHeadEndStyle === 'None')) {
+            if ((annotProperty === 'line' && (this.pdfViewer.lineSettings.lineHeadStartStyle === 'None' ||
+                this.pdfViewer.lineSettings.lineHeadEndStyle === 'None')) && !(this.pdfViewer.annotation && this.pdfViewer.annotation.isLineAnnotationFillColorEnabled())) {
                 enableColorTool = false;
             }
             if (annotProperty === 'textMarkup') {
@@ -5043,7 +5147,7 @@ export class AnnotationToolbar {
             } else if (annotProperty === 'line') {
                 this.showColorEditTool(enableColorTool, colorIndex, colorIndex);
             } else if (annotProperty === 'shapeAndCalibrate') {
-                if (!(this.pdfViewer.selectedItems.annotations[0] && (this.pdfViewer.selectedItems.annotations[0].shapeAnnotationType === 'Line'))) {
+                if (!(this.pdfViewer.selectedItems.annotations[0] && (this.pdfViewer.selectedItems.annotations[0].shapeAnnotationType === 'Line')) && (this.pdfViewer.annotation && this.pdfViewer.annotation.isLineAnnotationFillColorEnabled())) {
                     this.showColorEditTool(isEnable, colorIndex, colorIndex);
                 }
                 this.showStrokeColorEditTool(isEnable, strokeIndex, strokeIndex);
@@ -5192,7 +5296,7 @@ export class AnnotationToolbar {
             }
             if (!isBlazor()) {
                 if (isPropertiesChanges) {
-                    if (this.pdfViewer.selectedItems.annotations[0] && (this.pdfViewer.selectedItems.annotations[0].shapeAnnotationType === 'Line')) {
+                    if ((this.pdfViewer.selectedItems.annotations[0] && (this.pdfViewer.selectedItems.annotations[0].shapeAnnotationType === 'Line' || this.pdfViewer.selectedItems.annotations[0].shapeAnnotationType === 'LineWidthArrowHead' || this.pdfViewer.selectedItems.annotations[0].shapeAnnotationType === 'Distance')) || (this.pdfViewer.annotation && this.pdfViewer.annotation.isLineAnnotationFillColorEnabled())) {
                         this.enableItems(this.colorDropDownElement.parentElement, true);
                         this.hidePropertiesTools(isEnable, 'line');
                     }
@@ -5373,26 +5477,74 @@ export class AnnotationToolbar {
         }
     }
 
-    private updateToolbarItems(): void {
+    /**
+     * @param {boolean} isEnable - It describes about the isEnable boolean value
+     * @private
+     * @returns {void}
+     */
+    public enableCalibrateAnnotationTool(isEnable: boolean): void {
+        if (this.toolbar && this.calibrateItem) {
+            this.enableItems(this.calibrateItem.parentElement, isEnable);
+        }
+    }
+
+    /**
+     * @param {boolean} isEnable - It describes about the isEnable boolean value
+     * @private
+     * @returns {void}
+     */
+    public enableShapeAnnotationTool(isEnable: boolean): void {
+        if (this.toolbar && this.shapesItem) {
+            this.enableItems(this.shapesItem.parentElement, isEnable);
+        }
+    }
+
+    /**
+     * @private
+     * @returns {void}
+     */
+    public updateToolbarItems(): void {
         if (this.pdfViewer.enableTextMarkupAnnotation) {
             this.enableTextMarkupAddTools(true);
         } else {
             this.enableTextMarkupAddTools(false);
         }
-        this.enableItems(this.shapeElement.parentElement, this.pdfViewer.enableShapeAnnotation);
-        this.toolbar.enableItems(this.stampElement.parentElement, this.pdfViewer.enableStampAnnotations);
-        this.enableItems(this.calibrateElement.parentElement, this.pdfViewer.enableMeasureAnnotation);
-        this.enableItems(this.freeTextEditItem.parentElement, this.pdfViewer.enableFreeText);
-        this.enableItems(this.handWrittenSignatureItem.parentElement, this.pdfViewer.enableHandwrittenSignature);
-        this.enableItems(this.inkAnnotationItem.parentElement, this.pdfViewer.enableInkAnnotation);
-        this.closeItem.setAttribute('tabindex', '0');
+        if (this.shapeElement) {
+            this.enableItems(this.shapeElement.parentElement, this.pdfViewer.enableShapeAnnotation);
+        }
+        if (this.stampElement) {
+            this.toolbar.enableItems(this.stampElement.parentElement, this.pdfViewer.enableStampAnnotations);
+        }
+        if (this.calibrateElement) {
+            this.enableItems(this.calibrateElement.parentElement, this.pdfViewer.enableMeasureAnnotation);
+        }
+        if (this.freeTextEditItem) {
+            this.enableItems(this.freeTextEditItem.parentElement, this.pdfViewer.enableFreeText);
+        }
+        if (this.handWrittenSignatureItem) {
+            this.enableItems(this.handWrittenSignatureItem.parentElement, this.pdfViewer.enableHandwrittenSignature);
+        }
+        if (this.inkAnnotationItem) {
+            this.enableItems(this.inkAnnotationItem.parentElement, this.pdfViewer.enableInkAnnotation);
+        }
+        if (this.closeItem) {
+            this.closeItem.setAttribute('tabindex', '0');
+        }
     }
 
     private enableTextMarkupAddTools(isEnable: boolean): void {
-        this.enableItems(this.highlightItem.parentElement, isEnable);
-        this.enableItems(this.underlineItem.parentElement, isEnable);
-        this.enableItems(this.strikethroughItem.parentElement, isEnable);
-        this.enableItems(this.squigglyItem.parentElement, isEnable);
+        if (this.highlightItem){
+            this.enableItems(this.highlightItem.parentElement, isEnable);
+        }
+        if (this.underlineItem){
+            this.enableItems(this.underlineItem.parentElement, isEnable);
+        }
+        if (this.strikethroughItem){
+            this.enableItems(this.strikethroughItem.parentElement, isEnable);
+        }
+        if (this.squigglyItem){
+            this.enableItems(this.squigglyItem.parentElement, isEnable);
+        }
     }
 
     /**
@@ -5490,7 +5642,7 @@ export class AnnotationToolbar {
         } else {
             this.toolbarElement.style.display = 'none';
             this.isToolbarHidden = true;
-            if (!this.pdfViewer.isFormDesignerToolbarVisible) {
+            if (!this.pdfViewer.isFormDesignerToolbarVisible && !this.pdfViewer.isRedactionToolbarVisible) {
                 this.adjustViewer(true);
             }
             this.primaryToolbar.deSelectItem(this.primaryToolbar.annotationItem);

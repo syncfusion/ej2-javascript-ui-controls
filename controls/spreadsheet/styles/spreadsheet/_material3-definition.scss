@@ -1,3 +1,7 @@
+@use 'ej2-base/styles/definition/material3' as *;
+@use 'ej2-navigations/styles/toolbar/material3-definition' as *;
+@forward 'ej2-base/styles/definition/material3';
+@forward 'ej2-navigations/styles/toolbar/material3-definition';
 $sheet-skin: 'Material3' !default;
 $spreadsheet-border-width: 1px;
 $select-all-size: 26px !default;
@@ -41,6 +45,10 @@ $cfmain-header-font-size: $spreadsheet-dlg-label-font-size !default;
 $spreadsheet-label-font-color: rgba($content-text-color-alt1) !default;
 $spreadsheet-edit-selection-font-color: rgba($on-primary) !default;
 $spreadsheet-border-cpicker-width: 330px !default;
+$spread-border-radius-0: $radius-0 !default;
+$spread-border-radius-3: $radius-3 !default;
+$spread-border-radius-4: $radius-4 !default;
+$spread-border-radius-8: $radius-8 !default;
 
 //selection
 $selection-bg-color: rgba($primary, .12) !default;
@@ -70,6 +78,8 @@ $sheet-tab-button-active-bg-color: rgba($content-bg-color-selected) !default;
 $sheet-tab-selected-bg-color: $content-bg-color-alt1 !default;
 $sheet-tab-btn-icon-line-height: 32px !default;
 $sheet-tab-aggr-bg-color-selected: $tbar-focus-bg !default;
+$bigger-spreadsheet-sheet-tab-rename-line-height: 48px !default;
+$bigger-spreadsheet-sheet-tab-rename-margin-bottom: 0 !default;
 
 //Formula bar
 $formula-bar-font-size: $text-sm !default;
@@ -117,7 +127,7 @@ $align-ddb-item-height: 28px !default;
 $align-ddb-ul-padding: 8px !default;
 $align-ddb-item-padding: 0 7px !default;
 $align-ddb-item-margin: 0 !default;
-$align-ddb-item-border-radius: 4px !default;
+$align-ddb-item-border-radius: $radius-4 !default;
 $ctrl-btn-padding: 16px !default;
 $spreadsheet-ribbon-btn-width: 32px !default;
 $spreadsheet-ribbon-btn-height: 32px !default;
@@ -185,6 +195,7 @@ $find-popup-border-top-color: rgba($border-light) !default;
 $find-popup-border-color: rgba($border-light) !default;
 $find-popup-box-shadow: $shadow-lg !default;
 $find-dlg-alert-span-font-size: $spreadsheet-dlg-error-font-size !default;
+$find-dlg-alert-span-font-weight: bold !default;
 $bigger-find-dlg-btn-font-size: $text-xs !default;
 $find-dlg-header-font-weight: $font-weight-normal !default;
 $find-dialog-header-font-size: $spreadsheet-dlg-label-font-size !default;
@@ -215,6 +226,7 @@ $protectworkbook-dlg-pwd-content-font-size: $spreadsheet-dlg-label-font-size !de
 $protect-content-font-size: $spreadsheet-dlg-label-font-size !default;
 $protect-content-height: auto !default;
 $protectworkbook-dlg-alert-span-padding-top: 6px !default;
+$pwd-alert-span-padding-top: 4px !default;
 
 //Conditional Formatting
 $ele-color: $content-bg-color-alt3 !default;
@@ -286,6 +298,8 @@ $protectworkbook-dlg-content-header-line: 16px !default;
 $protectworkbook-dlg-password-content-padding1: 4px 0 0 !default;
 $protectworkbook-dlg-password-content-padding2: 16px 0 0 !default;
 $validation-dlg-content-header-padding-top: 20px !default;
+$validation-dlg-content-footer-clearall-margin-left: 0 !default;
+$validation-dlg-content-footer-clearall-margin-right: 0 !default;
 $validation-dlg-content-header-line: 16px !default;
 $validation-dlg-content-padding: 12px !default;
 $spreadsheet-sort-dlg-error-bottom: 0 !default;
@@ -296,6 +310,7 @@ $bigger-formula-bar-height: 32px !default;
 $bigger-formula-bar-line-height: 32px !default;
 $bigger-insert-function-icon-height: 31px !default;
 $bigger-spreadsheet-sheet-tab-icon-height: 48px !default;
+$bigger-spreadsheet-sheet-tab-icon-padding: 0 !default;
 $bigger-spreadsheet-cf-main-margin: 8px 0 20px !default;
 $bigger-spreadsheet-cf-sub-margin: 12px !default;
 $bigger-spreadsheet-cf-header2-margin: 20px !default;
@@ -317,6 +332,7 @@ $bigger-protect-password-content-padding: 4px 0 0 !default;
 $bigger-protect-password-content-padding2: 20px 0 0 !default;
 $bigger-data-validation-content-padding-top: 20px !default;
 $spreadsheet-ribbon-toolbar-btn-hover-color: $tbar-hover-bg !default;
+$spread-toolbar-btn-font-weight: normal !default;
 
 //Name Manager Dialog
 $spreadsheet-namerange-header-font-size: 22px !default;
@@ -399,8 +415,46 @@ $bigger-spreadsheet-protection-sheet-option-padding-top: 13px !default;
 $bigger-spreadsheet-protection-sheet-option-padding-bottom:4px !default;
 
 //Blazor typography and spacing
+$spreadsheet-ribbon-simplified-mode-btn-font-weight: normal !default;
+$spreadsheet-name-dlg-header-mobile-font-weight: 600 !default;
+$spreadsheet-name-dlg-header-mobile-font-size: 16px !default;
+$spreadsheet-custom-close-btn-font-size: 18px !default;
+$spreadsheet-name-error-message-font-size: 12px !default;
+$spreadsheet-name-delete-warning-font-size: 16px !default;
+$spreadsheet-formula-suggession-containter-font-size: 10px !default;
+$bigger-spreadsheet-ribbonoverflow-font-size: 20px !default;
+$spreadsheet-overlay-resizer-border-radius: 4px !default;
+$spreadsheet-ribbon-simplified-mode-border-radius: 0 !default;
 $spreadsheet-font-weight-bold: bold !default;
 $spreadsheet-font-size-16: 16px !default;
 $spreadsheet-font-size-18: 18px !default;
 $spreadsheet-margin-10: 10px !default;
 $spreadsheet-padding-20: 20px !default;
+$spreadsheet-autofill-menuoption-min-width: 70px !default;
+$spreadsheet-border-menu-min-width: 270px !default;
+$spreadsheet-border-preview-line-width: 135px !default;
+$spreadsheet-border-auto-width: auto !default;
+$ids: 'LineStyleThin' 'LineStyleMedium' 'LineStyleThick' 'LineStyleDotted' 'LineStyleDashed' 'LineStyleDouble';
+$border-style-collection: solid solid solid dotted dashed double;
+$border-width-collection: thin medium thick thin thin medium;
+$spreadsheet-border-radius-50p: 50%;
+$spreadsheet-numformat-text-width: 100% !default;
+$spreadsheet-padding-5: 5px !default;
+
+// Threaded Comment
+$spread-comment-indicator-color: rgba($primary) !default;
+$spread-comment-background-color: rgba($content-bg-color) !default;
+$spread-comment-resolved-background-color: $hdr-selection-bg-color !default;
+$spread-comment-review-pane-background-color: $content-bg-color-alt2 !default;
+$spread-comment-review-title-color: rgba($content-text-color) !default;
+$spread-comment-title-color: rgba($content-text-color) !default;
+$spread-comment-text-color: rgba($content-text-color) !default;
+$spread-comment-timestamp-color: rgba($content-text-color-alt1) !default;
+$spread-comment-input-height: 32px !default;
+$spread-comment-input-border-bottom: 2px solid rgba(97, 97, 97, 1) !default;
+$spread-comment-input-border-bottom-focused: 2px solid rgba($primary) !default;
+$spread-comment-border: 1px solid rgba($border-light) !default;
+$spread-comment-menu-height: 32px !default;
+$spread-comment-menu-width: 32px !default;
+$spread-comment-postbtn-padding: 6px 12px !default;
+$spread-comment-header-wrap-gap: 8px !default;

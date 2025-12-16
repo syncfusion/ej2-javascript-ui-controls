@@ -212,35 +212,37 @@ export class BaseTooltip extends ChartData {
                                 }
                             }
                             seriesElementsGroupCollections.forEach((seriesElementsGroup: HTMLElement) => {
-                                seriesElementsGroup.childNodes.forEach((seriesElement: HTMLElement) => {
-                                    const targetOpacity: number = seriesElement.id.indexOf('border') > -1 ? 1 :
-                                        seriesElement.id.indexOf('Symbol') > -1 ? currentSeries.marker.opacity : currentSeries.opacity;
-                                    const targetStrokeWidth: number = seriesElement.id.indexOf('border') > -1 && currentSeries.border.width
-                                        ? parseFloat(currentSeries.border.width.toString())
-                                        : seriesElement.id.indexOf('Symbol') > -1 && currentSeries.marker.border.width
-                                            ? parseFloat(currentSeries.marker.border.width.toString())
-                                            : currentSeriesWidth;
-                                    if (highlight && this.chart.highlightColor !== 'transparent' && seriesElement.id !== '') {
-                                        if (isAccumulation ? (seriesElementsGroup.getAttribute('id').indexOf('datalabel') > -1 ? indexFinder(seriesElement.id).point === pointIndex :
-                                            seriesElement.id === target) : (seriesElementsGroup.getAttribute('id') === this.element.id + 'DataLabelCollection' ? (indexFinder(seriesElement.id).series === series.index) : (currentSeries.index === series.index))) {
-                                            seriesElement.setAttribute('opacity', targetOpacity.toString());
-                                            if ((!series.isRectSeries || (seriesElement.id.indexOf('border') > -1)) && (!isAccumulation)) {
-                                                seriesElement.setAttribute('stroke-width', (targetStrokeWidth + 1).toString());
+                                if (seriesElementsGroup !== null) {
+                                    seriesElementsGroup.childNodes.forEach((seriesElement: HTMLElement) => {
+                                        const targetOpacity: number = seriesElement.id.indexOf('border') > -1 ? 1 :
+                                            seriesElement.id.indexOf('Symbol') > -1 ? currentSeries.marker.opacity : currentSeries.opacity;
+                                        const targetStrokeWidth: number = seriesElement.id.indexOf('border') > -1 && currentSeries.border.width
+                                            ? parseFloat(currentSeries.border.width.toString())
+                                            : seriesElement.id.indexOf('Symbol') > -1 && currentSeries.marker.border.width
+                                                ? parseFloat(currentSeries.marker.border.width.toString())
+                                                : currentSeriesWidth;
+                                        if (highlight && this.chart.highlightColor !== 'transparent' && seriesElement.id !== '') {
+                                            if (isAccumulation ? (seriesElementsGroup.getAttribute('id').indexOf('datalabel') > -1 ? indexFinder(seriesElement.id).point === pointIndex :
+                                                seriesElement.id === target) : (seriesElementsGroup.getAttribute('id') === this.element.id + 'DataLabelCollection' ? (indexFinder(seriesElement.id).series === series.index) : (currentSeries.index === series.index))) {
+                                                seriesElement.setAttribute('opacity', targetOpacity.toString());
+                                                if ((!series.isRectSeries || (seriesElement.id.indexOf('border') > -1)) && (!isAccumulation)) {
+                                                    seriesElement.setAttribute('stroke-width', (targetStrokeWidth + 1).toString());
+                                                }
+                                            }
+                                            else {
+                                                seriesElement.setAttribute('opacity', isAccumulation ? seriesElement.id.indexOf('datalabel') > -1 ? '0.5' : '0.3'
+                                                    : (seriesElement.getAttribute('id').indexOf('Text') > -1 ? '0.5' : '0.3'));
+                                                if ((!series.isRectSeries || (seriesElement.id.indexOf('border') > -1)) && (!isAccumulation)) {
+                                                    seriesElement.setAttribute('stroke-width', (targetStrokeWidth).toString());
+                                                }
                                             }
                                         }
-                                        else {
-                                            seriesElement.setAttribute('opacity', isAccumulation ? seriesElement.id.indexOf('datalabel') > -1 ? '0.5' : '0.3'
-                                                : (seriesElement.getAttribute('id').indexOf('Text') > -1 ? '0.5' : '0.3'));
-                                            if ((!series.isRectSeries || (seriesElement.id.indexOf('border') > -1)) && (!isAccumulation)) {
-                                                seriesElement.setAttribute('stroke-width', (targetStrokeWidth).toString());
-                                            }
+                                        else if (!this.currentPoints[0] && seriesElement.id !== '') {
+                                            this.animateHighlight(targetOpacity, seriesElement, this.chart.tooltip.duration
+                                                , ((!series.isRectSeries || (seriesElement.id.indexOf('border') > -1)) && (!isAccumulation)) ? targetStrokeWidth : null);
                                         }
-                                    }
-                                    else if (!this.currentPoints[0] && seriesElement.id !== '') {
-                                        this.animateHighlight(targetOpacity, seriesElement, this.chart.tooltip.duration
-                                            , ((!series.isRectSeries || (seriesElement.id.indexOf('border') > -1)) && (!isAccumulation)) ? targetStrokeWidth : null);
-                                    }
-                                });
+                                    });
+                                }
                             });
                         }
                     }
@@ -288,6 +290,7 @@ export class BaseTooltip extends ChartData {
                     shared: (this.control as Chart | AccumulationChart).tooltip.shared,
                     crosshair: crosshairEnabled,
                     shapes: shapes,
+                    markerImage: (templatePoint as Points) && (templatePoint as Points).marker && (templatePoint as Points).marker.imageUrl !== '' ? (templatePoint as Points).marker.imageUrl : '',
                     clipBounds: this.chart.chartAreaType === 'PolarRadar' ? new ChartLocation(0, 0) : clipLocation,
                     areaBounds: bounds,
                     palette: this.findPalette(),

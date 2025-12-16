@@ -1,4 +1,4 @@
-import { Property, Complex, ChildProperty, Collection, extend, Browser } from '@syncfusion/ej2-base';import { FontModel, BorderModel } from '../../common/model/base-model';import { Font, Border } from '../../common/model/base';import { AxisPosition } from '../utils/enum';import { EdgeLabelPlacement, ValueType, IntervalType, LabelIntersectAction, Orientation, ChartRangePadding, SkeletonType } from '../../common/utils/enum';import { rotateTextSize, firstToLowerCase, valueToCoefficient, inside, isBreakLabel, isZoomSet, getTitle, getElement, appendChildElement } from '../../common/utils/helper';import { Size, Rect, measureText } from '@syncfusion/ej2-svg-base';import { DoubleRange } from '../utils/double-range';import { Chart } from '../chart';import { Series } from '../series/chart-series';import { Double } from '../axis/double-axis';import { DateTime } from '../axis/date-time-axis';import { Category } from '../axis/category-axis';import { DateTimeCategory } from '../axis/date-time-category-axis';import { LabelPlacement, TextAlignment } from '../../common/utils/enum';import { IAxisRangeCalculatedEventArgs } from '../../chart/model/chart-interface';import { axisRangeCalculated } from '../../common/model/constants';import { StripLineSettings, MultiLevelLabels, LabelBorder, ScrollbarSettings } from '../model/chart-base';import { StripLineSettingsModel, MultiLevelLabelsModel, LabelBorderModel, ScrollbarSettingsModel} from '../model/chart-base-model';import { textWrap } from '../../common/utils/helper';import { ScrollBar } from '../../common/scrollbar/scrollbar';import { isNullOrUndefined } from '@syncfusion/ej2-base';import { VisibleRangeModel } from '../../common/model/interface';import { CartesianAxisLayoutPanel } from './cartesian-panel';
+import { Property, Complex, ChildProperty, Collection, extend, Browser, createElement } from '@syncfusion/ej2-base';import { FontModel, BorderModel } from '../../common/model/base-model';import { Font, Border } from '../../common/model/base';import { AxisPosition } from '../utils/enum';import { EdgeLabelPlacement, ValueType, IntervalType, LabelIntersectAction, Orientation, ChartRangePadding, SkeletonType } from '../../common/utils/enum';import { rotateTextSize, firstToLowerCase, valueToCoefficient, inside, isBreakLabel, isZoomSet, getTitle, getElement, appendChildElement, createTemplate, measureElementRect } from '../../common/utils/helper';import { Size, Rect, measureText } from '@syncfusion/ej2-svg-base';import { DoubleRange } from '../utils/double-range';import { Chart } from '../chart';import { Points, Series } from '../series/chart-series';import { Double } from '../axis/double-axis';import { DateTime } from '../axis/date-time-axis';import { Category } from '../axis/category-axis';import { DateTimeCategory } from '../axis/date-time-category-axis';import { LabelPlacement, TextAlignment } from '../../common/utils/enum';import { IAxisRangeCalculatedEventArgs } from '../../chart/model/chart-interface';import { axisRangeCalculated } from '../../common/model/constants';import { StripLineSettings, MultiLevelLabels, LabelBorder, ScrollbarSettings } from '../model/chart-base';import { StripLineSettingsModel, MultiLevelLabelsModel, LabelBorderModel, ScrollbarSettingsModel} from '../model/chart-base-model';import { textWrap } from '../../common/utils/helper';import { ScrollBar } from '../../common/scrollbar/scrollbar';import { isNullOrUndefined } from '@syncfusion/ej2-base';import { VisibleRangeModel } from '../../common/model/interface';import { CartesianAxisLayoutPanel } from './cartesian-panel';import { AccPoints } from '../../accumulation-chart';
 
 /**
  * Interface for a class Row
@@ -550,6 +550,33 @@ export interface AxisModel {
      */
 
     labelPosition?: AxisPosition;
+
+    /**
+     * Specifies the template used to render axis labels, allowing for customized labels with text, images, or other UI elements.
+     * The template is provided as a string with placeholders for interpolation. Use `${label}` to insert the axis label and `${value}` for the axis label value.
+     * For security, string templates use dangerouslySetInnerHTML in React—ensure input is trusted to avoid XSS vulnerabilities.
+     * If null or undefined, the axis will render default labels.
+     * Compatible with both categorical and numerical axes.
+     *
+     * @example
+     * ```html
+     * <div id='Chart'></div>
+     * ```
+     * ```typescript
+     * let chart: Chart = new Chart({
+     * ...
+     * primaryXAxis: {
+     * labelTemplate: '<div>Country: ${label}</div>'
+     * }
+     * ...
+     * });
+     * chart.appendTo('#Chart');
+     * ```
+     *
+     * @default null
+     */
+
+    labelTemplate?: string | Function;
 
     /**
      * A unique identifier for an axis. To associate an axis with a series, set this name to the `xAxisName` or `yAxisName` properties of the series.

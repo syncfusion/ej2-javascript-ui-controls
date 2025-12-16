@@ -1,3 +1,6 @@
+@use 'ej2-base/styles/common/mixin' as *;
+@use './theme-variables' as *;
+@use '../excel-filter/theme-variables' as excel-vars;
 @mixin hover-color-styles($grid-skin, $material, $bootstrap) {
   @if $grid-skin == 'material3' {
     background: $material;
@@ -151,13 +154,13 @@
     .e-checkboxfilter {
       & .e-dlg-content {
         padding-left: $grid-bigger-checkbox-content-padding-left;
-        @if $grid-xlfl-skin == 'fluent2' {
+        @if excel-vars.$grid-xlfl-skin == 'fluent2' {
           padding-right: 24px;
         }
       }
 
       & .e-footer-content {
-        @if $grid-xlfl-skin == 'fluent2' {
+        @if excel-vars.$grid-xlfl-skin == 'fluent2' {
           padding-right: 24px;
           padding-left: 24px;
         }
@@ -473,119 +476,26 @@
         margin: -20px 18px -14px 5px;
       }
     }
-
     
     .e-gridheader {
       .e-headercell .e-headercelldiv.e-headerchkcelldiv {
         @if $grid-skin == 'fluent2' {
           margin-bottom: 2px;
-          margin-left: 7px;
         }
-        @if $grid-skin == 'tailwind3' {
-          padding-left: 8px;
-        }
-      }
-
-      .e-headercell:not(:first-child) .e-headercelldiv.e-headerchkcelldiv {
-        @if $grid-skin == 'tailwind3' {
-          padding-left: 12px;
+        @if $grid-skin == 'fluent' {
+          margin-bottom: 0;
         }
       }
 
-      .e-fltr-icon .e-sortnumber {
-        margin: $grid-bigger-fltr-sortnumber-margin;
-      }
-  
-      .e-rightalign.e-fltr-icon .e-sortfilterdiv {
-        margin: $grid-bigger-fltricon-sortdiv-rightalign-margin;
-      }
-
-      .e-rightalign {
-        .e-sortnumber {
-          @include grid-flot-margin(left, $grid-bigger-sortnumber-rightalign-margin);
-        }
-        .e-sortfilterdiv {
-          margin: $grid-bigger-sortdiv-rightalign-margin;
-        }
-      }
-
-      .e-sortfilter .e-rightalign .e-headercelldiv,
       .e-rightalign .e-stackedheadercelldiv {
         @if $grid-skin == 'material3' {
           margin-left: 12px;
         }
       }
-  
-      .e-rightalign.e-fltr-icon .e-sortnumber {
-        @include grid-flot-margin(left, $grid-bigger-fltr-sortnumber-rightalign-margin);
-      }
-
-      .e-columnheader.e-wrap {
-        .e-sortfilterdiv {
-          margin: $grid-bigger-wrap-sortdiv-margin;
-        }
-        .e-rightalign .e-sortfilterdiv .e-wrap .e-rightalign .e-sortfilterdiv {
-          margin: $grid-bigger-wrap-rightalign-sortdiv-margin;
-        }
-    
-        .e-fltr-icon .e-sortfilterdiv .e-wrap .e-fltr-icon .e-sortfilterdiv {
-          margin: $grid-bigger-wrap-fltricon-sortdiv-margin;
-        }
-      }
-
-      .e-fltr-icon .e-sortfilterdiv {
-        margin: $grid-bigger-fltricon-sortdiv-margin;
-      }
-  
-      .e-headercell .e-headercelldiv.e-headerchkcelldiv {
-        @if $grid-skin == 'fluent' {
-          padding-left: 4px;
-        }
-      }
-
-      & tr th:last-child {
-        padding-right: $grid-bigger-header-first-last-cell-padding;
-      }
 
       & tr th:first-child.e-filterbarcell,
       & tr th:last-child.e-filterbarcell {
         padding-left: $grid-filterbarcell-first-last-child-padding-left;
-      }
-
-      & tr th:first-child {
-        padding-left: $grid-bigger-header-first-last-cell-padding;
-      }
-    }
-
-    &.e-wrap .e-columnheader {
-      .e-sortfilterdiv {
-        margin: $grid-bigger-wrap-sortdiv-margin;
-      }
-      
-      .e-fltr-icon .e-sortfilterdiv {
-        margin: $grid-bigger-wrap-fltricon-sortdiv-margin;
-      }
-
-      .e-fltr-icon.e-rightalign .e-sortfilterdiv {
-        margin: $grid-bigger-wrap-rightalign-sortdiv-margin;
-      }
-
-      & .e-fltr-icon .e-sortnumber {
-        margin: $grid-bigger-textwrap-sortnumber-margin;
-      }
-    }
-
-    &.e-wrap.e-rtl .e-headercell.e-fltr-icon .e-headercelldiv .e-sortnumber {
-      margin: $grid-rtl-bigger-textwrap-sortnumber-margin;
-    }
-
-    &.e-wrap.e-rtl .e-columnheader {
-      .e-fltr-icon .e-sortfilterdiv {
-        margin: $grid-bigger-rtl-wrap-fltricon-sortdiv-margin;
-      }
-
-      .e-fltr-icon.e-rightalign .e-sortfilterdiv {
-        margin: $grid-bigger-rtl-wrap-rightalign-sortdiv-margin;
       }
     }
 
@@ -632,16 +542,6 @@
       }
     }
 
-    .e-rowcell:first-child,
-    .e-summarycell:first-child {
-      padding-left: $grid-bigger-first-last-rowcell-padding;
-    }
-
-    .e-rowcell:last-child,
-    .e-summarycell:last-child {
-      padding-right: $grid-bigger-first-last-rowcell-padding;
-    }
-
     .e-filterbarcell,
     .e-filterbarcelldisabled {
       height: $grid-bigger-headercell-line-height;
@@ -670,52 +570,29 @@
       }
     }
 
-    .e-columnmenu {
-      bottom: $grid-column-menu-top-touch;
-      top: $grid-column-menu-bottom-touch;
-    }
-
     &.e-device.e-noselect {
       user-select: none;
     }
 
-    .e-filtermenudiv {
-      margin: $grid-bigger-fltrdiv-margin;
+    .e-rightalign.e-fltr-icon .e-headertext,
+    .e-centeralign.e-fltr-icon .e-headertext {
+      padding: 0 4px;
+    }
+    .e-fltr-icon .e-headertext,
+    .e-leftalign.e-fltr-icon .e-headertext {
+      padding-right: 4px;
     }
 
-    &.e-wrap .e-filtermenudiv {
-      @if $grid-skin == 'material' {
-        margin: -25px -2px -12px 8px;
+    &.e-rtl {
+      .e-rightalign.e-fltr-icon .e-headertext {
+        padding-right: 0;
       }
-      @if $grid-skin == 'fabric' {
-        margin: -26px -7px -24px;
+      .e-fltr-icon .e-headertext {
+        padding: 0 0 0 4px;
       }
-      @if $grid-skin == 'bootstrap5' or $grid-skin == 'bootstrap5.3' {
-        margin: -14px -2px -14px 4px;
+      .e-leftalign.e-fltr-icon .e-headertext {
+        padding: 0 4px;
       }
-    }
-
-    .e-sortfilterdiv {
-      margin: $grid-bigger-sortdiv-margin;
-    }
-
-    &.e-rtl .e-gridheader .e-headercell .e-headercelldiv.e-headerchkcelldiv {
-      padding: $grid-bigger-rtl-headercelldiv-chkbox-padding;
-    }
-
-    &.e-rtl .e-gridheader .e-headercell:not(:first-child) .e-headercelldiv.e-headerchkcelldiv {
-      @if $grid-skin == 'tailwind3' {
-        padding-right: 11px;
-      }
-    }
-
-    .e-wrap .e-sortfilterdiv {
-      margin: $grid-bigger-wrap-sortdiv-margin;
-    }
-
-    .e-gridheader .e-columnheader.e-wrap .e-rightalign.e-fltr-icon .e-sortfilterdiv,
-    .e-wrap .e-rightalign.e-fltr-icon .e-sortfilterdiv {
-      margin: $grid-bigger-wrap-rightalign-fltricon-sortdiv-margin;
     }
 
     &.e-wrap {
@@ -731,7 +608,6 @@
       font-size: $grid-sort-number-font-size;
       height: $grid-bigger-sort-number-size;
       line-height: $grid-bigger-sortnumer-line-height;
-      margin: $grid-bigger-sortnumber-margin;
       width: $grid-bigger-sort-number-size;
 
       @if $grid-skin == 'fluent' {
@@ -746,80 +622,8 @@
         }
       }
       .e-headercell.e-fltr-icon .e-headercelldiv .e-sortnumber {
-        margin: $grid-rtl-bigger-sortnumber-withfilter-margin;
         @if $grid-skin == 'tailwind' {
           margin-left: 0;
-        }
-      }
-  
-      .e-headercell .e-sortfilterdiv,
-      .e-detailheadercell .e-sortfilterdiv {
-        margin: $grid-rtl-bigger-sortcelldiv-margin;
-      }
-
-      .e-filtermenudiv {
-        margin: $grid-rtl-bigger-fltrdiv-margin;
-      }
-  
-      .e-rightalign .e-filtermenudiv {
-        margin: $grid-rtl-bigger-rightalign-fltrdiv-margin;
-      }
-
-      &.e-wrap {
-        .e-filtermenudiv {
-          margin: $grid-rtl-bigger-wrap-fltrdiv-margin;
-        }
-    
-        .e-rightalign .e-filtermenudiv {
-          margin: $grid-rtl-bigger-wrap-rightalign-fltrdiv-margin;
-        }
-      }
-  
-      .e-headercell .e-headercelldiv .e-sortnumber,
-      .e-detailheadercell .e-headercelldiv .e-sortnumber {
-        margin: $grid-rtl-bigger-sortnumber-margin;
-      }
-  
-      .e-headercell.e-rightalign .e-headercelldiv .e-sortnumber,
-      .e-detailheadercell.e-rightalign .e-headercelldiv .e-sortnumber {
-        margin: $grid-rtl-bigger-rightalign-sortnumber-margin;
-      }
-  
-      .e-headercell.e-leftalign.e-headercell.e-fltr-icon .e-headercelldiv .e-sortnumber,
-      .e-detailheadercell.e-leftalign.e-headercell.e-fltr-icon .e-headercelldiv .e-sortnumber {
-        @if $grid-skin == 'tailwind' {
-          margin: 0 0 0 6px;
-        }
-      }
-
-      .e-gridheader {
-        .e-rightalign .e-sortfilterdiv {
-          margin: $grid-rtl-bigger-sortcelldiv-right-align-margin;
-        }
-    
-        .e-fltr-icon .e-sortfilterdiv {
-          margin: $grid-rtl-bigger-fltricon-sortdiv-margin;
-        }
-    
-        .e-leftalign .e-sortfilterdiv {
-          @if $grid-skin == 'tailwind' {
-            margin-bottom: -14.5px;
-            margin-top: -14.5px;
-          }
-          @else if $grid-skin == 'bootstrap5' {
-            margin-bottom: -12px;
-            margin-top: -14px;
-          }
-        }
-    
-        .e-fltr-icon.e-leftalign .e-sortfilterdiv {
-          @if $grid-skin == 'tailwind' {
-            margin-right: -6px;
-          }
-        }
-    
-        .e-rightalign.e-fltr-icon .e-sortfilterdiv {
-          margin: $grid-rtl-bigger-fltricon-sortdiv-rightalign-margin;
         }
       }
 
@@ -947,7 +751,7 @@
 
       .e-icons {
         @if $grid-skin == 'material3' {
-          border-radius: 8px;
+          border-radius: $grid-border-radius-8;
         }
       }
     }
@@ -1041,15 +845,6 @@
       }
     }
     /* stylelint-enable */
-
-    &.e-bigger .e-columnmenu {
-      bottom: $grid-bigger-columnmenu-bottom;
-      margin: $grid-bigger-column-menu-margin;
-    }
-
-    .e-columnmenu {
-      right: $grid-column-menu-right-touch;
-    }
 
     .e-groupheadercell,
     .e-groupheadercell:hover {
@@ -1518,7 +1313,6 @@
   .e-toolbar .e-toolbar-items .e-hscroll-bar .e-hscroll-content > .e-toolbar-item:not(.e-hidden):nth-last-child(1 of :not(.e-hidden)) {
     margin-right: $grid-bigger-toolbar-div-margin;
   }
-
   .e-toolbar.e-rtl .e-toolbar-items:first-child:not(.e-toolbar-multirow) > .e-toolbar-item:not(.e-hidden):nth-last-child(1 of :not(.e-hidden)),
   .e-toolbar.e-rtl .e-toolbar-items .e-hscroll-bar .e-hscroll-content > .e-toolbar-item:not(.e-hidden):nth-last-child(1 of :not(.e-hidden)) {
     margin-left: $grid-bigger-toolbar-div-margin;
@@ -1610,15 +1404,6 @@
       font-size: $grid-bigger-check-select-all-font-size;
     }
   }
-
-  .e-columnmenu {
-    margin: $grid-bigger-column-menu-margin;
-  }
-  
-  &.e-rtl .e-columnmenu {
-    margin: $grid-bigger-rtl-cm-margin;
-    right: auto;
-  }
   
   &.e-rtl.e-device .e-columnmenu {
     margin: $grid-bigger-device-rtl-cm-margin;
@@ -1641,12 +1426,10 @@
      
     .e-rowcell:first-child {
       line-height: $grid-bigger-first-last-rowcell-padding;
-      padding-left: $grid-bigger-first-last-rowcell-padding;
     }
      
     .e-rowcell:last-child {
       line-height: $grid-bigger-first-last-rowcell-padding;
-      padding-right: $grid-bigger-first-last-rowcell-padding;
     }
   }
   
@@ -2058,7 +1841,7 @@
     border-bottom-color: $grid-header-border-color;
     padding: $grid-bigger-res-dlg-hdr-padding;
     width: 100%;
-    border-radius: 0;
+    border-radius: $grid-border-radius-0;
     @if $grid-skin == 'fluent2' {
       background: $content-bg-color-alt1;
     }
@@ -2190,6 +1973,12 @@
           }
         }
   
+        & .e-res-sort-clear-btn:focus {
+          @if $grid-skin == 'fluent2' {
+            color: $primary-text-pressed;
+          }
+        }
+
         & .e-res-sort-clear-btn {
           color: $grid-responsive-filter-reset-color;
           @include grid-font-size-weight-styles($grid-responsive-sort-clear-btn-font-size, 500);
@@ -2379,9 +2168,9 @@
         }
       }
 
-      @if $grid-xlfl-skin == 'fluent2' {
+      @if excel-vars.$grid-xlfl-skin == 'fluent2' {
         .e-checkbox-wrapper .e-frame {
-          @if $grid-xlfl-skin == 'fluent2' {
+          @if excel-vars.$grid-xlfl-skin == 'fluent2' {
             margin: 0 0 1px 4px;
           }
         }

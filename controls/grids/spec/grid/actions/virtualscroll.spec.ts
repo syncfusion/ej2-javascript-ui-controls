@@ -2249,7 +2249,7 @@ describe('EJ2-977352: Issue with aggregate calculation in Grid with Virtual Scro
                 ],
             }, done);
     });
-
+    
     it('Coverage for aggregates update on editing', (done: Function) => {
         gObj.selectRow(1);
         gObj.startEdit();

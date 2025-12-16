@@ -1,3 +1,5 @@
+@use 'ej2-base/styles/common/mixin' as *;
+@use './theme-variables' as *;
 @include export-module('toolbar-theme') {
   /* stylelint-disable property-no-vendor-prefix */
   .e-toolbar {

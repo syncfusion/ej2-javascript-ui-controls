@@ -1,3 +1,6 @@
+@use 'ej2-base/styles/definition/bds' as *;
+@forward 'ej2-base/styles/definition/bds';
+
 //Layout Variables Start
 $card-img-brdr-radious: 50% !default;
 $card-brdr-radious: 6px !default;
@@ -37,6 +40,8 @@ $card-image-title-mheight: 30px !default;
 $card-action-nrml-vertical-padding: 18px 18px !default;
 $card-action-nrml-btn-vertical-margin: 0 0 6px 0 !default;
 $card-action-btn-nrml-height: 30px !default;
+$card-action-btn-nrml-line-height: 30px !default;
+$card-action-btn-nrml-min-height: 30px !default;
 $card-action-btn-nrml-margin: 0 0 0 6px !default;
 $card-action-btn-nrml-padding: 0 6px !default;
 $card-nrml-content-padding: 0 18px 12px 18px !default;
@@ -45,6 +50,14 @@ $card-header-txt-nrml-subtitle-font: $text-sm !default;
 $card-image-title-font: $text-base !default;
 $card-action-btn-icon-width: 24px !default;   //Need to check UI
 $card-action-btn-icon-height: 24px !default;   //Need to check UI
+$card-nrml-font-size: 15px !default;
+$card-normal-line-height: normal !default;
+$card-corner-border-radius: 50% !default;
+$card-header-title-font-weight: normal !default;
+$card-sub-title-font-weight: normal !default;
+$card-btn-border-radius: 2px !default;
+$card-font-family: $font-family !default;
+
 // Touch
 $card-bigger-lheight: 48px !default;
 $card-bigger-mheight: 48px !default;
@@ -70,6 +83,8 @@ $card-action-bigger-padding: 24px 24px !default;
 $card-action-bigger-vertical-padding: 12px 24px 24px 24px !default;
 $card-action-bigger-btn-vertical-margin: 0 0 8px 0 !default;//Need to check UI
 $card-action-btn-bigger-height: 38px !default;
+$card-action-btn-bigger-line-height: 38px !default;
+$card-action-btn-bigger-min-height: 38px !default;
 $card-action-btn-bigger-margin: 0 0 0 8px !default;
 $card-action-btn-bigger-padding: 0 6px !default;
 $card-bigger-content-padding: 0 24px 16px 24px !default;
@@ -81,6 +96,10 @@ $card-action-btn-bigger-icon-height: 24px !default;  //Need to check UI
 $card-image-title-nrml-padding: 8px 16px !default;
 $card-action-nrml-padding: 18px 18px !default;
 $card-highlight-color: $primary !default;
+
+$card-padding-none: 0 !default;
+$card-margin-none: 0 !default;
+$card-horizontal-padding: 2px !default;
 
 //Layout Variables End
 

@@ -202,7 +202,7 @@ describe('AIAssistView -', () => {
             });
             aiAssistView.appendTo(aiAssistViewElem);
             const toolbarItems: NodeListOf<HTMLDivElement> = aiAssistViewElem.querySelectorAll('.e-toolbar-item');
-            expect(toolbarItems.length).toBe(3);
+            expect(toolbarItems.length).toBe(4);
             expect(toolbarItems[1].children[0].getAttribute('tabindex')).toEqual('1');
             expect(toolbarItems[2].children[0].getAttribute('tabindex')).toEqual('2');
         });
@@ -218,7 +218,7 @@ describe('AIAssistView -', () => {
             aiAssistView.appendTo(aiAssistViewElem);
             const toolbarElement: HTMLDivElement = aiAssistViewElem.querySelector('.e-toolbar');
             let toolbarItems: NodeListOf<HTMLDivElement> = aiAssistViewElem.querySelectorAll('.e-toolbar-item');
-            expect(toolbarItems.length).toBe(2);
+            expect(toolbarItems.length).toBe(3);
             expect(toolbarItems[1].children[0].getAttribute('tabindex')).toEqual('-1');
             aiAssistView.toolbarSettings = {
                 items: [{ iconCss: 'e-icons e-user', align: 'Right', tabIndex: 1 }, { iconCss: 'e-icons e-folder', align: 'Right', tabIndex: 2 }],
@@ -226,7 +226,7 @@ describe('AIAssistView -', () => {
             aiAssistView.dataBind();
             (toolbarElement as any).ej2_instances[0].dataBind();
             toolbarItems = aiAssistViewElem.querySelectorAll('.e-toolbar-item');
-            expect(toolbarItems.length).toBe(4);
+            expect(toolbarItems.length).toBe(5);
             expect(toolbarItems[1].children[0].getAttribute('tabindex')).toEqual('-1');
             expect(toolbarItems[2].children[0].getAttribute('tabindex')).toEqual('1');
             expect(toolbarItems[3].children[0].getAttribute('tabindex')).toEqual('2');
@@ -298,6 +298,46 @@ describe('AIAssistView -', () => {
             expect(likeItem).not.toBeNull();
             expect(likeItem.querySelector('button span').classList.contains('e-like')).toEqual(true);
             likeItem.click();
+        });
+
+        it('Custom Response toolbarsettings prop checking', () => {
+            aiAssistView = new AIAssistView({
+                prompts: [ {
+                    prompt: 'How can i assist you?',
+                    response: 'I can help you with that.'
+                }],
+                responseToolbarSettings: {
+                    items: [
+                        { iconCss: 'e-icons e-assist-like' },
+                        { iconCss: 'e-icons e-assist-copy' },
+                        { iconCss: 'e-icons e-assist-dislike' },
+                        { iconCss: 'e-icons e-stop' }
+                    ]
+                }
+            });
+            aiAssistView.appendTo(aiAssistViewElem);
+            let toolbarItems: NodeListOf<HTMLDivElement> = aiAssistViewElem.querySelectorAll('.e-content-footer .e-toolbar-item');
+            expect(toolbarItems).not.toBeNull();
+            let likeItem: HTMLElement = (toolbarItems[0] as HTMLElement).querySelector('button');
+            let disLikeItem: HTMLElement = (toolbarItems[2] as HTMLElement).querySelector('button');
+            expect(likeItem).not.toBeNull();
+            expect(disLikeItem).not.toBeNull();
+            expect(disLikeItem.querySelector('button span').classList.contains('e-assist-dislike')).toEqual(true);
+            expect(likeItem.querySelector('button span').classList.contains('e-assist-like')).toEqual(true);
+            likeItem.click();
+            toolbarItems = aiAssistViewElem.querySelectorAll('.e-content-footer .e-toolbar-item');
+            expect(toolbarItems).not.toBeNull();
+            likeItem = (toolbarItems[0] as HTMLElement).querySelector('button');
+            disLikeItem = (toolbarItems[2] as HTMLElement).querySelector('button');
+            expect(likeItem.querySelector('button span').classList.contains('e-assist-like-filled')).toEqual(true);
+            expect(disLikeItem.querySelector('button span').classList.contains('e-assist-dislike')).toEqual(true);
+            disLikeItem.click();
+            toolbarItems = aiAssistViewElem.querySelectorAll('.e-content-footer .e-toolbar-item');
+            expect(toolbarItems).not.toBeNull();
+            likeItem = (toolbarItems[0] as HTMLElement).querySelector('button');
+            disLikeItem = (toolbarItems[2] as HTMLElement).querySelector('button');
+            expect(likeItem.querySelector('button span').classList.contains('e-assist-like')).toEqual(true);
+            expect(disLikeItem.querySelector('button span').classList.contains('e-assist-dislike-filled')).toEqual(true);
         });
 
         it('Assist views checking', () => {
@@ -594,6 +634,129 @@ describe('AIAssistView -', () => {
             expect((suggestionElems[1] as HTMLElement).querySelector('b').textContent).toEqual('Can i help you with something?');
         });
 
+        it('Banner template dynamic change checking', () => {
+            document.body.appendChild(sTag);
+            aiAssistView = new AIAssistView({
+            });
+            aiAssistView.appendTo(aiAssistViewElem);
+            aiAssistView.bannerTemplate = '#bannerTemplate';
+            aiAssistView.dataBind();
+            const bannerElem: HTMLElement = aiAssistViewElem.querySelector('.e-banner-view');
+            expect(bannerElem).not.toBeNull();
+            expect(bannerElem.querySelector('h1').textContent).toEqual('AI Assistant');
+            expect(bannerElem.querySelector('p').textContent).toEqual('Your everyday AI companion');
+        });
+
+        it('should dynamically change the banner template', () => {
+            document.body.appendChild(sTag);
+            aiAssistView = new AIAssistView({
+                bannerTemplate: '#bannerTemplate'
+            });
+            aiAssistView.appendTo(aiAssistViewElem);
+            let bannerElem: HTMLElement = aiAssistViewElem.querySelector('.e-banner-view');
+            expect(bannerElem).not.toBeNull();
+            expect(bannerElem.querySelector('h1').textContent).toEqual('AI Assistant');
+            expect(bannerElem.querySelector('p').textContent).toEqual('Your everyday AI companion');
+            aiAssistView.bannerTemplate = '<h1>ChatGPT AssistView</h1><p>Lets look into the AI World</p>';
+            aiAssistView.dataBind();
+            bannerElem = aiAssistViewElem.querySelector('.e-banner-view');
+            expect(bannerElem).not.toBeNull();
+            expect(bannerElem.querySelector('h1').textContent).toEqual('ChatGPT AssistView');
+            expect(bannerElem.querySelector('p').textContent).toEqual('Lets look into the AI World');
+        });
+
+        it('Prompt suggestion item template dynamic checking', () => {
+            document.body.appendChild(sTag4);
+            aiAssistView = new AIAssistView({
+                promptSuggestions: [ 'How can i assist you?', 'Can i help you with something?' ],
+            });
+            aiAssistView.appendTo(aiAssistViewElem);
+            aiAssistView.promptSuggestionItemTemplate =  '#promptSuggItemTemplate';
+            aiAssistView.dataBind();
+            const suggestionElems: NodeList = aiAssistViewElem.querySelectorAll('.e-suggestions li');
+            expect(suggestionElems).not.toBeNull();
+            expect((suggestionElems[0] as HTMLElement).querySelector('b').textContent).toEqual('How can i assist you?');
+            expect((suggestionElems[1] as HTMLElement).querySelector('b').textContent).toEqual('Can i help you with something?');
+        });
+
+        it('should dynamically change the prompt suggestion item template', () => {
+            document.body.appendChild(sTag4);
+            aiAssistView = new AIAssistView({
+                promptSuggestions: [ 'How can i assist you?', 'Can i help you with something?' ],
+                promptSuggestionItemTemplate :  '#promptSuggItemTemplate'
+            });
+            aiAssistView.appendTo(aiAssistViewElem);
+            let suggestionElems: NodeList = aiAssistViewElem.querySelectorAll('.e-suggestions li');
+            expect(suggestionElems).not.toBeNull();
+            expect((suggestionElems[0] as HTMLElement).querySelector('b').textContent).toEqual('How can i assist you?');
+            expect((suggestionElems[1] as HTMLElement).querySelector('b').textContent).toEqual('Can i help you with something?');
+            sTag4.innerHTML = '<h1>${promptSuggestion}</h1>';
+            aiAssistView.promptSuggestionItemTemplate = '';
+            aiAssistView.dataBind();
+            aiAssistView.promptSuggestionItemTemplate =  '#promptSuggItemTemplate';
+            aiAssistView.dataBind();
+            suggestionElems = aiAssistViewElem.querySelectorAll('.e-suggestions li');
+            expect(suggestionElems).not.toBeNull();
+            expect((suggestionElems[0] as HTMLElement).querySelector('h1').textContent).toEqual('How can i assist you?');
+            expect((suggestionElems[1] as HTMLElement).querySelector('h1').textContent).toEqual('Can i help you with something?');
+        });
+
+        it('Footer template dynamic checking', () => {
+            document.body.appendChild(sTag1);
+            aiAssistView = new AIAssistView({
+            });
+            aiAssistView.appendTo(aiAssistViewElem);
+            aiAssistView.footerTemplate = '#footerTemplate';
+            aiAssistView.dataBind();
+            const footerElem: HTMLElement = aiAssistViewElem.querySelector('.e-footer');
+            expect(footerElem).not.toBeNull();
+            expect(footerElem.querySelector('textarea')).not.toBeNull();
+            expect(footerElem.querySelector('button').textContent).toEqual('Generate');
+        });
+
+        it('should dynamically change the footer template', () => {
+            document.body.appendChild(sTag1);
+            aiAssistView = new AIAssistView({
+                footerTemplate : '#footerTemplate'
+            });
+            aiAssistView.appendTo(aiAssistViewElem);
+            aiAssistView.footerTemplate = '';
+            aiAssistView.dataBind();
+            const footerElem: HTMLElement = aiAssistViewElem.querySelector('.e-footer');
+            expect(footerElem).not.toBeNull();
+            expect(footerElem.querySelector('textarea')).not.toBeNull();
+            const sendBtnElem: HTMLButtonElement = footerElem.querySelector('.e-footer .e-assist-send.e-icons');
+            expect(sendBtnElem).not.toBeNull();
+        });
+
+        it ('Footer template should toggle send icon into stop response icon', function(done){
+            const template = createElement('script', { id: 'footertemplate', attrs: { type: 'text/x-template' } });
+            template.innerHTML = '<div><textarea></textarea><span class="e-icons e-assist-send"></span></div>';
+            document.body.appendChild(template);
+            aiAssistView = new AIAssistView({
+                footerTemplate: '#footertemplate'
+            });
+            aiAssistView.appendTo(aiAssistViewElem);
+            const footerElem: HTMLElement = aiAssistViewElem.querySelector('.e-footer');
+            expect(footerElem).not.toBeNull();
+            const textarea: HTMLElement = footerElem.querySelector('textarea');
+            expect(textarea).not.toBeNull();
+            const sendBtnElem: HTMLElement = footerElem.querySelector('.e-footer .e-assist-send.e-icons');
+            expect(sendBtnElem).not.toBeNull();
+            textarea.innerText = 'Hi this is a prompt';
+            const inputEvent = new Event('input', { bubbles: true });
+            textarea.dispatchEvent(inputEvent);
+            setTimeout(function () {
+                aiAssistView.executePrompt(textarea.textContent);
+                textarea.innerText = "";
+                setTimeout(function () {
+                    var stopResponseBtn: HTMLElement = footerElem.querySelector('.e-assist-stop');
+                    expect(stopResponseBtn).not.toBeNull();
+                    stopResponseBtn.click();
+                    done();
+                }, 200);
+            }, 600);
+        });
     });
 
     describe('API -', () => {
@@ -837,7 +1000,6 @@ describe('AIAssistView -', () => {
             setTimeout(() => {
                 const clearBtnElem: HTMLElement = aiAssistViewElem.querySelector('.e-footer .e-assist-clear-icon');
                 expect(clearBtnElem).not.toBeNull();
-                expect(clearBtnElem.classList.contains('e-assist-clear-icon-hide')).toEqual(false);
                 done();
             }, 450, done);
         });
@@ -862,7 +1024,6 @@ describe('AIAssistView -', () => {
             setTimeout(() => {
                 const clearBtnElem: HTMLElement = aiAssistViewElem.querySelector('.e-footer .e-assist-clear-icon');
                 expect(clearBtnElem).not.toBeNull();
-                expect(clearBtnElem.classList.contains('e-assist-clear-icon-hide')).toEqual(false);
                 done();
             }, 450, done);
         });
@@ -880,7 +1041,6 @@ describe('AIAssistView -', () => {
             setTimeout(() => {
                 const clearBtnElem: HTMLElement = aiAssistViewElem.querySelector('.e-footer .e-assist-clear-icon');
                 expect(clearBtnElem).not.toBeNull();
-                expect(clearBtnElem.classList.contains('e-assist-clear-icon-hide')).toEqual(false);
                 clearBtnElem.click();
                 expect(textareaEle.innerText).toEqual('');
                 done();
@@ -903,12 +1063,16 @@ describe('AIAssistView -', () => {
             setTimeout(() => {
                 const clearBtnElem: HTMLElement = aiAssistViewElem.querySelector('.e-footer .e-assist-clear-icon');
                 expect(clearBtnElem).not.toBeNull();
-                expect(clearBtnElem.classList.contains('e-assist-clear-icon-hide')).toEqual(false);
+                const toolbarItems: NodeListOf<HTMLElement> = aiAssistViewElem.querySelectorAll('.e-footer .e-toolbar-item');
+                expect(toolbarItems[0].title).toBe('Clear');
+                expect(toolbarItems[0].classList.contains('e-hidden')).toBe(false);
                 const sendBtnElem: HTMLButtonElement = aiAssistViewElem.querySelector('.e-footer .e-assist-send.e-icons');
                 const blurEvent: FocusEvent = new FocusEvent('blur', { relatedTarget: sendBtnElem });
+                textareaEle.blur()
                 textareaEle.dispatchEvent(blurEvent);
                 setTimeout(() => {
-                    expect(clearBtnElem.classList.contains('e-assist-clear-icon-hide')).toEqual(true);
+                    expect(toolbarItems[0].title).toBe('Clear');
+                    expect(toolbarItems[0].classList.contains('e-hidden')).toBe(true);
                     done();
                 }, 0);
             }, 450);
@@ -929,11 +1093,46 @@ describe('AIAssistView -', () => {
             setTimeout(() => {
                 const clearBtnElem: HTMLElement = aiAssistViewElem.querySelector('.e-footer .e-assist-clear-icon');
                 expect(clearBtnElem).not.toBeNull();
-                expect(clearBtnElem.classList.contains('e-assist-clear-icon-hide')).toEqual(false);
+                const toolbarItems: NodeListOf<HTMLElement> = aiAssistViewElem.querySelectorAll('.e-footer .e-toolbar-item');
+                expect(toolbarItems[0].title).toBe('Clear');
+                expect(toolbarItems[0].classList.contains('e-hidden')).toBe(false);
+                textareaEle.blur();
                 const blurEvent: FocusEvent = new FocusEvent('blur', { relatedTarget: null });
                 textareaEle.dispatchEvent(blurEvent);
                 setTimeout(() => {
-                    expect(clearBtnElem.classList.contains('e-assist-clear-icon-hide')).toEqual(true);
+                    expect(toolbarItems[0].title).toBe('Clear');
+                    expect(toolbarItems[0].classList.contains('e-hidden')).toBe(true);
+                    done();
+                }, 0);
+            }, 450);
+        });
+
+        it('should remove focus when other than footer is focused', (done: DoneFn) => {
+            aiAssistView = new AIAssistView({
+                showClearButton: true,
+                prompts: [{
+                    prompt: 'Already sent prompt',
+                    response: 'Response to prompt'
+                }]
+            });
+            aiAssistView.appendTo(aiAssistViewElem);
+
+            const textareaEle: HTMLDivElement = aiAssistViewElem.querySelector('.e-footer .e-assist-textarea');
+            const footerElem: HTMLElement = aiAssistViewElem.querySelector('.e-footer');
+            const promptItem: HTMLElement = aiAssistViewElem.querySelector('.e-prompt-container');
+
+            textareaEle.focus();
+            textareaEle.innerText = 'Some text to enable clear button';
+            textareaEle.dispatchEvent(new Event('input', { bubbles: true }));
+
+            setTimeout(() => {
+                expect(footerElem.classList.contains('e-footer-focused')).toBe(true);
+
+                const blurEvent: FocusEvent = new FocusEvent('blur', { bubbles: true, relatedTarget: promptItem });
+                textareaEle.dispatchEvent(blurEvent);
+
+                setTimeout(() => {
+                    expect(footerElem.classList.contains('e-footer-focused')).toBe(false);
                     done();
                 }, 0);
             }, 450);
@@ -1001,23 +1200,6 @@ describe('AIAssistView -', () => {
             expect(aiAssistViewElem.classList.contains('e-rtl')).toEqual(false);
         });
 
-        it('Locale checking', () => {
-            L10n.load({
-                'fr-BE': {
-                   'aiassistview': {
-                        'stopResponseText': "Arrêtez de répondre"
-                    }
-                }
-            });
-            aiAssistView = new AIAssistView({
-            });
-            aiAssistView.appendTo(aiAssistViewElem);
-            expect(aiAssistViewElem.querySelector('.e-stop-response-text').textContent).toEqual('Stop Responding');
-            aiAssistView.locale = 'fr-BE';
-            aiAssistView.dataBind();
-            expect(aiAssistViewElem.querySelector('.e-stop-response-text').textContent).toEqual('Arrêtez de répondre');
-        });
-
         it('Hidden textarea value checking', (done: DoneFn) => {
             aiAssistView = new AIAssistView({
             });
@@ -1075,7 +1257,6 @@ describe('AIAssistView -', () => {
             setTimeout(() => {
                 const clearBtnElem: HTMLElement = aiAssistViewElem.querySelector('.e-footer .e-assist-clear-icon');
                 expect(clearBtnElem).not.toBeNull();
-                expect(clearBtnElem.classList.contains('e-assist-clear-icon-hide')).toEqual(false);
                 clearBtnElem.click();
                 expect(textareaEle.innerText).toEqual('');
                 expect(hiddenTextarea.value).toEqual('');
@@ -1302,12 +1483,14 @@ describe('AIAssistView -', () => {
                 expect(sendBtnElem.classList.contains('disabled')).toBe(false, 'Send button should be enabled after input');
                 sendBtnElem.click();
                 setTimeout(() => {
-                    const promptElem: HTMLElement = aiAssistViewElem.querySelector('.e-prompt-text');                    if (promptElem) {
+                    const promptElem: HTMLElement = aiAssistViewElem.querySelector('.e-prompt-text');
+                    if (promptElem) {
                         expect(promptElem.textContent).toBe(iframePrompt, 'Prompt should display iframe content as text');
                         expect(promptElem.querySelector('iframe')).toBeNull('No iframe tag should be rendered');
                     }
 
-                    const responseElem: HTMLElement = aiAssistViewElem.querySelector('.e-output');                    if (responseElem) {
+                    const responseElem: HTMLElement = aiAssistViewElem.querySelector('.e-output');
+                    if (responseElem) {
                         expect(responseElem.textContent).toBe(
                             'For real-time prompt processing, connect the AIAssistView component to your preferred AI service, such as OpenAI or Azure Cognitive Services.',
                             'Response should match expected output'
@@ -1544,9 +1727,9 @@ class HelloWorld
                     "Steps to publish a e-book with marketing strategy"
                 ],
                 promptRequest: () => {
-                    const stoprespondingElem: HTMLElement = aiAssistViewElem.querySelector('.e-stop-response');
+                    const stoprespondingElem: HTMLElement = aiAssistViewElem.querySelector('.e-assist-stop');
                     expect(stoprespondingElem).not.toBeNull();
-                    EventHandler.trigger(stoprespondingElem, 'click');
+                    stoprespondingElem.click();
                 }
             });
             aiAssistView.appendTo(aiAssistViewElem);
@@ -1729,6 +1912,134 @@ class HelloWorld
             }, 400);
         });
 
+        it('should remove banner template when prompt is sent', (done: DoneFn) => {
+            aiAssistView = new AIAssistView({
+                promptRequest: (args: PromptRequestEventArgs) => {
+                    aiAssistView.promptSuggestions = [ 'Suggestion 1' ];
+                    aiAssistView.dataBind();
+                    args.promptSuggestions = [ 'How can i assist you?', 'Can i help you with something?' ];
+                    aiAssistView.addPromptResponse('For real-time prompt processing, connect the AIAssistView component to your preferred AI service, such as OpenAI or Azure Cognitive Services.');
+                },
+                bannerTemplate: `<div class="ai-assist-banner">
+                            <div class="e-icons e-assistview-icon"></div>
+                            <h2>AI Assistance</h2>
+                            <div class="ai-assist-banner-subtitle">Your everyday AI companion</div>
+                        </div>`,
+            });
+            aiAssistView.appendTo(aiAssistViewElem);
+            const textareaEle: HTMLDivElement = aiAssistViewElem.querySelector('.e-footer .e-assist-textarea');
+            expect(textareaEle).not.toBeNull();
+            expect(aiAssistView.element.querySelector('.e-banner-view')).not.toBeNull();
+            textareaEle.innerText = 'Write a palindrome program in C#.';
+            const inputEvent: Event = new Event('input', { bubbles: true });
+            textareaEle.dispatchEvent(inputEvent);
+            setTimeout(() => {
+                const sendBtnElem: HTMLButtonElement = aiAssistView.element.querySelector('.e-footer .e-assist-send.e-icons');
+                expect(sendBtnElem).not.toBeNull();
+                expect(sendBtnElem.classList.contains('disabled')).toEqual(false);
+                sendBtnElem.click();
+                setTimeout(() => {
+                    const promptElem: HTMLElement = aiAssistViewElem.querySelector('.e-prompt-text');
+                    expect(promptElem).not.toBeNull();
+                    expect(promptElem.textContent).toEqual('Write a palindrome program in C#.');
+                    const responseElem: HTMLElement = aiAssistViewElem.querySelector('.e-output');
+                    expect(responseElem).not.toBeNull();
+                    expect(responseElem.textContent).toEqual('For real-time prompt processing, connect the AIAssistView component to your preferred AI service, such as OpenAI or Azure Cognitive Services.');
+                    expect(aiAssistView.element.querySelector('.e-banner-view')).toBeNull();
+                    done();
+                }, 100);
+            }, 450);
+        });
+
+        it('should remove banner template when prompt suggestions are sent', () => {
+            aiAssistView = new AIAssistView({
+                promptSuggestions: [ 'How can i assist you?', 'Can i help you with something?' ],
+                promptRequest: (args: PromptRequestEventArgs) => {
+                    args.promptSuggestions = [ 'How can i assist you?', 'Can i help you with something?' ];
+                    aiAssistView.addPromptResponse('For real-time prompt processing, connect the AIAssistView component to your preferred AI service, such as OpenAI or Azure Cognitive Services.');
+                },
+                bannerTemplate: `<div class="ai-assist-banner">
+                            <div class="e-icons e-assistview-icon"></div>
+                            <h2>AI Assistance</h2>
+                            <div class="ai-assist-banner-subtitle">Your everyday AI companion</div>
+                        </div>`,
+            });
+            aiAssistView.appendTo(aiAssistViewElem);
+            const suggestionElem: HTMLLIElement = aiAssistViewElem.querySelectorAll('.e-suggestion-list li')[0] as HTMLLIElement;
+            expect(suggestionElem).not.toBeNull();
+            expect(aiAssistView.element.querySelector('.e-banner-view')).not.toBeNull();
+            suggestionElem.click();
+            const promptElem: HTMLElement = aiAssistViewElem.querySelector('.e-prompt-text');
+            expect(promptElem).not.toBeNull();
+            expect(promptElem.textContent).toEqual('How can i assist you?');
+            expect(aiAssistView.element.querySelector('.e-banner-view')).toBeNull();
+            const responseElem: HTMLElement = aiAssistViewElem.querySelector('.e-output');
+            expect(responseElem).not.toBeNull();
+            expect(responseElem.textContent).toEqual('For real-time prompt processing, connect the AIAssistView component to your preferred AI service, such as OpenAI or Azure Cognitive Services.');
+        });
+
+        it('should render banner template when prompts are cleared', (done: DoneFn) => {
+            aiAssistView = new AIAssistView({
+                promptRequest: (args: PromptRequestEventArgs) => {
+                    aiAssistView.promptSuggestions = [ 'Suggestion 1' ];
+                    aiAssistView.dataBind();
+                    args.promptSuggestions = [ 'How can i assist you?', 'Can i help you with something?' ];
+                    aiAssistView.addPromptResponse('For real-time prompt processing, connect the AIAssistView component to your preferred AI service, such as OpenAI or Azure Cognitive Services.');
+                },
+                bannerTemplate: `<div class="ai-assist-banner">
+                            <div class="e-icons e-assistview-icon"></div>
+                            <h2>AI Assistance</h2>
+                            <div class="ai-assist-banner-subtitle">Your everyday AI companion</div>
+                        </div>`,
+            });
+            aiAssistView.appendTo(aiAssistViewElem);
+            const textareaEle: HTMLDivElement = aiAssistViewElem.querySelector('.e-footer .e-assist-textarea');
+            expect(textareaEle).not.toBeNull();
+            expect(aiAssistView.element.querySelector('.e-banner-view')).not.toBeNull();
+            textareaEle.innerText = 'Write a palindrome program in C#.';
+            const inputEvent: Event = new Event('input', { bubbles: true });
+            textareaEle.dispatchEvent(inputEvent);
+            setTimeout(() => {
+                const sendBtnElem: HTMLButtonElement = aiAssistView.element.querySelector('.e-footer .e-assist-send.e-icons');
+                expect(sendBtnElem).not.toBeNull();
+                expect(sendBtnElem.classList.contains('disabled')).toEqual(false);
+                sendBtnElem.click();
+                setTimeout(() => {
+                    const promptElem: HTMLElement = aiAssistViewElem.querySelector('.e-prompt-text');
+                    expect(promptElem).not.toBeNull();
+                    expect(promptElem.textContent).toEqual('Write a palindrome program in C#.');
+                    const responseElem: HTMLElement = aiAssistViewElem.querySelector('.e-output');
+                    expect(responseElem).not.toBeNull();
+                    expect(responseElem.textContent).toEqual('For real-time prompt processing, connect the AIAssistView component to your preferred AI service, such as OpenAI or Azure Cognitive Services.');
+                    expect(aiAssistView.element.querySelector('.e-banner-view')).toBeNull();
+                    aiAssistView.prompts = [];
+                    aiAssistView.dataBind();
+                    expect(aiAssistView.element.querySelector('.e-banner-view')).not.toBeNull();
+                    done();
+                }, 100);
+            }, 450);
+        });
+
+        it('should not render banner template when prompts are initialized', () => {
+            aiAssistView = new AIAssistView({
+                prompts: [ {
+                    prompt: 'How can i assist you?',
+                    response: 'I can help you with that.'
+                }],
+                bannerTemplate: () => '<div><h1>AI Assistant</h1><p>Your everyday AI companion</p></div>'
+            });
+            aiAssistView.appendTo(aiAssistViewElem);
+            const promptElem: HTMLElement = aiAssistViewElem.querySelector('.e-prompt-text');
+            expect(promptElem).not.toBeNull();
+            expect(promptElem.textContent).toEqual('How can i assist you?');
+            const responseElem: HTMLElement = aiAssistViewElem.querySelector('.e-output');
+            expect(responseElem).not.toBeNull();
+            expect(responseElem.textContent).toEqual('I can help you with that.');
+            expect(aiAssistView.element.querySelector('.e-banner-view')).toBeNull();
+            aiAssistView.prompts = [];
+            aiAssistView.dataBind();
+            expect(aiAssistView.element.querySelector('.e-banner-view')).not.toBeNull();
+        });
 
     });
 
@@ -1764,7 +2075,8 @@ class HelloWorld
                 keyEventArgs.key = 'Enter';
                 (aiAssistView as any).keyHandler(keyEventArgs, 'footer');
                 setTimeout(() => {
-                    expect(sendBtnElem.classList.contains('disabled')).toEqual(true);
+                    const updatedSendBtn: HTMLElement = aiAssistView.element.querySelector('.e-footer .e-assist-send.e-icons');
+                    expect(updatedSendBtn.classList.contains('disabled')).toEqual(true);
                     const promptElem: HTMLElement[] = Array.from(aiAssistViewElem.querySelectorAll('.e-prompt-text'));
                     expect(promptElem.length).toEqual(1);
                     aiAssistView.prompt = '';
@@ -1780,7 +2092,7 @@ class HelloWorld
                     "Steps to publish a e-book with marketing strategy"
                 ],
                 promptRequest: () => {
-                    const stopResponseBtn: HTMLElement = aiAssistViewElem.querySelector('.e-stop-response');
+                    const stopResponseBtn: HTMLElement = aiAssistViewElem.querySelector('.e-assist-stop');
                     expect(stopResponseBtn).not.toBeNull();
                     stopResponseBtn.focus();
                     const enterKeyEvent: KeyboardEvent = new KeyboardEvent('keydown', {
@@ -1822,8 +2134,12 @@ class HelloWorld
                 promptRequest: (args: PromptRequestEventArgs) => {
                     args.cancel = false;
                     aiAssistView.addPromptResponse('Partial response chunk ', false);
+                    let footerToolbar: HTMLElement = aiAssistViewElem.querySelector('.e-content-footer');
+                    expect(footerToolbar).toBeNull();
                     setTimeout(() => {
                         aiAssistView.addPromptResponse('Final response', true);
+                        footerToolbar = aiAssistViewElem.querySelector('.e-content-footer');
+                        expect(footerToolbar).not.toBeNull();
                         const responseElem: HTMLElement = aiAssistViewElem.querySelector('.e-output');
                         expect(responseElem.textContent).not.toContain('Partial response chunk');
                         expect(responseElem.textContent).toContain('Final response');
@@ -1878,7 +2194,7 @@ class HelloWorld
             aiAssistView.addPromptResponse(`<pre><span class="e-icons e-code-copy e-assist-copy"></span><code class="csharp language-csharp">Hello</code></pre>`, false);
             setTimeout(() => {
                 aiAssistView.addPromptResponse(`<pre><code class=\"csharp language-csharp\">World !</code></pre>`, false);
-                const stoprespondingElem: HTMLElement = aiAssistViewElem.querySelector('.e-stop-response');
+                const stoprespondingElem: HTMLElement = aiAssistViewElem.querySelector('.e-assist-stop');
                 expect(stoprespondingElem).not.toBeNull();
                 EventHandler.trigger(stoprespondingElem, 'click');
                 setTimeout(() => {
@@ -2008,8 +2324,7 @@ class HelloWorld
             expect(sendBtnElem.classList.contains('disabled')).toEqual(true);
 
             let fileObj: File = new File(["Nice One"], "last.txt", {lastModified: 0, type: "overide/mimetype"});
-            let fileObj1: File = new File(["2nd File"], "image.png", {lastModified: 0, type: "overide/mimetype"});
-            let eventArgs = { type: 'click', target: {files: [fileObj, fileObj1]}, preventDefault: (): void => { } };
+            let eventArgs = { type: 'click', target: {files: [fileObj]}, preventDefault: (): void => { } };
             uploadObj.onSelectFiles(eventArgs);
 
             setTimeout(() => {
@@ -2017,8 +2332,8 @@ class HelloWorld
                 setTimeout(() => {
                     expect(sendBtnElem.classList.contains('disabled')).toEqual(false);
                     done();
-                }, 500);
-            }, 500);
+                }, 800);
+            }, 800);
 
         });
 
@@ -2041,8 +2356,7 @@ class HelloWorld
             // Simulate adding a file to the uploader and uploading
             const uploadObj: any = (aiAssistView as any).uploaderObj as Uploader;
             let fileObj: File = new File(["Nice One"], "last.txt", {lastModified: 0, type: "overide/mimetype"});
-            let fileObj1: File = new File(["2nd File"], "image.png", {lastModified: 0, type: "overide/mimetype"});
-            let eventArgs = { type: 'click', target: {files: [fileObj, fileObj1]}, preventDefault: (): void => { } };
+            let eventArgs = { type: 'click', target: {files: [fileObj]}, preventDefault: (): void => { } };
             uploadObj.onSelectFiles(eventArgs);
             setTimeout(() => {
                 const uploadedFileItem = (aiAssistView as any).footer.querySelector('.e-assist-uploaded-file-item');
@@ -2051,7 +2365,7 @@ class HelloWorld
                 setTimeout(() => {
                     expect(isAttachmentRemoved).toBe(true);
                     done();
-                }, 500);
+                }, 800);
             }, 1000);
         });
 
@@ -2065,12 +2379,16 @@ class HelloWorld
             expect(aiAssistView.attachmentSettings.saveUrl).toBe('');
             expect(aiAssistView.attachmentSettings.removeUrl).toBe('');
             expect(aiAssistView.attachmentSettings.maxFileSize).toBe(2000000); // Default max file size
+            expect(aiAssistView.attachmentSettings.maximumCount).toBe(10);
+            expect(aiAssistView.attachmentSettings.allowedFileTypes).toBe('');
 
             // Change properties dynamically
             aiAssistView.attachmentSettings = {
                 saveUrl: '/new/save/url',
                 removeUrl: '/new/remove/url',
-                maxFileSize: 500000
+                maxFileSize: 500000,
+                maximumCount: 5,
+                allowedFileTypes: '.png'
             };
             aiAssistView.dataBind();
 
@@ -2078,6 +2396,8 @@ class HelloWorld
             expect(aiAssistView.attachmentSettings.saveUrl).toBe('/new/save/url');
             expect(aiAssistView.attachmentSettings.removeUrl).toBe('/new/remove/url');
             expect(aiAssistView.attachmentSettings.maxFileSize).toBe(500000);
+            expect(aiAssistView.attachmentSettings.maximumCount).toBe(5);
+            expect(aiAssistView.attachmentSettings.allowedFileTypes).toBe('.png');
         });
 
         it('should dynamically change the enableAttachments property', () => {
@@ -2114,10 +2434,12 @@ class HelloWorld
                     saveUrl: 'js.syncfusion.comm'
                 },
                 attachmentUploadFailure: (e) => {
-                    // Verification logic for upload failure
-                    expect(e.file.name).toBe('sample.txt');
-                    expect(e.operation).toBe('upload');
-                    done();
+                   setTimeout(() => {
+                        // Verification logic for upload failure
+                        expect(e.file.name).toBe('sample.txt');
+                        expect(e.operation).toBe('upload');
+                        done();
+                    });
                 }
             });
             aiAssistView.appendTo(aiAssistViewElem);
@@ -2188,7 +2510,7 @@ class HelloWorld
             let eventArgs = { type: 'click', target: {files: [fileObj]}, preventDefault: (): void => { } };
             uploader.onSelectFiles(eventArgs);
             let failureElement = aiAssistView.element.querySelector('.e-upload-failure-alert');
-            expect(failureElement.querySelector('.e-failure-message').textContent).toBe('Upload failed: File size is too large');
+            expect(failureElement.querySelector('.e-failure-message').textContent).toBe('Upload failed: 1 file exceeded the maximum size');
             (failureElement.querySelector('.e-assist-clear-icon') as HTMLElement).click();
             failureElement = aiAssistView.element.querySelector('.e-upload-failure-alert');
             expect(failureElement).toBeNull();
@@ -2254,10 +2576,12 @@ class HelloWorld
                 }
             });
             aiAssistView.appendTo(aiAssistViewElem);
+
             const uploader = (aiAssistView as any).uploaderObj;
             let fileObj: File = new File(["Test content"], "testfile.txt", { lastModified: 0, type: "text/plain" });
             let eventArgs = { type: 'click', target: { files: [fileObj] }, preventDefault: (): void => {} };
             uploader.onSelectFiles(eventArgs);
+
             let failureElement = aiAssistView.element.querySelector('.e-upload-failure-alert');
             expect(failureElement).not.toBeNull();
             expect(failureElement.querySelector('.e-failure-message').textContent).toBe('Bestand is te groot`e');
@@ -2295,6 +2619,792 @@ class HelloWorld
             expect(uploadedFileEle).not.toBeNull();
             expect(uploadedFileEle.querySelector('.e-assist-file-name').textContent).toBe('Nature');
             expect(uploadedFileEle.querySelector('.e-assist-file-size').textContent).toBe('488.28 KB');
+        });
+
+        it('should allow to upload multiple files', (done: DoneFn) => {
+            aiAssistView = new AIAssistView({
+                enableAttachments: true,
+                attachmentSettings: {
+                    saveUrl: 'https://services.syncfusion.com/js/production/api/FileUploader/Save',
+                    removeUrl: 'https://services.syncfusion.com/js/production/api/FileUploader/Remove'
+                }
+            });
+
+            aiAssistView.appendTo(aiAssistViewElem);
+
+            const file1 = new File(['data1'], 'file1.png', { type: 'image/png' });
+            const file2 = new File(['data2'], 'file2.txt', { type: 'text/plain' });
+            const file3 = new File(['data3'], 'file3.png', { type: 'image/png' });
+
+            const fileInput = aiAssistViewElem.querySelector('.e-assist-file-upload') as HTMLInputElement;
+            const dt = new DataTransfer();
+            dt.items.add(file1);
+            dt.items.add(file2);
+            dt.items.add(file3);
+            fileInput.files = dt.files;
+            fileInput.dispatchEvent(new Event('change'));
+            setTimeout(() => {
+                const dropArea: HTMLElement = aiAssistViewElem.querySelector('.e-assist-drop-area');
+                const attachedFiles: NodeListOf<HTMLElement> = dropArea.querySelectorAll('.e-assist-uploaded-file-item');
+                expect(attachedFiles.length).toBe(3);
+                const uploadedFiles = (aiAssistView as any).uploadedFiles;
+                expect(uploadedFiles.length).toBe(3);
+                const sendBtnElem: HTMLElement = aiAssistViewElem.querySelector('.e-assist-send');
+                expect(sendBtnElem.classList).not.toContain('disabled');
+                done();
+            }, 700);
+        });
+
+        it('should allow to upload file after sending a file successfully', (done: DoneFn) => {
+            aiAssistView = new AIAssistView({
+                enableAttachments: true,
+                attachmentSettings: {
+                    saveUrl: 'https://services.syncfusion.com/js/production/api/FileUploader/Save',
+                    removeUrl: 'https://services.syncfusion.com/js/production/api/FileUploader/Remove'
+                }
+            });
+            aiAssistView.appendTo(aiAssistViewElem);
+
+            const file1 = new File(['data1'], 'file1.png', { type: 'image/png' });
+            let fileInput = aiAssistViewElem.querySelector('.e-assist-file-upload') as HTMLInputElement;
+            const dt1 = new DataTransfer();
+            dt1.items.add(file1);
+            fileInput.files = dt1.files;
+            fileInput.dispatchEvent(new Event('change'));
+
+            setTimeout(() => {
+                let dropArea = aiAssistViewElem.querySelector('.e-assist-drop-area');
+                let attachedFiles = dropArea.querySelectorAll('.e-assist-uploaded-file-item');
+                expect(attachedFiles.length).toBe(1);
+
+                const sendBtnElem: HTMLElement = aiAssistViewElem.querySelector('.e-assist-send');
+                expect(sendBtnElem).not.toBeNull();
+                sendBtnElem.click();
+
+                setTimeout(() => {
+                    const attachmentElem: HTMLElement =aiAssistViewElem.querySelector('.e-assist-attachment-icon');
+                    attachmentElem.click();
+                    fileInput = aiAssistViewElem.querySelector('.e-assist-file-upload') as HTMLInputElement;
+                    expect(fileInput).not.toBeNull();
+                    const file2 = new File(['data2'], 'file2.txt', { type: 'text/plain' });
+                    const dt2 = new DataTransfer();
+                    dt2.items.add(file2);
+                    fileInput.files = dt2.files;
+                    fileInput.dispatchEvent(new Event('change'));
+
+                    setTimeout(() => {
+                        dropArea = aiAssistViewElem.querySelector('.e-assist-drop-area');
+                        attachedFiles = dropArea.querySelectorAll('.e-assist-uploaded-file-item');
+                        expect(attachedFiles.length).toBe(1);
+                        done();
+                    }, 700);
+                }, 500);
+            }, 700);
+        });
+
+        it('should restrict file upload to maximumCount limit and show error on exceeding', (done: DoneFn) => {
+            aiAssistView = new AIAssistView({
+                enableAttachments: true,
+                attachmentSettings: {
+                    saveUrl: 'https://services.syncfusion.com/js/production/api/FileUploader/Save',
+                    removeUrl: 'https://services.syncfusion.com/js/production/api/FileUploader/Remove',
+                    maximumCount: 2
+                }
+            });
+
+            aiAssistView.appendTo(aiAssistViewElem);
+
+            const file1 = new File(['data1'], 'file1.png', { type: 'image/png' });
+            const file2 = new File(['data2'], 'file2.png', { type: 'image/png' });
+            const file3 = new File(['data3'], 'file3.png', { type: 'image/png' });
+
+            const fileInput = aiAssistViewElem.querySelector('.e-assist-file-upload') as HTMLInputElement;
+            const dt = new DataTransfer();
+            dt.items.add(file1);
+            dt.items.add(file2);
+            dt.items.add(file3);
+            fileInput.files = dt.files;
+            fileInput.dispatchEvent(new Event('change'));
+
+            setTimeout(() => {
+                const failureAlert = aiAssistViewElem.querySelector('.e-upload-failure-alert');
+                expect(failureAlert).not.toBeNull();
+                expect(failureAlert.classList.contains('e-show')).toBe(true);
+                done();
+            }, 500);
+        });
+
+        it('check for error message when maximumCount is set as one', (done: DoneFn) => {
+            aiAssistView = new AIAssistView({
+                enableAttachments: true,
+                attachmentSettings: {
+                    saveUrl: 'https://services.syncfusion.com/js/production/api/FileUploader/Save',
+                    removeUrl: 'https://services.syncfusion.com/js/production/api/FileUploader/Remove',
+                    maximumCount: 1
+                }
+            });
+
+            aiAssistView.appendTo(aiAssistViewElem);
+
+            const file1 = new File(['data1'], 'file1.png', { type: 'image/png' });
+            const file2 = new File(['data2'], 'file2.png', { type: 'image/png' });
+
+            const fileInput = aiAssistViewElem.querySelector('.e-assist-file-upload') as HTMLInputElement;
+            const dt = new DataTransfer();
+            dt.items.add(file1);
+            dt.items.add(file2);
+            fileInput.files = dt.files;
+            fileInput.dispatchEvent(new Event('change'));
+
+            setTimeout(() => {
+                const failureAlert = aiAssistViewElem.querySelector('.e-upload-failure-alert');
+                expect(failureAlert).not.toBeNull();
+                expect(failureAlert.classList.contains('e-show')).toBe(true);
+                const failureMessage = failureAlert.querySelector('.e-failure-message');
+                expect(failureMessage.textContent).toBe('Upload limit reached: Maximum 1 file allowed. Remove extra files to proceed uploading');
+                done();
+            }, 500);
+        });
+
+        it('should show and remove failure alert when file count exceeds maximumCount', () => {
+            jasmine.clock().install();
+            aiAssistView = new AIAssistView({
+                enableAttachments: true,
+                attachmentSettings: {
+                    saveUrl: 'https://services.syncfusion.com/js/production/api/FileUploader/Save',
+                    removeUrl: 'https://services.syncfusion.com/js/production/api/FileUploader/Remove',
+                    maximumCount: 2
+                }
+            });
+
+            aiAssistView.appendTo(aiAssistViewElem);
+
+            const file1 = new File(['data1'], 'file1.png', { type: 'image/png' });
+            const file2 = new File(['data2'], 'file2.png', { type: 'image/png' });
+            const file3 = new File(['data3'], 'file3.png', { type: 'image/png' });
+
+            const fileInput = aiAssistViewElem.querySelector('.e-assist-file-upload') as HTMLInputElement;
+            const dt = new DataTransfer();
+            dt.items.add(file1);
+            dt.items.add(file2);
+            dt.items.add(file3);
+            fileInput.files = dt.files;
+
+            fileInput.dispatchEvent(new Event('change'));
+            jasmine.clock().tick(500);
+
+            const failureAlert = aiAssistViewElem.querySelector('.e-upload-failure-alert');
+            expect(failureAlert).not.toBeNull();
+            expect(failureAlert.classList.contains('e-show')).toBe(true);
+            jasmine.clock().tick(3000);
+
+            expect(failureAlert.classList.contains('e-show')).toBe(false);
+
+            jasmine.clock().uninstall();
+        });
+
+        it('should restrict file upload to maximumCount limit and allow upload after increasing limit', (done: DoneFn) => {
+            aiAssistView = new AIAssistView({
+                enableAttachments: true,
+                attachmentSettings: {
+                    saveUrl: 'https://services.syncfusion.com/js/production/api/FileUploader/Save',
+                    removeUrl: 'https://services.syncfusion.com/js/production/api/FileUploader/Remove',
+                    maximumCount: 2
+                }
+            });
+
+            aiAssistView.appendTo(aiAssistViewElem);
+
+            const file1 = new File(['data1'], 'file1.png', { type: 'image/png' });
+            const file2 = new File(['data2'], 'file2.png', { type: 'image/png' });
+            const file3 = new File(['data3'], 'file3.png', { type: 'image/png' });
+
+            const fileInput = aiAssistViewElem.querySelector('.e-assist-file-upload') as HTMLInputElement;
+            const dt = new DataTransfer();
+            dt.items.add(file1);
+            dt.items.add(file2);
+            dt.items.add(file3);
+            fileInput.files = dt.files;
+            fileInput.dispatchEvent(new Event('change'));
+
+            setTimeout(() => {
+                const failureAlert = aiAssistViewElem.querySelector('.e-upload-failure-alert');
+                expect(failureAlert).not.toBeNull();
+                expect(failureAlert.classList.contains('e-show')).toBe(true);
+                const closeIcon: HTMLElement = failureAlert.querySelector('.e-assist-clear-icon');
+                expect(closeIcon).not.toBeNull();
+                closeIcon.click();
+
+                aiAssistView.attachmentSettings.maximumCount = 3;
+                aiAssistView.dataBind();
+
+                const newDt = new DataTransfer();
+                newDt.items.add(file1);
+                newDt.items.add(file2);
+                newDt.items.add(file3);
+                fileInput.files = newDt.files;
+                fileInput.dispatchEvent(new Event('change'));
+
+                setTimeout(() => {
+                    const updatedFailureAlert = aiAssistViewElem.querySelector('.e-upload-failure-alert');
+                    expect(updatedFailureAlert).toBeNull();
+                    const dropArea: HTMLElement = aiAssistViewElem.querySelector('.e-assist-drop-area');
+                    const attachedFiles: NodeListOf<HTMLElement> = dropArea.querySelectorAll('.e-assist-uploaded-file-item');
+                    expect(attachedFiles.length).toBe(3);
+                    done();
+                }, 500);
+            }, 500);
+        });
+
+        it('should dynamically change the locale for fileUploadFailure alert', () => {
+            L10n.load({
+                'fr-BE': {
+                    "aiassistview": {
+                        "fileCountFailure": 'Limite de téléchargement atteinte : Maximum {0} fichiers autorisés. Supprimez les fichiers supplémentaires pour continuer le téléchargement.'
+                    }
+                }
+            });
+
+            aiAssistView = new AIAssistView({
+                enableAttachments: true,
+                attachmentSettings: {
+                    saveUrl: 'https://services.syncfusion.com/js/production/api/FileUploader/Save',
+                    removeUrl: 'https://services.syncfusion.com/js/production/api/FileUploader/Remove',
+                    maximumCount: 0
+                }
+            });
+
+            aiAssistView.appendTo(aiAssistViewElem);
+
+            const file1 = new File(["File One"], "file1.txt", { type: "text/plain" });
+            const file2 = new File(["File Two"], "file2.txt", { type: "text/plain" });
+
+            const fileInput = aiAssistViewElem.querySelector('.e-assist-file-upload') as HTMLInputElement;
+            const dt1 = new DataTransfer();
+            dt1.items.add(file1);
+            fileInput.files = dt1.files;
+            fileInput.dispatchEvent(new Event('change'));
+            let failureElement = aiAssistViewElem.querySelector('.e-upload-failure-alert');
+            expect(failureElement).not.toBeNull();
+            expect(failureElement.querySelector('.e-failure-message').textContent).toBe(
+                'Upload limit reached: Maximum 0 files allowed. Remove extra files to proceed uploading'
+            );
+            const closeIcon: HTMLElement = failureElement.querySelector('.e-assist-clear-icon');
+            expect(closeIcon).not.toBeNull();
+            closeIcon.click();
+
+            aiAssistView.locale = 'fr-BE';
+            aiAssistView.dataBind();
+            const dt2 = new DataTransfer();
+            dt2.items.add(file2);
+            fileInput.files = dt2.files;
+            fileInput.dispatchEvent(new Event('change'));
+
+            failureElement = aiAssistViewElem.querySelector('.e-upload-failure-alert');
+            expect(failureElement).not.toBeNull();
+            expect(failureElement.querySelector('.e-failure-message').textContent).toBe(
+                'Limite de téléchargement atteinte : Maximum 0 fichiers autorisés. Supprimez les fichiers supplémentaires pour continuer le téléchargement.'
+            );
+        });
+
+        it('should dynamically change the failure messsage locale when showing fileUploadFailure alert', () => {
+            L10n.load({
+                'de-DE': {
+                    "aiassistview": {
+                        "fileCountFailure": 'Upload-Limit erreicht: Maximal {0} Dateien erlaubt. Bitte entfernen Sie zusätzliche Dateien, um den Upload fortzusetzen.'
+                    }
+                }
+            });
+
+            aiAssistView = new AIAssistView({
+                enableAttachments: true,
+                attachmentSettings: {
+                    saveUrl: 'https://services.syncfusion.com/js/production/api/FileUploader/Save',
+                    removeUrl: 'https://services.syncfusion.com/js/production/api/FileUploader/Remove',
+                    maximumCount: 1
+                },
+                locale: 'de-DE'
+            });
+            aiAssistView.appendTo(aiAssistViewElem);
+            const file1 = new File(['data1'], 'file1.png', { type: 'image/png' });
+            const file2 = new File(['data2'], 'file2.png', { type: 'image/png' });
+            const fileInput = aiAssistViewElem.querySelector('.e-assist-file-upload') as HTMLInputElement;
+            const dt = new DataTransfer();
+            dt.items.add(file1);
+            dt.items.add(file2);
+            fileInput.files = dt.files;
+            fileInput.dispatchEvent(new Event('change'));
+            let failureElement = aiAssistViewElem.querySelector('.e-upload-failure-alert');
+            expect(failureElement).not.toBeNull();
+            expect(failureElement.querySelector('.e-failure-message').textContent).toBe(
+                'Upload-Limit erreicht: Maximal 1 Dateien erlaubt. Bitte entfernen Sie zusätzliche Dateien, um den Upload fortzusetzen.'
+            );
+            aiAssistView.locale = 'en-US';
+            aiAssistView.dataBind();
+            expect(failureElement).not.toBeNull();
+            expect(failureElement.querySelector('.e-failure-message').textContent).toBe(
+                'Upload limit reached: Maximum 1 file allowed. Remove extra files to proceed uploading'
+            );
+            
+        });
+
+        it('attachment click event checking', (done: DoneFn) => {
+            let attachmentClickCalled = false;
+            aiAssistView = new AIAssistView({
+                enableAttachments: true,
+                attachmentSettings: {
+                    saveUrl: 'https://services.syncfusion.com/js/production/api/FileUploader/Save',
+                    removeUrl: 'https://services.syncfusion.com/js/production/api/FileUploader/Remove',
+                    attachmentClick: function (args) {
+                        attachmentClickCalled = true;
+                    }
+                }
+            });
+
+            aiAssistView.appendTo(aiAssistViewElem);
+
+            const file1 = new File(['data1'], 'file1.png', { type: 'image/png' });
+            const fileInput = aiAssistViewElem.querySelector('.e-assist-file-upload') as HTMLInputElement;
+            const dt = new DataTransfer();
+            dt.items.add(file1);
+            fileInput.files = dt.files;
+            fileInput.dispatchEvent(new Event('change'));
+            setTimeout(() => {
+                const dropArea: HTMLElement = aiAssistViewElem.querySelector('.e-assist-drop-area');
+                const attachedFile: HTMLElement = dropArea.querySelector('.e-assist-uploaded-file-item');
+                expect(attachedFile).not.toBeNull();
+                attachedFile.click();
+                expect(attachmentClickCalled).toBe(true);
+                done();
+            }, 500);
+        });
+
+        it('should open file browser when Enter key is pressed on the attachment icon', (done: DoneFn) => {
+            aiAssistView = new AIAssistView({
+                enableAttachments: true,
+                attachmentSettings: {
+                    saveUrl: 'https://services.syncfusion.com/js/production/api/FileUploader/Save',
+                    removeUrl: 'https://services.syncfusion.com/js/production/api/FileUploader/Remove'
+                }
+            });
+            const keydownSpy = spyOn<any>(aiAssistView, 'footerKeyHandler').and.callThrough();
+            aiAssistView.appendTo(aiAssistViewElem);
+            const attachmentBtn: HTMLElement = aiAssistViewElem.querySelector('.e-toolbar-item .e-assist-attachment-icon').closest('.e-tbar-btn') as HTMLElement;
+            attachmentBtn.focus();
+            const enterKeyEvent = new KeyboardEvent('keydown', { key: 'Enter', code: 'Enter', bubbles: true });
+            attachmentBtn.dispatchEvent(enterKeyEvent);
+            setTimeout(() => {
+                expect(keydownSpy).toHaveBeenCalled();
+                done();
+            }, 200, done);
+        });
+    });
+
+    describe('Footer interactions - keyboard and focus states', () => {
+        let aiAssistView: AIAssistView;
+        const host: HTMLElement = createElement('div', { id: 'aiAssistViewComp_footer' });
+
+        beforeEach(() => {
+            document.body.appendChild(host);
+        });
+
+        afterEach(() => {
+            if (aiAssistView && !aiAssistView.isDestroyed) {
+                aiAssistView.destroy();
+            }
+            if (host && host.parentElement) {
+                document.body.removeChild(host);
+            }
+        });
+
+        it('should add e-footer-focused on focus and remove it on blur', (done: DoneFn) => {
+            aiAssistView = new AIAssistView({});
+            aiAssistView.appendTo(host);
+
+            const footerElem: HTMLElement = host.querySelector('.e-footer');
+            const textareaEle: HTMLDivElement = host.querySelector('.e-footer .e-assist-textarea');
+
+            // Ensure initial state is not focused
+            expect(footerElem.classList.contains('e-footer-focused')).toBe(false);
+
+            // Focus event should add focused class
+            textareaEle.focus();
+            const focusEvent: FocusEvent = new FocusEvent('focus', { bubbles: true });
+            textareaEle.dispatchEvent(focusEvent);
+            expect(footerElem.classList.contains('e-footer-focused')).toBe(true);
+
+            // Blur without relatedTarget should remove focused class
+            const blurEvent: FocusEvent = new FocusEvent('blur', { bubbles: true, relatedTarget: null });
+            textareaEle.dispatchEvent(blurEvent);
+
+            // Let the blur handler run
+            setTimeout(() => {
+                expect(footerElem.classList.contains('e-footer-focused')).toBe(false);
+                done();
+            }, 0);
+        });
+
+        it('should have e-footer-focus-wave-effect when no footerTemplate is provided', () => {
+            aiAssistView = new AIAssistView({});
+            aiAssistView.appendTo(host);
+
+            const footerElem: HTMLElement = host.querySelector('.e-footer');
+            expect(footerElem).not.toBeNull();
+
+            // When footerTemplate is not provided, renderAssistViewFooter adds this class
+            expect(footerElem.classList.contains('e-footer-focus-wave-effect')).toBe(true);
+        });
+    });
+
+    describe('Footer Toolbar -', () => {
+        afterEach(() => {
+            if (aiAssistView) {
+                aiAssistView.destroy();
+            }
+        });
+
+        it('Footer toolbarsettings prop checking', () => {
+            let isClicked: boolean;
+            aiAssistView = new AIAssistView({
+                showClearButton: true,
+                enableAttachments: true,
+                footerToolbarSettings: {
+                    itemClick: (args: ToolbarItemClickedEventArgs) => {
+                        if (args.item.iconCss === 'e-icons e-bold') {
+                            isClicked = true;
+                        }
+                    },
+                    items: [
+                        { iconCss: 'e-icons e-bold', tabIndex: 1 }
+                    ]
+                }
+            });
+            aiAssistView.appendTo(aiAssistViewElem);
+            const toolbarItems: NodeListOf<HTMLElement> = aiAssistViewElem.querySelectorAll('.e-footer .e-toolbar-item');
+            expect(toolbarItems).not.toBeNull();
+            expect(toolbarItems.length).toBe(4);
+            const boldItem: HTMLElement = (toolbarItems[0] as HTMLElement).querySelector('button');
+            expect(boldItem).not.toBeNull();
+            expect(boldItem.querySelector('button span').classList.contains('e-bold')).toEqual(true);
+            boldItem.click();
+            expect(isClicked).toBe(true);
+        });
+
+        it('Default items checking with enableAttachments: false and showClearButton: false', () => {
+            aiAssistView = new AIAssistView({
+                enableAttachments: false,
+                showClearButton: false
+            });
+            aiAssistView.appendTo(aiAssistViewElem);
+            const footerToolbarItems: NodeListOf<HTMLDivElement> = aiAssistViewElem.querySelectorAll('.e-footer .e-toolbar-item');
+            expect(footerToolbarItems.length).toBe(1);
+            const sendButton = footerToolbarItems[0].querySelector('.e-assist-send');
+            expect(sendButton).not.toBeNull();
+        });
+
+        it('Default items checking with enableAttachments: true and showClearButton: false', () => {
+            aiAssistView = new AIAssistView({
+                enableAttachments: true,
+                showClearButton: false
+            });
+            aiAssistView.appendTo(aiAssistViewElem);
+            const footerToolbarItems: NodeListOf<HTMLDivElement> = aiAssistViewElem.querySelectorAll('.e-footer .e-toolbar-item');
+            expect(footerToolbarItems.length).toBe(2);
+            const attachmentButton = footerToolbarItems[0].querySelector('.e-assist-attachment-icon');
+            expect(attachmentButton).not.toBeNull();
+            expect(attachmentButton.closest('.e-toolbar-item').getAttribute('title')).toBe('Attach File');
+            const sendButton = footerToolbarItems[1].querySelector('.e-assist-send');
+            expect(sendButton).not.toBeNull();
+        });
+
+        it('Default items checking with enableAttachments: false and showClearButton: true', () => {
+            aiAssistView = new AIAssistView({
+                enableAttachments: false,
+                showClearButton: true
+            });
+            aiAssistView.appendTo(aiAssistViewElem);
+            const footerToolbarItems: NodeListOf<HTMLDivElement> = aiAssistViewElem.querySelectorAll('.e-footer .e-toolbar-item');
+            expect(footerToolbarItems.length).toBe(2);
+            const clearButton = footerToolbarItems[0].querySelector('.e-assist-clear-icon');
+            expect(clearButton).not.toBeNull();
+            expect(clearButton.closest('.e-toolbar-item').getAttribute('title')).toBe('Clear');
+            const sendButton = footerToolbarItems[1].querySelector('.e-assist-send');
+            expect(sendButton).not.toBeNull();
+        });
+
+        it('Default items checking with enableAttachments: true and showClearButton: true', () => {
+            aiAssistView = new AIAssistView({
+                enableAttachments: true,
+                showClearButton: true
+            });
+            aiAssistView.appendTo(aiAssistViewElem);
+            const footerToolbarItems: NodeListOf<HTMLDivElement> = aiAssistViewElem.querySelectorAll('.e-footer .e-toolbar-item');
+            expect(footerToolbarItems.length).toBe(3);
+            const attachmentButton = footerToolbarItems[0].querySelector('.e-assist-attachment-icon');
+            expect(attachmentButton).not.toBeNull();
+            expect(attachmentButton.closest('.e-toolbar-item').getAttribute('title')).toBe('Attach File');
+            const clearButton = footerToolbarItems[1].querySelector('.e-assist-clear-icon');
+            expect(clearButton).not.toBeNull();
+            expect(clearButton.closest('.e-toolbar-item').getAttribute('title')).toBe('Clear');
+            const sendButton = footerToolbarItems[2].querySelector('.e-assist-send');
+            expect(sendButton).not.toBeNull();
+        });
+
+        it('Custom footer toolbar items checking', () => {
+            aiAssistView = new AIAssistView({
+                footerToolbarSettings: {
+                    items: [
+                        { iconCss: 'e-icons e-custom-icon-1', tooltip: 'Custom 1' },
+                        { iconCss: 'e-icons e-custom-icon-2', tooltip: 'Custom 2' }
+                    ]
+                }
+            });
+            aiAssistView.appendTo(aiAssistViewElem);
+            const footerToolbarItems: NodeListOf<HTMLDivElement> = aiAssistViewElem.querySelectorAll('.e-footer .e-toolbar-item');
+            // Default send button + 2 custom buttons
+            expect(footerToolbarItems.length).toBe(3);
+            expect(footerToolbarItems[0].querySelector('.e-custom-icon-1')).not.toBeNull();
+            expect(footerToolbarItems[0].getAttribute('title')).toBe('Custom 1');
+            expect(footerToolbarItems[1].querySelector('.e-custom-icon-2')).not.toBeNull();
+            expect(footerToolbarItems[1].getAttribute('title')).toBe('Custom 2');
+            expect(footerToolbarItems[2].querySelector('.e-assist-send')).not.toBeNull();
+        });
+
+        it('Should override default footer toolbar items with custom items', () => {
+            aiAssistView = new AIAssistView({
+                enableAttachments: true,
+                showClearButton: true,
+                footerToolbarSettings: {
+                    items: [
+                        { iconCss: 'e-icons e-assist-attachment-icon', tooltip: 'My Attachment' },
+                        { iconCss: 'e-icons e-assist-send', tooltip: 'Submit' }
+                    ]
+                }
+            });
+            aiAssistView.appendTo(aiAssistViewElem);
+            const footerToolbarItems: NodeListOf<HTMLDivElement> = aiAssistViewElem.querySelectorAll('.e-footer .e-toolbar-item');
+            expect(footerToolbarItems.length).toBe(3);
+            const attachmentButton = footerToolbarItems[0].querySelector('.e-assist-attachment-icon');
+            expect(attachmentButton).not.toBeNull();
+            expect(aiAssistView.footerToolbarSettings.items[0].iconCss).toContain('e-icons e-assist-attachment-icon');
+            expect(attachmentButton.closest('.e-toolbar-item').getAttribute('title')).toBe('My Attachment');
+            const clearButton = footerToolbarItems[2].querySelector('.e-assist-clear-icon');
+            expect(clearButton).not.toBeNull();
+            expect(aiAssistView.footerToolbarSettings.items[2].iconCss).toContain('e-icons e-assist-clear-icon');
+            expect(clearButton.closest('.e-toolbar-item').getAttribute('title')).toBe('Clear');
+            const sendButton = footerToolbarItems[1].querySelector('.e-assist-send');
+            expect(sendButton).not.toBeNull();
+            expect(aiAssistView.footerToolbarSettings.items[1].iconCss).toContain('e-icons e-assist-send');
+            expect(sendButton.closest('.e-toolbar-item').getAttribute('title')).toBe('Submit');
+        });
+
+        it('footerToolbarSettings itemClicked event checking', (done: DoneFn) => {
+            let itemClicked = false;
+            aiAssistView = new AIAssistView({
+                footerToolbarSettings: {
+                    items: [
+                        { iconCss: 'e-icons e-test-button', tooltip: 'Test Button' }
+                    ],
+                    itemClick: (args) => {
+                        itemClicked = true;
+                        expect(args.item.iconCss).toBe('e-icons e-test-button');
+                        done();
+                    }
+                }
+            });
+            aiAssistView.appendTo(aiAssistViewElem);
+            const testButton = aiAssistViewElem.querySelector('.e-footer .e-test-button') as HTMLElement;
+            expect(testButton).not.toBeNull();
+            testButton.click();
+            expect(itemClicked).toBe(true);
+        });
+
+        it('footerToolbarSettings itemClicked event cancellation', (done: DoneFn) => {
+            let itemClicked = false;
+            aiAssistView = new AIAssistView({
+                footerToolbarSettings: {
+                    items: [
+                        { iconCss: 'e-icons e-test-button', tooltip: 'Test Button' }
+                    ],
+                    itemClick: (args) => {
+                        itemClicked = true;
+                        args.cancel = true;
+                    }
+                }
+            });
+            aiAssistView.appendTo(aiAssistViewElem);
+            const testButton = aiAssistViewElem.querySelector('.e-footer .e-test-button') as HTMLElement;
+            expect(testButton).not.toBeNull();
+            testButton.click();
+            expect(itemClicked).toBe(true);
+            done();
+        });
+
+        it('Dynamically updating the footerToolbarSettings items', () => {
+            aiAssistView = new AIAssistView({
+                footerToolbarSettings: {
+                    items: [
+                        { iconCss: 'e-icons e-bold', tooltip: 'Initial' }
+                    ]
+                }
+            });
+            aiAssistView.appendTo(aiAssistViewElem);
+            let footerToolbarItems: NodeListOf<HTMLDivElement> = aiAssistViewElem.querySelectorAll('.e-footer .e-toolbar-item');
+            expect(footerToolbarItems.length).toBe(2);
+            expect(footerToolbarItems[0].querySelector('.e-bold')).not.toBeNull();
+
+            aiAssistView.footerToolbarSettings.items = [
+                { iconCss: 'e-icons e-copy', tooltip: 'Updated' },
+                { iconCss: 'e-icons e-assist-send', tooltip: 'New Send' }
+            ];
+            aiAssistView.dataBind();
+
+            footerToolbarItems = aiAssistViewElem.querySelectorAll('.e-footer .e-toolbar-item');
+            expect(footerToolbarItems.length).toBe(2);
+            expect(footerToolbarItems[0].querySelector('.e-copy')).not.toBeNull();
+            expect(footerToolbarItems[0].getAttribute('title')).toBe('Updated');
+            expect(footerToolbarItems[1].querySelector('.e-assist-send')).not.toBeNull();
+            expect(footerToolbarItems[1].getAttribute('title')).toBe('New Send');
+        });
+
+        it('Dynamically enabling or disabling attachments updates footer toolbar', () => {
+            aiAssistView = new AIAssistView({
+                enableAttachments: false,
+                showClearButton: false
+            });
+            aiAssistView.appendTo(aiAssistViewElem);
+            let footerToolbarItems = aiAssistViewElem.querySelectorAll('.e-footer .e-toolbar-item');
+            expect(footerToolbarItems.length).toBe(1);
+
+            aiAssistView.enableAttachments = true;
+            aiAssistView.dataBind();
+            footerToolbarItems = aiAssistViewElem.querySelectorAll('.e-footer .e-toolbar-item');
+            expect(footerToolbarItems.length).toBe(2);
+            expect(footerToolbarItems[0].querySelector('.e-assist-attachment-icon')).not.toBeNull();
+
+            aiAssistView.enableAttachments = false;
+            aiAssistView.dataBind();
+            footerToolbarItems = aiAssistViewElem.querySelectorAll('.e-footer .e-toolbar-item');
+            expect(footerToolbarItems.length).toBe(1);
+            expect(footerToolbarItems[0].querySelector('.e-assist-attachment-icon')).toBeNull();
+        });
+
+        it('Dynamically enabling or disabling showClearButton updates footer toolbar', (done: DoneFn) => {
+            aiAssistView = new AIAssistView({
+                enableAttachments: false,
+                showClearButton: false
+            });
+            aiAssistView.appendTo(aiAssistViewElem);
+            let footerToolbarItems = aiAssistViewElem.querySelectorAll('.e-footer .e-toolbar-item');
+            expect(footerToolbarItems.length).toBe(1);
+
+            aiAssistView.showClearButton = true;
+            aiAssistView.dataBind();
+            footerToolbarItems = aiAssistViewElem.querySelectorAll('.e-footer .e-toolbar-item');
+            expect(footerToolbarItems.length).toBe(2);
+            expect(footerToolbarItems[0].querySelector('.e-assist-clear-icon')).not.toBeNull();
+            const textareaEle: HTMLDivElement = aiAssistViewElem.querySelector('.e-footer .e-assist-textarea');
+            textareaEle.innerText = 'Some text';
+            const inputEvent: Event = new Event('input', { bubbles: true });
+            textareaEle.dispatchEvent(inputEvent);
+
+            setTimeout(() => {
+                aiAssistView.showClearButton = false;
+                aiAssistView.dataBind();
+                footerToolbarItems = aiAssistViewElem.querySelectorAll('.e-footer .e-toolbar-item');
+                expect(footerToolbarItems.length).toBe(1);
+                expect(footerToolbarItems[0].querySelector('.e-assist-clear-icon')).toBeNull();
+                done();
+            }, 100);
+        });
+
+        it('Clicking on attachment icon should trigger hidden file input', (done) => {
+            aiAssistView = new AIAssistView({
+                enableAttachments: true,
+                attachmentSettings: {
+                    saveUrl: '/api/upload',
+                    removeUrl: '/api/remove'
+                }
+            });
+            aiAssistView.appendTo(aiAssistViewElem);
+
+            const fileInput = aiAssistViewElem.querySelector('.e-assist-file-upload');
+            expect(fileInput).not.toBeNull();
+            const fileInputSpy = spyOn(fileInput as HTMLInputElement, 'click');
+
+            const attachmentIcon = aiAssistViewElem.querySelector('.e-assist-attachment-icon') as HTMLElement;
+            expect(attachmentIcon).not.toBeNull();
+            const attachmentToolbarItem = attachmentIcon.closest('.e-toolbar-item') as HTMLElement;
+            attachmentToolbarItem.click();
+            expect(fileInputSpy).toHaveBeenCalled();
+            done();
+        });
+    });
+
+    describe('footerToolbarPosition Property Checking -', () => {
+        afterEach(() => {
+            if (aiAssistView) {
+                aiAssistView.destroy();
+            }
+        });
+
+        it('Default footerToolbarPosition is inline', () => {
+            aiAssistView = new AIAssistView();
+            aiAssistView.appendTo(aiAssistViewElem);
+            const footerElement = aiAssistViewElem.querySelector('.e-footer');
+            expect(footerElement).not.toBeNull();
+            expect(footerElement.classList.contains('e-toolbar-bottom')).toBe(false);
+            expect(footerElement.classList.contains('e-toolbar-inline')).toBe(true);
+            const toolbar: HTMLElement = aiAssistViewElem.querySelector('.e-footer .e-toolbar');
+            expect(toolbar).not.toBeNull();
+        });
+
+        it('Setting footerToolbarPosition as Bottom', () => {
+            aiAssistView = new AIAssistView({
+                footerToolbarSettings: {
+                    toolbarPosition: 'Bottom'
+                }
+            });
+            aiAssistView.appendTo(aiAssistViewElem);
+            const footerElement = aiAssistViewElem.querySelector('.e-footer');
+            expect(footerElement).not.toBeNull();
+            expect(footerElement.classList.contains('e-toolbar-bottom')).toBe(true);
+            const toolbar: HTMLElement = aiAssistViewElem.querySelector('.e-footer .e-toolbar');
+            expect(toolbar).not.toBeNull();
+        });
+
+        it('Dynamic update of footerToolbarPosition from Inline to Bottom', () => {
+            aiAssistView = new AIAssistView({
+                footerToolbarSettings: {
+                    toolbarPosition: 'Inline'
+                }
+            });
+            aiAssistView.appendTo(aiAssistViewElem);
+            let footerElement = aiAssistViewElem.querySelector('.e-footer');
+            expect(footerElement.classList.contains('e-toolbar-bottom')).toBe(false);
+            expect(footerElement.classList.contains('e-toolbar-inline')).toBe(true);
+            aiAssistView.footerToolbarSettings.toolbarPosition = 'Bottom';
+            aiAssistView.dataBind();
+            footerElement = aiAssistViewElem.querySelector('.e-footer');
+            expect(footerElement.classList.contains('e-toolbar-bottom')).toBe(true);
+            expect(footerElement.classList.contains('e-toolbar-inline')).toBe(false);
+        });
+
+        it('Dynamic update of footerToolbarPosition from Bottom to Inline', () => {
+            aiAssistView = new AIAssistView({
+                footerToolbarSettings: {
+                    toolbarPosition: 'Bottom'
+                }
+            });
+            aiAssistView.appendTo(aiAssistViewElem);
+            let footerElement = aiAssistViewElem.querySelector('.e-footer');
+            expect(footerElement.classList.contains('e-toolbar-bottom')).toBe(true);
+
+            aiAssistView.footerToolbarSettings.toolbarPosition = 'Inline';
+            aiAssistView.dataBind();
+            footerElement = aiAssistViewElem.querySelector('.e-footer');
+            expect(footerElement.classList.contains('e-toolbar-bottom')).toBe(false);
+            expect(footerElement.classList.contains('e-toolbar-inline')).toBe(true);
         });
     });
 });

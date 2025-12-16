@@ -1,4 +1,4 @@
-@import 'ej2-base/styles/definition/tailwind.scss';
-@import 'rich-text-editor/tailwind-definition.scss';
-@import 'rich-text-editor/icons/tailwind.scss';
-@import 'rich-text-editor/all.scss';
+@use 'ej2-base/styles/definition/tailwind' as *;
+@use 'rich-text-editor/tailwind-definition' as *;
+@use 'rich-text-editor/icons/tailwind' as *;
+@use 'rich-text-editor/all' as *;

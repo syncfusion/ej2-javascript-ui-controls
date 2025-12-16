@@ -1,3 +1,5 @@
+@use 'ej2-base/styles/common/mixin' as *;
+@use './theme-variables' as *;
 @include export-module('calendar-layout') { /*! calendar layout */
 
   #{&}ejs-calendar {
@@ -56,9 +58,9 @@
 
       #{if(&, '&', '*')} button {
         background: transparent;
-        border: 0;
+        border: $border-zero;
         margin-right: $calendar-icon-button-margin;
-        padding: 0;
+        padding: $padding-zero;
         text-decoration: $calendar-none-style;
       }
       #{if(&, '&', '*')} span {
@@ -87,15 +89,15 @@
     #{if(&, '&', '*')} .e-content {
       #{if(&, '&', '*')} .e-selected ,
       #{if(&, '&', '*')} .e-state-hover {
-        border-radius: 0;
+        border-radius: $calendar-zero-border-radius;
       }
       #{if(&, '&', '*')} span.e-day {
-        border-radius: 0;
+        border-radius: $calendar-zero-border-radius;
         cursor: $calendar-cursor-pointer-style;
         display: $calendar-inline-block-style;
         font-size: $calendar-date-font-size;
         overflow: hidden;
-        padding: 0;
+        padding: $padding-zero;
         text-align: center;
         text-decoration: $calendar-none-style;
         vertical-align: middle;
@@ -142,7 +144,7 @@
       }
       #{if(&, '&', '*')} td:hover {
         @if skin-name == 'fluent2' {
-          border-radius: 2px;
+          border-radius: $calendar-td-hover-border-radius;
           background: $calendar-hover-border-color;
         }
       }
@@ -150,9 +152,9 @@
       table {
         border-collapse: separate;
         border-spacing: 0;
-        border-width: 0;
+        border-width: $border-zero;
         float: $calendar-float-left-style;
-        margin: 0;
+        margin: $margin-zero;
         outline: 0;
         padding: $calendar-table-padding;
         table-layout: fixed;
@@ -237,7 +239,7 @@
       padding-top: $calendar-icon-padding-top;
       @if $skin-name == 'tailwind3' {
         position: inherit;
-        top: 4px;
+        top: $calendar-header-icon-top;
       }
     }
     #{if(&, '&', '*')} .e-footer-container {
@@ -248,7 +250,7 @@
   .e-calendar .e-content td.e-today:hover {
     @if $skin-name == 'fluent2' {
       background: $calendar-hover-border-color;
-      border-radius: 2px;
+      border-radius: $calendar-td-hover-border-radius;
     }
   }
 
@@ -313,7 +315,7 @@
     #{if(&, '&', '*')} .e-content {
       #{if(&, '&', '*')} .e-selected ,
       #{if(&, '&', '*')} .e-state-hover {
-        border-radius: 0;
+        border-radius: $calendar-zero-border-radius;
       }
       #{if(&, '&', '*')} span.e-day {
         border: $calendar-default-border-color;
@@ -363,7 +365,7 @@
     #{if(&, '&', '*')} .e-content.e-decade td .e-selected {
       @if $skin-name == 'tailwind3' {
         background: $calendar-active-bg-color;
-        border-radius: 6px;
+        border-radius: $calendar-active-content-border-radius;
       }
     }
 
@@ -437,7 +439,7 @@
       max-width: $calendar-small-max-width;
       min-width: $calendar-small-min-width;
       padding: $calendar-small-popup-padding;
-      min-height: 220px;
+      min-height: $calendar-small-min-height;
     }
     @else {
       max-width: $calendar-small-max-width;
@@ -489,7 +491,7 @@
         #{if(&, '&', '*')} span {
           font-size: $calendar-small-icon-font-size-style;
           padding: $calendar-small-icon-padding;
-          line-height: 14px;
+          line-height: $line-height;
         }
       }
 

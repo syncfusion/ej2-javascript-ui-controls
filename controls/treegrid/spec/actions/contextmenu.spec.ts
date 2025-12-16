@@ -1101,3 +1101,224 @@ describe('954460: Script Error shown in Row Editing', () => {
         destroy(gridObj);
     });
 });
+
+describe('Summary - Delete via context menu should not throw and summaries recompute', () => {
+  let gridObj: TreeGrid;
+  let actioncomplete:any;
+
+  beforeAll((done: Function) => {
+    gridObj = createGrid({
+      dataSource: sampleData.slice(0),
+      childMapping: 'subtasks',
+      treeColumnIndex: 1,
+      editSettings: { allowAdding: true, allowDeleting: true, allowEditing: true, mode: 'Row' },
+      contextMenuItems: ['Delete', 'Save', 'Cancel'],
+      columns: [
+        { field: 'taskID', headerText: 'Task ID', isPrimaryKey: true },
+        { field: 'taskName', headerText: 'Task Name' },
+        { field: 'duration', headerText: 'Duration', type: 'number' }
+      ],
+      aggregates: [{
+        columns: [{
+          type: 'Sum',
+          field: 'duration',
+          columnName: 'taskName',
+          footerTemplate: 'Sum: ${Sum}'
+        }]
+      }]
+    }, done)
+  });
+
+  it('no formatter error on delete; footer exists after change', (done: Function) => {
+    // Select a parent to trigger multiple recomputations
+    gridObj.selectRow(0);
+
+     let deleteItem: any = (gridObj.grid.contextMenuModule as any).defaultItems['Delete'];
+            (gridObj.grid.contextMenuModule as any).row = gridObj.getSelectedRows()[0];
+            (gridObj.grid.contextMenuModule as any).contextMenuItemClick({ item: deleteItem });
+           
+   
+    actioncomplete=()=>{
+      const footer = gridObj.getFooterContent();
+      expect(footer).toBeTruthy();
+      const templateCell = footer.querySelector('.e-templatecell') as HTMLElement;
+      expect(templateCell).toBeTruthy();
+      expect(templateCell.innerText.trim().length).toBeGreaterThan(0);
+      done();
+    }
+    gridObj.actionComplete=actioncomplete;
+         
+  });
+
+  afterAll(() => destroy(gridObj));
+});
+
+describe('Batch Edit - Delete via context menu', () => {
+    let gridObj: TreeGrid;
+    let beforeBatchDelete;
+    let contextMenuClickHandler;
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: sampleData,
+                childMapping: 'subtasks',
+                treeColumnIndex: 1,
+                allowPaging: true,
+                pageSettings: { pageSize: 10 },
+                editSettings: { allowAdding: true, allowDeleting: true, allowEditing: true, mode: 'Batch' },
+                contextMenuItems: ['Edit', 'Delete', 'Save', 'Cancel'],
+                selectionSettings: { mode: 'Row', type: 'Multiple' },
+                columns: [
+                    { field: 'taskID', headerText: 'Task ID', isPrimaryKey: true },
+                    { field: 'taskName', headerText: 'Task Name' },
+                    { field: 'progress', headerText: 'Progress' },
+                    { field: 'startDate', headerText: 'Start Date' }
+                ]
+            },
+            () => setTimeout(done, 500) // Increased delay for grid rendering
+        );
+    });
+    it('handles non-delete context menu item (Edit)', (done: Function) => {
+        gridObj.selectRow(0);
+        // Bind contextMenuClick event
+        contextMenuClickHandler = (args: any) => {
+           expect(args.item.id).toBe(gridObj.element.id + '_gridcontrol_cmenu_Edit');
+        };
+        gridObj.contextMenuClick = contextMenuClickHandler;
+        setTimeout(() => {
+            const targetCell = gridObj.getCellFromIndex(0, 1);
+            expect(targetCell).toBeTruthy('Target cell should exist');
+            const parentRow = gridObj.getRowByIndex(0);
+            expect(parentRow).toBeTruthy('Parent row should exist');
+            // Create context menu element if not present
+            let contextMenuElement = document.getElementById(gridObj.element.id + '_gridcontrol_cmenu');
+            if (!contextMenuElement) {
+                contextMenuElement = document.createElement('div');
+                contextMenuElement.id = gridObj.element.id + '_gridcontrol_cmenu';
+                document.body.appendChild(contextMenuElement);
+            }
+            const contextMenuModule = gridObj.grid.contextMenuModule as any;
+            contextMenuModule.contextMenu = contextMenuModule.contextMenu || {
+                items: [
+                    { id: gridObj.element.id + '_gridcontrol_cmenu_Edit' },
+                    { id: gridObj.element.id + '_gridcontrol_cmenu_Delete' }
+                ]
+            };
+            contextMenuModule.contextMenuItemClick = contextMenuModule.contextMenuItemClick || (() => {});
+            (contextMenuElement as any).ej2_instances[0].select = contextMenuModule.contextMenuItemClick.bind(contextMenuModule);
+            // Simulate context menu
+            const event = new MouseEvent('contextmenu', { bubbles: true, cancelable: true });
+            contextMenuModule.eventArgs = { target: targetCell, originalEvent: event };
+            console.log('Event Args:', contextMenuModule.eventArgs);
+            const e: any = {
+                event: contextMenuModule.eventArgs,
+                items: contextMenuModule.contextMenu.items,
+                parentItem: parentRow,
+                element: contextMenuElement
+            };
+            expect(e.element).toBeTruthy('Context menu element should exist');
+            try {
+                contextMenuModule.contextMenuBeforeOpen(e);
+                contextMenuModule.contextMenuOpen();
+            } catch (err) {
+                contextMenuModule.contextMenuItemClick({
+                    item: { id: gridObj.element.id + '_gridcontrol_cmenu_Edit' },
+                    element: contextMenuElement,
+                    cancel: false
+                });
+                expect(contextMenuModule.contextMenuItemClick).toHaveBeenCalled();
+                done();
+                return;
+            }
+            // Simulate select event for Edit
+            const editMenuItem = document.createElement('div');
+            editMenuItem.id = gridObj.element.id + '_gridcontrol_cmenu_Edit';
+            contextMenuElement.appendChild(editMenuItem);
+            
+            (contextMenuElement as any).ej2_instances[0].select({
+                item: { id: gridObj.element.id + '_gridcontrol_cmenu_Edit' },
+                element: editMenuItem,
+                cancel: false
+            });
+            done();
+        }, 500);
+    });
+    afterAll(() => {
+        destroy(gridObj);
+    });
+});
+describe('Batch Edit - Full ContextMenuItemClick Prototype Coverage', () => {
+    let gridObj: TreeGrid;
+    let initialChangesLength: number;
+    beforeAll((done: Function) => {
+        gridObj = createGrid({
+            dataSource: sampleData,
+            childMapping: 'subtasks',
+            treeColumnIndex: 1,
+            allowPaging: true,
+            pageSettings: { pageSize: 10 },
+            editSettings: { allowAdding: true, allowDeleting: true, allowEditing: true, mode: 'Batch' },
+            contextMenuItems: ['Edit', 'Delete', 'Save', 'Cancel'],
+            selectionSettings: { mode: 'Row', type: 'Multiple' },
+            columns: [
+                { field: 'taskID', headerText: 'Task ID', isPrimaryKey: true },
+                { field: 'taskName', headerText: 'Task Name' },
+                { field: 'progress', headerText: 'Progress' },
+                { field: 'startDate', headerText: 'Start Date' }
+            ]
+        }, done);
+    });
+    beforeEach(() => {
+        initialChangesLength = (gridObj.getBatchChanges() as any).deletedRecords.length;  // Track per test
+        gridObj.clearSelection();  // Reset state
+    });
+    it('covers falsy args.item in contextMenuItemClick (early return, no delete)', () => {
+      
+        gridObj.trigger('contextMenuItemClick');
+        const finalChanges = (gridObj.getBatchChanges() as any).deletedRecords.length;
+        expect(finalChanges).toBe(initialChangesLength);  // No delete occurred
+       
+       
+    });
+    it('covers truthy args.item with falsy id in contextMenuItemClick (early return, no delete)', () => {
+        
+        gridObj.trigger('contextMenuItemClick');
+        const finalChanges = (gridObj.getBatchChanges() as any).deletedRecords.length;
+        expect(finalChanges).toBe(initialChangesLength);
+       
+        
+});
+  
+    it('covers parent delete branch (hasChildRecords true)', () => {
+        initialChangesLength = (gridObj.getBatchChanges() as any).deletedRecords.length;  //
+        gridObj.selectRow(0);  // Parent
+        
+       
+        const beforeBatchDeleteHandler = (args: any) => {
+            const changes:any = gridObj.getBatchChanges();
+            expect((changes.deletedRecords as any).length).toBe(5);
+            
+        };
+        gridObj.batchDelete = beforeBatchDeleteHandler;
+       let deleteItem: any = (gridObj.grid.contextMenuModule as any).defaultItems['Delete'];
+            (gridObj.grid.contextMenuModule as any).row = gridObj.getSelectedRows()[0];
+            (gridObj.contextMenuModule as any).contextMenuItemClick({ item: deleteItem });
+      
+        
+    });
+    it('should not delete when context menu item is not delete', function () {
+         gridObj.selectRow(1);
+     let deleteItem: any = (gridObj.grid.contextMenuModule as any).defaultItems['Edit'];
+            (gridObj.grid.contextMenuModule as any).row = gridObj.getSelectedRows()[0];
+            (gridObj.contextMenuModule as any).contextMenuItemClick({ item: deleteItem });
+             const contextmenuItemclick=(args: any) => {
+               expect(args.cancel).toBeFalsy(); 
+             }
+             gridObj.grid.contextMenuModule.contextMenuItemClick=contextmenuItemclick;
+});
+   
+    afterAll(() => {
+        
+        destroy(gridObj);
+    });
+});

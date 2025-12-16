@@ -1,15 +1,14 @@
-@import 'ej2-base/styles/definition/bootstrap.scss';
-@import 'ej2-buttons/styles/button/bootstrap-definition.scss';
-@import 'popup/bootstrap-definition.scss';
-@import 'dialog/bootstrap-definition.scss';
-@import 'dialog/icons/bootstrap.scss';
-@import 'dialog/all.scss';
-@import 'dialog/bigger.scss';
-@import 'popup/all.scss';
+@use 'ej2-buttons/styles/button/bootstrap-definition' as *;
+@use 'popup/bootstrap-definition' as *;
+@use 'dialog/bootstrap-definition' as *;
+@use 'dialog/icons/bootstrap' as *;
+@use 'dialog/all' as *;
+@use 'dialog/bigger' as *;
+@use 'popup/all' as *;
 
-@import 'tooltip/bootstrap-definition.scss';
-@import 'tooltip/icons/bootstrap.scss';
-@import 'tooltip/all.scss';
-@import 'tooltip/bigger.scss';
-@import 'spinner/bootstrap-definition.scss';
-@import 'spinner/all.scss';
+@use 'tooltip/bootstrap-definition' as *;
+@use 'tooltip/icons/bootstrap' as *;
+@use 'tooltip/all' as *;
+@use 'tooltip/bigger' as *;
+@use 'spinner/bootstrap-definition' as *;
+@use 'spinner/all' as *;

@@ -1,6 +1,6 @@
 import { Component, L10n } from '@syncfusion/ej2-base';
-import { ItemModel, OverflowMode } from '@syncfusion/ej2-navigations';
-import { ItemModel as DropDownItemModel, DropDownButton, SplitButton } from '@syncfusion/ej2-splitbuttons';
+import { ItemAlign, ItemModel, ItemType, Menu, MenuItemModel, OverflowMode } from '@syncfusion/ej2-navigations';
+import { ItemModel as DropDownItemModel, DropDownButton, SplitButton, DropDownButtonModel } from '@syncfusion/ej2-splitbuttons';
 import { RenderType } from './enum';
 import { ToolbarType, CommandName, DialogType, ColorModeType } from '../../common/enum';
 import { Toolbar } from '../actions/toolbar';
@@ -12,7 +12,7 @@ import { NodeSelection } from '../../selection/selection';
 import { EditorMode, EnterKey, ShiftEnterKey } from './../../common/types';
 import { ToolbarSettingsModel, IFrameSettingsModel, ImageSettingsModel, AudioSettingsModel, VideoSettingsModel, TableSettingsModel, FormatPainterSettingsModel, ImportWordModel, ExportWordModel, ExportPdfModel, CodeBlockSettingsModel } from '../../models/models';
 import { QuickToolbarSettingsModel, InlineModeModel, PasteCleanupSettingsModel, EmojiSettingsModel } from '../../models/models';
-import { FileManagerSettingsModel } from '../models/models';
+import { AIAssistantSettingsModel, FileManagerSettingsModel } from '../models/models';
 import { Count } from '../actions/count';
 import { ColorPicker, FileInfo } from '@syncfusion/ej2-inputs';
 import { Image } from '../renderer/image-module';
@@ -26,18 +26,22 @@ import { HtmlEditor } from '../actions/html-editor';
 import { MarkdownEditor } from '../actions/markdown-editor';
 import { FullScreen } from '../actions/full-screen';
 import { DropDownButtons } from '../actions/dropdown-buttons';
-import { IColorPickerModel, IDropDownItemModel, IDropDownModel, IEditorModel, IExecutionGroup, IFormatPainter, ISplitButtonModel, IToolbarItemModel, IToolbarItems, IToolbarStatus, ResponseEventArgs, IListDropDownModel, ISlashMenuItem, ICodeBlockCommandsArgs } from '../../common/interface';
+import { IColorPickerModel, IDropDownItemModel, IDropDownModel, IEditorModel, IExecutionGroup, IFormatPainter, ISplitButtonModel, IToolbarItemModel, IToolbarItems, IToolbarStatus, ResponseEventArgs, IListDropDownModel, ISlashMenuItem, ICodeBlockCommandsArgs, ExecuteCommandOption } from '../../common/interface';
 import { KeyboardEvents } from '../actions/keyboard';
 import { ViewSource } from '../renderer/view-source';
 import { PasteCleanup } from '../actions/paste-clean-up';
 import { Popup } from '@syncfusion/ej2-popups';
 import { Resize } from '../actions/resize';
+import { ClipBoardCleanup } from '../actions/clipboard-cleanup';
 import { FileManager } from '../actions/file-manager';
 import { EnterKeyAction } from '../actions/enter-key';
 import { EmojiPicker } from '../actions/emoji-picker';
 import { SlashMenuSettingsModel } from '../../models';
 import { CustomUserAgentData } from '../../common/user-agent';
 import { CodeBlock } from '../actions/code-block';
+import { AssistantToolbarType, EditorPopupType, IMenuRenderTargetType } from './types';
+import { ToolbarItemModel } from '@syncfusion/ej2-interactive-chat';
+import { ILineHeightProperties } from '../../editor-manager/base/interface';
 
 /**
  * Specifies Rich Text Editor interfaces.
@@ -162,6 +166,8 @@ export interface IRichTextEditor extends Component<HTMLElement> {
 
     fontSize?: IFontProperties
 
+    lineHeight?: ILineHeightProperties
+
     fontColor?: IColorProperties
 
     numberFormatList?: INumberFormatListPropertiesProperties
@@ -203,6 +209,7 @@ export interface IRichTextEditor extends Component<HTMLElement> {
     shiftEnterKey?: ShiftEnterKey
     audioModule?: Audio
     videoModule?: Video
+    clipBoardCleanupModule?: ClipBoardCleanup
     pasteCleanupModule?: PasteCleanup
     codeBlockModule?: CodeBlock
     undoRedoModule?: UndoRedoManager
@@ -249,7 +256,7 @@ export interface IRichTextEditor extends Component<HTMLElement> {
     addAudioVideoWrapper?(): void
     preventDefaultResize?(e?: FocusEvent | MouseEvent): void
     autoResize?(): void
-    executeCommand?(commandName: CommandName, value?: string | HTMLElement | ICodeBlockCommandsArgs): void
+    executeCommand?(commandName: CommandName, value?: string | HTMLElement | ICodeBlockCommandsArgs,  option?: ExecuteCommandOption): void
     serializeValue?(value: string): string
     sanitizeHtml?(value: string): string
     enableAutoUrl?: boolean
@@ -264,9 +271,19 @@ export interface IRichTextEditor extends Component<HTMLElement> {
     addAnchorAriaLabel?(value: string): string
     autoSaveOnIdle: boolean
     slashMenuSettings: SlashMenuSettingsModel
+    aiAssistantSettings: AIAssistantSettingsModel;
     showDialog(type: DialogType): void
-    scrollParentElements: HTMLElement[]
-    getSelectedHtml(): string
+    scrollParentElements: HTMLElement[];
+    /**
+     * Retrieves the HTML representation of the selected content as a string.
+     *
+     * @returns {string} - The HTML content of the selected area.
+     */
+    getSelectedHtml(): string;
+    isEntireRTEContentSelected(): boolean
+    imageModule: Image;
+    isRTEFocused: boolean;
+    getHtml(): string;
 }
 
 export interface IQuickToolbar {
@@ -343,6 +360,7 @@ export interface IRenderer {
     renderColorPicker?(args: IColorPickerModel, item?: string, toobarType?: string): ColorPicker
     renderListDropDown?(args: IDropDownModel): DropDownButton
     renderSplitButton?(args: ISplitButtonModel): SplitButton
+    renderMenu?(args: IMenuRenderArgs): { menu: Menu, dropDownButton : DropDownButton}
 }
 
 /**
@@ -772,6 +790,10 @@ export const executeGroup: { [key: string]: IExecutionGroup } = {
         subCommand: 'fontsize',
         value: '10pt'
     },
+    'lineHeight': {
+        command: 'lineHeight',
+        value: ''
+    },
     'backColor': {
         command: 'font',
         subCommand: 'backgroundcolor',
@@ -992,4 +1014,347 @@ export interface SlashMenuItemSelectArgs {
      * Specifies the boolean value to cancel the default action if set to true.
      */
     cancel?: boolean;
+}
+
+/**
+ * Defines the structure of AI command items displayed in the command dropdown menu.
+ * Supports hierarchical organization through nested items.
+ */
+export interface AICommands {
+    /**
+     * The display text shown for this command in the UI.
+     */
+    text: string;
+
+    /**
+     * The actual prompt or command text sent to the AI service when selected.
+     */
+    prompt?: string;
+
+    /**
+     * CSS class name for the icon to display with this command.
+     */
+    iconCss?: string;
+
+    /**
+     * Collection of nested command items for creating multi-level command menus.
+     */
+    items?: AICommands[];
+}
+
+/**
+ * Extends the standard toolbar settings with additional properties specific to
+ * the AI Assistant functionality.
+ */
+export interface IAIAssistantToolbarItem {
+    /**
+     * Specifies the primary command to execute when toolbar actions are triggered.
+     *
+     * @type {string}
+     * @default ''
+     */
+    command: string;
+
+    /**
+     * Specifies the secondary or sub-command to execute when toolbar actions are triggered.
+     *
+     * @type {string}
+     * @default ''
+     */
+    subCommand: string;
+
+    /**
+     * Specifies the CSS class for the icon of the toolbar item.
+     * Represents the icon displayed for the toolbar item.
+     *
+     * @type {string}
+     * @default ''
+     */
+    iconCss?: string;
+
+    /**
+     * Specifies the text of the toolbar item.
+     * Represents the display text of the toolbar item.
+     *
+     * @type {string}
+     * @default null
+     */
+    text?: string;
+
+    /**
+     * Specifies the type of the toolbar item.
+     * Represents the item type of the toolbar item.
+     *
+     * @type {ItemType}
+     * @default "Button"
+     * @aspPopulateDefaultValue
+     */
+    type?: ItemType;
+
+    /**
+     * Specifies the alignment of the toolbar item.
+     *
+     * @type {ItemAlign}
+     * @default "Left"
+     * @aspPopulateDefaultValue
+     */
+    align?: ItemAlign;
+
+    /**
+     * Specifies whether the toolbar item is visible.
+     * Indicates if the toolbar item should be displayed.
+     *
+     * @type {boolean}
+     * @default true
+     */
+    visible?: boolean;
+
+    /**
+     * Specifies whether the toolbar item is disabled.
+     * Indicates if the toolbar item is interactive or not.
+     *
+     * @type {boolean}
+     * @default false
+     */
+    disabled?: boolean;
+
+    /**
+     * Specifies the tooltip text for the toolbar item.
+     * Represents the text shown when hovering over the toolbar item.
+     *
+     * @type {string}
+     * @default ''
+     */
+    tooltip?: string;
+
+    /**
+     * Specifies the CSS class for styling the toolbar item.
+     * Represents the additional CSS classes applied to the toolbar item.
+     *
+     * @type {string}
+     * @default ''
+     */
+    cssClass?: string;
+
+    /**
+     * Specifies the template that defines the appearance of the toolbar item.
+     * Represents the custom template for rendering the toolbar item, which can be a string or a function.
+     *
+     * @default null
+     * @angularType string | object
+     * @reactType string | function | JSX.Element
+     * @vueType string | function
+     * @aspType string
+     */
+    template?: string | Function;
+
+    /**
+     * Specifies the tab order of the toolbar items.
+     * When assigned positive values, it allows switching focus to the next/previous toolbar items using the Tab/Shift+Tab keys.
+     * If the value is set to 0 for all toolbar items, the tab order switches based on the element's order in the DOM.
+     *
+     * @type {number}
+     * @default -1
+     */
+    tabIndex?: number;
+}
+
+/**
+ * Interface defining the arguments for toolbar item click events in the AI Assistant Popup.
+ * Used to handle and control click events on custom toolbar items across header, prompt, and
+ * response toolbars. Allows for rendering custom toolbar elements such as button dropdowns and inputs.
+ *
+ *
+ */
+export interface AIAssitantToolbarClickEventArgs {
+    /**
+     * Specifies the toolbar section where the click event occurred.
+     * Identifies which of the three toolbars (Header, Prompt, or Response) contained the clicked item.
+     *
+     * @type {AssistantToolbarType}
+     * @required
+     */
+    requestType: AssistantToolbarType;
+
+    /**
+     * Specifies the AI Assistant toolbar item that was clicked.
+     * Represents the model of the toolbar item that triggered the click event.
+     *
+     * @type {IAIAssistantToolbarItem}
+     * @default null
+     * @optional
+     */
+    item: IAIAssistantToolbarItem;
+
+    /**
+     * Specifies the event object associated with the toolbar item click.
+     * Represents the underlying event that triggered the click action, providing details about the event.
+     *
+     * @type {Event}
+     * @default null
+     * @optional
+     */
+    originalEvent: Event;
+
+    /**
+     * Specifies whether the click event should be cancelled.
+     * Determines if the default action associated with the click event should be prevented.
+     *
+     * @type {boolean}
+     * @default false
+     * @optional
+     */
+    cancel: boolean;
+
+    /**
+     * Specifies the index of the message data associated with the toolbar item click event.
+     * This property is not applicable for header toolbar item click.
+     *
+     * @type {number}
+     * @default -1
+     * @optional
+     */
+    dataIndex?: number;
+}
+
+
+/**
+ * Represents the Menu Rendering args of the Toolbar renderer.
+ *
+ * @private
+ */
+export interface IMenuRenderArgs {
+    menuItems: MenuItemModel;
+    dropDownItems: DropDownButtonModel;
+    name: string;
+    containerType: IMenuRenderTargetType;
+    toolbarElement: HTMLElement;
+    dropDownRoot: HTMLButtonElement;
+    menuRoot: HTMLUListElement;
+}
+
+export interface AIAssistantPromptRequestArgs {
+    /**
+     * The current selection in the editor, represented as HTML.
+     * This includes formatting tags and other HTML elements.
+     *
+     * @type {string}
+     */
+    html: string;
+    /**
+     * The current selection in the editor, represented as plain text.
+     * This excludes any HTML formatting or markup.
+     *
+     * @type {string}
+     */
+    text: string;
+    /**
+     * Specifies whether the prompt request should be cancelled.
+     * Determines if the prompt request should be stopped, giving control over whether the prompt processing continues or is aborted.
+     *
+     * @type {boolean}
+     * @default false
+     *
+     */
+    cancel: boolean;
+    /**
+     * Specifies the toolbar items for the output view in the AI Assistant.
+     * Represents the collection of toolbar items that are displayed alongside the output view, allowing for additional interactions.
+     *
+     * @type {ToolbarItemModel[]}
+     * @default null
+     *
+     */
+    responseToolbarItems: ToolbarItemModel[];
+    /**
+     * Specifies the text of the prompt request.
+     *
+     * @type {string}
+     * @default null
+     *
+     */
+    prompt: string;
+    /**
+     * Specifies the list of prompt suggestions.
+     * Represents an array of suggested prompts that can assist the user.
+     *
+     * @type {string[]}
+     * @default null
+     *
+     */
+    promptSuggestions: string[];
+}
+
+export interface AIAssistantStopRespondingArgs {
+    /**
+     * Specifies the event object associated with the stop responding action.
+     * Represents the underlying event that triggered the action.
+     *
+     * @type {Event}
+     * @default null
+     */
+    event?: Event;
+    /**
+     * Specifies the prompt text associated with the request.
+     * Represents the input prompt for which the response was being generated.
+     *
+     * @type {string}
+     * @default ''
+     *
+     */
+    prompt?: string;
+    /**
+     * Specifies the index of the prompt in the prompt list.
+     * Represents the position of the prompt in the stored collection.
+     *
+     * @type {number}
+     * @default -1
+     */
+    dataIndex?: number;
+}
+
+/**
+ * Interface that defines the arguments for before popup open and close events.
+ *
+ * This interface is used when a popup is about to be opened or closed in the editor.
+ * It provides information about the popup and allows cancellation of the event.
+ *
+ */
+export interface BeforePopupOpenCloseEventArgs {
+    /**
+     * Specifies the type of popup that is being opened or closed.
+     *
+     * @type {EditorPopupType}
+     */
+    type: EditorPopupType;
+
+    /**
+     * The popup instance that is being opened or closed.
+     *
+     * @type {Popup}
+     */
+    popup?: Popup;
+
+    /**
+     * The HTML element associated with the popup.
+     *
+     * @type {HTMLElement}
+     */
+    element: HTMLElement;
+
+    /**
+     * Determines whether the popup open/close action should be canceled.
+     * Set to true to prevent the popup from opening or closing.
+     *
+     * @type {boolean}
+     */
+    cancel: boolean;
+
+    /**
+     * The original DOM event that triggered the popup action, if available.
+     *
+     * @type {Event}
+     * @optional
+     */
+    originalEvent?: Event;
 }

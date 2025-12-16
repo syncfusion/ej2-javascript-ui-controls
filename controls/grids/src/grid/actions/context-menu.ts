@@ -61,7 +61,9 @@ export const menuClass: CMenuClassList = {
     area: 'e-grid-area-icon',
     stackingArea: 'e-grid-stacking-area-icon',
     stackingArea100: 'e-grid-stacking-area-100-icon',
-    scatter: 'e-grid-scatter-icon'
+    scatter: 'e-grid-scatter-icon',
+    pin: 'e-grid-icon-pin',
+    unpin: 'e-grid-icon-unpin'
 };
 
 export interface CMenuClassList {
@@ -109,6 +111,8 @@ export interface CMenuClassList {
     stackingArea: string;
     stackingArea100: string;
     scatter: string;
+    pin: string;
+    unpin: string;
 }
 
 /**
@@ -416,6 +420,12 @@ export class ContextMenu implements IAction {
             args.gridInstance = this.parent;
             args.chartType = item;
             break;
+        case 'PinRow':
+            this.parent.pinRows([this.targetRowdata.rowData]);
+            break;
+        case 'UnpinRow':
+            this.parent.unpinRows([this.targetRowdata.rowData]);
+            break;
         }
         args.column = this.targetColumn;
         args.rowInfo = this.targetRowdata;
@@ -495,6 +505,11 @@ export class ContextMenu implements IAction {
                 } else if (this.ensureTarget(args.event.target as HTMLElement, (item as ContextMenuItemModel).target) && item.separator) {
                     showSepItems.push(item.id);
                 }
+                if (key === 'PinRow' && !isNullOrUndefined(this.targetRowdata.row) && this.targetRowdata.row.classList.contains('e-grid-pin-row')) {
+                    this.hiddenItems.push(item.text);
+                } else if (key === 'UnpinRow' && !isNullOrUndefined(this.targetRowdata.row) && !this.targetRowdata.row.classList.contains('e-grid-pin-row')) {
+                    this.hiddenItems.push(item.text);
+                }
             }
             if (showSepItems.length > 0) {
                 this.contextMenu.showItems(showSepItems, true);
@@ -535,7 +550,7 @@ export class ContextMenu implements IAction {
     }
 
     private ensureFrozenHeader(targetElement: HTMLElement): boolean {
-        return (this.parent.frozenRows)
+        return (this.parent.frozenRows || this.parent.pinnedTopRecords.length)
             && closest(targetElement, menuClass.header) ? true : false;
     }
 
@@ -803,6 +818,12 @@ export class ContextMenu implements IAction {
         case 'Scatter':
             menuItem = { target: menuClass.content, iconCss: menuClass.scatter };
             break;
+        case 'PinRow':
+            menuItem = { target: '.e-rowcell', iconCss: menuClass.pin };
+            break;
+        case 'UnpinRow':
+            menuItem = { target: '.e-rowcell', iconCss: menuClass.unpin };
+            break;
         }
         this.defaultItems[`${item}`] = {
             text: this.getLocaleText(item), id: this.generateID(item),
@@ -816,7 +837,7 @@ export class ContextMenu implements IAction {
             'Group', 'Ungroup', 'Edit', 'Delete', 'Save', 'Cancel', 'Copy', 'export',
             'PdfExport', 'ExcelExport', 'CsvExport', 'SortAscending', 'SortDescending',
             'FirstPage', 'PrevPage', 'LastPage', 'NextPage',
-            'Chart', 'BarChart', 'ColumnChart', 'LineChart', 'AreaChart',
+            'Chart', 'BarChart', 'ColumnChart', 'LineChart', 'AreaChart', 'PinRow', 'UnpinRow',
             ...this.chartList];
     }
     private setLocaleKey(): { [key: string]: string } {
@@ -858,7 +879,9 @@ export class ContextMenu implements IAction {
             'Area': 'Area',
             'StackingArea': 'StackingArea',
             'StackingArea100': 'StackingArea100',
-            'Scatter': 'Scatter'
+            'Scatter': 'Scatter',
+            'PinRow': 'PinRow',
+            'UnpinRow': 'UnpinRow'
         };
         return localeKeys;
     }

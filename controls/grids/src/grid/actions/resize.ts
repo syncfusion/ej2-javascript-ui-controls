@@ -141,7 +141,8 @@ export class Resize implements IAction {
         let indentWidth: number = 0;
         const uid: string = id ? id : this.parent.getUidByColumnField(fName);
         const columnIndex: number = this.parent.getNormalizedColumnIndex(uid);
-        const headerTextClone: Element = (<HTMLElement>headerTable.querySelector('[data-mappinguid="' + uid + '"]').parentElement.cloneNode(true));
+        const headerTextClone: Element =
+            (closest(headerTable.querySelector('[data-mappinguid="' + uid + '"]'), 'th')).cloneNode(true) as HTMLElement;
         const contentTextClone: HTMLTableCellElement[] = this.getCellElementsByColumnIndex(columnIndex);
         let footerTextClone: NodeListOf<Element>;
         const columnIndexByField: number = this.parent.getColumnIndexByField(fName);
@@ -307,12 +308,21 @@ export class Resize implements IAction {
         myTable.className = table.className;
         myTable.classList.add('e-resizetable');
         myTable.style.cssText = 'table-layout: auto;width: auto';
+        let thead: HTMLElement;
+        if (tag === 'e-gridheader') {
+            thead = this.parent.createElement('thead') as HTMLElement;
+            myTable.appendChild(thead);
+        }
         const myTr: HTMLTableRowElement = this.parent.createElement('tr') as HTMLTableRowElement;
         for (let i: number = (startRowIndex <= 0 ? 1 : startRowIndex); i <= (endRowIndex > text.length ? text.length : endRowIndex); i++) {
             const tr: HTMLTableRowElement = myTr.cloneNode() as HTMLTableRowElement;
             tr.className = table.querySelector('tr').className;
             tr.appendChild(text[parseInt((i - 1).toString(), 10)]);
-            myTable.appendChild(tr);
+            if (!isNullOrUndefined(thead)) {
+                thead.appendChild(tr);
+            } else {
+                myTable.appendChild(tr);
+            }
         }
         mySubDiv.appendChild(myTable);
         myTableDiv.appendChild(mySubDiv);

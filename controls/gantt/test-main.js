@@ -121,6 +121,16 @@ require.config({
         name: '@syncfusion/ej2-filemanager',
         location: 'node_modules/@syncfusion/ej2-filemanager/dist',
         main: 'ej2-filemanager.umd.min.js'
+      },
+      {
+            name: "@syncfusion/ej2-interactive-chat",
+            location: "node_modules/@syncfusion/ej2-interactive-chat/dist",
+            main: "ej2-interactive-chat.umd.min.js",
+      },
+      {
+            name: "@syncfusion/ej2-markdown-converter",
+            location: "node_modules/@syncfusion/ej2-markdown-converter/dist",
+            main: "ej2-markdown-converter.umd.min.js",
       }
     // Include dependent packages
   ],

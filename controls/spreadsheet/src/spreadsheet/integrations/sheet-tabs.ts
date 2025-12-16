@@ -3,7 +3,7 @@ import { Spreadsheet } from '../base/index';
 import { refreshSheetTabs, locale, insertSheetTab, cMenuBeforeOpen, dialog, hideSheet, removeDesignChart, goToSheet, showSheet } from '../common/index';
 import { sheetNameUpdate, clearUndoRedoCollection, completeAction, showAggregate, focus, getUpdateUsingRaf } from '../common/index';
 import { sheetTabs, renameSheetTab, removeSheetTab, activeSheetChanged, focusRenameInput } from '../common/index';
-import { protectSheet, DialogBeforeOpenEventArgs, editOperation } from '../common/index';
+import { protectSheet, DialogBeforeOpenEventArgs, editOperation, refreshCommentsPane, updateNoteContainer } from '../common/index';
 import { SheetModel, getSheetName, aggregateComputation, AggregateArgs, Workbook } from '../../workbook/index';
 import { isSingleCell, getRangeIndexes, getSheet, getSheetIndex, beginAction } from '../../workbook/index';
 import { DropDownButton, MenuEventArgs, BeforeOpenCloseMenuEventArgs, OpenCloseMenuEventArgs } from '@syncfusion/ej2-splitbuttons';
@@ -106,6 +106,8 @@ export class SheetTabs {
                 this.goToSheet(args, cancelSelect, true);
             },
             created: (): void => {
+                /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
+                delete (this.tabInstance as Record<string, any>).tabKeyModule.keyConfigs.openPopup;
                 const tBarItems: HTMLElement = this.tabInstance.element.querySelector('.e-toolbar-items');
                 tBarItems.classList.add('e-sheet-tabs-items');
                 EventHandler.add(tBarItems, 'dblclick', this.renameSheetTab, this);
@@ -144,6 +146,9 @@ export class SheetTabs {
             }
             if (!formula) { this.parent.endEdit(); }
         }
+        if (this.parent.showCommentsPane) {
+            this.parent.notify(refreshCommentsPane, { sheetIdx: args.selectedIndex });
+        }
         this.parent.activeSheetIndex = args.selectedIndex;
         this.parent.dataBind();
         this.updateDropDownItems(args.selectedIndex, args.previousIndex);
@@ -156,7 +161,10 @@ export class SheetTabs {
             this.parent.notify(completeAction, {
                 eventArgs: { previousSheetIndex: args.previousIndex, currentSheetIndex: args.selectedIndex }, action: 'gotoSheet'
             });
-            getUpdateUsingRaf(() => focus(this.parent.element));
+            getUpdateUsingRaf(() => {
+                focus(this.parent.element);
+                this.parent.notify(updateNoteContainer, null);
+            });
         }
     }
 
@@ -618,6 +626,9 @@ export class SheetTabs {
         this.parent.activeSheetIndex = activeIndex;
         this.parent.setProperties({ activeSheetIndex: activeIndex }, true);
         this.parent.renderModule.refreshSheet();
+        if (this.parent.showCommentsPane) {
+            this.parent.notify(refreshCommentsPane, { sheetIdx: this.parent.activeSheetIndex });
+        }
         this.tabInstance.selectedItem = activeIndex;
         this.tabInstance.dataBind();
         this.updateDropDownItems(activeIndex);

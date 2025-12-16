@@ -1,4 +1,9 @@
+@use 'ej2-base/styles/definition/fabric-dark' as *;
+@forward 'ej2-base/styles/definition/fabric-dark';
 $sidebar-background: $neutral-lighter-alt !default;
 $sidebar-border: $neutral-light !default;
 $sidebar-box-shadow: 0 0 20px rgba(0, 0, 0, .2) !default;
 $sidebar-overlay: rgba(0, 0, 0, .6) !default;
+$sidebar-height: 100% !default;
+$sidebar-border-width: 1px !default;
+$sidebar-margin-none: 0 !default;

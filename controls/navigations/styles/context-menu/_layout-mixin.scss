@@ -1,3 +1,5 @@
+@use 'ej2-base/styles/common/mixin' as *;
+@use './theme-variables' as *;
 @mixin ul-layout {
   font-weight: $cmenu-font-weight;
   list-style-image: none;

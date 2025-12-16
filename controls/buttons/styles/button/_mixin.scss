@@ -1,4 +1,5 @@
 @use 'sass:color';
+@use './theme-variables' as *;
 @mixin button-focus {
   background: $btn-focus-bgcolor;
   @if $skin-name == 'Material3' {

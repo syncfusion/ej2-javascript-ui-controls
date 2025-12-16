@@ -182,7 +182,6 @@ const DLG_OVERLAYCLICK_CLOSED: string = 'overlayClick';
 const DLG_DRAG : string = 'e-draggable';
 const FOCUSABLE_ELEMENTS_SELECTOR: string = 'input,select,textarea,button:enabled,a,[contenteditable="true"],[tabindex]';
 
-
 /**
  * Provides information about a BeforeOpen event.
  */
@@ -1673,7 +1672,7 @@ export class Dialog extends Component<HTMLElement> implements INotifyPropertyCha
     }
 
     private disableElement(element: HTMLElement, t: string): HTMLElement {
-        const elementMatch: Function = element ? element.matches || element.webkitMatchesSelector || element.msGetRegionContent : null;
+        const elementMatch: Function = element ? element.matches : null;
         if (elementMatch) {
             for (; element; element = <HTMLElement>element.parentNode) {
                 if (element instanceof Element && elementMatch.call(element, t)) {

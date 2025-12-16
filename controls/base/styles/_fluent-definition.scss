@@ -1,4 +1,5 @@
-@import 'definition/fluent.scss';
+@use 'definition/fluent' as *;
+@forward 'definition/fluent';
 
 $font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, 'Roboto', 'Helvetica Neue', sans-serif !default;
 $font-size: 12px !default;

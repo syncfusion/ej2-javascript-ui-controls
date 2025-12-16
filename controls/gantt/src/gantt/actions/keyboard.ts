@@ -349,7 +349,7 @@ export class FocusModule {
         const target : Element = e.target as Element;
         if (ganttObj.selectionModule) {
             if (ganttObj.selectedRowIndex !== -1 && (!target || ((!target.classList.contains('e-rowcell') &&
-                !target.classList.contains('e-headercell')) || (this.parent.contextMenuModule && this.parent.contextMenuModule.isOpen)))) {
+                !target.classList.contains('e-headercell')) || (this.parent.contextMenuModule && this.parent.contextMenuModule.isOpen))) && !(this.parent.filterModule && this.parent.filterModule.filterMenuElement != null)) {
                 if ((e.action === 'downArrow' || e.action === 'upArrow') && this.parent.selectionModule && this.parent.allowSelection && this.parent.virtualScrollModule && this.parent.enableVirtualization) {
                     expandedRecords = ganttObj.getExpandedRecords(ganttObj.flatData);
                 }

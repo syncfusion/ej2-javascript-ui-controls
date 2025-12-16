@@ -207,6 +207,34 @@ export class FileManager extends Component<HTMLElement> implements INotifyProper
     public allowDragAndDrop: boolean;
 
     /**
+     * Specifies a template to render customized content for all the nodes. If the `navigationPaneTemplate` property
+     * is set, the template content overrides the displayed node text in the File Manager navigation pane.
+     * The property accepts a template string or HTML element ID holding the content.
+     *
+     * @default null
+     * @angularType string | object
+     * @reactType string | function | JSX.Element
+     * @vueType string | function
+     * @aspType string
+     */
+    @Property()
+    public navigationPaneTemplate: string | Function;
+
+    /**
+     * Specifies a template to render customized content for all the files or folders in the large icons view. If the `largeIconsTemplate` property
+     * is set, the template content overrides the displayed files or folders text in the File Manager large icons view. The property accepts template string
+     * or HTML element ID holding the content.
+     *
+     * @default null
+     * @angularType string | object
+     * @reactType string | function | JSX.Element
+     * @vueType string | function
+     * @aspType string
+     */
+    @Property()
+    public largeIconsTemplate: string | Function;
+
+    /**
      * Enables or disables the multiple files selection of the file manager.
      *
      * @default true
@@ -464,7 +492,8 @@ export class FileManager extends Component<HTMLElement> implements INotifyProper
      *  maxFileSize: 30000000,
      *  allowedExtensions: '',
      *  autoClose: false,
-     *  directoryUpload: false
+     *  directoryUpload: false,
+     *  sequentialUpload: false
      * }
      */
     @Complex<UploadSettingsModel>({}, UploadSettings)
@@ -1088,6 +1117,7 @@ export class FileManager extends Component<HTMLElement> implements INotifyProper
             maxFileSize: this.uploadSettings.maxFileSize,
             allowedExtensions: this.uploadSettings.allowedExtensions,
             directoryUpload: this.uploadSettings.directoryUpload,
+            sequentialUpload: this.uploadSettings.sequentialUpload,
             fileListRendering: this.onFileListRender.bind(this)
         });
         this.uploadObj.appendTo('#' + this.element.id + CLS.UPLOAD_ID);
@@ -1232,7 +1262,30 @@ export class FileManager extends Component<HTMLElement> implements INotifyProper
             createDeniedDialog(this, details, events.permissionUpload);
             return;
         }
+        if (this.allowOrDenyUpload(args, details)) {
+            args.cancel = true;
+            createDeniedDialog(this, details, events.permissionUpload);
+            return;
+        }
         this.uploadDialogObj.show();
+    }
+
+    private allowOrDenyUpload(args: SelectedEventArgs, uploadDetails: Object): boolean {
+        const permission: Object = getValue('permission', uploadDetails);
+        if (isNOU(args) || isNOU(permission) || isNOU(getValue('uploadContentFilter', permission))) {
+            return false;
+        }
+        const hasFolder: boolean = args.filesData.some((f: FileInfo) => {
+            const name: string = !isNOU(f.name) ? f.name : '';
+            return name.includes('/') || name.includes('\\');
+        });
+        const hasFile: boolean = args.filesData.some((f: FileInfo) => {
+            const name: string = !isNOU(f.name) ? f.name : '';
+            return !(name.includes('/') || name.includes('\\'));
+        });
+        if (hasFolder && getValue('uploadContentFilter', permission) === 1) { return true; }
+        if (hasFile && getValue('uploadContentFilter', permission) === 2) { return true; }
+        return false;
     }
 
     private onFileUploadSuccess(args: { [key: string]: Object; }): void {
@@ -1501,7 +1554,9 @@ export class FileManager extends Component<HTMLElement> implements INotifyProper
                     this.dragSelectedItems.push(item.querySelector('.e-drag-text').textContent);
                 }
                 if (this.showItemCheckBoxes) {
-                    item.querySelector('.e-frame').classList.add('e-check');
+                    if (item.querySelector('.e-frame')) {
+                        item.querySelector('.e-frame').classList.add('e-check');
+                    }
                 }
             }
         }
@@ -1686,6 +1741,14 @@ export class FileManager extends Component<HTMLElement> implements INotifyProper
                 break;
             case 'fileSystemData':
                 this.fileSystemData = newProp.fileSystemData;
+                requiresRefresh = true;
+                break;
+            case 'navigationPaneTemplate':
+                this.navigationPaneTemplate = newProp.navigationPaneTemplate;
+                requiresRefresh = true;
+                break;
+            case 'largeIconsTemplate':
+                this.largeIconsTemplate = newProp.largeIconsTemplate;
                 requiresRefresh = true;
                 break;
             }

@@ -3,11 +3,12 @@
  * Export items model
  */
 
-import { IRichTextEditor } from '../base/interface';
+import { AICommands, IRichTextEditor } from '../base/interface';
 import { TableStyleItems } from '../../models/items';
 import { IToolsItems, IDropDownItemModel } from '../../common/interface';
+import { ItemModel } from '@syncfusion/ej2-navigations';
 
-export let templateItems: string[] = ['alignments', 'formats', 'fontname', 'fontsize', 'fontcolor', 'backgroundcolor', 'align', 'display', 'audiolayoutoption', 'videolayoutoption', 'videoalign', 'tablerows', 'tablecolumns', 'tablecell', 'tablecellhorizontalalign', 'tablecellverticalalign', 'styles', 'numberformatlist', 'bulletformatlist', 'codeblock', 'borderstyle', 'bordercolor', 'tablebackgroundcolor'];
+export let templateItems: string[] = ['lineheight', 'alignments', 'formats', 'fontname', 'fontsize', 'fontcolor', 'backgroundcolor', 'align', 'display', 'audiolayoutoption', 'videolayoutoption', 'videoalign', 'tablerows', 'tablecolumns', 'tablecell', 'tablecellhorizontalalign', 'tablecellverticalalign', 'styles', 'numberformatlist', 'bulletformatlist', 'codeblock', 'borderstyle', 'tablebackgroundcolor', 'bordercolor', 'aicommands'];
 
 export let tools: { [key: string]: IToolsItems } = {
     'alignments': {
@@ -44,6 +45,13 @@ export let tools: { [key: string]: IToolsItems } = {
         'tooltip': 'JustifyFull',
         'command': 'Alignments',
         'subCommand': 'JustifyFull'
+    },
+    'lineheight': {
+        'id': 'LineHeight',
+        'icon': 'e-lineHeight',
+        'tooltip': 'Line Height',
+        'command': 'LineHeight',
+        'subCommand': 'LineHeight'
     },
     'fontname': {
         'id': 'FontName',
@@ -655,6 +663,20 @@ export let tools: { [key: string]: IToolsItems } = {
         'tooltip': 'Checklist',
         'command': 'Checklist',
         'subCommand': 'Checklist'
+    },
+    'aiquery': {
+        'id': 'AIQuery',
+        'icon': 'e-magic-wand',
+        'tooltip': 'Ask AI',
+        'command': 'AIAssistant',
+        'subCommand': 'AIQuery'
+    },
+    'aicommands': {
+        'id': 'AICommandsDropDownMenu',
+        'icon': 'e-ai-chat',
+        'tooltip': 'AI Commands',
+        'command': 'AIAssistant',
+        'subCommand': 'AICommands'
     }
 };
 
@@ -869,5 +891,117 @@ export let windowKeys: { [key: string]: string } = {
     'FormatPainter': 'Alt+Shift+C, Alt+Shift+V',
     'InlineCode': 'Ctrl+`',
     'CodeBlock': 'Ctrl+Shift+B',
-    'Checklist': 'Ctrl+Shift+9'
+    'Checklist': 'Ctrl+Shift+9',
+    'AIQuery': 'Alt+Enter'
 };
+
+export const DEFAULT_AI_COMMANDS: AICommands[] = [
+    {
+        text: "Improve Content",
+        prompt: "Improve the clarity, coherence, and overall quality of the following content:"
+    },
+    {
+        text: "Shorten",
+        prompt: "Shorten the following content without losing its core message:"
+    },
+    {
+        text: "Elaborate",
+        prompt: "Expand on the following content with more detail and explanation:"
+    },
+    {
+        text: "Summarize",
+        prompt: "Summarize the following content in a concise and clear way:"
+    },
+    {
+        text: "Check Grammar & Spelling",
+        prompt: "Check the following content for grammar and spelling mistakes, and correct them:"
+    },
+    {
+        text: "Change Tone",
+        items: [
+            {
+                text: "Professional",
+                prompt: "Rewrite the following content in a professional tone:"
+            },
+            {
+                text: "Casual",
+                prompt: "Rewrite the following content in a casual, conversational tone:"
+            },
+            {
+                text: "Direct",
+                prompt: "Rewrite the following content to be more direct and to the point:"
+            },
+            {
+                text: "Friendly",
+                prompt: "Rewrite the following content in a friendly and approachable tone:"
+            },
+            {
+                text: "Inspirational",
+                prompt: "Rewrite the following content in an inspirational and motivational tone:"
+            },
+            {
+                text: "Persuasive",
+                prompt: "Rewrite the following content in a persuasive tone to convince the reader:"
+            }
+        ]
+    },
+    {
+        text: "Change Style",
+        items: [
+            {
+                text: "Business",
+                prompt: "Rewrite the following content in a business writing style:"
+            },
+            {
+                text: "Legal",
+                prompt: "Rewrite the following content in a formal legal writing style:"
+            },
+            {
+                text: "Journalistic",
+                prompt: "Rewrite the following content in a journalistic/reporting style:"
+            },
+            {
+                text: "Academic",
+                prompt: "Rewrite the following content in an academic writing style:"
+            }
+        ]
+    },
+    {
+        text: "Translate",
+        prompt: "",
+        items: [
+            {
+                text: "English",
+                prompt: "Translate the following content into English:"
+            },
+            {
+                text: "German",
+                prompt: "Translate the following content into German:"
+            },
+            {
+                text: "Spanish",
+                prompt: "Translate the following content into Spanish:"
+            },
+            {
+                text: "French",
+                prompt: "Translate the following content into French:"
+            },
+            {
+                text: "Japanese",
+                prompt: "Translate the following content into Japanese:"
+            },
+            {
+                text: "Simplified Chinese",
+                prompt: "Translate the following content into Simplified Chinese:"
+            },
+            {
+                text: "Hindi",
+                prompt: "Translate the following content into Hindi:"
+            },
+            {
+                text: "Arabic",
+                prompt: "Translate the following content into Arabic:"
+            }
+        ]
+    }
+];

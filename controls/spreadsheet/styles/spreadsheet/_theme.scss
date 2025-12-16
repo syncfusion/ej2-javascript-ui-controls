@@ -1,3 +1,10 @@
+@use 'ej2-base/styles/common/mixin' as *;
+@use './theme-variables' as *;
+@use '../spreadsheet-ribbon/theme-variables' as ribbon-vars;
+@use 'ej2-navigations/styles/toolbar/theme-variables' as theme-vars;
+@use 'ej2-navigations/styles/context-menu/theme-variables' as cmenu-vars;
+@use 'ej2-navigations/styles/tab/theme-variables' as tab-vars;
+@use 'ej2-buttons/styles/button/theme-variables' as btn-vars;
 @include export-module('spreadsheet-theme') {
 
   /*! spreadsheet theme */
@@ -174,7 +181,7 @@
           & .e-toolbar-item {
             & .e-tab-wrap:hover .e-tab-text,
             &.e-active .e-tab-wrap .e-tab-text {
-              color: $tab-text-color;
+              color: tab-vars.$tab-text-color;
             }
           }
         }
@@ -237,13 +244,13 @@
         &:hover {
           @if $skin-name == 'bootstrap5' or $skin-name == 'bootstrap5.3' {
             & .e-btn-icon {
-              color: $btn-color;
+              color: btn-vars.$btn-color;
             }
           }
           @if $skin-name == 'Material3' {
             & .e-btn-icon {
-              color: $btn-color;
-              border-radius: 8px;
+              color: btn-vars.$btn-color;
+              border-radius: $spread-border-radius-8;
             }
           }
         }
@@ -251,7 +258,7 @@
         &:disabled {
           @if $skin-name == 'bootstrap5' or $skin-name == 'bootstrap5.3' or $skin-name == 'Material3' or $skin-name == 'tailwind3' {
             & .e-btn-icon {
-              color: $btn-disabled-color;
+              color: btn-vars.$btn-disabled-color;
             }
           }
         }
@@ -259,11 +266,11 @@
 
       & .e-btn.e-flat.e-active {
         @if $skin-name == 'Material3' {
-          border-radius: 8px;
+          border-radius: $spread-border-radius-8;
           background: $sheet-tab-button-active-bg-color;
         }
         @if $skin-name == 'bootstrap4' {
-          color: $btn-color;
+          color: btn-vars.$btn-color;
         }
         @if $skin-name == 'fluent2' or $skin-name == 'bootstrap5.3' {
           & .e-btn-icon {
@@ -307,7 +314,7 @@
       @if $skin-name == 'Material3' {
         box-shadow: none;
         background: $hdr-hover-bg-color;
-        border-radius: 4px;
+        border-radius: $spread-border-radius-4;
         padding: 8px 12px;
       }
       @else {
@@ -330,7 +337,7 @@
         }
         @if $skin-name == 'bootstrap4' or $skin-name == 'bootstrap' {
           &:focus {
-            background: $tbar-focus-bg;
+            background: theme-vars.$tbar-focus-bg;
           }
         }
       }
@@ -352,7 +359,7 @@
 
       &:hover:not(.e-active) {
         @if $skin-name != 'fluent2' {
-          background: $tbar-hover-bg;
+          background: theme-vars.$tbar-hover-bg;
         }
         @else {
           background: $sheet-tab-aggr-bg-color-hover;
@@ -363,22 +370,22 @@
         }
         border-color: $spreadsheet-ribbon-item-hover-border-color;
         @if $skin-name == 'Material3' {
-          border-radius: 4px;
+          border-radius: $spread-border-radius-4;
         }
         @if $skin-name == 'bootstrap4' {
-          color: $tbar-hover-font;
+          color: theme-vars.$tbar-hover-font;
 
           & .e-icons,
           & .e-dropdown-btn {
-            color: $tbar-active-font-color;
+            color: theme-vars.$tbar-active-font-color;
           }
         }
         @if $skin-name == 'bootstrap5' or $skin-name == 'bootstrap5.3' or $skin-name == 'FluentUI' {
-          color: $btn-flat-hover-color;
+          color: btn-vars.$btn-flat-hover-color;
 
           & .e-icons,
           & .e-dropdown-btn {
-            color: $btn-flat-hover-color;
+            color: btn-vars.$btn-flat-hover-color;
           }
         }
       }
@@ -388,7 +395,7 @@
           background: $sheet-tab-aggr-bg-color-selected;
           border-color: $spreadsheet-ribbon-item-active-border-color;
           @if $skin-name == 'Material3' {
-            border-radius: 4px;
+            border-radius: $spread-border-radius-4;
           }
           @if $skin-name == 'fluent2' or $skin-name == 'tailwind3' {
             color: $sheet-tab-aggr-btn-active-color;
@@ -401,11 +408,11 @@
       @if $skin-name == 'bootstrap4' or $skin-name == 'highcontrast' {
         &.e-active,
         &:focus {
-          color: $tbar-active-font-color;
+          color: theme-vars.$tbar-active-font-color;
 
           & .e-icons,
           &.e-dropdown-btn {
-            color: $tbar-active-font-color;
+            color: theme-vars.$tbar-active-font-color;
           }
         }
       }
@@ -419,7 +426,7 @@
       @if $skin-name == 'bootstrap5' or $skin-name == 'bootstrap5.3' or $skin-name == 'FluentUI' {
         &.e-active,
         &:focus {
-          color: $btn-flat-active-color;
+          color: btn-vars.$btn-flat-active-color;
         }
       }
     }
@@ -430,7 +437,7 @@
           @if $skin-name == 'Material3' {
             background: $spreadsheet-ribbon-item-active-background-color;
             border-color: $spreadsheet-ribbon-item-active-border-color;
-            border-radius: 4px;
+            border-radius: $spread-border-radius-4;
           }
           @if $skin-name == 'fluent2' {
             & .e-btn-icon.e-icons:not(.e-caret) {
@@ -457,7 +464,7 @@
         }
         &:focus:not(.e-active) {
           @if $skin-name == 'Material3' {
-            border-radius: 4px;
+            border-radius: $spread-border-radius-4;
           }
           @if $skin-name == 'fluent2' {
             & .e-btn-icon.e-icons:not(.e-caret) {
@@ -471,10 +478,10 @@
           background: transparent;
         }
         border-color: transparent;
-        box-shadow: $tbar-btn-box-shadow;
+        box-shadow: theme-vars.$tbar-btn-box-shadow;
         @if $skin-name != 'Material3' {
           background-color: transparent;
-          color: $tbar-default-font;
+          color: theme-vars.$tbar-default-font;
         }
         @if $skin-name == 'bootstrap5.3' or $skin-name == 'tailwind3' {
           &:not(:hover):not(.e-active):not(.e-overlay) .e-btn-icon.e-icons {
@@ -497,7 +504,7 @@
             }
           }
           @if $skin-name == 'Material3' {
-            border-radius: 4px;
+            border-radius: $spread-border-radius-4;
           }
           @if $skin-name == 'bootstrap5' or $skin-name == 'bootstrap5.3' {
             color: $spreadsheet-ribbon-item-hover-color;
@@ -509,7 +516,7 @@
             }
           }
           @if $skin-name == 'bootstrap4' {
-            color: $tbar-hover-font;
+            color: theme-vars.$tbar-hover-font;
 
             & .e-icons,
             &.e-dropdown-btn .e-tbar-btn-text {
@@ -523,7 +530,7 @@
             background: $spreadsheet-ribbon-item-active-background-color;
             border-color: $spreadsheet-ribbon-item-active-border-color;
             @if $skin-name == 'Material3' {
-              border-radius: 4px;
+              border-radius: $spread-border-radius-4;
             }
           }
           @if $skin-name == 'fluent2' {
@@ -544,7 +551,7 @@
             }
           }
           @if $skin-name == 'bootstrap4' {
-            color: $tbar-hover-font;
+            color: theme-vars.$tbar-hover-font;
           }
         }
 
@@ -560,7 +567,7 @@
           @if $skin-name == 'Material3' {
             background: $spreadsheet-ribbon-item-active-background-color;
             border-color: $spreadsheet-ribbon-item-active-border-color;
-            border-radius: 4px;
+            border-radius: $spread-border-radius-4;
           }
           @if $skin-name == 'fluent2' {
             & .e-btn-icon.e-icons:not(.e-caret) {
@@ -579,7 +586,7 @@
       @if $skin-name == 'bootstrap4' or $skin-name == 'highcontrast' {
         &.e-active,
         &:focus {
-          color: $tbar-active-font-color;
+          color: theme-vars.$tbar-active-font-color;
 
           & .e-icons,
           &.e-dropdown-btn .e-tbar-btn-text {
@@ -590,7 +597,7 @@
       @if $skin-name == 'bootstrap5' {
         &.e-active,
         &:focus {
-          color: $tbar-active-icon-color;
+          color: theme-vars.$tbar-active-icon-color;
 
           & .e-icons,
           &.e-dropdown-btn .e-tbar-btn-text {
@@ -600,7 +607,7 @@
 
         &.e-split-colorpicker {
           @if $skin-name == 'bootstrap5' or $skin-name == 'bootstrap5.3' {
-            color: $tbar-default-font;
+            color: theme-vars.$tbar-default-font;
           }
         }
       }
@@ -636,7 +643,7 @@
           color: $formula-bar-color;
         }
         @else {
-          color: $expand-icon-color;
+          color: ribbon-vars.$expand-icon-color;
         }
       }
 
@@ -1030,7 +1037,7 @@
       & .e-border-style {
         & .e-menu-item {
           &::after {
-            border-bottom-color: $cmenu-color;
+            border-bottom-color: cmenu-vars.$cmenu-color;
           }
         }
       }
@@ -2177,7 +2184,7 @@
         }
         @else if $skin-name == 'fluent2' or $skin-name == 'bootstrap5.3' or $skin-name == 'tailwind3' {
           background-color: $spreadsheet-chart-icon-bg-color;
-          border-radius: 4px;
+          border-radius: $spreadsheet-chart-icon-border-radius;
         }
         @else {
           background-color: $ele-hover-color;
@@ -2204,7 +2211,7 @@
 
   @if $skin-name != 'fluent2' and $skin-name != 'tailwind3' {
     .e-spreadsheet .e-ribbon .e-content .e-toolbar .e-toolbar-items .e-toolbar-item.e-overlay .e-icons {
-      color: $tbar-default-icon-color;
+      color: theme-vars.$tbar-default-icon-color;
     }
   }
 
@@ -2241,7 +2248,7 @@
 
     &.e-align-ddb ul .e-item:not(.e-selected) .e-menu-icon {
       @if $skin-name != 'fluent2' and $skin-name != 'bootstrap5.3' {
-        color: $tbar-default-icon-color;
+        color: theme-vars.$tbar-default-icon-color;
       }
     }
 

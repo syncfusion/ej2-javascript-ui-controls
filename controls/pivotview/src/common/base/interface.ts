@@ -3,8 +3,8 @@ import { IDrilledItem, IStringIndex, ICalculatedFields, ICalculatedFieldSettings
 import { IFilter } from '../../base/engine';
 import { Mode, SelectionMode, PdfBorderStyle, AggregateTypes, ExportView } from '../base/enum';
 import { L10n } from '@syncfusion/ej2-base';
-import { Grid, ExcelStyle, CellSelectionMode, SelectionType, CheckboxSelectionType, PdfExportProperties } from '@syncfusion/ej2-grids';
-import { Column, ExcelExportProperties } from '@syncfusion/ej2-grids';
+import { Grid, ExcelStyle, CellSelectionMode, SelectionType, CheckboxSelectionType, PdfExportProperties, Hyperlink } from '@syncfusion/ej2-grids';
+import { Column, ExcelExportProperties as GridExcelExportProperties } from '@syncfusion/ej2-grids';
 import { CellSelectingEventArgs, ColumnModel, ExcelHAlign, ExcelVAlign } from '@syncfusion/ej2-grids';
 import { PdfStandardFont, PdfTrueTypeFont, PdfGridCell, PdfPageOrientation, PdfGridColumn } from '@syncfusion/ej2-pdf-export';
 import { SeriesModel, ExportType, Axis, IChartEventArgs, FontModel, Alignment } from '@syncfusion/ej2-charts';
@@ -649,16 +649,41 @@ export interface IAction {
 }
 
 /**
- * Defines the row on excel export
+ * Defines the configuration for a row in Excel export.
+ *
+ * This interface specifies the row index, height, and the collection of cells to be rendered
+ * in the exported Excel sheet. It is used to customize the layout and content of each row
+ * during Pivot Table export.
+ *
  */
 export interface ExcelRow {
     /**
-     * Defines the index for cells
+     * Specifies the index of the row in the Excel sheet.
+     * This determines the vertical position of the row during export.
+     *
+     * @value
+     * @example
+     * index: 5
      */
     index?: number;
-    /**  Defines the cells in a row */
+    /**
+     * Defines the collection of cells to be included in the row.
+     * Each cell can contain content, style, and formatting options.
+     *
+     * @value
+     * @example
+     * cells: [{ value: 'Total', style: { fontColor: '#000000' } }]
+     */
     cells?: ExcelCell[];
-
+    /**
+     * Specifies the height of the Excel row.
+     * This controls the vertical spacing of the row in the Excel sheet.
+     *
+     * @value
+     * @example
+     * height: 25
+     */
+    height?: number;
 }
 
 /**
@@ -673,7 +698,93 @@ export interface ExcelColumn {
      * Defines the width of each column
      */
     width: number;
+}
 
+/**
+ * Represents the configuration for embedding an image into an Excel cell during Excel export.
+ *
+ * This interface allows you to specify the image source, dimensions, and placement coordinates
+ * within the Excel sheet. The image is inserted using a base64-encoded string and can span
+ * across multiple rows and columns based on the defined layout.
+ *
+ * @example
+ * ```ts
+ * const imageConfig: ExcelImage = {
+ *   image: "iVBORw0KGgoAAAANSUhEUgAA...",
+ *   height: 50,
+ *   width: 50,
+ *   row: 2,
+ *   column: 3,
+ *   lastRow: 5,
+ *   lastColumn: 6
+ * };
+ * ```
+ *
+ */
+export interface ExcelImage {
+    /**
+     * A base64-encoded string representing the image to be embedded in the Excel worksheet.
+     * The string must contain only the raw base64 data, without any MIME type prefix (e.g., no `data:image/png;base64,`).
+     *
+     * @value
+     * @example
+     * image: "iVBORw0KGgoAAAANSUhEUgAA..."
+     */
+    image?: string;
+    /**
+     * Specifies the height of the image in Excel cell.
+     * This determines how tall the image will appear in the exported Excel sheet.
+     *
+     * @value
+     * @example
+     * height: 50
+     */
+    height?: number;
+    /**
+     * Specifies the width of the image in Excel cell.
+     * This determines how wide the image will appear in the exported Excel sheet.
+     *
+     * @value
+     * @example
+     * width: 50
+     */
+    width?: number;
+    /**
+     * Defines the starting row index in the Excel sheet where the image will be placed.
+     * This indicates the top boundary of the image.
+     *
+     * @value
+     * @example
+     * row: 1
+     */
+    row?: number;
+    /**
+     * Defines the starting column index in the Excel sheet where the image will be placed.
+     * This indicates the left boundary of the image.
+     *
+     * @value
+     * @example
+     * column: 2
+     */
+    column?: number;
+    /**
+     * Defines the ending row index that the image should span to vertically.
+     * This allows the image to cover multiple rows if needed.
+     *
+     * @value
+     * @example
+     * lastRow: 4
+     */
+    lastRow?: number;
+    /**
+     * Defines the ending column index that the image should span to horizontally.
+     * This allows the image to cover multiple columns if needed.
+     *
+     * @value
+     * @example
+     * lastColumn: 5
+     */
+    lastColumn?: number;
 }
 
 /**
@@ -714,6 +825,14 @@ export interface ExcelCell {
     value?: string | boolean | number | Date;
     /** Defines the style of the cell */
     style?: ExcelStyles;
+    /**
+     * Adds a hyperlink to the cell, enabling clickable navigation to external URLs or internal references.
+     *
+     * @value
+     * @example
+     * hyperlink: { target: 'https://example.com', displayText: 'Click Here' }
+     */
+    hyperlink?: Hyperlink;
 }
 
 /**
@@ -1406,4 +1525,23 @@ export interface ExportCompleteEventArgs {
     promise?: Promise<{
         blobData: Blob;
     }>;
+}
+
+/**
+ * The event argument that holds configuration details for exporting Pivot Table data to Excel.
+ *
+ * This interface extends the base `GridExcelExportProperties` and includes additional options
+ * specific to Pivot Table export, such as targeting multiple Pivot Table instances by ID.
+ *
+ */
+export interface ExcelExportProperties extends GridExcelExportProperties {
+    /**
+     * Defines the IDs of the Pivot Table instances to be exported to Excel.
+     * Multiple Pivot Tables can be exported by specifying their element IDs in this array.
+     *
+     * @value
+     * @example
+     * pivotTableIds: ['PivotView1', 'PivotView2']
+     */
+    pivotTableIds ?: string[]
 }

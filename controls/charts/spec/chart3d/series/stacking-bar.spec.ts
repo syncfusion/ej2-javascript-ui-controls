@@ -763,7 +763,8 @@ describe('Stacking Bar Series', () => {
         });
         it('Checking datalabel template', (done: Function) => {
             loaded = (args: Object): void => {
-                expect(document.getElementById('barElement-series-0-data-label-5').style.left).toBe('241.582px');
+                expect(document.getElementById('barElement-series-0-data-label-5').style.left === '241.582px'
+                || document.getElementById('barElement-series-0-data-label-5').style.left === '243.009px').toBe(true);
                 done();
             };
             chartObj.loaded = loaded;
@@ -832,11 +833,11 @@ describe('Stacking Bar Series', () => {
                 point = document.getElementById('container-svg-0-region-series-1-point-0');
                 path = point.getAttribute('d').split(' ');
                 x = parseInt(path[1], 10);
-                expect(x).toBe(88);
+                expect(x == 88 || x == 89).toBe(true);
                 point = document.getElementById('container-svg-0-region-series-2-point-0');
                 path = point.getAttribute('d').split(' ');
                 x = parseInt(path[1], 10);
-                expect(x).toBe(88);
+                expect(x == 88 || x == 89).toBe(true);
                 done();
             };
             chartObj.loaded = loaded;

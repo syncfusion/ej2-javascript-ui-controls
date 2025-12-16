@@ -1861,7 +1861,6 @@ describe('Batch Editing module', () => {
             gridObj.cellSave = cellSave;
             gridObj.keyboardModule.keyAction({ action: 'enter', preventDefault: preventDefault, target: cell } as any);
         });
-
         it('EJ2-846554-Script error when trying to edit after sorting in presence of validation message in Batch mode', () => {
             gridObj.cellSave = null;
             (gridObj.editModule as any).editModule.editCell(0, 'CustomerID');
@@ -1881,7 +1880,6 @@ describe('Batch Editing module', () => {
             gridObj.sortColumn('CustomerID', 'Ascending');
             expect(gridObj.editModule.formObj).toBeUndefined;
         });
-
         it('EJ2-849429-Cell changes not saving when clicking outside grid', (done: Function) => {
             let cellSave = (args?: any): void => { // must be execute after focus out
                 gridObj.cellSave = null;
@@ -1891,7 +1889,6 @@ describe('Batch Editing module', () => {
             gridObj['focusOutHandler']({target: null, relatedTarget: null} as any);                
             setTimeout(function () { done(); }, 300);
         });
-
         afterAll(() => {
             destroy(gridObj);
             gridObj = null;

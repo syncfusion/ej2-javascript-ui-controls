@@ -1,20 +1,22 @@
+@use 'ej2-base/styles/common/mixin' as *;
+@use './theme-variables' as *;
 @mixin fluent2-small-round-btn {
   @if $theme-name == 'fluent2' {
-    height: 32px;
-    width: 32px;
-    border-radius: 20px;
+    height: $qrybldr-small-round-btn-height;
+    width: $qrybldr-small-round-btn-width;
+    border-radius: $qrybldr-small-round-btn-border-radius;
     border-color: transparent;
-    line-height: 14px;
+    line-height: $qrybldr-small-round-btn-line-height;
   }
 }
 
 @mixin fluent2-bigger-small-round-btn {
   @if $theme-name == 'fluent2' {
-    height: 38px;
-    width: 38px;
-    border-radius: 20px;
+    height: $qrybldr-bigger-small-round-btn-height;
+    width: $qrybldr-bigger-small-round-btn-width;
+    border-radius: $qrybldr-bigger-small-round-btn-border-radius;
     border-color: transparent;
-    line-height: 0px;
+    line-height: $qrybldr-bigger-small-round-btn-line-height;
   }
 }
 @include export-module('querybuilder-layout') {
@@ -34,7 +36,7 @@
     }
 
     & .e-cloneproperties.e-group-body {
-      padding: 0 !important; /* stylelint-disable-line declaration-no-important */
+      padding: $qryblr-zero-padding-margin !important; /* stylelint-disable-line declaration-no-important */
     }
 
     & .e-dragclone.e-cloneproperties {
@@ -47,11 +49,11 @@
       }
 
       & .e-rule-value-delete {
-        margin-top: 10px;
+        margin-top: $qrybldr-dragclone-value-margin-top;
       }
 
       & .e-drag-qb-rule {
-        padding: 18px 5px;
+        padding: $qrybldr-dragclone-drag-rule-padding;
         @if $skin-name == 'fluent2' {
           color: $icon-color;
         }
@@ -65,7 +67,7 @@
 
     & .e-dragclone .e-rule-field {
       display: flex;
-      padding: 10px;
+      padding: $qrybldr-dragclone-rule-padding;
     }
 
     & .e-dragclone.e-notallowedcur,
@@ -75,34 +77,34 @@
 
     & .e-group-body .e-drag-qb-rule,
     & .e-dragclone .e-drag-qb-rule {
-      padding: 15px 3px 15px 11px;
+      padding: $qrybldr-dragclone-qb-rule-padding;
       vertical-align: middle;
       font-size: $qrybldr-drag-icon-font-size;
       color: $qryblr-drag-icon-color;
     }
 
     & .e-group-header .e-drag-qb-rule {
-      margin: 1px;
+      margin: $qrybldr-dragclone-qb-rule-margin;
       padding: $qrybldr-drag-grp-icon-pad !important; /* stylelint-disable-line declaration-no-important */
     }
 
     & .e-drag-rule-bottom-line {
-      border-bottom: 2px solid $qrybldr-btngroup-active-bgcolor !important; /* stylelint-disable-line declaration-no-important */
+      border-bottom: $qrybldr-drag-rule-bottom-line-border !important; /* stylelint-disable-line declaration-no-important */
     }
 
     & .e-drag-rule-top-line {
-      border-top: 2px solid $qrybldr-btngroup-active-bgcolor !important; /* stylelint-disable-line declaration-no-important */
+      border-top: $qrybldr-drag-rule-bottom-line-border !important; /* stylelint-disable-line declaration-no-important */
     }
 
     &.e-rtl {
       & .e-btn-group.e-rtl .e-btn.e-btngroup-and-lbl.e-small {
         &.e-not {
           @if $skin-name == 'Material3' {
-            border: 1px solid $secondary-outline-border;
+            border: $qryblder-border solid $secondary-outline-border;
           }
           @else {
-            border-bottom-right-radius: 0;
-            border-top-right-radius: 0;
+            border-bottom-right-radius: $qrybldr-zero-border-radius;
+            border-top-right-radius: $qrybldr-zero-border-radius;
           }
         }
 
@@ -126,16 +128,16 @@
 
       & .e-btn-group.e-rtl .e-qb-toggle.e-btn.e-small {
         @if $skin-name == 'Material3' {
-          border: 1px solid $secondary-outline-border;
-          border-bottom-right-radius: 4px;
-          border-bottom-left-radius: 0;
-          border-top-left-radius: 0;
-          border-top-right-radius: 4px;
+          border: $qryblder-border solid $secondary-outline-border;
+          border-bottom-right-radius: $qrybldr-btn-rtl-right-radius;
+          border-bottom-left-radius: $qrybldr-btn-rtl-left-radius;
+          border-top-left-radius: $qrybldr-btn-rtl-left-radius;
+          border-top-right-radius: $qrybldr-btn-rtl-right-radius;
         }
         @else {
-          border-bottom-left-radius: 0;
-          border-top-left-radius: 0;
-          border-top-right-radius: 0;
+          border-bottom-left-radius: $qrybldr-zero-border-radius;
+          border-top-left-radius: $qrybldr-zero-border-radius;
+          border-top-right-radius: $qrybldr-zero-border-radius;
         }
 
         &.e-not-readonly {
@@ -187,7 +189,7 @@
       }
 
       & .e-rule-list > .e-group-container:first-child {
-        margin-top: 0;
+        margin-top: $qryblr-zero-padding-margin;
       }
 
       & .e-rule-list > ::after,
@@ -261,7 +263,7 @@
     }
 
     & .e-rule-list > .e-group-container:first-child {
-      margin-top: 0;
+      margin-top: $qryblr-zero-padding-margin;
     }
 
     & .e-rule-list .e-group-container::before {
@@ -279,27 +281,27 @@
 
       & .e-qb-toggle.e-btn.e-small {
         @if $skin-name == 'Material3' {
-          border: 1px solid $secondary-outline-border;
+          border: $qryblder-border solid $secondary-outline-border;
           border-bottom-right-radius: $qrybldr-btngrp-brdr-radius;
-          border-bottom-left-radius: 4px;
-          border-top-left-radius: 4px;
+          border-bottom-left-radius: $qrybldr-toggle-btn-left-radius;
+          border-top-left-radius: $qrybldr-toggle-btn-left-radius;
           border-top-right-radius: $qrybldr-btngrp-brdr-radius;
         }
         @else {
-          border-bottom-right-radius: 0;
+          border-bottom-right-radius: $qrybldr-zero-border-radius;
           border-radius: $qrybldr-btngrp-brdr-radius;
-          border-top-right-radius: 0;
+          border-top-right-radius: $qrybldr-zero-border-radius;
         }
 
         &.e-not-readonly {
           @if $skin-name == 'Material3' {
-            border: 1px solid $secondary-outline-border;
+            border: $qryblder-border solid $secondary-outline-border;
             border-bottom-left-radius: $qrybldr-btngrp-brdr-radius;
             border-top-left-radius: $qrybldr-btngrp-brdr-radius;
           }
           @else {
-            border-bottom-right-radius: 0;
-            border-top-right-radius: 0;
+            border-bottom-right-radius: $qrybldr-zero-border-radius;
+            border-top-right-radius: $qrybldr-zero-border-radius;
           }
           pointer-events: none;
         }
@@ -316,9 +318,9 @@
 
         & .e-btn.e-small {
           @if $theme-name == 'fluent2' {
-            font-size: 14px;
-            line-height: 18.4px;
-            padding: 6px 12px;
+            font-size: $qry-bldr-btn-small-font-size;
+            line-height: $qry-bldr-btn-small-line-height;
+            padding: $qry-bldr-btn-small-padding;
           }
         }
       }
@@ -332,12 +334,12 @@
       & .e-btn.e-btngroup-and-lbl.e-small {
         &.e-not {
           @if $skin-name == 'Material3' {
-            border: 1px solid $secondary-outline-border;
-            border-bottom-right-radius: 0;
-            border-top-right-radius: 0;
+            border: $qryblder-border solid $secondary-outline-border;
+            border-bottom-right-radius: $qrybldr-btn-rtl-left-radius;
+            border-top-right-radius: $qrybldr-btn-rtl-left-radius;
           }
-          border-bottom-left-radius: 0;
-          border-top-left-radius: 0;
+          border-bottom-left-radius: $qrybldr-zero-border-radius;
+          border-top-left-radius: $qrybldr-zero-border-radius;
         }
 
         &.e-readonly-and {
@@ -352,11 +354,11 @@
 
       & .e-btn.e-btngroup-or-lbl.e-small {
         @if $skin-name == 'Material3' {
-          border: 1px solid $secondary-outline-border;
+          border: $qryblder-border solid $secondary-outline-border;
         }
         @else {
-          border-bottom-left-radius: 0;
-          border-top-left-radius: 0;
+          border-bottom-left-radius: $qrybldr-zero-border-radius;
+          border-top-left-radius: $qrybldr-zero-border-radius;
         }
 
         &.e-readonly-or-not {
@@ -366,13 +368,13 @@
 
         &.e-readonly-or {
           @if $skin-name == 'Material3' {
-            border: 1px solid $secondary-outline-border;
+            border: $qryblder-border solid $secondary-outline-border;
             border-bottom-left-radius: $qrybldr-btngrp-brdr-radius;
             border-top-left-radius: $qrybldr-btngrp-brdr-radius;
           }
           @else {
-            border-bottom-left-radius: 0;
-            border-top-left-radius: 0;
+            border-bottom-left-radius: $qrybldr-zero-border-radius;
+            border-top-left-radius: $qrybldr-zero-border-radius;
           }
         }
 
@@ -426,7 +428,7 @@
 
     & .e-rule-list {
       padding: $qrybldr-rulelist;
-      padding-bottom: 0;
+      padding-bottom: $qryblr-zero-padding-margin;
     }
 
     & .e-group-container {
@@ -439,12 +441,12 @@
     }
 
     & .e-rule-list > .e-group-container {
-      padding: 0;
+      padding: $qryblr-zero-padding-margin;
       padding-bottom: $grpcon-padding;
     }
 
     & .e-group-container .e-rule-list > .e-group-container {
-      padding-bottom: 0;
+      padding-bottom: $qryblr-zero-padding-margin;
     }
 
     & .e-group-body {
@@ -457,22 +459,22 @@
         padding-right: $hrmode-ruledlt-mrgn;
 
         &.e-prev-joined-rule {
-          border-bottom: 0;
-          border-bottom-left-radius: 0;
-          border-bottom-right-radius: 0;
+          border-bottom: $qryblr-zero-padding-margin;
+          border-bottom-left-radius: $qrybldr-zero-border-radius;
+          border-bottom-right-radius: $qrybldr-zero-border-radius;
         }
 
         &.e-joined-rule {
-          border-top-left-radius: 0;
-          border-top-right-radius: 0;
+          border-top-left-radius: $qrybldr-zero-border-radius;
+          border-top-right-radius: $qrybldr-zero-border-radius;
           @if $skin-name == 'Material3' {
             border-top-style: $qrybldr-joined-rule-border-style;
           }
           @else {
             border-top-style: $qrybldr-rule-list-border-style;
           }
-          border-top-width: 1px;
-          margin-top: 0;
+          border-top-width: $qryblder-border;
+          margin-top: $qryblr-zero-padding-margin;
         }
 
         &.e-separate-rule {
@@ -502,7 +504,7 @@
         }
 
         & .e-rule-value.e-custom-value {
-          width: 200px;
+          width: $qrybldr-rule-value-width;
         }
 
         & .e-operator,
@@ -551,7 +553,7 @@
         @if $skin-name != 'Material3' {
           padding-right: $device-rulecon-right-padding;
         }
-        right: 0;
+        right: $qryblr-zero-padding-margin;
       }
 
       & .e-rule-field,
@@ -569,7 +571,7 @@
 
       & .e-vertical-mode .e-removerule.e-rule-delete {
         box-shadow: $ruledelete-shadow;
-        right: 0;
+        right: $qryblr-zero-padding-margin;
 
         &.e-readonly {
           display: none;
@@ -610,13 +612,13 @@
     & .e-group-body .e-rule-container.e-vertical-mode .e-clone-rule,
     &.e-device .e-group-body .e-rule-container .e-lock-rule,
     &.e-device .e-group-body .e-rule-container .e-clone-rule {
-      margin-bottom: 12px;
+      margin-bottom: $qrybldr-group-body-rule-margin;
     }
 
     & .e-group-body .e-rule-delete,
     & .e-group-body .e-lock-rule,
     & .e-group-body .e-clone-rule {
-      margin-left: 12px;
+      margin-left: $qrybldr-group-body-rule-margin;
     }
 
     & .e-delete-icon::before {
@@ -628,7 +630,7 @@
     }
 
     & .e-edit-rule {
-      right: 0;
+      right: $qryblr-zero-padding-margin;
     }
 
     & .e-collapse-rule {
@@ -644,12 +646,12 @@
       font-size: $qrybldr-collapse-font-size;
       padding: $qrybldr-collapse-padding;
       position: $qrybldr-clspe-rule-pos;
-      right: 0;
-      top: 0;
+      right: $qryblr-zero-padding-margin;
+      top: $qryblr-zero-padding-margin;
       @if $skin-name == 'tailwind3' {
         border: none;
-        right: 7px;
-        border-radius: 20px;
+        right: $qry-bldr-collapse-rule-right;
+        border-radius: $qry-bldr-collapse-rule-border-radius;
       }
     }
 
@@ -657,7 +659,7 @@
       border-style: none;
       font-family: $font-family;
       font-size: $qrybldr-smrytxt-font-size;
-      line-height: 1.5em;
+      line-height: $qrybldr-summary-line-height;
       padding: $qrybldr-summary-padding;
       resize: none;
       width: $qrybldr-summary-text-width;
@@ -683,92 +685,78 @@
 
     &.e-multi-connector {
       & .e-rule-list > .e-btn-group {
-        margin-top: 10px;
-        margin-bottom: 10px;
+        margin-top: $qry-multi-list-margin-top;
+        margin-bottom: $qry-multi-list-margin-bottom;
       }
 
       & .e-qb-toggle {
-        margin-left: 3px;
-        margin-right: 10px;
+        margin-left: $qry-multi-list-margin-left;
+        margin-right: $qry-multi-list-margin-right;
       }
 
       & .e-group-container:not(:first-child) {
-        padding: 12px !important; /* stylelint-disable-line declaration-no-important */
-        border: 1px solid;
-        margin-top: 0;
-        border-radius: 4px;
+        padding: $qrybldr-group-container-not-padding !important; /* stylelint-disable-line declaration-no-important */
+        border: $qrybldr-group-container-not-border;
+        margin-top: $qryblr-zero-padding-margin;
+        border-radius: $qrybldr-group-container-not-border-radius;
       }
 
       & .e-rule-list > .e-group-container:first-child {
-        padding: 12px !important; /* stylelint-disable-line declaration-no-important */
-        border: 1px solid;
-        border-radius: 4px;
+        padding: $qrybldr-group-container-not-padding !important; /* stylelint-disable-line declaration-no-important */
+        border: $qrybldr-group-container-not-border;
+        border-radius: $qrybldr-group-container-not-border-radius;
       }
 
       & .e-group-container:not(:first-child)::before,
       & .e-rule-list > .e-group-container:first-child::before{
-        height: calc(50% - 8px);
+        height: $qrybldr-group-container-height;
       }
 
       & .e-group-container::after {
-        height: calc(50% + 17px);
-        top: calc(50% - 17px);
+        height: $qrybldr-group-container-after-height;
+        top: $qrybldr-group-container-after-top;
       }
 
       & .e-btn-group + .e-group-container {
-        margin-top: 0;
+        margin-top: $qryblr-zero-padding-margin;
       }
 
       & .e-group-action .e-btn:first-child {
-        margin-left: 0;
+        margin-left: $qryblr-zero-padding-margin;
       }
 
       & .e-qb-toggle-btn {
-        margin-right: 6px !important; /* stylelint-disable-line declaration-no-important */
+        margin-right: $qry-toggle-btn-margin-right !important; /* stylelint-disable-line declaration-no-important */
       }
 
       & .e-btn-group {
         & .e-btn.e-small {
           @if $theme-name == 'fluent2' {
-            font-size: 14px;
-            line-height: 18.4px;
-            padding: 6px 12px;
+            font-size: $qry-bldr-btn-grp-font-size;
+            line-height: $qry-bldr-btn-grp-line-height;
+            padding: $qry-bldr-btn-grp-padding;
           }
         }
       }
 
       & .e-multi-connector-init-group {
-        height: 40px;
+        height: $qry-multi-init-group-height;
       }
 
       & .e-btn-group::after,
       & .e-btn-group::before {
-        left: -12px;
-        width: 8px;
+        left: $qry-btn-group-before-left;
+        width: $qrybldr-btn-group-width;
       }
 
       & .e-rule-list .e-group-container::before,
       & .e-rule-list .e-group-container::after {
-        left: -12px !important; /* stylelint-disable-line declaration-no-important */
-        @if $skin-name == 'Material3' {
-          left: -13px !important; /* stylelint-disable-line declaration-no-important */
-        }
-        
-        @if $skin-name == 'material' {
-          left: -12.8px !important; /* stylelint-disable-line declaration-no-important */
-        }
+        left: $qry-btn-rule-group-before-left !important; /* stylelint-disable-line declaration-no-important */
       }
 
       & .e-rule-list .e-btn-group::before,
       & .e-rule-list .e-btn-group::after {
-        left: -11.2px !important; /* stylelint-disable-line declaration-no-important */
-        @if $skin-name == 'Material3' {
-          left: -12.5px !important; /* stylelint-disable-line declaration-no-important */
-        }
-
-        @if $skin-name == 'material' {
-          left: -12px !important; /* stylelint-disable-line declaration-no-important */
-        }
+        left: $qry-btn-rule-list-before-left !important; /* stylelint-disable-line declaration-no-important */
       }
 
       & .e-qb-toggle-btn {
@@ -776,7 +764,7 @@
       }
 
       & .e-btn-group + .e-rule-container {
-        margin-top: 0 !important; /* stylelint-disable-line declaration-no-important */
+        margin-top: $qryblr-zero-padding-margin !important; /* stylelint-disable-line declaration-no-important */
       }
     }
   }

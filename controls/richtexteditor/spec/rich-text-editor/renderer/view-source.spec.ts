@@ -3,7 +3,7 @@
  */
 import { Browser, L10n } from "@syncfusion/ej2-base";
 import { RichTextEditor } from "../../../src/rich-text-editor/index";
-import { renderRTE, destroy } from './../render.spec';
+import { renderRTE, destroy, setCursorPoint } from './../render.spec';
 
 describe('Toolbar - view html', () => {
     describe('div content source code', () => {
@@ -366,6 +366,47 @@ describe('Toolbar - view html', () => {
             });
         });
 
+        afterAll(() => {
+            destroy(rteObj);
+        });
+    });
+    describe('989122: Undo not working properly when loading content from the Source code view.', () => {
+        let rteObj: RichTextEditor;
+        let innerHTML: string = `<p>data</p>`;
+        let controlId: string;
+        beforeAll((done: Function) => {
+            rteObj = renderRTE({
+                value: innerHTML,
+                toolbarSettings: {
+                    items: ['SourceCode','Bold', 'Undo']
+                },
+                enableHtmlSanitizer: false
+            });
+            controlId = rteObj.element.id;
+            done();
+        });
+        it('Undo not working properly', (done) => {
+            let item: HTMLElement = rteObj.element.querySelector('#' + controlId + '_toolbar_SourceCode');
+            item.click();
+            setTimeout(() => {
+                let textarea: HTMLTextAreaElement = rteObj.element.querySelector(".e-rte-srctextarea");
+                textarea.value = `<p>Testing</p>`;
+                let item = rteObj.element.querySelector('#' + controlId + '_toolbar_Preview') as HTMLElement;
+                item.click();
+                setTimeout(() => {
+                    let node: any = rteObj.inputElement.querySelector('p').childNodes[0];
+                    setCursorPoint(node, 3);
+                    let id = rteObj.getID();
+                    const elem = (rteObj as any).element.querySelector('#' + id + '_toolbar_Bold');
+                    elem.click();
+                    expect((rteObj as any).inputElement.innerHTML === '<p><strong>Testing</strong></p>').toBe(true);
+                    const undo: HTMLElement = (rteObj as any).element.querySelector('#' + id + '_toolbar_Undo');
+                    undo.click();
+                    expect((rteObj as any).inputElement.innerHTML === '<p>Testing</p>').toBe(true);
+                    done();
+                });
+            });
+        });
         afterAll(() => {
             destroy(rteObj);
         });

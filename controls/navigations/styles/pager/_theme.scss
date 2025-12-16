@@ -1,3 +1,5 @@
+@use 'ej2-base/styles/common/mixin' as *;
+@use './theme-variables' as *;
 @mixin color-opacity-styles($color, $opacity) {
   color: $color;
   opacity: $opacity;
@@ -48,7 +50,7 @@
     .e-pager-default:hover {
       @include background-color-opacity-styles($pager-hover-bg-color, $pager-hover-color, $pager-content-opacity);
       @if $pager-skin == 'material3' {
-        border-radius: 4px;
+        border-radius: $pager-border-radius-4;
       }
     }
 
@@ -138,7 +140,7 @@
         border-right-color: $primary-light;
       }
       @if $pager-skin == 'material3' {
-        border-radius: 4px;
+        border-radius: $pager-border-radius-4;
       }
       @include background-color-opacity-styles($pager-active-bg-color, $pager-active-color, 1);
     }

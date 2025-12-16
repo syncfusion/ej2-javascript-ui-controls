@@ -1,4 +1,4 @@
-import { Property, ChildProperty } from '@syncfusion/ej2-base';import { SaveFormat, DisplayLayoutOptions, ActionOnScroll } from '../common/types';import { ToolbarItems, ToolbarConfigItems, ColorModeType } from '../common/enum';import { ToolbarType } from '../common/enum';import { IToolbarItems, IDropDownItemModel, ICodeBlockLanguageModel, IToolsItemConfigs, IListDropDownModel } from '../common/interface';import { backgroundColor, fontColor, fontFamily, fontSize, formatItems, predefinedItems, TableStyleItems, numberFormatList, bulletFormatList, codeBlockList } from '../models/items';import { ToolbarPosition } from '../editor-manager/base/enum';
+import { Property, ChildProperty } from '@syncfusion/ej2-base';import { SaveFormat, DisplayLayoutOptions, ActionOnScroll } from '../common/types';import { ToolbarItems, ToolbarConfigItems, ColorModeType } from '../common/enum';import { ToolbarType } from '../common/enum';import { IToolbarItems, IDropDownItemModel, ICodeBlockLanguageModel, IToolsItemConfigs, IListDropDownModel } from '../common/interface';import { backgroundColor, fontColor, fontFamily, fontSize, formatItems, predefinedItems, TableStyleItems, numberFormatList, bulletFormatList, codeBlockList, lineHeight } from '../models/items';import { ToolbarPosition } from '../editor-manager/base/enum';
 
 /**
  * Interface for a class ToolbarSettings
@@ -655,6 +655,34 @@ export interface FontSizeModel {
      * @default fontSize
      */
     items?: IDropDownItemModel[];
+
+}
+
+/**
+ * Interface for a class LineHeight
+ */
+export interface LineHeightModel {
+
+    /**
+     * Specifies the default line height applied to the selected block element.
+     *
+     * @default null
+     */
+    default?: string;
+
+    /**
+     * Specifies the set of line height options displayed in the dropdown.
+     *
+     * @default lineHeight
+     */
+    items?: IDropDownItemModel[];
+
+    /**
+     * When enabled, the editor retains any numeric line height values found in pasted or imported content, even if they are not in the predefined lineHeight.items list.
+     * These values appear as "Custom: {value}" options in the dropdown.
+     * @default false
+     */
+    supportAllValues?: boolean;
 
 }
 

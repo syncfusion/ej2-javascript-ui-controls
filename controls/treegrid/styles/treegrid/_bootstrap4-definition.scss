@@ -1,3 +1,5 @@
+@use 'ej2-base/styles/definition/bootstrap4' as *;
+@forward 'ej2-base/styles/definition/bootstrap4';
 $treegrid-right-arrow-icon: '\e70b' !default;
 $treegrid-toolbar-expand-icon: '\e7db' !default;
 $treegrid-toolbar-collapse-icon: '\e7dc' !default;

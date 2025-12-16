@@ -1,3 +1,8 @@
+@use 'ej2-base/styles/definition/bds' as *;
+@use 'ej2-buttons/styles/button/bds-definition' as *;
+@forward 'ej2-base/styles/definition/bds';
+@forward 'ej2-buttons/styles/button/bds-definition';
+
 //layout variables
 $drop-down-btn-arrow-content: '\e706' !default;
 $drop-down-btn-vertical-btn-padding: 6px 12px !default;
@@ -51,6 +56,15 @@ $drop-down-btn-li-selection-bgcolor: $flyout-bg-color-selected !default;
 $drop-down-btn-li-selection-font-color: $content-text-color !default;
 $drop-down-btn-menu-icon-color: $secondary-text-color !default;
 $drop-down-btn-menu-icon-disabled-color: $secondary-text-color-disabled !default;
+$drop-down-btn-line-height: 1 !default;
+$dd-btn-zero-margin-padding: 0 !default;
+$dd-menu-height: 1px !default;
+$dd-menu-icon-width: 1em !default;
+$dd-menu-width: 1px !default;
+$dd-auto-height: auto !default;
+$dd-bgr-seperator-line-height: normal !default;
+
+$dd-full-width: 100% !default;
 
 .e-dropdown-popup {
   position: absolute;

@@ -1,3 +1,5 @@
+@use 'ej2-base/styles/common/mixin' as *;
+@use '../material-definition' as *;
 @include export-module('pdfviewer-material-icons') {
   .e-pdfviewer {
     .e-pv-icon::before {
@@ -555,6 +557,10 @@
     content: '\e93b';
     font-family: 'e-icons';
   }
+  .e-pv-text-redact-icon::before {
+    content: '\ea17';
+    font-family: 'e-icons';
+  }
   .e-pv-redaction-panel-icon::before {
     content: '\ea08';
     font-family: 'e-icons';
@@ -569,6 +575,10 @@
   }
   .e-pv-multiple-comment::before {
     content: '\e97a';
+    font-family: 'e-icons';
+  }
+  .e-pv-extract-page-icon::before {
+    content: '\ea22';
     font-family: 'e-icons';
   }
 }

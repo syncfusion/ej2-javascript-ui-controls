@@ -1,1 +1,24 @@
-@import './fluent-definition.scss';
+@use 'ej2-base/styles/definition/fluent-dark' as *;
+@forward 'ej2-base/styles/definition/fluent-dark';
+$numeric-skin-name: $skin-name !default;
+$numeric-input-icon-size: 16px !default;
+$numeric-input-bigger-icon-size: 20px !default;
+$numeric-input-small-icon-size: 14px !default;
+$numeric-input-bigger-small-icon-size: 18px !default;
+$numric-zero-padding-margin: 0 !default;
+$numeric-bigger-min-height: 40px !default;
+$numeric-min-height: 33px !default;
+$numeric-zero-height: 0 !default;
+
+$numeric-prepend-label-bottom-top: 15px !default;
+$numeric-prepend-label-top-top: 15px !default;
+$numeric-prepend-outline-label-bottom-top: 15px !default;
+$numeric-prepend-outline-label-top-top: 15px !default;
+$numeric-prepend-filled-label-bottom-top: 15px !default;
+$numeric-prepend-filled-label-top-top: 20px !default;
+$numeric-bigger-prepend-label-bottom-top: 18px !default;
+$numeric-bigger-prepend-label-top-top: 15px !default;
+$numeric-bigger-prepend-outline-label-bottom-top: 19px !default;
+$numeric-bigger-prepend-outline-label-top-top: 18px !default;
+$numeric-bigger-prepend-filled-label-bottom-top: 19px !default;
+$numeric-bigger-prepend-filled-label-top-top: 18px !default;

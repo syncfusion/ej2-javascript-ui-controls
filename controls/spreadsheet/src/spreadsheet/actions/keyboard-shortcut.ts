@@ -39,9 +39,10 @@ export class KeyboardShortcut {
 
     private isTrgtNotInput(e: KeyboardEvent): boolean {
         const trgt: Element = e.target as Element;
-        return (!closest(trgt, '.e-filter-popup')
-            && !closest(trgt, '.e-find-dlg') && !closest(trgt, '.e-hyperlink-dlg') &&
-            !closest(trgt, '.e-sheet-tab') && !closest(trgt, '.e-name-box') && !closest(trgt, '.e-link-dialog'));
+        return (!closest(trgt, '.e-filter-popup') && !closest(trgt, '.e-find-dlg') &&
+            !closest(trgt, '.e-hyperlink-dlg') && !closest(trgt, '.e-sheet-tab') && !closest(trgt, '.e-name-box') &&
+            !closest(trgt, '.e-link-dialog') && !closest(trgt, '.e-comment-input')
+        );
     }
 
     private ribbonShortCuts(e: KeyboardEvent): void {//switch between ribbon tabs
@@ -57,6 +58,8 @@ export class KeyboardShortcut {
             } else if (e.keyCode === 65) { /*alt + A =data */
                 tabIdx = 4;
             } else if (e.keyCode === 87) {    /*alt + W =view*/
+                tabIdx = 6;
+            } else if (e.keyCode === 82) {    /*alt + R =review*/
                 tabIdx = 5;
             } else if (e.keyCode === 77) {    /*alt + M =formula */
                 tabIdx = 3;
@@ -315,7 +318,7 @@ export class KeyboardShortcut {
                 this.parent.notify(findToolDlg, {});
             } else if (e.keyCode === 121) { /* Context menu open Shift+F10 */
                 const className: string = document.activeElement.className;
-                if (['e-spreadsheet', 'e-cell', 'e-header-cell', 'e-clipboard', 'e-rowhdr-table', 'e-selectall-table', 'e-main-panel'].some((cls: string) => className.includes(cls))) {
+                if (['e-spreadsheet', 'e-cell', 'e-header-cell', 'e-clipboard', 'e-rowhdr-table', 'e-selectall-table', 'e-main-panel', 'e-tab-wrap'].some((cls: string) => className.includes(cls))) {
                     this.focusTarget(sheet);
                 }
             }
@@ -437,7 +440,7 @@ export class KeyboardShortcut {
                     target = hdrRow && this.parent.getCell(0, leftIdx + 1, hdrRow);
                 }
             }
-        } else {
+        } else if (document.activeElement.className !== 'e-tab-wrap') {
             const topLeftIdx: number[] = getRangeIndexes(sheet.paneTopLeftCell);
             target = this.parent.getCell(indexes[0], indexes[1]);
             const frozenRow: number = this.parent.frozenRowCount(sheet);

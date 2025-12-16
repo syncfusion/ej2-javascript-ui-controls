@@ -72,6 +72,7 @@ export class PdfGantt extends PdfTreeGrid {
         let pageWidth: number = 0;
         let remainWidth: number = 0;
         let point: number = 0;
+        let endDays1: number;
         const headerWidth: number = pixelToPoint(this.chartHeader.width);
         const timelineSettings: Timeline = this.parent.timelineModule;
 
@@ -199,8 +200,14 @@ export class PdfGantt extends PdfTreeGrid {
                 else {
                     detail.startDate.setDate(detail.startDate.getDate() + startDays1 * count);
                 }
-                const endDays1: number = Math.round((detail.endPoint - detail.startPoint)
+                if (this.parent.pdfExportModule.gantt.taskbar.isAutoFit()) {
+                    endDays1 = Math.round((detail.endPoint - detail.startPoint)
+                    / pixelToPoint(this.chartHeader.bottomTierCellWidth) * 7 - 1);
+                }
+                else {
+                    endDays1 = Math.round((detail.endPoint - detail.startPoint)
                     / pixelToPoint(this.chartHeader.bottomTierCellWidth)) * 7 - 1;
+                }
                 detail.endDate = new Date(detail.startDate.getTime());
                 if (!this.parent.timelineSettings.showWeekend){
                     detail.endDate = this.calculateDaysWithoutNonworkingDays(detail.endDate, endDays1 * count);
@@ -344,7 +351,7 @@ export class PdfGantt extends PdfTreeGrid {
                         pageData.width = (detail.totalWidth);
                     }
                     else {
-                        pageData.width = (detail.totalWidth);
+                        pageData.width = pixelToPoint(detail.totalWidth);
                     }
                     this.pdfPageDetail.push(pageData);
                     pagePoint.y += pageData.height;

@@ -17,6 +17,7 @@ export class FilterSettings extends ChildProperty<FilterSettings> {
     /**
      * Defines filter type of Gantt.
      * * `Menu` - Enables menu filters in Grid.
+     * * `Excel` - Specifies the filtersetting type as excel.
      *
      * @default Menu
      * @isenumeration true

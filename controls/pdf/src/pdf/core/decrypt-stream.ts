@@ -1,6 +1,6 @@
 import { _PdfBaseStream } from './base-stream';
 import { _PdfDecodeStream } from './decode-stream';
-import { _Cipher } from './security/encryptor';
+import { _Cipher } from './security/encryptors/cipher';
 export class _PdfDecryptStream extends _PdfDecodeStream {
     readonly _chunkSize: number = 512;
     _initialized: boolean;

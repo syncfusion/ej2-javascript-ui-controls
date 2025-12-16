@@ -3,7 +3,6 @@
  */
 import { createElement } from '@syncfusion/ej2-base';
 import { Diagram } from '../../../src/diagram/diagram';
-import { Path } from '../../../src/diagram/objects/node';
 import { ShapeAnnotationModel } from '../../../src/diagram/objects/annotation-model';
 import { NodeModel, PathModel, } from '../../../src/diagram/objects/node-model';
 import { NodeConstraints, AnnotationConstraints } from '../../../src/diagram/enum/enum';
@@ -14,6 +13,7 @@ describe('Diagram Control', () => {
     describe('Annotation property change', () => {
         let diagram: Diagram;
         let ele: HTMLElement;
+        let mouseEvents: MouseEvents = new MouseEvents();
         beforeAll((): void => {
             const isDef = (o: any) => o !== undefined && o !== null;
                 if (!isDef(window.performance)) {
@@ -87,6 +87,7 @@ describe('Diagram Control', () => {
         afterAll((): void => {
             diagram.destroy();
             ele.remove();
+            mouseEvents = null;
         });
 
         it('Checking annotation width and height change', (done: Function) => {
@@ -154,14 +155,11 @@ describe('Diagram Control', () => {
             done();
         });
         it('Checking without label', (done: Function) => {
-            let mouseEvents: MouseEvents = new MouseEvents();
             let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
             mouseEvents.clickEvent(diagramCanvas, 500, 108);
             mouseEvents.dblclickEvent(diagramCanvas, 500, 108);
-            let element = document.getElementById('diagram_editTextBoxDiv');
             mouseEvents.clickEvent(diagramCanvas, 500, 158);
             mouseEvents.dblclickEvent(diagramCanvas, 500, 158);
-            let element1 = document.getElementById('diagram_editTextBoxDiv');
             (diagram.nodes[4] as NodeModel).annotations[0].constraints = AnnotationConstraints.InheritReadOnly;
             diagram.dataBind();
             mouseEvents.clickEvent(diagramCanvas, 500, 108);

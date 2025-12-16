@@ -510,7 +510,7 @@ export class Clipboard {
                                     cell = extend({}, cell ? cell : {}, null, true);
                                     if (!isExtend && this.copiedInfo && !this.copiedInfo.isCut && cell.formula) {
                                         const newFormula: string = getUpdatedFormula([x + l, colInd], [i, j], prevSheet,
-                                                                                     this.parent, null);
+                                                                                     this.parent);
                                         if (!isNullOrUndefined(newFormula)) {
                                             cell.formula = newFormula;
                                         }

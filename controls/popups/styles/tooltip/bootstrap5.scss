@@ -1,5 +1,5 @@
-@import 'ej2-base/styles/definition/bootstrap5.scss';
-@import 'bootstrap5-definition.scss';
-@import 'icons/bootstrap5.scss';
-@import 'all.scss';
-@import 'bigger.scss';
+@use 'ej2-base/styles/definition/bootstrap5' as *;
+@use 'bootstrap5-definition' as *;
+@use 'icons/bootstrap5' as *;
+@use 'all' as *;
+@use 'bigger' as *;

@@ -186,6 +186,10 @@ export const ICON_GRID: string = 'e-icons e-fe-grid';
 /** @hidden */
 export const ICON_LARGE: string = 'e-icons e-fe-large';
 /** @hidden */
+export const ICON_FOLDER: string = 'e-icons e-folder';
+/** @hidden */
+export const ICON_FILE: string = 'e-icons e-file-format';
+/** @hidden */
 export const ICON_BREADCRUMB: string = 'e-icons e-fe-breadcrumb';
 /** @hidden */
 export const ICON_CLEAR: string = 'e-icons e-fe-clear';

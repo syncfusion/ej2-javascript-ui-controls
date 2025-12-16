@@ -23,3 +23,4 @@ export * from './merge';
 export * from './conditional-formatting';
 export * from './auto-fill';
 export * from './note';
+export * from './comment';

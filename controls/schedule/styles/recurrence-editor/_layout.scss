@@ -1,9 +1,11 @@
+@use 'ej2-base/styles/common/mixin' as *;
+@use './theme-variables' as *;
 @include export-module('recurrence-editor-layout') {
   .e-recurrenceeditor {
     .e-editor {
       display: flex;
       flex-flow: row wrap;
-      margin: 0 auto;
+      margin: $recurrence-spacing-0 auto;
       max-width: 1240px;
     }
 
@@ -21,8 +23,8 @@
 
       .e-repeat-content {
         display: inline-block;
-        font-weight: normal;
-        padding: 18px 0 0 8px;
+        font-weight: $recurrence-font-weight-normal;
+        padding: $recurrence-spacing-18 $recurrence-spacing-0 $recurrence-spacing-0 $recurrence-spacing-8;
       }
 
       .e-input-wrapper {
@@ -41,7 +43,7 @@
       }
 
       .e-monthday-element {
-        padding-left: 10px;
+        padding-left: $recurrence-spacing-10;
       }
     }
 
@@ -50,12 +52,12 @@
     }
 
     .e-form-left {
-      padding: 0 8px 16px 0;
+      padding: $recurrence-spacing-0 $recurrence-spacing-8 $recurrence-spacing-16 $recurrence-spacing-0;
     }
 
     .e-form-right,
     .e-input-wrapper-side.e-form-right {
-      padding: 0 0 10px;
+      padding: $recurrence-spacing-0 $recurrence-spacing-0 $recurrence-spacing-10;
     }
 
     .e-input-wrapper {
@@ -63,13 +65,13 @@
       width: 50%;
 
       div {
-        margin-bottom: 2.5%;
+        margin-bottom: $recurrence-spacing-2-5;
       }
     }
 
     .e-input-wrapper.e-end-on-date,
     .e-input-wrapper.e-end-on-count {
-      padding-right: 0;
+      padding-right: $recurrence-spacing-0;
       margin-top: $recurrence-end-on-date-margin-top;
     }
 
@@ -81,12 +83,12 @@
 
       .e-form-left,
       .e-input-wrapper-side.e-form-left {
-        padding: 0 0 10px 8px;
+        padding: $recurrence-spacing-0 $recurrence-spacing-0 $recurrence-spacing-10 $recurrence-spacing-8;
       }
 
       .e-form-right,
       .e-input-wrapper-side.e-form-right {
-        padding: 0 8px 10px 0;
+        padding: $recurrence-spacing-0 $recurrence-spacing-8 $recurrence-spacing-10 $recurrence-spacing-0;
       }
 
       .e-recurrence-table .e-monthday-element {
@@ -101,24 +103,24 @@
 
       .e-input-wrapper-side.e-end-on .e-end-on-label,
       .e-input-wrapper-side.e-non-week > .e-month-expander-label {
-        padding-right: 0;
+        padding-right: $recurrence-spacing-0;
       }
 
       .e-end-on-label {
-        margin-bottom: 5px;
+        margin-bottom: $recurrence-spacing-5;
       }
 
       .e-input-wrapper-side.e-end-on .e-end-on-left {
-        padding: 0 0 0 8px;
+        padding: $recurrence-spacing-0 $recurrence-spacing-0 $recurrence-spacing-0 $recurrence-spacing-8;
       }
 
       .e-input-wrapper.e-end-on-date,
       .e-input-wrapper.e-end-on-count {
-        padding: 0 8px 0 0;
+        padding: $recurrence-spacing-0 $recurrence-spacing-8 $recurrence-spacing-0 $recurrence-spacing-0;
       }
 
       .e-recurrence-table .e-day-position {
-        margin-right: 20px;
+        margin-right: $recurrence-spacing-20;
       }
 
       .e-recurrenceeditor {
@@ -134,14 +136,14 @@
       .e-week-expander-label {
         font-size: $recurrence-label-font-nrml-size;
         font-weight: $recurrence-label-font-weight;
-        margin-bottom: 8px;
+        margin-bottom: $recurrence-spacing-8;
       }
 
       button {
-        border-radius: 50%;
+        border-radius: $recurrence-radius-50;
         flex-flow: row wrap;
-        height: 35px;
-        margin: 0 8px 10px;
+        height: $recurrence-height-35;
+        margin: $recurrence-spacing-0 $recurrence-spacing-8 $recurrence-spacing-10;
         width: 35px;
       }
     }
@@ -155,15 +157,15 @@
     }
 
     .e-year-expander {
-      margin-bottom: 11px;
+      margin-bottom: $recurrence-spacing-11;
     }
 
     .e-month-expander tr:first-child .e-input-wrapper {
-      padding-bottom: 11px;
+      padding-bottom: $recurrence-spacing-11;
     }
 
     .e-month-expander-checkbox-wrapper.e-input-wrapper {
-      padding-top: 3px;
+      padding-top: $recurrence-spacing-3;
 
       .e-month-type .e-label {
         display: none;
@@ -177,37 +179,37 @@
 
     .e-input-wrapper-side {
       float: left;
-      padding: 16px 20px 0;
+      padding: $recurrence-spacing-16 $recurrence-spacing-20 $recurrence-spacing-0;
       width: 50%;
 
       &.e-end-on {
         .e-end-on-left {
-          padding-right: 16px;
+          padding-right: $recurrence-spacing-16;
         }
       }
 
       &.e-non-week > .e-input-wrapper {
-        margin: 0;
+        margin: $recurrence-spacing-0;
       }
 
       &.e-non-week > .e-month-expander-label {
         font-size: $recurrence-label-font-nrml-size;
         font-weight: $recurrence-label-font-weight;
         margin-bottom: $recurrence-month-label-bottom;
-        padding-right: 16px;
+        padding-right: $recurrence-spacing-16;
       }
     }
 
     .e-input-wrapper-side .e-days .e-form-left {
-      padding-bottom: 6px;
+      padding-bottom: $recurrence-spacing-6;
     }
 
     .e-input-wrapper-side .e-non-week .e-form-left {
-      padding-bottom: 12px;
+      padding-bottom: $recurrence-spacing-12;
     }
 
     .e-input-wrapper-side.e-form-right {
-      margin-bottom: 11px;
+      margin-bottom: $recurrence-spacing-11;
     }
   }
 
@@ -224,82 +226,82 @@
       }
 
       .e-week-expander-label {
-        margin-bottom: 6px;
+        margin-bottom: $recurrence-spacing-6;
       }
 
       .e-month-expander-label {
-        font-size: 12px;
-        margin-bottom: 5px;
+        font-size: $recurrence-label-font-nrml-size;
+        margin-bottom: $recurrence-spacing-5;
       }
 
       .e-footer-content {
-        padding: 12px;
+        padding: $recurrence-spacing-12;
       }
 
       .e-form-left,
       .e-input-wrapper-side.e-form-left {
-        padding: 0 3px 10px 0;
+        padding: $recurrence-spacing-0 $recurrence-spacing-3 $recurrence-spacing-10 $recurrence-spacing-0;
       }
 
       .e-form-right,
       .e-input-wrapper-side.e-form-right {
-        padding: 0 0 10px 3px;
+        padding: $recurrence-spacing-0 $recurrence-spacing-0 $recurrence-spacing-10 $recurrence-spacing-3;
       }
 
       .e-input-wrapper.e-end-on-date,
       .e-input-wrapper.e-end-on-count {
-        padding: 0 0 0 10px;
+        padding: $recurrence-spacing-0 $recurrence-spacing-0 $recurrence-spacing-0 $recurrence-spacing-10;
       }
 
       .e-input-wrapper-side.e-end-on .e-end-on-left {
-        padding-right: 10px;
+        padding-right: $recurrence-spacing-10;
       }
 
       &.e-end-on {
-        padding-right: 0;
+        padding-right: $recurrence-spacing-0;
 
         .e-end-on-label {
           float: none;
-          font-size: 12px;
+          font-size: $recurrence-label-font-nrml-size;
           font-weight: $recurrence-label-font-weight;
           margin-bottom: $recurrence-label-bottom;
         }
 
         .e-end-on-left {
-          padding-right: 0;
+          padding-right: $recurrence-spacing-0;
         }
       }
 
       .e-recurrence-table .e-monthday-element,
       .e-recurrence-table .e-day-position {
-        padding-left: 20px;
+        padding-left: $recurrence-spacing-20;
       }
 
       .e-recurrence-table .e-monthday-element {
-        margin-left: 20px;
+        margin-left: $recurrence-spacing-20;
       }
 
       .e-week-position {
         right: 0;
-        padding-right: 10px;
+        padding-right: $recurrence-spacing-10;
       }
 
       &.e-rtl {
         .e-input-wrapper-side.e-end-on .e-end-on-left {
-          padding-right: 0;
+          padding-right: $recurrence-spacing-0;
         }
 
         .e-input-wrapper.e-end-on-date,
         .e-input-wrapper.e-end-on-count {
-          padding: 0 10px 0 0;
+          padding: $recurrence-spacing-0 $recurrence-spacing-10 $recurrence-spacing-0 $recurrence-spacing-0;
         }
 
         .e-recurrence-table .e-monthday-element {
-          padding: 0 20px 0 0;
+          padding: $recurrence-spacing-0 $recurrence-spacing-20 $recurrence-spacing-0 $recurrence-spacing-0;
         }
 
         .e-recurrence-table .e-day-position {
-          padding: 0 50px 0 0;
+          padding: $recurrence-spacing-0 $recurrence-spacing-50 $recurrence-spacing-0 $recurrence-spacing-0;
         }
 
         .e-week-position {
@@ -312,7 +314,7 @@
       .e-dlg-header-content {
         background: none;
         box-shadow: none;
-        padding-bottom: 10px;
+        padding-bottom: $recurrence-spacing-10;
       }
 
       .e-editor {
@@ -322,7 +324,7 @@
       }
 
       .e-footer-content {
-        padding: 16px 8px;
+        padding: $recurrence-spacing-16 $recurrence-spacing-8;
       }
     }
   }
@@ -353,7 +355,7 @@
         flex-direction: column;
 
         >.e-input-wrapper.e-form-left {
-          margin-top: 0;
+          margin-top: $recurrence-spacing-0;
         }
 
         .e-input-wrapper-side.e-non-week > .e-month-expander-label,
@@ -362,7 +364,7 @@
         }
 
         > div {
-          margin-top: 20px;
+          margin-top: $recurrence-spacing-20;
         }
 
         > .e-input-wrapper {
@@ -379,21 +381,21 @@
 
         .e-form-left,
         .e-input-wrapper-side.e-form-left {
-          padding: 0 0 10px;
+          padding: $recurrence-spacing-0 $recurrence-spacing-0 $recurrence-spacing-10;
         }
 
         .e-input-wrapper.e-end-on-date,
         .e-input-wrapper.e-end-on-count {
-          padding: 0 0 0 10px;
+          padding: $recurrence-spacing-0 $recurrence-spacing-0 $recurrence-spacing-0 $recurrence-spacing-10;
         }
 
         .e-input-wrapper-side.e-end-on .e-end-on-left {
-          padding-right: 10px;
+          padding-right: $recurrence-spacing-10;
         }
 
         .e-form-right,
         .e-input-wrapper-side.e-form-right {
-          padding-left: 0;
+          padding-left: $recurrence-spacing-0;
         }
 
         .e-input-wrapper-side.e-days {
@@ -405,18 +407,18 @@
         }
 
         .e-recurrence-table .e-day-position {
-          padding-left: 59px;
+          padding-left: $recurrence-spacing-59;
         }
       }
 
       &.e-rtl {
         .e-input-wrapper-side.e-end-on .e-end-on-left {
-          padding-right: 0;
+          padding-right: $recurrence-spacing-0;
         }
 
         .e-input-wrapper.e-end-on-date,
         .e-input-wrapper.e-end-on-count {
-          padding: 0 10px 0 0;
+          padding: $recurrence-spacing-0 $recurrence-spacing-10 $recurrence-spacing-0 $recurrence-spacing-0;
         }
       }
     }

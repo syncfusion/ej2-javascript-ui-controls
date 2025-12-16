@@ -8,6 +8,7 @@ export interface IContextMenu {
     currentTarget: HTMLElement
     previousAction: string
     createContextMenu(): void
+    updateContextMenuItems(items: string[], isEnable: boolean): void
     open(top: number, left: number, target: HTMLElement): void
     close(): void
     destroy(): void

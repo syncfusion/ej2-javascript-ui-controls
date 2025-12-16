@@ -1,3 +1,6 @@
+@use 'ej2-base/styles/common/mixin' as *;
+@use 'ej2-buttons/styles/button/mixin' as *;
+@use './theme-variables' as *;
 @include export-module('button-group-layout') {
 /* stylelint-disable */
   #{if(&, '&', '*')}.e-btn-group,
@@ -22,16 +25,16 @@
     }
 
     input + label.e-btn {
-      margin-bottom: 0;
+      margin-bottom: $btn-group-zero-margin-padding;
     }
 
     input {
       -moz-appearance: none;
-      height: 1px;
-      margin: 0 0 0 $btn-grp-margin;
+      height: $btn-group-input-height;
+      margin: $btn-group-input-margin;
       opacity: 0;
       position: absolute;
-      width: 1px;
+      width: $btn-group-input-width;
     }
 
     // Disabled
@@ -53,50 +56,50 @@
         }
 
         &:not(:first-of-type):not(:last-of-type) {
-          border-radius: 0;
+          border-radius: $btn-zero-radius;
         }
 
         &:first-of-type,
         &:last-of-type:not(:last-child) {
-          border-bottom-right-radius: 0;
-          border-top-right-radius: 0;
+          border-bottom-right-radius: $btn-zero-radius;
+          border-top-right-radius: $btn-zero-radius;
         }
 
         &:last-of-type {
-          border-bottom-left-radius: 0;
-          border-top-left-radius: 0;
+          border-bottom-left-radius: $btn-zero-radius;
+          border-top-left-radius: $btn-zero-radius;
         }
       }
 
       .e-split-btn-wrapper {
         +.e-btn {
-          border-bottom-left-radius: 0;
-          border-top-left-radius: 0;
+          border-bottom-left-radius: $btn-zero-radius;
+          border-top-left-radius: $btn-zero-radius;
         }
 
         &:not(:first-child):not(:last-child) {
           .e-btn:last-child {
-            border-bottom-right-radius: 0;
-            border-top-right-radius: 0;
+            border-bottom-right-radius: $btn-zero-radius;
+            border-top-right-radius: $btn-zero-radius;
           }
 
           .e-btn:first-child {
-            border-bottom-left-radius: 0;
-            border-top-left-radius: 0;
+            border-bottom-left-radius: $btn-zero-radius;
+            border-top-left-radius: $btn-zero-radius;
           }
         }
 
         &:first-child {
           .e-btn:last-child {
-            border-bottom-right-radius: 0;
-            border-top-right-radius: 0;
+            border-bottom-right-radius: $btn-zero-radius;
+            border-top-right-radius: $btn-zero-radius;
           }
         }
 
         &:last-child {
           .e-btn:first-child {
-            border-bottom-left-radius: 0;
-            border-top-left-radius: 0;
+            border-bottom-left-radius: $btn-zero-radius;
+            border-top-left-radius: $btn-zero-radius;
           }
         }
       }
@@ -108,50 +111,50 @@
         margin-left: $btn-grp-margin-left;
 
         &:not(:first-of-type):not(:last-of-type) {
-          border-radius: 0;
+          border-radius: $btn-zero-radius;
         }
 
         &:first-of-type,
         &:last-of-type:not(:last-child) {
-          border-bottom-left-radius: 0;
-          border-top-left-radius: 0;
+          border-bottom-left-radius: $btn-zero-radius;
+          border-top-left-radius: $btn-zero-radius;
         }
 
         &:last-of-type {
-          border-bottom-right-radius: 0;
-          border-top-right-radius: 0;
+          border-bottom-right-radius: $btn-zero-radius;
+          border-top-right-radius: $btn-zero-radius;
         }
       }
 
       .e-split-btn-wrapper {
         +.e-btn {
-          border-bottom-right-radius: 0;
-          border-top-right-radius: 0;
+          border-bottom-right-radius: $btn-zero-radius;
+          border-top-right-radius: $btn-zero-radius;
         }
 
         &:not(:first-child):not(:last-child) {
           .e-btn:last-child {
-            border-bottom-left-radius: 0;
-            border-top-left-radius: 0;
+            border-bottom-left-radius: $btn-zero-radius;
+            border-top-left-radius: $btn-zero-radius;
           }
 
           .e-btn:first-child {
-            border-bottom-right-radius: 0;
-            border-top-right-radius: 0;
+            border-bottom-right-radius: $btn-zero-radius;
+            border-top-right-radius: $btn-zero-radius;
           }
         }
 
         &:first-child {
           .e-btn:last-child {
-            border-bottom-left-radius: 0;
-            border-top-left-radius: 0;
+            border-bottom-left-radius: $btn-zero-radius;
+            border-top-left-radius: $btn-zero-radius;
           }
         }
 
         &:last-child {
           .e-btn:first-child {
-            border-bottom-right-radius: 0;
-            border-top-right-radius: 0;
+            border-bottom-right-radius: $btn-zero-radius;
+            border-top-right-radius: $btn-zero-radius;
           }
         }
       }
@@ -163,7 +166,7 @@
       flex-direction: column;
 
       input {
-        margin: $btn-grp-margin 0 0;
+        margin: $btn-vertical-grp-margin;
       }
 
       // Round corner
@@ -173,21 +176,21 @@
         }
 
         &:not(:first-of-type):not(:last-of-type) {
-          border-radius: 0;
+          border-radius: $btn-zero-radius;
         }
 
         &:first-of-type {
-          border-bottom-left-radius: 0;
-          border-bottom-right-radius: 0;
-          border-top-left-radius: 2px;
-          border-top-right-radius: 2px;
+          border-bottom-left-radius: $btn-zero-radius;
+          border-bottom-right-radius: $btn-zero-radius;
+          border-top-left-radius: $btn-top-radius;
+          border-top-right-radius: $btn-top-radius;
         }
 
         &:last-of-type {
-          border-bottom-left-radius: 2px;
-          border-bottom-right-radius: 2px;
-          border-top-left-radius: 0;
-          border-top-right-radius: 0;
+          border-bottom-left-radius: $btn-top-radius;
+          border-bottom-right-radius: $btn-top-radius;
+          border-top-left-radius: $btn-zero-radius;
+          border-top-right-radius: $btn-zero-radius;
         }
       }
     }
@@ -209,15 +212,15 @@
           }
 
           &:last-of-type:not(:last-child) {
-            border-bottom-right-radius: 0;
-            border-top-right-radius: 0;
+            border-bottom-right-radius: $btn-zero-radius;
+            border-top-right-radius: $btn-zero-radius;
           }
         }
 
         .e-split-btn-wrapper {
           +.e-btn {
-            border-bottom-left-radius: 0;
-            border-top-left-radius: 0;
+            border-bottom-left-radius: $btn-zero-radius;
+            border-top-left-radius: $btn-zero-radius;
           }
 
           &:first-child {
@@ -227,15 +230,15 @@
             }
 
             .e-btn:last-child {
-              border-bottom-right-radius: 0;
-              border-top-right-radius: 0;
+              border-bottom-right-radius: $btn-zero-radius;
+              border-top-right-radius: $btn-zero-radius;
             }
           }
 
           &:last-child {
              .e-btn:first-child {
-              border-bottom-left-radius: 0;
-              border-top-left-radius: 0;
+              border-bottom-left-radius: $btn-zero-radius;
+              border-top-left-radius: $btn-zero-radius;
             }
 
             .e-btn:last-child {
@@ -262,13 +265,13 @@
           }
 
           &:last-of-type:not(:last-child) {
-            border-bottom-left-radius: 0;
-            border-top-left-radius: 0;
+            border-bottom-left-radius: $btn-zero-radius;
+            border-top-left-radius: $btn-zero-radius;
           }
 
           &:first-of-type:not(:first-child) {
-            border-bottom-right-radius: 0;
-            border-top-right-radius: 0;
+            border-bottom-right-radius: $btn-zero-radius;
+            border-top-right-radius: $btn-zero-radius;
           }
         }
       }

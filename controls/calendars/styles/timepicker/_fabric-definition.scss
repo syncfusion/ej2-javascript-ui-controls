@@ -1,3 +1,5 @@
+@use 'ej2-base/styles/definition/fabric' as *;
+@forward 'ej2-base/styles/definition/fabric';
 $timepicker-skin-name: 'fabric' !default;
 $timepicker-default-text-indent: 10px !default;
 $timepicker-list-bigger-line-height: 48px !default;
@@ -75,3 +77,14 @@ $modal-landscape-padding: 1vh 2vw !default;
 $modal-list-item-padding: 1vh 0 !default;
 $modal-mobile-font-size: 14px !default;
 $modal-tablet-font-size: 18px !default;
+
+$timepicker-list-parent-margin: 0;
+$timepicker-list-parent-padding: $timepicker-list-normal-padding 0;
+$timepicker-list-parent-bigger-padding: $timepicker-list-bigger-padding 0;
+$timepicker-zero-border-radius: 0 !default;
+$timepicker-model-title-font-weight: 500 !default;
+$timepicker-bigger-content-placeholder-min-height: 40px !default;
+$timepicker-full-height: 100% !default;
+$timepicker-content-placeholder-min-height: 33px !default;
+$timepicker-full-width: 100% !default;
+$timepicker-border: 1px !default;

@@ -1,5 +1,5 @@
-@import 'ej2-base/styles/definition/bds.scss';
-@import 'ej2-buttons/styles/button/bds-definition.scss';
-@import 'bds-definition.scss';
-@import 'all.scss';
-@import 'bigger.scss';
+@use 'ej2-base/styles/definition/bds' as *;
+@use 'ej2-buttons/styles/button/bds-definition' as *;
+@use 'bds-definition' as *;
+@use 'all' as *;
+@use 'bigger' as *;

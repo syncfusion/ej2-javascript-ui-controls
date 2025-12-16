@@ -1642,6 +1642,17 @@ describe('Recurrence Date Generator Specs', () => {
         });
     });
 
+    describe('Schedule - recurrence date and time check', () => {
+        const startDate: Date = new Date('Mon Oct 13 2025 10:00:00');
+        it('Check the date with time', () => {
+            expect(JSON.stringify(generate(startDate, 'FREQ=DAILY;INTERVAL=1;UNTIL=20251015T095959Z', null, 0)))
+                .toBe(JSON.stringify([
+                    new Date('Mon Oct 13 2025 10:00:00').getTime(), new Date('Tue Oct 14 2025 10:00:00').getTime()
+                ]));
+        });
+       
+    });
+
     it('memory leak', () => {
         profile.sample();
         const average: number = inMB(profile.averageChange);

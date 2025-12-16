@@ -166,7 +166,8 @@ export class BatchEdit {
     }
 
     private onCellFocused(e: CellFocusArgs): void {
-        const clear: boolean = (!e.container.isContent || !e.container.isDataCell) && !(this.parent.frozenRows && e.container.isHeader);
+        const clear: boolean = (!e.container.isContent || !e.container.isDataCell)
+            && !((this.parent.frozenRows || this.parent.pinnedTopRowModels.length) && e.container.isHeader);
         if (this.parent.focusModule.active) {
             this.prevEditedBatchCell = this.parent.focusModule.active.matrix.current.toString() === this.prevEditedBatchCellMatrix()
                 .toString();
@@ -235,7 +236,10 @@ export class BatchEdit {
 
     public closeEdit(): void {
         const gObj: IGrid = this.parent;
-        const rows: Row<Column>[] = this.parent.getRowsObject();
+        let rows: Row<Column>[] = this.parent.getRowsObject();
+        if (this.parent.pinnedTopRowModels.length) {
+            rows = rows.concat(this.parent.pinnedTopRowModels);
+        }
         const argument: BeforeBatchSaveArgs = { cancel: false, batchChanges: this.getBatchChanges() };
         gObj.notify(events.beforeBatchCancel, argument);
         if (argument.cancel) {
@@ -391,7 +395,10 @@ export class BatchEdit {
             deletedRecords: [],
             changedRecords: []
         };
-        const rows: Row<Column>[] = this.parent.getRowsObject() as Row<Column>[];
+        let rows: Row<Column>[] = this.parent.getRowsObject() as Row<Column>[];
+        if (this.parent.pinnedTopRowModels.length) {
+            rows = rows.concat(this.parent.pinnedTopRowModels);
+        }
         for (const row of rows) {
             if (row.isDirty) {
                 switch (row.edit) {

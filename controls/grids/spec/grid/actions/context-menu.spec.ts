@@ -1357,4 +1357,64 @@ describe('context menu module', () => {
             gridObj = null;
         });
     });
+
+    describe('Coverage for Freeze and Unfreeze row through context menu', () => {
+        let gridObj: Grid;
+        beforeAll((done: Function) => {
+            gridObj = createGrid({
+                dataSource: data,
+                allowPaging: true,
+                contextMenuItems: ['PinRow', 'UnpinRow'],
+                isRowPinned: function (data: any, column: any) {
+                    return data && data.OrderID % 9 === 0;
+                },
+                columns: [
+                    { field: 'OrderID', headerText: 'Order ID', width: 120, textAlign: 'Right', isPrimaryKey: true },
+                    { field: 'CustomerName', headerText: 'Customer Name', width: 160 },
+                    { field: 'Freight', format: 'C2', textAlign: 'Right', width: 120, editType: 'numericedit' },
+                    { field: 'ShipName', headerText: 'Ship Name', width: 200 },
+                    { field: 'ShipCountry', headerText: 'Ship Country', width: 150, editType: 'dropdownedit' },
+                ]
+            }, done);
+        });
+
+        it('Open the context menu for first content row', (done: Function) => {
+            gridObj.selectRow(2);
+            let eventArgs = { target: gridObj.getContent().querySelector('tr').querySelector('td') };
+            let e = {
+                event: eventArgs,
+                items: gridObj.contextMenuModule.contextMenu.items
+            };
+            (gridObj.contextMenuModule as any).contextMenuBeforeOpen(e);
+            (gridObj.contextMenuModule as any).contextMenuOpen();
+            done();
+        });
+
+        it('Click the context menu to freeze the row', (done: Function) => {
+            let pin: any = (gridObj.contextMenuModule as any).defaultItems['PinRow'];
+            let dataBound = function () {
+                expect(gridObj.pinnedTopRecords.length).toBe(3);
+                gridObj.dataBound = null;
+                done();
+            }
+            gridObj.dataBound = dataBound;
+            (gridObj.contextMenuModule as any).contextMenuItemClick({ item: pin });
+        });
+
+        it('coverage for unfreeze the row', (done: Function) => {
+            let data = gridObj.getRowsObject()[0].data;
+            let dataBound = function () {
+                expect(gridObj.pinnedTopRecords.length).toBe(2);
+                gridObj.dataBound = null;
+                done();
+            }
+            gridObj.dataBound = dataBound;
+            gridObj.unpinRows([data]);
+        });
+
+        afterAll(() => {
+            destroy(gridObj);
+            gridObj = null;
+        });
+    });
 });

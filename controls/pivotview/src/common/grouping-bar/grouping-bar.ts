@@ -262,16 +262,13 @@ export class GroupingBar implements IAction {
                         ? this.parent.engineModule.rowMaxLevel + 1
                         : 1;
                     for (let i: number = 0; i < level; i++) {
-                        if (!isNullOrUndefined(colGroupElement[i as number])) {
-                            const element: HTMLElement = colGroupElement[i as number] as HTMLElement;
-                            if (this.parent && this.parent.gridSettings && !this.parent.gridSettings.allowAutoResizing) {
-                                if (!isNullOrUndefined(element.offsetWidth)) {
-                                    colGroupElementWidth += element.offsetWidth;
-                                }
-                            } else {
-                                if (!isNullOrUndefined(element.style) && !isNullOrUndefined(element.style.width)) {
-                                    colGroupElementWidth += parseInt(element.style.width, 10);
-                                }
+                        const element: HTMLElement = colGroupElement[i as number] as HTMLElement;
+                        if (!isNullOrUndefined(element)) {
+                            if (this.parent && this.parent.gridSettings && !this.parent.gridSettings.allowAutoResizing
+                                && !isNullOrUndefined(element.offsetWidth)) {
+                                colGroupElementWidth += element.offsetWidth;
+                            } else if (!isNullOrUndefined(element.style) && !isNullOrUndefined(element.style.width)) {
+                                colGroupElementWidth += parseInt(element.style.width, 10);
                             }
                         }
                     }
@@ -356,10 +353,12 @@ export class GroupingBar implements IAction {
                     setStyleAttribute(filterPanel, { height: formatUnit(maxHeight) });
                 }
             }
-            const rightAxisPanelWidth: string =
-                formatUnit(this.groupingChartTable.offsetWidth - Math.ceil(leftAxisPanel.getBoundingClientRect().width));
-            setStyleAttribute(valuePanel, { width: Math.ceil(valuePanel.getBoundingClientRect().width) + 'px' });
-            setStyleAttribute(rightAxisPanel, { width: rightAxisPanelWidth });
+            if (this.parent && !isNullOrUndefined(this.parent.minWidth)) {
+                const rightAxisPanelWidth: string =
+                    formatUnit(this.groupingChartTable.offsetWidth - Math.ceil(leftAxisPanel.getBoundingClientRect().width));
+                setStyleAttribute(valuePanel, { width: Math.ceil(valuePanel.getBoundingClientRect().width) + 'px' });
+                setStyleAttribute(rightAxisPanel, { width: rightAxisPanelWidth });
+            }
         }
     }
 
@@ -412,16 +411,13 @@ export class GroupingBar implements IAction {
                 });
             }
             for (let i: number = 0; i < level; i++) {
-                if (!isNullOrUndefined(colGroupElement[i as number])) {
-                    const element: HTMLElement = colGroupElement[i as number] as HTMLElement;
-                    if (this.parent && this.parent.gridSettings && !this.parent.gridSettings.allowAutoResizing) {
-                        if (!isNullOrUndefined(element.offsetWidth)) {
-                            colGroupElementWidth += element.offsetWidth;
-                        }
-                    } else {
-                        if (!isNullOrUndefined(element.style) && !isNullOrUndefined(element.style.width)) {
-                            colGroupElementWidth += parseInt(element.style.width, 10);
-                        }
+                const element: HTMLElement = colGroupElement[i as number] as HTMLElement;
+                if (!isNullOrUndefined(element)) {
+                    if (this.parent && this.parent.gridSettings && !this.parent.gridSettings.allowAutoResizing
+                        && !isNullOrUndefined(element.offsetWidth)) {
+                        colGroupElementWidth += element.offsetWidth;
+                    } else if (!isNullOrUndefined(element.style) && !isNullOrUndefined(element.style.width)) {
+                        colGroupElementWidth += parseInt(element.style.width, 10);
                     }
                 }
                 if (!isNullOrUndefined((this.parent.element.querySelectorAll('.e-group-pivot-rows')[i as number] as HTMLElement))) {

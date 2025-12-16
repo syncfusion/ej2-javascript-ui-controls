@@ -1,1 +1,16 @@
-/* stylelint-disable-line no-empty-source */
+@use 'ej2-base/styles/definition/tailwind3' as *;
+@forward 'ej2-base/styles/definition/tailwind3';
+
+$textarea-VH-textarea-padding: 3px 10px 3px 12px !default;
+$textarea-outline-VH-textarea-padding: 3px 10px 3px 12px !default;
+$textarea-filled-VH-textarea-padding: 3px 10px 3px 12px !default;
+$textarea-VV-template-padding: 9px 8px 9px 8px !default;
+$textarea-outline-VV-template-padding: 9px 8px 9px 8px !default;
+$textarea-filled-VV-template-padding: 9px 8px 9px 8px !default;
+$textarea-HV-textarea-padding: 11px 5px 5px 5px !default;
+$textarea-HV-textarea-top: -7px !default;
+$textarea-outline-HV-textarea-padding: 3px 5px 5px 5px !default;
+$textarea-outline-HV-label-top: -6px !default;
+$textarea-filled-HV-textarea-padding: 9px 5px 5px 5px !default;
+$textarea-filled-HV-label-top: 24px !default;
+$textbox-icon-template-separator-color: $border-light;

@@ -1,3 +1,5 @@
+@use 'ej2-base/styles/definition/material' as *;
+@forward 'ej2-base/styles/definition/material';
 $otp-input-width: 32px !default;
 $otp-input-height: 32px !default;
 $otp-input-gap: 14px !default;
@@ -57,3 +59,4 @@ $otp-input-underlined-bg-color: transparent !default;
 $otp-input-disabled-color: rgba($grey-light-font, .38) !default;
 $otp-input-disabled-border-color: $grey-300 !default;
 $otp-input-disabled-bg-color: $otp-background-color !default;
+$otp-input-zero-padding-margin: 0 !default;

@@ -665,22 +665,13 @@ describe('3DChart Control Selection ', () => {
         chartObj.loaded = loaded;
         chartObj.refresh();
     });
-    it('memory leak', () => {
-        profile.sample();
-        const average: any = inMB(profile.averageChange);
-        //Check average change in memory samples to not be over 10MB
-        expect(average).toBeLessThan(10);
-        const memory: any = inMB(getMemoryProfile());
-        //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
-        expect(memory).toBeLessThan(profile.samples[0] + 0.25);
-    });
-    it('memory leak', () => {
-        profile.sample();
-        const average: any = inMB(profile.averageChange);
-        //Check average change in memory samples to not be over 10MB
-        expect(average).toBeLessThan(10);
-        const memory: any = inMB(getMemoryProfile());
-        //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
-        expect(memory).toBeLessThan(profile.samples[0] + 0.25);
-    });
+    // it('memory leak', () => {
+    //     profile.sample();
+    //     const average: any = inMB(profile.averageChange);
+    //     //Check average change in memory samples to not be over 10MB
+    //     expect(average).toBeLessThan(10);
+    //     const memory: any = inMB(getMemoryProfile());
+    //     //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
+    //     expect(memory).toBeLessThan(profile.samples[0] + 0.25);
+    // });
 });

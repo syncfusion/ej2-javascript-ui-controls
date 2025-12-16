@@ -1,3 +1,5 @@
+@use 'ej2-base/styles/common/mixin' as *;
+@use './theme-variables' as *;
 @mixin list-style($height, $line-height, $position) {
   height: $height;
   line-height: $line-height;
@@ -75,7 +77,7 @@
         @if $skin-name == 'fluent2' {
           border-radius: $listview-item-radius;
           margin: $listview-item-margin-bottom;
-          padding: 0;
+          padding: $listview-padding-none;
         }
         @if ($skin-name == 'tailwind') {
           .e-text-content .e-list-text {
@@ -98,8 +100,8 @@
       }
 
       & .e-list-parent {
-        margin: 0;
-        padding: 0;
+        margin: $listview-list-margin;
+        padding: $listview-list-padding;
       }
 
       & .e-icon-back {
@@ -114,7 +116,7 @@
         }
         @if ($skin-name == 'tailwind3') {
           @include size($listview-back-icon-size, $listview-back-icon-size);
-          margin: 8px 8px 8px 0;
+          margin: $listview-back-icon-margin;
         }
       }
 
@@ -128,9 +130,9 @@
         }
         @else {
           @if ($skin-name != 'FluentUI' and $skin-name != 'Material3' and $skin-name != 'fluent2' ) {
-            border-bottom: 1px solid;
+            border-bottom: $listview-header-border-bottom-size solid;
           }
-          padding: 0 $listview-header-text-padding;
+          padding: $listview-list-padding $listview-header-text-padding;
         }
 
         &.e-list-navigation .e-text {
@@ -173,7 +175,7 @@
         border-top: $listview-group-border-top solid;
         height: $listview-groupheader-item-height;
         line-height: $listview-groupheader-item-line-height;
-        font-weight: 600;
+        font-weight: $listview-group-item-font-weight;
         @if ($skin-name == 'tailwind') {
           box-sizing: border-box;
           font-weight: $font-weight-medium;
@@ -198,15 +200,15 @@
         .e-list-text {
           cursor: default;
           @if $skin-name == 'fluent2' {
-            padding: 0;
+            padding: $listview-padding-none;
           }
           @if $skin-name == 'tailwind3' {
-            font-weight: 600;
+            font-weight: $listview-group-item-font-weight;
           }
         }
 
         &:first-child {
-          border: 0;
+          border: $listview-border-none;
           border-bottom: $listview-group-first-border-bottom solid $listview-border-bottom-color;
         }
       }
@@ -224,24 +226,24 @@
         top: 50%;
         transform: translateY(-50%);
         @if ($skin-name == 'tailwind') {
-          @include size($listview-icon-size, $listview-icon-size);
+          @include size($listview-icon-height, $listview-icon-size);
         }
       }
 
       & .e-text-content {
-        height: 100%;
+        height: $listview-text-content-height;
         position: relative;
         vertical-align: middle;
 
         &.e-checkbox {
           .e-list-text {
-            width: calc(100% - 40px);
+            width: $listview-checkbox-text-content-width;
           }
           &.e-checkbox-left .e-list-icon + .e-list-text {
-            width: calc(100% - 90px);
+            width: $listview-checkbox-left-list-icon-text-width;
           }
           &.e-checkbox-right .e-list-icon + .e-list-text {
-            width: calc(100% - 80px);
+            width: $listview-checkbox-right-list-icon-text-width;
           }
         }
       }
@@ -275,29 +277,29 @@
           padding: $listview-item-padding;
         }
         @if $skin-name == 'tailwind3' {
-          font-weight: 500;
+          font-weight: $listview-list-text-font-weight;
         }
       }
 
       & .e-list-icon + .e-list-text,
       & .e-icon-wrapper .e-list-text,
       & .e-icon-wrapper.e-text-content.e-checkbox .e-list-text {
-        width: calc(100% - 60px);
+        width: $listview-icon-text-width;
       }
 
       & .e-list-icon {
         margin-right: $listview-icon-margin-right;
         @if ($skin-name == 'tailwind' or $skin-name == 'tailwind3' or $skin-name == 'FluentUI' or $skin-name == 'fluent2') {
-          @include size($listview-icon-size, $listview-icon-size);
+          @include size($listview-icon-height, $listview-icon-size);
         }
         @else if ($skin-name == 'Material3') {
-          @include size(20px, 20px);
+          @include size($listview-icon-size, $listview-icon-size);
         }
         @else if ($skin-name == 'material' or $skin-name == 'material-dark') {
-          @include size(18px, 18px);
+          @include size($listview-icon-size, $listview-icon-size);
         }
         @else {
-          @include size(30px, 30px);
+          @include size($listview-list-icon-size, $listview-list-icon-size);
         }
       }
 
@@ -335,7 +337,7 @@
             @include icon-margin(8px, 0);
           }
           @else {
-            @include icon-margin(16px, 0);
+            @include icon-margin($listview-item-icon-margin-left, $listview-item-icon-margin-right);
           }
         }
 

@@ -1,7 +1,6 @@
-@import 'ej2-base/styles/definition/bootstrap4.scss';
-@import 'pivotfieldlist/bootstrap4-definition.scss';
-@import 'pivotview/bootstrap4-definition.scss';
-@import 'pivotview/icons/bootstrap4.scss';
-@import 'pivotview/all.scss';
-@import 'pivotfieldlist/icons/bootstrap4.scss';
-@import 'pivotfieldlist/all.scss';
+@use 'pivotfieldlist/bootstrap4-definition' as *;
+@use 'pivotview/bootstrap4-definition' as *;
+@use 'pivotview/icons/bootstrap4' as *;
+@use 'pivotview/all' as *;
+@use 'pivotfieldlist/icons/bootstrap4' as *;
+@use 'pivotfieldlist/all' as *;

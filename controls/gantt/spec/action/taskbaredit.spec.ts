@@ -846,7 +846,7 @@ describe('Gantt taskbar edit action', () => {
                         child: 'subtasks',
                         dependency: 'Predecessor'
                     },
-                    UpdateOffsetOnTaskbarEdit:false,
+                    updateOffsetOnTaskbarEdit:false,
                     projectStartDate: new Date('03/25/2019'),
                     projectEndDate: new Date('05/30/2019'),
                     rowHeight: 40,
@@ -899,7 +899,7 @@ describe('Gantt taskbar edit action', () => {
                         child: 'subtasks',
                         dependency: 'Predecessor'
                     },
-                    UpdateOffsetOnTaskbarEdit:true,
+                    updateOffsetOnTaskbarEdit:true,
                     projectStartDate: new Date('03/25/2019'),
                     projectEndDate: new Date('05/30/2019'),
                     rowHeight: 40,
@@ -1419,8 +1419,10 @@ describe('Gantt taskbar edit action', () => {
             }, done);
         });
         it('Avoid initial resize', () => {
-            ganttObj.actionComplete = (args: ITaskbarEditedEventArgs) => {
-                expect(ganttObj.getFormatedDate(args.data['StartDate'], 'MM/dd/yyyy HH:mm')).toBe('04/03/2019 08:00');
+            ganttObj.actionComplete = (args: any) => {
+                if (args.requestType === 'save') {
+                    expect(ganttObj.getFormatedDate(args.data['StartDate'], 'MM/dd/yyyy HH:mm')).toBe('04/03/2019 08:00');
+                }
             };
             
             ganttObj.actionBegin = (args: any) => {
@@ -4594,7 +4596,7 @@ describe('Incorrect offset update while dragging taskbar - CR 544540', () => {
                         child: 'subtasks',
                         dependency: 'Predecessor'
                     },
-                    UpdateOffsetOnTaskbarEdit:false,
+                    updateOffsetOnTaskbarEdit:false,
                     projectStartDate: new Date('03/25/2019'),
                     projectEndDate: new Date('05/30/2019'),
                     rowHeight: 40,

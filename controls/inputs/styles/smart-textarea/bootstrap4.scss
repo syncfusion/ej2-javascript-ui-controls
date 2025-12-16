@@ -1,4 +1,4 @@
-@import 'ej2-base/styles/definition/bootstrap4.scss';
-@import '../textarea/bootstrap4-definition.scss';
-@import 'bootstrap4-definition.scss';
-@import 'all.scss';
+@use 'ej2-base/styles/definition/bootstrap4' as *;
+@use '../textarea/bootstrap4-definition' as *;
+@use 'bootstrap4-definition' as *;
+@use 'all' as *;

@@ -1,3 +1,5 @@
+@use 'ej2-base/styles/common/mixin' as *;
+@use './theme-variables' as *;
 @include export-module('datetimepicker-theme') {
 
   /*! datetimepicker theme */
@@ -77,7 +79,7 @@
         }
         color: $datetime-list-active-font-color;
         @if $skin-name == 'tailwind3' {
-          font-weight: 500;
+          font-weight: $font-weight-medium;
         }
       }
 

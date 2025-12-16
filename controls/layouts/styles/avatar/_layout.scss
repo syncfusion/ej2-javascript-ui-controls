@@ -1,3 +1,5 @@
+@use 'ej2-base/styles/common/mixin' as *;
+@use './theme-variables' as *;
 @mixin avatar-size($height, $width, $line-height) {
   height: $height;
   width: $width;
@@ -15,7 +17,7 @@
     border-radius: $avatar-base-border-radius;
     color: $avatar-base-text-color;
     display: inline-flex;
-    font-family: $font-family;
+    font-family: $avatar-font-family;
     font-size: $avatar-base-font-size;
     font-weight: $avatar-base-font-weight;
     height: $avatar-base-height;
@@ -29,7 +31,7 @@
 
     @if ($skin-name == 'fluent2') {
       &:has(:not(img)) {
-        border: 1px solid $avatar-border;
+        border: $avatar-border-width solid $avatar-border;
       }
     }
 
@@ -49,21 +51,21 @@
     &.e-avatar-xsmall {
       font-size: $avatar-xsmall-font-size;
       @if ($skin-name == 'tailwind3' or $skin-name == 'tailwind' or $skin-name == 'tailwind-dark' or $skin-name == 'bootstrap5' or $skin-name == 'bootstrap5.3' or $skin-name == 'FluentUI' or $skin-name == 'Material3' or $skin-name == 'fluent2') {
-        @include avatar-size(24px, 24px, $avatar-base-xsmall-line-height);
+        @include avatar-size($avatar-base-xsmall-height, $avatar-base-xsmall-width, $avatar-base-xsmall-line-height);
       }
     }
 
     &.e-avatar-small {
       font-size: $avatar-small-font-size;
       @if ($skin-name == 'tailwind3' or $skin-name == 'tailwind' or $skin-name == 'tailwind-dark' or $skin-name == 'bootstrap5' or $skin-name == 'bootstrap5.3' or $skin-name == 'FluentUI' or $skin-name == 'Material3' or $skin-name == 'fluent2') {
-        @include avatar-size(32px, 32px, $avatar-base-small-line-height);
+        @include avatar-size($avatar-base-small-height, $avatar-base-small-width, $avatar-base-small-line-height);
       }
     }
 
     &.e-avatar-large {
       font-size: $avatar-large-font-size;
       @if ($skin-name == 'tailwind3' or $skin-name == 'tailwind' or $skin-name == 'tailwind-dark' or $skin-name == 'bootstrap5' or $skin-name == 'bootstrap5.3' or $skin-name == 'FluentUI' or $skin-name == 'Material3' or $skin-name == 'fluent2') {
-        @include avatar-size(48px, 48px, $avatar-base-large-line-height);
+        @include avatar-size($avatar-base-large-height, $avatar-base-large-width, $avatar-base-large-line-height);
       }
       @if ($skin-name == 'bootstrap5' or $skin-name == 'bootstrap5.3') {
         border-radius: $avatar-large-border-radius;
@@ -73,7 +75,7 @@
     &.e-avatar-xlarge {
       font-size: $avatar-xlarge-font-size;
       @if ($skin-name == 'tailwind3' or $skin-name == 'tailwind' or $skin-name == 'tailwind-dark' or $skin-name == 'bootstrap5' or $skin-name == 'bootstrap5.3' or $skin-name == 'FluentUI' or $skin-name == 'Material3' or $skin-name == 'fluent2') {
-        @include avatar-size(56px, 56px, $avatar-base-xlarge-line-height);
+        @include avatar-size($avatar-base-xlarge-height, $avatar-base-xlarge-width, $avatar-base-xlarge-line-height);
       }
       @if ($skin-name == 'bootstrap5' or $skin-name == 'bootstrap5.3') {
         border-radius: $avatar-large-border-radius;

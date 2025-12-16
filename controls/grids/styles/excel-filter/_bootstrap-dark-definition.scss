@@ -1,3 +1,5 @@
+@use 'ej2-base/styles/definition/bootstrap-dark' as *;
+@forward 'ej2-base/styles/definition/bootstrap-dark';
 $grid-xl-rtl-radio-padding-left: 0 !default;
 $grid-xl-rtl-radio-padding-right: 25px !default;
 $grid-autofill-color: $brand-primary !default;
@@ -60,3 +62,5 @@ $grid-xlfl-li-icon-margin-arrow-icon: 15px !default;
 $grid-bigger-xlfl-li-icon-margin-arrow-icon: 0 !default;
 $grid-xl-radio-margin-top: 0 !default;
 $grid-xlfl-skin: 'bootstrap' !default;
+
+$grid-border-radius-0: 0 !default;

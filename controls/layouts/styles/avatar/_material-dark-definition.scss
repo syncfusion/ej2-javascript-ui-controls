@@ -1,3 +1,6 @@
+@use 'ej2-base/styles/definition/material-dark' as *;
+@forward 'ej2-base/styles/definition/material-dark';
+
 // Avatar Base
 $avatar-base-border-radius: 5px !default;
 $avatar-base-font-size: 1em !default;
@@ -7,6 +10,7 @@ $avatar-base-background-color: #bcbcbc !default;
 $avatar-base-text-color: #fff !default;
 $avatar-base-font-weight: 400 !default;
 $avatar-base-img-height: 100% !default;
+$avatar-font-family: $font-family !default;
 
 // Circle Avatar
 $avatar-circle-border-radius: 50% !default;

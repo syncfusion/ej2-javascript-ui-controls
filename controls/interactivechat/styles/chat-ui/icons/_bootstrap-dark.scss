@@ -1,3 +1,4 @@
+@use 'ej2-base/styles/common/mixin' as *;
 @include export-module('chatui-bootstrap-dark-icons') {
   .e-chat-send::before {
     content: '\e816';
@@ -50,7 +51,7 @@
   .e-chat-attachment-icon::before {
     content: '\e1a0';
   }
-  .e-chat-file-format-icon::before {
+  .e-chat-file-icon::before {
     content: '\e1a1';
   }
   .e-chat-upload::before {
@@ -61,5 +62,11 @@
   }
   .e-chat-download::before {
     content: '\ec32';
+  }
+  .e-chat-circle-close::before {
+    content: '\e7e9';
+  }
+  .e-chat-back-icon::before {
+    content: '\e828';
   }
 }

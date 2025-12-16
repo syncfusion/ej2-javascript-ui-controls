@@ -1,3 +1,6 @@
+@use 'ej2-base/styles/common/mixin' as *;
+@use 'ej2-base/styles/definition/highcontrast' as *;
+@forward 'ej2-base/styles/definition/highcontrast';
 $ddl-input-font-size: 14px !default;
 $ddl-input-border: $border-size $border-type !default;
 $ddl-input-font-family: inherit !default;
@@ -7,7 +10,7 @@ $ddl-input-padding: 8px !default;
 $ddl-input-group-border-width: 1px !default;
 $ddl-clear-icon-margin-right: 0 !default;
 $ddl-active-font-color: $active-font-color !default;
-$input-margin-top: 28px !default;
+
 $ddl-list-search-icon-padding: 8px !default;
 $ddl-list-filter-text-indent: 0 12px !default;
 $ddl-list-icon-color: $bg-base-20 !default;
@@ -25,12 +28,33 @@ $ddl-back-icon-padding: 0 !default;
 $ddl-filter-margin: 0 !default;
 $ddl-box-border-color: $border-fg !default;
 
+$ddl-input-bgr-small-clear-margin: 0 4px !default;
+$ddl-input-popup-padding: 4px 0 !default;
+$ddl-input-zero-padding: 0 !default;
+$ddl-bigger-filter-parent-padding: 8px 16px 8px 0 !default;
+$ddl-bigger-small-filtr-parent: 8px 16px !default;
+$ddl-bigger-filter-input-parent-padding: 4px 16px 4px 0 !default;
+
+$ddl-bgr-input-filter-margin-left: -20px !default;
+$ddl-bgr-content-min-height: 40px !default;
+$ddl-border-width: 1px !default;
+$ddl-zero-margin-padding: 0 !default;
+$ddl-content-nim-height: 33px !default;
+$ddl-popup-resize-height: 15px !default;
+$ddl-bgr-popup-clear-min-width: 16px !default;
+$ddl-bgr-popup-clear-min-height: 16px !default;
+$ddl-bgr-small-popup-clear-min-height: 18px !default;
+$ddl-bgr-small-popup-clear-min-width: 18px !default;
+$ddl-zero-height: 0 !default;
+$ddl-popup-resize-width: 15px !default;
+$input-border: $ddl-zero-value $border-type !default;
+$ddl-full-width: 100%;
+
 //small size
 $ddl-small-list-font-size: 13px !default;
 
 // touch size
 $ddl-bigger-small-list-font-size: 14px !default;
-$input-border: $ddl-zero-value $border-type !default;
 
 @include export-module('dropdownlist-highcontrast') {
   #{&}.e-popup.e-ddl .e-dropdownbase {

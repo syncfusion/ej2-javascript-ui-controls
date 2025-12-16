@@ -66,8 +66,8 @@ export function findObjectUnderMouse(
         if (pdfViewer.annotation) {
             const pageDiv: HTMLElement = pdfBase.getElement('_pageDiv_' + pdfViewer.annotation.getEventPageNumber(event));
             if (pageDiv) {
-                const pageCurrentRect: ClientRect =
-                    pageDiv.getBoundingClientRect();
+                const pageCurrentRect: DOMRect =
+                    pageDiv.getBoundingClientRect() as DOMRect;
 
                 offsetX = touchArg.changedTouches[0].clientX - pageCurrentRect.left;
                 offsetY = touchArg.changedTouches[0].clientY - pageCurrentRect.top;
@@ -75,16 +75,16 @@ export function findObjectUnderMouse(
         }
 
     } else if (event && event.target &&  (event as any).path && event.target.parentElement && event.target.parentElement.classList.contains('foreign-object')) {
-        const targetParentRect: ClientRect = (event as any).path[4].getBoundingClientRect();
+        const targetParentRect: DOMRect = (event as any).path[4].getBoundingClientRect();
         offsetX = (event as PointerEvent).clientX - targetParentRect.left;
         offsetY = (event as PointerEvent).clientY - targetParentRect.top;
     } else if (event.target && (event.target as HTMLElement).parentElement && (event.target as HTMLElement).parentElement.classList.contains('foreign-object')) {
-        const targetParentRect: ClientRect = (event.target as any).offsetParent.offsetParent.offsetParent.getBoundingClientRect();
+        const targetParentRect: DOMRect = (event.target as any).offsetParent.offsetParent.offsetParent.getBoundingClientRect();
         offsetX = (event as PointerEvent).clientX - targetParentRect.left;
         offsetY = (event as PointerEvent).clientY - targetParentRect.top;
     }
     else if (event.target && (event.target as HTMLElement).parentElement && (event.target as HTMLElement).parentElement.parentElement && (event.target as HTMLElement).parentElement.parentElement.classList.contains('foreign-object')) {
-        let targetParentRect: ClientRect;
+        let targetParentRect: DOMRect;
         if (event.target.offsetParent && event.target.offsetParent.offsetParent &&
              event.target.offsetParent.offsetParent.offsetParent && event.target.offsetParent.offsetParent.offsetParent.offsetParent){
             targetParentRect = event.target.offsetParent.offsetParent.offsetParent.offsetParent.getBoundingClientRect();

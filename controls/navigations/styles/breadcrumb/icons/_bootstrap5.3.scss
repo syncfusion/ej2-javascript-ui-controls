@@ -1,3 +1,5 @@
+@use 'ej2-base/styles/common/mixin' as *;
+@use '../bootstrap5.3-definition' as *;
 @include export-module('breadcrumb-bootstrap5-icons') {
   .e-breadcrumb {
     .e-breadcrumb-collapsed::before,
@@ -10,14 +12,14 @@
     }
 
     .e-home {
-      height: 18px;
+      height: $breadcrumb-home-icon-height;
     }
   }
 
   .e-bigger .e-breadcrumb,
   .e-bigger.e-breadcrumb {
     .e-home {
-      height: 21px;
+      height: $breadcrumb-bigger-home-icon-height;
     }
   }
 }

@@ -1,3 +1,5 @@
+@use 'ej2-base/styles/definition/fluent' as *;
+@forward 'ej2-base/styles/definition/fluent';
 $treegrid-right-arrow-icon-color: $icon-color !default;
 $treegrid-right-arrow-hover-color: $icon-color-hover !default;
 $childborder-color: $primary !default;

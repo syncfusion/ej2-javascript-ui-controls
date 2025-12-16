@@ -24,6 +24,7 @@ export class DropDownButtons {
     public fontNameDropDown: DropDownButton;
     public fontSizeDropDown: DropDownButton;
     public alignDropDown: DropDownButton;
+    public lineHeightDropDown: DropDownButton;
     public imageAlignDropDown: DropDownButton;
     public displayDropDown: DropDownButton;
     public tableRowsDropDown: DropDownButton;
@@ -73,9 +74,10 @@ export class DropDownButtons {
      * @returns {void}
      * @hidden
      * @param {HTMLElement} targetEle - specifies the arugument
+     * @param {boolean} isInlineToolbar - specifies the inline toolbar
      * @deprecated
      */
-    public renderDropDowns(args: IDropDownRenderArgs, targetEle?: HTMLElement): void {
+    public renderDropDowns(args: IDropDownRenderArgs, targetEle?: HTMLElement, isInlineToolbar?: boolean): void {
         this.initializeInstance();
         const type: string = args.containerType;
         const tbElement: HTMLElement = args.container;
@@ -157,7 +159,7 @@ export class DropDownButtons {
                         content: this.dropdownContent(
                             this.parent.format.width,
                             type,
-                            ((type === 'quick') ? '' : getDropDownValue(formatItem, formatContent, 'text', 'text'))),
+                            ((type === 'quick' && !isInlineToolbar) ? '' : getDropDownValue(formatItem, formatContent, 'text', 'text'))),
                         cssClass: classes.CLS_DROPDOWN_POPUP + ' ' + classes.CLS_DROPDOWN_ITEMS + ' ' + classes.CLS_FORMATS_TB_BTN,
                         itemName: 'Formats', items: formatItem, element: targetElement
                     } as IDropDownModel);
@@ -180,7 +182,7 @@ export class DropDownButtons {
                         content: this.dropdownContent(
                             this.parent.fontFamily.width,
                             type,
-                            ((fontItem.length === 0) ? this.i10n.getConstant('fontName') : (type === 'quick') ? '' : (getDropDownValue(fontItem, fontNameContent, 'text', 'text') === 'Default' ? this.i10n.getConstant('fontName') : getDropDownValue(fontItem, fontNameContent, 'text', 'text')))),
+                            ((fontItem.length === 0) ? this.i10n.getConstant('fontName') : (type === 'quick' && !isInlineToolbar) ? '' : (getDropDownValue(fontItem, fontNameContent, 'text', 'text') === 'Default' ? this.i10n.getConstant('fontName') : getDropDownValue(fontItem, fontNameContent, 'text', 'text')))),
                         cssClass: classes.CLS_DROPDOWN_POPUP + ' ' + classes.CLS_DROPDOWN_ITEMS + ' ' + classes.CLS_FONT_NAME_TB_BTN,
                         itemName: 'FontName', items: fontItem, element: targetElement
                     } as IDropDownModel);
@@ -223,6 +225,28 @@ export class DropDownButtons {
                         itemName: 'Alignments', items: model.alignmentItems, element: targetElement
                     } as IDropDownModel);
                     break;
+                case 'lineheight': {
+                    targetElement = select('#' + this.parent.getID() + '_' + type + '_LineHeight', tbElement);
+                    if (isNullOrUndefined(targetElement) || targetElement.classList.contains(classes.CLS_DROPDOWN_BTN)) {
+                        return;
+                    }
+                    const lineheights: IDropDownItemModel[] = !isNullOrUndefined(this.lineHeightDropDown) &&
+                        !isNullOrUndefined(this.lineHeightDropDown.items) &&
+                        this.lineHeightDropDown.items.length > 0
+                        ? this.lineHeightDropDown.items
+                        : JSON.parse(JSON.stringify(this.parent.lineHeight.items.slice()));
+                    lineheights.forEach((item: IDropDownItemModel): void => {
+                        Object.defineProperties((item as object), {
+                            command: { value: 'LineHeight', enumerable: true }, subCommand: { value: 'LineHeights', enumerable: true }
+                        });
+                    });
+                    this.lineHeightDropDown = this.toolbarRenderer.renderDropDownButton({
+                        cssClass: classes.CLS_DROPDOWN_POPUP + ' ' + classes.CLS_DROPDOWN_ITEMS + ' ' + classes.CLS_LINE_HEIGHT_TB_BTN,
+                        iconCss: 'e-lineHeight e-icons',
+                        itemName: 'lineHeight', items: lineheights, element: targetElement
+                    } as IDropDownModel);
+                    break;
+                }
                 case 'align':
                 case 'videoalign':
                     this.renderAlignmentDropDown(type, tbElement, targetEle, item);
@@ -593,6 +617,11 @@ export class DropDownButtons {
             this.tableBorderStyleDropDown.destroy();
             this.tableBorderStyleDropDown = null;
         }
+        if (this.lineHeightDropDown) {
+            this.removeDropDownClasses(this.lineHeightDropDown.element);
+            this.lineHeightDropDown.destroy();
+            this.lineHeightDropDown = null;
+        }
         this.toolbarRenderer = null;
     }
 
@@ -706,7 +735,8 @@ export class DropDownButtons {
             this.tableColumnsDropDown,
             this.tableCellDropDown,
             this.tableCellVerticalAlignDropDown,
-            this.tableBorderStyleDropDown
+            this.tableBorderStyleDropDown,
+            this.lineHeightDropDown
         ];
         dropdowns.forEach((dropdown: DropDownButton) => {
             if (dropdown && dropdown.dropDown && dropdown.dropDown.element && dropdown.dropDown.element.classList.contains('e-popup-open')) {

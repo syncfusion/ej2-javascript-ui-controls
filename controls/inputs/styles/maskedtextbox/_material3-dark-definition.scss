@@ -1,1 +1,21 @@
-@import './material3-definition.scss';
+@use 'ej2-base/styles/definition/material3-dark' as *;
+@forward 'ej2-base/styles/definition/material3-dark';
+$mask-error-color: rgba($error) !default;
+$mask-font-size: 14px !default;
+$mask-bigger-font-size: 16px !default;
+$mask-font-family: Roboto , $font-family !default;
+$mask-bigger-min-height: 40px !default;
+$mask-min-height: 33px !default;
+
+$mask-prepend-label-bottom-top: -1px !default;
+$mask-prepend-label-top-top: -6px !default;
+$mask-prepend-outline-label-bottom-top: -4px !default;
+$mask-prepend-outline-label-top-top: -6px !default;
+$mask-prepend-filled-label-bottom-top: 18px !default;
+$mask-prepend-filled-label-top-top: 10px !default;
+$mask-bigger-prepend-label-bottom-top: -7px !default;
+$mask-bigger-prepend-label-top-top: -6px !default;
+$mask-bigger-prepend-outline-label-bottom-top: -7px !default;
+$mask-bigger-prepend-outline-label-top-top: -6px !default;
+$mask-bigger-prepend-filled-label-bottom-top: 19px !default;
+$mask-bigger-prepend-filled-label-top-top: 8px !default;

@@ -1,3 +1,5 @@
+@use 'ej2-base/styles/common/mixin' as *;
+@use './theme-variables' as *;
 @mixin button-size($size) {
   height: $size;
   width: $size;
@@ -36,11 +38,11 @@
         @include button-size(18px);
       }
       @if ($skin-name == 'tailwind' or $skin-name == 'bootstrap5' or $skin-name == 'bootstrap5.3') {
-        border-radius: 10px;
+        border-radius: $slider-slide-button-radius;
         box-shadow: $slider-button-shadow;
       }
       @else {
-        border-radius: 50%;
+        border-radius: $slider-full-radius;
       }
       @if ($skin-name == 'Material3') {
         padding: 4px;

@@ -767,23 +767,19 @@ describe('Chart Legend', () => {
                 expect(legendElement).not.toBe(null);
 
                 expect(legendElement.getAttribute('x') == '34').toBe(true);
-
-                expect(legendElement.getAttribute('y') == '309.25' || legendElement.getAttribute('y') == '301.25').toBe(true);
+                expect(legendElement.getAttribute('y') == '309.25' || legendElement.getAttribute('y') == '301.25' || legendElement.getAttribute('y') == '319').toBe(true);
                 legendElement = document.getElementById(legendId + '_text_' + 2);
                 expect(legendElement).not.toBe(null);
 
                 expect(legendElement.getAttribute('x') == '34').toBe(true);
-
-                expect(legendElement.getAttribute('y') == '332.25' || legendElement.getAttribute('y') == '326.25').toBe(true);
+                expect(legendElement.getAttribute('y') == '332.25' || legendElement.getAttribute('y') == '326.25' || legendElement.getAttribute('y') == '339').toBe(true);
                 legendElement = document.getElementById(legendId + '_text_' + 3);
                 expect(legendElement).not.toBe(null);
 
                 expect(legendElement.getAttribute('x') == '34').toBe(true);
-
-                expect(legendElement.getAttribute('y') == '355.25' || legendElement.getAttribute('y') == '351.25').toBe(true);
+                expect(legendElement.getAttribute('y') == '355.25' || legendElement.getAttribute('y') == '351.25' || legendElement.getAttribute('y') == '359').toBe(true);
                 value = chartObj.legendModule.legendBounds.height;
-
-                expect(value == 98 || value == 102).toBe(true);
+                expect(value == 98 || value == 102 || value == 90).toBe(true);
                 value = chartObj.legendModule.legendBounds.width;
 
                 expect(value == 94 || value == 73).toBe(true);

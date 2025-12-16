@@ -65,7 +65,7 @@ describe('Diagram Control', () => {
         let diagram: Diagram;
         let ele: HTMLElement;
         beforeAll(() => {
-            ele = createElement('div', { id: 'diagram' });
+            ele = createElement('div', { id: 'diagram1' });
             document.body.appendChild(ele);
             populateNodes();
             diagram = new Diagram({
@@ -73,11 +73,13 @@ describe('Diagram Control', () => {
                 layout: { type: 'SymmetricalLayout', springLength: 80, springFactor: 0.8, maxIteration: 500, margin: { left: 20, top: 20 } },
                 nodes: nodes, connectors: connectors,
             });
-            diagram.appendTo('#diagram');
+            diagram.appendTo('#diagram1');
         });
         afterAll(() => {
             diagram.destroy();
+            diagram = null;
             ele.remove();
+            ele = null;
         });
         it('Checking SymmetricalLayout springLength', (done: Function) => {
             let smtLayout: SymmetricLayout = new SymmetricLayout();
@@ -121,7 +123,7 @@ describe('Diagram Control', () => {
         let diagram: Diagram;
         let ele: HTMLElement;
         beforeAll(() => {
-            ele = createElement('div', { id: 'diagram' });
+            ele = createElement('div', { id: 'diagram2' });
             document.body.appendChild(ele);
             populateNodes();
             function createNode(id:string, width:number, height:number, offsetX:number, offsetY:number, content:string) {
@@ -193,11 +195,13 @@ describe('Diagram Control', () => {
                 ],
                 layout: { type: 'HierarchicalTree'},
             });
-            diagram.appendTo('#diagram');
+            diagram.appendTo('#diagram2');
         });
         afterAll(() => {
             diagram.destroy();
+            diagram = null;
             ele.remove();
+            ele = null;
         });
 
         it('Checking group node at layout', (done: Function) => {
@@ -209,18 +213,20 @@ describe('Diagram Control', () => {
         let diagram: Diagram;
         let ele: HTMLElement;
         beforeAll(() => {
-            ele = createElement('div', { id: 'diagram' });
+            ele = createElement('div', { id: 'diagram3' });
             document.body.appendChild(ele);
             diagram = new Diagram({
                 width: '1200px', height: '580px',
                 layout: { type: 'SymmetricalLayout', springLength: 60.69145326979739, springFactor: 0.8, maxIteration: 500 },
                     nodes: [], connectors:[], getNodeDefaults: getNodeDefaults,
                 });
-            diagram.appendTo('#diagram');
+            diagram.appendTo('#diagram3');
         });
         afterAll(() => {
             diagram.destroy();
+            diagram = null;
             ele.remove();
+            ele = null;
         });
         it('Checking SymmetricalLayout without node', (done: Function) => {
             let smtLayout: SymmetricLayout = new SymmetricLayout();
@@ -235,7 +241,7 @@ describe('Diagram Control', () => {
         var diagram: Diagram;
         var ele: HTMLElement;
         beforeAll(function () {
-            ele = createElement('div', { id: 'diagram' });
+            ele = createElement('div', { id: 'diagram4' });
             document.body.appendChild(ele);
             var node1 = { id: 'node1', annotations: [{ content: 'node1' }], };
             var node2 = { id: 'node2', annotations: [{ content: 'node2' }], };
@@ -247,11 +253,13 @@ describe('Diagram Control', () => {
                 layout: { type: 'SymmetricalLayout', springLength: 60.69145326979739, springFactor: 0.8, maxIteration: 500 },
                 nodes: [node1, node2, node3], connectors:[connector1, connector2], getNodeDefaults: getNodeDefaults,
             });
-            diagram.appendTo('#diagram');
+            diagram.appendTo('#diagram4');
         });
         afterAll(function () {
             diagram.destroy();
-            ele.remove();
+              diagram = null;
+                ele.remove();
+                ele = null;
         });
         it('Checking SymmetricalLayout springLength same as calculated distance', function (done) {
             var smtLayout = new SymmetricLayout();

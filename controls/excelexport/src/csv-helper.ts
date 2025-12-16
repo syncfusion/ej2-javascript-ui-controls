@@ -6,6 +6,8 @@ import {Encoding} from '@syncfusion/ej2-file-utils';
  */
 /* eslint-disable */
 export class CsvHelper {
+    private qualifier: string | undefined;
+	private lineSeparator: string = '\r\n'; // default CRLF
     private isMicrosoftBrowser: boolean;
     private buffer: Blob;
     private csvStr: string;
@@ -14,13 +16,15 @@ export class CsvHelper {
     private isServerRendered: boolean;
     private separator: string;
     /* tslint:disable:no-any */
-    constructor(json: any, separator: string) {
+    constructor(json: any, separator: string, qualifier?: string, newLine?: 'CRLF' | 'LF' | 'CR' | string)  {
         this.csvStr = '';
         if (separator === null || separator === undefined) {
             this.separator = ',';
         } else {
             this.separator = separator;
         }
+        this.qualifier = (qualifier === undefined) ? '"' : qualifier;
+		this.lineSeparator = this.GetLineSeparator(newLine);
         this.formatter = new ValueFormatter();
         this.isMicrosoftBrowser = !(!navigator.msSaveBlob);
         if (json.isServerRendered !== null && json.isServerRendered !== undefined) {
@@ -43,7 +47,11 @@ export class CsvHelper {
 
         //this.csvStr = 'a1,a2,a3\nb1,b2,b3';
     }
-
+	 private GetLineSeparator(newLine?: 'CRLF' | 'LF' | 'CR' | string): string {
+        if (!newLine) { return '\r\n'; }
+        const map = { CRLF: '\r\n', LF: '\n', CR: '\r' };
+        return (newLine in map) ? (map as any)[newLine] : String(newLine);
+    }
     private parseWorksheet(json: any): void {
         //Rows
         if (json.rows !== null && json.rows !== undefined) {
@@ -57,7 +65,7 @@ export class CsvHelper {
             //Row index
             if (row.index !== null && row.index !== undefined) {
                 while (count < row.index) {
-                    this.csvStr += '\r\n';
+                    this.csvStr += this.lineSeparator;
                     count++;
                 }
                 this.parseRow(row);
@@ -66,7 +74,7 @@ export class CsvHelper {
             }
 
         }
-		this.csvStr += '\r\n';
+		this.csvStr += this.lineSeparator;
     }
     /* tslint:disable:no-any */
     private parseRow(row: any): void {
@@ -129,25 +137,46 @@ export class CsvHelper {
         }
         this.csvStr = csv;
     }
-    private parseCellValue(value: String): any {
-        let val: string = '';
+  
+	private parseCellValue(value: String): any {
+		const csvLineSeparator = (this.separator !== undefined && this.separator !== null) ? this.separator : ','; // field delimiter
+		const csvQualifier = (this.qualifier && this.qualifier.length > 0) ? this.qualifier : '"';
+		const newLine = this.lineSeparator || '\r\n';             // configured newline sequence
+		
+		if (value == null) return '';
+		
+		// Normalize all newline variants to the configured newline sequence
+		const normalized = String(value).replace(/\r\n|\n|\r/g, newLine);
+		
+		// Detect if the value is already wrapped with the qualifier
+		const alreadyQualified = normalized.startsWith(csvQualifier) && normalized.endsWith(csvQualifier);
+		
+		// Escape qualifiers by doubling them (avoid touching the outer pair if already qualified)
+		let escaped = '';
+		for (let i = 0; i < normalized.length; i++) {
+			const ch = normalized[i];
+		
+			// Preserve the first/last char if they are the wrapping qualifiers
+			if (alreadyQualified && (i === 0 || i === normalized.length - 1)) {
+			escaped += ch;
+			continue;
+			}
+		
+			escaped += (ch === csvQualifier) ? (csvQualifier + csvQualifier) : ch;
+		}
+		
+		// Quote when needed: contains delimiter, qualifier, or newline, or has leading/trailing whitespace
+		const mustQuote =
+			escaped.includes(csvLineSeparator) ||
+			escaped.includes(csvQualifier) ||
+			escaped.includes(newLine) ||
+			/^\s/.test(escaped) ||
+			/\s$/.test(escaped);
+		
+		if (alreadyQualified) return escaped;
+		return mustQuote ? (csvQualifier + escaped + csvQualifier) : escaped;
+	}
 
-        let length: number = value.length;
-
-        for (let start: number = 0; start < length ; start++) {
-            if (value[start] === '\"') {
-                val += value[start].replace('\"', '\"\"');
-            } else {
-                val += value[start];
-            }
-        }
-        value = val;
-        if (value.indexOf(this.separator) !== -1 || value.indexOf('\n') !== -1 || value.indexOf('\"') !== -1) {
-            return value = '\"' + value + '\"';
-        } else {
-            return value;
-        }
-    }
     /**
      * Saves the file with specified name and sends the file to client browser
      * @param  {string} fileName- file name to save.

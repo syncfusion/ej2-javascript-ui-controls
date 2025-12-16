@@ -1,3 +1,4 @@
+@use 'ej2-base/styles/common/mixin' as *;
 @include export-module('query-builder-bds-icons') {
   .e-query-builder {
     & .e-collapse-rule::before {

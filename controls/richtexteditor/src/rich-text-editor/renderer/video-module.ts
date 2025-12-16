@@ -3,7 +3,7 @@ import { Button, RadioButton } from '@syncfusion/ej2-buttons';
 import { BeforeUploadEventArgs, FileInfo, InputEventArgs, MetaData, ProgressEventArgs, RemovingEventArgs, SelectedEventArgs, TextBox, Uploader, UploadingEventArgs } from '@syncfusion/ej2-inputs';
 import { ClickEventArgs } from '@syncfusion/ej2-navigations';
 import { Dialog, DialogModel, Popup } from '@syncfusion/ej2-popups';
-import { isIDevice, convertToBlob } from '../../common/util';
+import { isIDevice, convertToBlob, getRootOffsetParent, getMediaResizeBarValue } from '../../common/util';
 import { NodeSelection } from '../../selection/selection';
 import * as classes from '../base/classes';
 import { CLS_VID_FOCUS } from '../../common/constant';
@@ -19,6 +19,7 @@ import { VideoCommand } from '../../editor-manager/plugin/video';
 import {MediaDropEventArgs} from '../../common/interface';
 import { PopupUploader } from './popup-uploader-renderer';
 import { RichTextEditorModel } from '../base';
+import * as EVENTS from './../../common/constant';
 
 export class Video {
     public element: HTMLElement;
@@ -34,6 +35,7 @@ export class Video {
     private contentModule: IRenderer;
     private rendererFactory: RendererFactory;
     private quickToolObj: IQuickToolbar;
+    public isVideoClicked: boolean;
     /**
      * @hidden
      */
@@ -64,9 +66,6 @@ export class Video {
     private widthNum: TextBox;
     private heightNum: TextBox;
     private button: Button;
-    private drop: EventListenerOrEventListenerObject;
-    private drag: EventListenerOrEventListenerObject;
-    private enter: EventListenerOrEventListenerObject;
     private videoDragPopupTime: number;
     private showVideoQTbarTime: number;
 
@@ -85,15 +84,6 @@ export class Video {
     protected addEventListener(): void {
         if (this.parent.isDestroyed) {
             return;
-        }
-        if (!this.drop) {
-            this.drop = this.dragDrop.bind(this);
-        }
-        if (!this.drag) {
-            this.drag = this.dragOver.bind(this);
-        }
-        if (!this.enter) {
-            this.enter = this.dragEnter.bind(this);
         }
         this.parent.on(events.keyDown, this.onKeyDown, this);
         this.parent.on(events.keyUp, this.onKeyUp, this);
@@ -136,22 +126,17 @@ export class Video {
         this.parent.off(events.destroy, this.destroy);
         this.parent.off(events.bindOnEnd, this.bindOnEnd);
         this.parent.off(events.modelChanged, this.onPropertyChanged);
-        const dropElement: HTMLElement | Document = this.parent.iframeSettings.enable ? this.parent.inputElement.ownerDocument
-            : this.parent.inputElement;
-        dropElement.removeEventListener('drop', this.drop, true);
-        dropElement.removeEventListener('dragenter', this.enter, true);
-        dropElement.removeEventListener('dragover', this.drag, true);
-        this.drop = null;
-        this.drag = null;
-        this.enter = null;
+        this.parent.off(EVENTS.touchEnd, this.videoClick);
+        this.parent.off(EVENTS.dropEvent, this.dragDrop);
+        this.parent.off(EVENTS.dragEnter, this.dragEnter);
+        this.parent.off(EVENTS.dragOver, this.dragOver);
         if (!isNullOrUndefined(this.contentModule)) {
-            EventHandler.remove(this.contentModule.getEditPanel(), Browser.touchEndEvent, this.videoClick);
             this.parent.formatter.editorManager.observer.off(events.checkUndo, this.undoStack);
             if (this.parent.insertVideoSettings.resize) {
-                EventHandler.remove(this.parent.contentModule.getEditPanel(), Browser.touchStartEvent, this.resizeStart);
+                this.parent.off(EVENTS.touchStart, this.resizeStart);
                 (this.parent.element.ownerDocument as Document).removeEventListener('mousedown', this.docClick);
                 this.docClick = null;
-                EventHandler.remove(this.contentModule.getEditPanel(), 'cut', this.onCutHandler);
+                this.parent.off(EVENTS.cut, this.onCutHandler);
                 EventHandler.remove(this.contentModule.getDocument(), Browser.touchMoveEvent, this.resizing);
             }
         }
@@ -169,8 +154,8 @@ export class Video {
                 switch (Object.keys(e.newProp.insertVideoSettings)[0]) {
                 case 'resize':
                     if (this.parent.insertVideoSettings.resize === false) {
-                        EventHandler.remove(this.parent.contentModule.getEditPanel(), Browser.touchStartEvent, this.resizeStart);
-                        EventHandler.remove(this.contentModule.getEditPanel(), 'cut', this.onCutHandler);
+                        this.parent.off(EVENTS.touchStart, this.resizeStart);
+                        this.parent.off(EVENTS.cut, this.onCutHandler);
                         this.cancelResizeAction();
                     } else {
                         this.addresizeHandler();
@@ -180,20 +165,18 @@ export class Video {
             }
         }
     }
-    private addresizeHandler(): void {
-        EventHandler.add(this.parent.contentModule.getEditPanel(), Browser.touchStartEvent, this.resizeStart, this);
-        (this.parent.element.ownerDocument as Document).addEventListener('mousedown', this.docClick);
-        EventHandler.add(this.contentModule.getEditPanel(), 'cut', this.onCutHandler, this);
-    }
 
+    private addresizeHandler(): void {
+        this.parent.on(EVENTS.touchStart, this.resizeStart, this);
+        (this.parent.element.ownerDocument as Document).addEventListener('mousedown', this.docClick);
+        this.parent.on(EVENTS.cut, this.onCutHandler, this);
+    }
     private afterRender(): void {
         this.contentModule = this.rendererFactory.getRenderer(RenderType.Content);
-        EventHandler.add(this.contentModule.getEditPanel(), Browser.touchEndEvent, this.videoClick, this);
-        const dropElement: HTMLElement | Document = this.parent.iframeSettings.enable ?
-            this.parent.inputElement.ownerDocument : this.parent.inputElement;
-        dropElement.addEventListener('drop', this.drop, true);
-        dropElement.addEventListener('dragenter', this.enter, true);
-        dropElement.addEventListener('dragover', this.drag, true);
+        this.parent.on(EVENTS.touchEnd, this.videoClick, this);
+        this.parent.on(EVENTS.dropEvent, this.dragDrop, this);
+        this.parent.on(EVENTS.dragEnter, this.dragEnter, this);
+        this.parent.on(EVENTS.dragOver, this.dragOver, this);
         if (this.parent.insertVideoSettings.resize) {
             this.addresizeHandler();
         }
@@ -474,9 +457,11 @@ export class Video {
             if (((e.target as HTMLElement).tagName === 'VIDEO' || this.isEmbedVidElem((e.target as HTMLElement)))) {
                 this.contentModule.getEditPanel().setAttribute('contenteditable', 'false');
                 (e.target as HTMLElement).focus();
+                this.isVideoClicked = true;
             } else {
-                if (!this.parent.readonly) {
+                if (!this.parent.readonly && !this.parent.imageModule.isImageClicked && !this.parent.audioModule.isAudioClicked) {
                     this.contentModule.getEditPanel().setAttribute('contenteditable', 'true');
+                    this.isVideoClicked = false;
                 }
             }
         }
@@ -546,44 +531,31 @@ export class Video {
         const borWid: number = (Browser.isDevice) ? (4 * parseInt((e.style.outline.slice(-3)), 10)) + 2 :
             (2 * parseInt((e.style.outline.slice(-3)), 10)) + 2; //span border width + video outline width
         const devWid: number = ((Browser.isDevice) ? 0 : 2); // span border width
-        (vidResizeDiv.querySelector('.e-rte-botLeft') as HTMLElement).style.left = (left - borWid) + 'px';
+        // to remove the scroll bar width in RTL mode
+        let right: number = 0;
+        if (this.parent.enableRtl && !this.parent.iframeSettings.enable) {
+            const offsetParent: HTMLElement = getRootOffsetParent(e, this.rteID);
+            right = offsetParent.offsetWidth - offsetParent.clientWidth;
+        }
+        (vidResizeDiv.querySelector('.e-rte-botLeft') as HTMLElement).style.left = ((left - borWid) - right) + 'px';
         (vidResizeDiv.querySelector('.e-rte-botLeft') as HTMLElement).style.top = ((parseInt(vidHgt.toString(), 10) - borWid) + top) + 'px';
-        (vidResizeDiv.querySelector('.e-rte-botRight') as HTMLElement).style.left = ((parseInt(vidWid.toString(), 10) - (borWid - devWid)) + left) + 'px';
+        (vidResizeDiv.querySelector('.e-rte-botRight') as HTMLElement).style.left = (((parseInt(vidWid.toString(), 10) - (borWid - devWid)) + left) - right) + 'px';
         (vidResizeDiv.querySelector('.e-rte-botRight') as HTMLElement).style.top = ((parseInt(vidHgt.toString(), 10) - borWid) + top) + 'px';
-        (vidResizeDiv.querySelector('.e-rte-topRight') as HTMLElement).style.left = ((parseInt(vidWid.toString(), 10) - (borWid - devWid)) + left) + 'px';
+        (vidResizeDiv.querySelector('.e-rte-topRight') as HTMLElement).style.left = (((parseInt(vidWid.toString(), 10) - (borWid - devWid)) + left) - right) + 'px';
         (vidResizeDiv.querySelector('.e-rte-topRight') as HTMLElement).style.top = (top - (borWid)) + 'px';
-        (vidResizeDiv.querySelector('.e-rte-topLeft') as HTMLElement).style.left = (left - borWid) + 'px';
+        (vidResizeDiv.querySelector('.e-rte-topLeft') as HTMLElement).style.left = ((left - borWid) - right) + 'px';
         (vidResizeDiv.querySelector('.e-rte-topLeft') as HTMLElement).style.top = (top - borWid) + 'px';
     }
 
     private calcPos(elem: HTMLElement): OffsetPosition {
-        const ignoreOffset: string[] = ['TD', 'TH', 'TABLE', 'A'];
-        let parentOffset: OffsetPosition = { top: 0, left: 0 };
-        let elementOffset: OffsetPosition;
-        const doc: Document = elem.ownerDocument;
-        let offsetParent: Node = ((elem.offsetParent && (elem.offsetParent.classList.contains('e-video-clickelem') ||
-        ignoreOffset.indexOf(elem.offsetParent.tagName) > -1)) ? closest(elem, '#' + this.parent.getID() + '_rte-edit-view') : elem.offsetParent) || doc.documentElement;
-        while (offsetParent &&
-                (offsetParent === doc.body || offsetParent === doc.documentElement) &&
-                (<HTMLElement>offsetParent).style.position === 'static') {
-            offsetParent = offsetParent.parentNode;
-        }
-        if (offsetParent && offsetParent !== elem && offsetParent.nodeType === 1) {
-            parentOffset = (<HTMLElement>offsetParent).getBoundingClientRect();
-        }
-        if (elem && elem.nodeType === 1 && elem.tagName === 'IFRAME') {
-            elementOffset = elem.getBoundingClientRect();
-            return {
-                top: elementOffset.top - parentOffset.top,
-                left: elementOffset.left - parentOffset.left
-            };
-        } else {
-            return {
-                top: elem.offsetTop,
-                left: elem.offsetLeft
-            };
-        }
+        const rootEl: HTMLTextAreaElement = this.parent.contentModule.getEditPanel() as HTMLTextAreaElement;
+        const ElemOffset: OffsetPosition = getMediaResizeBarValue(elem, rootEl);
+        return {
+            top: ElemOffset.top,
+            left: ElemOffset.left
+        };
     }
+
     private setAspectRatio(vid: HTMLVideoElement | HTMLIFrameElement, expectedX: number, expectedY: number, e: ResizeArgs): void {
         const vidEleStyle: CSSStyleDeclaration | HTMLIFrameElement = getComputedStyle(vid);
         if (isNullOrUndefined(vidEleStyle)) {
@@ -801,25 +773,37 @@ export class Video {
             this.undoStack({ subCommand: (originalEvent.keyCode === 90 ? 'undo' : 'redo') });
         }
         if (originalEvent.keyCode === 8 || originalEvent.keyCode === 46) {
-            if (selectNodeEle && selectNodeEle[0] &&
-                ((selectNodeEle[0].nodeName === 'VIDEO' || this.isEmbedVidElem(selectNodeEle[0] as HTMLElement)) ||
-                (originalEvent.keyCode === 46 && (selectNodeEle[0].nextSibling as HTMLElement) &&
-                ((selectNodeEle[0].nextSibling as HTMLElement).className === 'e-video-wrap' || this.isEmbedVidElem(selectNodeEle[0].nextSibling as HTMLElement))) ||
-                (originalEvent.keyCode === 8 && (selectNodeEle[0].previousSibling as HTMLElement) &&
-                ((selectNodeEle[0].previousSibling as HTMLElement).className === 'e-video-wrap' || this.isEmbedVidElem(selectNodeEle[0].previousSibling as HTMLElement)))) &&
-                selectNodeEle.length <= 2 && (selectNodeEle[0] as HTMLElement).nodeName !== '#text') {
-                if (!isNullOrUndefined(this.parent.formatter.editorManager.nodeSelection)) {
-                    save = this.parent.formatter.editorManager.nodeSelection.save(range, this.parent.contentModule.getDocument());
-                }
-                originalEvent.preventDefault();
-                const event: IImageNotifyArgs = {
-                    selectNode: selectNodeEle, selection: save, selectParent: selectParentEle,
-                    args: {
-                        item: { command: 'Videos', subCommand: 'VideoRemove' } as IToolbarItemModel,
-                        originalEvent: originalEvent
+            if (selectNodeEle && selectNodeEle[0]) {
+                // Is Video element selected to delete
+                const isVideoSelected: boolean = selectNodeEle[0].nodeName === 'VIDEO' ||
+                    this.isEmbedVidElem(selectNodeEle[0] as HTMLElement);
+                // Is Delete Key is pressed to remove video
+                const isVideoDeleteKeyPress: boolean = originalEvent.keyCode === 46 &&
+                    ((selectNodeEle[0].nextSibling as HTMLElement) &&
+                    ((selectNodeEle[0].nextSibling as HTMLElement).className === 'e-video-wrap' ||
+                    this.isEmbedVidElem(selectNodeEle[0].nextSibling as HTMLElement)) &&
+                    (range.startOffset === range.endOffset) &&
+                    (range.startContainer.textContent.length === range.startOffset));
+                // Is Backspace key is pressed to remove video
+                const isVideoBackSpaceKeyPress: boolean = originalEvent.keyCode === 8 &&
+                    ((selectNodeEle[0].previousSibling as HTMLElement) &&
+                    ((selectNodeEle[0].previousSibling as HTMLElement).className === 'e-video-wrap' ||
+                    this.isEmbedVidElem(selectNodeEle[0].previousSibling as HTMLElement)) &&
+                    (range.startOffset === range.endOffset) && range.startOffset === 0);
+                if ((isVideoSelected || isVideoBackSpaceKeyPress || isVideoDeleteKeyPress)) {
+                    if (!isNullOrUndefined(this.parent.formatter.editorManager.nodeSelection)) {
+                        save = this.parent.formatter.editorManager.nodeSelection.save(range, this.parent.contentModule.getDocument());
                     }
-                };
-                this.deleteVideo(event, originalEvent.keyCode);
+                    originalEvent.preventDefault();
+                    const event: IImageNotifyArgs = {
+                        selectNode: selectNodeEle, selection: save, selectParent: selectParentEle,
+                        args: {
+                            item: { command: 'Videos', subCommand: 'VideoRemove' } as IToolbarItemModel,
+                            originalEvent: originalEvent
+                        }
+                    };
+                    this.deleteVideo(event, originalEvent.keyCode);
+                }
             }
             if (this.parent.contentModule.getEditPanel().querySelector('.e-vid-resize')) {
                 this.removeResizeEle();
@@ -840,17 +824,19 @@ export class Video {
                 const src: string = (this.deletedVid[i as number] as HTMLVideoElement).src;
                 this.videoRemovePost(src as string);
             }
-            if (this.parent.editorMode !== 'Markdown') {
+            if (this.parent.editorMode !== 'Markdown' && range.startContainer === range.endContainer && range.startOffset === range.endOffset) {
                 if (range.startContainer.nodeType === 3) {
-                    if (originalEvent.code === 'Backspace') {
+                    if (originalEvent.code === 'Backspace' && !this.parent.audioModule.isAudioRemoved) {
                         if ((range.startContainer as HTMLElement).previousElementSibling && range.startOffset === 0 &&
-                            (range.startContainer as HTMLElement).previousElementSibling.classList.contains(classes.CLS_VIDEOWRAP)) {
+                            ((range.startContainer as HTMLElement).previousElementSibling.classList.contains(classes.CLS_VIDEOWRAP) ||
+                            this.isEmbedVidElem((range.startContainer as HTMLElement).previousElementSibling as HTMLElement))) {
                             detach((range.startContainer as HTMLElement).previousElementSibling);
                         }
                     } else {
-                        if ((range.startContainer as HTMLElement).nextElementSibling &&
+                        if (!this.parent.audioModule.isAudioRemoved && (range.startContainer as HTMLElement).nextElementSibling &&
                             range.endContainer.textContent.length === range.endOffset &&
-                            (range.startContainer as HTMLElement).nextElementSibling.classList.contains(classes.CLS_VIDEOWRAP)) {
+                            ((range.startContainer as HTMLElement).nextElementSibling.classList.contains(classes.CLS_VIDEOWRAP) ||
+                            this.isEmbedVidElem((range.startContainer as HTMLElement).nextElementSibling as HTMLElement))) {
                             detach((range.startContainer as HTMLElement).nextElementSibling);
                         }
                     }
@@ -1011,7 +997,7 @@ export class Video {
         }
         e.selection.restore();
         this.parent.formatter.process(
-            this.parent, e.args, (e.args as ClickEventArgs).originalEvent,
+            this.parent, e.args, (e.args as ClickEventArgs),
             {
                 selectNode: e.selectNode,
                 subCommand: ((e.args as ClickEventArgs).item as IDropDownItemModel).subCommand
@@ -1605,43 +1591,45 @@ export class Video {
      * @returns {void}
      */
     private dragDrop(args: MediaDropEventArgs): void {
-        this.parent.trigger(events.beforeMediaDrop, args, (e: MediaDropEventArgs) => {
-            const isVideoOrFileDrop: boolean = e.dataTransfer.files.length > 0;
-            if (!e.cancel && isVideoOrFileDrop) {
-                // Skip drop if it's on toolbar or editor is readonly
-                if (closest((e.target as HTMLElement), '#' + this.parent.getID() + '_toolbar') ||
-                    this.parent.inputElement.contentEditable === 'false') {
+        if (args.dataTransfer.files.length > 0 && args.dataTransfer.files[0].type.startsWith('video')) {
+            this.parent.trigger(events.beforeMediaDrop, args, (e: MediaDropEventArgs) => {
+                const isVideoOrFileDrop: boolean = e.dataTransfer.files.length > 0;
+                if (!e.cancel && isVideoOrFileDrop) {
+                    // Skip drop if it's on toolbar or editor is readonly
+                    if (closest((e.target as HTMLElement), '#' + this.parent.getID() + '_toolbar') ||
+                        this.parent.inputElement.contentEditable === 'false') {
+                        e.preventDefault();
+                        return;
+                    }
+                    // Clean up resize handles if active
+                    if (this.parent.element.querySelector('.' + classes.CLS_VID_RESIZE)) {
+                        detach(this.vidResizeDiv);
+                    }
                     e.preventDefault();
-                    return;
-                }
-                // Clean up resize handles if active
-                if (this.parent.element.querySelector('.' + classes.CLS_VID_RESIZE)) {
-                    detach(this.vidResizeDiv);
-                }
-                e.preventDefault();
-                let range: Range;
-                // Get the correct range/position for insertion based on browser
-                if (this.contentModule.getDocument().caretRangeFromPoint) { //For chrome
-                    range = this.contentModule.getDocument().caretRangeFromPoint(e.clientX, e.clientY);
-                } else if ((e.rangeParent)) { //For mozilla firefox
-                    range = this.contentModule.getDocument().createRange();
-                    range.setStart(e.rangeParent, e.rangeOffset);
+                    let range: Range;
+                    // Get the correct range/position for insertion based on browser
+                    if (this.contentModule.getDocument().caretRangeFromPoint) { //For chrome
+                        range = this.contentModule.getDocument().caretRangeFromPoint(e.clientX, e.clientY);
+                    } else if ((e.rangeParent)) { //For mozilla firefox
+                        range = this.contentModule.getDocument().createRange();
+                        range.setStart(e.rangeParent, e.rangeOffset);
+                    } else {
+                        range = this.getDropRange(e.clientX, e.clientY); //For internet explorer
+                    }
+                    this.parent.notify(events.selectRange, { range: range });
+                    // Don't proceed if we're already in upload mode
+                    const uploadArea: HTMLElement = this.parent.element.querySelector('.' + classes.CLS_DROPAREA) as HTMLElement;
+                    if (uploadArea) {
+                        return;
+                    }
+                    this.insertDragVideo(e as DragEvent);
                 } else {
-                    range = this.getDropRange(e.clientX, e.clientY); //For internet explorer
+                    if (isVideoOrFileDrop) {
+                        e.preventDefault();
+                    }
                 }
-                this.parent.notify(events.selectRange, { range: range });
-                // Don't proceed if we're already in upload mode
-                const uploadArea: HTMLElement = this.parent.element.querySelector('.' + classes.CLS_DROPAREA) as HTMLElement;
-                if (uploadArea) {
-                    return;
-                }
-                this.insertDragVideo(e as DragEvent);
-            } else {
-                if (isVideoOrFileDrop) {
-                    e.preventDefault();
-                }
-            }
-        });
+            });
+        }
     }
     /**
      * Used to calculate range on internet explorer for video drag and drop
@@ -1752,7 +1740,8 @@ export class Video {
                     actionBeginArgs.itemCollection
                 );
                 // Find the inserted video and set opacity
-                const videoElement: HTMLVideoElement = this.parent.contentModule.getEditPanel().querySelector('video:last-of-type');
+                const range: Range = this.parent.formatter.editorManager.nodeSelection.getRange(this.parent.contentModule.getDocument());
+                const videoElement : HTMLVideoElement = (range.commonAncestorContainer as HTMLElement).querySelector('video');
                 if (videoElement) {
                     videoElement.style.opacity = '0.5';
                     // Set up upload handler for the inserted video
@@ -1820,30 +1809,9 @@ export class Video {
                         args.args,
                         videoCommandArgs
                     );
-                    this.showPopupToolBar(args, videoCommandArgs);
                 }
             });
             reader.readAsDataURL((args as NotifyArgs).file);
-        }
-    }
-
-    private showPopupToolBar(e: NotifyArgs, url: IVideoCommandsArgs): void {
-        const videoSrc: string = 'video[src="' + url.url + '"]';
-        const videoElement: Element = this.parent.inputElement.querySelector(videoSrc);
-        this.parent.quickToolbarModule.createQTBar('Video', 'MultiRow', this.parent.quickToolbarSettings.video, RenderType.VideoToolbar);
-        const args: IShowPopupArgs = {
-            args: e.args as MouseEvent,
-            type: 'Videos',
-            isNotify: undefined,
-            elements: videoElement
-        };
-        if (videoElement) {
-            this.showVideoQTbarTime = setTimeout(() => {
-                this.showVideoQuickToolbar(args);
-                if (this.parent.insertVideoSettings.resize) {
-                    this.resizeStart(e.args as PointerEvent, videoElement);
-                }
-            }, 0);
         }
     }
 

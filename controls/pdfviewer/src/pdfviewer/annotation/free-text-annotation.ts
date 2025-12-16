@@ -999,14 +999,16 @@ export class FreeTextAnnotation {
      */
     public onKeyDownInputBox(event: KeyboardEvent): void {
         // eslint-disable-next-line
-        if (event.which !== 18) {
+        const isTab: boolean = event.key === 'Tab' || event.code === 'Tab';
+        const isAlt: boolean = event.key === 'Alt' || event.code === 'AltLeft' || event.code === 'AltRight';
+        if (!isAlt) {
             if (event.ctrlKey && event.key.toLowerCase() === 'a') {
                 event.preventDefault();
                 this.inputBoxElement.select();
             }
             // eslint-disable-next-line
             const inuptEleObj: FreeTextAnnotation = this;
-            if (event.which === 9 || (isNullOrUndefined(this.pdfViewer.selectedItems.annotations[0]) && !this.isNewFreeTextAnnot)) {
+            if (isTab || (isNullOrUndefined(this.pdfViewer.selectedItems.annotations[0]) && !this.isNewFreeTextAnnot)) {
                 event.preventDefault();
             }
             this.selectedAnnotation = this.pdfViewer.selectedItems.annotations &&
@@ -1165,11 +1167,12 @@ export class FreeTextAnnotation {
         const target: any = event.target;
         this.selectionStart = 0;
         this.selectionEnd = 0;
-        if (event.which === 3 && target) {
+        const isRightClick: boolean = event.button === 2;
+        if (isRightClick && target) {
             this.selectionStart = target.selectionStart;
             this.selectionEnd = target.selectionEnd;
         }
-        if (event.which === 3 && window.getSelection() !== null && window.getSelection().toString() !== '') {
+        if (isRightClick && window.getSelection() !== null && window.getSelection().toString() !== '') {
             this.isTextSelected = true;
         } else {
             this.isTextSelected = false;

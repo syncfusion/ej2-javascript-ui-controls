@@ -1,8 +1,10 @@
+@use 'ej2-base/styles/common/mixin' as *;
+@use './theme-variables' as *;
 @include export-module('splitter-layout') {
   .e-splitter {
     &.e-splitter-horizontal,
     &.e-splitter-vertical {
-      border-width: 1px;
+      border-width: $splitbar-border-width;
       display: flex;
       overflow: hidden;
       position: relative;
@@ -92,16 +94,16 @@
 
             .e-navigate-arrow {
               &:not(.e-arrow-down) {
-                border-radius: 50%;
-                bottom: 20px;
-                right: 22px;
+                border-radius: $splitbar-arrow-border-radius;
+                bottom: $splitter-vertical-navigate-arrow-topbottom;
+                right: $splitter-vertical-navigate-arrow-left;
               }
 
               &.e-arrow-down {
-                border-radius: 50%;
-                left: 22px;
+                border-radius: $splitbar-arrow-border-radius;
+                left: $splitter-vertical-navigate-arrow-left;
                 right: auto;
-                top: 20px;
+                top: $splitter-vertical-navigate-arrow-topbottom;
 
                 &::after {
                   right: auto;
@@ -134,7 +136,7 @@
           content: '';
           cursor: col-resize;
           display: block;
-          height: 100%;
+          height: $splitbar-resizable-height;
           position: absolute;
           width: 16px;
           z-index: 10;
@@ -143,7 +145,7 @@
         .e-resize-handler {
           align-items: center;
           display: flex;
-          height: $splitbar-icon-gap;
+          height: $splitbar-icon-height;
           justify-content: center;
           position: relative;
           width: 1px;
@@ -155,61 +157,61 @@
 
         .e-navigate-arrow:not(.e-arrow-right)::before,
         .e-navigate-arrow:not(.e-arrow-right)::after {
-          left: 8px;
-          right: 3px;
+          left: $splitter-navigate-right-arrow-left;
+          right: $splitter-navigate-right-arrow-right;
         }
 
         .e-navigate-arrow {
           border-image: none;
-          border-width: 1px;
+          border-width: $splitbar-border-width;
           cursor: pointer;
           display: flex;
-          height: 26px;
-          padding: 1px 12px;
+          height: $splitbar-arrow-height;
+          padding: $split-bar-horizontal-navigate-arrow-padding;
           position: relative;
 
           &::before,
           &::after {
-            border-radius: 16px;
+            border-radius: $splitbar-arrow-segment-radius;
             content: '';
-            height: 8px;
+            height: $splitbar-arrow-segment-height;
             position: absolute;
             transform: rotate(0deg);
-            width: 2px;
+            width: $splitter-navigate-arrow-width;
           }
 
           &::before {
-            top: 5px;
-            transform-origin: 1px 7px 0;
+            top: $splitter-navigate-arrow-top-before;
+            transform-origin: $splitter-navigate-arrow-transform-origin-before;
           }
 
           &::after {
-            top: 11px;
-            transform-origin: 1px 1px 0;
+            top: $splitter-navigate-arrow-top-after;
+            transform-origin: $splitter-navigate-arrow-transform-origin-after;
           }
 
           &:not(.e-arrow-right) {
-            border-radius: 50%;
-            right: 5px;
+            border-radius: $splitbar-arrow-border-radius;
+            right: $splitter-navigate-arrow-left;
           }
 
           &.e-arrow-right {
-            border-radius: 50%;
-            left: 5px;
+            border-radius: $splitbar-arrow-border-radius;
+            left: $splitter-navigate-arrow-right;
           }
 
           &.e-arrow-right::before,
           &.e-arrow-right::after {
-            right: 8px;
+            right: $splitter-horizontal-navigate-arrow-right;
           }
         }
 
         &.e-last-bar:not(.e-resizable-split-bar) {
-          margin: 0 3px;
+          margin: $splitbar-horizontal-last-bar-margin;
         }
 
         &:not(.e-resizable-split-bar) {
-          margin: 0 0 0 3px;
+          margin: $splitbar-horizontal-bar-margin;
         }
       }
 
@@ -234,7 +236,7 @@
           content: '';
           cursor: row-resize;
           display: block;
-          height: 16px;
+          height: $splitbar-vertical-resizable-height;
           position: absolute;
           width: 100%;
           z-index: 12;
@@ -243,7 +245,7 @@
         .e-resize-handler {
           align-items: center;
           display: flex;
-          height: 1px;
+          height: $splitbar-vertical-handler-height;
           justify-content: center;
           width: $splitbar-icon-gap;
 
@@ -254,70 +256,70 @@
 
         .e-navigate-arrow:not(.e-arrow-down)::before,
         .e-navigate-arrow:not(.e-arrow-down)::after {
-          left: 10px;
+          left: $splitter-vertical-navarrow-up-left;
         }
 
         .e-navigate-arrow {
           border-image: none;
-          border-width: 0;
+          border-width: $splitter-border-none;
           cursor: pointer;
           display: flex;
-          height: 26px;
-          padding: 10px 3px 10px 18px;
+          height: $splitbar-arrow-height;
+          padding: $split-bar-vertical-navigate-arrow-padding;
           position: relative;
-          width: 26px;
+          width: $splitter-vertical-nav-arrow-width;
 
           &::before,
           &::after {
-            border-radius: 16px;
+            border-radius: $splitbar-arrow-segment-radius;
             content: '';
-            height: 8px;
+            height: $splitbar-arrow-segment-height;
             position: absolute;
             transform: rotate(90deg);
-            width: 2px;
+            width: $splitter-navigate-arrow-width;
           }
 
           &:not(.e-arrow-down) {
             &::before {
-              top: 3px;
-              transform-origin: 2px 7px 0;
+              top: $splitter-vertical-navigate-arrow-up-top-before;
+              transform-origin: $splitter-vertical-navigate-arrow-up-transform-origin-before;
             }
           }
 
           &:not(.e-arrow-down) {
             &::after {
-              left: 11px;
-              top: 8px;
-              transform-origin: 1px 1px 0;
+              left: $splitter-vertical-navarrow-up-left-after;
+              top: $splitter-vertical-navigate-arrow-up-top-after;
+              transform-origin: $splitter-vertical-navigate-arrow-up-transform-origin-after;
             }
           }
 
           &.e-arrow-down {
             &::before {
-              left: 12px;
-              top: 8px;
-              transform-origin: 1px 6px 0;
+              left: $splitter-vertical-navigate-arrow-down-left-before;
+              top: $splitter-vertical-navigate-arrow-down-top-before;
+              transform-origin: $splitter-vertical-navarrow-transform-origin-before;
             }
           }
 
           &.e-arrow-down {
             &::after {
-              left: 10px;
-              top: 12px;
-              transform-origin: 1px 2px 0;
+              left: $splitter-vertical-navigate-arrow-down-left-after;
+              top: $splitter-vertical-navigate-arrow-down-top-after;
+              transform-origin: $splitter-vertical-navarrow-transform-origin-after;
             }
           }
 
           &:not(.e-arrow-down) {
-            border-radius: 50%;
-            bottom: 20px;
-            left: 22px;
+            border-radius: $splitbar-arrow-border-radius;
+            bottom: $splitter-vertical-navigate-arrow-topbottom;
+            left: $splitter-vertical-navigate-arrow-left;
           }
 
           &.e-arrow-down {
-            border-radius: 50%;
-            right: 22px;
-            top: 20px;
+            border-radius: $splitbar-arrow-border-radius;
+            right: $splitter-vertical-navigate-arrow-left;
+            top: $splitter-vertical-navigate-arrow-topbottom;
           }
 
           &.e-arrow-down::before,
@@ -327,11 +329,11 @@
         }
 
         &.e-last-bar:not(.e-resizable-split-bar) {
-          margin: 3px 0;
+          margin: $splitbar-vertical-last-bar-margin;
         }
 
         &:not(.e-resizable-split-bar) {
-          margin: 3px 0 0;
+          margin: $splitbar-vertical-bar-margin;
         }
       }
       .e-navigate-arrow {
@@ -352,7 +354,7 @@
   }
 
   .e-splitter.e-ie .e-navigate-arrow.e-arrow-left {
-    margin-left: -26px;
+    margin-left: $split-bar-horizontal-navigate-arrow-left-margin-left;
   }
 
   .e-splitter.e-ie .e-split-bar-horizontal .e-resize-handler {

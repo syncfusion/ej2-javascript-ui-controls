@@ -6,6 +6,7 @@ import { PdfDocument } from '../pdf-document';
 import { PdfPage } from '../pdf-page';
 import { _PdfDictionary, _PdfName, _PdfReference } from '../pdf-primitives';
 import { PdfLayerCollection } from './layer-collection';
+import { Size } from './../pdf-type';
 /**
  * Represents the base class for layer objects.
  * ```typescript
@@ -401,7 +402,7 @@ export class PdfLayer {
         let lly: number = 0;
         let urx: number = 0;
         let ury: number = 0;
-        const size: number[] = this._page.size;
+        const size: Size = this._page.size;
         const mbox: number[] = this._page.mediaBox;
         if (mbox && mbox.length >= 4) {
             llx = mbox[0];
@@ -418,10 +419,11 @@ export class PdfLayer {
                 const crx: number = cbox[2];
                 const cry: number = cbox[3];
                 const isValid: boolean = (cx < 0 || cy < 0 || crx < 0 || cry < 0) &&
-                    (Math.floor(Math.abs(cy)) === Math.floor(Math.abs(size[1]))) &&
-                    (Math.floor(Math.abs(cx)) === Math.floor(Math.abs(size[0])));
+                    (Math.floor(Math.abs(cy)) === Math.floor(Math.abs(size.height))) &&
+                    (Math.floor(Math.abs(cx)) === Math.floor(Math.abs(size.width)));
                 if (isValid) {
-                    this._graphics = new PdfGraphics([Math.max(cx, crx), Math.max(cy, cry)], stream, this._crossReference, this._page);
+                    this._graphics = new PdfGraphics({width: Math.max(cx, crx), height: Math.max(cy, cry)},
+                                                     stream, this._crossReference, this._page);
                 } else {
                     this._graphics = new PdfGraphics(size, stream, this._crossReference, this._page);
                     this._graphics._cropBox = cbox;
@@ -430,8 +432,8 @@ export class PdfLayer {
                 this._graphics = new PdfGraphics(size, stream, this._crossReference, this._page);
             }
         } else if ((llx < 0 || lly < 0 || urx < 0 || ury < 0) &&
-            (Math.floor(Math.abs(lly)) === Math.floor(Math.abs(size[1]))) &&
-            (Math.floor(Math.abs(urx)) === Math.floor(Math.abs(size[0])))) {
+            (Math.floor(Math.abs(lly)) === Math.floor(Math.abs(size.height))) &&
+            (Math.floor(Math.abs(urx)) === Math.floor(Math.abs(size.width)))) {
             let width: number = Math.max(llx, urx);
             let height: number = Math.max(lly, ury);
             if (width <= 0 || height <= 0) {
@@ -451,7 +453,7 @@ export class PdfLayer {
                 width = Math.max(llx, urx);
                 height = Math.max(lly, ury);
             }
-            this._graphics = new PdfGraphics([width, height], stream, this._crossReference, this._page);
+            this._graphics = new PdfGraphics({width: width, height: height}, stream, this._crossReference, this._page);
         } else {
             this._graphics = new PdfGraphics(size, stream, this._crossReference, this._page);
         }
@@ -477,16 +479,16 @@ export class PdfLayer {
                 }
                 const clip: number[] = this._graphics._clipBounds;
                 if (rotate === 90) {
-                    this._graphics.translateTransform(0, size[1]);
+                    this._graphics.translateTransform({x: 0, y: size.height});
                     this._graphics.rotateTransform(-90);
-                    this._graphics._clipBounds = [clip[0], clip[1], size[0], size[1]];
+                    this._graphics._clipBounds = [clip[0], clip[1], size.width, size.height];
                 } else if (rotate === 180) {
-                    this._graphics.translateTransform(size[0], size[1]);
+                    this._graphics.translateTransform({x: size.width, y: size.height});
                     this._graphics.rotateTransform(-180);
                 } else if (rotate === 270) {
-                    this._graphics.translateTransform(size[0], 0);
+                    this._graphics.translateTransform({x: size.width, y: 0});
                     this._graphics.rotateTransform(-270);
-                    this._graphics._clipBounds = [clip[0], clip[1], size[1], size[0]];
+                    this._graphics._clipBounds = [clip[0], clip[1], size.height, size.width];
                 }
             }
         }

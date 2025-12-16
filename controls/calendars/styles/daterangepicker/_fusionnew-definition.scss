@@ -1,3 +1,6 @@
+@use 'ej2-base/styles/definition/fusionnew' as *;
+@forward 'ej2-base/styles/definition/fusionnew';
+
 // size variables
 $range-btn-font-weight: $font-weight-medium !default;
 $range-btn-width: 50% !default;
@@ -293,3 +296,23 @@ $modal-range-header-text-color: $content-text-color !default;
 $modal-range-tablet-font-size: 18px !default;
 
 $range-header-font-size: 16px !default;
+
+$padding-zero: 0;
+$margin-zero: 0;
+$daterangepicker-day-span-margin: 8px 0;
+$daterangepicker-span-padding: 11px;
+$height-zero: 0 !default;
+$range-full-height: 100% !default;
+$range-full-width: 100% !default;
+$range-content-min-height: 40px !default;
+$range-normal-content-min-height: 33px !default;
+$zero-border: 0 !default;
+$range-device-span-font-size: 18px !default;
+$range-calendar-container-height: 78vh !default;
+$range-footer-font-size: 18px !default;
+$range-calendar-holder-container-height: 70vh !default;
+$range-calendar-holder-container-600-height: 65% !default;
+$range-container-content-month-height: 50vh !default;
+$date-range-day-span-font-size: 16px !default;
+$range-outline-float-text-width: calc(100% - 80px);
+$range-outline-static-clear-float-text-width: calc(100% - 110px);

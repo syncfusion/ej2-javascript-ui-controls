@@ -1982,6 +1982,75 @@ describe('Year and TimelineYear View Event Render Module', () => {
         });
     });
 
+    describe('Schedule Timeline Month view MoreIndicator rendering', () => {
+        let schObj: Schedule;
+        beforeAll((done: DoneFn) => {
+            const yearData: Record<string, any>[] = [
+                {
+                    Id: 1,
+                    Subject: 'Event 1',
+                    StartTime: new Date(2017, 2, 2),
+                    EndTime: new Date(2017, 2, 2)
+                },
+                {
+                    Id: 2,
+                    Subject: 'Event 2',
+                    StartTime: new Date(2017, 2, 2),
+                    EndTime: new Date(2017, 2, 2)
+                },
+                {
+                    Id: 3,
+                    Subject: 'Event 3',
+                    StartTime: new Date(2017, 2, 2),
+                    EndTime: new Date(2017, 2, 2)
+                },
+                {
+                    Id: 4,
+                    Subject: 'Event 4',
+                    StartTime: new Date(2017, 2, 2),
+                    EndTime: new Date(2017, 2, 2)
+                },
+                {
+                    Id: 5,
+                    Subject: 'Event 5',
+                    StartTime: new Date(2017, 2, 2),
+                    EndTime: new Date(2017, 2, 2)
+                }
+            ];
+            const model: ScheduleModel = {
+                width: '800px',
+                height: '550px',
+                selectedDate: new Date(2017, 3, 1),
+                views: [
+                    { option: 'TimelineYear', displayName: 'Horizontal Year' },
+                ],
+                eventSettings: {
+                    dataSource: yearData,
+                    enableIndicator: true
+                }
+            };
+            schObj = util.createSchedule(model, [], done);
+        });
+
+        afterAll(() => {
+            util.destroy(schObj);
+        });
+
+        it('checking the more indicator styles in timeline year view', () => {
+            const moreIndicatorList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-more-indicator'));
+            expect(moreIndicatorList.length).toEqual(1);
+            const moreIndicatorElement: HTMLElement = moreIndicatorList[0] as HTMLElement;
+            const startDateMs = parseInt(moreIndicatorElement.getAttribute('data-start-date') || 'NaN', 10);
+            let selector = `.e-work-cells[data-date="${startDateMs}"]`;
+            const workCell = schObj.element.querySelector(selector) as HTMLElement;
+            expect(moreIndicatorElement.style.transform).toContain('translateY(-100%)');
+            const cellBottom = () => workCell.getBoundingClientRect().bottom;
+            const indicatorBottom = () => moreIndicatorElement.getBoundingClientRect().bottom;
+            const differenece = Math.abs(indicatorBottom() - cellBottom());
+            expect(differenece).toBeLessThanOrEqual(1);
+        });
+    });
+
     it('memory leak', () => {
         profile.sample();
         const average: number = inMB(profile.averageChange);

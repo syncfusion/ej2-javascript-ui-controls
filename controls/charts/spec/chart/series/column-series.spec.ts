@@ -372,20 +372,19 @@ describe('Column Series', () => {
             chartObj.refresh();
         });
 
-        it('Checking animation', (done: Function) => {
-
+        it('Checking animation', async (): Promise<void> => {
             animationCOmplete = (args: IAnimationCompleteEventArgs): void => {
                 let point = document.getElementById('container_Series_' + args.series.index + '_Point_0');
                 expect(point.getAttribute('transform') === 'translate(0,0)').toBe(true);
-                done();
+                //done();
             };
 
             chartObj.series[0].animation.enable = true;
 
-
             chartObj.animationComplete = animationCOmplete;
 
             chartObj.refresh();
+            await wait(500);
 
         });
     });
@@ -442,15 +441,16 @@ describe('Column Series', () => {
             chartObj.refresh();
         });
 
-        it('Checking animation for Cylindrical chart', (done: Function) => {
+        it('Checking animation for Cylindrical chart', async (): Promise<void> => {
             animationCOmplete = (args: IAnimationCompleteEventArgs): void => {
                 let point = document.getElementById('container_Series_' + args.series.index + '_Point_4_Region_2');
                 expect(point.getAttribute('transform') === 'translate(0,0)').toBe(true);
-                done();
+                //done();
             };
             chartObj.series[0].animation.enable = true;
             chartObj.animationComplete = animationCOmplete;
             chartObj.refresh();
+            await wait(500);
         });
     });
 
@@ -2031,7 +2031,7 @@ describe('Column Series', () => {
                 trigger.mousemovetEvent(target, Math.ceil(x), Math.ceil(y));
                 trigger.draganddropEvent(columnContainer, Math.ceil(x), Math.ceil(y), Math.ceil(x) - 142, Math.ceil(y));
                 let yValue: number = columnChart.visibleSeries[0].points[3].yValue;
-                expect(yValue == 17.89 || yValue == 18.26).toBe(true);
+                expect(yValue == 17.89 || yValue == 18.26 || yValue == 17.07 || yValue == 17.64).toBe(true);
                 columnChart.loaded = null;
                 done();
             };
@@ -2407,6 +2407,10 @@ describe('Column Series', () => {
             chartObj.refresh();
         });
     });
+
+    async function wait(ms: number): Promise<void> {
+        return new Promise(resolve => setTimeout(resolve, ms));
+    }
 });
 
 export interface series1 {

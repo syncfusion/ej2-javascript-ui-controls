@@ -1,4 +1,4 @@
-import { Component, Property, NotifyPropertyChanges, INotifyPropertyChanged, isNullOrUndefined, setValue, getValue } from '@syncfusion/ej2-base';
+import { Component, Property, NotifyPropertyChanges, INotifyPropertyChanged, isNullOrUndefined, setValue, getValue, append, compile, select, selectAll } from '@syncfusion/ej2-base';
 import { detach, getUniqueID, Event, EventHandler, EmitType, Internationalization, L10n, addClass, removeClass, closest, formatUnit } from '@syncfusion/ej2-base';
 import { FloatLabelType, Input, InputObject, TEXTBOX_FOCUS } from '../input/input';
 import { FocusInEventArgs, FocusOutEventArgs, InputEventArgs, ChangedEventArgs } from '../textbox/textbox';
@@ -11,6 +11,13 @@ const RESIZE_Y: string = 'e-resize-y';
 const RESIZE_XY: string = 'e-resize-xy';
 const RESIZE_NONE: string = 'e-resize-none';
 export type Resize = 'Vertical' | 'Horizontal' | 'Both' | 'None';
+
+/**
+ * Defines the direction for adornments elements for TextArea.
+ * - Horizontal :- Adornments elemets with textarea in horizontal direction.
+ * - Vertical :- Adornments elemets with textarea in vertical direction.
+ */
+export type AdornmentsDirection = 'Horizontal' | 'Vertical';
 
 @NotifyPropertyChanges
 export class TextArea extends Component<HTMLTextAreaElement> implements INotifyPropertyChanged {
@@ -25,6 +32,9 @@ export class TextArea extends Component<HTMLTextAreaElement> implements INotifyP
     private inputPreviousValue: string = null;
     private preventChange: boolean;
     private clearButton: HTMLElement;
+    private prependedElement: HTMLElement;
+    private appendedElement: HTMLElement;
+    private iconTemplateFn: Function;
 
     /**
      * Specifies the boolean value whether the TextArea allows user to change the text.
@@ -148,6 +158,58 @@ export class TextArea extends Component<HTMLTextAreaElement> implements INotifyP
      */
     @Property(null)
     public rows: number;
+
+    /**
+     * Specifies the HTML template to prepend inside the TextArea wrapper.
+     * Accepts an HTML string or a function returning an HTML string.
+     * Updates dynamically when the property value changes.
+     *
+     * @default null
+     * @angularType string | object
+     * @reactType string | function | JSX.Element
+     * @vueType string | function
+     * @aspType string
+     */
+    @Property(null)
+    public prependTemplate: string | Function;
+
+    /**
+     * Specifies the HTML template to append inside the TextArea wrapper.
+     * Accepts an HTML string or a function returning an HTML string.
+     * Updates dynamically when the property value changes.
+     *
+     * @default null
+     * @angularType string | object
+     * @reactType string | function | JSX.Element
+     * @vueType string | function
+     * @aspType string
+     */
+    @Property(null)
+    public appendTemplate: string | Function;
+
+    /**
+     * Specifies the adornment direction of textarea.
+     * Controls the flow of the textarea and adornment sections (horizontal vs vertical).
+     *
+     * @isenumeration true
+     * @asptype AdornmentsDirection
+     * @default 'Horizontal'
+     *
+     */
+    @Property('Horizontal')
+    public adornmentFlow: AdornmentsDirection;
+
+    /**
+     * Specifies the adornment orientation of textarea.
+     * Controls the direction of adornment items relative to each other within their region (horizontal vs vertical).
+     *
+     * @isenumeration true
+     * @asptype AdornmentsDirection
+     * @default 'Horizontal'
+     *
+     */
+    @Property('Horizontal')
+    public adornmentOrientation: AdornmentsDirection;
 
     /**
      * Triggers when the TextArea component is created.
@@ -281,6 +343,7 @@ export class TextArea extends Component<HTMLTextAreaElement> implements INotifyP
                 break;
             case 'enableRtl':
                 Input.setEnableRtl(this.enableRtl, [this.textareaWrapper.container]);
+                this.handleAdornmentFloatLabel();
                 break;
             case 'placeholder':
                 Input.setPlaceholder(this.placeholder, this.element);
@@ -330,6 +393,24 @@ export class TextArea extends Component<HTMLTextAreaElement> implements INotifyP
                     }
                     this.setWrapperWidth();
                 }
+                break;
+            case 'prependTemplate':
+                this.handleAdornmentDirection();
+                this.updatePrependTemplate();
+                break;
+            case 'appendTemplate':
+                this.handleAdornmentDirection(true);
+                this.updateAppendTemplate();
+                break;
+            case 'adornmentFlow':
+                this.handleAdornmentDirection();
+                this.updatePrependTemplate();
+                this.updateAppendTemplate();
+                break;
+            case 'adornmentOrientation':
+                this.handleAdornmentDirection();
+                this.updatePrependTemplate();
+                this.updateAppendTemplate();
                 break;
             }
         }
@@ -435,7 +516,148 @@ export class TextArea extends Component<HTMLTextAreaElement> implements INotifyP
         Input.setWidth(this.width, this.textareaWrapper.container);
         this.setWrapperWidth();
         this.updateFloatLabelOverflowWidth();
+        this.handleAdornmentDirection();
+        this.createPrependTemplate();
+        this.createAppendTemplate();
         this.renderComplete();
+        if (this.floatLabelType === 'Auto' && (this.prependTemplate || this.appendTemplate) && typeof (window as any).ResizeObserver !== 'undefined') {
+            const resizeObserver: any = new (window as any).ResizeObserver((entries: any[]) => {
+                for (const entry of entries) {
+                    const floatLabelElement: HTMLElement = entry.target && entry.target.parentElement ? entry.target.parentElement.querySelector('.e-float-text') : null;
+                    if (floatLabelElement && floatLabelElement.classList.contains('e-label-bottom')) {
+                        floatLabelElement.style.width = `${entry.contentRect.width}px`;
+                    } else if (floatLabelElement && floatLabelElement.classList.contains('e-label-top')) {
+                        floatLabelElement.style.width = 'auto';
+                    }
+                }
+            });
+            resizeObserver.observe(this.element);
+        }
+    }
+
+    private updatePrependTemplate(): void {
+        this.removePrependTemplate();
+        this.createPrependTemplate();
+    }
+
+    private updateAppendTemplate(): void {
+        this.removeAppendTemplate();
+        this.createAppendTemplate();
+    }
+
+    private templateComplier(iconTemplate: string | Function): Function {
+        if (iconTemplate) {
+            try {
+                if (typeof iconTemplate !== 'function' && selectAll(iconTemplate, document).length) {
+                    return compile(select(iconTemplate, document).innerHTML.trim());
+                } else {
+                    return compile(iconTemplate);
+                }
+            } catch (exception) {
+                return compile(iconTemplate);
+            }
+        }
+        return undefined;
+    }
+
+    private createPrependTemplate(): void {
+        if (!isNullOrUndefined(this.prependTemplate)) {
+            const container: HTMLElement = this.textareaWrapper.container;
+            this.prependedElement = this.createElement('div', { className: 'e-prepend-template' });
+            this.iconTemplateFn = this.templateComplier(this.prependTemplate);
+            const iconTempCompiler: Function = this.iconTemplateFn(null, this, 'template', this.element.id + 'Template', this.isStringTemplate, null, this.prependedElement);
+            if (iconTempCompiler) {
+                const fromElements: HTMLElement[] = [].slice.call(iconTempCompiler);
+                append(fromElements, this.prependedElement);
+            }
+            const inputElement: HTMLElement = container.querySelector('textarea');
+            container.classList.add('e-prepend-wrapper');
+            if (inputElement) {
+                container.insertBefore(this.prependedElement, inputElement);
+            } else {
+                container.insertBefore(this.prependedElement, container.firstChild);
+            }
+            this.handleAdornmentFloatLabel();
+            this.renderReactTemplates();
+        }
+    }
+
+    private createAppendTemplate(): void {
+        if (!isNullOrUndefined(this.appendTemplate)) {
+            const container: HTMLElement = this.textareaWrapper.container;
+            this.appendedElement = this.createElement('div', { className: 'e-append-template' });
+            this.iconTemplateFn = this.templateComplier(this.appendTemplate);
+            const iconTempCompiler: Function = this.iconTemplateFn(null, this, 'template', this.element.id + 'Template', this.isStringTemplate, null, this.appendedElement);
+            if (iconTempCompiler) {
+                const fromElements: HTMLElement[] = [].slice.call(iconTempCompiler);
+                append(fromElements, this.appendedElement);
+            }
+            container.classList.add('e-append-wrapper');
+            container.appendChild(this.appendedElement);
+            this.renderReactTemplates();
+        }
+    }
+
+    private handleAdornmentDirection(isPropertyChange?: boolean): void {
+        const floatLabelElement: HTMLElement = this.textareaWrapper.container.querySelector('.e-float-text');
+        if (floatLabelElement && this.floatLabelType === 'Auto' && !isPropertyChange) {
+            floatLabelElement.style.marginLeft = '0';
+            floatLabelElement.style.marginRight = '0';
+            floatLabelElement.style.marginTop = '0';
+        }
+        if (this.adornmentFlow === 'Vertical' && (this.appendTemplate || this.prependTemplate)) {
+            this.textareaWrapper.container.classList.add('e-adornment-flow-vertical');
+            this.textareaWrapper.container.classList.remove('e-adornment-flow-horizontal');
+        } else if (this.appendTemplate || this.prependTemplate) {
+            this.textareaWrapper.container.classList.add('e-adornment-flow-horizontal');
+            this.textareaWrapper.container.classList.remove('e-adornment-flow-vertical');
+        }
+        if (this.adornmentOrientation === 'Vertical' && (this.appendTemplate || this.prependTemplate)) {
+            this.textareaWrapper.container.classList.add('e-adornment-orientation-vertical');
+            this.textareaWrapper.container.classList.remove('e-adornment-orientation-horizontal');
+        } else if (this.appendTemplate || this.prependTemplate) {
+            this.textareaWrapper.container.classList.add('e-adornment-orientation-horizontal');
+            this.textareaWrapper.container.classList.remove('e-adornment-orientation-vertical');
+        }
+    }
+
+    private handleAdornmentFloatLabel(): void {
+        const floatLabelElement: HTMLElement = this.textareaWrapper.container.querySelector('.e-float-text');
+        if (floatLabelElement && this.floatLabelType === 'Auto') {
+            setTimeout(function(): void {
+                if (floatLabelElement && this.prependedElement && this.adornmentFlow !== 'Vertical' && !this.enableRtl) {
+                    floatLabelElement.style.marginLeft = `${this.prependedElement.offsetWidth}px`;
+                    floatLabelElement.style.marginRight = '0';
+                } else if (floatLabelElement && this.prependedElement && this.adornmentFlow !== 'Vertical' && this.enableRtl) {
+                    floatLabelElement.style.marginRight = `${this.prependedElement.offsetWidth}px`;
+                    floatLabelElement.style.marginLeft = '0';
+                }
+                if (this.adornmentFlow === 'Vertical' && this.adornmentOrientation === 'Vertical') {
+                    if (floatLabelElement && this.prependedElement) {
+                        floatLabelElement.style.marginTop = `${this.prependedElement.offsetHeight}px`;
+                    }
+                }
+                if (this.adornmentFlow === 'Vertical' && this.adornmentOrientation === 'Horizontal') {
+                    if (floatLabelElement && this.prependedElement) {
+                        floatLabelElement.style.marginTop = `${this.prependedElement.offsetHeight}px`;
+                    }
+                }
+            }.bind(this), 10);
+        }
+    }
+
+    private removePrependTemplate(): void {
+        if (!isNullOrUndefined(this.prependedElement)) {
+            detach(this.prependedElement);
+            this.prependedElement = null;
+        }
+    }
+
+    private removeAppendTemplate(): void {
+        if (!isNullOrUndefined(this.appendedElement)) {
+            detach(this.appendedElement);
+            this.appendedElement = null;
+        }
     }
 
     public getModuleName(): string {
@@ -520,6 +742,9 @@ export class TextArea extends Component<HTMLTextAreaElement> implements INotifyP
 
     public destroy(): void {
         this.unWireEvents();
+        this.removePrependTemplate();
+        this.removeAppendTemplate();
+        this.clearTemplate();
         if (this.showClearButton) {
             this.clearButton = document.getElementsByClassName('e-clear-icon')[0] as HTMLElement;
         }
@@ -556,6 +781,14 @@ export class TextArea extends Component<HTMLTextAreaElement> implements INotifyP
             }
         }
         this.trigger('focus', eventArgs);
+        if (this.floatLabelType === 'Auto' && (this.prependTemplate || this.appendTemplate)) {
+            setTimeout(function(): void {
+                const label: HTMLElement = this.textareaWrapper ? this.textareaWrapper.container.querySelector('.e-float-text') : null;
+                if (label) {
+                    label.style.width = 'auto';
+                }
+            }.bind(this), 5);
+        }
     }
 
     private focusOutHandler(args: MouseEvent | TouchEvent | KeyboardEvent): void {
@@ -569,6 +802,7 @@ export class TextArea extends Component<HTMLTextAreaElement> implements INotifyP
             value: this.value
         };
         this.updateFloatLabelOverflowWidth();
+        this.handleAdornmentFloatLabel();
         this.trigger('blur', eventArgs);
     }
 
@@ -831,8 +1065,15 @@ export class TextArea extends Component<HTMLTextAreaElement> implements INotifyP
         const container: HTMLElement = this.textareaWrapper.container;
         const label: HTMLElement | null = container.querySelector('.e-float-text-overflow') || container.querySelector('.e-float-text');
         const calculateWidth: number = (container.clientWidth - this.getRightIconsWidth());
-        if (label && calculateWidth) {
+        if (label && calculateWidth && (!this.prependTemplate || !this.appendTemplate)) {
             label.style.width = calculateWidth + 'px';
+        } else if (this.floatLabelType === 'Auto' && (this.prependTemplate || this.appendTemplate)) {
+            setTimeout(function(): void {
+                const label: HTMLElement = container ? container.querySelector('.e-float-text.e-label-bottom') : null;
+                if (label) {
+                    label.style.width = this.element.offsetWidth + 'px';
+                }
+            }.bind(this), 10);
         }
     }
 }

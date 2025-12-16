@@ -410,8 +410,17 @@ describe('Diagram Control', () => {
             diagram.appendTo('#diagram35');
         });
         afterAll((): void => {
-            diagram.destroy();
-            ele.remove();
+             if (diagram) {
+                diagram.destroy();
+                diagram = null;
+            }
+            // Clean possible leftover edit box from previous tests
+            const edit = document.getElementById('diagram35_editBox');
+            if (edit && edit.parentNode) edit.parentNode.removeChild(edit);
+            if (ele && ele.parentNode) {
+                ele.parentNode.removeChild(ele);
+            }
+            ele = null;
         });
 
         it('Checking stack panel without children', (done: Function) => {
@@ -421,7 +430,7 @@ describe('Diagram Control', () => {
         });
     });
 
-    describe('Simple Stack Panel without children', () => {
+    describe('Simple Stack Panel without children inner node', () => {
         let diagram: Diagram;
         let ele: HTMLElement;
         let mouseEvents: MouseEvents = new MouseEvents();
@@ -467,8 +476,17 @@ describe('Diagram Control', () => {
             diagram.appendTo('#diagram35');
         });
         afterAll((): void => {
-            diagram.destroy();
-            ele.remove();
+             if (diagram) {
+                diagram.destroy();
+                diagram = null;
+            }
+            // Clean possible leftover edit box from previous tests
+            const edit = document.getElementById('diagram35_editBox');
+            if (edit && edit.parentNode) edit.parentNode.removeChild(edit);
+            if (ele && ele.parentNode) {
+                ele.parentNode.removeChild(ele);
+            }
+            ele = null;
         });
 
         it('Checking stack panel addition of inner node', (done: Function) => {
@@ -576,8 +594,9 @@ describe('Diagram Control', () => {
             diagram.add(node);
         });
         afterAll((): void => {
-            diagram.destroy();
-            ele.remove();
+            if (diagram) { diagram.destroy(); diagram = null; }
+            if (ele && ele.parentNode) ele.parentNode.removeChild(ele);
+            ele = null;
         });
 
         it('Checking stack panel addition of inner node', (done: Function) => {
@@ -927,9 +946,10 @@ describe('887625: UML class nodes cloned in diagram canvas while dragging nodes 
         palette.appendTo('#symbolpaletteUml');
     });
     afterAll((): void => {
-        diagram.destroy();
-        palette.destroy();
-        ele.remove();
+        if (diagram) { diagram.destroy(); diagram = null; }
+        if (palette) { palette.destroy(); palette = null; }
+        if (ele && ele.parentNode) ele.parentNode.removeChild(ele);
+        ele = null;
     });
     it('Checking UML shapes', (done: Function) => {
         palette.expandMode = 'Multiple';

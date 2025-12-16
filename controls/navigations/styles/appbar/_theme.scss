@@ -1,3 +1,5 @@
+@use 'ej2-base/styles/common/mixin' as *;
+@use './theme-variables' as *;
 @include export-module('appbar-theme') {
   .e-appbar {
     box-shadow: $appbar-bottom-shadow;
@@ -14,7 +16,7 @@
       }
 
       .e-appbar-separator {
-        border-left: 1px solid $appbar-color-alt1;
+        border-left: $appbar-border-width solid $appbar-color-alt1;
       }
 
       .e-btn,
@@ -58,7 +60,7 @@
       border-color: $appbar-border-color-alt2;
 
       .e-appbar-separator {
-        border-left: 1px solid $appbar-color-alt2;
+        border-left: $appbar-border-width solid $appbar-color-alt2;
       }
 
       .e-btn,
@@ -97,7 +99,7 @@
       border-color: $appbar-border-color-primary;
 
       .e-appbar-separator {
-        border-left: 1px solid $appbar-color-primary;
+        border-left: $appbar-border-width solid $appbar-color-primary;
       }
 
       .e-menu-wrapper,
@@ -115,10 +117,10 @@
       background: inherit;
       color: inherit;
       border-color: inherit;
-      border: 1px solid;
+      border: $appbar-border-width solid;
 
       .e-appbar-separator {
-        border-left: 1px solid;
+        border-left: $appbar-border-width solid;
       }
 
       .e-menu-wrapper,
@@ -205,7 +207,7 @@
 
   .e-inherit.e-input-group .e-input-group-icon,
   .e-inherit.e-input-group.e-control-wrapper .e-input-group-icon {
-    border: none;
+    border: $appbar-input-group-icon-border;
     color: inherit;
   }
 

@@ -1,4 +1,4 @@
-@import 'ej2-base/styles/definition/tailwind-dark.scss';
-@import '../drop-down-list/tailwind-dark-definition.scss';
-@import 'tailwind-dark-definition.scss';
-@import 'all.scss';
+@use 'ej2-base/styles/definition/tailwind-dark' as *;
+@use '../drop-down-list/tailwind-dark-definition' as *;
+@use 'tailwind-dark-definition' as *;
+@use 'all' as *;

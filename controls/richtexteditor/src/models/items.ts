@@ -60,6 +60,19 @@ export const fontSize: IDropDownItemModel[] = [
 ];
 
 /**
+ * Line height options for text formatting.
+ */
+export const lineHeight: IDropDownItemModel[] = [
+    { text: 'Default', value: '' },
+    { text: '1', value: '1' },
+    { text: '1.15', value: '1.15' },
+    { text: '1.5', value: '1.5' },
+    { text: '2', value: '2' },
+    { text: '2.5', value: '2.5' },
+    { text: '3', value: '3' },
+];
+
+/**
  * Formatting options for rich text elements.
  */
 export const formatItems: IDropDownItemModel[] = [

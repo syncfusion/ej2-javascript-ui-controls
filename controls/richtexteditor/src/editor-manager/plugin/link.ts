@@ -15,13 +15,10 @@ import { IEditorModel } from '../../common/interface';
  * Link internal component
  *
  * @hidden
- * @deprecated
+ * @private
  */
 export class LinkCommand {
     private parent: IEditorModel;
-    private drop: EventListenerOrEventListenerObject;
-    private enter: EventListenerOrEventListenerObject;
-    private start: EventListenerOrEventListenerObject;
     private dragSelectionRange: Range;
 
     /**
@@ -29,13 +26,10 @@ export class LinkCommand {
      *
      * @param {IEditorModel} parent - specifies the editor manager
      * @hidden
-     * @deprecated
+     * @private
      */
     public constructor(parent: IEditorModel) {
         this.parent = parent;
-        this.drop = this.dragDrop.bind(this);
-        this.enter = this.dragEnter.bind(this);
-        this.start = this.dragStart.bind(this);
         this.addEventListener();
     }
     private addEventListener(): void {
@@ -43,9 +37,9 @@ export class LinkCommand {
         this.parent.observer.on(EVENTS.INTERNAL_DESTROY, this.destroy, this);
         const dropElement: Element = this.parent.editableElement;
         if (dropElement) {
-            EventHandler.add(dropElement, 'drop', this.drop as EventListener);
-            EventHandler.add(dropElement, 'dragenter', this.enter as EventListener);
-            EventHandler.add(dropElement, 'dragover', this.start as EventListener);
+            this.parent.observer.on(EVENTS.dropEventHandler, this.dragDrop, this);
+            this.parent.observer.on(EVENTS.dragEnterEvent, this.dragEnter, this);
+            this.parent.observer.on(EVENTS.dragOverEvent, this.dragStart, this);
         }
     }
 
@@ -54,13 +48,10 @@ export class LinkCommand {
         this.parent.observer.off(EVENTS.INTERNAL_DESTROY, this.destroy);
         const dropElement: Element = this.parent.editableElement;
         if (dropElement) {
-            EventHandler.remove(dropElement, 'drop', this.drop as EventListener);
-            EventHandler.remove(dropElement, 'dragenter', this.enter as EventListener);
-            EventHandler.remove(dropElement, 'dragover', this.start as EventListener);
+            this.parent.observer.off(EVENTS.dropEventHandler, this.dragDrop);
+            this.parent.observer.off(EVENTS.dragEnterEvent, this.dragEnter);
+            this.parent.observer.off(EVENTS.dragOverEvent, this.dragStart);
         }
-        this.drop = null;
-        this.enter = null;
-        this.start = null;
     }
 
     private linkCommand(e: IHtmlItem): void {
@@ -230,6 +221,7 @@ export class LinkCommand {
                 anchorEle.removeAttribute('target');
                 anchorEle.removeAttribute('aria-label');
             }
+            if (isNOU(e.item.selection)) { return; }
             if (linkText === e.item.text) {
                 e.item.selection.setSelectionText(this.parent.currentDocument, anchorEle, anchorEle, 1, 1);
                 e.item.selection.restore();
@@ -262,6 +254,7 @@ export class LinkCommand {
                     return '\u00A0'.repeat(match.length);
                 });
                 anchor.innerText = modifiedText;
+                if (isNOU(e.item.selection)) { return; }
                 e.item.selection.restore();
                 InsertHtml.Insert(this.parent.currentDocument, anchor, this.parent.editableElement);
                 if (!isNOU(anchor.parentElement) && anchor.parentElement.nodeName === 'LI') {

@@ -1,7 +1,9 @@
 import { createElement, remove } from '@syncfusion/ej2-base';
-import { BlockEditor, BlockType, ContentType, getBlockContentElement, setCursorPosition } from '../../src/index';
 import { createEditor } from '../common/util.spec';
-import { BlockModel, CommandItemModel, HeadingProps } from '../../src/blockeditor/models';
+import { BlockModel, CommandItemModel, IHeadingBlockSettings } from '../../src/models/index';
+import { setCursorPosition, getBlockContentElement } from '../../src/common/utils/index';
+import { BlockType, ContentType } from '../../src/models/enums';
+import { BlockEditor } from '../../src/index';
 
 describe('Slash Command Module', () => {
     beforeAll(() => {
@@ -23,8 +25,8 @@ describe('Slash Command Module', () => {
             const blocks: BlockModel[] = [
                 {
                     id: 'paragraph1',
-                    type: BlockType.Paragraph,
-                    content: [{ id: 'paragraph-content', type: ContentType.Text, content: 'Hello world' }]
+                    blockType: BlockType.Paragraph,
+                    content: [{ id: 'paragraph-content', contentType: ContentType.Text, content: 'Hello world' }]
                 }
             ];
             editor = createEditor({ blocks: blocks });
@@ -44,14 +46,16 @@ describe('Slash Command Module', () => {
         });
 
         it('transforming paragraph to heading', (done) => {
+            let domBlocks = editor.element.querySelectorAll<HTMLElement>('.e-block');
+            let modelBlocks = editor.blocks;
             const blockElement = editorElement.querySelector('.e-block') as HTMLElement;
             expect(blockElement).not.toBeNull();
-            editor.setFocusToBlock(blockElement);
+            editor.blockManager.setFocusToBlock(blockElement);
             const contentElement = getBlockContentElement(blockElement);
             setCursorPosition(contentElement, 0);
             contentElement.textContent = '/' + contentElement.textContent;
             setCursorPosition(contentElement, 1);
-            editor.stateManager.updateContentOnUserTyping(blockElement);
+            editor.blockManager.stateManager.updateContentOnUserTyping(blockElement);
             editorElement.querySelector('.e-mention.e-editable-element').dispatchEvent(new KeyboardEvent('keyup', { key: '/', code: 'Slash', bubbles: true }));
             const slashCommandElement = document.querySelector('.e-popup.e-blockeditor-command-menu') as HTMLElement;
             expect(slashCommandElement).not.toBeNull();
@@ -59,24 +63,33 @@ describe('Slash Command Module', () => {
             const headingElement = slashCommandElement.querySelector('li[data-value="Heading 1"]') as HTMLElement;
             expect(headingElement).not.toBeNull();
             headingElement.dispatchEvent(new MouseEvent('mousedown', { bubbles: true }));
-            expect(editor.blocks[0].type).toBe(BlockType.Heading);
-            expect((editor.blocks[0].props as HeadingProps).level).toBe(1);
-            setTimeout(() => {
-                expect(editorElement.querySelector('.e-block').querySelector('h1').textContent).toBe('Hello world');
-                expect(editor.blocks[0].content[0].content).toBe('Hello world');
-                done();
-            }, 200);
+
+            domBlocks = editor.element.querySelectorAll<HTMLElement>('.e-block');
+            modelBlocks = editor.blocks;
+            expect(modelBlocks.length).toBe(1);
+            expect(modelBlocks[0].blockType).toBe(BlockType.Heading);
+            expect((modelBlocks[0].properties as IHeadingBlockSettings).level).toBe(1);
+            expect(domBlocks.length).toBe(1);
+            const headingEle = editorElement.querySelector('.e-block').querySelector('h1') as HTMLElement;   
+            expect(headingEle).not.toBeNull(); // h1 should exist
+            expect(headingEle.textContent).toBe('Hello world'); // h1 should contain correct text
+            expect(headingEle.tagName).toBe('H1'); 
+            expect(headingEle.textContent).toBe('Hello world');
+            expect(modelBlocks[0].content[0].content).toBe('Hello world');
+            done();
         });
 
         it('transforming heading to quote', (done) => {
+            let modelBlocks = editor.blocks;
+            let domBlocks = editor.element.querySelectorAll<HTMLElement>('.e-block');
             const blockElement = editorElement.querySelector('.e-block') as HTMLElement;
             expect(blockElement).not.toBeNull();
-            editor.setFocusToBlock(blockElement);
+            editor.blockManager.setFocusToBlock(blockElement);
             const contentElement = getBlockContentElement(blockElement);
             setCursorPosition(contentElement, 0);
             contentElement.textContent = '/' + contentElement.textContent;
             setCursorPosition(contentElement, 1);
-            editor.stateManager.updateContentOnUserTyping(blockElement);
+            editor.blockManager.stateManager.updateContentOnUserTyping(blockElement);
             editorElement.querySelector('.e-mention.e-editable-element').dispatchEvent(new KeyboardEvent('keyup', { key: '/', code: 'Slash', bubbles: true }));
             const slashCommandElement = document.querySelector('.e-popup.e-blockeditor-command-menu') as HTMLElement;
             expect(slashCommandElement).not.toBeNull();
@@ -84,23 +97,30 @@ describe('Slash Command Module', () => {
             const quoteElement = slashCommandElement.querySelector('li[data-value="Quote"]') as HTMLElement;
             expect(quoteElement).not.toBeNull();
             quoteElement.dispatchEvent(new MouseEvent('mousedown', { bubbles: true }));
-            expect(editor.blocks[0].type).toBe(BlockType.Quote);
-            setTimeout(() => {
-                expect(editorElement.querySelector('.e-block').querySelector('blockquote').textContent).toBe('Hello world');
-                expect(editor.blocks[0].content[0].content).toBe('Hello world');
-                done();
-            }, 200);
+            modelBlocks = editor.blocks;
+            domBlocks = editor.element.querySelectorAll<HTMLElement>('.e-block');
+            expect(modelBlocks.length).toBe(1);
+            expect(domBlocks.length).toBe(1);
+            expect(modelBlocks[0].blockType).toBe(BlockType.Quote);
+            const blockquoteElement = editorElement.querySelector('.e-block').querySelector('blockquote') as HTMLElement;
+            expect(blockquoteElement.textContent).toBe('Hello world');
+            expect(blockquoteElement).not.toBeNull();
+            expect(blockquoteElement.tagName).toBe('BLOCKQUOTE');
+            expect(modelBlocks[0].content[0].content).toBe('Hello world');
+            done();
         });
 
         it('transforming quote to bullet list', (done) => {
+            let modelBlocks = editor.blocks;
+            let domBlocks = editor.element.querySelectorAll<HTMLElement>('.e-block');
             const blockElement = editorElement.querySelector('.e-block') as HTMLElement;
             expect(blockElement).not.toBeNull();
-            editor.setFocusToBlock(blockElement);
+            editor.blockManager.setFocusToBlock(blockElement);
             const contentElement = getBlockContentElement(blockElement);
             setCursorPosition(contentElement, 0);
             contentElement.textContent = '/' + contentElement.textContent;
             setCursorPosition(contentElement, 1);
-            editor.stateManager.updateContentOnUserTyping(blockElement);
+            editor.blockManager.stateManager.updateContentOnUserTyping(blockElement);
             editorElement.querySelector('.e-mention.e-editable-element').dispatchEvent(new KeyboardEvent('keyup', { key: '/', code: 'Slash', bubbles: true }));
             const slashCommandElement = document.querySelector('.e-popup.e-blockeditor-command-menu') as HTMLElement;
             expect(slashCommandElement).not.toBeNull();
@@ -108,159 +128,172 @@ describe('Slash Command Module', () => {
             const bulletListElement = slashCommandElement.querySelector('li[data-value="Bullet List"]') as HTMLElement;
             expect(bulletListElement).not.toBeNull();
             bulletListElement.dispatchEvent(new MouseEvent('mousedown', { bubbles: true }));
-            expect(editor.blocks[0].type).toBe(BlockType.BulletList);
-            setTimeout(() => {
-                expect(editorElement.querySelector('.e-block').querySelector('li').textContent).toBe('Hello world');
-                expect(editor.blocks[0].content[0].content).toBe('Hello world');
-                done();
-            }, 200);
+
+            modelBlocks = editor.blocks;
+            domBlocks = editor.element.querySelectorAll<HTMLElement>('.e-block');
+            expect(modelBlocks.length).toBe(1);
+            expect(domBlocks.length).toBe(1);
+            expect(modelBlocks[0].blockType).toBe(BlockType.BulletList);
+            const bulletBlock = editorElement.querySelector('.e-block') as HTMLElement;
+            const listElement = bulletBlock.querySelector('ul') as HTMLElement;
+            const listItem = listElement.querySelector('li') as HTMLElement;      
+            expect(listElement).not.toBeNull(); // UL should exist
+            expect(listItem).not.toBeNull();
+            expect(getBlockContentElement(domBlocks[0]).style.getPropertyValue('list-style-type')).toBe('');
+            expect(editorElement.querySelector('.e-block').querySelector('li').textContent).toBe('Hello world');
+            expect(modelBlocks[0].content[0].content).toBe('Hello world');
+            done();
         });
 
         it('transforming to divider when content is present', (done) => {
-            setTimeout(() => {
-                const blockElement = editorElement.querySelector('.e-block') as HTMLElement;
-                expect(blockElement).not.toBeNull();
-                editor.setFocusToBlock(blockElement);
-                const contentElement = getBlockContentElement(blockElement);
-                setCursorPosition(contentElement, 0);
-                contentElement.textContent = 'Hello world /';
-                setCursorPosition(contentElement, contentElement.textContent.length);
-                editor.stateManager.updateContentOnUserTyping(blockElement);
-                editorElement.querySelector('.e-mention.e-editable-element').dispatchEvent(new KeyboardEvent('keyup', { key: '/', code: 'Slash', bubbles: true }));
-                const slashCommandElement = document.querySelector('.e-popup.e-blockeditor-command-menu') as HTMLElement;
-                expect(slashCommandElement).not.toBeNull();
-                // click divider li element inside the popup
-                const dividerLiElement = slashCommandElement.querySelector('li[data-value="Divider"]') as HTMLElement;
-                expect(dividerLiElement).not.toBeNull();
-                dividerLiElement.dispatchEvent(new MouseEvent('mousedown', { bubbles: true }));
-                // Should create new divider block since content is present in the current block
-                expect(editor.blocks[0].type).toBe(BlockType.Paragraph);
-                expect(editor.blocks[1].type).toBe(BlockType.Divider);
-                setTimeout(() => {
-                    expect(editorElement.querySelector('.e-block').querySelector('p').textContent).toBe('Hello world ');
-                    expect(editorElement.querySelectorAll('.e-block').length).toBe(3);
-                    expect(editorElement.querySelectorAll('.e-block')[1].querySelector('hr')).not.toBeNull();
-                    expect(editor.blocks[0].content[0].content).toBe('Hello world ');
-                    expect(editor.blocks[1].content.length).toBe(0);
-
-                    //Ensure focus is in next sibling of divider
-                    expect(editor.currentFocusedBlock.id).toBe(editor.blocks[2].id);
-                    done();
-                }, 200);
-            }, 100);
+            let modelBlocks = editor.blocks;
+            let domBlocks = editor.element.querySelectorAll<HTMLElement>('.e-block');
+            const blockElement = editorElement.querySelector('.e-block') as HTMLElement;
+            expect(blockElement).not.toBeNull();
+            editor.blockManager.setFocusToBlock(blockElement);
+            const contentElement = getBlockContentElement(blockElement);
+            setCursorPosition(contentElement, 0);
+            contentElement.textContent = 'Hello world /';
+            setCursorPosition(contentElement, contentElement.textContent.length);
+            editor.blockManager.stateManager.updateContentOnUserTyping(blockElement);
+            editorElement.querySelector('.e-mention.e-editable-element').dispatchEvent(new KeyboardEvent('keyup', { key: '/', code: 'Slash', bubbles: true }));
+            const slashCommandElement = document.querySelector('.e-popup.e-blockeditor-command-menu') as HTMLElement;
+            expect(slashCommandElement).not.toBeNull();
+            // click divider li element inside the popup
+            const dividerLiElement = slashCommandElement.querySelector('li[data-value="Divider"]') as HTMLElement;
+            expect(dividerLiElement).not.toBeNull();
+            dividerLiElement.dispatchEvent(new MouseEvent('mousedown', { bubbles: true }));
+            modelBlocks = editor.blocks;
+            domBlocks = editor.element.querySelectorAll<HTMLElement>('.e-block');
+            expect(modelBlocks.length).toBe(3);
+            expect(domBlocks.length).toBe(3);
+            // Should create new divider block since content is present in the current block
+            expect(modelBlocks[0].blockType).toBe(BlockType.Paragraph);
+            expect(modelBlocks[1].blockType).toBe(BlockType.Divider);
+            expect(modelBlocks[2].blockType).toBe(BlockType.Paragraph);
+            expect(editorElement.querySelector('.e-block').querySelector('p').textContent).toBe('Hello world ');
+            expect(domBlocks[0].querySelector('p')).not.toBeNull();
+            expect(domBlocks[1].querySelector('hr')).not.toBeNull();
+            expect(domBlocks[2].querySelector('p')).not.toBeNull();
+            expect(modelBlocks[0].content[0].content).toBe('Hello world ');
+            //Ensure focus is in next sibling of divider
+            expect(editor.blockManager.currentFocusedBlock.id).toBe(modelBlocks[2].id);
+            done();
         });
 
         it('transforming to divider when content is empty', (done) => {
-            setTimeout(() => {
-                const blockElement = editorElement.querySelector('.e-block') as HTMLElement;
-                expect(blockElement).not.toBeNull();
-                editor.setFocusToBlock(blockElement);
-                const contentElement = getBlockContentElement(blockElement);
-                setCursorPosition(contentElement, 0);
-                contentElement.textContent = '/';
-                setCursorPosition(contentElement, 1);
-                editor.stateManager.updateContentOnUserTyping(blockElement);
-                editorElement.querySelector('.e-mention.e-editable-element').dispatchEvent(new KeyboardEvent('keyup', { key: '/', code: 'Slash', bubbles: true }));
-                const slashCommandElement = document.querySelector('.e-popup.e-blockeditor-command-menu') as HTMLElement;
-                expect(slashCommandElement).not.toBeNull();
-                // click divider li element inside the popup
-                const dividerLiElement = slashCommandElement.querySelector('li[data-value="Divider"]') as HTMLElement;
-                expect(dividerLiElement).not.toBeNull();
-                dividerLiElement.dispatchEvent(new MouseEvent('mousedown', { bubbles: true }));
-                // Current bullet list block should be replaced with divider block since content is empty
-                expect(editor.blocks[0].type).toBe(BlockType.Divider);
-                expect(editor.blocks[1].type).toBe(BlockType.Paragraph);
-                setTimeout(() => {
-                    expect(editorElement.querySelector('.e-block').querySelector('p')).toBeNull();
-                    expect(editorElement.querySelectorAll('.e-block').length).toBe(2);
-                    expect(editorElement.querySelectorAll('.e-block')[0].querySelector('hr')).not.toBeNull();
-                    expect(editorElement.querySelectorAll('.e-block')[1].querySelector('p')).not.toBeNull();
-
-                    expect(editor.blocks[0].content.length).toBe(0);
-
-                    //Ensure focus is in next sibling of divider
-                    expect(editor.currentFocusedBlock.id).toBe(editor.blocks[1].id);
-                    done();
-                }, 200);
-            }, 100);
+            let modelBlocks = editor.blocks;
+            let domBlocks = editor.element.querySelectorAll<HTMLElement>('.e-block');
+            const blockElement = editorElement.querySelector('.e-block') as HTMLElement;
+            expect(blockElement).not.toBeNull();
+            editor.blockManager.setFocusToBlock(blockElement);
+            const contentElement = getBlockContentElement(blockElement);
+            setCursorPosition(contentElement, 0);
+            contentElement.textContent = '/';
+            setCursorPosition(contentElement, 1);
+            editor.blockManager.stateManager.updateContentOnUserTyping(blockElement);
+            editorElement.querySelector('.e-mention.e-editable-element').dispatchEvent(new KeyboardEvent('keyup', { key: '/', code: 'Slash', bubbles: true }));
+            const slashCommandElement = document.querySelector('.e-popup.e-blockeditor-command-menu') as HTMLElement;
+            expect(slashCommandElement).not.toBeNull();
+            // click divider li element inside the popup
+            const dividerLiElement = slashCommandElement.querySelector('li[data-value="Divider"]') as HTMLElement;
+            expect(dividerLiElement).not.toBeNull();
+            dividerLiElement.dispatchEvent(new MouseEvent('mousedown', { bubbles: true }));
+            modelBlocks = editor.blocks;
+            domBlocks = editor.element.querySelectorAll<HTMLElement>('.e-block');
+            // Current bullet list block should be replaced with divider block since content is empty
+            expect(modelBlocks[0].blockType).toBe(BlockType.Divider);
+            expect(modelBlocks[1].blockType).toBe(BlockType.Paragraph);
+            expect(modelBlocks.length).toBe(2);
+            expect(domBlocks.length).toBe(2);
+            expect(editorElement.querySelector('.e-block').querySelector('p')).toBeNull();
+            expect(domBlocks[0].querySelector('hr')).not.toBeNull();
+            expect(domBlocks[1].querySelector('p')).not.toBeNull();
+            expect(modelBlocks[0].content.length).toBe(0);
+            //Ensure focus is in next sibling of divider
+            expect(editor.blockManager.currentFocusedBlock.id).toBe(modelBlocks[1].id);
+            done();
         });
         
         it('transforming to collapsible when content is empty', (done) => {
             const newBlock: BlockModel = {
                 id: 'paragraph2',
-                type: BlockType.Paragraph,
+                blockType: BlockType.Paragraph,
                 content: [
-                    { id: 'content2', type: ContentType.Text, content: '' }
+                    { id: 'content2', contentType: ContentType.Text, content: '' }
                 ]
             };
-            setTimeout(()=>{
-                editor.addBlock(newBlock, 'paragraph1', true);
-                const blockElements = editorElement.querySelectorAll('.e-block') as NodeListOf<HTMLElement>;
-                const blockElement = blockElements[1];
-                expect(blockElement).not.toBeNull();
-                editor.setFocusToBlock(blockElement);
-                const contentElement = getBlockContentElement(blockElement);
-                setCursorPosition(contentElement, 0);
-                contentElement.textContent = '/';
-                setCursorPosition(contentElement, 1);
-                editor.stateManager.updateContentOnUserTyping(blockElement);
-                editorElement.querySelector('.e-mention.e-editable-element').dispatchEvent(new KeyboardEvent('keyup', { key: '/', code: 'Slash', bubbles: true }));
-                const slashCommandElement = document.querySelector('.e-popup.e-blockeditor-command-menu') as HTMLElement;
-                expect(slashCommandElement).not.toBeNull();
-                // click collapsible paragraph li element inside the popup
-                const collapsibleParaEle = slashCommandElement.querySelector('li[data-value="Collapsible Paragraph"]') as HTMLElement;
-                expect(collapsibleParaEle).not.toBeNull();
-                collapsibleParaEle.dispatchEvent(new MouseEvent('mousedown', { bubbles: true }));
-                // Current bullet list block should be replaced with CollapsibleParagraph block since content is empty
-                expect(editor.blocks[1].type).toBe(BlockType.CollapsibleParagraph);
-                expect(editor.blocks[2].type).toBe(BlockType.Paragraph);
-                setTimeout(() => {
-                    expect(editorElement.querySelectorAll('.e-block')[1].classList.contains('e-toggle-block')).toBe(true);
-                    done();
-                }, 200);
-            });
+            editor.addBlock(newBlock, 'paragraph1', true);
+            const blockElements = editorElement.querySelectorAll('.e-block') as NodeListOf<HTMLElement>;
+            const blockElement = blockElements[1];
+            expect(blockElement).not.toBeNull();
+            editor.blockManager.setFocusToBlock(blockElement);
+            const contentElement = getBlockContentElement(blockElement);
+            setCursorPosition(contentElement, 0);
+            contentElement.textContent = '/';
+            setCursorPosition(contentElement, 1);
+            editor.blockManager.stateManager.updateContentOnUserTyping(blockElement);
+            editorElement.querySelector('.e-mention.e-editable-element').dispatchEvent(new KeyboardEvent('keyup', { key: '/', code: 'Slash', bubbles: true }));
+            const slashCommandElement = document.querySelector('.e-popup.e-blockeditor-command-menu') as HTMLElement;
+            expect(slashCommandElement).not.toBeNull();
+            // click collapsible paragraph li element inside the popup
+            const collapsibleParaEle = slashCommandElement.querySelector('li[data-value="Collapsible Paragraph"]') as HTMLElement;
+            expect(collapsibleParaEle).not.toBeNull();
+            collapsibleParaEle.dispatchEvent(new MouseEvent('mousedown', { bubbles: true }));
+            let modelBlocks = editor.blocks;
+            let domBlocks = editor.element.querySelectorAll<HTMLElement>('.e-block');
+            expect(modelBlocks.length).toBe(3);
+            expect(domBlocks.length).toBe(4);  //including child
+            // Current bullet list block should be replaced with CollapsibleParagraph block since content is empty
+            expect(modelBlocks[1].blockType).toBe(BlockType.CollapsibleParagraph);
+            expect(modelBlocks[2].blockType).toBe(BlockType.Paragraph);
+            expect(domBlocks[1].getAttribute('data-block-type')).toBe('CollapsibleParagraph'); 
+            expect(domBlocks[2].querySelector('p')).not.toBeNull();
+            expect(domBlocks[1].classList.contains('e-toggle-block')).toBe(true);
+            done();
         });
 
         it('transforming to callout when content is empty', (done) => {
             const newBlock: BlockModel = {
                 id: 'paragraph2',
-                type: BlockType.Paragraph,
+                blockType: BlockType.Paragraph,
                 content: [
-                    { id: 'content2', type: ContentType.Text, content: '' }
+                    { id: 'content2', contentType: ContentType.Text, content: '' }
                 ]
             };
-            setTimeout(()=>{
-                editor.addBlock(newBlock, 'paragraph1', true);
-                const blockElements = editorElement.querySelectorAll('.e-block') as NodeListOf<HTMLElement>;
-                const blockElement = blockElements[1];
-                expect(blockElement).not.toBeNull();
-                editor.setFocusToBlock(blockElement);
-                const contentElement = getBlockContentElement(blockElement);
-                setCursorPosition(contentElement, 0);
-                contentElement.textContent = '/';
-                setCursorPosition(contentElement, 1);
-                editor.stateManager.updateContentOnUserTyping(blockElement);
-                editorElement.querySelector('.e-mention.e-editable-element').dispatchEvent(new KeyboardEvent('keyup', { key: '/', code: 'Slash', bubbles: true }));
-                const slashCommandElement = document.querySelector('.e-popup.e-blockeditor-command-menu') as HTMLElement;
-                expect(slashCommandElement).not.toBeNull();
-                // click callout li element inside the popup
-                const calloutEle = slashCommandElement.querySelector('li[data-value="Callout"]') as HTMLElement;
-                expect(calloutEle).not.toBeNull();
-                calloutEle.dispatchEvent(new MouseEvent('mousedown', { bubbles: true }));
-                // Current bullet list block should be replaced with callout block since content is empty
-                expect(editor.blocks[1].type).toBe(BlockType.Callout);
-                expect(editor.blocks[2].type).toBe(BlockType.Paragraph);
-                setTimeout(() => {
-                    expect(editorElement.querySelectorAll('.e-block')[1].classList.contains('e-callout-block')).toBe(true);
-                    done();
-                }, 200);
-            });
+            editor.addBlock(newBlock, 'paragraph1', true);
+            const blockElements = editorElement.querySelectorAll('.e-block') as NodeListOf<HTMLElement>;
+            const blockElement = blockElements[1];
+            expect(blockElement).not.toBeNull();
+            editor.blockManager.setFocusToBlock(blockElement);
+            const contentElement = getBlockContentElement(blockElement);
+            setCursorPosition(contentElement, 0);
+            contentElement.textContent = '/';
+            setCursorPosition(contentElement, 1);
+            editor.blockManager.stateManager.updateContentOnUserTyping(blockElement);
+            editorElement.querySelector('.e-mention.e-editable-element').dispatchEvent(new KeyboardEvent('keyup', { key: '/', code: 'Slash', bubbles: true }));
+            const slashCommandElement = document.querySelector('.e-popup.e-blockeditor-command-menu') as HTMLElement;
+            expect(slashCommandElement).not.toBeNull();
+            // click callout li element inside the popup
+            const calloutEle = slashCommandElement.querySelector('li[data-value="Callout"]') as HTMLElement;
+            expect(calloutEle).not.toBeNull();
+            calloutEle.dispatchEvent(new MouseEvent('mousedown', { bubbles: true }));
+            let modelBlocks = editor.blocks;
+            let domBlocks = editor.element.querySelectorAll<HTMLElement>('.e-block');
+            expect(modelBlocks.length).toBe(3);
+            expect(domBlocks.length).toBe(4);  //children included
+            // Current bullet list block should be replaced with callout block since content is empty
+            expect(modelBlocks[1].blockType).toBe(BlockType.Callout);
+            expect(modelBlocks[2].blockType).toBe(BlockType.Paragraph);
+            expect(domBlocks[1].classList.contains('e-callout-block')).toBe(true);
+            expect(domBlocks[2].querySelector('p')).not.toBeNull();
+            done();
         });
 
         it('should execute command with keyboard shortcut', (done) => {
             const blockElement = editorElement.querySelector('.e-block') as HTMLElement;
             expect(blockElement).not.toBeNull();
-            editor.setFocusToBlock(blockElement);
+            editor.blockManager.setFocusToBlock(blockElement);
             
             // Simulate the keyboard shortcut
             const keyEvent = new KeyboardEvent('keydown', {
@@ -273,24 +306,29 @@ describe('Slash Command Module', () => {
             
             
             editor.element.dispatchEvent(keyEvent);
-            
-            setTimeout(() => {
-                // Check if block has been transformed
-                expect(editor.blocks[0].type).toBe(BlockType.Heading);
-                expect((editor.blocks[0].props as HeadingProps).level).toBe(1);
-                done();
-            }, 100);
+            let modelBlocks = editor.blocks;
+            let domBlocks = editor.element.querySelectorAll<HTMLElement>('.e-block');
+            expect(modelBlocks.length).toBe(1); 
+            expect(domBlocks.length).toBe(1); 
+            // Check if block has been transformed
+            expect(modelBlocks[0].blockType).toBe(BlockType.Heading);
+            expect((modelBlocks[0].properties as IHeadingBlockSettings).level).toBe(1);
+            const headingBlock = editorElement.querySelector('.e-block') as HTMLElement;
+            const headingElement = headingBlock.querySelector('h1') as HTMLElement;
+            expect(headingElement).not.toBeNull();
+            expect(headingElement.tagName).toBe('H1');
+            done();
         });
         
         it('should filter commands and show filtered results', (done) => {
             const blockElement = editorElement.querySelector('.e-block') as HTMLElement;
-            editor.setFocusToBlock(blockElement);
+            editor.blockManager.setFocusToBlock(blockElement);
             
             // Open slash command popup
             const contentElement = getBlockContentElement(blockElement);
             contentElement.textContent = '/head';
             setCursorPosition(contentElement, contentElement.textContent.length);
-            editor.stateManager.updateContentOnUserTyping(blockElement);
+            editor.blockManager.stateManager.updateContentOnUserTyping(blockElement);
             editorElement.querySelector('.e-mention.e-editable-element').dispatchEvent(new KeyboardEvent('keyup', { 
                 key: 'd', 
                 code: 'KeyD', 
@@ -318,10 +356,10 @@ describe('Slash Command Module', () => {
         it('should check popup open state', (done) => {
             const blockElement = editorElement.querySelector('.e-block') as HTMLElement;
             const contentElement = getBlockContentElement(blockElement);
-            editor.setFocusToBlock(blockElement);
+            editor.blockManager.setFocusToBlock(blockElement);
             contentElement.textContent = '/';
             setCursorPosition(contentElement, 1);
-            editor.stateManager.updateContentOnUserTyping(blockElement);
+            editor.blockManager.stateManager.updateContentOnUserTyping(blockElement);
             editorElement.querySelector('.e-mention.e-editable-element').dispatchEvent(new KeyboardEvent('keyup', { key: '/', code: 'Slash', bubbles: true }));
             
             setTimeout(() => {
@@ -352,24 +390,24 @@ describe('Slash Command Module', () => {
             }, 100);
         });
         
-        it('should update popup properties when commandMenu properties change', (done) => {
+        it('should update popup properties when commandMenuSettings properties change', (done) => {
             
             const blockElement = editorElement.querySelector('.e-block') as HTMLElement;
             const contentElement = getBlockContentElement(blockElement);
             contentElement.textContent = '/';
             setCursorPosition(contentElement, 1);
-            editor.stateManager.updateContentOnUserTyping(blockElement);
+            editor.blockManager.stateManager.updateContentOnUserTyping(blockElement);
             editorElement.querySelector('.e-mention.e-editable-element').dispatchEvent(new KeyboardEvent('keyup', { 
                 key: '/', 
                 code: 'Slash', 
                 bubbles: true 
             }));
-            editor.commandMenu.popupWidth = '400px';
-            editor.commandMenu.popupHeight = '400px';
+            editor.commandMenuSettings.popupWidth = '400px';
+            editor.commandMenuSettings.popupHeight = '400px';
             setTimeout(() => {
                 const popup = document.querySelector('.e-blockeditor-command-menu.e-popup');
                 // once onprop change for slash command is fixed can uncomment below lines
-                // Check if properties were updated
+                /* 981088 */
                 const popupWidth = (popup as HTMLElement).style.width;
                 const popupHeight = (popup as HTMLElement).style.maxHeight;
                 
@@ -379,7 +417,7 @@ describe('Slash Command Module', () => {
             }, 100);
         });
         
-        it('should change commands when commandMenu.commands is updated', (done) => {
+        it('should change commands when commandMenuSettings.commands is updated', (done) => {
             const customCommand: CommandItemModel = {
                 label: 'Custom Command',
                 type: BlockType.Paragraph,
@@ -387,14 +425,14 @@ describe('Slash Command Module', () => {
                 tooltip: 'Custom tooltip'
             };
             
-            editor.commandMenu.commands = [customCommand];
+            editor.commandMenuSettings.commands = [customCommand];
             
             // Open popup
             const blockElement = editorElement.querySelector('.e-block') as HTMLElement;
             const contentElement = getBlockContentElement(blockElement);
             contentElement.textContent = '/custom';
             setCursorPosition(contentElement, contentElement.textContent.length);
-            editor.stateManager.updateContentOnUserTyping(blockElement);
+            editor.blockManager.stateManager.updateContentOnUserTyping(blockElement);
             editorElement.querySelector('.e-mention.e-editable-element').dispatchEvent(new KeyboardEvent('keyup', { 
                 key: 'm', 
                 code: 'KeyM', 
@@ -408,15 +446,13 @@ describe('Slash Command Module', () => {
                 done();
             }, 300);
         });
-        
-        it('should handle tooltip display', (done) => {
-            editor.commandMenu.enableTooltip = true;
-            
+
+        it('should handle tooltip display', (done) => {            
             const blockElement = editorElement.querySelector('.e-block') as HTMLElement;
             const contentElement = getBlockContentElement(blockElement);
             contentElement.textContent = '/';
             setCursorPosition(contentElement, 1);
-            editor.stateManager.updateContentOnUserTyping(blockElement);
+            editor.blockManager.stateManager.updateContentOnUserTyping(blockElement);
             editorElement.querySelector('.e-mention.e-editable-element').dispatchEvent(new KeyboardEvent('keyup', { 
                 key: '/', 
                 code: 'Slash', 
@@ -448,12 +484,12 @@ describe('Slash Command Module', () => {
 
         function triggerSlashPopupOpen(blockElement: HTMLElement, editorElement: HTMLElement) {
             expect(blockElement).not.toBeNull();
-            editor.setFocusToBlock(blockElement);
+            editor.blockManager.setFocusToBlock(blockElement);
             const contentElement = getBlockContentElement(blockElement);
             setCursorPosition(contentElement, 0);
             contentElement.textContent = '/' + contentElement.textContent;
             setCursorPosition(contentElement, 1);
-            editor.stateManager.updateContentOnUserTyping(blockElement);
+            editor.blockManager.stateManager.updateContentOnUserTyping(blockElement);
             editorElement.querySelector('.e-mention.e-editable-element').dispatchEvent(new KeyboardEvent('keyup', { key: '/', code: 'Slash', bubbles: true }));
         }
 
@@ -462,19 +498,18 @@ describe('Slash Command Module', () => {
             document.body.appendChild(editorElement);
             const blocks: BlockModel[] = [
                 {
-                    type: BlockType.Paragraph,
-                    content: [{ id: 'paragraph-content', type: ContentType.Text, content: 'Hello world' }]
+                    blockType: BlockType.Paragraph,
+                    content: [{ id: 'paragraph-content', contentType: ContentType.Text, content: 'Hello world' }]
                 }
             ];
             editor = createEditor({ 
                 blocks: blocks,
-                commandMenu: {
-                    enableTooltip: false,
+                commandMenuSettings: {
                     commands: [
                         {
                             id: 'checklist-command',
                             type: BlockType.Checklist,
-                            groupHeader: 'General',
+                            groupBy: 'General',
                             label: 'Checklist',
                             tooltip: 'Create a checklist',
                             iconCss: 'e-icons e-check-box',
@@ -482,7 +517,7 @@ describe('Slash Command Module', () => {
                         {
                             id: 'bullet-list-command',
                             type: BlockType.BulletList,
-                            groupHeader: 'General',
+                            groupBy: 'General',
                             label: 'Bullet List',
                             tooltip: 'Create a bullet list',
                             iconCss: 'e-icons e-list-unordered',
@@ -515,19 +550,9 @@ describe('Slash Command Module', () => {
                 expect(popup.querySelectorAll('li.e-list-item').length).toBe(2);
                 done();
             }, 200);
-        });
-
-        it('should not render tooltip when enableTooltip is false', (done) => {
-            const blockElement = editorElement.querySelector('.e-block') as HTMLElement;
-            triggerSlashPopupOpen(blockElement, editorElement);
-            setTimeout(() => {
-                expect((editor.slashCommandModule as any).slashMenuTooltip).toBeUndefined();
-                done();
-            }, 200);
-        });
+        });        
 
         it('should handle args.cancel for tooltip properly', (done) => {
-            editor.commandMenu.enableTooltip = true;
             editor.dataBind();
             const blockElement = editorElement.querySelector('.e-block') as HTMLElement;
             triggerSlashPopupOpen(blockElement, editorElement);
@@ -554,64 +579,17 @@ describe('Slash Command Module', () => {
         });
 
         it('should handle null values properly', (done) => {
-            spyOn(editor.blockRendererManager, 'handleBlockTransformation').and.callThrough();
-            (editor.slashCommandModule as any).transformBlocks({
+            spyOn(editor.blockManager.blockCommand, 'handleBlockTransformation').and.callThrough();
+            (editor.blockManager.slashCommandModule as any).transformBlocks({
                 type: null
             });
 
-            expect(editor.blockRendererManager.handleBlockTransformation).not.toHaveBeenCalled();
+            expect(editor.blockManager.blockCommand.handleBlockTransformation).not.toHaveBeenCalled();
             done();
         });
 
-        it('should trigger open and close events', (done) => {
-            editor.commandMenu.open = (args) => {
-                isOpenFired = true;
-            };
-            editor.commandMenu.close = (args) => {
-                isCloseFired = true;
-            };
-            const blockElement = editorElement.querySelector('.e-block') as HTMLElement;
-            triggerSlashPopupOpen(blockElement, editorElement);
-            setTimeout(() => {
-                expect(isOpenFired).toBe(true);
-                editor.slashCommandModule.hidePopup();
-                setTimeout(() => {
-                    expect(isCloseFired).toBe(true);
-                    done();
-                }, 200);
-            }, 200);
-        });
-
-        it('should cancel open event', (done) => {
-            editor.commandMenu.open = (args) => {
-                args.cancel = true;
-            };
-            editor.slashCommandModule.showPopup();
-            setTimeout(function () {
-                const popup = document.querySelector('.e-blockeditor-command-menu');
-                expect(popup).toBeNull();
-                done();
-            }, 200);
-        });
-
-        it('should cancel close event', (done) => {
-            editor.commandMenu.close = (args) => {
-                args.cancel = true;
-            };
-            const blockElement = editorElement.querySelector('.e-block') as HTMLElement;
-            triggerSlashPopupOpen(blockElement, editorElement);
-            setTimeout(() => {
-                blockElement.click();
-                setTimeout(function () {
-                    const popup = document.querySelector('.e-blockeditor-command-menu');
-                    expect(popup).not.toBeNull();
-                    done();
-                }, 100);
-            }, 100);
-        });
-
         it('should handle queryfilter event', (done) => {
-            editor.commandMenu.queryFiltering = (args) => {
+            editor.commandMenuSettings.filtering = (args) => {
                 isQueryFilterFired = true;
             };
             const blockElement = editorElement.querySelector('.e-block') as HTMLElement;
@@ -630,9 +608,9 @@ describe('Slash Command Module', () => {
         it('should handle command item click callback', (done) => {
             const blockElement = editorElement.querySelector('.e-block') as HTMLElement;
             const contentElement = getBlockContentElement(blockElement);
-            
+            editor.blockManager.setFocusToBlock(blockElement);
             let itemClickedCalled = false;
-            editor.commandMenu.itemClicked = (args) => {
+            editor.commandMenuSettings.itemSelect = (args) => {
                 itemClickedCalled = true;
             };
             
@@ -649,7 +627,9 @@ describe('Slash Command Module', () => {
                 checklistItem.dispatchEvent(new MouseEvent('mousedown', { bubbles: true }));
                 
                 setTimeout(() => {
-                    expect(editor.blocks[0].type).toBe(BlockType.Checklist);
+                    expect(editor.blocks[0].blockType).toBe(BlockType.Checklist);
+                    const checklistBlock = editorElement.querySelector('.e-block[data-block-type="Checklist"]');
+                    expect(checklistBlock).not.toBeNull();
                     expect(itemClickedCalled).toBe(true);
                     
                     done();
@@ -658,7 +638,6 @@ describe('Slash Command Module', () => {
         });
 
         it('should adjust tooltip position when rtl is toggled', (done) => {
-            editor.commandMenu.enableTooltip = true;
             editor.enableRtl = true;
             editor.dataBind();
             const blockElement = editorElement.querySelector('.e-block') as HTMLElement;
@@ -683,11 +662,11 @@ describe('Slash Command Module', () => {
             const blockElement = editorElement.querySelector('.e-block') as HTMLElement;
             triggerSlashPopupOpen(blockElement, editorElement);
             setTimeout(() => {
-                expect(editor.slashCommandModule.isPopupOpen()).toBe(true);
+                expect(editor.blockManager.slashCommandModule.isPopupOpen()).toBe(true);
 
-                editor.slashCommandModule.hidePopup();
+                editor.blockManager.slashCommandModule.hidePopup();
                 setTimeout(() => {
-                    expect(editor.slashCommandModule.isPopupOpen()).toBe(false);
+                    expect(editor.blockManager.slashCommandModule.isPopupOpen()).toBe(false);
                     done();
                 }, 100);
             }, 100);
@@ -697,7 +676,7 @@ describe('Slash Command Module', () => {
             const blockElement = editorElement.querySelector('.e-block') as HTMLElement;
             triggerSlashPopupOpen(blockElement, editorElement);
             setTimeout(() => {
-                editor.slashCommandModule.showPopup();
+                editor.blockManager.slashCommandModule.showPopup();
                 expect(document.querySelectorAll('.e-blockeditor-command-menu').length).toBe(1);
                 done();
             }, 100);
@@ -706,14 +685,14 @@ describe('Slash Command Module', () => {
         it('should filter command items properly', (done) => {
             const blockElement = editorElement.querySelector('.e-block') as HTMLElement;
             expect(blockElement).not.toBeNull();
-            editor.setFocusToBlock(blockElement);
+            editor.blockManager.setFocusToBlock(blockElement);
             const contentElement = getBlockContentElement(blockElement);
             setCursorPosition(contentElement, 0);
-            editor.slashCommandModule.showPopup();
+            editor.blockManager.slashCommandModule.showPopup();
             setTimeout(() => {
                 contentElement.textContent = 'Check';
                 setCursorPosition(contentElement, contentElement.textContent.length);
-                editor.isPopupOpenedOnAddIconClick = true;
+                editor.blockManager.isPopupOpenedOnAddIconClick = true;
                 editorElement.dispatchEvent(new Event('input'));
                 setTimeout(() => {
                     const popup = document.querySelector('.e-blockeditor-command-menu');
@@ -728,12 +707,12 @@ describe('Slash Command Module', () => {
         it('should exit and hide popup when filter query length exceeds', (done) => {
             const blockElement = editorElement.querySelector('.e-block') as HTMLElement;
             expect(blockElement).not.toBeNull();
-            editor.setFocusToBlock(blockElement);
+            editor.blockManager.setFocusToBlock(blockElement);
             const contentElement = getBlockContentElement(blockElement);
             setCursorPosition(contentElement, 0);
-            editor.slashCommandModule.showPopup();
+            editor.blockManager.slashCommandModule.showPopup();
             setTimeout(() => {
-                (editor.slashCommandModule as any).filterCommands(BlockType.Checklist, 10, 10);
+                (editor.blockManager.slashCommandModule as any).filterCommands(BlockType.Checklist, 10, 10);
                 setTimeout(() => {
                     const popup = document.querySelector('.e-blockeditor-command-menu');
                     expect(popup).toBeNull();

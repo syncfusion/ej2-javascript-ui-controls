@@ -9,6 +9,7 @@ import { renderRTE, destroy, setCursorPoint, dispatchEvent, androidUA, iPhoneUA,
 import { BASIC_MOUSE_EVENT_INIT, DELETE_EVENT_INIT, BACKSPACE_EVENT_INIT } from '../../constant.spec';
 import * as classes from '../../../src/rich-text-editor/base/classes';
 import * as events from '../../../src/rich-text-editor/base/constant';
+import { ActionBeginEventArgs } from "./../../../src/common/interface";
 
 function getQTBarModule(rteObj: RichTextEditor): QuickToolbar {
     return rteObj.quickToolbarModule;
@@ -36,7 +37,7 @@ describe('Audio Module', () => {
             clickEvent.initEvent("mousedown", false, true);
             cntTarget.dispatchEvent(clickEvent);
             let target: HTMLElement = ele.querySelector('.e-rte-audio');
-            let eventsArg: any = { pageX: 50, pageY: 300, target: target, which: 1 };
+            let eventsArg: any = { pageX: 50, pageY: 300, target: target, which: 1, preventDefault: function () { } };
             setCursorPoint(target, 0);
             rteObj.mouseUp(eventsArg);
             expect(document.querySelectorAll('.e-rte-quick-popup').length).toBe(1);
@@ -1057,7 +1058,7 @@ describe('Audio Module', () => {
             clickEvent.initEvent("mousedown", false, true);
             cntTarget.dispatchEvent(clickEvent);
             let target: HTMLElement = ele.querySelector('#aud-container span');
-            let eventsArg: any = { pageX: 50, pageY: 300, target: target, which: 2 };
+            let eventsArg: any = { pageX: 50, pageY: 300, target: target, which: 2, preventDefault: function () { } };
             setCursorPoint(target, 0);
             rteObj.mouseUp(eventsArg);
             setTimeout(() => {
@@ -1082,7 +1083,7 @@ describe('Audio Module', () => {
             clickEvent.initEvent("mousedown", false, true);
             cntTarget.dispatchEvent(clickEvent);
             let target: HTMLElement = ele.querySelector('#aud-container span');
-            let eventsArg: any = { pageX: 50, pageY: 300, target: target, which: 3 };
+            let eventsArg: any = { pageX: 50, pageY: 300, target: target, which: 3 , preventDefault: function () { } };
             setCursorPoint(target, 0);
             rteObj.mouseUp(eventsArg);
             setTimeout(() => {
@@ -2693,7 +2694,7 @@ describe('Audio Module', () => {
             const audioFile = new File(['dummy'], 'test.mp3', { type: 'audio/mp3' });
             const singleTransfer = new DataTransfer();
             singleTransfer.items.add(audioFile);
-            const singleDropEvent = new DragEvent('drop', { dataTransfer: singleTransfer });
+            const singleDropEvent = new DragEvent('drop', { dataTransfer: singleTransfer, bubbles: true });
             paragraphForSingleDrop.dispatchEvent(singleDropEvent);
 
             setTimeout(() => {
@@ -2777,7 +2778,7 @@ describe('Audio Module', () => {
         });
         it(" Check audio after drop", function (done: Function) {
             let fileObj: File = new File(["Nice One"], "sample.mp3", { lastModified: 0, type: "audio/mp3" });
-            let event: any = { clientX: 40, clientY: 294, target: rteObj.contentModule.getEditPanel(), dataTransfer: { files: [fileObj] }, preventDefault: function () { return; } };
+            let event: any = { clientX: 40, clientY: 324, target: rteObj.contentModule.getEditPanel(), dataTransfer: { files: [fileObj] }, preventDefault: function () { return; } };
             (rteObj.audioModule as any).getDropRange(event.clientX, event.clientY);
             (rteObj.audioModule as any).dragDrop(event);
             ele = rteObj.element.getElementsByTagName('audio')[0];
@@ -2899,7 +2900,6 @@ describe('Audio Module', () => {
             };
 
             (rteObj.audioModule as any).dragDrop(event);
-
             setTimeout(() => {
                 // There should be no audio element inserted
                 expect(rteObj.inputElement.querySelectorAll('audio').length).toBe(0);
@@ -3303,6 +3303,133 @@ describe('Audio Module', () => {
             done();
         });
     });
+
+    describe('Audio Drag and drop', () => {
+    let rteObj: RichTextEditor;
+    let ele: HTMLElement;
+    let element: HTMLElement;
+    let videoSize: number;
+    let size: number;
+    let sizeInBytes: number;
+
+    beforeAll((done: Function) => {
+        element = createElement('form', {
+            id: "form-element", innerHTML:
+                ` <div class="form-group">
+                    <textarea id="defaultRTE" name="defaultRTE" required maxlength="100" minlength="20" data-msg-containerid="dateError">
+                    </textarea>
+                    <div id="dateError"></div>
+                </div>
+                ` });
+        document.body.appendChild(element);
+
+        rteObj = new RichTextEditor({
+            insertAudioSettings: {
+                saveUrl: 'http://aspnetmvc.syncfusion.com/services/api/uploadbox/Save'
+            },
+            value: `
+            <p><span class="e-audio-wrap" contenteditable="false" style="width: 300px; margin: 0px auto;"><span class="e-clickelem"><audio controls="" class="e-rte-audio e-audio-inline"><source src="https://cdn.syncfusion.com/ej2/richtexteditor-resources/RTE-Audio.wav" type="audio/mp3"/></audio></span></span><br/></p>
+            `,
+            placeholder: 'Type something'
+        });
+
+        rteObj.appendTo('#defaultRTE');
+        done();
+    });
+
+    afterAll((done: Function) => {
+        destroy(rteObj);
+        detach(element);
+        const inlineAudio = document.querySelector('.e-audio-inline');
+        if (inlineAudio) {
+            detach(inlineAudio);
+        }
+        done();
+    });
+
+    it('Verified that the audio is dropping correctly and the target is set to the currently dropped audio', (done: Function) => {
+        let fileObj: File = new File(["Nice One"], "sample.mp3", { lastModified: 0, type: "audio/mp3" });
+        let event: any = { clientX: 40, clientY: 294, target: rteObj.contentModule.getEditPanel(), dataTransfer: { files: [fileObj] }, preventDefault: function () { return; } };
+        (rteObj.audioModule as any).getDropRange(event.clientX, event.clientY);
+        (rteObj.audioModule as any).dragDrop(event);
+        ele = rteObj.element.getElementsByTagName('audio')[0];
+        setTimeout(() => {
+            expect(rteObj.element.getElementsByTagName('audio').length).toBe(2);
+            expect(ele.classList.contains('e-rte-audio')).toBe(true);
+            expect(ele.classList.contains('e-audio-inline')).toBe(true);
+            done();
+        }, 1000);
+    });
+    });
+    describe('976200: Backspace deletes only audio when video is before audio', () => {
+        let rteEle: HTMLElement;
+        let rteObj: RichTextEditor;
+        let keyBoardEvent: any = {
+            type: 'keydown',
+            preventDefault: () => { },
+            ctrlKey: false,
+            key: 'Backspace',
+            stopPropagation: () => { },
+            shiftKey: false,
+            which: 8,
+            keyCode: 8,
+            code: 'Backspace'
+        };
+        const innerHTML = `<h1>Welcome to the Sync<span class="e-video-wrap" contenteditable="false" title="Recording 2024-12-16 111248.mp4"><video class="e-rte-video e-video-inline e-resize" controls="" width="auto" height="auto" style="min-width: 0px; max-width: 1617px; min-height: 0px; width: 100px; height: 100px;"><source src="blob:http://127.0.0.1:5500/6ef6f056-052a-4fff-ae52-7bfb27ca0d3e" type="video/mp4"></video></span>fusion Rich Te<span class="e-audio-wrap" contenteditable="false" title="RTE-Audio.wav"><span class="e-clickelem"><audio class="e-rte-audio e-audio-inline" controls="" style=""><source src="blob:http://127.0.0.1:5500/090750b3-225d-4ba7-a915-415f42f0efb1" type="audio/wav"></audio></span></span>xt Editor</h1>`;
+        beforeAll(() => {
+            rteObj = renderRTE({
+                height: 400,
+                toolbarSettings: {
+                    items: ['Audio', 'Video', 'Bold']
+                },
+                value: innerHTML
+            });
+            rteEle = rteObj.element;
+        });
+        afterAll(() => {
+            destroy(rteObj);
+        });
+        it('should delete only audio when backspace is pressed after audio', (done: Function) => {
+            const audioNode = (rteObj as any).inputElement.querySelector('.e-audio-wrap');
+            setCursorPoint(audioNode, 0);
+            (rteObj as any).keyDown(keyBoardEvent);
+            const audioExists = (rteObj as any).inputElement.querySelector('.e-audio-wrap');
+            const videoExists = (rteObj as any).inputElement.querySelector('.e-video-wrap');
+            expect(audioExists).toBe(null);
+            expect(videoExists).not.toBe(null);
+            done();
+        });
+    });
+    describe('976200: Delete deletes only audio when audio is before video', () => {
+        let rteEle: HTMLElement;
+        let rteObj: RichTextEditor;
+        let keyBoardEvent: any = { type: 'keydown', preventDefault: () => { }, ctrlKey: true, key: 'delete', stopPropagation: () => { }, shiftKey: false, which: 46 };
+        const innerHTML = `<h1>Welcome to the Sync<span class="e-audio-wrap" contenteditable="false" title="RTE-Audio.wav"><span class="e-clickelem"><audio class="e-rte-audio e-audio-inline" controls=""><source src="blob:http://127.0.0.1:5500/090750b3-225d-4ba7-a915-415f42f0efb1" type="audio/wav"></audio></span></span>fusion Rich Te<span class="e-video-wrap" contenteditable="false" title="Recording 2024-12-16 111248.mp4"><video class="e-rte-video e-video-inline e-resize" controls="" width="auto" height="auto" style="min-width: 0px; max-width: 1617px; min-height: 0px; width: 100px; height: 100px;"><source src="blob:http://127.0.0.1:5500/6ef6f056-052a-4fff-ae52-7bfb27ca0d3e" type="video/mp4"></video></span>xt Editor</h1>`;
+        beforeAll(() => {
+            rteObj = renderRTE({
+                height: 400,
+                toolbarSettings: {
+                    items: ['Audio', 'Video', 'Bold']
+                },
+                value: innerHTML
+            });
+            rteEle = rteObj.element;
+        });
+        afterAll(() => {
+            destroy(rteObj);
+        });
+        it('should delete only audio when delete key is pressed after audio', (done: Function) => {
+            const textNode: HTMLElement = (rteObj as any).inputElement.querySelector('h1').firstChild;
+            setCursorPoint(textNode, textNode.textContent.length);
+            keyBoardEvent.action = 'delete';
+            (rteObj as any).keyDown(keyBoardEvent);
+            const audioExists = (rteObj as any).inputElement.querySelector('.e-audio-wrap');
+            const videoExists = (rteObj as any).inputElement.querySelector('.e-video-wrap');
+            expect(audioExists).toBe(null);
+            expect(videoExists).not.toBe(null);
+            done();
+        });
+    });
     describe('981296 - Inserted audio remains on the same line even after setting the layoutOption.', function () {
         let rteEle: HTMLElement;
         let rteObj: RichTextEditor;
@@ -3334,6 +3461,131 @@ describe('Audio Module', () => {
             expect(!isNullOrUndefined(rteObj.inputElement.querySelector('.e-rte-audio'))).toBe(true);
             expect((rteObj.inputElement.querySelector('.e-audio-wrap') as HTMLElement).style.display == 'block').toBe(true);
             done();
+        });
+    });
+    describe('982989 - Backspace removes audio and preceding text character', () => {
+        let rteObj: RichTextEditor;
+        let innerHTML1: string = `<h1>Welcome to the Syncfusion R<span class="e-audio-wrap" contenteditable="false" title="RTE-Audio.wav"><span class="e-clickelem"><audio class="e-rte-audio e-audio-inline" controls="" style=""><source src="blob:null/f9441d42-c695-4615-8d65-28cc0d19cb56" type="audio/wav"/></audio></span></span> ich Text Editor</h1>`;
+        beforeEach(() => {
+            rteObj = renderRTE({
+                value: innerHTML1
+            });
+        });
+        afterEach(() => {
+            destroy(rteObj);
+        });
+        it('Audio backsapce action checking using backspace key with cursor position', (done: Function) => {
+            let node: any = rteObj.inputElement.querySelector('h1').childNodes[2];
+            setCursorPoint(node, 0);
+            const backspaceKeyDownEvent: KeyboardEvent = new KeyboardEvent('keydown', BACKSPACE_EVENT_INIT);
+            rteObj.inputElement.dispatchEvent(backspaceKeyDownEvent);
+            const expectedHTML: string = '<h1>Welcome to the Syncfusion R ich Text Editor</h1>';
+            setTimeout(() => {
+                expect((rteObj as any).inputElement.innerHTML === expectedHTML).toBe(true);
+                done();
+            }, 100);
+        });
+        it('Audio backsapce action checking using backspace key with selection', () => {
+            let node: any = rteObj.inputElement.querySelector('h1').childNodes[2];
+            rteObj.formatter.editorManager.nodeSelection.setSelectionText(document, node, node, 0, 3);
+            const backSpaceKeyDown: KeyboardEvent = new KeyboardEvent('keydown', BACKSPACE_EVENT_INIT);
+            rteObj.inputElement.dispatchEvent(backSpaceKeyDown);
+            const expectedHTML: string = '<h1>Welcome to the Syncfusion R<span class="e-audio-wrap" contenteditable="false" title="RTE-Audio.wav"><span class="e-clickelem"><audio class="e-rte-audio e-audio-inline" controls="" style=""><source src="blob:null/f9441d42-c695-4615-8d65-28cc0d19cb56" type="audio/wav"></audio></span></span> ich Text Editor</h1>';
+            expect((rteObj as any).inputElement.innerHTML === expectedHTML).toBe(true);
+        });
+        it('Audio delete action checking using delete key with cursor position', (done: Function) => {
+            let node: any = rteObj.inputElement.querySelector('h1').childNodes[1];
+            setCursorPoint(node, 0);
+            const deleteKeyDownEvent: KeyboardEvent = new KeyboardEvent('keydown', DELETE_EVENT_INIT);
+            rteObj.inputElement.dispatchEvent(deleteKeyDownEvent);
+            const expectedHTML: string = '<h1>Welcome to the Syncfusion R ich Text Editor</h1>';
+            setTimeout(() => {
+                expect((rteObj as any).inputElement.innerHTML === expectedHTML).toBe(true);
+                done();
+            }, 100);
+        });
+        it('Audio delete action checking using delete key with selection', () => {
+            let node: any = rteObj.inputElement.querySelector('h1').childNodes[0];
+            rteObj.formatter.editorManager.nodeSelection.setSelectionText(
+                document, node, node, (node.textContent.length - 3), node.textContent.length);
+            const deleteKeyDown: KeyboardEvent = new KeyboardEvent('keydown', DELETE_EVENT_INIT);
+            rteObj.inputElement.dispatchEvent(deleteKeyDown);
+            const expectedHTML: string = '<h1>Welcome to the Syncfusion R<span class="e-audio-wrap" contenteditable="false" title="RTE-Audio.wav"><span class="e-clickelem"><audio class="e-rte-audio e-audio-inline" controls="" style=""><source src="blob:null/f9441d42-c695-4615-8d65-28cc0d19cb56" type="audio/wav"></audio></span></span> ich Text Editor</h1>';
+            expect((rteObj as any).inputElement.innerHTML === expectedHTML).toBe(true);;
+        });
+    });
+    describe('985160 - Coverage for dragEnter', () => {
+        let rteObj: RichTextEditor;
+        let dragEvent: any;
+        beforeEach((done: DoneFn) => {
+            rteObj = renderRTE({});
+            dragEvent = {
+                dataTransfer: {
+                    items: [{ type: "audio/mp3" }],
+                    types: ["Files"]
+                },
+                preventDefault: jasmine.createSpy('preventDefault')
+            };
+            done();
+        });
+        afterEach((done: DoneFn) => {
+            destroy(rteObj);
+            done();
+        });
+        it('should cover dragEnter', () => {
+            dragEvent.dataTransfer.items = [{ type: 'audio/mp3' }];
+            (rteObj.audioModule as any).dragEnter(dragEvent);
+            expect(dragEvent.dataTransfer.dropEffect === 'copy').toBe(true);
+            expect(dragEvent.preventDefault).toHaveBeenCalled();
+        });
+    });
+    describe('985160 - Coverage for Audio Module insertDragAudio', () => {
+        let rteObj: any;
+        beforeEach(() => {
+            rteObj = renderRTE({
+                toolbarSettings: { items: ['Audio'] },
+                insertAudioSettings: { allowedTypes: ['.mp3'] },
+                actionBegin: (args: ActionBeginEventArgs) =>{
+                    args.cancel = true
+                }
+            });
+        });
+        afterEach((done: DoneFn) => {
+            destroy(rteObj);
+            done();
+        });
+        it('should not insert audio when multiple files are dropped', (done: DoneFn) => {
+            rteObj.value = `<p>Drop multiple files here.</p>`;
+            rteObj.dataBind();
+            const paragraphForMultiDrop = rteObj.inputElement.querySelector('p');
+            const audioFile1 = new File(['dummy'], 'test1.mp3', { type: 'audio/mp3' });
+            const audioFile2 = new File(['dummy'], 'test2.mp3', { type: 'audio/mp3' });
+            const multiTransfer = new DataTransfer();
+            multiTransfer.items.add(audioFile1);
+            multiTransfer.items.add(audioFile2);
+            const multiDropEvent = new DragEvent('drop', { dataTransfer: multiTransfer, bubbles: true });
+            paragraphForMultiDrop.dispatchEvent(multiDropEvent);
+            setTimeout(() => {
+                expect(rteObj.inputElement.querySelectorAll('.e-audio-wrap').length).toBe(0);
+                done();
+            }, 100);
+        });
+        it('should not call audioPaste when actionBeginArgs.cancel is true', (done: DoneFn) => {
+            rteObj.value = `<p>Drop audio here.</p>`;
+            rteObj.actionBegin = (args: ActionBeginEventArgs) => {
+                args.cancel = true
+            };
+            rteObj.dataBind();
+            const paragraph = rteObj.inputElement.querySelector('p');
+            const audioFile = new File(['dummy'], 'test.mp3', { type: 'audio/mp3' });
+            const transfer = new DataTransfer();
+            transfer.items.add(audioFile);
+            const dropEvent = new DragEvent('drop', { dataTransfer: transfer, bubbles: true });
+            paragraph.dispatchEvent(dropEvent);
+            setTimeout(() => {
+                expect(rteObj.inputElement.querySelectorAll('.e-audio-wrap').length).toBe(0);
+                done();
+            }, 100);
         });
     });
 });

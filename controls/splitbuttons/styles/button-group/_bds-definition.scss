@@ -1,3 +1,8 @@
+@use 'ej2-base/styles/definition/bds' as *;
+@use 'ej2-buttons/styles/button/bds-definition' as *;
+@forward 'ej2-base/styles/definition/bds';
+@forward 'ej2-buttons/styles/button/bds-definition';
+
 //layout variables
 $btn-grp-margin: -1px !default;
 $btn-grp-margin-left: -1px !default;
@@ -5,6 +10,14 @@ $btn-grp-wrapper-border: 4px !default;
 $btn-grp-round-radius: 20px !default;
 $btn-grp-icon-font-size: $text-lg !default;
 $btn-grp-icon-font-size-bigger: 22px !default;
+
+$btn-group-input-margin: 0 0 0 -1px !default;
+$btn-zero-radius: 0 !default;
+$btn-vertical-grp-margin: -1 0 0 !default;
+$btn-top-radius: 2px !default;
+$btn-group-zero-margin-padding: 0 !default;
+$btn-group-input-height: 1px !default;
+$btn-group-input-width: 1px !default;
 
 //Normal Outline GroupButton
 $btn-grp-outline-focus-border-color: $secondary-border-color !default;

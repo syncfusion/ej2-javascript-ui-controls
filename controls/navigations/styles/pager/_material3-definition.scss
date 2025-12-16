@@ -1,4 +1,6 @@
 @use 'sass:math';
+@use 'ej2-base/styles/definition/material3' as *;
+@forward 'ej2-base/styles/definition/material3';
 
 $pager-numericitem-border-radius: 4px !default;
 $pager-border-type: solid !default;
@@ -164,3 +166,6 @@ $pager-adaptive-constant-pagesizeall-top: 13px !default;
 $pager-bigger-adaptive-constant-pagesizeall-top: 15px !default;
 $pager-rtl-adaptive-constant-pagesizeall-top: 12px !default;
 $pager-rtl-e-bigger-adaptive-constant-pagesizeall-top: 14px !default;
+
+$pager-border-radius-4: 4px !default;
+$pager-border-radius-5: 5px !default;

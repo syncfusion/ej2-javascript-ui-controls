@@ -1,2 +1,2 @@
-@import 'common/all.scss';
-@import 'animation/all.scss';
+@use './common/all' as *;
+@use 'animation/all' as *;

@@ -1,7 +1,6 @@
-@import 'ej2-base/styles/definition/material.scss';
-@import 'document-editor/material-definition.scss';
-@import 'document-editor/icons/material.scss';
-@import 'document-editor/all.scss';
-@import 'document-editor-container/material-definition.scss';
-@import 'document-editor-container/icons/material.scss';
-@import 'document-editor-container/all.scss';
+@use 'document-editor/material-definition' as *;
+@use 'document-editor/icons/material' as *;
+@use 'document-editor/all' as *;
+@use 'document-editor-container/material-definition' as *;
+@use 'document-editor-container/icons/material' as *;
+@use 'document-editor-container/all' as *;

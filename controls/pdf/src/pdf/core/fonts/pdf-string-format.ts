@@ -7,11 +7,11 @@ import { PdfTextAlignment, PdfTextDirection, PdfSubSuperScript, _PdfWordWrapType
  * // Gets the first page
  * let page: PdfPage = document.getPage(0) as PdfPage;
  * // Create a new PDF standard font
- * let font: PdfStandardFont = new PdfStandardFont(PdfFontFamily.Helvetica, 10);
+ * let font: PdfStandardFont = document.embedFont(PdfFontFamily.helvetica, 10, PdfFontStyle.regular);
  * // Create a new PDF string format
  * let format: PdfStringFormat = new PdfStringFormat(PdfTextAlignment.right, PdfVerticalAlignment.bottom);
  * // Draw the text
- * page.graphics.drawString('Helvetica', font, [0, 180, page.size[0], 40], undefined, new PdfBrush([0, 0, 255]), format);
+ * page.graphics.drawString('Helvetica', font, {x: 0, y: 180, width: page.size.width, height: 40}, new PdfBrush({r: 0, g: 0, b: 255}), format);
  * // Save the document
  * document.save('output.pdf');
  * // Destroy the document
@@ -45,11 +45,11 @@ export class PdfStringFormat {
      * // Gets the first page
      * let page: PdfPage = document.getPage(0) as PdfPage;
      * // Create a new PDF standard font
-     * let font: PdfStandardFont = new PdfStandardFont(PdfFontFamily.Helvetica, 10);
+     * let font: PdfStandardFont = document.embedFont(PdfFontFamily.helvetica, 10, PdfFontStyle.regular);
      * // Create a new PDF string format
      * let format: PdfStringFormat = new PdfStringFormat();
      * // Draw the text
-     * page.graphics.drawString('Helvetica', font, [0, 180, page.size[0], 40], undefined, new PdfBrush([0, 0, 255]), format);
+     * page.graphics.drawString('Helvetica', font, {x: 0, y: 180, width: page.size.width, height: 40}, new PdfBrush({r: 0, g: 0, b: 255}), format);
      * // Save the document
      * document.save('output.pdf');
      * // Destroy the document
@@ -67,11 +67,11 @@ export class PdfStringFormat {
      * // Gets the first page
      * let page: PdfPage = document.getPage(0) as PdfPage;
      * // Create a new PDF standard font
-     * let font: PdfStandardFont = new PdfStandardFont(PdfFontFamily.Helvetica, 10);
+     * let font: PdfStandardFont = document.embedFont(PdfFontFamily.helvetica, 10, PdfFontStyle.regular);
      * // Create a new PDF string format
      * let format: PdfStringFormat = new PdfStringFormat(PdfTextAlignment.right);
      * // Draw the text
-     * page.graphics.drawString('Helvetica', font, [0, 180, page.size[0], 40], undefined, new PdfBrush([0, 0, 255]), format);
+     * page.graphics.drawString('Helvetica', font, {x: 0, y: 180, width: page.size.width, height: 40}, new PdfBrush({r: 0, g: 0, b: 255}), format);
      * // Save the document
      * document.save('output.pdf');
      * // Destroy the document
@@ -90,11 +90,11 @@ export class PdfStringFormat {
      * // Gets the first page
      * let page: PdfPage = document.getPage(0) as PdfPage;
      * // Create a new PDF standard font
-     * let font: PdfStandardFont = new PdfStandardFont(PdfFontFamily.Helvetica, 10);
+     * let font: PdfStandardFont = document.embedFont(PdfFontFamily.helvetica, 10, PdfFontStyle.regular);
      * // Create a new PDF string format
      * let format: PdfStringFormat = new PdfStringFormat(PdfTextAlignment.right, PdfVerticalAlignment.bottom);
      * // Draw the text
-     * page.graphics.drawString('Helvetica', font, [0, 180, page.size[0], 40], undefined, new PdfBrush([0, 0, 255]), format);
+     * page.graphics.drawString('Helvetica', font, {x: 0, y: 180, width: page.size.width, height: 40}, new PdfBrush({r: 0, g: 0, b: 255}), format);
      * // Save the document
      * document.save('output.pdf');
      * // Destroy the document
@@ -131,13 +131,13 @@ export class PdfStringFormat {
      * // Gets the first page
      * let page: PdfPage = document.getPage(0) as PdfPage;
      * // Create a new PDF standard font
-     * let font: PdfStandardFont = new PdfStandardFont(PdfFontFamily.Helvetica, 10);
+     * let font: PdfStandardFont = document.embedFont(PdfFontFamily.helvetica, 10, PdfFontStyle.regular);
      * // Create a new PDF string format
      * let format: PdfStringFormat = new PdfStringFormat(PdfTextAlignment.right);
      * // Get the default paragraph indent
      * let paragraph: number = format.paragraphIndent;
      * // Draw the text
-     * page.graphics.drawString('Helvetica', font, [0, 180, page.size[0], 40], undefined, new PdfBrush([0, 0, 255]), format);
+     * page.graphics.drawString('Helvetica', font, {x: 0, y: 180, width: page.size.width, height: 40}, new PdfBrush({r: 0, g: 0, b: 255}), format);
      * // Save the document
      * document.save('output.pdf');
      * // Destroy the document
@@ -157,13 +157,13 @@ export class PdfStringFormat {
      * // Gets the first page
      * let page: PdfPage = document.getPage(0) as PdfPage;
      * // Create a new PDF standard font
-     * let font: PdfStandardFont = new PdfStandardFont(PdfFontFamily.Helvetica, 10);
+     * let font: PdfStandardFont = document.embedFont(PdfFontFamily.helvetica, 10, PdfFontStyle.regular);
      * // Create a new PDF string format
      * let format: PdfStringFormat = new PdfStringFormat(PdfTextAlignment.right);
      * // Set a new paragraph indent
      * format.paragraphIndent = 20;
      * // Draw the text
-     * page.graphics.drawString('Helvetica', font, [0, 180, page.size[0], 40], undefined, new PdfBrush([0, 0, 255]), format);
+     * page.graphics.drawString('Helvetica', font, {x: 0, y: 180, width: page.size.width, height: 40}, new PdfBrush({r: 0, g: 0, b: 255}), format);
      * // Save the document
      * document.save('output.pdf');
      * // Destroy the document
@@ -184,7 +184,7 @@ export class PdfStringFormat {
      * // Gets the first page
      * let page: PdfPage = document.getPage(0) as PdfPage;
      * // Create a new PDF standard font
-     * let font: PdfStandardFont = new PdfStandardFont(PdfFontFamily.Helvetica, 10);
+     * let font: PdfStandardFont = document.embedFont(PdfFontFamily.helvetica, 10, PdfFontStyle.regular);
      * // Create a new PDF string format
      * let format: PdfStringFormat = new PdfStringFormat(PdfTextAlignment.right);
      * // Set a new paragraph indent
@@ -192,7 +192,7 @@ export class PdfStringFormat {
      * // Get the subscript or superscript mode
      * let script: PdfSubSuperScript = format.subSuperScript;
      * // Draw the text
-     * page.graphics.drawString('Helvetica', font, [0, 180, page.size[0], 40], undefined, new PdfBrush([0, 0, 255]), format);
+     * page.graphics.drawString('Helvetica', font, {x: 0, y: 180, width: page.size.width, height: 40}, new PdfBrush({r: 0, g: 0, b: 255}), format);
      * // Save the document
      * document.save('output.pdf');
      * // Destroy the document
@@ -216,7 +216,7 @@ export class PdfStringFormat {
      * // Gets the first page
      * let page: PdfPage = document.getPage(0) as PdfPage;
      * // Create a new PDF standard font
-     * let font: PdfStandardFont = new PdfStandardFont(PdfFontFamily.Helvetica, 10);
+     * let font: PdfStandardFont = document.embedFont(PdfFontFamily.helvetica, 10, PdfFontStyle.regular);
      * // Create a new PDF string format
      * let format: PdfStringFormat = new PdfStringFormat(PdfTextAlignment.right);
      * // Set a new paragraph indent
@@ -224,7 +224,7 @@ export class PdfStringFormat {
      * // Set the subscript or superscript mode
      * format.subSuperScript = PdfSubSuperScript.subScript;
      * // Draw the text
-     * page.graphics.drawString('Helvetica', font, [0, 180, page.size[0], 40], undefined, new PdfBrush([0, 0, 255]), format);
+     * page.graphics.drawString('Helvetica', font, {x: 0, y: 180, width: page.size.width, height: 40}, new PdfBrush({r: 0, g: 0, b: 255}), format);
      * // Save the document
      * document.save('output.pdf');
      * // Destroy the document
@@ -249,11 +249,11 @@ export class PdfStringFormat {
  * // Gets the first page
  * let page: PdfPage = document.getPage(0) as PdfPage;
  * // Create a new PDF standard font
- * let font: PdfStandardFont = new PdfStandardFont(PdfFontFamily.Helvetica, 10, PdfFontStyle.regular);
+ * let font: PdfStandardFont = document.embedFont(PdfFontFamily.helvetica, 10, PdfFontStyle.regular);
  * // Create a new PDF string format
  * let format: PdfStringFormat = new PdfStringFormat(PdfTextAlignment.right, PdfVerticalAlignment.top);
  * // Draw the text
- * page.graphics.drawString('Helvetica', font, [0, 180, page.size[0], 40], undefined, new PdfBrush([0, 0, 255]), format);
+ * page.graphics.drawString('Helvetica', font, {x: 0, y: 180, width: page.size.width, height: 40}, new PdfBrush({r: 0, g: 0, b: 255}), format);
  * // Save the document
  * document.save('output.pdf');
  * // Destroy the document

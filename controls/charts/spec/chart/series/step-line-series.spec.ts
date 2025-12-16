@@ -351,18 +351,19 @@ describe('Chart Control', () => {
             chartObj.refresh();
 
         });
-        it('Checking animation', (done: Function) => {
+        it('Checking animation', async (): Promise<void> => {
 
            let animate: EmitType<IAnimationCompleteEventArgs> = (args: series1): void => {
                 let point : Element =  <Element>document.getElementById('container_ChartSeriesClipRect_' + args.series.index).childNodes[0];
                 expect(point.getAttribute('width') === document.getElementById('container_ChartAreaBorder').getAttribute('width')).toBe(true);
-                done();
+                //done();
             };
             chartObj.series[0].animation.enable = true;
             chartObj.series[1].animation.enable = true;
             chartObj.series[2].animation.enable = true;
             chartObj.animationComplete = animate;
             chartObj.refresh();
+            await wait(500);
 
         });
         it('Checking with category axis and multiple category data ', (done: Function) => {
@@ -390,6 +391,9 @@ describe('Chart Control', () => {
             chartObj.refresh();
         });
     });
+    async function wait(ms: number): Promise<void> {
+        return new Promise(resolve => setTimeout(resolve, ms));
+    }
     describe('Step line Series Inversed axis', () => {
         let chart: Chart;
         let loaded: EmitType<ILoadedEventArgs>;

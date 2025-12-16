@@ -1,3 +1,5 @@
+@use 'ej2-base/styles/common/mixin' as *;
+@use './theme-variables' as *;
 @include export-module('speechtotext-layout') {
   .e-speech-to-text.e-btn {
     align-items: center;
@@ -8,18 +10,18 @@
     min-height: $stt-min-height;
     padding: $stt-padding;
     @if ($skin-name == 'fluent2') {
-      line-height: 0;
+      line-height: $stt-btn-line-height;
     }
     &.e-round {
       width: $stt-round-width;
       height: $stt-round-height;
-      padding: 0;
+      padding: $stt-round-padding;
     }
     .e-btn-icon {
       font-size: $stt-font-size;
       margin-top: $stt-margin-top;
       @if ($skin-name == 'material' or $skin-name == 'material-dark' or $skin-name == 'Material3') {
-        line-height: 2px;
+        line-height: $stt-btn-icon-line-height;
         width: 2em;
       }
     }
@@ -35,10 +37,10 @@
     .e-btn-icon {
       font-size: $stt-btn-font-size;
       @if ($skin-name == 'FluentUI') {
-        margin-top: 0;
+        margin-top: $stt-round-btn-margin-top;
       }
       @if ($skin-name == 'fluent2' or $skin-name == 'material' or $skin-name == 'material-dark' or $skin-name == 'fabric-dark') {
-        margin-top: 1px;
+        margin-top: $stt-round-btn-margin-top;
       }
     }
   }

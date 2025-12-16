@@ -405,6 +405,7 @@ export class ComboBox extends DropDownList {
             this.detachChangeEvent(null);
         }
     }
+
     protected updateValues(): void {
         if (this.fields.disabled) {
             if (this.value != null) {
@@ -448,7 +449,7 @@ export class ComboBox extends DropDownList {
                                 this.setHiddenValue();
                                 Input.setValue(this.text, this.inputElement, this.floatLabelType, this.showClearButton);
                             }
-                            else{
+                            else {
                                 this.valueMuteChange(null);
                             }
                         });

@@ -101,6 +101,10 @@ export class DiagramEventHandler {
                     this.diagram.currentDrawingObject = null;
                 }
                 if (this.tool) {
+                    //973919: Runtime Error When Deleting Connector in elementDraw Event
+                    if ((this.tool as any).drawingObject) {
+                        (this.tool as any).drawingObject = null;
+                    }
                     this.tool.mouseUp({ position: this.currentPosition });
                 }
                 this.tool = null;
@@ -461,9 +465,22 @@ export class DiagramEventHandler {
             this.diagram.triggerEvent(eventName, arg);
         }
         if (eventName === DiagramEvent.onUserHandleMouseUp) {
-            const element: HTMLElement = document.getElementById(this.diagram.selectedItems.userHandles[parseInt(i.toString(), 10)].name + '_userhandle');
+            // //EJ2-982152 -onUserHandleMouseUp event not triggers on user handles with content, image or a template
+            let element: HTMLElement;
+            if (arg.element.pathData) {
+                element = document.getElementById(this.diagram.selectedItems.userHandles[parseInt(i.toString(), 10)].name + '_userhandle');
+            }
+            else if (arg.element.source) {
+                element = document.getElementById(this.diagram.selectedItems.userHandles[parseInt(i.toString(), 10)].name + '_image');
+            }
+            else if (arg.element.content) {
+                element = document.getElementById(this.diagram.selectedItems.userHandles[parseInt(i.toString(), 10)].name + '_shape_native_element');
+            }
+            else {
+                element = document.getElementById(this.diagram.selectedItems.userHandles[parseInt(i.toString(), 10)].name + '_shape_html_element');
+            }
             if (this.commandHandler.isUserHandle(this.currentPosition)
-                && element && element.id === this.userHandleObject + '_userhandle') {
+                && element && element.id && (element.id.split(this.userHandleObject).length > 1)) {
                 //EJ2-838423 -onUserHandleMouseUp event triggers multiple times
                 this.diagram.triggerEvent(eventName, arg);
             }

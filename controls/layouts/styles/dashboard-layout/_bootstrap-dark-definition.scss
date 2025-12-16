@@ -1,3 +1,6 @@
+@use 'ej2-base/styles/definition/bootstrap-dark' as *;
+@forward 'ej2-base/styles/definition/bootstrap-dark';
+
 /*! component's theme wise override bootstrap-definitions and variables */
 
 // Generic
@@ -100,3 +103,4 @@ $element-width-complete: 100% !important !default;
 //gridlines
 $gridline-background: #141414 !default;
 $gridline-border: #2C2C2C !default;
+$gridline-border-width: 1px !default;

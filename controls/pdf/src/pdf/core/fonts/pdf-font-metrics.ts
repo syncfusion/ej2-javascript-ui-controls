@@ -1,57 +1,13 @@
-import { PdfStringFormat } from './pdf-string-format';
-import { PdfSubSuperScript } from './../enumerator';
 export class _PdfFontMetrics {
-    _ascent: number;
-    _descent: number;
     _name: string;
     _postScriptName: string;
-    _size: number;
-    _height: number;
     _firstChar: number;
     _lastChar: number;
-    _lineGap: number = 0;
     _subScriptSizeFactor: number;
     _superscriptSizeFactor: number;
     _widthTable: _WidthTable;
     _isUnicodeFont: boolean;
     _isBold: boolean;
-    _getAscent(format: PdfStringFormat): number {
-        return this._ascent * 0.001 * this._getSize(format);
-    }
-    _getDescent(format: PdfStringFormat): number {
-        return this._descent * 0.001 * this._getSize(format);
-    }
-    _getLineGap(format: PdfStringFormat): number {
-        return this._lineGap * 0.001 * this._getSize(format);
-    }
-    _getHeight(): number
-    _getHeight(format: PdfStringFormat): number
-    _getHeight(format?: PdfStringFormat): number {
-        let height: number;
-        const clearTypeFonts: string[] = [ 'cambria', 'candara', 'constantia', 'corbel', 'cariadings' ];
-        const clearTypeFontCollection: string[] = [];
-        clearTypeFontCollection.push(...clearTypeFonts);
-        if (this._getDescent(format) < 0) {
-            height = (this._getAscent(format) - this._getDescent(format) + this._getLineGap(format));
-        } else {
-            height = (this._getAscent(format) + this._getDescent(format) + this._getLineGap(format));
-        }
-        return height;
-    }
-    _getSize(format: PdfStringFormat): number {
-        let size : number = this._size;
-        if (format !== null && typeof format !== 'undefined') {
-            switch (format.subSuperScript) {
-            case PdfSubSuperScript.subScript:
-                size /= this._subScriptSizeFactor;
-                break;
-            case PdfSubSuperScript.superScript:
-                size /= this._superscriptSizeFactor;
-                break;
-            }
-        }
-        return size;
-    }
 }
 export abstract class _WidthTable {
     abstract _itemAt(index: number): number;

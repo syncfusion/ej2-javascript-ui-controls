@@ -9,7 +9,7 @@ import {
     HierarchicalTree,
     randomId
 } from '../../../src/diagram/index';
-import { createElement } from '@syncfusion/ej2-base';
+import { createElement, remove } from '@syncfusion/ej2-base';
 import { Diagram } from '../../../src/diagram/diagram';
 import { MouseEvents } from '../interaction/mouseevents.spec';
 import { profile, inMB, getMemoryProfile } from '../../../spec/common.spec';
@@ -165,6 +165,7 @@ let connectorData: any = [
 describe('Crud Diagram', () => {
     let diagram: Diagram;
     let ele: HTMLElement;
+
     beforeAll(() => {
         ele = createElement('div', { id: 'CrudDiagram' });
         document.body.appendChild(ele);
@@ -211,10 +212,18 @@ describe('Crud Diagram', () => {
         });
         diagram.appendTo('#CrudDiagram');
     });
+
     afterAll(() => {
-        diagram.destroy();
-        ele.remove();
+        if (diagram) {
+            diagram.destroy();
+            diagram = null;
+        }
+        if (ele) {
+            remove(ele);
+            ele = null;
+        }
     });
+
     it('Checking insertdata', (done: Function) => {
         let mouseEvents: MouseEvents = new MouseEvents();
         let diagramCanvas: HTMLElement = document.getElementById(
@@ -227,29 +236,30 @@ describe('Crud Diagram', () => {
         let selectedItem: NodeModel = diagram.selectedItems.nodes[0];
         let description: string = 'data';
         let color: string = 'red';
-        let node: any = {
+        let newNode: any = {
             id: randomId(),
             style: { fill: color },
-            // Removed Math.random() due to lack of cryptographic security.
             Id: 10,
             Description: description,
             Color: color
         };
-        let connector: any = {
+        let newConnector: any = {
             id: randomId(),
             sourceID: selectedItem.id,
-            targetID: node.id,
-            // Removed Math.random() due to lack of cryptographic security.
+            targetID: newNode.id,
             Id: 5
         };
-        diagram.add(node);
-        diagram.add(connector);
+        diagram.add(newNode);
+        diagram.add(newConnector);
         diagram.doLayout();
         let data: object = diagram.insertData();
         expect(
             (data as Diagram).nodes.length == 1 &&
             (data as Diagram).connectors.length == 1
         ).toBe(true);
+
+        // Cleanup
+        mouseEvents = null;
         done();
     });
 
@@ -261,7 +271,7 @@ describe('Crud Diagram', () => {
         let element = document.getElementById(diagram.nodes[diagram.nodes.length - 1].id);
         let bounds: ClientRect | DOMRect = element.getBoundingClientRect();
         mouseEvents.clickEvent(diagramCanvas, (bounds as DOMRect).x + diagram.element.offsetLeft, (bounds as DOMRect).y + diagram.element.offsetTop);
-        
+
         let selectedItem: any = diagram.selectedItems.nodes[0];
         selectedItem.Description = 'sametor';
         selectedItem.Color = 'blue';
@@ -270,6 +280,9 @@ describe('Crud Diagram', () => {
         expect(
             (diagram.selectedItems.nodes[0] as any).Description == 'sametor'
         ).toBe(true);
+
+        // Cleanup
+        mouseEvents = null;
         done();
     });
 
@@ -288,14 +301,17 @@ describe('Crud Diagram', () => {
             (data as Diagram).nodes.length == 1 &&
             (data as Diagram).connectors.length == 1
         ).toBe(true);
+
+        // Cleanup
+        mouseEvents = null;
         done();
     });
-
 });
 
 describe('Crud Datasource', () => {
     let diagram: Diagram;
     let ele: HTMLElement;
+
     beforeAll(() => {
         ele = createElement('div', { id: 'CrudDiagram1' });
         document.body.appendChild(ele);
@@ -333,29 +349,37 @@ describe('Crud Datasource', () => {
         });
         diagram.appendTo('#CrudDiagram1');
     });
+
     afterAll(() => {
-        diagram.destroy();
-        ele.remove();
+        if (diagram) {
+            diagram.destroy();
+            diagram = null;
+        }
+        if (ele) {
+            remove(ele);
+            ele = null;
+        }
     });
+
     it('Checking insertnode', (done: Function) => {
         let description: string = 'data';
         let color: string = 'red';
-        let node: any = {
+        let newNode: any = {
             id: randomId(),
             offsetX: 300,
             offsetY: 300,
             width: 100,
             height: 100,
-            // Removed Math.random() due to lack of cryptographic security.
             Id: 28,
             Description: description,
             Color: color
         };
-        diagram.add(node);
-        let data: any = diagram.insertData(node);
-        expect(node.Description == 'data').toBe(true);
+        diagram.add(newNode);
+        let data: any = diagram.insertData(newNode);
+        expect(newNode.Description == 'data').toBe(true);
         done();
     });
+
     it('Checking updatenode', (done: Function) => {
         let mouseEvents: MouseEvents = new MouseEvents();
         let diagramCanvas: HTMLElement = document.getElementById(
@@ -367,8 +391,12 @@ describe('Crud Datasource', () => {
         selectedItem.Description = 'Niranjan';
         let data: any = diagram.updateData(selectedItem);
         expect(selectedItem.Description == 'Niranjan').toBe(true);
+
+        // Cleanup
+        mouseEvents = null;
         done();
     });
+
     it('Checking deletenode', (done: Function) => {
         let mouseEvents: MouseEvents = new MouseEvents();
         let diagramCanvas: HTMLElement = document.getElementById(
@@ -380,14 +408,17 @@ describe('Crud Datasource', () => {
         diagram.remove(selectedItem);
         let data: any = diagram.removeData(selectedItem);
         expect(diagram.nodes.length === 12).toBe(true);
+
+        // Cleanup
+        mouseEvents = null;
         done();
     });
-
 });
 
 describe('Crud read Node datasource', () => {
     let diagram: Diagram;
     let ele: HTMLElement;
+
     beforeAll(() => {
         ele = createElement('div', { id: 'CrudDiagram2' });
         document.body.appendChild(ele);
@@ -439,22 +470,30 @@ describe('Crud read Node datasource', () => {
         });
         diagram.appendTo('#CrudDiagram2');
     });
+
     afterAll(() => {
-        diagram.destroy();
-        ele.remove();
+        if (diagram) {
+            diagram.destroy();
+            diagram = null;
+        }
+        if (ele) {
+            remove(ele);
+            ele = null;
+        }
     });
+
     it('Checking empty crud', (done: Function) => {
         let nodes: NodeModel[] = diagram.nodes;
         let connectors: ConnectorModel[] = diagram.connectors;
         // expect(nodes.length > 0).toBe(true);
         done();
     });
-
 });
 
 describe('Crud read Connector datasource', () => {
     let diagram: Diagram;
     let ele: HTMLElement;
+
     beforeAll(() => {
         ele = createElement('div', { id: 'CrudDiagram3' });
         document.body.appendChild(ele);
@@ -498,23 +537,32 @@ describe('Crud read Connector datasource', () => {
         });
         diagram.appendTo('#CrudDiagram3');
     });
+
     afterAll(() => {
-        diagram.destroy();
-        ele.remove();
+        if (diagram) {
+            diagram.destroy();
+            diagram = null;
+        }
+        if (ele) {
+            remove(ele);
+            ele = null;
+        }
     });
+
     it('Checking empty connection crud', (done: Function) => {
         let nodes: NodeModel[] = diagram.nodes;
         let connectors: ConnectorModel[] = diagram.connectors;
         expect(nodes.length == 0 && connectors.length == 0).toBe(true);
         done();
     });
+
     it('memory leak', () => {
         profile.sample();
-        let average: any = inMB(profile.averageChange)
+        let average: any = inMB(profile.averageChange);
         //Check average change in memory samples to not be over 10MB
         expect(average).toBeLessThan(10);
-        let memory: any = inMB(getMemoryProfile())
+        let memory: any = inMB(getMemoryProfile());
         //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
         expect(memory).toBeLessThan(profile.samples[0] + 0.25);
-    })
+    });
 });

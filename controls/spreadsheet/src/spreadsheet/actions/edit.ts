@@ -322,7 +322,8 @@ export class Edit {
                             break;
                         }
                     }
-                } else if (trgtElem.classList.contains('e-spreadsheet') || closest(trgtElem, '.e-sheet-panel')) {
+                } else if (trgtElem.classList.contains('e-spreadsheet') || (closest(trgtElem, '.e-sheet-panel') &&
+                    !trgtElem.classList.contains('e-comment-input'))) {
                     if (keyCode === 13 && trgtElem.contentEditable === 'true') {
                         e.preventDefault();
                     }

@@ -1,5 +1,5 @@
 import { Workbook, SheetModel, CellModel, getCell, getSheet, getSheetIndex, getColumn, setCell } from '../base/index';
-import { setLinkModel, getRangeIndexes, updateCell, getSwapRange, isLocked, ExtendedSheet, importModelUpdate } from '../common/index';
+import { setLinkModel, getRangeIndexes, updateCell, getSwapRange, isLocked, importModelUpdate, ExtendedSheet } from '../common/index';
 import { HyperlinkModel } from '../common/class-model';
 import { isNullOrUndefined } from '@syncfusion/ej2-base';
 

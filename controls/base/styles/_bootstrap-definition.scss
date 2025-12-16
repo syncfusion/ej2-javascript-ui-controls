@@ -1,4 +1,5 @@
-@import 'definition/bootstrap.scss';
+@use 'definition/bootstrap' as *;
+@forward 'definition/bootstrap';
 
 $font-family: 'Helvetica Neue', 'Helvetica', 'Arial', sans-serif, '-apple-system', 'BlinkMacSystemFont' !default;
 $font-size: 12px !default;

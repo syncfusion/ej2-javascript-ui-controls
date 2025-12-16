@@ -1,13 +1,15 @@
+@use 'ej2-base/styles/common/mixin' as *;
+@use './theme-variables' as *;
 @include export-module('progress-button-layout') {
   .e-progress-btn {
     position: relative;
 
     .e-progress {
-      height: 100%;
-      left: 0;
+      height: $progress-btn-full-height;
+      left: $progress-btn-zero-padding-margin;
       opacity: 0;
       position: absolute;
-      top: 0;
+      top: $progress-btn-zero-padding-margin;
       transition: opacity .3s linear;
     }
 
@@ -23,24 +25,24 @@
 
     &.e-vertical {
       .e-progress {
-        bottom: 0;
-        height: 0%;
-        top: auto;
-        width: 100%;
+        bottom: $progress-btn-zero-padding-margin;
+        height: $progress-btn-nill-height;
+        top: $progress-auto-width;
+        width: $progress-full-width;
       }
     }
 
     &.e-progress-top {
       .e-progress {
-        height: 10%;
+        height: $progress-btn-process-height;
       }
     }
 
     &.e-progress-bottom {
       .e-progress {
-        bottom: -1px;
-        height: 10%;
-        top: auto;
+        bottom: $spinner-inner-top;
+        height: $progress-btn-process-height;
+        top: $progress-auto-width;
       }
     }
 
@@ -68,7 +70,7 @@
         .e-btn-content,
         .e-spinner {
           display: block;
-          line-height: 1;
+          line-height: $progress-btn-line-height;
         }
       }
 
@@ -84,14 +86,14 @@
           padding-right: $progress-btn-spinner-padding;
 
           .e-spinner-inner {
-            top: -1px;
+            top: $spinner-inner-top;
           }
         }
 
         &.e-rtl {
           .e-spinner {
             padding-left: $progress-btn-spinner-padding;
-            padding-right: 0;
+            padding-right: $progress-btn-zero-padding-margin;
           }
         }
       }
@@ -101,13 +103,13 @@
           padding-left: $progress-btn-spinner-padding;
 
           .e-spinner-inner {
-            top: -1px;
+            top: $spinner-inner-top;
           }
         }
 
         &.e-rtl {
           .e-spinner {
-            padding-left: 0;
+            padding-left: $progress-btn-zero-padding-margin;
             padding-right: $progress-btn-spinner-padding;
           }
         }
@@ -140,7 +142,7 @@
           &.e-rtl {
             .e-spinner {
               padding-left: $progress-btn-spinner-padding-small;
-              padding-right: 0;
+              padding-right: $progress-btn-zero-padding-margin;
             }
           }
         }
@@ -152,7 +154,7 @@
 
           &.e-rtl {
             .e-spinner {
-              padding-left: 0;
+              padding-left: $progress-btn-zero-padding-margin;
               padding-right: $progress-btn-spinner-padding-small;
             }
           }
@@ -179,34 +181,34 @@
     }
 
     &.e-round-corner {
-      border-radius: 5em;
+      border-radius: $progress-round-border-radius;
       outline: none;
       overflow: hidden;
     }
 
     &.e-rtl {
       .e-progress {
-        left: auto;
-        right: 0;
+        left: $progress-auto-width;
+        right: $progress-btn-zero-padding-margin;
       }
 
       &.e-vertical {
         .e-progress {
-          bottom: auto;
-          top: 0;
+          bottom: $progress-auto-width;
+          top: $progress-btn-zero-padding-margin;
         }
       }
     }
 
     .e-spinner-pane {
-      height: auto;
+      height: $progress-auto-height;
       position: relative;
-      width: auto;
+      width: $progress-auto-width;
 
       .e-spinner-inner {
-        left: auto;
+        left: $progress-auto-width;
         position: relative;
-        top: auto;
+        top: $progress-auto-width;
         transform: none;
       }
     }
@@ -214,63 +216,63 @@
     .e-cont-animate {
       align-items: center;
       display: inline-flex;
-      height: 100%;
+      height: $progress-btn-full-height;
       justify-content: center;
-      left: 0;
+      left: $progress-btn-zero-padding-margin;
       position: absolute;
-      top: 0;
-      width: 100%;
+      top: $progress-btn-zero-padding-margin;
+      width: $progress-full-width;
     }
 
     @keyframes ProgressSlideLeft {
       from {
-        left: 0%;
+        left: $progress-zero-width;
         opacity: 1;
       }
 
       to {
-        left: -100%;
+        left: $progress-negative-full-width;
         opacity: 0;
       }
     }
 
     @keyframes ProgressSlideRight {
       from {
-        left: 0%;
+        left: $progress-zero-width;
         opacity: 1;
       }
 
       to {
-        left: 100%;
+        left: $progress-full-width;
         opacity: 0;
       }
     }
 
     @keyframes ProgressSlideUp {
       from {
-        height: auto;
+        height: $progress-auto-height;
         opacity: 1;
-        top: 0;
+        top: $progress-btn-zero-padding-margin;
       }
 
       to {
-        height: auto;
+        height: $progress-auto-height;
         opacity: 0;
-        top: -100px;
+        top: $progress-slideup-to-top;
       }
     }
 
     @keyframes ProgressSlideDown {
       from {
-        height: auto;
+        height: $progress-auto-height;
         opacity: 1;
-        top: 0;
+        top: $progress-btn-zero-padding-margin;
       }
 
       to {
-        height: auto;
+        height: $progress-auto-height;
         opacity: 0;
-        top: 100px;
+        top: $progress-slidedown-to-top;
       }
     }
 

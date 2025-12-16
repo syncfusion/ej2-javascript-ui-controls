@@ -1,6 +1,8 @@
+@use 'ej2-base/styles/common/mixin' as *;
+@use './theme-variables' as *;
 @mixin schedule-appointments-styles {
   background: $schedule-appointment-bg-color;
-  border: 1px solid $schedule-appointment-border-color;
+  border: $schedule-border-1 solid $schedule-appointment-border-color;
   border-radius: $schedule-appointment-border-radius;
   color: $schedule-appointment-font-color;
   display: flex;
@@ -9,9 +11,9 @@
 }
 
 @mixin schedule-appointments-subject-styles {
-  font-size: 13px;
-  font-weight: 500;
-  line-height: 1.2;
+  font-size: $schedule-font-size-13;
+  font-weight: $schedule-font-weight-medium;
+  line-height: $schedule-line-height-1-2;
   margin-left: auto;
   min-height: 18px;
   overflow: hidden;
@@ -19,12 +21,12 @@
 
 @mixin schedule-inline-appointment-styles {
   background: transparent;
-  border: 0;
+  border: $schedule-border-0;
   color: $schedule-appointment-font-color;
-  font-size: 13px;
-  font-weight: 500;
-  line-height: 1.2;
-  padding-top: 4px;
+  font-size: $schedule-font-size-13;
+  font-weight: $schedule-font-weight-medium;
+  line-height: $schedule-line-height-1-2;
+  padding-top: $schedule-spacing-4;
   width: 100%;
 }
 
@@ -32,9 +34,9 @@
   color: $schedule-secondary-content-font-color;
   cursor: pointer;
   font-size: $schedule-more-indicator-nrml-font-size;
-  line-height: 11px;
+  line-height: $schedule-line-height-11;
   overflow: hidden;
-  padding: 2px 4px;
+  padding: $schedule-spacing-2 $schedule-spacing-4;
   position: absolute;
   text-overflow: ellipsis;
 }
@@ -72,7 +74,7 @@
     user-select: none;
 
     .e-schedule-toolbar {
-      border: 0;
+      border: $schedule-border-0;
       border-bottom: $schedule-tbar-border-bottom-size;
       box-shadow: $schedule-tbar-box-shadow;
       margin-bottom: $schedule-tbar-box-shadow-bottom-margin;
@@ -94,10 +96,10 @@
       }
 
       .e-toolbar-items {
-        height: $schedule-tbar-min-height;
+        height: $schedule-tbar-height;
 
         &.e-tbar-pos {
-          height: $schedule-tbar-min-height;
+          height: $schedule-tbar-height;
           min-height: $schedule-tbar-min-height;
 
           .e-toolbar-right .e-toolbar-item .e-tbar-btn {
@@ -125,7 +127,7 @@
         }
 
         &.e-tbar-pos > div {
-          height: inherit;
+          height: $schedule-height-inherit;
         }
 
         .e-tbar-btn.e-btn {
@@ -192,7 +194,7 @@
       }
 
       &.e-rtl .e-hor-nav {
-        border-left: 0;
+        border-left: $schedule-border-0;
         border-right: $border-size $schedule-tbar-border-nav-type $schedule-tbar-border-nav;
 
         &:not(.e-nav-active):hover {
@@ -252,7 +254,7 @@
         .e-toolbar-items .e-toolbar-left .e-tbar-btn.e-icon-btn {
           &:hover,
           &:focus {
-            height: calc(100% - 20px);
+            height: calc($schedule-height-p100 - $schedule-height-20);
           }
         }
 
@@ -279,7 +281,7 @@
           }
 
           &.e-tbar-pos > div {
-            height: inherit;
+            height: $schedule-height-inherit;
           }
 
           .e-toolbar-item .e-tbar-btn.e-btn.e-tbtn-txt .e-icons.e-btn-icon {
@@ -311,12 +313,12 @@
           width: 100%;
           
           .e-toolbar-item .e-tbar-btn.e-btn {
-            padding-left: 7px;
+            padding-left: $schedule-spacing-7;
           }
            
           &.e-rtl {
             .e-toolbar-item .e-tbar-btn.e-btn {
-              padding-right: 7px;
+              padding-right: $schedule-spacing-7;
             }
           }
         }
@@ -334,14 +336,14 @@
       display: flex;
       margin-bottom: $schedule-tbar-box-shadow-bottom-margin;
       min-height: $schedule-tbar-min-height;
-      padding: 10px;
+      padding: $schedule-spacing-10;
 
       .e-resource-menu {
         .e-icon-menu {
           color: $schedule-icon-color;
-          font-size: 14px;
-          padding: 7px;
-          padding-left: 4px;
+          font-size: $schedule-font-icon-size-14;
+          padding: $schedule-spacing-7;
+          padding-left: $schedule-spacing-4;
         }
 
         &.e-disable {
@@ -353,8 +355,8 @@
         display: flex;
 
         .e-resource-name {
-          font-size: 14px;
-          padding: 5px;
+          font-size: $schedule-font-size-14;
+          padding: $schedule-spacing-5;
           color: $schedule-tree-content-color;
 
           &:not(:last-child) {
@@ -364,10 +366,10 @@
 
         .e-icon-next {
           color: $schedule-icon-color;
-          font-size: 10px;
-          line-height: 18px;
+          font-size: $schedule-font-icon-size-10;
+          line-height: $schedule-line-height-18;
           opacity: .4;
-          padding: 5px;
+          padding: $schedule-spacing-5;
         }
       }
 
@@ -402,13 +404,13 @@
     .e-resource-tree-popup {
       background: $schedule-tree-bg-color;
       box-shadow: $schedule-more-indicator-shadow-color-res-tree-popup;
-      height: 100%;
+      height: $schedule-height-p100;
       position: absolute;
       width: 250px;
       color: $schedule-tree-font-color;
 
       .e-resource-tree {
-        height: 100%;
+        height: $schedule-height-p100;
         overflow-y: auto;
       }
 
@@ -420,7 +422,7 @@
     .e-resource-tree-popup-overlay {
       &.e-enable {
         background: $schedule-popup-overlay-bg-color;
-        height: 100%;
+        height: $schedule-height-p100;
         left: 0;
         opacity: .5;
         position: absolute;
@@ -431,9 +433,9 @@
 
     .e-new-event {
       background: $schedule-appointment-bg-color;
-      border: 1px solid $schedule-appointment-font-color;
-      border-radius: 5px;
-      height: 100%;
+      border: $schedule-border-1 solid $schedule-appointment-font-color;
+      border-radius: $schedule-border-radius-5;
+      height: $schedule-height-p100;
       opacity: .9;
       position: relative;
       width: 100%;
@@ -441,11 +443,11 @@
 
       .e-title {
         color: $schedule-appointment-font-color;
-        font-size: 12px;
-        line-height: 1.2;
-        margin: 0;
+        font-size: $schedule-font-size-12;
+        line-height: $schedule-line-height-1-2;
+        margin: $schedule-spacing-0;
         overflow-wrap: break-word;
-        padding: 3px;
+        padding: $schedule-spacing-3;
         position: absolute;
         text-align: left;
         white-space: normal;
@@ -454,10 +456,10 @@
     }
 
     .e-schedule-table {
-      border: 0 none;
+      border: $schedule-border-0 none;
       border-collapse: separate;
       border-spacing: 0;
-      margin: 0;
+      margin: $schedule-spacing-0;
       table-layout: fixed;
       width: 100%;
     }
@@ -472,7 +474,7 @@
     }
 
     .e-outer-table > tbody > tr > td {
-      padding: 0;
+      padding: $schedule-spacing-0;
       vertical-align: top;
     }
 
@@ -485,7 +487,7 @@
     }
 
     .e-content-placeholder {
-      height: 100%;
+      height: $schedule-height-p100;
       position: relative;
       width: 100%;
       z-index: 99999;
@@ -508,12 +510,12 @@
 
     .e-left-icon,
     .e-right-icon {
-      font-size: 8px;
+      font-size: $schedule-font-icon-size-8;
     }
 
     .e-m-date {
       cursor: pointer;
-      font-size: 20px;
+      font-size: $schedule-font-size-20;
 
       &:hover {
         text-decoration: underline;
@@ -521,7 +523,7 @@
     }
 
     .e-m-day {
-      font-size: 12px;
+      font-size: $schedule-font-size-12;
     }
 
     #{if(&, '&', '*')}.e-device {
@@ -542,7 +544,7 @@
       .e-subject {
         overflow: hidden;
         overflow-wrap: break-word;
-        padding: 4px;
+        padding: $schedule-spacing-4;
         white-space: normal;
         word-wrap: break-word;
       }
@@ -551,7 +553,7 @@
     .e-block-indicator {
       color: $schedule-block-appointment-font-color;
       float: right;
-      padding: 0 5px;
+      padding: $schedule-spacing-0 $schedule-spacing-5;
       z-index: 1;
     }
 
@@ -626,7 +628,7 @@
 
       .e-appointment.e-appointment-border {
         .e-top-bottom-resize {
-          height: 10px;
+          height: $schedule-height-10;
           left: 50%;
           position: absolute;
           transform: translateX(-50%);
@@ -634,8 +636,8 @@
         }
 
         .e-left-right-resize {
-          border-radius: 50%;
-          height: 100%;
+          border-radius: $schedule-border-radius-50;
+          height: $schedule-height-p100;
           position: absolute;
           top: 50%;
           transform: translateY(-50%);
@@ -643,19 +645,19 @@
         }
 
         .e-top-handler .e-top-bottom-resize {
-          margin-top: -8px;
+          margin-top: $schedule-negative-spacing-8;
         }
 
         .e-bottom-handler .e-top-bottom-resize {
-          margin-top: 8px;
+          margin-top: $schedule-spacing-8;
         }
 
         .e-left-handler .e-left-right-resize {
-          margin-left: -8px;
+          margin-left: $schedule-negative-spacing-8;
         }
 
         .e-right-handler .e-left-right-resize {
-          margin-left: 8px;
+          margin-left: $schedule-spacing-8;
         }
       }
     }
@@ -665,13 +667,13 @@
 
         &.e-left-handler,
         &.e-right-handler {
-          height: 100%;
+          height: $schedule-height-p100;
           width: 5px;
         }
 
         &.e-top-handler,
         &.e-bottom-handler {
-          height: 5px;
+          height: $schedule-height-5;
           width: 100%;
         }
       }
@@ -682,7 +684,7 @@
 
       &.e-left-handler,
       &.e-right-handler {
-        height: 100%;
+        height: $schedule-height-p100;
         min-width: 1px;
         max-width: 10px;
         width: 20%;
@@ -704,7 +706,7 @@
       &.e-bottom-handler {
         min-height: 1px;
         max-height: 10px;
-        height: 20%;
+        height: $schedule-height-p20;
         width: 100%;
       }
 
@@ -728,23 +730,23 @@
       &.e-timescale-disable {
         .e-content-table,
         .e-content-wrap {
-          height: 100%;
+          height: $schedule-height-p100;
         }
 
         .e-all-day-row,
         .e-all-day-cells {
-          height: 0 !important; /* stylelint-disable-line declaration-no-important */
+          height: $schedule-height-0 !important; /* stylelint-disable-line declaration-no-important */
         }
 
         .e-appointment {
           @include schedule-appointments-styles;
           height: $schedule-timescale-appointment-height;
-          margin-bottom: 2px;
+          margin-bottom: $schedule-spacing-2;
 
           .e-appointment-details {
             display: flex;
             flex: auto;
-            padding: 2px 4px 0 2px;
+            padding: $schedule-spacing-2 $schedule-spacing-4 $schedule-spacing-0 $schedule-spacing-2;
             text-align: left;
           }
 
@@ -756,16 +758,16 @@
           .e-subject {
             @include schedule-appointments-subject-styles;
             overflow-wrap: break-word;
-            padding-top: 1px;
+            padding-top: $schedule-spacing-1;
             white-space: normal;
             word-wrap: break-word;
           }
 
           .e-time,
           .e-location {
-            font-size: 11px;
+            font-size: $schedule-font-size-11;
             overflow: hidden;
-            padding-top: 1px;
+            padding-top: $schedule-spacing-1;
             text-overflow: ellipsis;
           }
 
@@ -775,19 +777,19 @@
 
           .e-recurrence-icon,
           .e-recurrence-edit-icon {
-            line-height: $schedule-timescale-appointment-height;
-            padding: 0 5px;
+            line-height: $schedule-timescale-recurrence-icon-line-height;
+            padding: $schedule-spacing-0 $schedule-spacing-5;
           }
 
           .e-left-icon,
           .e-right-icon {
-            line-height: $schedule-timescale-appointment-height;
-            padding: 0 2px;
+            line-height: $schedule-timescale-recurrence-icon-line-height;
+            padding: $schedule-spacing-0 $schedule-spacing-2;
           }
 
           &.e-appointment-border,
           &:focus {
-            border: 0;
+            border: $schedule-border-0;
             box-shadow: $schedule-event-box-shadow-1, $schedule-event-box-shadow-2, $schedule-event-box-shadow-3;
           }
 
@@ -802,7 +804,7 @@
         }
 
         .e-work-cells {
-          height: auto;
+          height: $schedule-height-auto;
           vertical-align: top;
         }
 
@@ -831,13 +833,13 @@
       .e-resource-cells {
         color: $schedule-primary-content-font-color;
         font-size: $schedule-header-day-nrml-font-size;
-        height: 40px;
-        padding: 8px;
-        padding-left: 15px;
+        height: $schedule-height-40;
+        padding: $schedule-spacing-8;
+        padding-left: $schedule-spacing-15;
       }
 
       .e-header-cells {
-        font-size: 12px;
+        font-size: $schedule-font-size-12;
         height: $schedule-header-cells-height;
         padding: $schedule-header-cells-padding;
 
@@ -879,7 +881,7 @@
 
       .e-row-count-wrapper {
         display: block;
-        height: 100%;
+        height: $schedule-height-p100;
         pointer-events: none;
         position: relative;
 
@@ -889,7 +891,7 @@
           cursor: pointer;
           overflow: hidden;
           overflow-wrap: normal;
-          padding: 2px 4px;
+          padding: $schedule-spacing-2 $schedule-spacing-4;
           pointer-events: visible;
           position: absolute;
           text-overflow: ellipsis;
@@ -910,11 +912,11 @@
         color: $schedule-tbar-default-icon-color;
         cursor: pointer;
         display: block;
-        font-size: 11px;
-        height: 25px;
+        font-size: $schedule-font-size-11;
+        height: $schedule-height-25;
         left: 0;
-        line-height: 25px;
-        margin: 0 auto;
+        line-height: $schedule-line-height-25;
+        margin: $schedule-spacing-0 auto;
         position: absolute;
         right: 0;
         transform: rotate(0deg);
@@ -936,7 +938,7 @@
         &:hover,
         &:focus {
           background: $schedule-header-hover-color;
-          border-radius: 100%;
+          border-radius: $schedule-border-radius-full;
           color: $schedule-all-day-section-hover-color;
         }
       }
@@ -947,7 +949,7 @@
 
       .e-all-day-cells {
         height: $schedule-allday-cells-height;
-        padding: 0;
+        padding: $schedule-spacing-0;
         text-align: center;
         vertical-align: top;
       }
@@ -1012,7 +1014,7 @@
         overflow: hidden;
 
         &.e-all-day-scroll {
-          border-bottom: 1px solid $schedule-appointment-border-color;
+          border-bottom: $schedule-border-1 solid $schedule-appointment-border-color;
           overflow-y: auto;
 
           .e-header-row .e-resource-cells {
@@ -1042,9 +1044,9 @@
       .e-timeline-wrapper,
       .e-day-wrapper,
       .e-all-day-appointment-wrapper {
-        height: 0;
-        margin: 0;
-        padding: 0;
+        height: $schedule-height-0;
+        margin: $schedule-spacing-0;
+        padding: $schedule-spacing-0;
         position: relative;
       }
 
@@ -1065,20 +1067,20 @@
           flex: auto;
           line-height: $schedule-month-appointment-text-line-height;
           overflow: hidden;
-          padding: 1px 0 1px 4px;
+          padding: $schedule-spacing-1 $schedule-spacing-0 $schedule-spacing-1 $schedule-spacing-4;
 
           .e-subject {
             flex: auto;
-            font-size: 13px;
-            font-weight: 500;
+            font-size: $schedule-font-size-13;
+            font-weight: $schedule-font-weight-medium;
             overflow: hidden;
             text-overflow: ellipsis;
           }
 
           .e-time {
             display: block;
-            font-size: 11px;
-            padding: 1px 4px 2px 0;
+            font-size: $schedule-font-size-11;
+            padding: $schedule-spacing-1 $schedule-spacing-4 $schedule-spacing-2 $schedule-spacing-0;
           }
 
           .e-recurrence-icon,
@@ -1086,7 +1088,7 @@
           .e-left-icon,
           .e-right-icon {
             line-height: $schedule-appointment-text-line-height;
-            padding: 0 2px;
+            padding: $schedule-spacing-0 $schedule-spacing-2;
           }
         }
 
@@ -1096,7 +1098,7 @@
 
         &.e-appointment-border,
         &:focus {
-          border: 0;
+          border: $schedule-border-0;
           box-shadow: $schedule-event-box-shadow-1, $schedule-event-box-shadow-2, $schedule-event-box-shadow-3;
         }
       }
@@ -1107,7 +1109,7 @@
 
       .e-day-wrapper .e-appointment {
         background: $schedule-appointment-bg-color;
-        border: 1px solid $schedule-appointment-border-color;
+        border: $schedule-border-1 solid $schedule-appointment-border-color;
         border-radius: $schedule-appointment-border-radius;
         color: $schedule-appointment-font-color;
         overflow: hidden;
@@ -1123,16 +1125,16 @@
         .e-subject {
           @include schedule-appointments-subject-styles;
           overflow-wrap: break-word;
-          padding-top: 4px;
+          padding-top: $schedule-spacing-4;
           white-space: normal;
           word-wrap: break-word;
         }
 
         .e-time,
         .e-location {
-          font-size: 11px;
+          font-size: $schedule-font-size-11;
           overflow: hidden;
-          padding-top: 1px;
+          padding-top: $schedule-spacing-1;
           text-overflow: ellipsis;
         }
 
@@ -1149,7 +1151,7 @@
           bottom: 5px;
           display: block;
           float: right;
-          height: auto;
+          height: $schedule-height-auto;
           left: auto;
           position: absolute;
           right: 5px;
@@ -1158,16 +1160,16 @@
 
         .e-indicator {
           display: block;
-          margin: 0 45%;
+          margin: $schedule-spacing-0 $schedule-spacing-percentage-45;
         }
 
         .e-up-icon,
         .e-down-icon {
-          font-size: 8px;
+          font-size: $schedule-font-icon-size-8;
         }
 
         .e-up-icon {
-          margin-top: 3px;
+          margin-top: $schedule-spacing-3;
           top: 0;
         }
 
@@ -1178,7 +1180,7 @@
 
         &.e-appointment-border,
         &:focus {
-          border: 0;
+          border: $schedule-border-0;
           box-shadow: $schedule-event-box-shadow-1, $schedule-event-box-shadow-2, $schedule-event-box-shadow-3;
         }
       }
@@ -1214,7 +1216,7 @@
 
         .e-clone-time-indicator,
         .e-current-time {
-          font-size: 9px;
+          font-size: $schedule-font-size-9;
         }
 
         .e-time-cells-wrap {
@@ -1227,7 +1229,7 @@
         }
 
         .e-day-wrapper .e-appointment .e-subject {
-          font-weight: 500;
+          font-weight: $schedule-font-weight-medium;
           min-height: auto;
         }
       }
@@ -1242,17 +1244,17 @@
         }
 
         .e-all-day-appointment-wrapper .e-appointment .e-appointment-details {
-          padding: 1px 4px 1px 0;
+          padding: $schedule-spacing-1 $schedule-spacing-4 $schedule-spacing-1 $schedule-spacing-0;
         }
 
         .e-day-wrapper .e-appointment {
           .e-appointment-details {
-            line-height: 15px;
+            line-height: $schedule-line-height-15;
             text-align: right;
           }
 
           .e-subject {
-            font-weight: 500;
+            font-weight: $schedule-font-weight-medium;
             margin-right: auto;
           }
 
@@ -1292,12 +1294,12 @@
         position: relative;
 
         .e-schedule-table {
-          height: 100%;
+          height: $schedule-height-p100;
         }
 
         .e-week-number {
           color: $schedule-secondary-content-font-color;
-          padding-top: 4px;
+          padding-top: $schedule-spacing-4;
           text-align: center;
           vertical-align: top;
           width: 36px;
@@ -1307,7 +1309,7 @@
 
     .e-clipboard {
       cursor: default;
-      height: 1px;
+      height: $schedule-height-1;
       left: -1000px;
       position: fixed;
       resize: none;
@@ -1324,7 +1326,7 @@
       }
 
       .e-content-wrap table tr:last-child td {
-        border-bottom-width: 0;
+        border-bottom-width: $schedule-border-0;
       }
 
       .e-date-header-wrap {
@@ -1349,9 +1351,9 @@
       .e-resource-cells {
         color: $schedule-primary-content-font-color;
         font-size: $schedule-date-header-wrap-nrml-font-size;
-        height: 40px;
-        padding: 8px;
-        padding-left: 15px;
+        height: $schedule-height-40;
+        padding: $schedule-spacing-8;
+        padding-left: $schedule-spacing-15;
       }
 
       .e-header-cells {
@@ -1362,7 +1364,7 @@
       }
 
       .e-content-table {
-        height: 100%;
+        height: $schedule-height-p100;
       }
 
       .e-work-cells {
@@ -1406,7 +1408,7 @@
       .e-date-header {
         cursor: pointer;
         display: table;
-        height: 20px;
+        height: $schedule-height-20;
         line-height: $schedule-date-header-line-height;
         margin: $schedule-date-header-margin;
         text-align: center;
@@ -1421,11 +1423,11 @@
       }
 
       .e-new-event {
-        height: calc(100% - 25px);
+        height: calc($schedule-height-p100 - $schedule-height-25);
       }
 
       .e-block-indicator {
-        margin-top: -20px;
+        margin-top: $schedule-negative-spacing-20;
       }
 
       .e-inline-appointment {
@@ -1449,20 +1451,20 @@
 
           .e-subject {
             flex: auto;
-            font-size: 13px;
-            font-weight: 500;
+            font-size: $schedule-font-size-13;
+            font-weight: $schedule-font-weight-medium;
             overflow: hidden;
             padding: $schedule-month-appointment-subject-padding;
             text-overflow: ellipsis;
           }
 
           .e-inline-subject {
-            padding: 4px;
+            padding: $schedule-spacing-4;
             text-align: center;
           }
 
           .e-time {
-            font-size: 11px;
+            font-size: $schedule-font-size-11;
             padding: $schedule-month-appointment-time-padding;
           }
 
@@ -1470,14 +1472,14 @@
           .e-recurrence-edit-icon,
           .e-left-icon,
           .e-right-icon {
-            line-height: $schedule-month-appointment-height;
-            padding: 0 2px;
+            line-height: $schedule-recurrence-icon-line-height;
+            padding: $schedule-spacing-0 $schedule-spacing-2;
           }
         }
 
         &.e-appointment-border,
         &:focus {
-          border: 0;
+          border: $schedule-border-0;
           box-shadow: $schedule-event-box-shadow-1, $schedule-event-box-shadow-2, $schedule-event-box-shadow-3;
         }
 
@@ -1486,7 +1488,7 @@
         }
 
         .e-subject {
-          padding: 2px;
+          padding: $schedule-spacing-2;
           width: 100%;
         }
       }
@@ -1509,7 +1511,7 @@
         .e-left-indent,
         .e-week-number {
           border-left: $border-size $border-type $schedule-content-border-color;
-          border-right-width: 0;
+          border-right-width: $schedule-border-0;
         }
       }
     }
@@ -1521,11 +1523,11 @@
         justify-content: center;
 
         .e-month-calendar.e-calendar {
-          border: 0;
+          border: $schedule-border-0;
           flex: 0 25%;
           max-width: 100%;
           min-width: $schedule-calendar-width;
-          padding: 10px;
+          padding: $schedule-spacing-10;
           @if ($theme-name == 'fluent2') {
             box-shadow: none;
           }
@@ -1536,7 +1538,7 @@
 
           .e-content span.e-day {
             display: block;
-            margin: 0 auto;
+            margin: $schedule-spacing-0 auto;
           }
 
           .e-other-month {
@@ -1552,9 +1554,9 @@
           .e-appointment,
           .e-appointment-indicator {
             background: $schedule-appointment-bg-color;
-            border-radius: 50%;
-            height: 5px;
-            margin: -6px auto 0;
+            border-radius: $schedule-border-radius-50;
+            height: $schedule-height-5;
+            margin: $schedule-negative-spacing-6 auto $schedule-spacing-0;
             position: relative;
             width: 5px;
           }
@@ -1594,7 +1596,7 @@
             text-align: left;
 
             &:first-child {
-              border-left-width: 0;
+              border-left-width: $schedule-border-0;
             }
           }
         }
@@ -1603,13 +1605,13 @@
       .e-resource-cells {
         color: $schedule-primary-content-font-color;
         font-size: $schedule-date-header-wrap-nrml-font-size;
-        height: 40px;
-        padding: 8px;
-        padding-left: 15px;
+        height: $schedule-height-40;
+        padding: $schedule-spacing-8;
+        padding-left: $schedule-spacing-15;
       }
 
       .e-content-wrap table td:first-child {
-        border-left-width: 0;
+        border-left-width: $schedule-border-0;
       }
 
       .e-resource .e-month-calendar {
@@ -1627,10 +1629,10 @@
 
       .e-month-header-wrapper {
         .e-schedule-table {
-          height: 100%;
+          height: $schedule-height-p100;
 
           &.e-auto-height {
-            height: auto;
+            height: $schedule-height-auto;
           }
         }
       }
@@ -1645,7 +1647,7 @@
         background: $schedule-header-bg-color;
         border-color: $schedule-header-border-color;
         border-style: $border-type;
-        border-width: 0 $border-size $border-size 0;
+        border-width: $schedule-border-0 $border-size $border-size $schedule-border-0;
         color: $schedule-header-font-color;
         text-align: center;
 
@@ -1656,7 +1658,7 @@
 
       .e-resource-text {
         color: $schedule-primary-content-font-color;
-        font-size: 13px;
+        font-size: $schedule-font-size-13;
         overflow: hidden;
         padding: $schedule-timeline-year-resource-text-padding;
         text-overflow: ellipsis;
@@ -1669,7 +1671,7 @@
 
       .e-left-indent-wrap .e-resource-cells,
       .e-date-header-wrap .e-resource-cells {
-        height: 40px;
+        height: $schedule-height-40;
       }
 
       .e-resource-column-wrap {
@@ -1680,11 +1682,11 @@
           background: $schedule-work-cells-bg-color;
           border-color: $schedule-content-border-color;
           border-style: $border-type;
-          border-width: 0 1px 1px 0;
+          border-width: $schedule-border-0 $schedule-border-1 $schedule-border-1 $schedule-border-0;
           color: $schedule-primary-content-font-color;
           height: $schedule-timeline-year-work-cells-height;
           padding-left: $schedule-timeline-year-resource-cells-padding-left;
-          padding-right: 0;
+          padding-right: $schedule-spacing-0;
           vertical-align: middle;
 
           &.e-child-node {
@@ -1698,10 +1700,10 @@
       }
 
       .e-resource-column-table {
-        height: 100%;
+        height: $schedule-height-p100;
 
         &.e-auto-height {
-          height: auto;
+          height: $schedule-height-auto;
         }
       }
 
@@ -1710,8 +1712,8 @@
         cursor: pointer;
         float: left;
         font-family: 'e-icons';
-        font-size: 12px;
-        padding: 4px 7px;
+        font-size: $schedule-font-icon-size-12;
+        padding: $schedule-spacing-4 $schedule-spacing-7;
       }
 
       .e-resource-collapse {
@@ -1719,26 +1721,26 @@
       }
 
       .e-content-table {
-        height: 100%;
+        height: $schedule-height-p100;
 
         &.e-auto-height {
-          height: auto;
+          height: $schedule-height-auto;
         }
       }
 
       .e-left-indent td {
         border-color: $schedule-content-border-color;
         border-style: $border-type;
-        border-width: 0 $border-size 0 0;
+        border-width: $schedule-border-0 $border-size $schedule-border-0 $schedule-border-0;
         vertical-align: middle;
       }
 
       .e-left-indent tr:last-child td {
-        border-width: 0 $border-size $border-size 0;
+        border-width: $schedule-border-0 $border-size $border-size $schedule-border-0;
       }
 
       &.e-horizontal .e-left-indent {
-        padding: 0;
+        padding: $schedule-spacing-0;
         width: 100px;
       }
 
@@ -1783,7 +1785,7 @@
         .e-date-header {
           cursor: pointer;
           display: table;
-          height: 20px;
+          height: $schedule-height-20;
           line-height: $schedule-date-header-line-height;
           margin: $schedule-date-header-margin;
           text-align: center;
@@ -1824,24 +1826,24 @@
           .e-appointment-details {
             display: flex;
             flex: auto;
-            line-height: 20px;
+            line-height: $schedule-line-height-20;
             overflow: hidden;
           }
 
           .e-subject {
             flex: auto;
-            font-size: 13px;
-            font-weight: 500;
+            font-size: $schedule-font-size-13;
+            font-weight: $schedule-font-weight-medium;
             overflow: hidden;
-            padding: 1px 2px;
+            padding: $schedule-spacing-1 $schedule-spacing-2;
             text-overflow: ellipsis;
           }
 
           .e-time,
           .e-location {
-            font-size: 11px;
+            font-size: $schedule-font-size-11;
             overflow: hidden;
-            padding: 1.5px;
+            padding: $schedule-spacing-1-5;
             text-overflow: ellipsis;
           }
 
@@ -1851,19 +1853,19 @@
 
           .e-recurrence-icon,
           .e-recurrence-edit-icon {
-            line-height: $schedule-month-appointment-height;
-            padding: 0 5px;
+            line-height: $schedule-recurrence-icon-line-height;
+            padding: $schedule-spacing-0 $schedule-spacing-5;
           }
 
           .e-left-icon,
           .e-right-icon {
-            line-height: $schedule-month-appointment-height;
-            padding: 0 2px;
+            line-height: $schedule-recurrence-icon-line-height;
+            padding: $schedule-spacing-0 $schedule-spacing-2;
           }
 
           &.e-appointment-border,
           &:focus {
-            border: 0;
+            border: $schedule-border-0;
             box-shadow: $schedule-event-box-shadow-1, $schedule-event-box-shadow-2, $schedule-event-box-shadow-3;
           }
 
@@ -1899,7 +1901,7 @@
     .e-timeline-month-view {
       .e-content-wrap,
       .e-content-table {
-        height: 100%;
+        height: $schedule-height-p100;
       }
 
       .e-date-header-wrap {
@@ -1965,7 +1967,7 @@
 
       .e-resource-text {
         color: $schedule-primary-content-font-color;
-        font-size: 13px;
+        font-size: $schedule-font-size-13;
         overflow: hidden;
         padding: $schedule-timeline-year-resource-text-padding;
         text-overflow: ellipsis;
@@ -1975,7 +1977,7 @@
         background: $schedule-header-bg-color;
         border-color: $schedule-header-border-color;
         border-style: $border-type;
-        border-width: 0 1px 1px 0;
+        border-width: $schedule-border-0 $schedule-border-1 $schedule-border-1 $schedule-border-0;
         color: $schedule-header-font-color;
         vertical-align: middle;
         width: $schedule-timeline-resources-width;
@@ -1985,11 +1987,11 @@
         background: $schedule-work-cells-bg-color;
         border-color: $schedule-content-border-color;
         border-style: $border-type;
-        border-width: 0 1px 1px 0;
+        border-width: $schedule-border-0 $schedule-border-1 $schedule-border-1 $schedule-border-0;
         color: $schedule-primary-content-font-color;
         height: $schedule-timeline-work-cells-height;
         padding-left: $schedule-timeline-year-resource-cells-padding-left;
-        padding-right: 0;
+        padding-right: $schedule-spacing-0;
         vertical-align: middle;
 
         &:focus {
@@ -2003,17 +2005,17 @@
       }
 
       .e-resource-column-table {
-        height: 100%;
+        height: $schedule-height-p100;
       }
 
       .e-auto-height {
-        height: auto;
+        height: $schedule-height-auto;
       }
 
       &.e-ignore-whitespace .e-work-cells,
       &.e-ignore-whitespace .e-resource-cells,
       &.e-ignore-whitespace .e-event-container {
-        height: 42px;
+        height: $schedule-height-42;
       }
 
       &.e-virtual-mask .e-work-cells {
@@ -2026,8 +2028,8 @@
         cursor: pointer;
         float: left;
         font-family: 'e-icons';
-        font-size: 12px;
-        padding: 4px 7px;
+        font-size: $schedule-font-icon-size-12;
+        padding: $schedule-spacing-4 $schedule-spacing-7;
       }
 
       .e-resource-collapse {
@@ -2055,7 +2057,7 @@
           display: flex;
           flex: auto;
           overflow: hidden;
-          padding: 0 4px;
+          padding: $schedule-spacing-0 $schedule-spacing-4;
 
           .e-inner-wrap {
             flex: auto;
@@ -2065,21 +2067,21 @@
 
         .e-subject {
           @include schedule-appointments-subject-styles;
-          padding-top: 4px;
+          padding-top: $schedule-spacing-4;
           text-overflow: ellipsis;
         }
 
         .e-time,
         .e-location {
-          font-size: 11px;
+          font-size: $schedule-font-size-11;
           overflow: hidden;
-          padding-top: 1px;
+          padding-top: $schedule-spacing-1;
           text-overflow: ellipsis;
         }
 
         .e-time {
           display: block;
-          line-height: 1.4;
+          line-height: $schedule-line-height-1-4;
         }
 
         .e-disable {
@@ -2088,8 +2090,8 @@
 
         .e-recurrence-icon,
         .e-recurrence-edit-icon {
-          line-height: $schedule-timeline-appointment-height;
-          padding: 0 5px;
+          line-height: $schedule-timeline-recurrence-icon-line-height;
+          padding: $schedule-spacing-0 $schedule-spacing-5;
         }
 
         .e-indicator {
@@ -2098,18 +2100,18 @@
 
         .e-left-icon,
         .e-right-icon {
-          font-size: 10px;
-          line-height: $schedule-timeline-appointment-height;
-          padding-right: 7px;
+          font-size: $schedule-font-icon-size-10;
+          line-height: $schedule-timeline-recurrence-icon-line-height;
+          padding-right: $schedule-spacing-7;
         }
 
         .e-right-icon {
-          padding-right: 5px;
+          padding-right: $schedule-spacing-5;
         }
 
         &.e-appointment-border,
         &:focus {
-          border: 0;
+          border: $schedule-border-0;
           box-shadow: $schedule-event-box-shadow-1, $schedule-event-box-shadow-2, $schedule-event-box-shadow-3;
         }
 
@@ -2194,7 +2196,7 @@
         .e-appointment {
           .e-left-icon,
           .e-right-icon {
-            padding: 0 0 0 5px;
+            padding: $schedule-spacing-0 $schedule-spacing-0 $schedule-spacing-0 $schedule-spacing-5;
           }
         }
 
@@ -2203,12 +2205,12 @@
         }
 
         .e-resource-left-td {
-          border-width: 0 0 1px 1px;
+          border-width: $schedule-border-0 $schedule-border-0 $schedule-border-1 $schedule-border-1;
         }
 
         .e-resource-cells {
-          border-width: 0 0 1px 1px;
-          padding-right: 15px;
+          border-width: $schedule-border-0 $schedule-border-0 $schedule-border-1 $schedule-border-1;
+          padding-right: $schedule-spacing-15;
         }
 
         .e-resource-tree-icon {
@@ -2234,8 +2236,8 @@
         }
 
         .e-date-header-wrap td {
-          border-left-width: 0;
-          border-right-width: 0;
+          border-left-width: $schedule-border-0;
+          border-right-width: $schedule-border-0;
         }
 
         .e-content-wrap {
@@ -2249,7 +2251,7 @@
         }
 
         .e-more-indicator {
-          font-size: 12px;
+          font-size: $schedule-font-size-12;
         }
 
         .e-navigate {
@@ -2263,7 +2265,7 @@
     .e-month-agenda-view {
       .e-schedule-resource-toolbar {
         .e-resource-menu {
-          margin-top: 6px;
+          margin-top: $schedule-spacing-6;
 
           &.e-disable {
             display: none;
@@ -2271,14 +2273,14 @@
         }
 
         .e-resource-level-title .e-icon-next {
-          margin-top: 4px;
+          margin-top: $schedule-spacing-4;
         }
       }
 
       .e-week-number-wrapper .e-week-number {
         border-right: $border-size $border-type $schedule-content-border-color;
-        height: 40px;
-        padding-top: 8px;
+        height: $schedule-height-40;
+        padding-top: $schedule-spacing-8;
       }
 
       .e-wrapper-container {
@@ -2289,7 +2291,7 @@
       .e-content-table {
         border-bottom: $schedule-month-agenda-border;
         box-shadow: $schedule-box-shadow;
-        height: 100%;
+        height: $schedule-height-p100;
       }
 
       .e-resource-column {
@@ -2300,14 +2302,14 @@
       .e-resource-name {
         color: $schedule-primary-content-font-color;
         font-size: $schedule-date-header-wrap-device-font-size;
-        line-height: 26px;
+        line-height: $schedule-line-height-26;
         overflow: hidden;
-        padding: 8px;
+        padding: $schedule-spacing-8;
         text-overflow: ellipsis;
       }
 
       .e-day-padding {
-        padding-left: 8px;
+        padding-left: $schedule-spacing-8;
       }
 
       .e-day-border {
@@ -2327,12 +2329,12 @@
         cursor: default;
         font-weight: normal;
         height: $schedule-month-header-cells-nrml-height;
-        padding: 5px;
+        padding: $schedule-spacing-5;
         text-align: center;
       }
 
       .e-work-cells {
-        height: 40px;
+        height: $schedule-height-40;
         position: relative;
         vertical-align: top;
 
@@ -2346,9 +2348,9 @@
       }
 
       .e-date-header {
-        height: 24px;
-        line-height: 24.5px;
-        margin: 4px auto 0;
+        height: $schedule-height-24;
+        line-height: $schedule-line-height-24-5;
+        margin: $schedule-spacing-4 auto $schedule-spacing-0;
         text-align: center;
         width: 24px;
       }
@@ -2360,12 +2362,12 @@
       .e-appointment-wrap {
         background: $schedule-agenda-color;
         overflow: auto;
-        padding: 0 8px;
+        padding: $schedule-spacing-0 $schedule-spacing-8;
       }
 
       .e-appointment {
-        border-left: 3px solid $schedule-appointment-bg-color;
-        border-right: 0;
+        border-left: $schedule-border-3 solid $schedule-appointment-bg-color;
+        border-right: $schedule-border-0;
         cursor: default;
         padding: $schedule-month-agenda-appointment-padding;
 
@@ -2390,44 +2392,50 @@
         display: flex;
       }
 
-      .e-subject {
+      .e-subject,
+      .e-inline-subject {
         color: $schedule-primary-content-font-color;
-        font-size: 14px;
-        line-height: 26px;
+        font-size: $schedule-font-size-14;
+        line-height: $schedule-line-height-26;
         overflow: hidden;
         text-overflow: ellipsis;
+      }
+
+      .e-inline-subject {
+        font-weight: normal;
+        padding-top: $schedule-spacing-0;
       }
 
       .e-recurrence-icon,
       .e-recurrence-edit-icon {
         color: $schedule-secondary-content-font-color;
-        line-height: 26px;
-        padding: 0 10px;
+        line-height: $schedule-line-height-26;
+        padding: $schedule-spacing-0 $schedule-spacing-10;
       }
 
       .e-date-time {
         color: $schedule-secondary-content-font-color;
-        font-size: 12px;
-        line-height: 26px;
+        font-size: $schedule-font-size-12;
+        line-height: $schedule-line-height-26;
         overflow: hidden;
         text-overflow: ellipsis;
       }
 
       .e-location {
         color: $schedule-secondary-content-font-color;
-        font-size: 12px;
-        line-height: 26px;
+        font-size: $schedule-font-size-12;
+        line-height: $schedule-line-height-26;
         overflow: hidden;
-        padding-left: 8px;
+        padding-left: $schedule-spacing-8;
         text-overflow: ellipsis;
       }
 
       .e-no-event {
         color: $schedule-secondary-content-font-color;
         cursor: default;
-        font-size: 14px;
-        height: 100%;
-        padding: 8px 4px;
+        font-size: $schedule-font-size-14;
+        height: $schedule-height-p100;
+        padding: $schedule-spacing-8 $schedule-spacing-4;
       }
 
       .e-agenda-item.e-month-agenda-view {
@@ -2435,16 +2443,16 @@
       }
 
       .e-agenda-parent.e-month-agenda-view {
-        margin: 0;
-        padding: 0;
+        margin: $schedule-spacing-0;
+        padding: $schedule-spacing-0;
       }
 
       .e-work-cells .e-appointment-indicator {
         background: $schedule-appointment-bg-color;
-        border-radius: 50%;
-        height: 6px;
+        border-radius: $schedule-border-radius-50;
+        height: $schedule-height-6;
         left: 0;
-        margin: 1px auto;
+        margin: $schedule-spacing-1 auto;
         width: 6px;
       }
     }
@@ -2454,18 +2462,18 @@
         .e-left-indent,
         .e-week-number {
           border-left: $border-size $border-type $schedule-content-border-color;
-          border-right-width: 0;
+          border-right-width: $schedule-border-0;
         }
 
         .e-appointment {
-          border-left: 0;
-          border-right: 3px solid $schedule-appointment-bg-color;
+          border-left: $schedule-border-0;
+          border-right: $schedule-border-3 solid $schedule-appointment-bg-color;
         }
 
         .e-resource-column {
           border-bottom: $border-size $border-type $schedule-content-border-color;
           border-left: $border-size $border-type $schedule-content-border-color;
-          border-right: 0;
+          border-right: $schedule-border-0;
           vertical-align: top;
           width: 75px;
 
@@ -2475,7 +2483,7 @@
         }
 
         .e-day-padding {
-          padding-right: 8px;
+          padding-right: $schedule-spacing-8;
         }
       }
     }
@@ -2496,7 +2504,7 @@
       background: $schedule-agenda-color;
 
       .e-agenda-load-more {
-        font-size: 14px;
+        font-size: $schedule-font-size-14;
       }
 
       .e-content-wrap table td:first-child,
@@ -2513,13 +2521,13 @@
 
       .e-month-header {
         background: $schedule-appointment-bg-color;
-        height: 100px;
-        padding-top: 12px;
+        height: $schedule-height-100;
+        padding-top: $schedule-spacing-12;
         vertical-align: top;
 
         .e-date-header {
           color: $schedule-appointment-font-color;
-          font-size: 18px;
+          font-size: $schedule-font-size-18;
         }
       }
 
@@ -2530,6 +2538,7 @@
 
         .e-m-date {
           font-size: $schedule-header-date-nrml-font-size;
+          line-height: $schedule-agenda-date-line-height;
         }
 
         .e-m-day {
@@ -2551,15 +2560,15 @@
       }
 
       .e-day-padding {
-        padding-left: 8px;
+        padding-left: $schedule-spacing-8;
       }
 
       .e-date-header {
-        font-size: 20px;
+        font-size: $schedule-font-size-20;
       }
 
       .e-day-header {
-        font-size: 12px;
+        font-size: $schedule-font-size-12;
       }
 
       .e-subject-wrap {
@@ -2593,47 +2602,47 @@
       .e-subject,
       .e-inline-subject {
         color: $schedule-primary-content-font-color;
-        font-size: 14px;
-        line-height: 23px;
+        font-size: $schedule-font-size-14;
+        line-height: $schedule-line-height-23;
         overflow: hidden;
         text-overflow: ellipsis;
       }
 
       .e-inline-subject {
         font-weight: normal;
-        padding-top: 0;
+        padding-top: $schedule-spacing-0;
       }
 
       .e-resource-name {
         color: $schedule-primary-content-font-color;
         font-size: $schedule-header-day-nrml-font-size;
-        line-height: 26px;
+        line-height: $schedule-line-height-26;
         overflow: hidden;
-        padding: 8px;
+        padding: $schedule-spacing-8;
         text-overflow: ellipsis;
       }
 
       .e-recurrence-icon,
       .e-recurrence-edit-icon {
         color: $schedule-primary-content-font-color;
-        line-height: 21px;
-        padding: 0 10px;
+        line-height: $schedule-agenda-recurrence-icon-line-height;
+        padding: $schedule-spacing-0 $schedule-spacing-10;
       }
 
       .e-date-time {
         color: $schedule-secondary-content-font-color;
-        font-size: 12px;
-        line-height: 21px;
+        font-size: $schedule-font-size-12;
+        line-height: $schedule-agenda-recurrence-icon-line-height;
         overflow: hidden;
         text-overflow: ellipsis;
       }
 
       .e-location {
         color: $schedule-secondary-content-font-color;
-        font-size: 12px;
-        line-height: 23px;
+        font-size: $schedule-font-size-12;
+        line-height: $schedule-line-height-23;
         overflow: hidden;
-        padding-left: 8px;
+        padding-left: $schedule-spacing-8;
         text-overflow: ellipsis;
       }
 
@@ -2642,13 +2651,13 @@
       }
 
       .e-agenda-parent {
-        margin: 0;
-        padding: 0;
+        margin: $schedule-spacing-0;
+        padding: $schedule-spacing-0;
       }
 
       .e-appointment {
-        border-left: 3px solid $schedule-appointment-bg-color;
-        border-right: 0;
+        border-left: $schedule-border-3 solid $schedule-appointment-bg-color;
+        border-right: $schedule-border-0;
         cursor: default;
         padding: $schedule-agenda-appointment-padding;
 
@@ -2672,17 +2681,17 @@
       .e-no-event {
         color: $schedule-secondary-content-font-color;
         cursor: default;
-        font-size: 14px;
-        line-height: 52px;
-        padding: 0 11px;
+        font-size: $schedule-font-size-14;
+        line-height: $schedule-line-height-52;
+        padding: $schedule-spacing-0 $schedule-spacing-11;
       }
 
       .e-empty-event {
         color: $schedule-secondary-content-font-color;
         cursor: default;
-        font-size: 14px;
-        line-height: 52px;
-        padding: 0 11px;
+        font-size: $schedule-font-size-14;
+        line-height: $schedule-line-height-52;
+        padding: $schedule-spacing-0 $schedule-spacing-11;
       }
     }
 
@@ -2704,13 +2713,13 @@
     #{if(&, '&', '*')}.e-rtl {
       .e-agenda-view {
         .e-appointment {
-          border-left: 0;
-          border-right: 3px solid $schedule-appointment-bg-color;
+          border-left: $schedule-border-0;
+          border-right: $schedule-border-3 solid $schedule-appointment-bg-color;
         }
 
         .e-resource-column {
           border-left: $border-size $border-type $schedule-content-border-color;
-          border-right: 0;
+          border-right: $schedule-border-0;
           @include schedule-resource-column-styles;
 
           .e-resource-name {
@@ -2719,13 +2728,13 @@
         }
 
         .e-day-padding {
-          padding-right: 8px;
+          padding-right: $schedule-spacing-8;
         }
 
         .e-date-border {
           border-bottom: $border-size $border-type $schedule-content-border-color;
           border-left: $border-size $border-type $schedule-content-border-color;
-          border-right: 0;
+          border-right: $schedule-border-0;
         }
       }
     }
@@ -2803,7 +2812,7 @@
 
   /*! schedule event tooltip */
   .e-schedule-event-tooltip .e-subject {
-    font-size: 12px;
+    font-size: $schedule-font-size-12;
   }
 
   .e-tooltip-hidden {
@@ -2821,17 +2830,17 @@
       padding: $schedule-following-events-dlg-padding;
 
       button {
-        margin-bottom: 6px;
+        margin-bottom: $schedule-spacing-6;
       }
     }
     @media screen and (max-width: 767px) {
       width: 289px;
 
       .e-footer-content {
-        padding: 5%;
+        padding: $schedule-spacing-percentage-5;
         
         button {
-          margin-bottom: 5%;
+          margin-bottom: $schedule-spacing-percentage-5;
         }
       }
     }
@@ -2853,7 +2862,7 @@
       border-top: $schedule-alert-dialog-border;
 
       button {
-        margin-bottom: 6px;
+        margin-bottom: $schedule-spacing-6;
       }
     }
 
@@ -2874,11 +2883,11 @@
     }
 
     .e-dlg-header-content {
-      padding-bottom: 8px;
+      padding-bottom: $schedule-spacing-8;
     }
 
     .e-dlg-content {
-      padding-bottom: 12px;
+      padding-bottom: $schedule-spacing-12;
       position: relative;
     }
 
@@ -2889,34 +2898,34 @@
     .e-subject-container,
     .e-start-container,
     .e-description-label {
-      padding-right: 8px;
+      padding-right: $schedule-spacing-8;
     }
 
     .e-start-time-zone-container {
-      padding-left: 4px;
-      padding-right: 8px;
+      padding-left: $schedule-spacing-4;
+      padding-right: $schedule-spacing-8;
     }
 
     .e-location-container,
     .e-end-container {
-      padding-left: 8px;
+      padding-left: $schedule-spacing-8;
     }
 
     .e-end-time-zone-container {
-      padding-left: 8px;
-      padding-right: 4px;
+      padding-left: $schedule-spacing-8;
+      padding-right: $schedule-spacing-4;
     }
 
     .e-all-day-container {
-      padding-right: 16px;
+      padding-right: $schedule-spacing-16;
     }
 
     .e-time-zone-row {
       display: flex;
-      height: 0;
-      margin-bottom: 0;
+      height: $schedule-height-0;
+      margin-bottom: $schedule-spacing-0;
       overflow: hidden;
-      padding-bottom: 0;
+      padding-bottom: $schedule-spacing-0;
       transition: .3s ease-in-out;
       width: 100%;
 
@@ -2928,7 +2937,7 @@
 
       &.e-enable {
         height: $schedule-timezone-enable-nrml-height;
-        margin-bottom: 12px;
+        margin-bottom: $schedule-spacing-12;
 
         .e-start-time-zone-container,
         .e-end-time-zone-container {
@@ -2948,7 +2957,7 @@
     }
 
     .e-resources {
-      padding-bottom: 12px;
+      padding-bottom: $schedule-spacing-12;
       width: 100%;
     }
 
@@ -2970,7 +2979,7 @@
 
     .e-description,
     .e-float-input .e-description {
-      height: 50px;
+      height: $schedule-height-50;
       resize: vertical;
     }
 
@@ -2980,38 +2989,38 @@
     }
 
     .e-footer-content {
-      margin-top: 4px;
+      margin-top: $schedule-spacing-4;
     }
 
     &.e-rtl {
       text-align: right;
 
       .e-all-day-container {
-        margin-left: 16px;
-        margin-right: 0;
+        margin-left: $schedule-spacing-16;
+        margin-right: $schedule-spacing-0;
       }
 
       .e-subject-container,
       .e-start-container,
       .e-description-label {
-        padding-left: 8px;
-        padding-right: 0;
+        padding-left: $schedule-spacing-8;
+        padding-right: $schedule-spacing-0;
       }
 
       .e-start-time-zone-container {
-        padding-left: 8px;
-        padding-right: 4px;
+        padding-left: $schedule-spacing-8;
+        padding-right: $schedule-spacing-4;
       }
 
       .e-location-container,
       .e-end-container {
-        padding-left: 0;
-        padding-right: 8px;
+        padding-left: $schedule-spacing-0;
+        padding-right: $schedule-spacing-8;
       }
 
       .e-end-time-zone-container {
-        padding-left: 4px;
-        padding-right: 8px;
+        padding-left: $schedule-spacing-4;
+        padding-right: $schedule-spacing-8;
       }
 
       .e-event-delete {
@@ -3034,7 +3043,7 @@
 
     .e-schedule-dialog {
       .e-all-day-container {
-        padding-bottom: 10px;
+        padding-bottom: $schedule-spacing-10;
       }
 
       .e-all-day-time-zone-row {
@@ -3045,7 +3054,7 @@
   .e-ddl.e-popup {
     .e-resource-template {
       display: flex;
-      padding: 0 10px;
+      padding: $schedule-spacing-0 $schedule-spacing-10;
       text-indent: 10px;
 
       .e-resource-color {
@@ -3091,7 +3100,7 @@
     .e-end-container,
     .e-start-time-zone-container,
     .e-end-time-zone-container {
-      padding-left: 0;
+      padding-left: $schedule-spacing-0;
       width: 100%;
     }
 
@@ -3099,7 +3108,7 @@
     .e-start-container,
     .e-start-time-zone-container,
     .e-description-label {
-      padding-right: 0;
+      padding-right: $schedule-spacing-0;
     }
 
     .e-location-container,
@@ -3110,7 +3119,7 @@
     .e-subject-container,
     .e-description-row,
     .e-repeat-container {
-      padding-top: 20px;
+      padding-top: $schedule-spacing-20;
     }
 
     .e-all-day-time-zone-row {
@@ -3118,27 +3127,27 @@
     }
 
     .e-resources {
-      padding-bottom: 0;
-      padding-top: 20px;
+      padding-bottom: $schedule-spacing-0;
+      padding-top: $schedule-spacing-20;
     }
 
     .e-description,
     .e-float-input .e-description {
-      height: 60px;
+      height: $schedule-height-60;
       resize: vertical;
     }
 
     .e-all-day-time-zone-row {
-      margin-top: 0;
-      padding-bottom: 0;
+      margin-top: $schedule-spacing-0;
+      padding-bottom: $schedule-spacing-0;
     }
 
     .e-repeat-parent-row {
-      padding-top: 8px;
+      padding-top: $schedule-spacing-8;
     }
 
     .e-all-day-container {
-      margin-right: 20px;
+      margin-right: $schedule-spacing-20;
     }
 
     .e-title-header {
@@ -3150,7 +3159,7 @@
     .e-back-icon,
     .e-forward-icon {
       cursor: pointer;
-      line-height: normal;
+      line-height: $schedule-line-height-normal;
     }
 
     .e-title-text {
@@ -3175,8 +3184,8 @@
 
     .e-repeat-container {
       display: block;
-      padding-right: 35px;
-      padding-left: 0;
+      padding-right: $schedule-spacing-35;
+      padding-left: $schedule-spacing-0;
     }
 
     .e-icon-down-arrow {
@@ -3189,27 +3198,27 @@
       }
 
       .e-all-day-container {
-        margin-left: 20px;
-        margin-right: 0;
+        margin-left: $schedule-spacing-20;
+        margin-right: $schedule-spacing-0;
       }
 
       .e-subject-container,
       .e-start-container,
       .e-start-time-zone-container,
       .e-description-label {
-        padding-left: 0;
+        padding-left: $schedule-spacing-0;
       }
 
       .e-location-container,
       .e-end-container,
       .e-end-time-zone-container,
       .e-all-day-container {
-        padding-right: 0;
+        padding-right: $schedule-spacing-0;
       }
 
       .e-repeat-container {
-        padding-left: 35px;
-        padding-right: 0;
+        padding-left: $schedule-spacing-35;
+        padding-right: $schedule-spacing-0;
       }
     }
 
@@ -3221,13 +3230,13 @@
       }
 
       .e-recurrence-edit-button {
-        border: 0;
+        border: $schedule-border-0;
         box-shadow: none;
-        margin: -3px 5px;
+        margin: $schedule-negative-spacing-3 $schedule-spacing-5;
         position: absolute;
 
         .e-recurrence-edit.e-icons {
-          font-size: 12px;
+          font-size: $schedule-font-icon-size-12;
           position: relative;
           top: 1px;
         }
@@ -3246,7 +3255,7 @@
     opacity: 1;
     user-select: none;
     width: 100%;
-    border: 1px solid $schedule-popup-border-color;
+    border: $schedule-border-1 solid $schedule-popup-border-color;
 
     .e-hidden {
       display: none;
@@ -3287,7 +3296,7 @@
           }
 
           .e-subject {
-            font-size: 22px;
+            font-size: $schedule-font-size-22;
             height: $schedule-cell-popup-subject-height;
           }
         }
@@ -3351,9 +3360,9 @@
             border-radius: $schedule-event-popup-subject-border-radius;
             color: $schedule-event-popup-subject-color;
             cursor: default;
-            font-size: 20px;
-            font-weight: 500;
-            line-height: 1.5;
+            font-size: $schedule-font-size-20;
+            font-weight: $schedule-font-weight-medium;
+            line-height: $schedule-line-height-1-5;
             max-height: 87px;
             padding: $schedule-event-popup-subject-padding;
           }
@@ -3378,7 +3387,7 @@
         .e-delete,
         .e-close {
           background: transparent;
-          border: 0;
+          border: $schedule-border-0;
         }
       }
 
@@ -3409,12 +3418,12 @@
       .e-resource-details {
         color: $schedule-primary-content-font-color;
         cursor: default;
-        font-size: 14px;
+        font-size: $schedule-font-size-14;
       }
     }
 
     .e-popup-table td:last-child {
-      padding-top: 0;
+      padding-top: $schedule-spacing-0;
     }
 
     .e-popup-footer {
@@ -3423,7 +3432,7 @@
       text-align: right;
 
       .e-event-edit {
-        margin-right: 8px;
+        margin-right: $schedule-spacing-8;
       }
 
       .e-event-edit,
@@ -3437,7 +3446,7 @@
 
       .e-event-details {
         border: $schedule-popup-btn-border;
-        margin-right: 8px;
+        margin-right: $schedule-spacing-8;
         right: auto;
         text-transform: $schedule-popup-footer-text-transform;
       }
@@ -3459,11 +3468,11 @@
 
       .e-event-details,
       .e-event-edit {
-        margin-left: 8px;
+        margin-left: $schedule-spacing-8;
       }
 
       .e-popup-footer {
-        padding: 8px 8px 8px 18px;
+        padding: $schedule-spacing-8 $schedule-spacing-8 $schedule-spacing-8 $schedule-spacing-18;
         text-align: left;
       }
 
@@ -3472,18 +3481,18 @@
       .e-time-zone-icon,
       .e-description-icon,
       .e-resource-icon {
-        padding: 0 0 0 10px;
+        padding: $schedule-spacing-0 $schedule-spacing-0 $schedule-spacing-0 $schedule-spacing-10;
       }
     }
 
     &.e-device {
       bottom: 0;
-      height: 100%;
+      height: $schedule-height-p100;
       left: 0;
-      margin: 0;
+      margin: $schedule-spacing-0;
       max-width: 100%;
       overflow: hidden;
-      padding: 0;
+      padding: $schedule-spacing-0;
       position: fixed;
       right: 0;
       top: 0;
@@ -3507,7 +3516,7 @@
         .e-edit.e-btn.e-small.e-round,
         .e-delete.e-btn.e-small.e-round,
         .e-close.e-btn.e-small.e-round {
-          height: 2.5em;
+          height: $schedule-height-2-5;
           width: 2.5em;
         }
 
@@ -3517,7 +3526,7 @@
         }
 
         .e-close {
-          margin-left: 0;
+          margin-left: $schedule-spacing-0;
           margin-right: auto;
           order: -1;
         }
@@ -3528,20 +3537,20 @@
       }
 
       .e-event-popup .e-popup-content {
-        padding: 12px 24px;
+        padding: $schedule-spacing-12 $schedule-spacing-24;
       }
 
       .e-multiple-event-popup .e-popup-header {
         display: flex;
-        padding: 15px;
+        padding: $schedule-spacing-15;
 
         .e-close,
         .e-edit,
         .e-delete {
           background: $schedule-multiple-event-popup-icon-bg-color;
-          border: 0;
+          border: $schedule-border-0;
           color: $schedule-multiple-event-popup-icon-color;
-          height: 35px;
+          height: $schedule-height-35;
           width: 35px;
           &:focus,
           &:hover {
@@ -3550,10 +3559,10 @@
         }
 
         .e-subject {
-          font-size: 15px;
-          font-weight: 500;
-          height: 35px;
-          line-height: 2.25;
+          font-size: $schedule-font-size-15;
+          font-weight: $schedule-font-weight-medium;
+          height: $schedule-height-35;
+          line-height: $schedule-line-height-2-25;
           padding: $schedule-multiple-event-popup-subject-padding;
           width: calc(100% - 105px);
         }
@@ -3569,7 +3578,7 @@
         .e-event-popup .e-popup-header {
           .e-close {
             margin-left: auto;
-            margin-right: 0;
+            margin-right: $schedule-spacing-0;
           }
         }
       }
@@ -3582,12 +3591,12 @@
       min-width: 100%;
 
       .e-popup-footer {
-        padding-left: 5px;
+        padding-left: $schedule-spacing-5;
       }
 
       &.e-rtl {
         .e-popup-footer {
-          padding-right: 5px;
+          padding-right: $schedule-spacing-5;
         }
       }
     }
@@ -3598,8 +3607,7 @@
     border-radius: $schedule-appointment-border-radius;
     box-shadow: $schedule-event-box-shadow-1, $schedule-event-box-shadow-2, $schedule-event-box-shadow-3;
     color: $schedule-appointment-font-color;
-    display: flex;
-    height: 38px;
+    height: $schedule-height-38;
     width: 100px;
     z-index: 9;
 
@@ -3619,7 +3627,7 @@
     .e-appointment-details {
       flex: auto;
       overflow: hidden;
-      padding: 0 4px;
+      padding: $schedule-spacing-0 $schedule-spacing-4;
       text-align: left;
 
       .e-inner-wrap {
@@ -3629,14 +3637,14 @@
 
       .e-subject {
         @include schedule-appointments-subject-styles;
-        padding-top: 4px;
+        padding-top: $schedule-spacing-4;
         text-overflow: ellipsis;
       }
 
       .e-time {
-        font-size: 11px;
+        font-size: $schedule-font-size-11;
         overflow: hidden;
-        padding-top: 1px;
+        padding-top: $schedule-spacing-1;
         text-overflow: ellipsis;
       }
 
@@ -3648,11 +3656,7 @@
     &.e-month-event {
       .e-appointment-details {
         .e-subject {
-          padding: 3px 2px;
-        }
-
-        .e-time {
-          display: none;
+          padding: $schedule-spacing-0;
         }
       }
     }
@@ -3661,7 +3665,7 @@
   .e-vertical-view .e-all-day-appointment-wrapper .e-appointment.e-schedule-event-clone {
     .e-appointment-details {
       .e-subject {
-        padding: 3px 0 1px 4px;
+        padding: $schedule-spacing-3 $schedule-spacing-0 $schedule-spacing-1 $schedule-spacing-4;
       }
 
       .e-time {
@@ -3693,7 +3697,7 @@
 
 .e-more-popup-wrapper {
   background: $schedule-popup-bg-color;
-  border: 1px solid $schedule-popup-border-color;
+  border: $schedule-border-1 solid $schedule-popup-border-color;
   border-radius: $schedule-more-popup-wrapper-border-radius;
   box-shadow: $schedule-more-indicator-shadow-color-more-popup;
   opacity: 1;
@@ -3701,35 +3705,35 @@
   width: 225px;
 
   .e-more-appointment-wrapper {
-    margin: 0 4px;
+    margin: $schedule-spacing-0 $schedule-spacing-4;
   }
 
   .e-more-event-popup {
-    height: 100%;
+    height: $schedule-height-p100;
     position: relative;
     width: 100%;
   }
 
   .e-more-event-header {
-    height: 35px;
-    margin: 0 8px 4px 14px;
+    height: $schedule-height-35;
+    margin: $schedule-spacing-0 $schedule-spacing-8 $schedule-spacing-4 $schedule-spacing-14;
   }
 
   .e-more-event-content {
     color: $schedule-primary-content-font-color;
-    height: calc(100% - 35px);
+    height: calc($schedule-height-p100 - $schedule-height-35);
     max-height: 150px;
     overflow-y: auto;
-    padding: 10px 10px 0;
+    padding: $schedule-spacing-10 $schedule-spacing-10 $schedule-spacing-0;
 
     .e-appointment-border {
-      border: 0;
+      border: $schedule-border-0;
       box-shadow: $schedule-event-box-shadow-1, $schedule-event-box-shadow-2, $schedule-event-box-shadow-3;
     }
   }
 
   .e-more-event-date-header {
-    height: 100%;
+    height: $schedule-height-p100;
     width: calc(100% - 25px);
 
     .e-current-date {
@@ -3740,14 +3744,14 @@
   .e-header-day {
     color: $schedule-primary-content-font-color;
     font-size: $schedule-date-header-wrap-nrml-font-size;
-    line-height: 1;
+    line-height: $schedule-line-height-1;
     padding-bottom: $schedule-more-appointment-margin-bottom;
   }
 
   .e-header-date {
     color: $schedule-primary-content-font-color;
     font-size: $schedule-header-date-nrml-font-size;
-    line-height: 1;
+    line-height: $schedule-line-height-1;
     max-width: 15%;
 
     &:hover {
@@ -3762,11 +3766,11 @@
 
   .e-more-event-close {
     background: transparent;
-    border: 0;
+    border: $schedule-border-0;
     box-shadow: none;
     color: $schedule-popup-icon-color;
     cursor: pointer;
-    height: 25px;
+    height: $schedule-height-25;
     padding: $schedule-bgr-more-event-close-icon-padding;
     position: absolute;
     right: 6px;
@@ -3783,7 +3787,7 @@
     &:focus,
     &:hover {
       background: $schedule-popup-header-icon-focus-bg-color;
-      border-radius: 50%;
+      border-radius: $schedule-border-radius-50;
       color: $schedule-popup-header-icon-focus-color;
       @if $skin-name == 'fluent2'{
         .e-close-icon {
@@ -3801,16 +3805,16 @@
     height: $schedule-month-appointment-height;
     line-height: $schedule-appointment-text-line-height;
     margin-bottom: $schedule-more-appointment-margin-bottom;
-    padding: 2px 0;
+    padding: $schedule-spacing-2 $schedule-spacing-0;
     width: 100%;
 
     .e-subject {
       color: $schedule-appointment-font-color;
       flex: auto;
-      font-size: 13px;
-      font-weight: 500;
+      font-size: $schedule-font-size-13;
+      font-weight: $schedule-font-weight-medium;
       overflow: hidden;
-      padding: 0 2px;
+      padding: $schedule-spacing-0 $schedule-spacing-2;
       text-overflow: ellipsis;
       white-space: nowrap;
     }
@@ -3825,22 +3829,22 @@
 
     .e-recurrence-icon,
     .e-recurrence-edit-icon {
-      line-height: $schedule-month-appointment-height;
-      padding: 0 2px;
+      line-height: $schedule-recurrence-icon-line-height;
+      padding: $schedule-spacing-0 $schedule-spacing-2;
     }
 
     &.e-appointment-border,
     &:focus {
-      border: 0;
+      border: $schedule-border-0;
       box-shadow: $schedule-event-box-shadow-1, $schedule-event-box-shadow-2, $schedule-event-box-shadow-3;
     }
   }
 
   &.e-device {
     bottom: 0;
-    height: 100%;
+    height: $schedule-height-p100;
     left: 0;
-    margin: 0;
+    margin: $schedule-spacing-0;
     max-width: 100%;
     overflow: hidden;
     position: fixed;
@@ -3856,11 +3860,11 @@
 
   &.e-rtl {
     .e-header-date {
-      padding-right: 10px;
+      padding-right: $schedule-spacing-10;
     }
 
     .e-header-day {
-      padding-right: 10px;
+      padding-right: $schedule-spacing-10;
     }
 
     .e-more-event-close {

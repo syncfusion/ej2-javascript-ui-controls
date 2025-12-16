@@ -2014,7 +2014,16 @@ export class MeasureAnnotation {
             subject = this.pdfViewer.lineSettings.subject !== '' ? this.pdfViewer.lineSettings.subject : this.pdfViewer.annotationSettings.subject !== '' ? this.pdfViewer.annotationSettings.subject : 'Distance calculation' ;
             isArrow = true;
             if (annotationObject.vertexPoints)
-            {vertexPoints = annotationObject.vertexPoints; }
+            {
+                vertexPoints = annotationObject.vertexPoints;
+                if (vertexPoints.length === 1) {
+                    const createVertexPoint: any = {
+                        x: vertexPoints[0].x + 100,
+                        y: vertexPoints[0].y
+                    };
+                    vertexPoints.push(createVertexPoint);
+                }
+            }
             else
             {vertexPoints = [{x: offset.x, y: offset.y}, {x: offset.x + 100, y: offset.y}]; }
             annotationObject.width = annotationObject.width ? annotationObject.width : 1;
@@ -2034,7 +2043,21 @@ export class MeasureAnnotation {
             subject = this.pdfViewer.arrowSettings.subject !== '' ? this.pdfViewer.arrowSettings.subject : this.pdfViewer.annotationSettings.subject !== '' ? this.pdfViewer.annotationSettings.subject : 'Perimeter calculation';
             isArrow = true;
             if (annotationObject.vertexPoints)
-            {vertexPoints = annotationObject.vertexPoints; }
+            {
+                vertexPoints = annotationObject.vertexPoints;
+                if (vertexPoints.length === 1) {
+                    let createVertexPoint: any = {
+                        x: vertexPoints[0].x + 85,
+                        y: vertexPoints[0].y
+                    };
+                    vertexPoints.push(createVertexPoint);
+                    createVertexPoint = {
+                        x: vertexPoints[0].x + 86,
+                        y: vertexPoints[0].y + 62
+                    };
+                    vertexPoints.push(createVertexPoint);
+                }
+            }
             else
             {vertexPoints = [{ x: offset.x, y: offset.y},
                 { x: offset.x + 85, y: offset.y},
@@ -2055,7 +2078,22 @@ export class MeasureAnnotation {
             shapeAnnotationType = 'Polygon';
             subject = this.pdfViewer.rectangleSettings.subject !== '' ? this.pdfViewer.rectangleSettings.subject : this.pdfViewer.annotationSettings.subject !== '' ? this.pdfViewer.annotationSettings.subject : 'Area calculation';
             if (annotationObject.vertexPoints)
-            {vertexPoints = annotationObject.vertexPoints; }
+            {
+                vertexPoints = annotationObject.vertexPoints;
+                if (vertexPoints.length === 1) {
+                    let createVertexPoint: any = {
+                        x: vertexPoints[0].x + 88,
+                        y: vertexPoints[0].y - 1
+                    };
+                    vertexPoints.push(createVertexPoint);
+                    createVertexPoint = {
+                        x: vertexPoints[0].x + 89,
+                        y: vertexPoints[0].y + 53
+                    };
+                    vertexPoints.push(createVertexPoint);
+                    vertexPoints.push(vertexPoints[0]);
+                }
+            }
             else
             {vertexPoints = [{x: offset.x, y: offset.y},
                 { x: offset.x + 88, y: offset.y - 1},
@@ -2093,7 +2131,27 @@ export class MeasureAnnotation {
             shapeAnnotationType = 'Polygon';
             subject =  this.pdfViewer.polygonSettings.subject !== '' ? this.pdfViewer.polygonSettings.subject : this.pdfViewer.annotationSettings.subject !== '' ? this.pdfViewer.annotationSettings.subject : 'Volume calculation';
             if (annotationObject.vertexPoints)
-            {vertexPoints = annotationObject.vertexPoints; }
+            {
+                vertexPoints = annotationObject.vertexPoints;
+                if (vertexPoints.length === 1) {
+                    let createVertexPoint: any = {
+                        x: vertexPoints[0].x,
+                        y: vertexPoints[0].y + 109
+                    };
+                    vertexPoints.push(createVertexPoint);
+                    createVertexPoint = {
+                        x: vertexPoints[0].x + 120,
+                        y: vertexPoints[0].y + 109
+                    };
+                    vertexPoints.push(createVertexPoint);
+                    createVertexPoint = {
+                        x: vertexPoints[0].x + 120,
+                        y: vertexPoints[0].y - 1
+                    };
+                    vertexPoints.push(createVertexPoint);
+                    vertexPoints.push(vertexPoints[0]);
+                }
+            }
             else
             {vertexPoints = [
                 { x: offset.x, y: offset.y},

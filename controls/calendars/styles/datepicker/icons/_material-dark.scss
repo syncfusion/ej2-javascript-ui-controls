@@ -1,3 +1,5 @@
+@use 'ej2-base/styles/common/mixin' as *;
+@use '../material-dark-definition' as *;
 @include export-module('datepicker-material-icons') {
 
   /*! component icons */

@@ -1,3 +1,5 @@
+@use 'ej2-base/styles/common/mixin' as *;
+@use '../fabric-dark-definition' as *;
 @include export-module('datepicker-fabric-icons') {
 
   /*! component icons */

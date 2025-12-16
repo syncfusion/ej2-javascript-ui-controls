@@ -58,7 +58,9 @@ export type Action =
     'stringfilterrequest' |
     'booleanfilterrequest' |
     'batchDelete' |
-    'batchCancel';
+    'batchCancel' |
+    'pin-row' |
+    'unpin-row';
 
 
 
@@ -474,6 +476,8 @@ export type ContextMenuItem =
     'PrevPage' |
     'LastPage' |
     'NextPage' |
+    'PinRow' |
+    'UnpinRow' |
     ChartType;
 
 /**

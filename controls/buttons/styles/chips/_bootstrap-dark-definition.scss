@@ -1,4 +1,6 @@
 @use 'sass:color';
+@use 'ej2-base/styles/definition/bootstrap-dark' as *;
+@forward 'ej2-base/styles/definition/bootstrap-dark';
 
 //General
 $chip-bg-color: $grey-light !default;
@@ -587,3 +589,6 @@ $chip-outline-danger-active-border-color: color.adjust($chip-danger-bg-color, $l
 $chip-outline-danger-focus-active-border-color: $chip-outline-danger-focus-border-color !default;
 $chip-outline-danger-pressed-border-color: color.adjust($chip-danger-bg-color, $lightness: -10%) !default;
 $chip-outline-danger-disabled-border-color: rgba($chip-danger-bg-color, .65) !default;
+$chip-touch-text-margin-top: -3px !default;
+$chip-align-line-height: 1 !default;
+$chip-zero-width: 0 !default;

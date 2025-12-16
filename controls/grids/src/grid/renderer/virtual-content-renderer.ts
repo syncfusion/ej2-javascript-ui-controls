@@ -128,7 +128,7 @@ export class VirtualContentRenderer extends ContentRender implements IRenderer {
 
     public renderEmpty(tbody: HTMLElement): void {
         this.getTable().appendChild(tbody);
-        if (this.parent.frozenRows) {
+        if (this.parent.frozenRows || this.parent.pinnedTopRowModels.length) {
             this.parent.getHeaderContent().querySelector(literals.tbody).innerHTML = '';
         }
         this.virtualEle.adjustTable(0, 0);
@@ -553,7 +553,8 @@ export class VirtualContentRenderer extends ContentRender implements IRenderer {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const cell: any = (<{ cells?: HTMLElement[] }>row).cells[this.cellIndex];
         cell.focus({ preventScroll: true });
-        if (!this.parent.selectionSettings.checkboxOnly) {
+        if (!this.parent.selectionSettings.checkboxOnly && !((this.parent.enableVirtualization
+            || this.parent.enableInfiniteScrolling) && this.parent.pinnedTopRowModels.length)) {
             this.parent.selectRow(parseInt(row.getAttribute(literals.ariaRowIndex), 10) - 1);
         }
         this.activeKey = this.empty as string;
@@ -914,8 +915,8 @@ export class VirtualContentRenderer extends ContentRender implements IRenderer {
         if (this.requestType === 'virtualscroll' && this.vgenerator.currentInfo.blockIndexes) {
             this.vgenerator.currentInfo = {};
         }
-        if (row && this.parent.isManualRefresh && this.currentInfo.blockIndexes
-            && (this.currentInfo.blockIndexes.length === 3 || visiblePage.length > 1)) {
+        if (row && (this.parent.isManualRefresh || this.requestType === 'pin-row' || this.requestType === 'unpin-row') &&
+            this.currentInfo.blockIndexes && (this.currentInfo.blockIndexes.length === 3 || visiblePage.length > 1)) {
             this.vgenerator.startIndex = parseInt(row.getAttribute('aria-rowindex'), 10) - 1;
             this.vgenerator.currentInfo = extend({}, this.currentInfo);
             this.vgenerator.currentInfo.blockIndexes = this.currentInfo.blockIndexes.slice();
@@ -1172,7 +1173,8 @@ export class VirtualContentRenderer extends ContentRender implements IRenderer {
                 } else {
                     this.activeKey = this.empty as string;
                 }
-                if (!this.parent.selectionSettings.checkboxOnly) {
+                if (!this.parent.selectionSettings.checkboxOnly && !((this.parent.enableVirtualization
+                    || this.parent.enableInfiniteScrolling) && this.parent.pinnedTopRowModels.length)) {
                     this.parent.selectRow(rowIndex);
                 }
             }
@@ -1214,6 +1216,9 @@ export class VirtualContentRenderer extends ContentRender implements IRenderer {
         }
         const index: number = (this.parent.allowPaging && this.parent.enableColumnVirtualization) ?
             this.editedRowIndex % this.getBlockSize() : this.editedRowIndex - ((block - 1) * this.getBlockSize());
+        if (this.parent.pinnedTopRowModels.length && this.parent.pinnedTopRowModels.length > index) {
+            return;
+        }
         if (this.parent.groupSettings.columns.length) {
             const editRowObject: Row<Column> = this.getEditedRowObject();
             if (editRowObject) {
@@ -1421,6 +1426,7 @@ export class VirtualContentRenderer extends ContentRender implements IRenderer {
             startIdx += Math.floor((startIdx / this.getBlockSize()) / 2);
         }
         const rowCollection: Element[] = this.parent.getDataRows();
+        const pinnedRows: Row<Column>[] = this.parent.pinnedTopRowModels;
         let collection: Element[] | Object[] = isRowObject ? this.parent.getCurrentViewRecords() : rowCollection;
         if (isRowObject && this.parent.allowGrouping && this.parent.groupSettings.columns.length) {
             startIdx = parseInt(this.parent.getRows()[0].getAttribute(literals.ariaRowIndex), 10) - 1;
@@ -1430,6 +1436,21 @@ export class VirtualContentRenderer extends ContentRender implements IRenderer {
             startIdx = parseInt(rowCollection[0].getAttribute(literals.ariaRowIndex), 10) - 1;
         }
         let selectedRow: Element | Object = collection[index - startIdx];
+        if (pinnedRows.length) {
+            if (index < pinnedRows.length) {
+                if (!isRowObject) {
+                    selectedRow = rowCollection[parseInt(index.toString(), 10)];
+                } else {
+                    selectedRow = pinnedRows[parseInt(index.toString(), 10)].data;
+                }
+            } else {
+                selectedRow = isRowObject ? collection[index - startIdx - pinnedRows.length] : selectedRow;
+                if (this.parent.groupSettings.columns.length) {
+                    selectedRow = isRowObject ? collection[index - startIdx] : selectedRow;
+                }
+            }
+            return selectedRow;
+        }
         if (isRowObject && !this.parent.groupSettings.enableLazyLoading && this.parent.groupSettings.columns.length
             && this.parent.aggregates) {
             const row: Element = rowCollection[index - startIdx];

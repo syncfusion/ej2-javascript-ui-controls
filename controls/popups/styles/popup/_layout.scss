@@ -1,10 +1,12 @@
+@use 'ej2-base/styles/common/mixin' as *;
+@use './theme-variables' as *;
 @include export-module('popup-layout') {
 
   /*! popup layout */
   .e-popup {
-    height: auto;
+    height: $popup-height;
     position: absolute;
-    width: auto;
+    width: $popup-width;
     z-index: 1000;
   }
 

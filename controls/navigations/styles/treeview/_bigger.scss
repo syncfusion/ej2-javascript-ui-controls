@@ -1,3 +1,5 @@
+@use 'ej2-base/styles/common/mixin' as *;
+@use './theme-variables' as *;
 @mixin big-icon-style($size) {
   height: $size;
   width: $size;
@@ -44,18 +46,18 @@
 
         .e-small.e-css.e-checkbox-wrapper {
           & .e-frame {
-            height: 20px;
-            line-height: 17px;
-            width: 20px;
+            height: $treeview-big-checkbox-size;
+            line-height: $treeview-big-checkbox-line-height;
+            width: $treeview-big-checkbox-size;
           }
 
           & .e-check,
           & .e-stop {
-            font-size: 12px;
+            font-size: $treeview-big-checkbox-mark-font-size;
           }
 
           & .e-stop {
-            line-height: 17px;
+            line-height: $treeview-big-checkbox-line-height;
           }
         }
 
@@ -81,7 +83,7 @@
         }
 
         .e-drop-count {
-          padding: 3px 5px 4px;
+          padding: $treeview-big-drop-count-padding;
         }
       }
     }
@@ -90,14 +92,14 @@
 
       .e-list-text {
         @if ($skin-name != 'Material3' and $skin-name != 'tailwind3') {
-          padding: 0;
+          padding: $treeview-padding-none;
         }
         width: 100%;
       }
 
       .e-checkbox-wrapper {
         + .e-list-text {
-          padding: 0;
+          padding: $treeview-navigable-check-text-padding-bigger;
         }
 
         + .e-list-url .e-anchor-wrap {
@@ -173,16 +175,16 @@
     }
 
     .e-list-text {
-      line-height: $treeview-big-text-height;
+      line-height: $treeview-big-text-line-height;
       @if $skin-name != 'bootstrap4' or $skin-name != 'tailwind3' {
-        min-height: $treeview-big-text-height;
+        min-height: $treeview-big-text-min-height;
       }
       @else if $skin-name == 'bootstrap4' {
         min-height: 38px;
       }
       @if $skin-name == 'tailwind3' {
         padding: $treeview-big-text-padding;
-        min-height: $treeview-big-item-height;
+        min-height: $treeview-big-item-min-height;
       }
 
       @if $skin-name == 'bootstrap5.3' {
@@ -212,7 +214,7 @@
 
         @if $skin-name != 'material' {
           .e-input {
-            height: 36px;
+            height: $treeview-big-list-text-input-height;
           }
         }
 
@@ -230,10 +232,10 @@
 
         .e-input {
           @if $skin-name =='tailwind3' {
-            height: 40px;
-            line-height: 24px;
-            padding-top: 8px;
-            padding-bottom: 8px;
+            height: $treeview-input-height-bgr;
+            line-height: $treeview-big-input-line-height;
+            padding-top: $treeview-big-input-padding-top;
+            padding-bottom: $treeview-big-input-padding-bottom;
           }
 
           @if $skin-name =='bootstrap5' {
@@ -248,15 +250,14 @@
           }
 
           @if $skin-name == 'bootstrap5.3' {
-            line-height: 24px;
+            line-height: $treeview-list-text-input-line-height;
             min-height: 24px;
-            padding-top: 7px;
-            padding-bottom: 7px;
+            padding-top: $treeview-list-text-input-padding;
+            padding-bottom: $treeview-list-text-input-padding;
           }
         }
       }
     }
-
     .e-list-item .e-text-content .e-list-text {
       &:has(> .e-input-group) {
         @if $skin-name =='highcontrast' {
@@ -322,7 +323,7 @@
       }
 
       @if $skin-name == 'tailwind3' {
-        height: $treeview-big-icon-size;
+        height: $treeview-big-icon-height;
         width: $treeview-big-icon-size;
       }
 
@@ -463,7 +464,7 @@
     .e-list-text {
       font-size: $treeview-big-font-size;
       @if $skin-name == 'Material3' {
-        padding: 12px;
+        padding: $treeview-bigger-list-text-padding;
       }
       
       @if $skin-name == 'bootstrap4' {
@@ -492,6 +493,17 @@
       .e-list-text {
         @if $skin-name == 'bootstrap4' {
           padding: $treeview-big-drag-text-padding;
+        }
+      }
+    }
+    .e-list-item.e-editing {
+      .e-list-text {
+        .e-input-group.e-input-focus {
+          .e-input {
+            @if $skin-name == 'tailwind3' {
+              padding-bottom: $treeview-big-input-padding-bottom;
+            }
+          }
         }
       }
     }

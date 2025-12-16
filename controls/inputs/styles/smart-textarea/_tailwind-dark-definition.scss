@@ -1,1 +1,5 @@
-@import './tailwind-definition.scss';
+@use 'ej2-base/styles/definition/tailwind-dark' as *;
+@forward 'ej2-base/styles/definition/tailwind-dark';
+$sta-background-color: $content-bg-color-alt1 !default;
+$sta-color: $content-text-color !default;
+$sta-box-shadow: $shadow-lg !default;

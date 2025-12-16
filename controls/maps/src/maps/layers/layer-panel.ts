@@ -342,15 +342,20 @@ export class LayerPanel {
         this.rectBounds = null;
         const shapeSettings: ShapeSettings = <ShapeSettings>this.currentLayer.shapeSettings;
         for (let r: number = 0; r < renderData.length; r++) {
-            const geometryData: object = renderData[r as number];
-            const geom: object = geometryData['geometry'];
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            const geometryData: any = renderData[r as number];
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            const geom: any = geometryData['geometry'];
             const hasGeom: boolean = !isNullOrUndefined(geom);
             const hasCoords: boolean = !isNullOrUndefined(geometryData['coordinates']);
             if (hasGeom || hasCoords) {
                 const type: string = hasGeom ? geom['type'] : geometryData['type'];
-                const coords: object[] = hasGeom ? geom['coordinates'] : geometryData['coordinates'];
-                const data: object = geom;
-                const properties: object = geometryData['properties'];
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                const coords: any[] = hasGeom ? geom['coordinates'] : geometryData['coordinates'];
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                const data: any = geom;
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                const properties: any = geometryData['properties'];
                 this.generatePoints(type, coords, data, properties);
             }
         }
@@ -416,7 +421,8 @@ export class LayerPanel {
                         this.currentLayer.shapeDataPath, this.currentLayer.shapePropertyPath, this.currentLayer
                     );
                     if (k !== null) {
-                        const currentDataSource: object = this.currentLayer.dataSource[k as number];
+                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                        const currentDataSource: any = this.currentLayer.dataSource[k as number];
                         if (currentDataSource[shapeSettings.borderColorValuePath]) {
                             borderValue.color = currentDataSource[shapeSettings.borderColorValuePath];
                         }

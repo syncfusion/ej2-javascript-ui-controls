@@ -1,3 +1,6 @@
+@use 'ej2-base/styles/common/mixin' as *;
+@use './theme-variables' as *;
+@use './theme' as *;
 @mixin resizer-styles($display, $position, $top, $width, $index) {
   display: $display;
   position: $position;
@@ -47,7 +50,6 @@
 
 .e-bigger {
   .e-gantt-single-timeline {
-    .e-timeline-header-container,
     .e-timeline-header-table-body tr {
       height: $gantt-bigger-header-border-height !important; /* stylelint-disable-line declaration-no-important */
     }
@@ -92,10 +94,6 @@
       .e-gantt-manualparenttaskbar-left,
       .e-gantt-manualparenttaskbar-right {
         width: 15px;
-      }
-
-      .e-timeline-header-container {
-        height: $gantt-bigger-header-border-height;
       }
 
       .e-timeline-header-table-body tr{
@@ -145,7 +143,7 @@
       .e-connectorpoint-left,
       .e-right-connectorpoint-outer-div,
       .e-left-connectorpoint-outer-div {
-        border-radius: 50%;
+        border-radius: $gantt-manual-parent-taskbar-border-radius;
         display: inline-block;
         position: absolute;
       }
@@ -263,11 +261,13 @@
         /* stylelint-disable-line declaration-no-important */
         .e-btn.e-dlg-closeicon-btn {
           left: -11px;
-
+          line-height: 100%;
+          padding: 12px !important;  /* stylelint-disable-line declaration-no-important */
+        
           @if ($skin-name =='bootstrap5-dark' or $skin-name =='bootstrap5') {
             top: 2px;
           }
-
+        
           @else {
             top: 3px;
           }
@@ -288,14 +288,21 @@
 
       .e-btn .e-btn-icon.e-icon-dlg-close {
         font-size: $gantt-bigger-dialog-close-button-size;
+        line-height: 100%;
 
         @if ($skin-name =='Material3') {
           width: $gantt-bigger-dialog-close-button-size;
         }
+        @if ($skin-name =='bootstrap5.3' or $skin-name =='bootstrap5.3-dark') {
+          top: 0;
+          left: 0;
+        }
       }
 
       .e-footer-content {
-        height: $gantt-bigger-filter-dialog-footer-height;
+        @if ($skin-name != 'FluentUI' and $skin-name != 'fluent-dark' and $skin-name != 'fabric' and $skin-name != 'fabric-dark' and $skin-name != 'highcontrast') {
+          height: $gantt-bigger-filter-dialog-footer-height;
+        }
         padding: $gantt-bigger-filter-dialog-footer-padding;
 
         .e-btn {
@@ -341,7 +348,7 @@
   }
 
   .e-gantt-dialog {
-    border-radius: 6px;
+    border-radius: $gantt-bigger-dialog-border-radius;
 
     .e-tab .e-tab-header .e-toolbar-item .e-tab-wrap {
       padding: 0 16px !important; /* stylelint-disable-line declaration-no-important */
@@ -359,7 +366,7 @@
       padding: $gantt-bigger-dialog-edit-form-scroll-padding;
     }
 
-    .e-edit-form-row {
+    .e-edit-form-row:not(:has(.e-richtexteditor)) {
       height: $gantt-bigger-add-dialog-content-height;
     }
 
@@ -432,6 +439,12 @@
 
     .e-btn.e-primary {
       padding: 6px 21px 6px 23px !important; /* stylelint-disable-line declaration-no-important */
+      @if ($skin-name =='Material3' or $skin-name =='Material3-dark') {
+        background: rgba(103, 80, 164, 1) !important; /* stylelint-disable-line declaration-no-important */
+        border-color: rgba(103, 80, 164, 1) !important; /* stylelint-disable-line declaration-no-important */
+        color: rgba(255, 255, 255, 1) !important; /* stylelint-disable-line declaration-no-important */
+        border-radius: 20px;
+      }
     }
 
     .e-datetime-wrapper .e-time-icon.e-icons::before {

@@ -1,5 +1,4 @@
-@import 'ej2-base/styles/definition/material.scss';
-@import 'blockeditor/material-definition.scss';
-@import 'blockeditor/icons/material.scss';
-@import 'blockeditor/all.scss';
-@import 'blockeditor/bigger.scss';
+@use 'blockeditor/material-definition' as *;
+@use 'blockeditor/icons/material' as *;
+@use 'blockeditor/all' as *;
+@use 'blockeditor/bigger' as *;

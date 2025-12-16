@@ -1,3 +1,6 @@
+@use 'ej2-base/styles/definition/highcontrast-light' as *;
+@forward 'ej2-base/styles/definition/highcontrast-light';
+
 //default
 $vscroll-skin: 'highcontrast' !default;
 $vscroll-nav-nrml-height: 40px !default;

@@ -1,3 +1,5 @@
+@use 'ej2-base/styles/definition/bds' as *;
+@forward 'ej2-base/styles/definition/bds';
 $grid-columnchooser-search-border-color: $border-light !default;
 $grid-columnchooser-search-border-fcolor: $primary !default;
 $grid-columnchooser-footer-border-opacity: 1 !default;
@@ -70,3 +72,5 @@ $grid-xlfl-li-icon-margin-arrow-icon: 8px !default;
 $grid-bigger-xlfl-li-icon-margin-arrow-icon: 12px !default;
 $grid-xl-radio-margin-top: 0 !default;
 $grid-xlfl-skin: $skin-name !default;
+
+$grid-border-radius-0: 0 !default;

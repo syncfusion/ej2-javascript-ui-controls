@@ -1,1 +1,80 @@
-@import './material3-definition.scss';
+@use 'ej2-base/styles/common/mixin' as *;
+@use 'definition' as *;
+@use 'ej2-base/styles/definition/material3-dark' as *;
+@forward 'ej2-base/styles/definition/material3-dark';
+
+//layout variables
+$diagram-border-stroke-width: 2;
+$diagram-lane-border-stroke-width: 2;
+$diagram-highlighter-border-stroke-width: 2;
+$diagram-symbolpalette-shape-radius: 4px;
+$diagram-tooltip: none;
+
+//normal
+$diagram-endpoint-handle-color: rgba($primary-text-color);
+$diagram-endpoint-handle-connected-border: rgba($primary-text-color);
+
+$diagram-resize-handle-disable-color: rgba($border-light);
+$diagram-border-stroke-disabled: rgba($border-light);
+$diagram-resize-handle-disable-stroke: rgba($primary-text-color);
+$diagram-rotate-handle-color: rgba($primary);
+$diagram-bezier-handle-color: rgba($primary-text-color);
+
+$diagram-symbolpalette-hover: $diagram-palette-hover-background;
+$diagram-symbolpalette-selected: $diagram-palette-selection-background;
+
+$diagram-ruler-color: rgba($content-text-color-alt1);
+$diagram-ruler-font-size: $text-xxs;
+$diagram-ruler-marker-background-color: $content-bg-color-alt1;
+$diagram-ruler-label-fill: rgba($content-text-color-alt1);
+$diagram-ruler-tick-stroke: rgba($border-light);
+
+$palette-background-color: rgba($diagram-palette-background);
+
+$diagram-overview-resizer-color:rgba($primary);
+$diagram-editbox-fontcolor: rgba($black);
+$diagram-background-color: rgba($white);
+
+//end normal
+//primary
+$diagram-endpoint-handle-connected-color: rgba($primary);
+
+$diagram-resize-handle-color: rgba($primary);
+$diagram-resize-handle-stroke: rgba($primary);
+
+$diagram-border-stroke: rgba($primary);
+$diagram-bezier-line-color: rgba($primary);
+
+$diagram-highlighter-stroke: rgba($primary);
+$diagram-selected-region-stroke: rgba($primary);
+$diagram-pivot-line-stroke: rgba($primary);
+$diagram-ruler-marker-stroke: rgba($primary);
+
+$diagram-helper-stroke: rgba($primary);
+
+$diagram-text-edit-selection-background: rgba($primary);
+$diagram-editbox-background: rgba($white);
+
+$diagram-border-strokes: rgba($primary);
+$diagram-lane-border-strokes: rgba($primary);
+$diagram-text-edit-selection-color: rgba($primary-text-color);
+
+$diagram-multiselect-stroke: $diagram-resize-handle-stroke;
+
+//end primary
+
+.e-icons {
+  font-family: 'e-icons';
+  font-style: normal;
+  font-variant: normal;
+  font-weight: normal;
+  line-height: 1;
+  text-transform: none;
+}
+
+@include export-module('diagram-bootstrap-icons') {
+  
+  .e-symbolpalette {
+    .e-clear-searchtext::before{ content: '\e7e7'; }
+  }
+}

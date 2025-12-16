@@ -1,3 +1,5 @@
+@use 'ej2-base/styles/common/mixin' as *;
+@use './theme-variables' as *;
 @include export-module('color-picker-bigger') {
   .e-bigger .e-colorpicker-wrapper,
   .e-bigger.e-colorpicker-wrapper,
@@ -33,7 +35,7 @@
     }
 
     .e-colorpicker-popup:not(.e-split-btn-wrapper):not(.e-dropdown-btn) {
-      line-height: 0;
+      line-height: $color-zero-line-height;
     }
   }
 
@@ -46,17 +48,20 @@
 
       & .e-slider-preview .e-colorpicker-slider .e-slider-container .e-slider {
         @if $skin-name == 'bootstrap5.3' {
-          top: calc(50% - 6px);
+          top: $slider-preview-color-top;
         }
       }
 
       & .e-switch-ctrl-btn .e-ctrl-btn {
-        margin: 2px 0;
         @if $skin-name == 'bootstrap5.3' {
-          width: 85.913%;
+          width: $switch-ctrl-btn-width;
         }
         @if $skin-name == 'tailwind3' {
-          font-size: 16px;
+          font-size: $color-switch-ctrl-btn-tail-font-size;
+          margin: $color-switch-ctrl-btn-tail-margin;
+        }
+        @else {
+          margin: $color-bigger-switch-ctrl-margin;
         }
       }
 
@@ -80,10 +85,10 @@
             padding: $cpicker-bigger-ctrl-btn-padding;
           }
           @if $skin-name == 'fluent2' {
-            padding: 13px 12px;
+            padding: $switch-ctrl-btn-padding;
           }
           @if $skin-name == 'tailwind3' {
-            height: 64px;
+            height: $color-switch-ctrl-btn-height;
             align-content: center;
           }
         }
@@ -102,11 +107,11 @@
       @media only screen and (max-width: 600px) {
         @if $skin-name == 'material' or $skin-name == 'FluentUI' or $skin-name == 'tailwind' or $skin-name == 'bootstrap5' or $skin-name == 'bootstrap5.3' or $skin-name == 'Material3' {
           &.e-color-picker {
-            width: 100% !important; /* stylelint-disable-line declaration-no-important */
+            width: $color-full-width !important; /* stylelint-disable-line declaration-no-important */
           }
 
           &.e-colorpicker-popup {
-            width: calc(100% - 20px) !important; /* stylelint-disable-line declaration-no-important */
+            width: $color-picker-popup-width !important; /* stylelint-disable-line declaration-no-important */
           }
         }
       }
@@ -125,7 +130,7 @@
         @media only screen and (max-width: 600px) {
           @if $skin-name == 'Material3' {
             & .e-tile {
-              width: 33px !important; /* stylelint-disable-line declaration-no-important */
+              width: $mat3-color-pic-title-width !important; /* stylelint-disable-line declaration-no-important */
             }
           }
         }
@@ -138,8 +143,8 @@
             width: 12px;
           }
           @if $skin-name == 'tailwind3' {
-            height: 20px;
-            width: 20px;
+            height: $color-hsv-container-height;
+            width: $color-hsv-container-width;
           }
         }
 
@@ -162,14 +167,14 @@
           vertical-align: super;
           width: $cpicker-bigger-preview-size;
           @if $skin-name == 'tailwind3' {
-            height: 42px;
+            height: $color-slider-prew-container-height;
             & .e-preview {
               &.e-current {
-                height: 20px;
+                height: $color-slider-preview-current-height;
               }
               &.e-previous {
-                height: 21px;
-                top: 20px;
+                height: $color-slider-preview-previous-height;
+                top: $color-slider-preview-previous-top;
               }
             }
           }
@@ -180,17 +185,17 @@
             top: $cpicker-preview-container-top;
           }
           @else if $skin-name == 'tailwind3' {
-            top: 10px;
+            top: $color-picker-preview-tail-top;
           }
           @else {
-            top: 0;
+            top: $color-zero-padding-margin;
           }
         }
 
         @media only screen and (max-width: 600px) {
           & .e-preview-container {
             @if $skin-name == 'material' or $skin-name == 'FluentUI' or $skin-name == 'tailwind' or $skin-name == 'bootstrap5' or $skin-name == 'bootstrap5.3' or $skin-name == 'Material3' {
-              margin-left: 4.6% !important; /* stylelint-disable-line declaration-no-important */
+              margin-left: $color-mob-preview-cont-margin-left !important; /* stylelint-disable-line declaration-no-important */
             }
           }
         }
@@ -209,10 +214,10 @@
                 height: $cpicker-bigger-slider-height;
               }
               @else if $skin-name == 'bootstrap5' or $skin-name == 'bootstrap5.3' {
-                border-radius: 6px;
+                border-radius: $color-slider-track-bot-border-radius;
               }
               @if $skin-name == 'bootstrap5.3' or $skin-name == 'tailwind3' {
-                height: 8px !important; /* stylelint-disable-line declaration-no-important */
+                height: $color-slider-height !important; /* stylelint-disable-line declaration-no-important */
               }
             }
 
@@ -222,7 +227,7 @@
                   height: 12px;
                 }
                 @if $skin-name == 'bootstrap5.3' or $skin-name == 'tailwind3' {
-                  height: 8px !important; /* stylelint-disable-line declaration-no-important */
+                  height: $color-slider-height !important; /* stylelint-disable-line declaration-no-important */
                 }
               }
             }
@@ -239,13 +244,13 @@
         & .e-switch-ctrl-btn {
           @if $skin-name == 'bootstrap4' {
             display: inline-block;
-            padding: 16px;
             white-space: nowrap;
-            width: 100%;
+            width: $color-full-width;
+            padding: $color-bigger-switch-btn-padding;
           }
 
           & .e-ctrl-btn {
-            width: 90.6%;
+            width: $color-ctrl-btn-width;
           }
 
           & .e-cancel {
@@ -287,12 +292,7 @@
             @else if $skin-name == 'bootstrap-dark' {
               font-weight: normal;
             }
-            @if $skin-name == 'bootstrap5' or $skin-name == 'bootstrap5.3' or $skin-name == 'Material3' {
-              font-size: 14px;
-            }
-            @else {
-              font-size: 16px;
-            }
+            font-size: $color-bgr-recent-clr-font-size;
             height: $cpicker-bigger-recent-color-span-hgt;
             padding: $cpicker-bigger-recent-color-span-pad;
             line-height: $cpicker-bigger-recent-color-span-line-hgt;
@@ -303,7 +303,7 @@
   
             & .e-tile {
               @if $skin-name == 'fabric' or $skin-name == 'fabric-dark' or $skin-name == 'bootstrap5' or $skin-name == 'bootstrap5.3' or $skin-name == 'highcontrast-light' or $skin-name == 'highcontrast' or $skin-name == 'bootstrap' {
-                height: 24px !important; /* stylelint-disable-line declaration-no-important */
+                height: $cpicker-bgr-palette-title-height !important; /* stylelint-disable-line declaration-no-important */
               }
               @else {
                 height: $cpicker-bigger-recent-color-tile-dim !important; /* stylelint-disable-line declaration-no-important */
@@ -323,8 +323,8 @@
           @if $skin-name == 'tailwind3' {
             .e-float-text {
               font-weight: $font-weight-normal;
-              font-size: 16px !important; /* stylelint-disable-line declaration-no-important */
-              right: 0 !important; /* stylelint-disable-line declaration-no-important */
+              font-size: $color-float-text-font-size !important; /* stylelint-disable-line declaration-no-important */
+              right: $color-zero-padding-margin !important; /* stylelint-disable-line declaration-no-important */
             }
           }
           &:first-child {
@@ -356,7 +356,7 @@
 
       &.e-color-palette .e-mode-switch-btn {
         @if $skin-name == 'bootstrap5.3' {
-          width: 13.306%;
+          width: $color-palette-switch-btn-width;
         }
       }
 
@@ -371,20 +371,10 @@
           height: $cpicker-bigger-switch-btn-width;
         }
         @if $skin-name == 'bootstrap5.3' {
-          height: 38px;
+          height: $switch-mode-height;
         }
-        @if $skin-name == 'tailwind' or $skin-name == 'tailwind-dark' {
-          font-size: 22px;
-          line-height: 22px;
-        }
-        @else if $skin-name == 'tailwind3' {
-          font-size: 16px;
-          line-height: 16px;
-        }
-        @else {
-          font-size: 18px;
-          line-height: 18px;
-        }
+        font-size: $color-bgr-value-mode-switch-font-size;
+        line-height: $color-bgr-value-mode-switch-line-height;
       }
 
       & .e-mode-switch-btn {
@@ -442,12 +432,12 @@
     & .e-hide-valueswitcher {
       & .e-container {
         & .e-input-container {
-          width: 100%;
+          width: $color-full-width;
         }
 
         & .e-float-input {
           &:last-child {
-            margin-right: 0;
+            margin-right: $color-zero-padding-margin;
           }
 
           &.e-numeric {
@@ -494,7 +484,7 @@
     & .e-container {
       & .e-slider-preview {
         & .e-preview-container {
-          margin-left: 0;
+          margin-left: $color-zero-padding-margin;
           margin-right: $cpicker-bigger-preview-margin-left;
         }
       }
@@ -502,7 +492,7 @@
       & .e-selected-value {
         & .e-float-input {
           margin-left: $cpicker-bigger-label-margin;
-          margin-right: 0;
+          margin-right: $color-zero-padding-margin;
         }
       }
 
@@ -515,7 +505,7 @@
       & .e-container {
         & .e-float-input {
           &:last-child {
-            margin-left: 0;
+            margin-left: $color-zero-padding-margin;
           }
         }
       }
@@ -527,7 +517,7 @@
     & .e-container {
       & .e-input-container {
         & .e-float-input:first-child {
-          width: 100%;
+          width: $color-full-width;
         }
       }
     }
@@ -536,7 +526,7 @@
   .e-bigger .e-popup.e-tooltip-wrap,
   .e-bigger.e-popup.e-tooltip-wrap {
     &.e-color-picker-tooltip {
-      min-width: 32px;
+      min-width: $color-bigger-popup-min-width;
 
       & .e-tip-content {
         height: $cpicker-bigger-tooltip-preview-size;
@@ -547,15 +537,15 @@
 
   @if $skin-name == 'fluent2' {
     .e-bigger .e-container .e-switch-ctrl-btn .e-ctrl-btn {
-      width: 87%;
+      width: $bgr-container-switch-btn-width;
     }
-  
+
     .e-bigger .e-container.e-color-picker .e-colorpicker-slider .e-slider-container:first-child {
-      margin-bottom: 4px !important; /* stylelint-disable-line declaration-no-important */
+      margin-bottom: $color-bigger-slider-first-child-margin-bottom !important; /* stylelint-disable-line declaration-no-important */
     }
-  
+
     .e-bigger .e-container .e-slider-preview .e-colorpicker-slider .e-slider-container .e-slider {
-      top: calc(50% - 25px) !important; /* stylelint-disable-line declaration-no-important */
+      top: $bgr-slider-preview-top !important; /* stylelint-disable-line declaration-no-important */
     }
   }
 }

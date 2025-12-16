@@ -9,7 +9,7 @@ import * as EVENTS from './../../common/constant';
  * Link internal component
  *
  * @hidden
- * @deprecated
+ * @private
  */
 export class MDTable {
     private parent: MarkdownParser;
@@ -22,7 +22,7 @@ export class MDTable {
      *
      * @param {IMDTable} options - specifies the options
      * @hidden
-     * @deprecated
+     * @private
      */
     public constructor(options: IMDTable) {
         extend(this, this, options, true);
@@ -45,7 +45,7 @@ export class MDTable {
      *
      * @returns {void}
      * @hidden
-     * @deprecated
+     * @private
      */
     public destroy(): void {
         this.removeEventListener();

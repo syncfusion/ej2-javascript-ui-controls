@@ -1,3 +1,5 @@
+@use 'ej2-base/styles/common/mixin' as *;
+@use './theme-variables' as *;
 @mixin background-color-styles($grid-skin, $bg, $bgcolor) {
   @if $grid-skin == 'material3' {
     background: $bg;
@@ -129,7 +131,7 @@
     .e-groupdroparea .e-icons {
       color: $grid-header-icon-color;
       @if $grid-skin == 'material3' or $grid-skin == 'fluent2' or $grid-skin == 'tailwind3' {
-        border-radius: 4px;
+        border-radius: $grid-border-radius-4;
       }
     }
 
@@ -645,8 +647,8 @@
         }
       }
 
-      .e-focused .e-rhandler,
-      .e-focused .e-rsuppress {
+      &:not(.sf-grid) .e-focused .e-rhandler,
+      &:not(.sf-grid) .e-focused .e-rsuppress {
         border: 0 none;
       }
 
@@ -863,6 +865,35 @@
     &.sf-grid {
       .e-gridfooter .e-summarycontent {
         border-right: 0 $grid-header-border-color solid;
+      }
+      //New changes
+      :is(.e-groupdroparea,
+    .e-groupdroparea .e-groupsort,
+    .e-groupdroparea .e-ungroupbutton,
+    .e-headercontent th.e-headercell:not(.e-menu-item):not(.e-editedbatchcell),
+    .e-headercontent td.e-rowcell:not(.e-menu-item):not(.e-editedbatchcell),
+    .e-content td.e-rowcell:not(.e-menu-item):not(.e-editedbatchcell),
+    .e-content td.e-groupcaption:not(.e-menu-item):not(.e-editedbatchcell),
+    .e-content td.e-recordplusexpand:not(.e-menu-item):not(.e-editedbatchcell),
+    .e-content td.e-recordpluscollapse:not(.e-menu-item):not(.e-editedbatchcell),
+    .e-content td.e-detailrowcollapse:not(.e-menu-item):not(.e-editedbatchcell),
+    .e-content td.e-detailrowexpand:not(.e-menu-item):not(.e-editedbatchcell),
+    .e-content th.e-detailcell:not(.e-menu-item):not(.e-editedbatchcell)):is(:focus, :focus-visible) {
+        box-shadow: $grid-cell-focus-shadow;
+      }
+      
+      .e-groupdroparea .e-groupheadercell:focus-visible {
+        box-shadow: $grid-cell-focus-shadow;
+      }
+
+      &.e-resize-lines {
+        th:focus,
+        th:focus-visible {
+          .e-rhandler,
+          .e-rsuppress {
+            border: 0 none;
+          }
+        }
       }
     }
 

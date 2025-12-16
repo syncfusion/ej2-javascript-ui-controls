@@ -1,5 +1,4 @@
-@import 'ej2-base/styles/definition/bootstrap5-dark.scss';
-@import 'blockeditor/bootstrap5-dark-definition.scss';
-@import 'blockeditor/icons/bootstrap5-dark.scss';
-@import 'blockeditor/all.scss';
-@import 'blockeditor/bigger.scss';
+@use 'blockeditor/bootstrap5-dark-definition' as *;
+@use 'blockeditor/icons/bootstrap5-dark' as *;
+@use 'blockeditor/all' as *;
+@use 'blockeditor/bigger' as *;

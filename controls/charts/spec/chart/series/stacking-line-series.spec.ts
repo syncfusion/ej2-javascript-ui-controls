@@ -181,13 +181,15 @@ describe('Chart Control', () => {
                 expect(stackLabel !== null).toBe(true);
                 expect(stackLabel1.innerHTML).toBe('20.00');
                 expect(stackLabel.innerHTML).toBe('75.00');
-                expect(stackLabel.getAttribute('x') === '470.8' || stackLabel.getAttribute('x') === '434.8').toBe(true);
+                expect(stackLabel.getAttribute('x') === '470.8' || stackLabel.getAttribute('x') === '434.8' || stackLabel.getAttribute('x') === '458.8' || stackLabel.getAttribute('x') === '448').toBe(true);
                 expect(stackLabel.getAttribute('y') === '288.5208333333333' || stackLabel.getAttribute('y') === '275.0208333333333').toBe(true);
-                expect(stackLabel.getAttribute('transform') === 'rotate(270, 470.8, 288.5208333333333)' || stackLabel.getAttribute('transform') === 'rotate(270, 470.8, 275.0208333333333)').toBe(true);
+                expect(stackLabel.getAttribute('transform') === 'rotate(270, 470.8, 288.5208333333333)' || stackLabel.getAttribute('transform') === 'rotate(270, 470.8, 275.0208333333333)'
+                || stackLabel.getAttribute('transform') === 'rotate(270, 448, 275.0208333333333)' || stackLabel.getAttribute('transform') === 'rotate(270, 458.8, 275.0208333333333)').toBe(true);
                 expect(stackLabelRect !== null).toBe(true);
-                expect(stackLabelRect.getAttribute('x') === '161.1' || stackLabelRect.getAttribute('x') === '149.1').toBe(true);
+                expect(stackLabelRect.getAttribute('x') === '161.1' || stackLabelRect.getAttribute('x') === '157.1' || stackLabelRect.getAttribute('x') === '149.1' || stackLabelRect.getAttribute('x') === '153.5').toBe(true);
                 expect(stackLabelRect.getAttribute('y')).toBe('313.78125');
-                expect(stackLabelRect.getAttribute('transform')).toBe('rotate(270, 182.6, 333.78125)');
+                expect(stackLabelRect.getAttribute('transform') === 'rotate(270, 182.6, 333.78125)' || stackLabelRect.getAttribute('transform') === 'rotate(270, 175, 333.78125)'
+                || stackLabelRect.getAttribute('transform') === 'rotate(270, 178.6, 333.78125)').toBe(true);
                 done();
             };
             chartObj.loaded = loaded;

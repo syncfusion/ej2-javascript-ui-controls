@@ -1,9 +1,9 @@
 import { SheetRender, RowRenderer, CellRenderer } from './index';
 import { Spreadsheet } from '../base/index';
-import { extend, remove } from '@syncfusion/ej2-base';
+import { extend, isNullOrUndefined, remove } from '@syncfusion/ej2-base';
 import { CellModel, SheetModel, getSheetName, getRowsHeight, getColumnsWidth, getData, Workbook, getSheetIndexFromId } from '../../workbook/index';
 import { getCellAddress, getCellIndexes, workbookFormulaOperation, moveOrDuplicateSheet, skipHiddenIdx } from '../../workbook/index';
-import { RefreshArgs, sheetTabs, onContentScroll, deInitProperties, beforeDataBound, updateTranslate } from '../common/index';
+import { RefreshArgs, sheetTabs, onContentScroll, deInitProperties, beforeDataBound, updateTranslate, showCommentsPane } from '../common/index';
 import { spreadsheetDestroyed, isFormulaBarEdit, editOperation, FormulaBarEdit } from '../common/index';
 import { getSiblingsHeight, refreshSheetTabs, ScrollEventArgs, focus, getUpdatedScrollPosition } from '../common/index';
 import { ribbon, formulaBar, IRenderer, beforeVirtualContentLoaded, setAriaOptions, JsonData } from '../common/index';
@@ -57,6 +57,9 @@ export class Render {
         this.renderSheet(sheetPanel);
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         this.checkTopLeftCell(!(this.parent as any).refreshing);
+        if (this.parent.showCommentsPane) {
+            this.parent.notify(showCommentsPane, { show: this.parent.showCommentsPane });
+        }
     }
 
     private checkTopLeftCell(
@@ -134,8 +137,16 @@ export class Render {
     }
 
     private renderSheet(panel: HTMLElement = document.getElementById(this.parent.element.id + '_sheet_panel')): void {
-        panel.appendChild(this.parent.createElement('div', { className: 'e-sheet', id: this.parent.element.id + '_sheet', styles:
-            'background-color: #fff' }));
+        const sheet: HTMLElement = this.parent.createElement('div', {
+            className: 'e-sheet', id: this.parent.element.id + '_sheet',
+            styles: 'background-color: #fff'
+        });
+        if (!isNullOrUndefined(panel.querySelector('.e-review-panel')) && panel.firstChild !== sheet) {
+            sheet.classList.add('e-sheet-with-review-panel');
+            panel.insertBefore(sheet, panel.firstChild);
+        } else {
+            panel.appendChild(sheet);
+        }
         (this.parent.serviceLocator.getService('sheet') as IRenderer).renderPanel();
     }
 

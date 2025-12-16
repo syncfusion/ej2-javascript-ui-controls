@@ -2,10 +2,10 @@
  * Video module spec
  */
 import { Browser, isNullOrUndefined, detach, createElement } from '@syncfusion/ej2-base';
-import { RichTextEditor, QuickToolbar, IQuickToolbar } from './../../../src/index';
+import { RichTextEditor, QuickToolbar, IQuickToolbar, IImageNotifyArgs } from './../../../src/index';
 import { NodeSelection } from './../../../src/selection/index';
 import { DialogType } from "../../../src/common/enum";
-import { renderRTE, destroy, setCursorPoint, dispatchEvent, iPhoneUA, currentBrowserUA, setSelection } from "./../render.spec";
+import { renderRTE, destroy, setCursorPoint, dispatchEvent, iPhoneUA, currentBrowserUA, clickVideo, setSelection } from "./../render.spec";
 import { BASIC_MOUSE_EVENT_INIT, DELETE_EVENT_INIT, BACKSPACE_EVENT_INIT } from '../../constant.spec';
 import { MACOS_USER_AGENT } from '../user-agent.spec';
 import * as classes from '../../../src/rich-text-editor/base/classes';
@@ -50,7 +50,7 @@ describe('Video Module ', () => {
         });
         it('Replace Web url using quick toolbar', function (done) {
             editor.focusIn();
-            const toolbarItem: HTMLElement = editor.element.querySelector('.e-toolbar-item .e-video');
+            const toolbarItem: HTMLElement = editor.element.querySelector('.e-toolbar-item .e-video').parentElement.parentElement;
             toolbarItem.click();
             setTimeout(() => {
                 const dialog: HTMLElement = editor.element.querySelector('.e-rte-video-dialog');
@@ -75,14 +75,16 @@ describe('Video Module ', () => {
                             const changeEvent = new Event("change", { bubbles: true, cancelable: true });
                             urlRadio.dispatchEvent(changeEvent);
                             const input: HTMLInputElement = dialog.querySelector('.e-video-url');
-                            input.value = 'https://cdn.syncfusion.com/ej2/richtexteditor-resources/RTE-Ocean-Waves.mp4';
+                            input.value = 'http://localhost:9876/base/spec/content/video/RTE-Ocean-Waves.mp4';
                             input.dispatchEvent(new Event('input'));
-                            const insertButton: HTMLButtonElement = dialog.querySelector('.e-insertVideo.e-primary');
-                            insertButton.click();
                             setTimeout(() => {
-                                expect(editor.inputElement.querySelector('.e-embed-video-wrap')).toBe(null);
-                                expect(editor.inputElement.querySelector('video')).not.toBe(null);
-                                done();
+                                const insertButton: HTMLButtonElement = dialog.querySelector('.e-insertVideo.e-primary');
+                                insertButton.click();
+                                setTimeout(() => {
+                                    expect(editor.inputElement.querySelector('.e-embed-video-wrap')).toBe(null);
+                                    expect(editor.inputElement.querySelector('video')).not.toBe(null);
+                                    done();
+                                }, 100);
                             }, 100);
                         }, 100);
                     }, 100);
@@ -786,7 +788,7 @@ client side. Customer easy to edit the contents and get the HTML content for
             clickEvent.initEvent("mousedown", false, true);
             cntTarget.dispatchEvent(clickEvent);
             let target: HTMLElement = ele.querySelector('#vidTag');
-            let eventsArg: any = { pageX: 50, pageY: 300, target: target, which: 1 };
+            let eventsArg: any = { pageX: 50, pageY: 300, target: target, which: 1, preventDefault: function () { } };
             setCursorPoint(target, 0);
             rteObj.mouseUp(eventsArg);
             setTimeout(() => {
@@ -1579,6 +1581,7 @@ client side. Customer easy to edit the contents and get the HTML content for
         afterAll(() => {
             destroy(rteObj);
         });
+
         it('left applied', (done: Function) => {
             rteObj.inputElement.dispatchEvent(INIT_MOUSEDOWN_EVENT);
             const clickEvent: MouseEvent = document.createEvent("MouseEvents");
@@ -1715,6 +1718,41 @@ client side. Customer easy to edit the contents and get the HTML content for
             (<any>rteObj).videoModule.deleteVideo(evnArg);
             setTimeout(() => {
                 expect((rteObj as any).element.querySelector('.e-video-wrap')).toBe(null);
+                done();
+            }, 100);
+        });
+    });
+
+    describe('Bug 979708: Cursor gets lost while deleting video - ', () => {
+        let rteObj: RichTextEditor;
+        let innerHTML1: string = `
+        <p>testing&nbsp;<span class="e-video-wrap" contenteditable="false" title="mov_bob.mp4"><video class="e-rte-video e-video-inline" controls=""><source src="https://www.w3schools.com/html/mov_bbb.mp4" type="video/mp3"></video></span><br></p>`;
+        beforeAll(() => {
+            rteObj = renderRTE({
+                toolbarSettings: {
+                    items: ['Video']
+                },
+                insertVideoSettings: {
+                    saveUrl: "https://ej2.syncfusion.com/services/api/uploadbox/Save",
+                    path: "../Videos/"
+                },
+                value: innerHTML1
+            });
+        })
+        afterAll(() => {
+            destroy(rteObj);
+        })
+        it('while deleting video through quick toolbar, cursor should be present', (done: Function) => {
+            (rteObj.contentModule.getEditPanel() as HTMLElement).focus();
+            let args: any = { preventDefault: function () { }, originalEvent: { currentTarget: document.getElementById('rte_toolbarItems') }, item: { command: 'Videos', subCommand: 'VideoRemove' } };
+            let range: any = new NodeSelection().getRange(document);
+            let save: any = new NodeSelection().save(range, document);
+            let evnArg = { args: args, self: (<any>rteObj).videoModule, selection: save, selectNode: new Array(), };
+            evnArg.selectNode = [rteObj.element.querySelector('video')];
+            (<any>rteObj).videoModule.deleteVideo(evnArg);
+            setTimeout(() => {
+                expect((rteObj as any).element.querySelector('.e-video-wrap')).toBe(null);
+                expect((<any>rteObj).contentModule.getEditPanel().contains(document.activeElement)).toBe(true);
                 done();
             }, 100);
         });
@@ -2189,7 +2227,7 @@ client side. Customer easy to edit the contents and get the HTML content for
             clickEvent.initEvent("mousedown", false, true);
             cntTarget.dispatchEvent(clickEvent);
             let target: HTMLElement = ele.querySelector('#vid-container span');
-            let eventsArg: any = { pageX: 50, pageY: 300, target: target, which: 2 };
+            let eventsArg: any = { pageX: 50, pageY: 300, target: target, which: 2, preventDefault: function () { } };
             setCursorPoint(target, 0);
             rteObj.mouseUp(eventsArg);
             setTimeout(() => {
@@ -2214,7 +2252,7 @@ client side. Customer easy to edit the contents and get the HTML content for
             clickEvent.initEvent("mousedown", false, true);
             cntTarget.dispatchEvent(clickEvent);
             let target: HTMLElement = ele.querySelector('#vid-container video');
-            let eventsArg: any = { pageX: 50, pageY: 300, target: target, which: 3 };
+            let eventsArg: any = { pageX: 50, pageY: 300, target: target, which: 3, preventDefault: function () { } };
             setCursorPoint(target, 0);
             rteObj.mouseUp(eventsArg);
             setTimeout(() => {
@@ -2854,9 +2892,11 @@ client side. Customer easy to edit the contents and get the HTML content for
                 }
             });
         });
+
         afterAll(() => {
             destroy(rteObj);
         });
+
         it('Should insert video with the dynamic maxWidth', (done: Function) => {
             (rteObj as any).insertVideoSettings.maxWidth = '400';
             rteObj.dataBind();
@@ -4746,7 +4786,7 @@ describe('962339: Script error and improper video selection removal after alignm
         });
         it(" Check video after drop", function (done: Function) {
             let fileObj: File = new File(["Nice One"], "sample.mp4", { lastModified: 0, type: "video/mp4" });
-            let event: any = { clientX: 40, clientY: 294, target: rteObj.contentModule.getEditPanel(), dataTransfer: { files: [fileObj] }, preventDefault: function () { return; } };
+            let event: any = { clientX: 40, clientY: 324, target: rteObj.contentModule.getEditPanel(), dataTransfer: { files: [fileObj] }, preventDefault: function () { return; } };
             (rteObj.videoModule as any).getDropRange(event.clientX, event.clientY);
             (rteObj.videoModule as any).dragDrop(event);
             ele = rteObj.element.getElementsByTagName('video')[0];
@@ -5014,7 +5054,83 @@ describe('962339: Script error and improper video selection removal after alignm
         });
     });
 
-     describe('980106 - The resize option appears in the wrong position', () => {
+    describe('977306: Resize Bar for Video in Syncfusion Rich Text Editor with RTL enabled', () => {
+        let rteObj: RichTextEditor;
+        beforeAll(() => {
+            rteObj = renderRTE({
+                value: `<h1>Welcome to the Syncfusion Rich Text Editor</h1>
+                    <p>The Rich Text Editor, a WYSIWYG (what you see is what you get) editor, is a user interface that allows you to create, edit, and format rich text content. You can try out a demo of this editor here.</p>
+                    <h2>Do you know the key features of the editor?</h2>
+                    <blockquote>
+                    <p><em>Easily access Audio, Image, Link, Video, and Table operations through the quick toolbar by right-clicking on the corresponding element with your mouse.</em></p>
+                    </blockquote>
+                    <h2>Unlock the Power of Tables</h2>
+                    <p>A table can be created in the editor using either a keyboard shortcut or the toolbar. With the quick toolbar, you can perform table cell insert, delete, split, and merge operations. You can style the table cells using background colours and borders.</p>
+                    <h2>Elevating Your Content with Images</h2>
+                    <p>Images can be added to the<p>Images can be added to the editor by pasting or dragging into the editing area, using the toolbar to insert one as a URL, or uploading directly from the File Browser. Easily manage your images on the server by configuring the <a class="e-rte-anchor" href="https://ej2.syncfusion.com/documentation/api/rich-text-editor/#insertimagesettings" title="Insert Image Settings API" aria-label="Open in new window">insertImageSettings</a> to upload, save, or remove them. </p> editor by pasting or dragging into the editing area, using the toolbar to insert one as a URL, or uploading directly from the File Browser. Easily manage your images on the server by configuring the <a class="e-rte-anchor" href="https://ej2.syncfusion.com/documentation/api/rich-text-editor/#insertimagesettings" title="Insert Image Settings API" aria-label="Open in new window">insertImageSettings</a> to upload, save, or remove them. </p>
+                    <p>The Editor can integrate with the Syncfusion Image Editor to crop, rotate, annotate, and apply filters to images. Check out the demos <a class="e-rte-anchor" href="https://ej2.syncfusion.com/demos/#/material/rich-text-editor/image-editor-integration.html" title="Image Editor Demo" aria-label="Open in new window">here</a>.</p>
+                    <p><span class="e-video-wrap" contenteditable="false" title="Cursor_Error.mp4"><video class="e-rte-video e-video-inline e-video-focus e-resize" controls="" width="auto" height="auto" style="min-width: 0px; max-width: 1841px; min-height: 0px; outline: rgb(74, 144, 226) solid 2px;"><source src="blob:null/13553dcd-ac8f-4257-8bb2-9d90eddb0f5a" type="video/mp4"></video></span> </p>`
+                ,
+                toolbarSettings: {
+                    items: ['Video']
+                },
+                height: 400,
+                enableRtl: true
+            });
+        });
+        afterAll(() => {
+            destroy(rteObj);
+        });
+        it('checking resize bar in Video', (done: Function) => {
+            let trg = (rteObj.element.querySelector('video') as HTMLVideoElement);
+            clickVideo(trg);
+            setTimeout(() => {
+                expect(rteObj.element.querySelectorAll('.e-vid-resize').length).toBe(1);
+                expect(rteObj.element.querySelectorAll('.e-rte-videoboxmark').length).toBe(4);
+                done();
+            }, 100);
+        });
+    });
+    describe('977306: Resize Bar for iframe embeded Video in Syncfusion Rich Text Editor with RTL enabled', () => {
+        let rteObj: RichTextEditor;
+        let rteEle: HTMLElement;
+        beforeAll(() => {
+            rteObj = renderRTE({
+                toolbarSettings: {
+                    items: ['Video', 'Bold']
+                },
+                height: 400,
+                enableRtl: true,
+                insertVideoSettings: {
+                    layoutOption: 'Inline',
+                    width: '300',
+                    height: '200',
+                    resize: true
+                }
+            });
+            rteEle = rteObj.element;
+        });
+        afterAll(() => {
+            destroy(rteObj);
+        });
+        it('checking resize bar in iframe embeded Video', (done: Function) => {
+            (rteObj.contentModule.getEditPanel() as HTMLElement).focus();
+            (<HTMLElement>rteEle.querySelectorAll(".e-toolbar-item")[0] as HTMLElement).click();
+            setTimeout(() => {
+                let dialogEle: Element = rteObj.element.querySelector('.e-dialog');
+                (dialogEle.querySelector('.e-embed-video-url') as HTMLInputElement).value = '<iframe width="560" height="315" src="https://www.youtube.com/embed/N7CAo5lWS8c?si=44NxG9au9zbZ9oxM" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>';
+                (dialogEle.querySelector('.e-embed-video-url') as HTMLInputElement).dispatchEvent(new Event("input"));
+                (document.querySelector('.e-insertVideo.e-primary') as HTMLElement).click();
+                setTimeout(() => {
+                    expect(rteObj.element.querySelectorAll('.e-vid-resize').length).toBe(1);
+                    expect(rteObj.element.querySelectorAll('.e-rte-videoboxmark').length).toBe(4);
+                    done();
+                }, 3000);
+            }, 100);
+        });
+    });
+    
+    describe('980106 - The resize option appears in the wrong position', () => {
         let rteObj: RichTextEditor;
         let clickEvent: any;
         let innerHTML: string = `<p><b>Description:</b></p>
@@ -5041,6 +5157,7 @@ describe('962339: Script error and improper video selection removal after alignm
             destroy(rteObj);
         });
         it('The resize option appears in the wrong position', () => {
+            
             let trg = (rteObj.contentModule.getEditPanel().querySelector('video') as HTMLElement);
             clickEvent = document.createEvent("MouseEvents");
             clickEvent.initEvent("mousedown", false, true);
@@ -5087,5 +5204,237 @@ describe('962339: Script error and improper video selection removal after alignm
             (editor.videoModule as any).addEventListener();
             done();
         });
-    })
+    });
+
+    describe('982989 - Backspace removes video and preceding text character', () => {
+        let rteObj: RichTextEditor;
+        let innerHTML1: string = `<h1>Welcome to the Syncfusion R<span class="e-video-wrap" contenteditable="false" title="Cursor_Error.mp4" style="cursor: auto;"><video class="e-rte-video e-video-inline" controls="" width="auto" height="auto" style="min-width: 200px; max-width: 1457px; min-height: 90px; width: 236px; height: 118px;"><source src="blob:null/28d262ec-a16e-4d7e-b98b-f6d259ea3dff" type="video/mp4"/></video></span> ich Text Editor</h1>`;
+        beforeEach(() => {
+            rteObj = renderRTE({
+                value: innerHTML1
+            });
+        });
+        afterEach(() => {
+            destroy(rteObj);
+        });
+        it('Video backsapce action checking using backspace key with cursor position', (done: Function) => {
+            let node: any = rteObj.inputElement.querySelector('h1').childNodes[2];
+            setCursorPoint(node, 0);
+            const backspaceKeyDownEvent: KeyboardEvent = new KeyboardEvent('keydown', BACKSPACE_EVENT_INIT);
+            rteObj.inputElement.dispatchEvent(backspaceKeyDownEvent);
+            const expectedHTML: string = '<h1>Welcome to the Syncfusion R ich Text Editor</h1>';
+            setTimeout(() => {
+                expect((rteObj as any).inputElement.innerHTML === expectedHTML).toBe(true);
+                done();
+            }, 100);
+        });
+        it('Video backsapce action checking using backspace key with selection', () => {
+            let node: any = rteObj.inputElement.querySelector('h1').childNodes[2];
+            rteObj.formatter.editorManager.nodeSelection.setSelectionText(document, node, node, 0, 3);
+            const backSpaceKeyDown: KeyboardEvent = new KeyboardEvent('keydown', BACKSPACE_EVENT_INIT);
+            const backSpaceKeyUp: KeyboardEvent = new KeyboardEvent('keyup', BACKSPACE_EVENT_INIT);
+            rteObj.inputElement.dispatchEvent(backSpaceKeyDown);
+            rteObj.inputElement.dispatchEvent(backSpaceKeyUp);
+            const expectedHTML: string = '<h1>Welcome to the Syncfusion R<span class="e-video-wrap" contenteditable="false" title="Cursor_Error.mp4" style="cursor: auto;"><video class="e-rte-video e-video-inline" controls="" width="auto" height="auto" style="min-width: 200px; max-width: 1457px; min-height: 90px; width: 236px; height: 118px;"><source src="blob:null/28d262ec-a16e-4d7e-b98b-f6d259ea3dff" type="video/mp4"></video></span> ich Text Editor</h1>';
+            expect((rteObj as any).inputElement.innerHTML === expectedHTML).toBe(true);
+        });
+        it('Video delete action checking using delete key with cursor position', (done: Function) => {
+            let node: any = rteObj.inputElement.querySelector('h1').childNodes[1];
+            setCursorPoint(node, 0);
+            const deleteKeyDownEvent: KeyboardEvent = new KeyboardEvent('keydown', DELETE_EVENT_INIT);
+            rteObj.inputElement.dispatchEvent(deleteKeyDownEvent);
+            const expectedHTML: string = '<h1>Welcome to the Syncfusion R ich Text Editor</h1>';
+            setTimeout(() => {
+                expect((rteObj as any).inputElement.innerHTML === expectedHTML).toBe(true);
+                done();
+            }, 100);
+        });
+        it('Video delete action checking using delete key with selection', () => {
+            let node: any = rteObj.inputElement.querySelector('h1').childNodes[0];
+            rteObj.formatter.editorManager.nodeSelection.setSelectionText(
+                document, node, node, (node.textContent.length - 3), node.textContent.length);
+            const deleteKeyDown: KeyboardEvent = new KeyboardEvent('keydown', DELETE_EVENT_INIT);
+            rteObj.inputElement.dispatchEvent(deleteKeyDown);
+            const expectedHTML: string = '<h1>Welcome to the Syncfusion R<span class="e-video-wrap" contenteditable="false" title="Cursor_Error.mp4" style="cursor: auto;"><video class="e-rte-video e-video-inline" controls="" width="auto" height="auto" style="min-width: 200px; max-width: 1457px; min-height: 90px; width: 236px; height: 118px;"><source src="blob:null/28d262ec-a16e-4d7e-b98b-f6d259ea3dff" type="video/mp4"></video></span> ich Text Editor</h1>';
+            expect((rteObj as any).inputElement.innerHTML === expectedHTML).toBe(true);
+        });
+    });
+
+    describe('video module coverage', () => {
+        let rteObj: any;
+        const dummyVideoElement = document.createElement("image"); // Create a <video> element
+        const textNode = document.createTextNode("Sample video text"); // Optional: add text inside video
+        dummyVideoElement.appendChild(textNode); // Append text to video
+        const e: IImageNotifyArgs = {
+        selectNode: [dummyVideoElement],
+        module: "videoModule",
+        requestType: "videoResize",
+        enable: true,
+        text: "Resize video",
+        name: "videoSizeCommand",
+        cssClass: "video-class"
+        };
+
+        beforeEach(() => {
+            rteObj = renderRTE({
+                toolbarSettings: { items: ['video'] },
+                value : '<p>Hi Everyone</p><video></video>'
+            });
+        });
+        afterEach(() => {
+            destroy(rteObj);
+        });
+        it('should cover undoStack when subCommand is not undo/redo and videosize and oncuthandler coverage', () => {
+            let undoCount = (rteObj as any).formatter.getUndoRedoStack().length;
+            (rteObj as any).videoModule.undoStack({ subCommand: "video" });
+            rteObj.focusIn();
+            (rteObj as any).videoModule.videoSize(e);
+            (rteObj as any).videoModule.onCutHandler();
+        });
+    });
+
+    describe('997329: Resize Icon Misalignment for Video and Image Elements After Checklist Application - CheckList', () => {
+            let rteObj: RichTextEditor;
+            let clickEvent: any;
+            beforeEach(() => {
+                rteObj = renderRTE({
+                    value: `<h1>Welcome to the Syncfusion Rich Text Editor</h1>
+    <p>The Rich Text Editor, a WYSIWYG (what you see is what you get) editor, is a user interface that allows you to create, edit, and format rich text content. You can try out a demo of this editor here.</p>
+    <h2>Do you know the key features of the editor?</h2>
+    <ul class="e-rte-checklist">
+       <li>Basic features include headings, block quotes, numbered lists, bullet lists, and support to insert images, tables, audio, and video.</li>
+       <li>Inline styles include <b>bold</b>, <em>italic</em>, <span style="text-decoration: underline">underline</span>, <span style="text-decoration: line-through">strikethrough</span>, <a class="e-rte-anchor" href="https://ej2.syncfusion.com/demos/#/material/rich-text-editor/tools.html" title="https://ej2.syncfusion.com/demos/#/material/rich-text-editor/tools.html" aria-label="Open in new window">hyperlinks</a>, 😀 and more.</li>
+       <li>The toolbar has multi-row, expandable, <span class="e-video-wrap" contenteditable="false" title="Cursor_Error.mp4" style="cursor: auto;"><video class="e-rte-video e-video-inline" controls="" width="auto" height="auto" style="min-width: 200px; max-width: 1535px; min-height: 90px; width: 132.584px; height: 59px;"><source src="blob:null/b02366d0-8ec3-4e4c-b65b-b306efb4d62d" type="video/mp4"></video></span> and scrollable modes. The Editor supports an inline toolbar, a floating toolbar, and custom toolbar items.</li>
+       <li>Integration with Syncfusion Mention control lets users tag other users. To learn more, check out the <a class="e-rte-anchor" href="https://ej2.syncfusion.com/documentation/rich-text-editor/mention-integration" title="Mention Documentation" aria-label="Open in new window">documentation</a> and <a class="e-rte-anchor" href="https://ej2.syncfusion.com/demos/#/material/rich-text-editor/mention-integration.html" title="Mention Demos" aria-label="Open in new window">demos</a>.</li>
+       <li><b>Paste from MS Word</b> - helps to reduce the effort while converting the Microsoft Word content to HTML format with format and styles. To learn more, check out the documentation <a class="e-rte-anchor" href="https://ej2.syncfusion.com/documentation/rich-text-editor/paste-cleanup" title="Paste from MS Word Documentation" aria-label="Open in new window">here</a>.</li>
+       <li>Other features: placeholder text, character count, form validation, enter key configuration, resizable editor, IFrame rendering, tooltip, source code view, RTL mode, persistence, HTML Sanitizer, autosave, and <a class="e-rte-anchor" href="https://ej2.syncfusion.com/documentation/api/rich-text-editor/" title="Rich Text Editor API" aria-label="Open in new window">more</a>.</li>
+    </ul>
+    <blockquote>
+       <p><em>Easily access Audio, Image, Link, Video, and Table operations through the quick toolbar by right-clicking on the corresponding element with your mouse.</em></p>
+    </blockquote>
+    <h2>Unlock the Power of Tables</h2>
+    <p>A table can be created in the editor using either a keyboard shortcut or the toolbar. With the quick toolbar, you can perform table cell insert, delete, split, and merge operations. You can style the table cells using background colours and borders.</p>`,
+                    toolbarSettings: {
+                        items: ['Image']
+                    },
+                    height: 400
+                });
+            });
+            afterEach(() => {
+                destroy(rteObj);
+            });
+            it(('checking resize bar in Video in checklist'), () => {
+                let imgElem: HTMLElement = rteObj.element.querySelector('.e-rte-video');
+                clickEvent = document.createEvent("MouseEvents");
+                clickEvent.initEvent("mousedown", false, true);
+                imgElem.dispatchEvent(clickEvent);
+                (rteObj.videoModule as any).resizeStart(clickEvent);
+                expect(rteObj.element.querySelectorAll('.e-vid-resize').length).toBe(1);
+                const videoBoxMarkEle: NodeListOf<HTMLElement> = rteObj.element.querySelectorAll('.e-rte-videoboxmark');
+                expect(videoBoxMarkEle.length).toBe(4);
+                expect(parseFloat(videoBoxMarkEle[0].style.top)).toBeGreaterThan(100);
+                expect(parseFloat(videoBoxMarkEle[0].style.left)).toBeGreaterThan(100);
+                expect(parseFloat(videoBoxMarkEle[1].style.top)).toBeGreaterThan(100);
+                expect(parseFloat(videoBoxMarkEle[1].style.left)).toBeGreaterThan(100);
+                expect(parseFloat(videoBoxMarkEle[2].style.top)).toBeGreaterThan(100);
+                expect(parseFloat(videoBoxMarkEle[2].style.left)).toBeGreaterThan(100);
+                expect(parseFloat(videoBoxMarkEle[3].style.top)).toBeGreaterThan(100);
+                expect(parseFloat(videoBoxMarkEle[3].style.left)).toBeGreaterThan(100);
+            });
+            it(('checking resize bar in Video in checklist in rtl mode'), () => {
+                rteObj.enableRtl = true;
+                rteObj.dataBind();
+                expect(rteObj.element.classList.contains('e-rtl')).toBe(true);
+                let imgElem: HTMLElement = rteObj.element.querySelector('.e-rte-video');
+                clickEvent = document.createEvent("MouseEvents");
+                clickEvent.initEvent("mousedown", false, true);
+                imgElem.dispatchEvent(clickEvent);
+                (rteObj.videoModule as any).resizeStart(clickEvent);
+                expect(rteObj.element.querySelectorAll('.e-vid-resize').length).toBe(1);
+                const videoBoxMarkEle: NodeListOf<HTMLElement> = rteObj.element.querySelectorAll('.e-rte-videoboxmark');
+                expect(videoBoxMarkEle.length).toBe(4);
+                expect(parseFloat(videoBoxMarkEle[0].style.top)).toBeGreaterThan(100);
+                expect(parseFloat(videoBoxMarkEle[0].style.left)).toBeGreaterThan(100);
+                expect(parseFloat(videoBoxMarkEle[1].style.top)).toBeGreaterThan(100);
+                expect(parseFloat(videoBoxMarkEle[1].style.left)).toBeGreaterThan(100);
+                expect(parseFloat(videoBoxMarkEle[2].style.top)).toBeGreaterThan(100);
+                expect(parseFloat(videoBoxMarkEle[2].style.left)).toBeGreaterThan(100);
+                expect(parseFloat(videoBoxMarkEle[3].style.top)).toBeGreaterThan(100);
+                expect(parseFloat(videoBoxMarkEle[3].style.left)).toBeGreaterThan(100);
+            });
+        });
+
+    describe('Video Drag and Drop', () => {
+        let rteObj: RichTextEditor;
+        let ele: HTMLElement;
+        let element: HTMLElement;
+        let videoSize: number;
+        let size: number;
+        let sizeInBytes: number;
+
+        beforeAll((done: Function) => {
+            element = createElement('form', {
+                id: 'form-element',
+                innerHTML: `
+                    <div class="form-group">
+                        <textarea id="defaultRTE" name="defaultRTE" required maxlength="100" minlength="20" data-msg-containerid="dateError"></textarea>
+                        <div id="dateError"></div>
+                    </div>
+                `
+            });
+            document.body.appendChild(element);
+
+            rteObj = new RichTextEditor({
+                insertVideoSettings: {
+                    saveUrl: 'http://aspnetmvc.syncfusion.com/services/api/uploadbox/Save'
+                },
+                value: `
+                    <p><br/><span class="e-video-wrap" contenteditable="false">
+                        <video controls style="width: 30%;" class="e-rte-video e-video-inline">
+                            https://cdn.syncfusion.com/ej2/richtexteditor-resources/RTE-Ocean-Waves.mp4
+                        </video>
+                    </span></p>
+                    <p><br/></p>
+                `,
+                placeholder: 'Type something'
+            });
+
+            rteObj.appendTo('#defaultRTE');
+            done();
+        });
+
+        afterAll((done: Function) => {
+            destroy(rteObj);
+            detach(element);
+            const inlineVideo = document.querySelector('.e-video-inline');
+            if (inlineVideo) {
+                detach(inlineVideo);
+            }
+            done();
+        });
+
+        it('Verified that the video is dropping correctly and the target is set to the currently dropped video', (done: Function) => {
+            // Place cursor after the existing video
+            const editPanel = rteObj.contentModule.getEditPanel();
+            const range = document.createRange();
+            const selection = window.getSelection();
+            const nextParagraph = editPanel.querySelectorAll('p')[1];
+            range.setStart(nextParagraph, 0);
+            range.collapse(true);
+            selection.removeAllRanges();
+            selection.addRange(range);
+            // Simulate drag and drop
+                let fileObj: File = new File(["Nice One"], "sample.mp4", { lastModified: 0, type: "video/mp4" });
+                let event: any = { clientX: 40, clientY: 294, dataTransfer: { files: [fileObj] }, preventDefault: function () { return; } };
+                rteObj.focusIn();
+                (rteObj.videoModule as any).insertDragVideo(event);
+            setTimeout(() => {
+                ele = rteObj.element.getElementsByTagName('video')[1]; // second video
+                expect(rteObj.element.getElementsByTagName('video').length).toBe(2);
+                expect(ele.classList.contains('e-rte-video')).toBe(true);
+                expect(ele.classList.contains('e-video-inline')).toBe(true);
+                done();
+            }, 1000);
+        });
+    });
 });

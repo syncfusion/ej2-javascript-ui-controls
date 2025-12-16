@@ -11,7 +11,7 @@ import { IEditorModel } from '../../common/interface';
  * Link internal component
  *
  * @hidden
- * @deprecated
+ * @private
  */
 export class ImageCommand {
     private parent: IEditorModel;
@@ -20,7 +20,7 @@ export class ImageCommand {
      *
      * @param {IEditorModel} parent - specifies the parent element
      * @hidden
-     * @deprecated
+     * @private
      */
     public constructor(parent: IEditorModel) {
         this.parent = parent;
@@ -41,7 +41,7 @@ export class ImageCommand {
      * @param {IHtmlItem} e - specifies the element
      * @returns {void}
      * @hidden
-     * @deprecated
+     * @private
      */
     public imageCommand(e: IHtmlItem): void {
         switch (e.value.toString().toLowerCase()) {

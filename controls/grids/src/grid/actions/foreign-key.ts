@@ -130,6 +130,10 @@ export class ForeignKey extends Data {
         const predicates: Predicate[] = [];
         const query: Query = new Query();
         let field: string = fromData ? column.foreignKeyField : column.field;
+        if (this.parent.searchSettings && this.parent.searchSettings.key.length) {
+            const query: Query = new Query().where(column.foreignKeyValue, 'contains', this.parent.searchSettings.key, true);
+            e = new DataManager((e) as JSON[]).executeLocal(query) as { records?: Object[] };
+        }
         if (gObj.allowPaging || gObj.enableVirtualization || fromData) {
             e = <{ records?: Object[] }>new DataManager(((gObj.allowGrouping && gObj.groupSettings.columns.length && !fromData) ?
                 e.records : e) as JSON[]).executeLocal(new Query().select(field));

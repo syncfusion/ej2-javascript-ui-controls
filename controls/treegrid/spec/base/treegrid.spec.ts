@@ -1,6 +1,6 @@
 import { TreeGrid } from '../../src/treegrid/base/treegrid';
 import { createGrid, destroy } from './treegridutil.spec';
-import { sampleData, projectData, expandStateData, testdata, treeMappedData, multiLevelSelfRef1, emptyChildData, allysonData, selfReferenceData, stateChangeData, childdata1, stackedData } from './datasource.spec';
+import { sampleData, projectData, expandStateData, testdata, treeMappedData, multiLevelSelfRef1, emptyChildData, allysonData, selfReferenceData, stateChangeData, childdata1, stackedData, columnSpanData, columnSpanSelfRefData } from './datasource.spec';
 import { PageEventArgs, extend, doesImplementInterface, getObject, FilterEventArgs, SearchEventArgs, SortEventArgs, RowSelectEventArgs, ResizeArgs, ColumnModel } from '@syncfusion/ej2-grids';
 import { RowExpandingEventArgs, RowCollapsingEventArgs } from '../../src';
 import { ColumnMenu } from '../../src/treegrid/actions/column-menu';
@@ -2810,14 +2810,6 @@ describe('Null or undefined check', () => {
         gridObj.dataBind();
         expect(gridObj.loadingIndicator.indicatorType).toBe(undefined);
     });
-    it("locale", () => {
-        gridObj.locale = null;
-        gridObj.dataBind();
-        expect(gridObj.locale).toBe(null);
-        gridObj.locale = undefined;
-        gridObj.dataBind();
-        expect(gridObj.locale).toBe(undefined);
-    });
     it("pagerTemplate", () => {
         gridObj.pagerTemplate = null;
         gridObj.dataBind();
@@ -4903,6 +4895,7 @@ describe('Task 969587: Testing TreeGrid Empty Record Template', () => {
         }
     });
 });
+
 describe('Remote data- child positions are wrong after expanding record', () => {
     class HierarchyAdaptor extends WebApiAdaptor {
     processQuery(dm: any, query: any, hierarchyFilters: any) {
@@ -4970,6 +4963,401 @@ describe('Remote data- child positions are wrong after expanding record', () => 
     });
 });
 
+describe('Keyboard selection', () => {
+  let gridObj: TreeGrid;
+  const preventDefault: Function = new Function();
+  let rowSelected:any;
+
+  beforeAll((done: Function) => {
+    gridObj = createGrid(
+      {
+        dataSource: sampleData,
+        childMapping: 'subtasks',
+        treeColumnIndex: 1,
+        height: 400,
+        allowSelection: true,
+        selectionSettings: { type: 'Single', mode: 'Row' },
+        columns: [
+          { field: 'taskID', headerText: 'Task ID', width: 60, textAlign: 'Right' },
+          { field: 'taskName', headerText: 'Task Name', width: 180, textAlign: 'Left' },
+          { field: 'duration', headerText: 'Duration', width: 80, textAlign: 'Right' },
+          { field: 'progress', headerText: 'Progress', width: 80, textAlign: 'Right' }
+        ]
+      },
+      done
+    );
+  });
+
+  it('Down arrow on last row should clear selection', () => {
+    const rows = gridObj.getVisibleRecords();
+    const lastIndex = rows.length - 1;
+
+    gridObj.selectRow(lastIndex);
+    expect(gridObj.getSelectedRowIndexes()).toEqual([lastIndex]);
+
+    const lastRowCell = (gridObj.getRows()[lastIndex] as any).getElementsByClassName('e-rowcell')[0] as HTMLElement;
+    gridObj.keyboardModule.keyAction({ action: 'downArrow', preventDefault, target: lastRowCell } as any);
+
+    rowSelected=()=>{
+            expect(gridObj.getSelectedRowIndexes().length).toBe(1);
+            }
+            gridObj.rowSelected=rowSelected;
+ });
+
+  
+  afterAll(() => {
+    destroy(gridObj);
+  });
+});
+
+describe('User Story 970793: Need to provide row and Cell Spanning support with cross features', () => {
+    let gridObj: TreeGrid;
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: columnSpanData,
+                treeColumnIndex: 1,
+                childMapping: 'subtasks',
+                height: 317,
+                rowHeight: 40,
+                enableRowSpan: true,
+                enableColumnSpan: true,
+                allowPaging: true,
+                allowFiltering: true,
+                allowSelection: true,
+                allowSorting: true,
+                allowReordering: true,
+                allowResizing: true,
+                showColumnChooser: true,
+                filterSettings: { type: 'Excel' },
+                toolbar: ['Search', 'ColumnChooser'],
+                gridLines: 'Both',
+                columns: [
+                    { field: 'EmployeeID', headerText: 'Employee ID', width: 150, textAlign: 'Right', isPrimaryKey: true, freeze: 'Left' },
+                    { field: 'EmployeeName', headerText: 'Employee Name', width: 200 },
+                    { field: '9:00', headerText: '9:00 AM', width: 120, textAlign: 'Center', },
+                    { field: '9:30', headerText: '9:30 AM', width: 120, textAlign: 'Center' },
+                    { field: '10:00', headerText: '10:00 AM', width: 120, textAlign: 'Center' },
+                    { field: '10:30', headerText: '10:30 AM', width: 120, textAlign: 'Center' },
+                    { field: '11:00', headerText: '11:00 AM', width: 120, textAlign: 'Center' },
+                    { field: '11:30', headerText: '11:30 AM', width: 120, textAlign: 'Center' },
+                    { field: '12:00', headerText: '12:00 PM', width: 120, textAlign: 'Center' },
+                    { field: '12:30', headerText: '12:30 PM', width: 120, textAlign: 'Center' },
+                    { field: '1:00', headerText: '1:00 PM', width: 120, textAlign: 'Center' },
+                    { field: '1:30', headerText: '1:30 PM', width: 120, textAlign: 'Center' },
+                    { field: '2:00', headerText: '2:00 PM', width: 120, textAlign: 'Center' },
+                    { field: '2:30', headerText: '2:30 PM', width: 120, textAlign: 'Center' },
+                    { field: '3:00', headerText: '3:00 PM', width: 120, textAlign: 'Center' },
+                    { field: '3:30', headerText: '3:30 PM', width: 120, textAlign: 'Center' },
+                    { field: '4:00', headerText: '4:00 PM', width: 120, textAlign: 'Center' },
+                    { field: '4:30', headerText: '4:30 PM', width: 120, textAlign: 'Center', freeze: 'Right' },
+                    { field: '5:00', headerText: '5:00 PM', width: 120, textAlign: 'Center', freeze: 'Right' }
+                ]
+            },
+            done
+        );
+    });
+    it('Row spand and cols span support', (done: Function) => {
+        let tr = gridObj.getContentTable().querySelectorAll('tr');
+        let row1 = tr[0].querySelectorAll('td');
+        let row3 = tr[2].querySelectorAll('td');
+        expect(row1.length).toBe(12);
+        expect(row3.length).toBe(7);
+        expect(row1[11].getAttribute('rowspan')).toBe('2');
+        expect(row1[2].getAttribute('colspan')).toBe('2');
+        done();
+    });
+    it('Test sorting with spanned cell', (done: Function) => {
+        let dataBound = (args: any): void => {
+            let tr = gridObj.getContentTable().querySelectorAll('tr');
+            let row1 = tr[0].querySelectorAll('td');
+            let row3 = tr[3].querySelectorAll('td');
+            expect(row1.length).toBe(12);
+            expect(row3.length).toBe(8);
+            expect(row1[6].getAttribute('rowspan')).toBe('2');
+            expect(row1[4].getAttribute('colspan')).toBe('2');
+            gridObj.dataBound = null;
+            done();
+        }
+        gridObj.dataBound = dataBound;
+        gridObj.sortByColumn('EmployeeName', 'Ascending', true);
+    });
+    it('Test Filtering with spanned cell', (done: Function) => {
+        let dataBound = (args: any): void => {
+            let tr = gridObj.getContentTable().querySelectorAll('tr');
+            let row1 = tr[0].querySelectorAll('td');
+            expect(row1.length).toBe(12);
+            expect(row1[7].getAttribute('rowspan')).toBe('5');
+            expect(row1[4].getAttribute('colspan')).toBe('2');
+            gridObj.dataBound = null;
+            done();
+        }
+        gridObj.dataBound = dataBound;
+        gridObj.filterByColumn('EmployeeName', 'contains', 'Andrew');
+    });
+    afterAll(() => {
+        destroy(gridObj);
+        gridObj = null;
+    });
+});
+describe('User Story 970793: Need to provide row and Cell Spanning support with cross features', () => {
+    let gridObj: TreeGrid;
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: columnSpanData,
+                treeColumnIndex: 1,
+                childMapping: 'subtasks',
+                height: 317,
+                rowHeight: 40,
+                enableRowSpan: true,
+                enableColumnSpan: true,
+                allowPaging: true,
+                allowFiltering: true,
+                allowSelection: true,
+                allowSorting: true,
+                allowReordering: true,
+                allowResizing: true,
+                showColumnChooser: true,
+                filterSettings: { type: 'Excel' },
+                toolbar: ['Search', 'ColumnChooser'],
+                gridLines: 'Both',
+                columns: [
+                    { field: 'EmployeeID', headerText: 'Employee ID', width: 150, textAlign: 'Right', isPrimaryKey: true, freeze: 'Left' },
+                    { field: 'EmployeeName', headerText: 'Employee Name', width: 200 },
+                    { field: '9:00', headerText: '9:00 AM', width: 120, textAlign: 'Center', },
+                    { field: '9:30', headerText: '9:30 AM', width: 120, textAlign: 'Center' },
+                    { field: '10:00', headerText: '10:00 AM', width: 120, textAlign: 'Center' },
+                    { field: '10:30', headerText: '10:30 AM', width: 120, textAlign: 'Center' },
+                    { field: '11:00', headerText: '11:00 AM', width: 120, textAlign: 'Center' },
+                    { field: '11:30', headerText: '11:30 AM', width: 120, textAlign: 'Center' },
+                    { field: '12:00', headerText: '12:00 PM', width: 120, textAlign: 'Center' },
+                    { field: '12:30', headerText: '12:30 PM', width: 120, textAlign: 'Center' },
+                    { field: '1:00', headerText: '1:00 PM', width: 120, textAlign: 'Center' },
+                    { field: '1:30', headerText: '1:30 PM', width: 120, textAlign: 'Center' },
+                    { field: '2:00', headerText: '2:00 PM', width: 120, textAlign: 'Center' },
+                    { field: '2:30', headerText: '2:30 PM', width: 120, textAlign: 'Center' },
+                    { field: '3:00', headerText: '3:00 PM', width: 120, textAlign: 'Center' },
+                    { field: '3:30', headerText: '3:30 PM', width: 120, textAlign: 'Center' },
+                    { field: '4:00', headerText: '4:00 PM', width: 120, textAlign: 'Center' },
+                    { field: '4:30', headerText: '4:30 PM', width: 120, textAlign: 'Center', freeze: 'Right' },
+                    { field: '5:00', headerText: '5:00 PM', width: 120, textAlign: 'Center', freeze: 'Right' }
+                ]
+            },
+            done
+        );
+    });
+    it('Test collapse with spanned cell', (done: Function) => {
+        let dataBound = (args: any): void => {
+            let tr = gridObj.getContentTable().querySelectorAll('tr');
+            let row1 = tr[0].querySelectorAll('td');
+            expect(row1.length).toBe(12);
+            expect(row1[7].getAttribute('rowspan')).toBe('12');
+            expect(row1[5].getAttribute('colspan')).toBe('3');
+            gridObj.dataBound = null;
+            done();
+        }
+        gridObj.dataBound = dataBound;
+        let rows = gridObj.getRows();
+        (rows[0].getElementsByClassName('e-treegridexpand')[0] as HTMLElement).click();
+    });
+    it('Test collapse with spanned cell', (done: Function) => {
+        let dataBound = (args: any): void => {
+            let tr = gridObj.getContentTable().querySelectorAll('tr');
+            let row1 = tr[0].querySelectorAll('td');
+            expect(row1.length).toBe(12);
+            expect(row1[7].getAttribute('rowspan')).toBe('12');
+            expect(row1[5].getAttribute('colspan')).toBe('3');
+            gridObj.dataBound = null;
+            done();
+        }
+        gridObj.dataBound = dataBound;
+        let rows = gridObj.getRows();
+        (rows[0].getElementsByClassName('e-treegridcollapse')[0] as HTMLElement).click();
+    });
+    afterAll(() => {
+        destroy(gridObj);
+        gridObj = null;
+    });
+});
+describe('User Story 970793: Need to provide row and Cell Spanning support with cross features', () => {
+    let gridObj: TreeGrid;
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: columnSpanSelfRefData,
+                treeColumnIndex: 1,
+                idMapping:'EmployeeID',
+                parentIdMapping:'parentID',
+                height: 317,
+                rowHeight: 40,
+                enableRowSpan: true,
+                enableColumnSpan: true,
+                allowPaging: true,
+                allowFiltering: true,
+                allowSelection: true,
+                allowSorting: true,
+                allowReordering: true,
+                allowResizing: true,
+                showColumnChooser: true,
+                filterSettings: { type: 'Excel' },
+                toolbar: ['Search', 'ColumnChooser'],
+                gridLines: 'Both',
+                columns: [
+                    { field: 'EmployeeID', headerText: 'Employee ID', width: 150, textAlign: 'Right', isPrimaryKey: true, freeze: 'Left' },
+                    { field: 'EmployeeName', headerText: 'Employee Name', width: 200 },
+                    { field: '9:00', headerText: '9:00 AM', width: 120, textAlign: 'Center', },
+                    { field: '9:30', headerText: '9:30 AM', width: 120, textAlign: 'Center' },
+                    { field: '10:00', headerText: '10:00 AM', width: 120, textAlign: 'Center' },
+                    { field: '10:30', headerText: '10:30 AM', width: 120, textAlign: 'Center' },
+                    { field: '11:00', headerText: '11:00 AM', width: 120, textAlign: 'Center' },
+                    { field: '11:30', headerText: '11:30 AM', width: 120, textAlign: 'Center' },
+                    { field: '12:00', headerText: '12:00 PM', width: 120, textAlign: 'Center' },
+                    { field: '12:30', headerText: '12:30 PM', width: 120, textAlign: 'Center' },
+                    { field: '1:00', headerText: '1:00 PM', width: 120, textAlign: 'Center' },
+                    { field: '1:30', headerText: '1:30 PM', width: 120, textAlign: 'Center' },
+                    { field: '2:00', headerText: '2:00 PM', width: 120, textAlign: 'Center' },
+                    { field: '2:30', headerText: '2:30 PM', width: 120, textAlign: 'Center' },
+                    { field: '3:00', headerText: '3:00 PM', width: 120, textAlign: 'Center' },
+                    { field: '3:30', headerText: '3:30 PM', width: 120, textAlign: 'Center' },
+                    { field: '4:00', headerText: '4:00 PM', width: 120, textAlign: 'Center' },
+                    { field: '4:30', headerText: '4:30 PM', width: 120, textAlign: 'Center', freeze: 'Right' },
+                    { field: '5:00', headerText: '5:00 PM', width: 120, textAlign: 'Center', freeze: 'Right' }
+                ]
+            },
+            done
+        );
+    });
+    it('Row spand and cols span support with self-referential', (done: Function) => {
+        let tr = gridObj.getContentTable().querySelectorAll('tr');
+        let row1 = tr[0].querySelectorAll('td');
+        let row3 = tr[2].querySelectorAll('td');
+        expect(row1.length).toBe(12);
+        expect(row3.length).toBe(7);
+        expect(row1[11].getAttribute('rowspan')).toBe('2');
+        expect(row1[2].getAttribute('colspan')).toBe('2');
+        done();
+    });
+    it('Test sorting with spanned cell with self-referential', (done: Function) => {
+            let dataBound = (args: any): void => {
+                let tr = gridObj.getContentTable().querySelectorAll('tr');
+                let row1 = tr[0].querySelectorAll('td');
+                let row3 = tr[3].querySelectorAll('td');
+                expect(row1.length).toBe(12);
+                expect(row3.length).toBe(8);
+                expect(row1[6].getAttribute('rowspan')).toBe('2');
+                expect(row1[4].getAttribute('colspan')).toBe('2');
+                gridObj.dataBound = null;
+                done();
+            }
+            gridObj.dataBound = dataBound;
+            gridObj.sortByColumn('EmployeeName', 'Ascending', true);
+        });
+        it('Test Filtering with spanned cell with self-referential', (done: Function) => {
+            let dataBound = (args: any): void => {
+                let tr = gridObj.getContentTable().querySelectorAll('tr');
+                let row1 = tr[0].querySelectorAll('td');
+                expect(row1.length).toBe(12);
+                expect(row1[7].getAttribute('rowspan')).toBe('5');
+                expect(row1[4].getAttribute('colspan')).toBe('2');
+                gridObj.dataBound = null;
+                done();
+            }
+            gridObj.dataBound = dataBound;
+            gridObj.filterByColumn('EmployeeName', 'contains', 'Andrew');
+        });
+    afterAll(() => {
+        destroy(gridObj);
+        gridObj = null;
+    });
+});
+describe('User Story 970793: Need to provide row and Cell Spanning support with cross features', () => {
+    let gridObj: TreeGrid;
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: columnSpanData,
+                treeColumnIndex: 1,
+                childMapping: 'subtasks',
+                height: 317,
+                rowHeight: 40,
+                enableRowSpan: true,
+                enableColumnSpan: true,
+                allowPaging: true,
+                allowFiltering: true,
+                allowSelection: true,
+                allowSorting: true,
+                allowReordering: true,
+                allowResizing: true,
+                showColumnChooser: true,
+                filterSettings: { type: 'Excel' },
+                toolbar: ['Search', 'ColumnChooser'],
+                gridLines: 'Both',
+                columns: [
+                    { field: 'EmployeeID', headerText: 'Employee ID', width: 150, textAlign: 'Right', isPrimaryKey: true, freeze: 'Left' },
+                    { field: 'EmployeeName', headerText: 'Employee Name', width: 200 },
+                    { field: '9:00', headerText: '9:00 AM', width: 120, textAlign: 'Center', },
+                    { field: '9:30', headerText: '9:30 AM', width: 120, textAlign: 'Center' },
+                    { field: '10:00', headerText: '10:00 AM', width: 120, textAlign: 'Center' },
+                    { field: '10:30', headerText: '10:30 AM', width: 120, textAlign: 'Center' },
+                    { field: '11:00', headerText: '11:00 AM', width: 120, textAlign: 'Center' },
+                    { field: '11:30', headerText: '11:30 AM', width: 120, textAlign: 'Center' },
+                    { field: '12:00', headerText: '12:00 PM', width: 120, textAlign: 'Center' },
+                    { field: '12:30', headerText: '12:30 PM', width: 120, textAlign: 'Center' },
+                    { field: '1:00', headerText: '1:00 PM', width: 120, textAlign: 'Center' },
+                    { field: '1:30', headerText: '1:30 PM', width: 120, textAlign: 'Center' },
+                    { field: '2:00', headerText: '2:00 PM', width: 120, textAlign: 'Center' },
+                    { field: '2:30', headerText: '2:30 PM', width: 120, textAlign: 'Center' },
+                    { field: '3:00', headerText: '3:00 PM', width: 120, textAlign: 'Center' },
+                    { field: '3:30', headerText: '3:30 PM', width: 120, textAlign: 'Center' },
+                    { field: '4:00', headerText: '4:00 PM', width: 120, textAlign: 'Center' },
+                    { field: '4:30', headerText: '4:30 PM', width: 120, textAlign: 'Center', freeze: 'Right' },
+                    { field: '5:00', headerText: '5:00 PM', width: 120, textAlign: 'Center', freeze: 'Right' }
+                ]
+            },
+            done
+        );
+    });
+        it('Test collapse with spanned cell with self-referential', (done: Function) => {
+            let dataBound = (args: any): void => {
+                let tr = gridObj.getContentTable().querySelectorAll('tr');
+                let row1 = tr[0].querySelectorAll('td');
+                expect(row1.length).toBe(12);
+                expect(row1[7].getAttribute('rowspan')).toBe('12');
+                expect(row1[5].getAttribute('colspan')).toBe('3');
+                gridObj.dataBound = null;
+                done();
+            }
+            gridObj.dataBound = dataBound;
+            let rows = gridObj.getRows();
+            (rows[0].getElementsByClassName('e-treegridexpand')[0] as HTMLElement).click();
+        });
+        it('Test collapse with spanned cell with self-referential', (done: Function) => {
+            let dataBound = (args: any): void => {
+                let tr = gridObj.getContentTable().querySelectorAll('tr');
+                let row1 = tr[0].querySelectorAll('td');
+                expect(row1.length).toBe(12);
+                expect(row1[7].getAttribute('rowspan')).toBe('12');
+                expect(row1[5].getAttribute('colspan')).toBe('3');
+                gridObj.dataBound = null;
+                done();
+            }
+            gridObj.dataBound = dataBound;
+            let rows = gridObj.getRows();
+            (rows[0].getElementsByClassName('e-treegridcollapse')[0] as HTMLElement).click();
+        });
+        it('Check onpropertychanged for enableRowSpan and enableColumnSpan', () => {
+            gridObj.enableRowSpan = false;
+            gridObj.enableColumnSpan = false;
+            expect(gridObj.enableRowSpan).toBe(false);
+            expect(gridObj.enableColumnSpan).toBe(false);
+        });
+    afterAll(() => {
+        destroy(gridObj);
+        gridObj = null;
+    });
+});
+
 describe('isRowSelectable method', () => {
     let gridObj: TreeGrid;
     
@@ -4992,6 +5380,7 @@ describe('isRowSelectable method', () => {
             done
         );
     });
+
     it('Test isRowSelectable property', () => {
         gridObj.isRowSelectable = (data: any) => {
             return data.taskID !== 1;
@@ -4999,44 +5388,80 @@ describe('isRowSelectable method', () => {
         ((<HTMLElement>(gridObj.element.querySelectorAll(".e-row")[0].getElementsByClassName("e-frame e-icons")[0])) as any).click();
         expect(gridObj.flatData.length).toBe(36);
     });
+
     afterAll(() => {
         destroy(gridObj);
     });
 });
 
-describe('EJ2-990496-Properties missing on initial render of treegrid when using getColumnByField() method', () => {
+describe('FreezeRefresh method', () => {
     let gridObj: TreeGrid;
-    let isTaskName: boolean;
     beforeAll((done: Function) => {
         gridObj = createGrid(
             {
-                dataSource: sampleData,
-                childMapping: 'subtasks',
-                treeColumnIndex: 1,
-                height: 400,
-                columns: [
-                    { type: 'checkbox', width: 50 },
-                    { field: 'taskID', headerText: 'Task ID', width: 60, textAlign: 'Right' },
-                    { field: 'taskName', headerText: 'Task Name', width: 180, textAlign: 'Left' },
-                    { field: 'duration', headerText: 'Duration', width: 80, textAlign: 'Right' },
-                    { field: 'progress', headerText: 'Progress', width: 80, textAlign: 'Right' }
-                ],
-                created: () => {
-                    const treegridElement = document.getElementsByClassName('e-treegrid')[0] as HTMLElement & { ej2_instances: any[] };
-                    const treegrid = treegridElement.ej2_instances[0];
-                    isTaskName = treegrid.getColumnByField('taskName').visible;
-                }
+            dataSource: sampleData,
+            childMapping: 'subtasks',
+            treeColumnIndex: 1,
+            height: 400,
+            allowSelection: true,
+            allowFiltering: true,
+            columns: [
+                { type: 'checkbox', width: 50 },
+                { field: 'taskID', headerText: 'Task ID', width: 60, textAlign: 'Right' },
+                { field: 'taskName', headerText: 'Task Name', width: 180, textAlign: 'Left' },
+                { field: 'duration', headerText: 'Duration', width: 80, textAlign: 'Right' },
+                { field: 'progress', headerText: 'Progress', width: 80, textAlign: 'Right' }
+            ]
             },
             done
         );
     });
-    it('checking the visible property is assigned of column properties in created event', function (done: Function) {
-        expect(isTaskName).toBe(true);
+
+    it('Test FreezeRefresh method', (done: Function) => {
+        gridObj.setProperties({allowFiltering: false},true);
+        gridObj.refreshLayout();
+        expect(gridObj.allowFiltering).toBe(false);
         done();
     });
+
     afterAll(() => {
         destroy(gridObj);
-    })
+    });
+});
+
+describe('Locale', () => {
+    let gridObj: TreeGrid;
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+            dataSource: sampleData,
+            childMapping: 'subtasks',
+            treeColumnIndex: 1,
+            height: 400,
+            columns: [
+                { type: 'checkbox', width: 50 },
+                { field: 'taskID', headerText: 'Task ID', width: 60, textAlign: 'Right' },
+                { field: 'taskName', headerText: 'Task Name', width: 180, textAlign: 'Left' },
+                { field: 'duration', headerText: 'Duration', width: 80, textAlign: 'Right' },
+                { field: 'progress', headerText: 'Progress', width: 80, textAlign: 'Right' }
+            ]
+            },
+            done
+        );
+    });
+
+    it("locale", () => {
+        gridObj.locale = null;
+        gridObj.dataBind();
+        expect(gridObj.locale).toBe(null);
+        gridObj.locale = undefined;
+        gridObj.dataBind();
+        expect(gridObj.locale).toBe(undefined);
+    });
+
+    afterAll(() => {
+        destroy(gridObj);
+    });
 });
 
 describe('Bug 988871: DataSource not updated on adding records using addRecords method.', () => {
@@ -5159,6 +5584,85 @@ describe('Bug 988871: DataSource not updated on adding records using addRecords 
             }
         };
         gridObj.addRecord({ taskID: 1, taskName: 'planning' }, 0, 'Below');
+    });
+    afterAll(() => {
+        destroy(gridObj);
+    });
+});
+
+describe('EJ2-990496-Properties missing on initial render of treegrid when using getColumnByField() method', () => {
+    let gridObj: TreeGrid;
+    let isTaskName: boolean;
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: sampleData,
+                childMapping: 'subtasks',
+                treeColumnIndex: 1,
+                height: 400,
+                columns: [
+                    { type: 'checkbox', width: 50 },
+                    { field: 'taskID', headerText: 'Task ID', width: 60, textAlign: 'Right' },
+                    { field: 'taskName', headerText: 'Task Name', width: 180, textAlign: 'Left' },
+                    { field: 'duration', headerText: 'Duration', width: 80, textAlign: 'Right' },
+                    { field: 'progress', headerText: 'Progress', width: 80, textAlign: 'Right' }
+                ],
+                created: () => {
+                    const treegridElement = document.getElementsByClassName('e-treegrid')[0] as HTMLElement & { ej2_instances: any[] };
+                    const treegrid = treegridElement.ej2_instances[0];
+                    isTaskName = treegrid.getColumnByField('taskName').visible;
+                }
+            },
+            done
+        );
+    });
+    it('checking the visible property is assigned of column properties in created event', function (done: Function) {
+        expect(isTaskName).toBe(true);
+        done();
+    });
+    afterAll(() => {
+        destroy(gridObj);
+    })
+});
+
+
+describe('Task 985326: Testing getPageSizeByHeight method', () => {
+    let gridObj: TreeGrid;
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: sampleData,
+                childMapping: 'subtasks',
+                treeColumnIndex: 1,
+                allowPaging: true,
+                height: 410,
+                columns: [
+                    { field: 'taskID', headerText: 'Task ID', width: 110 },
+                    { field: 'taskName', headerText: 'Task Name', width: 150 },
+                    { field: 'StartDate', headerText: 'Start Date', width: 90, textAlign: 'Right', type: 'date', format: 'yMd' },
+                    { field: 'Duration', headerText: 'Duration', width: 80, textAlign: 'Right' },
+                    { field: 'Progress', headerText: 'Progress', width: 80, textAlign: 'Right' },
+                    { field: 'Priority', headerText: 'Priority', width: 90 }
+                ]
+            },
+            done
+        );
+    });
+    it('should get pageSize by height without param', () => {
+        expect((gridObj as any).getPageSizeByHeight()).toBe(22);
+    });
+    it('should get pageSize by height with param', () => {
+        expect((gridObj as any).getPageSizeByHeight(488)).toBe(17);
+    });
+    it('should get pageSize by height with param as string', () => {
+        expect((gridObj as any).getPageSizeByHeight('488')).toBe(17);
+    });
+    it('should get pageSize by height with param as percentage', () => {
+        expect((gridObj as any).getPageSizeByHeight('100%')).toBe(22);
+    });
+    it('should get pageSize by height without paging', () => {
+        gridObj.allowPaging = false;
+        expect((gridObj as any).getPageSizeByHeight()).toBe(22);
     });
     afterAll(() => {
         destroy(gridObj);

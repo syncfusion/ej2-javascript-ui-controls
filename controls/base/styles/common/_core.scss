@@ -1,3 +1,5 @@
+@use './mixin' as *;
+@use './theme-vars' as *;
 @include export-module('base-core') {
 
   .e-control,

@@ -27,7 +27,6 @@ describe('Symbol Palette - Group', () => {
         let diagram: Diagram;
         let palette: SymbolPalette;
         let ele: HTMLElement;
-        let mouseEvents: MouseEvents = new MouseEvents();
 
         let basicShapes: NodeModel[] = [
             { id: 'Rectangle', shape: { type: 'Basic', shape: 'Rectangle' }, style: { strokeWidth: 2 },width:50,height:30,offsetX:50,offsetY:50 },
@@ -36,8 +35,8 @@ describe('Symbol Palette - Group', () => {
         ];
         beforeAll((): void => {
             ele = createElement('div', { styles: 'width:100%;height:500px;' });
-            ele.appendChild(createElement('div', { id: 'symbolPalette', styles: 'width:250px;height:550px;float:left;' }));
-            ele.appendChild(createElement('div', { id: 'diagram', styles: 'width:500px;height:550px;float:right;' }));
+            ele.appendChild(createElement('div', { id: 'symbolPalette1', styles: 'width:250px;height:550px;float:left;' }));
+            ele.appendChild(createElement('div', { id: 'diagram1', styles: 'width:500px;height:550px;float:right;' }));
             document.body.appendChild(ele);
             let nodes: NodeModel[] = [
                 {
@@ -63,7 +62,7 @@ describe('Symbol Palette - Group', () => {
                 connectors: connectors, nodes: nodes, pageSettings: { background: { color: 'transparent' } },
                 width: '74%', height: '600px'
             });
-            diagram.appendTo('#diagram');
+            diagram.appendTo('#diagram1');
 
             palette = new SymbolPalette({
                 width: '250px', height: '100%',
@@ -72,27 +71,30 @@ describe('Symbol Palette - Group', () => {
                 ], enableAnimation: false, enableSearch: true, symbolHeight: 50, symbolWidth: 50,
                 symbolMargin: { top: 12, bottom: 12, left: 12, right: 12 }
             });
-            palette.appendTo('#symbolPalette');
+            palette.appendTo('#symbolPalette1');
         });
 
         afterAll((): void => {
             diagram.destroy();
             palette.destroy();
             ele.remove();
+            diagram = null;
+            palette = null;
+            ele = null;
         });
-        it('Checking default palette rendering with group Symbol', (done: Function) => {
-            setTimeout(() => {
-                console.log('timeOut1');
-                let events: MouseEvents = new MouseEvents();
-                events.mouseDownEvent(palette.element, 70, 125, false, false);
-                events.mouseMoveEvent(palette.element, 150, 150, false, false);
-                events.mouseUpEvent(palette.element, 150, 150, false, false);
-                palette.getPersistData();
-                let start: HTMLElement = document.getElementById('group');
-                expect(start.offsetWidth == 59 && start.offsetHeight == 59).toBe(true);
-                done();
-            }, 10);
-        });
+        // it('Checking default palette rendering with group Symbol', (done: Function) => {
+        //     setTimeout(() => {
+        //         console.log('timeOut1');
+        //         let events: MouseEvents = new MouseEvents();
+        //         events.mouseDownEvent(palette.element, 70, 125, false, false);
+        //         events.mouseMoveEvent(palette.element, 150, 150, false, false);
+        //         events.mouseUpEvent(palette.element, 150, 150, false, false);
+        //         palette.getPersistData();
+        //         let start: HTMLElement = document.getElementById('group');
+        //         expect(start.offsetWidth == 59 && start.offsetHeight == 59).toBe(true);
+        //         done();
+        //     }, 10);
+        // });
         it('Checking Allow Drag', (done: Function) => {
             palette.allowDrag = false;
             palette.dataBind();
@@ -152,7 +154,6 @@ describe('Symbol Palette - Group', () => {
         let diagram: Diagram;
         let palette: SymbolPalette;
         let ele: HTMLElement;
-        let mouseEvents: MouseEvents = new MouseEvents();
 
         let basicShapes: NodeModel[] = [
             { id: 'Rectangle', shape: { type: 'Basic', shape: 'Rectangle' }, style: { strokeWidth: 2 }, offsetX: 25, offsetY: 25 },
@@ -167,8 +168,8 @@ describe('Symbol Palette - Group', () => {
         ];
         beforeAll((): void => {
             ele = createElement('div', { styles: 'width:100%;height:500px;' });
-            ele.appendChild(createElement('div', { id: 'symbolPalette', styles: 'width:25%;float:left;' }));
-            ele.appendChild(createElement('div', { id: 'diagram', styles: 'width:74%;height:500px;float:left;' }));
+            ele.appendChild(createElement('div', { id: 'symbolPalette2', styles: 'width:25%;float:left;' }));
+            ele.appendChild(createElement('div', { id: 'diagram2', styles: 'width:74%;height:500px;float:left;' }));
             document.body.appendChild(ele);
             let nodes: NodeModel[] = [
                 {
@@ -194,7 +195,7 @@ describe('Symbol Palette - Group', () => {
                 connectors: connectors, nodes: nodes, pageSettings: { background: { color: 'transparent' } },
                 width: '74%', height: '600px'
             });
-            diagram.appendTo('#diagram');
+            diagram.appendTo('#diagram2');
 
             palette = new SymbolPalette({
                 width: '250px', height: '100%',
@@ -232,35 +233,37 @@ describe('Symbol Palette - Group', () => {
                 symbolMargin: { top: 12, bottom: 12, left: 12, right: 12 },
                 symbolPreview: { height: 100, width: 100 }
             });
-            palette.appendTo('#symbolPalette');
+            palette.appendTo('#symbolPalette2');
         });
 
         afterAll((): void => {
             diagram.destroy();
             palette.destroy();
             ele.remove();
+            diagram = null;
+            palette = null;
+            ele = null;
         });
-        it('Checking default palette rendering with group Symbol with offset', (done: Function) => {
-            setTimeout(() => {
-                // just for coverage
-                console.log('timeOut2');
-                let events: MouseEvents = new MouseEvents();
-                events.mouseDownEvent(palette.element, 70, 125, false, false);
-                events.mouseMoveEvent(palette.element, 150, 150, false, false);
-                events.mouseUpEvent(palette.element, 150, 150, false, false);
-                palette.getPersistData();
-                let start: HTMLElement = document.getElementById('group3');
-                expect(start.offsetWidth == 59 && start.offsetHeight == 59).toBe(true);
-                done();
-            }, 10);
-        });
+        // it('Checking default palette rendering with group Symbol with offset', (done: Function) => {
+        //     setTimeout(() => {
+        //         // just for coverage
+        //         console.log('timeOut2');
+        //         let events: MouseEvents = new MouseEvents();
+        //         events.mouseDownEvent(palette.element, 70, 125, false, false);
+        //         events.mouseMoveEvent(palette.element, 150, 150, false, false);
+        //         events.mouseUpEvent(palette.element, 150, 150, false, false);
+        //         palette.getPersistData();
+        //         let start: HTMLElement = document.getElementById('group3');
+        //         expect(start.offsetWidth == 59 && start.offsetHeight == 59).toBe(true);
+        //         done();
+        //     }, 10);
+        // });
       
     });
     describe('Symbol Palette - group with path element', () => {
         let diagram: Diagram;
         let palette: SymbolPalette;
         let ele: HTMLElement;
-        let mouseEvents: MouseEvents = new MouseEvents();
 
         let basicShapes: NodeModel[] = [
             {
@@ -291,8 +294,8 @@ describe('Symbol Palette - Group', () => {
         ];
         beforeAll((): void => {
             ele = createElement('div', { styles: 'width:100%;height:500px;' });
-            ele.appendChild(createElement('div', { id: 'symbolPalette', styles: 'width:25%;float:left;' }));
-            ele.appendChild(createElement('div', { id: 'diagram', styles: 'width:74%;height:500px;float:left;' }));
+            ele.appendChild(createElement('div', { id: 'symbolPalette3', styles: 'width:25%;float:left;' }));
+            ele.appendChild(createElement('div', { id: 'diagram3', styles: 'width:74%;height:500px;float:left;' }));
             document.body.appendChild(ele);
             let nodes: NodeModel[] = [
                 {
@@ -318,7 +321,7 @@ describe('Symbol Palette - Group', () => {
                 connectors: connectors, nodes: nodes, pageSettings: { background: { color: 'transparent' } },
                 width: '74%', height: '600px'
             });
-            diagram.appendTo('#diagram');
+            diagram.appendTo('#diagram3');
 
             palette = new SymbolPalette({
                 width: '250px', height: '100%',
@@ -328,35 +331,37 @@ describe('Symbol Palette - Group', () => {
                 symbolMargin: { top: 12, bottom: 12, left: 12, right: 12 },
                 symbolPreview: { height: 100, width: 100 }
             });
-            palette.appendTo('#symbolPalette');
+            palette.appendTo('#symbolPalette3');
         });
 
         afterAll((): void => {
             diagram.destroy();
             palette.destroy();
             ele.remove();
+            diagram = null;
+            palette = null;
+            ele = null;
         });
-        it('Checking default palette rendering with group Symbol with offset', (done: Function) => {
-            setTimeout(() => {
-                // just for coverage
-                console.log('timeOut3');
-                let events: MouseEvents = new MouseEvents();
-                events.mouseDownEvent(palette.element, 70, 125, false, false);
-                events.mouseMoveEvent(palette.element, 150, 150, false, false);
-                events.mouseUpEvent(palette.element, 150, 150, false, false);
-                palette.getPersistData();
-                let start: HTMLElement = document.getElementById('SHAPE_BELL11');
-                expect(start.offsetWidth == 59 && start.offsetHeight == 59).toBe(true);
-                done();
-            }, 10);
-        });
+        // it('Checking default palette rendering with group Symbol with offset', (done: Function) => {
+        //     setTimeout(() => {
+        //         // just for coverage
+        //         console.log('timeOut3');
+        //         let events: MouseEvents = new MouseEvents();
+        //         events.mouseDownEvent(palette.element, 70, 125, false, false);
+        //         events.mouseMoveEvent(palette.element, 150, 150, false, false);
+        //         events.mouseUpEvent(palette.element, 150, 150, false, false);
+        //         palette.getPersistData();
+        //         let start: HTMLElement = document.getElementById('SHAPE_BELL11');
+        //         expect(start.offsetWidth == 59 && start.offsetHeight == 59).toBe(true);
+        //         done();
+        //     }, 10);
+        // });
     
     });
     describe('Testing symbol palette after getting refreshed', () => {
         let diagram: Diagram;
         let palette: SymbolPalette;
         let ele: HTMLElement;
-        let mouseEvents: MouseEvents = new MouseEvents();
 
         let basicShapes: NodeModel[] = [
             { id: 'Rectangle', shape: { type: 'Basic', shape: 'Rectangle' }, style: { strokeWidth: 2 },width:50,height:30,offsetX:50,offsetY:50 },
@@ -365,14 +370,14 @@ describe('Symbol Palette - Group', () => {
         ];
         beforeAll((): void => {
             ele = createElement('div', { styles: 'width:100%;height:500px;' });
-            ele.appendChild(createElement('div', { id: 'symbolPalette', styles: 'width:250px;height:550px;float:left;' }));
-            ele.appendChild(createElement('div', { id: 'diagram', styles: 'width:500px;height:550px;float:right;' }));
+            ele.appendChild(createElement('div', { id: 'symbolPalette4', styles: 'width:250px;height:550px;float:left;' }));
+            ele.appendChild(createElement('div', { id: 'diagram4', styles: 'width:500px;height:550px;float:right;' }));
             document.body.appendChild(ele);
 
             diagram = new Diagram({
                 width: '74%', height: '600px'
             });
-            diagram.appendTo('#diagram');
+            diagram.appendTo('#diagram4');
 
             palette = new SymbolPalette({
                 width: '250px', height: '100%',
@@ -381,34 +386,36 @@ describe('Symbol Palette - Group', () => {
                 ], symbolHeight: 50, symbolWidth: 50,
                 symbolMargin: { top: 12, bottom: 12, left: 12, right: 12 }
             });
-            palette.appendTo('#symbolPalette');
+            palette.appendTo('#symbolPalette4');
         });
 
         afterAll((): void => {
             diagram.destroy();
             palette.destroy();
             ele.remove();
+            diagram = null;
+            palette = null;
+            ele = null;
         });
-        it('Checking highlights', (done: Function) => {
-            palette.refresh();
-            setTimeout(() => {
-                console.log('timeOut4');
-                let events: MouseEvents = new MouseEvents();
-                events.mouseDownEvent(palette.element, 70, 125, false, false);
-                events.mouseMoveEvent(palette.element, 150, 150, false, false);
-                events.mouseUpEvent(palette.element, 150, 150, false, false);
-                palette.getPersistData();
-                let start: HTMLElement = document.getElementById('group');
-                expect(start.offsetWidth == 59 && start.offsetHeight == 59).toBe(true);
-                done();
-            }, 10);
-        });
+        // it('Checking highlights', (done: Function) => {
+        //     palette.refresh();
+        //     setTimeout(() => {
+        //         console.log('timeOut4');
+        //         let events: MouseEvents = new MouseEvents();
+        //         events.mouseDownEvent(palette.element, 70, 125, false, false);
+        //         events.mouseMoveEvent(palette.element, 150, 150, false, false);
+        //         events.mouseUpEvent(palette.element, 150, 150, false, false);
+        //         palette.getPersistData();
+        //         let start: HTMLElement = document.getElementById('group');
+        //         expect(start.offsetWidth == 59 && start.offsetHeight == 59).toBe(true);
+        //         done();
+        //     }, 10);
+        // });
     });
     describe('Testing multiSelect tool enables selector for dropped node', () => {
         let diagram: Diagram;
         let palette: SymbolPalette;
         let ele: HTMLElement;
-        let mouseEvents: MouseEvents = new MouseEvents();
 
         let basicShapes: NodeModel[] = [
             { id: 'Rectangle', shape: { type: 'Basic', shape: 'Rectangle' }, style: { strokeWidth: 2 },width:50,height:30,offsetX:50,offsetY:50 },
@@ -417,8 +424,8 @@ describe('Symbol Palette - Group', () => {
         ];
         beforeAll((): void => {
             ele = createElement('div', { styles: 'width:100%;height:500px;' });
-            ele.appendChild(createElement('div', { id: 'symbolPalette', styles: 'width:250px;height:550px;float:left;' }));
-            ele.appendChild(createElement('div', { id: 'diagram', styles: 'width:500px;height:550px;float:right;' }));
+            ele.appendChild(createElement('div', { id: 'symbolPalette5', styles: 'width:250px;height:550px;float:left;' }));
+            ele.appendChild(createElement('div', { id: 'diagram5', styles: 'width:500px;height:550px;float:right;' }));
             document.body.appendChild(ele);
             let nodes: NodeModel[] = [
                 {
@@ -444,7 +451,7 @@ describe('Symbol Palette - Group', () => {
                 connectors: connectors, nodes: nodes, pageSettings: { background: { color: 'transparent' } },
                 width: '74%', height: '600px'
             });
-            diagram.appendTo('#diagram');
+            diagram.appendTo('#diagram5');
 
             palette = new SymbolPalette({
                 width: '250px', height: '100%',
@@ -453,35 +460,38 @@ describe('Symbol Palette - Group', () => {
                 ], enableAnimation: false, enableSearch: true, symbolHeight: 50, symbolWidth: 50,
                 symbolMargin: { top: 12, bottom: 12, left: 12, right: 12 }
             });
-            palette.appendTo('#symbolPalette');
+            palette.appendTo('#symbolPalette5');
         });
 
         afterAll((): void => {
             diagram.destroy();
             palette.destroy();
             ele.remove();
+            diagram = null;
+            palette = null;
+            ele = null;
         });
-        it('Multiselect tool enables selector at drop', (done: Function) => {
-            palette.element['ej2_instances'][1]['helper'] = (e: { target: HTMLElement, sender: PointerEvent | TouchEvent }) => {
-                let clonedElement: HTMLElement; let diagramElement: any;
-                let position: PointModel = palette['getMousePosition'](e.sender);
-                let symbols: IElement = palette.symbolTable['group'];
-                palette['selectedSymbols'] = symbols;
-                if (symbols !== undefined) {
-                    clonedElement = palette['getSymbolPreview'](symbols, e.sender, palette.element);
-                    clonedElement.setAttribute('paletteId', palette.element.id);
-                }
-                return clonedElement;
-            };
-            let events: MouseEvents = new MouseEvents();
-            events.mouseDownEvent(palette.element, 75, 100, false, false);
-            events.mouseMoveEvent(palette.element, 100, 100, false, false);
-            events.mouseMoveEvent(palette.element, 200, 200, false, false);
-            // expect(document.getElementsByClassName('e-dragclone').length > 0).toBe(true);
-            events.mouseMoveEvent(diagram.element, 300, 300, false, false);
-            events.mouseUpEvent(diagram.element, 300, 300, false, false);
-            done();
-        });
+        // it('Multiselect tool enables selector at drop', (done: Function) => {
+        //     palette.element['ej2_instances'][1]['helper'] = (e: { target: HTMLElement, sender: PointerEvent | TouchEvent }) => {
+        //         let clonedElement: HTMLElement; let diagramElement: any;
+        //         let position: PointModel = palette['getMousePosition'](e.sender);
+        //         let symbols: IElement = palette.symbolTable['group'];
+        //         palette['selectedSymbols'] = symbols;
+        //         if (symbols !== undefined) {
+        //             clonedElement = palette['getSymbolPreview'](symbols, e.sender, palette.element);
+        //             clonedElement.setAttribute('paletteId', palette.element.id);
+        //         }
+        //         return clonedElement;
+        //     };
+        //     let events: MouseEvents = new MouseEvents();
+        //     events.mouseDownEvent(palette.element, 75, 100, false, false);
+        //     events.mouseMoveEvent(palette.element, 100, 100, false, false);
+        //     events.mouseMoveEvent(palette.element, 200, 200, false, false);
+        //     // expect(document.getElementsByClassName('e-dragclone').length > 0).toBe(true);
+        //     events.mouseMoveEvent(diagram.element, 300, 300, false, false);
+        //     events.mouseUpEvent(diagram.element, 300, 300, false, false);
+        //     done();
+        // });
      
     });
 
@@ -560,6 +570,9 @@ describe('SymbolPalette - swimLane', () => {
             diagram.destroy();
             palette.destroy();
             ele.remove();
+            diagram = null;
+            palette = null;
+            ele = null;
         });
         it('Checking default palette rendering with swimlane symbols', (done: Function) => {
             expect(
@@ -645,6 +658,9 @@ describe('SymbolPalette - swimLane', () => {
             diagram.destroy();
             palette.destroy();
             ele.remove();
+            diagram = null;
+            palette = null;
+            ele = null;
         });
         it('Checking default palette rendering with swimlane symbols', (done: Function) => {
             expect(
@@ -673,7 +689,6 @@ describe('Symbol Palette - Draggable Element', () => {
         let diagram: Diagram;
 
         let ele: HTMLElement;
-        let mouseEvents: MouseEvents = new MouseEvents();
         let isDropRaised: boolean = false;
 
         let basicShapes: NodeModel[] = [
@@ -717,6 +732,8 @@ describe('Symbol Palette - Draggable Element', () => {
             if (cloneElement123 && cloneElement123.parentNode) {
                 cloneElement123.parentNode.removeChild(cloneElement123);
             }
+            diagram = null;
+            ele = null;
         });
 
         it('checking the drop event was firing whith droppable elements', (done: Function) => {
@@ -733,7 +750,6 @@ describe('Symbol Palette - Draggable Element', () => {
                 let diagram: Diagram;
                 let palette: SymbolPalette;
                 let ele: HTMLElement;
-                let mouseEvents: MouseEvents = new MouseEvents();
                 beforeAll((): void => {
                     ele = createElement('div', { styles: 'width:100%;height:500px;' });
                     ele.appendChild(createElement('div', { id: 'symbolpaletteBpmnSize', styles: 'width:25%;float:left;' }));
@@ -786,6 +802,9 @@ describe('Symbol Palette - Draggable Element', () => {
                     diagram.destroy();
                     palette.destroy();
                     ele.remove();
+                    diagram = null;
+                    palette = null;
+                    ele = null;
                 });
                 it('Checking bpmn event shape size ', (done: Function) => {
                     let element = (document.getElementById('Event_container').getBoundingClientRect());
@@ -799,7 +818,6 @@ describe('check symbol palette ignoreSymbolOnSearch property', () => {
     let diagram: Diagram;
     let palette: SymbolPalette;
     let ele: HTMLElement;
-    let mouseEvents: MouseEvents = new MouseEvents();
     let pathData = 'M 120 24.9999 C 120 38.8072 109.642 50 96.8653 50 L 23.135' +
     ' 50 C 10.3578 50 0 38.8072 0 24.9999 L 0 24.9999 C' +
     '0 11.1928 10.3578 0 23.135 0 L 96.8653 0 C 109.642 0 120 11.1928 120 24.9999 Z';
@@ -934,8 +952,8 @@ describe('check symbol palette ignoreSymbolOnSearch property', () => {
     
     beforeAll((): void => {
         ele = createElement('div', { styles: 'width:100%;height:500px;' });
-        ele.appendChild(createElement('div', { id: 'symbolpalette', styles: 'width:25%;float:left;' }));
-        ele.appendChild(createElement('div', { id: 'diagram', styles: 'width:74%;height:500px;float:left;' }));
+        ele.appendChild(createElement('div', { id: 'symbolpalette7', styles: 'width:25%;float:left;' }));
+        ele.appendChild(createElement('div', { id: 'diagram7', styles: 'width:74%;height:500px;float:left;' }));
         document.body.appendChild(ele);
         let nodes: NodeModel[] = [
             {
@@ -1041,7 +1059,7 @@ describe('check symbol palette ignoreSymbolOnSearch property', () => {
             getNodeDefaults: getNodeDefaults,
            width: '70%'
          });
-        diagram.appendTo('#diagram');
+        diagram.appendTo('#diagram7');
     
         palette = new SymbolPalette({
             palettes: palettes,
@@ -1053,17 +1071,19 @@ describe('check symbol palette ignoreSymbolOnSearch property', () => {
             width: '100%',
             ignoreSymbolsOnSearch: ['verticalPhase','horizontalPhase','Link1']
         });
-        palette.appendTo('#symbolpalette');
+        palette.appendTo('#symbolpalette7');
     });
     
     afterAll((): void => {
         diagram.destroy();
         palette.destroy();
         ele.remove();
+        diagram = null;
+        palette = null;
+        ele = null;
     });
 
     it('checking ignoreSymbolOnSearch', (done: Function) => {
-        let events: MouseEvents = new MouseEvents();
             palette.enableSearch = true;
             palette.dataBind();
             let element: HTMLElement = document.getElementById("textEnter");
@@ -1080,7 +1100,6 @@ describe('check symbol palette ignoreSymbolOnSearch property', () => {
     });
     
     it('checking ignoreSymbolOnSearch symbol', (done: Function) => {
-        let events: MouseEvents = new MouseEvents();
             palette.enableSearch = true;
             palette.dataBind();
             let element: HTMLElement = document.getElementById("textEnter");

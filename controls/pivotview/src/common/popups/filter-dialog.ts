@@ -99,8 +99,6 @@ export class FilterDialog {
             enableRtl: this.parent.enableRtl,
             enableHtmlSanitizer: this.parent.enableHtmlSanitizer,
             width: '320px',
-            height: this.parent.isDataOverflow ? (this.allowExcelLikeFilter ? '440px' : '400px') :
-                (this.allowExcelLikeFilter ? '400px' : '350px'),
             position: { X: 'center', Y: 'center' },
             buttons: [
                 {

@@ -1,3 +1,4 @@
+@use 'ej2-base/styles/common/mixin' as *;
 @include export-module('chatui-fabric-dark-icons') {
   .e-chat-send::before {
     content: '\e816';
@@ -50,7 +51,7 @@
   .e-chat-attachment-icon::before {
     content: '\e1ad';
   }
-  .e-chat-file-format-icon::before {
+  .e-chat-file-icon::before {
     content: '\e1ae';
   }
   .e-chat-upload::before {
@@ -61,5 +62,11 @@
   }
   .e-chat-download::before {
     content: '\ebe4';
+  }
+  .e-chat-circle-close::before {
+    content: '\e975';
+  }
+  .e-chat-back-icon::before {
+    content: '\e85b';
   }
 }

@@ -1,8 +1,10 @@
+@use 'ej2-base/styles/common/mixin' as *;
+@use './theme-variables' as *;
 @include export-module('splitter-theme') {
   .e-splitter {
     &.e-splitter-horizontal,
     &.e-splitter-vertical {
-      border: solid 1px $splitter-border-color;
+      border: solid $splitbar-border-width $splitter-border-color;
 
       .e-pane {
         color: $splitpane-font-color;
@@ -61,7 +63,7 @@
             &.e-arrow-right {
               background-color: $navigation-arrow-background;
               border-color: $navigation-icon-border-hover;
-              border-width: 1px;
+              border-width: $splitbar-border-width;
               opacity: .9;
             }
           }
@@ -127,7 +129,7 @@
             &.e-arrow-down {
               background-color: $navigation-arrow-background;
               border-color: $navigation-icon-border-hover;
-              border-width: 1px;
+              border-width: $splitbar-border-width;
               opacity: .9;
             }
           }

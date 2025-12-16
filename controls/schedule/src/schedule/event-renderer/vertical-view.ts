@@ -206,7 +206,7 @@ export class VerticalEvent extends EventBase {
             const appWidth: string = eventObj.IsBlock ? '99%' : '100%';
             setStyleAttribute(appointmentElement, { 'width': appWidth, 'height': blockHeight, 'top': blockTop });
             const index: number = this.getDayIndex(dayIndex, resource, dayCount);
-            const appLeft: string = eventObj.IsBlock ? '0.5px' : '0px';
+            const appLeft: string = eventObj.IsBlock ? '1px' : '0px';
             this.appendEvent(eventObj, appointmentElement, index, appLeft);
         }
     }

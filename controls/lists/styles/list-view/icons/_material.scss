@@ -1,3 +1,5 @@
+@use '../material-definition' as *;
+
 .e-icon-collapsible::before {
   content: '\e913';
 }

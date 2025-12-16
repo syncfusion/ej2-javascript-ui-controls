@@ -1,14 +1,13 @@
-@import 'ej2-base/styles/definition/bds.scss';
-@import 'avatar/bds-definition.scss';
-@import 'avatar/all.scss';
+@use 'avatar/bds-definition' as *;
+@use 'avatar/all' as *;
 
-@import 'card/bds-definition.scss';
-@import 'card/all.scss';
-@import 'splitter/bds-definition.scss';
-@import 'splitter/icons/bds.scss';
-@import 'splitter/all.scss';
-@import 'dashboard-layout/bds-definition.scss';
-@import 'dashboard-layout/icons/bds.scss';
-@import 'dashboard-layout/all.scss';
-@import 'timeline/bds-definition.scss';
-@import 'timeline/all.scss';
+@use 'card/bds-definition' as *;
+@use 'card/all' as *;
+@use 'splitter/bds-definition' as *;
+@use 'splitter/icons/bds' as *;
+@use 'splitter/all' as *;
+@use 'dashboard-layout/bds-definition' as *;
+@use 'dashboard-layout/icons/bds' as *;
+@use 'dashboard-layout/all' as *;
+@use 'timeline/bds-definition' as *;
+@use 'timeline/all' as *;

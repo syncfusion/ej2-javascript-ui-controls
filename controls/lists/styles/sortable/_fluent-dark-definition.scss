@@ -1,1 +1,2 @@
-@import './fluent-definition.scss';
+@use 'ej2-base/styles/definition/fluent-dark' as *;
+@forward 'ej2-base/styles/definition/fluent-dark';

@@ -1,3 +1,5 @@
+@use 'ej2-base/styles/common/mixin' as *;
+@use './theme-variables' as *;
 @include export-module('maskedtextbox-layout') {
 
   /*! maskedtextbox layout */
@@ -10,6 +12,88 @@
 
   .e-content-placeholder.e-mask.e-placeholder-mask {
     background-size: 300px 33px;
-    min-height: 33px;
+    min-height: $mask-min-height;
+  }
+
+  div.e-mask.e-input-group,
+  span.e-mask.e-input-group {
+    &.e-prepend-wrapper,
+    &.e-append-wrapper {
+      &.e-float-input.e-control-wrapper label.e-float-text.e-label-bottom {
+        top: $mask-prepend-label-bottom-top;
+      }
+
+      &.e-float-input.e-control-wrapper label.e-float-text.e-label-top {
+        top: $mask-prepend-label-top-top;
+      }
+
+      &.e-outline {
+        &.e-float-input.e-control-wrapper label.e-float-text.e-label-bottom {
+          top: $mask-prepend-outline-label-bottom-top;
+        }
+
+        &.e-float-input.e-control-wrapper label.e-float-text.e-label-top {
+          top: $mask-prepend-outline-label-top-top;
+        }
+      }
+
+      &.e-filled {
+        &.e-float-input.e-control-wrapper label.e-float-text.e-label-bottom {
+          top: $mask-prepend-filled-label-bottom-top;
+        }
+
+        &.e-float-input.e-control-wrapper label.e-float-text.e-label-top {
+          top: $mask-prepend-filled-label-top-top;
+        }
+      }
+    }
+  }
+
+  .e-mask.e-input-group.e-prepend-wrapper.e-float-input.e-control-wrapper label.e-float-text.e-label-bottom {
+    padding-left: 0;
+  }
+  .e-mask.e-input-group.e-prepend-wrapper.e-float-input.e-control-wrapper label.e-float-text.e-label-bottom {
+    padding-right: 0;
+  }
+
+  .e-mask.e-input-group.e-prepend-wrapper input.e-input {
+    padding-left: 0;
+  }
+
+  .e-mask.e-rtl.e-input-group.e-prepend-wrapper input.e-input {
+    padding-right: 0;
+  }
+
+  @if ($skin-name == 'tailwind' or $skin-name == 'tailwind3') {
+    .e-mask.e-input-group.e-prepend-wrapper input,
+    .e-mask.e-input-group.e-append-wrapper input {
+      height: 35px;
+    }
+  }
+  @if ($skin-name == 'highcontrast' or $skin-name == 'highcontrast-light' or $skin-name == 'FluentUI' or $skin-name == 'fluent2' or $skin-name == 'fabric' or $skin-name == 'fabric-dark' or $skin-name == 'bootstrap5') {
+    .e-mask.e-input-group.e-prepend-wrapper input,
+    .e-mask.e-input-group.e-append-wrapper input {
+      height: 37px;
+    }
+  }
+  @if ($skin-name == 'bootstrap' or $skin-name == 'bootstrap-dark') {
+    .e-mask.e-input-group.e-prepend-wrapper input,
+    .e-mask.e-input-group.e-append-wrapper input {
+      height: 39px;
+    }
+  }
+
+  @if ($skin-name == 'bootstrap4') {
+    .e-mask.e-input-group.e-prepend-wrapper input,
+    .e-mask.e-input-group.e-append-wrapper input {
+      height: 38px;
+    }
+  }
+
+  @if ($skin-name == 'bootstrap5.3') {
+    .e-mask.e-input-group.e-prepend-wrapper input,
+    .e-mask.e-input-group.e-append-wrapper input {
+      height: 36px;
+    }
   }
 }

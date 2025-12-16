@@ -12,6 +12,7 @@ export type ToolbarItem =
     'DownloadOption' |
     'UndoRedoTool' |
     'AnnotationEditTool' |
+    'RedactionEditTool' |
     'FormDesignerEditTool' |
     'CommentTool' |
     'SubmitForm' |
@@ -57,6 +58,19 @@ export type FormDesignerToolbarItem =
     'DeleteTool';
 
 /**
+ * Enum RedactionToolbarItem for redaction toolbar settings
+ * This redaction customization feature shall be available only when the PDF Viewer is operating in Standalone Mode.
+ */
+export type RedactionToolbarItem =
+    'MarkForRedaction' |
+    'RedactPages' |
+    'RedactionPanel' |
+    'Redact' |
+    'RemoveAnnotation' |
+    'CommentPanel' |
+    'Close';
+
+/**
  * Enum LinkTarget for hyperlink navigation
  */
 export type LinkTarget = 'CurrentTab' | 'NewTab' | 'NewWindow';
@@ -72,7 +86,7 @@ export type SignatureItem = 'Signature' | 'Initial';
 /**
  * Enum AnnotationType for specifying Annotations
  */
-export type AnnotationType = 'None' | 'Highlight' | 'Underline' | 'Strikethrough' | 'Squiggly' | 'Line' | 'Arrow' | 'Rectangle' | 'Circle' | 'Polygon' | 'Distance' | 'Perimeter' | 'Area' | 'Radius' | 'Volume' | 'FreeText' | 'HandWrittenSignature' | 'Initial' | 'Ink' | 'Stamp' | 'Image' | 'StickyNotes';
+export type AnnotationType = 'None' | 'Highlight' | 'Underline' | 'Strikethrough' | 'Squiggly' | 'Line' | 'Arrow' | 'Rectangle' | 'Redaction' | 'Circle' | 'Polygon' | 'Distance' | 'Perimeter' | 'Area' | 'Radius' | 'Volume' | 'FreeText' | 'HandWrittenSignature' | 'Initial' | 'Ink' | 'Stamp' | 'Image' | 'StickyNotes';
 
 /**
  * Enum LineHeadStyle for line and arrow annotation

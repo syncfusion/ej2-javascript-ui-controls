@@ -3787,7 +3787,7 @@ describe('Row Editing - Add record in last page then cancel', () => {
     });
 });
 
-   describe('977200 -AddRecord method', () => {
+describe('977200 -AddRecord method', () => {
     let gridObj: TreeGrid;
     let index=100;
     function onClick(): any {
@@ -3865,8 +3865,6 @@ describe('Row Editing - Add record in last page then cancel', () => {
             done
         );
     });
-
-
     it('Add Toolbar with empty tree grid', (done: Function) => {
        let actionComplete = (args?: any): void => {
             if (args.requestType === 'save') {
@@ -3911,9 +3909,324 @@ describe('Row Editing - Add record in last page then cancel', () => {
         gridObj.actionComplete = actionComplete;
      gridObj.getCellFromIndex(0, 3).querySelector(".e-unboundcelldiv").childNodes[0].dispatchEvent(new MouseEvent('click'));  
       });
-
     afterAll(() => {
         destroy(gridObj);
     });
-
+});
+describe('Add Multiple record using addRecord method -Above', () => {
+    let gridObj: TreeGrid;
+    
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                 dataSource:sampleData,
+                 childMapping: 'subtasks',
+                 treeColumnIndex: 2,
+                 height: 400,
+                 editSettings: {
+                   allowAdding: true,
+                   allowEditing: true,
+                   allowDeleting: true,
+                   mode: 'Row',
+                   allowEditOnDblClick: false,
+                   
+                 },
+                 selectionSettings : { enableToggle: false },
+                toolbar: ["Add","Edit","Delete","Update","Cancel",'ExcelExport', 'CsvExport', 'PdfExport'],
+                 columns: [
+                   {
+                     field: 'taskID',
+                     isPrimaryKey: true,
+                     headerText: 'Task ID',
+                     width: 70,
+                     textAlign: 'Right',
+                   },
+                   {
+                     field: 'taskName',
+                     headerText: 'Task Name',
+                     width: 200,
+                     textAlign: 'Left',
+                   },
+                   
+                   {
+                     field: 'duration',
+                     headerText: 'Duration',
+                     width: 80,
+                     textAlign: 'Right',
+                   },
+                   
+                 ],
+            },
+            done
+        );
+    });
+    
+    it('Add record using addRecord method as Above', (done: Function) => {
+         let data = [{ taskID: 100, taskName: "new" },{ taskID: 101, taskName: "new1" },];
+         let actionComplete = (args?: any): void => {
+           
+              expect((gridObj.flatData[1] as any).taskID).toBe(101);
+              expect((gridObj.flatData[2] as any).taskID).toBe(100);
+              done();
+            
+        };
+        gridObj.actionComplete = actionComplete;
+        gridObj.addRecord(data, 1, 'Above');
+      });
+    afterAll(() => {
+        destroy(gridObj);
+    });
+});
+describe('Add Multiple record using addRecord method -Below', () => {
+    let gridObj: TreeGrid;
+    
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                 dataSource:sampleData,
+                 childMapping: 'subtasks',
+                 treeColumnIndex: 2,
+                 height: 400,
+                 editSettings: {
+                   allowAdding: true,
+                   allowEditing: true,
+                   allowDeleting: true,
+                   mode: 'Row',
+                   allowEditOnDblClick: false,
+                   
+                 },
+                 selectionSettings : { enableToggle: false },
+                toolbar: ["Add","Edit","Delete","Update","Cancel",'ExcelExport', 'CsvExport', 'PdfExport'],
+                 columns: [
+                   {
+                     field: 'taskID',
+                     isPrimaryKey: true,
+                     headerText: 'Task ID',
+                     width: 70,
+                     textAlign: 'Right',
+                   },
+                   {
+                     field: 'taskName',
+                     headerText: 'Task Name',
+                     width: 200,
+                     textAlign: 'Left',
+                   },
+                   
+                   {
+                     field: 'duration',
+                     headerText: 'Duration',
+                     width: 80,
+                     textAlign: 'Right',
+                   },
+                   
+                 ],
+            },
+            done
+        );
+    });
+    
+    it('Add record using addRecord method as below', (done: Function) => {
+         let data = [{ taskID: 100, taskName: "new" },{ taskID: 101, taskName: "new1" },];
+         let actionComplete = (args?: any): void => {
+           
+              expect((gridObj.flatData[2] as any).taskID).toBe(100);
+              expect((gridObj.flatData[3] as any).taskID).toBe(101);
+              done();
+            
+        };
+        gridObj.actionComplete = actionComplete;
+        gridObj.addRecord(data, 1, 'Below');
+      });
+    afterAll(() => {
+        destroy(gridObj);
+    });
+});
+describe('Add Multiple record using addRecord method - Child', () => {
+    let gridObj: TreeGrid;
+    
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                 dataSource:sampleData,
+                 childMapping: 'subtasks',
+                 treeColumnIndex: 2,
+                 height: 400,
+                 editSettings: {
+                   allowAdding: true,
+                   allowEditing: true,
+                   allowDeleting: true,
+                   mode: 'Row',
+                   allowEditOnDblClick: false,
+                   
+                 },
+                 selectionSettings : { enableToggle: false },
+                toolbar: ["Add","Edit","Delete","Update","Cancel",'ExcelExport', 'CsvExport', 'PdfExport'],
+                 columns: [
+                   {
+                     field: 'taskID',
+                     isPrimaryKey: true,
+                     headerText: 'Task ID',
+                     width: 70,
+                     textAlign: 'Right',
+                   },
+                   {
+                     field: 'taskName',
+                     headerText: 'Task Name',
+                     width: 200,
+                     textAlign: 'Left',
+                   },
+                   
+                   {
+                     field: 'duration',
+                     headerText: 'Duration',
+                     width: 80,
+                     textAlign: 'Right',
+                   },
+                   
+                 ],
+            },
+            done
+        );
+    });
+    
+    it('Add record using addRecord method as Child', (done: Function) => {
+         let data = [{ taskID: 100, taskName: "new" },{ taskID: 101, taskName: "new1" },];
+         let actionComplete = (args?: any): void => {
+           
+              expect((gridObj.flatData[1] as any).hasChildRecords).toBe(true);
+             done();
+            
+        };
+        gridObj.actionComplete = actionComplete;
+        gridObj.addRecord(data, 1, 'Child');
+      });
+    afterAll(() => {
+        destroy(gridObj);
+    });
+});
+describe('Add Multiple record using addRecord method - Top', () => {
+    let gridObj: TreeGrid;
+    
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                 dataSource:sampleData,
+                 childMapping: 'subtasks',
+                 treeColumnIndex: 2,
+                 height: 400,
+                 editSettings: {
+                   allowAdding: true,
+                   allowEditing: true,
+                   allowDeleting: true,
+                   mode: 'Row',
+                   allowEditOnDblClick: false,
+                   
+                 },
+                 selectionSettings : { enableToggle: false },
+                toolbar: ["Add","Edit","Delete","Update","Cancel",'ExcelExport', 'CsvExport', 'PdfExport'],
+                 columns: [
+                   {
+                     field: 'taskID',
+                     isPrimaryKey: true,
+                     headerText: 'Task ID',
+                     width: 70,
+                     textAlign: 'Right',
+                   },
+                   {
+                     field: 'taskName',
+                     headerText: 'Task Name',
+                     width: 200,
+                     textAlign: 'Left',
+                   },
+                   
+                   {
+                     field: 'duration',
+                     headerText: 'Duration',
+                     width: 80,
+                     textAlign: 'Right',
+                   },
+                   
+                 ],
+            },
+            done
+        );
+    });
+    
+    it('Add record using addRecord method as Top', (done: Function) => {
+         let data = [{ taskID: 100, taskName: "new" },{ taskID: 101, taskName: "new1" },];
+         let actionComplete = (args?: any): void => {
+           
+              expect((gridObj.flatData[0] as any).taskID).toBe(100);
+              expect((gridObj.flatData[1] as any).taskID).toBe(101);
+              done();
+        };
+        gridObj.actionComplete = actionComplete;
+        gridObj.addRecord(data, 1, 'Top');
+      });
+    afterAll(() => {
+        destroy(gridObj);
+    });
+});
+describe('Add Multiple record using addRecord method - Bottom', () => {
+    let gridObj: TreeGrid;
+    
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                 dataSource:sampleData,
+                 childMapping: 'subtasks',
+                 treeColumnIndex: 2,
+                 height: 400,
+                 editSettings: {
+                   allowAdding: true,
+                   allowEditing: true,
+                   allowDeleting: true,
+                   mode: 'Row',
+                   allowEditOnDblClick: false,
+                   
+                 },
+                 selectionSettings : { enableToggle: false },
+                toolbar: ["Add","Edit","Delete","Update","Cancel",'ExcelExport', 'CsvExport', 'PdfExport'],
+                 columns: [
+                   {
+                     field: 'taskID',
+                     isPrimaryKey: true,
+                     headerText: 'Task ID',
+                     width: 70,
+                     textAlign: 'Right',
+                   },
+                   {
+                     field: 'taskName',
+                     headerText: 'Task Name',
+                     width: 200,
+                     textAlign: 'Left',
+                   },
+                   
+                   {
+                     field: 'duration',
+                     headerText: 'Duration',
+                     width: 80,
+                     textAlign: 'Right',
+                   },
+                   
+                 ],
+            },
+            done
+        );
+    });
+    
+    it('Add record using addRecord method as Bottom', (done: Function) => {
+         let data = [{ taskID: 100, taskName: "new" },{ taskID: 101, taskName: "new1" },];
+         let actionComplete = (args?: any): void => {
+           
+              expect((gridObj.flatData[36] as any).taskID).toBe(100);
+              expect((gridObj.flatData[37] as any).taskID).toBe(101);
+              done();
+        };
+        gridObj.actionComplete = actionComplete;
+        gridObj.addRecord(data, 1, 'Bottom');
+      });
+    afterAll(() => {
+        destroy(gridObj);
+    });
 });

@@ -1,4 +1,7 @@
-@import 'definition.scss';
+@use 'ej2-base/styles/common/mixin' as *;
+@use 'definition' as *;
+@use 'ej2-base/styles/definition/highcontrast' as *;
+@forward 'ej2-base/styles/definition/highcontrast';
 
 $hc-theme-primary: #ffd939;
 $hc-theme-dark-font: #fff;

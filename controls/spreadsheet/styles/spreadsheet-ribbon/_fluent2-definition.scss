@@ -1,3 +1,5 @@
+@use 'ej2-base/styles/definition/fluent2' as *;
+@forward 'ej2-base/styles/definition/fluent2';
 $spreadsheet-ribbon-skin: $skin-name !default;
 $file-menu-wrap-padding: 0 !default;
 $drop-icon-margin: 16px 14px !default;
@@ -30,3 +32,6 @@ $bigger-spread-file-drop-icon-font-size: $font-icon-14 !default;
 $spreadsheet-file-menu-press-background: $primary !default;
 $spreadsheet-file-menu-press-font-color: $primary-text-color !default;
 $spreadsheet-file-menu-press-icon-color: $primary-text-color !default;
+$spread-ribbon-font-weight-bold: bold !default;
+$spread-ribbon-border-radius-0: $radius-0 !default;
+$spread-ribbon-border-radius-4: $radius-4 !default;

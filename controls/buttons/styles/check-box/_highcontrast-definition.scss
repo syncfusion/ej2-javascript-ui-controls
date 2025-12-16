@@ -1,3 +1,5 @@
+@use 'ej2-base/styles/definition/highcontrast' as *;
+@forward 'ej2-base/styles/definition/highcontrast';
 $cbox-bgcolor: $bg-base-0 !default;
 $cbox-bigger-check-fontsize: 14px !default;
 $cbox-bigger-font-size: 14px !default;
@@ -82,3 +84,10 @@ $cbox-ripple-bigger-small-height: 38px !default;
 $cbox-ripple-bigger-small-width: 38px !default;
 $cbox-key-focussed-bgcolor: transparent !default;
 $cbox-checked-ripple-bgcolo: rgba(0, 0, 0, .3) !default;
+$cbox-zero-margin: 0 !default;
+$cbox-wrapper-line-height: 1 !default;
+$cbox-label-line-height: 0 !default;
+$cbox-ripple-container-border-radius: 50% !default;
+$cbox-nrml-height: 1px !default;
+$cbox-nrml-width: 1px !default;
+$cbox-auto-width: auto;

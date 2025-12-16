@@ -19,7 +19,7 @@ import { IConnectorLineObject, IValidateArgs, IValidateMode, ITaskAddedEventArgs
 import { PdfExportProperties, ISplitterResizedEventArgs } from './interface';
 import { ZoomEventArgs, IActionBeginEventArgs, CellSelectingEventArgs, RowDeselectEventArgs, PdfQueryCellInfoEventArgs } from './interface';
 import { ITimeSpanEventArgs, ZoomTimelineSettings, QueryCellInfoEventArgs, RowDataBoundEventArgs, RowSelectEventArgs } from './interface';
-import { TaskFieldsModel, TimelineSettingsModel, SplitterSettingsModel, SortSettings, SortSettingsModel } from '../models/models';
+import { TaskFieldsModel, TimelineSettingsModel, SplitterSettingsModel, SortSettings, SortSettingsModel, CalendarSettingsModel, CalendarSettings, CalendarExceptionModel } from '../models/models';
 import { EventMarkerModel, AddDialogFieldSettingsModel, EditDialogFieldSettingsModel, EditSettingsModel } from '../models/models';
 import { HolidayModel, DayWorkingTimeModel, FilterSettingsModel, SelectionSettingsModel, LoadingIndicatorModel, LoadingIndicator } from '../models/models';
 import { TaskFields, TimelineSettings, Holiday, EventMarker, DayWorkingTime, EditSettings, SelectionSettings } from '../models/models';
@@ -70,6 +70,8 @@ import { UndoRedo } from '../actions/undo-redo';
 import { WeekWorkingTimeModel } from '../models/week-working-time-model';
 import { WeekWorkingTime } from '../models/week-working-time';
 import {CellSaveArgs} from '@syncfusion/ej2-grids';
+import { CalendarModule } from './calendar-module';
+import { CalendarContext } from './calendar-context';
 /**
  *
  * Represents the Gantt chart component.
@@ -118,6 +120,7 @@ export class Gantt extends Component<HTMLElement>
     private oldRecords: IGanttData[] = [];
     private updateDuration: boolean = false;
     private isConvertedMilestone: boolean = false;
+    private isDynamicDataUpdate: boolean = false;
     /** @hidden */
     public topBottomHeader: number;
     /** @hidden */
@@ -174,6 +177,8 @@ export class Gantt extends Component<HTMLElement>
     public previousRecords: object = {};
     /** @hidden */
     public editedRecords: IGanttData[] = [];
+    /** @hidden */
+    public defaultCalendarContext: CalendarContext;
     /** @hidden */
     public modifiedRecords: IGanttData[] = [];
     /** @hidden */
@@ -468,14 +473,14 @@ export class Gantt extends Component<HTMLElement>
     @Property(true)
     public disableHtmlEncode: boolean;
     /**
-     * Configures the loading indicator for the Gantt Chart. Specifies the type of indicator to display (spinner or shimmer effect) during waiting periods when actions are performed in the Gantt Chart.
+     * Specifies the type of loading indicator to display during scrolling action in the virtual scrolling feature when `enableVirtualization` is enabled.
      *
      * @default {indicatorType: 'Spinner'}
      */
     @Complex<LoadingIndicatorModel>({}, LoadingIndicator)
     public loadingIndicator: LoadingIndicatorModel;
     /**
-     * Specifies whether to display shimmer effect during scrolling action in virtual scrolling feature. If disabled, spinner is shown instead of shimmer effect.
+     * Specifies whether to display a shimmer effect during scrolling in the virtual scrolling feature when `enableVirtualization` is enabled. If disabled, a spinner is shown instead of the shimmer effect.
      *
      * @default true
      */
@@ -497,15 +502,6 @@ export class Gantt extends Component<HTMLElement>
      */
     @Property(true)
     public updateOffsetOnTaskbarEdit: boolean;
-    /**
-     * Specifies whether to update offset value on a task for all the predecessor edit actions.
-     *
-     * @default true
-     * @deprecated This method is deprecated from Vol 2 2024 release. Use `updateOffsetOnTaskbarEdit` this property instead.
-     * @aspIgnore
-     */
-    @Property(true)
-    public UpdateOffsetOnTaskbarEdit: boolean;
     /**
      * Specifies whether to auto calculate the start and end dates based on factors such as working time, holidays, weekends, and task dependencies.
      *
@@ -581,7 +577,7 @@ export class Gantt extends Component<HTMLElement>
     public enablePredecessorValidation: boolean;
 
     /**
-     * If `showColumnMenu` set to true, enables the column menu options for each column in the Gantt chart.
+     * If `showColumnMenu` set to true, enables the column menu options for each column header in the Gantt chart.
      *
      * @default false
      */
@@ -613,8 +609,8 @@ export class Gantt extends Component<HTMLElement>
     public undoRedoActions: GanttAction[];
 
     /**
-     * By default, task schedule dates are calculated with system time zone. If the Gantt chart is assigned with a specific time zone,
-     * then schedule dates are calculated based on the given time zone date value.
+     * By default, task schedule dates are calculated with system time zone. If the Gantt chart is assigned with a specific time zone, then schedule dates are calculated based on the given time zone date value.
+     * This property function properly when the timeline displays hours. To enable this, set `timelineViewMode` to 'Hour' or configure `topTier.unit` as 'Day' and `bottomTier.unit` as 'Hour'.
      *
      * @default null
      */
@@ -699,6 +695,19 @@ export class Gantt extends Component<HTMLElement>
     public renderBaseline: boolean;
 
     /**
+     * Defines the calendar configuration for the project, including working times, holidays, and task-specific calendars.
+     *
+     * This setting enables customization of scheduling behavior across the Gantt chart, including:
+     * - Global working hours and non-working days
+     * - Holiday definitions with localized labels
+     * - Task-level calendar overrides via `taskFields.calendarId`
+     *
+     * @default {}
+     */
+    @Complex<CalendarSettingsModel>({}, CalendarSettings)
+    public calendarSettings: CalendarSettingsModel;
+
+    /**
      * Defines whether to enable or disable the taskbar drag and drop action in the Gantt chart.
      *
      * @default false
@@ -707,7 +716,7 @@ export class Gantt extends Component<HTMLElement>
     public allowTaskbarDragAndDrop: boolean;
 
     /**
-     * Specifies whether taskbars can overlap in the Gantt chart.
+     * Specifies whether taskbars can overlap in the Gantt chart. To enable overlapping behavior, use this property along with `enableMultiTaskbar`.
      *
      * @default true
      */
@@ -716,7 +725,7 @@ export class Gantt extends Component<HTMLElement>
 
     /**
      * Configures the grid lines displayed in the TreeGrid and Gantt chart.
-     * The `gridLines` property allows customization of the type of grid lines to be shown, either horizontal, vertical, or both.
+     * The `gridLines` property allows customization of the type of grid lines to be shown, either horizontal, vertical, both or none.
      *
      *  @default 'Horizontal'
      */
@@ -795,7 +804,7 @@ export class Gantt extends Component<HTMLElement>
     public enableVirtualization: boolean;
 
     /**
-     * Enables better performance for projects with a large time span by initially rendering only the visible timeline cells.
+     * Enables better performance for projects with a large time span by initially rendering only the visible timeline cells when `enableVirtualization` is enabled.
      * Subsequent cells are loaded on horizontal scrolling.
      *
      * @default false
@@ -807,7 +816,7 @@ export class Gantt extends Component<HTMLElement>
      * `toolbar` defines the toolbar items of the Gantt.
      * It contains built-in and custom toolbar items.
      * If an array value is assigned, it is considered as the list of built-in and custom toolbar items in the Gantt's toolbar.
-     * <br><br>
+     * <br>
      * The available built-in toolbar items are:
      * * Add: Adds a new record.
      * * Edit: Edits the selected task.
@@ -1009,15 +1018,15 @@ export class Gantt extends Component<HTMLElement>
     @Property('ProjectView')
     public viewType: ViewType;
     /**
-     * Defines the customized working time for the project.
-     * This helps in accurately planning tasks based on available working hours and ensures proper task scheduling.
+     * Defines the customized working time for the project to ensure accurate task scheduling, and works only when the timeline is configured with topTier.unit as 'Day' and bottomTier.unit as 'Hour' or when `timelineViewMode` is set to 'Hour' or 'Day'.
+     *
      * {% codeBlock src='gantt/dayWorkingTime/index.md' %}{% endcodeBlock %}
      */
     @Collection<DayWorkingTimeModel>([{ from: 8, to: 12 }, { from: 13, to: 17 }], DayWorkingTime)
     public dayWorkingTime: DayWorkingTimeModel[];
 
     /**
-     * Specifies unique working hours for each weekday in gantt chart to tailor schedules precisely.
+     * Specifies the working days in a week for accurate planning, and works only when the timeline is configured with topTier.unit as 'Day' and bottomTier.unit as 'Hour' or when `timelineViewMode` is set to 'Hour' or 'Day'.
      */
     @Collection<WeekWorkingTimeModel>([], WeekWorkingTime)
     public weekWorkingTime: WeekWorkingTimeModel[];
@@ -1238,6 +1247,26 @@ export class Gantt extends Component<HTMLElement>
      */
     @Property('Auto')
     public taskMode: ScheduleMode;
+    /**
+     * Specifies the number of columns that should remain visible and fixed on the left side of the Gantt during horizontal scrolling.
+     * This feature ensures key columns, such as identifiers, stay visible while users scroll through data.
+     *
+     * @default 0
+     */
+    @Property(0)
+    public frozenColumns: number;
+
+    /**
+     * Defines a custom template to display when the Gantt chart has no records.
+     *
+     * This template replaces the default empty record message and can include text, HTML elements, or images.
+     * Accepts either a template string or an HTML element ID.
+     *
+     * @default null
+     * @aspType string
+     */
+    @Property()
+    public emptyRecordTemplate: string | Function;
 
     /**
      * Configures the filter settings for the Gantt chart, enabling users to filter tasks based on specific columns or criteria.
@@ -1272,6 +1301,11 @@ export class Gantt extends Component<HTMLElement>
      * @private
      */
     public dateValidationModule: DateProcessor;
+
+    /**
+     * @private
+     */
+    public calendarModule: CalendarModule;
 
     /**
      * @private
@@ -1989,6 +2023,35 @@ export class Gantt extends Component<HTMLElement>
             this.hideSpinner();
         }
     }
+    private isCustomDayWorkingTime(dayWorkingTime: DayWorkingTimeModel[]): boolean {
+        const defaultWorkingTime: DayWorkingTimeModel[] = [
+            { from: 8, to: 12 },
+            { from: 13, to: 17 }
+        ];
+        if (!dayWorkingTime || dayWorkingTime.length !== defaultWorkingTime.length) {
+            return true;
+        }
+        for (let i: number = 0; i < defaultWorkingTime.length; i++) {
+            const current: DayWorkingTimeModel = dayWorkingTime[i as number];
+            const def: DayWorkingTimeModel = defaultWorkingTime[i as number];
+            if (current.from !== def.from || current.to !== def.to) {
+                return true;
+            }
+        }
+        return false;
+    }
+    private assignPropertiesToCalendar(): void {
+        if (this.holidays.length > 0) {
+            this.calendarModule.holidays = this.holidays;
+        } else {
+            this.calendarModule.holidays = this.calendarSettings.projectCalendar.holidays;
+        }
+        if (this.isCustomDayWorkingTime(this.dayWorkingTime)) {
+            this.calendarModule.workingTime = this.dayWorkingTime;
+        } else {
+            this.calendarModule.workingTime = this.calendarSettings.projectCalendar.workingTime;
+        }
+    }
     private initProperties(): void {
         this.globalize = new Internationalization(this.locale);
         this.isAdaptive = Browser.isDevice;
@@ -1997,8 +2060,6 @@ export class Gantt extends Component<HTMLElement>
         this.updatedRecords = [];
         this.ids = [];
         this.ganttColumns = [];
-        this.updateOffsetOnTaskbarEdit = this.UpdateOffsetOnTaskbarEdit === false ?
-            this.UpdateOffsetOnTaskbarEdit : this.updateOffsetOnTaskbarEdit;
         this.localeObj = new L10n(this.getModuleName(), this.getDefaultLocale(), this.locale);
         this.dataOperation = new TaskProcessor(this);
         this.nonWorkingHours = [];
@@ -2077,6 +2138,8 @@ export class Gantt extends Component<HTMLElement>
             this.dialogValidateMode.respectStartNoLaterThan = false;
             this.dialogValidateMode.respectFinishNoLaterThan = false;
         }
+        this.calendarModule = new CalendarModule(this);
+        this.assignPropertiesToCalendar();
         this.secondsPerDay = this.dataOperation.getSecondsPerDay();
         this.nonWorkingDayIndex = [];
         this.dataOperation.getNonWorkingDayIndex();
@@ -2131,6 +2194,7 @@ export class Gantt extends Component<HTMLElement>
             this.setProperties({ resourceFields: { unit: 'unit' } }, true);
         }
         this.taskIds = [];
+        this.defaultCalendarContext = new CalendarContext(this, this.calendarSettings.projectCalendar);
     }
 
     private isUndoRedoItemPresent(action: string): boolean {
@@ -2390,8 +2454,13 @@ export class Gantt extends Component<HTMLElement>
         checkModule('filter', filter, this.injectedModules, failureCases);
         checkModule('selection', this.allowSelection, this.injectedModules, failureCases);
         let dayMarkers: boolean;
-        if (this.highlightWeekends || (this.holidays && this.holidays.length > 0)
-            || (this.eventMarkers && this.eventMarkers.length > 0)) {
+        const holidays: HolidayModel[] = this.calendarModule.holidays;
+        if (
+            this.highlightWeekends ||
+            (holidays &&
+                holidays.length > 0) ||
+            (this.eventMarkers && this.eventMarkers.length > 0)
+        ) {
             dayMarkers = true;
         }
         checkModule('dayMarkers', dayMarkers, this.injectedModules, failureCases);
@@ -2399,6 +2468,13 @@ export class Gantt extends Component<HTMLElement>
         checkModule('columnMenu', this.showColumnMenu, this.injectedModules, failureCases);
         checkModule('pdfExport', this.allowPdfExport, this.injectedModules, failureCases);
         checkModule('virtualScroll', this.enableVirtualization, this.injectedModules, failureCases);
+        let freeze: boolean;
+        const hasFreezeProp: boolean = Array.isArray(this.columns) &&
+        (this.columns as ColumnModel[]).some((col: ColumnModel) => !!col.freeze);
+        if (this.frozenColumns || hasFreezeProp || this.getFrozenColumnsCount()) {
+            freeze = true;
+        }
+        checkModule('freeze', freeze, this.injectedModules, failureCases);
         if (failureCases.length > 0) {
             /* eslint-disable-next-line */
             const failureEventArgs: any = {
@@ -3310,139 +3386,140 @@ export class Gantt extends Component<HTMLElement>
      */
     public getZoomingLevels(): ZoomTimelineSettings[] {
         const _WeekStartDay: number = this.timelineSettings.weekStartDay;
+        const _WeekendBackground: string = this.timelineSettings.weekendBackground;
         const zoomingLevels: ZoomTimelineSettings[] = [
             {
                 topTier: { unit: 'Year', format: 'yyyy', count: 50 },
                 bottomTier: { unit: 'Year', format: 'yyyy', count: 10 }, timelineUnitSize: 99, level: 0,
-                timelineViewMode: 'Year', weekStartDay: _WeekStartDay, updateTimescaleView: true, weekendBackground: null, showTooltip: true
+                timelineViewMode: 'Year', weekStartDay: _WeekStartDay, updateTimescaleView: true, weekendBackground: _WeekendBackground, showTooltip: true
             },
             {
                 topTier: { unit: 'Year', format: 'yyyy', count: 20 },
                 bottomTier: { unit: 'Year', format: 'yyyy', count: 5 }, timelineUnitSize: 99, level: 1,
-                timelineViewMode: 'Year', weekStartDay: _WeekStartDay, updateTimescaleView: true, weekendBackground: null, showTooltip: true
+                timelineViewMode: 'Year', weekStartDay: _WeekStartDay, updateTimescaleView: true, weekendBackground: _WeekendBackground, showTooltip: true
             },
             {
                 topTier: { unit: 'Year', format: 'yyyy', count: 5 },
                 bottomTier: { unit: 'Year', format: 'yyyy', count: 1 }, timelineUnitSize: 99, level: 2,
-                timelineViewMode: 'Year', weekStartDay: _WeekStartDay, updateTimescaleView: true, weekendBackground: null, showTooltip: true
+                timelineViewMode: 'Year', weekStartDay: _WeekStartDay, updateTimescaleView: true, weekendBackground: _WeekendBackground, showTooltip: true
             },
             {
                 topTier: { unit: 'Year', format: 'MMM, yy', count: 1 },
                 bottomTier: {
                     unit: 'Month', formatter: this.displayHalfValue, count: 6
                 }, timelineUnitSize: 66, level: 3,
-                timelineViewMode: 'Year', weekStartDay: _WeekStartDay, updateTimescaleView: true, weekendBackground: null, showTooltip: true
+                timelineViewMode: 'Year', weekStartDay: _WeekStartDay, updateTimescaleView: true, weekendBackground: _WeekendBackground, showTooltip: true
             },
             {
                 topTier: { unit: 'Year', format: 'MMM, yy', count: 1 },
                 bottomTier: {
                     unit: 'Month', formatter: this.displayHalfValue, count: 6
                 }, timelineUnitSize: 99, level: 4,
-                timelineViewMode: 'Year', weekStartDay: _WeekStartDay, updateTimescaleView: true, weekendBackground: null, showTooltip: true
+                timelineViewMode: 'Year', weekStartDay: _WeekStartDay, updateTimescaleView: true, weekendBackground: _WeekendBackground, showTooltip: true
             },
             {
                 topTier: { unit: 'Year', format: 'MMM, yy', count: 1 },
                 bottomTier: {
                     unit: 'Month', formatter: this.displayQuarterValue, count: 3
                 }, timelineUnitSize: 66, level: 5,
-                timelineViewMode: 'Year', weekStartDay: _WeekStartDay, updateTimescaleView: true, weekendBackground: null, showTooltip: true
+                timelineViewMode: 'Year', weekStartDay: _WeekStartDay, updateTimescaleView: true, weekendBackground: _WeekendBackground, showTooltip: true
             },
             {
                 topTier: { unit: 'Year', format: 'yyyy', count: 1 },
                 bottomTier: {
                     unit: 'Month', formatter: this.displayQuarterValue, count: 3
                 }, timelineUnitSize: 99, level: 6,
-                timelineViewMode: 'Year', weekStartDay: _WeekStartDay, updateTimescaleView: true, weekendBackground: null, showTooltip: true
+                timelineViewMode: 'Year', weekStartDay: _WeekStartDay, updateTimescaleView: true, weekendBackground: _WeekendBackground, showTooltip: true
             },
             {
                 topTier: { unit: 'Year', format: 'yyyy', count: 1 },
                 bottomTier: { unit: 'Month', format: 'MMM yyyy', count: 1 }, timelineUnitSize: 99, level: 7,
-                timelineViewMode: 'Year', weekStartDay: _WeekStartDay, updateTimescaleView: true, weekendBackground: null, showTooltip: true
+                timelineViewMode: 'Year', weekStartDay: _WeekStartDay, updateTimescaleView: true, weekendBackground: _WeekendBackground, showTooltip: true
             },
             {
                 topTier: { unit: 'Month', format: 'MMM, yy', count: 1 },
                 bottomTier: { unit: 'Week', format: 'dd', count: 1 }, timelineUnitSize: 33, level: 8,
-                timelineViewMode: 'Month', weekStartDay: _WeekStartDay, updateTimescaleView: true, weekendBackground: null, showTooltip: true
+                timelineViewMode: 'Month', weekStartDay: _WeekStartDay, updateTimescaleView: true, weekendBackground: _WeekendBackground, showTooltip: true
             },
             {
                 topTier: { unit: 'Month', format: 'MMM, yyyy', count: 1 },
                 bottomTier: { unit: 'Week', format: 'dd MMM', count: 1 }, timelineUnitSize: 66, level: 9,
-                timelineViewMode: 'Month', weekStartDay: _WeekStartDay, updateTimescaleView: true, weekendBackground: null, showTooltip: true
+                timelineViewMode: 'Month', weekStartDay: _WeekStartDay, updateTimescaleView: true, weekendBackground: _WeekendBackground, showTooltip: true
             },
             {
                 topTier: { unit: 'Month', format: 'MMM, yyyy', count: 1 },
                 bottomTier: { unit: 'Week', format: 'dd MMM', count: 1 }, timelineUnitSize: 99, level: 10,
-                timelineViewMode: 'Month', weekStartDay: _WeekStartDay, updateTimescaleView: true, weekendBackground: null, showTooltip: true
+                timelineViewMode: 'Month', weekStartDay: _WeekStartDay, updateTimescaleView: true, weekendBackground: _WeekendBackground, showTooltip: true
             },
             {
                 topTier: { unit: 'Week', format: 'MMM dd, yyyy', count: 1 },
                 bottomTier: { unit: 'Day', format: 'd', count: 1 }, timelineUnitSize: 33, level: 11,
-                timelineViewMode: 'Week', weekStartDay: _WeekStartDay, updateTimescaleView: true, weekendBackground: null, showTooltip: true
+                timelineViewMode: 'Week', weekStartDay: _WeekStartDay, updateTimescaleView: true, weekendBackground: _WeekendBackground, showTooltip: true
             },
             {
                 topTier: { unit: 'Week', format: 'MMM dd, yyyy', count: 1 },
                 bottomTier: { unit: 'Day', format: 'd', count: 1 }, timelineUnitSize: 66, level: 12,
-                timelineViewMode: 'Week', weekStartDay: _WeekStartDay, updateTimescaleView: true, weekendBackground: null, showTooltip: true
+                timelineViewMode: 'Week', weekStartDay: _WeekStartDay, updateTimescaleView: true, weekendBackground: _WeekendBackground, showTooltip: true
             },
             {
                 topTier: { unit: 'Week', format: 'MMM dd, yyyy', count: 1 },
                 bottomTier: { unit: 'Day', format: 'd', count: 1 }, timelineUnitSize: 99, level: 13,
-                timelineViewMode: 'Week', weekStartDay: _WeekStartDay, updateTimescaleView: true, weekendBackground: null, showTooltip: true
+                timelineViewMode: 'Week', weekStartDay: _WeekStartDay, updateTimescaleView: true, weekendBackground: _WeekendBackground, showTooltip: true
             },
             {
                 topTier: { unit: 'Day', format: 'E dd yyyy', count: 1 },
                 bottomTier: { unit: 'Hour', format: 'hh a', count: 12 }, timelineUnitSize: 66, level: 14,
-                timelineViewMode: 'Day', weekStartDay: _WeekStartDay, updateTimescaleView: true, weekendBackground: null, showTooltip: true
+                timelineViewMode: 'Day', weekStartDay: _WeekStartDay, updateTimescaleView: true, weekendBackground: _WeekendBackground, showTooltip: true
             },
             {
                 topTier: { unit: 'Day', format: 'E dd yyyy', count: 1 },
                 bottomTier: { unit: 'Hour', format: 'hh a', count: 12 }, timelineUnitSize: 99, level: 15,
-                timelineViewMode: 'Day', weekStartDay: _WeekStartDay, updateTimescaleView: true, weekendBackground: null, showTooltip: true
+                timelineViewMode: 'Day', weekStartDay: _WeekStartDay, updateTimescaleView: true, weekendBackground: _WeekendBackground, showTooltip: true
             },
             {
                 topTier: { unit: 'Day', format: 'E dd yyyy', count: 1 },
                 bottomTier: { unit: 'Hour', format: 'hh a', count: 6 }, timelineUnitSize: 66, level: 16,
-                timelineViewMode: 'Day', weekStartDay: _WeekStartDay, updateTimescaleView: true, weekendBackground: null, showTooltip: true
+                timelineViewMode: 'Day', weekStartDay: _WeekStartDay, updateTimescaleView: true, weekendBackground: _WeekendBackground, showTooltip: true
             },
             {
                 topTier: { unit: 'Day', format: 'E dd yyyy', count: 1 },
                 bottomTier: { unit: 'Hour', format: 'hh a', count: 6 }, timelineUnitSize: 99, level: 17,
-                timelineViewMode: 'Day', weekStartDay: _WeekStartDay, updateTimescaleView: true, weekendBackground: null, showTooltip: true
+                timelineViewMode: 'Day', weekStartDay: _WeekStartDay, updateTimescaleView: true, weekendBackground: _WeekendBackground, showTooltip: true
             },
             {
                 topTier: { unit: 'Day', format: 'E dd yyyy', count: 1 },
                 bottomTier: { unit: 'Hour', format: 'hh a', count: 2 }, timelineUnitSize: 66, level: 18,
-                timelineViewMode: 'Day', weekStartDay: _WeekStartDay, updateTimescaleView: true, weekendBackground: null, showTooltip: true
+                timelineViewMode: 'Day', weekStartDay: _WeekStartDay, updateTimescaleView: true, weekendBackground: _WeekendBackground, showTooltip: true
             },
             {
                 topTier: { unit: 'Day', format: 'E dd yyyy', count: 1 },
                 bottomTier: { unit: 'Hour', format: 'hh a', count: 2 }, timelineUnitSize: 99, level: 19,
-                timelineViewMode: 'Day', weekStartDay: _WeekStartDay, updateTimescaleView: true, weekendBackground: null, showTooltip: true
+                timelineViewMode: 'Day', weekStartDay: _WeekStartDay, updateTimescaleView: true, weekendBackground: _WeekendBackground, showTooltip: true
             },
             {
                 topTier: { unit: 'Day', format: 'E dd yyyy', count: 1 },
                 bottomTier: { unit: 'Hour', format: 'hh a', count: 1 }, timelineUnitSize: 66, level: 20,
-                timelineViewMode: 'Day', weekStartDay: _WeekStartDay, updateTimescaleView: true, weekendBackground: null, showTooltip: true
+                timelineViewMode: 'Day', weekStartDay: _WeekStartDay, updateTimescaleView: true, weekendBackground: _WeekendBackground, showTooltip: true
             },
             {
                 topTier: { unit: 'Day', format: 'E dd yyyy', count: 1 },
                 bottomTier: { unit: 'Hour', format: 'hh a', count: 1 }, timelineUnitSize: 99, level: 21,
-                timelineViewMode: 'Day', weekStartDay: _WeekStartDay, updateTimescaleView: true, weekendBackground: null, showTooltip: true
+                timelineViewMode: 'Day', weekStartDay: _WeekStartDay, updateTimescaleView: true, weekendBackground: _WeekendBackground, showTooltip: true
             },
             {
                 topTier: { unit: 'Hour', format: 'ddd MMM, h a', count: 1 },
                 bottomTier: { unit: 'Minutes', format: 'mm', count: 30 }, timelineUnitSize: 66, level: 22,
-                timelineViewMode: 'Hour', weekStartDay: 0, updateTimescaleView: true, weekendBackground: null, showTooltip: true
+                timelineViewMode: 'Hour', weekStartDay: 0, updateTimescaleView: true, weekendBackground: _WeekendBackground, showTooltip: true
             },
             {
                 topTier: { unit: 'Hour', format: 'ddd MMM, h a', count: 1 },
                 bottomTier: { unit: 'Minutes', format: 'mm', count: 15 }, timelineUnitSize: 66, level: 23,
-                timelineViewMode: 'Hour', weekStartDay: _WeekStartDay, updateTimescaleView: true, weekendBackground: null, showTooltip: true
+                timelineViewMode: 'Hour', weekStartDay: _WeekStartDay, updateTimescaleView: true, weekendBackground: _WeekendBackground, showTooltip: true
             },
             {
                 topTier: { unit: 'Hour', format: 'ddd MMM, h a', count: 1 },
                 bottomTier: { unit: 'Minutes', format: 'mm', count: 1 }, timelineUnitSize: 66, level: 24,
-                timelineViewMode: 'Hour', weekStartDay: _WeekStartDay, updateTimescaleView: true, weekendBackground: null, showTooltip: true
+                timelineViewMode: 'Hour', weekStartDay: _WeekStartDay, updateTimescaleView: true, weekendBackground: _WeekendBackground, showTooltip: true
             }
 
         ];
@@ -3696,6 +3773,44 @@ export class Gantt extends Component<HTMLElement>
             this.ganttChartModule.scrollObject.updateTopPosition();
         }
     }
+    private handleTaskSchedulingChanges(prop: string, newProp: GanttModel, refreshState: { isRefresh: boolean }): void {
+        let workingTimeChange: boolean = false;
+        let taskCalendarChange: boolean = false;
+        if (prop === 'calendarSettings' && (newProp[prop as string].projectCalendar && (newProp[prop as string].projectCalendar.workingTime || newProp[prop as string].projectCalendar.exceptions))) {
+            workingTimeChange = true;
+        }
+        if (prop === 'calendarSettings' && (Array.isArray(newProp[prop as string].taskCalendars))) {
+            workingTimeChange = true;
+            taskCalendarChange = true;
+        }
+        if (prop === 'dayWorkingTime' || prop === 'weekWorkingTime' || prop === 'enableHover' || workingTimeChange) {
+            refreshState.isRefresh = true;
+        }
+        let projectHolidaysChange: boolean = false;
+        if (prop === 'calendarSettings' && newProp[prop as string].projectCalendar && newProp[prop as string].projectCalendar.holidays) {
+            projectHolidaysChange = true;
+        }
+        if (prop === 'includeWeekend' || prop === 'allowUnscheduledTasks' || prop === 'holidays' || projectHolidaysChange) {
+            this.isLoad = true;
+            if (prop === 'holidays' || projectHolidaysChange) {
+                this.totalHolidayDates = this.dataOperation.getHolidayDates(prop);
+                if (projectHolidaysChange) {
+                    newProp['holidays'] = newProp[prop as string].projectCalendar.holidays;
+                }
+                this.notify('ui-update', { module: 'day-markers', properties: newProp });
+            }
+            this.dataOperation.reUpdateGanttData();
+            this.treeGrid.refreshColumns();
+            this.chartRowsModule.initiateTemplates();
+            this.chartRowsModule.refreshGanttRows();
+            this.isLoad = false;
+            if (this.taskFields.dependency) {
+                this.predecessorModule.updatedRecordsDateByPredecessor();
+                this.treeGrid.refreshColumns();
+                this.chartRowsModule.refreshGanttRows();
+            }
+        }
+    }
 
     /**
      * Called internally, if any of the property value changed.
@@ -3707,7 +3822,9 @@ export class Gantt extends Component<HTMLElement>
      */
     // eslint-disable-next-line
     public onPropertyChanged(newProp: GanttModel, oldProp: GanttModel): void {
-        let isRefresh: boolean = false;
+        const refreshState: {
+            isRefresh: boolean;
+        } = { isRefresh: false };
         // eslint-disable-next-line
         for (let prop of Object.keys(newProp)) {
             switch (prop) {
@@ -3752,7 +3869,7 @@ export class Gantt extends Component<HTMLElement>
                 this.timelineModule.refreshTimeline();
                 if (this.enableTimelineVirtualization && (!this.undoRedoModule || (this.undoRedoModule &&
                     !this.undoRedoModule['isZoomingUndoRedoProgress']))) {
-                    isRefresh = true;
+                    refreshState.isRefresh = true;
                 }
                 if (this.undoRedoModule && this.undoRedoModule['isZoomingUndoRedoProgress']) {
                     this.undoRedoModule['isZoomingUndoRedoProgress'] =  false;
@@ -3844,26 +3961,11 @@ export class Gantt extends Component<HTMLElement>
             case 'includeWeekend':
             case 'allowUnscheduledTasks':
             case 'holidays':
-                this.isLoad = true;
-                if (prop === 'holidays') {
-                    this.totalHolidayDates = this.dataOperation.getHolidayDates();
-                    this.notify('ui-update', { module: 'day-markers', properties: newProp });
-                }
-                this.dataOperation.reUpdateGanttData();
-                this.treeGrid.refreshColumns();
-                this.chartRowsModule.initiateTemplates();
-                this.chartRowsModule.refreshGanttRows();
-                this.isLoad = false;
-                if (this.taskFields.dependency) {
-                    this.predecessorModule.updatedRecordsDateByPredecessor();
-                    this.treeGrid.refreshColumns();
-                    this.chartRowsModule.refreshGanttRows();
-                }
-                break;
+            case 'calendarSettings':
             case 'dayWorkingTime':
             case 'weekWorkingTime':
             case 'enableHover':
-                isRefresh = true;
+                this.handleTaskSchedulingChanges(prop, newProp, refreshState);
                 break;
             case 'addDialogFields':
             case 'editDialogFields':
@@ -3872,15 +3974,20 @@ export class Gantt extends Component<HTMLElement>
                 }
                 break;
             case 'columns':
-                this.treeGridModule.treeGridColumns = [];
-                this.treeGridModule.validateGanttColumns();
-                if (this.editModule) {
-                    this.editModule['updateDefaultColumnEditors']();
+                if (this.isFrozenGrid()) {
+                    refreshState.isRefresh = true;
                 }
-                this.treeGrid.columns = this.treeGridModule.treeGridColumns;
-                this.treeGrid.refreshColumns();
-                this.chartRowsModule.initiateTemplates();
-                this.timelineModule.updateChartByNewTimeline();
+                else {
+                    this.treeGridModule.treeGridColumns = [];
+                    this.treeGridModule.validateGanttColumns();
+                    if (this.editModule) {
+                        this.editModule['updateDefaultColumnEditors']();
+                    }
+                    this.treeGrid.columns = this.treeGridModule.treeGridColumns;
+                    this.treeGrid.refreshColumns();
+                    this.chartRowsModule.initiateTemplates();
+                    this.timelineModule.updateChartByNewTimeline();
+                }
                 break;
             case 'width':
             case 'height':
@@ -3895,6 +4002,12 @@ export class Gantt extends Component<HTMLElement>
                 if (!isNullOrUndefined(this.editModule)) {
                     this.editModule.reUpdateEditModules();
                 }
+                if (!isNullOrUndefined(this.toolbarModule)) {
+                    this.toolbarModule.refreshToolbarItems();
+                }
+                break;
+            case 'allowPdfExport':
+            case 'allowExcelExport':
                 if (!isNullOrUndefined(this.toolbarModule)) {
                     this.toolbarModule.refreshToolbarItems();
                 }
@@ -3935,6 +4048,7 @@ export class Gantt extends Component<HTMLElement>
                 } else {
                     this.treeGrid.hasChildMapping = null;
                 }
+                this.isDynamicDataUpdate = true;
                 this.dataOperation.checkDataBinding(true);
                 break;
             case 'enableContextMenu':
@@ -3965,7 +4079,7 @@ export class Gantt extends Component<HTMLElement>
                     }
                 }
                 if (prop !== 'allowTaskbarDragAndDrop') {
-                    isRefresh = true;
+                    refreshState.isRefresh = true;
                 }
                 break;
             case 'validateManualTasksOnLinking':
@@ -3974,9 +4088,16 @@ export class Gantt extends Component<HTMLElement>
             case 'showOverAllocation':
                 this.updateOverAllocationCotainer();
                 break;
+            case 'emptyRecordTemplate':
+                this.treeGrid.emptyRecordTemplate = this.emptyRecordTemplate;
+                break;
+            case 'frozenColumns':
+                this.treeGrid.frozenColumns = this.frozenColumns;
+                refreshState.isRefresh = true;
+                break;
             }
         }
-        if (isRefresh) {
+        if (refreshState.isRefresh) {
             if (this.isLoad && this.contentMaskTable) {
                 this.contentMaskTable = null;
             }
@@ -4115,6 +4236,7 @@ export class Gantt extends Component<HTMLElement>
      */
     public requiredModules(): ModuleDeclaration[] {
         const modules: ModuleDeclaration[] = [];
+        const holidays: HolidayModel[] = this.calendarModule.holidays;
         if (this.isDestroyed) { return modules; }
         if (this.allowSorting) {
             modules.push({
@@ -4189,7 +4311,7 @@ export class Gantt extends Component<HTMLElement>
                 args: [this]
             });
         }
-        if (this.highlightWeekends || (this.holidays && this.holidays.length > 0)
+        if (this.highlightWeekends || (holidays && holidays.length > 0)
             || (this.eventMarkers && this.eventMarkers.length > 0)) {
             modules.push({
                 member: 'dayMarkers',
@@ -4217,6 +4339,14 @@ export class Gantt extends Component<HTMLElement>
         if (this.enableVirtualization) {
             modules.push({
                 member: 'virtualScroll',
+                args: [this]
+            });
+        }
+        const hasFreezeProp: boolean = Array.isArray(this.columns) &&
+        (this.columns as ColumnModel[]).some((col: ColumnModel) => !!col.freeze);
+        if (this.frozenColumns || hasFreezeProp || this.getFrozenColumnsCount()) {
+            modules.push({
+                member: 'freeze',
                 args: [this]
             });
         }
@@ -4257,7 +4387,25 @@ export class Gantt extends Component<HTMLElement>
         this.treeGrid.grid[`${persist4}`].apply(this, [columns]);
     }
     private isFrozenGrid(): boolean {
-        return this.treeGrid.grid.isFrozenGrid();
+        let isFreeze: boolean;
+        const hasFreezeProp: boolean = Array.isArray(this.columns) &&
+        (this.columns as ColumnModel[]).some((col: ColumnModel) => !!col.freeze);
+        if (this.frozenColumns || hasFreezeProp || this.getFrozenColumnsCount()) {
+            isFreeze = true;
+        }
+        return isFreeze;
+    }
+    private removeBorder(columns: Column[]): void {
+        const persist5: string = 'removeBorder';
+        this.treeGrid.grid[`${persist5}`].apply(this, [columns]);
+    }
+    private frozenLeftBorderColumns(columns: Column): void {
+        const persist6: string = 'frozenLeftBorderColumns';
+        this.treeGrid.grid[`${persist6}`].apply(this, [columns]);
+    }
+    private frozenRightBorderColumns(columns: Column): void {
+        const persist7: string = 'frozenRightBorderColumns';
+        this.treeGrid.grid[`${persist7}`].apply(this, [columns]);
     }
     /**
      * Clears all the sorted columns of the Gantt.
@@ -4599,14 +4747,16 @@ export class Gantt extends Component<HTMLElement>
     }
 
     /**
-     * To move horizontal scroll bar of Gantt to specific date.
+     * Scrolls the Gantt chart's timeline horizontally to bring the specified date into view.
      *
-     * @param  {string} date - Defines the date to which the Gantt chart should scroll.
-     * @returns {void} .
+     * This method is useful for navigating directly to a task, milestone, or any specific time range.
+     *
+     * @param {string | Date} date - The target date to scroll to. Accepts a date string or a JavaScript Date object.
+     * @returns {void}
      */
-    public scrollToDate(date: string): void {
+    public scrollToDate(date: string | Date): void {
         const tempDate: Date = this.dateValidationModule.getDateFromFormat(date);
-        const left: number = this.dataOperation.getTaskLeft(tempDate, false);
+        const left: number = this.dataOperation.getTaskLeft(tempDate, false, this.defaultCalendarContext);
         this.ganttChartModule.updateScrollLeft(left);
 
     }
@@ -4704,6 +4854,20 @@ export class Gantt extends Component<HTMLElement>
     }
 
     /**
+     * Refreshes the column definitions and layout of the TreeGrid pane.
+     *
+     * Applies any changes made to column configurations such as visibility, order, or width.
+     * If `refreshUI` is set to `true`, the DOM is updated to reflect the latest column settings.
+     *
+     * @param {boolean} [refreshUI=false] - When set to `true`, the UI is updated immediately to reflect the latest column settings.
+     * If `false` or omitted, only the internal column configuration is updated; the DOM remains unchanged until the next render cycle.
+     * @returns {void}
+     */
+    public refreshColumns(refreshUI?: boolean): void {
+        this.treeGrid.refreshColumns(refreshUI);
+    }
+
+    /**
      * Export Gantt data to Excel file(.xlsx).
      *
      * @param  {ExcelExportProperties} excelExportProperties - Defines the export properties of the Gantt.
@@ -4791,7 +4955,31 @@ export class Gantt extends Component<HTMLElement>
             includeWeekend = isCustomManual || this.includeWeekend || !this.autoCalculateDateScheduling;
         }
         const nonWorkingDays: number[] = !includeWeekend ? this.nonWorkingDayIndex : [];
-        const holidays: number[] = this.totalHolidayDates;
+        let calendarContext: CalendarContext = null;
+        const editModule: Edit = this.editModule;
+        let ganttProp: ITaskData;
+        if (editModule) {
+            if (
+                editModule.cellEditModule &&
+                editModule.cellEditModule.isCellEdit &&
+                editModule.cellEditModule.currentEditedRowData &&
+                editModule.cellEditModule.currentEditedRowData.ganttProperties &&
+                editModule.cellEditModule.currentEditedRowData.ganttProperties.calendarContext
+            ) {
+                ganttProp = editModule.cellEditModule.currentEditedRowData.ganttProperties;
+                calendarContext = editModule.cellEditModule.currentEditedRowData.ganttProperties.calendarContext;
+            } else if (
+                editModule.dialogModule &&
+                editModule.dialogModule['isEdit'] &&
+                editModule.dialogModule['editedRecord'] &&
+                editModule.dialogModule['editedRecord'].ganttProperties &&
+                editModule.dialogModule['editedRecord'].ganttProperties.calendarContext
+            ) {
+                ganttProp = editModule.dialogModule['editedRecord'].ganttProperties;
+                calendarContext = editModule.dialogModule['editedRecord'].ganttProperties.calendarContext;
+            }
+        }
+        const holidays: number[] = calendarContext ? calendarContext.defaultHolidays : this.defaultCalendarContext.defaultHolidays;
         if (nonWorkingDays.length > 0 && nonWorkingDays.indexOf(args.date.getDay()) !== -1) {
             args.isDisabled = true;
         } else if (holidays.length > 0) {
@@ -4804,6 +4992,12 @@ export class Gantt extends Component<HTMLElement>
                 } else {
                     args.isDisabled = true;
                 }
+            }
+        }
+        if (calendarContext) {
+            const override: boolean = calendarContext.getExceptionForDate(args.date);
+            if (override || (ganttProp.isMilestone && args.isDisabled && ganttProp.startDate.getTime() === args.date.getTime())) {
+                args.isDisabled = false;
             }
         }
     }
@@ -4858,6 +5052,20 @@ export class Gantt extends Component<HTMLElement>
         this.timelineModule.performTimeSpanAction(
             'nextTimeSpan', 'publicMethod',
             new Date(this.timelineModule.timelineStartDate.getTime()), new Date(this.timelineModule.timelineEndDate.getTime()), mode);
+    }
+    /**
+     * Sanitizes task properties by removing the calendarContext property.
+     *
+     * @param  {ITaskData} props - The task data object containing properties to be sanitized.
+     * @returns {ITaskData} The sanitized properties object without calendarContext.
+     * @private
+     */
+    public removeCalendarContext (props: ITaskData): ITaskData {
+        if (!props) {
+            return props;
+        }
+        const { calendarContext, ...rest } = props; // Exclude calendarContext
+        return rest;
     }
 
     /**
@@ -4973,20 +5181,23 @@ export class Gantt extends Component<HTMLElement>
         const resultIf: boolean = (this.isOnEdit || this.isOnDelete) ? true : false;
         if (resultIf) {
             this.makeCloneData(field, record, isTaskData);
-            const fieldName: any = field.includes('.') ? field.split('.')[1] : field;
             const ganttData: ITaskData = isTaskData ? (record as ITaskData) : (record as IGanttData).ganttProperties;
+            const fieldName: any = field.includes('.') ? field.split('.')[1] : field;
             const id: string  = ganttData.rowUniqueID;
             const task: IGanttData = this.getRecordByID(id);
             let isValid: boolean = false;
             isValid = ((isNullOrUndefined(value) || isNullOrUndefined(record[`${fieldName}`])) ||
                 (!isNullOrUndefined(value) && !isNullOrUndefined(record[`${fieldName}`]) &&
-                    (value instanceof Date
+                    ((value instanceof Date && (record[`${fieldName}`]) instanceof Date)
                         ? value.getTime() !== record[`${fieldName}`].getTime()
                         : (Array.isArray(value) || typeof value === 'object')
                             ? JSON.stringify(value) !== JSON.stringify(record[`${fieldName}`])
                             : record[`${fieldName}`] !== value))) ? true : isValid;
             if (fieldName === 'totalDuration' && task) {
                 isValid = (record as ITaskData).progress !== task.ganttProperties.progress ? true : false;
+            }
+            if (this.treeGridModule['isDateColumnCellEdit']) {
+                isValid = true;
             }
             if (task && isValid && (this.editedRecords.indexOf(task) === -1 || this.editedRecords.length === 0)) {
                 if (this.editModule['draggedRecord'] && this.editModule['draggedRecord'].ganttProperties.taskId === ganttData.taskId) {
@@ -5934,6 +6145,29 @@ export class Gantt extends Component<HTMLElement>
      * @public
      */
     public getGanttColumns(): ColumnModel[] {
+        this.updateColumnModel(this.getGridColumns());
+        return this.ganttColumns;
+    }
+
+    private updateColumnModel(column?: Column[]): ColumnModel[] {
+        let temp: string | Function;
+        let field: string;
+        const treeGridColumns: Column[] = isNullOrUndefined(column) ? this.getGridColumns() : column;
+        if (this.treeColumnIndex !== -1 && this.ganttColumns[this.treeColumnIndex] &&
+                    !isNullOrUndefined((this.ganttColumns[this.treeColumnIndex] as Column).template)) {
+            temp = (this.ganttColumns[this.treeColumnIndex] as Column).template;
+            field = (this.ganttColumns[this.treeColumnIndex] as Column).field;
+        }
+        if (this.ganttColumns.length === treeGridColumns.length) {
+            for (let i: number = 0; i < treeGridColumns.length; i++) {
+                for (const prop of Object.keys(this.ganttColumns[parseInt(i.toString(), 10)])) {
+                    this.ganttColumns[parseInt(i.toString(), 10)][`${prop}`] = treeGridColumns[parseInt(i.toString(), 10)][`${prop}`];
+                }
+                if (field === this.ganttColumns[parseInt(i.toString(), 10)].field && this.ganttColumns[parseInt(i.toString(), 10)].type !== 'checkbox' && (!isNullOrUndefined(temp) && temp !== '')) {
+                    this.ganttColumns[parseInt(i.toString(), 10)].template = temp;
+                }
+            }
+        }
         return this.ganttColumns;
     }
 
@@ -6220,5 +6454,14 @@ export class Gantt extends Component<HTMLElement>
         if ((this as any).isReact) {
             this.clearTemplate(['TaskbarTemplate', 'ParentTaskbarTemplate', 'MilestoneTemplate', 'TaskLabelTemplate', 'RightLabelTemplate', 'LeftLabelTemplate', 'TooltipTaskbarTemplate', 'TooltipBaselineTemplate', 'TooltipConnectorLineTemplate', 'TimelineTemplate']);
         }
+    }
+
+    /**
+     * Gets the number of frozen column in Gantt
+     *
+     * @returns {number} - Returns frozen column count
+     */
+    private getFrozenColumnsCount(): number {
+        return this.treeGrid.getFrozenColumns();
     }
 }

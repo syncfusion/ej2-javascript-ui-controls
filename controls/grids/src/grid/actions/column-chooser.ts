@@ -175,6 +175,7 @@ export class ColumnChooser implements IAction {
         this.parent.on(events.rtlUpdated, this.rtlUpdate, this);
         this.parent.on(events.resetColumns, this.onResetColumns, this);
         this.parent.on(events.setFullScreenDialog, this.setFullScreenDialog, this);
+        this.parent.on(events.inBoundModelChanged, this.onPropertyChanged, this );
         if (this.parent.enableAdaptiveUI) {
             this.parent.on(events.renderResponsiveChangeAction, this.renderResponsiveChangeAction, this);
         }
@@ -1469,5 +1470,21 @@ export class ColumnChooser implements IAction {
     public showCustomColumnChooser(enable: boolean): void {
         this.responsiveDialogRenderer.isCustomDialog = enable;
         this.responsiveDialogRenderer.showResponsiveDialog();
+    }
+
+    /**
+     * @param {NotifyArgs} e - specifies the NotifyArgs
+     * @returns {void}
+     * @hidden
+     */
+    public onPropertyChanged(e: NotifyArgs): void {
+        if (e && e.module !== this.getModuleName()) { return; }
+        const enableSearch: boolean = this.parent.columnChooserSettings.enableSearching;
+        if (this.dlgObj && this.dlgObj.element) {
+            const searchWrapper: HTMLElement = this.dlgObj.element.querySelector('.e-cc-searchdiv');
+            const contentElement: HTMLElement = this.dlgObj.element.querySelector('.e-dlg-content');
+            searchWrapper.style.display = enableSearch ? '' : 'none';
+            contentElement.style.margin = enableSearch ? '' : '0px';
+        }
     }
 }

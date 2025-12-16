@@ -1,4 +1,6 @@
-@import 'layout-mixin.scss';
+@use 'ej2-base/styles/common/mixin' as *;
+@use './theme-variables' as *;
+@use 'layout-mixin' as *;
 @include export-module('contextmenu-layout') {
   .e-contextmenu-wrapper,
   .e-contextmenu-container {
@@ -16,7 +18,7 @@
         &.e-contextmenu {
           box-shadow: $cmenu-parent-ul-box-shadow;
           @if $skin-name == 'bootstrap5' or $skin-name == 'bootstrap5.3' or $skin-name == 'tailwind' or $skin-name == 'Material3' {
-            padding: 4px 0;
+            padding: $cmenu-nrml-ul-padding;
           }
           &.e-contextmenu-template {
             .e-menu-caret-icon {
@@ -26,7 +28,7 @@
         }
 
         &.e-ul {
-          font-family: $font-family;
+          font-family: $cmenu-container-ul-font-family;
         }
 
         & .e-menu-item  {
@@ -35,7 +37,7 @@
 
           & .e-menu-icon {
             @if $skin-name == 'fluent2' {
-              margin-bottom: 1px;
+              margin-bottom: $cmenu-item--icon-margin-bottom;
             }
           }
 
@@ -57,13 +59,13 @@
 
           &.e-separator {
             @if $skin-name == 'fluent2' {
-              padding: 0 !important;  /* stylelint-disable-line declaration-no-important */
+              padding: $cmenu-padding-none !important;  /* stylelint-disable-line declaration-no-important */
             }
           }
 
           &:focus-visible {
             @if $skin-name == 'fluent2' {
-              border-radius: 4px;
+              border-radius: $cmenu-item-focus-viible-border-radius;
               background-color: $content-bg-color;
               box-shadow: $shadow-focus-ring1;
             }
@@ -92,24 +94,24 @@
 
         &.e-transparent {
           background: transparent;
-          border: 0;
+          border: $cmenu-border-none;
           box-shadow: none;
-          height: 1px;
+          height: $cmenu-ul-height;
           left: 0;
           min-width: 0;
-          padding: 0;
+          padding: $cmenu-padding-none;
           top: 0;
           width: 0;
         }
 
         &.e-transparent .e-menu-item {
-          height: 0;
-          padding: 0;
+          height: $cmenu-height-none;
+          padding: $cmenu-padding-none;
         }
 
         &.e-transparent .e-menu-item.e-separator {
-          border: 0;
-          margin: 0;
+          border: $cmenu-border-none;
+          margin: $cmenu-margin-none;
         }
       }
     }
@@ -119,21 +121,21 @@
         box-shadow: $cmenu-parent-ul-box-shadow;
 
         & .e-vscroll-bar {
-          height: 100%;
+          height: $cmenu-vscroll-bar-height;
           width: inherit;
         }
 
         & .e-scroll-nav {
-          height: 16px;
+          height: $cmenu-scroll-nav-height;
         }
 
         &:not(.e-scroll-device) {
-          padding: 16px 0;
+          padding: $cmanu-scroll-padding;
         }
 
         & ul {
           box-shadow: none;
-          margin-top: -12px;
+          margin-top: $cmenu-scroll-margin-top;
           width: inherit;
         }
       }
@@ -156,7 +158,7 @@
   .e-small .e-contextmenu-wrapper ul .e-menu-item .e-caret,
   .e-small .e-contextmenu-wrapper ul .e-menu-icon {
     @if $skin-name == 'fluent2' {
-      font-size: 12px;
+      font-size: $cmenu-small-caret-icon-font-size;
     }
   }
 
@@ -165,14 +167,14 @@
     @if $skin-name == 'tailwind3' {
       font-size: $cmenu-small-font-size;
       height: $cmenu-small-li-height;
-      line-height: $cmenu-small-li-height;
+      line-height: $cmenu-small-li-line-height;
       .e-caret,
       .e-menu-icon {
         font-size: $cmenu-small-font-size;
-        line-height: $cmenu-small-li-height;
+        line-height: $cmenu-small-li-line-height;
       }
       &.e-separator {
-        height: auto;
+        height: $cmenu-auto-height;
       }
     }
   }

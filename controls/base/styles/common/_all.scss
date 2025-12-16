@@ -1,2 +1,2 @@
-@import 'mixin.scss';
-@import 'core.scss';
+@use './mixin' as *;
+@use './core' as *;

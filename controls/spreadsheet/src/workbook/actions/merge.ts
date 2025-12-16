@@ -589,10 +589,24 @@ export class WorkbookMerge {
     private updateMergedCellsFromSheet(): void {
         this.parent.sheets.forEach((sheet: ExtendedSheet) => {
             if (sheet.mergedCells) {
+                let rowSpan: number; let colSpan: number;
+                let startRow: number; let startCol: number; let endRow: number; let endCol: number;
+                let rowSpanDiff: number; let colSpanDiff: number;
                 sheet.mergedCells.forEach((model: MergedCellModel) => {
-                    const startRow: number = model.address[0]; const startCol: number = model.address[1];
-                    const rowSpan: number = model.rowSpan; const colSpan: number = model.colSpan;
-                    const endRow: number = startRow + rowSpan - 1; const endCol: number = startCol + colSpan - 1;
+                    startRow = model.address[0]; rowSpan = model.rowSpan;
+                    if (startRow < sheet.rowCount && (rowSpan >= 1048576 || startRow + rowSpan >= 1048576)) {
+                        rowSpan = sheet.rowCount - startRow;
+                        endRow = sheet.rowCount - 1;
+                    } else {
+                        endRow = startRow + rowSpan - 1;
+                    }
+                    startCol = model.address[1]; colSpan = model.colSpan;
+                    if (startCol < sheet.colCount && (colSpan >= 16384 || startCol + colSpan >= 16384)) {
+                        colSpan = sheet.colCount - startCol;
+                        endCol = sheet.colCount - 1;
+                    } else {
+                        endCol = startCol + colSpan - 1;
+                    }
                     for (let rIdx: number = startRow; rIdx <= endRow; rIdx++) {
                         for (let cIdx: number = startCol; cIdx <= endCol; cIdx++) {
                             const cell: CellModel = getCell(rIdx, cIdx, sheet, true, true);
@@ -604,11 +618,11 @@ export class WorkbookMerge {
                                     cell.colSpan = colSpan;
                                 }
                             } else {
-                                const rowSpanDiff: number = rIdx - startRow;
-                                const colSpanDiff: number = cIdx - startCol;
+                                rowSpanDiff = rIdx - startRow;
                                 if (rowSpan > 1 && rowSpanDiff > 0) {
                                     cell.rowSpan = -rowSpanDiff;
                                 }
+                                colSpanDiff = cIdx - startCol;
                                 if (colSpan > 1 && colSpanDiff > 0) {
                                     cell.colSpan = -colSpanDiff;
                                 }

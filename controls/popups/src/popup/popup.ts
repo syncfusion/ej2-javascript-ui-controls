@@ -439,14 +439,14 @@ export class Popup extends Component<HTMLElement> implements INotifyPropertyChan
     }
 
     private isElementVisible (relateToElement: HTMLElement, scrollElement: HTMLElement): boolean {
-        const rect: ClientRect = this.checkGetBoundingClientRect(relateToElement);
+        const rect: DOMRectReadOnly = this.checkGetBoundingClientRect(relateToElement) as DOMRectReadOnly;
 
         if (!rect.height || !rect.width) {
             return false;
         }
 
         if (!isNullOrUndefined(this.checkGetBoundingClientRect(scrollElement))) {
-            const parent: ClientRect = scrollElement.getBoundingClientRect();
+            const parent: DOMRectReadOnly = scrollElement.getBoundingClientRect() as DOMRect;
             return !(rect.bottom < parent.top) &&
                 (!(rect.bottom > parent.bottom) &&
                 (!(rect.right > parent.right) &&
@@ -576,10 +576,10 @@ export class Popup extends Component<HTMLElement> implements INotifyPropertyChan
         }
     }
 
-    private checkGetBoundingClientRect(ele: HTMLElement): ClientRect {
-        let eleRect: ClientRect;
+    private checkGetBoundingClientRect(ele: HTMLElement): DOMRectReadOnly {
+        let eleRect: DOMRectReadOnly;
         try {
-            eleRect = ele.getBoundingClientRect();
+            eleRect = ele.getBoundingClientRect() as DOMRectReadOnly;
             return eleRect;
         } catch (error) {
             return null;
@@ -593,8 +593,8 @@ export class Popup extends Component<HTMLElement> implements INotifyPropertyChan
         offsetX: number,
         offsetY: number,
         height: number = 0): OffsetPosition {
-        const eleRect: ClientRect = this.checkGetBoundingClientRect(ele);
-        const anchorRect: ClientRect = this.checkGetBoundingClientRect(anchorEle);
+        const eleRect: DOMRectReadOnly = this.checkGetBoundingClientRect(ele);
+        const anchorRect: DOMRectReadOnly = this.checkGetBoundingClientRect(anchorEle);
         if ( isNullOrUndefined(eleRect)  || isNullOrUndefined(anchorRect) ) {
             return null;
         }
@@ -698,8 +698,8 @@ export class Popup extends Component<HTMLElement> implements INotifyPropertyChan
                     this.element.style.top = data.top + 'px';
                 }
             } else {
-                const elementRect: ClientRect = this.checkGetBoundingClientRect(this.element);
-                const viewPortRect: ClientRect = this.checkGetBoundingClientRect(this.viewPortElement);
+                const elementRect: DOMRectReadOnly = this.checkGetBoundingClientRect(this.element);
+                const viewPortRect: DOMRectReadOnly = this.checkGetBoundingClientRect(this.viewPortElement);
                 if (isNullOrUndefined(elementRect) || isNullOrUndefined(viewPortRect)) {
                     return null;
                 }

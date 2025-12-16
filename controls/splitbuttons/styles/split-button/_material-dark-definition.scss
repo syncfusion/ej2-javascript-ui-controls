@@ -1,3 +1,8 @@
+@use 'ej2-base/styles/definition/material-dark' as *;
+@use '../drop-down-button/material-dark-definition' as *;
+@forward 'ej2-base/styles/definition/material-dark';
+@forward '../drop-down-button/material-dark-definition';
+
 //default
 $split-btn-zindex: 0;
 $split-btn-border-radius: 2px;
@@ -22,5 +27,47 @@ $split-btn-active-left-border-color: transparent;
 $split-btn-sec-btn-margin-left: 0;
 $split-btn-icon-btn-padding: 6px;
 $split-btn-icon-btn-padding-bigger: 9px;
+$drop-dbtn-bigger-padding-left: 4px !default;
+$drop-dbtn-bigger-padding-right: 4px !default;
+$split-btn-bigger-padding-left: 12px !default;
+$split-btn-bigger-padding-right: 6px !default;
+$split-btn-bgr-vertical-padding-bottom: 6px !default;
+$split-btn-bgr-vertical-padding-right: 12px !default;
+$drop-down-btn-bgr-vertical-padding-bottom: 4px !default;
+$drop-down-btn-bgr-vertical-padding-top: 4px !default;
+$drop-down-bigger-btn-icon-margin-left: 0 !default;
+$drop-down-bigger-btn-icon-padding-right: 10px !default;
+$drop-down-bigger-icon-top-padding-bottom: 6px !default;
+$drop-down-zero-padding-margin: 0 !default;
+$drop-down-zero-border-radius: 0 !default;
+$drop-down-bigger-rtl-padding-left: 6px !default;
+$drop-down-bigger-rtl-padding-right: 12px !default;
+$drop-down-bgr-rtl-icon-padding-left: 10px !default;
+$drop-dbtn-bigger-padding-left: 4px !default;
+$drop-dbtn-bigger-padding-right: 4px !default;
+
+$split-rtl-btn-padding-left: 4px !default;
+$split-rtl-btn-padding-right: 10px !default;
+
+$split-btn-icon-padding-right: 8px !default;
+$split-rtl-btn-icon-padding-left: 8px !default;
+
+$split-btn-padding-left: 10px !default;
+$split-btn-padding-right: 10px !default;
+$split-btn-top-icon-padding-bottom: 10px !default;
+$split-btn-top-icon-padding-top: 10px !default;
+$split-btn-icon-top-padding-bottom: 4px !default;
+$drop-down-btn-padding-left: 4px !default;
+$drop-down-btn-padding-right: 4px !default;
+$split-btn-line-height: 1 !default;
+$split-btn-vertical-padding-bottom: 4px !default;
+$split-btn-vertical-padding-right: 10px !default;
+$split-btn-vertical-icon-top-padding: 4px !default;
+$drop-down-btn-vertical-padding-bottom: 4px !default;
+$drop-down-btn-vertical-padding-top: 4px !default;
+$split-btn-top-icon-padding-bottom: 12px !default;
+$split-btn-top-icon-padding-top: 12px !default;
+$split-auto-width: auto !default;
+$split-full-width: 100% !default;
 
 //enddefault

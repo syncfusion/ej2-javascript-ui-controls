@@ -1,6 +1,6 @@
 import { KeyboardEventArgs, removeClass, addClass, extend, L10n, EventHandler } from '@syncfusion/ej2-base';
 import { closest, classList, isNullOrUndefined } from '@syncfusion/ej2-base';
-import { DetailTemplateDetachArgs, IGrid, InfiniteScrollArgs, NotifyArgs } from '../base/interface';
+import { DetailExpandCollapseArgs, DetailTemplateDetachArgs, IGrid, InfiniteScrollArgs, NotifyArgs, EJ2Intance } from '../base/interface';
 import { Grid } from '../base/grid';
 import { parents, getUid, appendChildren, isComplexField, getObject } from '../base/util';
 import * as events from '../base/constant';
@@ -67,7 +67,7 @@ export class DetailRow {
             && !this.parent.allowGrouping) {
             e.preventDefault();
         }
-        this.toogleExpandcollapse(closest(e.target as Element, 'td'));
+        this.toogleExpandcollapse(closest(e.target as Element, 'td'), e);
     }
 
     private auxilaryclickHandler(e: MouseEvent): void {
@@ -77,7 +77,7 @@ export class DetailRow {
         }
     }
 
-    private toogleExpandcollapse(target: Element): void {
+    private toogleExpandcollapse(target: Element, event?: KeyboardEventArgs | MouseEvent): void {
         this.l10n = this.serviceLocator.getService<L10n>('localization');
         const gObj: IGrid = this.parent;
         const table: Element = this.parent.getContentTable();
@@ -100,6 +100,24 @@ export class DetailRow {
             this.parent.getContentTable().querySelector( literals.tbody).children[tr.rowIndex + 1] as HTMLElement;
         if (target.classList.contains('e-detailrowcollapse')) {
             const data: Object = rowObj.data;
+            const expandArgs: DetailExpandCollapseArgs = {
+                rowData: data, parentRow: target.closest('tr'), cancel: false, detailRow: this.isDetailRow(nextRow) ? nextRow : null
+            };
+            if (!isNullOrUndefined(event)) {
+                expandArgs.event = event;
+            }
+            if (!isNullOrUndefined(gObj.childGrid)) {
+                expandArgs.childGrid = gObj.childGrid;
+                if (this.isDetailRow(nextRow)) {
+                    const gridElement: EJ2Intance = nextRow.querySelector('.e-grid');
+                    expandArgs.childGridInstance = gridElement ?
+                        (((gridElement as EJ2Intance).ej2_instances as Object[])[0] as IGrid) : null;
+                }
+            }
+            gObj.trigger(events.detailExpand, expandArgs);
+            if (expandArgs.cancel) {
+                return;
+            }
             if (this.isDetailRow(nextRow)) {
                 nextRow.style.display = '';
                 gObj.notify(events.detailStateChange, {data: data,
@@ -234,6 +252,23 @@ export class DetailRow {
             target.firstElementChild.setAttribute('title', this.l10n.getConstant('Expanded'));
         } else {
             if (this.isDetailRow(nextRow)) {
+                const collapseArgs: DetailExpandCollapseArgs = { rowData: rowObj.data,
+                    parentRow: target.closest('tr'), cancel: false, detailRow: this.isDetailRow(nextRow) ? nextRow : null };
+                if (!isNullOrUndefined(event)) {
+                    collapseArgs.event = event;
+                }
+                if (!isNullOrUndefined(gObj.childGrid)) {
+                    collapseArgs.childGrid = gObj.childGrid;
+                    if (this.isDetailRow(nextRow)) {
+                        const gridElement: EJ2Intance = nextRow.querySelector('.e-grid');
+                        collapseArgs.childGridInstance = gridElement ?
+                            (((gridElement as EJ2Intance).ej2_instances as Object[])[0] as IGrid) : null;
+                    }
+                }
+                gObj.trigger(events.detailCollapse, collapseArgs);
+                if (collapseArgs.cancel) {
+                    return;
+                }
                 nextRow.style.display = 'none';
                 gObj.notify(events.detailStateChange, { data: rowObj.data,
                     childGrid: gObj.childGrid, detailElement: target, isExpanded: isExpanded });
@@ -424,7 +459,7 @@ export class DetailRow {
             }
             if (element && !element.classList.contains('e-detailrowcollapse') &&
                 !element.classList.contains('e-detailrowexpand')) { break; }
-            this.toogleExpandcollapse(element);
+            this.toogleExpandcollapse(element, e);
             break;
         }
     }

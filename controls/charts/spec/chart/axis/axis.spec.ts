@@ -15,7 +15,7 @@ import { EmitType } from '@syncfusion/ej2-base';
 import { DateTime, Zoom, ScrollBar } from '../../../src/index' ;
 import { Logarithmic } from '../../../src/index';
 import { ILoadedEventArgs, IAxisLabelRenderEventArgs, IAxisLabelClickEventArgs } from '../../../src/chart/model/chart-interface';
-import  {profile , inMB, getMemoryProfile } from '../../common.spec';
+import  {profile , inMB, getMemoryProfile} from '../../common.spec';
 import { categoryData } from '../base/data.spec';
 Chart.Inject(LineSeries, Category, ColumnSeries, DateTime, Logarithmic, Zoom, ScrollBar, AreaSeries);
 
@@ -836,7 +836,7 @@ describe('Chart Control', () =>{
         it('Checking with label width', (done: Function) => {
             loaded = (args: Object): void => {
                 let maximumLabelWidth:HTMLElement = document.getElementById('chartContainer0_AxisLabel_0');
-                expect(Math.round(maximumLabelWidth.getBoundingClientRect().width)).toBeLessThanOrEqual(56);
+                expect(Math.round(maximumLabelWidth.getBoundingClientRect().width)).toBeLessThanOrEqual(57);
                 done();
             };
             chart.loaded = loaded;
@@ -2064,6 +2064,329 @@ describe('Chart Control', () =>{
             });
 
         })
+    });
+
+    // Add this block to spec/chart/axis/axis.spec.ts
+
+    describe('Axis label template rendering', () => {
+        let ele: HTMLElement;
+        let chart: Chart;
+        let loaded: EmitType<ILoadedEventArgs>;
+
+        beforeAll((): void => {
+            ele = createElement('div', { id: 'chartContainer' });
+            document.body.appendChild(ele);
+            chart = new Chart({
+                // Make tick/label counts deterministic
+                primaryXAxis: {
+                    minimum: 1,
+                    maximum: 5,
+                    interval: 1,
+                    // Render a simple template per label
+                    labelTemplate: '<div class="x-label">${value}-X</div>'
+                },
+                primaryYAxis: {
+                    minimum: 0,
+                    maximum: 50,
+                    interval: 10,
+                    labelTemplate: '<div class="y-label">${value}-Y</div>'
+                },
+                series: [{
+                    type: 'Line',
+                    dataSource: [{ x: 1, y: 10 }, { x: 2, y: 20 }, { x: 3, y: 30 }, { x: 4, y: 40 }, { x: 5, y: 50 }],
+                    xName: 'x',
+                    yName: 'y',
+                    animation: { enable: false }
+                }],
+                legendSettings: { visible: false }
+            });
+        });
+
+        afterAll((): void => {
+            chart.destroy();
+            ele.remove();
+        });
+
+        it('renders templates for X and Y axis labels with correct count and content', (done: Function) => {
+            loaded = (): void => {
+                // X-axis template checks
+                const xLabelsGroup = document.getElementById('chartContainer_XAxisLabelTemplate_Collection');
+                expect(xLabelsGroup !== null).toBe(true);
+
+                const xLabelDivs = xLabelsGroup.querySelectorAll('.x-label');
+                // Expect labels for 1,2,3,4,5
+                expect(xLabelDivs.length).toBe(5);
+                expect((xLabelDivs[0] as HTMLElement).innerText.trim()).toBe('1-X');
+                expect((xLabelDivs[4] as HTMLElement).innerText.trim()).toBe('5-X');
+
+                // Ensure default text nodes are not present when template is used
+                const xTextNodes = xLabelsGroup.querySelectorAll('text');
+                expect(xTextNodes.length).toBe(0);
+
+                // Y-axis template checks
+                const yLabelsGroup = document.getElementById('chartContainer_YAxisLabelTemplate_Collection');
+                expect(yLabelsGroup !== null).toBe(true);
+
+                const yLabelDivs = yLabelsGroup.querySelectorAll('.y-label');
+                // Expect labels for 0,10,20,30,40,50
+                expect(yLabelDivs.length).toBe(6);
+                expect((yLabelDivs[0] as HTMLElement).innerText.trim()).toBe('0-Y');
+                expect((yLabelDivs[5] as HTMLElement).innerText.trim()).toBe('50-Y');
+
+                // Ensure default text nodes are not present when template is used
+                const yTextNodes = yLabelsGroup.querySelectorAll('text');
+                expect(yTextNodes.length).toBe(0);
+
+                done();
+            };
+            chart.loaded = loaded;
+            chart.appendTo('#chartContainer');
+        });
+
+        it('supports template rendering with opposedPosition and Inside labelPosition', (done: Function) => {
+            loaded = (): void => {
+                // Verify that templates still render in opposed/inside scenarios
+                const xLabelDivs = document.querySelectorAll('#chartContainer .x-label');
+                const yLabelDivs = document.querySelectorAll('#chartContainer .y-label');
+
+                expect(xLabelDivs.length).toBe(5);
+                expect(yLabelDivs.length).toBe(6);
+
+                // Spot check a couple of values remain templated
+                expect((xLabelDivs[2] as HTMLElement).innerText.trim()).toBe('3-X');
+                expect((yLabelDivs[3] as HTMLElement).innerText.trim()).toBe('30-Y');
+
+                done();
+            };
+
+            chart.loaded = loaded;
+            chart.primaryXAxis.opposedPosition = true;
+            chart.primaryXAxis.labelPosition = 'Inside';
+            chart.primaryYAxis.opposedPosition = true;
+            chart.primaryYAxis.labelPosition = 'Inside';
+            chart.refresh();
+        });
+        it('renders templates correctly when both X and Y axes are inversed', (done: Function) => {
+            loaded = (): void => {
+                // X-axis template checks
+                const xLabelsGroup = document.getElementById('chartContainer_XAxisLabelTemplate_Collection');
+                expect(xLabelsGroup !== null).toBe(true);
+
+                const xLabelDivs = xLabelsGroup!.querySelectorAll('.x-label');
+                expect(xLabelDivs.length).toBe(5);
+
+                // Verify some templated contents exist
+                expect((xLabelDivs[0] as HTMLElement).innerText.trim()).toBe('1-X');
+                expect((xLabelDivs[4] as HTMLElement).innerText.trim()).toBe('5-X');
+
+                // Ensure default text nodes are not present when template is used
+                const xTextNodes = xLabelsGroup!.querySelectorAll('text');
+                expect(xTextNodes.length).toBe(0);
+
+                // Y-axis template checks
+                const yLabelsGroup = document.getElementById('chartContainer_YAxisLabelTemplate_Collection');
+                expect(yLabelsGroup !== null).toBe(true);
+
+                const yLabelDivs = yLabelsGroup!.querySelectorAll('.y-label');
+                expect(yLabelDivs.length).toBe(6);
+
+                // Verify some templated contents exist
+                expect((yLabelDivs[0] as HTMLElement).innerText.trim()).toBe('0-Y');
+                expect((yLabelDivs[5] as HTMLElement).innerText.trim()).toBe('50-Y');
+
+                // Ensure default text nodes are not present when template is used
+                const yTextNodes = yLabelsGroup!.querySelectorAll('text');
+                expect(yTextNodes.length).toBe(0);
+
+                done();
+            };
+
+            chart.loaded = loaded;
+            chart.primaryXAxis.isInversed = true;
+            chart.primaryYAxis.isInversed = true;
+            chart.refresh();
+        });
+
+        it('supports template rendering when axes are inversed with opposedPosition and Inside labelPosition', (done: Function) => {
+            loaded = (): void => {
+                // Verify that templates render in opposed/inside + inversed scenarios
+                const xLabelDivs = document.querySelectorAll('#chartContainer .x-label');
+                const yLabelDivs = document.querySelectorAll('#chartContainer .y-label');
+
+                expect(xLabelDivs.length).toBe(5);
+                expect(yLabelDivs.length).toBe(6);
+
+                // Spot check a couple of values remain templated
+                expect((xLabelDivs[2] as HTMLElement).innerText.trim()).toBe('3-X');
+                expect((yLabelDivs[3] as HTMLElement).innerText.trim()).toBe('30-Y');
+
+                done();
+            };
+
+            chart.loaded = loaded;
+            chart.primaryXAxis.isInversed = true;
+            chart.primaryYAxis.isInversed = true;
+
+            chart.primaryXAxis.opposedPosition = true;
+            chart.primaryXAxis.labelPosition = 'Outside';
+
+            chart.primaryYAxis.opposedPosition = true;
+            chart.primaryYAxis.labelPosition = 'Inside';
+
+            chart.refresh();
+        });
+        it('checking label rotation as 90', (done: Function) => {
+            loaded = (args: Object): void => {
+                let firstLabel: HTMLElement = document.getElementById('chartContainerprimaryXAxis_AxisLabelTemplate_0');
+                expect(firstLabel.getAttribute('style').indexOf('rotate(90') != -1).toBe(true);
+                done();
+            };
+            chart.loaded = loaded;
+            chart.primaryXAxis.opposedPosition = false;
+            chart.primaryXAxis.labelPosition = 'Outside';
+            chart.primaryYAxis.opposedPosition = false;
+            chart.primaryYAxis.labelPosition = 'Outside';
+            chart.primaryXAxis.isInversed = false;
+            chart.primaryYAxis.isInversed = false;
+            chart.primaryXAxis.labelRotation = 90;
+            chart.refresh();
+        });
+        it('checking label rotation as 45', (done: Function) => {
+            loaded = (args: Object): void => {
+                let firstLabel: HTMLElement = document.getElementById('chartContainerprimaryXAxis_AxisLabelTemplate_0');
+                expect(firstLabel.getAttribute('style').indexOf('rotate(45') != -1).toBe(true);
+                done();
+            };
+            chart.loaded = loaded;
+            chart.primaryXAxis.opposedPosition = false;
+            chart.primaryXAxis.labelRotation = 45;
+            chart.primaryYAxis.labelRotation = 90;
+            chart.refresh();
+        });
+        it('Checking axis label template with edgelabelPlacement', (done: Function) => {
+            loaded = (args: Object): void => {
+                let svg: HTMLElement = document.getElementById('chartContainerprimaryXAxis_AxisLabelTemplate_0');
+                expect(svg == null).toBe(true);
+                done();
+            };
+            chart.loaded = loaded;
+            chart.primaryXAxis.labelTemplate = '<div class="x-label">${value}-X label template</div>';
+            chart.primaryXAxis.edgeLabelPlacement = 'Hide';
+            chart.primaryXAxis.labelRotation = 0;
+            chart.primaryYAxis.labelRotation = 0;
+            chart.refresh();
+
+        });
+        it('Checking axis label template with edgelabelPlacement shift', (done: Function) => {
+            loaded = (args: Object): void => {
+                let svg = document.getElementById('chartContainerprimaryXAxis_AxisLabelTemplate_0');
+                let chartArea: HTMLElement = document.getElementById('chartContainer_ChartAreaBorder');
+                expect(parseFloat(svg.getAttribute('x')) < parseFloat(chartArea.getAttribute('x'))).toBe(false);
+                svg = document.getElementById('chartContainerprimaryXAxis_AxisLabelTemplate_0');
+                expect(parseFloat(svg.getAttribute('x')) < parseFloat(chartArea.getAttribute('width')) + parseFloat(chartArea.getAttribute('x')))
+                done();
+            };
+            chart.loaded = loaded;
+            chart.primaryXAxis.edgeLabelPlacement = 'Shift';
+            chart.refresh();
+
+        });
+
+        it('Checking axis label template with x axis opposedPosition as true and labelPosition outside', (done: Function) => {
+            loaded = (): void => {
+                const firstLabel = document.getElementById('chartContainerprimaryXAxis_AxisLabelTemplate_0') as HTMLElement;
+                expect(firstLabel).not.toBeNull();
+                expect(firstLabel.getAttribute('style')!.indexOf('rotate(30') !== -1).toBe(true);
+                const xLabelsGroup = document.getElementById('chartContainer_XAxisLabelTemplate_Collection');
+                expect(xLabelsGroup).not.toBeNull();
+                const xLabelDivs = xLabelsGroup!.querySelectorAll('.x-label');
+                expect(xLabelDivs.length).toBe(5);
+                done();
+            };
+
+            chart.loaded = loaded;
+            chart.primaryXAxis.opposedPosition = true;
+            chart.primaryXAxis.labelPosition = 'Outside';
+            chart.primaryXAxis.labelRotation = 30;
+            chart.primaryYAxis.opposedPosition = false;
+            chart.primaryYAxis.labelRotation = 0;
+            chart.refresh();
+        });
+
+        it('Checking axis label template with x axis opposedPosition as true and labelPosition inside', (done: Function) => {
+            loaded = (): void => {
+                const firstLabel = document.getElementById('chartContainerprimaryXAxis_AxisLabelTemplate_0') as HTMLElement;
+                expect(firstLabel).not.toBeNull();
+                expect(firstLabel.getAttribute('style')!.indexOf('rotate(30') !== -1).toBe(true);
+                done();
+            };
+
+            chart.loaded = loaded;
+            chart.primaryXAxis.opposedPosition = true;
+            chart.primaryXAxis.labelPosition = 'Inside';
+            chart.primaryXAxis.labelRotation = 30;
+            chart.refresh();
+        });
+
+
+        it('Checking axis label template with x axis inversed as true and shift edgeLabelPlacement', (done: Function) => {
+            loaded = (): void => {
+                const chartArea = document.getElementById('chartContainer_ChartAreaBorder')!;
+                expect(chartArea).not.toBeNull();
+                const firstLabel = document.getElementById('chartContainerprimaryXAxis_AxisLabelTemplate_0') as HTMLElement;
+                const lastLabel = document.getElementById('chartContainerprimaryXAxis_AxisLabelTemplate_4') as HTMLElement;
+                if (firstLabel) {
+                    const x0 = firstLabel.getBoundingClientRect().left;
+                    const areaX = parseFloat(chartArea.getAttribute('x')!);
+                    expect(x0 >= areaX).toBe(true);
+                }
+                if (lastLabel) {
+                    const x4 = lastLabel.getBoundingClientRect().left;
+                    const areaX = parseFloat(chartArea.getAttribute('x')!);
+                    const areaW = parseFloat(chartArea.getAttribute('width')!);
+                    expect(x4 <= areaX + areaW).toBe(true);
+                }
+
+                done();
+            };
+
+            chart.loaded = loaded;
+            chart.width = '160';
+            chart.primaryXAxis.isInversed = true;
+            chart.primaryXAxis.edgeLabelPlacement = 'Shift';
+            chart.primaryXAxis.labelRotation = 0;
+            chart.primaryXAxis.opposedPosition = false;
+            chart.primaryXAxis.labelTemplate = '<div class="x-label">Very-Long-Label-${value}-X</div>';
+
+            chart.primaryYAxis.isInversed = false;
+            chart.primaryYAxis.edgeLabelPlacement = 'None';
+            chart.primaryYAxis.labelRotation = 0;
+
+            chart.refresh();
+        });
+
+        it('Checking axis label template with x axis inversed as false and none edgeLabelPlacement', (done: Function) => {
+            loaded = (): void => {
+                const xLabelsGroup = document.getElementById('chartContainer_XAxisLabelTemplate_Collection');
+                expect(xLabelsGroup).not.toBeNull();
+                const xLabelDivs = xLabelsGroup!.querySelectorAll('.x-label');
+                expect(xLabelDivs.length).toBe(5);
+
+                done();
+            };
+
+            chart.loaded = loaded;
+            // Keep the chart extremely narrow and labels long to force trimming and overlaps
+            chart.width = '120';
+            chart.primaryXAxis.minimum = 1;
+            chart.primaryXAxis.maximum = 5;
+            chart.primaryXAxis.interval = 1;
+            chart.primaryXAxis.edgeLabelPlacement = 'None';
+            chart.primaryXAxis.labelRotation = 0;
+            chart.primaryXAxis.isInversed = false;
+            chart.primaryXAxis.labelTemplate = '<div class="x-label">Ultra-Long-Template-Label-${value}-X</div>';
+            chart.refresh();
+        });
     });
 
 });

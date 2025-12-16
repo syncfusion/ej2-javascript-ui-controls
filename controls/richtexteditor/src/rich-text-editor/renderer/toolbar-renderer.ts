@@ -1,13 +1,14 @@
 import { addClass, Browser, L10n, removeClass, isNullOrUndefined, isNullOrUndefined as isNOU, EventHandler, detach } from '@syncfusion/ej2-base';
 import { closest} from '@syncfusion/ej2-base';
-import { Toolbar, ClickEventArgs, BeforeCreateArgs, OverflowMode } from '@syncfusion/ej2-navigations';
-import { DropDownButton, MenuEventArgs, BeforeOpenCloseMenuEventArgs, SplitButton } from '@syncfusion/ej2-splitbuttons';
+import { Toolbar, ClickEventArgs, BeforeCreateArgs, OverflowMode, Menu, KeyDownEventArgs, OpenCloseMenuEventArgs } from '@syncfusion/ej2-navigations';
+import { DropDownButton, MenuEventArgs, BeforeOpenCloseMenuEventArgs, SplitButton, ItemModel } from '@syncfusion/ej2-splitbuttons';
+import { MenuEventArgs as MenuBarItemSelectedArgs } from '@syncfusion/ej2-navigations';
 import { Tooltip, TooltipEventArgs } from '@syncfusion/ej2-popups';
 import * as classes from '../base/classes';
 import * as events from '../base/constant';
 import { CLS_TOOLBAR, CLS_DROPDOWN_BTN, CLS_RTE_ELEMENTS, CLS_INLINE_DROPDOWN,
     CLS_CUSTOM_TILE, CLS_NOCOLOR_ITEM } from '../base/classes';
-import { IRichTextEditor, IToolbarOptions, IRenderer } from '../base/interface';
+import { IRichTextEditor, IToolbarOptions, IRenderer, IMenuRenderArgs } from '../base/interface';
 import { IDropDownModel, IColorPickerEventArgs, IDropDownItemModel, ISplitButtonModel, IColorPickerModel } from '../../common/interface';
 import { ColorPicker, ModeSwitchEventArgs, PaletteTileEventArgs } from '@syncfusion/ej2-inputs';
 import { ServiceLocator } from '../services/service-locator';
@@ -24,6 +25,8 @@ import { ToolbarType } from '../../common/enum';
 export class ToolbarRenderer implements IRenderer {
     private mode: OverflowMode;
     private toolbarPanel: Element;
+    private itemValue: ItemModel[];
+    private lineHeightDropDown: DropDownButton;
     private defaultColorPicker: string;
     /**
      *
@@ -181,6 +184,10 @@ export class ToolbarRenderer implements IRenderer {
     }
 
     private dropDownClose(args: MenuEventArgs): void {
+        if (this.parent.lineHeight.supportAllValues  && this.lineHeightDropDown) {
+            this.lineHeightDropDown.items = this.itemValue;
+            this.lineHeightDropDown.dataBind();
+        }
         if (!this.isEscapeKey)
         {
             this.parent.notify(events.selectionRestore, args);
@@ -387,7 +394,7 @@ export class ToolbarRenderer implements IRenderer {
                         }
                     }
                     //Formats preselect
-                    if (!isNOU(args.items[0 as number]) && ((args.items[0 as number] as IDropDownItemModel).command === 'Formats' || (args.items[0 as number] as IDropDownItemModel).command === 'Font')) {
+                    if (!isNOU(args.items[0 as number]) && ((args.items[0 as number] as IDropDownItemModel).command === 'Formats' || (args.items[0 as number] as IDropDownItemModel).command === 'Font' || (args.items[0 as number] as IDropDownItemModel).command === 'LineHeight')) {
                         const fontName: string[] = [];
                         const formats: string[] = [];
                         let hasUpdatedActive: boolean = false;
@@ -415,7 +422,9 @@ export class ToolbarRenderer implements IRenderer {
                             const divNode: HTMLDivElement = this.parent.createElement('div') as HTMLDivElement;
                             divNode.innerHTML = updatedHtml;
                             const spanElement: HTMLSpanElement = divNode.querySelector('span');
-                            spanElement.style.cssText = styleValue;
+                            if (spanElement) {
+                                spanElement.style.cssText = styleValue;
+                            }
                             if (!hasUpdatedActive && ((divNode.textContent.trim() !== ''
                                 && args.element.childNodes[index as number].textContent.trim() === divNode.textContent.trim()) ||
                                 (((args.items[0 as number] as IDropDownItemModel).command === 'Formats' && !isNOU(toolbarStatus.formats) && this.parent.format.types[index as number].value.toLowerCase() === toolbarStatus.formats.toLowerCase() && (args.element.childNodes[index as number] as Element).classList.contains(this.parent.format.types[index as number].cssClass))
@@ -429,6 +438,48 @@ export class ToolbarRenderer implements IRenderer {
                                 }
                             } else {
                                 removeClass([args.element.childNodes[index as number]] as Element[], 'e-active');
+                            }
+                            if ((args.items[0 as number] as IDropDownItemModel).command === 'LineHeight') {
+                                const targetElement: HTMLElement = this.findFirstBlockElement();
+                                if (targetElement) {
+                                    const lineHeightStyle: string = targetElement.style.lineHeight;
+                                    const numericLineHeight: number = parseFloat(lineHeightStyle);
+                                    const dropdownVSelectedValue: string = (args.items[index as number] as IDropDownItemModel).value;
+                                    const dummyItem: ItemModel[] = args.items;
+                                    this.itemValue = dummyItem;
+                                    if (numericLineHeight === parseFloat(dropdownVSelectedValue)) {
+                                        addClass([args.element.childNodes[index as number]] as Element[], 'e-active');
+                                        hasUpdatedActive = true;
+                                    }
+                                } else {
+                                    removeClass([args.element.childNodes[index as number]] as Element[], 'e-active');
+                                }
+                            }
+                        }
+                        if ((args.items[0 as number] as IDropDownItemModel).command === 'LineHeight') {
+                            const targetElement: HTMLElement = this.findFirstBlockElement();
+                            if (this.parent.lineHeight.supportAllValues && !hasUpdatedActive && !isNOU(targetElement) && targetElement.style.lineHeight !== '') {
+                                this.lineHeightDropDown = dropDown;
+                                hasUpdatedActive = true;
+                                const items: { text: string; value: string; }[] = [
+                                    { text: 'Custom: ' + targetElement.style.lineHeight, value: targetElement.style.lineHeight }
+                                ];
+                                dropDown.items = [...args.items, ...items];
+                                dropDown.dataBind();
+                                addClass([args.element.childNodes[(args.element.childNodes.length - 1) as number]] as Element[], 'e-active');
+                            }
+                            else if (!hasUpdatedActive) {
+                                dropDown.items.forEach((item: any, index: number) => {
+                                    const itemValue: number = parseFloat(item.value);
+
+                                    if (itemValue === parseFloat(this.parent.lineHeight.default)) {
+                                        const matchingChild: Element = args.element.childNodes[index  as number] as Element;
+                                        addClass([matchingChild], 'e-active');
+                                    }
+                                });
+                                if (isNOU(this.parent.lineHeight.default)) {
+                                    addClass([args.element.childNodes[(0) as number]] as Element[], 'e-active');
+                                }
                             }
                         }
                     }
@@ -470,6 +521,19 @@ export class ToolbarRenderer implements IRenderer {
         popupElement.setAttribute('aria-owns', this.parent.getID());
         return dropDown;
     }
+    private findFirstBlockElement(): HTMLElement | null {
+        const range: Range = this.parent.getRange();
+        let targetElement: HTMLElement = range.startContainer.nodeType === Node.ELEMENT_NODE
+            ? range.startContainer as HTMLElement
+            : (range.startContainer as HTMLElement).parentElement;
+        // Traverse up to find the closest non-inline element
+        while (!this.parent.formatter.editorManager.domNode.isBlockNode(targetElement)) {
+            targetElement = targetElement.parentElement;
+        }
+
+        return targetElement;
+    }
+
     private mouseOutHandler (): void {
         if (!isNOU(this.tooltipTargetEle)){
             this.tooltipTargetEle.setAttribute('title', this.tooltipTargetEle.getAttribute('data-title'));
@@ -534,10 +598,28 @@ export class ToolbarRenderer implements IRenderer {
         if (Browser.info.name === 'safari' && !proxy.parent.inputElement.contains(proxy.parent.getRange().startContainer)) {
             proxy.parent.notify(events.selectionRestore, {});
         }
-        if (proxy.parent.editorMode !== 'Markdown' ) {
-            const startNode: HTMLElement = proxy.parent.getRange().startContainer.parentElement;
-            const listElem: Element = startNode.closest('LI');
-            const currentLiElem: HTMLElement = !isNOU(listElem) ? listElem.parentElement : null;
+        if (proxy.parent.editorMode !== 'Markdown') {
+            const range: Range = proxy.parent.getRange();
+            if (isNOU(range)) { return; }
+            // Resolve element for start/end (account for text nodes)
+            const startEl: HTMLElement = (range.startContainer.nodeType === Node.ELEMENT_NODE
+                ? range.startContainer as Element : (range.startContainer as Node).parentElement) as HTMLElement | null;
+            const endEl: HTMLElement = (range.endContainer.nodeType === Node.ELEMENT_NODE
+                ? range.endContainer as Element : (range.endContainer as Node).parentElement) as HTMLElement | null;
+            if (isNOU(startEl) || isNOU(endEl)) { return; }
+            const isCaret: boolean = range.startOffset === range.endOffset && range.startContainer === range.endContainer;
+            const commonNode: HTMLElement = range.commonAncestorContainer as HTMLElement;
+            const commonIsListish: boolean = ['LI', 'UL', 'OL'].indexOf(commonNode.nodeName) >= 0;
+            const inSameLi: boolean = startEl.closest('li') === endEl.closest('li');
+            // Only proceed if the selection context is within a list or within a single LI or a cursor position
+            if (!(isCaret || commonIsListish || inSameLi)) { return; }
+            let currentLiElem: HTMLElement;
+            if (startEl.nodeName === 'UL' || startEl.nodeName === 'OL') {
+                currentLiElem = startEl;
+            } else {
+                const listElem: Element = startEl.closest('LI');
+                currentLiElem = !isNOU(listElem) ? listElem.parentElement : null;
+            }
             const currentAction: string = (args.items[0 as number] as IDropDownItemModel).subCommand;
             if (!isNOU(currentLiElem)) {
                 // Checks if current action matches the list type (numbered or bulleted)
@@ -551,7 +633,8 @@ export class ToolbarRenderer implements IRenderer {
                         if (currentListStyle === (args.element.childNodes[index as number] as HTMLElement).innerHTML.split(' ').join('').toLocaleLowerCase()) {
                             addClass([args.element.childNodes[index as number]] as Element[], 'e-active');
                             break;
-                        } else if (currentListStyle === '' && ((args.element.childNodes[index as number] as HTMLElement).innerHTML === 'Number' || (args.element.childNodes[index as number] as HTMLElement).innerHTML === 'Disc') ) {
+                        } else if (currentListStyle === '' && ((args.element.childNodes[index as number] as HTMLElement).innerHTML === 'Number' ||
+                            (args.element.childNodes[index as number] as HTMLElement).innerHTML === 'Disc') ) {
                             // Handles default list style case
                             addClass([args.element.childNodes[index as number]] as Element[], 'e-active');
                             break;
@@ -727,6 +810,59 @@ export class ToolbarRenderer implements IRenderer {
         colorPicker.appendTo(args.element);
         args.element.setAttribute('role', 'button');
         return colorPicker;
+    }
+
+    public renderMenu(args: IMenuRenderArgs) : { menu: Menu, dropDownButton : DropDownButton} {
+        const dropDown: DropDownButton = new DropDownButton({
+            target: args.dropDownItems.target,
+            iconCss: !isNOU(args.dropDownItems.iconCss) ? args.dropDownItems.iconCss : '',
+            content: !isNOU(args.dropDownItems.content) ? args.dropDownItems.content : '',
+            cssClass: args.dropDownItems.cssClass,
+            enableRtl: this.parent.enableRtl,
+            beforeOpen: this.menueDropDownBeforeOpen.bind(this),
+            beforeClose: this.menueDropDownBeforeClose.bind(this),
+            select: this.menuItemSelected.bind(this)
+        }, args.dropDownRoot);
+        const menu: Menu = new Menu({
+            orientation: 'Vertical',
+            items: args.menuItems.items,
+            cssClass: 'e-rte-' + args.name + '-menu' + ' e-rte-menu ' + classes.CLS_RTE_ELEMENTS + this.parent.getCssClass(true),
+            enableRtl: this.parent.enableRtl,
+            beforeOpen: this.menuBeforeOpen.bind(this),
+            beforeClose: this.menuBeforeClose.bind(this),
+            select: this.menuItemSelected.bind(this),
+            enablePersistence: this.parent.enablePersistence
+        });
+        if (this.parent.element.dataset.rteUnitTesting === 'true') {
+            menu.animationSettings = { effect: 'None', duration: 0 };
+            dropDown.animationSettings = { effect: 'None', duration: 0 };
+        }
+        menu.appendTo(args.menuRoot);
+        return { menu: menu, dropDownButton : dropDown};
+    }
+
+    private menuItemSelected(args: MenuBarItemSelectedArgs) : void {
+        this.parent.notify(events.menuItemselected, { element: args.element, item: args.item, originalEvent: args.event });
+    }
+
+    private menuBeforeOpen(args: BeforeOpenCloseMenuEventArgs): void {
+        this.parent.notify(events.selectionSave, args);
+        this.parent.notify(events.menuBeforeOpen, args);
+    }
+
+    private menuBeforeClose(args: BeforeOpenCloseMenuEventArgs): void {
+        this.parent.notify(events.selectionRestore, args);
+        this.parent.notify(events.menuBeforeClose, args);
+    }
+
+    private menueDropDownBeforeOpen(args: BeforeOpenCloseMenuEventArgs): void {
+        this.parent.notify(events.selectionSave, args);
+        this.parent.notify(events.menuBeforeOpen, args);
+    }
+
+    private menueDropDownBeforeClose(args: BeforeOpenCloseMenuEventArgs): void {
+        this.parent.notify(events.selectionRestore, args);
+        this.parent.notify(events.menuBeforeClose, args);
     }
 
     /**

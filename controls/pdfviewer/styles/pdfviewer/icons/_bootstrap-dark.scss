@@ -1,3 +1,5 @@
+@use 'ej2-base/styles/common/mixin' as *;
+@use '../bootstrap-definition' as *;
 @include export-module('pdfviewer-bootstrap-icons') {
   .e-pdfviewer {
     .e-pv-icon::before {
@@ -550,6 +552,10 @@
     content: '\E93b';
     font-family: 'e-icons';
   }
+  .e-pv-text-redact-icon::before {
+    content: '\e1b1';
+    font-family: 'e-icons';
+  }
   .e-pv-redaction-panel-icon::before {
     content: '\e1a3';
     font-family: 'e-icons';
@@ -564,6 +570,10 @@
   }
   .e-pv-multiple-comment::before {
     content: '\e98a';
+    font-family: 'e-icons';
+  }
+  .e-pv-extract-page-icon::before {
+    content: '\e1c2';
     font-family: 'e-icons';
   }
 }

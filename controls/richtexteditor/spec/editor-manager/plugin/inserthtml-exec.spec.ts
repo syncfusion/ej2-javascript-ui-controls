@@ -3,6 +3,8 @@
  */
 import { createElement, detach } from '@syncfusion/ej2-base';
 import { EditorManager } from '../../../src/editor-manager/index';
+import { RichTextEditor } from './../../../src/index';
+import { renderRTE, destroy } from "../../rich-text-editor/render.spec";
 
 describe('Insert HTML  Exec plugin', () => {
 
@@ -95,6 +97,25 @@ describe('Insert HTML  Exec plugin', () => {
         });
         afterAll(() => {
             detach(elem);
+        });
+    });
+    describe('977751: Blazor: Script error after inserting custom emoji and pressing Enter in Rich Text Editor', () => {
+        let rteObj: RichTextEditor;
+        let editorObj: EditorManager;
+        beforeAll(() => {
+            rteObj = renderRTE({
+                value: `<p>The custom command item 🙂 - <b>Insert Emoticons</b> is added to the Toolbar. Click on the command and choose the emoticon you want to include from the popup.</p>`
+            });
+            editorObj = new EditorManager({ document: document, editableElement: document.querySelector(".e-content") });
+        });
+        afterAll(() => {
+            destroy(rteObj);
+        });
+        it('apply emoji by selecting ctrl + A inside editor', () => {
+            let targetEle: HTMLElement = rteObj.element.querySelector('p');
+            rteObj.formatter.editorManager.nodeSelection.setSelectionText(document, targetEle.firstChild, targetEle.lastChild, 0, targetEle.lastChild.textContent.length);
+            editorObj.execCommand("InsertHtml", null, null, null, '🙂' );
+            expect(rteObj.inputElement.innerHTML === '<p>🙂</p>').toBe(true);
         });
     });
 });

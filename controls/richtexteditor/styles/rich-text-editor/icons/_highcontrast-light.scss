@@ -1,3 +1,6 @@
+@use 'ej2-base/styles/common/mixin' as *;
+@use '../highcontrast-light-definition' as *;
+
 /*! component's theme wise override definitions and variables */
 
 @include export-module('richtexteditor-highcontrast-light-icons') {
@@ -26,6 +29,10 @@
 
     .e-justify-left::before {
       content: '\e33a';
+    }
+
+    .e-lineHeight::before {
+      content: '\eb8a';
     }
 
     .e-justify-center::before {

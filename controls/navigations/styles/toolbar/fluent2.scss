@@ -1,9 +1,9 @@
-@import 'ej2-base/styles/definition/fluent2.scss';
-@import '../h-scroll/fluent2-definition.scss';
-@import '../v-scroll/fluent2-definition.scss';
-@import 'ej2-buttons/styles/button/fluent2-definition.scss';
-@import 'ej2-popups/styles/popup/fluent2-definition.scss';
-@import 'fluent2-definition.scss';
-@import 'icons/fluent2.scss';
-@import 'all.scss';
-@import 'bigger.scss';
+@use 'ej2-base/styles/definition/fluent2' as *;
+@use '../h-scroll/fluent2-definition' as *;
+@use '../v-scroll/fluent2-definition' as *;
+@use 'ej2-buttons/styles/button/fluent2-definition' as *;
+@use 'ej2-popups/styles/popup/fluent2-definition' as *;
+@use 'fluent2-definition' as *;
+@use 'icons/fluent2' as *;
+@use 'all' as *;
+@use 'bigger' as *;

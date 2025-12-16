@@ -1,4 +1,4 @@
-import { Component, EventHandler, Property, Event, Browser, L10n, EmitType, getUniqueID } from '@syncfusion/ej2-base';
+import { Component, EventHandler, Property, Event, Browser, L10n, EmitType, getUniqueID, append, compile, select, selectAll } from '@syncfusion/ej2-base';
 import { NotifyPropertyChanges, INotifyPropertyChanged, BaseEventArgs } from '@syncfusion/ej2-base';
 import { attributes, addClass, removeClass, detach, closest } from '@syncfusion/ej2-base';
 import { isNullOrUndefined, getValue, formatUnit, setValue, merge } from '@syncfusion/ej2-base';
@@ -77,6 +77,9 @@ export class NumericTextBox extends Component<HTMLInputElement> implements INoti
     private isDynamicChange: boolean = false;
     private inputValue: number;
     private clearButton: HTMLElement;
+    private prependedElement: HTMLElement;
+    private appendedElement: HTMLElement;
+    private iconTemplateFunction: Function;
 
     /*NumericTextBox Options */
 
@@ -266,6 +269,19 @@ export class NumericTextBox extends Component<HTMLInputElement> implements INoti
     public validateDecimalOnType: boolean;
 
     /**
+     * Gets or sets a value indicating whether the mouse wheel interaction is enabled
+     * for incrementing or decrementing the value in the NumericTextBox component.
+     *
+     * @default true
+     * @remarks
+     * - When `allowMouseWheel` is set to `true`, scrolling the mouse wheel while the input is focused
+     *   will increment or decrement the value based on the step value.
+     * - When `allowMouseWheel` is set to `false`, mouse wheel scrolling will be ignored.
+     */
+    @Property(true)
+    public allowMouseWheel: boolean;
+
+    /**
      * The <b><a href="#placeholder" target="_blank">placeholder</a></b> acts as a label
      * and floats above the NumericTextBox based on the below values.
      * Possible values are:
@@ -277,6 +293,32 @@ export class NumericTextBox extends Component<HTMLInputElement> implements INoti
      */
     @Property('Never')
     public floatLabelType: FloatLabelType;
+
+    /**
+     * Specifies the HTML template string for custom elements to prepend to the NumericTextBox input.
+     * Supports icons, buttons, or any valid HTML. Updates dynamically on property change.
+     *
+     * @default null
+     * @angularType string | object
+     * @reactType string | function | JSX.Element
+     * @vueType string | function
+     * @aspType string
+     */
+    @Property(null)
+    public prependTemplate: string | Function;
+
+    /**
+     * Specifies the HTML template string for custom elements to append to the NumericTextBox input.
+     * Supports icons, buttons, or any valid HTML. Updates dynamically on property change.
+     *
+     * @default null
+     * @angularType string | object
+     * @reactType string | function | JSX.Element
+     * @vueType string | function
+     * @aspType string
+     */
+    @Property(null)
+    public appendTemplate: string | Function;
 
     /**
      * Triggers when the NumericTextBox component is created.
@@ -438,6 +480,8 @@ export class NumericTextBox extends Component<HTMLInputElement> implements INoti
                 this.enabled = false;
             }
             this.updateFloatLabelOverflowWidth();
+            this.createPrependTemplate();
+            this.createAppendTemplate();
             this.renderComplete();
         }
     }
@@ -807,6 +851,107 @@ export class NumericTextBox extends Component<HTMLInputElement> implements INoti
         EventHandler.remove(this.spinDown, Browser.touchEndEvent, this.mouseUpOnSpinner);
         EventHandler.remove(this.spinUp, Browser.touchMoveEvent, this.touchMoveOnSpinner);
         EventHandler.remove(this.spinDown, Browser.touchMoveEvent, this.touchMoveOnSpinner);
+    }
+
+    private updatePrependTemplate(): void {
+        this.removePrependTemplate();
+        this.createPrependTemplate();
+    }
+
+    private updateAppendTemplate(): void {
+        this.removeAppendTemplate();
+        this.createAppendTemplate();
+    }
+
+    private templateComplier(iconTemplate: string | Function): Function {
+        if (iconTemplate) {
+            try {
+                if (typeof iconTemplate !== 'function' && selectAll(iconTemplate, document).length) {
+                    return compile(select(iconTemplate, document).innerHTML.trim());
+                } else {
+                    return compile(iconTemplate);
+                }
+            } catch (exception) {
+                return compile(iconTemplate);
+            }
+        }
+        return undefined;
+    }
+
+    private createPrependTemplate(): void {
+        if (!isNullOrUndefined(this.prependTemplate)) {
+            const container: HTMLElement = this.container;
+            this.prependedElement = this.createElement('div', { className: 'e-prepend-template' });
+            this.iconTemplateFunction = this.templateComplier(this.prependTemplate);
+            const iconTemplateCompiler: Function = this.iconTemplateFunction(null, this, 'template', this.element.id + 'Template', this.isStringTemplate, null, this.prependedElement);
+            if (iconTemplateCompiler) {
+                const fromElements: HTMLElement[] = [].slice.call(iconTemplateCompiler);
+                append(fromElements, this.prependedElement);
+            }
+            const inputElement: HTMLElement = container.querySelector('input');
+            container.classList.add('e-prepend-wrapper');
+            if (inputElement) {
+                container.insertBefore(this.prependedElement, inputElement);
+            } else {
+                container.insertBefore(this.prependedElement, container.firstChild);
+            }
+            this.handleFloatLabel();
+            this.renderReactTemplates();
+        }
+    }
+
+    private createAppendTemplate(): void {
+        if (!isNullOrUndefined(this.appendTemplate)) {
+            const container: HTMLElement = this.container;
+            this.appendedElement = this.createElement('div', { className: 'e-append-template' });
+            this.iconTemplateFunction = this.templateComplier(this.appendTemplate);
+            const iconTemplateCompiler: Function = this.iconTemplateFunction(null, this, 'template', this.element.id + 'Template', this.isStringTemplate, null, this.appendedElement);
+            if (iconTemplateCompiler) {
+                const fromElements: HTMLElement[] = [].slice.call(iconTemplateCompiler);
+                append(fromElements, this.appendedElement);
+            }
+            container.classList.add('e-append-wrapper');
+            const spinElement: HTMLElement = container.querySelector('.e-spin-down');
+            if (this.showSpinButton && spinElement) {
+                container.insertBefore(this.appendedElement, spinElement);
+            } else {
+                container.appendChild(this.appendedElement);
+            }
+            this.handleFloatLabel();
+            this.renderReactTemplates();
+        }
+    }
+
+    private handleFloatLabel(): void {
+        const floatLabelElement: HTMLElement = this.container.querySelector('.e-float-text');
+        if (floatLabelElement && this.floatLabelType === 'Auto') {
+            setTimeout(function(): void {
+                if (floatLabelElement && this.prependedElement && !this.enableRtl) {
+                    floatLabelElement.style.marginLeft = `${this.prependedElement.offsetWidth}px`;
+                    floatLabelElement.style.marginRight = '0';
+                } else if (floatLabelElement && this.prependedElement && this.enableRtl) {
+                    floatLabelElement.style.marginRight = `${this.prependedElement.offsetWidth}px`;
+                    floatLabelElement.style.marginLeft = '0';
+                }
+                if (floatLabelElement && floatLabelElement.classList.contains('e-label-bottom')) {
+                    floatLabelElement.style.width = this.element.offsetWidth + 'px';
+                }
+            }.bind(this), 5);
+        }
+    }
+
+    private removePrependTemplate(): void {
+        if (!isNullOrUndefined(this.prependedElement)) {
+            detach(this.prependedElement);
+            this.prependedElement = null;
+        }
+    }
+
+    private removeAppendTemplate(): void {
+        if (!isNullOrUndefined(this.appendedElement)) {
+            detach(this.appendedElement);
+            this.appendedElement = null;
+        }
     }
 
     private changeHandler(event: Event): void {
@@ -1212,6 +1357,9 @@ export class NumericTextBox extends Component<HTMLInputElement> implements INoti
     }
 
     private mouseWheel(event: MouseWheelEvent): void {
+        if (!this.allowMouseWheel){
+            return;
+        }
         event.preventDefault();
         let delta: number;
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -1260,8 +1408,16 @@ export class NumericTextBox extends Component<HTMLInputElement> implements INoti
                 }
             }
         }
-        if (!Browser.isDevice) {
+        if (!Browser.isDevice && this.allowMouseWheel) {
             EventHandler.add(this.element, 'mousewheel DOMMouseScroll', this.mouseWheel, this);
+        }
+        const floatLabelElement: HTMLElement = this.container.querySelector('.e-float-text');
+        if (this.floatLabelType === 'Auto' && (this.prependTemplate || this.appendTemplate) && floatLabelElement) {
+            setTimeout(function(): void {
+                if (floatLabelElement) {
+                    floatLabelElement.style.width = 'auto';
+                }
+            }.bind(this), 5);
         }
     }
 
@@ -1296,6 +1452,19 @@ export class NumericTextBox extends Component<HTMLInputElement> implements INoti
             }
         }
         this.updateFloatLabelOverflowWidth();
+        const floatLabelElement: HTMLElement = this.container.querySelector('.e-float-text');
+        if (this.floatLabelType === 'Auto' && (this.prependTemplate || this.appendTemplate) && floatLabelElement) {
+            setTimeout(function(): void {
+                if (floatLabelElement && this.prependedElement && !this.enableRtl) {
+                    floatLabelElement.style.marginLeft = `${this.prependedElement.offsetWidth}px`;
+                } else if (floatLabelElement && this.prependedElement && this.enableRtl) {
+                    floatLabelElement.style.marginRight = `${this.prependedElement.offsetWidth}px`;
+                }
+                if (floatLabelElement && floatLabelElement.classList.contains('e-label-bottom')) {
+                    floatLabelElement.style.width = this.element.offsetWidth + 'px';
+                }
+            }.bind(this), 5);
+        }
         const formElement: Element = closest(this.element, 'form');
         if (formElement) {
             const element: Element = this.element.nextElementSibling;
@@ -1430,6 +1599,9 @@ export class NumericTextBox extends Component<HTMLInputElement> implements INoti
      */
     public destroy(): void {
         this.unwireEvents();
+        this.removePrependTemplate();
+        this.removeAppendTemplate();
+        this.clearTemplate();
         if (this.showClearButton) {
             this.clearButton = document.getElementsByClassName('e-clear-icon')[0] as HTMLElement;
         }
@@ -1531,6 +1703,7 @@ export class NumericTextBox extends Component<HTMLInputElement> implements INoti
                 break;
             case 'enableRtl':
                 Input.setEnableRtl(newProp.enableRtl, [this.container]);
+                this.handleFloatLabel();
                 break;
             case 'readonly':
                 Input.setReadonly(newProp.readonly, this.element);
@@ -1612,6 +1785,18 @@ export class NumericTextBox extends Component<HTMLInputElement> implements INoti
             case 'decimals':
                 this.decimals = newProp.decimals;
                 this.updateValue(this.value);
+                break;
+            case 'allowMouseWheel':
+                if (this.allowMouseWheel && this.isFocused){
+                    EventHandler.add(this.element, 'mousewheel DOMMouseScroll', this.mouseWheel, this);
+                }
+                break;
+            case 'prependTemplate':
+                this.updatePrependTemplate();
+                break;
+            case 'appendTemplate':
+                this.updateAppendTemplate();
+                break;
             }
         }
     }

@@ -45,34 +45,35 @@ describe('KeyBoard', () => {
 });
 
 describe('982113 - Dynamic Property changes for keyConfig', () => {
-    let rteObj: RichTextEditor;
-    beforeAll(() => {
-        rteObj = renderRTE({
-            keyConfig: { 'bold': 'ctrl+g' },
-            value: '<p id="pnode1">Sample</p>' +
-                '<p id="pnode4">Sample</p>' +
-                '<p id="pnode2">Sample</p>' +
-                '<p id="pnode3">Sample</p>'
+        let rteObj: RichTextEditor;
+        beforeAll(() => {
+            rteObj = renderRTE({
+                keyConfig: { 'bold': 'ctrl+g' },
+                value: '<p id="pnode1">Sample</p>' +
+                    '<p id="pnode4">Sample</p>' +
+                    '<p id="pnode2">Sample</p>' +
+                    '<p id="pnode3">Sample</p>'
+            });
+        });
+        afterAll(() => {
+            destroy(rteObj);
+        });
+        it('Dynamic Property changes for keyConfig', () => {
+            rteObj.keyConfig = { bold: 'ctrl+g' };
+            rteObj.dataBind();
+            let nodeSelection: NodeSelection = new NodeSelection();
+            let node: HTMLElement = document.getElementById("pnode1");
+            nodeSelection.setSelectionText(document, node.childNodes[0], node.childNodes[0], 1, 1);
+            let keyBoardEvent: any = { type: 'keydown', preventDefault: () => { }, ctrlKey: true, key: 'g', stopPropagation: () => { }, shiftKey: false, which: 71 };
+            keyBoardEvent.charCode = 71;
+            keyBoardEvent.keyCode = 71;
+            keyBoardEvent.bubbles = true;
+            rteObj.inputElement.dispatchEvent(new KeyboardEvent('keydown', keyBoardEvent));
+            expect(node.childNodes[0].nodeName.toLocaleLowerCase()).toBe('strong');
+            
         });
     });
-    afterAll(() => {
-        destroy(rteObj);
-    });
-    it('Dynamic Property changes for keyConfig', () => {
-        rteObj.keyConfig = { bold: 'ctrl+g' };
-        rteObj.dataBind();
-        let nodeSelection: NodeSelection = new NodeSelection();
-        let node: HTMLElement = document.getElementById("pnode1");
-        nodeSelection.setSelectionText(document, node.childNodes[0], node.childNodes[0], 1, 1);
-        let keyBoardEvent: any = { type: 'keydown', preventDefault: () => { }, ctrlKey: true, key: 'g', stopPropagation: () => { }, shiftKey: false, which: 71 };
-        keyBoardEvent.charCode = 71;
-        keyBoardEvent.keyCode = 71;
-        keyBoardEvent.bubbles = true;
-        rteObj.inputElement.dispatchEvent(new KeyboardEvent('keydown', keyBoardEvent));
-        expect(node.childNodes[0].nodeName.toLocaleLowerCase()).toBe('strong');
 
-    });
-});
 
 describe('RTE Keyboard shortcut testing', () => {
     let rteObj: RichTextEditor;

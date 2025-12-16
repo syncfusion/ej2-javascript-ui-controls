@@ -1,3 +1,5 @@
+@use 'ej2-base/styles/common/mixin' as *;
+@use './theme-variables' as *;
 @include export-module('otp-input-bigger') {
   .e-bigger.e-otpinput,
   .e-bigger .e-otpinput {
@@ -16,7 +18,7 @@
         font-size: $otp-bigger-input-password-font-size;
       }
       &.e-input.e-otp-input-focus:focus {
-        padding-bottom: 0;
+        padding-bottom: $otp-input-zero-padding-margin;
       }
     }
     .e-otp-separator {
@@ -25,7 +27,7 @@
     }
     &.e-filled {
       .e-otp-input-field {
-        padding: 0;
+        padding: $otp-input-zero-padding-margin;
       }
     }
   }
@@ -49,7 +51,7 @@
         font-size: $otp-bigger-small-input-password-font-size;
       }
       &.e-input.e-otp-input-focus:focus {
-        padding-bottom: 0;
+        padding-bottom: $otp-input-zero-padding-margin;
       }
     }
     .e-otp-separator {
@@ -58,7 +60,7 @@
     }
     &.e-filled {
       .e-otp-input-field {
-        padding: 0;
+        padding: $otp-input-zero-padding-margin;
       }
     }
   }

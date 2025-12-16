@@ -1,3 +1,5 @@
+@use 'ej2-base/styles/common/mixin' as *;
+@use './theme-variables' as *;
 @mixin tab-mob-last-item-margin {
   @media screen and (max-width: 480px) {
     margin: $tab-mob-last-item-margin;
@@ -21,16 +23,16 @@
     &.e-fill-mode .e-content .e-item,
     &.e-fill-mode .e-content .e-item > div,
     &.e-fill-mode .e-content .e-item > div > .e-blazor-template {
-      height: 100%;
+      height: $tab-content-height;
     }
 
     .e-tab-header {
       height: $tab-nrml-height;
-      min-height: $tab-nrml-height;
+      min-height: $tab-nrml-min-height;
 
       @media screen and (max-width: 480px) {
         height: $tab-big-height;
-        min-height: $tab-big-height;
+        min-height: $tab-big-min-height;
       }
 
       &::before {
@@ -49,13 +51,13 @@
       }
 
       .e-toolbar-items {
-        height: auto;
-        margin: 0;
-        min-height: $tab-nrml-height;
+        height: $tab-auto-height;
+        margin: $tab-margin-none;
+        min-height: $tab-nrml-min-height;
         position: relative;
 
         @media screen and (max-width: 480px) {
-          min-height: $tab-big-height;
+          min-height: $tab-big-min-height;
         }
 
         &:not(.e-tbar-pos) .e-toolbar-item:first-child,
@@ -103,7 +105,7 @@
       .e-toolbar-items.e-hscroll {
 
         &.e-scroll-device {
-          padding: 0;
+          padding: $tab-padding-none;
 
           .e-scroll-right-nav {
             display: none;
@@ -144,7 +146,7 @@
 
       &:not(.e-vertical) .e-indicator {
         bottom: 0;
-        height: $tab-border-width;
+        height: $tab-border-height;
         left: 0;
         right: 0;
         border-radius: $tab-nrml-vertical-indicator-bdr-radius;
@@ -160,13 +162,13 @@
         &:not(.e-separator) {
           height: $tab-nrml-height;
           margin: $tab-nrml-item-margin;
-          min-height: $tab-nrml-height;
+          min-height: $tab-nrml-min-height;
           min-width: auto;
           padding: $tab-nrml-item-padding;
 
           @media screen and (max-width: 480px) {
             height: $tab-big-height;
-            min-height: $tab-big-height;
+            min-height: $tab-big-min-height;
           }
         }
 
@@ -246,7 +248,7 @@
 
             .e-text-wrap {
               height: $tab-nrml-item-text-wrap-height;
-              padding: 0;
+              padding: $tab-padding-none;
 
               @media screen and (max-width: 480px) {
                 height: $tab-big-active-it-text-container-height;
@@ -277,13 +279,13 @@
 
         .e-icons.e-tab-icon {
           display: inline-flex;
-          height: $tab-nrml-icon-container-size;
+          height: $tab-nrml-icon-container-height;
           min-width: $tab-nrml-icon-container-size;
-          width: $tab-nrml-icon-container-size;
+          width: $tab-nrml-icon-container-width;
           line-height: $tab-nrml-item-tabicon-line-height;
 
           @media screen and (max-width: 480px) {
-            height: $tab-mob-icon-container-size;
+            height: $tab-mob-icon-container-height;
             width: $tab-mob-icon-container-size;
           }
         }
@@ -321,7 +323,7 @@
         }
 
         .e-icon-right {
-          margin: 0 0 0 8px;
+          margin: $tab-close-icon-margin;
 
           @media screen and (max-width: 480px) {
             margin: $tab-bgr-mob-item-iconright-margin;
@@ -357,14 +359,14 @@
             &:focus {
 
               .e-text-wrap {
-                height: auto;
+                height: $tab-auto-height;
               }
             }
           }
 
           .e-text-wrap {
             display: block;
-            height: auto;
+            height: $tab-auto-height;
           }
 
           &.e-active {
@@ -374,12 +376,12 @@
               &:focus {
 
                 .e-text-wrap {
-                  height: auto;
+                  height: $tab-auto-height;
                 }
               }
 
               .e-text-wrap {
-                height: auto;
+                height: $tab-auto-height;
               }
             }
           }
@@ -417,7 +419,7 @@
           display: flex;
           flex-direction: column;
           justify-content: center;
-          margin: auto;
+          margin: $tbar-margin-auto;
         }
       }
 
@@ -427,17 +429,17 @@
 
         .e-toolbar-item {
           height: $tab-nrml-pop-item-height;
-          min-height: $tab-nrml-pop-item-height;
+          min-height: $tab-nrml-pop-item-min-height;
           min-width: auto;
 
           @media screen and (max-width: 480px) {
             height: $tab-mob-pop-item-height;
-            min-height: $tab-mob-pop-item-height;
+            min-height: $tab-mob-pop-item-min-height;
           }
 
           &:not(.e-separator) {
             margin: $tab-pop-item-margin;
-            padding: 0;
+            padding: $tab-padding-none;
           }
 
           .e-tab-wrap {
@@ -466,7 +468,7 @@
           }
 
           .e-close-icon {
-            margin: 0 0 0 8px;
+            margin: $tab-close-icon-margin;
           }
 
           .e-close-icon::before {
@@ -477,7 +479,7 @@
             padding-right: $tab-nrml-pop-text-padding-right;
 
             @media screen and (max-width: 480px) {
-              padding-right: 0;
+              padding-right: $tab-padding-none;
             }
           }
 
@@ -490,10 +492,10 @@
             }
 
             &:not(.e-separator) {
-              min-height: $tab-pop-nrml-icon-top-bottom-item-height;
+              min-height: $tab-pop-nrml-icon-top-bottom-item-min-height;
 
               @media screen and (max-width: 480px) {
-                min-height: $tab-pop-big-icon-top-bottom-item-height;
+                min-height: $tab-pop-big-icon-top-bottom-item-min-height;
               }
             }
 
@@ -507,21 +509,21 @@
 
             .e-text-wrap {
               display: inline-flex;
-              height: auto;
+              height: $tab-auto-height;
             }
 
             .e-tab-text {
               display: block;
               justify-content: center;
-              margin: 0 0 0 10px;
-              padding-left: 0;
-              padding-right: 10px;
+              margin: $tab-nrml-pop-text-margin;
+              padding-left: $tab-padding-none;
+              padding-right: $tab-nrml-pop-text-padding-right;
 
               @media screen and (max-width: 480px) {
                 justify-content: center;
-                margin: 0 0 0 12px;
-                padding-left: 0;
-                padding-right: 0;
+                margin: $tab-mob-pop-text-margin;
+                padding-left: $tab-padding-none;
+                padding-right: $tab-padding-none;
               }
             }
 
@@ -534,7 +536,7 @@
           &.e-ibottom {
 
             .e-tab-text {
-              margin: 0;
+              margin: $tab-margin-none;
             }
           }
 
@@ -572,13 +574,13 @@
 
       .e-scroll-nav {
         height: $tab-nrml-height;
-        min-height: $tab-nrml-height;
+        min-height: $tab-nrml-min-height;
         min-width: auto;
         width: auto;
 
         @media screen and (max-width: 480px) {
           height: $tab-big-height;
-          min-height: $tab-big-height;
+          min-height: $tab-big-min-height;
         }
 
         &.e-scroll-left-nav {
@@ -596,7 +598,7 @@
         .e-nav-left-arrow::before,
         .e-nav-right-arrow::before {
           font-size: $tab-nrml-nav-icon-size;
-          line-height: $tab-nrml-nav-icon-container-size;
+          line-height: $tab-nrml-nav-icon-container-line-height;
           position: relative;
           top: $tab-nrml-scroll-nav-arrow-before-top;
           vertical-align: initial;
@@ -605,7 +607,7 @@
         .e-nav-arrow {
           font-size: $tab-nrml-nav-icon-size;
           height: $tab-nrml-nav-icon-container-size;
-          line-height: $tab-nrml-nav-icon-container-size;
+          line-height: $tab-nrml-nav-icon-container-line-height;
           width: $tab-nrml-nav-icon-container-size;
 
           @media screen and (max-width: 480px) {
@@ -619,14 +621,14 @@
 
       .e-hor-nav {
         height: $tab-nrml-height;
-        min-height: $tab-nrml-height;
+        min-height: $tab-nrml-min-height;
         min-width: auto;
         padding: $tab-nrml-nav-right-icon-padding;
         width: auto;
 
         @media screen and (max-width: 480px) {
           height: $tab-big-height;
-          min-height: $tab-big-height;
+          min-height: $tab-big-min-height;
           padding: $tab-mob-nav-right-icon-padding;
         }
 
@@ -634,7 +636,7 @@
         .e-popup-down-icon {
           font-size: $tab-nrml-nav-icon-size;
           height: $tab-nrml-nav-icon-container-size;
-          line-height: $tab-nrml-nav-icon-container-size;
+          line-height: $tab-nrml-nav-icon-container-line-height;
           width: $tab-nrml-nav-icon-container-size;
 
           @media screen and (max-width: 480px) {
@@ -646,7 +648,7 @@
 
           &::before {
             font-size: $tab-nrml-nav-icon-size;
-            line-height: $tab-nrml-nav-icon-container-size;
+            line-height: $tab-nrml-nav-icon-container-line-height;
             position: relative;
             top: 0;
             vertical-align: initial;
@@ -755,7 +757,7 @@
 
         .e-toolbar-items:not(.e-tbar-pos) .e-toolbar-item:last-child {
           margin: $tab-nrml-even-last-item-margin;
-          padding-bottom: 0;
+          padding-bottom: $tab-padding-none;
           padding-top: $tab-nrml-even-boot-active-item-padding-bottom;
 
           @media screen and (max-width: 480px) {
@@ -772,7 +774,7 @@
 
           &.e-active {
             margin: $tab-nrml-even-boot-item-margin;
-            padding-bottom: 0;
+            padding-bottom: $tab-padding-none;
             padding-top: $tab-nrml-boot-active-item-padding-bottom;
 
             @media screen and (max-width: 480px) {
@@ -781,7 +783,7 @@
 
             .e-text-wrap {
               height: $tab-nrml-item-text-wrap-height;
-              padding: 0;
+              padding: $tab-padding-none;
 
               @media screen and (max-width: 480px) {
                 height: $tab-big-active-text-container-height;
@@ -804,14 +806,14 @@
           &.e-ibottom {
 
             .e-text-wrap {
-              height: initial;
+              height: $tab-initial-height;
             }
 
             &.e-active {
 
               .e-text-wrap {
-                height: initial;
-                padding: 0;
+                height: $tab-initial-height;
+                padding: $tab-padding-none;
               }
 
               .e-text-wrap::before {
@@ -833,14 +835,14 @@
 
         &::before {
           bottom: 0;
-          height: 100%;
+          height: $tab-content-height;
           left: 0;
           top: 0;
         }
 
         &[style *= 'overflow: hidden']::before {
           bottom: $tab-nrml-vertical-scroll-nav-top-bottom;
-          height: auto;
+          height: $tab-auto-height;
           top: $tab-nrml-vertical-scroll-nav-top-bottom;
 
           @media screen and (max-width: 480px) {
@@ -856,7 +858,7 @@
         }
 
         .e-toolbar-items {
-          height: inherit;
+          height: $tab-inherit-height;
           flex-direction: column;
           align-items: normal;
 
@@ -868,11 +870,11 @@
         .e-toolbar-item {
 
           &:last-child {
-            margin: 0;
+            margin: $tab-margin-none;
           }
 
           &:not(.e-separator) {
-            margin: 0;
+            margin: $tab-margin-none;
           }
 
           .e-tab-wrap {
@@ -936,7 +938,7 @@
             left: auto;
             right: 0;
             @if ($skin-name == 'Material3') {
-              border-radius: 3px 0 0 3px;
+              border-radius: $tab-indicator-border-radius;
             }
             @else if ($skin-name == 'fluent2') {
               border-radius: $tab-nrml-vertical-indicator-bdr-radius;
@@ -959,7 +961,7 @@
               position: $tab-nrml-item-active-before-position;
               right: $tab-nrml-item-active-before-bottom;
               transition: $tab-nrml-vertical-before-transition;
-              width: $tab-nrml-item-active-before-height;
+              width: $tab-nrml-item-active-before-width;
             }
 
             &::after {
@@ -985,7 +987,7 @@
             left: 0;
             right: auto;
             @if ($skin-name == 'Material3') {
-              border-radius: 0 3px 3px 0;
+              border-radius: $tab-nrml-vertical-right-indicator-border-radius;
             }
             @else if ($skin-name == 'fluent2') {
               border-radius: $tab-nrml-vertical-indicator-bdr-radius;
@@ -1019,7 +1021,7 @@
               position: $tab-nrml-item-active-before-position;
               right: $tab-nrml-vertical-before-left;
               transition: $tab-nrml-vertical-before-transition;
-              width: $tab-nrml-item-active-before-height;
+              width: $tab-nrml-item-active-before-width;
             }
 
             &::after {
@@ -1043,8 +1045,8 @@
           .e-nav-arrow {
             font-size: $tab-nrml-vertical-nav-arrow-font-size;
             height: $tab-nrml-vertical-nav-arrow-size;
-            line-height: $tab-nrml-vertical-nav-arrow-size;
-            margin: 0 auto;
+            line-height: $tab-nrml-vertical-nav-arrow-line-height;
+            margin: $tab-margin-none auto;
             width: $tab-nrml-vertical-nav-arrow-size;
           }
         }
@@ -1055,7 +1057,7 @@
 
           .e-popup-up-icon,
           .e-popup-down-icon {
-            height: 100%;
+            height: $tab-content-height;
             transform: none;
             transition: none;
             width: 100%;
@@ -1063,7 +1065,7 @@
             &::before {
               float: left;
               font-family: $tab-font-family;
-              font-size: $tab-nrml-font-size;
+              font-size: $tab-nrml-font-icon-size;
               font-weight: $tab-font-weight;
               line-height: $tab-nrml-more-btn-line-height;
               text-align: left;
@@ -1074,7 +1076,7 @@
 
             &::after {
               float: left;
-              font-size: 12px;
+              font-size: $tab-popup-down-icon-font-size;
               line-height: $tab-nrml-more-btn-line-height;
               margin: $tab-pop-more-icon-margin;
               vertical-align: initial;
@@ -1097,7 +1099,7 @@
         &.e-toolpop {
 
           .e-toolbar-items {
-            height: auto;
+            height: $tab-auto-height;
           }
         }
       }
@@ -1110,14 +1112,14 @@
         .e-toolbar-items:not(.e-tbar-pos) {
 
           .e-toolbar-item:last-child {
-            margin: 0;
+            margin: $tab-margin-none;
           }
         }
 
         .e-toolbar-item {
 
           &:not(.e-separator) {
-            margin: 0;
+            margin: $tab-margin-none;
 
             &.e-itop .e-close-icon,
             &.e-ibottom .e-close-icon {
@@ -1195,7 +1197,7 @@
 
       > .e-tab-header {
         height: $tab-nrml-tb-icon-height;
-        min-height: $tab-nrml-tb-icon-height;
+        min-height: $tab-nrml-tb-icon-min-height;
 
         &.e-reorder-active-item .e-toolbar-pop {
 
@@ -1291,7 +1293,7 @@
       &.e-vertical-tab {
 
         .e-tab-header.e-vertical .e-toolbar-items {
-          height: inherit;
+          height: $tab-inherit-height;
         }
       }
     }
@@ -1316,11 +1318,11 @@
           }
 
           .e-tab-wrap:focus .e-text-wrap {
-            height: auto;
+            height: $tab-auto-height;
           }
 
           &.e-active .e-tab-wrap:focus .e-text-wrap {
-            height: auto;
+            height: $tab-auto-height;
           }
         }
       }
@@ -1352,7 +1354,7 @@
 
             .e-tab-wrap:focus .e-text-wrap {
               height: $tab-nrml-item-text-wrap-height;
-              padding: 0;
+              padding: $tab-padding-none;
             }
           }
 
@@ -1360,11 +1362,11 @@
           &.e-ibottom {
 
             .e-tab-wrap:focus .e-text-wrap {
-              height: auto;
+              height: $tab-auto-height;
             }
 
             &.e-active .e-tab-wrap:focus .e-text-wrap {
-              height: auto;
+              height: $tab-auto-height;
             }
           }
         }
@@ -1539,7 +1541,7 @@
 
       .e-tab-header {
         height: $tab-nrml-fill-height;
-        min-height: $tab-nrml-fill-height;
+        min-height: $tab-nrml-fill-minheight;
 
         @media screen and (max-width: 480px) {
           height: $tab-mob-fill-height;
@@ -1551,8 +1553,8 @@
         }
 
         .e-toolbar-items {
-          height: auto;
-          min-height: $tab-nrml-fill-height;
+          height: $tab-auto-height;
+          min-height: $tab-nrml-fill-minheight;
 
           @media screen and (max-width: 480px) {
             min-height: $tab-mob-fill-height;
@@ -1570,7 +1572,7 @@
           &:not(.e-separator) {
             height: $tab-nrml-fill-height;
             margin: $tab-alt-item-margin;
-            min-height: $tab-nrml-fill-height;
+            min-height: $tab-nrml-fill-minheight;
             padding: $tab-nrml-background-active-padding;
 
             @media screen and (max-width: 480px) {
@@ -1581,7 +1583,7 @@
             &.e-itop,
             &.e-ibottom {
               height: $tab-nrml-fill-icon-top-bottom-item-height;
-              min-height: $tab-nrml-fill-icon-top-bottom-item-height;
+              min-height: $tab-nrml-fill-icon-top-bottom-item-min-height;
             }
           }
 
@@ -1639,7 +1641,7 @@
 
           &.e-itop .e-text-wrap,
           &.e-ibottom .e-text-wrap {
-            height: auto;
+            height: $tab-auto-height;
           }
         }
 
@@ -1647,7 +1649,7 @@
 
           .e-toolbar-item.e-itop:not(.e-separator),
           .e-toolbar-item.e-ibottom:not(.e-separator) {
-            height: auto;
+            height: $tab-auto-height;
           }
         }
 
@@ -1659,13 +1661,13 @@
 
               &:first-child.e-active,
               &:last-child.e-active {
-                padding: 0;
+                padding: $tab-padding-none;
               }
 
               &.e-itop,
               &:first-child.e-itop,
               &:last-child.e-itop {
-                padding-top: 0;
+                padding-top: $tab-padding-none;
               }
             }
           }
@@ -1673,8 +1675,8 @@
           .e-toolbar-item {
 
             &.e-active {
-              margin-right: 0;
-              padding: 0;
+              margin-right: $tab-margin-none;
+              padding: $tab-padding-none;
 
               .e-text-wrap {
                 height: $tab-nrml-fill-item-textwrap-height;
@@ -1693,7 +1695,7 @@
               }
 
               .e-text-wrap {
-                height: auto;
+                height: $tab-auto-height;
               }
             }
           }
@@ -1702,7 +1704,7 @@
         &.e-vertical {
 
           .e-toolbar-items {
-            height: inherit;
+            height: $tab-inherit-height;
 
             .e-toolbar-item {
 
@@ -1738,10 +1740,10 @@
             height: $tab-nrml-focus-fill-icon-top-bottom-item-height;
 
             .e-text-wrap {
-              height: auto;
+              height: $tab-auto-height;
 
               @media screen and (max-width: 480px) {
-                height: auto;
+                height: $tab-auto-height;
               }
             }
           }
@@ -1758,8 +1760,8 @@
       &.e-vertical-icon {
 
         > .e-tab-header {
-          height: $tab-nrml-tb-icon-height - 2;
-          min-height: $tab-nrml-tb-icon-height - 2;
+          height: $tab-nrml-tb-icon-height - $tab-nrml-tb-icon-height-calc;
+          min-height: $tab-nrml-tb-icon-min-height - 2;
         }
       }
     }
@@ -1777,7 +1779,7 @@
         .e-toolbar-item {
 
           &:not(.e-separator) {
-            margin: 0;
+            margin: $tab-margin-none;
             padding: $tab-nrml-background-active-padding;
           }
 
@@ -1828,12 +1830,12 @@
 
           .e-toolbar-items:not(.e-tbar-pos) .e-toolbar-item:first-child.e-active,
           .e-toolbar-items:not(.e-tbar-pos) .e-toolbar-item:last-child.e-active {
-            padding: 0;
+            padding: $tab-padding-none;
           }
 
           .e-toolbar-item.e-active {
-            margin: 0;
-            padding: 0;
+            margin: $tab-margin-none;
+            padding: $tab-padding-none;
           }
         }
 
@@ -1912,14 +1914,14 @@
         .e-toolbar-pop {
 
           .e-toolbar-item {
-            margin: 0;
+            margin: $tab-margin-none;
 
             .e-tab-text {
               padding-left: $tab-rtl-nrml-pop-text-padding-left;
-              padding-right: 0;
+              padding-right: $tab-padding-none;
 
               @media screen and (max-width: 480px) {
-                padding-left: 0;
+                padding-left: $tab-padding-none;
               }
             }
 
@@ -1940,14 +1942,14 @@
 
             &.e-itop .e-tab-text,
             &.e-ibottom .e-tab-text {
-              margin: 0;
-              padding-left: 10px;
-              padding-right: 0;
+              margin: $tab-margin-none;
+              padding-left: $tab-nrml-pop-text-padding-right;
+              padding-right: $tab-padding-none;
 
               @media screen and (max-width: 480px) {
-                margin: 0;
-                padding-left: 10px;
-                padding-right: 0;
+                margin: $tab-margin-none;
+                padding-left: $tab-nrml-pop-text-padding-right;
+                padding-right: $tab-padding-none;
               }
             }
           }
@@ -1976,7 +1978,7 @@
           }
 
           &::after {
-            margin: 0;
+            margin: $tab-margin-none;
             width: 100%;
           }
         }
@@ -1991,13 +1993,13 @@
     &:not(.e-separator) {
       height: $tab-nrml-height;
       margin: $tab-nrml-item-margin;
-      min-height: $tab-nrml-height;
+      min-height: $tab-nrml-min-height;
       min-width: auto;
       padding: $tab-nrml-item-padding;
 
       @media screen and (max-width: 480px) {
         height: $tab-big-height;
-        min-height: $tab-big-height;
+        min-height: $tab-big-min-height;
       }
     }
 
@@ -2055,13 +2057,13 @@
 
     .e-icons.e-tab-icon {
       display: inline-flex;
-      height: $tab-nrml-icon-container-size;
+      height: $tab-nrml-icon-container-height;
       min-width: $tab-nrml-icon-container-size;
-      width: $tab-nrml-icon-container-size;
+      width: $tab-nrml-icon-container-width;
       line-height: $tab-nrml-item-tabicon-line-height;
 
       @media screen and (max-width: 480px) {
-        height: $tab-mob-icon-container-size;
+        height: $tab-mob-icon-container-height;
         width: $tab-mob-icon-container-size;
       }
     }
@@ -2088,7 +2090,7 @@
     }
 
     .e-icon-right {
-      margin: 0 0 0 8px;
+      margin: $tab-clone-element-icon-margin;
 
       @media screen and (max-width: 480px) {
         margin: $tab-bgr-mob-item-iconright-margin;
@@ -2124,14 +2126,14 @@
         &:focus {
 
           .e-text-wrap {
-            height: auto;
+            height: $tab-auto-height;
           }
         }
       }
 
       .e-text-wrap {
         display: block;
-        height: auto;
+        height: $tab-auto-height;
       }
 
       .e-close-icon {
@@ -2167,7 +2169,7 @@
       display: flex;
       flex-direction: column;
       justify-content: center;
-      margin: auto;
+      margin: $tbar-margin-auto;
     }
 
     &.e-close-show {

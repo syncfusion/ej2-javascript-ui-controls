@@ -6,7 +6,7 @@ import { InsertMethods } from './insert-methods';
  * Split the Node based on selection
  *
  * @hidden
- * @deprecated
+ * @private
  */
 export class NodeCutter {
     public enterAction: string = 'P'
@@ -20,7 +20,7 @@ export class NodeCutter {
      * @param {HTMLElement} node - specifies the node element.
      * @returns {Node} - returns the node value
      * @hidden
-     * @deprecated
+     * @private
      */
     public GetSpliceNode(range: Range, node: HTMLElement): Node {
         node = this.SplitNode(range, node, true);
@@ -34,7 +34,7 @@ export class NodeCutter {
      * @param {boolean} isCollapsed - specifies the boolean value
      * @returns {HTMLElement} - returns the element
      * @hidden
-     * @deprecated
+     * @private
      */
     public SplitNode(range: Range, node: HTMLElement, isCollapsed: boolean): HTMLElement {
         if (node) {
@@ -149,7 +149,7 @@ export class NodeCutter {
      * @param {Node} node - specifies the node.
      * @returns {Range} - returns the range value
      * @hidden
-     * @deprecated
+     * @private
      */
     public GetCursorRange(docElement: Document, range: Range, node: Node): Range {
         let cursorRange: Range = docElement.createRange();
@@ -196,7 +196,7 @@ export class NodeCutter {
      * @param {Node} node - specifies the node.
      * @returns {Node} - returns the node value
      * @hidden
-     * @deprecated
+     * @private
      */
     public GetCursorNode(docElement: Document, range: Range, node: Node): Node {
         return this.GetSpliceNode(this.GetCursorRange(docElement, range, node), node as HTMLElement);
@@ -208,7 +208,7 @@ export class NodeCutter {
      * @param {string} line - specifies the string value.
      * @returns {string} - returns the string
      * @hidden
-     * @deprecated
+     * @private
      */
     public TrimLineBreak(line: string): string {
         return line.replace(/(\r\n\t|\n|\r\t)/gm, ' ');

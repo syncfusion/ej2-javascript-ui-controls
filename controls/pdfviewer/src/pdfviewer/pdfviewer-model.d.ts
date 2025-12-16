@@ -1,4 +1,4 @@
-import { Component, INotifyPropertyChanged, NotifyPropertyChanges, ChildProperty, L10n, Collection, Complex, isBlazor, Browser } from '@syncfusion/ej2-base';import { ModuleDeclaration, isNullOrUndefined, Property, Event, EmitType, SanitizeHtmlHelper } from '@syncfusion/ej2-base';import { IAnnotationPoint, IPoint, IPageAnnotations, PdfViewerBase, PdfiumRunner, TextMarkupAnnotation } from './index';import { Navigation } from './index';import { Magnification } from './index';import { Toolbar } from './index';import { ToolbarItem } from './index';import { PdfRenderer } from './index';import { LinkTarget, InteractionMode, SignatureFitMode, AnnotationType, AnnotationToolbarItem, LineHeadStyle, ContextMenuAction, FontStyle, TextAlignment, AnnotationResizerShape, AnnotationResizerLocation, ZoomMode, PrintMode, CursorType, ContextMenuItem, DynamicStampItem, SignStampItem, StandardBusinessStampItem, FormFieldType, AllowedInteraction, AnnotationDataFormat, SignatureType, CommentStatus, SignatureItem, FormDesignerToolbarItem, DisplayMode, Visibility, FormFieldDataFormat, PdfKeys, ModifierKeys, ExtractTextOption } from './base/types';import { Annotation } from './index';import { LinkAnnotation } from './index';import { ThumbnailView } from './index';import { BookmarkView } from './index';import { TextSelection } from './index';import { TextSearch } from './index';import { AccessibilityTags } from './index';import { FormFields } from './index';import { FormDesigner } from './index';import { Print, CalibrationUnit } from './index';import { PageOrganizer } from './index';import { UnloadEventArgs, LoadEventArgs, LoadFailedEventArgs, AjaxRequestFailureEventArgs, PageChangeEventArgs, PageClickEventArgs, ZoomChangeEventArgs, HyperlinkClickEventArgs, HyperlinkMouseOverArgs, ImportStartEventArgs, ImportSuccessEventArgs, ImportFailureEventArgs, ExportStartEventArgs, ExportSuccessEventArgs, ExportFailureEventArgs, AjaxRequestInitiateEventArgs, PageRenderInitiateEventArgs, AjaxRequestSuccessEventArgs, PageRenderCompleteEventArgs, PageOrganizerSaveAsEventArgs, PageOrganizerZoomChangedEventArgs } from './index';import { AnnotationAddEventArgs, AnnotationRemoveEventArgs, AnnotationPropertiesChangeEventArgs, AnnotationResizeEventArgs, AnnotationSelectEventArgs, AnnotationMoveEventArgs, AnnotationDoubleClickEventArgs, AnnotationMouseoverEventArgs, PageMouseoverEventArgs, AnnotationMouseLeaveEventArgs , ButtonFieldClickEventArgs} from './index';import { TextSelectionStartEventArgs, TextSelectionEndEventArgs, DownloadStartEventArgs, DownloadEndEventArgs, ExtractTextCompletedEventArgs, PrintStartEventArgs, PrintEndEventArgs } from './index';import { TextSearchStartEventArgs, TextSearchCompleteEventArgs, TextSearchHighlightEventArgs } from './index';import { CustomContextMenuSelectEventArgs, CustomContextMenuBeforeOpenEventArgs } from './index';import { PdfAnnotationBase, PdfFormFieldBase, ZOrderPageTable } from './drawing/pdf-annotation';import { PdfAnnotationBaseModel, PdfFormFieldBaseModel } from './drawing/pdf-annotation-model';import { Drawing, ClipBoardObject } from './drawing/drawing';import { Selector } from './drawing/selector';import { SelectorModel } from './drawing/selector-model';import { PointModel, IElement, Rect, Point, Size, processPathData, splitArrayCollection } from '@syncfusion/ej2-drawings';import { renderAdornerLayer } from './drawing/dom-util';import { ThumbnailClickEventArgs } from './index';import { ValidateFormFieldsArgs, BookmarkClickEventArgs, AnnotationUnSelectEventArgs, BeforeAddFreeTextEventArgs, FormFieldFocusOutEventArgs, CommentEventArgs, FormFieldClickArgs, FormFieldAddArgs, FormFieldRemoveArgs, FormFieldPropertiesChangeArgs, FormFieldMouseLeaveArgs, FormFieldMouseoverArgs, FormFieldMoveArgs, FormFieldResizeArgs, FormFieldSelectArgs, FormFieldUnselectArgs, FormFieldDoubleClickArgs, AnnotationMovingEventArgs, KeyboardCustomCommandsEventArgs, ISize } from './base';import { AddSignatureEventArgs, RemoveSignatureEventArgs, MoveSignatureEventArgs, SignaturePropertiesChangeEventArgs, ResizeSignatureEventArgs, SignatureSelectEventArgs, SignatureUnselectEventArgs } from './base';import { IFormField, IFormFieldBound } from './form-designer/form-designer';import { ClickEventArgs, MenuItemModel } from '@syncfusion/ej2-navigations';import { PdfViewerUtils, PdfiumTaskScheduler, TaskPriorityLevel } from './base/pdfviewer-utlis';
+import { Component, INotifyPropertyChanged, NotifyPropertyChanges, ChildProperty, L10n, Collection, Complex, isBlazor, Browser } from '@syncfusion/ej2-base';import { ModuleDeclaration, isNullOrUndefined, Property, Event, EmitType, SanitizeHtmlHelper } from '@syncfusion/ej2-base';import { IAnnotationPoint, IPoint, IPageAnnotations, PdfViewerBase, PdfiumRunner, TextMarkupAnnotation, ShapeAnnotation, MeasureAnnotation, OrganizeDetails } from './index';import { Navigation } from './index';import { Magnification } from './index';import { Toolbar } from './index';import { AnnotationToolbar } from './index';import { RedactionToolbar } from './toolbar/redaction-toolbar';import { FormDesignerToolbar } from './toolbar/formdesigner-toolbar';import { PdfRenderedFields } from './pdf-base/form-fields-base';import { ToolbarItem } from './index';import { PdfRenderer } from './index';import { LinkTarget, InteractionMode, SignatureFitMode, AnnotationType, AnnotationToolbarItem, RedactionToolbarItem, LineHeadStyle, ContextMenuAction, FontStyle, TextAlignment, AnnotationResizerShape, AnnotationResizerLocation, ZoomMode, PrintMode, CursorType, ContextMenuItem, DynamicStampItem, SignStampItem, StandardBusinessStampItem, FormFieldType, AllowedInteraction, AnnotationDataFormat, SignatureType, CommentStatus, SignatureItem, FormDesignerToolbarItem, DisplayMode, Visibility, FormFieldDataFormat, PdfKeys, ModifierKeys, ExtractTextOption } from './base/types';import { Annotation } from './index';import { LinkAnnotation } from './index';import { ThumbnailView } from './index';import { BookmarkView } from './index';import { TextSelection } from './index';import { TextSearch } from './index';import { AccessibilityTags } from './index';import { FormFields } from './index';import { FormDesigner } from './index';import { Print, CalibrationUnit } from './index';import { PageOrganizer } from './index';import { UnloadEventArgs, LoadEventArgs, LoadFailedEventArgs, AjaxRequestFailureEventArgs, PageChangeEventArgs, PageClickEventArgs, ZoomChangeEventArgs, HyperlinkClickEventArgs, HyperlinkMouseOverArgs, ImportStartEventArgs, ImportSuccessEventArgs, ImportFailureEventArgs, ExportStartEventArgs, ExportSuccessEventArgs, ExportFailureEventArgs, AjaxRequestInitiateEventArgs, PageRenderInitiateEventArgs, AjaxRequestSuccessEventArgs, PageRenderCompleteEventArgs, PageOrganizerSaveAsEventArgs, PageOrganizerZoomChangedEventArgs } from './index';import { AnnotationAddEventArgs, AnnotationRemoveEventArgs, AnnotationPropertiesChangeEventArgs, AnnotationResizeEventArgs, AnnotationSelectEventArgs, AnnotationMoveEventArgs, AnnotationDoubleClickEventArgs, AnnotationMouseoverEventArgs, PageMouseoverEventArgs, AnnotationMouseLeaveEventArgs , ButtonFieldClickEventArgs} from './index';import { TextSelectionStartEventArgs, TextSelectionEndEventArgs, DownloadStartEventArgs, DownloadEndEventArgs, ExtractTextCompletedEventArgs, PrintStartEventArgs, PrintEndEventArgs } from './index';import { TextSearchStartEventArgs, TextSearchCompleteEventArgs, TextSearchHighlightEventArgs } from './index';import { CustomContextMenuSelectEventArgs, CustomContextMenuBeforeOpenEventArgs } from './index';import { PdfAnnotationBase, PdfFormFieldBase, ZOrderPageTable } from './drawing/pdf-annotation';import { PdfAnnotationBaseModel, PdfFormFieldBaseModel } from './drawing/pdf-annotation-model';import { Drawing, ClipBoardObject } from './drawing/drawing';import { Selector } from './drawing/selector';import { SelectorModel } from './drawing/selector-model';import { PointModel, IElement, Rect, Point, Size, processPathData, splitArrayCollection, getPathString } from '@syncfusion/ej2-drawings';import { renderAdornerLayer } from './drawing/dom-util';import { ThumbnailClickEventArgs } from './index';import { ValidateFormFieldsArgs, BookmarkClickEventArgs, AnnotationUnSelectEventArgs, BeforeAddFreeTextEventArgs, FormFieldFocusOutEventArgs, CommentEventArgs, FormFieldClickArgs, FormFieldAddArgs, FormFieldRemoveArgs, FormFieldPropertiesChangeArgs, FormFieldMouseLeaveArgs, FormFieldMouseoverArgs, FormFieldMoveArgs, FormFieldResizeArgs, FormFieldSelectArgs, FormFieldUnselectArgs, FormFieldDoubleClickArgs, AnnotationMovingEventArgs, KeyboardCustomCommandsEventArgs, ISize } from './base';import { AddSignatureEventArgs, RemoveSignatureEventArgs, MoveSignatureEventArgs, SignaturePropertiesChangeEventArgs, ResizeSignatureEventArgs, SignatureSelectEventArgs, SignatureUnselectEventArgs } from './base';import { IFormField, IFormFieldBound } from './form-designer/form-designer';import { ClickEventArgs, MenuItemModel } from '@syncfusion/ej2-navigations';import { PdfViewerUtils, PdfiumTaskScheduler, TaskPriorityLevel } from './base/pdfviewer-utlis';import { Rectangle } from '@syncfusion/ej2-pdf';import { PdfDocument, PdfPageImportOptions } from '@syncfusion/ej2-pdf';
 import {IAjaxHeaders,IPdfRectBounds} from "./pdfviewer";
 import {ComponentModel} from '@syncfusion/ej2-base';
 
@@ -21,6 +21,12 @@ export interface ToolbarSettingsModel {
      * Provide option to customize the annotation toolbar of the PDF Viewer.
      */
     annotationToolbarItems?: AnnotationToolbarItem[];
+
+    /**
+     * Provide option to customize the redaction toolbar of the PDF Viewer.
+     * This redaction customization feature shall be available only when the PDF Viewer is operating in Standalone Mode.
+     */
+    redactionToolbarItems?: RedactionToolbarItem[];
 
     /**
      * Customize the tools to be exposed in the form designer toolbar.
@@ -142,6 +148,23 @@ export interface FormDesignerToolbarSettingsModel {
      * shows only the defined options in the PdfViewer.
      */
     formDesignerToolbarItem?: FormDesignerToolbarItem[];
+
+}
+
+/**
+ * Interface for a class RedactionToolbarSettings
+ */
+export interface RedactionToolbarSettingsModel {
+
+    /**
+     * Enable or disables the tooltip of the toolbar.
+     */
+    showTooltip?: boolean;
+
+    /**
+     * Gets or sets the toolbar items available in the redaction toolbar of the PDF Viewer.
+     */
+    redactionToolbarItem?: RedactionToolbarItem[];
 
 }
 
@@ -1075,6 +1098,156 @@ export interface RectangleSettingsModel {
      * specifies the subject of the annotation.
      */
     subject?: string;
+
+}
+
+/**
+ * Interface for a class PdfAnnotationSettings
+ */
+export interface PdfAnnotationSettingsModel {
+
+    /**
+     * Get or set the bounds of the annotation.
+     */
+    bound?: Rectangle;
+
+    /**
+     * Get or set page number of the annotation.
+     */
+    pageNumber?: number;
+
+    /**
+     * Gets or sets the fill color of the redacted area.
+     */
+    fillColor?: string;
+
+    /**
+     * specifies the author of the annotation.
+     */
+    author?: string;
+
+    /**
+     * specified the thickness of the annotation.
+     */
+    thickness?: number;
+
+    /**
+     * specifies the annotation selector settings of the annotation.
+     */
+    annotationSelectorSettings?: AnnotationSelectorSettingsModel;
+
+    /**
+     * specifies the minHeight of the annotation.
+     */
+    minHeight?: number;
+
+    /**
+     * specifies the minWidth of the annotation.
+     */
+    minWidth?: number;
+
+    /**
+     * specifies the minHeight of the annotation.
+     */
+    maxHeight?: number;
+
+    /**
+     * specifies the maxWidth of the annotation.
+     */
+    maxWidth?: number;
+
+    /**
+     * specifies the locked action of the annotation.
+     */
+    isLock?: boolean;
+
+    /**
+     * specifies the custom data of the annotation.
+     */
+    customData?: object;
+
+    /**
+     * Gets or sets the allowed interactions for the locked rectangle annotations.
+     * IsLock can be configured using rectangle settings.
+     *
+     * @default ['None']
+     */
+    allowedInteractions?: AllowedInteraction[];
+
+    /**
+     * specifies whether the individual annotations are included or not in print actions.
+     */
+    isPrint?: boolean;
+
+    /**
+     * specifies the subject of the annotation.
+     */
+    subject?: string;
+
+}
+
+/**
+ * Interface for a class RedactionSettings
+ */
+export interface RedactionSettingsModel extends PdfAnnotationSettingsModel{
+
+    /**
+     * If true, disables the default redaction confirmation popup.
+     */
+    disableConfirmationPopup?: boolean;
+
+    /**
+     * Gets or sets the opacity of the redaction marker.
+     * This property controls the transparency of the redaction marker's fill and border.
+     */
+    markerOpacity?: number;
+
+    /**
+     * Gets or sets the border color of the redaction marker.
+     * This property defines the color of the border surrounding the redaction area.
+     */
+    markerBorderColor?: string;
+
+    /**
+     * Gets or sets the fill color of the redaction marker.
+     * This property defines the color used to fill the redaction area.
+     */
+    markerFillColor?: string;
+
+    /**
+     * Gets or sets the text to be displayed as an overlay in the redaction annotation.
+     * Specifies the string that will appear over the redacted area.
+     */
+    overlayText?: string;
+
+    /**
+     * Gets or sets a value indicating whether the overlay text should repeat to fill the redaction area.
+     */
+    isRepeat?: boolean;
+
+    /**
+     * Gets or sets the font color of the overlay text in the redaction annotation.
+     * Specifies the color used for the overlay text displayed within the redacted area.
+     */
+    fontColor?: string;
+
+    /**
+     * Gets or sets the font size of the overlay text in the redaction annotation.
+     * This property determines the size of the overlay text displayed within the redacted area.
+     */
+    fontSize?: number;
+
+    /**
+     * Gets or sets the font family used for the overlay text in the redaction annotation.
+     * Defines the font style of the overlay text that appears on the redacted area.
+     */
+    fontFamily?: string;
+
+    /**
+     * Gets or sets the alignment of the overlay text displayed in the redaction annotation.
+     * This property defines how the overlay text is aligned within the bounds of the redaction area.
+     */
+    textAlignment?: TextAlignment;
 
 }
 
@@ -3761,6 +3934,19 @@ export interface PageOrganizerSettingsModel {
      */
     imageZoom?: number;
 
+    /**
+     * Get or set a boolean value to show or hide the pages extract option in the page organizer dialog. TRUE by default.
+     * The showExtractPagesOption API for the Extract Pages feature will be available only when the PDF Viewer is operating in Standalone Mode.
+     */
+    showExtractPagesOption?: boolean;
+
+    /**
+     * Specifies whether the pages can be extracted.
+     * The canExtractPages API for the Extract Pages feature will be available only when the PDF Viewer is operating in Standalone Mode.
+     * @default true
+     */
+    canExtractPages?: boolean;
+
 }
 
 /**
@@ -4010,6 +4196,17 @@ export interface PdfViewerModel extends ComponentModel{
      * @default false
      */
     isFormDesignerToolbarVisible?: boolean;
+
+    /**
+     * Opens the redaction toolbar when the PDF document is loaded in the PDF Viewer control initially
+     * and get the redaction Toolbar Visible status.
+     *
+     * {% codeBlock src='pdfviewer/isFormDesignerToolbarVisible/index.md' %}{% endcodeBlock %}
+     *
+     * @public
+     * @default false
+     */
+    isRedactionToolbarVisible?: boolean;
 
     /**
      * Enables or disables the multi-page text markup annotation selection in UI.
@@ -4449,6 +4646,15 @@ export interface PdfViewerModel extends ComponentModel{
     enableFormDesignerToolbar?: boolean;
 
     /**
+     * Opens the redaction designer toolbar when the PDF document is loaded in the PDF Viewer control initially.
+     *
+     * {% codeBlock src='pdfviewer/enableRedactionToolbar/index.md' %}{% endcodeBlock %}
+     *
+     * @default true
+     */
+    enableRedactionToolbar?: boolean;
+
+    /**
      * Gets or sets a boolean value to show or hide the bookmark panel while loading a document.
      *
      * {% codeBlock src='pdfviewer/isBookmarkPanelOpen/index.md' %}{% endcodeBlock %}
@@ -4742,6 +4948,11 @@ export interface PdfViewerModel extends ComponentModel{
      */
 
     rectangleSettings?: RectangleSettingsModel;
+
+    /**
+     * Defines the settings of redaction annotation.
+     */
+    redactionSettings?: RedactionSettingsModel;
 
     /**
      * Defines the settings of shape label.

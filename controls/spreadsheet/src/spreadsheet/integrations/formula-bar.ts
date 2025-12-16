@@ -7,7 +7,7 @@ import { updateSelectedRange, getSheetNameFromAddress, getSheetIndex, DefineName
 import { ComboBox, DropDownList, SelectEventArgs as DdlSelectArgs } from '@syncfusion/ej2-dropdowns';
 import { BeforeOpenEventArgs } from '@syncfusion/ej2-popups';
 import { rippleEffect, L10n, EventHandler, detach, Internationalization, isNullOrUndefined, select, getComponent } from '@syncfusion/ej2-base';
-import { isUndefined, getNumericObject, initializeCSPTemplate } from '@syncfusion/ej2-base';
+import { isUndefined, getNumericObject, initializeCSPTemplate, animationMode } from '@syncfusion/ej2-base';
 import { editOperation, formulaBarOperation, keyDown, keyUp, formulaOperation, editAlert, editValue, renderInsertDlg, readonlyAlert, addressHandle } from '../common/event';
 import { intToDate, isNumber } from '../../workbook/common/math';
 import { Dialog } from '../services/dialog';
@@ -538,10 +538,8 @@ export class FormulaBar {
                 });
                 if (isCancelled) {
                     this.categoryList = this.formulaList = null;
-                } else {
-                    this.categoryList.appendTo('#' + this.parent.element.id + '_formula_category');
-                    this.formulaList.appendTo('#' + this.parent.element.id + '_formula_list');
-                    EventHandler.add(this.formulaList.element, 'dblclick', this.formulaClickHandler, this);
+                } else if (animationMode !== 'Disable') {
+                    this.appendInsertFnDlgList();
                 }
             }
         }
@@ -563,7 +561,16 @@ export class FormulaBar {
         this.parent.setPanelSize();
     }
 
+    private appendInsertFnDlgList(): void {
+        this.categoryList.appendTo('#' + this.parent.element.id + '_formula_category');
+        this.formulaList.appendTo('#' + this.parent.element.id + '_formula_list');
+        EventHandler.add(this.formulaList.element, 'dblclick', this.formulaClickHandler, this);
+    }
+
     private dialogOpen(): void {
+        if (animationMode === 'Disable') {
+            this.appendInsertFnDlgList();
+        }
         getUpdateUsingRaf((): void => {
             const okBtn: HTMLElement = this.dialog.dialogInstance.element.querySelector('.e-footer-content .e-primary');
             const l10n: L10n = this.parent.serviceLocator.getService(locale);

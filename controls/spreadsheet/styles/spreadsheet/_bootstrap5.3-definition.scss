@@ -1,3 +1,8 @@
+@use 'ej2-base/styles/definition/bootstrap5.3' as *;
+@use 'ej2-navigations/styles/toolbar/bootstrap5.3-definition' as *;
+@use 'ej2-navigations/styles/tab/bootstrap5.3-definition' as *;
+@forward 'ej2-base/styles/definition/bootstrap5.3';
+@forward 'ej2-navigations/styles/toolbar/bootstrap5.3-definition';
 $sheet-skin: $skin-name !default;
 $spreadsheet-border-width: 1px;
 $select-all-size: 26px !default;
@@ -24,6 +29,7 @@ $aggregate-list-font-size: $font-icon-14 !default;
 $aggregate-list-line-height: 22px !default;
 $aggregate-list-caret-line-height: $text-xxs !default;
 $header-cell-font-weight: $font-weight-normal !default;
+$header-cell-padding-top: 0 !default;
 $spreadsheet-tbar-btn-icon-font-size: $font-icon-18 !default;
 $spreadsheet-cpicker-font-color-font-size: $font-icon-13 !default;
 $spreadsheet-cpicker-fill-color-font-size: $font-icon-14 !default;
@@ -32,6 +38,9 @@ $spreadsheet-drop-icon-font-size: $font-icon-12 !default;
 $define-name-input-height: 24px !default;
 $define-name-input-padding: 0 0 0 8px !default;
 $define-name-input-padding-rtl: 0 8px 0 0 !default;
+$spread-border-radius-0: $radius-0 !default;
+$spread-border-radius-3: $radius-3 !default;
+$spread-border-radius-4: $radius-4 !default;
 
 //selection
 $selection-bg-color: rgba(13, 110, 253, .12) !default;
@@ -58,11 +67,14 @@ $sheet-tab-btn-icon-color: $icon-color !default;
 $spread-sheet-tab-text-color:  $content-text-color !default;
 $select-icon-color: $primary !default;
 $sheet-tab-btn-icon-line-height: 32px !default;
-$sheet-tab-wrap-border-radius: 4px 4px 0 0 !default;
+$sheet-tab-wrap-border-radius: $radius-4 $radius-4 $radius-0 $radius-0 !default;
 $sheet-tab-aggr-bg-color-selected: $secondary-bg-color-pressed !default;
 $sheet-tab-btn-icon-active-color: $secondary-text-color !default;
 $bigger-spreadsheet-sheet-tab-icon-height: 38px !default;
 $bigger-spreadsheet-add-sheet-icon-font: $font-icon-18 !default;
+$bigger-spreadsheet-sheet-tab-icon-padding: 0 !default;
+$bigger-spreadsheet-sheet-tab-rename-line-height: 48px !default;
+$bigger-spreadsheet-sheet-tab-rename-margin-bottom: 0 !default;
 
 //Formula bar
 $formula-bar-font-size: $text-sm !default;
@@ -110,7 +122,7 @@ $align-ddb-item-height: 28px !default;
 $align-ddb-ul-padding: 8px !default;
 $align-ddb-item-padding: 0 7px !default;
 $align-ddb-item-margin: 0 !default;
-$align-ddb-item-border-radius: 4px !default;
+$align-ddb-item-border-radius: $radius-4 !default;
 $ctrl-btn-padding: 16px !default;
 $spreadsheet-ribbon-btn-width: 30px !default;
 $spreadsheet-ribbon-btn-height: 30px !default;
@@ -149,6 +161,7 @@ $hyper-doc-border-color:  $border-light !default;
 $hyperlink-dlg-header-content-font-size: $text-lg !default;
 $hyperlink-dlg-content-header-font-size: $text-sm !default;
 $hyperlink-dlg-content-text-font-size: $text-sm !default;
+$hyperlink-dlg-content-text-margin-top: 6px !default;
 $link-dialog-tab-text-font-size: $text-sm !default;
 $hyperlink-dlg-refcont-border: 1px solid $hyper-doc-border-color !default;
 $hyperlink-dlg-refcont-margin: 6px 0 0 0 !default;
@@ -166,6 +179,7 @@ $filter-icon-before-font-size: $font-icon-18 !default;
 $filter-list-hover-bg-color: $table-bg-color-hover !default;
 $spreadsheet-filter-btn-bottom: 0 !default;
 $spreadsheet-filter-btn-width: 18px !default;
+$spreadsheet-filter-btn-border: 0 !default;
 $spreadsheet-filter-icon-color: rgb($black) !default;
 $bigger-filter-icon-font-size: $font-icon-18 !default;
 
@@ -180,7 +194,12 @@ $find-popup-border-top-color: $border-light !default;
 $find-popup-border-color: $border-light !default;
 $find-popup-box-shadow: none !default;
 $find-dlg-alert-span-font-size: $text-xs !default;
+$find-dlg-alert-span-font-weight: bold !default;
+$find-dlg-content-padding-top: 0 !default;
 $bigger-find-dlg-btn-font-size: $text-xs !default;
+$bigger-find-dlg-btn-footer-btn-margin-bottom: 4px !default;
+$bigger-find-dlg-btn-footer-btn-margin-top: 4px !default;
+$bigger-find-dlg-content-padding-top: 0 !default;
 $find-dlg-header-font-weight: $font-weight-normal !default;
 $cfmain-header-font-size: $text-sm !default;
 $find-dlg-exactmatchcheckbox-padding: 12px 0 !default;
@@ -207,7 +226,9 @@ $protectworkbook-dlg-pwd-alert-span-font-size: $text-sm !default;
 $protectworkbook-dlg-pwd-content-font-size: $text-base !default;
 $protect-content-font-size: $text-sm !default;
 $protect-content-height: 33px !default;
+$protect-content-padding-top: 12px !default;
 $protectworkbook-dlg-alert-span-padding-top: 4px !default;
+$pwd-alert-span-padding-top: 4px !default;
 $bigger-protectworkbook-dlg-pwd-content-line-height: $text-2xl !default;
 $bigger-protectworkbook-dlg-pwd-content-margin-bottom: 8px !default;
 $protectworkbook-dlg-password-content-padding1: 0 !default;
@@ -223,6 +244,7 @@ $cf-menu-icon-font-size: $font-icon-16 !default;
 $cf-dlg-input-height: 34px !default;
 $cf-dlg-header-margin-top: 12px !default;
 $cf-databar-icon-bg-color: $dark-ele-hover-color !default;
+$cf-iconsets-rating-padding: 2px 12px !default;
 
 //Formula selection
 $vborder-selection: $spreadsheet-selection-1;
@@ -245,6 +267,7 @@ $custom-format-dlg-sample-margin: 12px 0 6px 0 !default;
 $custom-format-dlg-btn-height: 32px !default;
 $custom-format-dlg-btn-line-height: 22px !default;
 $expand-icon-color: $icon-color !default;
+$spread-dialog-listview-border-radius: $radius-4 !default;
 
 //File Name Dialog
 $open-dlg-width: 340px !default;
@@ -257,6 +280,7 @@ $open-dlg-header-padding-bttom: 6px !default;
 $bigger-validation-list-width: 22px !default;
 $bigger-validation-list-icon-height-width: 0 !default;
 $validation-dlg-content-header-font-size: $text-sm !default;
+$validation-dlg-content-input-margin-top: 6px !default;
 $validation-dlg-content-input-font-size: $text-sm !default;
 $validation-dlg-error-font-size: $text-xs !default;
 $validationerror-dlg-content-font-size: $text-sm !default;
@@ -279,17 +303,20 @@ $bigger-spreadsheet-chart-icon-font-size: 36px !default;
 $bigger-spreadsheet-addchart-icon-font-size: $font-icon-26 !default;
 $chart-text-content-color: $flyout-text-color !default;
 $spreadsheet-chart-icon-bg-color: $flyout-bg-color-hover !default;
+$spreadsheet-chart-icon-border-radius: $radius-4 !default;
 
 //Mixins
 $spreadsheet-ribbon-tab-text-wrap-height: 35px !default;
 $spreadsheet-cf-header-margin-bottom: 6px !default;
 $spreadsheet-cfmain-header-margin-bottom: 12px !default;
 $spreadsheet-sort-template-item-padding: 0 !default;
+$spreadsheet-sort-template-item-border: 0 !default;
 $spreadsheet-ribbon-toolbar-item-height: 32px !default;
 $hyperlink-dlg-content-header-line-height: 22px !default;
 $dlg-description-content-padding-top: 12px !default;
 $dlg-category-formula-description-padding: 8px 0 0 !default;
 $protect-dlg-password-header-line-height: 22px !default;
+$protect-dlg-password-header-margin-bottom: 6px !default;
 $protect-dlg-protect-check-margin-top: $text-xs !default;
 $protect-option-list-margin-top: 8px !default;
 $reenterpwd-dlg-content-header-line: 22px !default;
@@ -299,6 +326,9 @@ $validation-dlg-content-header-line: 22px !default;
 $validation-dlg-content-padding: 12px !default;
 $validation-dlg-content-header-padding-top: 12px !default;
 $spreadsheet-sort-dlg-error-bottom: 0 !default;
+$spreadsheet-sort-dlg-delete-padding-left: 18px !default;
+$spreadsheet-sort-dlg-delete-margin-right: 20px !default;
+$spreadsheet-sort-casecheckbox-margin-left: 16px !default;
 $bigger-spread-ribbon-tab-text-wrap-height: 42px !default;
 $bigger-spread-ribbon-tab-menu-items-height: 42px !default;
 $bigger-spread-ribbon-tab-menu-items-line-height: 42px !default;
@@ -318,6 +348,7 @@ $bigger-find-replace-casecheck-padding-bottom: 16px !default;
 $bigger-find-replace-casecheck-padding-top: 16px !default;
 $bigger-find-replace-exactmatch-padding: 16px 0 !default;
 $bigger-spreadsheet-dlg-label-padding-bottom: 8px !default;
+$bigger-spreadsheet-dlg-label-margin: 0 !default;
 $bigger-hyperlink-dlg-content-padding: 16px !default;
 $bigger-hyperlink-dlg-content-margin: 0 0 16px !default;
 $bigger-hyperlink-dlg-header-line-height: 24px !default;
@@ -342,9 +373,13 @@ $bigger-spread-sheet-tab-nav-arrow-font: $font-icon-18 !default;
 $bigger-spread-sheet-aggregate-font-size: $text-base !default;
 $bigger-spread-sheet-aggregate-line-height: 24px !default;
 $bigger-spread-dlg-header-content-line-height: 24px !default;
+$bigger-spread-dlg-header-content-padding-bottom: 8px !default;
+$bigger-spread-dlg-header-content-margin: 0 !default;
 $bigger-spread-dlg-header-label-bottom: 8px !default;
 $bigger-spreadsheet-sort-dlg-list-padding: 16px !default;
 $bigger-spread-dlg-header-label-top: 16px !default;
+$spread-dialog-label-margin-bottom: 6px !default;
+$spread-toolbar-btn-font-weight: normal !default;
 
 //Name Manager Dialog
 $spreadsheet-namerange-header-font-size: 22px !default;
@@ -426,9 +461,53 @@ $bigger-spreadsheet-protection-sheet-option-font-size: 16px !default;
 $bigger-spreadsheet-protection-sheet-option-padding-top: 16px !default;
 $bigger-spreadsheet-protection-sheet-option-padding-bottom:6px !default;
 
+//Blazor ribbon
+$spreadsheet-ribbon-simplified-mode-tab-header-font-weight: $font-weight-normal !default;
+
+//Blazor Namemanager
+$spreadsheet-name-manager-form-group-padding-top: 0 !default;
+
 //Blazor typography and spacing
+$spreadsheet-ribbon-simplified-mode-btn-font-weight: normal !default;
+$spreadsheet-name-dlg-header-mobile-font-weight: 600 !default;
+$spreadsheet-name-dlg-header-mobile-font-size: 16px !default;
+$spreadsheet-custom-close-btn-font-size: 18px !default;
+$spreadsheet-name-error-message-font-size: 12px !default;
+$spreadsheet-name-delete-warning-font-size: 16px !default;
+$spreadsheet-formula-suggession-containter-font-size: 10px !default;
+$bigger-spreadsheet-ribbonoverflow-font-size: 20px !default;
+$spreadsheet-overlay-resizer-border-radius: 4px !default;
+$spreadsheet-ribbon-simplified-mode-border-radius: 0 !default;
 $spreadsheet-font-weight-bold: bold !default;
 $spreadsheet-font-size-16: 16px !default;
 $spreadsheet-font-size-18: 18px !default;
 $spreadsheet-margin-10: 10px !default;
 $spreadsheet-padding-20: 20px !default;
+$spreadsheet-autofill-menuoption-min-width: 61px !default;
+$spreadsheet-border-menu-min-width: 270px !default;
+$spreadsheet-border-preview-line-width: 135px !default;
+$spreadsheet-border-auto-width: auto !default;
+$ids: 'LineStyleThin' 'LineStyleMedium' 'LineStyleThick' 'LineStyleDotted' 'LineStyleDashed' 'LineStyleDouble';
+$border-style-collection: solid solid solid dotted dashed double;
+$border-width-collection: thin medium thick thin thin medium;
+$spreadsheet-border-radius-50p: 50%;
+$spreadsheet-numformat-text-width: 100% !default;
+$spreadsheet-padding-5: 5px !default;
+
+// Threaded Comment
+$spread-comment-indicator-color: $primary !default;
+$spread-comment-background-color: $flyout-bg-color !default;
+$spread-comment-resolved-background-color: $content-bg-color-alt2 !default;
+$spread-comment-review-pane-background-color: $content-bg-color-alt1 !default;
+$spread-comment-review-title-color: $content-text-color-alt1 !default;
+$spread-comment-title-color: $content-text-color-alt1 !default;
+$spread-comment-text-color: $content-text-color !default;
+$spread-comment-timestamp-color: $content-text-color-alt2 !default;
+$spread-comment-input-height: 32px !default;
+$spread-comment-input-border-bottom: 2px solid rgba(97, 97, 97, 1) !default;
+$spread-comment-input-border-bottom-focused: 2px solid $primary !default;
+$spread-comment-border: 1px solid $border-light !default;
+$spread-comment-menu-height: 32px !default;
+$spread-comment-menu-width: 32px !default;
+$spread-comment-postbtn-padding: 2px 12px !default;
+$spread-comment-header-wrap-gap: 8px !default;

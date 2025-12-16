@@ -1,3 +1,4 @@
+@use 'ej2-base/styles/common/mixin' as *;
 @include export-module('multicolumncombobox-fusionnew-icons') {
   .e-input-group.e-control-wrapper .e-multicolumn-list-icon::before {
     content: '\e729';

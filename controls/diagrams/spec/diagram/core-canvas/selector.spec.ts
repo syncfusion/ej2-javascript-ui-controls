@@ -36,6 +36,7 @@ describe('Diagram Control', () => {
         afterAll((): void => {
             diagram.destroy();
             ele.remove();
+            (diagram as any) = null; (ele as any) = null;
         });
 
         it('Checking Single selection for node for pivot 0.5 in SVG rendering Mode', (done: Function) => {
@@ -76,6 +77,7 @@ describe('Diagram Control', () => {
         afterAll((): void => {
             diagram.destroy();
             ele.remove();
+            (diagram as any) = null; (ele as any) = null;
         });
 
         it('Checking single selection for node for pivot 0 in SVG rendering Mode', (done: Function) => {
@@ -109,6 +111,7 @@ describe('Diagram Control', () => {
         afterAll((): void => {
             diagram.destroy();
             ele.remove();
+            (diagram as any) = null; (ele as any) = null;
         });
 
         it('Checking single selection for pivot 1 in SVG rendering Mode', (done: Function) => {
@@ -142,6 +145,7 @@ describe('Diagram Control', () => {
         afterAll((): void => {
             diagram.destroy();
             ele.remove();
+            (diagram as any) = null; (ele as any) = null;
         });
 
         it('Checking single selection for pivot 1 based on rotateAngle in SVG rendering Mode', (done: Function) => {
@@ -180,6 +184,7 @@ describe('Diagram Control', () => {
         afterAll((): void => {
             diagram.destroy();
             ele.remove();
+            (diagram as any) = null; (ele as any) = null;
         });
 
         it('Checking Single Selection for Connector in SVG rendering Mode', (done: Function) => {
@@ -235,6 +240,7 @@ describe('Diagram Control', () => {
         afterAll((): void => {
             diagram.destroy();
             ele.remove();
+            (diagram as any) = null; (ele as any) = null;
         });
 
         it('Checking Multiple Selection for Connector in SVG rendering Mode', (done: Function) => {
@@ -271,6 +277,7 @@ describe('Diagram Control', () => {
         afterAll((): void => {
             diagram.destroy();
             ele.remove();
+            (diagram as any) = null; (ele as any) = null;
         });
 
         it('Checking Multiple Selection for Nodes in SVG rendering Mode', (done: Function) => {
@@ -313,6 +320,7 @@ describe('Diagram Control', () => {
         afterAll((): void => {
             diagram.destroy();
             ele.remove();
+            (diagram as any) = null; (ele as any) = null;
         });
 
         it('Checking multiple selection for nodes and connectors in SVG rendering Mode', (done: Function) => {
@@ -354,6 +362,7 @@ describe('Diagram Control', () => {
         afterAll((): void => {
             diagram.destroy();
             ele.remove();
+            (diagram as any) = null; (ele as any) = null;
         });
 
         it('Checking multiple selection for nodes and connectors with remove selection in SVG rendering Mode', (done: Function) => {
@@ -397,6 +406,7 @@ describe('Diagram Control', () => {
         afterAll((): void => {
             diagram.destroy();
             ele.remove();
+            (diagram as any) = null; (ele as any) = null;
         });
 
         it('Checking Multiple Selection for nodes and  connectors with removeAll in SVG rendering Mode', (done: Function) => {
@@ -433,6 +443,7 @@ describe('Diagram Control', () => {
         afterAll((): void => {
             diagram.destroy();
             ele.remove();
+            (diagram as any) = null; (ele as any) = null;
         });
 
         it('Checking single selection for pivot 1 in SVG rendering Mode', (done: Function) => {

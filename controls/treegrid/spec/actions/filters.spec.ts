@@ -1897,3 +1897,85 @@ describe('959378: Filtering using query and Sorting', () => {
         destroy(gridObj);
     });
 });
+
+describe("971747: Collapse All not working after filtering the records in the frozen rows", () => {
+    let gridObj: TreeGrid;
+
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: sampleData,
+                childMapping: "subtasks",
+                treeColumnIndex: 1,
+                allowFiltering: true,
+                frozenRows: 4,
+                height: 400,
+                columns: ["taskID", "taskName", "duration", "progress"],
+            },
+            done
+        );
+    });
+
+    it("Collapse All after filtering the records", (done: Function) => {
+        gridObj.grid.actionComplete = (args?: any): void => {
+            if (args.requestType === "filtering") {
+                setTimeout(() => {
+                    gridObj.collapseAll();
+                    const expandIcon = gridObj.getRows()[0].querySelector('.e-treegridexpand');
+                    expect(isNullOrUndefined(expandIcon)).toBe(true);
+                    done();
+                }, 100);
+            }
+        };
+
+        gridObj.filterByColumn("taskName", "contains", "plan");
+    });
+
+    afterAll(() => {
+        destroy(gridObj);
+    });
+});
+
+describe("EJ2-971747 Script error when frozen rows are enabled in collapsing after editing filtered records ", () => {
+  let gridObj: TreeGrid;
+  beforeAll((done: Function) => {
+    gridObj = createGrid(
+      {
+        dataSource: sampleData,
+        childMapping: "subtasks",
+        treeColumnIndex: 1,
+        allowFiltering: true,
+        frozenRows: 4,
+        height: 400,
+        columns: [
+          { field: "taskID", headerText: "Task ID", width: 70 },
+          { field: "taskName", headerText: "Task Name", width: 200 },
+          { field: "duration", headerText: "Duration", width: 100 },
+          { field: "progress", headerText: "Progress", width: 100 },
+        ],
+      },
+      done
+    );
+  });
+
+  it("should edit a filtered record and collapse all without script error", (done: Function) => {
+    gridObj.filterByColumn("taskName", "contains", "plan");
+    gridObj.startEdit();
+    const inputElem = gridObj.element.querySelector(
+      ".e-rowcell .e-input"
+    ) as HTMLInputElement;
+    if (inputElem) {
+      inputElem.value = "Planning Updated";
+      inputElem.dispatchEvent(new Event("input"));
+    }
+    gridObj.endEdit();
+    gridObj.collapseAll();
+    const expandIcon = gridObj.getRows()[0].querySelector(".e-treegridexpand");
+    expect(isNullOrUndefined(expandIcon)).toBe(true);
+    done();
+  });
+
+  afterAll(() => {
+    destroy(gridObj);
+  });
+});

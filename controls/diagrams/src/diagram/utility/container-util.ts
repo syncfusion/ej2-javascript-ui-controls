@@ -611,13 +611,15 @@ export function addContainerChild(child: NodeModel, parentId: string, diagram: D
 export function removeChild(node: Node, diagram: Diagram): void {
     const id: string = node.id;
     const parent: NodeModel = diagram.nameTable[node.parentId];
-    const children: string[] = (parent.shape as Container).children;
-    removeGElement(parent.wrapper, id, diagram, true);
-    const childrenIndex: number = children.indexOf(id);
-    children.splice(childrenIndex, 1);
-    node.parentId = '';
-    diagram.refreshDiagramLayer();
-    diagram.updateSelector();
+    if (parent) {
+        const children: string[] = (parent.shape as Container).children;
+        removeGElement(parent.wrapper, id, diagram, true);
+        const childrenIndex: number = children.indexOf(id);
+        children.splice(childrenIndex, 1);
+        node.parentId = '';
+        diagram.refreshDiagramLayer();
+        diagram.updateSelector();
+    }
 }
 
 /** @private */

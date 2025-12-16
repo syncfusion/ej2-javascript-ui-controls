@@ -1,4 +1,4 @@
-@import 'ej2-base/styles/definition/bootstrap5.scss';
-@import 'blockeditor/bootstrap5-definition.scss';
-@import 'blockeditor/icons/bootstrap5.scss';
-@import 'blockeditor/all.scss';
+@use 'ej2-base/styles/definition/bootstrap5' as *;
+@use 'blockeditor/bootstrap5-definition' as *;
+@use 'blockeditor/icons/bootstrap5' as *;
+@use 'blockeditor/all' as *;

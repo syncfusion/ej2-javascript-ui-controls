@@ -1,3 +1,6 @@
+@use 'ej2-base/styles/common/mixin' as *;
+@use './theme-variables' as *;
+@use '../input/theme-variables' as *;
 @include export-module('numerictextbox-theme') {
   .e-numeric.e-control-wrapper {
     #{if(&, '&', '*')}.e-input-group:not(.e-disabled):active:not(.e-success):not(.e-warning):not(.e-error):not(.e-input-focus) {

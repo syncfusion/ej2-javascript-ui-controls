@@ -1,5 +1,3 @@
-[![coverage](http://ej2.syncfusion.com/badges/ej2-diagrams/coverage.svg)](http://ej2.syncfusion.com/badges/ej2-diagrams)
-
 # JavaScript Diagram Control
 
 The [JavaScript Diagram](https://www.syncfusion.com/javascript-ui-controls/js-diagram?utm_source=npm&utm_medium=listing&utm_campaign=javascript-diagram-npm) control is used for visualizing, creating, and editing interactive diagrams. It supports creating flowcharts, organizational charts, mind maps, floor plans, UML diagrams, and BPMN charts either through code or a visual interface.

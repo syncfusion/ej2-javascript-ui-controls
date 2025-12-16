@@ -1,3 +1,2 @@
-@import 'ej2-base/styles/definition/bootstrap.scss';
-@import 'drawing/bootstrap-definition.scss';
-@import 'drawing/all.scss';
+@use 'drawing/bootstrap-definition' as *;
+@use 'drawing/all' as *;

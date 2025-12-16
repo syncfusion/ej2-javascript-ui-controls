@@ -1,14 +1,14 @@
-@import 'ej2-base/styles/definition/material-dark.scss';
-@import 'avatar/material-dark-definition.scss';
-@import 'avatar/all.scss';
+@use 'ej2-base/styles/definition/material-dark' as *;
+@use 'avatar/material-dark-definition' as *;
+@use 'avatar/all' as *;
 
-@import 'card/material-dark-definition.scss';
-@import 'card/all.scss';
-@import 'splitter/material-dark-definition.scss';
-@import 'splitter/icons/material-dark.scss';
-@import 'splitter/all.scss';
-@import 'dashboard-layout/material-dark-definition.scss';
-@import 'dashboard-layout/icons/material-dark.scss';
-@import 'dashboard-layout/all.scss';
-@import 'timeline/material-dark-definition.scss';
-@import 'timeline/all.scss';
+@use 'card/material-dark-definition' as *;
+@use 'card/all' as *;
+@use 'splitter/material-dark-definition' as *;
+@use 'splitter/icons/material-dark' as *;
+@use 'splitter/all' as *;
+@use 'dashboard-layout/material-dark-definition' as *;
+@use 'dashboard-layout/icons/material-dark' as *;
+@use 'dashboard-layout/all' as *;
+@use 'timeline/material-dark-definition' as *;
+@use 'timeline/all' as *;

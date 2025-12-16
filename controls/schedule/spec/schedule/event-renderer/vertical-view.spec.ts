@@ -1923,14 +1923,14 @@ describe('Vertical View Event Render Module', () => {
 
         it('checking generateEventOccurrences method with parent event as argument', () => {
             expect(schObj.generateEventOccurrences(data[0]).length).toEqual(43);
-            expect(schObj.generateEventOccurrences(data[1]).length).toEqual(24);
+            expect(schObj.generateEventOccurrences(data[1]).length).toEqual(23);
         });
 
         it('checking generateEventOccurrences method with parent event and startDate as arguments', () => {
-            expect(schObj.generateEventOccurrences(data[1], new Date(2023, 1, 8)).length).toEqual(18);
+            expect(schObj.generateEventOccurrences(data[1], new Date(2023, 1, 8)).length).toEqual(17);
             expect(schObj.generateEventOccurrences(data[1], new Date(2023, 1, 8))[0].StartTime.getTime()).toEqual(
                 new Date(2023, 1, 7, 10, 0).getTime());
-            expect(schObj.generateEventOccurrences(data[1], new Date(2023, 1, 20)).length).toEqual(6);
+            expect(schObj.generateEventOccurrences(data[1], new Date(2023, 1, 20)).length).toEqual(5);
         });
 
         it('checking generateEventOccurrences method with parent event and wrong startDate as arguments', () => {

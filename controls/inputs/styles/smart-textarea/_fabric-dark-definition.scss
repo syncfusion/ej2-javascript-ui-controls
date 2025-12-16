@@ -1,3 +1,5 @@
+@use 'ej2-base/styles/definition/fabric-dark' as *;
+@forward 'ej2-base/styles/definition/fabric-dark';
 $sta-background-color: $neutral-white !default;
 $sta-color: $neutral-secondary !default;
 $sta-box-shadow: rgba(0, 0, 0, .3) !default;

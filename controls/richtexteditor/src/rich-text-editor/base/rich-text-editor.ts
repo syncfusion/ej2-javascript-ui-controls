@@ -6,14 +6,15 @@ import { Touch as EJ2Touch, TapEventArgs, KeyboardEventArgs } from '@syncfusion/
 import { getScrollableParent, BeforeOpenEventArgs, BeforeCloseEventArgs } from '@syncfusion/ej2-popups';
 import { RichTextEditorModel } from './rich-text-editor-model';
 import * as events from '../base/constant';
+import * as EVENTS from './../../common/constant';
 import * as classes from '../base/classes';
 import { Render } from '../renderer/render';
 import { ViewSource } from '../renderer/view-source';
-import { IFormatter, IBaseQuickToolbar, SlashMenuItemSelectArgs, ImageFailedEventArgs, IRenderer } from './interface';
+import { IFormatter, IBaseQuickToolbar, SlashMenuItemSelectArgs, ImageFailedEventArgs, IRenderer, AIAssistantPromptRequestArgs, AIAssistantStopRespondingArgs, BeforePopupOpenCloseEventArgs, AIAssitantToolbarClickEventArgs } from './interface';
 import { executeGroup, ToolbarStatusEventArgs } from './interface';
 import { ChangeEventArgs, AfterImageDeleteEventArgs, AfterMediaDeleteEventArgs, PasteCleanupArgs } from './interface';
-import { ILinkCommandsArgs, ImageDropEventArgs, IImageCommandsArgs, IAudioCommandsArgs, IVideoCommandsArgs, BeforeSanitizeHtmlArgs, ITableCommandsArgs, ExecuteCommandOption, ICodeBlockCommandsArgs, IListCommandArgs, IToolbarItems, MediaDropEventArgs, IToolbarItemModel, NotifyArgs, ToolbarClickEventArgs } from '../../common/interface';
-import { PrintEventArgs, ActionCompleteEventArgs, ActionBeginEventArgs, IFormatPainterArgs, CleanupResizeElemArgs, ImageSuccessEventArgs, IExecutionGroup, ResizeArgs, StatusArgs, BeforeQuickToolbarOpenArgs, SelectionChangedEventArgs } from '../../common/interface';
+import { ILinkCommandsArgs, ImageDropEventArgs, IImageCommandsArgs, IAudioCommandsArgs, IVideoCommandsArgs, BeforeSanitizeHtmlArgs, ITableCommandsArgs, ExecuteCommandOption, ICodeBlockCommandsArgs, IListCommandArgs, IToolbarItems, MediaDropEventArgs, IToolbarItemModel, NotifyArgs, ToolbarClickEventArgs, ExportingEventArgs } from '../../common/interface';
+import { PrintEventArgs, ActionCompleteEventArgs, ActionBeginEventArgs, ClipboardWriteEventArgs, IFormatPainterArgs, CleanupResizeElemArgs, ImageSuccessEventArgs, IExecutionGroup, ResizeArgs, StatusArgs, BeforeQuickToolbarOpenArgs, SelectionChangedEventArgs } from '../../common/interface';
 import { ServiceLocator } from '../services/service-locator';
 import { RendererFactory } from '../services/renderer-factory';
 import { RenderType } from './enum';
@@ -21,11 +22,11 @@ import { EditorMode, ShiftEnterKey, EnterKey } from './../../common/types';
 import { Toolbar } from '../actions/toolbar';
 import { ExecCommandCallBack } from '../actions/execute-command-callback';
 import { KeyboardEvents } from '../actions/keyboard';
-import { FontFamilyModel, FontSizeModel, FontColorModel, FormatModel, BackgroundColorModel, NumberFormatListModel, BulletFormatListModel, CodeBlockSettingsModel } from '../../models/models';
+import { FontFamilyModel, FontSizeModel, FontColorModel, FormatModel, BackgroundColorModel, NumberFormatListModel, BulletFormatListModel, CodeBlockSettingsModel, LineHeightModel } from '../../models/models';
 import { ToolbarSettingsModel, IFrameSettingsModel, ImageSettingsModel, AudioSettingsModel, VideoSettingsModel, TableSettingsModel, EmojiSettingsModel } from '../../models/models';
 import { QuickToolbarSettingsModel, InlineModeModel, PasteCleanupSettingsModel, FormatPainterSettingsModel, ImportWordModel, ExportWordModel, ExportPdfModel } from '../../models/models';
-import { ToolbarSettings, ImageSettings, AudioSettings, VideoSettings, QuickToolbarSettings, FontFamily, FontSize, Format, NumberFormatList, BulletFormatList, FormatPainterSettings, ImportWord, ExportWord, ExportPdf, CodeBlockSettings } from '../../models/toolbar-settings';
-import { FileManagerSettingsModel } from '../models/models';
+import { ToolbarSettings, ImageSettings, AudioSettings, VideoSettings, QuickToolbarSettings, FontFamily, FontSize, Format, NumberFormatList, BulletFormatList, FormatPainterSettings, ImportWord, ExportWord, ExportPdf, CodeBlockSettings, LineHeight } from '../../models/toolbar-settings';
+import { AIAssistantSettingsModel, FileManagerSettingsModel } from '../models/models';
 import { EmojiSettings } from '../../models/emoji-settings';
 import { FileManagerSettings } from '../models/fileManager-settings';
 import { TableSettings, PasteCleanupSettings } from '../../models/toolbar-settings';
@@ -49,7 +50,7 @@ import { PasteCleanup } from '../actions/paste-clean-up';
 import { ImportExport } from '../actions/import-export';
 import { EnterKeyAction } from '../actions/enter-key';
 import * as CONSTANT from '../../common/constant';
-import { IHtmlKeyboardEvent, IHtmlUndoRedoData, BeforeInputEvent } from '../../editor-manager/base/interface';
+import { IHtmlKeyboardEvent, IHtmlUndoRedoData, BeforeInputEvent, ILineHeightProperties } from '../../editor-manager/base/interface';
 import { dispatchEvent, getEditValue, decode, isEditableValueEmpty, getDefaultValue } from '../base/util';
 import { cleanHTMLString, scrollToCursor, getStructuredHtml, isIDevice, alignmentHtml, openPrintWindow } from '../../common/util';
 import { DialogRenderer } from '../renderer/dialog-renderer';
@@ -68,8 +69,14 @@ import { NodeSelection } from '../../selection/index';
 import { MarkdownUndoRedoData } from '../../markdown-parser/base/interface';
 import { ICodeBlockItem } from '../../common/interface';
 import { CodeBlock } from '../actions/code-block';
+import { ClipBoardCleanup } from '../actions/clipboard-cleanup';
 import { CommandName, DialogType } from '../../common/enum';
+import { AIAssistantSettings } from '../models/ai-assistant-settings';
+import { DEFAULT_AI_COMMANDS } from '../models/items';
+import { AIAssistant } from '../renderer/ai-assistant';
+import { PromptModel } from '@syncfusion/ej2-interactive-chat';
 import { PopupUploader } from '../renderer/popup-uploader-renderer';
+import { AutoFormat } from '../actions';
 
 /**
  * Represents the Rich Text Editor component.
@@ -109,6 +116,7 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
     private internalID: string;
     private mutationObserver: MutationObserver;
     private hasContentChanged: boolean = false;
+    private isToolbarClipboardAction: boolean;
     /**
      * @private
      */
@@ -205,6 +213,12 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
      * @hidden
      * @deprecated
      */
+    public clipBoardCleanupModule: ClipBoardCleanup;
+
+    /**
+     * @hidden
+     * @deprecated
+     */
     public pasteCleanupModule: PasteCleanup;
 
     /**
@@ -212,6 +226,12 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
      * @deprecated
      */
     public codeBlockModule: CodeBlock;
+
+    /**
+     * @hidden
+     * @deprecated
+     */
+    public autoFormatModule: AutoFormat;
 
     /**
      * @hidden
@@ -267,6 +287,8 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
     public formatPainterModule: FormatPainter;
 
     public slashMenuModule: SlashMenu;
+
+    public aiAssistantModule: AIAssistant;
 
     /**
      * @hidden
@@ -340,6 +362,35 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
     public slashMenuSettings: SlashMenuSettingsModel;
 
     /**
+     * Configures the AI Assistant functionality settings for the Rich Text Editor component.
+     *
+     * This property allows you to customize various aspects of the AI Assistant feature including:
+     * * Predefined AI commands in the dropdown menu
+     * * Popup dimensions and appearance
+     * * Placeholder text for the AI prompt input
+     * * Toolbar configurations for different sections
+     * * Custom prompts and suggestions
+     * * Banner template customization
+     *
+     * @default {
+     * commands: DEFAULT_AI_COMMANDS,
+     * popupWidth: '600px',
+     * popupMaxHeight: '400px',
+     * placeholder: 'Ask AI to rewrite or generate content.' ,
+     * headerToolbarSettings : ['AIcommands', 'Close'],
+     * promptToolbarSettings: ['Edit', 'Copy'],
+     * responseToolbarSettings: ['Regenerate', 'Copy', '|', 'Insert'],
+     * prompts: [],
+     * suggestions: [],
+     * bannerTemplate: '',
+     * maxPromptHistory: 20
+     * }
+     *
+     */
+    @Complex<AIAssistantSettingsModel>({ commands: DEFAULT_AI_COMMANDS, popupWidth: '600px', popupMaxHeight: '400px', placeholder: 'Ask AI to rewrite or generate content.' , headerToolbarSettings : ['AIcommands', 'Close'], promptToolbarSettings: ['Edit', 'Copy'], responseToolbarSettings: ['Regenerate', 'Copy', '|', 'Insert'], prompts: [], suggestions: [], bannerTemplate: '', maxPromptHistory: 20}, AIAssistantSettings)
+    public aiAssistantSettings: AIAssistantSettingsModel;
+
+    /**
      * Specifies the items to be rendered in the quick toolbar based on the target element.
      * Properties:
      * * enable: Boolean to show or hide the quick toolbar.
@@ -367,6 +418,14 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
      */
     @Complex<QuickToolbarSettingsModel>({}, QuickToolbarSettings)
     public quickToolbarSettings: QuickToolbarSettingsModel;
+
+    /**
+     * Enables or disables the Clipboard Cleanup feature. When set to `true`, copy and cut operations are intercepted to remove unwanted inline styles.
+     *
+     * @default true
+     */
+    @Property(true)
+    public enableClipboardCleanup: boolean;
 
     /**
      * Configures paste options in the Rich Text Editor.
@@ -767,6 +826,17 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
     public enableXhtml: boolean;
 
     /**
+     * Enables or disables the Markdown auto-formatting feature.
+     * When set to `true`, Markdown syntax typed by the user is automatically
+     * converted into the corresponding HTML formatting during keypress.
+     *
+     * @type {boolean}
+     * @default true
+     */
+    @Property(true)
+    public enableMarkdownAutoFormat: boolean;
+
+    /**
      * Specifies the height of the Rich Text Editor component.
      *
      * @default "auto"
@@ -1041,6 +1111,29 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
     public fontSize: FontSizeModel;
 
     /**
+     * Defines the predefined line heights that populate the Line Height dropdown in the Rich Text Editor toolbar.
+     *
+     * {% codeBlock src='rich-text-editor/line-height/index.md' %}{% endcodeBlock %}
+     *
+     * @default
+     * {
+     * default: '',
+     * items: [
+     * { text: '1', value: '1' },
+     * { text: '1.15', value: '1.15' },
+     * { text: '1.5', value: '1.5' },
+     * { text: '2', value: '2' },
+     * { text: '2.5', value: '2.5' },
+     * { text: '3', value: '3' }
+     * ],
+     * supportAllValues: false
+     * }
+     */
+    @Complex<LineHeightModel>({}, LineHeight)
+    public lineHeight: LineHeightModel;
+
+
+    /**
      * Defines the color palette for the font color toolbar command.
      *
      * {% codeBlock src='rich-text-editor/font-color/index.md' %}{% endcodeBlock %}
@@ -1124,6 +1217,14 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
      */
     @Event()
     public actionComplete: EmitType<ActionCompleteEventArgs>;
+
+    /**
+     * This event triggers before setting copy or cut clipboard data to clipboard.
+     *
+     * @event 'beforeClipboardWrite'
+     */
+    @Event()
+    public beforeClipboardWrite: EmitType<ClipboardWriteEventArgs>;
 
     /**
      * This event triggers before a dialog is opened.
@@ -1453,6 +1554,80 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
     @Event()
     public selectionChanged: EmitType<SelectionChangedEventArgs>;
 
+    /**
+     * Triggers when a user selects an item from the AI Assistant toolbar using mouse, touch, or keyboard navigation.
+     * Use this event to handle custom toolbar item click action.
+     *
+     *
+     * @event 'aiAssistantToolbarClick'
+     * @type {EmitType<AIAssitantToolbarClickEventArgs>}
+     *
+     */
+    @Event()
+    public aiAssistantToolbarClick: EmitType<AIAssitantToolbarClickEventArgs>;
+
+    /**
+     * Triggers when a user sends a prompt to the AI Assistant using the slash menu item in the popup.
+     * Use this event to handle the request with your preferred AI Provider.
+     *
+     *
+     * @event aiAssistantPromptRequest
+     * @type {EmitType<AIAssistantPromptRequestArgs>}
+     *
+     */
+    @Event()
+    public aiAssistantPromptRequest: EmitType<AIAssistantPromptRequestArgs>;
+
+    /**
+     * Triggers when the user clicks the stop responding button in the AI Assistant.
+     * This event helps to cancel the ongoing AI Query request when the stopResponding button is clicked.
+     *
+     *
+     * @event aiAssistantStopRespondingClick
+     * @type {EmitType<AIAssistantStopRespondingArgs>}
+     */
+    @Event()
+    public aiAssistantStopRespondingClick: EmitType<AIAssistantStopRespondingArgs>;
+
+    /**
+     * Triggers before a popup is about to open in the editor.
+     * This event occurs when any popup is about to be displayed in the editor.
+     * It can be used to manipulate the popup content by adding additional elements or custom logics.
+     * The event can be canceled by setting `args.cancel` to `true` to prevent the popup from opening.
+     *
+     * @event beforePopupOpen
+     * @type {EmitType<BeforePopupOpenCloseEventArgs>}
+     */
+    @Event()
+    public beforePopupOpen: EmitType<BeforePopupOpenCloseEventArgs>;
+
+    /**
+     * Triggers before a popup is about to close in the editor.
+     * Can be canceled by setting `args.cancel` to `true`.
+     * This event is useful for cleaning up custom elements which were added to the popup element.
+     *
+     * @event beforePopupClose
+     * @type {EmitType<BeforePopupOpenCloseEventArgs>}
+     */
+    @Event()
+    public beforePopupClose: EmitType<BeforePopupOpenCloseEventArgs>;
+
+    /**
+     * This event triggers when a Word document `import` is initiated by the editor, letting you customize the outgoing HTTP request before it is sent.
+     *
+     * @event 'wordImporting'
+     */
+    @Event()
+    public wordImporting: EmitType<UploadingEventArgs>;
+
+    /**
+     * This event triggers just before PDF or Word export requests are dispatched by the editor, allowing user to customize the outgoing request.
+     *
+     * @event 'documentExporting'
+     */
+    @Event()
+    public documentExporting: EmitType<ExportingEventArgs>;
+
     public keyboardModule: KeyboardEvents;
     public localeObj: L10n;
     public valueContainer: HTMLTextAreaElement;
@@ -1465,6 +1640,7 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
     private isSelectionStartInRTE: boolean;
     private selectionTimeout: number;
     private previousRange: Range | null;
+    public isRTEFocused: boolean;
 
     public constructor(options?: RichTextEditorModel, element?: string | HTMLElement) {
         super(options, <HTMLElement | string>element);
@@ -1472,6 +1648,7 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
         this.isCopyAll = false;
         this.isSelecting = false;
         this.isSelectionStartInRTE = false;
+        this.isRTEFocused = false;
     }
     /**
      * To provide the array of modules needed for component rendering
@@ -1549,6 +1726,21 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
                 member: 'codeBlock',
                 args: [this, this.serviceLocator]
             });
+            if (this.enableClipboardCleanup) {
+                modules.push(
+                    { member: 'clipBoardCleanup', args: [this] }
+                );
+            }
+            if (this.enableMarkdownAutoFormat) {
+                modules.push({
+                    member: 'autoFormat',
+                    args: [this]
+                });
+            }
+            modules.push({
+                member: 'aiAssistant',
+                args: [this, this.serviceLocator]
+            });
         }
         if (this.fileManagerSettings.enable) {
             modules.push(
@@ -1597,6 +1789,7 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
     private initializeValue(): void {
         this.isFocusOut = false;
         this.isRTE = false;
+        this.isToolbarClipboardAction = false;
         this.isBlur = true;
         this.defaultResetValue = null;
         this.isResizeInitialized = false;
@@ -1802,14 +1995,17 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
         value = this.htmlPurifier(commandName, value);
         let internalValue: string | HTMLElement | ILinkCommandsArgs |
         IImageCommandsArgs | ITableCommandsArgs | FormatPainterSettingsModel | IFormatPainterArgs |
-        ICodeBlockCommandsArgs | IListCommandArgs;
+        ICodeBlockCommandsArgs | IListCommandArgs | ILineHeightProperties;
         if (this.editorMode === 'HTML') {
             const range: Range = this.getRange();
             if (this.iframeSettings.enable) {
                 this.formatter.editorManager.nodeSelection.Clear(this.element.ownerDocument);
             }
-            const toFocus: boolean = (this.iframeSettings.enable &&
+            let toFocus: boolean = (this.iframeSettings.enable &&
                 range.startContainer === this.inputElement) ? true : !this.inputElement.contains(range.startContainer);
+            if (this.iframeSettings.enable) {
+                toFocus = true;
+            }
             if (toFocus) {
                 this.focusIn();
             }
@@ -1856,6 +2052,9 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
             internalValue = {
                 formatPainterAction: tool.value
             };
+        }
+        if (tool.command === 'lineHeight') {
+            internalValue = { selectedValue: (value ? value : tool.value)};
         }
         if (tool.command === 'CodeBlock' && !isNOU(value)) {
             (value as ICodeBlockItem).action = 'createCodeBlock';
@@ -2362,12 +2561,7 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
             this.setPlaceHolder();
         }
         if (this.editorMode === 'HTML' && !isNOU(e) && !isNOU(e.code) && (e.code === 'Backspace' || e.code === 'Delete')) {
-            const range: Range = this.contentModule.getDocument().getSelection().getRangeAt(0);
-            const div: HTMLElement = document.createElement('div');
-            div.appendChild(range.cloneContents());
-            const selectedHTML: string = div.innerHTML;
-            if (selectedHTML === this.inputElement.innerHTML ||
-                (range.commonAncestorContainer === this.inputElement && selectedHTML === this.inputElement.textContent.trim())) {
+            if (this.isEntireRTEContentSelected()) {
                 this.isCopyAll = true;
             }
         }
@@ -2649,6 +2843,7 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
         this.notifyMouseUp(e);
         this.setPlaceHolder();
         this.autoResize();
+        this.notify(EVENTS.touchEnd, e);
         this.updateUndoRedoStack(e);
         if (this.isSelectionInRTE()) {
             this.triggerSelectionChanged();
@@ -2667,6 +2862,56 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
     }
 
     /**
+     * Handles clipboard events to prevent default browser behavior for cut and copy operations
+     *
+     * @param {ClipboardEvent} e - The clipboard event object
+     * @returns {void}
+     * @hidden
+     * @deprecated
+     */
+    public clipBoardHandler(e: ClipboardEvent | KeyboardEvent): void {
+        if (!isNullOrUndefined(e) && this.editorMode === 'HTML') {
+            if (e && this.handleTableCellCopy()) {
+                // Copy and cut was handled by table module
+                e.preventDefault();
+                return;
+            }
+            const range: Range = this.getRange();
+            if (!isNOU(range)) {
+                const collapsed: boolean = (range.startContainer === range.endContainer) &&
+                    range.startOffset === range.endOffset;
+                const isModuleAndPropertyEnabled: boolean = this.enableClipboardCleanup && !isNOU(this.clipBoardCleanupModule);
+                if (isModuleAndPropertyEnabled && !collapsed &&
+                    !isNOU((e as ClipboardEvent).clipboardData)) {
+                    this.notify(events.clipBoardCleanup, { args: e });
+                    if (e.type === 'copy' && !this.isToolbarClipboardAction) {
+                        this.formatter.onSuccess(this, {
+                            requestType: 'Copy',
+                            editorMode: this.editorMode,
+                            event: e
+                        });
+                    } else if (e.type === 'cut' && !this.isToolbarClipboardAction) {
+                        this.formatter.onSuccess(this, {
+                            requestType: 'Cut',
+                            editorMode: this.editorMode,
+                            event: e
+                        });
+                    }
+                    (e as ClipboardEvent).preventDefault();
+                }
+                if (isNOU(this.clipBoardCleanupModule) && this.enableClipboardCleanup) {
+                    console.warn('[WARNING] :: Module "clipBoardCleanup" is not available in RichTextEditor component! You either misspelled the module name or forgot to load it.');
+                }
+            }
+            this.notify(EVENTS.cut, e);
+            if (!isNOU(e.type) && e.type === 'cut' && !isNOU(this.quickToolbarModule)) {
+                this.quickToolbarModule.hideQuickToolbars();
+            }
+        }
+        this.isToolbarClipboardAction = false;
+    }
+
+    /**
      * @param {MouseEvent | KeyboardEvent | ClipboardEvent} e - specifies the event.
      * @returns {void}
      * @hidden
@@ -2678,6 +2923,7 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
             e.preventDefault();
             return;
         }
+        this.isToolbarClipboardAction = true;
         this.contentModule.getDocument().execCommand('copy', false, null);
     }
 
@@ -2701,6 +2947,7 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
             (range.commonAncestorContainer === this.inputElement && selectedHTML === this.inputElement.textContent.trim())) {
             this.isCopyAll = true;
         }
+        this.isToolbarClipboardAction = true;
         this.contentModule.getDocument().execCommand('cut', false, null);
     }
 
@@ -2788,6 +3035,9 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
                 e.preventDefault();
             }
         });
+        if (!isNOU(e) && !isNOU(e.type) && e.type === 'paste' && !isNOU(this.quickToolbarModule)) {
+            this.quickToolbarModule.hideQuickToolbars();
+        }
         this.isPlainPaste = false;
     }
 
@@ -2911,6 +3161,7 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
         this.isSelecting = false;
         this.selectionTimeout = null;
         this.previousRange = null;
+        this.isRTEFocused = false;
         super.destroy();
     }
 
@@ -3003,14 +3254,13 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
         return selectedHtml;
     }
 
-    /* Extracts both HTML and plain text content from the current selection range. */
+    /* Extracts both HTML content from the current selection range. */
     private extractContentFromSelection(range: Range): string {
-        let htmlContent : string = '';
+        let htmlContent: string = '';
         htmlContent = this.getHTMLFromSelectionRange(range);
         htmlContent = this.normalizeInlineElementWrapping(range, htmlContent);
         return htmlContent;
     }
-
     /* Extracts HTML content from the current selection range by wrapping it in a temporary container */
     private getHTMLFromSelectionRange(selectionRange: Range): string {
         const clonedSelection: DocumentFragment = selectionRange.cloneContents();
@@ -3018,7 +3268,6 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
         temporaryContainer.appendChild(clonedSelection);
         return temporaryContainer.innerHTML;
     }
-
     /* Extracts HTML content and ensures inline elements are properly wrapped if present in the selection.*/
     private normalizeInlineElementWrapping(selectionRange: Range, htmlContent: string): string {
         const startNode: Node = selectionRange.startContainer;
@@ -3041,7 +3290,6 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
         }
         return htmlContent;
     }
-
     /* Returns the outer HTML of the nearest inline-level ancestor after replacing its inner content with the provided HTML content. */
     private getWrappedAroundInlineElement(inlineAncestor: HTMLElement, contentToWrap: string): string {
         const contentContainer: HTMLElement = this.createElement('div');
@@ -3399,10 +3647,8 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
                     ((this.inputElement.firstChild.nodeName === 'P' || this.inputElement.firstChild.nodeName === 'DIV') && !isNOU(this.inputElement.firstChild.firstChild) &&
                         this.inputElement.firstChild.childNodes.length < 2 && this.inputElement.firstChild.firstChild.nodeName === 'BR'))) {
                     this.placeHolderWrapper.classList.add('e-placeholder-enabled');
-                    EventHandler.add(this.inputElement as HTMLElement, 'input', this.setPlaceHolder, this);
                 } else {
                     this.placeHolderWrapper.classList.remove('e-placeholder-enabled');
-                    EventHandler.remove(this.inputElement as HTMLElement, 'input', this.setPlaceHolder);
                 }
             } else {
                 this.inputElement.setAttribute('placeholder', this.placeholder);
@@ -3414,10 +3660,8 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
                     this.inputElement.firstChild.firstChild.nodeName === 'BR'))) {
                 addClass([this.inputElement], 'e-rte-placeholder');
                 this.inputElement.setAttribute('placeholder', this.placeholder);
-                EventHandler.add(this.inputElement as HTMLElement, 'input', this.setPlaceHolder, this);
             } else {
                 removeClass([this.inputElement], 'e-rte-placeholder');
-                EventHandler.remove(this.inputElement as HTMLElement, 'input', this.setPlaceHolder);
             }
         }
     }
@@ -3934,6 +4178,7 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
         this.notify(events.mouseDown, { args: e });
         this.formatter.editorManager.observer.notify(events.mouseDown, { args: e });
         this.clickPoints = { clientX: touch.clientX, clientY: touch.clientY };
+        this.notify(EVENTS.touchStart, e);
     }
 
     private preventImgResize(e: FocusEvent | MouseEvent): void {
@@ -3997,6 +4242,9 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
         if ((!this.isRTE || this.isFocusOut)) {
             this.isRTE = this.isFocusOut ? false : true;
             this.isFocusOut = false;
+            if (e.target && (e.target as HTMLElement).nodeName !== '#text' && (e.target as HTMLElement).closest('.e-content')) {
+                this.isRTEFocused = true;
+            }
             addClass([this.element], [classes.CLS_FOCUS]);
             if (this.editorMode === 'HTML') {
                 this.cloneValue = (this.inputElement.innerHTML === '<p><br></p>' || this.inputElement.innerHTML === '<div><br></div>' ||
@@ -4216,6 +4464,7 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
             if (!isNOU(this.placeHolderWrapper) && this.element.querySelector('[title = Preview]')) {
                 this.placeHolderWrapper.style.display = 'none';
             }
+            this.isRTEFocused = false;
             EventHandler.remove(document, 'mousedown', this.onDocumentClick);
         } else {
             this.isRTE = true;
@@ -4487,7 +4736,12 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
                     }
                 }
             }
-            if ((element.length >= this.maxLength && this.maxLength !== -1) && (e as MouseEvent).which !== arrayKey) {
+            let elementLength: number = element.length;
+            const selectionLength: number = this.contentModule.getDocument().getSelection().toString().length;
+            if (selectionLength > 0) {
+                elementLength = element.length - selectionLength;
+            }
+            if ((elementLength >= this.maxLength && this.maxLength !== -1) && (e as MouseEvent).which !== arrayKey) {
                 (e as MouseEvent).preventDefault();
             }
         }
@@ -4513,7 +4767,27 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         return allowedKeys.indexOf((e as any).which) !== -1;
     }
-
+    private dragEnterHandler(e: MouseEvent | KeyboardEvent): void {
+        this.notify(EVENTS.dragEnter, e);
+        this.formatter.editorManager.observer.notify(EVENTS.dragEnter, e);
+    }
+    private dragOverHandler(e: MouseEvent | KeyboardEvent): void {
+        this.notify(EVENTS.dragOver, e);
+        this.formatter.editorManager.observer.notify(EVENTS.dragOver, e);
+    }
+    private dropHandler(e: MouseEvent | KeyboardEvent | DragEvent): void {
+        if (e instanceof DragEvent && e.dataTransfer.types[0] !== 'Files') {
+            if (this.formatter.getUndoRedoStack().length === 0 && !this.isSelectionInRTE()) {
+                this.formatter.saveData();
+            }
+            setTimeout(() => {
+                this.formatter.saveData();
+                this.formatter.enableUndo(this);
+            }, 0);
+        }
+        this.notify(EVENTS.dropEvent, e);
+        this.formatter.editorManager.observer.notify(EVENTS.dropEvent, e);
+    }
     private bindEvents(): void {
         this.keyboardModule = new KeyboardEvents(this.inputElement, {
             keyAction: this.keyDown.bind(this), keyConfigs:
@@ -4527,6 +4801,8 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
             EventHandler.add(formElement, 'reset', this.resetHandler, this);
         }
         EventHandler.add(this.inputElement, 'keyup', this.keyUp, this);
+        EventHandler.add(this.inputElement, 'copy', this.clipBoardHandler, this);
+        EventHandler.add(this.inputElement, 'cut', this.clipBoardHandler, this);
         EventHandler.add(this.inputElement, 'paste', this.onPaste, this);
         EventHandler.add(this.inputElement, 'content-changed', this.contentChanged, this);
         this.mouseDownDebListener = debounce(this.mouseUp, 30);
@@ -4536,30 +4812,25 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
         this.wireContextEvent();
         this.formatter.editorManager.observer.on(CONSTANT.KEY_DOWN_HANDLER, this.editorKeyDown, this);
         this.element.ownerDocument.defaultView.addEventListener('resize', this.onResizeHandler, true);
-        EventHandler.add(this.inputElement, 'drop', this.handleNonFileDrop, this);
         if (this.iframeSettings.enable) {
             EventHandler.add(this.inputElement, 'focusin', this.focusHandler, this);
             EventHandler.add(this.inputElement, 'focusout', this.blurHandler, this);
             EventHandler.add(this.inputElement.ownerDocument, 'scroll', this.contentScrollHandler, this);
             EventHandler.add(this.inputElement.ownerDocument, Browser.touchStartEvent, this.onIframeMouseDown, this);
             EventHandler.add(this.contentModule.getPanel(), 'load', this.iframeLoadHandler, this);
+            EventHandler.add(this.inputElement.ownerDocument, 'dragenter', this.dragEnterHandler, this);
+            EventHandler.add(this.inputElement.ownerDocument, 'dragover', this.dragOverHandler, this);
+            EventHandler.add(this.inputElement.ownerDocument, 'drop', this.dropHandler, this);
+        } else {
+            EventHandler.add(this.inputElement, 'dragenter', this.dragEnterHandler, this);
+            EventHandler.add(this.inputElement, 'dragover', this.dragOverHandler, this);
+            EventHandler.add(this.inputElement, 'drop', this.dropHandler, this);
         }
         this.wireScrollElementsEvents();
         // Handle selectionchange to update selection state
         EventHandler.add(this.inputElement.ownerDocument, 'selectionchange', this.selectionChangeHandler, this);
         // Handle mouseup (document-wide to capture outside RTE release)
         EventHandler.add(this.inputElement.ownerDocument, 'mouseup', this.mouseUpHandlerForSelection , this);
-    }
-    private handleNonFileDrop(e: DragEvent): void {
-        if (e.dataTransfer.types[0] !== 'Files') {
-            if (this.formatter.getUndoRedoStack().length === 0 && !this.isSelectionInRTE()) {
-                this.formatter.saveData();
-            }
-            setTimeout(() => {
-                this.formatter.saveData();
-                this.formatter.enableUndo(this);
-            }, 0);
-        }
     }
     private onIframeMouseDown(e: MouseEvent): void {
         this.isBlur = false;
@@ -4571,16 +4842,17 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
 
     private inputHandler(): void {
         this.autoResize();
+        const isPlceHolderEnabled: boolean = this.placeHolderWrapper && this.placeHolderWrapper.classList.contains('e-placeholder-enabled');
+        const hasText: boolean = this.inputElement.textContent.length > 0;
+        const hasMediaElements: boolean = this.inputElement.querySelector('img, video, audio, table') !== null;
+        const hasContent: boolean = hasText || hasMediaElements;
+        if ((isPlceHolderEnabled && hasContent) || (!isPlceHolderEnabled && !hasContent)) {
+            this.setPlaceHolder();
+        }
     }
 
     private editorKeyDown(e: IHtmlKeyboardEvent): void {
         switch (e.event.action) {
-        case 'copy':
-            this.onCopy(e.event);
-            break;
-        case 'cut':
-            this.onCut(e.event);
-            break;
         case 'tab':
             if (this.iframeSettings.enable) {
                 this.isBlur = true;
@@ -4591,12 +4863,22 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
             this.print();
             break;
         }
-        if (e.callBack && (e.event.action === 'copy' || e.event.action === 'cut' || e.event.action === 'delete')) {
-            e.callBack({
-                requestType: e.event.action,
-                editorMode: 'HTML',
-                event: e.event
-            });
+        if (e.callBack) {
+            if (e.event.action === 'delete') {
+                e.callBack({
+                    requestType: e.event.action,
+                    editorMode: 'HTML',
+                    event: e.event
+                });
+            } else if (!(this.enableClipboardCleanup && !isNOU(this.clipBoardCleanupModule))) {
+                if (e.event.action === 'copy' || e.event.action === 'cut') {
+                    e.callBack({
+                        requestType: e.event.action,
+                        editorMode: 'HTML',
+                        event: e.event
+                    });
+                }
+            }
         }
     }
 
@@ -4635,6 +4917,8 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
             EventHandler.remove(formElement, 'reset', this.resetHandler);
         }
         EventHandler.remove(this.inputElement, 'keyup', this.keyUp);
+        EventHandler.remove(this.inputElement, 'copy', this.clipBoardHandler);
+        EventHandler.remove(this.inputElement, 'cut', this.clipBoardHandler);
         EventHandler.remove(this.inputElement, 'paste', this.onPaste);
         EventHandler.remove(this.inputElement, 'content-changed', this.contentChanged);
         EventHandler.remove(this.inputElement, Browser.touchEndEvent, this.mouseDownDebListener);
@@ -4647,7 +4931,6 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
             this.formatter.editorManager.observer.off(CONSTANT.KEY_DOWN_HANDLER, this.editorKeyDown);
         }
         this.element.ownerDocument.defaultView.removeEventListener('resize', this.onResizeHandler, true);
-        EventHandler.remove(this.inputElement, 'drop', this.handleNonFileDrop);
         this.onResizeHandler = null;
         if (this.iframeSettings.enable) {
             EventHandler.remove(this.inputElement, 'focusin', this.focusHandler);
@@ -4655,6 +4938,14 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
             EventHandler.remove(this.inputElement.ownerDocument, 'scroll', this.contentScrollHandler);
             EventHandler.remove(this.inputElement.ownerDocument, Browser.touchStartEvent, this.onIframeMouseDown);
             EventHandler.remove(this.contentModule.getPanel(), 'load', this.iframeLoadHandler);
+            EventHandler.remove(this.inputElement.ownerDocument, 'dragenter', this.dragEnterHandler);
+            EventHandler.remove(this.inputElement.ownerDocument, 'dragover', this.dragOverHandler);
+            EventHandler.remove(this.inputElement.ownerDocument, 'drop', this.dropHandler);
+        }
+        if (!this.iframeSettings.enable) {
+            EventHandler.remove(this.inputElement, 'dragenter', this.dragEnterHandler);
+            EventHandler.remove(this.inputElement, 'dragover', this.dragOverHandler);
+            EventHandler.remove(this.inputElement, 'drop', this.dropHandler);
         }
         if (this.userAgentData && this.userAgentData.getPlatform() === 'Android') {
             EventHandler.remove(this.inputElement, 'beforeinput', this.beforeInputHandler);
@@ -4826,4 +5117,158 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
         this.triggerSelectionChanged();
     }
 
+    /**
+     * Utility to check if all then contents are selected within RTE
+     *
+     * @private
+     * @hidden
+     * @returns {boolean} `true` if the selection is within the RTE; otherwise, `false`.
+     */
+    public isEntireRTEContentSelected(): boolean {
+        const range: Range = this.contentModule.getDocument().getSelection().getRangeAt(0);
+        const div: HTMLElement = document.createElement('div');
+        div.appendChild(range.cloneContents());
+        const selectedHTML: string = div.innerHTML;
+        return (selectedHTML === this.inputElement.innerHTML || (range.commonAncestorContainer === this.inputElement &&
+            selectedHTML === this.inputElement.textContent.trim()));
+    }
+
+    /**
+     * Returns the collection of the Prompt and response data of the AI Assistant.
+     *
+     * This can be used to retrieve the conversation history between the user and the AI Assistant.
+     *
+     * @returns {PromptModel[]} An array of PromptModel objects containing the prompt and response history.
+     * @public
+     *
+     * @example
+     * // Get the complete history of prompts and responses
+     * const promptHistory = editor.getAIPromptHistory();
+     *
+     * // Display the last conversation
+     * if (promptHistory.length > 0) {
+     *   const lastConversation = promptHistory[promptHistory.length - 1];
+     *   console.log("Last prompt:", lastConversation.prompt);
+     *   console.log("Last response:", lastConversation.response);
+     * }
+     */
+    public getAIPromptHistory(): PromptModel[] {
+        return this.aiAssistantModule.getPromptHistory();
+    }
+
+    /**
+     * Executes the specified prompt in the AI Assistant.
+     *
+     * This method sends the provided text as a prompt to the AI Assistant for processing and response.
+     *
+     * @param {string} prompt - The prompt text to be executed. It must be a non-empty string.
+     *
+     * @returns {void}
+     * @public
+     *
+     * @example
+     * // Execute a simple prompt
+     * editor.executeAIPrompt("Review the selected text");
+     *
+     */
+    public executeAIPrompt(prompt: string): void {
+        this.aiAssistantModule.executePrompt(prompt);
+    }
+
+    /**
+     * Adds a response to the last prompt or appends a new prompt data in the AI Assistant.
+     *
+     * > The `outputResponse` text should be in `.md` format and will be converted to `.html`.
+     *
+     * @param {string | Object} outputResponse - The response to be added. Can be:
+     *  - A string representing the response text to be added to the last prompt
+     *  - An object containing both prompt and response data to be appended or updated
+     *
+     * @param {boolean} isFinalUpdate - Indicates whether this response is the final one, which will hide the stop response button.
+     *                                  Set to true when the complete response has been received.
+     *
+     * @returns {void}
+     * @public
+     *
+     * @example
+     * // Add a simple text response to the last prompt
+     * editor.addAIPromptResponse("This is the AI response");
+     *
+     * // Add a final response (will hide the stop button)
+     * editor.addAIPromptResponse("Here is the complete answer", true);
+     *
+     * // Add a new prompt and response together
+     * editor.addAIPromptResponse({
+     *   prompt: "How do I format a table?",
+     *   response: "To format a table, follow these steps..."
+     * });
+     */
+    public addAIPromptResponse(outputResponse: string | Object, isFinalUpdate?: boolean): void {
+        this.aiAssistantModule.addPromptResponse(outputResponse, isFinalUpdate);
+    }
+
+    /**
+     * Shows the AI Assistant Query Popup.
+     *
+     * This method displays the popup interface for interacting with the AI Assistant,
+     * allowing users to enter prompts and view responses.
+     *
+     * @returns {void}
+     * @public
+     *
+     * @example
+     * // Display the AI Assistant popup
+     * editor.showAIAssistantPopup();
+     *
+     * // Create a button that shows the AI Assistant popup
+     * document.getElementById('aiButton').addEventListener('click', () => {
+     *   editor.showAIAssistantPopup();
+     * });
+     */
+    public showAIAssistantPopup(): void {
+        this.aiAssistantModule.showQueryPopup();
+    }
+
+    /**
+     * Hides the AI Assistant Query Popup.
+     *
+     * This method programmatically closes the AI Assistant popup interface. Useful when
+     * handling custom actions via Editor toolbar buttons or when the interaction is complete.
+     *
+     * @returns {void}
+     * @public
+     *
+     * @example
+     * // Close the AI Assistant popup after processing a request
+     * editor.executePrompt("Format this paragraph");
+     * editor.hideAIAssistantPopup();
+     *
+     * // Create a custom close button
+     * document.getElementById('closeAiButton').addEventListener('click', () => {
+     *   editor.hideAIAssistantPopup();
+     * });
+     */
+    public hideAIAssistantPopup(): void {
+        this.aiAssistantModule.hideAIQueryPopup();
+    }
+
+    /**
+     * Clears all prompt and response data from the AI Assistant's history stack.
+     *
+     * This method removes the entire conversation history between the user and the AI Assistant,
+     * resetting all stored prompts and responses.
+     *
+     * @returns {void} No return value.
+     * @public
+     *
+     * @example
+     * // Retrieve the current history before clearing
+     * const promptHistory = editor.getAIPromptHistory();
+     *
+     * // Post the history to a database and then clear it
+     * editor.clearAIPromptHistory();
+     */
+    public clearAIPromptHistory(): void {
+        this.aiAssistantModule.clearAIPromptHistory();
+    }
 }

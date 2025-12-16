@@ -1,3 +1,6 @@
+@use 'ej2-base/styles/definition/highcontrast-light' as *;
+@forward 'ej2-base/styles/definition/highcontrast-light';
+
 /*! component's theme wise override highcontrast-definitions and variables */
 
 // Generic
@@ -98,3 +101,4 @@ $element-width-complete: 100% !important !default;
 //gridlines
 $gridline-background: $bg-base-10 !default;
 $gridline-border: $border-default !default;
+$gridline-border-width: 1px !default;

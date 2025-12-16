@@ -1,3 +1,6 @@
+@use 'ej2-base/styles/definition/fabric' as *;
+@forward 'ej2-base/styles/definition/fabric';
+
 /*! component's theme wise override fabric-definitions and variables */
 
 // Generic
@@ -100,3 +103,4 @@ $element-width-complete: 100% !important !default;
 //gridlines
 $gridline-background: $neutral-lighter !default;
 $gridline-border: $neutral-tertiary !default;
+$gridline-border-width: 1px !default;

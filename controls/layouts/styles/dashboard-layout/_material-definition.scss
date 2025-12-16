@@ -1,3 +1,6 @@
+@use 'ej2-base/styles/definition/material' as *;
+@forward 'ej2-base/styles/definition/material';
+
 /*! component's theme wise override material-definitions and variables */
 
 // Generic
@@ -100,3 +103,4 @@ $element-width-complete: 100% !important !default;
 //gridlines
 $gridline-background: $grey-100 !default;
 $gridline-border: $grey-400 !default;
+$gridline-border-width: 1px !default;

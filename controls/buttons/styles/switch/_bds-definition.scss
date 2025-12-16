@@ -1,3 +1,5 @@
+@use 'ej2-base/styles/definition/bds' as *;
+@forward 'ej2-base/styles/definition/bds';
 $switch-wrapper-width: 36px !default;
 $switch-wrapper-height: 20px !default;
 $switch-inner-width: 100% !default;
@@ -133,3 +135,22 @@ $switch-ripple-bg-color: rgba(255, 64, 129, .12) !default;
 $switch-on-disabled-bg-color: $switch-inner-bg !default;
 $switch-inner-hover-on-font-color: $primary-text-color !default;
 $switch-handle-off-hover-bg-color: $content-bg-color !default;
+$switch-ripple-border-radius: 50% !default;
+
+$switch-height: 1px !default;
+$switch-ripple-container-height: 52px !default;
+$switch-width: 1px !default;
+$switch-ripple-container-width: 52px !default;
+
+$switch-ripple-container-bottom: -9px !default;
+$switch-ripple-container-left: -17px !default;
+$switch-ripple-container-top: -17px !default;
+
+//fluent 2
+$switch-bgr-small-wrapper-margin: 8px !default;
+$switch-bgr-wrapper-margin: 10px !default;
+$switch-nrml-focus-border-radius: 1px !default;
+$small-switch-css-margin: 6px !default;
+
+//material3
+$switch-ripple-element-border-radius: 50% !default;

@@ -13,7 +13,7 @@ import { getCorrespondingColumns, getCorrespondingIndex, insertColGroupWithSizes
  * - Adjusting table structure to accommodate pasted content
  *
  * @hidden
- * @deprecated
+ * @private
  */
 export class TablePasting {
     private allCells: HTMLElement[][] = [];
@@ -31,7 +31,7 @@ export class TablePasting {
      * @param {NodeListOf<Element>} targetCells - Collection of cells where the paste operation targets
      * @returns {void}
      * @hidden
-     * @deprecated
+     * @private
      */
     public handleTablePaste(insertedTable: HTMLTableElement, targetCells: NodeListOf<Element>): void {
         if (!insertedTable || !targetCells || targetCells.length < 1) {
@@ -860,7 +860,7 @@ export class TablePasting {
      * @param {HTMLElement} insertedNode - The node that was pasted into the editor
      * @returns {HTMLElement | null} - The valid table element or wrapper, or null if no valid table found
      * @hidden
-     * @deprecated
+     * @private
      */
     public getValidTableFromPaste(insertedNode: HTMLElement): HTMLElement | null {
         if (insertedNode.nodeName.toLowerCase() === 'table') {

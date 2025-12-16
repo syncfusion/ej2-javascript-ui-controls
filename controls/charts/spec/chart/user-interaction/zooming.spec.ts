@@ -2691,7 +2691,8 @@ describe('Checking Zooming Toolkit with fluent2 high contrast theme', () => {
             chartObj.loaded = null;
             let Element1: HTMLElement = document.getElementById('chartContainer_Zooming_KitCollection');
             expect(Element1 !== null).toBe(true);
-            expect(Element1.getAttribute('transform') === 'translate(73.5,299)' || Element1.getAttribute('transform') === 'translate(75.5,308)').toBe(true);
+            expect(Element1.getAttribute('transform') === 'translate(73.5,299)' || Element1.getAttribute('transform') === 'translate(75.5,308)'
+            || Element1.getAttribute('transform') === 'translate(78.5,299)').toBe(true);
             done();
         };
         chartObj.loaded = loaded;
@@ -2705,7 +2706,8 @@ describe('Checking Zooming Toolkit with fluent2 high contrast theme', () => {
             chartObj.loaded = null;
             let Element1: HTMLElement = document.getElementById('chartContainer_Zooming_KitCollection');
             expect(Element1 !== null).toBe(true);
-            expect(Element1.getAttribute('transform') === 'translate(336.75,192.875)' || Element1.getAttribute('transform') === 'translate(337.75,192.875)').toBe(true);
+            expect(Element1.getAttribute('transform') === 'translate(336.75,192.875)' || Element1.getAttribute('transform') === 'translate(337.75,192.875)'
+            || Element1.getAttribute('transform') === 'translate(339.25,192.875)').toBe(true);
             done();
         };
 

@@ -1,9 +1,9 @@
-@import 'ej2-base/styles/definition/highcontrast.scss';
-@import 'pivotfieldlist/highcontrast-definition.scss';
-@import 'pivotview/highcontrast-definition.scss';
-@import 'pivotview/icons/highcontrast.scss';
-@import 'pivotview/all.scss';
-@import 'pivotview/bigger.scss';
-@import 'pivotfieldlist/icons/highcontrast.scss';
-@import 'pivotfieldlist/all.scss';
-@import 'pivotfieldlist/bigger.scss';
+@use 'ej2-base/styles/definition/highcontrast' as *;
+@use 'pivotfieldlist/highcontrast-definition' as *;
+@use 'pivotview/highcontrast-definition' as *;
+@use 'pivotview/icons/highcontrast' as *;
+@use 'pivotview/all' as *;
+@use 'pivotview/bigger' as *;
+@use 'pivotfieldlist/icons/highcontrast' as *;
+@use 'pivotfieldlist/all' as *;
+@use 'pivotfieldlist/bigger' as *;

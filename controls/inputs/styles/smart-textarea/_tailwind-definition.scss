@@ -1,3 +1,5 @@
+@use 'ej2-base/styles/definition/tailwind' as *;
+@forward 'ej2-base/styles/definition/tailwind';
 $sta-background-color: $content-bg-color-alt1 !default;
 $sta-color: $content-text-color !default;
 $sta-box-shadow: $shadow-lg !default;

@@ -1,1 +1,6 @@
+@use 'ej2-base/styles/definition/bds' as *;
+@forward 'ej2-base/styles/definition/bds';
+
 /* stylelint-disable-line no-empty-source */
+$popup-width: auto !default;
+$popup-height: auto !default;

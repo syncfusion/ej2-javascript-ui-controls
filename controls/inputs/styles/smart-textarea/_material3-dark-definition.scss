@@ -1,1 +1,5 @@
-@import './material3-definition.scss';
+@use 'ej2-base/styles/definition/material3-dark' as *;
+@forward 'ej2-base/styles/definition/material3-dark';
+$sta-background-color: rgba($content-bg-color) !default;
+$sta-color: rgba($primary) !default;
+$sta-box-shadow: $shadow-lg !default;

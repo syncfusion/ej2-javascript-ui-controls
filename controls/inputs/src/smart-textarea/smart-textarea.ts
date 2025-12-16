@@ -1,10 +1,13 @@
 // eslint-disable-next-line @typescript-eslint/triple-slash-reference
 ///<reference path='../textarea/textarea-model.d.ts'/>
-import { EventHandler, Property, createElement } from '@syncfusion/ej2-base';
+import { EmitType, Event, EventHandler, Property, createElement } from '@syncfusion/ej2-base';
 import { TextArea } from '../textarea/textarea';
 import { CaretPosition, CaretPositionHelper } from './caret-helper';
 import { SmartTextAreaModel } from './smart-textarea-model';
 
+/**
+ * @hidden
+ */
 export interface ChatParameters {
     messages: ChatMessage[];
     temperature?: number;
@@ -14,21 +17,71 @@ export interface ChatParameters {
     presencePenalty?: number;
 }
 
+/**
+ * @hidden
+ */
 export enum ChatMessageRole {
     System = 'system',
     User = 'user',
     Assistant = 'assistant',
 }
 
+/**
+ * @hidden
+ */
 export interface ChatMessage {
     role: ChatMessageRole;
     content: string;
 }
 
+/**
+ * Event arguments passed before a suggestion is inserted into the textarea.
+ * Allows customization or cancellation of the insertion.
+ */
+export interface BeforeSuggestionInsertArgs {
+    /**
+     * Specifies the text that will be displayed as a suggestion while typing in the SmartTextArea.
+     */
+    text: string;
+    /**
+     * Set to true to cancel the suggestion insertion. Default: false
+     */
+    cancel: boolean;
+}
+
+/**
+ * Event arguments passed after a suggestion has been successfully inserted.
+ */
+export interface AfterSuggestionInsertArgs {
+    /**
+     * Specifies the text that is displayed as a suggestion while typing in the SmartTextArea. If the suggestion request fails, an empty string is returned.
+     */
+    text: string;
+}
+
+/**
+ * Defines the value for the `showSuggestionOnPopup` property.
+ */
 export type SuggestionMode = 'Enable' | 'Disable' | 'None';
 
 export class SmartTextArea extends TextArea {
     private pendingSuggestionAbort: any;
+
+    /**
+     * Triggered before suggestions are shown as the user types in the SmartTextArea component. Allows cancellation of suggestion insertion.
+     *
+     * @event beforeSuggestionInsert
+     */
+    @Event()
+    public beforeSuggestionInsert: EmitType<BeforeSuggestionInsertArgs>;
+
+    /**
+     * Triggered after suggestions are shown as the user types in the SmartTextArea component. Used for post-insertion analytics or updates.
+     *
+     * @event afterSuggestionInsert
+     */
+    @Event()
+    public afterSuggestionInsert: EmitType<AfterSuggestionInsertArgs>;
 
     /**
      * Represents the user's role or designation, which can be used to provide role-specific suggestions or content within the smart textarea.
@@ -82,6 +135,10 @@ export class SmartTextArea extends TextArea {
     private suggestionDisplay: InlineSuggestion | ContextSuggestion;
     private typingDebounceTimeout: any;
 
+    /**
+     * @private
+     * @returns {void}
+     */
     public render(): void {
         super.render();
         if (!(this.element instanceof HTMLTextAreaElement)) {
@@ -96,7 +153,7 @@ export class SmartTextArea extends TextArea {
             this.textArea.setAttribute('data-inline-suggestions', suggestionState);
         }
         this.suggestionDisplay = this.shouldShowInlineSuggestions(this.textArea) ?
-            new InlineSuggestion(smartTextArea, this.textArea) : new ContextSuggestion(smartTextArea, this.textArea);
+            new InlineSuggestion(this, smartTextArea, this.textArea) : new ContextSuggestion(this, smartTextArea, this.textArea);
     }
 
     protected wireEvents(): void {
@@ -249,7 +306,15 @@ export class SmartTextArea extends TextArea {
             if (!insertSuggestion.endsWith(' ')) {
                 insertSuggestion += ' ';
             }
-            this.suggestionDisplay.show(insertSuggestion);
+            const beforeArgs: BeforeSuggestionInsertArgs = {
+                text: insertSuggestion,
+                cancel: false
+            };
+            this.trigger('beforeSuggestionInsert', beforeArgs);
+            if (beforeArgs.cancel) {
+                return;
+            }
+            this.suggestionDisplay.show(beforeArgs.text);
         }
     }
 
@@ -278,10 +343,19 @@ export class SmartTextArea extends TextArea {
         return -1;
     }
 
+    /**
+     * Gets component name.
+     * @returns {string} - Returns the string value.
+     * @private
+     */
     public getModuleName(): string {
         return 'smarttextarea';
     }
 
+    /**
+     * @private
+     * @returns {void}
+     */
     public destroy(): void {
         super.destroy();
         this.textArea = null;
@@ -290,7 +364,11 @@ export class SmartTextArea extends TextArea {
     }
 }
 
+/**
+ * @hidden
+ */
 class InlineSuggestion {
+    private smartTextArea: SmartTextArea;
     private owner: HTMLElement;
     private textArea: HTMLTextAreaElement;
     private latestSuggestionText: string;
@@ -308,8 +386,9 @@ class InlineSuggestion {
         this.originalValueProperty.set.call(this.textArea, newValue);
     }
 
-    constructor(smartTextArea: HTMLElement, textArea: HTMLTextAreaElement) {
-        this.owner = smartTextArea;
+    constructor(smartTextArea: SmartTextArea, container: HTMLElement, textArea: HTMLTextAreaElement) {
+        this.smartTextArea = smartTextArea;
+        this.owner = container;
         this.textArea = textArea;
         this.latestSuggestionText = '';
         this.suggestionStartPos = null;
@@ -361,6 +440,7 @@ class InlineSuggestion {
     }
 
     public accept(): void {
+        const insertedText: string = this.currentSuggestion;
         this.textArea.setSelectionRange(this.suggestionEndPos, this.suggestionEndPos);
         this.suggestionStartPos = null;
         this.suggestionEndPos = null;
@@ -369,6 +449,7 @@ class InlineSuggestion {
         }
         this.textArea.removeAttribute('data-suggestion-visible');
         CaretPositionHelper.adjustScrollToCaretPosition(this.textArea);
+        this.smartTextArea.trigger('afterSuggestionInsert', { insertedText });
     }
 
     public reject(): void {
@@ -391,7 +472,11 @@ class InlineSuggestion {
     }
 }
 
+/**
+ * @hidden
+ */
 class ContextSuggestion {
+    private smartTextArea: SmartTextArea;
     private textArea: HTMLTextAreaElement;
     private latestSuggestionText: string = '';
     private suggestionElement: HTMLDivElement;
@@ -399,7 +484,8 @@ class ContextSuggestion {
     private suggestionTextElement: HTMLSpanElement;
     private showing: boolean = false;
 
-    constructor(container: HTMLElement, textArea: HTMLTextAreaElement) {
+    constructor(smartTextArea: SmartTextArea, container: HTMLElement, textArea: HTMLTextAreaElement) {
+        this.smartTextArea = smartTextArea;
         this.textArea = textArea;
         this.suggestionElement = document.createElement('div');
         this.suggestionElement.classList.add('smart-textarea-suggestion-overlay');
@@ -452,9 +538,11 @@ class ContextSuggestion {
 
     public accept(): void {
         if (this.showing) {
-            CaretPositionHelper.insertCharacter(this.textArea, this.currentSuggestion);
+            const insertedText: string = this.currentSuggestion;
+            CaretPositionHelper.insertCharacter(this.textArea, insertedText);
             CaretPositionHelper.adjustScrollToCaretPosition(this.textArea);
             this.hide();
+            this.smartTextArea.trigger('afterSuggestionInsert', { insertedText });
         }
     }
 
@@ -491,6 +579,9 @@ class ContextSuggestion {
     }
 }
 
+/**
+ * @hidden
+ */
 class VirtualCaret {
     private textArea: HTMLTextAreaElement;
     private caretDiv: HTMLDivElement;

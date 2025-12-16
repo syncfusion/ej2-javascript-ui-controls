@@ -1,3 +1,6 @@
+@use 'ej2-base/styles/definition/fluent' as *;
+@forward 'ej2-base/styles/definition/fluent';
+
 /*! component's theme wise override tailwind-definitions and variables */
 
 // Generic
@@ -109,3 +112,4 @@ $panel-drop-border: 1px $primary dashed !default;
 $gridline-background: $content-bg-color-alt2 !default;
 $gridline-border: $border-dark !default;
 $gridline-border-radius: $model-radius-small !default;
+$gridline-border-width: 1px !default;

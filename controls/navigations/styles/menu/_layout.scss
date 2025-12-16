@@ -1,21 +1,23 @@
-@import '../context-menu/layout-mixin.scss';
+@use 'ej2-base/styles/common/mixin' as *;
+@use './theme-variables' as *;
+@use '../context-menu/layout-mixin' as *;
 @include export-module('menu-layout') {
   .e-menu-wrapper,
   .e-menu-container {
     border: $menu-ul-border;
     border-radius: $cmenu-ul-border-radius;
     display: inline-block;
-    line-height: 0;
+    line-height: $menu-wrapper-line-height;
 
     & .e-menu-vscroll {
-      height: inherit;
+      height: $menu-inherit-height;
     }
 
     @at-root {
       & ul {
         @include ul-layout;
         @if $skin-name == 'tailwind3' {
-          font-weight: $font-weight-medium;
+          font-weight: $menu-container-ul-font-weight;
         }
         font-size: $menu-font-size;
         padding: $menu-ul-padding;
@@ -24,7 +26,7 @@
 
         & .e-separator {
           @if $skin-name == 'fluent2' {
-            padding: 0 !important; /* stylelint-disable-line declaration-no-important */
+            padding: $menu-padding-none !important; /* stylelint-disable-line declaration-no-important */
           }
         }
 
@@ -62,33 +64,33 @@
           @include li-layout;
           display: inline-flex;
           height: $menu-li-height;
-          line-height: $menu-li-height;
+          line-height: $menu-li-line-height;
           padding: $menu-li-padding;
           vertical-align: top;
           white-space: nowrap;
 
           & .e-menu-icon {
             font-size: $menu-icon-font-size;
-            height: auto;
-            line-height: $menu-li-height;
+            height: $menu-auto-height;
+            line-height: $menu-li-line-height;
             margin-right: $menu-icon-margin-right;
             text-align: center;
             @if $skin-name == 'fluent2' {
-              margin-bottom: 2px;
+              margin-bottom: $menu-icon-margin-bottom;
             }
             @else {
-              margin-bottom: 4px;
+              margin-bottom: $menu-icon-margin-bottom;
             }
           }
 
           & .e-caret {
             font-size: $menu-caret-font-size;
-            height: auto;
+            height: $menu-auto-height;
             @if $skin-name == 'bootstrap5' or $skin-name == 'bootstrap5.3' or $skin-name == 'FluentUI' or $skin-name == 'Material3' or $skin-name == 'fluent2' {
               line-height: $menu-icon-li-height;
             }
             @else {
-              line-height: $menu-li-height;
+              line-height: $menu-li-line-height;
             }
             position: absolute;
             right: $menu-caret-right;
@@ -115,7 +117,7 @@
         @include ul-size;
         min-width: $cmenu-min-width;
         @if $skin-name == 'tailwind3' {
-          font-weight: $font-weight-normal;
+          font-weight: $menu-ul-font-weight;
         }
 
         & .e-menu-item {
@@ -125,7 +127,7 @@
           & .e-caret {
             font-size: $submenu-caret-font-size;
             @if $skin-name == 'fluent2' {
-              padding: 9px 0;
+              padding: $menu-container-caret-padding;
             }
           }
         }
@@ -144,21 +146,21 @@
 
     & .e-menu-header {
       display: none;
-      font-family: $font-family;
-      font-size: $menu-icon-font-size;
-      font-weight: $font-weight;
+      font-family: $menu-header-font-family;
+      font-size: $menu-header-font-size;
+      // font-weight: $font-weight;
       height: $menu-li-height;
-      line-height: $menu-li-height;
+      line-height: $menu-li-line-height;
       text-align: left;
       white-space: nowrap;
       @if $skin-name == 'tailwind3' {
-        font-weight: $font-weight-medium;
+        font-weight: $menu-container-ul-font-weight;
       }
 
       & .e-menu-title,
       & .e-menu-icon {
         display: inline-block;
-        line-height: inherit;
+        line-height: $menu-inherit-line-height;
       }
 
       & .e-menu-icon {
@@ -171,10 +173,10 @@
 
     & .e-menu-hscroll.e-hscroll:not(.e-scroll-device) {
       @if $skin-name == 'bootstrap4' {
-        padding: 4px $menu-hscroll-nav-size;
+        padding: $menu-scroll-padding $menu-hscroll-nav-size;
       }
       @else {
-        padding: 0 $menu-hscroll-nav-size;
+        padding: $menu-scroll-padding $menu-hscroll-nav-size;
       }
 
       & .e-scroll-nav {
@@ -185,7 +187,7 @@
 
         &:focus,
         &:hover {
-          border: 0;
+          border: $menu-hscroll-nav-interaction-border;
         }
 
         &.e-scroll-right-nav {
@@ -230,7 +232,7 @@
 
     & .e-menu-vscroll.e-vscroll {
       &:not(.e-scroll-device) {
-        padding: $menu-vscroll-nav-size 0;
+        padding: $menu-vscroll-nav-padding $menu-scroll-padding;
       }
 
       &.e-scroll-device {
@@ -245,7 +247,7 @@
       }
 
       & .e-vscroll-bar {
-        height: 100%;
+        height: $menu-scroll-bar-height;
         width: inherit;
 
         & .e-vscroll-content {
@@ -254,7 +256,7 @@
       }
 
       & .e-scroll-nav {
-        height: $menu-vscroll-nav-size;
+        height: $menu-vscroll-nav-height;
       }
     }
 
@@ -268,7 +270,7 @@
     }
 
     &.e-contextmenu-container {
-      height: 1px;
+      height: $menu-container-height;
 
       .e-menu-vscroll ul.e-ul {
         width: inherit;
@@ -326,7 +328,7 @@
 
   .e-menu-wrapper.e-hamburger,
   .e-menu-container.e-hamburger {
-    border: 0;
+    border: $menu-hamburger-border;
     display: block;
     position: relative;
 
@@ -336,8 +338,8 @@
     }
 
     & .e-popup.e-menu-popup {
-      border: 0;
-      border-radius: 0;
+      border: $menu-hamburger-border;
+      border-radius: $menu-hamburger-border-radius;
       box-shadow: none;
       display: block;
       position: relative;
@@ -357,11 +359,11 @@
         & .e-menu-item {
           text-indent: $menu-li-text-indent;
           @if $skin-name == 'Material3' {
-            border-radius: 0;
+            border-radius: $menu-item-border-radius;
           }
 
           &.e-blankicon {
-            text-indent: $menu-li-text-indent + $menu-icon-font-size + $menu-icon-margin-right;
+            text-indent: $menu-li-text-indent + $menu-icon-font-size-text-indent + $menu-icon-margin-right-text-indent;
           }
 
           & .e-menu-icon {
@@ -396,22 +398,22 @@
       }
 
       &.e-menu:not(.e-vertical) {
-        border-top: 0;
+        border-top: $menu-hamburger-border;
         display: block;
-        padding: 0;
+        padding: $menu-hamburger-padding;
         position: absolute;
       }
 
       &.e-ul {
         font-size: $menu-font-size;
-        padding: 0;
+        padding: $menu-hamburger-padding;
 
         & .e-menu-item {
-          line-height: $menu-li-height;
+          line-height: $menu-li-line-height;
           text-indent: inherit;
 
           &.e-blankicon {
-            padding: 0;
+            padding: $menu-hamburger-padding;
             text-indent: inherit;
           }
 
@@ -433,12 +435,12 @@
 
       & .e-menu-item {
         display: list-item;
-        height: auto;
-        padding: 0;
+        height: $menu-auto-height;
+        padding: $menu-hamburger-padding;
 
         &.e-menu-caret-icon,
         &.e-blankicon {
-          padding: 0;
+          padding: $menu-hamburger-padding;
         }
 
         & .e-menu-url {
@@ -470,7 +472,7 @@
         }
       }
       .e-ul {
-        font-weight: $font-weight-medium;
+        font-weight: $menu-container-ul-font-weight;
       }
     }
   }
@@ -479,12 +481,12 @@
   .e-rtl.e-menu-container.e-hamburger ul {
     & .e-menu-item {
       & .e-menu-caret-icon {
-        padding-left: 0;
-        padding-right: 0;
+        padding-left: $menu-hamburger-padding;
+        padding-right: $menu-hamburger-padding;
       }
 
       & .e-menu-icon {
-        margin-left: 0;
+        margin-left: $menu-hamburger-rtl-icon-margin-left;
         text-indent: inherit;
       }
 

@@ -1,1 +1,705 @@
-@import './tailwind-definition.scss';
+@use 'ej2-base/styles/definition/tailwind-dark' as *;
+@forward 'ej2-base/styles/definition/tailwind-dark';
+
+//Layout Variables Start
+$rte-border-size: 1px !default;
+$rte-2px-border-size: 2px !default;
+$rte-border-type: solid !default;
+$rte-list-btn-flex: column !default;
+$rte-split-btn-line-height: 30px !default;
+$rte-big-split-btn-line-height: 38px !default;
+$rte-big-quick-item-btn-width: 38px !default;
+$rte-big-quick-item-btn-height: 38px !default;
+$rte-big-quick-item-padding: 12px !default;
+$rte-quick-item-icon-min-width: 24px !default;
+$rte-big-quick-item-line-height: $leading-normal !default;
+$rte-content-padding: 12px !default;
+$rte-toolbar-icon-size: 18px !default;
+$rte-toolbar-big-icon-size: 18px !default;
+$rte-tb-items-margin-left: 7px !default;
+$rte-active-tb-item-btn-padding: 0 4px !default;
+$rte-split-btn-active-color-icon-line-height: 30px !default;
+$rte-format-btn-min-width: 0 !default;
+$rte-font-name-btn-min-width: 0 !default;
+$rte-font-size-btn-min-width: 0 !default;
+$rte-big-drop-btn-padding-left: 10px !default;
+$rte-big-drop-btn-padding-right: 6px !default;
+$rte-big-drop-btn-action-padding-left: 10px !default;
+$rte-big-drop-btn-action-padding-right: 6px !default;
+$rte-colorpicker-parent-padding-active-hover: 0 !default;
+$rte-font-icon-width: 30px !default;
+$rte-font-arrow-width: 18px !default;
+$rte-font-arrow-touch-width: 20px !default;
+$rte-placeholder-line-height: $leading-normal !default;
+$rte-big-active-tb-item-btn-padding: 0 8px !default;
+$rte-table-popup-padding: 18px 18px 8px 22px !default;
+$rte-table-popup-min-height: 164px !default;
+$rte-table-popup-border: 1px solid $cool-gray-300 !default;
+$rte-insert-dialog-label-padding-top: 12px !default;
+$rte-insert-dialog-label-padding-bottom: 3px !default;
+$rte-big-quick-tbar-item-min-height: 38px !default;
+$rte-big-quick-tbar-item-min-width: 38px !default;
+$rte-content-font-size: 14px !default;
+$rte-big-content-font-size: 16px !default;
+$rte-big-dialog-min-height: 324px !default;
+$rte-dropdown-caret-icon-size: $text-xs !default;
+$rte-big-dropdown-caret-icon-size: $text-sm !default;
+$font-weight: $font-weight-normal !default;
+$rte-table-popup-border-radius: 2px !default;
+$rte-resize-handler-margin-bottom: 3px;
+$rte-resize-handler-margin-right: 3px;
+$rte-resize-handler-position: 0;
+$rte-inline-tmp-min-width: 55px;
+$rte-inline-tmp-size-min-width: 66px;
+$rte-inline-tmp-color-min-width: 55px;
+$rte-big-color-list-span-common-padding-left-right: 0;
+$rte-default-character-count-opacity: 1;
+$rte-droparea-browsebtn-height: 36px;
+$rte-droparea-browsebtn-padding: 0 18px;
+$rte-insert-dialog-font-size: 15px;
+$rte-table-popup-tablecell-height: 14px;
+$rte-table-popup-tablecell-width: 14px;
+$rte-table-popup-tablecell-margin: 1px;
+$rte-table-popup-row-height: 16px;
+$rte-big-table-row-height: 18px;
+$rte-big-tablecell-height: 16px;
+$rte-big-tablecell-width: 16px;
+$rte-toolbar-item-frist-last-child-margin: 0;
+$rte-toolbar-expaned-padding: 0 4px;
+$rte-big-toolbar-expaned-padding: 0 8px;
+$rte-toolbar-expaned-padding-hover: 0 4px;
+$rte-big-formatlists-dropdown-line-height: 35px;
+
+//Layout Variables End
+
+//Theme Variables Start
+$rte-insert-icon-color: $primary !default;
+$rte-table-multicell-select-bg-color: rgba($primary, .08) !default;
+$rte-border-color: $border-light !default;
+$rte-content-bg: $content-bg-color !default;
+$rte-full-screen-bg: $content-bg-color !default;
+$rte-content-font-color: $content-text-color !default;
+$rte-item-color: $content-text-color !default;
+$rte-icons-color: $icon-color !default;
+$rte-hover-icons-color: $icon-color !default;
+$rte-img-popup-border: 1px solid $border-light !default;
+$rte-img-popup-box-shadow: $shadow !default;
+$rte-img-popup-color: $border-light !default;
+$rte-quick-item-active-bg: $secondary-bg-color-pressed !default;
+$rte-quick-item-active-font-color: $icon-color !default;
+$rte-quick-item-hover-border-color: $secondary-border-color-hover !default;
+$rte-quick-item-active-border-color: $secondary-border-color-pressed !default;
+$rte-extended-toolbar-background: $content-bg-color-alt2 !default;
+$rte-quick-pop-border: none !default;
+$rte-quick-tb-border: 1px solid $border-light !default;
+$rte-quick-pop-bg: $content-bg-color-alt2 !default;
+$rte-quick-vr-line-color: $border-light !default;
+$rte-quick-pop-item-focus-bg: $secondary-bg-color-pressed !default;
+$rte-quick-tb-btn-hover: $secondary-bg-color-pressed !default;
+$rte-tb-item-active-bg: $secondary-bg-color-pressed !default;
+$rte-tb-active-font-color: $icon-color !default;
+$rte-tb-item-active-border:  1px solid $secondary-border-color-pressed !default;
+$rte-expand-tb-border-bottom: $rte-border-size $rte-border-type $border-light !default;
+$rte-color-picker-active-bg: inherit !default;
+$rte-drop-btn-active-bg: $secondary-bg-color-pressed !default;
+$rte-drop-btn-active-color: $icon-color !default;
+$rte-split-btn-active-hover-font-color: $icon-color !default;
+$rte-tb-hover-font-color: $icon-color !default;
+$rte-split-btn-hover-bg: $content-bg-color-alt1 !default;
+$rte-split-btn-span-hover-bg: $content-bg-color-alt3 !default;
+$rte-split-btn-focus-bg: $content-bg-color-alt1 !default;
+$rte-btn-active-bg: $content-bg-color-alt1 !default;
+$rte-split-btn-active-color-icon-line-height: 30px !default;
+$rte-qt-item-btn-line-height: 32px;
+$rte-dropdown-color: $content-text-color !default;
+$rte-dropdown-transition-color: $content-text-color-alt2 !default;
+$rte-color-picker-line-height: 1 !default;
+$rte-popup-item-min-height: 30px !default;
+$rte-big-popup-item-min-height: 38px !default;
+$rte-popup-bg: $content-bg-color-alt2 !default;
+
+$rte-link-valid-color: $danger !default;
+$rte-upload-drag-border-clr: $border-dark !default;
+$rte-img-header-clr: $content-text-color-alt1 !default;
+$rte-drop-text-clr: $content-text-color-alt2 !default;
+$rte-default-character-count-color: $content-text-color-alt1 !default;
+$rte-warning-character-count-color: $warning !default;
+$rte-error-character-count-color: $danger !default;
+$rte-img-border: solid 2px #4a90e2 !default;
+$rte-font-family: $font-family !default;
+$rte-content-color: $content-text-color !default;
+$rte-content-blockquote-border-left-color: solid 3px $content-bg-color-alt4 !default;
+$rte-dropdown-selection-bgcolor: $secondary-bg-color-pressed !default;
+$rte-ext-tbar-overlay-icons-color: $icon-color-disabled !default;
+$rte-overlay-color: $overlay-bg-color !default;
+$rte-dropdown-selection-color: $content-text-color-selected !default;
+$rte-anchor-color: $info !default;
+$rte-ext-tbar-overlay-dropdown-color: $content-bg-color-alt4 !default;
+$rte-img-resize-back-color: $primary !default;
+$rte-img-resize-color: $primary-text-color !default;
+$rte-table-header-color: $content-text-color !default;
+$rte-table-span-bg-color: $content-bg-color !default;
+$rte-table-span-border: 1px solid $border-light !default;
+$rte-table-span-active-bg-color: $primary-lighter !default;
+$rte-table-span-active-border-color: $primary !default;
+$rte-table-select-border-color:  $primary !default;
+$rte-table-popup-bg: $content-bg-color !default;
+$rte-table-resize-back-color: $content-bg-color !default;
+$rte-table-popup-color: $border-light !default;
+$rte-table-popup-box: $shadow !default;
+$rte-table-border-color: $border-light !default;
+$rte-table-alternate-color: $content-bg-color-alt1 !default;
+$rte-table-header-bg: $content-bg-color-alt1 !default;
+$rte-toolbar-hor-nav-border-width: 0 0 0 0 !default;
+$rte-top-left-border-radius: 0;
+$rte-top-right-border-radius: 0;
+$rte-extended-toolbar-items-padding: 0;
+
+//Theme Variables End
+
+$rte-tb-hover-bg-color: $content-bg-color-alt1 !default;
+
+$rte-img-dlg-max-height: 363px !default;
+$rte-img-alt-dlg-max-height: 363px !default;
+$rte-img-link-dlg-max-height: 173px !default;
+$rte-img-size-dlg-max-height: 236px !default;
+$rte-link-dlg-max-height: 331px !default;
+$rte-file-browser-dlg-max-height: 557px !default;
+$rte-table-dlg-max-height: 232px !default;
+$rte-edit-table-dlg-max-height: 340px !default;
+$rte-quick-popup-border: 1px solid $border-light !default;
+$rte-quick-popup-border-radius: 2px !default;
+$rte-quick-popup-outer-margin: 3px 7px !default;
+$rte-quick-popup-inner-padding: 0 4px !default;
+$rte-quick-big-popup-outer-margin: 4px 9px !default;
+$rte-quick-big-popup-inner-padding: 0 6px !default;
+$rte-quick-popup-bg-color: $content-bg-color-alt2 !default;
+$rte-quick-popup-box-shadow: $shadow-md !default;
+
+$rte-big-img-dlg-max-height: 397px !default;
+$rte-big-img-alt-dlg-max-height: 397px !default;
+$rte-big-img-link-dlg-max-height: 211px !default;
+$rte-big-img-size-dlg-max-height: 293px !default;
+$rte-big-link-dlg-max-height: 378px !default;
+$rte-big-file-browser-dlg-max-height: 557px !default;
+$rte-big-table-dlg-max-height: 283px !default;
+$rte-big-edit-table-dlg-max-height: 388px !default;
+$rte-drop-text-width: 300px !default;
+$rte-drop-text-height: 128px !default;
+$rte-big-drop-text-height: 140px !default;
+$rte-drop-text-mobile-width: 250px !default;
+$rte-tbar-default-bg: $content-bg-color-alt2;
+$rte-big-insert-dialog-label-padding-top: 12px;
+$rte-tb-expended-min-height: 40px !default;
+$rte-big-tb-expended-min-height: 48px !default;
+$rte-tb-expended-padding-left: 1px !default;
+$rte-tb-expended-hover-padding-left: 0 !default;
+$rte-toolbar-expaned-minwidth: 18px !default;
+$rte-default-btn-bg: $content-bg-color-alt2 !default;
+$rte-split-btn-border-radius: 4px !default;
+$rte-split-btn-height: 30px !default;
+$rte-big-split-btn-height: 38px !default;
+$rte-hover-btn-border-color: $icon-color !default;
+$rte-active-btn-icons-color: $icon-color !default;
+$rte-default-icon-color: $icon-color !default;
+$rte-icon-color: $icon-color !default;
+$rte-hover-split-btn-border: 1px solid $secondary-border-color-hover !default;
+$rte-split-btn-border: 1px solid transparent !default;
+$rte-button-focus-box-shadow: $shadow-focus-ring1 !default;
+
+$rte-emoji-pop-background: $flyout-bg-color;
+$rte-emoji-pop-box-shadow: none;
+$rte-emoji-pop-border:1px solid $cool-gray-200;
+$rte-emoji-tbar-btn-bg: transparent;
+$rte-emoji-tbar-btn-select-bg : $secondary-border-color-hover;
+$rte-emoji-tbar-btn-hover: $secondary-border-color-hover;
+$rte-emoji-btn-height: 249px;
+$rte-emoji-grp-btn-height: 40px;
+$rte-emoji-grp-btn-width: 40px;
+$rte-emoji-headname-font-weight: 400;
+$rte-emoji-headname-color:$content-text-color-alt2;
+$rte-big-emoji-btn-height: 254px;
+$rte-content-pre-background: inherit;
+$rte-code-background: rgba(157, 157, 157, .15) !default;
+$rte-code-color: rgba(237, 72, 76) !default;
+
+$rte-format-painter-cursor: url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzIiIGhlaWdodD0iMjIiIHZpZXdCb3g9IjAgMCAzMiAyMiIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHBhdGggZD0iTTUgMi41QzQuNDQ3NzIgMi41IDQgMi45NDc3MiA0IDMuNUM0IDQuMDUyMjggNC40NDc3MiA0LjUgNSA0LjVINi42OTcyMkw3LjUgNS4wMzUxOFYxNi45NjQ4TDYuNjk3MjIgMTcuNUg1QzQuNDQ3NzIgMTcuNSA0IDE3Ljk0NzcgNCAxOC41QzQgMTkuMDUyMyA0LjQ0NzcyIDE5LjUgNSAxOS41SDYuNjk3MjJDNy4wOTIwNyAxOS41IDcuNDc4MDkgMTkuMzgzMSA3LjgwNjYyIDE5LjE2NDFMOC41IDE4LjcwMTlMOS4xOTMzOCAxOS4xNjQxQzkuNTIxOTEgMTkuMzgzMSA5LjkwNzkzIDE5LjUgMTAuMzAyOCAxOS41SDEyQzEyLjU1MjMgMTkuNSAxMyAxOS4wNTIzIDEzIDE4LjVDMTMgMTcuOTQ3NyAxMi41NTIzIDE3LjUgMTIgMTcuNUwxMC4zMDI4IDE3LjVMOS41IDE2Ljk2NDhWNS4wMzUxOEwxMC4zMDI4IDQuNUgxMkMxMi41NTIzIDQuNSAxMyA0LjA1MjI4IDEzIDMuNUMxMyAyLjk0NzcyIDEyLjU1MjMgMi41IDEyIDIuNUgxMC4zMDI4QzkuOTA3OTMgMi41IDkuNTIxOTEgMi42MTY4OCA5LjE5MzM4IDIuODM1OUw4LjUgMy4yOTgxNUw3LjgwNjYyIDIuODM1OUM3LjQ3ODA5IDIuNjE2ODggNy4wOTIwNyAyLjUgNi42OTcyMiAyLjVINVoiIGZpbGw9ImJsYWNrIiBzdHJva2U9IndoaXRlIiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KPHBhdGggZD0iTTIzLjUgNFY4LjVIMjVDMjUuODI4NCA4LjUgMjYuNSA5LjE3MTU3IDI2LjUgMTBWMTEuNVYxNy41SDIzLjVIMjAuNUgxNi41QzE3LjUgMTUgMTcuNSAxMS41IDE3LjUgMTEuNVYxMEMxNy41IDkuMTcxNTcgMTguMTcxNiA4LjUgMTkgOC41SDIwLjVWNEMyMC41IDMuMTcxNTcgMjEuMTcxNiAyLjUgMjIgMi41QzIyLjgyODQgMi41IDIzLjUgMy4xNzE1NyAyMy41IDRaIiBmaWxsPSJibGFjayIvPgo8cGF0aCBkPSJNMjMuNSA4LjVWNEMyMy41IDMuMTcxNTcgMjIuODI4NCAyLjUgMjIgMi41VjIuNUMyMS4xNzE2IDIuNSAyMC41IDMuMTcxNTcgMjAuNSA0VjguNU0yMy41IDguNUgyNUMyNS44Mjg0IDguNSAyNi41IDkuMTcxNTcgMjYuNSAxMFYxMS41TTIzLjUgOC41SDIwLjVNMjAuNSA4LjVIMTlDMTguMTcxNiA4LjUgMTcuNSA5LjE3MTU3IDE3LjUgMTBWMTEuNU0yNi41IDExLjVWMTcuNUgyMy41TTI2LjUgMTEuNUgxNy41TTE3LjUgMTEuNUMxNy41IDExLjUgMTcuNSAxNSAxNi41IDE3LjVIMjAuNU0yMy41IDE3LjVWMTQuNU0yMy41IDE3LjVIMjAuNU0yMC41IDE3LjVWMTUuNSIgc3Ryb2tlPSJ3aGl0ZSIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+Cjwvc3ZnPgo=')  8 1, auto;
+
+$rte-img-upload-abort-icon-btn-margin-top: 5px;
+$rte-big-img-upload-abort-icon-btn-margin-top: -2px;
+$rte-big-img-upload-abort-icon-btn-padding: 18px;
+$rte-dialog-upload-status-progress: $info;
+
+$rte-code-block-label-font-weight: 600;
+$rte-code-block-label-font-family: Inter;
+$rte-code-block-label-line-height: 16px;
+$rte-code-block-font-family: Space Mono !default;
+$rte-code-block-font-weight: 400 !default;
+$rte-code-block-line-height: 20px !default;
+$rte-hr-border: 2px solid rgba(176, 179, 184, 1) !default;
+$rte-hr-outline: rgba(0, 120, 214, 1) !default;
+
+$rte-quick-toolbar-tip-pointer-border: $border-light !default;
+$rte-quick-toolbar-tip-pointer-content: $content-bg-color-alt2 !default;
+
+$rte-popup-padding: 0 8px !default;
+$rte-popup-item-padding: 4px 4px !default;
+
+$rte-checklist-checked-bg-color: $primary-bg-color !default;
+$rte-checklist-checked-border-color: 1px solid var(--Button-Primary-Button-primary-bg-color, rgba(79, 70, 229, 1)) !default;
+$rte-checklist-checked-checkmark-color: $primary-text-color !default;
+$rte-checklist-checkbox-border: 1px solid var(--Border-color-border, rgba(209, 213, 219, 1));
+
+$rte-ai-assistant-btn-disabled: $icon-color-disabled !default;
+$rte-ai-assistant-box-shadow: $shadow-lg !default;
+
+$rte-toolbar-item-hov-bg-color: $content-bg-color-alt1;
+
+//Start of Typography Variables Implementation
+//font-size
+$rte-pre-before-content-font-size: 12px !default;
+$rte-default-character-count-font-size: 14px !default;
+$rte-drop-text-font-size: 14px !default;
+$rte-emoji-headname-font-size: 14px !default;
+$rte-table-header-font-size: 14px !default;
+$rte-popup-open-font-size: 14px !default;
+$rte-pre-font-size: 14px !default;
+$rte-slash-menu-item-text-font-size: 14px !default;
+$rte-big-emoji-popup-small-font-size: 16px !default;
+$rte-big-emoji-picker-name-font-size: 16px !default;
+$rte-big-emoji-btn-group-small-font-size: 16px !default;
+$rte-emoji-pop-tbar-btn-small-font-size: 16px !default;
+$rte-emoji-grp-btn-small-font-size: 16px !default;
+$rte-emoji-pop-tbar-btn-large-font-size: 24px !default;
+$rte-emoji-grp-btn-large-font-size: 24px !default;
+$rte-emoji-grp-btn-font-size: 24px !default;
+$rte-slash-menu-content-font-size: 30px !default;
+$rte-slash-menu-para-before-font-size: 15px !default;
+$rte-slash-menu-h1-before-font-size: 13px !default;
+$rte-slash-menu-h2-before-font-size: 13px !default;
+$rte-slash-menu-h3-before-font-size: 13px !default;
+$rte-slash-menu-h4-before-font-size: 13px !default;
+$rte-slash-menu-item-description-font-size: 12px !default;
+$rte-common-content-font-size: 1em !default;
+$rte-content-h4-font-size: 1.714em !default;
+$rte-content-h5-font-size: 1.428em !default;
+$rte-content-h6-font-size: 1.142em !default;
+$rte-content-ul-h3-font-size: 1.16em !default;
+$rte-content-ul-h4-font-size: 1em !default;
+$rte-content-ul-h5-font-size: .83em !default;
+$rte-content-ul-h6-font-size: .7em !default;
+$rte-filemanager-label-font-size: 15px !default;
+$rte-content-h1-font-size: 2.857em !default;
+$rte-content-h2-font-size: 2.285em !default;
+$rte-content-h3-font-size: 2em !default;
+$rte-content-ul-h1-font-size: 2em !default;
+$rte-content-ul-h2-font-size: 1.5em !default;
+$rte-big-emoji-popup-large-font-size: 26px !default;
+$rte-big-emoji-btn-group-large-font-size: 26px !default;
+$rte-big-emoji-picker-group-font-size: 26px !default;
+$rte-big-content-h1-font-size: 2.857em !default;
+$rte-big-content-h2-font-size: 2.285em !default;
+$rte-big-content-h3-font-size: 2em !default;
+$rte-big-content-h4-font-size: 1.714em !default;
+$rte-big-content-h5-font-size: 1.428em !default;
+$rte-big-content-h6-font-size: 1.142em !default;
+$rte-big-content-ul-h1-font-size: 2em !default;
+$rte-big-content-ul-h2-font-size: 1.5em !default;
+$rte-big-content-ul-h3-font-size: 1.16em !default;
+$rte-big-content-ul-h4-font-size: 1em !default;
+$rte-big-content-ul-h5-font-size: .83em !default;
+$rte-big-content-ul-h6-font-size: .7em !default;
+
+//font-weight
+$rte-slash-menu-content-text-font-weight: 500 !default;
+$rte-big-emoji-picker-name-font-weight: 500 !default;
+$rte-content-h1-font-weight: 600 !default;
+$rte-content-h2-font-weight: 600 !default;
+$rte-content-h3-font-weight: 600 !default;
+$rte-content-h4-font-weight: 600 !default;
+$rte-content-h5-font-weight: 600 !default;
+$rte-edit-table-border-label-font-weight: 600 !default;
+$rte-content-font-weight: 400 !default;
+$rte-lable-font-weight: 400 !default;
+$rte-color-picker-font-weight: 400 !default;
+$rte-popup-open-font-weight: 400 !default;
+$rte-dropdown-btn-font-weight: 400 !default;
+$rte-popup-open-font-weight: 400 !default;
+$rte-content-strong-b-font-weight: 700 !default;
+$rte-content-ul-h1-font-weight: 700 !default;
+$rte-content-ul-h2-font-weight: 700 !default;
+$rte-content-ul-h3-font-weight: 700 !default;
+$rte-content-ul-h4-font-weight: 700 !default;
+$rte-content-ul-h5-font-weight: 700 !default;
+$rte-content-ul-h6-font-weight: 700 !default;
+$rte-content-img-caption-font-weight: 400;
+
+//line-height
+$rte-slash-menu-item-text-line-height: 20px !default;
+$rte-slash-menu-content-line-height: 20px !default;
+$rte-slash-menu-item-description-line-height: 20px !default;
+$rte-content-ul-h1-line-height: 40px !default;
+$rte-content-ul-h2-line-height: 40px !default;
+$rte-content-ul-h1-small-line-height: 24px !default;
+$rte-content-ul-h2-small-line-height: 24px !default;
+$rte-content-h1-line-height: 1.2 !default;
+$rte-content-h5-line-height: 1.2 !default;
+$rte-content-h6-line-height: 1.5 !default;
+$rte-dialog-word-upload-text-line-height: normal;
+$rte-uploadwrap-droparea-upload-text-line-height: normal;
+$rte-content-line-height: 1.5 !default;
+$rte-content-h2-line-height: 1.2 !default;
+$rte-content-h3-line-height: 1.2 !default;
+$rte-content-h4-line-height: 1.2 !default;
+$rte-srctextarea-line-height: 22px !default;
+$rte-inline-dropdown-line-height: 34px !default;
+$rte-big-content-height: 1.5 !default;
+$rte-big-content-h1-line-height: 1.2 !default;
+$rte-big-content-h2-line-height: 1.2 !default;
+$rte-big-content-h3-line-height: 1.2 !default;
+$rte-big-content-h4-line-height: 1.2 !default;
+$rte-big-content-h5-line-height: 1.2 !default;
+$rte-big-content-h6-line-height: 1.5 !default;
+
+//border-radius
+$rte-content-pre-border-radius: 0 !default;
+$rte-emoji-pop-border-radius: 4px !default;
+$rte-upload-drag-border-radius: 4px !default;
+$rte-big-emojipicker-tbar-btn-border-radius: 4px !default;
+$rte-checklist-checkbox-border-radius: 4px !default;
+$rte-container-border-radius: 4px !default;
+$rte-big-container-border-radius: 4px !default;
+$rte-tb-item-active-border-radius: 4px !default;
+$rte-border-radius: 4px !default;
+$rte-pre-border-radius: 6px !default;
+$rte-big-tb-expand-border-radius: 8px !default;
+$rte-big-dialog-border-radius: 16px !default;
+$rte-insert-table-btn-border-radius: 20px !default;
+$rte-toolbar-border-radius: 0 4px 0 0;
+$rte-toolbar-container-border-radius: 0 0 4px 4px !default;
+$rte-pre-before-content-border-radius: 0 0 4px 4px !default;
+$rte-toolbar-wrapper-border-radius: 4px 4px 0 0 !default;
+$rte-big-toolbar-border-radius: 0 4px 0 0;
+$rte-big-toolbar-container-border-radius: 0 0 4px 4px !default;
+$rte-big-toolbar-wrapper-border-radius: 4px 4px 0 0 !default;
+$rte-videoboxmark-border-radius: 15px !default;
+
+//padding
+$rte-content-pre-padding: 0 !default;
+$rte-upload-dlg-content-padding: 0 !default;
+$rte-table-dlg-content-padding: 0 !default;
+$rte-big-toolbar-tbar-btn-hover-padding: 0 !default;
+$rte-big-toolbar-tbar-btn-active-padding: 0 !default;
+$rte-big-toolbar-tbar-btn-padding: 0 !default;
+$rte-emoji-picker-tbar-btn-text-padding: 0 !default;
+$rte-video-elem-padding: 0 !default;
+$rte-colorpicker-custom-palette-padding: 0 !default;
+$rte-container-custom-palette-padding: 0 !default;
+$rte-img-wrap-padding: 0 !default;
+$rte-media-break-elem-padding: 1px !default;
+$rte-media-inline-elem-padding: 1px !default;
+$rte-colorpicker-custom-palette-switch-btn-padding: 5px !default;
+$rte-video-wrapper-padding: 5px !default;
+$rte-content-textarea-padding: 8px !default;
+$rte-emoji-btn-padding: 10px !default;
+$rte-big-emoji-btn-padding: 12px !default;
+$rte-slash-menu-icon-padding: 15px !default;
+$rte-placeholder-padding: 16px !default;
+$rte-content-src-textarea-padding: 16px !default;
+$rte-iframe-content-padding: 16px !default;
+$rte-big-emoji-btn-group-padding: 8px 0 !default;
+$rte-big-emoji-picker-group-padding: 8px 0 !default;
+$rte-big-emoji-popup-padding: 9px 5px !default;
+$rte-big-toolbar-tbar-btn-small-padding: 3px 7px !default;
+$rte-big-toolbar-tbar-btn-large-padding: 2px 5px !default;
+$rte-dlg-modal-browse-btn-padding: 0 18px !default;
+$rte-link-dlg-content-padding: 7px 20px !default;
+$rte-emoji-picker-tbar-btn-material-padding: 0 6px !default;
+$rte-emoji-grp-btn-padding: 6px 0 !default;
+$rte-video-url-wrap-padding: 8px 4px !default;
+$rte-emoji-grp-btn-control-padding: 6px 0 !default;
+$rte-table-padding: 2px 5px !default;
+$rte-emoji-picker-tbar-btn-hover-padding: 7px 3px !default;
+$rte-emoji-picker-tbar-btn-padding: 7px 3px !default;
+$rte-code-block-padding: 20px 16px 16px !default;
+$rte-inline-dropdown-ul-padding: 7px 0 !default;
+$rte-slash-menu-item-text-padding:  5px 0 1px !default;
+$rte-slash-menu-item-description-padding: 1px 0 5px !default;
+$rte-code-block-label-padding: 2px 4px !default;
+$rte-big-slash-menu-item-description-padding: 1px 0 5px !default;
+$rte-big-slash-menu-item-text-padding: 5px 0 1px !default;
+$rte-inline-dropdown-li-padding: 0 6.5px !default;
+$rte-toolbar-tbar-btn-padding: 0 !default;
+$rte-toolbar-tbar-btn-hover-padding: 0 !default;
+$rte-toolbar-tbar-btn-icons-padding: 0 !default;
+$rte-big-split-tbar-btn-padding: 0 !default;
+$rte-big-split-tbar-btn-hover-padding: 0 !default;
+$rte-big-split-tbar-btn-icons-padding: 0 !default;
+
+//padding-left
+$rte-blockquote-padding-left: 0 !default;
+$rte-big-slashmenu-li-padding-left: 0 !default;
+$rte-iframe-blockquote-padding-left: 12px !default;
+$rte-character-count-padding-left: 30px !default;
+
+//padding-right
+$rte-blockquote-padding-right: 12px !default;
+$rte-character-count-padding-right: unset !default;
+
+//padding-top
+$rte-video-dialog-label-padding-top: 0 !default;
+$rte-dlg-header-content-padding-top: 0 !default;
+$rte-table-dialog-label-padding-top: 0 !default;
+$rte-filemanager-label-padding-top: 15px !default;
+$rte-video-url-wrapper-padding-top: 15px !default;
+$rte-radio-keep-format-padding-top: 24px !default;
+$rte-radio-remove-plain-padding-top: 20px !default;
+$rte-link-label-first-child-padding-top: 0 !default;
+$rte-img-label-first-child-padding-top: 0 !default;
+
+//padding-bottom
+$rte-count-resize-enabled-content-padding-bottom: 0 !default;
+$rte-default-character-count-padding-bottom: 2px !default;
+$rte-video-url-wrapper-padding-bottom: 5px !default;
+$rte-filemanager-label-padding-bottom: 8px !default;
+
+//margin
+$rte-img-caption-imgleft-margin: 0 !default;
+$rte-table-tablecell-small-margin: 0 !default;
+$rte-dialog-radio-small-margin: 0 !default;
+$rte-video-elem-margin: 0 !default;
+$rte-tbar-btn-small-margin: 0 !default;
+$rte-table-dlg-content-small-margin: 0 !default;
+$rte-content-textarea-margin: 0 !default;
+$rte-quick-toolbar-horizontal-separator-margin: 0 !default;
+$rte-popup-toolbar-item-margin: 0 !default;
+$rte-quick-horizontal-separator-first-margin: 0 !default;
+$rte-table-tablecell-large-margin: 1px !default;
+$rte-table-open-tablecell-margin: 1px !default;
+$rte-emojipicker-input-control-wrapper-margin: 10px !default;
+$rte-content-hr-margin: 10px 0 !default;
+$rte-content-h1-margin: 10px 0 !default;
+$rte-content-h2-margin: 10px 0 !default;
+$rte-content-h3-margin: 10px 0 !default;
+$rte-content-h4-margin: 10px 0 !default;
+$rte-content-h5-margin: 10px 0 !default;
+$rte-content-h6-margin: 10px 0 !default;
+$rte-content-blockquote-margin: 10px 0 !default;
+$rte-content-pre-margin: 0 0 10px !default;
+$rte-content-p-margin: 0 0 10px !default;
+$rte-ul-menu-icon-margin: 0 6px !default;
+$rte-rtl-ul-menu-icon-margin: 0 6px !default;
+$rte-img-video-center-margin: 5px auto !default;
+$rte-img-video-left-margin: 0 auto !default;
+$rte-img-video-right-margin: 0 auto !default;
+$rte-drop-text-margin: 0 auto !default;
+$rte-drop-text-mobile-margin: 0 auto !default;
+$rte-img-caption-margin: 5px auto !default;
+$rte-img-caption-inline-margin: 5px auto !default;
+$rte-droparea-browsebtn-margin: 0 auto 10px !default;
+$rte-dlg-modal-browse-btn-margin: 0 auto 10px !default;
+$rte-media-droparea-browsebtn-margin: 0 auto 10px !default;
+$rte-li-ul-margin:  10px !default;
+$rte-big-quick-toolbar-item-margin: 0 !default;
+$rte-media-elem-margin: auto !default;
+$rte-content-img-caption-inner-margin: auto !default;
+$rte-img-wrap-margin: auto !default;
+
+//margin-left
+$rte-content-blockquote-margin-left: 0 !default;
+$rte-toolbar-multirow-margin-left: 0 !default;
+$rte-toolbar-item-first-child-margin-left: 0 !default;
+$rte-img-caption-left-margin-left: 0 !default;
+$rte-uploadwrap-file-container-margin-left: 0 !default;
+$rte-toolbar-poup-extended-margin-left: 0 !default;
+$rte-media-inline-elem-margin-left: 5px !default;
+$rte-img-video-right-margin-left: 5px !default;
+$rte-img-caption-inline-margin-left: 5px !default;
+$rte-slash-menu-icon-margin-left: 15px !default;
+$rte-imgcenter-margin-left: auto !default;
+$rte-imgright-margin-left: auto !default;
+$rte-image-imgright-margin-left: auto !default;
+
+//margin-right
+$rte-img-caption-right-margin-right: 0 !default;
+$rte-toolbar-multirow-margin-right: 0 !default;
+$rte-img-caption-imgright-margin-right: 0 !default;
+$rte-img-caption-inline-margin-right: 5px !default;
+$rte-media-inline-elem-margin-right: 5px !default;
+$rte-img-video-left-margin-right: 5px !default;
+$rte-default-character-count-margin-right: 15px !default;
+$rte-upload-file-container-margin-right: 50px !default;
+$rte-imgcenter-margin-right: auto !default;
+$rte-imgleft-margin-right: auto !default;
+$rte-character-count-last-child-margin-right: 10px !default;
+$rte-character-count-rtl-margin-right: auto !default;
+
+//margin-top
+$rte-uploadwrap-file-btn-icons-margin-top: 0 !default;
+$rte-color-picker-margin-top: 3px !default;
+$rte-table-field-margin-top: 4px !default;
+$rte-table-element-margin-top: 12px !default;
+$rte-table-span-margin-top: 12px !default;
+$rte-content-h3-h4-tag-margin-top: .6em !default;
+$rte-content-h4-h5-tag-margin-top: .6em !default;
+$rte-content-h5-h6-tag-margin-top: .6em !default;
+$rte-big-content-h3-h4-tag-margin-top: .6em !default;
+$rte-big-content-h4-h5-tag-margin-top: .6em !default;
+$rte-big-content-h5-h6-tag-margin-top: .6em !default;
+
+//margin-bottom
+$rte-tb-bottom-content-margin-bottom: 0 !default;
+$rte-content-ul-tag-margin-bottom: 0 !default;
+$rte-content-para-pre-block-last-margin-bottom: 0 !default;
+$rte-table-span-margin-bottom: 8px !default;
+$rte-content-p-margin-bottom: 10px !default;
+$rte-content-li-margin-bottom: 10px !default;
+$rte-content-table-margin-bottom: 10px !default;
+$rte-resize-bar-margin-bottom: 20px !default;
+
+//border
+$rte-content-pre-border: 0 !default;
+$rte-content-textarea-border: 0 !default;
+$rte-content-src-textarea-border: 0 !default;
+$rte-media-break-elem-border: 0 !default;
+$rte-media-elem-border: 0 !default;
+$rte-quick-popup-hide-border: 0 !default;
+$rte-hr-small-border: 2px solid rgba(157, 157, 157, .48) !default;
+$rte-pre-border: 1px solid rgba(229, 231, 235, 1) !default;
+$rte-pre-small-border: 1px solid rgba(40, 47, 60, 1) !default;
+$rte-table-select-border: 2px double $rte-table-select-border-color !default;
+$rte-table-select-multi-cells-border: 1px double $rte-table-select-border-color !default;
+$rte-container-border: 1px solid $rte-border-color !default;
+$rte-table-border: 1px solid $rte-table-border-color !default;
+$rte-media-droparea-upload-border: 0 solid transparent !default;
+$rte-content-table-select-border: 1px double $rte-table-select-border-color !default;
+$rte-table-border-table-border: 1px double $rte-table-border-color !default;
+$rte-import-word-upload-border: 0 solid transparent !default;
+$rte-drop-text-border: 2px dashed $rte-upload-drag-border-clr !default;
+$rte-table-span-active-border: 1px solid $rte-table-span-active-border-color !default;
+$rte-tb-expended-hover-border: solid rgba(0, 0, 0, .12) !default;
+$rte-img-video-boxmark-border: 1px solid $rte-img-resize-color !default;
+$rte-mob-img-video-boxmark-border: 1px solid $rte-img-resize-back-color !default;
+$rte-direct-span-media-boxmark-border: 1px solid $rte-img-resize-color !default;
+$rte-emoji-grp-btn-border: none !default;
+$rte-insert-table-btn-border: none !default;
+$rte-iframe-content-border: none !default;
+$rte-quick-popup-toolbar-border: none !default;
+$rte-toolbar-btn-border: none !default;
+$rte-toolbar-btn-hover-border: none !default;
+$rte-emojipicker-toolbar-border: none !default;
+$rte-emojipicker-toolbar-scroll-border: none !default;
+$rte-toolbar-pop-border: none !default;
+
+//border-bottom
+$rte-dialog-file-list-border-bottom: 0 !default;
+$rte-uploadwrap-file-list-border-bottom: 0 solid transparent !default;
+$rte-reicon-before-border-bottom: 6px solid transparent !default;
+$rte-reicon-after-border-bottom: 6px solid transparent !default;
+$rte-toolbar-wrapper-container-border-bottom: 1px solid $rte-border-color !default;
+
+//border-top
+$rte-dialog-upload-files-border-top: 0 !default;
+$rte-reicon-before-border-top: 6px solid transparent !default;
+$rte-reicon-after-border-top: 6px solid transparent !default;
+$rte-wrapper-tb-bottom-border-top: 1px solid $rte-border-color !default;
+$rte-droparea-files-border-top: 0 solid transparent !default;
+
+//border-left
+$rte-content-blockquote-border-left: 0 !default;
+$rte-reicon-after-border-left: 6px solid !default;
+
+//border-right
+$rte-reicon-before-border-right: 6px solid !default;
+
+//gap
+$rte-edit-table-cell-gap: 16px !default;
+$rte-emoji-btn-gap: 10px !default;
+$rte-emoji-btn-group-gap: 6px !default;
+$rte-emoji-search-btn-gap: 6px !default;
+$rte-big-emoji-search-btn-gap: 6px !default;
+$rte-slashmenu-description-gap: 10px !default;
+$rte-big-emoji-btn-gap: 10px !default;
+$rte-big-emoji-btn-group-gap: 8px !default;
+
+//height
+$rte-content-ul-h1-height: 40px;
+$rte-content-ul-h2-height: 40px;
+$rte-checklist-checkbox-height: 16px;
+$rte-container-height: 100%;
+$rte-content-textarea-height: 100%;
+$rte-full-screen-height: 100%;
+$rte-content-height: 100%;
+$rte-table-cell-after-height: 100%;
+$rte-srctextarea-height: 100%;
+$rte-color-picker-height: auto;
+$rte-media-inline-dropdown-height: 34px;
+$rte-content-table-select-height: inherit;
+$rte-emoji-search-btn-height: 0;
+$rte-modal-popup-container-height: 100%;
+$rte-popup-overlay-height: 100%;
+$rte-reicon-before-height: 0;
+$rte-reicon-after-height: 0;
+$rte-dlg-modal-browse-btn-mobile-height: 36px;
+$rte-toolbar-wrapper-container-height: auto;
+$rte-tip-pointer-before-after-height: 0;
+
+//width
+$rte-checklist-checkbox-width: 16px;
+$rte-container-width: 100%;
+$rte-content-textarea-width: 100%;
+$rte-full-screen-width: 100%;
+$rte-toolbar-multirow-width: 100%;
+$rte-content-width: 100%;
+$rte-e-content-width: 100%;
+$rte-table-cell-after-width: 100%;
+$rte-srctextarea-width: 100%;
+$rte-color-picker-width: 100%;
+$rte-ul-menu-icon-width: auto;
+$rte-drop-text-width: auto;
+$rte-content-img-caption-inner-width: 100%;
+$rte-img-wrap-width: 100%;
+$rte-insert-table-btn-width: 100%;
+$rte-table-bgcolor-width: 50%;
+$rte-modal-popup-container-width: 100%;
+$rte-popup-overlay-width: 100%;
+$rte-insert-table-btn-width: 100%;
+$rte-pop-toolbar-extended-width: 100%;
+$rte-tip-pointer-before-after-width: 0;
+$rte-emoji-popup-open-width: 310px;
+$rte-big-emoji-popup-open-width: 337px;
+
+//min-height
+$rte-dialog-min-height: 298px;
+$rte-uploadwrap-file-list-min-height: initial;
+$rte-quick-toolbar-min-height: auto;
+$rte-quick-toolbar-items-not-tbar-pos-min-height: auto;
+$rte-quick-toolbar-items-not-tbar-pos-min-width: auto;
+$rte-popup-toolbar-item-min-height: auto;
+$rte-big-quick-toolbar-min-height: auto;
+$rte-big-quick-toolbar-items-not-tbar-pos-min-height: auto;
+$rte-big-popup-toolbar-item-min-height: auto;
+$rte-expended-nav-min-height: 38px;
+$rte-big-expended-nav-min-height: 48px;
+$rte-emoji-popup-open-min-height: 330px;
+$rte-big-emoji-popup-open-min-height: 337px;
+
+//min-width
+$rte-quick-toolbar-min-width: auto;
+$rte-popup-toolbar-item-min-width: auto;
+$rte-big-quick-toolbar-min-width: auto;
+$rte-big-quick-toolbar-items-not-tbar-pos-min-width: auto;
+$rte-big-popup-toolbar-item-min-width: auto;
+$rte-dropdown-icons-ul-min-width: auto;
+
+//max-width
+$rte-media-break-elem-max-width: 100%;
+$rte-media-elem-max-width: 100%;
+$rte-media-inline-elem-max-width: 100%;
+$rte-img-video-center-max-width: 100%;
+$rte-img-caption-max-width: 100%;
+
+//max-height
+$rte-codeblock-dropdown-popup-max-height: 300px;
+
+//End of Typography Variables Implementation

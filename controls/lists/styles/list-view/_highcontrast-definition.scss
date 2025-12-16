@@ -1,3 +1,5 @@
+@use 'ej2-base/styles/definition/highcontrast' as *;
+@forward 'ej2-base/styles/definition/highcontrast';
 $listview-font-family: $font-family !default;
 $listview-text-color: $content-font !default;
 $listview-text-disabled: rgba($disable, .54) !default;
@@ -73,6 +75,22 @@ $listview-checkbox-right-margin: -2px 0 0 10px !default;
 $listview-checkbox-left-margin: -2px 10px 0 0 !default;
 $listview-rtl-checkbox-left-margin: -2px 0 0 10px !default;
 $listview-rtl-checkbox-right-margin: -2px 10px 0 0 !default;
+$listview-list-margin: 0 !default;
+$listview-list-padding: 0 !default;
+$listview-header-border-bottom-size: 1px !default;
+$listview-group-item-font-weight: 600 !default;
+$listview-border-none: 0 !default;
+$listview-item-icon-margin-left: 16px !default;
+$listview-item-icon-margin-right: 0 !default;
+$listitem-header-font-weight: 500 !default;
+$listview-margin-none: 0 !default;
+$listview-padding-none: 0 !default;
+$listview-text-content-height: 100% !default;
+$listview-checkbox-text-content-width: calc(100% - 40px) !default;
+$listview-checkbox-left-list-icon-text-width: calc(100% - 90px) !default;
+$listview-checkbox-right-list-icon-text-width: calc(100% - 80px) !default;
+$listview-icon-text-width: calc(100% - 60px) !default;
+$listview-list-icon-size: 30px !default;
 
 //ListView In-built template variables
 $listview-template-padding: .6153em .923em !default;
@@ -102,3 +120,4 @@ $listview-template-multiline-header-font-size: 13px !default;
 $listview-template-multiline-padding: .6153em .923em !default;
 $listview-template-multiline-content-font-size: 13px !default;
 $listview-template-multiline-avatar-top: .6153em !default;
+$listview-template-height: inherit !default;

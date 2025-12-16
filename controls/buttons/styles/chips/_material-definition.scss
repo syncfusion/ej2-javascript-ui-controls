@@ -1,4 +1,6 @@
 @use 'sass:color';
+@use 'ej2-base/styles/definition/material' as *;
+@forward 'ej2-base/styles/definition/material';
 
 //General
 $chip-bg-color: $grey-300 !default;
@@ -589,3 +591,6 @@ $chip-outline-danger-active-border-color: transparent !default;
 $chip-outline-danger-focus-active-border-color: $chip-outline-danger-focus-border-color !default;
 $chip-outline-danger-pressed-border-color: transparent !default;
 $chip-outline-danger-disabled-border-color: $chip-outline-disabled-border-color !default;
+$chip-touch-text-margin-top: -3px !default;
+$chip-align-line-height: 1 !default;
+$chip-zero-width: 0 !default;

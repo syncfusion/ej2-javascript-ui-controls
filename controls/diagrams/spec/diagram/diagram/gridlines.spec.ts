@@ -4,12 +4,12 @@
 import { createElement } from '@syncfusion/ej2-base';
 import { Diagram } from '../../../src/diagram/diagram';
 import { GridlinesModel, SnapSettingsModel } from '../../../src/diagram/diagram/grid-lines-model';
-import  {profile , inMB, getMemoryProfile} from '../../../spec/common.spec';
-import { BpmnDiagrams, BpmnFlowModel, ComplexHierarchicalTree, ConnectorBridging, ConnectorConstraints, ConnectorModel, DataBinding, DiagramConstraints, DiagramContextMenu, DiagramTools, FlipDirection, FlowchartLayout, HierarchicalTree, LayoutAnimation, LineDistribution, SelectorConstraints, UndoRedo } from '../../../src/diagram/index';
-Diagram.Inject(ConnectorBridging,DiagramContextMenu,DataBinding,LineDistribution,LayoutAnimation,UndoRedo,BpmnDiagrams,FlowchartLayout,HierarchicalTree,ComplexHierarchicalTree)
+import { profile, inMB, getMemoryProfile } from '../../../spec/common.spec';
+import { BpmnDiagrams, BpmnFlowModel, ComplexHierarchicalTree, ConnectorBridging, ConnectorModel, DataBinding, DiagramConstraints, DiagramContextMenu, FlipDirection, FlowchartLayout, HierarchicalTree, LayoutAnimation, LineDistribution, UndoRedo } from '../../../src/diagram/index';
+Diagram.Inject(ConnectorBridging, DiagramContextMenu, DataBinding, LineDistribution, LayoutAnimation, UndoRedo, BpmnDiagrams, FlowchartLayout, HierarchicalTree, ComplexHierarchicalTree)
 /**
  * Gridlines
- */
+ */
 describe('Diagram Control', () => {
 
     describe('Gridlines', () => {
@@ -17,11 +17,11 @@ describe('Diagram Control', () => {
         let ele: HTMLElement;
         beforeAll((): void => {
             const isDef = (o: any) => o !== undefined && o !== null;
-                if (!isDef(window.performance)) {
-                    console.log("Unsupported environment, window.performance.memory is unavailable");
-                    this.skip(); //Skips test (in Chai)
-                    return;
-                }
+            if (!isDef(window.performance)) {
+                console.log("Unsupported environment, window.performance.memory is unavailable");
+                this.skip(); //Skips test (in Chai)
+                return;
+            }
             ele = createElement('div', { id: 'diagramd' });
             document.body.appendChild(ele);
             diagram = new Diagram({
@@ -32,6 +32,7 @@ describe('Diagram Control', () => {
         afterAll((): void => {
             diagram.destroy();
             ele.remove();
+            (diagram as any) = null; (ele as any) = null;
         });
 
         it('Checking default gridlines', (done: Function) => {
@@ -40,16 +41,14 @@ describe('Diagram Control', () => {
         });
         it('Checking horizontalgridlines with custom style', (done: Function) => {
             let horizontalGridlines: GridlinesModel = { lineColor: 'blue', lineDashArray: '2,2' };
-            let verticalGridlines: GridlinesModel = { lineColor: 'red', lineDashArray: '2,2' };
             let snapSettings: SnapSettingsModel = { horizontalGridlines: horizontalGridlines };
             diagram.snapSettings = snapSettings;
             diagram.dataBind();
             done();
         });
         it('Checking verticalGridlines', (done: Function) => {
-            let horizontalGridlines: GridlinesModel = { lineColor: 'blue', lineDashArray: '2,2' };
             let verticalGridlines: GridlinesModel = { lineColor: 'red', lineDashArray: '2,2' };
-            let snapSettings: SnapSettingsModel = {verticalGridlines: verticalGridlines };
+            let snapSettings: SnapSettingsModel = { verticalGridlines: verticalGridlines };
             diagram.snapSettings = snapSettings;
             diagram.dataBind();
             done();
@@ -62,18 +61,18 @@ describe('Diagram Control', () => {
             diagram.dataBind();
             done();
         });
-        });
+    });
 
     describe('Gridlines', () => {
         let diagram: Diagram;
         let ele: HTMLElement;
         beforeAll((): void => {
             const isDef = (o: any) => o !== undefined && o !== null;
-                if (!isDef(window.performance)) {
-                    console.log("Unsupported environment, window.performance.memory is unavailable");
-                    this.skip(); //Skips test (in Chai)
-                    return;
-                }
+            if (!isDef(window.performance)) {
+                console.log("Unsupported environment, window.performance.memory is unavailable");
+                this.skip(); //Skips test (in Chai)
+                return;
+            }
             ele = createElement('div', { id: 'diagramgridcount' });
             document.body.appendChild(ele);
             diagram = new Diagram({
@@ -95,16 +94,17 @@ describe('Diagram Control', () => {
         afterAll((): void => {
             diagram.destroy();
             ele.remove();
+            (diagram as any) = null; (ele as any) = null;
         });
         it('Checking dynamic gridlines', (done: Function) => {
             let pattern: HTMLElement = document.getElementById('diagramgridcount_pattern');
             expect(Number(pattern.getAttribute("height")) === diagram.rulerSettings.verticalRuler.segmentWidth &&
-            Number(pattern.getAttribute("width")) === diagram.rulerSettings.horizontalRuler.segmentWidth &&
+                Number(pattern.getAttribute("width")) === diagram.rulerSettings.horizontalRuler.segmentWidth &&
                 pattern.children.length === (diagram.rulerSettings.horizontalRuler.interval +
                     diagram.rulerSettings.verticalRuler.interval)).toBe(true);
             done();
         });
-        it('memory leak', () => { 
+        it('memory leak', () => {
             profile.sample();
             let average: any = inMB(profile.averageChange)
             //Check average change in memory samples to not be over 10MB
@@ -120,11 +120,11 @@ describe('Diagram Control', () => {
         let ele: HTMLElement;
         beforeAll((): void => {
             const isDef = (o: any) => o !== undefined && o !== null;
-                if (!isDef(window.performance)) {
-                    console.log("Unsupported environment, window.performance.memory is unavailable");
-                    this.skip(); //Skips test (in Chai)
-                    return;
-                }
+            if (!isDef(window.performance)) {
+                console.log("Unsupported environment, window.performance.memory is unavailable");
+                this.skip(); //Skips test (in Chai)
+                return;
+            }
             ele = createElement('div', { id: 'diagramNullUndefined' });
             document.body.appendChild(ele);
             diagram = new Diagram({
@@ -135,28 +135,29 @@ describe('Diagram Control', () => {
         afterAll((): void => {
             diagram.destroy();
             ele.remove();
+            (diagram as any) = null; (ele as any) = null;
         });
         it('Width and height properties', (done: Function) => {
             diagram.destroy();
-            diagram = new Diagram({width: null, height: null});
+            diagram = new Diagram({ width: null, height: null });
             diagram.appendTo('#diagramNullUndefined');
             expect(diagram.width === '100%' && diagram.height === '100%').toBe(true);
             diagram.destroy();
-             diagram = new Diagram({width: undefined, height: undefined});
+            diagram = new Diagram({ width: undefined, height: undefined });
             diagram.appendTo('#diagramNullUndefined');
             expect(diagram.width === '100%' && diagram.height === '100%').toBe(true);
             diagram.destroy();
             done();
-         });
+        });
         it('setting null and undefined values to diagram properties-1', (done: Function) => {
             diagram = new Diagram({
-                width:1000,height:700,nodes:null,connectors:null,addInfo:null,backgroundColor:null,
-                constraints:null,commandManager:null,connectorDefaults:null,contextMenuSettings:null,
-                customCursor:null,dataSourceSettings:null,diagramSettings:null,drawingObject:null,
-                enableConnectorSplit:null,enablePersistence:null,enableRtl:null,getConnectorDefaults:null,getNodeDefaults:null,
-                historyManager:null,layers:null,layout:null,locale:null,mode:null,pageSettings:null,
-                rulerSettings:null,snapSettings:null,tool:null,tooltip:null,segmentThumbShape:null,serializationSettings:null,
-                selectedItems:null,scrollSettings:null,segmentThumbSize:null
+                width: 1000, height: 700, nodes: null, connectors: null, addInfo: null, backgroundColor: null,
+                constraints: null, commandManager: null, connectorDefaults: null, contextMenuSettings: null,
+                customCursor: null, dataSourceSettings: null, diagramSettings: null, drawingObject: null,
+                enableConnectorSplit: null, enablePersistence: null, enableRtl: null, getConnectorDefaults: null, getNodeDefaults: null,
+                historyManager: null, layers: null, layout: null, locale: null, mode: null, pageSettings: null,
+                rulerSettings: null, snapSettings: null, tool: null, tooltip: null, segmentThumbShape: null, serializationSettings: null,
+                selectedItems: null, scrollSettings: null, segmentThumbSize: null
             });
             diagram.appendTo('#diagramNullUndefined');
             expect(diagram.nodes.length === 0 && diagram.connectors.length === 0).toBe(true);
@@ -177,13 +178,13 @@ describe('Diagram Control', () => {
             expect(diagram.scrollSettings !== null && diagram.segmentThumbSize === null).toBe(true);
             diagram.destroy();
             diagram = new Diagram({
-                width:1000,height:700,nodes:undefined,connectors:undefined,addInfo:undefined,backgroundColor:undefined,
-                constraints:undefined,commandManager:undefined,connectorDefaults:undefined,contextMenuSettings:undefined,
-                customCursor:undefined,dataSourceSettings:undefined,diagramSettings:undefined,drawingObject:undefined,
-                enableConnectorSplit:undefined,enablePersistence:undefined,enableRtl:undefined,getConnectorDefaults:undefined,getNodeDefaults:undefined,
-                historyManager:undefined,layers:undefined,layout:undefined,locale:undefined,mode:undefined,pageSettings:undefined,
-                rulerSettings:undefined,snapSettings:undefined,tool:undefined,tooltip:undefined,segmentThumbShape:undefined,serializationSettings:undefined,
-                selectedItems:undefined,scrollSettings:undefined,segmentThumbSize:undefined
+                width: 1000, height: 700, nodes: undefined, connectors: undefined, addInfo: undefined, backgroundColor: undefined,
+                constraints: undefined, commandManager: undefined, connectorDefaults: undefined, contextMenuSettings: undefined,
+                customCursor: undefined, dataSourceSettings: undefined, diagramSettings: undefined, drawingObject: undefined,
+                enableConnectorSplit: undefined, enablePersistence: undefined, enableRtl: undefined, getConnectorDefaults: undefined, getNodeDefaults: undefined,
+                historyManager: undefined, layers: undefined, layout: undefined, locale: undefined, mode: undefined, pageSettings: undefined,
+                rulerSettings: undefined, snapSettings: undefined, tool: undefined, tooltip: undefined, segmentThumbShape: undefined, serializationSettings: undefined,
+                selectedItems: undefined, scrollSettings: undefined, segmentThumbSize: undefined
             });
             diagram.appendTo('#diagramNullUndefined');
             expect(diagram.nodes.length === 0 && diagram.connectors.length === 0).toBe(true);
@@ -207,14 +208,14 @@ describe('Diagram Control', () => {
         });
         it('setting null and undefined values to diagram properties-2', (done: Function) => {
             diagram = new Diagram({
-                width:1000,height:700,nodes:[{id:'node1',width:100,shape:{type:'HTML'},height:100,offsetX:300,offsetY:300,annotations:[{id:'n1A1'}],fixedUserHandles:[{id:'h1'}]}],
-                connectors:[
-                    {id:'connector1',sourcePoint:{x:100,y:100},targetPoint:{x:200,y:200},annotations:[{id:'c1A1'}]},
-                    {id:'connector2',sourcePoint:{x:100,y:200},targetPoint:{x:200,y:100},annotations:[{id:'c2A1'}]}
+                width: 1000, height: 700, nodes: [{ id: 'node1', width: 100, shape: { type: 'HTML' }, height: 100, offsetX: 300, offsetY: 300, annotations: [{ id: 'n1A1' }], fixedUserHandles: [{ id: 'h1' }] }],
+                connectors: [
+                    { id: 'connector1', sourcePoint: { x: 100, y: 100 }, targetPoint: { x: 200, y: 200 }, annotations: [{ id: 'c1A1' }] },
+                    { id: 'connector2', sourcePoint: { x: 100, y: 200 }, targetPoint: { x: 200, y: 100 }, annotations: [{ id: 'c2A1' }] }
                 ],
-                bridgeDirection:null,fixedUserHandleTemplate:null,annotationTemplate:null,nodeTemplate:null,userHandleTemplate:null,
-                selectedItems:{userHandles:[{name:'U1',offset:0.5}]},
-                constraints:DiagramConstraints.Default|DiagramConstraints.Bridging,
+                bridgeDirection: null, fixedUserHandleTemplate: null, annotationTemplate: null, nodeTemplate: null, userHandleTemplate: null,
+                selectedItems: { userHandles: [{ name: 'U1', offset: 0.5 }] },
+                constraints: DiagramConstraints.Default | DiagramConstraints.Bridging,
             });
             diagram.appendTo('#diagramNullUndefined');
             expect(diagram.nodes.length === 1 && diagram.connectors.length === 2).toBe(true);
@@ -223,14 +224,14 @@ describe('Diagram Control', () => {
             expect(diagram.userHandleTemplate === null && diagram.selectedItems.userHandles.length === 1).toBe(true);
             diagram.destroy();
             diagram = new Diagram({
-                width:1000,height:700,nodes:[{id:'node1',width:100,shape:{type:'HTML'},height:100,offsetX:300,offsetY:300,annotations:[{id:'n1A1'}],fixedUserHandles:[{id:'h1'}]}],
-                connectors:[
-                    {id:'connector1',sourcePoint:{x:100,y:100},targetPoint:{x:200,y:200},annotations:[{id:'c1A1'}]},
-                    {id:'connector2',sourcePoint:{x:100,y:200},targetPoint:{x:200,y:100},annotations:[{id:'c2A1'}]}
+                width: 1000, height: 700, nodes: [{ id: 'node1', width: 100, shape: { type: 'HTML' }, height: 100, offsetX: 300, offsetY: 300, annotations: [{ id: 'n1A1' }], fixedUserHandles: [{ id: 'h1' }] }],
+                connectors: [
+                    { id: 'connector1', sourcePoint: { x: 100, y: 100 }, targetPoint: { x: 200, y: 200 }, annotations: [{ id: 'c1A1' }] },
+                    { id: 'connector2', sourcePoint: { x: 100, y: 200 }, targetPoint: { x: 200, y: 100 }, annotations: [{ id: 'c2A1' }] }
                 ],
-                bridgeDirection:undefined,fixedUserHandleTemplate:undefined,annotationTemplate:undefined,nodeTemplate:undefined,userHandleTemplate:undefined,
-                selectedItems:{userHandles:[{name:'U1',offset:0.5}]},
-                constraints:DiagramConstraints.Default|DiagramConstraints.Bridging,
+                bridgeDirection: undefined, fixedUserHandleTemplate: undefined, annotationTemplate: undefined, nodeTemplate: undefined, userHandleTemplate: undefined,
+                selectedItems: { userHandles: [{ name: 'U1', offset: 0.5 }] },
+                constraints: DiagramConstraints.Default | DiagramConstraints.Bridging,
             });
             diagram.appendTo('#diagramNullUndefined');
             expect(diagram.nodes.length === 1 && diagram.connectors.length === 2).toBe(true);
@@ -240,12 +241,12 @@ describe('Diagram Control', () => {
             diagram.destroy();
             done();
         });
-        
+
         it('nodes and connectors properties', (done: Function) => {
             diagram = new Diagram({
                 width: '1000px', height: '600px',
-                connectors: [{id:null,sourcePoint:null,targetPoint:null,sourceID:null,targetID:null,type:null,sourcePortID:null,targetPortID:null,cornerRadius:null,addInfo:null,constraints:null,sourceDecorator:null,targetDecorator:null,annotations:null,ports:null,connectorSpacing:null,connectionPadding:null,bridgeSpace:null,style:null,bezierSettings:null,hitPadding:null,tooltip:null,fixedUserHandles:null,segments:null,visible:null}],
-                nodes: [{id:null,offsetX:null,offsetY:null,pivot:null,addInfo:null,width:null,height:null,shape:null,style:null,ports:null,constraints:null,annotations:null,fixedUserHandles:null,flip:null,flipMode:null,tooltip:null,children:null,excludeFromLayout:null,expandIcon:null,collapseIcon:null,shadow:null,visible:null,verticalAlignment:null,horizontalAlignment:null,margin:null,rotateAngle:null,previewSize:null,dragSize:null}]
+                connectors: [{ id: null, sourcePoint: null, targetPoint: null, sourceID: null, targetID: null, type: null, sourcePortID: null, targetPortID: null, cornerRadius: null, addInfo: null, constraints: null, sourceDecorator: null, targetDecorator: null, annotations: null, ports: null, connectorSpacing: null, connectionPadding: null, bridgeSpace: null, style: null, bezierSettings: null, hitPadding: null, tooltip: null, fixedUserHandles: null, segments: null, visible: null }],
+                nodes: [{ id: null, offsetX: null, offsetY: null, pivot: null, addInfo: null, width: null, height: null, shape: null, style: null, ports: null, constraints: null, annotations: null, fixedUserHandles: null, flip: null, flipMode: null, tooltip: null, children: null, excludeFromLayout: null, expandIcon: null, collapseIcon: null, shadow: null, visible: null, verticalAlignment: null, horizontalAlignment: null, margin: null, rotateAngle: null, previewSize: null, dragSize: null }]
             });
             diagram.appendTo('#diagramNullUndefined');
             expect(diagram.nodes.length === 1 && diagram.connectors.length === 1).toBe(true);
@@ -280,8 +281,8 @@ describe('Diagram Control', () => {
             diagram.destroy();
             diagram = new Diagram({
                 width: '1000px', height: '600px',
-                connectors: [{id:undefined,sourcePoint:undefined,targetPoint:undefined,sourceID:undefined,targetID:undefined,type:undefined,sourcePortID:undefined,targetPortID:undefined,cornerRadius:undefined,addInfo:undefined,constraints:undefined,sourceDecorator:undefined,targetDecorator:undefined,annotations:undefined,ports:undefined,connectorSpacing:undefined,connectionPadding:undefined,bridgeSpace:undefined,style:undefined,bezierSettings:undefined,hitPadding:undefined,tooltip:undefined,fixedUserHandles:undefined,segments:undefined,visible:undefined}],
-                nodes: [{id:undefined,offsetX:undefined,offsetY:undefined,pivot:undefined,addInfo:undefined,width:undefined,height:undefined,shape:undefined,style:undefined,ports:undefined,constraints:undefined,annotations:undefined,fixedUserHandles:undefined,flip:undefined,flipMode:undefined,tooltip:undefined,children:undefined,excludeFromLayout:undefined,expandIcon:undefined,collapseIcon:undefined,shadow:undefined,visible:undefined,verticalAlignment:undefined,horizontalAlignment:undefined,margin:undefined,rotateAngle:undefined,previewSize:undefined,dragSize:undefined}]
+                connectors: [{ id: undefined, sourcePoint: undefined, targetPoint: undefined, sourceID: undefined, targetID: undefined, type: undefined, sourcePortID: undefined, targetPortID: undefined, cornerRadius: undefined, addInfo: undefined, constraints: undefined, sourceDecorator: undefined, targetDecorator: undefined, annotations: undefined, ports: undefined, connectorSpacing: undefined, connectionPadding: undefined, bridgeSpace: undefined, style: undefined, bezierSettings: undefined, hitPadding: undefined, tooltip: undefined, fixedUserHandles: undefined, segments: undefined, visible: undefined }],
+                nodes: [{ id: undefined, offsetX: undefined, offsetY: undefined, pivot: undefined, addInfo: undefined, width: undefined, height: undefined, shape: undefined, style: undefined, ports: undefined, constraints: undefined, annotations: undefined, fixedUserHandles: undefined, flip: undefined, flipMode: undefined, tooltip: undefined, children: undefined, excludeFromLayout: undefined, expandIcon: undefined, collapseIcon: undefined, shadow: undefined, visible: undefined, verticalAlignment: undefined, horizontalAlignment: undefined, margin: undefined, rotateAngle: undefined, previewSize: undefined, dragSize: undefined }]
             });
             diagram.appendTo('#diagramNullUndefined');
             expect(diagram.nodes.length === 1 && diagram.connectors.length === 1).toBe(true);
@@ -314,7 +315,7 @@ describe('Diagram Control', () => {
         it('diargam model properties', (done: Function) => {
             diagram = new Diagram({
                 width: '1000px', height: '600px',
-                nodes:[{id:'node1',width:100,height:100,offsetX:100,offsetY:100,annotations:[{content:'Node1'}]}],
+                nodes: [{ id: 'node1', width: 100, height: 100, offsetX: 100, offsetY: 100, annotations: [{ content: 'Node1' }] }],
                 scrollSettings: { scrollLimit: null, currentZoom: null, canAutoScroll: null, scrollableArea: null, minZoom: null, maxZoom: null, horizontalOffset: null, verticalOffset: null },
                 pageSettings: { width: null, height: null, multiplePage: null, showPageBreaks: null, orientation: null, background: { source: null, color: null, align: null, scale: null }, boundaryConstraints: null },
                 contextMenuSettings: { show: null, items: null },
@@ -322,8 +323,8 @@ describe('Diagram Control', () => {
                 rulerSettings: { showRulers: null, horizontalRuler: null, verticalRuler: null, dynamicGrid: null },
                 serializationSettings: { preventDefaults: null },
                 dataSourceSettings: { dataSource: null, id: null, parentId: null, root: null },
-                layout: { type: null, horizontalSpacing: null, verticalSpacing: null,orientation:null,margin: null,connectionPointOrigin:null,arrangement:null, fixedNode: null, getLayoutInfo: null, enableAnimation:null, enableRouting:null,flowchartLayoutSettings:null },
-                selectedItems: { userHandles: null, constraints: null},
+                layout: { type: null, horizontalSpacing: null, verticalSpacing: null, orientation: null, margin: null, connectionPointOrigin: null, arrangement: null, fixedNode: null, getLayoutInfo: null, enableAnimation: null, enableRouting: null, flowchartLayoutSettings: null },
+                selectedItems: { userHandles: null, constraints: null },
             });
             diagram.appendTo('#diagramNullUndefined');
             expect(diagram.nodes.length === 1).toBe(true);
@@ -355,7 +356,7 @@ describe('Diagram Control', () => {
             diagram.destroy();
             diagram = new Diagram({
                 width: '1000px', height: '600px',
-                nodes:[{id:'node1',width:100,height:100,offsetX:100,offsetY:100,annotations:[{content:'Node1'}]}],
+                nodes: [{ id: 'node1', width: 100, height: 100, offsetX: 100, offsetY: 100, annotations: [{ content: 'Node1' }] }],
                 scrollSettings: { scrollLimit: undefined, currentZoom: undefined, canAutoScroll: undefined, scrollableArea: undefined, minZoom: undefined, maxZoom: undefined, horizontalOffset: undefined, verticalOffset: undefined },
                 pageSettings: { width: undefined, height: undefined, multiplePage: undefined, showPageBreaks: undefined, orientation: undefined, background: { source: undefined, color: undefined, align: undefined, scale: undefined }, boundaryConstraints: undefined },
                 contextMenuSettings: { show: undefined, items: undefined },
@@ -363,8 +364,8 @@ describe('Diagram Control', () => {
                 rulerSettings: { showRulers: undefined, horizontalRuler: undefined, verticalRuler: undefined, dynamicGrid: undefined },
                 serializationSettings: { preventDefaults: undefined },
                 dataSourceSettings: { dataSource: undefined, id: undefined, parentId: undefined, root: undefined },
-                layout: { type: undefined, horizontalSpacing: undefined,orientation:undefined, verticalSpacing: undefined, margin: undefined, fixedNode: undefined,connectionPointOrigin:undefined,arrangement:undefined, getLayoutInfo: undefined, enableAnimation:undefined, enableRouting:undefined,flowchartLayoutSettings:undefined },
-                selectedItems: { userHandles: undefined, constraints: undefined},
+                layout: { type: undefined, horizontalSpacing: undefined, orientation: undefined, verticalSpacing: undefined, margin: undefined, fixedNode: undefined, connectionPointOrigin: undefined, arrangement: undefined, getLayoutInfo: undefined, enableAnimation: undefined, enableRouting: undefined, flowchartLayoutSettings: undefined },
+                selectedItems: { userHandles: undefined, constraints: undefined },
             });
             diagram.appendTo('#diagramNullUndefined');
             expect(diagram.nodes.length === 1).toBe(true);
@@ -404,7 +405,7 @@ describe('Diagram Control', () => {
                 { id: 'connector3', sourceID: 'node2', targetID: 'node4', type: 'Orthogonal', annotations: [{ content: 'No' }] }],
                 layout: { type: 'Flowchart', flowchartLayoutSettings: { yesBranchDirection: null, noBranchDirection: null, yesBranchValues: null, noBranchValues: null } },
 
-          });
+            });
             diagram.appendTo('#diagramNullUndefined');
             expect(diagram.layout.type === 'Flowchart' && diagram.layout.flowchartLayoutSettings !== null).toBe(true);
             expect(diagram.layout.flowchartLayoutSettings.yesBranchDirection === null && diagram.layout.flowchartLayoutSettings.noBranchDirection === null).toBe(true);
@@ -434,7 +435,7 @@ describe('Diagram Control', () => {
                 connectors: [{ id: 'connector1', sourceID: 'node1', targetID: 'node2', type: 'Orthogonal' },
                 { id: 'connector2', sourceID: 'node2', targetID: 'node3', type: 'Orthogonal', annotations: [{ content: 'Yes' }] },
                 { id: 'connector3', sourceID: 'node2', targetID: 'node4', type: 'Orthogonal', annotations: [{ content: 'No' }] }],
-                layout: { type: 'OrganizationalChart', orientation: null, horizontalSpacing: null, verticalSpacing: null, margin: null, getLayoutInfo: null,enableAnimation: null, },
+                layout: { type: 'OrganizationalChart', orientation: null, horizontalSpacing: null, verticalSpacing: null, margin: null, getLayoutInfo: null, enableAnimation: null, },
             });
             diagram.appendTo('#diagramNullUndefined');
             expect(diagram.layout.type === 'OrganizationalChart' && diagram.layout.orientation === null).toBe(true);
@@ -450,7 +451,7 @@ describe('Diagram Control', () => {
                 connectors: [{ id: 'connector1', sourceID: 'node1', targetID: 'node2', type: 'Orthogonal' },
                 { id: 'connector2', sourceID: 'node2', targetID: 'node3', type: 'Orthogonal', annotations: [{ content: 'Yes' }] },
                 { id: 'connector3', sourceID: 'node2', targetID: 'node4', type: 'Orthogonal', annotations: [{ content: 'No' }] }],
-                layout: { type: 'OrganizationalChart', orientation: undefined, horizontalSpacing: undefined, verticalSpacing: undefined, margin: undefined, getLayoutInfo: undefined,enableAnimation: undefined, },
+                layout: { type: 'OrganizationalChart', orientation: undefined, horizontalSpacing: undefined, verticalSpacing: undefined, margin: undefined, getLayoutInfo: undefined, enableAnimation: undefined, },
             });
             diagram.appendTo('#diagramNullUndefined');
             expect(diagram.layout.type === 'OrganizationalChart' && diagram.layout.orientation === 'TopToBottom').toBe(true);
@@ -467,7 +468,7 @@ describe('Diagram Control', () => {
                 connectors: [{ id: 'connector1', sourceID: 'node1', targetID: 'node2', type: 'Orthogonal' },
                 { id: 'connector2', sourceID: 'node2', targetID: 'node3', type: 'Orthogonal', annotations: [{ content: 'Yes' }] },
                 { id: 'connector3', sourceID: 'node2', targetID: 'node4', type: 'Orthogonal', annotations: [{ content: 'No' }] }],
-                layout: { type: 'ComplexHierarchicalTree', orientation: null, horizontalSpacing: null, verticalSpacing: null, margin: null, getLayoutInfo: null,enableAnimation: null, },
+                layout: { type: 'ComplexHierarchicalTree', orientation: null, horizontalSpacing: null, verticalSpacing: null, margin: null, getLayoutInfo: null, enableAnimation: null, },
             });
             diagram.appendTo('#diagramNullUndefined');
             expect(diagram.layout.type === 'ComplexHierarchicalTree' && diagram.layout.orientation === null).toBe(true);
@@ -483,7 +484,7 @@ describe('Diagram Control', () => {
                 connectors: [{ id: 'connector1', sourceID: 'node1', targetID: 'node2', type: 'Orthogonal' },
                 { id: 'connector2', sourceID: 'node2', targetID: 'node3', type: 'Orthogonal', annotations: [{ content: 'Yes' }] },
                 { id: 'connector3', sourceID: 'node2', targetID: 'node4', type: 'Orthogonal', annotations: [{ content: 'No' }] }],
-                layout: { type: 'ComplexHierarchicalTree', orientation: undefined, horizontalSpacing: undefined, verticalSpacing: undefined, margin: undefined, getLayoutInfo: undefined,enableAnimation: undefined, },
+                layout: { type: 'ComplexHierarchicalTree', orientation: undefined, horizontalSpacing: undefined, verticalSpacing: undefined, margin: undefined, getLayoutInfo: undefined, enableAnimation: undefined, },
             });
             diagram.appendTo('#diagramNullUndefined');
             expect(diagram.layout.type === 'ComplexHierarchicalTree' && diagram.layout.orientation === 'TopToBottom').toBe(true);
@@ -500,7 +501,7 @@ describe('Diagram Control', () => {
                 connectors: [{ id: 'connector1', sourceID: 'node1', targetID: 'node2', type: 'Orthogonal' },
                 { id: 'connector2', sourceID: 'node2', targetID: 'node3', type: 'Orthogonal', annotations: [{ content: 'Yes' }] },
                 { id: 'connector3', sourceID: 'node2', targetID: 'node4', type: 'Orthogonal', annotations: [{ content: 'No' }] }],
-                layout: { type: 'MindMap', orientation: null, horizontalSpacing: null, verticalSpacing: null, margin: null, getLayoutInfo: null,enableAnimation: null,getBranch:null },
+                layout: { type: 'MindMap', orientation: null, horizontalSpacing: null, verticalSpacing: null, margin: null, getLayoutInfo: null, enableAnimation: null, getBranch: null },
             });
             diagram.appendTo('#diagramNullUndefined');
             expect(diagram.layout.type === 'MindMap' && diagram.layout.orientation === null).toBe(true);
@@ -516,7 +517,7 @@ describe('Diagram Control', () => {
                 connectors: [{ id: 'connector1', sourceID: 'node1', targetID: 'node2', type: 'Orthogonal' },
                 { id: 'connector2', sourceID: 'node2', targetID: 'node3', type: 'Orthogonal', annotations: [{ content: 'Yes' }] },
                 { id: 'connector3', sourceID: 'node2', targetID: 'node4', type: 'Orthogonal', annotations: [{ content: 'No' }] }],
-                layout: { type: 'MindMap', orientation: undefined, horizontalSpacing: undefined, verticalSpacing: undefined, margin: undefined, getLayoutInfo: undefined,enableAnimation: undefined,getBranch:undefined },
+                layout: { type: 'MindMap', orientation: undefined, horizontalSpacing: undefined, verticalSpacing: undefined, margin: undefined, getLayoutInfo: undefined, enableAnimation: undefined, getBranch: undefined },
             });
             diagram.appendTo('#diagramNullUndefined');
             expect(diagram.layout.type === 'MindMap' && diagram.layout.horizontalSpacing === 30).toBe(true);
@@ -533,7 +534,7 @@ describe('Diagram Control', () => {
                 connectors: [{ id: 'connector1', sourceID: 'node1', targetID: 'node2', type: 'Orthogonal' },
                 { id: 'connector2', sourceID: 'node2', targetID: 'node3', type: 'Orthogonal', annotations: [{ content: 'Yes' }] },
                 { id: 'connector3', sourceID: 'node2', targetID: 'node4', type: 'Orthogonal', annotations: [{ content: 'No' }] }],
-                layout: { type: 'HierarchicalTree', orientation: null, horizontalSpacing: null, verticalSpacing: null, margin: null, getLayoutInfo: null,enableAnimation: null },
+                layout: { type: 'HierarchicalTree', orientation: null, horizontalSpacing: null, verticalSpacing: null, margin: null, getLayoutInfo: null, enableAnimation: null },
             });
             diagram.appendTo('#diagramNullUndefined');
             expect(diagram.layout.type === 'HierarchicalTree' && diagram.layout.orientation === null).toBe(true);
@@ -549,7 +550,7 @@ describe('Diagram Control', () => {
                 connectors: [{ id: 'connector1', sourceID: 'node1', targetID: 'node2', type: 'Orthogonal' },
                 { id: 'connector2', sourceID: 'node2', targetID: 'node3', type: 'Orthogonal', annotations: [{ content: 'Yes' }] },
                 { id: 'connector3', sourceID: 'node2', targetID: 'node4', type: 'Orthogonal', annotations: [{ content: 'No' }] }],
-                layout: { type: 'HierarchicalTree', orientation: undefined, horizontalSpacing: undefined, verticalSpacing: undefined, margin: undefined, getLayoutInfo: undefined,enableAnimation: undefined },
+                layout: { type: 'HierarchicalTree', orientation: undefined, horizontalSpacing: undefined, verticalSpacing: undefined, margin: undefined, getLayoutInfo: undefined, enableAnimation: undefined },
             });
             diagram.appendTo('#diagramNullUndefined');
             expect(diagram.layout.type === 'HierarchicalTree' && diagram.layout.orientation === 'TopToBottom').toBe(true);
@@ -562,10 +563,12 @@ describe('Diagram Control', () => {
         it('diagram style-port-annotation properties', (done: Function) => {
             diagram = new Diagram({
                 width: '1000px', height: '600px',
-                nodes:[{id:'n1',offsetX:200,offsetY:200,height:50,width:100,style:{fill:null,strokeColor:null,strokeWidth:null,strokeDashArray:null,opacity:null,},
-                    ports:[{id:null,offset:null,visibility:null,constraints:null,shape:null,width:null,height:null}],
-                annotations:[{content:null}]}],
-                connectors:[{id:'c1',sourcePoint:{x:100,y:100},targetPoint:{x:200,y:200},type:'Orthogonal',annotations:[{content:null}]}],
+                nodes: [{
+                    id: 'n1', offsetX: 200, offsetY: 200, height: 50, width: 100, style: { fill: null, strokeColor: null, strokeWidth: null, strokeDashArray: null, opacity: null, },
+                    ports: [{ id: null, offset: null, visibility: null, constraints: null, shape: null, width: null, height: null }],
+                    annotations: [{ content: null }]
+                }],
+                connectors: [{ id: 'c1', sourcePoint: { x: 100, y: 100 }, targetPoint: { x: 200, y: 200 }, type: 'Orthogonal', annotations: [{ content: null }] }],
             });
             diagram.appendTo('#diagramNullUndefined');
             expect(diagram.nodes.length === 1).toBe(true);
@@ -582,10 +585,12 @@ describe('Diagram Control', () => {
             diagram.destroy();
             diagram = new Diagram({
                 width: '1000px', height: '600px',
-                nodes:[{id:'n1',offsetX:200,offsetY:200,height:50,width:100,style:{fill:undefined,strokeColor:undefined,strokeWidth:undefined,strokeDashArray:undefined,opacity:undefined,},
-                    ports:[{id:undefined,offset:undefined,visibility:undefined,constraints:undefined,shape:undefined,width:undefined,height:undefined}],
-                annotations:[{content:undefined}]}],
-                connectors:[{id:'c1',sourcePoint:{x:100,y:100},targetPoint:{x:200,y:200},type:'Orthogonal',annotations:[{content:undefined}]}],
+                nodes: [{
+                    id: 'n1', offsetX: 200, offsetY: 200, height: 50, width: 100, style: { fill: undefined, strokeColor: undefined, strokeWidth: undefined, strokeDashArray: undefined, opacity: undefined, },
+                    ports: [{ id: undefined, offset: undefined, visibility: undefined, constraints: undefined, shape: undefined, width: undefined, height: undefined }],
+                    annotations: [{ content: undefined }]
+                }],
+                connectors: [{ id: 'c1', sourcePoint: { x: 100, y: 100 }, targetPoint: { x: 200, y: 200 }, type: 'Orthogonal', annotations: [{ content: undefined }] }],
             });
             diagram.appendTo('#diagramNullUndefined');
             expect(diagram.nodes.length === 1).toBe(true);
@@ -605,32 +610,33 @@ describe('Diagram Control', () => {
         it('diagram swimlane properties', (done: Function) => {
             diagram = new Diagram({
                 width: '1000px', height: '600px',
-                nodes:[{
-                    id:null,
-                    shape:{type:'SwimLane',orientation:null,header:null,
-                        lanes:[
+                nodes: [{
+                    id: null,
+                    shape: {
+                        type: 'SwimLane', orientation: null, header: null,
+                        lanes: [
                             {
-                                id:null,header:null,children:null,canMove:null,style:{fill:null,strokeColor:null,strokeWidth:null,strokeDashArray:null,opacity:null},
+                                id: null, header: null, children: null, canMove: null, style: { fill: null, strokeColor: null, strokeWidth: null, strokeDashArray: null, opacity: null },
                             },
                             {
-                                id:'lane2',header:{annotation:{content:null,constraints:null}},children:null,canMove:null,style:{fill:null,strokeColor:null,strokeWidth:null,strokeDashArray:null,opacity:null,},
+                                id: 'lane2', header: { annotation: { content: null, constraints: null } }, children: null, canMove: null, style: { fill: null, strokeColor: null, strokeWidth: null, strokeDashArray: null, opacity: null, },
                             }
                         ],
-                        phases:[
-                            {id:null,offset:null,addInfo:null,header:null,style:{fill:null,strokeColor:null,strokeWidth:null,opacity:null,strokeDashArray:null}},
-                            {id:'phase2'}
+                        phases: [
+                            { id: null, offset: null, addInfo: null, header: null, style: { fill: null, strokeColor: null, strokeWidth: null, opacity: null, strokeDashArray: null } },
+                            { id: 'phase2' }
                         ]
                     },
-                    offsetX:300,offsetY:300,height:400,width:500
+                    offsetX: 300, offsetY: 300, height: 400, width: 500
+                },
+                {
+                    id: 'swim2',
+                    shape: {
+                        header: { annotation: { content: null, constraints: null, style: { fill: null, fontFamily: null, fontSize: null } } },
+                        lanes: null, phases: null, orientation: null,
                     },
-                    {
-                        id:'swim2',
-                        shape:{
-                            header:{annotation:{content:null,constraints:null,style:{fill:null,fontFamily:null,fontSize:null}}},
-                            lanes:null,phases:null,orientation:null,
-                        },
-                        offsetX:null,offsetY:null,height:null,width:null
-                    }
+                    offsetX: null, offsetY: null, height: null, width: null
+                }
                 ]
             });
             diagram.appendTo('#diagramNullUndefined');
@@ -640,32 +646,33 @@ describe('Diagram Control', () => {
             diagram.destroy();
             diagram = new Diagram({
                 width: '1000px', height: '600px',
-                nodes:[{
-                    id:undefined,
-                    shape:{type:'SwimLane',orientation:undefined,header:undefined,
-                        lanes:[
+                nodes: [{
+                    id: undefined,
+                    shape: {
+                        type: 'SwimLane', orientation: undefined, header: undefined,
+                        lanes: [
                             {
-                                id:undefined,header:undefined,children:undefined,canMove:undefined,style:{fill:undefined,strokeColor:undefined,strokeWidth:undefined,strokeDashArray:undefined,opacity:undefined},
+                                id: undefined, header: undefined, children: undefined, canMove: undefined, style: { fill: undefined, strokeColor: undefined, strokeWidth: undefined, strokeDashArray: undefined, opacity: undefined },
                             },
                             {
-                                id:'lane2',header:{annotation:{content:undefined,constraints:undefined}},children:undefined,canMove:undefined,style:{fill:undefined,strokeColor:undefined,strokeWidth:undefined,strokeDashArray:undefined,opacity:undefined,},
+                                id: 'lane2', header: { annotation: { content: undefined, constraints: undefined } }, children: undefined, canMove: undefined, style: { fill: undefined, strokeColor: undefined, strokeWidth: undefined, strokeDashArray: undefined, opacity: undefined, },
                             }
                         ],
-                        phases:[
-                            {id:undefined,offset:undefined,addInfo:undefined,header:undefined,style:{fill:undefined,strokeColor:undefined,strokeWidth:undefined,opacity:undefined,strokeDashArray:undefined}},
-                            {id:'phase2'}
+                        phases: [
+                            { id: undefined, offset: undefined, addInfo: undefined, header: undefined, style: { fill: undefined, strokeColor: undefined, strokeWidth: undefined, opacity: undefined, strokeDashArray: undefined } },
+                            { id: 'phase2' }
                         ]
                     },
-                    offsetX:300,offsetY:300,height:400,width:500
+                    offsetX: 300, offsetY: 300, height: 400, width: 500
+                },
+                {
+                    id: 'swim2',
+                    shape: {
+                        header: { annotation: { content: undefined, constraints: undefined, style: { fill: undefined, fontFamily: undefined, fontSize: undefined } } },
+                        lanes: undefined, phases: undefined, orientation: undefined,
                     },
-                    {
-                        id:'swim2',
-                        shape:{
-                            header:{annotation:{content:undefined,constraints:undefined,style:{fill:undefined,fontFamily:undefined,fontSize:undefined}}},
-                            lanes:undefined,phases:undefined,orientation:undefined,
-                        },
-                        offsetX:undefined,offsetY:undefined,height:undefined,width:undefined
-                    }
+                    offsetX: undefined, offsetY: undefined, height: undefined, width: undefined
+                }
                 ]
             });
             diagram.appendTo('#diagramNullUndefined');
@@ -678,24 +685,24 @@ describe('Diagram Control', () => {
         it('diagram bpmn proprties', (done: Function) => {
             diagram = new Diagram({
                 width: '1000px', height: '600px',
-                nodes:[
-                    {id:'bpmn1',shape:{type:'Bpmn',shape:null,event:null},offsetX:100,offsetY:100},
-                    {id:'bpmn2',shape:{type:'Bpmn',shape:'DataObject',dataObject:null},offsetX:300,offsetY:100},
-                    {id:'bpmn3',shape:{type:'Bpmn',shape:'Gateway',gateway:null},offsetX:500,offsetY:100},
-                    {id:'bpmn4',shape:{type:'Bpmn',shape:'Activity',activity:null},offsetX:700,offsetY:100},
-                    {id:'bpmn5',shape:{type:'Bpmn',shape:'Activity',activity:{subProcess:null}},offsetX:100,offsetY:300},
-                    {id:'bpmn6',shape:{type:'Bpmn',shape:'Activity',activity:{subProcess:{collapsed:null}}},offsetX:300,offsetY:300},
-                    {id:'bpmn7',shape:{type:'Bpmn',shape:'Activity',activity:{task:null}},offsetX:500,offsetY:300},
-                    {id:'bpmn8',shape:{type:'Bpmn',shape:'Activity',activity:{task:{type:null}}},offsetX:700,offsetY:300},
+                nodes: [
+                    { id: 'bpmn1', shape: { type: 'Bpmn', shape: null, event: null }, offsetX: 100, offsetY: 100 },
+                    { id: 'bpmn2', shape: { type: 'Bpmn', shape: 'DataObject', dataObject: null }, offsetX: 300, offsetY: 100 },
+                    { id: 'bpmn3', shape: { type: 'Bpmn', shape: 'Gateway', gateway: null }, offsetX: 500, offsetY: 100 },
+                    { id: 'bpmn4', shape: { type: 'Bpmn', shape: 'Activity', activity: null }, offsetX: 700, offsetY: 100 },
+                    { id: 'bpmn5', shape: { type: 'Bpmn', shape: 'Activity', activity: { subProcess: null } }, offsetX: 100, offsetY: 300 },
+                    { id: 'bpmn6', shape: { type: 'Bpmn', shape: 'Activity', activity: { subProcess: { collapsed: null } } }, offsetX: 300, offsetY: 300 },
+                    { id: 'bpmn7', shape: { type: 'Bpmn', shape: 'Activity', activity: { task: null } }, offsetX: 500, offsetY: 300 },
+                    { id: 'bpmn8', shape: { type: 'Bpmn', shape: 'Activity', activity: { task: { type: null } } }, offsetX: 700, offsetY: 300 },
                 ],
-                connectors:[
-                    {id:'bpmnC1',sourceID:'bpmn1',targetID:'bpmn2',shape:null},
-                    {id:'bpmnC2',sourceID:'bpmn2',targetID:'bpmn3',shape:{type:null}},
-                    {id:'bpmnC3',sourceID:'bpmn3',targetID:'bpmn4',shape:{type:'Bpmn'}},
-                    {id:'bpmnC4',sourceID:'bpmn4',targetID:'bpmn5',shape:{type:'Bpmn',flow:null}},
-                    {id:'bpmnC5',sourceID:'bpmn5',targetID:'bpmn6',shape:{type:'Bpmn',flow:'Message',message:null}},
-                    {id:'bpmnC6',sourceID:'bpmn6',targetID:'bpmn7',shape:{type:'Bpmn',flow:'Sequence',sequence:null}},
-                    {id:'bpmnC7',sourceID:'bpmn7',targetID:'bpmn8',shape:{type:'Bpmn',flow:'Association',association:null}},
+                connectors: [
+                    { id: 'bpmnC1', sourceID: 'bpmn1', targetID: 'bpmn2', shape: null },
+                    { id: 'bpmnC2', sourceID: 'bpmn2', targetID: 'bpmn3', shape: { type: null } },
+                    { id: 'bpmnC3', sourceID: 'bpmn3', targetID: 'bpmn4', shape: { type: 'Bpmn' } },
+                    { id: 'bpmnC4', sourceID: 'bpmn4', targetID: 'bpmn5', shape: { type: 'Bpmn', flow: null } },
+                    { id: 'bpmnC5', sourceID: 'bpmn5', targetID: 'bpmn6', shape: { type: 'Bpmn', flow: 'Message', message: null } },
+                    { id: 'bpmnC6', sourceID: 'bpmn6', targetID: 'bpmn7', shape: { type: 'Bpmn', flow: 'Sequence', sequence: null } },
+                    { id: 'bpmnC7', sourceID: 'bpmn7', targetID: 'bpmn8', shape: { type: 'Bpmn', flow: 'Association', association: null } },
                 ]
             });
             diagram.appendTo('#diagramNullUndefined');
@@ -704,24 +711,24 @@ describe('Diagram Control', () => {
             diagram.destroy();
             diagram = new Diagram({
                 width: '1000px', height: '600px',
-                nodes:[
-                    {id:'bpmn1',shape:{type:'Bpmn',shape:undefined,event:undefined},offsetX:100,offsetY:100},
-                    {id:'bpmn2',shape:{type:'Bpmn',shape:'DataObject',dataObject:undefined},offsetX:300,offsetY:100},
-                    {id:'bpmn3',shape:{type:'Bpmn',shape:'Gateway',gateway:undefined},offsetX:500,offsetY:100},
-                    {id:'bpmn4',shape:{type:'Bpmn',shape:'Activity',activity:undefined},offsetX:700,offsetY:100},
-                    {id:'bpmn5',shape:{type:'Bpmn',shape:'Activity',activity:{subProcess:undefined}},offsetX:100,offsetY:300},
-                    {id:'bpmn6',shape:{type:'Bpmn',shape:'Activity',activity:{subProcess:{collapsed:undefined}}},offsetX:300,offsetY:300},
-                    {id:'bpmn7',shape:{type:'Bpmn',shape:'Activity',activity:{task:undefined}},offsetX:500,offsetY:300},
-                    {id:'bpmn8',shape:{type:'Bpmn',shape:'Activity',activity:{task:{type:undefined}}},offsetX:700,offsetY:300},
+                nodes: [
+                    { id: 'bpmn1', shape: { type: 'Bpmn', shape: undefined, event: undefined }, offsetX: 100, offsetY: 100 },
+                    { id: 'bpmn2', shape: { type: 'Bpmn', shape: 'DataObject', dataObject: undefined }, offsetX: 300, offsetY: 100 },
+                    { id: 'bpmn3', shape: { type: 'Bpmn', shape: 'Gateway', gateway: undefined }, offsetX: 500, offsetY: 100 },
+                    { id: 'bpmn4', shape: { type: 'Bpmn', shape: 'Activity', activity: undefined }, offsetX: 700, offsetY: 100 },
+                    { id: 'bpmn5', shape: { type: 'Bpmn', shape: 'Activity', activity: { subProcess: undefined } }, offsetX: 100, offsetY: 300 },
+                    { id: 'bpmn6', shape: { type: 'Bpmn', shape: 'Activity', activity: { subProcess: { collapsed: undefined } } }, offsetX: 300, offsetY: 300 },
+                    { id: 'bpmn7', shape: { type: 'Bpmn', shape: 'Activity', activity: { task: undefined } }, offsetX: 500, offsetY: 300 },
+                    { id: 'bpmn8', shape: { type: 'Bpmn', shape: 'Activity', activity: { task: { type: undefined } } }, offsetX: 700, offsetY: 300 },
                 ],
-                connectors:[
-                    {id:'bpmnC1',sourceID:'bpmn1',targetID:'bpmn2',shape:undefined},
-                    {id:'bpmnC2',sourceID:'bpmn2',targetID:'bpmn3',shape:{type:undefined}},
-                    {id:'bpmnC3',sourceID:'bpmn3',targetID:'bpmn4',shape:{type:'Bpmn'}},
-                    {id:'bpmnC4',sourceID:'bpmn4',targetID:'bpmn5',shape:{type:'Bpmn',flow:undefined}},
-                    {id:'bpmnC5',sourceID:'bpmn5',targetID:'bpmn6',shape:{type:'Bpmn',flow:'Message',message:undefined}},
-                    {id:'bpmnC6',sourceID:'bpmn6',targetID:'bpmn7',shape:{type:'Bpmn',flow:'Sequence',sequence:undefined}},
-                    {id:'bpmnC7',sourceID:'bpmn7',targetID:'bpmn8',shape:{type:'Bpmn',flow:'Association',association:undefined}},
+                connectors: [
+                    { id: 'bpmnC1', sourceID: 'bpmn1', targetID: 'bpmn2', shape: undefined },
+                    { id: 'bpmnC2', sourceID: 'bpmn2', targetID: 'bpmn3', shape: { type: undefined } },
+                    { id: 'bpmnC3', sourceID: 'bpmn3', targetID: 'bpmn4', shape: { type: 'Bpmn' } },
+                    { id: 'bpmnC4', sourceID: 'bpmn4', targetID: 'bpmn5', shape: { type: 'Bpmn', flow: undefined } },
+                    { id: 'bpmnC5', sourceID: 'bpmn5', targetID: 'bpmn6', shape: { type: 'Bpmn', flow: 'Message', message: undefined } },
+                    { id: 'bpmnC6', sourceID: 'bpmn6', targetID: 'bpmn7', shape: { type: 'Bpmn', flow: 'Sequence', sequence: undefined } },
+                    { id: 'bpmnC7', sourceID: 'bpmn7', targetID: 'bpmn8', shape: { type: 'Bpmn', flow: 'Association', association: undefined } },
                 ]
             });
             diagram.appendTo('#diagramNullUndefined');

@@ -2,11 +2,11 @@
 ///<reference path='../interactive-chat-base/interactive-chat-base-model.d.ts'/>
 import { EventHandler, INotifyPropertyChanged, Property, NotifyPropertyChanges, Collection, EmitType, Event, remove, L10n, SanitizeHtmlHelper } from '@syncfusion/ej2-base';
 import { ChildProperty, getUniqueID, isNullOrUndefined as isNOU, BaseEventArgs, Complex, removeClass, addClass } from '@syncfusion/ej2-base';
-import { AIAssistViewModel, PromptModel, ResponseToolbarSettingsModel, PromptToolbarSettingsModel, AssistViewModel, AttachmentSettingsModel } from './ai-assistview-model';
+import { AIAssistViewModel, PromptModel, ResponseToolbarSettingsModel, PromptToolbarSettingsModel, AssistViewModel, AttachmentSettingsModel, FooterToolbarSettingsModel } from './ai-assistview-model';
 import { ItemModel, Toolbar, ClickEventArgs } from '@syncfusion/ej2-navigations';
 import { InterActiveChatBase, ToolbarSettings, ToolbarItem, ToolbarItemClickedEventArgs, TextState } from '../interactive-chat-base/interactive-chat-base';
 import { ToolbarItemModel, ToolbarSettingsModel } from '../interactive-chat-base/interactive-chat-base-model';
-import { ActionCompleteEventArgs, FileInfo, Uploader, BeforeUploadEventArgs, UploadingEventArgs } from '@syncfusion/ej2-inputs';
+import { FileInfo, Uploader, BeforeUploadEventArgs, UploadingEventArgs } from '@syncfusion/ej2-inputs';
 
 const ASSISTHEADER: string = 'e-aiassist-header-text e-assist-view-header';
 /* eslint-disable @typescript-eslint/no-misused-new, no-redeclare */
@@ -73,6 +73,20 @@ export enum AssistViewType {
      * Represents a custom assist view type.
      */
     Custom = 'Custom'
+}
+
+/**
+ * Specifies the type of footer.
+ */
+export enum ToolbarPosition {
+    /**
+     * Displays the toolbar inline with the content.
+     */
+    Inline = 'Inline',
+    /**
+     * Displays the toolbar at the bottom of the edit area.
+     */
+    Bottom = 'Bottom'
 }
 
 /**
@@ -164,6 +178,25 @@ export class AttachmentSettings extends ChildProperty<AttachmentSettings> {
      */
     @Property(2000000)
     public maxFileSize: number;
+
+    /**
+     * Specifies the maximum number of attachments allowed per prompt.
+     * Limits the number of files that can be uploaded and attached to a single prompt.
+     * Must be a positive integer.
+     *
+     * @type {number}
+     * @default 10
+     */
+    @Property(10)
+    public maximumCount: number;
+
+    /**
+     * Event raised when a attachment item is clicked in the assistview component either before sending or after the attachment is sent.
+     *
+     * @event attachmentClick
+     */
+    @Event()
+    public attachmentClick: EmitType<AttachmentClickEventArgs>;
 }
 
 
@@ -235,6 +268,40 @@ export class ResponseToolbarSettings extends ChildProperty<ResponseToolbarSettin
     public itemClicked: EmitType<ToolbarItemClickedEventArgs>;
 }
 
+/**
+ * Represents a toolbar item model in the AIAssistview component.
+ */
+export class FooterToolbarSettings extends ChildProperty<FooterToolbarSettings> {
+
+    /**
+     * Specifies the position of the footer toolbar in the editor.
+     * This property determines whether the toolbar is rendered inline with the content or at the bottom of the edit area.
+     *
+     * @isenumeration true
+     * @default ToolbarPosition.Inline
+     * @asptype ToolbarPosition
+     */
+    @Property('Inline')
+    public toolbarPosition: ToolbarPosition | string;
+
+    /**
+     * Specifies the collection of toolbar items in the footer toolbar of the AIAssistView component.
+     * Represents the list of items to be displayed in the toolbar.
+     *
+     * @type {ToolbarItemModel[]}
+     * @default null
+     */
+    @Collection<ToolbarItemModel>([], ToolbarItem)
+    public items: ToolbarItemModel[];
+
+    /**
+     * Event raised when a toolbar item is clicked in the footer toolbar of the AIAssistView component.
+     *
+     * @event itemClick
+     */
+    @Event()
+    public itemClick: EmitType<ToolbarItemClickedEventArgs>;
+}
 
 export interface PromptRequestEventArgs extends BaseEventArgs {
     /**
@@ -344,6 +411,28 @@ export interface StopRespondingEventArgs extends BaseEventArgs {
      * @default -1
      */
     dataIndex?: number
+}
+
+export interface AttachmentClickEventArgs extends BaseEventArgs {
+    /**
+     * Specifies the event object associated with the click event args.
+     * Represents the underlying event that triggered the action, providing details about the event.
+     *
+     * @type {Event}
+     * @default null
+     *
+     */
+    event?: Event
+
+    /**
+     * Represents the file that is intended to be previewed.
+     * This property holds a `file` object containing all relevant details of the file. It can be canceled or previewed before the message is sent.
+     *
+     * @type {FileInfo}
+     * @default null
+     *
+     */
+    file?: FileInfo
 }
 
 /**
@@ -525,6 +614,16 @@ export class AIAssistView extends InterActiveChatBase implements INotifyProperty
     public responseToolbarSettings: ResponseToolbarSettingsModel;
 
     /**
+     * Configuration object for rendering a Syncfusion Toolbar in the footer.
+     * This property holds the settings required to initialize and display a custom Syncfusion Toolbar in the input field.
+     *
+     * @type {FooterToolbarSettingsModel | null}
+     * @default null
+     */
+    @Complex<FooterToolbarSettingsModel>({toolbarPosition: 'Inline', items: [] }, FooterToolbarSettings)
+    public footerToolbarSettings: FooterToolbarSettingsModel;
+
+    /**
      * Specifies whether the attachments is enabled in the AIAssistView component.
      *
      * @type {boolean}
@@ -540,7 +639,7 @@ export class AIAssistView extends InterActiveChatBase implements INotifyProperty
      *
      * @default null
      */
-    @Complex<AttachmentSettingsModel>({saveUrl: '', removeUrl: '', maxFileSize: 2000000, allowedFileTypes: ''}, AttachmentSettings)
+    @Complex<AttachmentSettingsModel>({saveUrl: '', removeUrl: '', maxFileSize: 2000000, allowedFileTypes: '', maximumCount: 10}, AttachmentSettings)
     public attachmentSettings: AttachmentSettingsModel;
 
     /**
@@ -695,7 +794,6 @@ export class AIAssistView extends InterActiveChatBase implements INotifyProperty
 
     /* Private variables */
     private l10n: L10n;
-    private stopRespondingContent: HTMLElement;
     private viewWrapper: HTMLElement;
     private outputElement: HTMLElement;
     private skeletonContainer: HTMLElement;
@@ -711,7 +809,6 @@ export class AIAssistView extends InterActiveChatBase implements INotifyProperty
     private toolbar: Toolbar;
     private displayContents: HTMLElement[] = [];
     private previousElement: HTMLElement;
-    private stopResponding: HTMLElement;
     private isOutputRenderingStop: boolean;
     private promptToolbarEle: Toolbar;
     private isAssistView: boolean;
@@ -719,10 +816,13 @@ export class AIAssistView extends InterActiveChatBase implements INotifyProperty
     private preTagElements: { preTag: HTMLPreElement; handler: Function }[] = [];
     private isResponseRequested : boolean;
     private lastStreamPrompt: string;
-    private attachmentIcon: HTMLElement;
     private uploadedFiles: FileInfo[] = [];
     private uploaderObj: Uploader;
     private dropArea: HTMLElement;
+    private footerToolbarEle: Toolbar;
+    private sendToolbarItem: ItemModel = null;
+    private clearToolbarItem: ItemModel = null;
+    private attachmentToolbarItem: ItemModel = null;
 
 
     /**
@@ -945,7 +1045,7 @@ export class AIAssistView extends InterActiveChatBase implements INotifyProperty
     private appendView(activeViewIndex: number): void {
         //updating the new view section according to the activeView property
         if (activeViewIndex === 0 && this.assistViewTemplateIndex < 0) {
-            this.viewWrapper.append(this.contentWrapper, this.stopResponding, this.footer);
+            this.viewWrapper.append(this.contentWrapper, this.footer);
         }
         else if (activeViewIndex === 0 && this.assistViewTemplateIndex >= 0) {
             this.viewWrapper.append(this.assistCustomSection);
@@ -959,7 +1059,6 @@ export class AIAssistView extends InterActiveChatBase implements INotifyProperty
         // removing the previously binded element
         this.viewWrapper.removeChild(this.previousElement);
         if (previousIndex === 0 && this.assistViewTemplateIndex < 0) {
-            this.viewWrapper.removeChild(this.stopResponding);
             this.viewWrapper.removeChild(this.footer);
         }
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -982,19 +1081,18 @@ export class AIAssistView extends InterActiveChatBase implements INotifyProperty
         const contentContainer: HTMLElement = this.element.querySelector('.e-view-container');
         this.content = this.getElement('contentContainer');
         this.getFooter();
-        const footerClass: string = `e-footer ${this.footerTemplate ? 'e-footer-template' : ''}`;
-        this.footer.className = footerClass;
+        this.updateFooterClass();
         this.renderContent();
         this.renderAssistViewFooter();
-        this.renderBannerView(this.bannerTemplate, contentContainer, 'bannerTemplate');
+        this.updateBannerView(contentContainer);
         contentContainer.append(this.content);
-        this.renderStopResponding();
     }
 
     private initializeLocale(): void {
         this.l10n = new L10n('aiassistview', {
             stopResponseText: 'Stop Responding',
-            fileSizeFailure: 'Upload failed: File size is too large',
+            fileSizeFailure: 'Upload failed: {0} files exceeded the maximum size',
+            fileCountFailure: 'Upload limit reached: Maximum {0} files allowed. Remove extra files to proceed uploading',
             send: 'Send',
             attachments: 'Attach File',
             clear: 'Clear'
@@ -1002,17 +1100,43 @@ export class AIAssistView extends InterActiveChatBase implements INotifyProperty
         this.l10n.setLocale(this.locale);
     }
 
-    private renderStopResponding(): void {
-        this.stopResponding = this.createElement('div', { attrs: { class: 'e-stop-response', tabIndex: '0', 'aria-label': 'Stop Responding', role: 'button' } });
-        const stopRespondingIcon: HTMLElement = this.createElement('span', { className: 'e-icons e-assist-stop' });
-        this.stopRespondingContent = this.createElement('span', { className: 'e-stop-response-text' });
-        this.updateStopRespondingTitle();
-        this.appendChildren(this.stopResponding, stopRespondingIcon, this.stopRespondingContent);
+    private toggleStopRespondingButton(show: boolean): void {
+        const sendIconClass: string = 'e-assist-send';
+        const stopIconClass: string = 'e-assist-stop';
+        const stopTooltip: string = this.l10n.getConstant('stopResponseText');
+        if (!this.footerTemplate) {
+            const currentIcon: string = show ? sendIconClass : stopIconClass;
+            const newIcon: string = show ? stopIconClass : sendIconClass;
+            const toolbarItem: ItemModel = this.footerToolbarEle.items.find((item: ItemModel) => item.prefixIcon === `e-icons ${currentIcon}`);
+            if (toolbarItem) {
+                toolbarItem.prefixIcon = `e-icons ${newIcon}`;
+                toolbarItem.tooltipText = show ? stopTooltip : null;
+            }
+            this.footerToolbarEle.dataBind();
+            this.refreshTextareaUI();
+        } else {
+            const currentIcon: HTMLElement = this.footer.querySelector(`.${show ? sendIconClass : stopIconClass}`) as HTMLElement;
+            if (currentIcon) {
+                currentIcon.classList.replace(show ? sendIconClass : stopIconClass, show ? stopIconClass : sendIconClass);
+                if (show) {
+                    currentIcon.title = stopTooltip;
+                    EventHandler.add(currentIcon, 'click', this.respondingStopper, this);
+                } else {
+                    currentIcon.removeAttribute('title');
+                    EventHandler.remove(currentIcon, 'click', this.respondingStopper);
+                }
+            }
+        }
     }
 
-    private updateStopRespondingTitle(): void {
-        this.l10n.setLocale(this.locale);
-        this.stopRespondingContent.textContent = this.l10n.getConstant('stopResponseText');
+    private hasStopResponseButton(): boolean {
+        if (!this.footerToolbarEle && this.footerTemplate) {
+            return this.footer.querySelector('.e-assist-stop') ? true : false;
+        }
+        else if (this.footerToolbarEle) {
+            return this.footerToolbarEle.element.querySelector('.e-assist-stop') ? true : false;
+        }
+        return false;
     }
 
     private renderContent(): void {
@@ -1037,7 +1161,7 @@ export class AIAssistView extends InterActiveChatBase implements INotifyProperty
         if (this.prompts) {
             this.prompts.forEach((prompt: PromptModel, i: number) => {
                 this.renderOutputContainer(SanitizeHtmlHelper.sanitize(prompt.prompt)
-                    , SanitizeHtmlHelper.sanitize(prompt.response), prompt.attachedFiles, i);
+                    , SanitizeHtmlHelper.sanitize(prompt.response), prompt.attachedFiles, i, undefined, true);
             });
         }
         if (this.suggestionsElement && this.content.contains(this.suggestionsElement)) {
@@ -1045,6 +1169,17 @@ export class AIAssistView extends InterActiveChatBase implements INotifyProperty
         }
         else { this.content.appendChild(this.outputElement); }
         if (isMethodCall) { this.aiAssistViewRendered = true; }
+    }
+
+    private updateBannerView(contentContainer: HTMLElement): void {
+        if (this.prompts.length === 0) {
+            this.renderBannerView(this.bannerTemplate, contentContainer, 'bannerTemplate');
+        }
+    }
+
+    private updateFooterClass(): void {
+        const footerClass: string = `e-footer ${this.footerTemplate ? 'e-footer-template' : ''}`;
+        this.footer.className = footerClass;
     }
 
     private renderAssistViewFooter(): void {
@@ -1072,45 +1207,180 @@ export class AIAssistView extends InterActiveChatBase implements INotifyProperty
             this.appendChildren(textareaAndIconsWrapper, this.editableTextarea, hiddenTextarea);
             this.footer.append(textareaAndIconsWrapper);
         }
-        const sendIconClass: string = 'e-assist-send e-icons disabled';
-        const clearIconClass: string = 'e-icons e-assist-clear-icon e-assist-clear-icon-hide';
         if (!this.footerTemplate) {
             const footerIconsWrapper: HTMLDivElement = this.createElement('div', { attrs: { class: 'e-footer-icons-wrapper'}});
-            this.sendIcon = this.createElement('span', { attrs: { class: sendIconClass, role: 'button', 'aria-label': 'Submit', tabindex: '0', title: this.l10n.getConstant('send') } }) as HTMLElement;
-            footerIconsWrapper.appendChild(this.sendIcon);
-            if (this.showClearButton) {
-                this.renderClearIcon(footerIconsWrapper, clearIconClass);
-                this.clearIcon.setAttribute('title', this.l10n.getConstant('clear'));
-            }
-            this.updateAttachmentElement(footerIconsWrapper);
+            this.renderFooterToolbar(footerIconsWrapper);
             textareaAndIconsWrapper.appendChild(footerIconsWrapper);
             this.footer.appendChild(textareaAndIconsWrapper);
-            this.footer.classList.add('focus-wave-effect');
+            this.footer.classList.add('e-footer-focus-wave-effect');
             this.refreshTextareaUI();
             this.pushToUndoStack(this.prompt);
         }
     }
 
-    private updateAttachmentElement(footerIconsWrapper: HTMLElement): void {
-        if (this.enableAttachments) {
-            this.renderAttachmentIcon(footerIconsWrapper);
+    private renderFooterToolbar(container: HTMLElement): void {
+        const toolbarItems: ItemModel[] = [];
+        const customItems: ToolbarItemModel[] = this.footerToolbarSettings.items || [];
+
+        for (const customItem of customItems) {
+            const mappedItem: ItemModel = {
+                type: customItem.type,
+                template: customItem.template,
+                disabled: customItem.disabled,
+                cssClass: customItem.cssClass,
+                visible: customItem.visible,
+                tooltipText: customItem.tooltip,
+                prefixIcon: customItem.iconCss,
+                text: customItem.text,
+                align: customItem.align,
+                tabIndex: customItem.tabIndex
+            };
+            toolbarItems.push(mappedItem);
+        }
+        if (this.enableAttachments && !this.isDuplicatedItem('e-icons e-assist-attachment-icon', toolbarItems)) {
+            this.attachmentToolbarItem = {
+                prefixIcon: 'e-icons e-assist-attachment-icon',
+                tooltipText: this.l10n.getConstant('attachments'),
+                align: 'Right'
+            };
+            toolbarItems.push(this.attachmentToolbarItem);
+        }
+
+        if (this.showClearButton && !this.isDuplicatedItem('e-icons e-assist-clear-icon', toolbarItems)) {
+            this.clearToolbarItem = {
+                prefixIcon: 'e-icons e-assist-clear-icon',
+                tooltipText: this.l10n.getConstant('clear'),
+                align: 'Right'
+            };
+            toolbarItems.push(this.clearToolbarItem);
+        }
+
+        if (!this.isDuplicatedItem('e-icons e-assist-send', toolbarItems)) {
+            this.sendToolbarItem = {
+                prefixIcon: 'e-icons e-assist-send',
+                align: 'Right'
+            };
+            toolbarItems.push(this.sendToolbarItem);
+        }
+
+        const prevOnChange: boolean = this.isProtectedOnChange;
+        this.isProtectedOnChange = true;
+        const footerToolbarItems: ToolbarItemModel[] = toolbarItems.map((item: ItemModel) => ({
+            type: item.type,
+            text: item.text,
+            iconCss: item.prefixIcon,
+            cssClass: item.cssClass,
+            tooltip: item.tooltipText,
+            template: item.template as string | Function,
+            disabled: item.disabled,
+            visible: item.visible,
+            align: item.align,
+            tabIndex: item.tabIndex
+        }));
+        this.footerToolbarSettings.items = footerToolbarItems;
+        this.isProtectedOnChange = prevOnChange;
+
+        this.footerToolbarEle = new Toolbar({
+            items: toolbarItems,
+            enableRtl: this.enableRtl,
+            width: '100%',
+            clicked: (args: ClickEventArgs) => {
+                const eventItemArgs: ToolbarItemModel = {
+                    type: args.item.type,
+                    text: args.item.text,
+                    iconCss: args.item.prefixIcon,
+                    cssClass: args.item.cssClass,
+                    tooltip: args.item.tooltipText,
+                    template: args.item.template as string | Function,
+                    disabled: args.item.disabled,
+                    visible: args.item.visible,
+                    align: args.item.align,
+                    tabIndex: args.item.tabIndex
+                };
+                const eventArgs: ToolbarItemClickedEventArgs = {
+                    item: eventItemArgs,
+                    event: args.originalEvent,
+                    cancel: false
+                };
+                if (this.footerToolbarSettings.itemClick) {
+                    this.footerToolbarSettings.itemClick.call(this, eventArgs);
+                }
+                if (!eventArgs.cancel) {
+                    switch (args.item.prefixIcon) {
+                    case 'e-icons e-assist-send':
+                        if (!this.isResponseRequested && !args.item.disabled) {
+                            this.onSendIconClick();
+                        }
+                        break;
+                    case 'e-icons e-assist-stop':
+                        this.respondingStopper(args.originalEvent as MouseEvent);
+                        break;
+                    case 'e-icons e-assist-clear-icon':
+                        this.clearIconHandler();
+                        break;
+                    case 'e-icons e-assist-attachment-icon':
+                        if (this.uploaderObj && this.attachmentToolbarItem) {
+                            let uploaderElement: HTMLElement = this.footerToolbarEle.element.querySelector('.e-assist-file-upload') as HTMLElement;
+                            if (!uploaderElement) {
+                                this.updateAttachmentElement();
+                                uploaderElement = this.footerToolbarEle.element.querySelector('.e-assist-file-upload') as HTMLElement;
+                            }
+                            if (uploaderElement) {
+                                uploaderElement.click();
+                            }
+                        }
+                        break;
+                    }
+                }
+            }
+        });
+
+        const toolbarContainer: HTMLElement = this.createElement('div');
+        this.footerToolbarEle.appendTo(toolbarContainer);
+        this.footerToolbarEle.element.setAttribute('aria-label', 'assist-footer-toolbar');
+        container.appendChild(toolbarContainer);
+        this.updateAttachmentElement();
+    }
+
+    private isDuplicatedItem(iconCss: string, toolbarItems: ItemModel[]): boolean {
+        for (const item of toolbarItems) {
+            if ((item.prefixIcon || '') === iconCss) {
+                switch (iconCss) {
+                case 'e-icons e-assist-send':
+                    this.sendToolbarItem = item;
+                    break;
+                case 'e-icons e-assist-clear-icon':
+                    this.clearToolbarItem = item;
+                    break;
+                case 'e-icons e-assist-attachment-icon':
+                    this.attachmentToolbarItem = item;
+                    break;
+                }
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private updateAttachmentElement(): void {
+        if (this.enableAttachments && this.attachmentToolbarItem) {
+            this.renderAttachmentIcon();
         }
         else {
             if (this.uploaderObj) {
                 this.uploaderObj.destroy();
-                this.attachmentIcon.innerHTML = '';
                 this.dropArea.innerHTML = '';
-                this.attachmentIcon.remove();
                 remove(this.dropArea);
             }
         }
     }
 
-    private renderAttachmentIcon(footerIconsWrapper: HTMLElement): void {
+    private renderAttachmentIcon(): void {
         this.dropArea = this.createElement('div', { attrs: { class: 'e-assist-drop-area' } });
         this.footer.prepend(this.dropArea);
-        this.attachmentIcon = this.createElement('span', { attrs: { class: 'e-icons e-assist-attachment-icon', role: 'button', 'aria-label': 'Attach file', tabindex: '0', title: this.l10n.getConstant('attachments') } }) as HTMLElement;
+        const attachmentIcon: HTMLElement = this.footerToolbarEle.element.querySelector('.e-assist-attachment-icon') as HTMLElement;
         const uploaderElement: HTMLElement = this.createElement('input', { attrs: { class: 'e-assist-file-upload', type: 'file', id: 'fileUpload'} });
+        attachmentIcon.appendChild(uploaderElement);
         this.uploaderObj = new Uploader({
             asyncSettings: {
                 saveUrl: this.attachmentSettings.saveUrl,
@@ -1122,51 +1392,43 @@ export class AIAssistView extends InterActiveChatBase implements INotifyProperty
             success: this.onUploadSuccess.bind(this),
             failure: this.onUploadFailure.bind(this),
             uploading: this.onUploadStart.bind(this),
-            actionComplete: this.handleActionComplete.bind(this),
-            multiple: false
-        });
-        this.attachmentIcon.appendChild(uploaderElement);
-        this.uploaderObj.appendTo(uploaderElement);
-        this.attachmentIcon.addEventListener('click', () => uploaderElement.click());
-        footerIconsWrapper.prepend(this.attachmentIcon);
-    }
-
-    private handleActionComplete(args: ActionCompleteEventArgs): void {
-        const statustext: boolean = args.fileData[0].status === (this.uploaderObj as any).l10n.getConstant('invalidMaxFileSize');
-        if (args.fileData[0].statusCode === '0' && statustext) {
-            const failureAlert: HTMLElement = this.renderFailureAlert();
-            if (this.viewWrapper.contains(this.footer)) {
-                this.viewWrapper.insertBefore(failureAlert, this.footer);
+            multiple: true,
+            selected: (args: any) => {
+                const oversized: FileInfo[] = args.filesData.filter((file: FileInfo) =>
+                    file.status === (this.uploaderObj as any).l10n.getConstant('invalidMaxFileSize') && file.statusCode === '0');
+                if (oversized.length) {
+                    this.showFailureAlert('fileSizeFailure', oversized.length, 'e-size-failure');
+                    (uploaderElement as any).value = '';
+                }
+                const totalSelected: number = args.filesData.length + this.uploadedFiles.length;
+                if (totalSelected > this.attachmentSettings.maximumCount) {
+                    args.cancel = true;
+                    this.showFailureAlert('fileCountFailure', this.attachmentSettings.maximumCount, 'e-count-failure');
+                    (uploaderElement as any).value = '';
+                    return;
+                }
             }
-            const messageElement: HTMLElement = failureAlert.querySelector('.e-failure-message') as HTMLElement;
-            messageElement.textContent = this.l10n.getConstant('fileSizeFailure');
-
-            failureAlert.classList.add('e-show');
-            setTimeout(() => {
-                this.handleFailureAlertRemove(failureAlert);
-            }, 3000);
-        }
-    }
-
-    private renderFailureAlert(): HTMLElement {
-        const alertElement: HTMLElement = this.createElement('div', {
-            className: 'e-upload-failure-alert',
-            innerHTML: `
-                <span class="e-icons e-assist-circle-close" aria-label="Upload failure"></span>
-                <div class="e-failure-message">Upload failed</div>
-                <span class="e-icons e-assist-clear-icon" role="button" tabindex="0" aria-label="Close"></span>
-            `
         });
-        EventHandler.add(alertElement, 'click', () => { this.handleFailureAlertRemove(alertElement); }, this );
-        return alertElement;
+        this.uploaderObj.appendTo(uploaderElement);
     }
 
-    private handleFailureAlertRemove(alertElement: HTMLElement): void {
-        alertElement.classList.remove('e-show');
-        EventHandler.remove(alertElement, 'click', this.handleFailureAlertRemove);
-        if (this.viewWrapper && this.viewWrapper.contains(alertElement)) {
-            this.viewWrapper.removeChild(alertElement);
+    private showFailureAlert(localeConstantKey: string, fileCount: number, failureType: string): void {
+        let failureMessage: string = this.l10n.getConstant(localeConstantKey).replace('{0}', fileCount.toString());
+        if (fileCount === 1) {
+            failureMessage = failureMessage.replace('files', 'file');
         }
+        this.createFailureAlert(failureMessage, failureType);
+    }
+
+    private createFailureAlert(failureMessage: string, failureType: string): void {
+        const failureAlert: HTMLElement = this.renderFailureAlert(this.viewWrapper, failureMessage, failureType, 'e-assist-circle-close', 'e-assist-clear-icon');
+        if (this.viewWrapper.contains(this.footer)) {
+            this.viewWrapper.insertBefore(failureAlert, this.footer);
+        }
+        failureAlert.classList.add('e-show');
+        setTimeout(() => {
+            this.handleFailureAlertRemove(this.viewWrapper, failureAlert);
+        }, 3000);
     }
 
     private onUploadStart(args: UploadingEventArgs): void {
@@ -1174,16 +1436,11 @@ export class AIAssistView extends InterActiveChatBase implements INotifyProperty
         this.uploadedFiles.push(args.fileData);
         const fileItem: HTMLElement = this.createFileItem(args.fileData, true);
         this.dropArea.appendChild(fileItem);
-
-        const progressFill: HTMLElement = this.element.querySelector(`#e-assist-progress-${CSS.escape(args.fileData.name)}`) as HTMLElement;
-        if (progressFill) {
-            progressFill.style.width = '20%';
-        }
     }
 
     private onUploadProgress(args: any): void {
         const uploadProgress: number = args.e.loaded / args.e.total * 100;
-        const progressFill: HTMLElement = this.element.querySelector(`#e-assist-progress-${CSS.escape(args.file.name)}`) as HTMLElement;
+        const progressFill: HTMLElement = this.footer.querySelector(`#e-assist-progress-${CSS.escape(args.file.name)}`) as HTMLElement;
         if (progressFill) {
             progressFill.style.width = `${uploadProgress}%`;
         }
@@ -1192,12 +1449,15 @@ export class AIAssistView extends InterActiveChatBase implements INotifyProperty
     private onUploadSuccess(args: any): void {
         if (args.operation === 'upload') {
             this.trigger('attachmentUploadSuccess', args);
-            const progressFill: HTMLElement = this.element.querySelector(`#e-assist-progress-${CSS.escape(args.file.name)}`) as HTMLElement;
+            const progressFill: HTMLElement = this.footer.querySelector(`#e-assist-progress-${CSS.escape(args.file.name)}`) as HTMLElement;
             if (progressFill) {
                 progressFill.style.width = '100%';
                 this.cleanupFileItem(args.file.name);
             }
-            this.checkAndActivateSendIcon();
+            const progressBar: HTMLElement = this.footer.querySelector('.e-assist-progress-fill');
+            if (!progressBar) {
+                this.checkAndActivateSendIcon();
+            }
         }
         else if (args.operation === 'remove') {
             this.trigger('attachmentRemoved', args);
@@ -1205,7 +1465,7 @@ export class AIAssistView extends InterActiveChatBase implements INotifyProperty
     }
 
     private cleanupFileItem(fileName: string): void {
-        const fileItem: HTMLElement = this.element.querySelector(`#e-assist-progress-${CSS.escape(fileName)}`) as HTMLElement;
+        const fileItem: HTMLElement = this.footer.querySelector(`#e-assist-progress-${CSS.escape(fileName)}`) as HTMLElement;
         if (fileItem) {
             fileItem.parentElement.remove();
         }
@@ -1215,7 +1475,7 @@ export class AIAssistView extends InterActiveChatBase implements INotifyProperty
         this.trigger('attachmentUploadFailure', args);
         this.uploaderObj.remove(args.file);
         this.uploadedFiles = this.uploadedFiles.filter((file: FileInfo) => file.name !== args.file.name);
-        const progressFill: HTMLElement = this.element.querySelector(`#e-assist-progress-${CSS.escape(args.file.name)}`) as HTMLElement;
+        const progressFill: HTMLElement = this.footer.querySelector(`#e-assist-progress-${CSS.escape(args.file.name)}`) as HTMLElement;
         if (progressFill) {
             progressFill.style.width = '100%';
             progressFill.classList.add('failed');
@@ -1235,13 +1495,27 @@ export class AIAssistView extends InterActiveChatBase implements INotifyProperty
         progressBar.appendChild(progressFill);
         fileDetails.append(fileName, fileSize);
         fileItem.append(fileIcon, fileDetails);
+        let closeButton: HTMLElement;
         if (isForFooter) {
-            const closeButton: HTMLElement = this.createElement('span', { attrs: { class: 'e-icons e-assist-clear-icon', role: 'button', 'aria-label': 'Clear file', tabindex: '-1' } });
+            closeButton = this.createElement('span', { attrs: { class: 'e-icons e-assist-clear-icon', role: 'button', 'aria-label': 'Clear file', tabindex: '-1' } });
             EventHandler.add(closeButton, 'click', () => this.handleRemoveUploadedFile(closeButton, fileData, fileItem));
             fileItem.append(closeButton);
         }
         fileItem.append(progressBar);
+        EventHandler.add(fileItem, 'click', (event: MouseEvent) => {
+            if (closeButton && (event.target === closeButton || (event.target as HTMLElement).classList.contains('e-assist-clear-icon'))) {
+                return;
+            }
+            this.handleAttachmentPreview(fileData);
+        });
         return fileItem;
+    }
+
+    private handleAttachmentPreview(file: FileInfo): void {
+        const eventArgs: AttachmentClickEventArgs = {};
+        if (this.attachmentSettings.attachmentClick) {
+            this.attachmentSettings.attachmentClick.call(this, eventArgs);
+        }
     }
 
     private handleRemoveUploadedFile(closeButton: HTMLElement, fileData: FileInfo, fileItem: HTMLElement): void {
@@ -1291,75 +1565,54 @@ export class AIAssistView extends InterActiveChatBase implements INotifyProperty
     }
 
     private footerKeyHandler(e: KeyboardEvent): void {
+        const targetElement: HTMLElement = e.target as HTMLElement;
+        if (targetElement.classList.contains('e-tbar-btn') && targetElement.querySelector('.e-assist-attachment-icon')) {
+            return;
+        }
         this.keyHandler(e, 'footer');
-    }
-
-    private stopResponseKeyHandler(e: KeyboardEvent): void {
-        this.keyHandler(e, 'stopresponse');
     }
 
     private wireEvents(): void {
         this.wireFooterEvents(this.footerTemplate);
-        if (this.stopResponding) {
-            EventHandler.add(this.stopResponding, 'click', this.respondingStopper, this);
-            EventHandler.add(this.stopResponding, 'keydown', this.stopResponseKeyHandler, this);
-        }
-        this.wireClearIconEvents();
-    }
-    private wireClearIconEvents(): void {
-        if (this.clearIcon) {
-            EventHandler.add(this.clearIcon, 'click', this.clearIconHandler, this);
-        }
     }
     private unWireEvents(): void {
         this.unWireFooterEvents(this.footerTemplate);
-        if (this.stopResponding) {
-            EventHandler.remove(this.stopResponding, 'click', this.respondingStopper);
-            EventHandler.remove(this.stopResponding, 'keydown', this.stopResponseKeyHandler);
-        }
-        this.unWireClearIconEvents();
         this.detachCodeCopyEventHandler();
     }
     private onFocusEditableTextarea(): void {
-        if (this.clearIcon && this.editableTextarea.textContent.length > 0) {
-            this.clearIcon.classList.remove('e-assist-clear-icon-hide');
-        }
         if (this.footer) {
-            this.footer.classList.add('focused');
+            this.footer.classList.add('e-footer-focused');
         }
+        this.toggleClearIcon();
     }
 
     private onBlurEditableTextarea(e: FocusEvent): void {
         const relatedTargetEle: HTMLElement = e.relatedTarget as HTMLElement;
+
+        if (relatedTargetEle && relatedTargetEle.closest('.e-toolbar')) {
+            return;
+        }
+
         if (!relatedTargetEle) {
-            if (this.clearIcon) {
-                this.clearIcon.classList.add('e-assist-clear-icon-hide');
-            }
             if (this.footer) {
-                this.footer.classList.remove('focused');
+                this.footer.classList.remove('e-footer-focused');
+            }
+            if (this.clearToolbarItem) {
+                this.toggleClearIcon();
             }
         }
         else {
-            if (this.clearIcon) {
-                if (!relatedTargetEle.classList.contains('e-assist-clear-icon')) {
-                    this.clearIcon.classList.add('e-assist-clear-icon-hide');
-                    if (this.footer) {
-                        this.footer.classList.remove('focused');
-                    }
+            if (this.clearToolbarItem) {
+                if (relatedTargetEle && !(relatedTargetEle.querySelector('.e-assist-clear-icon'))) {
+                    this.toggleClearIcon();
                 }
             }
-            else {
-                if (this.footer) {
-                    this.footer.classList.remove('focused');
-                }
+            if (this.footer) {
+                this.footer.classList.remove('e-footer-focused');
             }
         }
     }
-    private unWireClearIconEvents(): void {
-        if (this.clearIcon) {
-            EventHandler.remove(this.clearIcon, 'click', this.clearIconHandler);
-        }
-    }
+
     private detachCodeCopyEventHandler(): void {
         this.preTagElements.forEach(({preTag, handler}: { preTag: HTMLPreElement, handler: Function }) => {
             const copyIcon: HTMLSpanElement = preTag.querySelector('.e-code-copy');
@@ -1377,9 +1630,9 @@ export class AIAssistView extends InterActiveChatBase implements INotifyProperty
                 if (!this.isResponseRequested) {
                     this.onSendIconClick();
                 }
-                break;
-            case 'stopresponse':
-                this.respondingStopper(event);
+                else if (this.isResponseRequested && this.hasStopResponseButton()) {
+                    this.respondingStopper(event);
+                }
                 break;
             }
         }
@@ -1396,6 +1649,7 @@ export class AIAssistView extends InterActiveChatBase implements INotifyProperty
         this.refreshTextareaUI();
         this.editableTextarea.focus();
         this.pushToUndoStack(this.prompt);
+        this.checkAndActivateSendIcon();
     }
     private respondingStopper(event: KeyboardEvent | MouseEvent): void {
         this.isOutputRenderingStop = true;
@@ -1407,7 +1661,7 @@ export class AIAssistView extends InterActiveChatBase implements INotifyProperty
                 this.outputElement.removeChild(this.skeletonContainer);
             }
         }
-        this.stopResponding.classList.remove('e-btn-active');
+        this.toggleStopRespondingButton(false);
         const promptIndex: number = this.prompts ? this.prompts.length - 1 : -1;
         const eventArgs: StopRespondingEventArgs = {
             event: event,
@@ -1441,8 +1695,11 @@ export class AIAssistView extends InterActiveChatBase implements INotifyProperty
         this.lastStreamPrompt = '';
         if (this.suggestionsElement) { this.suggestionsElement.hidden = true; }
         this.isOutputRenderingStop = false;
-        this.stopResponding.classList.add('e-btn-active');
+        this.toggleStopRespondingButton(true);
         this.addPrompt();
+        if (this.prompts.length === 1) {
+            this.updateBannerTemplate('');
+        }
         this.createOutputElement();
         const eventArgs: PromptRequestEventArgs = {
             cancel: false,
@@ -1535,7 +1792,7 @@ export class AIAssistView extends InterActiveChatBase implements INotifyProperty
             this.outputElement.append(this.outputSuggestionEle);
         }
         this.outputElement.append(outputContainer);
-        if (this.stopResponding && isFinalUpdate) { this.stopResponding.classList.remove('e-btn-active'); }
+        if (this.hasStopResponseButton() && isFinalUpdate) { this.toggleStopRespondingButton(false); }
         if (!this.isOutputRenderingStop && !this.content.contains(this.suggestionsElement) && this.suggestionsElement) {
             this.content.append(this.suggestionsElement);
         }
@@ -1588,8 +1845,14 @@ export class AIAssistView extends InterActiveChatBase implements INotifyProperty
             this.outputContentBodyEle.innerHTML = response;
             if (isFinalUpdate) { this.renderPreTag(this.outputContentBodyEle); }
         }
-        this.renderOutputToolbarItems(index, isFinalUpdate);
-        this.appendChildren(aiOutputEle, this.outputContentBodyEle, this.contentFooterEle);
+        if (this.outputElement.querySelector('.e-skeleton')) {
+            this.outputElement.removeChild(this.skeletonContainer);
+        }
+        this.appendChildren(aiOutputEle, this.outputContentBodyEle);
+        if (isFinalUpdate){
+            this.renderOutputToolbarItems(index, isFinalUpdate);
+            this.appendChildren(aiOutputEle, this.contentFooterEle);
+        }
     }
     private renderPreTag (outputContentEle: HTMLElement): void {
         const preTags: HTMLPreElement[] = Array.from(outputContentEle.querySelectorAll('pre'));
@@ -1681,8 +1944,6 @@ export class AIAssistView extends InterActiveChatBase implements INotifyProperty
         });
     }
     private handleItemClick(args: ClickEventArgs, index: number): void {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        (args.item as any).controlParent.element.querySelector('.e-assist-dislike');
         if (args.item.prefixIcon === 'e-icons e-assist-copy') {
             this.getClipBoardContent(SanitizeHtmlHelper.sanitize(this.prompts[parseInt(index.toString(), 10)].response));
             args.item.prefixIcon = 'e-icons e-assist-check';
@@ -1708,11 +1969,17 @@ export class AIAssistView extends InterActiveChatBase implements INotifyProperty
             const promptItem: PromptModel = this.prompts[parseInt(index.toString(), 10)];
             // eslint-disable-next-line  @typescript-eslint/no-explicit-any
             const controlParentItems: ItemModel[] = (args.item as any).controlParent.items;
+            const likeIndex: number = controlParentItems.findIndex((it: ItemModel) =>
+                it.prefixIcon === 'e-icons e-assist-like' || it.prefixIcon === 'e-icons e-assist-like-filled'
+            );
+            const dislikeIndex: number = controlParentItems.findIndex((it: ItemModel) =>
+                it.prefixIcon === 'e-icons e-assist-dislike' || it.prefixIcon === 'e-icons e-assist-dislike-filled'
+            );
             if (isLikeInteracted) {
                 if (promptItem.isResponseHelpful === true) {
                     args.item.prefixIcon = 'e-icons e-assist-like-filled';
                     if (controlParentItems && controlParentItems.length > 2) {
-                        controlParentItems[2].prefixIcon = 'e-icons e-assist-dislike';
+                        controlParentItems[parseInt(dislikeIndex.toString(), 10)].prefixIcon = 'e-icons e-assist-dislike';
                     }
                 }
                 else {
@@ -1723,7 +1990,7 @@ export class AIAssistView extends InterActiveChatBase implements INotifyProperty
                 if (promptItem.isResponseHelpful === false) {
                     args.item.prefixIcon = 'e-icons e-assist-dislike-filled';
                     if (controlParentItems && controlParentItems.length > 1) {
-                        controlParentItems[1].prefixIcon = 'e-icons e-assist-like';
+                        controlParentItems[parseInt(likeIndex.toString(), 10)].prefixIcon = 'e-icons e-assist-like';
                     }
                 }
                 else {
@@ -1883,12 +2150,52 @@ SanitizeHtmlHelper.sanitize(this.prompts[parseInt(promptIndex.toString(), 10)].p
         this.updateHiddenTextarea(this.prompt);
         this.checkAndActivateSendIcon();
         this.updateFooterElementClass();
+        this.updateFooterType();
+        this.toggleClearIcon();
     }
 
     private checkAndActivateSendIcon(): void {
+        if (!this.footerToolbarEle) { return; }
         const length: number = this.prompt.length > 0 ? this.prompt.length : this.uploadedFiles.length;
-        this.activateSendIcon(length);
+        if (this.sendToolbarItem.prefixIcon === 'e-icons e-assist-send') {
+            const sendItem: HTMLElement = this.footerToolbarEle.element.querySelector('.e-assist-send') as HTMLElement;
+            if (sendItem) {
+                if (length > 0) {
+                    removeClass([sendItem], 'disabled');
+                    sendItem.setAttribute('title', this.l10n.getConstant('send'));
+                } else {
+                    addClass([sendItem], 'disabled');
+                }
+            }
+        }
     }
+
+    private toggleClearIcon(): void {
+        if (this.clearToolbarItem && this.footerToolbarEle) {
+            const isFocused: boolean = document.activeElement === this.editableTextarea;
+            const hasContent: boolean = this.editableTextarea.textContent.length > 0;
+            const clearItemElement: HTMLElement = this.footerToolbarEle.element.querySelector('.e-toolbar-item .e-icons.e-assist-clear-icon')
+                .closest('.e-toolbar-item') as HTMLElement;
+            if (clearItemElement) {
+                if (isFocused && hasContent) {
+                    this.footerToolbarEle.hideItem(clearItemElement, false);
+                } else {
+                    this.footerToolbarEle.hideItem(clearItemElement, true);
+                }
+            }
+        }
+    }
+
+    private updateFooterType(): void {
+        if (this.footerToolbarSettings.toolbarPosition.toLocaleLowerCase() === 'bottom') {
+            this.footer.classList.remove('e-toolbar-inline');
+            this.footer.classList.add('e-toolbar-bottom');
+        } else {
+            this.footer.classList.remove('e-toolbar-bottom');
+            this.footer.classList.add('e-toolbar-inline');
+        }
+    }
+
 
     private updateIcons(newCss: string, isPromptIconCss: boolean = false): void {
         let elements: NodeListOf<Element>;
@@ -1920,41 +2227,142 @@ SanitizeHtmlHelper.sanitize(this.prompts[parseInt(promptIndex.toString(), 10)].p
         this.toolbar.items = this.toolbarItems;
     }
 
+    private updateAttachmentToolbarItemInSettings(): void {
+        const prevOnChange: boolean = this.isProtectedOnChange;
+        this.isProtectedOnChange = true;
+
+        const items: ToolbarItemModel[] = this.footerToolbarSettings.items;
+        const attachmentItemIndex: number = items.findIndex((item: ToolbarItemModel) => item.iconCss === 'e-icons e-assist-attachment-icon');
+
+        if (this.enableAttachments && attachmentItemIndex === -1) {
+            const attachmentItem: ToolbarItemModel = {
+                iconCss: 'e-icons e-assist-attachment-icon',
+                tooltip: this.l10n.getConstant('attachments'),
+                align: 'Right'
+            };
+            const sendItemIndex: number = items.findIndex((item: ToolbarItemModel) => item.iconCss === 'e-icons e-assist-send');
+            items.splice(sendItemIndex !== -1 ? sendItemIndex : items.length, 0, attachmentItem);
+
+        } else if (!this.enableAttachments && attachmentItemIndex !== -1) {
+            items.splice(attachmentItemIndex, 1);
+        }
+
+        this.isProtectedOnChange = prevOnChange;
+    }
+
+    private updateClearToolbarItemInSettings(): void {
+        const prevOnChange: boolean = this.isProtectedOnChange;
+        this.isProtectedOnChange = true;
+
+        const items: ToolbarItemModel[] = this.footerToolbarSettings.items;
+        const clearItemIndex: number = items.findIndex((item: ToolbarItemModel) => item.iconCss === 'e-icons e-assist-clear-icon');
+
+        if (this.showClearButton && clearItemIndex === -1) {
+            const clearItem: ToolbarItemModel = {
+                iconCss: 'e-icons e-assist-clear-icon',
+                tooltip: this.l10n.getConstant('clear'),
+                align: 'Right'
+            };
+            const sendItemIndex: number = items.findIndex((item: ToolbarItemModel) => item.iconCss === 'e-icons e-assist-send');
+            items.splice(sendItemIndex !== -1 ? sendItemIndex : items.length, 0, clearItem);
+        } else if (!this.showClearButton && clearItemIndex !== -1) {
+            items.splice(clearItemIndex, 1);
+        }
+
+        this.isProtectedOnChange = prevOnChange;
+    }
+
+    private updateFooterToolbar(): void {
+        const footerIconsWrapper: HTMLElement = this.footer.querySelector('.e-footer-icons-wrapper') as HTMLElement;
+        if (footerIconsWrapper) {
+            footerIconsWrapper.innerHTML = '';
+            this.footerToolbarEle = null;
+            this.sendToolbarItem = null;
+            this.clearToolbarItem = null;
+            this.attachmentToolbarItem = null;
+            this.renderFooterToolbar(footerIconsWrapper);
+            this.refreshTextareaUI();
+        }
+    }
+
     private updateResponse(response: string, index: number, isFinalUpdate: boolean, responseItem: HTMLDivElement | null): void {
         if (!this.responseItemTemplate && responseItem) {
+            const outputEle: HTMLDivElement | null = responseItem.querySelector('.e-output');
             const outputContentBodyEle: HTMLDivElement = responseItem.querySelector('.e-content-body');
             if (outputContentBodyEle) { outputContentBodyEle.innerHTML = response; }
             if (isFinalUpdate && this.suggestionsElement) {
                 this.suggestionsElement.hidden = false;
             }
             if (isFinalUpdate) { this.renderPreTag(outputContentBodyEle); }
+            if (isFinalUpdate){
+                this.renderOutputToolbarItems(index, isFinalUpdate);
+                this.appendChildren(outputEle, this.contentFooterEle);
+            }
         }
         else {
             this.renderOutputContainer(undefined, response, undefined, index, false, isFinalUpdate);
         }
     }
 
+    private updateBannerTemplate(newTemplate: string | Function): void {
+        if (!isNOU(newTemplate)) {
+            const contentContainer: HTMLElement = this.element.querySelector('.e-view-container');
+            const existingTemplate: HTMLElement = contentContainer.querySelector('.e-banner-view');
+            if (existingTemplate) {
+                existingTemplate.remove();
+            }
+            this.updateBannerView(contentContainer);
+        }
+    }
+
+    private updatePromptSuggestionTemplate(): void {
+        if (this.suggestionsElement) { this.suggestionsElement.remove(); }
+        if (!this.isOutputRenderingStop) {
+            this.renderSuggestions(this.promptSuggestions, this.promptSuggestionsHeader, this.promptSuggestionItemTemplate,
+                                   'promptSuggestion', 'promptSuggestionItemTemplate', this.onSuggestionClick);
+        }
+    }
+
+    private updateFooterTemplate(): void {
+        this.footer.innerHTML = '';
+        this.updateFooterClass();
+        this.unWireFooterEvents(this.footerTemplate);
+        this.renderAssistViewFooter();
+        if (!this.footerTemplate) {
+            this.wireFooterEvents(this.footerTemplate);
+        }
+    }
+
     private updateAttachmentSettings(newAttachment: AttachmentSettingsModel): void {
-        this.uploaderObj.allowedExtensions = newAttachment.allowedFileTypes;
-        this.uploaderObj.maxFileSize = newAttachment.maxFileSize;
+        if (!isNOU(newAttachment.allowedFileTypes)) {
+            this.uploaderObj.allowedExtensions = newAttachment.allowedFileTypes;
+        }
+        if (!isNOU(newAttachment.maxFileSize)) {
+            this.uploaderObj.maxFileSize = newAttachment.maxFileSize;
+        }
         this.uploaderObj.asyncSettings = {
-            saveUrl: newAttachment.saveUrl,
-            removeUrl: newAttachment.removeUrl
+            saveUrl: !isNOU(newAttachment.saveUrl) ?  newAttachment.saveUrl : this.uploaderObj.asyncSettings.saveUrl,
+            removeUrl: !isNOU(newAttachment.removeUrl) ?  newAttachment.removeUrl : this.uploaderObj.asyncSettings.removeUrl
         };
     }
 
     private updateLocale(): void {
         // Update file upload failure locale
+        this.l10n.setLocale(this.locale);
         const failureElement: HTMLElement = this.viewWrapper.querySelector('.e-upload-failure-alert') as HTMLElement;
         if (failureElement) {
             const failureMessageEle: HTMLElement = failureElement.querySelector('.e-failure-message') as HTMLElement;
-            this.l10n.setLocale(this.locale);
-            failureMessageEle.textContent = this.l10n.getConstant('fileSizeFailure');
-        }
-
-        // Update stop responding locale text
-        if (this.assistViewTemplateIndex < 0) {
-            this.updateStopRespondingTitle();
+            if (failureMessageEle.classList.contains('e-size-failure')) {
+                failureMessageEle.textContent = this.l10n.getConstant('fileSizeFailure');
+            }
+            else {
+                let failureText: string = this.l10n.getConstant('fileCountFailure');
+                failureText = failureText.replace('{0}', this.attachmentSettings.maximumCount.toString());
+                if (this.attachmentSettings.maximumCount === 1) {
+                    failureText = failureText.replace('files', 'file');
+                }
+                failureMessageEle.textContent = failureText;
+            }
         }
     }
 
@@ -2000,7 +2408,6 @@ SanitizeHtmlHelper.sanitize(this.prompts[parseInt(promptIndex.toString(), 10)].p
             'footer',
             'assistCustomSection',
             'content',
-            'stopRespondingContent',
             'stopResponding',
             'contentWrapper'
         ];
@@ -2077,8 +2484,8 @@ SanitizeHtmlHelper.sanitize(this.prompts[parseInt(promptIndex.toString(), 10)].p
                     this.lastStreamPrompt = tPrompt.prompt;
                 }
             }
-            if (isFinalUpdate && this.stopResponding) {
-                this.stopResponding.classList.remove('e-btn-active');
+            if (isFinalUpdate && this.hasStopResponseButton()) {
+                this.toggleStopRespondingButton(false);
             }
             this.isResponseRequested = !isFinalUpdate;
         }
@@ -2124,26 +2531,13 @@ SanitizeHtmlHelper.sanitize(this.prompts[parseInt(promptIndex.toString(), 10)].p
                 this.updateHeader(this.showHeader, this.toolbarHeader, this.viewWrapper);
                 break;
             case 'promptSuggestions':
-                if (this.suggestionsElement) { this.suggestionsElement.remove(); }
-                if (!this.isOutputRenderingStop) {
-                    this.renderSuggestions(this.promptSuggestions, this.promptSuggestionsHeader, this.promptSuggestionItemTemplate,
-                                           'promptSuggestion', 'promptSuggestionItemTemplate', this.onSuggestionClick);
-                }
+                this.updatePromptSuggestionTemplate();
                 break;
             case 'showClearButton':
                 if (this.footerTemplate) { return; }
                 else {
-                    if (this.clearIcon) {
-                        this.unWireClearIconEvents();
-                        remove(this.clearIcon); this.clearIcon = null;
-                    }
-                    else {
-                        const footerIconsWrapper: HTMLDivElement = this.footer.querySelector('.e-footer-icons-wrapper');
-                        this.renderClearIcon(footerIconsWrapper, 'e-icons e-assist-clear-icon e-assist-clear-icon-hide');
-                        this.clearIcon.setAttribute('title', this.l10n.getConstant('clear'));
-                        this.updateFooterElementClass();
-                        this.wireClearIconEvents();
-                    }
+                    this.updateClearToolbarItemInSettings();
+                    this.updateFooterToolbar();
                 }
                 break;
             case 'promptPlaceholder':
@@ -2170,15 +2564,26 @@ SanitizeHtmlHelper.sanitize(this.prompts[parseInt(promptIndex.toString(), 10)].p
             case 'toolbarSettings':
                 this.updateToolbarSettings(oldProp.toolbarSettings);
                 break;
+            case 'footerToolbarSettings':
+                if (newProp.footerToolbarSettings.items) {
+                    this.updateFooterToolbar();
+                }
+                if (newProp.footerToolbarSettings.toolbarPosition) {
+                    this.updateFooterType();
+                }
+                break;
             case 'promptToolbarSettings':
             case 'responseToolbarSettings':
             case 'prompts':
                 this.isOutputRenderingStop = false;
                 if (this.outputElement) { remove(this.outputElement); }
-                if (this.stopResponding) { this.stopResponding.classList.remove('e-btn-active'); }
+                if (this.hasStopResponseButton()) { this.toggleStopRespondingButton(false); }
                 this.aiAssistViewRendered = false;
                 this.renderOutputContent(true);
                 this.detachCodeCopyEventHandler();
+                if (this.bannerTemplate) {
+                    this.updateBannerTemplate(this.bannerTemplate);
+                }
                 break;
             case 'prompt':
                 if (!this.footerTemplate) {
@@ -2190,10 +2595,24 @@ SanitizeHtmlHelper.sanitize(this.prompts[parseInt(promptIndex.toString(), 10)].p
             case 'locale':
                 this.updateLocale();
                 break;
+            case 'bannerTemplate': {
+                this.updateBannerTemplate(newProp.bannerTemplate);
+                break;
+            }
+            case 'promptSuggestionItemTemplate': {
+                if (!isNOU(newProp.promptSuggestionItemTemplate)) {
+                    this.updatePromptSuggestionTemplate();
+                }
+                break;
+            }
+            case 'footerTemplate': {
+                this.updateFooterTemplate();
+                break;
+            }
             case 'enableAttachments': {
                 if (!this.footerTemplate) {
-                    const footerIconsWrapper: HTMLDivElement = this.element.querySelector('.e-footer-icons-wrapper');
-                    this.updateAttachmentElement(footerIconsWrapper);
+                    this.updateAttachmentToolbarItemInSettings();
+                    this.updateFooterToolbar();
                 }
                 break;
             }

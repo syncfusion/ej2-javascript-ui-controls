@@ -43,7 +43,6 @@ export class StylesHelper {
 
             // Add default styles first in the specified order
             StylesHelper.addDefaultStyles(styles, defaultStyleNames, stylesMaps, localObj);
-
             // Track added styles to avoid duplicates
             const addedStylesMap: { [key: string]: boolean } = {};
             /* eslint-disable */

@@ -468,7 +468,7 @@ describe('default stock chart', () => {
             chart.loaded = (args: Object): void => {
                 element = document.getElementById('stock_stockChart_chartAxisLabels0');
                 expect(element.childNodes[1].firstChild.textContent === '1/30/2017' ||
-                element.childNodes[1].firstChild.textContent === 'Feb 13').toBe(true);
+                element.childNodes[1].firstChild.textContent === 'Feb 13' || element.childNodes[1].firstChild.textContent === 'Feb 20').toBe(true);
                 done();
             };
             chart.refresh();

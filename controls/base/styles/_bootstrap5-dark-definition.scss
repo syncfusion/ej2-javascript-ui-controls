@@ -1,4 +1,5 @@
-@import 'definition/bootstrap5-dark.scss';
+@use 'definition/bootstrap5-dark' as *;
+@forward 'definition/bootstrap5-dark';
 
 $font-family: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans', 'Liberation Sans', sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji' !default;
 $font-size: 12px !default;

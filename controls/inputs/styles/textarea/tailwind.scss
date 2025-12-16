@@ -1,5 +1,5 @@
-@import 'ej2-base/styles/definition/tailwind.scss';
-@import '../input/tailwind-definition.scss';
-@import '../textbox/tailwind-definition.scss';
-@import 'tailwind-definition.scss';
-@import 'all.scss';
+@use 'ej2-base/styles/definition/tailwind' as *;
+@use '../input/tailwind-definition' as *;
+@use '../textbox/tailwind-definition' as *;
+@use 'tailwind-definition' as *;
+@use 'all' as *;

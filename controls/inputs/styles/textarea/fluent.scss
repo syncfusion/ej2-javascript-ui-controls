@@ -1,5 +1,5 @@
-@import 'ej2-base/styles/definition/fluent.scss';
-@import '../input/fluent-definition.scss';
-@import '../textbox/fluent-definition.scss';
-@import 'fluent-definition.scss';
-@import 'all.scss';
+@use 'ej2-base/styles/definition/fluent' as *;
+@use '../input/fluent-definition' as *;
+@use '../textbox/fluent-definition' as *;
+@use 'fluent-definition' as *;
+@use 'all' as *;

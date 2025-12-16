@@ -1,3 +1,6 @@
+@use 'ej2-base/styles/definition/material3' as *;
+@forward 'ej2-base/styles/definition/material3';
+
 /*! component's theme wise override definitions and variables */
 $vscroll-skin: 'material3' !default;
 $vscroll-nav-nrml-height: 48px !default;

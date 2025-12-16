@@ -4,6 +4,7 @@ import { IGanttData, IPredecessor, ITaskData } from '../base/interface';
 import { TaskFieldsModel } from '../models/task-fields-model';
 import { addClass } from '@syncfusion/ej2-base';
 import * as cls from '../base/css-constants';
+import { CalendarContext } from '../base/calendar-context';
 
 /** @hidden */
 
@@ -68,7 +69,16 @@ export class CriticalPath {
                 totalRecords[j as number].isCritical = false;
                 totalRecords[j as number].ganttProperties.isCritical = false;
                 /* eslint-disable-next-line */
-                dateDifference = this.parent.dataOperation.getDuration(totalRecords[j as number].ganttProperties.endDate, checkEndDate, totalRecords[j as number].ganttProperties.durationUnit, totalRecords[j as number].ganttProperties.isAutoSchedule, totalRecords[j as number].ganttProperties.isMilestone);
+                const calendarContext: CalendarContext = totalRecords[j as number].ganttProperties
+                    ? totalRecords[j as number].ganttProperties.calendarContext
+                    : this.parent.defaultCalendarContext;
+                dateDifference = this.parent.dataOperation.getDuration(
+                    totalRecords[j as number].ganttProperties.endDate,
+                    checkEndDate, totalRecords[j as number].ganttProperties.durationUnit,
+                    totalRecords[j as number].ganttProperties.isAutoSchedule, totalRecords[j as number].ganttProperties.isMilestone,
+                    undefined,
+                    calendarContext
+                );
                 totalRecords[j as number].slack = dateDifference + ' ' + totalRecords[j as number].ganttProperties.durationUnit;
                 totalRecords[j as number].ganttProperties.slack = dateDifference + ' ' + totalRecords[j as number].ganttProperties.durationUnit;
                 if (totalRecords[j as number].ganttProperties.endDate >= checkEndDate) {
@@ -213,7 +223,7 @@ export class CriticalPath {
                         indexEnddate = this.resourceCollectionIds.indexOf(num.toString());
                     }
                     const flatData: ITaskData = totalRecords[indexEnddate as number].ganttProperties;
-                    dateDifference = this.parent.dataOperation.getDuration(flatData.endDate, checkEndDate, 'minute', flatData.isAutoSchedule, flatData.isMilestone);
+                    dateDifference = this.parent.dataOperation.getDuration(flatData.endDate, checkEndDate, 'minute', flatData.isAutoSchedule, flatData.isMilestone, undefined, flatData.calendarContext);
                     collection[z as number]['slack'] = dateDifference;
                     collection[z as number]['fs'] = -1;
                     collection[z as number]['enddate'] = flatData.endDate;
@@ -305,10 +315,10 @@ export class CriticalPath {
                 // calculate slack value for the task contains predecessor connection in "finish to start".
                 if (fromDataPredecessor[i as number] === 'FS') {
                     if (fromIdFlatData.endDate > toIdFlatData.startDate) {
-                        dateDifference = -(this.parent.dataOperation.getDuration(toIdFlatData.startDate, fromIdFlatData.endDate, 'minute', fromIdFlatData.isAutoSchedule, fromIdFlatData.isMilestone));
+                        dateDifference = -(this.parent.dataOperation.getDuration(toIdFlatData.startDate, fromIdFlatData.endDate, 'minute', fromIdFlatData.isAutoSchedule, fromIdFlatData.isMilestone, undefined, toIdFlatData.calendarContext));
                     }
                     else {
-                        dateDifference = this.parent.dataOperation.getDuration(fromIdFlatData.endDate, toIdFlatData.startDate, 'minute', fromIdFlatData.isAutoSchedule, fromIdFlatData.isMilestone);
+                        dateDifference = this.parent.dataOperation.getDuration(fromIdFlatData.endDate, toIdFlatData.startDate, 'minute', fromIdFlatData.isAutoSchedule, fromIdFlatData.isMilestone, undefined, toIdFlatData.calendarContext);
                     }
 
                     // execute if the slack value is not set initially.
@@ -357,10 +367,10 @@ export class CriticalPath {
                     // It execute if the task is in auto mode.
                     if (fromIdFlatData.isAutoSchedule) {
                         if (fromIdFlatData.startDate > toIdFlatData.startDate) {
-                            dateDifference = -(this.parent.dataOperation.getDuration(toIdFlatData.endDate, fromIdFlatData.startDate, 'minute', fromIdFlatData.isAutoSchedule, fromIdFlatData.isMilestone));
+                            dateDifference = -(this.parent.dataOperation.getDuration(toIdFlatData.endDate, fromIdFlatData.startDate, 'minute', fromIdFlatData.isAutoSchedule, fromIdFlatData.isMilestone, undefined, toIdFlatData.calendarContext));
                         }
                         else {
-                            dateDifference = this.parent.dataOperation.getDuration(fromIdFlatData.startDate, toIdFlatData.startDate, 'minute', fromIdFlatData.isAutoSchedule, fromIdFlatData.isMilestone);
+                            dateDifference = this.parent.dataOperation.getDuration(fromIdFlatData.startDate, toIdFlatData.startDate, 'minute', fromIdFlatData.isAutoSchedule, fromIdFlatData.isMilestone, undefined, toIdFlatData.calendarContext);
                         }
                         // It execute while the slack value is not set to the corresponding task.
                         if (isNullOrUndefined(collection[fromTaskIdIndex as number]['slack'])) {
@@ -492,7 +502,7 @@ export class CriticalPath {
                                 // execute if the previous task has sucessor.
                                 else if (!isNullOrUndefined(collection[totaskId as number]['to'])) {
                                     if (toIdFlatData.endDate > fromIdFlatData.startDate) {
-                                        dateDifference = -(this.parent.dataOperation.getDuration(fromIdFlatData.startDate, toIdFlatData.endDate, 'minute', fromIdFlatData.isAutoSchedule, fromIdFlatData.isMilestone));
+                                        dateDifference = -(this.parent.dataOperation.getDuration(fromIdFlatData.startDate, toIdFlatData.endDate, 'minute', fromIdFlatData.isAutoSchedule, fromIdFlatData.isMilestone, undefined, toIdFlatData.calendarContext));
                                     }
                                     else {
                                         dateDifference = this.getSlackDuration(toIdFlatData.endDate, fromIdFlatData.startDate, 'minute',
@@ -513,7 +523,7 @@ export class CriticalPath {
                                         dateDifference = -(this.getSlackDuration(toIdFlatData.endDate, fromIdFlatData.startDate, 'minute', flatRecords[indexFromTaskId as number]));
                                     }
                                     else {
-                                        dateDifference = this.parent.dataOperation.getDuration(fromIdFlatData.startDate, toIdFlatData.endDate, 'minute', fromIdFlatData.isAutoSchedule, fromIdFlatData.isMilestone);
+                                        dateDifference = this.parent.dataOperation.getDuration(fromIdFlatData.startDate, toIdFlatData.endDate, 'minute', fromIdFlatData.isAutoSchedule, fromIdFlatData.isMilestone, undefined, toIdFlatData.calendarContext );
                                     }
                                 } else {
                                     dateDifference = this.getSlackDuration(fromIdFlatData.endDate, checkEndDate, 'minute',
@@ -535,7 +545,7 @@ export class CriticalPath {
                                     dateDifference = this.getSlackDuration(fromIdFlatData.endDate, checkEndDate, 'minute', flatRecords[indexFromTaskId as number]);
                                 } else if (!isNullOrUndefined(collection[totaskId as number]['to'])) {
                                     if (toIdFlatData.endDate > fromIdFlatData.startDate) {
-                                        dateDifference = -(this.parent.dataOperation.getDuration(fromIdFlatData.startDate, toIdFlatData.endDate, 'minute', fromIdFlatData.isAutoSchedule, fromIdFlatData.isMilestone));
+                                        dateDifference = -(this.parent.dataOperation.getDuration(fromIdFlatData.startDate, toIdFlatData.endDate, 'minute', fromIdFlatData.isAutoSchedule, fromIdFlatData.isMilestone, undefined, toIdFlatData.calendarContext ));
                                     }
                                     else {
                                         dateDifference = this.getSlackDuration(toIdFlatData.endDate, fromIdFlatData.startDate, 'minute',
@@ -561,7 +571,7 @@ export class CriticalPath {
                                         dateDifference = -(this.getSlackDuration(toIdFlatData.endDate, fromIdFlatData.startDate, 'minute', flatRecords[indexFromTaskId as number]));
                                     }
                                     else {
-                                        dateDifference = this.parent.dataOperation.getDuration(fromIdFlatData.startDate, toIdFlatData.endDate, 'minute', fromIdFlatData.isAutoSchedule, fromIdFlatData.isMilestone);
+                                        dateDifference = this.parent.dataOperation.getDuration(fromIdFlatData.startDate, toIdFlatData.endDate, 'minute', fromIdFlatData.isAutoSchedule, fromIdFlatData.isMilestone, undefined, toIdFlatData.calendarContext);
                                     }
                                 } else {
                                     dateDifference = this.getSlackDuration(fromIdFlatData.endDate, checkEndDate, 'minute', flatRecords[indexFromTaskId as number]);
@@ -612,7 +622,10 @@ export class CriticalPath {
             return 0;
         }
         else {
-            return this.parent.dataOperation.getDuration(startDate, endDate, durationUnit, record.ganttProperties.isAutoSchedule, true);
+            return this.parent.dataOperation.getDuration(
+                startDate, endDate, durationUnit, record.ganttProperties.isAutoSchedule,
+                true, undefined, record.ganttProperties.calendarContext
+            );
         }
     }
     /* eslint-disable-next-line */
@@ -642,22 +655,26 @@ export class CriticalPath {
                 if (record.ganttProperties.predecessor[i as number].type === 'FS') {
                     durationDiff = this.parent.dataOperation.getDuration(
                         fromRecord.ganttProperties.endDate, record.ganttProperties.startDate,
-                        fromRecord.ganttProperties.durationUnit, fromRecord.ganttProperties.isAutoSchedule, true);
+                        fromRecord.ganttProperties.durationUnit, fromRecord.ganttProperties.isAutoSchedule,
+                        true, undefined, record.ganttProperties.calendarContext );
                 }
                 else if (record.ganttProperties.predecessor[i as number].type === 'SS') {
                     durationDiff = this.parent.dataOperation.getDuration(
                         fromRecord.ganttProperties.startDate, record.ganttProperties.startDate,
-                        fromRecord.ganttProperties.durationUnit, fromRecord.ganttProperties.isAutoSchedule, true);
+                        fromRecord.ganttProperties.durationUnit, fromRecord.ganttProperties.isAutoSchedule,
+                        true, undefined, record.ganttProperties.calendarContext );
                 }
                 else if (record.ganttProperties.predecessor[i as number].type === 'FF') {
                     durationDiff = this.parent.dataOperation.getDuration(
                         fromRecord.ganttProperties.endDate, record.ganttProperties.endDate,
-                        fromRecord.ganttProperties.durationUnit, fromRecord.ganttProperties.isAutoSchedule, true);
+                        fromRecord.ganttProperties.durationUnit, fromRecord.ganttProperties.isAutoSchedule,
+                        true, undefined, record.ganttProperties.calendarContext );
                 }
                 else if (record.ganttProperties.predecessor[i as number].type === 'SF') {
                     durationDiff = this.parent.dataOperation.getDuration(
                         record.ganttProperties.endDate, fromRecord.ganttProperties.startDate,
-                        fromRecord.ganttProperties.durationUnit, fromRecord.ganttProperties.isAutoSchedule, true);
+                        fromRecord.ganttProperties.durationUnit, fromRecord.ganttProperties.isAutoSchedule,
+                        true, undefined, record.ganttProperties.calendarContext );
                 }
                 const isValidDuration: boolean = this.parent.updateOffsetOnTaskbarEdit
                     ? durationDiff >= 0
@@ -696,7 +713,9 @@ export class CriticalPath {
                 parentCriticalEndDate,
                 child.ganttProperties.durationUnit,
                 child.ganttProperties.isAutoSchedule,
-                true
+                true,
+                undefined,
+                child.ganttProperties.calendarContext
             );
             child.ganttProperties.slack = child.slack = dateDiff + ' ' + child.ganttProperties.durationUnit;
             // If aligned and incomplete, mark as critical
@@ -713,7 +732,7 @@ export class CriticalPath {
                 }
             }
             // Recurse for nested children
-            if (child.childRecords && child.childRecords.length) {
+            if (child.hasChildRecords && child.childRecords && child.childRecords.length) {
                 const nextParentCriticalEndDate: Date = child.isCritical ? child.ganttProperties.endDate : parentCriticalEndDate;
                 this.updateChildCriticalTasks(child, criticalPathIds, nextParentCriticalEndDate);
             }
@@ -751,14 +770,15 @@ export class CriticalPath {
                             if (predecessorLength[i as number].to !== currentData.taskId.toString()) {
                                 if (this.parent.viewType === 'ResourceView' || predecessorLength[i as number].to !== currentData.taskId.toString()) {
                                     /* eslint-disable-next-line */
-                                    dateDifference = this.parent.dataOperation.getDuration(currentData.endDate, flatRecords[toID as number].ganttProperties.startDate, currentData.durationUnit, currentData.isAutoSchedule, currentData.isMilestone);
+                                    dateDifference = this.parent.dataOperation.getDuration(currentData.endDate, flatRecords[toID as number].ganttProperties.startDate, currentData.durationUnit, currentData.isAutoSchedule, currentData.isMilestone, undefined, flatRecords[toID as number].ganttProperties.calendarContext);
                                 }
                                 else {
                                     toID = this.parent.ids.indexOf(predecessorLength[i as number].from);
                                     if (toID !== -1) {
                                         dateDifference = this.parent.dataOperation.getDuration(
                                             flatRecords[toID as number].ganttProperties.endDate, currentData.startDate,
-                                            currentData.durationUnit, currentData.isAutoSchedule, currentData.isMilestone);
+                                            currentData.durationUnit, currentData.isAutoSchedule, currentData.isMilestone,
+                                            undefined, flatRecords[toID as number].ganttProperties.calendarContext);
                                         if (dateDifference === 0 && index !== toID && flatRecords[index as number].slack === noSlackValue) {
                                             flatRecords[toID as number].slack = flatRecords[index as number].slack;
                                             flatRecords[toID as number].ganttProperties.slack = flatRecords[index as number].slack;
@@ -779,15 +799,15 @@ export class CriticalPath {
                         }
                         else if (predecessorLength[i as number].type === 'SF') {
                             /* eslint-disable-next-line */
-                            dateDifference = this.parent.dataOperation.getDuration(currentData.startDate, flatRecords[toID as number].ganttProperties.endDate, currentData.durationUnit, currentData.isAutoSchedule, currentData.isMilestone);
+                            dateDifference = this.parent.dataOperation.getDuration(currentData.startDate, flatRecords[toID as number].ganttProperties.endDate, currentData.durationUnit, currentData.isAutoSchedule, currentData.isMilestone, undefined, flatRecords[toID as number].ganttProperties.calendarContext);
                         }
                         else if (predecessorLength[i as number].type === 'SS') {
                             /* eslint-disable-next-line */
-                            dateDifference = this.parent.dataOperation.getDuration(currentData.startDate, flatRecords[toID as number].ganttProperties.startDate, currentData.durationUnit, currentData.isAutoSchedule, currentData.isMilestone);
+                            dateDifference = this.parent.dataOperation.getDuration(currentData.startDate, flatRecords[toID as number].ganttProperties.startDate, currentData.durationUnit, currentData.isAutoSchedule, currentData.isMilestone, undefined, flatRecords[toID as number].ganttProperties.calendarContext);
                         }
                         else {
                             /* eslint-disable-next-line */
-                            dateDifference = this.parent.dataOperation.getDuration(currentData.endDate, flatRecords[toID as number].ganttProperties.endDate, currentData.durationUnit, currentData.isAutoSchedule, currentData.isMilestone);
+                            dateDifference = this.parent.dataOperation.getDuration(currentData.endDate, flatRecords[toID as number].ganttProperties.endDate, currentData.durationUnit, currentData.isAutoSchedule, currentData.isMilestone, undefined, flatRecords[toID as number].ganttProperties.calendarContext);
                         }
                         if (typeof (flatRecords[index as number][this.parent.taskFields.id]) === 'number') {
                             predecessorFrom = parseInt(predecessorLength[i as number].from, 10);

@@ -1,4 +1,6 @@
 @use 'sass:color';
+@use 'ej2-base/styles/definition/tailwind' as *;
+@forward 'ej2-base/styles/definition/tailwind';
 
 /*! calendar tailwind theme variables */
 //month view
@@ -15,6 +17,7 @@ $calendar-bigger-month-view-padding: 0 !default;
 $calendar-bigger-month-view-height: 36px !default;
 $calendar-bigger-month-view-line-height: $calendar-bigger-month-view-height !default;
 $calendar-bigger-month-view-width: 36px !default;
+$border-zero: 0;
 
 //Focus related styles
 $calendar-title-focus-box-shadow: 0 0 0 1px $content-text-color-alt3 !default;
@@ -271,3 +274,12 @@ $calendar-today-btn-primary-color: $primary-text-color !default;
 $calendar-today-btn-primary-disabled-bgcolor: $primary-bg-color-disabled !default;
 $calendar-today-btn-primary-disabled-color: $primary-text-disabled !default;
 $calendar-today-btn-primary-disabled-border-color: $primary-border-color-disabled !default;
+
+$line-height: 14px;
+$margin-zero: 0;
+$padding-zero: 0;
+$calendar-bigger-rtl-header-text-indent: 6px !default;
+$calendar-zero-border-radius: 0 !default;
+$calendar-bigger-header-width: 60% !default;
+$calendar-bigger-placeholder-min-height: 392px !default;
+$calendar-small-min-height: 220px !default;

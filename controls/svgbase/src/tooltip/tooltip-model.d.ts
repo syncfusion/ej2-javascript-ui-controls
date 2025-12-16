@@ -306,6 +306,13 @@ export interface TooltipModel extends ComponentModel{
     shapes?: TooltipShape[];
 
     /**
+     * imageUrl for marker.
+     *
+     * @private
+     */
+    markerImage?: string;
+
+    /**
      * Location for Tooltip.
      *
      * @private

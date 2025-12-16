@@ -1,7 +1,7 @@
 /**
  * `Clear Format` module is used to handle Clear Format.
  */
-import { closest, isNullOrUndefined } from '@syncfusion/ej2-base';
+import { closest, isNullOrUndefined as isNOU } from '@syncfusion/ej2-base';
 import { NodeSelection } from './../../selection/index';
 import { NodeCutter } from './nodecutter';
 import { DOMNode } from './dom-node';
@@ -29,7 +29,7 @@ export class ClearFormat {
      * @param {string} command - specifies the command value
      * @returns {void}
      * @hidden
-     * @deprecated
+     * @private
      */
     public static clear(docElement: Document, endNode: Node, enterAction: string, selector?: string, command?: string): void {
         this.domNode = new DOMNode((endNode as HTMLElement), docElement);
@@ -64,7 +64,7 @@ export class ClearFormat {
                     lastText = nodes[nodes.length - i];
                 }
                 const lasNode: Node = nodeCutter.GetSpliceNode(range, lastText as HTMLElement);
-                if (lasNode) {
+                if (!isNOU(lasNode) && !isNOU(preNode)) {
                     nodeSelection.setSelectionText(docElement, preNode, lasNode, 0, (lasNode.nodeType === 3) ?
                         lasNode.textContent.length : lasNode.childNodes.length);
                 }
@@ -216,7 +216,7 @@ export class ClearFormat {
                         parentNodes[index1 as number].parentNode as HTMLElement));
             }
             const blockquoteNode: Node = closest(parentNodes[index1 as number], 'blockquote');
-            if (parentNodes[index1 as number].nodeName.toLocaleLowerCase() !== 'blockquote' && !isNullOrUndefined(blockquoteNode) && blockquoteNode.textContent === parentNodes[index1 as number].textContent) {
+            if (parentNodes[index1 as number].nodeName.toLocaleLowerCase() !== 'blockquote' && !isNOU(blockquoteNode) && blockquoteNode.textContent === parentNodes[index1 as number].textContent) {
                 const blockNodes: Node[] = this.removeParent([blockquoteNode]);
                 this.unWrap(docElement, blockNodes, nodeCutter, nodeSelection);
             }

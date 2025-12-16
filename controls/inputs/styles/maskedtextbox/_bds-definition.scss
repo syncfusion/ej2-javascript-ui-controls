@@ -1,3 +1,5 @@
+@use 'ej2-base/styles/definition/bds' as *;
+@forward 'ej2-base/styles/definition/bds';
 $mask-font-family: $font-family !default;
 $mask-font-size: $text-sm !default;
 $mask-bigger-font-size: $text-base !default;
@@ -5,3 +7,18 @@ $mask-bigger-font-size: $text-base !default;
 // color
 
 $mask-error-color: $danger !default;
+$mask-bigger-min-height: 40px !default;
+$mask-min-height: 33px !default;
+
+$mask-prepend-label-bottom-top: 20px !default;
+$mask-prepend-label-top-top: 18px !default;
+$mask-prepend-outline-label-bottom-top: 20px !default;
+$mask-prepend-outline-label-top-top: 17px !default;
+$mask-prepend-filled-label-bottom-top: 20px !default;
+$mask-prepend-filled-label-top-top: 20px !default;
+$mask-bigger-prepend-label-bottom-top: 22px !default;
+$mask-bigger-prepend-label-top-top: 18px !default;
+$mask-bigger-prepend-outline-label-bottom-top: 22px !default;
+$mask-bigger-prepend-outline-label-top-top: 17px !default;
+$mask-bigger-prepend-filled-label-bottom-top: 23px !default;
+$mask-bigger-prepend-filled-label-top-top: 18px !default;

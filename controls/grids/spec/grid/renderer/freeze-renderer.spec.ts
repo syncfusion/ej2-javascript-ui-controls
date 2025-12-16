@@ -2,20 +2,22 @@
  * Freeze Renderer spec
  */
 import { Grid } from '../../../src/grid/base/grid';
-import { Column } from '../../../src/grid/models';
+import { Column, ColumnModel } from '../../../src/grid/models';
 import { createElement, remove, EmitType } from '@syncfusion/ej2-base';
 import { data, employeeData } from '../base/datasource.spec';
 import { Freeze } from '../../../src/grid/actions/freeze';
 import { Aggregate } from '../../../src/grid/actions/aggregate';
 import { VirtualScroll } from '../../../src/grid/actions/virtual-scroll';
+import { InfiniteScroll } from '../../../src/grid/actions/infinite-scroll';
 import { Edit } from '../../../src/grid/actions/edit';
 import { createGrid, destroy } from '../base/specutil.spec';
 import { profile, inMB, getMemoryProfile } from '../base/common.spec';
 import { getScrollBarWidth } from '../../../src/grid/base/util';
 import { QueryCellInfoEventArgs } from '../../../src/grid/base/interface';
 import { Resize } from '../../../src/grid/actions/resize';
+import { isRowPinned } from '../../../src';
 
-Grid.Inject(Freeze, Aggregate, Edit, VirtualScroll, Resize);
+Grid.Inject(Freeze, Aggregate, Edit, VirtualScroll, Resize, InfiniteScroll);
 
 describe('Freeze render module', () => {
     describe('Freeze Row and Column', () => {
@@ -1108,6 +1110,103 @@ describe('Freeze render module', () => {
         it('check table style width', () => {
             expect((gridObj.getHeaderTable() as HTMLElement).style.width).toBe('100%');
         });
+
+        afterAll(() => {
+            destroy(gridObj);
+        });
+    });
+
+    describe('code coverage - isRowPinned', () => {
+        let gridObj: Grid;
+        beforeAll((done: Function) => {
+            gridObj = createGrid(
+                {
+                    dataSource: data,
+                    allowPaging: true,
+                    toolbar: ['Add', 'Edit', 'Delete', 'Update', 'Search'],
+                    editSettings: {allowEditing: true, allowAdding: true, allowDeleting: true, mode: 'Normal'},
+                    isRowPinned: function (data: {OrderID: number}, columns: ColumnModel) {
+                        return data && data.OrderID < 10251;
+                    },
+                    height: 400,
+                    columns: [
+                        { headerText: 'OrderID', field: 'OrderID', isPrimaryKey: true, },
+                        { headerText: 'CustomerID', field: 'CustomerID' },
+                        { headerText: 'EmployeeID', field: 'EmployeeID' },
+                        { headerText: 'ShipCountry', field: 'ShipCountry' },
+                    ]
+                }, done);
+        });
+
+        it('Freezed rows check', () => {
+            expect(gridObj.pinnedTopRecords.length).toBe(3);
+        });
+
+        it('Update Row to programmatically update the row', (done: Function)=> {
+            let dataBound = (): void => {
+                expect((gridObj as any).getHeaderTable().querySelector('tbody').children[0].cells[1].textContent).toBe('Edited');
+                expect((gridObj as any).getContentTable().querySelector('tbody').children[0].cells[1].textContent).toBe('Edited');
+                gridObj.dataBound = null;
+                done();
+            }
+            gridObj.dataBound = dataBound;
+            gridObj.updateRow(3, { OrderID: 10248, CustomerID: 'Edited', ShipCountry: 'France' });
+        })
+
+        it('Editing the content row will reflect the freeze row', (done: Function)=> {
+            const idx: number = gridObj.getRowIndexByPrimaryKey(10250);
+            gridObj.selectRow(idx);
+            gridObj.startEdit();
+            ((gridObj as any).element.querySelectorAll('.e-gridform tr input')[1] as any).ej2_instances[0].value = 'HANAR';
+            gridObj.endEdit();
+            expect((gridObj as any).getHeaderTable().querySelector('tbody').children[2].cells[1].textContent).toBe('HANAR');
+            expect((gridObj as any).getContentTable().querySelector('tbody').children[2].cells[1].textContent).toBe('HANAR');
+            done();
+        })
+
+        it('Deleting the content row will reflect the freeze row', (done: Function)=> {
+            const idx: number = gridObj.getRowIndexByPrimaryKey(10248);
+            gridObj.selectRow(idx);
+            let dataBound = (): void => {
+                expect(gridObj.pinnedTopRecords.length).toBe(2);
+                gridObj.dataBound = null;
+                done();
+            }
+            gridObj.dataBound = dataBound;
+            gridObj.deleteRecord();
+        })
+
+        afterAll(() => {
+            destroy(gridObj);
+        });
+    });
+
+    describe('code coverage - isRowPinned infinitescroll', () => {
+        let gridObj: Grid;
+        beforeAll((done: Function) => {
+            gridObj = createGrid(
+                {
+                    dataSource: data,
+                    enableInfiniteScrolling: true,
+                    editSettings: {allowEditing: true, allowAdding: true, allowDeleting: true, mode: 'Normal'},
+                    isRowPinned: function (data: {OrderID: number}, columns: ColumnModel) {
+                        return data && data.OrderID < 10251;
+                    },
+                    height: 400,
+                    columns: [
+                        { headerText: 'OrderID', field: 'OrderID', isPrimaryKey: true, },
+                        { headerText: 'CustomerID', field: 'CustomerID' },
+                        { headerText: 'EmployeeID', field: 'EmployeeID' },
+                        { headerText: 'ShipCountry', field: 'ShipCountry' },
+                    ]
+                }, done);
+        });
+
+        it('coverage for infinite scroll', (done: Function)=> {
+            gridObj.selectRow(0);
+            gridObj.startEdit();
+            done();
+        })
 
         afterAll(() => {
             destroy(gridObj);

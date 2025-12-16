@@ -1,3 +1,5 @@
+@use 'ej2-base/styles/definition/highcontrast-light' as *;
+@forward 'ej2-base/styles/definition/highcontrast-light';
 $switch-wrapper-width: 44px !default;
 $switch-active-background: initial !default;
 $switch-wrapper-height: 20px !default;
@@ -143,3 +145,11 @@ $switch-bigger-small-ripple-height: 36px !default;
 $switch-bigger-small-ripple-left: -10px !default;
 $switch-bigger-small-ripple-top: -10px !default;
 $switch-bigger-small-ripple-width: 36px !default;
+$switch-ripple-border-radius: 50% !default;
+$switch-height: 1px !default;
+$switch-ripple-container-height: 52px !default;
+$switch-width: 1px !default;
+$switch-ripple-container-width: 52px !default;
+$switch-ripple-container-bottom: -9px !default;
+$switch-ripple-container-left: -17px !default;
+$switch-ripple-container-top: -17px !default;

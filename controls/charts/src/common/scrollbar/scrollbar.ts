@@ -946,4 +946,3 @@ export class ScrollBar {
     }
 
 }
-

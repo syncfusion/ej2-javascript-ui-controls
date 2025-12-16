@@ -48,6 +48,8 @@ export const defaultLocale: Object = {
     'None': 'None',
     'View-LargeIcons': 'Large icons',
     'View-Details': 'Details',
+    'Upload-File': 'File',
+    'Upload-Folder': 'Folder',
     'Search': 'Search',
     'Button-Ok': 'OK',
     'Button-Cancel': 'Cancel',
@@ -96,6 +98,8 @@ export const defaultLocale: Object = {
     'ApplyAll-Label': 'Do this for all current items',
     'KB': 'KB',
     'Access-Message': '{0} is not accessible. You need permission to perform the {1} action.',
+    'FolderUpload-Access-Message': '{0} is not accessible. you need permission to perform the {1} action.',
+    'FileUpload-Access-Message': '{0} is not accessible. you need permission to perform the {1} action.',
     'Network-Error': 'NetworkError: Failed to send on XMLHTTPRequest: Failed to load',
     'Server-Error': 'ServerError: Invalid response from'
 };

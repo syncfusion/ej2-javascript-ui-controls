@@ -1,3 +1,5 @@
+@use 'ej2-base/styles/common/mixin' as *;
+@use './theme-variables' as *;
 @include export-module('daterangepicker-layout') {
 
   .e-input-group.e-control-wrapper.e-date-range-wrapper.e-non-edit.e-input-focus .e-input:focus ~ .e-clear-icon,
@@ -11,13 +13,13 @@
   .e-float-input.e-input-group.e-control-wrapper.e-date-range-wrapper.e-input-focus .e-daterange-hidden,
   .e-input-group.e-control-wrapper.e-date-range-wrapper.e-input-focus .e-daterange-hidden,
   .e-float-input.e-control-wrapper.e-date-range-wrapper.e-input-focus .e-daterange-hidden {
-    border: 0;
-    height: 0;
-    margin: 0;
-    padding: 0;
-    text-indent: 0;
+    border: $zero-border;
+    height: $height-zero;
+    margin: $margin-zero;
+    padding: $padding-zero;
+    text-indent: $padding-zero;
     visibility: hidden;
-    width: 0;
+    width: $padding-zero;
   }
 
   #{&}.e-daterangepicker {
@@ -66,7 +68,7 @@
           white-space: $range-text-nowrap;
           width: $range-start-end-label-width;
           @if $skin-name == 'Material3' {
-            font-weight: $font-weight-medium;
+            font-weight: $font-weight-semibold;
           }
         }
         #{if(&, '&', '*')} .e-change-icon {
@@ -140,8 +142,8 @@
               float: $range-float-right;
             }
             @if $skin-name == 'tailwind3' {
-              margin-right: 0;
-              right: -10px;
+              margin-right: $daterangepicker-margin-right;
+              right: $date-range-popup-next-right;
             }
           }
           #{if(&, '&', '*')} .e-prev {
@@ -149,7 +151,7 @@
               float: $range-float-left;
             }
             @if $skin-name == 'tailwind3' {
-              left: -10px;
+              left: $date-range-popup-next-right;
             }
           }
           #{if(&, '&', '*')} .e-next,
@@ -158,7 +160,7 @@
             width: $range-normal-nav-icon-width;
             @if $skin-name == 'tailwind3' {
               position: inherit;
-              top: 4px;
+              top: $date-range-popup-next-top;
             }
           }
           #{if(&, '&', '*')} .e-next span,
@@ -272,7 +274,7 @@
             height: $range-preset-normal-list-height;
             line-height: $range-preset-normal-list-height;
             @if $skin-name == 'tailwind3' {
-              font-weight: 500;
+              font-weight: $font-weight-medium;
             }
             &.e-active:first-child {
               @if $skin-name == 'Material3' {
@@ -417,32 +419,32 @@
   align-items: center;
   display: flex;
   flex-direction: column;
-  height: 100%;
+  height: $range-full-height;
   justify-content: center;
-  left: 0;
-  max-height: 100%;
+  left: $margin-zero;
+  max-height: $range-full-height;
   position: fixed;
-  top: 0;
-  width: 100%;
+  top: $margin-zero;
+  width: $range-full-width;
   z-index: 1002;
 
   .e-daterangepicker.e-popup.e-control.e-lib.e-device.e-popup-open {
     position: relative;
-    top:0 !important;
-    left: 0 !important;
+    top: $padding-zero !important;
+    left: $padding-zero !important;
   }
 
   .e-daterangepicker.e-popup.e-popup-expand.e-control.e-lib.e-device.e-popup-open {
-    min-height:100%;
-    min-width: 100%;
-    height:100%;
-    width:100%;
+    min-height: $range-full-height;
+    min-width: $range-full-width;
+    height: $range-full-height;
+    width: $range-full-width;
 }
 }
 
 .e-content-placeholder.e-daterangepicker.e-placeholder-daterangepicker {
   background-size: 250px 33px;
-  min-height: 33px;
+  min-height: $range-normal-content-min-height;
 }
 
 .e-daterangepick-mob-popup-wrap {
@@ -458,7 +460,7 @@
             #{if(&, '&', '*')} .e-range-header {
               height: $modal-range-portrait-header-height;
               padding: $modal-range-portrait-header-padding;
-              margin: 0;
+              margin: $margin-zero;
               color: $range-calendar-header-dark-color;
 
               #{if(&, '&', '*')} .e-model-header-wrapper {
@@ -520,8 +522,8 @@
 
                   #{if(&, '&', '*')} span {
                     @media (min-device-width: 768px) {
-                      font-size: 18px;
-                      padding: 11px;
+                      font-size: $range-device-span-font-size;
+                      padding: $daterangepicker-span-padding;
                     }
                   }
                 }
@@ -593,18 +595,18 @@
         }        
 
         #{if( &, '&', '*')} .e-calendar-holder {
-            height: 100%;
+            height: $range-full-height;
 
             #{if( &, '&', '*')} .e-calendar-container {
               @media (max-height: 600px) {
-                min-height: 78vh;
-                height: 78vh;
+                min-height: $range-calendar-container-height;
+                height: $range-calendar-container-height;
               }
 
               #{if( &, '&', '*')} .e-calendar {
                 @media (max-height: 600px) {
-                  min-height: 78vh;
-                  height: 78vh;
+                  min-height: $range-calendar-container-height;
+                  height: $range-calendar-container-height;
                 }
               }
             }
@@ -622,7 +624,7 @@
         }
 
         #{if(&, '&', '*')} .e-separator {
-            margin: 0;
+            margin: $margin-zero;
         }
 
         #{if( &, '&', '*')} .e-content.e-month {
@@ -648,7 +650,7 @@
               font-size: $range-header-font-size;
 
               @media (min-device-width: 768px) {
-                font-size: 18px;
+                font-size: $range-footer-font-size;
               }
             }
            }
@@ -656,7 +658,7 @@
 
         #{if(&, '&', '*')} .e-range-mob-popup-wrap {
           position: relative;
-          height:100%;
+          height: $range-full-height;
 
           #{if(&, '&', '*')} .e-model-header {
             height: $modal-range-presets-header-height;
@@ -688,7 +690,7 @@
     #{if( &, '&', '*')} .e-daterangepicker.e-popup.e-popup-expand {
       #{if( &, '&', '*')} .e-date-range-container .e-range-header .e-model-header-wrapper .e-btn {
         @if $skin-name != 'fluent2' {
-          padding: 0;
+          padding: $padding-zero;
         }
         @media (min-device-width: 768px) {
           font-size: $modal-range-header-landscape-font-size;
@@ -698,19 +700,19 @@
       #{if( &, '&', '*')} .e-calendar-holder {
         #{if(&, '&', '*')} .e-calendar-container {
           @media (min-height: 600px) {
-            min-height: 70vh;
-            height: 70vh;
+            min-height: $range-calendar-holder-container-height;
+            height: $range-calendar-holder-container-height;
           }
 
           @media (max-height: 600px) {
-            min-height: 65%;
-            height: 65%;
+            min-height: $range-calendar-holder-container-600-height;
+            height: $range-calendar-holder-container-600-height;
           }
 
           #{if(&, '&', '*')} .e-calendar {
             @media (min-height: 600px) {
-              min-height: 70vh;
-              height: 70vh;
+              min-height: $range-calendar-holder-container-height;
+              height: $range-calendar-holder-container-height;
             }
           }
 
@@ -718,7 +720,7 @@
           #{if(&, '&', '*')} .e-content.e-year,
           #{if(&, '&', '*')} .e-content.e-decade {        
             @media (max-height: 600px) {
-              height: 50vh;
+              height: $range-container-content-month-height;
             }
           }
         }
@@ -764,8 +766,8 @@
           }
 
           #{if(&, '&', '*')} .e-day-span {
-            margin: 8px 0;
-            font-size: 16px;
+            margin: $daterangepicker-day-span-margin;
+            font-size: $date-range-day-span-font-size;
           }
           
         }            
@@ -802,9 +804,9 @@
 }
 
 .e-outline.e-float-input.e-control-wrapper label.e-float-text.e-label-bottom span.e-float-text-content.e-float-text-overflow.e-date-time-icon {
-  width: calc(100% - 80px);
+  width: $range-outline-float-text-width;
 }
 
 .e-outline.e-float-input.e-static-clear.e-control-wrapper label.e-float-text.e-label-bottom span.e-float-text-content.e-float-text-overflow.e-date-time-icon {
-  width: calc(100% - 110px);
+  width: $range-outline-static-clear-float-text-width;
 }

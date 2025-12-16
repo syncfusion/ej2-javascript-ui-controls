@@ -1,3 +1,5 @@
+@use 'ej2-base/styles/common/mixin' as *;
+@use './theme-variables' as *;
 @include export-module('field-list-bigger') {
 
   .e-bigger.e-pivot-formatting-dialog,
@@ -9,8 +11,8 @@
     }
 
     .e-colorpicker-wrapper.e-format-font-color-picker {
-      margin-right: 20px;
-      margin-left: 0;
+      margin-right: $field-list-spacing-20;
+      margin-left: $field-list-spacing-0;
     }
 
     .e-split-preview {
@@ -26,9 +28,9 @@
     }
 
     .e-format-value-preview {
-      margin: 0;
+      margin: $field-list-spacing-0;
       @if ($skin-name =='tailwind') or ($skin-name =='bootstrap5') or ($skin-name =='FluentUI') or ($skin-name =='fabric') or ($skin-name =='bootstrap4') {
-        padding: 0;
+        padding: $field-list-spacing-0;
       }
 
       @if ($skin-name =='tailwind') or ($skin-name =='bootstrap5') {
@@ -38,7 +40,7 @@
 
     .e-format-color-picker .e-split-btn-wrapper .e-btn.e-icon-btn {
       @if ($field-list-skin =='bootstrap4') {
-        padding: 4px 8px;
+        padding: $field-list-spacing-4 $field-list-spacing-8;
       }
     }
 
@@ -54,8 +56,8 @@
 
     &.e-rtl {
       .e-colorpicker-wrapper.e-format-font-color-picker {
-        margin-left: 20px;
-        margin-right: 0;
+        margin-left: $field-list-spacing-20;
+        margin-right: $field-list-spacing-0;
       }
     }
   }
@@ -63,8 +65,8 @@
   .e-bigger.e-pivot-calc-dialog-div,
   .e-bigger .e-pivot-calc-dialog-div {
     /* stylelint-disable */
-    max-height: 660px !important;
-    min-width: 401px !important;
+    max-height: $field-list-height-660 !important;
+    min-width: $field-list-width-401 !important;
     /* stylelint-enable */
 
     .e-pivot-all-field-title,
@@ -75,22 +77,22 @@
     .e-olap-member-title {
       font-size: $field-list-bigger-header-font-size;
       padding: $pivot-calculated-bigger-header-padding 0;
-      padding-bottom: 0;
+      padding-bottom: $field-list-spacing-0;
 
       @if ($skin-name =='FluentUI') {
-        font-weight: 600;
-        margin-top: 16px;
+        font-weight: $field-list-font-weight-semibold;
+        margin-top: $field-list-spacing-16;
       }
 
       @if ($skin-name =='bootstrap5') or ($skin-name =='tailwind') {
-        padding-bottom: 4px;
-        padding-top: 16px;
+        padding-bottom: $field-list-spacing-4;
+        padding-top: $field-list-spacing-16;
       }
     }
 
     .e-treeview ul {
       li {
-        padding: 2px 0;
+        padding: $field-list-spacing-2 $field-list-spacing-0;
       }
     }
 
@@ -100,7 +102,7 @@
           font-size: $field-list-bigger-icon-size;
 
           @if ($skin-name =='FluentUI') {
-            padding-top: 12px;
+            padding-top: $field-list-spacing-12;
           }
         }
 
@@ -108,7 +110,7 @@
         .e-edit,
         .e-edited {
           /* stylelint-disable */
-          margin: 0 12px 0 0 !important;
+          margin: $field-list-spacing-0 $field-list-spacing-12 $field-list-spacing-0 $field-list-spacing-0 !important;
 
           @if ($skin-name =='FluentUI') or ($skin-name =='bootstrap5') {
             font-size: $field-list-bigger-header-icon-size !important;
@@ -126,7 +128,7 @@
           }
 
           @if ($skin-name =='fluent2') {
-            font-size: 20px;
+            font-size: $field-list-font-icon-20;
           }
 
           @if ($skin-name =='tailwind') {
@@ -144,15 +146,15 @@
           &.e-remove-report {
 
             @if ($skin-name =='FluentUI') {
-              padding-top: 0;
+              padding-top: $field-list-spacing-0;
             }
 
             @if ($skin-name =='bootstrap5') {
-              padding-top: 3px;
+              padding-top: $field-list-spacing-3;
             }
 
             @if ($skin-name =='tailwind') {
-              padding-top: 4px;
+              padding-top: $field-list-spacing-4;
             }
           }
         }
@@ -171,8 +173,8 @@
 
     &.e-olap-calc-dialog-div {
       /* stylelint-disable */
-      max-height: 750px !important;
-      min-width: 580px !important;
+      max-height: $field-list-height-750 !important;
+      min-width: $field-list-width-580 !important;
       /* stylelint-enable */
 
       .e-pivot-calc-outer-div {
@@ -207,15 +209,15 @@
         }
 
         .e-pivot-calculated-div {
-          margin-left: 24px;
+          margin-left: $field-list-spacing-24;
         }
       }
 
       &.e-rtl {
         .e-pivot-calc-outer-div {
           .e-pivot-calculated-div {
-            margin-left: 0;
-            margin-right: 24px;
+            margin-left: $field-list-spacing-0;
+            margin-right: $field-list-spacing-24;
           }
         }
       }
@@ -227,16 +229,16 @@
   .e-bigger.e-field-list-tree.e-drag-item.e-treeview,
   .e-bigger.e-pivot-calc.e-drag-item.e-treeview {
     height: $field-list-bigger-button-height;
-    padding: 6px 12px;
+    padding: $field-list-spacing-6 $field-list-spacing-12;
 
     @if ($field-list-skin =='bootstrap4') {
-      padding: 9px 10px;
+      padding: $field-list-spacing-9 $field-list-spacing-10;
     }
 
     &.e-drag-restrict {
       .e-no-drop {
         &::before {
-          padding: 4px;
+          padding: $field-list-spacing-4;
         }
       }
     }
@@ -245,17 +247,17 @@
   .e-bigger .e-button-drag-clone,
   .e-bigger.e-button-drag-clone {
     height: $field-list-bigger-button-height;
-    line-height: 1.5em;
-    padding: 6px 12px;
+    line-height: $field-list-line-height-24;
+    padding: $field-list-spacing-6 $field-list-spacing-12;
 
     @if ($field-list-skin =='bootstrap4') {
-      border: 0;
-      padding: 7px 12px;
+      border: $field-list-border-0;
+      padding: $field-list-spacing-7 $field-list-spacing-12;
     }
 
     @if ($skin-name =='tailwind') or ($skin-name =='bootstrap5') or ($skin-name =='FluentUI') {
       line-height: normal;
-      padding: 0 12px;
+      padding: $field-list-spacing-0 $field-list-spacing-12;
     }
   }
 
@@ -268,7 +270,7 @@
 
         .e-sort-ascend-icon,
         .e-sort-descend-icon {
-          font-size: 18px;
+          font-size: $field-list-font-icon-18;
         }
 
         .e-level-drop {
@@ -296,7 +298,7 @@
           .e-kpiStatus-icon,
           .e-kpiTrend-icon,
           .e-kpiValue-icon {
-            margin-left: 10px;
+            margin-left: $field-list-spacing-10;
           }
         }
       }
@@ -320,7 +322,7 @@
             .e-kpiStatus-icon,
             .e-kpiTrend-icon,
             .e-kpiValue-icon {
-              margin-left: 10px;
+              margin-left: $field-list-spacing-10;
             }
           }
         }
@@ -337,14 +339,14 @@
       .e-filter-tab-container {
         .e-tab-header {
           .e-toolbar-item .e-icon-left + .e-tab-text {
-            margin: 0 0 0 6px;
+            margin: $field-list-spacing-0 $field-list-spacing-0 $field-list-spacing-0 $field-list-spacing-6;
           }
         }
 
         &.e-rtl {
           .e-tab-header {
             .e-toolbar-item .e-icon-left + .e-tab-text {
-              margin: 0 6px 0 0;
+              margin: $field-list-spacing-0 $field-list-spacing-6 $field-list-spacing-0 $field-list-spacing-0;
             }
           }
         }
@@ -357,7 +359,7 @@
 
       .e-excelfilter {
         @if ($skin-name =='tailwind') {
-          padding-top: 16px;
+          padding-top: $field-list-spacing-16;
         }
 
         .e-member-editor-container-outer-div {
@@ -370,17 +372,17 @@
         height: $field-list-excel-filter-bigger-height;
 
         .e-filter-text-div {
-          font-size: 14px;
+          font-size: $field-list-font-size-14;
         }
 
         .e-filter-option-container-1,
         .e-filter-option-container-2,
         .e-separator-div {
-          padding-top: 24px;
+          padding-top: $field-list-spacing-24;
         }
 
         .e-between-text-div {
-          padding: 10px 0;
+          padding: $field-list-spacing-10 $field-list-spacing-0;
         }
       }
 
@@ -395,7 +397,7 @@
 
       @if ($skin-name =='Material3') {
         .e-filter-tab-container {
-          max-width: 350px;
+          max-width: $field-list-width-350;
         }
       }
     }
@@ -405,7 +407,7 @@
     .e-value-field-settings {
       .e-dlg-header-content {
         .e-clear-filter-button.e-small {
-          font-size: 14px;
+          font-size: $field-list-font-icon-14;
           top: 0;
         }
       }
@@ -413,7 +415,7 @@
 
     .e-value-field-settings {
       .e-value-field-div-content {
-        padding: 0 $field-list-editor-search-padding-size 10px;
+        padding: $field-list-spacing-0 $field-list-editor-search-padding-size $field-list-spacing-10;
       }
 
       .e-field-name-text-container {
@@ -421,7 +423,7 @@
 
         .e-field-name-title,
         .e-field-name-content {
-          font-size: 14px;
+          font-size: $field-list-font-size-14;
         }
       }
 
@@ -429,13 +431,13 @@
       .e-type-option-container,
       .e-base-field-option-container,
       .e-base-item-option-container {
-        padding-top: 24px;
+        padding-top: $field-list-spacing-24;
 
         .e-base-field-option-text,
         .e-base-item-option-text,
         .e-type-option-text,
         .e-caption-input-text {
-          font-size: 14px;
+          font-size: $field-list-font-size-14;
         }
       }
     }
@@ -454,11 +456,11 @@
 
     .e-member-editor-dialog,
     .e-olap-editor-dialog {
-      max-height: 440px !important;
-      min-width: 370px !important;
+      max-height: $field-list-height-440 !important;
+      min-width: $field-list-width-370 !important;
 
       .e-member-editor-container-outer-div .e-list-parent .e-ul {
-        height: auto;
+        height: $field-list-height-auto;
       }
     }
   }
@@ -476,11 +478,11 @@
         background: $field-list-header-background-color;
         color: $field-list-default-header-font-color;
         font-size: $field-list-bigger-header-font-size;
-        font-weight: normal;
+        font-weight: $field-list-font-weight-normal;
         overflow: hidden;
 
         @if ($field-list-skin =='bootstrap4') {
-          padding-left: 16px;
+          padding-left: $field-list-spacing-16;
         }
       }
 
@@ -491,13 +493,13 @@
         .e-sort-ascend,
         .e-sort-descend {
           font-size: $field-list-bigger-header-icon-size;
-          padding: 0 0 0 $field-list-bigger-icon-to-icon-padding;
-          width: 24px;
+          padding: $field-list-spacing-0 $field-list-spacing-0 $field-list-spacing-0 $field-list-bigger-icon-to-icon-padding;
+          width: $field-list-width-24;
         }
       }
 
       .e-field-list {
-        padding-left: 5px;
+        padding-left: $field-list-spacing-5;
 
         &:not(.e-olap-field-list-tree) {
           ul {
@@ -505,11 +507,11 @@
 
             li.e-pivot-parent {
               @if ($skin-name =='bootstrap5') {
-                padding-left: 7px;
+                padding-left: $field-list-spacing-7;
               }
 
               @if ($skin-name =='FluentUI') {
-                padding-left: 8px;
+                padding-left: $field-list-spacing-8;
               }
             }
 
@@ -523,25 +525,25 @@
 
         ul {
           li {
-            padding: 0;
+            padding: $field-list-spacing-0;
           }
         }
 
         .e-drag {
           font-size: $field-list-bigger-icon-size !important;
-          height: 24px !important;
+          height: $field-list-height-24 !important;
           margin-bottom: $field-list-treeview-drag-bigger-padding !important;
-          margin-right: 4px !important;
-          width: 24px !important;
+          margin-right: $field-list-spacing-4 !important;
+          width: $field-list-width-24 !important;
 
           @if ($skin-name =='fluent2') {
-            font-size: 20px !important;
-            margin-bottom: 5px !important;
-            margin-right: 0 !important;
+            font-size: $field-list-font-icon-20 !important;
+            margin-bottom: $field-list-spacing-5 !important;
+            margin-right: $field-list-spacing-0 !important;
           }
 
           @if ($skin-name =='tailwind3') {
-            margin-right: 0 !important;
+            margin-right: $field-list-spacing-0 !important;
           }
         }
 
@@ -556,7 +558,7 @@
         .e-kpiStatus-icon,
         .e-kpiTrend-icon,
         .e-kpiValue-icon {
-          margin-left: 10px;
+          margin-left: $field-list-spacing-10;
         }
 
         &.e-olap-field-list-tree {
@@ -583,11 +585,11 @@
       .e-right-axis-fields .e-field-list-values {
         .e-axis-container {
           height: $field-list-bigger-header-height;
-          padding: 0 $field-list-bigger-header-padding 0;
+          padding: $field-list-spacing-0 $field-list-bigger-header-padding $field-list-spacing-0;
 
           .e-axis-icon-container {
             height: $field-list-bigger-header-icon-size;
-            width: 24px;
+            width: $field-list-width-24;
 
             .e-axis-rows,
             .e-axis-columns,
@@ -599,7 +601,7 @@
 
           .e-axis-header {
             font-size: $field-list-bigger-header-font-size;
-            padding: 0 12px;
+            padding: $field-list-spacing-0 $field-list-spacing-12;
           }
         }
 
@@ -617,12 +619,12 @@
               .e-pvt-btn-content {
                 font-size: $field-list-bigger-button-font-size;
                 line-height: $field-list-bigger-button-line-height;
-                padding: 0 10px;
+                padding: $field-list-spacing-0 $field-list-spacing-10;
               }
 
               .e-draggable {
-                height: 24px;
-                width: 24px;
+                height: $field-list-width-24;
+                width: $field-list-width-24;
               }
 
               .e-sort,
@@ -633,8 +635,8 @@
                 cursor: pointer;
                 display: inline-block;
                 font-size: $field-list-bigger-icon-size;
-                height: 24px;
-                width: 24px;
+                height: $field-list-width-24;
+                width: $field-list-width-24;
               }
 
               .e-sort {
@@ -643,10 +645,10 @@
 
               .e-drag {
                 font-size: $field-list-bigger-icon-size;
-                width: 24px;
+                width: $field-list-width-24;
 
                 @if ($skin-name =='fluent2') {
-                  font-size: 20px;
+                  font-size: $field-list-font-icon-20;
                 }
               }
             }
@@ -655,7 +657,7 @@
 
         .e-draggable-prompt {
           @if ($field-list-skin =='bootstrap4') {
-            font-size: 16px;
+            font-size: $field-list-font-icon-16;
           }
         }
       }
@@ -666,7 +668,7 @@
     }
 
     &.e-static {
-      max-height: 735px;
+      max-height: $field-list-height-735;
 
       .e-field-list-container {
         .e-center-title {
@@ -694,21 +696,21 @@
 
           /* stylelint-disable */
           .e-right-axis-fields {
-            padding: 0 !important;
+            padding: $field-list-spacing-0 !important;
           }
         }
       }
 
       .e-layout-footer .e-checkbox-layout .e-checkbox-wrapper label .e-label {
-        width: calc(100% - 30px);
+        width: calc($field-list-width-100p - $field-list-width-30);
       }
     }
 
     &.e-rtl {
       .e-field-table {
         .e-field-list {
-          padding-left: 0;
-          padding-right: 5px;
+          padding-left: $field-list-spacing-0;
+          padding-right: $field-list-spacing-5;
 
           &:not(.e-olap-field-list-tree) {
             ul {
@@ -716,11 +718,11 @@
 
               li.e-pivot-parent {
                 @if ($skin-name =='bootstrap5') {
-                  padding-right: 7px;
+                  padding-right: $field-list-spacing-7;
                 }
 
                 @if ($skin-name =='FluentUI') {
-                  padding-right: 8px;
+                  padding-right: $field-list-spacing-8;
                 }
               }
 
@@ -733,8 +735,8 @@
           }
 
           .e-drag {
-            margin-left: 4px !important;
-            margin-right: 0 !important;
+            margin-left: $field-list-spacing-4 !important;
+            margin-right: $field-list-spacing-0 !important;
           }
 
           .e-calc-measure-icon,
@@ -748,8 +750,8 @@
           .e-kpiStatus-icon,
           .e-kpiTrend-icon,
           .e-kpiValue-icon {
-            margin-left: 0;
-            margin-right: 10px;
+            margin-left: $field-list-spacing-0;
+            margin-right: $field-list-spacing-10;
           }
 
           /* stylelint-enable */
@@ -765,7 +767,7 @@
           .e-sort-none,
           .e-sort-ascend,
           .e-sort-descend {
-            padding: 0 $field-list-bigger-icon-to-icon-padding 0 0;
+            padding: $field-list-spacing-0 $field-list-bigger-icon-to-icon-padding $field-list-spacing-0 $field-list-spacing-0;
           }
         }
       }
@@ -774,7 +776,7 @@
 
         .e-left-axis-fields,
         .e-right-axis-fields {
-          padding-left: 0;
+          padding-left: $field-list-spacing-0;
           padding-right: $field-list-default-padding-size;
         }
 
@@ -790,7 +792,7 @@
             .e-remove,
             .e-dropdown-icon,
             .e-edit {
-              padding-left: 0;
+              padding-left: $field-list-spacing-0;
               padding-right: $field-list-bigger-icon-to-icon-padding;
             }
           }
@@ -800,24 +802,24 @@
 
     &.e-search-mode {
       &.e-static {
-        max-height: 750px;
+        max-height: $field-list-height-750;
 
         .e-field-list-container {
-          max-height: 800px;
+          max-height: $field-list-height-800;
 
           .e-field-table {
-            height: 270px;
+            height: $field-list-height-270;
           }
         }
       }
 
       /* stylelint-disable */
-      &.e-popup {
-        max-height: 600px !important;
+      &.e-popup:not(.e-device) {
+        max-height: $field-list-height-600 !important;
         min-height: $field-list-search-popup-container-bigger-height !important;
 
         .e-field-list-container {
-          height: 387px;
+          height: $field-list-height-387;
 
           @if ($skin-name =='fluent2') {
             height: 397px;
@@ -828,7 +830,7 @@
 
             .e-field-list-tree-outer-div {
               @if ($skin-name =='fluent2' or $skin-name =='tailwind') {
-                height: 310px !important;
+                height: $field-list-height-310 !important;
               }
             }
           }

@@ -1,3 +1,5 @@
+@use 'ej2-base/styles/common/mixin' as *;
+@use '../material-definition' as *;
 @include export-module('spreadsheet-material-icons') {
   .e-spreadsheet {
     & .e-findtool-dlg {
@@ -1040,6 +1042,146 @@
     & .e-password-protect-icon {
       &::before {
         content: '\e88a';
+      }
+    }
+  }
+
+  .e-spreadsheet,
+  .e-spreadsheet-contextmenu {
+    & .e-comment-add {
+      &::before {
+        content: '\e814';
+      }
+    }
+
+    & .e-multiple-comment {
+      &::before {
+        content: '\e97a';
+      }
+    }
+
+    & .e-previous-comment {
+      &::before {
+        content: '\e9ef';
+      }
+    }
+
+    & .e-next-comment {
+      &::before {
+        content: '\e9f0';
+      }
+    }
+
+    & .e-close-comment {
+      &::before {
+        content: '\e9f1';
+      }
+    }
+
+    & .e-comment-reopen {
+      &::before {
+        content: '\e818';
+      }
+    }
+
+    & .e-close {
+      &::before {
+        content: '\ea7f';
+      }
+    }
+
+    & .e-notes {
+      &::before {
+        content: '\e72d';
+      }
+    }
+
+    & .e-add-notes {
+      &::before {
+        content: '\e9ba';
+      }
+    }
+
+    & .e-previous-note {
+      &::before {
+        content: '\ea20';
+      }
+    }
+
+    & .e-next-note {
+      &::before {
+        content: '\ea1f';
+      }
+    }
+
+    & .e-all-notes {
+      &::before {
+        content: '\ea1e';
+      }
+    }
+
+    & .e-edit-notes {
+      &::before {
+        content: '\e9bb';
+      }
+    }
+
+    & .e-delete-notes {
+      &::before {
+        content: '\e9bc';
+      }
+    }
+
+    .e-comment-container,
+    .e-pane-container {
+      & .e-send {
+        &::before {
+          content: '\e816';
+        }
+      }
+
+      & .e-more-horizontal-1 {
+        &::before {
+          content: '\e615';
+        }
+      }
+
+      & .e-undo {
+        &::before {
+          content: '\e341';
+        }
+      }
+
+      & .e-edit {
+        &::before {
+          content: '\e891';
+        }
+      }
+
+      & .e-check {
+        &::before {
+          content: '\e935';
+        }
+      }
+
+      & .e-trash {
+        &::before {
+          content: '\e94a';
+        }
+      }
+    }
+
+    .e-review-panel {
+      & .e-filter {
+        &::before {
+          content: '\e251';
+        }
+      }
+
+      & .e-filter-active {
+        &::before {
+          content: '\ebb3';
+        }
       }
     }
   }

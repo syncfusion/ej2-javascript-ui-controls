@@ -1,3 +1,5 @@
+@use 'ej2-base/styles/common/mixin' as *;
+@use '../tailwind3-definition' as *;
 @include export-module('pdfviewer-bootstrap-icons') {
   .e-pdfviewer {
     .e-pv-icon::before {
@@ -6,7 +8,7 @@
 
     .e-pv-icon-search::before {
       font-family: 'e-icons';
-      font-size: 12px;
+      font-size: $pv-text-xs;
     }
 
     .e-pv-open-document-icon::before {
@@ -122,7 +124,7 @@
 
     .e-pv-resize-icon::before {
       content: '\e7e3';
-      font-size: 10px;
+      font-size: $pv-text-xxs;
     }
 
     .e-pv-text-select-tool-icon::before {
@@ -434,7 +436,7 @@
 
   .e-pv-annotation-stamp-container .e-menu-wrapper ul .e-menu-item .e-caret::before {
     content: '\e734';
-    font-size: 18px;
+    font-size: $pv-text-lg;
   }
 
   .e-pv-freetext-icon::before {
@@ -554,6 +556,10 @@
     content: '\E80b';
     font-family: 'e-icons';
   }
+  .e-pv-text-redact-icon::before {
+    content: '\e94f';
+    font-family: 'e-icons';
+  }
   .e-pv-redact-pages-icon::before {
     content: '\e893';
     font-family: 'e-icons';
@@ -572,6 +578,10 @@
   }
   .e-pv-multiple-comment::before {
     content: '\e8bc';
+    font-family: 'e-icons';
+  }
+  .e-pv-extract-page-icon::before {
+    content: '\e95a';
     font-family: 'e-icons';
   }
 }

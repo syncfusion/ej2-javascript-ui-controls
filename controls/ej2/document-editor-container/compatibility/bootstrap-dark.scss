@@ -3,7 +3,7 @@ $imported-modules: () !default;
 .e-lib {
     @at-root
     {
-        @import "../bootstrap-dark.scss";
+        @use "../bootstrap-dark" as *;
     }
 
     & .e-js [class^='e-'], & .e-js [class*=' e-'] {

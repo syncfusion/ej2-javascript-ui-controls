@@ -1,3 +1,4 @@
+import { PdfColor } from '@syncfusion/ej2-pdf';
 export class _TextState {
     _ctm: number[];
     _fontName: string;
@@ -13,7 +14,7 @@ export class _TextState {
     _textRise: number;
     _identityMatrix: number[] = [1, 0, 0, 1, 0, 0];
     _fontIdentityMatrix: number[] = [0.001, 0, 0, 0.001, 0, 0];
-    _textColor: number[] = [];
+    _textColor: PdfColor;
     constructor() {
         this._ctm = this._identityMatrix;
         this._fontName = null;

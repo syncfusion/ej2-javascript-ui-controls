@@ -1,24 +1,40 @@
+@use 'ej2-base/styles/definition/fluent2' as *;
+@forward 'ej2-base/styles/definition/fluent2';
 $appbar-bg-color-primary: $primary !default;
 $appbar-color-primary: $primary-text-color !default;
 $appbar-border-color-primary: $primary !default;
 $appbar-font-size: $text-sm !default;
 $appbar-bigger-font-size: $text-base !default;
 $appbar-border: $appbar-border-color-alt1 !default;
+$appbar-bigger-height: 56px !default;
+$appbar-bigger-dense-height: 48px !default;
+$appbar-bigger-prominent-height: 112px !default;
+$appbar-nrml-height: 48px !default;
+$appbar-nrml-padding: 8px !default;
+$appbar-border-radius: $radius-4 !default;
+$appbar-content-height: 100% !default;
+$appbar-nrml-prominent-height: 94px !default;
+$appbar-nrml-dense-height: 50px !default;
+$appbar-separator-height: 24px !default;
+$appbar-border-width: 1px !default;
+$appbar-input-group-icon-border: none !default;
+$appbar-bigger-padding: 16px !default;
+$appbar-bgr-prominent-height: 132px !default;
 
 /* stylelint-disable */
 .e-appbar {
   &.e-light {
-    border-bottom: 1px solid $appbar-border !important;
+    border-bottom: $appbar-border-width solid $appbar-border !important;
   }
   &.e-horizontal-bottom {
-    border-top: 1px solid $appbar-border !important;
+    border-top: $appbar-border-width solid $appbar-border !important;
   }
 }
 
 .e-bigger .e-appbar,
 .e-appbar.e-bigger {
-  padding: 16px !important;
+  padding: $appbar-bigger-padding !important;
   &.e-prominent {
-    height: 132px;
+    height: $appbar-bgr-prominent-height;
   }
 }

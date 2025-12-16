@@ -1,4 +1,3 @@
-
 import { ChildProperty, compile as baseTemplateComplier, setValue, Internationalization, isUndefined } from '@syncfusion/ej2-base';
 import { extend as baseExtend, isNullOrUndefined, getValue, classList, NumberFormatOptions } from '@syncfusion/ej2-base';
 import { setStyleAttribute, addClass, attributes, remove, createElement, DateFormatOptions, removeClass } from '@syncfusion/ej2-base';
@@ -2098,7 +2097,14 @@ export function addStickyColumnPosition(gObj: IGrid, column: Column, node: Eleme
  * @hidden
  */
 export function getCellsByTableName(gObj: IGrid, col: Column, rowIndex: number): Element[] {
-    return [].slice.call(gObj.getDataRows()[parseInt(rowIndex.toString(), 10)].getElementsByClassName(literals.rowCell));
+    const rowCellArgs: { rowIndex: number, elements: HTMLElement[] | null } = { rowIndex: rowIndex, elements: null };
+    gObj.notify('get-row-cells', rowCellArgs);
+    if (rowCellArgs.elements) {
+        return rowCellArgs.elements;
+    }
+    else {
+        return [].slice.call(gObj.getDataRows()[parseInt(rowIndex.toString(), 10)].getElementsByClassName(literals.rowCell));
+    }
 }
 
 /**

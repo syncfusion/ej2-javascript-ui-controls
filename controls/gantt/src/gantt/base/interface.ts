@@ -19,6 +19,7 @@ import { TimelineViewMode } from '../base/enum';
 import { TimelineTierSettingsModel } from '../models/timeline-settings-model';
 import { EventMarkerModel } from '../models/event-marker-model';
 import { PdfPaddings } from '../export/pdf-base/index';
+import { CalendarContext } from './calendar-context';
 /**
  * Specifies Gantt-chart interfaces
  *
@@ -205,6 +206,10 @@ export interface ITaskData {
     constraintDate?: Date;
     /** Defines the constraint type of the task. */
     constraintType?: ConstraintType;
+    /** Provides the calendar context used for task scheduling, including working hours, holidays, and overrides. */
+    calendarContext?: CalendarContext
+    /** Identifies the calendar configuration to be used for this task, linking it to a specific calendar definition (e.g., project-level or resource-specific calendar). */
+    calendarId?: string
 }
 
 export interface ITaskSegment {
@@ -740,13 +745,14 @@ export interface IEventMarkerInfo{
     left?: number;
     label?: string;
     date?: Date;
+    top? : string;
 }
 export interface ActionCompleteArgs extends ZoomEventArgs, IKeyPressedEventArgs {
     element?: HTMLElement;
     requestType?: string;
     data?: IGanttData[];
     modifiedRecords?: IGanttData[];
-    modifiedTaskData?: IGanttData[];
+    modifiedTaskData?: Object[];
     cancel?: boolean;
     /** Specifies the newly added task data without custom Gantt properties.
      *

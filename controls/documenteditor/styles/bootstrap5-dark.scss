@@ -1,9 +1,8 @@
-@import 'ej2-base/styles/definition/bootstrap5-dark.scss';
-@import 'document-editor/bootstrap5-dark-definition.scss';
-@import 'document-editor/icons/bootstrap5-dark.scss';
-@import 'document-editor/all.scss';
-@import 'document-editor/bigger.scss';
-@import 'document-editor-container/bootstrap5-dark-definition.scss';
-@import 'document-editor-container/icons/bootstrap5-dark.scss';
-@import 'document-editor-container/all.scss';
-@import 'document-editor-container/bigger.scss';
+@use 'document-editor/bootstrap5-dark-definition' as *;
+@use 'document-editor/icons/bootstrap5-dark' as *;
+@use 'document-editor/all' as *;
+@use 'document-editor/bigger' as *;
+@use 'document-editor-container/bootstrap5-dark-definition' as *;
+@use 'document-editor-container/icons/bootstrap5-dark' as *;
+@use 'document-editor-container/all' as *;
+@use 'document-editor-container/bigger' as *;

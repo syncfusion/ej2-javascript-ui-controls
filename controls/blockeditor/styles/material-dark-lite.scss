@@ -1,4 +1,4 @@
-@import 'ej2-base/styles/definition/material-dark.scss';
-@import 'blockeditor/material-dark-definition.scss';
-@import 'blockeditor/icons/material-dark.scss';
-@import 'blockeditor/all.scss';
+@use 'ej2-base/styles/definition/material-dark' as *;
+@use 'blockeditor/material-dark-definition' as *;
+@use 'blockeditor/icons/material-dark' as *;
+@use 'blockeditor/all' as *;

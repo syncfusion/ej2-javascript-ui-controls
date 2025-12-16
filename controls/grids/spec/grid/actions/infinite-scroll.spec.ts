@@ -2539,3 +2539,39 @@ describe('EJ2-970106: Script Error on "Select All" Checkbox Click with Column Vi
         gridObj = null;
     });
 });
+
+describe('Infinite scroll normal mode with edit feature teating => ', () => {
+    let gridObj: Grid;
+    let dataLength = virtualData.length; let data1: number; let data2: number; let rowIndex: number = 149; let scrollTop: number;
+    let rowsCount: number;
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: virtualData,
+                enableInfiniteScrolling: true,
+                pageSettings: { pageSize: 50 },
+                editSettings: { allowAdding: true, allowEditing: true, allowDeleting: true },
+                toolbar: ['Add', 'Edit', 'Delete', 'Update', 'Cancel'],
+                height: 400,
+                columns: [
+                    { field: 'FIELD2', headerText: 'FIELD2', isPrimaryKey: true, width: 120 },
+                    { field: 'FIELD1', headerText: 'FIELD1', width: 100 },
+                    { field: 'FIELD3', headerText: 'FIELD3', width: 120 },
+                    { field: 'FIELD4', headerText: 'FIELD4', width: 120 },
+                    { field: 'FIELD5', headerText: 'FIELD5', width: 120 }
+                ]
+            }, () => {
+                setTimeout(done, 200);
+            });
+    });
+    it('Coverage for infinitescroll editing', (done: Function)=> {
+        (gridObj as any).pinnedTopRowModels = gridObj.getRowsObject()[0];
+        (gridObj as any).infiniteScrollModule.editRowIndex = 3;
+        (gridObj as any).infiniteScrollModule.getEditedRowObject();
+        done();
+    })
+    afterAll(() => {
+        destroy(gridObj);
+        gridObj = null;
+    });
+});

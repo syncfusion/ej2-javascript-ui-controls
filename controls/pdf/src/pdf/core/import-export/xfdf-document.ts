@@ -10,6 +10,7 @@ import { _PdfBaseStream, _PdfContentStream } from './../base-stream';
 import { _hexStringToByteArray, _stringToAnnotationFlags, _convertToColor, _bytesToString, _hexStringToString, _getSpecialCharacter, _getLatinCharacter, _getInheritableProperty, _getNewGuidString, _byteArrayToHexString, _stringToBytes, _annotationFlagsToString, _encode, _compressStream } from './../utils';
 import { _PdfCrossReference } from './../pdf-cross-reference';
 import { PdfCheckBoxField, PdfComboBoxField, PdfField, PdfListBoxField, PdfRadioButtonListField, PdfTextBoxField, PdfListField } from './../form/field';
+import { PdfColor, Point } from '../pdf-type';
 export abstract class _ExportHelper {
     exportAppearance: boolean;
     _asPerSpecification: boolean = false;
@@ -996,13 +997,13 @@ export class _XfdfDocument extends _ExportHelper {
             writer._writeAttributeString('page', pageIndex.toString());
             this._annotationAttributes.push('page');
             let lineAnnotation: PdfLineAnnotation;
-            let points: number[];
+            let points: Point[];
             switch (type) {
             case 'Line':
                 lineAnnotation = annotation as PdfLineAnnotation;
                 points = lineAnnotation.linePoints;
-                writer._writeAttributeString('start', points[0].toString() + ',' + points[1].toString());
-                writer._writeAttributeString('end', points[2].toString() + ',' + points[3].toString());
+                writer._writeAttributeString('start', points[0].x.toString() + ',' + points[0].y.toString());
+                writer._writeAttributeString('end', points[1].x.toString() + ',' + points[1].y.toString());
                 break;
             case 'Stamp':
                 hasAppearance = true;
@@ -1959,7 +1960,8 @@ export class _XfdfDocument extends _ExportHelper {
     _applyAttributeValues(dictionary: _PdfDictionary, attributes: NamedNodeMap): void {
         Array.from(attributes).forEach((attribute: Attr) => {
             const value: string = attribute.value;
-            let values: number[];
+            let values: PdfColor;
+            let rect: number[];
             let leaderExtend : number;
             switch (attribute.name.toLowerCase()) {
             case 'page':
@@ -1987,37 +1989,37 @@ export class _XfdfDocument extends _ExportHelper {
                 this._addString(dictionary, 'IRT', value);
                 break;
             case 'rect':
-                values = this._obtainPoints(value);
-                if (values && values.length === 4) {
-                    dictionary.update('Rect', values);
+                rect = this._obtainPoints(value);
+                if (rect && rect.length === 4) {
+                    dictionary.update('Rect', rect);
                 }
                 break;
             case 'color':
                 values = _convertToColor(value);
-                if (values && values.length === 3) {
-                    dictionary.update('C', [values[0] / 255, values[1] / 255, values[2] / 255]);
+                if (values) {
+                    dictionary.update('C', [values.r / 255, values.g / 255, values.b / 255]);
                 }
                 break;
             case 'oc':
                 if (value && dictionary.get('Subtype').name === 'Redact') {
                     values = _convertToColor(value);
-                    if (values && values.length === 3) {
-                        dictionary.update('OC', [values[0] / 255, values[1] / 255, values[2] / 255]);
+                    if (values) {
+                        dictionary.update('OC', [values.r / 255, values.g / 255, values.b / 255]);
                     }
                 }
                 break;
             case 'afc':
                 if (value && dictionary.get('Subtype').name === 'Redact') {
                     values = _convertToColor(value);
-                    if (values && values.length === 3) {
-                        dictionary.update('AFC', [values[0] / 255, values[1] / 255, values[2] / 255]);
+                    if (values) {
+                        dictionary.update('AFC', [values.r / 255, values.g / 255, values.b / 255]);
                     }
                 }
                 break;
             case 'interior-color':
                 values = _convertToColor(value);
-                if (values && values.length === 3) {
-                    dictionary.update('IC', [values[0] / 255, values[1] / 255, values[2] / 255]);
+                if (values) {
+                    dictionary.update('IC', [values.r / 255, values.g / 255, values.b / 255]);
                 }
                 break;
             case 'date':

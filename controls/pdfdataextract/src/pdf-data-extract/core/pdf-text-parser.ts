@@ -1,4 +1,4 @@
-import { _PdfCrossReference, _PdfDictionary, _PdfName, PdfPage, PdfRotationAngle } from '@syncfusion/ej2-pdf';
+import { _PdfCrossReference, _PdfDictionary, _PdfName, PdfPage, PdfRotationAngle, Rectangle, Size } from '@syncfusion/ej2-pdf';
 import { _GraphicState, _TextState } from './graphic-state';
 import { _getLiteralString, _hexToChar, _isArrayEqual, _skipEscapeSequence } from './utils';
 import { _FontStructure } from './text-extraction/font-structure';
@@ -17,8 +17,8 @@ export class _PdfTextParser {
     _index: number = 0;
     _fontSize: number =  0;
     _encodedText: string[] = [];
-    _previousRect: { x: number, y: number, width: number, height: number } = {x: 0, y: 0, width: 0 , height: 0};
-    _boundingRectangle: { x: number, y: number, width: number, height: number } = {x: 0, y: 0, width: 0 , height: 0};
+    _previousRect: Rectangle = {x: 0, y: 0, width: 0 , height: 0};
+    _boundingRectangle: Rectangle = {x: 0, y: 0, width: 0 , height: 0};
     _translateTextMatrix(x: number, y: number, textMatrix: _MatrixHelper): _MatrixHelper {
         const matrix: _MatrixHelper = new _MatrixHelper(textMatrix._m11, textMatrix._m12, textMatrix._m21, textMatrix._m22,
                                                         textMatrix._m11 * x + textMatrix._m21 * y + textMatrix._offsetX,
@@ -117,8 +117,8 @@ export class _PdfTextParser {
                 isFound = true;
                 break;
             }
-            const size: number[] = page.size;
-            yPosition = Math.floor(size[1] - y);
+            const size: Size = page.size;
+            yPosition = Math.floor(size.height - y);
             if ((bounds.y >= yPosition && yPosition >= (bounds.y - bounds.height)) || (bounds.y <= yPosition && yPosition <= (bounds.y +
                  bounds.height))) {
                 isFound = true;
@@ -150,10 +150,10 @@ export class _PdfTextParser {
     _getRelativeLocation(x: number, y: number , page: PdfPage): number[] {
         const location: number[] = [x, y];
         if (page.rotation === PdfRotationAngle.angle90) {
-            location[0] = page.size[1] - y;
+            location[0] = page.size.height - y;
             location[1] = x;
         } else if (page.rotation === PdfRotationAngle.angle270) {
-            location[0] = page.size[0] - x;
+            location[0] = page.size.width - x;
             location[1] = y;
         }
         return location;
@@ -452,7 +452,7 @@ export class _PdfTextParser {
                     encodedText[Number.parseInt(index.toString(), 10)] = glyph._fontCharacter;
                 }
                 textGlyph._text = glyph._unicode;
-                textGlyph._bounds = [bounds.x, bounds.y, bounds.width, bounds.height];
+                textGlyph._bounds = bounds;
                 textGlyph._fontName = currentFont._name;
                 textGlyph._fontStyle = currentFont._fontStyle;
                 textGlyph._fontSize = textState._fontSize;

@@ -2,51 +2,6 @@
 
 ## [Unreleased]
 
-## 31.2.18 (2025-12-09)
-
-### Schedule
-
-#### Bug fixes
-
-- `#I779062` - Fixed an issue where the Scheduler became unresponsive in agenda view when the data source was reset to empty.
-
-## 31.2.3 (2025-10-22)
-
-### Schedule
-
-#### Bug fixes
-
-- `#I746004` - Fixed an issue where appointments overlapped when a large number of them were rendered.
-- `#I738200` - Fixed an issue where the Scheduler became unresponsive when many appointments overlapped simultaneously.
-
-## 31.2.2 (2025-10-15)
-
-### Schedule
-
-#### Bug fixes
-
-- `#I757470` - An issue where cells were misaligned and events were added to the wrong cell when using the `enableLazyLoading` property has been fixed.
-- `#I770447` - The issue where the tooltip displayed incorrect content in the `Year` view has been fixed.
-
-## 31.1.21 (2025-09-23)
-
-### Schedule
-
-#### Bug fixes
-
-- `#I746117`, `#I754057` - An issue where an empty content area was rendered during virtual scrolling when using `rowAutoHeight` in combination with `overscanCount` has been resolved.
-- `#F197352` - An issue that caused appointments to overlap in the `TimelineYear` view has been fixed.
-
-## 31.1.20 (2025-09-10)
-
-### Schedule
-
-#### Bug fixes
-
-- `#I760538` - The issue where the Edit Event popup was incorrectly displayed for recurring events when `allowEditing` property set to `false` has been resolved.
-
-## 31.1.17 (2025-09-05)
-
 ### Schedule
 
 #### Features

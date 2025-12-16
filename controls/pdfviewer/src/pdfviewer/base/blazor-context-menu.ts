@@ -45,6 +45,15 @@ export class BlazorContextMenu implements IContextMenu {
         }
     }
     /**
+     * @param {string[]} items - It describes about the items
+     * @param {boolean} isEnable - It describes about the isEnable boolean
+     * @private
+     * @returns {void}
+     */
+    // eslint-disable-next-line @typescript-eslint/no-empty-function
+    public updateContextMenuItems(items: string[], isEnable: boolean): void {
+    }
+    /**
      * open the context menu.
      *
      * @param {number} top - The top.

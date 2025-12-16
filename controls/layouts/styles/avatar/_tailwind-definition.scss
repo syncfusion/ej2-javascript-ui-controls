@@ -1,3 +1,6 @@
+@use 'ej2-base/styles/definition/tailwind' as *;
+@forward 'ej2-base/styles/definition/tailwind';
+
 // Avatar Base
 $avatar-base-border-radius: 4px !default;
 $avatar-base-background-color: $content-bg-color-alt3 !default;
@@ -8,6 +11,7 @@ $avatar-base-line-height: 22px !default;
 $avatar-base-text-color: $content-text-color-alt2 !default;
 $avatar-base-font-weight: $font-weight-medium !default;
 $avatar-base-img-height: 100% !default;
+$avatar-font-family: $font-family !default;
 
 // Circle Avatar
 $avatar-circle-border-radius: 50% !default;
@@ -23,3 +27,15 @@ $avatar-base-xsmall-line-height: 16px !default;
 $avatar-base-small-line-height: 18px !default;
 $avatar-base-large-line-height: 28px !default;
 $avatar-base-xlarge-line-height: 28px !default;
+
+//Avatar Height
+$avatar-base-xsmall-height: 24px !default;
+$avatar-base-small-height: 32px !default;
+$avatar-base-large-height: 48px !default;
+$avatar-base-xlarge-height: 56px !default;
+
+//Avatar Width
+$avatar-base-xsmall-width: 24px !default;
+$avatar-base-small-width: 32px !default;
+$avatar-base-large-width: 48px !default;
+$avatar-base-xlarge-width: 56px !default;

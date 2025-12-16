@@ -3,7 +3,6 @@
  */
 import { createElement } from '@syncfusion/ej2-base';
 import { Diagram } from '../../../src/diagram/diagram';
-import { Path } from '../../../src/diagram/objects/node';
 import { NodeModel, PathModel, } from '../../../src/diagram/objects/node-model';
 import { PointPortModel } from '../../../src/diagram/objects/port-model';
 import  {profile , inMB, getMemoryProfile} from '../../../spec/common.spec';

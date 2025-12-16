@@ -1,3 +1,5 @@
+@use '../highcontrast-definition' as *;
+
 .e-tooltip-close::before {
   color: $tooltip-content-font-color;
   content: '\e953';

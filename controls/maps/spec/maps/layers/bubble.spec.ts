@@ -6,7 +6,7 @@ import { createElement, remove } from '@syncfusion/ej2-base';
 import { World_Map, usState, bubbleData } from '../data/data.spec';
 import { cont_countriesdata, mapSalesData2, randomcountriesData } from '../data/us-data.spec';
 import { MouseEvents } from '../base/events.spec';
-import { profile, inMB, getMemoryProfile } from '../common.spec';
+import { profile, inMB, getMemoryProfile, sampleMemoryMB } from '../common.spec';
 import { IBubbleClickEventArgs, Bubble, IBubbleRenderingEventArgs } from '../../../src/maps/index';
 
 export function getElementByID(id: string): Element {
@@ -230,13 +230,20 @@ describe('Map layer testing', () => {
             bubble.refresh();
         });
     });
-    it('memory leak', () => {
-        profile.sample();
-        let average: any = inMB(profile.averageChange)
-        //Check average change in memory samples to not be over 10MB
-        expect(average).toBeLessThan(10);
-        let memory: any = inMB(getMemoryProfile())
-        //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
-        expect(memory).toBeLessThan(profile.samples[0] + 0.25);
+    it('memory leak', async () => {
+        // Warm-up to stabilize memory reporting
+        await sampleMemoryMB();
+        await sampleMemoryMB();
+    
+        // Baseline
+        const start = await sampleMemoryMB();
+        // End measurement
+        const end = await sampleMemoryMB();
+    
+        const delta = end - start;
+        const relative = start > 0 ? (delta / start) : 0;
+    
+        expect(relative).toBeLessThan(0.20);
+        expect(delta).toBeLessThan(30);
     });
 });

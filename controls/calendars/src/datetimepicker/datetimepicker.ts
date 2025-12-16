@@ -602,7 +602,9 @@ export class DateTimePicker extends DatePicker {
     public focusOut(): void {
         if (document.activeElement === this.inputElement) {
             this.inputElement.blur();
-            removeClass([this.inputWrapper.container], [INPUTFOCUS]);
+            if (this.inputWrapper) {
+                removeClass([this.inputWrapper.container], [INPUTFOCUS]);
+            }
         }
 
     }

@@ -6,7 +6,7 @@ import { PathElement } from '../core/elements/path-element';
 import { TextElement } from '../core/elements/text-element';
 import { whiteSpaceToString, wordBreakToString, textAlignToString, bBoxText, bBoxTextHeight } from './base-util';
 import { Matrix, identityMatrix, transformPointByMatrix, rotateMatrix } from '../primitives/matrix';
-import { createElement, Browser } from '@syncfusion/ej2-base';
+import { createElement, Browser } from '@syncfusion/ej2-base'; /*externalscript*/
 import { BaseAttributes, TextAttributes, SubTextElement, TextBounds } from '../rendering/canvas-interface';
 
 /**
@@ -143,6 +143,9 @@ function getTextOptions(element: TextElement, maxWidth?: number): BaseAttributes
     (options as TextAttributes).color = element.style.color;
     (options as TextAttributes).italic = element.style.italic;
     (options as TextAttributes).bold = element.style.bold;
+    if (element.thickness !== undefined){
+        (options as TextAttributes).thickness = element.thickness;
+    }
     options.dashArray = ''; options.strokeWidth = element.style.strokeWidth; options.fill = '';
     return options;
 }
@@ -158,7 +161,12 @@ function wrapSvgText(text: TextAttributes, textValue?: string, maxHeight?: numbe
             txtValue += content[0];
             for (k = 0; k < content.length; k++) {
                 bounds1 = bBoxText(txtValue, text);
+                if (txtValue == '\n'){
+                    txtValue = content[k + 1];
+                    k++;
+                }
                 if (bounds1 >= text.width && txtValue.length > 0) {
+                    txtValue = content[k + 1] == '\n' ? txtValue + content[k + 1] : txtValue;
                     childNodes[childNodes.length] = { text: txtValue, x: 0, dy: 0, width: bounds1 };
                     txtValue = '';
                 } else {
@@ -168,10 +176,14 @@ function wrapSvgText(text: TextAttributes, textValue?: string, maxHeight?: numbe
                     // }
                     let width: number = bBoxText(txtValue, text);
                     if ((Math.ceil(width) + 2 >= text.width && txtValue.length > 0) || (txtValue.indexOf('\n') > -1)) {
+                        txtValue = txtValue.slice(0, -1);
+                        width = bBoxText(txtValue, text);
+                        txtValue = content[k + 1] == '\n' ? txtValue + content[k + 1] : txtValue;
                         childNodes[childNodes.length] = { text: txtValue, x: 0, dy: 0, width: width };
-                        txtValue = '';
+                        txtValue = content[k + 1] || '';
                     }
                     if (k === content.length - 1 && txtValue.length > 0) {
+                        txtValue = content[k + 1] == '\n' ? txtValue + content[k + 1] : txtValue;
                         childNodes[childNodes.length] = { text: txtValue, x: 0, dy: 0, width: width };
                         txtValue = '';
                     }
@@ -196,12 +208,23 @@ function wordWrapping(text: TextAttributes, textValue?: string, maxHeight?: numb
 
     let existingWidth: number;
     let existingText: string;
+    let height: number = 0;
+    let thicknessInPixel: number = text.thickness * (96 / 72);
+    // The padding has been added to remove the overflow text such that text would be contained within the bounds.
+    const topPadding: number = text.thickness !== undefined ? (thicknessInPixel) * 4 : 5;
     for (j = 0; j < eachLine.length; j++) {
         txt = '';
+        if (childNodes.length > 0 && ((childNodes.length * text.fontSize * 1.2) + topPadding) > maxHeight) {
+            break;
+        }
         words = text.textWrapping !== 'NoWrap' ? eachLine[parseInt(j.toString(), 10)].split(' ') : eachLine;
+        const exactMaxHeight: number = text.thickness !== undefined ? Math.floor(maxHeight) : maxHeight;
         for (i = 0; i < words.length; i++) {
+            const exactTextHeight: number = text.thickness !== undefined ? Math.ceil(height) : height;
             bounds1 = bBoxText(words[parseInt(i.toString(), 10)] as string, text);
-            if (bounds1 > text.width && (words[parseInt(i.toString(), 10)] as string).length > 0 && text.textWrapping !== 'NoWrap') {
+            //Used to get the word width including thickness.
+            const wordWidth: number = text.thickness !== undefined ? thicknessInPixel * 4 + bounds1 : bounds1;
+            if (wordWidth > text.width && (words[parseInt(i.toString(), 10)] as string).length > 0 && text.textWrapping !== 'NoWrap' && exactTextHeight < exactMaxHeight) {
                 if (eachLine.length > 1) {
                     words[parseInt(i.toString(), 10)] = words[parseInt(i.toString(), 10)] + '\n';
                 }
@@ -209,21 +232,60 @@ function wordWrapping(text: TextAttributes, textValue?: string, maxHeight?: numb
                 childNodes = wrapText(text, txtValue, childNodes, maxHeight);
             } else {
                 txtValue += (((i !== 0 || words.length === 1) && wrap && txtValue.length > 0) ? ' ' : '') + words[parseInt(i.toString(), 10)];
-                newText = txtValue + (words[i + 1] || '');
+                let spaceWithText: string = text.thickness !== undefined && i + 1 != words.length ? ' ' : '';
+                newText = txtValue + spaceWithText + (words[i + 1] || '');
                 let width: number = bBoxText(newText, text);
                 if (eachLine.length > 1 && i === words.length - 1) {
                     txtValue = txtValue + '\n';
                 }
-                if (Math.floor(width) > text.width - 2 && txtValue.length > 0) {
+                const isNewlineOnly: boolean = txtValue === '\n';
+                const isLastWordAndNextLineEmpty: boolean = (i + 1 >= words.length &&  eachLine[parseInt((j + 1).toString(), 10)] === '');
+                let calculatedWidth: number = text.thickness !== undefined ? Math.ceil(thicknessInPixel) * 4 + Math.ceil(width) + 2 : Math.ceil(width) + 2;
+                let paddingBetweenWords: number = text.thickness !== undefined ? (thicknessInPixel) * 2 : 0;
+                if (childNodes.length == 0 && text.thickness !== undefined && topPadding !== 0 && topPadding > exactMaxHeight) {
+                    height = height + getHeightMultiplier(txtValue) * bBoxTextHeight(txtValue, text) + topPadding;
+                    break;
+                }
+                const exactTextWidth: number = text.thickness !== undefined ? Math.floor(text.width) : text.width;
+                if (calculatedWidth >= exactTextWidth && txtValue.length > 0) {
                     textValue = txtValue;
-                    childNodes[childNodes.length] = {
-                        text: (txtValue.indexOf('\n') === -1 && i !== words.length - 1) ? txtValue + ' ' : textValue, x: 0, dy: 0,
-                        width: newText === txtValue ? width : (txtValue === existingText) ? existingWidth : bBoxText(txtValue, text)
-                    };
+                    if ((maxHeight === undefined || maxHeight === null || exactTextHeight < exactMaxHeight || childNodes.length === 0 && text.fontSize * 1.2 > maxHeight)) {
+                        childNodes[childNodes.length] = {
+                            text: (txtValue.indexOf('\n') === -1 && i !== words.length - 1) ? txtValue + ' ' : textValue, x: 0, dy: 0,
+                            width: newText === txtValue ? width : (txtValue === existingText) ? existingWidth : bBoxText(txtValue, text)
+                        };
+                        if (text.textAlign === 'justify' && text.thickness !== undefined) {
+                            childNodes[childNodes.length - 1].width = Math.floor(text.width)
+                        }
+                    } else if (text.thickness !== undefined && exactTextHeight >= exactMaxHeight && bBoxTextHeight(txtValue, text) > paddingBetweenWords) {
+                        childNodes[childNodes.length] = {
+                            text: txtValue.indexOf('\n') === -1 && i !== words.length ? txtValue + ' ' : textValue, x: 0, dy: 0,
+                            width: newText === txtValue ? width : txtValue === existingText ? existingWidth : bBoxText(txtValue, text)
+                        };
+                        if (text.textAlign === 'justify' && text.thickness !== undefined) {
+                            childNodes[childNodes.length - 1].width = Math.floor(text.width)
+                        }
+                        break;
+                    }
+                    const sanitizedForHeight: string = (isNewlineOnly || isLastWordAndNextLineEmpty) ? txtValue : txtValue.replace(/\n/g, '');
+                    height = height + getHeightMultiplier(sanitizedForHeight) * bBoxTextHeight(sanitizedForHeight, text) + paddingBetweenWords;
                     txtValue = '';
                 } else {
                     if (i === words.length - 1) {
-                        childNodes[childNodes.length] = { text: txtValue, x: 0, dy: 0, width: width };
+                        if ((maxHeight === undefined) || (exactTextHeight < exactMaxHeight) || childNodes.length === 0 && text.fontSize * 1.2 > maxHeight) {
+                            childNodes[childNodes.length] = { text: txtValue, x: 0, dy: 0, width: text.thickness !== undefined ? exactTextWidth : width };
+                            if (text.textAlign === 'justify' && text.thickness !== undefined) {
+                                childNodes[childNodes.length - 1].width = Math.floor(text.width)
+                            }
+                        } else if (text.thickness !== undefined && exactTextHeight >= exactMaxHeight && bBoxTextHeight(txtValue, text) > paddingBetweenWords) {
+                            childNodes[childNodes.length] = { text: txtValue, x: 0, dy: 0, width: text.thickness !== undefined ? exactTextWidth : width };
+                            if (text.textAlign === 'justify' && text.thickness !== undefined) {
+                                childNodes[childNodes.length - 1].width = Math.floor(text.width)
+                            }
+                            break;
+                        }
+                        const sanitizedForHeightEnd: string = (isNewlineOnly || isLastWordAndNextLineEmpty) ? txtValue : txtValue.replace(/\n/g, '');
+                        height = height + getHeightMultiplier(sanitizedForHeightEnd) * bBoxTextHeight(sanitizedForHeightEnd, text) + paddingBetweenWords;
                         txtValue = '';
                     }
                 }
@@ -235,6 +297,12 @@ function wordWrapping(text: TextAttributes, textValue?: string, maxHeight?: numb
     return childNodes;
 }
 /** @private */
+function getHeightMultiplier(text: string) : number{
+    const lines: string[] = text.split(/\r?\n/);
+    const hasContent: boolean = lines.some(line => line.trim().length > 0);
+    return hasContent ? lines.length : 1;
+}
+/** @private */
 function wrapText(txt: TextAttributes, textValue?: string, childNode?: SubTextElement[],
     maxHeight?: number): SubTextElement[] {
     let k: number = 0;
@@ -244,17 +312,23 @@ function wrapText(txt: TextAttributes, textValue?: string, childNode?: SubTextEl
     let height: number = 0;
     txtValue += content[0];
     let isFreeTextHeightAllowed: boolean; 
+    let additionalPadding: number = txt.thickness !== undefined ? Math.ceil(txt.thickness * (96 / 72)) * 4 : 0; 
     for (k = 0; k < content.length; k++) {
         bounds1 = bBoxText(txtValue, txt);
         if (bounds1 >= txt.width && txtValue.length > 0) {
-            childNode[childNode.length] = { text: txtValue, x: 0, dy: 0, width: bounds1 };
+            if (maxHeight + additionalPadding === undefined || maxHeight === null || height < maxHeight) {
+                childNode[childNode.length] = { text: txtValue, x: 0, dy: 0, width: bounds1 };
+            }
+            height = height +  bBoxTextHeight(txtValue, txt) + additionalPadding;
+            additionalPadding = 0;
             txtValue = '';
         } else {
             txtValue = txtValue + (content[k + 1] || '');
-            let width: number = bBoxText(txtValue, txt);
-            if ((Math.ceil(width) + 2 >= txt.width && txtValue.length > 0) || (txtValue.indexOf('\n') > -1)) {
+            let width: number = bBoxText(txtValue, txt) + additionalPadding;
+            if ((Math.ceil(width) + 2 >= txt.width && txtValue.length > 0)) {
+                height = height +  bBoxTextHeight(txtValue, txt) + additionalPadding;
+                additionalPadding = 0;  
                 txtValue = txtValue.slice(0, -1);
-                height = height +  bBoxTextHeight(txtValue, txt);
                 width = bBoxText(txtValue, txt);
                 isFreeTextHeightAllowed = ((maxHeight === undefined || maxHeight === null || height <= maxHeight));
                 if (isFreeTextHeightAllowed) {
@@ -264,7 +338,8 @@ function wrapText(txt: TextAttributes, textValue?: string, childNode?: SubTextEl
             }
             if (k === content.length - 1 && txtValue.length > 0) {
                 if (txt.strokeWidth > 1 && txt.relativeMode === 'Point') {
-                    height = height + bBoxTextHeight(txtValue, txt);
+                    height = height + bBoxTextHeight(txtValue, txt) + additionalPadding;
+                    additionalPadding = 0;
                 }
                 isFreeTextHeightAllowed = ((maxHeight === undefined || maxHeight === null || height <= maxHeight));
                 if (isFreeTextHeightAllowed) {

@@ -1,6 +1,6 @@
 import { SpreadsheetHelper } from '../util/spreadsheethelper.spec';
 import { defaultData, filterData, emptyCellData } from '../util/datasource.spec';
-import { Spreadsheet, filterByCellValue, refreshCheckbox, DialogBeforeOpenEventArgs, focus, setCell, setImage } from '../../../src/index';
+import { Spreadsheet, filterByCellValue, refreshCheckbox, DialogBeforeOpenEventArgs, focus, setCell, setImage, onContentScroll } from '../../../src/index';
 import { classList, getComponent } from '@syncfusion/ej2-base';
 
 describe('Filter ->', () => {
@@ -591,21 +591,23 @@ describe('Filter ->', () => {
             helper.click('#' + helper.id + '_sorting');
             helper.click('.e-sort-filter-ddb ul li:nth-child(5)');
             setTimeout(() => {
-                expect(helper.getElementFromSpreadsheet('.e-dialog.e-popup-open')).not.toBeNull();
+                const dialog: HTMLElement = helper.getElementFromSpreadsheet('.e-dialog.e-popup-open');
+                expect(dialog).not.toBeNull();
                 helper.setAnimationToNone('.e-dialog');
                 helper.click('.e-dialog .e-primary');
                 done();
-            });
+            }, 20);
         });
         it('Open invalid filter range dialog using context menu', (done: Function) => {
             helper.setAnimationToNone('#' + helper.id + '_contextmenu');
             helper.openAndClickCMenuItem(0, 12, [6, 4], false, false);
             setTimeout(() => {
-                //expect(helper.getElementFromSpreadsheet('.e-dialog.e-popup-open')).not.toBeNull();
+                const dialog: HTMLElement = helper.getElementFromSpreadsheet('.e-dialog.e-popup-open');
+                expect(dialog).not.toBeNull();
                 helper.setAnimationToNone('.e-dialog');
                 helper.click('.e-dialog .e-primary');
                 done();
-            });
+            }, 20);
         });
         it('Cancel opening invalid filter range dialog', (done: Function) => {
             const spreadsheet: Spreadsheet = helper.getInstance();
@@ -615,7 +617,8 @@ describe('Filter ->', () => {
             helper.click('#' + helper.id + '_sorting');
             helper.click('.e-sort-filter-ddb ul li:nth-child(5)');
             setTimeout(() => {
-                expect(helper.getElementFromSpreadsheet('.e-dialog.e-popup-open')).toBeNull(); 
+                const dialog: HTMLElement = helper.getElementFromSpreadsheet('.e-dialog.e-popup-open');
+                expect(dialog).toBeNull(); 
                 done();
             });
         });
@@ -2236,6 +2239,25 @@ describe('Filter ->', () => {
                     });
                 });
             });
+            it('EJ2-989682 - Unwanted Whitespace Strings Added in Filter Options in Spreadsheet', (done: Function) => {
+                helper.edit('K2', ' 1 ');
+                helper.edit('K3', '   ');
+                helper.edit('K4', '=LEN(K2)');
+                expect(helper.invoke('getCell', [1, 10]).textContent).toBe('1');
+                helper.getInstance().goTo('K1');
+                helper.triggerKeyNativeEvent(76, true, true);
+                const td: HTMLTableCellElement = helper.invoke('getCell', [0, 10]);
+                helper.getInstance().keyboardNavigationModule.keyDownHandler({ preventDefault: function () { }, target: td, altKey: true, keyCode: 40 });
+                setTimeout(() => {
+                    setTimeout(() => {
+                        const items = document.querySelectorAll('.e-checkboxlist .e-ftrchk');
+                        expect(items[0].textContent).not.toBe('   ');
+                        expect(items[1].textContent).not.toBe('   ');
+                        expect(items[2].textContent).not.toBe('   ');
+                        done();
+                    });
+                });
+            });
         });
     });
 
@@ -2732,6 +2754,7 @@ describe('Filter ->', () => {
             it('Scrolling and checking', (done: Function) => {
                 setTimeout(() => {
                     helper.invoke('goTo', ['D65']);
+                    helper.getInstance().notify(onContentScroll, { scrollTop: 1280, scrollLeft: 0 });                    
                     setTimeout(() => {
                         expect(helper.getInstance().element.querySelectorAll('.e-ss-overlay.e-ss-overlay-active').length > 0).toBeTruthy();
                         const spreadsheet: any = helper.getInstance();

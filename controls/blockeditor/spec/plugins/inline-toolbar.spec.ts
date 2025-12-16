@@ -1,6 +1,10 @@
 import { createElement } from '@syncfusion/ej2-base';
-import { BlockEditor, BlockType, ContentType, BuiltInToolbar, getBlockContentElement, PopupRenderer, ToolbarRenderer, TooltipRenderer, getSelectedRange, setCursorPosition, ContentModel, BaseStylesProp, Styles } from '../../src/index';
 import { createEditor } from '../common/util.spec';
+import { setCursorPosition, getBlockContentElement, getSelectedRange } from '../../src/common/utils/index';
+import { BlockType, ContentType, CommandName } from '../../src/models/enums';
+import { BlockEditor, ToolbarRenderer, TooltipRenderer } from '../../src/index';
+import { BaseChildrenProp, BaseStylesProp, ContentModel, ILabelContentSettings, IMentionContentSettings, Styles } from '../../src/models/index';
+import { PopupRenderer } from '../../src/block-manager/renderer/common/popup-renderer';
 
 describe('Inline Toolbar Module', () => {
     beforeAll(() => {
@@ -23,8 +27,8 @@ describe('Inline Toolbar Module', () => {
                 blocks: [
                     {
                         id: 'paragraph-1',
-                        type: BlockType.Paragraph,
-                        content: [{ id: 'paragraph-content-1', type: ContentType.Text, content: 'Hello world' }]
+                        blockType: BlockType.Paragraph,
+                        content: [{ id: 'paragraph-content-1', contentType: ContentType.Text, content: 'Hello world' }]
                     }
                 ]
             });
@@ -42,7 +46,7 @@ describe('Inline Toolbar Module', () => {
         it('should display inline toolbar on text selection', (done) => {
             setTimeout(() => {
                 const blockElement = editorElement.querySelector('#paragraph-1') as HTMLElement;
-                editor.setFocusToBlock(blockElement);
+                editor.blockManager.setFocusToBlock(blockElement);
                 editor.setSelection('paragraph-content-1', 0, 4);
                 const mouseUpEvent = new MouseEvent('mouseup', {
                     view: window,
@@ -51,8 +55,9 @@ describe('Inline Toolbar Module', () => {
                 });
                 editorElement.dispatchEvent(mouseUpEvent);
                 setTimeout(() => {
-                    expect(editorElement.querySelector('#' + editor.currentFocusedBlock.id)).toBe(blockElement);
+                    expect(editorElement.querySelector('#' + editor.blockManager.currentFocusedBlock.id)).toBe(blockElement);
                     expect(document.querySelector('.e-blockeditor-inline-toolbar-popup').classList.contains('e-popup-open')).toBe(true);
+                    expect(editor.inlineToolbarSettings.items.length).toBe(6);
                     done();
                 }, 100);
             }, 200);
@@ -61,7 +66,7 @@ describe('Inline Toolbar Module', () => {
         it('should handle inline toolbar item click', (done) => {
             setTimeout(() => {
                 const blockElement = editorElement.querySelector('#paragraph-1') as HTMLElement;
-                editor.setFocusToBlock(blockElement);
+                editor.blockManager.setFocusToBlock(blockElement);
                 editor.setSelection('paragraph-content-1', 0, 5);
                 
                 const mouseUpEvent = new MouseEvent('mouseup', {
@@ -82,10 +87,10 @@ describe('Inline Toolbar Module', () => {
                         const contentElement = getBlockContentElement(blockElement);
                         expect(contentElement.querySelector('strong')).not.toBeNull();
                         expect(contentElement.querySelector('strong').textContent).toBe('Hello');
-                        expect((editor.blocks[0].content[0].props as BaseStylesProp).styles.bold).toBe(true);
+                        expect((editor.blocks[0].content[0].properties as BaseStylesProp).styles.bold).toBe(true);
                         
                         let itemClickedCalled = false;
-                        editor.inlineToolbar.itemClicked = (args) => {
+                        editor.inlineToolbarSettings.itemClick = (args) => {
                             itemClickedCalled = true;
                             args.cancel = true;
                         };
@@ -96,9 +101,188 @@ describe('Inline Toolbar Module', () => {
                         setTimeout(() => {
                             expect(itemClickedCalled).toBe(true);
                             expect(contentElement.querySelector('em')).toBeNull();
-                            
+                            const contentModel = editor.blocks[0].content[0];
+                            const styles = (contentModel.properties as BaseStylesProp).styles;              
+                            expect(styles.italic).toBeFalsy(); 
                             done();
                         }, 100);
+                    }, 100);
+                }, 100);
+            }, 200);
+        });
+
+        it('should render inline toolbar with string items', (done) => {
+            const getToolbar = (): HTMLElement => document.querySelector('.e-blockeditor-inline-toolbar-popup') as HTMLElement;
+            const getButton = (command: string): HTMLElement =>
+                getToolbar().querySelector(`[data-command="${command}"]`) as HTMLElement;
+            const getContentEl = (blockEl: HTMLElement): HTMLElement => getBlockContentElement(blockEl);
+            setTimeout(() => {
+                editor.inlineToolbarSettings.items = ['Bold', 'Italic', 'Underline', 'Strikethrough'];
+                editor.dataBind();
+                const blockElement = editorElement.querySelector('#paragraph-1') as HTMLElement;
+                editor.blockManager.setFocusToBlock(blockElement);
+                editor.setSelection('paragraph-content-1', 0, 5); // "Hello"
+                const mouseUpEvent = new MouseEvent('mouseup', { view: window, bubbles: true, cancelable: true });
+                editorElement.dispatchEvent(mouseUpEvent);
+                setTimeout(() => {
+                const toolbar = getToolbar();
+                expect(toolbar).toBeTruthy();
+                expect(toolbar.classList.contains('e-popup-open')).toBe(true);
+                getButton('Bold').dispatchEvent(new MouseEvent('click', { bubbles: true }));
+                setTimeout(() => {
+                    const contentEl = getContentEl(blockElement);
+                    const strong = contentEl.querySelector('strong');
+                    expect(strong).not.toBeNull();
+                    expect(strong!.textContent).toBe('Hello');
+                    expect((editor.blocks[0].content[0].properties as BaseStylesProp).styles.bold).toBe(true);
+                    getButton('Italic').dispatchEvent(new MouseEvent('click', { bubbles: true }));
+                    setTimeout(() => {
+                    const em = contentEl.querySelector('em, i'); // support either tag
+                    expect(em).not.toBeNull();
+                    expect((editor.blocks[0].content[0].properties as BaseStylesProp).styles.italic).toBe(true);
+                    getButton('Underline').dispatchEvent(new MouseEvent('click', { bubbles: true }));
+                    setTimeout(() => {
+                        const underline = contentEl.querySelector('u');
+                        expect(underline).not.toBeNull();
+                        expect((editor.blocks[0].content[0].properties as BaseStylesProp).styles.underline).toBe(true);
+                        getButton('Strikethrough').dispatchEvent(new MouseEvent('click', { bubbles: true }));
+                        setTimeout(() => {
+                        const strike = contentEl.querySelector('s, strike, del');
+                        expect(strike).not.toBeNull();
+                        const styles = (editor.blocks[0].content[0].properties as BaseStylesProp).styles as Record<string, any>;
+                        expect(Boolean(styles.strikethrough)).toBe(true);
+                        done();
+                        }, 100);
+                    }, 100);
+                    }, 100);
+                }, 100);
+                }, 100);
+            }, 200);
+        });
+
+        it('should apply Subscript from inline toolbar', (done) => {
+            const getToolbar = (): HTMLElement =>
+                document.querySelector('.e-blockeditor-inline-toolbar-popup') as HTMLElement;
+            const getButton = (command: string): HTMLElement =>
+                getToolbar().querySelector(`[data-command="${command}"]`) as HTMLElement;
+            const getContentEl = (blockEl: HTMLElement): HTMLElement => getBlockContentElement(blockEl);
+            setTimeout(() => {
+                editor.inlineToolbarSettings.items = ['Subscript'];
+                editor.dataBind();
+                const blockElement = editorElement.querySelector('#paragraph-1') as HTMLElement;
+                editor.blockManager.setFocusToBlock(blockElement);
+                editor.setSelection('paragraph-content-1', 0, 5); // "Hello"
+                const mouseUpEvent = new MouseEvent('mouseup', { view: window, bubbles: true, cancelable: true });
+                editorElement.dispatchEvent(mouseUpEvent);
+                setTimeout(() => {
+                    const toolbar = getToolbar();
+                    expect(toolbar.classList.contains('e-popup-open')).toBe(true);
+                    getButton('Subscript').dispatchEvent(new MouseEvent('click', { bubbles: true }));
+                    setTimeout(() => {
+                        const contentEl = getContentEl(blockElement);
+                        const sub = contentEl.querySelector('sub');
+                        expect(sub).not.toBeNull();
+                        expect(sub!.textContent).toBe('Hello');
+                        const styles = (editor.blocks[0].content[0].properties as BaseStylesProp).styles as Record<string, any>;
+                        expect(Boolean(styles.subscript)).toBe(true);
+                        done();
+                    }, 100);
+                }, 100);
+            }, 200);
+        });
+
+        it('should apply Superscript from inline toolbar', (done) => {
+            const getToolbar = (): HTMLElement =>
+                document.querySelector('.e-blockeditor-inline-toolbar-popup') as HTMLElement;
+            const getButton = (command: string): HTMLElement =>
+                getToolbar().querySelector(`[data-command="${command}"]`) as HTMLElement;
+            const getContentEl = (blockEl: HTMLElement): HTMLElement => getBlockContentElement(blockEl);
+            setTimeout(() => {
+                editor.inlineToolbarSettings.items = ['Superscript'];
+                editor.dataBind();
+                const blockElement = editorElement.querySelector('#paragraph-1') as HTMLElement;
+                editor.blockManager.setFocusToBlock(blockElement);
+                editor.setSelection('paragraph-content-1', 0, 5); // "Hello"
+                const mouseUpEvent = new MouseEvent('mouseup', { view: window, bubbles: true, cancelable: true });
+                editorElement.dispatchEvent(mouseUpEvent);
+                setTimeout(() => {
+                    const toolbar = getToolbar();
+                    expect(toolbar.classList.contains('e-popup-open')).toBe(true);
+                    getButton('Superscript').dispatchEvent(new MouseEvent('click', { bubbles: true }));
+                    setTimeout(() => {
+                        const contentEl = getContentEl(blockElement);
+                        const sup = contentEl.querySelector('sup');
+                        expect(sup).not.toBeNull();
+                        expect(sup!.textContent).toBe('Hello');
+                        const styles = (editor.blocks[0].content[0].properties as BaseStylesProp).styles as Record<string, any>;
+                        expect(Boolean(styles.superscript)).toBe(true);
+                        done();
+                    }, 100);
+                }, 100);
+            }, 200);
+        });
+
+        it('should apply Uppercase from inline toolbar', (done) => {
+            const getToolbar = (): HTMLElement =>
+                document.querySelector('.e-blockeditor-inline-toolbar-popup') as HTMLElement;
+            const getButton = (command: string): HTMLElement =>
+                getToolbar().querySelector(`[data-command="${command}"]`) as HTMLElement;
+            const getContentEl = (blockEl: HTMLElement): HTMLElement => getBlockContentElement(blockEl);
+
+            setTimeout(() => {
+                editor.inlineToolbarSettings.items = [ 'Uppercase' ];
+                editor.dataBind();
+
+                const blockElement = editorElement.querySelector('#paragraph-1') as HTMLElement;
+                editor.blockManager.setFocusToBlock(blockElement);
+                editor.setSelection('paragraph-content-1', 0, 5); // "Hello"
+
+                const mouseUpEvent = new MouseEvent('mouseup', { view: window, bubbles: true, cancelable: true });
+                editorElement.dispatchEvent(mouseUpEvent);
+
+                setTimeout(() => {
+                    const toolbar = getToolbar();
+                    expect(toolbar.classList.contains('e-popup-open')).toBe(true);
+
+                    getButton('Uppercase').dispatchEvent(new MouseEvent('click', { bubbles: true }));
+
+                    setTimeout(() => {
+                        const contentEl = getContentEl(blockElement);
+                        expect(contentEl.innerText).toContain('HELLO world');
+                        done();
+                    }, 100);
+                }, 100);
+            }, 200);
+        });
+
+        it('should apply Lowercase from inline toolbar', (done) => {
+            const getToolbar = (): HTMLElement =>
+                document.querySelector('.e-blockeditor-inline-toolbar-popup') as HTMLElement;
+            const getButton = (command: string): HTMLElement =>
+                getToolbar().querySelector(`[data-command="${command}"]`) as HTMLElement;
+            const getContentEl = (blockEl: HTMLElement): HTMLElement => getBlockContentElement(blockEl);
+
+            setTimeout(() => {
+                editor.inlineToolbarSettings.items = [ 'Lowercase' ];
+                editor.dataBind();
+
+                const blockElement = editorElement.querySelector('#paragraph-1') as HTMLElement;
+                editor.blockManager.setFocusToBlock(blockElement);
+                editor.setSelection('paragraph-content-1', 0, 5); // "Hello"
+
+                const mouseUpEvent = new MouseEvent('mouseup', { view: window, bubbles: true, cancelable: true });
+                editorElement.dispatchEvent(mouseUpEvent);
+
+                setTimeout(() => {
+                    const toolbar = getToolbar();
+                    expect(toolbar.classList.contains('e-popup-open')).toBe(true);
+
+                    getButton('Lowercase').dispatchEvent(new MouseEvent('click', { bubbles: true }));
+
+                    setTimeout(() => {
+                        const contentEle = getContentEl(blockElement);
+                        expect(contentEle.innerText).toContain('hello world');
+                        done();
                     }, 100);
                 }, 100);
             }, 200);
@@ -110,25 +294,25 @@ describe('Inline Toolbar Module', () => {
                 blocks: [
                     {
                         id: 'paragraph-1',
-                        type: BlockType.Paragraph,
+                        blockType: BlockType.Paragraph,
                         content: [
                             { 
                                 id: 'content-1', 
-                                type: ContentType.Text, 
+                                contentType: ContentType.Text, 
                                 content: 'Bold and italic ', 
-                                props: { styles: { bold: true, italic: true }  }
+                                properties: { styles: { bold: true, italic: true }  }
                             },
                             { 
                                 id: 'content-2', 
-                                type: ContentType.Text, 
+                                contentType: ContentType.Text, 
                                 content: 'Bold only ', 
-                                props: { styles: { bold: true } }
+                                properties: { styles: { bold: true } }
                             },
                             { 
                                 id: 'content-3', 
-                                type: ContentType.Text, 
+                                contentType: ContentType.Text, 
                                 content: 'No formatting', 
-                                props: { styles: {} }
+                                properties: { styles: {} }
                             }
                         ]
                     }
@@ -138,7 +322,7 @@ describe('Inline Toolbar Module', () => {
             
             setTimeout(() => {
                 const blockElement = editorElement.querySelector('#paragraph-1') as HTMLElement;
-                editor.setFocusToBlock(blockElement);
+                editor.blockManager.setFocusToBlock(blockElement);
                 
                 const contentElement = getBlockContentElement(blockElement);
                 
@@ -192,7 +376,7 @@ describe('Inline Toolbar Module', () => {
         it('should handle color picker changes', (done) => {
             setTimeout(() => {
                 const blockElement = editorElement.querySelector('#paragraph-1') as HTMLElement;
-                editor.setFocusToBlock(blockElement);
+                editor.blockManager.setFocusToBlock(blockElement);
                 editor.setSelection('paragraph-content-1', 0, 5);
                 
                 editorElement.dispatchEvent(new MouseEvent('mouseup', { bubbles: true }));
@@ -219,7 +403,11 @@ describe('Inline Toolbar Module', () => {
                             // Should update the color icon in the toolbar
                             const colorIcon = colorDropdown.querySelector('.e-inline-color-icon');
                             expect((colorIcon as HTMLElement).style.borderBottomColor).not.toBe('#000000');
-                            
+                            const contentModel = editor.blocks[0].content[0];
+                            const styles = (contentModel.properties as BaseStylesProp).styles;
+
+                            expect(typeof styles.color).toBe('string');
+                            expect(styles.color).toBe('rgba(244,67,54,1)');
                             done();
                         }, 100);
                     }, 100);
@@ -229,30 +417,36 @@ describe('Inline Toolbar Module', () => {
 
         it('should handle colorpicker changes properly', () => {
             const blockElement = editorElement.querySelector('#paragraph-1') as HTMLElement;
-            editor.setFocusToBlock(blockElement);
+            editor.blockManager.setFocusToBlock(blockElement);
             editor.setSelection('paragraph-content-1', 0, 4);
-            (editor.inlineToolbarModule as any).handleColorChange('bgColor', {
-                currentValue: {
-                    rgba: 'rgb(255, 132, 132)',
-                }
+            
+            (editor.blockManager.inlineToolbarModule as any).handleColorChange({
+                type: 'backgroundColor',
+                value: 'rgb(255, 132, 132)'
             });
             const tbarIcon = document.querySelector('.e-inline-bgColor-icon') as HTMLElement;
             expect(tbarIcon.style.borderBottomColor).toBe('rgb(255, 132, 132)');
+            const contentModel = editor.blocks[0].content[0];
+            const styles = (contentModel.properties as BaseStylesProp).styles;
+
+            expect(typeof styles.backgroundColor).toBe('string');
+            expect(styles.backgroundColor).toBe('rgb(255, 132, 132)');
+
         });
         
         it('should handle property changes', (done) => {
             setTimeout(() => {
-                const originalWidth = editor.inlineToolbar.width;
-                editor.inlineToolbar.width = '500px';
+                const originalWidth = editor.inlineToolbarSettings.popupWidth;
+                editor.inlineToolbarSettings.popupWidth = '500px';
                 
                 setTimeout(() => {
                     const popup = document.querySelector('.e-blockeditor-inline-toolbar-popup');
                     expect((popup as HTMLElement).style.width).toBe('500px');
                     
-                    const originalItems = [...editor.inlineToolbar.items];
-                    editor.inlineToolbar.items = [
-                        { id: 'bold', iconCss: 'e-icons e-bold', tooltip: 'Bold', item: BuiltInToolbar.Bold, htmlAttributes: { 'data-command': BuiltInToolbar.Bold } },
-                        { id: 'italic', iconCss: 'e-icons e-italic', tooltip: 'Italic', item: BuiltInToolbar.Italic, htmlAttributes: { 'data-command': BuiltInToolbar.Italic } },
+                    const originalItems = [...editor.inlineToolbarSettings.items];
+                    editor.inlineToolbarSettings.items = [
+                        { id: 'bold', iconCss: 'e-icons e-bold', tooltipText: 'Bold', command: CommandName.Bold, htmlAttributes: { 'data-command': CommandName.Bold } },
+                        { id: 'italic', iconCss: 'e-icons e-italic', tooltipText: 'Italic', command: CommandName.Italic, htmlAttributes: { 'data-command': CommandName.Italic } },
                     ];
                     
                     setTimeout(() => {
@@ -260,66 +454,10 @@ describe('Inline Toolbar Module', () => {
                         const toolbarItems = toolbar.querySelectorAll('.e-toolbar-item');
                         expect(toolbarItems.length).toBe(2);
                         
-                        editor.inlineToolbar.width = originalWidth;
-                        expect(editor.inlineToolbar.items.length).toBe(2);
+                        editor.inlineToolbarSettings.popupWidth = originalWidth;
+                        expect(editor.inlineToolbarSettings.items.length).toBe(2);
                         
                         done();
-                    }, 100);
-                }, 100);
-            }, 200);
-        });
-        
-        it('should show and hide toolbar programmatically', (done) => {
-            setTimeout(() => {
-                const blockElement = editorElement.querySelector('#paragraph-1') as HTMLElement;
-                editor.setFocusToBlock(blockElement);
-                editor.setSelection('paragraph-content-1', 0, 5);
-                
-                // Get a range for testing
-                const selection = window.getSelection();
-                const range = selection.getRangeAt(0);
-                
-                // Hide toolbar initially (if visible)
-                editor.inlineToolbarModule.hideInlineToolbar();
-                
-                setTimeout(() => {
-                    const popup = document.querySelector('.e-blockeditor-inline-toolbar-popup');
-                    expect(popup.classList.contains('e-popup-open')).toBe(false);
-                    
-                    // Show toolbar programmatically
-                    editor.inlineToolbarModule.showInlineToolbar(range);
-                    
-                    setTimeout(() => {
-                        expect(popup.classList.contains('e-popup-open')).toBe(true);
-                        
-                        // Add close handler and test cancellation
-                        let closeCalled = false;
-                        editor.inlineToolbar.close = (args) => {
-                            closeCalled = true;
-                            args.cancel = true;
-                        };
-                        
-                        // Try to hide
-                        editor.inlineToolbarModule.hideInlineToolbar();
-                        
-                        setTimeout(() => {
-                            // Should still be open because we cancelled
-                            expect(closeCalled).toBe(true);
-                            expect(popup.classList.contains('e-popup-open')).toBe(true);
-                            
-                            // Remove cancel
-                            editor.inlineToolbar.close = (args) => {
-                                closeCalled = true;
-                            };
-                            
-                            // Hide again
-                            editor.inlineToolbarModule.hideInlineToolbar();
-                            
-                            setTimeout(() => {
-                                expect(popup.classList.contains('e-popup-open')).toBe(false);
-                                done();
-                            }, 100);
-                        }, 100);
                     }, 100);
                 }, 100);
             }, 200);
@@ -328,7 +466,7 @@ describe('Inline Toolbar Module', () => {
         it('should handle keyboard shortcuts for formatting', (done) => {
             setTimeout(() => {
                 const blockElement = editorElement.querySelector('#paragraph-1') as HTMLElement;
-                editor.setFocusToBlock(blockElement);
+                editor.blockManager.setFocusToBlock(blockElement);
                 editor.setSelection('paragraph-content-1', 0, 5);
                 
                 const boldKeyEvent = new KeyboardEvent('keydown', {
@@ -355,7 +493,11 @@ describe('Inline Toolbar Module', () => {
                     setTimeout(() => {
                         expect(contentElement.querySelector('em strong')).not.toBeNull();
                         expect(contentElement.querySelector('em strong').textContent).toBe('Hello');
-                        
+                        const contentModel = editor.blocks[0].content[0];
+                        const styles = (contentModel.properties as BaseStylesProp).styles;
+                        expect(styles.bold).toBe(true);
+                        expect(styles.italic).toBe(true);
+                        expect(contentModel.content).toBe('Hello');
                         done();
                     }, 100);
                 }, 100);
@@ -368,7 +510,7 @@ describe('Inline Toolbar Module', () => {
                 editor.dataBind();
                 
                 const blockElement = editorElement.querySelector('#paragraph-1') as HTMLElement;
-                editor.setFocusToBlock(blockElement);
+                editor.blockManager.setFocusToBlock(blockElement);
                 editor.setSelection('paragraph-content-1', 0, 5);
                 editorElement.dispatchEvent(new MouseEvent('mouseup', { bubbles: true }));
                 
@@ -401,7 +543,7 @@ describe('Inline Toolbar Module', () => {
             document.body.appendChild(editorElement);
             editor = createEditor({});
             editor.appendTo('#editor');
-            popupRenderer = new PopupRenderer(editor);
+            popupRenderer = new PopupRenderer(editor.blockManager);
             toolbarRenderer = new ToolbarRenderer(editor);
             tooltipRenderer = new TooltipRenderer(editor);
         });
@@ -526,17 +668,16 @@ describe('Inline Toolbar Module', () => {
                 blocks: [
                     {
                         id: 'paragraph-1',
-                        type: BlockType.Paragraph,
-                        content: [{ id: 'paragraph-content-1', type: ContentType.Text, content: 'Hello world' }]
+                        blockType: BlockType.Paragraph,
+                        content: [{ id: 'paragraph-content-1', contentType: ContentType.Text, content: 'Hello world' }]
                     }
                 ],
-                inlineToolbar: {
-                    enableTooltip: false,
+                inlineToolbarSettings: {
                     items: [
-                        { id: 'bold', iconCss: 'e-icons e-bold', tooltip: 'Bold', item: BuiltInToolbar.Bold, htmlAttributes: { 'data-command': BuiltInToolbar.Bold } },
-                        { id: 'italic', iconCss: 'e-icons e-italic', tooltip: 'Italic', item: BuiltInToolbar.Italic, htmlAttributes: { 'data-command': BuiltInToolbar.Italic } },
-                        { id: 'underline', iconCss: 'e-icons e-underline', tooltip: 'Underline', item: BuiltInToolbar.Underline, htmlAttributes: { 'data-command': BuiltInToolbar.Underline } },
-                        { id: 'strikethrough', iconCss: 'e-icons e-strikethrough', tooltip: 'Strikethrough', item: BuiltInToolbar.Strikethrough, htmlAttributes: { 'data-command': BuiltInToolbar.Strikethrough } },
+                        { id: 'bold', iconCss: 'e-icons e-bold', tooltipText: 'Bold', command: CommandName.Bold, htmlAttributes: { 'data-command': CommandName.Bold } },
+                        { id: 'italic', iconCss: 'e-icons e-italic', tooltipText: 'Italic', command: CommandName.Italic, htmlAttributes: { 'data-command': CommandName.Italic } },
+                        { id: 'underline', iconCss: 'e-icons e-underline', tooltipText: 'Underline', command: CommandName.Underline, htmlAttributes: { 'data-command': CommandName.Underline } },
+                        { id: 'strikethrough', iconCss: 'e-icons e-strikethrough', tooltipText: 'Strikethrough', command: CommandName.Strikethrough, htmlAttributes: { 'data-command': CommandName.Strikethrough } },
                     ]
                 }
             });
@@ -559,78 +700,14 @@ describe('Inline Toolbar Module', () => {
             }, 100);
         });
 
-        it('should not render tooltip when enabletooltip is false', () => {
-            expect((editor.inlineToolbarModule as any).inlineToolbarTooltip).toBeUndefined();
-        });
-
-        it('should trigger open and close events', (done) => {
-            setTimeout(() => {
-                const blockElement = editorElement.querySelector('#paragraph-1') as HTMLElement;
-                const contentElement = getBlockContentElement(blockElement);
-                editor.setFocusToBlock(blockElement);
-                setCursorPosition(contentElement, 0);
-                editor.inlineToolbar.open = (args) => {
-                    isOpened = true;
-                };
-                editor.inlineToolbar.close = (args) => {
-                    isClosed = true;
-                };
-                editor.inlineToolbarModule.showInlineToolbar(getSelectedRange());
-                expect(isOpened).toBe(true);
-
-                setTimeout(() => {
-                    editor.inlineToolbarModule.hideInlineToolbar();
-                    expect(isClosed).toBe(true);
-                    done();
-                }, 100);
-            }, 200);
-        });
-
-        it('should cancel open event', (done) => {
-            setTimeout(() => {
-                const blockElement = editorElement.querySelector('#paragraph-1') as HTMLElement;
-                const contentElement = getBlockContentElement(blockElement);
-                editor.setFocusToBlock(blockElement);
-                setCursorPosition(contentElement, 0);
-                const popup = document.querySelector('.e-blockeditor-inline-toolbar-popup');
-                editor.inlineToolbar.open = (args) => {
-                    args.cancel = true;
-                },
-                editor.inlineToolbarModule.showInlineToolbar(getSelectedRange());
-                expect(popup.classList.contains('e-popup-open')).toBe(false);
-                done();
-            }, 200);
-        });
-
-        it('should cancel close event', (done) => {
-            setTimeout(() => {
-                const blockElement = editorElement.querySelector('#paragraph-1') as HTMLElement;
-                const contentElement = getBlockContentElement(blockElement);
-                editor.setFocusToBlock(blockElement);
-                setCursorPosition(contentElement, 0);
-                const popup = document.querySelector('.e-blockeditor-inline-toolbar-popup');
-                editor.inlineToolbar.close = (args) => {
-                    args.cancel = true;
-                },
-                editor.inlineToolbarModule.showInlineToolbar(getSelectedRange());
-                setTimeout(() => {
-                    editor.inlineToolbarModule.hideInlineToolbar();
-                    setTimeout(() => {
-                        expect(popup.classList.contains('e-popup-open')).toBe(true);
-                        done();
-                    }, 100);
-                }, 100);
-            }, 200);
-        });
-
         it('should not show toolbar when enable is false', (done) => {
             setTimeout(() => {
                 const blockElement = editorElement.querySelector('#paragraph-1') as HTMLElement;
                 const contentElement = getBlockContentElement(blockElement);
-                editor.setFocusToBlock(blockElement);
+                editor.blockManager.setFocusToBlock(blockElement);
                 setCursorPosition(contentElement, 0);
-                editor.inlineToolbar.enable = false;
-                editor.inlineToolbarModule.showInlineToolbar(getSelectedRange())
+                editor.inlineToolbarSettings.enable = false;
+                editor.blockManager.inlineToolbarModule.showInlineToolbar(getSelectedRange())
                 expect(document.querySelector('.e-blockeditor-inline-toolbar').classList.contains('e-popup-open')).toBe(false);
                 done();
             }, 200);
@@ -638,7 +715,7 @@ describe('Inline Toolbar Module', () => {
 
         it('should fetch common styles properly', () => {
             const contents: ContentModel[] = [{
-                props: {
+                properties: {
                     styles: {
                         bold: true,
                         italic: true,
@@ -651,7 +728,7 @@ describe('Inline Toolbar Module', () => {
                     }
                 }
             }, {
-                props: {
+                properties: {
                     styles: {
                         bold: true,
                         italic: true,
@@ -662,12 +739,11 @@ describe('Inline Toolbar Module', () => {
                         superscript: true,
                         subscript: true,
                         color: '#000000',
-                        bgColor: '#ffffff',
-                        custom: '',
+                        backgroundColor: '#ffffff'
                     }
                 }
             }];
-            const commonStyles: Styles = (editor.inlineToolbarModule as any).getCommonStyles(contents);
+            const commonStyles: Styles = (editor.blockManager.inlineToolbarModule as any).getCommonStyles(contents);
             expect(commonStyles.bold).toBe(true);
             expect(commonStyles.italic).toBe(true);
             expect(commonStyles.underline).toBe(true);
@@ -677,37 +753,617 @@ describe('Inline Toolbar Module', () => {
             expect(commonStyles.superscript).toBe(true);
             expect(commonStyles.subscript).toBe(true);
             expect(commonStyles.color).toBeUndefined();
-            expect(commonStyles.bgColor).toBeUndefined();
-            expect(commonStyles.custom).toBeUndefined();
+            expect(commonStyles.backgroundColor).toBeUndefined();
         });
 
         it('should handle null values properly', (done) => {
             setTimeout(() => {
                 const blockElement = editorElement.querySelector('#paragraph-1') as HTMLElement;
                 const contentElement = getBlockContentElement(blockElement);
-                editor.setFocusToBlock(blockElement);
+                editor.blockManager.setFocusToBlock(blockElement);
 
                 //Without range
-                editor.inlineToolbarModule.toggleToolbarActiveState();
+                editor.blockManager.inlineToolbarModule.toggleToolbarActiveState();
 
                 //Set range as editorelement
-                editor.nodeSelection.createRangeWithOffsets(editorElement, editorElement, 0, 0);
-                editor.inlineToolbarModule.toggleToolbarActiveState();
+                editor.blockManager.nodeSelection.createRangeWithOffsets(editorElement, editorElement, 0, 0);
+                editor.blockManager.inlineToolbarModule.toggleToolbarActiveState();
 
                 //Set range as contentElement
                 setCursorPosition(contentElement, 0);
-                editor.inlineToolbarModule.toggleToolbarActiveState();
+                editor.blockManager.inlineToolbarModule.toggleToolbarActiveState();
 
                 //Set range as contentElement
-                editor.nodeSelection.createRangeWithOffsets(blockElement, blockElement, 0, 0);
-                editor.inlineToolbarModule.toggleToolbarActiveState();
+                editor.blockManager.nodeSelection.createRangeWithOffsets(blockElement, blockElement, 0, 0);
+                editor.blockManager.inlineToolbarModule.toggleToolbarActiveState();
 
                 document.querySelector('.e-blockeditor-inline-toolbar').remove();
                 (editor.inlineToolbarModule as any).initializeColorPickerAndDropdown();
 
-                (editor.inlineToolbarModule as any).getCommonStyles([]);
+                (editor.blockManager.inlineToolbarModule as any).getCommonStyles([]);
                 done();
             }, 200);
+        });
+    });
+
+    describe('Popup Positioning and Overflow Prevention', () => {
+        let editor: BlockEditor;
+        let editorElement: HTMLElement;
+        let popup: HTMLElement;
+        let blockElement: HTMLElement;
+        let contentElement: HTMLElement;
+        let parentContainerEle: HTMLElement;
+        let scrollContainerEle: HTMLElement;
+
+        beforeEach(() => {
+            editorElement = createElement('div', { id: 'editor' });
+            document.body.appendChild(editorElement);
+            editor = createEditor({
+                blocks: [
+                    {
+                        id: 'paragraph-1',
+                        blockType: BlockType.Paragraph,
+                        content: [{ id: 'paragraph-content-1', contentType: ContentType.Text, content: 'A Block Editor Component is a used to manage and edit content in discrete "blocks. Each block can represent a specific type of content, such as text, images, videos, tables, or other rich media. The key idea is to divide content into modular blocks that can be independently created, edited, rearranged, or deleted.' }]
+                    },
+                    {
+                        id: 'paragraph-2',
+                        blockType: BlockType.Paragraph,
+                        content: [{ id: 'paragraph-content-2', contentType: ContentType.Text, content: 'This is a paragraph block 1' }]
+                    },
+                    {
+                        id: 'paragraph-3',
+                        blockType: BlockType.Paragraph,
+                        content: [{ id: 'paragraph-content-3', contentType: ContentType.Text, content: 'This is a paragraph block 2' }]
+                    },
+                    {
+                        id: 'paragraph-4',
+                        blockType: BlockType.Paragraph,
+                        content: [{ id: 'paragraph-content-4', contentType: ContentType.Text, content: 'This is a paragraph block 3' }]
+                    },
+                    {
+                        id: 'paragraph-5',
+                        blockType: BlockType.Paragraph,
+                        content: [{ id: 'paragraph-content-5', contentType: ContentType.Text, content: 'This is a paragraph block 4' }]
+                    }
+                ]
+            });
+            editor.appendTo('#editor');
+        });
+
+        afterEach(() => {
+            if (editor) {
+                editor.destroy();
+                editor = undefined;
+            }
+            if (parentContainerEle) {
+                document.body.removeChild(parentContainerEle);
+                parentContainerEle = null;
+            }
+            else if (scrollContainerEle) {
+                document.body.removeChild(scrollContainerEle);
+                scrollContainerEle = null;
+            }
+            else {
+                if (editorElement) {
+                    document.body.removeChild(editorElement);
+                }
+            }
+        });
+
+        beforeEach((done) => {
+            setTimeout(() => {
+                blockElement = editorElement.querySelector('#paragraph-1') as HTMLElement;
+                contentElement = getBlockContentElement(blockElement);
+                editor.blockManager.setFocusToBlock(blockElement);
+                popup = document.querySelector('.e-blockeditor-inline-toolbar-popup') as HTMLElement;
+                done();
+            }, 100);
+        });
+
+        it('should position popup correctly at start of block without overflow', (done) => {
+            editor.setSelection('paragraph-content-1', 0, 5); // Selection at start
+            const mouseUpEvent = new MouseEvent('mouseup', { bubbles: true });
+            editorElement.dispatchEvent(mouseUpEvent);
+
+            setTimeout(() => {
+                expect(popup.classList.contains('e-popup-open')).toBe(true);
+
+                const editorRect = editorElement.getBoundingClientRect();
+                const popupRect = popup.getBoundingClientRect();
+
+                // Verify no left/right overflow
+                expect(popupRect.left).toBeGreaterThanOrEqual(editorRect.left);
+                expect(popupRect.right).toBeLessThanOrEqual(editorRect.right + 2);
+
+                // Verify no top/bottom overflow
+                expect(popupRect.top).toBeGreaterThanOrEqual(editorRect.top);
+                expect(popupRect.bottom).toBeLessThanOrEqual(editorRect.bottom);
+
+                done();
+            }, 100);
+        });
+
+        it('should position popup correctly in middle of block without overflow', (done) => {
+            editor.setSelection('paragraph-content-1', 50, 60); // Selection in middle (adjusted for longer content)
+            const mouseUpEvent = new MouseEvent('mouseup', { bubbles: true });
+            editorElement.dispatchEvent(mouseUpEvent);
+
+            setTimeout(() => {
+                expect(popup.classList.contains('e-popup-open')).toBe(true);
+
+                const editorRect = editorElement.getBoundingClientRect();
+                const popupRect = popup.getBoundingClientRect();
+
+                expect(popupRect.left).toBeGreaterThanOrEqual(editorRect.left);
+                expect(popupRect.right).toBeLessThanOrEqual(editorRect.right + 2);
+                expect(popupRect.top).toBeGreaterThanOrEqual(editorRect.top);
+                expect(popupRect.bottom).toBeLessThanOrEqual(editorRect.bottom);
+
+                done();
+            }, 100);
+        });
+
+        it('should position popup correctly at end of block without overflow', (done) => {
+            const textLength = contentElement.textContent.length;
+            editor.setSelection('paragraph-content-1', textLength - 5, textLength); // Selection at end
+            const mouseUpEvent = new MouseEvent('mouseup', { bubbles: true });
+            editorElement.dispatchEvent(mouseUpEvent);
+
+            setTimeout(() => {
+                expect(popup.classList.contains('e-popup-open')).toBe(true);
+
+                const editorRect = editorElement.getBoundingClientRect();
+                const popupRect = popup.getBoundingClientRect();
+
+                expect(popupRect.left).toBeGreaterThanOrEqual(editorRect.left);
+                expect(popupRect.right).toBeLessThanOrEqual(editorRect.right + 2);
+                expect(popupRect.top).toBeGreaterThanOrEqual(editorRect.top);
+                expect(popupRect.bottom).toBeLessThanOrEqual(editorRect.bottom);
+
+                done();
+            }, 100);
+        });
+
+        it('should handle top collision and reposition popup below selection', (done) => {
+            // Simulate a scenario where popup would collide at top (e.g., selection near top of editor)
+            const paraEle1 = editorElement.querySelector('#paragraph-content-1');
+            const range = document.createRange();
+            range.setStart(paraEle1.firstChild, 5); // Anchor at end
+            range.setEnd(paraEle1.firstChild, 0); // Focus at start
+            const selection = window.getSelection();
+            selection.removeAllRanges();
+            selection.addRange(range);
+
+            // Force backward direction using extend if supported
+            if (selection.extend) {
+                selection.collapse(paraEle1.firstChild, 5); // Set anchor
+                selection.extend(paraEle1.firstChild, 0); // Set focus backward
+            }
+
+            const mouseUpEvent = new MouseEvent('mouseup', { bubbles: true });
+            editorElement.dispatchEvent(mouseUpEvent);
+
+            setTimeout(() => {
+                expect(popup.classList.contains('e-popup-open')).toBe(true);
+
+                const editorRect = editorElement.getBoundingClientRect();
+                const popupRect = popup.getBoundingClientRect();
+                const selectionRect = getSelectedRange().getBoundingClientRect();
+
+                // Verify repositioned below if top space is insufficient
+                expect(popupRect.top).toBeGreaterThanOrEqual(selectionRect.bottom); // Repositioned below
+                expect(popupRect.bottom).toBeLessThanOrEqual(editorRect.bottom); // No bottom overflow
+
+                done();
+            }, 100);
+        });
+
+        it('should handle top collision and reposition popup below selection on partial selection at start of the block', (done) => {
+            // Simulate a scenario where popup would collide at top (e.g., selection near top of editor)
+            const paraEle1 = editorElement.querySelector('#paragraph-content-1');
+            const range = document.createRange();
+            range.setStart(paraEle1.firstChild, 2); // Anchor at end
+            range.setEnd(paraEle1.firstChild, 0); // Focus at start
+            const selection = window.getSelection();
+            selection.removeAllRanges();
+            selection.addRange(range);
+
+            // Force backward direction using extend if supported
+            if (selection.extend) {
+                selection.collapse(paraEle1.firstChild, 2); // Set anchor
+                selection.extend(paraEle1.firstChild, 0); // Set focus backward
+            }
+
+            const mouseUpEvent = new MouseEvent('mouseup', { bubbles: true });
+            editorElement.dispatchEvent(mouseUpEvent);
+
+            setTimeout(() => {
+                expect(popup.classList.contains('e-popup-open')).toBe(true);
+
+                const editorRect = editorElement.getBoundingClientRect();
+                const popupRect = popup.getBoundingClientRect();
+                const selectionRect = getSelectedRange().getBoundingClientRect();
+
+                // Verify repositioned below if top space is insufficient
+                expect(popupRect.top).toBeGreaterThanOrEqual(selectionRect.bottom); // Repositioned below
+                expect(popupRect.bottom).toBeLessThanOrEqual(editorRect.bottom); // No bottom overflow
+
+                done();
+            }, 100);
+        });
+
+        it('should handle top collision and reposition popup below selection on partial selection at end of the block', (done) => {
+            const textLength = contentElement.textContent.length;
+            // Simulate a scenario where popup would collide at top (e.g., selection near top of editor)
+            const paraEle1 = editorElement.querySelector('#paragraph-content-1');
+            const range = document.createRange();
+            range.setStart(paraEle1.firstChild, textLength); // Anchor at end
+            range.setEnd(paraEle1.firstChild, textLength - 5); // Focus at start
+            const selection = window.getSelection();
+            selection.removeAllRanges();
+            selection.addRange(range);
+
+            // Force backward direction using extend if supported
+            if (selection.extend) {
+                selection.collapse(paraEle1.firstChild, textLength); // Set anchor
+                selection.extend(paraEle1.firstChild, textLength - 5); // Set focus backward
+            }
+
+            const mouseUpEvent = new MouseEvent('mouseup', { bubbles: true });
+            editorElement.dispatchEvent(mouseUpEvent);
+
+            setTimeout(() => {
+                expect(popup.classList.contains('e-popup-open')).toBe(true);
+
+                const editorRect = editorElement.getBoundingClientRect();
+                const popupRect = popup.getBoundingClientRect();
+                const selectionRect = getSelectedRange().getBoundingClientRect();
+
+                // Verify repositioned below if top space is insufficient
+                expect(popupRect.top).toBeGreaterThanOrEqual(selectionRect.bottom); // Repositioned below
+                expect(popupRect.bottom).toBeLessThanOrEqual(editorRect.bottom); // No bottom overflow
+
+                done();
+            }, 100);
+        });
+
+        it('should handle top collision and reposition popup below selection on partial selection at end of the first line', (done) => {
+            // Simulate a scenario where popup would collide at top (e.g., selection near top of editor)
+            const paraEle1 = editorElement.querySelector('#paragraph-content-1');
+            const range = document.createRange();
+            range.setStart(paraEle1.firstChild, 45); // Anchor at end
+            range.setEnd(paraEle1.firstChild, 40); // Focus at start
+            const selection = window.getSelection();
+            selection.removeAllRanges();
+            selection.addRange(range);
+
+            // Force backward direction using extend if supported
+            if (selection.extend) {
+                selection.collapse(paraEle1.firstChild, 45); // Set anchor
+                selection.extend(paraEle1.firstChild, 40); // Set focus backward
+            }
+
+            const mouseUpEvent = new MouseEvent('mouseup', { bubbles: true });
+            editorElement.dispatchEvent(mouseUpEvent);
+
+            setTimeout(() => {
+                expect(popup.classList.contains('e-popup-open')).toBe(true);
+
+                const editorRect = editorElement.getBoundingClientRect();
+                const popupRect = popup.getBoundingClientRect();
+                const selectionRect = getSelectedRange().getBoundingClientRect();
+
+                // Verify repositioned below if top space is insufficient
+                expect(popupRect.top).toBeGreaterThanOrEqual(selectionRect.bottom); // Repositioned below
+                expect(popupRect.bottom).toBeLessThanOrEqual(editorRect.bottom); // No bottom overflow
+
+                done();
+            }, 100);
+        });
+
+        it('should handle bottom collision and reposition popup above selection', (done) => {
+            // Simulate bottom collision (selection near bottom)
+            editor.height = '300px';
+            editor.dataBind();
+            blockElement = editorElement.querySelector('#paragraph-3') as HTMLElement; // Select last block
+            contentElement = getBlockContentElement(blockElement);
+            editor.blockManager.setFocusToBlock(blockElement);
+            editor.setSelection('paragraph-content-3', 0, 5);
+
+            const mouseUpEvent = new MouseEvent('mouseup', { bubbles: true });
+            editorElement.dispatchEvent(mouseUpEvent);
+
+            setTimeout(() => {
+                expect(popup.classList.contains('e-popup-open')).toBe(true);
+
+                const editorRect = editorElement.getBoundingClientRect();
+                const popupRect = popup.getBoundingClientRect();
+                const selectionRect = getSelectedRange().getBoundingClientRect();
+
+                // Verify repositioned above if bottom space is insufficient
+                expect(popupRect.bottom).toBeLessThanOrEqual(selectionRect.top); // Repositioned above
+                expect(popupRect.top).toBeGreaterThanOrEqual(editorRect.top); // No top overflow
+
+                done();
+            }, 100);
+        });
+
+        it('should reposition popup on window resize without overflow', (done) => {
+            editor.setSelection('paragraph-content-1', 0, 5);
+            const mouseUpEvent = new MouseEvent('mouseup', { bubbles: true });
+            editorElement.dispatchEvent(mouseUpEvent);
+
+            setTimeout(() => {
+                expect(popup.classList.contains('e-popup-open')).toBe(true);
+
+                // Simulate resize
+                const originalWidth = window.innerWidth;
+                const originalHeight = window.innerHeight;
+                Object.defineProperty(window, 'innerWidth', { value: originalWidth - 200, writable: true });
+                Object.defineProperty(window, 'innerHeight', { value: originalHeight - 200, writable: true });
+
+                const resizeEvent = new Event('resize');
+                window.dispatchEvent(resizeEvent);
+
+                setTimeout(() => {
+                    const editorRect = editorElement.getBoundingClientRect();
+                    const popupRect = popup.getBoundingClientRect();
+
+                    // Verify repositioned within bounds after resize
+                    expect(popupRect.left).toBeGreaterThanOrEqual(editorRect.left);
+                    expect(popupRect.right).toBeLessThanOrEqual(editorRect.right + 2);
+                    expect(popupRect.top).toBeGreaterThanOrEqual(editorRect.top);
+                    expect(popupRect.bottom).toBeLessThanOrEqual(editorRect.bottom);
+
+                    // Restore original dimensions
+                    Object.defineProperty(window, 'innerWidth', { value: originalWidth, writable: true });
+                    Object.defineProperty(window, 'innerHeight', { value: originalHeight, writable: true });
+
+                    done();
+                }, 100);
+            }, 100);
+        });
+
+        it('should handle ViewPort collision in calculateOffsetX and adjust left/right positioning', (done) => {
+            // Simulate ViewPort collision: Make editor wide enough for left/right overflow test
+            editorElement.style.width = '200px'; // Small width to force horizontal collision
+            editor.setSelection('paragraph-content-1', 0, 5); // Forward selection
+
+            const mouseUpEvent = new MouseEvent('mouseup', { bubbles: true });
+            editorElement.dispatchEvent(mouseUpEvent);
+
+            setTimeout(() => {
+                expect(popup.classList.contains('e-popup-open')).toBe(true);
+
+                const editorRect = editorElement.getBoundingClientRect();
+                const popupRect = popup.getBoundingClientRect();
+
+                // Verify left/right adjusted for ViewPort collision (no overflow)
+                expect(popupRect.left).toBeGreaterThanOrEqual(0); // Left adjusted to viewport
+                expect(popupRect.right).toBeLessThanOrEqual(window.innerWidth); // Right adjusted to viewport
+
+                done();
+            }, 100);
+        });
+
+        it('should handle ParentElement collision in calculateOffsetX and center popup', (done) => {
+            // Simulate ParentElement collision: Selection where popup would overflow parent horizontally
+            editorElement.style.width = '300px'; // Constrain parent width
+            editor.setSelection('paragraph-content-1', contentElement.textContent.length - 5, contentElement.textContent.length); // Selection at end to force right overflow
+
+            const mouseUpEvent = new MouseEvent('mouseup', { bubbles: true });
+            editorElement.dispatchEvent(mouseUpEvent);
+
+            setTimeout(() => {
+                expect(popup.classList.contains('e-popup-open')).toBe(true);
+
+                const editorRect = editorElement.getBoundingClientRect();
+                const popupRect = popup.getBoundingClientRect();
+                const selectionRect = getSelectedRange().getBoundingClientRect();
+
+                // Verify centered or adjusted within parent (ParentElement branch)
+                expect(popupRect.left).toBeGreaterThanOrEqual(editorRect.left);
+                expect(popupRect.right).toBeLessThanOrEqual(editorRect.right + 2);
+
+                done();
+            }, 100);
+        });
+
+        it('should handle ScrollableContainer collision in calculateOffsetX with scroll adjustment', (done) => {
+            // Simulate ScrollableContainer: Nest editor in a scrollable parent
+            scrollContainerEle = createElement('div', { styles: 'height: 200px; overflow: auto; width: 300px;' });
+            document.body.appendChild(scrollContainerEle);
+            scrollContainerEle.appendChild(editorElement);
+            editorElement.style.width = '300px';
+
+            editor.setSelection('paragraph-content-1', 50, 60); // Middle selection
+
+            // Scroll horizontally to simulate overflow
+            scrollContainerEle.scrollLeft = 100;
+
+            const mouseUpEvent = new MouseEvent('mouseup', { bubbles: true });
+            editorElement.dispatchEvent(mouseUpEvent);
+
+            setTimeout(() => {
+                expect(popup.classList.contains('e-popup-open')).toBe(true);
+
+                const scrollRect = scrollContainerEle.getBoundingClientRect();
+                const popupRect = popup.getBoundingClientRect();
+
+                // Verify adjusted within scrollable container (ScrollableContainer branch)
+                expect(popupRect.left).toBeGreaterThanOrEqual(scrollRect.left);
+                expect(popupRect.right).toBeLessThanOrEqual(scrollRect.right + 2);
+
+                done();
+            }, 100);
+        });
+
+        it('should handle Hidden collision in getTopCollisionType and getSpaceAbove', (done) => {
+            // Simulate Hidden: Position block above viewport (top < 0)
+            editorElement.style.marginTop = '-200px'; // Move block out of view (top hidden)
+            editor.setSelection('paragraph-content-1', 0, 5);
+
+            const mouseUpEvent = new MouseEvent('mouseup', { bubbles: true });
+            editorElement.dispatchEvent(mouseUpEvent);
+
+            setTimeout(() => {
+                expect(popup.classList.contains('e-popup-open')).toBe(true);
+
+                const editorRect = editorElement.getBoundingClientRect();
+                const popupRect = popup.getBoundingClientRect();
+                const selectionRect = getSelectedRange().getBoundingClientRect();
+
+                expect(popupRect.top).not.toBeGreaterThanOrEqual(selectionRect.bottom);
+
+                done();
+            }, 100);
+        });
+
+        it('should handle ParentElement collision in getTopCollisionType and getSpaceAbove', (done) => {
+            // Simulate ParentElement: parentRect.top > 0
+            parentContainerEle = createElement('div', { styles: 'margin-top: 100px;' });
+            document.body.appendChild(parentContainerEle);
+            parentContainerEle.appendChild(editorElement);
+
+            editor.setSelection('paragraph-content-1', 0, 5);
+
+            const mouseUpEvent = new MouseEvent('mouseup', { bubbles: true });
+            editorElement.dispatchEvent(mouseUpEvent);
+
+            setTimeout(() => {
+                expect(popup.classList.contains('e-popup-open')).toBe(true);
+
+                const parentRect = parentContainerEle.getBoundingClientRect();
+                const popupRect = popup.getBoundingClientRect();
+                const selectionRect = getSelectedRange().getBoundingClientRect();
+
+                // Verify spaceAbove as blockRect.top - parentRect.top (ParentElement branch)
+                expect(popupRect.top).toBeGreaterThanOrEqual(parentRect.top);
+                expect(popupRect.bottom).toBeLessThanOrEqual(parentRect.bottom);
+
+                done();
+            }, 100);
+        });
+
+        it('should handle viewport in getTopCollisionType and getSpaceAbove', (done) => {
+            // Simulate ScrollableContainer: scrollParentRect.top > 0
+            scrollContainerEle = createElement('div', { styles: 'height: 200px; overflow: auto;' });
+            document.body.appendChild(scrollContainerEle);
+            scrollContainerEle.appendChild(editorElement);
+
+            editor.blockManager.setFocusToBlock(editorElement.querySelector('#paragraph-2'));
+            editor.setSelection('paragraph-content-2', 0, 5);
+            scrollContainerEle.scrollTop = 100;
+
+            const mouseUpEvent = new MouseEvent('mouseup', { bubbles: true });
+            editorElement.dispatchEvent(mouseUpEvent);
+
+            setTimeout(() => {
+                expect(popup.classList.contains('e-popup-open')).toBe(true);
+
+                const scrollRect = scrollContainerEle.getBoundingClientRect();
+                const popupRect = popup.getBoundingClientRect();
+                const selectionRect = getSelectedRange().getBoundingClientRect();
+                // Verify spaceAbove as scrollParentRect.top - parentRect.top (ScrollableContainer branch)
+                expect(popupRect.top).toBeGreaterThanOrEqual(scrollRect.top);
+                expect(popupRect.top).toBeGreaterThanOrEqual(selectionRect.bottom);
+
+                done();
+            }, 100);
+        });
+
+        it('should handle ScrollableContainer collision in getTopCollisionType and getSpaceAbove', (done) => {
+            // Simulate ScrollableContainer: scrollParentRect.top > 0
+            editorElement.style.height = '300px';
+            editorElement.scrollTop = 100;
+            editor.blockManager.setFocusToBlock(editorElement.querySelector('#paragraph-2'));
+            editor.setSelection('paragraph-content-2', 0, 5);
+
+            const mouseUpEvent = new MouseEvent('mouseup', { bubbles: true });
+            editorElement.dispatchEvent(mouseUpEvent);
+
+            setTimeout(() => {
+                expect(popup.classList.contains('e-popup-open')).toBe(true);
+
+                const popupRect = popup.getBoundingClientRect();
+
+                const selectionRect = getSelectedRange().getBoundingClientRect();
+                expect(popupRect.top).toBeGreaterThanOrEqual(selectionRect.bottom);
+
+                done();
+            }, 100);
+        });
+
+        it('should handle ViewPort collision in getBottomCollisionType and getSpaceBelow', (done) => {
+            // Simulate ViewPort: scrollParentRect.bottom >= innerHeight and parentRect.bottom >= innerHeight
+            editorElement.style.height = '200px';
+            editorElement.style.overflow = 'auto';
+            editorElement.scrollTop = 0; // No scroll, bottom at viewport edge
+
+            editor.setSelection('paragraph-content-1', 0, 5);
+
+            const mouseUpEvent = new MouseEvent('mouseup', { bubbles: true });
+            editorElement.dispatchEvent(mouseUpEvent);
+
+            setTimeout(() => {
+                expect(popup.classList.contains('e-popup-open')).toBe(true);
+
+                const editorRect = editorElement.getBoundingClientRect();
+                const popupRect = popup.getBoundingClientRect();
+
+                // Verify spaceBelow as window.innerHeight - blockRect.bottom (ViewPort branch)
+                expect(popupRect.bottom).toBeLessThanOrEqual(window.innerHeight);
+
+                done();
+            }, 100);
+        });
+
+        it('should handle ParentElement collision in getBottomCollisionType and getSpaceBelow', (done) => {
+            // Simulate ParentElement: parentRect.bottom <= scrollParentRect.bottom
+            parentContainerEle = createElement('div', { styles: 'height: 200px; overflow: hidden;' });
+            document.body.appendChild(parentContainerEle);
+            parentContainerEle.appendChild(editorElement);
+
+            editor.setSelection('paragraph-content-1', 0, 5);
+
+            const mouseUpEvent = new MouseEvent('mouseup', { bubbles: true });
+            editorElement.dispatchEvent(mouseUpEvent);
+
+            setTimeout(() => {
+                expect(popup.classList.contains('e-popup-open')).toBe(true);
+
+                const parentRect = parentContainerEle.getBoundingClientRect();
+                const popupRect = popup.getBoundingClientRect();
+
+                // Verify spaceBelow as parentRect.bottom - blockRect.bottom (ParentElement branch)
+                expect(popupRect.bottom).toBeLessThanOrEqual(parentRect.bottom);
+
+                done();
+            }, 100);
+        });
+
+        it('should handle ScrollableContainer collision in getBottomCollisionType and getSpaceBelow', (done) => {
+            // Simulate ScrollableContainer: parentRect.bottom > scrollParentRect.bottom
+            scrollContainerEle = createElement('div', { styles: 'height: 150px; overflow: auto;' });
+            document.body.appendChild(scrollContainerEle);
+            scrollContainerEle.appendChild(editorElement);
+            editorElement.style.height = '300px'; // Taller than scroll container
+
+            editor.setSelection('paragraph-content-1', 0, 5);
+
+            const mouseUpEvent = new MouseEvent('mouseup', { bubbles: true });
+            editorElement.dispatchEvent(mouseUpEvent);
+
+            setTimeout(() => {
+                expect(popup.classList.contains('e-popup-open')).toBe(true);
+
+                const scrollRect = scrollContainerEle.getBoundingClientRect();
+                const popupRect = popup.getBoundingClientRect();
+                const selectionRect = getSelectedRange().getBoundingClientRect();
+                expect(popupRect.top).toBeGreaterThanOrEqual(selectionRect.bottom);
+
+                done();
+            }, 100);
         });
     });
 });

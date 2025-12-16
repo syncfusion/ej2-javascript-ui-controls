@@ -1,3 +1,5 @@
+@use 'ej2-base/styles/common/mixin' as *;
+@use './theme-variables' as *;
 @include export-module('maskedtextbox-bigger') {
 
   .e-bigger .e-control-wrapper.e-mask #{&}.e-maskedtextbox {
@@ -15,6 +17,46 @@
   .e-bigger .e-content-placeholder.e-mask.e-placeholder-mask,
   .e-bigger.e-content-placeholder.e-mask.e-placeholder-mask {
     background-size: 300px 40px;
-    min-height: 40px;
+    min-height: $mask-bigger-min-height;
+  }
+
+  div.e-bigger.e-mask.e-input-group,
+  .e-bigger div.e-mask.e-input-group,
+  span.e-bigger.e-mask.e-input-group,
+  .e-bigger span.e-mask.e-input-group {
+    &.e-prepend-wrapper,
+    &.e-append-wrapper {
+      &.e-float-input.e-control-wrapper label.e-float-text.e-label-bottom {
+        top: $mask-bigger-prepend-label-bottom-top;
+      }
+
+      &.e-float-input.e-control-wrapper label.e-float-text.e-label-top {
+        top: $mask-bigger-prepend-label-top-top;
+      }
+
+      &.e-outline {
+        &.e-float-input.e-control-wrapper label.e-float-text.e-label-bottom {
+          top: $mask-bigger-prepend-outline-label-bottom-top;
+        }
+
+        &.e-float-input.e-control-wrapper label.e-float-text.e-label-top {
+          top: $mask-bigger-prepend-outline-label-top-top;
+        }
+      }
+
+      &.e-filled {
+        &.e-float-input.e-control-wrapper label.e-float-text.e-label-bottom {
+          top: $mask-bigger-prepend-filled-label-bottom-top;
+        }
+
+        &.e-float-input.e-control-wrapper label.e-float-text.e-label-top {
+          top: $mask-bigger-prepend-filled-label-top-top;
+        }
+      }
+
+      & input {
+        height: auto;
+      }
+    }
   }
 }

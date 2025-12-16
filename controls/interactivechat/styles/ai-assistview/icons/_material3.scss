@@ -1,3 +1,4 @@
+@use 'ej2-base/styles/common/mixin' as *;
 @include export-module('aiassist-material3-icons') {
   .e-assist-send::before {
     content: '\e71d';

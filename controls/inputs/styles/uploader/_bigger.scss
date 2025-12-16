@@ -1,8 +1,10 @@
+@use 'ej2-base/styles/common/mixin' as *;
+@use './theme-variables' as *;
 @include export-module('uploader-bigger') {
 
   .e-bigger {
     .e-upload {
-      width: 100%;
+      width: $upload-full-width;
       @if $skin-name == 'FluentUI' {
         border-radius: $upload-border-radius-bigger;
       }
@@ -250,7 +252,7 @@
           padding-top: $form-upload-bigger-file-list-padding-top;
 
           #{if(&, '&', '*')} .e-file-container {
-            top: 0;
+            top: $upload-zer-padding-margin;
 
             #{if(&, '&', '*')} .e-hidden-input {
               display: none;
@@ -274,7 +276,7 @@
               display: block;
               font-size: $form-upload-bigger-file-status-font-size;
               line-height: $form-upload-bigger-file-name-line-height;
-              padding-bottom: 0;
+              padding-bottom: $upload-zer-padding-margin;
               padding-top: $form-upload-bigger-file-name-padding;
               position: relative;
             }
@@ -313,7 +315,7 @@
   }
 
   .e-bigger.e-small .e-upload {
-    width: 100%;
+    width: $upload-full-width;
 
     #{if(&, '&', '*')}.e-control-wrapper {
       font-family: $upload-root-font-family;
@@ -321,13 +323,13 @@
 
     .e-hidden-file-input {
       border: 0;
-      height: 0;
-      margin: 0;
+      height: $upload-zero-height;
+      margin: $upload-zer-padding-margin;
       outline: none;
-      padding: 0;
-      text-indent: 0;
+      padding: $upload-zer-padding-margin;
+      text-indent: $upload-zer-padding-margin;
       visibility: hidden;
-      width: 0;
+      width: $upload-zero-width;
     }
 
     .e-file-select-wrap {
@@ -357,7 +359,7 @@
         padding-top: $form-upload-file-list-padding-top;
 
         #{if(&, '&', '*')} .e-file-container {
-          top: 0;
+          top: $upload-zer-padding-margin;
 
           #{if(&, '&', '*')} .e-hidden-input {
             display: none;
@@ -381,7 +383,7 @@
             display: block;
             font-size: $form-upload-file-status-font-size;
             line-height: $form-upload-file-name-line-height;
-            padding-bottom: 0;
+            padding-bottom: $upload-zer-padding-margin;
             padding-top: $form-upload-file-name-padding;
             position: relative;
           }
@@ -431,7 +433,7 @@
       .e-upload-file-list {
         font-family: $upload-font-family;
         font-size: $list-items-font-size-smaller;
-        height: 100%;
+        height: $upload-full-height;
         line-height: $list-line-height;
         @if $skin-name == 'tailwind' {
           line-height: $list-line-height-smaller;
@@ -441,7 +443,7 @@
 
         .e-file-container {
           display: block;
-          height: 100%;
+          height: $upload-full-height;
           margin-left: $list-item-margin-left-smaller;
           margin-right: $list-item-margin-right;
           min-height: $list-item-height;
@@ -511,7 +513,7 @@
               border-radius: $inner-wrap-radius;
               display: block;
               height: $progress-inner-wrap-height-smaller;
-              width: 100%;
+              width: $upload-full-width;
 
               #{if(&, '&', '*')} .e-upload-progress-bar {
                 border-radius: $progress-bar-radius;
@@ -742,7 +744,7 @@
               left: $left;
               margin-left: $margin-rtl-smaller;
               margin-right: $margin-rtl-smaller;
-              right: auto;
+              right: $upload-auto-width;
               top: $remove-icon-rtl-top-smaller;
               @if $skin-name == 'FluentUI' {
                 margin-left: $margin-icon-rtl-smaller;
@@ -754,7 +756,7 @@
           #{if(&, '&', '*')} .e-file-reload-btn {
             #{if(&, '&', '*')}.e-icons {
               left: $reload-btn-right;
-              right: auto;
+              right: $upload-auto-width;
             }
           }
 
@@ -789,13 +791,13 @@
 
     .e-content-placeholder.e-upload.e-placeholder-upload {
       background-size: 400px 65px;
-      min-height: 65px;
+      min-height: $upload-bgr-placeholder-min-height;
     }
 
     .e-bigger .e-content-placeholder.e-upload.e-placeholder-upload,
     .e-bigger.e-content-placeholder.e-upload.e-placeholder-upload {
       background-size: 400px 80px;
-      min-height: 80px;
+      min-height: $upload-bgr-content-placeholder-min-height;
     }
   }
 
@@ -803,11 +805,11 @@
   .e-bigger.e-small .e-upload .e-upload-actions {
     @if $skin-name == 'bootstrap5' or $skin-name == 'bootstrap5.3' or $skin-name == 'fluent2' or $skin-name == 'tailwind' {
       background-color: $content-bg-color-alt1;
-      border-radius: 0 0 6px 6px;
+      border-radius: $uploader-actions-border-radius;
     }
     @if $skin-name == 'FluentUI' {
       background-color: $transparent;
-      border-radius: 0 0 6px 6px;
+      border-radius: $uploader-actions-border-radius;
     }
   }
 }

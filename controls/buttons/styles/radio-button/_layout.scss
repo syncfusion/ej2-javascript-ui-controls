@@ -1,3 +1,5 @@
+@use 'ej2-base/styles/common/mixin' as *;
+@use './theme-variables' as *;
 @mixin fluent-focus-border {
   @if $skin-name == 'FluentUI' {
     border: 1px solid transparent;
@@ -13,17 +15,17 @@
 @include export-module('radiobutton-layout') {
   .e-radio-wrapper {
     display: inline-block;
-    line-height: 1;
+    line-height: $radio-btn-wrapper-line-height;
     position: relative;
   }
 
   /* stylelint-disable property-no-vendor-prefix */
   .e-radio {
     -webkit-appearance: none;
-    height: 1px;
+    height: $radio-btn-radio-height;
     opacity: 0;
     position: absolute;
-    width: 1px;
+    width: $radio-btn-radio-width;
 
     &:not(:checked):not(:disabled):hover {
       +label,
@@ -50,7 +52,7 @@
       +label.e-rtl,
       +label.e-right {
         &::after {
-          left: auto;
+          left: $radio-auto-position;
         }
       }
     }
@@ -59,7 +61,7 @@
       +label {
         @if $skin-name == 'fluent2' {
           box-shadow: $switch-box-shadow;
-          border-radius: 1px;
+          border-radius: $radio-focus-border-radius;
         }
       }
     }
@@ -68,7 +70,7 @@
       -webkit-tap-highlight-color: transparent;
       cursor: pointer;
       display: inline-block;
-      margin: 0;
+      margin: $radio-btn-zero-padding;
       position: relative;
       user-select: none;
       vertical-align: middle;
@@ -78,21 +80,18 @@
         height: 24px;
       }
       @if $skin-name == 'fluent2' {
-        margin: 7.6px;
+        margin: $radio-btn-focus-margin;
       }
 
       & .e-label {
         display: inline-block;
         font-family: $font-family;
         font-size: $radio-btn-font-size;
-        font-weight: normal;
+        font-weight: $radio-label-font-weight;
         line-height: $radio-btn-line-height;
         padding-left: $radio-btn-padding-left;
         vertical-align: text-top;
         white-space: normal;
-        @if $skin-name == 'tailwind3' {
-          font-weight: $font-weight-medium;
-        }
       }
 
       &:focus,
@@ -102,7 +101,7 @@
 
       &::before {
         border: $radio-btn-border;
-        border-radius: 50%;
+        border-radius: $radio-button-border-radius;
         box-sizing: border-box;
         content: '';
         height: $radio-btn-height;
@@ -111,7 +110,7 @@
           top: 1px;
         }
         @else {
-          left: 0;
+          left: $radio-btn-zero-padding;
         }
         position: absolute;
         width: $radio-btn-width;
@@ -140,8 +139,8 @@
       }
 
       &::after {
-        border: 1px solid;
-        border-radius: 50%;
+        border: $radio-btn-after-border;
+        border-radius: $radio-button-border-radius;
         box-sizing: border-box;
         content: '';
         height: $radio-btn-icon-height;
@@ -153,7 +152,7 @@
       }
 
       & .e-ripple-container {
-        border-radius: 50%;
+        border-radius: $radio-button-border-radius;
         height: $radio-btn-ripple-size;
         left: $radio-btn-ripple-position;
         position: absolute;
@@ -163,7 +162,7 @@
 
         & .e-ripple-element {
           @if $skin-name == 'Material3' {
-            border-radius: 50%;
+            border-radius: $radio-btn-ripple-border-radius;
           }
         }
       }
@@ -171,22 +170,22 @@
       &.e-right,
       &.e-rtl {
         & .e-label {
-          padding-left: 0;
+          padding-left: $radio-btn-zero-padding;
           padding-right: $radio-btn-padding-left;
         }
 
         &::before {
-          left: auto;
-          right: 0;
+          left: $radio-auto-position;
+          right: $radio-btn-zero-padding;
         }
 
         &::after {
-          left: auto;
+          left: $radio-auto-position;
           right: $radio-btn-icon-right;
         }
 
         & .e-ripple-container {
-          left: auto;
+          left: $radio-auto-position;
           right: $radio-btn-ripple-position;
         }
       }
@@ -195,22 +194,22 @@
         &.e-rtl {
           & .e-label {
             padding-left: $radio-btn-padding-left;
-            padding-right: 0;
+            padding-right: $radio-btn-zero-padding;
           }
 
           &::before {
-            left: 0;
-            right: auto;
+            left: $radio-btn-zero-padding;
+            right: $radio-auto-position;
           }
 
           &::after {
             left: $radio-btn-icon-right;
-            right: auto;
+            right: $radio-auto-position;
           }
 
           & .e-ripple-container {
-            left: -8px;
-            right: auto;
+            left: $radio-nrml-ripple-rtl-container-left;
+            right: $radio-auto-position;
           }
         }
       }
@@ -242,17 +241,17 @@
         &.e-right,
         &.e-rtl {
           & .e-label {
-            padding-left: 0;
+            padding-left: $radio-btn-zero-padding;
             padding-right: $radio-btn-small-padding;
           }
 
           &::after {
-            left: auto;
+            left: $radio-auto-position;
             right: $radio-btn-small-icon-right;
           }
 
           & .e-ripple-container {
-            left: auto;
+            left: $radio-auto-position;
             right: $radio-btn-small-ripple-position;
           }
         }
@@ -261,17 +260,17 @@
           &.e-rtl {
             & .e-label {
               padding-left: $radio-btn-small-padding;
-              padding-right: 0;
+              padding-right: $radio-btn-zero-padding;
             }
 
             &::after {
               left: $radio-btn-small-icon-right;
-              right: auto;
+              right: $radio-auto-position;
             }
 
             & .e-ripple-container {
-              left: -10px;
-              right: auto;
+              left: $radio-ripple-left;
+              right: $radio-auto-position;
             }
           }
         }
@@ -313,13 +312,13 @@
   .e-small .e-radio + label,
   .e-radio + label.e-small {
     @if $skin-name == 'fluent2' {
-      margin: 5.6px;
+      margin: $radio-small-btn-label-margin;
     }
     & .e-label {
       line-height: $radio-btn-small-line-height;
       padding-left: $radio-btn-small-padding;
       @if $skin-name == 'fluent2' or $skin-name == 'tailwind3' {
-        font-size: 12px;
+        font-size: $text-xs;
       }
     }
 
@@ -343,17 +342,17 @@
     &.e-right,
     &.e-rtl {
       & .e-label {
-        padding-left: 0;
+        padding-left: $radio-btn-zero-padding;
         padding-right: $radio-btn-small-padding;
       }
 
       &::after {
-        left: auto;
+        left: $radio-auto-position;
         right: $radio-btn-small-icon-right;
       }
 
       & .e-ripple-container {
-        left: auto;
+        left: $radio-auto-position;
         right: $radio-btn-small-ripple-position;
       }
     }
@@ -362,17 +361,17 @@
       &.e-rtl {
         & .e-label {
           padding-left: $radio-btn-small-padding;
-          padding-right: 0;
+          padding-right: $radio-btn-zero-padding;
         }
 
         &::after {
           left: $radio-btn-small-icon-right;
-          right: auto;
+          right: $radio-auto-position;
         }
 
         & .e-ripple-container {
-          left: -10px;
-          right: auto;
+          left: $radio-ripple-left;
+          right: $radio-auto-position;
         }
       }
     }

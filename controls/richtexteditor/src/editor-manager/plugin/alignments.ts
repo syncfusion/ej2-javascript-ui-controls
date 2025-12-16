@@ -10,7 +10,7 @@ import { isIDevice, setEditFrameFocus } from '../../common/util';
  * Formats internal component
  *
  * @hidden
- * @deprecated
+ * @private
  */
 export class Alignments {
     private parent: EditorManager;
@@ -26,7 +26,7 @@ export class Alignments {
      * @param {EditorManager} parent - specifies the parent element.
      * @returns {void}
      * @hidden
-     * @deprecated
+     * @private
      */
     public constructor(parent: EditorManager) {
         this.parent = parent;

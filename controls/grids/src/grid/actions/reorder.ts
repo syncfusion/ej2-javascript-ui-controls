@@ -48,7 +48,9 @@ export class Reorder implements IAction {
     }
 
     private chkDropPosition(srcElem: Element, destElem: Element): boolean {
-        const col: Column = this.parent.getColumnByUid(destElem.firstElementChild.getAttribute('data-mappinguid'));
+        const headerCelldiv: Element = destElem.querySelector('.e-headercelldiv') || destElem.querySelector('.e-stackedheadercelldiv');
+        const destElement: Element = headerCelldiv ? headerCelldiv : destElem.firstElementChild;
+        const col: Column = this.parent.getColumnByUid(destElement.getAttribute('data-mappinguid'));
         const bool: boolean = col ? !col.lockColumn : true;
         return ((srcElem.parentElement.isEqualNode(destElem.parentElement) || this.parent.enableColumnVirtualization)
             || (this.parent.isFrozenGrid()
@@ -148,7 +150,9 @@ export class Reorder implements IAction {
                 }
             } else {
                 const newIndex: number = this.targetParentContainerIndex(this.element, destElem);
-                const uid: string = this.element.firstElementChild.getAttribute('data-mappinguid');
+                const stackHeaderCellElement: HTMLElement = this.element.querySelector('.e-stackedheadercelldiv');
+                const uid: string = stackHeaderCellElement ? stackHeaderCellElement.getAttribute('data-mappinguid') :
+                    this.element.querySelector('.e-headercelldiv').getAttribute('data-mappinguid');
                 this.destElement = destElem;
                 this.parent.notify(events.setReorderDestinationElement, { ele: destElem });
                 if (uid) {
@@ -185,7 +189,7 @@ export class Reorder implements IAction {
                 }
             }
             const col: Column =
-            this.parent.getColumnByUid(this.destElement.firstElementChild.getAttribute('data-mappinguid'));
+            this.parent.getColumnByUid(this.destElement.querySelector('.e-headercelldiv').getAttribute('data-mappinguid'));
             if (col) {
                 for (let i: number = 0; i < cols.length; i++) {
                     if (cols[parseInt(i.toString(), 10)].field === col.field) {
@@ -279,7 +283,13 @@ export class Reorder implements IAction {
                 i--;
             }
             else if (headers[parseInt(i.toString(), 10)].closest('thead').firstChild === headers[parseInt(i.toString(), 10)].parentElement) {
-                stackedCols.push(this.parent.getColumnByUid(headers[parseInt(i.toString(), 10)].firstElementChild.getAttribute('data-mappinguid')));
+                const element: Element = headers[parseInt(i.toString(), 10)];
+                if (element.querySelector('.e-stackedheadercelldiv')) {
+                    stackedCols.push(this.parent.getColumnByUid(element.querySelector('.e-stackedheadercelldiv')
+                        .getAttribute('data-mappinguid')));
+                } else {
+                    stackedCols.push(this.parent.getColumnByUid(element.querySelector('.e-headercelldiv').getAttribute('data-mappinguid')));
+                }
             }
         }
         return stackedCols;
@@ -507,7 +517,7 @@ export class Reorder implements IAction {
             // eslint-disable-next-line no-case-declarations
             const element: HTMLElement = gObj.focusModule.currentInfo.element;
             if (element && element.classList.contains('e-headercell')) {
-                const column: Column = gObj.getColumnByUid(element.firstElementChild.getAttribute('data-mappinguid'));
+                const column: Column = gObj.getColumnByUid(element.querySelector('.e-headercelldiv').getAttribute('data-mappinguid'));
                 const visibleCols: Column[] = gObj.getVisibleColumns();
                 const index: number = visibleCols.indexOf(column);
                 const toCol: Column = e.action === 'ctrlLeftArrow' ? visibleCols[index - 1] : visibleCols[index + 1];

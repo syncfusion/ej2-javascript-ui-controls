@@ -1,4 +1,6 @@
 @use 'sass:color';
+@use 'ej2-base/styles/definition/material-dark' as *;
+@forward 'ej2-base/styles/definition/material-dark';
 
 /*! Form material theme wise override definitions and variables */
 // form field styles
@@ -41,3 +43,13 @@ $form-button-right-justify: flex-end !default;
 $form-button-center-justify: center !default;
 $form-button-border-radius: 20px !default;
 $form-button-padding: 7px 16px !default;
+
+$form-data-label-margin-right: 12px !default;
+$form-switch-wrapper-margin-top: 3px !default;
+$form-switch-wrapper-margin-left: 5px !default;
+$form-button-margin-top: 24px !default;
+$form-button-gap: 10px !default;
+$form-child-layout-margin-top: 0 !default;
+$form-item-wrapper-width: calc(75% - 12px);
+$form-label-q-width: 25%;
+$form-full-width: 100%;

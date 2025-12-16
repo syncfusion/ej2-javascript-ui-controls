@@ -1,3 +1,5 @@
+@use 'ej2-base/styles/common/mixin' as *;
+@use './theme-variables' as *;
 @include export-module('floating-action-button-theme') {
   .e-fab.e-btn {
     box-shadow: $fab-box-shadow;

@@ -1,4 +1,4 @@
-import { Property, Browser, Component, ModuleDeclaration, createElement, setStyleAttribute, Fetch } from '@syncfusion/ej2-base';
+import { Property, Browser, Component, ModuleDeclaration, createElement, setStyleAttribute, Fetch, getInstance } from '@syncfusion/ej2-base';
 import { EmitType, EventHandler, Complex, ChildProperty, Collection, isNullOrUndefined, remove } from '@syncfusion/ej2-base';
 import { Internationalization, L10n, NotifyPropertyChanges, INotifyPropertyChanged, compile, formatUnit } from '@syncfusion/ej2-base';
 import { removeClass, addClass, Event, KeyboardEventArgs, setValue, closest, select, SanitizeHtmlHelper } from '@syncfusion/ej2-base';
@@ -13,7 +13,7 @@ import { Tooltip, TooltipEventArgs, createSpinner, showSpinner, hideSpinner } fr
 import * as events from '../../common/base/constant';
 import * as cls from '../../common/base/css-constant';
 import { AxisFields } from '../../common/grouping-bar/axis-field-renderer';
-import { LoadEventArgs, EnginePopulatingEventArgs, DrillThroughEventArgs, MultiLevelLabelRenderEventArgs, EditCompletedEventArgs, ExportPageSize } from '../../common/base/interface';
+import { LoadEventArgs, EnginePopulatingEventArgs, DrillThroughEventArgs, MultiLevelLabelRenderEventArgs, EditCompletedEventArgs, ExportPageSize, ExcelExportProperties } from '../../common/base/interface';
 import { BeforeServiceInvokeEventArgs, FetchRawDataArgs, UpdateRawDataArgs, PivotActionBeginEventArgs, PivotActionCompleteEventArgs } from '../../common/base/interface';
 import { MultiLevelLabelClickEventArgs, PivotActionInfo, AfterServiceInvokeEventArgs, PivotColumn, ChartLabelInfo, PivotActionFailureEventArgs } from '../../common/base/interface';
 import { FetchReportArgs, LoadReportArgs, RenameReportArgs, RemoveReportArgs, ToolbarArgs } from '../../common/base/interface';
@@ -39,7 +39,7 @@ import { SelectionType, ContextMenuItemModel } from '@syncfusion/ej2-grids';
 import { CellSelectEventArgs, RowSelectEventArgs, ResizeArgs, getScrollBarWidth } from '@syncfusion/ej2-grids';
 import { RowDeselectEventArgs, ContextMenuClickEventArgs } from '@syncfusion/ej2-grids';
 import { EditSettingsModel, HeaderCellInfoEventArgs, CellDeselectEventArgs } from '@syncfusion/ej2-grids';
-import { PdfExportProperties, ExcelExportProperties, ExcelQueryCellInfoEventArgs, ColumnDragEventArgs } from '@syncfusion/ej2-grids';
+import { PdfExportProperties, ExcelQueryCellInfoEventArgs, ColumnDragEventArgs } from '@syncfusion/ej2-grids';
 import { ExcelHeaderQueryCellInfoEventArgs, PdfQueryCellInfoEventArgs, PdfHeaderQueryCellInfoEventArgs } from '@syncfusion/ej2-grids';
 import { ExcelExport } from '../actions/excel-export';
 import { PDFExport } from '../actions/pdf-export';
@@ -4437,21 +4437,22 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
      * @param  {boolean} isMultipleExport - Specifies whether multiple exports are enabled.
      * @param  {workbook} workbook - Defines the Workbook if multiple exports are enabled.
      * @param  {boolean} isBlob - If set to true, the exported file will be returned as blob data.
-     * @returns {void}
+     * @returns {Promise<Workbook>} A promise that resolves to the generated Excel workbook.
      */
     public excelExport(
         excelExportProperties?: ExcelExportProperties, isMultipleExport?: boolean, workbook?: Workbook, isBlob?: boolean
-    ): void {
+    ): Promise<Workbook> {
         this.isBlobData = isBlob;
         if (this.dataSourceSettings.mode === 'Server') {
             this.getEngine('onExcelExport', null, null, null, null, null, null, null, null, excelExportProperties);
         } else {
-            if ((this.enableVirtualization || this.enablePaging || this.allowEngineExport || (this.allowConditionalFormatting
-                 && this.dataSourceSettings.conditionalFormatSettings.length > 0))) {
+            const exportPivots: string[] = excelExportProperties ? excelExportProperties.pivotTableIds : undefined;
+            if (exportPivots && exportPivots.length && isMultipleExport) {
+                const pivotIds: string[] = exportPivots.slice();
+                return this.exportMultipleExcelPivotTable(pivotIds, excelExportProperties, isMultipleExport, workbook, isBlob);
+            }
+            else {
                 this.excelExportModule.exportToExcel('Excel', excelExportProperties, isBlob);
-            } else {
-                this.exportType = 'Excel';
-                this.grid.excelExport(excelExportProperties, isMultipleExport, workbook, isBlob);
             }
             this.actionObj.actionName = this.getActionCompleteName();
             const actionInfo: PivotActionInfo = {
@@ -4462,6 +4463,27 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
                 this.actionCompleteMethod();
             }
         }
+        return null;
+    }
+
+    private exportMultipleExcelPivotTable(pivotIds: string[], excelExportProperties?: ExcelExportProperties, isMultipleExport?: boolean,
+                                          workbook?: Workbook, isBlob?: boolean): Promise<Workbook> {
+        const pivot: PivotView = this as PivotView;
+        if (pivotIds.length !== 0) {
+            const currentPivotId: string = pivotIds.shift();
+            const currentPivotInstance: PivotView = select('#' + currentPivotId, document) ?
+                getInstance(select('#' + currentPivotId, document), PivotView) as PivotView : undefined;
+            const exportPromise: Promise<object> = currentPivotInstance && currentPivotInstance.excelExportModule ?
+                this.excelExportModule.exportToExcel('Excel', excelExportProperties, isBlob, workbook, isMultipleExport, currentPivotInstance) : null;
+            if (!isNullOrUndefined(exportPromise)) {
+                return exportPromise.then(function (exportedGridResults: Workbook): Promise<Workbook> {
+                    isMultipleExport = pivotIds.length === 1 ? false : true;
+                    return pivot.exportMultipleExcelPivotTable(pivotIds, excelExportProperties, isMultipleExport, exportedGridResults,
+                                                               isBlob);
+                });
+            }
+        }
+        return null;
     }
 
     /**
@@ -6602,7 +6624,7 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
 
     /** @hidden */
 
-    public applyFormatting(pivotValues: IAxisSet[][]): void {
+    public applyFormatting(pivotValues: IAxisSet[][], dataSourceSettings?: DataSourceSettingsModel): void {
         if (pivotValues) {
             const colIndex: number[] = [];
             for (let len: number = pivotValues.length, i: number = 0; i < len; i++) {
@@ -6610,13 +6632,15 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
                     colIndex.push(i);
                 }
             }
+            const dataSourceSetting: DataSourceSettingsModel = !isNullOrUndefined(dataSourceSettings) ? dataSourceSettings
+                : this.dataSourceSettings;
             for (let i: number = 0; i < pivotValues.length; i++) {
                 for (let j: number = this.isTabular ? (this.engineModule.rowMaxLevel + 1) : 1; (pivotValues[i as number] &&
                     j < pivotValues[i as number].length); j++) {
                     if ((pivotValues[i as number][j as number] as IAxisSet).axis === 'value' && (pivotValues[i as number][j as number] as IAxisSet).formattedText !== '') {
                         (pivotValues[i as number][j as number] as IAxisSet).style = undefined;
                         (pivotValues[i as number][j as number] as IAxisSet).cssClass = undefined;
-                        const format: IConditionalFormatSettings[] = this.dataSourceSettings.conditionalFormatSettings;
+                        const format: IConditionalFormatSettings[] = dataSourceSetting.conditionalFormatSettings;
                         for (let k: number = 0; k < format.length; k++) {
                             if ((format[k as number].applyGrandTotals === true || isNullOrUndefined(format[k as number].applyGrandTotals))
                                 ? true : !(pivotValues[i as number][j as number] as IAxisSet).isGrandSum) {
@@ -6658,7 +6682,7 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
                 }
             }
 
-            const format: IConditionalFormatSettings[] = this.dataSourceSettings.conditionalFormatSettings;
+            const format: IConditionalFormatSettings[] = dataSourceSetting.conditionalFormatSettings;
             for (let k: number = 0; k < format.length; k++) {
                 const sheet: StyleSheet = (this.createStyleSheet.bind(this))();
                 const str: string = 'color: ' + format[k as number].style.color + '!important;background-color: ' + format[k as number].style.backgroundColor +

@@ -21,7 +21,7 @@ describe('Diagram Control', () => {
         let stops: StopModel[] = [{ color: 'white', offset: 0 }, { color: 'red', offset: 50 }];
         let gradient: RadialGradientModel = { cx: 50, cy: 50, fx: 50, fy: 50, stops: stops, type: 'Radial' };
 
-        let ele: HTMLElement; let sourceMargin: MarginModel = { left: 5, right: 5, bottom: 5, top: 5 };
+        let ele: HTMLElement;
         beforeAll((): void => {
             const isDef = (o: any) => o !== undefined && o !== null;
             if (!isDef(window.performance)) {
@@ -29,7 +29,7 @@ describe('Diagram Control', () => {
                 this.skip(); //Skips test (in Chai)
                 return;
             }
-            ele = createElement('div', { id: 'diagram' });
+            ele = createElement('div', { id: 'diagram1' });
             document.body.appendChild(ele);
             let node: NodeModel = {
                 id: 'node', width: 100, height: 100, offsetX: 100, offsetY: 100,
@@ -99,7 +99,7 @@ describe('Diagram Control', () => {
             diagram = new Diagram({
                 width: '1500px', height: '1500px', nodes: [node, node1, node2, node3, node4, node5]
             });
-            diagram.appendTo('#diagram');
+            diagram.appendTo('#diagram1');
         });
         afterAll((): void => {
             diagram.destroy();
@@ -239,7 +239,6 @@ describe('Diagram Control', () => {
         let diagram: Diagram;
         let ele: HTMLElement;
         let sourceMargin: MarginModel = { left: 5, right: 5, bottom: 5, top: 5 };
-        let subeventMargin: MarginModel = { left: 10, top: 10 };
         beforeAll((): void => {
             const isDef = (o: any) => o !== undefined && o !== null;
             if (!isDef(window.performance)) {
@@ -247,7 +246,7 @@ describe('Diagram Control', () => {
                 this.skip(); //Skips test (in Chai)
                 return;
             }
-            ele = createElement('div', { id: 'diagram' });
+            ele = createElement('div', { id: 'diagram2' });
             document.body.appendChild(ele);
             let node1: NodeModel = {
                 id: 'node1', width: 190, height: 190, offsetX: 300, offsetY: 200,
@@ -338,7 +337,7 @@ describe('Diagram Control', () => {
             diagram = new Diagram({
                 width: '1500px', height: '500px', nodes: [node1, node2]
             });
-            diagram.appendTo('#diagram');
+            diagram.appendTo('#diagram2');
         });
         afterAll((): void => {
             diagram.destroy();
@@ -398,8 +397,6 @@ describe('Diagram Control', () => {
     describe('BPMN Sub Events rotate handle', () => {
         let diagram: Diagram;
         let ele: HTMLElement;
-        let sourceMargin: MarginModel = { left: 5, right: 5, bottom: 5, top: 5 };
-        let subeventMargin: MarginModel = { left: 10, top: 10 };
         beforeAll((): void => {
             const isDef = (o: any) => o !== undefined && o !== null;
             if (!isDef(window.performance)) {
@@ -407,7 +404,7 @@ describe('Diagram Control', () => {
                 this.skip(); //Skips test (in Chai)
                 return;
             }
-            ele = createElement('div', { id: 'diagram' });
+            ele = createElement('div', { id: 'diagram3' });
             document.body.appendChild(ele);
             let nodea: NodeModel = {
                 id: 'nodea', maxHeight: 600, maxWidth: 600, minWidth: 300, minHeight: 300,
@@ -425,7 +422,7 @@ describe('Diagram Control', () => {
             diagram = new Diagram({
                 width: '500px', height: '500px', nodes: [nodea]
             });
-            diagram.appendTo('#diagram');
+            diagram.appendTo('#diagram3');
         });
         afterAll((): void => {
             diagram.destroy();
@@ -443,7 +440,7 @@ describe('Diagram Control', () => {
         let diagram: Diagram;
         let ele: HTMLElement;
         beforeAll(function () {
-            ele = createElement('div', { id: 'diagram1' });
+            ele = createElement('div', { id: 'diagram4' });
             document.body.appendChild(ele);
             let nodea : NodeModel = {
                 id: 'nodea', maxHeight: 600, maxWidth: 600, minWidth: 300, minHeight: 300,
@@ -461,7 +458,7 @@ describe('Diagram Control', () => {
             diagram = new Diagram({
                 width: '74%', height: '600px', nodes: [nodea],
             });
-            diagram.appendTo('#diagram1');
+            diagram.appendTo('#diagram4');
         });
         afterAll(function () {
             diagram.destroy();
@@ -485,7 +482,7 @@ describe('Diagram Control', () => {
         let diagram: Diagram;
         let ele: HTMLElement;
         beforeAll(function () {
-            ele = createElement('div', { id: 'diagram1' });
+            ele = createElement('div', { id: 'diagram5' });
             document.body.appendChild(ele);
             let node : NodeModel = {
                 id: 'node', maxHeight: 600, maxWidth: 600, minWidth: 300, minHeight: 300,
@@ -503,7 +500,7 @@ describe('Diagram Control', () => {
             diagram = new Diagram({
                 width: '74%', height: '600px', nodes: [node],
             });
-            diagram.appendTo('#diagram1');
+            diagram.appendTo('#diagram5');
         });
         afterAll(function () {
             diagram.destroy();
@@ -547,7 +544,7 @@ describe('Diagram Control', () => {
         let diagram: Diagram;
         let ele: HTMLElement;
         beforeAll(function () {
-            ele = createElement('div', { id: 'diagram1' });
+            ele = createElement('div', { id: 'diagram6' });
             document.body.appendChild(ele);
             let node : NodeModel = {
                 id: 'node', maxHeight: 600, maxWidth: 600, minWidth: 300, minHeight: 300,
@@ -565,7 +562,7 @@ describe('Diagram Control', () => {
             diagram = new Diagram({
                 width: '74%', height: '600px', nodes: [node,],
             });
-            diagram.appendTo('#diagram1');
+            diagram.appendTo('#diagram6');
         });
         afterAll(function () {
             diagram.destroy();
@@ -584,7 +581,7 @@ describe('Diagram Control', () => {
         let diagram: Diagram;
         let ele: HTMLElement;
         beforeAll(function () {
-            ele = createElement('div', { id: 'diagram1' });
+            ele = createElement('div', { id: 'diagram7' });
             document.body.appendChild(ele);
             let nodea : NodeModel = {
                 id: 'nodea', maxHeight: 600, maxWidth: 600, minWidth: 300, minHeight: 300,
@@ -600,7 +597,7 @@ describe('Diagram Control', () => {
             diagram = new Diagram({
                 width: '74%', height: '600px', nodes: [nodea],
             });
-            diagram.appendTo('#diagram1');
+            diagram.appendTo('#diagram7');
         });
         afterAll(function () {
             diagram.destroy();
@@ -629,8 +626,7 @@ describe('Diagram Control', () => {
     describe('BPMN transaction with its icon', () => {
         let diagram: Diagram;
         let ele: HTMLElement;
-        let sourceMargin: MarginModel = { left: 5, right: 5, bottom: 5, top: 5 };
-        let subeventMargin: MarginModel = { left: 10, top: 10 };
+
         beforeAll((): void => {
             const isDef = (o: any) => o !== undefined && o !== null;
             if (!isDef(window.performance)) {
@@ -638,7 +634,7 @@ describe('Diagram Control', () => {
                 this.skip(); //Skips test (in Chai)
                 return;
             }
-            ele = createElement('div', { id: 'diagram' });
+            ele = createElement('div', { id: 'diagram8' });
             document.body.appendChild(ele);
             let nodea: NodeModel = {
                 id: 'nodea', maxHeight: 600, maxWidth: 600, minWidth: 300, minHeight: 300,
@@ -656,7 +652,7 @@ describe('Diagram Control', () => {
             diagram = new Diagram({
                 width: '500px', height: '500px', nodes: [nodea]
             });
-            diagram.appendTo('#diagram');
+            diagram.appendTo('#diagram8');
         });
         afterAll((): void => {
             diagram.destroy();
@@ -689,8 +685,7 @@ describe('Diagram Control', () => {
     describe('BPMN transaction with its icon', () => {
         let diagram: Diagram;
         let ele: HTMLElement;
-        let sourceMargin: MarginModel = { left: 5, right: 5, bottom: 5, top: 5 };
-        let subeventMargin: MarginModel = { left: 10, top: 10 };
+
         beforeAll((): void => {
             const isDef = (o: any) => o !== undefined && o !== null;
             if (!isDef(window.performance)) {
@@ -698,7 +693,7 @@ describe('Diagram Control', () => {
                 this.skip(); //Skips test (in Chai)
                 return;
             }
-            ele = createElement('div', { id: 'diagram' });
+            ele = createElement('div', { id: 'diagram9' });
             document.body.appendChild(ele);
             let node1: NodeModel = {
                 id: 'node1', width: 100, height: 100, offsetX: 300, offsetY: 100,
@@ -723,7 +718,7 @@ describe('Diagram Control', () => {
             diagram = new Diagram({
                 width: '500px', height: '500px', nodes: [node1, node2]
             });
-            diagram.appendTo('#diagram');
+            diagram.appendTo('#diagram9');
         });
         afterAll((): void => {
             diagram.destroy();

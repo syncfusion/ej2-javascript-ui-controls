@@ -1,4 +1,6 @@
 @use 'sass:color';
+@use 'ej2-base/styles/common/mixin' as *;
+@use './theme-variables' as *;
 
 /* stylelint-disable property-no-vendor-prefix */
 @mixin sibling-theme($left, $right) {
@@ -233,10 +235,10 @@
       &::before {
         background: $treeview-drag-line-color;
         @if $skin-name == 'bootstrap4' {
-          border: 1px;
+          border: $treeview-sibling-border;
         }
         @if ($skin-name == 'fluent2') {
-          border: 1px solid $treeview-sibling-border-color;
+          border: $treeview-sibling-border solid $treeview-sibling-border-color;
         }
       }
     }

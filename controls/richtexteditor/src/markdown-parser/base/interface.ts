@@ -6,7 +6,7 @@ import { KeyboardEventArgs } from '@syncfusion/ej2-base';
  * Specifies IMDFormats interfaces.
  *
  * @hidden
- * @deprecated
+ * @private
  */
 export interface IMDFormats {
     /**
@@ -23,7 +23,7 @@ export interface IMDFormats {
  * Specifies IMTable interfaces.
  *
  * @hidden
- * @deprecated
+ * @private
  */
 export interface IMDTable {
     syntaxTag?: {[key in MarkdownTableFormat]: {[key: string]: string} }
@@ -37,7 +37,7 @@ export interface IMDTable {
 /**
  * Defines types to be used to customize the markdown syntax.
  *
- * @deprecated
+ * @private
  */
 export type MarkdownTableFormat = 'Formats' | 'List';
 
@@ -45,7 +45,7 @@ export type MarkdownTableFormat = 'Formats' | 'List';
  * Specifies ISelectedLines interfaces.
  *
  * @hidden
- * @deprecated
+ * @private
  */
 export interface ISelectedLines {
     /**
@@ -66,7 +66,7 @@ export interface ISelectedLines {
  * Specifies MarkdownParserModel interfaces.
  *
  * @hidden
- * @deprecated
+ * @private
  */
 export interface IMarkdownParserModel {
     /**
@@ -95,7 +95,7 @@ export interface IMarkdownParserModel {
  * Specifies ISubCommands interfaces.
  *
  * @hidden
- * @deprecated
+ * @private
  */
 export interface IMarkdownSubCommands {
     /**
@@ -113,7 +113,7 @@ export interface IMarkdownSubCommands {
 }
 
 /**
- * @deprecated
+ * @private
  */
 export interface MarkdownUndoRedoData {
     text?: string
@@ -122,7 +122,7 @@ export interface MarkdownUndoRedoData {
 }
 
 /**
- * @deprecated
+ * @private
  */
 export interface IMarkdownItem {
     module?: string
@@ -134,7 +134,7 @@ export interface IMarkdownItem {
 }
 
 /**
- * @deprecated
+ * @private
  */
 export interface IMarkdownItemArgs {
     url?: string
@@ -149,7 +149,7 @@ export interface IMarkdownItemArgs {
  * Specifies IMDKeyboardEvent interfaces.
  *
  * @hidden
- * @deprecated
+ * @private
  */
 export interface IMDKeyboardEvent {
     /**

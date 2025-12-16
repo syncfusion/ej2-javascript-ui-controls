@@ -1,4 +1,6 @@
 @use 'sass:math';
+@use 'ej2-base/styles/definition/material-dark' as *;
+@forward 'ej2-base/styles/definition/material-dark';
 
 $pager-font-size: 13px !default;
 $pager-font-line-height: 1 !default;
@@ -148,3 +150,6 @@ $pager-adaptive-constant-pagesizeall-top: 14px !default;
 $pager-bigger-adaptive-constant-pagesizeall-top: 14px !default;
 $pager-rtl-adaptive-constant-pagesizeall-top: 15px !default;
 $pager-rtl-e-bigger-adaptive-constant-pagesizeall-top: 14px !default;
+
+$pager-border-radius-4: 4px !default;
+$pager-border-radius-5: 5px !default;

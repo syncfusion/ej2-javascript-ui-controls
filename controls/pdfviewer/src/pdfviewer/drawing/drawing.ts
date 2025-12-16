@@ -11,7 +11,7 @@ import { Canvas, refreshDiagramElements, DrawingRenderer } from '@syncfusion/ej2
 import { Selector } from './selector';
 import { SvgRenderer } from '@syncfusion/ej2-drawings';
 import { SelectorModel } from './selector-model';
-import { isLineShapes, setElementStype, findPointsLength, getBaseShapeAttributes, isLeader, Leader, cloneObject } from './drawing-util';
+import { isLineShapes, setElementStype, findPointsLength, getBaseShapeAttributes, isLeader, Leader, cloneObject, updateColorWithOpacity } from './drawing-util';
 import { getConnectorPoints, updateSegmentElement, getSegmentElement, updateDecoratorElement, getDecoratorElement, clipDecorators, initDistanceLabel, initLeaders, initLeader, getPolygonPath, initPerimeterLabel } from './connector-util';
 import { isNullOrUndefined, isBlazor, Browser } from '@syncfusion/ej2-base';
 import { AnnotationResizerLocation, AnnotationSelectorSettingsModel } from '../index';
@@ -423,6 +423,7 @@ export class Drawing {
             break;
         }
         case 'Rectangle':
+        case 'Redaction':
             basicElement = new DrawingElement();
             content = basicElement;
             canvas.children.push(content);
@@ -1084,6 +1085,9 @@ export class Drawing {
             const size: Size = new Size();
             const selectorModel: Selector = this.pdfViewer.selectedItems as Selector;
             this.clearSelectorLayer(select);
+            if (this.pdfViewer.toolbarModule && this.pdfViewer.toolbarModule.annotationToolbarModule) {
+                this.pdfViewer.toolbarModule.annotationToolbarModule.isRedactAnnotSelected = false;
+            }
             if (selectorModel.wrapper) {
                 selectorModel.wrapper.measure(size);
                 const zoom: number = this.pdfViewer.viewerBase.getZoomFactor();
@@ -1928,7 +1932,7 @@ export class Drawing {
             resizerLocation = 3 as AnnotationResizerLocation;
         }
         let isNodeShape: boolean = false;
-        if (this.pdfViewer.selectedItems.annotations[0] && (this.pdfViewer.selectedItems.annotations[0].shapeAnnotationType === 'Ellipse' || this.pdfViewer.selectedItems.annotations[0].shapeAnnotationType === 'Radius' || this.pdfViewer.selectedItems.annotations[0].shapeAnnotationType === 'Rectangle' || this.pdfViewer.selectedItems.annotations[0].shapeAnnotationType === 'Ink')) {
+        if (this.pdfViewer.selectedItems.annotations[0] && (this.pdfViewer.selectedItems.annotations[0].shapeAnnotationType === 'Ellipse' || this.pdfViewer.selectedItems.annotations[0].shapeAnnotationType === 'Radius' || this.pdfViewer.selectedItems.annotations[0].shapeAnnotationType === 'Rectangle' || this.pdfViewer.selectedItems.annotations[0].shapeAnnotationType === 'Redaction' || this.pdfViewer.selectedItems.annotations[0].shapeAnnotationType === 'Ink')) {
             isNodeShape = true;
         }
         if (!this.pdfViewer.viewerBase.checkSignatureFormField(element.id) && !nodeConstraints && !isSticky &&
@@ -2058,6 +2062,12 @@ export class Drawing {
                       3 ? 3 : (!isNullOrUndefined(this.pdfViewer.rectangleSettings.annotationSelectorSettings)
                       && !isNullOrUndefined(this.pdfViewer.rectangleSettings.annotationSelectorSettings.resizerLocation))
                             ? this.pdfViewer.rectangleSettings.annotationSelectorSettings.resizerLocation : 3;
+                } else if (type === 'Redaction' && this.pdfViewer.redactionSettings.annotationSelectorSettings) {
+                    resizerLocation = isNullOrUndefined(this.pdfViewer.redactionSettings.annotationSelectorSettings.resizerLocation) ||
+                     this.pdfViewer.redactionSettings.annotationSelectorSettings.resizerLocation ===
+                      3 ? 3 : (!isNullOrUndefined(this.pdfViewer.redactionSettings.annotationSelectorSettings)
+                      && !isNullOrUndefined(this.pdfViewer.redactionSettings.annotationSelectorSettings.resizerLocation))
+                            ? this.pdfViewer.redactionSettings.annotationSelectorSettings.resizerLocation : 3;
                 } else if (type === 'Ellipse' && this.pdfViewer.circleSettings.annotationSelectorSettings) {
                     resizerLocation = isNullOrUndefined(this.pdfViewer.circleSettings.annotationSelectorSettings.resizerLocation) ||
                      this.pdfViewer.circleSettings.annotationSelectorSettings.resizerLocation ===
@@ -2502,6 +2512,23 @@ export class Drawing {
                 }
             }
             update = true;
+        }
+        if (node.markerFillColor !== undefined) {
+            actualObject.markerFillColor = node.markerFillColor;
+            const fillColor: string = updateColorWithOpacity(node.markerFillColor, actualObject.markerOpacity as number);
+            actualObject.wrapper.children[0].style.fill = fillColor;
+        }
+        if (node.markerBorderColor !== undefined) {
+            actualObject.markerBorderColor = node.markerBorderColor;
+            actualObject.wrapper.children[0].style.strokeColor = actualObject.markerBorderColor;
+        }
+        if (node.markerOpacity !== undefined) {
+            actualObject.markerOpacity = node.markerOpacity;
+            const fillColor: string = updateColorWithOpacity(actualObject.markerFillColor, actualObject.markerOpacity as number);
+            actualObject.wrapper.children[0].style.fill = fillColor;
+        }
+        if (node.overlayText !== undefined) {
+            actualObject.overlayText = node.overlayText;
         }
         if (actualObject.enableShapeLabel && node.labelFillColor !== undefined) {
             if (actualObject.enableShapeLabel && actualObject.wrapper && actualObject.wrapper.children) {
@@ -3526,7 +3553,7 @@ export class Drawing {
         return newobjs as PdfAnnotationBaseModel[];
     }
 
-    private isWithinBounds(pageCurrentRect: ClientRect, events: any): boolean {
+    private isWithinBounds(pageCurrentRect: DOMRect, events: any): boolean {
         const { clientX, clientY } = events;
         const { left, right, top, bottom } = pageCurrentRect;
         return left < clientX && clientX < right && top < clientY && clientY < bottom;
@@ -3569,8 +3596,8 @@ export class Drawing {
                         for (let j: number = 0; j < copiedItems.length; j++) {
                             const copy: PdfAnnotationBaseModel = copiedItems[parseInt(j.toString(), 10)];
                             const pageDiv: HTMLElement = this.pdfViewer.viewerBase.getElement('_pageDiv_' + copy.pageIndex);
-                            let events: any = event as MouseEvent;
-                            const pageCurrentRect: ClientRect = pageDiv.getBoundingClientRect();
+                            let events: any = (window as any).event as MouseEvent;
+                            const pageCurrentRect: DOMRect = pageDiv.getBoundingClientRect() as DOMRect;
                             if (events && !events.clientX && !events.clientY) {
                                 events = { clientX: this.pdfViewer.viewerBase.mouseLeft, clientY: this.pdfViewer.viewerBase.mouseTop };
                             }
@@ -3742,7 +3769,7 @@ export class Drawing {
         for (let i: number = 0; i < copy.vertexPoints.length; i++) {
             if (pageDiv) {
                 if (i === 0) {
-                    const pageCurrentRect: ClientRect = pageDiv.getBoundingClientRect();
+                    const pageCurrentRect: DOMRect = pageDiv.getBoundingClientRect() as DOMRect;
                     x1 = copy.vertexPoints[parseInt(i.toString(), 10)].x;
                     y1 = copy.vertexPoints[parseInt(i.toString(), 10)].y;
                     copy.vertexPoints[parseInt(i.toString(), 10)].x = (events.clientX - pageCurrentRect.left) / zoomfactor;
@@ -3754,6 +3781,65 @@ export class Drawing {
                     copy.vertexPoints[parseInt(i.toString(), 10)].y += y2 - y1;
                 }
             }
+        }
+        if (pageDiv) {
+            const pageWidth: number = pageDiv.offsetWidth / zoomfactor;
+            const pageHeight: number = pageDiv.offsetHeight / zoomfactor;
+
+            const modifiedPoints: PointModel[] = [...copy.vertexPoints];
+
+            if (copy.shapeAnnotationType === 'Distance' && !isNullOrUndefined(copy.leaderHeight)) {
+                this.calculateLeaderEndPoint(modifiedPoints, copy.leaderHeight);
+            }
+
+            let minLeft: number = Infinity;
+            let minTop: number = Infinity;
+            let maxRight: number = -Infinity;
+            let maxBottom: number = -Infinity;
+
+            modifiedPoints.forEach((point: any) => {
+                minLeft = Math.min(minLeft, point.x);
+                minTop = Math.min(minTop, point.y);
+                maxRight = Math.max(maxRight, point.x);
+                maxBottom = Math.max(maxBottom, point.y);
+            });
+
+            let shiftX: number = 0;
+            let shiftY: number = 0;
+
+            // Check horizontal boundaries
+            if (minLeft < 0) {
+                shiftX = -minLeft; // Shift right
+            } else if (maxRight > pageWidth) {
+                shiftX = pageWidth - maxRight; // Shift left
+            }
+
+            // Check vertical boundaries
+            if (minTop < 0) {
+                shiftY = -minTop; // Shift down
+            } else if (maxBottom > pageHeight) {
+                shiftY = pageHeight - maxBottom; // Shift up
+            }
+
+            // Apply calculated shifts to all vertex points
+            if (shiftX !== 0 || shiftY !== 0) {
+                copy.vertexPoints.forEach((point: any) => {
+                    point.x = Math.floor(point.x + shiftX);
+                    point.y = Math.floor(point.y + shiftY);
+                });
+            }
+        }
+    }
+
+    private calculateLeaderEndPoint(vertexPoints: PointModel[], leaderHeight: number): void {
+        const angle: number = Point.findAngle(vertexPoints[0], vertexPoints[1]);
+        for (let i: number = 0; i < 2; i++) {
+            const point: PointModel = vertexPoints[parseInt(i.toString(), 10)];
+            const newPoint: PointModel = { x: point.x, y: point.y - leaderHeight };
+            const matrix: Matrix = identityMatrix();
+            rotateMatrix(matrix, angle, point.x, point.y);
+            const rotatedPoint: PointModel = transformPointByMatrix(matrix, { x: newPoint.x, y: newPoint.y });
+            vertexPoints.push(rotatedPoint);
         }
     }
 

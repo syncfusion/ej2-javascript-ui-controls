@@ -1,5 +1,5 @@
 import { Spreadsheet } from '../base/index';
-import { contentLoaded, mouseDown, virtualContentLoaded, cellNavigate, getUpdateUsingRaf, IOffset, focusBorder, positionAutoFillElement, hideAutoFillOptions, performAutoFill, selectAutoFillRange, rangeSelectionByKeydown } from '../common/index';
+import { contentLoaded, mouseDown, virtualContentLoaded, cellNavigate, getUpdateUsingRaf, IOffset, focusBorder, positionAutoFillElement, hideAutoFillOptions, performAutoFill, selectAutoFillRange, rangeSelectionByKeydown, removeCommentContainer, initiateComment } from '../common/index';
 import { showAggregate, refreshOverlayElem, getRowIdxFromClientY, getColIdxFromClientX, hideAutoFillElement, NoteSaveEventArgs, showNote } from '../common/index';
 import { SheetModel, updateSelectedRange, getColumnWidth, mergedRange, activeCellMergedRange, Workbook, getSelectedRange, checkColumnValidation } from '../../workbook/index';
 import { getRowHeight, isSingleCell, activeCellChanged, MergeArgs, checkIsFormula, getSheetIndex } from '../../workbook/index';
@@ -10,7 +10,7 @@ import { colWidthChanged, protectSelection, editOperation, initiateFormulaRefere
 import { getRangeIndexes, getCellAddress, getRangeAddress, getCellIndexes, getSwapRange } from '../../workbook/common/address';
 import { addressHandle, isMouseDown, isMouseMove, selectionStatus, setPosition, removeRangeEle, removeNoteContainer, setActionData } from '../common/index';
 import { isCellReference, getSheetNameFromAddress, CellModel, isLocked, getColumn, getCell, updateCell, getSheetName } from '../../workbook/index';
-import { selectionComplete, parseFormulaArgument, getChartRowIdxFromClientY, getChartColIdxFromClientX, addDPRValue, isRowSelected, isColumnSelected } from '../../workbook/common/index';
+import { selectionComplete, parseFormulaArgument, getChartRowIdxFromClientY, getChartColIdxFromClientX, addDPRValue, isRowSelected, isColumnSelected, ExtendedNoteModel, ExtendedSheet } from '../../workbook/common/index';
 import { getIndexesFromAddress, skipHiddenIdx, isHiddenRow, isHiddenCol } from '../../workbook/index';
 import { DropDownList } from '@syncfusion/ej2-dropdowns';
 
@@ -38,6 +38,7 @@ export class Selection {
     /** @hidden */
     public isNoteActiveElement: boolean = false;
     private isNoteTouch: boolean = false;
+    private isCommentTouch: boolean = false;
 
     /**
      * Constructor for the Spreadsheet selection module.
@@ -259,39 +260,78 @@ export class Selection {
         if (closest(e.target as Element, '.e-scrollbar') || (e.target as Element).classList.contains('e-main-panel') ||
             (e.target as Element).classList.contains('e-sheet')) { return; }
         const eventArgs: { action: string, editedValue: string } = { action: 'getCurrentEditValue', editedValue: '' };
-        const sheet: SheetModel = this.parent.getActiveSheet();
+        const sheet: ExtendedSheet = <ExtendedSheet>this.parent.getActiveSheet();
         this.parent.notify(editOperation, eventArgs);
         const isFormulaEdit: boolean =  checkIsFormula(eventArgs.editedValue, true);
-        const isNoteCellIndex: boolean = this.parent.enableNotes && !isNullOrUndefined(this.parent.spreadsheetNoteModule.noteCellIndexes);
-        const cellIndexes: number[] = isNoteCellIndex ? this.parent.spreadsheetNoteModule.noteCellIndexes :
-            getCellIndexes(this.parent.getActiveSheet().activeCell);
+        const isNoteCellIndex: boolean = this.parent.enableNotes && !isNullOrUndefined(this.parent.spreadsheetNoteModule.activeNoteCell);
+        const cellIndexes: number[] = isNoteCellIndex ? this.parent.spreadsheetNoteModule.activeNoteCell : getCellIndexes(sheet.activeCell);
         const targetElement: HTMLElement = this.parent.getCell(cellIndexes[0], cellIndexes[1]);
+        let isOtherNoteContainer: boolean;
         if (!isNullOrUndefined(targetElement) && targetElement.children !== null && targetElement.children.length > 0
             && this.isNoteActiveElement && targetElement.children[targetElement.children.length - 1].classList.contains('e-addNoteIndicator')) {
             const cell: CellModel = getCell(cellIndexes[0], cellIndexes[1], sheet);
             const eventAction: string = !isNullOrUndefined(cell) && cell.notes ? 'editNote' : 'addNote';
-            const noteContainer: HTMLTextAreaElement  = document.getElementsByClassName('e-addNoteContainer')[0] as HTMLTextAreaElement;
+            /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
+            const noteModule: any = this.parent.spreadsheetNoteModule as any;
+            const noteModel: ExtendedNoteModel = noteModule.getNoteByCellIndex(cellIndexes[0], cellIndexes[1]);
+            const noteId: string = this.parent.spreadsheetNoteModule.getNoteId(noteModel);
+            const noteContainer: HTMLTextAreaElement = document.getElementById(noteId) as HTMLTextAreaElement;
             const address: string = getSheetName(this.parent as Workbook, this.parent.activeSheetIndex) + '!' + getRangeAddress(cellIndexes);
-            if (!isNullOrUndefined(noteContainer) && !isNullOrUndefined(noteContainer.value) && (e.target as HTMLElement).className !== 'e-addNoteContainer'
-                && ((isNullOrUndefined(cell) || isNullOrUndefined(cell.notes)) || (cell.notes !== noteContainer.value))) {
+            isOtherNoteContainer = noteContainer && (e.target as HTMLElement).classList.contains('e-addNoteContainer') &&
+                e.target !== noteContainer;
+            if (!isNullOrUndefined(noteContainer) && !isNullOrUndefined(noteContainer.value) &&
+                ((e.target as HTMLElement).className !== 'e-addNoteContainer' || isOtherNoteContainer) &&
+                ((isNullOrUndefined(cell) || isNullOrUndefined(cell.notes)) ||
+                ((cell.notes as ExtendedNoteModel).text !== noteContainer.value))) {
                 this.parent.notify(setActionData, { args: { action: 'beforeCellSave', eventArgs: { address: address } } });
+                const updatedNote: ExtendedNoteModel = {
+                    id: noteModel.id,
+                    rowIdx: cellIndexes[0],
+                    colIdx: cellIndexes[1],
+                    text: noteContainer.value,
+                    isVisible: noteModel.isVisible
+                };
                 updateCell(
-                    this.parent, this.parent.getActiveSheet(), { rowIdx: cellIndexes[0], colIdx: cellIndexes[1], preventEvt: true,
-                        cell: { notes: noteContainer.value, isNoteEditable:  false }});
-                const eventArgs : NoteSaveEventArgs =  { notes: noteContainer.value, address: address};
+                    this.parent, sheet, { rowIdx: cellIndexes[0], colIdx: cellIndexes[1], preventEvt: true,
+                        cell: { notes: updatedNote, isNoteEditable:  false }});
+                noteModule.syncNoteToSheetArray(sheet, cellIndexes[0], cellIndexes[1], updatedNote);
+                const eventArgs : NoteSaveEventArgs =  { notes: updatedNote, address: address};
                 this.parent.notify(completeAction, { eventArgs: eventArgs, action: eventAction });
-            } else if ((e.target as HTMLElement).className !== 'e-addNoteContainer') {
+            } else if ((e.target as HTMLElement).className !== 'e-addNoteContainer' || isOtherNoteContainer) {
                 updateCell(
-                    this.parent, this.parent.getActiveSheet(), { rowIdx: cellIndexes[0], colIdx: cellIndexes[1], preventEvt: true,
+                    this.parent, sheet, { rowIdx: cellIndexes[0], colIdx: cellIndexes[1], preventEvt: true,
                         cell: { isNoteEditable: false }});
             }
-            this.parent.spreadsheetNoteModule.isShowNote = null;
         }
-        if (!this.isNoteTouch && (e.target as HTMLElement).className !== 'e-addNoteContainer' && document.getElementsByClassName('e-addNoteContainer') && document.getElementsByClassName('e-addNoteContainer').length > 0){
-            this.parent.notify(removeNoteContainer, '');
+        if (!this.isNoteTouch && ((e.target as HTMLElement).className !== 'e-addNoteContainer' || isOtherNoteContainer) && document.getElementsByClassName('e-addNoteContainer') && document.getElementsByClassName('e-addNoteContainer').length > 0){
+            /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
+            const note: ExtendedNoteModel = (this.parent.spreadsheetNoteModule as any).getNoteByCellIndex(cellIndexes[0], cellIndexes[1]);
+            if (note && !note.isVisible) {
+                this.parent.notify(removeNoteContainer, { rowIndex: cellIndexes[0], columnIndex: cellIndexes[1] });
+            }
+        }
+        if (isOtherNoteContainer || (e.target as HTMLElement).classList.contains('e-addNoteContainer')) {
+            const noteContainer: HTMLElement = e.target as HTMLElement;
+            const curNoteId: string = noteContainer.id.split('e-note-container-')[1];
+            if (sheet.notes && curNoteId) {
+                const note: ExtendedNoteModel = sheet.notes.find((note: ExtendedNoteModel) => note.id === curNoteId);
+                if (note && note.isVisible && note.rowIdx !== undefined) {
+                    this.parent.spreadsheetNoteModule.activeNoteCell = [note.rowIdx, note.colIdx];
+                    updateCell(
+                        this.parent, sheet, { rowIdx: note.rowIdx, colIdx: note.colIdx, preventEvt: true, cell: { isNoteEditable: true } });
+                }
+            }
         }
         if (this.isNoteTouch && e.type.indexOf('mouse') > -1) {
             this.isNoteTouch = false;
+        }
+        const commentContainer: HTMLCollectionOf<Element> = document.getElementsByClassName('e-comment-container');
+        if (!this.isCommentTouch && !closest(e.target as Element, '.e-comment-container') &&
+            commentContainer && commentContainer.length > 0) {
+            this.parent.notify(removeCommentContainer, '');
+        }
+        if (this.isCommentTouch && e.type.indexOf('mouse') > -1) {
+            this.isCommentTouch = false;
         }
         if (!this.parent.isEdit || isFormulaEdit) {
             const overlayElem: HTMLElement = document.getElementById(this.parent.element.id + '_overlay');
@@ -459,7 +499,25 @@ export class Selection {
                         const cellIndexes: number[] = getCellIndexes(getRangeAddress(range).split(':')[0]);
                         this.parent.notify(showNote, { rowIndex: cellIndexes[0], columnIndex: cellIndexes[1], isNoteEditable: false });
                         this.isNoteTouch = true;
-                        this.parent.spreadsheetNoteModule.isNoteVisibleOnTouch = true;
+                    }
+                    let isCommentAvailable: boolean = targetElement.className === 'e-comment-indicator';
+                    if (!isCommentAvailable && targetElement.children.length > 0) {
+                        const className: string = targetElement.children[targetElement.childElementCount - 1].className;
+                        isCommentAvailable = typeof className === 'string' && className.indexOf('e-comment-indicator') > -1;
+                    }
+                    if (isTouchStart(e)) {
+                        if (isNoteAvailable) {
+                            const cellIndexes: number[] = getCellIndexes(getRangeAddress(range).split(':')[0]);
+                            this.parent.notify(showNote, { rowIndex: cellIndexes[0], columnIndex: cellIndexes[1], isNoteEditable: false });
+                            this.isNoteTouch = true;
+                        }
+                        if (isCommentAvailable) {
+                            const cellIndexes: number[] = getCellIndexes(getRangeAddress(range).split(':')[0]);
+                            this.parent.notify(
+                                initiateComment, { rowIndex: cellIndexes[0], columnIndex: cellIndexes[1], isSelection: true });
+                            this.isCommentTouch = true;
+                            this.parent.spreadsheetCommentModule.isCommentVisibleOnTouch = true;
+                        }
                     }
                     if (isTouchStart(e) && !(isColSelected || isRowSelected)) {
                         this.touchEvt = e;
@@ -476,7 +534,6 @@ export class Selection {
                     if (!this.isNoteTouch && e.type.indexOf('mouse') > -1 && isNoteAvailable) {
                         const cellIndexes: number[] = getCellIndexes(getRangeAddress(range).split(':')[0]);
                         this.parent.notify(showNote, { rowIndex: cellIndexes[0], columnIndex: cellIndexes[1], isNoteEditable: false });
-                        this.parent.spreadsheetNoteModule.isNoteVisible = true;
                     }
                     if (this.parent.isMobileView()) {
                         this.parent.element.classList.add('e-mobile-focused');

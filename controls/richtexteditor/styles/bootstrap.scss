@@ -1,5 +1,4 @@
-@import 'ej2-base/styles/definition/bootstrap.scss';
-@import 'rich-text-editor/bootstrap-definition.scss';
-@import 'rich-text-editor/icons/bootstrap.scss';
-@import 'rich-text-editor/all.scss';
-@import 'rich-text-editor/bigger.scss';
+@use 'rich-text-editor/bootstrap-definition' as *;
+@use 'rich-text-editor/icons/bootstrap' as *;
+@use 'rich-text-editor/all' as *;
+@use 'rich-text-editor/bigger' as *;

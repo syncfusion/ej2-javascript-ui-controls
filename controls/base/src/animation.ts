@@ -186,7 +186,10 @@ export class Animation extends Base<HTMLElement> implements INotifyPropertyChang
         let timerId: number = 0;
         let prevTimeStamp: number = 0;
         const duration: number = model.duration;
-        model.element.setAttribute('e-animate', 'true');
+        if (model && model.element)
+        {
+            model.element.setAttribute('e-animate', 'true');
+        }
         const startAnimation: (timeStamp?: number) => void = (timeStamp?: number): void => {
             try {
                 if (timeStamp) {
@@ -228,8 +231,10 @@ export class Animation extends Base<HTMLElement> implements INotifyPropertyChang
                 }
             } catch (e) {
                 cancelAnimationFrame(timerId);
-                model.element.removeAttribute('e-animation-id');
-                if (model.fail) {
+                if (model && model.element) {
+                    model.element.removeAttribute('e-animation-id');
+                }
+                if (model && model.fail) {
                     model.fail.call(this, e);
                 }
             }

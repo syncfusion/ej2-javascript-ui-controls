@@ -1,3 +1,4 @@
+@use 'ej2-base/styles/common/mixin' as *;
 @include export-module('stepper-highcontrast-icons') {
   .e-step-indicator::before {
     content: '\e9a1';

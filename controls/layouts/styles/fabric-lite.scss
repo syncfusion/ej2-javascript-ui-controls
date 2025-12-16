@@ -1,14 +1,14 @@
-@import 'ej2-base/styles/definition/fabric.scss';
-@import 'avatar/fabric-definition.scss';
-@import 'avatar/all.scss';
+@use 'ej2-base/styles/definition/fabric' as *;
+@use 'avatar/fabric-definition' as *;
+@use 'avatar/all' as *;
 
-@import 'card/fabric-definition.scss';
-@import 'card/all.scss';
-@import 'splitter/fabric-definition.scss';
-@import 'splitter/icons/fabric.scss';
-@import 'splitter/all.scss';
-@import 'dashboard-layout/fabric-definition.scss';
-@import 'dashboard-layout/icons/fabric.scss';
-@import 'dashboard-layout/all.scss';
-@import 'timeline/fabric-definition.scss';
-@import 'timeline/all.scss';
+@use 'card/fabric-definition' as *;
+@use 'card/all' as *;
+@use 'splitter/fabric-definition' as *;
+@use 'splitter/icons/fabric' as *;
+@use 'splitter/all' as *;
+@use 'dashboard-layout/fabric-definition' as *;
+@use 'dashboard-layout/icons/fabric' as *;
+@use 'dashboard-layout/all' as *;
+@use 'timeline/fabric-definition' as *;
+@use 'timeline/all' as *;

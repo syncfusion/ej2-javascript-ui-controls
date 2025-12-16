@@ -1,3 +1,5 @@
+@use 'ej2-base/styles/definition/fabric-dark' as *;
+@forward 'ej2-base/styles/definition/fabric-dark';
 $grid-xlfl-fieldset-padding: 9px !default;
 $grid-xlfltd-padding: 12px !default;
 $grid-xlfltable-border-spacing: 0 !default;
@@ -60,3 +62,5 @@ $grid-xlfl-li-icon-margin-arrow-icon: 25px !default;
 $grid-bigger-xlfl-li-icon-margin-arrow-icon: 0 !default;
 $grid-xl-radio-margin-top: 0 !default;
 $grid-xlfl-skin: 'fabric' !default;
+
+$grid-border-radius-0: 0 !default;

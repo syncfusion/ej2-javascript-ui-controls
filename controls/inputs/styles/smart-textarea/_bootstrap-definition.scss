@@ -1,3 +1,5 @@
+@use 'ej2-base/styles/definition/bootstrap' as *;
+@forward 'ej2-base/styles/definition/bootstrap';
 $sta-background-color: $brand-primary-font !default;
 $sta-color: $gray-dark !default;
 $sta-box-shadow: rgba(0, 0, 0, .5) !default;

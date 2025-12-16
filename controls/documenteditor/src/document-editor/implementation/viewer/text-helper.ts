@@ -548,7 +548,6 @@ export class TextHelper {
         }
         return false;
     }
-
     /**
      * @private
      * @param {string} text - Specifies the text

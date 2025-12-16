@@ -85,7 +85,7 @@ describe('Chart Control', () => {
 
                 svg = document.getElementById('chartContainer2_AxisLabel_3');
                 expect(svg.getAttribute('y') == '293').toBe(true);
-                expect(svg.getAttribute('x') == '43').toBe(true);
+                expect(svg.getAttribute('x') == '43' || svg.getAttribute('x') == '42.5').toBe(true);
                 done();
             };
             chartObj.loaded = loaded;

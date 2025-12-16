@@ -1130,7 +1130,8 @@ export class CalendarBase extends Component<HTMLElement> implements INotifyPrope
                 date: localDate,
                 isDisabled: false,
                 element: tdEle,
-                isOutOfRange: disabled
+                isOutOfRange: disabled,
+                currentView: this.currentView()
             };
             const argument: RenderDayCellEventArgs = this.renderDayCellArgs;
             this.renderDayCellEvent(argument);
@@ -2955,6 +2956,8 @@ export interface RenderDayCellEventArgs extends BaseEventArgs {
     date?: Date
     /** Defines whether the current date is out of range (less than min or greater than max) or not. */
     isOutOfRange?: boolean
+
+    currentView?: string
 }
 export interface ChangedEventArgs extends BaseEventArgs {
     /** Defines the selected date of the Calendar.

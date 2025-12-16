@@ -73,7 +73,7 @@ describe('Diagram Control', () => {
     describe('multiplelayer canvas', () => {
         let diagram: Diagram;
         let ele: HTMLElement;
-        let selArray: any = [];
+        let mouseEvents: MouseEvents = new MouseEvents();
 
         beforeAll((): void => {
             const isDef = (o: any) => o !== undefined && o !== null;
@@ -120,6 +120,7 @@ describe('Diagram Control', () => {
         afterAll((): void => {
             diagram.destroy();
             ele.remove();
+            mouseEvents = null;
         });
 
         it('layer property ', (done: Function) => {
@@ -174,7 +175,6 @@ describe('Diagram Control', () => {
             expect(diagram.nameTable['uuu'].wrapper.visible === true).toBe(true);
             diagram.activeLayer.lock = true;
             let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
-            let mouseEvents: MouseEvents = new MouseEvents();
             mouseEvents.dragAndDropEvent(diagramCanvas, 100, 300, 300, 110);
             done();
         });
@@ -183,7 +183,6 @@ describe('Diagram Control', () => {
     describe('multiplelayer svg ', () => {
         let diagram: Diagram;
         let ele: HTMLElement;
-        let selArray: any = [];
 
         beforeAll((): void => {
             const isDef = (o: any) => o !== undefined && o !== null;
@@ -280,7 +279,6 @@ describe('Diagram Control', () => {
     describe('clonelayer issue with connection', () => {
         let diagram: Diagram;
         let ele: HTMLElement;
-        let selArray: any = [];
 
         beforeAll((): void => {
             const isDef = (o: any) => o !== undefined && o !== null;
@@ -335,7 +333,6 @@ describe('Diagram Control', () => {
     describe('clonelayer issue without connection', () => {
         let diagram: Diagram;
         let ele: HTMLElement;
-        let selArray: any = [];
 
         beforeAll((): void => {
             const isDef = (o: any) => o !== undefined && o !== null;
@@ -398,62 +395,6 @@ describe('Diagram Control', () => {
     describe('group issue with layer', () => {
         let diagram: Diagram;
         let ele: HTMLElement;
-        let selArray: any = [];
-
-        beforeAll((): void => {
-            const isDef = (o: any) => o !== undefined && o !== null;
-            if (!isDef(window.performance)) {
-                console.log("Unsupported environment, window.performance.memory is unavailable");
-                this.skip(); //Skips test (in Chai)
-                return;
-            }
-            ele = createElement('div', { id: 'diagram' });
-            document.body.appendChild(ele);
-            let nodes: NodeModel[] = [{
-                id: 'node1', width: 100, height: 100, offsetX: 100,
-                offsetY: 200,
-                ports: [{ id: 'port1', shape: 'Square', offset: { x: 0, y: 0.5 }, visibility: PortVisibility.Hover },
-                { id: 'port2', shape: 'Square', offset: { x: 0.5, y: 0 }, visibility: PortVisibility.Hover },
-                { id: 'port3', shape: 'Square', offset: { x: 0.5, y: 1 }, visibility: PortVisibility.Hover },
-                { id: 'port4', shape: 'Square', offset: { x: 1, y: 0.5 }, visibility: PortVisibility.Hover }]
-            }, {
-                id: 'node2', width: 200, height: 100, offsetX: 400,
-                offsetY: 400,
-                ports: [{ id: 'port1', shape: 'Square', offset: { x: 0, y: 0.5 }, visibility: PortVisibility.Hover },
-                { id: 'port2', shape: 'Square', offset: { x: 0.5, y: 0 }, visibility: PortVisibility.Hover },
-                { id: 'port3', shape: 'Square', offset: { x: 0.5, y: 1 }, visibility: PortVisibility.Hover },
-                { id: 'port4', shape: 'Square', offset: { x: 1, y: 0.5 }, visibility: PortVisibility.Hover }]
-            },
-            { id: 'group', children: ['node1', 'node2'] }
-            ];
-
-            diagram = new Diagram({
-                width: 1000, height: 600,
-                nodes: nodes,
-                layers: [{ id: 'layer1', visible: true, objects: ['node1', 'node2', 'group'] }]
-            });
-            diagram.appendTo('#diagram');
-        });
-
-        afterAll((): void => {
-            diagram.destroy();
-            ele.remove();
-        });
-
-        it('hide/show layer on nodes ports', (done: Function) => {
-            diagram.setActiveLayer('layer1');
-            diagram.commandHandler.getLayer('layer1').visible = false;
-            diagram.commandHandler.getLayer('layer1').visible = true;
-            expect(diagram.nodes[0].ports[0].visibility === PortVisibility.Hover).toBe(true);
-            diagram.dataBind();
-            done();
-        });
-    });
-
-    describe('group issue with layer', () => {
-        let diagram: Diagram;
-        let ele: HTMLElement;
-        let selArray: any = [];
 
         beforeAll((): void => {
             const isDef = (o: any) => o !== undefined && o !== null;
@@ -508,7 +449,6 @@ describe('Diagram Control', () => {
     describe('zIndex Issue with Layer', () => {
         let diagram: Diagram;
         let ele: HTMLElement;
-        let selArray: any = [];
 
         beforeAll((): void => {
             const isDef = (o: any) => o !== undefined && o !== null;
@@ -635,10 +575,10 @@ describe('Diagram Control', () => {
             done();
         });
     });
+
     describe('Changing layer zindex in Canvas mode', () => {
         let diagram: Diagram;
         let ele: HTMLElement;
-        let selArray: any = [];
 
         beforeAll((): void => {
             const isDef = (o: any) => o !== undefined && o !== null;
@@ -766,10 +706,10 @@ describe('Diagram Control', () => {
             done();
         });
     });
+
     describe('multiplelayer canvas', () => {
         let diagram: Diagram;
         let ele: HTMLElement;
-        let selArray: any = [];
 
         beforeAll((): void => {
             ele = createElement('div', { id: 'diagram' });
@@ -798,7 +738,6 @@ describe('Diagram Control', () => {
     describe('zIndex Issue with Layer', () => {
         let diagram: Diagram;
         let ele: HTMLElement;
-        let selArray: any = [];
 
         beforeAll((): void => {
             const isDef = (o: any) => o !== undefined && o !== null;
@@ -848,7 +787,6 @@ describe('Diagram Control', () => {
     describe('multiple layer - Hidden layer is visible', () => {
         let diagram: Diagram;
         let ele: HTMLElement;
-        let selArray: any = [];
 
         beforeAll((): void => {
             const isDef = (o: any) => o !== undefined && o !== null;

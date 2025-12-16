@@ -1,6 +1,6 @@
 import { SpreadsheetHelper } from '../util/spreadsheethelper.spec';
 import { dateData, defaultData, GDPData, productData } from '../util/datasource.spec';
-import { CellModel, ChartModel, ExtendedAxisModel, ExtendedChartModel, ExtendedSheet, getColumnsWidth, getFormatFromType, setCell, SheetModel, Spreadsheet } from '../../../src/index';
+import { CellModel, ChartModel, ExtendedAxisModel, ExtendedChartModel, ExtendedSheet, getColumnsWidth, getFormatFromType, onContentScroll, setCell, SheetModel, Spreadsheet } from '../../../src/index';
 import { Overlay } from '../../../src/spreadsheet/services/index';
 import { getComponent, EventHandler } from '@syncfusion/ej2-base';
 import { Chart, Export } from '@syncfusion/ej2-charts';
@@ -32,7 +32,7 @@ describe('Chart ->', () => {
             const overlay: HTMLElement = helper.getElementFromSpreadsheet('.e-ss-overlay');
             expect(overlay.classList.contains('e-ss-overlay-active')).toBeTruthy();
             const ribbonTabObj: any = getComponent(helper.getElementFromSpreadsheet('.e-tab'), 'tab');
-            expect(ribbonTabObj.selectedItem).toBe(6);
+            expect(ribbonTabObj.selectedItem).toBe(7);
             spreadsheet.allowEditing = false;
             spreadsheet.dataBind();
             expect(overlay.classList.contains('e-ss-overlay-active')).toBeFalsy();
@@ -46,14 +46,14 @@ describe('Chart ->', () => {
             spreadsheet.dataBind();
             helper.triggerMouseAction('mousedown', { x: 0, y: 0 }, overlay, overlay);
             expect(overlay.classList.contains('e-ss-overlay-active')).toBeTruthy();
-            expect(ribbonTabObj.selectedItem).toBe(6);
+            expect(ribbonTabObj.selectedItem).toBe(7);
             done();
         });
         it('select and deselect the chart', (done: Function) => {
             const chartOverlay: HTMLElement = helper.getElementFromSpreadsheet(`#${cell.chart[0].id}`).parentElement;
             const ribbonObj: any = spreadsheet.ribbonModule.ribbon;
             expect(chartOverlay.classList.contains('e-ss-overlay-active')).toBeTruthy();
-            expect(ribbonObj.selectedTab).toBe(5);
+            expect(ribbonObj.selectedTab).toBe(6);
             helper.invoke('selectImage');
             expect(chartOverlay.classList.contains('e-ss-overlay-active')).toBeTruthy();
             helper.invoke('deselectChart');
@@ -66,7 +66,7 @@ describe('Chart ->', () => {
             helper.invoke('selectChart', [cell.chart[0].id]);
             expect(chartOverlay.classList.contains('e-ss-overlay-active')).toBeTruthy();
             expect(imageOverlay.classList.contains('e-ss-overlay-active')).toBeFalsy();
-            expect(ribbonObj.selectedTab).toBe(5);
+            expect(ribbonObj.selectedTab).toBe(6);
             helper.invoke('deselectChart');
             expect(chartOverlay.classList.contains('e-ss-overlay-active')).toBeFalsy();
             expect(ribbonObj.selectedTab).toBe(0);
@@ -74,16 +74,16 @@ describe('Chart ->', () => {
             const chartCell: CellModel = spreadsheet.sheets[0].rows[0].cells[1];
             const chartOverlay1: HTMLElement = helper.getElementFromSpreadsheet(`#${chartCell.chart[0].id}`).parentElement;
             expect(chartOverlay1.classList.contains('e-ss-overlay-active')).toBeTruthy();
-            expect(ribbonObj.selectedTab).toBe(5);
+            expect(ribbonObj.selectedTab).toBe(6);
             helper.invoke('selectChart');
             expect(chartOverlay.classList.contains('e-ss-overlay-active')).toBeTruthy();
             expect(chartOverlay1.classList.contains('e-ss-overlay-active')).toBeFalsy();
-            expect(ribbonObj.selectedTab).toBe(5);
+            expect(ribbonObj.selectedTab).toBe(6);
             helper.invoke('selectRange', ['B1:B1']);
             helper.invoke('selectChart');
             expect(chartOverlay.classList.contains('e-ss-overlay-active')).toBeFalsy();
             expect(chartOverlay1.classList.contains('e-ss-overlay-active')).toBeTruthy();
-            expect(ribbonObj.selectedTab).toBe(5);
+            expect(ribbonObj.selectedTab).toBe(6);
             done();
         });
         it('select and deselect the image', (done: Function) => {
@@ -803,7 +803,7 @@ describe('Chart ->', () => {
             });
         });
         it('Add Chart Title Non->', (done: Function) => {
-            helper.switchRibbonTab(6);
+            helper.switchRibbonTab(7);
             helper.getElement('#' + helper.id + '_addchart').click();
             const target: HTMLElement = helper.getElement('#' + helper.id + '_addchart-popup .e-menu-item[aria-label="Chart Title"]');
             (getComponent(target.parentElement, 'menu') as any).animationSettings.effect = 'None';
@@ -823,7 +823,7 @@ describe('Chart ->', () => {
             });
         });
         it('Choosing Material Dark in Chart Theme Dropdown->', (done: Function) => {
-            helper.switchRibbonTab(6);
+            helper.switchRibbonTab(7);
             helper.getElement('#' + helper.id + '_chart_theme').click();
             helper.getElement('.e-item[aria-label="Material Dark"]').click();
             setTimeout(() => {
@@ -889,7 +889,7 @@ describe('Chart ->', () => {
             helper.switchRibbonTab(1);
             helper.click('#spreadsheet_undo');
             setTimeout(() => {
-                helper.switchRibbonTab(6);
+                helper.switchRibbonTab(7);
                 expect(helper.getElement('#' + helper.id + '_chart_theme').textContent).toContain('HighContrast');
                 done();
             });
@@ -939,7 +939,7 @@ describe('Chart ->', () => {
             });
         });
         it('Apply Inside End Data Labels->', (done: Function) => {
-            helper.switchRibbonTab(6);
+            helper.switchRibbonTab(7);
             helper.getElement('#' + helper.id + '_addchart').click();
             const target: HTMLElement = helper.getElement('#' + helper.id + '_addchart-popup .e-menu-item[aria-label="Data Labels"]');
             (getComponent(target.parentElement, 'menu') as any).animationSettings.effect = 'None';
@@ -959,7 +959,7 @@ describe('Chart ->', () => {
             });
         });
         it('Apply Inside Base Data Labels->', (done: Function) => {
-            helper.switchRibbonTab(6);
+            helper.switchRibbonTab(7);
             helper.getElement('#' + helper.id + '_addchart').click();
             const target: HTMLElement = helper.getElement('#' + helper.id + '_addchart-popup .e-menu-item[aria-label="Data Labels"]');
             (getComponent(target.parentElement, 'menu') as any).animationSettings.effect = 'None';
@@ -979,7 +979,7 @@ describe('Chart ->', () => {
             });
         });
         it('Apply Outside End Data Labels->', (done: Function) => {
-            helper.switchRibbonTab(6);
+            helper.switchRibbonTab(7);
             helper.getElement('#' + helper.id + '_addchart').click();
             const target: HTMLElement = helper.getElement('#' + helper.id + '_addchart-popup .e-menu-item[aria-label="Data Labels"]');
             (getComponent(target.parentElement, 'menu') as any).animationSettings.effect = 'None';
@@ -999,7 +999,7 @@ describe('Chart ->', () => {
             });
         });
         it('Apply None Data Labels->', (done: Function) => {
-            helper.switchRibbonTab(6);
+            helper.switchRibbonTab(7);
             helper.getElement('#' + helper.id + '_addchart').click();
             const target: HTMLElement = helper.getElement('#' + helper.id + '_addchart-popup .e-menu-item[aria-label="Data Labels"]');
             (getComponent(target.parentElement, 'menu') as any).animationSettings.effect = 'None';
@@ -1032,7 +1032,7 @@ describe('Chart ->', () => {
             done();
         });
         it('Apply Center Data Labels for Pie Chart->', (done: Function) => {
-            helper.switchRibbonTab(6);
+            helper.switchRibbonTab(7);
             helper.getElement('#' + helper.id + '_addchart').click();
             const target: HTMLElement = helper.getElement('#' + helper.id + '_addchart-popup .e-menu-item[aria-label="Data Labels"]');
             (getComponent(target.parentElement, 'menu') as any).animationSettings.effect = 'None';
@@ -1176,7 +1176,7 @@ describe('Chart ->', () => {
             });
         });
         it('Apply Left Legend->', (done: Function) => {
-            helper.switchRibbonTab(6);
+            helper.switchRibbonTab(7);
             helper.getElement('#' + helper.id + '_addchart').click();
             const target: HTMLElement = helper.getElement('#' + helper.id + '_addchart-popup .e-menu-item[aria-label="Legends"]');
             (getComponent(target.parentElement, 'menu') as any).animationSettings.effect = 'None';
@@ -1196,7 +1196,7 @@ describe('Chart ->', () => {
             });
         });
         it('Apply Bottom Legend->', (done: Function) => {
-            helper.switchRibbonTab(6);
+            helper.switchRibbonTab(7);
             helper.getElement('#' + helper.id + '_addchart').click();
             const target: HTMLElement = helper.getElement('#' + helper.id + '_addchart-popup .e-menu-item[aria-label="Legends"]');
             (getComponent(target.parentElement, 'menu') as any).animationSettings.effect = 'None';
@@ -1216,7 +1216,7 @@ describe('Chart ->', () => {
             });
         });
         it('Apply Legend Top->', (done: Function) => {
-            helper.switchRibbonTab(6);
+            helper.switchRibbonTab(7);
             helper.getElement('#' + helper.id + '_addchart').click();
             const target: HTMLElement = helper.getElement('#' + helper.id + '_addchart-popup .e-menu-item[aria-label="Legends"]');
             (getComponent(target.parentElement, 'menu') as any).animationSettings.effect = 'None';
@@ -1236,7 +1236,7 @@ describe('Chart ->', () => {
             });
         });
         it('Apply No Legend->', (done: Function) => {
-            helper.switchRibbonTab(6);
+            helper.switchRibbonTab(7);
             helper.getElement('#' + helper.id + '_addchart').click();
             const target: HTMLElement = helper.getElement('#' + helper.id + '_addchart-popup .e-menu-item[aria-label="Legends"]');
             (getComponent(target.parentElement, 'menu') as any).animationSettings.effect = 'None';
@@ -1371,7 +1371,7 @@ describe('Chart ->', () => {
             });
         });
         it('Apply Left Legend->', (done: Function) => {
-            helper.switchRibbonTab(6);
+            helper.switchRibbonTab(7);
             helper.getElement('#' + helper.id + '_addchart').click();
             const target: HTMLElement = helper.getElement('#' + helper.id + '_addchart-popup .e-menu-item[aria-label="Legends"]');
             (getComponent(target.parentElement, 'menu') as any).animationSettings.effect = 'None';
@@ -1391,7 +1391,7 @@ describe('Chart ->', () => {
             });
         });
         it('Apply Bottom Legend->', (done: Function) => {
-            helper.switchRibbonTab(6);
+            helper.switchRibbonTab(7);
             helper.getElement('#' + helper.id + '_addchart').click();
             const target: HTMLElement = helper.getElement('#' + helper.id + '_addchart-popup .e-menu-item[aria-label="Legends"]');
             (getComponent(target.parentElement, 'menu') as any).animationSettings.effect = 'None';
@@ -1411,7 +1411,7 @@ describe('Chart ->', () => {
             });
         });
         it('Apply Legend Top->', (done: Function) => {
-            helper.switchRibbonTab(6);
+            helper.switchRibbonTab(7);
             helper.getElement('#' + helper.id + '_addchart').click();
             const target: HTMLElement = helper.getElement('#' + helper.id + '_addchart-popup .e-menu-item[aria-label="Legends"]');
             (getComponent(target.parentElement, 'menu') as any).animationSettings.effect = 'None';
@@ -1431,7 +1431,7 @@ describe('Chart ->', () => {
             });
         });
         it('Apply No Legend->', (done: Function) => {
-            helper.switchRibbonTab(6);
+            helper.switchRibbonTab(7);
             helper.getElement('#' + helper.id + '_addchart').click();
             const target: HTMLElement = helper.getElement('#' + helper.id + '_addchart-popup .e-menu-item[aria-label="Legends"]');
             (getComponent(target.parentElement, 'menu') as any).animationSettings.effect = 'None';
@@ -1785,7 +1785,34 @@ describe('Chart ->', () => {
             done();
         });
     });
-        
+
+    describe('994206 - Script error issue->', () => {
+        beforeAll((done: Function) => {
+            helper.initializeSpreadsheet({
+                sheets: [{
+                    ranges: [{ dataSource: defaultData }], frozenRows: 1, frozenColumns: 1,
+                    rows: [{
+                        index: 1,
+                        cells: [{ index: 2, chart: [{ type: 'Scatter', theme: 'Material', isSeriesInRows: true, range: 'Sheet1!A1:M10', id: 'test_chart_freeze_pane', top: 35, left: 145 }] }]
+                    }]
+                }]
+            }, done);
+        });
+        afterAll(() => {
+            helper.invoke('destroy');
+        });
+        it('while interacting with charts containing large data points ', (done: Function) => {
+            const spreadsheet: Spreadsheet = helper.getInstance();
+            const chart: ChartModel[] = spreadsheet.sheets[0].rows[1].cells[2].chart;
+            expect(chart).toBeDefined();
+            expect(chart.length).toBe(1);
+            expect(chart[0].range).toBe('Sheet1!A1:M10');
+            helper.edit('K5', '');
+            expect(spreadsheet.sheets[0].rows[4].cells[10].value).toBe('');
+            done();
+        });
+    });
+    
     describe('EJ2-883265 -> Testing bar chart with Add chart elements UI interaction->', () => {
         beforeAll((done: Function) => {
             helper.initializeSpreadsheet({ sheets: [{ ranges: [{ dataSource: defaultData }] }] }, done);
@@ -2761,7 +2788,7 @@ describe('Chart ->', () => {
                 (getComponent(target.parentElement, 'menu') as any).animationSettings.effect = 'None';
                 helper.triggerMouseAction('mouseover', { x: target.getBoundingClientRect().left + 5, y: target.getBoundingClientRect().top + 5 }, document, target);
                 helper.getElement('#line').click();
-                helper.switchRibbonTab(6);
+                helper.switchRibbonTab(7);
                 helper.getElement('#' + helper.id + '_chart_theme').click();
                 helper.getElement('.e-item[aria-label="Material 3 Dark"]').click();
                 setTimeout(() => {
@@ -2772,7 +2799,7 @@ describe('Chart ->', () => {
             it('Insert chart and apply Fluent 2 Dark theme->', (done: Function) => {
                 const spreadsheet: Spreadsheet = helper.getInstance();
                 spreadsheet.insertChart([{ type: "Column", range: 'G1:H11' }]);
-                helper.switchRibbonTab(6);
+                helper.switchRibbonTab(7);
                 helper.getElement('#' + helper.id + '_chart_theme').click();
                 helper.getElement('.e-item[aria-label="Fluent 2 Dark"]').click();
                 setTimeout(() => {
@@ -2783,7 +2810,7 @@ describe('Chart ->', () => {
             it('Switch chart and apply Fabric theme ->', (done: Function) => {
                 helper.invoke('selectRange', ['A1']);
                 helper.invoke('selectChart');
-                helper.switchRibbonTab(6);
+                helper.switchRibbonTab(7);
                 expect(helper.getElement('#' + helper.id + '_chart_theme').textContent).toContain('Material 3 Dark');
                 helper.getElement('#' + helper.id + '_chart_theme').click();
                 helper.getElement('.e-item[aria-label="Fabric"]').click();
@@ -2795,7 +2822,7 @@ describe('Chart ->', () => {
             it('Switch chart and apply Bootstrap theme->', (done: Function) => {
                 helper.invoke('selectRange', ['G1']);
                 helper.invoke('selectChart');
-                helper.switchRibbonTab(6);
+                helper.switchRibbonTab(7);
                 expect(helper.getElement('#' + helper.id + '_chart_theme').textContent).toContain('Fluent 2 Dark');
                 helper.getElement('#' + helper.id + '_chart_theme').click();
                 helper.getElement('.e-item[aria-label="Bootstrap"]').click();
@@ -2852,6 +2879,7 @@ describe('Chart ->', () => {
                 const spreadsheet: Spreadsheet = helper.getInstance();
                 expect(spreadsheet.sheets[0].rows[1].cells[1].chart.length).toBe(1);
                 helper.invoke('goTo', ['A55']);
+                spreadsheet.notify(onContentScroll, { scrollTop: 1080, scrollLeft: 0 });
                 setTimeout(() => {
                     expect(spreadsheet.sheets[0].paneTopLeftCell).toEqual('A55');
                     helper.invoke('goTo', ['A1']);
@@ -3542,7 +3570,7 @@ describe('Chart ->', () => {
         it('Choosing Fluent 2 Dark in Chart Theme Dropdown->', (done: Function) => {
             const spreadsheet: Spreadsheet = helper.getInstance();
             spreadsheet.insertChart([{ type: "Scatter", range: 'A1:B4' }]);
-            helper.switchRibbonTab(6);
+            helper.switchRibbonTab(7);
             helper.getElement('#' + helper.id + 'switch_row_column_chart').click();
             helper.getElement('#' + helper.id + '_chart_theme').click();
             helper.getElement('.e-item[aria-label="Fluent 2 Dark"]').click();
@@ -3552,7 +3580,7 @@ describe('Chart ->', () => {
             }, 20);
         });
         it('Choosing Material 3 Dark in Chart Theme Dropdown->', (done: Function) => {
-            helper.switchRibbonTab(6);
+            helper.switchRibbonTab(7);
             helper.getElement('#' + helper.id + 'switch_row_column_chart').click();
             helper.getElement('#' + helper.id + '_chart_theme').click();
             helper.getElement('.e-item[aria-label="Material 3 Dark"]').click();
@@ -3574,7 +3602,7 @@ describe('Chart ->', () => {
             spreadsheet.insertChart([{ type: "Column", range: 'A1:H3' }]);
             let cell: CellModel = spreadsheet.sheets[0].rows[0].cells[0];
             expect(cell.chart[0].isSeriesInRows).toBeTruthy();
-            helper.switchRibbonTab(6);
+            helper.switchRibbonTab(7);
             helper.getElement('#' + helper.id + 'switch_row_column_chart').click();
             expect(cell.chart[0].isSeriesInRows).toBeFalsy();
             expect(cell.chart[0].type === 'Column').toBeTruthy();
@@ -3603,7 +3631,7 @@ describe('Chart ->', () => {
         it('Switch row and column->', (done: Function) => {
             const spreadsheet: Spreadsheet = helper.getInstance();
             spreadsheet.insertChart([{ type: "Pie", range: 'D1:H11' }]);
-            helper.switchRibbonTab(6);
+            helper.switchRibbonTab(7);
             helper.getElement('#' + helper.id + 'switch_row_column_chart').click();
             let cell: CellModel = spreadsheet.sheets[0].rows[0].cells[3];
             expect(cell.chart[0].type === 'Pie').toBeTruthy();
@@ -4542,7 +4570,7 @@ describe('Chart ->', () => {
             expect(document.getElementById('chart_30_AxisLabel_1').textContent).toBe('4/4/2014');
             const target: HTMLElement = document.getElementById('chart_3_Series_0_Point_7');
             helper.triggerMouseAction('mousemove', { x: target.getBoundingClientRect().left, y: target.getBoundingClientRect().top }, chart, target);
-            helper.switchRibbonTab(6);
+            helper.switchRibbonTab(7);
             helper.getElement('#' + helper.id + 'switch_row_column_chart').click();
             expect(chartObj.primaryXAxis.valueType).toBe('Category');
             expect(document.getElementById('chart_30_AxisLabel_0').textContent).toBe('Quantity');
@@ -4567,10 +4595,10 @@ describe('Chart ->', () => {
                 expect(document.getElementById('chart_70_AxisLabel_1').textContent).toBe('1/1/1920 0...');
                 const target: HTMLElement = document.getElementById('chart_7_Series_0_Point_7');
                 helper.triggerMouseAction('mousemove', { x: target.getBoundingClientRect().left, y: target.getBoundingClientRect().top }, chart, target);
-                helper.switchRibbonTab(6);
+                helper.switchRibbonTab(7);
                 helper.getElement('#' + helper.id + 'switch_row_column_chart').click();
                 expect(chartObj.primaryXAxis.valueType).toBe('Category');
-                helper.switchRibbonTab(6);
+                helper.switchRibbonTab(7);
                 helper.getElement('#' + helper.id + 'switch_row_column_chart').click();
                 expect(chartObj.primaryXAxis.valueType).toBe('DateTime');
                 expect(document.getElementById('chart_70_AxisLabel_0').textContent).toBe('1/1/1900 0...');

@@ -3503,7 +3503,7 @@ export class Layout {
                     if (this.documentHelper.compatibilityMode === 'Word2003'
                         && !isNullOrUndefined(bodyWidget.page)
                         && ownerPara.isInHeaderFooter) {
-                        if ((floatingItem instanceof TableWidget && !floatingItem.isInsideTable) || (floatingItem instanceof ShapeBase && !floatingItem.paragraph.isInsideTable)) {
+                        if ((floatingItem instanceof TableWidget && !floatingItem.isInsideTable) || (floatingItem instanceof ShapeElementBox && !floatingItem.paragraph.isInsideTable)) {
                             continue;
                         }
                     }

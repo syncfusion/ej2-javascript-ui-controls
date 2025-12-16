@@ -1,1 +1,16 @@
-/* stylelint-disable-line no-empty-source */
+@use 'ej2-base/styles/definition/fluent' as *;
+@forward 'ej2-base/styles/definition/fluent';
+
+$textarea-VH-textarea-padding: 3px 8px !default;
+$textarea-outline-VH-textarea-padding: 3px 8px !default;
+$textarea-filled-VH-textarea-padding: 3px 8px !default;
+$textarea-VV-template-padding: 8px !default;
+$textarea-outline-VV-template-padding: 8px !default;
+$textarea-filled-VV-template-padding: 8px !default;
+$textarea-HV-textarea-padding: 10px 5px 5px 5px !default;
+$textarea-HV-textarea-top: -8px !default;
+$textarea-outline-HV-textarea-padding: 10px 5px 5px 5px !default;
+$textarea-outline-HV-label-top: -8px !default;
+$textarea-filled-HV-textarea-padding: 10px 5px 5px 5px !default;
+$textarea-filled-HV-label-top: -6px !default;
+$textbox-icon-template-separator-color: $border-dark;

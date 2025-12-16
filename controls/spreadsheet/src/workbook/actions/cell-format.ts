@@ -1,10 +1,11 @@
-import { CellStyleModel, getRangeIndexes, setCellFormat, applyCellFormat, activeCellChanged, SetCellFormatArgs, isReadOnly, isReadOnlyCells, workbookReadonlyAlert, mergedRange, MergeArgs, setMerge, updateMergeBorder } from '../common/index';
+import { CellStyleModel, getRangeIndexes, setCellFormat, applyCellFormat, activeCellChanged, SetCellFormatArgs, isReadOnly, isReadOnlyCells, mergedRange, MergeArgs, setMerge, updateMergeBorder, ExtendedSheet, ExtendedThreadedCommentModel } from '../common/index';
 import { CellFormatArgs, getSwapRange, TextDecoration, textDecorationUpdate, ClearOptions, BeforeCellFormatArgs } from '../common/index';
 import { CellStyleExtendedModel, BorderType, clear, getIndexesFromAddress, activeCellMergedRange, deleteHyperlink } from '../common/index';
 import { SheetModel, Workbook, getSheetIndex, isHiddenRow, getSheet, getCell, CellModel, setCell, updateCFModel, getColumn, ColumnModel, RowModel } from '../index';
 import { getRow, ExtendedRowModel, updateCell, CellUpdateArgs, isHeightCheckNeeded, workbookFormulaOperation } from '../index';
 import { ExtendedWorkbook, ConditionalFormat, ConditionalFormatModel, applyCF, ApplyCFArgs, getColorCode } from '../index';
-import { checkColumnValidation, updateHighlight, ValidationModel } from '../index';
+import { checkColumnValidation, updateHighlight, ValidationModel, ExtendedNoteModel } from '../index';
+import { processSheetComments, processSheetNotes } from '../../spreadsheet/common/event';
 
 /**
  * Workbook Cell format.
@@ -634,6 +635,16 @@ export class WorkbookCellFormat {
                         break;
                     case 'Clear All':
                         isValExist = !!(cell.value || cell.formula);
+                        if (cell.comment) {
+                            this.parent.notify(processSheetComments, {
+                                sheet: sheet as ExtendedSheet, id: (cell.comment as ExtendedThreadedCommentModel).id,
+                                isDelete: true, isRefresh: true, sheetIdx: sheetIdx
+                            });
+                        }
+                        if (cell.notes) {
+                            this.parent.notify(
+                                processSheetNotes, { sheet: sheet, id: (cell.notes as ExtendedNoteModel).id, isDelete: true });
+                        }
                         setCell(sRowIdx, sColIdx, sheet, {}, false);
                         if (isValExist) {
                             evtArgs = { action: 'refreshCalculate', rowIndex: sRowIdx, colIndex: sColIdx, sheetIndex: sheetIdx };

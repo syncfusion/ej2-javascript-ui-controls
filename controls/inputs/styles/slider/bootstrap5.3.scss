@@ -1,6 +1,6 @@
-@import 'ej2-base/styles/definition/bootstrap5.3.scss';
-@import 'ej2-popups/styles/popup/bootstrap5.3-definition.scss';
-@import 'ej2-popups/styles/tooltip/bootstrap5.3-definition.scss';
-@import 'bootstrap5.3-definition.scss';
-@import 'all.scss';
-@import 'bigger.scss';
+@use 'ej2-base/styles/definition/bootstrap5.3' as *;
+@use 'ej2-popups/styles/popup/bootstrap5.3-definition' as *;
+@use 'ej2-popups/styles/tooltip/bootstrap5.3-definition' as *;
+@use 'bootstrap5.3-definition' as *;
+@use 'all' as *;
+@use 'bigger' as *;

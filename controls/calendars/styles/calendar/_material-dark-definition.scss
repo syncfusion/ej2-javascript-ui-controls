@@ -1,3 +1,6 @@
+@use 'ej2-base/styles/definition/material-dark' as *;
+@forward 'ej2-base/styles/definition/material-dark';
+
 //default
 $calendar-title-hover-color: $grey-dark-font !default;
 $calendar-icon-hover-color: $grey-dark-font !default;
@@ -70,6 +73,7 @@ $calendar-pointer-events: none !default;
 $calendar-float-right-style: right !default;
 $calendar-icon-padding-top: 0 !default;
 $calendar-header-title-padding: 0 5px !default;
+$border-zero: 0;
 
 //Focus related styles
 $calendar-title-focus-box-shadow: 0 0 0 1px $grey-white !default;
@@ -202,3 +206,12 @@ $calendar-small-title-font-color: $grey-dark-font !default;
 $calendar-bigger-small-table-padding: 0 10px 10px !default;
 $calendar-bigger-small-yeardecade-font-size: 13px !default;
 $calendar-small-font-size: 12px !default;
+
+$line-height: 14px;
+$margin-zero: 0;
+$padding-zero: 0;
+$calendar-bigger-rtl-header-text-indent: 6px !default;
+$calendar-zero-border-radius: 0 !default;
+$calendar-bigger-header-width: 60% !default;
+$calendar-bigger-placeholder-min-height: 392px !default;
+$calendar-small-min-height: 220px !default;

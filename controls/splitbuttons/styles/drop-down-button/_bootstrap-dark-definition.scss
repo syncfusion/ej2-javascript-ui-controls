@@ -1,3 +1,7 @@
+@use 'ej2-base/styles/definition/bootstrap-dark' as *;
+@use 'ej2-buttons/styles/button/bootstrap-dark-definition' as *;
+@forward 'ej2-base/styles/definition/bootstrap-dark';
+@forward 'ej2-buttons/styles/button/bootstrap-dark-definition';
 $drop-down-btn-arrow-content: '\e969' !default;
 $drop-down-btn-vertical-btn-padding: 6px 12px !default;
 $drop-down-btn-vertical-bigger-padding: 8px 16px !default;
@@ -50,3 +54,12 @@ $drop-down-btn-small-caret-icon-font-size-bigger: 10px !default;
 $drop-down-btn-box-shadow: none !default;
 $drop-down-btn-popup-margin-top: 0 !default;
 $drop-down-btn-bigger-popup-margin-top: 0 !default;
+
+$drop-down-btn-line-height: 1 !default;
+$dd-btn-zero-margin-padding: 0 !default;
+$dd-menu-height: 1px !default;
+$dd-menu-icon-width: 1em !default;
+$dd-menu-width: 1px !default;
+$dd-auto-height: auto !default;
+$dd-bgr-seperator-line-height: normal !default;
+$dd-full-width: 100% !default;

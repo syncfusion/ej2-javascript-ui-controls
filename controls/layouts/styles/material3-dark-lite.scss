@@ -1,14 +1,14 @@
-@import 'ej2-base/styles/definition/material3-dark.scss';
-@import 'avatar/material3-dark-definition.scss';
-@import 'avatar/all.scss';
+@use 'ej2-base/styles/definition/material3-dark' as *;
+@use 'avatar/material3-dark-definition' as *;
+@use 'avatar/all' as *;
 
-@import 'card/material3-dark-definition.scss';
-@import 'card/all.scss';
-@import 'splitter/material3-dark-definition.scss';
-@import 'splitter/icons/material3-dark.scss';
-@import 'splitter/all.scss';
-@import 'dashboard-layout/material3-dark-definition.scss';
-@import 'dashboard-layout/icons/material3-dark.scss';
-@import 'dashboard-layout/all.scss';
-@import 'timeline/material3-dark-definition.scss';
-@import 'timeline/all.scss';
+@use 'card/material3-dark-definition' as *;
+@use 'card/all' as *;
+@use 'splitter/material3-dark-definition' as *;
+@use 'splitter/icons/material3-dark' as *;
+@use 'splitter/all' as *;
+@use 'dashboard-layout/material3-dark-definition' as *;
+@use 'dashboard-layout/icons/material3-dark' as *;
+@use 'dashboard-layout/all' as *;
+@use 'timeline/material3-dark-definition' as *;
+@use 'timeline/all' as *;

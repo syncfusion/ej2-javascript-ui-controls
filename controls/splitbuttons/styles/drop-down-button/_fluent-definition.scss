@@ -1,3 +1,7 @@
+@use 'ej2-base/styles/definition/fluent' as *;
+@use 'ej2-buttons/styles/button/fluent-definition' as *;
+@forward 'ej2-base/styles/definition/fluent';
+@forward 'ej2-buttons/styles/button/fluent-definition';
 $drop-down-btn-arrow-content: '\e70d' !default;
 $drop-down-btn-vertical-btn-padding: 6px 12px !default;
 $drop-down-btn-vertical-bigger-padding: 8px 16px !default;
@@ -37,6 +41,9 @@ $drop-down-btn-ul-border: 0 solid $border-light !default;
 $drop-down-btn-li-box-shadow: inset 0 0 0 1px rgba($content-text-color, 1) !default;
 $drop-down-btn-li-border-style: solid !default;
 
+$drop-down-btn-line-height: 1 !default;
+$dd-btn-zero-margin-padding: 0 !default;
+
 //Color
 $drop-down-btn-color: $secondary-text-color !default;
 $drop-down-btn-disable-text: $secondary-text-color-disabled !default;
@@ -53,3 +60,9 @@ $drop-down-btn-li-selection-font-color: $flyout-text-color-selected !default;
 $drop-down-btn-menu-icon-color: $icon-color !default;
 $drop-down-btn-menu-icon-disabled-color: $icon-color !default;
 $drop-down-btn-li-hover-bgcolor: $flyout-bg-color-hover !default;
+$dd-menu-height: 1px !default;
+$dd-menu-icon-width: 1em !default;
+$dd-menu-width: 1px !default;
+$dd-auto-height: auto !default;
+$dd-bgr-seperator-line-height: normal !default;
+$dd-full-width: 100% !default;

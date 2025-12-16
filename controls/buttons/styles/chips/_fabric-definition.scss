@@ -1,4 +1,6 @@
 @use 'sass:color';
+@use 'ej2-base/styles/definition/fabric' as *;
+@forward 'ej2-base/styles/definition/fabric';
 
 //General
 $chip-bg-color: $neutral-light !default;
@@ -587,3 +589,5 @@ $chip-outline-danger-active-border-color: transparent !default;
 $chip-outline-danger-focus-active-border-color: $chip-outline-danger-focus-border-color !default;
 $chip-outline-danger-pressed-border-color: transparent !default;
 $chip-outline-danger-disabled-border-color: $chip-outline-disabled-border-color !default;
+$chip-zero-width: 0 !default;
+$chip-align-line-height: 1 !default;

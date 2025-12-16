@@ -959,6 +959,110 @@ describe('Chart Control', () => {
             chartObj.refresh();
         });
     });
+    // Add this block to spec/chart/polar-radar/polar-radar-axis.spec.ts
+
+    describe('Polar/Radar axis label template rendering', () => {
+        let ele: HTMLElement;
+        let chart: Chart;
+        let loaded: EmitType<ILoadedEventArgs>;
+
+        beforeAll((): void => {
+            ele = createElement('div', { id: 'polarTemplate' });
+            document.body.appendChild(ele);
+            chart = new Chart({
+                primaryXAxis: {
+                    valueType: 'Double',
+                    minimum: 1,
+                    maximum: 5,
+                    interval: 1,
+                    labelTemplate:'<div class="x-tpl">${value}-PX</div>'
+                },
+                primaryYAxis: {
+                    valueType: 'Double',
+                    minimum: 0,
+                    maximum: 50,
+                    interval: 10,
+                    labelTemplate: '<div class="y-tpl">${value}-PY</div>'
+                },
+                series: [{
+                    type: 'Polar',
+                    drawType: 'Line',
+                    animation: { enable: false },
+                    dataSource: [
+                        { x: 1, y: 10 }, { x: 2, y: 15 }, { x: 3, y: 25 }, { x: 4, y: 35 }, { x: 5, y: 45 }
+                    ],
+                    xName: 'x',
+                    yName: 'y'
+                }],
+                legendSettings: { visible: false }
+            });
+        });
+
+        afterAll((): void => {
+            chart.destroy();
+            ele.remove();
+        });
+
+        it('renders templates for X and Y axis labels in Polar with correct count and content', (done: Function) => {
+            loaded = (): void => {
+                // X-axis templates
+                const xLabelsGroup = document.getElementById('polarTemplate_XAxisLabelTemplate_Collection');
+                expect(xLabelsGroup !== null).toBe(true);
+                const xTpls = xLabelsGroup.querySelectorAll('.x-tpl');
+                expect(xTpls.length).toBe(5);
+                expect((xTpls[0] as HTMLElement).innerText.trim()).toBe('1-PX');
+                expect((xTpls[4] as HTMLElement).innerText.trim()).toBe('5-PX');
+
+                // Ensure default <text> elements are not used when template is set
+                expect(xLabelsGroup.querySelectorAll('text').length).toBe(0);
+
+                // Y-axis templates
+                const yLabelsGroup = document.getElementById('polarTemplate_YAxisLabelTemplate_Collection');
+                expect(yLabelsGroup !== null).toBe(true);
+                const yTpls = yLabelsGroup.querySelectorAll('.y-tpl');
+                expect(yTpls.length).toBe(6); // 0,10,20,30,40,50
+                expect((yTpls[0] as HTMLElement).innerText.trim()).toBe('0-PY');
+                expect((yTpls[5] as HTMLElement).innerText.trim()).toBe('50-PY');
+
+                expect(yLabelsGroup.querySelectorAll('text').length).toBe(0);
+
+                done();
+            };
+            chart.loaded = loaded;
+            chart.appendTo('#polarTemplate');
+        });
+
+        it('renders templates correctly in Radar with startAngle and Inside label position', (done: Function) => {
+            loaded = (): void => {
+                const xLabelsGroup = document.getElementById('polarTemplate_XAxisLabelTemplate_Collection');
+                const yLabelsGroup = document.getElementById('polarTemplate_YAxisLabelTemplate_Collection');
+                expect(xLabelsGroup !== null && yLabelsGroup !== null).toBe(true);
+
+                // Counts remain the same with Radar + Inside
+                const xTpls = xLabelsGroup.querySelectorAll('.x-tpl');
+                const yTpls = yLabelsGroup.querySelectorAll('.y-tpl');
+                expect(xTpls.length).toBe(5);
+                expect(yTpls.length).toBe(6);
+
+                // Spot-check content remains templated
+                expect((xTpls[2] as HTMLElement).innerText.trim()).toBe('3-PX');
+                expect((yTpls[3] as HTMLElement).innerText.trim()).toBe('30-PY');
+
+                // Ensure still no default <text> labels
+                expect(xLabelsGroup.querySelectorAll('text').length).toBe(0);
+                expect(yLabelsGroup.querySelectorAll('text').length).toBe(0);
+
+                done();
+            };
+
+            chart.loaded = loaded;
+            chart.series[0].type = 'Radar';
+            chart.primaryXAxis.labelPosition = 'Inside';
+            chart.primaryYAxis.labelPosition = 'Inside';
+            chart.primaryXAxis.startAngle = 90;
+            chart.refresh();
+        });
+    });
     describe('Polar Axis: Trim Axis Labels after legend enabled', () => {
         let chartObj: Chart;
         beforeAll((): void => {

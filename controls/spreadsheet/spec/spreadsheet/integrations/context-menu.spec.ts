@@ -189,7 +189,7 @@ describe('Spreadsheet context menu module ->', () => {
             const coords: DOMRect = <DOMRect>td.getBoundingClientRect();
             helper.triggerMouseAction('contextmenu', { x: coords.x, y: coords.y }, null, td);
             setTimeout(() => {
-                expect(helper.getElements('#' + helper.id + '_contextmenu li').length).toBe(13);
+                expect(helper.getElements('#' + helper.id + '_contextmenu li').length).toBe(14);
                 expect(helper.getElement('#' + helper.id + '_contextmenu li:nth-child(4)').textContent).toBe('Custom Item 1');
                 expect(helper.getElement('#' + helper.id + '_contextmenu li:nth-child(6)').textContent).toBe('Custom Item 2');
                 helper.click('#' + helper.id + '_contextmenu li:nth-child(6)');
@@ -208,7 +208,7 @@ describe('Spreadsheet context menu module ->', () => {
             const coords: DOMRect = <DOMRect>td.getBoundingClientRect();
             helper.triggerMouseAction('contextmenu', { x: coords.x, y: coords.y }, null, td);
             setTimeout(() => {
-                expect(helper.getElements('#' + helper.id + '_contextmenu li').length).toBe(10);
+                expect(helper.getElements('#' + helper.id + '_contextmenu li').length).toBe(11);
                 expect(helper.getElement('#' + helper.id + '_contextmenu li:nth-child(1)').textContent).toBe('Copy');
                 helper.getInstance().contextMenuBeforeOpen = null;
                 done();
@@ -223,7 +223,7 @@ describe('Spreadsheet context menu module ->', () => {
             const coords: DOMRect = <DOMRect>td.getBoundingClientRect();
             helper.triggerMouseAction('contextmenu', { x: coords.x, y: coords.y }, null, td);
             setTimeout(() => {
-                expect(helper.getElement('#' + helper.id + '_contextmenu li:nth-child(11)').classList).toContain('e-disabled');
+                expect(helper.getElement('#' + helper.id + '_contextmenu li:nth-child(12)').classList).toContain('e-disabled');
                 helper.getInstance().contextMenuBeforeOpen = null;
                 done();
             });
@@ -477,7 +477,7 @@ describe('Spreadsheet context menu module ->', () => {
             let coords: DOMRect = <DOMRect>td.getBoundingClientRect();
             helper.triggerMouseAction('contextmenu', { x: coords.x, y: coords.y }, null, td);
             setTimeout(() => {
-                expect(helper.getElements('#' + helper.id + '_contextmenu li').length).toBe(11);
+                expect(helper.getElements('#' + helper.id + '_contextmenu li').length).toBe(12);
                 helper.triggerKeyEvent('keydown', 27, null, false, false);
                 done();
             });
@@ -603,7 +603,7 @@ describe('Spreadsheet context menu module ->', () => {
                     td = document.elementFromPoint(coords.x,coords.y) as HTMLElement;
                     helper.triggerMouseAction('contextmenu', { x: coords.x, y: coords.y }, null, td);
                     setTimeout(() => {
-                        expect(helper.getElements('#' + helper.id + '_contextmenu li').length).toBe(11);
+                        expect(helper.getElements('#' + helper.id + '_contextmenu li').length).toBe(12);
                         done();
                     });
                 });
@@ -750,7 +750,7 @@ describe('Spreadsheet context menu module ->', () => {
             const coords: DOMRect = <DOMRect>td.getBoundingClientRect();
             helper.triggerMouseAction('contextmenu', { x: coords.x, y: coords.y }, null, td);
             setTimeout(() => {
-                expect(helper.getElement('#' + helper.id + '_contextmenu li:nth-child(9)').classList).toContain('e-disabled');
+                expect(helper.getElement('#' + helper.id + '_contextmenu li:nth-child(10)').classList).toContain('e-disabled');
                 done();
             });
         });
@@ -761,7 +761,7 @@ describe('Spreadsheet context menu module ->', () => {
             const coords: DOMRect = <DOMRect>td.getBoundingClientRect();
             helper.triggerMouseAction('contextmenu', { x: coords.x, y: coords.y }, null, td);
             setTimeout(() => {
-                expect(helper.getElement('#' + helper.id + '_contextmenu li:nth-child(9)').classList).toContain('e-disabled');
+                expect(helper.getElement('#' + helper.id + '_contextmenu li:nth-child(10)').classList).toContain('e-disabled');
                 done();
             });
         });
@@ -772,7 +772,7 @@ describe('Spreadsheet context menu module ->', () => {
             const coords: DOMRect = <DOMRect>td.getBoundingClientRect();
             helper.triggerMouseAction('contextmenu', { x: coords.x, y: coords.y }, null, td);
             setTimeout(() => {
-                expect(helper.getElement('#' + helper.id + '_contextmenu li:nth-child(9)').classList).toContain('e-disabled');
+                expect(helper.getElement('#' + helper.id + '_contextmenu li:nth-child(10)').classList).toContain('e-disabled');
                 done();
             });
         });
@@ -909,10 +909,10 @@ describe('Spreadsheet context menu module ->', () => {
                     expect(helper.getElement('#' + helper.id + '_contextmenu li:nth-child(6)').classList).toContain('e-disabled');
                     expect(helper.getElement('#' + helper.id + '_contextmenu li:nth-child(7)').textContent).toBe('Sort');
                     expect(helper.getElement('#' + helper.id + '_contextmenu li:nth-child(7)').classList).toContain('e-disabled');
-                    expect(helper.getElement('#' + helper.id + '_contextmenu li:nth-child(9)').textContent).toBe('Add Note');
-                    expect(helper.getElement('#' + helper.id + '_contextmenu li:nth-child(9)').classList).toContain('e-disabled');
-                    expect(helper.getElement('#' + helper.id + '_contextmenu li:nth-child(11)').textContent).toBe('Hyperlink');
-                    expect(helper.getElement('#' + helper.id + '_contextmenu li:nth-child(11)').classList).toContain('e-disabled');
+                    expect(helper.getElement('#' + helper.id + '_contextmenu li:nth-child(10)').textContent).toBe('Add Note');
+                    expect(helper.getElement('#' + helper.id + '_contextmenu li:nth-child(10)').classList).toContain('e-disabled');
+                    expect(helper.getElement('#' + helper.id + '_contextmenu li:nth-child(12)').textContent).toBe('Hyperlink');
+                    expect(helper.getElement('#' + helper.id + '_contextmenu li:nth-child(12)').classList).toContain('e-disabled');
                     done();
                 });
             });

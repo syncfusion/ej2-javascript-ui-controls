@@ -20,3 +20,4 @@ export type FindModeType = 'Sheet' | 'Workbook';
  * Defines the print modes.
  */
 export type PrintType = 'ActiveSheet' | 'Workbook';
+

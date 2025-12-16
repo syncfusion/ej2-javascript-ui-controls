@@ -9,6 +9,7 @@ import { DateProcessor } from '../base/date-processor';
 import { ViolationType } from '../base/enum';
 import { TaskFieldsModel } from '../models/task-fields-model';
 import { RadioButton } from '@syncfusion/ej2-buttons';
+import { CalendarContext } from '../base/calendar-context';
 /**
  * File for handling connector line edit operation in Gantt.
  *
@@ -1031,6 +1032,9 @@ export class ConnectorLineEdit {
         let violatedParent: IGanttData;
         let ganttTaskData: ITaskData;
         let violateType: string;
+        const calendarContext: CalendarContext = ganttRecord && ganttRecord.ganttProperties && ganttRecord.ganttProperties.calendarContext
+                            ? ganttRecord.ganttProperties.calendarContext
+                            : this.parent.defaultCalendarContext;
         const startDate: Date = this.parent.predecessorModule.getPredecessorDate(ganttRecord, predecessor, null);
         if (data) {
             ganttTaskData  = data.ganttProperties;
@@ -1050,7 +1054,8 @@ export class ConnectorLineEdit {
                     this.parent.durationUnit,
                     ganttTaskData.isAutoSchedule,
                     ganttTaskData.isMilestone,
-                    true
+                    true,
+                    calendarContext
                 );
                 if (duration !== 0 || (duration === 0 && this.parent.updateOffsetOnTaskbarEdit === false)) {
                     if (ganttTaskData.startDate < startDate) {
@@ -1096,7 +1101,8 @@ export class ConnectorLineEdit {
                     this.parent.durationUnit,
                     parentGanttRecord.ganttProperties.isAutoSchedule,
                     parentGanttRecord.ganttProperties.isMilestone,
-                    true
+                    true,
+                    calendarContext
                 );
                 if (
                     duration !== 0 || (duration === 0 && this.parent.updateOffsetOnTaskbarEdit === false)
@@ -1116,7 +1122,8 @@ export class ConnectorLineEdit {
                     this.parent.durationUnit,
                     parentGanttRecord.ganttProperties.isAutoSchedule,
                     parentGanttRecord.ganttProperties.isMilestone,
-                    true
+                    true,
+                    calendarContext
                 );
                 if (duration !== 0 || (duration === 0 && this.parent.updateOffsetOnTaskbarEdit === false)) {
                     if (endDate < parentGanttRecord.ganttProperties.startDate) {
@@ -1253,7 +1260,7 @@ export class ConnectorLineEdit {
         parentPredecessor.splice(parentIndex, 1);
         const predecessorString: string = this.parent.predecessorModule.getPredecessorStringValue(childRecord);
         childPredecessor.push(predecessor[0]);
-        this.updatePredecessor(childRecord, predecessorString);
+        this.parent.connectorLineEditModule.updatePredecessor(childRecord, predecessorString);
     }
 
     /**

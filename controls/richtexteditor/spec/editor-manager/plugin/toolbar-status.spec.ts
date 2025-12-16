@@ -359,6 +359,7 @@ describe('EJ2-69534 - Font-Size dynamic update using custom class name style tag
     });
     afterAll(() => {
         detach(divElement);
+        styleElement.remove();
     });
     it('Check Font-size value property ', () => {
         let node: Node = document.getElementById('paragraph1');

@@ -75,6 +75,19 @@ export class ContextMenu {
             element.insertBefore(iconSpan, this.parent.view === 'Details' ? element.childNodes[1] : element.childNodes[0]);
             iconSpan.setAttribute('class', CLS.ICON_GRID + ' ' + CLS.MENU_ICON);
         }
+        if (args.item.id === this.getMenuId('fileupload')) {
+            this.renderFileFolderIcons(args, CLS.ICON_FILE, !this.parent.uploadObj.directoryUpload);
+        }
+        if (args.item.id === this.getMenuId('folderupload')) {
+            this.renderFileFolderIcons(args, CLS.ICON_FOLDER, this.parent.uploadObj.directoryUpload);
+        }
+    }
+
+    public renderFileFolderIcons(menuArgs: MenuEventArgs, fileFolderIcon: string, isDirectory: boolean): void {
+        const iconSpan: HTMLElement = createElement('span');
+        const element: HTMLElement = menuArgs.element;
+        element.insertBefore(iconSpan, isDirectory ? element.childNodes[1] : element.childNodes[0]);
+        iconSpan.setAttribute('class', fileFolderIcon + ' ' + CLS.MENU_ICON);
     }
 
     public onBeforeClose(args: BeforeOpenCloseMenuEventArgs): void {
@@ -396,7 +409,7 @@ export class ContextMenu {
         if (isNOU(args.item) || !args.item.id) { return; }
         const itemText: string = args.item.id.substr((this.parent.element.id + '_cm_').length);
         let details: Object[];
-        if (itemText === 'refresh' || itemText === 'newfolder' || itemText === 'upload') {
+        if (itemText === 'refresh' || itemText === 'newfolder' || itemText === 'fileupload' || itemText === 'folderupload') {
             details = [getPathObject(this.parent)];
             this.parent.itemData = details;
         } else {
@@ -500,9 +513,6 @@ export class ContextMenu {
                 case 'newfolder':
                     createNewFolder(this.parent);
                     break;
-                case 'upload':
-                    uploadItem(this.parent);
-                    break;
                 case 'name':
                 case 'size':
                 case 'date':
@@ -523,6 +533,12 @@ export class ContextMenu {
                     /* istanbul ignore next */
                 case 'detailsview':
                     updateLayout(this.parent, 'Details');
+                    break;
+                case 'fileupload':
+                case 'folderupload':
+                    this.parent.setProperties({ uploadSettings: { directoryUpload: itemText === 'fileupload' ? false : true } });
+                    this.parent.dataBind();
+                    uploadItem(this.parent);
                     break;
                 }
             }
@@ -600,7 +616,19 @@ export class ContextMenu {
                 item = { id: itemId, text: itemText, iconCss: CLS.ICON_OPEN };
                 break;
             case 'Upload':
-                item = { id: itemId, text: itemText, iconCss: CLS.ICON_UPLOAD };
+                item = {
+                    id: itemId, text: itemText, iconCss: CLS.ICON_UPLOAD,
+                    items: [
+                        {
+                            id: this.getMenuId('folderupload'), text: getLocaleText(this.parent, 'Upload-Folder'),
+                            iconCss: !this.parent.uploadObj.directoryUpload ? null : CLS.TB_OPTION_TICK
+                        },
+                        {
+                            id: this.getMenuId('fileupload'), text: getLocaleText(this.parent, 'Upload-File'),
+                            iconCss: this.parent.uploadObj.directoryUpload ? null : CLS.TB_OPTION_TICK
+                        }
+                    ]
+                };
                 break;
             case 'Cut':
                 item = { id: itemId, text: itemText, iconCss: CLS.ICON_CUT };

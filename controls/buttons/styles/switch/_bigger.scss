@@ -1,3 +1,5 @@
+@use 'ej2-base/styles/common/mixin' as *;
+@use './theme-variables' as *;
 @include export-module('switch-bigger') {
   #{if(&, '&', '*')}.e-bigger.e-small .e-switch-wrapper,
   #{if(&, '&', '*')}.e-bigger.e-small.e-switch-wrapper,
@@ -6,7 +8,7 @@
     height: $switch-bigger-small-wrapper-height;
     width: $switch-bigger-small-wrapper-width;
     @if $skin-name == 'fluent2' {
-      margin: 8px;
+      margin: $switch-bgr-small-wrapper-margin;
     }
 
     & .e-switch-handle {
@@ -17,7 +19,7 @@
     }
 
     & .e-ripple-container {
-      border-radius: 50%;
+      border-radius: $switch-ripple-border-radius;
       height: $switch-bigger-small-ripple-height;
       left: $switch-bigger-small-ripple-left;
       pointer-events: none;
@@ -105,7 +107,7 @@
     height: $switch-bigger-wrapper-height;
     width: $switch-bigger-wrapper-width;
     @if $skin-name == 'fluent2' {
-      margin: 10px;
+      margin: $switch-bgr-wrapper-margin;
     }
 
     & .e-switch-handle {
@@ -202,7 +204,7 @@
       }
 
       & .e-ripple-container {
-        border-radius: 50%;
+        border-radius: $switch-ripple-border-radius;
         height: $switch-bigger-small-ripple-height;
         left: $switch-bigger-small-ripple-left;
         pointer-events: none;

@@ -83,7 +83,9 @@ export class ActionEvents {
             args.action === 'beforeWrap' || args.action === 'beforeReplace' || args.action === 'filter' || args.action === 'beforeClear' ||
             args.action === 'beforeInsertImage' || args.action === 'beforeInsertChart' || args.action === 'chartDesign' ||
             args.action === 'cellDelete' || args.action === 'autofill' || args.action === 'validation' ||
-            args.action === 'removeValidation' || args.action === 'hyperlink' || args.action === 'removeHyperlink' || args.action === 'deleteImage')) {
+            args.action === 'removeValidation' || args.action === 'hyperlink' || args.action === 'removeHyperlink' || args.action === 'deleteImage' ||
+            args.action === 'addComment' || args.action === 'editComment' || args.action === 'deleteComment' || args.action === 'resolveComment' ||
+            args.action === 'reopenComment' || args.action === 'addReply' || args.action === 'editReply' || args.action === 'deleteReply')) {
             this.parent.notify(setActionData, { args: args });
         }
         if (preventAction) { args.preventAction = true; }

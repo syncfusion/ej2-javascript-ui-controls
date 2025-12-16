@@ -10,7 +10,7 @@ import { isIDevice, setEditFrameFocus } from '../../common/util';
  * Indents internal component
  *
  * @hidden
- * @deprecated
+ * @private
  */
 export class Indents {
     private parent: EditorManager;
@@ -20,7 +20,7 @@ export class Indents {
      *
      * @param {EditorManager} parent - specifies the parent element
      * @hidden
-     * @deprecated
+     * @private
      */
     public constructor(parent: EditorManager) {
         this.parent = parent;

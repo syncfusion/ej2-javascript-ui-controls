@@ -1,9 +1,9 @@
-@import 'ej2-base/styles/definition/fabric.scss';
-@import '../context-menu/fabric-definition.scss';
-@import '../h-scroll/fabric-definition.scss';
-@import '../v-scroll/fabric-definition.scss';
-@import 'ej2-popups/styles/popup/fabric-definition.scss';
-@import 'fabric-definition.scss';
-@import 'icons/fabric.scss';
-@import 'all.scss';
-@import 'bigger.scss';
+@use 'ej2-base/styles/definition/fabric' as *;
+@use '../context-menu/fabric-definition' as *;
+@use '../h-scroll/fabric-definition' as *;
+@use '../v-scroll/fabric-definition' as *;
+@use 'ej2-popups/styles/popup/fabric-definition' as *;
+@use 'fabric-definition' as *;
+@use 'icons/fabric' as *;
+@use 'all' as *;
+@use 'bigger' as *;

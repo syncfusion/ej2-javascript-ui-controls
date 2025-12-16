@@ -1,11 +1,14 @@
+@use 'ej2-base/styles/definition/tailwind3' as *;
+@forward 'ej2-base/styles/definition/tailwind3';
+
 //Layout Variables Start
 $dialog-close-button-left: 0 !default;
 $dialog-header-border: 1px solid $border-light !default;
 $dialog-close-icon-font-size: 14px !default;
 $dialog-bigger-close-icon-font-size: 16px !default;
-$footer-content-border-radius: 8px !default;
-$header-content-border-radius: 8px !default;
-$dialog-border-radius: 8px !default;
+$footer-content-border-radius: $radius-8 !default;
+$header-content-border-radius: $radius-8 !default;
+$dialog-border-radius: $radius-8 !default;
 $dialog-border: 1px solid $border-light !default;
 $dialog-content-font-size: $text-sm !default;
 $dialog-header-line-height: 1.5 !default;
@@ -92,3 +95,14 @@ $dialog-footer-flat-hover-btn-bg-color: $secondary-bg-color-hover !default;
 $dialog-footer-flat-btn-border-color: $secondary-border-color !default;
 $dialog-footer-flat-btn-content-color: $secondary-text-color !default;
 $dialog-enable-resize-padding-bottom: 15px !default;
+$dialog-bigger-rtl-footer-btn-margin-left: 0 !default;
+$dialog-zero-padding-margin: 0 !default;
+$dialog-alert-popup-margin: 30px !default;
+$dialog-full-width: 100% !default;
+$dialog-header-width: 80% !default;
+$dialog-max-height: 98% !default;
+$dialog-full-height: 100% !default;
+$dialog-mobile-width: 600px !default;
+$dialog-auto-width: auto !default;
+$dialog-bigger-header-content-height: 56px !default;
+$dialog-btn-icon-close-margin-top: -25px !default;

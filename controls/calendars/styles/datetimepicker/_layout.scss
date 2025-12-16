@@ -1,3 +1,5 @@
+@use 'ej2-base/styles/common/mixin' as *;
+@use './theme-variables' as *;
 @include export-module('datetimepicker-layout') {
   // datetimepicker layout
   .e-input-group.e-control-wrapper.e-datetime-wrapper.e-non-edit.e-input-focus .e-input:focus ~ .e-clear-icon,
@@ -68,19 +70,19 @@
     align-items: center;
     display: flex;
     flex-direction: column;
-    height: 100%;
+    height: $datetime-full-height;
     justify-content: center;
-    left: 0;
-    max-height: 100%;
+    left: $margin-zero;
+    max-height: $datetime-full-height;
     position: fixed;
-    top: 0;
-    width: 100%;
+    top: $margin-zero;
+    width: $date-time-full-width;
     z-index: 1002;
   
     .e-datetimepicker.e-popup.e-lib.e-control.e-popup-open {
-      left: 0 !important; /* stylelint-disable-line declaration-no-important */
+      left: $margin-zero !important; /* stylelint-disable-line declaration-no-important */
       position: relative;
-      top: 0 !important; /* stylelint-disable-line declaration-no-important */
+      top: $margin-zero !important; /* stylelint-disable-line declaration-no-important */
     }
   }
 
@@ -91,19 +93,19 @@
     @if $skin-name == 'Material3' {
       background: $datetime-default-overlay;
     }
-    height: 100%;
-    left: 0;
+    height: $datetime-full-height;
+    left: $margin-zero;
     opacity: .5;
     pointer-events: auto;
     position: fixed;
-    top: 0;
-    width: 100%;
+    top: $margin-zero;
+    width: $date-time-full-width;
     z-index: 999;
   }
 
   #{&}.e-datetimepicker.e-popup {
     border-style: solid;
-    border-width: 1px;
+    border-width: $date-time-border-width;
     overflow: auto;
 
     #{if(&, '&', '*')} .e-content {
@@ -111,12 +113,12 @@
     }
 
     #{if(&, '&', '*')} .e-list-parent.e-ul {
-      margin: 0;
+      margin: $margin-zero;
       @if $skin-name != 'Material3' {
-        padding: $datetime-list-normal-padding 0;
+        padding: $datetime-list-parent-padding;
       }
       @else {
-        padding: 0;
+        padding: $margin-zero;
       }
 
       #{if(&, '&', '*')} .e-list-item {
@@ -172,7 +174,7 @@
 
   .e-content-placeholder.e-datetimepicker.e-placeholder-datetimepicker {
     background-size: 250px 33px;
-    min-height: 33px;
+    min-height: $datetime-content-place-min-height;
   }
 
   .e-datetimepicker.e-popup-expand.e-popup {

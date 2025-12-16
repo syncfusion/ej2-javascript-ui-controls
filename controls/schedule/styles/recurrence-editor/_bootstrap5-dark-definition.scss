@@ -1,1 +1,41 @@
-@import './bootstrap5-definition.scss';
+@use 'ej2-base/styles/definition/bootstrap5-dark' as *;
+@forward 'ej2-base/styles/definition/bootstrap5-dark';
+$recurrence-label-bottom: 7px !default;
+$recurrence-month-label-bottom: 5px !default;
+$recurrence-month-label-bottom-bgr: 0 !default;
+$recurrence-label-font-weight: $font-weight-medium !default;
+$recurrence-label-font-nrml-size: 12px !default;
+$recurrence-label-font-bgr-size: 16px !default;
+$recurrence-left-padding: 0 8px 16px 0 !default;
+$recurrence-week-position-bgr-min-width: 130px !default;
+$recurrence-day-position-bgr-min-width: 190px !default;
+$recurrence-day-position-bgr-padding-left: 54px !default;
+$recurrence-end-bgr-padding-right: 16px !default;
+$recurrence-week-position-min-width: 98px !default;
+$recurrence-end-on-date-margin-top: 24px !default;
+$recurrence-repeat-on-week-selector-margin-bottom: 18px !default;
+
+$recurrence-font-weight-normal: normal !default;
+$recurrence-radius-50: 50% !default;
+
+$recurrence-height-35: 35px !default;
+$recurrence-height-40: 40px !default;
+
+$recurrence-spacing-0: 0 !default;
+$recurrence-spacing-1: 1px !default;
+$recurrence-spacing-3: 3px !default;
+$recurrence-spacing-5: 5px !default;
+$recurrence-spacing-6: 6px !default;
+$recurrence-spacing-8: 8px !default;
+$recurrence-spacing-10: 10px !default;
+$recurrence-spacing-11: 11px !default;
+$recurrence-spacing-12: 12px !default;
+$recurrence-spacing-14: 14px !default;
+$recurrence-spacing-16: 16px !default;
+$recurrence-spacing-18: 18px !default;
+$recurrence-spacing-20: 20px !default;
+$recurrence-spacing-50: 50px !default;
+$recurrence-spacing-59: 59px !default;
+$recurrence-spacing-64: 64px !default;
+
+$recurrence-spacing-2-5: 2.5% !default;

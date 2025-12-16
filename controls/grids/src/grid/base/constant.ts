@@ -7,6 +7,8 @@ export const load: string = 'load';
 /** @hidden */
 export const rowDataBound: string = 'rowDataBound';
 /** @hidden */
+export const isRowPinned: string = 'isRowPinned';
+/** @hidden */
 export const queryCellInfo: string = 'queryCellInfo';
 /** @hidden */
 export const headerCellInfo: string = 'headerCellInfo';
@@ -62,6 +64,10 @@ export const beforePrint: string = 'beforePrint';
 export const printComplete: string = 'printComplete';
 /** @hidden */
 export const detailDataBound: string = 'detailDataBound';
+/** @hidden */
+export const detailExpand: string = 'detailExpand';
+/** @hidden */
+export const detailCollapse: string = 'detailCollapse';
 /** @hidden */
 export const toolbarClick: string = 'toolbarClick';
 /** @hidden */

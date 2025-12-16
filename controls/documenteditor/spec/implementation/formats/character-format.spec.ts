@@ -345,7 +345,6 @@ describe('container document character format validation', () => {
         element = undefined;
         container = undefined;
     });
-
     it('Set character format API validation', () => {
         console.log('Set character format API validation');
         container.documentEditor.openBlank();
@@ -377,7 +376,6 @@ describe('container document default format validation', () => {
         element = undefined;
         container = undefined;
     });
-
     it('Set document defalut character format API validation', () => {
         console.log('Set character format API validation');
         container.documentEditor.openBlank();

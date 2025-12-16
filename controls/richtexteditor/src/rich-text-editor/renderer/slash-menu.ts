@@ -119,7 +119,7 @@ export class SlashMenu {
         args.cancel = true;
         this.parent.focusIn();
         this.savedSelection.restore();
-        const item: FieldSettingsModel = args.itemData;
+        const item: FieldSettingsModel = args.itemData as FieldSettingsModel;
         const selectEventArgs: SlashMenuItemSelectArgs = {
             isInteracted: args.isInteracted,
             item: args.item,

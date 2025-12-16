@@ -1,3 +1,5 @@
+@use 'ej2-base/styles/common/mixin' as *;
+@use './theme-variables' as *;
 @mixin ripple-container {
   bottom: $cbox-ripple-small-size;
   height: $cbox-ripple-small-height;
@@ -12,7 +14,7 @@
   .e-css.e-checkbox-wrapper {
     cursor: pointer;
     display: inline-block;
-    line-height: 1;
+    line-height: $cbox-wrapper-line-height;
     outline: none;
     user-select: none;
     @if $skin-name == 'FluentUI' {
@@ -20,16 +22,16 @@
       padding: 3px;
     }
     @if $skin-name == 'fluent2' {
-      border-radius: 4px;
+      border-radius: $cbox-nrml-checkbox-border-radius;
       border: 1px solid transparent;
-      line-height: 0;
+      line-height: $cbox-label-line-height;
     }
     @at-root {
       & label {
         cursor: pointer;
         display: inline-block;
-        line-height: 0;
-        margin: 0;
+        line-height: $cbox-label-line-height;
+        margin: $cbox-zero-margin;
         position: relative;
         white-space: nowrap;
       }
@@ -54,7 +56,7 @@
         }
         @if $skin-name == 'fluent2' {
           & {
-            border-radius: 4px;
+            border-radius: $cbox-nrml-checkbox-border-radius;
             box-shadow: $shadow-focus-ring1;
           }
         }
@@ -74,7 +76,7 @@
       }
 
       & .e-ripple-container {
-        border-radius: 50%;
+        border-radius: $cbox-ripple-container-border-radius;
         bottom: $cbox-ripple-size;
         height: $cbox-ripple-height;
         left: $cbox-ripple-size;
@@ -87,7 +89,7 @@
 
         & .e-ripple-element {
           @if $skin-name == 'Material3' {
-            border-radius: 50%;
+            border-radius: $cbox-ripple-container-border-radius;
           }
         }
       }
@@ -108,14 +110,14 @@
       }
 
       & .e-checkbox {
-        height: 1px;
+        height: $cbox-nrml-height;
         opacity: 0;
         position: absolute;
-        width: 1px;
+        width: $cbox-nrml-width;
 
         +.e-label {
           @if $skin-name == 'fluent2' {
-            margin: 6px 4px 6px 8px;
+            margin: $cbox-nrml-label-margin;
           }
           @else {
             margin-right: $cbox-margin;
@@ -137,12 +139,12 @@
         vertical-align: middle;
         width: $cbox-width;
         @if $skin-name == 'fluent2' {
-          margin: 7.2px 8px;
+          margin: $cbox-nrml-frame-margin;
         }
 
         +.e-label {
           @if $skin-name == 'fluent2' {
-            margin: 6px 8px 6px 4px;
+            margin: $cbox-nrml-label-frame-margin;
           }
           @else {
             margin-left: $cbox-margin;
@@ -150,7 +152,7 @@
         }
 
         +.e-ripple-container {
-          left: auto;
+          left: $cbox-auto-width;
         }
       }
 
@@ -186,7 +188,7 @@
 
         & .e-frame {
           @if $skin-name != 'fluent2' {
-            margin: 0;
+            margin: $cbox-zero-margin;
           }
 
           &:hover {
@@ -203,22 +205,22 @@
 
           + .e-ripple-container {
             left: $cbox-ripple-size;
-            right: auto;
+            right: $cbox-auto-width;
           }
         }
 
         & .e-label {
           @if $skin-name == 'fluent2' {
-            margin: 6px 4px 6px 8px;
+            margin: $cbox-nrml-label-margin;
           }
           @else {
-            margin-left: 0;
+            margin-left: $cbox-zero-margin;
             margin-right: $cbox-margin;
           }
 
           +.e-frame {
             @if $skin-name != 'fluent2' {
-              margin: 0;
+              margin: $cbox-zero-margin;
             }
           }
         }
@@ -226,11 +228,11 @@
         & .e-checkbox {
           +.e-label {
             @if $skin-name == 'fluent2' {
-              margin: 6px 4px 6px 8px;
+              margin: $cbox-nrml-label-margin;
             }
             @else {
               margin-left: $cbox-margin;
-              margin-right: 0;
+              margin-right: $cbox-zero-margin;
             }
           }
         }
@@ -264,15 +266,16 @@
     }
   }
 
-  .e-checkbox-wrapper[readonly] {
-    pointer-events: none;
-  }
-
   .e-overlay .e-checkbox-wrapper.e-pointer-event .e-ripple-container {
     pointer-events: none;
   }
+
   .e-checkbox-wrapper.e-pointer-event .e-ripple-container{
     pointer-events: auto;
+  }
+
+  .e-checkbox-wrapper[readonly] {
+    pointer-events: none;
   }
 
   .e-small .e-checkbox-wrapper,
@@ -284,7 +287,7 @@
       line-height: $cbox-small-lineheight;
       width: $cbox-small-width;
       @if $skin-name == 'fluent2' {
-        margin: 6.2px 8px;
+        margin: $cbox-small-frame-margin;
       }
 
       &:hover {

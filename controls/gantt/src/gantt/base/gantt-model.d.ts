@@ -1,4 +1,4 @@
-import { Component, createElement, Complex, addClass, removeClass, Event, EmitType, formatUnit, Browser, closest } from '@syncfusion/ej2-base';import { Internationalization, extend, getValue, isObjectArray, isObject, setValue, isUndefined } from '@syncfusion/ej2-base';import { Property, NotifyPropertyChanges, INotifyPropertyChanged, L10n, ModuleDeclaration, EventHandler } from '@syncfusion/ej2-base';import { isNullOrUndefined, KeyboardEvents, KeyboardEventArgs, Collection, append, remove } from '@syncfusion/ej2-base';import { createSpinner, showSpinner, hideSpinner, Dialog } from '@syncfusion/ej2-popups';import { RowDragEventArgs, GridColumn} from '@syncfusion/ej2-grids';import { TaskProcessor } from './task-processor';import { GanttChart } from './gantt-chart';import { Timeline } from '../renderer/timeline';import { GanttTreeGrid } from './tree-grid';import { Toolbar } from '../actions/toolbar';import { CriticalPath } from '../actions/critical-path';import { IGanttData, IWorkingTimeRange, IQueryTaskbarInfoEventArgs, BeforeTooltipRenderEventArgs, IDependencyEventArgs, IGanttTaskInfo, ITaskSegment } from './interface';import { DataStateChangeEventArgs } from '@syncfusion/ej2-treegrid';import { ITaskbarEditedEventArgs, IParent, ITaskData, PdfColumnHeaderQueryCellInfoEventArgs } from './interface';import { ICollapsingEventArgs, CellEditArgs, PdfQueryTimelineCellInfoEventArgs } from './interface';import { IConnectorLineObject, IValidateArgs, IValidateMode, ITaskAddedEventArgs, IKeyPressedEventArgs, IEventMarkerInfo } from './interface';import { PdfExportProperties, ISplitterResizedEventArgs } from './interface';import { ZoomEventArgs, IActionBeginEventArgs, CellSelectingEventArgs, RowDeselectEventArgs, PdfQueryCellInfoEventArgs } from './interface';import { ITimeSpanEventArgs, ZoomTimelineSettings, QueryCellInfoEventArgs, RowDataBoundEventArgs, RowSelectEventArgs } from './interface';import { TaskFieldsModel, TimelineSettingsModel, SplitterSettingsModel, SortSettings, SortSettingsModel } from '../models/models';import { EventMarkerModel, AddDialogFieldSettingsModel, EditDialogFieldSettingsModel, EditSettingsModel } from '../models/models';import { HolidayModel, DayWorkingTimeModel, FilterSettingsModel, SelectionSettingsModel, LoadingIndicatorModel, LoadingIndicator } from '../models/models';import { TaskFields, TimelineSettings, Holiday, EventMarker, DayWorkingTime, EditSettings, SelectionSettings } from '../models/models';import { FilterSettings, SplitterSettings, TooltipSettings, LabelSettings, LabelSettingsModel } from '../models/models';import { SearchSettingsModel, SearchSettings, ResourceFields, ResourceFieldsModel } from '../models/models';import { ItemModel, ClickEventArgs } from '@syncfusion/ej2-navigations';import { DateProcessor } from './date-processor';import { ChartRows } from '../renderer/chart-rows';import { Dependency } from '../actions/dependency';import * as cls from './css-constants';import { Query, DataManager } from '@syncfusion/ej2-data';import { Column, ColumnModel } from '../models/column';import { TreeGrid, FilterSettingsModel as TreeGridFilterSettingModel } from '@syncfusion/ej2-treegrid';import { Sort } from '../actions/sort';import { CellSelectEventArgs, ISelectedCell, ContextMenuItemModel } from '@syncfusion/ej2-grids';import { CellDeselectEventArgs, IIndex, FailureEventArgs } from '@syncfusion/ej2-grids';import { HeaderCellInfoEventArgs, ColumnMenuClickEventArgs, ColumnMenuOpenEventArgs } from '@syncfusion/ej2-grids';import { ColumnMenuItemModel, ExcelQueryCellInfoEventArgs } from '@syncfusion/ej2-grids';import { ExcelExportProperties, ExcelExportCompleteArgs, ExcelHeaderQueryCellInfoEventArgs } from '@syncfusion/ej2-grids';import { RowDD } from '../actions/rowdragdrop';import { Filter } from '../actions/filter';import { PageEventArgs, FilterEventArgs, SortEventArgs, ResizeArgs, ColumnDragEventArgs, getActualProperties } from '@syncfusion/ej2-grids';import { RenderDayCellEventArgs } from '@syncfusion/ej2-calendars';import { ConnectorLine } from '../renderer/connector-line';import { ConnectorLineEdit } from '../actions/connector-line-edit';import { Edit } from '../actions/edit';import { Splitter } from './splitter';import { ResizeEventArgs, ResizingEventArgs } from '@syncfusion/ej2-layouts';import { TooltipSettingsModel } from '../models/tooltip-settings-model';import { Tooltip } from '../renderer/tooltip';import { ToolbarItem, ColumnMenuItem, RowPosition, DurationUnit, SortDirection, GanttAction, ViolationType } from './enum';import { GridLine, ContextMenuItem, ScheduleMode, ViewType } from './enum';import { Selection } from '../actions/selection';import { ExcelExport } from '../actions/excel-export';import { DayMarkers } from '../actions/day-markers';import { ContextMenu } from './../actions/context-menu';import { RowSelectingEventArgs } from './interface';import { ContextMenuOpenEventArgs as CMenuOpenEventArgs, ContextMenuClickEventArgs as CMenuClickEventArgs } from './interface';import { ColumnMenu } from '../actions/column-menu';import { ITaskbarClickEventArgs, RecordDoubleClickEventArgs, IMouseMoveEventArgs } from './interface';import { PdfExport } from '../actions/pdf-export';import { WorkUnit, TaskType } from './enum';import { FocusModule } from '../actions/keyboard';import { VirtualScroll } from '../actions/virtual-scroll';import { isCountRequired } from './utils';import { TaskbarEdit } from '../actions/taskbar-edit';import { UndoRedo } from '../actions/undo-redo';import { WeekWorkingTimeModel } from '../models/week-working-time-model';import { WeekWorkingTime } from '../models/week-working-time';import {CellSaveArgs} from '@syncfusion/ej2-grids';
+import { Component, createElement, Complex, addClass, removeClass, Event, EmitType, formatUnit, Browser, closest } from '@syncfusion/ej2-base';import { Internationalization, extend, getValue, isObjectArray, isObject, setValue, isUndefined } from '@syncfusion/ej2-base';import { Property, NotifyPropertyChanges, INotifyPropertyChanged, L10n, ModuleDeclaration, EventHandler } from '@syncfusion/ej2-base';import { isNullOrUndefined, KeyboardEvents, KeyboardEventArgs, Collection, append, remove } from '@syncfusion/ej2-base';import { createSpinner, showSpinner, hideSpinner, Dialog } from '@syncfusion/ej2-popups';import { RowDragEventArgs, GridColumn} from '@syncfusion/ej2-grids';import { TaskProcessor } from './task-processor';import { GanttChart } from './gantt-chart';import { Timeline } from '../renderer/timeline';import { GanttTreeGrid } from './tree-grid';import { Toolbar } from '../actions/toolbar';import { CriticalPath } from '../actions/critical-path';import { IGanttData, IWorkingTimeRange, IQueryTaskbarInfoEventArgs, BeforeTooltipRenderEventArgs, IDependencyEventArgs, IGanttTaskInfo, ITaskSegment } from './interface';import { DataStateChangeEventArgs } from '@syncfusion/ej2-treegrid';import { ITaskbarEditedEventArgs, IParent, ITaskData, PdfColumnHeaderQueryCellInfoEventArgs } from './interface';import { ICollapsingEventArgs, CellEditArgs, PdfQueryTimelineCellInfoEventArgs } from './interface';import { IConnectorLineObject, IValidateArgs, IValidateMode, ITaskAddedEventArgs, IKeyPressedEventArgs, IEventMarkerInfo } from './interface';import { PdfExportProperties, ISplitterResizedEventArgs } from './interface';import { ZoomEventArgs, IActionBeginEventArgs, CellSelectingEventArgs, RowDeselectEventArgs, PdfQueryCellInfoEventArgs } from './interface';import { ITimeSpanEventArgs, ZoomTimelineSettings, QueryCellInfoEventArgs, RowDataBoundEventArgs, RowSelectEventArgs } from './interface';import { TaskFieldsModel, TimelineSettingsModel, SplitterSettingsModel, SortSettings, SortSettingsModel, CalendarSettingsModel, CalendarSettings, CalendarExceptionModel } from '../models/models';import { EventMarkerModel, AddDialogFieldSettingsModel, EditDialogFieldSettingsModel, EditSettingsModel } from '../models/models';import { HolidayModel, DayWorkingTimeModel, FilterSettingsModel, SelectionSettingsModel, LoadingIndicatorModel, LoadingIndicator } from '../models/models';import { TaskFields, TimelineSettings, Holiday, EventMarker, DayWorkingTime, EditSettings, SelectionSettings } from '../models/models';import { FilterSettings, SplitterSettings, TooltipSettings, LabelSettings, LabelSettingsModel } from '../models/models';import { SearchSettingsModel, SearchSettings, ResourceFields, ResourceFieldsModel } from '../models/models';import { ItemModel, ClickEventArgs } from '@syncfusion/ej2-navigations';import { DateProcessor } from './date-processor';import { ChartRows } from '../renderer/chart-rows';import { Dependency } from '../actions/dependency';import * as cls from './css-constants';import { Query, DataManager } from '@syncfusion/ej2-data';import { Column, ColumnModel } from '../models/column';import { TreeGrid, FilterSettingsModel as TreeGridFilterSettingModel } from '@syncfusion/ej2-treegrid';import { Sort } from '../actions/sort';import { CellSelectEventArgs, ISelectedCell, ContextMenuItemModel } from '@syncfusion/ej2-grids';import { CellDeselectEventArgs, IIndex, FailureEventArgs } from '@syncfusion/ej2-grids';import { HeaderCellInfoEventArgs, ColumnMenuClickEventArgs, ColumnMenuOpenEventArgs } from '@syncfusion/ej2-grids';import { ColumnMenuItemModel, ExcelQueryCellInfoEventArgs } from '@syncfusion/ej2-grids';import { ExcelExportProperties, ExcelExportCompleteArgs, ExcelHeaderQueryCellInfoEventArgs } from '@syncfusion/ej2-grids';import { RowDD } from '../actions/rowdragdrop';import { Filter } from '../actions/filter';import { PageEventArgs, FilterEventArgs, SortEventArgs, ResizeArgs, ColumnDragEventArgs, getActualProperties } from '@syncfusion/ej2-grids';import { RenderDayCellEventArgs } from '@syncfusion/ej2-calendars';import { ConnectorLine } from '../renderer/connector-line';import { ConnectorLineEdit } from '../actions/connector-line-edit';import { Edit } from '../actions/edit';import { Splitter } from './splitter';import { ResizeEventArgs, ResizingEventArgs } from '@syncfusion/ej2-layouts';import { TooltipSettingsModel } from '../models/tooltip-settings-model';import { Tooltip } from '../renderer/tooltip';import { ToolbarItem, ColumnMenuItem, RowPosition, DurationUnit, SortDirection, GanttAction, ViolationType } from './enum';import { GridLine, ContextMenuItem, ScheduleMode, ViewType } from './enum';import { Selection } from '../actions/selection';import { ExcelExport } from '../actions/excel-export';import { DayMarkers } from '../actions/day-markers';import { ContextMenu } from './../actions/context-menu';import { RowSelectingEventArgs } from './interface';import { ContextMenuOpenEventArgs as CMenuOpenEventArgs, ContextMenuClickEventArgs as CMenuClickEventArgs } from './interface';import { ColumnMenu } from '../actions/column-menu';import { ITaskbarClickEventArgs, RecordDoubleClickEventArgs, IMouseMoveEventArgs } from './interface';import { PdfExport } from '../actions/pdf-export';import { WorkUnit, TaskType } from './enum';import { FocusModule } from '../actions/keyboard';import { VirtualScroll } from '../actions/virtual-scroll';import { isCountRequired } from './utils';import { TaskbarEdit } from '../actions/taskbar-edit';import { UndoRedo } from '../actions/undo-redo';import { WeekWorkingTimeModel } from '../models/week-working-time-model';import { WeekWorkingTime } from '../models/week-working-time';import {CellSaveArgs} from '@syncfusion/ej2-grids';import { CalendarModule } from './calendar-module';import { CalendarContext } from './calendar-context';
 import {ComponentModel} from '@syncfusion/ej2-base';
 
 /**
@@ -44,14 +44,14 @@ export interface GanttModel extends ComponentModel{
     disableHtmlEncode?: boolean;
 
     /**
-     * Configures the loading indicator for the Gantt Chart. Specifies the type of indicator to display (spinner or shimmer effect) during waiting periods when actions are performed in the Gantt Chart.
+     * Specifies the type of loading indicator to display during scrolling action in the virtual scrolling feature when `enableVirtualization` is enabled.
      *
      * @default {indicatorType: 'Spinner'}
      */
     loadingIndicator?: LoadingIndicatorModel;
 
     /**
-     * Specifies whether to display shimmer effect during scrolling action in virtual scrolling feature. If disabled, spinner is shown instead of shimmer effect.
+     * Specifies whether to display a shimmer effect during scrolling in the virtual scrolling feature when `enableVirtualization` is enabled. If disabled, a spinner is shown instead of the shimmer effect.
      *
      * @default true
      */
@@ -70,15 +70,6 @@ export interface GanttModel extends ComponentModel{
      * @default true
      */
     updateOffsetOnTaskbarEdit?: boolean;
-
-    /**
-     * Specifies whether to update offset value on a task for all the predecessor edit actions.
-     *
-     * @default true
-     * @deprecated This method is deprecated from Vol 2 2024 release. Use `updateOffsetOnTaskbarEdit` this property instead.
-     * @aspIgnore
-     */
-    UpdateOffsetOnTaskbarEdit?: boolean;
 
     /**
      * Specifies whether to auto calculate the start and end dates based on factors such as working time, holidays, weekends, and task dependencies.
@@ -148,7 +139,7 @@ export interface GanttModel extends ComponentModel{
     enablePredecessorValidation?: boolean;
 
     /**
-     * If `showColumnMenu` set to true, enables the column menu options for each column in the Gantt chart.
+     * If `showColumnMenu` set to true, enables the column menu options for each column header in the Gantt chart.
      *
      * @default false
      */
@@ -177,8 +168,8 @@ export interface GanttModel extends ComponentModel{
     undoRedoActions?: GanttAction[];
 
     /**
-     * By default, task schedule dates are calculated with system time zone. If the Gantt chart is assigned with a specific time zone,
-     * then schedule dates are calculated based on the given time zone date value.
+     * By default, task schedule dates are calculated with system time zone. If the Gantt chart is assigned with a specific time zone, then schedule dates are calculated based on the given time zone date value.
+     * This property function properly when the timeline displays hours. To enable this, set `timelineViewMode` to 'Hour' or configure `topTier.unit` as 'Day' and `bottomTier.unit` as 'Hour'.
      *
      * @default null
      */
@@ -261,6 +252,18 @@ export interface GanttModel extends ComponentModel{
     renderBaseline?: boolean;
 
     /**
+     * Defines the calendar configuration for the project, including working times, holidays, and task-specific calendars.
+     *
+     * This setting enables customization of scheduling behavior across the Gantt chart, including:
+     * - Global working hours and non-working days
+     * - Holiday definitions with localized labels
+     * - Task-level calendar overrides via `taskFields.calendarId`
+     *
+     * @default {}
+     */
+    calendarSettings?: CalendarSettingsModel;
+
+    /**
      * Defines whether to enable or disable the taskbar drag and drop action in the Gantt chart.
      *
      * @default false
@@ -268,7 +271,7 @@ export interface GanttModel extends ComponentModel{
     allowTaskbarDragAndDrop?: boolean;
 
     /**
-     * Specifies whether taskbars can overlap in the Gantt chart.
+     * Specifies whether taskbars can overlap in the Gantt chart. To enable overlapping behavior, use this property along with `enableMultiTaskbar`.
      *
      * @default true
      */
@@ -276,7 +279,7 @@ export interface GanttModel extends ComponentModel{
 
     /**
      * Configures the grid lines displayed in the TreeGrid and Gantt chart.
-     * The `gridLines` property allows customization of the type of grid lines to be shown, either horizontal, vertical, or both.
+     * The `gridLines` property allows customization of the type of grid lines to be shown, either horizontal, vertical, both or none.
      *
      *  @default 'Horizontal'
      */
@@ -346,7 +349,7 @@ export interface GanttModel extends ComponentModel{
     enableVirtualization?: boolean;
 
     /**
-     * Enables better performance for projects with a large time span by initially rendering only the visible timeline cells.
+     * Enables better performance for projects with a large time span by initially rendering only the visible timeline cells when `enableVirtualization` is enabled.
      * Subsequent cells are loaded on horizontal scrolling.
      *
      * @default false
@@ -357,7 +360,7 @@ export interface GanttModel extends ComponentModel{
      * `toolbar` defines the toolbar items of the Gantt.
      * It contains built-in and custom toolbar items.
      * If an array value is assigned, it is considered as the list of built-in and custom toolbar items in the Gantt's toolbar.
-     * <br><br>
+     * <br>
      * The available built-in toolbar items are:
      * * Add: Adds a new record.
      * * Edit: Edits the selected task.
@@ -556,14 +559,14 @@ export interface GanttModel extends ComponentModel{
     viewType?: ViewType;
 
     /**
-     * Defines the customized working time for the project.
-     * This helps in accurately planning tasks based on available working hours and ensures proper task scheduling.
+     * Defines the customized working time for the project to ensure accurate task scheduling, and works only when the timeline is configured with topTier.unit as 'Day' and bottomTier.unit as 'Hour' or when `timelineViewMode` is set to 'Hour' or 'Day'.
+     *
      * {% codeBlock src='gantt/dayWorkingTime/index.md' %}{% endcodeBlock %}
      */
     dayWorkingTime?: DayWorkingTimeModel[];
 
     /**
-     * Specifies unique working hours for each weekday in gantt chart to tailor schedules precisely.
+     * Specifies the working days in a week for accurate planning, and works only when the timeline is configured with topTier.unit as 'Day' and bottomTier.unit as 'Hour' or when `timelineViewMode` is set to 'Hour' or 'Day'.
      */
     weekWorkingTime?: WeekWorkingTimeModel[];
 
@@ -765,6 +768,25 @@ export interface GanttModel extends ComponentModel{
      * @default 'Auto'
      */
     taskMode?: ScheduleMode;
+
+    /**
+     * Specifies the number of columns that should remain visible and fixed on the left side of the Gantt during horizontal scrolling.
+     * This feature ensures key columns, such as identifiers, stay visible while users scroll through data.
+     *
+     * @default 0
+     */
+    frozenColumns?: number;
+
+    /**
+     * Defines a custom template to display when the Gantt chart has no records.
+     *
+     * This template replaces the default empty record message and can include text, HTML elements, or images.
+     * Accepts either a template string or an HTML element ID.
+     *
+     * @default null
+     * @aspType string
+     */
+    emptyRecordTemplate?: string | Function;
 
     /**
      * Configures the filter settings for the Gantt chart, enabling users to filter tasks based on specific columns or criteria.

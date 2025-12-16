@@ -1,1 +1,16 @@
-/* stylelint-disable-line no-empty-source */
+@use 'ej2-base/styles/definition/bootstrap-dark' as *;
+@forward 'ej2-base/styles/definition/bootstrap-dark';
+
+$textarea-VH-textarea-padding: 3px 12px 3px 12px !default;
+$textarea-outline-VH-textarea-padding: 3px 12px 3px 12px !default;
+$textarea-filled-VH-textarea-padding: 3px 12px 3px 12px !default;
+$textarea-VV-template-padding: 7px 12px 7px 12px !default;
+$textarea-outline-VV-template-padding: 7px 12px 7px 12px !default;
+$textarea-filled-VV-template-padding: 7px 12px 7px 12px !default;
+$textarea-HV-textarea-padding: 9px 5px 5px 5px !default;
+$textarea-HV-textarea-top: -8px !default;
+$textarea-outline-HV-textarea-padding: 9px 5px 5px 5px !default;
+$textarea-outline-HV-label-top: -9px !default;
+$textarea-filled-HV-textarea-padding: 9px 5px 5px 5px !default;
+$textarea-filled-HV-label-top: -6px !default;
+$textbox-icon-template-separator-color: $grey-cc;

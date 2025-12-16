@@ -1,1 +1,6 @@
-@import './tailwind-definition.scss';
+@use 'ej2-base/styles/definition/tailwind-dark' as *;
+@forward 'ej2-base/styles/definition/tailwind-dark';
+
+/* stylelint-disable-line no-empty-source */
+$popup-width: auto !default;
+$popup-height: auto !default;

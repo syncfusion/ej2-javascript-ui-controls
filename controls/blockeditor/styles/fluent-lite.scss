@@ -1,4 +1,4 @@
-@import 'ej2-base/styles/definition/fluent.scss';
-@import 'blockeditor/fluent-definition.scss';
-@import 'blockeditor/icons/fluent.scss';
-@import 'blockeditor/all.scss';
+@use 'ej2-base/styles/definition/fluent' as *;
+@use 'blockeditor/fluent-definition' as *;
+@use 'blockeditor/icons/fluent' as *;
+@use 'blockeditor/all' as *;

@@ -1,5 +1,6 @@
 @use 'sass:meta';
-@import 'definition/material-dark.scss';
+@use 'definition/material-dark' as *;
+@forward 'definition/material-dark';
 
 @if not meta.variable-exists('is-roboto-loaded') {
   //sass-lint:disable no-url-protocols,no-url-domains

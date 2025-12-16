@@ -379,7 +379,6 @@ export class Zoom {
                 axisRange: axis.visibleRange
             });
         }
-
         const onZoomingEventArg: IZoomingEventArgs = { cancel: false, axisCollection: zoomedAxisCollections, name: onZooming };
         this.chart.trigger(onZooming, onZoomingEventArg, () => {
             if (onZoomingEventArg.cancel) {
@@ -446,7 +445,7 @@ export class Zoom {
         this.isZoomed = true;
         this.calculateZoomAxesRange(chart);
         chart.disableTrackTooltip = true;
-        this.performedUI =  true;
+        this.performedUI = true;
         this.isPanning = chart.zoomSettings.enablePan || this.isPanning;
         this.zoomCompleteEvtCollection = [];
         let argsData: IZoomCompleteEventArgs;

@@ -76,9 +76,11 @@ export class VirtualScroll {
                         EventHandler.add(mCont.parentElement, 'mouseup touchend scroll', this.common(mHdr, mCont.parentElement, mCont), this);
                     }
                 } else {
-                    EventHandler.add(ele, 'mouseup touchend', this.common(mHdr, mCont, mCont), this);
+                    const isServerMode: boolean = this.parent && this.parent.dataSourceSettings && this.parent.dataSourceSettings.mode === 'Server';
+                    const events: string = isServerMode ? 'mouseup touchend' : 'mouseup touchend scroll';
+                    EventHandler.add(ele, events, this.common(mHdr, mCont, mCont), this);
                     if (!this.parent.isAdaptive) {
-                        EventHandler.add(mCont.parentElement, 'mouseup touchend', this.common(mHdr, mCont.parentElement, mCont), this);
+                        EventHandler.add(mCont.parentElement, events, this.common(mHdr, mCont.parentElement, mCont), this);
                     }
                 }
                 EventHandler.add(mScrollBar, 'scroll', this.onCustomScrollbarScroll(mCont, mHdr), this);
@@ -367,7 +369,8 @@ export class VirtualScroll {
         return (e: Event) => {
             eleScrollLeft = Math.abs(ele.scrollLeft);
             left = eleScrollLeft * this.parent.horizontalScrollScale;
-            if (e.type === 'wheel' || e.type === 'touchmove' || this.eventType === 'wheel' || this.eventType === 'touchmove') {
+            if (e.type === 'wheel' || e.type === 'touchmove' || e.type === 'scroll' ||
+                this.eventType === 'wheel' || this.eventType === 'touchmove' || this.eventType === 'scroll') {
                 if (this.horizontalScrollTimeoutObj) {
                     clearTimeout(this.horizontalScrollTimeoutObj);
                 }

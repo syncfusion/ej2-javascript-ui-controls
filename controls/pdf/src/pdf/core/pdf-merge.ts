@@ -92,7 +92,7 @@ export class _PdfMergeHelper {
             });
         } else {
             template = page._contentTemplate;
-            newPage.graphics.drawTemplate(template, {x: 0, y: 0, width: template._size[0], height: template._size[1]});
+            newPage.graphics.drawTemplate(template, {x: 0, y: 0, width: template._size.width, height: template._size.height});
             template._content.dictionary.update('Resources', this._copier._copy(pageDictionary.getRaw('Resources')));
             this._pageReference.set(pageDictionary, newPage);
             if (!isCopiedPage) {
@@ -1075,7 +1075,7 @@ export class _PdfMergeHelper {
         } else {
             pagesettings.rotation = page.rotation;
         }
-        pagesettings.orientation = (page.size[0] > page.size[1]) ? PdfPageOrientation.landscape : PdfPageOrientation.portrait;
+        pagesettings.orientation = (page.size.width > page.size.height) ? PdfPageOrientation.landscape : PdfPageOrientation.portrait;
         if (typeof index !== 'undefined') {
             newPage = this._destinationDocument.addPage(index, pagesettings);
         } else {

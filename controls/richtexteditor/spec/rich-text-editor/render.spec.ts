@@ -1,11 +1,11 @@
 import { createElement, detach, getUniqueID, extend, Browser } from '@syncfusion/ej2-base';
 import { RichTextEditor } from './../../src/rich-text-editor/base/rich-text-editor';
 import { RichTextEditorModel } from './../../src/rich-text-editor/base/rich-text-editor-model';
-import { HtmlEditor, MarkdownEditor, Toolbar, QuickToolbar, SlashMenu } from "../../src/rich-text-editor/index";
-import { Link, Image, Audio, Video, Table, PasteCleanup, Count, Resize, FileManager, FormatPainter, EmojiPicker, ImportExport, CodeBlock } from "../../src/rich-text-editor/index";
+import { HtmlEditor, MarkdownEditor, Toolbar, QuickToolbar, SlashMenu, ClipBoardCleanup, AIAssistant } from "../../src/rich-text-editor/index";
+import { Link, Image, Audio, Video, Table, PasteCleanup, Count, Resize, FileManager, FormatPainter, EmojiPicker, ImportExport, CodeBlock, AutoFormat } from "../../src/rich-text-editor/index";
 import { CustomUserAgentData } from '../../src/common/user-agent';
 
-RichTextEditor.Inject(HtmlEditor, MarkdownEditor, FormatPainter, Toolbar, QuickToolbar, Link, Image, Audio, Video, Table, PasteCleanup, Count, Resize, FileManager, EmojiPicker, SlashMenu, ImportExport, CodeBlock);
+RichTextEditor.Inject(HtmlEditor, MarkdownEditor, FormatPainter, Toolbar, QuickToolbar, Link, Image, Audio, Video, Table, PasteCleanup, Count, Resize, FileManager, EmojiPicker, SlashMenu, ImportExport, CodeBlock, ClipBoardCleanup, AIAssistant, AutoFormat);
 
 export let currentBrowserUA: string = navigator.userAgent;
 export let ieUA: string = 'Mozilla/5.0 (Windows NT 6.3; Trident/7.0; rv:11.0) like Gecko';

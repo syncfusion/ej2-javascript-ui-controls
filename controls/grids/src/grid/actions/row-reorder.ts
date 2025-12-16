@@ -359,8 +359,9 @@ export class RowDD {
             data: (Object.keys(this.dragStartData[0]).length > 0) ? this.dragStartData as Object[] : this.currentViewData()
         };
         gObj.trigger(events.rowDrop, args, () => {
-            if (!(parentsUntil(target, literals.row) || parentsUntil(target, 'e-emptyrow')
-                || parentsUntil(target,  literals.gridContent)) || args.cancel) {
+            if ((!(parentsUntil(target, literals.row) || parentsUntil(target, 'e-emptyrow')
+                || parentsUntil(target,  literals.gridContent)) || args.cancel)
+                || (this.parent.pinnedTopRowModels.length && parentsUntil(target,  literals.headerContent))) {
                 this.dragTarget = null;
                 remove(e.helper);
                 return;
@@ -521,7 +522,8 @@ export class RowDD {
         const currentViewData: Object[] = this.parent.getCurrentViewRecords();
         const isRemoteData: boolean = this.parent.isRemote();
         for (let i: number = 0, len: number = tr.length; i < len; i++) {
-            const index: number = parseInt(tr[parseInt(i.toString(), 10)].getAttribute(literals.ariaRowIndex), 10) - 1;
+            const index: number = parseInt(tr[parseInt(i.toString(), 10)].getAttribute(literals.ariaRowIndex), 10) - 1
+                - this.parent.pinnedTopRowModels.length;
             rowObj[parseInt(i.toString(), 10)] = rowObjects[parseInt(index.toString(), 10)];
             if (!isRemoteData) {
                 recordobj[parseInt(i.toString(), 10)] = currentViewData[parseInt(index.toString(), 10)];
@@ -535,7 +537,8 @@ export class RowDD {
                 currentViewData[parseInt(i.toString(), 10)] = recordobj[parseInt(i.toString(), 10)];
             }
         }
-        resetRowIndex(this.parent, rowObjects, tr);
+        resetRowIndex(this.parent, rowObjects, tr, this.parent.pinnedTopRowModels.length);
+        this.parent.selectionModule.setPinnedSelectionIndexes();
     }
 
     private rowOrder(args: RowDropEventArgs): void {

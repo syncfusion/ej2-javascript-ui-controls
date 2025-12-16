@@ -820,7 +820,7 @@ export class SpreadsheetChart {
             primaryXAxis.valueType = 'DateTime';
             primaryXAxis.minimum = this.minDate;
             primaryXAxis.maximum = this.maxDate;
-        } else {
+        }else {
             primaryXAxis.valueType = chart.type === 'Scatter' &&
                 !chartRange.isStringSeries && !chart.isSeriesInRows ? 'Double' : 'Category';
         }

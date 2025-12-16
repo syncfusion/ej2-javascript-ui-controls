@@ -1,4 +1,6 @@
 @use 'sass:math';
+@use 'ej2-base/styles/definition/fluent' as *;
+@forward 'ej2-base/styles/definition/fluent';
 
 $grid-checkmark-color: $primary-text-color !default;
 $grid-chart-border-color: $border-dark !default;

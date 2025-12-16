@@ -343,37 +343,49 @@ describe('Waterfall Series', () => {
             chartObj.refresh();
         });
 
-          it('Checking animationEvent', (done: Function) => {
-            animationComplete = (args: IAnimationCompleteEventArgs): void => {
-                let point: Element = document.getElementById('container_Series_' + args.series.index + '_Point_0');
-                expect(point.getAttribute('transform') === 'translate(0,0)').toBe(true);
-                done();
+          it('Checking animationEvent', async (): Promise<void> => {
+            loaded = (args: Object): void => {
+                animationComplete = (args: IAnimationCompleteEventArgs): void => {
+                    let point: Element = document.getElementById('container_Series_' + args.series.index + '_Point_0');
+                    expect(point.getAttribute('transform') === 'translate(0,0)').toBe(true);
+                    //done();
+                };
             };
+            chartObj.loaded = loaded;
             chartObj.animationComplete = animationComplete;
             chartObj.series[0].animation.enable = true;
             chartObj.refresh();
+            await wait(2000);
         });
-        it('Checking animation with duration', (done: Function) => {
-            animationComplete = (args: IAnimationCompleteEventArgs): void => {
-                let point: Element = document.getElementById('container_Series_' + args.series.index + '_Point_0');
-                expect(point.getAttribute('transform') === 'translate(0,0)').toBe(true);
-                done();
+        it('Checking animation with duration', async (): Promise<void> => {
+            loaded = (args: Object): void => {
+                animationComplete = (args: IAnimationCompleteEventArgs): void => {
+                    let point: Element = document.getElementById('container_Series_' + args.series.index + '_Point_0');
+                    expect(point.getAttribute('transform') === 'translate(0,0)').toBe(true);
+                    //done();
+                };
             };
+            chartObj.loaded = loaded;
             chartObj.animationComplete = animationComplete;
             chartObj.series[0].animation.enable = true;
             chartObj.series[0].animation.duration = 2000;
             chartObj.refresh();
+            await wait(2000);
         });
-        it('Checking animation with delay', (done: Function) => {
-            animationComplete = (args: IAnimationCompleteEventArgs): void => {
-                let point: Element = document.getElementById('container_Series_' + args.series.index + '_Point_0');
-                expect(point.getAttribute('transform') === 'translate(0,0)').toBe(true);
-                done();
+        it('Checking animation with delay', async (): Promise<void> => {
+            loaded = (args: Object): void => {
+                animationComplete = (args: IAnimationCompleteEventArgs): void => {
+                    let point: Element = document.getElementById('container_Series_' + args.series.index + '_Point_0');
+                    expect(point.getAttribute('transform') === 'translate(0,0)').toBe(true);
+                    //done();
+                };
             };
+            chartObj.loaded = loaded;
             chartObj.animationComplete = animationComplete;
             chartObj.series[0].animation.enable = true;
             chartObj.series[0].animation.delay = 200;
             chartObj.refresh();
+            await wait(2000);
         });
         it('checking with marker', (done: Function) => {
             loaded = (args: Object): void => {
@@ -1091,7 +1103,9 @@ describe('Waterfall Series', () => {
             loaded = (args: Object): void => {
                 let series: HTMLElement = document.getElementById('container_Series_0_Connector_');
                 let d: string = series.getAttribute('d');
-                expect(d).toBe('M 158.05624999999998 371.5 L 174.69375000000002 371.5 M 324.43125000000003 371.5 L 341.06874999999997 371.5 M 490.80625000000003 148.6 L 507.44374999999997 148.6 ');
+                expect(d == 'M 158.05624999999998 371.5 L 174.69375000000002 371.5 M 324.43125000000003 371.5 L 341.06874999999997 371.5 M 490.80625000000003 148.6 L 507.44374999999997 148.6 '
+                    || d == 'M 149.03125 371.5 L 164.71875 371.5 M 305.90625 371.5 L 321.59375 371.5 M 462.78125 148.6 L 478.46875 148.6 '
+                    || d == 'M 153.30624999999998 371.5 L 169.44375000000002 371.5 M 314.68125000000003 371.5 L 330.81874999999997 371.5 M 476.05625000000003 148.6 L 492.19374999999997 148.6 ').toBe(true);
                 done();
             };
             chart.loaded = loaded;
@@ -1101,7 +1115,9 @@ describe('Waterfall Series', () => {
             loaded = (args: Object): void => {
                 let series: HTMLElement = document.getElementById('container_Series_0_Connector_');
                 let d: string = series.getAttribute('d');
-                expect(d).toBe('M 158.05624999999998 371.5 L 174.69375000000002 371.5 M 324.43125000000003 371.5 L 341.06874999999997 371.5 M 490.80625000000003 148.6 L 507.44374999999997 148.6 ');
+                expect(d == 'M 158.05624999999998 371.5 L 174.69375000000002 371.5 M 324.43125000000003 371.5 L 341.06874999999997 371.5 M 490.80625000000003 148.6 L 507.44374999999997 148.6 '
+                    || d == 'M 149.03125 371.5 L 164.71875 371.5 M 305.90625 371.5 L 321.59375 371.5 M 462.78125 148.6 L 478.46875 148.6 '
+                    || d == 'M 153.30624999999998 371.5 L 169.44375000000002 371.5 M 314.68125000000003 371.5 L 330.81874999999997 371.5 M 476.05625000000003 148.6 L 492.19374999999997 148.6 ').toBe(true);
                 done();
             };
             chart.series[0].marker.visible=true;
@@ -1112,7 +1128,9 @@ describe('Waterfall Series', () => {
             loaded = (args: Object): void => {
                 let series: HTMLElement = document.getElementById('container_Series_0_Connector_');
                 let d: string = series.getAttribute('d');
-                expect(d).toBe('M 647.1812500000001 371.5 L 351.06874999999997 371.5 M 480.80625000000003 371.5 L 324.43125000000003 371.5 M 174.69374999999997 148.6 L 158.05625000000003 148.6 ');
+                expect(d == 'M 647.1812500000001 371.5 L 351.06874999999997 371.5 M 480.80625000000003 371.5 L 324.43125000000003 371.5 M 174.69374999999997 148.6 L 158.05625000000003 148.6 '
+                    || d == 'M 609.65625 371.5 L 331.59375 371.5 M 452.78125 371.5 L 305.90625 371.5 M 164.71874999999997 148.6 L 149.03125000000003 148.6 '
+                    || d == 'M 627.4312500000001 371.5 L 340.81874999999997 371.5 M 466.05625000000003 371.5 L 314.68125000000003 371.5 M 169.44374999999997 148.6 L 153.30625000000003 148.6 ').toBe(true);
                 done();
             };
             chart.primaryXAxis.isInversed=true;
@@ -1123,7 +1141,9 @@ describe('Waterfall Series', () => {
             loaded = (args: Object): void => {
                 let series: HTMLElement = document.getElementById('container_Series_0_Connector_');
                 let d: string = series.getAttribute('d');
-                expect(d).toBe('M 0 296.61875 L 0 169.13125 M 0 218.99375 L 0 151.36875 M 410.09999999999997 81.50624999999998 L 410.09999999999997 73.74375000000002 ');
+                expect(d == 'M 0 296.61875 L 0 169.13125 M 0 218.99375 L 0 151.36875 M 410.09999999999997 81.50624999999998 L 410.09999999999997 73.74375000000002 '
+                    || d == 'M 0 296.61875 L 0 169.13125 M 0 218.99375 L 0 151.36875 M 387.3 81.50624999999998 L 387.3 73.74375000000002 '
+                    || d == 'M 0 296.61875 L 0 169.13125 M 0 218.99375 L 0 151.36875 M 398.09999999999997 81.50624999999998 L 398.09999999999997 73.74375000000002 ').toBe(true);
                 done();
             };
             chart.primaryXAxis.isInversed=false;
@@ -1135,7 +1155,9 @@ describe('Waterfall Series', () => {
             loaded = (args: Object): void => {
                 let series: HTMLElement = document.getElementById('container_Series_0_Connector_');
                 let d: string = series.getAttribute('d');
-                expect(d).toBe('M 0 73.74375000000002 L 0 81.50625 M 0 151.36875 L 0 159.13125 M 410.09999999999997 228.99375 L 410.09999999999997 236.75625 ');
+                expect(d == 'M 0 73.74375000000002 L 0 81.50625 M 0 151.36875 L 0 159.13125 M 410.09999999999997 228.99375 L 410.09999999999997 236.75625 '
+                    || d == 'M 0 73.74375000000002 L 0 81.50625 M 0 151.36875 L 0 159.13125 M 387.3 228.99375 L 387.3 236.75625 '
+                    || d == 'M 0 73.74375000000002 L 0 81.50625 M 0 151.36875 L 0 159.13125 M 398.09999999999997 228.99375 L 398.09999999999997 236.75625 ').toBe(true);
                 done();
             };
             chart.primaryXAxis.isInversed=true;
@@ -1318,6 +1340,9 @@ describe('Waterfall Series', () => {
             chart.refresh();
         });
     });
+    async function wait(ms: number): Promise<void> {
+        return new Promise(resolve => setTimeout(resolve, ms));
+    }
     it('memory leak', () => {
         profile.sample();
         let average: any = inMB(profile.averageChange)

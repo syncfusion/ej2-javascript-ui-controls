@@ -1,3 +1,5 @@
+@use 'ej2-base/styles/definition/fluent' as *;
+@forward 'ej2-base/styles/definition/fluent';
 $cbox-bigger-check-fontsize: 18px !default;
 $cbox-bigger-font-size: $text-base !default;
 $cbox-bigger-height: 24px !default;
@@ -86,3 +88,10 @@ $cbox-border-style: solid !default;
 // fluent theme
 $cbox-check-content: '\e774' !default;
 $cbox-icon-color: $icon-color !default;
+$cbox-zero-margin: 0 !default;
+$cbox-wrapper-line-height: 1 !default;
+$cbox-label-line-height: 0 !default;
+$cbox-ripple-container-border-radius: 50% !default;
+$cbox-nrml-height: 1px !default;
+$cbox-nrml-width: 1px !default;
+$cbox-auto-width: auto;

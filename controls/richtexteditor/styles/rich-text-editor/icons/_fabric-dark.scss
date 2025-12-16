@@ -1,3 +1,6 @@
+@use 'ej2-base/styles/common/mixin' as *;
+@use '../fabric-dark-definition' as *;
+
 /*! component's theme wise override definitions and variables */
 
 @include export-module('richtexteditor-fabric-dark-icons') {
@@ -24,6 +27,10 @@
     }
     .e-justify-left::before {
       content: '\e33a';
+    }
+
+    .e-lineHeight::before {
+      content: '\eb8a';
     }
 
     .e-justify-center::before {

@@ -1,5 +1,6 @@
 @use 'sass:meta';
-@import 'definition/material3.scss';
+@use 'definition/material3' as *;
+@forward 'definition/material3';
 
 @if not meta.variable-exists('is-roboto-loaded') {
   //sass-lint:disable no-url-protocols,no-url-domains
@@ -7,9 +8,9 @@
 }
   
 $is-roboto-loaded: 'true' !default;
-$font-family: 'Roboto', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', sans-serif !default;
-$font-size: 12px !default;
-$font-weight: 400 !default;
+$font-family: $font-family !default;
+$font-size: $text-xs !default;
+$font-weight: $font-weight-normal !default;
 $error-font-color: $danger !default;
 $warning-font-color: $warning !default;
 $success-font-color: $success !default;

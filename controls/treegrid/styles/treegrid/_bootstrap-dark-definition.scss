@@ -1,3 +1,5 @@
+@use 'ej2-base/styles/definition/bootstrap-dark' as *;
+@forward 'ej2-base/styles/definition/bootstrap-dark';
 $treegrid-right-arrow-icon: '\e22f' !default;
 $treegrid-toolbar-expand-icon: '\e558' !default;
 $treegrid-toolbar-collapse-icon: '\e557' !default;

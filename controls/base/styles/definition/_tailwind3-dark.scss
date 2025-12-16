@@ -1,10 +1,14 @@
 @use 'sass:color';
 @use 'sass:meta';
 @use 'sass:list';
-@import '../common/mixin.scss';
+@use '../common/mixin' as *;
 
 @function mapcolorvariable($pallete-name){
   @return var(#{'--color-sf-'+  $pallete-name});
+}
+
+@function maplayoutvariable($pallete-name){
+  @return var(#{'--e-'+  $pallete-name});
 }
 
 @function shade-color($color, $percentage) {
@@ -484,6 +488,21 @@
   --color-sf-chip-info-bg-color-disabled: rgba(6, 182, 212, .1);
   --color-sf-chip-info-border-color-disabled: rgba(6, 182, 212, .2);
   --color-sf-chip-info-text-disabled: #155e75;
+}
+
+:root {
+  --e-font-name: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', arial, 'Noto Sans', 'Liberation Sans', sans-serif, 'apple color emoji', 'Segoe UI emoji', 'Segoe UI Symbol', 'Noto color emoji';
+  --e-serif-font-name: 'Roboto';
+  --e-mono-font-name: 'Roboto Mono';
+  --e-radius: 1rem;
+  --e-border: 1rem;
+  --e-font-sans: sans-serif;
+  --e-font-serif: serif;
+  --e-font-mono: monospace;
+}
+
+:root {
+  --e-font-family: var(--e-font-name), var(--e-font-sans);
 }
 
 // backgroundcolor
@@ -986,6 +1005,172 @@ $white: mapcolorvariable('white') !default;
 // Transparent
 $transparent: mapcolorvariable('transparent') !default;
 
+/* Font Family */
+$font-family: maplayoutvariable('font-family') !default;
+
+/* Font Size */
+$text-xxs: 10px !default;
+$text-xs: 12px !default;
+$text-sm: 14px !default;
+$text-base: 16px !default;
+$text-lg: 18px !default;
+$text-xl: 20px !default;
+$text-2xl: 24px !default;
+$text-3xl: 30px !default;
+$text-4xl: 36px !default;
+$text-5xl: 48px !default;
+$text-6xl: 60px !default;
+$text-7xl: 72px !default;
+$text-8xl: 96px !default;
+$text-9xl: 128px !default;
+
+// font Weight
+$font-weight: 400 !default;
+$font-weight-lighter: lighter !default;
+$font-weight-light: 300 !default;
+$font-weight-normal: 400 !default;
+$font-weight-medium: 500 !default;
+$font-weight-semibold: 600 !default;
+$font-weight-bold: 700 !default;
+$font-weight-bolder: bolder !default;
+
+//font-icons
+$font-icon-5: 5px !default;
+$font-icon-8: 8px !default;
+$font-icon-9: 9px !default;
+$font-icon-10: 10px !default;
+$font-icon-12: 12px !default;
+$font-icon-13: 13px !default;
+$font-icon-14: 14px !default;
+$font-icon-15: 15px !default;
+$font-icon-16: 16px !default;
+$font-icon-17: 17px !default;
+$font-icon-18: 18px !default;
+$font-icon-20: 20px !default;
+$font-icon-22: 22px !default;
+$font-icon-24: 24px !default;
+$font-icon-26: 26px !default;
+$font-icon-28: 28px !default;
+$font-icon-32: 32px !default;
+
+/* border */
+$border-0: calc(maplayoutvariable('border') * 0) !default; /* 0px */
+$border-1: calc(maplayoutvariable('border') * .0625) !default; /* 1px */
+$border-1-5:   calc(maplayoutvariable('border') * .09375) !default;   /* 1.5px */
+$border-2: calc(maplayoutvariable('border') * .125) !default; /* 2px */
+$border-3: calc(maplayoutvariable('border') * .1875) !default; /* 3px */
+$border-4: calc(maplayoutvariable('border') * .25) !default; /* 4px */
+$border-5: calc(maplayoutvariable('border') * .3125) !default; /* 5px */
+$border-6: calc(maplayoutvariable('border') * .375) !default; /* 6px */
+$border-7: calc(maplayoutvariable('border') * .4375) !default; /* 7px */
+$border-8: calc(maplayoutvariable('border') * .5) !default; /* 8px */
+
+/* Radius */
+$radius-0: calc(maplayoutvariable('radius') * 0) !default;
+$radius-1: calc(maplayoutvariable('radius') * .0625) !default; /* 1px */
+$radius-2: calc(maplayoutvariable('radius') * .125) !default; /* 2px */
+$radius-3: calc(maplayoutvariable('radius') * .1875) !default; /* 3px */
+$radius-4: calc(maplayoutvariable('radius') * .25) !default; /* 4px */
+$radius-5: calc(maplayoutvariable('radius') * .3125) !default; /* 5px */
+$radius-6: calc(maplayoutvariable('radius') * .375) !default; /* 6px */
+$radius-7: calc(maplayoutvariable('radius') * .4375) !default; /* 7px */
+$radius-8: calc(maplayoutvariable('radius') * .5) !default; /* 8px */
+$radius-9: calc(maplayoutvariable('radius') * .5625) !default; /* 9px */
+$radius-10: calc(maplayoutvariable('radius') * .625) !default; /* 10px */
+$radius-11: calc(maplayoutvariable('radius') * .6875) !default; /* 11px */
+$radius-12: calc(maplayoutvariable('radius') * .75) !default; /* 12px */
+$radius-13: calc(maplayoutvariable('radius') * .8125) !default; /* 13px */
+$radius-14: calc(maplayoutvariable('radius') * .875) !default; /* 14px */
+$radius-15: calc(maplayoutvariable('radius') * .9375) !default; /* 15px */
+$radius-16: calc(maplayoutvariable('radius') * 1) !default; /* 16px */
+$radius-17: calc(maplayoutvariable('radius') * 1.0625) !default; /* 17px */
+$radius-18: calc(maplayoutvariable('radius') * 1.125) !default; /* 18px */
+$radius-19: calc(maplayoutvariable('radius') * 1.1875) !default; /* 19px */
+$radius-20: calc(maplayoutvariable('radius') * 1.25) !default; /* 20px */
+$radius-21: calc(maplayoutvariable('radius') * 1.3125) !default; /* 21px */
+$radius-22: calc(maplayoutvariable('radius') * 1.375) !default; /* 22px */
+$radius-23: calc(maplayoutvariable('radius') * 1.4375) !default; /* 23px */
+$radius-24: calc(maplayoutvariable('radius') * 1.5) !default; /* 24px */
+$radius-25: calc(maplayoutvariable('radius') * 1.5625) !default; /* 25px */
+$radius-26: calc(maplayoutvariable('radius') * 1.625) !default; /* 26px */
+$radius-27: calc(maplayoutvariable('radius') * 1.6875) !default; /* 27px */
+$radius-28: calc(maplayoutvariable('radius') * 1.75) !default; /* 28px */
+$radius-29: calc(maplayoutvariable('radius') * 1.8125) !default; /* 29px */
+$radius-30: calc(maplayoutvariable('radius') * 1.875) !default; /* 30px */
+$radius-31: calc(maplayoutvariable('radius') * 1.9375) !default; /* 31px */
+$radius-32: calc(maplayoutvariable('radius') * 2) !default; /* 32px */
+$radius-33: calc(maplayoutvariable('radius') * 2.0625) !default; /* 33px */
+$radius-34: calc(maplayoutvariable('radius') * 2.125) !default; /* 34px */
+$radius-35: calc(maplayoutvariable('radius') * 2.1875) !default; /* 35px */
+$radius-36: calc(maplayoutvariable('radius') * 2.25) !default; /* 36px */
+$radius-37: calc(maplayoutvariable('radius') * 2.3125) !default; /* 37px */
+$radius-38: calc(maplayoutvariable('radius') * 2.375) !default; /* 38px */
+$radius-39: calc(maplayoutvariable('radius') * 2.4375) !default; /* 39px */
+$radius-40: calc(maplayoutvariable('radius') * 2.5) !default; /* 40px */
+$radius-41: calc(maplayoutvariable('radius') * 2.5625) !default; /* 41px */
+$radius-42: calc(maplayoutvariable('radius') * 2.625) !default; /* 42px */
+$radius-43: calc(maplayoutvariable('radius') * 2.6875) !default; /* 43px */
+$radius-44: calc(maplayoutvariable('radius') * 2.75) !default; /* 44px */
+$radius-45: calc(maplayoutvariable('radius') * 2.8125) !default; /* 45px */
+$radius-46: calc(maplayoutvariable('radius') * 2.875) !default; /* 46px */
+$radius-47: calc(maplayoutvariable('radius') * 2.9375) !default; /* 47px */
+$radius-48: calc(maplayoutvariable('radius') * 3) !default; /* 48px */
+$radius-49: calc(maplayoutvariable('radius') * 3.0625) !default; /* 49px */
+$radius-50: calc(maplayoutvariable('radius') * 3.125) !default; /* 50px */
+$radius-5em:    calc(maplayoutvariable('radius') * 5) !default;        /* 5em */
+$radius-full: 999px !default;
+$radius-unset: unset;
+$border-65p: 65%;
+$border-unset: unset;
+$border-none: none;
+$border-radius-50p: 50%;
+
+$btn-small-radius:maplayoutvariable('radius-4') !default;
+$btn-default-radius:maplayoutvariable('radius-6') !default;
+$btn-bigger-small-radius:maplayoutvariable('radius-6') !default;
+$btn-bigger-radius:maplayoutvariable('radius-8') !default;
+
+$checkbox-small-radius:maplayoutvariable('radius-4') !default;
+$checkbox-default-radius:maplayoutvariable('radius-4') !default;
+$checkbox-bigger-small-radius:maplayoutvariable('radius-4') !default;
+$checkbox-bigger-radius:maplayoutvariable('radius-4') !default;
+
+$chip-small-radius:maplayoutvariable('radius-4') !default;
+$chip-default-radius:maplayoutvariable('radius-6') !default;
+$chip-bigger-small-radius:maplayoutvariable('radius-6') !default;
+$chip-bigger-radius:maplayoutvariable('radius-6') !default;
+
+$input-small-radius:maplayoutvariable('radius-4') !default;
+$input-default-radius:maplayoutvariable('radius-6') !default;
+$input-bigger-small-radius:maplayoutvariable('radius-6') !default;
+$input-bigger-radius:maplayoutvariable('radius-8') !default;
+
+$flyout-small-radius:maplayoutvariable('radius-4') !default;
+$flyout-default-radius:maplayoutvariable('radius-6') !default;
+$flyout-bigger-small-radius:maplayoutvariable('radius-6') !default;
+$flyout-bigger-radius:maplayoutvariable('radius-8') !default;
+
+$modal-default-radius:maplayoutvariable('radius-8') !default;
+$modal-bigger-radius:maplayoutvariable('radius-12') !default;
+
+$card-default-radius:maplayoutvariable('radius-8') !default;
+$card-bigger-radius:maplayoutvariable('radius-12') !default;
+
+$tooltip-default-radius:maplayoutvariable('radius-4') !default;
+$tooltip-bigger-radius:maplayoutvariable('radius-6') !default;
+
+$toast-default-radius:maplayoutvariable('radius-8') !default;
+$toast-bigger-radius:maplayoutvariable('radius-12') !default;
+
+$msg-default-radius:maplayoutvariable('radius-6') !default;
+$msg-bigger-radius:maplayoutvariable('radius-8') !default;
+
+$list-hover-radius:maplayoutvariable('radius-6') !default;
+$list-bigger-hover-radius:maplayoutvariable('radius-8') !default;
+
+$flyout-hover-radius:maplayoutvariable('radius-6') !default;
+$flyout-bigger-hover-radius:maplayoutvariable('radius-8') !default;
+
 // scss-docs-start gray-color-variables
 $gray-50: #f9fafb !default;
 $gray-100: #f3f4f6 !default;
@@ -1167,25 +1352,6 @@ $info-shadow-focus: 0 0 0 4px rgba($info-shadow, .5) !default;
 $warning-shadow-focus: 0 0 0 4px rgba($warning-shadow, .5) !default;
 $keyboard-focus-shadow: inset 0 0 0 1px $shadow-color, inset 0 0 0 2px $shadow-color1 !default;
 
-// fontfamily
-$font-family: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', arial, 'Noto Sans', 'Liberation Sans', sans-serif, 'apple color emoji', 'Segoe UI emoji', 'Segoe UI Symbol', 'Noto color emoji' !default;
-
-// default font Size
-$text-xxs: 10px !default;
-$text-xs: 12px !default;
-$text-sm: 14px !default;
-$text-base: 16px !default;
-$text-lg: 18px !default;
-$text-xl: 20px !default;
-$text-2xl: 24px !default;
-$text-3xl: 30px !default;
-$text-4xl: 36px !default;
-$text-5xl: 48px !default;
-$text-6xl: 60px !default;
-$text-7xl: 72px !default;
-$text-8xl: 96px !default;
-$text-9xl: 128px !default;
-
 // heading
 $h1-font-size: 40px !default;
 $h2-font-size: 32px !default;
@@ -1194,8 +1360,6 @@ $h4-font-size: $text-2xl !default;
 $h5-font-size: $text-xl !default;
 $h6-font-size: $text-base !default;
 
-// display
-
 // Line height
 $leading-none: 1 !default;
 $leading-tight: 1.25 !default;
@@ -1203,16 +1367,6 @@ $leading-snug: 1.375 !default;
 $leading-normal: 1.5 !default;
 $leading-relaxed: 1.625 !default;
 $leading-loose: 2 !default;
-
-// font Weight
-$font-weight: 400 !default;
-$font-weight-lighter: lighter !default;
-$font-weight-light: 300 !default;
-$font-weight-normal: 400 !default;
-$font-weight-medium: 500 !default;
-$font-weight-semibold: 600 !default;
-$font-weight-bold: 700 !default;
-$font-weight-bolder: bolder !default;
 
 // Secondary-button
 $secondary-bg-color: $secondary-bg-color !default;
@@ -1571,24 +1725,6 @@ $rating-unrated-disabled-color: $rating-unrated-disabled-color !default;
 $rating-selected-hover-color: $rating-selected-hover-color !default;
 $rating-unrated-hover-color: $rating-unrated-hover-color !default;
 $rating-pressed-color: $rating-pressed-color !default;
-
-//font-icons
-$font-icon-8: 8px !default;
-$font-icon-9: 9px !default;
-$font-icon-10: 10px !default;
-$font-icon-12: 12px !default;
-$font-icon-13: 13px !default;
-$font-icon-14: 14px !default;
-$font-icon-15: 15px !default;
-$font-icon-16: 16px !default;
-$font-icon-17: 17px !default;
-$font-icon-18: 18px !default;
-$font-icon-20: 20px !default;
-$font-icon-22: 22px !default;
-$font-icon-24: 24px !default;
-$font-icon-26: 26px !default;
-$font-icon-28: 28px !default;
-$font-icon-32: 32px !default;
 
 //badge
 $badge-light-bg-color: $badge-light-bg-color;

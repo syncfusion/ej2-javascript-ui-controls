@@ -1,3 +1,5 @@
+@use 'ej2-base/styles/common/mixin' as *;
+@use './theme-variables' as *;
 @mixin chip-color($bg-color, $border-color, $color, $icon-color, $avatar-bg-color, $avatar-font-color, $delete-icon-color: null) {
   background: $bg-color;
   @if $skin-name != 'Material3' {

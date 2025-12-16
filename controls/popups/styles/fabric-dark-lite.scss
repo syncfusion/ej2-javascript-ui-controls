@@ -1,13 +1,13 @@
-@import 'ej2-base/styles/definition/fabric-dark.scss';
-@import 'ej2-buttons/styles/button/fabric-dark-definition.scss';
-@import 'popup/fabric-dark-definition.scss';
-@import 'dialog/fabric-dark-definition.scss';
-@import 'dialog/icons/fabric-dark.scss';
-@import 'dialog/all.scss';
-@import 'popup/all.scss';
+@use 'ej2-base/styles/definition/fabric-dark' as *;
+@use 'ej2-buttons/styles/button/fabric-dark-definition' as *;
+@use 'popup/fabric-dark-definition' as *;
+@use 'dialog/fabric-dark-definition' as *;
+@use 'dialog/icons/fabric-dark' as *;
+@use 'dialog/all' as *;
+@use 'popup/all' as *;
 
-@import 'tooltip/fabric-dark-definition.scss';
-@import 'tooltip/icons/fabric-dark.scss';
-@import 'tooltip/all.scss';
-@import 'spinner/fabric-dark-definition.scss';
-@import 'spinner/all.scss';
+@use 'tooltip/fabric-dark-definition' as *;
+@use 'tooltip/icons/fabric-dark' as *;
+@use 'tooltip/all' as *;
+@use 'spinner/fabric-dark-definition' as *;
+@use 'spinner/all' as *;

@@ -1,3 +1,5 @@
+@use 'ej2-base/styles/common/mixin' as *;
+@use './theme-variables' as *;
 @include export-module('dropdownbase-theme') {
   .e-rtl {
     #{if(&, '&', '*')} .e-dropdownbase {
@@ -159,13 +161,13 @@
   .e-multi-column#{&}.e-ddl#{&}.e-popup#{&}.e-popup-open td {
     display: table-cell;
     overflow: hidden;
-    padding-right: 16px;
+    padding-right: $ddl-multi-column-popup-padding-right;
     text-indent: 10px;
     text-overflow: ellipsis;
   }
 
   .e-multi-column#{&}.e-ddl#{&}.e-popup#{&}.e-popup-open th {
-    line-height: 36px;
+    line-height: $ddl-multi-column-popup-line-height;
     text-align: left;
   }
 
@@ -187,16 +189,16 @@
   }
 
   .e-multi-column#{&}.e-ddl#{&}.e-popup#{&}.e-popup-open .e-dropdownbase .e-list-item {
-    padding-right: 0;
+    padding-right: $ddl-list-zero-padding;
   }
 
   .e-multi-column#{&}.e-ddl#{&}.e-popup#{&}.e-popup-open#{&}.e-scroller .e-ddl-header {
-    padding-right: 16px;
+    padding-right: $ddl-multi-popup-scroll-head-pad-right;
   }
 
   .e-multi-column#{&}.e-ddl#{&}.e-popup#{&}.e-popup-open .e-ddl-header,
   .e-multi-column#{&}.e-ddl#{&}.e-popup#{&}.e-popup-open#{&}.e-ddl-device .e-ddl-header {
-    padding-right: 0;
+    padding-right: $ddl-list-zero-padding;
   }
 
   .e-multi-column#{&}.e-ddl#{&}.e-popup#{&}.e-popup-open .e-text-center {

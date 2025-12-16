@@ -1,25 +1,22 @@
+@use 'ej2-base/styles/common/mixin' as *;
+@use './theme-variables' as *;
 @mixin icon-left-right {
   @if $skin-name == 'bootstrap4' {
-    padding: 0 $btn-bigger-icon-top-bottom-padding;
+    padding: $btn-zero-padding $btn-bigger-icon-top-bottom-padding;
   }
   @if $skin-name == 'tailwind' or $skin-name == 'tailwind-dark' {
-    line-height: 0;
+    line-height: $btn-zero-line-height;
   }
 }
 
 @mixin mat3-border-radius {
   @if $skin-name == 'Material3' {
-    border-radius: 4px;
+    border-radius: $btn-bgr-mat3-border-radius;
   }
 }
 
 @mixin top-bottom-icon-btn {
-  @if $skin-name == 'tailwind' or $skin-name == 'tailwind-dark' {
-    line-height: 0;
-  }
-  @else {
-    line-height: 1;
-  }
+  line-height: $btn-top-bottom-icon-line-height;
 }
 
 @include export-module('button-bigger') {
@@ -31,12 +28,12 @@
     line-height: $btn-bigger-small-text-line-height;
     padding: $btn-bigger-small-padding;
     @if $skin-name == 'tailwind' or $skin-name == 'tailwind-dark' {
-      border-radius: 4px;
+      border-radius: $btn-bgr-tail-border-radius;
     }
 
     &.e-round-corner {
       @if $skin-name == 'Material3' {
-        border-radius: 25px;
+        border-radius: $btn-bgr-mat3-round-border-radius;
         padding: $btn-bigger-small-padding;
       }
     }
@@ -59,19 +56,19 @@
 
       &.e-icon-top {
         padding-bottom: $btn-small-icon-top-bottom-padding;
-        width: auto;
+        width: $btn-auto-width;
       }
 
       &.e-icon-bottom {
         padding-top: $btn-small-icon-top-bottom-padding;
-        width: auto;
+        width: $btn-auto-width;
       }
     }
 
     &.e-icon-btn {
       padding: $btn-bigger-small-icon-padding;
       @if $skin-name == 'fluent2' {
-        line-height: 16px;
+        line-height: $btn-bgr-icon-line-height;
       }
       @include mat3-border-radius;
     }
@@ -84,25 +81,25 @@
 
     &.e-round {
       height: $btn-round-bigger-small-height;
-      line-height: 1;
-      padding: 0;
+      line-height: $btn-round-line-height;
+      padding: $btn-zero-padding;
       width: $btn-round-bigger-small-width;
 
       & .e-btn-icon {
         font-size: $btn-bigger-small-round-font-size;
         line-height: $btn-bigger-small-round-icon-line-height;
-        width: auto;
+        width: $btn-auto-width;
       }
     }
 
     &.e-rtl {
       & .e-icon-right {
         margin-left: $btn-bigger-small-icon-margin;
-        margin-right: 0;
+        margin-right: $btn-zero-padding;
       }
 
       & .e-icon-left {
-        margin-left: 0;
+        margin-left: $btn-zero-padding;
         margin-right: $btn-bigger-small-icon-margin;
       }
     }
@@ -116,15 +113,15 @@
     line-height: $btn-bigger-text-line-height;
     padding: $btn-bigger-padding;
     @if $skin-name == 'tailwind' or $skin-name == 'tailwind-dark' {
-      border-radius: 4px;
+      border-radius: $btn-bgr-tail-border-radius;
     }
     @else if $skin-name == 'bootstrap5.3' {
-      border-radius: 6px;
+      border-radius: $btn-bigger-border-radius;
     }
 
     &.e-round-corner {
       @if $skin-name == 'Material3' {
-        border-radius: 25px;
+        border-radius: $btn-bgr-mat3-round-border-radius;
         padding: $btn-bigger-padding;
       }
     }
@@ -147,21 +144,18 @@
 
       &.e-icon-top {
         padding-bottom: $btn-bigger-icon-top-bottom-padding;
-        width: auto;
+        width: $btn-auto-width;
       }
 
       &.e-icon-bottom {
         padding-top: $btn-bigger-icon-top-bottom-padding;
-        width: auto;
+        width: $btn-auto-width;
       }
     }
 
     &.e-icon-btn {
-      @if $skin-name == 'Material3' {
-        line-height: 1.2;
-      }
-      @if $skin-name == 'fluent2' {
-        line-height: 1.352em;
+      @if $skin-name == 'Material3' or $skin-name == 'fluent2' {
+        line-height: $btn-icon-bgr-line-height;
       }
       @if $skin-name == 'highcontrast' {
         padding: 3px 11px;
@@ -177,28 +171,28 @@
 
     &.e-round {
       height: $btn-round-bigger-height;
-      line-height: 1;
-      padding: 0;
+      line-height: $btn-round-line-height;
+      padding: $btn-zero-padding;
       width: $btn-round-bigger-width;
       @if $skin-name == 'tailwind' or $skin-name == 'Material3' or $skin-name == 'bootstrap5.3' {
-        border-radius: 50%;
+        border-radius: $btn-round-border-radius;
       }
 
       & .e-btn-icon {
         font-size: $btn-bigger-round-font-size;
         line-height: $btn-bigger-round-icon-line-height;
-        width: auto;
+        width: $btn-auto-width;
       }
     }
 
     &.e-rtl {
       & .e-icon-right {
         margin-left: $btn-bigger-icon-margin;
-        margin-right: 0;
+        margin-right: $btn-zero-padding;
       }
 
       & .e-icon-left {
-        margin-left: 0;
+        margin-left: $btn-zero-padding;
         margin-right: $btn-bigger-icon-margin;
       }
     }
@@ -211,12 +205,12 @@
         border-radius: 2px;
       }
       @else if $skin-name == 'bootstrap5.3' {
-        border-radius: 6px;
+        border-radius: $btn-bigger-border-radius;
       }
 
       &.e-round-corner {
         @if $skin-name == 'Material3' {
-          border-radius: 25px;
+          border-radius: $btn-bgr-mat3-round-border-radius;
           padding: $btn-bigger-small-padding;
         }
       }
@@ -239,12 +233,12 @@
 
         &.e-icon-top {
           padding-bottom: $btn-small-icon-top-bottom-padding;
-          width: auto;
+          width: $btn-auto-width;
         }
 
         &.e-icon-bottom {
           padding-top: $btn-small-icon-top-bottom-padding;
-          width: auto;
+          width: $btn-auto-width;
         }
       }
 
@@ -261,28 +255,28 @@
 
       &.e-round {
         height: $btn-round-bigger-small-height;
-        line-height: 1;
-        padding: 0;
+        line-height: $btn-round-line-height;
+        padding: $btn-zero-padding;
         width: $btn-round-bigger-small-width;
         @if $skin-name == 'bootstrap5' or $skin-name == 'bootstrap5.3' or $skin-name == 'FluentUI' or $skin-name == 'Material3' {
-          border-radius: 50%;
+          border-radius: $btn-round-border-radius;
         }
 
         & .e-btn-icon {
           font-size: $btn-bigger-small-round-font-size;
           line-height: $btn-bigger-small-round-icon-line-height;
-          width: auto;
+          width: $btn-auto-width;
         }
       }
 
       &.e-rtl {
         & .e-icon-right {
           margin-left: $btn-bigger-small-icon-margin;
-          margin-right: 0;
+          margin-right: $btn-zero-padding;
         }
 
         & .e-icon-left {
-          margin-left: 0;
+          margin-left: $btn-zero-padding;
           margin-right: $btn-bigger-small-icon-margin;
         }
       }
@@ -292,8 +286,8 @@
   @if $skin-name == 'fluent2' {
     .e-bigger.e-small .e-btn.e-icon-btn .e-btn-icon,
     .e-bigger .e-btn.e-icon-btn .e-btn-icon {
-      font-size: 16px;
-      line-height: 16px;
+      font-size: $btn-bgr-icon-font-size;
+      line-height: $btn-bgr-icon-line-height;
     }
   }
 }

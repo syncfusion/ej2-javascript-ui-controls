@@ -6,6 +6,7 @@ import { Filter } from '../../src/treegrid/actions/filter';
 import { Toolbar } from '../../src/treegrid/actions/toolbar';
 import { Edit } from '../../src/treegrid/actions/edit';
 import { Sort } from '../../src/treegrid/actions/sort';
+import { Freeze } from '../../src/treegrid/actions/freeze-column';
 import { Aggregate } from '../../src/treegrid/actions/summary';
 import { PageEventArgs, FilterEventArgs, EditEventArgs } from '@syncfusion/ej2-grids';
 import { select } from '@syncfusion/ej2-base';
@@ -13,7 +14,7 @@ import { select } from '@syncfusion/ej2-base';
 /**
  * TreeGrid HierarchySelection spec
  */
-TreeGrid.Inject(Page, Filter, Toolbar, Edit, Aggregate, Sort);
+TreeGrid.Inject(Page, Filter, Toolbar, Edit, Aggregate, Sort, Freeze);
 
 describe('TreeGrid Hierarchy Selection', () => {
     describe('select Checkboxes using selectCheckboxes method', () => {
@@ -847,6 +848,7 @@ describe('EJ2-33060 - Header checkbox gets removed when using hideColumns and sh
                 childMapping: 'subtasks',
                 treeColumnIndex: 1,
                 allowPaging: true,
+                autoCheckHierarchy:true,
                 columns: [
                     { field: 'taskID', headerText: 'Task ID', isPrimaryKey: true, width: 120 },
                     { field: 'taskName', headerText: 'CheckBox Column', width: 160, showCheckbox: true },
@@ -935,6 +937,79 @@ describe('Bug 861737: Checkbox column behavior is not working when using display
         gridObj.getHeaderTable().querySelector('.e-frame').dispatchEvent(event);
         expect(gridObj.getRows()[0].cells[1].querySelector('.e-frame').classList.contains('e-check')).toBeFalsy();
         expect(gridObj.getRows()[0].cells[2].querySelector('.e-frame').classList.contains('e-check')).toBeTruthy();
+    });
+    afterAll(() => {
+        destroy(gridObj);
+    });
+});
+
+describe('Code coverage', () => {
+    let gridObj: TreeGrid;
+    let actionComplete: () => void;
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: sampleData,
+                childMapping: 'subtasks',
+                treeColumnIndex: 1,
+                allowPaging: true,
+                allowFiltering: true,
+                editSettings: { allowEditing: true, allowAdding: true, allowDeleting: true, mode: 'Row', newRowPosition: 'Child' },
+                toolbar: ['Add', 'Edit', 'Delete', 'Update', 'Cancel'],
+                autoCheckHierarchy: true,
+                columns: [
+                    { field: 'taskID', headerText: 'Task ID', isPrimaryKey: true, width: 120 },
+                    { field: 'taskName', headerText: 'Task Name', width: 150, showCheckbox: true },
+                    { field: 'duration', headerText: 'Duration', type: 'number', width: 150 },
+                    { field: 'progress', headerText: 'Progress', width: 150 },
+                    { field: 'startDate', headerText: 'Start Date', type: 'date', format: 'yMd', width: 150 }
+                ]
+            },
+            done
+        );
+    });
+    it('select the checkBoxes', (done: Function) => {
+        actionComplete = (args?: EditEventArgs): void => {
+            if (args.requestType === 'delete') {
+                expect(gridObj.getCheckedRecords().length).toBe(0);
+            }
+            done();
+        };
+        gridObj.selectCheckboxes([2]);
+        gridObj.actionComplete = actionComplete;
+        gridObj.selectRow(2);
+        (<any>gridObj.grid.toolbarModule).toolbarClickHandler({ item: { id: gridObj.grid.element.id + '_delete' } });
+    });
+    afterAll(() => {
+        destroy(gridObj);
+    });
+});
+
+describe('Code coverage', () => {
+    let gridObj: TreeGrid;
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: sampleData,
+                childMapping: 'subtasks',
+                treeColumnIndex: 1,
+                autoCheckHierarchy: true,
+                frozenColumns: 2,
+                frozenRows: 2,
+                columns: [
+                    { field: 'taskID', headerText: 'Task ID', isPrimaryKey: true, width: 120 },
+                    { field: 'taskName', headerText: 'Task Name', width: 150, showCheckbox: true },
+                    { field: 'duration', headerText: 'Duration', type: 'number', width: 150 },
+                    { field: 'progress', headerText: 'Progress', width: 150 },
+                    { field: 'startDate', headerText: 'Start Date', type: 'date', format: 'yMd', width: 150 }
+                ]
+            },
+            done
+        );
+    });
+    it('select the checkBoxes', () => {
+        gridObj.selectCheckboxes([2]);
+        expect(gridObj.getCheckedRecords().length).toBe(1);
     });
     afterAll(() => {
         destroy(gridObj);

@@ -1,3 +1,6 @@
+@use 'ej2-base/styles/definition/fusionnew' as *;
+@forward 'ej2-base/styles/definition/fusionnew';
+
 // uploader bootstrap theme
 $zero-value: 0 !default;
 $upload-root-font-family: $font-family !default;
@@ -208,3 +211,13 @@ $clear-icon-focus-color: transparent !default;
 $list-bottom-border: 1px solid $border-light !default;
 $upload-border: 1px dashed $border-dark !default;
 $drag-hover-border: 1px dashed $primary !default;
+
+$upload-zer-padding-margin: 0 !default;
+$upload-zero-height: 0 !default;
+$upload-full-height: 100% !default;
+$upload-bgr-placeholder-min-height: 65px !default;
+$upload-bgr-content-placeholder-min-height: 80px !default;
+$upload-zero-width: 0 !default;
+$upload-full-width: 100% !default;
+$upload-auto-width: auto !default;
+$uploader-actions-border-radius: 0 0 6px 6px !default;

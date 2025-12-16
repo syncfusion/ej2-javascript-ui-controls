@@ -120,11 +120,11 @@ export class ToolBase {
 
     private checkProperty: boolean = true;
 
-    protected toolName: string = 'ToolBase';
-
     protected undoParentElement: SelectorModel = { nodes: [], connectors: [] };
 
     protected undoContainerElement: SelectorModel = { nodes: [], connectors: [] };
+
+    protected toolName: string = 'ToolBase';
 
     protected mouseDownElement: (NodeModel | ConnectorModel);
 
@@ -1450,7 +1450,7 @@ export class MoveTool extends ToolBase {
             this.commandHandler.renderStackHighlighter(args);
             if (this.currentTarget && (args.source !== this.currentTarget) &&
                 this.commandHandler.isDroppable(args.source, this.currentTarget) && (args.source as Node).id !== 'helper') {
-                let object: NodeModel = (args.source instanceof Selector) ? args.source.nodes[0] : args.source;
+                let object: NodeModel | ConnectorModel = (args.source instanceof Selector) ? args.source.nodes[0] || args.source.connectors[0] : args.source;
                 if ((!this.commandHandler.isParentAsContainer(object, true))
                     && (object.shape.type !== 'SwimLane' && !(object.shape as SwimLaneModel).isPhase)) {
                     if ((this.currentTarget as Node).isLane) {
@@ -1597,9 +1597,12 @@ export class RotateTool extends ToolBase {
                 childTable: this.childTable
             };
             this.commandHandler.addHistoryEntry(entry);
-            this.commandHandler.updateSelector();
             this.rotateStart =false;
         }
+        // Bug 983771: Rotate thumb Missing After Rotation of Selected Nodes.
+        // Moved updateSelector() outside the rotateAngle-change condition because on mouseup, rotating back to the same angle (e.g., 0°→ 0°) left the selector unrendered.
+        // This ensures the selector is always updated on rotation completion, even when the angle remains unchanged.
+        this.commandHandler.updateSelector();
         // this.commandHandler.updateBlazorSelector();
         this.canCancel = undefined;
         this.tempArgs = undefined;
@@ -2155,18 +2158,18 @@ export class ConnectorDrawingTool extends ConnectTool {
      * @private
      */
     public async mouseUp(args: MouseEventArgs): Promise<void> {
-
         this.commandHandler.enableServerDataBinding(false);
         this.checkPropertyValue();
         if (this.drawingObject && this.drawingObject instanceof Connector) {
             this.commandHandler.addObjectToDiagram(this.drawingObject);
-            this.triggerElementDrawEvent(this.drawingObject,'Completed','Connector',(this.drawingObject as ConnectorModel).type,false);
+            this.triggerElementDrawEvent(this.drawingObject, 'Completed', 'Connector', (this.drawingObject as ConnectorModel).type, false);
             this.drawingObject = null;
         }
-        // this.commandHandler.updateBlazorSelector();
         this.inAction = false;
-        this.commandHandler.enableServerDataBinding(true);
-        super.mouseUp(args);
+        if (this.commandHandler) {
+            this.commandHandler.enableServerDataBinding(true);
+            super.mouseUp(args);
+        }
     }
 
     /**   @private  */

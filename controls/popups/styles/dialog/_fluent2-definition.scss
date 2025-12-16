@@ -1,11 +1,14 @@
+@use 'ej2-base/styles/definition/fluent2' as *;
+@forward 'ej2-base/styles/definition/fluent2';
+
 //Layout Variables Start
 $dialog-close-button-left: 0 !default;
 $dialog-header-border: 0 !default;
 $dialog-close-icon-font-size: 18px !default;
 $dialog-bigger-close-icon-font-size: 18px !default;
 $dialog-header-font-size: 20px !default;
-$footer-content-border-radius: 8px !default;
-$header-content-border-radius: 8px 8px 0 0 !default;
+$footer-content-border-radius: $radius-8 !default;
+$header-content-border-radius: $radius-8 $radius-8 $radius-0 $radius-0 !default;
 $dialog-outer-border: 1px solid $dialog-border !default;
 $dialog-content-font-size: $text-sm !default;
 $dialog-header-line-height: $leading-tight !default;
@@ -13,8 +16,8 @@ $dialog-content-line-height: $leading-normal !default;
 $dialog-content-padding-top: 0 !default;
 $dialog-bigger-content-padding-top: 0 !default;
 $dialog-device-content-font-size: $text-base !default;
-$dialog-border-radius: 8px !default;
-$dialog-header-icon-hover-border-radius: 0 !default;
+$dialog-border-radius: $radius-8 !default;
+$dialog-header-icon-hover-border-radius: $radius-0 !default;
 $dialog-close-button-height: 32px !default;
 $dialog-close-button-width: 32px !default;
 $dialog-header-content-padding: 24px 24px 20px 24px !default;
@@ -92,6 +95,16 @@ $dialog-footer-flat-btn-content-color: $secondary-text-color !default;
 $dialog-enable-resize-padding-bottom: 15px !default;
 $dialog-footer-hover-btn: $primary-text-hover !default;
 $dialog-footer-flat-btn-hover-color: $secondary-text-color-hover !default;
+$dialog-bigger-rtl-footer-btn-margin-left: 0 !default;
+$dialog-zero-padding-margin: 0 !default;
+$dialog-alert-popup-margin: 30px !default;
+$dialog-full-width: 100% !default;
+$dialog-header-width: 80% !default;
+$dialog-max-height: 98% !default;
+$dialog-full-height: 100% !default;
+$dialog-mobile-width: 600px !default;
+$dialog-auto-width: auto !default;
+$dialog-normal-header-line-height: 32px !default;
 
 /* stylelint-disable */
 .e-dialog {
@@ -109,5 +122,5 @@ $dialog-footer-flat-btn-hover-color: $secondary-text-color-hover !default;
 .e-dialog .e-dlg-header-content .e-btn.e-dlg-closeicon-btn:active {
   color: $dialog-hover-icon-color;
   background-color: $dialog-closeicon-btn-hover-color;
-  border-radius: 4px;
+  border-radius: $radius-4;
 }

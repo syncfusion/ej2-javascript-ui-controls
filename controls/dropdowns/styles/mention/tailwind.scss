@@ -1,6 +1,6 @@
-@import 'ej2-base/styles/definition/tailwind.scss';
-@import 'ej2-popups/styles/popup/tailwind-definition.scss';
-@import 'ej2-popups/styles/spinner/tailwind-definition.scss';
-@import '../drop-down-base/tailwind-definition.scss';
-@import 'tailwind-definition.scss';
-@import 'all.scss';
+@use 'ej2-base/styles/definition/tailwind' as *;
+@use 'ej2-popups/styles/popup/tailwind-definition' as *;
+@use 'ej2-popups/styles/spinner/tailwind-definition' as *;
+@use '../drop-down-base/tailwind-definition' as *;
+@use 'tailwind-definition' as *;
+@use 'all' as *;

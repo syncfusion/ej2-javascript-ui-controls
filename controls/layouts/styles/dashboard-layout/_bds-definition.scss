@@ -1,3 +1,6 @@
+@use 'ej2-base/styles/definition/bds' as *;
+@forward 'ej2-base/styles/definition/bds';
+
 /*! component's theme wise override tailwind-definitions and variables */
 
 // Generic
@@ -107,3 +110,4 @@ $panel-drop-border: 1px $border-dark dashed !default;
 //gridlines
 $gridline-background: $content-bg-color-alt1 !default;
 $gridline-border: $border !default;
+$gridline-border-width: 1px !default;

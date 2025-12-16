@@ -1,3 +1,5 @@
+@use 'ej2-base/styles/common/mixin' as *;
+@use './theme-variables' as *;
 @include export-module('datepicker-theme') {
   #{&}.e-datepicker,
   .e-small#{&}.e-datepicker {

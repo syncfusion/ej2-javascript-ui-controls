@@ -1,4 +1,4 @@
-import { Grid, ContextMenu as cmenu, ContextMenuOpenEventArgs } from '@syncfusion/ej2-grids';
+import { Grid, ContextMenu as cmenu, ContextMenuOpenEventArgs, ContextMenuClickEventArgs } from '@syncfusion/ej2-grids';
 import { ITreeData, TreeGrid } from '../base';
 import { MenuEventArgs } from '@syncfusion/ej2-navigations';
 import { isNullOrUndefined, select } from '@syncfusion/ej2-base';
@@ -21,6 +21,7 @@ export class ContextMenu {
     public addEventListener(): void {
         this.parent.on('contextMenuOpen', this.contextMenuOpen, this);
         this.parent.on('contextMenuClick', this.contextMenuClick, this);
+        this.parent.on('contextMenuItemClick', this.contextMenuItemClick, this);
     }
     /**
      * @hidden
@@ -32,6 +33,20 @@ export class ContextMenu {
         }
         this.parent.off('contextMenuOpen', this.contextMenuOpen);
         this.parent.off('contextMenuClick', this.contextMenuClick);
+        this.parent.off('contextMenuItemClick', this.contextMenuItemClick);
+    }
+    private contextMenuItemClick(args: ContextMenuClickEventArgs): void {
+        const id: string = args.item && args.item.id ? args.item.id : '';
+        const delId: string = this.parent.element.id + '_gridcontrol_cmenu_Delete';
+        if (id !== delId) {
+            return;
+        }
+        if ((this.parent.getSelectedRecords()[0] as any).hasChildRecords || this.parent.getSelectedRecords().length > 1) {
+            this.parent.deleteRecord();
+        } else {
+            this.parent.deleteRow(this.parent.getSelectedRows()[0] as any);
+        }
+        (args as any).cancel = true;
     }
     private  contextMenuOpen(args: ContextMenuOpenEventArgs): void {
         const addRow: HTMLElement = select('#' + this.parent.element.id + '_gridcontrol_cmenu_AddRow', args.element);

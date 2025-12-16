@@ -1,3 +1,6 @@
+@use 'ej2-base/styles/definition/fluent' as *;
+@forward 'ej2-base/styles/definition/fluent';
+
 //default
 $datepicker-icon: '\e901' !default;
 $datepicker-icon-font-size: $font-icon-16 !default;
@@ -105,3 +108,29 @@ $modal-tablet-content-dimension: 64px !default;
 $modal-tablet-table-header-height: 48px !default;
 
 //enddefault
+
+$margin-zero: 0;
+$padding-zero: 0;
+$datepicker-modal-header-padding: 10px 10px 10px 15px;
+$datepicker-footer-container-padding: 10px 0;
+$date-picker-full-height: 100% !default;
+$datepicker-bigger-min-height: 40px !default;
+$datepicker-full-width: 100% !default;
+$datepicker-min-height: 33px !default;
+$date-picker-cell-container-height: 70% !default;
+$date-footer-container-font-size: 24px !default;
+$date-footer-height: 10% !default;
+$date-content-max-height: 50vh !default;
+$date-content-min-height: 60vh !default;
+$date-picker-popup-landscape-height: 25vh !default;
+$date-zero-radius: 0 !default;
+$date-mob-popup-height: 15vh !default;
+$date-normal-font: 400 !default;
+$date-header-mob-prev-height: 35px !default;
+$date-header-mob-prev-width: 35px !default;
+$date-min-device-height: 55px !default;
+$date-min-device-width: 55px !default;
+$date-picker-popup-next-height: 35px !default;
+$date-picker-popup-next-width: 35px !default;
+$date-picker-popup-next-min-height: 55px !default;
+$date-picker-popup-next-min-width: 55px !default;

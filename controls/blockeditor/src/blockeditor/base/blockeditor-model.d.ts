@@ -1,4 +1,4 @@
-import { Component, getUniqueID, INotifyPropertyChanged, NotifyPropertyChanges, Property, isNullOrUndefined as isNOU, formatUnit, Collection, EmitType, Complex, remove, Event, append, L10n, addClass } from '@syncfusion/ej2-base';import { BlockModel, UserModel, CommandMenuSettingsModel, InlineToolbarSettingsModel, PasteSettingsModel, BlockActionMenuSettingsModel, ContextMenuSettingsModel, LabelSettingsModel, BasePlaceholderProp, HeadingProps } from '../models/index';import { Block } from '../models/block/block';import { User } from '../models/common/user';import { CommandMenuSettings } from '../models/menus/command-menu-settings';import { InlineToolbarSettings } from '../models/menus/inline-toolbar-settings';import { ContextMenuSettings } from '../models/menus/context-menu-settings';import { BlockActionMenuSettings } from '../models/menus/blockaction-menu-settings';import { PasteSettings } from '../models/common/paste-settings';import { LabelSettings } from '../models/common/label-settings';import { FocusEventArgs, BlurEventArgs, BlockAddedEventArgs, BlockRemovedEventArgs, BlockMovedEventArgs, ContentChangedEventArgs, SelectionChangedEventArgs, UndoRedoEventArgs, BlockDragEventArgs, BlockDropEventArgs, KeyActionExecutedEventArgs, BeforePasteEventArgs, AfterPasteEventArgs } from './eventargs';import { getBlockContentElement, getBlockModelById } from '../utils/block';import { IUndoRedoSelectionState } from './interface';import { getTemplateFunction } from '../utils/common';import { BlockType, BuiltInToolbar } from './enums';import { clearBreakTags, isElementEmpty } from '../utils/dom';import { decode, encode, sanitizeHelper } from '../utils/security';import { events } from './constant';import * as constants from './constant';import { PopupRenderer, MentionRenderer, MenuBarRenderer, TooltipRenderer } from '../renderer/index';import { BlockRendererManager, BlockCommandManager, StateManager, FloatingIconManager, EventManager } from '../managers/index';import { FormattingAction, ListBlockAction, DragAndDropAction, BlockEditorMethods, UndoRedoAction, ClipboardAction } from '../actions/index';import { InlineContentInsertionModule, NodeSelection, SlashCommandModule, ContextMenuModule, BlockActionMenuModule, InlineToolbarModule, LinkModule } from '../plugins/index';import { BlockService } from '../services/index';
+import { Component, getUniqueID, INotifyPropertyChanged, NotifyPropertyChanges, Property, isNullOrUndefined as isNOU, formatUnit, Collection, EmitType, Complex, Event, append, L10n, addClass, updateCSSText } from '@syncfusion/ej2-base';import { UserModel, CommandMenuSettingsModel, InlineToolbarSettingsModel, PasteCleanupSettingsModel, BlockActionMenuSettingsModel, ContextMenuSettingsModel, LabelSettingsModel, ImageBlockSettingsModel, CodeBlockSettingsModel } from '../../models/index';import { BlockModel } from '../../models/block/block-model';import { User } from '../../models/common/user';import { CommandMenuSettings } from '../../models/menus/command-menu-settings';import { InlineToolbarSettings } from '../../models/menus/inline-toolbar-settings';import { ContextMenuSettings } from '../../models/menus/context-menu-settings';import { BlockActionMenuSettings } from '../../models/menus/blockaction-menu-settings';import { PasteCleanupSettings } from '../../models/common/paste-settings';import { LabelSettings } from '../../models/common/label-settings';import { FocusEventArgs, BlurEventArgs, SelectionChangedEventArgs, BlockDragEventArgs, BlockDropEventArgs, BeforePasteCleanupEventArgs, AfterPasteCleanupEventArgs, BlockChangedEventArgs } from '../../models/eventargs';import { getBlockModelById } from '../../common/utils/block';import { getTemplateFunction } from '../../common/utils/common';import { getCurrentLocaleJson, getLocaleItems } from '../../common/utils/data';import { CommandName } from '../../models/enums';import { events } from '../../common/constant';import * as constants from '../../common/constant';import { MentionRenderer, MenuBarRenderer, TooltipRenderer, DialogRenderer, FloatingIconRenderer, DropDownListRenderer } from '../renderer/index';import { EventManager, Intermediate } from '../managers/index';import { InlineContentInsertionModule, SlashCommandModule, ContextMenuModule, BlockActionMenuModule, InlineToolbarModule, LinkModule } from '../renderer/index';import { BlockManager } from '../../block-manager/base/block-manager';import { ImageBlockSettings, CodeBlockSettings } from '../../models/common/index';
 import {ComponentModel} from '@syncfusion/ej2-base';
 
 /**
@@ -10,7 +10,7 @@ export interface BlockEditorModel extends ComponentModel{
      * Specifies the height of the editor.
      * This property sets the height of the editor, which can be a string or number.
      *
-     * @default '100%'
+     * @default 'auto'
      */
     height?: string | number;
 
@@ -33,14 +33,17 @@ export interface BlockEditorModel extends ComponentModel{
     /**
      * Specifies the locale for localization.
      * This property sets the language and regional settings for the editor.
+     * The default locale value is 'en-US'.
      *
-     * @default ''
+     * @default 'en-US'
      */
     locale?: string;
 
     /**
      * Specifies custom keyboard shortcuts configuration.
      * This property allows the definition of custom keyboard shortcuts for editor commands.
+     *
+     * {% codeBlock src='blockeditor/keyconfig/index.md' %}{% endcodeBlock %}
      *
      * @default null
      */
@@ -51,6 +54,8 @@ export interface BlockEditorModel extends ComponentModel{
      * This property determines how many actions are stored for undo and redo functionality.
      * With a default value of 30, it allows users to revert up to 30 operations.
      *
+     * {% codeBlock src='blockeditor/undo-redo-stack/index.md' %}{% endcodeBlock %}
+     *
      * @default 30
      */
     undoRedoStack?: number;
@@ -58,6 +63,8 @@ export interface BlockEditorModel extends ComponentModel{
     /**
      * Specifies whether the editor is in read-only mode.
      * This property prevents users from editing the content when set to true.
+     *
+     * {% codeBlock src='blockeditor/readonly/index.md' %}{% endcodeBlock %}
      *
      * @default false
      */
@@ -75,6 +82,8 @@ export interface BlockEditorModel extends ComponentModel{
      * Specifies whether the HTML sanitizer is enabled.
      * This property determines if the HTML content will be sanitized to remove potentially harmful tags and attributes.
      *
+     * {% codeBlock src='blockeditor/enable-htmlsanitizer/index.md' %}{% endcodeBlock %}
+     *
      * @default true
      */
     enableHtmlSanitizer?: boolean;
@@ -83,22 +92,17 @@ export interface BlockEditorModel extends ComponentModel{
      * Specifies whether drag and drop functionality is enabled for the blocks.
      * This property enables or disables drag-and-drop operations within the block editor.
      *
+     * {% codeBlock src='blockeditor/enable-drag-drop/index.md' %}{% endcodeBlock %}
+     *
      * @default true
      */
     enableDragAndDrop?: boolean;
 
     /**
-     * Specifies whether URLs should automatically have "https://" added if the user does not include it.
-     * If disabled,  URLs will be entered as-is, without any protocol prepends.
-     * This can be useful for internal links or specific use cases where the protocol is not required.
-     *
-     * @default true
-     */
-    enableAutoHttps?: boolean;
-
-    /**
      * Specifies an array of block models representing the content of the editor.
      * This property holds the various blocks that make up the editor's content.
+     *
+     * {% codeBlock src='blockeditor/blocks/index.md' %}{% endcodeBlock %}
      *
      * @default []
      */
@@ -108,6 +112,8 @@ export interface BlockEditorModel extends ComponentModel{
      * Specifies an array of user models representing the list of users.
      * This property holds user details such as name, ID, and other properties.
      *
+     * {% codeBlock src='blockeditor/users/index.md' %}{% endcodeBlock %}
+     *
      * @default []
      */
     users?: UserModel[];
@@ -116,49 +122,81 @@ export interface BlockEditorModel extends ComponentModel{
      * Specifies configuration options for editor commands.
      * This property allows customization of command behaviors within the editor.
      *
+     * {% codeBlock src='blockeditor/command-menu/index.md' %}{% endcodeBlock %}
+     *
      * @default {}
      */
-    commandMenu?: CommandMenuSettingsModel;
+    commandMenuSettings?: CommandMenuSettingsModel;
 
     /**
      * Specifies settings for the formatting toolbar.
      * This property configures the toolbar that provides text formatting options.
      *
+     * {% codeBlock src='blockeditor/inline-toolbar/index.md' %}{% endcodeBlock %}
+     *
      * @default {}
      */
-    inlineToolbar?: InlineToolbarSettingsModel;
+    inlineToolbarSettings?: InlineToolbarSettingsModel;
 
     /**
      * Specifies the configuration settings for the block actions menu.
      * This property allows customization of the actions menu within the editor.
      *
+     * {% codeBlock src='blockeditor/block-action-menu/index.md' %}{% endcodeBlock %}
+     *
      * @default {}
      */
-    blockActionsMenu?: BlockActionMenuSettingsModel;
+    blockActionMenuSettings?: BlockActionMenuSettingsModel;
 
     /**
      * Specifies settings for the context menu.
      * This property configures the context menu options that appear on right-click actions.
      *
-     * @default {}
-     */
-    contextMenu?: ContextMenuSettingsModel;
-
-    /**
-     * Configures settings related to pasting content in the editor.
-     * This property utilizes the PasteSettingsModel to specify various options and behaviors for paste operations.
+     * {% codeBlock src='blockeditor/context-menu/index.md' %}{% endcodeBlock %}
      *
      * @default {}
      */
-    pasteSettings?: PasteSettingsModel;
+    contextMenuSettings?: ContextMenuSettingsModel;
+
+    /**
+     * Configures settings related to pasting content in the editor.
+     * This property utilizes the PasteCleanupSettingsModel to specify various options and behaviors for paste operations.
+     *
+     * {% codeBlock src='blockeditor/paste-settings/index.md' %}{% endcodeBlock %}
+     *
+     * @default {}
+     */
+    pasteCleanupSettings?: PasteCleanupSettingsModel;
 
     /**
      * Configures settings related to label popup in the editor.
      * This property utilizes the LabelSettingsModel to specify various options and behaviors for paste operations.
      *
+     * {% codeBlock src='blockeditor/label-settings/index.md' %}{% endcodeBlock %}
+     *
      * @default {}
      */
     labelSettings?: LabelSettingsModel;
+
+    /**
+     * Configures settings related to image block in the editor.
+     * This property utilizes the ImageBlockSettingsModel to specify various options for image block settings.
+     *
+     * {% codeBlock src='blockeditor/image-settings/index.md' %}{% endcodeBlock %}
+     *
+     * @default {}
+     */
+    imageBlockSettings?: ImageBlockSettingsModel;
+
+    /**
+     * Configures settings related to code block in the editor.
+     * This property utilizes the CodeBlockSettingsModel to specify various options for code block settings.
+     *
+     * {% codeBlock src='blockeditor/code-settings/index.md' %}{% endcodeBlock %}
+     *
+     * @default {}
+     */
+    codeBlockSettings?: CodeBlockSettingsModel;
 
     /**
      * Event triggered after the Blockeditor is rendered completely.
@@ -168,64 +206,40 @@ export interface BlockEditorModel extends ComponentModel{
     created?: EmitType<Object>;
 
     /**
-     * Event triggered when the content of the block editor is changed.
-     * This event provides details about the changes made to the content.
+     * Event triggered when the editor blocks are changed.
+     * This event provides details about the changes made to the editor blocks.
      *
-     * @event contentChanged
+     * {% codeBlock src='blockeditor/block-change/index.md' %}{% endcodeBlock %}
+     *
+     * @event blockChanged
      */
-    contentChanged?: EmitType<ContentChangedEventArgs>;
+    blockChanged?: EmitType<BlockChangedEventArgs>;
 
     /**
      * Event triggered when the selection in the block editor changes.
      * This event provides details about the new selection state.
+     *
+     * {% codeBlock src='blockeditor/selection-changed/index.md' %}{% endcodeBlock %}
      *
      * @event selectionChanged
      */
     selectionChanged?: EmitType<SelectionChangedEventArgs>;
 
     /**
-     * Event triggered when an undo or redo operation is performed in the block editor.
-     * This event provides details about the undo/redo action that was executed.
-     *
-     * @event undoRedoPerformed
-     */
-    undoRedoPerformed?: EmitType<UndoRedoEventArgs>;
-
-    /**
-     * Event triggered when a block is added to the block editor.
-     * This event provides details about the newly added block.
-     *
-     * @event blockAdded
-     */
-    blockAdded?: EmitType<BlockAddedEventArgs>;
-
-    /**
-     * Event triggered when a block is removed from the block editor.
-     * This event provides details about the block being removed.
-     *
-     * @event blockRemoved
-     */
-    blockRemoved?: EmitType<BlockRemovedEventArgs>;
-
-    /**
-     * Event triggered when a block is moved within the block editor.
-     * This event provides details about the moved block.
-     *
-     * @event blockMoved
-     */
-    blockMoved?: EmitType<BlockMovedEventArgs>;
-
-    /**
      * Event triggered during the dragging operation of a block.
      * This event provides details about the drag operation.
      *
-     * @event blockDrag
+     * {% codeBlock src='blockeditor/block-dragging/index.md' %}{% endcodeBlock %}
+     *
+     * @event blockDragging
      */
-    blockDrag?: EmitType<BlockDragEventArgs>;
+    blockDragging?: EmitType<BlockDragEventArgs>;
 
     /**
      * Event triggered when the drag operation for a block starts.
      * This event provides details about the initial stage of the drag.
+     *
+     * {% codeBlock src='blockeditor/block-drag-start/index.md' %}{% endcodeBlock %}
      *
      * @event blockDragStart
      */
@@ -235,13 +249,17 @@ export interface BlockEditorModel extends ComponentModel{
      * Event triggered when a block is dropped after a drag operation.
      * This event provides details about the block drop action.
      *
-     * @event blockDrop
+     * {% codeBlock src='blockeditor/block-dropped/index.md' %}{% endcodeBlock %}
+     *
+     * @event blockDropped
      */
-    blockDrop?: EmitType<BlockDropEventArgs>;
+    blockDropped?: EmitType<BlockDropEventArgs>;
 
     /**
      * Event triggered when the block editor gains focus.
      * This event provides details about the focus action.
+     *
+     * {% codeBlock src='blockeditor/focus/index.md' %}{% endcodeBlock %}
      *
      * @event focus
      */
@@ -251,33 +269,30 @@ export interface BlockEditorModel extends ComponentModel{
      * Event triggered when the block editor loses focus.
      * This event provides details about the blur action.
      *
+     * {% codeBlock src='blockeditor/blur/index.md' %}{% endcodeBlock %}
+     *
      * @event blur
      */
     blur?: EmitType<BlurEventArgs>;
 
     /**
-     * Event triggered when a key action (both built-in and custom) is executed in the block editor component.
-     * This event provides detailed information about the executed key action, including the key combination,
-     * the action performed, whether the action was triggered by a custom key configuration, and the platform.
-     *
-     * @event keyActionExecuted
-     */
-    keyActionExecuted?: EmitType<KeyActionExecutedEventArgs>;
-
-    /**
      * Event triggered before a paste operation occurs in the block editor.
      * This event allows interception or modification of the pasted content.
      *
-     * @event beforePaste
+     * {% codeBlock src='blockeditor/before-paste/index.md' %}{% endcodeBlock %}
+     *
+     * @event beforePasteCleanup
      */
-    beforePaste?: EmitType<BeforePasteEventArgs>;
+    beforePasteCleanup?: EmitType<BeforePasteCleanupEventArgs>;
 
     /**
      * Event triggered after a paste operation occurs in the block editor.
      * This event provides details about the pasted content.
      *
-     * @event afterPaste
+     * {% codeBlock src='blockeditor/after-paste/index.md' %}{% endcodeBlock %}
+     *
+     * @event afterPasteCleanup
      */
-    afterPaste?: EmitType<AfterPasteEventArgs>;
+    afterPasteCleanup?: EmitType<AfterPasteCleanupEventArgs>;
 
 }

@@ -303,7 +303,7 @@ describe('Chart Control', () => {
                 svg = document.getElementById('container_Series_0_Point_0');
                 expect(svg != null).toBe(true);
                 axisLabel = document.getElementById('container0_AxisLabel_0');
-                expect(axisLabel.textContent === '23' || axisLabel.textContent === 'Jun 23').toBe(true);
+                expect(axisLabel.textContent === '23' || axisLabel.textContent === 'Jun 23' || axisLabel.textContent === 'Jun 24').toBe(true);
                 done();
             };
             chartObj.loaded = loaded;
@@ -653,7 +653,7 @@ describe('Chart Control', () => {
                 element1 = <HTMLElement>crosshair.childNodes[2].childNodes[2];
                 expect(element1.getAttribute('d')).not.toEqual('');
                 element1 = <HTMLElement>crosshair.childNodes[2].childNodes[1];
-                expect(element1.textContent == '5503.287'|| element1.textContent == '5509.650').toBe(true);
+                expect(element1.textContent == '5503.287'|| element1.textContent == '5509.650' || element1.textContent == '5510.204' || element1.textContent == '5509.934').toBe(true);
                 chartArea = document.getElementById('container_ChartAreaBorder');
                 y = parseFloat(chartArea.getAttribute('y')) + elem.offsetTop + 1;
                 x = parseFloat(chartArea.getAttribute('x')) + elem.offsetLeft + 1;

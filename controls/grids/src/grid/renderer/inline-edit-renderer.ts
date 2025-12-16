@@ -131,8 +131,7 @@ export class InlineEditRender {
                 if (!this.parent.enableRtl && (gObj.gridLines === 'Vertical' || gObj.gridLines === 'Both') && isFirstVisibleCell) {
                     if (gLen) {
                         td.classList.add('e-grid-group-first-cell');
-                    }
-                    else if ((this.parent.renderModule && this.parent.renderModule.isFirstColumnHidden) &&
+                    } else if ((this.parent.renderModule && this.parent.renderModule.isFirstColumnHidden) &&
                         !(this.parent.allowRowDragAndDrop || this.parent.childGrid || this.parent.detailTemplate)) {
                         td.classList.add('e-first-visible-cell');
                     }

@@ -623,7 +623,7 @@ class SequenceDiagramModel {
      * @private
      */
     public addLifeLine(participant: Node): void{
-        const lifeline: Connector = new Connector(this.diagram, 'connectors', { id: `${participant.id}_Lifeline` });
+        const lifeline: Connector = new Connector(this.diagram, 'connectors', { id: `${participant.id}_Lifeline` }, true);
         UMLHelperClass.updateConnectorStyles(lifeline, 'Dashed');
         this.diagram.connectors.push(lifeline);
         // set participant name as key and lifeline connector as its value
@@ -748,7 +748,7 @@ class SequenceDiagramModel {
                 continue;
             }
             const connector: Connector = new Connector(this.diagram, 'connectors',
-                                                       { id: message.id.toString() });
+                                                       { id: message.id.toString() }, true);
 
             UMLHelperClass.addOrUpdateParticipantDetails(connector, sourceParticipant.id,
                                                          targetParticipant.id, message.type, null);
@@ -798,7 +798,7 @@ class SequenceDiagramModel {
                             id: `${node.id}_Activation_${activationID}`,
                             minHeight: 10, minWidth: 10,
                             data: activation
-                        });
+                        }, true);
 
                         UMLHelperClass.updateNodeShape(activationNode, false);
 
@@ -866,7 +866,7 @@ class SequenceDiagramModel {
         const fragmentModel: FragmentModel = new FragmentModel(fragment.id.toString(), fragment.type, [], [],
                                                                new Node(this.diagram, 'nodes', { id: fragment.id.toString() + '_Fragment',
                                                                    data: fragment, shape: {type: 'Path'},
-                                                                   style: { fill: 'transparent', strokeColor: '#000000', strokeWidth: 1 } }),
+                                                                   style: { fill: 'transparent', strokeColor: '#000000', strokeWidth: 1 } }, true),
                                                                0);
 
         for (const condition of fragment.conditions) {
@@ -2804,7 +2804,7 @@ class FragmentRenderer {
                 offsetY: offsetY,
                 shape: { type: 'Path', data: this.getGeneralFragmentShape(width, height) },
                 style: { fill: 'transparent', strokeColor: '#000000', strokeWidth: 1 }
-            });
+            }, true);
             fragment.node = this.diagram.add(fragment.node) as Node;
         }
     }
@@ -2967,7 +2967,7 @@ class LifeLineRenderer {
             annotations: participant.annotations,
             style: participant.style,
             ports: [{ id: participant.id + '_center_port', shape: null }]
-        });
+        }, true);
         return this.diagram.add(footBoxNode) as Node;
     }
 
@@ -3174,10 +3174,10 @@ class MermaidUmlParser {
 
                     if (source.toLowerCase() === affectedParticipant.toLowerCase() ||
                         target.toLowerCase() === affectedParticipant.toLowerCase()) {
-
+                        //Bug 974517: Error thrown in UML Sequence diagram connectors customization.
                         const createConnector: Connector = new Connector(this.diagram, 'connectors', {
                             id: (nextIndex + 1).toString()
-                        });
+                        }, true);
 
                         UMLHelperClass.addOrUpdateParticipantDetails(createConnector, source, target,
                                                                      UmlSequenceMessageType.Create, affectedParticipant);
@@ -3225,7 +3225,7 @@ class MermaidUmlParser {
 
                         const destroyConnector: Connector = new Connector(this.diagram, 'connectors', {
                             id: (nextIndex + 1).toString()
-                        });
+                        }, true);
 
                         UMLHelperClass.addOrUpdateParticipantDetails(destroyConnector, source, target,
                                                                      UmlSequenceMessageType.Delete, participantName);
@@ -3282,7 +3282,7 @@ class MermaidUmlParser {
         this.createOrGetParticipant(source);
         this.createOrGetParticipant(target);
 
-        const connector: Connector = new Connector(this.diagram, 'connectors', { id: index.toString() });
+        const connector: Connector = new Connector(this.diagram, 'connectors', { id: index.toString() }, true);
 
         UMLHelperClass.addOrUpdateParticipantDetails(connector, source, target, UmlSequenceMessageType.Synchronous, null);
         UMLHelperClass.updateAnnotation(connector, message);
@@ -3352,7 +3352,7 @@ class MermaidUmlParser {
                     const activationNode: Node = new Node(this.diagram, 'nodes', {
                         id: participant + '_Activation_' + randomId(),
                         minHeight: 10, minWidth: 10
-                    });
+                    }, true);
                     UMLHelperClass.updateNodeShape(activationNode, false);
 
                     this.sequenceDiagramModel.addActivation(new ActivationModel(activationNode,
@@ -3406,7 +3406,7 @@ class MermaidUmlParser {
                     const activationNode: Node = new Node(this.diagram, 'nodes', {
                         id: participant + '_Activation_' + randomId(),
                         minHeight: 10, minWidth: 10
-                    });
+                    }, true);
                     UMLHelperClass.updateNodeShape(activationNode, false);
 
                     this.sequenceDiagramModel.addActivation(new ActivationModel(activationNode,
@@ -3593,7 +3593,7 @@ class MermaidUmlParser {
         if (!this.sequenceDiagramModel.participants.has(alias || name)) {
             const participant: Node = new Node(this.diagram, 'nodes', {
                 id: alias || name
-            });
+            }, true);
             UMLHelperClass.updateNodeShape(participant, isActor);
             UMLHelperClass.updateAnnotation(participant, name, isActor);
             this.sequenceDiagramModel.addParticipant(participant);

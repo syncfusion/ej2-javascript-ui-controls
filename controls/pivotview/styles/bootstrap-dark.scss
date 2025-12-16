@@ -1,9 +1,8 @@
-@import 'ej2-base/styles/definition/bootstrap-dark.scss';
-@import 'pivotfieldlist/bootstrap-dark-definition.scss';
-@import 'pivotview/bootstrap-dark-definition.scss';
-@import 'pivotview/icons/bootstrap-dark.scss';
-@import 'pivotview/all.scss';
-@import 'pivotview/bigger.scss';
-@import 'pivotfieldlist/icons/bootstrap-dark.scss';
-@import 'pivotfieldlist/all.scss';
-@import 'pivotfieldlist/bigger.scss';
+@use 'pivotfieldlist/bootstrap-dark-definition' as *;
+@use 'pivotview/bootstrap-dark-definition' as *;
+@use 'pivotview/icons/bootstrap-dark' as *;
+@use 'pivotview/all' as *;
+@use 'pivotview/bigger' as *;
+@use 'pivotfieldlist/icons/bootstrap-dark' as *;
+@use 'pivotfieldlist/all' as *;
+@use 'pivotfieldlist/bigger' as *;

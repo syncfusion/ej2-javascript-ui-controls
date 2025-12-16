@@ -1,3 +1,5 @@
+@use 'ej2-base/styles/common/mixin' as *;
+@use './theme-variables' as *;
 @include export-module('listbox-bigger') {
   .e-bigger .e-listbox-wrapper,
   .e-listbox-wrapper.e-bigger,
@@ -6,22 +8,19 @@
     @if ($skin-name == 'bootstrap4') {
       font-size: 16px;
     }
-    @if ($theme-name == 'bootstrap5.3' or $theme-name == 'bootstrap5.3-dark') {
-      border-radius: 6px;
-    }
-    @if $skin-name == 'tailwind3' {
-      border-radius: 8px;
+    @if ($theme-name == 'bootstrap5.3' or $theme-name == 'bootstrap5.3-dark' or $skin-name == 'tailwind3') {
+      border-radius: $list-box-bgr-border-radius;
     }
 
     &.e-listboxtool-container .e-list-wrap {
       @if $skin-name == 'FluentUI' or $skin-name == 'bootstrap5' or $skin-name == 'bootstrap5.3' or $skin-name == 'tailwind' {
-        width: calc(100% - 20%) !important; /* stylelint-disable-line declaration-no-important */
+        width: $list-tool-box-wrap-width !important; /* stylelint-disable-line declaration-no-important */
       }
       @else if $skin-name == 'material' or $skin-name == 'bootstrap4' or $skin-name == 'bootstrap' {
-        width: calc(100% - 15%) !important; /* stylelint-disable-line declaration-no-important */
+        width: $list-tool-box-wrap-width !important; /* stylelint-disable-line declaration-no-important */
       }
       @else if $skin-name == 'fabric' or $skin-name == 'highcontrast' {
-        width: calc(100% - 17%) !important; /* stylelint-disable-line declaration-no-important */
+        width: $list-tool-box-wrap-width !important; /* stylelint-disable-line declaration-no-important */
       }
     }
 
@@ -48,7 +47,7 @@
         padding: 12px 20px;
       }
       @if ($theme-name == 'bootstrap5.3' or $theme-name == 'bootstrap5.3-dark' or $skin-name == 'tailwind3') {
-        font-size: 16px;
+        font-size: $list-box-bgr-list-item-font-size;
       }
     }
 
@@ -63,16 +62,12 @@
     .e-list-group-item {
       height: $listbox-touch-groupheader-height;
       line-height: $listbox-touch-groupheader-line-height;
-      @if ($skin-name == 'bootstrap4') {
-        font-size: 16px;
-        padding: 12px 20px;
+      @if ($skin-name == 'bootstrap4' or $skin-name == 'tailwind3') {
+        font-size: $list-item-grup-font-size;
+        padding: $list-item-grp-padding;
       }
       @if $theme-name == 'bootstrap5.3' or $theme-name == 'bootstrap5.3-dark' {
-        padding: 9px 16px;
-      }
-      @if ($skin-name == 'tailwind3') {
-        font-size: 14px;
-        padding: 10px 16px;
+        padding: $list-item-grp-padding;
       }
     }
 
@@ -142,7 +137,7 @@
   .e-bigger .e-listbox-container .e-selectall-parent + .e-list-parent,
   .e-small.e-bigger .e-listbox-container.e-filter-list .e-list-parent,
   .e-bigger .e-listbox-container.e-filter-list .e-selectall-parent + .e-list-parent {
-    height: 100%;
+    height: $list-box-full-height;
   }
 
   .e-bigger .e-listbox-wrapper.e-filter-list .e-selectall-parent + .e-list-parent,
@@ -180,11 +175,11 @@
 
   @if $skin-name == 'tailwind3' {
     .e-bigger .e-listboxtool-wrapper .e-listbox-tool .e-btn-icon {
-      font-size: 18px;
+      font-size: $text-lg;
     }
 
     .e-bigger .e-listbox-wrapper .e-filter-parent {
-      padding: 12px;
+      padding: $listbox-bigger-filter-parent-padding;
     }
   }
 }

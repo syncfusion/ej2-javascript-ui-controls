@@ -7,6 +7,7 @@ import { Tooltip, TooltipEventArgs } from '@syncfusion/ej2-popups';
 import { DropDownButton, ItemModel, OpenCloseMenuEventArgs, MenuEventArgs } from '@syncfusion/ej2-splitbuttons';
 import { ToolbarItem, FormFieldDataFormat } from '../base/types';
 import { FormDesignerToolbar } from './formdesigner-toolbar';
+import { RedactionToolbar } from './redaction-toolbar';
 /* eslint-disable valid-jsdoc */
 /**
  * Toolbar module
@@ -62,7 +63,10 @@ export class Toolbar {
     public textSearchItem: HTMLElement;
     private undoItem: HTMLElement;
     private redoItem: HTMLElement;
-    private commentItem: HTMLElement;
+    /**
+     * @private
+     */
+    public commentItem: HTMLElement;
     /**
      * @private
      */
@@ -71,12 +75,20 @@ export class Toolbar {
      * @private
      */
     public formDesignerItem: HTMLElement;
+    /**
+     * @private
+     */
+    public redactionItem: HTMLElement;
     private moreOptionItem: HTMLElement;
     private organizePageItem: HTMLElement;
     /**
      * @private
      */
     public annotationToolbarModule: AnnotationToolbar;
+    /**
+     * @private
+     */
+    public redactionToolbarModule: RedactionToolbar;
     /**
      * @private
      */
@@ -104,8 +116,13 @@ export class Toolbar {
      * @private
      */
     public isTextSearchBoxDisplayed: boolean = false;
+    /**
+     * @private
+     */
+    public updateZoomDropDown: boolean = false;
     private isUndoRedoBtnsVisible: boolean = true;
     private isAnnotationEditBtnVisible: boolean = true;
+    private isRedactionEditBtnVisible: boolean = true;
     private isFormDesignerEditBtnVisible: boolean = true;
     private isCommentBtnVisible: boolean = true;
     private isSubmitbtnvisible: boolean = true;
@@ -178,6 +195,12 @@ export class Toolbar {
                 this.annotationToolbarModule = new AnnotationToolbar(this.pdfViewer, this.pdfViewerBase, this);
                 if (!Browser.isDevice || this.pdfViewer.enableDesktopMode) {
                     this.annotationToolbarModule.initializeAnnotationToolbar();
+                }
+            }
+            if (this.pdfViewer.annotationModule) {
+                this.redactionToolbarModule = new RedactionToolbar(this.pdfViewer, this.pdfViewerBase, this);
+                if (!Browser.isDevice || this.pdfViewer.enableDesktopMode) {
+                    this.redactionToolbarModule.initializeRedactionToolbar();
                 }
             }
             if (this.pdfViewer.formDesignerModule) {
@@ -337,7 +360,28 @@ export class Toolbar {
     }
 
     /**
-     * Shows or remove the the toolbar items in the PdfViewer.
+     * Shows /hides the redaction toolbar in the PdfViewer.
+     * This redaction customization feature shall be available only when the PDF Viewer is operating in Standalone Mode.
+     *
+     * @param  {boolean} enableRedactionToolbar - If set true , its show the redaction Toolbar
+     *
+     * **Remarks:**
+     * This method toggles the visibility of the redaction annotation toolbar in the PDF Viewer.
+     * It allows the user to control the toolbar's visibility based on their interactions with the viewer.
+     * @returns {void}
+     */
+    public showRedactionToolbar(enableRedactionToolbar: boolean): void {
+        if (enableRedactionToolbar  && this.pdfViewerBase.clientSideRendering) {
+            this.redactionToolbarModule.isToolbarHidden = true;
+            this.redactionToolbarModule.showRedactionToolbar(null, false, true);
+        } else {
+            this.redactionToolbarModule.isToolbarHidden = false;
+            this.redactionToolbarModule.showRedactionToolbar(null, false, false);
+        }
+    }
+
+    /**
+     * Shows /hides the the toolbar items in the PdfViewer
      *
      * @param  {string[]} items - Defines the toolbar items in the toolbar
      * @param  {boolean} isVisible - If set true, then its show the toolbar Items
@@ -376,6 +420,9 @@ export class Toolbar {
             case 'AnnotationEditTool':
                 this.showAnnotationEditTool(isVisible);
                 break;
+            case 'RedactionEditTool':
+                this.showRedactionEditTool(isVisible);
+                break;
             case 'FormDesignerEditTool':
                 this.showFormDesignerEditTool(isVisible);
                 break;
@@ -384,6 +431,9 @@ export class Toolbar {
                 break;
             case 'SubmitForm':
                 this.showSubmitForm(isVisible);
+                break;
+            case 'OrganizePagesTool':
+                this.showPageOrganizerToolbar(isVisible);
                 break;
             }
         }
@@ -446,6 +496,9 @@ export class Toolbar {
                 break;
             case 'AnnotationEditTool':
                 this.enableAnnotationEditTool(isEnable);
+                break;
+            case 'RedactionEditTool':
+                this.enableRedactionEditTool(isEnable);
                 break;
             case 'FormDesignerEditTool':
                 this.enableFormDesignerEditTool(isEnable);
@@ -549,9 +602,9 @@ export class Toolbar {
         this.isDownloadBtnVisible = enableDownloadOption;
         if (!Browser.isDevice || this.pdfViewer.enableDesktopMode) {
             //The itemsIndexArray is null, the default previous value for DownloadOption has been passed as (26,26).
-            this.applyHideToToolbar(enableDownloadOption, !isNullOrUndefined(this.itemsIndexArray[12]) ?
-                this.itemsIndexArray[12].startIndex : 26, !isNullOrUndefined(this.itemsIndexArray[12]) ?
-                this.itemsIndexArray[12].endIndex : 26);
+            this.applyHideToToolbar(enableDownloadOption, !isNullOrUndefined(this.itemsIndexArray[13]) ?
+                this.itemsIndexArray[13].startIndex : 27, !isNullOrUndefined(this.itemsIndexArray[13]) ?
+                this.itemsIndexArray[13].endIndex : 27);
         } else {
             this.applyHideToToolbar(enableDownloadOption, 6, 6);
         }
@@ -566,9 +619,9 @@ export class Toolbar {
     private showPrintOption(enablePrintOption: boolean): void {
         this.isPrintBtnVisible = enablePrintOption;
         //For mobile devices, the default previous value for PrintOption has been passed as (25,25).
-        this.applyHideToToolbar(enablePrintOption, !isNullOrUndefined(this.itemsIndexArray[11]) ?
-            this.itemsIndexArray[11].startIndex : 25, !isNullOrUndefined(this.itemsIndexArray[11]) ?
-            this.itemsIndexArray[11].endIndex : 25);
+        this.applyHideToToolbar(enablePrintOption, !isNullOrUndefined(this.itemsIndexArray[12]) ?
+            this.itemsIndexArray[12].startIndex : 26, !isNullOrUndefined(this.itemsIndexArray[12]) ?
+            this.itemsIndexArray[12].endIndex : 26);
     }
 
     private showSearchOption(enableSearchOption: boolean): void {
@@ -579,7 +632,7 @@ export class Toolbar {
                 this.itemsIndexArray[8].startIndex : 22, !isNullOrUndefined(this.itemsIndexArray[8]) ?
                 this.itemsIndexArray[8].endIndex : 22);
         } else {
-            this.applyHideToToolbar(enableSearchOption, 6, 6);
+            this.applyHideToToolbar(enableSearchOption, 7, 7);
         }
     }
 
@@ -621,12 +674,24 @@ export class Toolbar {
         }
     }
 
+    private showRedactionEditTool(isEnable: boolean): void {
+        this.isRedactionEditBtnVisible = isEnable;
+        if (!Browser.isDevice || this.pdfViewer.enableDesktopMode) {
+            //The itemsIndexArray is null, the default previous value for AnnotationEditTool has been passed as (23,23).
+            this.applyHideToToolbar(isEnable, !isNullOrUndefined(this.itemsIndexArray[10]) ?
+                this.itemsIndexArray[10].startIndex : 24, !isNullOrUndefined(this.itemsIndexArray[10]) ?
+                this.itemsIndexArray[10].endIndex : 24);
+        } else {
+            this.applyHideToToolbar(isEnable, 6, 6);
+        }
+    }
+
     private showFormDesignerEditTool(isEnable: boolean): void {
         this.isFormDesignerEditBtnVisible = isEnable;
         //For mobile devices, the default previous value for FormDesignerEditTool has been passed as (24,24).
-        this.applyHideToToolbar(isEnable, !isNullOrUndefined(this.itemsIndexArray[10]) ?
-            this.itemsIndexArray[10].startIndex : 24, !isNullOrUndefined(this.itemsIndexArray[10]) ?
-            this.itemsIndexArray[10].endIndex : 24);
+        this.applyHideToToolbar(isEnable, !isNullOrUndefined(this.itemsIndexArray[11]) ?
+            this.itemsIndexArray[11].startIndex : 25, !isNullOrUndefined(this.itemsIndexArray[11]) ?
+            this.itemsIndexArray[11].endIndex : 25);
     }
 
     private showSubmitForm(isEnable: boolean): void {
@@ -679,13 +744,26 @@ export class Toolbar {
         this.enableItems(this.textSearchItem.parentElement, enableSearchOption);
     }
 
-    private enableUndoRedoTool(isEnable: boolean): void {
-        this.enableItems(this.undoItem.parentElement, isEnable);
-        this.enableItems(this.redoItem.parentElement, isEnable);
+    /**
+     * @param {boolean} isEnable - It describes about the isEnable boolean value
+     * @private
+     * @returns {void}
+     */
+    public enableUndoRedoTool(isEnable: boolean): void {
+        if (!isNullOrUndefined(this.undoItem) && !isNullOrUndefined(this.redoItem)) {
+            this.enableItems(this.undoItem.parentElement, isEnable);
+            this.enableItems(this.redoItem.parentElement, isEnable);
+        }
     }
 
     private enableAnnotationEditTool(isEnable: boolean): void {
         this.enableItems(this.annotationItem.parentElement, isEnable);
+    }
+
+    private enableRedactionEditTool(isEnable: boolean): void {
+        if (!isNullOrUndefined(this.redactionItem)) {
+            this.enableItems(this.redactionItem.parentElement, isEnable);
+        }
     }
 
     private enableFormDesignerEditTool(isEnable: boolean): void {
@@ -695,8 +773,8 @@ export class Toolbar {
     }
 
     private enableCommentsTool(isEnable: boolean): void {
-        if (this.pdfViewer.enableStickyNotesAnnotation) {
-            this.enableItems(this.annotationItem.parentElement, isEnable);
+        if (this.pdfViewer.enableStickyNotesAnnotation && !isNullOrUndefined(this.commentItem)) {
+            this.enableItems(this.commentItem.parentElement, isEnable);
         }
     }
 
@@ -762,16 +840,21 @@ export class Toolbar {
                     this.enableItems(this.pdfViewerBase.getElement('_zoomDropDownContainer'), false);
                     this.enableItems(this.textSelectItem.parentElement, false);
                     this.enableItems(this.annotationItem.parentElement, false);
+                    this.enableItems(this.redactionItem.parentElement, false);
                     this.enableItems(this.formDesignerItem.parentElement, false);
                     this.enableItems(this.panItem.parentElement, false);
                     this.enableItems(this.textSearchItem.parentElement, false);
                     this.deSelectItem(this.annotationItem);
-                    if (this.annotationToolbarModule) {
+                    if (this.annotationToolbarModule && this.pdfViewer.enableAnnotation) {
                         this.annotationToolbarModule.resetToolbar();
                     }
                     this.deSelectItem(this.formDesignerItem);
-                    if (this.formDesignerToolbarModule) {
+                    if (this.formDesignerToolbarModule && this.pdfViewer.enableFormDesigner) {
                         this.formDesignerToolbarModule.resetFormDesignerToolbar();
+                    }
+                    this.deSelectItem(this.redactionItem);
+                    if (this.redactionToolbarModule) {
+                        this.redactionToolbarModule.resetToolbar();
                     }
                 } else if (this.pdfViewerBase.pageCount > 0) {
                     const obj: HTMLElement = this.pdfViewerBase.getElement('_currentPageInputContainer');
@@ -794,6 +877,9 @@ export class Toolbar {
                         if (this.pdfViewer.formDesignerModule && this.pdfViewer.enableFormDesigner) {
                             this.enableItems(this.formDesignerItem.parentElement, true);
                         }
+                        if (this.pdfViewer.annotation && this.pdfViewer.annotation.redactionAnnotationModule) {
+                            this.enableItems(this.redactionItem.parentElement, true);
+                        }
                         if (this.pdfViewer.textSearchModule && this.pdfViewer.enableTextSearch) {
                             this.enableItems(this.textSearchItem.parentElement, true);
                         }
@@ -814,6 +900,13 @@ export class Toolbar {
                         this.enableToolbarItem(['FormDesignerEditTool'], false);
                     }
                 }
+                if (this.pdfViewer.toolbarSettings.redactionToolbarItems) {
+                    if (this.pdfViewer.toolbarSettings.redactionToolbarItems.length === 0 ||
+                        this.pdfViewer.annotation && !this.pdfViewer.annotation.redactionAnnotationModule ||
+                        !this.pdfViewer.enableRedactionToolbar) {
+                        this.enableToolbarItem(['RedactionEditTool'], false);
+                    }
+                }
                 if (!this.pdfViewer.enableDownload) {
                     this.enableDownloadOption(false);
                 }
@@ -826,19 +919,33 @@ export class Toolbar {
                 this.enableItems(this.textSearchItem.parentElement, false);
                 this.enableItems(this.moreOptionItem.parentElement, false);
                 this.enableItems(this.annotationItem.parentElement, false);
+                this.enableItems(this.redactionItem.parentElement, false);
             } else if (this.pdfViewerBase.pageCount > 0) {
-                this.enableItems(this.textSearchItem.parentElement, true);
+                if (this.pdfViewer.textSearchModule && this.pdfViewer.enableTextSearch) {
+                    this.enableItems(this.textSearchItem.parentElement, true);
+                }
                 this.enableItems(this.moreOptionItem.parentElement, true);
                 if (this.pdfViewer.annotationModule && this.pdfViewer.enableAnnotation) {
                     this.enableItems(this.annotationItem.parentElement, true);
                 }
+                if (this.pdfViewer.annotation && this.pdfViewer.annotation.redactionAnnotationModule &&
+                    this.pdfViewer.enableRedactionToolbar) {
+                    this.enableItems(this.redactionItem.parentElement, true);
+                }
                 if (!this.pdfViewer.annotationModule || !this.pdfViewer.enableAnnotationToolbar) {
                     this.enableToolbarItem(['AnnotationEditTool'], false);
+                }
+                if (!this.pdfViewer.annotationModule || !this.pdfViewer.enableRedactionToolbar) {
+                    this.enableToolbarItem(['RedactionEditTool'], false);
                 }
                 this.updateUndoRedoButtons();
                 if (this.pdfViewer && this.pdfViewer.element && this.pdfViewer.element.id && this.pdfViewer.isAnnotationToolbarVisible) {
                     const annotationId: string = this.pdfViewer.element.id + '_annotationIcon';
                     this.annotationToolbarModule.createAnnotationToolbarForMobile(annotationId);
+                }
+                if (this.pdfViewer && this.pdfViewer.element && this.pdfViewer.element.id && this.pdfViewer.isRedactionToolbarVisible) {
+                    const redactionId: string = this.pdfViewer.element.id + '_redactionIcon';
+                    this.redactionToolbarModule.createRedactionToolbarForMobile(redactionId);
                 }
             }
         }
@@ -888,7 +995,11 @@ export class Toolbar {
         if (this.pdfViewer.magnificationModule && !this.isMagnificationToolDisabled && (!Browser.isDevice ||
              this.pdfViewer.enableDesktopMode)) {
             if (this.pdfViewer.minZoom != null || this.pdfViewer.maxZoom != null) {
-                if (this.pdfViewer.magnificationModule.zoomFactor <= this.pdfViewer.minZoom / 100) {
+                if (this.pdfViewer.minZoom === this.pdfViewer.maxZoom && this.pdfViewer.magnificationModule.zoomFactor ===
+                    this.pdfViewer.minZoom / 100) {
+                    this.enableItems(this.zoomInItem.parentElement, false);
+                    this.enableItems(this.zoomOutItem.parentElement, false);
+                } else if (this.pdfViewer.magnificationModule.zoomFactor <= this.pdfViewer.minZoom / 100) {
                     this.enableItems(this.zoomInItem.parentElement, true);
                     this.enableItems(this.zoomOutItem.parentElement, false);
                 } else if (this.pdfViewer.magnificationModule.zoomFactor >= this.pdfViewer.maxZoom / 100) {
@@ -1005,6 +1116,9 @@ export class Toolbar {
             if (this.formDesignerToolbarModule) {
                 this.formDesignerToolbarModule.destroy();
             }
+            if (this.redactionToolbarModule) {
+                this.redactionToolbarModule.destroy();
+            }
             if (this.toolbar) {
                 this.toolbar.destroy();
             }
@@ -1018,7 +1132,7 @@ export class Toolbar {
         const componentElement: any = [this.openDocumentItem, this.firstPageItem, this.previousPageItem, this.nextPageItem,
             this.lastPageItem, this.currentPageBoxElement, this.zoomOutItem, this.zoomInItem, this.zoomDropdownItem, this.textSelectItem,
             this.panItem, this.submitItem, this.undoItem, this.redoItem, this.commentItem, this.textSearchItem, this.annotationItem,
-            this.formDesignerItem, this.printItem, this.downloadItem];
+            this.redactionItem, this.formDesignerItem, this.printItem, this.downloadItem];
         for (let i: number = 0; i < componentElement.length; i++) {
             if (componentElement[parseInt(i.toString(), 10)]) {
                 this.destroyDependentComponent(componentElement[parseInt(i.toString(), 10)]);
@@ -1151,6 +1265,9 @@ export class Toolbar {
                 this.pdfViewer.toolbarSettings.formDesignerToolbarItems = ['TextboxTool', 'PasswordTool', 'CheckBoxTool',
                     'RadioButtonTool', 'DropdownTool', 'ListboxTool', 'DrawSignatureTool', 'DeleteTool'];
             }
+            if (isNullOrUndefined(this.pdfViewer.toolbarSettings.redactionToolbarItems)) {
+                this.pdfViewer.toolbarSettings.redactionToolbarItems = ['MarkForRedaction', 'RedactPages', 'RedactionPanel', 'Redact', 'RemoveAnnotation', 'CommentPanel', 'Close'];
+            }
             if (isNullOrUndefined(this.pdfViewer.toolbarSettings.showTooltip)) {
                 this.pdfViewer.toolbarSettings.showTooltip = false;
             }
@@ -1197,7 +1314,7 @@ export class Toolbar {
         spanElement.className = 'e-tbar-btn-text e-pv-submitform-text';
         spanElement.textContent = this.pdfViewer.localeObj.getConstant('SubmitForm');
         submitButton.appendChild(spanElement);
-        const defaultToolbarOrder: any = ['OpenOption', 'PageNavigationTool', 'MagnificationTool', 'SelectionTool', 'PanTool', 'UndoRedoTool', 'CommentTool', 'SubmitForm', 'SearchOption', 'AnnotationEditTool', 'FormDesignerEditTool', 'PrintOption', 'DownloadOption'];
+        const defaultToolbarOrder: any = ['OpenOption', 'PageNavigationTool', 'MagnificationTool', 'SelectionTool', 'PanTool', 'UndoRedoTool', 'CommentTool', 'SubmitForm', 'SearchOption', 'AnnotationEditTool', 'RedactionEditTool', 'FormDesignerEditTool', 'PrintOption', 'DownloadOption'];
         for (let i: number = 0; i < defaultToolbarOrder.length; i++) {
             if (i === 0) {
                 this.createCustomItem(i);
@@ -1219,6 +1336,7 @@ export class Toolbar {
                     this.toolItems.push({ template: currentPageInputTemplate, align: 'Left', cssClass: 'e-pv-current-page-container' });
                     this.toolItems.push({ template: totalPageTemplate, align: 'Left', cssClass: 'e-pv-total-page-container' });
                 } else {
+                    this.itemsIndexArray.push({ item: 'PageNavigationTool', startIndex: this.toolItems.length, endIndex: this.toolItems.length + 5 });
                     this.toolItems.push({ prefixIcon: 'e-pv-last-page-navigation-icon e-pv-icon', cssClass: 'e-pv-last-page-navigation-container', id: this.pdfViewer.element.id + '_firstPage', text: this.pdfViewer.localeObj.getConstant('First text'), align: 'Left' });
                     this.toolItems.push({ prefixIcon: 'e-pv-next-page-navigation-icon e-pv-icon', cssClass: 'e-pv-next-page-navigation-container', id: this.pdfViewer.element.id + '_previousPage', text: this.pdfViewer.localeObj.getConstant('Previous text'), align: 'Left' });
                     this.toolItems.push({ prefixIcon: 'e-pv-previous-page-navigation-icon e-pv-icon', cssClass: 'e-pv-previous-page-navigation-container', id: this.pdfViewer.element.id + '_nextPage', text: this.pdfViewer.localeObj.getConstant('Next text'), align: 'Left' });
@@ -1268,14 +1386,18 @@ export class Toolbar {
                 this.toolItems.push({ prefixIcon: 'e-pv-annotation-icon e-pv-icon', cssClass: 'e-pv-annotation-container', id: this.pdfViewer.element.id + '_annotation', text: this.pdfViewer.localeObj.getConstant('Annotation Edit text'), align: 'Right' });
                 break;
             case 10:
+                this.itemsIndexArray.push({ item: 'RedactionEditTool', startIndex: this.toolItems.length, endIndex: this.toolItems.length });
+                this.toolItems.push({ prefixIcon: 'e-pv-redaction-icon e-pv-icon', cssClass: 'e-pv-redaction-container', id: this.pdfViewer.element.id + '_redaction', text: this.pdfViewer.localeObj.getConstant('Redaction'), align: 'Right' });
+                break;
+            case 11:
                 this.itemsIndexArray.push({ item: 'FormDesignerEditTool', startIndex: this.toolItems.length, endIndex: this.toolItems.length });
                 this.toolItems.push({ prefixIcon: 'e-pv-formdesigner-icon e-pv-icon', cssClass: 'e-pv-formdesigner-container', id: this.pdfViewer.element.id + '_formdesigner', text: this.pdfViewer.localeObj.getConstant('FormDesigner Edit text'), align: 'Right' });
                 break;
-            case 11:
+            case 12:
                 this.itemsIndexArray.push({ item: 'PrintOption', startIndex: this.toolItems.length, endIndex: this.toolItems.length });
                 this.toolItems.push({ prefixIcon: 'e-pv-print-document-icon e-pv-icon', cssClass: 'e-pv-print-document-container', id: this.pdfViewer.element.id + '_print', text: this.pdfViewer.localeObj.getConstant('Print text'), align: 'Right' });
                 break;
-            case 12:
+            case 13:
                 this.itemsIndexArray.push({ item: 'DownloadOption', startIndex: this.toolItems.length, endIndex: this.toolItems.length });
                 this.toolItems.push({ prefixIcon: 'e-pv-download-document-icon e-pv-icon', cssClass: 'e-pv-download-document-container', id: this.pdfViewer.element.id + '_download', text: this.pdfViewer.localeObj.getConstant('Download'), align: 'Right' });
                 break;
@@ -1302,11 +1424,12 @@ export class Toolbar {
         this.undoItem = this.addClassToolbarItem('_undo', 'e-pv-undo', this.pdfViewer.localeObj.getConstant('Undo'));
         this.redoItem = this.addClassToolbarItem('_redo', 'e-pv-redo', this.pdfViewer.localeObj.getConstant('Redo'));
         this.annotationItem = this.addClassToolbarItem('_annotation', 'e-pv-annotation', this.pdfViewer.localeObj.getConstant('Annotation'));
+        this.redactionItem = this.addClassToolbarItem('_redaction', 'e-pv-redaction', this.pdfViewer.localeObj.getConstant('Redaction'));
         this.textSearchItem = this.addClassToolbarItem('_search', 'e-pv-text-search', this.pdfViewer.localeObj.getConstant('Text Search'));
     }
 
     private afterToolbarCreation(): void {
-        const isMac: boolean = navigator.platform.match(/(Mac|iPhone|iPod|iPad)/i) ? true : false;
+        const isMac: boolean = /ipad|iphone|ipod|mac/.test(navigator.userAgent.toLowerCase()) ? true : false;
         this.itemsContainer = this.toolbar.element.childNodes[0] as HTMLElement;
         this.itemsContainer.id = this.pdfViewer.element.id + '_toolbarItemsContainer';
         this.openDocumentItem = this.addClassToolbarItem('_open', 'e-pv-open-document', this.pdfViewer.localeObj.getConstant('Open') + (isMac ? ' (⌘+O)' : ' (Ctrl+O)'));
@@ -1333,6 +1456,7 @@ export class Toolbar {
         this.annotationItem = this.addClassToolbarItem('_annotation', 'e-pv-annotation', this.pdfViewer.localeObj.getConstant('Annotation') + (isMac ? ' (⌘+⇧+A)' : ' (Ctrl+Shift+A)'));
         this.annotationItem.setAttribute('aria-label', this.pdfViewer.localeObj.getConstant('Annotation Edit text'));
         this.formDesignerItem = this.addClassToolbarItem('_formdesigner', 'e-pv-formdesigner', this.pdfViewer.localeObj.getConstant('FormDesigner'));
+        this.redactionItem = this.addClassToolbarItem('_redaction', 'e-pv-redaction', this.pdfViewer.localeObj.getConstant('Redaction'));
         this.printItem = this.addClassToolbarItem('_print', 'e-pv-print-document', this.pdfViewer.localeObj.getConstant('Print') + (isMac ? ' (⌘+P)' : ' (Ctrl+P)'));
         this.downloadItem = this.addClassToolbarItem('_download', 'e-pv-download-document', this.pdfViewer.localeObj.getConstant('Download file') + (isMac ? ' (⌘+S)' : ' (Ctrl+S)'));
         this.zoomDropdownItem = this.pdfViewerBase.getElement('_zoomDropDown');
@@ -1430,7 +1554,11 @@ export class Toolbar {
         return zoomDropdownElement.outerHTML;
     }
 
-    private createZoomDropdown(): void {
+    /**
+     * @private
+     * @returns {void}
+     */
+    public createZoomDropdown(): void {
         // eslint-disable-next-line
         const proxy: any = this;
         let minZoom: number = proxy.pdfViewer.minZoom;
@@ -1468,26 +1596,35 @@ export class Toolbar {
             items.push({ percent: '10%', id: '0' }, { percent: '35%', id: '1' }, { percent: '50%', id: '2' }, { percent: '75%', id: '3' }, { percent: '100%', id: '4' }, { percent: '125%', id: '5' }, { percent: '150%', id: '6' }, { percent: '200%', id: '7' }, { percent: '400%', id: '8' });
         }
         items.push({ percent: proxy.pdfViewer.localeObj.getConstant('Fit Page'), id: 'fitPage' }, { percent: proxy.pdfViewer.localeObj.getConstant('Fit Width'), id: 'fitWidth' }, { percent: proxy.pdfViewer.localeObj.getConstant('Automatic'), id: 'automatic' });
-        if (!proxy.pdfViewer.enableRtl) {
-            proxy.zoomDropDown = new ComboBox({
-                dataSource: items, text: '100%', fields: { text: 'percent', value: 'id' }, readonly: true, cssClass: 'e-pv-zoom-drop-down', popupHeight: '450px', showClearButton: false, open: proxy.openZoomDropdown.bind(proxy), select: function (args: any): void {
-                    if (args.e.type === 'keydown' && args.itemData.percent !== proxy.zoomDropDown.element.value) {
-                        proxy.zoomDropDownChange(proxy.zoomDropDown.element.value);
-                        args.cancel = true;
+        if (!proxy.updateZoomDropDown) {
+            if (!proxy.pdfViewer.enableRtl) {
+                proxy.zoomDropDown = new ComboBox({
+                    dataSource: items, text: '100%', fields: { text: 'percent', value: 'id' }, readonly: true, cssClass: 'e-pv-zoom-drop-down', popupHeight: '450px', showClearButton: false, open: proxy.openZoomDropdown.bind(proxy), select: function (args: any): void {
+                        if (args.e.type === 'keydown' && args.itemData.percent !== proxy.zoomDropDown.element.value) {
+                            proxy.zoomDropDownChange(proxy.zoomDropDown.element.value);
+                            args.cancel = true;
+                        }
                     }
-                }
-            });
+                });
+            } else {
+                proxy.zoomDropDown = new ComboBox({
+                    dataSource: items, text: '100%', enableRtl: true, fields: { text: 'percent', value: 'id' }, readonly: true, cssClass: 'e-pv-zoom-drop-down-rtl', popupHeight: '450px', showClearButton: false, open: proxy.openZoomDropdown.bind(proxy), select: function (args: any): void {
+                        if (args.e.type === 'keydown' && args.itemData.percent !== proxy.zoomDropDown.element.value) {
+                            proxy.zoomDropDownChange(proxy.zoomDropDown.element.value);
+                            args.cancel = true;
+                        }
+                    }
+                });
+            }
+            proxy.zoomDropDown.appendTo(proxy.pdfViewerBase.getElement('_zoomDropDown'));
         } else {
-            proxy.zoomDropDown = new ComboBox({
-                dataSource: items, text: '100%', enableRtl: true, fields: { text: 'percent', value: 'id' }, readonly: true, cssClass: 'e-pv-zoom-drop-down-rtl', popupHeight: '450px', showClearButton: false, open: proxy.openZoomDropdown.bind(proxy), select: function (args: any): void {
-                    if (args.e.type === 'keydown' && args.itemData.percent !== proxy.zoomDropDown.element.value) {
-                        proxy.zoomDropDownChange(proxy.zoomDropDown.element.value);
-                        args.cancel = true;
-                    }
-                }
-            });
+            if (proxy.zoomDropDown) {
+                proxy.zoomDropDown.dataSource = items;
+                proxy.zoomDropDown.dataBind(); // re-render with new data
+                const updateValue: any = items.find((i: any) => i.percent === proxy.zoomFactor * 100 + '%');
+                proxy.zoomDropDown.value = updateValue ? updateValue.id : null;
+            }
         }
-        proxy.zoomDropDown.appendTo(proxy.pdfViewerBase.getElement('_zoomDropDown'));
     }
 
     private createCurrentPageInputTemplate(): string {
@@ -1530,6 +1667,7 @@ export class Toolbar {
                     disabled: true
                 },
                 { prefixIcon: 'e-pv-annotation-icon e-pv-icon', cssClass: 'e-pv-annotation-container', tooltipText: this.pdfViewer.localeObj.getConstant('Annotation'), id: this.pdfViewer.element.id + '_annotation', align: 'Right' },
+                { prefixIcon: 'e-pv-redaction-icon e-pv-icon', cssClass: 'e-pv-redaction-container', tooltipText: this.pdfViewer.localeObj.getConstant('Redaction'), id: this.pdfViewer.element.id + '_redaction', align: 'Right' },
                 { prefixIcon: 'e-pv-text-search-icon e-pv-icon', tooltipText: this.pdfViewer.localeObj.getConstant('Text Search'), id: this.pdfViewer.element.id + '_search', align: 'Right' },
                 { template: template, align: 'Right' }
             ], clicked: this.toolbarClickHandler, width: '', height: '', overflowMode: 'Popup'
@@ -1542,6 +1680,9 @@ export class Toolbar {
         this.annotationItem = this.pdfViewerBase.getElement('_annotation');
         this.annotationItem.classList.add('e-pv-annotation');
         this.annotationItem.firstElementChild.id = this.pdfViewer.element.id + '_annotationIcon';
+        this.redactionItem = this.pdfViewerBase.getElement('_redaction');
+        this.redactionItem.classList.add('e-pv-redaction');
+        this.redactionItem.firstElementChild.id = this.pdfViewer.element.id + '_redactionIcon';
         this.organizePageItem = this.pdfViewerBase.getElement('_menu_organize');
         this.organizePageItem.classList.add('e-pv-organize-view');
         this.annotationItem.firstElementChild.id = this.pdfViewer.element.id + '_organize-view' + '_icon';
@@ -1572,7 +1713,7 @@ export class Toolbar {
         this.moreDropDown = new DropDownButton({
             items: items, iconCss: 'e-pv-more-icon e-pv-icon', cssClass: 'e-caret-hide',
             open: (args: OpenCloseMenuEventArgs) => {
-                const dropdownButtonPosition: ClientRect = this.moreDropDown.element.getBoundingClientRect();
+                const dropdownButtonPosition: DOMRect = this.moreDropDown.element.getBoundingClientRect() as DOMRect;
                 if (!this.pdfViewer.enableRtl) {
                     args.element.parentElement.style.left = dropdownButtonPosition.left + dropdownButtonPosition.width - args.element.parentElement.offsetWidth + 'px';
                 }
@@ -1582,8 +1723,9 @@ export class Toolbar {
                     this.pdfViewerBase.download();
                     break;
                 case this.pdfViewer.element.id + '_menu_bookmarks':
-                    this.showToolbar(false);
-                    this.pdfViewerBase.navigationPane.createNavigationPaneMobile('bookmarks');
+                    if (this.pdfViewerBase.navigationPane) {
+                        this.pdfViewerBase.navigationPane.showBookmarksPaneMobile();
+                    }
                     break;
                 default:
                     break;
@@ -1897,6 +2039,11 @@ export class Toolbar {
         case this.pdfViewer.element.id + '_annotationText':
             this.initiateAnnotationMode((args.originalEvent.target as HTMLElement).id, isKeyBoardEvent);
             break;
+        case this.pdfViewer.element.id + '_redaction':
+        case this.pdfViewer.element.id + '_redactionIcon':
+        case this.pdfViewer.element.id + '_redactionText':
+            this.initiateRedactionMode((args.originalEvent.target as HTMLElement).id, isKeyBoardEvent);
+            break;
         case this.pdfViewer.element.id + '_formdesigner':
         case this.pdfViewer.element.id + '_formdesignerIcon':
         case this.pdfViewer.element.id + '_formdesignerText':
@@ -2051,7 +2198,7 @@ export class Toolbar {
     };
 
     private navigateToPage = (args: KeyboardEvent): void => {
-        if (args.which === 13) {
+        if (args.key === 'Enter' || args.code === 'Enter') {
             const enteredValue: number = parseInt((this.currentPageBoxElement as HTMLInputElement).value, 10);
             if (enteredValue !== null) {
                 if (enteredValue > 0 && enteredValue <= this.pdfViewerBase.pageCount) {
@@ -2077,11 +2224,13 @@ export class Toolbar {
     };
 
     private onZoomDropDownInput(event: KeyboardEvent): boolean {
-        if ((event.which < 48 || event.which > 57) && event.which !== 8 && event.which !== 13 && event.which !== 32) {
+        const isDigit: boolean = event.key >= '0' && event.key <= '9';
+        const allowedKeys: string[] = ['Backspace', 'Enter', ' ']; // Space is represented as ' '
+        if (!isDigit && allowedKeys.indexOf(event.key) === -1){
             event.preventDefault();
             return false;
         } else {
-            if (event.which === 13) {
+            if (event.key === 'Enter' || event.code === 'Enter') {
                 event.preventDefault();
                 const value: string = (this.zoomDropDown.element as HTMLInputElement).value.trim();
                 this.zoomDropDownChange(value);
@@ -2243,11 +2392,24 @@ export class Toolbar {
                 if (isKeyBoardEvent || this.pdfViewer.toolbarModule.annotationToolbarModule.toolbar.items.length > 0) {
                     document.getElementById(this.pdfViewer.toolbarModule.annotationToolbarModule.toolbar.items[0].id).focus();
                 }
-                if (this.pdfViewer.isAnnotationToolbarVisible && this.pdfViewer.isFormDesignerToolbarVisible) {
+                if (this.pdfViewer.isAnnotationToolbarVisible &&
+                    (this.pdfViewer.isFormDesignerToolbarVisible || this.pdfViewer.isRedactionToolbarVisible)) {
                     const formDesignerMainDiv: HTMLElement = document.getElementById(this.pdfViewer.element.id + '_formdesigner_toolbar');
-                    formDesignerMainDiv.style.display = 'none';
-                    this.formDesignerToolbarModule.isToolbarHidden = false;
-                    this.formDesignerToolbarModule.showFormDesignerToolbar(this.formDesignerItem);
+                    if (formDesignerMainDiv) {
+                        formDesignerMainDiv.style.display = 'none';
+                    }
+                    const redactionMainDiv: HTMLElement = document.getElementById(this.pdfViewer.element.id + '_redaction_toolbar');
+                    if (redactionMainDiv) {
+                        redactionMainDiv.style.display = 'none';
+                    }
+                    if (this.formDesignerToolbarModule) {
+                        this.formDesignerToolbarModule.isToolbarHidden = false;
+                        this.formDesignerToolbarModule.showFormDesignerToolbar(this.formDesignerItem);
+                    }
+                    if (this.redactionToolbarModule) {
+                        this.redactionToolbarModule.isToolbarHidden = false;
+                        this.redactionToolbarModule.showRedactionToolbar(this.redactionItem);
+                    }
                     this.annotationToolbarModule.adjustViewer(true);
                 }
             }
@@ -2261,20 +2423,79 @@ export class Toolbar {
         }
     }
 
+    /**
+     * @param {string} id - It describes about the id value
+     * @param {boolean} isKeyBoardEvent - It describes about the whether isKeyBoardEvent true or not
+     * @private
+     * @returns {void}
+     */
+    public initiateRedactionMode(id?: string, isKeyBoardEvent?: boolean): void {
+        if (!Browser.isDevice || this.pdfViewer.enableDesktopMode) {
+            if (this.redactionToolbarModule && this.pdfViewer.enableRedactionToolbar) {
+                this.redactionToolbarModule.showRedactionToolbar(this.redactionItem);
+                if (this.pdfViewer.isRedactionToolbarVisible &&
+                    (this.pdfViewer.isAnnotationToolbarVisible || this.pdfViewer.isFormDesignerToolbarVisible)) {
+                    const annotationMainDiv: HTMLElement = document.getElementById(this.pdfViewer.element.id + '_annotation_toolbar');
+                    annotationMainDiv.style.display = 'none';
+                    const formDesignerMainDiv: HTMLElement = document.getElementById(this.pdfViewer.element.id + '_formdesigner_toolbar');
+                    if (formDesignerMainDiv) {
+                        formDesignerMainDiv.style.display = 'none';
+                    }
+                    const commentPanel: HTMLElement = document.getElementById(this.pdfViewer.element.id + '_commantPanel');
+                    if (!isNullOrUndefined(commentPanel) && !isNullOrUndefined(this.pdfViewerBase.navigationPane)) {
+                        if (commentPanel.style.display === 'block') {
+                            this.pdfViewerBase.navigationPane.closeCommentPanelContainer();
+                        }
+                    }
+                    if (this.annotationToolbarModule) {
+                        this.annotationToolbarModule.isToolbarHidden = false;
+                        this.annotationToolbarModule.showAnnotationToolbar(this.annotationItem);
+                    }
+                    if (this.formDesignerToolbarModule) {
+                        this.formDesignerToolbarModule.isToolbarHidden = false;
+                        this.formDesignerToolbarModule.showFormDesignerToolbar(this.formDesignerItem);
+                    }
+                    this.redactionToolbarModule.adjustViewer(true);
+                }
+                if (isKeyBoardEvent && this.pdfViewer.toolbarModule.redactionToolbarModule.toolbar.items.length > 0) {
+                    document.getElementById(this.pdfViewer.toolbarModule.redactionToolbarModule.toolbar.items[0].id).focus();
+                }
+            }
+        } else {
+            if (!isBlazor()) {
+                if (id === this.pdfViewer.element.id + '_redaction') {
+                    id = this.pdfViewer.element.id + '_redactionIcon';
+                }
+                this.redactionToolbarModule.createRedactionToolbarForMobile(id);
+            }
+        }
+    }
+
     private initiateFormDesignerMode(isKeyBoardEvent?: boolean): void {
         if (this.formDesignerToolbarModule && this.pdfViewer.enableFormDesignerToolbar) {
             this.formDesignerToolbarModule.showFormDesignerToolbar(this.formDesignerItem);
-            if (this.pdfViewer.isAnnotationToolbarVisible && this.pdfViewer.isFormDesignerToolbarVisible) {
+            if (this.pdfViewer.isFormDesignerToolbarVisible &&
+                (this.pdfViewer.isAnnotationToolbarVisible || this.pdfViewer.isRedactionToolbarVisible)) {
                 const annotationMainDiv: HTMLElement = document.getElementById(this.pdfViewer.element.id + '_annotation_toolbar');
                 annotationMainDiv.style.display = 'none';
+                const redactionMainDiv: HTMLElement = document.getElementById(this.pdfViewer.element.id + '_redaction_toolbar');
+                if (redactionMainDiv) {
+                    redactionMainDiv.style.display = 'none';
+                }
                 const commentPanel: HTMLElement = document.getElementById(this.pdfViewer.element.id + '_commantPanel');
                 if (!isNullOrUndefined(commentPanel) && !isNullOrUndefined(this.pdfViewerBase.navigationPane)) {
                     if (commentPanel.style.display === 'block') {
                         this.pdfViewerBase.navigationPane.closeCommentPanelContainer();
                     }
                 }
-                this.annotationToolbarModule.isToolbarHidden = false;
-                this.annotationToolbarModule.showAnnotationToolbar(this.annotationItem);
+                if (this.annotationToolbarModule) {
+                    this.annotationToolbarModule.isToolbarHidden = false;
+                    this.annotationToolbarModule.showAnnotationToolbar(this.annotationItem);
+                }
+                if (this.redactionToolbarModule) {
+                    this.redactionToolbarModule.isToolbarHidden = false;
+                    this.redactionToolbarModule.showRedactionToolbar(this.redactionItem);
+                }
                 this.formDesignerToolbarModule.adjustViewer(true);
             }
             if (isKeyBoardEvent && this.pdfViewer.toolbarModule.formDesignerToolbarModule.toolbar.items.length > 0) {
@@ -2391,6 +2612,12 @@ export class Toolbar {
             } else {
                 this.showCommentOption(false);
             }
+            if (this.isRedactionEditBtnVisible  && this.pdfViewerBase.clientSideRendering) {
+                this.showRedactionEditTool(true);
+            }
+            else {
+                this.showRedactionEditTool(false);
+            }
         }
     }
 
@@ -2487,6 +2714,11 @@ export class Toolbar {
             } else {
                 this.showAnnotationEditTool(false);
             }
+            if (this.pdfViewerBase.clientSideRendering && toolbarSettingsItems.indexOf('RedactionEditTool') !== -1) {
+                this.showRedactionEditTool(true);
+            } else {
+                this.showRedactionEditTool(false);
+            }
             if (toolbarSettingsItems.indexOf('FormDesignerEditTool') !== -1) {
                 this.showFormDesignerEditTool(true);
             } else {
@@ -2527,6 +2759,11 @@ export class Toolbar {
                 this.showAnnotationEditTool(true);
             } else {
                 this.showAnnotationEditTool(false);
+            }
+            if (this.pdfViewerBase.clientSideRendering && toolbarSettingsItems.indexOf('RedactionEditTool') !== -1) {
+                this.showRedactionEditTool(true);
+            } else {
+                this.showRedactionEditTool(false);
             }
             if (toolbarSettingsItems.indexOf('SearchOption') !== -1) {
                 this.showSearchOption(true);

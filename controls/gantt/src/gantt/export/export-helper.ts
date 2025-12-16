@@ -1211,7 +1211,10 @@ export class ExportValueFormatter {
         if (args.column.type === 'number' && args.column.format !== undefined && args.column.format !== '') {
             return args.value ? this.internationalization.getNumberFormat({ format: args.column.format })(args.value) : '';
         } else if (args.column.type === 'boolean') {
-            return args.value ? 'true' : 'false';
+            if (ganttObj.taskFields.manual === args.column.field && ganttObj.taskMode === 'Custom') {
+                return args.value === 'true' ? 'Manual' : 'Auto';
+            }
+            return args.value === 'true' ? 'true' : 'false';
         } else if ((args.column.type === 'date' || args.column.type === 'datetime' || args.column.type === 'time') && args.column.format !== undefined && args.value !== '') {
             if (typeof args.value === 'string') {
                 args.value = new Date(args.value);

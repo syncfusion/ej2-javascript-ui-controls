@@ -1,3 +1,4 @@
+@use 'ej2-base/styles/common/mixin' as *;
 @include export-module('dropdownlist-tailwind-icons') {
   .e-ddl .e-search-icon::before {
     content: '\e754';

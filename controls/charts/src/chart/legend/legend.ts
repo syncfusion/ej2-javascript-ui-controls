@@ -689,4 +689,3 @@ export class Legend extends BaseLegend {
     }
 
 }
-

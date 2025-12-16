@@ -1,4 +1,6 @@
-@import 'theme-mixin.scss';
+@use 'ej2-base/styles/common/mixin' as *;
+@use './theme-variables' as *;
+@use 'theme-mixin' as *;
 @include export-module('contextmenu-theme') {
   .e-contextmenu-wrapper,
   .e-contextmenu-container {

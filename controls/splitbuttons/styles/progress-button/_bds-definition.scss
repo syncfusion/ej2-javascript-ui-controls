@@ -1,3 +1,8 @@
+@use 'ej2-base/styles/definition/bds' as *;
+@use 'ej2-buttons/styles/button/bds-definition' as *;
+@forward 'ej2-base/styles/definition/bds';
+@forward 'ej2-buttons/styles/button/bds-definition';
+
 //layout variables
 $skin-name :'Material3';
 $progress-btn-circle-opacity: .8 !default;
@@ -21,3 +26,17 @@ $progress-btn-flat-warning-progress-color: rgba($warning-text, 1) !default;
 $progress-btn-flat-danger-progress-color: rgba($danger-text, 1) !default;
 $btn-flat-primary-path-arc: $white;
 $fade-out: none !default;
+$progress-btn-zero-padding-margin: 0 !default;
+$progress-btn-line-height: 1 !default;
+$progress-btn-full-height: 100% !default;
+$progress-btn-nill-height: 0% !default;
+$progress-btn-process-height: 10% !default;
+$progress-auto-width: auto !default;
+$progress-auto-height: auto !default;
+$progress-full-width: 100% !default;
+$spinner-inner-top: -1px !default;
+$progress-round-border-radius: 5em !default;
+$progress-slidedown-to-top: 100px !default;
+$progress-slideup-to-top: -100px !default;
+$progress-zero-width: 0% !default;
+$progress-negative-full-width: -100% !default;

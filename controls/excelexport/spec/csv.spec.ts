@@ -12,6 +12,93 @@ describe('CSV-Export', () => {
     // }
     //Methods testcase
     //Bug - 829928
+    it('csv-line-separator-cr', (done) => {
+        let book: Workbook = new Workbook({
+         worksheets: [
+            {
+                name: 'Sheet',
+                columns: [{ index: 1, width: 100 }],
+                rows: [
+                    { index: 1, cells: [{ index: 1, value: 'Line1' }] },
+                    { index: 2, cells: [{ index: 1, value: 'Line2' }] },
+                ],
+            }
+        ],
+        csvLineSeparator:'CR'
+        }, 'csv', 'en-US', 'USD', ','); // CR separator
+
+        book.saveAsBlob('text/csv', 'utf8').then((csvBlob: { blobData: Blob }) => {
+            if (Utils.isDownloadEnabled) {
+                Utils.download(csvBlob.blobData, 'csv-line-separator-cr.csv');
+            }
+            let reader = new FileReader();
+            reader.readAsText(csvBlob.blobData, 'utf8');
+            reader.onload = () => {
+            const csvText = reader.result as string;
+                expect(csvText).toContain('\r');
+                expect(csvText.split('\r').length).toBeGreaterThan(1);
+                done();
+            };
+        });
+    });
+    it('csv-line-separator-lf', (done) => {
+        let book: Workbook = new Workbook({
+            worksheets: [
+                {
+                    name: 'Sheet',
+                    columns: [{ index: 1, width: 100 }],
+                    rows: [
+                        { index: 1, cells: [{ index: 1, value: 'Line1' }] },
+                        { index: 2, cells: [{ index: 1, value: 'Line2' }] },
+                    ],
+                }
+            ],
+            csvLineSeparator:'LF'
+        }, 'csv', 'en-US', 'USD', ','); // LF separator
+
+        book.saveAsBlob('text/csv', 'utf8').then((csvBlob: { blobData: Blob }) => {
+            if (Utils.isDownloadEnabled) {
+                Utils.download(csvBlob.blobData, 'csv-line-separator-lf.csv');
+            }
+            let reader = new FileReader();
+            reader.readAsText(csvBlob.blobData, 'utf8');
+            reader.onload = () => {
+                const csvText = reader.result as string;
+                expect(csvText).toContain('\n');
+                expect(csvText.split('\n').length).toBeGreaterThan(1);
+                done();
+            };
+        });
+    });
+    it('csv-line-separator-crlf', (done) => {
+        let book: Workbook = new Workbook({
+            worksheets: [
+                {
+                    name: 'Sheet',
+                    columns: [{ index: 1, width: 100 }],
+                    rows: [
+                        { index: 1, cells: [{ index: 1, value: 'Line1' }] },
+                        { index: 2, cells: [{ index: 1, value: 'Line2' }] },
+                    ],
+                }
+            ],
+            csvLineSeparator:'CRLF'
+        }, 'csv', 'en-US', 'USD', ','); // CRLF separator
+
+        book.saveAsBlob('text/csv', 'utf8').then((csvBlob: { blobData: Blob }) => {
+            if (Utils.isDownloadEnabled) {
+                Utils.download(csvBlob.blobData, 'csv-line-separator-crlf.csv');
+            }
+            let reader = new FileReader();
+            reader.readAsText(csvBlob.blobData, 'utf8');
+            reader.onload = () => {
+                const csvText = reader.result as string;
+                expect(csvText).toContain('\r\n');
+                expect(csvText.split('\r\n').length).toBeGreaterThan(1);
+                done();
+            };
+        });
+    });
     it('text-doublequotes-csv', (done) => {
         let book: Workbook = new Workbook({
             worksheets: [
@@ -107,6 +194,87 @@ describe('CSV-Export', () => {
                 }
             }
         });
+    });
+    it('csv-text-qualifier-double-quote', (done) => {
+    let book: Workbook = new Workbook({
+        worksheets: [
+            {
+                name: 'Sheet',
+                columns: [{ index: 1, width: 100 }],
+                rows: [
+                    { index: 1, cells: [{ index: 1, value: 'Hello"World' }] },
+                    { index: 2, cells: [{ index: 1, value: '12345,Test' }] },
+                ],
+            }
+        ],csvQualifier: '"'
+    }, 'csv', 'en-US', 'USD', ','); // qualifier = "
+    book.saveAsBlob('text/csv', 'utf8').then((csvBlob: { blobData: Blob }) => {
+        if (Utils.isDownloadEnabled) {
+            Utils.download(csvBlob.blobData, 'csv-text-qualifier-double-quote.csv');
+        }
+        let reader = new FileReader();
+        reader.readAsText(csvBlob.blobData, 'utf8');
+        reader.onload = () => {
+            const csvText = reader.result as string;
+            expect(csvText).toContain('"Hello""World"');
+            expect(csvText).toContain('"12345,Test"');
+            done();
+        };
+    });
+    });
+    it('csv-text-qualifier-dollar', (done) => {
+    let book: Workbook = new Workbook({
+        worksheets: [
+            {
+                name: 'Sheet',
+                columns: [{ index: 1, width: 100 }],
+                rows: [
+                    { index: 1, cells: [{ index: 1, value: 'Hello$World' }] },
+                    { index: 2, cells: [{ index: 1, value: '12345,Test' }] },
+                ],
+            }
+        ],csvQualifier: '$' 
+    }, 'csv', 'en-US', 'USD', ','); // qualifier = $
+    book.saveAsBlob('text/csv', 'utf8').then((csvBlob: { blobData: Blob }) => {
+        if (Utils.isDownloadEnabled) {
+            Utils.download(csvBlob.blobData, 'csv-text-qualifier-dollar.csv');
+        }
+        let reader = new FileReader();
+        reader.readAsText(csvBlob.blobData, 'utf8');
+        reader.onload = () => {
+            const csvText = reader.result as string;
+            expect(csvText).toContain('$Hello$$World$');
+            expect(csvText).toContain('$12345,Test$');
+            done();
+        };
+    });
+    });
+    it('csv-text-qualifier-pipe', (done) => {
+    let book: Workbook = new Workbook({
+        worksheets: [
+            {
+                name: 'Sheet',
+                columns: [{ index: 1, width: 100 }],
+                rows: [
+                    { index: 1, cells: [{ index: 1, value: 'Hello|World' }] },
+                    { index: 2, cells: [{ index: 1, value: '12345,Test' }] },
+                ],
+            }
+        ],csvQualifier: '|' 
+    }, 'csv', 'en-US', 'USD', ','); // qualifier = |
+    book.saveAsBlob('text/csv', 'utf8').then((csvBlob: { blobData: Blob }) => {
+        if (Utils.isDownloadEnabled) {
+            Utils.download(csvBlob.blobData, 'csv-text-qualifier-pipe.csv');
+        }
+        let reader = new FileReader();
+        reader.readAsText(csvBlob.blobData, 'utf8');
+        reader.onload = () => {
+            const csvText = reader.result as string;
+            expect(csvText).toContain('|Hello||World|');
+            expect(csvText).toContain('|12345,Test|');
+            done();
+        };
+    });
     });
     it('csv-encoding-utf8', (done) => {
         let book: Workbook = new Workbook({

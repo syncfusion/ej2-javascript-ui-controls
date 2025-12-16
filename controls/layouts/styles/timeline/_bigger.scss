@@ -1,3 +1,5 @@
+@use 'ej2-base/styles/common/mixin' as *;
+@use './theme-variables' as *;
 @include export-module('timeline-bigger') {
   .e-bigger.e-timeline,
   .e-bigger .e-timeline {
@@ -38,10 +40,10 @@
     .e-content {
       font-size: $timeline-bigger-content-font-size;
       @if ($skin-name == 'fluent2' or $skin-name == 'bootstrap5.3') {
-        font-weight: 600;
+        font-weight: $timeline-content-font-weight;
       }
       @else {
-        font-weight: 500;
+        font-weight: $timeline-content-font-weight;
       }
     }
   }

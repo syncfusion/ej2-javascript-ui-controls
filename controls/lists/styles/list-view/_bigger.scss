@@ -1,3 +1,5 @@
+@use 'ej2-base/styles/common/mixin' as *;
+@use './theme-variables' as *;
 @mixin list-style($height, $line-height, $position) {
   height: $height;
   line-height: $line-height;
@@ -110,7 +112,7 @@
         font-size: 16px;
       }
       @if ($skin-name == 'tailwind3') {
-        padding-top: 9px;
+        padding-top: $listview-touch-group-item-padding-top;
       }
 
       .e-text-content {
@@ -131,7 +133,7 @@
         padding: $listview-template-padding;
       }
       @if ($skin-name == 'tailwind3') {
-        padding: 0 16px;
+        padding: $listview-touch-list-header-padding-top;
       }
 
       .e-text {
@@ -154,28 +156,28 @@
         margin-right: 12px;
       }
       @if ($skin-name == 'tailwind' or $skin-name == 'tailwind3') {
-        @include size($listview-touch-item-size, $listview-touch-item-size);
+        @include size($listview-touch-item-height, $listview-touch-item-size);
         margin-right: $listview-touch-icon-margin-right;
       }
     }
 
     .e-icon-collapsible {
       @if ($skin-name == 'bootstrap4') {
-        font-size: 12px;
+        font-size: $listview-icon-collapsible-font-size;
       }
       @else if $skin-name == 'fluent2' {
-        font-size: 14px;
+        font-size: $listview-icon-collapsible-font-size;
 
         &::before {
-          padding: 5px;
+          padding: $listview-icon-collapsible-before-padding;
         }
       }
       @if ($skin-name == 'tailwind') {
         font-size: $listview-touch-item-size;
-        @include size($listview-touch-item-size, $listview-touch-item-size);
+        @include size($listview-touch-item-height, $listview-touch-item-size);
       }
       @if ($skin-name == 'tailwind3') {
-        font-size: 22px;
+        font-size: $listview-touch-collapsible-icon-font-size;
       }
     }
 
@@ -197,8 +199,8 @@
 
     & .e-icon-back {
       @if $skin-name == 'tailwind3' {
-        margin: 10px 12px 10px 0;
-        @include size($listview-icon-size, $listview-icon-size);
+        margin: $listview-touch-back-icon-margin;
+        @include size($listview-icon-height, $listview-icon-size);
         &::before {
           font-size: $listview-touch-back-icon-font-size;
         }
@@ -241,10 +243,10 @@
 
       @if $skin-name == 'tailwind3' {
         & .e-list-icon {
-          margin-right: 12px;
+          margin-right: $listview-rtl-touch-list-icon-margin-right;
         }
         & .e-icon-back {
-          margin: 0 12px;
+          margin: $listview-rtl-touch-back-icon-margin;
         }
       }
 
@@ -276,8 +278,8 @@
       .e-list-wrapper {
         &.e-list-avatar {
           .e-avatar {
-            @include avatar-size($listview-touch-template-avatar-size, $listview-touch-template-avatar-size, -5px, $listview-template-avatar-left, null);
-            margin: 10px 10px 10px 0;
+            @include avatar-size($listview-touch-template-avatar-height, $listview-touch-template-avatar-size, -5px, $listview-template-avatar-left, null);
+            margin: $listview-touch-list-avatar-margin;
           }
         }
 
@@ -293,7 +295,7 @@
             @include text-style($listview-touch-template-multiline-header-font-size, $listview-touch-template-multiline-header-line-height);
           }
           .e-list-content {
-            padding-top: 3px;
+            padding-top: $listview-touch-template-multiline-content-padding-top;
           }
         }
       }

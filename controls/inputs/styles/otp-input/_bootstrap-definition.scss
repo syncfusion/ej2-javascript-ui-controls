@@ -1,3 +1,5 @@
+@use 'ej2-base/styles/definition/bootstrap' as *;
+@forward 'ej2-base/styles/definition/bootstrap';
 $otp-input-width: 34px !default;
 $otp-input-height: 34px !default;
 $otp-input-gap: 12px !default;
@@ -57,3 +59,4 @@ $otp-input-underlined-bg-color: transparent !default;
 $otp-input-disabled-color: $grey-99 !default;
 $otp-input-disabled-border-color: $grey-cc !default;
 $otp-input-disabled-bg-color: $grey-lighter !default;
+$otp-input-zero-padding-margin: 0 !default;

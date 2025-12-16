@@ -1,4 +1,6 @@
 @use 'sass:color';
+@use 'ej2-base/styles/definition/bootstrap4' as *;
+@forward 'ej2-base/styles/definition/bootstrap4';
 
 $border-type: solid !default;
 $border-size: 1px !default;
@@ -42,7 +44,9 @@ $tbar-btn-press-bg: $tbar-press-bg !default;
 $tbar-press-border-color: $tbar-hover-border-color !default;
 $tbar-active-border-color: color.adjust($gray-600, $lightness: -12.5%) !default;
 $tbar-nrml-size: 38px !default;
+$tbar-nrml-height: 38px !default;
 $tbar-bgr-size: 54px !default;
+$tbar-bgr-height: 54px !default;
 $tbar-nrml-items-size: 38px !default;
 $tbar-bgr-items-size: 54px !default;
 $tbar-border-type: solid !default;
@@ -103,6 +107,7 @@ $tbar-btn-bgr-minheight: 38px !default;
 $tbar-btn-bgr-line-height: 34px !default;
 $tbar-btn-icon-bgr-line-height: 32px !default;
 $tbar-btn-font-size: 14px !default;
+$tbar-btn-icon-font-size: 14px !default;
 $tbar-btn-border-radius: 4px !default;
 $tbar-btn-pressed-box-shadow: inset  0 3px 5px rgba(0, 0, 0, .125) !default;
 $tbar-btn-icon-bgr-width: 24px !default;
@@ -192,6 +197,17 @@ $tbar-popup-nav-pressed-border-size: 3px !default;
 $tbar-popup-nav-pressed-focus-border-color: $gray-500 !default;
 $tbar-popup-nav-pressed-focus-border-size: 3px !default;
 $tbar-popup-btn-hover-border-size: $tbar-zero-value !default;
+$tbar-popup-btn-icon-font-size: 14px !default;
+$tbar-margin-zero: 0 !default;
+$tbar-padding-zero: 0 !default;
+$tbar-border-zero: 0 !default;
+$tbar-radius-zero: 0 !default;
+$tbar-multirow-items-btm-mrgn-small: 1px !default;
+$tbar-extended-left-mrgn: -1px !default;
+$tbar-auto-height: auto !default;
+$tbar-inherit-height: inherit !default;
+$tbar-items-height: 100% !default;
+$tbar-margin-auto: auto !default;
 @mixin tbar-btn-animation {
   content: '';
 }

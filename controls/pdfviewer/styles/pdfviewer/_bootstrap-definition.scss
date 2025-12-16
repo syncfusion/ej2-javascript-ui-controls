@@ -1,3 +1,6 @@
+@use 'ej2-base/styles/definition/bootstrap' as *;
+@forward 'ej2-base/styles/definition/bootstrap';
+
 /*! PdfViewer's default definitions and variables */
 $pv-background: $grey-e6 !default;
 $pv-control-border-color: $grey-cc !default;
@@ -318,8 +321,8 @@ $pv-sidebar-bookmark-title-font-size: 14px !default;
 $pv-sidebar-bookmark-title-font-family: Roboto-Regular !default;
 $pv-sidebar-bookmark-title-color: rgba(0, 0, 0, .87) !default;
 $pv-sidebar-bookmark-title-font: grey-light-font 87% !default;
-$-treeview-overflow: unset !default;
-$-treeview-fullrow-height: 34px !default;
+$pv-treeview-overflow: unset !default;
+$pv-treeview-fullrow-height: 34px !default;
 $pv-bookmark-view-ul-padding: 0 0 0 16px !default;
 $pv-bookmark-view-list-ul-padding-left: 32px !default;
 $pv-bookmark-view-icon-collapsible-display: inline-block !default;
@@ -599,5 +602,318 @@ $pv-selected-signature-color: #f00 !default;
 $pv-signature-font-color: #000 !default;
 $pv-green-color: rgb(24, 169, 85) !default;
 $pv-blue-color: rgb(0, 122, 255) !default;
-$-pv-orange-color: rgb(245, 103, 0) !default;
-$-pv-red-color: rgb(255, 59, 48) !default;
+$pv-orange-color: rgb(245, 103, 0) !default;
+$pv-red-color: rgb(255, 59, 48) !default;
+$pv-annotation-tool-item-focus-box-shadow: 0 0 0 4px rgba(var(--color-sf-secondary-shadow), .5);
+$pv-blazor-annotation-thickness-popup-container-mobile-box-shadow: 0 3px 8px 0 #e9ecef;
+$pv-redaction-panel-text-color: #000 !default;
+
+// Typography Varaiables
+
+// Font weight
+$pv-font-weight-medium: 500 !default;
+$pv-font-weight-semibold: 600 !default;
+
+// Font Size
+$pv-text-xxs: 10px !default;
+$pv-text-xs: 12px !default;
+$pv-text-sm: 14px !default;
+$pv-text-base: 16px !default;
+$pv-text-lg: 18px !default;
+$pv-text-xl: 20px !default;
+$pv-text-2xl: 24px !default;
+$pv-font-size-0: 0 !default;
+$pv-font-size-13: 13px !default;
+$pv-font-size-15: 15px !default;
+$pv-font-size-inherit: inherit !default;
+
+// Line Height
+$pv-line-height-14: 14px !default;
+$pv-line-height-16: 16px !default;
+$pv-line-height-20: 20px !default;
+$pv-line-height-24: 24px !default;
+$pv-line-height-28: 28px !default;
+$pv-line-height-32: 32px !default;
+$pv-line-height-36: 36px !default;
+$pv-line-height-40: 40px !default;
+$pv-line-height-0: 0 !default;
+$pv-line-height-normal: normal !default;
+
+// Spacing
+$pv-spacing-0: 0 !default;
+$pv-spacing-1: 1px !default;
+$pv-spacing-2: 2px !default;
+$pv-spacing-3: 3px !default;
+$pv-spacing-4: 4px !default;
+$pv-spacing-5: 5px !default;
+$pv-spacing-6: 6px !default;
+$pv-spacing-7: 7px !default;
+$pv-spacing-8: 8px !default;
+$pv-spacing-9: 9px !default;
+$pv-spacing-10: 10px !default;
+$pv-spacing-11: 11px !default;
+$pv-spacing-12: 12px !default;
+$pv-spacing-13: 13px !default;
+$pv-spacing-14: 14px !default;
+$pv-spacing-15: 15px !default;
+$pv-spacing-16: 16px !default;
+$pv-spacing-17: 17px !default;
+$pv-spacing-18: 18px !default;
+$pv-spacing-20: 20px !default;
+$pv-spacing-22: 22px !default;
+$pv-spacing-24: 24px !default;
+$pv-spacing-25: 25px !default;
+$pv-spacing-28: 28px !default;
+$pv-spacing-30: 30px !default;
+$pv-spacing-32: 32px !default;
+$pv-spacing-36: 36px !default;
+$pv-spacing-40: 40px !default;
+$pv-spacing-42: 42px !default;
+$pv-spacing-44: 44px !default;
+$pv-spacing-48: 48px !default;
+$pv-spacing-3-425p: 3.425% !default;
+$pv-spacing-3-657p: 3.657% !default;
+$pv-spacing-unset: unset !default;
+$pv-spacing-145: 145px !default;
+$pv-spacing-87: 87px !default;
+$pv-spacing-auto: auto !default;
+$pv-spacing--2: -2px !default;
+$pv-spacing--4: -4px !default;
+$pv-spacing--6: -6px !default;
+$pv-spacing--8: -8px !default;
+$pv-spacing--12: -12px !default;
+$pv-spacing-7p: 7% !default;
+$pv-spacing-55p: 55% !default;
+$pv-spacing-54p: 54% !default;
+$pv-spacing-160: 160px !default;
+$pv-spacing-195: 195px !default;
+$pv-spacing-60p: 60% !default;
+$pv-spacing--2p: -2% !default;
+$pv-spacing--4p: -4% !default;
+$pv-spacing-85: 85px !default;
+$pv-spacing--10: -10px !default;
+
+// Border width
+$pv-border-0: 0 !default;
+$pv-border-1: 1px !default;
+$pv-border-2: 2px !default;
+$pv-border-3: 3px !default;
+$pv-border-4: 4px !default;
+$pv-border-5: 5px !default;
+$pv-border-6: 6px !default;
+$pv-border-7: 7px !default;
+
+// Radius
+$pv-radius-0: 0 !default;
+$pv-radius-2: 2px !default;
+$pv-radius-4: 4px !default;
+$pv-radius-6: 6px !default;
+$pv-radius-8: 8px !default;
+$pv-radius-12: 12px !default;
+$pv-radius-16: 16px !default;
+$pv-radius-20: 20px !default;
+$pv-radius-48: 48px !default;
+$pv-border-radius-50p: 50% !default;
+
+//Height
+$pv-height-0: 0 !default; /* 0px */
+$pv-height-1: 1px !default; /* 1px */
+$pv-height-10: 10px !default; /* 10px */
+$pv-height-12: 12px !default; /* 12px */
+$pv-height-14: 14px !default; /* 14px */
+$pv-height-18: 18px !default; /* 18px */
+$pv-height-20: 20px !default; /* 20px */
+$pv-height-22: 22px !default; /* 22px */
+$pv-height-24: 24px !default; /* 24px */
+$pv-height-25: 25px !default; /* 25px */
+$pv-height-26: 26px !default; /* 26px */
+$pv-height-28: 28px !default; /* 28px */
+$pv-height-29: 29px !default; /* 29px */
+$pv-height-30: 30px !default; /* 30px */
+$pv-height-31: 31px !default; /* 31px */
+$pv-height-32: 32px !default; /* 32px */
+$pv-height-33: 33px !default; /* 33px */
+$pv-height-34: 34px !default; /* 34px */
+$pv-height-36: 36px !default; /* 36px */
+$pv-height-38: 38px !default; /* 38px */
+$pv-height-40: 40px !default; /* 40px */
+$pv-height-42: 42px !default; /* 42px */
+$pv-height-45: 45px !default; /* 45px */
+$pv-height-48: 48px !default; /* 48px */
+$pv-height-49: 49px !default; /* 49px */
+$pv-height-50: 50px !default; /* 50px */
+$pv-height-56: 56px !default; /* 56px */
+$pv-height-60: 60px !default; /* 60px */
+$pv-height-88: 88px !default; /* 88px */
+$pv-height-108: 108px !default; /* 108px */
+$pv-height-123: 123px !default; /* 123px */
+$pv-height-140: 140px !default; /* 140px */
+$pv-height-150: 150px !default; /* 150px */
+$pv-height-270: 270px !default; /* 270px */
+$pv-height-280: 280px !default; /* 280px */
+$pv-height-305: 305px !default; /* 305px */
+$pv-height-340: 340px !default; /* 340px */
+$pv-height-350: 350px !default; /* 350px */
+$pv-height-500: 500px !default; /* 500px */
+$pv-height-inherit: inherit !default; /* inherit */
+$pv-height-auto: auto !default; /* auto */
+$pv-height-unset: unset !default; /* unset */
+$pv-height-normal: normal !default; /* normal */
+$pv-height-p95: 95% !default; /* 95% */
+$pv-height-p96: 96% !default; /* 96% */
+$pv-height-p98: 98% !default; /* 98% */
+$pv-height-p100: 100% !default; /* 100% */
+$pv-height-329: 329px !default; /* 329px */
+$pv-height-98: 98px !default; /* 98px */
+$pv-height-465: 465px !default; /* 465px */
+$pv-height-112: 112px !default; /* 112px */
+$pv-height-620: 620px !default; /* 620px */
+$pv-height-1-5em: 1.5em !default; /* 1.5em */
+$pv-height-132: 132px !default; /* 132px */
+$pv-height-555: 555px !default; /* 555px */
+$pv-height-525: 525px !default; /* 525px */
+$pv-height-570: 570px !default; /* 570px */
+$pv-height-600: 600px !default; /* 600px */
+$pv-height-505: 505px !default; /* 505px */
+$pv-height-490: 490px !default; /* 490px */
+$pv-height-138: 138px !default; /* 138px */
+$pv-height-565: 565px !default; /* 565px */
+$pv-height-585: 585px !default; /* 585px */
+$pv-height-627: 627px !default; /* 627px */
+$pv-height-591: 591px !default; /* 591px */
+$pv-height-584: 584px !default; /* 584px */
+$pv-height-592: 592px !default; /* 592px */
+$pv-height-590: 590px !default; /* 590px */
+$pv-height-615: 615px !default; /* 615px */
+$pv-height-576: 576px !default; /* 576px */
+$pv-height-109: 109px !default; /* 109px */
+$pv-height-498: 498px !default; /* 498px */
+$pv-height-530: 530px !default; /* 530px */
+
+//Width
+$pv-width-p10: 10% !default; /* 10% */
+$pv-width-p25: 25% !default; /* 25% */
+$pv-width-p40: 40% !default; /* 40% */
+$pv-width-p45: 45% !default; /* 45% */
+$pv-width-p50: 50% !default; /* 50% */
+$pv-width-p54: 54% !default; /* 54% */
+$pv-width-p55: 55% !default; /* 55% */
+$pv-width-p70: 70% !default; /* 70% */
+$pv-width-p80: 80% !default; /* 80% */
+$pv-width-p100: 100% !default; /* 100% */
+$pv-width-0: 0 !default; /* 0px */
+$pv-width-1: 1px !default; /* 1px */
+$pv-width-6: 6px !default; /* 6px */
+$pv-width-8: 8px !default; /* 8px */
+$pv-width-18: 18px !default; /* 18px */
+$pv-width-20: 20px !default; /* 20px */
+$pv-width-21: 21px !default; /* 21px */
+$pv-width-24: 24px !default; /* 24px */
+$pv-width-25: 25px !default; /* 25px */
+$pv-width-28: 28px !default; /* 28px */
+$pv-width-30: 30px !default; /* 30px */
+$pv-width-32: 32px !default; /* 32px */
+$pv-width-33: 33px !default; /* 33px */
+$pv-width-36: 36px !default; /* 36px */
+$pv-width-38: 38px !default; /* 38px */
+$pv-width-40: 40px !default; /* 40px */
+$pv-width-42: 42px !default; /* 42px */
+$pv-width-43: 43px !default; /* 43px */
+$pv-width-44: 44px !default; /* 44px */
+$pv-width-48: 48px !default; /* 48px */
+$pv-width-50: 50px !default; /* 50px */
+$pv-width-54: 54px !default; /* 54px */
+$pv-width-56: 56px !default; /* 56px */
+$pv-width-58: 58px !default; /* 58px */
+$pv-width-59: 59px !default; /* 59px */
+$pv-width-60: 60px !default; /* 60px */
+$pv-width-61: 61px !default; /* 61px */
+$pv-width-64: 64px !default; /* 64px */
+$pv-width-65: 65px !default; /* 65px */
+$pv-width-68: 68px !default; /* 68px */
+$pv-width-70: 70px !default; /* 70px */
+$pv-width-72: 72px !default; /* 72px */
+$pv-width-75: 75px !default; /* 75px */
+$pv-width-76: 76px !default; /* 76px */
+$pv-width-82: 82px !default; /* 82px */
+$pv-width-84: 84px !default; /* 84px */
+$pv-width-90: 90px !default; /* 90px */
+$pv-width-92: 92px !default; /* 92px */
+$pv-width-96: 96px !default; /* 96px */
+$pv-width-100: 100px !default; /* 100px */
+$pv-width-110: 110px !default; /* 110px */
+$pv-width-120: 120px !default; /* 120px */
+$pv-width-122: 122px !default; /* 122px */
+$pv-width-140: 140px !default; /* 140px */
+$pv-width-150: 150px !default; /* 150px */
+$pv-width-160: 160px !default; /* 160px */
+$pv-width-180: 180px !default; /* 180px */
+$pv-width-195: 195px !default; /* 195px */
+$pv-width-200: 200px !default; /* 200px */
+$pv-width-240: 240px !default; /* 240px */
+$pv-width-275: 275px !default; /* 275px */
+$pv-width-290: 290px !default; /* 290px */
+$pv-width-300: 300px !default; /* 300px */
+$pv-width-500: 500px !default; /* 500px */
+$pv-width-auto: auto !default; /* auto */
+$pv-width-inherit: inherit !default; /* inherit */
+$pv-width-unset: unset !default; /* unset */
+$pv-width-1em: 1em !default; /* 1em */
+$pv-width-1-5em: 1.5em !default; /* 1.5em */
+$pv-width-2em: 2em !default; /* 2em */
+$pv-width-37p: 37% !default; /* 37% */
+$pv-width-43p: 43% !default; /* 43% */
+$pv-width-44p: 44% !default; /* 44% */
+$pv-width-46p: 46% !default; /* 46% */
+$pv-width-52p: 52% !default; /* 52% */
+$pv-width-78p: 78% !default; /* 78% */
+$pv-width-85p: 85% !default; /* 85% */
+$pv-width-94p: 94% !default; /* 94% */
+$pv-width-95p: 95% !default; /* 95% */
+$pv-width-95-5p: 95.5% !default; /* 95.5% */
+$pv-width-95-55p: 95.55% !default; /* 95.55% */
+$pv-width-97p: 97% !default; /* 97% */
+$pv-width-103p: 103% !default; /* 103% */
+$pv-width-38-5: 38.5px !default; /* 38.5px */
+$pv-width-105: 105px !default; /* 105px */
+$pv-width-118: 118px !default; /* 118px */
+$pv-width-128: 128px !default; /* 128px */
+$pv-width-138: 138px !default; /* 138px */
+$pv-width-152: 152px !default; /* 152px */
+$pv-width-154: 154px !default; /* 154px */
+$pv-width-155: 155px !default; /* 155px */
+$pv-width-163: 163px !default; /* 163px */
+$pv-width-165: 165px !default; /* 165px */
+$pv-width-170: 170px !default; /* 170px */
+$pv-width-175: 175px !default; /* 175px */
+$pv-width-176: 176px !default; /* 176px */
+$pv-width-177: 177px !default; /* 177px */
+$pv-width-185: 185px !default; /* 185px */
+$pv-width-186: 186px !default; /* 186px */
+$pv-width-204: 204px !default; /* 204px */
+$pv-width-214: 214px !default; /* 214px */
+$pv-width-215: 215px !default; /* 215px */
+$pv-width-232: 232px !default; /* 232px */
+$pv-width-248: 248px !default; /* 248px */
+$pv-width-285: 285px !default; /* 285px */
+$pv-width-295: 295px !default; /* 295px */
+$pv-width-311: 311px !default; /* 311px */
+$pv-width-318: 318px !default; /* 318px */
+$pv-width-335: 335px !default; /* 335px */
+$pv-width-340: 340px !default; /* 340px */
+$pv-width-368: 368px !default; /* 368px */
+$pv-width-380: 380px !default; /* 380px */
+$pv-width-384: 384px !default; /* 384px */
+$pv-width-385: 385px !default; /* 385px */
+$pv-width-396: 396px !default; /* 396px */
+$pv-width-420: 420px !default; /* 420px */
+$pv-width-430: 430px !default; /* 430px */
+$pv-width-435: 435px !default; /* 435px */
+$pv-width-450: 450px !default; /* 450px */
+$pv-width-470: 470px !default; /* 470px */
+$pv-width-490: 490px !default; /* 490px */
+$pv-width-525: 525px !default; /* 525px */
+$pv-width-max: max-content !default; /* max-content */
+
+//letter-spacing
+$pv-letter-spacing-0-24: .24px !default; /* .24px */

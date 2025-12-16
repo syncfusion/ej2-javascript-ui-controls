@@ -11,7 +11,7 @@ import { GroupableView, DataBinding, DiagramModel, HierarchicalTree, ImageElemen
 import { UndoRedo } from '../../../src/diagram/objects/undo-redo';
 import { profile, inMB, getMemoryProfile } from '../../../spec/common.spec';
 import { DataManager, Query } from '@syncfusion/ej2-data';
-Diagram.Inject(PrintAndExport, UndoRedo,DataBinding, HierarchicalTree);
+Diagram.Inject(PrintAndExport, UndoRedo, DataBinding, HierarchicalTree);
 /**
  * Print and Export Spec
  */
@@ -20,10 +20,12 @@ describe('Print and export', () => {
     describe('Print and Export Settings', () => {
         let diagram: Diagram;
         let ele: HTMLElement;
-        let scroller: DiagramScroller;
         let pageSettings: PageSettingsModel = {};
         let background: BackgroundModel = {};
-
+        let options: IExportOptions = {};
+        let svg: string | SVGElement;
+        let data: SVGElement | string;
+        let rect: Rect = new Rect();
         beforeAll((): void => {
             const isDef = (o: any) => o !== undefined && o !== null;
             if (!isDef(window.performance)) {
@@ -31,7 +33,7 @@ describe('Print and export', () => {
                 this.skip(); //Skips test (in Chai)
                 return;
             }
-            ele = createElement('div', { id: 'diagram' });
+            ele = createElement('div', { id: 'diagram1' });
             document.body.appendChild(ele);
             let connector: ConnectorModel = {
                 id: 'connector1', sourcePoint: { x: 300, y: 400 }, targetPoint: { x: 500, y: 500 }
@@ -57,53 +59,48 @@ describe('Print and export', () => {
                 width: '1200px', height: '600px', nodes: [node, node2, node3], connectors: [connector],
                 mode: 'Canvas'
             });
-            diagram.appendTo('#diagram');
+            diagram.appendTo('#diagram1');
 
         });
 
         afterAll((): void => {
             diagram.destroy();
             ele.remove();
+            (diagram as any) = null; (ele as any) = null; 
         });
 
         it('Export settings with bounds and margin - Download', (done: Function) => {
-            let options: IExportOptions = {};
             options.mode = 'Data';
             options.margin = { left: 10, right: 10, top: 10, bottom: 10 };
             let rect: Rect = new Rect();
             rect.x = 5; rect.y = 5; rect.height = 500; rect.width = 500;
             options.bounds = rect;
-            let svg: string | SVGElement;
             svg = diagram.exportDiagram(options);
             expect(svg).not.toBeNull();
             done();
         });
 
         it('Export settings with default functions with margin as zero - Download', (done: Function) => {
-            let options: IExportOptions = {};
+
             options.mode = 'Data';
             options.format = 'PNG';
             options.margin = { left: null, right: null, top: null, bottom: null };
             options.region = 'PageSettings';
-            let svg: string | SVGElement;
             svg = diagram.exportDiagram(options);
             expect(svg).not.toBeNull();
             done();
         });
         it('Export settings with default functions with bounds as zero - Download', (done: Function) => {
-            let options: IExportOptions = {};
             options.mode = 'Data';
             options.format = 'PNG';
             options.bounds = new Rect();
             options.region = 'PageSettings';
-            let svg: string | SVGElement;
             svg = diagram.exportDiagram(options);
             expect(svg).not.toBeNull();
             done();
         });
 
         it('Export settings with mode svg and format SVG - Download', (done: Function) => {
-            let options: IExportOptions = {};
             options.mode = 'Data';
 
             options.format = 'SVG';
@@ -113,13 +110,11 @@ describe('Print and export', () => {
             options.multiplePage = false;
             options.pageHeight = 300;
             options.pageWidth = 300;
-            let svg: string | SVGElement;
             svg = diagram.exportDiagram(options);
             expect(svg).not.toBeNull();
             done();
         });
         it('Export settings with mode Data and format SVG', (done: Function) => {
-            let options: IExportOptions = {};
             options.mode = 'Data';
             options.format = 'SVG';
             options.region = 'PageSettings';
@@ -127,49 +122,41 @@ describe('Print and export', () => {
             options.margin = { left: 5, top: 5, bottom: 5, right: 5 };
             options.pageHeight = 300;
             options.pageWidth = 300;
-            let svg: string | SVGElement;
             svg = diagram.exportDiagram(options);
             expect(svg).not.toBeNull();
             done();
         });
         it('Export Settings with mode PNG and multiple page false - Download', (done: Function) => {
-            let options: IExportOptions = {};
             options.mode = 'Data';
             options.format = 'PNG';
             diagram.mode = 'Canvas';
             diagram.dataBind();
             options.region = 'PageSettings';
-            let svg: string | SVGElement;
             svg = diagram.exportDiagram(options);
             expect(svg).not.toBeNull();
             done();
         });
         it('Export Settings with Fromat PNG and Multiple page true - Download', (done: Function) => {
-            let options: IExportOptions = {};
             options.mode = 'Data';
             options.format = 'PNG';
             options.region = 'Content';
             options.multiplePage = true;
-            let svg: string | SVGElement;
             svg = diagram.exportDiagram(options);
             expect(svg).not.toBeNull();
             done();
         });
         it('Export Settings with Fromat PNG and Multiple page true with page height and page width - Download', (done: Function) => {
-            let options: IExportOptions = {};
             options.mode = 'Data';
             options.format = 'PNG';
             options.region = 'PageSettings';
             options.multiplePage = true;
             diagram.pageSettings = pageSettings;
             diagram.dataBind();
-            let svg: string | SVGElement;
             svg = diagram.exportDiagram(options);
             expect(svg).not.toBeNull();
             done();
         });
         it('Export Settings with Fromat PNG and Multiple page true with page height and width as null - Download', (done: Function) => {
-            let options: IExportOptions = {};
             options.mode = 'Data';
             options.format = 'PNG';
             options.region = 'PageSettings';
@@ -178,13 +165,11 @@ describe('Print and export', () => {
             diagram.pageSettings.height = null;
             diagram.pageSettings.width = null;
             diagram.dataBind();
-            let svg: string | SVGElement;
             svg = diagram.exportDiagram(options);
             expect(svg).not.toBeNull();
             done();
         });
         it('Export Settings with Fromat PNG and Multiple page false with page height and page width - Download', (done: Function) => {
-            let options: IExportOptions = {};
             options.mode = 'Data';
             options.format = 'PNG';
             options.region = 'PageSettings';
@@ -194,13 +179,11 @@ describe('Print and export', () => {
             diagram.pageSettings.height = 300;
             diagram.pageSettings.width = 400;
             diagram.dataBind();
-            let svg: string | SVGElement;
             svg = diagram.exportDiagram(options);
             expect(svg).not.toBeNull();
             done();
         });
         it('Export Settings with Fromat PNG and Multiple page false with page height ,width as null- Download', (done: Function) => {
-            let options: IExportOptions = {};
             options.mode = 'Data';
             options.format = 'PNG';
             options.region = 'PageSettings';
@@ -210,13 +193,11 @@ describe('Print and export', () => {
             diagram.pageSettings.height = null;
             diagram.pageSettings.width = null;
             diagram.dataBind();
-            let svg: string | SVGElement;
             svg = diagram.exportDiagram(options);
             expect(svg).not.toBeNull();
             done();
         });
         it('Export Settings with Fromat PNG and Multiple page true with page height,width(Landscape) - Download', (done: Function) => {
-            let options: IExportOptions = {};
             options.mode = 'Data';
             options.format = 'PNG';
             options.region = 'PageSettings';
@@ -226,13 +207,11 @@ describe('Print and export', () => {
             options.pageWidth = 500;
             diagram.pageSettings = pageSettings;
             diagram.dataBind();
-            let svg: string | SVGElement;
             svg = diagram.exportDiagram(options);
             expect(svg).not.toBeNull();
             done();
         });
         it('Export Settings with Format PNG and Multiple page true with Strectch - Download', (done: Function) => {
-            let options: IExportOptions = {};
             options.mode = 'Data';
             options.format = 'PNG';
             options.region = 'PageSettings';
@@ -240,13 +219,11 @@ describe('Print and export', () => {
             options.pageHeight = 300;
             options.pageWidth = 500;
             options.stretch = 'Stretch';
-            let svg: string | SVGElement;
             svg = diagram.exportDiagram(options);
             expect(svg).not.toBeNull();
             done();
         });
         it('Export Settings with Format PNG and Multiple page true with Meet - Download', (done: Function) => {
-            let options: IExportOptions = {};
             options.mode = 'Data';
             options.format = 'PNG';
             options.region = 'PageSettings';
@@ -254,13 +231,11 @@ describe('Print and export', () => {
             options.pageHeight = 300;
             options.pageWidth = 500;
             options.stretch = 'Meet';
-            let svg: string | SVGElement;
             svg = diagram.exportDiagram(options);
             expect(svg).not.toBeNull();
             done();
         });
         it('Export Settings with Format PNG and Multiple page true with Slice - Download', (done: Function) => {
-            let options: IExportOptions = {};
             options.mode = 'Data';
             options.format = 'PNG';
             options.region = 'PageSettings';
@@ -269,13 +244,11 @@ describe('Print and export', () => {
             options.pageWidth = 300;
             options.pageOrientation = 'Landscape';
             options.stretch = 'Slice';
-            let svg: string | SVGElement;
             svg = diagram.exportDiagram(options);
             expect(svg).not.toBeNull();
             done();
         });
         it('Export Settings with Format PNG and Multiple page true with Slice (Portrait) - Download', (done: Function) => {
-            let options: IExportOptions = {};
             options.mode = 'Data';
             options.format = 'PNG';
             options.region = 'PageSettings';
@@ -284,13 +257,11 @@ describe('Print and export', () => {
             options.pageWidth = 500;
             options.pageOrientation = 'Portrait';
             options.stretch = 'Meet';
-            let svg: string | SVGElement;
             svg = diagram.exportDiagram(options);
             expect(svg).not.toBeNull();
             done();
         });
         it('Print and Export Settings with Format PNG and Multiple page true with Slice (Portrait) - Download', (done: Function) => {
-            let options: IExportOptions = {};
             options.mode = 'Data';
             options.format = 'PNG';
             options.region = 'PageSettings';
@@ -299,106 +270,87 @@ describe('Print and export', () => {
             options.pageWidth = 500;
             options.pageOrientation = 'Portrait';
             options.stretch = 'Meet';
-            let svg: string | SVGElement;
             svg = diagram.exportDiagram(options);
             expect(svg).not.toBeNull();
             done();
         });
 
         it('Export Settings with Fromat PNG and mode Data', (done: Function) => {
-            let options: IExportOptions = {};
             options.mode = 'Data';
             options.format = 'PNG';
             options.region = 'PageSettings';
-            let svg: string | SVGElement;
             svg = diagram.exportDiagram(options);
             expect(svg).not.toBeNull();
             done();
         });
 
         it('Export Settings with Format PNG and mode Data with background image with color', (done: Function) => {
-            let options: IExportOptions = {};
             options.mode = 'Data';
             options.format = 'PNG';
             options.region = 'PageSettings';
-            let background: BackgroundModel = {};
             background.source = 'https://www.w3schools.com/images/w3schools_green.jpg';
             background.scale = 'Meet';
             background.align = 'XMinYMin';
             background.color = 'grey';
             diagram.pageSettings.background = background;
             diagram.dataBind();
-            let svg: string | SVGElement;
             svg = diagram.exportDiagram(options);
             expect(svg).not.toBeNull();
             done();
         });
 
         it('Export Settings with Format PNG and mode Data with background image with color,scale slice', (done: Function) => {
-            let options: IExportOptions = {};
             options.mode = 'Data';
             options.format = 'PNG';
             options.region = 'PageSettings';
-            let background: BackgroundModel = {};
             background.source = 'https://www.w3schools.com/images/w3schools_green.jpg';
             background.scale = 'Slice';
             background.align = 'XMinYMin';
             background.color = 'grey';
             diagram.pageSettings.background = background;
             diagram.dataBind();
-            let svg: string | SVGElement;
             svg = diagram.exportDiagram(options);
             expect(svg).not.toBeNull();
             done();
         });
         it('Export Settings with Format PNG and mode Data with background image with no color', (done: Function) => {
-            let options: IExportOptions = {};
             options.mode = 'Data';
             options.format = 'PNG';
             options.region = 'PageSettings';
-            let background: BackgroundModel = {};
             background.source = 'https://www.w3schools.com/images/w3schools_green.jpg';
             background.scale = 'Meet';
             background.align = 'XMinYMin';
             background.color = 'none';
             diagram.pageSettings.background = background;
             diagram.dataBind();
-            let svg: string | SVGElement;
             svg = diagram.exportDiagram(options);
             expect(svg).not.toBeNull();
             done();
         });
         it('Export Settings with Format PNG and mode Data with  image(Slice)', (done: Function) => {
-            let options: IExportOptions = {};
             options.mode = 'Data';
             options.format = 'PNG';
             options.region = 'PageSettings';
-            let background: BackgroundModel = {};
             background.source = 'https://www.w3schools.com/images/w3schools_green.jpg';
             background.scale = 'Slice';
             background.align = 'None';
             diagram.pageSettings.background = background;
             diagram.dataBind();
-            let svg: string | SVGElement;
             svg = diagram.exportDiagram(options);
             expect(svg).not.toBeNull();
             done();
         });
         it('Export settings with default functions - Default', (done: Function) => {
-            let options: IExportOptions = {};
             options.margin = { left: 10, right: 10, top: 10, bottom: 10 };
-            let rect: Rect = new Rect();
             rect.x = 5; rect.y = 5; rect.height = 500; rect.width = 500;
             options.bounds = rect;
             options.region = 'PageSettings';
             options.mode = 'Data';
-            let svg: string | SVGElement;
             svg = diagram.exportDiagram(options);
             expect(svg).not.toBeNull();
             done();
         });
         it('Export settings without Margin - Download', (done: Function) => {
-            let options: IExportOptions = {};
             options.mode = 'Data';
             options.format = 'PNG';
             options.region = 'PageSettings';
@@ -406,13 +358,11 @@ describe('Print and export', () => {
             options.multiplePage = true;
             options.pageHeight = 300;
             options.pageWidth = 300;
-            let svg: string | SVGElement;
             svg = diagram.exportDiagram(options);
             expect(svg).not.toBeNull();
             done();
         });
         it('Export settings without Margin - Download', (done: Function) => {
-            let options: IExportOptions = {};
             options.mode = 'Data';
             options.format = 'PNG';
             options.region = 'PageSettings';
@@ -421,22 +371,18 @@ describe('Print and export', () => {
             options.multiplePage = true;
             options.pageHeight = 300;
             options.pageWidth = 300;
-            let svg: string | SVGElement;
             svg = diagram.exportDiagram(options);
             expect(svg).not.toBeNull();
             done();
         });
         it('Export settings without Margin - Download', (done: Function) => {
-            let rect: Rect = new Rect();
             rect.x = null;
             rect.y = null;
-            let options: IExportOptions = {};
             options.mode = 'Data';
             options.format = 'SVG';
             options.bounds = rect;
             options.region = 'PageSettings';
             options.fileName = 'export';
-            let data: SVGElement | string;
             data = diagram.exportDiagram(options);
             expect(data).not.toBeNull();
             done();
@@ -451,10 +397,8 @@ describe('Print and export', () => {
             done();
         });
         it('Export settings with Stretch', (done: Function) => {
-            let rect: Rect = new Rect();
             rect.x = null;
             rect.y = null;
-            let options: IExportOptions = {};
             options.mode = 'Data';
             options.bounds = rect;
             options.region = 'PageSettings';
@@ -463,7 +407,6 @@ describe('Print and export', () => {
             options.pageWidth = 500;
             options.pageOrientation = 'Landscape';
             options.multiplePage = false;
-            let data: SVGElement | string;
             data = diagram.exportDiagram(options);
             expect(data).not.toBeNull();
             done();
@@ -473,9 +416,10 @@ describe('Print and export', () => {
     describe('Print and Export Settings', () => {
         let diagram: Diagram;
         let ele: HTMLElement;
-        let scroller: DiagramScroller;
         let pageSettings: PageSettingsModel = {};
         let background: BackgroundModel = {};
+        let options: IExportOptions = {};
+        let data: SVGElement | string;
 
         beforeAll((): void => {
             const isDef = (o: any) => o !== undefined && o !== null;
@@ -484,7 +428,7 @@ describe('Print and export', () => {
                 this.skip(); //Skips test (in Chai)
                 return;
             }
-            ele = createElement('div', { id: 'diagram' });
+            ele = createElement('div', { id: 'diagram2' });
             document.body.appendChild(ele);
             let connector: ConnectorModel = {
                 id: 'connector1', sourcePoint: { x: 300, y: 400 }, targetPoint: { x: 500, y: 500 }
@@ -509,29 +453,27 @@ describe('Print and export', () => {
             diagram = new Diagram({
                 width: '1200px', height: '600px', nodes: [node, node2, node3], connectors: [connector]
             });
-            diagram.appendTo('#diagram');
+            diagram.appendTo('#diagram2');
 
         });
 
         afterAll((): void => {
             diagram.destroy();
             ele.remove();
+            (diagram as any) = null; (ele as any) = null; 
         });
 
         it('Export settings With diagram mode SVG and format SVG - Download', (done: Function) => {
-            let options: IExportOptions = {};
             options.mode = 'Data';
             options.format = 'SVG';
             options.region = 'PageSettings';
             options.fileName = 'export';
-            let data: SVGElement | string;
             data = diagram.exportDiagram(options);
             expect(data).not.toBeNull();
             done();
         });
 
         it('Print Settings with Fromat PNG and mode Data', (done: Function) => {
-            let options: IExportOptions = {};
             options.multiplePage = true;
             options.pageHeight = 500;
             options.pageWidth = 300;
@@ -541,7 +483,6 @@ describe('Print and export', () => {
             done();
         });
         it('Print Settings with mode Data', (done: Function) => {
-            let options: IExportOptions = {};
             options.multiplePage = false;
             options.pageHeight = 300;
             options.pageWidth = 500;
@@ -551,17 +492,14 @@ describe('Print and export', () => {
             done();
         });
         it('Print Settings with mode Data with page Width', (done: Function) => {
-            let options: IExportOptions = {};
             options.multiplePage = true;
             options.pageWidth = 500;
             options.pageOrientation = 'Portrait';
             options.region = 'PageSettings';
             diagram.print(options);
-            let svg: string | SVGElement = null;
             done();
         });
         it('Print Settings with mode Data with page Height', (done: Function) => {
-            let options: IExportOptions = {};
             options.multiplePage = true;
             options.pageHeight = 500;
             options.pageOrientation = 'Portrait';
@@ -570,7 +508,6 @@ describe('Print and export', () => {
             done();
         });
         it('Print Settings with mode Data with page Width without Format', (done: Function) => {
-            let options: IExportOptions = {};
             options.multiplePage = true;
             options.pageWidth = 500;
             options.format = 'SVG';
@@ -580,7 +517,6 @@ describe('Print and export', () => {
             done();
         });
         it('Print Settings with mode Data with page Height without format', (done: Function) => {
-            let options: IExportOptions = {};
             options.multiplePage = true;
             options.pageHeight = 500;
             options.format = 'SVG';
@@ -590,17 +526,15 @@ describe('Print and export', () => {
             done();
         });
         it('Exported data returns same png format for all other format', (done: Function) => {
-			let options: IExportOptions = {};
             options.mode = 'Data';
             options.region = 'Content';
             options.fileName = 'export';
             options.format = 'JPG';
-            let image: string|SVGElement = diagram.exportDiagram(options);
+            let image: string | SVGElement = diagram.exportDiagram(options);
             expect(image).not.toBeNull();
             done();
         });
         it('Export settings With diagram mode Download and format JPG - Download', (done: Function) => {
-            let options: IExportOptions = {};
             options.mode = 'Data';
             options.format = 'JPG';
             options.region = 'PageSettings';
@@ -615,9 +549,10 @@ describe('Print and export', () => {
     describe('Print and Export Settings', () => {
         let diagram: Diagram;
         let ele: HTMLElement;
-        let scroller: DiagramScroller;
         let pageSettings: PageSettingsModel = {};
         let background: BackgroundModel = {};
+        let options: IExportOptions = {};
+        let data: SVGElement | string;
 
         beforeAll((): void => {
             const isDef = (o: any) => o !== undefined && o !== null;
@@ -626,7 +561,7 @@ describe('Print and export', () => {
                 this.skip(); //Skips test (in Chai)
                 return;
             }
-            ele = createElement('div', { id: 'diagram' });
+            ele = createElement('div', { id: 'diagram3' });
             document.body.appendChild(ele);
             let connector: ConnectorModel = {
                 id: 'connector1', sourcePoint: { x: 300, y: 400 }, targetPoint: { x: 500, y: 500 }
@@ -651,47 +586,42 @@ describe('Print and export', () => {
             diagram = new Diagram({
                 width: '1200px', height: '600px'
             } as DiagramModel);
-            diagram.appendTo('#diagram');
+            diagram.appendTo('#diagram3');
 
         });
 
         afterAll((): void => {
             diagram.destroy();
             ele.remove();
+            (diagram as any) = null; (ele as any) = null; 
         });
 
         it('No elements in diagram - Download', (done: Function) => {
-            let options: IExportOptions = {};
             options.mode = 'Data';
             options.format = 'SVG';
             options.region = 'PageSettings';
             options.fileName = 'export';
-            let data: SVGElement | string;
             data = diagram.exportDiagram(options);
             done();
         });
 
         it('Page Settings in diagram - Download', (done: Function) => {
-            let options: IExportOptions = {};
             options.mode = 'Data';
             options.format = 'SVG';
             options.region = 'PageSettings';
             diagram.pageSettings = pageSettings;
             options.fileName = 'export';
-            let data: SVGElement | string;
             data = diagram.exportDiagram(options);
             done();
         });
 
         it('Page Settings color as none in diagram - Download', (done: Function) => {
-            let options: IExportOptions = {};
             options.mode = 'Data';
             options.format = 'PNG';
             options.region = 'PageSettings';
             diagram.pageSettings = pageSettings;
             diagram.pageSettings.background.color = 'none';
             options.fileName = 'export';
-            let data: SVGElement | string;
             data = diagram.exportDiagram(options);
             done();
         });
@@ -709,12 +639,14 @@ describe('Print and export', () => {
     describe('tesing the native node export and print', () => {
         let diagram: Diagram;
         let ele: HTMLElement;
-        let scroller: DiagramScroller;
         let pageSettings: PageSettingsModel = {};
         let background: BackgroundModel = {};
+        let options: IExportOptions = {};
+        let htmlData: string;
+        let imBound: Rect;
 
         beforeAll((): void => {
-            ele = createElement('div', { id: 'diagram' });
+            ele = createElement('div', { id: 'diagram4' });
             document.body.appendChild(ele);
             let connector: ConnectorModel = {
                 id: 'connector1', sourcePoint: { x: 300, y: 400 }, targetPoint: { x: 500, y: 500 }
@@ -739,27 +671,25 @@ describe('Print and export', () => {
             pageSettings.height = 300; pageSettings.width = 300;
             pageSettings.orientation = 'Portrait';
             diagram = new Diagram({
-                width: '1200px', height: '600px', nodes: [node, node2, node3],pageSettings:pageSettings
+                width: '1200px', height: '600px', nodes: [node, node2, node3], pageSettings: pageSettings
             } as DiagramModel);
-            diagram.appendTo('#diagram');
+            diagram.appendTo('#diagram4');
 
         });
 
         afterAll((): void => {
             diagram.destroy();
             ele.remove();
+            (diagram as any) = null; (ele as any) = null; 
         });
 
         it('export the diagram with native node', (done: Function) => {
-            let options: IExportOptions = {};
             options.mode = 'Data';
-            let regionType: any = document.getElementById('regionTypes');
             options.region = 'Content';
             options.fileName = 'export';
-            let type: any = document.getElementById('exportTypes');
             options.format = 'PNG';
-            let htmlData: string = diagram.getDiagramContent();
-            let imBound: Rect = diagram.getDiagramBounds();
+            htmlData = diagram.getDiagramContent();
+            imBound = diagram.getDiagramBounds();
             let jsonResult: {} = { htmlData: { htmlData: htmlData, width: imBound.width } };
 
             let image: string = "data:image/png;base64,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…"
@@ -768,17 +698,14 @@ describe('Print and export', () => {
         });
 
         it('export the diagram with native node which is zoomed and with in custombounds', (done: Function) => {
-            let options: IExportOptions = {};
             options.mode = 'Data';
-            let regionType: any = document.getElementById('regionTypes');
             options.region = 'CustomBounds';
             options.fileName = 'export';
             options.bounds = new Rect(100, 100, 100, 100);
-            let type: any = document.getElementById('exportTypes');
             options.format = 'PNG';
             diagram.zoom(0.5);
-            let htmlData: string = diagram.getDiagramContent();
-            let imBound: Rect = diagram.getDiagramBounds();
+            htmlData = diagram.getDiagramContent();
+            imBound = diagram.getDiagramBounds();
             let jsonResult: {} = { htmlData: { htmlData: htmlData, width: imBound.width } };
             let image: string = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAlgAAAJYCAIAAAAxBA+LAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAAFiUAABYlAUlSJPAAAIp+SURBVHhe7b0HnFTHlfZdk3oyMIBggEHkLEDkOGQGhIhC5DiEYWYACeVkKyFAQtlKZJBsr+Wwtuy1La+jAkgg2bvefffd9XrXn621Vq9Wa+9agZmejt85Vfferq7pHnokGHXf+9Tvz1WdutV1Q7fqmVNRRKMAAACAdzFtAAAAwFOYNgAAAOApTBsAAADwFKYNAAAAeArTBgAAADyFaQMAAACewrQBAAAAT2HaAAAAgKcwbQAAAMBTmDYAAADgKUwbAAAA8BSmDQAAAHgK0wYAAAA8hWkDAAAAnsK0AQAAAE9h2gAAAICnMG0AAADAU5g2AAAA4ClMGwAAAPAUpg0AAAB4CtMGAAAAPIVpAwAAAJ7CtAEAAABPYdoAAACApzBtAAAAwFOYNgAAAOApTBsAAADwFKYNAAAAeArTBgAAADyFaQMAAACewrQBAAAAT2HaAAAAgKcwbQAAAMBTmDYAAADgKUwbAAAA8BSmDQAAAHgK0wYAAAA8hWkDAAAAnsK0AQAAAE9h2gAAAICnMG0AAADAU5g2AAAA4ClMGwAAAPAUpg0AAAB4CtMGAAAAPIVpAwAAAJ7CtC8SWclRZ5sfk4H8nzE/mQ7OWXV0cM46cQAA8Aqm/ZnJZiI5SaGqNuExGcj/GfOT6eCcVUcHeTYSzSFk3PhOAQDAzZh2K1E1rIhG8iLh0mCoItA0zN80JuAfRTQ2jvH7x/qbRvmbRgb8Y1Q6mcmPlFnlQf6Lk5+yBSgz5+fE5gSbZB7OT9mGB4N9IpGi+K8YAABcjmm3BvYhlD9BKkgS+OBDIhJ5rKhIhEJHiotFMPg8xYPhI0UlIhQ8UVRM6ceSxFUezh8KHUL+i5W/WOYvpnjomIwfo++F8nBcHVV68GRJCX2hjy9cRN9az2ZfNAAAuBnTbg0khHnkC0YjWZFQJ3/jlHbtKfHvo9E/RaN/jEbfiUb/Kxr9QEaId6PR9+SRTqmIHqcIHSnz+8h/CfL/XppONoVuUs7/oO+O/o4JBIY2+6IBAMDNmHYK2M2hdIz4JCSEnRsbZ0aiB6kKjkQpBKNRvzyG5TFFKDPyt8BnyR+wU5Sp4oRKp0CRd8lfDDSNjP+6AQDA5Zh2CiQSwmCXxobZpdy89kGEalcphnyMRCOEFQXphPxq1NekviNy5cOhFwL+UfFfNwAAuBzTTpUIHUkI7aZRKYSRyCPR6HuyelWuBh1VUM4H+ByISGxTBT3OrqFUQYq8V1wEjxAA4DlMO1WkEGp9hJ39DTNLSynxXbtW9dsVLuE0xFEE8TaNR6x4LMWOU6A4N43Kr4ybRkOhYxBCAIDXMO0UiDWNRrQ+QhLCmEfINauqahHSNUj1U0FGSRTfh0cIAPAgpp0CSYVQeoSqaZQChDC9g/X3igwcYSEMhk5CCAEAXsO0UyCREAa7+BP0EaYYKHOrAvK3HJrnpxSFCnpctpfyV0aR94owahQA4D1MOwWSCqHVRxgTQqe21YNKVHWxQcKg0vVsDgmDStezOSQMKl3P5pAwqHQ9m0PCoNL1bA4Jg0rXszkkDCpdz+bgBCNFj5P+BR0hDIZO+CGEAACPYdqtwRwsI+cROkKIptG0Dc1E0frKPigqEv4mTJ8AAHgL024NcULY2Ig+wkwJjgpSYCG0v7IPAkF4hAAAz2HaKZC4abSxoSoSfjIafR9CmF6Bvg7rG3GC9AKtQF+TEkJKUSvLDI//ugEAwOWYdgokE8I5cmUZCGGaBUsITS/QisYLYSR4BINlAABew7RTQBPCuKbRykj0AK81atWqEMK0DboQckT+6UKRPxUXCiyxBgDwGqadAgmFsJO/sbK0HSWqRbchhOkcTCG0XcY/BYNfhRACALyGaaeAJoRO0yiPGjXmEUII0yo4ykeB4o4p4/yV0feFeYQAAC9i2imQSAhj8wghhOkZkgkhfU3O9In3gmGsNQoA8BymnQKaEBrzCNkjxDzC9A/JhPADeIQAAA9i2imQVAjjV5aBEGZEiBPCQPAE+ggBAF7DtFNAE8L4ptFI5DGtaTT1tUYRPscQ1zQKjxAA4EFMOwWSCmF8HyGEMCNCnBAGQycghAAAr2HaKZBICNFHmKkhrmmUPUI0jQIAPIZpp0BSIUQfYQaGOCHk/QghhAAAj2HaKZBICNFHmKkhrmkUfYQAAA9i2imQVAjRR5iBIU4I0UcIAPAgpp0CmhAa8wixH2HmBfqmtD7CIvQRAgA8h2mnQFIhxMoyGRLo23GCLoTv8zxCeIQAAI9h2imgCaHeNHpe7Uf4AZpG0zIkFD8KetPoH4tKsB8hAMBzmHYKJBNCfT9CCGG6hWZCaIU4IQyGj0AIAQBew7RTQBNCvWmU9yN8EPsRZkLQhVBGrK/sT+gjBAB4ENNOgYRCiP0IMygkFULsRwgA8CCmnQKaEDpNozxYBvsRpnNwlI8CxR1Txvkro+8L8wgBAF7EtFMgkRAmmEcIIUyrkEwI6Wty+gixHyEAwIuYdgpoQmjMI8Rao5kRkgkh9iMEAHgR006BpEKItUYzMMQJIfYjBAB4ENNOAU0I45tGsdZoBoa4plF4hAAAD2LaKZBUCLHWaAaGOCHEWqMAAA9i2imQSAjRR5ipIa5pFPsRAgA8iGmnQFIhRB9hBoY4IcR+hAAAD2LaKZBICNFHmKkhrmkUfYQAAA9i2imQVAgzro8wIu81WVBnW87Tcvgsn22rECeE6CMEAHgQ004BTQiNeYTYjzDzAn1TWh8h1hoFAHgP006BpEKIlWUyJNC34wRdCLEfIQDAi5h2CmhCqDeNYj/CtA4JxY+C3jSK/QgBAF7EtFMgmRBm2H6Egp89LjRPSRZSyZl6aW0SmgmhFeKEEPsRAgA8iGmngCaEetNopu1HSEJlaJVjXnCQi/FBJzgflGUnzpMGQRdCGbG+MuxHCADwIqadAgmFMPP2I1RCpcuVEVfBsmVwUvT0rKwsJ10FFddT0iwkFULsRwgA8CCmnQKaEDpNozxYJsP2I3TkSnfjjAiF5okUaZ5IwYmrAvVTaRAc5aNAcceUcb5f+r4wjxAA4EVMOwUSCWGCeYSZIYQtRyh8ikQVyEyneYTJhJC+JqePEPsRAgC8iGmngCaExjzCjFprtLmGOSnNT5GkNU9UET2oRBUMM51CMiHEfoQAAC9i2imQVAgza61RXahU3ElpfkqPUEiYqELzhtb0DnFCiP0IAQAexLRTQBPC+KbRzFpr1BAqMp0U/VQqiQk7BQ0zXUNc0yg8QgCABzHtFEgqhJm11mhzodJTKK4CxXUnzwkqhYJlt1haGoc4IcRaowAAD2LaKZBICDOwjxBBhrimUexHCADwIKadAkmFMLP6CBFkiBNC7EcIAPAgpp0CiYQwA/sIEWSIaxpFHyEAwIOYdgokFcLM6iNEkCFOCNFHCADwIKadApoQGvMIsR9h5gX6prQ+Qqw1CgDwHqadAkmFMLNWlvFwoG/HCboQYj9CAIAXMe0U0IRQbxrFfoRpHRKKHwW9aRT7EQIAvIhpp0AyIcyw/Qg9FpoJoRXihBD7EQIAPIhpp4AmhHrTaKbtR+jhoAuhjFhfGfYjBAB4EdNOgYRCmHn7EXo4JBVC7EcIAPAgpp0CmhA6TaM8WCbD9iP0WHCUjwLFHVPG+Suj7wvzCAEAXsS0UyCRECaYRwghTKuQTAjpa3L6CLEfIQDAi5h2CmhCaMwjxFqjmRGSCSH2IwQAeBHTToGkQoi1RjMwxAkh9iMEAHgQ004BTQjjm0ax1mgGhrimUXiEAAAPYtopkFQIsdZoBoY4IcRaowAAD2LaKZBICNFHmKkhrmkU+xECADyIaadAUiFEH2EGhjghxH6EAAAPYtopkEgI0UeYqSGuaRR9hAAAD2LaKZBUCNFHmIEhTgjRRwgA8CCmnQKaEBrzCLEfYeYF+qa0PkKsNQoA8B6mnQJJhRAry2RIoG/HCboQYj9CAIAXMe0U0IRQbxrFfoRpHRKKHwW9aRT7EQIAvIhpp0AyIcR+hOkcUhHCd4PhI/4AhBAA4C1MOwU0IdSbRrEfYcYESxTtb8oRQt6P0N+U4X2EEYmRCAAAyTHtFEgohNiPMIOCJYQy6EL452Dwq/6mMfZXnLk4v1UAALgwpp0CTl1jTKjHfoSZEnQh1JtGeR4hCyH/cZMjUX/o6HGdZHn0uE6yPHpcJ1kePa6j0nOghQCAVmHaKZBICBPMI4QQZkTQhfDdUOhYwJ/ZQhgJZ8vfJx1FBG2kAIAUMO0U0ITQmEeItUbTMkT4K9G9QA6UxF+UTLcj7xereYSRrMzG+omqXykAAFwA004Bp4pJOI8QQpiegb6ROC1MJIQfBAMvchN3sAt9oQxFksVVpHl6sriKNE9PFleR5unJ4ioSKouES6PhIv5Z8q9UeYfOTxcAABJg2imgCWF80yjWGk3j0EwIpfpZ6dZX9uf8AvHxh7WNDXMaG2f6/TMaG2YzjTMZO+73z7ITKxnKnDb5/f6xgaZh4WCF1ELyDmUjqv1ztSNGHADgdUw7BZxKpOU+QghhWoR7772XjoK/6GTHsBDkOYWzskUk9H+KC0Uk/ES7EhGJHuRj5DF5fCRBvB3leZDjaZM/Gr1t0RLhbxoZDbXnn2U4j3+f6hebVBQBAF7HtFPAqUSMUaPoI0zHoAQveZAeoRXoK2uIRv83Gv2A/qChr1Ie35dHFTHilIGgzOmT/41IdF9D45xosAvLXrggEimw9E8NqHF+uhBCAICNaadAUiFEH2EGBk0I6YsjwrLVNJVjpMWzzY+XPj/9/IpLRMP5RdFA92g4JxIpIhwh5C5tCCEAoBmmnQKJhBB9hOkaEnqEchypFiwVUUFJY4by+0j4qcbzV0cD5S0LoR0BAICLKoToI8zUEBNC+uLIlafvTqHiCY8OZDo4Z5sfHch0cM42PzqQ6eCcbX5U/K60RLAQBruREEbDEEIAwIUx7RTQhNCYR4j9CNMvXKiP0GXhnUj4ycbzCyJB9gh57CgPH1VCqKbhU0T/DQMAwEUVQqws44agvEPLQUwhpFf+d0qL2SOMBLmPEEIIAEgF004BTQj1plHsR5iWoRUeYSv0Jm3DO6HQoYZPlkUDFVIISxhLCK0/2pQQYrAMAMDBtFMggRBGWQjntIvbjxAeYaaFOCGkbzBFVDASW0AFI7EFVDASk/EOjxplIbQ8QowaBQBcENNOgZgQxv7KDnb2N0yPRh6MRt8NU3Vk1Vwu8DAyPsR5hHFS58rwu0j4icbz87mPkPQvTghzIlEZifsNAwDARRJC7iNsrJRLe2A/wvQKcTMlPCCEpaWisaEqYk2ohxACAC6MaadATAj1CfWN52dEIwdtIQzINUpIC5UiOgPcKYJ4m8bJI3S59sWFdyKhZxo/WcSDZUwhxPQJAEBiTDsFEglhsEtj3DxCVRerRlI6gs8RT7VPy1GjnyyJhnpIISyJaINlIIQAgISYdgokE8I5ctTon0NyvSuqfImwikuDj/ZSWOZRT08WR/7W5yeEyOWIV4K1skyiPkIIIQAgMaadApoQxuYRdvI3Tm7XgRL/nrRQroP8R8m72uLIatFkFUkYVx9B/ouYn3J+wsLolfB7tbIMhBAAkDqm3Rp4AIIkKxouCQf6RcIL2rcX5BeWlspNc2Lb6DzJxwtso/MI8jfL81nzB8NHfHn0TX1IWmi7hclE0R1iiT5CAECrMe1WIisUnqTsCwc7BAP9yC+UO6nObmiY4eeNVaf7z5NZ5W/gzVT9cjPVxHE6yo1Ykf8i5v/4k3VNTd+V2xgpIbR6De2QLJ65QfURQggBAK3AtFuP0kLyC328ikewUyTYhQl1jgY7yyObF44j/yXIT1pYVETf0fuaEAalYKjgPiFsoY8Q0ycAAIkx7U+F0kKQdgT8o0LBE7K/0CtCmLyPEEIIAEiMaX9alBaSX5gnx5Eq1FCa5vFkIL9zKiGtzu9vGlNUTN8OC6EcO+p6IWyhjxBCCABIjGl/WiwhjETzIhGfBcUdU48nA/mdUwlpfX4SwmDopGoa9YgQqj5Cex4hhBAAcGFMO2X0qkTFQdrhbxolPUKnj5CC+8RPD7+POPsRQggBAKlh2imjVyWoVtKUQNPIYOB4an2E7gjoIwQAtBrT/syoKgakBSSEpewRvkP6543BMu9EQocaP1lm9xGWYIk1AMAFMe3PjFUFg3SAhDASPCKXmPGKEMo+QkcIdY8QQggASIxpAzcR8I8qLqTIn0jnPNNHiP0IAQCtw7SBm/A3jQoFvhoTQv7niB9F3CeE2I8QANBqTBu4CX/TyGJeWeY9rWk0mRC6QxSx1igAoNWYNnATJISh0LEko0bdKYTYjxAA0FpMG7gJ2yPUF91OJoTuCNiPEADQakwbuAkSwmDgVBIhpOBCIcR+hACA1mLawE1ofYQeEUL0EQIAWo1pAzfBfYSp7j7hjoD9CAEArca0gZtosY+QgvuEEPsRAgBajWkDNyE9wufRRwghBAC0gGkDN4E+QgghAOCCmDZwE57tI8R+hACA1DFt4Cb8TaOa9RHq4uc+IcR+hACAVmPawE2QRxgMkEfobMzrfiFEHyEAoLWYNnAT/sDwYt6P8I8shKyEpHyyadSKu08UsR8hAKDVmDZwEySEoZDajzBeCDm4UwixHyEAoLWYNnAT3Eeo70doaaEKhhC6I2A/QgBAqzFt4CawHyGEEABwQUwbuAltHiH2I0TTKAAgMaYN3ATPI8R+hBBCAECLmDZwE7ZHiP0IIYQAgKSYNnATch4h9iOEEAIAWsK0gZvQ+gg9IoToIwQAtBrTBm6C+wixHyGEEADQIqYN3ESLfYQU3CeE2I8QANBqTBu4CekRYj9CCCEAoCVMG7gJ9BFCCAEAF8S0gZvwbB8h9iMEAKSOaQM3gf0IIYQAgAti2sBNkEeI/QghhACAljFt4CawHyGWWAMAXBDTBm4C+xFqHiGEEACQGNMGbuJS70cYkepqhISJbRWwHyEAoNWYNnAT2I8QQggAuCCmDdyENo/wYu5HmKLP52RrQx8Ra40CAFqNaQM3wfMIL8Z+hIJ/J3GheUqycMGclEEFy/5MAfsRAgBajWkDN2F7hJ9mP0Jy4xxPrrlQpa5bLefUz+rxT+tEYj9CAECrMW3gJuQ8wk+/H6EuhM5RBSOugmXL4KTo6SqRgmXHh2TprQnYjxAA0GpMG7gJrY/w0wihE5RE6UKVlUVCwkFPdOJ6pHkiBT3uBJX4aX1BFdBHCABoNaYN3AT3EV6MtUYdiWquarqkfYpEJzRP+VQB+xECAFqNaQM30WIfIYXWCaEKKk5H5bo1P6VHKOg59aDOOqF5yqcK2I8QANBqTBu4CekRXoT9CHWVUnEnpfkpPUIhYaIRWjjVyoC1RgEArca0gZu4uH2ETiDTSdFPfYpECnr8s3UQUsB+hACAVmPawE1c3D5CPRhKpoJly2AlyWAlJcpp2XawUu3Qel3EfoQAgFZj2sBNfC77EX5mry4WWl8U9iMEALQa0wZugjzC9NyPsLnCXST5RB8hAKDVmDZwE+m8H+FFdBy1gP0IAQCtxrSBm0jD/Qgvjf45AfsRAgBajWkDN3Gp9yNMv4D9CAEArca0gZvAfoQQQgDABTFt4Ca0eYQXcz/CNA5YaxQA0GpMG7gJnkd4MfYjzJyA/QgBAK3GtIGbsD3CT7MfYWYG7EcIAGg1pg3chJxH+On3I8zAgP0IAQCtxrSBm9D6CD0ihOgjBAC0GtMGboL7CC/GWqOZE7AfIQCg1Zg2cBMt9hFScJ8QYj9CAECrMW3gJqRHeBH2I8ycgLVGAQCtxrSBm0AfIYQQAHBBTBu4Cc/2EWI/QgBA6pg2cBOfy36En2vAfoQAgFZj2sBNkEeYnvsRXrKAPkIAQKsxbeAm0nk/wksTsB8hAKDVmDZwE2m4H+ElDtiPEADQakwbuAnsR4imUQDABTFt4CawHyGEEABwQUwbuAltHiH2I0TTKAAgMaYN3ATPI8R+hBBCAECLmDZwE7ZHiP0IIYQAgKSYNnATch4h9iOEEAIAWsK0gZvQ+gg9IoToIwQAtBrTBm6C+wixHyGEEADQIqYN3ESLfYQU3CeE2I8QANBqTBu4CekRYj9CCCEAoCVMG7gJ9BFCCAEAF8S0gZvwbB8h9iMEAKSOaQM3gf0IIYQAgAti2sBNkEeI/QghhACAljFt4CawHyGWWAMAXBDTBm4C+xFqHiGEEACQGNMGbgL7EaJpFFxU1C/nM/x+IhIZj0hip+Jp+Sy4uJg2cBPYjxBCCC4q6pfT2t+PlhlCmJaYNnAT2jxC7EeIplGQCuq30RwjW5ykxctbloP1WfULTIpdiP1ZPQW0DaYN3ATPI8R+hBBC0ArUb6M5zTJECDtRF0VdAq2cqQphohTQFpg2cBO2R4j9CCGEIDV0SYuXNwtuY5e/pQTy5mS2P2shJVOh50lKs9LAJca0gZuQ8wixHyGEELQK9fOg34zETMyh35KkBSFUH0x0jKHKdD7ioGcAbYRpAzeh9RF6RAjRRwg+I1mRqObzWWpnn7XcO4c4P0/18ElYLGUJvkjEZx+VfCrUbzK+cEb9MvHjbGtMG7gJ7iPEfoRWpQMhBKlgyZglVzGtkr8ZFj+ZyCiTiH3WzuaUwCpoo1IUuhA2xykQtBGmDdxEi32EFNwnhNiPELSOSEzGtJSYyNk/GEvbfNFwgfxdFXA8SvKmfl0K20F0Pmtg/fAUjgdpe592Omh7TBu4CekRYj9CCCFIHfnbYNmTWD8VlRITQj5aTp6dM5ahJBoqjYTKIqHO4UDXSKAiHOgVCfYNB/oFA/2DgYGBwOBAYGigaTj97+lvGuP3j/f7JzY2TggGrgwHu6txzs3lGVxSTBu4CfQRQghBi1i/BFt4KC7789Qvh9VO99WkVxem35VE8/DIpQtHC8Lh9sFwl0Cwnz8wrLFpfEPjzIbzV//lL0v/7d/mvnlu8ss/uvIrXx3w9NPd77u3ZM91WZs2iKsXiEkTxOBBostloqREjBsjfviD9iSWLKV8P6pwdWPg0mLawE14to8Q+xGC1Mh2fC+KyEZR6dVFim23T/l8eZFIAflqkVAnXrQoUBFp6hNu6h/wDyLHrikwutE/8eOPp/zLvwz52x93PXLc94V7RPUWMWuWGDiIFa6gSOQXivwCkZ8vfIRP+PJEbp7IyRU5OZJskSU4pXcvQd4hXUW2ryq/ED/UtsC0gZvAfoQQQtBKNLePJZChX1E4VB4IDOQ2zIaqxvMrfvsv81/6zpUPPdh5a7WYMV306yNKCkRBnsjPEwW5wpcjfNkiN5sVLidLZJHOSYQih0RPQhFCqqAQhVk5om8f0dA4Ry4QKIUQP9S2wrSBmyCPEPsRcoRrNwghMHHcQQn9SMjzK2KHjH2+fuGmwdyT5x9L3t5bbw84ejR/9y4xfRq3ZBaQhyd9O8uxIzEjNSNI59TR0Lw8IXySUlFYntWpX0HFyLJBk/oMHtePs3EoISGcUgkh/HwwbeAmsB8hllgDqSH/VAqXBoN9mpomNXxy7Tu/X/3ii1feuKdwyhTRrp0le75ckSsbM0m0LA9PSR3pXL4QBeTXsdSV9BV9JudMuqZ86a6Rm7845bpHr7r7xIqD39p85Kd7nvj+rt1PLdj19NU7n1q0+4mVC7ZO4o+zS5hPgrp6tWjyT3GaRvFDbTNMG7gJEsJg2NqP0BY/p49QF0I9ntHB2I/QFkIevA4hBA5S9iI++nmEQ52DwZ48ktM/5r/eH/+tb3as3ylGjBAFBSJfOXyqAVO2YVoRpXxEsegxtHD0nIoFG4dvunXaTU8sPfj1rSd/cfOp1284cXr3iTO7TpypP3Gm9uQbOwmKH3+j/sD319QdmlpzePKOQ9Prn14wYXlvLoeFMJeud…"
             diagram.exportImage(image, options);
@@ -786,15 +713,12 @@ describe('Print and export', () => {
         });
 
         it('print the diagram with native node', (done: Function) => {
-            let options: IExportOptions = {};
             options.mode = 'Data';
-            let regionType: any = document.getElementById('regionTypes');
             options.region = 'Content';
             options.fileName = 'export';
-            let type: any = document.getElementById('exportTypes');
             options.format = 'PNG';
-            let htmlData: string = diagram.getDiagramContent();
-            let imBound: Rect = diagram.getDiagramBounds();
+            htmlData = diagram.getDiagramContent();
+            imBound = diagram.getDiagramBounds();
             let jsonResult: {} = { htmlData: { htmlData: htmlData, width: imBound.width } };
 
             let image: string = "data:image/png;base64,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…"
@@ -806,12 +730,14 @@ describe('Print and export', () => {
     describe('tesing the native node export and print with multiple page', () => {
         let diagram: Diagram;
         let ele: HTMLElement;
-        let scroller: DiagramScroller;
         let pageSettings: PageSettingsModel = {};
         let background: BackgroundModel = {};
+        let options: IExportOptions = {};
+        let htmlData: string;
+        let imBound: Rect;
 
         beforeAll((): void => {
-            ele = createElement('div', { id: 'diagram' });
+            ele = createElement('div', { id: 'diagram5' });
             document.body.appendChild(ele);
             let connector: ConnectorModel = {
                 id: 'connector1', sourcePoint: { x: 300, y: 400 }, targetPoint: { x: 500, y: 500 }
@@ -838,25 +764,23 @@ describe('Print and export', () => {
             diagram = new Diagram({
                 width: '600px', height: '600px', nodes: [node, node2, node3], pageSettings: pageSettings
             } as DiagramModel);
-            diagram.appendTo('#diagram');
+            diagram.appendTo('#diagram5');
 
         });
 
         afterAll((): void => {
             diagram.destroy();
             ele.remove();
+            (diagram as any) = null; (ele as any) = null; 
         });
 
         it('export the diagram with native node', (done: Function) => {
-            let options: IExportOptions = {};
             options.mode = 'Data';
-            let regionType: any = document.getElementById('regionTypes');
             options.region = 'Content';
             options.fileName = 'export';
-            let type: any = document.getElementById('exportTypes');
             options.format = 'PNG';
-            let imBound: Rect = diagram.getDiagramBounds();
-            let htmlData: string = diagram.getDiagramContent();
+            htmlData = diagram.getDiagramContent();
+            imBound = diagram.getDiagramBounds();
             let jsonResult: {} = { htmlData: { htmlData: htmlData, width: imBound.width } };
             let image: string = "data:image/png;base64,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…"
             diagram.exportImage(image, options);
@@ -864,86 +788,71 @@ describe('Print and export', () => {
         });
     });
 
-        describe('Gradient not applied for the node in export functionality', () => {
-            let diagram: Diagram;
-            let ele: HTMLElement;
-            let scroller: DiagramScroller;
-            let pageSettings: PageSettingsModel = {};
-            let background: BackgroundModel = {};
+    describe('Gradient not applied for the node in export functionality', () => {
+        let diagram: Diagram;
+        let ele: HTMLElement;
+        var options: IExportOptions = {};
 
-            beforeAll((): void => {
-                ele = createElement('div', { id: 'diagram' });
-                document.body.appendChild(ele);
-                let connector: ConnectorModel = {
-                    id: 'connector1', sourcePoint: { x: 300, y: 400 }, targetPoint: { x: 500, y: 500 }
-                };
-                let nodes: any = [
-                    {
-                        id: 'node1', width: 100, height: 100, offsetX: 100, offsetY: 100,
-                        style: {
-                            fill: 'red', opacity: 0.8, gradient: {
-                                x1: 0, y1: 0, x2: 0, y2: 100, stops: [{ color: 'red', offset: 0 }, { color: 'blue', offset: 1 }],
-                                type: 'Linear'
-                            }
+        beforeAll((): void => {
+            ele = createElement('div', { id: 'diagram6' });
+            document.body.appendChild(ele);
+            let connector: ConnectorModel = {
+                id: 'connector1', sourcePoint: { x: 300, y: 400 }, targetPoint: { x: 500, y: 500 }
+            };
+            let nodes: any = [
+                {
+                    id: 'node1', width: 100, height: 100, offsetX: 100, offsetY: 100,
+                    style: {
+                        fill: 'red', opacity: 0.8, gradient: {
+                            x1: 0, y1: 0, x2: 0, y2: 100, stops: [{ color: 'red', offset: 0 }, { color: 'blue', offset: 1 }],
+                            type: 'Linear'
                         }
-                    },
-                    {
-                        id: 'node2', width: 100, height: 100, offsetX: 400, offsetY: 700,
-                        style: {
-                            fill: 'red', opacity: 0.8, gradient: {
-                                x1: 0, y1: 0, x2: 0, y2: 100, stops: [{ color: 'red', offset: 0 }, { color: 'blue', offset: 1 }],
-                                type: 'Linear'
-                            }
+                    }
+                },
+                {
+                    id: 'node2', width: 100, height: 100, offsetX: 400, offsetY: 700,
+                    style: {
+                        fill: 'red', opacity: 0.8, gradient: {
+                            x1: 0, y1: 0, x2: 0, y2: 100, stops: [{ color: 'red', offset: 0 }, { color: 'blue', offset: 1 }],
+                            type: 'Linear'
                         }
-                    },
-                    {
-                        id: 'nodesss2', width: 100, height: 100, offsetX: 400, offsetY: 100,
-                        style: { strokeColor: '#8f908f', fill: '#e2f3fa', gradient: {
+                    }
+                },
+                {
+                    id: 'nodesss2', width: 100, height: 100, offsetX: 400, offsetY: 100,
+                    style: {
+                        strokeColor: '#8f908f', fill: '#e2f3fa', gradient: {
                             cx: 50, cy: 50, fx: 50, fy: 50,
                             stops: [{ color: '#00555b', offset: 0 },
-                                { color: '#37909A', offset: 90 }],
+                            { color: '#37909A', offset: 90 }],
                             type: 'Radial'
-                        } }
+                        }
                     }
-                ]
-                diagram = new Diagram({
-                    width: '100%', height: '600px', nodes: nodes,
-                    mode: 'SVG',
+                }
+            ]
+            diagram = new Diagram({
+                width: '100%', height: '600px', nodes: nodes,
+                mode: 'SVG',
 
-                    pageSettings: { width: 500, height: 200 }
-                });
-                diagram.appendTo('#diagram');
-
+                pageSettings: { width: 500, height: 200 }
             });
+            diagram.appendTo('#diagram6');
 
-            afterAll((): void => {
-                diagram.destroy();
-                ele.remove();
-            });
-
-            it('Gradient not applied for the node in export functionality', (done: Function) => {
-                var options: IExportOptions = {};
-                var base64Value = "data:image/jpeg;base64,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";
-                var base64Value2 = "data:image/jpeg;base64,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";
-                var base64Value3 = "data:image/jpeg;base64,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";
-                var base64Value4 = "data:image/jpeg;base64,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"
-                options.region = 'Content';
-                options.fileName = 'export';
-                options.mode = 'Data'
-                options.format = 'JPG';
-                var data;
-                var image = data = diagram.exportDiagram(options);
-                expect(image != base64Value).toBe(true);
-                done();
-            });
         });
+
+        afterAll((): void => {
+            diagram.destroy();
+            ele.remove();
+            (diagram as any) = null; (ele as any) = null; 
+        });
+    });
 
     describe('tesing the native node export and print with multiple page', () => {
         let diagram: Diagram;
         let ele: HTMLElement;
 
         beforeAll((): void => {
-            ele = createElement('div', { id: 'diagram' });
+            ele = createElement('div', { id: 'diagram7' });
             document.body.appendChild(ele);
             let nodes: NodeModel[] = [
                 {
@@ -989,13 +898,14 @@ describe('Print and export', () => {
             diagram = new Diagram({
                 width: '100%', height: '700px', nodes: nodes
             } as DiagramModel);
-            diagram.appendTo('#diagram');
+            diagram.appendTo('#diagram7');
 
         });
 
         afterAll((): void => {
             diagram.destroy();
             ele.remove();
+            (diagram as any) = null; (ele as any) = null; 
         });
 
         it('export the diagram with native node', (done: Function) => {
@@ -1529,7 +1439,7 @@ describe('Print and export', () => {
         ];
         let items: DataManager = new DataManager(data as JSON[], new Query().take(7));
         beforeAll((): void => {
-            ele = createElement('div', { id: 'diagram' });
+            ele = createElement('div', { id: 'diagram8' });
             document.body.appendChild(ele);
 
             diagram = new Diagram({
@@ -1602,12 +1512,13 @@ describe('Print and export', () => {
                     return content;
                 }
             } as DiagramModel);
-            diagram.appendTo('#diagram');
+            diagram.appendTo('#diagram8');
 
         });
         afterAll((): void => {
             diagram.destroy();
             ele.remove();
+            (diagram as any) = null; (ele as any) = null; 
         });
         it('export the diagram check the padding attached', (done: Function) => {
             let zoomin: ZoomOptions = { type: 'ZoomIn', zoomFactor: 0.2 };
@@ -1628,6 +1539,7 @@ describe('Print and export', () => {
     describe('Code coverage fixing', () => {
         let diagram: Diagram;
         let ele: HTMLElement;
+        let exportOptions: IExportOptions = {};
 
         beforeAll((): void => {
             ele = createElement('div', { id: 'diagramCode' });
@@ -1665,9 +1577,9 @@ describe('Print and export', () => {
         afterAll((): void => {
             diagram.destroy();
             ele.remove();
+            (diagram as any) = null; (ele as any) = null; 
         });
         it('Exporting node in SVG format', (done: Function) => {
-            let exportOptions: IExportOptions = {};
             exportOptions.region = 'Content';
             exportOptions.format = 'SVG';
             let data = diagram.exportDiagram(exportOptions);
@@ -1675,14 +1587,12 @@ describe('Print and export', () => {
             done();
         });
         it('Exporting node in SVG format without region', (done: Function) => {
-            let exportOptions: IExportOptions = {};
             exportOptions.format = 'SVG';
             let data = diagram.exportDiagram(exportOptions);
             expect(data).toBe(null);
             done();
         });
         it('Exporting node with BMP format', (done: Function) => {
-            let exportOptions: IExportOptions = {};
             exportOptions.region = 'Content';
             exportOptions.format = 'BMP';
             exportOptions.mode = 'Data';
@@ -1691,7 +1601,6 @@ describe('Print and export', () => {
             done();
         });
         it('Exporting node with JPG format', (done: Function) => {
-            let exportOptions: IExportOptions = {};
             exportOptions.region = 'Content';
             exportOptions.format = 'JPG';
             exportOptions.mode = 'Download';
@@ -1701,16 +1610,14 @@ describe('Print and export', () => {
         });
         it('Exporting image with base64', (done: Function) => {
             let base64 = 'data:image/png;base64,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';
-            let exportOptions: IExportOptions = {};
             exportOptions.mode = 'Download';
             exportOptions.margin = { left: 10, right: 10, top: 10, bottom: 10 };
             exportOptions.bounds = new Rect(NaN, NaN, NaN, NaN);
-            let data = diagram.exportImage(base64,exportOptions);
+            let data = diagram.exportImage(base64, exportOptions);
             expect(data === undefined).toBe(true);
             done();
         });
         it('Exporting nodes with pageHeight and pageWidth', (done: Function) => {
-            let exportOptions:IExportOptions = {};
             exportOptions.mode = 'Download';
             exportOptions.multiplePage = true;
             exportOptions.pageHeight = 500;
@@ -1720,7 +1627,6 @@ describe('Print and export', () => {
             done();
         });
         it('Exporting nodes with margin', (done: Function) => {
-            let exportOptions:IExportOptions = {};
             exportOptions.mode = 'Download';
             exportOptions.multiplePage = false;
             exportOptions.margin = { left: 10, right: 10, top: 10, bottom: 10 };
@@ -1729,7 +1635,6 @@ describe('Print and export', () => {
             done();
         });
         it('Exporting node without setting format with multiple page', (done: Function) => {
-            let exportOptions: IExportOptions = {};
             exportOptions.region = 'Content';
             exportOptions.multiplePage = true;
             exportOptions.pageOrientation = 'Landscape';
@@ -1738,13 +1643,13 @@ describe('Print and export', () => {
             done();
         });
         it('Zoom diagram without setting zoom factor', (done: Function) => {
-            let zoomOption = {type:'ZoomOut'};
+            let zoomOption = { type: 'ZoomOut' };
             diagram.zoomTo(zoomOption as ZoomOptions);
             expect(diagram.scrollSettings.currentZoom !== 1).toBe(true);
             done();
         });
         it('Nudging connector', (done: Function) => {
-            let connector: ConnectorModel = {type:'Straight',sourcePoint:{x:100,y:100},targetPoint:{x:200,y:200}};
+            let connector: ConnectorModel = { type: 'Straight', sourcePoint: { x: 100, y: 100 }, targetPoint: { x: 200, y: 200 } };
             diagram.add(connector);
             diagram.select([diagram.connectors[0]]);
             diagram.nudge('Down');
@@ -1755,6 +1660,7 @@ describe('Print and export', () => {
     describe('898304 - exportImage function export images only in "PNG" format', () => {
         let diagram: Diagram;
         let ele: HTMLElement;
+        let exportOptions: IExportOptions = {};
 
         beforeAll((): void => {
             ele = createElement('div', { id: 'diagramExportImage' });
@@ -1792,9 +1698,9 @@ describe('Print and export', () => {
         afterAll((): void => {
             diagram.destroy();
             ele.remove();
+            (diagram as any) = null; (ele as any) = null; 
         });
         it('Exporting node in SVG format', (done: Function) => {
-            let exportOptions: IExportOptions = {};
             exportOptions.region = 'Content';
             exportOptions.format = 'SVG';
             exportOptions.mode = 'Data';
@@ -1810,7 +1716,6 @@ describe('Print and export', () => {
             done();
         });
         it('Exporting node in JPG format', (done: Function) => {
-            let exportOptions: IExportOptions = {};
             exportOptions.region = 'Content';
             exportOptions.format = 'JPG';
             exportOptions.mode = 'Data';
@@ -1826,7 +1731,6 @@ describe('Print and export', () => {
             done();
         });
         it('Exporting node with PNG format', (done: Function) => {
-            let exportOptions: IExportOptions = {};
             exportOptions.region = 'Content';
             exportOptions.format = 'PNG';
             exportOptions.mode = 'Data';

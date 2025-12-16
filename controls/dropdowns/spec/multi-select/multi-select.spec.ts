@@ -2362,6 +2362,60 @@ describe('MultiSelect', () => {
             }, 4000);
         });
     });
+    // describe('EJ2-977924', () => {
+    //     let listObj: MultiSelect;
+    //     let originalTimeout: number;
+    //     let element: HTMLInputElement = <HTMLInputElement>createElement('input', { id: 'multiselect', attrs: { 'type': 'text' } });
+    //     let remoteData: DataManager = new DataManager({ 
+    //         url: 'https://services.syncfusion.com/js/production/api/VirtualDropdownData',
+    //         adaptor: new UrlAdaptor(),
+    //         crossDomain: true
+    //     });
+    //    beforeAll((done) => {
+    //         originalTimeout = jasmine.DEFAULT_TIMEOUT_INTERVAL;
+    //         jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+    //         document.body.innerHTML = '';
+    //         document.body.appendChild(element);
+    //         listObj = new MultiSelect({
+    //             dataSource: remoteData,
+    //             query: new Query(),
+    //             fields: { text: 'CustomerID', value: 'OrderID' },
+    //             placeholder: 'Select customers',
+    //             enableVirtualization: true,
+    //             mode: 'CheckBox',
+    //             popupHeight: '200px',
+    //             showSelectAll: true,
+    //             maximumSelectionLength: 10
+    //         });
+    //         listObj.appendTo(element);
+    //         done();
+    //     });
+    //     afterAll(() => {
+    //         jasmine.DEFAULT_TIMEOUT_INTERVAL = originalTimeout;
+    //         if (element) {
+    //             listObj.destroy();
+    //             element.remove();
+    //         }
+    //     });
+    //     it(' when using the maxselectionlength , selected items exceeds the multiselect input', (done) => {
+    //         (<any>listObj).renderPopup();
+    //         listObj.showPopup();
+    //         setTimeout(() => {
+    //             expect((<any>listObj).isPopupOpen()).toBe(true);
+    //             mouseEventArgs.target = (listObj as any).popupWrapper.querySelectorAll('.e-selectall-parent')[0];
+    //             mouseEventArgs.type = 'click';
+    //             (<any>listObj).selectAllItem(true, mouseEventArgs);
+    //             setTimeout(() => {
+    //                 expect((listObj as any).list.querySelectorAll('.e-active').length == (listObj as any).maximumSelectionLength).toBe(true);
+    //                 expect((listObj as any).value.length == (listObj as any).maximumSelectionLength).toBe(true);
+    //                 listObj.hidePopup();
+    //                 listObj.destroy();
+    //                 done();
+    //             }, 500);
+    //         }, 500);
+    //     });
+        
+    // });
     describe('Remote data binding - with-out keyboard list selection', () => {
         let listObj: MultiSelect;
         let popupObj: any;

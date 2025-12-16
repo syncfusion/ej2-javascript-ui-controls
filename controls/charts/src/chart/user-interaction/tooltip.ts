@@ -414,7 +414,7 @@ export class Tooltip extends BaseTooltip {
                     closetYValue = data.point.symbolLocations[0].y;
                     tempData = data;
                 }
-                lastData = (data.series.category === 'TrendLine' && chart.tooltip.shared) ? lastData : tempData || data;
+                lastData = tempData || data;
                 dataCollection.push(data);
             }
             // if (data && this.triggerEvent(data, isFirst, this.getTooltipText(data)), this.findHeader(data)) {

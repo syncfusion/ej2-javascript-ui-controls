@@ -5,10 +5,10 @@ import { PdfAnnotationCollection } from './annotations/annotation-collection';
 import { PdfGraphics, PdfGraphicsState } from './graphics/pdf-graphics';
 import { _PdfBaseStream, _PdfContentStream } from './base-stream';
 import { PdfRotationAngle, PdfDestinationMode, PdfFormFieldsTabOrder, PdfPageOrientation } from './enumerator';
-import { PdfNamedDestination } from './pdf-outline';
 import { PdfDocument, PdfPageSettings } from './pdf-document';
 import { PdfTemplate } from './graphics/pdf-template';
 import { _PdfCatalog } from './pdf-catalog';
+import { Point, Size, Rectangle } from './pdf-type';
 /**
  * Represents a page loaded from the PDF document.
  * ```typescript
@@ -29,7 +29,7 @@ export class PdfPage {
     _ref: _PdfReference;
     _annotations: PdfAnnotationCollection;
     _isAnnotationParsed: boolean = false;
-    _size: number[];
+    _size: Size;
     _mBox: number[];
     _cBox: number[];
     _orientation: PdfPageOrientation;
@@ -114,7 +114,7 @@ export class PdfPage {
     /**
      * Gets the size of the page (Read only).
      *
-     * @returns {number[]} Page width and height as number array.
+     * @returns {Size} The size of the PDF page.
      *
      * ```typescript
      * // Load an existing PDF document
@@ -122,15 +122,15 @@ export class PdfPage {
      * // Access first page
      * let page: PdfPage = document.getPage(0);
      * // Gets the width and height of the PDF page as number array
-     * let size: number[] = page.size;
+     * let size: Size = page.size;
      * // Save the document
      * document.save('output.pdf');
      * // Destroy the document
      * document.destroy();
      * ```
      */
-    get size(): number[] {
-        if (typeof this._size === 'undefined') {
+    get size(): Size {
+        if (typeof this._size === 'undefined' || typeof this._size.width === 'undefined' || typeof this._size.height === 'undefined') {
             const mBox: number[] = _getInheritableProperty(this._pageDictionary, 'MediaBox', false, true, 'Parent', 'P');
             const cBox: number[] = _getInheritableProperty(this._pageDictionary, 'CropBox', false, true, 'Parent', 'P');
             let width: number = 0;
@@ -155,7 +155,7 @@ export class PdfPage {
                 width = 612;
                 height = 792;
             }
-            this._size = [Math.abs(width), Math.abs(height)];
+            this._size = {width: Math.abs(width), height: Math.abs(height)};
         }
         return this._size;
     }
@@ -342,8 +342,8 @@ export class PdfPage {
     get orientation(): PdfPageOrientation {
         if (typeof this._orientation === 'undefined') {
             if (typeof this.size !== 'undefined') {
-                const size: number[] = this.size;
-                if (size[0] > size[1]) {
+                const size: Size = this.size;
+                if (size.width > size.height) {
                     this._orientation = PdfPageOrientation.landscape;
                 } else {
                     this._orientation = PdfPageOrientation.portrait;
@@ -371,9 +371,9 @@ export class PdfPage {
      * // Gets the graphics of the PDF page
      * let graphics: PdfGraphics = page.graphics;
      * //Create a new pen.
-     * let pen: PdfPen = new PdfPen([0, 0, 0], 1);
+     * let pen: PdfPen = new PdfPen({r: 0, g: 0, b: 0}, 1);
      * //Draw line on the page graphics.
-     * graphics.drawLine(pen, 10, 10, 100, 100);
+     * graphics.drawLine(pen, {x: 10, y: 10}, {x: 100, y: 100});
      * // Save the document
      * document.save('output.pdf');
      * // Destroy the document
@@ -452,7 +452,7 @@ export class PdfPage {
         let lly: number = 0;
         let urx: number = 0;
         let ury: number = 0;
-        const size: number[] = this.size;
+        const size: Size = this.size;
         const mbox: number[] = this.mediaBox;
         if (mbox && mbox.length >= 4) {
             llx = mbox[0];
@@ -469,10 +469,10 @@ export class PdfPage {
                 const crx: number = cbox[2];
                 const cry: number = cbox[3];
                 const isValid: boolean = (cx < 0 || cy < 0 || crx < 0 || cry < 0) &&
-                    (Math.floor(Math.abs(cy)) === Math.floor(Math.abs(size[1]))) &&
-                    (Math.floor(Math.abs(cx)) === Math.floor(Math.abs(size[0])));
+                    (Math.floor(Math.abs(cy)) === Math.floor(Math.abs(size.height))) &&
+                    (Math.floor(Math.abs(cx)) === Math.floor(Math.abs(size.width)));
                 if (isValid) {
-                    this._g = new PdfGraphics([Math.max(cx, crx), Math.max(cy, cry)], stream, this._crossReference, this);
+                    this._g = new PdfGraphics({width: Math.max(cx, crx), height: Math.max(cy, cry)}, stream, this._crossReference, this);
                 } else {
                     this._g = new PdfGraphics(size, stream, this._crossReference, this);
                     this._g._cropBox = cbox;
@@ -481,8 +481,8 @@ export class PdfPage {
                 this._g = new PdfGraphics(size, stream, this._crossReference, this);
             }
         } else if ((llx < 0 || lly < 0 || urx < 0 || ury < 0) &&
-            (Math.floor(Math.abs(lly)) === Math.floor(Math.abs(size[1]))) &&
-            (Math.floor(Math.abs(urx)) === Math.floor(Math.abs(size[0])))) {
+            (Math.floor(Math.abs(lly)) === Math.floor(Math.abs(size.height))) &&
+            (Math.floor(Math.abs(urx)) === Math.floor(Math.abs(size.width)))) {
             let width: number = Math.max(llx, urx);
             let height: number = Math.max(lly, ury);
             if (width <= 0 || height <= 0) {
@@ -502,7 +502,7 @@ export class PdfPage {
                 width = Math.max(llx, urx);
                 height = Math.max(lly, ury);
             }
-            this._g = new PdfGraphics([width, height], stream, this._crossReference, this);
+            this._g = new PdfGraphics({width: width, height: height}, stream, this._crossReference, this);
         } else {
             this._g = new PdfGraphics(size, stream, this._crossReference, this);
         }
@@ -528,16 +528,16 @@ export class PdfPage {
                 }
                 const clip: number[] = this._g._clipBounds;
                 if (rotate === 90) {
-                    this._g.translateTransform(0, size[1]);
+                    this._g.translateTransform({x: 0, y: size.height});
                     this._g.rotateTransform(-90);
-                    this._g._clipBounds = [clip[0], clip[1], size[0], size[1]];
+                    this._g._clipBounds = [clip[0], clip[1], size.width, size.height];
                 } else if (rotate === 180) {
-                    this._g.translateTransform(size[0], size[1]);
+                    this._g.translateTransform({x: size.width, y: size.height});
                     this._g.rotateTransform(-180);
                 } else if (rotate === 270) {
-                    this._g.translateTransform(size[0], 0);
+                    this._g.translateTransform({x: size.width, y: 0});
                     this._g.rotateTransform(-270);
-                    this._g._clipBounds = [clip[0], clip[1], size[1], size[0]];
+                    this._g._clipBounds = [clip[0], clip[1], size.height, size.width];
                 }
             }
         }
@@ -632,13 +632,13 @@ export class PdfPage {
         template._content.dictionary.set('Resources', this._resourceObject);
         if (this.cropBox[0] > 0 || this.cropBox[1] > 0) {
             template._content.dictionary.set('BBox', this.cropBox);
-            template._size = [this.cropBox[0], this.cropBox[1]];
+            template._size = {width: this.cropBox[0], height: this.cropBox[1]};
         } else if (this.mediaBox[0] > 0 || this.mediaBox[1] > 0) {
             template._content.dictionary.set('BBox', this.mediaBox);
-            template._size = [this.mediaBox[0], this.mediaBox[1]];
+            template._size = {width: this.mediaBox[0], height: this.mediaBox[1]};
         } else {
-            template._content.dictionary.set('BBox', [0, 0, this.size[0], this.size[1]]);
-            template._size = [this.size[0], this.size[1]];
+            template._content.dictionary.set('BBox', [0, 0, this.size.width, this.size.height]);
+            template._size = {width: this.size.width, height: this.size.height};
         }
         return template;
     }
@@ -694,9 +694,9 @@ export class PdfPage {
  * // Sets the mode of the destination.
  * destination.mode = PdfDestinationMode.fitToPage;
  * // Sets the location of the destination.
- * destination.location = [20, 20];
+ * destination.location = {x: 20, y: 20};
  * // Sets the bounds of the destination.
- * destination.destinationBounds = [20, 20, 100, 50];
+ * destination.destinationBounds = {x: 20, y: 20, width: 100, height: 50};
  * // Sets destination to  document link annotation.
  * annotation.destination = destination;
  * // Save the document
@@ -708,14 +708,15 @@ export class PdfPage {
 
 export class PdfDestination {
     _page: PdfPage;
-    _location: number[] = [0, 0];
+    _location: Point = {x: 0, y: 0};
     _destinationMode: PdfDestinationMode = PdfDestinationMode.location;
     _zoom: number = 0;
     _isValid: boolean = true;
     _index: number;
-    _destinationBounds: number[] = [0, 0, 0, 0];
+    _destinationBounds: Rectangle = {x: 0, y: 0, width: 0, height: 0};
     _array: Array<any> = Array<any>(); // eslint-disable-line
     _parent: any; // eslint-disable-line
+    _isBookmark: boolean;
     /**
      * Initializes a new instance of the `PdfDestination` class.
      * ```typescript
@@ -732,9 +733,9 @@ export class PdfDestination {
      * // Sets the mode of the destination.
      * destination.mode = PdfDestinationMode.fitToPage;
      * // Sets the location of the destination.
-     * destination.location = [20, 20];
+     * destination.location = {x: 20, y: 20};
      * // Sets the bounds of the destination.
-     * destination.destinationBounds = [20, 20, 100, 50];
+     * destination.destinationBounds = {x: 20, y: 20, width: 100, height: 50};
      * // Sets destination to  document link annotation.
      * annotation.destination = destination;
      * // Save the document
@@ -747,38 +748,112 @@ export class PdfDestination {
     /**
      * Initializes a new instance of the `PdfDestination` class.
      *
-     * @private
      * @param {PdfPage} page PdfPage.
      */
     constructor(page: PdfPage)
     /**
      * Initializes a new instance of the `PdfDestination` class.
      *
-     * @private
      * @param {PdfPage} page PdfPage.
-     * @param {number[]} location Location.
+     * @param {Point} location Location.
      */
-    constructor(page: PdfPage, location: number[])
-    constructor(page?: PdfPage, location?: number[]) {
-        if (typeof page !== 'undefined' && page !== null) {
-            if (page.rotation === PdfRotationAngle.angle180) {
-                this._location = [page.graphics._size[0], this._location[1]];
-            } else if (page.rotation === PdfRotationAngle.angle90) {
-                this._location = [0, 0];
-            } else if (page.rotation === PdfRotationAngle.angle270) {
-                this._location = [page.graphics._size[0], 0];
+    constructor(page: PdfPage, location: Point)
+    /**
+     * Initializes a new instance of the `PdfDestination` class.
+     *
+     * @param {PdfPage} page PdfPage.
+     * @param {Rectangle} bounds Bounds.
+     */
+    constructor(page: PdfPage, bounds: Rectangle)
+    /**
+     * Initializes a new instance of the `PdfDestination` class.
+     *
+     * @param {PdfPage} page PdfPage.
+     * @param {Point} location Location.
+     * @param {object} options Destination options.
+     * @param {number} [options.zoom] The zoom level for the destination.
+     * @param {PdfDestinationMode} [options.mode] The destination display mode.
+     *
+     * ```typescript
+     * // Load an existing PDF document
+     * let document: PdfDocument = new PdfDocument(data, password);
+     * // Get the first page
+     * let page: PdfPage = document.getPage(0) as PdfPage;
+     * // Create new document link annotation
+     * const docLink = new PdfDocumentLinkAnnotation(
+     *   { x: 80, y: 100, width: 120, height: 18 },
+     *   new PdfDestination(
+     *     page: document.getPage(0),
+     *     location: { x: 10, y: 20 }, {zoom: 5,
+     *     mode: PdfDestinationMode.fitToPage
+     *   }),
+     *   { color: { r: 0, g: 128, b: 0 }, opacity: 1 }
+     * );
+     * // Add annotation to the page
+     * page.addAnnotation(docLink);
+     * // Destroy the document
+     * document.destroy();
+     * ```
+     */
+    constructor(page: PdfPage, location: Point, options: {zoom?: number, mode?: PdfDestinationMode})
+    /**
+     * Initializes a new instance of the `PdfDestination` class.
+     *
+     * @param {PdfPage} page PdfPage.
+     * @param {Rectangle} bounds Bounds.
+     * @param {object} options Destination options.
+     * @param {number} [options.zoom] The zoom level for the destination.
+     * @param {PdfDestinationMode} [options.mode] The destination display mode.
+     *
+     * ```typescript
+     * // Load an existing PDF document
+     * let document: PdfDocument = new PdfDocument(data, password);
+     * // Get the first page
+     * let page: PdfPage = document.getPage(0) as PdfPage;
+     * // Create new document link annotation
+     * const docLink = new PdfDocumentLinkAnnotation(
+     *   { x: 80, y: 100, width: 120, height: 18 },
+     *   new PdfDestination(
+     *     page: document.getPage(0),
+     *     bounds: { x: 10, y: 20, width: 100, height: 200 }, {zoom: 5,
+     *     mode: PdfDestinationMode.fitToPage
+     *   }),
+     *   { color: { r: 0, g: 128, b: 0 }, opacity: 1 }
+     * );
+     * // Add annotation to the page
+     * page.addAnnotation(docLink);
+     * // Destroy the document
+     * document.destroy();
+     * ```
+     */
+    constructor(page: PdfPage, bounds: Rectangle, options: {zoom?: number, mode?: PdfDestinationMode})
+    constructor(arg1?: PdfPage, arg2?: Point | Rectangle, arg3?: {zoom?: number, mode?: PdfDestinationMode}) {
+        if (typeof arg1 !== 'undefined' && arg1 !== null) {
+            if (arg1.rotation === PdfRotationAngle.angle180) {
+                this._location = {x: arg1.graphics._size.width, y: this._location.y};
+            } else if (arg1.rotation === PdfRotationAngle.angle90) {
+                this._location = {x: 0, y: 0};
+            } else if (arg1.rotation === PdfRotationAngle.angle270) {
+                this._location = {x: arg1.graphics._size.width, y: 0};
             } else {
-                this._location = [0,  this._location[1]];
+                this._location = {x: 0,  y: this._location.y};
             }
-            this._page = page;
-            this._index = page._pageIndex;
+            this._page = arg1;
+            this._index = arg1._pageIndex;
         }
-        if (typeof location !== 'undefined' && location.length === 2) {
-            this._location = location;
+        if (arg2 !== null && typeof arg2 !== 'undefined') {
+            this._location = {x: arg2.x, y: arg2.y};
+            if ('width' in arg2 && 'height' in arg2 && typeof arg2.width === 'number' && typeof arg2.height === 'number') {
+                this._destinationBounds = arg2;
+            }
         }
-        if (typeof location !== 'undefined' && location.length === 4) {
-            this._location = [location[0], location[1]];
-            this._destinationBounds = location;
+        if (arg3 !== null && typeof arg3 !== 'undefined') {
+            if ('mode' in arg3 && arg3.mode !== null && typeof arg3.mode !== 'undefined') {
+                this.mode = arg3.mode;
+            }
+            if ('zoom' in arg3 && arg3.zoom !== null && typeof arg3.zoom !== 'undefined') {
+                this.zoom = arg3.zoom;
+            }
         }
     }
     /**
@@ -819,9 +894,9 @@ export class PdfDestination {
      * // Sets the mode of the destination.
      * destination.mode = PdfDestinationMode.fitToPage;
      * // Sets the location of the destination.
-     * destination.location = [20, 20];
+     * destination.location = {x: 20, y: 20};
      * // Sets the bounds of the destination.
-     * destination.destinationBounds = [20, 20, 100, 50];
+     * destination.destinationBounds = {x: 20, y: 20, width: 100, height: 50};
      * // Sets destination to  document link annotation.
      * annotation.destination = destination;
      * // Save the document
@@ -874,9 +949,9 @@ export class PdfDestination {
      * // Sets the mode of the destination.
      * destination.mode = PdfDestinationMode.fitToPage;
      * // Sets the location of the destination.
-     * destination.location = [20, 20];
+     * destination.location = {x: 20, y: 20};
      * // Sets the bounds of the destination.
-     * destination.destinationBounds = [20, 20, 100, 50];
+     * destination.destinationBounds = {x: 20, y: 20, width: 100, height: 50};
      * // Sets destination to  document link annotation.
      * annotation.destination = destination;
      * // Save the document
@@ -950,9 +1025,9 @@ export class PdfDestination {
      * // Sets the mode of the destination.
      * destination.mode = PdfDestinationMode.fitToPage;
      * // Sets the location of the destination.
-     * destination.location = [20, 20];
+     * destination.location = {x: 20, y: 20};
      * // Sets the bounds of the destination.
-     * destination.destinationBounds = [20, 20, 100, 50];
+     * destination.destinationBounds = {x: 20, y: 20, width: 100, height: 50};
      * // Sets destination to document link annotation.
      * annotation.destination = destination;
      * // Save the document
@@ -970,27 +1045,27 @@ export class PdfDestination {
     /**
      * Gets the location of the destination.
      *
-     * @returns {number[]} page.
+     * @returns {Point} page.
      * ```typescript
      * // Load an existing PDF document
      * let document: PdfDocument = new PdfDocument(data, password);
      * // Access the annotation at index 0
      * let annot: PdfDocumentLinkAnnotation = document.getPage(0).annotations.at(0) as PdfDocumentLinkAnnotation;
      * // Gets the location of the destination.
-     * let location: number[] = annot.destination.location;
+     * let location: Point = annot.destination.location;
      * // Save the document
      * document.save('output.pdf');
      * // Destroy the document
      * document.destroy();
      * ```
      */
-    get location(): number[] {
+    get location(): Point {
         return this._location;
     }
     /**
      * Sets the location of the destination.
      *
-     * @param {number[]} value page.
+     * @param {Point} value page.
      * ```typescript
      * // Load an existing PDF document
      * let document: PdfDocument = new PdfDocument(data, password);
@@ -1005,9 +1080,9 @@ export class PdfDestination {
      * // Sets the mode of the destination.
      * destination.mode = PdfDestinationMode.fitToPage;
      * // Sets the location of the destination.
-     * destination.location = [20, 20];
+     * destination.location = {x: 20, y: 20};
      * // Sets the bounds of the destination.
-     * destination.destinationBounds = [20, 20, 100, 50];
+     * destination.destinationBounds = {x: 20, y: 20, width: 100, height: 50};
      * // Sets destination to  document link annotation.
      * annotation.destination = destination;
      * // Save the document
@@ -1016,7 +1091,7 @@ export class PdfDestination {
      * document.destroy();
      * ```
      */
-    set location(value: number[]) {
+    set location(value: Point) {
         if (value !== this._location) {
             this._location = value;
             this._initializePrimitive();
@@ -1025,27 +1100,27 @@ export class PdfDestination {
     /**
      * Gets the bounds of the destination.
      *
-     * @returns {number[]} bounds.
+     * @returns {Rectangle} bounds.
      * ```typescript
      * // Load an existing PDF document
      * let document: PdfDocument = new PdfDocument(data, password);
      * // Access the annotation at index 0
      * let annot: PdfDocumentLinkAnnotation = document.getPage(0).annotations.at(0) as PdfDocumentLinkAnnotation;
      * // Gets the bounds of the destination.
-     * let destinationBounds: number[] = annot.destination.destinationBounds;
+     * let destinationBounds: Rectangle = annot.destination.destinationBounds;
      * // Save the document
      * document.save('output.pdf');
      * // Destroy the document
      * document.destroy();
      * ```
      */
-    get destinationBounds(): number[] {
+    get destinationBounds(): Rectangle {
         return this._destinationBounds;
     }
     /**
      * Sets the bounds of the destination.
      *
-     * @param {number[]} value bounds.
+     * @param {Rectangle} value bounds.
      * ```typescript
      * // Load an existing PDF document
      * let document: PdfDocument = new PdfDocument(data, password);
@@ -1060,9 +1135,9 @@ export class PdfDestination {
      * // Sets the mode of the destination.
      * destination.mode = PdfDestinationMode.fitToPage;
      * // Sets the location of the destination.
-     * destination.location = [20, 20];
+     * destination.location = {x: 20, y: 20};
      * // Sets the bounds of the destination.
-     * destination.destinationBounds = [20, 20, 100, 50];
+     * destination.destinationBounds = {x: 20, y: 20, width: 100, height: 50};
      * // Sets destination to  document link annotation.
      * annotation.destination = destination;
      * // Save the document
@@ -1071,7 +1146,7 @@ export class PdfDestination {
      * document.destroy();
      * ```
      */
-    set destinationBounds(value: number[]) {
+    set destinationBounds(value: Rectangle) {
         if (value !== this._destinationBounds) {
             this._destinationBounds = value;
             this._initializePrimitive();
@@ -1112,8 +1187,8 @@ export class PdfDestination {
             case PdfDestinationMode.location:
                 this._array.push(_PdfName.get('XYZ'));
                 if (typeof page !== 'undefined' && page !== null) {
-                    this._array.push(this._location[0]);
-                    this._array.push(this._page.graphics._size[1] - this._location[1]);
+                    this._array.push(this._location.x);
+                    this._array.push(this._page.graphics._size.height - this._location.y);
                 } else {
                     this._array.push(0);
                     this._array.push(0);
@@ -1125,18 +1200,18 @@ export class PdfDestination {
                 break;
             case PdfDestinationMode.fitR:
                 this._array.push(_PdfName.get('FitR'));
-                this._array.push(this._destinationBounds[0]);
-                this._array.push(this._destinationBounds[1]);
-                this._array.push(this._destinationBounds[2]);
-                this._array.push(this._destinationBounds[3]);
+                this._array.push(this._destinationBounds.x);
+                this._array.push(this._destinationBounds.y);
+                this._array.push(this._destinationBounds.width);
+                this._array.push(this._destinationBounds.height);
                 break;
             case PdfDestinationMode.fitH:
                 this._array.push(_PdfName.get('FitH'));
-                this._array.push((typeof page !== 'undefined' && page !== null) ? page.size[1] - this._location[1] : 0);
+                this._array.push((typeof page !== 'undefined' && page !== null) ? page.size.height - this._location.y : 0);
                 break;
             }
             if (this._parent) {
-                this._parent._dictionary.set(this._parent instanceof PdfNamedDestination ? 'D' : 'Dest', this._array);
+                this._parent._dictionary.set(this._isBookmark ? 'Dest' : 'D', this._array);
                 this._parent._dictionary._updated = true;
             }
         }
@@ -1155,10 +1230,13 @@ export class _PdfDestinationHelper {
         let destination: PdfDestination;
         let page: PdfPage;
         let loadedDocument: PdfDocument;
-        if (!this._dictionary || !this._dictionary.has(this._key)) {
+        if (!this._dictionary || (!this._dictionary.has(this._key) && !this._dictionary.has('D'))) {
             return undefined;
         } else if (this._dictionary && this._dictionary._crossReference && this._dictionary._crossReference._document) {
             loadedDocument = this._dictionary._crossReference._document;
+        }
+        if (this._dictionary.has('D')) {
+            this._key = 'D';
         }
         let destinationArray: any[] = this._dictionary.getArray(this._key); // eslint-disable-line
         if ((typeof destinationArray === 'string' || (destinationArray instanceof _PdfName && typeof destinationArray.name === 'string')) && loadedDocument) {
@@ -1199,12 +1277,12 @@ export class _PdfDestinationHelper {
                 left = destinationArray[2];
                 top = destinationArray[3];
                 zoom = destinationArray[4];
-                topValue = typeof top === 'number' ? (page.size[1] - top) : 0;
+                topValue = typeof top === 'number' ? (page.size.height - top) : 0;
                 leftValue = typeof left === 'number' ? left : 0;
                 if (page.rotation !== PdfRotationAngle.angle0) {
                     topValue = _checkRotation(page, top, left);
                 }
-                destination = new PdfDestination(page, [leftValue, topValue]);
+                destination = new PdfDestination(page, {x: leftValue, y: topValue});
                 destination._index = page._pageIndex;
                 destination.zoom = (typeof zoom !== 'undefined' && zoom !== null) ? zoom : 0;
                 if (left === null || top === null || zoom === null || typeof left === 'undefined' ||
@@ -1229,7 +1307,7 @@ export class _PdfDestinationHelper {
                 bottom = (typeof bottom !== 'undefined' && bottom !== null) ? bottom : 0;
                 right = (typeof right !== 'undefined' && right !== null) ? right : 0;
                 top = (typeof top !== 'undefined' && top !== null) ? top : 0;
-                destination = new PdfDestination(page, [left, bottom, right, top]);
+                destination = new PdfDestination(page, {x: left, y: bottom, width: right, height: top});
                 destination._index = page._pageIndex;
                 destination.mode = PdfDestinationMode.fitR;
                 break;
@@ -1238,8 +1316,8 @@ export class _PdfDestinationHelper {
                 if (destinationArray.length > 2) {
                     top = destinationArray[2];
                 }
-                topValue = typeof top === 'number' ? (page.size[1] - top) : 0;
-                destination = new PdfDestination(page, [0, topValue]);
+                topValue = typeof top === 'number' ? (page.size.height - top) : 0;
+                destination = new PdfDestination(page, {x: 0, y: topValue});
                 destination._index = page._pageIndex;
                 destination.mode = PdfDestinationMode.fitH;
                 if (top === null || typeof top === 'undefined') {

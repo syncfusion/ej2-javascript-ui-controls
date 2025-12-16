@@ -8,7 +8,7 @@ import { closest, isNullOrUndefined } from '@syncfusion/ej2-base';
  * Update Toolbar Status
  *
  * @hidden
- * @deprecated
+ * @private
  */
 
 export const statusCollection: IToolbarStatus = getDefaultHtmlTbStatus();
@@ -25,7 +25,7 @@ export class ToolbarStatus {
      * @param {Node} documentNode - specifies the document node.
      * @returns {IToolbarStatus} - returns the toolbar status
      * @hidden
-     * @deprecated
+     * @private
      */
     public static get(
         docElement: Document,

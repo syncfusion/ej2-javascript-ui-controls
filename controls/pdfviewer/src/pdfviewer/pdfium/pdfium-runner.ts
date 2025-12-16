@@ -239,12 +239,8 @@ export function PdfiumRunner(): void {
                     wasmBuffer: wasmBuffer
                 });
             }
-            const pages: number = FPDF.GetPageCount(documentDetails.processor.wasmData.wasm);
-            documentDetails.setPages(pages);
-            documentDetails.createAllPages();
             pdfiumWindow.fileByteArray = null;
-            ctx.postMessage({ message: 'PageLoaded', pageIndex: event.data.pageIndex, isZoomMode: event.data.isZoomMode,
-                pageCount : pages, pageSizes: documentDetails.pageSizes, pageRotation: documentDetails.pageRotation });
+            ctx.postMessage({ message: 'PageLoaded', pageIndex: event.data.pageIndex, isZoomMode: event.data.isZoomMode});
         }
         else if (event.data.message === 'LoadPageStampCollection') {
             const fileSize: number = event.data.uploadedFile.length;
@@ -258,9 +254,8 @@ export function PdfiumRunner(): void {
                 wasm: FPDF.LoadMemDocument(wasmBuffer, fileSize, event.data.password),
                 wasmBuffer: wasmBuffer
             });
-            const pages: number = FPDF.GetPageCount(documentDetailsNew.processor.wasmData.wasm);
-            documentDetailsNew.setPages(pages);
-            documentDetailsNew.createAllPages();
+            documentDetailsNew.pageSizes = new SizeF(event.data.pageSize[0], event.data.pageSize[1]);
+            documentDetailsNew.pageRotation.push(event.data.rotation);
             const firstPage: Page = documentDetailsNew.getPage(event.data.pageIndex);
             const ImageData: any = event.data;
             const data: object = firstPage.render(null, ImageData.zoomFactor, false, null, null, null, true);
@@ -1558,23 +1553,10 @@ export function PdfiumRunner(): void {
             this.pages = Array(pagesCount).fill(null);
         }
 
-        public createAllPages(): void {
-            for (let i: number = 0; i < this.pages.length; i++) {
-                this.pages[parseInt(i.toString(), 10)] = new Page(parseInt(i.toString(), 10), this.processor);
-                this.pages[parseInt(i.toString(), 10)] = new Page(i, this.processor);
-                const currentPageSize: any = this.processor.getPageSize(i);
-                this.pageSizes[parseInt(i.toString(), 10)] = new SizeF(currentPageSize[0], currentPageSize[1]);
-                const page: any = (FPDF as any).LoadPage(documentDetails.processor.wasmData.wasm, i);
-                const rotation: any = (FPDF as any).GetPageRotation(page);
-                FPDF.ClosePage(page);
-                this.pageRotation.push(rotation);
-            }
-        }
-
         public getPage(index: any): any {
             let page: any = this.pages[parseInt(index.toString(), 10)];
             if (!page) {
-                page = new Page(index);
+                page = new Page(index, this.processor);
                 this.pages[parseInt(index.toString(), 10)] = page;
             }
             return page;

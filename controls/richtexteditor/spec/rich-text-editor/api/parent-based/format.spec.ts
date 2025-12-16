@@ -1198,6 +1198,50 @@ describe('RTE PARENT BASED - formats - ', () => {
         });
     });
 
+    describe('995238: Indentation is removed when changing text format from Paragraph to Heading -', () => {
+        let rteObj: RichTextEditor;
+        let controlId: string;
+        beforeAll(() => {
+            rteObj = renderRTE({
+                value: '<p style="margin-left: 20px;">The Rich Text Editor, a WYSIWYG (what you see is what you get) editor, is a user interface that allows you to create, edit, and format rich text content. You can try out a demo of this editor here.</p>',
+                toolbarSettings: {
+                    items: ['Formats']
+                },
+                format: {
+                    types: [
+                        { text: 'Paragraph', value: 'P' },
+                        { text: 'Code', value: 'Pre'},
+                        { text: 'Quotation', value: 'BlockQuote'},
+                        { text: 'Heading 1', value: 'H1' },
+                        { text: 'Heading 2', value: 'H2' },
+                        { text: 'Heading 3', value: 'H3' },
+                        { text: 'Heading 4', value: 'H4' }
+                    ]
+                }
+            });
+            controlId = rteObj.element.id;
+        });
+        afterAll(() => {
+            destroy(rteObj);
+        });
+        it(' apply the "H1" format to selected element', (done: DoneFn) => {
+            let pEle: HTMLElement = rteObj.element.querySelector('p');
+            setCursorPoint(pEle, 0);
+            let item: HTMLElement = rteObj.element.querySelector('#' + controlId + '_toolbar_Formats');
+            item.click();
+            setTimeout(() => {
+                let popup: HTMLElement = document.getElementById(controlId + '_toolbar_Formats-popup');
+                dispatchEvent((popup.querySelectorAll('.e-item')[3] as HTMLElement), 'mousedown');
+                (popup.querySelectorAll('.e-item')[3] as HTMLElement).click();
+                setTimeout(() => {
+                    const expectedHtml: string = '<h1 style="margin-left: 20px;">The Rich Text Editor, a WYSIWYG (what you see is what you get) editor, is a user interface that allows you to create, edit, and format rich text content. You can try out a demo of this editor here.</h1>';
+                    expect(rteObj.inputElement.innerHTML === expectedHtml).toBe(true);
+                    done();
+                }, 100);
+            }, 100);
+        });
+    });
+
     describe('Apply Format to a Block node surrounded by a Paragraph on top and bottom', () => {
         let rteObj: RichTextEditor;
         beforeAll(() => {

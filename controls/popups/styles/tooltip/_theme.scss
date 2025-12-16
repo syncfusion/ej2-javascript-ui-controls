@@ -1,3 +1,5 @@
+@use 'ej2-base/styles/common/mixin' as *;
+@use './theme-variables' as *;
 @include export-module('tooltip-theme') {
 
   .e-tooltip-wrap {
@@ -18,11 +20,11 @@
     }
 
     .e-arrow-tip-outer {
-      height: 0;
+      height: $tooltip-zero-height;
       left: 0;
       position: absolute;
       top: 0;
-      width: 0;
+      width: $tooltip-zero-padding-margin;
 
       &.e-tip-bottom {
         border-left: $tooltip-arrow-outer-border $border-type transparent;
@@ -50,9 +52,9 @@
     }
 
     .e-arrow-tip-inner {
-      height: 0;
+      height: $tooltip-zero-height;
       position: absolute;
-      width: 0;
+      width: $tooltip-zero-padding-margin;
       z-index: 10;
 
       &.e-tip-right,

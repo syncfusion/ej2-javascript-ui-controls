@@ -50,7 +50,7 @@ describe('Diagram Control', () => {
         let ele: HTMLElement;
         let items: DataManager = new DataManager(data as JSON[], new Query().take(7));
         beforeAll(() => {
-            ele = createElement('div', { id: 'diagram' });
+            ele = createElement('div', { id: 'diagram1' });
             document.body.appendChild(ele);
             diagram = new Diagram({
                 width: 1000, height: 1000,
@@ -72,11 +72,13 @@ describe('Diagram Control', () => {
                     return connector;
                 },
             });
-            diagram.appendTo('#diagram');
+            diagram.appendTo('#diagram1');
         });
         afterAll(() => {
             diagram.destroy();
+            diagram = null;
             ele.remove();
+            ele = null;
         });
         it('Checking TopToBottom radial tree layout', (done: Function) => {
             diagram.layout.type = 'RadialTree';
@@ -122,7 +124,7 @@ describe('Diagram Control', () => {
         let ele: HTMLElement;
         let items: DataManager = new DataManager(data as JSON[], new Query().take(3));
         beforeAll(() => {
-            ele = createElement('div', { id: 'diagram' });
+            ele = createElement('div', { id: 'diagram2' });
             document.body.appendChild(ele);
             diagram = new Diagram({
 
@@ -145,11 +147,13 @@ describe('Diagram Control', () => {
                     return connector;
                 },
             });
-            diagram.appendTo('#diagram');
+            diagram.appendTo('#diagram2');
         });
         afterAll(() => {
             diagram.destroy();
+            diagram = null;
             ele.remove();
+            ele = null;
         });
         it('Checking root for radial tree layout', (done: Function) => {
             diagram.layout.type = 'RadialTree';
@@ -185,7 +189,7 @@ describe('Diagram Control', () => {
         let ele: HTMLElement;
         let items: DataManager = new DataManager(data11 as JSON[], new Query().take(7));
         beforeAll(() => {
-            ele = createElement('div', { id: 'diagram' });
+            ele = createElement('div', { id: 'diagram3' });
             document.body.appendChild(ele);
             diagram = new Diagram({
 
@@ -207,11 +211,13 @@ describe('Diagram Control', () => {
                     return connector;
                 },
             });
-            diagram.appendTo('#diagram');
+            diagram.appendTo('#diagram3');
         });
         afterAll(() => {
             diagram.destroy();
+            diagram = null;
             ele.remove();
+            ele = null;
         });
         it('Checking radial without root layout', (done: Function) => {
             diagram.layout.type = 'RadialTree';
@@ -239,7 +245,7 @@ describe('Diagram Control', () => {
         let ele: HTMLElement;
         let items: DataManager = new DataManager(data as JSON[], new Query().take(3));
         beforeAll(() => {
-            ele = createElement('div', { id: 'diagram' });
+            ele = createElement('div', { id: 'diagram4' });
             document.body.appendChild(ele);
             var nodes : NodeModel[] = [
                 { 
@@ -271,11 +277,13 @@ describe('Diagram Control', () => {
                     return connector;
                 },
             });
-            diagram.appendTo('#diagram');
+            diagram.appendTo('#diagram4');
         });
         afterAll(() => {
             diagram.destroy();
+            diagram = null;
             ele.remove();
+            ele = null;
         });
         it('Checking root position for radial tree layout', (done: Function) => {
             let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
@@ -317,7 +325,7 @@ describe('Diagram Control', () => {
         let ele: HTMLElement;
         let items: DataManager = new DataManager(data as JSON[], new Query().take(3));
         beforeAll(() => {
-            ele = createElement('div', { id: 'diagram' });
+            ele = createElement('div', { id: 'diagram5' });
             document.body.appendChild(ele);
             var nodes : NodeModel[] = [
                 { 
@@ -426,11 +434,13 @@ describe('Diagram Control', () => {
                     return connector;
                 },
             });
-            diagram.appendTo('#diagram');
+            diagram.appendTo('#diagram5');
         });
         afterAll(() => {
             diagram.destroy();
+            diagram = null;
             ele.remove();
+            ele = null;
         });
         it('Checking root position after adding default and runtime layout', (done: Function) => {
             let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
@@ -472,7 +482,7 @@ describe('Diagram Control', () => {
         let ele: HTMLElement;
         let items: DataManager = new DataManager(data as JSON[], new Query().take(3));
         beforeAll(() => {
-            ele = createElement('div', { id: 'diagram' });
+            ele = createElement('div', { id: 'diagram6' });
             document.body.appendChild(ele);
             var nodes : NodeModel[] = [
                 { 
@@ -581,11 +591,13 @@ describe('Diagram Control', () => {
                     return connector;
                 },
             });
-            diagram.appendTo('#diagram');
+            diagram.appendTo('#diagram6');
         });
         afterAll(() => {
             diagram.destroy();
+            diagram = null;
             ele.remove();
+            ele = null;
         });
         it('Checking root position after adding nodes for child nodes', (done: Function) => {
             let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');

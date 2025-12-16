@@ -1,6 +1,6 @@
-@import 'ej2-base/styles/definition/bootstrap5-dark.scss';
-@import 'ej2-popups/styles/popup/bootstrap5-dark-definition.scss';
-@import 'ej2-popups/styles/spinner/bootstrap5-dark-definition.scss';
-@import '../drop-down-base/bootstrap5-dark-definition.scss';
-@import 'bootstrap5-dark-definition.scss';
-@import 'all.scss';
+@use 'ej2-base/styles/definition/bootstrap5-dark' as *;
+@use 'ej2-popups/styles/popup/bootstrap5-dark-definition' as *;
+@use 'ej2-popups/styles/spinner/bootstrap5-dark-definition' as *;
+@use '../drop-down-base/bootstrap5-dark-definition' as *;
+@use 'bootstrap5-dark-definition' as *;
+@use 'all' as *;

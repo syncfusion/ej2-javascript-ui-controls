@@ -15,7 +15,7 @@ import { Row } from '../models/row';
 import { GridLine, Action, CellType, SortDirection, PrintMode, ToolbarItems, CommandButtonType, ContextMenuItem, ExcelBorderLineStyle, FocusType, ChartType } from './enum';
 import { MultipleExportType, MultiplePdfExportType, ExportType, ExcelHAlign, ExcelVAlign, BorderLineStyle, ToolbarItem, AggregateTemplateType } from './enum';
 import { PredicateModel } from './grid-model';
-import { SentinelType, Offsets, RowSelectable } from './type';
+import { SentinelType, Offsets, RowSelectable, PinRow } from './type';
 import { CheckState, ColumnQueryModeType, HierarchyGridPrintMode, ClipMode, freezeMode } from './enum';
 import { ResponsiveDialogAction, RowRenderingDirection } from './enum';
 import { Edit } from '../actions/edit';
@@ -422,6 +422,12 @@ export interface IGrid extends Component<HTMLElement> {
     detailTemplate?: string | Function;
 
     /**
+     * Specifies pin rows to top across all pages.
+     * @default null
+     */
+    isRowPinned?: PinRow | Function;
+
+    /**
      * Defines the child Grid to add inside the data rows of the parent Grid with expand/collapse options.
      */
     childGrid?: GridModel;
@@ -656,6 +662,16 @@ export interface IGrid extends Component<HTMLElement> {
 
     lazyLoadRender?: IRenderer;
 
+    pinnedTopRowModels?: Row<Column>[];
+
+    pinnedTopRecords?: Object[];
+
+    pinnedTopRowKeys?: { [key: number]: boolean };
+
+    pinnedRowIndexes?: { [key: number]: {pinnedIndex: number, contentIndex: number} };
+
+    contentRowIndexes?: { [key: number]: {pinnedIndex: number, contentIndex: number} };
+
     isSpan?: boolean;
 
     islazyloadRequest?: boolean;
@@ -857,8 +873,12 @@ export interface IGrid extends Component<HTMLElement> {
     addRecord?(data?: Object): void;
     deleteRow?(tr: HTMLTableRowElement): void;
     getRowObjectFromUID?(uid: string, isMovable?: boolean, isFrozenRight?: boolean): Row<Column>;
+    getPinnedRowObjectByKey?(value: string | Object | number): Row<Column>;
+    getRowIndexByPrimaryKey(value: string | Object): number;
     addFreezeRows?(fRows: Row<Column>[], mRows?: Row<Column>[]): Row<Column>[];
     getRowsObject?(): Row<Column>[];
+    pinRows?(data: Object[]): void;
+    unpinRows?(data: Object[]): void;
     getMovableRowsObject?(): Row<Column>[];
     getFrozenRightRowsObject?(): Row<Column>[];
     getFrozenRightContent?(): Element;
@@ -1350,6 +1370,7 @@ export interface IRow<T> {
  */
 export interface IModelGenerator<T> {
     generateRows(data: Object, args?: Object): Row<T>[];
+    generatePinnedTopRows?(data: Object): Row<T>[];
     refreshRows?(input?: Row<T>[]): Row<T>[];
 }
 
@@ -1411,7 +1432,6 @@ export interface PageEventArgs extends GridActionEventArgs {
     pageSize?: string;
     /** Defines the row information of the current page. */
     rows?: Row<Column>[];
-
 }
 
 export interface SortEventArgs extends GridActionEventArgs {
@@ -1447,6 +1467,37 @@ export interface DetailDataBoundEventArgs {
     data?: Object;
     /** Defines the child grid of the current row. */
     childGrid?: IGrid;
+}
+
+export interface DetailExpandCollapseArgs {
+    /**
+     * Defines the parent row element.
+     */
+    parentRow?: Element;
+    /**
+     * Defines the detail row element.
+     */
+    detailRow?: Element;
+    /**
+     * Defines the parent row data.
+     */
+    rowData?: Object;
+    /**
+     * Defines the child grid of the current row.
+     */
+    childGrid?: GridModel;
+    /**
+     * Defines the child grid of the current row.
+     */
+    childGridInstance?: IGrid;
+    /**
+     * Cancel the expand/collapse action.
+     */
+    cancel?: boolean;
+    /**
+     * Specifies mouse or keyboard event.
+     */
+    event?: MouseEvent | KeyboardEventArgs;
 }
 
 export interface ColumnChooserEventArgs {
@@ -2531,7 +2582,7 @@ export interface IEdit {
     isAdded?: boolean;
     previousData?: object;
     addBatchRow?: boolean;
-    virtualEditValidationArgs: object;
+    virtualEditValidationArgs?: object;
 }
 
 export interface CheckBoxChangeEventArgs extends ICancel {

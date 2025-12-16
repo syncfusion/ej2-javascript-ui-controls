@@ -1,3 +1,5 @@
+@use 'ej2-base/styles/common/mixin' as *;
+@use './theme-variables' as *;
 @include export-module('documenteditor-layout') {
   .e-de-dlg-container {
     padding-bottom: $de-padding-full;
@@ -44,18 +46,18 @@
   .e-rtl {
     .e-de-subcontainer-left {
       padding-left: $de-padding-half;
-      padding-right: 0;
+      padding-right: $de-subcontainer-padding-right;
     }
 
     .e-de-subcontainer-right {
-      padding-left: 0;
+      padding-left: $de-subcontainer-padding-left-rtl;
       padding-right: $de-padding-half;
       width: 50%;
     }
   }
 
   .e-de-blink-cursor {
-    border-left: 1px solid $de-blink-cursor-clr;
+    border-left: $de-blink-cursor-border-left solid $de-blink-cursor-clr;
     pointer-events: none;
     position: absolute;
     z-index: 3;
@@ -90,8 +92,8 @@
   }
 
   .e-de-text-target {
-    border: 0;
-    height: 1px;
+    border: $de-text-target-border;
+    height: $e-de-text-target-height;
     opacity: 0;
     outline-style: none;
     overflow: hidden;

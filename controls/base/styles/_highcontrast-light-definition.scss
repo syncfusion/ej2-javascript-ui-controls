@@ -1,4 +1,5 @@
-@import 'definition/highcontrast-light.scss';
+@use 'definition/highcontrast-light' as *;
+@forward 'definition/highcontrast-light';
 
 $font-family: 'Segoe UI', 'GeezaPro', 'DejaVu Serif', sans-serif, '-apple-system', 'BlinkMacSystemFont' !default;
 $font-size: 12px !default;

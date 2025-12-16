@@ -1,6 +1,6 @@
 import { RichTextEditor } from "../../src/rich-text-editor/base/rich-text-editor";
 import { destroy, renderRTE, setCursorPoint, dispatchEvent } from "../rich-text-editor/render.spec";
-import { BASIC_MOUSE_EVENT_INIT } from "../constant.spec";
+import { BASIC_MOUSE_EVENT_INIT, ENTERKEY_EVENT_INIT } from "../constant.spec";
 
 describe('Paste CR issues ', ()=> {
     describe(' EJ2-65988 - Code block doesnt work properly when pasting contents into the pre tag in RTE' , () => {
@@ -374,19 +374,19 @@ describe('Paste CR issues ', ()=> {
     });
 
     describe('Bug 988347: Incorrect Pasting of Bullet Points from External Sources', () => {
-        let rteObject : RichTextEditor ;
-        let innerHTML: string =`<html>\r\n<body>\r\n\x3C!--StartFragment--><li>Item one</li>\n<li>Item two</li>\x3C!--EndFragment-->\r\n</body>\r\n</html>`; 
-        beforeAll( () => {
+        let rteObject: RichTextEditor;
+        let innerHTML: string = `<html>\r\n<body>\r\n\x3C!--StartFragment--><li>Item one</li>\n<li>Item two</li>\x3C!--EndFragment-->\r\n</body>\r\n</html>`;
+        beforeAll(() => {
             rteObject = renderRTE({
                 pasteCleanupSettings: {
                     prompt: false
                 }, value: ''
+            });
         });
-        });
-        afterAll( () => {
+        afterAll(() => {
             destroy(rteObject);
         });
-        it(' should wrap ul when clipboard data has unstructured li in it', (done : Function) => {
+        it(' should wrap ul when clipboard data has unstructured li in it', (done: Function) => {
             setCursorPoint((rteObject as any).inputElement.firstElementChild, 0);
             const dataTransfer: DataTransfer = new DataTransfer();
             dataTransfer.setData('text/html', innerHTML);
@@ -431,7 +431,7 @@ describe('Paste CR issues ', ()=> {
         let rteObj: RichTextEditor;
         beforeAll(() => {
             rteObj = renderRTE({
-                value:"",
+                value: "",
                 pasteCleanupSettings: {
                     plainText: true,
                 }
@@ -449,7 +449,86 @@ describe('Paste CR issues ', ()=> {
                 expect(rteObj.inputElement.innerHTML).toBe(expectedElem);
                 done();
             }, 100);
-          });
+        });
+        afterAll(() => {
+            destroy(rteObj);
+        });
+    });
+
+    describe('Bug 995952: Enterkey with BR breaks the editor in RichTextEditor', () => {
+        let rteObj: RichTextEditor;
+        beforeAll(() => {
+            rteObj = renderRTE({
+                value: `text
+              <a
+                contenteditable="false"
+                href="https://google.com"
+                title=""
+                target="_blank"
+                style="word-break: normal"
+                data-tracking-enabled="false"
+                data-tracking-tag=""
+                >hyperlink</a
+              >`,
+                pasteCleanupSettings: {
+                    keepFormat: true,
+                    plainText: true,
+                },
+                placeholder: 'Type something',
+                enterKey: 'BR',
+            });
+        });
+        it('Ensured that pasted content is correctly positioned inside the editor even when a placeholder element is present.', (done: DoneFn) => {
+            rteObj.focusIn();
+            rteObj.formatter.editorManager.nodeSelection.setSelectionText(document, rteObj.inputElement.childNodes[0], rteObj.inputElement.childNodes[1], 0, 1);
+            const clipBoardData: string = 'In the early 16th century, northern India, then under mainly Muslim rulers,[126] fell again to the superior mobility and firepower of a new generation of Central Asian warriors.[127] The resulting Mughal Empire did not stamp out the local societies it came to rule.';
+            const dataTransfer: DataTransfer = new DataTransfer();
+            dataTransfer.setData('text/plain', clipBoardData);
+            const pasteEvent: ClipboardEvent = new ClipboardEvent('paste', { clipboardData: dataTransfer } as ClipboardEventInit);
+            rteObj.onPaste(pasteEvent);
+            setTimeout(() => {
+                const expectedElem: string = `In the early 16th century, northern India, then under mainly Muslim rulers,[126] fell again to the superior mobility and firepower of a new generation of Central Asian warriors.[127] The resulting Mughal Empire did not stamp out the local societies it came to rule.`;
+                expect(rteObj.inputElement.innerHTML).toBe(expectedElem);
+                done();
+            }, 100);
+        });
+        afterAll(() => {
+            destroy(rteObj);
+        });
+    });
+    describe('Bug 995952: Enterkey with BR breaks the editor in RichTextEditor', () => {
+        let rteObj: RichTextEditor;
+        beforeAll(() => {
+            rteObj = renderRTE({
+                value: `text
+              <a
+                contenteditable="false"
+                href="https://google.com"
+                title=""
+                target="_blank"
+                style="word-break: normal"
+                data-tracking-enabled="false"
+                data-tracking-tag=""
+                >hyperlink</a
+              >`,
+                placeholder: 'Type something',
+                enterKey: 'BR',
+            });
+        });
+        it('Ensured that pasted content is correctly positioned inside the editor when the enter key is configured as BR element.', (done: DoneFn) => {
+            rteObj.focusIn();
+            rteObj.formatter.editorManager.nodeSelection.setSelectionText(document, rteObj.inputElement.childNodes[0], rteObj.inputElement.childNodes[1], 0, 1);
+            const clipBoardData: string = '<p style="margin: 0in; font-size: 12pt; font-family: Aptos, sans-serif; background: white;"><span style="font-size: 11.5pt; font-family: &quot;Segoe UI&quot;, sans-serif; color: rgb(66, 66, 66);">When we try to paste some content into the Editor by replacing the previous content using Ctrl+A and Ctrl+V, the pasted content appends outside of the content editable div. This issue happens when using enterKey as BR. Need to resolve this issue</span></p>';
+            const dataTransfer: DataTransfer = new DataTransfer();
+            dataTransfer.setData('text/html', clipBoardData);
+            const pasteEvent: ClipboardEvent = new ClipboardEvent('paste', { clipboardData: dataTransfer } as ClipboardEventInit);
+            rteObj.onPaste(pasteEvent);
+            setTimeout(() => {
+                const expectedElem: string = `<p style="margin: 0in; font-size: 12pt; font-family: Aptos, sans-serif; background: white;"><span style="font-size: 11.5pt; font-family: &quot;Segoe UI&quot;, sans-serif; color: rgb(66, 66, 66);">When we try to paste some content into the Editor by replacing the previous content using Ctrl+A and Ctrl+V, the pasted content appends outside of the content editable div. This issue happens when using enterKey as BR. Need to resolve this issue</span></p>`;
+                expect(rteObj.inputElement.innerHTML).toBe(expectedElem);
+                done();
+            }, 100);
+        });
         afterAll(() => {
             destroy(rteObj);
         });
@@ -981,6 +1060,44 @@ describe('Paste CR issues ', ()=> {
             }, 100);
         });
         afterEach(() => {
+            destroy(rteObj);
+        });
+    });
+
+    describe('Bug 988998: Cursor Position Issue When Creating New List Item', () => {
+        let rteObj: RichTextEditor;
+        beforeAll(() => {
+            rteObj = renderRTE({
+                pasteCleanupSettings: {
+                    prompt: false,
+                },
+                value:`<ul>
+   <li style="text-align: start; color: rgb(51, 51, 51); font-family: &quot;Helvetica Neue&quot;, Helvetica, Arial, sans-serif; font-size: 14px; font-weight: 400;"><span class="start" style="color: rgb(51, 51, 51); font-family: &quot;Helvetica Neue&quot;, Helvetica, Arial, sans-serif; font-size: 14px; font-style: normal; font-weight: 400; text-align: start; text-indent: 0px; text-transform: none; white-space: normal; background-color: rgb(255, 255, 255); float: none; display: inline !important;">The Rich Text Editor</span></li>
+</ul>`
+            });
+        });
+        it('The cursor should be at the end of the pasted content in an empty list item', (done: DoneFn) => {
+            rteObj.focusIn();
+            const cursor = rteObj.inputElement.querySelector('ul .start');
+            setCursorPoint(cursor.firstChild, cursor.textContent.length);
+            rteObj.inputElement.dispatchEvent(new KeyboardEvent('keydown', ENTERKEY_EVENT_INIT));
+            rteObj.inputElement.dispatchEvent(new KeyboardEvent('keyup', ENTERKEY_EVENT_INIT));
+            const clipBoardData: string = `<html>
+<body>
+<!--StartFragment--><span style="color: rgb(51, 51, 51); font-family: &quot;Helvetica Neue&quot;, Helvetica, Arial, sans-serif; font-size: 14px; font-style: normal; font-variant-ligatures: normal; font-variant-caps: normal; font-weight: 400; letter-spacing: normal; orphans: 2; text-align: start; text-indent: 0px; text-transform: none; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; white-space: normal; background-color: rgb(255, 255, 255); text-decoration-thickness: initial; text-decoration-style: initial; text-decoration-color: initial; display: inline !important; float: none;">The Rich Text Editor</span><!--EndFragment-->
+</body>
+</html>`;
+            const dataTransfer: DataTransfer = new DataTransfer();
+            dataTransfer.setData('text/html', clipBoardData);
+            const pasteEvent: ClipboardEvent = new ClipboardEvent('paste', { clipboardData: dataTransfer } as ClipboardEventInit);
+            rteObj.contentModule.getEditPanel().dispatchEvent(pasteEvent);
+            setTimeout(() => {
+                const range: Range = rteObj.getRange();
+                expect(range.startOffset).not.toBe(0);
+                done();
+            }, 100);
+        });
+        afterAll(() => {
             destroy(rteObj);
         });
     });

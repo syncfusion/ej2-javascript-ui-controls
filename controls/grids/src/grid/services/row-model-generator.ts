@@ -34,10 +34,46 @@ export class RowModelGenerator implements IModelGenerator<Column> {
         if (this.parent.enableImmutableMode && args && args.startIndex) {
             startIndex = args.startIndex;
         }
+        if (!this.parent.enableVirtualization && this.parent.pinnedTopRowModels.length && args && args.requestType !== 'infiniteScroll') {
+            startIndex = this.parent.pinnedTopRowModels.length;
+        }
         for (let i: number = 0, len: number = Object.keys(data).length; i < len; i++ , startIndex++) {
             rows[parseInt(i.toString(), 10)] = this.generateRow(data[parseInt(i.toString(), 10)], startIndex);
         }
         return rows;
+    }
+
+    /**
+     *
+     * @param {Object} data - Defines row data
+     * @returns {Row<Column>} returns row model
+     * @hidden
+     */
+    public generatePinnedTopRows(data: Object): Row<Column>[] {
+        const rows: Row<Column>[] = [];
+        let startIndex: number = 0;
+        for (let i: number = 0, len: number = Object.keys(data).length; i < len; i++ , startIndex++) {
+            rows[parseInt(i.toString(), 10)] = this.generateRow(data[parseInt(i.toString(), 10)], startIndex);
+            for (let j: number = 0; j < this.parent.groupSettings.columns.length; j++) {
+                if (this.parent.enableColumnVirtualization) {
+                    continue;
+                } else {
+                    rows[parseInt(i.toString(), 10)].cells.unshift(this.generateCell({} as Column, null, CellType.HeaderIndent));
+                }
+            }
+        }
+        return rows;
+    }
+
+    protected ensurePinnedColumns(): Cell<Column>[] {
+        const cols: Cell<Column>[] = [];
+        if (this.parent.detailTemplate || this.parent.childGrid) {
+            cols.push(this.generateCell({} as Column, null, CellType.HeaderIndent));
+        }
+        if (this.parent.isRowDragable()) {
+            cols.push(this.generateCell({} as Column, null, CellType.HeaderIndent));
+        }
+        return cols;
     }
 
     protected ensureColumns(): Cell<Column>[] {
@@ -86,7 +122,10 @@ export class RowModelGenerator implements IModelGenerator<Column> {
         options.isAltRow = this.parent.enableAltRow ? index % 2 !== 0 : false;
         options.isSelected = this.parent.getSelectedRowIndexes().indexOf(index) > -1;
         this.refreshForeignKeyRow(options);
-        const cells: Cell<Column>[] = this.ensureColumns();
+        let cells: Cell<Column>[] = this.ensureColumns();
+        if (this.parent.pinnedTopRecords.length && index < this.parent.pinnedTopRecords.length) {
+            cells = this.ensurePinnedColumns();
+        }
         const row: Row<Column> = new Row<Column>(<{ [x: string]: Object }>options, this.parent);
         row.cells = this.parent.getFrozenMode() === 'Right' ? this.generateCells(options).concat(cells)
             : cells.concat(this.generateCells(options));

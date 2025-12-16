@@ -4,7 +4,7 @@
 
 /**
  *
- * @deprecated
+ * @private
  * @hidden
  * Defines the context or contexts in which styles will be copied.
  */
@@ -12,7 +12,7 @@ export type IFormatPainterContext = 'Text'| 'List' | 'Table';
 
 /**
  *
- * @deprecated
+ * @private
  * @hidden
  * Defines the action values for format painter.
  */

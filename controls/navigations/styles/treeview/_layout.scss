@@ -1,3 +1,6 @@
+@use 'ej2-base/styles/common/mixin' as *;
+@use './theme-variables' as *;
+
 /* stylelint-disable property-no-vendor-prefix */
 @mixin user-select {
   -moz-user-select: none;
@@ -11,7 +14,7 @@
     border-radius: 10px;
   }
   @else {
-    border: 4px solid transparent;
+    border: $treeview-sibling-border-size solid transparent;
   }
 }
 
@@ -60,7 +63,7 @@
     position: relative;
     white-space: nowrap;
     @if $skin-name == 'fluent2' or $skin-name == 'tailwind3' {
-      border: 1px solid;
+      border: $treeview-border-size solid;
       border-color: $treeview-border-color;
       border-radius: $treeview-radius;
     }
@@ -73,7 +76,7 @@
 
       & .e-virtual-mask {
         display: block;
-        margin-bottom: 20px;
+        margin-bottom: $treeview-virtual-mask-margin-bottom;
       }
 
       & .e-ul {
@@ -144,15 +147,15 @@
 
     @if ($skin-name == 'fluent2') {
       .e-checkbox-wrapper .e-frame {
-        margin-right: 0;
+        margin-right: $treeview-margin-none;
       }
       .e-list-item:last-child:not(.e-level-1) {
-        padding-bottom: 0;
+        padding-bottom: $treeview-padding-none;
       }
     }
 
     .e-ul {
-      margin: 0;
+      margin: $treeview-root-ul-margin;
       padding: $treeview-root-ul-padding;
     }
 
@@ -164,19 +167,19 @@
     .e-list-item {
       list-style: none;
       @if $skin-name == 'fabric' or $skin-name == 'fabric-dark' or $skin-name == 'bootstrap' or $skin-name == 'bootstrap-dark' {
-        padding: 2px 0;
+        padding: $treeview-list-item-padding;
       }
       @if $skin-name == 'fluent2' {
-        padding: 4px 0;
+        padding: $treeview-list-item-padding;
       }
 
       .e-ul {
         padding: $treeview-child-ul-padding;
         @if $skin-name == 'fabric' or $skin-name == 'fabric-dark' or $skin-name == 'bootstrap' or $skin-name == 'bootstrap-dark' {
-          margin: 2px 0 -2px;
+          margin: $treeview-child-ul-margin;
         }
         @if $skin-name == 'fluent2' {
-          margin-top: 4px;
+          margin-top: $treeview-child-ul-margin;
         }
       }
 
@@ -199,7 +202,7 @@
 
       div.e-icons.interaction {
         -webkit-transition: -webkit-transform .3s ease-in-out;
-        border-radius: 15px;
+        border-radius: $treeview-interaction-icon-radius;
         transition: -webkit-transform .3s ease-in-out;
         transition: transform .3s ease-in-out;
         transition: transform .3s ease-in-out, -webkit-transform .3s ease-in-out;
@@ -230,28 +233,28 @@
               }
             }
             @if $skin-name == 'tailwind3' {
-              padding-top: 4px;
-              padding-bottom: 4px;
+              padding-top: $treeview-edit-inline-padding-top;
+              padding-bottom: $treeview-edit-inline-padding-bottom;
             }
             @if $skin-name == 'highcontrast' {
-              padding-top: 3px;
-              padding-bottom: 3px;
+              padding-top: $treeview-edit-inline-padding;
+              padding-bottom: $treeview-edit-inline-padding;
             }
             @if ($skin-name == 'FluentUI') {
-              padding-top: 3px;
-              padding-bottom: 3px;
+              padding-top: $treeview-edit-inline-padding;
+              padding-bottom: $treeview-edit-inline-padding;
             }
             @if $skin-name == 'bootstrap5.3' {
-              padding-top: 2px;
-              padding-bottom: 2px;
+              padding-top: $treeview-edit-inline-padding;
+              padding-bottom: $treeview-edit-inline-padding;
             }
             @if $skin-name == 'bootstrap4' {
-              padding-top: 5px;
-              padding-bottom: 5px;
+              padding-top: $treeview-edit-inline-padding;
+              padding-bottom: $treeview-edit-inline-padding;
             }
             @if $skin-name == 'bootstrap5' {
-              padding-top: 3px;
-              padding-bottom: 3px;
+              padding-top: $treeview-edit-inline-padding;
+              padding-bottom: $treeview-edit-inline-padding;
             }
           }
         }
@@ -274,7 +277,7 @@
     .e-text-content {
       @include user-select;
       cursor: pointer;
-      margin: 0;
+      margin: $treeview-text-wrap-margin;
       padding: $treeview-text-wrap-padding;
 
       @if $skin-name == 'fabric' or $skin-name == 'fabric-dark' or $skin-name == 'bootstrap' or $skin-name == 'bootstrap-dark' {
@@ -282,7 +285,7 @@
       }
 
       @if $skin-name == 'Material3' or $skin-name == 'tailwind3' {
-        border: none;
+        border: $treeview-border-none;
       }
 
       + .e-sibling {
@@ -293,14 +296,14 @@
           margin-top: 1px;
         }
         @else {
-          margin-top: -1px;
+          margin-top: $treeview-text-sibling-margin-top;
         }
       }
     }
 
     .e-fullrow {
       @include user-select;
-      border: 1px solid;
+      border: $treeview-border-size solid;
       box-sizing: border-box;
       cursor: pointer;
       height: $treeview-item-height;
@@ -311,7 +314,7 @@
       @if $skin-name == 'fluent2' {
         border-radius: $treeview-radius;
         width: calc(100% - 8px);
-        margin-left: 4px;
+        margin-left: $treeview-fullrow-margin-left;
       }
 
       @supports (-webkit-overflow-scrolling: touch) {
@@ -346,16 +349,16 @@
     .e-list-text {
       box-sizing: border-box;
       display: inline-block;
-      line-height: $treeview-text-height;
+      line-height: $treeview-text-line-height;
       margin: $treeview-text-margin;
       @if $skin-name == 'Material3' or $skin-name == 'tailwind3' {
-        min-height: $treeview-item-height;
+        min-height: $treeview-item-min-height;
       }
       @else if $skin-name != 'bootstrap4' {
-        min-height: $treeview-text-height;
+        min-height: $treeview-text-min-height;
       }
       @else if $skin-name == 'bootstrap4' {
-        min-height: 30px;
+        min-height: $treeview-text-min-height;
       }
       @if $skin-name == 'tailwind3' {
         font-weight: $treeview-font-weight;
@@ -371,7 +374,7 @@
           margin-bottom: 4px;
         }
         @else {
-          margin-bottom: 0;
+          margin-bottom: $treeview-input-group-margin-bottom;
         }
         min-width: 150px;
         vertical-align: bottom;
@@ -380,18 +383,18 @@
         }
         .e-input {
           @if $skin-name != 'material' and $skin-name != 'material-dark' {
-            height: 28px;
-            padding-top: 6px;
-            padding-bottom: 6px;
+            height: $treeview-input-group-input-height;
+            padding-top: $treeview-input-padding;
+            padding-bottom: $treeview-input-padding;
           }
           @if $skin-name == 'tailwind3' {
-            line-height: 20px;
-            height: 32px;
+            line-height: $treeview-input-line-height;
+            height: $treeview-nrml-input-height;
           }
           @if $skin-name == 'bootstrap5.3' {
-            height: 32px;
-            padding-top: 5px;
-            padding-bottom: 5px;
+            height: $treeview-input-group-height;
+            padding-top: $treeview-input-group-padding;
+            padding-bottom: $treeview-input-group-padding;
           }
         }
       }
@@ -408,14 +411,14 @@
         padding: $treeview-text-padding;
       }
       @else {
-        padding: 0;
+        padding: $treeview-nav-padding;
       }
     }
 
     .e-list-icon,
     .e-list-img {
       display: inline-block;
-      height: $treeview-image-size;
+      height: $treeview-image-height;
       margin: $treeview-image-margin;
       vertical-align: middle;
       width: $treeview-image-size;
@@ -437,7 +440,7 @@
     .e-icon-collapsible,
     .e-icon-expandable {
       display: inline-block;
-      height: $treeview-icon-size;
+      height: $treeview-nrml-icon-height;
       margin: $treeview-icon-margin;
       vertical-align: middle;
       width: $treeview-icon-size;
@@ -459,19 +462,19 @@
       }
       @else {
         @include sibling-style;
-        height: 6px;
-        margin-top: -5px;
+        height: $treeview-nrml-siblings-height;
+        margin-top: $treeview-sibling-margin-top;
         width: 6px;
       }
 
       &::before {
         @include sibling-before(ltr);
         @if ($skin-name == 'tailwind' or $skin-name == 'bootstrap5' or $skin-name == 'FluentUI') {
-          height: 2px;
+          height: $treeview-sibling-before-height;
           top: -1.5px;
         }
         @else {
-          height: 1px;
+          height: $treeview-sibling-before-height;
           width: 144px;
         }
       }
@@ -485,34 +488,34 @@
 
     .e-popup {
       @include user-select;
-      font-weight: normal;
+      font-weight: $treeview-popup-font-weight;
       position: absolute;
       z-index: 99999;
 
       .e-content {
-        border-radius: 4px;
+        border-radius: $treeview-popup-border-radius;
         border-style: solid;
-        border-width: 1px;
-        font-size: 14px;
-        padding: 4px;
+        border-width: $treeview-popup-border-width;
+        font-size: $treeview-popup-font-size;
+        padding: $treeview-popup-padding;
       }
 
       .e-icons {
-        border: 1px solid transparent;
+        border: $treeview-popup-border-width solid transparent;
         cursor: pointer;
         display: inline-block;
-        height: 26px;
-        line-height: 18px;
-        padding: 4px;
+        height: $treeview-popup-icon-height;
+        line-height: $treeview-popup-icon-line-height;
+        padding: $treeview-popup-padding;
         width: 26px;
       }
 
       .e-downtail {
         &::before,
         &::after {
-          border: 10px solid transparent;
+          border: $treeview-popup-tail-border-size solid transparent;
           content: '';
-          height: 0;
+          height: $treeview-height-none;
           left: 8px;
           position: absolute;
           width: 0;
@@ -573,11 +576,11 @@
       }
 
       .e-nav-wrapper {
-        padding: 0;
+        padding: $treeview-nav-padding;
       }
 
       .e-checkbox-wrapper + .e-list-text .e-nav-wrapper:not(:has(.e-list-icon)) {
-        padding: 0;
+        padding: $treeview-nav-padding;
       }
 
       .e-list-icon,
@@ -609,11 +612,11 @@
             padding: $treeview-icon-padding;
           }
           @else if ($skin-name == 'bootstrap5' or $skin-name == 'bootstrap5.3') {
-            padding: 0 $treeview-drag-icon-padding;
+            padding: $treeview-padding-none $treeview-drag-icon-padding;
           }
           @if $skin-name == 'fluent2' {
-            line-height: 20px;
-            padding: 5px 12px 7px 8px;
+            line-height: $treeview-text-content-line-height;
+            padding: $treeview-text-content-padding;
           }
         }
       }
@@ -623,7 +626,7 @@
         .e-icon-expandable {
           @if ($skin-name != 'bootstrap5' and $skin-name != 'bootstrap5.3' and $skin-name != 'FluentUI') {
             @if ($skin-name == 'fluent2') {
-              margin: 0;
+              margin: $treeview-margin-none;
             }
             @else {
               margin: $treeview-drag-icon-margin;
@@ -649,7 +652,7 @@
 
       .e-drop-count {
         border: $treeview-drop-count-border-size solid;
-        border-radius: 15px;
+        border-radius: $treeview-drop-count-radius;
         box-sizing: content-box;
         font-size: $treeview-drop-count-font-size;
         @if $skin-name == 'bootstrap4' {
@@ -658,16 +661,16 @@
           padding: 0 5px;
         }
         @else {
-          line-height: normal;
+          line-height: $treeview-drop-count-line-height;
           min-width: 12px;
           @if ($skin-name == 'tailwind' or $skin-name == 'bootstrap5' or $skin-name == 'bootstrap5.3' or $skin-name == 'FluentUI') {
-            padding: 1px 3px 2px;
+            padding: $treeview-drop-count-padding;
           }
           @else {
-            padding: 3px 5px 4px;
+            padding: $treeview-drop-count-padding;
           }
         }
-        margin-left: -12px;
+        margin-left: $treeview-drop-count-margin;
         position: absolute;
         text-align: center;
         top: -10px;
@@ -710,7 +713,7 @@
         }
 
         .e-nav-wrapper {
-          padding: 0;
+          padding: $treeview-nav-padding;
         }
 
         .e-list-icon,
@@ -786,7 +789,7 @@
         }
 
         .e-drop-count {
-          margin-right: -12px;
+          margin-right: $treeview-drop-count-margin;
         }
       }
 

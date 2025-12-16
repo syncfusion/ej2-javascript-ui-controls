@@ -586,7 +586,7 @@ describe('Month Event Render Module', () => {
         it('Check the recurrence event occurrences count', async (done: DoneFn) => {
             schObj.dataBound = () => {
                 expect(schObj.eventsData[0].RecurrenceRule).toEqual('FREQ=WEEKLY;BYDAY=MO,TU;INTERVAL=1;UNTIL=20220308T000000Z;');
-                expect(schObj.element.querySelectorAll('.e-appointment').length).toEqual(2);
+                expect(schObj.element.querySelectorAll('.e-appointment').length).toEqual(1);
                 done();
             };
             const workCell: HTMLTableCellElement = schObj.element.querySelector('[data-date="1646611200000"]');
@@ -908,6 +908,111 @@ describe('Month Event Render Module', () => {
             ownerDropDown.dataBind();
             const saveButton: HTMLElement = editor.querySelector('.e-event-save') as HTMLElement;
             saveButton.click();
+        });
+    });
+
+    describe('Schedule Month view MoreIndicator rendering', () => {
+        let schObj: Schedule;
+        beforeAll((done: DoneFn) => {
+            const model: ScheduleModel = { views: ['Month', 'TimelineMonth'], currentView: 'Month', height: '450px', width: '500px', selectedDate: new Date(2021, 1, 15) };
+            schObj = util.createSchedule(model, moreIndicatorData, done);
+        });
+
+        afterAll(() => {
+            util.destroy(schObj);
+        });
+        
+        it('Check the MoreIndicator styles in Month view', () => {
+            const moreIndicatorList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-more-indicator'));
+            expect(moreIndicatorList.length).toEqual(9);
+            const moreIndicatorElement: HTMLElement = moreIndicatorList[0] as HTMLElement;
+            const workCell = (closest(moreIndicatorElement, '.e-work-cells') as HTMLElement) || moreIndicatorElement.parentElement as HTMLElement;
+            expect(moreIndicatorElement.style.transform).toContain('translateY(-100%)');
+            const cellBottom = () => workCell.getBoundingClientRect().bottom;
+            const indicatorBottom = () => moreIndicatorElement.getBoundingClientRect().bottom;
+            const differenece = Math.abs(indicatorBottom() - cellBottom());
+            expect(differenece).toBeLessThanOrEqual(1);
+        });
+    });
+
+    describe('Schedule Timeline Month view MoreIndicator rendering', () => {
+        let schObj: Schedule;
+        beforeAll((done: DoneFn) => {
+            const TimelineData: Record<string, any>[] = [
+                {
+                    Id: 1,
+                    Subject: 'Event 1',
+                    StartTime: new Date(2017, 2, 2),
+                    EndTime: new Date(2017, 2, 2)
+                },
+                {
+                    Id: 2,
+                    Subject: 'Event 2',
+                    StartTime: new Date(2017, 2, 2),
+                    EndTime: new Date(2017, 2, 2)
+                },
+                {
+                    Id: 3,
+                    Subject: 'Event 3',
+                    StartTime: new Date(2017, 2, 2),
+                    EndTime: new Date(2017, 2, 2)
+                },
+                {
+                    Id: 4,
+                    Subject: 'Event 4',
+                    StartTime: new Date(2017, 2, 2),
+                    EndTime: new Date(2017, 2, 2)
+                },
+                {
+                    Id: 5,
+                    Subject: 'Event 5',
+                    StartTime: new Date(2017, 2, 2),
+                    EndTime: new Date(2017, 2, 2)
+                },
+                {
+                    Id: 6,
+                    Subject: 'Event 6',
+                    StartTime: new Date(2017, 2, 2),
+                    EndTime: new Date(2017, 2, 2)
+                },
+                {
+                    Id: 7,
+                    Subject: 'Event 7',
+                    StartTime: new Date(2017, 2, 2),
+                    EndTime: new Date(2017, 2, 2)
+                }
+            ];
+            const model: ScheduleModel = {
+                width: '800px',
+                height: '350px',
+                selectedDate: new Date(2017, 2, 2),
+                views: [
+                    { option: 'TimelineMonth' },
+                ],
+                eventSettings: {
+                    dataSource: TimelineData,
+                    enableIndicator: true
+                }
+            };
+            schObj = util.createSchedule(model, [], done);
+        });
+
+        afterAll(() => {
+            util.destroy(schObj);
+        });
+
+        it('Check the MoreIndicator styles in Timeline Month view', () => {
+            const moreIndicatorList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-more-indicator'));
+            expect(moreIndicatorList.length).toEqual(1);
+            const moreIndicatorElement: HTMLElement = moreIndicatorList[0] as HTMLElement;
+            const startDateMs = parseInt(moreIndicatorElement.getAttribute('data-start-date') || 'NaN', 10);
+            let selector = `.e-work-cells[data-date="${startDateMs}"]`;
+            const workCell = schObj.element.querySelector(selector) as HTMLElement;
+            expect(moreIndicatorElement.style.transform).toContain('translateY(-100%)');
+            const cellBottom = () => workCell.getBoundingClientRect().bottom;
+            const indicatorBottom = () => moreIndicatorElement.getBoundingClientRect().bottom;
+            const differenece = Math.abs(indicatorBottom() - cellBottom());
+            expect(differenece).toBeLessThanOrEqual(1);
         });
     });
 

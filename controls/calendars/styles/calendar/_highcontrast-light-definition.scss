@@ -1,3 +1,6 @@
+@use 'ej2-base/styles/definition/highcontrast-light' as *;
+@forward 'ej2-base/styles/definition/highcontrast-light';
+
 //default
 $calendar-title-hover-color: $selection-bg !default;
 $calendar-icon-hover-color: $hover-font !default;
@@ -152,6 +155,7 @@ $calendar-bigger-icon-margin: 0 !default;
 $calendar-selected-border-color: 1px solid $selection-bg !default;
 $calendar-week-number-font-weight: 500 !default;
 $calendar-header-title-padding: 0 5px !default;
+$border-zero: 0;
 
 // newly added
 $calendar-active-today-hover-font-color: $selection-font !default;
@@ -200,3 +204,12 @@ $calendar-bigger-small-yeardecade-font-size: 12px !default;
 $calendar-small-font-size: 12px !default;
 
 //enddefault
+
+$line-height: 14px;
+$margin-zero: 0;
+$padding-zero: 0;
+$calendar-bigger-rtl-header-text-indent: 6px !default;
+$calendar-zero-border-radius: 0 !default;
+$calendar-bigger-header-width: 60% !default;
+$calendar-bigger-placeholder-min-height: 392px !default;
+$calendar-small-min-height: 220px !default;

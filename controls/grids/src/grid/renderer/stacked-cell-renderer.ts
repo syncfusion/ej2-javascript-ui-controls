@@ -31,12 +31,16 @@ export class StackedHeaderCellRenderer extends CellRenderer implements ICellRend
     public render(cell: Cell<Column>, data: Object, attributes?: { [x: string]: Object }): Element {
 
         const node: Element = this.element.cloneNode() as Element;
+        const headercellContainer: HTMLElement = this.parent.createElement('div', {
+            className: 'e-headercell-container e-stacked-header'
+        });
         const div : Element = this.parent.createElement('div', {
             className: 'e-stackedheadercelldiv',
             attrs: { 'data-mappinguid': cell.column.uid }
         });
         const column: Column = cell.column;
-        node.appendChild(div);
+        headercellContainer.appendChild(div);
+        node.appendChild(headercellContainer);
         if (!isNullOrUndefined(column.headerTemplate)) {
             appendChildren(div, column.getHeaderTemplate()(
                 column, this.parent, 'headerTemplate', null, null, null, null, this.parent.root));

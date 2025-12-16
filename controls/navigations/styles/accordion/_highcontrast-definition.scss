@@ -1,3 +1,5 @@
+@use 'ej2-base/styles/definition/highcontrast' as *;
+@forward 'ej2-base/styles/definition/highcontrast';
 $acrdn-skin: 'highcontrast' !default;
 $acrdn-disable-color: $disable !default;
 $acrdn-header-font-bgr-size: 14px !default;
@@ -9,7 +11,9 @@ $acrdn-bgr-icn-minwidth: 30px !default;
 $acrdn-slct-header-font-weight: 600 !default;
 $acrdn-nrml-icn-minwidth: 24px !default;
 $acrdn-nrml-header-minheight: 40px !default;
+$acrdn-nrml-header-height: 40px !default;
 $acrdn-bgr-header-minheight: 50px !default;
+$acrdn-bgr-header-height: 50px !default;
 $acrdn-nrml-header-lineheight: 39px !default;
 $acrdn-bgr-header-lineheight: 49px !default;
 $acrdn-icon-font-size: $font-size !default;
@@ -191,3 +195,8 @@ $acrdn-item-nes-selected-exp-hover-hdr-con-font: $acrdn-nested-selected-exp-hove
 $acrdn-item-exp-not-selected-hdr-focus-bg: $border-fg-alt !default;
 $acrdn-item-exp-not-selected-hdr-focus-border: 2px dashed $acrdn-focus-exp-hdr-focus-border-color !default;
 $acrdn-item-exp-not-selected-hdr-focus-border-color: $acrdn-focus-exp-hdr-focus-border-color !default;
+$acrdn-border-none: 0 !default;
+$acrdn-auto-height: auto !default;
+$acrdn-nested-header-content-font-weight: normal !default;
+$acrdn-padding-none: 0 !default;
+$acrdn-margin-none: 0 !default;

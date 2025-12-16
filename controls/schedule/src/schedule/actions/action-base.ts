@@ -265,6 +265,13 @@ export class ActionBase {
         }
     }
 
+    public removeDragResizeClones(): void {
+        const eventWrappers: HTMLElement[] = [].slice.call(this.parent.element.querySelectorAll('.' + cls.CLONE_ELEMENT_CLASS));
+        for (const wrapper of eventWrappers) {
+            remove(wrapper);
+        }
+    }
+
     public getCursorElement(e: MouseEvent & TouchEvent): HTMLElement {
         const pages: (MouseEvent & TouchEvent) | Touch = this.parent.eventBase.getPageCoordinates(e);
         return document.elementFromPoint(pages.clientX, pages.clientY) as HTMLElement;
@@ -458,10 +465,7 @@ export class ActionBase {
         this.monthEvent.dateRender = dateRender;
         this.monthEvent.getSlotDates(workDays);
         if (this.resizeEdges.left || this.resizeEdges.right) {
-            const eventWrappers: HTMLElement[] = [].slice.call(this.parent.element.querySelectorAll('.' + cls.CLONE_ELEMENT_CLASS));
-            for (const wrapper of eventWrappers) {
-                remove(wrapper);
-            }
+            this.removeDragResizeClones();
         }
         const spannedEvents: Record<string, any>[] = this.monthEvent.splitEvent(event, dateRender);
         for (const event of spannedEvents) {

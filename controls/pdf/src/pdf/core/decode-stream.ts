@@ -1,5 +1,5 @@
-import { _PdfBaseStream, _PdfStream } from './base-stream';
 import { _PdfDictionary } from './pdf-primitives';
+import { _PdfBaseStream, _PdfStream } from './base-stream';
 export class _PdfDecodeStream extends _PdfBaseStream {
     constructor(maybeMinBufferLength: number) {
         super();

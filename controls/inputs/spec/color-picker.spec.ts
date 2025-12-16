@@ -1661,3 +1661,4 @@ describe('ColorPicker', () => {
         });
     });
 });
+

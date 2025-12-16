@@ -93,6 +93,7 @@ describe('Diagram Control', () => {
         afterAll((): void => {
             diagram.destroy();
             ele.remove();
+            (diagram as any) = null; (ele as any) = null;
         });
         it('Checking annotation alinments and positions in SVG rendering Mode', (done: Function) => {
 

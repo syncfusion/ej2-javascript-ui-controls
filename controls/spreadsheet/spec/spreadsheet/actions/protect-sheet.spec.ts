@@ -720,7 +720,7 @@ describe('Protect sheet ->', () => {
                 let td: HTMLTableCellElement = helper.invoke('getCell', [0, 0]);
                 const coords: DOMRect = <DOMRect>td.getBoundingClientRect();
                 helper.triggerMouseAction('contextmenu', { x: coords.x, y: coords.y }, null, td);
-                helper.click('#' + helper.id + '_contextmenu li:nth-child(11)');
+                helper.click('#' + helper.id + '_contextmenu li:nth-child(12)');
                 setTimeout(() => {
                     expect(helper.getElement('.e-editAlert-dlg.e-dialog')).toBeNull();
                     helper.setAnimationToNone('.e-hyperlink-dlg.e-dialog');
@@ -1471,7 +1471,7 @@ describe('Protect sheet ->', () => {
             let coords: DOMRect = <DOMRect>td.getBoundingClientRect();
             helper.triggerMouseAction('contextmenu', { x: coords.x, y: coords.y }, null, td);
             setTimeout(() => {
-                expect(helper.getElement('#' + helper.id + '_contextmenu li:nth-child(9)').classList).toContain('e-disabled');
+                expect(helper.getElement('#' + helper.id + '_contextmenu li:nth-child(10)').classList).toContain('e-disabled');
                 done();
             }, 10);
         });
@@ -1481,7 +1481,7 @@ describe('Protect sheet ->', () => {
             let coords: DOMRect = <DOMRect>td.getBoundingClientRect();
             helper.triggerMouseAction('contextmenu', { x: coords.x, y: coords.y }, null, td);
             setTimeout(() => {
-                expect(helper.getElement('#' + helper.id + '_contextmenu li:nth-child(9)').classList).toContain('e-disabled');
+                expect(helper.getElement('#' + helper.id + '_contextmenu li:nth-child(10)').classList).toContain('e-disabled');
                 done();
             }, 10);
         });

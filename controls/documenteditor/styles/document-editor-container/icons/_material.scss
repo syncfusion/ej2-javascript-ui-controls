@@ -1,3 +1,6 @@
+@use 'ej2-base/styles/common/mixin' as *;
+@use '../material-definition' as *;
+@use '../../document-editor/material-definition' as *;
 @include export-module('document-editor-container-material-icons') {
   .e-de-ctnr-close::before {
     content: '\eb36';

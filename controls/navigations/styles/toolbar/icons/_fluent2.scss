@@ -1,3 +1,4 @@
+@use 'ej2-base/styles/common/mixin' as *;
 @include export-module('toolbar-fluent2-icons') {
   #{&}.e-toolbar {
   

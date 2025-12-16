@@ -1,5 +1,5 @@
-@import 'ej2-base/styles/definition/tailwind.scss';
-@import 'ej2-popups/styles/tooltip/tailwind-definition.scss';
-@import 'tailwind-definition.scss';
-@import 'all.scss';
-@import 'bigger.scss';
+@use 'ej2-base/styles/definition/tailwind' as *;
+@use 'ej2-popups/styles/tooltip/tailwind-definition' as *;
+@use 'tailwind-definition' as *;
+@use 'all' as *;
+@use 'bigger' as *;

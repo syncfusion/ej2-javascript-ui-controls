@@ -11,7 +11,7 @@ import { IEditorModel } from '../../common/interface';
  * Video internal component
  *
  * @hidden
- * @deprecated
+ * @private
  */
 export class VideoCommand {
     private parent: IEditorModel;
@@ -21,7 +21,7 @@ export class VideoCommand {
      *
      * @param {IEditorModel} parent - specifies the parent element
      * @hidden
-     * @deprecated
+     * @private
      */
     public constructor(parent: IEditorModel) {
         this.parent = parent;
@@ -41,7 +41,7 @@ export class VideoCommand {
      * @param {IHtmlItem} e - specifies the element
      * @returns {void}
      * @hidden
-     * @deprecated
+     * @private
      */
     public videoCommand(e: IHtmlItem): void {
         let selectNode: HTMLElement;
@@ -223,7 +223,8 @@ export class VideoCommand {
             } else {
                 videoElm = !e.item.isEmbedUrl ? (selectedNode as Element).tagName === 'VIDEO' ? (selectedNode as Element) : (selectedNode as Element).lastElementChild : (selectedNode as Element).querySelector('iframe');
             }
-            videoElm.addEventListener(videoElm.tagName !== 'IFRAME' ? 'loadeddata' : 'load', () => {
+            const eventName: string = videoElm.tagName !== 'IFRAME' ? 'loadeddata' : 'load';
+            const onVideoLoadEvent: () => void = () => {
                 if (e.value !== 'VideoReplace' || !isReplaced) {
                     if (e.item.isEmbedUrl && videoElm) {
                         videoElm.classList.add('e-rte-embed-url');
@@ -241,7 +242,9 @@ export class VideoCommand {
                         });
                     }
                 }
-            });
+                videoElm.removeEventListener(eventName, onVideoLoadEvent);
+            };
+            videoElm.addEventListener(eventName, onVideoLoadEvent);
             if (isReplaced) {
                 (videoElm as HTMLVideoElement).load();
             }

@@ -46,8 +46,8 @@ describe('TreeGrid Reordering', () => {
     it('Reorder Testing', (done: Function) => {
       actionComplete = (): void => {
         headers = TreeGridObj.getHeaderContent().querySelectorAll('.e-headercell');
-        expect(headers[0].querySelector('.e-headercelldiv').textContent).toBe('taskName');
-        expect(headers[1].querySelector('.e-headercelldiv').textContent).toBe('Task Id');
+        expect(headers[0].querySelector('.e-headercelldiv').innerText.trim()).toBe('taskName');
+        expect(headers[1].querySelector('.e-headercelldiv').innerText.trim()).toBe('Task Id');
         expect(TreeGridObj.getRows()[0].getElementsByClassName('e-rowcell')[0].querySelector(".e-icons"));
         done();
       };
@@ -193,8 +193,8 @@ describe('Flat data Reorder', () => {
   it('Reorder Testing', (done: Function) => {
     actionComplete = (): void => {
       headers = TreeGridObj.getHeaderContent().querySelectorAll('.e-headercell');
-      expect(headers[0].querySelector('.e-headercelldiv').textContent).toBe('Task Name');
-      expect(headers[1].querySelector('.e-headercelldiv').textContent).toBe('Task ID');
+      expect(headers[0].querySelector('.e-headercelldiv').innerText.trim()).toBe('Task Name');
+      expect(headers[1].querySelector('.e-headercelldiv').innerText.trim()).toBe('Task ID');
       expect(TreeGridObj.getRows()[0].getElementsByClassName('e-rowcell')[0].querySelector(".e-icons"));
       done();
     };
@@ -259,9 +259,9 @@ describe('Reorder Columns by using method', () => {
       TreeGridObj.reorderColumns(['EmployeeID','Address'],'DOB');
       columns = TreeGridObj.grid.getColumns() as Column[];
       headers = TreeGridObj.getHeaderContent().querySelectorAll('.e-headercell');
-      expect(headers[0].querySelector('.e-headercelldiv').textContent).toBe('DOB');
-      expect(headers[1].querySelector('.e-headercelldiv').textContent).toBe('EmployeeID');
-      expect(headers[2].querySelector('.e-headercelldiv').textContent).toBe('Address');
+      expect(headers[0].querySelector('.e-headercelldiv').innerText.trim()).toBe('DOB');
+      expect(headers[1].querySelector('.e-headercelldiv').innerText.trim()).toBe('EmployeeID');
+      expect(headers[2].querySelector('.e-headercelldiv').innerText.trim()).toBe('Address');
       expect(columns[0].field).toBe('DOB');
       expect(columns[1].field).toBe('EmployeeID');
       expect(columns[2].field).toBe('Address');
@@ -312,9 +312,9 @@ describe('Stacked data Reorder', () => {
       columns = TreeGridObj.grid.getColumns() as Column[];
       headers = TreeGridObj.getHeaderContent().querySelectorAll('.e-headercell');
      
-      expect(headers[0].querySelector('.e-headercelldiv')).toBe('Order Details');
-      expect(headers[1].querySelector('.e-headercelldiv')).toBe('Shipment Details');
-      expect(headers[2].querySelector('.e-headercelldiv')).toBe('Price Details');
+      expect(headers[0].querySelector('.e-stackedheadercelldiv').textContent).toBe('Order Details');
+      expect(headers[1].querySelector('.e-stackedheadercelldiv').textContent).toBe('Shipment Details');
+      expect(headers[2].querySelector('.e-stackedheadercelldiv').textContent).toBe('Price Details');
       expect(columns[2].field).toBe('orderDate');
       expect(columns[3].field).toBe('shipMentCategory');
       expect(columns[4].field).toBe('shippedDate');

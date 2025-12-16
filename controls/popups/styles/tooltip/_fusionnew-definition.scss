@@ -1,3 +1,6 @@
+@use 'ej2-base/styles/definition/fusionnew' as *;
+@forward 'ej2-base/styles/definition/fusionnew';
+
 //layout variables
 $tooltip-drop-shadow: $shadow-sm !default;
 $tooltip-close-icon-border: 1px solid $secondary-bg-color !default;
@@ -47,3 +50,16 @@ $tooltip-hover-icon-color:  $secondary-text-color !default;
 $tooltip-icon-bg-hover: $secondary-bg-color-hover !default;
 $tooltip-icon-border-color: $secondary-bg-color !default;
 $tooltip-close-icon-border-hover: $secondary-border-color-hover !default;
+$tooltip-tip-content-line-height: 20px !default;
+$tooltip-zero-padding-margin: 0 !default;
+$tooltip-wrap-min-width: 30px !default;
+$tooltip-zero-height: 0 !default;
+$tooltip-one-line-height: 1 !default;
+$tooltip-close-right: -9px !default;
+$tooltip-close-top: -9px !default;
+$tooltip-full-height: 100% !default;
+$tooltip-full-width: 100% !default;
+$tooltip-nrml-close-border-radius: 9px !default;
+$tooltip-nrml-close-border: 1px !default;
+$tooltip-nrml-close-height: 16px !default;
+$tooltip-nrml-close-width: 16px !default;

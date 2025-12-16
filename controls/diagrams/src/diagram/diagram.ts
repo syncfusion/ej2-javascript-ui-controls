@@ -41,7 +41,7 @@ import { ITextEditEventArgs, IHistoryChangeArgs, IScrollChangeEventArgs } from '
 import { IMouseEventArgs, IBlazorHistoryChangeArgs } from './objects/interface/IElement';
 import { IBlazorCustomHistoryChangeArgs, IImageLoadEventArgs } from './objects/interface/IElement';
 import { StackEntryObject, IExpandStateChangeEventArgs } from './objects/interface/IElement';
-import { ZoomOptions, IPrintOptions, IExportOptions, IFitOptions, ActiveLabel, IEditSegmentOptions, HierarchyData, NodeData, SpaceLevel, IGraph, ConnectorStyle, MermaidStyle } from './objects/interface/interfaces';
+import { ZoomOptions, IPrintOptions, IExportOptions, IFitOptions, ActiveLabel, IEditSegmentOptions, HierarchyData, NodeData, SpaceLevel, IGraph, ConnectorStyle, MermaidStyle, OverviewObject } from './objects/interface/interfaces';
 import { View, IDataSource, IFields } from './objects/interface/interfaces';
 import { GroupableView } from './core/containers/container';
 import { Node, BpmnShape, BpmnAnnotation, SwimLane, Path, DiagramShape, UmlActivityShape, FlowShape, BasicShape, UmlClassMethod, MethodArguments, UmlEnumerationMember, UmlClassAttribute, Lane, Shape, Container, Html, Native } from './objects/node';
@@ -108,7 +108,7 @@ import { getPortLayerSvg, getDiagramLayerSvg, applyStyleAgainstCsp } from './uti
 import { getAdornerLayerSvg, getSelectorElement, getGridLayerSvg, getBackgroundLayerSvg } from './utility/dom-util';
 import { CommandManager, ContextMenuSettings } from './diagram/keyboard-commands';
 import { CommandManagerModel, CommandModel, ContextMenuSettingsModel } from './diagram/keyboard-commands-model';
-import { canDelete, canInConnect, canOutConnect, canRotate, canVitualize, canDrawThumbs, canBridge } from './utility/constraints-util';
+import { canDelete, canInConnect, canOutConnect, canRotate, canVitualize, canDrawThumbs } from './utility/constraints-util';
 import { canPortInConnect, canPortOutConnect } from './utility/constraints-util';
 import { canResize, canSingleSelect, canZoomPan, canZoomTextEdit, canMultiSelect } from './utility/constraints-util';
 import { canDragSourceEnd, canDragTargetEnd, canDragSegmentThumb, enableReadOnly, canMove } from './utility/constraints-util';
@@ -170,10 +170,11 @@ import { getClassAttributesChild, getClassMembersChild, getClassNodesChild } fro
 import { getIntersectionPoints, getPortDirection } from './utility/connector';
 import { FlowchartLayout } from './layout/flowChart/flow-chart-layout';
 import { dragContainerChild, updateContainerDocks, setSizeForContainer, removeChildFromContainer, updateChildWrapper, addContainerChild, removeChild, dropContainerChild } from './utility/container-util';
-import { Overview } from '../overview';
+import { Overview } from '../overview/overview';
 import { identityMatrix, rotateMatrix, transformPointByMatrix, scaleMatrix, Matrix } from './primitives/matrix';
 import { UmlSequenceDiagram } from './diagram/sequence-diagram';
 import { UmlSequenceDiagramModel } from './diagram/sequence-diagram-model';
+
 /**
  * Represents the Diagram control
  * ```html
@@ -1743,6 +1744,8 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
     // To indicate the connector inside group is flipping.
     /**@private */
     public connectorFlipInProgress: boolean = false;
+    /** @private */
+    public overviewObject: OverviewObject = undefined;
     // Indicates whether the current action is part of an undo or redo operation
     /** @private */
     public checkUndoRedo: boolean = false;
@@ -1765,7 +1768,16 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
      * @private
      */
     public deserializing: boolean = false;
-
+    /**
+     * Defines initial values of scrollSettings.
+     * @private
+     */
+    public initialScrollValues: ScrollValues;
+    /**
+     * Defines current values of scrollSettings.
+     * @private
+     */
+    public currentScrollValues: ScrollValues;
     /**
      * Constructor for creating the widget
      */
@@ -2032,7 +2044,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                         this.updateLayer(newProp); break;
                     case 'scrollSettings':
                         this.scrollActions |= ScrollActions.PropertyChange;
-                        this.updateScrollSettings(newProp);
+                        this.updateScrollSettings(newProp, oldProp);
                         this.scrollActions &= ~ScrollActions.PropertyChange;
                         break;
                     case 'locale':
@@ -2598,6 +2610,14 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
         this.updateFitToPage();
         if (this.refreshing) {
             this.renderReactTemplates();
+            this.updateViews();
+        }
+    }
+    private updateViews(): void {
+        if (this.overviewObject) {
+            if (this.overviewObject.view && this.overviewObject.view instanceof Overview) {
+                this.overviewObject.view.setParent(this.element.id);
+            }
         }
     }
     /* tslint:enable */
@@ -4695,7 +4715,9 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                     childTable: childTable
                 };
                 this.addHistoryEntry(entry);
-                removeChild((child as Node), this);
+                // 983723 - An exception occurs when attempting to remove a child from a container
+                const childNode: Node = child instanceof Node ? child : this.nameTable[`${id}`];
+                removeChild(childNode, this);
             }
         } else {
             const id: string = this.removeChild(group, child);
@@ -8521,18 +8543,44 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
             this.refreshDiagramLayer();
         }
     }
-    private updateScrollSettings(newProp: DiagramModel): void {
+    private updateScrollSettings(newProp: DiagramModel, oldProp: DiagramModel): void {
         const hPan: number = (-this.scroller.horizontalOffset + newProp.scrollSettings.horizontalOffset || 0);
         const vPan: number = (-this.scroller.verticalOffset + newProp.scrollSettings.verticalOffset || 0);
         //diagram scroll offset value is updated in opposite sign value.
         //Bug 951366: Incorrect Scroll Offset Values When scroll diagram Using Scrollbar.
         this.scrollSettings.horizontalOffset = -this.scroller.horizontalOffset || 0;
         this.scrollSettings.verticalOffset = -this.scroller.verticalOffset || 0;
-        const oldValue: ScrollValues = {
-            VerticalOffset: this.scrollSettings.verticalOffset, HorizontalOffset: this.scrollSettings.horizontalOffset,
-            ViewportHeight: this.scrollSettings.viewPortHeight, ViewportWidth: this.scrollSettings.viewPortWidth,
-            CurrentZoom: this.scroller.currentZoom
-        };
+
+        // 974407 - Issue with ScrollChange Event Properties
+        let panStatus: State = 'Start';
+        if (this.realActions & RealAction.PanInProgress) {
+            panStatus = 'Progress';
+        }
+        let oldValue: ScrollValues;
+        if (panStatus === 'Start') {
+            oldValue = {
+                VerticalOffset: oldProp.scrollSettings.verticalOffset !== undefined ?
+                    oldProp.scrollSettings.verticalOffset : this.scrollSettings.verticalOffset,
+                HorizontalOffset: oldProp.scrollSettings.horizontalOffset !== undefined ?
+                    oldProp.scrollSettings.horizontalOffset : this.scrollSettings.horizontalOffset,
+                ViewportHeight: oldProp.scrollSettings.viewPortHeight !== undefined ?
+                    oldProp.scrollSettings.viewPortHeight : this.scrollSettings.viewPortHeight,
+                ViewportWidth: oldProp.scrollSettings.viewPortWidth !== undefined ?
+                    oldProp.scrollSettings.viewPortWidth : this.scrollSettings.viewPortWidth,
+                CurrentZoom: oldProp.scrollSettings.currentZoom !== undefined ?
+                    oldProp.scrollSettings.currentZoom : this.scroller.currentZoom
+            };
+            this.initialScrollValues = oldValue;
+        }
+        else if (panStatus === 'Progress') {
+            oldValue = {
+                VerticalOffset: this.currentScrollValues.VerticalOffset,
+                HorizontalOffset: this.currentScrollValues.HorizontalOffset,
+                ViewportHeight: this.currentScrollValues.ViewportHeight,
+                ViewportWidth: this.currentScrollValues.ViewportWidth,
+                CurrentZoom: this.currentScrollValues.CurrentZoom
+            };
+        }
         if (hPan !== 0 || vPan !== 0) {
             this.pan(hPan, vPan);
             //Setting offset property at runtime provides opposite offset values
@@ -8544,10 +8592,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
             ViewportHeight: this.scrollSettings.viewPortHeight, ViewportWidth: this.scrollSettings.viewPortWidth,
             CurrentZoom: this.scroller.currentZoom
         };
-        let panStatus: State = 'Start';
-        if (this.realActions & RealAction.PanInProgress) {
-            panStatus = 'Progress';
-        }
+        this.currentScrollValues = newValue;
         const arg: IScrollChangeEventArgs | IBlazorScrollChangeEventArgs = {
             oldValue: oldValue as ScrollValues,
             newValue: newValue, source: this,
@@ -10655,9 +10700,6 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
         if (this.bridgingModule) {
             for (let i: number = 0; i < this.connectors.length; i++) {
                 const connector: Connector = this.connectors[parseInt(i.toString(), 10)] as Connector;
-                if (!canBridge(connector, this) && this.lineDistributionModule) {
-                    continue;
-                }
                 this.bridgingModule.updateBridging(connector, this);
                 const canvas: GroupableView = this.connectors[parseInt(i.toString(), 10)].wrapper;
                 if (canvas && canvas.children && canvas.children.length > 0) {
@@ -10951,6 +10993,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
             if (overview) {
                 this.views.push(overview.id);
                 this.views[overview.id] = overview;
+                this.overviewObject = { id: overview.id, view: overview as Overview };
                 overview.renderDocument(overview);
                 overview.diagramRenderer.setLayers();
                 overview.initializeOverviewLayers();
@@ -10965,7 +11008,9 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
             }
             this.views[`${id}`] = undefined;
             const index: number = this.views.indexOf(id);
-            this.views.splice(index, 1);
+            if (index >= 0) {
+                this.views.splice(index, 1);
+            }
         }
     }
 
@@ -11857,7 +11902,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                 }
             }
         }
-        while (!isSelected);
+        while (!isSelected && selectables.length > 0); // Bug: 985134 - Diagram Becomes Unresponsive When Pressing Tab in Empty Diagram
     }
 
     /**
@@ -13410,6 +13455,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
             const node: Object = cloneObject(actualObject);
             this.insertValue(node, false);
         }
+        //989130- Port random exception due to incorrect tool args change
         let existingBounds: Rect;
         if (actualObject && actualObject.wrapper !== undefined) {
             existingBounds = actualObject.wrapper.bounds;
@@ -15368,6 +15414,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
      * @param {string[]} nodeIds - An array of node IDs on which the ports need to be distributed.
      */
     public distributePorts(nodeIds: string[]): void {
+        const sortedNodes: string[] = [];
         for (let n = 0; n < nodeIds.length; n++) {
             const node: Node = this.nameTable[nodeIds[parseInt(n.toString(), 10)]];
             if (!node || !node.ports || !node.width || !node.height) {
@@ -15483,7 +15530,10 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                 if (ports.length === 0) {
                     return;
                 }
-                ports.sort(this.callSort(node, edge, this));
+                ports.sort(this.callSort(node, edge, this, sortedNodes));
+                if (sortedNodes.indexOf(node.id) === -1) {
+                    sortedNodes.push(node.id);
+                }
                 const N: number = ports.length;
                 for (let i = 0; i < N; i++) {
                     const port: PointPortModel = ports[parseInt(i.toString(), 10)];
@@ -15517,7 +15567,8 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
         return { x: nodeLeft + port.offset.x * node.width, y: nodeTop + port.offset.y * node.height };
     }
 
-    private callSort(node: Node, edge: Direction, diagram: Diagram): (a: PointPortModel, b: PointPortModel) => number {
+    private callSort(node: Node, edge: Direction, diagram: Diagram, sortedNodes: string[]):
+    (a: PointPortModel, b: PointPortModel) => number {
         return (a: PointPortModel, b: PointPortModel) => {
             const aHasConn: number = (a.outEdges && a.outEdges.length) || (a.inEdges && a.inEdges.length);
             const bHasConn: number = (b.outEdges && b.outEdges.length) || (b.inEdges && b.inEdges.length);
@@ -15525,11 +15576,114 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                 : diagram.getProjectedOffset(a, node, edge);
             const bVal: PointModel = bHasConn ? diagram.getConnectorTargetOffset(b, node, edge, diagram)
                 : diagram.getProjectedOffset(b, node, edge);
-            if (edge === 'Top' || edge === 'Bottom') {
-                return (aVal.x - bVal.x) === 0 ? (bVal.y - aVal.y) : (aVal.x - bVal.x);
-            } else {
-                return (aVal.y - bVal.y) === 0 ? (bVal.x - aVal.x) : (aVal.y - bVal.y);
+
+            // 971299 - Issue with Automatic port distribution cross connection logic
+            let portAConnector: ConnectorModel = (a.outEdges && a.outEdges.length) ? diagram.nameTable[a.outEdges[0]] :
+                (a.inEdges && a.inEdges.length) ? diagram.nameTable[a.inEdges[0]] : null;
+            let portBConnector: ConnectorModel = (b.outEdges && b.outEdges.length) ? diagram.nameTable[b.outEdges[0]] :
+                (b.inEdges && b.inEdges.length) ? diagram.nameTable[b.inEdges[0]] : null;
+            let isSourcePoint: boolean = false;
+            let sourceNodeA: NodeModel; let sourceNodeB: NodeModel;
+            let sourcePortA: PointPortModel; let sourcePortB: PointPortModel;
+            let targetNodeA: NodeModel; let targetNodeB: NodeModel;
+            let targetPortA: PointPortModel; let targetPortB: PointPortModel;
+
+            if (portAConnector) {
+                sourceNodeA = diagram.nameTable[portAConnector.sourceID];
+                sourcePortA = diagram.getConnectedPort(sourceNodeA, portAConnector, true);
+                targetNodeA = diagram.nameTable[portAConnector.targetID];
+                targetPortA = diagram.getConnectedPort(targetNodeA, portAConnector);
+                if (portAConnector.targetID === node.id) {
+                    isSourcePoint = true;
+                }
+                if (targetNodeA && sortedNodes.indexOf(targetNodeA.id) !== -1) {
+                    portAConnector = null;
+                }
             }
+            if (portBConnector) {
+                sourceNodeB = diagram.nameTable[portBConnector.sourceID];
+                sourcePortB = diagram.getConnectedPort(sourceNodeB, portBConnector, true);
+                targetNodeB = diagram.nameTable[portBConnector.targetID];
+                targetPortB = diagram.getConnectedPort(targetNodeB, portBConnector);
+                if (portBConnector.targetID === node.id) {
+                    isSourcePoint = true;
+                }
+                if (targetNodeB && sortedNodes.indexOf(targetNodeB.id) !== -1) {
+                    portBConnector = null;
+                }
+            }
+            if (portAConnector && portBConnector) {
+                let portAPosition: Direction;
+                let portBPosition: Direction;
+                if (targetPortA && targetPortA.offset.x === 0 || (!targetPortA && sourcePortA && sourcePortA.offset.x === 0)) {
+                    portAPosition = 'Left';
+                }
+                if (targetPortA && targetPortA.offset.x === 1|| (!targetPortA && sourcePortA && sourcePortA.offset.x === 1)) {
+                    portAPosition = 'Right';
+                }
+                if (targetPortA && targetPortA.offset.y === 0 || (!targetPortA && sourcePortA && sourcePortA.offset.y === 0)) {
+                    portAPosition = 'Top';
+                }
+                if (targetPortA && targetPortA.offset.y === 1 || (!targetPortA && sourcePortA && sourcePortA.offset.y === 1)) {
+                    portAPosition = 'Bottom';
+                }
+                if (targetPortB && targetPortB.offset.x === 0 || (!targetPortB && sourcePortB && sourcePortB.offset.x === 0)) {
+                    portBPosition = 'Left';
+                }
+                if (targetPortB && targetPortB.offset.x === 1 || (!targetPortB && sourcePortB && sourcePortB.offset.x === 1)) {
+                    portBPosition = 'Right';
+                }
+                if (targetPortB && targetPortB.offset.y === 0 || (!targetPortB && sourcePortB && sourcePortB.offset.y === 0)) {
+                    portBPosition = 'Top';
+                }
+                if (targetPortB && targetPortB.offset.y === 1 || (!targetPortB && sourcePortB && sourcePortB.offset.y === 1)) {
+                    portBPosition = 'Bottom';
+                }
+                if (edge === 'Top' || edge === 'Bottom') {
+                    if (portBConnector.targetID !== node.id && (edge === 'Top' && portAPosition === 'Bottom' || edge === 'Top' && portAPosition === 'Right' ||
+                        edge === 'Bottom' && portAPosition === 'Top' || edge === 'Bottom' && portAPosition === 'Left')) {
+                        return (aVal.x - bVal.x) === 0 ? (bVal.y - aVal.y) : (aVal.x - bVal.x);
+                    }
+                    else if (edge === 'Top' && portAPosition === 'Top' || edge === 'Top' && portAPosition === 'Left'
+                        || edge === 'Bottom' && portAPosition === 'Bottom' || edge === 'Bottom' && portAPosition === 'Right') {
+
+                        if (targetNodeA && targetNodeB && targetNodeA.id === targetNodeB.id && !isSourcePoint && ((edge === 'Bottom' && portAPosition === 'Right' && portBPosition === 'Right')
+                            || (edge === 'Bottom' && portAPosition === 'Bottom' && portBPosition === 'Bottom')
+                            || (edge === 'Top' && portAPosition === 'Top' && portBPosition === 'Top')
+                            || (edge === 'Top' && portAPosition === 'Left' && portBPosition === 'Left'))) {
+                            return (aVal.x - bVal.x) === 0 ? (aVal.y - bVal.y) : (bVal.x - aVal.x);
+                        }
+                        else {
+                            return (aVal.x - bVal.x) === 0 ? (bVal.y - aVal.y) : (aVal.x - bVal.x);
+                        }
+                    }
+                    else {
+                        return (aVal.x - bVal.x) === 0 ? (aVal.y - bVal.y) : (bVal.x - aVal.x);
+                    }
+                }
+                else {
+                    if (edge === 'Left' && portAPosition === 'Right' || edge === 'Left' && portAPosition === 'Bottom' ||
+                        edge === 'Right' && portAPosition === 'Left' || edge === 'Right' && portAPosition === 'Top') {
+                        return (aVal.y - bVal.y) === 0 ? (bVal.x - aVal.x) : (aVal.y - bVal.y);
+                    }
+                    else if (edge === 'Left' && portAPosition === 'Left' || edge === 'Left' && portAPosition === 'Top'
+                        || edge === 'Right' && portAPosition === 'Right' || edge === 'Right' && portAPosition === 'Bottom') {
+                        if (targetNodeA && targetNodeB && targetNodeA.id === targetNodeB.id && !isSourcePoint && ((edge === 'Right' && portAPosition === 'Bottom' && portBPosition === 'Bottom')
+                            || (edge === 'Right' && portAPosition === 'Right' && portBPosition === 'Right')
+                            || (edge === 'Left' && portAPosition === 'Left' && portBPosition === 'Left')
+                            || (edge === 'Left' && portAPosition === 'Top' && portBPosition === 'Top'))) {
+                            return (aVal.y - bVal.y) === 0 ? (aVal.x - bVal.x) : (bVal.y - aVal.y);
+                        }
+                        else {
+                            return (aVal.y - bVal.y) === 0 ? (bVal.x - aVal.x) : (aVal.y - bVal.y);
+                        }
+                    }
+                    else {
+                        return (aVal.y - bVal.y) === 0 ? (aVal.x - bVal.x) : (bVal.y - aVal.y);
+                    }
+                }
+            }
+            return 0;
         };
     }
 

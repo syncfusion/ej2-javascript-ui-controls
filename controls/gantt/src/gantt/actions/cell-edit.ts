@@ -8,7 +8,7 @@ import { TreeGrid, Edit } from '@syncfusion/ej2-treegrid';
 import { Deferred } from '@syncfusion/ej2-data';
 import { Tab } from '@syncfusion/ej2-navigations';
 import { ConstraintType } from '../base/enum';
-import { ColumnModel as GanttColumnModel } from '../models/column';
+import { CalendarContext } from '../base/calendar-context';
 /**
  * To handle cell edit action on default columns and custom columns
  */
@@ -267,6 +267,9 @@ export class CellEdit {
             this.parent.editModule.endEditAction(args);
         }
         this.isCellEdit = false;
+        if (this.parent.treeGridModule['isDateColumnCellEdit']) {
+            this.parent.treeGridModule['isDateColumnCellEdit'] = false;
+        }
         if (!isNullOrUndefined(this.parent.editModule.cellEditModule.editedColumn)) {
             this.parent.editModule.cellEditModule.editedColumn = null;
         }
@@ -425,6 +428,9 @@ export class CellEdit {
     public validateEndDateWithSegments(ganttProp: ITaskData): ITaskSegment[] {
         const ganttSegments: ITaskSegment[] = [];
         const segments: ITaskSegment[] = ganttProp.segments;
+        const calendarContext: CalendarContext = ganttProp
+            ? ganttProp.calendarContext
+            : this.parent.defaultCalendarContext;
         for (let i: number = 0; i < segments.length; i++) {
             const segment: ITaskSegment = segments[parseInt(i.toString(), 10)];
             let endDate: Date = segment.endDate;
@@ -432,13 +438,13 @@ export class CellEdit {
                 ganttProp.endDate.getTime() && i !== segments.length - 1 ? endDate : ganttProp.endDate;
             segment.duration = this.parent.dataOperation.getDuration(
                 segment.startDate, endDate, ganttProp.durationUnit, ganttProp.isAutoSchedule,
-                ganttProp.isMilestone
+                ganttProp.isMilestone, undefined, calendarContext
             );
             if (segments.length > 0 && endDate.getTime() < segment.startDate.getTime()
                 && endDate.getTime() <= ganttProp.endDate.getTime()) {
                 segments[i - 1].duration = this.parent.dataOperation.getDuration(
                     segments[i - 1].startDate, ganttProp.endDate, ganttProp.durationUnit,
-                    ganttProp.isAutoSchedule, ganttProp.isMilestone);
+                    ganttProp.isAutoSchedule, ganttProp.isMilestone, undefined, calendarContext);
                 continue;
             }
             ganttSegments.push(segment);
@@ -694,11 +700,14 @@ export class CellEdit {
      */
     private progressEdited(args: ITaskbarEditedEventArgs): void {
         const ganttRecord: IGanttData = args.data;
-        const rawProgress: number = ganttRecord[this.parent.taskFields.progress];
-        let progressValue: number = this.parent.dataOperation['formatProgressValue'](rawProgress, this.parent.taskFields.progress);
-        progressValue = (progressValue > 100) ? 100 : progressValue;
-        this.parent.setRecordValue('progress', progressValue, ganttRecord.ganttProperties, true);
-        this.parent.setRecordValue('taskData.' + this.parent.taskFields.progress, progressValue, args.data);
+        this.parent.setRecordValue(
+            'progress',
+            (ganttRecord[this.parent.taskFields.progress] > 100 ? 100 : ganttRecord[this.parent.taskFields.progress]),
+            ganttRecord.ganttProperties, true);
+        this.parent.setRecordValue(
+            'taskData.' + this.parent.taskFields.progress,
+            (ganttRecord[this.parent.taskFields.progress] > 100 ? 100 : ganttRecord[this.parent.taskFields.progress]),
+            args.data);
         if (!ganttRecord.ganttProperties.isAutoSchedule) {
             this.parent.setRecordValue('autoWidth',
                                        this.parent.dataOperation.calculateWidth(ganttRecord, false), ganttRecord.ganttProperties, true);

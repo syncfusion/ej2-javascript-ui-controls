@@ -672,7 +672,7 @@ describe('Breadcrumb', () => {
             }
         });
     });
-    describe('Accessibility compliance', () => {
+     describe('Accessibility compliance', () => {
         afterEach(() => {
             breadcrumb.destroy();
         });
@@ -708,7 +708,7 @@ describe('Breadcrumb', () => {
             expect(activeItem.getAttribute('aria-current')).toBe('page');
 
             itemElements.filter((li: HTMLElement) => li !== activeItem).forEach((li: HTMLElement) => {expect(li.hasAttribute('aria-current')).toBe(false);});
-            
+
             breadcrumb.destroy();
             host.remove();
         });

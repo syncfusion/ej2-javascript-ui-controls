@@ -1,3 +1,5 @@
+@use 'ej2-base/styles/common/mixin' as *;
+@use './theme-variables' as *;
 @include export-module('checkbox-bigger') {
   .e-bigger.e-small .e-checkbox-wrapper,
   .e-bigger.e-small.e-checkbox-wrapper,
@@ -8,9 +10,9 @@
       line-height: $cbox-bigger-small-lineheight;
       width: $cbox-bigger-small-width;
       @if $skin-name == 'fluent2' {
-        margin: 8.2px 8px;
+        margin: $cbox-bgr-css-margin;
         +label {
-          margin: 7.2px 8px 7.2px 4px;
+          margin: $cbox-bgr-css-label-margin;
         }
       }
 
@@ -62,7 +64,7 @@
     & .e-checkbox {
       +.label {
         @if $skin-name == 'fluent2' {
-          margin: 9px 6px 9px 8px;
+          margin: $cbox-bgr-checkbox-label-margin;
         }
       }
     }
@@ -71,7 +73,7 @@
       line-height: $cbox-bigger-lineheight;
       width: $cbox-bigger-width;
       @if $skin-name == 'fluent2' {
-        margin: 9.2px 8px;
+        margin: $cbox-bgr-checkbox-label-frame-margin;
       }
 
       &:hover {
@@ -88,7 +90,7 @@
         font-size: $cbox-bigger-font-size;
         line-height: $cbox-bigger-height;
         @if $skin-name == 'fluent2' {
-          margin: 9px 8px 9px 6px;
+          margin: $cbox-bigger-label-margin;
         }
         @else {
           margin-left: $cbox-bigger-margin;
@@ -96,7 +98,7 @@
       }
 
       +.e-ripple-container {
-        left: auto;
+        left: $cbox-auto-width;
       }
     }
 
@@ -125,7 +127,7 @@
     &.e-rtl {
       & .e-frame {
         @if $skin-name != 'fluent2' {
-          margin: 0;
+          margin: $cbox-zero-margin;
         }
 
         &:hover {
@@ -146,20 +148,20 @@
 
         +.e-label {
           @if $skin-name == 'fluent2' {
-            margin: 9px 6px 9px 8px;
+            margin: $cbox-bgr-checkbox-label-margin;
           }
           @else {
-            margin-left: 0;
+            margin-left: $cbox-zero-margin;
             margin-right: $cbox-bigger-margin;
           }
         }
 
         +.e-ripple-container {
-          left: auto;
+          left: $cbox-auto-width;
         }
 
         +.e-ripple-container {
-          right: auto;
+          right: $cbox-auto-width;
         }
       }
     }
@@ -220,7 +222,7 @@
         &.e-check,
         &.e-stop {
           @if $skin-name == 'Material3' {
-            line-height: 18px;
+            line-height: $cbox-disabled-line-height;
           }
         }
       }

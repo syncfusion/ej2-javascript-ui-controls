@@ -52,6 +52,9 @@ export class ContentRender implements IRenderer {
         if (!isNOU(this.parent.fontSize.default)) {
             this.editableElement.style.fontSize = this.parent.fontSize.default;
         }
+        if (!isNOU(this.parent.lineHeight.default)) {
+            this.editableElement.style.lineHeight = this.parent.lineHeight.default;
+        }
         this.editableElement.innerHTML = rteContent;
         div.appendChild(this.editableElement);
         this.setPanel(div);

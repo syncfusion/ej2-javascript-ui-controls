@@ -1,5 +1,6 @@
 @use 'sass:meta';
-@import 'definition/material.scss';
+@use 'definition/material' as *;
+@forward 'definition/material';
 
 @if not meta.variable-exists('is-roboto-loaded') {
   //sass-lint:disable no-url-protocols,no-url-domains

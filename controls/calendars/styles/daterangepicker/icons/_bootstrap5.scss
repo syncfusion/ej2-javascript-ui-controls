@@ -1,3 +1,5 @@
+@use 'ej2-base/styles/common/mixin' as *;
+@use '../bootstrap5-definition' as *;
 @include export-module('daterangepicker-bootstrap5-icons') {
 
   /*! component icons */

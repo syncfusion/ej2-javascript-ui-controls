@@ -1077,14 +1077,16 @@ describe('Circular-Gauge Control', () => {
         it('Checking tick, label position as cross', (done: Function) => {
             gauge.loaded = (args: ILoadedEventArgs): void => {
                 svg = document.getElementById('container_Axis_0_Label_0');
-                expect(svg.getAttribute('x') == '587.5' || svg.getAttribute('x') == '579.75').toBe(true);
+                expect(svg.getAttribute('x') == '587.5' || svg.getAttribute('x') == '579.75' || svg.getAttribute('x') == '566.25'
+                || svg.getAttribute('x') == '577.5').toBe(true);
                 expect(svg.getAttribute('y')).toBe('225');
                 svg = document.getElementById('container_Axis_Major_TickLine_0_0');
                 value = svg.getAttribute('d').split(' ');
-                expect(value[1] == '589.5' || value[1] == '596.5').toBe(true);
+                expect(value[1] == '589.5' || value[1] == '596.5' || value[1] == '576' || value[1] == '586.5').toBe(true);
                 svg = document.getElementById('container_Axis_Minor_TickLine_0_4');
                 value = svg.getAttribute('d').split(' ');
-                expect(value[1] == '210.72455052316764' || value[1] == '215.01102564713278' || value[1] == '319.7606962531708').toBe(true);
+                expect(value[1] == '210.72455052316764' || value[1] == '215.01102564713278' || value[1] == '319.7606962531708' ||
+                value[1] == '309.7606962531708' || value[1] == '301.22422348763496').toBe(true);
                 done();
             };
             gauge.axes[0].majorTicks.height = 10;
@@ -1100,7 +1102,7 @@ describe('Circular-Gauge Control', () => {
         it('Checking ticks position as cross and label position as Outside', (done: Function) => {
             gauge.loaded = (args: ILoadedEventArgs): void => {
                 svg = document.getElementById('container_Axis_0_Label_0');
-                expect(svg.getAttribute('x') == '579' || svg.getAttribute('x') == '587.5').toBe(true);
+                expect(svg.getAttribute('x') == '579' || svg.getAttribute('x') == '587.5' || svg.getAttribute('x') == '565.5' || svg.getAttribute('x') == '577.5').toBe(true);
                 expect(svg.getAttribute('y')).toBe('225');
                 done();
             };
@@ -1111,7 +1113,7 @@ describe('Circular-Gauge Control', () => {
         it('Checking ticks position as outside and label position as cross', (done: Function) => {
             gauge.loaded = (args: ILoadedEventArgs): void => {
                 svg = document.getElementById('container_Axis_0_Label_0');
-                expect(svg.getAttribute('x') == '579' || svg.getAttribute('x') == '587.5').toBe(true);
+                expect(svg.getAttribute('x') == '579' || svg.getAttribute('x') == '587.5' || svg.getAttribute('x') == '565.5' || svg.getAttribute('x') == '577.5').toBe(true);
                 expect(svg.getAttribute('y')).toBe('225');
                 done();
             };

@@ -1,7 +1,7 @@
 @use 'sass:color';
 @use 'sass:meta';
 @use 'sass:list';
-@import '../common/mixin.scss';
+@use '../common/mixin' as *;
 
 $accent: #e3165b !default;
 $accent-font: #fff !default;

@@ -1,3 +1,6 @@
+@use 'ej2-base/styles/common/mixin' as *;
+@use '../highcontrast-light-definition' as *;
+@use '../../document-editor/highcontrast-light-definition' as *;
 @include export-module('document-editor-container-highcontrast-light-icons') {
   .e-de-ctnr-close::before {
     content: '\eb68';

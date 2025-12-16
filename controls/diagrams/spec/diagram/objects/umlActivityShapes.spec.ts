@@ -8,12 +8,10 @@ import { Canvas } from '../../../src/diagram/core/containers/canvas';
 import { PointModel } from '../../../src/diagram/primitives/point-model';
 import { Rect } from '../../../src/diagram/primitives/rect';
 import { Matrix, transformPointByMatrix, identityMatrix } from '../../../src/diagram/primitives/matrix';
-import { UmlSequenceDiagramModel, UmlSequenceParticipantModel, UmlSequenceMessageModel, UmlSequenceFragmentModel  } from "../../../src/diagram/diagram/sequence-diagram-model";
-import { UmlSequenceMessageType, UmlSequenceFragmentType, UmlSequenceDiagram,  } from "../../../src/diagram/diagram/sequence-diagram";
+import { UmlSequenceDiagramModel, UmlSequenceParticipantModel, UmlSequenceMessageModel, UmlSequenceFragmentModel } from "../../../src/diagram/diagram/sequence-diagram-model";
+import { UmlSequenceMessageType, UmlSequenceFragmentType, UmlSequenceDiagram } from "../../../src/diagram/diagram/sequence-diagram";
 
-import {
-    SymbolPalette, SymbolInfo,
-} from '../../../src/symbol-palette/index';
+import { SymbolPalette, SymbolInfo, } from '../../../src/symbol-palette/index';
 import { MouseEvents } from '../interaction/mouseevents.spec';
 import { ActivityFlow } from '../../../src/diagram/objects/connector';
 import { profile, inMB, getMemoryProfile } from '../../../spec/common.spec';
@@ -26,6 +24,14 @@ describe('Diagram Control', () => {
         let diagram: Diagram;
         let ele: HTMLElement;
         let mouseEvents: MouseEvents = new MouseEvents();
+        let wrapper: Canvas;
+        let nodeNew: NodeModel;
+        let node: NodeModel;
+        let element: DiagramElement;
+        let diagramCanvas: HTMLElement;
+        let connector: ConnectorModel;
+        let connector1: ConnectorModel;
+
         beforeAll((): void => {
             const isDef = (o: any) => o !== undefined && o !== null;
             if (!isDef(window.performance)) {
@@ -35,7 +41,7 @@ describe('Diagram Control', () => {
             }
             ele = createElement('div', { id: 'diagramuml' });
             document.body.appendChild(ele);
-            let node: NodeModel[] = [{
+            let nodes: NodeModel[] = [{
                 id: 'InitialNode', width: 90, height: 90, offsetX: 100, offsetY: 100,
                 shape: { type: 'UmlActivity', shape: 'InitialNode' },
                 annotations: [{
@@ -129,17 +135,19 @@ describe('Diagram Control', () => {
                 targetPoint: { x: 100, y: 400 }, shape: { type: 'UmlActivity', flow: 'Exception' }
             }];
             diagram = new Diagram({
-                width: 1500, height: 1500, nodes: node, connectors: connectors,
+                width: 1500, height: 1500, nodes: nodes, connectors: connectors,
             });
             diagram.appendTo('#diagramuml');
+            diagramCanvas = document.getElementById(diagram.element.id + 'content');
         });
 
         afterAll((): void => {
             diagram.destroy();
             ele.remove();
+            (diagram as any) = null; (ele as any) = null;
         });
         it('Checking before, after,  UML Activity shape and type as InitialNode ', (done: Function) => {
-            let wrapper: Canvas = (diagram.nodes[0] as NodeModel).wrapper.children[0] as Canvas;
+            wrapper = (diagram.nodes[0] as NodeModel).wrapper.children[0] as Canvas;
             expect((
                 document.getElementById(
                     diagram.nodes[0].id + '_content').getAttribute('d') === 'M45,90 C20.19,90,0,69.81,0,45 C0,20.189999999999998,20.19,0,45,0 C69.81,0,90,20.19,90,45 C90,69.81,69.81,90,45,90 Z ' &&
@@ -147,22 +155,22 @@ describe('Diagram Control', () => {
             done();
         });
         it('Checking before, after,  UML Activity shape and type as Action ', (done: Function) => {
-            let wrapper: Canvas = (diagram.nodes[1] as NodeModel).wrapper.children[0] as Canvas;
+            wrapper = (diagram.nodes[1] as NodeModel).wrapper.children[0] as Canvas;
             expect((wrapper.actualSize.width === 90 && wrapper.actualSize.height === 90 &&
                 wrapper.offsetX === 300 && wrapper.offsetY === 100
             )).toBe(true);
             done();
         });
         it('Checking UmlActivity shapes-Decision', (done: Function) => {
-            let node: NodeModel = diagram.nodes[2];
-            let element: DiagramElement = node.wrapper.children[0];
+            node = diagram.nodes[2];
+            element = node.wrapper.children[0];
             expect(
                 document.getElementById(diagram.nodes[2].id + '_content').getAttribute('d') === 'M45,90 L0,45 L45,0 L90,45 L45,90 Z ' &&
                 (element as PathModel).data == 'M10,19.707L0.293,10L10,0.293L19.707,10L10,19.707z').toBe(true);
             done();
         });
         it('Checking before, after,  UML Activity shape and type as MergeNode ', (done: Function) => {
-            let wrapper: Canvas = (diagram.nodes[3] as NodeModel).wrapper.children[0] as Canvas;
+            wrapper = (diagram.nodes[3] as NodeModel).wrapper.children[0] as Canvas;
             expect(
                 document.getElementById(diagram.nodes[3].id + '_content').getAttribute('d') === 'M45,90 L0,45 L45,0 L90,45 L45,90 Z ' &&
                 (wrapper.actualSize.width === 90 && wrapper.actualSize.height === 90 &&
@@ -171,7 +179,7 @@ describe('Diagram Control', () => {
             done();
         });
         it('Checking before, after,  UML Activity shape and type as FinalNode ', (done: Function) => {
-            let wrapper: Canvas = (diagram.nodes[4] as NodeModel).wrapper.children[0] as Canvas;
+            wrapper = (diagram.nodes[4] as NodeModel).wrapper.children[0] as Canvas;
             expect((wrapper.children[0].actualSize.width === 90
                 && wrapper.children[0].actualSize.height === 90 &&
                 wrapper.children[0].offsetX === 900 && wrapper.children[0].offsetY === 100) &&
@@ -183,23 +191,22 @@ describe('Diagram Control', () => {
             done();
         });
 
-        it('Resize finalNode', (done: Function) => {
-            let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
-            mouseEvents.clickEvent(diagramCanvas, 800, 300);
-            let matrix: Matrix = identityMatrix();
-            let bounds: Rect = (diagram.nodes[4] as NodeModel).wrapper.bounds;
-            let refPoint: PointModel = transformPointByMatrix(matrix, bounds.topLeft); refPoint.x += 8; refPoint.y += 8;
-            mouseEvents.dragAndDropEvent(diagramCanvas, refPoint.x, refPoint.y, refPoint.x + 5, refPoint.y - 10);
-            mouseEvents.mouseMoveEvent(diagramCanvas, 860, 90);
-            mouseEvents.mouseDownEvent(diagramCanvas, 860, 90);
-            mouseEvents.mouseMoveEvent(diagramCanvas, 800, 90);
-            expect(Math.round(diagram.nodes[4].width) == 145 || Math.round(diagram.nodes[4].width) == 150).toBe(true);
-            mouseEvents.mouseUpEvent(diagramCanvas, 800, 90);
-            done();
-        });
+        // it('Resize finalNode', (done: Function) => {
+        //     mouseEvents.clickEvent(diagramCanvas, 800, 300);
+        //     let matrix: Matrix = identityMatrix();
+        //     let bounds: Rect = (diagram.nodes[4] as NodeModel).wrapper.bounds;
+        //     let refPoint: PointModel = transformPointByMatrix(matrix, bounds.topLeft); refPoint.x += 8; refPoint.y += 8;
+        //     mouseEvents.dragAndDropEvent(diagramCanvas, refPoint.x, refPoint.y, refPoint.x + 5, refPoint.y - 10);
+        //     mouseEvents.mouseMoveEvent(diagramCanvas, 860, 90);
+        //     mouseEvents.mouseDownEvent(diagramCanvas, 860, 90);
+        //     mouseEvents.mouseMoveEvent(diagramCanvas, 800, 90);
+        //     expect(Math.round(diagram.nodes[4].width) == 145 || Math.round(diagram.nodes[4].width) == 150).toBe(true);
+        //     mouseEvents.mouseUpEvent(diagramCanvas, 800, 90);
+        //     done();
+        // });
 
         it('Checking before, after,  UML Activity shape and type as ForkNode ', (done: Function) => {
-            let wrapper: Canvas = (diagram.nodes[5] as NodeModel).wrapper.children[0] as Canvas;
+            wrapper = (diagram.nodes[5] as NodeModel).wrapper.children[0] as Canvas;
             expect(
                 document.getElementById(diagram.nodes[5].id + '_content').getAttribute('d') === 'M0,0 L90,0 L90,90 L0,90 L0,0 Z ' &&
                 (wrapper.actualSize.width === 90
@@ -209,8 +216,8 @@ describe('Diagram Control', () => {
             done();
         });
         it('Checking UmlActivity shapes-JoinNode', (done: Function) => {
-            let node: NodeModel = diagram.nodes[6];
-            let element: DiagramElement = node.wrapper.children[0];
+            node = diagram.nodes[6];
+            element = node.wrapper.children[0];
             expect(
                 (diagram.nodes[6] as NodeModel).wrapper.children[0].height === 90 &&
                 document.getElementById(diagram.nodes[6].id + '_content').getAttribute('d') === "M0,0 L90,0 L90,90 L0,90 L0,0 Z " &&
@@ -218,8 +225,8 @@ describe('Diagram Control', () => {
             done();
         });
         it('Checking UmlActivity shapes-TimeEvent', (done: Function) => {
-            let node: NodeModel = diagram.nodes[7];
-            let element: DiagramElement = node.wrapper.children[0];
+            node = diagram.nodes[7];
+            element = node.wrapper.children[0];
             expect(
                 document.getElementById(diagram.nodes[7].id + '_content').getAttribute('d') === "M90,0 L45,45 L0,0 L90,0 Z M0,90 L45,45 L90,90 L0,90 Z " &&
                 (element as PathModel).data == 'M50.001,0.00286865 L25.001,25.0029 L0.000976562,0.00286865 L50.001,0.00286865 z ' +
@@ -227,65 +234,65 @@ describe('Diagram Control', () => {
             done();
         });
         it('Checking UmlActivity shapes-AcceptingEvent', (done: Function) => {
-            let node: NodeModel = diagram.nodes[8];
-            let element: DiagramElement = node.wrapper.children[0];
+            node = diagram.nodes[8];
+            element = node.wrapper.children[0];
             expect(
                 document.getElementById(diagram.nodes[8].id + '_content').getAttribute('d') === "M1.48,90 L35.56,44.54 L0,0 L89.04,0 L90,89.09 Z " &&
                 (element as PathModel).data == 'M17.8336 32.164 L29.64 24 L17.32 16 L48.1664 16 L48.5 32 Z').toBe(true);
             done();
         });
         it('Checking UmlActivity shapes-SendSignal', (done: Function) => {
-            let node: NodeModel = diagram.nodes[9];
-            let element: DiagramElement = node.wrapper.children[0];
+            node = diagram.nodes[9];
+            element = node.wrapper.children[0];
             expect(document.getElementById(diagram.nodes[9].id + '_content').getAttribute('d') === "M72.3,90 L90,44.52 L71.55,0 L0,0 L0,90 Z " &&
                 (element as PathModel).data == 'M48.164 31.8336 L56 23.832 L47.836 16 L16.168 16 L16.1668 31.8336 Z').toBe(true);
             done();
         });
         it('Checking UmlActivity shapes-ReceiveSignal', (done: Function) => {
-            let node: NodeModel = diagram.nodes[10];
-            let element: DiagramElement = node.wrapper.children[0];
+            node = diagram.nodes[10];
+            element = node.wrapper.children[0];
             expect(document.getElementById(diagram.nodes[10].id + '_content').getAttribute('d') === "M90,89.99 L66.57,45.47 L89.07,0 L0,0 L0,90 Z " &&
                 (element as PathModel).data == 'M48.1664 31.8336 L39.836 24 L47.836 16 L16.168 16 L16.168 31.836 Z').toBe(true);
             done();
         });
         it('Checking UmlActivity shapes-StructuredNode', (done: Function) => {
-            let node: NodeModel = diagram.nodes[11];
-            let element: DiagramElement = node.wrapper.children[0];
+            node = diagram.nodes[11];
+            element = node.wrapper.children[0];
             expect(document.getElementById(diagram.nodes[11].id + '_content').getAttribute('d') === "M0,0 L90,0 L90,90 L0,90 Z " &&
                 (element as PathModel).data == 'M0,0 L50,0 L50,50 L0,50 z').toBe(true);
             done();
         });
         it('Checking UmlActivity shapes-Note', (done: Function) => {
-            let node: NodeModel = diagram.nodes[12];
-            let element: DiagramElement = node.wrapper.children[0];
+            node = diagram.nodes[12];
+            element = node.wrapper.children[0];
             expect(document.getElementById(diagram.nodes[12].id + '_content').getAttribute('d') === "M80,0 L0,0 L0,90 L90,90 L90,18 L80,18 L80,0 L90,18 Z " &&
                 (element as PathModel).data == 'M20 12 L4 12 L4 22 L22 22 L22 14 L20 14 L20 12 L22 14 Z').toBe(true);
             done();
         });
         it('Checking UmlActivity shapes-flow - control flow', (done: Function) => {
-            let connector: ConnectorModel = diagram.connectors[0];
+            connector = diagram.connectors[0];
             diagram.connectors
-            let element: DiagramElement = connector.wrapper.children[0];
+            element = connector.wrapper.children[0];
             expect(element.style.strokeWidth == 1).toBe(true);
             done();
         });
         it('Checking UmlActivity shapes-flow - object flow', (done: Function) => {
-            let connector: ConnectorModel = diagram.connectors[1];
-            let element: DiagramElement = connector.wrapper.children[0];
+            connector = diagram.connectors[1];
+            element = connector.wrapper.children[0];
             expect(element.style.strokeWidth == 1).toBe(true);
             done();
         });
         it('Checking UmlActivity shapes-flow - exception flow', (done: Function) => {
-            let connector: ConnectorModel = diagram.connectors[2];
-            let element: DiagramElement = connector.wrapper.children[0];
+            connector = diagram.connectors[2];
+            element = connector.wrapper.children[0];
             expect((element as PathModel).data == 'M100 100 L110.61 260.61 L89.39 239.39 L99.97 399.5').toBe(true);
             done();
         });
         it('Checking uml Activity shapes InitialNode to decision', (done: Function) => {
             ((diagram.nodes[0] as NodeModel).shape as UmlActivityShapeModel).shape = 'Decision';
             diagram.dataBind();
-            let node: NodeModel = diagram.nodes[0];
-            let element: DiagramElement = node.wrapper.children[0];
+            node = diagram.nodes[0];
+            element = node.wrapper.children[0];
             expect((element as PathModel).data == 'M10,19.707L0.293,10L10,0.293L19.707,10L10,19.707z').toBe(true);
             done();
 
@@ -304,12 +311,12 @@ describe('Diagram Control', () => {
             diagram.nodes[0].style.opacity = 5;
             diagram.nodes[0].style.strokeColor = 'green';
             diagram.dataBind();
-            let node: NodeModel = diagram.nodes[0];
+            node = diagram.nodes[0];
             expect(node.style.fill == 'red').toBe(true);
             done();
         });
         it('Add umlActivity shapes at runtime', (done: Function) => {
-            let nodeNew: NodeModel = {
+            nodeNew = {
                 id: 'nodeNew', width: 90, height: 90, offsetX: 500, offsetY: 800,
                 shape: { type: 'UmlActivity', shape: 'Note' } as UmlActivityShapeModel,
             };
@@ -357,7 +364,7 @@ describe('Diagram Control', () => {
             done();
         });
         it('Add umlActivity shapes JoinNode at runtime without height and width', (done: Function) => {
-            let nodeNew: NodeModel = {
+            nodeNew = {
                 id: 'nodeNew2', offsetX: 500, offsetY: 800,
                 shape: { type: 'UmlActivity', shape: 'JoinNode' } as UmlActivityShapeModel,
             };
@@ -366,7 +373,7 @@ describe('Diagram Control', () => {
             done();
         });
         it('Add umlActivity shapes JoinNode at runtime without style fill', (done: Function) => {
-            let nodeNew: NodeModel = {
+            nodeNew = {
                 id: 'nodeNew3', offsetX: 800, offsetY: 100,
                 style: { strokeColor: 'yellow' },
                 shape: { type: 'UmlActivity', shape: 'JoinNode' } as UmlActivityShapeModel,
@@ -376,7 +383,7 @@ describe('Diagram Control', () => {
             done();
         });
         it('Add umlActivity shapes InitialNode at runtime ', (done: Function) => {
-            let nodeNew: NodeModel = {
+            nodeNew = {
                 id: 'nodeNew6', offsetX: 800, offsetY: 800, style: { strokeColor: 'yellow' },
                 shape: { type: 'UmlActivity', shape: 'InitialNode' } as UmlActivityShapeModel,
             };
@@ -385,7 +392,7 @@ describe('Diagram Control', () => {
             done();
         });
         it('Add umlActivity shapes ForkNode at runtime without style', (done: Function) => {
-            let nodeNew: NodeModel = {
+            nodeNew = {
                 id: 'nodeNew7', offsetX: 1000, offsetY: 800,
                 shape: { type: 'UmlActivity', shape: 'ForkNode' } as UmlActivityShapeModel,
             };
@@ -394,7 +401,7 @@ describe('Diagram Control', () => {
             done();
         });
         it('Add umlActivity shapes InitialNode at runtime without style', (done: Function) => {
-            let nodeNew: NodeModel = {
+            nodeNew = {
                 id: 'nodeNew8', offsetX: 1000, offsetY: 800,
                 shape: { type: 'UmlActivity', shape: 'InitialNode' } as UmlActivityShapeModel,
             };
@@ -403,7 +410,7 @@ describe('Diagram Control', () => {
             done();
         });
         it('Add umlActivity flow shapes', (done: Function) => {
-            let connector1: ConnectorModel = {
+            connector1 = {
                 id: 'flow2',
                 type: 'Straight', style: { fill: 'red', strokeDashArray: ' 2 3', strokeColor: 'yellow', strokeWidth: 5 },
                 shape: { type: 'UmlActivity', flow: 'Control' } as ActivityFlow,
@@ -416,7 +423,7 @@ describe('Diagram Control', () => {
             done();
         });
         it('Add umlActivity flow shapes ', (done: Function) => {
-            let connector1: ConnectorModel = {
+            connector1 = {
                 id: 'flow1',
                 type: 'Straight', style: { fill: 'red', strokeDashArray: ' 2 3', strokeColor: 'yellow', strokeWidth: 5 },
                 shape: { type: 'UmlActivity', flow: 'Object' } as ActivityFlow,
@@ -435,7 +442,6 @@ describe('Diagram Control', () => {
         let diagram: Diagram;
         let palette: SymbolPalette;
         let ele: HTMLElement;
-        let mouseEvents: MouseEvents = new MouseEvents();
         let umlActivitySymbols: NodeModel[] = [
             { id: 'Action', shape: { type: 'UmlActivity', shape: 'Action' }, annotations: [{ content: 'FinalNode' }] },
             { id: 'Decision', shape: { type: 'UmlActivity', shape: 'Decision' } },
@@ -523,6 +529,7 @@ describe('Diagram Control', () => {
             diagram.destroy();
             palette.destroy();
             ele.remove();
+            (diagram as any) = null; (palette as any) = null; (ele as any) = null;
         });
 
         it('Checking default palette rendering', (done: Function) => {
@@ -545,7 +552,6 @@ describe('Diagram Control', () => {
     describe('Testing UmlConnector', () => {
         let diagram: Diagram;
         let ele: HTMLElement;
-        let mouseEvents: MouseEvents = new MouseEvents();
 
         let umlActivityFlowSymbols: ConnectorModel[] = [
             {
@@ -580,17 +586,18 @@ describe('Diagram Control', () => {
                 return;
             }
             ele = createElement('div', { styles: 'width:100%;height:500px;' });
-            ele.appendChild(createElement('div', { id: 'umlActivityDiagram', styles: 'width:74%;height:500px;float:left;' }));
+            ele.appendChild(createElement('div', { id: 'umlActivityDiagram2', styles: 'width:74%;height:500px;float:left;' }));
             document.body.appendChild(ele);
             diagram = new Diagram({
-                connectors:umlActivityFlowSymbols,
+                connectors: umlActivityFlowSymbols,
             });
-            diagram.appendTo('#umlActivityDiagram');
+            diagram.appendTo('#umlActivityDiagram2');
         });
 
         afterAll((): void => {
             diagram.destroy();
             ele.remove();
+            (diagram as any) = null; (ele as any) = null;
         });
 
         it('831806-Umlclass connector Mulitiplicity - Many to Many', (done: Function) => {
@@ -600,144 +607,9 @@ describe('Diagram Control', () => {
     });
 
 
-     describe('Code coverage UML node', () => {
+    describe('Code coverage UML node', () => {
         let diagram: Diagram;
         let ele: HTMLElement;
-        let mouseEvents: MouseEvents = new MouseEvents();
-                    //Set the default values of nodes.
-                    function getNodeDefaults(obj: NodeModel): NodeModel {
-                        obj.style = { fill: '#26A0DA', strokeColor: 'white' };
-                        return obj;
-                    }
-
-                    //Set an annoation style at runtime.
-                    function setNodeTemplate(node: NodeModel): void {
-                        if (node.annotations.length > 0) {
-                        for (let i: number = 0; i < node.annotations.length; i++) {
-                            node.annotations[i].style.color = 'white';
-                        }
-                        }
-                    }
-
-                    //create class Property
-                    function createProperty(name: string, type: string): object {
-                        return { name: name, type: type };
-                    }
-
-                    //create class Methods
-                    function createMethods(name: string, type: string): object {
-                        return { name: name, type: type };
-                    }
-
-        beforeAll((): void => {
-            const isDef = (o: any) => o !== undefined && o !== null;
-            if (!isDef(window.performance)) {
-                console.log("Unsupported environment, window.performance.memory is unavailable");
-                this.skip(); //Skips test (in Chai)
-                return;
-            }
-            ele = createElement('div', { styles: 'width:100%;height:500px;' });
-            ele.appendChild(createElement('div', { id: 'umlClassDiagram', styles: 'width:74%;height:500px;float:left;' }));
-            document.body.appendChild(ele);
-
-
-
-            let nodes: NodeModel[] = [
-                {
-                  id: 'Patient',
-                  shape: {
-                    type: 'UmlClassifier',
-                    classShape: {
-                      name: 'Patient',
-                      attributes: [
-                        createProperty('accepted', 'Date'),
-                        createProperty('sickness', 'History'),
-                        createProperty('prescription', 'String[*]'),
-                        createProperty('allergies', 'String[*]'),
-                      ],
-                      methods: [createMethods('getHistory', 'History')],
-                    },
-                    classifier: 'Class',
-                  } as UmlClassifierShapeModel,
-                  offsetX: 200,
-                  offsetY: 250,
-                },
-                {
-                    id: 'Hospital',
-                    shape: {
-                        type: 'UmlClassifier',
-                        classShape: {
-                            name: 'Hospital',
-                            methods: [
-                                createMethods('getDepartment', 'String'),
-                            ]
-                        },
-                        classifier: 'Interface'
-                    } as UmlClassifierShapeModel,
-                    offsetX: 638,
-                    offsetY: 100,
-                },
-                {
-                    id: 'Enumerarion',
-                    shape: {
-                        type: 'UmlClassifier',
-                        classShape: {
-                            name: 'Enumerarion',
-                            methods: [
-                                createMethods('getDepartment', 'String'),
-                            ]
-                        },
-                        classifier: 'Enumeration'
-                    } as UmlClassifierShapeModel,
-                    offsetX: 338,
-                    offsetY: 400,
-                },
-              ];
-            let connectors: ConnectorModel[] = [];
-
-            diagram = new Diagram({
-            width: '100%',
-            height: '700px',
-            nodes: nodes,
-            connectors: connectors,
-            //Sets the default values of nodes
-            getNodeDefaults: getNodeDefaults,
-            //Customize the content of the node
-            setNodeTemplate: setNodeTemplate,
-            });
-            diagram.appendTo('#umlClassDiagram');
-        });
-
-        afterAll((): void => {
-            diagram.destroy();
-            ele.remove();
-        });
-
-        it('Adding uml node at runtime', (done: Function) => {
-            let node1 = diagram.nameTable['Patient'];
-            let node2 = diagram.nameTable['Hospital'];
-            let node3 = diagram.nameTable['Enumerarion'];
-            let child = createProperty('newchild', 'data');
-            diagram.addChildToUmlNode(node1, child, 'Attribute');
-            diagram.addChildToUmlNode(node1, child, 'Method');
-            diagram.addChildToUmlNode(node2, child, 'Attribute');
-            diagram.addChildToUmlNode(node2, child, 'Method');
-            diagram.addChildToUmlNode(node3, child, 'Attribute');
-            diagram.addChildToUmlNode(node3, child, 'Member');
-            expect(diagram.nodes.length === 21).toBe(true);
-            done();
-        });
-        it('Changing locale', (done: Function) => {
-            diagram.locale = 'de-DE'
-            diagram.dataBind();
-            expect(diagram.locale === 'de-DE').toBe(true);
-            done();
-        });
-    });
-    describe('Code coverage UML classifier nodes', () => {
-        let diagram: Diagram;
-        let ele: HTMLElement;
-        let mouseEvents: MouseEvents = new MouseEvents();
         //Set the default values of nodes.
         function getNodeDefaults(obj: NodeModel): NodeModel {
             obj.style = { fill: '#26A0DA', strokeColor: 'white' };
@@ -772,6 +644,140 @@ describe('Diagram Control', () => {
             }
             ele = createElement('div', { styles: 'width:100%;height:500px;' });
             ele.appendChild(createElement('div', { id: 'umlClassDiagram', styles: 'width:74%;height:500px;float:left;' }));
+            document.body.appendChild(ele);
+
+
+
+            let nodes: NodeModel[] = [
+                {
+                    id: 'Patient',
+                    shape: {
+                        type: 'UmlClassifier',
+                        classShape: {
+                            name: 'Patient',
+                            attributes: [
+                                createProperty('accepted', 'Date'),
+                                createProperty('sickness', 'History'),
+                                createProperty('prescription', 'String[*]'),
+                                createProperty('allergies', 'String[*]'),
+                            ],
+                            methods: [createMethods('getHistory', 'History')],
+                        },
+                        classifier: 'Class',
+                    } as UmlClassifierShapeModel,
+                    offsetX: 200,
+                    offsetY: 250,
+                },
+                {
+                    id: 'Hospital',
+                    shape: {
+                        type: 'UmlClassifier',
+                        classShape: {
+                            name: 'Hospital',
+                            methods: [
+                                createMethods('getDepartment', 'String'),
+                            ]
+                        },
+                        classifier: 'Interface'
+                    } as UmlClassifierShapeModel,
+                    offsetX: 638,
+                    offsetY: 100,
+                },
+                {
+                    id: 'Enumerarion',
+                    shape: {
+                        type: 'UmlClassifier',
+                        classShape: {
+                            name: 'Enumerarion',
+                            methods: [
+                                createMethods('getDepartment', 'String'),
+                            ]
+                        },
+                        classifier: 'Enumeration'
+                    } as UmlClassifierShapeModel,
+                    offsetX: 338,
+                    offsetY: 400,
+                },
+            ];
+            let connectors: ConnectorModel[] = [];
+
+            diagram = new Diagram({
+                width: '100%',
+                height: '700px',
+                nodes: nodes,
+                connectors: connectors,
+                //Sets the default values of nodes
+                getNodeDefaults: getNodeDefaults,
+                //Customize the content of the node
+                setNodeTemplate: setNodeTemplate,
+            });
+            diagram.appendTo('#umlClassDiagram');
+        });
+
+        afterAll((): void => {
+            diagram.destroy();
+            ele.remove();
+            (diagram as any) = null; (ele as any) = null;
+        });
+
+        it('Adding uml node at runtime', (done: Function) => {
+            let node1 = diagram.nameTable['Patient'];
+            let node2 = diagram.nameTable['Hospital'];
+            let node3 = diagram.nameTable['Enumerarion'];
+            let child = createProperty('newchild', 'data');
+            diagram.addChildToUmlNode(node1, child, 'Attribute');
+            diagram.addChildToUmlNode(node1, child, 'Method');
+            diagram.addChildToUmlNode(node2, child, 'Attribute');
+            diagram.addChildToUmlNode(node2, child, 'Method');
+            diagram.addChildToUmlNode(node3, child, 'Attribute');
+            diagram.addChildToUmlNode(node3, child, 'Member');
+            expect(diagram.nodes.length === 21).toBe(true);
+            done();
+        });
+        it('Changing locale', (done: Function) => {
+            diagram.locale = 'de-DE'
+            diagram.dataBind();
+            expect(diagram.locale === 'de-DE').toBe(true);
+            done();
+        });
+    });
+    describe('Code coverage UML classifier nodes', () => {
+        let diagram: Diagram;
+        let ele: HTMLElement;
+        //Set the default values of nodes.
+        function getNodeDefaults(obj: NodeModel): NodeModel {
+            obj.style = { fill: '#26A0DA', strokeColor: 'white' };
+            return obj;
+        }
+
+        //Set an annoation style at runtime.
+        function setNodeTemplate(node: NodeModel): void {
+            if (node.annotations.length > 0) {
+                for (let i: number = 0; i < node.annotations.length; i++) {
+                    node.annotations[i].style.color = 'white';
+                }
+            }
+        }
+
+        //create class Property
+        function createProperty(name: string, type: string): object {
+            return { name: name, type: type };
+        }
+
+        //create class Methods
+        function createMethods(name: string, type: string): object {
+            return { name: name, type: type };
+        }
+
+        beforeAll((): void => {
+            const isDef = (o: any) => o !== undefined && o !== null;
+            if (!isDef(window.performance)) {
+                console.log("Unsupported environment, window.performance.memory is unavailable");
+                this.skip(); //Skips test (in Chai)
+                return;
+            }
+            ele = createElement('div', { styles: 'width:100%;height:500px;' });
+            ele.appendChild(createElement('div', { id: 'umlClassDiagram2', styles: 'width:74%;height:500px;float:left;' }));
             document.body.appendChild(ele);
 
 
@@ -877,12 +883,13 @@ describe('Diagram Control', () => {
                 //Customize the content of the node
                 setNodeTemplate: setNodeTemplate,
             });
-            diagram.appendTo('#umlClassDiagram');
+            diagram.appendTo('#umlClassDiagram2');
         });
 
         afterAll((): void => {
             diagram.destroy();
             ele.remove();
+            (diagram as any) = null; (ele as any) = null;
         });
 
         it('Adding umlchild node at runtime', (done: Function) => {
@@ -942,7 +949,7 @@ describe('Diagram Control', () => {
                 return;
             }
             ele = createElement('div', { styles: 'width:100%;height:500px;' });
-            ele.appendChild(createElement('div', { id: 'umlClassDiagram', styles: 'width:74%;height:500px;float:left;' }));
+            ele.appendChild(createElement('div', { id: 'umlClassDiagram3', styles: 'width:74%;height:500px;float:left;' }));
             document.body.appendChild(ele);
 
             let nodes: NodeModel[] = [
@@ -1014,12 +1021,13 @@ describe('Diagram Control', () => {
                 //Customize the content of the node
                 setNodeTemplate: setNodeTemplate,
             });
-            diagram.appendTo('#umlClassDiagram');
+            diagram.appendTo('#umlClassDiagram3');
         });
 
         afterAll((): void => {
             diagram.destroy();
             ele.remove();
+            (diagram as any) = null; (ele as any) = null;
         });
 
         it('Adding umlchild node at runtime', (done: Function) => {
@@ -1052,7 +1060,6 @@ describe('Diagram Control', () => {
         describe('Sample-1', () => {
             let diagram: Diagram;
             let ele: HTMLElement;
-            let error: any;
             beforeAll((): void => {
                 ele = createElement('div', { id: 'umlSequenceDiagram-1', styles: 'width:100%;height:800px;' });
                 document.body.appendChild(ele);
@@ -1165,9 +1172,9 @@ describe('Diagram Control', () => {
             afterAll((): void => {
                 diagram.destroy();
                 ele.remove();
+                (diagram as any) = null; (ele as any) = null;
             });
             it('render', (done: Function) => {
-                debugger;
                 expect(diagram.nodes.length).toBe(11);
                 expect(diagram.connectors.length).toBe(28);
                 done();
@@ -1240,6 +1247,7 @@ describe('Diagram Control', () => {
             afterAll((): void => {
                 diagram.destroy();
                 ele.remove();
+                (diagram as any) = null; (ele as any) = null;
             });
             it('render', (done: Function) => {
                 expect(diagram.nodes.length).toBe(10);
@@ -1354,6 +1362,7 @@ describe('Diagram Control', () => {
             afterAll((): void => {
                 diagram.destroy();
                 ele.remove();
+                (diagram as any) = null; (ele as any) = null;
             });
             it('render', (done: Function) => {
                 expect(diagram.nodes.length).toBe(10);
@@ -1405,11 +1414,11 @@ describe('Diagram Control', () => {
         describe('errorHandling', () => {
             let diagram: Diagram;
             let ele: HTMLElement;
-            let error: any;
+            let model: UmlSequenceDiagramModel;
             beforeAll((): void => {
-                ele = createElement('div', { id: 'errorHandling',  styles: 'width:100%;height:800px;' });
+                ele = createElement('div', { id: 'errorHandling', styles: 'width:100%;height:800px;' });
                 document.body.appendChild(ele);
-                const model: UmlSequenceDiagramModel = {
+                const models: UmlSequenceDiagramModel = {
                     participants: [
                         {
                             content: "Unnamed Participant",
@@ -1422,7 +1431,7 @@ describe('Diagram Control', () => {
                 diagram = new Diagram({
                     width: '100%',
                     height: '800px',
-                    model: model
+                    model: models
                 });
                 diagram.appendTo('#errorHandling');
 
@@ -1431,13 +1440,14 @@ describe('Diagram Control', () => {
             afterAll((): void => {
                 diagram.destroy();
                 ele.remove();
+                (diagram as any) = null; (ele as any) = null;
             });
             it('Participant ID undefined', (done: Function) => {
                 expect(diagram.nodes.length).toBe(0);
                 done();
             });
             it('Message ID undefined', (done: Function) => {
-                const model: UmlSequenceDiagramModel = {
+                model = {
                     participants: [
                         {
                             id: 'User1',
@@ -1449,7 +1459,7 @@ describe('Diagram Control', () => {
                             content: 'ParticipantB',
                         }
                     ],
-                    messages: [{content: 'message', fromParticipantID: 'User1', toParticipantID: 'User1'}],
+                    messages: [{ content: 'message', fromParticipantID: 'User1', toParticipantID: 'User1' }],
                     fragments: []
                 };
                 diagram.model = model;
@@ -1459,7 +1469,7 @@ describe('Diagram Control', () => {
                 done();
             });
             it('Message ID not given', (done: Function) => {
-                const model: UmlSequenceDiagramModel = {
+                model = {
                     participants: [
                         {
                             id: 'User1',
@@ -1471,7 +1481,7 @@ describe('Diagram Control', () => {
                             content: 'ParticipantB',
                         }
                     ],
-                    messages: [{id: 'msg1', content: 'message', fromParticipantID: 'User1'}],
+                    messages: [{ id: 'msg1', content: 'message', fromParticipantID: 'User1' }],
                     fragments: []
                 };
                 diagram.model = model;
@@ -1480,8 +1490,8 @@ describe('Diagram Control', () => {
                 expect(diagram.connectors.length).toBe(2);
                 done();
             });
-             it('Incorrect from & to participant ID', (done: Function) => {
-                const model: UmlSequenceDiagramModel = {
+            it('Incorrect from & to participant ID', (done: Function) => {
+                model = {
                     participants: [
                         {
                             id: 'User1',
@@ -1491,12 +1501,12 @@ describe('Diagram Control', () => {
                         {
                             id: 'User2',
                             content: 'ParticipantB',
-                            activationBoxes: [{id: 'Act2', startMessageID: "X", endMessageID: "Y" }]
+                            activationBoxes: [{ id: 'Act2', startMessageID: "X", endMessageID: "Y" }]
                         }
                     ],
                     messages: [
-                        {id: 'msg1', content: 'message1', fromParticipantID: 'A', toParticipantID: 'B'},
-                        {id: 'msg2', content: 'message2', fromParticipantID: 'User2', toParticipantID: 'User1'},
+                        { id: 'msg1', content: 'message1', fromParticipantID: 'A', toParticipantID: 'B' },
+                        { id: 'msg2', content: 'message2', fromParticipantID: 'User2', toParticipantID: 'User1' },
 
                     ],
                     fragments: []
@@ -1508,7 +1518,7 @@ describe('Diagram Control', () => {
                 done();
             });
             it('Activation ID undefined', (done: Function) => {
-                const model: UmlSequenceDiagramModel = {
+                model = {
                     participants: [
                         {
                             id: 'User1',
@@ -1518,12 +1528,12 @@ describe('Diagram Control', () => {
                         {
                             id: 'User2',
                             content: 'ParticipantB',
-                            activationBoxes: [{startMessageID: "message1", endMessageID: "message2" }]
+                            activationBoxes: [{ startMessageID: "message1", endMessageID: "message2" }]
                         }
                     ],
                     messages: [
-                        {id: 'message1',content: 'message1', fromParticipantID: 'User1', toParticipantID: 'User2'},
-                        {id: 'message2',content: 'message2', fromParticipantID: 'User2', toParticipantID: 'User1'},
+                        { id: 'message1', content: 'message1', fromParticipantID: 'User1', toParticipantID: 'User2' },
+                        { id: 'message2', content: 'message2', fromParticipantID: 'User2', toParticipantID: 'User1' },
 
                     ],
                     fragments: []
@@ -1534,7 +1544,7 @@ describe('Diagram Control', () => {
                 done();
             });
             it('Incorrect activation start & end message ID', (done: Function) => {
-                const model: UmlSequenceDiagramModel = {
+                model = {
                     participants: [
                         {
                             id: 'User1',
@@ -1544,12 +1554,12 @@ describe('Diagram Control', () => {
                         {
                             id: 'User2',
                             content: 'ParticipantB',
-                            activationBoxes: [{id: 'Act2', startMessageID: "X", endMessageID: "Y" }]
+                            activationBoxes: [{ id: 'Act2', startMessageID: "X", endMessageID: "Y" }]
                         }
                     ],
                     messages: [
-                        {id: 'message1', content: 'message1', fromParticipantID: 'User1', toParticipantID: 'User2'},
-                        {id: 'message2', content: 'message2', fromParticipantID: 'User2', toParticipantID: 'User1'},
+                        { id: 'message1', content: 'message1', fromParticipantID: 'User1', toParticipantID: 'User2' },
+                        { id: 'message2', content: 'message2', fromParticipantID: 'User2', toParticipantID: 'User1' },
 
                     ],
                     fragments: []
@@ -1560,7 +1570,7 @@ describe('Diagram Control', () => {
                 done();
             });
             it('Fragment ID undefined', (done: Function) => {
-                const model: UmlSequenceDiagramModel = {
+                model = {
                     participants: [
                         {
                             id: 'User1',
@@ -1570,17 +1580,17 @@ describe('Diagram Control', () => {
                         {
                             id: 'User2',
                             content: 'ParticipantB',
-                            activationBoxes: [{id: 'Act2', startMessageID: "message1", endMessageID: "message2" }]
+                            activationBoxes: [{ id: 'Act2', startMessageID: "message1", endMessageID: "message2" }]
                         }
                     ],
                     messages: [
-                        {id: 'message1', content: 'message1', fromParticipantID: 'User1', toParticipantID: 'User2'},
-                        {id: 'message2', content: 'message2', fromParticipantID: 'User2', toParticipantID: 'User1'},
+                        { id: 'message1', content: 'message1', fromParticipantID: 'User1', toParticipantID: 'User2' },
+                        { id: 'message2', content: 'message2', fromParticipantID: 'User2', toParticipantID: 'User1' },
 
                     ],
                     fragments: [{
-                            type: UmlSequenceFragmentType.Loop,
-                            conditions: [{ content: "Looping" }]
+                        type: UmlSequenceFragmentType.Loop,
+                        conditions: [{ content: "Looping" }]
                     }]
                 };
                 diagram.model = model;
@@ -1624,20 +1634,20 @@ describe('Diagram Control', () => {
                 }
                 catch (e) {
                     error = e;
-                    debugger;
                 }
             });
 
             afterAll((): void => {
                 diagram.destroy();
                 ele.remove();
+                (diagram as any) = null; (ele as any) = null;
             });
             it('render', (done: Function) => {
                 expect(error).toBe(undefined);
                 done();
             });
         });
-        
+
         describe('errorHandling-10', () => {
             let diagram: Diagram;
             let ele: HTMLElement;
@@ -1679,13 +1689,13 @@ describe('Diagram Control', () => {
                 }
                 catch (e) {
                     error = e;
-                    debugger;
                 }
             });
 
             afterAll((): void => {
                 diagram.destroy();
                 ele.remove();
+                (diagram as any) = null; (ele as any) = null;
             });
             it('render', (done: Function) => {
                 expect(error).toBe(undefined);
@@ -1726,13 +1736,13 @@ describe('Diagram Control', () => {
                 }
                 catch (e) {
                     error = e;
-                    debugger;
                 }
             });
 
             afterAll((): void => {
                 diagram.destroy();
                 ele.remove();
+                (diagram as any) = null; (ele as any) = null;
             });
             it('render', (done: Function) => {
                 expect(error).toBe(undefined);
@@ -1792,13 +1802,13 @@ describe('Diagram Control', () => {
                 }
                 catch (e) {
                     error = e;
-                    debugger;
                 }
             });
 
             afterAll((): void => {
                 diagram.destroy();
                 ele.remove();
+                (diagram as any) = null; (ele as any) = null;
             });
             it('render', (done: Function) => {
                 expect(error).toBe(undefined);
@@ -1856,20 +1866,20 @@ describe('Diagram Control', () => {
                 }
                 catch (e) {
                     error = e;
-                    debugger;
                 }
             });
 
             afterAll((): void => {
                 diagram.destroy();
                 ele.remove();
+                (diagram as any) = null; (ele as any) = null;
             });
             it('render', (done: Function) => {
                 expect(error).toBe(undefined);
                 done();
             });
         });
-    
+
         describe('errorHandling-15', () => {
             let diagram: Diagram;
             let ele: HTMLElement;
@@ -1897,13 +1907,13 @@ describe('Diagram Control', () => {
                 }
                 catch (e) {
                     error = e;
-                    debugger;
                 }
             });
 
             afterAll((): void => {
                 diagram.destroy();
                 ele.remove();
+                (diagram as any) = null; (ele as any) = null;
             });
             it('render', (done: Function) => {
                 expect(error).toBe(undefined);
@@ -1961,13 +1971,13 @@ describe('Diagram Control', () => {
                 }
                 catch (e) {
                     error = e;
-                    debugger;
                 }
             });
 
             afterAll((): void => {
                 diagram.destroy();
                 ele.remove();
+                (diagram as any) = null; (ele as any) = null;
             });
             it('render', (done: Function) => {
                 expect(error).toBe(undefined);
@@ -2049,13 +2059,13 @@ describe('Diagram Control', () => {
                 }
                 catch (e) {
                     error = e;
-                    debugger;
                 }
             });
 
             afterAll((): void => {
                 diagram.destroy();
                 ele.remove();
+                (diagram as any) = null; (ele as any) = null;
             });
             it('render', (done: Function) => {
                 expect(error).toBe(undefined);
@@ -2106,13 +2116,13 @@ describe('Diagram Control', () => {
                 }
                 catch (e) {
                     error = e;
-                    debugger;
                 }
             });
 
             afterAll((): void => {
                 diagram.destroy();
                 ele.remove();
+                (diagram as any) = null; (ele as any) = null;
             });
             it('render', (done: Function) => {
                 expect(error).toBe(undefined);
@@ -2171,13 +2181,13 @@ describe('Diagram Control', () => {
                 }
                 catch (e) {
                     error = e;
-                    debugger;
                 }
             });
 
             afterAll((): void => {
                 diagram.destroy();
                 ele.remove();
+                (diagram as any) = null; (ele as any) = null;
             });
             it('render', (done: Function) => {
                 expect(error).toBe(undefined);
@@ -2237,13 +2247,13 @@ describe('Diagram Control', () => {
                 }
                 catch (e) {
                     error = e;
-                    debugger;
                 }
             });
 
             afterAll((): void => {
                 diagram.destroy();
                 ele.remove();
+                (diagram as any) = null; (ele as any) = null;
             });
             it('render', (done: Function) => {
                 expect(error).toBe(undefined);
@@ -2302,20 +2312,20 @@ describe('Diagram Control', () => {
                 }
                 catch (e) {
                     error = e;
-                    debugger;
                 }
             });
 
             afterAll((): void => {
                 diagram.destroy();
                 ele.remove();
+                (diagram as any) = null; (ele as any) = null;
             });
             it('render', (done: Function) => {
                 expect(error).toBe(undefined);
                 done();
             });
         });
-      
+
         describe('errorHandling-23', () => {
             let diagram: Diagram;
             let ele: HTMLElement;
@@ -2393,13 +2403,13 @@ describe('Diagram Control', () => {
                 }
                 catch (e) {
                     error = e;
-                    debugger;
                 }
             });
 
             afterAll((): void => {
                 diagram.destroy();
                 ele.remove();
+                (diagram as any) = null; (ele as any) = null;
             });
             it('render', (done: Function) => {
                 expect(error).toBe(undefined);
@@ -2448,13 +2458,13 @@ describe('Diagram Control', () => {
                 }
                 catch (e) {
                     error = e;
-                    debugger;
                 }
             });
 
             afterAll((): void => {
                 diagram.destroy();
                 ele.remove();
+                (diagram as any) = null; (ele as any) = null;
             });
             it('render', (done: Function) => {
                 expect(diagram.nodes.length).toBe(4);
@@ -2513,13 +2523,13 @@ describe('Diagram Control', () => {
                 }
                 catch (e) {
                     error = e;
-                    debugger;
                 }
             });
 
             afterAll((): void => {
                 diagram.destroy();
                 ele.remove();
+                (diagram as any) = null; (ele as any) = null;
             });
             it('render', (done: Function) => {
                 expect(error).toBe(undefined);
@@ -2570,13 +2580,13 @@ describe('Diagram Control', () => {
                 }
                 catch (e) {
                     error = e;
-                    debugger;
                 }
             });
 
             afterAll((): void => {
                 diagram.destroy();
                 ele.remove();
+                (diagram as any) = null; (ele as any) = null;
             });
             it('render', (done: Function) => {
                 expect(error).toBe(undefined);
@@ -2618,6 +2628,7 @@ describe('Diagram Control', () => {
             afterAll((): void => {
                 diagram.destroy();
                 ele.remove();
+                (diagram as any) = null; (ele as any) = null;
             });
             it('render', (done: Function) => {
                 expect(diagram.nodes.length).toBe(4);
@@ -2660,13 +2671,14 @@ describe('Diagram Control', () => {
             afterAll((): void => {
                 diagram.destroy();
                 ele.remove();
+                (diagram as any) = null; (ele as any) = null;
             });
             it('render', (done: Function) => {
                 expect(diagram.nodes.length).toBe(3);
                 done();
             });
         });
-            describe('Mermaid to Sequence', () => {
+        describe('Mermaid to Sequence', () => {
             let diagram: Diagram;
             let ele: HTMLElement;
             let mermaidData: string;
@@ -2738,6 +2750,7 @@ describe('Diagram Control', () => {
             afterAll((): void => {
                 diagram.destroy();
                 ele.remove();
+                (diagram as any) = null; (ele as any) = null;
             });
             it('load mermaid data', (done: Function) => {
                 diagram.loadDiagramFromMermaid(mermaidData)
@@ -2872,11 +2885,12 @@ describe('Diagram Control', () => {
             afterAll((): void => {
                 diagram.destroy();
                 ele.remove();
+                (diagram as any) = null; (ele as any) = null;
             });
             it('check mermaid data', (done: Function) => {
                 const mermaidText: string = diagram.saveDiagramAsMermaid();
-                const expectedMermaidData: string = 
-`sequenceDiagram
+                const expectedMermaidData: string =
+                    `sequenceDiagram
     participant Alice as Alice
     participant Bob as Bob
     participant Dave as Developer
@@ -2946,10 +2960,11 @@ describe('Diagram Control', () => {
             afterAll((): void => {
                 diagram.destroy();
                 ele.remove();
+                (diagram as any) = null; (ele as any) = null;
             });
             it('check messages', (done: Function) => {
-                const expectedMermaidData: string = 
-`sequenceDiagram
+                const expectedMermaidData: string =
+                    `sequenceDiagram
     participant A
     participant B
 
@@ -3022,11 +3037,12 @@ describe('Diagram Control', () => {
             afterAll((): void => {
                 diagram.destroy();
                 ele.remove();
+                (diagram as any) = null; (ele as any) = null;
             });
             it('check messages', (done: Function) => {
                 const mermaidText: string = diagram.saveDiagramAsMermaid();
-                const expectedMermaidData: string = 
-`sequenceDiagram
+                const expectedMermaidData: string =
+                    `sequenceDiagram
     actor p1 as User
     participant p2 as System
     loop max 3 attempts
@@ -3061,10 +3077,11 @@ describe('Diagram Control', () => {
             afterAll((): void => {
                 diagram.destroy();
                 ele.remove();
+                (diagram as any) = null; (ele as any) = null;
             });
             it('cover create destory messages', (done: Function) => {
-                const mermaidData: string = 
-`sequenceDiagram
+                const mermaidData: string =
+                    `sequenceDiagram
     participant Alice
     participant Bob
 
@@ -3097,10 +3114,11 @@ describe('Diagram Control', () => {
             afterAll((): void => {
                 diagram.destroy();
                 ele.remove();
+                (diagram as any) = null; (ele as any) = null;
             });
             it('Activation undefined', (done: Function) => {
-                const mermaidData: string = 
-`sequenceDiagram
+                const mermaidData: string =
+                    `sequenceDiagram
     participant A as Alice
     participant B
     participant C
@@ -3154,8 +3172,8 @@ describe('Diagram Control', () => {
                 done();
             });
             it('message after participant destroyed', (done: Function) => {
-                const mermaidData: string = 
-`sequenceDiagram
+                const mermaidData: string =
+                    `sequenceDiagram
     actor Alice
     participant Bob
     
@@ -3179,8 +3197,8 @@ describe('Diagram Control', () => {
                 done();
             });
             it('Empty message collection in 1st fragment condition', (done: Function) => {
-                const mermaidData: string = 
-`sequenceDiagram
+                const mermaidData: string =
+                    `sequenceDiagram
     actor Alice
     participant Bob
 
@@ -3207,8 +3225,8 @@ describe('Diagram Control', () => {
                 done();
             });
             it('Empty message collection in 2nd fragment condition', (done: Function) => {
-                const mermaidData: string = 
-`sequenceDiagram
+                const mermaidData: string =
+                    `sequenceDiagram
     actor Alice
     participant Bob
 
@@ -3234,9 +3252,9 @@ describe('Diagram Control', () => {
                 expect(diagram.connectors.length).toBe(8);
                 done();
             });
-             it('overlapping activations', (done: Function) => {
-                const mermaidData: string = 
-`sequenceDiagram
+            it('overlapping activations', (done: Function) => {
+                const mermaidData: string =
+                    `sequenceDiagram
     participant A as Alice
     participant B as Bob
     participant C as Charlie

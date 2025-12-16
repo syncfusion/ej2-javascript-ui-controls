@@ -743,7 +743,177 @@ describe('Detail template module', () => {
             gridObj = actionComplete = null;
         });
     });
- 
+
+    describe('Hierarchy Render testing with detailExpand and detailCollapse events', () => {
+        let gridObj: Grid;
+        let detailExpand: () => void;
+        let detailCollapse: () => void;
+        beforeAll((done: Function) => {
+            gridObj = createGrid(
+                {
+                    dataSource: employeeData.slice(5),
+                    allowPaging: true,
+                    columns: [
+                        { field: 'EmployeeID', headerText: 'Employee ID', textAlign: 'Right', width: 75 },
+                        { field: 'FirstName', headerText: 'First Name', textAlign: 'Left', width: 100 },
+                    ],
+                    childGrid: {
+                        dataSource: filterData.slice(0, 10),
+                        queryString: 'EmployeeID',                      
+                        columns: [
+                            { field: 'OrderID', headerText: 'Order ID', textAlign: 'Right', width: 75 },
+                            { field: 'EmployeeID', headerText: 'Employee ID', textAlign: 'Right', width: 75 },
+                        ]
+                    },
+                    detailCollapse: detailCollapse,
+                    detailExpand: detailExpand
+                }, done);
+        });
+
+        it('prevent detail action', (done: Function) => {
+            let detailExpand: (e: any) => void = (e: any) => {
+                e.cancel = true;
+                expect(e.parentRow).toBeDefined();
+                expect(e.detailRow).toBeNull();
+                expect(e.event).not.toBeDefined();
+                expect(e.rowData).toBeDefined();
+                done();
+            };
+            gridObj.detailExpand = detailExpand;
+            gridObj.detailRowModule.expand(1);
+        });
+        
+        it('expand detail row', (done: Function) => {
+            const detailRows: NodeListOf<HTMLElement> = gridObj.getContentTable().querySelectorAll('.e-detailrow');
+            const visibleRows = Array.from(detailRows).filter(el => {
+                return el.style.display !== 'none';
+            });
+            expect(visibleRows.length).toBe(0);
+            let detailExpand: (e: any) => void = (e: any) => {
+                done();
+            };
+            gridObj.detailExpand = detailExpand;
+            gridObj.detailRowModule.expand(1);
+        });
+
+        it('prevent collapse action', (done: Function) => {
+            const detailRows: NodeListOf<HTMLElement> = gridObj.getContentTable().querySelectorAll('.e-detailrow');
+            const visibleRows = Array.from(detailRows).filter(el => {
+                return el.style.display !== 'none';
+            });
+            expect(visibleRows.length).toBe(1);
+            let detailCollapse: (e: any) => void = (e: any) => {
+                e.cancel = true;
+                expect(e.parentRow).toBeDefined();
+                expect(e.detailRow).toBeDefined();
+                expect(e.event).not.toBeDefined();
+                expect(e.rowData).toBeDefined();
+                done();
+            };
+            gridObj.detailCollapse = detailCollapse;
+            gridObj.detailExpand = null;
+            gridObj.detailRowModule.collapse(1);
+        });
+        
+        it('collapse detail row', (done: Function) => {
+            const detailRows: NodeListOf<HTMLElement> = gridObj.getContentTable().querySelectorAll('.e-detailrow');
+            const visibleRows = Array.from(detailRows).filter(el => {
+                return el.style.display !== 'none';
+            });
+            expect(visibleRows.length).toBe(1);
+            let detailCollapse: (e: any) => void = (e: any) => {
+                done();
+            };
+            gridObj.detailCollapse = detailCollapse;
+            gridObj.detailRowModule.collapse(1);
+        });
+        
+        
+        it('check the detail status 1', (done: Function) => {
+            const detailRows: NodeListOf<HTMLElement> = gridObj.getContentTable().querySelectorAll('.e-detailrow');
+            const visibleRows = Array.from(detailRows).filter(el => {
+                return el.style.display !== 'none';
+            });
+            expect(visibleRows.length).toBe(0);
+            gridObj.detailCollapse = null;
+            gridObj.detailExpand = null;
+            done();
+        });
+
+        it('prevent detail action with mouse click', (done: Function) => {
+            let detailExpand: (e: any) => void = (e: any) => {
+                e.cancel = true;
+                expect(e.parentRow).toBeDefined();
+                expect(e.detailRow).toBeNull();
+                expect(e.event).toBeDefined();
+                expect(e.rowData).toBeDefined();
+                done();
+            };
+            gridObj.detailExpand = detailExpand;
+            (gridObj.getDataRows()[2].querySelector('.e-detailrowcollapse') as HTMLElement).click();
+        });
+        
+        it('expand detail row with mouse click', (done: Function) => {
+            const detailRows: NodeListOf<HTMLElement> = gridObj.getContentTable().querySelectorAll('.e-detailrow');
+            const visibleRows = Array.from(detailRows).filter(el => {
+                return el.style.display !== 'none';
+            });
+            expect(visibleRows.length).toBe(0);
+            let detailExpand: (e: any) => void = (e: any) => {
+                done();
+            };
+            gridObj.detailExpand = detailExpand;
+            (gridObj.getDataRows()[2].querySelector('.e-detailrowcollapse') as HTMLElement).click();
+        });
+
+        it('prevent collapse action with mouse click', (done: Function) => {
+            const detailRows: NodeListOf<HTMLElement> = gridObj.getContentTable().querySelectorAll('.e-detailrow');
+            const visibleRows = Array.from(detailRows).filter(el => {
+                return el.style.display !== 'none';
+            });
+            expect(visibleRows.length).toBe(1);
+            let detailCollapse: (e: any) => void = (e: any) => {
+                e.cancel = true;
+                expect(e.parentRow).toBeDefined();
+                expect(e.detailRow).toBeDefined();
+                expect(e.event).toBeDefined();
+                expect(e.rowData).toBeDefined();
+                done();
+            };
+            gridObj.detailCollapse = detailCollapse;
+            gridObj.detailExpand = null;
+            (gridObj.getDataRows()[2].querySelector('.e-detailrowexpand') as HTMLElement).click();
+        });
+        
+        it('collapse detail row', (done: Function) => {
+            const detailRows: NodeListOf<HTMLElement> = gridObj.getContentTable().querySelectorAll('.e-detailrow');
+            const visibleRows = Array.from(detailRows).filter(el => {
+                return el.style.display !== 'none';
+            });
+            expect(visibleRows.length).toBe(1);
+            let detailCollapse: (e: any) => void = (e: any) => {
+                done();
+            };
+            gridObj.detailCollapse = detailCollapse;
+            (gridObj.getDataRows()[2].querySelector('.e-detailrowexpand') as HTMLElement).click();
+        });
+        
+        it('check the detail status 2', (done: Function) => {
+            const detailRows: NodeListOf<HTMLElement> = gridObj.getContentTable().querySelectorAll('.e-detailrow');
+            const visibleRows = Array.from(detailRows).filter(el => {
+                return el.style.display !== 'none';
+            });
+            expect(visibleRows.length).toBe(0);
+            gridObj.detailCollapse = null;
+            gridObj.detailExpand = null;
+            done();
+        });
+        afterAll(() => {
+            destroy(gridObj);
+            gridObj = detailCollapse = detailExpand = null;
+        });
+    });
+
     describe('indent cell width check for autogenerated cols', () => {
         let gridObj: Grid;
         let rowDataBound: (args: any) => void;

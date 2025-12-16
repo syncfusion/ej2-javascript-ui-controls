@@ -310,7 +310,6 @@ export type SortDirection =
  * * Merge Task :- Defines the merge two segments into one segment.
  * ```
  *
- * @hidden
  */
 
 export type ContextMenuItem =

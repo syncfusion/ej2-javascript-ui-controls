@@ -1,3 +1,6 @@
+@use 'ej2-base/styles/definition/tailwind3' as *;
+@forward 'ej2-base/styles/definition/tailwind3';
+
 // size variables
 $timepicker-skin-name: 'tailwind3' !default;
 $timepicker-default-text-indent: 12px !default;
@@ -7,7 +10,7 @@ $timepicker-list-normal-font-size: $text-sm !default;
 $timepicker-list-bigger-font-size: $text-base !default;
 $timepicker-list-normal-text-indent: $timepicker-default-text-indent !default;
 $timepicker-list-bigger-text-indent: 16px !default;
-$timepicker-popup-border-radius: 6px !default;
+$timepicker-popup-border-radius: $radius-6 !default;
 $timepicker-list-font-weight: $font-weight-normal !default;
 $timepicker-list-normal-padding: 0 !default;
 $timepicker-list-bigger-padding: 0 !default;
@@ -90,3 +93,15 @@ $timepicker-list-navigation-font-color: $flyout-text-color !default;
 $timepicker-list-navigation-box-shadow: $shadow-focus-ring2 !default;
 $timepicker-list-focus-bg-color: $flyout-bg-color-focus !default;
 $timepicker-list-focus-font-color: $flyout-text-color-focus !default;
+
+$timepicker-list-parent-margin: 0;
+$timepicker-list-parent-padding: $timepicker-list-normal-padding 0;
+
+$timepicker-list-parent-bigger-padding: $timepicker-list-bigger-padding 0;
+$timepicker-zero-border-radius: $radius-0 !default;
+$timepicker-model-title-font-weight: 500 !default;
+$timepicker-bigger-content-placeholder-min-height: 40px !default;
+$timepicker-full-height: 100% !default;
+$timepicker-content-placeholder-min-height: 33px !default;
+$timepicker-full-width: 100% !default;
+$timepicker-border: 1px !default;

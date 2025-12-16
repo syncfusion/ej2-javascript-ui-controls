@@ -717,100 +717,98 @@ describe('Find & Replace ->', () => {
         it('Find in dialog', (done: Function) => {
             setTimeout(() => {
                 helper.click('.e-findtool-dlg .e-findRib-more');
+                helper.setAnimationToNone('.e-find-dlg.e-dialog');
+                expect((helper.getElementFromSpreadsheet('.e-find-dlg .e-btn-findPrevious') as HTMLInputElement).disabled).toBeTruthy();
+                expect((helper.getElementFromSpreadsheet('.e-find-dlg .e-btn-findNext') as HTMLInputElement).disabled).toBeTruthy();
+                const findTxtBox: HTMLInputElement = helper.getElementFromSpreadsheet('.e-find-dlg .e-text-findNext') as HTMLInputElement;
+                findTxtBox.value = '10';
+                helper.triggerKeyEvent('keyup', 88, null, null, null, findTxtBox);
                 setTimeout(() => {
-                    helper.setAnimationToNone('.e-find-dlg.e-dialog');
-                    expect((helper.getElementFromSpreadsheet('.e-find-dlg .e-btn-findPrevious') as HTMLInputElement).disabled).toBeTruthy();
-                    expect((helper.getElementFromSpreadsheet('.e-find-dlg .e-btn-findNext') as HTMLInputElement).disabled).toBeTruthy();
-                    const findTxtBox: HTMLInputElement = helper.getElementFromSpreadsheet('.e-find-dlg .e-text-findNext') as HTMLInputElement;
-                    findTxtBox.value = '10';
-                    helper.triggerKeyEvent('keyup', 88, null, null, null, findTxtBox);
+                    expect((helper.getElementFromSpreadsheet('.e-find-dlg .e-btn-findPrevious') as HTMLInputElement).disabled).toBeFalsy();
+                    expect((helper.getElementFromSpreadsheet('.e-find-dlg .e-btn-findNext') as HTMLInputElement).disabled).toBeFalsy();
+                    helper.click('.e-find-dlg .e-btn-findPrevious');
+                    expect(helper.getInstance().sheets[0].selectedRange).toBe('G6:G6');
+                    helper.click('.e-find-dlg .e-btn-findPrevious');
+                    expect(helper.getInstance().sheets[0].selectedRange).toBe('E6:E6');
+                    helper.click('.e-find-dlg .e-btn-findNext');
+                    expect(helper.getInstance().sheets[0].selectedRange).toBe('G6:G6');
+                    helper.click('.e-find-dlg .e-btn-findNext');
+                    expect(helper.getInstance().sheets[0].selectedRange).toBe('C7:C7');
+                    findTxtBox.value = 'T-Shirts';
+                    helper.click('.e-find-dlg .e-btn-findNext');
+                    expect(helper.getInstance().sheets[0].selectedRange).toBe('A11:A11');
+                    helper.click('.e-find-dlg .e-btn-findNext');
+                    expect(helper.getInstance().sheets[0].selectedRange).toBe('A11:A11');
+                    findTxtBox.value = '6:23:54 AM';
+                    helper.click('.e-find-dlg .e-btn-findNext');
+                    expect(helper.getInstance().sheets[0].selectedRange).toBe('C5:C5');
+                    findTxtBox.value = '50';
+                    helper.click('.e-find-dlg .e-btn-findNext');
+                    expect(helper.getInstance().sheets[0].selectedRange).toBe('D11:D11');
+
+                    const dialog: any = helper.getElementFromSpreadsheet('.e-find-dlg.e-dialog');
+                    findTxtBox.focus();
+                    // Find next by pressing enter key
+                    dialog.ej2_instances[0].keyDown({ preventDefault: function () { }, target: findTxtBox, keyCode: 13 });
                     setTimeout(() => {
-                        expect((helper.getElementFromSpreadsheet('.e-find-dlg .e-btn-findPrevious') as HTMLInputElement).disabled).toBeFalsy();
-                        expect((helper.getElementFromSpreadsheet('.e-find-dlg .e-btn-findNext') as HTMLInputElement).disabled).toBeFalsy();
-                        helper.click('.e-find-dlg .e-btn-findPrevious');
-                        expect(helper.getInstance().sheets[0].selectedRange).toBe('G6:G6');
-                        helper.click('.e-find-dlg .e-btn-findPrevious');
-                        expect(helper.getInstance().sheets[0].selectedRange).toBe('E6:E6');
-                        helper.click('.e-find-dlg .e-btn-findNext');
-                        expect(helper.getInstance().sheets[0].selectedRange).toBe('G6:G6');
-                        helper.click('.e-find-dlg .e-btn-findNext');
-                        expect(helper.getInstance().sheets[0].selectedRange).toBe('C7:C7');
-                        findTxtBox.value = 'T-Shirts';
-                        helper.click('.e-find-dlg .e-btn-findNext');
-                        expect(helper.getInstance().sheets[0].selectedRange).toBe('A11:A11');
-                        helper.click('.e-find-dlg .e-btn-findNext');
-                        expect(helper.getInstance().sheets[0].selectedRange).toBe('A11:A11');
-                        findTxtBox.value = '6:23:54 AM';
-                        helper.click('.e-find-dlg .e-btn-findNext');
-                        expect(helper.getInstance().sheets[0].selectedRange).toBe('C5:C5');
-                        findTxtBox.value = '50';
-                        helper.click('.e-find-dlg .e-btn-findNext');
-                        expect(helper.getInstance().sheets[0].selectedRange).toBe('D11:D11');
-
-                        const dialog: any = helper.getElementFromSpreadsheet('.e-find-dlg.e-dialog');
+                        // expect(helper.getInstance().sheets[0].selectedRange).toBe('F11:F11'); // This case need to be fixed
+                        // Find previous by pressing shift + enter key
                         findTxtBox.focus();
-                        // Find next by pressing enter key
-                        dialog.ej2_instances[0].keyDown({ preventDefault: function () { }, target: findTxtBox, keyCode: 13 });
+                        dialog.ej2_instances[0].keyDown({ preventDefault: function () { }, target: findTxtBox, keyCode: 13, shiftKey: true });
                         setTimeout(() => {
-                            // expect(helper.getInstance().sheets[0].selectedRange).toBe('F11:F11'); // This case need to be fixed
-                            // Find previous by pressing shift + enter key
-                            findTxtBox.focus();
-                            dialog.ej2_instances[0].keyDown({ preventDefault: function () { }, target: findTxtBox, keyCode: 13, shiftKey: true });
+                            // expect(helper.getInstance().sheets[0].selectedRange).toBe('D11:D11'); // This case need to be fixed
+                            helper.invoke('selectRange', ['D11']); // Remove this when above case is fixed
+                            helper.click('.e-find-dlg .e-btn-findPrevious');
+                            expect(helper.getInstance().sheets[0].selectedRange).toBe('H3:H3');
+                            const replaceTxtBox: HTMLInputElement = helper.getElementFromSpreadsheet('.e-find-dlg .e-text-replaceInp') as HTMLInputElement;
+                            replaceTxtBox.value = 'Test';
+                            helper.triggerKeyEvent('keyup', 88, null, null, null, replaceTxtBox);
                             setTimeout(() => {
-                                // expect(helper.getInstance().sheets[0].selectedRange).toBe('D11:D11'); // This case need to be fixed
-                                helper.invoke('selectRange', ['D11']); // Remove this when above case is fixed
-                                helper.click('.e-find-dlg .e-btn-findPrevious');
-                                expect(helper.getInstance().sheets[0].selectedRange).toBe('H3:H3');
-                                const replaceTxtBox: HTMLInputElement = helper.getElementFromSpreadsheet('.e-find-dlg .e-text-replaceInp') as HTMLInputElement;
-                                replaceTxtBox.value = 'Test';
-                                helper.triggerKeyEvent('keyup', 88, null, null, null, replaceTxtBox);
+                                // Replace
+                                helper.click('.e-find-dlg .e-btn-replace');
+                                // expect(helper.getInstance().sheets[0].rows[2].cells[7].value).toBe('Test');
+                                // expect(helper.invoke('getCell', [2, 7]).textContent).toBe('Test');
+                                // expect(helper.getInstance().sheets[0].rows[10].cells[3].value).toBe(50);
+
+                                // Replace all
+                                helper.click('.e-find-dlg .e-btn-replaceAll');
                                 setTimeout(() => {
-                                    // Replace
-                                    helper.click('.e-find-dlg .e-btn-replace');
-                                    // expect(helper.getInstance().sheets[0].rows[2].cells[7].value).toBe('Test');
-                                    // expect(helper.invoke('getCell', [2, 7]).textContent).toBe('Test');
-                                    // expect(helper.getInstance().sheets[0].rows[10].cells[3].value).toBe(50);
+                                    // expect(helper.getElementFromSpreadsheet('.e-findtool-dlg.e-dialog')).toBeNull();
+                                    // expect(helper.getInstance().sheets[0].rows[10].cells[3].value).toBe('Test');
+                                    // expect(helper.invoke('getCell', [10, 3]).textContent).toBe('Test');
+                                    // expect(helper.getInstance().sheets[0].rows[10].cells[5].value).toBe('Test0');
+                                    // expect(helper.invoke('getCell', [10, 5]).textContent).toBe('Test0');
+                                    // expect(helper.getElementFromSpreadsheet('.e-replace-alert-span').textContent).toBe('2 matches replaced with Test');
 
-                                    // Replace all
-                                    helper.click('.e-find-dlg .e-btn-replaceAll');
-                                    setTimeout(() => {
-                                        // expect(helper.getElementFromSpreadsheet('.e-findtool-dlg.e-dialog')).toBeNull();
-                                        // expect(helper.getInstance().sheets[0].rows[10].cells[3].value).toBe('Test');
-                                        // expect(helper.invoke('getCell', [10, 3]).textContent).toBe('Test');
-                                        // expect(helper.getInstance().sheets[0].rows[10].cells[5].value).toBe('Test0');
-                                        // expect(helper.invoke('getCell', [10, 5]).textContent).toBe('Test0');
-                                        // expect(helper.getElementFromSpreadsheet('.e-replace-alert-span').textContent).toBe('2 matches replaced with Test');
+                                    // Find by matching exact cell content
+                                    helper.click('.e-find-dlg .e-findnreplace-checkmatch');
+                                    findTxtBox.value = 'Sneakers';
+                                    helper.click('.e-find-dlg .e-btn-findNext');
+                                    expect(helper.getInstance().sheets[0].selectedRange).toBe('A7:A7');
+                                    helper.invoke('selectRange', ['A1']);
+                                    findTxtBox.value = 'Sneaker';
+                                    helper.click('.e-find-dlg .e-btn-findNext');
+                                    expect(helper.getInstance().sheets[0].selectedRange).toBe('A1:A1');
+                                    expect(helper.getElementFromSpreadsheet('.e-find-alert-span').textContent).toBe("We couldn't find what you were looking for.");
 
-                                        // Find by matching exact cell content
-                                        helper.click('.e-find-dlg .e-findnreplace-checkmatch');
-                                        findTxtBox.value = 'Sneakers';
-                                        helper.click('.e-find-dlg .e-btn-findNext');
-                                        expect(helper.getInstance().sheets[0].selectedRange).toBe('A7:A7');
-                                        helper.invoke('selectRange', ['A1']);
-                                        findTxtBox.value = 'Sneaker';
-                                        helper.click('.e-find-dlg .e-btn-findNext');
-                                        expect(helper.getInstance().sheets[0].selectedRange).toBe('A1:A1');
-                                        expect(helper.getElementFromSpreadsheet('.e-find-alert-span').textContent).toBe("We couldn't find what you were looking for.");
+                                    // Search by column
+                                    const dropDownList: any = helper.getElementFromSpreadsheet('.e-find-dlg .e-findnreplace-searchby');
+                                    dropDownList.ej2_instances[0].value = 'By Column';
+                                    dropDownList.ej2_instances[0].dataBind();
+                                    findTxtBox.value = '10';
+                                    helper.click('.e-find-dlg .e-btn-findNext');
+                                    expect(helper.getInstance().sheets[0].selectedRange).toBe('D2:D2');
+                                    helper.click('.e-find-dlg .e-btn-findNext');
+                                    expect(helper.getInstance().sheets[0].selectedRange).toBe('E6:E6');
 
-                                        // Search by column
-                                        const dropDownList: any = helper.getElementFromSpreadsheet('.e-find-dlg .e-findnreplace-searchby');
-                                        dropDownList.ej2_instances[0].value = 'By Column';
-                                        dropDownList.ej2_instances[0].dataBind();
-                                        findTxtBox.value = '10';
-                                        helper.click('.e-find-dlg .e-btn-findNext');
-                                        expect(helper.getInstance().sheets[0].selectedRange).toBe('D2:D2');
-                                        helper.click('.e-find-dlg .e-btn-findNext');
-                                        expect(helper.getInstance().sheets[0].selectedRange).toBe('E6:E6');
-
-                                        // Checking disabling find button when it has empty value
-                                        // findTxtBox.value = ''; // Check this case
-                                        // helper.triggerKeyEvent('keyup', 88, null, null, null, findTxtBox);
-                                        // setTimeout(() => {
-                                        //     expect((helper.getElementFromSpreadsheet('.e-find-dlg .e-btn-findNext') as any).disabled).toBeTruthy();
-                                        //     expect((helper.getElementFromSpreadsheet('.e-find-dlg .e-btn-findPrevious') as any).disabled).toBeTruthy();
-                                        done();
-                                        //});
-                                    });
+                                    // Checking disabling find button when it has empty value
+                                    // findTxtBox.value = ''; // Check this case
+                                    // helper.triggerKeyEvent('keyup', 88, null, null, null, findTxtBox);
+                                    // setTimeout(() => {
+                                    //     expect((helper.getElementFromSpreadsheet('.e-find-dlg .e-btn-findNext') as any).disabled).toBeTruthy();
+                                    //     expect((helper.getElementFromSpreadsheet('.e-find-dlg .e-btn-findPrevious') as any).disabled).toBeTruthy();
+                                    done();
+                                    //});
                                 });
                             });
                         });

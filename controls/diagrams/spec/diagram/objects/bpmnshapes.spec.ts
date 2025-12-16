@@ -28,7 +28,7 @@ describe('Diagram Control', () => {
                     this.skip(); //Skips test (in Chai)
                     return;
                 }
-            ele = createElement('div', { id: 'diagram' });
+            ele = createElement('div', { id: 'diagram1' });
             document.body.appendChild(ele);
             let shadow: ShadowModel = { distance: 10, opacity: 0.5 };
             let node: NodeModel = {
@@ -54,7 +54,7 @@ describe('Diagram Control', () => {
                 width: 1500, height: 500, nodes: [node, node1, node2,
                     node3]
             });
-            diagram.appendTo('#diagram');
+            diagram.appendTo('#diagram1');
         });
 
         afterAll((): void => {
@@ -80,7 +80,7 @@ describe('Diagram Control', () => {
                     this.skip(); //Skips test (in Chai)
                     return;
                 }
-            ele = createElement('div', { id: 'diagram' });
+            ele = createElement('div', { id: 'diagram2' });
             document.body.appendChild(ele);
             let shadow: ShadowModel = { distance: 10, opacity: 0.5 };
             let node: NodeModel = {
@@ -109,7 +109,7 @@ describe('Diagram Control', () => {
                 width: 1500, height: 500, nodes: [node, node1, node2,
                     node3]
             });
-            diagram.appendTo('#diagram');
+            diagram.appendTo('#diagram2');
         });
 
         afterAll((): void => {
@@ -136,7 +136,7 @@ describe('Diagram Control', () => {
                     this.skip(); //Skips test (in Chai)
                     return;
                 }
-            ele = createElement('div', { id: 'diagram' });
+            ele = createElement('div', { id: 'diagram3' });
             document.body.appendChild(ele);
             let shadow: ShadowModel = { distance: 10, opacity: 0.5 };
             let nodes: NodeModel[] = [{
@@ -195,7 +195,7 @@ describe('Diagram Control', () => {
             diagram = new Diagram({
                 width: 1000, height: 500, nodes: nodes
             });
-            diagram.appendTo('#diagram');
+            diagram.appendTo('#diagram3');
         });
 
         afterAll((): void => {
@@ -254,9 +254,8 @@ describe('Diagram Control', () => {
                     this.skip(); //Skips test (in Chai)
                     return;
                 }
-            ele = createElement('div', { id: 'diagram' });
+            ele = createElement('div', { id: 'diagram4' });
             document.body.appendChild(ele);
-            let shadow: ShadowModel = { distance: 10, opacity: 0.5 };
             let connectors: ConnectorModel[] = [
                 {
                   id: 'Connector1',
@@ -364,7 +363,7 @@ describe('Diagram Control', () => {
                diagram = new Diagram({
                 width: 1000, height: 500, nodes: nodes,connectors:connectors,
             });
-            diagram.appendTo('#diagram');
+            diagram.appendTo('#diagram4');
         });
 
         afterAll((): void => {
@@ -420,7 +419,7 @@ describe('Diagram Control', () => {
                     this.skip(); //Skips test (in Chai)
                     return;
                 }
-            ele = createElement('div', { id: 'diagram' });
+            ele = createElement('div', { id: 'diagram5' });
             document.body.appendChild(ele);
             let connectors: ConnectorModel[] = [
                 {
@@ -657,7 +656,7 @@ describe('Diagram Control', () => {
                 width: '800px', height: '500px', nodes: nodes,
                 connectors:connectors,
             });
-            diagram.appendTo('#diagram');
+            diagram.appendTo('#diagram5');
         });
 
         afterAll((): void => {
@@ -699,7 +698,7 @@ describe('Diagram Control', () => {
                     this.skip(); //Skips test (in Chai)
                     return;
                 }
-            ele = createElement('div', { id: 'diagram' });
+            ele = createElement('div', { id: 'diagram6' });
             document.body.appendChild(ele);
             let connectors: ConnectorModel[] = [
                 {
@@ -737,7 +736,7 @@ describe('Diagram Control', () => {
                 connectors:connectors,
               
             });
-            diagram.appendTo('#diagram');
+            diagram.appendTo('#diagram6');
         });
 
         afterAll((): void => {
@@ -759,7 +758,6 @@ describe('Diagram Control', () => {
             }
           }
         it('Conditional sequence connector is improper when connected with BPMN Service shape', (done: Function) => {
-            let node1 =   diagram.getObject('service');  
             diagram.remove(diagram.connectors[0]);
             diagram.add(getDefaultSequenceConnector()); 
             diagram.dataBind();
@@ -782,7 +780,7 @@ describe('Diagram Control', () => {
                     this.skip(); //Skips test (in Chai)
                     return;
                 }
-            ele = createElement('div', { id: 'diagram' });
+            ele = createElement('div', { id: 'diagram7' });
             document.body.appendChild(ele);
              
               let nodes: NodeModel[] = [
@@ -806,7 +804,7 @@ describe('Diagram Control', () => {
                diagram = new Diagram({
                 width: 1000, height: 500, nodes: nodes
             });
-            diagram.appendTo('#diagram');
+            diagram.appendTo('#diagram7');
         });
 
         afterAll((): void => {
@@ -849,7 +847,7 @@ describe('BPMN subprocess save and load issue ', () => {
                     this.skip(); //Skips test (in Chai)
                     return;
                 }
-            ele = createElement('div', { id: 'diagram' });
+            ele = createElement('div', { id: 'diagram8' });
             document.body.appendChild(ele);
              
               let nodes: NodeModel[] = [
@@ -870,7 +868,7 @@ describe('BPMN subprocess save and load issue ', () => {
                width: '74%', height: '600px',// connectors: connector6,
         nodes: nodes,
             });
-            diagram.appendTo('#diagram');
+            diagram.appendTo('#diagram8');
         });
 
         afterAll((): void => {
@@ -904,7 +902,7 @@ describe('BPMN subprocess save and load issue ', () => {
                     this.skip(); //Skips test (in Chai)
                     return;
                 }
-            ele = createElement('div', { id: 'diagram' });
+            ele = createElement('div', { id: 'diagram9' });
             document.body.appendChild(ele);
              
             let nodes: NodeModel[] = [
@@ -940,7 +938,7 @@ describe('BPMN subprocess save and load issue ', () => {
                 width: '74%', height: '600px',// connectors: connector6,
          nodes: nodes,
              });
-            diagram.appendTo('#diagram');
+            diagram.appendTo('#diagram9');
         });
 
         afterAll((): void => {
@@ -976,7 +974,7 @@ describe('BPMN Flow connectors not changed properly at runtime ', () => {
                 this.skip(); //Skips test (in Chai)
                 return;
             }
-        ele = createElement('div', { id: 'diagram' });
+        ele = createElement('div', { id: 'diagram10' });
         document.body.appendChild(ele);
          
         let connectors:ConnectorModel[]=[
@@ -1008,7 +1006,7 @@ describe('BPMN Flow connectors not changed properly at runtime ', () => {
            diagram = new Diagram({
             width: '74%', height: '600px',connectors:connectors
          });
-        diagram.appendTo('#diagram');
+        diagram.appendTo('#diagram10');
     });
 
     afterAll((): void => {
@@ -1092,7 +1090,7 @@ describe('BPMN Shapes strokecolor changing', () => {
                 this.skip(); //Skips test (in Chai)
                 return;
             }
-        ele = createElement('div', { id: 'diagram' });
+        ele = createElement('div', { id: 'diagram11' });
         document.body.appendChild(ele);
         let shadow: ShadowModel = { distance: 10, opacity: 0.5 };
         let nodes: NodeModel[] = [{
@@ -1126,7 +1124,7 @@ describe('BPMN Shapes strokecolor changing', () => {
         diagram = new Diagram({
             width: 1000, height: 500, nodes: nodes
         });
-        diagram.appendTo('#diagram');
+        diagram.appendTo('#diagram11');
     });
 
     afterAll((): void => {
@@ -1163,6 +1161,7 @@ describe('BPMN sub process Shape render highlighter', () => {
     let diagram: Diagram;
     let ele: HTMLElement;
     let events: MouseEvents = new MouseEvents();
+    let diagramCanvas: HTMLElement;
     beforeAll((): void => {
         const isDef = (o: any) => o !== undefined && o !== null;
             if (!isDef(window.performance)) {
@@ -1172,7 +1171,6 @@ describe('BPMN sub process Shape render highlighter', () => {
             }
         ele = createElement('div', { id: 'diagramSubProcess' });
         document.body.appendChild(ele);
-        let shadow: ShadowModel = { distance: 10, opacity: 0.5 };
         let nodes: NodeModel[] = [{
             id: 'processesStart', width: 30, height: 30, shape: {
                 type: 'Bpmn', shape: 'Event',
@@ -1204,7 +1202,7 @@ describe('BPMN sub process Shape render highlighter', () => {
     });
 
     it('check highlighter for sub process when connetor dock', (done: Function) => {
-        let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
+        diagramCanvas = document.getElementById(diagram.element.id + 'content');
         diagram.select([diagram.connectors[0]]);
         let decorator = document.getElementById('connectorSourceThumb');
         let bounds: any = decorator.getBoundingClientRect();
@@ -1216,7 +1214,7 @@ describe('BPMN sub process Shape render highlighter', () => {
         done();
     });
     it('select child Select BPMN subprocess', (done: Function) => {
-        let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
+        diagramCanvas = document.getElementById(diagram.element.id + 'content');
         let node=diagram.getObject('processesStart');
         diagram.select([node]);
         let resizeHandle= document.getElementById('resizeSouth');

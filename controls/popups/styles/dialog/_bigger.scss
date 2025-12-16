@@ -1,14 +1,13 @@
+@use 'ej2-base/styles/common/mixin' as *;
+@use './theme-variables' as *;
 @include export-module('dialog-bigger') {
 
   .e-bigger.e-dialog,
   #{if(&, '&', '*')}.e-bigger .e-dialog {
     #{if(&, '&', '*')} .e-dlg-header-content {
       padding: $dialog-bigger-header-content-padding;
-      @if $skin-name == 'bootstrap5.3' {
-        height: 60px;
-      }
-      @if $skin-name == 'tailwind3' {
-        height: 56px;
+      @if $skin-name == 'bootstrap5.3' or $skin-name == 'tailwind3' {
+        height: $dialog-bigger-header-content-height;
       }
       @if $skin-name == 'bootstrap5' {
         line-height: inherit;
@@ -18,7 +17,7 @@
     & .e-dlg-header {
       font-size: $dialog-bigger-header-content-font-size;
       @if $skin-name == 'Material3' {
-        line-height: 40px;
+        line-height: $dialog-bigger-header-line-height;
       }
       @if $skin-name == 'material' or $skin-name == 'material-dark' {
         line-height: 36px;
@@ -62,18 +61,18 @@
       font-size: $dialog-bigger-close-icon-font-size;
       width: $dialog-bigger-close-icon-width;
       @if $skin-name == 'bootstrap5' {
-        top: auto;
-        left: auto;
+        top: $dialog-auto-width;
+        left: $dialog-auto-width;
       }
       @if $skin-name == 'tailwind3' {
-        margin-top: -25px;
+        margin-top: $dialog-btn-icon-close-margin-top;
       }
     }
   }
 
   .e-bigger.e-rtl .e-footer-content .e-btn,
   .e-bigger .e-rtl .e-footer-content .e-btn {
-    margin-left: 0;
+    margin-left: $dialog-bigger-rtl-footer-btn-margin-left;
     margin-right: $dialog-bigger-footer-button-margin-right;
   }
 

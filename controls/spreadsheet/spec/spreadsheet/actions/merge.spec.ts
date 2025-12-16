@@ -1,6 +1,6 @@
 import { SpreadsheetHelper } from '../util/spreadsheethelper.spec';
 import { defaultData } from '../util/datasource.spec';
-import { CellModel, setColumn, setRow, SheetModel, Spreadsheet, DialogBeforeOpenEventArgs, ExtendedSheet, MergedCellModel  } from '../../../src/index';
+import { CellModel, setColumn, setRow, SheetModel, Spreadsheet, DialogBeforeOpenEventArgs, ExtendedSheet, MergedCellModel, onContentScroll  } from '../../../src/index';
 import { checkPosition } from '../actions/selection.spec';
 
 describe('Merge ->', () => {
@@ -109,8 +109,12 @@ describe('Merge ->', () => {
         it('Cut paste of merged range', (done: Function) => {
             setTimeout((): void => {
                 helper.invoke('cut').then(() => {
-                    checkPosition(helper.getElementFromSpreadsheet('.e-active-cell'), ['79px', '63px', '61px', '65px']);
-                    checkPosition(helper.getElementFromSpreadsheet('.e-selection'), ['79px', '63px', '61px', '129px']);
+                    const activeCell: HTMLElement = helper.getElementFromSpreadsheet('.e-active-cell');
+                    const selectionCell: HTMLElement = helper.getElementFromSpreadsheet('.e-selection');
+                    const activeCellPixel: string[] = ['79px', '63px', '61px', '65px'];
+                    const selectionCellPixel: string[] = ['79px', '63px', '61px', '129px'];
+                    checkPosition(activeCell, activeCellPixel);
+                    checkPosition(selectionCell, selectionCellPixel);
                     helper.invoke('selectRange', ['E10']);
                     helper.invoke('paste', ['E10']);
                     setTimeout(() => {
@@ -325,11 +329,13 @@ describe('Merge ->', () => {
         it('Merge cell on column wise scrolling', (done: Function) => {
             helper.invoke('merge', ['A12:I15']);
             helper.invoke('goTo', ['W1']);
+            helper.getInstance().notify(onContentScroll, { scrollTop: 0, scrollLeft: 1280 });
             setTimeout(()=>{
                 let td: HTMLTableCellElement = helper.invoke('getCell', [9, 7]);
                 expect(td.colSpan).toBe(2);
                 expect(td.rowSpan).toBe(6);
                 helper.invoke('goTo', ['A1']);
+                helper.getInstance().notify(onContentScroll, { scrollTop: 0, scrollLeft: 0 });
                 setTimeout(()=>{
                     expect(td.rowSpan).toBe(1);
                     expect(td.colSpan).toBe(1); 
@@ -632,10 +638,12 @@ describe('Merge ->', () => {
             });
             it('While scrolling the frozen column applied sheet merged cells get messed up with each other', (done: Function) => {
                 helper.invoke('goTo', ['S1']);
-                setTimeout(()=>{
+                helper.getInstance().notify(onContentScroll, { scrollTop: 0, scrollLeft: 1152 });
+                setTimeout(() => {
                     let td: HTMLTableCellElement = helper.invoke('getCell', [0, 3]);
                     expect(td.style.display).toBe('');
                     helper.invoke('goTo', ['A1']);
+                    helper.getInstance().notify(onContentScroll, { scrollTop: 0, scrollLeft: 0 });
                     setTimeout(()=>{
                         expect(td.style.display).toBe('none');
                         done();

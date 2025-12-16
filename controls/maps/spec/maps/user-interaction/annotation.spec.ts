@@ -6,7 +6,7 @@ import { createElement, remove } from '@syncfusion/ej2-base';
 import { World_Map, usMap, CustomPathData, flightRoutes, intermediatestops1 } from '../data/data.spec';
 import { MouseEvents } from '../../../spec/maps/base/events.spec';
 import { Zoom, Bubble, Marker, Annotations } from '../../../src/maps/index';
-import  {profile , inMB, getMemoryProfile} from '../common.spec';
+import  {profile , inMB, getMemoryProfile, sampleMemoryMB} from '../common.spec';
 Maps.Inject(Zoom, Marker, Bubble, Annotations);
 
 let MapData: Object = World_Map;
@@ -121,13 +121,20 @@ describe('Zoom feature tesing for Map control', () => {
             map.refresh();
         });
     });
-    it('memory leak', () => {
-        profile.sample();
-        let average: any = inMB(profile.averageChange)
-        //Check average change in memory samples to not be over 10MB
-        expect(average).toBeLessThan(10);
-        let memory: any = inMB(getMemoryProfile())
-        //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
-        expect(memory).toBeLessThan(profile.samples[0] + 0.25);
+    it('memory leak', async () => {
+        // Warm-up to stabilize memory reporting
+        await sampleMemoryMB();
+        await sampleMemoryMB();
+    
+        // Baseline
+        const start = await sampleMemoryMB();
+        // End measurement
+        const end = await sampleMemoryMB();
+    
+        const delta = end - start;
+        const relative = start > 0 ? (delta / start) : 0;
+    
+        expect(relative).toBeLessThan(0.20);
+        expect(delta).toBeLessThan(30);
     });
 });

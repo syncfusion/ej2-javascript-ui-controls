@@ -1,12 +1,14 @@
+@use 'ej2-base/styles/common/mixin' as *;
+@use './theme-variables' as *;
 @include export-module('document-editor-container-layout') {
   .e-de-toolbar {
-    height: 100%;
+    height: $e-de-toolbar-height;
   }
   .e-documenteditorcontainer {
     display: block;
   }
   .e-de-toolbar .e-toolbar-items .e-toolbar-item .e-tbar-btn-text .e-de-text-wrap {
-    height: 0;
+    height: $e-de-text-wrap-height;
     @if $skin-name == 'tailwind' {
       line-height: 1;
     }
@@ -14,7 +16,7 @@
       line-height: .5;
     }
     @else {
-      line-height: 0;
+      line-height: $de-toolbar-line-height;
     }
   }
 
@@ -40,10 +42,10 @@
   }
 
   .e-de-ctnr-hglt-btn {
-    border: .5px solid transparent;
+    border: $e-de-ctnr-hglt-btn-border solid transparent;
     display: inline-block;
-    height: 25px;
-    margin: 3px;
+    height: $e-de-ctnr-hglt-btn-height;
+    margin: $de-ctnr-hglt-btn-margin;
     width: 25px;
   }
 
@@ -54,8 +56,8 @@
   }
 
   .e-hglt-no-color {
-    height: 30px;
-    padding-top: 1px;
+    height: $e-hglt-no-color-height;
+    padding-top: $de-hglt-no-color-padding-top;
     width: 157px;
 
     #{if(&, '&', '*')}:hover {
@@ -65,10 +67,10 @@
   }
 
   .e-de-ctnr-hglt-no-color {
-    font-size: 12px;
+    font-size: $de-ctnr-hglt-no-color-font-size;
     font-weight: normal;
     left: 40px;
-    padding-top: 11px;
+    padding-top: $de-ctnr-hglt-no-color-padding-top;
     position: absolute;
     top: 100px;
   }

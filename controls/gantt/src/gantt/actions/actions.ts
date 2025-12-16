@@ -18,3 +18,4 @@ export * from './column-menu';
 export * from './rowdragdrop';
 export * from './pdf-export';
 export * from './virtual-scroll';
+export * from './freeze-column';

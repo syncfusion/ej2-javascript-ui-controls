@@ -1,3 +1,6 @@
+@use 'ej2-base/styles/definition/fluent' as *;
+@forward 'ej2-base/styles/definition/fluent';
+
 // uploader bootstrap theme
 $zero-value: 0 !default;
 $upload-root-font-family: $font-family !default;
@@ -226,3 +229,13 @@ $clear-icon-focus-color: rgba($black, .12) !default;
 $list-bottom-border: 0 solid $border-light !default;
 $upload-border: 1px dashed $border-dark !default;
 $drag-hover-border: 2px dashed $primary-outline !default;
+
+$upload-zer-padding-margin: 0 !default;
+$upload-zero-height: 0 !default;
+$upload-full-height: 100% !default;
+$upload-bgr-placeholder-min-height: 65px !default;
+$upload-bgr-content-placeholder-min-height: 80px !default;
+$upload-zero-width: 0 !default;
+$upload-full-width: 100% !default;
+$upload-auto-width: auto !default;
+$uploader-actions-border-radius: 0 0 6px 6px !default;

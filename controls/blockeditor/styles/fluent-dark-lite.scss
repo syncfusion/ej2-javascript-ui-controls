@@ -1,4 +1,4 @@
-@import 'ej2-base/styles/definition/fluent-dark.scss';
-@import 'blockeditor/fluent-dark-definition.scss';
-@import 'blockeditor/icons/fluent-dark.scss';
-@import 'blockeditor/all.scss';
+@use 'ej2-base/styles/definition/fluent-dark' as *;
+@use 'blockeditor/fluent-dark-definition' as *;
+@use 'blockeditor/icons/fluent-dark' as *;
+@use 'blockeditor/all' as *;

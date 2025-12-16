@@ -1,3 +1,6 @@
+@use 'ej2-base/styles/definition/fluent2' as *;
+@forward 'ej2-base/styles/definition/fluent2';
+
 /*! calendar theme variables */
 //month view
 $calendar-normal-month-view-height: 32px !default;
@@ -13,6 +16,7 @@ $calendar-bigger-month-view-padding: 0 !default;
 $calendar-bigger-month-view-height: 40px !default;
 $calendar-bigger-month-view-line-height: $calendar-bigger-month-view-height !default;
 $calendar-bigger-month-view-width: 40px !default;
+$border-zero: 0;
 
 //header dimension
 $calendar-header-font-size: $text-xs !default;
@@ -38,7 +42,7 @@ $calendar-small-header-padding: 8px 8px 6px 12px !default;
 $calendar-bigger-small-header-padding: 8px 12px 6px 20px !default;
 
 // common size properties
-$calendar-wrapper-border-radius: 2px !default;
+$calendar-wrapper-border-radius: $radius-2 !default;
 $calendar-full-width: 100% !default;
 $calendar-lg-day-header-format-max-width: 100% !default;
 $calendar-lg-day-header-format-min-width: 540px !default;
@@ -162,7 +166,7 @@ $calendar-date-font-size: $text-xs !default;
 $calendar-bigger-day-font-size: $text-sm !default;
 $calendar-link-font-weight-style: $font-weight-normal !default;
 $calendar-disable-font-weight-style: $font-weight-normal !default;
-$calendar-border-radius: 2px !default;
+$calendar-border-radius: $radius-2 !default;
 
 //week header font size
 $calendar-bigger-week-header-font-size: $text-sm !default;
@@ -224,7 +228,7 @@ $calendar-hover-border-color: $primary-lighter !default;
 $calendar-disable-font-color: $content-text-color-disabled !default;
 $calendar-focused-date-bg-style: $primary-light !default;
 $calendar-small-title-font-color: $content-text-color-alt1 !default;
-$calendar-title-border-radius: 2px !default;
+$calendar-title-border-radius: $radius-2 !default;
 $calendar-title-focus-box-shadow: $keyboard-focus !default;
 $calendar-title-focus-background: none !default;
 $calendar-title-active-background: $primary-light !default;
@@ -287,9 +291,9 @@ $calendar-normal-year-decade-height-inside: 40px !default;
 $calendar-bigger-year-decade-height-inside: 40px !default;
 $calendar-selected-box-shadow: none !default;
 $calendar-text-color-focus: rgba($primary-text-color) !default;
-$calendar-today-border-radius: 50% !default;
-$calendar-border-selected-radius: 50% !default;
-$calendar-focused-state-border-radius: 2px !default;
+$calendar-today-border-radius: $radius-full !default;
+$calendar-border-selected-radius: $radius-full !default;
+$calendar-focused-state-border-radius: $radius-2 !default;
 $calendar-focused-state-box-shadow: none !default;
 $calendar-focused-state-month-box-shadow: none !default;
 $calendar-selected-month-bg-color: $primary-lighter !default;
@@ -297,3 +301,15 @@ $calendar-selected-month-bg-color: $primary-lighter !default;
 .e-small:not(.e-bigger) .e-calendar.e-week-number {
   min-width: 230px;
 }
+
+$line-height: 14px;
+$margin-zero: 0;
+$padding-zero: 0;
+$calendar-bigger-rtl-header-text-indent: 6px !default;
+$calendar-zero-border-radius: $radius-0 !default;
+$calendar-bigger-header-width: auto !default;
+$calendar-bigger-placeholder-min-height: 392px !default;
+$calendar-small-min-height: 220px !default;
+$calendar-bgr-small-border-radius: $radius-8 !default;
+$calendar-td-hover-border-radius: $radius-2 !default;
+$calendar-content-td-border-radius: $radius-2 !default;

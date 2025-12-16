@@ -1,3 +1,6 @@
+@use 'ej2-base/styles/definition/bootstrap5.3' as *;
+@forward 'ej2-base/styles/definition/bootstrap5.3';
+
 //default
 $datepicker-icon: '\e901' !default;
 $datepicker-icon-font-size: $font-icon-16 !default;
@@ -8,8 +11,8 @@ $datepicker-bigger-icon-container-min-width: 36px !default;
 $datepicker-bigger-icon-font-size: $font-icon-18 !default;
 $datepicker-icon-normal-margin: 0 !default;
 $datepicker-icon-bigger-margin: 0 !default;
-$datepicker-icon-border-radius: 50% !default;
-$datepicker-popup-border-radius: 6px !default;
+$datepicker-icon-border-radius: $radius-full !default;
+$datepicker-popup-border-radius: $radius-6 !default;
 $datepicker-box-sizing: border-box !default;
 $datepicker-modal-header-display: block !default;
 $datepicker-calendar-tbody-landscape-height: 130px !default;
@@ -106,3 +109,30 @@ $modal-tablet-content-dimension: 64px !default;
 $modal-tablet-table-header-height: 48px !default;
 
 //enddefault
+
+$margin-zero: 0;
+$padding-zero: 0;
+$datepicker-modal-header-padding: 10px 10px 10px 15px;
+$datepicker-footer-container-padding: 10px 0;
+$date-picker-full-height: 100% !default;
+$datepicker-bigger-min-height: 40px !default;
+$datepicker-full-width: 100% !default;
+$datepicker-min-height: 33px !default;
+$date-header-mob-prev-height: 46px !default;
+$date-header-mob-prev-width: 46px !default;
+$date-min-device-height: 70px !default;
+$date-min-device-width: 70px !default;
+$date-picker-popup-next-height: 46px !default;
+$date-picker-popup-next-width: 46px !default;
+$date-picker-popup-next-min-height: 70px !default;
+$date-picker-popup-next-min-width: 70px !default;
+
+$date-picker-cell-container-height: 70% !default;
+$date-footer-container-font-size: 24px !default;
+$date-footer-height: 10% !default;
+$date-content-max-height: 50vh !default;
+$date-content-min-height: 60vh !default;
+$date-picker-popup-landscape-height: 25vh !default;
+$date-zero-radius: $radius-0 !default;
+$date-mob-popup-height: 15vh !default;
+$date-normal-font: 400 !default;

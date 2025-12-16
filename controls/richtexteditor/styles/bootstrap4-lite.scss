@@ -1,4 +1,3 @@
-@import 'ej2-base/styles/definition/bootstrap4.scss';
-@import 'rich-text-editor/bootstrap4-definition.scss';
-@import 'rich-text-editor/icons/bootstrap4.scss';
-@import 'rich-text-editor/all.scss';
+@use 'rich-text-editor/bootstrap4-definition' as *;
+@use 'rich-text-editor/icons/bootstrap4' as *;
+@use 'rich-text-editor/all' as *;

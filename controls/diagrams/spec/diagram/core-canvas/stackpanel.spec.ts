@@ -42,6 +42,7 @@ describe('Diagram Control', () => {
         afterAll((): void => {
             diagram.destroy();
             ele.remove();
+            (diagram as any) = null; (ele as any) = null;
         });
 
         it('Checking stack panel without children in SVG rendering Mode', (done: Function) => {
@@ -75,6 +76,7 @@ describe('Diagram Control', () => {
         afterAll((): void => {
             diagram.destroy();
             ele.remove();
+            (diagram as any) = null; (ele as any) = null;
         });
 
         it('Checking stack panel with empty children in SVG rendering Mode', (done: Function) => {
@@ -117,6 +119,7 @@ describe('Diagram Control', () => {
         afterAll((): void => {
             diagram.destroy();
             ele.remove();
+            (diagram as any) = null; (ele as any) = null;
         });
 
         it('Checking default orientation in SVG rendering Mode', (done: Function) => {
@@ -183,6 +186,7 @@ describe('Diagram Control', () => {
         afterAll((): void => {
             diagram.destroy();
             ele.remove();
+            (diagram as any) = null; (ele as any) = null;
         });
 
         it('Checking horizontal panel in SVG rendering Mode', (done: Function) => {
@@ -250,6 +254,7 @@ describe('Diagram Control', () => {
         afterAll((): void => {
             diagram.destroy();
             ele.remove();
+            (diagram as any) = null; (ele as any) = null;
         });
 
         it('Checking vertical panel in SVG rendering Mode', (done: Function) => {
@@ -296,6 +301,7 @@ describe('Diagram Control', () => {
         afterAll((): void => {
             diagram.destroy();
             ele.remove();
+            (diagram as any) = null; (ele as any) = null;
         });
 
         it('Checking horizontal panel with padding in SVG rendering Mode', (done: Function) => {
@@ -342,6 +348,7 @@ describe('Diagram Control', () => {
         afterAll((): void => {
             diagram.destroy();
             ele.remove();
+            (diagram as any) = null; (ele as any) = null;
         });
 
         it('Checking vertical stack panel with padding in SVG rendering Mode', (done: Function) => {
@@ -389,6 +396,7 @@ describe('Diagram Control', () => {
         afterAll((): void => {
             diagram.destroy();
             ele.remove();
+            (diagram as any) = null; (ele as any) = null;
         });
 
         it('Checking horizontal panel with margin in SVG rendering Mode', (done: Function) => {
@@ -436,6 +444,7 @@ describe('Diagram Control', () => {
         afterAll((): void => {
             diagram.destroy();
             ele.remove();
+            (diagram as any) = null; (ele as any) = null;
         });
 
         it('Checking vertical stack panel with margin in SVG rendering Mode', (done: Function) => {
@@ -525,6 +534,7 @@ describe('Diagram Control', () => {
         afterAll((): void => {
             diagram.destroy();
             ele.remove();
+            (diagram as any) = null; (ele as any) = null;
         });
 
         it('Checking rotated vertical stack panel in SVG rendering Mode', (done: Function) => {
@@ -614,6 +624,7 @@ describe('Diagram Control', () => {
         afterAll((): void => {
             diagram.destroy();
             ele.remove();
+            (diagram as any) = null; (ele as any) = null;
         });
 
         it('Checking rotated horizontal stack panel in SVG rendering Mode', (done: Function) => {

@@ -435,10 +435,10 @@ export class YearEvent extends TimelineEvent {
         }
         const moreIndicator: HTMLElement = this.getMoreIndicatorElement(count, startDate, endDate);
         const rowTr: HTMLElement = this.parent.element.querySelector(`.e-content-wrap tr:nth-child(${row + 1})`) as HTMLElement;
-        const top: number = rowTr.offsetTop + (this.cellHeight - this.moreIndicatorHeight);
+        const top: number = rowTr.offsetTop + this.cellHeight;
         left = (Math.floor(left / this.cellWidth) * this.cellWidth);
         right = (Math.floor(right / this.cellWidth) * this.cellWidth);
-        setStyleAttribute(moreIndicator, { 'width': this.cellWidth + 'px', 'left': left + 'px', 'right': right + 'px', 'top': top + 'px' });
+        setStyleAttribute(moreIndicator, { 'width': this.cellWidth + 'px', 'left': left + 'px', 'right': right + 'px', 'top': top + 'px', 'transform': 'translateY(-100%)' });
         if (!isNullOrUndefined(index)) {
             moreIndicator.setAttribute('data-group-index', index.toString());
         }

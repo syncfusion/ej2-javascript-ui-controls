@@ -7,8 +7,8 @@ import { IndicatorType } from '@syncfusion/ej2-grids';
 export class LoadingIndicator extends ChildProperty<LoadingIndicator> {
     /**
      * Defines the loading indicator. The available loading indicator are:
-     * * Spinner
-     * * Shimmer
+     * * Spinner – Displays a rotating loader icon. Ideal for quick data loading scenarios.
+     * * Shimmer – Displays a placeholder skeleton with a shimmering animation. Recommended for longer data loading operations to provide a better user experience.
      *
      * @default Syncfusion.EJ2.Grids.IndicatorType.Spinner
      * @isEnumeration true

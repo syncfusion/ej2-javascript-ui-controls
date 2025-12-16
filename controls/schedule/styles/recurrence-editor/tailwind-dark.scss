@@ -1,9 +1,9 @@
-@import 'ej2-base/styles/definition/tailwind-dark.scss';
-@import 'ej2-inputs/styles/numerictextbox/tailwind-dark-definition.scss';
-@import 'ej2-buttons/styles/button/tailwind-dark-definition.scss';
-@import 'ej2-buttons/styles/radio-button/tailwind-dark-definition.scss';
-@import 'ej2-calendars/styles/datepicker/tailwind-dark-definition.scss';
-@import 'ej2-dropdowns/styles/drop-down-list/tailwind-dark-definition.scss';
-@import 'tailwind-dark-definition.scss';
-@import 'all.scss';
-@import 'bigger.scss';
+@use 'ej2-base/styles/definition/tailwind-dark' as *;
+@use 'ej2-inputs/styles/numerictextbox/tailwind-dark-definition' as *;
+@use 'ej2-buttons/styles/button/tailwind-dark-definition' as *;
+@use 'ej2-buttons/styles/radio-button/tailwind-dark-definition' as *;
+@use 'ej2-calendars/styles/datepicker/tailwind-dark-definition' as *;
+@use 'ej2-dropdowns/styles/drop-down-list/tailwind-dark-definition' as *;
+@use 'tailwind-dark-definition' as *;
+@use 'all' as *;
+@use 'bigger' as *;

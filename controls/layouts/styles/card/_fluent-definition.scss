@@ -1,3 +1,6 @@
+@use 'ej2-base/styles/definition/fluent' as *;
+@forward 'ej2-base/styles/definition/fluent';
+
 //Layout Variables Start
 $card-img-brdr-radious: 50% !default;
 $card-brdr-radious: $model-radius !default;
@@ -37,6 +40,8 @@ $card-image-title-mheight: 30px !default;
 $card-action-nrml-vertical-padding: 12px !default;
 $card-action-nrml-btn-vertical-margin: 0 0 6px 0 !default;
 $card-action-btn-nrml-height: 30px !default;
+$card-action-btn-nrml-line-height: 30px !default;
+$card-action-btn-nrml-min-height: 30px !default;
 $card-action-btn-nrml-margin: 0 0 0 6px !default;
 $card-action-btn-nrml-padding: 0 6px !default;
 $card-nrml-content-padding: 16px !default;
@@ -45,6 +50,13 @@ $card-header-txt-nrml-subtitle-font: $text-xs !default;
 $card-image-title-font: $text-base !default;
 $card-action-btn-icon-width: 24px !default;
 $card-action-btn-icon-height: 24px !default;
+$card-nrml-font-size: 15px !default;
+$card-normal-line-height: normal !default;
+$card-corner-border-radius: 50% !default;
+$card-header-title-font-weight: normal !default;
+$card-sub-title-font-weight: normal !default;
+$card-btn-border-radius: 2px !default;
+$card-font-family: $font-family !default;
 
 // Touch
 $card-bigger-lheight: 48px !default;
@@ -69,6 +81,8 @@ $card-image-title-bigger-mheight: 40px !default;
 $card-action-bigger-vertical-padding: 16px !default;
 $card-action-bigger-btn-vertical-margin: 0 0 7px 0 !default;
 $card-action-btn-bigger-height: 38px !default;
+$card-action-btn-bigger-line-height: 38px !default;
+$card-action-btn-bigger-min-height: 38px !default;
 $card-action-btn-bigger-margin: 0 0 0 13px !default;
 $card-action-btn-bigger-padding: 0 6px !default;
 $card-bigger-content-padding: 20px !default;
@@ -83,6 +97,10 @@ $card-action-nrml-padding: 16px !default;
 $card-action-bigger-padding: 20px !default;
 $card-header-bigger-whole-padding: 20px !default;
 $card-header-whole-padding: 16px !default;
+
+$card-padding-none: 0 !default;
+$card-margin-none: 0 !default;
+$card-horizontal-padding: 2px !default;
 
 //Layout Variables End
 

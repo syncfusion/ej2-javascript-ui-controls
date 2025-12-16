@@ -1,3 +1,5 @@
+@use 'ej2-base/styles/common/mixin' as *;
+@use './theme-variables' as *;
 @mixin active-icon {
   .e-fe-dot,
   .e-fe-tick {
@@ -166,7 +168,7 @@
           @if ($fm-skin-name == 'Material3') {
             border: none;
             border-bottom: 1px solid $outline;
-            border-radius: 0;
+            border-radius: $fe-address-input-group-border-radius;
           }
         }
       }
@@ -417,5 +419,8 @@
     .e-upload .e-upload-actions {
       border-bottom-color: $fe-up-list-border-color;
     }
+  }
+  .e-filemanager .e-grid.sf-grid :is(.e-headercontent th.e-headercell:not(.e-menu-item):not(.e-editedbatchcell).e-fe-checkbox, .e-content td.e-rowcell:not(.e-menu-item):not(.e-editedbatchcell).e-fe-checkbox):is(:focus, :focus-visible) {
+    box-shadow: none;
   }
 }

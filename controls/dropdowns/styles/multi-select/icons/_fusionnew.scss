@@ -1,3 +1,5 @@
+@use 'ej2-base/styles/common/mixin' as *;
+@use '../fusionnew-definition' as *;
 @include export-module('multiselect-fusionnew-icons') {
   .e-multiselect.e-input-group .e-ddl-icon::before {
     content: '\e729';

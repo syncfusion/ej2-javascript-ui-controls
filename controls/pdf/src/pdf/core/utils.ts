@@ -1,6 +1,7 @@
 import { _PdfDictionary, _PdfName, _PdfReference } from './pdf-primitives';
 import { PdfPage } from './pdf-page';
 import { PdfFormFieldVisibility, PdfAnnotationFlag, PdfCheckBoxStyle, PdfHighlightMode, PdfBorderStyle, PdfBorderEffectStyle, PdfLineEndingStyle, _PdfCheckFieldState, PdfMeasurementUnit, _PdfGraphicsUnit, PdfTextMarkupAnnotationType, PdfRotationAngle, PdfAnnotationState, PdfAnnotationStateModel, PdfPopupIcon, PdfRubberStampAnnotationIcon, PdfAttachmentIcon, PdfAnnotationIntent, PdfBlendMode, _PdfAnnotationType, PdfNumberStyle, PdfDashStyle } from './enumerator';
+import { _TagClassType, _ConstructionType, _UniversalType } from './security/digital-signature/asn1/enumerator';
 import { _PdfTransformationMatrix } from './graphics/pdf-graphics';
 import { PdfDocument, PdfPageSettings } from './pdf-document';
 import { _PdfBaseStream, _PdfStream } from './base-stream';
@@ -11,46 +12,15 @@ import { PdfField, PdfTextBoxField, PdfComboBoxField } from './form/field';
 import { PdfCjkFontFamily, PdfCjkStandardFont, PdfFont, PdfFontFamily, PdfFontStyle, PdfStandardFont, PdfTrueTypeFont } from './fonts/pdf-standard-font';
 import { PdfStringFormat } from './fonts/pdf-string-format';
 import { _PdfCrossReference } from './pdf-cross-reference';
-import { PdfForm } from './form';
+import { PdfForm } from './form/form';
 import { _ImageDecoder } from './graphics/images/image-decoder';
 import { _JpegDecoder } from './graphics/images/jpeg-decoder';
 import { _PngDecoder } from './graphics/images/png-decoder';
 import { CompressedStreamWriter } from '@syncfusion/ej2-compression';
-import { _PdfFontMetrics, _StandardWidthTable, _WidthTable } from './fonts/pdf-font-metrics';
-/**
- * Represents a bounding rectangle with an origin (x, y) and size (width, height).
- *
- * @property {number} x - The horizontal coordinate of the rectangle's origin.
- * @property {number} y - The vertical coordinate of the rectangle's origin.
- * @property {number} width - The width of the rectangle.
- * @property {number} height - The height of the rectangle.
- */
-export type Rectangle = {
-    x: number;
-    y: number;
-    width: number;
-    height: number;
-};
-/**
- * Represents the size.
- *
- * @property {number} width - The width.
- * @property {number} height - The height.
- */
-export type Size = {
-    width: number;
-    height: number;
-};
-/**
- * Represents a point in a two-dimensional coordinate system.
- *
- * @property {number} x - The x-coordinate of the point.
- * @property {number} y - The y-coordinate of the point.
- */
-export type Point = {
-    x: number;
-    y: number;
-};
+import { _CjkWidthTable, _PdfFontMetrics, _StandardWidthTable, _WidthTable } from './fonts/pdf-font-metrics';
+import { _PdfAbstractSyntaxElement } from './security/digital-signature/asn1/abstract-syntax';
+import { _PdfUniqueEncodingElement } from './security/digital-signature/asn1/unique-encoding-element';
+import { Size, PdfColor, Point } from './pdf-type';
 /**
  * Gets the unsigned value.
  *
@@ -147,8 +117,8 @@ export function _checkRotation(page: PdfPage, height: number, left: number): num
     } else if (page.rotation === PdfRotationAngle.angle180) {
         topValue = (typeof height === 'undefined' || height === null) ? 0 : height;
     } else if (page.rotation === PdfRotationAngle.angle270) {
-        const size: number[] = page.size;
-        topValue = (typeof height === 'undefined' || height === null) ? 0 : size[0] - left;
+        const size: Size = page.size;
+        topValue = (typeof height === 'undefined' || height === null) ? 0 : size.width - left;
     }
     return topValue;
 }
@@ -335,18 +305,32 @@ export function _stringToBytes(value: string, isDirect: boolean = false,
  * Check equal or not.
  *
  * @private
- * @param {number[]} first byte array.
- * @param {number[]} second byte array.
+ * @param {Uint8Array | number[]} first byte array.
+ * @param {Uint8Array | number[]} second byte array.
  * @returns {boolean} Equal or not
  */
 export function _areArrayEqual(first: Uint8Array | number[], second: Uint8Array | number[]): boolean {
     return first.length === second.length && first.every((val: number, i: number) => val === second[<number>i]);
 }
 /**
+ * Check whether entries in points are equal or not.
+ *
+ * @private
+ * @param {Point[]} a first point array.
+ * @param {Point[]} b second point array.
+ * @returns {boolean} Return true if for each elements are equal in both point array.
+ */
+export function _arePointsEqual(a: Point[], b: Point[]): boolean {
+    if (a.length !== b.length) {
+        return false;
+    }
+    return a.every((p: Point, i: number) => p.x === b[<number>i].x && p.y === b[<number>i].y);
+}
+/**
  * Convert number to string as round value with fixed decimal points 2.
  *
  * @private
- * @param {number[]} value number value.
+ * @param {number} value number value.
  * @returns {boolean} Equal string.
  */
 export function _numberToString(value: number): string {
@@ -375,6 +359,25 @@ export function _areNotEqual(value: number[], current: number[]): boolean {
         }
     }
     return result;
+}
+/**
+ * Check whether entries in points are equal or not.
+ *
+ * @private
+ * @param {Point[]} value first point array.
+ * @param {Point[]} current second point array.
+ * @returns {boolean} Return true if for each elements are equal in both point array.
+ */
+export function _arePointsNotEqual(value: Point[], current: Point[]): boolean {
+    if (value.length !== current.length) {
+        return true;
+    }
+    for (let i: number = 0; i < value.length; i++) {
+        if (value[<number>i].x !== current[<number>i].x || value[<number>i].y !== current[<number>i].y) {
+            return true;
+        }
+    }
+    return false;
 }
 /**
  * Process bytes and convert as string.
@@ -799,26 +802,26 @@ export function _calculateBounds(dictionary: _PdfDictionary, page: PdfPage): { x
     if (dictionary.has('Rect')) {
         rect = _parseRectangle(dictionary);
         if (page) {
-            const size: number[] = page.size;
+            const size: Size = page.size;
             const mBox: number[] = page.mediaBox;
             const cropBox: number[] = page.cropBox;
             if (cropBox && Array.isArray(cropBox) && cropBox.length === 4 && page._pageDictionary.has('CropBox')) {
-                if ((cropBox[0] !== 0 || cropBox[1] !== 0 || size[0] === cropBox[2] ||
-                    size[1] === cropBox[3]) && (rect.x !== cropBox[0])) {
+                if ((cropBox[0] !== 0 || cropBox[1] !== 0 || size.width === cropBox[2] ||
+                    size.height === cropBox[3]) && (rect.x !== cropBox[0])) {
                     rect.x -= cropBox[0];
                     rect.y = cropBox[3] - (rect.y + rect.height);
                 } else {
-                    rect.y = size[1] - (rect.y + rect.height);
+                    rect.y = size.height - (rect.y + rect.height);
                 }
             } else if (mBox && Array.isArray(mBox) && mBox.length === 4 && page._pageDictionary.has('MediaBox')) {
-                if (mBox[0] > 0 || mBox[1] > 0 || size[0] === mBox[2] || size[1] === mBox[3]) {
+                if (mBox[0] > 0 || mBox[1] > 0 || size.width === mBox[2] || size.height === mBox[3]) {
                     rect.x -= mBox[0];
                     rect.y = mBox[3] - (rect.y + rect.height);
                 } else {
-                    rect.y = size[1] - (rect.y + rect.height);
+                    rect.y = size.height - (rect.y + rect.height);
                 }
             } else {
-                rect.y = size[1] - (rect.y + rect.height);
+                rect.y = size.height - (rect.y + rect.height);
             }
         } else {
             rect.y = rect.y + rect.height;
@@ -869,9 +872,9 @@ export function _getUpdatedBounds(value: number[], page?: PdfPage): number[] {
     const width: number = value[2];
     const height: number = value[3];
     if (page) {
-        const size: number[] = page.size;
-        const pageWidth: number = size[0];
-        const pageHeight: number = size[1];
+        const size: Size = page.size;
+        const pageWidth: number = size.width;
+        const pageHeight: number = size.height;
         const mBox: number[] = page.mediaBox;
         const cropBox: number[] = page.cropBox;
         if (cropBox && Array.isArray(cropBox) && cropBox.length === 4) {
@@ -899,9 +902,9 @@ export function _getUpdatedBounds(value: number[], page?: PdfPage): number[] {
  *
  * @private
  * @param {string} colorString Color value in string format.
- * @returns {number[]} RGB color value.
+ * @returns {PdfColor | undefined} RGB color value.
  */
-export function _convertToColor(colorString: string): number[] {
+export function _convertToColor(colorString: string): PdfColor | undefined {
     let color: number[] = _getColorValue(colorString);
     if (!color) {
         const result: RegExpExecArray = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(colorString);
@@ -909,30 +912,122 @@ export function _convertToColor(colorString: string): number[] {
             color = [parseInt(result[1], 16), parseInt(result[2], 16), parseInt(result[3], 16)];
         }
     }
-    return color;
+    return color ? {r: color[0], g: color[1], b: color[2]} : undefined;
+}
+/**
+ * Checks if the given value is an array of Point objects.
+ *
+ * @private
+ * @param {any} value - Value to check.
+ * @returns {boolean} True if value is Point[].
+ */
+export function _isPointArray(value: any): boolean { // eslint-disable-line
+    return Array.isArray(value) &&
+        value.every(item => // eslint-disable-line
+            item &&
+            typeof item.x === 'number' &&
+            typeof item.y === 'number'
+        );
+}
+/**
+ * Converts a flat number array into an array of Point objects.
+ *
+ * @private
+ * @param {number[]} arr - Array of numbers [x1, y1, x2, y2, ...].
+ * @returns {Point[]} Array of Point objects.
+ */
+export function _convertToPoints(arr: number[]): Point[] {
+    const points: Point[] = [];
+    for (let i: number = 0; i < arr.length; i += 2) {
+        points.push({ x: arr[<number>i], y: arr[i + 1] });
+    }
+    return points;
+}
+/**
+ * Converts a number array into an array of Point arrays.
+ *
+ * @private
+ * @param {Array<number[]>} data - Array of arrays containing numeric coordinates.
+ * @returns {Array<Point[]>} Array of Point arrays.
+ */
+export function _convertNumberToPointArrays(data: Array<number[]>): Array<Point[]> {
+    return data.map(innerArray => { // eslint-disable-line
+        const points: Point[] = [];
+        for (let i: number = 0; i < innerArray.length; i += 2) {
+            points.push({ x: innerArray[<number>i], y: innerArray[i + 1] });
+        }
+        return points;
+    });
+}
+/**
+ * Converts a number array into a flat array of Point objects.
+ *
+ * @private
+ * @param {Array<number[]>} data - Array of arrays containing numeric coordinates.
+ * @returns {Point[]} Flattened array of Point objects.
+ */
+export function _convertNumberArraysToPoints(data: Array<number[]>): Point[] {
+    const points: Point[] = [];
+    for (const innerArray of data) {
+        for (let i: number = 0; i < innerArray.length; i += 2) {
+            points.push({ x: innerArray[<number>i], y: innerArray[i + 1] });
+        }
+    }
+    return points;
+}
+/**
+ * Converts an array of Point arrays into a number array.
+ *
+ * @private
+ * @param {Array<Point[]>} data - Array of Point arrays.
+ * @returns {Array<number[]>} Array of arrays containing numeric coordinates.
+ */
+export function _convertPointsToNumberArrays(data: Array<Point[]>): Array<number[]> {
+    return data.map(innerArray => { // eslint-disable-line
+        const numbers: number[] = [];
+        for (const point of innerArray) {
+            numbers.push(point.x, point.y);
+        }
+        return numbers;
+    });
+}
+/**
+ * Converts an array of Point objects into a flat number array.
+ *
+ * @private
+ * @param {Point[]} data - Array of Point objects.
+ * @returns {number[]} Array of numbers [x1, y1, x2, y2, ...].
+ */
+export function _convertPointToNumberArray(data: Point[]): number[] {
+    const numbers: number[] = [];
+    for (let i: number = 0; i < data.length; i++) {
+        const point: Point = data[<number>i];
+        numbers.push(point.x, point.y);
+    }
+    return numbers;
 }
 /**
  * Parse RGB color.
  *
  * @private
  * @param {number[]} array Color array in dictionary.
- * @returns {number[]} RGB color value.
+ * @returns {PdfColor} RGB color value.
  */
-export function _parseColor(array: number[]): number[] {
-    let color: number[];
+export function _parseColor(array: number[]): PdfColor {
+    let color: PdfColor;
     if (array) {
         if (array.length === 1) {
             const entry: number = array[0];
             if (typeof entry !== 'undefined') {
                 const round: number = Math.round(entry * 255);
-                color = [round, round, round];
+                color = {r: round, g: round, b: round};
             }
         } else if (array.length === 3) {
             const r: number = array[0];
             const g: number = array[1];
             const b: number = array[2];
             if (typeof r !== 'undefined' && typeof g !== 'undefined' && typeof b !== 'undefined') {
-                color = [Math.round(r * 255), Math.round(g * 255), Math.round(b * 255)];
+                color = {r: Math.round(r * 255), g: Math.round(g * 255), b: Math.round(b * 255)};
             }
         } else if (array.length === 4) {
             const c: number = array[0];
@@ -941,9 +1036,9 @@ export function _parseColor(array: number[]): number[] {
             const k: number = array[3];
             if (typeof c !== 'undefined' && typeof m !== 'undefined' && typeof y !== 'undefined' && typeof k !== 'undefined') {
                 const fBlack: number = k * 255;
-                color = [Math.round(255 - Math.min(255, ((c * (255 - fBlack)) + fBlack))),
-                    Math.round(255 - Math.min(255, ((m * (255 - fBlack)) + fBlack))),
-                    Math.round(255 - Math.min(255, ((y * (255 - fBlack)) + fBlack)))];
+                color = {r: Math.round(255 - Math.min(255, ((c * (255 - fBlack)) + fBlack))),
+                    g: Math.round(255 - Math.min(255, ((m * (255 - fBlack)) + fBlack))),
+                    b: Math.round(255 - Math.min(255, ((y * (255 - fBlack)) + fBlack)))};
             }
         }
     }
@@ -3700,20 +3795,55 @@ export function _removeReferences(normal: any, crossReference: _PdfCrossReferenc
         _removeDuplicateReference(normalElement, crossReference, secondKey);
     }
 }
+/**
+ * Represents the base class for all custom exceptions.
+ * Provides a message and a name for the exception.
+ */
 export class BaseException {
+    /**
+     * The error message describing the exception.
+     */
     message: string;
+    /**
+     * The name of the exception type.
+     */
     name: string;
+    /**
+     * Creates a new BaseException instance.
+     *
+     * @private
+     * @param {string} message - The error message.
+     * @param {string} name - The name of the exception.
+     */
     constructor(message: string, name: string) {
         this.message = message;
         this.name = name;
     }
 }
+/**
+ * Represents an error related to invalid format.
+ * Extends BaseException.
+ */
 export class FormatError extends BaseException {
+    /**
+     * Creates a new FormatError instance.
+     *
+     * @param {string} message - The error message describing the format issue.
+     */
     constructor(message: string) {
         super(message, 'FormatError');
     }
 }
+/**
+ * Represents an error thrown when the parser reaches the end of the file unexpectedly.
+ * Extends BaseException.
+ */
 export class ParserEndOfFileException extends BaseException {
+    /**
+     * Creates a new ParserEndOfFileException instance.
+     *
+     * @param {string} message - The error message describing the EOF condition.
+     */
     constructor(message: string) {
         super(message, 'ParserEndOfFileException');
     }
@@ -3829,7 +3959,7 @@ export function _obtainFontDetails(form: PdfForm, widget: PdfWidgetAnnotation, f
                     if (!hasValidFontCache && font instanceof PdfStandardFont && field instanceof PdfTextBoxField &&
                         !field._isTextChanged && fontDictionary) {
                         const widthTable: _WidthTable = font._metrics._widthTable;
-                        const metrics: _PdfFontMetrics = _createFontMetrics(fontDictionary, font.height, baseFont.name);
+                        const metrics: _PdfFontMetrics = _createFontMetrics(fontDictionary, font.height, baseFont.name, font);
                         if (metrics) {
                             font._metrics = metrics;
                         }
@@ -3916,19 +4046,20 @@ export function _obtainFontDetails(form: PdfForm, widget: PdfWidgetAnnotation, f
  * @param {_PdfDictionary} fontDictionary Form field.
  * @param {number} height Font family.
  * @param {string} baseFontName Font name.
+ * @param {PdfStandardFont} font The font.
  * @returns {_PdfFontMetrics} Font metrics.
  */
-export function _createFontMetrics(fontDictionary: _PdfDictionary, height: number, baseFontName: string): _PdfFontMetrics {
+export function _createFontMetrics(fontDictionary: _PdfDictionary, height: number, baseFontName: string,
+                                   font: PdfStandardFont): _PdfFontMetrics {
     let fontMetrics: _PdfFontMetrics;
     if (fontDictionary.has('FontDescriptor')) {
         fontMetrics = new _PdfFontMetrics();
         const fontDescriptor: _PdfDictionary = fontDictionary.get('FontDescriptor');
         if (fontDescriptor) {
-            fontMetrics._ascent = fontDescriptor.get('Ascent');
-            fontMetrics._descent = fontDescriptor.get('Descent');
-            fontMetrics._ascent = fontDescriptor.get('Ascent');
-            fontMetrics._size = height;
-            fontMetrics._height = fontMetrics._ascent - fontMetrics._descent;
+            font._ascent = fontDescriptor.get('Ascent');
+            font._descent = fontDescriptor.get('Descent');
+            font._ascent = fontDescriptor.get('Ascent');
+            font._height = font._ascent - font._descent;
             fontMetrics._postScriptName = baseFontName;
         }
     }
@@ -3950,7 +4081,7 @@ export function _createFontMetrics(fontDictionary: _PdfDictionary, height: numbe
  */
 export function _getFontSize(field: PdfField, family: PdfFontFamily): number {
     let selectedValue: string;
-    const measureValue: number[][] = [];
+    const measureValue: Size[] = [];
     let s: number = 0;
     try {
         if (field instanceof PdfComboBoxField) {
@@ -3993,8 +4124,8 @@ export function _getFontSize(field: PdfField, family: PdfFontFamily): number {
                 width -= doubleBorderWidth;
             }
             if (measureValue.length > 0) {
-                const maxWidthSize: number = (12 * (width - offset[0])) / measureValue[measureValue.length - 1][0];
-                const maxHeightSize: number = (12 * (rect[3] - offset[1])) / measureValue[measureValue.length - 1][1];
+                const maxWidthSize: number = (12 * (width - offset[0])) / measureValue[measureValue.length - 1].width;
+                const maxHeightSize: number = (12 * (rect[3] - offset[1])) / measureValue[measureValue.length - 1].height;
                 s = Math.min(maxWidthSize, maxHeightSize);
             } else {
                 s = 12;
@@ -4002,7 +4133,7 @@ export function _getFontSize(field: PdfField, family: PdfFontFamily): number {
             if (field._obtainSelectedValue().length !== 0) {
                 let fonts: PdfStandardFont = new PdfStandardFont(family, s);
                 let text: string = field._dictionary.get('V');
-                let textSize: number[];
+                let textSize: Size;
                 if (typeof text !== 'undefined') {
                     if (Array.isArray(text) && text.length >= 1) {
                         textSize = fonts.measureString(text[0]);
@@ -4011,7 +4142,7 @@ export function _getFontSize(field: PdfField, family: PdfFontFamily): number {
                     }
                 }
                 if (typeof textSize !== 'undefined') {
-                    if (textSize[0] > boundsWidth || textSize[1] > boundsHeight) {
+                    if (textSize.width > boundsWidth || textSize.height > boundsHeight) {
                         const width: number = boundsWidth - 4 * field.border.width;
                         const heightLimit: number = boundsHeight - 4 * field.border.width;
                         const minimumFontSize: number = 0.248;
@@ -4019,7 +4150,7 @@ export function _getFontSize(field: PdfField, family: PdfFontFamily): number {
                         for (let i: number = 1; i <= boundsHeight; i++) {
                             fonts = new PdfStandardFont(family, i);
                             fonts._size = i;
-                            let textSize: number[];
+                            let textSize: Size;
                             if (typeof text !== 'undefined') {
                                 if (Array.isArray(text) && text.length >= 1) {
                                     textSize = fonts.measureString(text[0]);
@@ -4027,7 +4158,7 @@ export function _getFontSize(field: PdfField, family: PdfFontFamily): number {
                                     textSize = fonts.measureString(text);
                                 }
                             }
-                            if (textSize[0] > boundsWidth || textSize[1] > heightLimit) {
+                            if (textSize.width > boundsWidth || textSize.height > heightLimit) {
                                 fontSize = i;
                                 do {
                                     fontSize -= 0.001;
@@ -4042,8 +4173,8 @@ export function _getFontSize(field: PdfField, family: PdfFontFamily): number {
                                         text = text[0];
                                     }
                                     const textWidth: number = fonts.getLineWidth(text, stringFormat);
-                                    const newSize: number[] = fonts.measureString(text, stringFormat);
-                                    if (textWidth < width && newSize[1] < heightLimit) {
+                                    const newSize: Size = fonts.measureString(text, stringFormat);
+                                    if (textWidth < width && newSize.height < heightLimit) {
                                         fonts._size = fontSize;
                                         break;
                                     }
@@ -4078,10 +4209,10 @@ export function _getFontSize(field: PdfField, family: PdfFontFamily): number {
             const refFontSize: number = 12;
             const refFont: PdfStandardFont = new PdfStandardFont(family, refFontSize);
             if (!field.multiLine) {
-                const [refWidth, refHeight] = refFont.measureString(text);
-                if (refWidth > 0 && refHeight > 0) {
-                    const sizeBasedOnWidth: number = (refFontSize * availableWidth) / refWidth;
-                    const sizeBasedOnHeight: number = (refFontSize * availableHeight) / refHeight;
+                const refSize: Size = refFont.measureString(text);
+                if (refSize.width > 0 && refSize.height > 0) {
+                    const sizeBasedOnWidth: number = (refFontSize * availableWidth) / refSize.width;
+                    const sizeBasedOnHeight: number = (refFontSize * availableHeight) / refSize.height;
                     s = Math.min(sizeBasedOnWidth, sizeBasedOnHeight);
                 } else {
                     s = 8;
@@ -4451,12 +4582,15 @@ export function _getFontFromDescriptor(dictionary: _PdfDictionary): Uint8Array {
  * @param {Array<number[]>} previousCollection Previous collection.
  * @returns {boolean} result.
  */
-export function _checkInkPoints(inkPointsCollection: Array<number[]>, previousCollection: Array<number[]>): boolean {
+export function _checkInkPoints(
+    inkPointsCollection: Point[][],
+    previousCollection: Point[][]
+): boolean {
     if (inkPointsCollection.length !== previousCollection.length) {
         return false;
     }
-    return inkPointsCollection.every((point: number[], index: number) =>
-        _areArrayEqual(point, previousCollection[<number>index])
+    return inkPointsCollection.every((point: Point[], index: number) =>
+        _arePointsEqual(point, previousCollection[<number>index])
     );
 }
 /**
@@ -4476,14 +4610,14 @@ export function _updateBounds(annotation: PdfAnnotation, bounds?: number[]): num
             annotation.bounds.width, annotation.bounds.height];
         if (annotation._page._isNew && annotation._page._pageSettings) {
             const pageSettings: PdfPageSettings = annotation._page._pageSettings;
-            const pageBounds: number[] = [pageSettings.margins.left, pageSettings.margins.top, pageSettings.size[0] -
+            const pageBounds: number[] = [pageSettings.margins.left, pageSettings.margins.top, pageSettings.size.width -
                 (pageSettings.margins.left + pageSettings.margins.right),
-            pageSettings.size[1] - (pageSettings.margins.top + pageSettings.margins.bottom)];
+            pageSettings.size.height - (pageSettings.margins.top + pageSettings.margins.bottom)];
             rect[0] += pageBounds[0];
-            rect[1] = pageSettings.size[1] - (pageBounds[1] + rect[1]);
+            rect[1] = pageSettings.size.height - (pageBounds[1] + rect[1]);
         } else {
-            const size: number[] = annotation._page.size;
-            rect[1] = size[1] - (annotation.bounds.y + annotation.bounds.height);
+            const size: Size = annotation._page.size;
+            rect[1] = size.height - (annotation.bounds.y + annotation.bounds.height);
             const cropBoxOrMediaBox: number[] = annotation._getCropOrMediaBox();
             if (cropBoxOrMediaBox && cropBoxOrMediaBox.length > 2 && (cropBoxOrMediaBox[0] !== 0 || cropBoxOrMediaBox[1] !== 0)) {
                 rect[0] += cropBoxOrMediaBox[0];
@@ -4735,7 +4869,7 @@ export function _updatePageCount(dictionary: _PdfDictionary, valueToIncrement: n
  * @returns {void} Nothing.
  */
 export function _updatePageSettings(dictionary: _PdfDictionary, settings: PdfPageSettings): void {
-    const bounds: number[] = [0, 0, settings.size[0], settings.size[1]];
+    const bounds: number[] = [0, 0, settings.size.width, settings.size.height];
     dictionary.update('MediaBox', bounds);
     dictionary.update('CropBox', bounds);
     let rotate: number = Math.floor(settings.rotation as number) * 90;
@@ -4744,10 +4878,6 @@ export function _updatePageSettings(dictionary: _PdfDictionary, settings: PdfPag
     }
     dictionary.update('Rotate', rotate);
 }
-/**
- * Base64 encoded string representing an empty PDF document.
- */
-export const _emptyPdfData: string = 'JVBERi0xLjQNCiWDkvr+DQoxIDAgb2JqDQo8PA0KL1R5cGUgL0NhdGFsb2cNCi9QYWdlcyAyIDAgUg0KL0Fjcm9Gb3JtIDMgMCBSDQo+Pg0KZW5kb2JqDQoyIDAgb2JqDQo8PA0KL1R5cGUgL1BhZ2VzDQovS2lkcyBbNCAwIFJdDQovQ291bnQgMQ0KL1Jlc291cmNlcyA8PD4+DQoNCi9NZWRpYUJveCBbLjAwIC4wMCA1OTUuMDAgODQyLjAwXQ0KL1JvdGF0ZSAwDQo+Pg0KZW5kb2JqDQozIDAgb2JqDQo8PA0KL0ZpZWxkcyBbXQ0KPj4NCmVuZG9iag0KNCAwIG9iag0KPDwNCi9Db3VudCAxDQovVHlwZSAvUGFnZXMNCi9LaWRzIFs1IDAgUl0NCi9QYXJlbnQgMiAwIFINCj4+DQplbmRvYmoNCjUgMCBvYmoNCjw8DQovVHlwZSAvUGFnZQ0KL1BhcmVudCA0IDAgUg0KPj4NCmVuZG9iag0KeHJlZg0KMCA2DQowMDAwMDAwMDAwIDY1NTM1IGYNCjAwMDAwMDAwMTcgMDAwMDAgbg0KMDAwMDAwMDA4OSAwMDAwMCBuDQowMDAwMDAwMjE4IDAwMDAwIG4NCjAwMDAwMDAyNTUgMDAwMDAgbg0KMDAwMDAwMDMzNCAwMDAwMCBuDQp0cmFpbGVyDQo8PA0KL1Jvb3QgMSAwIFINCi9TaXplIDYNCj4+DQoNCnN0YXJ0eHJlZg0KMzg3DQolJUVPRg0K';
 /**
  * Checks if the given string contains any Unicode (non-ASCII) characters.
  *
@@ -4894,4 +5024,539 @@ export function _setRotateAngle(rotateAngle: number, annot: PdfAnnotation): void
         }
         annot._dictionary.update('Rotate', rotateAngle);
     }
+}
+/**
+ * Reads a 32-bit unsigned integer from the specified offset in the given data array.
+ *
+ * @param {Uint8Array} data - The data array containing the bytes.
+ * @param {number} offset - The position in the data array to start reading.
+ * @returns {number} The 32-bit unsigned integer read from the data array.
+ */
+export function _readUnsignedInteger32(data: Uint8Array, offset: number): number {
+    return (((data[<number>offset] << 24) | (data[offset + 1] << 16) | (data[offset + 2] << 8) |
+              data[offset + 3]) >>> 0);
+}
+/**
+ * Reads a signed 8-bit integer from the specified offset in the given data array.
+ *
+ * @param {Uint8Array} data - The data array containing the bytes.
+ * @param {number} offset - The position in the data array to start reading.
+ * @returns {number} The 8-bit signed integer read from the data array.
+ */
+export function _readInteger8(data: Uint8Array, offset: number): number {
+    return (data[<number>offset] << 24) >> 24;
+}
+/**
+ * Calculates the base-2 logarithm of a number and rounds it up to the nearest integer.
+ *
+ * @param {number} x - The number to calculate the logarithm for.
+ * @returns {number} The smallest integer greater than or equal to the logarithm of x to base 2; returns 0 if x is less than or equal to 0.
+ */
+export function _log2(x: number): number {
+    return x > 0 ? Math.ceil(Math.log2(x)) : 0;
+}
+/**
+ * Defines a non-enumerable property on an object.
+ *
+ * @param {object} obj - The object on which to define the property.
+ * @param {string} prop - The name of the property to define.
+ * @param {*} value - The value of the property.
+ * @param {boolean} [nonSerializable=false] - Indicates whether the property should be enumerable.
+ * @returns {*} The value that was set for the property.
+ */
+export function _defineLazyProperty(obj: any, prop: any, value: any, nonSerializable: boolean = false): any { // eslint-disable-line
+    Object.defineProperty(obj, prop, {
+        value,
+        enumerable: !nonSerializable,
+        configurable: true,
+        writable: false
+    });
+    return value;
+}
+/**
+ * Clamps a number between a minimum and maximum value.
+ *
+ * @param {number} v - The number to clamp.
+ * @param {number} min - The minimum value.
+ * @param {number} max - The maximum value.
+ * @returns {number} The clamped value.
+ */
+export function _mathClamp(v: number, min: number, max: number): number {
+    return Math.min(Math.max(v, min), max);
+}
+/**
+ * Throws an error with the given message.
+ *
+ * @param {string} msg - The error message.
+ * @returns {void} This function does not return a value.
+ */
+export function _unreachable(msg: string): void {
+    throw new Error(msg);
+}
+/**
+ * Converts a grayScale image data array to an RGBA image data array.
+ *
+ * @param {Uint8Array} src - The source grayScale data array.
+ * @param {Uint32Array} dest - The destination RGBA data array.
+ * @returns {void} This function does not return a value.
+ */
+export function _grayToRgba(src: Uint8Array, dest: Uint32Array): void {
+    if (_isLittleEndian()) {
+        for (let i: number = 0, ii: number = src.length; i < ii; i++) {
+            dest[<number>i] = (src[<number>i] * 0x10101) | 0xff000000;
+        }
+    } else {
+        for (let i: number = 0, ii: number = src.length; i < ii; i++) {
+            dest[<number>i] = (src[<number>i] * 0x1010100) | 0x000000ff;
+        }
+    }
+}
+/**
+ * Checks if the current environment is little-endian.
+ *
+ * @returns {boolean} True if the environment is little-endian, false otherwise.
+ */
+export function _isLittleEndian(): boolean {
+    const buffer8: Uint8Array = new Uint8Array(4);
+    buffer8[0] = 1;
+    const view32: Uint32Array = new Uint32Array(buffer8.buffer, 0, 1);
+    return view32[0] === 1;
+}
+/**
+ * Extracts the attributes element from a DER-encoded ASN1 collection.
+ *
+ * @param {_PdfUniqueEncodingElement} abstractSyntaxCollection - The ASN1 collection from which attributes are to be extracted.
+ * @returns {_PdfUniqueEncodingElement | undefined} The extracted attributes element if valid, otherwise undefined.
+ */
+export function _extractAttributes(abstractSyntaxCollection: _PdfUniqueEncodingElement): _PdfUniqueEncodingElement {
+    const sequence: _PdfAbstractSyntaxElement[] = abstractSyntaxCollection._getSequence();
+    if (sequence.length === 3) {
+        const attributesElement: _PdfAbstractSyntaxElement = sequence[2];
+        if (attributesElement._tagClass === _TagClassType.universal &&
+            attributesElement._getTagNumber() === _UniversalType.abstractSyntaxSet &&
+            attributesElement._construction === _ConstructionType.constructed) {
+            return attributesElement  as _PdfUniqueEncodingElement;
+        }
+    }
+    return undefined;
+}
+/**
+ * Compares two Uint8Array instances for byte-wise equality.
+ *
+ * @param {Uint8Array} a - The first Uint8Array to compare.
+ * @param {Uint8Array} b - The second Uint8Array to compare.
+ * @returns {boolean} Returns true if both arrays are equal in length and content, otherwise false.
+ */
+export function _areUint8ArraysEqual(a: Uint8Array, b: Uint8Array): boolean {
+    if (a.length !== b.length){
+        return false;
+    }
+    for (let i: number = 0; i < a.length; i++) {
+        if (a[<number>i] !== b[<number>i]){
+            return false;
+        }
+    }
+    return true;
+}
+/**
+ * Computes modular exponentiation: (base^exp) mod mod.
+ * Efficiently calculates large powers using the right-to-left binary method.
+ *
+ * @param {bigint} base - The base number.
+ * @param {bigint} exp - The exponent.
+ * @param {bigint} mod - The modulus.
+ * @returns {bigint} The result of (base^exp) % mod.
+ */
+export function _modPow(base: bigint, exp: bigint, mod: bigint): bigint {
+    const bigInt: (value: string | number | boolean) => bigint = _getBigInt();
+    let res: bigint = bigInt(1);
+    base = base % mod;
+    while (exp > bigInt(0)) {
+        if (exp % bigInt(2) === bigInt(1)) {
+            res = (res * base) % mod;
+        }
+        exp = exp >> bigInt(1);
+        base = (base * base) % mod;
+    }
+    return res;
+}
+/**
+ * Computes the modular inverse of a number `a` modulo `m`.
+ * That is, finds `x` such that (a * x) % m === 1.
+ * Uses the Extended Euclidean Algorithm.
+ *
+ * @param {bigint} a - The number to find the inverse of.
+ * @param {bigint} m - The modulus.
+ * @returns {bigint} The modular inverse of `a` modulo `m`, or 0 if no inverse exists.
+ */
+export function _modInverse(a: bigint, m: bigint): bigint {
+    const bigInt: (value: string | number | boolean) => bigint = _getBigInt();
+    const m0: bigint = m;
+    let x0: bigint = bigInt(0);
+    let x1: bigint = bigInt(1);
+    if (m === bigInt(1)) {
+        return bigInt(0);
+    }
+    while (a > bigInt(1)) {
+        if (m === bigInt(0)) {
+            return bigInt(1);
+        }
+        const q: bigint = a / m;
+        let t: bigint = m;
+        m = a % m;
+        a = t;
+        t = x0;
+        x0 = x1 - q * x0;
+        x1 = t;
+    }
+    if (x1 < bigInt(0)) {
+        x1 += m0;
+    }
+    return x1;
+}
+/**
+ * Converts a Uint8Array to a BigInt by interpreting the bytes as a big-endian integer.
+ *
+ * @param {Uint8Array} bytes - The byte array to convert.
+ * @returns {bigint} The resulting BigInt value.
+ */
+export function _bytesToBigInt(bytes: Uint8Array): bigint {
+    const bigInt: (value: string | number | boolean) => bigint = _getBigInt();
+    let result: bigint = bigInt(0);
+    for (let i: number = 0; i < bytes.length; i++) {
+        result = (result << bigInt(8)) + bigInt(bytes[<number>i]);
+    }
+    return result;
+}
+/**
+ * Converts a BigInt to a Uint8Array using big-endian byte order.
+ *
+ * @param {bigint} n - The BigInt value to convert.
+ * @returns {Uint8Array} The resulting byte array.
+ */
+export function _bigIntToBytes(n: bigint): Uint8Array {
+    const bigInt: (value: string | number | boolean) => bigint = _getBigInt();
+    if (n === bigInt(0)) {
+        return new Uint8Array([0]);
+    }
+    let hex: string = (n as any).toString(16); // eslint-disable-line
+    if (hex.length % 2 !== 0) {
+        hex = '0' + hex;
+    }
+    const len: number = hex.length / 2;
+    const u8: Uint8Array = new Uint8Array(len);
+    for (let i: number = 0; i < len; i++) {
+        u8[<number>i] = parseInt(hex.substr(i * 2, 2), 16);
+    }
+    return u8;
+}
+/**
+ * Generates a cryptographically insecure random BigInt of the specified bit length.
+ * The result is a non-negative BigInt with up to `bitLength` bits.
+ *
+ * @param {number} bitLength - The desired bit length of the random number.
+ * @returns {bigint} A randomly generated BigInt.
+ */
+export function _randomBigInt(bitLength: number): bigint {
+    const byteLength: number = Math.ceil(bitLength / 8);
+    const randomBytes: Uint8Array = new Uint8Array(byteLength);
+    for (let i: number = 0; i < byteLength; i++) {
+        randomBytes[<number>i] = Math.floor(Math.random() * 256);
+    }
+    const mask: number = (1 << (bitLength % 8)) - 1;
+    if (mask > 0) {
+        randomBytes[0] &= mask;
+    }
+    return _bytesToBigInt(randomBytes);
+}
+/**
+ * Generates a random BigInt within the inclusive range [min, max].
+ * Uses rejection sampling to ensure uniform distribution.
+ * Falls back to a smaller random if no valid candidate is found after 1000 attempts.
+ *
+ * @param {bigint} min - The minimum value (inclusive).
+ * @param {bigint} max - The maximum value (inclusive).
+ * @returns {bigint} A random BigInt between min and max.
+ */
+export function _createRandomInRange(min: bigint, max: bigint): bigint {
+    if (min >= max) {
+        return min;
+    }
+    const bitLength: number = (max as any).toString(2).length; // eslint-disable-line
+    for (let i: number = 0; i < 1000; i++) {
+        const candidate: bigint = _randomBigInt(bitLength);
+        if (candidate >= min && candidate <= max) {
+            return candidate;
+        }
+    }
+    const fallback: bigint = _randomBigInt(((max as any) - (min as any)).toString(2).length - 1); // eslint-disable-line
+    return fallback + min;
+}
+/**
+ * Handle explicit conversion
+ *
+ * @param {Uint8Array} value - Input value.
+ * @returns {Uint8Array} Converted value.
+ */
+export function _handleExplicitConversion(value: Uint8Array): Uint8Array {
+    const len: number = value.length;
+    if ((len === 0x4D || len === 0x6D || len === 0x5D || len === 0x41) && value[0] === 0x31) {
+        return value.slice(1);
+    } else if ((len === 0x87 || len === 0xD4 || len === 0xB4) && value[0] === 0x31 && value[1] === 0x81) {
+        return value.slice(2);
+    } else if (len === 0x77 && value[0] === 0x31) {
+        return value.slice(1);
+    }
+    return value;
+}
+/**
+ * Returns a function that converts a value to bigint.
+ *
+ * @returns {bigint} The bigInt
+ */
+export function _getBigInt(): (value: string | number | boolean) => bigint {
+    return (Function('return BigInt'))();
+}
+/**
+ * Pads a single-digit number with a leading zero to ensure two-digit formatting.
+ *
+ * @param {number} value - The number to pad.
+ * @returns {string} A string representing the number with at least two digits.
+ */
+export function _pad2(value: number): string {
+    return value < 10 ? '0' + value : '' + value;
+}
+/**
+ * Converts a Date object to a string in the PDF date format 'D:YYYYMMDDHHMMSSOHH'MM'SS''.
+ *
+ * @param {Date} dateTime - The Date object to be converted to a string.
+ * @returns {string} A string representing the date and time in the PDF format.
+ */
+export function _convertDateToString(dateTime: Date): string {
+    const year: number = dateTime.getUTCFullYear();
+    const month: string = _pad2(dateTime.getUTCMonth() + 1);
+    const day: string = _pad2(dateTime.getUTCDate());
+    const hours: string = _pad2(dateTime.getUTCHours());
+    const minutes: string = _pad2(dateTime.getUTCMinutes());
+    const seconds: string = _pad2(dateTime.getUTCSeconds());
+    return `D:${year}${month}${day}${hours}${minutes}${seconds}Z`;
+}
+/**
+ * Converts a PDF date string into a JavaScript Date object.
+ *
+ * @param {string} date - The date string to convert.
+ * @returns {Date} A JavaScript Date object representing the converted date.
+ */
+export function _convertStringToDate(date: string): Date {
+    if (date.startsWith('D:')) {
+        const year: number = parseInt(date.substring(2, 6), 10);
+        const month: number = parseInt(date.substring(6, 8), 10) - 1;
+        const day: number = parseInt(date.substring(8, 10), 10);
+        const hour: number = parseInt(date.substring(10, 12), 10);
+        const minute: number = parseInt(date.substring(12, 14), 10);
+        const second: number = parseInt(date.substring(14, 16), 10);
+        let utcTime: number = Date.UTC(year, month, day, hour, minute, second);
+        if (date.length >= 17) {
+            const tz: string = date[16];
+            if (tz === 'Z') {
+                return new Date(utcTime);
+            }
+            if ((tz === '+' || tz === '-') && date.length >= 23) {
+                const tzHour: number = parseInt(date.substring(17, 19), 10);
+                const tzMinute: number = parseInt(date.substring(20, 22), 10);
+                const offset: number = (tzHour * 60 + tzMinute) * 60000;
+                utcTime -= tz === '+' ? offset : -offset;
+                return new Date(utcTime);
+            }
+        }
+        const istOffset: number = (5 * 60 + 30) * 60000;
+        utcTime -= istOffset;
+        return new Date(utcTime);
+    }
+    return new Date(date);
+}
+/**
+ * Returns the appropriate CJK font encoding name based on the specified `PdfCjkFontFamily`.
+ *
+ * @param {PdfCjkFontFamily} fontFamily The  cjk font family.
+ * @returns {_PdfName} representing the encoding name suitable for the given font family.
+ */
+export function _getCjkEncoding(fontFamily: PdfCjkFontFamily): _PdfName {
+    let encoding: string = 'Unknown';
+    switch (fontFamily) {
+    case PdfCjkFontFamily.hanyangSystemsGothicMedium:
+    case PdfCjkFontFamily.hanyangSystemsShinMyeongJoMedium:
+        encoding = 'UniKS-UCS2-H';
+        break;
+    case PdfCjkFontFamily.heiseiKakuGothicW5:
+    case PdfCjkFontFamily.heiseiMinchoW3:
+        encoding = 'UniJIS-UCS2-H';
+        break;
+    case PdfCjkFontFamily.monotypeHeiMedium:
+    case PdfCjkFontFamily.monotypeSungLight:
+        encoding = 'UniCNS-UCS2-H';
+        break;
+    case PdfCjkFontFamily.sinoTypeSongLight:
+        encoding = 'UniGB-UCS2-H';
+        break;
+    }
+    return new _PdfName(encoding);
+}
+/**
+ * Creates and returns a descendant CIDFont dictionary for a specified CJK font family.
+ *
+ * @param {PdfCjkFontFamily} family - The CJK font family to be used.
+ * @param {PdfFontStyle} style - The font style to apply.
+ * @param {_PdfFontMetrics} metrics - The font metrics containing width table, PostScript name, and other font-specific data.
+ * @returns {_PdfDictionary[]} An array containing a single `_PdfDictionary` that represents the descendant font definition.
+ */
+export function _getCjkDescendantFont(family: PdfCjkFontFamily, style: PdfFontStyle,
+                                      metrics: _PdfFontMetrics): _PdfDictionary[] {
+    const dictionary: _PdfDictionary = new _PdfDictionary();
+    dictionary._updated = true;
+    dictionary.set('Type', _PdfName.get('Font'));
+    dictionary.set('Subtype', _PdfName.get('CIDFontType2'));
+    dictionary.set('BaseFont', new _PdfName(metrics._postScriptName));
+    dictionary.set('DW', (metrics._widthTable as _CjkWidthTable)._defaultWidth);
+    dictionary.set('W', metrics._widthTable._toArray());
+    dictionary.set('CIDSystemInfo', _getCjkSystemInfo(family));
+    return [dictionary];
+}
+/**
+ * Returns the CIDSystemInfo dictionary for the specified CJK font family.
+ *
+ * @param {PdfCjkFontFamily} family - The CJK font family for which the system information is needed.
+ * @returns {_PdfDictionary} A `_PdfDictionary` containing the CIDSystemInfo entries.
+ */
+export function _getCjkSystemInfo(family: PdfCjkFontFamily): _PdfDictionary {
+    const systemInformation: _PdfDictionary = new _PdfDictionary();
+    systemInformation._updated = true;
+    systemInformation.set('Registry', 'Adobe');
+    switch (family) {
+    case PdfCjkFontFamily.hanyangSystemsGothicMedium:
+    case PdfCjkFontFamily.hanyangSystemsShinMyeongJoMedium:
+        systemInformation.set('Ordering', 'Korea1');
+        systemInformation.set('Supplement', 1);
+        break;
+    case PdfCjkFontFamily.heiseiKakuGothicW5:
+    case PdfCjkFontFamily.heiseiMinchoW3:
+        systemInformation.set('Ordering', 'Japan1');
+        systemInformation.set('Supplement', 2);
+        break;
+    case PdfCjkFontFamily.monotypeHeiMedium:
+    case PdfCjkFontFamily.monotypeSungLight:
+        systemInformation.set('Ordering', 'CNS1');
+        systemInformation.set('Supplement', '0');
+        break;
+    case PdfCjkFontFamily.sinoTypeSongLight:
+        systemInformation.set('Ordering', 'GB1');
+        systemInformation.set('Supplement', 2);
+        break;
+    }
+    return systemInformation;
+}
+/**
+ * Resolves and returns the corresponding `PdfFontFamily` enum value based on the given PostScript font name.
+ *
+ * @param {string} postScriptName - The PostScript name of the font.
+ * @returns {PdfFontFamily} The resolved `PdfFontFamily` enum value corresponding to the font name.
+ */
+export function _resolveStandardFontFamily(postScriptName: string): PdfFontFamily {
+    if (postScriptName.includes('Helvetica')) {
+        return PdfFontFamily.helvetica;
+    }
+    if (postScriptName.includes('Courier')) {
+        return PdfFontFamily.courier;
+    }
+    if (postScriptName.includes('Times')) {
+        return PdfFontFamily.timesRoman;
+    }
+    if (postScriptName.includes('Symbol')) {
+        return PdfFontFamily.symbol;
+    }
+    if (postScriptName.includes('ZapfDingbats')) {
+        return PdfFontFamily.zapfDingbats;
+    }
+    return PdfFontFamily.helvetica;
+}
+/**
+ * Resolves and returns the corresponding `PdfCjkFontFamily` enum value based on the given PostScript font name.
+ *
+ * @param {string} postScriptName - The PostScript name of the CJK font.
+ * @returns {PdfCjkFontFamily} The resolved `PdfCjkFontFamily` enum value corresponding to the font name.
+ * @throws {Error} Error if the font name does not match any known CJK font family.
+ */
+export function _resolveCjkFontFamily(postScriptName: string): PdfCjkFontFamily {
+    switch (postScriptName) {
+    case 'HeiseiKakuGo-W5':
+    case 'HeiseiKakuGo-W5,BoldItalic':
+    case 'HeiseiKakuGo-W5,Bold':
+    case 'HeiseiKakuGo-W5,Italic':
+        return PdfCjkFontFamily.heiseiKakuGothicW5;
+    case 'HeiseiMin-W3':
+    case 'HeiseiMin-W3,BoldItalic':
+    case 'HeiseiMin-W3,Bold':
+    case 'HeiseiMin-W3,Italic':
+        return PdfCjkFontFamily.heiseiMinchoW3;
+    case 'HYGoThic-Medium':
+    case 'HYGoThic-Medium,BoldItalic':
+    case 'HYGoThic-Medium,Bold':
+    case 'HYGoThic-Medium,Italic':
+        return PdfCjkFontFamily.hanyangSystemsGothicMedium;
+    case 'HYSMyeongJo-Medium':
+    case 'HYSMyeongJo-Medium,BoldItalic':
+    case 'HYSMyeongJo-Medium,Bold':
+    case 'HYSMyeongJo-Medium,Italic':
+        return PdfCjkFontFamily.hanyangSystemsShinMyeongJoMedium;
+    case 'MHei-Medium':
+    case 'MHei-Medium,BoldItalic':
+    case 'MHei-Medium,Bold':
+    case 'MHei-Medium,Italic':
+        return PdfCjkFontFamily.monotypeHeiMedium;
+    case 'MSung-Light':
+    case 'MSung-Light,BoldItalic':
+    case 'MSung-Light,Bold':
+    case 'MSung-Light,Italic':
+        return PdfCjkFontFamily.monotypeSungLight;
+    case 'STSong-Light':
+    case 'STSong-Light,BoldItalic':
+    case 'STSong-Light,Bold':
+    case 'STSong-Light,Italic':
+        return PdfCjkFontFamily.sinoTypeSongLight;
+    default:
+        throw new Error(`Unknown CJK font family for: ${postScriptName}`);
+    }
+}
+/**
+ * Pads the current string with another string (multiple times, if needed)
+ *
+ * @param {string} str - The original string to be padded.
+ * @param {number} targetLength - The desired length
+ * @param {string} [padString='0'] - The string to pad the original string with.
+ * @returns {string} The padded string if the original string length is less than the target length. Returns the original string otherwise.
+ */
+export function _padStart(str: string, targetLength: number, padString: string = '0'): string {
+    targetLength = targetLength >> 0;
+    padString = String(padString || ' ');
+    if (str.length >= targetLength) {
+        return str;
+    } else {
+        const remainingLength: number = targetLength - str.length;
+        if (remainingLength > padString.length) {
+            padString += padString.repeat(remainingLength / padString.length);
+        }
+        return padString.slice(0, remainingLength) + str;
+    }
+}
+/**
+ * Converts a Uint8Array to a hexadecimal string representation.
+ *
+ * @param {Uint8Array} buffer - The input byte array to convert.
+ * @returns {string} A hexadecimal string representation of the input.
+ */
+export function _bytesToHex(buffer: Uint8Array): string {
+    return Array.from(buffer)
+        .map((byte: number) => _padStart(byte.toString(16), 2, '0'))
+        .join('')
+        .toUpperCase();
 }

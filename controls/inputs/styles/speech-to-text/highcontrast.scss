@@ -1,7 +1,7 @@
-@import 'ej2-base/styles/definition/highcontrast.scss';
-@import 'ej2-buttons/styles/button/highcontrast-definition.scss';
-@import 'ej2-popups/styles/tooltip/highcontrast-definition.scss';
-@import 'highcontrast-definition.scss';
-@import 'icons/highcontrast.scss';
-@import 'all.scss';
-@import 'bigger.scss';
+@use 'ej2-base/styles/definition/highcontrast' as *;
+@use 'ej2-buttons/styles/button/highcontrast-definition' as *;
+@use 'ej2-popups/styles/tooltip/highcontrast-definition' as *;
+@use 'highcontrast-definition' as *;
+@use 'icons/highcontrast' as *;
+@use 'all' as *;
+@use 'bigger' as *;

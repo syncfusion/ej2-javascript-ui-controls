@@ -5,6 +5,7 @@ import { Gantt } from '../base/gantt';
 import { createElement, formatUnit, remove, SanitizeHtmlHelper } from '@syncfusion/ej2-base';
 import * as cls from '../base/css-constants';
 import { isNullOrUndefined } from '@syncfusion/ej2-base';
+import { HolidayModel } from '../models/holiday-model';
 
 export class NonWorkingDay {
     private parent: Gantt;
@@ -42,7 +43,8 @@ export class NonWorkingDay {
      * @private
      */
     public renderHolidays(): void {
-        if (this.parent.holidays && this.parent.holidays.length > 0) {
+        const holidays: HolidayModel[] = this.parent.calendarModule.holidays;
+        if (holidays && holidays.length > 0) {
             this.createNonworkingContainer();
             if (!this.nonworkingContainer.contains(this.holidayContainer)) {
                 this.holidayContainer = createElement('div', {
@@ -77,28 +79,42 @@ export class NonWorkingDay {
         const container: HTMLElement = createElement('div');
         const height: number = this.parent.contentHeight;
         let toolbarHeight: number = 0;
+        const holidays: HolidayModel[] = this.parent.calendarModule.holidays;
         if (!isNullOrUndefined(this.parent.toolbarModule) && !isNullOrUndefined(this.parent.toolbarModule.element)) {
             toolbarHeight =  this.parent.toolbarModule.element.offsetHeight;
         }
         const viewportHeight: number =
         this.parent.ganttHeight - toolbarHeight - this.parent.ganttChartModule.chartTimelineContainer.offsetHeight;
-        for (let i: number = 0; i < this.parent.holidays.length; i++) {
-            if (this.parent.holidays[i as number].from && this.parent.holidays[i as number].to) {
-                fromDate = this.parent.dateValidationModule.getDateFromFormat(this.parent.holidays[i as number].from);
-                toDate = this.parent.dateValidationModule.getDateFromFormat(this.parent.holidays[i as number].to);
+        for (let i: number = 0; i < holidays.length; i++) {
+            if (holidays[i as number].from &&
+                holidays[i as number].to) {
+                fromDate = this.parent.dateValidationModule.getDateFromFormat(
+                    holidays[i as number].from
+                );
+                toDate = this.parent.dateValidationModule.getDateFromFormat(
+                    holidays[i as number].to
+                );
                 toDate.setDate(toDate.getDate() + 1);
                 fromDate.setHours(0, 0, 0, 0);
                 toDate.setHours(0, 0, 0, 0);
-            } else if (this.parent.holidays[i as number].from) {
-                fromDate = this.parent.dateValidationModule.getDateFromFormat(this.parent.holidays[i as number].from);
+            } else if (holidays[i as number].from) {
+                fromDate = this.parent.dateValidationModule.getDateFromFormat(
+                    holidays[i as number].from
+                );
                 fromDate.setHours(0, 0, 0, 0);
-            } else if (this.parent.holidays[i as number].to) {
-                fromDate = this.parent.dateValidationModule.getDateFromFormat(this.parent.holidays[i as number].to);
+            } else if (holidays[i as number].to) {
+                fromDate = this.parent.dateValidationModule.getDateFromFormat(
+                    holidays[i as number].to
+                );
                 fromDate.setHours(0, 0, 0, 0);
             }
-            const width: number = (this.parent.holidays[i as number].from && this.parent.holidays[i as number].to) ?
-                this.parent.dataOperation.getTaskWidth(fromDate, toDate) : this.parent.perDayWidth;
-            const left: number = this.parent.dataOperation.getTaskLeft(fromDate, false, true);
+            const width: number = (
+                holidays[i as number].from &&
+                holidays[i as number].to
+            )
+                ? this.parent.dataOperation.getTaskWidth(fromDate, toDate)
+                : this.parent.perDayWidth;
+            const left: number = this.parent.dataOperation.getTaskLeft(fromDate, false, this.parent.defaultCalendarContext, true);
             const align: string = this.parent.enableRtl ? `right:${left}px;` : `left:${left}px;`;
             const holidayDiv: HTMLElement = createElement('div', {
                 className: cls.holidayElement, styles: `${align} width:${width}px; height:100%;`
@@ -108,13 +124,13 @@ export class NonWorkingDay {
                 className: cls.holidayLabel, styles: `top:${spanTop}px;left:${(width / 2)}px;`
             });
             const property: string = this.parent.disableHtmlEncode ? 'textContent' : 'innerHTML';
-            spanElement[property as string] = this.parent.holidays[i as number].label ? this.parent.holidays[i as number].label : '';
+            spanElement[property as string] = holidays[i as number].label ? holidays[i as number].label : '';
             if (this.parent.enableHtmlSanitizer && typeof (spanElement[property as string]) === 'string') {
                 spanElement[property as string] = SanitizeHtmlHelper.sanitize(spanElement[property as string]);
             }
             holidayDiv.appendChild(spanElement);
-            if (this.parent.holidays[i as number].cssClass) {
-                holidayDiv.classList.add(this.parent.holidays[i as number].cssClass);
+            if (holidays[i as number].cssClass) {
+                holidayDiv.classList.add(holidays[i as number].cssClass);
             }
             container.appendChild(holidayDiv);
         }
@@ -173,7 +189,7 @@ export class NonWorkingDay {
         const hasDST: boolean = this.parent.dataOperation.hasDSTTransition(startDate.getFullYear());
         do {
             if (nonWorkingIndex.indexOf(startDate.getDay()) !== -1) {
-                const left: number = this.parent.dataOperation.getTaskLeft(startDate, false, true);
+                const left: number = this.parent.dataOperation.getTaskLeft(startDate, false, this.parent.defaultCalendarContext, true);
                 let width: number = this.parent.perDayWidth;
                 if (isFirstCell) {
                     const start: Date =  new Date(startDate.getTime());

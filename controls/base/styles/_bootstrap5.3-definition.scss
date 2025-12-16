@@ -1,7 +1,8 @@
-@import 'definition/bootstrap5.3.scss';
+@use 'definition/bootstrap5.3' as *;
+@forward 'definition/bootstrap5.3';
 
-$font-size: 12px !default;
-$font-weight: 400 !default;
+$font-size: $text-xs !default;
+$font-weight: $font-weight-normal !default;
 $error-font-color: $danger !default;
 $warning-font-color: $yellow !default;
 $success-font-color: #198754 !default;

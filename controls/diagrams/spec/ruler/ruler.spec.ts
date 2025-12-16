@@ -3,7 +3,7 @@
  */
 import { createElement } from '@syncfusion/ej2-base';
 import { Diagram } from '../../src/diagram/diagram';
-import { Ruler, TickAlignment } from '../../src/ruler/index';
+import { Ruler} from '../../src/ruler/index';
 import { MouseEvents } from '../diagram/interaction/mouseevents.spec';
 import { IArrangeTickOptions } from '../../src/ruler/objects/interface/interfaces';
 import { profile, inMB, getMemoryProfile } from '../common.spec';
@@ -13,8 +13,8 @@ import { DiagramTools } from '../../src/diagram/enum/enum';
 
 
 let mouseEvents: MouseEvents = new MouseEvents();
-describe('Ruler component', () => {
-    describe('Testing Ruler Component', () => {
+describe('Ruler component1', () => {
+    describe('Testing Ruler Component1', () => {
         let ruler: Ruler;
         let ele: HTMLElement;
         beforeAll((): void => {
@@ -33,6 +33,8 @@ describe('Ruler component', () => {
         afterAll((): void => {
             ruler.destroy();
             ele.remove();
+            ruler = null;
+            ele = null;
         });
 
         it('Checking default Ruler component', (done: Function) => {
@@ -42,7 +44,7 @@ describe('Ruler component', () => {
             done();
         });
 
-        it('Checking default Ruler component', (done: Function) => {
+        it('Checking default Ruler component vertical', (done: Function) => {
             let rulerObj: HTMLElement = document.getElementById(ruler.element.id + '_ruler_space');
             ruler.orientation = 'Vertical';
             ruler.offset = 10;
@@ -51,7 +53,7 @@ describe('Ruler component', () => {
             done();
         });
 
-        it('Checking default Ruler component', (done: Function) => {
+        it('Checking default Ruler component length', (done: Function) => {
             let rulerObj: HTMLElement = document.getElementById(ruler.element.id + '_ruler_space');
             ruler.length = 400;
             ruler.dataBind();
@@ -62,8 +64,8 @@ describe('Ruler component', () => {
 });
 
 
-describe('Ruler component', () => {
-    describe('Testing Ruler Component', () => {
+describe('Ruler component2', () => {
+    describe('Testing Ruler Component2', () => {
         let ruler: Ruler;
         let ele: HTMLElement;
         beforeAll((): void => {
@@ -83,9 +85,11 @@ describe('Ruler component', () => {
         afterAll((): void => {
             ruler.destroy();
             ele.remove();
+            ruler = null;
+            ele = null;
         });
 
-        it('Checking default Ruler component', (done: Function) => {
+        it('Checking default Ruler component ruler object element', (done: Function) => {
             let rulerObj: HTMLElement = document.getElementById(ruler.element.id + '_ruler_space');
             ruler.getPersistData();
             expect(rulerObj !== undefined).toBe(true);
@@ -95,8 +99,8 @@ describe('Ruler component', () => {
 });
 
 
-describe('Ruler component', () => {
-    describe('Testing Ruler Component', () => {
+describe('Ruler component3', () => {
+    describe('Testing Ruler Component3', () => {
         let ruler: Ruler;
         let ele: HTMLElement;
         beforeAll((): void => {
@@ -117,9 +121,11 @@ describe('Ruler component', () => {
         afterAll((): void => {
             ruler.destroy();
             ele.remove();
+            ruler = null;
+            ele = null;
         });
 
-        it('Checking default Ruler component', (done: Function) => {
+        it('Checking default Ruler component horizontal', (done: Function) => {
             let rulerObj: HTMLElement = document.getElementById(ruler.element.id + '_ruler_space');
             ruler.getPersistData();
             expect(rulerObj !== undefined).toBe(true);
@@ -128,8 +134,8 @@ describe('Ruler component', () => {
     });
 });
 
-describe('Ruler', () => {
-    describe('Testing Ruler', () => {
+describe('Ruler1', () => {
+    describe('Testing Ruler1', () => {
         let diagram: Diagram;
         let ruler: Ruler;
         let ele: HTMLElement;
@@ -162,6 +168,8 @@ describe('Ruler', () => {
         afterAll((): void => {
             diagram.destroy();
             ele.remove();
+            diagram = null;
+            ele = null;
         });
 
         it('Checking default Ruler', (done: Function) => {
@@ -268,8 +276,8 @@ describe('Ruler', () => {
     });
 });
 
-describe('Ruler', () => {
-    describe('Testing Ruler', () => {
+describe('Ruler2', () => {
+    describe('Testing Ruler2', () => {
         let diagram: Diagram;
         let ruler: Ruler;
         let ele: HTMLElement;
@@ -288,6 +296,8 @@ describe('Ruler', () => {
         afterAll((): void => {
             diagram.destroy();
             ele.remove();
+            diagram = null;
+            ele = null;
         });
 
         it('checking the ruler marker', (done: Function) => {
@@ -370,6 +380,8 @@ describe('Ruler', () => {
         afterAll((): void => {
             diagram.destroy();
             ele.remove();
+            diagram = null;
+            ele = null;
         });
 
         it('Updating ruler at runtime', (done: Function) => {
@@ -492,8 +504,10 @@ describe('Ruler', () => {
         afterAll((): void => {
             diagram.destroy();
             ele.remove();
+            diagram = null;
+            ele = null;
         });
-        it('Update ruler at runtime', (done: Function) => {
+        it('Update ruler at runtime marker color', (done: Function) => {
              diagram.rulerSettings.verticalRuler.thickness = 100;
              diagram.rulerSettings.horizontalRuler.thickness = 100;
              diagram.rulerSettings.verticalRuler.markerColor = 'yellow';
@@ -548,6 +562,8 @@ describe('Ruler', () => {
         afterAll((): void => {
             diagram.destroy();
             ele.remove();
+            diagram = null;
+            ele = null;
         });
         it('end edit for node', (done: Function) => {
             let diagramCanvas = document.getElementById(diagram.element.id + 'content');

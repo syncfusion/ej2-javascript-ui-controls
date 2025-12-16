@@ -1,5 +1,5 @@
-import { Component, Property, NotifyPropertyChanges, INotifyPropertyChanged, isNullOrUndefined, setValue, getValue } from '@syncfusion/ej2-base';import { detach, getUniqueID, Event, EventHandler, EmitType, Internationalization, L10n, addClass, removeClass, closest, formatUnit } from '@syncfusion/ej2-base';import { FloatLabelType, Input, InputObject, TEXTBOX_FOCUS } from '../input/input';import { FocusInEventArgs, FocusOutEventArgs, InputEventArgs, ChangedEventArgs } from '../textbox/textbox';
-import {Resize} from "./textarea";
+import { Component, Property, NotifyPropertyChanges, INotifyPropertyChanged, isNullOrUndefined, setValue, getValue, append, compile, select, selectAll } from '@syncfusion/ej2-base';import { detach, getUniqueID, Event, EventHandler, EmitType, Internationalization, L10n, addClass, removeClass, closest, formatUnit } from '@syncfusion/ej2-base';import { FloatLabelType, Input, InputObject, TEXTBOX_FOCUS } from '../input/input';import { FocusInEventArgs, FocusOutEventArgs, InputEventArgs, ChangedEventArgs } from '../textbox/textbox';
+import {Resize,AdornmentsDirection} from "./textarea";
 import {ComponentModel} from '@syncfusion/ej2-base';
 
 /**
@@ -115,6 +115,54 @@ export interface TextAreaModel extends ComponentModel{
      * @aspType int?
      */
     rows?: number;
+
+    /**
+     * Specifies the HTML template to prepend inside the TextArea wrapper.
+     * Accepts an HTML string or a function returning an HTML string.
+     * Updates dynamically when the property value changes.
+     *
+     * @default null
+     * @angularType string | object
+     * @reactType string | function | JSX.Element
+     * @vueType string | function
+     * @aspType string
+     */
+    prependTemplate?: string | Function;
+
+    /**
+     * Specifies the HTML template to append inside the TextArea wrapper.
+     * Accepts an HTML string or a function returning an HTML string.
+     * Updates dynamically when the property value changes.
+     *
+     * @default null
+     * @angularType string | object
+     * @reactType string | function | JSX.Element
+     * @vueType string | function
+     * @aspType string
+     */
+    appendTemplate?: string | Function;
+
+    /**
+     * Specifies the adornment direction of textarea.
+     * Controls the flow of the textarea and adornment sections (horizontal vs vertical).
+     *
+     * @isenumeration true
+     * @asptype AdornmentsDirection
+     * @default 'Horizontal'
+     *
+     */
+    adornmentFlow?: AdornmentsDirection;
+
+    /**
+     * Specifies the adornment orientation of textarea.
+     * Controls the direction of adornment items relative to each other within their region (horizontal vs vertical).
+     *
+     * @isenumeration true
+     * @asptype AdornmentsDirection
+     * @default 'Horizontal'
+     *
+     */
+    adornmentOrientation?: AdornmentsDirection;
 
     /**
      * Triggers when the TextArea component is created.

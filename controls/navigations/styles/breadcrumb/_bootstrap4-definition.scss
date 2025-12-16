@@ -1,4 +1,6 @@
 @use 'sass:color';
+@use 'ej2-base/styles/definition/bootstrap4' as *;
+@forward 'ej2-base/styles/definition/bootstrap4';
 
 // Size variables
 $breadcrumb-skin: 'bootstrap' !default;
@@ -28,8 +30,17 @@ $breadcrumb-scroll-mode-lineheight: normal !default;
 $breadcrumb-popup-item-padding: 0 20px !default;
 $breadcrumb-popup-border-radius: 4px !default;
 $breadcrumb-popup-item-height: 26px !default;
+$breadcrumb-popup-item-line-height: 26px !default;
 $cmenu-li-hover-outline-offset: 0 !default;
 $breadcrumb-popup-item-bigger-height: 32px !default;
+$breadcrumb-popup-item-bigger-line-height: 32px !default;
+$breadcrumb-normal-line-height: normal !default;
+$breadcrumb-menuitem-height: 1px !default;
+$breadcrumb-border-none: 0 !default;
+$breadcrumb-padding-none: 0 !default;
+$breadcrumb-margin-none: 0 !default;
+$breadcrumb-menu-item-margin: -1px !default;
+$breadcrumb-border-radius: 4px !default;
 
 // Color variables
 $breadcrumb-item-color: $primary !default;

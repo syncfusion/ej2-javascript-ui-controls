@@ -1,3 +1,5 @@
+@use 'ej2-base/styles/common/mixin' as *;
+@use './theme-variables' as *;
 @include export-module('aiassistview-bigger') {
   .e-bigger.e-aiassistview,
   .e-bigger .e-aiassistview {
@@ -6,22 +8,22 @@
       .e-toolbar {
         .e-toolbar-items {
           .e-toolbar-left {
-            height: calc($aiassist-bigger-header-height - 1px);
+            height: $toolbar-left-bigger-height;
           }
           .e-toolbar-item {
             &.e-assist-view-header,
             &.e-custom-view-header {
               @if ($skin-name == 'highcontrast') {
                 // To apply box-shadow styling during keyboard navigation
-                padding: 1.5px;
+                padding: $bigger-view-header-padding;
               }
               @else {
-                padding: 0;
+                padding: $bigger-view-header-padding;
               }
               .e-tbar-btn {
-                padding: 0;
+                padding: $bigger-tbar-btn-padding;
                 .e-btn-icon {
-                  padding: 4px 4px 4px 2px;
+                  padding: $bigger-btn-icon-padding;
                 }
               }
             }
@@ -31,7 +33,7 @@
     }
 
     .e-view-content {
-      height: calc(100% - $aiassist-bigger-header-height);
+      height: $view-content-bigger-height;
     }
     .e-prompt-icon {
       min-height: $aiassist-bigger-icon-height;
@@ -46,32 +48,46 @@
     .e-loading-body,
     .e-content-body,
     .e-loading-footer {
-      padding: 6px 0 0 6px;
+      padding: $bigger-loading-footer-padding;
     }
     .e-prompt-text {
       padding: $prompt-text-bigger-padding;
-      line-height: 22px;
+      line-height: $bigger-prompt-text-line-height;
+      min-height: 40px;
+      box-sizing: border-box;
     }
     .e-content-container {
-      font-size: 16px;
+      font-size: $bigger-content-container-font-size;
     }
     .e-suggestion-header {
-      font-size: 16px;
+      font-size: $bigger-suggestion-header-font-size;
       font-weight: $suggesstions-header-bigger-font-weight;
-      margin-bottom: 15px;
+      margin-bottom: $bigger-suggestion-header-margin-bottom;
     }
     .e-suggestions {
       &.e-suggestion-item-template ul li {
-        padding: 0;
+        padding: $bigger-suggestion-item-padding;
       }
       li {
-        line-height: 22px;
+        line-height: $bigger-suggestion-li-line-height;
         font-weight: $suggesstions-bigger-font-weight;
         padding: $suggesstions-bigger-list-padding;
         margin: $suggesstions-bigger-list-margin;
+        height: $bigger-suggestion-li-height;
+        box-sizing: border-box;
       }
     }
     .e-footer {
+      .e-assist-stop {
+        height: $response-stopper-bigger-height;
+        width: $response-stopper-bigger-width;
+        min-height: $response-stopper-bigger-height;
+        padding: $assist-stop-padding-bigger;
+        box-sizing: border-box;
+        line-height: $response-stopper-bigger-line-height;
+        font-weight: $response-stopper-bigger-font-weight;
+        font-size: $response-stopper-bigger-font-size;
+      }
       &:not(.e-footer-template) {
         .e-assist-send {
           font-size: $send-icon-size-bigger;
@@ -79,10 +95,37 @@
         .e-assist-clear-icon:not(.e-assist-clear-icon-hide) {
           font-size: $clear-icon-size-bigger;
         }
+        &.e-toolbar-bottom .e-textarea-icons-wrapper {
+          .e-footer-icons-wrapper {
+            padding: $assist-multirow-footer-icons-padding-bigger;
+          }
+        }
       }
       .e-footer-icons-wrapper {
         gap: $assist-footer-icons-gap-bigger;
         padding: $assist-footer-icons-padding-bigger;
+        .e-toolbar {
+          height: $assist-footer-tbar-min-height-bigger;
+          min-height: $assist-footer-tbar-min-height-bigger;
+          .e-tbar-btn {
+            min-height: $assist-footer-tbar-min-height-bigger;
+            min-width: $assist-footer-tbar-min-height-bigger;
+            max-width: $assist-footer-tbar-min-height-bigger;
+          }
+          .e-tbar-btn:has(.e-assist-stop) {
+            max-width: $assist-footer-tbar-min-height-bigger;
+            .e-btn-icon {
+              min-width: $assist-footer-tbar-min-height-bigger;
+            }
+          }
+          .e-toolbar-item {
+            min-height: unset;
+            min-width: unset;
+          }
+          .e-toolbar-right .e-toolbar-item:last-child {
+            margin-right: 0;
+          }
+        }
         .e-assist-attachment-icon {
           font-size: $assist-attachment-icon-font-size-bigger;
         }
@@ -91,23 +134,16 @@
         min-height: $assist-textarea-min-height-bigger;
         line-height: $assist-textarea-line-height-bigger;
         padding: $assist-textarea-padding-bigger;
-        font-size: 16px;
+        font-size: $bigger-assist-textarea-font-size;
       }
     }
-    .e-stop-response.e-btn-active {
-      height: $response-stopper-bigger-height;
-      margin-bottom: 20px;
-      padding: $response-stopper-bigger-padding;
-      line-height: $response-stopper-bigger-line-height;
-      font-weight: $response-stopper-bigger-font-weight;
-      font-size: $response-stopper-bigger-font-size;
-    }
+    
     &.e-rtl {
       .e-view-header .e-toolbar-item {
         &.e-assist-view-header,
         &.e-custom-view-header {
           .e-tbar-btn .e-btn-icon {
-            padding: 4px 2px 4px 4px;
+            padding: $bigger-rtl-btn-icon-padding;
           }
         }
       }
@@ -119,12 +155,12 @@
       .e-loading-body,
       .e-content-body,
       .e-loading-footer {
-        padding: 6px 6px 0 0;
+        padding: $bigger-rtl-loading-footer-padding;
       }
       .e-footer {
         .e-footer-icons-wrapper {
           padding: $assist-footer-icons-rtl-padding-bigger;
-          padding-right: unset;
+          padding-right: $bigger-footer-icons-wrapper-right;
         }
       }
     }
@@ -133,18 +169,24 @@
     .e-prompt-content .e-prompt-uploaded-files:has(.e-assist-uploaded-file-item) {
       border-radius: $bigger-prompt-uploded-file-border-radius;
       padding: $bigger-prompt-uploded-file-padding;
+      gap: $prompt-uploaded-files-gap-bigger;
     }
 
     .e-footer .e-assist-drop-area:has(.e-assist-uploaded-file-item) {
       margin: $bigger-prompt-files-container-margin;
     }
 
+    .e-footer .e-assist-drop-area {
+      .e-assist-uploaded-file-item {
+        margin: $bigger-prompt-files-margin;
+      }
+    }
+
     .e-footer .e-assist-drop-area,
     .e-prompt-content .e-prompt-uploaded-files {
       .e-assist-uploaded-file-item {
-        margin: $bigger-prompt-files-margin;
         &:not(:has(.e-assist-clear-icon)) .e-assist-file-details {
-          padding-right: 15px;
+          padding-right: $bigger-assist-file-details-right;
         }
       }
 

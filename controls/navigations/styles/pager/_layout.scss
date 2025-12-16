@@ -1,3 +1,5 @@
+@use 'ej2-base/styles/common/mixin' as *;
+@use './theme-variables' as *;
 @mixin padding-bottom-right-top-styles($bottom, $right, $top) {
   padding-bottom: $bottom;
   padding-right: $right;
@@ -170,7 +172,7 @@
         border: 3px solid $primary-light;
       }
       @if $pager-skin == 'material3' {
-        border-radius: 4px;
+        border-radius: $pager-border-radius-4;
       }
       font-style: normal;
       font-variant: normal;
@@ -197,11 +199,11 @@
       .e-nextpagedisabled,
       .e-lastpagedisabled {
         @if $pager-skin == 'fluent2' {
-          border-radius: 5px;
+          border-radius: $pager-border-radius-5;
           @include border-right-width-styles($pager-border-type, 0);
           margin-left: 1px;
           &.e-focused {
-            border-radius: 5px;
+            border-radius: $pager-border-radius-5;
           }
         }
         @else {
@@ -225,7 +227,7 @@
         @else if $pager-skin == 'material3' {
           vertical-align: middle;
           &.e-focused {
-            border-radius: 4px;
+            border-radius: $pager-border-radius-4;
           }
         }
         @else if $pager-skin == 'tailwind3' {

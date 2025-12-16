@@ -1,109 +1,110 @@
+@use 'ej2-base/styles/common/mixin' as *;
 @include export-module('grid-chart-bootstrap-dark-icons') {
 
   .e-grid-chart-export-icon::before {
-    content: '\e72e';
+    content: '\e702';
   }
 
   .e-grid-chart-print::before {
-    content: '\e75d';
+    content: '\e34b';
   }
 
   .e-grid-chart-jpeg::before {
-    content: '\e94b';
+    content: '\e1ad';
   }
 
   .e-grid-chart-png::before {
-    content: '\e7ee';
+    content: '\e715';
   }
 
   .e-grid-chart-svg::before {
-    content: '\e7cf';
+    content: '\e716';
   }
 
   .e-grid-chart-pdf::before {
-    content: '\e700';
+    content: '\e240';
   }
 
   .e-grid-chart-xlsx::before {
-    content: '\e781';
+    content: '\e726';
   }
 
   .e-grid-chart-csv::before {
-    content: '\e7ba';
+    content: '\e241';
   }
 
   #{&}.e-grid-context-menu-dialog {
 
     .e-grid-chart-icon::before {
-      content: '\e826';
+      content: '\e70d';
     }
 
     .e-grid-bar-chart-icon::before {
-      content: '\e86c';
+      content: '\e855';
     }
 
     .e-grid-bar-icon::before {
-      content: '\e86c';
+      content: '\e855';
     }
 
     .e-grid-stacking-bar-icon::before {
-      content: '\e866';
+      content: '\e889';
     }
 
     .e-grid-stacking-bar-100-icon::before {
-      content: '\e86d';
+      content: '\e863';
     }
 
     .e-grid-pie-icon::before {
-      content: '\e869';
+      content: '\e141';
     }
 
     .e-grid-column-chart-icon::before {
-      content: '\e86a';
+      content: '\e847';
     }
 
     .e-grid-column-icon::before {
-      content: '\e86a';
+      content: '\e847';
     }
 
     .e-grid-stacking-column-icon::before {
-      content: '\e875';
+      content: '\e888';
     }
 
     .e-grid-stacking-column-100-icon::before {
-      content: '\e86f';
+      content: '\e868';
     }
 
     .e-grid-line-chart-icon::before {
-      content: '\e86e';
-    }
-
-    .e-grid-line-icon::before {
-      content: '\e86e';
-    }
-
-    .e-grid-stacking-line-icon::before {
       content: '\e867';
     }
 
+    .e-grid-line-icon::before {
+      content: '\e867';
+    }
+
+    .e-grid-stacking-line-icon::before {
+      content: '\e841';
+    }
+
     .e-grid-stacking-line-100-icon::before {
-      content: '\e870';
-    }
-
-    .e-grid-area-chart-icon::before {
-      content: '\e873';
-    }
-
-    .e-grid-area-icon::before {
-      content: '\e873';
-    }
-
-    .e-grid-stacking-area-icon::before {
       content: '\e871';
     }
 
+    .e-grid-area-chart-icon::before {
+      content: '\e883';
+    }
+
+    .e-grid-area-icon::before {
+      content: '\e883';
+    }
+
+    .e-grid-stacking-area-icon::before {
+      content: '\e875';
+    }
+
     .e-grid-stacking-area-100-icon::before {
-      content: '\e86b';
+      content: '\e900';
     }
 
     .e-grid-scatter-icon::before {
@@ -111,11 +112,11 @@
     }
 
     .e-grid-chart-max-icon::before {
-      content: '\e81c';
+      content: '\e342';
     }
 
     .e-grid-chart-min-icon::before {
-      content: '\e7b0';
+      content: '\e337';
     }
   }
 }

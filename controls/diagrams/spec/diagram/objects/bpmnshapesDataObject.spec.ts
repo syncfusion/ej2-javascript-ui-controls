@@ -270,7 +270,7 @@ describe('BPMN shapes', () => {
                     this.skip(); //Skips test (in Chai)
                     return;
                 }
-            ele = createElement('div', { id: 'diagram' });
+            ele = createElement('div', { id: 'diagram2' });
             document.body.appendChild(ele);
             let node1: NodeModel = {
                 id: 'node1', width: 100, height: 100, offsetX: 100, offsetY: 100,
@@ -313,7 +313,7 @@ describe('BPMN shapes', () => {
             diagram = new Diagram({
                 width: 1000, height: 1000, nodes: [ node1,node2,node3,node4,node5]
             });
-            diagram.appendTo('#diagram');
+            diagram.appendTo('#diagram2');
             });
             afterAll((): void => {
             diagram.destroy();

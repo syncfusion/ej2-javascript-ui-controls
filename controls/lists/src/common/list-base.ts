@@ -1075,8 +1075,8 @@ export namespace ListBase {
                 append(compiledString(item, componentInstance, 'groupTemplate', curOpt.groupTemplateID, !!curOpt.isStringTemplate), li);
             }
         } else if (!grpLI && options && options.template) {
-            const compiledString: Function = compileTemplate(options.template);
             if (componentInstance && componentInstance.getModuleName() !== 'listview') {
+                const compiledString: Function = compileTemplate(options.template);
                 const compiledElement: HTMLElement[] = compiledString(
                     item,
                     componentInstance,
@@ -1089,7 +1089,13 @@ export namespace ListBase {
                     append(compiledElement, li);
                 }
             } else {
-                append(compiledString(item, componentInstance, 'template', curOpt.templateID, !!curOpt.isStringTemplate), li);
+                // For spreadsheet comment templates, call the template function directly instead of relying on compiled string.
+                if (componentInstance && componentInstance.isInternalTemplate) {
+                    append((<Function>options.template)(item), li);
+                } else {
+                    const compiledString: Function = compileTemplate(options.template);
+                    append(compiledString(item, componentInstance, 'template', curOpt.templateID, !!curOpt.isStringTemplate), li);
+                }
             }
         } else {
             const innerDiv: HTMLElement = createElement('div', {

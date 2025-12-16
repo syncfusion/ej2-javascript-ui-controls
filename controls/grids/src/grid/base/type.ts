@@ -41,3 +41,12 @@ export type BatchChanges = { addedRecords?: Object[], changedRecords?: Object[],
  * @returns Returns true to allow selecting the row; false to disable selection.
  */
 export type RowSelectable = (data: Object, columns: ColumnModel[]) => boolean;
+
+/**
+ * A function that determines whether a given data row is pinned to the top.
+ * @param data - The data object for the row being evaluated.
+ * @param columns - The column definitions of the Grid.
+ * @returns Returns true to pin the row to the top; false otherwise.
+ */
+export type PinRow = (data: Object, columns: ColumnModel[]) => boolean;
+

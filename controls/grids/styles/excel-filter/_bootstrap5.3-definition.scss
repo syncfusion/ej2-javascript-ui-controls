@@ -1,3 +1,5 @@
+@use 'ej2-base/styles/definition/bootstrap5.3' as *;
+@forward 'ej2-base/styles/definition/bootstrap5.3';
 $grid-column-chosser-searchdiv-opactiy: .6 !default;
 $grid-column-chosser-searchdiv-fopactiy: 1 !default;
 $grid-columnchooser-search-border-color: $border-light !default;
@@ -71,3 +73,5 @@ $grid-xlfl-li-icon-margin-arrow-icon: 13px !default;
 $grid-bigger-xlfl-li-icon-margin-arrow-icon: 6.2px !default;
 $grid-xl-radio-margin-top: 0 !default;
 $grid-xlfl-skin: 'bootstrap5' !default;
+
+$grid-border-radius-0: 0 !default;

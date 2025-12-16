@@ -7081,9 +7081,11 @@ describe("Adding rows at different positions with virtualization", () => {
 
 describe("982776: Coverage Fix: Checkbox with virtualization", function () {
   let TreeGridObj: TreeGrid;
+
   if (!addVirtualData.length) {
     dataSource1();
   }
+
   beforeAll((done: Function) => {
     TreeGridObj = createGrid(
       {
@@ -7108,6 +7110,7 @@ describe("982776: Coverage Fix: Checkbox with virtualization", function () {
       done
     );
   });
+
   it("Coverage Fix", (done: Function) => {
     setTimeout(() => {
       const header = TreeGridObj.element
@@ -7118,7 +7121,42 @@ describe("982776: Coverage Fix: Checkbox with virtualization", function () {
       done();
     }, 100);
   });
+
   afterAll(() => {
     destroy(TreeGridObj);
+  });
+});
+
+describe("Task 985326: Testing getPageSizeByHeight method", () => {
+  let treegrid: TreeGrid;
+  beforeAll((done: Function) => {
+    treegrid = createGrid(
+      {
+        dataSource: editVirtualData,
+        enableVirtualization: true,
+        childMapping: "Crew",
+        treeColumnIndex: 1,
+        height: 400,
+        allowFiltering: true,
+        toolbar: ['ExpandAll', 'CollapseAll'],
+        frozenRows: 2,
+        columns: [
+          { field: "TaskID", headerText: "ID", isPrimaryKey: true, width: 140 },
+          { field: "FIELD1", headerText: "Name", width: 140 },
+          { field: "FIELD2", headerText: "Year", width: 120, textAlign: "Right" },
+          { field: "FIELD3", headerText: "Stint", width: 120, textAlign: "Right" },
+          { field: "FIELD4", headerText: "TMID", width: 120, textAlign: "Right" }
+        ],
+      },
+      done
+    );
+  }); 
+
+  it('should get pageSize by height with Virtualization', () => {
+      expect((treegrid as any).getPageSizeByHeight()).toBe(24);
+  });
+
+  afterAll(() => {
+    destroy(treegrid);
   });
 });

@@ -1,8 +1,18 @@
+@use 'ej2-base/styles/definition/bootstrap' as *;
+@use 'ej2-buttons/styles/button/bootstrap-definition' as *;
+@forward 'ej2-base/styles/definition/bootstrap';
+@forward 'ej2-buttons/styles/button/bootstrap-definition';
 $progress-btn-color: $grey-light-font !default;
 $progress-btn-bgcolor: rgba($grey-white, .3) !default;
 $progress-btn-bgcolor-normal: rgba($grey-base, .2) !default;
 $progress-btn-warning-progress-color: $progress-btn-bgcolor !default;
 $progress-btn-circle-opacity: 1 !default;
+
+$progress-btn-zero-padding-margin: 0 !default;
+$progress-btn-line-height: 1 !default;
+$progress-btn-full-height: 100% !default;
+$progress-btn-nill-height: 0% !default;
+$progress-btn-process-height: 10% !default;
 
 $progress-btn-transition: all .3s linear !default;
 
@@ -22,3 +32,12 @@ $progress-btn-flat-info-progress-color: #fff !default;
 $progress-btn-flat-warning-progress-color: #fff !default;
 $progress-btn-flat-danger-progress-color: #fff !default;
 $btn-flat-primary-path-arc: none;
+$progress-auto-width: auto !default;
+$progress-auto-height: auto !default;
+$progress-full-width: 100% !default;
+$spinner-inner-top: -1px !default;
+$progress-round-border-radius: 5em !default;
+$progress-slidedown-to-top: 100px !default;
+$progress-slideup-to-top: -100px !default;
+$progress-zero-width: 0% !default;
+$progress-negative-full-width: -100% !default;

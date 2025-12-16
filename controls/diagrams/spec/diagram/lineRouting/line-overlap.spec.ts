@@ -88,10 +88,12 @@ describe('Diagram Control', () => {
             afterAll((): void => {
                 diagram.destroy();
                 ele.remove();
+                diagram = null;
+                ele = null;
             });
 
             it('check segment overlaps', (done: Function) => {
-                debugger;
+                
                 let overlapFound = false;
                 diagram.connectors.forEach((connector: Connector) => {
                     const lineSegments: any[] = (diagram.avoidLineOverlappingModule as any).segmentMappings.get(connector);
@@ -114,7 +116,7 @@ describe('Diagram Control', () => {
                 done();
             });
             it('check node overlaps', (done: Function) => {
-                debugger;
+                
                 let overlaped: boolean = false;
                 diagram.connectors.forEach((connector: Connector) => {
                     const lineSegments: any[] = (diagram.avoidLineOverlappingModule as any).segmentMappings.get(connector) as any[];
@@ -213,6 +215,8 @@ describe('Diagram Control', () => {
             afterAll((): void => {
                 diagram.destroy();
                 ele.remove();
+                diagram = null;
+                ele = null;
             });
 
             it('check segment overlaps', (done: Function) => {
@@ -337,6 +341,8 @@ describe('Diagram Control', () => {
             afterAll((): void => {
                 diagram.destroy();
                 ele.remove();
+                 diagram = null;
+                ele = null;
             });
 
             //it('check segment overlaps', (done: Function) => {
@@ -432,6 +438,8 @@ describe('Diagram Control', () => {
             afterAll((): void => {
                 diagram.destroy();
                 ele.remove();
+                diagram = null;
+                ele = null;
             });
 
             it('check segment overlaps', (done: Function) => {
@@ -535,6 +543,8 @@ describe('Diagram Control', () => {
             afterAll((): void => {
                 diagram.destroy();
                 ele.remove();
+                 diagram = null;
+                ele = null;
             });
 
             it('check segment overlaps', (done: Function) => {
@@ -621,6 +631,8 @@ describe('Diagram Control', () => {
             afterAll((): void => {
                 diagram.destroy();
                 ele.remove();
+                 diagram = null;
+                ele = null;
             });
 
             it('check segment overlaps', (done: Function) => {
@@ -746,6 +758,8 @@ describe('Diagram Control', () => {
             afterAll((): void => {
                 diagram.destroy();
                 ele.remove();
+                diagram = null;
+                ele = null;
             });
 
             it('check segment overlaps', (done: Function) => {
@@ -906,6 +920,8 @@ describe('Diagram Control', () => {
             afterAll((): void => {
                 diagram.destroy();
                 ele.remove();
+                diagram = null;
+                ele = null;
             });
 
             it('check segment overlaps', (done: Function) => {
@@ -1121,6 +1137,8 @@ describe('Diagram Control', () => {
             afterAll((): void => {
                 diagram.destroy();
                 ele.remove();
+                diagram = null;
+                ele = null;
             });
 
             it('check segment overlaps', (done: Function) => {

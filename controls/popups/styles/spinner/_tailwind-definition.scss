@@ -1,3 +1,5 @@
+@use 'ej2-base/styles/definition/tailwind' as *;
+@forward 'ej2-base/styles/definition/tailwind';
 $theme: 'Tailwind';
 
 //Layout Variables Start
@@ -29,6 +31,12 @@ $spin-fabric-arc-color: $primary;
 $spin-bootstrap-stroke-color: $primary;
 $spin-boot5-stroke-width: 4;
 $spin-boot5-stroke-color: $primary;
+$spin-tail-margin: 0 auto !default;
+$spin-bootstrap-border-radius: 50% !default;
+$spinner-zero-space: 0 !default;
+$spinner-full-width: 100% !default;
+$spinner-half-width: 50% !default;
+$spinner-full-height: 100% !default;
 
 @mixin boot5-spinner-rotate {
   animation: material-spinner-rotate .75s linear infinite;

@@ -128,11 +128,14 @@ export class Pager {
                             value: this.parent.pageSettings.currentRowPage,
                             enableRtl: this.parent.enableRtl,
                             locale: this.parent.locale,
-                            width: tableWidth < 669 ? '50px' : '64px',
                             change: this.rowPageChange.bind(this),
                             cssClass: this.parent.cssClass
                         });
                         rowPagerTextBox.appendTo(select('#' + this.parent.element.id + '_row_textbox', this.parent.element));
+                        const rowPageContainer: HTMLElement =
+                            select('#' + this.parent.element.id + '_' + 'row' + '_PageInfoContainer', this.parent.element);
+                        const rowNumericTextBox: HTMLElement = select('.e-numeric', rowPageContainer);
+                        this.setPagerWidthClasses(rowNumericTextBox, tableWidth);
                         this.trackUIComponent('NumericTextBox', rowPagerTextBox);
                     }
                     if (pagerOptions.showRowPageSize) {
@@ -149,7 +152,6 @@ export class Pager {
                             change: this.rowPageSizeChange.bind(this),
                             popupHeight: '300px',
                             popupWidth: '100%',
-                            width: '64px',
                             cssClass: this.parent.cssClass
                         });
                         rowPageSizeDropDown.appendTo(select('#' + this.parent.element.id + '_' + 'row' + '_size_list', this.parent.element));
@@ -169,11 +171,14 @@ export class Pager {
                             value: this.parent.pageSettings.currentColumnPage,
                             enableRtl: this.parent.enableRtl,
                             locale: this.parent.locale,
-                            width: tableWidth < 669 ? '50px' : '64px',
                             change: this.columnPageChange.bind(this),
                             cssClass: this.parent.cssClass
                         });
                         columnPagerTextBox.appendTo(select('#' + this.parent.element.id + '_column_textbox', this.parent.element));
+                        const columnPageContainer: HTMLElement =
+                            select('#' + this.parent.element.id + '_' + 'column' + '_PageInfoContainer', this.parent.element);
+                        const columnNumericTextBox: HTMLElement = select('.e-numeric', columnPageContainer);
+                        this.setPagerWidthClasses(columnNumericTextBox, tableWidth);
                         this.trackUIComponent('NumericTextBox', columnPagerTextBox);
                     }
                     if (pagerOptions.showColumnPageSize) {
@@ -190,7 +195,6 @@ export class Pager {
                             change: this.columnPageSizeChange.bind(this),
                             popupHeight: '300px',
                             popupWidth: '100%',
-                            width: '64px',
                             cssClass: this.parent.cssClass
                         });
                         columnPageSizeDropDown.appendTo(select('#' + this.parent.element.id + '_' + 'column' + '_size_list', this.parent.element));
@@ -203,6 +207,15 @@ export class Pager {
         }
     }
 
+    private setPagerWidthClasses(pageContainer: HTMLElement, tableWidth: number): void {
+        if (tableWidth > 669) {
+            pageContainer.classList.add('wide-width');
+            pageContainer.classList.remove('narrow-width');
+        } else {
+            pageContainer.classList.add('narrow-width');
+            pageContainer.classList.remove('wide-width');
+        }
+    }
     private wireEvent(): void {
         const elements: HTMLElement[] = [].slice.call(this.parent.element.querySelectorAll('.' + cls.FIRST_PAGER_ICON + ', .' + cls.PREV_PAGER_ICON + ', .' + cls.NEXT_PAGER_ICON + ', .' + cls.LAST_PAGER_ICON));
         for (let i: number = 0; i < elements.length; i++) {

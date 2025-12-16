@@ -1,3 +1,5 @@
+@use 'ej2-base/styles/common/mixin' as *;
+@use './theme-variables' as *;
 @include export-module('blockeditor-theme') {
 
   /* ======== Main Editor ======== */
@@ -9,13 +11,13 @@
     }
 
     /* ======== Drag and Drop Styles ======== */
-    .drop-indicator {
+    .e-be-drop-indicator {
       background: $be-drop-indicator-bg-color;
       &::before {
         background: $be-drop-indicator-bg-color;
       }
     }
-    .dragging-clone {
+    .e-be-dragging-clone {
       background: $be-dragging-clone-bg-color;
     }
 
@@ -27,7 +29,7 @@
         }
       }
       .e-be-hr {
-        border: 2px solid $be-divider-border-color;
+        border: $be-hr-border solid $be-divider-border-color;
       }
     }
 
@@ -102,6 +104,9 @@
     .e-code-block {
       background-color: $be-code-block-container-bg-color;
       color: $be-color;
+      .e-block-content {
+        background: transparent;
+      }
     }
     .e-code-block-toolbar {
       background: $be-code-block-container-bg-color;
@@ -139,7 +144,7 @@
     .e-table-block {
       th,
       td {
-        border: 1px solid $be-table-border-color;
+        border: $be-table-block-border solid $be-table-border-color;
       }
       thead tr {
         background: $be-table-header-row-bg-color;
@@ -152,14 +157,45 @@
       tr:hover {
         background: $be-table-row-hover-bg-color;
         color: $be-table-row-hover-color;
+        .e-cell-focus {
+          @if $theme-name == 'fluent2-highcontrast'{
+            border-color: rgba(255, 255, 255, 1);
+          }
+        }
       }
       tr:has(.e-cell-focus) {
-        background: $be-table-row-focus-bg-color;
         color: $be-table-row-focus-color;
+        @if $theme-name == 'fluent2-highcontrast'{
+          color: rgba(255, 255, 255, 1);
+        }
       }
       .e-cell-focus {
-        outline: 2px solid $be-table-cell-focus-color;
-        box-shadow: $be-table-cell-focus-shadow;
+        border: $be-cell-focus-outline double $be-table-cell-focus-color;
+      }
+      .e-col-action-handle:not(.e-action-bar-active):hover,
+      .e-row-action-handle:not(.e-action-bar-active):hover {
+        background-color: $be-table-gripper-hover-bg;
+        color: $be-table-gripper-hover-color;
+      }
+      .e-action-bar-active {
+        background-color: $be-table-row-gripper-pressed-bg;
+        color: $be-table-row-gripper-pressed-color;
+        border: 1px double $be-table-row-col-selected-border;
+      }
+      .e-col-selected {
+        background-color: $be-table-col-selected-bg;
+      }
+      .e-row-selected {
+        background-color: $be-table-row-selected-bg;
+      }
+
+      tr.e-row-selected td,
+      .e-col-selected {
+        border: 1px double $be-table-row-col-selected-border;
+        @if $theme-name == 'fluent2-highcontrast'{
+          border-color: rgba(255, 255, 255, 1);
+        }
+        box-shadow: unset;
       }
     }
     .e-row-add-indicator,
@@ -172,18 +208,39 @@
       background: $be-table-hover-line-bg-color;
     }
 
+    .e-table-hover-icon {
+      background-color: rgba(224, 224, 224, 1);
+    }
+
+    .e-block {
+      .e-row-dot,
+      .e-col-dot {
+        background: $be-table-dot-bg-color;
+      }
+      .e-row-insert-handle,
+      .e-col-insert-handle {
+        color: $be-table-insert-handle-color;
+        border: 1px solid $be-table-insert-handle-border;
+        background-color: $be-table-insert-handle-bg;
+      }
+      .e-row-hover-line,
+      .e-col-hover-line {
+        background: $be-table-row-col-hover-line;
+      }
+    }
+
     /* ======== Image Block Styles ======== */
     .e-image-block {
       &.e-image-focus,
       &:hover {
-        outline: 2px solid $be-table-cell-focus-color;
+        outline: $be-image-focus-outline solid $be-table-cell-focus-color;
       }
     }
 
     /* ======== Audio Block Styles ======== */
     .e-audio-block {
       &:hover {
-        outline: 2px solid $be-table-cell-focus-color;
+        outline: $be-audio-block-outline solid $be-table-cell-focus-color;
       }
     }
 
@@ -191,7 +248,26 @@
     .e-video-block {
       &.e-video-focus,
       &:hover {
-        outline: 2px solid $be-table-cell-focus-color;
+        outline: $be-video-block-outline solid $be-table-cell-focus-color;
+      }
+    }
+  }
+
+  .e-table-gripper-action-popup {
+    background: $be-table-popup-bg;
+    border: $be-table-popup-border;
+    box-shadow: $be-table-popup-box-shadow;
+    .e-icons {
+      color: $be-table-popup-icon-color;
+      &:hover {
+        background: $be-table-popup-icon-hover-bg;
+        border-color: $be-table-popup-icon-hover-bg;
+        color: $be-table-popup-icon-hover-color;
+      }
+      &:active {
+        background: $be-table-popup-icon-pressed-bg;
+        border-color: $be-table-popup-icon-pressed-bg;
+        color: $be-table-popup-icon-pressed-color;
       }
     }
   }
@@ -212,7 +288,14 @@
     border: $be-inline-toolbar-border-width solid $be-inline-toolbar-popup-border-color;
     background: $be-inline-toolbar-popup-bg-color;
     box-shadow: $be-inline-toolbar-popup-shadow;
-
+    @if $theme-name == 'fluent2-highcontrast'{
+      border: 1px solid #ffff;
+    }
+    @else if $theme-name == 'Material3'{
+      border: none;
+      box-shadow: none;
+      filter: drop-shadow(0 2px 6px rgba(0, 0, 0, .3));
+    }
     .e-toolbar-item {
       &.e-active {
         .e-btn {
@@ -221,6 +304,14 @@
         .e-tbar-btn .e-icons,
         .e-tbar-btn:focus .e-icons {
           color: $be-inline-toolbar-item-active-color;
+        }
+      }
+      .e-tbar-btn.e-toolbar-color-dropdown,
+      .e-tbar-btn.e-toolbar-bgcolor-dropdown {
+        &:hover .e-be-color-icon-wrapper {
+          @if ($skin-name == 'bootstrap5.3' or $skin-name == 'bootstrap5') {
+            color: rgba(255, 255, 255, 1);
+          }
         }
       }
     }
@@ -262,7 +353,7 @@
 
   /* ======== Slash Command styles ======== */
   .e-blockeditor-command-menu.e-popup {
-    .e-list-item:not(.e-disabled):not(.e-active) {
+    .e-list-item:not(.e-disabled):not(.e-active):not(.e-hover) {
       .e-command-mention-item-template {
         .e-command-icon {
           color: $be-ctmenu-icon-color;
@@ -278,7 +369,7 @@
   }
 
   /* Context menu styles */
-  .e-blockeditor-contextmenu {
+  .e-blockeditor-contextmenu ul {
     .e-menu-item:not(.e-disabled) {
       .e-ctmenu-icon {
         color: $be-ctmenu-icon-color;
@@ -295,7 +386,7 @@
   /* ======== common styles for mention and popup menu ======== */
   .e-blockeditor-mention-menu.e-popup,
   .e-blockeditor-blockaction-popup,
-  .e-blockeditor-contextmenu {
+  .e-blockeditor-contextmenu ul {
     border: $be-mention-popup-border-width solid $be-mention-popup-border-color;
     background: $be-mention-popup-bg-color;
     box-shadow: $be-mention-popup-shadow;

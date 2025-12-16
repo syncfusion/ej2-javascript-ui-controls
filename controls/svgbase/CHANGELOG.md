@@ -2,6 +2,12 @@
 
 ## [Unreleased]
 
+### Svg Base
+
+#### Bug Fixes
+
+- `#I770361` - Tooltip position now updates correctly after zooming in on the bar chart.
+
 ## 27.1.48 (2024-09-18)
 
 ### Svg Base

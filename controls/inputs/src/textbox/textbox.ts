@@ -1,4 +1,4 @@
-import { Component, Property, Event, EmitType, EventHandler, L10n, setValue, getValue, isNullOrUndefined, Browser } from '@syncfusion/ej2-base';
+import { Component, Property, Event, EmitType, EventHandler, L10n, setValue, getValue, isNullOrUndefined, Browser, compile, select, selectAll, append } from '@syncfusion/ej2-base';
 import { NotifyPropertyChanges, INotifyPropertyChanged, detach, Internationalization, getUniqueID, closest } from '@syncfusion/ej2-base';
 import { addClass, removeClass } from '@syncfusion/ej2-base';
 import { FloatLabelType, Input, InputObject, containerAttributes, TEXTBOX_FOCUS } from '../input/input';
@@ -68,6 +68,9 @@ export class TextBox extends Component<HTMLInputElement | HTMLTextAreaElement> i
     private textboxOptions: TextBoxModel;
     private inputPreviousValue: string = null;
     private clearButton: HTMLElement;
+    private prependedElement: HTMLElement;
+    private appendedElement: HTMLElement;
+    private iconTemplateFunction: Function;
 
     /**
      * Specifies the behavior of the TextBox such as text, password, email, etc.
@@ -184,6 +187,32 @@ export class TextBox extends Component<HTMLInputElement | HTMLTextAreaElement> i
      */
     @Property(null)
     public width: number | string;
+
+    /**
+     * Specifies the HTML template string for custom elements to prepend to the TextBox input.
+     * Supports icons, buttons, or any valid HTML. Updates dynamically on property change.
+     *
+     * @default null
+     * @angularType string | object
+     * @reactType string | function | JSX.Element
+     * @vueType string | function
+     * @aspType string
+     */
+    @Property(null)
+    public prependTemplate: string | Function;
+
+    /**
+     * Specifies the HTML template string for custom elements to append to the TextBox input.
+     * Supports icons, buttons, or any valid HTML. Updates dynamically on property change.
+     *
+     * @default null
+     * @angularType string | object
+     * @reactType string | function | JSX.Element
+     * @vueType string | function
+     * @aspType string
+     */
+    @Property(null)
+    public appendTemplate: string | Function;
 
     /**
      * Triggers when the TextBox component is created.
@@ -318,6 +347,7 @@ export class TextBox extends Component<HTMLInputElement | HTMLTextAreaElement> i
                 break;
             case 'enableRtl':
                 Input.setEnableRtl(this.enableRtl, [this.textboxWrapper.container]);
+                this.handleFloatLabel();
                 break;
             case 'placeholder':
                 Input.setPlaceholder(this.placeholder, this.respectiveElement);
@@ -338,6 +368,12 @@ export class TextBox extends Component<HTMLInputElement | HTMLTextAreaElement> i
                 this.l10n.setLocale(this.locale);
                 this.setProperties({ placeholder: this.l10n.getConstant('placeholder') }, true);
                 Input.setPlaceholder(this.placeholder, this.respectiveElement);
+                break;
+            case 'prependTemplate':
+                this.updatePrependTemplate();
+                break;
+            case 'appendTemplate':
+                this.updateAppendTemplate();
                 break;
             }
         }
@@ -531,6 +567,21 @@ export class TextBox extends Component<HTMLInputElement | HTMLTextAreaElement> i
         if (!this.element.hasAttribute('aria-labelledby') && !this.element.hasAttribute('placeholder')  && !this.element.hasAttribute('aria-label')) {
             this.element.setAttribute('aria-label', 'textbox');
         }
+        this.createPrependTemplate();
+        this.createAppendTemplate();
+        if (this.multiline && this.floatLabelType === 'Auto' && (this.prependTemplate || this.appendTemplate) && typeof (window as any).ResizeObserver !== 'undefined') {
+            const resizeObserver: any = new (window as any).ResizeObserver((entries: any[]) => {
+                for (const entry of entries) {
+                    const floatLabelElement: HTMLElement = entry.target && entry.target.parentElement ? entry.target.parentElement.querySelector('.e-float-text.e-label-bottom') : null;
+                    if (floatLabelElement && floatLabelElement.classList.contains('e-label-bottom')) {
+                        floatLabelElement.style.width = `${entry.contentRect.width}px`;
+                    } else if (floatLabelElement && floatLabelElement.classList.contains('e-label-top')) {
+                        floatLabelElement.style.width = 'auto';
+                    }
+                }
+            });
+            resizeObserver.observe(this.textarea);
+        }
         this.renderComplete();
     }
 
@@ -546,6 +597,102 @@ export class TextBox extends Component<HTMLInputElement | HTMLTextAreaElement> i
     private setInitialValue() : void {
         if (!this.isAngular) {
             this.respectiveElement.setAttribute('value', this.initialValue);
+        }
+    }
+
+    private updatePrependTemplate(): void {
+        this.removePrependTemplate();
+        this.createPrependTemplate();
+    }
+
+    private updateAppendTemplate(): void {
+        this.removeAppendTemplate();
+        this.createAppendTemplate();
+    }
+
+    private templateComplier(iconTemplate: string | Function): Function {
+        if (iconTemplate) {
+            try {
+                if (typeof iconTemplate !== 'function' && selectAll(iconTemplate, document).length) {
+                    return compile(select(iconTemplate, document).innerHTML.trim());
+                } else {
+                    return compile(iconTemplate);
+                }
+            } catch (exception) {
+                return compile(iconTemplate);
+            }
+        }
+        return undefined;
+    }
+
+    private createPrependTemplate(): void {
+        if (!isNullOrUndefined(this.prependTemplate)) {
+            const container: HTMLElement = this.textboxWrapper.container;
+            this.prependedElement = this.createElement('div', { className: 'e-prepend-template' });
+            this.iconTemplateFunction = this.templateComplier(this.prependTemplate);
+            const iconTemplateCompiler: Function = this.iconTemplateFunction(null, this, 'template', this.element.id + 'Template', this.isStringTemplate, null, this.prependedElement);
+            if (iconTemplateCompiler) {
+                const fromElements: HTMLElement[] = [].slice.call(iconTemplateCompiler);
+                append(fromElements, this.prependedElement);
+            }
+            const inputElement: HTMLElement = container.querySelector('input');
+            container.classList.add('e-prepend-wrapper');
+            if (inputElement) {
+                container.insertBefore(this.prependedElement, inputElement);
+            } else {
+                container.insertBefore(this.prependedElement, container.firstChild);
+            }
+            this.handleFloatLabel();
+            this.renderReactTemplates();
+        }
+    }
+
+    private createAppendTemplate(): void {
+        if (!isNullOrUndefined(this.appendTemplate)) {
+            const container: HTMLElement = this.textboxWrapper.container;
+            this.appendedElement = this.createElement('div', { className: 'e-append-template' });
+            this.iconTemplateFunction = this.templateComplier(this.appendTemplate);
+            const iconTemplateCompiler: Function = this.iconTemplateFunction(null, this, 'template', this.element.id + 'Template', this.isStringTemplate, null, this.appendedElement);
+            if (iconTemplateCompiler) {
+                const fromElements: HTMLElement[] = [].slice.call(iconTemplateCompiler);
+                append(fromElements, this.appendedElement);
+            }
+            container.classList.add('e-append-wrapper');
+            container.appendChild(this.appendedElement);
+            this.handleFloatLabel();
+            this.renderReactTemplates();
+        }
+    }
+
+    private handleFloatLabel(): void {
+        const floatLabelElement: HTMLElement = this.textboxWrapper.container.querySelector('.e-float-text');
+        if (floatLabelElement && this.floatLabelType === 'Auto') {
+            setTimeout(function(): void {
+                if (floatLabelElement && this.prependedElement && !this.enableRtl) {
+                    floatLabelElement.style.marginLeft = `${this.prependedElement.offsetWidth}px`;
+                    floatLabelElement.style.marginRight = '0';
+                } else if (floatLabelElement && this.prependedElement && this.enableRtl) {
+                    floatLabelElement.style.marginRight = `${this.prependedElement.offsetWidth}px`;
+                    floatLabelElement.style.marginLeft = '0';
+                }
+                if (floatLabelElement && floatLabelElement.classList.contains('e-label-bottom')) {
+                    floatLabelElement.style.width = this.element.offsetWidth + 'px';
+                }
+            }.bind(this), 5);
+        }
+    }
+
+    private removePrependTemplate(): void {
+        if (!isNullOrUndefined(this.prependedElement)) {
+            detach(this.prependedElement);
+            this.prependedElement = null;
+        }
+    }
+
+    private removeAppendTemplate(): void {
+        if (!isNullOrUndefined(this.appendedElement)) {
+            detach(this.appendedElement);
+            this.appendedElement = null;
         }
     }
 
@@ -613,6 +760,14 @@ export class TextBox extends Component<HTMLInputElement | HTMLTextAreaElement> i
             value: this.value
         };
         this.trigger('focus', eventArgs);
+        if (this.floatLabelType === 'Auto' && (this.prependTemplate || this.appendTemplate)) {
+            setTimeout(function(): void {
+                const label: HTMLElement = this.textboxWrapper ? this.textboxWrapper.container.querySelector('.e-float-text') : null;
+                if (label) {
+                    label.style.width = 'auto';
+                }
+            }.bind(this), 5);
+        }
     }
     private focusOutHandler(args: MouseEvent | TouchEvent | KeyboardEvent): void {
         if (!(this.previousValue === null && this.value === null && this.respectiveElement.value === '') &&
@@ -625,6 +780,14 @@ export class TextBox extends Component<HTMLInputElement | HTMLTextAreaElement> i
             value: this.value
         };
         this.trigger('blur', eventArgs);
+        if (this.floatLabelType === 'Auto' && (this.prependTemplate || this.appendTemplate)) {
+            setTimeout(function(): void {
+                const label: HTMLElement = this.textboxWrapper ? this.textboxWrapper.container.querySelector('.e-float-text.e-label-bottom') : null;
+                if (label) {
+                    label.style.width = this.multiline ? this.textarea.offsetWidth : this.element.offsetWidth + 'px';
+                }
+            }.bind(this), 5);
+        }
     }
 
     private keydownHandler (args: KeyboardEvent): void {
@@ -743,6 +906,9 @@ export class TextBox extends Component<HTMLInputElement | HTMLTextAreaElement> i
 
     public destroy(): void {
         this.unWireEvents();
+        this.removePrependTemplate();
+        this.removeAppendTemplate();
+        this.clearTemplate();
         if (this.showClearButton) {
             this.clearButton = document.getElementsByClassName('e-clear-icon')[0] as HTMLElement;
         }

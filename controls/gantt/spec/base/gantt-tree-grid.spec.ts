@@ -64,7 +64,7 @@ describe('Gantt base module', () => {
     it('Column menu click', () => {
         ganttObj.showColumnMenu = true;
         ganttObj.refresh();
-        let element: HTMLElement = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol > div.e-gridheader.e-lib.e-droppable > div > table > thead > tr > th:nth-child(1) > div.e-icons.e-columnmenu') as HTMLElement;
+        let element: HTMLElement = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol > div.e-gridheader.e-lib.e-droppable > div > table > thead > tr > th:nth-child(1) > div.e-headercell-container > div.e-icons.e-columnmenu') as HTMLElement;
         element.click();
     });
     afterAll(() => {

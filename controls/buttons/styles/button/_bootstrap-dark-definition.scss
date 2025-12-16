@@ -1,4 +1,6 @@
 @use 'sass:color';
+@use 'ej2-base/styles/definition/bootstrap-dark' as *;
+@forward 'ej2-base/styles/definition/bootstrap-dark';
 
 //normal
 $btn-color: $grey-dark-font !default;
@@ -348,3 +350,11 @@ $btn-flat-info-disabled-bgcolor: $btn-info-disabled-bgcolor !default;
 $btn-flat-warning-disabled-bgcolor: $btn-warning-disabled-bgcolor !default;
 $btn-flat-danger-disabled-bgcolor: $btn-danger-disabled-bgcolor !default;
 $btn-focus-box-shadow: none !default;
+$btn-zero-padding: 0 !default;
+$btn-top-bottom-icon-line-height: 1 !default;
+$btn-round-line-height: 1 !default;
+$btn-round-border-radius: 50% !default;
+$btn-auto-width: auto !default;
+$btn-width-full: 100% !default;
+$btn-zero-border: 0 !default;
+$btn-zero-line-height: 0 !default;

@@ -267,7 +267,7 @@ describe('Diagram Control', () => {
                     this.skip(); //Skips test (in Chai)
                     return;
                 }
-            ele = createElement('div', { id: 'diagram' });
+            ele = createElement('div', { id: 'diagram1' });
             document.body.appendChild(ele);
             let node1: NodeModel = {
                 id: 'node15', width: 100, height: 100, offsetX: 500, offsetY: 300,
@@ -315,7 +315,7 @@ describe('Diagram Control', () => {
                 width: 1500, height: 1500, nodes: [node1,
                     node2, node3, node4, node5, node6]
             });
-            diagram.appendTo('#diagram');
+            diagram.appendTo('#diagram1');
         });
 
         afterAll((): void => {

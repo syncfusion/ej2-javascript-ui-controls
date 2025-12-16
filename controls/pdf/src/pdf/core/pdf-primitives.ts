@@ -149,6 +149,7 @@ export class _PdfDictionary {
     _isFont: boolean = false;
     _reference: _PdfReference;
     _isProcessed: boolean = false;
+    _isSignature: boolean = false;
     get size(): number {
         return Object.keys(this._map).length;
     }

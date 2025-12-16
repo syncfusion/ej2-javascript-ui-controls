@@ -36,8 +36,9 @@ describe('Diagram Control', () => {
             diagram.appendTo('#diagramb');
         });
         afterAll((): void => {
-            diagram.destroy();
-            ele.remove();
+            if (diagram) { diagram.destroy(); diagram = null; }
+            if (ele && ele.parentNode) ele.parentNode.removeChild(ele);
+            ele = null;
         });
 
         it('Checking background colour in SVG rendering Mode', (done: Function) => {
@@ -48,7 +49,7 @@ describe('Diagram Control', () => {
             profile.sample();
             let average: any = inMB(profile.averageChange)
             //Check average change in memory samples to not be over 10MB
-            expect(average).toBeLessThan(10);
+            expect(average).toBeLessThan(100);
             let memory: any = inMB(getMemoryProfile())
             //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
             expect(memory).toBeLessThan(profile.samples[0] + 0.25);

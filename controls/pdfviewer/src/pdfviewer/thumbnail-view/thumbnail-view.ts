@@ -56,9 +56,12 @@ export class ThumbnailView {
      * @returns {void}
      */
     public createThumbnailContainer(): void {
-        this.thumbnailView = createElement('div', { id: this.pdfViewer.element.id + '_thumbnail_view', className: 'e-pv-thumbnail-view e-pv-thumbnail-row' });
-        this.pdfViewerBase.navigationPane.sideBarContent.appendChild(this.thumbnailView);
-        this.pdfViewerBase.navigationPane.sideBarContent.addEventListener('scrollend', this.thumbnailOnScroll);
+        this.thumbnailView = this.pdfViewerBase.getElement('_thumbnail_view');
+        if (isNullOrUndefined(this.thumbnailView)) {
+            this.thumbnailView = createElement('div', { id: this.pdfViewer.element.id + '_thumbnail_view', className: 'e-pv-thumbnail-view e-pv-thumbnail-row' });
+            this.pdfViewerBase.navigationPane.sideBarContent.appendChild(this.thumbnailView);
+            this.pdfViewerBase.navigationPane.sideBarContent.addEventListener('scrollend', this.thumbnailOnScroll);
+        }
     }
 
     private thumbnailOnScroll = (event: any): void => {
@@ -113,6 +116,9 @@ export class ThumbnailView {
             }
             if (document.getElementById(proxy.pdfViewer.element.id + '_thumbnail_view')) {
                 document.getElementById(proxy.pdfViewer.element.id + '_thumbnail_view').style.display = 'flex';
+            }
+            if (proxy.pdfViewerBase.navigationPane) {
+                proxy.pdfViewerBase.navigationPane.isThumbnailOpen = true;
             }
             const bookmarkContent: any = proxy.pdfViewer.element.querySelector('.e-pv-bookmark-view');
             if (bookmarkContent) {
@@ -753,6 +759,12 @@ export class ThumbnailView {
      * @returns {void}
      */
     public clear(): void {
+        this.closeThumbnailPane();
+        if (!Browser.isDevice || this.pdfViewer.enableDesktopMode) {
+            if (this.pdfViewer.bookmark) {
+                this.pdfViewer.bookmark.closeBookmarkPane();
+            }
+        }
         this.startIndex = 0;
         this.thumbnailLimit = 0;
         this.list = [];

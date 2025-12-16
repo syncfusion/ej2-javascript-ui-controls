@@ -1,3 +1,4 @@
+@use 'ej2-base/styles/common/mixin' as *;
 @include export-module('blockeditor-fabric-icons') {
 
   .e-block-add-icon::before {
@@ -69,6 +70,10 @@
 
     .e-be-toggle-paragraph::before {
       content: '\e353';
+    }
+
+    .e-be-table::before {
+      content: '\e294';
     }
   }
 }

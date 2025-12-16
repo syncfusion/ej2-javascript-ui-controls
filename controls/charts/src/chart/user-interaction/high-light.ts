@@ -11,13 +11,13 @@ import { Selection } from './selection';
 /**
  * The `Highlight` module manages the highlighting of chart elements.
  *
- * @private
  */
 export class Highlight extends Selection {
 
     /**
      * Constructor for selection module.
      *
+     * @private
      */
 
     constructor(chart: Chart) {

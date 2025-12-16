@@ -1,3 +1,5 @@
+@use 'ej2-base/styles/common/mixin' as *;
+@use './theme-variables' as *;
 @include export-module('data-form-layout') {
 
   /*! data-form layout */
@@ -122,12 +124,12 @@
 
       .e-form-item-wrapper {
         flex: 1 1 auto;
-        max-width: calc(75% - 12px);
+        max-width: $form-item-wrapper-width;
       }
 
       .e-form-label {
-        margin-right: 12px;
-        width: 25%;
+        margin-right: $form-data-label-margin-right;
+        width: $form-label-q-width;
         text-align: end;
         flex-direction: column;
         align-items: flex-end;
@@ -176,8 +178,8 @@
         align-items: center;
   
         .e-switch-wrapper + .e-form-label {
-          margin-top: 3px;
-          margin-left: 5px;
+          margin-top: $form-switch-wrapper-margin-top;
+          margin-left: $form-switch-wrapper-margin-left;
         }
     
         .e-checkbox-wrapper + .e-form-label {
@@ -208,9 +210,9 @@
     #{if(&, '&', '*')} .e-button-right,
     #{if(&, '&', '*')} .e-button-center,
     #{if(&, '&', '*')} .e-button-stretch {
-      margin-top: 24px;
+      margin-top: $form-button-margin-top;
       display: $form-display-flex;
-      gap: 10px;
+      gap: $form-button-gap;
 
       #{if(&, '&', '*')} .e-btn {
         border-radius: $form-button-border-radius;
@@ -220,12 +222,12 @@
 
     #{if(&, '&', '*')} .e-button-stretch {
       #{if(&, '&', '*')} .e-btn {
-        width: 100%;
+        width: $form-full-width;
       }
     }
 
     > :first-child.e-form-layout {
-      margin-top: 0;
+      margin-top: $form-child-layout-margin-top;
     }
   }
 }

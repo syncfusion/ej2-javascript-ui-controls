@@ -1,3 +1,5 @@
+@use 'ej2-base/styles/common/mixin' as *;
+@use '../bootstrap5.3-definition' as *;
 @include export-module('multiselect-bootstrap5-icons') {
   .e-multiselect.e-input-group .e-ddl-icon::before {
     content: '\e729';
@@ -13,8 +15,6 @@
   }
 
   .e-multi-select-wrapper .e-close-hooker::before {
-    height: 16px;
-    font-size: 16px;
     content: '\e7e7';
     cursor: pointer;
     left: $ddl-overall-close-left;

@@ -1,4 +1,7 @@
-@import 'definition.scss';
+@use 'ej2-base/styles/common/mixin' as *;
+@use 'definition' as *;
+@use 'ej2-base/styles/definition/fluent2' as *;
+@forward 'ej2-base/styles/definition/fluent2';
 
 //layout variables
 $diagram-border-stroke-width: 2;

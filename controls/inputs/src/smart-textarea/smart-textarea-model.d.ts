@@ -1,11 +1,25 @@
-import { EventHandler, Property, createElement } from '@syncfusion/ej2-base';import { TextArea } from '../textarea/textarea';import { CaretPosition, CaretPositionHelper } from './caret-helper';
-import {SuggestionMode} from "./smart-textarea";
+import { EmitType, Event, EventHandler, Property, createElement } from '@syncfusion/ej2-base';import { TextArea } from '../textarea/textarea';import { CaretPosition, CaretPositionHelper } from './caret-helper';
+import {BeforeSuggestionInsertArgs,AfterSuggestionInsertArgs,SuggestionMode} from "./smart-textarea";
 import {TextAreaModel} from "../textarea/textarea-model";
 
 /**
  * Interface for a class SmartTextArea
  */
 export interface SmartTextAreaModel extends TextAreaModel{
+
+    /**
+     * Triggered before suggestions are shown as the user types in the SmartTextArea component. Allows cancellation of suggestion insertion.
+     *
+     * @event beforeSuggestionInsert
+     */
+    beforeSuggestionInsert?: EmitType<BeforeSuggestionInsertArgs>;
+
+    /**
+     * Triggered after suggestions are shown as the user types in the SmartTextArea component. Used for post-insertion analytics or updates.
+     *
+     * @event afterSuggestionInsert
+     */
+    afterSuggestionInsert?: EmitType<AfterSuggestionInsertArgs>;
 
     /**
      * Represents the user's role or designation, which can be used to provide role-specific suggestions or content within the smart textarea.

@@ -19,7 +19,6 @@ import { ReturnType } from '../base/type';
  *
  * @hidden
  */
-
 export class StringFilterUI implements IFilterMUI {
 
     private parent: IGrid;

@@ -19,7 +19,7 @@ import { ConnectorLineEdit } from './connector-line-edit';
 import { ITreeData, TreeGrid, Edit as TreeGridEdit } from '@syncfusion/ej2-treegrid';
 import { CriticalPath, UndoRedo } from '..';
 import { ITaskSegment, TaskType } from '../base/common';
-
+import { timelineHeaderCellLabel } from '../base/css-constants';
 
 /**
  * The Edit Module is used to handle editing actions.
@@ -38,7 +38,6 @@ export class Edit {
     private taskViolation: string;
     private canReset: boolean = false;
     private isFlatDataHaveUnAsignedTask: boolean = false;
-    private dirtyTasks: Set<string | number> = new Set<string | number>();
     /**
      * @private
      */
@@ -607,11 +606,6 @@ export class Edit {
                 const column: ColumnModel = ganttObj.columnByField[key as string];
                 /* eslint-disable-next-line */
                 let value: any = data[key as string];
-                // Handles for both updateRecordByID() & Dialog-save update actions:
-                if (tasks.progress === key) {
-                    value = this.parent.dataOperation['formatProgressValue'](value, key);
-                    value = (100 < value) ? 100 : value;
-                }
                 if (!isNullOrUndefined(column) && (column.editType === 'datepickeredit' || column.editType === 'datetimepickeredit')) {
                     value = ganttObj.dataOperation.getDateFromFormat(value);
                 }
@@ -1365,46 +1359,35 @@ export class Edit {
             this.parent.viewType === 'ResourceView'
                 ? rec.ganttProperties.taskId.toString()
                 : rec.ganttProperties.rowUniqueID.toString();
-
         interface ISuccessorLink {
             from: string;
             to: string;
         }
-
         const taskId: string = getTaskId(currentParent);
         const queue: ISuccessorLink[] = [];
         const directSuccessors: ISuccessorLink[] = (currentParent.ganttProperties.predecessor || [])
             .filter((data: IPredecessor) => data.from === taskId)
             .map((data: IPredecessor) => ({ from: data.from, to: data.to }));
-
         queue.push(...directSuccessors);
         const visitedSuccessors: Set<string> = new Set<string>();
-
         while (queue.length > 0) {
             const successor: ISuccessorLink = queue.shift()!;
-
             if (visitedSuccessors.has(successor.to)) {
                 continue;
             }
             visitedSuccessors.add(successor.to);
-
-            const parentGanttRecord: IGanttData | null = this.parent.connectorLineModule.getRecordByID(successor.from);
-            const record: IGanttData | null = this.parent.connectorLineModule.getRecordByID(successor.to);
-
+            const parentGanttRecord: IGanttData | null = this.parent.connectorLineModule.getRecordByID(successor.from) as IGanttData;
+            const record: IGanttData | null = this.parent.connectorLineModule.getRecordByID(successor.to) as IGanttData;
             if (!record) {
                 continue;
             }
-
             this.parent.predecessorModule['validateChildGanttRecord'](parentGanttRecord, record);
-
             if (record.hasChildRecords && record.ganttProperties.isAutoSchedule) {
                 this.parent.predecessorModule['updateChildItems'](record);
             }
-
             if (record.parentItem && record.ganttProperties.isAutoSchedule) {
                 this.parent.dataOperation.updateParentItems(record);
             }
-
             // Walk up parent hierarchy
             if (record.parentItem) {
                 let parent: IGanttData | null = this.parent.getRecordByID(record.parentItem.taskId);
@@ -1413,9 +1396,9 @@ export class Edit {
                         const parentId: string = getTaskId(parent);
                         for (const link of parent.ganttProperties.predecessor) {
                             if (link.from === parentId) {
-                                const toRecord: IGanttData = this.parent.connectorLineModule.getRecordByID(link.to);
+                                const toRecord: IGanttData = this.parent.connectorLineModule.getRecordByID(link.to) as IGanttData;
                                 if (toRecord) {
-                                    const fromRecord: IGanttData = this.parent.connectorLineModule.getRecordByID(link.from);
+                                    const fromRecord: IGanttData = this.parent.connectorLineModule.getRecordByID(link.from) as IGanttData;
                                     this.parent.predecessorModule['validateChildGanttRecord'](fromRecord, toRecord);
                                 }
                             }
@@ -1424,27 +1407,23 @@ export class Edit {
                     parent = parent.parentItem ? this.parent.getRecordByID(parent.parentItem.taskId) : null;
                 }
             }
-
             // Walk down all children (BFS)
             if (record.hasChildRecords) {
                 const childQueue: IGanttData[] = [...record.childRecords];
                 const visitedChildren: Set<string> = new Set<string>();
-
                 while (childQueue.length > 0) {
                     const child: IGanttData = childQueue.shift()!;
                     const childId: string = getTaskId(child);
-
                     if (visitedChildren.has(childId)) {
                         continue;
                     }
                     visitedChildren.add(childId);
-
                     if (child.ganttProperties.predecessor) {
                         for (const link of child.ganttProperties.predecessor) {
                             if (link.from === childId) {
-                                const toRec: IGanttData | null = this.parent.connectorLineModule.getRecordByID(link.to);
+                                const toRec: IGanttData | null = this.parent.connectorLineModule.getRecordByID(link.to) as IGanttData;
                                 if (toRec) {
-                                    const fromRec: IGanttData | null = this.parent.connectorLineModule.getRecordByID(link.from);
+                                    const fromRec: IGanttData = this.parent.connectorLineModule.getRecordByID(link.from) as IGanttData;
                                     this.parent.predecessorModule['validateChildGanttRecord'](fromRec, toRec);
                                     if (toRec.hasChildRecords) {
                                         this.parent.predecessorModule['updateChildItems'](toRec);
@@ -1453,13 +1432,11 @@ export class Edit {
                             }
                         }
                     }
-
                     if (child.hasChildRecords) {
                         childQueue.push(...child.childRecords);
                     }
                 }
             }
-
             // Add next level successors
             if (record.ganttProperties.predecessor) {
                 const currentId: string = getTaskId(record);
@@ -1545,6 +1522,7 @@ export class Edit {
                     ((this.parent.undoRedoModule && !this.parent.undoRedoModule['isUndoRedoPerformed']) || !this.parent.undoRedoModule)) {
                     this.processSuccessorChainAndChildren(currentParent);
                 }
+                // Check if the current parent has its own parent (grandparent)
                 if (currentParent.parentItem) {
                     currentParent = this.parent.getRecordByID(currentParent.parentItem.taskId);
                 } else {
@@ -1912,7 +1890,7 @@ export class Edit {
         const currentBaselineEnd: Date = { ...eventArgs.data.ganttProperties.baselineEndDate };
         const currentProgress: number = eventArgs.data.ganttProperties.progress;
         /* eslint-disable-next-line */
-        const unModifiedData: any = JSON.parse(JSON.stringify(eventArgs.data.ganttProperties));
+        const unModifiedData: any = extend({}, eventArgs.data.ganttProperties, undefined, true);
         this.parent.trigger('actionBegin', eventArgs, (eventArg: IActionBeginEventArgs) => {
             this.parent.treeGridModule.setCancelArgs = eventArg.cancel;
             if (currentBaselineStart !== eventArg.data['ganttProperties'].baselineStartDate
@@ -1944,7 +1922,8 @@ export class Edit {
                     durationUnit,
                     isAutoSchedule,
                     isMilestone,
-                    true
+                    true,
+                    ganttProps.calendarContext
                 );
                 if (duration !== 0) {
                     ganttProps.isMilestone = false;
@@ -2028,7 +2007,6 @@ export class Edit {
             }
         });
     }
-
     private processStandardDateFields(
         sourceRecord: ITaskData | object | IGanttData,
         targetRecord: ITaskData | object | IGanttData,

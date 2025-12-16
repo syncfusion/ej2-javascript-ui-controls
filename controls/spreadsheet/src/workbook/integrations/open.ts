@@ -62,28 +62,6 @@ export class WorkbookOpen {
         if (options.password) {
             formData.append('password', options.password as string);
         }
-        formData.append('IsManualCalculationEnabled', (this.parent.calculationMode === 'Manual').toString());
-        const eventArgs: BeforeOpenEventArgs = {
-            file: options.file || null,
-            cancel: false,
-            requestData: {
-                method: 'POST',
-                body: formData
-            },
-            password: args.passWord
-        };
-        /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
-        const guid: string = (options as any).guid;
-        if (isNullOrUndefined(options.sheetPassword) && !guid && isNullOrUndefined(isRetryRequest)) {
-            this.parent.trigger('beforeOpen', eventArgs);
-            this.parent.notify(beginAction, { eventArgs: eventArgs, action: 'beforeOpen' });
-        } else if (guid) {
-            formData.append('guid', guid);
-        }
-        if (eventArgs.cancel) {
-            this.parent.isOpen = false;
-            return;
-        }
         const header: { chunkSize: string, documentId: string } = { chunkSize: null, documentId: null };
         if (this.parent.openSettings.chunkSize > 0 && isNullOrUndefined(options.sheetPassword)) {
             this.setToDefaults(isRetryRequest);
@@ -96,6 +74,33 @@ export class WorkbookOpen {
             if (!isNullOrUndefined(header)) {
                 formData.append('chunkPayload', JSON.stringify(header));
             }
+        }
+        formData.append('IsManualCalculationEnabled', (this.parent.calculationMode === 'Manual').toString());
+        const eventArgs: BeforeOpenEventArgs = {
+            file: options.file || null,
+            cancel: false,
+            requestData: {
+                method: 'POST',
+                body: formData
+            },
+            password: args.passWord,
+            requestType: 'initial'
+        };
+        /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
+        const guid: string = (options as any).guid;
+        if (isNullOrUndefined(options.sheetPassword) && !guid && isNullOrUndefined(isRetryRequest)) {
+            this.parent.trigger('beforeOpen', eventArgs);
+            this.parent.notify(beginAction, { eventArgs: eventArgs, action: 'beforeOpen' });
+        } else if (guid) {
+            formData.append('guid', guid);
+            if (options.isThresholdLimitConfirmed) {
+                eventArgs.requestType = 'thresholdLimitConfirmed';
+                this.parent.trigger('beforeOpen', eventArgs);
+            }
+        }
+        if (eventArgs.cancel) {
+            this.parent.isOpen = false;
+            return;
         }
         if (eventArgs.parseOptions) {
             formData.append('parseOptions', JSON.stringify(eventArgs.parseOptions));
@@ -205,13 +210,14 @@ export class WorkbookOpen {
         formData.append('chunkPayload', JSON.stringify(header));
         const requestEventArgs: BeforeOpenEventArgs = {
             file: file || null,
-            cancel: false,
             requestData: {
                 method: 'POST',
                 body: formData
             },
-            password: eventArgs.password
+            password: eventArgs.password,
+            requestType: 'chunk'
         };
+        this.parent.trigger('beforeOpen', requestEventArgs);
         fetch(this.parent.openUrl, requestEventArgs.requestData)
             /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
             .then((response: any) => {

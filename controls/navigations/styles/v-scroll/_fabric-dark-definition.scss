@@ -1,3 +1,6 @@
+@use 'ej2-base/styles/definition/fabric-dark' as *;
+@forward 'ej2-base/styles/definition/fabric-dark';
+
 //default
 $vscroll-skin: 'fabric' !default;
 $vscroll-nav-nrml-height: 40px !default;

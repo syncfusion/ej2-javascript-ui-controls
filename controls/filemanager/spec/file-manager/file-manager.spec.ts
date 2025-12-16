@@ -8,10 +8,21 @@ import { Toolbar } from '../../src/file-manager/actions/toolbar';
 import { createElement, Browser, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { data1, data10, data11, stringData, accessData1, idData1 } from './data';
 import { FailureEventArgs } from '../../src';
+import * as fmUtility from '../../src/file-manager/common/utility';
 
 FileManager.Inject(Toolbar, NavigationPane, DetailsView);
 
 describe('FileManager control', () => {
+    beforeAll(() => {
+        const style = document.createElement('style');
+        style.innerHTML = `
+            html, body {
+                width: 100%;
+                height: 100%;
+            }
+        `;
+        document.head.appendChild(style);
+    });
     describe('DOM element class based rendering', () => {
         let feObj: FileManager;
         let ele: HTMLElement;
@@ -1881,6 +1892,338 @@ describe('FileManager control', () => {
                 status: 200,
                 responseText: JSON.stringify(data1)
             });
+        });
+    });
+
+    describe('navigation pane template testing', () => {
+        let feObj: FileManager;
+        let ele: HTMLElement;
+        let originalTimeout: any;
+        beforeEach(() => {
+            jasmine.Ajax.install();
+            ele = createElement('div', { id: 'file' });
+            document.body.appendChild(ele);
+            originalTimeout = jasmine.DEFAULT_TIMEOUT_INTERVAL;
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = 50000;
+        });
+        afterEach(() => {
+            jasmine.Ajax.uninstall();
+            if (feObj) feObj.destroy();
+            ele.remove();
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = originalTimeout;
+        });
+        it('content with string type', () => {
+            feObj = new FileManager({
+                ajaxSettings: {
+                    url: '/FileOperations',
+                    uploadUrl: '/Upload', downloadUrl: '/Download', getImageUrl: '/GetImage'
+                },
+                navigationPaneTemplate: '<div style="display: inline-flex;"><span class="custom-template" >${name}</span></div>'
+            });
+            feObj.appendTo('#file');
+            this.request = jasmine.Ajax.requests.mostRecent();
+            this.request.respondWith({
+                status: 200,
+                responseText: JSON.stringify(data1)
+            });
+            expect(feObj.navigationpaneModule.treeObj.element.querySelectorAll('.custom-template').length).toEqual(5);
+            expect((feObj.navigationpaneModule.treeObj.element.querySelectorAll('.custom-template')[0] as HTMLElement).innerText).toEqual('FileContent');
+            expect((feObj.navigationpaneModule.treeObj.element.querySelectorAll('.custom-template')[1] as HTMLElement).innerText).toEqual('Documents');
+            expect((feObj.navigationpaneModule.treeObj.element.querySelectorAll('.custom-template')[2] as HTMLElement).innerText).toEqual('Employees');
+            expect((feObj.navigationpaneModule.treeObj.element.querySelectorAll('.custom-template')[3] as HTMLElement).innerText).toEqual('Food');
+            expect((feObj.navigationpaneModule.treeObj.element.querySelectorAll('.custom-template')[4] as HTMLElement).innerText).toEqual('Nature');
+            feObj.destroy();
+        });
+        it('content with function type ', () => {
+            feObj = new FileManager({
+                view: 'Details',
+                ajaxSettings: {
+                    url: '/FileOperations',
+                    uploadUrl: '/Upload', downloadUrl: '/Download', getImageUrl: '/GetImage'
+                },
+                navigationPaneTemplate: function (args: any) {
+                    return `
+                        <div style="display: inline-flex; align-items: center;">
+                            <span class="custom-template">
+                                ${args.name}
+                            </span>
+                            <div class="e-list-icon ${args._fm_icon}" style="margin-left: 8px;"></div>
+                        </div>
+                    `;
+                },
+            });
+            feObj.appendTo('#file');
+            this.request = jasmine.Ajax.requests.mostRecent();
+            this.request.respondWith({
+                status: 200,
+                responseText: JSON.stringify(data1)
+            });
+            expect(feObj.navigationpaneModule.treeObj.element.querySelectorAll('.custom-template').length).toEqual(5);
+            expect((feObj.navigationpaneModule.treeObj.element.querySelectorAll('.custom-template')[0] as HTMLElement).innerText).toEqual('FileContent');
+            expect((feObj.navigationpaneModule.treeObj.element.querySelectorAll('.custom-template')[1] as HTMLElement).innerText).toEqual('Documents');
+            expect((feObj.navigationpaneModule.treeObj.element.querySelectorAll('.custom-template')[2] as HTMLElement).innerText).toEqual('Employees');
+            expect((feObj.navigationpaneModule.treeObj.element.querySelectorAll('.custom-template')[3] as HTMLElement).innerText).toEqual('Food');
+            expect((feObj.navigationpaneModule.treeObj.element.querySelectorAll('.custom-template')[4] as HTMLElement).innerText).toEqual('Nature');
+            feObj.destroy();
+        });
+        it('content with script type', () => {
+            const scriptTemplate: HTMLScriptElement = document.createElement('script');
+            scriptTemplate.type = 'text/x-template';
+            scriptTemplate.id = 'navigationPaneTemplate';
+            scriptTemplate.innerHTML = '<div style="display: inline-flex;"><span class="custom-template" >${name}</span></div>';
+            document.body.appendChild(scriptTemplate);
+            feObj = new FileManager({
+                view: 'Details',
+                ajaxSettings: {
+                    url: '/FileOperations',
+                    uploadUrl: '/Upload', downloadUrl: '/Download', getImageUrl: '/GetImage'
+                },
+                navigationPaneTemplate: "#navigationPaneTemplate"
+            });
+            feObj.appendTo('#file');
+            this.request = jasmine.Ajax.requests.mostRecent();
+            this.request.respondWith({
+                status: 200,
+                responseText: JSON.stringify(data1)
+            });
+            expect(feObj.navigationpaneModule.treeObj.element.querySelectorAll('.custom-template').length).toEqual(5);
+            expect((feObj.navigationpaneModule.treeObj.element.querySelectorAll('.custom-template')[0] as HTMLElement).innerText).toEqual('FileContent');
+            expect((feObj.navigationpaneModule.treeObj.element.querySelectorAll('.custom-template')[1] as HTMLElement).innerText).toEqual('Documents');
+            expect((feObj.navigationpaneModule.treeObj.element.querySelectorAll('.custom-template')[2] as HTMLElement).innerText).toEqual('Employees');
+            expect((feObj.navigationpaneModule.treeObj.element.querySelectorAll('.custom-template')[3] as HTMLElement).innerText).toEqual('Food');
+            expect((feObj.navigationpaneModule.treeObj.element.querySelectorAll('.custom-template')[4] as HTMLElement).innerText).toEqual('Nature');
+            feObj.destroy();
+            document.body.removeChild(scriptTemplate);
+        });
+    });
+
+    describe('large icons template testing', () => {
+        let feObj: FileManager;
+        let ele: HTMLElement;
+        let originalTimeout: any;
+
+        beforeEach(() => {
+            jasmine.Ajax.install();
+            ele = createElement('div', { id: 'file' });
+            document.body.appendChild(ele);
+            originalTimeout = jasmine.DEFAULT_TIMEOUT_INTERVAL;
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = 50000;
+        });
+
+        afterEach(() => {
+            jasmine.Ajax.uninstall();
+            if (feObj) feObj.destroy();
+            ele.remove();
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = originalTimeout;
+        });
+
+        it('content with string type', () => {
+            feObj = new FileManager({
+                view: 'LargeIcons',
+                ajaxSettings: {
+                    url: '/FileOperations',
+                    uploadUrl: '/Upload', downloadUrl: '/Download', getImageUrl: '/GetImage'
+                },
+                showThumbnail: false,
+                largeIconsTemplate: '<div style="display: inline-flex;"><span class="custom-template">${name}</span></div>'
+            });
+            feObj.appendTo('#file');
+            this.request = jasmine.Ajax.requests.mostRecent();
+            this.request.respondWith({
+                status: 200,
+                responseText: JSON.stringify(data1)
+            });
+
+            const container = document.getElementById('file_largeicons');
+            const templates = container.querySelectorAll('.custom-template');
+            expect(templates.length).toBeGreaterThan(0);
+            const names: string[] = Array.from(templates).map((e) => (e as HTMLElement).innerText.trim());
+            expect(names).toContain('Documents');
+            expect(names).toContain('Employees');
+            expect(names).toContain('Food');
+            expect(names).toContain('Nature');
+        });
+
+        it('content with function type', () => {
+            feObj = new FileManager({
+                view: 'LargeIcons',
+                ajaxSettings: {
+                    url: '/FileOperations',
+                    uploadUrl: '/Upload', downloadUrl: '/Download', getImageUrl: '/GetImage'
+                },
+                showThumbnail: false,
+                largeIconsTemplate: function(args: any) {
+                    return `
+                        <div style="display: inline-flex; align-items: center;">
+                            <span class="custom-template">${args.name}</span>
+                            <div class="e-list-icon ${args._fm_icon}" style="margin-left: 8px;"></div>
+                        </div>
+                    `;
+                }
+            });
+            feObj.appendTo('#file');
+            this.request = jasmine.Ajax.requests.mostRecent();
+            this.request.respondWith({
+                status: 200,
+                responseText: JSON.stringify(data1)
+            });
+
+            const container = document.getElementById('file_largeicons');
+            const templates = container.querySelectorAll('.custom-template');
+            expect(templates.length).toBeGreaterThan(0);
+            const names: string[] = Array.from(templates).map((e) => (e as HTMLElement).innerText.trim());
+            expect(names).toContain('Documents');
+            expect(names).toContain('Employees');
+            expect(names).toContain('Food');
+            expect(names).toContain('Nature');
+        });
+
+        it('content with script type', () => {
+            const scriptTemplate: HTMLScriptElement = document.createElement('script');
+            scriptTemplate.type = 'text/x-template';
+            scriptTemplate.id = 'largeIconsTemplate';
+            scriptTemplate.innerHTML = '<div style="display: inline-flex;"><span class="custom-template">${name}</span></div>';
+            document.body.appendChild(scriptTemplate);
+
+            feObj = new FileManager({
+                view: 'LargeIcons',
+                ajaxSettings: {
+                    url: '/FileOperations',
+                    uploadUrl: '/Upload', downloadUrl: '/Download', getImageUrl: '/GetImage'
+                },
+                showThumbnail: false,
+                largeIconsTemplate: '#largeIconsTemplate'
+            });
+            feObj.appendTo('#file');
+            this.request = jasmine.Ajax.requests.mostRecent();
+            this.request.respondWith({
+                status: 200,
+                responseText: JSON.stringify(data1)
+            });
+
+            const container = document.getElementById('file_largeicons');
+            const templates = container.querySelectorAll('.custom-template');
+            expect(templates.length).toBeGreaterThan(0);
+            const names: string[] = Array.from(templates).map((e) => (e as HTMLElement).innerText.trim());
+            expect(names).toContain('Documents');
+            expect(names).toContain('Employees');
+            expect(names).toContain('Food');
+            expect(names).toContain('Nature');
+
+            document.body.removeChild(scriptTemplate);
+        });
+    });
+
+    describe('Upload selection restrictions and sequential upload', () => {
+        let feObj: any;
+        let ele: HTMLElement;
+        let originalTimeout: any;
+
+        beforeEach((done: Function) => {
+            jasmine.Ajax.install();
+            ele = createElement('div', { id: 'file' });
+            document.body.appendChild(ele);
+            feObj = new FileManager({
+                view: 'Details',
+                ajaxSettings: {
+                    url: '/FileOperations',
+                    uploadUrl: '/Upload',
+                    downloadUrl: '/Download',
+                    getImageUrl: '/GetImage'
+                },
+                showThumbnail: false
+            });
+            feObj.appendTo('#file');
+
+            const request = jasmine.Ajax.requests.mostRecent();
+            request.respondWith({
+                status: 200,
+                responseText: JSON.stringify({ files: [], cwd: { name: 'Files' } })
+            });
+
+            originalTimeout = jasmine.DEFAULT_TIMEOUT_INTERVAL;
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = 50000;
+
+            setTimeout(() => done(), 100);
+        });
+
+        afterEach(() => {
+            jasmine.Ajax.uninstall();
+            if (feObj) feObj.destroy();
+            ele.remove();
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = originalTimeout;
+        });
+
+        it('should cancel selection when folder upload is restricted (uploadContentFilter=1)', () => {
+            spyOn(fmUtility, 'hasUploadAccess').and.returnValue(true);
+            spyOn(fmUtility, 'getPathObject').and.returnValue({
+                permission: { uploadContentFilter: 1 }
+            });
+            const deniedSpy = spyOn(fmUtility, 'createDeniedDialog');
+            const showSpy = spyOn(feObj.uploadDialogObj, 'show');
+            const args: any = {
+                filesData: [
+                    { name: 'FolderA/sub.txt', size: 10 }, // treated as folder content due to '/'
+                    { name: 'plain-file.txt', size: 20 }
+                ],
+                cancel: false
+            };
+            (feObj as any).onSelected(args);
+            expect(args.cancel).toBe(true);
+            expect(deniedSpy).toHaveBeenCalled();
+            expect(showSpy).not.toHaveBeenCalled();
+        });
+
+        it('should cancel selection when file upload is restricted (uploadContentFilter=2)', () => {
+            spyOn(fmUtility, 'hasUploadAccess').and.returnValue(true);
+            spyOn(fmUtility, 'getPathObject').and.returnValue({
+                permission: { uploadContentFilter: 2 }
+            });
+            const deniedSpy = spyOn(fmUtility, 'createDeniedDialog');
+            const showSpy = spyOn(feObj.uploadDialogObj, 'show');
+            const args: any = {
+                filesData: [
+                    { name: 'photo.png', size: 100 },
+                    { name: 'doc.pdf', size: 200 }
+                ],
+                cancel: false
+            };
+            (feObj as any).onSelected(args);
+            expect(args.cancel).toBe(true);
+            expect(deniedSpy).toHaveBeenCalled();
+            expect(showSpy).not.toHaveBeenCalled();
+        });
+
+        it('should allow selection and open dialog when not restricted', () => {
+            spyOn(fmUtility, 'hasUploadAccess').and.returnValue(true);
+            spyOn(fmUtility, 'getPathObject').and.returnValue({
+                permission: { uploadContentFilter: 1 } // restrict folders only
+            });
+            const deniedSpy = spyOn(fmUtility, 'createDeniedDialog');
+            const showSpy = spyOn(feObj.uploadDialogObj, 'show');
+            const args: any = {
+                filesData: [
+                    { name: 'file-one.txt', size: 10 },
+                    { name: 'file-two.txt', size: 20 }
+                ],
+                cancel: false
+            };
+            (feObj as any).onSelected(args);
+            expect(args.cancel).toBe(false);
+            expect(deniedSpy).not.toHaveBeenCalled();
+            expect(showSpy).toHaveBeenCalled();
+        });
+
+        it('should propagate uploadSettings.sequentialUpload to Uploader and via setModel', (done: Function) => {
+            expect(feObj.uploadSettings.sequentialUpload).toBe(false);
+            expect(feObj.uploadObj.sequentialUpload).toBe(false);
+            feObj.uploadSettings = { ...feObj.uploadSettings, sequentialUpload: true };
+            feObj.dataBind();
+
+            setTimeout(() => {
+                expect(feObj.uploadSettings.sequentialUpload).toBe(true);
+                done();
+            }, 50);
         });
     });
 });

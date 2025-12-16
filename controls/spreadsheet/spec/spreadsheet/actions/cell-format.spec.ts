@@ -2,7 +2,7 @@ import { SpreadsheetHelper } from '../util/spreadsheethelper.spec';
 import { defaultData } from '../util/datasource.spec';
 import { SheetModel, getRangeAddress, Spreadsheet, getCell, CellModel, setCellFormat} from '../../../src/index';
 import { L10n, getComponent } from '@syncfusion/ej2-base';
-import { SpreadsheetModel } from '../../../src/spreadsheet/index';
+import { SpreadsheetModel, onContentScroll } from '../../../src/spreadsheet/index';
 
 describe('Cell Format ->', () => {
     let helper: SpreadsheetHelper = new SpreadsheetHelper('spreadsheet');
@@ -1135,7 +1135,17 @@ describe('Cell Format ->', () => {
                 spreadsheet.cellFormat({ fontFamily: 'Arial Black', fontSize: '14pt' }, 'B1:G9');
                 expect(helper.getInstance().sheets[0].rows[3].cells[3].style.borderRight).toBe(undefined);
                 expect(helper.getInstance().sheets[0].rows[3].cells[3].style.borderBottom).toBe(undefined);
-                done();
+                done()
+            });
+            it('EJ2-987493 -> Row Height Changes for Merged Cells on Horizontal Scrolling', (done: Function) => {
+                const spreadsheet: Spreadsheet = helper.getInstance();
+                helper.invoke('merge', ['B10:M10']);
+                const rowHeight: number = helper.getInstance().sheets[1].rows[9].height;
+                spreadsheet.cellFormat({ fontFamily: 'Arial Black', fontSize: '14pt' }, 'B10');
+                setTimeout(() => {
+                    expect(spreadsheet.sheets[1].rows[9].height).toBe(rowHeight);
+                    done();
+                });
             });
             it('EJ2-989647 -> Borders should rendered properly in merged cells when adjacent top cell is also merged', (done: Function) => {
                 helper.invoke('merge', ['B11:C11']);
@@ -2242,6 +2252,7 @@ describe('Cell Format ->', () => {
         });
     });
     describe('EJ2-982178: Provide support for horizontal scrolling using Shift+Mouse wheel', () => {
+        let spreadsheet: any; let sheet: SheetModel; let scrollModule: any;
         beforeAll((done: Function) => {
             helper.initializeSpreadsheet({ sheets: [{ ranges: [{ dataSource: defaultData }] }] }, done);
         });
@@ -2249,60 +2260,63 @@ describe('Cell Format ->', () => {
             helper.invoke('destroy');
         });
         it('horizontal scrolling should not be performed on using ctrl+Mouse wheel on headder and content', (done: Function) => {
-            let content: any = helper.invoke('getColumnHeaderContent');
-            const wheelEvent: WheelEvent = new WheelEvent('wheel', {
-                deltaX: 500, deltaY: 400, ctrlKey: true, bubbles: true, cancelable: true
-            });
-            content.dispatchEvent(wheelEvent);
-            expect(helper.getInstance().sheets[0].topLeftCell).toBe('A1');
+            const header: any = helper.invoke('getColumnHeaderContent');
+            helper.triggerKeyEvent('wheel', 17, header, true);
+            spreadsheet = helper.getInstance();
+            sheet = spreadsheet.sheets[0];
+            expect(sheet.topLeftCell).toBe('A1');
+            const content: any = helper.invoke('getMainContent');
+            helper.triggerKeyEvent('wheel', 17, content, true);
+            expect(sheet.topLeftCell).toBe('A1');
             done();
         });
         it('horizontal scrolling should be performed on using Shift+Mouse wheel on content', (done: Function) => {
-            let content: any = helper.invoke('getMainContent');
-            let wheelEvent: WheelEvent = new WheelEvent('wheel', {
-                deltaX: 0, deltaY: 500, shiftKey: true, bubbles: true, cancelable: true
+            scrollModule = spreadsheet.scrollModule;
+            scrollModule.onContentWheel({
+                deltaX: 0, deltaY: 70, shiftKey: true, cancelable: true, preventDefault: (): void => {}
             });
-            content.dispatchEvent(wheelEvent);
+            spreadsheet.notify(onContentScroll, { scrollTop: 0, scrollLeft: spreadsheet.getScrollElement().scrollLeft });
             setTimeout(() => {
-                expect(helper.getInstance().sheets[0].topLeftCell).not.toBe('A1');
+                expect(sheet.topLeftCell).not.toBe('A1');
                 done();
-            }, 20);
+            });
         });
-        it('horizontal scrolling should be performed on using Shift+Mouse wheel on headder', (done: Function) => {
-            let content: any = helper.invoke('getColumnHeaderContent');
-            const topLeftCell: string = helper.getInstance().sheets[0].topLeftCell;
-            let wheelEvent: WheelEvent = new WheelEvent('wheel', {
-                deltaX: 0, deltaY: 400, shiftKey: true, bubbles: true, cancelable: true
+        it('horizontal scrolling should be performed on using Shift+Mouse wheel on header', (done: Function) => {
+            const topLeftCell: string = sheet.topLeftCell;
+            scrollModule.onHeaderWheel({
+                deltaX: 0, deltaY: 70, shiftKey: true, cancelable: true, preventDefault: (): void => {}
             });
-            content.dispatchEvent(wheelEvent);
+            spreadsheet.notify(onContentScroll, { scrollTop: 0, scrollLeft: spreadsheet.getScrollElement().scrollLeft });
             setTimeout(() => {
-                expect(helper.getInstance().sheets[0].topLeftCell).not.toBe(topLeftCell);
+                expect(sheet.topLeftCell).not.toBe(topLeftCell);
                 done();
-            }, 20);
+            });
         });
         it('Simultaneous scrolling using trackpad on Header', (done: Function) => {
-            let content: any = helper.invoke('getColumnHeaderContent');
-            const topLeftCell: string = helper.getInstance().sheets[0].topLeftCell;
-            const wheelEvent: WheelEvent = new WheelEvent('wheel', {
-                deltaX: 500, deltaY: 500, shiftKey: false, bubbles: true, cancelable: true
+            const topLeftCell: string = sheet.topLeftCell;
+            scrollModule.onHeaderWheel({
+                deltaX: 70, deltaY: 30, shiftKey: false, cancelable: true, preventDefault: (): void => {}
             });
-            content.dispatchEvent(wheelEvent);
+            spreadsheet.notify(
+                onContentScroll, { scrollTop: spreadsheet.getMainContent().parentElement.scrollTop,
+                    scrollLeft: spreadsheet.getScrollElement().scrollLeft });
             setTimeout(() => {
-                // expect(helper.getInstance().sheets[0].topLeftCell).not.toBe(topLeftCell);
+                expect(sheet.topLeftCell).not.toBe(topLeftCell);
                 done();
-            }, 10);
+            });
         });
         it('Simultaneous scrolling using trackpad on Content', (done: Function) => {
-            let content: any = helper.invoke('getMainContent');
-            const topLeftCell: string = helper.getInstance().sheets[0].topLeftCell;
-            const wheelEvent: WheelEvent = new WheelEvent('wheel', {
-                deltaX: 500, deltaY: 500, shiftKey: false, bubbles: true, cancelable: true
+            const topLeftCell: string = sheet.topLeftCell;
+            scrollModule.onContentWheel({
+                deltaX: 70, deltaY: 30, shiftKey: false, cancelable: true, preventDefault: (): void => {}
             });
-            content.dispatchEvent(wheelEvent);
+            spreadsheet.notify(
+                onContentScroll, { scrollTop: spreadsheet.getMainContent().parentElement.scrollTop,
+                    scrollLeft: spreadsheet.getScrollElement().scrollLeft });
             setTimeout(() => {
-                //expect(helper.getInstance().sheets[0].topLeftCell).not.toBe(topLeftCell);
+                expect(sheet.topLeftCell).not.toBe(topLeftCell);
                 done();
-            }, 10);
+            });
         });
     });
     describe('EJ2-972438: Accounting Cell Formatting Breaks with Font Style/Size Change ->', () => {

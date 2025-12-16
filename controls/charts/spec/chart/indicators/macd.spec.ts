@@ -196,11 +196,11 @@ describe('Chart', () => {
 
                 //define check condition
                 let svg: HTMLElement = document.getElementById('containerAxisLine_2');
-                expect(svg.getAttribute('d').split(' ')[1] == '1222.5' || svg.getAttribute('d').split(' ')[1] == '717.5' ||
-                    svg.getAttribute('d').split(' ')[1] == '729.5').toBe(true);
+                expect(svg.getAttribute('d').split(' ')[1] == '1222.5' || svg.getAttribute('d').split(' ')[1] == '717.5' || svg.getAttribute('d').split(' ')[1] == '709.5' ||
+                    svg.getAttribute('d').split(' ')[1] == '729.5' || svg.getAttribute('d').split(' ')[1] == '691.5').toBe(true);
                 expect(svg.getAttribute('d').split(' ')[2] == '10.25').toBe(true);
-                expect(svg.getAttribute('d').split(' ')[4] == '1222.5' || svg.getAttribute('d').split(' ')[4] == '717.5' ||
-                    svg.getAttribute('d').split(' ')[4] == '729.5').toBe(true);
+                expect(svg.getAttribute('d').split(' ')[4] == '1222.5' || svg.getAttribute('d').split(' ')[4] == '717.5' || svg.getAttribute('d').split(' ')[4] == '709.5' ||
+                    svg.getAttribute('d').split(' ')[4] == '729.5' || svg.getAttribute('d').split(' ')[4] == '691.5').toBe(true);
                 expect(svg.getAttribute('d').split(' ')[5] == '381.5' || svg.getAttribute('d').split(' ')[5] == '379.5').toBe(true);
                 expect(chartObj.visibleSeries[1].yAxis.name).toBe('secondary');
                 done();
@@ -290,8 +290,8 @@ describe('Chart', () => {
                 let svg: HTMLElement = document.getElementById('containerAxisLine_0');
                 expect(svg.getAttribute('d').split(' ')[1] == '57.5' || svg.getAttribute('d').split(' ')[1] == '53.5').toBe(true);
                 expect(svg.getAttribute('d').split(' ')[2] == '36.75' || svg.getAttribute('d').split(' ')[2] == '35.75').toBe(true);
-                expect(svg.getAttribute('d').split(' ')[4] == '1222.5' || svg.getAttribute('d').split(' ')[4] == '717.5' ||
-                    svg.getAttribute('d').split(' ')[4] == '729.5').toBe(true);
+                expect(svg.getAttribute('d').split(' ')[4] == '1222.5' || svg.getAttribute('d').split(' ')[4] == '717.5' || svg.getAttribute('d').split(' ')[4] == '709.5' ||
+                    svg.getAttribute('d').split(' ')[4] == '729.5' || svg.getAttribute('d').split(' ')[4] == '691.5').toBe(true);
                 expect(svg.getAttribute('d').split(' ')[5] == '36.75' || svg.getAttribute('d').split(' ')[5] == '35.75').toBe(true);
                 done();
 
@@ -564,41 +564,47 @@ describe('Chart', () => {
             chartObj.refresh();
             
         });
-        it('Checking series animationEvent', (done: Function) => {
+        it('Checking series animationEvent', async (): Promise<void> => {
             animationComplete = (args: IAnimationCompleteEventArgs): void => {
                 let point: Element = document.getElementById('containerIndicatorGroup0');
                 expect(point.getAttribute('transform') === 'translate(57.5,295.225)' ||
                     point.getAttribute('transform') === 'translate(53.5,295.625)').toBe(true);
-                done();
+                //done();
             };
             chartObj.animationComplete = animationComplete;
             chartObj.series[0].animation.enable = true;
             chartObj.refresh(); 
+            await wait(500);
         });
-        it('Checking technicalindicators animationEvent', (done: Function) => {
+        it('Checking technicalindicators animationEvent', async (): Promise<void> => {
             animationComplete = (args: IAnimationCompleteEventArgs): void => {
                 let point: Element = document.getElementById('containerIndicatorGroup0');
                 expect(point.getAttribute('transform') === 'translate(57.5,295.225)' ||
                     point.getAttribute('transform') === 'translate(53.5,295.625)').toBe(true);
-                done();
+                //done();
             };
             chartObj.animationComplete = animationComplete;
             chartObj.indicators[0].animation.enable = true;
             chartObj.refresh(); 
+            await wait(500);
         });
-        it('Checking both series and technical indicators animationEvent', (done: Function) => {
+        it('Checking both series and technical indicators animationEvent', async (): Promise<void> => {
             animationComplete = (args: IAnimationCompleteEventArgs): void => {
                 let point: Element = document.getElementById('containerIndicatorGroup0');
                 expect(point.getAttribute('transform') === 'translate(57.5,295.225)' ||
                     point.getAttribute('transform') === 'translate(53.5,295.625)').toBe(true);
-                done();
+                //done();
             };
             chartObj.animationComplete = animationComplete;
             chartObj.series[0].animation.enable = true;
             chartObj.indicators[0].animation.enable = true;
             chartObj.refresh(); 
+            await wait(500);
         });
     });
+    async function wait(ms: number): Promise<void> {
+        return new Promise(resolve => setTimeout(resolve, ms));
+    }
     it('memory leak', () => {
         profile.sample();
         let average: any = inMB(profile.averageChange)

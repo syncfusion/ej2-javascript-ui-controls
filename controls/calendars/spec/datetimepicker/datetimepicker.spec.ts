@@ -1488,6 +1488,34 @@ describe('document layout testing', () => {
         done();
     });
 });
+describe('Destroy on blur event', () => {
+    let datetimepicker: any;
+    beforeEach(() => {
+        const ele: HTMLElement = createElement('input', { id: 'dateTime' });
+        document.body.appendChild(ele);
+    });
+    afterEach(() => {
+        if (datetimepicker && datetimepicker.destroy) {
+            try { datetimepicker.destroy(); } catch (e) { /* already destroyed by blur */ }
+        }
+        document.body.innerHTML = '';
+    });
+    it('should destroy instance on blur without errors', () => {
+        datetimepicker = new DateTimePicker({
+            value: new Date('12/15/2017 02:00 PM'),
+            placeholder: 'select Date Time',
+            width: '250px',
+            enableMask: true,
+            blur: function() { this.destroy(); }
+        });
+        datetimepicker.appendTo('#dateTime');
+        datetimepicker.focusIn();
+        datetimepicker.focusOut();
+        expect(document.querySelector('.e-datetime-wrapper')).toBe(null);
+        expect(document.querySelector('.e-datetimepicker')).toBe(null);
+    });
+});
+
 describe('ShowTodayButton set as false', () => {
     let datetimepicker: any;
     datetimepicker = undefined;
@@ -5249,6 +5277,7 @@ describe('Masked date time code coverage improvements ', () => {
     beforeEach(() => {
         let ele: HTMLElement = createElement('input', { id: 'date' });
         document.body.appendChild(ele);
+
     });
     afterEach(() => {
         if (date) {

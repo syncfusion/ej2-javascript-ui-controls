@@ -1,10 +1,9 @@
-@import 'ej2-base/styles/definition/material3.scss';
-
-@import '../context-menu/material3-definition.scss';
-@import '../h-scroll/material3-definition.scss';
-@import '../v-scroll/material3-definition.scss';
-@import 'ej2-popups/styles/popup/material3-definition.scss';
-@import 'material3-definition.scss';
-@import 'icons/material3.scss';
-@import 'all.scss';
-@import 'bigger.scss';
+@use 'ej2-base/styles/definition/material3' as *;
+@use '../context-menu/material3-definition' as *;
+@use '../h-scroll/material3-definition' as *;
+@use '../v-scroll/material3-definition' as *;
+@use 'ej2-popups/styles/popup/material3-definition' as *;
+@use 'material3-definition' as *;
+@use 'icons/material3' as *;
+@use 'all' as *;
+@use 'bigger' as *;

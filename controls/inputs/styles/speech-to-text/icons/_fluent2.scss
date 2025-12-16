@@ -1,3 +1,4 @@
+@use 'ej2-base/styles/common/mixin' as *;
 @include export-module('speechtotext-fluent2-icons') {
   .e-listen-icon::before {
     content: '\e91c';

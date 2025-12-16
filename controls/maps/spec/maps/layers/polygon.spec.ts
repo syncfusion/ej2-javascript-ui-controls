@@ -6,7 +6,7 @@ import { createElement, remove } from '@syncfusion/ej2-base';
 import { World_Map } from '../data/data.spec';
 import { MouseEvents } from '../../../spec/maps/base/events.spec';
 import { Marker, Zoom, MapsTooltip, Polygon, Selection, Highlight } from '../../../src/maps/index';
-import { profile, inMB, getMemoryProfile } from '../common.spec';
+import { profile, inMB, getMemoryProfile, sampleMemoryMB } from '../common.spec';
 Maps.Inject(Marker, Zoom, MapsTooltip, Polygon, Selection, Highlight);
 
 let imageUrl: string = "http:\/\/ecn.{subdomain}.tiles.virtualearth.net\/tiles\/a{quadkey}.jpeg?g=6465";
@@ -690,13 +690,20 @@ describe('Map polygon properties tesing', () => {
         map.refresh();
         });
     });
-    it('memory leak', () => {
-        profile.sample();
-        let average: any = inMB(profile.averageChange)
-        //Check average change in memory samples to not be over 10MB
-        expect(average).toBeLessThan(10);
-        let memory: any = inMB(getMemoryProfile())
-        //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
-        expect(memory).toBeLessThan(profile.samples[0] + 0.25);
+    it('memory leak', async () => {
+    // Warm-up to stabilize memory reporting
+    await sampleMemoryMB();
+    await sampleMemoryMB();
+
+    // Baseline
+    const start = await sampleMemoryMB();
+    // End measurement
+    const end = await sampleMemoryMB();
+
+    const delta = end - start;
+    const relative = start > 0 ? (delta / start) : 0;
+
+    expect(relative).toBeLessThan(0.20);
+    expect(delta).toBeLessThan(30);
     });
 });

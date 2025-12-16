@@ -1,9 +1,9 @@
-@import 'ej2-base/styles/definition/fluent-dark.scss';
-@import '../context-menu/fluent-dark-definition.scss';
-@import '../h-scroll/fluent-dark-definition.scss';
-@import '../v-scroll/fluent-dark-definition.scss';
-@import 'ej2-popups/styles/popup/fluent-dark-definition.scss';
-@import 'fluent-dark-definition.scss';
-@import 'icons/fluent-dark.scss';
-@import 'all.scss';
-@import 'bigger.scss';
+@use 'ej2-base/styles/definition/fluent-dark' as *;
+@use '../context-menu/fluent-dark-definition' as *;
+@use '../h-scroll/fluent-dark-definition' as *;
+@use '../v-scroll/fluent-dark-definition' as *;
+@use 'ej2-popups/styles/popup/fluent-dark-definition' as *;
+@use 'fluent-dark-definition' as *;
+@use 'icons/fluent-dark' as *;
+@use 'all' as *;
+@use 'bigger' as *;

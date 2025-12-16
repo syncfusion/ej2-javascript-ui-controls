@@ -1,5 +1,5 @@
-@import 'ej2-base/styles/definition/highcontrast.scss';
-@import 'rich-text-editor/highcontrast-definition.scss';
-@import 'rich-text-editor/icons/highcontrast.scss';
-@import 'rich-text-editor/all.scss';
-@import 'rich-text-editor/bigger.scss';
+@use 'ej2-base/styles/definition/highcontrast' as *;
+@use 'rich-text-editor/highcontrast-definition' as *;
+@use 'rich-text-editor/icons/highcontrast' as *;
+@use 'rich-text-editor/all' as *;
+@use 'rich-text-editor/bigger' as *;

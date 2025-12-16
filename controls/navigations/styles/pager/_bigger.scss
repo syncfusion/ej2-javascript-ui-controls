@@ -1,3 +1,5 @@
+@use 'ej2-base/styles/common/mixin' as *;
+@use './theme-variables' as *;
 @include export-module('pager-bigger') {
 
   /*! Pager bigger */
@@ -321,7 +323,7 @@
   .e-responsive #{&}.e-pager.e-bigger {
     div.e-icons {
       @if $pager-skin == 'material3' {
-        border-radius: 4px;
+        border-radius: $pager-border-radius-4;
       }
     }
     &.e-adaptive {

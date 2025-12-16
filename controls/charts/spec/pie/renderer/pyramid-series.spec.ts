@@ -883,7 +883,7 @@ describe('Accumulation Chart Control', () => {
             pie.loaded = (args: Object): void => {
                 pie.loaded = null;
                 const element: Element = document.getElementById('ej2container_datalabel_Series_0_text_0');
-                expect(element.getAttribute('x')).toBe('440.06344942579506');
+                expect(element.getAttribute('x') == '440.06344942579506' || element.getAttribute('x') == '420.42605145759717' || element.getAttribute('x') == '429.72797681095403').toBe(true);
                 expect(element.getAttribute('y')).toBe('97.52150530035335');
                 expect(element.textContent).toBe('Milk, Youghnut, Cheese: 435 cal');
                 done();

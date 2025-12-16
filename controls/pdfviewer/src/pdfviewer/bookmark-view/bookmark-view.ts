@@ -1,5 +1,5 @@
 import { PdfViewerBase, PdfViewer } from '../index';
-import { createElement, Browser, isBlazor, initializeCSPTemplate } from '@syncfusion/ej2-base';
+import { createElement, Browser, isBlazor, initializeCSPTemplate, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { TreeView, DrawNodeEventArgs, NodeClickEventArgs, EventArgs } from '@syncfusion/ej2-navigations';
 import { ListView } from '@syncfusion/ej2-lists';
 import { AjaxHandler } from '../index';
@@ -46,8 +46,13 @@ export class BookmarkView {
      * @returns {void}
      */
     public openBookmarkPane(): void {
-        if (this.pdfViewerBase.navigationPane) {
-            this.pdfViewerBase.navigationPane.openBookmarkcontentInitially();
+        if (this.pdfViewerBase.navigationPane && this.bookmarks) {
+            if (Browser.isDevice && !this.pdfViewer.enableDesktopMode) {
+                this.pdfViewerBase.navigationPane.showBookmarksPaneMobile();
+            }
+            else {
+                this.pdfViewerBase.navigationPane.openBookmarkcontentInitially();
+            }
         }
     }
 
@@ -58,7 +63,7 @@ export class BookmarkView {
      */
     public closeBookmarkPane(): void {
         if (this.pdfViewerBase.navigationPane) {
-            this.pdfViewerBase.navigationPane.closeBookmarkPane();
+            this.pdfViewerBase.navigationPane.closeBookmarkPane(true);
         }
     }
 
@@ -73,9 +78,7 @@ export class BookmarkView {
         if (this.pdfViewerBase.jsonDocumentId) {
             (jsonObject as any).documentId = this.pdfViewerBase.jsonDocumentId;
         }
-        if (this.pdfViewer.enableBookmarkStyles) {
-            (jsonObject as any).bookmarkStyles = this.pdfViewer.enableBookmarkStyles;
-        }
+        (jsonObject as any).bookmarkStyles = true;
         this.bookmarkRequestHandler = new AjaxHandler(this.pdfViewer);
         this.bookmarkRequestHandler.url = proxy.pdfViewer.serviceUrl + '/Bookmarks';
         this.bookmarkRequestHandler.responseType = 'json';
@@ -139,7 +142,12 @@ export class BookmarkView {
                 proxy.pdfViewerBase.navigationPane.enableBookmarkButton();
                 proxy.isBookmarkViewDiv = false;
                 if (proxy.pdfViewer.isBookmarkPanelOpen) {
-                    proxy.pdfViewerBase.navigationPane.openBookmarkcontentInitially();
+                    if (Browser.isDevice && !proxy.pdfViewer.enableDesktopMode) {
+                        proxy.pdfViewerBase.navigationPane.showBookmarksPaneMobile();
+                    }
+                    else {
+                        proxy.pdfViewerBase.navigationPane.openBookmarkcontentInitially();
+                    }
                 }
             }
         }
@@ -265,7 +273,7 @@ export class BookmarkView {
         if (this.pdfViewer.enableBookmarkStyles) {
             for (let k: number = 0; k < this.bookmarkStyles.length; k++) {
                 if ((args.text.trim()) === (this.bookmarkStyles[parseInt(k.toString(), 10)].Text.trim())) {
-                    const element: any = args.node.lastElementChild;
+                    const element: any = args.node.querySelector(':scope > div.e-text-content');
                     if (element) {
                         const fontStyle: any = this.bookmarkStyles[parseInt(k.toString(), 10)].FontStyle.split(',');
                         for (let n: number = 0; n < fontStyle.length; n++) {
@@ -285,6 +293,26 @@ export class BookmarkView {
                         }
                     }
                     break;
+                }
+            }
+        }
+        else {
+            const element: HTMLElement = args.node.querySelector(':scope > div.e-text-content') as HTMLElement;
+            if (element) {
+                if (element.style.fontStyle) {
+                    element.style.removeProperty('font-style');
+                }
+                if (element.style.fontWeight) {
+                    element.style.removeProperty('font-weight');
+                }
+                const currentElement: HTMLElement = element.getElementsByClassName('e-pv-bookmark-title')[0] as HTMLElement;
+                if (currentElement && currentElement.style.color) {
+                    currentElement.style.removeProperty('color');
+                }
+                else {
+                    if (element.children.length > 0 && (element.children[0] as HTMLElement).style.color) {
+                        (element.children[0] as HTMLElement).style.removeProperty('color');
+                    }
                 }
             }
         }
@@ -338,6 +366,36 @@ export class BookmarkView {
                 }
             }
         }
+    }
+
+    /**
+     * @private
+     * @returns {void}
+     */
+    public handleBookmarkStyles(): void {
+        const bookmarkNodes: HTMLLIElement[] = Array.from(this.treeObj.getRootElement().querySelectorAll('li.e-list-item')) as HTMLLIElement[];
+        for (const node of bookmarkNodes) {
+            const nodeId: string = node.dataset['uid'];
+            const nodeData: any = this.findBookmarkNodeData(this.bookmarks.bookMark as any[], nodeId);
+            this.bookmarkPanelBeforeOpen(
+                {node: node, nodeData: {[nodeId]: nodeData as Object}, text: nodeData.Title as string} as DrawNodeEventArgs);
+        }
+    }
+
+    private findBookmarkNodeData(nodes: any[] | null, targetId: string): any {
+        if (isNullOrUndefined(nodes)) {
+            return null;
+        }
+        for (const node of nodes) {
+            if (String(node.Id) === targetId) {
+                return node;
+            }
+            const foundInChild: any = this.findBookmarkNodeData(node.Child, targetId);
+            if (foundInChild) {
+                return foundInChild;
+            }
+        }
+        return null;
     }
 
     private navigateToBookmark(bookid: number, text: string, fileName: string) : void {
@@ -395,6 +453,12 @@ export class BookmarkView {
      * @returns {void}
      */
     public clear(): void {
+        this.closeBookmarkPane();
+        if (!Browser.isDevice || this.pdfViewer.enableDesktopMode) {
+            if (this.pdfViewer.thumbnailView) {
+                this.pdfViewer.thumbnailView.closeThumbnailPane();
+            }
+        }
         if (this.pdfViewerBase.navigationPane) {
             this.pdfViewerBase.navigationPane.disableBookmarkButton();
             this.pdfViewerBase.navigationPane.updateViewerContainerOnClose();

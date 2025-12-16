@@ -1,7 +1,7 @@
 import { SpreadsheetHelper } from '../util/spreadsheethelper.spec';
 import { defaultData } from '../util/datasource.spec';
 import { AfterHyperlinkArgs, CellModel, DialogBeforeOpenEventArgs, ExtendedSheet, HyperlinkModel, RowModel } from '../../../src';
-import { getFormatFromType, BeforeHyperlinkArgs, setCellFormat } from '../../../src/index';
+import { getFormatFromType, BeforeHyperlinkArgs, setCellFormat, onContentScroll } from '../../../src/index';
 import { Spreadsheet } from "../../../src/index"; 
 import { getComponent } from '@syncfusion/ej2-base';
 
@@ -108,7 +108,7 @@ describe('Hyperlink ->', () => {
                 expect(args.target).toBe('_blank');
             };
             expect(sheet.rows[0].cells[0].style.color).toBe('#00e');
-            helper.openAndClickCMenuItem(0, 0, [12]);
+            helper.openAndClickCMenuItem(0, 0, [13]);
             expect(sheet.rows[0].cells[0].style.color).toBe('#551a8b');
             spreadsheet.beforeHyperlinkClick = undefined;
             done();
@@ -123,7 +123,7 @@ describe('Hyperlink ->', () => {
         });
 
         it('Edit hyperlink', (done: Function) => {
-            helper.openAndClickCMenuItem(0, 0, [11]);
+            helper.openAndClickCMenuItem(0, 0, [12]);
             setTimeout(() => {
                 helper.getElements('.e-edithyperlink-dlg .e-webpage input')[1].value = 'www.amazon.com';
                 helper.setAnimationToNone('.e-edithyperlink-dlg.e-dialog');
@@ -135,7 +135,7 @@ describe('Hyperlink ->', () => {
         });
 
         it('Remove hyperlink', (done: Function) => {
-            helper.openAndClickCMenuItem(0, 0, [13]);
+            helper.openAndClickCMenuItem(0, 0, [14]);
             expect(sheet.rows[0].cells[0].hyperlink).toBeUndefined();
             expect(helper.invoke('getCell', [0, 0]).children[0]).toBeUndefined();
             done();
@@ -172,7 +172,7 @@ describe('Hyperlink ->', () => {
             }, 10);
         });
         it('Remove hyperlink from empty cell', (done: Function) => {
-            helper.openAndClickCMenuItem(0, 10, [13]);
+            helper.openAndClickCMenuItem(0, 10, [14]);
             setTimeout(() => {
                 expect(sheet.rows[0].cells[10].hyperlink).toBeUndefined();
                 expect(helper.invoke('getCell', [0, 10]).children[0]).toBeUndefined();
@@ -292,7 +292,7 @@ describe('Hyperlink ->', () => {
             helper.invoke('selectRange', ['C1']);
             helper.invoke('addHyperlink', [{ address: 'A10' }, 'C1']);
             helper.setAnimationToNone('#' + helper.id + '_contextmenu');
-            helper.openAndClickCMenuItem(0, 2, [12]);
+            helper.openAndClickCMenuItem(0, 2, [13]);
             setTimeout(() => {
                 expect(helper.getInstance().sheets[0].selectedRange).toBe('A10:A10');
                 done();
@@ -443,7 +443,7 @@ describe('Hyperlink ->', () => {
                 helper.click('.e-hyperlink-dlg .e-footer-content button:nth-child(1)');
                 helper.invoke('selectRange', ['C1']);
                 helper.setAnimationToNone('#' + helper.id + '_contextmenu');
-                helper.openAndClickCMenuItem(0, 2, [13]);
+                helper.openAndClickCMenuItem(0, 2, [14]);
                 expect(helper.getInstance().sheets[0].rows[0].cells[2].hyperlink).toBeUndefined();
                 expect(helper.invoke('getCell', [0, 2]).children[0]).toBeUndefined();
                 let td: HTMLElement = helper.invoke('getCell', [0, 2]);
@@ -569,12 +569,13 @@ describe('Hyperlink ->', () => {
             helper.switchRibbonTab(2);
             helper.getElementFromSpreadsheet('#' + helper.id + '_hyperlink').click();
             setTimeout(() => {
-                helper.getElements('.e-hyperlink-dlg .e-webpage input')[1].value = 'www.google.com';
-                helper.triggerKeyEvent('keyup', 88, null, null, null, helper.getElements('.e-hyperlink-dlg .e-webpage input')[1]);
+                const urlInput: HTMLInputElement = helper.getElements('.e-hyperlink-dlg .e-webpage input')[1];
+                urlInput.value = 'www.google.com';
+                helper.triggerKeyEvent('keyup', 88, null, null, null, urlInput);
                 const btn: HTMLButtonElement = helper.getElement('.e-hyperlink-dlg .e-footer-content button:nth-child(1)');
                 expect(btn.disabled).toBeFalsy();
-                helper.getElements('.e-hyperlink-dlg .e-webpage input')[1].value = '';
-                helper.triggerKeyEvent('keyup', 88, null, null, null, helper.getElements('.e-hyperlink-dlg .e-webpage input')[1]);
+                urlInput.value = '';
+                helper.triggerKeyEvent('keyup', 88, null, null, null, urlInput);
                 expect(btn.disabled).toBeTruthy();
                 done();
             });
@@ -584,12 +585,13 @@ describe('Hyperlink ->', () => {
             helper.setAnimationToNone('.e-hyperlink-dlg.e-dialog');
             helper.setAnimationToNone('.e-hyperlink-dlg.e-dialog .e-link-dialog.e-tab', true);
             helper.getElements('.e-hyperlink-dlg .e-toolbar-item')[1].click();
-            helper.getElements('.e-hyperlink-dlg .e-document .e-input')[1].value = ' ';
-            helper.triggerKeyEvent('keyup', 88, null, null, null, helper.getElements('.e-hyperlink-dlg .e-document input')[1]);
+            const cellRefInput: HTMLInputElement = helper.getElements('.e-hyperlink-dlg .e-document .e-input')[1];
+            cellRefInput.value = ' ';
+            helper.triggerKeyEvent('keyup', 88, null, null, null, cellRefInput);
             const btn: HTMLButtonElement = helper.getElement('.e-hyperlink-dlg .e-footer-content button:nth-child(1)');
             expect(btn.disabled).toBeTruthy();
-            helper.getElements('.e-hyperlink-dlg .e-document input')[1].value = 'K30';
-            helper.triggerKeyEvent('keyup', 88, null, null, null, helper.getElements('.e-hyperlink-dlg .e-document input')[1]);
+            cellRefInput.value = 'K30';
+            helper.triggerKeyEvent('keyup', 88, null, null, null, cellRefInput);
             expect(btn.disabled).toBeFalsy();
             helper.click('.e-hyperlink-dlg .e-footer-content button:nth-child(1)');
             let td: HTMLElement = helper.invoke('getCell', [0, 0]).children[0];
@@ -861,15 +863,17 @@ describe('Hyperlink ->', () => {
             const spreadsheet = helper.getInstance();
             spreadsheet.addHyperlink('Sheet1!A250', 'A60');
             spreadsheet.goTo('Sheet1!A60');
+            spreadsheet.notify(onContentScroll, { scrollTop: helper.invoke('getMainContent').parentElement.scrollTop, scrollLeft: 0 });
             setTimeout(() => {
                 spreadsheet.selectRange('A60');
                 helper.setAnimationToNone('#' + helper.id + '_contextmenu');
-                helper.openAndClickCMenuItem(59, 0, [12]);
+                helper.openAndClickCMenuItem(59, 0, [13]);
+                spreadsheet.notify(onContentScroll, { scrollTop: helper.invoke('getMainContent').parentElement.scrollTop, scrollLeft: 0 });
                 setTimeout(() => {
-                    expect(helper.getInstance().sheets[0].selectedRange).toBe('A250:A250');
+                    expect(spreadsheet.sheets[0].selectedRange).toBe('A250:A250');
                     done();
-                }, 20);
-            }, 20);
+                });
+            });
         });
     });
 
@@ -886,7 +890,7 @@ describe('Hyperlink ->', () => {
             spreadsheet.addHyperlink('https://support.microsoft.com/en-us/office/use-autofilter-to-filter-your-data-7d87d63e-ebd0-424b-8106-e2ab61133d92', 'A1');
             expect(spreadsheet.sheets[0].rows[0].cells[0].style.color).toBe('#00e');
             helper.setAnimationToNone('#' + helper.id + '_contextmenu');
-            helper.openAndClickCMenuItem(0, 0, [12]);
+            helper.openAndClickCMenuItem(0, 0, [13]);
             setTimeout(() => {
                 expect(spreadsheet.sheets[0].rows[0].cells[0].style.color).toBe('#551a8b');
                 done();
@@ -913,7 +917,7 @@ describe('Hyperlink ->', () => {
             helper.invoke('selectRange', ['B1']);
             helper.invoke('addHyperlink', [{ address: 'http:/invalid_url' }, 'B1']);
             helper.setAnimationToNone('#' + helper.id + '_contextmenu');
-            helper.openAndClickCMenuItem(0, 1, [12]);
+            helper.openAndClickCMenuItem(0, 1, [13]);
             setTimeout(() => {
                 let dialog = helper.getElement('.e-dlg-modal.e-dialog');
                 expect(!!dialog).toBeTruthy();
@@ -948,7 +952,7 @@ describe('Hyperlink ->', () => {
                     helper.click('.e-hyperlink-dlg .e-footer-content button:nth-child(1)');
                     setTimeout(() => {
                         helper.setAnimationToNone('#spreadsheet_contextmenu');
-                        helper.openAndClickCMenuItem(0, 0, [13]);
+                        helper.openAndClickCMenuItem(0, 0, [14]);
                         expect(helper.getInstance().sheets[0].rows[0].cells[0].hyperlink).toBeUndefined();
                         expect(helper.invoke('getCell', [0, 0]).children[0]).toBeUndefined();
                         done();
@@ -979,7 +983,7 @@ describe('Hyperlink ->', () => {
                 const coords: DOMRect = <DOMRect>td.getBoundingClientRect();
                 helper.triggerMouseAction('contextmenu', { x: coords.x, y: coords.y }, null, td);
                 setTimeout(() => {
-                    helper.click('#' + helper.id + '_contextmenu li:nth-child(11)');
+                    helper.click('#' + helper.id + '_contextmenu li:nth-child(12)');
                     setTimeout(() => {
                         helper.setAnimationToNone('.e-hyperlink-dlg.e-dialog');
                         helper.click('.e-hyperlink-dlg .e-footer-content button:nth-child(2)');
@@ -1145,7 +1149,7 @@ describe('Hyperlink ->', () => {
                 let afterHyperlinkClickSpy = jasmine.createSpy('afterHyperlinkClick');
                 spreadsheet.afterHyperlinkClick = afterHyperlinkClickSpy;
                 helper.setAnimationToNone('#' + helper.id + '_contextmenu');
-                helper.openAndClickCMenuItem(0, 0, [12]);
+                helper.openAndClickCMenuItem(0, 0, [13]);
                 expect(afterHyperlinkClickSpy).not.toHaveBeenCalled();
                 done();
             });
@@ -1280,7 +1284,7 @@ describe('Hyperlink ->', () => {
                 expect(cell.wrap).toEqual(true);
                 helper.invoke('insertHyperlink', [{ address: 'www.google.com' }, 'H10']);
                 expect((cell.hyperlink as HyperlinkModel).address).toEqual('http://www.google.com');
-                helper.openAndClickCMenuItem(0, 0, [11]);
+                helper.openAndClickCMenuItem(0, 0, [12]);
                 setTimeout(() => {
                     helper.getElements('.e-edithyperlink-dlg .e-webpage input')[1].value = 'www.syncfusion.com';
                     helper.setAnimationToNone('.e-edithyperlink-dlg.e-dialog');

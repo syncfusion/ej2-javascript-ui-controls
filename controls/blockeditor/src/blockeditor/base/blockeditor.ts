@@ -1,33 +1,31 @@
-import { Component, getUniqueID, INotifyPropertyChanged, NotifyPropertyChanges, Property, isNullOrUndefined as isNOU, formatUnit, Collection, EmitType, Complex, remove, Event, append, L10n, addClass } from '@syncfusion/ej2-base';
-import { BlockModel, UserModel, CommandMenuSettingsModel, InlineToolbarSettingsModel, PasteSettingsModel, BlockActionMenuSettingsModel, ContextMenuSettingsModel, LabelSettingsModel, BasePlaceholderProp, HeadingProps } from '../models/index';
+import { Component, getUniqueID, INotifyPropertyChanged, NotifyPropertyChanges, Property, isNullOrUndefined as isNOU, formatUnit, Collection, EmitType, Complex, Event, append, L10n, addClass, updateCSSText } from '@syncfusion/ej2-base';
+import { UserModel, CommandMenuSettingsModel, InlineToolbarSettingsModel, PasteCleanupSettingsModel, BlockActionMenuSettingsModel, ContextMenuSettingsModel, LabelSettingsModel, ImageBlockSettingsModel, CodeBlockSettingsModel } from '../../models/index';
 import { BlockEditorModel } from './blockeditor-model';
-import { Block } from '../models/block/block';
-import { User } from '../models/common/user';
-import { CommandMenuSettings } from '../models/menus/command-menu-settings';
-import { InlineToolbarSettings } from '../models/menus/inline-toolbar-settings';
-import { ContextMenuSettings } from '../models/menus/context-menu-settings';
-import { BlockActionMenuSettings } from '../models/menus/blockaction-menu-settings';
-import { PasteSettings } from '../models/common/paste-settings';
-import { LabelSettings } from '../models/common/label-settings';
-import { FocusEventArgs, BlurEventArgs, BlockAddedEventArgs, BlockRemovedEventArgs, BlockMovedEventArgs, ContentChangedEventArgs, SelectionChangedEventArgs, UndoRedoEventArgs, BlockDragEventArgs, BlockDropEventArgs, KeyActionExecutedEventArgs, BeforePasteEventArgs, AfterPasteEventArgs } from './eventargs';
-import { getBlockContentElement, getBlockModelById } from '../utils/block';
-import { IUndoRedoSelectionState } from './interface';
-import { getTemplateFunction } from '../utils/common';
-import { BlockType, BuiltInToolbar } from './enums';
-import { clearBreakTags, isElementEmpty } from '../utils/dom';
-import { decode, encode, sanitizeHelper } from '../utils/security';
-import { events } from './constant';
-import * as constants from './constant';
+import { BlockModel } from '../../models/block/block-model';
+import { User } from '../../models/common/user';
+import { CommandMenuSettings } from '../../models/menus/command-menu-settings';
+import { InlineToolbarSettings } from '../../models/menus/inline-toolbar-settings';
+import { ContextMenuSettings } from '../../models/menus/context-menu-settings';
+import { BlockActionMenuSettings } from '../../models/menus/blockaction-menu-settings';
+import { PasteCleanupSettings } from '../../models/common/paste-settings';
+import { LabelSettings } from '../../models/common/label-settings';
+import { FocusEventArgs, BlurEventArgs, SelectionChangedEventArgs, BlockDragEventArgs, BlockDropEventArgs, BeforePasteCleanupEventArgs, AfterPasteCleanupEventArgs, BlockChangedEventArgs } from '../../models/eventargs';
+import { getBlockModelById } from '../../common/utils/block';
+import { getTemplateFunction } from '../../common/utils/common';
+import { getCurrentLocaleJson, getLocaleItems } from '../../common/utils/data';
+import { CommandName } from '../../models/enums';
+import { events } from '../../common/constant';
+import * as constants from '../../common/constant';
 
-import { PopupRenderer, MentionRenderer, MenuBarRenderer, TooltipRenderer } from '../renderer/index';
-import { BlockRendererManager, BlockCommandManager, StateManager, FloatingIconManager, EventManager } from '../managers/index';
-import { FormattingAction, ListBlockAction, DragAndDropAction, BlockEditorMethods, UndoRedoAction, ClipboardAction } from '../actions/index';
-import { InlineContentInsertionModule, NodeSelection, SlashCommandModule, ContextMenuModule, BlockActionMenuModule, InlineToolbarModule, LinkModule } from '../plugins/index';
-import { BlockService } from '../services/index';
+import { MentionRenderer, MenuBarRenderer, TooltipRenderer, DialogRenderer, FloatingIconRenderer, DropDownListRenderer } from '../renderer/index';
+import { EventManager, Intermediate } from '../managers/index';
+import { InlineContentInsertionModule, SlashCommandModule, ContextMenuModule, BlockActionMenuModule, InlineToolbarModule, LinkModule } from '../renderer/index';
+import { BlockManager } from '../../block-manager/base/block-manager';
+import { ImageBlockSettings, CodeBlockSettings } from '../../models/common/index';
 
 /**
  * Represents the root class for the Block Editor component.
- * The `BlockEditor` is a rich text editor that provides functionality for creating, editing, and managing blocks of content.
+ * The BlockEditor is a block based editor that provides functionality for creating, editing, and managing blocks of content.
  * Blocks can include paragraph, lists, toggles, and other block types, organized hierarchically.
  *
  **/
@@ -38,9 +36,9 @@ export class BlockEditor extends Component<HTMLElement> implements INotifyProper
      * Specifies the height of the editor.
      * This property sets the height of the editor, which can be a string or number.
      *
-     * @default '100%'
+     * @default 'auto'
      */
-    @Property('100%')
+    @Property('auto')
     public height: string | number;
 
     /**
@@ -64,15 +62,18 @@ export class BlockEditor extends Component<HTMLElement> implements INotifyProper
     /**
      * Specifies the locale for localization.
      * This property sets the language and regional settings for the editor.
+     * The default locale value is 'en-US'.
      *
-     * @default ''
+     * @default 'en-US'
      */
-    @Property('')
+    @Property('en-US')
     public locale: string;
 
     /**
      * Specifies custom keyboard shortcuts configuration.
      * This property allows the definition of custom keyboard shortcuts for editor commands.
+     *
+     * {% codeBlock src='blockeditor/keyconfig/index.md' %}{% endcodeBlock %}
      *
      * @default null
      */
@@ -84,6 +85,8 @@ export class BlockEditor extends Component<HTMLElement> implements INotifyProper
      * This property determines how many actions are stored for undo and redo functionality.
      * With a default value of 30, it allows users to revert up to 30 operations.
      *
+     * {% codeBlock src='blockeditor/undo-redo-stack/index.md' %}{% endcodeBlock %}
+     *
      * @default 30
      */
     @Property(30)
@@ -92,6 +95,8 @@ export class BlockEditor extends Component<HTMLElement> implements INotifyProper
     /**
      * Specifies whether the editor is in read-only mode.
      * This property prevents users from editing the content when set to true.
+     *
+     * {% codeBlock src='blockeditor/readonly/index.md' %}{% endcodeBlock %}
      *
      * @default false
      */
@@ -111,6 +116,8 @@ export class BlockEditor extends Component<HTMLElement> implements INotifyProper
      * Specifies whether the HTML sanitizer is enabled.
      * This property determines if the HTML content will be sanitized to remove potentially harmful tags and attributes.
      *
+     * {% codeBlock src='blockeditor/enable-htmlsanitizer/index.md' %}{% endcodeBlock %}
+     *
      * @default true
      */
     @Property(true)
@@ -120,33 +127,29 @@ export class BlockEditor extends Component<HTMLElement> implements INotifyProper
      * Specifies whether drag and drop functionality is enabled for the blocks.
      * This property enables or disables drag-and-drop operations within the block editor.
      *
+     * {% codeBlock src='blockeditor/enable-drag-drop/index.md' %}{% endcodeBlock %}
+     *
      * @default true
      */
     @Property(true)
     public enableDragAndDrop: boolean;
 
     /**
-     * Specifies whether URLs should automatically have "https://" added if the user does not include it.
-     * If disabled,  URLs will be entered as-is, without any protocol prepends.
-     * This can be useful for internal links or specific use cases where the protocol is not required.
-     *
-     * @default true
-     */
-    @Property(true)
-    public enableAutoHttps: boolean;
-
-    /**
      * Specifies an array of block models representing the content of the editor.
      * This property holds the various blocks that make up the editor's content.
      *
+     * {% codeBlock src='blockeditor/blocks/index.md' %}{% endcodeBlock %}
+     *
      * @default []
      */
-    @Collection<BlockModel>([], Block)
+    @Property([])
     public blocks: BlockModel[];
 
     /**
      * Specifies an array of user models representing the list of users.
      * This property holds user details such as name, ID, and other properties.
+     *
+     * {% codeBlock src='blockeditor/users/index.md' %}{% endcodeBlock %}
      *
      * @default []
      */
@@ -157,55 +160,89 @@ export class BlockEditor extends Component<HTMLElement> implements INotifyProper
      * Specifies configuration options for editor commands.
      * This property allows customization of command behaviors within the editor.
      *
+     * {% codeBlock src='blockeditor/command-menu/index.md' %}{% endcodeBlock %}
+     *
      * @default {}
      */
     @Complex<CommandMenuSettingsModel>({}, CommandMenuSettings)
-    public commandMenu: CommandMenuSettingsModel;
+    public commandMenuSettings: CommandMenuSettingsModel;
 
     /**
      * Specifies settings for the formatting toolbar.
      * This property configures the toolbar that provides text formatting options.
      *
+     * {% codeBlock src='blockeditor/inline-toolbar/index.md' %}{% endcodeBlock %}
+     *
      * @default {}
      */
     @Complex<InlineToolbarSettingsModel>({}, InlineToolbarSettings)
-    public inlineToolbar: InlineToolbarSettingsModel;
+    public inlineToolbarSettings: InlineToolbarSettingsModel;
 
     /**
      * Specifies the configuration settings for the block actions menu.
      * This property allows customization of the actions menu within the editor.
      *
+     * {% codeBlock src='blockeditor/block-action-menu/index.md' %}{% endcodeBlock %}
+     *
      * @default {}
      */
     @Complex<BlockActionMenuSettingsModel>({}, BlockActionMenuSettings)
-    public blockActionsMenu: BlockActionMenuSettingsModel;
+    public blockActionMenuSettings: BlockActionMenuSettingsModel;
 
     /**
      * Specifies settings for the context menu.
      * This property configures the context menu options that appear on right-click actions.
      *
-     * @default {}
-     */
-    @Complex<ContextMenuSettingsModel>({}, ContextMenuSettings)
-    public contextMenu: ContextMenuSettingsModel;
-
-    /**
-     * Configures settings related to pasting content in the editor.
-     * This property utilizes the PasteSettingsModel to specify various options and behaviors for paste operations.
+     * {% codeBlock src='blockeditor/context-menu/index.md' %}{% endcodeBlock %}
      *
      * @default {}
      */
-    @Complex<PasteSettingsModel>({}, PasteSettings)
-    public pasteSettings: PasteSettingsModel;
+    @Complex<ContextMenuSettingsModel>({}, ContextMenuSettings)
+    public contextMenuSettings: ContextMenuSettingsModel;
+
+    /**
+     * Configures settings related to pasting content in the editor.
+     * This property utilizes the PasteCleanupSettingsModel to specify various options and behaviors for paste operations.
+     *
+     * {% codeBlock src='blockeditor/paste-settings/index.md' %}{% endcodeBlock %}
+     *
+     * @default {}
+     */
+    @Complex<PasteCleanupSettingsModel>({}, PasteCleanupSettings)
+    public pasteCleanupSettings: PasteCleanupSettingsModel;
 
     /**
      * Configures settings related to label popup in the editor.
      * This property utilizes the LabelSettingsModel to specify various options and behaviors for paste operations.
      *
+     * {% codeBlock src='blockeditor/label-settings/index.md' %}{% endcodeBlock %}
+     *
      * @default {}
      */
-    @Complex<LabelSettingsModel>({}, LabelSettings)
+    @Complex<LabelSettingsModel>({ items: [], triggerChar: '$'}, LabelSettings)
     public labelSettings: LabelSettingsModel;
+
+    /**
+     * Configures settings related to image block in the editor.
+     * This property utilizes the ImageBlockSettingsModel to specify various options for image block settings.
+     *
+     * {% codeBlock src='blockeditor/image-settings/index.md' %}{% endcodeBlock %}
+     *
+     * @default {}
+     */
+    @Complex<ImageBlockSettingsModel>({}, ImageBlockSettings)
+    public imageBlockSettings: ImageBlockSettingsModel;
+
+    /**
+     * Configures settings related to code block in the editor.
+     * This property utilizes the CodeBlockSettingsModel to specify various options for code block settings.
+     *
+     * {% codeBlock src='blockeditor/code-settings/index.md' %}{% endcodeBlock %}
+     *
+     * @default {}
+     */
+    @Complex<CodeBlockSettingsModel>({ languages: [], defaultLanguage: 'plaintext' }, CodeBlockSettings)
+    public codeBlockSettings: CodeBlockSettingsModel;
 
     /* Events */
 
@@ -218,17 +255,21 @@ export class BlockEditor extends Component<HTMLElement> implements INotifyProper
     public created: EmitType<Object>;
 
     /**
-     * Event triggered when the content of the block editor is changed.
-     * This event provides details about the changes made to the content.
+     * Event triggered when the editor blocks are changed.
+     * This event provides details about the changes made to the editor blocks.
      *
-     * @event contentChanged
+     * {% codeBlock src='blockeditor/block-change/index.md' %}{% endcodeBlock %}
+     *
+     * @event blockChanged
      */
     @Event()
-    public contentChanged: EmitType<ContentChangedEventArgs>;
+    public blockChanged: EmitType<BlockChangedEventArgs>;
 
     /**
      * Event triggered when the selection in the block editor changes.
      * This event provides details about the new selection state.
+     *
+     * {% codeBlock src='blockeditor/selection-changed/index.md' %}{% endcodeBlock %}
      *
      * @event selectionChanged
      */
@@ -236,53 +277,21 @@ export class BlockEditor extends Component<HTMLElement> implements INotifyProper
     public selectionChanged: EmitType<SelectionChangedEventArgs>;
 
     /**
-     * Event triggered when an undo or redo operation is performed in the block editor.
-     * This event provides details about the undo/redo action that was executed.
-     *
-     * @event undoRedoPerformed
-     */
-    @Event()
-    public undoRedoPerformed: EmitType<UndoRedoEventArgs>;
-
-    /**
-     * Event triggered when a block is added to the block editor.
-     * This event provides details about the newly added block.
-     *
-     * @event blockAdded
-     */
-    @Event()
-    public blockAdded: EmitType<BlockAddedEventArgs>;
-
-    /**
-     * Event triggered when a block is removed from the block editor.
-     * This event provides details about the block being removed.
-     *
-     * @event blockRemoved
-     */
-    @Event()
-    public blockRemoved: EmitType<BlockRemovedEventArgs>;
-
-    /**
-     * Event triggered when a block is moved within the block editor.
-     * This event provides details about the moved block.
-     *
-     * @event blockMoved
-     */
-    @Event()
-    public blockMoved: EmitType<BlockMovedEventArgs>;
-
-    /**
      * Event triggered during the dragging operation of a block.
      * This event provides details about the drag operation.
      *
-     * @event blockDrag
+     * {% codeBlock src='blockeditor/block-dragging/index.md' %}{% endcodeBlock %}
+     *
+     * @event blockDragging
      */
     @Event()
-    public blockDrag: EmitType<BlockDragEventArgs>;
+    public blockDragging: EmitType<BlockDragEventArgs>;
 
     /**
      * Event triggered when the drag operation for a block starts.
      * This event provides details about the initial stage of the drag.
+     *
+     * {% codeBlock src='blockeditor/block-drag-start/index.md' %}{% endcodeBlock %}
      *
      * @event blockDragStart
      */
@@ -293,14 +302,18 @@ export class BlockEditor extends Component<HTMLElement> implements INotifyProper
      * Event triggered when a block is dropped after a drag operation.
      * This event provides details about the block drop action.
      *
-     * @event blockDrop
+     * {% codeBlock src='blockeditor/block-dropped/index.md' %}{% endcodeBlock %}
+     *
+     * @event blockDropped
      */
     @Event()
-    public blockDrop: EmitType<BlockDropEventArgs>;
+    public blockDropped: EmitType<BlockDropEventArgs>;
 
     /**
      * Event triggered when the block editor gains focus.
      * This event provides details about the focus action.
+     *
+     * {% codeBlock src='blockeditor/focus/index.md' %}{% endcodeBlock %}
      *
      * @event focus
      */
@@ -311,72 +324,57 @@ export class BlockEditor extends Component<HTMLElement> implements INotifyProper
      * Event triggered when the block editor loses focus.
      * This event provides details about the blur action.
      *
+     * {% codeBlock src='blockeditor/blur/index.md' %}{% endcodeBlock %}
+     *
      * @event blur
      */
     @Event()
     public blur: EmitType<BlurEventArgs>;
 
     /**
-     * Event triggered when a key action (both built-in and custom) is executed in the block editor component.
-     * This event provides detailed information about the executed key action, including the key combination,
-     * the action performed, whether the action was triggered by a custom key configuration, and the platform.
-     *
-     * @event keyActionExecuted
-     */
-    @Event()
-    public keyActionExecuted: EmitType<KeyActionExecutedEventArgs>;
-
-    /**
      * Event triggered before a paste operation occurs in the block editor.
      * This event allows interception or modification of the pasted content.
      *
-     * @event beforePaste
+     * {% codeBlock src='blockeditor/before-paste/index.md' %}{% endcodeBlock %}
+     *
+     * @event beforePasteCleanup
      */
     @Event()
-    public beforePaste: EmitType<BeforePasteEventArgs>;
+    public beforePasteCleanup: EmitType<BeforePasteCleanupEventArgs>;
 
     /**
      * Event triggered after a paste operation occurs in the block editor.
      * This event provides details about the pasted content.
      *
-     * @event afterPaste
+     * {% codeBlock src='blockeditor/after-paste/index.md' %}{% endcodeBlock %}
+     *
+     * @event afterPasteCleanup
      */
     @Event()
-    public afterPaste: EmitType<AfterPasteEventArgs>;
+    public afterPasteCleanup: EmitType<AfterPasteCleanupEventArgs>;
 
 
     /* Renderers */
     /** @hidden */
-    public popupRenderer: PopupRenderer;
-
-    /** @hidden */
     public mentionRenderer: MentionRenderer;
-
     /** @hidden */
     public tooltipRenderer: TooltipRenderer;
-
     /** @hidden */
     public menubarRenderer: MenuBarRenderer;
+    /** @hidden */
+    public dialogRenderer: DialogRenderer;
+    /** @hidden */
+    public dropdownListRenderer: DropDownListRenderer;
 
     /* Manager instances */
     /** @hidden */
-    public blockRendererManager: BlockRendererManager;
-
-    /** @hidden */
-    public blockCommandManager: BlockCommandManager;
-
-    /** @hidden */
-    public stateManager: StateManager;
-
-    /** @hidden */
-    public floatingIconManager: FloatingIconManager;
+    public floatingIconRenderer: FloatingIconRenderer;
 
     /** @hidden */
     public eventManager: EventManager;
 
-    /* Services */
-    /** @hidden */
-    public blockService: BlockService;
+    public blockManager: BlockManager;
+    public intermediate: Intermediate;
 
     /* Plugins */
     /** @hidden */
@@ -390,68 +388,20 @@ export class BlockEditor extends Component<HTMLElement> implements INotifyProper
     /** @hidden */
     public blockActionMenuModule: BlockActionMenuModule;
     /** @hidden */
-    public nodeSelection: NodeSelection;
-    /** @hidden */
     public linkModule: LinkModule;
 
-    /* Actions */
-    /** @hidden */
-    public formattingAction: FormattingAction;
-
-    /** @hidden */
-    public listBlockAction: ListBlockAction;
-
-    /** @hidden */
-    public dragAndDropAction: DragAndDropAction;
-
-    /** @hidden */
-    public blockEditorMethods: BlockEditorMethods;
-
-    /** @hidden */
-    public clipboardAction: ClipboardAction;
-
     /* Variables */
-    /** @hidden */
-    public overlayContainer: HTMLElement;
 
     /** @hidden */
-    public floatingIconContainer!: HTMLElement;
-
-    /** @hidden */
-    public currentHoveredBlock: HTMLElement;
-
-    /** @hidden */
-    public currentFocusedBlock: HTMLElement;
-
-    /** @hidden */
-    public isPopupOpenedOnAddIconClick: boolean;
-
-    /** @hidden */
-    public blockWrapper: HTMLElement;
+    public blockContainer: HTMLElement;
 
     /** @hidden */
     public keyCommandMap: Map<string, string>;
-
-    private defaultKeyConfig: Record<string, string> = {
-        bold: 'ctrl+b',
-        italic: 'ctrl+i',
-        underline: 'ctrl+u',
-        strikethrough: 'ctrl+shift+x',
-        link: 'ctrl+k',
-        print: 'ctrl+p'
-    };
     /** @hidden */
     public l10n: L10n;
     /** @hidden */
-    public updateTimer: ReturnType<typeof setTimeout>;
-    /** @hidden */
-    public isEntireEditorSelected: boolean
-    /** @hidden */
-    public undoRedoAction: UndoRedoAction;
-    /** @hidden */
-    public previousSelection: IUndoRedoSelectionState | undefined = undefined;
-    /** @hidden */
     public isProtectedOnChange: boolean;
+    private localeJson: Record<string, string>;
 
     /**
      * Constructor for creating the component
@@ -514,44 +464,31 @@ export class BlockEditor extends Component<HTMLElement> implements INotifyProper
      */
     private initialize(): void {
         this.initializeLocale();
-        this.initializeServices();
-        // Initialize managers and engines
         this.initializeManagers();
         this.intializeEngines();
-
-        // Initialize key bindings
-        this.initializeKeyBindings();
 
         // Set dimensions and styles
         this.setDimension();
         this.setCssClass();
+        this.setRtlClass();
 
-        this.stateManager.updateEditorReadyOnlyState();
-        // Update and process blocks
-        const populatedBlocks: BlockModel[] = this.stateManager.populateBlockProperties(this.getEditorBlocks());
-        this.setEditorBlocks(populatedBlocks);
-        this.stateManager.updatePropChangesToModel();
-        this.stateManager.populateUniqueIds(this.getEditorBlocks());
+        this.blockManager.stateManager.populateUniqueIds(this.blockManager.getEditorBlocks());
 
         // Create floating icons and overlay containers
-        if (!this.floatingIconContainer) {
-            this.floatingIconManager.createFloatingIcons();
-        }
-        if (!this.overlayContainer) {
-            this.createOverlayContainer();
+        if (!this.floatingIconRenderer.floatingIconContainer) {
+            this.floatingIconRenderer.createFloatingIcons();
         }
 
         // Render the blocks
-        this.renderBlockWrapper();
         this.initializeMentionModules();
-        this.renderBlocks(this.getEditorBlocks());
+        this.renderBlocks(this.blockManager.getEditorBlocks());
+        this.updateEditorReadyOnlyState();
 
-        // Wire events and apply RTL settings
+        // Wire events
         if (this.enableDragAndDrop) {
-            this.dragAndDropAction.wireDragEvents();
+            this.intermediate.processActions('wireUnWireDragEvents', { enable: true });
         }
         this.eventManager.wireGlobalEvents();
-        this.applyRtlSettings();
     }
 
     /**
@@ -560,38 +497,12 @@ export class BlockEditor extends Component<HTMLElement> implements INotifyProper
      * @returns {void}
      */
     private initializeLocale(): void {
-        this.l10n = new L10n(this.getModuleName(), {
-            paragraph: 'Write something or ‘/’ for commands.',
-            heading1: 'Heading 1',
-            heading2: 'Heading 2',
-            heading3: 'Heading 3',
-            heading4: 'Heading 4',
-            collapsibleParagraph: 'Collapsible Paragraph',
-            collapsibleHeading1: 'Collapsible Heading 1',
-            collapsibleHeading2: 'Collapsible Heading 2',
-            collapsibleHeading3: 'Collapsible Heading 3',
-            collapsibleHeading4: 'Collapsible Heading 4',
-            bulletList: 'Add item',
-            numberedList: 'Add item',
-            checklist: 'Todo',
-            quote: 'Write a quote',
-            callout: 'Write a callout',
-            addIconTooltip: 'Click to insert below',
-            dragIconTooltipActionMenu: 'Click to open',
-            dragIconTooltip: '(Hold to drag)',
-            insertLink: 'Insert Link',
-            linkText: 'Text',
-            linkTextPlaceholder: 'Link text',
-            linkUrl: 'URL',
-            linkUrlPlaceholder: 'https://example.com',
-            linkTitle: 'Title',
-            linkTitlePlaceholder: 'Link title',
-            linkOpenInNewWindow: 'Open in new window',
-            linkInsert: 'Insert',
-            linkRemove: 'Remove',
-            linkCancel: 'Cancel',
-            codeCopyTooltip: 'Copy code'
-        }, this.locale);
+        this.l10n = new L10n(this.getModuleName(), getLocaleItems(), this.locale);
+        this.updateInternalLocaleCollection();
+    }
+
+    private updateInternalLocaleCollection(): void {
+        this.localeJson = getCurrentLocaleJson(this.l10n);
     }
 
     /**
@@ -600,20 +511,42 @@ export class BlockEditor extends Component<HTMLElement> implements INotifyProper
      * @returns {void}
      */
     private initializeManagers(): void {
-        this.blockRendererManager = new BlockRendererManager(this);
-        this.blockCommandManager = new BlockCommandManager(this);
-        this.stateManager = new StateManager(this);
-        this.floatingIconManager = new FloatingIconManager(this);
+        this.blockManager = new BlockManager();
+        this.intermediate = new Intermediate(this);
+        this.renderblockContainer();
+        this.blockManager.updateContext({
+            localeJson: this.localeJson,
+            blocks: this.blocks,
+            blockContainer: this.blockContainer,
+            rootEditorElement: this.element,
+            pasteCleanupSettings: this.pasteCleanupSettings,
+            imageBlockSettings: this.imageBlockSettings,
+            codeBlockSettings: this.codeBlockSettings,
+            labelSettings: this.labelSettings,
+            users: this.users,
+
+            blockActionMenuSettings: this.blockActionMenuSettings,
+            contextMenuSettings: this.contextMenuSettings,
+            commandMenuSettings: this.commandMenuSettings,
+            inlineToolbarSettings: this.inlineToolbarSettings,
+
+            ...this.getEditorProps()
+        });
+        this.blockManager.initialize();
+
+        this.floatingIconRenderer = new FloatingIconRenderer(this);
         this.eventManager = new EventManager(this);
     }
 
-    /**
-     * Initializes all services
-     *
-     * @returns {void}
-     */
-    private initializeServices(): void {
-        this.blockService = new BlockService(this.blocks);
+    private getEditorProps(): Partial<BlockEditorModel> {
+        return {
+            readOnly: this.readOnly,
+            undoRedoStack: this.undoRedoStack,
+            enableHtmlEncode: this.enableHtmlEncode,
+            enableHtmlSanitizer: this.enableHtmlSanitizer,
+            enableDragAndDrop: this.enableDragAndDrop,
+            keyConfig: this.keyConfig
+        };
     }
 
     /**
@@ -622,22 +555,17 @@ export class BlockEditor extends Component<HTMLElement> implements INotifyProper
      * @returns {void}
      */
     private intializeEngines(): void {
-        this.blockEditorMethods = new BlockEditorMethods(this);
-        this.nodeSelection = new NodeSelection(this);
-        this.popupRenderer = new PopupRenderer(this);
         this.menubarRenderer = new MenuBarRenderer(this);
         this.mentionRenderer = new MentionRenderer(this);
         this.tooltipRenderer = new TooltipRenderer(this);
-        this.formattingAction = new FormattingAction(this);
-        this.listBlockAction = new ListBlockAction(this);
-        this.dragAndDropAction = new DragAndDropAction(this);
-        this.undoRedoAction = new UndoRedoAction(this);
-        this.clipboardAction = new ClipboardAction(this);
+        this.dialogRenderer = new DialogRenderer(this);
+        this.dropdownListRenderer = new DropDownListRenderer(this);
+
         this.inlineContentInsertionModule = new InlineContentInsertionModule(this);
-        this.linkModule = new LinkModule(this);
         this.inlineToolbarModule = new InlineToolbarModule(this);
         this.blockActionMenuModule = new BlockActionMenuModule(this);
         this.contextMenuModule = new ContextMenuModule(this);
+        this.linkModule = new LinkModule(this);
     }
 
     /**
@@ -646,8 +574,11 @@ export class BlockEditor extends Component<HTMLElement> implements INotifyProper
      * @returns {void}
      */
     private setDimension(): void {
-        this.element.style.width = !isNOU(this.width) ? formatUnit(this.width) : this.element.style.width;
-        this.element.style.height = !isNOU(this.height) ? formatUnit(this.height) : this.element.style.height;
+        const cssText: string = `
+          width: ${!isNOU(this.width) ? formatUnit(this.width) : this.element.style.width};
+          height: ${!isNOU(this.height) ? formatUnit(this.height) : this.element.style.height};
+         `;
+        updateCSSText(this.element, cssText);
     }
 
     /**
@@ -660,70 +591,30 @@ export class BlockEditor extends Component<HTMLElement> implements INotifyProper
     }
 
     /**
+     * Sets the Rtl class on the editor
+     *
+     * @returns {void}
+     */
+    private setRtlClass(): void {
+        this.element.classList.toggle(constants.RTL_CLS, this.enableRtl);
+    }
+
+    /**
      * Applies dynamic locale changes
      *
      * @returns {void}
      */
     private updateLocale(): void {
         this.l10n.setLocale(this.locale);
-        // Manually update placeholder for current focused block alone, rest will be updated on further focus
-        if (this.currentFocusedBlock) {
-            this.togglePlaceholder(this.currentFocusedBlock, true);
+        this.updateInternalLocaleCollection();
+        this.blockManager.updateContext({ localeJson: this.localeJson });
+
+        if (this.blockManager.currentFocusedBlock) {
+            this.blockManager.togglePlaceholder(this.blockManager.currentFocusedBlock, true);
         }
-        this.floatingIconManager.updateFloatingIconTooltipContent();
+        this.floatingIconRenderer.updateFloatingIconTooltipContent();
         this.notify(events.localeChanged, {});
-    }
-
-    /**
-     * Applies RTL settings to the editor
-     *
-     * @returns {void}
-     */
-    private applyRtlSettings(): void {
-        this.element.classList.toggle(constants.RTL_CLS, this.enableRtl);
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const rtlTargets: any = [
-            this.inlineContentInsertionModule.userMenuObj,
-            this.inlineContentInsertionModule.labelMenuObj,
-            this.floatingIconManager.addIconTooltip,
-            this.floatingIconManager.dragIconTooltip,
-            this.contextMenuModule.contextMenuObj
-        ];
-
-        for (const target of rtlTargets) {
-            if (target) {
-                target.enableRtl = this.enableRtl;
-            }
-        }
-        this.notify(events.rtlChanged, {});
-    }
-
-    /**
-     * Creates the overlay container for popups and dialogs
-     *
-     * @returns {void}
-     */
-    private createOverlayContainer(): void {
-        this.overlayContainer = this.createElement('div', { className: constants.OVERLAY_CONTAINER_CLS });
-        this.element.appendChild(this.overlayContainer);
-    }
-
-    /**
-     * Initializes the key bindings
-     *
-     * @returns {void}
-     */
-    private initializeKeyBindings(): void {
-        const config: { [key: string]: string } = { ...this.defaultKeyConfig, ...this.keyConfig };
-        const map: Map<string, string> = new Map<string, string>();
-
-        for (const command in config) {
-            if (Object.prototype.hasOwnProperty.call(config, command)) {
-                const keyCombo: string = config[`${command}`].toLowerCase().replace(/\s+/g, '');
-                map.set(keyCombo, command);
-            }
-        }
-        this.keyCommandMap = map;
+        this.blockManager.observer.notify(events.localeChanged, {});
     }
 
     /**
@@ -738,14 +629,16 @@ export class BlockEditor extends Component<HTMLElement> implements INotifyProper
     }
 
     /**
-     * Creates the block wrapper container
+     * Creates the block container
      *
      * @returns {void}
      */
-    private renderBlockWrapper(): void {
-        this.blockWrapper = this.createElement('div', { className: constants.BLOCK_WRAPPER_CLS });
-        this.element.appendChild(this.blockWrapper);
-        this.blockCommandManager.createDefaultEmptyBlock();
+    private renderblockContainer(): void {
+        this.blockContainer = this.createElement('div', {
+            id: this.element.id + constants.BLOCK_CONTAINER_ID,
+            className: constants.BLOCK_CONTAINER_CLS
+        });
+        this.element.appendChild(this.blockContainer);
     }
 
     /**
@@ -756,55 +649,8 @@ export class BlockEditor extends Component<HTMLElement> implements INotifyProper
      * @hidden
      */
     public renderBlocks(blocks: BlockModel[]): void {
-        this.blockRendererManager.renderBlocks(blocks);
-    }
-
-    /**
-     * Sets focus to a block element
-     *
-     * @param {HTMLElement} block The block element to focus
-     * @returns {void}
-     * @hidden
-     */
-    public setFocusToBlock(block: HTMLElement): void {
-        if (block) {
-            block.focus();
-            this.currentFocusedBlock = block;
-        }
-    }
-
-    /**
-     * Fetches the editor blocks from service
-     *
-     * @returns {BlockModel[]} The editor blocks data
-     * @hidden
-     */
-    public getEditorBlocks(): BlockModel[] {
-        if (!this.blockService) { return []; }
-        return this.blockService.getBlocks();
-    }
-
-    /**
-     * Populates the editor blocks data with the given blocks
-     *
-     * @param {BlockModel[]} blocks The blocks to set for the editor
-     * @returns {void}
-     * @hidden
-     */
-    public setEditorBlocks(blocks: BlockModel[]): void {
-        if (!this.blockService) { return; }
-        this.blockService.setBlocks(blocks);
-    }
-
-    /**
-     * Gets a block element by ID
-     *
-     * @param {string} blockId The block ID
-     * @returns {HTMLElement | null} The block element or null if not found
-     * @hidden
-     */
-    public getBlockElementById(blockId: string): HTMLElement | null {
-        return this.blockWrapper.querySelector(`#${blockId}`);
+        this.blockManager.blockCommand.createDefaultEmptyBlock();
+        this.blockManager.blockRenderer.renderBlocks(blocks);
     }
 
     /**
@@ -814,81 +660,50 @@ export class BlockEditor extends Component<HTMLElement> implements INotifyProper
      * @hidden
      */
     public getCurrentFocusedBlockModel(): BlockModel {
-        if (!this.currentFocusedBlock) { return null; }
-        return getBlockModelById(this.currentFocusedBlock.id, this.getEditorBlocks());
-    }
-
-    /**
-     * Toggles the placeholder for a block element
-     *
-     * @param {HTMLElement} blockElement The block element
-     * @param {boolean} isFocused Whether the block is currently focused
-     * @returns {void}
-     * @hidden
-     */
-    public togglePlaceholder(blockElement: HTMLElement, isFocused: boolean): void {
-        const blockModel: BlockModel = blockElement ? getBlockModelById(blockElement.id, this.getEditorBlocks()) : null;
-        if (!blockModel || (blockModel && !('placeholder' in blockModel.props))) { return; }
-        const blockType: string = blockElement.getAttribute('data-block-type');
-        const placeholderValue: string = this.getPlaceholderValue(blockModel);
-        const contentEle: HTMLElement = getBlockContentElement(blockElement);
-        const isEmptyContent: boolean = isElementEmpty(contentEle);
-        contentEle.setAttribute('placeholder', isEmptyContent && isFocused ? placeholderValue : '');
-        if (isEmptyContent && blockType !== BlockType.Code) {
-            clearBreakTags(contentEle);
-        }
+        if (!this.blockManager.currentFocusedBlock) { return null; }
+        return getBlockModelById(this.blockManager.currentFocusedBlock.id, this.blockManager.getEditorBlocks());
     }
 
     /**
      * Responsible for rendering the template for a block
      *
-     * @param {BlockModel} block The block model
-     * @param {HTMLElement} templateElement The template element to render into
+     * @param {{ block: BlockModel, templateElement: HTMLElement }} args The options to render template
      * @returns {void}
      * @hidden
      */
-    public renderTemplate(block: BlockModel, templateElement: HTMLElement): void {
-        const templateName: string = block.id + 'template';
+    public renderTemplate(args: { block: BlockModel, templateElement: HTMLElement }): void {
+        const templateName: string = args.block.id + 'template';
         this.clearTemplate([templateName]);
-        const templateFunction: Function = getTemplateFunction(block.template);
-        append(templateFunction({}, this, templateName, 'template', this.isStringTemplate), templateElement);
+        const templateFunction: Function = getTemplateFunction(args.block.template);
+        append(templateFunction({}, this, templateName, 'template', this.isStringTemplate), args.templateElement);
         this.renderReactTemplates();
     }
 
     /**
-     * Serializes the given value for HTML encoding and sanitization
+     * Updates read-only state of editable elements in the editor
      *
-     * @param {string} value The value to serialize
-     * @returns {string} The serialized value
+     * @returns {void}
      * @hidden
      */
-    public serializeValue(value: string): string {
-        if (!isNOU(value)) {
-            if (this.enableHtmlEncode) {
-                value = sanitizeHelper(decode(value), this.enableHtmlSanitizer);
-                value = encode(value);
-            } else {
-                value = sanitizeHelper(value, this.enableHtmlSanitizer);
-            }
-        }
-        return value;
-    }
+    public updateEditorReadyOnlyState(): void {
+        const defaultNonEditableElements: string[] = [
+            'e-callout-icon', 'e-toggle-icon', 'e-image-container', 'e-checkmark-container', 'e-divider-block',
+            'e-code-block-toolbar', 'e-code-block-copy-button', 'e-mention-chip',
+            ...this.blockManager.blockRenderer.tableRenderer.nonEditableElements
+        ];
+        let editableElements: HTMLElement[] = Array.from(this.element.querySelectorAll(
+            `[contenteditable='${this.readOnly}']:not([data-table-readonly-processed]`
+        ));
 
-    /**
-     * Gets the placeholder value for the given block element.
-     *
-     * @param {BlockModel} block The block model to get placeholder for.
-     * @returns {string} The placeholder value for the given block type.
-     * @hidden
-     */
-    public getPlaceholderValue(block: BlockModel): string {
-        const props: HeadingProps = block.props as HeadingProps;
-        if (props && props.placeholder && props.placeholder !== '') { return props.placeholder; }
-        let constant: string = block.type.charAt(0).toLowerCase() + block.type.slice(1);
-        if (block.type.endsWith(BlockType.Heading) && props && props.level) {
-            constant += props.level.toString();
-        }
-        return this.l10n.getConstant(constant);
+        editableElements = editableElements.filter((element: HTMLElement) => {
+            return !defaultNonEditableElements.some((className: string) => element.classList.contains(className));
+        });
+
+        editableElements.forEach((element: HTMLElement) => {
+            element.contentEditable = (!this.readOnly).toString();
+        });
+
+        this.element.classList.toggle('e-readonly', this.readOnly);
     }
 
     /* Section Public methods */
@@ -902,7 +717,7 @@ export class BlockEditor extends Component<HTMLElement> implements INotifyProper
      * @returns {void}
      */
     public addBlock(block: BlockModel, targetId?: string, isAfter?: boolean): void {
-        this.blockEditorMethods.addBlock(block, targetId, isAfter);
+        this.blockManager.editorMethods.addBlock(block, targetId, isAfter);
     }
 
     /**
@@ -912,7 +727,7 @@ export class BlockEditor extends Component<HTMLElement> implements INotifyProper
      * @returns {void}
      */
     public removeBlock(blockId: string): void {
-        this.blockEditorMethods.removeBlock(blockId);
+        this.blockManager.editorMethods.removeBlock(blockId);
     }
 
     /**
@@ -922,7 +737,7 @@ export class BlockEditor extends Component<HTMLElement> implements INotifyProper
      * @returns {BlockModel | null} - The block model or null if not found
      */
     public getBlock(blockId: string): BlockModel | null {
-        return this.blockEditorMethods.getBlock(blockId);
+        return this.blockManager.editorMethods.getBlock(blockId);
     }
 
     /**
@@ -933,7 +748,7 @@ export class BlockEditor extends Component<HTMLElement> implements INotifyProper
      * @returns {void}
      */
     public moveBlock(fromBlockId: string, toBlockId: string): void {
-        this.blockEditorMethods.moveBlock(fromBlockId, toBlockId);
+        this.blockManager.editorMethods.moveBlock(fromBlockId, toBlockId);
     }
 
     /**
@@ -944,7 +759,7 @@ export class BlockEditor extends Component<HTMLElement> implements INotifyProper
      * @returns {boolean} True if update was successful
      */
     public updateBlock(blockId: string, properties: Partial<BlockModel>): boolean {
-        return this.blockEditorMethods.updateBlock(blockId, properties);
+        return this.blockManager.editorMethods.updateBlock(blockId, properties);
     }
 
     /**
@@ -955,7 +770,7 @@ export class BlockEditor extends Component<HTMLElement> implements INotifyProper
      * @returns {void}
      */
     public enableToolbarItems(itemId: string | string[]): void {
-        this.blockEditorMethods.enableDisableToolbarItems(itemId, true);
+        this.blockManager.editorMethods.enableDisableToolbarItems(itemId, true);
     }
 
     /**
@@ -966,7 +781,7 @@ export class BlockEditor extends Component<HTMLElement> implements INotifyProper
      * @returns {void}
      */
     public disableToolbarItems(itemId: string | string[]): void {
-        this.blockEditorMethods.enableDisableToolbarItems(itemId, false);
+        this.blockManager.editorMethods.enableDisableToolbarItems(itemId, false);
     }
 
     /**
@@ -976,8 +791,8 @@ export class BlockEditor extends Component<HTMLElement> implements INotifyProper
      * @param {value} value - The value required if any (Optional).
      * @returns {void}
      */
-    public executeToolbarAction(action: BuiltInToolbar, value?: string): void {
-        this.blockEditorMethods.executeToolbarAction(action, value);
+    public executeToolbarAction(action: CommandName, value?: string): void {
+        this.blockManager.editorMethods.executeToolbarAction(action, value);
     }
 
     /**
@@ -990,7 +805,7 @@ export class BlockEditor extends Component<HTMLElement> implements INotifyProper
      * @returns {void}
      */
     public setSelection(contentId: string, startIndex: number, endIndex: number): void {
-        this.blockEditorMethods.setSelection(contentId, startIndex, endIndex);
+        this.blockManager.editorMethods.setSelection(contentId, startIndex, endIndex);
     }
 
     /**
@@ -1001,7 +816,7 @@ export class BlockEditor extends Component<HTMLElement> implements INotifyProper
      * @returns {void}
      */
     public setCursorPosition(blockId: string, position: number): void {
-        this.blockEditorMethods.setCursorPosition(blockId, position);
+        this.blockManager.editorMethods.setCursorPosition(blockId, position);
     }
 
     /**
@@ -1010,7 +825,7 @@ export class BlockEditor extends Component<HTMLElement> implements INotifyProper
      * @returns {BlockModel | null} - The block model or null if not found
      */
     public getSelectedBlocks(): BlockModel[] | null {
-        return this.blockEditorMethods.getSelectedBlocks();
+        return this.blockManager.editorMethods.getSelectedBlocks();
     }
 
     /**
@@ -1019,7 +834,7 @@ export class BlockEditor extends Component<HTMLElement> implements INotifyProper
      * @returns {Range | null} Current selection range or null
      */
     public getRange(): Range | null {
-        return this.blockEditorMethods.getRange();
+        return this.blockManager.editorMethods.getRange();
     }
 
     /**
@@ -1029,7 +844,7 @@ export class BlockEditor extends Component<HTMLElement> implements INotifyProper
      * @returns {void}
      */
     public selectRange(range: Range): void {
-        this.blockEditorMethods.selectRange(range);
+        this.blockManager.editorMethods.selectRange(range);
     }
 
     /**
@@ -1039,7 +854,7 @@ export class BlockEditor extends Component<HTMLElement> implements INotifyProper
      * @returns {void}
      */
     public selectBlock(blockId: string): void {
-        this.blockEditorMethods.selectBlock(blockId);
+        this.blockManager.editorMethods.selectBlock(blockId);
     }
 
     /**
@@ -1048,7 +863,7 @@ export class BlockEditor extends Component<HTMLElement> implements INotifyProper
      * @returns {void}
      */
     public selectAllBlocks(): void {
-        this.blockEditorMethods.selectAllBlocks();
+        this.blockManager.editorMethods.selectAllBlocks();
     }
 
     /**
@@ -1057,7 +872,7 @@ export class BlockEditor extends Component<HTMLElement> implements INotifyProper
      * @returns {void}
      */
     public focusIn(): void {
-        this.blockEditorMethods.focusIn();
+        this.blockManager.editorMethods.focusIn();
     }
 
     /**
@@ -1066,7 +881,7 @@ export class BlockEditor extends Component<HTMLElement> implements INotifyProper
      * @returns {void}
      */
     public focusOut(): void {
-        this.blockEditorMethods.focusOut();
+        this.blockManager.editorMethods.focusOut();
     }
 
     /**
@@ -1075,7 +890,7 @@ export class BlockEditor extends Component<HTMLElement> implements INotifyProper
      * @returns {number} Number of blocks in editor
      */
     public getBlockCount(): number {
-        return this.blockEditorMethods.getBlockCount();
+        return this.blockManager.editorMethods.getBlockCount();
     }
 
     /**
@@ -1084,7 +899,7 @@ export class BlockEditor extends Component<HTMLElement> implements INotifyProper
      * @returns {void}
      */
     public print(): void {
-        this.blockEditorMethods.print();
+        this.blockManager.editorMethods.print();
     }
 
     /**
@@ -1100,7 +915,7 @@ export class BlockEditor extends Component<HTMLElement> implements INotifyProper
         replace: boolean = false,
         targetBlockId?: string
     ): boolean {
-        return this.blockEditorMethods.renderBlocksFromJson(json, replace, targetBlockId);
+        return this.blockManager.editorMethods.renderBlocksFromJson(json, replace, targetBlockId);
     }
 
     /**
@@ -1110,9 +925,8 @@ export class BlockEditor extends Component<HTMLElement> implements INotifyProper
      * @param {string} blockId - Optional ID of the block to retrieve
      * @returns {any} The JSON representation of the editor data
      */
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    public getDataAsJson(blockId?: string): any {
-        return this.blockEditorMethods.getDataAsJson(blockId);
+    public getDataAsJson(blockId?: string): BlockModel | BlockModel[] {
+        return this.blockManager.editorMethods.getDataAsJson(blockId);
     }
 
     /**
@@ -1123,55 +937,31 @@ export class BlockEditor extends Component<HTMLElement> implements INotifyProper
      * @returns {string} The HTML representation of the editor data
      */
     public getDataAsHtml(blockId?: string): string {
-        return this.blockEditorMethods.getDataAsHtml(blockId);
+        return this.blockManager.editorMethods.getDataAsHtml(blockId);
     }
 
-    protected removeAndNullify(element: HTMLElement): void {
-        if (element) {
-            if (!isNOU(element.parentNode)) {
-                remove(element);
-            } else {
-                element.innerHTML = '';
-            }
-        }
-    }
-
-    private destroyBlockEditor(): void {
-        const properties: string [] = [
-            'floatingIconContainer',
-            'currentHoveredBlock',
-            'currentFocusedBlock',
-            'blockWrapper',
-            'overlayContainer'
-        ];
-
-        for (const prop of properties) {
-            const element: keyof BlockEditor = prop as keyof BlockEditor;
-            this.removeAndNullify(this[element as keyof BlockEditor]);
-            (this[element as keyof BlockEditor] as HTMLElement) = null;
-        }
+    /**
+     * Parses an HTML string into an array of BlockModel objects.
+     *
+     * @param {string} html - HTML string to parse.
+     * @returns {BlockModel[]} An array of BlockModel objects representing the parsed HTML structure.
+     */
+    public parseHtmlToBlocks(html: string): BlockModel[] {
+        return this.blockManager.editorMethods.parseHtmlToBlocks(html);
     }
 
     public destroy(): void {
         if (this.isDestroyed) {
             return;
         }
-        this.eventManager.unWireGlobalEvents();
-        if (this.enableDragAndDrop) {
-            this.dragAndDropAction.destroy();
-        }
-        if (this.undoRedoAction) {
-            this.undoRedoAction.destroy();
-        }
-        if (!isNOU(this.updateTimer)) {
-            clearInterval(this.updateTimer);
-            this.updateTimer = null;
-        }
         this.notify(events.destroy, {});
+        this.blockManager.observer.notify(events.destroy, {});
 
-        this.popupRenderer = null;
         this.mentionRenderer = null;
         this.menubarRenderer = null;
+        this.tooltipRenderer = null;
+        this.dialogRenderer = null;
+        this.dropdownListRenderer = null;
 
         this.inlineToolbarModule = null;
         this.inlineContentInsertionModule = null;
@@ -1179,28 +969,15 @@ export class BlockEditor extends Component<HTMLElement> implements INotifyProper
         this.contextMenuModule = null;
         this.blockActionMenuModule = null;
         this.linkModule = null;
-        this.nodeSelection = null;
 
-        this.formattingAction = null;
-        this.listBlockAction = null;
-        this.blockEditorMethods = null;
-
-        this.blockCommandManager = null;
-        this.blockRendererManager = null;
-        this.floatingIconManager = null;
-        this.stateManager = null;
+        this.floatingIconRenderer = null;
         this.eventManager = null;
 
-        this.blockService = null;
-
-        this.keyCommandMap = null;
-        this.defaultKeyConfig = null;
         this.l10n = null;
-        this.dragAndDropAction = null;
-        this.undoRedoAction = null;
-        this.updateTimer = null;
-        this.destroyBlockEditor();
+        this.blockContainer = null;
         this.isRendered = false;
+
+        this.intermediate = null;
         super.destroy();
     }
 
@@ -1212,10 +989,11 @@ export class BlockEditor extends Component<HTMLElement> implements INotifyProper
      * @returns {void}
      * @hidden
      */
-    /* eslint-disable */
     public onPropertyChanged(newProp: BlockEditorModel, oldProp?: BlockEditorModel): void {
         const prevProp: BlockEditorModel = oldProp;
         if (!prevProp) { return; }
+
+        this.blockManager.updateContext(this.getEditorProps());
         for (const prop of Object.keys(newProp)) {
             switch (prop) {
             case 'width':
@@ -1229,42 +1007,46 @@ export class BlockEditor extends Component<HTMLElement> implements INotifyProper
                 this.updateLocale();
                 break;
             case 'enableRtl':
-                this.applyRtlSettings();
+                this.setRtlClass();
+                this.notify(events.rtlChanged, {});
                 break;
             case 'readOnly':
-                this.stateManager.updateEditorReadyOnlyState();
+                this.updateEditorReadyOnlyState();
+                this.intermediate.processActions('wireUnWireDragEvents', { enable: !this.readOnly });
                 break;
             case 'keyConfig':
-                this.initializeKeyBindings();
+                this.blockManager.initializeKeyBindings();
+                break;
+            case 'undoRedoStack':
+                this.blockManager.undoRedoAction.adjustUndoRedoStacks();
                 break;
             case 'enableDragAndDrop':
-                if (this.enableDragAndDrop) {
-                    this.dragAndDropAction.wireDragEvents();
-                }
-                else {
-                    this.dragAndDropAction.unwireDragEvents();
-                }
+                this.intermediate.processActions('wireUnWireDragEvents', { enable: this.enableDragAndDrop });
                 break;
-            case 'enableAutoHttps':
-                this.linkModule.handleAutoHttps();
+            case 'enableHtmlSanitizer':
+            case 'enableHtmlEncode':
+            case 'blocks':
+                this.blockManager.editorMethods.replaceAllBlocks(
+                    prop === 'blocks' ? newProp.blocks : this.blockManager.getEditorBlocks()
+                );
                 break;
-            case 'commandMenu':
+            case 'labelSettings':
+            case 'users':
+                this.notify(events.moduleChanged, { module: 'inlineContent', newProp: newProp, oldProp: oldProp });
+                break;
+            case 'commandMenuSettings':
                 this.notify(events.moduleChanged, { module: 'slashCommand', newProp: newProp, oldProp: oldProp });
                 break;
-            case 'inlineToolbar':
-                this.notify(events.moduleChanged, { module: 'inlineToolbar', newProp: newProp, oldProp: oldProp });
+            case 'inlineToolbarSettings':
+                this.notify(events.moduleChanged, { module: 'inlineToolbarSettings', newProp: newProp, oldProp: oldProp });
                 break;
-            case 'blockActionsMenu':
-                this.notify(events.moduleChanged, { module: 'blockActionsMenu', newProp: newProp, oldProp: oldProp });
+            case 'blockActionMenuSettings':
+                this.notify(events.moduleChanged, { module: 'blockActionMenuSettings', newProp: newProp, oldProp: oldProp });
                 break;
-            case 'contextMenu':
-                this.notify(events.moduleChanged, { module: 'contextMenu', newProp: newProp, oldProp: oldProp });
-                break;
-            case 'blocks':
-                this.stateManager.handleBlockPropertyChanges({ newProp: newProp, oldProp: oldProp });
+            case 'contextMenuSettings':
+                this.notify(events.moduleChanged, { module: 'contextMenuSettings', newProp: newProp, oldProp: oldProp });
                 break;
             }
         }
     }
-    /* eslint-enable */
 }

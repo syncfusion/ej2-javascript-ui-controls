@@ -5085,7 +5085,9 @@ describe('Ribbon', () => {
                         }]
                     }]
                 }]
-            }, ribbonEle);          
+            }, ribbonEle);
+            containerEle.style.width = '800px';
+            ribbon.refreshLayout();       
             setTimeout(function () {
                 setTimeout(function () {
                     var item3 = ribbon.getItem('item3');

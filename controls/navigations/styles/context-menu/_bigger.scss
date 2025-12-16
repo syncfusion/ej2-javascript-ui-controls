@@ -1,3 +1,5 @@
+@use 'ej2-base/styles/common/mixin' as *;
+@use './theme-variables' as *;
 @mixin bigger-rtl-blank-icon {
   padding-left: $cmenu-caret-blank-icon;
 
@@ -14,37 +16,36 @@
 
 @mixin bigger-li-size {
   height: $cmenu-bigger-li-height;
-  line-height: $cmenu-bigger-li-height;
+  line-height: $cmenu-bigger-li-line-height;
   @if $skin-name == 'fluent2' {
-    height: 40px;
-    line-height: 21px;
-    padding: 9px;
+    height: $cmenu-bigger-li-size-height;
+    line-height: $cmenu-bigger-li-size-line-height;
+    padding: $cmenu-bigger-li-size-padding;
   }
-
   &.e-menu-caret-icon {
     @if $skin-name == 'fluent2' {
-      padding: 9px 36px 9px 9px;
+      padding: $cmenu-caret-icon-padding;
     }
   }
 
   & .e-menu-icon {
     font-size: $cmenu-icon-bigger-font-size;
-    line-height: $cmenu-bigger-li-height;
+    line-height: $cmenu-bigger-li-line-height;
     @if $skin-name == 'tailwind' {
       margin-right: $cmenu-icon-bigger-margin-right;
     }
   }
 
   & .e-caret {
-    line-height: $cmenu-bigger-li-height;
+    line-height: $cmenu-bigger-li-line-height;
     @if $skin-name == 'fluent2' {
-      margin: 3px 0;
+      margin: $cmenu-bigger-caret-icon-margin;
     }
   }
 
   &.e-separator {
-    height: auto;
-    line-height: normal;
+    height: $cmenu-auto-height;
+    line-height: $cmenu-normal-line-height;
   }
 }
 
@@ -58,7 +59,7 @@
     max-width: $cmenu-bigger-max-width;
     min-width: $cmenu-bigger-min-width;
     @if $skin-name == 'bootstrap5' or $skin-name == 'bootstrap5.3' or  $skin-name == 'Material3' {
-      padding: 8px 0;
+      padding: $cmenu-bigger-ul-padding;
     }
 
     & .e-menu-item  {
@@ -66,14 +67,14 @@
 
       & .e-menu-icon {
         @if $skin-name == 'fluent2' {
-          margin-bottom: 2px;
+          margin-bottom: $cmenu-item-icon-margin-top;
         }
       }
 
       & .e-caret {
         font-size: $cmenu-bigger-caret-font-size;
         @if $skin-name == 'fluent2' {
-          padding: 0;
+          padding: $cmenu-padding-none;
         }
       }
     }
@@ -90,7 +91,7 @@
 
   .e-bigger .e-contextmenu-wrapper.e-rtl ul .e-menu-item.e-menu-caret-icon {
     @if $skin-name == 'fluent2' {
-      padding: 9px 9px 9px 36px;
+      padding: $cmenu-bigger-rtl-caret-icon-padding;
     }
   }
 
@@ -99,12 +100,12 @@
     @if $skin-name == 'tailwind3' {
       height: $cmenu-bigger-small-li-height;
       font-size: $cmenu-bigger-font-size;
-      line-height: $cmenu-bigger-small-li-height;
+      line-height: $cmenu-bigger-small-li-line-height;
       &.e-separator {
-        height: auto;
+        height: $cmenu-auto-height;
       }
       .e-menu-icon {
-        line-height: $cmenu-bigger-small-li-height;
+        line-height: $cmenu-bigger-small-li-line-height;
       }
     }
   }

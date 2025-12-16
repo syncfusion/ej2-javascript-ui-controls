@@ -4,7 +4,7 @@ import { RangeModel, SheetModel, UsedRangeModel } from './sheet-model';
 import { RowModel } from './row-model';
 import { ColumnModel } from './column-model';
 import { processIdx } from './data';
-import { SheetState, ProtectSettingsModel, ConditionalFormat, ConditionalFormatModel, ExtendedRange, getCellIndexes, moveOrDuplicateSheet, workbookFormulaOperation, duplicateSheetFilterHandler, ExtendedSheet, moveSheetHandler, updateSortCollection, ImageModel, ChartModel } from '../common/index';
+import { SheetState, ProtectSettingsModel, ConditionalFormat, ConditionalFormatModel, ExtendedRange, getCellIndexes, moveOrDuplicateSheet, workbookFormulaOperation, duplicateSheetFilterHandler, ExtendedSheet, moveSheetHandler, updateSortCollection, ImageModel, ChartModel, ExtendedThreadedCommentModel, ExtendedNoteModel } from '../common/index';
 import { ProtectSettings, getCellAddress } from '../common/index';
 import { isUndefined, ChildProperty, Property, Complex, Collection, extend, getUniqueID } from '@syncfusion/ej2-base';
 import { WorkbookModel } from './workbook-model';
@@ -551,6 +551,8 @@ export function initSheet(context: Workbook, sheet?: SheetModel[], isImport?: bo
         context.setSheetPropertyOnMute(sheet, 'showGridLines', isUndefined(sheet.showGridLines) ? true : sheet.showGridLines);
         context.setSheetPropertyOnMute(sheet, 'state', sheet.state || 'Visible');
         sheet.maxHgts = sheet.maxHgts || [];
+        sheet.comments = sheet.comments || [];
+        sheet.notes = sheet.notes || [];
         sheet.isImportProtected = sheet.isProtected && isImport;
         sheet.protectSettings = sheet.protectSettings || { selectCells: false, formatCells: false, formatRows: false, formatColumns: false,
             insertLink: false };
@@ -564,7 +566,7 @@ export function initSheet(context: Workbook, sheet?: SheetModel[], isImport?: bo
                 sheet.frozenColumns ? indexes[1] + sheet.frozenColumns : indexes[1]));
         }
         processIdx(sheet.columns);
-        initRow(sheet.rows, isImport);
+        initRow(sheet, sheet.rows, isImport);
     });
     processIdx(sheets, true, context);
 }
@@ -580,15 +582,99 @@ export function initSheet(context: Workbook, sheet?: SheetModel[], isImport?: bo
 // }
 
 /**
+ * Return a util function to push the cell comment into the sheet comments model.
+ *
+ * @param {ExtendedSheet} sheet - Specifies the sheet model.
+ * @returns {Function} - Return a util function to push the cell comment into the sheet comments model.
+ */
+function processComments(sheet: ExtendedSheet): (cell: CellModel, rowIdx: number, colIdx: number) => void {
+    return (cell: CellModel, rowIdx: number, colIdx: number): void => {
+        const updatedThread: ExtendedThreadedCommentModel = { ...(cell.comment as ExtendedThreadedCommentModel) };
+        if (!updatedThread.id) {
+            updatedThread.id = getUniqueID('e_spreadsheet_comment');
+        }
+        if (!updatedThread.address) {
+            updatedThread.address = [rowIdx, colIdx];
+        }
+        if (updatedThread.replies && updatedThread.replies.length > 0) {
+            updatedThread.replies.forEach((reply: ExtendedThreadedCommentModel) => {
+                reply.id = getUniqueID('e_spreadsheet_reply');
+            });
+        }
+        cell.comment = updatedThread;
+        sheet.comments.push(updatedThread);
+    };
+}
+
+/**
+ * Return a util function to push the cell note into the sheet notes model.
+ *
+ * @param {ExtendedSheet} sheet - Specifies the sheet model.
+ * @returns {Function} - Return a util function to push the cell note into the sheet notes model.
+ */
+function processNotes(sheet: ExtendedSheet): (cell: CellModel, rowIdx: number, colIdx: number) => void {
+    return (cell: CellModel, rowIdx: number, colIdx: number): void => {
+        let updatedNote: ExtendedNoteModel;
+        if (typeof cell.notes === 'string') {
+            updatedNote = {
+                id: getUniqueID('e_note'),
+                text: cell.notes,
+                rowIdx: rowIdx,
+                colIdx: colIdx,
+                isVisible: false
+            } as ExtendedNoteModel;
+            cell.notes = updatedNote;
+        } else {
+            updatedNote = { ...(cell.notes as ExtendedNoteModel) };
+            if (!updatedNote.id) {
+                updatedNote.id = getUniqueID('e_note');
+            }
+            if (!updatedNote.rowIdx && updatedNote.rowIdx !== 0) {
+                updatedNote.rowIdx = rowIdx;
+            }
+            if (!updatedNote.colIdx && updatedNote.colIdx !== 0) {
+                updatedNote.colIdx = colIdx;
+            }
+            if (isUndefined(updatedNote.isVisible)) {
+                updatedNote.isVisible = false;
+            }
+            cell.notes = updatedNote;
+        }
+        sheet.notes.push(updatedNote);
+    };
+}
+
+/**
+ * @param {ExtendedSheet} sheet - Specifies the sheet.
  * @param {RowModel[]} rows - Specifies the rows.
  * @param {boolean} isImport - Specifies the operation is from Import or not.
  * @returns {void} - Specifies the row.
  */
-function initRow(rows: RowModel[], isImport?: boolean): void {
+function initRow(sheet: ExtendedSheet, rows: RowModel[], isImport?: boolean): void {
+    let processComment: Function; let processNote: Function;
+    if (isImport) {
+        if (!sheet.comments.length) {
+            processComment = processComments(sheet);
+        }
+        if (!sheet.notes.length) {
+            processNote = processNotes(sheet);
+        }
+    } else {
+        processComment = processComments(sheet);
+        processNote = processNotes(sheet);
+    }
+    let rowIdx: number = -1;
     rows.forEach((row: RowModel) => {
-        if (row && row.cells) {
-            // Process cell indexes in ascending order when the import operation is performed.
-            processIdx(row.cells, null, undefined, isImport);
+        if (row) {
+            if (row.index === undefined) {
+                rowIdx++;
+            } else {
+                rowIdx = row.index;
+            }
+            if (row.cells) {
+                // Process cell indexes in ascending order when the import operation is performed.
+                processIdx(row.cells, null, undefined, isImport, rowIdx, processComment, processNote);
+            }
         }
     });
     processIdx(rows, null, undefined, isImport);

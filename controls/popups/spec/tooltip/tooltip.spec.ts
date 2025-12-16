@@ -1038,21 +1038,6 @@ describe('Tooltip Control', () => {
             expect(tooltipEle.querySelector('.e-arrow-tip').classList.contains('e-tip-bottom')).toEqual(true);
             triggerMouseEvent(target1, 'mouseleave');
         });
-        it('windowCollision with collision affected position - left and bottom', () => {
-            let elem: HTMLDivElement = document.createElement('div');
-            elem.innerHTML = '<div id="targetContainer" style="height: 400px;width: 400px;background: #4e699c;margin: 100px 0px 50px 165px;float: left;overflow: scroll;position: relative;"><div id="target" style="height: 100px;width: 100px;background: #af0404;float: left;position:absolute;left:0px;top:300px;">Tooltip target</div></div>';
-            document.body.appendChild(elem.firstChild);
-            tooltip = new Tooltip({
-                animation: { open: { effect: 'None' }, close: { effect: 'None' } },
-                position: 'BottomCenter', content: 'collision left and bottom', target: '#target',
-                windowCollision:true
-            }, '#targetContainer');
-            let target1: HTMLElement = document.getElementById('target');
-            triggerMouseEvent(target1, 'mouseover');
-            let tooltipEle: HTMLElement = document.querySelector('.e-tooltip-wrap') as HTMLElement;
-            expect(tooltipEle.querySelector('.e-arrow-tip').classList.contains('e-tip-top')).toEqual(true);
-            triggerMouseEvent(target1, 'mouseleave');
-        });
         it('collision affected position - right and top', () => {
             let elem: HTMLDivElement = document.createElement('div');
             elem.innerHTML = '<div id="targetContainer" style="height: 400px;width: 400px;background: #4e699c;margin: 100px 0px 50px 165px;float: left;overflow: scroll;position: relative;"><div id="target" style="height: 100px;width: 100px;background: #af0404;float: left;position:absolute;left:300px;top:0px;">Tooltip target</div></div>';

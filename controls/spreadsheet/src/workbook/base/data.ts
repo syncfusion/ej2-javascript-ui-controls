@@ -339,10 +339,13 @@ export function getModel(model: (SheetModel | RowModel | CellModel)[], idx: numb
  * @param {boolean} isSheet - Specifies the bool value.
  * @param {Workbook} context - Specifies the Workbook.
  * @param {boolean} isSort - Specifies whether to sort the unordered cell/row model in ascending order.
+ * @param {number} rowIndex - Specifies the row index.
+ * @param {Function} processComment - Specifies the callback function to process the comments.
+ * @param {Function} processNote - Specifies the callback function to process the notes.
  * @returns {void} - To process the index
  */
-export function processIdx(model: (SheetModel | RowModel | CellModel)[], isSheet?: boolean,
-                           context?: Workbook, isSort?: boolean): void {
+export function processIdx(model: (SheetModel | RowModel | CellModel)[], isSheet?: boolean, context?: Workbook, isSort?: boolean,
+                           rowIndex?: number, processComment?: Function, processNote?: Function): void {
     let j: number;
     let diff: number = 0;
     let cnt: number;
@@ -357,9 +360,11 @@ export function processIdx(model: (SheetModel | RowModel | CellModel)[], isSheet
         });
     }
     for (let i: number = 0; i < len; i++) {
-        if (!isNullOrUndefined(model[i as number]) && !isUndefined(model[i as number].index)) {
-            cnt = diff = model[i as number].index - i;
-            delete model[i as number].index;
+        if (!isNullOrUndefined(model[i as number])) {
+            if (!isUndefined(model[i as number].index)) {
+                cnt = diff = model[i as number].index - i;
+                delete model[i as number].index;
+            }
         }
         if (diff > 0) {
             j = 0;
@@ -392,6 +397,14 @@ export function processIdx(model: (SheetModel | RowModel | CellModel)[], isSheet
                 model[i as number], 'usedRange',
                 { rowIndex: (model[i as number] as SheetModel).rows.length ? (model[i as number] as SheetModel).rows.length - 1 : 0,
                     colIndex: cellCnt });
+        } else if (rowIndex !== undefined && (processNote || processComment)) {
+            const cell: CellModel = model[i as number] as CellModel;
+            if (processComment && cell && cell.comment) {
+                processComment(cell, rowIndex, i);
+            }
+            if (processNote && cell && cell.notes) {
+                processNote(cell, rowIndex, i);
+            }
         }
     }
 }

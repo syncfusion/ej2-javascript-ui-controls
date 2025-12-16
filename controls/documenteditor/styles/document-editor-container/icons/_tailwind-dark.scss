@@ -1,3 +1,5 @@
+@use 'ej2-base/styles/common/mixin' as *;
+@use '../tailwind-dark-definition' as *;
 @include export-module('document-editor-container-tailwind-dark-icons') {
   .e-de-ctnr-close::before {
     color: $icon-color;

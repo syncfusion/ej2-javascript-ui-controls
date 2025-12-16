@@ -1,15 +1,17 @@
+@use 'ej2-base/styles/common/mixin' as *;
+@use './theme-variables' as *;
 @include export-module('split-button-bigger') {
   .e-bigger .e-split-btn-wrapper,
   .e-bigger.e-split-btn-wrapper {
     @if $skin-name == 'Material3' {
-      border-radius: 4px;
+      border-radius: $split-bgr-btn-border-radius;
       box-shadow: $btn-box-shadow;
     }
     .e-split-btn {
       @if $skin-name == 'Material3' or $skin-name == 'Material3-dark' {
-        border-radius: 4px;
+        border-radius: $split-bgr-btn-border-radius;
         box-shadow: none;
-        padding: 9px 4px;
+        padding: $split-wrapper-split-btn-padding;
       }
       @if $skin-name == 'bootstrap4'or $skin-name == 'FluentUI' {
         padding: 7px 4px;
@@ -17,38 +19,33 @@
         padding-right: $split-btn-icon-btn-padding-bigger;
       }
       @else if $skin-name == 'tailwind' or $skin-name == 'tailwind-dark' {
-        padding-left: 16px;
-        padding-right: 16px;
+        padding-left: $split-btn-bigger-padding-left;
+        padding-right: $split-btn-bigger-padding-right;
         line-height: 1.781em;
       }
       @else {
-        padding-left: 12px;
-        padding-right: 6px;
+        padding-left: $split-btn-bigger-padding-left;
+        padding-right: $split-btn-bigger-padding-right;
       }
 
       &.e-top-icon-btn {
-        padding-bottom: 12px;
-        padding-top: 12px;
+        padding-bottom: $split-btn-top-icon-padding-bottom;
+        padding-top: $split-btn-top-icon-padding-top;
       }
 
       .e-btn-icon {
         font-size: $drop-down-btn-icon-font-size-bigger;
-        margin-left: 0;
-        @if $skin-name == 'FluentUI' {
-          padding-right: 8px;
-        }
-        @else {
-          padding-right: 10px;
-        }
-        width: auto;
+        margin-left: $drop-down-bigger-btn-icon-margin-left;
+        padding-right: $drop-down-bigger-btn-icon-padding-right;
+        width: $split-auto-width;
         @if $skin-name == 'Material3' {
-          border-radius: 4px;
+          border-radius: $split-bgr-btn-border-radius;
         }
       }
 
       .e-icon-top {
-        padding-bottom: 6px;
-        padding-right: 0;
+        padding-bottom: $drop-down-bigger-icon-top-padding-bottom;
+        padding-right: $drop-down-zero-padding-margin;
       }
 
       &.e-icon-btn {
@@ -56,22 +53,18 @@
         padding-right: $split-btn-icon-btn-padding-bigger;
 
         .e-btn-icon {
-          padding-right: 0;
+          padding-right: $drop-down-zero-padding-margin;
         }
       }
     }
 
     .e-dropdown-btn {
-      @if $skin-name == 'bootstrap4' {
-        padding-left: 10px;
-        padding-right: 10px;
-      }
       @if $skin-name == 'Material3' or $skin-name == 'Material3-dark' {
-        padding: 9px 4px;
+        padding: $split-wrapper-split-btn-padding;
       }
       @else {
-        padding-left: 4px;
-        padding-right: 4px;
+        padding-left: $drop-dbtn-bigger-padding-left;
+        padding-right: $drop-dbtn-bigger-padding-right;
       }
       @if $skin-name == 'tailwind' or $skin-name == 'tailwind-dark' {
         z-index: 1;
@@ -84,30 +77,21 @@
           padding-left: $split-btn-icon-btn-padding-bigger;
           padding-right: $split-btn-icon-btn-padding-bigger;
         }
-        @else if $skin-name == 'tailwind' or $skin-name == 'tailwind-dark' {
-          padding-left: 12px;
-          padding-right: 12px;
-        }
         @else {
-          padding-left: 6px;
-          padding-right: 12px;
+          padding-left: $drop-down-bigger-rtl-padding-left;
+          padding-right: $drop-down-bigger-rtl-padding-right;
         }
 
         .e-btn-icon {
-          @if $skin-name == 'FluentUI' {
-            padding-left: 8px;
-          }
-          @else {
-            padding-left: 10px;
-          }
-          padding-right: 0;
+          padding-left: $drop-down-bgr-rtl-icon-padding-left;
+          padding-right: $drop-down-zero-padding-margin;
           @if $skin-name == 'Material3' {
-            border-radius: 4px;
+            border-radius: $split-bgr-btn-border-radius;
           }
         }
 
         .e-icon-top {
-          padding-left: 0;
+          padding-left: $drop-down-zero-padding-margin;
         }
 
         &.e-icon-btn {
@@ -115,7 +99,7 @@
           padding-right: $split-btn-icon-btn-padding-bigger;
 
           .e-btn-icon {
-            padding-left: 0;
+            padding-left: $drop-down-zero-padding-margin;
           }
         }
       }
@@ -128,8 +112,8 @@
           padding-right: $split-btn-icon-btn-padding-bigger;
         }
         @else {
-          padding-bottom: 6px;
-          padding-right: 12px;
+          padding-bottom: $split-btn-bgr-vertical-padding-bottom;
+          padding-right: $split-btn-bgr-vertical-padding-right;
         }
       }
 
@@ -139,15 +123,15 @@
           padding-top: $split-btn-icon-btn-padding-bigger;
         }
         @else {
-          padding-bottom: 4px;
-          padding-top: 4px;
+          padding-bottom: $drop-down-btn-bgr-vertical-padding-bottom;
+          padding-top: $drop-down-btn-bgr-vertical-padding-top;
         }
         @if $skin-name == 'tailwind' or $skin-name == 'tailwind-dark' {
           z-index: 1;
         }
 
         .e-icon-bottom {
-          padding-top: 0;
+          padding-top: $drop-down-zero-padding-margin;
         }
       }
     }

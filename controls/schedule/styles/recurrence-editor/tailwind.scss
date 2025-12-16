@@ -1,9 +1,9 @@
-@import 'ej2-base/styles/definition/tailwind.scss';
-@import 'ej2-inputs/styles/numerictextbox/tailwind-definition.scss';
-@import 'ej2-buttons/styles/button/tailwind-definition.scss';
-@import 'ej2-buttons/styles/radio-button/tailwind-definition.scss';
-@import 'ej2-calendars/styles/datepicker/tailwind-definition.scss';
-@import 'ej2-dropdowns/styles/drop-down-list/tailwind-definition.scss';
-@import 'tailwind-definition.scss';
-@import 'all.scss';
-@import 'bigger.scss';
+@use 'ej2-base/styles/definition/tailwind' as *;
+@use 'ej2-inputs/styles/numerictextbox/tailwind-definition' as *;
+@use 'ej2-buttons/styles/button/tailwind-definition' as *;
+@use 'ej2-buttons/styles/radio-button/tailwind-definition' as *;
+@use 'ej2-calendars/styles/datepicker/tailwind-definition' as *;
+@use 'ej2-dropdowns/styles/drop-down-list/tailwind-definition' as *;
+@use 'tailwind-definition' as *;
+@use 'all' as *;
+@use 'bigger' as *;

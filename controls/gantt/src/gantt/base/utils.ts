@@ -247,3 +247,12 @@ export function getUid(): number {
     return uid++;
 }
 
+/**
+ * @returns {number} A cryptographically secure random number .
+ * @hidden
+ */
+export function getRandom(): number {
+    const array: Uint32Array = new Uint32Array(1);
+    window.crypto.getRandomValues(array);
+    return array[0] / (0xFFFFFFFF + 1);
+}

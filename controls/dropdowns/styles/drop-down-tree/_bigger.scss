@@ -1,3 +1,5 @@
+@use 'ej2-base/styles/common/mixin' as *;
+@use './theme-variables' as *;
 @mixin close-style($font-size, $height, $width) {
   font-size: $font-size;
   height: $height;
@@ -11,7 +13,7 @@
   &::before {
     font-size: $font-size;
     @if ($ddt-skin-name == 'fluent2') {
-      padding: 3px;
+      padding: $ddt-chip-close-before-padding;
     }
   }
 }
@@ -99,24 +101,24 @@
         @if ($ddt-skin-name =='tailwind3') {
           & .e-chips {
             & > .e-chipcontent {
-              height: 20px;
-              font-size: 14px;
-              line-height: 20px;
-              padding: 0 6px 0 4px;
+              height: $ddt-chip-content-height;
+              font-size: $ddt-big-chip-font-size;
+              line-height: $ddt-big-chip-line-height;
+              padding: $ddt-big-chipcontent-padding;
             }
           }
           & .e-chips-close {
-            margin: 0 6px 2px 0;
+            margin: $ddt-big-chip-close-margin;
           }
         }
       }
 
       .e-input-group-icon.e-ddt-icon {
         @if $ddt-skin-name == 'bootstrap4' {
-          font-size: 10px;
+          font-size: $ddt-bgr-icon-font-size;
         }
         @else if $ddt-skin-name == 'fluent2' {
-          font-size: 18px;
+          font-size: $ddt-bgr-icon-font-size;
         }
       }
 
@@ -129,9 +131,9 @@
           min-height: $ddt-close-icon-bigger-min-height;
         }
         @if $ddt-skin-name == 'fluent2' {
-          padding: 0;
+          padding: $ddt-bgr-padding-none;
           &::before {
-            font-size: 18px;
+            font-size: $ddt-bgr-clear-icon-font-size;
           }
         }
       }
@@ -155,10 +157,10 @@
           @include min-style(32px, 32px, 12px, 27px);
         }
         @if $ddt-skin-name == 'tailwind3' {
-          height: 16px;
+          height: $ddt-chips-close-height;
           width: 16px;
           &::before {
-            font-size: 16px;
+            font-size: $ddt-big-chip-close-font-size;
           }
         }
       }
@@ -175,8 +177,8 @@
               padding-top: 0;
             }
             @if ($ddt-skin-name == 'fluent2') {
-              padding-top: 9px;
-              padding-bottom: 9px;
+              padding-top: $ddt-overflow-remain-wrap-padding;
+              padding-bottom: $ddt-overflow-remain-wrap-padding;
             }
           }
         }
@@ -371,7 +373,7 @@
   
     &.e-show-dd-icon .e-chips-wrapper .e-chips:last-child {
       @if $ddt-skin-name != 'tailwind' and $ddt-skin-name != 'bootstrap5' and $ddt-skin-name != 'bootstrap5.3' and $ddt-skin-name != 'Material3' and $ddt-skin-name != 'tailwind3' {
-        margin-right: $ddt-dd-icon-bigger-width;
+        margin-right: $ddt-dd-icon-bigger-margin-right;
       }
       max-width: $ddt-big-chip-ddi-width;
     }
@@ -398,17 +400,17 @@
 
         .e-all-text {
           font-size: $ddt-big-select-all-font-size;
-          line-height: 24px;
+          line-height: $ddt-popup-text-line-height;
           margin: $ddt-big-select-all-text-margin;
         }
       }
 
       @if ($ddt-skin-name == 'tailwind3') {
-        border-radius: 8px;
-        margin-top: 8px;
+        border-radius: $ddt-popup-radius;
+        margin-top: $ddt-popup-margin;
 
         .e-filter-wrap {
-          padding: 8px 9px;
+          padding: $ddt-popup-filter-wrap-padding;
         }
       }
 
@@ -521,28 +523,28 @@
 
       &.e-show-dd-icon {
         @if $ddt-skin-name == 'tailwind' or $ddt-skin-name == 'tailwind3' or $ddt-skin-name == 'bootstrap5' or $ddt-skin-name == 'bootstrap5.3' or $ddt-skin-name == 'FluentUI' {
-          @include chip-last-margin(4px, null);
+          @include chip-last-margin($ddt-show-dd-icon-margin-left, null);
         }
         @else if $ddt-skin-name != 'Material3' {
-          @include chip-last-margin(1px, $ddt-dd-icon-bigger-width);
+          @include chip-last-margin($ddt-show-dd-icon-margin-left, $ddt-dd-icon-bigger-margin-right);
         }
       }
 
       &.e-show-clear {
         @if $ddt-skin-name == 'tailwind' or $ddt-skin-name == 'tailwind3' or $ddt-skin-name == 'bootstrap5' or $ddt-skin-name == 'bootstrap5.3' or $ddt-skin-name == 'FluentUI' {
-          @include chip-last-margin(4px, null);
+          @include chip-last-margin($ddt-show-dd-icon-margin-left, null);
         }
         @else if $ddt-skin-name != 'Material3' {
-          @include chip-last-margin(1px, $ddt-close-icon-bigger-width);
+          @include chip-last-margin($ddt-show-dd-icon-margin-left, $ddt-close-icon-bigger-width);
         }
       }
 
       &.e-show-clear.e-show-dd-icon {
         @if $ddt-skin-name == 'tailwind' or $ddt-skin-name == 'bootstrap5' or $ddt-skin-name == 'FluentUI' {
-          @include chip-last-margin($ddt-last-chip-bigger-right-margin, 4px);
+          @include chip-last-margin($ddt-last-chip-bigger-right-margin, $ddt-show-dd-icon-margin-right);
         }
         @else {
-          @include chip-last-margin($ddt-last-chip-bigger-right-margin, 1px);
+          @include chip-last-margin($ddt-last-chip-bigger-right-margin, $ddt-show-dd-icon-margin-right);
         }
       }
 

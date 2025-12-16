@@ -180,6 +180,13 @@ export class PdfAnnotationBase extends ChildProperty<PdfAnnotationBase> {
     public author: string;
 
     /**
+     * Represents the overlayText value of the annotation
+     *
+     * @default ''
+     */
+    @Property('')
+    public overlayText: string;
+    /**
      * Represents the modified date of the annotation
      *
      * @default ''
@@ -226,6 +233,54 @@ export class PdfAnnotationBase extends ChildProperty<PdfAnnotationBase> {
      */
     @Property('#ffffff00')
     public fillColor: string;
+
+    /**
+     * Represents the isRepeat of the annotation.
+     *
+     * @default false
+     */
+    @Property(false)
+    public isRepeat: boolean;
+
+    /**
+     * Represents the useOverlayText of the annotation.
+     *
+     * @default false
+     */
+    @Property(false)
+    public useOverlayText: boolean;
+
+    /**
+     * Represents the opacity of the fill color (0-100).
+     *
+     * @default 1
+     */
+    @Property(1)
+    public markerOpacity: number;
+
+    /**
+     * Represents the outline color of the redaction.
+     *
+     * @default 'rgba(255, 0, 0, 1)'
+     */
+    @Property('rgba(255, 0, 0, 1)')
+    public markerBorderColor : string;
+
+    /**
+     * Represents the outline color of the redaction.
+     *
+     * @default 'rgba(0, 0, 0, 1)'
+     */
+    @Property('rgba(0, 0, 0, 1)')
+    public originalFillColor : string;
+
+    /**
+     * Represents the outline color of the redaction.
+     *
+     * @default 'rgba(255, 255, 255, 1)'
+     */
+    @Property('rgba(255, 255, 255, 1)')
+    public markerFillColor: string;
 
     /**
      * Represents the fill color of the annotation

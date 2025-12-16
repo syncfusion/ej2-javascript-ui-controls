@@ -39,6 +39,11 @@ export interface ChangeEventArgs extends SelectEventArgs {
      */
     event: MouseEvent | KeyboardEvent | TouchEvent
     /**
+     * Specifies the original event arguments.
+     *  @deprecated
+     */
+    e: MouseEvent | KeyboardEvent | TouchEvent
+    /**
      * Illustrates whether the current action needs to be prevented or not.
      * @deprecated
      */
@@ -2328,6 +2333,9 @@ export class DropDownList extends DropDownBase implements IInput {
                 }
             }
         } else {
+            while (this.hiddenElement.firstChild) {
+                this.hiddenElement.removeChild(this.hiddenElement.firstChild);
+            }
             this.hiddenElement.innerHTML = '';
         }
     }
@@ -3766,6 +3774,13 @@ export class DropDownList extends DropDownBase implements IInput {
                 this.filterInput.removeAttribute('autocapitalize');
                 this.filterInput.removeAttribute('spellcheck');
             }
+            if (this.filterInput.parentNode) {
+                this.filterInput.parentNode.removeChild(this.filterInput);
+                const attrs: any = Array.prototype.slice.call(this.filterInput.attributes);
+                for (let n: number = 0; n < attrs.length; n++) {
+                    this.filterInput.removeAttribute(attrs[n as number].name);
+                }
+            }
             this.filterInput = null;
         }
         attributes(this.targetElement(), { 'aria-expanded': 'false' });
@@ -4876,9 +4891,68 @@ export class DropDownList extends DropDownBase implements IInput {
                 detach(this.inputWrapper.container);
             }
         }
-        delete this.hiddenElement;
+        if (this.hiddenElement) {
+            if (this.hiddenElement.onchange) {
+                this.hiddenElement.onchange = null;
+            }
+            this.hiddenElement.onchange = null;
+            this.hiddenElement.onclick = null;
+            this.hiddenElement.oninput = null;
+            const attrs: any = Array.prototype.slice.call(this.hiddenElement.attributes);
+            for (let n: number = 0; n < attrs.length; n++) {
+                this.hiddenElement.removeAttribute(attrs[n as number].name);
+            }
+            const children: any = this.hiddenElement.children;
+            for (let i: number = 0; i < children.length; i++) {
+                const child: any = children[i as number];
+                (child as any).onclick = null;
+                (child as any).onchange = null;
+                child.textContent = '';
+                const attrs: any = Array.prototype.slice.call(child.attributes);
+                for (let n: number = 0; n < attrs.length; n++) {
+                    child.removeAttribute(attrs[n as number].name);
+                }
+            }
+            let selectedElement: any = this.hiddenElement.querySelector('option');
+            if (selectedElement) {
+                selectedElement.removeAttribute('value');
+                selectedElement.removeAttribute('selected');
+                selectedElement.text = '';
+                selectedElement.innerHTML = '';
+                selectedElement = null;
+            }
+            while (this.hiddenElement.firstChild) {
+                this.hiddenElement.removeChild(this.hiddenElement.firstChild);
+            }
+            if (this.hiddenElement.attributes) {
+                const attrs: any = Array.prototype.slice.call(this.hiddenElement.attributes);
+                for (let n: number = 0; n < attrs.length; n++) {
+                    this.hiddenElement.removeAttribute(attrs[n as number].name);
+                }
+            }
+            if (this.hiddenElement.parentNode) {
+                this.hiddenElement.parentNode.removeChild(this.hiddenElement);
+            }
+            this.hiddenElement.innerHTML = '';
+        }
         this.filterInput = null;
         this.keyboardModule = null;
+        if (this.list) {
+            detach(this.list);
+        }
+        if (this.ulElement) {
+            detach(this.ulElement);
+        }
+        if (this.popupContentElement) {
+            detach(this.popupContentElement);
+        }
+        if (this.popupObj && this.popupObj.element) {
+            if (this.popupObj.element && this.popupObj.element.parentNode) {
+                this.popupObj.element.parentNode.removeChild(this.popupObj.element);
+            }
+            detach(this.popupObj.element);
+            this.popupObj.element = null;
+        }
         this.ulElement = null;
         this.list = null;
         this.clearIconElement = null;
@@ -4892,7 +4966,14 @@ export class DropDownList extends DropDownBase implements IInput {
         this.header = null;
         this.previousSelectedLI = null;
         this.valueTempElement = null;
+        if (this.actionData.ulElement) {
+            detach(this.actionData.ulElement);
+        }
         this.actionData.ulElement = null;
+        if (this.actionCompleteData.ulElement) {
+            detach(this.actionCompleteData.ulElement);
+        }
+        this.actionCompleteData.ulElement = null;
         if (this.inputElement && !isNullOrUndefined(this.inputElement.onchange)) {
             this.inputElement.onchange = null;
         }

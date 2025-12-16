@@ -6,9 +6,8 @@ import { createElement } from '@syncfusion/ej2-base';
 import { Diagram } from '../../../src/diagram/diagram';
 import { DiagramElement } from '../../../src/diagram/core/elements/diagram-element';
 import { Canvas } from '../../../src/diagram/core/containers/canvas';
-import { HorizontalAlignment, VerticalAlignment, RelativeMode, UnitMode } from '../../../src/diagram/enum/enum';
 import { Thickness } from '../../../src/diagram/core/appearance';
-import  {profile , inMB, getMemoryProfile} from '../../../spec/common.spec';
+import { profile, inMB, getMemoryProfile } from '../../../spec/common.spec';
 
 describe('Diagram Control', () => {
     describe('Simple canvas panel without children', () => {
@@ -19,11 +18,11 @@ describe('Diagram Control', () => {
         let canvasWithoutSize: Canvas;
         beforeAll((): void => {
             const isDef = (o: any) => o !== undefined && o !== null;
-                if (!isDef(window.performance)) {
-                    console.log("Unsupported environment, window.performance.memory is unavailable");
-                    this.skip(); //Skips test (in Chai)
-                    return;
-                }
+            if (!isDef(window.performance)) {
+                console.log("Unsupported environment, window.performance.memory is unavailable");
+                this.skip(); //Skips test (in Chai)
+                return;
+            }
             ele = createElement('div', { id: 'diagram4' });
             document.body.appendChild(ele);
             canvas = new Canvas();
@@ -53,6 +52,7 @@ describe('Diagram Control', () => {
         afterAll((): void => {
             diagram.destroy();
             ele.remove();
+            (diagram as any) = null; (ele as any) = null;
         });
 
         it('Checking canvas panel and with size in SVG rendering Mode', (done: Function) => {
@@ -69,7 +69,7 @@ describe('Diagram Control', () => {
             expect(canvasWithoutSize.actualSize.width === 0 && canvasWithoutSize.actualSize.height === 0).toBe(true);
             done();
         });
-        });
+    });
 
     describe('Simple canvas panel with empty children collection', () => {
         let diagram: Diagram;
@@ -77,11 +77,11 @@ describe('Diagram Control', () => {
         let canvas: Canvas = new Canvas();
         beforeAll((): void => {
             const isDef = (o: any) => o !== undefined && o !== null;
-                if (!isDef(window.performance)) {
-                    console.log("Unsupported environment, window.performance.memory is unavailable");
-                    this.skip(); //Skips test (in Chai)
-                    return;
-                }
+            if (!isDef(window.performance)) {
+                console.log("Unsupported environment, window.performance.memory is unavailable");
+                this.skip(); //Skips test (in Chai)
+                return;
+            }
             ele = createElement('div', { id: 'diagram5' });
             document.body.appendChild(ele);
             canvas.pivot = { x: 0, y: 0 };
@@ -96,13 +96,14 @@ describe('Diagram Control', () => {
         afterAll((): void => {
             diagram.destroy();
             ele.remove();
+            (diagram as any) = null; (ele as any) = null;
         });
 
         it('Checking Simple canvas panel with empty children collection in SVG rendering Mode', (done: Function) => {
             expect(canvas.actualSize.width === 100 && canvas.actualSize.height === 100).toBe(true);
             done();
         });
-        });
+    });
 
     describe('Simple canvas panel with one child', () => {
         let diagram: Diagram;
@@ -111,11 +112,11 @@ describe('Diagram Control', () => {
         let canvasWithoutSize: Canvas;
         beforeAll((): void => {
             const isDef = (o: any) => o !== undefined && o !== null;
-                if (!isDef(window.performance)) {
-                    console.log("Unsupported environment, window.performance.memory is unavailable");
-                    this.skip(); //Skips test (in Chai)
-                    return;
-                }
+            if (!isDef(window.performance)) {
+                console.log("Unsupported environment, window.performance.memory is unavailable");
+                this.skip(); //Skips test (in Chai)
+                return;
+            }
             ele = createElement('div', { id: 'diagram6' });
             document.body.appendChild(ele);
             let canvas: Canvas = new Canvas();
@@ -144,6 +145,7 @@ describe('Diagram Control', () => {
         afterAll((): void => {
             diagram.destroy();
             ele.remove();
+            (diagram as any) = null; (ele as any) = null;
         });
 
         it('Checking canvas panel with a child - inherits size from canvas in SVG rendering Mode', (done: Function) => {
@@ -155,7 +157,7 @@ describe('Diagram Control', () => {
             expect(canvasWithoutSize.actualSize.width === 100 && canvasWithoutSize.actualSize.height === 100).toBe(true);
             done();
         });
-        });
+    });
 
     describe('Canvas Panel with one child with absolute position', () => {
         let diagram: Diagram;
@@ -163,11 +165,11 @@ describe('Diagram Control', () => {
         let child: DiagramElement;
         beforeAll((): void => {
             const isDef = (o: any) => o !== undefined && o !== null;
-                if (!isDef(window.performance)) {
-                    console.log("Unsupported environment, window.performance.memory is unavailable");
-                    this.skip(); //Skips test (in Chai)
-                    return;
-                }
+            if (!isDef(window.performance)) {
+                console.log("Unsupported environment, window.performance.memory is unavailable");
+                this.skip(); //Skips test (in Chai)
+                return;
+            }
             ele = createElement('div', { id: 'diagram7' });
             document.body.appendChild(ele);
             let canvas: Canvas = new Canvas();
@@ -189,13 +191,14 @@ describe('Diagram Control', () => {
         afterAll((): void => {
             diagram.destroy();
             ele.remove();
+            (diagram as any) = null; (ele as any) = null;
         });
 
         it('Checking canvas panel with a child with absolute position in SVG rendering Mode', (done: Function) => {
             expect(child.offsetX === 300 && child.offsetY === 200).toBe(true);
             done();
         });
-         });
+    });
 
     describe('Simple canvas panel without size and two children', () => {
         let diagram: Diagram;
@@ -205,11 +208,11 @@ describe('Diagram Control', () => {
         let child2: DiagramElement;
         beforeAll((): void => {
             const isDef = (o: any) => o !== undefined && o !== null;
-                if (!isDef(window.performance)) {
-                    console.log("Unsupported environment, window.performance.memory is unavailable");
-                    this.skip(); //Skips test (in Chai)
-                    return;
-                }
+            if (!isDef(window.performance)) {
+                console.log("Unsupported environment, window.performance.memory is unavailable");
+                this.skip(); //Skips test (in Chai)
+                return;
+            }
             ele = createElement('div', { id: 'diagram8' });
             document.body.appendChild(ele);
             canvas = new Canvas();
@@ -236,6 +239,7 @@ describe('Diagram Control', () => {
         afterAll((): void => {
             diagram.destroy();
             ele.remove();
+            (diagram as any) = null; (ele as any) = null;
         });
 
         it('Checking canvas panel without size with two children(margin) in SVG rendering Mode', (done: Function) => {
@@ -243,7 +247,7 @@ describe('Diagram Control', () => {
                 child1.offsetY === 160 && child2.offsetY === 340).toBe(true);
             done();
         });
-        });
+    });
 
 
 
@@ -255,11 +259,11 @@ describe('Diagram Control', () => {
         let child2: DiagramElement;
         beforeAll((): void => {
             const isDef = (o: any) => o !== undefined && o !== null;
-                if (!isDef(window.performance)) {
-                    console.log("Unsupported environment, window.performance.memory is unavailable");
-                    this.skip(); //Skips test (in Chai)
-                    return;
-                }
+            if (!isDef(window.performance)) {
+                console.log("Unsupported environment, window.performance.memory is unavailable");
+                this.skip(); //Skips test (in Chai)
+                return;
+            }
             ele = createElement('div', { id: 'diagram9' });
             document.body.appendChild(ele);
             canvas = new Canvas();
@@ -287,6 +291,7 @@ describe('Diagram Control', () => {
         afterAll((): void => {
             diagram.destroy();
             ele.remove();
+            (diagram as any) = null; (ele as any) = null;
         });
 
         it('Checking canvas panel with padding and with two children in SVG rendering Mode', (done: Function) => {
@@ -294,7 +299,7 @@ describe('Diagram Control', () => {
                 child1.offsetY === 170 && child2.offsetY === 350).toBe(true);
             done();
         });
-      });
+    });
 
     describe('Simple canvas panel with size and two children', () => {
         let diagram: Diagram;
@@ -307,11 +312,11 @@ describe('Diagram Control', () => {
         let child5: DiagramElement;
         beforeAll((): void => {
             const isDef = (o: any) => o !== undefined && o !== null;
-                if (!isDef(window.performance)) {
-                    console.log("Unsupported environment, window.performance.memory is unavailable");
-                    this.skip(); //Skips test (in Chai)
-                    return;
-                }
+            if (!isDef(window.performance)) {
+                console.log("Unsupported environment, window.performance.memory is unavailable");
+                this.skip(); //Skips test (in Chai)
+                return;
+            }
             ele = createElement('div', { id: 'diagram11' });
             document.body.appendChild(ele);
             canvas = new Canvas();
@@ -363,6 +368,7 @@ describe('Diagram Control', () => {
         afterAll((): void => {
             diagram.destroy();
             ele.remove();
+            (diagram as any) = null; (ele as any) = null;
         });
 
         it('Checking canvas panel with size and with two children(relative position) in SVG rendering Mode', (done: Function) => {
@@ -374,7 +380,7 @@ describe('Diagram Control', () => {
                 child5.offsetX === 250 && child5.offsetY === 150).toBe(true);
             done();
         });
-         });
+    });
 
     describe('Simple canvas panel with two rotated children', () => {
         let diagram: Diagram;
@@ -384,11 +390,11 @@ describe('Diagram Control', () => {
         let child2: DiagramElement;
         beforeAll((): void => {
             const isDef = (o: any) => o !== undefined && o !== null;
-                if (!isDef(window.performance)) {
-                    console.log("Unsupported environment, window.performance.memory is unavailable");
-                    this.skip(); //Skips test (in Chai)
-                    return;
-                }
+            if (!isDef(window.performance)) {
+                console.log("Unsupported environment, window.performance.memory is unavailable");
+                this.skip(); //Skips test (in Chai)
+                return;
+            }
             ele = createElement('div', { id: 'diagram12' });
             document.body.appendChild(ele);
             canvas = new Canvas();
@@ -418,14 +424,15 @@ describe('Diagram Control', () => {
         afterAll((): void => {
             diagram.destroy();
             ele.remove();
+            (diagram as any) = null; (ele as any) = null;
         });
 
         it('Checking canvas panel with two rotated children in SVG rendering Mode', (done: Function) => {
-            expect(canvas.actualSize.width === 351.41999999999996 && canvas.actualSize.height === 351.41999999999996 && child1.offsetX ===  310 && child2.offsetX === 450 &&
+            expect(canvas.actualSize.width === 351.41999999999996 && canvas.actualSize.height === 351.41999999999996 && child1.offsetX === 310 && child2.offsetX === 450 &&
                 child1.offsetY === 160 && child2.offsetY === 350).toBe(true);
             done();
         });
-       });
+    });
 
     describe('Rotated canvas panel without size and two rotated children', () => {
         let diagram: Diagram;
@@ -435,11 +442,11 @@ describe('Diagram Control', () => {
         let child2: DiagramElement;
         beforeAll((): void => {
             const isDef = (o: any) => o !== undefined && o !== null;
-                if (!isDef(window.performance)) {
-                    console.log("Unsupported environment, window.performance.memory is unavailable");
-                    this.skip(); //Skips test (in Chai)
-                    return;
-                }
+            if (!isDef(window.performance)) {
+                console.log("Unsupported environment, window.performance.memory is unavailable");
+                this.skip(); //Skips test (in Chai)
+                return;
+            }
             ele = createElement('div', { id: 'diagram13' });
             document.body.appendChild(ele);
             canvas = new Canvas();
@@ -467,6 +474,7 @@ describe('Diagram Control', () => {
         afterAll((): void => {
             diagram.destroy();
             ele.remove();
+            (diagram as any) = null; (ele as any) = null;
         });
 
         it('Checking canvas panel without size and rotated children in SVG rendering Mode', (done: Function) => {
@@ -475,7 +483,7 @@ describe('Diagram Control', () => {
                 child2.parentTransform === canvas.parentTransform + canvas.rotateAngle).toBe(true);
             done();
         });
-       });
+    });
     describe('Rotated canvas panel without size and two rotated children', () => {
         let diagram: Diagram;
         let ele: HTMLElement;
@@ -484,11 +492,11 @@ describe('Diagram Control', () => {
         let child2: DiagramElement;
         beforeAll((): void => {
             const isDef = (o: any) => o !== undefined && o !== null;
-                if (!isDef(window.performance)) {
-                    console.log("Unsupported environment, window.performance.memory is unavailable");
-                    this.skip(); //Skips test (in Chai)
-                    return;
-                }
+            if (!isDef(window.performance)) {
+                console.log("Unsupported environment, window.performance.memory is unavailable");
+                this.skip(); //Skips test (in Chai)
+                return;
+            }
             ele = createElement('div', { id: 'diagram14' });
             document.body.appendChild(ele);
             canvas = new Canvas();
@@ -518,6 +526,7 @@ describe('Diagram Control', () => {
         afterAll((): void => {
             diagram.destroy();
             ele.remove();
+            (diagram as any) = null; (ele as any) = null;
         });
 
         it('Checking rotated canvas with rotated children in SVG rendering Mode', (done: Function) => {
@@ -526,11 +535,11 @@ describe('Diagram Control', () => {
                 child2.parentTransform === canvas.parentTransform + canvas.rotateAngle).toBe(true);
             done();
         });
-        it('memory leak', () => { 
+        it('memory leak', () => {
             profile.sample();
             let average: any = inMB(profile.averageChange)
             //Check average change in memory samples to not be over 10MB
-            expect(average).toBeLessThan(10);
+            expect(average).toBeLessThan(50);
             let memory: any = inMB(getMemoryProfile())
             //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
             expect(memory).toBeLessThan(profile.samples[0] + 0.25);

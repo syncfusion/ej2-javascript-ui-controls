@@ -1,4 +1,3 @@
-@import 'ej2-base/styles/definition/material3.scss';
-
-@import 'material3-definition.scss';
-@import 'all.scss';
+@use 'ej2-base/styles/definition/material3' as *;
+@use 'material3-definition' as *;
+@use 'all' as *;

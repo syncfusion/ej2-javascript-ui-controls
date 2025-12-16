@@ -1,6 +1,6 @@
 {
 	"name": "@syncfusion/ej2-multicolumn-combobox",
-	"version": "31.2.4",
+	"version": "32.1.1",
 	"description": "Essential JS 2 Component",
 	"author": "Syncfusion Inc.",
 	"license": "SEE LICENSE IN license",
@@ -10,8 +10,7 @@
 	"typings": "index.d.ts",
 	"dependencies": {
 		"@syncfusion/ej2-base": "*",
-		"@syncfusion/ej2-grids": "*",
-		"markdown-spellcheck": "^1.3.1"
+		"@syncfusion/ej2-grids": "*"
 	},
 	"devDependencies": {
 		"@syncfusion/ej2-staging": "^1.0.1",

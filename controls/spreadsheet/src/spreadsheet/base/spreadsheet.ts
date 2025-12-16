@@ -4,7 +4,7 @@ import { Property, NotifyPropertyChanges, INotifyPropertyChanged, ModuleDeclarat
 import { addClass, removeClass, EmitType, Complex, formatUnit, L10n, isNullOrUndefined, Browser } from '@syncfusion/ej2-base';
 import { detach, select, closest, setStyleAttribute, EventHandler } from '@syncfusion/ej2-base';
 import { MenuItemModel, BeforeOpenCloseMenuEventArgs, ItemModel } from '@syncfusion/ej2-navigations';
-import { mouseDown, spreadsheetDestroyed, keyUp, BeforeOpenEventArgs, clearViewer, refreshSheetTabs, positionAutoFillElement, readonlyAlert, deInitProperties, UndoRedoEventArgs, isColumnRange, isRowRange, findDlg } from '../common/index';
+import { mouseDown, spreadsheetDestroyed, keyUp, BeforeOpenEventArgs, clearViewer, refreshSheetTabs, positionAutoFillElement, readonlyAlert, deInitProperties, UndoRedoEventArgs, isColumnRange, isRowRange, findDlg, refreshCommentsPane } from '../common/index';
 import { performUndoRedo, overlay, DialogBeforeOpenEventArgs, createImageElement, deleteImage, removeHyperlink } from '../common/index';
 import { HideShowEventArgs, sheetNameUpdate, updateUndoRedoCollection, getUpdateUsingRaf, setAutoFit } from '../common/index';
 import { actionEvents, CollaborativeEditArgs, keyDown, enableFileMenuItems, hideToolbarItems, updateAction } from '../common/index';
@@ -15,7 +15,7 @@ import { addContextMenuItems, removeContextMenuItems, enableContextMenuItems, se
 import { cut, copy, paste, PasteSpecialType, dialog, editOperation, activeSheetChanged, refreshFormulaDatasource } from '../common/index';
 import { Render } from '../renderer/render';
 import { Scroll, VirtualScroll, Edit, CellFormat, Selection, KeyboardNavigation, KeyboardShortcut, WrapText } from '../actions/index';
-import { Clipboard, ShowHide, UndoRedo, SpreadsheetHyperlink, Resize, Insert, Delete, FindAndReplace, Merge, AutoFill, SpreadsheetNote } from '../actions/index';
+import { Clipboard, ShowHide, UndoRedo, SpreadsheetHyperlink, Resize, Insert, Delete, FindAndReplace, Merge, AutoFill, SpreadsheetNote, SpreadsheetComment } from '../actions/index';
 import { ProtectSheet } from '../actions/index';
 import { CellRenderEventArgs, IRenderer, IViewport, OpenOptions, MenuSelectEventArgs, click, hideFileMenuItems } from '../common/index';
 import { Dialog, ActionEvents, Overlay } from '../services/index';
@@ -98,6 +98,16 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
      */
     @Property(true)
     public showAggregate: boolean;
+
+    /**
+     * Determines whether the comments pane is visible in the spreadsheet.
+     * When set to `true`, the comments pane is displayed; otherwise, it remains hidden.
+     * If not set, the pane remains hidden by default.
+     *
+     * @default false
+     */
+    @Property(false)
+    public showCommentsPane: boolean;
 
     /**
      * It enables or disables the clipboard operations (cut, copy, and paste) of the Spreadsheet.
@@ -726,6 +736,9 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
     /** @hidden */
     public spreadsheetNoteModule: SpreadsheetNote;
 
+    /** @hidden */
+    public spreadsheetCommentModule: SpreadsheetComment;
+
     /**
      * Array to store multiple rafIds on intial rendering.
      *
@@ -790,7 +803,7 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
             WorkbookHyperlink, Insert, Delete, WorkbookInsert, WorkbookDelete, DataValidation, WorkbookDataValidation, Print,
             ProtectSheet, WorkbookProtectSheet, FindAndReplace, WorkbookFindAndReplace, Merge, WorkbookMerge, SpreadsheetImage,
             ConditionalFormatting, WorkbookImage, WorkbookConditionalFormat, SpreadsheetChart, WorkbookChart, AutoFill, WorkbookAutoFill,
-            SpreadsheetNote
+            SpreadsheetNote, SpreadsheetComment
         );
         if (element) {
             this.appendTo(element);
@@ -1933,6 +1946,9 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
             this.notify(refreshSheetTabs, null);
             this.notify(workbookFormulaOperation, { action: 'initSheetInfo' });
             this.renderModule.refreshSheet();
+            if (this.showCommentsPane) {
+                this.notify(refreshCommentsPane, { sheetIdx: this.activeSheetIndex });
+            }
         } else {
             if (this.createdHandler) {
                 const refreshFn: Function = (): void => {
@@ -2328,6 +2344,10 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
             const nodeIndicator: HTMLElement = td.querySelector('.e-addNoteIndicator') as HTMLElement;
             if (nodeIndicator) {
                 node = nodeIndicator.previousSibling;
+            }
+            const commentIndicator: HTMLElement = td.querySelector('.e-comment-indicator') as HTMLElement;
+            if (commentIndicator) {
+                node = commentIndicator.previousSibling;
             }
             if (td.querySelector('.e-databar-value')) {
                 node = td.querySelector('.e-databar-value').lastChild;

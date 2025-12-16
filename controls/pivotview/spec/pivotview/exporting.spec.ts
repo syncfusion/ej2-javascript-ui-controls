@@ -1,5 +1,5 @@
 import { IDataSet } from '../../src/base/engine';
-import { pivot_dataset, pivot_smalldata } from '../base/datasource.spec';
+import { pivot_smalldata } from '../base/datasource.spec';
 import * as util from '../utils.spec';
 import { profile, inMB, getMemoryProfile } from '../common.spec';
 import { PivotView } from '../../src/pivotview/base/pivotview';
@@ -9,14 +9,375 @@ import { PDFExport } from '../../src/pivotview/actions/pdf-export';
 import { ExcelExport } from '../../src/pivotview/actions/excel-export';
 import { Toolbar } from '../../src/common/popups/toolbar';
 import { FieldList } from '../../src/common/actions/field-list';
-import { BeforeExportEventArgs, ExportCompleteEventArgs, PdfCellRenderArgs, PivotActionBeginEventArgs } from '../../src/common/base/interface';
-import { ExcelExportProperties, PdfExportProperties } from '@syncfusion/ej2-grids';
-import { PdfFontFamily, PdfFontStyle, PdfPageSize, PdfStandardFont, PdfStringFormat, PdfPageOrientation} from '@syncfusion/ej2-pdf-export';
+import { BeforeExportEventArgs, ColumnRenderEventArgs, ExcelExportProperties, ExcelImage, ExportCompleteEventArgs, PdfCellRenderArgs, PivotActionBeginEventArgs } from '../../src/common/base/interface';
+import { ExcelQueryCellInfoEventArgs, PdfExportProperties } from '@syncfusion/ej2-grids';
+import { PdfFontFamily, PdfFontStyle, PdfPageOrientation, PdfPageSize, PdfStandardFont, PdfStringFormat } from '@syncfusion/ej2-pdf-export';
 import { ILoadedEventArgs } from '@syncfusion/ej2-charts';
 
 let image: string = '/9j/4AAQSkZJRgABAQAAAQABAAD/9k=';
 
 describe('PDF Export', () => {
+    let pivotDatas: IDataSet[] = [
+        {
+            _id: "5a940692c2d185d9fde50e5e",
+            index: 0,
+            guid: "810a1191-81bd-4c18-ac73-d16ad3fc80eb",
+            isActive: "false",
+            balance: 2430.87,
+            advance: 7658,
+            quantity: 11,
+            age: 21,
+            eyeColor: "blue",
+            name: "Skinner Ward",
+            gender: "male",
+            company: "GROK",
+            email: "skinnerward@grok.com",
+            phone: "+1 (931) 600-3042",
+            date: "Wed Feb 16 2000 15:01:01 GMT+053s0 (India Standard Time)",
+            product: "Flight",
+            state: "New Jercy",
+            pno: "FEDD2340",
+        },
+        {
+            _id: "5a940692c5752f1ed81bbb3d",
+            index: 1,
+            guid: "41c9986b-ccef-459e-a22d-5458bbdca9c7",
+            isActive: "true",
+            balance: 3192.7,
+            advance: 6124,
+            quantity: 15,
+
+            age: 27,
+            eyeColor: "brown",
+            name: "Gwen Dixon",
+            gender: "female",
+            company: "ICOLOGY",
+            email: "gwendixon@icology.com",
+            phone: "+1 (951) 589-2187",
+            date: "Sun Feb 10 1991 20:28:59 GMT+0530 (India Standard Time)",
+            product: "Jet",
+            state: "Vetaikan",
+            pno: "ERTS4512",
+        },
+        {
+            _id: "5a9406924c0e7f4c98a82ca7",
+            index: 2,
+            guid: "50d2bf16-9092-4202-84f6-e892721fe5a5",
+            isActive: "true",
+            balance: 1663.84,
+            advance: 7631,
+            quantity: 14,
+
+            age: 28,
+            eyeColor: "green",
+            name: "Deena Gillespie",
+            gender: "female",
+            company: "OVERPLEX",
+            email: "deenagillespie@overplex.com",
+            phone: "+1 (826) 588-3430",
+            date: "Thu Mar 18 1993 17:07:48 GMT+0530 (India Standard Time)",
+            product: "Car",
+            state: "New Jercy",
+            pno: "ERTS4512",
+        },
+        {
+            _id: "5a940692dd9db638eee09828",
+            index: 3,
+            guid: "b8bdc65e-4338-440f-a731-810186ce0b3a",
+            isActive: "true",
+            balance: 1601.82,
+            advance: 6519,
+            quantity: 18,
+
+            age: 33,
+            eyeColor: "green",
+            name: "Susanne Peterson",
+            gender: "female",
+            company: "KROG",
+            email: "susannepeterson@krog.com",
+            phone: "+1 (868) 499-3292",
+            date: "Sat Feb 09 2002 04:28:45 GMT+0530 (India Standard Time)",
+            product: "Jet",
+            state: "Vetaikan",
+            pno: "CCOP1239",
+        },
+        {
+            _id: "5a9406926f9971a87eae51af",
+            index: 4,
+            guid: "3f4c79ec-a227-4210-940f-162ca0c293de",
+            isActive: "false",
+            balance: 1855.77,
+            advance: 7333,
+            quantity: 20,
+
+            age: 33,
+            eyeColor: "green",
+            name: "Stokes Hicks",
+            gender: "male",
+            company: "SIGNITY",
+            email: "stokeshicks@signity.com",
+            phone: "+1 (927) 585-2980",
+            date: "Fri Mar 12 2004 11:08:06 GMT+0530 (India Standard Time)",
+            product: "Van",
+            state: "Tamilnadu",
+            pno: "MEWD9812",
+        },
+        {
+            _id: "5a940692bcbbcdde08fcf7ec",
+            index: 5,
+            guid: "1d0ee387-14d4-403e-9a0c-3a8514a64281",
+            isActive: "true",
+            balance: 1372.23,
+            advance: 5668,
+            quantity: 16,
+
+            age: 39,
+            eyeColor: "green",
+            name: "Sandoval Nicholson",
+            gender: "male",
+            company: "IDEALIS",
+            email: "sandovalnicholson@idealis.com",
+            phone: "+1 (951) 438-3539",
+            date: "Sat Aug 30 1975 22:02:15 GMT+0530 (India Standard Time)",
+            product: "Bike",
+            state: "Tamilnadu",
+            pno: "CCOP1239",
+        },
+        {
+            _id: "5a940692ff31a6e1cdd10487",
+            index: 6,
+            guid: "58417d45-f279-4e21-ba61-16943d0f11c1",
+            isActive: "false",
+            balance: 2008.28,
+            advance: 7107,
+            quantity: 14,
+
+            age: 20,
+            eyeColor: "brown",
+            name: "Blake Thornton",
+            gender: "male",
+            company: "IMMUNICS",
+            email: "blakethornton@immunics.com",
+            phone: "+1 (852) 462-3571",
+            date: "Mon Oct 03 2005 05:16:53 GMT+0530 (India Standard Time)",
+            product: "Tempo",
+            state: "New Jercy",
+            pno: "CCOP1239",
+        },
+        {
+            _id: "5a9406928f2f2598c7ac7809",
+            index: 7,
+            guid: "d16299e3-e243-4e57-90fb-52446c4c0275",
+            isActive: "false",
+            balance: 2052.58,
+            advance: 7431,
+            quantity: 20,
+
+            age: 22,
+            eyeColor: "blue",
+            name: "Dillard Sharpe",
+            gender: "male",
+            company: "INEAR",
+            email: "dillardsharpe@inear.com",
+            phone: "+1 (963) 473-2308",
+            date: "Thu May 25 1978 04:57:00 GMT+0530 (India Standard Time)",
+            product: "Tempo",
+            state: "Rajkot",
+            pno: "ERTS4512",
+        },
+    ];
+
+    describe('-Empty Data in Chart', () => {
+        let pivotGridObj: PivotView;
+        let pdfExportProperties: PdfExportProperties = {
+            header: {
+                fromTop: 0,
+                height: 130,
+                contents: [
+                    {
+                        type: 'Text',
+                        value: "Northwind Traders",
+                        position: { x: 0, y: 50 },
+                        style: { textBrushColor: '#000000', fontSize: 13 }
+                    },
+
+                ]
+            },
+            footer: {
+                fromBottom: 160,
+                height: 150,
+                contents: [
+                    {
+                        type: 'PageNumber',
+                        pageNumberType: 'Arabic',
+                        format: 'Page {$current} of {$total}',
+                        position: { x: 0, y: 25 },
+                        style: { textBrushColor: '#02007a', fontSize: 15 }
+                    }
+                ]
+            }
+        }
+        let elem: HTMLElement = createElement('div', { id: 'PivotGrid' });
+        if (document.getElementById(elem.id)) {
+            remove(document.getElementById(elem.id));
+        }
+        document.body.appendChild(elem);
+        afterAll(() => {
+            if (pivotGridObj) {
+                pivotGridObj.destroy();
+            }
+            remove(elem);
+        });
+        beforeAll(() => {
+            const isDef = (o: any) => o !== undefined && o !== null;
+            if (!isDef(window.performance)) {
+                console.log("Unsupported environment, window.performance.memory is unavailable");
+                pending(); //Skips test (in Chai)
+                return;
+            }
+            if (document.getElementById(elem.id)) {
+                remove(document.getElementById(elem.id));
+            }
+            document.body.appendChild(elem);
+            PivotView.Inject(Toolbar, PDFExport, FieldList, VirtualScroll);
+            pivotGridObj = new PivotView({
+                dataSourceSettings: {
+                    dataSource: pivotDatas as IDataSet[],
+                    expandAll: false,
+                    enableSorting: true,
+                },
+                width: '100%',
+                height: 300,
+                allowCalculatedField: true,
+                allowExcelExport: true,
+                allowPdfExport: true,
+                showFieldList: true,
+                enableVirtualization: true,
+                toolbar: ['Export'],
+                showToolbar: true,
+                allowConditionalFormatting: true,
+                displayOption: { view: 'Both', primary: 'Chart' },
+
+                chartSettings: {
+                    value: 'Amount', enableExport: true, chartSeries: { type: 'Column', animation: { enable: false } }, enableMultipleAxis: true, showPointColorByMembers: true, enableScrollOnMultiAxis: true,
+                },
+              
+            });
+            pivotGridObj.appendTo('#PivotGrid');
+        });
+        it('For sample render-Empty Data', (done: Function) => {
+            setTimeout(() => {
+                expect(1).toBe(1);
+                done();
+            }, 500);
+        });
+        it('memory leak', () => {
+            profile.sample();
+            let average: any = inMB(profile.averageChange);
+            //Check average change in memory samples to not be over 10MB
+            let memory: any = inMB(getMemoryProfile());
+            //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
+            expect(memory).toBeLessThan(profile.samples[0] + 0.25);
+        });
+    });
+
+    describe('- Applying the theme to the cells in the PDF', () => {
+        let pivotGridObj: PivotView;
+        let elem: HTMLElement = createElement('div', { id: 'PivotGrid' });
+        if (document.getElementById(elem.id)) {
+            remove(document.getElementById(elem.id));
+        }
+        document.body.appendChild(elem);
+        afterAll(() => {
+            if (pivotGridObj) {
+                pivotGridObj.destroy();
+            }
+            remove(elem);
+        });
+        beforeAll(() => {
+            const isDef = (o: any) => o !== undefined && o !== null;
+            if (!isDef(window.performance)) {
+                console.log("Unsupported environment, window.performance.memory is unavailable");
+                pending(); //Skips test (in Chai)
+                return;
+            }
+            if (document.getElementById(elem.id)) {
+                remove(document.getElementById(elem.id));
+            }
+            document.body.appendChild(elem);
+            PivotView.Inject(Toolbar, PDFExport, FieldList, VirtualScroll);
+            pivotGridObj = new PivotView({
+                dataSourceSettings: {
+                    dataSource: pivotDatas as IDataSet[],
+                    rows: [{ name: 'product', caption: 'Items' }, { name: 'eyeColor' }],
+                    columns: [{ name: 'gender', caption: 'Population' }, { name: 'isActive' }],
+                    values: [{ name: 'balance' }, { name: 'quantity' }],
+                    expandAll: false
+                },
+                height: 800,
+                width: '100%',
+                allowPdfExport: true,
+                showFieldList: true,
+                toolbar: ['Export'],
+                showToolbar: true,
+                enableVirtualization: true,
+                actionBegin: function (args: PivotActionBeginEventArgs) {
+                    if (args.actionName === 'PDF export') {
+                        args.cancel = true;
+                        let pdfExportProperties: PdfExportProperties = {
+                            fileName: 'sample',
+                            theme: {
+                                header: {
+                                    fontColor: '#64FA50', fontName: 'Calibri', fontSize: 17, underline: true, bold: true,
+                                    strikeout: true, font: new PdfStandardFont(PdfFontFamily.Helvetica, 15, PdfFontStyle.Underline)
+                                },
+                                record: {
+                                    fontColor: '#64FA50', fontName: 'Courier', fontSize: 17, italic: true,
+                                    border: { color: '#64FA50', lineStyle: 'Thin', dashStyle: 'Dash' },
+                                    font: new PdfStandardFont(PdfFontFamily.Helvetica, 15, PdfFontStyle.Underline)
+                                },
+                                caption: {
+                                    fontColor: '#64FA50', fontName: 'Calibri', fontSize: 17, strikeout: true
+                                }
+                            }
+                        };
+                        pivotGridObj.pdfExport(pdfExportProperties, false, null, false);
+                    }
+                },
+                beforeExport: (args: BeforeExportEventArgs) => {
+                    args.fileName = 'Export';
+                },
+                virtualScrollSettings: { allowSinglePage: false }
+            });
+            pivotGridObj.appendTo('#PivotGrid');
+        });
+        beforeEach((done: Function) => {
+            setTimeout(() => { done(); }, 100);
+        });
+        it('- Table render', (done: Function) => {
+            setTimeout(() => {
+                expect((pivotGridObj.engineModule.pivotValues[0][1] as IDataSet).formattedText).toBe("female");
+                done();
+            }, 1500);
+        });
+        it('- Exporting', (done: Function) => {
+            setTimeout(() => {
+                let li: HTMLElement = document.getElementById('PivotGridexport_menu').children[0] as HTMLElement;
+                expect(li.classList.contains('e-menu-caret-icon')).toBeTruthy();
+                util.triggerEvent(li, 'mouseover');
+                (document.querySelectorAll('.e-menu-popup li')[0] as HTMLElement).click();
+                done();
+            }, 500);
+        });
+        it('memory leak', () => {
+            profile.sample();
+            let average: any = inMB(profile.averageChange);
+            //Check average change in memory samples to not be over 10MB
+            let memory: any = inMB(getMemoryProfile());
+            //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
+            expect(memory).toBeLessThan(profile.samples[0] + 0.25);
+        });
+    });
     describe('- Row height', () => {
         let pivotGridObj: PivotView;
         let elem: HTMLElement = createElement('div', { id: 'PivotGrid' });
@@ -44,7 +405,7 @@ describe('PDF Export', () => {
             PivotView.Inject(Toolbar, PDFExport, FieldList, VirtualScroll);
             pivotGridObj = new PivotView({
                 dataSourceSettings: {
-                    dataSource: pivot_dataset as IDataSet[],
+                    dataSource: pivotDatas as IDataSet[],
                     rows: [{ name: 'product', caption: 'Items' }, { name: 'eyeColor' }],
                     columns: [{ name: 'gender', caption: 'Population' }, { name: 'isActive' }],
                     values: [{ name: 'balance' }, { name: 'quantity' }],
@@ -119,7 +480,7 @@ describe('PDF Export', () => {
             PivotView.Inject(Toolbar, PDFExport, FieldList, VirtualScroll, ExcelExport);
             pivotGridObj = new PivotView({
                 dataSourceSettings: {
-                    dataSource: pivot_dataset as IDataSet[],
+                    dataSource: pivotDatas as IDataSet[],
                     rows: [{ name: 'product', caption: 'Items' }, { name: 'eyeColor' }],
                     columns: [{ name: 'gender', caption: 'Population' }, { name: 'isActive' }],
                     values: [{ name: 'balance' }, { name: 'quantity' }],
@@ -202,7 +563,7 @@ describe('PDF Export', () => {
             PivotView.Inject(Toolbar, PDFExport, FieldList, VirtualScroll);
             pivotGridObj = new PivotView({
                 dataSourceSettings: {
-                    dataSource: pivot_dataset as IDataSet[],
+                    dataSource: pivotDatas as IDataSet[],
                     rows: [{ name: 'product', caption: 'Items' }, { name: 'eyeColor' }],
                     columns: [{ name: 'gender', caption: 'Population' }, { name: 'isActive' }],
                     values: [{ name: 'balance' }, { name: 'quantity' }],
@@ -427,7 +788,7 @@ describe('PDF Export', () => {
             PivotView.Inject(Toolbar, PDFExport, FieldList, VirtualScroll);
             pivotGridObj = new PivotView({
                 dataSourceSettings: {
-                    dataSource: pivot_dataset as IDataSet[],
+                    dataSource: pivotDatas as IDataSet[],
                     rows: [{ name: 'product', caption: 'Items' }, { name: 'eyeColor' }],
                     columns: [{ name: 'gender', caption: 'Population' }, { name: 'isActive' }],
                     values: [{ name: 'balance' }, { name: 'quantity' }],
@@ -520,7 +881,7 @@ describe('PDF Export', () => {
             PivotView.Inject(Toolbar, PDFExport, FieldList, VirtualScroll);
             pivotGridObj = new PivotView({
                 dataSourceSettings: {
-                    dataSource: pivot_dataset as IDataSet[],
+                    dataSource: pivotDatas as IDataSet[],
                     rows: [{ name: 'product', caption: 'Items' }, { name: 'eyeColor' }],
                     columns: [{ name: 'gender', caption: 'Population' }, { name: 'isActive' }],
                     values: [{ name: 'balance' }, { name: 'quantity' }],
@@ -611,7 +972,7 @@ describe('PDF Export', () => {
             PivotView.Inject(Toolbar, PDFExport, FieldList, VirtualScroll);
             pivotGridObj = new PivotView({
                 dataSourceSettings: {
-                    dataSource: pivot_dataset as IDataSet[],
+                    dataSource: pivotDatas as IDataSet[],
                     rows: [{ name: 'product', caption: 'Items' }, { name: 'eyeColor' }],
                     columns: [{ name: 'gender', caption: 'Population' }, { name: 'isActive' }],
                     values: [{ name: 'balance' }, { name: 'quantity' }],
@@ -700,7 +1061,7 @@ describe('PDF Export', () => {
             PivotView.Inject(Toolbar, PDFExport, FieldList, VirtualScroll);
             pivotGridObj = new PivotView({
                 dataSourceSettings: {
-                    dataSource: pivot_dataset as IDataSet[],
+                    dataSource: pivotDatas as IDataSet[],
                     rows: [{ name: 'product', caption: 'Items' }, { name: 'eyeColor' }],
                     columns: [{ name: 'gender', caption: 'Population' }, { name: 'isActive' }],
                     values: [{ name: 'balance' }, { name: 'quantity' }],
@@ -789,7 +1150,7 @@ describe('PDF Export', () => {
             PivotView.Inject(Toolbar, PDFExport, FieldList, VirtualScroll);
             pivotGridObj = new PivotView({
                 dataSourceSettings: {
-                    dataSource: pivot_dataset as IDataSet[],
+                    dataSource: pivotDatas as IDataSet[],
                     rows: [{ name: 'product', caption: 'Items' }, { name: 'eyeColor' }],
                     columns: [{ name: 'gender', caption: 'Population' }, { name: 'isActive' }],
                     values: [{ name: 'balance' }, { name: 'quantity' }],
@@ -878,7 +1239,7 @@ describe('PDF Export', () => {
             PivotView.Inject(Toolbar, PDFExport, FieldList, VirtualScroll);
             pivotGridObj = new PivotView({
                 dataSourceSettings: {
-                    dataSource: pivot_dataset as IDataSet[],
+                    dataSource: pivotDatas as IDataSet[],
                     rows: [{ name: 'product', caption: 'Items' }, { name: 'eyeColor' }],
                     columns: [{ name: 'gender', caption: 'Population' }, { name: 'isActive' }],
                     values: [{ name: 'balance' }, { name: 'quantity' }],
@@ -967,7 +1328,7 @@ describe('PDF Export', () => {
             PivotView.Inject(Toolbar, PDFExport, FieldList, VirtualScroll);
             pivotGridObj = new PivotView({
                 dataSourceSettings: {
-                    dataSource: pivot_dataset as IDataSet[],
+                    dataSource: pivotDatas as IDataSet[],
                     rows: [{ name: 'product', caption: 'Items' }, { name: 'eyeColor' }],
                     columns: [{ name: 'gender', caption: 'Population' }, { name: 'isActive' }],
                     values: [{ name: 'balance' }, { name: 'quantity' }],
@@ -1054,7 +1415,7 @@ describe('PDF Export', () => {
             PivotView.Inject(Toolbar, PDFExport, FieldList, VirtualScroll);
             pivotGridObj = new PivotView({
                 dataSourceSettings: {
-                    dataSource: pivot_dataset as IDataSet[],
+                    dataSource: pivotDatas as IDataSet[],
                     rows: [{ name: 'product', caption: 'Items' }, { name: 'eyeColor' }],
                     columns: [{ name: 'gender', caption: 'Population' }, { name: 'isActive' }],
                     values: [{ name: 'balance' }, { name: 'quantity' }],
@@ -1142,7 +1503,7 @@ describe('PDF Export', () => {
             PivotView.Inject(Toolbar, PDFExport, FieldList, VirtualScroll);
             pivotGridObj = new PivotView({
                 dataSourceSettings: {
-                    dataSource: pivot_dataset as IDataSet[],
+                    dataSource: pivotDatas as IDataSet[],
                     rows: [{ name: 'product', caption: 'Items' }, { name: 'eyeColor' }],
                     columns: [{ name: 'gender', caption: 'Population' }, { name: 'isActive' }],
                     values: [{ name: 'balance' }, { name: 'quantity' }],
@@ -1230,7 +1591,7 @@ describe('PDF Export', () => {
             PivotView.Inject(Toolbar, PDFExport, FieldList, VirtualScroll);
             pivotGridObj = new PivotView({
                 dataSourceSettings: {
-                    dataSource: pivot_dataset as IDataSet[],
+                    dataSource: pivotDatas as IDataSet[],
                     rows: [{ name: 'product', caption: 'Items' }, { name: 'eyeColor' }],
                     columns: [{ name: 'gender', caption: 'Population' }, { name: 'isActive' }],
                     values: [{ name: 'balance' }, { name: 'quantity' }],
@@ -1318,7 +1679,7 @@ describe('PDF Export', () => {
             PivotView.Inject(Toolbar, PDFExport, FieldList, VirtualScroll, ExcelExport);
             pivotGridObj = new PivotView({
                 dataSourceSettings: {
-                    dataSource: pivot_dataset as IDataSet[],
+                    dataSource: pivotDatas as IDataSet[],
                     rows: [{ name: 'product', caption: 'Items' }, { name: 'eyeColor' }],
                     columns: [{ name: 'gender', caption: 'Population' }, { name: 'isActive' }],
                     values: [{ name: 'balance' }, { name: 'quantity' }],
@@ -1389,7 +1750,7 @@ describe('PDF Export', () => {
             PivotView.Inject(Toolbar, PDFExport, FieldList, VirtualScroll);
             pivotGridObj = new PivotView({
                 dataSourceSettings: {
-                    dataSource: pivot_dataset as IDataSet[],
+                    dataSource: pivotDatas as IDataSet[],
                     rows: [{ name: 'product', caption: 'Items' }, { name: 'eyeColor' }],
                     columns: [{ name: 'gender', caption: 'Population' }, { name: 'isActive' }],
                     values: [{ name: 'balance' }, { name: 'quantity' }],
@@ -1480,7 +1841,7 @@ describe('PDF Export', () => {
             PivotView.Inject(Toolbar, PDFExport, FieldList, VirtualScroll);
             pivotGridObj = new PivotView({
                 dataSourceSettings: {
-                    dataSource: pivot_dataset as IDataSet[],
+                    dataSource: pivotDatas as IDataSet[],
                     rows: [{ name: 'product', caption: 'Items' }, { name: 'eyeColor' }],
                     columns: [{ name: 'gender', caption: 'Population' }, { name: 'isActive' }],
                     values: [{ name: 'balance' }, { name: 'quantity' }],
@@ -1556,104 +1917,6 @@ describe('PDF Export', () => {
         });
     });
 
-    describe('- Applying the theme to the cells in the PDF', () => {
-        let pivotGridObj: PivotView;
-        let elem: HTMLElement = createElement('div', { id: 'PivotGrid' });
-        if (document.getElementById(elem.id)) {
-            remove(document.getElementById(elem.id));
-        }
-        document.body.appendChild(elem);
-        afterAll(() => {
-            if (pivotGridObj) {
-                pivotGridObj.destroy();
-            }
-            remove(elem);
-        });
-        beforeAll(() => {
-            const isDef = (o: any) => o !== undefined && o !== null;
-            if (!isDef(window.performance)) {
-                console.log("Unsupported environment, window.performance.memory is unavailable");
-                pending(); //Skips test (in Chai)
-                return;
-            }
-            if (document.getElementById(elem.id)) {
-                remove(document.getElementById(elem.id));
-            }
-            document.body.appendChild(elem);
-            PivotView.Inject(Toolbar, PDFExport, FieldList, VirtualScroll);
-            pivotGridObj = new PivotView({
-                dataSourceSettings: {
-                    dataSource: pivot_dataset as IDataSet[],
-                    rows: [{ name: 'product', caption: 'Items' }, { name: 'eyeColor' }],
-                    columns: [{ name: 'gender', caption: 'Population' }, { name: 'isActive' }],
-                    values: [{ name: 'balance' }, { name: 'quantity' }],
-                    expandAll: false
-                },
-                height: 800,
-                width: '100%',
-                allowPdfExport: true,
-                showFieldList: true,
-                toolbar: ['Export'],
-                showToolbar: true,
-                enableVirtualization: true,
-                actionBegin: function (args: PivotActionBeginEventArgs) {
-                    if (args.actionName === 'PDF export') {
-                        args.cancel = true;
-                        let pdfExportProperties: PdfExportProperties = {
-                            fileName: 'sample',
-                            theme: {
-                                header: {
-                                    fontColor: '#64FA50', fontName: 'Calibri', fontSize: 17, underline: true, bold: true,
-                                    strikeout: true, font: new PdfStandardFont(PdfFontFamily.Helvetica, 15, PdfFontStyle.Underline)
-                                },
-                                record: {
-                                    fontColor: '#64FA50', fontName: 'Courier', fontSize: 17, italic: true,
-                                    border: { color: '#64FA50', lineStyle: 'Thin', dashStyle: 'Dash' },
-                                    font: new PdfStandardFont(PdfFontFamily.Helvetica, 15, PdfFontStyle.Underline)
-                                },
-                                caption: {
-                                    fontColor: '#64FA50', fontName: 'Calibri', fontSize: 17, strikeout: true
-                                }
-                            }
-                        };
-                        pivotGridObj.pdfExport(pdfExportProperties, false, null, false);
-                    }
-                },
-                beforeExport: (args: BeforeExportEventArgs) => {
-                    args.fileName = 'Export';
-                },
-                virtualScrollSettings: { allowSinglePage: false }
-            });
-            pivotGridObj.appendTo('#PivotGrid');
-        });
-        beforeEach((done: Function) => {
-            setTimeout(() => { done(); }, 100);
-        });
-        it('- Table render', (done: Function) => {
-            setTimeout(() => {
-                expect((pivotGridObj.engineModule.pivotValues[0][1] as IDataSet).formattedText).toBe("female");
-                done();
-            }, 1500);
-        });
-        it('- Exporting', (done: Function) => {
-            setTimeout(() => {
-                let li: HTMLElement = document.getElementById('PivotGridexport_menu').children[0] as HTMLElement;
-                expect(li.classList.contains('e-menu-caret-icon')).toBeTruthy();
-                util.triggerEvent(li, 'mouseover');
-                (document.querySelectorAll('.e-menu-popup li')[0] as HTMLElement).click();
-                done();
-            }, 500);
-        });
-        it('memory leak', () => {
-            profile.sample();
-            let average: any = inMB(profile.averageChange);
-            //Check average change in memory samples to not be over 10MB
-            let memory: any = inMB(getMemoryProfile());
-            //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
-            expect(memory).toBeLessThan(profile.samples[0] + 0.25);
-        });
-    });
-
     describe('- Applying the styles to the cells in the PDF', () => {
         let pivotGridObj: PivotView;
         let elem: HTMLElement = createElement('div', { id: 'PivotGrid' });
@@ -1681,7 +1944,7 @@ describe('PDF Export', () => {
             PivotView.Inject(Toolbar, PDFExport, FieldList, VirtualScroll);
             pivotGridObj = new PivotView({
                 dataSourceSettings: {
-                    dataSource: pivot_dataset as IDataSet[],
+                    dataSource: pivotDatas as IDataSet[],
                     rows: [{ name: 'product', caption: 'Items' }, { name: 'eyeColor' }],
                     columns: [{ name: 'gender', caption: 'Population' }, { name: 'isActive' }],
                     values: [{ name: 'balance' }, { name: 'quantity' }],
@@ -1809,7 +2072,7 @@ describe('PDF Export', () => {
             PivotView.Inject(Toolbar, PDFExport, FieldList, VirtualScroll);
             pivotGridObj = new PivotView({
                 dataSourceSettings: {
-                    dataSource: pivot_dataset as IDataSet[],
+                    dataSource: pivotDatas as IDataSet[],
                     expandAll: false,
                     enableSorting: true,
                     rows: [{ name: 'product', caption: 'Items' }, { name: 'eyeColor' }],
@@ -1888,99 +2151,7 @@ describe('PDF Export', () => {
             expect(memory).toBeLessThan(profile.samples[0] + 0.25);
         });
     });
-    describe('-Empty Data in Chart', () => {
-        let pivotGridObj: PivotView;
-        let pdfExportProperties: PdfExportProperties = {
-            header: {
-                fromTop: 0,
-                height: 130,
-                contents: [
-                    {
-                        type: 'Text',
-                        value: "Northwind Traders",
-                        position: { x: 0, y: 50 },
-                        style: { textBrushColor: '#000000', fontSize: 13 }
-                    },
-
-                ]
-            },
-            footer: {
-                fromBottom: 160,
-                height: 150,
-                contents: [
-                    {
-                        type: 'PageNumber',
-                        pageNumberType: 'Arabic',
-                        format: 'Page {$current} of {$total}',
-                        position: { x: 0, y: 25 },
-                        style: { textBrushColor: '#02007a', fontSize: 15 }
-                    }
-                ]
-            }
-        }
-        let elem: HTMLElement = createElement('div', { id: 'PivotGrid' });
-        if (document.getElementById(elem.id)) {
-            remove(document.getElementById(elem.id));
-        }
-        document.body.appendChild(elem);
-        afterAll(() => {
-            if (pivotGridObj) {
-                pivotGridObj.destroy();
-            }
-            remove(elem);
-        });
-        beforeAll(() => {
-            const isDef = (o: any) => o !== undefined && o !== null;
-            if (!isDef(window.performance)) {
-                console.log("Unsupported environment, window.performance.memory is unavailable");
-                pending(); //Skips test (in Chai)
-                return;
-            }
-            if (document.getElementById(elem.id)) {
-                remove(document.getElementById(elem.id));
-            }
-            document.body.appendChild(elem);
-            PivotView.Inject(Toolbar, PDFExport, FieldList, VirtualScroll);
-            pivotGridObj = new PivotView({
-                dataSourceSettings: {
-                    dataSource: pivot_dataset as IDataSet[],
-                    expandAll: false,
-                    enableSorting: true,
-                },
-                width: '100%',
-                height: 300,
-                allowCalculatedField: true,
-                allowExcelExport: true,
-                allowPdfExport: true,
-                showFieldList: true,
-                enableVirtualization: true,
-                toolbar: ['Export'],
-                showToolbar: true,
-                allowConditionalFormatting: true,
-                displayOption: { view: 'Both', primary: 'Chart' },
-
-                chartSettings: {
-                    value: 'Amount', enableExport: true, chartSeries: { type: 'Column', animation: { enable: false } }, enableMultipleAxis: true, showPointColorByMembers: true, enableScrollOnMultiAxis: true,
-                },
-              
-            });
-            pivotGridObj.appendTo('#PivotGrid');
-        });
-        it('For sample render-Empty Data', (done: Function) => {
-            setTimeout(() => {
-                expect(1).toBe(1);
-                done();
-            }, 500);
-        });
-        it('memory leak', () => {
-            profile.sample();
-            let average: any = inMB(profile.averageChange);
-            //Check average change in memory samples to not be over 10MB
-            let memory: any = inMB(getMemoryProfile());
-            //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
-            expect(memory).toBeLessThan(profile.samples[0] + 0.25);
-        });
-    });
+    
     describe('- Excel Export With Header', () => {
         let pivotGridObj: PivotView;
         let excelExportProperties: ExcelExportProperties = {
@@ -2068,7 +2239,6 @@ describe('PDF Export', () => {
         });
         it('Excel  Export in header', (done: Function) => {
             setTimeout(() => {
-                debugger;
                 let li: HTMLElement = document.getElementById('PivotGridexport_menu').children[0] as HTMLElement;
                 expect(li.classList.contains('e-menu-caret-icon')).toBeTruthy();
                 util.triggerEvent(li, 'mouseover');
@@ -2219,7 +2389,7 @@ describe('PDF Export', () => {
             PivotView.Inject(Toolbar, PDFExport, FieldList, VirtualScroll);
             pivotGridObj = new PivotView({
                 dataSourceSettings: {
-                    dataSource: pivot_dataset as IDataSet[],
+                    dataSource: pivotDatas as IDataSet[],
                     expandAll: false,
                     enableSorting: true,
                     rows: [{ name: 'product', caption: 'Items' }, { name: 'eyeColor' }],
@@ -2282,6 +2452,84 @@ describe('PDF Export', () => {
                 expect(li.classList.contains('e-menu-caret-icon')).toBeTruthy();
                 util.triggerEvent(li, 'mouseover');
                 (document.querySelectorAll('.e-menu-popup li')[0] as HTMLElement).click();
+                done();
+            }, 1000);
+        });
+        it('memory leak', () => {
+            profile.sample();
+            let average: any = inMB(profile.averageChange);
+            //Check average change in memory samples to not be over 10MB
+            let memory: any = inMB(getMemoryProfile());
+            //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
+            expect(memory).toBeLessThan(profile.samples[0] + 0.25);
+        });
+    });
+    describe('PDF Export - Table and chart', () => {
+        let pivotGridObj: PivotView;
+        let elem: HTMLElement = createElement('div', { id: 'PivotGrid' });
+        if (document.getElementById(elem.id)) {
+            remove(document.getElementById(elem.id));
+        }
+        document.body.appendChild(elem);
+        afterAll(() => {
+            if (pivotGridObj) {
+                pivotGridObj.destroy();
+            }
+            remove(elem);
+        });
+        beforeAll(() => {
+            const isDef = (o: any) => o !== undefined && o !== null;
+            if (!isDef(window.performance)) {
+                console.log("Unsupported environment, window.performance.memory is unavailable");
+                pending(); //Skips test (in Chai)
+                return;
+            }
+            if (document.getElementById(elem.id)) {
+                remove(document.getElementById(elem.id));
+            }
+            document.body.appendChild(elem);
+            PivotView.Inject(Toolbar, PDFExport, ExcelExport, FieldList, VirtualScroll, Pager);
+            pivotGridObj = new PivotView({
+                dataSourceSettings: {
+                    dataSource: [
+                        { row: 'row1', column1: 'column1', column2: 'column1', value: 1 },
+                        { row: 'row2', column1: 'column2', column2: 'column2', value: 2 },
+                        { row: 'row3', column1: 'column3', column2: 'column3', value: 3 },
+                        { row: 'row4', column1: 'column4', column2: 'column4', value: 4 },
+                    ],
+                    columns: [{ name: 'column1' }, { name: 'column2' }],
+                    rows: [{ name: 'row' },],
+                    values: [{ name: 'value' }],
+                },
+                allowPdfExport: true,
+                displayOption: { view: 'Both', primary: 'Table'},
+                beforeExport: (args: BeforeExportEventArgs) => {
+                    args.width = 100;
+                    args.height = 100;
+                }
+            });
+            pivotGridObj.appendTo('#PivotGrid');
+        });
+        it('PDF export - primary table 1', (done: Function) => {
+            setTimeout(() => {
+                pivotGridObj.pdfExport(undefined, false, undefined, false, true);
+                expect(1).toBe(1);
+                done();
+            }, 1000);
+        });
+        it('PDF export - primary chart 2', (done: Function) => {
+            pivotGridObj.displayOption.primary = 'Chart'
+            setTimeout(() => {
+                pivotGridObj.pdfExport(undefined, false, undefined, false, true);
+                expect(1).toBe(1);
+                done();
+            }, 1000);
+        });
+        it('PDF export - primary chart 3', (done: Function) => {
+            pivotGridObj.displayOption.primary = 'Chart'
+            setTimeout(() => {
+                pivotGridObj.chartExport('PDF', { fileName: 'result' }, undefined, null, undefined);
+                expect(1).toBe(1);
                 done();
             }, 1000);
         });
@@ -2396,7 +2644,7 @@ describe('PDF Export', () => {
             setTimeout(() => {
                 expect(1).toBe(1);
                 done();
-            }, 1000);
+            }, 2000);
         });
         it('memory leak', () => {
             profile.sample();
@@ -2407,16 +2655,48 @@ describe('PDF Export', () => {
             expect(memory).toBeLessThan(profile.samples[0] + 0.25);
         });
     });
-    describe('PDF Export - Table and chart', () => {
+    describe('- Export Multiple Pivot Tables to Excel - AppendToSheet', () => {
         let pivotGridObj: PivotView;
-        let elem: HTMLElement = createElement('div', { id: 'PivotGrid' });
+        let pivotGridObj1: PivotView;
+        let excelExportProperties: ExcelExportProperties = {
+            multipleExport: { type: 'AppendToSheet', blankRows: 3 },
+            includeHiddenColumn: true,
+            pivotTableIds : ['PivotView', 'PivotView1'],
+            header: {
+                headerRows: 5,
+                rows: [
+                    { cells: [{ colSpan: 4, value: "Pivot Table", style: { fontColor: '#C67878', fontSize: 20, hAlign: 'Center', bold: true, underline: true } }] },
+                    { cells: [{ colSpan: 4, hyperlink: { target: 'https://www.northwind.com/', displayText: 'www.northwind.com' }, style: { hAlign: 'Center' } }] },
+                    { cells: [{ colSpan: 4, hyperlink: { target: 'mailto:support@northwind.com' }, style: { hAlign: 'Center' } }] },
+                ]
+            },
+            footer: {
+                footerRows: 4,
+                rows: [
+                    { cells: [{ colSpan: 4, value: "Thank you for your business!", style: { hAlign: 'Center', bold: true } }] },
+                    { cells: [{ colSpan: 4, value: "!Visit Again!", style: { hAlign: 'Center', bold: true } }] }
+                ]
+            }
+        };
+       
+        let elem: HTMLElement = createElement('div', { id: 'PivotView' });
         if (document.getElementById(elem.id)) {
             remove(document.getElementById(elem.id));
         }
         document.body.appendChild(elem);
+
+        let elem1: HTMLElement = createElement('div', { id: 'PivotView1' });
+        if (document.getElementById(elem1.id)) {
+            remove(document.getElementById(elem1.id));
+        }
+        document.body.appendChild(elem1);
+
         afterAll(() => {
             if (pivotGridObj) {
                 pivotGridObj.destroy();
+            }
+            if (pivotGridObj1) {
+                pivotGridObj1.destroy();
             }
             remove(elem);
         });
@@ -2431,50 +2711,256 @@ describe('PDF Export', () => {
                 remove(document.getElementById(elem.id));
             }
             document.body.appendChild(elem);
-            PivotView.Inject(Toolbar, PDFExport, ExcelExport, FieldList, VirtualScroll, Pager);
+            PivotView.Inject(Toolbar, PDFExport,ExcelExport, FieldList, VirtualScroll);
             pivotGridObj = new PivotView({
                 dataSourceSettings: {
-                    dataSource: [
-                        { row: 'row1', column1: 'column1', column2: 'column1', value: 1 },
-                        { row: 'row2', column1: 'column2', column2: 'column2', value: 2 },
-                        { row: 'row3', column1: 'column3', column2: 'column3', value: 3 },
-                        { row: 'row4', column1: 'column4', column2: 'column4', value: 4 },
-                    ],
-                    columns: [{ name: 'column1' }, { name: 'column2' }],
-                    rows: [{ name: 'row' },],
-                    values: [{ name: 'value' }],
+                    dataSource: pivot_smalldata as IDataSet[],
+                    expandAll: false,
+                    enableSorting: true,
+                    columns: [{ name: 'Date' }, { name: 'Product' }],
+                    rows: [{ name: 'Country' }, { name: 'State' }],
+                    formatSettings: [{ name: 'Amount', format: 'C' }],
+                    values: [{ name: 'Amount' }, { name: 'Quantity' }], filters: [],
+                    allowValueFilter: false,
+                    allowLabelFilter: true,
+                    filterSettings: [{name: 'Country', items: ['United Kingdom'], type: 'Exclude'}]
                 },
+                actionBegin: function (args: PivotActionBeginEventArgs) {
+                    if (args.actionName === 'Excel export') {
+                        args.cancel = true;
+                        pivotGridObj.excelExport(excelExportProperties, true);
+                    }
+                },
+                width: '100%',
+                height: 300,
+                allowCalculatedField: true,
+                allowExcelExport: true,
                 allowPdfExport: true,
-                displayOption: { view: 'Both', primary: 'Table'},
-                beforeExport: (args: BeforeExportEventArgs) => {
-                    args.width = 100;
-                    args.height = 100;
+                showFieldList: true,
+                showTooltip:true,
+                enableVirtualization: true,
+                toolbar: ['Export'],
+                showToolbar: true,
+                allowConditionalFormatting: true,
+                gridSettings: {
+                    excelQueryCellInfo: (args: ExcelQueryCellInfoEventArgs) => {
+                        if ((args.cell as any).formattedText == "Canada") {
+                            args.image = { height: 75, base64: image, width: 75 };
+                        }
+                    }
                 }
             });
-            pivotGridObj.appendTo('#PivotGrid');
+            pivotGridObj.appendTo('#PivotView');
+            pivotGridObj1 = new PivotView({
+                dataSourceSettings: {
+                    dataSource: pivot_smalldata as IDataSet[],
+                    expandAll: false,
+                    enableSorting: true,
+                    columns: [{ name: 'Date' }, { name: 'Product' }],
+                    rows: [{ name: 'Country' }, { name: 'State' }],
+                    formatSettings: [{ name: 'Amount', format: 'C' }],
+                    values: [{ name: 'Amount' }], filters: [],
+                    allowValueFilter: false,
+                    allowLabelFilter: true,
+                    filterSettings: [{name: 'Country', items: ['United Kingdom'], type: 'Exclude'}]
+                },
+                width: '100%',
+                height: 300,
+                allowCalculatedField: true,
+                allowExcelExport: true,
+                allowPdfExport: true,
+                showFieldList: true,
+                showTooltip:true,
+                enableVirtualization: true,
+                toolbar: ['Export'],
+                showToolbar: true,
+                allowConditionalFormatting: true,
+                gridSettings: {
+                    excelQueryCellInfo: (args: ExcelQueryCellInfoEventArgs) => {
+                        if ((args.cell as any).formattedText == "Canada") {
+                            args.hyperLink = { target: 'https://www.Syncfusion.com/' };
+                            args.image = { base64: image } as any;
+                        }
+                    },
+                    columnRender: (args: ColumnRenderEventArgs) => {
+                        args.stackedColumns[1].visible = false;
+                    }
+                }
+            });
+            pivotGridObj1.appendTo('#PivotView1');
+
         });
-        it('PDF export - primary table 1', (done: Function) => {
+        it('For sample render-Chart', (done: Function) => {
             setTimeout(() => {
-                pivotGridObj.pdfExport(undefined, false, undefined, false, true);
                 expect(1).toBe(1);
                 done();
-            }, 1000);
+            }, 500);
         });
-        it('PDF export - primary chart 2', (done: Function) => {
-            pivotGridObj.displayOption.primary = 'Chart'
+        it('Excel Export - AppendToSheet', (done: Function) => {
             setTimeout(() => {
-                pivotGridObj.pdfExport(undefined, false, undefined, false, true);
+                let li: HTMLElement = document.getElementById('PivotViewexport_menu').children[0] as HTMLElement;
+                expect(li.classList.contains('e-menu-caret-icon')).toBeTruthy();
+                util.triggerEvent(li, 'mouseover');
+                (document.querySelectorAll('.e-menu-popup li')[1] as HTMLElement).click();
+                done();
+            }, 2000);
+        });
+        it('memory leak', () => {
+            profile.sample();
+            let average: any = inMB(profile.averageChange);
+            //Check average change in memory samples to not be over 10MB
+            let memory: any = inMB(getMemoryProfile());
+            //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
+            expect(memory).toBeLessThan(profile.samples[0] + 0.25);
+        });
+    });
+    describe('- Export Multiple Pivot Tables to Excel - NewSheet', () => {
+        let pivotGridObj: PivotView;
+        let pivotGridObj1: PivotView;
+        let excelExportProperties: ExcelExportProperties = {
+            multipleExport: { type: 'NewSheet' },
+            pivotTableIds : ['PivotTable', 'PivotTable1'],
+            header: {
+                headerRows: 5,
+                rows: [
+                    { cells: [{ colSpan: 4, value: "Pivot Table", style: { fontColor: '#C67878', fontSize: 20, hAlign: 'Center', bold: true, underline: true } }] },
+                    { cells: [{ colSpan: 4, hyperlink: { target: 'https://www.northwind.com/', displayText: 'www.northwind.com' }, style: { hAlign: 'Center' } }] },
+                    { cells: [{ colSpan: 4, hyperlink: { target: 'mailto:support@northwind.com' }, style: { hAlign: 'Center' } }] },
+                ]
+            },
+            footer: {
+                footerRows: 4,
+                rows: [
+                    { cells: [{ colSpan: 4, value: "Thank you for your business!", hyperlink: { target: 'https://www.northwind.com/' }, style: { hAlign: 'Center', bold: true } }] },
+                    { cells: [{ colSpan: 4, value: "!Visit Again!", style: { hAlign: 'Center', bold: true } }] }
+                ]
+            },
+            theme:
+            {
+                header: { fontName: 'Segoe UI', fontColor: '#666666' },
+                record: { fontName: 'Segoe UI', fontColor: '#666666' },
+                caption: { fontName: 'Segoe UI', fontColor: '#666666' }
+            }
+        };
+
+        let elem: HTMLElement = createElement('div', { id: 'PivotTable' });
+        if (document.getElementById(elem.id)) {
+            remove(document.getElementById(elem.id));
+        }
+        document.body.appendChild(elem);
+        let elem1: HTMLElement = createElement('div', { id: 'PivotTable1' });
+        if (document.getElementById(elem1.id)) {
+            remove(document.getElementById(elem1.id));
+        }
+        document.body.appendChild(elem1);
+
+        afterAll(() => {
+            if (pivotGridObj) {
+                pivotGridObj.destroy();
+            }
+            if (pivotGridObj1) {
+                pivotGridObj1.destroy();
+            }
+            remove(elem);
+        });
+        beforeAll(() => {
+            const isDef = (o: any) => o !== undefined && o !== null;
+            if (!isDef(window.performance)) {
+                console.log("Unsupported environment, window.performance.memory is unavailable");
+                pending(); //Skips test (in Chai)
+                return;
+            }
+            if (document.getElementById(elem.id)) {
+                remove(document.getElementById(elem.id));
+            }
+            document.body.appendChild(elem);
+            PivotView.Inject(Toolbar, PDFExport,ExcelExport, FieldList, VirtualScroll);
+            pivotGridObj = new PivotView({
+                dataSourceSettings: {
+                    dataSource: pivot_smalldata as IDataSet[],
+                    expandAll: false,
+                    enableSorting: true,
+                    columns: [{ name: 'Date' }, { name: 'Product' }],
+                    rows: [{ name: 'Country' }, { name: 'State' }],
+                    formatSettings: [{ name: 'Amount', format: 'C' }],
+                    values: [{ name: 'Amount' }, { name: 'Quantity' }], filters: [],
+                    allowValueFilter: false,
+                    allowLabelFilter: true,
+                    filterSettings: [{name: 'Country', items: ['United Kingdom'], type: 'Exclude'}]
+                },
+                actionBegin: function (args: PivotActionBeginEventArgs) {
+                    if (args.actionName === 'Excel export') {
+                        args.cancel = true;
+                        pivotGridObj.excelExport(excelExportProperties, true);
+                    }
+                },
+                width: '100%',
+                height: 300,
+                allowCalculatedField: true,
+                allowExcelExport: true,
+                allowPdfExport: true,
+                showFieldList: true,
+                showTooltip:true,
+                enableVirtualization: true,
+                toolbar: ['Export'],
+                showToolbar: true,
+                allowConditionalFormatting: true,
+                gridSettings: {
+                    excelQueryCellInfo: (args: ExcelQueryCellInfoEventArgs) => {
+                        if ((args.cell as any).formattedText == "Canada") {
+                            args.image = { height: 10, base64: image } as any;
+                        }
+                    }
+                }
+            });
+            pivotGridObj.appendTo('#PivotTable');
+            pivotGridObj1 = new PivotView({
+                dataSourceSettings: {
+                    dataSource: pivot_smalldata as IDataSet[],
+                    expandAll: false,
+                    enableSorting: true,
+                    columns: [{ name: 'Date' }, { name: 'Product' }],
+                    rows: [{ name: 'Country' }, { name: 'State' }],
+                    formatSettings: [{ name: 'Amount', format: 'C' }],
+                    values: [{ name: 'Amount' }], filters: [],
+                    allowValueFilter: false,
+                    allowLabelFilter: true,
+                    filterSettings: [{name: 'Country', items: ['United Kingdom'], type: 'Exclude'}]
+                },
+                width: '100%',
+                height: 300,
+                allowCalculatedField: true,
+                allowExcelExport: true,
+                allowPdfExport: true,
+                showFieldList: true,
+                showTooltip:true,
+                enableVirtualization: true,
+                toolbar: ['Export'],
+                showToolbar: true,
+                allowConditionalFormatting: true,
+                gridSettings: {
+                    columnRender: (args: ColumnRenderEventArgs) => {
+                        args.stackedColumns[1].visible = false;
+                    }
+                }
+            });
+            pivotGridObj1.appendTo('#PivotTable1');
+
+        });
+        it('For sample render-Chart', (done: Function) => {
+            setTimeout(() => {
                 expect(1).toBe(1);
                 done();
-            }, 1000);
+            }, 500);
         });
-        it('PDF export - primary chart 3', (done: Function) => {
-            pivotGridObj.displayOption.primary = 'Chart'
+        it('Excel Export - NewSheet', (done: Function) => {
             setTimeout(() => {
-                pivotGridObj.chartExport('PDF', { fileName: 'result' }, undefined, null, undefined);
-                expect(1).toBe(1);
+                let li: HTMLElement = document.getElementById('PivotTableexport_menu').children[0] as HTMLElement;
+                expect(li.classList.contains('e-menu-caret-icon')).toBeTruthy();
+                util.triggerEvent(li, 'mouseover');
+                (document.querySelectorAll('.e-menu-popup li')[1] as HTMLElement).click();
                 done();
-            }, 1000);
+            }, 2000);
         });
         it('memory leak', () => {
             profile.sample();
@@ -2543,12 +3029,11 @@ describe('PDF Export', () => {
             PivotView.Inject(Toolbar, PDFExport);
             pivotGridObj = new PivotView({
                 dataSourceSettings: {
-                    dataSource: pivot_dataset as IDataSet[],
-                    expandAll: false,
-                    enableSorting: true,
+                    dataSource: pivotDatas as IDataSet[],
                     rows: [{ name: 'product', caption: 'Items' }, { name: 'eyeColor' }],
                     columns: [{ name: 'gender', caption: 'Population' }, { name: 'isActive' }],
                     values: [{ name: 'balance' }, { name: 'quantity' }],
+                    expandAll: false
                 },
                 width: '100%',
                 height: 300,
@@ -2562,7 +3047,7 @@ describe('PDF Export', () => {
                     }
                 },
                 chartSettings: {
-                    load: function (args: ILoadedEventArgs) {
+                    load: function(args: ILoadedEventArgs) {
                         args.chart.theme = 'HighContrast';
                     }
                 },

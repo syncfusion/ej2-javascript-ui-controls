@@ -83,7 +83,7 @@ export class NavigationPane {
         this.treeObj = new BaseTreeView({
             fields: {
                 dataSource: [rootData], id: '_fm_id', parentID: '_fm_pId', expanded: '_fm_expanded', selected: '_fm_selected', text: 'name',
-                hasChildren: 'hasChild', iconCss: '_fm_icon', htmlAttributes: '_fm_htmlAttr', tooltip: 'name'
+                hasChildren: 'hasChild', ...(isNOU(this.parent.navigationPaneTemplate) && { iconCss: '_fm_icon' }), htmlAttributes: '_fm_htmlAttr', tooltip: 'name'
             },
             enableHtmlSanitizer: this.parent.enableHtmlSanitizer,
             sortOrder: this.parent.navigationPaneSettings.sortOrder,
@@ -95,7 +95,8 @@ export class NavigationPane {
             nodeEditing: this.onNodeEditing.bind(this),
             drawNode: this.onDrowNode.bind(this),
             enableRtl: this.parent.enableRtl,
-            dataBound: this.addDragDrop.bind(this)
+            dataBound: this.addDragDrop.bind(this),
+            nodeTemplate: this.parent.navigationPaneTemplate
         });
         this.treeObj.isStringTemplate = true;
         this.treeObj.appendTo('#' + this.parent.element.id + CLS.TREE_ID);
@@ -107,7 +108,7 @@ export class NavigationPane {
             if (this.parent.allowDragAndDrop && isNOU(this.dragObj)) {
                 this.dragObj = new Draggable(this.treeObj.element, {
                     cursorAt: this.parent.dragCursorPosition,
-                    dragTarget: '.' + CLS.FULLROW,
+                    dragTarget: '.' + CLS.FULLROW + ',.' + CLS.TEXT_CONTENT,
                     distance: 5,
                     dragArea: this.parent.element,
                     drag: draggingHandler.bind(this, this.parent),
@@ -128,7 +129,7 @@ export class NavigationPane {
 
     public dragHelper(args: { element: HTMLElement, sender: MouseEvent & TouchEvent }): HTMLElement {
         const dragTarget: Element = <Element>args.sender.target;
-        if (!dragTarget.classList.contains(CLS.FULLROW)) { return null; }
+        if (!dragTarget.classList.contains(CLS.FULLROW) && !dragTarget.classList.contains(CLS.TEXT_CONTENT)) { return null; }
         const dragLi: Element = closest(dragTarget, 'li');
         this.parent.dragPath = '';
         this.parent.dragData = [];
@@ -151,7 +152,7 @@ export class NavigationPane {
     private getDropPath(node: Element, text: string): string {
         const id: string = node.getAttribute('data-id');
         const newText: string = this.parent.hasId ? id : text;
-        return getPath(node, newText, this.parent.hasId);
+        return getPath(node, newText, this.parent.hasId, this.parent);
     }
 
     private onDrowNode(args: DrawNodeEventArgs): void {
@@ -161,6 +162,16 @@ export class NavigationPane {
             module: 'NavigationPane'
         };
         this.parent.trigger('fileLoad', eventArgs);
+        if (this.parent && this.parent.portals && this.treeObj && this.treeObj.portals) {
+            for (let i: number = 0; i < this.treeObj.portals.length; i++) {
+                if (this.parent.portals.indexOf(this.treeObj.portals[i as number]) === -1) {
+                    this.parent.portals.push(this.treeObj.portals[i as number]);
+                }
+            }
+            if (this.parent.isReact) {
+                (this.parent as any).renderReactTemplates();
+            }
+        }
     }
 
     private addChild(files: { [key: string]: Object; }[], target: string, prevent: boolean): void {
@@ -270,7 +281,7 @@ export class NavigationPane {
         }
         this.parent.searchedItems = [];
         if (!args.isInteracted && !this.isRightClick && !this.isSameNodeClicked && !this.isPathDragged && !this.isRenameParent) {
-            this.parent.pathId = getPathId(args.node);
+            this.parent.pathId = getPathId(args.node, this.parent);
             return;
         }
         this.activeNode = args.node;
@@ -283,7 +294,7 @@ export class NavigationPane {
             updatePath(args.node, this.parent.itemData[0], this.parent);
         }
         else {
-            this.parent.pathId = getPathId(args.node);
+            this.parent.pathId = getPathId(args.node, this.parent);
             this.parent.visitedItem = args.node;
         }
         if (args.node.querySelector('.' + CLS.ICONS) && args.node.querySelector('.' + CLS.LIST_ITEM) === null) {
@@ -307,11 +318,11 @@ export class NavigationPane {
         if (!args.isInteracted && !this.isDrag) { return; }
         if (args.node.querySelector('.' + CLS.LIST_ITEM) === null) {
             this.isNodeExpandCalled = true;
-            const text: string = getValue('text', args.nodeData);
+            const nodeData: Object[] = this.getTreeData(getValue('id', args.nodeData));
             const id: string = args.node.getAttribute('data-id');
             const isId: boolean = isNOU(id) ? false : true;
-            const newText: string = isNOU(id) ? text : id;
-            const path: string = getPath(args.node, newText, isId);
+            const newText: string = isNOU(id) ? (nodeData[0] as { name: string }).name : id;
+            const path: string = getPath(args.node, newText, isId, this.parent);
             this.expandNodeTarget = args.node.getAttribute('data-uid');
             this.parent.expandedId = this.expandNodeTarget;
             this.parent.itemData = this.getTreeData(getValue('id', args.nodeData));

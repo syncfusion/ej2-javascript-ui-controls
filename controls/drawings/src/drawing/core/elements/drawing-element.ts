@@ -198,6 +198,9 @@ export class DrawingElement {
     /** @private */
     public elementActions: ElementAction = ElementAction.None;
 
+    /** @private */
+    public thickness?: number;
+
     // public constructor() {
     //     this.id = randomId();
     // }

@@ -1,3 +1,5 @@
+@use 'ej2-base/styles/definition/bootstrap' as *;
+@forward 'ej2-base/styles/definition/bootstrap';
 $sd-offset: 16px !default;
 $sd-ul-margin: 0 !default;
 $sd-li-text-padding: 0 5px !default;
@@ -63,3 +65,8 @@ $sd-hover-font-color: #000000 !default;
 $sd-active-li-bg: $grey-white !default;
 $sd-active-li-border-color: $grey-cc !default;
 $sd-active-font-color: #000000 !default;
+$sd-li-text-border-radius: 2px !default;
+$sd-border-normal-width: 1px !default;
+$sd-top-bottom-border-radius: 100% !default;
+$sd-zero-padding-margin: 0 !default;
+$spdl-border-width: 1px !default;

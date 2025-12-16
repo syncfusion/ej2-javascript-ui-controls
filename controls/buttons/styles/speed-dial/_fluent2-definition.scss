@@ -1,3 +1,5 @@
+@use 'ej2-base/styles/definition/fluent2' as *;
+@forward 'ej2-base/styles/definition/fluent2';
 $sd-offset: 16px !default;
 $sd-ul-margin: 0 !default;
 $sd-li-text-padding: 0 5px !default;
@@ -13,7 +15,7 @@ $sd-li-text-margin: 0 16px !default;
 $sd-li-text-height: 16px !default;
 $sd-li-icon-height: 32px !default;
 $sd-li-icon-width: 32px !default;
-$sd-li-icon-border-radius: 99999px !default;
+$sd-li-icon-border-radius: $radius-full !default;
 $sd-li-icon-font-size: 12px !default;
 
 $sd-small-horz-ul-padding: 2px 5px !default;
@@ -64,3 +66,12 @@ $sd-hover-font-color: $secondary-text-color-hover !default;
 $sd-active-li-bg: $secondary-bg-color-pressed !default;
 $sd-active-li-border-color: $secondary-border-color-pressed !default;
 $sd-active-font-color: $secondary-text-color-pressed !default;
+$sd-li-text-border-radius: $radius-2 !default;
+$sd-border-normal-width: 1px !default;
+$sd-top-bottom-border-radius: $radius-full !default;
+$sd-zero-padding-margin: 0 !default;
+$spdl-text-border-radius: $radius-20 !default;
+$spdl-text-font-size: 12px !default;
+$spdl-text-line-height: 16px !default;
+$spdl-text-padding: 8px 16px !default;
+$spdl-border-width: 1px !default;

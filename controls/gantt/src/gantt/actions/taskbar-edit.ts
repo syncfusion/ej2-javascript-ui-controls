@@ -9,6 +9,7 @@ import * as cls from '../base/css-constants';
 import { EditTooltip } from '../renderer/edit-tooltip';
 import { CriticalPath } from './critical-path';
 import { TaskFieldsModel } from '../models/models';
+import { CalendarContext } from '../base/calendar-context';
 
 /**
  * File for handling taskbar editing operation in Gantt.
@@ -1946,6 +1947,7 @@ export class TaskbarEdit extends DateProcessor {
         }
     }
     private updateSplitLeftResize(item: ITaskData): void {
+        const calendarContext: CalendarContext = item.calendarContext;
         const segment: ITaskSegment = item.segments[this.segmentIndex];
         const left: number = this.segmentIndex === 0 ? this.getRoundOffStartLeft(item, this.roundOffDuration) :
             this.getRoundOffStartLeft(segment, this.roundOffDuration);
@@ -1953,7 +1955,7 @@ export class TaskbarEdit extends DateProcessor {
         const startDate: Date = this.parent.dataOperation.checkStartDate(projectStartDate, item, false);
         const duration: number = this.parent.dataOperation.getDuration(
             startDate, segment.endDate, item.durationUnit,
-            item.isAutoSchedule, item.isMilestone);
+            item.isAutoSchedule, item.isMilestone, undefined, calendarContext);
 
         segment.startDate = new Date(startDate.getTime());
         segment.duration = duration;
@@ -1966,20 +1968,21 @@ export class TaskbarEdit extends DateProcessor {
         if (!isNullOrUndefined(item.segments[this.segmentIndex - 1])) {
             const segmentOffsetDuration: number = this.parent.dataOperation.getDuration(
                 item.segments[this.segmentIndex - 1].endDate, item.segments[this.segmentIndex].startDate, item.durationUnit,
-                item.isAutoSchedule, item.isMilestone);
+                item.isAutoSchedule, item.isMilestone, undefined, calendarContext);
             segment.offsetDuration = segmentOffsetDuration;
         }
         this.parent.setRecordValue('segments', item.segments, item, true);
         this.parent.dataOperation.updateMappingData(this.taskBarEditRecord, 'segments');
     }
     private updateSplitRightResizing(item: ITaskData): void {
+        const calendarContext: CalendarContext = item.calendarContext;
         const segment: ITaskSegment = item.segments[this.segmentIndex];
         const left: number = this.getRoundOffEndLeft(item, this.roundOffDuration);
         const tempEndDate: Date = this.getDateByLeft(left);
         const endDate: Date = this.parent.dataOperation.checkEndDate(tempEndDate, item, false);
         const duration: number = this.parent.dataOperation.getDuration(
             segment.startDate, endDate, item.durationUnit,
-            item.isAutoSchedule, item.isMilestone);
+            item.isAutoSchedule, item.isMilestone, undefined, calendarContext);
         segment.endDate = new Date(endDate.getTime());
         segment.duration = duration;
         // update next segment offset duration
@@ -1987,7 +1990,7 @@ export class TaskbarEdit extends DateProcessor {
             const nextSegment: ITaskSegment = item.segments[this.segmentIndex + 1];
             const segmentOffset: number = this.parent.dataOperation.getDuration(
                 item.segments[this.segmentIndex].endDate, nextSegment.startDate, item.durationUnit,
-                item.isAutoSchedule, item.isMilestone);
+                item.isAutoSchedule, item.isMilestone, undefined, calendarContext);
             segment.offsetDuration = segmentOffset;
         }
         this.parent.setRecordValue('segments', item.segments, item, true);
@@ -2010,6 +2013,7 @@ export class TaskbarEdit extends DateProcessor {
     }
 
     private setSplitTaskDrag(item: ITaskData): void {
+        const calendarContext: CalendarContext = item.calendarContext;
         const segment: ITaskSegment = item.segments[this.segmentIndex as number];
         const taskSettings: TaskFieldsModel = this.parent.taskFields;
         const left: number = this.getRoundOffStartLeft(segment, this.roundOffDuration);
@@ -2024,7 +2028,7 @@ export class TaskbarEdit extends DateProcessor {
             segment.endDate = segmentDate;
         }
         segment.duration = this.parent.dataOperation.getDuration(
-            segment.startDate, segment.endDate, item.durationUnit, item.isAutoSchedule, item.isMilestone
+            segment.startDate, segment.endDate, item.durationUnit, item.isAutoSchedule, item.isMilestone, undefined, calendarContext
         );
         this.parent.setRecordValue('duration', this.sumOfDuration(item.segments), item, true);
         this.parent.setRecordValue(
@@ -2040,8 +2044,9 @@ export class TaskbarEdit extends DateProcessor {
         if (!isNullOrUndefined(item.segments[this.segmentIndex - 1])) {
             let offsetDuration: number = this.parent.dataOperation.getDuration(
                 item.segments[this.segmentIndex - 1].endDate, item.segments[this.segmentIndex as number].startDate, item.durationUnit,
-                item.isAutoSchedule, item.isMilestone);
-            if (segment.startDate.getDay() === 1 && offsetDuration === 0 && !this.parent.includeWeekend) {
+                item.isAutoSchedule, item.isMilestone, undefined, calendarContext);
+            if (segment.startDate.getDay() === 1 && offsetDuration === 0 &&
+                (!this.parent.includeWeekend || calendarContext.exceptionsRanges.length === 0)) {
                 offsetDuration = 1;
             }
             segment.offsetDuration = offsetDuration;
@@ -2051,8 +2056,9 @@ export class TaskbarEdit extends DateProcessor {
             const nextSegment: ITaskSegment = item.segments[this.segmentIndex + 1];
             let offsetDuration: number = this.parent.dataOperation.getDuration(
                 item.segments[this.segmentIndex].endDate, nextSegment.startDate, item.durationUnit,
-                item.isAutoSchedule, item.isMilestone);
-            if (nextSegment.startDate.getDay() === 1 && offsetDuration === 0 && !this.parent.includeWeekend) {
+                item.isAutoSchedule, item.isMilestone, undefined, calendarContext);
+            if (nextSegment.startDate.getDay() === 1 && offsetDuration === 0 &&
+                (!this.parent.includeWeekend || calendarContext.exceptionsRanges.length === 0)) {
                 offsetDuration = 1;
             }
             nextSegment.offsetDuration = offsetDuration;
@@ -2587,7 +2593,11 @@ export class TaskbarEdit extends DateProcessor {
             this.parent.connectorLineEditModule.updatePredecessor(this.connectorSecondRecord, this.finalPredecessor);
         } else {
             if ((this.taskBarEditAction === 'ConnectorPointLeftDrag' ||
-                this.taskBarEditAction === 'ConnectorPointRightDrag') || (this.oldData && JSON.stringify(item.ganttProperties) === JSON.stringify(this.oldData.ganttProperties))) {
+                this.taskBarEditAction === 'ConnectorPointRightDrag') ||
+                (this.oldData &&
+                    JSON.stringify(
+                        this.parent.removeCalendarContext(item.ganttProperties)
+                    ) === JSON.stringify(this.parent.removeCalendarContext(this.oldData.ganttProperties)))) {
                 if (this.parent.undoRedoModule && this.parent.undoRedoModule['getUndoCollection'].length > 0) {
                     this.parent['totalUndoAction']--;
                     this.parent.undoRedoModule['getUndoCollection'].splice(this.parent.undoRedoModule['getUndoCollection'].length - 1, 1);
@@ -2673,6 +2683,7 @@ export class TaskbarEdit extends DateProcessor {
         const args: ITaskbarEditedEventArgs = extend({}, arg);
         const ganttRecord: IGanttData = args.data;
         const taskData: ITaskData = ganttRecord.ganttProperties;
+        const calendarContext: CalendarContext = taskData.calendarContext;
         const draggedRecIndex: number = this.parent.flatData.indexOf(ganttRecord);
         if ((this.parent.allowTaskbarDragAndDrop && this.taskBarEditAction === 'ChildDrag' || this.taskBarEditAction === 'ParentDrag' ||
                 this.taskBarEditAction === 'MilestoneDrag' || this.taskBarEditAction === 'ManualParentDrag') && this.dragMoveY > 0 &&
@@ -2775,7 +2786,7 @@ export class TaskbarEdit extends DateProcessor {
                 const cEndDate: Date = new Date(segment.endDate.getTime());
                 cStartDate.setDate(cStartDate.getDate());
                 cEndDate.setDate(cEndDate.getDate());
-                if (this.parent.includeWeekend) {
+                if (this.parent.includeWeekend || calendarContext.exceptionsRanges.length > 0) {
                     sDate.setHours(0, 0, 0, 0);
                     eDate.setHours(0, 0, 0, 0);
                     cStartDate.setDate(cStartDate.getDate() - 1);
@@ -2811,9 +2822,10 @@ export class TaskbarEdit extends DateProcessor {
                 }
                 else {
                 //Hits while dragging taskbar toward right & taskbar rightside resizing:
-                    if (cEndDate.getTime() <= sDate.getTime() && this.segmentIndex !== segments.length - 1 && !this.parent.includeWeekend &&
+                    if (cEndDate.getTime() <= sDate.getTime() && this.segmentIndex !== segments.length - 1 &&
+                        (!this.parent.includeWeekend || calendarContext.exceptionsRanges.length === 0) &&
                     this.parent.dataOperation.getDuration((this.parent.dataOperation.checkStartDate(
-                        cEndDate, taskData, false)), sDate, taskData.durationUnit, false, false) === 0 ) {
+                        cEndDate, taskData, false)), sDate, taskData.durationUnit, false, false, undefined, calendarContext) === 0 ) {
                         const segmentIndexes: { firstSegmentIndex: number; secondSegmentIndex: number }[] = [
                             { 'firstSegmentIndex': segment.segmentIndex, 'secondSegmentIndex': nextSegment.segmentIndex }
                         ];
@@ -2821,9 +2833,10 @@ export class TaskbarEdit extends DateProcessor {
                     }
                     //Hits while dragging taskbar toward left & taskbar leftside resizing:
                     else if (cStartDate.getTime() >= eDate.getTime() &&
-                    !isNullOrUndefined(previousSegment) && !isNullOrUndefined(segment) &&
-                    !this.parent.includeWeekend &&  this.parent.dataOperation.getDuration((this.parent.dataOperation.checkEndDate(
-                        cStartDate, taskData, false)), eDate, taskData.durationUnit, false, false) === 0 ) {
+                        !isNullOrUndefined(previousSegment) && !isNullOrUndefined(segment) &&
+                        (!this.parent.includeWeekend || calendarContext.exceptionsRanges.length === 0) &&
+                        this.parent.dataOperation.getDuration((this.parent.dataOperation.checkEndDate(
+                            cStartDate, taskData, false)), eDate, taskData.durationUnit, false, false, undefined, calendarContext) === 0) {
                         const segmentIndexes: { firstSegmentIndex: number; secondSegmentIndex: number }[] = [
                             { 'firstSegmentIndex': previousSegment.segmentIndex, 'secondSegmentIndex': segment.segmentIndex }
                         ];
@@ -3016,6 +3029,7 @@ export class TaskbarEdit extends DateProcessor {
         const target: Element = this.getElementByPosition(e);
         const element: HTMLElement = target as HTMLElement;
         const uniqueId: string = this.parent.viewType === 'ResourceView' ? fromItem.taskId : fromItem.rowUniqueID;
+
         if (this.taskBarEditAction === 'ConnectorPointLeftDrag') {
             predecessor = uniqueId + (this.parent.enableRtl ? 'F' : 'S');
         }
@@ -3062,7 +3076,6 @@ export class TaskbarEdit extends DateProcessor {
         }
         args.isValidLink = !isValidLink && args.isValidLink ? false : args.isValidLink;
         if (args.isValidLink) {
-            this.parent['regenerateCycle'] = true;
             if (!this.editTooltip.toolTipObj && !this.parent.isAdaptive) {
                 this.editTooltip.showHideTaskbarEditTooltip(true, this.segmentIndex);
             }

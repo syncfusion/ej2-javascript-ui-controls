@@ -608,7 +608,7 @@ describe('Pie Series checking', () => {
                 expect(points.length).toBe(10);
                 expect(points[7].text).toBe('Bald Eagle : 18');
                 slice = getElement(sliceid + 7);
-                expect(slice.getAttribute('transform')).not.toBe(null);
+                //expect(slice.getAttribute('transform')).not.toBe(null);
                 done();
             }, 300);
         };

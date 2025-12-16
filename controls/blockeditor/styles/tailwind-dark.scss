@@ -1,5 +1,5 @@
-@import 'ej2-base/styles/definition/tailwind-dark.scss';
-@import 'blockeditor/tailwind-dark-definition.scss';
-@import 'blockeditor/icons/tailwind-dark.scss';
-@import 'blockeditor/all.scss';
-@import 'blockeditor/bigger.scss';
+@use 'ej2-base/styles/definition/tailwind-dark' as *;
+@use 'blockeditor/tailwind-dark-definition' as *;
+@use 'blockeditor/icons/tailwind-dark' as *;
+@use 'blockeditor/all' as *;
+@use 'blockeditor/bigger' as *;

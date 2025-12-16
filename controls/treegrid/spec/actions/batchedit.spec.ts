@@ -2447,3 +2447,254 @@ describe('Batch Editing - Keyboard Navigation', () => {
         destroy(gridObj);
     });
 });
+
+describe('Batch Editing - Frozen Rows with new row', () => {
+    let gridObj: TreeGrid;
+    let actionComplete: () => void;
+
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: sampleData,
+                  childMapping: 'subtasks',
+                  allowSorting: true,
+                  allowPaging: true,
+                  allowFiltering: true,
+                  pageSettings: { pageSize: 7 },
+                  editSettings: {
+                    allowEditing: true,
+                    allowAdding: true,
+                    allowDeleting: true,
+                    mode: 'Batch',
+                  },
+                  toolbar: ["Add","Edit","Delete","Update","Cancel"],
+                  frozenRows: 2,
+                  frozenColumns: 2,
+                  treeColumnIndex: 1,
+                  columns: [
+                    {type:"checkbox", width: 50, textAlign: 'Center'   },
+                    {
+                      field: 'taskID',
+                      headerText: 'Task ID',
+                      isPrimaryKey: true,
+                      width: 90,
+                      textAlign: 'Right',
+                    },
+                    {
+                      field: 'taskName',
+                      headerText: 'Task Name',
+                      width: 180,
+                      textAlign: 'Left',
+                    },
+                    {
+                      field: 'startDate',
+                      headerText: 'Start Date',
+                      width: 90,
+                      editType: 'datePickeredit',
+                      textAlign: 'Right',
+                      type: 'date',
+                      format: 'yMd',
+                    },
+                    {
+                      field: 'duration',
+                      headerText: 'Duration',
+                      width: 80,
+                      editType: 'numericedit',
+                      textAlign: 'Right',
+                    },
+                ]
+            },
+            done
+        );
+    });
+
+    it('Newly added row as Top', (done: Function) => {
+        actionComplete = (args?: any): void => {
+            if (args['requestType'] === 'batchSave' ) {
+                expect((gridObj as any).dataSource[0].taskID === 101).toBe(true);
+            }
+            done();
+        };
+         const addedRecords: string = 'addedRecords';
+            gridObj.grid.actionComplete = actionComplete;
+            (<any>gridObj.grid.toolbarModule).toolbarClickHandler({ item: { id: gridObj.grid.element.id + '_add' } });
+            expect(gridObj.getRowByIndex(0).classList.contains('e-insertedrow')).toBe(true);
+            (gridObj.element.querySelector('.e-editedbatchcell').querySelector('input') as any).value = 101;
+            expect((gridObj.getBatchChanges()as any)[addedRecords] .length === 1).toBe(true);
+            (<any>gridObj.grid.toolbarModule).toolbarClickHandler({ item: { id: gridObj.grid.element.id + '_update' } });
+            select('#' + gridObj.element.id + '_gridcontrol' + 'EditConfirm', gridObj.element).querySelectorAll('button')[0].click();
+      
+    });
+
+    afterAll(() => {
+        destroy(gridObj);
+    });
+});
+
+describe('Batch Editing - Frozen Rows with new row', () => {
+    let gridObj: TreeGrid;
+    let actionComplete: () => void;
+
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: sampleData,
+                  childMapping: 'subtasks',
+                  allowSorting: true,
+                  allowPaging: true,
+                  allowFiltering: true,
+                  pageSettings: { pageSize: 7 },
+                  editSettings: {
+                    allowEditing: true,
+                    allowAdding: true,
+                    allowDeleting: true,
+                    mode: 'Batch',
+                    newRowPosition:"Above"
+                  },
+                  toolbar: ["Add","Edit","Delete","Update","Cancel"],
+                  frozenRows: 2,
+                  frozenColumns: 2,
+                  treeColumnIndex: 1,
+                  columns: [
+                    {type:"checkbox", width: 50, textAlign: 'Center'   },
+                    {
+                      field: 'taskID',
+                      headerText: 'Task ID',
+                      isPrimaryKey: true,
+                      width: 90,
+                      textAlign: 'Right',
+                    },
+                    {
+                      field: 'taskName',
+                      headerText: 'Task Name',
+                      width: 180,
+                      textAlign: 'Left',
+                    },
+                    {
+                      field: 'startDate',
+                      headerText: 'Start Date',
+                      width: 90,
+                      editType: 'datePickeredit',
+                      textAlign: 'Right',
+                      type: 'date',
+                      format: 'yMd',
+                    },
+                    {
+                      field: 'duration',
+                      headerText: 'Duration',
+                      width: 80,
+                      editType: 'numericedit',
+                      textAlign: 'Right',
+                    },
+                ]
+            },
+            done
+        );
+    });
+
+    it('Newly added row as Above', (done: Function) => {
+        actionComplete = (args?: any): void => {
+            if (args['requestType'] === 'batchSave' ) {
+                expect((gridObj as any).dataSource[0].subtasks[0].taskID === 102).toBe(true);
+            }
+            done();
+        };
+        gridObj.selectRow(1);
+         const addedRecords: string = 'addedRecords';
+            gridObj.grid.actionComplete = actionComplete;
+            (<any>gridObj.grid.toolbarModule).toolbarClickHandler({ item: { id: gridObj.grid.element.id + '_add' } });
+           (gridObj.element.querySelector('.e-editedbatchcell').querySelector('input') as any).value = 102;
+            expect((gridObj.getBatchChanges()as any)[addedRecords] .length === 1).toBe(true);
+            (<any>gridObj.grid.toolbarModule).toolbarClickHandler({ item: { id: gridObj.grid.element.id + '_update' } });
+            select('#' + gridObj.element.id + '_gridcontrol' + 'EditConfirm', gridObj.element).querySelectorAll('button')[0].click();
+      
+    });
+
+    afterAll(() => {
+        destroy(gridObj);
+    });
+});
+
+describe('Batch Editing - Frozen Rows with new row', () => {
+    let gridObj: TreeGrid;
+    let actionComplete: () => void;
+
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: sampleData,
+                  childMapping: 'subtasks',
+                  allowSorting: true,
+                  allowPaging: true,
+                  allowFiltering: true,
+                  pageSettings: { pageSize: 7 },
+                  editSettings: {
+                    allowEditing: true,
+                    allowAdding: true,
+                    allowDeleting: true,
+                    mode: 'Batch',
+                    newRowPosition:"Below",
+                  },
+                  toolbar: ["Add","Edit","Delete","Update","Cancel"],
+                  frozenRows: 2,
+                  frozenColumns: 2,
+                  treeColumnIndex: 1,
+                  columns: [
+                    {type:"checkbox", width: 50, textAlign: 'Center'   },
+                    {
+                      field: 'taskID',
+                      headerText: 'Task ID',
+                      isPrimaryKey: true,
+                      width: 90,
+                      textAlign: 'Right',
+                    },
+                    {
+                      field: 'taskName',
+                      headerText: 'Task Name',
+                      width: 180,
+                      textAlign: 'Left',
+                    },
+                    {
+                      field: 'startDate',
+                      headerText: 'Start Date',
+                      width: 90,
+                      editType: 'datePickeredit',
+                      textAlign: 'Right',
+                      type: 'date',
+                      format: 'yMd',
+                    },
+                    {
+                      field: 'duration',
+                      headerText: 'Duration',
+                      width: 80,
+                      editType: 'numericedit',
+                      textAlign: 'Right',
+                    },
+                ]
+            },
+            done
+        );
+    });
+
+    it('Newly added row as Below', (done: Function) => {
+        actionComplete = (args?: any): void => {
+            if (args['requestType'] === 'batchSave' ) {
+                expect((gridObj as any).dataSource[1].taskID === 103).toBe(true);
+            }
+            done();
+        };
+        gridObj.selectRow(1);
+         const addedRecords: string = 'addedRecords';
+            gridObj.grid.actionComplete = actionComplete;
+            (<any>gridObj.grid.toolbarModule).toolbarClickHandler({ item: { id: gridObj.grid.element.id + '_add' } });
+           (gridObj.element.querySelector('.e-editedbatchcell').querySelector('input') as any).value = 103;
+            expect((gridObj.getBatchChanges()as any)[addedRecords] .length === 1).toBe(true);
+            (<any>gridObj.grid.toolbarModule).toolbarClickHandler({ item: { id: gridObj.grid.element.id + '_update' } });
+            select('#' + gridObj.element.id + '_gridcontrol' + 'EditConfirm', gridObj.element).querySelectorAll('button')[0].click();
+      
+    });
+
+    afterAll(() => {
+        destroy(gridObj);
+    });
+});

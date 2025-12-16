@@ -59,7 +59,7 @@ export class UndoRedoManager {
      * @param {IHtmlSubCommands} e - specifies the sub command
      * @returns {void}
      * @hidden
-     * @deprecated
+     * @private
      */
     public onAction(e: IHtmlSubCommands): void {
         if (e.subCommand === 'Undo') {
@@ -74,7 +74,7 @@ export class UndoRedoManager {
      * @function destroy
      * @returns {void}
      * @hidden
-     * @deprecated
+     * @private
      */
     public destroy(): void {
         this.removeEventListener();
@@ -100,7 +100,8 @@ export class UndoRedoManager {
         }
     }
     private keyUp(e: IHtmlKeyboardEvent): void {
-        if ((e.event as KeyboardEvent).keyCode !== 17 && !(e.event as KeyboardEventArgs).ctrlKey) {
+        if ((e.event as KeyboardEvent).keyCode !== 17 && !(e.event as KeyboardEventArgs).ctrlKey
+        && (e.event as KeyboardEvent).keyCode !== 46) {
             this.saveData(e);
         }
     }
@@ -146,13 +147,17 @@ export class UndoRedoManager {
      * @param {KeyboardEvent} e - specifies the keyboard event
      * @returns {void}
      * @hidden
-     * @deprecated
+     * @private
      */
     public saveData(e?: KeyboardEvent | MouseEvent | IUndoCallBack): void {
         if (!this.parent.currentDocument) {
             return;
         }
         let range: Range = new NodeSelection(this.parent.editableElement as HTMLElement).getRange(this.parent.currentDocument);
+        if (!this.parent.editableElement.contains(range.commonAncestorContainer)) {
+            (this.parent.editableElement as HTMLElement).focus();
+            range = new NodeSelection(this.parent.editableElement as HTMLElement).getRange(this.parent.currentDocument);
+        }
         const currentContainer: Node = this.parent.editableElement === range.startContainer.parentElement ?
             range.startContainer.parentElement : range.startContainer;
         for (let i: number = currentContainer.childNodes.length - 1; i >= 0; i--) {
@@ -241,7 +246,7 @@ export class UndoRedoManager {
      * @param {IHtmlSubCommands} e - specifies the sub commands
      * @returns {void}
      * @hidden
-     * @deprecated
+     * @private
      */
     public undo(e?: IHtmlSubCommands | IHtmlKeyboardEvent): void {
         if (this.steps > 0) {
@@ -274,7 +279,7 @@ export class UndoRedoManager {
      * @function redo
      * @returns {void}
      * @hidden
-     * @deprecated
+     * @private
      */
     public redo(e?: IHtmlSubCommands | IHtmlKeyboardEvent): void {
         if (this.undoRedoStack[this.steps + 1] != null) {
@@ -306,7 +311,7 @@ export class UndoRedoManager {
      *
      * @returns {boolean} - returns the boolean value
      * @hidden
-     * @deprecated
+     * @private
      */
     public getUndoStatus(): { [key: string]: boolean } {
         const status: { [key: string]: boolean } = { undo: false, redo: false };

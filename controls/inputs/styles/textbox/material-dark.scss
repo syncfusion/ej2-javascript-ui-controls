@@ -1,5 +1,5 @@
-@import 'ej2-base/styles/definition/material-dark.scss';
-@import '../input/material-dark-definition.scss';
-@import 'material-dark-definition.scss';
-@import 'all.scss';
-@import 'bigger.scss';
+@use 'ej2-base/styles/definition/material-dark' as *;
+@use '../input/material-dark-definition' as *;
+@use 'material-dark-definition' as *;
+@use 'all' as *;
+@use 'bigger' as *;

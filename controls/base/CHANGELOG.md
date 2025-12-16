@@ -2,50 +2,11 @@
 
 ## [Unreleased]
 
-## 31.2.18 (2025-12-09)
-
 ### Common
 
 #### Bug Fixes
 
-- `#787955` - Resolved an issue where opening HTML via File Explorer switched layout from Page to Web by handling file:// origin in postMessage.
-
-## 31.2.5 (2025-11-04)
-
-### Common
-
-#### Bug Fixes
-
-- `#I780829` - Resolved the issue of unexpected auto-correction of invalid time input on blur in the DateTimePicker and TimePicker components.
-
-## 31.2.4 (2025-10-28)
-### Common
-#### Bug Fixes
 - `#768133` - Resolved a bug in the `processFraction` method that mishandled scientific notation which works fine for "5e-11" and improper for Decimal Cases like "5.7e-11".
-
-## 31.2.2 (2025-10-15)
-
-### Common
-
-#### Bug Fixes
-
-- `#768391` - Resolved the localization issue where Marathi (mr) culture was not applied correctly in Syncfusion components.
-
-## 31.1.22 (2025-10-01)
-
-### Common
-
-#### Bug Fixes
-
-- `#I756987` - Resolved the security issue from base library by replacing `Math.random` function with `Crypto.getRandomValues`.
-
-## 31.1.20 (2025-09-10)
-
-### Common
-
-#### Bug Fixes
-
-- `#I973865` - The number and percentage formatting issue has been resolved.
 
 ## 31.1.17 (2025-09-05)
 

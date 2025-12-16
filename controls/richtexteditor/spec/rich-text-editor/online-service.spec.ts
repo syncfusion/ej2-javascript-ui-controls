@@ -39,7 +39,6 @@ export function secureRandom(): number {
     return array[0] / (0xFFFFFFFF + 1);
 }
 
-
 export function getImageBlob(): Blob {
     const base64Data = IMG_BASE64;
     const bytecharacters = atob(base64Data);

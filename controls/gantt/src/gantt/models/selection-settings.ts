@@ -20,8 +20,12 @@ export class SelectionSettings extends ChildProperty<SelectionSettings> {
     public mode: SelectionMode;
 
     /**
-     * To define selection mode of cell.
+     * The cell selection modes are flow and box. It requires the selection `mode` to be either cell or both.
+     * * `Flow`: Selects the range of cells between start index and end index that also includes the other cells of the selected rows.
+     * * `Box`: Selects the range of cells within the start and end column indexes that includes in between cells of rows within the range.
+     * * `BoxWithBorder`: Selects the range of cells as like Box mode with borders.
      *
+     * The supported cell selection modes are defined in the [CellSelectionMode](../grid/cellselectionmode) enumeration.
      * @default Syncfusion.EJ2.Grids.CellSelectionMode.Flow
      * @isEnumeration true
      * @aspType Syncfusion.EJ2.Grids.CellSelectionMode

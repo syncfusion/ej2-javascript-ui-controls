@@ -1,3 +1,5 @@
+@use 'ej2-base/styles/definition/material3' as *;
+@forward 'ej2-base/styles/definition/material3';
 $treegrid-right-arrow-icon-color: rgba($icon-color) !default;
 $treegrid-right-arrow-hover-color: rgba($icon-color-hover) !default;
 $childborder-color: rgba($primary) !default;

@@ -1,3 +1,5 @@
+@use 'ej2-base/styles/common/mixin' as *;
+@use '../fluent2-definition' as *;
 @include export-module('multiselect-fluent2-icons') {
   .e-multiselect.e-input-group .e-ddl-icon::before {
     content: '\e729';
@@ -13,8 +15,6 @@
   }
   
   .e-multi-select-wrapper .e-close-hooker::before {
-    height: 18px;
-    font-size: 18px;
     content: '\e7e7';
     cursor: pointer;
     margin: auto;

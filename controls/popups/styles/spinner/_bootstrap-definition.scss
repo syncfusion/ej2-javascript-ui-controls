@@ -1,3 +1,5 @@
+@use 'ej2-base/styles/definition/bootstrap' as *;
+@forward 'ej2-base/styles/definition/bootstrap';
 $theme: 'Bootstrap' !default;
 $spin-overlay-background: rgba($grey-white, .2) !default;
 $spin-overlay-stroke-color: $grey-base !default;
@@ -19,6 +21,12 @@ $spin-tailwind-stroke-width: 4.5;
 $spin-boot5-stroke-color: $grey-base;
 $spin-tailwind-arc-color: $grey-base;
 $spin-tailwind-stroke-color: $grey-light-font;
+$spin-tail-margin: 0 auto !default;
+$spin-bootstrap-border-radius: 50% !default;
+$spinner-zero-space: 0 !default;
+$spinner-full-width: 100% !default;
+$spinner-half-width: 50% !default;
+$spinner-full-height: 100% !default;
 
 @mixin boot5-spinner-rotate {
   animation: material-spinner-rotate .75s linear infinite;

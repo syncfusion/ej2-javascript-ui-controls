@@ -15,3 +15,4 @@ export * from './renderer/iframe-content-renderer';
 export * from './renderer/markdown-renderer';
 export * from './renderer/quick-popup-renderer';
 export * from './renderer/slash-menu';
+export * from './renderer/ai-assistant';

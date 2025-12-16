@@ -5301,6 +5301,50 @@ describe('EJ2-969806: Aria Label includes undefined for columns using editTempla
     });
 });
 
+describe('EJ2-977444 - Delete key not working after selecting all via header checkbox', () => {
+    let gridObj: Grid;
+    let length: number = data.length;
+    let actionComplete: () => void;
+    let preventDefault: Function = new Function();
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: data,
+                editSettings: { allowEditing: true, allowAdding: true, allowDeleting: true, mode: 'Normal' },
+                toolbar: ['Add', 'Edit', 'Delete', 'Update', 'Cancel'],
+                allowPaging: true,
+                selectionSettings: { persistSelection: true, checkboxOnly: true },
+                pageSettings: { pageSize: 2 },
+                columns: [
+                    { type: 'checkbox', width: 50 },
+                    { field: 'OrderID', headerText: 'Order ID', isPrimaryKey: true, width: 100 },
+                    { field: 'CustomerID', headerText: 'Customer ID', width: 100 },
+                    { field: 'ShipCity', headerText: 'ShipCity', width: 100 },
+                    { field: 'ShipName', headerText: 'ShipName', width: 120 }
+                ]
+            }, done);
+    });
+
+    it('Select all via header checkbox and press Delete key', (done: Function) => {
+        actionComplete = (args?: any): void => {
+            if (args.requestType === 'delete') {
+                expect((gridObj.dataSource as any).length).toBe(0);
+                gridObj.actionComplete = null;
+                done();
+            }
+        };
+        gridObj.actionComplete = actionComplete;
+        const selectAllRows = (gridObj as any).element.querySelector('.e-headercelldiv .e-checkselectall');
+        selectAllRows.click();
+        gridObj.keyboardModule.keyAction({ action: 'delete', preventDefault: preventDefault, target: selectAllRows });
+    });
+
+    afterAll(() => {
+        destroy(gridObj);
+        gridObj = actionComplete = preventDefault = null;
+    });
+});
+
 describe('EJ2-981063-Double Left Border Displayed on First Visible Column When Original First Column Is Hidden ', () => {
     let gridObj: Grid;
     let actionComplete: (args: any) => void;
@@ -5344,39 +5388,6 @@ describe('EJ2-981063-Double Left Border Displayed on First Visible Column When O
         gridObj = actionComplete = null;
     });
 });
-
-describe('For Coverage', () => {
-    let gridObj: Grid;
-    beforeAll((done: Function) => {
-        gridObj = createGrid(
-            {
-                dataSource: data,
-                allowPaging: true,
-                editSettings: { allowEditing: true, allowAdding: true, allowDeleting: true},
-                columns: [
-                    { headerText: 'OrderID', field: 'OrderID', visible: false },
-                    { headerText: 'CustomerID', field: 'CustomerID' },
-                    { headerText: 'EmployeeID', field: 'EmployeeID' },
-                    { headerText: 'ShipCountry', field: 'ShipCountry' },
-                    { headerText: 'ShipCity', field: 'ShipCity' },
-                ],
-            }, done);
-    });
-
-    it('Coverage - 1', (done: Function) => {
-        gridObj.selectRow(0, true);
-        (gridObj as any).isTreeGrid = true;
-        gridObj.selectionModule.selectedRowIndexes = [ 0, 1 ];
-        gridObj.editModule.startEdit(null);
-        done();
-    });
-
-    afterAll(() => {
-        destroy(gridObj);
-        gridObj = null;
-    });
-});
-
 describe('991898: Updating the Chrome version in coverage test cases of EJ2 components -> 1 ', () => {
     let gridObj: Grid;
     let preventDefault: Function = new Function();

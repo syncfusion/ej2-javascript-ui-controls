@@ -223,7 +223,7 @@ export class PdfTimeline {
             cellBackgroundColor = holidayContainerColor;
             isHoliday = true;
         }
-        this.parent.holidays.map((item: HolidayModel) => {
+        this.parent.calendarModule.holidays.map((item: HolidayModel) => {
             const fromDate: Date = new Date(item.from);
             const toDate: Date = new  Date(item.to);
             const timelinedate: Date  = new Date(currentDate);
@@ -285,7 +285,9 @@ export class PdfTimeline {
             while (currentDateNow <= endDate) {
                 if (nonWorkingDays.indexOf(new Date(currentDateNow).getDay()) !== -1) {
                     const left: number = this.parent.dataOperation.getTaskLeft(
-                        this.parent.dateValidationModule.getDateFromFormat(currentDateNow, true), false, true);
+                        this.parent.dateValidationModule.getDateFromFormat(currentDateNow, true),
+                        false, this.parent.defaultCalendarContext, true
+                    );
                     const isAutoFit: boolean = this.parent.pdfExportModule.gantt.taskbar.isAutoFit();
                     const adjustedLeft: number = (isAutoFit ? left : pixelToPoint(left)) + this.gridPageWidth;
                     graphics.drawRectangle(

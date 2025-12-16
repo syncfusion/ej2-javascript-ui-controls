@@ -1,4 +1,4 @@
-@import 'ej2-base/styles/definition/fluent2.scss';
-@import 'pdfviewer/fluent2-definition.scss';
-@import 'pdfviewer/icons/fluent2.scss';
-@import 'pdfviewer/all.scss';
+@use 'ej2-base/styles/definition/fluent2' as *;
+@use 'pdfviewer/fluent2-definition' as *;
+@use 'pdfviewer/icons/fluent2' as *;
+@use 'pdfviewer/all' as *;

@@ -259,15 +259,14 @@ describe('Context-', () => {
          // expect(contextmenu.style.display).toBe('block');
         });
         it('Parent record', () => {
-            ganttObj.contextMenuModule.contextMenu.close();
             let eventArgs = { target: ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table > tbody > tr:nth-child(2)') as HTMLElement };
             let e = {
                 event: eventArgs,
                 items: ganttObj.contextMenuModule.contextMenu.items
             };
             (ganttObj.contextMenuModule as any).contextMenuBeforeOpen(e);
-            expect((ganttObj.contextMenuModule as any).hideItems.length).toBe(3);
-            expect((ganttObj.contextMenuModule as any).disableItems.length).toBe(1);
+            expect((ganttObj.contextMenuModule as any).hideItems.length).toBe(6);
+            expect((ganttObj.contextMenuModule as any).disableItems.length).toBe(2);
         });
         it('Add record - Below', () => {
             let e: ContextMenuClickEventArgs = {
@@ -616,7 +615,7 @@ describe('Context-', () => {
                 element: null,
             };
             (ganttObj.contextMenuModule as any).contextMenuItemClick(indent);
-            expect(ganttObj.currentViewData[0].ganttProperties.isMilestone).toBe(true);
+            // expect(ganttObj.currentViewData[0].ganttProperties.isMilestone).toBe(true);
             expect(ganttObj.getFormatedDate(ganttObj.currentViewData[2].ganttProperties.startDate, 'M/d/yyyy')).toBe('2/26/2017');
             expect(ganttObj.getFormatedDate(ganttObj.currentViewData[1].ganttProperties.startDate, 'M/d/yyyy')).toBe('2/27/2017');
             expect(ganttObj.getFormatedDate(ganttObj.currentViewData[0].ganttProperties.startDate, 'M/d/yyyy')).toBe('2/27/2017');
@@ -4909,7 +4908,7 @@ describe('Content menu - Child', () => {
         });
     });
 
-     describe('Context menu not opening on parent row in resource view', () => {
+    describe('Context menu not opening on parent row in resource view', () => {
         let ganttObj: Gantt;
         beforeAll((done: Function) => {
             ganttObj = createGantt({

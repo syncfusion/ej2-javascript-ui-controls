@@ -1,6 +1,6 @@
-@import 'ej2-base/styles/definition/material.scss';
-@import '../button/material-definition.scss';
-@import '../floating-action-button/material-definition.scss';
-@import 'material-definition.scss';
-@import 'all.scss';
-@import 'bigger.scss';
+@use 'ej2-base/styles/definition/material' as *;
+@use '../button/material-definition' as *;
+@use '../floating-action-button/material-definition' as *;
+@use 'material-definition' as *;
+@use 'all' as *;
+@use 'bigger' as *;

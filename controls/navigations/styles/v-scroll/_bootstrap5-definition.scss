@@ -1,3 +1,6 @@
+@use 'ej2-base/styles/definition/bootstrap5' as *;
+@forward 'ej2-base/styles/definition/bootstrap5';
+
 /*! component's theme wise override definitions and variables */
 $vscroll-skin: 'bootstrap5' !default;
 $vscroll-nav-nrml-height: 38px !default;

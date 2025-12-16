@@ -1,3 +1,6 @@
+@use 'ej2-base/styles/definition/tailwind3' as *;
+@forward 'ej2-base/styles/definition/tailwind3';
+
 /*! calendar bootstrap5 theme variables */
 //month view
 $calendar-normal-month-view-height: 32px !default;
@@ -10,6 +13,7 @@ $calendar-bigger-month-view-padding: 0 !default;
 $calendar-bigger-month-view-height: 38px !default;
 $calendar-bigger-month-view-line-height: $calendar-bigger-month-view-height !default;
 $calendar-bigger-month-view-width: 38px !default;
+$border-zero: 0;
 
 //header dimension
 $calendar-header-font-size: $text-sm !default;
@@ -31,7 +35,7 @@ $calendar-bigger-header-line-height: 20px !default;
 $calendar-bigger-header-title-padding: 9px 5px !default;
 
 // common size properties
-$calendar-wrapper-border-radius: 6px !default;
+$calendar-wrapper-border-radius: $radius-6 !default;
 $calendar-full-width: 100% !default;
 $calendar-lg-day-header-format-max-width: 100% !default;
 $calendar-lg-day-header-format-min-width: 540px !default;
@@ -150,7 +154,7 @@ $calendar-date-font-size: $text-sm !default;
 $calendar-bigger-day-font-size: $text-base !default;
 $calendar-link-font-weight-style: $font-weight-normal !default;
 $calendar-disable-font-weight-style: $font-weight-normal !default;
-$calendar-border-radius: 0 !default;
+$calendar-border-radius: $radius-0 !default;
 
 //week header font size
 $calendar-bigger-week-header-font-size: $text-sm !default;
@@ -162,7 +166,7 @@ $calendar-title-font-color: $content-text-color !default;
 $calendar-icon-font-color: $content-text-color-alt1 !default;
 $calendar-active-icon-color: $secondary-text-color !default;
 $calendar-title-hover-color: $content-bg-color-alt2 !default;
-$calendar-title-border-radius: 4px !default;
+$calendar-title-border-radius: $radius-4 !default;
 $calendar-title-hover-bg-color: $content-bg-color-alt2 !default;
 $calendar-title-focus-box-shadow: $shadow-focus-ring2 !default;
 $calendar-icon-focus-box-shadow: $shadow-focus-ring2 !default;
@@ -260,3 +264,15 @@ $today-button-active-bg: $primary-bg-color-pressed !default;
 $today-button-bg-border-active-color: $primary-border-color-pressed !default;
 $today-button-text-active-color: $primary-text-pressed !default;
 $calendar-active-hover-bg-color: $primary-bg-color-hover !default;
+
+$line-height: 14px;
+$margin-zero: 0;
+$padding-zero: 0;
+$calendar-bigger-rtl-header-text-indent: 6px !default;
+$calendar-zero-border-radius: $radius-0 !default;
+$calendar-bigger-header-width: 60% !default;
+$calendar-bigger-placeholder-min-height: 392px !default;
+$calendar-small-min-height: 220px !default;
+$calendar-selected-span-border-radius: $radius-40 !default;
+$calendar-active-content-border-radius: $radius-6 !default;
+$calendar-header-icon-top: 4px !default;

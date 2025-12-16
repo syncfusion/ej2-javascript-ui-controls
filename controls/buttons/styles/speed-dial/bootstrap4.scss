@@ -1,6 +1,6 @@
-@import 'ej2-base/styles/definition/bootstrap4.scss';
-@import '../button/bootstrap4-definition.scss';
-@import '../floating-action-button/bootstrap4-definition.scss';
-@import 'bootstrap4-definition.scss';
-@import 'all.scss';
-@import 'bigger.scss';
+@use 'ej2-base/styles/definition/bootstrap4' as *;
+@use '../button/bootstrap4-definition' as *;
+@use '../floating-action-button/bootstrap4-definition' as *;
+@use 'bootstrap4-definition' as *;
+@use 'all' as *;
+@use 'bigger' as *;

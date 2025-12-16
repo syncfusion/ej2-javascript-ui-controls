@@ -1303,4 +1303,49 @@ describe('Column chooser module', () => {
             gridObj = null;
         });
     });
+
+    describe('EJ2-988490 => Column Chooser search box can be enabled/disabled externally', () => {
+        let gridObj: Grid;
+        beforeAll((done: Function) => {
+            gridObj = createGrid(
+                {
+                    dataSource: data,
+                    allowPaging: true,
+                    showColumnChooser: true,
+                    toolbar: ['ColumnChooser'],
+                    columns: [
+                        { field: 'OrderID', headerText: 'Order ID', width: 130, textAlign: 'Right' },
+                        { field: 'OrderDate', headerText: 'Order Date', width: 130, format: 'yMd', textAlign: 'Right' },
+                        { field: 'Freight', width: 120, format: 'C2', textAlign: 'Right' },
+                        { field: 'ShippedDate', headerText: 'Shipped Date', width: 140, format: 'yMd', textAlign: 'Right' },
+                        { field: 'ShipCountry', visible: false, headerText: 'Ship Country', width: 150 },
+                    ],
+                }, done);
+        });
+
+        it('Search box is hidden when enableSearching is false', (done: Function) => {
+            gridObj.columnChooserModule.openColumnChooser();
+            const searchDiv = document.querySelector('.e-cc-searchdiv') as HTMLElement;
+            expect(searchDiv!.style.display).not.toBe('none');
+            gridObj.columnChooserSettings.enableSearching = false;
+            setTimeout(() => {
+                expect(searchDiv!.style.display).toBe('none');
+                done();
+            }, 100);
+        });
+        it('Search box is displayed when enableSearching is true', (done: Function) => {
+            gridObj.columnChooserModule.openColumnChooser();
+            const searchDiv = document.querySelector('.e-cc-searchdiv') as HTMLElement;
+            gridObj.columnChooserSettings.enableSearching = true;
+            setTimeout(() => {
+                expect(searchDiv!.style.display).not.toBe('none');
+                done();
+            }, 100);
+        });
+
+        afterAll(() => {
+            destroy(gridObj);
+            gridObj = null;
+        });
+    });
 });

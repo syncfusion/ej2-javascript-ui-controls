@@ -3,12 +3,13 @@
  * Schedule agenda view spec
  */
 import { closest } from '@syncfusion/ej2-base';
-import { Schedule, ScheduleModel, Day, Week, WorkWeek, Month, Agenda, EventRenderedArgs, RenderCellEventArgs } from '../../../src/schedule/index';
+import { Schedule, ScheduleModel, Day, Week, WorkWeek, Month, Agenda, EventRenderedArgs, RenderCellEventArgs, EJ2Instance } from '../../../src/schedule/index';
 import { triggerScrollEvent, createSchedule, destroy, triggerMouseEvent } from '../util.spec';
 import { resourceData, generateObject, defaultData, cloneDataSource } from '../base/datasource.spec';
 import * as util from '../../../src/schedule/base/util';
 import * as cls from '../../../src/schedule/base/css-constant';
 import { profile, inMB, getMemoryProfile } from '../../common.spec';
+import { DropDownList } from '@syncfusion/ej2-dropdowns';
 
 Schedule.Inject(Day, Week, WorkWeek, Month, Agenda);
 
@@ -2034,7 +2035,7 @@ describe('Agenda View', () => {
             schObj.eventSettings.dataSource = [];
             schObj.dataBind();
         });
-        
+
         it('Switch to Week for testing no crash and no hang', (done: DoneFn) => {
             schObj.dataBound = () => {
                 expect(schObj.currentView).toBe('Week');
@@ -2043,6 +2044,111 @@ describe('Agenda View', () => {
             };
             (schObj.element.querySelector('.e-week') as HTMLElement).click();
         });
+    });
+
+    describe('Check the header text in Agenda view when virtual scrolling is true', () => {
+        let schObj: Schedule;
+        beforeAll((done: DoneFn) => {
+            const eventData = [
+                {
+                    Id: 1,
+                    Subject: 'Nancy\'s Appointment',
+                    StartTime: new Date(2018, 3, 1, 9, 30),
+                    EndTime: new Date(2018, 3, 1, 11, 0),
+                },
+                {
+                    Id: 2,
+                    Subject: 'Steven\'s Appointment',
+                    StartTime: new Date(2018, 3, 2, 10, 0),
+                    EndTime: new Date(2018, 3, 2, 11, 30),
+                }
+            ];
+
+            const model: ScheduleModel = {
+                width: '100%', height: '550px', currentView: 'Week',
+                selectedDate: new Date(2018, 3, 1),
+                views: [
+                    { option: 'Day' },
+                    { option: 'Week' },
+                    { option: 'Month' },
+                    { option: 'Agenda', allowVirtualScrolling: true },
+                ],
+            };
+            schObj = createSchedule(model, eventData, done);
+        });
+        afterAll(() => {
+            destroy(schObj);
+        });
+
+        it('Compare header text with appointment details in Agenda view with margin top', () => {
+            schObj.dataBound = () => {
+                const scrollElement: HTMLElement = schObj.element.querySelector('.e-content-wrap') as HTMLElement;
+                triggerScrollEvent(scrollElement, 50);
+                triggerMouseEvent(schObj.element.querySelector('[data-id="Appointment_1"]') as HTMLElement, 'click');
+                const headerText: HTMLElement = schObj.element.querySelector('.e-tbar-btn-text') as HTMLElement;
+                const headerMonthText: string = headerText.textContent.split(' ')[0];
+                const appointmentData: any = schObj.getEventDetails(schObj.element.querySelector('[data-id="Appointment_1"]'));
+                const appointmentStartDate: Date = appointmentData.StartTime;
+                const appointmentMonth: string = appointmentStartDate.toLocaleString('default', { month: 'long' });
+                expect(headerMonthText).toEqual(appointmentMonth);
+            };
+            (schObj.element as HTMLElement).style.marginTop = '200px';
+            schObj.dataBind();
+            const todayButton: HTMLElement = schObj.element.querySelector('.e-today') as HTMLElement;
+            expect(todayButton).not.toBeNull();
+            todayButton.click();
+            triggerMouseEvent(schObj.element.querySelectorAll('.e-work-cells')[163] as HTMLElement, 'click');
+            triggerMouseEvent(schObj.element.querySelectorAll('.e-work-cells')[163] as HTMLElement, 'dblclick');
+            const dialogElement: HTMLElement = document.querySelector('.' + cls.EVENT_WINDOW_DIALOG_CLASS) as HTMLElement;
+            const repeatElement: DropDownList =
+                (dialogElement.querySelector('.e-repeat-element') as EJ2Instance).ej2_instances[0] as DropDownList;
+            repeatElement.index = 3; repeatElement.dataBind();
+            const saveButton: HTMLInputElement = dialogElement.querySelector('.e-event-save');
+            saveButton.click();
+            schObj.dataBind();
+            expect(schObj.element.querySelectorAll('.e-views').length).toEqual(4);
+            expect(schObj.element.querySelector('.e-active-view').classList).toContain('e-week');
+            schObj.currentView = 'Agenda';
+            schObj.dataBind();
+            expect(schObj.element.querySelector('.e-active-view').classList).toContain('e-agenda');
+        });
+    });
+    
+    describe('Agenda view without toolbar (showHeaderBar=false) in virtual scrolling', () => {
+        let schObj: Schedule;
+
+        beforeAll((done: DoneFn) => {
+            const model: ScheduleModel = {
+                width: '100%',
+                height: '550px',
+                currentView: 'Agenda',
+                selectedDate: new Date(2018, 3, 1),
+                showHeaderBar: false,
+                views: [{ option: 'Agenda', allowVirtualScrolling: true }]
+            };
+            schObj = createSchedule(model, generateObject(), done);
+        });
+
+        afterAll(() => {
+            destroy(schObj);
+        });
+
+        it('Should render without toolbar elements', () => {
+            expect(schObj.element.querySelectorAll('.e-schedule-toolbar-container').length).toEqual(0);
+            expect(schObj.element.querySelectorAll('.e-schedule-toolbar').length).toEqual(0);
+            expect(schObj.element.querySelector('.e-date-range')).toBeFalsy();
+            expect(schObj.element.querySelector('.e-content-wrap')).toBeTruthy();
+        });
+
+        it('Virtual scrolling works without toolbar', () => {
+            const container: HTMLElement = schObj.element.querySelector('.e-content-wrap') as HTMLElement;
+            const initialRows = container.querySelectorAll('tr').length;
+            expect(initialRows).toBeGreaterThan(0);
+            triggerScrollEvent(container, 0);
+            const rowsAfter = container.querySelectorAll('tr').length;
+            expect(rowsAfter).toBeLessThanOrEqual(20);
+        });
+
     });
 
     it('memory leak', () => {

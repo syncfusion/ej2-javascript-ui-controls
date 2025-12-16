@@ -1,4 +1,5 @@
 import { Ajax, loadCldr } from '@syncfusion/ej2-base';
+import { disableSpreadsheetRaf } from './../../src/spreadsheet/index';
 
 /**
  * Represents the class which contains Helper functions to test component.
@@ -15,6 +16,7 @@ export class TestHelper {
      */
     constructor(id: string) {
         this.id = id;
+        disableSpreadsheetRaf();
     }
 
     public getElement(elemRefr: string = '#' + this.id): any {

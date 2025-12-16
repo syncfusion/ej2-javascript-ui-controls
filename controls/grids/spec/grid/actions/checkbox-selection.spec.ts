@@ -8,6 +8,7 @@ import { data } from '../base/datasource.spec';
 import { Group } from '../../../src/grid/actions/group';
 import { Sort } from '../../../src/grid/actions/sort';
 import { Edit } from '../../../src/grid/actions/edit';
+import { Freeze } from '../../../src/grid/actions/freeze';
 import { employeeSelectData } from '../base/datasource.spec';
 import { employeeData } from '../base/datasource.spec';
 import { filterData } from '../base/datasource.spec';
@@ -17,7 +18,7 @@ import '../../../node_modules/es6-promise/dist/es6-promise';
 import { createGrid, destroy } from '../base/specutil.spec';
 import  {profile , inMB, getMemoryProfile} from '../base/common.spec';
 
-Grid.Inject(Selection, Page, Sort, Group, Edit, Toolbar);
+Grid.Inject(Selection, Page, Sort, Group, Edit, Toolbar, Freeze);
 
 //checkboxSelection
 describe('Grid checkbox selection functionality', () => {
@@ -1230,7 +1231,6 @@ describe('Grid checkbox selection functionality', () => {
                         allowAdding: true,
                         allowDeleting: true,
                         mode: 'Normal',
-
                         newRowPosition: 'Top',
                     },
                     selectionSettings: {
@@ -1247,18 +1247,61 @@ describe('Grid checkbox selection functionality', () => {
                     ],
                 }, done);
         });
-
         it('case 1 select events not trigger in edit mode', (done: Function) => {
             let rowSelected = (args: any) => {
                 expect(args.rowIndexes.length).toBe(1);
                 gridObj.rowSelected = null;
                 done();
             };
-
             gridObj.rowSelected = rowSelected;
             const tr: Element = gridObj.getRows()[1];
             (gridObj as any).editModule.startEdit(tr);
             (gridObj.element.querySelector('td.e-boolcell input') as HTMLElement).click();
+        });
+        afterAll(() => {
+            destroy(gridObj);
+            gridObj = null;
+        });
+    });
+    describe('Coverage for pin rows with chckbox selection', () => {
+        let gridObj: Grid;
+        beforeAll((done: Function) => {
+            gridObj = createGrid(
+                {
+                    dataSource: filterData,
+                    columns: [
+                        { type: 'checkbox', width: 50 },
+                        { field: 'OrderID', headerText: 'Order ID', isPrimaryKey: true, width: 120, textAlign: 'Right', minWidth: 10 },
+                        { field: 'Freight', width: 125, minWidth: 10 },
+                        { field: 'CustomerID', headerText: 'Customer ID', width: 130, minWidth: 10 },
+                    ],
+                    allowSelection: true,
+                    pageSettings: { pageSize: 12 },
+                    allowPaging: true,
+                    isRowPinned: function (data: any, column: any) {
+                        return data && data.OrderID < 10252;
+                    },
+                }, done);
+        });
+
+        it('Select the pinned row in content will be reflect in header pinned records', (done: Function) => {
+            let rowSelected = (args: any): void => {
+                gridObj.rowSelected = null;
+                done();
+            }
+            gridObj.rowSelected = rowSelected;
+            gridObj.selectRow(1);
+        });
+
+        it('Testing for Range selection', (done: Function) => {
+            gridObj.clearRowSelection();
+            let rowSelected = (args: any): void => {
+                expect(args.rowIndexes.length).toBe(9);
+                gridObj.rowSelected = null;
+                done();
+            }
+            gridObj.rowSelected = rowSelected;
+            gridObj.selectRowsByRange(4,8);
         });
 
         afterAll(() => {

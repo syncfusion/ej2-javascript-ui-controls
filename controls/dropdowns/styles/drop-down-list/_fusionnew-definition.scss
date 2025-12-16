@@ -1,7 +1,9 @@
+@use 'ej2-base/styles/common/mixin' as *;
+@use 'ej2-base/styles/definition/fusionnew' as *;
+@forward 'ej2-base/styles/definition/fusionnew';
 $ddl-input-font-size: $text-sm !default;
 $ddl-zero-value: 0 !default;
 $ddl-input-border: 1px $border-light !default;
-$border-type: solid !default;
 $ddl-input-font-family: inherit !default;
 $ddl-input-margin-bottom: 4px !default;
 $ddl-input-padding: 8px $ddl-zero-value 4px !default;
@@ -18,7 +20,14 @@ $ddl-back-icon-padding: 0 8px !default;
 $ddl-popup-shadow: $shadow-lg !default;
 $ddl-readonly-bg-color: $content-bg-color-alt2 !default;
 $ddl-filter-margin: 0 !default;
-$input-margin-top: 24px !default;
+$border-type: solid !default;
+
+$ddl-input-bgr-small-clear-margin: 0 4px !default;
+$ddl-input-popup-padding: 4px 0 !default;
+$ddl-input-zero-padding: 0 !default;
+$ddl-bigger-filter-parent-padding: 8px 16px 8px 0 !default;
+$ddl-bigger-small-filtr-parent: 8px 16px !default;
+$ddl-bigger-filter-input-parent-padding: 4px 16px 4px 0 !default;
 
 // Small Size
 $ddl-small-list-font-size: $text-xs !default;
@@ -37,7 +46,21 @@ $ddl-filter-background-color: $content-bg-color !default;
 $ddl-filter-bg: $content-bg-color !default;
 $ddl-list-icon-color: $icon-color !default;
 $ddl-filter-box-shadow: 0 1.5px 5px -2px $ddl-filter-box-shadow-color !default;
+
+$ddl-bgr-input-filter-margin-left: -20px !default;
+$ddl-bgr-content-min-height: 40px !default;
+$ddl-border-width: 1px !default;
+$ddl-zero-margin-padding: 0 !default;
+$ddl-content-nim-height: 33px !default;
+$ddl-popup-resize-height: 15px !default;
+$ddl-bgr-popup-clear-min-width: 16px !default;
+$ddl-bgr-popup-clear-min-height: 16px !default;
+$ddl-bgr-small-popup-clear-min-height: 18px !default;
+$ddl-bgr-small-popup-clear-min-width: 18px !default;
+$ddl-zero-height: 0 !default;
+$ddl-popup-resize-width: 15px !default;
 $input-border: $ddl-zero-value $border-type !default;
+$ddl-full-width: 100%;
 
 @include export-module('dropdownlist-bootstrap5') {
   #{&}.e-popup.e-ddl {

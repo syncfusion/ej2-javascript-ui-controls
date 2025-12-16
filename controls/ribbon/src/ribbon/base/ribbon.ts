@@ -11,8 +11,8 @@ import * as constants from './constant';
 import { RibbonFileMenu, RibbonBackstage, RibbonKeyTip } from '../modules/index';
 import { RibbonTooltipModel } from '../models/ribbon-tooltip-model';
 import { Popup } from '@syncfusion/ej2-popups';
-import { ColorPicker } from '@syncfusion/ej2-inputs';
 import { BeforeOpenCloseMenuEventArgs, DropDownButton, SplitButton } from '@syncfusion/ej2-splitbuttons';
+import { ColorPicker } from '@syncfusion/ej2-inputs';
 import { CheckBox } from '@syncfusion/ej2-buttons';
 import { RibbonContextualTab } from '../modules/ribbon-contextualtab';
 import { RibbonGallery } from '../items/ribbon-gallery';
@@ -3402,7 +3402,7 @@ export class Ribbon extends Component<HTMLElement> implements INotifyPropertyCha
      * @returns {void}
      */
     public selectTab(tabId: string): void {
-        const index: number = getIndex(this.tabs, (e: RibbonTab) => { return e.id === tabId; });
+        const index: number = this.tabObj.getItemIndex(tabId);
         this.setProperties({ selectedTab: index });
     }
     /**
@@ -3427,7 +3427,7 @@ export class Ribbon extends Component<HTMLElement> implements INotifyPropertyCha
     }
 
     private showHideTab(tabId: string, value: boolean, isContextual: boolean): void {
-        const index: number = getIndex(this.tabs, (e: RibbonTab) => { return e.id === tabId; });
+        const index: number = this.tabObj.getItemIndex(tabId);
         if (index === -1) { return; }
         this.tabObj.hideTab(index, value);
         if (isContextual) {

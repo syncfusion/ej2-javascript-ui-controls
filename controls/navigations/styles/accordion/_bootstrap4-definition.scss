@@ -1,4 +1,6 @@
 @use 'sass:color';
+@use 'ej2-base/styles/definition/bootstrap4' as *;
+@forward 'ej2-base/styles/definition/bootstrap4';
 
 $acrdn-skin: 'bootstrap4' !default;
 $acrdn-border-size: 1px !default;
@@ -24,7 +26,9 @@ $acrdn-selected-border-size: $acrdn-border-size !default;
 $acrdn-selected-border-color: $black !default;
 $acrdn-nested-header-font: $primary !default;
 $acrdn-nrml-header-minheight: 40px !default;
+$acrdn-nrml-header-height: 40px !default;
 $acrdn-bgr-header-minheight: 50px !default;
+$acrdn-bgr-header-height: 50px !default;
 $acrdn-nrml-header-lineheight: 39px !default;
 $acrdn-bgr-header-lineheight: 48px !default;
 $acrdn-nrml-header-paddingpix: 15px !default;
@@ -175,3 +179,8 @@ $acrdn-item-nes-selected-exp-hover-hdr-con-font: $primary !default;
 $acrdn-item-exp-not-selected-hdr-focus-bg: $gray-100 !default;
 $acrdn-item-exp-not-selected-hdr-focus-border: 0 !default;
 $acrdn-item-exp-not-selected-hdr-focus-border-color: initial !default;
+$acrdn-border-none: 0 !default;
+$acrdn-auto-height: auto !default;
+$acrdn-nested-header-content-font-weight: normal !default;
+$acrdn-padding-none: 0 !default;
+$acrdn-margin-none: 0 !default;

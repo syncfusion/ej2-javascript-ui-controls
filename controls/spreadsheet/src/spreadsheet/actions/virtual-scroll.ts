@@ -47,7 +47,9 @@ export class VirtualScroll {
         let startIndex: number = this.parent.frozenRowCount(sheet); const indexes: number[] = getCellIndexes(sheet.topLeftCell);
         if (args.top) {
             height = args.top;
-            if (sheet.frozenRows) { height += getRowsHeight(sheet, indexes[0], startIndex - 1, true); }
+            if (sheet.frozenRows && !this.parent.scrollSettings.isFinite) {
+                height += getRowsHeight(sheet, indexes[0], startIndex - 1, true);
+            }
             startIndex = getCellIndexes(sheet.paneTopLeftCell)[0];
         }
         height += getRowsHeight(sheet, startIndex, this.scroll[this.parent.activeSheetIndex].rowCount - 1, true);
@@ -56,7 +58,7 @@ export class VirtualScroll {
         const frozenCol: number = this.parent.frozenColCount(sheet);
         if (args.left) {
             size = args.left;
-            if (frozenCol) { size += getColumnsWidth(sheet, indexes[1], frozenCol - 1, true); }
+            if (frozenCol && !this.parent.scrollSettings.isFinite) { size += getColumnsWidth(sheet, indexes[1], frozenCol - 1, true); }
             startIndex = getCellIndexes(sheet.paneTopLeftCell)[1];
         } else {
             startIndex = frozenCol;

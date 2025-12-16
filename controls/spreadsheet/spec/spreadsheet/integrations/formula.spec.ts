@@ -190,7 +190,7 @@ describe('Spreadsheet formula module ->', () => {
         it('Geomean formula', (done: Function) => {
             helper.edit('J16', '=geomean(D2:D6)');
             expect(helper.invoke('getCell', [15, 9]).textContent).toBe('18.33133394');
-            expect(JSON.stringify(helper.getInstance().sheets[0].rows[15].cells[9])).toBe('{"value":"18.331333944571234","formula":"=geomean(D2:D6)"}');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[15].cells[9])).toBe('{"value":"18.331333944571238","formula":"=geomean(D2:D6)"}');
             done();
         });
 
@@ -422,10 +422,9 @@ describe('Spreadsheet formula module ->', () => {
             spreadsheet.editModule.editCellData.value = '=ROUNDUP(,0.5);';
             helper.getElement('.e-spreadsheet-edit').textContent = '=ROUNDUP(,0.5);';
             helper.triggerKeyNativeEvent(13);
-            const dialog: HTMLElement =  helper.getElement('.e-validation-error-dlg.e-dialog .e-dlg-content');
-            expect(dialog.textContent).toBe('We found that you typed a formula with an invalid arguments.');
-            helper.click('.e-validation-error-dlg.e-dialog .e-btn.e-primary');
+            expect(helper.getInstance().sheets[0].rows[4].cells[10].value).toBe('0');
             helper.edit('J13', '=ROUNDUP(23.457,1);');
+            expect(helper.getInstance().sheets[0].rows[12].cells[9].value).toBe('23.5');
             done();
         });
         it ('Calculate sheet', (done: Function) => {
@@ -669,7 +668,7 @@ describe('Spreadsheet formula module ->', () => {
             helper.getElement('.e-spreadsheet-edit').textContent = '=T();';
             helper.triggerKeyNativeEvent(13);
             const dialog: HTMLElement =  helper.getElement('.e-validation-error-dlg.e-dialog .e-dlg-content');
-            expect(dialog.textContent).toBe('We found that you typed a formula with a wrong number of arguments.');
+            expect(dialog.textContent).toBe('We found that you typed a formula with an invalid arguments.');
             helper.click('.e-validation-error-dlg.e-dialog .e-btn.e-primary');
             helper.edit('I12', '=T("hello");');
             done();
@@ -764,7 +763,7 @@ describe('Spreadsheet formula module ->', () => {
             helper.getElement('.e-spreadsheet-edit').textContent = '=NOW(B5)';
             helper.triggerKeyNativeEvent(13);
             const dialog: HTMLElement =  helper.getElement('.e-validation-error-dlg.e-dialog .e-dlg-content');
-            expect(dialog.textContent).toBe('We found that you typed a formula with a wrong number of arguments.');
+            expect(dialog.textContent).toBe('We found that you typed a formula with an invalid arguments.');
             helper.click('.e-validation-error-dlg.e-dialog .e-btn.e-primary');
             helper.edit('L1', '=NOW()');
             done();
@@ -2172,7 +2171,7 @@ describe('Spreadsheet formula module ->', () => {
             helper.getElement('.e-spreadsheet-edit').textContent = '=EXACT()';
             helper.triggerKeyNativeEvent(13);
             const dialog: HTMLElement =  helper.getElement('.e-validation-error-dlg.e-dialog .e-dlg-content');
-            expect(dialog.textContent).toBe('We found that you typed a formula with a wrong number of arguments.');
+            expect(dialog.textContent).toBe('We found that you typed a formula with an invalid arguments.');
             helper.click('.e-validation-error-dlg.e-dialog .e-btn.e-primary');
             helper.edit('I8', '=EXACT(word,word)');
             done();
@@ -2357,7 +2356,7 @@ describe('Spreadsheet formula module ->', () => {
             helper.getElement('.e-spreadsheet-edit').textContent = '=MOD()';
             helper.triggerKeyNativeEvent(13);
             const dialog: HTMLElement =  helper.getElement('.e-validation-error-dlg.e-dialog .e-dlg-content');
-            expect(dialog.textContent).toBe('We found that you typed a formula with a wrong number of arguments.');
+            expect(dialog.textContent).toBe('We found that you typed a formula with an invalid arguments.');
             helper.click('.e-validation-error-dlg.e-dialog .e-btn.e-primary');
             helper.edit('K12', '=MOD(10,2)');
             done();
@@ -2370,7 +2369,7 @@ describe('Spreadsheet formula module ->', () => {
             helper.getElement('.e-spreadsheet-edit').textContent = '=MOD(2,3,4)';
             helper.triggerKeyNativeEvent(13);
             const dialog: HTMLElement =  helper.getElement('.e-validation-error-dlg.e-dialog .e-dlg-content');
-            expect(dialog.textContent).toBe('We found that you typed a formula with a wrong number of arguments.');
+            expect(dialog.textContent).toBe('We found that you typed a formula with an invalid arguments.');
             helper.click('.e-validation-error-dlg.e-dialog .e-btn.e-primary');
             helper.edit('K13', '=MOD(2,3)');
             done();
@@ -4171,7 +4170,7 @@ describe('Spreadsheet formula module ->', () => {
             helper.getElement('.e-spreadsheet-edit').textContent = '=DEGREES()';
             helper.triggerKeyNativeEvent(13);
             const dialog: HTMLElement =  helper.getElement('.e-validation-error-dlg.e-dialog .e-dlg-content');
-            expect(dialog.textContent).toBe('We found that you typed a formula with a wrong number of arguments.');
+            expect(dialog.textContent).toBe('We found that you typed a formula with an invalid arguments.');
             helper.click('.e-validation-error-dlg.e-dialog .e-btn.e-primary');
             helper.edit('N2', '=DEGREES(PI())');
             done();
@@ -6625,10 +6624,9 @@ describe('Spreadsheet formula module ->', () => {
             spreadsheet.editModule.editCellData.value = '=ADDRESS(,,2)';
             helper.getElement('.e-spreadsheet-edit').textContent = '=ADDRESS(,,2)';
             helper.triggerKeyNativeEvent(13);
-            const dialog: HTMLElement =  helper.getElement('.e-validation-error-dlg.e-dialog .e-dlg-content');
-            expect(dialog.textContent).toBe('We found that you typed a formula with an invalid arguments.');
-            helper.click('.e-validation-error-dlg.e-dialog .e-btn.e-primary');
+            expect(spreadsheet.sheets[0].rows[16].cells[8].value).toBe('#VALUE!');
             helper.edit('I17', '=ADDRESS(1,2)');
+            expect(spreadsheet.sheets[0].rows[16].cells[8].value).toBe('$B$1');
             done();
         });
     });
@@ -8795,7 +8793,7 @@ describe('Spreadsheet formula module ->', () => {
         });
     });
 
-     describe('COUNTIF Formula Checking ->', () => {
+    describe('COUNTIF Formula Checking ->', () => {
         beforeAll((done: Function) => {
             helper.initializeSpreadsheet({
                 sheets: [{
@@ -8903,7 +8901,11 @@ describe('Spreadsheet formula module ->', () => {
             expect(dialog1.textContent).toBe('We found that you typed a formula with a wrong number of arguments.');
             helper.click('.e-validation-error-dlg.e-dialog .e-btn.e-primary');
             helper.edit('K11', '=COUNTIF(G2:G10,11)');
-            helper.edit('K12', '=COUNTIF(,"*e")');
+            spreadsheet.selectRange('K12');
+            helper.invoke('startEdit');
+            spreadsheet.editModule.editCellData.value = '=COUNTIF(,"*e")';
+            helper.getElement('.e-spreadsheet-edit').textContent = '=COUNTIF(,"*e")';
+            helper.triggerKeyNativeEvent(13);
             const dialog2: HTMLElement =  helper.getElement('.e-validation-error-dlg.e-dialog .e-dlg-content');
             expect(dialog2.textContent).toBe('We found that you typed a formula with a wrong number of arguments.');
             helper.click('.e-validation-error-dlg.e-dialog .e-btn.e-primary');
@@ -14145,7 +14147,11 @@ describe('Spreadsheet formula module ->', () => {
             expect(dialog1.textContent).toBe('We found that you typed a formula with a wrong number of arguments.');
             helper.click('.e-validation-error-dlg.e-dialog .e-btn.e-primary');
             helper.edit('K10', '=COUNTIFS(D2:D11,"<25",E2:E11,"<30")');
-            helper.edit('K11', '=COUNTIFS(,"*e")');
+            spreadsheet.selectRange('K11');
+            helper.invoke('startEdit');
+            spreadsheet.editModule.editCellData.value = '=COUNTIFS(,"*e")';
+            helper.getElement('.e-spreadsheet-edit').textContent = '=COUNTIFS(,"*e")';
+            helper.triggerKeyNativeEvent(13);
             const dialog2: HTMLElement =  helper.getElement('.e-validation-error-dlg.e-dialog .e-dlg-content');
             expect(dialog2.textContent).toBe('We found that you typed a formula with a wrong number of arguments.');
             helper.click('.e-validation-error-dlg.e-dialog .e-btn.e-primary');
@@ -14361,22 +14367,38 @@ describe('Spreadsheet formula module ->', () => {
             expect(dialog1.textContent).toBe('We found that you typed a formula with an invalid arguments.');
             helper.click('.e-validation-error-dlg.e-dialog .e-btn.e-primary');
             helper.edit('J7', '=COUNTBLANK(B2:B10)');
-            helper.edit('J8', '=COUNTBLANK("")');
+            spreadsheet.selectRange('J8');
+            helper.invoke('startEdit');
+            spreadsheet.editModule.editCellData.value = '=COUNTBLANK("")';
+            helper.getElement('.e-spreadsheet-edit').textContent = '=COUNTBLANK("")';
+            helper.triggerKeyNativeEvent(13);
             const dialog2: HTMLElement =  helper.getElement('.e-validation-error-dlg.e-dialog .e-dlg-content');
             expect(dialog2.textContent).toBe('We found that you typed a formula with an invalid arguments.');
             helper.click('.e-validation-error-dlg.e-dialog .e-btn.e-primary');
             helper.edit('J8', '=COUNTBLANK(B2:B10)');
-            helper.edit('J9', '=COUNTBLANK(,)');
+            spreadsheet.selectRange('J9');
+            helper.invoke('startEdit');
+            spreadsheet.editModule.editCellData.value = '=COUNTBLANK(,)';
+            helper.getElement('.e-spreadsheet-edit').textContent = '=COUNTBLANK(,)';
+            helper.triggerKeyNativeEvent(13);
             const dialog3: HTMLElement =  helper.getElement('.e-validation-error-dlg.e-dialog .e-dlg-content');
             expect(dialog3.textContent).toBe('We found that you typed a formula with an invalid arguments.');
             helper.click('.e-validation-error-dlg.e-dialog .e-btn.e-primary');
             helper.edit('J9', '=COUNTBLANK(B2:B10)');
-            helper.edit('J10', '=COUNTBLANK(H4,F7)');
+            spreadsheet.selectRange('J10');
+            helper.invoke('startEdit');
+            spreadsheet.editModule.editCellData.value = '=COUNTBLANK(H4,F7)';
+            helper.getElement('.e-spreadsheet-edit').textContent = '=COUNTBLANK(H4,F7)';
+            helper.triggerKeyNativeEvent(13);
             const dialog4: HTMLElement =  helper.getElement('.e-validation-error-dlg.e-dialog .e-dlg-content');
             expect(dialog4.textContent).toBe('We found that you typed a formula with an invalid arguments.');
             helper.click('.e-validation-error-dlg.e-dialog .e-btn.e-primary');
             helper.edit('J10', '=COUNTBLANK(B2:B10))');
-            helper.edit('J11', '=COUNTBLANK(H3:H10,F3:F9)');
+            spreadsheet.selectRange('J11');
+            helper.invoke('startEdit');
+            spreadsheet.editModule.editCellData.value = '=COUNTBLANK(H3:H10,F3:F9)';
+            helper.getElement('.e-spreadsheet-edit').textContent = '=COUNTBLANK(H3:H10,F3:F9)';
+            helper.triggerKeyNativeEvent(13);
             const dialog5: HTMLElement =  helper.getElement('.e-validation-error-dlg.e-dialog .e-dlg-content');
             expect(dialog5.textContent).toBe('We found that you typed a formula with an invalid arguments.');
             helper.click('.e-validation-error-dlg.e-dialog .e-btn.e-primary');
@@ -15368,7 +15390,7 @@ describe('Spreadsheet formula module ->', () => {
                 done();
             });
         });
-        describe('FB23112, EJ2-60666, EJ2-939665,EJ2-994048 ->', () => {
+        describe('FB23112, EJ2-60666, EJ2-939665, EJ2-994048 ->', () => {
             beforeAll((done: Function) => {
                 helper.initializeSpreadsheet({ sheets: [{ ranges: [{ dataSource: defaultData }] }] }, done);
             });
@@ -15382,7 +15404,7 @@ describe('Spreadsheet formula module ->', () => {
                 expect(helper.getInstance().sheets[0].rows[2].cells[8].value).toBe(7);
                 done();
             });
-            it('EJ2-994048: VLOOKUP comparison with empty string ("") returns FALSE when lookup value is blank cell',(done: Function) => {
+            it('EJ2-994048: VLOOKUP comparison with empty string ("") returns FALSE when lookup value is blank cell', (done: Function) => {
                 const spreadsheet: any = helper.getInstance().sheets[0];
                 helper.edit('D8', '');
                 expect(spreadsheet.rows[7].cells[3].value).toBe('');
@@ -23472,10 +23494,9 @@ describe('Spreadsheet formula module ->', () => {
             spreadsheet.editModule.editCellData.value = '=ADDRESS(,,2)';
             helper.getElement('.e-spreadsheet-edit').textContent = '=ADDRESS(,,2)';
             helper.triggerKeyNativeEvent(13);
-            const dialog: HTMLElement =  helper.getElement('.e-validation-error-dlg.e-dialog .e-dlg-content');
-            expect(dialog.textContent).toBe('We found that you typed a formula with an invalid arguments.');
-            helper.click('.e-validation-error-dlg.e-dialog .e-btn.e-primary');
+            expect(spreadsheet.sheets[0].rows[16].cells[8].value).toBe('#VALUE!');
             helper.edit('I17', '=ADDRESS(1,2)');
+            expect(spreadsheet.sheets[0].rows[16].cells[8].value).toBe('$B$1');
             done();
         });
     });

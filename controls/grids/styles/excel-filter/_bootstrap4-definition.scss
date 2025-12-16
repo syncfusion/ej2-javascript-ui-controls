@@ -1,3 +1,5 @@
+@use 'ej2-base/styles/definition/bootstrap4' as *;
+@forward 'ej2-base/styles/definition/bootstrap4';
 $grid-columnchooser-search-border-color: #212121 !default;
 $grid-columnchooser-search-border-fcolor: #ff4081 !default;
 $grid-columnchooser-footer-border-opacity: 1 !default;
@@ -70,3 +72,5 @@ $grid-xlfl-li-icon-margin-arrow-icon: 10px !default;
 $grid-bigger-xlfl-li-icon-margin-arrow-icon: 0 !default;
 $grid-xl-radio-margin-top: 0 !default;
 $grid-xlfl-skin: 'bootstrap4' !default;
+
+$grid-border-radius-0: 0 !default;

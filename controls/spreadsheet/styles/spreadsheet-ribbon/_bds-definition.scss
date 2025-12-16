@@ -1,3 +1,5 @@
+@use 'ej2-base/styles/definition/bds' as *;
+@forward 'ej2-base/styles/definition/bds';
 $spreadsheet-ribbon-skin: $skin-name !default;
 $file-menu-wrap-padding: 0 !default;
 $drop-icon-margin: 8px 4px !default;
@@ -20,3 +22,4 @@ $spreadsheet-ribbon-tab-text-wrap-height: 35px !default;
 $bigger-spread-ribbon-tab-text-wrap-height: 41px !default;
 $bigger-spread-ribbon-tab-menu-items-height: 41px !default;
 $bigger-spread-ribbon-tab-menu-items-line-height: 41px !default;
+$spread-ribbon-font-weight-bold: bold !default;

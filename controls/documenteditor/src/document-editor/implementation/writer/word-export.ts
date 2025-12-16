@@ -2842,7 +2842,7 @@ export class WordExport {
             writer.writeEndElement(); // end of strCache
             writer.writeEndElement(); // end of strRef
             writer.writeEndElement(); // end of tx
-            if (chart[chartTypeProperty[this.keywordIndex]] === 'Pie' || chart[chartTypeProperty[this.keywordIndex]] === 'Doughnut') {
+            if (chart[chartTypeProperty[this.keywordIndex]] === 'Pie' || chart[chartTypeProperty[this.keywordIndex]] === 'Doughnut' || (chart[chartTypeProperty[this.keywordIndex]] === 'Column_Stacked' && (series[dataPointsProperty[this.keywordIndex]]).length > 1)) {
                 this.parseChartDataPoint(writer, series);
                 writer.writeStartElement('c', 'explosion', this.chartNamespace);
                 writer.writeAttributeString(undefined, 'val', undefined, '0');

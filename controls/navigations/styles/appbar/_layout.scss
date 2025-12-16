@@ -1,24 +1,26 @@
+@use 'ej2-base/styles/common/mixin' as *;
+@use './theme-variables' as *;
 @include export-module('appbar-layout') {
   .e-appbar {
     display: flex;
     width: 100%;
-    height: 48px;
+    height: $appbar-nrml-height;
     flex-shrink: 0;
     flex-direction: row;
     position: relative;
     align-items: center;
-    padding: 8px;
+    padding: $appbar-nrml-padding;
     overflow: hidden;
     font-size: $appbar-font-size;
     @if ($skin-name == 'fluent2' or $skin-name == 'tailwind3') {
-      border-radius: 4px;
+      border-radius: $appbar-border-radius;
     }
 
     > div:first-child {
       display: flex;
       align-items: center;
       width: 100%;
-      height: 100%;
+      height: $appbar-content-height;
     }
 
     &.e-sticky {
@@ -28,7 +30,7 @@
     }
 
     &.e-prominent {
-      height: 94px;
+      height: $appbar-nrml-prominent-height;
       align-items: flex-start;
 
       > div:first-child {
@@ -37,7 +39,7 @@
     }
 
     &.e-dense {
-      height: 40px;
+      height: $appbar-nrml-dense-height;
     }
 
     &.e-horizontal-bottom {
@@ -56,7 +58,7 @@
     }
 
     .e-appbar-separator {
-      height: 24px;
+      height: $appbar-separator-height;
     }
 
     .e-appbar-spacer {

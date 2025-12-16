@@ -1,4 +1,4 @@
-@import 'ej2-base/styles/definition/fabric-dark.scss';
-@import 'rich-text-editor/fabric-dark-definition.scss';
-@import 'rich-text-editor/icons/fabric-dark.scss';
-@import 'rich-text-editor/all.scss';
+@use 'ej2-base/styles/definition/fabric-dark' as *;
+@use 'rich-text-editor/fabric-dark-definition' as *;
+@use 'rich-text-editor/icons/fabric-dark' as *;
+@use 'rich-text-editor/all' as *;

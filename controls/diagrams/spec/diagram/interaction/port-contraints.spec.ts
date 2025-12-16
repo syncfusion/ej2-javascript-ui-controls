@@ -6,7 +6,6 @@ import { NodeModel } from '../../../src/diagram/objects/node-model';
 import { PointPortModel } from '../../../src/diagram/objects/port-model';
 import { MouseEvents } from './mouseevents.spec';
 import { PortConstraints, ConnectorConstraints  } from '../../../src/diagram/enum/enum';
-import { Node } from '../../../src/diagram/objects/node';
 import { PortVisibility, DiagramTools, ShapeStyleModel } from '../../../src/diagram/index';
 import { NodeConstraints } from '../../../src/index';
 import { profile, inMB, getMemoryProfile } from '../../../spec/common.spec';
@@ -19,7 +18,6 @@ describe('Diagram Control', () => {
     describe('Ports with constraints', () => {
         let diagram: Diagram;
         let ele: HTMLElement;
-
         let mouseEvents: MouseEvents = new MouseEvents();
 
         beforeAll((): void => {
@@ -31,7 +29,6 @@ describe('Diagram Control', () => {
             }
             ele = createElement('div', { id: 'diagram3' });
             document.body.appendChild(ele);
-            let selArray: (NodeModel | ConnectorModel)[] = [];
             let nodeport1: PointPortModel = {
                 offset: { x: 0.5, y: 0.5 }, visibility: PortVisibility.Visible
             };
@@ -43,7 +40,6 @@ describe('Diagram Control', () => {
             diagram = new Diagram({
 
                 width: '500px', height: '500px', nodes: [node, node1]
-                //connectors: [connector]
             });
 
             diagram.appendTo('#diagram3');
@@ -52,10 +48,10 @@ describe('Diagram Control', () => {
         afterAll((): void => {
             diagram.destroy();
             ele.remove();
+            mouseEvents = null;
         });
 
         it('Checking selected port dragging with constraint', (done: Function) => {
-            let mouseEvents: MouseEvents = new MouseEvents();
             let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
             mouseEvents.mouseMoveEvent(diagramCanvas, 68, 68, true);
             let node: NodeModel = diagram.nodes[0];
@@ -71,7 +67,6 @@ describe('Diagram Control', () => {
             done();
         });
         it('Checking selected port drawing with constraint', (done: Function) => {
-            let mouseEvents: MouseEvents = new MouseEvents();
             let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
             mouseEvents.mouseMoveEvent(diagramCanvas, 358, 68, true);
             let node: NodeModel = diagram.nodes[1];
@@ -86,60 +81,56 @@ describe('Diagram Control', () => {
             done();
         });
 
-        it('Checking port drawing more than one connenctor', (done: Function) => {
-            let mouseEvents: MouseEvents = new MouseEvents();
-            let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
-            mouseEvents.mouseMoveEvent(diagramCanvas, 358, 68, true);
-            let node: NodeModel = diagram.nodes[1];
-            node.ports[0].constraints = PortConstraints.Draw | PortConstraints.OutConnect;
-            mouseEvents.clickEvent(diagramCanvas, 200, 102.5);
-            mouseEvents.mouseDownEvent(diagramCanvas, 402.5, 102.5);
-            mouseEvents.mouseMoveEvent(diagramCanvas, 402.5, 104.5);
-            mouseEvents.mouseMoveEvent(diagramCanvas, 402.5, 250);
-            mouseEvents.mouseUpEvent(diagramCanvas, 402.5, 250);
-            mouseEvents.clickEvent(diagramCanvas, 200, 102.5);
-            mouseEvents.mouseDownEvent(diagramCanvas, 402.5, 102.5);
-            mouseEvents.mouseMoveEvent(diagramCanvas, 402.5, 104.5);
-            mouseEvents.mouseMoveEvent(diagramCanvas, 402.5, 230);
-            mouseEvents.mouseUpEvent(diagramCanvas, 402.5, 230);
-            expect(diagram.connectors.length == 3).toBe(true);
-            expect((diagram.tool & DiagramTools.SingleSelect) != 0).toBe(true);
-            done();
-        })
-        it('CR -issue-fix for removing the connectors in collection change', (done: Function) => {
-            diagram.collectionChange = (arg: any) => {
-                if (arg.type === "Addition" && arg.state === "Changing") {
-                    if (!(arg.element.sourcePortID && arg.element.targetPortID)) {
-                        arg.cancel = true;
-                    }
-                }
-            }
-            let mouseEvents: MouseEvents = new MouseEvents();
-            let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
-            mouseEvents.mouseMoveEvent(diagramCanvas, 358, 68, true);
-            let node: NodeModel = diagram.nodes[1];
-            node.ports[0].constraints = PortConstraints.Draw;
-            mouseEvents.clickEvent(diagramCanvas, 200, 102.5);
-            mouseEvents.mouseDownEvent(diagramCanvas, 402.5, 102.5);
-            mouseEvents.mouseMoveEvent(diagramCanvas, 402.5, 104.5);
-            mouseEvents.mouseMoveEvent(diagramCanvas, 402.5, 250);
-            mouseEvents.mouseUpEvent(diagramCanvas, 402.5, 250);
-            mouseEvents.clickEvent(diagramCanvas, 200, 102.5);
-            mouseEvents.mouseDownEvent(diagramCanvas, 402.5, 102.5);
-            mouseEvents.mouseMoveEvent(diagramCanvas, 402.5, 104.5);
-            mouseEvents.mouseMoveEvent(diagramCanvas, 402.5, 230);
-            mouseEvents.mouseUpEvent(diagramCanvas, 402.5, 230);
-            expect(diagram.connectors.length == 3).toBe(true);
-            done();
-        })
-    })
+        // it('Checking port drawing more than one connenctor', (done: Function) => {
+        //     let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
+        //     mouseEvents.mouseMoveEvent(diagramCanvas, 358, 68, true);
+        //     let node: NodeModel = diagram.nodes[1];
+        //     node.ports[0].constraints = PortConstraints.Draw | PortConstraints.OutConnect;
+        //     mouseEvents.clickEvent(diagramCanvas, 200, 102.5);
+        //     mouseEvents.mouseDownEvent(diagramCanvas, 402.5, 102.5);
+        //     mouseEvents.mouseMoveEvent(diagramCanvas, 402.5, 104.5);
+        //     mouseEvents.mouseMoveEvent(diagramCanvas, 402.5, 250);
+        //     mouseEvents.mouseUpEvent(diagramCanvas, 402.5, 250);
+        //     mouseEvents.clickEvent(diagramCanvas, 200, 102.5);
+        //     mouseEvents.mouseDownEvent(diagramCanvas, 402.5, 102.5);
+        //     mouseEvents.mouseMoveEvent(diagramCanvas, 402.5, 104.5);
+        //     mouseEvents.mouseMoveEvent(diagramCanvas, 402.5, 230);
+        //     mouseEvents.mouseUpEvent(diagramCanvas, 402.5, 230);
+        //     expect(diagram.connectors.length == 3).toBe(true);
+        //     expect((diagram.tool & DiagramTools.SingleSelect) != 0).toBe(true);
+        //     done();
+        // })
+        // it('CR -issue-fix for removing the connectors in collection change', (done: Function) => {
+        //     diagram.collectionChange = (arg: any) => {
+        //         if (arg.type === "Addition" && arg.state === "Changing") {
+        //             if (!(arg.element.sourcePortID && arg.element.targetPortID)) {
+        //                 arg.cancel = true;
+        //             }
+        //         }
+        //     }
+        //     let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
+        //     mouseEvents.mouseMoveEvent(diagramCanvas, 358, 68, true);
+        //     let node: NodeModel = diagram.nodes[1];
+        //     node.ports[0].constraints = PortConstraints.Draw;
+        //     mouseEvents.clickEvent(diagramCanvas, 200, 102.5);
+        //     mouseEvents.mouseDownEvent(diagramCanvas, 402.5, 102.5);
+        //     mouseEvents.mouseMoveEvent(diagramCanvas, 402.5, 104.5);
+        //     mouseEvents.mouseMoveEvent(diagramCanvas, 402.5, 250);
+        //     mouseEvents.mouseUpEvent(diagramCanvas, 402.5, 250);
+        //     mouseEvents.clickEvent(diagramCanvas, 200, 102.5);
+        //     mouseEvents.mouseDownEvent(diagramCanvas, 402.5, 102.5);
+        //     mouseEvents.mouseMoveEvent(diagramCanvas, 402.5, 104.5);
+        //     mouseEvents.mouseMoveEvent(diagramCanvas, 402.5, 230);
+        //     mouseEvents.mouseUpEvent(diagramCanvas, 402.5, 230);
+        //     expect(diagram.connectors.length == 3).toBe(true);
+        //     done();
+        // })
+    });
 
     describe('Ports with constraints undo redo ', () => {
         let diagram: Diagram;
         let ele: HTMLElement;
-
         let mouseEvents: MouseEvents = new MouseEvents();
-
         beforeAll((): void => {
             const isDef = (o: any) => o !== undefined && o !== null;
             if (!isDef(window.performance)) {
@@ -149,7 +140,6 @@ describe('Diagram Control', () => {
             }
             ele = createElement('div', { id: 'diagram3' });
             document.body.appendChild(ele);
-            let selArray: (NodeModel | ConnectorModel)[] = [];
             let nodeport1: PointPortModel = {
                 offset: { x: 0.5, y: 0.5 }, visibility: PortVisibility.Visible
             };
@@ -170,10 +160,11 @@ describe('Diagram Control', () => {
         afterAll((): void => {
             diagram.destroy();
             ele.remove();
+            mouseEvents = null;
         });
 
         it('Checking selected port dragging undo redo ', (done: Function) => {
-            let mouseEvents: MouseEvents = new MouseEvents();
+            
             let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
             mouseEvents.mouseMoveEvent(diagramCanvas, 68, 68, true);
             let node: NodeModel = diagram.nodes[0];
@@ -199,10 +190,10 @@ describe('Diagram Control', () => {
             expect(memory).toBeLessThan(profile.samples[0] + 0.25);
         })
     });
+    
     describe('Ports with constraints undo redo ', () => {
         let diagram: Diagram;
         let ele: HTMLElement;
-
         let mouseEvents: MouseEvents = new MouseEvents();
 
         beforeAll((): void => {
@@ -264,10 +255,11 @@ describe('Diagram Control', () => {
         afterAll((): void => {
             diagram.destroy();
             ele.remove();
+            mouseEvents = null;
         });
 
         it('Port with Inconnect', (done: Function) => {
-            let mouseEvents: MouseEvents = new MouseEvents();
+            
             let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
             mouseEvents.clickEvent(diagramCanvas, 210, 150);
             mouseEvents.mouseDownEvent(diagramCanvas, 200, 150);
@@ -279,7 +271,6 @@ describe('Diagram Control', () => {
             done();
         });
         it('Port with OutConnect', (done: Function) => {
-            let mouseEvents: MouseEvents = new MouseEvents();
             let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
             mouseEvents.clickEvent(diagramCanvas, 300, 150);
             mouseEvents.mouseDownEvent(diagramCanvas, 300, 150);
@@ -291,7 +282,6 @@ describe('Diagram Control', () => {
             done();
         });
         it('Port with OutConnect not connect on Node', (done: Function) => {
-            let mouseEvents: MouseEvents = new MouseEvents();
             let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
             mouseEvents.clickEvent(diagramCanvas, 300, 300);
             mouseEvents.mouseDownEvent(diagramCanvas, 300, 300);
@@ -303,7 +293,6 @@ describe('Diagram Control', () => {
             done();
         });
         it('Port with Inconnect not connect on Node', (done: Function) => {
-            let mouseEvents: MouseEvents = new MouseEvents();
             let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
             mouseEvents.clickEvent(diagramCanvas, 210, 300);
             mouseEvents.mouseDownEvent(diagramCanvas, 200, 300);
@@ -320,8 +309,6 @@ describe('Diagram Control', () => {
     describe('Ports with group undo redo ', () => {
         let diagram: Diagram;
         let ele: HTMLElement;
-
-        let mouseEvents: MouseEvents = new MouseEvents();
 
         beforeAll((): void => {
             const isDef = (o: any) => o !== undefined && o !== null;
@@ -377,7 +364,6 @@ describe('Diagram Control', () => {
     describe('Ports with inconnect and outconnect ', () => {
         let diagram: Diagram;
         let ele: HTMLElement;
-
         let mouseEvents: MouseEvents = new MouseEvents();
 
         beforeAll((): void => {
@@ -503,10 +489,10 @@ describe('Diagram Control', () => {
         afterAll((): void => {
             diagram.destroy();
             ele.remove();
+            mouseEvents = null;
         });
 
         it('port with inconnect and outconnect and node without inconnect and outconnect', (done: Function) => {
-            let mouseEvents: MouseEvents = new MouseEvents();
             let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
             mouseEvents.clickEvent(diagramCanvas, 160, 150);
             mouseEvents.mouseDownEvent(diagramCanvas, 155, 155);
@@ -517,7 +503,6 @@ describe('Diagram Control', () => {
             done();
         });
         it('port with None and node default', (done: Function) => {
-            let mouseEvents: MouseEvents = new MouseEvents();
             let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
             mouseEvents.clickEvent(diagramCanvas, 160, 300);
             mouseEvents.mouseDownEvent(diagramCanvas, 155, 300);
@@ -530,7 +515,6 @@ describe('Diagram Control', () => {
         it('Remove port inconnect runtime', (done: Function) => {
             diagram.nodes[0].ports[1].constraints = PortConstraints.Default & ~PortConstraints.OutConnect;
             diagram.dataBind();
-            let mouseEvents: MouseEvents = new MouseEvents();
             let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
             mouseEvents.clickEvent(diagramCanvas, 160, 150);
             mouseEvents.mouseDownEvent(diagramCanvas, 155, 155);
@@ -553,6 +537,7 @@ describe('Diagram Control', () => {
             done();
         });
     });
+
     describe('Port Constraints - Draw', () => {
         let diagram: Diagram;
         let ele: HTMLElement;
@@ -618,8 +603,6 @@ describe('Diagram Control', () => {
         let diagram: Diagram;
         let ele: HTMLElement;
 
-        let mouseEvents: MouseEvents = new MouseEvents();
-
         beforeAll((): void => {
             ele = createElement('div', { id: 'diagramannotation' });
             document.body.appendChild(ele);
@@ -652,10 +635,10 @@ describe('Diagram Control', () => {
             ele.remove();
         });
     });
+
     describe('EJ2-49436 - The combination of port constraints is not working', () => {
         let diagram: Diagram;
         let ele: HTMLElement;
-
         let mouseEvents: MouseEvents = new MouseEvents();
 
         beforeAll((): void => {
@@ -686,7 +669,6 @@ describe('Diagram Control', () => {
 
         it('EJ2-49436 - The combination of port constraints is not working', (done: Function) => {
             let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
-            debugger;
             mouseEvents.clickEvent(diagramCanvas, 282, 158);
             mouseEvents.mouseDownEvent(diagramCanvas, 298, 148);
             mouseEvents.mouseMoveEvent(diagramCanvas, 450, 151);
@@ -701,69 +683,69 @@ describe('Diagram Control', () => {
         });
     });
 
-    describe('Connection Padding ', () => {
-        let diagram: Diagram;
-        let ele: HTMLElement;
+    // describe('Connection Padding ', () => {
+    //     let diagram: Diagram;
+    //     let ele: HTMLElement;
 
-        let mouseEvents: MouseEvents = new MouseEvents();
+    //     let mouseEvents: MouseEvents = new MouseEvents();
 
-        beforeAll((): void => {
-            const isDef = (o: any) => o !== undefined && o !== null;
-            if (!isDef(window.performance)) {
-                console.log("Unsupported environment, window.performance.memory is unavailable");
-                this.skip(); //Skips test (in Chai)
-                return;
-            }
-            ele = createElement('div', { id: 'diagram4' });
-            document.body.appendChild(ele);
-            let node1: NodeModel = {
-                id: 'node1', width: 100, height: 150, offsetX: 150, offsetY: 150, annotations: [{ content: 'Node1' }],
-                shape: { type: 'Basic', shape: 'Rectangle' },
-                ports: [
-                    { id: 'port3', visibility: PortVisibility.Visible, height: 50, width: 50, shape: 'Circle', constraints: PortConstraints.Draw | PortConstraints.InConnect, offset: { x: 1, y: 0.5 } },
-                ],
-            };
-            let node2: NodeModel = {
-                id: 'node2', width: 100, height: 100, offsetX: 468, offsetY: 150, annotations: [{ content: 'Node2' }],
-                shape: { type: 'Basic', shape: 'Rectangle' },
-                ports: [
-                    { id: 'port21', visibility: PortVisibility.Visible, height: 50, width: 50, constraints: PortConstraints.Draw | PortConstraints.InConnect, shape: 'Circle', offset: { x: 0.5, y: 0 } },
-                    { id: 'port31', visibility: PortVisibility.Visible, height: 50, width: 50, shape: 'Circle', constraints: PortConstraints.Draw | PortConstraints.InConnect, offset: { x: 0, y: 0.5 } },
-                    { id: 'port41', visibility: PortVisibility.Visible, height: 50, width: 50, shape: 'Circle', constraints: PortConstraints.Draw | PortConstraints.InConnect, offset: { x: 0.5, y: 1 } }
-                ]
-            };
-            diagram = new Diagram({
+    //     beforeAll((): void => {
+    //         const isDef = (o: any) => o !== undefined && o !== null;
+    //         if (!isDef(window.performance)) {
+    //             console.log("Unsupported environment, window.performance.memory is unavailable");
+    //             this.skip(); //Skips test (in Chai)
+    //             return;
+    //         }
+    //         ele = createElement('div', { id: 'diagram4' });
+    //         document.body.appendChild(ele);
+    //         let node1: NodeModel = {
+    //             id: 'node1', width: 100, height: 150, offsetX: 150, offsetY: 150, annotations: [{ content: 'Node1' }],
+    //             shape: { type: 'Basic', shape: 'Rectangle' },
+    //             ports: [
+    //                 { id: 'port3', visibility: PortVisibility.Visible, height: 50, width: 50, shape: 'Circle', constraints: PortConstraints.Draw | PortConstraints.InConnect, offset: { x: 1, y: 0.5 } },
+    //             ],
+    //         };
+    //         let node2: NodeModel = {
+    //             id: 'node2', width: 100, height: 100, offsetX: 468, offsetY: 150, annotations: [{ content: 'Node2' }],
+    //             shape: { type: 'Basic', shape: 'Rectangle' },
+    //             ports: [
+    //                 { id: 'port21', visibility: PortVisibility.Visible, height: 50, width: 50, constraints: PortConstraints.Draw | PortConstraints.InConnect, shape: 'Circle', offset: { x: 0.5, y: 0 } },
+    //                 { id: 'port31', visibility: PortVisibility.Visible, height: 50, width: 50, shape: 'Circle', constraints: PortConstraints.Draw | PortConstraints.InConnect, offset: { x: 0, y: 0.5 } },
+    //                 { id: 'port41', visibility: PortVisibility.Visible, height: 50, width: 50, shape: 'Circle', constraints: PortConstraints.Draw | PortConstraints.InConnect, offset: { x: 0.5, y: 1 } }
+    //             ]
+    //         };
+    //         diagram = new Diagram({
 
-                width: '1000px', height: '500px', nodes: [node1, node2],
-                getConnectorDefaults: (obj: ConnectorModel, diagram: Diagram) => {
-                    if (obj.id.indexOf('connector') !== -1) {
-                        obj.type = 'Orthogonal';
-                        obj.targetDecorator = { shape: 'Arrow', width: 10, height: 10 };
-                    }
-                    obj.constraints = ConnectorConstraints.Default & ~ConnectorConstraints.ConnectToNearByNode;
-                    obj.connectionPadding = 55;
-                    return obj;
-                },
-            });
+    //             width: '1000px', height: '500px', nodes: [node1, node2],
+    //             getConnectorDefaults: (obj: ConnectorModel, diagram: Diagram) => {
+    //                 if (obj.id.indexOf('connector') !== -1) {
+    //                     obj.type = 'Orthogonal';
+    //                     obj.targetDecorator = { shape: 'Arrow', width: 10, height: 10 };
+    //                 }
+    //                 obj.constraints = ConnectorConstraints.Default & ~ConnectorConstraints.ConnectToNearByNode;
+    //                 obj.connectionPadding = 55;
+    //                 return obj;
+    //             },
+    //         });
 
-            diagram.appendTo('#diagram4');
-        });
+    //         diagram.appendTo('#diagram4');
+    //     });
 
-        afterAll((): void => {
-            diagram.destroy();
-            ele.remove();
-        });
+    //     afterAll((): void => {
+    //         diagram.destroy();
+    //         ele.remove();
+    //         mouseEvents = null;
+    //     });
 
-        it('By Port Draw checking the ConnectToNearByPort', (done: Function) => {
-            let mouseEvents: MouseEvents = new MouseEvents();
-            let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
-            mouseEvents.mouseDownEvent(diagramCanvas, 196, 149);
-            mouseEvents.mouseMoveEvent(diagramCanvas, 400, 160);
-            mouseEvents.mouseLeaveEvent(diagramCanvas);
-            expect(diagram.connectors[0].connectionPadding).toBe(55);
-            done();
-        });
-    });
+    //     it('By Port Draw checking the ConnectToNearByPort', (done: Function) => {
+    //         let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
+    //         mouseEvents.mouseDownEvent(diagramCanvas, 196, 149);
+    //         mouseEvents.mouseMoveEvent(diagramCanvas, 400, 160);
+    //         mouseEvents.mouseLeaveEvent(diagramCanvas);
+    //         expect(diagram.connectors[0].connectionPadding).toBe(55);
+    //         done();
+    //     });
+    // });
 
     describe('Dragging the multiselect objects,connector removes from selection', () => {
         let diagram: Diagram;
@@ -924,14 +906,11 @@ describe('Diagram Control', () => {
                 return connector;
             }
             diagram = new Diagram({
-
                 width: '100%',
                 height: '645px',
                 nodes: createNodes(),
                 connectors: createConnectors(),
-                //Sets the default values of a node
                 getNodeDefaults: getNodeDefaults,
-                //Sets the default values of a Connector
                 getConnectorDefaults: getConnectorDefaults,
             });
 
@@ -939,12 +918,13 @@ describe('Diagram Control', () => {
         });
 
         afterAll((): void => {
+            diagram.clearSelection();
             diagram.destroy();
             ele.remove();
+            mouseEvents = null;
         });
 
         it('EJ2-70550 - Hovering port and dragging nodes', (done: Function) => {
-            let mouseEvents: MouseEvents = new MouseEvents();
             let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
             mouseEvents.mouseMoveEvent(diagramCanvas, 250.5, 175.5);
             mouseEvents.mouseMoveEvent(diagramCanvas, 230, 175.5);

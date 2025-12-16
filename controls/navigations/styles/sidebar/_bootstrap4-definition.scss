@@ -1,4 +1,9 @@
+@use 'ej2-base/styles/definition/bootstrap4' as *;
+@forward 'ej2-base/styles/definition/bootstrap4';
 $sidebar-background: $content-bg !default;
 $sidebar-border: $gray-300 !default;
 $sidebar-box-shadow: 0 0 20px rgba($black, .2) !default;
 $sidebar-overlay: rgba($black, .5) !default;
+$sidebar-height: 100% !default;
+$sidebar-border-width: 1px !default;
+$sidebar-margin-none: 0 !default;

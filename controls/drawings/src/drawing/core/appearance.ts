@@ -1,4 +1,4 @@
-import { Property, ChildProperty, Collection, ComplexFactory } from '@syncfusion/ej2-base';
+import { Property, ChildProperty, Collection, ComplexFactory } from '@syncfusion/ej2-base'; /*externalscript*/
 import { GradientModel, RadialGradientModel, LinearGradientModel, StopModel } from './appearance-model';
 import { TextDecoration, TextWrap, TextAlign, GradientType, TextOverflow, WhiteSpace } from '../enum/enum';
 

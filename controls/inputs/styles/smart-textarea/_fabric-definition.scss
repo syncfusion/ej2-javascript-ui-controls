@@ -1,3 +1,5 @@
+@use 'ej2-base/styles/definition/fabric' as *;
+@forward 'ej2-base/styles/definition/fabric';
 $sta-background-color: $neutral-white !default;
 $sta-color: $neutral-primary !default;
 $sta-box-shadow: rgba(0, 0, 0, .4) !default;

@@ -86,7 +86,7 @@ export class CustomUserAgentData {
      * @returns {boolean} - Returns true if the device is a mobile device.
      */
     public isMobileDevice(): boolean {
-        if (!this.isTesting && (window.navigator as any).userAgentData) {
+        if (!this.isTesting && (window.navigator as any).userAgentData && ((window.navigator as any).userAgentData as any).platform !== '') {
             return (window.navigator as any).userAgentData.mobile;
         }
         return /(iphone|ipod|ipad|android|blackberry|bb|playbook|windows phone|webos|opera mini|mobile)/i.test(this.userAgent);

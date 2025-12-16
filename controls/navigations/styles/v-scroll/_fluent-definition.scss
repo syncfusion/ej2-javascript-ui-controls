@@ -1,3 +1,6 @@
+@use 'ej2-base/styles/definition/fluent' as *;
+@forward 'ej2-base/styles/definition/fluent';
+
 /*! component's theme wise override definitions and variables */
 $vscroll-skin: 'FluentUI' !default;
 $vscroll-nav-nrml-height: 38px !default;

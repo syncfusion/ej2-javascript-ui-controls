@@ -99,7 +99,8 @@ export class BulletChartLegend extends BaseLegend {
         }
         if (bulletChart.dataSource !== null && bulletChart.targetField !== '') {
             fill = (bulletChart.theme.indexOf('Dark') > -1) ? 'white' : bulletChart.targetColor ? bulletChart.targetColor : 'black';
-            const shape: LegendShape = bulletChart.targetTypes[0] === 'Rect' ? bulletChart.orientation === 'Vertical' ? 'ActualRect' : 'TargetRect' : bulletChart.targetTypes[0] as LegendShape;
+            const shape: LegendShape = bulletChart.targetTypes[0] === 'Rect' ? bulletChart.orientation === 'Vertical' ? 'ActualRect' : 'TargetRect' :
+                bulletChart.targetTypes[0] as LegendShape;
             for (let i: number = 0; i < Object.keys(bulletChart.dataSource).length; i++) {
                 if (isNullOrUndefined(bulletChart.dataSource[i as number][bulletChart.targetField].length)
                 || bulletChart.dataSource[i as number][bulletChart.targetField].length === 1) {
@@ -268,4 +269,3 @@ export class BulletChartLegend extends BaseLegend {
         this.removeEventListener();
     }
 }
-

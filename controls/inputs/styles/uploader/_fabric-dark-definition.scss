@@ -1,3 +1,6 @@
+@use 'ej2-base/styles/definition/fabric-dark' as *;
+@forward 'ej2-base/styles/definition/fabric-dark';
+
 // uploader definition styles
 $zero-value: 0 !default;
 $upload-root-font-family: $font-family !default;
@@ -214,3 +217,13 @@ $form-upload-small-file-list-padding-top: $file-small-name-padding-top - 4 !defa
 $form-upload-small-file-list-padding-bottom: $file-small-name-padding-top !default;
 $form-upload-small-file-name-padding: 4px !default;
 $form-upload-small-file-status-font-size: $list-item-status-font-size-smaller !default;
+
+$upload-zer-padding-margin: 0 !default;
+$upload-zero-height: 0 !default;
+$upload-full-height: 100% !default;
+$upload-bgr-placeholder-min-height: 65px !default;
+$upload-bgr-content-placeholder-min-height: 80px !default;
+$upload-zero-width: 0 !default;
+$upload-full-width: 100% !default;
+$upload-auto-width: auto !default;
+$uploader-actions-border-radius: 0 0 6px 6px !default;

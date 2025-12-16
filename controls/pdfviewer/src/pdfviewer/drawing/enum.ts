@@ -7,6 +7,10 @@ export type PdfAnnotationType =
      */
     'Rectangle' |
     /**
+     * Redaction - Represents the annotation type as Redaction.
+     */
+    'Redaction' |
+    /**
      * Ellipse -  Represents the annotation type as Ellipse.
      */
     'Ellipse' |

@@ -6,7 +6,7 @@ import { EditorManager } from '../../../src/editor-manager/index';
 import { destroy, renderRTE, dispatchEvent, setSelection } from '../../rich-text-editor/render.spec';
 import { RichTextEditor } from '../../../src';
 import { CustomUserAgentData } from '../../../src/common/user-agent';
-import { BACKSPACE_EVENT_INIT, ENTERKEY_EVENT_INIT, DELETE_EVENT_INIT } from '../../constant.spec';
+import { BACKSPACE_EVENT_INIT, ENTERKEY_EVENT_INIT, DELETE_EVENT_INIT, SPACE_EVENT_INIT } from '../../constant.spec';
 
 function setCursorPoint(element: Element, point: number) {
     let range: Range = document.createRange();
@@ -741,7 +741,8 @@ describe ('left indent testing', () => {
                 editorObj.execCommand("Lists", 'OL', null);
                 expect(editNode.querySelectorAll('blockquote')[0].closest('OL')).toBe(null);
                 expect(editNode.querySelectorAll('blockquote')[1].closest('OL')).toBe(null);
-                expect(editNode.innerHTML === `<ol><li class="startFocus">Line 1</li><li>Line 2</li></ol><blockquote><ol><li>Line 3 with quotation</li></ol></blockquote><ol><li>Line 4</li><li>Line 5</li></ol><blockquote><ol><li>Line 6&nbsp;<span style="background-color: unset; text-align: inherit;">with quotation</span></li></ol></blockquote><ol><li>Line 7</li><li class="endFocus">Line 8</li></ol>`).toBe(true);            });
+                expect(editNode.innerHTML === `<ol><li class="startFocus">Line 1</li><li>Line 2</li></ol><blockquote><ol><li>Line 3 with quotation</li></ol></blockquote><ol><li>Line 4</li><li>Line 5</li></ol><blockquote><ol><li>Line 6&nbsp;<span style="background-color: unset; text-align: inherit;">with quotation</span></li></ol></blockquote><ol><li>Line 7</li><li class="endFocus">Line 8</li></ol>`).toBe(true);
+            });
             afterAll(() => {
                 detach(elem);
             });
@@ -1494,7 +1495,8 @@ describe ('left indent testing', () => {
                 endNode = editNode.querySelector('.endFocus');
                 editorObj.nodeSelection.setSelectionText(document, startNode.childNodes[0], endNode.childNodes[0], 1, 3);
                 editorObj.execCommand("Lists", 'OL', null);
-                expect(editNode.innerHTML === `<ol style="margin-left: 120px;"><li class="startFocus" style="color: red; background-color: yellow;">sdvsdvsdv</li><li style="color: yellow; background-color: red;">sdvdsvdsvsdvsdv</li><li>sdv</li><li class="endFocus" style="">sdvsdvdsvsdv</li></ol>`).toBe(true);            });
+                expect(editNode.innerHTML === `<ol style="margin-left: 120px;"><li class="startFocus" style="color: red; background-color: yellow;">sdvsdvsdv</li><li style="color: yellow; background-color: red;">sdvdsvdsvsdvsdv</li><li>sdv</li><li class="endFocus" style="">sdvsdvdsvsdv</li></ol>`).toBe(true);
+            });
             afterAll(() => {
                 detach(elem);
             });
@@ -1761,6 +1763,179 @@ describe ('left indent testing', () => {
 
             afterAll(() => {
                 detach(elem);
+            });
+        });
+
+        describe('992601: Auto format support for checklist and checked checklist', () => {
+            let rteObj: RichTextEditor;
+            beforeEach((done: Function) => {
+                rteObj = renderRTE({
+                    toolbarSettings: {
+                        items: ['SourceCode']
+                    },
+                    enableMarkdownAutoFormat: true,
+                });
+                done();
+            });
+            afterEach((done: Function) => {
+                destroy(rteObj);
+                done();
+            });
+            it('Auto format support for checklist', (done: Function) => {
+                rteObj.focusIn();
+                rteObj.inputElement.innerHTML = '<p>[] </p>';
+                let content: HTMLElement = rteObj.inputElement.querySelector('p').firstChild as HTMLElement;
+                setCursorPoint(content, 2);
+                const spaceDownEvent: KeyboardEvent = new KeyboardEvent('keydown', SPACE_EVENT_INIT);
+                rteObj.inputElement.dispatchEvent(spaceDownEvent);
+                const spaceUpEvent: KeyboardEvent = new KeyboardEvent('keyup', SPACE_EVENT_INIT);
+                rteObj.inputElement.dispatchEvent(spaceUpEvent);
+                setTimeout(() => {
+                    expect(rteObj.inputElement.querySelector('ul').classList.contains('e-rte-checklist')).toBe(true);
+                    done();
+                }, 50);
+            });
+            it('Auto format support for checked checklist', (done: Function) => {
+                rteObj.focusIn();
+                rteObj.inputElement.innerHTML = '<p>[x] </p>';
+                let content: HTMLElement = rteObj.inputElement.querySelector('p').firstChild as HTMLElement;
+                setCursorPoint(content, 3);
+                const spaceDownEvent: KeyboardEvent = new KeyboardEvent('keydown', SPACE_EVENT_INIT);
+                rteObj.inputElement.dispatchEvent(spaceDownEvent);
+                const spaceUpEvent: KeyboardEvent = new KeyboardEvent('keyup', SPACE_EVENT_INIT);
+                rteObj.inputElement.dispatchEvent(spaceUpEvent);
+                setTimeout(() => {
+                    expect(rteObj.inputElement.querySelector('ul').classList.contains('e-rte-checklist')).toBe(true);
+                    expect((rteObj.inputElement.querySelectorAll('.e-rte-checklist-checked')).length === 1).toBe(true);
+                    done();
+                }, 50);
+            });
+            it('Auto format support for checklist in Unordered list', (done: Function) => {
+                rteObj.focusIn();
+                rteObj.inputElement.innerHTML = '<ul><li>list1</li><li>list</li><li class="select">[] </li></ul>';
+                let content: HTMLElement = rteObj.inputElement.querySelector('.select').firstChild as HTMLElement;
+                setCursorPoint(content, 2);
+                const spaceDownEvent: KeyboardEvent = new KeyboardEvent('keydown', SPACE_EVENT_INIT);
+                rteObj.inputElement.dispatchEvent(spaceDownEvent);
+                const spaceUpEvent: KeyboardEvent = new KeyboardEvent('keyup', SPACE_EVENT_INIT);
+                rteObj.inputElement.dispatchEvent(spaceUpEvent);
+                setTimeout(() => {
+                    expect(rteObj.inputElement.querySelector('ul').classList.contains('e-rte-checklist')).toBe(true);
+                    done();
+                }, 50);
+            });
+            it('Auto format support for checklist in Ordered list', (done: Function) => {
+                rteObj.focusIn();
+                rteObj.inputElement.innerHTML = '<ol><li>list1</li><li>list</li><li class="select">[x] </li></0l>';
+                let content: HTMLElement = rteObj.inputElement.querySelector('.select').firstChild as HTMLElement;
+                setCursorPoint(content, 3);
+                const spaceDownEvent: KeyboardEvent = new KeyboardEvent('keydown', SPACE_EVENT_INIT);
+                rteObj.inputElement.dispatchEvent(spaceDownEvent);
+                const spaceUpEvent: KeyboardEvent = new KeyboardEvent('keyup', SPACE_EVENT_INIT);
+                rteObj.inputElement.dispatchEvent(spaceUpEvent);
+                setTimeout(() => {
+                    expect(rteObj.inputElement.querySelector('ul').classList.contains('e-rte-checklist')).toBe(true);
+                    done();
+                }, 50);
+            });
+        });
+
+        describe('995046: Auto format support for checklist and checked checklist with single space inside the []', () => {
+            let rteObj: RichTextEditor;
+            beforeEach(() => {
+                rteObj = renderRTE({
+                    toolbarSettings: {
+                        items: ['SourceCode']
+                    },
+                    enableMarkdownAutoFormat: true,
+                });
+            });
+            afterEach(() => {
+                destroy(rteObj);
+            });
+            it('Should create checklist when single space is present inside [ ]', (done: Function) => {
+                rteObj.focusIn();
+                rteObj.inputElement.innerHTML = '<p>[ ] </p>';
+                let content: HTMLElement = rteObj.inputElement.querySelector('p').firstChild as HTMLElement;
+                setCursorPoint(content, 3);
+                const spaceDownEvent: KeyboardEvent = new KeyboardEvent('keydown', SPACE_EVENT_INIT);
+                rteObj.inputElement.dispatchEvent(spaceDownEvent);
+                const spaceUpEvent: KeyboardEvent = new KeyboardEvent('keyup', SPACE_EVENT_INIT);
+                rteObj.inputElement.dispatchEvent(spaceUpEvent);
+                setTimeout(() => {
+                    expect(rteObj.inputElement.querySelector('ul').classList.contains('e-rte-checklist')).toBe(true);
+                    done();
+                }, 50);
+            });
+            it('Should create checked checklist when single space is present inside [ x], before the x', (done: Function) => {
+                rteObj.focusIn();
+                rteObj.inputElement.innerHTML = '<p>[ x] </p>';
+                let content: HTMLElement = rteObj.inputElement.querySelector('p').firstChild as HTMLElement;
+                setCursorPoint(content, 4);
+                const spaceDownEvent: KeyboardEvent = new KeyboardEvent('keydown', SPACE_EVENT_INIT);
+                rteObj.inputElement.dispatchEvent(spaceDownEvent);
+                const spaceUpEvent: KeyboardEvent = new KeyboardEvent('keyup', SPACE_EVENT_INIT);
+                rteObj.inputElement.dispatchEvent(spaceUpEvent);
+                setTimeout(() => {
+                    expect(rteObj.inputElement.querySelector('ul').classList.contains('e-rte-checklist')).toBe(true);
+                    done();
+                }, 50);
+            });
+            it('Should create checked checklist when single space is present inside [x ], after the x', (done: Function) => {
+                rteObj.focusIn();
+                rteObj.inputElement.innerHTML = '<p>[x ] </p>';
+                let content: HTMLElement = rteObj.inputElement.querySelector('p').firstChild as HTMLElement;
+                setCursorPoint(content, 4);
+                const spaceDownEvent: KeyboardEvent = new KeyboardEvent('keydown', SPACE_EVENT_INIT);
+                rteObj.inputElement.dispatchEvent(spaceDownEvent);
+                const spaceUpEvent: KeyboardEvent = new KeyboardEvent('keyup', SPACE_EVENT_INIT);
+                rteObj.inputElement.dispatchEvent(spaceUpEvent);
+                setTimeout(() => {
+                    expect(rteObj.inputElement.querySelector('ul').classList.contains('e-rte-checklist')).toBe(true);
+                    done();
+                }, 50);
+            });
+            it('Should create checked checklist when single space is present [ x ], beofre and after the x', (done: Function) => {
+                rteObj.focusIn();
+                rteObj.inputElement.innerHTML = '<p>[ x ] </p>';
+                let content: HTMLElement = rteObj.inputElement.querySelector('p').firstChild as HTMLElement;
+                setCursorPoint(content, 5);
+                const spaceDownEvent: KeyboardEvent = new KeyboardEvent('keydown', SPACE_EVENT_INIT);
+                rteObj.inputElement.dispatchEvent(spaceDownEvent);
+                const spaceUpEvent: KeyboardEvent = new KeyboardEvent('keyup', SPACE_EVENT_INIT);
+                rteObj.inputElement.dispatchEvent(spaceUpEvent);
+                setTimeout(() => {
+                    expect(rteObj.inputElement.querySelector('ul').classList.contains('e-rte-checklist')).toBe(true);
+                    done();
+                }, 50);
+            });
+            it('Should not create checklist for the multiple spaces inside []', (done: Function) => {
+                rteObj.focusIn();
+                rteObj.inputElement.innerHTML = '<p>[  ] </p>';
+                let content: HTMLElement = rteObj.inputElement.querySelector('p').firstChild as HTMLElement;
+                setCursorPoint(content, 4);
+                const spaceDownEvent: KeyboardEvent = new KeyboardEvent('keydown', SPACE_EVENT_INIT);
+                rteObj.inputElement.dispatchEvent(spaceDownEvent);
+                const spaceUpEvent: KeyboardEvent = new KeyboardEvent('keyup', SPACE_EVENT_INIT);
+                rteObj.inputElement.dispatchEvent(spaceUpEvent);
+                setTimeout(() => {
+                    expect(rteObj.inputElement.querySelectorAll('ul').length).toBe(0);
+                    done();
+                }, 50);
+            });
+             it('Should not create checklist for the multiple spaces inside [ x ]', (done: Function) => {
+                rteObj.focusIn();
+                rteObj.inputElement.innerHTML = '<p>[x  ] </p>';
+                let content: HTMLElement = rteObj.inputElement.querySelector('p').firstChild as HTMLElement;
+                setCursorPoint(content, 5);
+                const spaceDownEvent: KeyboardEvent = new KeyboardEvent('keydown', SPACE_EVENT_INIT);
+                rteObj.inputElement.dispatchEvent(spaceDownEvent);
+                const spaceUpEvent: KeyboardEvent = new KeyboardEvent('keyup', SPACE_EVENT_INIT);
+                rteObj.inputElement.dispatchEvent(spaceUpEvent);
+                setTimeout(() => {
+                    expect(rteObj.inputElement.querySelectorAll('ul').length).toBe(0);
+                    done();
+                }, 50);
             });
         });
 
@@ -3454,7 +3629,7 @@ describe ('left indent testing', () => {
             expect(editorEle.querySelectorAll('ol').length === 0).toBe(true);
             editor.formatter.editorManager.nodeSelection.setSelectionText(document, start, end, 0, 5);
             const toolbar: Element = editor.element.querySelectorAll('.e-rte-toolbar .e-toolbar-item')[0];
-            const button: Element = toolbar.querySelector('#' + editor.getID() + '_toolbar_NumberFormatList').parentElement;
+            const button: Element = toolbar.querySelector('#' + editor.getID() + '_toolbar_NumberFormatList');
             (button as HTMLElement).click();
             setTimeout(() => {
                 const lists = editorEle.querySelectorAll('ol');
@@ -3473,7 +3648,7 @@ describe ('left indent testing', () => {
             expect(editorEle.querySelectorAll('ol').length === 0).toBe(true);
             editor.formatter.editorManager.nodeSelection.setSelectionText(document, start, end, 2, 5);
             const toolbar: Element = editor.element.querySelectorAll('.e-rte-toolbar .e-toolbar-item')[0];
-            const button: Element = toolbar.querySelector('#' + editor.getID() + '_toolbar_NumberFormatList').parentElement;
+            const button: Element = toolbar.querySelector('#' + editor.getID() + '_toolbar_NumberFormatList');
             (button as HTMLElement).click();
             setTimeout(() => {
                 const unorderList = editorEle.querySelectorAll('ul')[0];
@@ -3492,7 +3667,7 @@ describe ('left indent testing', () => {
             expect(editorEle.querySelectorAll('ol').length === 0).toBe(true);
             setCursorPoint(start as Element, 4);
             const toolbar: Element = editor.element.querySelectorAll('.e-rte-toolbar .e-toolbar-item')[0];
-            const button: Element = toolbar.querySelector('#' + editor.getID() + '_toolbar_NumberFormatList').parentElement;
+            const button: Element = toolbar.querySelector('#' + editor.getID() + '_toolbar_NumberFormatList');
             (button as HTMLElement).click();
             setTimeout(() => {
                 expect(editorEle.querySelectorAll('ul').length === 0).toBe(true);
@@ -3510,7 +3685,7 @@ describe ('left indent testing', () => {
             const end = editorEle.querySelector('.end').firstChild;
             editor.formatter.editorManager.nodeSelection.setSelectionText(document, start, end, 2, 4);
             const toolbar: Element = editor.element.querySelectorAll('.e-rte-toolbar .e-toolbar-item')[0];
-            const button: Element = toolbar.querySelector('#' + editor.getID() + '_toolbar_NumberFormatList').parentElement;
+            const button: Element = toolbar.querySelector('#' + editor.getID() + '_toolbar_NumberFormatList');
             (button as HTMLElement).click();
             setTimeout(() => {
                 expect(editorEle.querySelectorAll('ol').length === 3).toBe(true);
@@ -4200,7 +4375,7 @@ describe('968282 : Implement NumberFormatList in executeCommand Method - Selecti
             let targetNodeTwo : HTMLElement = rteObj.inputElement.querySelector('#pNode12');
             rteObj.formatter.editorManager.nodeSelection.setSelectionText(document, targetNodeOne, targetNodeTwo, 0, 0);
             rteObj.executeCommand("numberFormatList", "upperRoman", {undo : true} );
-            expect(rteObj.inputElement.querySelector('#pNode11').parentElement.style.listStyleType === 'upper-roman').toBe(true)
+            expect(rteObj.inputElement.querySelector('#pNode11').parentElement.style.listStyleType === 'upper-roman').toBe(true);
             expect(document.querySelector('.e-toolbar-item').classList.contains('e-overlay')).toBe(false);
         });
         // case for checking dic list for executeCommand method.
@@ -4623,6 +4798,47 @@ describe('975383: Shortcut to toggle Checklist is not working.', () => {
     });
 });
 
+describe('978845 - List formatting fails when applied to indented checklist items in multi-selection', () => {
+    let editorObj: RichTextEditor;
+    beforeAll(() => {
+        editorObj = renderRTE({
+            enterKey: 'DIV',
+            toolbarSettings: {
+                items: ['OrderedList', 'UnorderedList']
+            },
+            value: `<ul>
+   <li>text1
+      <ul>
+         <li class="start">text2</li>
+      </ul>
+   </li>
+   <li class="end">text3</li>
+</ul>`
+        });
+    });
+    afterAll((done) => {
+        destroy(editorObj);
+        done();
+    });
+    it('Should convert the nested list into an ordered list', (done) => {
+        let startNode = editorObj.inputElement.querySelector('.start');
+        let endNode = editorObj.inputElement.querySelector('.end');
+        editorObj.formatter.editorManager.nodeSelection.setSelectionText(document, startNode.firstChild, endNode.lastChild, 0, 3);
+        (editorObj.element.querySelectorAll(".e-toolbar .e-toolbar-item")[0] as HTMLElement).click();
+        expect(editorObj.inputElement.innerHTML === `<ul><li>text1 <ol><li class="start">text2</li></ol> </li></ul><ol><li class="end">text3</li></ol>`).toBe(true);
+        done();
+    });
+    it('Should convert the UnorderedList into an ordered list', (done) => {
+        editorObj.inputElement.innerHTML = `<ul><li class="start">Text1<ul><li>Text2</li></ul></li><li>Text3<ul><li>Text4</li></ul></li><li class="end">Text5</li></ul>`;
+        let startNode = editorObj.inputElement.querySelector('.start');
+        let endNode = editorObj.inputElement.querySelector('.end');
+        editorObj.formatter.editorManager.nodeSelection.setSelectionText(document, startNode.firstChild, endNode.lastChild, 0, 3);
+        (editorObj.element.querySelectorAll(".e-toolbar .e-toolbar-item")[0] as HTMLElement).click();
+        expect(editorObj.inputElement.innerHTML === `<ol><li class="start">Text1<ol><li>Text2</li></ol></li><li>Text3<ol><li>Text4</li></ol></li><li class="end">Text5</li></ol>`).toBe(true);
+        done();
+    });
+});
+
 describe('977557 - When pressing enter key at start position of list affects the DOM structure', () => {
     let editorObj: RichTextEditor;
     beforeAll(() => {
@@ -4683,6 +4899,52 @@ describe('977409 - Deleting text breaks the nested bullet list with images in th
     });
 });
 
+describe('979658 - The content overlaps when converting a table into a UL or OL element.', () => {
+    let editorObj: RichTextEditor;
+    beforeAll(() => {
+        editorObj = renderRTE({
+            toolbarSettings: {
+                items: ['OrderedList', 'UnorderedList']
+            },
+            value: `<table class="e-rte-table" style="width: 100%; min-width: 0px; height: 50px">
+   <colgroup>
+      <col style="width: 50%;">
+      <col style="width: 50%;">
+   </colgroup>
+   <tbody>
+      <tr>
+         <td><br/></td>
+         <td><br/></td>
+      </tr>
+      <tr>
+         <td><br/></td>
+         <td><br/></td>
+      </tr>
+   </tbody>
+</table>
+<p><br/></p>`
+        });
+    });
+    afterAll((done) => {
+        destroy(editorObj);
+        done();
+    });
+    it('Should not add the table style to the list LI element', (done) => {
+        (editorObj as any).inputElement.focus();
+        const selection = document.getSelection();
+        const range = selection.getRangeAt(0);
+        selection.removeAllRanges();
+        const newRange = document.createRange();
+        const table = (editorObj as any).inputElement.querySelector('table');
+        newRange.setStartBefore(table);
+        newRange.setEndBefore(table);
+        selection.addRange(newRange);
+        (editorObj.element.querySelectorAll(".e-toolbar .e-toolbar-item")[1] as HTMLElement).click();
+        expect((editorObj.inputElement.querySelector('UL li') as HTMLElement).style.height !== table.style.height).toBe(true);
+        done();
+    });
+});
+
 describe('978392 - Image disappears when pressing backspace before image inside a list item.', ()=> {
     let editor: RichTextEditor;
     beforeAll(() => {
@@ -4709,25 +4971,120 @@ describe('978392 - Image disappears when pressing backspace before image inside 
    });
 });
 
-describe('979095 - Bullet list element comes with font color even after removing the font from the list content in RichTextEditor', () => {
+describe('Tab key indentation with maxLength', () => {
+    let editorObj: any;
+    let editNode: HTMLElement;
+    let startNode: Node;
+    let keyBoardEvent: any;
+
+    beforeAll((done: Function) => {
+        editorObj = renderRTE({
+            value: '<ul><li>1234567890</li></ul>',
+            enableTabKey: true,
+            maxLength: 10
+        });
+        editNode = editorObj.inputElement;
+        done();
+    });
+
+    afterAll((done: Function) => {
+        destroy(editorObj);
+        done();
+    });
+
+    it('Should not indent list when maxLength is reached and enableTabKey is true', (done: Function) => {
+        editorObj.focusIn();
+        startNode = editNode.querySelector('li');
+        editorObj.formatter.editorManager.nodeSelection.setCursorPoint(document, startNode, 0);
+        keyBoardEvent = {
+            preventDefault: () => {},
+            stopPropagation: () => {},
+            key: 'Tab',
+            code: 'Tab',
+            keyCode: 9,
+            which: 9,
+            shiftKey: false,
+            action: 'tab'
+        };
+        editorObj.formatter.editorManager.editorKeyDown({ event: keyBoardEvent });
+        setTimeout(() => {
+            const updatedText: string = editNode.querySelector('li').textContent;
+            expect(updatedText).toBe('1234567890');
+            done();
+        }, 50);
+    });
+});
+describe('994950 - Complete Revert list for complex nested list with intendation', () => {
     let editorObj: RichTextEditor;
-    beforeAll(() => {
+    beforeEach(() => {
         editorObj = renderRTE({
             toolbarSettings: {
-                items: ['OrderedList', 'UnorderedList']
-            },
-            value: `<ul><li style="color: rgb(255, 0, 0); text-decoration: inherit;"><span style="color: rgb(255, 0, 0); text-decoration: inherit;">ppppppp</span><span style="color: rgb(255, 0, 0); text-decoration: inherit;"><br></span><span style="color: rgb(255, 0, 0); text-decoration: inherit;">ffffffffffff</span></li></ul>`
+                items: ['OrderedList', 'UnorderedList', 'CheckList', 'Indent']
+            }
         });
     });
-    afterAll(() => {
+    afterEach(() => {
         destroy(editorObj);
     });
-    it('Now, the Rich Text Editor works properly by removing font color from bullet list elements when the font is cleared from the list content.', (done) => {
-        let startNode = editorObj.inputElement.querySelector('li');
-        editorObj.formatter.editorManager.nodeSelection.setSelectionText(document, startNode.firstChild, startNode.lastChild, 0, 1);
+    it('Should completely revert the selected complex list items', (done) => {
+        editorObj.inputElement.innerHTML = `<ul style="list-style-image: none; list-style-type: circle;"> <li style="list-style-type: none;"> <ul style="list-style-type: circle;"> <li class="selection-start">list 1</li> <li>list 2 <ul style="list-style-type: circle;"> <li>sub list 1</li> <li>sub list 2</li> <li>sub list 3</li> </ul> </li> <li class="selection-end">list 3</li> </ul> </li> </ul>`;
+        let startNode = editorObj.inputElement.querySelector('.selection-start');
+        let endNode = editorObj.inputElement.querySelector('.selection-end');
+        editorObj.formatter.editorManager.nodeSelection.setSelectionText(document, startNode.firstChild, endNode.firstChild, 0, endNode.firstChild.textContent.length);
         (editorObj.element.querySelectorAll(".e-toolbar .e-toolbar-item")[1] as HTMLElement).click();
-        expect(editorObj.inputElement.innerHTML === '<p style="text-decoration: inherit;"><span style="color: rgb(255, 0, 0); text-decoration: inherit;">ppppppp</span><span style="color: rgb(255, 0, 0); text-decoration: inherit;"><br></span><span style="color: rgb(255, 0, 0); text-decoration: inherit;">ffffffffffff</span></p>').toBe(true);
-        done();
+        setTimeout(() => {
+            expect(editorObj.inputElement.querySelectorAll('li').length).toBe(0);
+            expect(editorObj.inputElement.querySelectorAll('p').length).toBe(6);
+            expect(editorObj.inputElement.querySelector('.selection-start').nodeName).toBe('P');
+            done();
+        }, 100);
+    });
+    it('Select the entire list and apply the indent, should properly create the nested list', (done) => {
+        editorObj.inputElement.innerHTML = `<ul style="list-style-image: none; list-style-type: circle;"><li>list 1</li><li>list 2</li></ul>`;
+        let startNode = editorObj.inputElement.querySelector('ul');
+        editorObj.formatter.editorManager.nodeSelection.setSelectionText(document, startNode.firstElementChild.firstChild, startNode.lastElementChild.firstChild, 0, 2);
+        (editorObj.element.querySelectorAll(".e-toolbar .e-toolbar-item")[3] as HTMLElement).click();
+        setTimeout(() => {
+            expect(editorObj.inputElement.querySelectorAll('ul').length).toBe(2);
+            done();
+        }, 100);
+    });
+});
+describe('994501 - Complete Revert list Testing', () => {
+    let editorObj: RichTextEditor;
+    beforeEach(() => {
+        editorObj = renderRTE({
+            toolbarSettings: {
+                items: ['OrderedList', 'UnorderedList', 'CheckList']
+            }
+        });
+    });
+    afterEach(() => {
+        destroy(editorObj);
+    });
+    it('Reverting the list item with hr element', (done) => {
+        editorObj.inputElement.innerHTML = `<ul><li class="selection-start">list 1</li><li>list 2</li><li><hr></li><li class="selection-end">list 3</li></ul>`;
+        let startNode = editorObj.inputElement.querySelector('.selection-start');
+        let endNode = editorObj.inputElement.querySelector('.selection-end');
+        editorObj.formatter.editorManager.nodeSelection.setSelectionText(document, startNode.firstChild, endNode.firstChild, 0, endNode.firstChild.textContent.length);
+        (editorObj.element.querySelectorAll(".e-toolbar .e-toolbar-item")[1] as HTMLElement).click();
+        setTimeout(() => {
+            expect(editorObj.inputElement.querySelectorAll('li').length).toBe(0);
+            expect(editorObj.inputElement.querySelectorAll('hr').length).toBe(1);
+            done();
+        }, 100);
+    });
+    it('Reverting the nested checkList', (done) => {
+        editorObj.inputElement.innerHTML = `<ul class="e-rte-checklist"><li>list 1<ul class="e-rte-checklist"><li>sub list 1</li><li class="selection" >sub list 2</li><li>sub list 3</li></ul></li><li>list 2</li></ul>`;
+        let startNode = editorObj.inputElement.querySelector('.selection');
+        editorObj.formatter.editorManager.nodeSelection.setSelectionText(document, startNode.firstChild, startNode.lastChild, 0, 1);
+        (editorObj.element.querySelectorAll(".e-toolbar .e-toolbar-item")[2] as HTMLElement).click();
+        setTimeout(() => {
+            expect(editorObj.inputElement.querySelectorAll('.e-rte-checklist').length).toBe(4);
+            expect(editorObj.inputElement.querySelectorAll('.e-rte-checklist-hidden').length).toBe(1);
+            expect(editorObj.inputElement.querySelector('.selection').nodeName).toBe('P');
+            done();
+        }, 100);
     });
 });
 
@@ -4802,43 +5159,24 @@ describe('983729 - Complete Revert list Testing', () => {
     });
 });
 
-describe('Tab key indentation with maxLength', () => {
-    let editorObj: any;
-    let editNode: HTMLElement;
-    let startNode: Node;
-    let keyBoardEvent: any;
-    beforeAll((done: Function) => {
+describe('979095 - Bullet list element comes with font color even after removing the font from the list content in RichTextEditor', () => {
+    let editorObj: RichTextEditor;
+    beforeAll(() => {
         editorObj = renderRTE({
-            value: '<ul><li>1234567890</li></ul>',
-            enableTabKey: true,
-            maxLength: 10
+            toolbarSettings: {
+                items: ['OrderedList', 'UnorderedList']
+            },
+            value: `<ul><li style="color: rgb(255, 0, 0); text-decoration: inherit;"><span style="color: rgb(255, 0, 0); text-decoration: inherit;">ppppppp</span><span style="color: rgb(255, 0, 0); text-decoration: inherit;"><br></span><span style="color: rgb(255, 0, 0); text-decoration: inherit;">ffffffffffff</span></li></ul>`
         });
-        editNode = editorObj.inputElement;
-        done();
     });
-    afterAll((done: Function) => {
+    afterAll(() => {
         destroy(editorObj);
-        done();
     });
-    it('Should not indent list when maxLength is reached and enableTabKey is true', (done: Function) => {
-        editorObj.focusIn();
-        startNode = editNode.querySelector('li');
-        editorObj.formatter.editorManager.nodeSelection.setCursorPoint(document, startNode, 0);
-        keyBoardEvent = {
-            preventDefault: () => {},
-            stopPropagation: () => {},
-            key: 'Tab',
-            code: 'Tab',
-            keyCode: 9,
-            which: 9,
-            shiftKey: false,
-            action: 'tab'
-        };
-        editorObj.formatter.editorManager.editorKeyDown({ event: keyBoardEvent });
-        setTimeout(() => {
-            const updatedText: string = editNode.querySelector('li').textContent;
-            expect(updatedText).toBe('1234567890');
-            done();
-        }, 50);
+    it('Now, the Rich Text Editor works properly by removing font color from bullet list elements when the font is cleared from the list content.', (done) => {
+        let startNode = editorObj.inputElement.querySelector('li');
+        editorObj.formatter.editorManager.nodeSelection.setSelectionText(document, startNode.firstChild, startNode.lastChild, 0, 1);
+        (editorObj.element.querySelectorAll(".e-toolbar .e-toolbar-item")[1] as HTMLElement).click();
+        expect(editorObj.inputElement.innerHTML === '<p style="text-decoration: inherit;"><span style="color: rgb(255, 0, 0); text-decoration: inherit;">ppppppp</span><span style="color: rgb(255, 0, 0); text-decoration: inherit;"><br></span><span style="color: rgb(255, 0, 0); text-decoration: inherit;">ffffffffffff</span></p>').toBe(true);
+        done();
     });
 });

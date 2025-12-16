@@ -60,22 +60,17 @@ describe('FileManager module', () => {
             let insertBtn: HTMLButtonElement = document.body.querySelector('.e-rte-file-manager-dialog button.e-primary');
             insertBtn.removeAttribute('disabled');
             insertBtn.click();
-            setTimeout(() => {
-                expect(rteObj.element.querySelectorAll('.e-content img').length).toBe(1);
-            }, 100);
+            expect(rteObj.element.querySelectorAll('.e-content img').length).toBe(1);
         });
         it('cancel button click testing', (done: Function) => {
             (rteObj.element.querySelector('.e-toolbar-item button') as HTMLElement).click();
+            fileEle = document.body.querySelector('.e-rte-file-manager-dialog .e-filemanager');
+            expect(isNullOrUndefined(fileEle)).toBe(false);
             setTimeout(() => {
+                (document.body.querySelector('.e-rte-file-manager-dialog button.e-cancel') as HTMLElement).click();
                 fileEle = document.body.querySelector('.e-rte-file-manager-dialog .e-filemanager');
-                expect(isNullOrUndefined(fileEle)).toBe(false);
-                let cancelBtn: HTMLButtonElement = document.body.querySelector('.e-rte-file-manager-dialog button.e-cancel');
-                cancelBtn.click();
-                setTimeout(() => {
-                    fileEle = document.body.querySelector('.e-rte-file-manager-dialog .e-filemanager');
-                    expect(isNullOrUndefined(fileEle)).toBe(true);
-                    done();
-                }, 100);
+                expect(isNullOrUndefined(fileEle)).toBe(true);
+                done();
             }, 500);
         });
     });

@@ -1,3 +1,5 @@
+@use 'ej2-base/styles/common/mixin' as *;
+@use './theme-variables' as *;
 @include export-module('pdfviewer-layout') {
 
   /*! component layout */
@@ -23,14 +25,14 @@
     .e-pv-text {
       background: transparent;
       color: transparent;
-      line-height: normal;
+      line-height: $pv-line-height-normal;
       opacity: $pv-text-selection-opacity;
       position: absolute;
     }
 
     .e-pv-search-text-highlight,
     .e-pv-search-text-highlightother {
-      line-height: normal;
+      line-height: $pv-line-height-normal;
       opacity: $pv-text-selection-opacity;
       position: absolute;
     }
@@ -75,122 +77,122 @@
 
     .e-pv-touch-select-drop {
       display: inline-block;
-      height: 30px;
+      height: $pv-height-30;
       position: absolute;
-      width: 30px;
+      width: $pv-width-30;
       z-index: 1000;
     }
 
     .e-pv-touch-ellipse {
       background-color: $pv-selection-touch-element-background-color;
-      border-bottom-left-radius: 50%;
-      border-bottom-right-radius: 50%;
+      border-bottom-left-radius: $pv-border-radius-50p;
+      border-bottom-right-radius: $pv-border-radius-50p;
       border-color: $pv-selection-touch-element-border-color;
       border-style: solid;
-      border-top-left-radius: 50%;
-      border-width: 2px;
-      height: 20px;
-      margin: 0 0 0 9px;
+      border-top-left-radius: $pv-border-radius-50p;
+      border-width: $pv-border-2;
+      height: $pv-height-20;
+      margin: $pv-spacing-0 $pv-spacing-0 $pv-spacing-0 $pv-spacing-9;
       position: absolute;
-      width: 20px;
+      width: $pv-width-20;
     }
 
     .e-pv-annotation-note {
-      border-radius: 2px;
+      border-radius: $pv-radius-2;
       cursor: auto;
       font-size: $pv-sidebar-title-font-size;
-      height: auto;
-      max-width: 200px;
-      min-height: 10px;
-      min-width: 30px;
+      height: $pv-height-auto;
+      max-width: $pv-width-200;
+      min-height: $pv-height-10;
+      min-width: $pv-width-30;
       overflow-wrap: break-word;
-      padding: 5px;
+      padding: $pv-spacing-5;
       position: absolute;
-      width: auto;
+      width: $pv-width-auto;
       z-index: 10000;
     }
 
     .e-pv-annotation-note-author {
-      border-bottom: 1px solid $pv-annotation-note-border-bottom-color;
+      border-bottom: $pv-border-1 solid $pv-annotation-note-border-bottom-color;
       font-weight: bold;
     }
 
     .e-pv-annotation-popup-menu {
       cursor: auto;
-      min-width: 396px;
-      padding-bottom: 6px;
+      min-width: $pv-width-396;
+      padding-bottom: $pv-spacing-6;
       position: absolute;
-      width: auto;
+      width: $pv-width-auto;
       z-index: 10000;
     }
 
     .e-pv-annotation-popup-header {
-      height: auto;
-      min-height: 29px;
-      padding-top: 14px;
+      height: $pv-height-auto;
+      min-height: $pv-height-29;
+      padding-top: $pv-spacing-14;
     }
 
     .e-pv-annotation-popup-author {
       float: left;
-      font-size: 16px;
+      font-size: $pv-text-base;
       font-weight: bold;
-      margin-left: 14px;
+      margin-left: $pv-spacing-14;
     }
 
     .e-pv-annotation-popup-close {
       float: right;
-      height: 20px;
-      margin-right: 14px;
-      width: 20px;
+      height: $pv-height-20;
+      margin-right: $pv-spacing-14;
+      width: $pv-width-20;
     }
 
     .e-pv-annotation-modified-time {
-      height: 14px;
-      margin-left: 14px;
-      padding-top: 8px;
+      height: $pv-height-14;
+      margin-left: $pv-spacing-14;
+      padding-top: $pv-spacing-8;
     }
 
     .e-pv-annotation-popup-note-container {
-      height: auto;
-      padding: 14px;
-      width: auto;
+      height: $pv-height-auto;
+      padding: $pv-spacing-14;
+      width: $pv-width-auto;
     }
 
     .e-pv-annotation-popup-content {
       background-color: $pv-annotation-note-popup-bg-color;
-      border: 1px solid;
-      font-size: 16px;
-      min-height: 132.08px;
+      border: $pv-border-1 solid;
+      font-size: $pv-text-base;
+      min-height: $pv-height-132;
       overflow: hidden auto;
-      width: 368px;
+      width: $pv-width-368;
     }
 
     .e-pv-properties-fill-color-icon,
     .e-pv-properties-stroke-color-icon {
-      border-bottom: 2px solid;
+      border-bottom: $pv-border-2 solid;
     }
 
     .e-pv-drop {
       color: $pv-selection-touch-element-background-color;
       display: inline-block;
-      height: 20px;
+      height: $pv-height-20;
       position: absolute;
-      width: 20px;
+      width: $pv-width-20;
       z-index: 1000;
     }
 
     .e-pv-droplet {
       background-color: $pv-selection-touch-element-background-color;
-      border-bottom-left-radius: 50%;
-      border-bottom-right-radius: 50%;
+      border-bottom-left-radius: $pv-border-radius-50p;
+      border-bottom-right-radius: $pv-border-radius-50p;
       border-color: $pv-selection-touch-element-border-color;
       border-style: solid;
-      border-top-left-radius: 50%;
-      border-width: 2px;
-      height: 20px;
-      margin: 0 0 0 9px;
+      border-top-left-radius: $pv-border-radius-50p;
+      border-width: $pv-border-2;
+      height: $pv-height-20;
+      margin: $pv-spacing-0 $pv-spacing-0 $pv-spacing-0 $pv-spacing-9;
       position: absolute;
-      width: 20px;
+      width: $pv-width-20;
     }
   }
 }

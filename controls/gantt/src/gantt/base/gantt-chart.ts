@@ -471,7 +471,8 @@ export class GanttChart {
                 if (lastRow) {
                     addClass(lastRow.querySelectorAll('td'), 'e-lastrow');
                     const emptydivHeight: number = 36;
-                    const emptyHeight: number = this.parent.contentHeight === 0 ? this.parent.flatData.length > 1 ? emptydivHeight : 0 :
+                    const divHeight: number = this.parent.flatData.length > 1 ? emptydivHeight : 0;
+                    const emptyHeight: number = this.parent.contentHeight === 0 ? divHeight :
                         this.parent.contentHeight;
                     const contentElement: HTMLElement = this.parent.element.getElementsByClassName('e-chart-scroll-container e-content')[0] as HTMLElement;
                     if (emptyHeight >= contentElement['offsetHeight'] || (contentElement['offsetHeight'] - emptyHeight) < emptydivHeight) {
@@ -619,7 +620,9 @@ export class GanttChart {
             const dateObjLeft: number = this.parent.currentViewData[rowIndex as number].ganttProperties.left;
             if (!isNullOrUndefined(dateObject)) {
                 const left: number | {} = !this.parent.enableTimelineVirtualization ?
-                    this.parent.dataOperation.getTaskLeft(dateObject, false) : {};
+                    this.parent.dataOperation.getTaskLeft(
+                        dateObject, false, this.parent.currentViewData[rowIndex as number].ganttProperties.calendarContext
+                    ) : {};
                 if (this.parent.autoFocusTasks) {
                     if (this.parent.enableTimelineVirtualization) {
                         this.updateScrollLeft(dateObjLeft as number);
@@ -1143,7 +1146,6 @@ export class GanttChart {
             }
             this.parent.isExpandCollapseLevelMethod = false;
         }
-        // To render the child record on parent row after expanding.
         if (this.parent.enableMultiTaskbar) {
             this.parent.chartRowsModule.refreshRecords([record], true);
         }
@@ -1959,7 +1961,7 @@ export class GanttChart {
                 if (this.parent.pdfExportModule && this.parent.pdfExportModule.helper.exportProps
                     && this.parent.pdfExportModule.helper.exportProps.fitToWidthSettings
                     && this.parent.pdfExportModule.helper.exportProps.fitToWidthSettings.isFitToWidth
-                    && this.parent.pdfExportModule.isPdfExport) {
+                    && this.parent.pdfExportModule.isPdfExport && record) {
                     recordIndex = this.parent.ids.indexOf(record.ganttProperties.taskId.toString());
                 }
                 else {

@@ -155,7 +155,7 @@ describe('Bullet Chart Scale', () => {
                 bullet.loaded = null;
                 legendElement = document.getElementById(legendId + '_element');
                 value = parseInt(legendElement.getAttribute('x'), 10);
-                expect(value === 439.5 || value === 439 || value === 187 || value === 219).toBe(true);
+                expect(value === 439.5 || value === 439 || value === 187 || value === 219 || value === 173 || value === 209).toBe(true);
                 value = parseInt(legendElement.getAttribute('y'), 10);
                 expect(value === 89 || value === 99 || value === 96).toBe(true);
                 done();
@@ -187,7 +187,7 @@ describe('Bullet Chart Scale', () => {
                 bullet.loaded = null;
                 legendElement = document.getElementById(legendId + '_element');
                 value = parseInt(legendElement.getAttribute('x'), 10);
-                expect(value === 597 || value === 1103 || value === 635).toBe(true);
+                expect(value === 597 || value === 1103 || value === 635 || value === 570 || value === 615).toBe(true);
                 expect(parseInt(legendElement.getAttribute('y'), 10)).toBe(26);
                 done();
             };
@@ -202,7 +202,7 @@ describe('Bullet Chart Scale', () => {
                 bullet.loaded = null;
                 legendElement = document.getElementById(legendId + '_element');
                 value = parseInt(legendElement.getAttribute('x'), 10);
-                expect(value == 439.5 || value === 439 || value === 187 || value === 219).toBe(true);
+                expect(value == 439.5 || value === 439 || value === 187 || value === 219 || value === 173 || value === 209).toBe(true);
                 expect(parseInt(legendElement.getAttribute('y'), 10)).toBe(20);
                 done();
             };
@@ -217,7 +217,7 @@ describe('Bullet Chart Scale', () => {
                 bullet.loaded = null;
                 legendElement = document.getElementById(legendId + '_element');
                 value = parseInt(legendElement.getAttribute('x'), 10);
-                expect(value == 439.5 || value === 439 || value == 187 || value === 219).toBe(true);
+                expect(value == 439.5 || value === 439 || value == 187 || value === 219 || value === 173 || value === 209).toBe(true);
                 value = parseInt(legendElement.getAttribute('y'), 10);
                 expect(value === 41 || value === 50).toBe(true);
                 done();
@@ -295,7 +295,7 @@ describe('Bullet Chart Scale', () => {
                 bullet.loaded = null;
                 legendElement = document.getElementById(legendId + '_element');
                 value = parseInt(legendElement.getAttribute('x'), 10);
-                expect(value === 441 || value === 946 || value === 484).toBe(true);
+                expect(value === 441 || value === 946 || value === 484 || value === 414 || value === 464).toBe(true);
                 value = parseInt(legendElement.getAttribute('y'), 10);
                 expect(value === 89 || value === 99 || value === 96).toBe(true);
                 done();

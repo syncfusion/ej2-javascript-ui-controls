@@ -75,7 +75,10 @@ export class StickyNotesAnnotation {
     private isCreateContextMenu: boolean = false;
     private commentsRequestHandler: AjaxHandler;
     private selectAnnotationObj: any;
-    private isCommentsSelected: boolean = false;
+    /**
+     * @private
+     */
+    public isCommentsSelected: boolean = false;
     /**
      * @private
      */
@@ -437,6 +440,7 @@ export class StickyNotesAnnotation {
                     proxy.pdfViewerBase.updateModifiedDateToLocalDate(newData, 'stampAnnotations');
                     proxy.pdfViewerBase.updateModifiedDateToLocalDate(newData, 'stickyNotesAnnotation');
                     proxy.pdfViewerBase.updateModifiedDateToLocalDate(newData, 'textMarkupAnnotation');
+                    proxy.pdfViewerBase.updateModifiedDateToLocalDate(newData, 'redactionAnnotation');
                 }
                 for (let j: number = data.startPageIndex; j < data.endPageIndex; j++) {
                     if (data.annotationDetails[parseInt(j.toString(), 10)]) {
@@ -476,6 +480,15 @@ export class StickyNotesAnnotation {
                         this.updateDocumentAnnotationCollections(excistingAnnotation[parseInt(i.toString(), 10)].
                             shapeAnnotation[parseInt(j.toString(), 10)],
                                                                  newAnnotation[parseInt(i.toString(), 10)].shapeAnnotation);
+                    }
+                }
+                if (excistingAnnotation[parseInt(i.toString(), 10)].redactionAnnotation &&
+                 excistingAnnotation[parseInt(i.toString(), 10)].redactionAnnotation.length !== 0 &&
+                  newAnnotation[parseInt(i.toString(), 10)].redactionAnnotation) {
+                    for (let j: number = 0; j < excistingAnnotation[parseInt(i.toString(), 10)].redactionAnnotation.length; j++) {
+                        this.updateDocumentAnnotationCollections(excistingAnnotation[parseInt(i.toString(), 10)].
+                            redactionAnnotation[parseInt(j.toString(), 10)],
+                                                                 newAnnotation[parseInt(i.toString(), 10)].redactionAnnotation);
                     }
                 }
                 if (excistingAnnotation[parseInt(i.toString(), 10)].measureShapeAnnotation &&
@@ -581,6 +594,15 @@ export class StickyNotesAnnotation {
                      (!isNullOrUndefined(this.pdfViewer.annotationModule.measureAnnotationModule))) {
                         this.updateCollections(this.pdfViewer.annotationModule.measureAnnotationModule.
                             updateMeasureAnnotationCollections(annotation, pageNumber));
+                    }
+                    break;
+                case 'redaction':
+                case 'textRedact':
+                    // Add this new block for redaction annotations
+                    if (pageAnnotations.redactionAnnotation && pageAnnotations.redactionAnnotation.length !== 0 &&
+                        this.pdfViewer.annotationModule && this.pdfViewer.annotationModule.redactionAnnotationModule) {
+                        this.updateCollections(this.pdfViewer.annotationModule.redactionAnnotationModule
+                            .updateRedactionAnnotationCollections(annotation, pageNumber));
                     }
                     break;
                 case 'shape':
@@ -826,6 +848,8 @@ export class StickyNotesAnnotation {
                 if (!saveBtn.ej2_instances[0] || !input) { return; }
                 if (editObj.prevValue !== input.value.trim()) {
                     saveBtn.ej2_instances[0].disabled = input.value.trim().length === 0;
+                } else if (input.value === '') {
+                    saveBtn.ej2_instances[0].disabled = true;
                 }
             }
         };
@@ -1507,6 +1531,9 @@ export class StickyNotesAnnotation {
             } else if (data.shapeAnnotationType === 'Ink') {
                 this.commentsContainer.setAttribute('name', 'ink');
                 this.createTitleContainer(commentDiv, 'ink', pageIndex, data.subject, data.modifiedDate);
+            } else if (data.shapeAnnotationType === 'Redaction') {
+                this.commentsContainer.setAttribute('name', 'redaction');
+                this.createTitleContainer(commentDiv, 'redaction', pageIndex, data.subject, data.modifiedDate);
             } else {
                 this.commentsContainer.setAttribute('name', 'shape');
                 if (data.shapeAnnotationType === 'Line') {
@@ -1768,6 +1795,8 @@ export class StickyNotesAnnotation {
                 commentSpan.className = 'e-pv-strikethrough-icon e-pv-icon';
             } else if (annotationSubType === 'Squiggly') {
                 commentSpan.className = 'e-pv-squiggly-icon e-pv-icon';
+            } else if (annotationSubType === 'redaction' || annotationSubType === 'Redaction') {
+                commentSpan.className = 'e-pv-text-redact-icon e-pv-icon';
             } else {
                 commentSpan.className = 'e-pv-annotation-icon e-pv-icon';
             }
@@ -1775,6 +1804,8 @@ export class StickyNotesAnnotation {
             commentSpan.className = 'e-pv-freetext-icon e-pv-icon';
         } else if (annotationType === 'ink' || annotationSubType === 'Ink') {
             commentSpan.className = 'e-pv-inkannotation-icon e-pv-icon';
+        } else if (annotationType === 'redaction') {
+            commentSpan.className = 'e-pv-text-redact-icon e-pv-icon';
         }
     }
 
@@ -2143,6 +2174,14 @@ export class StickyNotesAnnotation {
             const commentsElement: any = event.currentTarget.parentElement;
             if (editElement) {
                 editElement.style.display = 'block';
+                const acMode: string = this.pdfViewer.enableAutoComplete ? 'on' : 'off';
+                const editInputs: NodeListOf<HTMLElement> = editElement.querySelectorAll('input.e-input, textarea.e-input');
+                if (editInputs && editInputs.length) {
+                    editInputs.forEach((el: HTMLElement) => {
+                        (el as any).autocomplete = acMode;
+                        el.setAttribute('autocomplete', acMode);
+                    });
+                }
                 if (editElement.querySelector('.e-editable-inline')) {
                     if (!this.isEditableElement) {
                         editElement.querySelector('.e-editable-inline').style.display = 'block';
@@ -2286,7 +2325,7 @@ export class StickyNotesAnnotation {
     public drawIcons(event: any): void {
         if (this.pdfViewerBase.isCommentIconAdded) {
             const pageIndex: number = this.pdfViewer.annotation.getEventPageNumber(event);
-            const pageCurrentRect: ClientRect = this.pdfViewerBase.getElement('_pageDiv_' + pageIndex).getBoundingClientRect();
+            const pageCurrentRect: DOMRect = this.pdfViewerBase.getElement('_pageDiv_' + pageIndex).getBoundingClientRect() as DOMRect;
             const zoomValue: number = this.pdfViewerBase.getZoomFactor();
             this.pdfViewer.annotationModule.isFormFieldShape = false;
             this.pdfViewer.annotation.stickyNotesAnnotationModule.
@@ -3249,6 +3288,8 @@ export class StickyNotesAnnotation {
                 type = 'sticky';
             } else if (type === 'Ink') {
                 type = 'ink';
+            } else if (type === 'Redaction' || type === 'redaction') {
+                type = 'redaction';
             }
             const pageAnnotations: any = this.getAnnotations(pageIndex, null, type);
             if (pageAnnotations !== null) {
@@ -3286,6 +3327,8 @@ export class StickyNotesAnnotation {
             type = 'freetext';
         } else if (type === 'ink' || type === 'Ink') {
             type = 'ink';
+        } else if (type === 'Redaction' || type === 'redaction') {
+            type = 'redaction';
         } else {
             type = 'shape_measure';
         }
@@ -3318,6 +3361,8 @@ export class StickyNotesAnnotation {
             type = 'freetext';
         } else if (type === 'ink' || type === 'Ink') {
             type = 'ink';
+        } else if (type === 'redaction' || type === 'Redaction') {
+            type = 'redaction';
         } else {
             type = 'shape_measure';
         }
@@ -3438,7 +3483,7 @@ export class StickyNotesAnnotation {
                 if (pageAnnotations[parseInt(i.toString(), 10)].annotName === annotation.annotName) {
                     const updateAnnotation: any = cloneObject(pageAnnotations[parseInt(i.toString(), 10)]);
                     updateAnnotation.annotName = newAnnotation.annotName;
-                    if (type === 'shape' || type === 'shape_measure' || type === 'freetext' || type === 'ink') {
+                    if (type === 'shape' || type === 'shape_measure' || type === 'freetext' || type === 'ink' || type === 'redaction') {
                         updateAnnotation.id = newAnnotation.id;
                     }
                     if (type === 'stamp') {
@@ -3484,6 +3529,8 @@ export class StickyNotesAnnotation {
                 annotType = 'freetext';
             } else if (annotation.shapeAnnotationType === 'Ink') {
                 annotType = 'ink';
+            } else if (annotation.shapeAnnotationType === 'Redaction') {
+                annotType = 'redaction';
             } else {
                 annotType = 'shape';
             }
@@ -3836,6 +3883,9 @@ export class StickyNotesAnnotation {
         }
         else if (type === 'ink' || type === 'Ink') {
             annotationType = 'ink';
+        }
+        else if (type === 'redaction') {
+            annotationType = 'redaction';
         }
         return annotationType;
     }

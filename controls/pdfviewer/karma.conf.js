@@ -32,6 +32,8 @@ module.exports = function (config) {
       { pattern: "node_modules/@syncfusion/ej2-inplace-editor/**/*.js", included: false },
       { pattern: "node_modules/@syncfusion/ej2-calendars/**/*.js", included: false },
       { pattern: "node_modules/@syncfusion/ej2-richtexteditor/**/*.js", included: false },
+      { pattern: "node_modules/@syncfusion/ej2-interactive-chat/**/*.js", included: false },
+      { pattern: "node_modules/@syncfusion/ej2-markdown-converter/**/*.js", included: false },
       { pattern: "node_modules/@syncfusion/ej2-filemanager/**/*.js", included: false },
       { pattern: "node_modules/@syncfusion/ej2-layouts/**/*.js", included: false },
       { pattern: "node_modules/@syncfusion/ej2-grids/**/*.js", included: false },
@@ -39,7 +41,8 @@ module.exports = function (config) {
       { pattern: "node_modules/@syncfusion/ej2-pdf-export/**/*.js", included: false },
       { pattern: "node_modules/@syncfusion/ej2-compression/**/*.js", included: false },
       { pattern: "node_modules/@syncfusion/ej2-file-utils/**/*.js", included: false },
-      { pattern: "node_modules/@syncfusion/ej2-pdf/**/*.js", included: false }
+      { pattern: "node_modules/@syncfusion/ej2-pdf/**/*.js", included: false },
+      { pattern: "node_modules/@syncfusion/ej2-pdf-data-extract/**/*.js", included: false }
 
 
       // Add dependent package's script files here              

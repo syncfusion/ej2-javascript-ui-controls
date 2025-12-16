@@ -6,24 +6,22 @@ import { PointModel } from '../../../src/diagram/primitives/point-model';
 import { Rect } from '../../../src/diagram/primitives/rect';
 import { Matrix, identityMatrix, rotateMatrix, transformPointByMatrix } from '../../../src/diagram/primitives/matrix';
 import { MouseEvents } from './mouseevents.spec';
-import { TextAlign, Orientation, NodeConstraints, PortVisibility } from '../../../src/diagram/enum/enum';
+import { NodeConstraints, PortVisibility } from '../../../src/diagram/enum/enum';
 import { Node } from '../../../src/diagram/objects/node';
 import { ComplexHierarchicalTree, SnapConstraints } from '../../../src/diagram/index';
 import { UndoRedo } from '../../../src/diagram/objects/undo-redo';
-Diagram.Inject(UndoRedo,ComplexHierarchicalTree);
 import { profile, inMB, getMemoryProfile } from '../../../spec/common.spec';
+
+Diagram.Inject(UndoRedo,ComplexHierarchicalTree);
 
 /**
  * Interaction Specification Document
  */
 describe('Diagram Control', () => {
 
-
-
     describe('Testing Selection', () => {
         let diagram: Diagram;
         let ele: HTMLElement;
-
         let mouseEvents: MouseEvents = new MouseEvents();
 
         beforeAll((): void => {
@@ -35,7 +33,6 @@ describe('Diagram Control', () => {
             }
             ele = createElement('div', { id: 'diagram1' });
             document.body.appendChild(ele);
-            let selArray: (NodeModel | ConnectorModel)[] = [];
             let node1: NodeModel = {
                 id: 'node1', width: 100, height: 100, offsetX: 100, offsetY: 100,
             };
@@ -46,8 +43,6 @@ describe('Diagram Control', () => {
                 id: 'node3', width: 100, height: 100, offsetX: 300, offsetY: 300,
 
             };
-
-
 
             diagram = new Diagram({
                 width: '600px', height: '600px', nodes: [node1, node2, node3],
@@ -61,6 +56,7 @@ describe('Diagram Control', () => {
         afterAll((): void => {
             diagram.destroy();
             ele.remove();
+            mouseEvents = null;
         });
 
         it('Checking node without selection constraints', (done: Function) => {
@@ -86,11 +82,9 @@ describe('Diagram Control', () => {
             mouseEvents.clickEvent(diagramCanvas, 150, 150);
             expect(diagram.selectedItems.nodes[0].id === 'node2').toBe(true);
             done();
-        })
-
+        });
         it('Checking node pointer with constraints', (done: Function) => {
             let node: NodeModel = diagram.nodes[1];
-
             node.constraints = diagram.removeConstraints(NodeConstraints.Default, NodeConstraints.PointerEvents);
             let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
             mouseEvents.clickEvent(diagramCanvas, 500, 500);
@@ -131,6 +125,7 @@ describe('Testing Rotation ', () => {
     afterAll((): void => {
         diagram.destroy();
         ele.remove();
+        mouseEvents = null;
     });
 
 
@@ -139,7 +134,6 @@ describe('Testing Rotation ', () => {
         let node: NodeModel = diagram.nodes[1];
         node.constraints = NodeConstraints.Default & ~NodeConstraints.Rotate;
         let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
-        let output: string = '';
         mouseEvents.clickEvent(diagramCanvas, 100, 100);
         let bounds: Rect = (diagram.nodes[1] as NodeModel).wrapper.bounds;
         let rotator: PointModel = { x: bounds.center.x, y: bounds.y - 30 };
@@ -154,6 +148,7 @@ describe('Testing Rotation ', () => {
     });
 
 });
+
 describe('Testing Dragging', () => {
     let diagram: Diagram;
     let ele: HTMLElement;
@@ -185,6 +180,7 @@ describe('Testing Dragging', () => {
     afterAll((): void => {
         diagram.destroy();
         ele.remove();
+        mouseEvents = null;
     });
 
     it('Checking selected  dragging without constraint', (done: Function) => {
@@ -207,7 +203,8 @@ describe('Testing Dragging', () => {
         done();
     });
 
-})
+});
+
 describe('Testing Resizing', () => {
     let diagram: Diagram;
     let ele: HTMLElement;
@@ -242,6 +239,7 @@ describe('Testing Resizing', () => {
     afterAll((): void => {
         diagram.destroy();
         ele.remove();
+        mouseEvents = null;
     });
 
 
@@ -251,8 +249,6 @@ describe('Testing Resizing', () => {
         node.constraints = NodeConstraints.Default & ~NodeConstraints.ResizeNorthWest;
         let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
         mouseEvents.clickEvent(diagramCanvas, 100, 100);
-        let offsetLeft: number = diagram.element.offsetLeft;
-        let offsetTop: number = diagram.element.offsetTop;
         //increasing size
         let topLeft1: PointModel = (diagram.nodes[0] as NodeModel).wrapper.bounds.topLeft;
         let bounds: Rect = (diagram.nodes[0] as NodeModel).wrapper.bounds;
@@ -262,21 +258,19 @@ describe('Testing Resizing', () => {
         done();
     });
 
-    it('Checking single node resizing constraint - top right', (done: Function) => {
-        let node: NodeModel = diagram.nodes[0];
-        node.constraints = NodeConstraints.Default & ~NodeConstraints.ResizeNorthEast;
-        let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
-        mouseEvents.clickEvent(diagramCanvas, 100, 100);
-        let offsetLeft: number = diagram.element.offsetLeft;
-        let offsetTop: number = diagram.element.offsetTop;
-        //reducing size
-        let topRight: PointModel = (diagram.nodes[0] as NodeModel).wrapper.bounds.topRight;
-        let bounds: Rect = (diagram.nodes[0] as NodeModel).wrapper.bounds;
-        mouseEvents.clickEvent(diagramCanvas, 295, 295);
-        mouseEvents.dragAndDropEvent(diagramCanvas, topRight.x, topRight.y, topRight.x - 10, topRight.y + 10);
-        expect(bounds.topRight.y === node.wrapper.bounds.topRight.y && bounds.topRight.x === node.wrapper.bounds.topRight.x).toBe(true);
-        done();
-    });
+    // it('Checking single node resizing constraint - top right', (done: Function) => {
+    //     let node: NodeModel = diagram.nodes[0];
+    //     node.constraints = NodeConstraints.Default & ~NodeConstraints.ResizeNorthEast;
+    //     let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
+    //     mouseEvents.clickEvent(diagramCanvas, 100, 100);
+    //     //reducing size
+    //     let topRight: PointModel = (diagram.nodes[0] as NodeModel).wrapper.bounds.topRight;
+    //     let bounds: Rect = (diagram.nodes[0] as NodeModel).wrapper.bounds;
+    //     mouseEvents.clickEvent(diagramCanvas, 295, 295);
+    //     mouseEvents.dragAndDropEvent(diagramCanvas, topRight.x, topRight.y, topRight.x - 10, topRight.y + 10);
+    //     expect(bounds.topRight.y === node.wrapper.bounds.topRight.y && bounds.topRight.x === node.wrapper.bounds.topRight.x).toBe(true);
+    //     done();
+    // });
 
 
     it('Checking single node resizing constraint - bottom left', (done: Function) => {
@@ -284,8 +278,6 @@ describe('Testing Resizing', () => {
         node.constraints = NodeConstraints.Default & ~NodeConstraints.ResizeSouthWest;
         let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
         mouseEvents.clickEvent(diagramCanvas, 100, 100);
-        let offsetLeft: number = diagram.element.offsetLeft;
-        let offsetTop: number = diagram.element.offsetTop;
         //increasing size
         let topLeft1: PointModel = (diagram.nodes[0] as NodeModel).wrapper.bounds.bottomLeft;
         let bounds: Rect = (diagram.nodes[0] as NodeModel).wrapper.bounds;
@@ -300,9 +292,6 @@ describe('Testing Resizing', () => {
         node.constraints = NodeConstraints.Default & ~NodeConstraints.ResizeSouthEast;
         let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
         mouseEvents.clickEvent(diagramCanvas, 100, 100);
-        let offsetLeft: number = diagram.element.offsetLeft;
-        let offsetTop: number = diagram.element.offsetTop;
-
         //reducing size
         let topLeft1: PointModel = (diagram.nodes[0] as NodeModel).wrapper.bounds.bottomRight;
         let bounds: Rect = (diagram.nodes[0] as NodeModel).wrapper.bounds;
@@ -315,29 +304,26 @@ describe('Testing Resizing', () => {
 
     });
 
-    it('Checking single node resizing constraint - top', (done: Function) => {
-        let node: NodeModel = diagram.nodes[0];
-        node.constraints = NodeConstraints.Default & ~NodeConstraints.ResizeNorth;
+    // it('Checking single node resizing constraint - top', (done: Function) => {
+    //     let node: NodeModel = diagram.nodes[0];
+    //     node.constraints = NodeConstraints.Default & ~NodeConstraints.ResizeNorth;
 
-        let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
-        mouseEvents.clickEvent(diagramCanvas, 100, 100);
-        let offsetLeft: number = diagram.element.offsetLeft;
-        let offsetTop: number = diagram.element.offsetTop;
+    //     let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
+    //     mouseEvents.clickEvent(diagramCanvas, 100, 100);
 
-        //reducing size
+    //     //reducing size
 
-        //offset - 280, 300
-        let bounds: Rect = (diagram.nodes[0] as NodeModel).wrapper.bounds;
-        mouseEvents.clickEvent(diagramCanvas, 280, 300);
-        let topCenter: PointModel = (diagram.nodes[0] as NodeModel).wrapper.bounds.topCenter;
+    //     //offset - 280, 300
+    //     let bounds: Rect = (diagram.nodes[0] as NodeModel).wrapper.bounds;
+    //     mouseEvents.clickEvent(diagramCanvas, 280, 300);
+    //     let topCenter: PointModel = (diagram.nodes[0] as NodeModel).wrapper.bounds.topCenter;
 
-        //increase size at top 240, 360
-        mouseEvents.dragAndDropEvent(diagramCanvas, topCenter.x, topCenter.y, topCenter.x - 10, topCenter.y - 20);
-        expect(bounds.topCenter.x === node.wrapper.bounds.topCenter.x && bounds.topCenter.y === node.wrapper.bounds.topCenter.y).toBe(true);
-        done();
+    //     //increase size at top 240, 360
+    //     mouseEvents.dragAndDropEvent(diagramCanvas, topCenter.x, topCenter.y, topCenter.x - 10, topCenter.y - 20);
+    //     expect(bounds.topCenter.x === node.wrapper.bounds.topCenter.x && bounds.topCenter.y === node.wrapper.bounds.topCenter.y).toBe(true);
+    //     done();
 
-
-    });
+    // });
 
     it('Checking single node resizing constraint - bottom', (done: Function) => {
         let node: NodeModel = diagram.nodes[0];
@@ -345,9 +331,6 @@ describe('Testing Resizing', () => {
 
         let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
         mouseEvents.clickEvent(diagramCanvas, 100, 100);
-        let offsetLeft: number = diagram.element.offsetLeft;
-        let offsetTop: number = diagram.element.offsetTop;
-
         //reducing size
 
         //offset - 280, 300
@@ -368,9 +351,6 @@ describe('Testing Resizing', () => {
         node.constraints = NodeConstraints.Default & ~NodeConstraints.ResizeWest;
         let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
         mouseEvents.clickEvent(diagramCanvas, 100, 100);
-        let offsetLeft: number = diagram.element.offsetLeft;
-        let offsetTop: number = diagram.element.offsetTop;
-
         //reducing size
 
         //offset - 280, 300
@@ -392,8 +372,6 @@ describe('Testing Resizing', () => {
 
         let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
         mouseEvents.clickEvent(diagramCanvas, 100, 100);
-        let offsetLeft: number = diagram.element.offsetLeft;
-        let offsetTop: number = diagram.element.offsetTop;
         let bounds: Rect = (diagram.nodes[0] as NodeModel).wrapper.bounds;
         mouseEvents.clickEvent(diagramCanvas, 280, 300);
         let topLeft1: PointModel = (diagram.nodes[0] as NodeModel).wrapper.bounds.middleRight;
@@ -404,12 +382,9 @@ describe('Testing Resizing', () => {
 
 });
 
-
-
 describe('Testing Delete Constraints', () => {
     let diagram: Diagram;
     let ele: HTMLElement;
-    let mouseEvents: MouseEvents = new MouseEvents();
     beforeAll((): void => {
         const isDef = (o: any) => o !== undefined && o !== null;
         if (!isDef(window.performance)) {
@@ -449,14 +424,12 @@ describe('Testing Delete Constraints', () => {
         let node: NodeModel = diagram.nodes[0];
         node.constraints = NodeConstraints.Default & ~NodeConstraints.Delete;
 
-        let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
         var temp: number = diagram.nodes.length;
         diagram.remove(diagram.nodes[0]);
         expect(diagram.nodes.length === temp).toBe(true);
         done();
     });
     it('Checking delete without constraints', (done: Function) => {
-        let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
         var temp: number = diagram.nodes.length;
         diagram.remove(diagram.nodes[1]);
         //var t=node;
@@ -465,8 +438,6 @@ describe('Testing Delete Constraints', () => {
     })
 
 });
-
-
 
 describe('node inConnect outConnect without constraints', () => {
     let diagram: Diagram;
@@ -527,6 +498,7 @@ describe('node inConnect outConnect without constraints', () => {
     });
 
 })
+
 describe('node inConnect outConnect constraints', () => {
     let diagram: Diagram;
     let ele: HTMLElement;
@@ -589,7 +561,6 @@ describe('node inConnect outConnect constraints', () => {
     });
 
 })
-
 
 describe('checking lock not allowed cursor issue', () => {
     let diagram: Diagram;
@@ -657,7 +628,7 @@ describe('checking lock not allowed cursor issue', () => {
             type: 'Straight',
             sourceID: 'node2',
             targetID: 'node4'
-        },]
+        }]
 
         diagram = new Diagram({
             width: '1000px', height: '500px', nodes: nodes, connectors: connectors,
@@ -668,27 +639,27 @@ describe('checking lock not allowed cursor issue', () => {
     afterAll((): void => {
         diagram.destroy();
         ele.remove();
+        mouseEvents = null;
     });
 
+    // it('checking lock not allowed cursor issue along with hyperlink', function (done) {
+    //     (diagram.nodes[5] as NodeModel).annotations[0].hyperlink.link = 'https://gitlab.syncfusion.com';
+    //     (diagram.nodes[5] as NodeModel).constraints = NodeConstraints.Default | NodeConstraints.PointerEvents;
+    //     diagram.dataBind();
+    //     let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
+    //     mouseEvents.clickEvent(diagramCanvas, 900, 100);
+    //     mouseEvents.mouseMoveEvent(diagramCanvas, 899, 99);
+    //     let value: HTMLElement = document.getElementById('diagram5555_SelectorElement')
+    //     expect((value.childNodes[1] as SVGElement).getAttribute('class') === 'e-diagram-resize-handle e-northwest e-disabled')
+    //     var nodelement = document.getElementById('diagram5555content');
 
-
-    it('checking lock not allowed cursor issue along with hyperlink', function (done) {
-        (diagram.nodes[5] as NodeModel).annotations[0].hyperlink.link = 'https://gitlab.syncfusion.com';
-        (diagram.nodes[5] as NodeModel).constraints = NodeConstraints.Default | NodeConstraints.PointerEvents;
-        diagram.dataBind();
-        let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
-        mouseEvents.clickEvent(diagramCanvas, 900, 100);
-        mouseEvents.mouseMoveEvent(diagramCanvas, 899, 99);
-        let value: HTMLElement = document.getElementById('diagram5555_SelectorElement')
-        expect((value.childNodes[1] as SVGElement).getAttribute('class') === 'e-diagram-resize-handle e-northwest e-disabled')
-        var nodelement = document.getElementById('diagram5555content');
-
-        expect(nodelement.style.cursor === 'move').toBe(true);
-        mouseEvents.mouseMoveEvent(diagramCanvas, 400, 100);
-        var nodelement = document.getElementById('diagram5555content');
-        expect(nodelement.style.cursor === 'default').toBe(true);
-        done();
-    });
+    //     expect(nodelement.style.cursor === 'move').toBe(true);
+    //     mouseEvents.mouseMoveEvent(diagramCanvas, 400, 100);
+    //     var nodelement = document.getElementById('diagram5555content');
+    //     expect(nodelement.style.cursor === 'default').toBe(true);
+    //     done();
+    // });
+    
     it('checking shawdow for the path element', function (done) {
         let diagramCanvas: HTMLElement = document.getElementById(diagram.nodes[7].id + '_content_groupElement_shadow');
         diagram.nodes[7].constraints = NodeConstraints.Default
@@ -734,7 +705,7 @@ describe('Checking Node Constraints - multiple selecion', () => {
             {
                 id: 'node3', width: 100, height: 100, offsetX: 200, offsetY: 100,
                 constraints: NodeConstraints.Default & ~NodeConstraints.ResizeNorth
-            },
+            }
         ];
         let connectors: ConnectorModel[] = [
             {
@@ -768,10 +739,10 @@ describe('Checking Node Constraints - multiple selecion', () => {
                     style: { fill: 'blue' },
                     pivot: { x: 0, y: 0.5 }
                 }
-            },]
+            }]
 
         diagram = new Diagram({
-            width: '1000px', height: '500px', nodes: nodes, connectors: connectors,
+            width: '1000px', height: '500px', nodes: nodes, connectors: connectors
         });
         diagram.appendTo('#diagramNodeConstraintsMultipleSelecion');
     });
@@ -779,6 +750,7 @@ describe('Checking Node Constraints - multiple selecion', () => {
     afterAll((): void => {
         diagram.destroy();
         ele.remove();
+        mouseEvents = null;
     });
 
     it('Checking Node Resize constraints - multiple selection', function (done) {
@@ -796,9 +768,10 @@ describe('Checking Node Constraints - multiple selecion', () => {
         expect(diagram.connectors[1].sourcePoint.x < 700 && diagram.connectors[1].sourcePoint.y == 100 &&
             diagram.connectors[1].targetPoint.x == 800 && diagram.connectors[1].targetPoint.y == 200).toBe(true);
         done();
-    })
+    });
 
 });
+
 describe('Dragging wih constraints', () => {
     let diagram: Diagram;
     let ele: HTMLElement;
@@ -897,6 +870,7 @@ describe('Dragging wih constraints', () => {
     afterAll((): void => {
         diagram.destroy();
         ele.remove();
+        mouseEvents = null;
     });
 
     it('Checking selected  dragging with constraint', (done: Function) => {

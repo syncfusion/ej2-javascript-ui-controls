@@ -488,9 +488,7 @@ describe('TreeGrid Expand/Collapse with Indent/Outdent Tests', () => {
     });
 
     it('should properly indent and then expand the parent', (done: Function) => {
-        
         actionComplete = (args?: any): void => {
-            debugger;
             if (args['requestType'] == 'indented') {
                 gridObj.expandRow(gridObj.getRows()[1]);
                 const expanded = gridObj.getRows().filter(row => row.querySelector('.e-treegridexpand'));

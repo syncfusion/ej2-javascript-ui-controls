@@ -1886,13 +1886,14 @@ describe('Schedule event window initial load', () => {
             util.triggerMouseEvent(schObj.element.querySelectorAll('.e-work-cells')[0] as HTMLElement, 'dblclick');
             const dialogElement: HTMLElement = document.querySelector('.' + cls.EVENT_WINDOW_DIALOG_CLASS) as HTMLElement;
             const subjectElement: HTMLInputElement = <HTMLInputElement>dialogElement.querySelector('#trainingNumber');
-            subjectElement.focus();
-            subjectElement.blur();
+            const formEl = dialogElement.querySelector('.e-schedule-form') as EJ2Instance;
+            const validator = (formEl as any).ej2_instances[0] as FormValidator;
+            subjectElement.value = '';
+            validator.validate('trainingNumber');
             expect(schObj.eventWindow.dialogObject.visible).toEqual(true);
             expect((schObj.eventWindow.dialogObject.element.querySelector('.e-tip-content') as HTMLElement).innerText).toEqual('This field is required');
-            subjectElement.focus();
             subjectElement.value = '&';
-            subjectElement.blur();
+            validator.validate('trainingNumber');
             expect(schObj.eventWindow.dialogObject.visible).toEqual(true);
             expect((schObj.eventWindow.dialogObject.element.querySelector('.e-tip-content') as HTMLElement).innerText).toEqual('Only & sign not allowed');
             const cancelButton: HTMLElement = dialogElement.querySelector('.' + cls.EVENT_WINDOW_CANCEL_BUTTON_CLASS) as HTMLElement;

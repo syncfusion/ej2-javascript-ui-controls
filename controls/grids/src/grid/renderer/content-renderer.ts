@@ -21,6 +21,8 @@ import { ColumnWidthService } from '../services/width-controller';
 import { GroupLazyLoadRenderer } from './group-lazy-load-renderer';
 import { freezeTable } from '../base/enum';
 import * as literals from '../base/string-literals';
+import { Query } from '@syncfusion/ej2-data';
+import { Data } from '../actions/data';
 
 
 // eslint-disable-next-line valid-jsdoc, jsdoc/require-param, jsdoc/require-returns
@@ -348,6 +350,12 @@ export class ContentRender implements IRenderer {
         }
         let modelData: Row<Column>[];
         modelData = this.checkCache(modelData, args);
+        if (gObj.isRowPinned) {
+            const query: Query = new Query();
+            const dataModule: Data = this.parent.getDataModule();
+            const pinnedData: Object[] = dataModule.pinnedData.executeLocal(dataModule.pinnedDataQuery(query));
+            gObj.pinnedTopRowModels = this.generator.generatePinnedTopRows(pinnedData);
+        }
         if (!this.isAddRows && !this.useGroupCache) {
             modelData = this.generator.generateRows(dataSource, args);
         }
@@ -381,6 +389,16 @@ export class ContentRender implements IRenderer {
                 ];
             }
             clearReactVueTemplates(this.parent, templates);
+        }
+        for (let i: number = 0; i < gObj.pinnedTopRowModels.length; i++) {
+            const pinRow: Element = row.render(gObj.pinnedTopRowModels[parseInt(i.toString(), 10)], columns);
+            addFixedColumnBorder(pinRow);
+            pinRow.classList.add('e-grid-pin-row');
+            const gCells: Element[] = [].slice.call(pinRow.getElementsByClassName('e-grouptopleftcell'));
+            if (gCells.length) {
+                gCells[gCells.length - 1].classList.add('e-lastgrouptopleftcell');
+            }
+            hdrfrag.appendChild(pinRow);
         }
         if (this.parent.enableColumnVirtualization) {
             const cellMerge: CellMergeRender<Column> = new CellMergeRender(this.serviceLocator, this.parent);
@@ -477,6 +495,11 @@ export class ContentRender implements IRenderer {
                     && this.ensureVirtualFrozenHeaderRender(args)) {
                     hdrfrag.appendChild(tr);
                 } else {
+                    const primarykey: string = gObj.getPrimaryKeyFieldNames()[0];
+                    const rowData: object = modelData[parseInt(i.toString(), 10)].data;
+                    if (!isNullOrUndefined(primarykey) && !isNullOrUndefined(rowData) && gObj.pinnedTopRowKeys[rowData[`${primarykey}`]]) {
+                        tr.classList.add('e-grid-pin-row');
+                    }
                     frag.appendChild(tr);
                 }
                 const rowIdx: number = parseInt(tr.getAttribute('aria-rowindex'), 10) - 1;
@@ -575,8 +598,9 @@ export class ContentRender implements IRenderer {
         }
         gObj.removeMaskRow();
         this.parent.notify('removeGanttShimmer', { requestType: 'hideShimmer'});
-        if ((gObj.frozenRows && args.requestType !== 'virtualscroll' && !isInfiniteScroll && this.ensureVirtualFrozenHeaderRender(args))
-            || (args.requestType === 'virtualscroll' && args.virtualInfo.sentinelInfo && args.virtualInfo.sentinelInfo.axis === 'X')) {
+        if (((gObj.frozenRows || gObj.isRowPinned) && args.requestType !== 'virtualscroll' && !isInfiniteScroll && this.ensureVirtualFrozenHeaderRender(args))
+            || (args.requestType === 'virtualscroll' && args.virtualInfo.sentinelInfo && args.virtualInfo.sentinelInfo.axis === 'X')
+            || ((args.requestType === 'virtualscroll' || isInfiniteScroll || args.requestType === 'delete') && gObj.isRowPinned)) {
             hdrTbody = gObj.getHeaderTable().querySelector( literals.tbody);
             if (isReact) {
                 const parentTable: HTMLElement = hdrTbody.parentElement;
@@ -653,8 +677,8 @@ export class ContentRender implements IRenderer {
                         this.parent.notify(events.showAddNewRowFocus, {});
                     }
                 }
-                if (this.parent.getVisibleFrozenRightCount() && this.parent.getContent() && getScrollWidth(this.parent) > 0) {
-                    this.parent.element.classList.add('e-right-shadow');
+                if (this.parent.getContent() && getScrollWidth(this.parent) > 0) {
+                    this.parent.scrollModule.updateFrozenShadow();
                 }
                 frag = null;
             },
@@ -1029,7 +1053,7 @@ export class ContentRender implements IRenderer {
 
     public renderEmpty(tbody: HTMLElement): void {
         this.getTable().appendChild(tbody);
-        if (this.parent.frozenRows) {
+        if (this.parent.frozenRows || this.parent.pinnedTopRowModels.length) {
             this.parent.getHeaderContent().querySelector( literals.tbody).innerHTML = '';
         }
     }

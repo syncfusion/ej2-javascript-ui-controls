@@ -1,15 +1,17 @@
+@use 'ej2-base/styles/common/mixin' as *;
+@use './theme-variables' as *;
 @include export-module('appbar-bigger') {
   .e-bigger .e-appbar,
   .e-appbar.e-bigger {
-    height: 56px;
+    height: $appbar-bigger-height;
     font-size: $appbar-bigger-font-size;
 
     &.e-dense {
-      height: 48px;
+      height: $appbar-bigger-dense-height;
     }
 
     &.e-prominent {
-      height: 112px;
+      height: $appbar-bigger-prominent-height;
     }
   }
 }

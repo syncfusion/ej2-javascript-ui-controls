@@ -2,42 +2,6 @@
 
 ## [Unreleased]
 
-## 31.2.15 (2025-11-25)
-
-### QueryBuilder
-
-#### Bug Fixes
-
-- `#I786194` – Fixed an issue where the scrollbar does not move properly when drag and drop the last item to the top.
-
-- `#I779353` - Fixed an issue where unwanted data requests were triggered during the initial rendering of the query builder.
-
-## 31.2.12 (2025-11-18)
-
-### QueryBuilder
-
-#### Bug Fixes
-
-- `#I776606` – Fixed an issue where the `MultiSelect` in Query Builder passes data requests without applying the filtered value.
-
-## 31.2.4 (2025-10-28)
-
-### QueryBuilder
-
-#### Bug Fixes
-
-- `#I771577` - Implemented default value setting support and column validation for the `DatePicker` component to ensure the start date is always less than the end date when between operators is selected.
-
-## 31.1.22 (2025-10-01)
-
-### QueryBuilder
-
-- `#I764996` - Issue where the lock rule did not disable the field selector in complex data binding scenarios.
-
-- `#I766063` - Fixed the issue where the rule condition value was not updating for new empty rules with new conditions.
-
-## 31.1.17 (2025-09-05)
-
 ### QueryBuilder
 
 - `#I80058` - Issue with "String type between values not update properly in query builder rules" has been fixed.

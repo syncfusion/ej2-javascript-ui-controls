@@ -1042,20 +1042,7 @@ export abstract class BlockWidget extends Widget {
                     return containerWidth;
                 }
             }
-            let width: number = this.associatedCell.getCellWidth(this);
-            const ownerCell: TableCellWidget = this.associatedCell;		
-            const cellSpacing: number = !isNullOrUndefined(ownerCell.ownerRow) && !isNullOrUndefined(ownerCell.ownerRow.ownerTable) ?		
-            ownerCell.ownerRow.ownerTable.tableFormat.cellSpacing : 0;		
-            let leftPad: number = 0;		
-            let rightPad: number = 0;		
-            if (block instanceof TableWidget && cellSpacing > 0)		
-            {		
-                leftPad = cellSpacing * 2 + block.tableFormat.borders.left.getLineWidth();		
-                rightPad = cellSpacing * 2 + block.tableFormat.borders.right.getLineWidth();		
-                width -= leftPad + rightPad;		
-            }		
-            //Calculates the cell client width reducing padding and cell spacing.		
-            return width;
+            return this.associatedCell.getCellWidth(this);
         }
         if (this.containerWidget instanceof TextFrame) {
             let shape: ShapeElementBox = this.containerWidget.containerShape as ShapeElementBox;
@@ -3956,8 +3943,6 @@ export class TableCellWidget extends BlockWidget {
             } else {
                 cellWidth = this.cellFormat.preferredWidth - leftMargin - rightMargin;
             }
-        } else if (!isNullOrUndefined(ownerTable) && ownerTable.tableFormat.preferredWidthType === 'Percent' && ownerTable.tableFormat.allowAutoFit && this.cellFormat.preferredWidthType === 'Auto' && block instanceof TableWidget && block.tableFormat.preferredWidthType === 'Percent' && block.tableFormat.allowAutoFit) {		
-            cellWidth = this.cellFormat.cellWidth - leftMargin - rightMargin;		
         }
         // For grid before and grid after with auto width, no need to calculate minimum preferred width.
         return cellWidth;
@@ -5188,7 +5173,7 @@ export abstract class ElementBox {
     get isCheckBoxElement(): boolean {
         let element: ElementBox = this;
         if (element instanceof TextElementBox && !isNullOrUndefined(element.text)) {
-            return element.text === String.fromCharCode(9745) || element.text === String.fromCharCode(9746) || element.text === String.fromCharCode(9744);
+            return element.text === String.fromCharCode(9746)|| element.text === String.fromCharCode(9745) || element.text === String.fromCharCode(9744);
         }
         return false;
     }

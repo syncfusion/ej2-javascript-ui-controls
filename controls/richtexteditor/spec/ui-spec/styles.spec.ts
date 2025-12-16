@@ -186,7 +186,7 @@ describe('UI Spec ', () => {
             expandBtn.click();
             setTimeout(() => {
                 const currentToolbarHeight: number = editor.toolbarModule.getToolbarElement().getBoundingClientRect().height;
-                // expect(currentToolbarHeight).toBeGreaterThan(toolbarHeight);
+                //expect(currentToolbarHeight).toBeGreaterThan(toolbarHeight);
                 //This usecase is covered in toolbar spec
                 done();
             }, 100);
@@ -580,7 +580,7 @@ describe('UI Spec ', () => {
 
         it('Should have proper height when the image is loaded.', (done: DoneFn) => {
             setTimeout(() => {
-                expect((editor.contentModule.getPanel() as HTMLElement).style.height).toBe('233px');
+                expect((editor.contentModule.getPanel() as HTMLElement).style.height).toBe('243px');
                 done();
             }, 500);
         });
@@ -1138,6 +1138,29 @@ describe('UI Spec ', () => {
             setTimeout(() => {
                 expect(tableResizeElement.style.top).toBe("357px");
                 expect(tableResizeElement.style.left).toBe("263px");
+                done();
+            }, 100);
+        });
+    });
+
+    describe('986502: RTE RTL mode: character count is aligned to the wrong side', () => {
+        let rteObj: RichTextEditor;
+        beforeAll(() => {
+            rteObj = renderRTE({
+                enableRtl: true,
+                showCharCount: true,
+                value: 'Testing character count in RTL mode'
+            });
+        });
+        afterAll(() => {
+            destroy(rteObj);
+        });
+        it('should apply margin-right: auto to character-count element in RTL', (done: DoneFn) => {
+            const countEl: HTMLElement = rteObj.element.querySelector('.e-rte-character-count') as HTMLElement;
+            expect(countEl).not.toBeNull();
+            const styles: CSSStyleDeclaration = window.getComputedStyle(countEl);
+            setTimeout(() => {
+                expect(parseFloat(styles.marginRight)).toBeGreaterThan(500);
                 done();
             }, 100);
         });

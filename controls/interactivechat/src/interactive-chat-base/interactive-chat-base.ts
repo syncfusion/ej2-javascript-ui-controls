@@ -362,6 +362,37 @@ export class InterActiveChatBase extends Component<HTMLElement> implements INoti
         document.body.removeChild(tempElement);
     }
 
+    protected writeFileToClipboard(file: File): void {
+        if (!document.hasFocus() || !('clipboard' in navigator)) {
+            return;
+        }
+        const mimeType: string = file.type;
+        const supportedTypes: string[] = ['image/png'];
+        if ((supportedTypes as any).includes(mimeType)) {
+            void (navigator as any).clipboard.write([
+                new ClipboardItem({ [mimeType]: file })
+            ]);
+            return;
+        }
+
+        const img: HTMLImageElement = new Image();
+        img.onload = () => {
+            const canvas: HTMLCanvasElement = document.createElement('canvas') as HTMLCanvasElement;
+            canvas.width = img.width;
+            canvas.height = img.height;
+            const ctx: CanvasRenderingContext2D = canvas.getContext('2d');
+            ctx.drawImage(img, 0, 0);
+            canvas.toBlob((blob: Blob) => {
+                if (blob) {
+                    void (navigator as any).clipboard.write([
+                        new ClipboardItem({ [blob.type]: blob })
+                    ]);
+                }
+            }, 'image/png');
+        };
+        img.src = URL.createObjectURL(file);
+    }
+
     protected getFooter(): void {
         this.footer = this.getElement('footer');
     }
@@ -509,7 +540,7 @@ export class InterActiveChatBase extends Component<HTMLElement> implements INoti
             this.renderClearIcon(footerIconsWrapper, clearIconClass);
         }
         this.footer.firstChild.appendChild(footerIconsWrapper);
-        this.footer.classList.add('focus-wave-effect');
+        this.footer.classList.add('e-footer-focus-wave-effect');
     }
     protected renderClearIcon(footerIconsWrapper: HTMLDivElement, clearIconClass: string): void {
         this.clearIcon = this.createElement('span', { attrs: { class: clearIconClass, role: 'button', 'aria-label': 'Close', tabindex: '-1' } }) as HTMLElement;
@@ -529,13 +560,8 @@ export class InterActiveChatBase extends Component<HTMLElement> implements INoti
         if (isNOU(this.editableTextarea)) { return; }
         const textarea: HTMLElement = this.editableTextarea;
         textarea.style.height = 'auto';
-        this.footer.classList.remove('expanded');
-        this.footer.classList[textarea.scrollHeight > parseInt(getComputedStyle(textarea).minHeight, 10) ? 'add' : 'remove']('expanded');
-        if (!isNOU(this.clearIcon)) {
-            const isFocused: boolean = document.activeElement === this.editableTextarea;
-            const hasContent: boolean = this.editableTextarea.textContent.length > 0;
-            this.clearIcon.classList[isFocused && hasContent ? 'remove' : 'add']('e-assist-clear-icon-hide');
-        }
+        this.footer.classList.remove('e-footer-expanded');
+        this.footer.classList[textarea.scrollHeight > parseInt(getComputedStyle(textarea).minHeight, 10) ? 'add' : 'remove']('e-footer-expanded');
     }
     protected updatePlaceholder(placeholder: string): void {
         if (this.editableTextarea) {
@@ -632,6 +658,7 @@ export class InterActiveChatBase extends Component<HTMLElement> implements INoti
         if (end === -1) { end = 0; }
         return { start, end };
     }
+
     private findTextNodeAndOffset(element: Node, targetOffset: number): { node: Node; offset: number } | null {
         // TreeWalker is a robust way to traverse all text nodes in the element's subtree
         const walker: TreeWalker = document.createTreeWalker(element, NodeFilter.SHOW_TEXT, null);
@@ -705,6 +732,7 @@ export class InterActiveChatBase extends Component<HTMLElement> implements INoti
         this.pushToUndoStack(this.editableTextarea.innerHTML);
         this.updateScroll(this.editableTextarea);
     }
+
     private getCurrentState(): TextState {
         const position: { start: number; end: number } = this.getCursorPosition();
         return {
@@ -726,6 +754,30 @@ export class InterActiveChatBase extends Component<HTMLElement> implements INoti
             }
         }, 400);
     }
+
+    protected renderFailureAlert(viewWrapper: HTMLElement, failureMessage: string, failureType: string, circleCloseIconClass: string,
+                                 closeIconClass: string )
+        : HTMLElement {
+        const alertElement: HTMLElement = this.createElement('div', {
+            className: 'e-upload-failure-alert',
+            innerHTML: `
+                <span class="e-icons ${circleCloseIconClass}" aria-label="Upload failure"></span>
+                <div class="e-failure-message ${failureType}">${failureMessage}</div>
+                <span class="e-icons ${closeIconClass}" role="button" tabindex="0" aria-label="Close"></span>
+            `
+        });
+        EventHandler.add(alertElement, 'click', () => { this.handleFailureAlertRemove(viewWrapper, alertElement); }, this );
+        return alertElement;
+    }
+
+    protected handleFailureAlertRemove(viewWrapper: HTMLElement, alertElement: HTMLElement): void {
+        alertElement.classList.remove('e-show');
+        EventHandler.remove(alertElement, 'click', this.handleFailureAlertRemove);
+        if (viewWrapper && viewWrapper.contains(alertElement)) {
+            viewWrapper.removeChild(alertElement);
+        }
+    }
+
     protected wireFooterEvents(
         footerTemplate: string | Function
     ): void {

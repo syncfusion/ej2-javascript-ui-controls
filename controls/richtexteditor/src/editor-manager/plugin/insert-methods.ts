@@ -12,7 +12,7 @@ export class InsertMethods {
      * @param {boolean} isAfter - specifies the boolean value
      * @returns {Text} - returns the text value
      * @hidden
-     * @deprecated
+     * @private
      */
     public static WrapBefore(textNode: Text, parentNode: HTMLElement, isAfter?: boolean): Text {
         parentNode.innerText = textNode.textContent;
@@ -31,7 +31,7 @@ export class InsertMethods {
      * @param {HTMLElement} parentNode - specifies the parent node.
      * @returns {HTMLElement} - returns the element
      * @hidden
-     * @deprecated
+     * @private
      */
     public static Wrap(childNode: HTMLElement, parentNode: HTMLElement): HTMLElement {
         this.AppendBefore(parentNode, childNode);
@@ -45,7 +45,7 @@ export class InsertMethods {
      * @param {Node} node - specifies the node element.
      * @returns {Node[]} - returns the array of value
      * @hidden
-     * @deprecated
+     * @private
      */
     public static unwrap(node: Node | HTMLElement): Node[] {
         const parent: Node = node.parentNode;
@@ -93,7 +93,7 @@ export class InsertMethods {
      * @param {boolean} isAfter - specifies the boolean value
      * @returns {void}
      * @hidden
-     * @deprecated
+     * @private
      */
     public static AppendBefore(
         textNode: HTMLElement | Text | DocumentFragment,

@@ -1,3 +1,7 @@
+@use 'ej2-base/styles/definition/bootstrap5' as *;
+@use 'ej2-buttons/styles/button/bootstrap5-definition' as *;
+@forward 'ej2-base/styles/definition/bootstrap5';
+@forward 'ej2-buttons/styles/button/bootstrap5-definition';
 $drop-down-btn-arrow-content: '\e70d' !default;
 $drop-down-btn-vertical-btn-padding: 6px 12px !default;
 $drop-down-btn-vertical-bigger-padding: 8px 16px !default;
@@ -51,3 +55,12 @@ $drop-down-btn-li-selection-font-color: $content-text-color !default;
 $drop-down-btn-menu-icon-color: $icon-color !default;
 $drop-down-btn-menu-icon-disabled-color: $secondary-text-color-disabled !default;
 $drop-down-btn-li-hover-bgcolor: $flyout-bg-color-hover !default;
+
+$drop-down-btn-line-height: 1 !default;
+$dd-btn-zero-margin-padding: 0 !default;
+$dd-menu-height: 1px !default;
+$dd-menu-icon-width: 1em !default;
+$dd-menu-width: 1px !default;
+$dd-auto-height: auto !default;
+$dd-bgr-seperator-line-height: normal !default;
+$dd-full-width: 100% !default;

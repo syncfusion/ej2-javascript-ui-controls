@@ -31,7 +31,7 @@ describe('ChatUI Component', () => {
                 id: 'user1',
                 statusIconCss: 'e-icons e-user-online'
             },
-            timeStamp: new Date('October 13, 2024 11:13:45'),
+            timeStamp: new Date('October 13, 2024 11:13:00'),
             status: {
                 iconCss: 'e-icons e-check',
                 tooltip: 'sent',
@@ -570,6 +570,33 @@ describe('ChatUI Component', () => {
             expect(messageStatusElement).toBeNull();
         });
 
+        it('should dynamically add a new user properties', function () {
+            chatUI = new ChatUI({
+                user: {
+                    id: 'u1',
+                    user: 'Alice',
+                    avatarUrl: 'alice.png',
+                    avatarBgColor: '#fff',
+                    cssClass: 'default'
+                }
+            });
+            const newProp = {
+                user: {
+                    statusIconCss: 'offline'
+                }
+            };
+            chatUI.appendTo('#chatUI');
+            chatUI.onPropertyChanged(newProp, { user: chatUI.user });
+            expect(chatUI.user).toEqual(jasmine.objectContaining({
+                id: 'u1',
+                user: 'Alice',
+                avatarUrl: 'alice.png',
+                avatarBgColor: '#fff',
+                cssClass: 'default',
+                statusIconCss: 'offline'
+            }));
+        });
+
         it('should dynamically change user properties into new user properties', function () {
             chatUI = new ChatUI({
                 user: {
@@ -638,6 +665,104 @@ describe('ChatUI Component', () => {
             expect(userText.textContent).toBe('Reena, John und 2 andere tippen gerade');
         });
 
+        it('Locale checking for pinned message', () => {
+            L10n.load({
+                'de': {
+                    "chat-ui": {
+                        "unpin": "lösen",
+                        "viewChat": "Im Chat ansehen"
+                    }
+                }
+            });
+            const pinnedMessage: MessageModel = {
+                id: 'msg1',
+                text: 'This is a pinned message!',
+                author: { id: 'user1', user: 'John Doe' },
+                timeStamp: new Date(),
+                isPinned: true
+            };
+
+            const message2: MessageModel = {
+                id: 'msg2',
+                text: 'First additional message!',
+                author: { id: 'user2', user: 'Jane Doe' },
+                timeStamp: new Date(),
+            };
+
+            const message3: MessageModel = {
+                id: 'msg3',
+                text: 'Second additional message!',
+                author: { id: 'user3', user: 'Alice Johnson' },
+                timeStamp: new Date(),
+            };
+
+            chatUI = new ChatUI({
+                user: { id: 'user4', user: 'Bob Brown' },
+                messages: [pinnedMessage, message2, message3],
+                locale: 'de',
+            });
+            chatUI.appendTo('#chatUI');
+
+            // Check the pinned message is present in the wrapper
+            const pinnedWrapper: HTMLElement = chatUIElem.querySelector('.e-pinned-message-wrapper');
+            const dropDownButton: HTMLElement = pinnedWrapper.querySelector('.e-dropdown-btn');
+            dropDownButton.click();
+            const pinnedDropdown: HTMLElement = document.querySelector('.e-dropdown-popup.e-pinned-dropdown-popup');
+            expect(pinnedDropdown).not.toBeNull();
+
+            const viewInChatButton: HTMLElement = pinnedDropdown.querySelector('.e-item');
+            expect(viewInChatButton).not.toBeNull();
+            expect(viewInChatButton.textContent).toBe('Im Chat ansehen');
+            viewInChatButton.click();
+
+            // Simulation of scrolling behavior or confirmation that message is viewed
+            const messageItems: NodeListOf<HTMLElement> = chatUIElem.querySelectorAll('.e-message-item');
+            const scrolledToMessage: HTMLElement = Array.from(messageItems).find(item => item.textContent.includes('This is a pinned message!'));
+            expect(scrolledToMessage).toBeTruthy();
+
+            // Verify clicking the unpin message button updates display property
+            dropDownButton.click();
+            const unpinButton: HTMLElement = pinnedDropdown.querySelectorAll('.e-item')[1] as HTMLElement;
+            expect(unpinButton).not.toBeNull();
+            expect(unpinButton.textContent).toBe('lösen');
+
+            unpinButton.click();
+            expect(pinnedWrapper.style.display).toBe('none'); // The wrapper is hidden but not removed
+        });
+
+        it('should render and dynamically update the locale for send icon', () => {
+            L10n.load({
+                'de-DE': {
+                    "chat-ui": {
+                        "send": 'Nachricht senden'
+                    }
+                },
+                'fr-BE': {
+                    "chat-ui": {
+                        "send": 'Envoyer le message'
+                    }
+                }
+            });
+            chatUI = new ChatUI({
+                locale: 'de-DE',
+                user: { id: 'user1', user: 'Albert' }
+            });
+            chatUI.appendTo(chatUIElem);
+
+            const sendIcon: HTMLElement = chatUIElem.querySelector('.e-chat-send') as HTMLElement;
+            expect(sendIcon).not.toBeNull();
+            sendIcon.classList.remove('disabled');
+            expect(sendIcon.getAttribute('title')).toBe('Nachricht senden');
+
+            chatUI.locale = 'fr-BE';
+            chatUI.dataBind();
+
+            const updatedSendIcon: HTMLElement = chatUIElem.querySelector('.e-chat-send') as HTMLElement;
+            expect(updatedSendIcon).not.toBeNull();
+            updatedSendIcon.classList.remove('disabled');
+            expect(updatedSendIcon.getAttribute('title')).toBe('Envoyer le message');
+        });
+
         it('Locale checking without typing users', () => {
             L10n.load({
                 'de': {
@@ -664,63 +789,6 @@ describe('ChatUI Component', () => {
             chatUI.dataBind();
             let typingInicator: HTMLDivElement = chatUIElem.querySelector('.e-typing-indicator');
             expect(typingInicator).toBeNull();
-        });
-
-        it('Locale checking for pinned message', () => {
-            L10n.load({
-                'de': {
-                    "chat-ui": {
-                        "unpin": "lösen",
-                        "viewChat": "Im Chat ansehen"
-                    }
-                }
-            });
-            const pinnedMessage: MessageModel = {
-                id: 'msg1',
-                text: 'This is a pinned message!',
-                author: { id: 'user1', user: 'John Doe' },
-                timeStamp: new Date(),
-                isPinned: true
-            };
-            const message2: MessageModel = {
-                id: 'msg2',
-                text: 'First additional message!',
-                author: { id: 'user2', user: 'Jane Doe' },
-                timeStamp: new Date(),
-            };
-            const message3: MessageModel = {
-                id: 'msg3',
-                text: 'Second additional message!',
-                author: { id: 'user3', user: 'Alice Johnson' },
-                timeStamp: new Date(),
-            };
-            chatUI = new ChatUI({
-                user: { id: 'user4', user: 'Bob Brown' },
-                messages: [pinnedMessage, message2, message3],
-                locale: 'de',
-            });
-            chatUI.appendTo('#chatUI');
-            // Check the pinned message is present in the wrapper
-            const pinnedWrapper: HTMLElement = chatUIElem.querySelector('.e-pinned-message-wrapper');
-            const dropDownButton: HTMLElement = pinnedWrapper.querySelector('.e-dropdown-btn');
-            dropDownButton.click();
-            const pinnedDropdown: HTMLElement = document.querySelector('.e-dropdown-popup.e-pinned-dropdown-popup');
-            expect(pinnedDropdown).not.toBeNull();
-            const viewInChatButton: HTMLElement = pinnedDropdown.querySelector('.e-item');
-            expect(viewInChatButton).not.toBeNull();
-            expect(viewInChatButton.textContent).toBe('Im Chat ansehen');
-            viewInChatButton.click();
-            // Simulation of scrolling behavior or confirmation that message is viewed
-            const messageItems: NodeListOf<HTMLElement> = chatUIElem.querySelectorAll('.e-message-item');
-            const scrolledToMessage: HTMLElement = Array.from(messageItems).find(item => item.textContent.includes('This is a pinned message!'));
-            expect(scrolledToMessage).toBeTruthy();
-            // Verify clicking the unpin message button updates display property
-            dropDownButton.click();
-            const unpinButton: HTMLElement = pinnedDropdown.querySelectorAll('.e-item')[1] as HTMLElement;
-            expect(unpinButton).not.toBeNull();
-            expect(unpinButton.textContent).toBe('lösen');
-            unpinButton.click();
-            expect(pinnedWrapper.style.display).toBe('none'); // The wrapper is hidden but not removed
         });
 
         it('Typing user dynamic addition', () => {
@@ -1000,20 +1068,6 @@ describe('ChatUI Component', () => {
             timeElement = chatUIElem.querySelector('.e-time');
             expect(timeElement.textContent).toBe('13/10/2024 11:13 AM');
         });
-
-        it('Custom TimeStampFormat with seconds checking', () => {
-            chatUI = new ChatUI({
-                messages: [messages[0]],
-                timeStampFormat: 'MM-dd-yyyy HH:mm:ss'
-            });
-            chatUI.appendTo('#chatUI');
-            let timeElement: HTMLDivElement = chatUIElem.querySelector('.e-time');
-            expect(timeElement.textContent).toBe('10-13-2024 11:13:45');
-            chatUI.timeStampFormat = 'dd/MM/yyyy hh:mm a';
-            chatUI.dataBind();
-            timeElement = chatUIElem.querySelector('.e-time');
-            expect(timeElement.textContent).toBe('13/10/2024 11:13 AM');
-        });
     
         it('ShowTimeStamp checking', () => {
             chatUI = new ChatUI({
@@ -1091,6 +1145,7 @@ describe('ChatUI Component', () => {
                 }, 1500);
             }, 100);
         });
+
         it('LoadOnDemand checking with no timebreak', (done: DoneFn) => {
             const longMessageList: MessageModel[] = Array(150).fill(null).map((_, index) => ({
                 id: `msg${index}`,
@@ -1322,7 +1377,7 @@ describe('ChatUI Component', () => {
                 done();
             }, 450);
         });
-
+        
         it('Sending a message with iframe content', (done: DoneFn) => {
             const sTag: HTMLElement = createElement('script', { id: 'emptyChatTemplate', attrs: { type: 'text/x-template' } });
             sTag.innerHTML = '<div><h1>Welcome to Chat</h1><p>Start your conversation</p></div>';
@@ -2015,9 +2070,9 @@ describe('ChatUI Component', () => {
             textareaElem.dispatchEvent(focusEvent);
             setTimeout(() => {
                 expect(document.activeElement).toBe(textareaElem);
-                expect(footerElem.classList.contains('focused')).toBe(true);
+                expect(footerElem.classList.contains('e-footer-focused')).toBe(true);
                 done();
-            }, 100);
+            }, 100, done);
         });
 
         it('addMessage method checking with string parameter', () => {
@@ -3295,12 +3350,15 @@ describe('ChatUI Component', () => {
                 ]
             });
             chatUI.appendTo('#chatUI');
+
             const textareaEle: HTMLDivElement = chatUIElem.querySelector('.e-footer .e-chat-textarea');
             expect(textareaEle).not.toBeNull();
+
             // State 1: Initial content
             textareaEle.innerText = 'Hello ';
             const inputEvent1 = new Event('input', { bubbles: true });
             textareaEle.dispatchEvent(inputEvent1);
+
             setTimeout(() => {
                 // State 2: Add a mention
                 const mentionChip = '<span contenteditable="false" class="e-mention-chip"><span class="e-chat-mention-user-chip" data-user-id="user1">John Doe</span></span>';
@@ -3308,18 +3366,22 @@ describe('ChatUI Component', () => {
                 const inputEvent2 = new Event('input', { bubbles: true });
                 textareaEle.dispatchEvent(inputEvent2);
                 const stateWithMention = textareaEle.innerHTML;
+
                 setTimeout(() => {
                     // State 3: Add more text after the mention
                     textareaEle.innerHTML += ' how are you?';
                     const inputEvent3 = new Event('input', { bubbles: true });
                     textareaEle.dispatchEvent(inputEvent3);
                     const finalState = textareaEle.innerHTML;
+
                     setTimeout(() => {
                         // Perform Undo: should revert to State 2
                         const undoEvent = new KeyboardEvent('keydown', { key: 'z', ctrlKey: true, bubbles: true });
                         (chatUI as any).footer.dispatchEvent(undoEvent);
+
                         setTimeout(() => {
                             expect(textareaEle.innerHTML).toBe(stateWithMention);
+
                             // Perform Redo: should revert to State 3
                             const redoEvent = new KeyboardEvent('keydown', { key: 'y', ctrlKey: true, bubbles: true });
                             (chatUI as any).footer.dispatchEvent(redoEvent);
@@ -3900,7 +3962,6 @@ describe('ChatUI Component', () => {
                 }, 300);
             }, 300);
         });
-
         it('should correctly render Xss text and mention chips when sending a message', (done: DoneFn) => {
             chatUIInstance = new ChatUI({
                 user: { id: 'current-user', user: 'Current User' },
@@ -4054,6 +4115,2698 @@ describe('ChatUI Component', () => {
                 return Promise.resolve();
             });
             copyButton.click();
+        });
+    });
+
+    describe('Attachment Support', () => {
+        let chatUIElem: HTMLElement;
+
+        beforeEach(() => {
+            chatUIElem = document.createElement('div');
+            chatUIElem.id = 'chatUI';
+            document.body.appendChild(chatUIElem);
+        });
+
+        afterEach(() => {
+            if (chatUI) {
+                chatUI.destroy();
+                chatUI = null;
+            }
+            if (chatUIElem && chatUIElem.parentElement) {
+                chatUIElem.parentElement.removeChild(chatUIElem);
+            }
+        });
+
+        it('should render attachment icon if enableAttachments property set to true', () => {
+           chatUI = new ChatUI({
+                enableAttachments: true
+            });
+            chatUI.appendTo(chatUIElem);
+            const attachmentIcon: HTMLElement = chatUIElem.querySelector('.e-chat-attachment-icon');
+            expect(attachmentIcon).not.toBeNull();
+            attachmentIcon.click(); 
+        });
+
+        it('should initialize with default attachment settings', () => {
+            chatUI = new ChatUI({
+                enableAttachments: true
+            });
+            chatUI.appendTo('#chatUI');
+
+            expect(chatUI.attachmentSettings.saveUrl).toBe('');
+            expect(chatUI.attachmentSettings.removeUrl).toBe('');
+            expect(chatUI.attachmentSettings.maxFileSize).toBe(30000000); // Default 30 MB
+        });
+
+        it('should upload a file successfully', () => {
+            const currentUserModel: UserModel = {
+                id: "user1",
+                user: "Albert",
+                statusIconCss: 'e-icons e-user-away'
+            };
+            let isBeforeEventCalled: boolean = false;
+            chatUI = new ChatUI({
+                user: currentUserModel,
+                enableAttachments: true,
+                attachmentSettings: {
+                    saveUrl: 'https://services.syncfusion.com/js/production/api/FileUploader/Save',
+                    removeUrl: 'https://services.syncfusion.com/js/production/api/FileUploader/Remove'
+                },
+                beforeAttachmentUpload: () => {
+                    isBeforeEventCalled = true
+                },
+                attachmentUploadSuccess: () => {
+                    const uploadedFiles = (chatUI as any).uploadedFiles;
+                    expect(uploadedFiles.length).toBe(1);
+                    expect(uploadedFiles[0].name).toBe('last.txt');
+                }
+            });
+
+            chatUI.appendTo(chatUIElem);
+            const uploadObj: any = (chatUI as any).uploaderObj as Uploader;
+
+            let fileObj: File = new File(["Nice One"], "last.txt", {lastModified: 0, type: "overide/mimetype"});
+            let fileObj1: File = new File(["2nd File"], "image.png", {lastModified: 0, type: "overide/mimetype"});
+            let eventArgs = { type: 'click', target: {files: [fileObj, fileObj1]}, preventDefault: (): void => { } };
+            uploadObj.onSelectFiles(eventArgs);
+        });
+
+        it('should upload an image and check whether it is rendered', (done) => {
+            const currentUserModel: UserModel = {
+                id: "user1",
+                user: "Albert",
+                statusIconCss: 'e-icons e-user-busy'
+            };
+            chatUI = new ChatUI({
+                user: currentUserModel,
+                enableAttachments: true,
+                attachmentSettings: {
+                    saveUrl: 'https://services.syncfusion.com/js/production/api/FileUploader/Save',
+                    removeUrl: 'https://services.syncfusion.com/js/production/api/FileUploader/Remove'
+                }
+            });
+            chatUI.appendTo(chatUIElem);
+
+            const file: File = new File(['sample image data'], 'sample.png', { type: 'image/png' });
+            const fileInput: HTMLInputElement = chatUIElem.querySelector('.e-chat-file-upload') as HTMLInputElement;
+            const dt = new DataTransfer();
+            dt.items.add(file);
+            fileInput.files = dt.files;
+
+            const changeEvent = new Event('change');
+            fileInput.dispatchEvent(changeEvent);
+
+            setTimeout(() => {
+                const dropArea: HTMLElement = chatUIElem.querySelector('.e-chat-drop-area') as HTMLElement;
+                const attachedFile: HTMLElement = dropArea.querySelector('.e-chat-uploaded-file-item') as HTMLElement;
+                expect(attachedFile).not.toBeNull();
+                const sendIcon: HTMLElement = chatUIElem.querySelector('.e-chat-send') as HTMLElement;
+                expect(sendIcon).not.toBeNull();
+                sendIcon.click();
+                setTimeout(() => {
+                    const messages: NodeListOf<HTMLElement> = chatUIElem.querySelectorAll('.e-message-item');
+                    expect(messages.length).toBeGreaterThan(0);
+                    const lastMsg: HTMLElement = messages[messages.length - 1];
+                    const img: HTMLImageElement = lastMsg.querySelector('img');
+                    expect(img).not.toBeNull();
+                    expect(img.src).toContain('blob:');
+                    done();
+                }, 500);
+            }, 500);
+        });
+
+        it('should upload a video and check whether it is rendered', (done) => {
+            const currentUserModel: UserModel = {
+                id: "user1",
+                user: "Albert",
+                statusIconCss: 'e-icons e-user-offline'
+            };
+            chatUI = new ChatUI({
+                user: currentUserModel,
+                enableAttachments: true,
+                attachmentSettings: {
+                    saveUrl: 'https://services.syncfusion.com/js/production/api/FileUploader/Save',
+                    removeUrl: 'https://services.syncfusion.com/js/production/api/FileUploader/Remove'
+                }
+            });
+            chatUI.appendTo(chatUIElem);
+            const file: File = new File(['sample video data'], 'sample.mp4', { type: 'video/mp4' });
+            const fileInput: HTMLInputElement = chatUIElem.querySelector('.e-chat-file-upload') as HTMLInputElement;
+            const dt = new DataTransfer();
+            dt.items.add(file);
+            fileInput.files = dt.files;
+
+            const changeEvent = new Event('change');
+            fileInput.dispatchEvent(changeEvent);
+
+            setTimeout(() => {
+                const dropArea: HTMLElement = chatUIElem.querySelector('.e-chat-drop-area') as HTMLElement;
+                const attachedFile: HTMLElement = dropArea.querySelector('.e-chat-uploaded-file-item') as HTMLElement;
+                expect(attachedFile).not.toBeNull();
+                const sendIcon: HTMLElement = chatUIElem.querySelector('.e-chat-send') as HTMLElement;
+                expect(sendIcon).not.toBeNull();
+                sendIcon.click();
+
+                setTimeout(() => {
+                    const messages: NodeListOf<HTMLElement> = chatUIElem.querySelectorAll('.e-message-item');
+                    expect(messages.length).toBeGreaterThan(0);
+
+                    const lastMsg: HTMLElement = messages[messages.length - 1];
+                    const video: HTMLVideoElement = lastMsg.querySelector('video');
+                    expect(video).not.toBeNull();
+                    expect(video.querySelector('source').src).toContain('blob:');
+
+                    const overlay: HTMLElement = lastMsg.querySelector('.e-chat-video-play');
+                    expect(overlay).not.toBeNull();
+                    done();
+                }, 500);
+            }, 500);
+        });
+
+        it('should initialize with default attachment settings and handle dynamic property changes', () => {
+            chatUI = new ChatUI({
+                enableAttachments: true
+            });
+            chatUI.appendTo(chatUIElem);
+
+            // Check initial values
+            expect(chatUI.attachmentSettings.saveUrl).toBe('');
+            expect(chatUI.attachmentSettings.removeUrl).toBe('');
+            expect(chatUI.attachmentSettings.maxFileSize).toBe(30000000); // Default max file size
+            expect(chatUI.attachmentSettings.enableDragAndDrop).toBe(true);
+            expect(chatUI.attachmentSettings.maximumCount).toBe(10);
+            expect(chatUI.attachmentSettings.allowedFileTypes).toBe('');
+            expect(chatUI.attachmentSettings.saveFormat).toBe('Blob');
+            expect(chatUI.attachmentSettings.path).toBe('');
+            expect(chatUI.attachmentSettings.previewTemplate).toBe('');
+            expect(chatUI.attachmentSettings.attachmentTemplate).toBe('');
+
+            // Change properties dynamically
+            chatUI.attachmentSettings = {
+                saveUrl: '/new/save/url',
+                removeUrl: '/new/remove/url',
+                maxFileSize: 5000000,
+                enableDragAndDrop: false,
+                maximumCount: 1,
+                allowedFileTypes: '.png',
+                saveFormat: 'Base64',
+                path: '/new/path/url',
+                previewTemplate: '<div> Preview Template </div>',
+                attachmentTemplate: '<div> Attachment Template </div>'
+            };
+            chatUI.dataBind();
+
+            // Check for updated values
+            expect(chatUI.attachmentSettings.saveUrl).toBe('/new/save/url');
+            expect(chatUI.attachmentSettings.removeUrl).toBe('/new/remove/url');
+            expect(chatUI.attachmentSettings.maxFileSize).toBe(5000000);
+            expect(chatUI.attachmentSettings.enableDragAndDrop).toBe(false);
+            expect(chatUI.attachmentSettings.maximumCount).toBe(1);
+            expect(chatUI.attachmentSettings.allowedFileTypes).toBe('.png');
+            expect(chatUI.attachmentSettings.saveFormat).toBe('Base64');
+            expect(chatUI.attachmentSettings.path).toBe('/new/path/url');
+            expect(chatUI.attachmentSettings.previewTemplate).toBe('<div> Preview Template </div>');
+            expect(chatUI.attachmentSettings.attachmentTemplate).toBe('<div> Attachment Template </div>');
+
+        });
+        
+        it('should dynamically change the enableAttachments property', () => {
+            chatUI = new ChatUI({
+                enableAttachments: true
+            });
+            chatUI.appendTo(chatUIElem);
+
+            // Check initial state
+            expect(chatUI.enableAttachments).toBe(true);
+            expect(chatUIElem.querySelector('.e-chat-attachment-icon')).not.toBeNull();
+
+            // Change the enableAttachments property
+            chatUI.enableAttachments = false;
+            chatUI.dataBind();
+
+            // Check for updated state
+            expect(chatUI.enableAttachments).toBe(false);
+            expect(chatUIElem.querySelector('.e-chat-attachment-icon')).toBeNull();
+
+            // Re-enable attachments
+            chatUI.enableAttachments = true;
+            chatUI.dataBind();
+
+            // Check if attachments are enabled again
+            expect(chatUI.enableAttachments).toBe(true);
+            expect(chatUIElem.querySelector('.e-chat-attachment-icon')).not.toBeNull();
+        });
+
+        it('should upload a file with path property', function (done) {
+            const currentUserModel = {
+                id: "user1",
+                user: "Albert"
+            };
+            chatUI = new ChatUI({
+                user: currentUserModel,
+                enableAttachments: true,
+                attachmentSettings: {
+                    saveUrl: 'https://services.syncfusion.com/js/production/api/FileUploader/Save',
+                    removeUrl: 'https://services.syncfusion.com/js/production/api/FileUploader/Remove',
+                    path: 'https://services.syncfusion.com/js/production/api/FileUploader'
+                },
+            });
+            chatUI.appendTo(chatUIElem);
+            const fileSizeInBytes = 2 * 1024 * 1024; // 2MB
+            const fileData = new Uint8Array(fileSizeInBytes);
+            const file: File = new File([fileData], 'document.docx', { type: 'application/' });
+            const fileInput: HTMLInputElement = chatUIElem.querySelector('.e-chat-file-upload') as HTMLInputElement;
+            const dt = new DataTransfer();
+            dt.items.add(file);
+            fileInput.files = dt.files;
+            const changeEvent = new Event('change');
+            fileInput.dispatchEvent(changeEvent);
+            setTimeout(function () {
+                const dropArea: HTMLElement = chatUIElem.querySelector('.e-chat-drop-area') as HTMLElement;
+                const attachedFile: HTMLElement = dropArea.querySelector('.e-chat-uploaded-file-item') as HTMLElement;
+                expect(attachedFile).not.toBeNull();
+                const sendIcon: HTMLElement = chatUIElem.querySelector('.e-chat-send') as HTMLElement;
+                expect(sendIcon).not.toBeNull();
+                sendIcon.click();
+
+                setTimeout(() => {
+                    const messageItem = chatUIElem.querySelector('.e-message-item');
+                    const fileWrapper = messageItem.querySelector('.e-chat-file-details');
+                    expect(fileWrapper).not.toBeNull();
+                    const fileName = fileWrapper.querySelector('.e-chat-file-name');
+                    expect(fileName.textContent).toBe('document.docx');
+                    const fileSize = fileWrapper.querySelector('.e-chat-file-size');
+                    expect(fileSize.textContent).toBe('2048.00 KB');
+                    done();
+                }, 500);
+            }, 500);
+        });
+
+        it('should dynamically change the saveFormat property', () => {
+            chatUI = new ChatUI({
+                enableAttachments: true
+            });
+            chatUI.appendTo(chatUIElem);
+            chatUI.attachmentSettings = {
+                saveFormat: 'Base64',
+            };
+            chatUI.dataBind();
+            expect(chatUI.attachmentSettings.saveFormat).toBe('Base64');
+            chatUI.attachmentSettings = {
+                saveFormat: 'Blob'
+            }
+            chatUI.dataBind();
+            expect(chatUI.attachmentSettings.saveFormat).toBe('Blob');
+        });
+
+        it('should upload an image with saveformat set as Base64', function (done) {
+            const currentUserModel = {
+                id: "user1",
+                user: "Albert"
+            };
+            chatUI = new ChatUI({
+                user: currentUserModel,
+                enableAttachments: true,
+                attachmentSettings: {
+                    saveUrl: 'https://services.syncfusion.com/js/production/api/FileUploader/Save',
+                    removeUrl: 'https://services.syncfusion.com/js/production/api/FileUploader/Remove',
+                    saveFormat: 'Base64'
+                }
+            });
+            chatUI.appendTo(chatUIElem);
+            const file: File = new File(['sample image data'], 'sample.png', { type: 'image/png' });
+            const fileInput: HTMLInputElement = chatUIElem.querySelector('.e-chat-file-upload') as HTMLInputElement;
+            const dt = new DataTransfer();
+            dt.items.add(file);
+            fileInput.files = dt.files;
+            
+            const changeEvent = new Event('change');
+            fileInput.dispatchEvent(changeEvent);
+            setTimeout(function () {
+                const dropArea: HTMLElement = chatUIElem.querySelector('.e-chat-drop-area') as HTMLElement;
+                const attachedFile: HTMLElement = dropArea.querySelector('.e-chat-uploaded-file-item') as HTMLElement;
+                expect(attachedFile).not.toBeNull();
+                const sendIcon: HTMLElement = chatUIElem.querySelector('.e-chat-send') as HTMLElement;
+                expect(sendIcon).not.toBeNull();
+                sendIcon.click();
+
+                setTimeout(() => {
+                    const messages = chatUIElem.querySelectorAll('.e-message-item');
+                    expect(messages.length).toBeGreaterThan(0);
+                    const lastMsg = messages[messages.length - 1];
+                    const img = lastMsg.querySelector('img');
+                    expect(img).not.toBeNull();
+                    expect(img.src).not.toContain('blob:');
+                    expect(img.alt).toBe('sample.png');
+                    done();
+                }, 500);
+            }, 500);
+        });
+
+        it('should upload a file with saveformat set as Base64', function (done) {
+            const currentUserModel = {
+                id: "user1",
+                user: "Albert"
+            };
+            chatUI = new ChatUI({
+                user: currentUserModel,
+                enableAttachments: true,
+                attachmentSettings: {
+                    saveUrl: 'https://services.syncfusion.com/js/production/api/FileUploader/Save',
+                    removeUrl: 'https://services.syncfusion.com/js/production/api/FileUploader/Remove',
+                    saveFormat: 'Base64'
+                },
+            });
+            chatUI.appendTo(chatUIElem);
+            const fileSizeInBytes = 2 * 1024 * 1024; // 2MB
+            const fileData = new Uint8Array(fileSizeInBytes);
+            const file: File = new File([fileData], 'document.docx', { type: 'application/' });
+            const fileInput: HTMLInputElement = chatUIElem.querySelector('.e-chat-file-upload') as HTMLInputElement;
+            const dt = new DataTransfer();
+            dt.items.add(file);
+            fileInput.files = dt.files;
+            const changeEvent = new Event('change');
+            fileInput.dispatchEvent(changeEvent);
+            setTimeout(function () {
+                const dropArea: HTMLElement = chatUIElem.querySelector('.e-chat-drop-area') as HTMLElement;
+                const attachedFile: HTMLElement = dropArea.querySelector('.e-chat-uploaded-file-item') as HTMLElement;
+                expect(attachedFile).not.toBeNull();
+                const sendIcon: HTMLElement = chatUIElem.querySelector('.e-chat-send') as HTMLElement;
+                expect(sendIcon).not.toBeNull();
+                sendIcon.click();
+
+                setTimeout(() => {
+                    const messageItem = chatUIElem.querySelector('.e-message-item');
+                    const fileWrapper = messageItem.querySelector('.e-chat-file-details');
+                    expect(fileWrapper).not.toBeNull();
+                    const fileName = fileWrapper.querySelector('.e-chat-file-name');
+                    expect(fileName.textContent).toBe('document.docx');
+                    const fileSize = fileWrapper.querySelector('.e-chat-file-size');
+                    expect(fileSize.textContent).toBe('2048.00 KB');
+                    done();
+                }, 500);
+            }, 500);
+        });
+
+        it('should render failure alert when an oversized file is uploaded', (done) => {
+            const currentUserModel = {
+                id: "user1",
+                user: "Albert"
+            };
+
+            chatUI = new ChatUI({
+                user: currentUserModel,
+                enableAttachments: true,
+                attachmentSettings: {
+                    maxFileSize: 0, 
+                    saveUrl: 'https://services.syncfusion.com/js/production/api/FileUploader/Save',
+                    removeUrl: 'https://services.syncfusion.com/js/production/api/FileUploader/Remove'
+                }
+            });
+
+            chatUI.appendTo(chatUIElem);
+            const largeFile = new File(['sample file'], 'bigfile.pdf', { type: 'application/pdf' });
+            const fileInput: HTMLInputElement = chatUIElem.querySelector('.e-chat-file-upload') as HTMLInputElement;
+            const dt = new DataTransfer();
+            dt.items.add(largeFile);
+            fileInput.files = dt.files;
+
+            const changeEvent = new Event('change');
+            fileInput.dispatchEvent(changeEvent);
+            setTimeout(() => {
+                const dropArea: HTMLElement = chatUIElem.querySelector('.e-chat-drop-area') as HTMLElement;
+                const attachedFile: HTMLElement = dropArea.querySelector('.e-chat-uploaded-file-item') as HTMLElement;
+                expect(attachedFile).toBeNull();
+                const failureElement: HTMLElement = chatUIElem.querySelector('.e-upload-failure-alert') as HTMLElement;
+                expect(failureElement).not.toBeNull();
+                expect(failureElement.querySelector('.e-failure-message').textContent).toBe('Upload failed: 1 file exceeded the maximum size');
+                const sendIcon: HTMLElement = chatUIElem.querySelector('.e-chat-send') as HTMLElement;
+                expect(sendIcon).not.toBeNull();
+                expect(sendIcon.classList).toContain('disabled');
+                done();
+            }, 500);
+        });
+
+        it('should render failure alert when an oversized image is uploaded', (done) => {
+            const currentUserModel = {
+                id: "user1",
+                user: "Albert"
+            };
+
+            chatUI = new ChatUI({
+                user: currentUserModel,
+                enableAttachments: true,
+                attachmentSettings: {
+                    maxFileSize: 0, 
+                    saveUrl: 'https://services.syncfusion.com/js/production/api/FileUploader/Save',
+                    removeUrl: 'https://services.syncfusion.com/js/production/api/FileUploader/Remove'
+                }
+            });
+
+            chatUI.appendTo(chatUIElem);
+            const largeFile = new File(['sample file'], 'sample.png', { type: 'image/' });
+            const largeFile2 = new File(['sample file'], 'bigfile.pdf', { type: 'application/pdf' });
+            const fileInput: HTMLInputElement = chatUIElem.querySelector('.e-chat-file-upload') as HTMLInputElement;
+            const dt = new DataTransfer();
+            dt.items.add(largeFile);
+            dt.items.add(largeFile2);
+            fileInput.files = dt.files;
+
+            const changeEvent = new Event('change');
+            fileInput.dispatchEvent(changeEvent);
+            setTimeout(() => {
+                const dropArea: HTMLElement = chatUIElem.querySelector('.e-chat-drop-area') as HTMLElement;
+                const attachedFile: HTMLElement = dropArea.querySelector('.e-chat-uploaded-file-item') as HTMLElement;
+                expect(attachedFile).toBeNull();
+                const failureElement: HTMLElement = chatUIElem.querySelector('.e-upload-failure-alert') as HTMLElement;
+                expect(failureElement).not.toBeNull();
+                expect(failureElement.querySelector('.e-failure-message').textContent).toBe('Upload failed: 2 files exceeded the maximum size');
+                const sendIcon: HTMLElement = chatUIElem.querySelector('.e-chat-send') as HTMLElement;
+                expect(sendIcon).not.toBeNull();
+                expect(sendIcon.classList).toContain('disabled');
+                done();
+            }, 500);
+        });
+
+        it('should show media preview overlay when clicking a sent image', (done) => {
+            const currentUserModel = { id: "user1", user: "Albert" };
+
+            chatUI = new ChatUI({
+                user: currentUserModel,
+                enableAttachments: true,
+                attachmentSettings: {
+                    saveUrl: 'https://services.syncfusion.com/js/production/api/FileUploader/Save',
+                    removeUrl: 'https://services.syncfusion.com/js/production/api/FileUploader/Remove'
+                }
+            });
+
+            chatUI.appendTo(chatUIElem);
+
+            const imageFile = new File(['image data'], 'sample.png', { type: 'image/png' });
+            const dt = new DataTransfer();
+            dt.items.add(imageFile);
+
+            const fileInput = chatUIElem.querySelector('.e-chat-file-upload') as HTMLInputElement;
+            fileInput.files = dt.files;
+
+            const changeEvent = new Event('change');
+            fileInput.dispatchEvent(changeEvent);
+
+            setTimeout(() => {
+                const dropArea: HTMLElement = chatUIElem.querySelector('.e-chat-drop-area') as HTMLElement;
+                const attachedFile: HTMLElement = dropArea.querySelector('.e-chat-uploaded-file-item') as HTMLElement;
+                expect(attachedFile).not.toBeNull();
+                const sendIcon: HTMLElement = chatUIElem.querySelector('.e-chat-send') as HTMLElement;
+                expect(sendIcon).not.toBeNull();
+                sendIcon.click();
+
+                setTimeout(() => {
+                    const imageMsg = chatUIElem.querySelector('.e-message-item img') as HTMLImageElement;
+                    expect(imageMsg).not.toBeNull();
+                    imageMsg.click();
+                    const overlay = chatUIElem.querySelector('.e-preview-overlay');
+                    expect(overlay).not.toBeNull();
+
+                    const previewImg = overlay.querySelector('.e-image-preview') as HTMLImageElement;
+                    expect(previewImg.alt).toBe('sample.png');
+                    const closeBtn = overlay.querySelector('.e-chat-back-icon') as HTMLElement;
+                    expect(closeBtn).not.toBeNull();
+                    closeBtn.click();
+
+                    const overlayAfterClose = chatUIElem.querySelector('.e-preview-overlay');
+                    expect(overlayAfterClose).toBeNull();
+
+                    done();
+                }, 500);
+            }, 500);
+        });
+
+        it('should upload a video and show preview when sent video is clicked', (done) => {
+            const currentUserModel = { id: "user1", user: "Albert" };
+
+            chatUI = new ChatUI({
+                user: currentUserModel,
+                enableAttachments: true,
+                attachmentSettings: {
+                saveUrl: 'https://services.syncfusion.com/js/production/api/FileUploader/Save',
+                removeUrl: 'https://services.syncfusion.com/js/production/api/FileUploader/Remove'
+                }
+            });
+            chatUI.appendTo(chatUIElem);
+            const videoFile = new File(['video data'], 'sample.mp4', { type: 'video/mp4' });
+            const dt = new DataTransfer();
+            dt.items.add(videoFile);
+
+            const fileInput = chatUIElem.querySelector('.e-chat-file-upload') as HTMLInputElement;
+            fileInput.files = dt.files;
+
+            const changeEvent = new Event('change');
+            fileInput.dispatchEvent(changeEvent);
+
+            setTimeout(() => {
+                const dropArea: HTMLElement = chatUIElem.querySelector('.e-chat-drop-area') as HTMLElement;
+                const attachedFile: HTMLElement = dropArea.querySelector('.e-chat-uploaded-file-item') as HTMLElement;
+                expect(attachedFile).not.toBeNull();
+                const sendIcon: HTMLElement = chatUIElem.querySelector('.e-chat-send') as HTMLElement;
+                expect(sendIcon).not.toBeNull();
+                sendIcon.click();
+
+                setTimeout(() => {
+                    const videoMsg = chatUIElem.querySelector('.e-message-item video') as HTMLVideoElement;
+                    expect(videoMsg).not.toBeNull();
+
+                    const playOverlay = chatUIElem.querySelector('.e-play-icon-wrapper') as HTMLElement;
+                    const playBtn = playOverlay.querySelector('.e-chat-video-play') as HTMLElement;
+                    expect(playBtn).not.toBeNull();
+                    playBtn.click();
+
+                    const previewOverlay = chatUIElem.querySelector('.e-preview-overlay') as HTMLElement;
+                    expect(previewOverlay).not.toBeNull();
+
+                    const previewVideo = previewOverlay.querySelector('video.e-video-preview') as HTMLVideoElement;
+                    expect(previewVideo).not.toBeNull();
+                    expect(previewVideo.title).toBe('sample.mp4');
+                    previewOverlay.click();
+                    const overlayAfterClose = chatUIElem.querySelector('.e-preview-overlay');
+                    expect(overlayAfterClose).toBeNull();
+                    expect(playBtn).not.toBeNull();
+                    playBtn.click();
+                    const clickEvent = new MouseEvent('click', { bubbles: true });
+                    previewOverlay.dispatchEvent(clickEvent);
+                    (chatUI as any).destroyAttachments();
+                    expect(chatUIElem.querySelector('.e-preview-overlay')).toBeNull();
+                    done();
+                }, 500);
+            }, 500);
+        });
+
+        it('should upload a file and show preview when sent file is clicked', (done) => {
+            const currentUserModel = { id: "user1", user: "Albert" };
+
+            chatUI = new ChatUI({
+                user: currentUserModel,
+                enableAttachments: true,
+                attachmentSettings: {
+                saveUrl: 'https://services.syncfusion.com/js/production/api/FileUploader/Save',
+                removeUrl: 'https://services.syncfusion.com/js/production/api/FileUploader/Remove'
+                }
+            });
+            chatUI.appendTo(chatUIElem);
+            const largeFile = new File(['sample file'], 'bigfile.pdf', { type: 'application/pdf' });
+            const fileInput: HTMLInputElement = chatUIElem.querySelector('.e-chat-file-upload') as HTMLInputElement;
+            const dt = new DataTransfer();
+            dt.items.add(largeFile);
+            fileInput.files = dt.files;
+
+            const changeEvent = new Event('change');
+            fileInput.dispatchEvent(changeEvent);
+
+            setTimeout(() => {
+                const dropArea: HTMLElement = chatUIElem.querySelector('.e-chat-drop-area') as HTMLElement;
+                const attachedFile: HTMLElement = dropArea.querySelector('.e-chat-uploaded-file-item') as HTMLElement;
+                expect(attachedFile).not.toBeNull();
+                const sendIcon: HTMLElement = chatUIElem.querySelector('.e-chat-send') as HTMLElement;
+                expect(sendIcon).not.toBeNull();
+                sendIcon.click();
+
+                setTimeout(() => {
+                    const fileMessage = chatUIElem.querySelector('.e-message-item .e-file-wrapper') as HTMLVideoElement;
+                    expect(fileMessage).not.toBeNull();
+                    fileMessage.click();
+                    const previewOverlay = chatUIElem.querySelector('.e-preview-overlay') as HTMLElement;
+                    expect(previewOverlay).not.toBeNull();
+                    const previewHeader = previewOverlay.querySelector('.e-preview-header') as HTMLElement;
+                    expect(previewHeader.textContent).toContain(largeFile.name);
+
+                    const previewFile = previewOverlay.querySelector('.e-file-preview') as HTMLElement;
+                    expect(previewFile).not.toBeNull();
+                    const noPreviewText = previewFile.querySelector('.e-preview-file-text') as HTMLElement;
+                    expect(noPreviewText.textContent).toContain('No Preview Available');
+                    const fileSizeText = previewFile.querySelector('.e-file-details') as HTMLElement;
+                    expect(fileSizeText.textContent).toContain('0.01 KB');
+                    const closeBtn = previewOverlay.querySelector('.e-chat-back-icon') as HTMLElement;
+                    expect(closeBtn).not.toBeNull();
+                    closeBtn.click();
+                    const overlayAfterClose = chatUIElem.querySelector('.e-preview-overlay');
+                    expect(overlayAfterClose).toBeNull();
+                    fileMessage.click();
+                    const clickEvent = new MouseEvent('click', { bubbles: true });
+                    previewOverlay.dispatchEvent(clickEvent);
+                    (chatUI as any).destroyAttachments();
+                    expect(chatUIElem.querySelector('.e-preview-overlay')).toBeNull();
+                    done();
+                }, 500);
+            }, 500);
+        });
+
+        it('should not show preview for uploaded file when attachment click is prevented', (done) => {
+            const currentUserModel = { id: "user1", user: "Albert" };
+
+            chatUI = new ChatUI({
+                user: currentUserModel,
+                enableAttachments: true,
+                attachmentSettings: {
+                    saveUrl: 'https://services.syncfusion.com/js/production/api/FileUploader/Save',
+                    removeUrl: 'https://services.syncfusion.com/js/production/api/FileUploader/Remove',
+                    attachmentClick: function (args) {
+                        args.cancel = true;
+                    }
+                }
+            });
+            chatUI.appendTo(chatUIElem);
+            const largeFile = new File(['sample file'], 'bigfile.pdf', { type: 'application/pdf' });
+            const fileInput: HTMLInputElement = chatUIElem.querySelector('.e-chat-file-upload') as HTMLInputElement;
+            const dt = new DataTransfer();
+            dt.items.add(largeFile);
+            fileInput.files = dt.files;
+
+            const changeEvent = new Event('change');
+            fileInput.dispatchEvent(changeEvent);
+
+            setTimeout(() => {
+                const dropArea: HTMLElement = chatUIElem.querySelector('.e-chat-drop-area') as HTMLElement;
+                const attachedFile: HTMLElement = dropArea.querySelector('.e-chat-uploaded-file-item') as HTMLElement;
+                expect(attachedFile).not.toBeNull();
+                const sendIcon: HTMLElement = chatUIElem.querySelector('.e-chat-send') as HTMLElement;
+                expect(sendIcon).not.toBeNull();
+                sendIcon.click();
+
+                setTimeout(() => {
+                    const fileMessage = chatUIElem.querySelector('.e-message-item .e-file-wrapper') as HTMLVideoElement;
+                    expect(fileMessage).not.toBeNull();
+                    fileMessage.click();
+                    const previewOverlay = chatUIElem.querySelector('.e-preview-overlay') as HTMLElement;
+                    expect(previewOverlay).toBeNull();
+                    done();
+                }, 500);
+            }, 500);
+        });
+
+        it('should close media preview overlay when pressing Escape key', (done) => {
+            const currentUserModel = { id: "user1", user: "Albert" };
+            chatUI = new ChatUI({
+                user: currentUserModel,
+                enableAttachments: true,
+                attachmentSettings: {
+                    saveUrl: 'https://services.syncfusion.com/js/production/api/FileUploader/Save',
+                    removeUrl: 'https://services.syncfusion.com/js/production/api/FileUploader/Remove'
+                }
+            });
+
+            chatUI.appendTo(chatUIElem);
+
+            const videoFile = new File(['sample video data'], 'sample.mp4', { type: 'video/mp4' });
+            const dt = new DataTransfer();
+            dt.items.add(videoFile);
+            const fileInput = chatUIElem.querySelector('.e-chat-file-upload') as HTMLInputElement;
+            fileInput.files = dt.files;
+            const changeEvent = new Event('change');
+            fileInput.dispatchEvent(changeEvent);
+
+            setTimeout(() => {
+                const dropArea: HTMLElement = chatUIElem.querySelector('.e-chat-drop-area') as HTMLElement;
+                const attachedFile: HTMLElement = dropArea.querySelector('.e-chat-uploaded-file-item') as HTMLElement;
+                expect(attachedFile).not.toBeNull();
+                const sendIcon: HTMLElement = chatUIElem.querySelector('.e-chat-send') as HTMLElement;
+                expect(sendIcon).not.toBeNull();
+                sendIcon.click();
+
+                setTimeout(() => {
+                    const videoMsg = chatUIElem.querySelector('.e-message-item video') as HTMLImageElement;
+                    expect(videoMsg).not.toBeNull();
+                    videoMsg.click();
+                    const overlay = chatUIElem.querySelector('.e-preview-overlay');
+                    expect(overlay).not.toBeNull();
+                    const escEvent = new KeyboardEvent('keydown', { key: 'Escape' });
+                    overlay.dispatchEvent(escEvent);
+                    setTimeout(() => {
+                        const overlayAfterEsc = chatUIElem.querySelector('.e-preview-overlay');
+                        expect(overlayAfterEsc).toBeNull();
+                        done();
+                    }, 100);
+                }, 500);
+            }, 500);
+        });
+
+
+        it('should copy the image file when copy icon is clicked', (done: DoneFn) => {
+            const currentUserModel = {
+                id: 'user1',
+                user: 'Albert'
+            };
+            chatUI = new ChatUI({
+                user: currentUserModel,
+                enableAttachments: true,
+                attachmentSettings: {
+                saveUrl: 'https://services.syncfusion.com/js/production/api/FileUploader/Save',
+                removeUrl: 'https://services.syncfusion.com/js/production/api/FileUploader/Remove'
+                }
+            });
+            chatUI.appendTo(chatUIElem);
+
+            const imageFile = new File(['mock-image-data'], 'sample.png', { type: 'image/png' });
+            const fileInput = chatUIElem.querySelector('.e-chat-file-upload') as HTMLInputElement;
+            const dt = new DataTransfer();
+            dt.items.add(imageFile);
+            fileInput.files = dt.files;
+            fileInput.dispatchEvent(new Event('change'));
+            setTimeout(() => {
+                const dropArea: HTMLElement = chatUIElem.querySelector('.e-chat-drop-area') as HTMLElement;
+                const attachedFile: HTMLElement = dropArea.querySelector('.e-chat-uploaded-file-item') as HTMLElement;
+                expect(attachedFile).not.toBeNull();
+                const sendIcon: HTMLElement = chatUIElem.querySelector('.e-chat-send') as HTMLElement;
+                expect(sendIcon).not.toBeNull();
+                sendIcon.click();
+                spyOn(chatUI as any, 'writeFileToClipboard');
+                const copyButton = chatUIElem.querySelector('.e-icons.e-chat-copy') as HTMLElement;
+                expect(copyButton).not.toBeNull();
+                copyButton.click();
+                expect((chatUI as any).writeFileToClipboard).toHaveBeenCalled();
+                done()
+            }, 500);
+        });
+
+        it('should upload an image and check whether it is rendered and pinned', (done: DoneFn) => {
+            const currentUserModel = {
+                    id: "user1",
+                    user: "Albert"
+                };
+            chatUI = new ChatUI({
+                user: currentUserModel,
+                enableAttachments: true,
+                attachmentSettings: {
+                saveUrl: 'https://services.syncfusion.com/js/production/api/FileUploader/Save',
+                removeUrl: 'https://services.syncfusion.com/js/production/api/FileUploader/Remove'
+                }
+            });
+
+            chatUI.appendTo(chatUIElem);
+
+            const file: File = new File(['sample image data'], 'sample.png', { type: 'image/png' });
+            const fileInput: HTMLInputElement = chatUIElem.querySelector('.e-chat-file-upload') as HTMLInputElement;
+
+            const dt = new DataTransfer();
+            dt.items.add(file);
+            fileInput.files = dt.files;
+
+            const changeEvent = new Event('change');
+            fileInput.dispatchEvent(changeEvent);
+        
+            setTimeout(() => {
+                const dropArea: HTMLElement = chatUIElem.querySelector('.e-chat-drop-area') as HTMLElement;
+                const attachedFile: HTMLElement = dropArea.querySelector('.e-chat-uploaded-file-item') as HTMLElement;
+                expect(attachedFile).not.toBeNull();
+                const sendIcon: HTMLElement = chatUIElem.querySelector('.e-chat-send') as HTMLElement;
+                expect(sendIcon).not.toBeNull();
+                sendIcon.click();
+
+                const messageWrapper: HTMLElement = chatUIElem.querySelector('.e-message-wrapper') as HTMLElement;
+                const pinButton: HTMLElement = messageWrapper.querySelector('.e-chat-pin') as HTMLElement;
+                expect(pinButton).not.toBeNull();
+                pinButton.click();
+                const pinnedMessageElement: HTMLElement = chatUIElem.querySelector('.e-pinned-message') as HTMLElement;
+                const pinnedImage: HTMLImageElement =  pinnedMessageElement.querySelector('.e-pinned-img-thumb') as HTMLImageElement;
+                expect(pinnedImage).not.toBeNull();
+                expect(pinnedMessageElement.querySelector('.e-pinned-file-name').textContent).toBe('sample.png')
+                expect(pinnedImage.src).toContain('blob:');
+                done();
+            }, 500);
+        });
+
+        it('should upload a file and check whether it is rendered and pinned', (done: DoneFn) => {
+            const currentUserModel = {
+                    id: "user1",
+                    user: "Albert"
+                };
+            chatUI = new ChatUI({
+                user:currentUserModel,
+                enableAttachments: true,
+                attachmentSettings: {
+                saveUrl: 'https://services.syncfusion.com/js/production/api/FileUploader/Save',
+                removeUrl: 'https://services.syncfusion.com/js/production/api/FileUploader/Remove'
+                }
+            });
+
+            chatUI.appendTo(chatUIElem);
+
+            const file: File = new File(['sample image data'], 'document.pdf', { type: 'application/' });
+            const fileInput: HTMLInputElement = chatUIElem.querySelector('.e-chat-file-upload') as HTMLInputElement;
+
+            const dt = new DataTransfer();
+            dt.items.add(file);
+            fileInput.files = dt.files;
+
+            const changeEvent = new Event('change');
+            fileInput.dispatchEvent(changeEvent);
+
+            setTimeout(() => {
+                const dropArea: HTMLElement = chatUIElem.querySelector('.e-chat-drop-area') as HTMLElement;
+                const attachedFile: HTMLElement = dropArea.querySelector('.e-chat-uploaded-file-item') as HTMLElement;
+                expect(attachedFile).not.toBeNull();
+                const sendIcon: HTMLElement = chatUIElem.querySelector('.e-chat-send') as HTMLElement;
+                expect(sendIcon).not.toBeNull();
+                sendIcon.click();
+                const messageWrapper: HTMLElement = chatUIElem.querySelector('.e-message-wrapper') as HTMLElement;
+
+                const pinButton: HTMLElement = messageWrapper.querySelector('.e-chat-pin') as HTMLElement;
+                expect(pinButton).not.toBeNull();
+                pinButton.click();
+                const pinnedMessageElement: HTMLElement = chatUIElem.querySelector('.e-pinned-message') as HTMLElement;
+                const pinnedfileIcon: HTMLElement =  pinnedMessageElement.querySelector('.e-icons') as HTMLElement;
+                expect(pinnedfileIcon).not.toBeNull();
+                expect(pinnedMessageElement.querySelector('.e-pinned-file-name').textContent).toBe('document.pdf');
+                done();
+            }, 500);
+        });
+
+        it('should upload a file and reply to that file attached message', (done: DoneFn) => {
+            const currentUserModel = {
+                    id: "user1",
+                    user: "Albert"
+                };
+            chatUI = new ChatUI({
+                user: currentUserModel,
+                enableAttachments: true,
+                showTimeStamp: false,
+                attachmentSettings: {
+                saveUrl: 'https://services.syncfusion.com/js/production/api/FileUploader/Save',
+                removeUrl: 'https://services.syncfusion.com/js/production/api/FileUploader/Remove'
+                }
+            });
+
+            chatUI.appendTo(chatUIElem);
+
+            const file: File = new File(['sample image data'], 'document.pdf', { type: 'application/' });
+            const fileInput: HTMLInputElement = chatUIElem.querySelector('.e-chat-file-upload') as HTMLInputElement;
+
+            const dt = new DataTransfer();
+            dt.items.add(file);
+            fileInput.files = dt.files;
+            const changeEvent = new Event('change');
+            fileInput.dispatchEvent(changeEvent);
+
+            setTimeout(() => {
+                const dropArea: HTMLElement = chatUIElem.querySelector('.e-chat-drop-area') as HTMLElement;
+                const attachedFile: HTMLElement = dropArea.querySelector('.e-chat-uploaded-file-item') as HTMLElement;
+                expect(attachedFile).not.toBeNull();
+                const sendIcon: HTMLElement = chatUIElem.querySelector('.e-footer .e-chat-send') as HTMLElement;
+                expect(sendIcon).not.toBeNull();
+                sendIcon.click();
+            
+                const replyButton: HTMLElement = chatUIElem.querySelector('.e-icons.e-chat-reply');
+                expect(replyButton).not.toBeNull();
+                replyButton.click();
+
+                const replyWrapper: HTMLElement = chatUIElem.querySelector('.e-reply-wrapper');
+                expect(replyWrapper).not.toBeNull();
+                const replyThumbImage: HTMLElement = replyWrapper.querySelector('.e-chat-file-icon');
+                expect(replyThumbImage.className).not.toBe(null);
+                const replyImageName: HTMLElement = replyWrapper.querySelector('.e-reply-file-name');
+                expect(replyImageName.textContent).toBe('document.pdf');
+                replyButton.click();
+
+                const footerTextArea: HTMLDivElement = chatUIElem.querySelector('.e-footer .e-chat-textarea');
+                footerTextArea.innerText = 'New reply message!';
+                const inputEvent: Event = new Event('input', { bubbles: true });
+                footerTextArea.dispatchEvent(inputEvent);
+                expect(sendIcon).not.toBeNull();
+                sendIcon.click();
+
+                const messageItems: NodeListOf<HTMLElement> = chatUIElem.querySelectorAll('.e-message-item');
+                const newMessageItem: HTMLElement = messageItems[messageItems.length - 1];
+                const newReplyWrapper: HTMLElement = newMessageItem.querySelector('.e-reply-wrapper');
+                expect(newReplyWrapper).not.toBeNull();
+                const newText: HTMLElement = newMessageItem.querySelector('.e-text');
+                expect(newText.textContent).toBe('New reply message!');
+                done();
+            }, 500);
+        });
+
+        it('should upload an image and reply to that message', (done: DoneFn) => {
+            const currentUserModel = {
+                    id: "user1",
+                    user: "Albert"
+                };
+            chatUI = new ChatUI({
+                user: currentUserModel,
+                enableAttachments: true,
+                timeStampFormat: 'dd/MM/yyyy hh:mm a',
+                attachmentSettings: {
+                saveUrl: 'https://services.syncfusion.com/js/production/api/FileUploader/Save',
+                removeUrl: 'https://services.syncfusion.com/js/production/api/FileUploader/Remove'
+                }
+            });
+            chatUI.appendTo(chatUIElem);
+
+            const file: File = new File(['sample image data'], 'sample.png', { type: 'image/png' });
+            const fileInput: HTMLInputElement = chatUIElem.querySelector('.e-chat-file-upload') as HTMLInputElement;
+
+            const dt = new DataTransfer();
+            dt.items.add(file);
+            fileInput.files = dt.files;
+
+            const changeEvent = new Event('change');
+            fileInput.dispatchEvent(changeEvent);
+
+            setTimeout(() => {
+                const dropArea: HTMLElement = chatUIElem.querySelector('.e-chat-drop-area') as HTMLElement;
+                const attachedFile: HTMLElement = dropArea.querySelector('.e-chat-uploaded-file-item') as HTMLElement;
+                expect(attachedFile).not.toBeNull();
+                const sendIcon: HTMLElement = chatUIElem.querySelector('.e-footer .e-chat-send') as HTMLElement;
+                expect(sendIcon).not.toBeNull();
+                sendIcon.click();
+
+                const replyButton: HTMLElement = chatUIElem.querySelector('.e-icons.e-chat-reply');
+                expect(replyButton).not.toBeNull();
+                replyButton.click();
+
+                const replyWrapper: HTMLElement = chatUIElem.querySelector('.e-reply-wrapper');
+                expect(replyWrapper).not.toBeNull();
+                const replyThumbImage: HTMLElement = chatUIElem.querySelector('.e-reply-media-thumb');
+                expect(replyThumbImage.className).not.toBe(null);
+                const replyImageName: HTMLElement = chatUIElem.querySelector('.e-reply-file-name');
+                expect(replyImageName.textContent).toBe('sample.png');
+                replyButton.click();
+
+                const footerTextArea: HTMLDivElement = chatUIElem.querySelector('.e-footer .e-chat-textarea');
+                footerTextArea.innerText = 'New reply message!';
+                const inputEvent: Event = new Event('input', { bubbles: true });
+                footerTextArea.dispatchEvent(inputEvent);
+
+                expect(sendIcon).not.toBeNull();
+                sendIcon.click();
+
+                const messageItems: NodeListOf<HTMLElement> = chatUIElem.querySelectorAll('.e-message-item');
+                const newMessageItem: HTMLElement = messageItems[messageItems.length - 1];
+                const newReplyWrapper: HTMLElement = newMessageItem.querySelector('.e-reply-wrapper');
+                expect(newReplyWrapper).not.toBeNull();
+                const newText: HTMLElement = newMessageItem.querySelector('.e-text');
+                expect(newText.textContent).toBe('New reply message!');
+                done()
+            }, 500);
+        });
+
+        it('should upload a video and reply to that message', (done: DoneFn) => {
+            const currentUserModel = {
+                id: "user1",
+                user: "Albert"
+            };
+            
+            chatUI = new ChatUI({
+                user: currentUserModel,
+                enableAttachments: true,
+                timeStampFormat: 'dd/MM/yyyy hh:mm a',
+                attachmentSettings: {
+                saveUrl: 'https://services.syncfusion.com/js/production/api/FileUploader/Save',
+                removeUrl: 'https://services.syncfusion.com/js/production/api/FileUploader/Remove'
+                }
+            });
+            chatUI.appendTo(chatUIElem);
+
+            const file: File = new File(['sample video data'], 'sample.mp4', { type: 'video/mp4' });
+            const fileInput: HTMLInputElement = chatUIElem.querySelector('.e-chat-file-upload') as HTMLInputElement;
+            const dt = new DataTransfer();
+            dt.items.add(file);
+            fileInput.files = dt.files;
+            const changeEvent = new Event('change');
+            fileInput.dispatchEvent(changeEvent);
+
+            setTimeout(() => {
+                const dropArea: HTMLElement = chatUIElem.querySelector('.e-chat-drop-area') as HTMLElement;
+                const attachedFile: HTMLElement = dropArea.querySelector('.e-chat-uploaded-file-item') as HTMLElement;
+                expect(attachedFile).not.toBeNull();
+                const sendIcon: HTMLElement = chatUIElem.querySelector('.e-footer .e-chat-send') as HTMLElement;
+                expect(sendIcon).not.toBeNull();
+                sendIcon.click();
+
+                const replyButton: HTMLElement = chatUIElem.querySelector('.e-icons.e-chat-reply');
+                expect(replyButton).not.toBeNull();
+                replyButton.click();
+                const replyWrapper: HTMLElement = chatUIElem.querySelector('.e-reply-wrapper');
+                expect(replyWrapper).not.toBeNull();
+                const replyThumbVideo: HTMLVideoElement = chatUIElem.querySelector('.e-reply-media-thumb') as HTMLVideoElement;
+                expect(replyThumbVideo).not.toBeNull();
+                expect(replyThumbVideo.src).toContain('blob:');
+
+                const replyVideoName: HTMLElement = chatUIElem.querySelector('.e-reply-file-name');
+                expect(replyVideoName.textContent).toBe('sample.mp4');
+                replyButton.click();
+
+                const footerTextArea: HTMLDivElement = chatUIElem.querySelector('.e-footer .e-chat-textarea');
+                footerTextArea.innerText = 'Reply to video!';
+                const inputEvent: Event = new Event('input', { bubbles: true });
+                footerTextArea.dispatchEvent(inputEvent);
+
+                expect(sendIcon).not.toBeNull();
+                sendIcon.click();
+
+                const messageItems: NodeListOf<HTMLElement> = chatUIElem.querySelectorAll('.e-message-item');
+                const newMessageItem: HTMLElement = messageItems[messageItems.length - 1];
+
+                const newReplyWrapper: HTMLElement = newMessageItem.querySelector('.e-reply-wrapper');
+                expect(newReplyWrapper).not.toBeNull();
+
+                const newText: HTMLElement = newMessageItem.querySelector('.e-text');
+                expect(newText.textContent).toBe('Reply to video!');
+                done()
+            }, 500);
+        });
+
+        it('should paste the image and send as attachment message', (done: DoneFn) => {
+            const currentUserModel = {
+                id: "user1",
+                user: "Albert"
+            };
+            chatUI = new ChatUI({
+                user: currentUserModel,
+                enableAttachments: true,
+                timeStampFormat: 'dd/MM/yyyy hh:mm a',
+                attachmentSettings: {
+                saveUrl: 'https://services.syncfusion.com/js/production/api/FileUploader/Save',
+                removeUrl: 'https://services.syncfusion.com/js/production/api/FileUploader/Remove'
+                }
+            });
+            chatUI.appendTo(chatUIElem);
+            
+            const textareaEle: HTMLDivElement = chatUIElem.querySelector('.e-footer .e-chat-textarea');
+            expect(textareaEle).not.toBeNull();
+            textareaEle.focus();
+            const range: Range = document.createRange();
+            range.selectNodeContents(textareaEle);
+            range.collapse(false); 
+            const selection = window.getSelection();
+            selection.removeAllRanges();
+            selection.addRange(range);
+            const blob: Blob = new Blob(['fake image content'], { type: 'image/png' });
+            const imageFile: File = new File([blob], 'sample.png', { type: 'image/png' }) as File;
+            const clipboardItem = new DataTransfer();
+            clipboardItem.items.add(imageFile);
+            const pasteEvent = new ClipboardEvent('paste', {
+                bubbles: true,
+                cancelable: true
+            });
+            Object.defineProperty(pasteEvent, 'clipboardData', {
+                value: clipboardItem
+            });
+            textareaEle.dispatchEvent(pasteEvent);
+            
+            setTimeout(() => {
+                const dropArea: HTMLElement = chatUIElem.querySelector('.e-chat-drop-area') as HTMLElement;
+                const attachedFile: HTMLElement = dropArea.querySelector('.e-chat-uploaded-file-item') as HTMLElement;
+                expect(attachedFile).not.toBeNull();
+                const sendIcon: HTMLElement = chatUIElem.querySelector('.e-chat-send') as HTMLElement;
+                expect(sendIcon).not.toBeNull();
+                sendIcon.click();
+
+                setTimeout(() => {
+                    const messageItem: HTMLElement = chatUIElem.querySelector('.e-message-item') as HTMLElement;
+                    const spinner: HTMLElement = messageItem.querySelector('.e-progress-wrapper');
+                    expect(spinner).not.toBeNull;
+                    const img: HTMLImageElement = messageItem.querySelector('img');
+                    expect(img).not.toBeNull();
+                    expect(img.src).toContain('blob:');
+                    done();
+                }, 450);
+            }, 450, done);
+        });
+        
+        it('should copy and write the png image directly to clipboard', (done: DoneFn) => {
+            const mockFile = new File(['dummy content'], 'image.png', { type: 'image/png' });
+            Object.defineProperty(navigator, 'clipboard', {
+                writable: true,
+                configurable: true,
+                value: {
+                write: jasmine.createSpy('clipboardWrite').and.callFake((items: ClipboardItem[]) => {
+                    expect(items.length).toBe(1);
+                    expect(items[0] instanceof ClipboardItem).toBe(true);
+                    done();
+                    return Promise.resolve();
+                })
+                }
+            });
+            spyOn(document, 'hasFocus').and.returnValue(true);
+
+            const instance: any = new InterActiveChatBase();
+            instance.writeFileToClipboard(mockFile);
+        });
+
+        it('should convert other type image to png and write to clipboard', function (done) {
+            const mockFile = new File(['dummy jpeg content'], 'image.jpeg', { type: 'image/jpeg' });
+            spyOn(document, 'hasFocus').and.returnValue(true);
+
+            spyOn(URL, 'createObjectURL').and.returnValue('blob:url-fake');
+
+            const originalImage = (window as any).Image;
+            const mockImage = function () {
+                setTimeout(() => {
+                    if (mockImageInstance.onload) {
+                        mockImageInstance.onload();
+                    }
+                }, 0);
+                return mockImageInstance;
+            };
+            const mockImageInstance: any = {
+                onload: null,
+                src: '',
+                width: 100,
+                height: 50
+            };
+            (window as any).Image = mockImage;
+            spyOn(document, 'createElement').and.callFake(function (tag: string) {
+                if (tag === 'canvas') {
+                return {
+                    width: 0,
+                    height: 0,
+                    getContext: () => ({
+                    drawImage: () => {}
+                    }),
+                    toBlob: function (callback: (blob: Blob) => void) {
+                    const blob = new Blob(['converted'], { type: 'image/png' });
+                    callback(blob);
+                    }
+                };
+                }
+                return document.createElement(tag);
+            });
+            Object.defineProperty(navigator, 'clipboard', {
+                writable: true,
+                configurable: true,
+                value: {
+                write: jasmine.createSpy('clipboardWrite').and.callFake(function (items: any) {
+                    expect(items.length).toBe(1);
+                    expect(items[0] instanceof ClipboardItem).toBe(true);
+                    done();
+                    return Promise.resolve();
+                })
+                }
+            });
+            const instance: any = new InterActiveChatBase();
+            instance.writeFileToClipboard(mockFile);
+            (window as any).Image = originalImage;
+        });
+
+        it('should not allow to paste not allowed file types in drop area', (done: DoneFn) => {
+            const currentUserModel = {
+                id: "user1",
+                user: "Albert"
+            };
+            chatUI = new ChatUI({
+                user: currentUserModel,
+                enableAttachments: true,
+                timeStampFormat: 'dd/MM/yyyy hh:mm a',
+                attachmentSettings: {
+                    saveUrl: 'https://services.syncfusion.com/js/production/api/FileUploader/Save',
+                    removeUrl: 'https://services.syncfusion.com/js/production/api/FileUploader/Remove',
+                    allowedFileTypes: '.jpeg'
+                }
+            });
+            chatUI.appendTo(chatUIElem);
+            
+            const textareaEle: HTMLDivElement = chatUIElem.querySelector('.e-footer .e-chat-textarea');
+            expect(textareaEle).not.toBeNull();
+            textareaEle.focus();
+            const range: Range = document.createRange();
+            range.selectNodeContents(textareaEle);
+            range.collapse(false); 
+            const selection = window.getSelection();
+            selection.removeAllRanges();
+            selection.addRange(range);
+            const blob: Blob = new Blob(['fake image content'], { type: 'image/png' });
+            const imageFile: File = new File([blob], 'sample.png', { type: 'image/png' }) as File;
+            const clipboardItem = new DataTransfer();
+            clipboardItem.items.add(imageFile);
+            const pasteEvent = new ClipboardEvent('paste', {
+                bubbles: true,
+                cancelable: true
+            });
+            Object.defineProperty(pasteEvent, 'clipboardData', {
+                value: clipboardItem
+            });
+            textareaEle.dispatchEvent(pasteEvent);
+            
+            setTimeout(() => {
+                const dropArea: HTMLElement = chatUIElem.querySelector('.e-chat-drop-area') as HTMLElement;
+                const attachedFile: HTMLElement = dropArea.querySelector('.e-chat-uploaded-file-item') as HTMLElement;
+                expect(attachedFile).toBeNull();
+                const sendIcon: HTMLElement = chatUIElem.querySelector('.e-chat-send') as HTMLElement;
+                expect(sendIcon).not.toBeNull();
+                expect(sendIcon.classList).toContain('disabled');
+                done();
+            }, 200);
+        });
+
+        it('should upload a video and check whether it is rendered and pinned', (done: DoneFn) => {
+            const currentUserModel = {
+                id: "user1",
+                user: "Albert"
+            };
+
+            chatUI = new ChatUI({
+                user: currentUserModel,
+                enableAttachments: true,
+                attachmentSettings: {
+                saveUrl: 'https://services.syncfusion.com/js/production/api/FileUploader/Save',
+                removeUrl: 'https://services.syncfusion.com/js/production/api/FileUploader/Remove'
+                }
+            });
+            chatUI.appendTo(chatUIElem);
+            const videoFile: File = new File(['sample video data'], 'sample.mp4', { type: 'video/mp4' });
+            const fileInput: HTMLInputElement = chatUIElem.querySelector('.e-chat-file-upload') as HTMLInputElement;
+            const dt = new DataTransfer();
+            dt.items.add(videoFile);
+            fileInput.files = dt.files;
+            const changeEvent = new Event('change');
+            fileInput.dispatchEvent(changeEvent);
+
+            setTimeout(() => {
+                const dropArea: HTMLElement = chatUIElem.querySelector('.e-chat-drop-area') as HTMLElement;
+                const attachedFile: HTMLElement = dropArea.querySelector('.e-chat-uploaded-file-item') as HTMLElement;
+                expect(attachedFile).not.toBeNull();
+                const sendIcon: HTMLElement = chatUIElem.querySelector('.e-chat-send') as HTMLElement;
+                expect(sendIcon).not.toBeNull();
+                sendIcon.click();
+
+                setTimeout(() => {
+                    const messageWrapper: HTMLElement = chatUIElem.querySelector('.e-message-wrapper') as HTMLElement;
+                    const pinButton: HTMLElement = messageWrapper.querySelector('.e-chat-pin') as HTMLElement;
+                    expect(pinButton).not.toBeNull();
+                    pinButton.click(); 
+
+                    const pinnedMessageElement: HTMLElement = chatUIElem.querySelector('.e-pinned-message') as HTMLElement;
+                    expect(pinnedMessageElement).not.toBeNull();
+
+                    const pinnedVideo: HTMLVideoElement = pinnedMessageElement.querySelector('.e-pinned-img-thumb') as HTMLVideoElement;
+                    expect(pinnedVideo).not.toBeNull();
+                    expect(pinnedVideo.src).toContain('blob:');
+
+                    const pinnedLabel: HTMLElement = pinnedMessageElement.querySelector('.e-pinned-file-name') as HTMLElement;
+                    expect(pinnedLabel).not.toBeNull();
+                    expect(pinnedLabel.textContent).toBe('sample.mp4');
+
+                    const unpinButton: HTMLElement = chatUIElem.querySelector('.e-chat-message-toolbar .e-icons.e-chat-unpin');
+                    expect(unpinButton).not.toBeNull();
+
+                    unpinButton.click();
+                    const pinnedWrapper: HTMLElement = chatUIElem.querySelector('.e-pinned-message-wrapper');
+                    expect(pinnedWrapper.style.display).toBe('none');
+                    done();
+                }, 500);
+            }, 500);
+        });
+
+        it('should trigger attachmentRemoved on remove operation in onUploadSuccess', () => {
+            const chatUI = new ChatUI({
+                user: { id: 'user1', user: 'Albert' },
+                enableAttachments: true,
+                attachmentSettings: {
+                    saveUrl: 'test-url',
+                    removeUrl: 'test-url'
+                }
+            });
+
+            const spyTrigger = spyOn(chatUI as any, 'trigger');
+            chatUI.appendTo(chatUIElem);
+
+            const args = {
+                operation: 'remove',
+                file: {
+                    name: 'example.jpg',
+                    id: 'file123',
+                    rawFile: new File([], 'example.jpg')
+                }
+            };
+            (chatUI as any).onUploadSuccess(args);
+            expect(spyTrigger).toHaveBeenCalledWith('attachmentRemoved', args);
+        });
+
+        it('should trigger attachmentUploadFailure on onUploadFailure', () => {
+            const chatUI = new ChatUI({
+                user: { id: 'user1', user: 'Albert' },
+                enableAttachments: true,
+                attachmentSettings: {
+                    saveUrl: 'test-url',
+                    removeUrl: 'test-url'
+                }
+            });
+            const spyTrigger = spyOn(chatUI as any, 'trigger');
+            chatUI.appendTo(chatUIElem);
+
+            const args = {
+                operation: 'upload',
+                file: {
+                    name: 'error-file.mp4',
+                    id: 'fail123',
+                    rawFile: new File([], 'error-file.mp4'),
+                    status: 'File failed to upload'
+                },
+                error: 'Upload failed due to network'
+            };
+            (chatUI as any).onUploadFailure(args);
+            expect(spyTrigger).toHaveBeenCalledWith('attachmentUploadFailure', args);
+        });
+
+        it('should render a document attachment using addMessage()', function () {
+            chatUI = new ChatUI({
+                user: { id: 'user1', user: 'Albert' },
+                enableAttachments: true,
+                attachmentSettings: {
+                   saveUrl: 'https://services.syncfusion.com/js/production/api/FileUploader/Save',
+                   removeUrl: 'https://services.syncfusion.com/js/production/api/FileUploader/Remove'
+                }
+            });
+            chatUI.appendTo(chatUIElem);
+            const mockFile = new File(['dummy content'], 'report.pdf', { type: 'application/pdf' });
+            const newMessage: MessageModel = {
+                id: 'msg1',
+                text: '',
+                author: { id: 'user3', user: 'FileUser', statusIconCss: 'e-icons e-user-away' },
+                timeStamp: new Date(),
+                attachedFile: {
+                    id: 'file1',
+                    name: mockFile.name,
+                    rawFile: mockFile,
+                    fileSource: URL.createObjectURL(mockFile),
+                    size: mockFile.size
+                },
+            } as any;
+
+            chatUI.addMessage(newMessage);
+            const messageElem = chatUIElem.querySelector('.e-message-item');
+            expect(messageElem).not.toBeNull();
+            const fileName = messageElem.querySelector('.e-chat-file-name') as HTMLElement;
+            expect(fileName.textContent).toBe('report.pdf');
+        });
+
+        it('should render an image attachment using addMessage()', function () {
+            chatUI = new ChatUI({
+                user: { id: 'user1', user: 'Albert' },
+                enableAttachments: true,
+                attachmentSettings: {
+                   saveUrl: 'https://services.syncfusion.com/js/production/api/FileUploader/Save',
+                   removeUrl: 'https://services.syncfusion.com/js/production/api/FileUploader/Remove'
+                }
+            });
+            chatUI.appendTo(chatUIElem);
+
+            const imageFile = new File(['image data'], 'photo.jpg', { type: 'image/jpeg' });
+            const newMessage: MessageModel = {
+                id: 'msg1',
+                text: '',
+                author: { id: 'user3', user: 'ImageUser', statusIconCss: 'e-icons e-user-busy' },
+                timeStamp: new Date(),
+                attachedFile: {
+                    id: 'img1',
+                    name: imageFile.name,
+                    rawFile: imageFile,
+                    fileSource: URL.createObjectURL(imageFile),
+                    size: imageFile.size
+                }
+            } as any;
+            chatUI.addMessage(newMessage);
+            const messageElem = chatUIElem.querySelector('.e-message-item');
+            expect(messageElem).not.toBeNull();
+            const img = messageElem.querySelector('img');
+            expect(img).not.toBeNull();
+            expect((img as HTMLImageElement).src).toContain('blob:');
+        });
+
+        it('should render a video attachment using addMessage()', function () {
+            chatUI = new ChatUI({
+                user: { id: 'user1', user: 'Albert' },
+                enableAttachments: true,
+                attachmentSettings: {
+                   saveUrl: 'https://services.syncfusion.com/js/production/api/FileUploader/Save',
+                   removeUrl: 'https://services.syncfusion.com/js/production/api/FileUploader/Remove'
+                }
+            });
+            chatUI.appendTo(chatUIElem);
+            const videoFile = new File(['video data'], 'movie.mp4', { type: 'video/mp4' });
+            const newMessage: MessageModel = {
+                id: 'msg1',
+                text: '',
+                author: { id: 'user3', user: 'VideoUser', statusIconCss: 'e-icons e-user-offline' },
+                timeStamp: new Date(),
+                attachedFile: {
+                    id: 'vid1',
+                    name: videoFile.name,
+                    rawFile: videoFile,
+                    fileSource: URL.createObjectURL(videoFile),
+                    size: videoFile.size
+                }
+            } as any;
+
+            chatUI.addMessage(newMessage);
+            const messageElem = chatUIElem.querySelector('.e-message-item');
+            expect(messageElem).not.toBeNull();
+            const video = messageElem.querySelector('video') as HTMLVideoElement;
+            expect(video).not.toBeNull();
+            expect(video.querySelector('source').src).toContain('blob:');
+            const playWrapper = messageElem.querySelector('.e-play-icon-wrapper') as HTMLElement;
+            expect(playWrapper).not.toBeNull();
+        });
+
+        it('should upload an image with incorrect saveUrl for checking failure case', (done) => {
+            const currentUserModel: UserModel = {
+                id: "user1",
+                user: "Albert"
+            };
+            chatUI = new ChatUI({
+                user: currentUserModel,
+                enableAttachments: true,
+                attachmentSettings: {
+                    saveUrl: 'https://services.syncfusion.com/js/production/api/FileUploader/Saves',
+                    removeUrl: 'https://services.syncfusion.com/js/production/api/FileUploader/Removes'
+                }
+            });
+            chatUI.appendTo(chatUIElem);
+
+            const file: File = new File(['sample image data'], 'sample.png', { type: 'image/png' });
+            const fileInput: HTMLInputElement = chatUIElem.querySelector('.e-chat-file-upload') as HTMLInputElement;
+            const dt = new DataTransfer();
+            dt.items.add(file);
+            fileInput.files = dt.files;
+
+            const changeEvent = new Event('change');
+            fileInput.dispatchEvent(changeEvent);
+
+            setTimeout(() => {
+                const dropArea: HTMLElement = chatUIElem.querySelector('.e-chat-drop-area') as HTMLElement;
+                const attachedFile: HTMLElement = dropArea.querySelector('.e-chat-uploaded-file-item') as HTMLElement;
+                expect(attachedFile).not.toBeNull();
+                const progressBar: HTMLElement = attachedFile.querySelector('.e-chat-progress-bar') as HTMLElement;
+                expect(progressBar).not.toBeNull();
+                const progressFill: HTMLElement = progressBar.querySelector('.e-chat-progress-fill') as HTMLElement;
+                const uploaderObj = (chatUI as any).uploaderObj;
+                uploaderObj.trigger('failure', {
+                    operation: 'upload',
+                    file: { name: 'sample.png', size: file.size, type: file.type }
+                });
+                expect(progressFill.classList).toContain('failed');
+                const sendIcon: HTMLElement = chatUIElem.querySelector('.e-chat-send') as HTMLElement;
+                expect(sendIcon).not.toBeNull();
+                expect(sendIcon.classList).toContain('disabled');
+                done();
+            }, 500);
+        });
+
+        it('should upload multiple files in the drop area', (done: DoneFn) => {
+            const currentUserModel: UserModel = {
+                id: "user1",
+                user: "Albert",
+                statusIconCss: 'e-icons e-user-busy'
+            };
+            chatUI = new ChatUI({
+                user: currentUserModel,
+                enableAttachments: true,
+                attachmentSettings: {
+                    saveUrl: 'https://services.syncfusion.com/js/production/api/FileUploader/Save',
+                    removeUrl: 'https://services.syncfusion.com/js/production/api/FileUploader/Remove'
+                }
+            });
+            chatUI.appendTo(chatUIElem);
+
+            const imageFile = new File(['image content'], 'sample.png', { type: 'image/png' });
+            const videoFile = new File(['video content'], 'sample.mp4', { type: 'video/mp4' });
+            const docFile = new File(['document content'], 'sample.pdf', { type: 'application/pdf' });
+
+            const fileInput: HTMLInputElement = chatUIElem.querySelector('.e-chat-file-upload') as HTMLInputElement;
+            const dt = new DataTransfer();
+            dt.items.add(imageFile);
+            dt.items.add(videoFile);
+            dt.items.add(docFile);
+            fileInput.files = dt.files;
+
+            const changeEvent = new Event('change');
+            fileInput.dispatchEvent(changeEvent);
+
+            setTimeout(() => {
+                const dropArea: HTMLElement = chatUIElem.querySelector('.e-chat-drop-area') as HTMLElement;
+                const attachedFiles: NodeListOf<HTMLElement> = dropArea.querySelectorAll('.e-chat-uploaded-file-item');
+                expect(attachedFiles).not.toBeNull();
+                expect(attachedFiles.length).toBe(3);
+                const sendIcon: HTMLElement = chatUIElem.querySelector('.e-chat-send') as HTMLElement;
+                expect(sendIcon).not.toBeNull();
+                sendIcon.click();
+                setTimeout(() => {
+                    const messages: NodeListOf<HTMLElement> = chatUIElem.querySelectorAll('.e-message-item');
+                    expect(messages.length).toBe(3);
+                    done();
+                }, 500);
+            }, 500);
+        });
+
+        it('should add files in drop area when multiple files are uploaded sequentially', (done: DoneFn) => {
+            const currentUserModel: UserModel = {
+                id: "user1",
+                user: "Albert",
+                statusIconCss: 'e-icons e-user-busy'
+            };
+
+            chatUI = new ChatUI({
+                user: currentUserModel,
+                enableAttachments: true,
+                attachmentSettings: {
+                    saveUrl: 'https://services.syncfusion.com/js/production/api/FileUploader/Save',
+                    removeUrl: 'https://services.syncfusion.com/js/production/api/FileUploader/Remove'
+                }
+            });
+
+            chatUI.appendTo(chatUIElem);
+
+            const imageFile = new File(['image content'], 'sample1.png', { type: 'image/png' });
+            const videoFile = new File(['video content'], 'sample2.mp4', { type: 'video/mp4' });
+
+            const fileInput = chatUIElem.querySelector('.e-chat-file-upload') as HTMLInputElement;
+
+            const dt1 = new DataTransfer();
+            dt1.items.add(imageFile);
+            fileInput.files = dt1.files;
+            fileInput.dispatchEvent(new Event('change'));
+
+            setTimeout(() => {
+                const dropArea: HTMLElement = chatUIElem.querySelector('.e-chat-drop-area') as HTMLElement;
+                let attachedFiles: NodeListOf<HTMLElement> = dropArea.querySelectorAll('.e-chat-uploaded-file-item');
+                expect(attachedFiles).not.toBeNull();
+                expect(attachedFiles.length).toBe(1);
+                const dt2 = new DataTransfer();
+                dt2.items.add(videoFile);
+                fileInput.files = dt2.files;
+                fileInput.dispatchEvent(new Event('change'));
+
+                setTimeout(() => {
+                    attachedFiles = dropArea.querySelectorAll('.e-chat-uploaded-file-item');
+                    expect(attachedFiles).not.toBeNull();
+                    expect(attachedFiles.length).toBe(2);
+                    done();
+                }, 500);
+            }, 500);
+        });
+
+        it('should upload multiple files and cleared from footer when clear icon is clicked', (done: DoneFn) => {
+            const currentUserModel: UserModel = {
+                id: "user1",
+                user: "Albert",
+                statusIconCss: 'e-icons e-user-busy'
+            };
+            chatUI = new ChatUI({
+                user: currentUserModel,
+                enableAttachments: true,
+                attachmentSettings: {
+                    saveUrl: 'https://services.syncfusion.com/js/production/api/FileUploader/Save',
+                    removeUrl: 'https://services.syncfusion.com/js/production/api/FileUploader/Remove'
+                }
+            });
+            chatUI.appendTo(chatUIElem);
+
+            const imageFile = new File(['image content'], 'sample.png', { type: 'image/png' });
+            const videoFile = new File(['video content'], 'sample.mp4', { type: 'video/mp4' });
+            const docFile = new File(['document content'], 'sample.pdf', { type: 'application/pdf' });
+
+            const fileInput: HTMLInputElement = chatUIElem.querySelector('.e-chat-file-upload') as HTMLInputElement;
+            const dt = new DataTransfer();
+            dt.items.add(imageFile);
+            dt.items.add(videoFile);
+            dt.items.add(docFile);
+            fileInput.files = dt.files;
+
+            const changeEvent = new Event('change');
+            fileInput.dispatchEvent(changeEvent);
+
+            setTimeout(() => {
+                const dropArea: HTMLElement = chatUIElem.querySelector('.e-chat-drop-area') as HTMLElement;
+                let attachedFiles: NodeListOf<HTMLElement> = dropArea.querySelectorAll('.e-chat-uploaded-file-item');
+                expect(attachedFiles).not.toBeNull();
+                expect(attachedFiles.length).toBe(3);
+                const sendIcon: HTMLElement = chatUIElem.querySelector('.e-chat-send') as HTMLElement;
+                const uploaderObj = (chatUI as any).uploaderObj;
+                ['sample.png', 'sample.mp4', 'sample.pdf'].forEach(function (name) {
+                    uploaderObj.trigger('success', { operation: 'upload', file: { name: name } });
+                });
+                expect(sendIcon.classList).toContain('enabled');
+                attachedFiles.forEach((fileElement: HTMLElement) => {
+                    const clearIcon: HTMLElement = fileElement.querySelector('.e-chat-close');
+                    expect(clearIcon).not.toBeNull();
+                    clearIcon.click();
+                });
+                attachedFiles = chatUIElem.querySelectorAll('.e-chat-uploaded-file-item');
+                expect(attachedFiles.length).toBe(0);
+                expect(sendIcon.classList).toContain('disabled');
+                done();
+            }, 500);
+        });
+
+        it('should upload multiple files and send text message with attachments', (done: DoneFn) => {
+            const currentUserModel: UserModel = {
+                id: "user1",
+                user: "Albert",
+                statusIconCss: 'e-icons e-user-busy'
+            };
+            chatUI = new ChatUI({
+                user: currentUserModel,
+                enableAttachments: true,
+                attachmentSettings: {
+                    saveUrl: 'https://services.syncfusion.com/js/production/api/FileUploader/Save',
+                    removeUrl: 'https://services.syncfusion.com/js/production/api/FileUploader/Remove'
+                }
+            });
+            chatUI.appendTo(chatUIElem);
+
+            const imageFile = new File(['image content'], 'sample.png', { type: 'image/png' });
+            const videoFile = new File(['video content'], 'sample.mp4', { type: 'video/mp4' });
+            const docFile = new File(['document content'], 'sample.pdf', { type: 'application/pdf' });
+
+            const fileInput: HTMLInputElement = chatUIElem.querySelector('.e-chat-file-upload') as HTMLInputElement;
+            const dt = new DataTransfer();
+            dt.items.add(imageFile);
+            dt.items.add(videoFile);
+            dt.items.add(docFile);
+            fileInput.files = dt.files;
+
+            const changeEvent = new Event('change');
+            fileInput.dispatchEvent(changeEvent);
+
+            setTimeout(() => {
+                const dropArea: HTMLElement = chatUIElem.querySelector('.e-chat-drop-area') as HTMLElement;
+                let attachedFiles: NodeListOf<HTMLElement> = dropArea.querySelectorAll('.e-chat-uploaded-file-item');
+                expect(attachedFiles).not.toBeNull();
+                expect(attachedFiles.length).toBe(3);
+                const textArea: HTMLElement = chatUIElem.querySelector('.e-chat-textarea') as HTMLElement;
+                textArea.innerHTML = 'This is text message with attachment';
+                textArea.dispatchEvent(new Event('input'));
+                const sendIcon: HTMLElement = chatUIElem.querySelector('.e-chat-send') as HTMLElement;
+                expect(sendIcon).not.toBeNull();
+                sendIcon.click();
+                setTimeout(() => {
+                    const messages: NodeListOf<HTMLElement> = chatUIElem.querySelectorAll('.e-message-item');
+                    expect(messages.length).toBe(3);
+                    messages.forEach((msg: HTMLElement, index: number) => {
+                        const messageText: HTMLElement = msg.querySelector('.e-text') as HTMLElement;
+                        if (index === messages.length - 1) {
+                            expect(messageText.textContent).toBe('This is text message with attachment');
+                        }
+                        else {
+                            expect(messageText).toBeNull();
+                        }
+                    });
+                    done();
+                }, 500);
+            }, 500);
+        });
+
+        it('should upload multiple files and send mentionedUsers in text message with attachments', (done: DoneFn) => {
+            const mentionUsers = [
+                { id: "user1", user: "John Doe" }
+            ];
+            const capturedMessages: MessageModel[] = [];
+
+            const chatUI = new ChatUI({
+                mentionUsers: mentionUsers,
+                user: { id: 'currentUser', user: 'Current User' },
+                messageSend: (args: MessageSendEventArgs) => {
+                    capturedMessages.push(args.message);
+                },
+                enableAttachments: true,
+                attachmentSettings: {
+                    saveUrl: 'https://services.syncfusion.com/js/production/api/FileUploader/Save',
+                    removeUrl: 'https://services.syncfusion.com/js/production/api/FileUploader/Remove'
+                }
+            });
+
+            chatUI.appendTo(chatUIElem);
+
+            const imageFile = new File(['image content'], 'sample.png', { type: 'image/png' });
+            const videoFile = new File(['video content'], 'sample.mp4', { type: 'video/mp4' });
+            const docFile = new File(['document content'], 'sample.pdf', { type: 'application/pdf' });
+
+            const fileInput = chatUIElem.querySelector('.e-chat-file-upload') as HTMLInputElement;
+            const dt = new DataTransfer();
+            dt.items.add(imageFile);
+            dt.items.add(videoFile);
+            dt.items.add(docFile);
+            fileInput.files = dt.files;
+
+            fileInput.dispatchEvent(new Event('change'));
+
+            setTimeout(() => {
+                const dropArea: HTMLElement = chatUIElem.querySelector('.e-chat-drop-area') as HTMLElement;
+                let attachedFiles: NodeListOf<HTMLElement> = dropArea.querySelectorAll('.e-chat-uploaded-file-item');
+                expect(attachedFiles).not.toBeNull();
+                expect(attachedFiles.length).toBe(3);
+                const mentionUser = mentionUsers[0];
+                const messageText = `This is a text message with mentioned user `;
+                const textareaElem = chatUIElem.querySelector('.e-chat-textarea') as HTMLDivElement;
+                textareaElem.innerText = messageText;
+                const mentionChip = document.createElement('span');
+                mentionChip.className = 'e-mention-chip';
+                const mentionUserSpan = document.createElement('span');
+                mentionUserSpan.className = 'e-chat-mention-user-chip';
+                mentionUserSpan.setAttribute('data-user-id', mentionUser.id);
+                mentionUserSpan.textContent = mentionUser.user;
+                mentionChip.appendChild(mentionUserSpan);
+                textareaElem.appendChild(mentionChip);
+                textareaElem.dispatchEvent(new Event('input'));
+                const sendButton = chatUIElem.querySelector('.e-chat-send') as HTMLElement;
+                sendButton.click();
+
+                setTimeout(() => {
+                    expect(capturedMessages.length).toBe(3);
+
+                    capturedMessages.forEach((msg, index) => {
+                        if (index === capturedMessages.length - 1 ) {
+                            expect(msg.text).toContain('This is a text message with mentioned user ');
+                            expect(msg.mentionUsers.length).toBe(1);
+                            expect(msg.mentionUsers[0].id).toBe(mentionUsers[0].id);
+                            expect(msg.mentionUsers[0].user).toBe(mentionUsers[0].user);
+                        }
+                        else {
+                            expect(msg.text).toBe('');
+                            expect(msg.mentionUsers.length).toBe(0);
+                        }
+                    });
+                    done();
+                }, 600);
+            }, 500);
+        });
+
+        it('should pin a message with both attachment and text message in it', (done: DoneFn) => {
+            const currentUserModel = {
+                id: "user1",
+                user: "Albert"
+            };
+
+            chatUI = new ChatUI({
+                user: currentUserModel,
+                enableAttachments: true,
+                attachmentSettings: {
+                    saveUrl: 'https://services.syncfusion.com/js/production/api/FileUploader/Save',
+                    removeUrl: 'https://services.syncfusion.com/js/production/api/FileUploader/Remove'
+                }
+            });
+
+            chatUI.appendTo(chatUIElem);
+
+            const file: File = new File(['sample image data'], 'document.pdf', { type: 'application/pdf' });
+            const fileInput: HTMLInputElement = chatUIElem.querySelector('.e-chat-file-upload') as HTMLInputElement;
+
+            const dt = new DataTransfer();
+            dt.items.add(file);
+            fileInput.files = dt.files;
+
+            const changeEvent = new Event('change');
+            fileInput.dispatchEvent(changeEvent);
+
+            setTimeout(() => {
+                const dropArea: HTMLElement = chatUIElem.querySelector('.e-chat-drop-area') as HTMLElement;
+                const attachedFile: HTMLElement = dropArea.querySelector('.e-chat-uploaded-file-item') as HTMLElement;
+                expect(attachedFile).not.toBeNull();
+
+                const textArea: HTMLElement = chatUIElem.querySelector('.e-chat-textarea') as HTMLElement;
+                expect(textArea).not.toBeNull();
+                textArea.innerHTML = 'This is a pinned message with attachment';
+                textArea.dispatchEvent(new Event('input'));
+
+                const sendIcon: HTMLElement = chatUIElem.querySelector('.e-chat-send') as HTMLElement;
+                expect(sendIcon).not.toBeNull();
+                sendIcon.click();
+
+                setTimeout(() => {
+                    const messageWrapper: HTMLElement = chatUIElem.querySelector('.e-message-wrapper') as HTMLElement;
+                    expect(messageWrapper).not.toBeNull();
+
+                    const pinButton: HTMLElement = messageWrapper.querySelector('.e-chat-pin') as HTMLElement;
+                    expect(pinButton).not.toBeNull();
+                    pinButton.click();
+
+                    const pinnedMessageElement: HTMLElement = chatUIElem.querySelector('.e-pinned-message') as HTMLElement;
+                    expect(pinnedMessageElement).not.toBeNull();
+
+                    const pinnedContent: HTMLElement = pinnedMessageElement.querySelector('.e-pinned-message-content') as HTMLElement;
+                    expect(pinnedContent).not.toBeNull();
+                    expect(pinnedContent.textContent).toBe('This is a pinned message with attachment');
+                    expect(pinnedMessageElement.querySelector('.e-pinned-file-name')).toBeNull();
+                    done();
+                }, 500);
+            }, 500);
+        });
+
+        it('should restrict file upload to maximumCount limit and show error on exceeding', (done: DoneFn) => {
+            const currentUserModel = {
+                id: "user1",
+                user: "Albert"
+            };
+
+            chatUI = new ChatUI({
+                user: currentUserModel,
+                enableAttachments: true,
+                attachmentSettings: {
+                    saveUrl: 'https://services.syncfusion.com/js/production/api/FileUploader/Save',
+                    removeUrl: 'https://services.syncfusion.com/js/production/api/FileUploader/Remove',
+                    maximumCount: 2
+                }
+            });
+
+            chatUI.appendTo(chatUIElem);
+
+            const file1 = new File(['data1'], 'file1.png', { type: 'image/png' });
+            const file2 = new File(['data2'], 'file2.png', { type: 'image/png' });
+            const file3 = new File(['data3'], 'file3.png', { type: 'image/png' });
+
+            const fileInput = chatUIElem.querySelector('.e-chat-file-upload') as HTMLInputElement;
+            const dt = new DataTransfer();
+            dt.items.add(file1);
+            dt.items.add(file2);
+            dt.items.add(file3);
+            fileInput.files = dt.files;
+            fileInput.dispatchEvent(new Event('change'));
+
+            setTimeout(() => {
+                const failureAlert = chatUIElem.querySelector('.e-upload-failure-alert');
+                expect(failureAlert).not.toBeNull();
+                expect(failureAlert.classList.contains('e-show')).toBe(true);
+                done();
+            }, 500);
+        });
+
+        it('check for error message when maximumCount is set as one', (done: DoneFn) => {
+            const currentUserModel = {
+                id: "user1",
+                user: "Albert"
+            };
+
+            chatUI = new ChatUI({
+                user: currentUserModel,
+                enableAttachments: true,
+                attachmentSettings: {
+                    saveUrl: 'https://services.syncfusion.com/js/production/api/FileUploader/Save',
+                    removeUrl: 'https://services.syncfusion.com/js/production/api/FileUploader/Remove',
+                    maximumCount: 1
+                }
+            });
+
+            chatUI.appendTo(chatUIElem);
+
+            const file1 = new File(['data1'], 'file1.png', { type: 'image/png' });
+            const file2 = new File(['data2'], 'file2.png', { type: 'image/png' });
+
+            const fileInput = chatUIElem.querySelector('.e-chat-file-upload') as HTMLInputElement;
+            const dt = new DataTransfer();
+            dt.items.add(file1);
+            dt.items.add(file2);
+            fileInput.files = dt.files;
+            fileInput.dispatchEvent(new Event('change'));
+
+            setTimeout(() => {
+                const failureAlert = chatUIElem.querySelector('.e-upload-failure-alert');
+                expect(failureAlert).not.toBeNull();
+                expect(failureAlert.classList.contains('e-show')).toBe(true);
+                const failureMessage = failureAlert.querySelector('.e-failure-message');
+                expect(failureMessage.textContent).toBe('Upload limit reached: Maximum 1 file allowed. Remove extra files to proceed uploading');
+                done();
+            }, 500);
+        });
+
+        it('should show and remove failure alert when file count exceeds maximumCount', () => {
+            jasmine.clock().install();
+            const currentUserModel = {
+                id: "user1",
+                user: "Albert"
+            };
+
+            chatUI = new ChatUI({
+                user: currentUserModel,
+                enableAttachments: true,
+                attachmentSettings: {
+                    saveUrl: 'https://services.syncfusion.com/js/production/api/FileUploader/Save',
+                    removeUrl: 'https://services.syncfusion.com/js/production/api/FileUploader/Remove',
+                    maximumCount: 2
+                }
+            });
+
+            chatUI.appendTo(chatUIElem);
+
+            const file1 = new File(['data1'], 'file1.png', { type: 'image/png' });
+            const file2 = new File(['data2'], 'file2.png', { type: 'image/png' });
+            const file3 = new File(['data3'], 'file3.png', { type: 'image/png' });
+
+            const fileInput = chatUIElem.querySelector('.e-chat-file-upload') as HTMLInputElement;
+            const dt = new DataTransfer();
+            dt.items.add(file1);
+            dt.items.add(file2);
+            dt.items.add(file3);
+            fileInput.files = dt.files;
+
+            fileInput.dispatchEvent(new Event('change'));
+            jasmine.clock().tick(500);
+
+            const failureAlert = chatUIElem.querySelector('.e-upload-failure-alert');
+            expect(failureAlert).not.toBeNull();
+            expect(failureAlert.classList.contains('e-show')).toBe(true);
+            jasmine.clock().tick(3000);
+
+            expect(failureAlert.classList.contains('e-show')).toBe(false);
+
+            jasmine.clock().uninstall();
+        });
+
+        it('should restrict file upload to maximumCount limit and allow upload after increasing limit', (done: DoneFn) => {
+            const currentUserModel = {
+                id: "user1",
+                user: "Albert"
+            };
+
+            chatUI = new ChatUI({
+                user: currentUserModel,
+                enableAttachments: true,
+                attachmentSettings: {
+                    saveUrl: 'https://services.syncfusion.com/js/production/api/FileUploader/Save',
+                    removeUrl: 'https://services.syncfusion.com/js/production/api/FileUploader/Remove',
+                    maximumCount: 2
+                }
+            });
+
+            chatUI.appendTo(chatUIElem);
+
+            const file1 = new File(['data1'], 'file1.png', { type: 'image/png' });
+            const file2 = new File(['data2'], 'file2.png', { type: 'image/png' });
+            const file3 = new File(['data3'], 'file3.png', { type: 'image/png' });
+
+            const fileInput = chatUIElem.querySelector('.e-chat-file-upload') as HTMLInputElement;
+            const dt = new DataTransfer();
+            dt.items.add(file1);
+            dt.items.add(file2);
+            dt.items.add(file3);
+            fileInput.files = dt.files;
+            fileInput.dispatchEvent(new Event('change'));
+
+            setTimeout(() => {
+                const failureAlert = chatUIElem.querySelector('.e-upload-failure-alert');
+                expect(failureAlert).not.toBeNull();
+                expect(failureAlert.classList.contains('e-show')).toBe(true);
+                const closeIcon: HTMLElement = failureAlert.querySelector('.e-chat-close');
+                expect(closeIcon).not.toBeNull();
+                closeIcon.click();
+
+                chatUI.attachmentSettings.maximumCount = 3;
+                chatUI.dataBind();
+
+                const newDt = new DataTransfer();
+                newDt.items.add(file1);
+                newDt.items.add(file2);
+                newDt.items.add(file3);
+                fileInput.files = newDt.files;
+                fileInput.dispatchEvent(new Event('change'));
+
+                setTimeout(() => {
+                    const updatedFailureAlert = chatUIElem.querySelector('.e-upload-failure-alert');
+                    expect(updatedFailureAlert).toBeNull();
+
+                    const sendIcon: HTMLElement = chatUIElem.querySelector('.e-chat-send') as HTMLElement;
+                    expect(sendIcon).not.toBeNull();
+                    sendIcon.click();
+                    const messageElements = chatUIElem.querySelectorAll('.e-message-item');
+                    expect(messageElements.length).toBe(3);
+                    done();
+                }, 500);
+            }, 500);
+        });
+
+        it('should render preview template with selected file image', (done: DoneFn) => {
+            const previewTemplateFn = (context: any): string => {
+                return `
+                    <div class="e-preview-image-temp">
+                        <img src="${context.selectedFile.fileSource}" alt="${context.selectedFile.name}" style="max-width: 100%; height: auto;" />
+                    </div>
+                `;
+            };
+            const currentUserModel = {
+                id: "user1",
+                user: "John Doe"
+            };
+            chatUI = new ChatUI({
+                user: currentUserModel,
+                enableAttachments: true,
+                attachmentSettings: {
+                    saveUrl: 'https://services.syncfusion.com/js/production/api/FileUploader/Save',
+                    removeUrl: 'https://services.syncfusion.com/js/production/api/FileUploader/Remove',
+                    previewTemplate: previewTemplateFn
+                }
+            });
+            chatUI.appendTo(chatUIElem);
+            const imageFile = new File(['image content'], 'sample.png', { type: 'image/png' });
+            const fileInput = chatUIElem.querySelector('.e-chat-file-upload') as HTMLInputElement;
+            const dt = new DataTransfer();
+            dt.items.add(imageFile);
+            fileInput.files = dt.files;
+            fileInput.dispatchEvent(new Event('change'));
+            setTimeout(() => {
+                const dropArea: HTMLElement = chatUIElem.querySelector('.e-chat-drop-area') as HTMLElement;
+                const attachedFile: HTMLElement = dropArea.querySelector('.e-chat-uploaded-file-item') as HTMLElement;
+                expect(attachedFile).not.toBeNull();
+                attachedFile.click();
+                const previewTemplateElem = chatUIElem.querySelector('.e-preview-template') as HTMLElement;
+                expect(previewTemplateElem).not.toBeNull();
+                const imageElem = previewTemplateElem.querySelector('img') as HTMLImageElement;
+                expect(imageElem).not.toBeNull();
+                expect(imageElem.alt).toBe('sample.png');
+                expect(imageElem.src).toContain('blob:');
+                done();
+            }, 500);
+        });
+
+        it('should dynamically change the preview template', (done: DoneFn) => {
+            const previewTemplateFn = (context: any): string => {
+                return `
+                    <div class="e-preview-image-temp">
+                        <img src="${context.selectedFile.fileSource}" alt="${context.selectedFile.name}" style="max-width: 100%; height: auto;" />
+                    </div>
+                `;
+            };
+            const currentUserModel = {
+                id: "user1",
+                user: "John Doe"
+            };
+            chatUI = new ChatUI({
+                user: currentUserModel,
+                enableAttachments: true,
+                attachmentSettings: {
+                    saveUrl: 'https://services.syncfusion.com/js/production/api/FileUploader/Save',
+                    removeUrl: 'https://services.syncfusion.com/js/production/api/FileUploader/Remove'
+                }
+            });
+            chatUI.appendTo(chatUIElem);
+            const imageFile = new File(['image content'], 'sample.png', { type: 'image/png' });
+            const fileInput = chatUIElem.querySelector('.e-chat-file-upload') as HTMLInputElement;
+            const dt = new DataTransfer();
+            dt.items.add(imageFile);
+            fileInput.files = dt.files;
+            fileInput.dispatchEvent(new Event('change'));
+            setTimeout(() => {
+                const dropArea: HTMLElement = chatUIElem.querySelector('.e-chat-drop-area') as HTMLElement;
+                const attachedFile: HTMLElement = dropArea.querySelector('.e-chat-uploaded-file-item') as HTMLElement;
+                expect(attachedFile).not.toBeNull();
+                attachedFile.click();
+                let previewTemplateElem = chatUIElem.querySelector('.e-preview-template') as HTMLElement;
+                expect(previewTemplateElem).toBeNull();
+                chatUI.attachmentSettings.previewTemplate = previewTemplateFn;
+                chatUI.dataBind();
+                attachedFile.click();
+                previewTemplateElem = chatUIElem.querySelector('.e-preview-template');
+                expect(previewTemplateElem).not.toBeNull();
+                const imageElem = previewTemplateElem.querySelector('img') as HTMLImageElement;
+                expect(imageElem).not.toBeNull();
+                expect(imageElem.alt).toBe('sample.png');
+                expect(imageElem.src).toContain('blob:');
+                done();
+            }, 500);
+        });
+
+        it('should render selected file with attachment template', (done: DoneFn) => {
+            const attachmentTemplateFn = (context: any): string => {
+                return `
+                    <div class="e-attached-file-temp">
+                        <div class="attached-file-name">${context.selectedFile.name}</div>
+                        <div class="attached-file-size">${context.selectedFile.type}</div>
+                    </div>
+                `;
+            };
+            const currentUserModel = {
+                id: "user1",
+                user: "John Doe"
+            };
+            chatUI = new ChatUI({
+                user: currentUserModel,
+                enableAttachments: true,
+                attachmentSettings: {
+                    saveUrl: 'https://services.syncfusion.com/js/production/api/FileUploader/Save',
+                    removeUrl: 'https://services.syncfusion.com/js/production/api/FileUploader/Remove',
+                    attachmentTemplate: attachmentTemplateFn
+                }
+            });
+            chatUI.appendTo(chatUIElem);
+            const imageFile = new File(['image content'], 'sample.png', { type: 'image/png' });
+            const fileInput = chatUIElem.querySelector('.e-chat-file-upload') as HTMLInputElement;
+            const dt = new DataTransfer();
+            dt.items.add(imageFile);
+            fileInput.files = dt.files;
+            fileInput.dispatchEvent(new Event('change'));
+            setTimeout(() => {
+                const dropArea: HTMLElement = chatUIElem.querySelector('.e-chat-drop-area') as HTMLElement;
+                const attachedFile: HTMLElement = dropArea.querySelector('.e-chat-uploaded-file-item') as HTMLElement;
+                expect(attachedFile).not.toBeNull();
+                const previewTemplateElem = attachedFile.querySelector('.e-attachment-template') as HTMLElement;
+                expect(previewTemplateElem).not.toBeNull();
+                const fileNameElement = previewTemplateElem.querySelector('.attached-file-name') as HTMLElement;
+                expect(fileNameElement).not.toBeNull();
+                expect(fileNameElement.textContent).toBe('sample.png');
+                const fileTypeElement = previewTemplateElem.querySelector('.attached-file-name') as HTMLElement;
+                expect(fileTypeElement).not.toBeNull();
+                expect(fileTypeElement.textContent).toContain('png');
+                done();
+            }, 500);
+        });
+
+        it('should destroy all attachment-related elements after showing preview', (done: DoneFn) => {
+            const currentUserModel: UserModel = {
+                id: "user1",
+                user: "Albert",
+                statusIconCss: 'e-icons e-user-busy'
+            };
+            chatUI = new ChatUI({
+                user: currentUserModel,
+                enableAttachments: true,
+                attachmentSettings: {
+                    saveUrl: 'https://services.syncfusion.com/js/production/api/FileUploader/Save',
+                    removeUrl: 'https://services.syncfusion.com/js/production/api/FileUploader/Remove',
+                }
+            });
+
+            chatUI.appendTo(chatUIElem);
+
+            const imageFile = new File(['image content'], 'sample.png', { type: 'image/png' });
+            const videoFile = new File(['video content'], 'sample.mp4', { type: 'video/mp4' });
+            const docFile = new File(['document content'], 'sample.pdf', { type: 'application/pdf' });
+
+            const fileInput: HTMLInputElement = chatUIElem.querySelector('.e-chat-file-upload') as HTMLInputElement;
+            const dt = new DataTransfer();
+            dt.items.add(imageFile);
+            dt.items.add(videoFile);
+            dt.items.add(docFile);
+            fileInput.files = dt.files;
+
+            fileInput.dispatchEvent(new Event('change'));
+
+            setTimeout(() => {
+                const dropArea: HTMLElement = chatUIElem.querySelector('.e-chat-drop-area') as HTMLElement;
+                const attachedFile: HTMLElement = dropArea.querySelector('.e-chat-uploaded-file-item') as HTMLElement;
+                expect(attachedFile).not.toBeNull();
+                (chatUI as any).destroyAttachments();
+                expect(chatUIElem.querySelector('.e-chat-attachment-icon')).toBeNull();
+                expect(chatUIElem.querySelector('.e-chat-drop-area')).toBeNull();
+                expect(chatUIElem.querySelector('.e-preview-overlay')).toBeNull();
+
+                expect((chatUI as any).uploaderObj).toBeNull();
+                expect((chatUI as any).attachmentIcon).toBeNull();
+                expect((chatUI as any).dropArea).toBeNull();
+                expect((chatUI as any).uploadedFiles.length).toBe(0);
+
+                done();
+            }, 500);
+        });
+
+        it('should render and dynamically update the locale for attachment icon', () => {
+            L10n.load({
+                'de-DE': {
+                    "chat-ui": {
+                        "attachments": 'Datei anhängen'
+                    }
+                },
+                'fr-BE': {
+                    "chat-ui": {
+                        "attachments": 'Joindre un fichier'
+                    }
+                }
+            });
+            chatUI = new ChatUI({
+                enableAttachments: true,
+                locale: 'de-DE',
+                user: { id: 'user1', user: 'Albert' }
+            });
+            chatUI.appendTo(chatUIElem);
+            const attachmentIcon: HTMLElement = chatUIElem.querySelector('.e-chat-attachment-icon') as HTMLElement;
+            expect(attachmentIcon).not.toBeNull();
+            expect(attachmentIcon.getAttribute('title')).toBe('Datei anhängen');
+            chatUI.locale = 'fr-BE';
+            chatUI.dataBind();
+            const updatedAttachmentIcon: HTMLElement = chatUIElem.querySelector('.e-chat-attachment-icon') as HTMLElement;
+            expect(updatedAttachmentIcon.getAttribute('title')).toBe('Joindre un fichier');
+        });
+
+        it('should render and dynamically update the locale for close icon in reply', () => {
+            L10n.load({
+                'de-DE': {
+                    "chat-ui": {
+                        "close": 'Schließen'
+                    }
+                },
+                'fr-BE': {
+                    "chat-ui": {
+                        "close": 'Fermer'
+                    }
+                }
+            });
+
+            const initialMessage: MessageModel = {
+                id: 'msg1',
+                text: 'Reply to this message!',
+                author: { id: 'user1', user: 'John Doe' },
+                timeStampFormat: 'dd/MM/yyyy'
+            };
+
+            chatUI = new ChatUI({
+                user: { id: 'user2', user: 'Jane Doe' },
+                messages: [initialMessage],
+                locale: 'de-DE'
+            });
+
+            chatUI.appendTo(chatUIElem);
+
+            const replyButton: HTMLElement = chatUIElem.querySelector('.e-icons.e-chat-reply');
+            expect(replyButton).not.toBeNull();
+
+            replyButton.click();
+
+            const replyWrapper: HTMLElement = chatUIElem.querySelector('.e-reply-wrapper');
+            expect(replyWrapper).not.toBeNull();
+
+            const closeIcon: HTMLElement = replyWrapper.querySelector('.e-chat-close');
+            expect(closeIcon).not.toBeNull();
+            expect(closeIcon.getAttribute('title')).toBe('Schließen');
+
+            chatUI.locale = 'fr-BE';
+            chatUI.dataBind();
+
+            const updatedCloseIcon: HTMLElement = chatUIElem.querySelector('.e-reply-wrapper .e-chat-close');
+            expect(updatedCloseIcon).not.toBeNull();
+            expect(updatedCloseIcon.getAttribute('title')).toBe('Fermer');
+        });
+
+        it('should render and dynamically update the locale for download and close icon in media preview', (done: DoneFn) => {
+            L10n.load({
+                'de-DE': {
+                    "chat-ui": {
+                        "download": 'Herunterladen',
+                        "close": "Schließen"
+                    }
+                },
+                'fr-BE': {
+                    "chat-ui": {
+                        "download": 'Télécharger',
+                        "close": 'Fermer'
+                    }
+                }
+            });
+
+            const currentUserModel = { id: "user1", user: "Albert" };
+
+            chatUI = new ChatUI({
+                user: currentUserModel,
+                enableAttachments: true,
+                locale: 'de-DE',
+                attachmentSettings: {
+                    saveUrl: 'https://services.syncfusion.com/js/production/api/FileUploader/Save',
+                    removeUrl: 'https://services.syncfusion.com/js/production/api/FileUploader/Remove'
+                }
+            });
+
+            chatUI.appendTo(chatUIElem);
+
+            const imageFile = new File(['image data'], 'sample.png', { type: 'image/png' });
+            const dt = new DataTransfer();
+            dt.items.add(imageFile);
+
+            const fileInput = chatUIElem.querySelector('.e-chat-file-upload') as HTMLInputElement;
+            fileInput.files = dt.files;
+            fileInput.dispatchEvent(new Event('change'));
+
+            setTimeout(() => {
+                const dropArea: HTMLElement = chatUIElem.querySelector('.e-chat-drop-area') as HTMLElement;
+                const attachedFile: HTMLElement = dropArea.querySelector('.e-chat-uploaded-file-item') as HTMLElement;
+                expect(attachedFile).not.toBeNull();
+
+                const sendIcon = chatUIElem.querySelector('.e-chat-send') as HTMLElement;
+                expect(sendIcon).not.toBeNull();
+                sendIcon.click();
+
+                setTimeout(() => {
+                    const imageMsg = chatUIElem.querySelector('.e-message-item img') as HTMLImageElement;
+                    expect(imageMsg).not.toBeNull();
+                    imageMsg.click();
+
+                    const overlay = chatUIElem.querySelector('.e-preview-overlay');
+                    expect(overlay).not.toBeNull();
+
+                    const previewImg = overlay.querySelector('.e-image-preview') as HTMLImageElement;
+                    expect(previewImg.alt).toBe('sample.png');
+
+                    const downloadIcon = overlay.querySelector('.e-chat-download') as HTMLElement;
+                    expect(downloadIcon).not.toBeNull();
+                    expect(downloadIcon.getAttribute('title')).toBe('Herunterladen');
+
+                    const closeIcon = overlay.querySelector('.e-chat-back-icon') as HTMLElement;
+                    expect(closeIcon).not.toBeNull();
+                    expect(closeIcon.getAttribute('title')).toBe('Schließen');
+                    chatUI.locale = 'fr-BE';
+                    chatUI.dataBind();
+
+                    const updatedDownloadIcon = chatUIElem.querySelector('.e-preview-overlay .e-chat-download') as HTMLElement;
+                    expect(updatedDownloadIcon).not.toBeNull();
+                    expect(updatedDownloadIcon.getAttribute('title')).toBe('Télécharger');
+
+                    const updatedCloseIcon = overlay.querySelector('.e-chat-back-icon') as HTMLElement;
+                    expect(updatedCloseIcon).not.toBeNull();
+                    expect(updatedCloseIcon).not.toBeNull();
+                    expect(updatedCloseIcon.getAttribute('title')).toBe('Fermer');
+                    updatedCloseIcon.click();
+
+                    const overlayAfterClose = chatUIElem.querySelector('.e-preview-overlay');
+                    expect(overlayAfterClose).toBeNull();
+
+                    done();
+                }, 500);
+            }, 500);
+        });
+
+         it('should update filePreview locale for file preview before sent', (done: DoneFn) => {
+            L10n.load({
+                'en-US': {
+                    "chat-ui": {
+                        "filePreview": 'No Preview Available'
+                    }
+                },
+                'fr-BE': {
+                    "chat-ui": {
+                        "filePreview": 'Aucune prévisualisation disponible'
+                    }
+                }
+            });
+            chatUI = new ChatUI({
+                user: { id: 'user1', user: 'Albert' },
+                enableAttachments: true,
+                attachmentSettings: {
+                    saveUrl: 'https://services.syncfusion.com/js/production/api/FileUploader/Save',
+                    removeUrl: 'https://services.syncfusion.com/js/production/api/FileUploader/Remove',
+                    maximumCount: 3
+                },
+                locale: 'en-US'
+            });
+
+            chatUI.appendTo(chatUIElem);
+
+            const file1 = new File(['doc content'], 'sample1.pdf', { type: 'application/pdf' });
+            const file2 = new File(['doc content'], 'sample2.pdf', { type: 'application/pdf' });
+            const file3 = new File(['doc content'], 'sample3.pdf', { type: 'application/pdf' });
+
+            const fileInput = chatUIElem.querySelector('.e-chat-file-upload') as HTMLInputElement;
+            const dt = new DataTransfer();
+            dt.items.add(file1);
+            dt.items.add(file2);
+            dt.items.add(file3);
+            fileInput.files = dt.files;
+            fileInput.dispatchEvent(new Event('change'));
+            setTimeout(() => {
+                const dropArea: HTMLElement = chatUIElem.querySelector('.e-chat-drop-area') as HTMLElement;
+                const attachedFile: HTMLElement = dropArea.querySelector('.e-chat-uploaded-file-item') as HTMLElement;
+                expect(attachedFile).not.toBeNull();
+                attachedFile.click();
+                const previewText = chatUIElem.querySelector('.e-preview-file-text');
+                expect(previewText.textContent).toBe('No Preview Available');
+                chatUI.locale = 'fr-BE';
+                chatUI.dataBind();
+                const updatedPreviewText: HTMLElement = chatUIElem.querySelector('.e-preview-file-text');
+                expect(updatedPreviewText.textContent).toBe('Aucune prévisualisation disponible');
+                done();
+            }, 200);
+        });
+
+        it('should dynamically change the locale and verify filePreview and remove icon titles in preview after sent', (done: DoneFn) => {
+            L10n.load({
+                'de-DE': {
+                    "chat-ui": {
+                        "filePreview": 'Keine Vorschau verfügbar'
+                    }
+                },
+                'fr-BE': {
+                    "chat-ui": {
+                        "filePreview": 'Aucune prévisualisation disponible'
+                    }
+                }
+            });
+
+            chatUI = new ChatUI({
+                enableAttachments: true,
+                attachmentSettings: {
+                    saveUrl: 'https://services.syncfusion.com/js/production/api/FileUploader/Save',
+                    removeUrl: 'https://services.syncfusion.com/js/production/api/FileUploader/Remove'
+                },
+                locale: 'de-DE',
+                user: { id: 'user1', user: 'Albert' }
+            });
+
+            chatUI.appendTo(chatUIElem);
+
+            const file1: File = new File(['Nice One'], 'sample1.txt', { type: 'text/plain' });
+            const fileInput: HTMLInputElement = chatUIElem.querySelector('.e-chat-file-upload') as HTMLInputElement;
+            const dt1 = new DataTransfer();
+            dt1.items.add(file1);
+            fileInput.files = dt1.files;
+            fileInput.dispatchEvent(new Event('change'));
+
+            setTimeout(() => {
+                const dropArea: HTMLElement = chatUIElem.querySelector('.e-chat-drop-area') as HTMLElement;
+                const attachedFile: HTMLElement = dropArea.querySelector('.e-chat-uploaded-file-item') as HTMLElement;
+                expect(attachedFile).not.toBeNull();
+                const sendIcon = chatUIElem.querySelector('.e-chat-send') as HTMLElement;
+                expect(sendIcon).not.toBeNull();
+                sendIcon.click();
+                setTimeout(() => {
+                    const fileMessage = chatUIElem.querySelector('.e-message-item .e-file-wrapper') as HTMLImageElement;
+                    expect(fileMessage).not.toBeNull();
+                    fileMessage.click();
+                    const preview: HTMLElement = chatUIElem.querySelector('.e-preview-overlay') as HTMLElement;
+                    const previewTextElem = preview.querySelector('.e-preview-file-text');
+                    expect(previewTextElem).not.toBeNull();
+                    expect(previewTextElem.textContent).toBe('Keine Vorschau verfügbar');
+                    chatUI.locale = 'fr-BE';
+                    chatUI.dataBind();
+                    const updatedPreviewTextElem = preview.querySelector('.e-preview-file-text');
+                    expect(updatedPreviewTextElem).not.toBeNull();
+                    expect(updatedPreviewTextElem.textContent).toBe('Aucune prévisualisation disponible');
+                    done();
+                }, 300);
+            }, 300);
+        });
+
+        it('should dynamically change the locale for fileSizeFailure alert when an oversized file is uploaded', () => {
+            const currentUserModel = {
+                id: "user1",
+                user: "Albert"
+            };
+            L10n.load({
+                'de-DE': {
+                    "chat-ui": {
+                        "fileSizeFailure": 'Upload fehlgeschlagen: Die Datei ist zu groß'
+                    }
+                }
+            });
+            chatUI = new ChatUI({
+                user: currentUserModel,
+                enableAttachments: true,
+                attachmentSettings: {
+                    maxFileSize: 0, 
+                    saveUrl: 'https://services.syncfusion.com/js/production/api/FileUploader/Save',
+                    removeUrl: 'https://services.syncfusion.com/js/production/api/FileUploader/Remove'
+                }
+            });
+
+            chatUI.appendTo(chatUIElem);
+            const file1 = new File(["File One"], "file1.txt", { type: "text/plain" });
+            const file2 = new File(["File Two"], "file2.txt", { type: "text/plain" });
+
+            const fileInput = chatUIElem.querySelector('.e-chat-file-upload') as HTMLInputElement;
+            const dt1 = new DataTransfer();
+            dt1.items.add(file1);
+            fileInput.files = dt1.files;
+            fileInput.dispatchEvent(new Event('change'));
+             let failureElement = chatUIElem.querySelector('.e-upload-failure-alert');
+            expect(failureElement).not.toBeNull();
+            expect(failureElement.querySelector('.e-failure-message').textContent).toBe('Upload failed: 1 file exceeded the maximum size');
+            const closeIcon: HTMLElement = failureElement.querySelector('.e-chat-close');
+            expect(closeIcon).not.toBeNull();
+            closeIcon.click();
+
+            chatUI.locale = 'de-DE';
+            chatUI.dataBind();
+            const dt2 = new DataTransfer();
+            dt2.items.add(file2);
+            fileInput.files = dt2.files;
+            fileInput.dispatchEvent(new Event('change'));
+
+            failureElement = chatUIElem.querySelector('.e-upload-failure-alert');
+            expect(failureElement).not.toBeNull();
+            expect(failureElement.querySelector('.e-failure-message').textContent).toBe('Upload fehlgeschlagen: Die Datei ist zu groß');
+        });
+
+        it('should dynamically change the locale for fileUploadFailure alert', () => {
+            L10n.load({
+                'fr-BE': {
+                    "chat-ui": {
+                        "fileCountFailure": 'Limite de téléchargement atteinte : Maximum {0} fichiers autorisés. Supprimez les fichiers supplémentaires pour continuer le téléchargement.'
+                    }
+                }
+            });
+
+            chatUI = new ChatUI({
+                enableAttachments: true,
+                attachmentSettings: {
+                    saveUrl: 'https://services.syncfusion.com/js/production/api/FileUploader/Save',
+                    removeUrl: 'https://services.syncfusion.com/js/production/api/FileUploader/Remove',
+                    maximumCount: 0
+                },
+                user: { id: 'user1', user: 'Albert' }
+            });
+
+            chatUI.appendTo(chatUIElem);
+
+            const file1 = new File(["File One"], "file1.txt", { type: "text/plain" });
+            const file2 = new File(["File Two"], "file2.txt", { type: "text/plain" });
+
+            const fileInput = chatUIElem.querySelector('.e-chat-file-upload') as HTMLInputElement;
+            const dt1 = new DataTransfer();
+            dt1.items.add(file1);
+            fileInput.files = dt1.files;
+            fileInput.dispatchEvent(new Event('change'));
+            let failureElement = chatUIElem.querySelector('.e-upload-failure-alert');
+            expect(failureElement).not.toBeNull();
+            expect(failureElement.querySelector('.e-failure-message').textContent).toBe(
+                'Upload limit reached: Maximum 0 files allowed. Remove extra files to proceed uploading'
+            );
+            const closeIcon: HTMLElement = failureElement.querySelector('.e-chat-close');
+            expect(closeIcon).not.toBeNull();
+            closeIcon.click();
+
+            chatUI.locale = 'fr-BE';
+            chatUI.dataBind();
+            const dt2 = new DataTransfer();
+            dt2.items.add(file2);
+            fileInput.files = dt2.files;
+            fileInput.dispatchEvent(new Event('change'));
+
+            failureElement = chatUIElem.querySelector('.e-upload-failure-alert');
+            expect(failureElement).not.toBeNull();
+            expect(failureElement.querySelector('.e-failure-message').textContent).toBe(
+                'Limite de téléchargement atteinte : Maximum 0 fichiers autorisés. Supprimez les fichiers supplémentaires pour continuer le téléchargement.'
+            );
+        });
+
+        it('should dynamically change the failure messsage locale when showing fileUploadFailure alert', () => {
+            L10n.load({
+                'de-DE': {
+                    "chat-ui": {
+                        "fileCountFailure": 'Upload-Limit erreicht: Maximal {0} Dateien erlaubt. Bitte entfernen Sie zusätzliche Dateien, um den Upload fortzusetzen.'
+                    }
+                }
+            });
+
+            chatUI = new ChatUI({
+                enableAttachments: true,
+                attachmentSettings: {
+                    saveUrl: 'https://services.syncfusion.com/js/production/api/FileUploader/Save',
+                    removeUrl: 'https://services.syncfusion.com/js/production/api/FileUploader/Remove',
+                    maximumCount: 1
+                },
+                locale: 'de-DE',
+                user: { id: 'user1', user: 'Albert' }
+            });
+            chatUI.appendTo(chatUIElem);
+            const file1 = new File(['data1'], 'file1.png', { type: 'image/png' });
+            const file2 = new File(['data2'], 'file2.png', { type: 'image/png' });
+            const fileInput = chatUIElem.querySelector('.e-chat-file-upload') as HTMLInputElement;
+            const dt = new DataTransfer();
+            dt.items.add(file1);
+            dt.items.add(file2);
+            fileInput.files = dt.files;
+            fileInput.dispatchEvent(new Event('change'));
+            let failureElement = chatUIElem.querySelector('.e-upload-failure-alert');
+            expect(failureElement).not.toBeNull();
+            expect(failureElement.querySelector('.e-failure-message').textContent).toBe(
+                'Upload-Limit erreicht: Maximal 1 Dateien erlaubt. Bitte entfernen Sie zusätzliche Dateien, um den Upload fortzusetzen.'
+            );
+            chatUI.locale = 'en-US';
+            chatUI.dataBind();
+            expect(failureElement).not.toBeNull();
+            expect(failureElement.querySelector('.e-failure-message').textContent).toBe(
+                'Upload limit reached: Maximum 1 file allowed. Remove extra files to proceed uploading'
+            );
+        });
+
+        it('should open file browser when Enter key is pressed on the attachment icon', (done: DoneFn) => {
+            chatUI = new ChatUI({
+                enableAttachments: true,
+                attachmentSettings: {
+                    saveUrl: 'https://services.syncfusion.com/js/production/api/FileUploader/Save',
+                    removeUrl: 'https://services.syncfusion.com/js/production/api/FileUploader/Remove',
+                }
+            });
+            const keydownSpy = spyOn<any>(chatUI, 'triggerUploaderAction').and.callThrough();
+            chatUI.appendTo(chatUIElem);
+            const attachmentIcon: HTMLElement = chatUIElem.querySelector('.e-chat-attachment-icon') as HTMLElement;
+            attachmentIcon.focus();
+            const fileInput = chatUIElem.querySelector('.e-chat-file-upload');
+            expect(fileInput).not.toBeNull();
+            const fileInputSpy = spyOn(fileInput as HTMLInputElement, 'click');
+            const enterKeyEvent = new KeyboardEvent('keydown', { key: 'Enter', code: 'Enter', bubbles: true });
+            attachmentIcon.dispatchEvent(enterKeyEvent);
+            setTimeout(() => {
+                expect(keydownSpy).toHaveBeenCalled();
+                expect(fileInputSpy).toHaveBeenCalled();
+                done();
+            }, 200, done);
+        });
+    });
+
+    describe('Footer interactions - keyboard and focus states', () => {
+        let chatUI: ChatUI;
+        const host: HTMLElement = createElement('div', { id: 'chatUIComp_footer' });
+
+        beforeEach(() => {
+            document.body.appendChild(host);
+        });
+
+        afterEach(() => {
+            if (chatUI && !chatUI.isDestroyed) {
+                chatUI.destroy();
+            }
+            if (host && host.parentElement) {
+                document.body.removeChild(host);
+            }
+        });
+
+        it('should add e-footer-focused on focus and remove it on blur', (done: DoneFn) => {
+            chatUI = new ChatUI({});
+            chatUI.appendTo(host);
+
+            const footerElem: HTMLElement = host.querySelector('.e-footer');
+            const textareaEle: HTMLDivElement = host.querySelector('.e-footer .e-chat-textarea');
+
+            // Ensure initial state is not focused
+            expect(footerElem.classList.contains('e-footer-focused')).toBe(false);
+
+            // Focus event should add focused class
+            textareaEle.focus();
+            const focusEvent: FocusEvent = new FocusEvent('focus', { bubbles: true });
+            textareaEle.dispatchEvent(focusEvent);
+            expect(footerElem.classList.contains('e-footer-focused')).toBe(true);
+
+            // Blur without relatedTarget should remove focused class
+            const blurEvent: FocusEvent = new FocusEvent('blur', { bubbles: true, relatedTarget: null });
+            textareaEle.dispatchEvent(blurEvent);
+
+            // Let the blur handler run
+            setTimeout(() => {
+                expect(footerElem.classList.contains('e-footer-focused')).toBe(false);
+                done();
+            }, 0);
+        });
+
+        it('should have e-footer-focus-wave-effect when no footerTemplate is provided', () => {
+            chatUI = new ChatUI({});
+            chatUI.appendTo(host);
+
+            const footerElem: HTMLElement = host.querySelector('.e-footer');
+            expect(footerElem).not.toBeNull();
+
+            // When footerTemplate is not provided, renderAssistViewFooter adds this class
+            expect(footerElem.classList.contains('e-footer-focus-wave-effect')).toBe(true);
         });
     });
 });

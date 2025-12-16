@@ -1,3 +1,5 @@
+@use 'ej2-base/styles/common/mixin' as *;
+@use './theme-variables' as *;
 @mixin schedule-select-cell-focus-styles {
   @if $skin-name == 'fluent2' {
     &:focus {
@@ -38,7 +40,7 @@
     .e-date-header-wrap {
       border-color: $schedule-header-border-color;
       border-style: $border-type;
-      border-width: 0;
+      border-width: $schedule-border-0;
       position: relative;
     }
 
@@ -55,7 +57,7 @@
     .e-vertical-view {
       .e-date-header-wrap table tbody td:first-child,
       .e-content-wrap table td:first-child {
-        border-left-width: 0;
+        border-left-width: $schedule-border-0;
       }
 
       .e-date-header-wrap {
@@ -73,16 +75,16 @@
         background: $schedule-header-bg-color;
         border-color: $schedule-header-border-color;
         border-style: $border-type;
-        border-width: 0 1px 1px 0;
+        border-width: $schedule-border-0 $schedule-border-1 $schedule-border-1 $schedule-border-0;
         color: $schedule-header-font-color;
 
         &.e-header-cells {
-          border-bottom-width: 0;
+          border-bottom-width: $schedule-border-0;
 
           &.e-week-number {
             color: $schedule-secondary-content-font-color;
             font-size: $schedule-date-header-wrap-nrml-font-size;
-            padding-top: 10px;
+            padding-top: $schedule-spacing-10;
             text-align: center;
             vertical-align: top;
           }
@@ -102,7 +104,7 @@
         text-align: left;
 
         &.e-header-cells {
-          border-bottom-width: 0;
+          border-bottom-width: $schedule-border-0;
         }
       }
 
@@ -110,7 +112,7 @@
         background: $schedule-time-cells-bg-color;
         border-color: $schedule-content-border-color;
         border-style: $border-type;
-        border-width: 0 1px 1px 0;
+        border-width: $schedule-border-0 $schedule-border-1 $schedule-border-1 $schedule-border-0;
         color: $schedule-time-cells-font-color;
       }
 
@@ -136,7 +138,7 @@
         border-color: $schedule-content-border-color;
         border-style: $border-type;
         border-width: $schedule-vertical-work-cells-border;
-        padding: 0;
+        padding: $schedule-spacing-0;
 
         &:hover {
           background: $schedule-hover-bg-color;
@@ -189,17 +191,17 @@
       }
 
       .e-current-timeline {
-        border-top: 1px $border-type $schedule-active-border-color;
+        border-top: $schedule-border-1 $border-type $schedule-active-border-color;
       }
 
       .e-previous-timeline {
-        border-top: 1px $schedule-alternate-cell-border $schedule-active-border-color;
+        border-top: $schedule-border-1 $schedule-alternate-cell-border $schedule-active-border-color;
       }
 
       &.e-by-date {
         .e-date-header-wrap table tbody td {
           &.e-header-cells {
-            border-bottom-width: 1px;
+            border-bottom-width: $schedule-border-1;
           }
         }
       }
@@ -208,7 +210,7 @@
     .e-month-view {
       .e-date-header-wrap table td:first-child,
       .e-content-wrap table td:first-child {
-        border-left-width: 0;
+        border-left-width: $schedule-border-0;
       }
     }
 
@@ -236,7 +238,7 @@
         border-style: $border-type;
         border-width: $schedule-month-work-cells-border;
         color: $schedule-primary-content-font-color;
-        padding: 0;
+        padding: $schedule-spacing-0;
 
         &:hover {
           background: $schedule-hover-bg-color;
@@ -255,10 +257,10 @@
 
       .e-current-date .e-date-header {
         background: $schedule-current-date-bg-color;
-        border-radius: 50%;
+        border-radius: $schedule-border-radius-50;
         color: $schedule-current-date-header-font-color;
         min-width: 20px;
-        padding: 0 4px;
+        padding: $schedule-spacing-0 $schedule-spacing-4;
         width: fit-content;
       }
 
@@ -304,7 +306,7 @@
     .e-timeline-month-view {
       .e-date-header-wrap table td:first-child,
       .e-content-wrap table td:first-child {
-        border-left-width: 0;
+        border-left-width: $schedule-border-0;
       }
 
       .e-date-header-wrap table td {
@@ -326,7 +328,7 @@
         border-style: $border-type;
         border-width: $schedule-timeline-work-cells-border;
         color: $schedule-primary-content-font-color;
-        padding: 0;
+        padding: $schedule-spacing-0;
 
         &:hover:not(.e-resource-group-cells) {
           background: $schedule-hover-bg-color;
@@ -380,7 +382,7 @@
       }
 
       .e-header-row .e-time-cells {
-        border-left-width: 0;
+        border-left-width: $schedule-border-0;
       }
 
       .e-clone-time-indicator,
@@ -390,7 +392,7 @@
       }
 
       .e-current-timeline {
-        border-left: 1px $border-type $schedule-active-border-color;
+        border-left: $schedule-border-1 $border-type $schedule-active-border-color;
       }
     }
 
@@ -399,9 +401,9 @@
         background: $schedule-work-cells-bg-color;
         border-color: $schedule-content-border-color;
         border-style: $border-type;
-        border-width: 0 $border-size $border-size 0;
+        border-width: $schedule-border-0 $border-size $border-size $schedule-border-0;
         color: $schedule-primary-content-font-color;
-        padding: 0;
+        padding: $schedule-spacing-0;
     
         &:hover:not(.e-other-month) {
           background: $schedule-hover-bg-color;
@@ -418,9 +420,9 @@
     
         &.e-current-day .e-date-header {
           background: $schedule-current-date-bg-color;
-          border-radius: 50%;
+          border-radius: $schedule-border-radius-50;
           color: $schedule-current-day-active-color;
-          margin: 2px;
+          margin: $schedule-spacing-2;
           width: 20px;
         }
     
@@ -474,7 +476,7 @@
       .e-vertical-view {
         .e-date-header-wrap table tbody td:first-child,
         .e-content-wrap table td:first-child {
-          border-right-width: 0;
+          border-right-width: $schedule-border-0;
         }
 
         .e-date-header-wrap table tbody td {
@@ -488,19 +490,19 @@
 
         .e-left-indent-wrap .e-header-cells,
         .e-date-header-wrap .e-header-cells {
-          border-bottom-width: 0;
+          border-bottom-width: $schedule-border-0;
         }
 
         .e-left-indent-wrap table tbody td,
         .e-time-cells-wrap table tbody td {
-          border-width: 0 0 1px 1px;
+          border-width: $schedule-border-0 $schedule-border-0 $schedule-border-1 $schedule-border-1;
         }
       }
 
       .e-month-view {
         .e-date-header-wrap table td:first-child,
         .e-content-wrap table td:first-child {
-          border-right-width: 0;
+          border-right-width: $schedule-border-0;
         }
 
         .e-date-header-wrap table td {
@@ -526,12 +528,12 @@
       .e-timeline-month-view {
         .e-date-header-wrap table td:first-child,
         .e-content-wrap table td:first-child {
-          border-right-width: 0;
+          border-right-width: $schedule-border-0;
         }
 
         .e-date-header-wrap table td:last-child,
         .e-content-wrap table td:last-child {
-          border-left-width: 0;
+          border-left-width: $schedule-border-0;
         }
 
         .e-date-header-wrap table td,
@@ -546,7 +548,7 @@
         }
 
         .e-header-row .e-time-cells {
-          border-right-width: 0;
+          border-right-width: $schedule-border-0;
         }
       }
     }
@@ -563,13 +565,13 @@
 
     .e-arrow-tip-inner.e-tip-top,
     .e-arrow-tip-outer.e-tip-top {
-      border-bottom: 8px solid $schedule-val-error-bg-color;
+      border-bottom: $schedule-border-8 solid $schedule-val-error-bg-color;
       color: $schedule-val-error-bg-color;
     }
 
     .e-arrow-tip-outer.e-tip-bottom,
     .e-arrow-tip-inner.e-tip-bottom {
-      border-top: 8px solid $schedule-val-error-bg-color;
+      border-top: $schedule-border-8 solid $schedule-val-error-bg-color;
       color: $schedule-val-error-bg-color;
     }
 

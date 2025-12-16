@@ -101,7 +101,7 @@ export class ConditionalFormatting {
             });
         } else {
             dialog = new Dialog({
-                allowDragging: true, position: { X: 'center', Y: this.parent.element.offsetTop }, buttons: buttonModel,
+                allowDragging: true, position: { X: 'center', Y: 'center' }, buttons: buttonModel,
                 beforeOpen: this.beforeOpen.bind(this), close: this.removeDialog.bind(this),
                 cssClass: this.parent.cssClass, isModal: true, closeOnEscape: true,
                 enableRtl: this.parent.enableRtl, locale: this.parent.locale, enableHtmlSanitizer: this.parent.enableHtmlSanitizer,

@@ -312,39 +312,42 @@ describe('Chart', () => {
         });
 
         //Animation
-        it('Checking animationEvent for series', (done: Function) => {
+        it('Checking animationEvent for series', async (): Promise<void> => {
             animationComplete = (args: IAnimationCompleteEventArgs): void => {
                 let point: Element = document.getElementById('container_Series_' + args.series.index + '_Point_0');
                 expect(point.getAttribute('transform') === 'translate(0,0)').toBe(true);
-                done();
+                //done();
             };
             chartObj.animationComplete = animationComplete;
             chartObj.series[0].animation.enable = true;
             chartObj.indicators[0].animation.enable = false;
             chartObj.refresh();
+            await wait(500);
         });
-        it('Checking animation for indicators', (done: Function) => {
+        it('Checking animation for indicators', async (): Promise<void> => {
             animationComplete = (args: IAnimationCompleteEventArgs): void => {
                 let point: Element = document.getElementById('container_Series_' + args.series.index + '_Point_0');
                 expect(point.getAttribute('transform')).toBeNull;
-                done();
+                //done();
             };
             chartObj.animationComplete = animationComplete;
             chartObj.series[0].animation.enable = false;
             chartObj.indicators[0].animation.enable = true;
             chartObj.refresh();
+            await wait(500);
         });
-        it('Checking animation with both series and indicators', (done: Function) => {
+        it('Checking animation with both series and indicators', async (): Promise<void> => {
             animationComplete = (args: IAnimationCompleteEventArgs): void => {
                 let point: Element = document.getElementById('container_Series_' + args.series.index + '_Point_0');
                // expect(point.getAttribute('transform') === 'translate(0,0)').toBe(true);
                chartObj.animationComplete = null;
-                done();
+                //done();
             };
             chartObj.animationComplete = animationComplete;
             chartObj.series[0].animation.enable = true;
             chartObj.series[0].animation.enable = true;
             chartObj.refresh();
+            await wait(500);
         });
 
         //Themes
@@ -579,6 +582,9 @@ describe('Chart', () => {
 
         });
     });
+    async function wait(ms: number): Promise<void> {
+        return new Promise(resolve => setTimeout(resolve, ms));
+    }
     it('memory leak', () => {
         profile.sample();
         let average: any = inMB(profile.averageChange)

@@ -231,7 +231,7 @@ describe('Resize ->', () => {
                 spreadsheet.autoFit('D');
                 setTimeout(() => {
                     expect(spreadsheet.sheets[0].columns[3].width).toBe(57);
-                    expect(helper.getElement().querySelector('.e-copy-indicator').style.width).toBe('65px');
+                    expect(helper.getElement().querySelector('.e-copy-indicator').style.width).toBe('58px');
                     done();
                 });
             });
@@ -561,7 +561,7 @@ describe('Resize ->', () => {
                 helper.getInstance().selectionModule.mouseMoveHandler({ target: autoFill, clientX: autoFillCoords.right, clientY: autoFillCoords.bottom });
                 helper.getInstance().selectionModule.mouseMoveHandler({ target: td, clientX: coords.left + 1, clientY: coords.top + 1 });
                 helper.triggerMouseAction('mouseup', { x: coords.left + 1, y: coords.top + 1 }, document, td);
-                expect(autoFill.style.top).toBe('255px');
+                expect(autoFill.style.top).toBe('275px');
                 expect(autoFill.style.right).toBe('59px');
                 helper.invoke('selectRange', ['A1:A1']);
                 expect(activeCell.style.width).toBe('64px');

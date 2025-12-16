@@ -3,7 +3,7 @@ import { Diagram } from '../../../src/diagram/diagram';
 import { NodeModel, TextModel, PathModel, FlowShapeModel, BasicShapeModel, ImageModel } from '../../../src/diagram/objects/node-model';
 import { TextStyle } from '../../../src/diagram/core/appearance';
 import { TextElement, TextStyleModel, PathElement, NodeConstraints, Html, DiagramElement } from '../../../src/diagram/index';
-import  {profile , inMB, getMemoryProfile} from '../../../spec/common.spec';
+import { profile, inMB, getMemoryProfile } from '../../../spec/common.spec';
 
 
 /**
@@ -17,11 +17,11 @@ describe('Diagram Control', () => {
 
         beforeAll((): void => {
             const isDef = (o: any) => o !== undefined && o !== null;
-                if (!isDef(window.performance)) {
-                    console.log("Unsupported environment, window.performance.memory is unavailable");
-                    this.skip(); //Skips test (in Chai)
-                    return;
-                }
+            if (!isDef(window.performance)) {
+                console.log("Unsupported environment, window.performance.memory is unavailable");
+                this.skip(); //Skips test (in Chai)
+                return;
+            }
             ele = createElement('div', { id: 'diagram' });
             document.body.appendChild(ele);
             let node: NodeModel = {
@@ -304,18 +304,18 @@ describe('Diagram Control', () => {
             expect(node.wrapper.children[0].visible).toBe(false);
             done();
         });
-       });
+    });
     describe('Native and HTML Node - Add content', () => {
         let diagram: Diagram;
         let ele: HTMLElement;
 
         beforeAll((): void => {
             const isDef = (o: any) => o !== undefined && o !== null;
-                if (!isDef(window.performance)) {
-                    console.log("Unsupported environment, window.performance.memory is unavailable");
-                    this.skip(); //Skips test (in Chai)
-                    return;
-                }
+            if (!isDef(window.performance)) {
+                console.log("Unsupported environment, window.performance.memory is unavailable");
+                this.skip(); //Skips test (in Chai)
+                return;
+            }
             ele = createElement('div', { id: 'diagramNativeHTML' });
             document.body.appendChild(ele);
             let nodes: NodeModel[] = [
@@ -359,25 +359,27 @@ describe('Diagram Control', () => {
             expect(document.getElementById('html').textContent == diagram.nodes[2].id).toBe(true);
             done();
         });
-       });
+    });
     describe('gradient - change runtime', () => {
         let diagram: Diagram;
         let ele: HTMLElement;
 
         beforeAll((): void => {
             const isDef = (o: any) => o !== undefined && o !== null;
-                if (!isDef(window.performance)) {
-                    console.log("Unsupported environment, window.performance.memory is unavailable");
-                    this.skip(); //Skips test (in Chai)
-                    return;
-                }
+            if (!isDef(window.performance)) {
+                console.log("Unsupported environment, window.performance.memory is unavailable");
+                this.skip(); //Skips test (in Chai)
+                return;
+            }
             ele = createElement('div', { id: 'diagramGradientCheck' });
             document.body.appendChild(ele);
             let nodes: NodeModel[] = [
                 {
-                    id: 'node1', height: 80, width: 80, offsetX: 150, offsetY: 50, shape: { type: 'Basic', shape: 'Ellipse'},
-                    style: { fill: 'pink', strokeColor: 'lightblue', strokeWidth: 3, strokeDashArray: '3,3',
-                    gradient: { type: 'Linear', x1: 0, x2: 40, y1: 0, y2: 40, stops: [{color: 'red', offset: 40}, {color: 'yellow', offset: 100}] } }, 
+                    id: 'node1', height: 80, width: 80, offsetX: 150, offsetY: 50, shape: { type: 'Basic', shape: 'Ellipse' },
+                    style: {
+                        fill: 'pink', strokeColor: 'lightblue', strokeWidth: 3, strokeDashArray: '3,3',
+                        gradient: { type: 'Linear', x1: 0, x2: 40, y1: 0, y2: 40, stops: [{ color: 'red', offset: 40 }, { color: 'yellow', offset: 100 }] }
+                    },
                     annotations: [{ content: 'Ellipse' }],
                     maxHeight: 200, maxWidth: 200, minHeight: 100, minWidth: 100
                 }
@@ -396,43 +398,44 @@ describe('Diagram Control', () => {
         });
 
         it('Checking gradient property change on runtime', (done: Function) => {
-           
+
             expect(document.getElementById('node1_content_linear') !== undefined).toBe(true);
             diagram.nodes[0].style.gradient = {
                 type: 'Radial', cx: 40, cy: 40, fx: 20, fy: 20, r: 20,
-                stops: [{color: 'yellow', offset: 0}, {color: 'red', offset: 100}]
+                stops: [{ color: 'yellow', offset: 0 }, { color: 'red', offset: 100 }]
             };
             diagram.dataBind();
             expect(document.getElementById('node1_content_linear') === null).toBe(true);
             expect(document.getElementById('node1_content_radial') !== undefined).toBe(true);
             diagram.nodes[0].style.gradient = {
-                type: 'Linear', x1: 0,y1: 0, x2: 50, y2: 50,
-                stops: [{color: 'red', offset: 40}, {color: 'yellow', offset: 100}]
+                type: 'Linear', x1: 0, y1: 0, x2: 50, y2: 50,
+                stops: [{ color: 'red', offset: 40 }, { color: 'yellow', offset: 100 }]
             };
             expect(document.getElementById('node1_content_radial') !== undefined).toBe(true);
             expect(document.getElementById('node1_content_linear') === null).toBe(true);
             done();
         });
-     });describe('shadow - change runtime', () => {
+    });
+    describe('shadow - change runtime', () => {
         let diagram: Diagram;
         let ele: HTMLElement;
 
         beforeAll((): void => {
             const isDef = (o: any) => o !== undefined && o !== null;
-                if (!isDef(window.performance)) {
-                    console.log("Unsupported environment, window.performance.memory is unavailable");
-                    this.skip(); //Skips test (in Chai)
-                    return;
-                }
+            if (!isDef(window.performance)) {
+                console.log("Unsupported environment, window.performance.memory is unavailable");
+                this.skip(); //Skips test (in Chai)
+                return;
+            }
             ele = createElement('div', { id: 'diagramShadowCheck' });
             document.body.appendChild(ele);
             let nodes: NodeModel[] = [
                 {
-                    id: 'node1', height: 80, width: 80, offsetX: 250, offsetY: 50, shape: { type: 'Flow', shape: 'Decision'},
-                    style: { fill: 'lightgreen', strokeColor: 'green', strokeWidth: 3, strokeDashArray: '3,1'}, 
+                    id: 'node1', height: 80, width: 80, offsetX: 250, offsetY: 50, shape: { type: 'Flow', shape: 'Decision' },
+                    style: { fill: 'lightgreen', strokeColor: 'green', strokeWidth: 3, strokeDashArray: '3,1' },
                     annotations: [{ content: 'Decision' }],
                     constraints: NodeConstraints.Default | NodeConstraints.Shadow,
-                    shadow: { color: 'grey', angle: 45, opacity: 0.75, distance: 5}
+                    shadow: { color: 'grey', angle: 45, opacity: 0.75, distance: 5 }
                 }
             ]
 
@@ -455,7 +458,7 @@ describe('Diagram Control', () => {
             expect(document.getElementById('node1_content_groupElement_shadow').getAttribute('fill') === 'blue').toBe(true);
             done();
         });
-        it('memory leak', () => { 
+        it('memory leak', () => {
             profile.sample();
             let average: any = inMB(profile.averageChange)
             //Check average change in memory samples to not be over 10MB
@@ -537,7 +540,7 @@ describe('Diagram Control', () => {
             document.body.appendChild(ele);
             let shape: BasicShapeModel = { type: 'Basic', shape: 'Rectangle' };
             let nodes: NodeModel[] = [
-                {id: 'node', offsetX: 100, offsetY: 100, shape: shape,annotations: [{ content: 'Node1'}]},
+                { id: 'node', offsetX: 100, offsetY: 100, shape: shape, annotations: [{ content: 'Node1' }] },
             ]
 
             diagram = new Diagram({
@@ -559,6 +562,6 @@ describe('Diagram Control', () => {
             expect(diagram.nodes[0].wrapper.children[0] instanceof PathElement).toBe(true);
             done();
         });
-        
+
     });
 });

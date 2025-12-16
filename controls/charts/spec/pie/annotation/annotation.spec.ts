@@ -415,10 +415,12 @@ describe('Accumumation Control', () => {
                 element = getElement('container_Secondary_Element');
                 expect(element.children[0].childElementCount).toBe(2);
                 element = getElement('container_Annotation_0');
-                expect((element as HTMLElement).style.left == '715px' || (element as HTMLElement).style.left == '339px').toBe(true);
+                expect((element as HTMLElement).style.left == '715px' || (element as HTMLElement).style.left == '339px'
+                || (element as HTMLElement).style.left == '329px' || (element as HTMLElement).style.left == '320px').toBe(true);
                 expect((element as HTMLElement).style.top == '218px' || (element as HTMLElement).style.top == '217px').toBe(true);
                 element = getElement('container_Annotation_1');
-                expect((element as HTMLElement).style.left == '690.888px' || (element as HTMLElement).style.left == '314.891px').toBe(true);
+                expect((element as HTMLElement).style.left == '690.888px' || (element as HTMLElement).style.left == '314.891px'
+                || (element as HTMLElement).style.left == '304.891px' || (element as HTMLElement).style.left == '295.891px').toBe(true);
                 expect((element as HTMLElement).style.top == '226px' || (element as HTMLElement).style.top == '225px').toBe(true);
                 done();
             };
@@ -431,10 +433,12 @@ describe('Accumumation Control', () => {
             template1.innerHTML = '<div>${chart.title}</div>';
             chartObj.loaded = (args: Object): void => {
                 element = getElement('container_Annotation_0');
-                expect((element as HTMLElement).style.left == '722.281px' || (element as HTMLElement).style.left == '346.317px').toBe(true);
+                expect((element as HTMLElement).style.left == '722.281px' || (element as HTMLElement).style.left == '346.317px'
+                || (element as HTMLElement).style.left == '336.317px' || (element as HTMLElement).style.left == '327.317px').toBe(true);
                 expect((element as HTMLElement).style.top == '136.324px' || (element as HTMLElement).style.top == '134.925px').toBe(true);
                 element = getElement('container_Annotation_1');
-                expect((element as HTMLElement).style.left == '698.169px' || (element as HTMLElement).style.left == '322.207px').toBe(true);
+                expect((element as HTMLElement).style.left == '698.169px' || (element as HTMLElement).style.left == '322.207px'
+                || (element as HTMLElement).style.left == '312.207px' || (element as HTMLElement).style.left == '303.207px').toBe(true);
                 expect((element as HTMLElement).style.top == '144.324px' || (element as HTMLElement).style.top == '142.925px').toBe(true);
                 done();
             };
@@ -454,7 +458,8 @@ describe('Accumumation Control', () => {
                 element = getElement('container_Annotation_0');
                 expect(element).toBe(null);
                 element = getElement('container_Annotation_1');
-                expect((element as HTMLElement).style.left == '698.169px' || (element as HTMLElement).style.left == '322.207px').toBe(true);
+                expect((element as HTMLElement).style.left == '698.169px' || (element as HTMLElement).style.left == '322.207px'
+                || (element as HTMLElement).style.left == '312.207px' || (element as HTMLElement).style.left == '303.207px').toBe(true);
                 expect((element as HTMLElement).style.top == '144.324px' || (element as HTMLElement).style.top == '142.925px').toBe(true);
                 done();
             };

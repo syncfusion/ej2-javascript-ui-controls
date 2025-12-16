@@ -5,7 +5,6 @@ import { TestHelper } from '../../../test-helper.spec';
 import { DocumentEditorContainer } from '../../../../src/document-editor-container/document-editor-container';
 import { Toolbar } from '../../../../src/document-editor-container/tool-bar/tool-bar';
 
-
 describe('Show Dialog documenteditor properties_1 ', () => {
     let documenteditor: DocumentEditor;
     beforeAll((): void => {

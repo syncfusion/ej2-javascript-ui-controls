@@ -399,29 +399,34 @@ export class DiagramScroller {
         if ((oldWidth !== this.diagramWidth || oldHeight !== this.diagramHeight) && this.diagram.scrollSettings.scrollLimit !== 'Diagram') {
             this.diagram.setSize(this.diagramWidth, this.diagramHeight);
         }
+        const canUpdateOffset: boolean = (pageBounds.height > this.viewPortHeight || pageBounds.width > this.viewPortWidth);
         if (this.diagram.scrollSettings.scrollLimit === 'Diagram') {
             if ((oldWidth !== this.diagramWidth || oldHeight !== this.diagramHeight || this.currentZoom !== 1)
                 && ((!this.diagram.diagramActions || !newOffset) || (this.diagram.diagramActions && newOffset &&
                     ((this.verticalOffset !== 0 || this.verticalOffset === newOffset.y) &&
                         (this.horizontalOffset !== 0 || this.horizontalOffset === newOffset.x))))) {
                 if ((this.diagram.scrollActions & ScrollActions.Interaction) && newOffset) {
-                    this.transform = {
-                        tx: Math.max(newOffset.x, -(pageBounds.left / this.currentZoom)) / this.currentZoom,
-                        ty: Math.max(newOffset.y, -(pageBounds.top / this.currentZoom)) / this.currentZoom,
-                        scale: this.currentZoom
-                    };
-                    this.horizontalOffset = newOffset.x;
-                    this.verticalOffset = newOffset.y;
+                    if (canUpdateOffset) {
+                        this.transform = {
+                            tx: Math.max(newOffset.x, -(pageBounds.left / this.currentZoom)) / this.currentZoom,
+                            ty: Math.max(newOffset.y, -(pageBounds.top / this.currentZoom)) / this.currentZoom,
+                            scale: this.currentZoom
+                        };
+                        this.horizontalOffset = newOffset.x;
+                        this.verticalOffset = newOffset.y;
+                    }
                 }
                 this.diagram.setSize(this.diagramWidth, this.diagramHeight);
                 if ((!(this.diagram.scrollActions & ScrollActions.PropertyChange)) && newOffset) {
-                    this.horizontalOffset = newOffset.x;
-                    this.verticalOffset = newOffset.y;
-                    this.transform = {
-                        tx: Math.max(newOffset.x, -pageBounds.left) / this.currentZoom,
-                        ty: Math.max(newOffset.y, -pageBounds.top) / this.currentZoom,
-                        scale: this.currentZoom
-                    };
+                    if (canUpdateOffset) {
+                        this.horizontalOffset = newOffset.x;
+                        this.verticalOffset = newOffset.y;
+                        this.transform = {
+                            tx: Math.max(newOffset.x, -pageBounds.left) / this.currentZoom,
+                            ty: Math.max(newOffset.y, -pageBounds.top) / this.currentZoom,
+                            scale: this.currentZoom
+                        };
+                    }
                 }
             } else if (newOffset && oldWidth === this.diagramWidth && oldHeight === this.diagramHeight &&
                 ((this.diagram.diagramCanvas.scrollHeight > this.viewPortHeight &&

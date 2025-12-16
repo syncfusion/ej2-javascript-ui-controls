@@ -9,7 +9,7 @@ import * as EVENTS from './../../common/constant';
  * Clear Format EXEC internal component
  *
  * @hidden
- * @deprecated
+ * @private
  */
 export class ClearFormatExec {
     private parent: EditorManager;
@@ -19,7 +19,7 @@ export class ClearFormatExec {
      * @param {EditorManager} parent - specifies the parent element.
      * @returns {void}
      * @hidden
-     * @deprecated
+     * @private
      */
     public constructor(parent: EditorManager) {
         this.parent = parent;

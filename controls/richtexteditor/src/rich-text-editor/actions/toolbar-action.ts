@@ -3,6 +3,7 @@ import * as events from '../base/constant';
 import { IRichTextEditor } from '../base/interface';
 import { IColorPickerEventArgs, IDropDownClickArgs } from '../../common/interface';
 import { IAdvanceListItem, ICodeBlockItem } from '../../common';
+import { ILineHeightProperties } from '../../editor-manager/base/interface';
 
 /**
  * `ToolbarAction` module is used to toolbar click action
@@ -46,8 +47,10 @@ export class ToolbarAction {
             const targetEle: HTMLElement = (args.originalEvent.target as HTMLElement).nodeName === 'SPAN' ?
                 (args.originalEvent.target as HTMLElement).closest('.e-rte-dropdown.e-split-btn') as HTMLElement : (args.originalEvent.target as HTMLElement);
             if (targetEle) {
-                const hasNumberList: boolean | null = targetEle.classList.contains('e-rte-numberformatlist-dropdown');
-                if (hasNumberList || targetEle.classList.contains('e-rte-bulletformatlist-dropdown')) {
+                const hasNumberList: boolean | null = targetEle.classList.contains('e-rte-numberformatlist-dropdown') &&
+                    targetEle.classList.contains('e-split-btn');
+                if (hasNumberList || (targetEle.classList.contains('e-rte-bulletformatlist-dropdown') &&
+                    targetEle.classList.contains('e-split-btn'))) {
                     args.item.command = 'Lists' ;
                     args.item.subCommand = args.item.subCommand === 'NumberFormatList' ? 'OL' : 'UL';
                 }
@@ -80,6 +83,11 @@ export class ToolbarAction {
             } else if (e.item.command === 'CodeBlock') {
                 const codeBlockItems: ICodeBlockItem = { language: e.item.text, label: e.item.label, action: 'createCodeBlock' };
                 this.parent.formatter.process(this.parent, e, e.originalEvent, codeBlockItems);
+            } else if (e.item.command === 'LineHeight') {
+                const lineheightItems: ILineHeightProperties = { default: this.parent.lineHeight.default,
+                    items: this.parent.lineHeight.items, supportAllValues: this.parent.lineHeight.supportAllValues,
+                    selectedValue: e.item.value };
+                this.parent.formatter.process(this.parent, e, e.originalEvent, lineheightItems);
             } else {
                 this.parent.formatter.process(this.parent, e, e.originalEvent, value);
             }

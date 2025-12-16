@@ -1,4 +1,6 @@
 @use 'sass:color';
+@use 'ej2-base/styles/definition/bootstrap4' as *;
+@forward 'ej2-base/styles/definition/bootstrap4';
 
 /*! calendar bootstrap theme variables */
 
@@ -13,6 +15,7 @@ $calendar-bigger-month-view-padding: 0 !default;
 $calendar-bigger-month-view-height: 32px !default;
 $calendar-bigger-month-view-line-height: $calendar-bigger-month-view-height !default;
 $calendar-bigger-month-view-width: 38px !default;
+$border-zero: 0;
 
 //header dimension
 $calendar-header-font-size: 14px !default;
@@ -238,3 +241,12 @@ $calendar-small-title-font-color: $gray-900 !default;
 $calendar-bigger-small-table-padding: 0 12px 12px 12px !default;
 $calendar-bigger-small-yeardecade-font-size: 14px !default;
 $calendar-small-font-size: 12px !default;
+
+$line-height: 14px;
+$margin-zero: 0;
+$padding-zero: 0;
+$calendar-bigger-rtl-header-text-indent: 6px !default;
+$calendar-zero-border-radius: 0 !default;
+$calendar-bigger-header-width: 60% !default;
+$calendar-bigger-placeholder-min-height: 392px !default;
+$calendar-small-min-height: 220px !default;

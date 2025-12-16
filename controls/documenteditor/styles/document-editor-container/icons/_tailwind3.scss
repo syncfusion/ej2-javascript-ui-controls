@@ -1,8 +1,11 @@
+@use 'ej2-base/styles/common/mixin' as *;
+@use '../tailwind3-definition' as *;
+@use '../../document-editor/tailwind3-definition' as *;
 @include export-module('document-editor-container-tailwind3-icons') {
   .e-de-ctnr-close::before {
     color: $icon-color;
     content: '\e7e7';
-    font-size: 16px;
+    font-size: $e-de-ctnr-close-font-size;
   }
 
   .e-de-ctnr-linespacing::before {
@@ -29,14 +32,14 @@
     color: $icon-color;
     content: '\e774';
     font-family: 'e-icons';
-    font-size: 10px;
+    font-size: $e-de-selected-spellcheck-font-size;
   }
 
   .e-de-selected-underline-item::before {
     color: $icon-color;
     content: '\e774';
     font-family: 'e-icons';
-    font-size: 10px;
+    font-size: $e-de-selected-spellcheck-font-size;
   }
 
   .e-de-ctnr-link::before {
@@ -174,7 +177,7 @@
 
   .e-de-ctnr-showhide::before {
     content: '\e71a';
-    font-size: 16px;
+    font-size: $e-de-ctnr-showhide-font-size;
   }
 
   .e-de-ctnr-print::before {
@@ -284,47 +287,47 @@
   .e-de-ctnr-bullet-none::before {
     color: $icon-color;
     content: '\e7f3';
-    font-size: 20px;
-    line-height: 28px;
+    font-size: $e-de-ctnr-bullet-font-size;
+    line-height: $e-de-ctnr-bullet-line-height;
   }
 
   .e-de-ctnr-bullet-dot::before {
     color: $icon-color;
     content: '\e747';
-    font-size: 8px;
-    line-height: 28px;
+    font-size: $e-de-ctnr-bullet-dot-font-size;
+    line-height: $e-de-ctnr-bullet-line-height;
   }
 
   .e-de-ctnr-bullet-circle::before {
     color: $icon-color;
     content: '\e7d0';
-    font-size: 8px;
-    line-height: 28px;
+    font-size: $e-de-ctnr-bullet-dot-font-size;
+    line-height: $e-de-ctnr-bullet-line-height;
   }
 
   .e-de-ctnr-bullet-square::before {
     color: $icon-color;
     content: '\e7be';
-    font-size: 8px;
-    line-height: 28px;
+    font-size: $e-de-ctnr-bullet-dot-font-size;
+    line-height: $e-de-ctnr-bullet-line-height;
   }
 
   .e-de-ctnr-bullet-flower::before {
     color: $icon-color;
     content: '\e79b';
-    line-height: 28px;
+    line-height: $e-de-ctnr-bullet-line-height;
   }
 
   .e-de-ctnr-bullet-arrow::before {
     color: $icon-color;
     content: '\e763';
-    line-height: 28px;
+    line-height: $e-de-ctnr-bullet-line-height;
   }
 
   .e-de-ctnr-bullet-tick::before {
     color: $icon-color;
     content: '\e7fc';
-    line-height: 28px;
+    line-height: $e-de-ctnr-bullet-line-height;
   }
 
   .e-de-selected-item::before {

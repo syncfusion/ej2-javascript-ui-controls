@@ -1,13 +1,12 @@
-@import 'ej2-base/styles/definition/bds.scss';
-@import 'ej2-buttons/styles/button/bds-definition.scss';
-@import 'popup/bds-definition.scss';
-@import 'dialog/bds-definition.scss';
-@import 'dialog/icons/bds.scss';
-@import 'dialog/all.scss';
-@import 'popup/all.scss';
+@use 'ej2-buttons/styles/button/bds-definition' as *;
+@use 'popup/bds-definition' as *;
+@use 'dialog/bds-definition' as *;
+@use 'dialog/icons/bds' as *;
+@use 'dialog/all' as *;
+@use 'popup/all' as *;
 
-@import 'tooltip/bds-definition.scss';
-@import 'tooltip/icons/bds.scss';
-@import 'tooltip/all.scss';
-@import 'spinner/bds-definition.scss';
-@import 'spinner/all.scss';
+@use 'tooltip/bds-definition' as *;
+@use 'tooltip/icons/bds' as *;
+@use 'tooltip/all' as *;
+@use 'spinner/bds-definition' as *;
+@use 'spinner/all' as *;

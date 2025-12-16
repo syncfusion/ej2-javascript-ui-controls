@@ -1,3 +1,6 @@
+@use 'ej2-base/styles/definition/fusionnew' as *;
+@forward 'ej2-base/styles/definition/fusionnew';
+
 /*! component's theme wise override tailwind-definitions and variables */
 
 // Generic
@@ -106,3 +109,4 @@ $panel-drop-border: 1px $primary-border-color dashed !default;
 $gridline-background: $content-bg-color-alt1 !default;
 $gridline-border: $border-dark !default;
 $gridline-border-radius: 6px !default;
+$gridline-border-width: 1px !default;

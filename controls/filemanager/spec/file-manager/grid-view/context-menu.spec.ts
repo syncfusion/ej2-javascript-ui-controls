@@ -1169,20 +1169,34 @@ describe('access control context menu testing', () => {
             let evt = document.createEvent('MouseEvents');
             evt.initEvent('contextmenu', true, true);
             document.getElementById('file_grid').querySelector('.e-content').dispatchEvent(evt);
-            document.getElementById('file_cm_upload').click();
-            let dialogObj: any = (document.getElementById("file_dialog") as any).ej2_instances[0];
-            expect(dialogObj.element.querySelector('.e-dlg-header').innerText).toEqual("Access Denied");
-            let treeLi1: any = treeObj.element.querySelectorAll('li');
-            let gridLi1: any = document.getElementById('file_grid').querySelectorAll('.e-row');
-            expect(treeLi1.length).toEqual(5);
-            expect(gridLi1.length).toEqual(9);
-            let aTreeLi1: any = treeObj.element.querySelectorAll('li.e-fe-hidden');
-            let aGridLi1: any = document.getElementById('file_grid').querySelectorAll('.e-row.e-fe-hidden');
-            expect(aTreeLi1.length).toEqual(2);
-            expect(aGridLi1.length).toEqual(4);
-            expect(treeLi1[2].classList.contains('e-fe-hidden')).toBe(true);
-            expect(gridLi1[1].classList.contains('e-fe-hidden')).toBe(true);
-            done();
+            let uploadMenuItem: HTMLElement = document.getElementById('file_cm_upload');
+            if (uploadMenuItem) {
+                let hoverEvent = new MouseEvent('mouseover', {
+                    bubbles: true,
+                    cancelable: true,
+                    view: window
+                });
+                uploadMenuItem.dispatchEvent(hoverEvent);
+                setTimeout(function () {
+                    let folderSubMenu: HTMLElement = document.querySelector('#file_cm_fileupload');
+                    if (folderSubMenu) {
+                        folderSubMenu.click();
+                    } 
+                    let dialogObj: any = (document.getElementById("file_dialog") as any).ej2_instances[0];
+                    expect(dialogObj.element.querySelector('.e-dlg-header').innerText).toEqual("Access Denied");
+                    let treeLi1: any = treeObj.element.querySelectorAll('li');
+                    let gridLi1: any = document.getElementById('file_grid').querySelectorAll('.e-row');
+                    expect(treeLi1.length).toEqual(5);
+                    expect(gridLi1.length).toEqual(9);
+                    let aTreeLi1: any = treeObj.element.querySelectorAll('li.e-fe-hidden');
+                    let aGridLi1: any = document.getElementById('file_grid').querySelectorAll('.e-row.e-fe-hidden');
+                    expect(aTreeLi1.length).toEqual(2);
+                    expect(aGridLi1.length).toEqual(4);
+                    expect(treeLi1[2].classList.contains('e-fe-hidden')).toBe(true);
+                    expect(gridLi1[1].classList.contains('e-fe-hidden')).toBe(true);
+                    done();
+                }, 500);
+            }
         }, 500);
     });
     it('mouse click on refresh button', (done: Function) => {

@@ -5,7 +5,7 @@ import { NodeModel, PathModel } from '../../../src/diagram/objects/node-model';
 import { ShadowModel, RadialGradientModel, StopModel, LinearGradientModel } from '../../../src/diagram/core/appearance-model';
 import { NodeConstraints } from '../../../src/diagram/enum/enum';
 import { DiagramModel } from '../../../src/diagram/index';
-import  {profile , inMB, getMemoryProfile} from '../../../spec/common.spec';
+import { profile, inMB, getMemoryProfile } from '../../../spec/common.spec';
 /**
  * Shadow & Gradient
  */
@@ -16,11 +16,11 @@ describe('Diagram Control for shadow properties', () => {
 
         beforeAll((): void => {
             const isDef = (o: any) => o !== undefined && o !== null;
-                if (!isDef(window.performance)) {
-                    console.log("Unsupported environment, window.performance.memory is unavailable");
-                    this.skip(); //Skips test (in Chai)
-                    return;
-                }
+            if (!isDef(window.performance)) {
+                console.log("Unsupported environment, window.performance.memory is unavailable");
+                this.skip(); //Skips test (in Chai)
+                return;
+            }
             let constraints: number = NodeConstraints.Default | NodeConstraints.Shadow;
             ele = createElement('div', { id: 'diagramg' });
             document.body.appendChild(ele);
@@ -68,6 +68,7 @@ describe('Diagram Control for shadow properties', () => {
         afterAll((): void => {
             diagram.destroy();
             ele.remove();
+            (diagram as any) = null; (ele as any) = null;
         });
 
         it('Testing default and custom shadow', (done: Function) => {
@@ -83,18 +84,18 @@ describe('Diagram Control for shadow properties', () => {
             expect(failure).toBe(false);
             done();
         });
-       });
+    });
     describe('Gradient', () => {
         let diagram: Diagram;
         let ele: HTMLElement;
 
         beforeAll((): void => {
             const isDef = (o: any) => o !== undefined && o !== null;
-                if (!isDef(window.performance)) {
-                    console.log("Unsupported environment, window.performance.memory is unavailable");
-                    this.skip(); //Skips test (in Chai)
-                    return;
-                }
+            if (!isDef(window.performance)) {
+                console.log("Unsupported environment, window.performance.memory is unavailable");
+                this.skip(); //Skips test (in Chai)
+                return;
+            }
             ele = createElement('div', { id: 'diagramh' });
             document.body.appendChild(ele);
 
@@ -134,6 +135,7 @@ describe('Diagram Control for shadow properties', () => {
         afterAll((): void => {
             diagram.destroy();
             ele.remove();
+            (diagram as any) = null; (ele as any) = null;
         });
 
         it('Testing radial gradient', (done: Function) => {
@@ -149,18 +151,18 @@ describe('Diagram Control for shadow properties', () => {
             expect(failure).toBe(false);
             done();
         });
-       });
+    });
     describe('Gradient', () => {
         let diagram: Diagram;
         let ele: HTMLElement;
 
         beforeAll((): void => {
             const isDef = (o: any) => o !== undefined && o !== null;
-                if (!isDef(window.performance)) {
-                    console.log("Unsupported environment, window.performance.memory is unavailable");
-                    this.skip(); //Skips test (in Chai)
-                    return;
-                }
+            if (!isDef(window.performance)) {
+                console.log("Unsupported environment, window.performance.memory is unavailable");
+                this.skip(); //Skips test (in Chai)
+                return;
+            }
             ele = createElement('div', { id: 'diagrami' });
             document.body.appendChild(ele);
 
@@ -200,6 +202,7 @@ describe('Diagram Control for shadow properties', () => {
         afterAll((): void => {
             diagram.destroy();
             ele.remove();
+            (diagram as any) = null; (ele as any) = null;
         });
 
         it('Checking Linear Gradient', (done: Function) => {
@@ -216,7 +219,7 @@ describe('Diagram Control for shadow properties', () => {
             done();
 
         });
-        it('memory leak', () => { 
+        it('memory leak', () => {
             profile.sample();
             let average: any = inMB(profile.averageChange)
             //Check average change in memory samples to not be over 10MB

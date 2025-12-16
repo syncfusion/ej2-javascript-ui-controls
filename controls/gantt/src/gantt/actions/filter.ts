@@ -1,5 +1,5 @@
 import { TreeGrid, Filter as TreeGridFilter, FilterSettingsModel as TreeFilterSettingsModel } from '@syncfusion/ej2-treegrid';
-import { FilterEventArgs, filterAfterOpen, GroupEventArgs, getFilterMenuPostion, ColumnMenuOpenEventArgs, IFilterCreate } from '@syncfusion/ej2-grids';
+import { FilterEventArgs, filterAfterOpen, GroupEventArgs, getFilterMenuPostion, ColumnMenuOpenEventArgs, IFilterCreate  } from '@syncfusion/ej2-grids';
 import { getActualProperties, IFilterMUI, Filter as GridFilter, getCustomDateFormat } from '@syncfusion/ej2-grids';
 import { Gantt } from '../base/gantt';
 import { FilterSettingsModel, ColumnModel, TaskFieldsModel } from '../models/models';

@@ -7,6 +7,7 @@ import { Size } from '@syncfusion/ej2-drawings';
 import { TaskPriorityLevel } from '../base/pdfviewer-utlis';
 import { FormFieldModel } from '../pdfviewer-model';
 import { PdfFormFieldBaseModel } from '../drawing';
+import { DefaultPrint } from './default-print';
 
 /**
  * Print module
@@ -23,6 +24,10 @@ export class Print {
      * @private
      */
     public printRequestHandler: AjaxHandler;
+    /**
+     * @private
+     */
+    public canPrint: boolean = false;
     private frameDoc: any;
     private iframe: any;
     private printWindow: Window;
@@ -44,58 +49,64 @@ export class Print {
     public print(): void {
         let pageIndex: number;
         if (this.pdfViewerBase.pageCount > 0) {
-            this.printViewerContainer = createElement('div', {
-                id: this.pdfViewer.element.id + '_print_viewer_container',
-                className: 'e-pv-print-viewer-container'
-            });
-            if (this.pdfViewer.printMode === 'Default') {
-                this.pdfViewerBase.showPrintLoadingIndicator(true);
-                this.iframe = document.createElement('iframe');
-                this.iframe.className = 'iframeprint';
-                this.iframe.id = 'iframePrint';
-                this.iframe.style.position = 'fixed';
-                this.iframe.style.top = '-100000000px';
-                document.body.appendChild(this.iframe);
-                this.frameDoc = this.iframe.contentWindow ? this.iframe.contentWindow : this.iframe.contentDocument;
-                this.frameDoc.document.open();
-            } else {
-                this.printWindow = window.open('', 'print', 'height=' + window.outerHeight + ',width=' + window.outerWidth + ',tabbar=no');
-                this.printWindow.moveTo(0, 0);
-                this.printWindow.resizeTo(screen.availWidth, screen.availHeight);
-                this.createPrintLoadingIndicator(this.printWindow.document.body);
-            }
-            setTimeout(
-                () => {
-                    for (pageIndex = 0; pageIndex < this.pdfViewerBase.pageCount; pageIndex++) {
-                        const pageWidth: number = this.pdfViewerBase.pageSize[parseInt(pageIndex.toString(), 10)].width;
-                        const pageHeight: number = this.pdfViewerBase.pageSize[parseInt(pageIndex.toString(), 10)].height;
-                        // Check if the document is A4 by comparing the A4 standard values with the buffer value
-                        let a4StdWidth: number = 793;
-                        let a4StdHeight: number = 1122;
-                        const bufferWidth: number = 10;
-                        const bufferHeight: number = 10;
-                        //Reduced the A4 standard width and height to prevent blank pages while printing
-                        const a4PrintWidth: number = 783;
-                        const a4PrintHeight: number = 1110;
-                        this.printWidth = 816;
-                        this.printHeight = 1056;
-                        // Check if the A4 document is protrait or landscape
-                        if (pageWidth > pageHeight) {
-                            a4StdWidth = 1122;
-                            a4StdHeight = 793;
-                        }
-                        if (!(pageWidth >= (a4StdWidth + bufferWidth) || pageWidth <= (a4StdWidth - bufferWidth)) &&
-                        !(pageHeight >= (a4StdHeight + bufferHeight) || pageHeight <= (a4StdHeight - bufferHeight))) {
+            if (Browser.isDevice || !this.pdfViewerBase.clientSideRendering) {
+                this.printViewerContainer = createElement('div', {
+                    id: this.pdfViewer.element.id + '_print_viewer_container',
+                    className: 'e-pv-print-viewer-container'
+                });
+                if (this.pdfViewer.printMode === 'Default') {
+                    this.pdfViewerBase.showPrintLoadingIndicator(true);
+                    this.iframe = document.createElement('iframe');
+                    this.iframe.className = 'iframeprint';
+                    this.iframe.id = 'iframePrint';
+                    this.iframe.style.position = 'fixed';
+                    this.iframe.style.top = '-100000000px';
+                    document.body.appendChild(this.iframe);
+                    this.frameDoc = this.iframe.contentWindow ? this.iframe.contentWindow : this.iframe.contentDocument;
+                    this.frameDoc.document.open();
+                } else {
+                    this.printWindow = window.open('', 'print', 'height=' + window.outerHeight + ',width=' + window.outerWidth + ',tabbar=no');
+                    this.printWindow.moveTo(0, 0);
+                    this.printWindow.resizeTo(screen.availWidth, screen.availHeight);
+                    this.createPrintLoadingIndicator(this.printWindow.document.body);
+                }
+                setTimeout(
+                    () => {
+                        for (pageIndex = 0; pageIndex < this.pdfViewerBase.pageCount; pageIndex++) {
+                            const pageWidth: number = this.pdfViewerBase.pageSize[parseInt(pageIndex.toString(), 10)].width;
+                            const pageHeight: number = this.pdfViewerBase.pageSize[parseInt(pageIndex.toString(), 10)].height;
+                            // Check if the document is A4 by comparing the A4 standard values with the buffer value
+                            let a4StdWidth: number = 793;
+                            let a4StdHeight: number = 1122;
+                            const bufferWidth: number = 10;
+                            const bufferHeight: number = 10;
+                            //Reduced the A4 standard width and height to prevent blank pages while printing
+                            const a4PrintWidth: number = 783;
+                            const a4PrintHeight: number = 1110;
+                            this.printWidth = 816;
+                            this.printHeight = 1056;
+                            // Check if the A4 document is protrait or landscape
+                            if (pageWidth > pageHeight) {
+                                a4StdWidth = 1122;
+                                a4StdHeight = 793;
+                            }
+                            if (!(pageWidth >= (a4StdWidth + bufferWidth) || pageWidth <= (a4StdWidth - bufferWidth)) &&
+                                !(pageHeight >= (a4StdHeight + bufferHeight) || pageHeight <= (a4StdHeight - bufferHeight))) {
 
-                            this.printWidth = a4PrintWidth;
-                            this.printHeight = a4PrintHeight;
+                                this.printWidth = a4PrintWidth;
+                                this.printHeight = a4PrintHeight;
+                            }
+                            this.pdfViewer.printModule.createRequestForPrint(pageIndex, pageWidth, pageHeight,
+                                                                             this.pdfViewerBase.pageCount, this.pdfViewer.printScaleFactor);
                         }
-                        this.pdfViewer.printModule.createRequestForPrint(pageIndex, pageWidth, pageHeight,
-                                                                         this.pdfViewerBase.pageCount, this.pdfViewer.printScaleFactor);
-                    }
-                    this.pdfViewer.firePrintEnd(this.pdfViewer.downloadFileName);
-                },
-                100);
+                        this.pdfViewer.firePrintEnd(this.pdfViewer.downloadFileName);
+                    },
+                    100);
+            } else {
+                this.pdfViewerBase.showPrintLoadingIndicator(true);
+                const directPrint: DefaultPrint = new DefaultPrint(this.pdfViewer, this.pdfViewerBase);
+                directPrint.createRequestForDirectPrint();
+            }
         }
     }
 
@@ -206,21 +217,24 @@ export class Print {
                             const freeTextAnnotation: number[] = printCollection.freeTextAnnotation;
                             const inkAnnotation: number[] = printCollection.signatureInkAnnotation;
                             const stickyNoteAnnotation: any = printCollection.stickyNotesAnnotation;
+                            const redactionAnnotation: number[] = printCollection.redactionAnnotation;
                             annotationSource = this.pdfViewer.annotationModule.textMarkupAnnotationModule.
                                 printAnnotationsInCanvas(textMarkupAnnotation, printImage.pageNumber, stampAnnotation,
                                                          shapeAnnotation, measureShapeAnnotation, stickyNoteAnnotation,
-                                                         freeTextAnnotation, inkAnnotation);
+                                                         freeTextAnnotation, inkAnnotation, redactionAnnotation);
                         } else {
                             annotationSource = this.pdfViewer.annotationModule.textMarkupAnnotationModule.
                                 printAnnotationsInCanvas(printCollection.textMarkupAnnotation, printImage.pageNumber,
                                                          printCollection.stampAnnotations, printCollection.shapeAnnotation,
                                                          printCollection.measureShapeAnnotation, printCollection.stickyNotesAnnotation,
-                                                         printCollection.freeTextAnnotation, printCollection.signatureInkAnnotation);
+                                                         printCollection.freeTextAnnotation, printCollection.signatureInkAnnotation,
+                                                         printCollection.redactionAnnotation);
                         }
                     }
-                    if (this.pdfViewerBase.isAnnotationCollectionRemoved) {
+                    if (this.pdfViewerBase.isAnnotationCollectionRemoved && this.pdfViewer.annotationModule &&
+                        this.pdfViewer.annotationModule.textMarkupAnnotationModule) {
                         annotationSource = this.pdfViewer.annotationModule.textMarkupAnnotationModule.
-                            printAnnotationsInCanvas(null, printImage.pageNumber, null, null, null, null, null, null);
+                            printAnnotationsInCanvas(null, printImage.pageNumber, null, null, null, null, null, null, null);
                     }
                 }
                 const currentPageNumber: number = printImage.pageNumber;

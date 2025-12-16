@@ -26,3 +26,5 @@ export * from './actions/format-painter';
 export * from './actions/emoji-picker';
 export * from './actions/import-export';
 export * from './actions/code-block';
+export * from './actions/clipboard-cleanup';
+export * from './actions/auto-format';

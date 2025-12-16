@@ -605,7 +605,12 @@ export function subArray(values: number[], index: number): number[] {
  */
 export function valueToCoefficient(value: number, axis: Axis): number {
     const range: VisibleRangeModel = axis.visibleRange;
-    const result: number = (value - <number>range.min) / (range.delta);
+    let result: number;
+    if (range.delta === 0) {
+        result = 0.5;
+    } else {
+        result = (value - <number>range.min) / range.delta;
+    }
     const isInverse: boolean = axis.isChart ? axis.isAxisInverse : axis.isInversed;
     return isInverse ? (1 - result) : result;
 
@@ -1844,14 +1849,17 @@ export function chartReactTemplate(
  */
 export function createTemplate(
     childElement: HTMLElement, pointIndex: number, content: string | Function, chart: Chart | AccumulationChart | RangeNavigator,
-    point?: Points | AccPoints, series?: Series | AccumulationSeries, dataLabelId?: string, labelIndex?: number,
+    point?: Points | AccPoints | VisibleLabels, series?: Series | AccumulationSeries, dataLabelId?: string, labelIndex?: number,
     argsData?: IAccTextRenderEventArgs, isTemplate?: boolean, points?: AccPoints[], datalabelGroup?: Element, id?: string,
     dataLabel?: AccumulationDataLabelSettingsModel, redraw?: boolean
 ): HTMLElement {
     const templateFn: Function = getTemplateFunction(content);
     let templateElement: HTMLCollection;
     try {
-        const tempObject: Object = { chart: chart, series: series, point: point };
+        let tempObject: Object = { chart: chart, series: series, point: point };
+        if (childElement.id.indexOf('AxisLabelTemplate') > -1) {
+            tempObject =  { value: (point as VisibleLabels).value, label: point.text };
+        }
         const templateId: string = dataLabelId ? dataLabelId + '_template' : 'template';
         const elementData: Element[] = templateFn ? templateFn(tempObject, chart, templateId, dataLabelId ||
             childElement.id.replace(/[^a-zA-Z0-9]/g, '')) : [];
@@ -2149,13 +2157,24 @@ export function getLabelText(currentPoint: Points, series: Series, chart: Chart)
 
     }
     if ((labelFormat || chart.useGroupingSeparator) && !currentPoint.text) {
-        series.yAxis.format = chart.intl.getNumberFormat({
-            format: customLabelFormat ? '' : labelFormat,
-            useGrouping: chart.useGroupingSeparator
-        });
+        const isDateTime: boolean =
+            series.yAxis.valueType === 'DateTime' &&
+            /[yMdHhms]/.test(labelFormat || '');
+
+        series.yAxis.format = isDateTime
+            ? chart.intl.getDateFormat({ format: customLabelFormat ? '' : labelFormat })
+            : chart.intl.getNumberFormat({
+                format: customLabelFormat ? '' : labelFormat,
+                useGrouping: chart.useGroupingSeparator
+            });
         for (let i: number = 0; i < text.length; i++) {
-            text[i as number] = customLabelFormat ? labelFormat.replace('{value}', series.yAxis.format(parseFloat(text[i as number]))) :
-                series.yAxis.format(parseFloat(text[i as number]));
+            const formatted: string = isDateTime
+                ? series.yAxis.format(new Date(Number(text[i as number])))
+                : series.yAxis.format(parseFloat(text[i as number]));
+
+            text[i as number] = customLabelFormat
+                ? labelFormat.replace('{value}', formatted)
+                : formatted;
         }
     }
     return text;

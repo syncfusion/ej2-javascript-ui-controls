@@ -363,6 +363,12 @@ describe('Keyboard shortcuts module ->', () => {
             expect(document.activeElement.querySelector('.e-tab-text').textContent).toBe('View');
             done();
         });
+        it('Review Tab switch->', (done: Function) => {
+            spreadsheet.keyboardShortcutModule.ribbonShortCuts({ keyCode: 82, altKey: true, preventDefault: (): void => {} });
+            expect(document.activeElement.classList.contains('e-tab-wrap')).toBeTruthy();
+            expect(document.activeElement.querySelector('.e-tab-text').textContent).toBe('Review');
+            done();
+        });
         it('Formulas Tab switch->', (done: Function) => {
             spreadsheet.keyboardShortcutModule.ribbonShortCuts({ keyCode: 77, altKey: true, preventDefault: (): void => {} });
             expect(document.activeElement.classList.contains('e-tab-wrap')).toBeTruthy();
@@ -491,6 +497,15 @@ describe('Keyboard shortcuts module ->', () => {
             spreadsheet.keyboardShortcutModule.ribbonShortCuts({ keyCode: 87, altKey: true, preventDefault: (): void => { } });
             expect(document.activeElement.classList.contains('e-tab-wrap')).toBeTruthy();
             expect(document.activeElement.querySelector('.e-tab-text').textContent).toBe('View');
+            setTimeout(() => {
+                expect(helper.getElement('.e-editAlert-dlg.e-dialog')).toBeNull();
+                done();
+            });
+        });
+        it('Review Tab switch->', (done: Function) => {
+            spreadsheet.keyboardShortcutModule.ribbonShortCuts({ keyCode: 82, altKey: true, preventDefault: (): void => { } });
+            expect(document.activeElement.classList.contains('e-tab-wrap')).toBeTruthy();
+            expect(document.activeElement.querySelector('.e-tab-text').textContent).toBe('Review');
             setTimeout(() => {
                 expect(helper.getElement('.e-editAlert-dlg.e-dialog')).toBeNull();
                 done();

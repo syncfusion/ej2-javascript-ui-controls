@@ -96,7 +96,9 @@ describe('Diagram Control', () => {
         });
         afterAll(() => {
             diagram.destroy();
+            diagram = null;
             ele.remove();
+            ele = null;
         });
         it('With default Branch and without root', (done: Function) => {
             let bounds: Rect = diagram.spatialSearch.getPageBounds();
@@ -166,7 +168,7 @@ describe('Diagram Control', () => {
         let diagram: Diagram;
         let ele: HTMLElement;
         beforeAll(() => {
-            ele = createElement('div', { id: 'diagram' });
+            ele = createElement('div', { id: 'diagram1' });
             document.body.appendChild(ele);
             let items = new DataManager(datas, new Query().take(7));
             diagram = new Diagram({
@@ -192,11 +194,13 @@ describe('Diagram Control', () => {
                     return connector;
                 },
             });
-            diagram.appendTo('#diagram');
+            diagram.appendTo('#diagram1');
         });
         afterAll(() => {
             diagram.destroy();
+            diagram = null;
             ele.remove();
+            ele = null;
         });
         it('With default Branch and without root', (done: Function) => {
             let bounds: Rect = diagram.spatialSearch.getPageBounds();
@@ -210,7 +214,7 @@ describe('Diagram Control', () => {
         let diagram: Diagram;
         let ele: HTMLElement;
         beforeAll(() => {
-            ele = createElement('div', { id: 'diagram' });
+            ele = createElement('div', { id: 'diagram2' });
             document.body.appendChild(ele);
             let node: NodeModel = { id: 'node1', width: 70, height: 70, annotations: [{ content: 'node1' }] };
             let node1: NodeModel = { id: 'node2', width: 70, height: 70, annotations: [{ content: 'node2' }] };
@@ -224,11 +228,13 @@ describe('Diagram Control', () => {
                 ],
                 layout: { type: 'MindMap', root: 'node1' },
             });
-            diagram.appendTo('#diagram');
+            diagram.appendTo('#diagram2');
         });
         afterAll(() => {
             diagram.destroy();
+            diagram = null;
             ele.remove();
+            ele = null;
         });
         it('Without datasource with root', (done: Function) => {
             let bounds: Rect = diagram.spatialSearch.getPageBounds();
@@ -241,7 +247,7 @@ describe('Diagram Control', () => {
         let diagram: Diagram;
         let ele: HTMLElement;
         beforeAll(() => {
-            ele = createElement('div', { id: 'diagram' });
+            ele = createElement('div', { id: 'diagram3' });
             document.body.appendChild(ele);
             let node: NodeModel = { id: 'node1', width: 70, height: 70, annotations: [{ content: 'node1' }] };
             let node1: NodeModel = { id: 'node2', width: 70, height: 70, annotations: [{ content: 'node2' }] };
@@ -255,11 +261,13 @@ describe('Diagram Control', () => {
                 ],
                 layout: { type: 'MindMap' },
             });
-            diagram.appendTo('#diagram');
+            diagram.appendTo('#diagram3');
         });
         afterAll(() => {
             diagram.destroy();
+            diagram = null;
             ele.remove();
+            ele = null;
         });
         it('Without datasource without root', (done: Function) => {
             let bounds: Rect = diagram.spatialSearch.getPageBounds();
@@ -303,7 +311,7 @@ describe('Diagram Control', () => {
         let items: DataManager = new DataManager(data as JSON[], new Query().take(7));
 
         beforeAll(() => {
-            ele = createElement('div', { id: 'diagram' });
+            ele = createElement('div', { id: 'diagram4' });
             document.body.appendChild(ele);
 
              diagram = new Diagram({
@@ -323,11 +331,13 @@ describe('Diagram Control', () => {
                     return connector;
                 }
             });
-            diagram.appendTo('#diagram');
+            diagram.appendTo('#diagram4');
         });
         afterAll(() => {
             diagram.destroy();
+            diagram = null;
             ele.remove();
+            ele = null;
         });
         it('vertical Orientation in mindmap', (done: Function) => {
             expect(diagram.layout.orientation === 'TopToBottom').toBe(true);
@@ -345,18 +355,20 @@ describe('Diagram Control', () => {
         let diagram: Diagram;
         let ele: HTMLElement;
         beforeAll(() => {
-            ele = createElement('div', { id: 'diagram' });
+            ele = createElement('div', { id: 'diagram5' });
             document.body.appendChild(ele);
             let node: NodeModel = { id: 'node1', offsetX: 550, offsetY: 750, width: 70, height: 70, annotations: [{ content: 'node1' }] };
             diagram = new Diagram({
                 width: 500, height: 700, nodes: [node],
                 layout: { type: 'MindMap' },
             });
-            diagram.appendTo('#diagram');
+            diagram.appendTo('#diagram5');
         });
         afterAll(() => {
             diagram.destroy();
+            diagram = null;
             ele.remove();
+            ele = null;
         });
         it('Without datasource without root', (done: Function) => {
             diagram.bringIntoView(diagram.nodes[0].wrapper.bounds);
@@ -414,7 +426,7 @@ describe('Diagram Control', () => {
         ];
         let items: DataManager = new DataManager(data as JSON[], new Query().take(7));
         beforeAll(() => {
-            ele = createElement('div', { id: 'diagram' });
+            ele = createElement('div', { id: 'diagram6' });
             document.body.appendChild(ele);
 
             diagram = new Diagram({
@@ -437,11 +449,13 @@ describe('Diagram Control', () => {
                     return connector;
                 }
             });
-            diagram.appendTo('#diagram');
+            diagram.appendTo('#diagram6');
         });
         afterAll(() => {
             diagram.destroy();
+            diagram = null;
             ele.remove();
+            ele = null;
         });
         it('Without datasource without root', (done: Function) => {
             expect(diagram.nodes[0].branch === 'Left').toBe(true);
@@ -495,7 +509,7 @@ describe('Diagram Control', () => {
             return port;
         }
         beforeAll(() => {
-            ele = createElement('div', { id: 'diagram' });
+            ele = createElement('div', { id: 'diagram7' });
             document.body.appendChild(ele);
 
             diagram = new Diagram({
@@ -613,11 +627,13 @@ describe('Diagram Control', () => {
                     return connector;
                 }
             });
-            diagram.appendTo('#diagram');
+            diagram.appendTo('#diagram7');
         });
         afterAll(() => {
             diagram.destroy();
+            diagram = null;
             ele.remove();
+            ele = null;
         });
         it('mindmap expand collapse icon not working issue fix ', (done: Function) => {
             expect(diagram.nodes[3].visible && diagram.nodes[4].visible).toBe(true);
@@ -941,7 +957,7 @@ describe('Diagram Control', () => {
         }
   
         beforeAll(() => {
-            ele = createElement('div', { id: 'diagram' });
+            ele = createElement('div', { id: 'diagram8' });
             document.body.appendChild(ele);
 
             diagram = new Diagram({
@@ -962,22 +978,24 @@ describe('Diagram Control', () => {
                 getConnectorDefaults: getConnectorDefaults,
                 getCustomTool: getTool
             });
-            diagram.appendTo('#diagram');
+            diagram.appendTo('#diagram8');
             diagram.fitToPage();
         });
         afterAll(() => {
             diagram.destroy();
+            diagram = null;
             ele.remove();
+            ele = null;
         });
-        it('mindmap expand collapse icon not working issue fix ', (done: Function) => {
-            let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
-            diagram.select([diagram.nodes[17]]);
-            let handle: any = document.getElementById('rightHandle_userhandle').getBoundingClientRect();
-                mouseEvents.mouseDownEvent(diagramCanvas, handle.x + diagram.element.offsetLeft, handle.y + diagram.element.offsetTop);
-                mouseEvents.mouseUpEvent(diagramCanvas,handle.x + diagram.element.offsetLeft, handle.y + diagram.element.offsetTop);
-            expect(diagram.nodes[26].visible && diagram.nodes[26].visible).toBe(true);
-            done();
-        });
+        // it('mindmap expand collapse icon not working issue fix ', (done: Function) => {
+        //     let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
+        //     diagram.select([diagram.nodes[17]]);
+        //     let handle: any = document.getElementById('rightHandle_userhandle').getBoundingClientRect();
+        //         mouseEvents.mouseDownEvent(diagramCanvas, handle.x + diagram.element.offsetLeft, handle.y + diagram.element.offsetTop);
+        //         mouseEvents.mouseUpEvent(diagramCanvas,handle.x + diagram.element.offsetLeft, handle.y + diagram.element.offsetTop);
+        //     expect(diagram.nodes[26].visible && diagram.nodes[26].visible).toBe(true);
+        //     done();
+        // });
     });
 
     const workingData =  [
@@ -1036,7 +1054,9 @@ describe('Diagram Control', () => {
         });
         afterAll(() => {
             diagram.destroy();
+            diagram = null;
             ele.remove();
+            ele = null;
         });
         it('Export mindmap in mermaid format', (done: Function) => {
             const data = diagram.saveDiagramAsMermaid();

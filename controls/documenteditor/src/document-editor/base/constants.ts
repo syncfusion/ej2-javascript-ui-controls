@@ -91,3 +91,8 @@ export const fileMenuItemClickEvent: string = 'fileMenuItemClick';
  * @hidden
  */
 export const beforePaste: string = 'beforePaste';
+/**
+ * Triggers when pages loads asynchronously in the document editor
+ * @hidden
+ */
+export const asyncPagesVisible: string = 'asyncPagesVisible';

@@ -1,3 +1,5 @@
+@use 'ej2-base/styles/common/mixin' as *;
+@use '../bds-definition' as *;
 @include export-module('multiselect-bds-icons') {
   .e-multiselect.e-input-group .e-ddl-icon::before {
     content: '\e729';

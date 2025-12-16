@@ -1,3 +1,4 @@
+@use 'ej2-base/styles/common/mixin' as *;
 @include export-module('blockeditor-fluent-icons') {
 
   .e-block-add-icon::before {
@@ -69,6 +70,10 @@
 
     .e-be-toggle-paragraph::before {
       content: '\e844';
+    }
+
+    .e-be-table::before {
+      content: '\e83f';
     }
   }
 }

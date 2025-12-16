@@ -229,8 +229,14 @@ export class Overview extends Component<HTMLElement> implements INotifyPropertyC
         this.element.style.width = String(this.model.width);
         this.canvas = canvas;
     }
-
-    private setParent(id: string): void {
+    /**
+     * setParent method\
+     *
+     * @returns {  void }  setParent method .\
+     * @param {string} id - provide the id value.
+     * @private
+     */
+    public setParent(id: string): void {
         const element: HTMLElement = document.getElementById(id);
         const instance: string = 'ej2_instances';
         if (this.parent) {
@@ -565,7 +571,9 @@ export class Overview extends Component<HTMLElement> implements INotifyPropertyC
     private updateHelper(difx?: number, dify?: number, size?: Size, width?: number, height?: number): void {
         let x: number; let y: number;
         let bounds: SVGRect;
-        const svg: SVGSVGElement = this.element.getElementsByTagName('svg')[2];
+        const targetId: string = this.element.id + '_canvas_overviewsvg';
+        const target: any = document.getElementById(targetId);
+        const svg: SVGElement = target as SVGElement;
         const rect: SVGRectElement = (svg as SVGSVGElement).getElementById('helper') as SVGRectElement;
         if (size) {
             bounds = rect.getBBox();
@@ -979,7 +987,10 @@ export class Overview extends Component<HTMLElement> implements INotifyPropertyC
                 }
             } else {
                 if ((evt.target as HTMLElement).id === this.canvas.id + '_overviewsvg' || (evt.target as HTMLElement).id === 'helper') {
-                    const svg: SVGSVGElement = this.element.getElementsByTagName('svg')[2];
+                    // 983793 : Exception Thrown When Clicking or Resizing the Overview Panel native shapes
+                    const targetId: string = this.element.id + '_canvas_overviewsvg';
+                    const target: any = document.getElementById(targetId);
+                    const svg: SVGElement = target as SVGElement;
                     const g: SVGRectElement = (svg as SVGSVGElement).getElementById(this.canvas.id
                         + 'overviewrect') as SVGRectElement;
                     const bounds: SVGRect = g.getBBox();
@@ -1009,7 +1020,9 @@ export class Overview extends Component<HTMLElement> implements INotifyPropertyC
     }
 
     private initHelper(): void {
-        const g: SVGElement = this.element.getElementsByTagName('svg')[2];
+        const targetId: string = this.element.id + '_canvas_overviewsvg';
+        const target: any = document.getElementById(targetId);
+        const g: SVGElement = target as SVGElement;
         //const scale: number = this.parent.scroller.currentZoom;
         let x: number = this.startPoint.x;
         let y: number = this.startPoint.y; let width: number = 1; let height: number = 1;

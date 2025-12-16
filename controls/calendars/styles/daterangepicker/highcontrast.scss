@@ -1,8 +1,8 @@
-@import 'ej2-base/styles/definition/highcontrast.scss';
-@import 'ej2-inputs/styles/input/highcontrast-definition.scss';
-@import 'ej2-popups/styles/popup/highcontrast-definition.scss';
-@import '../calendar/highcontrast-definition.scss';
-@import 'highcontrast-definition.scss';
-@import 'icons/highcontrast.scss';
-@import 'all.scss';
-@import 'bigger.scss';
+@use 'ej2-base/styles/definition/highcontrast' as *;
+@use 'ej2-inputs/styles/input/highcontrast-definition' as *;
+@use 'ej2-popups/styles/popup/highcontrast-definition' as *;
+@use '../calendar/highcontrast-definition' as *;
+@use 'highcontrast-definition' as *;
+@use 'icons/highcontrast' as *;
+@use 'all' as *;
+@use 'bigger' as *;

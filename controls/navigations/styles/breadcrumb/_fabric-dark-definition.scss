@@ -1,3 +1,6 @@
+@use 'ej2-base/styles/definition/fabric-dark' as *;
+@forward 'ej2-base/styles/definition/fabric-dark';
+
 // Size variables
 $breadcrumb-skin: 'fabric' !default;
 $breadcrumb-last-item-font-weight: 400 !default;
@@ -28,8 +31,17 @@ $breadcrumb-scroll-mode-lineheight: 30px !default;
 $breadcrumb-popup-item-padding: 0 10px !default;
 $breadcrumb-popup-border-radius: 0 !default;
 $breadcrumb-popup-item-height: 36px !default;
+$breadcrumb-popup-item-line-height: 36px !default;
 $cmenu-li-hover-outline-offset: 0 !default;
 $breadcrumb-popup-item-bigger-height: 48px !default;
+$breadcrumb-popup-item-bigger-line-height: 48px !default;
+$breadcrumb-normal-line-height: normal !default;
+$breadcrumb-menuitem-height: 1px !default;
+$breadcrumb-border-none: 0 !default;
+$breadcrumb-padding-none: 0 !default;
+$breadcrumb-margin-none: 0 !default;
+$breadcrumb-menu-item-margin: -1px !default;
+$breadcrumb-menu-margin-top: 2px !default;
 
 // Color variables
 $breadcrumb-item-color: $neutral-light-font !default;

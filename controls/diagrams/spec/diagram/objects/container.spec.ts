@@ -7,7 +7,7 @@ import { Canvas } from '../../../src/diagram/core/containers/canvas';
 import { BpmnDiagrams } from '../../../src/diagram/objects/bpmn';
 import { profile, inMB, getMemoryProfile } from '../../../spec/common.spec';
 import { BpmnShape, GroupableView } from '../../../src';
-import { NodeConstraints} from '../../../src/index';
+import { NodeConstraints } from '../../../src/index';
 import { MouseEvents } from '../interaction/mouseevents.spec';
 import { Node, Selector } from '../../../src/diagram/objects/node';
 import { ConnectorModel } from '../../../src/diagram/objects/connector-model';
@@ -21,9 +21,6 @@ describe('Diagram Control', () => {
     describe('Diagram Element', () => {
         let diagram: Diagram;
         let mouseEvents: MouseEvents = new MouseEvents();
-        let shadow: ShadowModel = { angle: 135, distance: 10, opacity: 0.9 };
-        let stops: StopModel[] = [{ color: 'white', offset: 0 }, { color: 'red', offset: 50 }];
-        let gradient: RadialGradientModel = { cx: 50, cy: 50, fx: 50, fy: 50, stops: stops, type: 'Radial' };
 
         let ele: HTMLElement;
         beforeAll((): void => {
@@ -33,7 +30,7 @@ describe('Diagram Control', () => {
                 this.skip(); //Skips test (in Chai)
                 return;
             }
-            ele = createElement('div', { id: 'diagram' });
+            ele = createElement('div', { id: 'diagramElement' });
             document.body.appendChild(ele);
             let nodes: NodeModel[] = [
                 { id: 'node1', offsetX: 300, offsetY: 250, width: 100, height: 40 },
@@ -55,11 +52,11 @@ describe('Diagram Control', () => {
                             },
                             style: { fill: 'red', strokeColor: 'blue', strokeWidth: 5, strokeDashArray: '2 2', opacity: 0.6 } as ShapeStyleModel,
                         },
-                        children:['node1', 'node2'],
+                        children: ['node1', 'node2'],
                     } as ContainerModel,
                 },
                 {
-                    id: 'container2', offsetX: 700, offsetY: 100, maxHeight: 500, maxWidth: 500, minHeight:300, minWidth: 300,
+                    id: 'container2', offsetX: 700, offsetY: 100, maxHeight: 500, maxWidth: 500, minHeight: 300, minWidth: 300,
                     style: { fill: 'red', strokeColor: 'blue', strokeWidth: 5, strokeDashArray: '2 2', opacity: 0.6 } as ShapeStyleModel,
                     shape: {
                         type: 'Container',
@@ -90,7 +87,7 @@ describe('Diagram Control', () => {
                             },
                             style: { fill: 'red', strokeColor: 'blue', strokeWidth: 5, strokeDashArray: '2 2', opacity: 0.6 } as ShapeStyleModel,
                         },
-                        children:['node4']
+                        children: ['node4']
                     } as ContainerModel,
                 },
             ];
@@ -98,12 +95,14 @@ describe('Diagram Control', () => {
             diagram = new Diagram({
                 width: 1500, height: 800, nodes: nodes
             });
-            diagram.appendTo('#diagram');
+            diagram.appendTo('#diagramElement');
         });
 
         afterAll((): void => {
             diagram.destroy();
             ele.remove();
+            diagram = null;
+            ele = null;
         });
 
         it('Drag and drop the child inside container', (done: Function) => {
@@ -181,7 +180,7 @@ describe('Diagram Control', () => {
             expect(diagram.nameTable['node3'].parentId === 'container3').toBe(true);
             done();
         });
-        
+
         it('memory leak', () => {
             profile.sample();
             let average: any = inMB(profile.averageChange)
@@ -196,9 +195,6 @@ describe('Diagram Control', () => {
     describe('Diagram Element', () => {
         let diagram: Diagram;
         let mouseEvents: MouseEvents = new MouseEvents();
-        let shadow: ShadowModel = { angle: 135, distance: 10, opacity: 0.9 };
-        let stops: StopModel[] = [{ color: 'white', offset: 0 }, { color: 'red', offset: 50 }];
-        let gradient: RadialGradientModel = { cx: 50, cy: 50, fx: 50, fy: 50, stops: stops, type: 'Radial' };
 
         let ele: HTMLElement;
         beforeAll((): void => {
@@ -208,7 +204,7 @@ describe('Diagram Control', () => {
                 this.skip(); //Skips test (in Chai)
                 return;
             }
-            ele = createElement('div', { id: 'diagram' });
+            ele = createElement('div', { id: 'diagram1' });
             document.body.appendChild(ele);
             let nodes: NodeModel[] = [
                 { id: 'node1', offsetX: 300, offsetY: 250, width: 100, height: 40 },
@@ -228,7 +224,7 @@ describe('Diagram Control', () => {
                             },
                             style: { fill: 'red', strokeColor: 'blue', strokeWidth: 5, strokeDashArray: '2 2', opacity: 0.6 } as ShapeStyleModel,
                         },
-                        children:['node1', 'node2'],
+                        children: ['node1', 'node2'],
                     } as ContainerModel,
                 }
             ];
@@ -245,12 +241,14 @@ describe('Diagram Control', () => {
                 width: 1500, height: 800, nodes: nodes,
                 connectors: connectors
             });
-            diagram.appendTo('#diagram');
+            diagram.appendTo('#diagram1');
         });
 
         afterAll((): void => {
             diagram.destroy();
             ele.remove();
+            diagram = null;
+            ele = null;
         });
 
         it('Drag child with connector inside container', (done: Function) => {
@@ -286,10 +284,6 @@ describe('Diagram Control', () => {
     });
     describe('Diagram Element', () => {
         let diagram: Diagram;
-        let mouseEvents: MouseEvents = new MouseEvents();
-        let shadow: ShadowModel = { angle: 135, distance: 10, opacity: 0.9 };
-        let stops: StopModel[] = [{ color: 'white', offset: 0 }, { color: 'red', offset: 50 }];
-        let gradient: RadialGradientModel = { cx: 50, cy: 50, fx: 50, fy: 50, stops: stops, type: 'Radial' };
 
         let ele: HTMLElement;
         beforeAll((): void => {
@@ -319,11 +313,11 @@ describe('Diagram Control', () => {
                             },
                             style: { fill: 'red', strokeColor: 'blue', strokeWidth: 5, strokeDashArray: '2 2', opacity: 0.6 } as ShapeStyleModel,
                         },
-                        children:['node1', 'node2'],
+                        children: ['node1', 'node2'],
                     } as ContainerModel,
                 },
                 {
-                    id: 'container2',  width: 700, height: 400, offsetX: 300, offsetY: 400, maxWidth:700,
+                    id: 'container2', width: 700, height: 400, offsetX: 300, offsetY: 400, maxWidth: 700,
                     style: { fill: 'red', strokeColor: 'blue', strokeWidth: 5, strokeDashArray: '2 2', opacity: 0.6 } as ShapeStyleModel,
                     shape: {
                         type: 'Container',
@@ -338,7 +332,7 @@ describe('Diagram Control', () => {
                             annotation: {},
                             style: {} as ShapeStyleModel,
                         },
-                        children:['node3']
+                        children: ['node3']
                     } as ContainerModel,
                 },
                 { id: 'node3', offsetX: 300, offsetY: 250, width: 100, height: 40 },
@@ -362,6 +356,8 @@ describe('Diagram Control', () => {
         afterAll((): void => {
             diagram.destroy();
             ele.remove();
+            diagram = null;
+            ele = null;
         });
 
         it('Copy paste the container', (done: Function) => {
@@ -385,9 +381,6 @@ describe('Diagram Control', () => {
     describe('Diagram Element - Container Changes', () => {
         let diagram: Diagram;
         let mouseEvents: MouseEvents = new MouseEvents();
-        let shadow: ShadowModel = { angle: 135, distance: 10, opacity: 0.9 };
-        let stops: StopModel[] = [{ color: 'white', offset: 0 }, { color: 'red', offset: 50 }];
-        let gradient: RadialGradientModel = { cx: 50, cy: 50, fx: 50, fy: 50, stops: stops, type: 'Radial' };
 
         let ele: HTMLElement;
         beforeAll((): void => {
@@ -397,7 +390,7 @@ describe('Diagram Control', () => {
                 this.skip(); //Skips test (in Chai)
                 return;
             }
-            ele = createElement('div', { id: 'diagram' });
+            ele = createElement('div', { id: 'diagramContainer' });
             document.body.appendChild(ele);
             let nodes: NodeModel[] = [
                 { id: 'node1', offsetX: 300, offsetY: 250, width: 100, height: 40 },
@@ -418,7 +411,7 @@ describe('Diagram Control', () => {
                             style: { fill: 'red', strokeColor: 'blue', strokeWidth: 5, strokeDashArray: '2 2', opacity: 0.6 } as ShapeStyleModel,
                         },
                     } as ContainerModel,
-                    shadow : { angle: 45, distance: 15, opacity: 0.3, color: 'grey' },
+                    shadow: { angle: 45, distance: 15, opacity: 0.3, color: 'grey' },
                     constraints: NodeConstraints.Default | NodeConstraints.Shadow,
                 },
                 {
@@ -436,11 +429,11 @@ describe('Diagram Control', () => {
                         header: {
                             style: { fill: 'red', strokeColor: 'blue', strokeWidth: 5, strokeDashArray: '2 2', opacity: 0.6 } as ShapeStyleModel,
                         },
-                        children:['node1', 'node2'],
+                        children: ['node1', 'node2'],
                     } as ContainerModel,
                 },
                 {
-                    id: 'container2', width: 700, height: 400, offsetX: 300, offsetY: 400, maxWidth:700,
+                    id: 'container2', width: 700, height: 400, offsetX: 300, offsetY: 400, maxWidth: 700,
                     style: { fill: 'red', strokeColor: 'blue', strokeWidth: 5, strokeDashArray: '2 2', opacity: 0.6 } as ShapeStyleModel,
                     shape: {
                         type: 'Container',
@@ -468,12 +461,14 @@ describe('Diagram Control', () => {
                 width: 1500, height: 1000, nodes: nodes,
                 connectors: connectors
             });
-            diagram.appendTo('#diagram');
+            diagram.appendTo('#diagramContainer');
         });
 
         afterAll((): void => {
             diagram.destroy();
             ele.remove();
+            diagram = null;
+            ele = null;
         });
 
         it('add container inside container', function (done: Function) {
@@ -492,10 +487,10 @@ describe('Diagram Control', () => {
             let diagramCanvas = document.getElementById(diagram.element.id + 'content');
             let node1 = diagram.nameTable['container2'].wrapper;
             let offsetX = diagram.nameTable['container2'].offsetX;
-            mouseEvents.mouseDownEvent(diagramCanvas, node1.bounds.center.x + 200,node1.bounds.center.y);
-            mouseEvents.mouseMoveEvent(diagramCanvas, node1.bounds.center.x - 10,node1.bounds.center.y);
-            mouseEvents.mouseMoveEvent(diagramCanvas, node1.bounds.center.x + 300,node1.bounds.center.y);
-            mouseEvents.mouseUpEvent(diagramCanvas, node1.bounds.center.x+300,node1.bounds.center.y);
+            mouseEvents.mouseDownEvent(diagramCanvas, node1.bounds.center.x + 200, node1.bounds.center.y);
+            mouseEvents.mouseMoveEvent(diagramCanvas, node1.bounds.center.x - 10, node1.bounds.center.y);
+            mouseEvents.mouseMoveEvent(diagramCanvas, node1.bounds.center.x + 300, node1.bounds.center.y);
+            mouseEvents.mouseUpEvent(diagramCanvas, node1.bounds.center.x + 300, node1.bounds.center.y);
             expect(diagram.nameTable['container2'].offsetX < offsetX).toBe(true);
             done();
         });
@@ -516,8 +511,8 @@ describe('Diagram Control', () => {
         });
 
         it('add child to container by Public method', function (done: Function) {
-             var child = {   
-                id:'child', width: 100, height: 100, offsetX: 300, offsetY: 200
+            var child = {
+                id: 'child', width: 100, height: 100, offsetX: 300, offsetY: 200
             };
             diagram.addChildToGroup(diagram.nameTable['container'], child);
             expect(diagram.nameTable['child'].parentId === 'container').toBe(true);
@@ -536,10 +531,6 @@ describe('Diagram Control', () => {
     });
     describe('Diagram Element - Container Deletion', () => {
         let diagram: Diagram;
-        let mouseEvents: MouseEvents = new MouseEvents();
-        let shadow: ShadowModel = { angle: 135, distance: 10, opacity: 0.9 };
-        let stops: StopModel[] = [{ color: 'white', offset: 0 }, { color: 'red', offset: 50 }];
-        let gradient: RadialGradientModel = { cx: 50, cy: 50, fx: 50, fy: 50, stops: stops, type: 'Radial' };
 
         let ele: HTMLElement;
         beforeAll((): void => {
@@ -549,7 +540,7 @@ describe('Diagram Control', () => {
                 this.skip(); //Skips test (in Chai)
                 return;
             }
-            ele = createElement('div', { id: 'diagram' });
+            ele = createElement('div', { id: 'diagramDeletion' });
             document.body.appendChild(ele);
             let nodes: NodeModel[] = [
                 {
@@ -568,7 +559,7 @@ describe('Diagram Control', () => {
                             style: { fill: 'red', strokeColor: 'blue', strokeWidth: 5, strokeDashArray: '2 2', opacity: 0.6 } as ShapeStyleModel,
                         },
                     } as ContainerModel,
-                    shadow : { angle: 45, distance: 15, opacity: 0.3, color: 'grey' },
+                    shadow: { angle: 45, distance: 15, opacity: 0.3, color: 'grey' },
                     constraints: NodeConstraints.Default | NodeConstraints.Shadow,
                 },
                 {
@@ -583,12 +574,14 @@ describe('Diagram Control', () => {
             diagram = new Diagram({
                 width: 1500, height: 1000, nodes: nodes
             });
-            diagram.appendTo('#diagram');
+            diagram.appendTo('#diagramDeletion');
         });
 
         afterAll((): void => {
             diagram.destroy();
             ele.remove();
+            diagram = null;
+            ele = null;
         });
 
         it('remove header container without children', function (done: Function) {
@@ -607,11 +600,6 @@ describe('Diagram Control', () => {
     });
     describe('Diagram Element - Container Group', () => {
         let diagram: Diagram;
-        let mouseEvents: MouseEvents = new MouseEvents();
-        let shadow: ShadowModel = { angle: 135, distance: 10, opacity: 0.9 };
-        let stops: StopModel[] = [{ color: 'white', offset: 0 }, { color: 'red', offset: 50 }];
-        let gradient: RadialGradientModel = { cx: 50, cy: 50, fx: 50, fy: 50, stops: stops, type: 'Radial' };
-
         let ele: HTMLElement;
         beforeAll((): void => {
             const isDef = (o: any) => o !== undefined && o !== null;
@@ -620,11 +608,11 @@ describe('Diagram Control', () => {
                 this.skip(); //Skips test (in Chai)
                 return;
             }
-            ele = createElement('div', { id: 'diagram' });
+            ele = createElement('div', { id: 'diagramGroup' });
             document.body.appendChild(ele);
             let nodes: NodeModel[] = [
                 { id: 'node1', offsetX: 300, offsetY: 250, width: 100, height: 40 },
-                { id: 'node2', offsetX: 450, offsetY: 250, width: 100, height: 40},
+                { id: 'node2', offsetX: 450, offsetY: 250, width: 100, height: 40 },
                 {
                     id: 'container', width: 300, height: 300, offsetX: 100, offsetY: 100,
                     style: { fill: 'red', strokeColor: 'blue', strokeWidth: 5, strokeDashArray: '2 2', opacity: 0.6 } as ShapeStyleModel,
@@ -642,7 +630,7 @@ describe('Diagram Control', () => {
                         },
                         children: ['container2']
                     } as ContainerModel,
-                    shadow : { angle: 45, distance: 15, opacity: 0.3, color: 'grey' },
+                    shadow: { angle: 45, distance: 15, opacity: 0.3, color: 'grey' },
                     constraints: NodeConstraints.Default | NodeConstraints.Shadow,
                 },
                 {
@@ -652,7 +640,7 @@ describe('Diagram Control', () => {
                         type: 'Container',
                         children: ['node1']
                     } as ContainerModel,
-                    shadow : { angle: 45, distance: 15, opacity: 0.3, color: 'grey' },
+                    shadow: { angle: 45, distance: 15, opacity: 0.3, color: 'grey' },
                     constraints: NodeConstraints.Default | NodeConstraints.Shadow,
                 }
             ];
@@ -660,12 +648,14 @@ describe('Diagram Control', () => {
             diagram = new Diagram({
                 width: 1500, height: 1000, nodes: nodes
             });
-            diagram.appendTo('#diagram');
+            diagram.appendTo('#diagramGroup');
         });
 
         afterAll((): void => {
             diagram.destroy();
             ele.remove();
+            diagram = null;
+            ele = null;
         });
 
         it('paste nodes and container with multiselect and Group', function (done) {
@@ -674,12 +664,12 @@ describe('Diagram Control', () => {
             diagram.group();
             diagram.copy();
             diagram.paste();
-            expect(diagram.nodes.length>0).toBe(true);
+            expect(diagram.nodes.length > 0).toBe(true);
             done();
 
         });
     });
-    
+
     describe('Bug 969383-Margin Properties Fail for Nested Containers with Children', () => {
         let diagram: Diagram;
         let mouseEvents: MouseEvents = new MouseEvents();
@@ -931,6 +921,8 @@ describe('Diagram Control', () => {
         afterAll((): void => {
             diagram.destroy();
             ele.remove();
+            diagram = null;
+            ele = null;
         });
         it('Render-nested-container-with-child', function (done) {
             let mainContainer: NodeModel = diagram.nameTable["container1"]

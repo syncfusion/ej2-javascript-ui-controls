@@ -190,6 +190,10 @@ export class DetailsView {
             (this.parent.toolbarModule.toolbarObj as any).portals) {
             (this.parent as any)['portals'] = (this.parent as any)['portals'].concat((this.parent.toolbarModule.toolbarObj as any).portals);
         }
+        if ((this.parent as any).portals && this.parent.navigationpaneModule &&
+            this.parent.navigationpaneModule.treeObj && this.parent.navigationpaneModule.treeObj.portals) {
+            (this.parent as any)['portals'] = (this.parent as any)['portals'].concat(this.parent.navigationpaneModule.treeObj.portals);
+        }
         this.parent.notify('renderReactTemplate', (this.parent as any)['portals']);
         (this.parent as any)['renderReactTemplates']();
     }
@@ -263,7 +267,7 @@ export class DetailsView {
                 }
             }
         }
-        const iWidth: string = ((this.parent.isMobile || this.parent.isBigger) ? '54' : '46');
+        const iWidth: string = ((this.parent.isMobile || this.parent.isBigger) ? '70' : '56');
         const icon: ColumnModel = {
             field: 'type', width: iWidth, minWidth: iWidth,
             template: initializeCSPTemplate(function(data: any): string | Function  {

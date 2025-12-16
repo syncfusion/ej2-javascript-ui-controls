@@ -315,6 +315,7 @@ export class WCharacterFormat {
         } else {
             return WCharacterFormat.getPropertyDefaultValue(property);
         }
+            
     }
     private documentCharacterFormat(): CharacterFormatInfo {
         if (isNullOrUndefined(this.ownerBase)) {

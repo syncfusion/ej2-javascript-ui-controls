@@ -1,3 +1,4 @@
+@use 'ej2-base/styles/common/mixin' as *;
 @include export-module('context-menu-material-icons') {
   .e-contextmenu-wrapper,
   .e-contextmenu-container {

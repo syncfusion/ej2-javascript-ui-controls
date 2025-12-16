@@ -409,7 +409,7 @@ export class WParagraphFormat {
                 editorFormat: editorFormat,
                 isPaste: isPasteAction
             };
-    }		    
+    } 
     /**
     * @private
     */

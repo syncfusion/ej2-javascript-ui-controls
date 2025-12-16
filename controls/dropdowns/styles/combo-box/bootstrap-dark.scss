@@ -1,4 +1,4 @@
-@import 'ej2-base/styles/definition/bootstrap-dark.scss';
-@import '../drop-down-list/bootstrap-dark-definition.scss';
-@import 'bootstrap-dark-definition.scss';
-@import 'all.scss';
+@use 'ej2-base/styles/definition/bootstrap-dark' as *;
+@use '../drop-down-list/bootstrap-dark-definition' as *;
+@use 'bootstrap-dark-definition' as *;
+@use 'all' as *;

@@ -1,3 +1,5 @@
+@use 'ej2-base/styles/common/mixin' as *;
+@use '../material3-definition' as *;
 @include export-module('dialog-material3-icons') {
   .e-dialog {
     .e-icon-dlg-close::before {

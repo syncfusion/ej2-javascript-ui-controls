@@ -1,3 +1,5 @@
+@use 'ej2-base/styles/common/mixin' as *;
+@use './theme-variables' as *;
 @include export-module('timepicker-layout') {
   //   timepicker layout
   .e-input-group.e-control-wrapper.e-time-wrapper.e-non-edit.e-input-focus .e-input:focus ~ .e-clear-icon,
@@ -38,19 +40,19 @@
     @if $timepicker-skin-name == 'Material3' {
       background: $timepicker-default-overlay;
     }
-    height: 100%;
-    left: 0;
+    height: $timepicker-full-height;
+    left: $timepicker-list-parent-margin;
     opacity: .5;
     pointer-events: auto;
     position: fixed;
-    top: 0;
-    width: 100%;
+    top: $timepicker-list-parent-margin;
+    width: $timepicker-full-width;
     z-index: 999;
   }
 
   #{&}.e-timepicker.e-popup {
     border-style: solid;
-    border-width: 1px;
+    border-width: $timepicker-border;
     overflow: auto;
 
     #{if(&, '&', '*')} .e-content {
@@ -58,8 +60,8 @@
     }
 
     #{if(&, '&', '*')} .e-list-parent.e-ul {
-      margin: 0;
-      padding: $timepicker-list-normal-padding 0;
+      margin: $timepicker-list-parent-margin;
+      padding: $timepicker-list-parent-padding;
 
       #{if(&, '&', '*')} .e-list-item {
         cursor: default;
@@ -69,7 +71,7 @@
         text-overflow: ellipsis;
         vertical-align: middle;
         white-space: nowrap;
-        width: 100%;
+        width: $timepicker-full-width;
       }
 
       #{if(&, '&', '*')} .e-list-item.e-hover {
@@ -113,7 +115,7 @@
 
   .e-content-placeholder.e-timepicker.e-placeholder-timepicker {
     background-size: 250px 33px;
-    min-height: 33px;
+    min-height: $timepicker-content-placeholder-min-height;
   }
 }
 
@@ -126,19 +128,19 @@
   align-items: center;
   display: flex;
   flex-direction: column;
-  height: 100%;
+  height: $timepicker-full-height;
   justify-content: center;
-  left: 0;
-  max-height: 100%;
+  left: $timepicker-list-parent-margin;
+  max-height: $timepicker-full-height;
   position: fixed;
-  top: 0;
-  width: 100%;
+  top: $timepicker-list-parent-margin;
+  width: $timepicker-full-width;
   z-index: 1002;
 
   .e-timepicker.e-popup.e-lib.e-control.e-popup-open {
-    left: 0 !important;
+    left: $timepicker-list-parent-margin !important;
     position: relative;
-    top: 0 !important;
+    top: $timepicker-list-parent-margin !important;
   }
 }
 
@@ -146,7 +148,7 @@
 .e-datetimepicker.e-popup-expand.e-timepicker.e-popup,
 .e-timepicker-mob-popup-wrap .e-popup-expand.e-datetimepicker.e-popup,
 .e-datetimepicker.e-popup-expand.e-popup {
-  border-radius: 0;
+  border-radius: $timepicker-zero-border-radius;
 }
 
 .e-timepicker-mob-popup-wrap .e-popup-expand,
@@ -167,7 +169,7 @@
       #{if(&, '&', '*')} .e-model-title {
         padding: $modal-portrait-content-padding;
         text-transform: $modal-header-title-transform;
-        font-weight: 500;
+        font-weight: $timepicker-model-title-font-weight;
       }
 
       #{if(&, '&', '*')} .e-btn.e-popup-close {

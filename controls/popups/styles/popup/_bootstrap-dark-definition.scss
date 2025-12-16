@@ -1,3 +1,8 @@
+@use 'ej2-base/styles/definition/bootstrap-dark' as *;
+@forward 'ej2-base/styles/definition/bootstrap-dark';
+
 //default
 //undefined
 //enddefault
+$popup-width: auto !default;
+$popup-height: auto !default;

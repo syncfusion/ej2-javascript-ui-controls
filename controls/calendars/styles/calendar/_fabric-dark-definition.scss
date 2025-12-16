@@ -1,3 +1,6 @@
+@use 'ej2-base/styles/definition/fabric-dark' as *;
+@forward 'ej2-base/styles/definition/fabric-dark';
+
 //default
 $calendar-title-hover-color: $neutral-light-fontalt !default;
 $calendar-icon-hover-color: $neutral-light-fontalt !default;
@@ -59,6 +62,7 @@ $calendar-normal-min-width: 232px !default;
 $calendar-small-max-width: $calendar-normal-max-width !default;
 $calendar-small-min-width: $calendar-normal-min-width !default;
 $calendar-header-title-padding: 0 5px !default;
+$border-zero: 0;
 
 // newly added
 $calendar-active-today-hover-font-color: $neutral-light-fontalt !default;
@@ -200,3 +204,12 @@ $calendar-bigger-small-yeardecade-font-size: 12px !default;
 $calendar-small-font-size: 12px !default;
 
 //enddefault
+
+$line-height: 14px;
+$margin-zero: 0;
+$padding-zero: 0;
+$calendar-bigger-rtl-header-text-indent: 6px !default;
+$calendar-zero-border-radius: 0 !default;
+$calendar-bigger-header-width: 60% !default;
+$calendar-bigger-placeholder-min-height: 392px !default;
+$calendar-small-min-height: 220px !default;

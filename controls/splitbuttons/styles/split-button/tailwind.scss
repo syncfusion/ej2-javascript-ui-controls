@@ -1,7 +1,7 @@
-@import 'ej2-base/styles/definition/tailwind.scss';
-@import 'ej2-buttons/styles/button/tailwind-definition.scss';
-@import 'ej2-popups/styles/popup/tailwind-definition.scss';
-@import './../drop-down-button/tailwind-definition.scss';
-@import 'tailwind-definition.scss';
-@import 'all.scss';
-@import 'bigger.scss';
+@use 'ej2-base/styles/definition/tailwind' as *;
+@use 'ej2-buttons/styles/button/tailwind-definition' as *;
+@use 'ej2-popups/styles/popup/tailwind-definition' as *;
+@use './../drop-down-button/tailwind-definition' as *;
+@use 'tailwind-definition' as *;
+@use 'all' as *;
+@use 'bigger' as *;

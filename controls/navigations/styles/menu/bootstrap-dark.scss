@@ -1,9 +1,9 @@
-@import 'ej2-base/styles/definition/bootstrap-dark.scss';
-@import '../context-menu/bootstrap-dark-definition.scss';
-@import '../h-scroll/bootstrap-dark-definition.scss';
-@import '../v-scroll/bootstrap-dark-definition.scss';
-@import 'ej2-popups/styles/popup/bootstrap-dark-definition.scss';
-@import 'bootstrap-dark-definition.scss';
-@import 'icons/bootstrap-dark.scss';
-@import 'all.scss';
-@import 'bigger.scss';
+@use 'ej2-base/styles/definition/bootstrap-dark' as *;
+@use '../context-menu/bootstrap-dark-definition' as *;
+@use '../h-scroll/bootstrap-dark-definition' as *;
+@use '../v-scroll/bootstrap-dark-definition' as *;
+@use 'ej2-popups/styles/popup/bootstrap-dark-definition' as *;
+@use 'bootstrap-dark-definition' as *;
+@use 'icons/bootstrap-dark' as *;
+@use 'all' as *;
+@use 'bigger' as *;

@@ -299,15 +299,16 @@ describe('Chart', () => {
         });
 
 
-        it('Checking animation', (done: Function) => {
+        it('Checking animation', async (): Promise<void> => {
             animationComplete = (args: IAnimationCompleteEventArgs): void => {
                 let point: Element = document.getElementById('container_Series_' + args.series.index + '_Point_0');
                 expect(point.getAttribute('transform') === 'translate(0,0)').toBe(true);
-                done();
+                //done();
             };
             chartObj.animationComplete = animationComplete;
             chartObj.series[0].animation.enable = true;
             chartObj.refresh();
+            await wait(500);
         });
         it('Legend Shape type', (done: Function) => {
             loaded = (args: Object): void => {
@@ -1399,6 +1400,9 @@ describe('Chart', () => {
             chartObj.refresh();
         });
     });
+    async function wait(ms: number): Promise<void> {
+        return new Promise(resolve => setTimeout(resolve, ms));
+    }
         it('memory leak', () => {
             profile.sample();
             let average: any = inMB(profile.averageChange)

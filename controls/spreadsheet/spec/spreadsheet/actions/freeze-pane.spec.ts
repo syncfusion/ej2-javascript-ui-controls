@@ -1,6 +1,6 @@
 import { SpreadsheetHelper } from "../util/spreadsheethelper.spec";
 import { defaultData, filterData } from '../util/datasource.spec';
-import { SheetModel, getRangeAddress, Spreadsheet } from "../../../src/index";
+import { SheetModel, getRangeAddress, Spreadsheet, onContentScroll } from "../../../src/index";
 
 describe('Freeze pane ->', () => {
     let helper: SpreadsheetHelper = new SpreadsheetHelper('spreadsheet');
@@ -29,15 +29,25 @@ describe('Freeze pane ->', () => {
     });
     it('Virtual scrolling - scroll down', (done: Function) => {
         helper.invoke('goTo', ['CS244']);
+        const spreadsheet: any = helper.getInstance();
+        spreadsheet.notify(
+            onContentScroll, {
+                scrollTop: spreadsheet.getMainContent().parentElement.scrollTop,
+                scrollLeft: spreadsheet.getScrollElement().scrollLeft });
         setTimeout((): void => {
             expect(sheet.topLeftCell).toBe('A1');
-            expect(sheet.paneTopLeftCell).toBe('CS244');
+            expect(sheet.paneTopLeftCell).toBe('CS232');
             expect(helper.invoke('getContentTable').tBodies[0].childElementCount).toBe(childCount);
             done();
         }, 30);
     });
     it('Virtual scrolling - scroll up', (done: Function) => {
         helper.invoke('goTo', ['D59']);
+        const spreadsheet: any = helper.getInstance();
+        spreadsheet.notify(
+            onContentScroll, {
+                scrollTop: spreadsheet.getMainContent().parentElement.scrollTop,
+                scrollLeft: spreadsheet.getScrollElement().scrollLeft });
         setTimeout((): void => {
             expect(sheet.topLeftCell).toBe('A1');
             expect(sheet.paneTopLeftCell).toBe('D59');
@@ -59,6 +69,17 @@ describe('Freeze pane ->', () => {
             done();
         }, 30);
     });
+    it('Hide/show headers with freeze panes', (done: Function) => {
+        helper.switchRibbonTab(6);
+        const sheet: SheetModel = helper.getInstance().getActiveSheet();
+        helper.click(`#${helper.id}_headers`);
+        expect(sheet.showHeaders).toBeFalsy();
+        expect(helper.getElementFromSpreadsheet(`#${helper.id}_sheet`).classList.contains('e-hide-headers')).toBeTruthy();
+        helper.click(`#${helper.id}_headers`);
+        expect(sheet.showHeaders).toBeTruthy();
+        expect(helper.getElementFromSpreadsheet(`#${helper.id}_sheet`).classList.contains('e-hide-headers')).toBeFalsy();
+        done();
+    });
     it('SF-401876 -> Apply freeze pane issue when columns range selection are before the viewport', (done: Function) => {
         sheet.selectedRange = 'A1:H11';
         sheet.frozenRows = 0; sheet.frozenColumns = 0;
@@ -66,7 +87,7 @@ describe('Freeze pane ->', () => {
         sheet.topLeftCell = sheet.paneTopLeftCell = 'D1';
         const spreadsheet: Spreadsheet = helper.getInstance();
         spreadsheet.setProperties({ sheets: spreadsheet.sheets }, true);
-        helper.switchRibbonTab(5);
+        helper.switchRibbonTab(6);
         helper.click('#' + helper.id + '_freezepanes');
         expect(sheet.frozenRows).toBe(0);
         expect(sheet.frozenColumns).toBe(0);
@@ -156,7 +177,7 @@ describe('CR-Issues ->', () => {
             helper.invoke('merge', ['A1:F1']);
             helper.invoke('selectRange', ['A1']);
             const autoFill: HTMLElement = helper.getElementFromSpreadsheet('.e-autofill');
-            let td: HTMLElement = helper.invoke('getCell', [5, 0]);
+            let td: HTMLElement = helper.invoke('getCell', [5, 5]);
             let autoFillCoords = autoFill.getBoundingClientRect();
             let coords = td.getBoundingClientRect();
             helper.triggerMouseAction('mousedown', { x: autoFillCoords.left + 1, y: autoFillCoords.top + 1 }, null, autoFill);
@@ -197,7 +218,7 @@ describe('API allowFreezePane:false condition checks', () => {
         done();
     });
     it('Check through UI interaction', (done: Function) => {
-        helper.switchRibbonTab(5);
+        helper.switchRibbonTab(6);
         helper.click('#' + helper.id + '_freezepanes');
         const freezePaneBtn = helper.getElementFromSpreadsheet('#' + helper.id + '_freezepanes');
         expect(freezePaneBtn.parentElement.classList.contains('e-overlay')).toBeTruthy();

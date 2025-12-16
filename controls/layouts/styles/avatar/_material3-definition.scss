@@ -1,4 +1,6 @@
-$avatar-base-border-radius: 4px !default;
+@use 'ej2-base/styles/definition/material3' as *;
+@forward 'ej2-base/styles/definition/material3';
+$avatar-base-border-radius: $radius-4 !default;
 $avatar-base-background-color: rgba($primary-light) !default;
 $avatar-base-font-size: $text-xl !default;
 $avatar-base-width: 40px !default;
@@ -7,13 +9,26 @@ $avatar-base-line-height: 20px !default;
 $avatar-base-text-color: rgba($primary-darker) !default;
 $avatar-base-font-weight: 500 !default;
 $avatar-base-img-height: 100% !default;
-$avatar-circle-border-radius: 50% !default;
+$avatar-circle-border-radius: $border-radius-50p !default;
 $avatar-xsmall-font-size: 14px !default;
 $avatar-small-font-size: 18px !default;
 $avatar-large-font-size: 26px !default;
 $avatar-xlarge-font-size: 30px !default;
-$avatar-large-border-radius: 4px !default;
+$avatar-large-border-radius: $radius-4 !default;
 $avatar-base-xsmall-line-height: 14px !default;
 $avatar-base-small-line-height: 18px !default;
 $avatar-base-large-line-height: 26px !default;
 $avatar-base-xlarge-line-height: 30px !default;
+$avatar-font-family: $font-family !default;
+
+//Avatar Height
+$avatar-base-xsmall-height: 24px !default;
+$avatar-base-small-height: 32px !default;
+$avatar-base-large-height: 48px !default;
+$avatar-base-xlarge-height: 56px !default;
+
+//Avatar Width
+$avatar-base-xsmall-width: 24px !default;
+$avatar-base-small-width: 32px !default;
+$avatar-base-large-width: 48px !default;
+$avatar-base-xlarge-width: 56px !default;

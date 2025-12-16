@@ -1,4 +1,4 @@
-import { AxisModel, CellStyleModel, ChartModel, ConditionalFormatModel, DefineNameModel, HyperlinkModel, ImageModel, SortCollectionModel } from './class-model';
+import { AxisModel, CellStyleModel, ChartModel, ConditionalFormatModel, DefineNameModel, HyperlinkModel, ImageModel, SortCollectionModel, ThreadedCommentModel } from './class-model';
 import { SaveType, SortOrder, FormatType, BorderType, ModelType, MergeType, ClearType, DataBar, ColorScale, IconSet } from './index';
 import { Sheet, RangeModel, CellModel, SheetModel, ColumnModel, RowModel, UsedRangeModel, TopBottom, HighlightCell } from '../index';
 import { CFColor, Workbook, PdfPageOrientation, ValidationModel } from '../index';
@@ -404,6 +404,36 @@ export interface AutoDetectInfo {
 }
 
 /**
+ * Defines the structure of a note associated with a cell. A note provides additional context or information for the cell content.
+ */
+export interface NoteModel {
+    /**
+     * Defines the text content of the note.
+     * If not set, the note will appear blank.
+     *
+     * @default ''
+     */
+    text?: string;
+
+    /**
+     * Indicates whether the note popup container is visible.
+     * When `true`, the note behaves like a sticky note—remaining open until explicitly closed.
+     * When `false`, the note appears on hover and closes automatically.
+     *
+     * @default false
+     */
+    isVisible?: boolean;
+}
+
+/** @hidden */
+export interface ExtendedNoteModel extends NoteModel {
+    id?: string;
+    rowIdx?: number;
+    colIdx?: number;
+    address?: number[];
+}
+
+/**
  * @hidden
  */
 export interface ExtendedSheet extends Sheet {
@@ -413,8 +443,9 @@ export interface ExtendedSheet extends Sheet {
     validations?: ValidationModel[];
     chartColl?: ChartModel[];
     imageColl?: ImageModel[];
+    comments?: ExtendedThreadedCommentModel[];
     mergedCells?: MergedCellModel[];
-    notes?: { text: string, address: number[] }[],
+    notes?: ExtendedNoteModel[];
     hyperLinks?: { address: string, range: number[] }[];
 }
 
@@ -1234,6 +1265,17 @@ export interface WorkbookParseOptions {
      * Disabling conditional formatting improves performance and reduces memory usage for files with complex formatting rules.
      */
     ignoreConditionalFormat?: boolean;
+}
+
+export interface CommentSaveEventArgs {
+    comment?: ThreadedCommentModel;
+    address?: string;
+    cancel?: boolean;
+}
+
+export interface ExtendedThreadedCommentModel extends ThreadedCommentModel {
+    id?: string;
+    address?: number[];
 }
 
 /** @hidden */

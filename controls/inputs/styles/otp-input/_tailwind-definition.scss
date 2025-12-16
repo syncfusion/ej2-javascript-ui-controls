@@ -1,3 +1,5 @@
+@use 'ej2-base/styles/definition/tailwind' as *;
+@forward 'ej2-base/styles/definition/tailwind';
 $otp-input-width: 30px !default;
 $otp-input-height: 30px !default;
 $otp-input-gap: 12px !default;
@@ -57,3 +59,4 @@ $otp-input-underlined-bg-color: $transparent !default;
 $otp-input-disabled-color: $content-text-color-disabled !default;
 $otp-input-disabled-border-color: $content-bg-color-alt2 !default;
 $otp-input-disabled-bg-color: $content-bg-color-alt2 !default;
+$otp-input-zero-padding-margin: 0 !default;

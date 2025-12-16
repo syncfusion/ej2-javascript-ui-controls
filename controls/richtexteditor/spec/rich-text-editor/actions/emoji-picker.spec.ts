@@ -7,7 +7,7 @@ import { ToolbarType } from "../../../src/common/enum";
 import { ActionBeginEventArgs  } from "../../../src/common/interface";
 import { destroy, renderRTE, setCursorPoint } from "./../render.spec";
 import { EditorManager } from "../../../src";
-import { BASIC_MOUSE_EVENT_INIT } from "../../constant.spec";
+import { ARROW_DOWN_EVENT_INIT, ARROW_LEFT_EVENT_INIT, ARROW_UP_EVENT_INIT, BACKSPACE_EVENT_INIT, BASIC_MOUSE_EVENT_INIT, ENTERKEY_EVENT_INIT, ESCAPE_KEY_EVENT_INIT } from "../../constant.spec";
 
 let keyboardEventArgs: any = {
     preventDefault: function () { },
@@ -429,13 +429,8 @@ describe('Emoji picker module', () => {
             const emojiButton: HTMLElement = rteObj.element.querySelector('#' + controlId + '_toolbar_EmojiPicker');
             emojiButton.click();
             expect(rteObj.element.querySelector('.e-rte-emojipicker-popup')).not.toBe(null);
-            const keyboardEventArgs: any = {
-                preventDefault: function () { },
-                keyCode: 27,
-                key: 'Escape',
-                type: 'keydown'
-            };
-            (<any>rteObj).keyDown(keyboardEventArgs);
+            const escapeEvent: KeyboardEvent = new KeyboardEvent('keydown', ESCAPE_KEY_EVENT_INIT);
+            document.querySelector('.e-rte-emojipicker-popup').dispatchEvent(escapeEvent);
             expect(rteObj.element.querySelector('.e-rte-emojipicker-popup')).toBe(null);
             expect(document.activeElement).toBe(emojiButton);
             done();
@@ -566,12 +561,12 @@ describe('Emoji picker module', () => {
                 selection.addRange(range);
                 keyboardEventArgs.keyCode = 186;
                 keyboardEventArgs.shiftKey = true;
-                (<any>rteObj).keyDown(keyboardEventArgs);
-                const btnGroup: NodeListOf<HTMLElement> = rteObj.element.querySelectorAll('.e-rte-emojipickerbtn-group button');
-                btnGroup[0].click();
-                expect(rteObj.element.querySelector('.e-rte-emojipicker-popup')).toBe(null);
-                expect(firstP.innerHTML).toBe('Emoji picker : : : : : : 😀');
-                done();
+            (<any>rteObj).keyDown(keyboardEventArgs);
+            const btnGroup: NodeListOf<HTMLElement> = rteObj.element.querySelectorAll('.e-rte-emojipickerbtn-group button');
+            btnGroup[0].click();
+            expect(rteObj.element.querySelector('.e-rte-emojipicker-popup')).toBe(null);
+            expect(firstP.innerHTML).toBe('Emoji picker : : : : : : 😀');
+            done();
         });
     });
     describe('Bug 963296: Empty Bullet List Retains in Editor After Selecting All Content and Inserting Emoji ', () => {
@@ -845,31 +840,31 @@ describe('Emoji picker module', () => {
                 },100);
         });
     });
-    describe('ArrowDown action of set of last emoji' , () => {
+    describe('ArrowDown action of set of last emoji', () => {
         let rteObj: RichTextEditor;
         let rteEle: HTMLElement;
         let controlId: string;
         let defaultRTE: HTMLElement = createElement('div', { id: 'defaultRTE' });
         let innerHTML: string = `<p id="rte-p"></p>`;
-        beforeEach( () => {
+        beforeEach(() => {
             document.body.appendChild(defaultRTE);
             rteObj = new RichTextEditor({
                 toolbarSettings: {
                     items: ['EmojiPicker']
                 },
-                value : innerHTML
+                value: innerHTML
             });
             rteObj.appendTo('#defaultRTE');
             rteEle = rteObj.element;
             controlId = rteEle.id;
         });
-        afterEach( () => {
+        afterEach(() => {
             destroy(rteObj);
         });
         it('ArrowDown action of set of last emoji', () => {
             const element: HTMLElement = rteObj.element.querySelector('#' + controlId + '_toolbar_EmojiPicker');
             element.click();
-            const emojiDiv:NodeListOf<HTMLElement> = document.querySelectorAll('.e-rte-emojipickerbtn-group');
+            const emojiDiv: NodeListOf<HTMLElement> = document.querySelectorAll('.e-rte-emojipickerbtn-group');
             emojiDiv[0].style.display = 'grid';
             emojiDiv[0].style.gridTemplateColumns = 'repeat(6, 1fr)';
             emojiDiv[1].style.display = 'grid';
@@ -877,23 +872,10 @@ describe('Emoji picker module', () => {
             const emoji: NodeListOf<HTMLElement> = document.querySelectorAll('.e-rte-emojipickerbtn-group button');
             emoji[23].focus();
             emoji[23].classList.add('e-focus');
-            keyboardEventArgs = {
-                preventDefault: function () { },
-                keyCode: 40,
-                shiftKey: false,
-                altKey: false,
-                ctrlKey: false,
-                char: '',
-                key: 'ArrowDown',
-                charCode: 40,
-                which: 40,
-                code: 'ArrowDown',
-                action: 'ArrowDown',
-                type: 'keydown',
-            };
-            (<any>rteObj).keyDown(keyboardEventArgs);
+            const arrowDownEvent: KeyboardEvent = new KeyboardEvent('keydown', ARROW_DOWN_EVENT_INIT);
+            document.querySelector('.e-rte-emojipicker-popup').dispatchEvent(arrowDownEvent);
             expect(document.activeElement.innerHTML).toBe('🧑');
-            (<any>rteObj).keyDown(keyboardEventArgs);
+            document.querySelector('.e-rte-emojipicker-popup').dispatchEvent(arrowDownEvent);
             expect(document.activeElement.innerHTML).toBe('🐹');
         });
     });
@@ -929,9 +911,8 @@ describe('Emoji picker module', () => {
             const emoji: NodeListOf<HTMLElement> = document.querySelectorAll('.e-rte-emojipickerbtn-group button');
             emoji[33].focus();
             emoji[33].classList.add('e-focus');
-            keyboardEventArgs.keyCode = 38;
-            keyboardEventArgs.shiftKey = false;
-            (<any>rteObj).keyDown(keyboardEventArgs);
+            const arrowUpEvent: KeyboardEvent = new KeyboardEvent('keydown', ARROW_UP_EVENT_INIT);
+            document.querySelector('.e-rte-emojipicker-popup').dispatchEvent(arrowUpEvent);
             expect(document.activeElement.innerHTML).toBe('🧑');
         });
     });
@@ -967,9 +948,8 @@ describe('Emoji picker module', () => {
             const emoji: NodeListOf<HTMLElement> = document.querySelectorAll('.e-rte-emojipickerbtn-group button');
             emoji[29].focus();
             emoji[29].classList.add('e-focus');
-            keyboardEventArgs.keyCode = 38;
-            keyboardEventArgs.shiftKey = false;
-            (<any>rteObj).keyDown(keyboardEventArgs);
+            const arrowUpEvent: KeyboardEvent = new KeyboardEvent('keydown', ARROW_UP_EVENT_INIT);
+            document.querySelector('.e-rte-emojipicker-popup').dispatchEvent(arrowUpEvent);
             expect(document.activeElement.innerHTML).toBe('💂');
         });
     });
@@ -1007,9 +987,8 @@ describe('Emoji picker module', () => {
             const emoji: NodeListOf<HTMLElement> = document.querySelectorAll('.e-rte-emojisearch-btn button');
             emoji[11].focus();
             emoji[11].classList.add('e-focus');
-            keyboardEventArgs.keyCode = 38;
-            keyboardEventArgs.shiftKey = false;
-            (<any>rteObj).keyDown(keyboardEventArgs);
+            const arrowUpEvent: KeyboardEvent = new KeyboardEvent('keydown', ARROW_UP_EVENT_INIT);
+            document.querySelector('.e-rte-emojipicker-popup').dispatchEvent(arrowUpEvent);
             expect(document.activeElement.innerHTML).toBe('😄');
         });
     });
@@ -1049,9 +1028,8 @@ describe('Emoji picker module', () => {
             const emoji: NodeListOf<HTMLElement> = document.querySelectorAll('.e-rte-emojisearch-btn button');
             emoji[5].focus();
             emoji[5].classList.add('e-focus');
-            keyboardEventArgs.keyCode = 40;
-            keyboardEventArgs.shiftKey = false;
-            (<any>rteObj).keyDown(keyboardEventArgs);
+            const arrowDownEvent: KeyboardEvent = new KeyboardEvent('keydown', ARROW_DOWN_EVENT_INIT);
+            document.querySelector('.e-rte-emojipicker-popup').dispatchEvent(arrowDownEvent);
             setTimeout(() => {
                 expect(document.activeElement.innerHTML).toBe('🎮');
                 done();
@@ -1092,9 +1070,8 @@ describe('Emoji picker module', () => {
             const emoji: NodeListOf<HTMLElement> = document.querySelectorAll('.e-rte-emojisearch-btn button');
             emoji[5].focus();
             emoji[5].classList.add('e-focus');
-            keyboardEventArgs.keyCode = 37;
-            keyboardEventArgs.shiftKey = false;
-            (<any>rteObj).keyDown(keyboardEventArgs);
+            const arrowLeftEvent: KeyboardEvent = new KeyboardEvent('keydown', ARROW_LEFT_EVENT_INIT);
+            document.querySelector('.e-rte-emojipicker-popup').dispatchEvent(arrowLeftEvent);
             expect(document.activeElement.innerHTML).toBe('😅');
         });
     });
@@ -1349,9 +1326,8 @@ describe('Emoji picker module', () => {
             const emoji: NodeListOf<HTMLElement> = document.querySelectorAll('.e-rte-emojisearch-btn button');
             emoji[0].focus();
             emoji[0].classList.add('e-focus');
-            keyboardEventArgs.keyCode = 38;
-            keyboardEventArgs.shiftKey = false;
-            (<any>rteObj).keyDown(keyboardEventArgs);
+            const arrowUpEvent: KeyboardEvent = new KeyboardEvent('keydown', ARROW_UP_EVENT_INIT);
+            document.querySelector('.e-rte-emojipicker-popup').dispatchEvent(arrowUpEvent);
             expect(document.activeElement.nodeName).toBe('INPUT');
         });
     });

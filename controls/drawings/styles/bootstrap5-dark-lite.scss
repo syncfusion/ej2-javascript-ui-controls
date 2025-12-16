@@ -1,3 +1,2 @@
-@import 'ej2-base/styles/definition/bootstrap5-dark.scss';
-@import 'drawing/bootstrap5-dark-definition.scss';
-@import 'drawing/all.scss';
+@use 'drawing/bootstrap5-dark-definition' as *;
+@use 'drawing/all' as *;

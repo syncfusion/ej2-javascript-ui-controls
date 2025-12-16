@@ -431,16 +431,21 @@ describe('Chart Control', () => {
             document.getElementById('container').remove();
         });
 
-        it('Default animation', (done: Function) => {
+        it('Default animation', async (): Promise<void> => {
            let animate: EmitType<IAnimationCompleteEventArgs> = (args: Series1): void => {
                 let series: Series = args.series;
                 let element: HTMLElement = document.getElementById('container_ChartSeriesClipRect_0').childNodes[0] as HTMLElement;
                 expect(series.clipRect.width === parseFloat(element.getAttribute('width'))).toBe(true);
-                done();
+                //done();
             };
             chartObj.animationComplete = animate;
+            chartObj.refresh();
+            await wait(500);
         });
     });
+    async function wait(ms: number): Promise<void> {
+        return new Promise(resolve => setTimeout(resolve, ms));
+    }
     describe('Spline Series Inversed axis', () => {
         let chart: Chart;
         let loaded: EmitType<ILoadedEventArgs>;

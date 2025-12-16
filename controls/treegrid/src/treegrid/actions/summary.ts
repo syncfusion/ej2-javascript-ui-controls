@@ -182,7 +182,7 @@ export class Aggregate {
             const disp: string = summaryColumn.columnName;
             const value: Object = types[parseInt(i.toString(), 10)] !== 'Custom' ? val[`${key}`] : val;
             single[`${disp}`] = single[`${disp}`] || {}; single[`${disp}`][`${key}`] = value;
-            single[`${disp}`][types[parseInt(i.toString(), 10)]] = !isNullOrUndefined(val) ? formatFn(value) : ' ';
+            single[`${disp}`][types[parseInt(i.toString(), 10)]] = (!isNullOrUndefined(val) && !isNullOrUndefined(value)) ? formatFn(value) : ' ';
         }
         helper.format = summaryColumn.getFormatter();
         const cellElement: Element = createElement('td', {

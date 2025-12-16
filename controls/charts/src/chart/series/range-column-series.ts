@@ -33,9 +33,16 @@ export class RangeColumnSeries extends ColumnBase {
             rect = this.getRectangle(rangePoint.xValue + sideBySideInfo.start, <number>rangePoint.high,
                                      rangePoint.xValue + sideBySideInfo.end, <number>rangePoint.low, series);
             rect.width = series.columnWidthInPixel ? series.columnWidthInPixel : rect.width;
-            rect.x = series.columnWidthInPixel ? rect.x - (((series.columnWidthInPixel / 2) * series.rectCount) -
-                (series.columnWidthInPixel * series.index)) : rect.x;
-
+            if (series.columnWidthInPixel) {
+                if (series.chart.columns.length === 1) {
+                    rect.x =
+                        rect.x -
+                        ((series.columnWidthInPixel / 2) * series.rectCount -
+                            series.columnWidthInPixel * series.index);
+                } else {
+                    rect.x = rect.x + rect.width / 2 - series.columnWidthInPixel;
+                }
+            }
             const argsData: IPointRenderEventArgs = this.triggerEvent(series, rangePoint, series.interior,
                                                                       { width: series.border.width, color: series.border.color });
             if (!argsData.cancel) {

@@ -1,10 +1,12 @@
+@use 'ej2-base/styles/common/mixin' as *;
+@use '../tailwind3-definition' as *;
 @include export-module('documenteditor-tailwind3-icons') {
   .e-documenteditor {
     .e-close::before {
       color: $icon-color;
       content: '\e7e7';
       font-family: 'e-icons';
-      font-size: 14px;
+      font-size: $e-close-font-size;
     }
 
     .e-de-op-search-icon::before {
@@ -51,28 +53,28 @@
       color: $icon-color;
       content: '\e733';
       font-family: 'e-icons';
-      font-size: 13px;
+      font-size: $e-de-cmt-mark-icon-font-size;
     }
 
     .e-de-multi-cmt-mark::before {
       color: $icon-color;
       content: '\e8bc';
       font-family: 'e-icons';
-      font-size: 14px;
+      font-size: $e-close-font-size;
     }
 
     .e-de-cmt-resolve-icon::before {
       color: $icon-color;
       content: '\e8f2';
       font-family: 'e-icons';
-      font-size: 13px;
+      font-size: $e-de-cmt-resolve-icon-font-size;
     }
 
     .e-de-multi-cmt-resolve::before {
       color: $icon-color;
       content: '\e8f3';
       font-family: 'e-icons';
-      font-size: 14px;
+      font-size: $e-close-font-size;
     }
 
     .e-de-cmt-post::before {
@@ -152,11 +154,11 @@
   }
 
   .e-de-table-properties-alignment {
-    border: 1px solid transparent;
+    border: $e-de-table-properties-alignment-border solid transparent;
   }
 
   .e-de-tablecell-alignment {
-    border: 1px solid transparent;
+    border: $e-de-table-properties-alignment-border solid transparent;
   }
 
   .e-de-tablecell-alignment:hover {
@@ -186,7 +188,7 @@
     content: '\e775';
     font-family: 'e-icons';
     font-size: $de-tablecell-alignment-font-size;
-    margin: 2px;
+    margin: $e-de-tablecell-top-alignment-margin;
   }
 
   .e-de-tablecell-center-alignment::before {
@@ -194,7 +196,7 @@
     content: '\e7e5';
     font-family: 'e-icons';
     font-size: $de-tablecell-alignment-font-size;
-    margin: 2px;
+    margin: $e-de-tablecell-top-alignment-margin;
   }
 
   .e-de-tablecell-bottom-alignment::before {
@@ -202,12 +204,12 @@
     content: '\e7d9';
     font-family: 'e-icons';
     font-size: $de-tablecell-alignment-font-size;
-    margin: 2px;
+    margin: $e-de-tablecell-top-alignment-margin;
   }
 
   .e-de-table-border-setting {
-    border: 1px solid $de-border-dlg-border-setting-inside-border;
-    height: 40px;
+    border: $e-de-table-border-setting-border solid $de-border-dlg-border-setting-inside-border;
+    height: $e-de-table-border-setting-height;
     left: 5px;
     position: relative;
     top: 5px;
@@ -215,36 +217,36 @@
   }
 
   .e-de-table-border-setting-genral {
-    border: 1px solid $de-border-dlg-border-setting-divs-color;
-    height: 52px;
+    border: $e-de-table-border-setting-border solid $de-border-dlg-border-setting-divs-color;
+    height: $e-de-table-border-setting-genral-height;
     width: 52px;
   }
 
   .e-de-table-border-preview-genral {
-    border: 1px solid $de-border-dlg-border-preview-divs-color;
-    height: 24px;
+    border: $e-de-table-border-setting-border solid $de-border-dlg-border-preview-divs-color;
+    height: $e-de-table-border-preview-genral-height;
     width: 24px;
   }
 
   .e-de-table-border-inside-setting:hover {
-    border: 1px solid $de-table-setting-hover-color;
+    border: $e-de-table-border-setting-border solid $de-table-setting-hover-color;
   }
 
   .e-de-table-border-preview {
-    height: 24px;
+    height: $e-de-table-border-preview-height;
     width: 24px;
   }
 
   .e-de-table-border-inside-preview:hover {
-    border: 1px solid $de-table-preview-hover-color;
+    border: $e-de-table-border-inside-border solid $de-table-preview-hover-color;
   }
 
   .e-de-table-border-inside-setting-click {
-    border: 1px solid $de-table-setting-color;
+    border: $e-de-table-border-inside-border solid $de-table-setting-color;
   }
 
   .e-de-table-border-inside-preview-click {
-    border: 1px solid $de-table-preview-setting-color;
+    border: $e-de-table-border-inside-border solid $de-table-preview-setting-color;
   }
 
   .e-de-table-border-none-setting::before {
@@ -320,7 +322,7 @@
     color: $icon-color;
     content: '\e7e0';
     font-family: 'e-icons';
-    font-size: 16px;
+    font-size: $e-de-table-border-font-size;
     left: $de-td-table-border-left;
     position: absolute;
     top: $de-td-table-border-top;
@@ -329,7 +331,7 @@
   .e-de-table-border-topcenter-alignment::before {
     color: $icon-color;
     content: '\e83b';
-    font-size: 16px;
+    font-size: $e-de-table-border-font-size;
     left: $de-td-table-border-left;
     position: absolute;
     top: $de-td-table-border-top;
@@ -338,7 +340,7 @@
   .e-de-table-border-topbottom-alignment::before {
     color: $icon-color;
     content: '\e766';
-    font-size: 16px;
+    font-size: $e-de-table-border-font-size;
     left: $de-td-table-border-left;
     position: absolute;
     top: $de-td-table-border-top;
@@ -347,7 +349,7 @@
   .e-de-table-border-diagionalup-alignment::before {
     color: $icon-color;
     content: '\e79d';
-    font-size: 16px;
+    font-size: $e-de-table-border-font-size;
     left: $de-td-table-border-left;
     position: absolute;
     top: $de-td-table-border-top;
@@ -356,7 +358,7 @@
   .e-de-table-border-diagionaldown-alignment::before {
     color: $icon-color;
     content: '\e784';
-    font-size: 16px;
+    font-size: $e-de-table-border-font-size;
     left: $de-td-table-border-left;
     position: absolute;
     top: $de-td-table-border-top;
@@ -365,7 +367,7 @@
   .e-de-table-border-bottomleft-alignment::before {
     color: $icon-color;
     content: '\e806';
-    font-size: 16px;
+    font-size: $e-de-table-border-font-size;
     left: $de-td-table-border-left;
     position: absolute;
     top: $de-td-table-border-top;
@@ -374,7 +376,7 @@
   .e-de-table-border-bottomcenter-alignment::before {
     color: $icon-color;
     content: '\e792';
-    font-size: 16px;
+    font-size: $e-de-table-border-font-size;
     left: $de-td-table-border-left;
     position: absolute;
     top: $de-td-table-border-top;
@@ -383,31 +385,31 @@
   .e-de-table-border-bottomright-alignment::before {
     color: $icon-color;
     content: '\e7ab';
-    font-size: 16px;
+    font-size: $e-de-table-border-font-size;
     left: $de-td-table-border-left;
     position: absolute;
     top: $de-td-table-border-top;
   }
 
   .e-de-columns-presets-genral {
-    height: 62px;
+    height: $e-de-columns-presets-genral-height;
     width: 62px;
-    margin-right: 33px;
-    margin-bottom: 12px;
+    margin-right: $e-de-columns-presets-genral-margin-right;
+    margin-bottom: $e-de-columns-presets-genral-margin-bottom;
   }
   
   .e-de-columns-padding-alignment {
-    padding-top: 24px;
+    padding-top: $e-de-columns-padding-alignment-padding-top;
   }
 
   .e-de-column-dlg-preview-div {
-    border: 1px solid $de-border-dlg-border-setting-divs-color;
-    height: 120px;
+    border: $e-de-column-dlg-preview-border solid $de-border-dlg-border-setting-divs-color;
+    height: $e-de-column-dlg-preview-height;
     width: 120px;
   }
 
   .e-de-padding-col-prev{
-    padding-left: 15px;
+    padding-left: $e-de-padding-col-prev-padding-left;
   }
 
   .e-width-space-div{
@@ -415,16 +417,16 @@
   }
   
   .e-de-columns-presets-genral.e-de-rtl{
-    margin-left: 33px;
+    margin-left: $e-de-columns-presets-genral-margin-right;
   }
   
   .e-de-padding-col-prev.e-de-rtl{
-    padding-right: 15px;
+    padding-right: $e-de-padding-col-prev-padding-left;
   }
   
   .e-de-column-dlg-preview-div.e-de-rtl{
-    border: 1px solid $de-border-dlg-border-setting-divs-color;
-    height: 120px;
+    border: $e-de-column-dlg-preview-border solid $de-border-dlg-border-setting-divs-color;
+    height: $e-de-column-dlg-preview-height;
     width: 120px;
   }
 
@@ -605,46 +607,46 @@
   .e-de-icon-bullet-list-dot::before {
     content: '\e747';
     font-family: 'e-icons';
-    font-size: 8px;
-    line-height: 28px;
+    font-size: $e-de-icon-bullet-list-dot-font-size;
+    line-height: $e-de-icon-bullet-list-line-height;
   }
 
   .e-de-icon-bullet-list-circle::before {
     content: '\e7d0';
     font-family: 'e-icons';
-    font-size: 8px;
-    line-height: 28px;
+    font-size: $e-de-icon-bullet-list-dot-font-size;
+    line-height: $e-de-icon-bullet-list-line-height;
   }
 
   .e-de-icon-bullet-list-square::before {
     content: '\e7be';
     font-family: 'e-icons';
-    font-size: 8px;
-    line-height: 28px;
+    font-size: $e-de-icon-bullet-list-dot-font-size;
+    line-height: $e-de-icon-bullet-list-line-height;
   }
 
   .e-de-icon-bullet-list-tick::before {
     content: '\e7fc';
     font-family: 'e-icons';
-    font-size: 12px;
+    font-size: $e-de-icon-bullet-list-tick-font-size;
   }
 
   .e-de-icon-bullet-list-flower::before {
     content: '\e79b';
     font-family: 'e-icons';
-    font-size: 12px;
+    font-size: $e-de-icon-bullet-list-tick-font-size;
   }
 
   .e-de-icon-bullet-list-arrow::before {
     content: '\e763';
     font-family: 'e-icons';
-    font-size: 12px;
+    font-size: $e-de-icon-bullet-list-tick-font-size;
   }
 
   .e-de-icon-bullet-list-none::before {
     content: '\e7f3';
     font-family: 'e-icons';
-    font-size: 24px;
+    font-size: $e-de-icon-bullet-list-none-font-size;
   }
 
   .e-de-icon-autofit::before {

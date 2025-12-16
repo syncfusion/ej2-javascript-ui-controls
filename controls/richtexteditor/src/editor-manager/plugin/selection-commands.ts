@@ -30,7 +30,7 @@ export class SelectionCommands {
      * @param {FormatPainterValue} painterValues specifies the element created and last child
      * @returns {void}
      * @hidden
-     * @deprecated
+     * @private
      */
     public static applyFormat(
         docElement: Document, format: string, endNode: Node, enterAction: string, tableCellSelection?: ITableSelection,
@@ -1085,7 +1085,7 @@ export class SelectionCommands {
             }
             break;
         case 'italic':
-            liElement.querySelectorAll('em, i').forEach(function (e: HTMLElement): void {
+            liElement.querySelectorAll('em,i').forEach(function (e: HTMLElement): void {
                 result = result + e.textContent;
             });
             if (result === value) {

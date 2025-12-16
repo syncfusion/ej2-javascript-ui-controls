@@ -1,22 +1,26 @@
+@use 'ej2-base/styles/definition/fluent2' as *;
+@forward 'ej2-base/styles/definition/fluent2';
+
 //layout
 $listview-icon-margin-right: 4px !default;
 $listview-icon-back-margin: 0 !default;
 $listview-icon-back-margin-right: 14px !default;
 $listview-item-height: 32px !default;
 $listview-item-line-height: 20px !default;
-$listview-item-radius: 4px !default;
+$listview-item-radius: $radius-4 !default;
 $listview-item-margin-bottom: 4px !default;
 $listview-rtl-icon-back-margin: 4px !default;
 $listview-item-padding: 6px 8px !default;
 $listview-rtl-item-padding: 4px 12px !default;
 $listview-header-padding: 8px !default;
-$listview-root-border-radius: 4px !default;
+$listview-root-border-radius: $radius-4 !default;
 $listview-nested-icon-collapsible: 12px !default;
 $listview-icon-size: 20px !default;
+$listview-icon-height: 20px !default;
 $listview-header-text-padding: 12px !default;
 $listview-header-font-size: $text-xs !default;
 $listview-header-height: 32px !default;
-$listview-header-font-weight: $font-weight-medium !default;
+$listview-header-font-weight: $font-weight-semibold !default;
 $listview-header-line-height: 16px !default;
 $listview-border-bottom: 0 !default;
 $listview-border-top: 0 !default;
@@ -56,6 +60,24 @@ $listview-checkbox-right-margin: 0 0 0 -4px !default;
 $listview-checkbox-left-margin: 0 -4px 0 0 !default;
 $listview-rtl-checkbox-left-margin: 0 0 0 -4px !default;
 $listview-rtl-checkbox-right-margin: 0 -4px 0 0 !default;
+$listview-list-margin: 0 !default;
+$listview-list-padding: 0 !default;
+$listview-group-item-font-weight: 600 !default;
+$listview-border-none: 0 !default;
+$listview-item-icon-margin-left: 16px !default;
+$listview-item-icon-margin-right: 0 !default;
+$listview-margin-none: 0 !default;
+$listview-padding-none: 0 !default;
+$listview-text-content-height: 100% !default;
+$listview-checkbox-text-content-width: calc(100% - 40px) !default;
+$listview-checkbox-left-list-icon-text-width: calc(100% - 90px) !default;
+$listview-checkbox-right-list-icon-text-width: calc(100% - 80px) !default;
+$listview-icon-text-width: calc(100% - 60px) !default;
+$listview-icon-collapsible-font-size: 12px !default;
+$listview-icon-collapsible-before-padding: 5px !default;
+$listview-item-header-line-height: 20px !default;
+$listview-list-content-line-height: 16px !default;
+$listview-list-badge-border-radius: $radius-10 !default;
 
 //ListView In-built template variables
 $listview-template-padding: 16px 16px 18px !default;
@@ -95,6 +117,7 @@ $listview-touch-template-badge-height: 20px !default;
 $listview-touch-template-badge-width: 34px !default;
 $listview-touch-template-badge-line-height: 18px !default;
 $listview-touch-template-badge-font-size: $text-xs !default;
+$listview-template-height: inherit !default;
 
 //color
 $listview-font-family: $font-family !default;

@@ -1,16 +1,27 @@
 // eslint-disable-next-line @typescript-eslint/triple-slash-reference
 ///<reference path='../interactive-chat-base/interactive-chat-base-model.d.ts'/>
-import { NotifyPropertyChanges, Property, INotifyPropertyChanged, getUniqueID, isNullOrUndefined as isNOU, EventHandler, L10n } from '@syncfusion/ej2-base';
+import { NotifyPropertyChanges, Property, INotifyPropertyChanged, getUniqueID, isNullOrUndefined as isNOU, EventHandler, L10n, remove } from '@syncfusion/ej2-base';
 import { Internationalization, ChildProperty, Collection, removeClass, Event, EmitType, BaseEventArgs, Complex } from '@syncfusion/ej2-base';
 import { InterActiveChatBase, ToolbarSettings, ToolbarItemClickedEventArgs, TextState, ToolbarItem } from '../interactive-chat-base/interactive-chat-base';
 import { ToolbarItemModel, ToolbarSettingsModel } from '../interactive-chat-base/interactive-chat-base-model';
-import { ChatUIModel, MessageModel, UserModel, MessageStatusModel, MessageReplyModel, MessageToolbarSettingsModel } from './chat-ui-model';
+import { ChatUIModel, MessageModel, UserModel, MessageStatusModel, MessageReplyModel, MessageToolbarSettingsModel, FileAttachmentSettingsModel } from './chat-ui-model';
 import { ClickEventArgs, ItemModel, Toolbar } from '@syncfusion/ej2-navigations';
 import { createSpinner, showSpinner, hideSpinner } from '@syncfusion/ej2-popups';
 import { Fab } from '@syncfusion/ej2-buttons';
 import { DropDownButton, MenuEventArgs } from '@syncfusion/ej2-splitbuttons';
 import { FieldSettingsModel, Mention, SelectEventArgs } from '@syncfusion/ej2-dropdowns';
+import { BeforeUploadEventArgs, FailureEventArgs, FileInfo, RemovingEventArgs, SuccessEventArgs, Uploader, UploadingEventArgs } from '@syncfusion/ej2-inputs';
 import { SanitizeHtmlHelper } from '@syncfusion/ej2-base';
+
+/**
+ * Specifies that the attachment will be saved as a Blob object.
+ * This format is used for storing binary data.
+ *
+ * Specifies that the attachment will be saved as a Base64-encoded string.
+ * This format is used for storing data as a text representation.
+ *
+ */
+export type SaveFormat = 'Base64' | 'Blob';
 
 export class MessageStatus extends ChildProperty<MessageStatus> {
     /**
@@ -202,6 +213,16 @@ export class MessageReply extends ChildProperty<MessageReply> {
      */
     @Property('')
     public timestampFormat: string;
+
+    /**
+     * Represents the attached files of the message sent by a user in the Chat UI component.
+     *
+     * @type {FileInfo}
+     * @default null
+     */
+    @Property(null)
+    public attachedFile: FileInfo;
+
 }
 
 /**
@@ -296,6 +317,17 @@ export class Message extends ChildProperty<Message> {
     public isForwarded: boolean;
 
     /**
+     * Specifies the list of files attached within the Chat UI.
+     * This property accepts an array of FileInfo objects that represent the files to be attached.
+     * By providing these files, they will be rendered during the initial rendering of the component.
+     *
+     * @type {FileInfo}
+     * @default null
+     */
+    @Property(null)
+    public attachedFile: FileInfo;
+
+    /**
      * Represents an array of users mentioned in the message.
      * This field contains the list of users referenced via the @mention feature in the message text, populated when mentions are selected from the suggestion popup.
      * The field is optional and defaults to an empty array if no mentions are included in the message.
@@ -305,6 +337,156 @@ export class Message extends ChildProperty<Message> {
      */
     @Property([])
     public mentionUsers: UserModel[];
+}
+
+export class FileAttachmentSettings extends ChildProperty<FileAttachmentSettings> {
+
+    /**
+     * Specifies the URL to save the uploaded files.
+     *
+     * @type {string}
+     * @default ''
+     */
+    @Property('')
+    public saveUrl: string;
+
+    /**
+     * Specifies the URL to remove the files from the server.
+     *
+     * @type {string}
+     * @default ''
+     */
+    @Property('')
+    public removeUrl: string;
+
+    /**
+     * Specifies the path for storing and displaying images.
+     * If both `saveFormat` and `path` are configured, the `path` property takes priority.
+     *
+     * @type {string}
+     * @default ''
+     */
+    @Property('')
+    public path: string;
+
+    /**
+     *  Specifies the format in which the attachment will be saved.
+     *  Accepts values such as 'Blob' or other supported formats.
+     *
+     * @type {SaveFormat}
+     * @default 'Blob'
+     */
+    @Property(Blob)
+    public saveFormat: SaveFormat
+
+    /**
+     * Specifies the allowed file types for attachments.
+     * Accepts a comma-separated string (e.g., ".jpg,.png").
+     *
+     * @type {string}
+     * @default ''
+     */
+    @Property('')
+    public allowedFileTypes: string;
+
+    /**
+     * Specifies the maximum file size (in bytes) for attachments.
+     * Prevents uploading files larger than this size.
+     *
+     * @type {number}
+     * @default 30000000
+     */
+    @Property(30000000)
+    public maxFileSize: number;
+
+    /**
+     * Specifies whether drag and drop is enabled for attachments.
+     * Allows users to drag files into the upload area.
+     *
+     * @type {boolean}
+     * @default true
+     */
+    @Property(true)
+    public enableDragAndDrop: boolean;
+
+    /**
+     * Specifies the maximum number of attachments allowed per message.
+     * Limits the number of files that can be uploaded and attached to a single message.
+     * Must be a positive integer.
+     *
+     * @type {number}
+     * @default 10
+     */
+    @Property(10)
+    public maximumCount: number;
+
+    /**
+     * Specifies a custom template for rendering attachment previews.
+     * Accepts a string or function to define the HTML structure or rendering logic for attachment previews (e.g., thumbnails, icons, file metadata).
+     * If not provided, the default preview will be rendered.
+     *
+     * @default ''
+     * @angularType string | object | HTMLElement
+     * @reactType string | function | JSX.Element | HTMLElement
+     * @vueType string | function | HTMLElement
+     * @aspType string
+     */
+    @Property('')
+    public previewTemplate : string | Function;
+
+    /**
+     * Specifies a custom template for rendering attachments in footer.
+     * Accepts a string or function to define the HTML structure or rendering logic for attachments (e.g., thumbnails, icons, file metadata).
+     * If not provided, the default attachments will be rendered.
+     *
+     * @default ''
+     * @angularType string | object | HTMLElement
+     * @reactType string | function | JSX.Element | HTMLElement
+     * @vueType string | function | HTMLElement
+     * @aspType string
+     */
+    @Property('')
+    public attachmentTemplate : string | Function;
+
+    /**
+     * Event raised when a attachment item is clicked in the Chat UI component wither before sending or after the attachment is sent.
+     *
+     * @event attachmentClick
+     */
+    @Event()
+    public attachmentClick: EmitType<ChatAttachmentClickEventArgs>;
+}
+
+export interface ChatAttachmentClickEventArgs  extends BaseEventArgs {
+    /**
+     * Specifies the event object associated with the click event args.
+     * Represents the underlying event that triggered the action, providing details about the event.
+     *
+     * @type {Event}
+     * @default null
+     *
+     */
+    event?: Event
+
+    /**
+     * Indicates whether rendering preview should be canceled.
+     * Setting this boolean property to `true` will prevent the preview rendering.
+     *
+     * @type {boolean}
+     * @default false
+     *
+     */
+    cancel?: boolean
+
+    /**
+     * Represents the file that is intended to be previewed.
+     * This property holds a `file` object containing all relevant details of the file. It can be canceled or previewed before the message is sent.
+     *
+     * @type {FileInfo}
+     * @default null
+     *
+     */
+    file?: FileInfo
 }
 
 export interface MessageSendEventArgs  extends BaseEventArgs {
@@ -787,6 +969,65 @@ export class ChatUI extends InterActiveChatBase implements INotifyPropertyChange
     @Event()
     public mentionSelect: EmitType<MentionSelectEventArgs>;
 
+    /**
+     * Specifies whether the attachments is enabled in the Chat UI component.
+     *
+     * @type {boolean}
+     * @default false
+     */
+    @Property(false)
+    public enableAttachments: boolean;
+
+    /**
+     * Specifies the configuration options for attachment handling.
+     *  Includes save URL, allowed file types, and maximum file size.
+     *
+     *
+     * @default null
+     */
+    @Complex<FileAttachmentSettingsModel>({saveUrl: '', removeUrl: '', maxFileSize: 30000000, allowedFileTypes: '', saveFormat: 'Blob', path: '', enableDragAndDrop: true, maximumCount: 10, previewTemplate: '', attachmentTemplate: ''}, FileAttachmentSettings)
+    public attachmentSettings: FileAttachmentSettingsModel;
+
+    /**
+     *  Fires before an attachment upload begins.
+     *  Allows inspection or cancellation of the upload process.
+     *
+     * @event beforeAttachmentUpload
+     *
+     * @param {BeforeUploadEventArgs} args - Details about the file to be uploaded.
+     */
+    @Event()
+    public beforeAttachmentUpload: EmitType<BeforeUploadEventArgs>;
+    /**
+     * Fires when an attachment is uploaded successfully.
+     *
+     * @event attachmentUploadSuccess
+     *
+     *  @param {object} args - Details about the uploaded file.
+     */
+    @Event()
+    public attachmentUploadSuccess: EmitType<SuccessEventArgs>;
+
+    /**
+     * Fires when an attachment upload fails.
+     *
+     * @event attachmentUploadFailure
+     *
+     * @param {object} args - Details about the failed file and error information.
+     */
+    @Event()
+    public attachmentUploadFailure: EmitType<FailureEventArgs>;
+
+    /**
+     * Fires when an attachment is removed.
+     *
+     * @event attachmentRemoved
+     *
+     * @param {object} args - Details about the removed file.
+     */
+    @Event()
+    public attachmentRemoved: EmitType<RemovingEventArgs>;
+
     /* Private variables */
     private l10n: L10n;
     private viewWrapper: HTMLElement;
@@ -805,6 +1046,10 @@ export class ChatUI extends InterActiveChatBase implements INotifyPropertyChange
     private dropDownButton: DropDownButton;
     private lastPinnedToolbar: Toolbar;
     private mentionObj: Mention;
+    private attachmentIcon: HTMLElement;
+    private uploadedFiles: FileInfo[] = [];
+    private uploaderObj: Uploader;
+    private dropArea: HTMLElement;
 
     /**
      * Constructor for creating the component
@@ -886,6 +1131,12 @@ export class ChatUI extends InterActiveChatBase implements INotifyPropertyChange
             noRecordsTemplate: 'No records found',
             forwarded: 'Forwarded',
             send: 'Send',
+            attachments: 'Attach File',
+            close: 'Close',
+            download: 'Download',
+            filePreview: 'No Preview Available',
+            fileCountFailure: 'Upload limit reached: Maximum {0} files allowed. Remove extra files to proceed uploading',
+            fileSizeFailure: 'Upload failed: {0} files exceeded the maximum size',
             unpin: 'Unpin',
             viewChat: 'View in Chat'
         }, this.locale);
@@ -1028,6 +1279,11 @@ export class ChatUI extends InterActiveChatBase implements INotifyPropertyChange
         let pushToolbar: ItemModel[] = [];
         if (this.messageToolbarSettings.items.length > 0) {
             const items: ToolbarItemModel[] = this.messageToolbarSettings.items.filter((item: ToolbarItemModel) => {
+                const isCopyIcon: boolean = item.iconCss.includes('e-chat-copy');
+                const hasFileAttachment: boolean =  this.hasAttachment(msg) && !(this.isImageFile(msg.attachedFile.rawFile));
+                if (isCopyIcon && hasFileAttachment) {
+                    return false;
+                }
                 return (
                     item.iconCss !== '' ||
                     item.text !== undefined ||
@@ -1173,6 +1429,10 @@ export class ChatUI extends InterActiveChatBase implements INotifyPropertyChange
         if (msg.text) {
             this.getClipBoardContent(this.getMessageText(msg));
         }
+        if (this.hasAttachment(msg)) {
+            const file: File = msg.attachedFile.rawFile as any;
+            this.writeFileToClipboard(file);
+        }
         // Provide feedback to user
         args.item.prefixIcon = 'e-icons e-chat-check';
         messageToolbar.dataBind();
@@ -1198,6 +1458,23 @@ export class ChatUI extends InterActiveChatBase implements INotifyPropertyChange
                 timeElement.textContent = this.showTimeStamp ? this.getFormattedTime(message.timeStamp, message.timeStampFormat) : '';
                 textElement.innerHTML = this.getMessageText(message);
             }
+
+            const previewContainer: HTMLElement = replyWrapper.querySelector('.e-reply-media-preview') as HTMLElement;
+            if (previewContainer) {
+                previewContainer.remove();
+            }
+            if (this.hasAttachment(message)) {
+                const file: FileInfo = message.attachedFile;
+                if (file) {
+                    const newReplyContent: HTMLElement = this.createFileReplyContent(message);
+                    const replyContent: HTMLElement = replyWrapper.querySelector('.e-reply-content') as HTMLElement;
+                    if (replyContent) {
+                        if (textElement) {
+                            replyContent.insertBefore(newReplyContent, textElement);
+                        }
+                    }
+                }
+            }
         }
         if (this.editableTextarea) {
             this.setFocusAtEnd(this.editableTextarea);
@@ -1206,7 +1483,8 @@ export class ChatUI extends InterActiveChatBase implements INotifyPropertyChange
     }
 
     private renderReplyElement(message: MessageModel, withClearIcon: boolean = false): HTMLElement {
-        if ((!message.replyTo || !message.replyTo.user || !message.replyTo.text || !message.replyTo.messageID) && !withClearIcon) {
+        if ((!message.replyTo || !message.replyTo.user || (!message.replyTo.text && !message.replyTo.attachedFile)
+        || !message.replyTo.messageID) && !withClearIcon) {
             return null;
         }
         const replyWrapper: HTMLDivElement = this.createElement('div', { className: 'e-reply-wrapper' });
@@ -1231,10 +1509,23 @@ export class ChatUI extends InterActiveChatBase implements INotifyPropertyChange
                 <span class='e-reply-message-user'>${withClearIcon ? message.author.user : message.replyTo.user.user}</span>
                 <span class='e-reply-message-time'>${this.showTimeStamp ? formattedTime : ''}</span>`
         });
+        if (this.hasAttachment(message.replyTo) || this.hasAttachment(message)) {
+            const file: FileInfo = withClearIcon ? (this.hasAttachment(message) ? message.attachedFile : null)
+                : (this.hasAttachment(message.replyTo) ? message.replyTo.attachedFile : null);
+            const sourceMessage: MessageModel = withClearIcon ? message : message.replyTo;
+            if (file) {
+                const fileReplyContent: HTMLElement = this.createFileReplyContent(sourceMessage);
+                const textElement: HTMLElement = replyContent.querySelector('.e-reply-message-text');
+                if (textElement) {
+                    replyContent.insertBefore(fileReplyContent, textElement);
+                }
+            }
+        }
         replyContent.prepend(messageDetails);
         if (withClearIcon) {
             const clearIcon: HTMLSpanElement = this.createElement('span', {
-                className: 'e-chat-close e-icons'
+                className: 'e-chat-close e-icons',
+                attrs: { title: this.l10n.getConstant('close')}
             });
 
             EventHandler.add(clearIcon, 'click', this.clearReplyWrapper.bind(this));
@@ -1247,6 +1538,41 @@ export class ChatUI extends InterActiveChatBase implements INotifyPropertyChange
 
         replyWrapper.prepend(replyContent);
         return replyWrapper;
+    }
+
+    private createFileReplyContent(message: MessageModel): HTMLElement {
+        const fileReplyContent: HTMLElement = this.createElement('div', { className: 'e-reply-media-preview' });
+        const messageText: string = this.getMessageText(message);
+        const hasText: boolean = messageText.trim() !== '';
+        const file: FileInfo = message.attachedFile;
+        if (this.isImageFile(file.rawFile)) {
+            const thumbnailImage: HTMLElement = this.createImageContent(file, 'e-reply-media-thumb');
+            fileReplyContent.appendChild(thumbnailImage);
+        }
+        else if (this.isVideoFile(file.rawFile)) {
+            const thumbnailvideo: HTMLVideoElement = this.createElement('video', {
+                attrs: {
+                    src: file.fileSource,
+                    alt: file.name,
+                    disablepictureinpicture: 'true',
+                    playsinline: 'true'
+                },
+                className: 'e-reply-media-thumb'
+            });
+            fileReplyContent.appendChild(thumbnailvideo);
+        } else {
+            const fileIcon: HTMLElement = this.createElement('span', { className: 'e-chat-file-icon e-icons' });
+            fileReplyContent.appendChild(fileIcon);
+        }
+        if (!hasText) {
+            const labelElement: HTMLElement = this.createElement('span', {
+                className: 'e-reply-file-name',
+                innerHTML: file.name,
+                attrs: { title: file.name }
+            });
+            fileReplyContent.appendChild(labelElement);
+        }
+        return fileReplyContent;
     }
 
     private renderPinnedMessage(): void {
@@ -1288,7 +1614,13 @@ export class ChatUI extends InterActiveChatBase implements INotifyPropertyChange
             }
             this.togglePinnedIcon(messageToolbar);
             if (pinnedText) {
-                pinnedText.innerHTML = this.getMessageText(message);
+                if (this.hasAttachment(message)) {
+                    pinnedText.innerHTML = '';
+                    this.pinAttachmentMessage(pinnedText, message);
+                }
+                else {
+                    pinnedText.innerHTML = this.getMessageText(message);
+                }
                 pinnedText.setAttribute('data-index', message.id);
             }
             this.pinnedMessageWrapper.style.display = 'flex';
@@ -1297,6 +1629,43 @@ export class ChatUI extends InterActiveChatBase implements INotifyPropertyChange
             this.pinnedMessageWrapper.style.display = 'none';
             this.togglePinnedIcon();
         }
+    }
+
+    private pinAttachmentMessage(container: HTMLElement, message: MessageModel): void {
+        const file: FileInfo = message.attachedFile;
+        if (!file) {
+            return;
+        }
+        let mediaElement: HTMLElement;
+        if (this.isImageFile(file.rawFile)) {
+            mediaElement = this.createImageContent(file, 'e-pinned-img-thumb') as HTMLImageElement;
+        }
+        else if (this.isVideoFile(file.rawFile)) {
+            mediaElement = this.createElement('video', {
+                attrs: {
+                    src: file.fileSource,
+                    alt: file.name,
+                    disablepictureinpicture: 'true',
+                    playsinline: 'true'
+                },
+                className: 'e-pinned-img-thumb'
+            }) as HTMLVideoElement;
+        }
+        else {
+            mediaElement = this.createElement('span', { className: 'e-chat-file-icon e-icons' }) as HTMLElement;
+        }
+        const messageText: string = this.getMessageText(message);
+        const hasText: boolean = messageText.trim() !== '';
+        const labelAttrs: { [key: string]: string } = {};
+        if (!hasText) {
+            labelAttrs.title = file.name;
+        }
+        const pinContent: HTMLElement = this.createElement('span', {
+            className: hasText ? 'e-pinned-message-content' : 'e-pinned-file-name',
+            innerHTML: hasText ? messageText : file.name,
+            attrs: labelAttrs
+        }) as HTMLElement;
+        this.appendChildren(container, mediaElement, pinContent);
     }
 
     private togglePinnedIcon(messageToolbar?: Toolbar): void {
@@ -1327,8 +1696,13 @@ export class ChatUI extends InterActiveChatBase implements INotifyPropertyChange
     private unpinMessage(messageID: string): void {
         this.pinnedMessageWrapper.style.display = 'none';
         this.togglePinnedIcon();
+        const prevOnChange: boolean = this.isProtectedOnChange;
+        this.isProtectedOnChange = true;
         const message: MessageModel = this.messages.find((msg: MessageModel) => msg.id === messageID);
-        if (message) { message.isPinned = false; }
+        if (message) {
+            message.isPinned = false;
+        }
+        this.isProtectedOnChange = prevOnChange;
     }
 
     private wireMessageToolbarEvents(messageItem: HTMLElement, toolbarEle: HTMLElement): void {
@@ -1611,23 +1985,14 @@ export class ChatUI extends InterActiveChatBase implements INotifyPropertyChange
             innerHTML: this.showTimeStamp ? formattedTime : ''
         });
     }
-    private containsDateParts(format: string): boolean {
-        if (!format) { return false; }
-        // Remove quoted literals like 'at' to avoid false positives
-        const fmt: string = format.replace(/'[^']*'/g, '');
-        // Match month (M/MM/MMM/MMMM), day (d/dd), or year (y/yy/yyy/yyyy)
-        const dateTokenRegex: RegExp = /(M{1,4}|d{1,2}|y{1,4})/;
-        return dateTokenRegex.test(fmt);
-    }
     private updateTimeFormats(timeStampFormat: string, fullTime: string, index?: number): void {
-        if (this.messages[parseInt(index!.toString(), 10)]) {
+        if (this.messages[parseInt(index.toString(), 10)]) {
             const prevOnChange: boolean = this.isProtectedOnChange;
             this.isProtectedOnChange = true;
-
-            // Only parse and overwrite when the format includes date parts
-            if (this.containsDateParts(timeStampFormat)) {
-                this.messages[parseInt(index!.toString(), 10)].timeStamp = this.intl.parseDate(fullTime, { format: timeStampFormat });
-            }
+            this.messages[parseInt(index.toString(), 10)].timeStamp = this.intl.parseDate(
+                fullTime,
+                { format: 'dd/MM/yyyy hh:mm a'});
+            this.messages[parseInt(index.toString(), 10)].timeStampFormat = timeStampFormat;
             this.isProtectedOnChange = prevOnChange;
         }
     }
@@ -1709,6 +2074,10 @@ export class ChatUI extends InterActiveChatBase implements INotifyPropertyChange
             className: 'e-text',
             innerHTML: this.getMessageText(msg)
         });
+        if (this.hasAttachment(msg)) {
+            const fileElement: HTMLElement = this.createAttachmentContent(msg);
+            messageContent.appendChild(fileElement);
+        }
         if (!isNOU(textElement) && textElement.innerHTML !== '') {
             messageContent.appendChild(textElement);
         }
@@ -1733,6 +2102,69 @@ export class ChatUI extends InterActiveChatBase implements INotifyPropertyChange
         const toolbarEle: HTMLElement = this.renderChatMessageToolbar(messageItem, msg);
         this.wireMessageToolbarEvents(messageItem, toolbarEle);
         messageItem.prepend(toolbarEle);
+    }
+
+    private createAttachmentContent(msg: MessageModel): HTMLElement {
+        const fileElement: HTMLElement = this.createElement('div', {
+            className: 'e-attached-file'
+        }) as HTMLElement;
+        const file: FileInfo = msg.attachedFile;
+        let wrapper: HTMLElement;
+        if (this.isImageFile(file.rawFile)) {
+            wrapper = this.createElement('div', {
+                className: 'e-image-wrapper'
+            }) as HTMLElement;
+            wrapper.appendChild(this.createImageContent(file, 'e-image'));
+            fileElement.appendChild(wrapper);
+        }
+        else if (this.isVideoFile(file.rawFile)) {
+            wrapper = this.createVideoContent(file);
+            fileElement.appendChild(wrapper);
+        }
+        else {
+            wrapper = this.createFileItem(msg.attachedFile, false);
+            fileElement.appendChild(wrapper);
+        }
+        EventHandler.add(fileElement, 'click', () => this.handleAttachmentPreview(file, true));
+        return fileElement;
+    }
+
+    private createVideoContent(file: FileInfo): HTMLElement {
+        const videoWrapper: HTMLElement = this.createElement('div', {
+            className: 'e-video-wrapper'
+        }) as HTMLElement;
+        const videoElement: HTMLVideoElement = this.createElement('video', {
+            attrs: {
+                disablepictureinpicture: 'true',
+                playsinline: 'true',
+                preload: 'metadata',
+                title: file.name
+            },
+            className: 'e-video'
+        }) as HTMLVideoElement;
+        const source: HTMLElement = this.createElement('source', {
+            attrs: {
+                src: file.fileSource,
+                type: (file.rawFile as any).type
+            }
+        });
+        videoElement.appendChild(source);
+        const playIconWrapper: HTMLElement = this.createElement('div', {
+            className: 'e-play-icon-wrapper'
+        }) as HTMLElement;
+        const playButton: HTMLElement = this.createElement('span', {
+            className: 'e-chat-video-play e-icons',
+            attrs: {
+                role: 'button',
+                tabindex: '0',
+                'aria-label': 'Play video',
+                title: 'Play'
+            }
+        }) as HTMLElement;
+        playIconWrapper.appendChild(playButton);
+        videoWrapper.appendChild(videoElement);
+        videoWrapper.appendChild(playIconWrapper);
+        return videoWrapper;
     }
 
     private updateForwardAndReplyElement(msg: MessageModel, messageContent: HTMLDivElement): void {
@@ -1797,12 +2229,10 @@ export class ChatUI extends InterActiveChatBase implements INotifyPropertyChange
         }, 1000);
     }
     private updateMessageTimeFormats(msg: MessageModel, index: number): void {
-        const hasValue: boolean = !isNOU(msg.timeStampFormat) && msg.timeStampFormat.length > 0;
-        const timeStampFormat: string = this.getFormat(hasValue ? msg.timeStampFormat : this.timeStampFormat);
         const fullTime: string = this.getFormattedTime(msg.timeStamp
             ? msg.timeStamp
-            : new Date(), timeStampFormat);
-        this.updateTimeFormats(timeStampFormat, fullTime, index);
+            : new Date(), 'dd/MM/yyyy hh:mm a');
+        this.updateTimeFormats(msg.timeStampFormat, fullTime, index);
     }
     private getMessageDate(index: number): Date {
         return new Date(this.messages[parseInt(index.toString(), 10)].timeStamp);
@@ -1839,6 +2269,11 @@ export class ChatUI extends InterActiveChatBase implements INotifyPropertyChange
         const sendIconClass: string = 'e-chat-send e-icons disabled';
         if (!this.footerTemplate) {
             this.renderFooterIcons(sendIconClass, false, '');
+            const footerIconsWrapper: HTMLElement = this.footer.querySelector('.e-footer-icons-wrapper') as HTMLElement;
+            if (footerIconsWrapper) {
+                this.sendIcon.setAttribute('title', this.l10n.getConstant('send'));
+                this.updateAttachmentElement(footerIconsWrapper);
+            }
             this.refreshTextareaUI();
             this.pushToUndoStack(this.editableTextarea.innerText);
             this.updateMentionObj();
@@ -1904,9 +2339,439 @@ export class ChatUI extends InterActiveChatBase implements INotifyPropertyChange
         this.activateSendIcon(this.editableTextarea.innerText.length);
     }
 
+    private hasAttachment(message: MessageModel | MessageReplyModel): boolean {
+        return message.attachedFile !== undefined && message.attachedFile !== null;
+    }
+
+    private isImageFile(file: Blob | any): boolean {
+        if (!file) {
+            return false;
+        }
+        return file.type && typeof file.type === 'string' && file.type.startsWith('image/');
+    }
+
+    private isVideoFile(file: Blob | any): boolean {
+        if (!file) {
+            return false;
+        }
+        return file.type && typeof file.type === 'string' && file.type.startsWith('video/');
+    }
+
+    private updateAttachmentElement(footerIconsWrapper: HTMLElement): void {
+        if (this.enableAttachments) {
+            this.renderAttachmentIcon(footerIconsWrapper);
+        }
+        else {
+            if (this.uploaderObj) {
+                this.uploaderObj.destroy();
+                EventHandler.remove(this.attachmentIcon, 'keydown', this.triggerUploaderAction);
+                this.attachmentIcon.innerHTML = '';
+                this.dropArea.innerHTML = '';
+                this.attachmentIcon.remove();
+                remove(this.dropArea);
+            }
+            this.removeFilesPreview();
+        }
+    }
+
+    private renderAttachmentIcon(footerIconsWrapper: HTMLElement): void {
+        this.dropArea = this.createElement('div', { attrs: { class: 'e-chat-drop-area' } });
+        this.footer.prepend(this.dropArea);
+        this.attachmentIcon = this.createElement('span', { attrs: { class: 'e-chat-attachment-icon e-icons', role: 'button', 'aria-label': 'Attach files', tabindex: '0', title: this.l10n.getConstant('attachments') } }) as HTMLElement;
+        const uploaderElement: HTMLElement = this.createElement('input', { attrs: { class: 'e-chat-file-upload', type: 'file', id: 'fileUpload'} });
+        let dropAreaTarget: HTMLElement;
+        if (this.attachmentSettings.enableDragAndDrop) {
+            dropAreaTarget = this.footer;
+        }
+        this.uploaderObj = new Uploader({
+            asyncSettings: {
+                saveUrl: this.attachmentSettings.saveUrl,
+                removeUrl: this.attachmentSettings.removeUrl
+            },
+            maxFileSize: this.attachmentSettings.maxFileSize,
+            allowedExtensions: this.attachmentSettings.allowedFileTypes,
+            success: this.onUploadSuccess.bind(this),
+            failure: this.onUploadFailure.bind(this),
+            uploading: this.onUploadStart.bind(this),
+            progress: this.onUploadProgress.bind(this),
+            multiple: true,
+            dropArea: dropAreaTarget,
+            selected: (args: any) => {
+                if (args.filesData.some((file: FileInfo) => file.status === (this.uploaderObj as any).l10n.getConstant('invalidFileType'))) {
+                    args.cancel = true;
+                    return;
+                }
+                const totalSelected: number = args.filesData.length + this.uploadedFiles.length;
+                if (totalSelected > this.attachmentSettings.maximumCount) {
+                    args.cancel = true;
+                    this.showFailureAlert('fileCountFailure', this.attachmentSettings.maximumCount, 'e-count-failure');
+                    (uploaderElement as any).value = '';
+                    return;
+                }
+                const oversized: FileInfo[] = args.filesData.filter((file: FileInfo) =>
+                    file.status === (this.uploaderObj as any).l10n.getConstant('invalidMaxFileSize') && file.statusCode === '0');
+                if (oversized.length) {
+                    this.showFailureAlert('fileSizeFailure', oversized.length, 'e-size-failure');
+                    (uploaderElement as any).value = '';
+                }
+                this.handleFileSelection(args);
+            }
+        });
+        this.attachmentIcon.appendChild(uploaderElement);
+        this.uploaderObj.appendTo(uploaderElement);
+        this.attachmentIcon.addEventListener('click', () => uploaderElement.click());
+        footerIconsWrapper.prepend(this.attachmentIcon);
+        EventHandler.add(this.attachmentIcon, 'keydown', this.triggerUploaderAction, this);
+    }
+
+    private triggerUploaderAction(e: KeyboardEvent): void {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            const uploaderElement: HTMLElement = this.footer.querySelector('.e-chat-file-upload') as HTMLElement;
+            if (uploaderElement) {
+                uploaderElement.click();
+            }
+        }
+    }
+
+    private showFailureAlert(localeConstantKey: string, fileCount: number, failureType: string): void {
+        let failureMessage: string = this.l10n.getConstant(localeConstantKey).replace('{0}', fileCount.toString());
+        if (fileCount === 1) {
+            failureMessage = failureMessage.replace('files', 'file');
+        }
+        this.createFailureAlert(failureMessage, failureType);
+    }
+
+    private createFailureAlert(failureMessage: string, failureType: string): void {
+        const failureAlert: HTMLElement = this.renderFailureAlert(this.viewWrapper, failureMessage, failureType, 'e-chat-circle-close', 'e-chat-close');
+        if (this.viewWrapper.contains(this.footer)) {
+            this.viewWrapper.insertBefore(failureAlert, this.footer);
+        }
+        failureAlert.classList.add('e-show');
+        setTimeout(() => {
+            this.handleFailureAlertRemove(this.viewWrapper, failureAlert);
+        }, 3000);
+    }
+
+    private async handleFileSelection(args: any): Promise<void> {
+        for (const fileData of args.filesData) {
+            const file: any = fileData.rawFile;
+
+            if (this.attachmentSettings.path) {
+                fileData.fileSource = `${this.attachmentSettings.path}/${fileData.name}`;
+            } else if (this.attachmentSettings.saveFormat === 'Base64') {
+                fileData.fileSource = await this.readFileAsBase64(file);
+            } else {
+                fileData.fileSource = URL.createObjectURL(file);
+            }
+        }
+        (this.element.querySelector('#fileUpload') as any).value = '';
+    }
+
+    private readFileAsBase64(file: File): Promise<string> {
+        return new Promise((resolve: any, reject: any) => {
+            const reader: FileReader = new FileReader();
+            reader.onload = () => resolve(reader.result as string);
+            reader.onerror = reject;
+            reader.readAsDataURL(file);
+        });
+    }
+
+    private onUploadStart(args: UploadingEventArgs): void {
+        this.trigger('beforeAttachmentUpload', args);
+        this.uploadedFiles.push(args.fileData);
+        const fileItem: HTMLElement = this.createFileItem(args.fileData, true);
+        this.dropArea.appendChild(fileItem);
+    }
+
+    private onUploadProgress(args: any): void {
+        const uploadProgress: number = args.e.loaded / args.e.total * 100;
+        const progressFill: HTMLElement = this.element.querySelector(`#e-chat-progress-${CSS.escape(args.file.name)}`) as HTMLElement;
+        if (progressFill) {
+            progressFill.style.width = `${uploadProgress}%`;
+        }
+    }
+
+    private onUploadSuccess(args: any): void {
+        if (args.operation === 'upload') {
+            this.trigger('attachmentUploadSuccess', args);
+            const progressFill: HTMLElement = this.element.querySelector(`#e-chat-progress-${CSS.escape(args.file.name)}`) as HTMLElement;
+            if (progressFill) {
+                progressFill.style.width = '100%';
+                this.cleanupFileItem(args.file.name);
+            }
+            const progressBar: HTMLElement = this.element.querySelector('.e-chat-progress-fill');
+            if (!progressBar) {
+                this.activateSendIcon(1);
+            }
+        }
+        else if (args.operation === 'remove') {
+            this.trigger('attachmentRemoved', args);
+        }
+    }
+
+    private cleanupFileItem(fileName: string): void {
+        const fileItem: HTMLElement = this.element.querySelector(`#e-chat-progress-${CSS.escape(fileName)}`) as HTMLElement;
+        if (fileItem) {
+            fileItem.parentElement.remove();
+        }
+    }
+
+    private onUploadFailure(args: any): void {
+        this.trigger('attachmentUploadFailure', args);
+        this.uploaderObj.remove(args.file);
+        this.uploadedFiles = this.uploadedFiles.filter((file: FileInfo) => file.name !== args.file.name);
+        const progressFill: HTMLElement = this.element.querySelector(`#e-chat-progress-${CSS.escape(args.file.name)}`) as HTMLElement;
+        if (progressFill) {
+            progressFill.style.width = '100%';
+            progressFill.classList.add('failed');
+        }
+    }
+
+    private createFileItem(fileData: FileInfo, isForFooter: boolean): HTMLElement {
+        const fileItem: HTMLElement = this.createElement('div', { className: isForFooter ? 'e-chat-uploaded-file-item' : 'e-file-wrapper' });
+        if (this.attachmentSettings.attachmentTemplate && isForFooter) {
+            const introContainer: HTMLElement = this.createElement('div', { className: 'e-attachment-template' });
+            fileItem.appendChild(introContainer);
+            this.getContextObject('attachmenttemplate', introContainer, null , null, null, fileData);
+        }
+        else {
+            const fileIcon: HTMLElement = this.createElement('div', { className: 'e-icons e-chat-file-icon' });
+            const fileDetails: HTMLElement = this.createElement('div', { className: 'e-chat-file-details' });
+            const fileName: HTMLElement = this.createElement('span', { className: 'e-chat-file-name', innerHTML: fileData.name });
+            const fileSize: HTMLElement = this.createElement('span', { className: 'e-chat-file-size', innerHTML: `${(fileData.size / 1024).toFixed(2)} KB` });
+            fileDetails.append(fileName, fileSize);
+            fileItem.append(fileIcon, fileDetails);
+        }
+        if (isForFooter) {
+            const closeButton: HTMLElement = this.createElement('span', { attrs: { class: 'e-icons e-chat-close', role: 'button', 'aria-label': 'Clear file', tabindex: '-1' } });
+            EventHandler.add(closeButton, 'click', () => this.handleRemoveUploadedFile(closeButton, fileData, fileItem));
+            fileItem.append(closeButton);
+            const progressBar: HTMLElement = this.createElement('div', { className: 'e-chat-progress-bar' });
+            const progressFill: HTMLElement = this.createElement('div', { id: `e-chat-progress-${fileData.name}`, className: 'e-chat-progress-fill' });
+
+            progressBar.appendChild(progressFill);
+            fileItem.append(progressBar);
+            EventHandler.add(fileItem, 'click', (event: MouseEvent) => {
+                if (closeButton && (event.target === closeButton || (event.target as HTMLElement).classList.contains('e-chat-close'))) {
+                    return;
+                }
+                this.handleAttachmentPreview(fileData, false);
+            });
+        }
+        return fileItem;
+    }
+
+    private handleRemoveUploadedFile(closeButton: HTMLElement, fileData: FileInfo, fileItem: HTMLElement): void {
+        this.uploaderObj.remove(fileData);
+        this.uploadedFiles = this.uploadedFiles.filter((file: FileInfo) => file.name !== fileData.name);
+        EventHandler.remove(closeButton, 'click', this.handleRemoveUploadedFile);
+        fileItem.remove();
+        const textLength: number = this.editableTextarea.innerText.length;
+        const totalLength: number = textLength + this.uploadedFiles.length;
+        this.activateSendIcon(totalLength);
+    }
+
+    private handleAttachmentPreview(file: FileInfo, isAfterPreview: boolean): void {
+        const eventArgs: ChatAttachmentClickEventArgs = { cancel: false };
+        if (this.attachmentSettings.attachmentClick) {
+            this.attachmentSettings.attachmentClick.call(this, eventArgs);
+        }
+        else if (!eventArgs.cancel) {
+            this.showMediaPreview(file, isAfterPreview);
+        }
+    }
+
+    private getFilePreview(file: FileInfo): HTMLElement {
+        const sizeInKB: number = file.size / 1024;
+        const sizeDisplay: string = sizeInKB < 1024 ? `${sizeInKB.toFixed(2)} KB` : `${(sizeInKB / 1024).toFixed(2)} MB`;
+        const filePreview: HTMLElement = this.createElement('div', {
+            className: 'e-file-preview'
+        });
+        const fileIcon: HTMLElement = this.createElement('span', {
+            className: 'e-icons e-file-document'
+        });
+        const previewText: HTMLElement = this.createElement('div', {
+            className: 'e-preview-file-text',
+            innerHTML: this.l10n.getConstant('filePreview')
+        });
+        const filedetails: HTMLElement = this.createElement('div', {
+            className: 'e-file-details',
+            innerHTML: '' + file.type + ' - ' + sizeDisplay
+        });
+        this.appendChildren(filePreview, fileIcon, previewText, filedetails);
+        return filePreview;
+    }
+
+    private removeFilesPreview(): void {
+        const previewWrapper: HTMLElement = this.messageWrapper.querySelector('.e-preview-overlay') as HTMLElement;
+        if (previewWrapper) {
+            previewWrapper.remove();
+        }
+    }
+
+    private renderPreviewTemplate(selectedFile: FileInfo, isAfterPreview: boolean): HTMLElement {
+        const introContainer: HTMLElement = this.createElement('div', { className: 'e-preview-template' });
+        let fileIndex: number;
+        if (isAfterPreview) {
+            fileIndex = this.messages.findIndex((msg: MessageModel) => msg.attachedFile === selectedFile);
+        }
+        else {
+            fileIndex = Array.isArray(this.uploadedFiles) && selectedFile ?
+                this.uploadedFiles.findIndex((fileData: FileInfo) => fileData.id === selectedFile.id) : -1;
+        }
+        this.getContextObject('previewtemplate', introContainer, fileIndex, null, null, selectedFile);
+        return introContainer;
+    }
+
+    private showMediaPreview(file: FileInfo, isAfterPreview: boolean): void {
+        const previewOverlay: HTMLElement = this.createElement('div', {
+            className: 'e-preview-overlay',
+            attrs: {
+                tabindex: '0'
+            }
+        }) as HTMLElement;
+        const previewHeader: HTMLElement = this.createElement('div', {
+            className: 'e-preview-header'
+        }) as HTMLElement;
+
+        const closeButton: HTMLElement = this.createElement('span', {
+            className: 'e-chat-back-icon e-icons',
+            attrs: {
+                title: this.l10n.getConstant('close')
+            }
+        }) as HTMLElement;
+        previewHeader.appendChild(closeButton);
+
+        const fileNameLabel: HTMLElement = this.createElement('span', {
+            className: 'e-preview-file-name',
+            innerHTML: file.name
+        }) as HTMLElement;
+        previewHeader.appendChild(fileNameLabel);
+        if (isAfterPreview) {
+            const downloadButton: HTMLElement = this.createElement('a', {
+                className: 'e-chat-download e-icons',
+                attrs: {
+                    href: file.fileSource,
+                    download: file.name,
+                    target: '_blank',
+                    title: this.l10n.getConstant('download')
+                }
+            }) as HTMLElement;
+            previewHeader.appendChild(downloadButton);
+        }
+
+        let previewContent: HTMLElement;
+        if (this.attachmentSettings.previewTemplate) {
+            previewContent = this.renderPreviewTemplate(file, isAfterPreview);
+        }
+        else {
+            if (this.isImageFile(file.rawFile)) {
+                previewContent = this.createImageContent(file, 'e-image-preview');
+            }
+            else if (this.isVideoFile(file.rawFile)) {
+                previewContent = this.createElement('video', {
+                    attrs: {
+                        autoplay: 'true',
+                        muted: 'true',
+                        controls: 'true',
+                        controlsList: 'nodownload noplaybackrate',
+                        disablepictureinpicture: 'true',
+                        preload: 'metadata',
+                        title: file.name
+                    },
+                    className: 'e-video-preview'
+                }) as HTMLVideoElement;
+                const source: HTMLSourceElement = this.createElement('source', {
+                    attrs: {
+                        src: file.fileSource,
+                        type: (file.rawFile as any).type
+                    }
+                });
+                previewContent.appendChild(source);
+            }
+            else {
+                previewContent = this.getFilePreview(file);
+            }
+        }
+        this.appendChildren(previewOverlay, previewHeader, previewContent);
+        this.messageWrapper.appendChild(previewOverlay);
+        previewOverlay.focus();
+
+        const escKeyHandler: any = (event: KeyboardEvent): void => {
+            if (event.key === 'Escape') {
+                closePreview();
+            }
+        };
+        const overlayClickHandler: any = (event: MouseEvent): void => {
+            if (event.currentTarget === event.target) {
+                closePreview();
+            }
+        };
+        const closeClickHandler: any = (): void => {
+            closePreview();
+        };
+        const closePreview: any = (): void => {
+            EventHandler.remove(previewOverlay, 'keydown', escKeyHandler);
+            EventHandler.remove(previewOverlay, 'click', overlayClickHandler);
+            EventHandler.remove(closeButton, 'click', closeClickHandler);
+            previewOverlay.remove();
+        };
+        EventHandler.add(previewOverlay, 'keydown', escKeyHandler);
+        EventHandler.add(previewOverlay, 'click', overlayClickHandler);
+        EventHandler.add(closeButton, 'click', closeClickHandler);
+    }
+
+    private createImageContent(file: FileInfo, imageClass: string): HTMLImageElement {
+        const imageElement: HTMLImageElement = this.createElement('img', {
+            attrs: {
+                src: file.fileSource,
+                alt: file.name
+            },
+            className: imageClass
+        }) as HTMLImageElement;
+        return imageElement;
+    }
+
+    private updateAttachmentSettings(newAttachment: FileAttachmentSettingsModel): void {
+        this.removeFilesPreview();
+        this.uploaderObj.allowedExtensions = !isNOU(newAttachment.allowedFileTypes) ? newAttachment.allowedFileTypes
+            : this.attachmentSettings.allowedFileTypes;
+        this.uploaderObj.maxFileSize = !isNOU(newAttachment.maxFileSize) ? newAttachment.maxFileSize : this.attachmentSettings.maxFileSize;
+        this.uploaderObj.asyncSettings = {
+            saveUrl: !isNOU(newAttachment.saveUrl) ? newAttachment.saveUrl : this.attachmentSettings.saveUrl,
+            removeUrl: !isNOU(newAttachment.removeUrl) ? newAttachment.removeUrl : this.attachmentSettings.removeUrl
+        };
+        if (!isNOU(newAttachment.path)) {
+            this.attachmentSettings.path = newAttachment.path;
+        }
+        if (!isNOU(newAttachment.enableDragAndDrop)) {
+            this.attachmentSettings.enableDragAndDrop = newAttachment.enableDragAndDrop;
+        }
+        this.uploaderObj.dropArea = this.attachmentSettings.enableDragAndDrop ? this.footer : '';
+        if (!isNOU(newAttachment.saveFormat)) {
+            if (newAttachment.saveFormat === 'Base64' || newAttachment.saveFormat === 'Blob') {
+                this.attachmentSettings.saveFormat = newAttachment.saveFormat;
+            }
+        }
+        if (!isNOU(newAttachment.maximumCount)) {
+            this.attachmentSettings.maximumCount = newAttachment.maximumCount;
+        }
+    }
+
+    private clearUploadedFiles(): void {
+        this.uploadedFiles = [];
+        if (this.dropArea) {
+            this.dropArea.innerHTML = '';
+        }
+        this.refreshTextareaUI();
+    }
     private refreshTextareaUI(): void {
+        const textLength: number = this.editableTextarea.innerText.length;
+        const previewCount: number = this.uploadedFiles && this.uploadedFiles.length ? this.uploadedFiles.length : 0;
+        const totalContent: number = textLength + previewCount;
         this.updateHiddenTextarea(this.editableTextarea.innerText);
-        this.activateSendIcon(this.editableTextarea.innerText.length);
+        this.activateSendIcon(totalContent);
         this.updateFooterElementClass();
     }
     private handleInput(event: Event): void {
@@ -1925,12 +2790,12 @@ export class ChatUI extends InterActiveChatBase implements INotifyPropertyChange
     }
     private onFocusEditableTextarea(): void {
         if (this.footer) {
-            this.footer.classList.add('focused');
+            this.footer.classList.add('e-footer-focused');
         }
     }
     private onBlurEditableTextarea(e: FocusEvent): void {
         if (this.footer) {
-            this.footer.classList.remove('focused');
+            this.footer.classList.remove('e-footer-focused');
         }
         this.triggerUserTyping(e, (e.target as HTMLDivElement).innerText);
     }
@@ -2057,7 +2922,7 @@ export class ChatUI extends InterActiveChatBase implements INotifyPropertyChange
     }
 
     private onSendIconClick(event: KeyboardEvent | Event): void {
-        if (this.editableTextarea && !this.editableTextarea.innerText.trim()) {
+        if (this.editableTextarea && this.uploadedFiles.length === 0 && !this.editableTextarea.innerText.trim()) {
             return;
         }
 
@@ -2067,37 +2932,76 @@ export class ChatUI extends InterActiveChatBase implements INotifyPropertyChange
             timestamp: this.currentReplyTo.timeStamp,
             timestampFormat: this.currentReplyTo.timeStampFormat,
             messageID: this.currentReplyTo.id,
-            mentionUsers: this.currentReplyTo.mentionUsers
+            mentionUsers: this.currentReplyTo.mentionUsers,
+            attachedFile: this.currentReplyTo.attachedFile
         } : null;
 
-        let newMessageObj: MessageModel = {
-            id: `${this.element.id}-message-${this.messages.length + 1}`,
-            author: this.user,
-            text: this.replaceMentionChipsWithPlaceholders(),
-            mentionUsers: this.getUserMentionFromContent(),
-            replyTo: repliedTO
-        };
+        const messageText: string = this.replaceMentionChipsWithPlaceholders();
+        const mentionUsers: UserModel[] = this.getUserMentionFromContent();
         const prevOnChange: boolean = this.isProtectedOnChange;
         this.editableTextarea.innerText = '';
         this.clearReplyWrapper();
         this.refreshTextareaUI();
         this.pushToUndoStack(this.editableTextarea.innerText);
-        const eventArgs: MessageSendEventArgs = {
-            cancel: false,
-            message: newMessageObj
-        };
         this.triggerUserTyping(event as Event, '');
-        this.trigger('messageSend', eventArgs, (args: MessageSendEventArgs) => {
-            if (args.cancel) { return; }
-            newMessageObj = args.message;
-            this.isProtectedOnChange = true;
-            this.messages = [...this.messages, newMessageObj];
-            this.isProtectedOnChange = prevOnChange;
-            this.renderNewMessage(newMessageObj, (this.messages.length - 1));
-        });
+        if (this.uploadedFiles && this.uploadedFiles.length > 0) {
+            const filesCount: number = this.uploadedFiles.length;
+            this.uploadedFiles.forEach((file: FileInfo, index: number) => {
+                let newMessageObj: MessageModel = {
+                    id: `${this.element.id}-message-${this.messages.length + 1}`,
+                    author: this.user,
+                    text: index === filesCount - 1 ? messageText : '',
+                    mentionUsers: index === filesCount - 1 ? mentionUsers : [],
+                    replyTo: index === filesCount - 1 ? repliedTO : null,
+                    attachedFile: file
+                };
+
+                const eventArgs: MessageSendEventArgs = {
+                    cancel: false,
+                    message: newMessageObj
+                };
+
+                this.trigger('messageSend', eventArgs, (args: MessageSendEventArgs) => {
+                    if (args.cancel) {
+                        return;
+                    }
+                    newMessageObj = args.message;
+                    this.isProtectedOnChange = true;
+                    this.messages = [...this.messages, newMessageObj];
+                    this.isProtectedOnChange = prevOnChange;
+                    this.renderNewMessage(newMessageObj, this.messages.length - 1);
+                });
+            });
+        } else {
+            let newMessageObj: MessageModel = {
+                id: `${this.element.id}-message-${this.messages.length + 1}`,
+                author: this.user,
+                text: messageText,
+                mentionUsers: mentionUsers,
+                replyTo: repliedTO,
+                attachedFile: null
+            };
+
+            const eventArgs: MessageSendEventArgs = {
+                cancel: false,
+                message: newMessageObj
+            };
+
+            this.trigger('messageSend', eventArgs, (args: MessageSendEventArgs) => {
+                if (args.cancel) {
+                    return;
+                }
+                newMessageObj = args.message;
+                this.isProtectedOnChange = true;
+                this.messages = [...this.messages, newMessageObj];
+                this.isProtectedOnChange = prevOnChange;
+                this.renderNewMessage(newMessageObj, this.messages.length - 1);
+            });
+        }
         if (this.suggestionsElement) { this.suggestionsElement.hidden = false; }
         // To prevent the issue where scrolling does not move to the bottom in the `messageTemplate` case on Angular and React platforms.
         this.updateScrollPosition(false, 5);
+        this.clearUploadedFiles();
     }
 
     private replaceMentionChipsWithPlaceholders(): string {
@@ -2133,7 +3037,8 @@ export class ChatUI extends InterActiveChatBase implements INotifyPropertyChange
         contentElement: HTMLElement,
         index?: number,
         message?: MessageModel,
-        currentMessagedate?: Date
+        currentMessagedate?: Date,
+        file?: FileInfo
     ): void {
         let template: string | Function;
         let context: object = { };
@@ -2153,6 +3058,16 @@ export class ChatUI extends InterActiveChatBase implements INotifyPropertyChange
             context = { users: this.typingUsers };
             break;
         }
+        case 'previewtemplate': {
+            template = this.attachmentSettings.previewTemplate;
+            context = { selectedFile: file, index: index };
+            break;
+        }
+        case 'attachmenttemplate': {
+            template = this.attachmentSettings.attachmentTemplate;
+            context = { selectedFile: file};
+            break;
+        }
         }
         this.updateContent(template, contentElement, context, templateName);
     }
@@ -2164,6 +3079,10 @@ export class ChatUI extends InterActiveChatBase implements INotifyPropertyChange
         this.toggleScrollIcon();
     }
     private footerKeyHandler(e: KeyboardEvent): void {
+        const targetElement: HTMLElement = e.target as HTMLElement;
+        if (targetElement.classList.contains('e-chat-attachment-icon')) {
+            return;
+        }
         this.keyHandler(e, 'footer');
     }
     private scrollBottomKeyHandler(e: KeyboardEvent): void {
@@ -2325,6 +3244,48 @@ export class ChatUI extends InterActiveChatBase implements INotifyPropertyChange
             this.mentionObj.noRecordsTemplate = this.l10n.getConstant('noRecordsTemplate');
         }
 
+        //update locale for icons
+        if (this.sendIcon) {
+            this.sendIcon.setAttribute('title', this.l10n.getConstant('send'));
+        }
+        if (this.attachmentIcon) {
+            this.attachmentIcon.setAttribute('title', this.l10n.getConstant('attachments'));
+        }
+        const closeIcon: HTMLElement = this.viewWrapper.querySelector('.e-chat-close');
+        if (closeIcon) {
+            closeIcon.setAttribute('title', this.l10n.getConstant('close'));
+        }
+        // Update locale for file preview
+        const attachmentPreview: HTMLElement = this.viewWrapper.querySelector('.e-preview-overlay');
+        if (attachmentPreview) {
+            const downloadIcon: HTMLElement = attachmentPreview.querySelector('.e-chat-download');
+            if (downloadIcon) {
+                downloadIcon.setAttribute('title', this.l10n.getConstant('download'));
+            }
+            const backIcon: HTMLElement = attachmentPreview.querySelector('.e-chat-back-icon');
+            if (backIcon) {
+                backIcon.setAttribute('title', this.l10n.getConstant('close'));
+            }
+            const filePreviewText: HTMLElement = attachmentPreview.querySelector('.e-preview-file-text');
+            if (filePreviewText) {
+                filePreviewText.textContent = this.l10n.getConstant('filePreview');
+            }
+        }
+        //update locale for failure message
+        const failureMessageElem: HTMLElement = this.viewWrapper.querySelector('.e-failure-message');
+        if (failureMessageElem) {
+            if (failureMessageElem.classList.contains('e-size-failure')) {
+                failureMessageElem.textContent = this.l10n.getConstant('fileSizeFailure');
+            }
+            else {
+                let failureText: string = this.l10n.getConstant('fileCountFailure');
+                failureText = failureText.replace('{0}', this.attachmentSettings.maximumCount.toString());
+                if (this.attachmentSettings.maximumCount === 1) {
+                    failureText = failureText.replace('files', 'file');
+                }
+                failureMessageElem.textContent = failureText;
+            }
+        }
         // Update locale for typing users text.
         if (!this.typingUsers || this.typingUsers.length === 0) {
             return;
@@ -2343,6 +3304,33 @@ export class ChatUI extends InterActiveChatBase implements INotifyPropertyChange
         EventHandler.remove(this.messageWrapper, 'scroll', this.handleScroll);
         EventHandler.remove(this.downArrowIcon.element, 'click', this.scrollBtnClick);
         EventHandler.remove(this.downArrowIcon.element, 'keydown', this.scrollBottomKeyHandler);
+        if (this.attachmentIcon) {
+            EventHandler.clearEvents(this.attachmentIcon);
+        }
+    }
+
+    private destroyAttachments(): void {
+        if (this.uploaderObj) {
+            this.uploaderObj.destroy();
+            this.uploaderObj = null;
+        }
+        if (this.attachmentIcon) {
+            this.attachmentIcon.innerHTML = '';
+            this.attachmentIcon.remove();
+            this.attachmentIcon = null;
+        }
+        if (this.dropArea) {
+            this.dropArea.innerHTML = '';
+            this.dropArea.remove();
+            this.dropArea = null;
+        }
+        if (this.messageWrapper) {
+            const previewOverlay: HTMLElement = this.messageWrapper.querySelector('.e-preview-overlay') as HTMLElement;
+            if (previewOverlay) {
+                previewOverlay.remove();
+            }
+        }
+        this.uploadedFiles = [];
     }
 
     private destroyChatUI(): void {
@@ -2395,7 +3383,8 @@ export class ChatUI extends InterActiveChatBase implements INotifyPropertyChange
                 author: this.user,
                 text: message,
                 timeStamp: new Date(),
-                timeStampFormat: this.timeStampFormat
+                timeStampFormat: this.timeStampFormat,
+                attachedFile: null
             };
             this.messages = [...this.messages, newMessageObj];
             this.renderNewMessage(newMessageObj, (this.messages.length - 1));
@@ -2412,7 +3401,8 @@ export class ChatUI extends InterActiveChatBase implements INotifyPropertyChange
                 mentionUsers: message.mentionUsers || [],
                 isPinned: message.isPinned || false,
                 replyTo: message.replyTo,
-                isForwarded: message.isForwarded || false
+                isForwarded: message.isForwarded || false,
+                attachedFile: message.attachedFile
             };
             this.messages = [...this.messages, newMessageObj];
             this.renderNewMessage(newMessageObj, (this.messages.length - 1));
@@ -2485,6 +3475,7 @@ export class ChatUI extends InterActiveChatBase implements INotifyPropertyChange
         this.destroyAndNullify(this.dropDownButton);
         this.destroyAndNullify(this.mentionObj);
         this.destroyChatUI();
+        this.destroyAttachments();
         this.intl = null;
     }
 
@@ -2577,6 +3568,15 @@ export class ChatUI extends InterActiveChatBase implements INotifyPropertyChange
                 break;
             case 'mentionUsers':
                 this.updateMentionObj();
+                break;
+            case 'enableAttachments':
+                if (!this.footerTemplate) {
+                    const footerIconsWrapper: HTMLDivElement = this.element.querySelector('.e-footer-icons-wrapper');
+                    this.updateAttachmentElement(footerIconsWrapper);
+                }
+                break;
+            case 'attachmentSettings':
+                this.updateAttachmentSettings(newProp.attachmentSettings);
                 break;
             }
         }

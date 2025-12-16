@@ -1,3 +1,5 @@
+@use 'ej2-base/styles/common/mixin' as *;
+@use './theme-variables' as *;
 @mixin acrdn-item-header-focus-box-shadow {
   @if ($skin-name == 'fluent2' or $skin-name == 'tailwind3') {
     box-shadow: none;

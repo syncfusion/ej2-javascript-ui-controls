@@ -446,7 +446,7 @@ export class Render {
             td.classList.add('e-leftfreeze');
             (td as HTMLElement).style.left = 0 + 'px';
         }
-        if (gObj.frozenRows && gObj.element.querySelector('.e-frozenrow-border')) {
+        if ((gObj.frozenRows || gObj.pinnedTopRowModels.length) && gObj.element.querySelector('.e-frozenrow-border')) {
             this.parent.element.querySelector('.e-frozenrow-border').classList.add('e-frozenrow-empty');
         }
         tr.appendChild(td);
@@ -558,7 +558,7 @@ export class Render {
                 const beforeArgs: { e: ReturnType, isResetPartialRecords: boolean } = { e: dataArgs, isResetPartialRecords: false };
                 gObj.notify(events.beforeSetPartialRecords, beforeArgs);
                 if (!gObj.isInitialLoad || this.parent.isRemote() || (args.action === 'add' && args.requestType === 'save') ||
-                    beforeArgs.isResetPartialRecords) {
+                    args.requestType === 'batchsave' || beforeArgs.isResetPartialRecords) {
                     const isTreeGrid: string = 'isTreeGrid';
                     const gridData: Object[] = (gObj.getDataModule().isRemote() || (!isNullOrUndefined(gObj.dataSource)
                         && (<{result: object[]}>gObj.dataSource).result)) ? dataArgs.result :
@@ -569,6 +569,21 @@ export class Render {
                         this.setPartialRecord(gridData);
                     }
                 }
+            }
+            const requestTypes: string[] = ['virtualscroll', 'infiniteScroll', 'grouping', 'paging', 'sorting', 'filtering'];
+            if (gObj.isRowPinned && (!gObj.isInitialLoad || (gObj.getDataModule().isRemote() && args.requestType
+                && requestTypes.indexOf(args.requestType) !== -1))) {
+                const gridData: Object[] = (gObj.getDataModule().isRemote() || (!isNullOrUndefined(gObj.dataSource)
+                        && (<{result: object[]}>gObj.dataSource).result)) ? dataArgs.result : (gObj.dataSource as object[]);
+                const primaryKey: string = this.parent.getPrimaryKeyFieldNames()[0];
+                for (let i: number = 0; i < gridData.length; i++) {
+                    const data: Object = gridData[parseInt(i.toString(), 10)];
+                    if ( !gObj.pinnedTopRowKeys[data[`${primaryKey}`]] && (gObj.isRowPinned as Function)(data)) {
+                        gObj.pinnedTopRecords.push(data);
+                        gObj.pinnedTopRowKeys[gridData[parseInt(i.toString(), 10)][`${primaryKey}`]] = true;
+                    }
+                }
+                gObj.getDataModule().pinnedData = new DataManager(gObj.pinnedTopRecords);
             }
             if (this.parent.isReact && !isNullOrUndefined(args) && !(args.requestType === 'infiniteScroll' && !this.parent.infiniteScrollSettings.enableCache) && !args.isFrozen) {
                 let templates: string[] = [
@@ -640,6 +655,8 @@ export class Render {
             const selectedData: Object[] = [];
             const nonselectedData: Object[] = [];
             const selectedDataIndexes: number[] = [];
+            this.selectableDataKey = {};
+            this.nonselectableDataKey = {};
             for (let i: number = 0; i < records.length; i++) {
                 if ((this.parent.isRowSelectable as Function)(records[parseInt(i.toString(), 10)], this.parent.columns)) {
                     selectedData.push(records[parseInt(i.toString(), 10)]);

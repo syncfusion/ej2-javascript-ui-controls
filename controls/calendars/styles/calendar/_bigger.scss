@@ -1,3 +1,5 @@
+@use 'ej2-base/styles/common/mixin' as *;
+@use './theme-variables' as *;
 @include export-module('calendar-bigger') {
 
   .e-bigger#{&}.e-calendar,
@@ -29,16 +31,17 @@
       @else {
         line-height: $calendar-bigger-header-height;
       }
-      @if $skin-name == 'fluent2' {
-        width: auto;
-      }
-      @else {
-        width: 60%;
+      width: $calendar-bigger-header-width;
+    }
+    #{if(&, '&', '*')}:not(.e-rtl) .e-header.e-year .e-title,
+    #{if(&, '&', '*')}:not(.e-rtl) .e-header.e-month .e-title {
+      @if $skin-name == 'Material3' {
+        margin-left: -3px;
       }
     }
     #{if(&, '&', '*')}.e-rtl .e-header .e-title {
       line-height: $calendar-bigger-header-height;
-      text-indent: 6px;
+      text-indent: $calendar-bigger-rtl-header-text-indent;
     }
     #{if(&, '&', '*')} .e-header {
       height: $calendar-bigger-header-height;
@@ -80,7 +83,7 @@
 
       #{if(&, '&', '*')} .e-selected ,
       #{if(&, '&', '*')} .e-state-hover {
-        border-radius: 0;
+        border-radius: $calendar-zero-border-radius;
       }
       #{if(&, '&', '*')} span.e-day {
         font-size: $calendar-bigger-month-font-size;
@@ -163,13 +166,13 @@
   .e-bigger .e-content-placeholder.e-calendar.e-placeholder-calendar,
   .e-bigger.e-content-placeholder.e-calendar.e-placeholder-calendar {
     background-size: 300px 392px;
-    min-height: 392px;
+    min-height: $calendar-bigger-placeholder-min-height;
   }
 
   .e-bigger.e-small #{&}.e-calendar {
     @if $skin-name == 'Material3' or $skin-name == 'fluent2' {
       background: $calendar-bg-color;
-      border-radius: 8px;
+      border-radius: $calendar-bgr-small-border-radius;
     }
     @if ($skin-name != 'Material3' and $skin-name != 'fluent2') {
       background-color: $calendar-bg-color;
@@ -181,12 +184,12 @@
       color: $calendar-header-icon-color;
     }
     #{if(&, '&', '*')} th {
-      border-bottom: 0;
+      border-bottom: $border-zero;
       color: $calendar-week-header-font-color;
     }
     @at-root {
       #{if(&, '&', '*')} .e-header {
-        border-bottom: 0;
+        border-bottom: $border-zero;
         #{if(&, '&', '*')} a {
           #{if(&, '&', '*')} span {
             border: $calendar-default-border-color;
@@ -275,7 +278,7 @@
       #{if(&, '&', '*')} .e-content.e-decade {
         #{if(&, '&', '*')} td.e-selected span.e-day {
           @if $skin-name == 'fluent2' {
-            font-weight: 600;
+            font-weight: $font-weight-semibold;
           }
         }
       }
@@ -335,7 +338,7 @@
             box-shadow: $calendar-focused-state-box-shadow;
           }
           @if $skin-name == 'fluent2' {
-            font-weight: 600;
+            font-weight: $font-weight-semibold;
           }
         }
         #{if(&, '&', '*')} td.e-focused-date:hover span.e-day {
@@ -462,7 +465,7 @@
         }
         #{if(&, '&', '*')} .e-disabled span.e-day:hover {
           background: $calendar-none-style;
-          border: 0;
+          border: $border-zero;
           color: $calendar-disable-font-color;
         }
         #{if(&, '&', '*')} .e-other-month:hover span.e-day {
@@ -492,7 +495,7 @@
         }
         #{if(&, '&', '*')} thead {
           background: $calendar-week-header-bg-style;
-          border-bottom: 0;
+          border-bottom: $border-zero;
         }
         #{if(&, '&', '*')} td:hover span.e-day,
         #{if(&, '&', '*')} td:focus span.e-day {
@@ -553,7 +556,7 @@
           }
           border: $calendar-selected-border-color;
           @if $skin-name == 'tailwind3' {
-            border-radius: 40px;
+            border-radius: $calendar-selected-span-border-radius;
           }
           @else {
             border-radius: $calendar-border-radius;
@@ -629,7 +632,7 @@
         #{if(&, '&', '*')}.e-decade td.e-focused-date > span.e-day {
           @if ($skin-name == 'FluentUI' or $skin-name == 'fluent2') {
             background: $calendar-none-style;
-            border-radius: 0;
+            border-radius: $calendar-zero-border-radius;
             box-shadow: $calendar-focused-state-month-box-shadow;
           }
         }
@@ -648,7 +651,7 @@
         #{if(&, '&', '*')}.e-decade td.e-focused-date:hover > span.e-day {
           @if ($skin-name == 'FluentUI' or $skin-name == 'fluent2') {
             background: $calendar-hover-color;
-            border-radius: 0;
+            border-radius: $calendar-zero-border-radius;
             box-shadow: $calendar-focused-state-month-box-shadow;
           }
         }
@@ -715,9 +718,9 @@
 
       #{if(&, '&', '*')} button {
         background: transparent;
-        border: 0;
+        border: $border-zero;
         margin-right: $calendar-icon-button-margin;
-        padding: 0;
+        padding: $padding-zero;
         text-decoration: $calendar-none-style;
       }
       #{if(&, '&', '*')} span {
@@ -746,15 +749,15 @@
     #{if(&, '&', '*')} .e-content {
       #{if(&, '&', '*')} .e-selected ,
       #{if(&, '&', '*')} .e-state-hover {
-        border-radius: 0;
+        border-radius: $calendar-zero-border-radius;
       }
       #{if(&, '&', '*')} span.e-day {
-        border-radius: 0;
+        border-radius: $calendar-zero-border-radius;
         cursor: $calendar-cursor-pointer-style;
         display: $calendar-inline-block-style;
         font-size: $calendar-date-font-size;
         overflow: hidden;
-        padding: 0;
+        padding: $padding-zero;
         text-align: center;
         text-decoration: $calendar-none-style;
         vertical-align: middle;
@@ -801,7 +804,7 @@
       }
       #{if(&, '&', '*')} td:hover {
         @if skin-name == 'fluent2' {
-          border-radius: 2px;
+          border-radius: $calendar-td-hover-border-radius;
           background: $calendar-hover-border-color;
         }
       }
@@ -809,9 +812,9 @@
       table {
         border-collapse: separate;
         border-spacing: 0;
-        border-width: 0;
+        border-width: $border-zero;
         float: $calendar-float-left-style;
-        margin: 0;
+        margin: $margin-zero;
         outline: 0;
         padding: $calendar-table-padding;
         table-layout: fixed;
@@ -954,7 +957,7 @@
     #{if(&, '&', '*')} .e-content {
       #{if(&, '&', '*')} .e-selected ,
       #{if(&, '&', '*')} .e-state-hover {
-        border-radius: 0;
+        border-radius: $calendar-zero-border-radius;
       }
       #{if(&, '&', '*')} span.e-day {
         border: $calendar-default-border-color;
@@ -1153,7 +1156,7 @@
   .e-bigger.e-small .e-calendar .e-content td.e-today:hover {
     @if $skin-name == 'fluent2' {
       background: $calendar-hover-border-color;
-      border-radius: 2px;
+      border-radius: $calendar-content-td-border-radius;
     }
   }
 }

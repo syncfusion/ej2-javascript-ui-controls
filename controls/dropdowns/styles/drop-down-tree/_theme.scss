@@ -1,3 +1,5 @@
+@use 'ej2-base/styles/common/mixin' as *;
+@use './theme-variables' as *;
 @mixin chip-style($bg-color, $close-color, $font-color) {
 
   @if $ddt-skin-name == 'Material3' {
@@ -23,7 +25,7 @@
       @include chip-style($ddt-chip-bg-color, $ddt-chip-close, $ddt-chip-font-color);
       @if $ddt-skin-name == 'Material3' or $theme-name == 'fluent2-highcontrast' {
         border-color: $ddt-chip-border-color;
-        border: 1px solid;
+        border: $ddt-chip-border;
       }
       &:hover {
         @if $ddt-skin-name == 'highcontrast' {

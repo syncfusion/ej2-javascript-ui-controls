@@ -1,3 +1,6 @@
+@use 'ej2-base/styles/definition/bootstrap5.3' as *;
+@forward 'ej2-base/styles/definition/bootstrap5.3';
+
 /*! calendar bootstrap5 theme variables */
 //month view
 $calendar-normal-month-view-height: 32px !default;
@@ -31,7 +34,7 @@ $calendar-bigger-header-line-height: 20px !default;
 $calendar-bigger-header-title-padding: 9px 5px !default;
 
 // common size properties
-$calendar-wrapper-border-radius: 4px !default;
+$calendar-wrapper-border-radius: $radius-4 !default;
 $calendar-full-width: 100% !default;
 $calendar-lg-day-header-format-max-width: 100% !default;
 $calendar-lg-day-header-format-min-width: 540px !default;
@@ -150,7 +153,7 @@ $calendar-date-font-size: $text-sm !default;
 $calendar-bigger-day-font-size: $text-base !default;
 $calendar-link-font-weight-style: $font-weight-normal !default;
 $calendar-disable-font-weight-style: $font-weight-normal !default;
-$calendar-border-radius: 4px !default;
+$calendar-border-radius: $radius-4 !default;
 
 //week header font size
 $calendar-bigger-week-header-font-size: $text-sm !default;
@@ -162,7 +165,7 @@ $calendar-title-font-color: $content-text-color-alt1 !default;
 $calendar-icon-font-color: $content-text-color-alt1 !default;
 $calendar-active-icon-color: $secondary-text-color !default;
 $calendar-title-hover-color: $content-bg-color-alt2 !default;
-$calendar-title-border-radius: 4px !default;
+$calendar-title-border-radius: $radius-4 !default;
 $calendar-title-hover-bg-color: $content-bg-color-alt2 !default;
 $calendar-title-focus-box-shadow: 0 0 0 1px $content-text-color-alt3 !default;
 $calendar-icon-focus-box-shadow: 0 0 0 1px $content-text-color-alt3 !default;
@@ -193,6 +196,7 @@ $calendar-other-decade-cell-color: $content-text-color-alt2 !default;
 //other months
 $calendar-other-month-date: $content-text-color-alt3 !default;
 $calendar-other-month-date-hover-bg: $calendar-other-month-date !default;
+$border-zero: 0;
 
 // td styles
 //color
@@ -258,3 +262,12 @@ $today-button-active-bg: $primary-bg-color-pressed !default;
 $today-button-bg-border-active-color: $primary-border-color-pressed !default;
 $today-button-text-active-color: $primary-text-pressed !default;
 $calendar-active-hover-bg-color: $primary-bg-color-hover !default;
+
+$line-height: 14px;
+$margin-zero: 0;
+$padding-zero: 0;
+$calendar-bigger-rtl-header-text-indent: 6px !default;
+$calendar-zero-border-radius: $radius-0 !default;
+$calendar-bigger-header-width: 60% !default;
+$calendar-bigger-placeholder-min-height: 392px !default;
+$calendar-small-min-height: 220px !default;

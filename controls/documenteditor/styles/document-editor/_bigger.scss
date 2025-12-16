@@ -1,3 +1,5 @@
+@use 'ej2-base/styles/common/mixin' as *;
+@use './theme-variables' as *;
 @include export-module('documenteditor-bigger') {
   /* stylelint-disable */
   .e-bigger {
@@ -5,7 +7,7 @@
     .e-de-para-dlg-container,
     .e-de-table-options-dlg {
       .e-checkbox-wrapper .e-label {
-        font-size: 14px;
+        font-size: $de-para-dlg-container-font-size-bigger;
       }
     }
 
@@ -26,14 +28,14 @@
       font-weight: $de-par-dlg-hdr-weight;
       margin-bottom: $de-padding-half-bigger;
       @if $skin-name =='tailwind' {
-        line-height: 22px;
+        line-height: $de-para-dlg-line-height;
       }
     }
 
     .e-de-para-dlg-container,
     .e-de-table-options-dlg {
       .e-checkbox-wrapper .e-label {
-        font-size: 12px;
+        font-size: $de-table-options-font-size-bigger;
       }
     }
 
@@ -48,12 +50,12 @@
     }
 
     .e-de-para-dlg-spacing-div {
-      margin-left: 20px;
+      margin-left: $de-para-dlg-left-margin-bigger;
     }
 
     .e-de-para-dlg-spacing-div.e-de-rtl {
-      margin-left: 0;
-      margin-right: 20px;
+      margin-left: $de-para-dlg-spacing-left-margin-bigger;
+      margin-right: $de-para-dlg-spacing-right-margin-bigger;
     }
 
     .e-de-para-dlg-sub-container .e-input-group {
@@ -72,11 +74,11 @@
       display: block;
 
       @if $skin-name =='FluentUI' {
-        font-size: 16px;
+        font-size: $de-dlg-sub-header-font-size;
       }
 
       @else {
-        font-size: 12px;
+        font-size: $de-dlg-sub-header-font-size-bigger;
       }
       font-weight: $de-header-font-weight;
       margin-bottom: $de-para-dlg-sub-title-bottom-margin;
@@ -90,7 +92,7 @@
 
     .e-de-rtl-btn-div.e-de-rtl {
       margin-left: $de-de-rtl-btn-div-e-de-rtl-margin-left;
-      margin-right: 0;
+      margin-right: $de-de-rtl-btn-div-e-de-rtl-margin-right-bigger;
     }
   }
 
@@ -120,11 +122,11 @@
     .e-rtl {
       .e-de-subcontainer-left {
         padding-left: $de-padding-half-bigger;
-        padding-right: 0;
+        padding-right: $de-subcontainer-left-padding-right-bigger;
       }
 
       .e-de-subcontainer-right {
-        padding-left: 0;
+        padding-left: $de-subcontainer-right-padding-left-bigger;
         padding-right: $de-padding-half-bigger;
         width: 50%;
       }
@@ -147,7 +149,7 @@
       .e-de-op-more-less,
       .e-de-rp-more-less {
         .e-label {
-          font-size: 16px !important;
+          font-size: $de-op-more-font-size !important;
         }
       }
     }
@@ -196,7 +198,7 @@
 
     .e-bigger .e-de-op-more-less {
       display: inline-flex;
-      margin-top: 16px;
+      margin-top: $de-op-more-less-margin-top-bigger;
     }
 
     .e-bigger .e-de-op-dlg-footer {
@@ -238,19 +240,19 @@
         .e-bookmark-list.e-de-rtl,
         .e-styles-list.e-de-rtl,
         .e-de-ff-dlg-lft-hlf.e-de-rtl {
-          margin-left: 16px;
+          margin-left: $de-font-dlg-left-margin-bigger;
         }
 
         .e-de-font-dlg-cb-right.e-de-rtl,
         .e-bookmark-list,
         .e-styles-list,
         .e-de-ff-dlg-lft-hlf {
-          margin-right: 16px;
+          margin-right: $de-font-dlg-right-margin-bigger;
         }
       }
 
       .e-bookmark-textboxdiv {
-        margin-bottom: 12px !important;
+        margin-bottom: $de-bookmark-textboxdiv-bottom-margin-bigger !important;
       }
 
       .e-de-ff-drpdwn-mvdn,
@@ -265,21 +267,21 @@
       }
 
       .e-de-track-date {
-        font-size: 12px;
+        font-size: $de-track-date-font-size-bigger;
       }
 
       .e-de-page-setup-dlg-sub-container-port {
         @if $skin-name !='FluentUI' {
-          margin-top: 19px;
+          margin-top: $de-page-setup-dlg-top-margin-bigger;
         }
 
         @else {
-          margin-top: 34px;
+          margin-top: $de-page-setup-dlg-top-margin-bigger;
         }
       }
 
       .e-de-table-container-div {
-        margin-top: 13px;
+        margin-top: $de-table-container-top-margin-bigger;
       }
 
       .e-de-table-properties-dlg {
@@ -361,7 +363,7 @@
       .e-de-rp-sub-content-div,
       .e-de-rp-stop-div3,
       .e-de-cmt-date {
-        font-size: 14px !important;
+        font-size: $e-de-cmt-sub-container-font-size !important;
       }
 
       .e-de-table-setting-heading,
@@ -674,20 +676,20 @@
       .e-de-style-icon-button-size,
       .e-de-style-icon-button-first-size,
       .e-de-style-icon-button-last-size {
-        height: 35px;
+        height: $e-de-style-icon-button-last-size-height;
       }
     }
 
     .e-de-style-bold-button-size {
       @if $skin-name !='tailwind' and $skin-name !='bootstrap5' and $skin-name !='FluentUI' and $skin-name !='Material3' {
-        margin-right: 8px;
-        height: 31px;
+        margin-right: $de-style-bold-button-right-margin-bigger;
+        height: $e-de-style-bold-button-size-height-big;
       }
 
       @if $skin-name=='fluent2' {
         margin-left: 0;
         border-left: 0;
-        border-right: 0px;
+        border-right: 0;
         height: 35px;
         margin-right: 0;
       }
@@ -711,7 +713,7 @@
     }
 
     .e-de-style-font-color-picker button {
-      height: 40px !important;
+      height: $e-de-style-font-color-picker-height-big !important;
       width: auto !important;
     }
   }
@@ -729,7 +731,7 @@
     }
 
     .e-de-style-font-color-picker button {
-      height: 40px !important;
+      height: $e-de-style-font-color-picker-height-big !important;
       width: auto !important;
     }
   }
@@ -742,7 +744,7 @@
         .e-de-style-paragraph-indent-group-button,
         .e-de-style-paragraph-group-button {
           button {
-            height: 40px !important;
+            height: $e-de-style-font-group-button-height !important;
             width: 44px !important;
           }
         }
@@ -752,7 +754,7 @@
       .e-de-style-paragraph-indent-group-button,
       .e-de-style-paragraph-group-button {
         button {
-          height: 40px !important;
+          height: $e-de-style-font-group-button-height !important;
           width: 44px !important;
         }
       }
@@ -763,7 +765,7 @@
 
     .e-de-op-input-group,
     .e-de-op-replacewith {
-      height: 40px;
+      height: $e-de-op-input-group-height;
     }
   }
 
@@ -787,7 +789,7 @@
     }
 
     .e-para-dlg-sub-height {
-      height: 170px;
+      height: $e-para-dlg-sub-height-height;
     }
 
     .e-de-toc-table-div .e-de-toc-dlg-toc-level.e-de-rtl {
@@ -799,12 +801,12 @@
     }
 
     .e-de-toc-label {
-      margin-left: 0px;
+      margin-left: $de-toc-label-margin-left-bigger;
     }
 
     .e-de-toc-label-rtl {
-      margin-left: 0px;
-      margin-right: 0px;
+      margin-left: $de-toc-label-rtl-margin-left-bigger;
+      margin-right: $de-toc-label-rtl-margin-right-bigger;
     }
 
     .e-de-outline-rtl {
@@ -812,7 +814,7 @@
     }
 
     .e-de-rp-header {
-      font-size: 16px;
+      font-size: $de-de-rp-header-font-size-bigger;
       width: 75%;
     }
   }
@@ -839,7 +841,7 @@
     .e-de-cmt-post-btn.e-btn.e-flat,
     .e-de-cmt-cancel-btn.e-btn.e-flat {
       height: $de-cmt-post-btn-ht-big;
-      margin-left: 12px;
+      margin-left: $de-cmt-post-btn-left-margin-bigger;
       width: $de-cmt-post-btn-wt-big;
 
       @if $skin-name =='tailwind' {
@@ -849,9 +851,9 @@
     }
 
     .e-de-cp-whole-header {
-      height: 56px;
-      padding: 16px;
-      padding-right: 8px;
+      height: $e-de-cp-whole-header-height;
+      padding: $de-cp-whole-header-padding-bigger;
+      padding-right: $de-cp-whole-header-padding-right-bigger;
     }
 
     .e-de-rp-close-icon {
@@ -865,7 +867,7 @@
 
       .e-de-cmt-post-btn.e-btn.e-flat,
       .e-de-cmt-cancel-btn.e-btn.e-flat {
-        margin-right: 12px;
+        margin-right: $de-cmt-post-btn-margin-right-bigger;
 
         @if $skin-name =='tailwind' {
           padding-bottom: $de-cmt-cancel-btn-padding-top-big;
@@ -901,7 +903,7 @@
     }
 
     .e-de-cmt-sub-container.e-de-cmt-reply {
-      padding: 0%;
+      padding: $de-cmt-sub-container-padding-cmt-reply;
     }
 
     .e-de-rp-nav-btn {
@@ -927,7 +929,7 @@
 
     .e-rtl {
       .e-de-cmt-author-name {
-        padding-left: 0%;
+        padding-left: $de-cmt-author-name-padding-left;
         padding-right: $de-cmt-author-nme-padding-left-big;
       }
 
@@ -948,14 +950,14 @@
     }
     @if $skin-name =='tailwind3' {
       .e-de-subcontainer-left .e-float-input {
-        margin-bottom: 8px;
+        margin-bottom: $de-subcontainer-left-margin-bottom-big;
       }
       .e-de-style-format-dropdwn {
         height: auto !important;
       }
       .e-de-op-more-less {
         > div:nth-child(2) {
-          margin-left: -12px;
+          margin-left: $bigger-de-op-more-less-margin-left;
         }
       }
     }

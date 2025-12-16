@@ -2,56 +2,6 @@
 
 ## [Unreleased]
 
-## 31.2.18 (2025-12-09)
-
-### Image Editor
-
-#### Bug Fixes
-
-- `#I788770` - Fixed console error occurring when clicking the `Z-Order` icon while Pen annotation is active.
-
-## 31.2.10 (2025-11-13)
-
-### Image Editor
-
-#### Bug Fixes
-
-- `#I780912` - Resolved an issue where `DrawText` did not apply bold and italic parameters as expected.
-
-## 31.2.5 (2025-11-04)
-
-### Image Editor
-
-#### Bug Fixes
-
-- `#I780544` - Resolved an issue on mobile devices where tapping a text shape while editing another would unintentionally delete the most recently added text shape.
-
-## 31.2.2 (2025-10-15)
-
-### Image Editor
-
-#### Bug Fixes
-
-- `#I769870` - Resolved an issue with `UpdateShape` method causes font size decrease and page unresponsive.
-
-## 31.1.22 (2025-10-01)
-
-### Image Editor
-
-#### Bug Fixes
-
-- `#I762686` - Resolved an issue where a script error was thrown and shapes were not removed when the 'undo' method was called programmatically.
-
-## 31.1.21 (2025-09-23)
-
-### Image Editor
-
-#### Bug Fixes
-
-- `#I762246` - The issue with "Cancel argument not working for select action in 'ShapeChanging' event" has been resolved.
-
-## 31.1.17 (2025-09-05)
-
 ### Image Editor
 
 #### Features

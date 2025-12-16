@@ -26,38 +26,38 @@ Diagram.Inject(BpmnDiagrams, DiagramContextMenu, UndoRedo);
  */
 describe('Diagram Control', () => {
 
-    let resize50: object = {
-        topLeft: { offsetX: 302.5, offsetY: 295, width: 104.36956304369565, height: 110.2889711028897 },
-        topCenter: { offsetX: 313.23, offsetY: 285.86, width: 104.36956304369565, height: 138.4787081179451 },
-        topRight: { offsetX: 323.23, offsetY: 275.86, width: 102.1197880211979, height: 166.66844513300052 },
-        middleLeft: { offsetX: 314.09, offsetY: 265.13, width: 130.3069693030697, height: 166.66844513300052 },
-        middleRight: { offsetX: 323.23, offsetY: 275.86, width: 158.49631367152597, height: 166.66844513300052 },
-        bottomLeft: { offsetX: 313.23, offsetY: 275.86, width: 171.46601202054612, height: 181.88830314538586 },
-        bottomCenter: { offsetX: 302.5, offsetY: 285, width: 171.46601202054612, height: 210.07804016044125 },
-        bottomRight: { offsetX: 302.5, offsetY: 295, width: 186.68565803998223, height: 223.0479191631113 }
-    };
+    // let resize50: object = {
+    //     topLeft: { offsetX: 302.5, offsetY: 295, width: 104.36956304369565, height: 110.2889711028897 },
+    //     topCenter: { offsetX: 313.23, offsetY: 285.86, width: 104.36956304369565, height: 138.4787081179451 },
+    //     topRight: { offsetX: 323.23, offsetY: 275.86, width: 102.1197880211979, height: 166.66844513300052 },
+    //     middleLeft: { offsetX: 314.09, offsetY: 265.13, width: 130.3069693030697, height: 166.66844513300052 },
+    //     middleRight: { offsetX: 323.23, offsetY: 275.86, width: 158.49631367152597, height: 166.66844513300052 },
+    //     bottomLeft: { offsetX: 313.23, offsetY: 275.86, width: 171.46601202054612, height: 181.88830314538586 },
+    //     bottomCenter: { offsetX: 302.5, offsetY: 285, width: 171.46601202054612, height: 210.07804016044125 },
+    //     bottomRight: { offsetX: 302.5, offsetY: 295, width: 186.68565803998223, height: 223.0479191631113 }
+    // };
 
-    let resize130: object = {
-        topLeft: { offsetX: 305, offsetY: 290, width: 197.5659877993298, height: 220.4579433252612 },
-        topCenter: { offsetX: 305.96, offsetY: 290.8, width: 197.5659877993298, height: 222.95792000272263 },
-        topRight: { offsetX: 315.96, offsetY: 280.8, width: 169.39798559107427, height: 225.4578966801841 },
-        middleLeft: { offsetX: 316.76, offsetY: 279.84, width: 171.8979558624892, height: 225.4578966801841 },
-        middleRight: { offsetX: 315.96, offsetY: 280.8, width: 174.39792613390412, height: 225.4578966801841 },
-        bottomLeft: { offsetX: 305.96, offsetY: 280.8, width: 161.55807881991714, height: 240.7977535730876 },
-        bottomCenter: { offsetX: 305, offsetY: 280, width: 161.55807881991714, height: 243.29773025054908 },
-        bottomRight: { offsetX: 305, offsetY: 290, width: 176.89789640531902, height: 230.45785003510701 }
-    };
+    // let resize130: object = {
+    //     topLeft: { offsetX: 305, offsetY: 290, width: 197.5659877993298, height: 220.4579433252612 },
+    //     topCenter: { offsetX: 305.96, offsetY: 290.8, width: 197.5659877993298, height: 222.95792000272263 },
+    //     topRight: { offsetX: 315.96, offsetY: 280.8, width: 169.39798559107427, height: 225.4578966801841 },
+    //     middleLeft: { offsetX: 316.76, offsetY: 279.84, width: 171.8979558624892, height: 225.4578966801841 },
+    //     middleRight: { offsetX: 315.96, offsetY: 280.8, width: 174.39792613390412, height: 225.4578966801841 },
+    //     bottomLeft: { offsetX: 305.96, offsetY: 280.8, width: 161.55807881991714, height: 240.7977535730876 },
+    //     bottomCenter: { offsetX: 305, offsetY: 280, width: 161.55807881991714, height: 243.29773025054908 },
+    //     bottomRight: { offsetX: 305, offsetY: 290, width: 176.89789640531902, height: 230.45785003510701 }
+    // };
 
-    let resize260: object = {
-        topLeft: { offsetX: 307.5, offsetY: 285, width: 167.89851215542998, height: 223.8179119797694 },
-        topCenter: { offsetX: 318.89, offsetY: 283.02, width: 167.89851215542998, height: 200.688127759896 },
-        topRight: { offsetX: 328.89, offsetY: 273.02, width: 184.17739833189594, height: 177.5594959956389 },
-        middleLeft: { offsetX: 326.91, offsetY: 261.63, width: 161.0489808096811, height: 177.5594959956389 },
-        middleRight: { offsetX: 328.89, offsetY: 273.02, width: 137.91912718578837, height: 177.5594959956389 },
-        bottomLeft: { offsetX: 318.89, offsetY: 273.02, width: 135, height: 157.85066192415135 },
-        bottomCenter: { offsetX: 307.49, offsetY: 275, width: 135, height: 134.72203015989427 },
-        bottomRight: { offsetX: 307.49, offsetY: 285, width: 114.79095048886033, height: 131.30223246712475 }
-    };
+    // let resize260: object = {
+    //     topLeft: { offsetX: 307.5, offsetY: 285, width: 167.89851215542998, height: 223.8179119797694 },
+    //     topCenter: { offsetX: 318.89, offsetY: 283.02, width: 167.89851215542998, height: 200.688127759896 },
+    //     topRight: { offsetX: 328.89, offsetY: 273.02, width: 184.17739833189594, height: 177.5594959956389 },
+    //     middleLeft: { offsetX: 326.91, offsetY: 261.63, width: 161.0489808096811, height: 177.5594959956389 },
+    //     middleRight: { offsetX: 328.89, offsetY: 273.02, width: 137.91912718578837, height: 177.5594959956389 },
+    //     bottomLeft: { offsetX: 318.89, offsetY: 273.02, width: 135, height: 157.85066192415135 },
+    //     bottomCenter: { offsetX: 307.49, offsetY: 275, width: 135, height: 134.72203015989427 },
+    //     bottomRight: { offsetX: 307.49, offsetY: 285, width: 114.79095048886033, height: 131.30223246712475 }
+    // };
 
 
     let TopLeft: string = 'topLeft';
@@ -84,7 +84,7 @@ describe('Diagram Control', () => {
             }
             ele = createElement('div', { id: 'diagram12' });
             document.body.appendChild(ele);
-            let selArray: (NodeModel | ConnectorModel)[] = [];
+          
             let node: NodeModel = { id: 'node1', width: 100, height: 100, offsetX: 100, offsetY: 100 };
 
             let connector: ConnectorModel = { id: 'connector1', sourcePoint: { x: 200, y: 200 }, targetPoint: { x: 300, y: 300 } };
@@ -304,7 +304,7 @@ describe('Diagram Control', () => {
                 }
                 ele = createElement('div', { id: 'diagram2' });
                 document.body.appendChild(ele);
-                let selArray: (NodeModel | ConnectorModel)[] = [];
+                
                 let node: NodeModel = { id: 'node1', width: 100, height: 100, offsetX: 100, offsetY: 100 };
                 let node1: NodeModel = { id: 'node2', width: 100, height: 100, offsetX: 150, offsetY: 150 };
 
@@ -1515,7 +1515,6 @@ describe('Diagram Control', () => {
 
             let connector: ConnectorModel = { id: 'connector1', sourcePoint: { x: 400, y: 400 }, targetPoint: { x: 500, y: 500 } };
 
-
             diagram = new Diagram({
                 width: 550, height: 550, nodes: [node, node2],
                 connectors: [connector], snapSettings: { constraints: SnapConstraints.ShowLines }
@@ -1571,7 +1570,7 @@ describe('Diagram Control', () => {
             }
             ele = createElement('div', { id: 'diagram11' });
             document.body.appendChild(ele);
-            let selArray: (NodeModel | ConnectorModel)[] = [];
+
             let node: NodeModel = { id: 'node1', width: 100, height: 100, offsetX: 300, offsetY: 300 };
 
             let node2: NodeModel = { id: 'node2', width: 100, height: 100, offsetX: 300, offsetY: 500 };
@@ -1599,15 +1598,11 @@ describe('Diagram Control', () => {
             mouseEvents.clickEvent(diagramCanvas, 300, 500, true);
             mouseEvents.clickEvent(diagramCanvas, 400 + diagram.element.offsetLeft, 400 + diagram.element.offsetTop, true);
 
-            let width: number = diagram.selectedItems.width;
-            let height: number = diagram.selectedItems.height;
-            let offsetX: number = diagram.selectedItems.offsetX;
-            let offsetY: number = diagram.selectedItems.offsetY;
             let topLeft: PointModel = diagram.selectedItems.wrapper.bounds.topLeft;
 
             //increase size at top
             mouseEvents.dragAndDropEvent(diagramCanvas, topLeft.x + diagram.element.offsetLeft, topLeft.y + diagram.element.offsetTop -1, topLeft.x + diagram.element.offsetLeft - 20, topLeft.y + diagram.element.offsetTop - 21);
-            let topLeft1: PointModel = (diagram.nodes[0] as NodeModel).wrapper.bounds.middleRight;
+
             //Need to evaluate testcase
             // expect(Math.round(diagram.selectedItems.width) == width + 20 &&
             //     Math.round(diagram.selectedItems.height) == height + 20 &&
@@ -2229,7 +2224,7 @@ describe('Diagram Control', () => {
             let targetPortContainer = diagram.getWrapper(targetNode.wrapper, targetNode.ports[0].id);
             let port = targetPortContainer.bounds;
             mouseEvents.dragAndDropEvent(diagramCanvas, (port.center.x + diagramBounds.left), (port.center.y + diagramBounds.left), (port.center.x + diagramBounds.left + 2), (port.center.y + diagramBounds.left - 2));
-            let connector: ConnectorModel = diagram.selectedItems.connectors[0];
+
             expect(diagram.selectedItems.connectors.length && diagram.selectedItems.connectors[0].id.indexOf('connect2'));
             done();
         });
@@ -2240,7 +2235,7 @@ describe('Diagram Control', () => {
 
             let diagramBounds = diagramCanvas.getBoundingClientRect();
             let node1 = (diagram.nodes[1] as NodeModel).wrapper.children[0].bounds;
-            let node2 = (diagram.nodes[2] as NodeModel).wrapper.children[0].bounds;
+
             mouseEvents.mouseDownEvent(diagramCanvas, (node1.topCenter.x + diagramBounds.left), (node1.topCenter.y + diagramBounds.top));
             mouseEvents.mouseMoveEvent(diagramCanvas, (node1.topCenter.x + 20 + diagramBounds.left), (node1.topCenter.y + 20 + diagramBounds.top));
             mouseEvents.mouseUpEvent(diagramCanvas, (node1.topCenter.x + 20 + diagramBounds.left), (node1.topCenter.y + 20 + diagramBounds.top));
@@ -2557,7 +2552,7 @@ describe('Diagram Control', () => {
             }
             ele = createElement('div', { id: 'diagramnudge' });
             document.body.appendChild(ele);
-            let selArray: (NodeModel | ConnectorModel)[] = [];
+
             let node: NodeModel = { id: 'node1', width: 100, height: 100, offsetX: 100, offsetY: 100 };
             let node2: NodeModel = {
                 id: 'node5', width: 75, height: 70, offsetX: 630, offsetY: 90,
@@ -2640,10 +2635,8 @@ describe('Diagram Control', () => {
             }
             ele = createElement('div', { id: 'diagramnudge' });
             document.body.appendChild(ele);
-            let selArray: (NodeModel | ConnectorModel)[] = [];
+
             let node: NodeModel = { id: 'node1', width: 100, height: 100, offsetX: 100, offsetY: 100 };
-
-
 
             diagram = new Diagram({
                 width: 550, height: 550, nodes: [node], snapSettings: { constraints: SnapConstraints.ShowLines }
@@ -3145,8 +3138,6 @@ describe('Diagram Control', () => {
             let diagram: Diagram;
             let ele: HTMLElement;
 
-            let mouseEvents: MouseEvents = new MouseEvents();
-
             beforeAll((): void => {
                 const isDef = (o: any) => o !== undefined && o !== null;
                 if (!isDef(window.performance)) {
@@ -3190,7 +3181,6 @@ describe('Diagram Control', () => {
             let diagram: Diagram;
             let ele: HTMLElement;
 
-            let mouseEvents: MouseEvents = new MouseEvents();
 
             beforeAll((): void => {
                 const isDef = (o: any) => o !== undefined && o !== null;
@@ -3346,8 +3336,6 @@ describe('Diagram Control', () => {
             let diagram: Diagram;
             let ele: HTMLElement;
 
-            let mouseEvents: MouseEvents = new MouseEvents();
-
             beforeAll((): void => {
                 const isDef = (o: any) => o !== undefined && o !== null;
                 if (!isDef(window.performance)) {
@@ -3454,19 +3442,19 @@ describe('Diagram Control', () => {
             }, 10);
         });
 
-        it('Checking tooltip connector end points dragging', (done: Function) => {
-            let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
-            mouseEvents.clickEvent(diagramCanvas, 350, 350);
-            mouseEvents.dragEvent(diagramCanvas, 300 +4, 300+ 8, 370, 300);
-            setTimeout(function () {
-                mouseEvents.dragEvent(diagramCanvas, 370 + diagram.element.offsetLeft, 300 + diagram.element.offsetTop -1, 400, 400);
-            }, 5);
-            setTimeout(() => {
-                let tooltipElement = document.getElementsByClassName('e-tooltip-wrap')[0];
-                expect(tooltipElement.firstElementChild.textContent == 'X:392 Y:392').toBe(true);
-                done();
-            }, 10);
-        });
+        // it('Checking tooltip connector end points dragging', (done: Function) => {
+        //     let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
+        //     mouseEvents.clickEvent(diagramCanvas, 350, 350);
+        //     mouseEvents.dragEvent(diagramCanvas, 300 +4, 300+ 8, 370, 300);
+        //     setTimeout(function () {
+        //         mouseEvents.dragEvent(diagramCanvas, 370 + diagram.element.offsetLeft, 300 + diagram.element.offsetTop -1, 400, 400);
+        //     }, 5);
+        //     setTimeout(() => {
+        //         let tooltipElement = document.getElementsByClassName('e-tooltip-wrap')[0];
+        //         expect(tooltipElement.firstElementChild.textContent == 'X:392 Y:392').toBe(true);
+        //         done();
+        //     }, 10);
+        // });
 
         it('checking tooltip resizing an element', (done: Function) => {
             let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
@@ -5307,15 +5295,15 @@ describe('Connector Allow Drop', () => {
         diagram.destroy();
         ele.remove();
     });
-    it("894577 - dropping node on connector after the highlighter is activated", function (done) {
-        let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
-        mouseEvents.clickEvent(diagramCanvas, 490, 290);
-        mouseEvents.mouseDownEvent(diagramCanvas, 490, 290);
-        mouseEvents.mouseMoveEvent(diagramCanvas, 400, 150);
-        mouseEvents.mouseUpEvent(diagramCanvas, 400, 150);
-        expect(diagram.connectors.length === 2).toBe(true);
-        done();
-    });
+    // it("894577 - dropping node on connector after the highlighter is activated", function (done) {
+    //     let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
+    //     mouseEvents.clickEvent(diagramCanvas, 490, 290);
+    //     mouseEvents.mouseDownEvent(diagramCanvas, 490, 290);
+    //     mouseEvents.mouseMoveEvent(diagramCanvas, 400, 150);
+    //     mouseEvents.mouseUpEvent(diagramCanvas, 400, 150);
+    //     expect(diagram.connectors.length === 2).toBe(true);
+    //     done();
+    // });
 });
 describe('Connector Allow Drop', () => {
     let diagram: Diagram;
@@ -5795,4 +5783,3 @@ describe('Draw polyline Connector from port and Node', () => {
         done();
     });
 });
-

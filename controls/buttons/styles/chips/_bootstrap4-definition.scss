@@ -1,4 +1,6 @@
 @use 'sass:color';
+@use 'ej2-base/styles/definition/bootstrap4' as *;
+@forward 'ej2-base/styles/definition/bootstrap4';
 
 // Calculate box shadow
 @function custom-box-shadow($bg-color) {
@@ -592,6 +594,9 @@ $chip-outline-danger-active-border-color: $danger !default;
 $chip-outline-danger-focus-active-border-color: $danger !default;
 $chip-outline-danger-pressed-border-color: $danger !default;
 $chip-outline-danger-disabled-border-color: $danger !default;
+$chip-touch-text-margin-top: -3px !default;
+$chip-align-line-height: 1 !default;
+$chip-zero-width: 0 !default;
 
 // box shadows
 // primary

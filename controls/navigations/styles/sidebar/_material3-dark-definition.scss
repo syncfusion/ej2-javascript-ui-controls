@@ -1,1 +1,9 @@
-@import './material3-definition.scss';
+@use 'ej2-base/styles/definition/material3-dark' as *;
+@forward 'ej2-base/styles/definition/material3-dark';
+$sidebar-box-shadow: rgba($shadow) !default;
+$sidebar-background: $surface2 !default;
+$sidebar-border: $transparent !default;
+$sidebar-overlay: $overlay-bg-color !default;
+$sidebar-height: 100% !default;
+$sidebar-border-width: 1px !default;
+$sidebar-margin-none: 0 !default;

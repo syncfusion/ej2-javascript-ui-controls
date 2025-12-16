@@ -1,7 +1,9 @@
+@use 'ej2-base/styles/common/mixin' as *;
+@use './theme-variables' as *;
 @include export-module('toolbar-bigger') {
   .e-bigger .e-toolbar,
   .e-toolbar.e-bigger {
-    height: $tbar-bgr-size;
+    height: $tbar-bgr-height;
     min-height: $tbar-bgr-size;
 
     .e-toolbar-items {
@@ -55,6 +57,14 @@
           &:active {
             padding: $tbar-btn-bgr-focus-padding;
           }
+        }
+      }
+    }
+
+    &.e-spacer-toolbar {
+      &.e-pop-mode {
+        .e-toolbar-items {
+          width: calc(100% - $tbar-nav-bgr-width);
         }
       }
     }
@@ -133,11 +143,11 @@
         &:not(.e-tbar-pos) .e-toolbar-item {
 
           &:first-child {
-            margin-left: 0;
+            margin-left: $tbar-margin-zero;
           }
 
           &:last-child {
-            margin-right: 0;
+            margin-right: $tbar-margin-zero;
           }
         }
       }
@@ -149,7 +159,7 @@
         }
 
         &.e-separator {
-          height: auto;
+          height: $tbar-auto-height;
           margin: $tbar-separator-vertical-bgr-mrgn;
           min-height: auto;
         }
@@ -195,10 +205,10 @@
 
       .e-toolbar-extended {
         min-height: $tbar-bgr-size;
-        padding-bottom: 0;
+        padding-bottom: $tbar-padding-zero;
         padding-left: $tbar-item-bgr-mrgn;
         padding-right: $tbar-item-bgr-mrgn;
-        padding-top: 0;
+        padding-top: $tbar-padding-zero;
 
         .e-toolbar-item {
           min-height: $tbar-bgr-items-size;
@@ -248,14 +258,14 @@
       }
 
       &.e-tbar-extended {
-        border-bottom: 0;
-        border-bottom-left-radius: 0;
-        border-bottom-right-radius: 0;
+        border-bottom: $tbar-border-zero;
+        border-bottom-left-radius: $tbar-radius-zero;
+        border-bottom-right-radius: $tbar-radius-zero;
   
         .e-toolbar-extended {
-          border-top: 0;
-          border-top-left-radius: 0;
-          border-top-right-radius: 0;
+          border-top: $tbar-border-zero;
+          border-top-left-radius: $tbar-radius-zero;
+          border-top-right-radius: $tbar-radius-zero;
         }
       }
     }
@@ -294,19 +304,19 @@
 
           .e-toolbar-center .e-toolbar-item,
           .e-toolbar-right .e-toolbar-item {
-            margin: 0;
+            margin: $tbar-margin-zero;
           }
 
           .e-toolbar-right .e-toolbar-item:last-child {
             margin-left: $tbar-item-bgr-mrgn;
-            margin-right: 0;
+            margin-right: $tbar-margin-zero;
           }
         }
 
         &:not(.e-tbar-pos) {
 
           .e-toolbar-item:first-child {
-            margin-left: 0;
+            margin-left: $tbar-margin-zero;
             margin-right: $tbar-item-bgr-mrgn;
           }
         }

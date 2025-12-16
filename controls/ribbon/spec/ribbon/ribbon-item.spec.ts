@@ -1426,6 +1426,7 @@ describe('Ribbon Items', () => {
             expect(document.querySelector('#item2_container').classList.contains('e-ribbon-medium-item')).toBe(true);
             expect(document.querySelector('#item3_container').classList.contains('e-ribbon-medium-item')).toBe(true);
         });
+
         it('Colorpicker resize in simplified', () => {
              let isColorPickerOpen: boolean = false;
             ribbon = new Ribbon({
@@ -1885,7 +1886,8 @@ describe('Ribbon Items', () => {
             expect(document.body.querySelector('#item3-popup').classList.contains('e-popup-close')).toBe(true);
 
             //Clicking on button
-            (ribbon.element.querySelector('#item1') as HTMLElement).dispatchEvent(new Event('mousedown', { bubbles: true }));
+            (document.body.querySelector('#item1') as HTMLElement).dispatchEvent(new Event('mousedown', { bubbles: true }));
+            (document.body.querySelector('#item1') as HTMLElement).click();
             expect(document.body.querySelector('#'+splitBtn.id+'_dropdownbtn-popup').classList.contains('e-popup-close')).toBe(true);
             expect(document.body.querySelector('#ribbon_tab_sim_ovrl_overflow-popup').classList.contains('e-popup-close')).toBe(true);
             expect(document.body.querySelector('#item3-popup').classList.contains('e-popup-close')).toBe(true);

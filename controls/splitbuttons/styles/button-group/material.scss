@@ -1,5 +1,5 @@
-@import 'ej2-base/styles/definition/material.scss';
-@import 'ej2-buttons/styles/button/material-definition.scss';
-@import 'material-definition.scss';
-@import 'all.scss';
-@import 'bigger.scss';
+@use 'ej2-base/styles/definition/material' as *;
+@use 'ej2-buttons/styles/button/material-definition' as *;
+@use 'material-definition' as *;
+@use 'all' as *;
+@use 'bigger' as *;

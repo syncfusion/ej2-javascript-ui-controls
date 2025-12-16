@@ -1,10 +1,13 @@
+@use 'ej2-base/styles/common/mixin' as *;
+@use './theme-variables' as *;
+@use './layout' as *;
 @include export-module('querybuilder-bigger') {
   .e-query-builder.e-device,
   .e-bigger.e-query-builder,
   .e-bigger .e-query-builder {
     &.e-multi-connector {
       & .e-rule-list .e-group-container {
-        margin-top: 0 !important; /* stylelint-disable-line declaration-no-important */
+        margin-top: $qryblr-zero-padding-margin !important; /* stylelint-disable-line declaration-no-important */
       }
     }
     & .e-group-container  {
@@ -12,7 +15,7 @@
     }
 
     & .e-rule-list > .e-group-container {
-      padding: 0;
+      padding: $qryblr-zero-padding-margin;
     }
 
     & .e-rule-list > .e-rule-container:not(:first-child)::before {
@@ -20,7 +23,7 @@
     }
 
     & .e-rule-list > .e-group-container:first-child {
-      margin-top: 0;
+      margin-top: $qryblr-zero-padding-margin;
     }
 
     & .e-rule-list > ::before {
@@ -40,7 +43,7 @@
 
     & .e-rule-list {
       padding: $qrybldr-bigger-rulelist;
-      padding-bottom: 0;
+      padding-bottom: $qryblr-zero-padding-margin;
     }
 
     & .e-rule-list .e-group-container {
@@ -53,17 +56,17 @@
 
     & .e-collapse-rule {
       @if $theme-name == 'fluent2' {
-        font-size: 16px;
-        padding: 11px;
+        font-size: $qrybldr-collapse-rule-font-size;
+        padding: $qrybldr-collapse-flu2-padding;
       }
       @if $skin-name == 'tailwind3' {
-        font-size: 16px;
+        font-size: $qrybldr-collapse-rule-font-size;
       }
     }
 
     & .e-btn.e-small.e-round .e-btn-icon {
       @if $theme-name == 'fluent2' {
-        font-size: 16px;
+        font-size: $qrybldr-btn-small-round-font-size;
       }
     }
 
@@ -73,9 +76,9 @@
 
     & .e-group-header .e-btn-group .e-small.e-btn {
       @if $theme-name == 'fluent2' {
-        font-size: 16px;
-        line-height: 20px;
-        padding: 8px 12px;
+        font-size: $qrybldr-btn-small-round-font-size;
+        line-height: $qrybldr-group-btn-line-height;
+        padding: $qrybldr-group-btn-padding;
       }
     }
 
@@ -92,7 +95,7 @@
       }
 
       & .e-rule-container.e-vertical-mode {
-        width: auto;
+        width: $qrybldr-vertical-width;
       }
 
       & .e-rule-container.e-separate-rule {
@@ -105,11 +108,11 @@
         @if $skin-name != 'Material3' {
           padding-right: $device-rulecon-right-padding;
         }
-        right: 0;
+        right: $qryblr-zero-padding-margin;
       }
 
       & .e-rule-container.e-horizontal-mode .e-rule-delete {
-        margin-bottom: 0;
+        margin-bottom: $qryblr-zero-padding-margin;
       }
 
       & .e-horizontal-mode .e-rule-delete,
@@ -128,7 +131,7 @@
       }
 
       & .e-rule-value.e-custom-value {
-        width: 200px;
+        width: $qrybldr-rule-value-width;
       }
 
       & .e-rule-value {
@@ -171,7 +174,7 @@
         line-height: 2 !important; /* stylelint-disable-line declaration-no-important */
       }
       @if $skin-name == 'bootstrap5' or $skin-name == 'bootstrap5.3' or $skin-name == 'FluentUI' {
-        line-height: .8em !important; /* stylelint-disable-line declaration-no-important */
+        line-height: $qrybldr-btn-small-line-height !important; /* stylelint-disable-line declaration-no-important */
       }
     }
   }
@@ -194,10 +197,10 @@
 
   .e-bigger .e-query-builder .e-dragclone.e-cloneproperties {
     & .e-drag-qb-rule {
-      padding: 24px 5px;
+      padding: $qrybldr-bigger-drag-clone-padding;
     }
     & .e-rule-value-delete {
-      margin: 15px;
+      margin: $qrybldr-bigger-drag-clone-margin;
     }
   }
 

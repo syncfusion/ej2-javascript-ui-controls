@@ -1,13 +1,13 @@
-@import 'ej2-base/styles/definition/fluent-dark.scss';
-@import 'ej2-buttons/styles/button/fluent-dark-definition.scss';
-@import 'dialog/fluent-dark-definition.scss';
-@import 'dialog/icons/fluent-dark.scss';
-@import 'dialog/all.scss';
-@import 'popup/fluent-dark-definition.scss';
-@import 'popup/all.scss';
+@use 'ej2-base/styles/definition/fluent-dark' as *;
+@use 'ej2-buttons/styles/button/fluent-dark-definition' as *;
+@use 'popup/fluent-dark-definition' as *;
+@use 'dialog/fluent-dark-definition' as *;
+@use 'dialog/icons/fluent-dark' as *;
+@use 'dialog/all' as *;
+@use 'popup/all' as *;
 
-@import 'tooltip/fluent-dark-definition.scss';
-@import 'tooltip/icons/fluent-dark.scss';
-@import 'tooltip/all.scss';
-@import 'spinner/fluent-dark-definition.scss';
-@import 'spinner/all.scss';
+@use 'tooltip/fluent-dark-definition' as *;
+@use 'tooltip/icons/fluent-dark' as *;
+@use 'tooltip/all' as *;
+@use 'spinner/fluent-dark-definition' as *;
+@use 'spinner/all' as *;

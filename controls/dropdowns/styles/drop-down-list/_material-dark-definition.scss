@@ -1,3 +1,7 @@
+@use 'ej2-base/styles/common/mixin' as *;
+@use 'ej2-base/styles/definition/material-dark' as *;
+@forward 'ej2-base/styles/definition/material-dark';
+
 //default
 $ddl-input-font-size: 14px !default;
 $ddl-zero-value: 0 !default;
@@ -23,7 +27,28 @@ $ddl-clear-icon-margin-right: 66px !default;
 $ddl-back-icon-margin: 0 10px 0 -52px !default;
 $ddl-back-icon-padding: 0 8px !default;
 $ddl-filter-margin: 0 !default;
-$input-margin-top: 16px !default;
+
+$ddl-input-bgr-small-clear-margin: 0 4px !default;
+$ddl-input-popup-padding: 4px 0 !default;
+$ddl-input-zero-padding: 0 !default;
+$ddl-bigger-filter-parent-padding: 8px 16px 8px 0 !default;
+$ddl-bigger-small-filtr-parent: 8px 16px !default;
+$ddl-bigger-filter-input-parent-padding: 4px 16px 4px 0 !default;
+
+$ddl-bgr-input-filter-margin-left: -20px !default;
+$ddl-bgr-content-min-height: 40px !default;
+$ddl-border-width: 1px !default;
+$ddl-zero-margin-padding: 0 !default;
+$ddl-content-nim-height: 33px !default;
+$ddl-popup-resize-height: 15px !default;
+$ddl-bgr-popup-clear-min-width: 16px !default;
+$ddl-bgr-popup-clear-min-height: 16px !default;
+$ddl-bgr-small-popup-clear-min-height: 18px !default;
+$ddl-bgr-small-popup-clear-min-width: 18px !default;
+$ddl-zero-height: 0 !default;
+$ddl-popup-resize-width: 15px !default;
+$input-border: $ddl-zero-value $border-type !default;
+$ddl-full-width: 100%;
 
 // Small Size
 
@@ -31,7 +56,6 @@ $ddl-small-list-font-size: 12px !default;
 
 // touch small
 $ddl-bigger-small-list-font-size: 13px !default;
-$input-border: $ddl-zero-value $border-type !default;
 
 //enddefault
 

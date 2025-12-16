@@ -1,9 +1,9 @@
-@import 'ej2-base/styles/definition/tailwind.scss';
-@import '../context-menu/tailwind-definition.scss';
-@import '../h-scroll/tailwind-definition.scss';
-@import '../v-scroll/tailwind-definition.scss';
-@import 'ej2-popups/styles/popup/tailwind-definition.scss';
-@import 'tailwind-definition.scss';
-@import 'icons/tailwind.scss';
-@import 'all.scss';
-@import 'bigger.scss';
+@use 'ej2-base/styles/definition/tailwind' as *;
+@use '../context-menu/tailwind-definition' as *;
+@use '../h-scroll/tailwind-definition' as *;
+@use '../v-scroll/tailwind-definition' as *;
+@use 'ej2-popups/styles/popup/tailwind-definition' as *;
+@use 'tailwind-definition' as *;
+@use 'icons/tailwind' as *;
+@use 'all' as *;
+@use 'bigger' as *;

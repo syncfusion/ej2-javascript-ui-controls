@@ -1,4 +1,6 @@
 @use 'sass:color';
+@use 'ej2-base/styles/definition/bootstrap4' as *;
+@forward 'ej2-base/styles/definition/bootstrap4';
 
 $listview-font-family: $font-family !default;
 $listview-text-color: rgba($gray-900, 1) !default;
@@ -83,6 +85,23 @@ $listview-touch-checkbox-right-margin: 0 0 0 12px !default;
 $listview-touch-checkbox-left-margin: 0 12px 0 0 !default;
 $listview-touch-rtl-checkbox-left-margin: 0 0 0 12px !default;
 $listview-touch-rtl-checkbox-right-margin: 0 12px 0 0 !default;
+$listview-list-margin: 0 !default;
+$listview-list-padding: 0 !default;
+$listview-header-border-bottom-size: 1px !default;
+$listview-group-item-font-weight: 600 !default;
+$listview-border-none: 0 !default;
+$listview-item-icon-margin-left: 16px !default;
+$listview-item-icon-margin-right: 0 !default;
+$listitem-header-font-weight: 500 !default;
+$listview-margin-none: 0 !default;
+$listview-padding-none: 0 !default;
+$listview-text-content-height: 100% !default;
+$listview-checkbox-text-content-width: calc(100% - 40px) !default;
+$listview-checkbox-left-list-icon-text-width: calc(100% - 90px) !default;
+$listview-checkbox-right-list-icon-text-width: calc(100% - 80px) !default;
+$listview-icon-text-width: calc(100% - 60px) !default;
+$listview-icon-collapsible-font-size: 12px !default;
+$listview-list-icon-size: 30px !default;
 
 //ListView In-built template variables
 $listview-template-padding: .7142em 1.0714em !default;
@@ -112,3 +131,4 @@ $listview-template-multiline-header-font-size: 18px !default;
 $listview-template-multiline-padding: .7142em 1.0714em !default;
 $listview-template-multiline-content-font-size: 14px !default;
 $listview-template-multiline-avatar-top: .7142em !default;
+$listview-template-height: inherit !default;

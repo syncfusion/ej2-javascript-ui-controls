@@ -1,3 +1,5 @@
+@use 'ej2-base/styles/common/mixin' as *;
+@use './theme-variables' as *;
 @include export-module('datepicker-bigger') {
   #{&}.e-datepicker.e-bigger,
   .e-bigger #{&}.e-datepicker {
@@ -11,7 +13,7 @@
   .e-bigger .e-content-placeholder.e-datepicker.e-placeholder-datepicker,
   .e-bigger.e-content-placeholder.e-datepicker.e-placeholder-datepicker {
     background-size: 250px 40px;
-    min-height: 40px;
+    min-height: $datepicker-bigger-min-height;
   }
 
   .e-bigger#{&}.e-datepicker,

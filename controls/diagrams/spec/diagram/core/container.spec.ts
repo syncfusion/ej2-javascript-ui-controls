@@ -34,8 +34,9 @@ describe('Diagram Control', () => {
             diagram.appendTo('#diagram');
         });
         afterAll((): void => {
-            diagram.destroy();
-            ele.remove();
+            if (diagram) { diagram.destroy(); diagram = null; }
+            if (ele && ele.parentNode) ele.parentNode.removeChild(ele);
+            ele = null;
         });
 
         it('Checking container without chidlren', (done: Function) => {
@@ -78,8 +79,9 @@ describe('Diagram Control', () => {
             diagram.appendTo('#diagram1');
         });
         afterAll((): void => {
-            diagram.destroy();
-            ele.remove();
+            if (diagram) { diagram.destroy(); diagram = null; }
+            if (ele && ele.parentNode) ele.parentNode.removeChild(ele);
+            ele = null;
         });
 
         it('Checking before, after, Simple container with two child', (done: Function) => {
@@ -149,8 +151,9 @@ describe('Diagram Control', () => {
             diagram.appendTo('#diagram2');
         });
         afterAll((): void => {
-            diagram.destroy();
-            ele.remove();
+            if (diagram) { diagram.destroy(); diagram = null; }
+            if (ele && ele.parentNode) ele.parentNode.removeChild(ele);
+            ele = null;
         });
 
         it('Checking before, after, Simple container with two child  and one rotated child', (done: Function) => {
@@ -219,8 +222,9 @@ describe('Diagram Control', () => {
             diagram.appendTo('#diagram3');
         });
         afterAll((): void => {
-            diagram.destroy();
-            ele.remove();
+            if (diagram) { diagram.destroy(); diagram = null; }
+            if (ele && ele.parentNode) ele.parentNode.removeChild(ele);
+            ele = null;
         });
 
         it('Checking before, after, Simple container with rotation and rotated child', (done: Function) => {
@@ -292,8 +296,9 @@ describe('Diagram Control', () => {
             diagram.appendTo('#diagram4');
         });
         afterAll((): void => {
-            diagram.destroy();
-            ele.remove();
+            if (diagram) { diagram.destroy(); diagram = null; }
+            if (ele && ele.parentNode) ele.parentNode.removeChild(ele);
+            ele = null;
         });
 
         it('Checking before, after, Simple container with rotation and rotated child', (done: Function) => {

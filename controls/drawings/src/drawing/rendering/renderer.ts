@@ -26,6 +26,9 @@ export class DrawingRenderer {
     public isSvgMode: Boolean = true;
     /** @private */
     private element: HTMLElement;
+    public freeTextMaxHeight: number = 0;
+    public isFreeTextAnnotation: boolean = false;
+    public zoomFactor: number = 1;
     constructor(name: string, isSvgMode: Boolean) {
         this.diagramId = name;
         this.element = getDiagramElement(this.diagramId);
@@ -158,9 +161,12 @@ export class DrawingRenderer {
         (options as TextAttributes).wrapBounds = element.wrapBounds;
         (options as TextAttributes).childNodes = element.childNodes;
         options.dashArray = ''; options.strokeWidth = 0; options.fill = element.style.fill;
+        if (element.thickness !== undefined) {
+            (options as TextAttributes).thickness = element.thickness;
+        }
         let ariaLabel: Object = element.content ? element.content : element.id;
         this.renderer.drawRectangle(canvas as HTMLCanvasElement, options as RectAttributes);
-        this.renderer.drawText(canvas as HTMLCanvasElement, options as TextAttributes);
+        this.renderer.drawText(canvas as HTMLCanvasElement, options as TextAttributes, this.freeTextMaxHeight, this.isFreeTextAnnotation, this.zoomFactor);
     }
 
 
@@ -205,7 +211,9 @@ export class DrawingRenderer {
             dashArray: element.style.strokeDashArray || '', opacity: element.style.opacity,
             visible: element.visible, id: element.id, gradient: element.style.gradient,
         };
-
+        if (element.thickness !== undefined){
+            options.thickness = element.thickness;
+        }
         if (transform) {
             options.x += transform.tx;
             options.y += transform.ty;

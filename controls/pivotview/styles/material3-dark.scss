@@ -1,11 +1,9 @@
-
-@import 'ej2-base/styles/definition/material3-dark.scss';
-
-@import 'pivotview/material3-dark-definition.scss';
-@import 'pivotview/icons/material3-dark.scss';
-@import 'pivotview/all.scss';
-@import 'pivotview/bigger.scss';
-@import 'pivotfieldlist/material3-dark-definition.scss';
-@import 'pivotfieldlist/icons/material3-dark.scss';
-@import 'pivotfieldlist/all.scss';
-@import 'pivotfieldlist/bigger.scss';
+@use 'ej2-base/styles/definition/material3-dark' as *;
+@use 'pivotfieldlist/material3-dark-definition' as *;
+@use 'pivotview/material3-dark-definition' as *;
+@use 'pivotview/icons/material3-dark' as *;
+@use 'pivotview/all' as *;
+@use 'pivotview/bigger' as *;
+@use 'pivotfieldlist/icons/material3-dark' as *;
+@use 'pivotfieldlist/all' as *;
+@use 'pivotfieldlist/bigger' as *;

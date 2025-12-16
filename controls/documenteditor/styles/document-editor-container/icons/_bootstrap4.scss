@@ -1,3 +1,6 @@
+@use 'ej2-base/styles/common/mixin' as *;
+@use '../bootstrap4-definition' as *;
+@use '../../document-editor/bootstrap4-definition' as *;
 @include export-module('document-editor-container-bootstrap4-icons') {
   .e-de-ctnr-close::before {
     content: '\e745';

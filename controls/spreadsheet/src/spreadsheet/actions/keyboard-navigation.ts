@@ -1,11 +1,11 @@
 import { Spreadsheet } from '../base/index';
 import { keyDown, cellNavigate, filterCellKeyDown, getUpdateUsingRaf, isLockedCells, focus, dialog, getRightIdx, addressHandle, initiateCur, rangeSelectionByKeydown, editOperation, isNavigationKey } from '../common/index';
-import { SheetModel, getCellIndexes, getRangeAddress, getRowHeight, getColumnWidth, CellModel, isHiddenCol, checkIsFormula } from '../../workbook/index';
+import { SheetModel, getCellIndexes, getRangeAddress, getRowHeight, getColumnWidth, CellModel, isHiddenCol, checkIsFormula, ExtendedNoteModel, ExtendedSheet } from '../../workbook/index';
 import { getRangeIndexes, getSwapRange, isHiddenRow, isColumnSelected, isRowSelected, skipHiddenIdx, getCell } from '../../workbook/index';
 import { getRowsHeight, getColumnsWidth, isLocked, getColumn, ColumnModel, updateCell, getSheetName, Workbook } from '../../workbook/index';
 import { getBottomOffset, removeNoteContainer, setActionData, NoteSaveEventArgs, completeAction } from '../common/index';
 import { Dialog } from '../services/index';
-import { Browser, closest, getComponent, isNullOrUndefined } from '@syncfusion/ej2-base';
+import { Browser, closest, getComponent, isNullOrUndefined, animationMode } from '@syncfusion/ej2-base';
 
 /**
  * Represents keyboard navigation support for Spreadsheet.
@@ -58,25 +58,38 @@ export class KeyboardNavigation {
         const textarea: HTMLTextAreaElement = e.target as HTMLTextAreaElement;
         if (!isNullOrUndefined(textarea) && textarea.classList.contains('e-addNoteContainer')) {
             if (e.key === 'Escape' || e.keyCode === 27) {
-                const isNoteCellIndex: boolean = !isNullOrUndefined(this.parent.spreadsheetNoteModule.noteCellIndexes);
-                const cellIndexes: number[] = isNoteCellIndex ? this.parent.spreadsheetNoteModule.noteCellIndexes :
+                /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
+                const noteModule: any = this.parent.spreadsheetNoteModule as any;
+                const isNoteCellIndex: boolean = this.parent.enableNotes && !isNullOrUndefined(noteModule.activeNoteCell);
+                const cellIndexes: number[] = isNoteCellIndex ? this.parent.spreadsheetNoteModule.activeNoteCell :
                     getCellIndexes(this.parent.getActiveSheet().activeCell);
+                const noteModel: ExtendedNoteModel = noteModule.getNoteByCellIndex(cellIndexes[0], cellIndexes[1]);
                 const cell: CellModel = getCell(cellIndexes[0], cellIndexes[1], this.parent.getActiveSheet());
                 const targetElement: HTMLElement = this.parent.getCell(cellIndexes[0], cellIndexes[1]);
                 const address: string = getSheetName(this.parent as Workbook, this.parent.activeSheetIndex) + '!' + getRangeAddress(cellIndexes);
-                if (!isNullOrUndefined(textarea) && !isNullOrUndefined(textarea.value)
-                    && ((isNullOrUndefined(cell) || isNullOrUndefined(cell.notes)) || (cell.notes !== textarea.value))
+                if (!isNullOrUndefined(textarea) && !isNullOrUndefined(textarea.value) && ((isNullOrUndefined(cell)
+                    || isNullOrUndefined(cell.notes)) || ((cell.notes as ExtendedNoteModel).text !== textarea.value))
                     && document.activeElement.className.indexOf('e-addNoteContainer') > -1) {
                     const eventAction: string = !isNullOrUndefined(cell) && cell.notes ? 'editNote' : 'addNote';
                     this.parent.notify(setActionData, { args: { action: 'beforeCellSave', eventArgs: { address: address } } });
+                    const updatedNote: ExtendedNoteModel = {
+                        id: noteModel.id,
+                        rowIdx: cellIndexes[0],
+                        colIdx: cellIndexes[1],
+                        text: textarea.value,
+                        isVisible: noteModel.isVisible
+                    };
                     updateCell(
                         this.parent, this.parent.getActiveSheet(), { rowIdx: cellIndexes[0], colIdx: cellIndexes[1], preventEvt: true,
-                            cell: { notes: textarea.value, isNoteEditable: false }});
-                    const eventArgs : NoteSaveEventArgs =  { notes: textarea.value, address: address};
+                            cell: { notes: updatedNote, isNoteEditable: false }});
+                    const sheetExt: ExtendedSheet = this.parent.getActiveSheet() as ExtendedSheet;
+                    noteModule.syncNoteToSheetArray(sheetExt, cellIndexes[0], cellIndexes[1], updatedNote);
+                    const eventArgs : NoteSaveEventArgs =  { notes: updatedNote, address: address};
                     this.parent.notify(completeAction, { eventArgs: eventArgs, action: eventAction });
                 }
-                this.parent.spreadsheetNoteModule.isShowNote = null;
-                this.parent.notify(removeNoteContainer, '');
+                if (cell && !(cell.notes as ExtendedNoteModel).isVisible) {
+                    this.parent.notify(removeNoteContainer, { rowIndex: cellIndexes[0], columnIndex: cellIndexes[1] });
+                }
                 focus(targetElement);
             }
             return;
@@ -357,7 +370,7 @@ export class KeyboardNavigation {
                         this.parent.scrollModule.isKeyScroll = false;
                     }
                     mainPanel.scrollTop = scrollTop;
-                    getUpdateUsingRaf((): void => {
+                    const updateFn: Function = (): void => {
                         if (e.keyCode === 34) {
                             selectIdx[2] = skipHiddenIdx(sheet, getCellIndexes(sheet.paneTopLeftCell)[0] + selectDiff, true);
                             if (this.parent.scrollSettings.isFinite && selectIdx[2] > sheet.rowCount - 1) {
@@ -369,7 +382,12 @@ export class KeyboardNavigation {
                             selectIdx[2] = selectIdx[2] < 0 ? 0 : selectIdx[2];
                         }
                         this.updateSelection(sheet, selectIdx, e);
-                    });
+                    };
+                    if (animationMode === 'Disable') {
+                        setTimeout(updateFn);
+                    } else {
+                        getUpdateUsingRaf(updateFn);
+                    }
                 }
             } else {
                 if (e.keyCode === 9 || (this.parent.enableRtl ? e.keyCode === 37 : e.keyCode === 39)) { /*Right or Tab key*/
@@ -434,7 +452,7 @@ export class KeyboardNavigation {
                         this.parent.scrollModule.isKeyScroll = false;
                     }
                     mainPanel.scrollTop = scrollTop;
-                    getUpdateUsingRaf((): void => {
+                    const updateFn: Function = (): void => {
                         let activeRow: number;
                         if (e.keyCode === 34) {
                             activeRow = skipHiddenIdx(sheet, getCellIndexes(sheet.paneTopLeftCell)[0] + selectDiff, true);
@@ -452,7 +470,12 @@ export class KeyboardNavigation {
                         }
                         this.parent.notify(
                             cellNavigate, { range: [activeRow, actIdxes[1], activeRow, actIdxes[1]], preventAnimation: true });
-                    });
+                    };
+                    if (animationMode === 'Disable') {
+                        setTimeout(updateFn);
+                    } else {
+                        getUpdateUsingRaf(updateFn);
+                    }
                 }
             }
             if (e.shiftKey ? e.keyCode === 9 : (this.parent.enableRtl ? e.keyCode === 39 : e.keyCode === 37)) { /*left or shift+tab key*/
@@ -492,8 +515,9 @@ export class KeyboardNavigation {
             }
         }
         if (isNavigate && (!this.parent.scrollModule || this.parent.scrollModule.isKeyScroll) && !isSheetTabFocus &&
-            !closest(document.activeElement, '.e-ribbon') && !target.classList.contains('e-insert-function')
-            && (!target.classList.contains('e-formula-bar') || (target.classList.contains('e-formula-bar') && target.nodeName === 'TEXTAREA' && e.keyCode === 13))) {
+            !closest(document.activeElement, '.e-ribbon') && !target.classList.contains('e-insert-function') &&
+            !target.classList.contains('e-comment-input') && (!target.classList.contains('e-formula-bar') ||
+                (target.classList.contains('e-formula-bar') && target.nodeName === 'TEXTAREA' && e.keyCode === 13))) {
             if (e.keyCode === 40 || e.keyCode === 38 || e.keyCode === 13) { /* down || up */
                 while (isHiddenRow(sheet, actIdxes[0])) {
                     if (e.keyCode === 40 || (!e.shiftKey && e.keyCode === 13)) {

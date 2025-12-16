@@ -2330,7 +2330,7 @@ describe('Bug:839954-Vertical scroll and taskbar is not fully visible in yearly 
             }, done);
     });
     it('Checking scrollbar height in singletier mode', () => {
-        expect(ganttObj.element.getElementsByClassName('e-chart-scroll-container e-content')[0]['style'].height).toBe('calc(100% - 46px)');
+        expect(ganttObj.element.getElementsByClassName('e-chart-scroll-container e-content')[0]['style'].height).toBe('calc(100% - 47px)');
     });
     afterAll(() => {
         if (ganttObj) {

@@ -1,3 +1,5 @@
+@use 'ej2-base/styles/definition/fusionnew' as *;
+@forward 'ej2-base/styles/definition/fusionnew';
 $otp-input-width: 30px !default;
 $otp-input-height: 30px !default;
 $otp-input-gap: 12px !default;
@@ -57,3 +59,4 @@ $otp-input-underlined-bg-color: rgba(255, 255, 255, 0) !default;
 $otp-input-disabled-color: rgba(28, 27, 31, 1) !default;
 $otp-input-disabled-border-color: rgba(121, 116, 126, 1) !default;
 $otp-input-disabled-bg-color: $otp-background-color !default;
+$otp-input-zero-padding-margin: 0 !default;

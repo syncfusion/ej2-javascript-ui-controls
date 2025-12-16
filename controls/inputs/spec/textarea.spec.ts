@@ -1862,4 +1862,108 @@ describe('TextArea Component', () => {
             textareaObj.destroy();
          });
     });
+    describe('TextArea adornments feature', function (){
+        let textareaObj: any;
+        beforeEach(function() {
+            let inputElement: HTMLElement = createElement('input', { id: 'textarea'});
+            document.body.appendChild(inputElement);
+        });
+        afterEach(function() {
+            document.body.innerHTML = '';
+        });
+        it('icons template with Horizontal flow and orientation',function() {
+            textareaObj = new TextArea({ 
+                placeholder: 'Enter the Value',
+                prependTemplate: '<span class="e-icons e-user"></span>',
+                appendTemplate: '<span class="e-icons e-search"></span>',
+                floatLabelType: 'Auto'
+            },'#textarea');
+            expect(textareaObj.textareaWrapper.container.querySelector('.e-user')).not.toBe(null);
+            expect(textareaObj.textareaWrapper.container.querySelector('.e-search')).not.toBe(null);
+            expect(textareaObj.textareaWrapper.container.classList.contains('e-adornment-flow-horizontal')).toBe(true);
+            expect(textareaObj.textareaWrapper.container.classList.contains('e-adornment-orientation-horizontal')).toBe(true);
+            textareaObj.destroy();
+        });
+        it('icons template with vertical flow and orientation',function() {
+            textareaObj = new TextArea({ 
+                placeholder: 'Enter the Value',
+                prependTemplate: '<span class="e-icons e-user"></span>',
+                appendTemplate: '<span class="e-icons e-search"></span>',
+                adornmentFlow: 'Vertical',
+                adornmentOrientation: 'Vertical',
+                floatLabelType: 'Auto'
+            },'#textarea');
+            expect(textareaObj.textareaWrapper.container.querySelector('.e-user')).not.toBe(null);
+            expect(textareaObj.textareaWrapper.container.querySelector('.e-search')).not.toBe(null);
+            expect(textareaObj.textareaWrapper.container.classList.contains('e-adornment-flow-vertical')).toBe(true);
+            expect(textareaObj.textareaWrapper.container.classList.contains('e-adornment-orientation-vertical')).toBe(true);
+            textareaObj.destroy();
+        });
+        it('icons template with vertical flow and horizontal orientation',function() {
+            textareaObj = new TextArea({ 
+                placeholder: 'Enter the Value',
+                prependTemplate: '<span class="e-icons e-user"></span>',
+                appendTemplate: '<span class="e-icons e-search"></span>',
+                adornmentFlow: 'Vertical',
+                floatLabelType: 'Auto'
+            },'#textarea');
+            expect(textareaObj.textareaWrapper.container.querySelector('.e-user')).not.toBe(null);
+            expect(textareaObj.textareaWrapper.container.querySelector('.e-search')).not.toBe(null);
+            expect(textareaObj.textareaWrapper.container.classList.contains('e-adornment-flow-vertical')).toBe(true);
+            expect(textareaObj.textareaWrapper.container.classList.contains('e-adornment-orientation-horizontal')).toBe(true);
+            textareaObj.destroy();
+        });
+        it('icons template with horizontal flow and vertical orientation',function() {
+            textareaObj = new TextArea({ 
+                placeholder: 'Enter the Value',
+                prependTemplate: '<span class="e-icons e-user"></span>',
+                appendTemplate: '<span class="e-icons e-search"></span>',
+                adornmentOrientation: 'Vertical',
+                floatLabelType: 'Auto'
+            },'#textarea');
+            expect(textareaObj.textareaWrapper.container.querySelector('.e-user')).not.toBe(null);
+            expect(textareaObj.textareaWrapper.container.querySelector('.e-search')).not.toBe(null);
+            expect(textareaObj.textareaWrapper.container.classList.contains('e-adornment-flow-horizontal')).toBe(true);
+            expect(textareaObj.textareaWrapper.container.classList.contains('e-adornment-orientation-vertical')).toBe(true);
+            textareaObj.destroy();
+        });
+        it('icons template with dynamically rendering',function() {
+            textareaObj = new TextArea({ 
+                placeholder: 'Enter the Value'
+            },'#textarea');
+            textareaObj.prependTemplate = '<span class="e-icons e-user"></span>';
+            textareaObj.appendTemplate = '<span class="e-icons e-search"></span>';
+            textareaObj.dataBind();
+            expect(textareaObj.textareaWrapper.container.querySelector('.e-user')).not.toBe(null);
+            expect(textareaObj.textareaWrapper.container.querySelector('.e-search')).not.toBe(null);
+            textareaObj.destroy();
+        });
+        it('icons template with dynamically changing orientation',function() {
+            textareaObj = new TextArea({ 
+                placeholder: 'Enter the Value',
+                prependTemplate: '<span class="e-icons e-user"></span>',
+                appendTemplate: '<span class="e-icons e-search"></span>',
+                floatLabelType: 'Auto'
+            },'#textarea');
+            textareaObj.adornmentFlow = 'Vertical'; 
+            textareaObj.adornmentOrientation = 'Vertical';
+            textareaObj.dataBind();
+            expect(textareaObj.textareaWrapper.container.querySelector('.e-user')).not.toBe(null);
+            expect(textareaObj.textareaWrapper.container.querySelector('.e-search')).not.toBe(null);
+        });
+        it('code coverage with function call',function() {
+            textareaObj = new TextArea({ 
+                placeholder: 'Enter the Value',
+                width: '100px',
+                value: 'Enter the value',
+                prependTemplate: '<span class="e-icons e-user"></span>',
+                appendTemplate: '<span class="e-icons e-search"></span>',
+                floatLabelType: 'Auto'
+            },'#textarea');
+            textareaObj.onMouseMove();
+            textareaObj.keydownHandler({keyCode: 9});
+            textareaObj.handleAdornmentFloatLabel();
+            textareaObj.dataBind();
+        });
+    });
 });

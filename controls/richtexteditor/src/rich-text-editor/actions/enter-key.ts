@@ -74,7 +74,7 @@ export class EnterKeyAction {
             isTableEnter = blockElement.tagName === 'TH' || blockElement.tagName === 'TD' || blockElement.tagName === 'TBODY' ? false : true;
         }
         const eventArgs: KeyboardEventArgs = e.args as KeyboardEventArgs;
-        if (eventArgs.which === 13 && !eventArgs.ctrlKey && (!Browser.isDevice ? (eventArgs.code === 'Enter' || eventArgs.code === 'NumpadEnter') : eventArgs.key === 'Enter' )) {
+        if (eventArgs.which === 13 && !eventArgs.ctrlKey && !eventArgs.altKey && (!Browser.isDevice ? (eventArgs.code === 'Enter' || eventArgs.code === 'NumpadEnter') : eventArgs.key === 'Enter' )) {
             if (isNOU(this.startNode.closest('LI, UL, OL')) && isNOU(this.endNode.closest('LI, UL, OL')) &&
             isNOU(this.startNode.closest('.e-img-inner')) && isTableEnter &&
             isNOU(this.startNode.closest('PRE')) && isNOU(this.endNode.closest('PRE')) &&
@@ -92,10 +92,19 @@ export class EnterKeyAction {
                             this.parent.formatter.saveData();
                         }
                         if (!(this.range.startOffset === this.range.endOffset && this.range.startContainer === this.range.endContainer)) {
+                            let isEntireRTE: boolean = false;
+                            if (this.parent.isEntireRTEContentSelected()) {
+                                isEntireRTE = true;
+                            }
                             if (this.range.startContainer.nodeType === Node.TEXT_NODE || !((this.range.startContainer.nodeName === 'IMG' || (this.range.startContainer as HTMLElement).querySelector('img')) ||
                             this.range.startContainer.nodeName === 'SPAN' && ((this.range.startContainer as HTMLElement).classList.contains('e-video-wrap') ||
                                 (this.range.startContainer as HTMLElement).classList.contains('e-audio-wrap')))) {
                                 this.range.deleteContents();
+                            }
+                            if (isEntireRTE && this.parent.inputElement.textContent === '' ) {
+                                // This is a true "Select All". Clear the editor completely.
+                                this.parent.inputElement.innerHTML = '';
+                                isEntireRTE = false;
                             }
                             if (this.range.startContainer.nodeName === '#text' && this.range.startContainer.textContent.length === 0 &&
                             this.range.startContainer.parentElement !== this.parent.inputElement) {
@@ -134,7 +143,7 @@ export class EnterKeyAction {
                                             while (!isNOU(currentFocusElem) && currentFocusElem.nodeName !== '#text' && currentFocusElem.nodeName !== 'BR') {
                                                 currentFocusElem = currentFocusElem.lastChild;
                                             }
-                                            if (currentFocusElem.nodeName !== 'BR' && currentFocusElem.parentElement.textContent.length === 0 && currentFocusElem.parentElement.innerHTML.length === 0 &&
+                                            if (!isNOU(currentFocusElem) && currentFocusElem.nodeName !== 'BR' && currentFocusElem.parentElement.textContent.length === 0 && currentFocusElem.parentElement.innerHTML.length === 0 &&
                                             currentFocusElem.parentElement.nodeName !== 'BR') {
                                                 currentFocusElem.parentElement.appendChild(this.parent.createElement('BR'));
                                             }

@@ -7,7 +7,7 @@ import { ICodeBlockItem, IEditorModel } from '../../common/interface';
  * Code Block internal component
  *
  * @hidden
- * @deprecated
+ * @private
  */
 export class CodeBlockPlugin {
     private parent: IEditorModel;
@@ -17,7 +17,7 @@ export class CodeBlockPlugin {
      *
      * @param {IEditorModel} parent - specifies the parent element
      * @hidden
-     * @deprecated
+     * @private
      */
     public constructor(parent: IEditorModel) {
         this.parent = parent;

@@ -1,3 +1,5 @@
+@use 'ej2-base/styles/common/mixin' as *;
+@use './theme-variables' as *;
 @mixin fab-button-styles($border-radius, $min-height, $min-width, $padding, $icon-font-size) {
   border-radius: $border-radius;
   min-height: $min-height;
@@ -5,7 +7,7 @@
   padding: $padding;
 
   &.e-icon-btn {
-    padding: 0;
+    padding: $fab-zero-padding;
   }
 
   .e-btn-icon {
@@ -25,12 +27,12 @@
     z-index: 100000;
 
     .e-btn-icon {
-      margin-top: 0;
+      margin-top: $fab-zero-padding;
       font-size: $fab-icon-font-size;
     }
 
     &.e-icon-btn {
-      padding: 0;
+      padding: $fab-zero-padding;
     }
 
     &.e-fab-fixed {
@@ -40,11 +42,11 @@
     &.e-fab-top {
       top: $fab-offset;
       &.e-fab-middle {
-        top: 50%;
+        top: $fab-half-position-top;
         transform: translateY(-50%);
         &.e-fab-left.e-fab-center {
-          left: 50%;
-          top: 50%;
+          left: $fab-half-position-top;
+          top: $fab-half-position-top;
           transform: translate(-50%, -50%);
         }
       }
@@ -57,7 +59,7 @@
     &.e-fab-left {
       left: $fab-offset;
       &.e-fab-center {
-        left: 50%;
+        left: $fab-half-position-top;
         transform: translateX(-50%);
       }
     }
@@ -72,11 +74,11 @@
       &.e-fab-top {
         top: $fab-offset;
         &.e-fab-middle {
-          top: 50%;
+          top: $fab-half-position-top;
           transform: translateY(-50%);
           &.e-fab-right.e-fab-center {
-            right: 50%;
-            top: 50%;
+            right: $fab-half-position-top;
+            top: $fab-half-position-top;
             transform: translate(50%, -50%);
           }
         }
@@ -89,7 +91,7 @@
       &.e-fab-right {
         right: $fab-offset;
         &.e-fab-center {
-          right: 50%;
+          right: $fab-half-position-top;
           transform: translateX(50%);
         }
       }

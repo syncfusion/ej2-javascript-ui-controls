@@ -1,3 +1,7 @@
+@use 'ej2-base/styles/common/mixin' as *;
+@use 'ej2-base/styles/definition/highcontrast-light' as *;
+@forward 'ej2-base/styles/definition/highcontrast-light';
+
 /* stylelint-disable */
 $ddt-skin-name: 'highcontrast-light' !default;
 $ddt-box-shadow: 0 5px 5px -3px rgba(0, 0, 0, 0.2), 0 8px 10px 0px rgba(0, 0, 0, 0.14), 0 3px 14px 0px rgba(0, 0, 0, 0.12) !default;
@@ -11,7 +15,10 @@ $ddt-spin-icon-margin: inherit !default;
 $ddt-dd-icon-bottom: 0 !default;
 $ddt-dd-icon-bigger-bottom: 0 !default;
 $ddt-dd-icon-width: 30px !default;
+$ddt-nrml-show-dd-icon-margin-left: 30px !default;
+$ddt-dd-icon-margin-right: 30px !default;
 $ddt-dd-icon-bigger-width: 38px !default;
+$ddt-dd-icon-bigger-margin-right: 38px !default;
 $ddt-rtl-close-left: -7px !default;
 $ddt-list-filter-text-indent: 0 12px !default;
 $ddt-filter-border: 1px solid $border-fg !default;
@@ -68,6 +75,17 @@ $ddt-big-select-all-padding: 0px !default;
 $ddt-big-select-all-text-margin: 0 !default;
 $ddt-rtl-big-select-all-text-margin: 0 !default;
 $ddt-select-all-checkbox-bottom: 0 !default;
+$ddt-popup-text-line-height: 24px !default;
+$ddt-show-dd-icon-margin-right: 1px !default;
+$ddt-nrml-border-none: 0 !default;
+$ddt-nrml-padding-none: 0 !default;
+$ddt-nrml-margin-none: 0 !default;
+$ddt-nrml-popup-selectall-border-bottom: 1px !default;
+$ddt-nrml-nodata-font-size: 14px !default;
+$ddt-nrml-nodata-padding: 14px 16px !default;
+$ddt-nrml-show-dd-icon-margin: 1px !default;
+$ddt-nrml-popup-ul-padding: 0 14px 0 0 !default;
+$ddt-show-dd-icon-margin-left: 1px !default;
 
 $ddt-chip-text-line-height: 26px !default;
 $ddt-icon-bg-color: $bg-base-0 !default;
@@ -80,3 +98,6 @@ $ddt-delim-padding: 6px 10px 0 10px !default;
 $ddt-delim-bigger-padding: 8px 12px 0 12px !default;
 $ddt-remains-count-padding-top: 6px !default;
 $ddt-item-hover-bg: $hover-bg !default;
+$ddt-height-none: 0 !default;
+$ddt-popup-border: 1px !default;
+$ddt-list-item-ul-padding: 0 0 0 14px !default;

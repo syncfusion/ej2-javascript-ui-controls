@@ -2,7 +2,7 @@
  * Defines common util methods used by Rich Text Editor.
  */
 import { isNullOrUndefined, Browser, removeClass, closest, createElement, detach } from '@syncfusion/ej2-base';
-import { IToolbarStatus } from './interface';
+import { IToolbarStatus, OffsetPosition } from './interface';
 import { CLS_AUD_FOCUS, CLS_IMG_FOCUS, CLS_RESIZE, CLS_RTE_DRAG_IMAGE, CLS_TABLE_MULTI_CELL, CLS_TABLE_SEL, CLS_TABLE_SEL_END, CLS_VID_FOCUS } from './constant';
 import { IsFormatted } from '../editor-manager/plugin/isformatted';
 
@@ -149,6 +149,7 @@ export function getDefaultHtmlTbStatus(): IToolbarStatus {
         bulletFormatList: false,
         underline: false,
         alignments: null,
+        lineHeight: null,
         backgroundcolor: null,
         fontcolor: null,
         fontname: null,
@@ -1158,4 +1159,60 @@ export function openPrintWindow(element: Element, printWindow ?: Window): Window
         },
         500);
     return printWindow;
+}
+
+/**
+ * Determines the effective root offset parent of a given image or Video element,
+ *
+ * @private
+ * @param {HTMLElement} mediaElement - The image or Video element whose offset parent is to be found.
+ * @param {string} parentID - The ID of the parent element.
+ * @returns {HTMLElement} - The resolved root offset parent element.
+ */
+export function getRootOffsetParent(mediaElement: HTMLElement, parentID: string): HTMLElement {
+    const ignoreOffset: string[] = ['TD', 'TH', 'TABLE', 'A'];
+    const doc: Document = mediaElement.ownerDocument;
+    let offsetParent: Node;
+    const rootEle: HTMLElement = closest(mediaElement, '#' + parentID + '_rte-edit-view') as HTMLElement;
+    if (mediaElement.closest('.e-rte-checklist')) {
+        offsetParent = rootEle ? rootEle : doc.documentElement;
+    } else {
+        offsetParent = ((mediaElement.offsetParent &&
+            ((mediaElement.offsetParent.classList.contains('e-img-caption') ||
+            mediaElement.offsetParent.classList.contains('e-video-clickelem')) ||
+            ignoreOffset.indexOf(mediaElement.offsetParent.tagName) > -1)) ?
+            rootEle : mediaElement.offsetParent) || doc.documentElement;
+    }
+    while (offsetParent &&
+            (offsetParent === doc.body || offsetParent === doc.documentElement) &&
+            (<HTMLElement>offsetParent).style.position === 'static') {
+        offsetParent = offsetParent.parentNode;
+    }
+    return offsetParent as HTMLElement;
+}
+
+/**
+ * Determines the image or video element top and left position,
+ *
+ * @private
+ * @param {HTMLElement} mediaElement - The image or Video element whose offset parent is to be found.
+ * @param {HTMLTextAreaElement} rootEle - RichTextEditor root div element.
+ * @returns {OffsetPosition} - The resolved media element top and left position value.
+ */
+export function getMediaResizeBarValue(mediaElement: HTMLElement, rootEle: HTMLTextAreaElement): OffsetPosition {
+    // Client rects in the same document coordinate space
+    const elemRect: OffsetPosition = mediaElement.getBoundingClientRect();
+    const rootRect: OffsetPosition = rootEle.getBoundingClientRect();
+    // Determine scroll context
+    const documentEle: Document = rootEle.ownerDocument as Document;
+    // Page scroll (used if you need page-relative, but cancels out when subtracting rects)
+    const pageX: number = documentEle.documentElement.scrollLeft || 0;
+    const pageY: number = documentEle.documentElement.scrollTop || 0;
+    // Content-root internal scroll (if the editor area is scrollable)
+    const rootScrollX: number = rootEle.scrollLeft || 0;
+    const rootScrollY: number = rootEle.scrollTop || 0;
+    return {
+        top: (elemRect.top + pageY) - (rootRect.top + pageY) + rootScrollY,
+        left: (elemRect.left + pageX) - (rootRect.left + pageX) + rootScrollX
+    };
 }

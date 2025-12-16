@@ -1,4 +1,4 @@
-import { Component, ModuleDeclaration, EventHandler, Complex, Browser, EmitType, addClass, detach, updateCSSText, isNullOrUndefined } from '@syncfusion/ej2-base';import { Property, NotifyPropertyChanges, INotifyPropertyChanged, formatUnit, L10n, closest } from '@syncfusion/ej2-base';import { setStyleAttribute, Event, removeClass, print as printWindow, attributes } from '@syncfusion/ej2-base';import { isNullOrUndefined as isNOU, compile, append, extend, debounce } from '@syncfusion/ej2-base';import { Touch as EJ2Touch, TapEventArgs, KeyboardEventArgs } from '@syncfusion/ej2-base';import { getScrollableParent, BeforeOpenEventArgs, BeforeCloseEventArgs } from '@syncfusion/ej2-popups';import * as events from '../base/constant';import * as classes from '../base/classes';import { Render } from '../renderer/render';import { ViewSource } from '../renderer/view-source';import { IFormatter, IBaseQuickToolbar, SlashMenuItemSelectArgs, ImageFailedEventArgs, IRenderer } from './interface';import { executeGroup, ToolbarStatusEventArgs } from './interface';import { ChangeEventArgs, AfterImageDeleteEventArgs, AfterMediaDeleteEventArgs, PasteCleanupArgs } from './interface';import { ILinkCommandsArgs, ImageDropEventArgs, IImageCommandsArgs, IAudioCommandsArgs, IVideoCommandsArgs, BeforeSanitizeHtmlArgs, ITableCommandsArgs, ExecuteCommandOption, ICodeBlockCommandsArgs, IListCommandArgs, IToolbarItems, MediaDropEventArgs, IToolbarItemModel, NotifyArgs, ToolbarClickEventArgs } from '../../common/interface';import { PrintEventArgs, ActionCompleteEventArgs, ActionBeginEventArgs, IFormatPainterArgs, CleanupResizeElemArgs, ImageSuccessEventArgs, IExecutionGroup, ResizeArgs, StatusArgs, BeforeQuickToolbarOpenArgs, SelectionChangedEventArgs } from '../../common/interface';import { ServiceLocator } from '../services/service-locator';import { RendererFactory } from '../services/renderer-factory';import { RenderType } from './enum';import { EditorMode, ShiftEnterKey, EnterKey } from './../../common/types';import { Toolbar } from '../actions/toolbar';import { ExecCommandCallBack } from '../actions/execute-command-callback';import { KeyboardEvents } from '../actions/keyboard';import { FontFamilyModel, FontSizeModel, FontColorModel, FormatModel, BackgroundColorModel, NumberFormatListModel, BulletFormatListModel, CodeBlockSettingsModel } from '../../models/models';import { ToolbarSettingsModel, IFrameSettingsModel, ImageSettingsModel, AudioSettingsModel, VideoSettingsModel, TableSettingsModel, EmojiSettingsModel } from '../../models/models';import { QuickToolbarSettingsModel, InlineModeModel, PasteCleanupSettingsModel, FormatPainterSettingsModel, ImportWordModel, ExportWordModel, ExportPdfModel } from '../../models/models';import { ToolbarSettings, ImageSettings, AudioSettings, VideoSettings, QuickToolbarSettings, FontFamily, FontSize, Format, NumberFormatList, BulletFormatList, FormatPainterSettings, ImportWord, ExportWord, ExportPdf, CodeBlockSettings } from '../../models/toolbar-settings';import { FileManagerSettingsModel } from '../models/models';import { EmojiSettings } from '../../models/emoji-settings';import { FileManagerSettings } from '../models/fileManager-settings';import { TableSettings, PasteCleanupSettings } from '../../models/toolbar-settings';import { FontColor, BackgroundColor } from '../../models/toolbar-settings';import { IFrameSettings } from '../../models/iframe-settings';import { InlineMode } from '../../models/inline-mode';import { Link } from '../renderer/link-module';import { Image } from '../renderer/image-module';import { Audio } from '../renderer/audio-module';import { Video } from '../renderer/video-module';import { Table } from '../renderer/table-module';import { Count } from '../actions/count';import { HtmlEditor } from '../actions/html-editor';import { MarkdownEditor } from '../actions/markdown-editor';import { defaultLocale } from '../models/default-locale';import { setAttributes } from '../actions/html-attributes';import { BaseToolbar } from '../actions/base-toolbar';import { QuickToolbar } from '../actions/quick-toolbar';import { FullScreen } from '../actions/full-screen';import { PasteCleanup } from '../actions/paste-clean-up';import { ImportExport } from '../actions/import-export';import { EnterKeyAction } from '../actions/enter-key';import * as CONSTANT from '../../common/constant';import { IHtmlKeyboardEvent, IHtmlUndoRedoData, BeforeInputEvent } from '../../editor-manager/base/interface';import { dispatchEvent, getEditValue, decode, isEditableValueEmpty, getDefaultValue } from '../base/util';import { cleanHTMLString, scrollToCursor, getStructuredHtml, isIDevice, alignmentHtml, openPrintWindow } from '../../common/util';import { DialogRenderer } from '../renderer/dialog-renderer';import { SelectedEventArgs, RemovingEventArgs, UploadingEventArgs, BeforeUploadEventArgs } from '@syncfusion/ej2-inputs';import { Resize } from '../actions/resize';import { FileManager } from '../actions/file-manager';import { FormatPainter } from '../actions/format-painter';import { EmojiPicker } from '../actions/emoji-picker';import { SlashMenuSettings } from '../../models/slash-menu-settings';import { SlashMenuSettingsModel } from '../../models/slash-menu-settings-model';import { SlashMenu } from '../renderer/slash-menu';import { mentionRestrictKeys } from '../../common/config';import { CustomUserAgentData } from '../../common/user-agent';import { cleanupInternalElements, removeSelectionClassStates, resetContentEditableElements } from '../../common/util';import { NodeSelection } from '../../selection/index';import { MarkdownUndoRedoData } from '../../markdown-parser/base/interface';import { ICodeBlockItem } from '../../common/interface';import { CodeBlock } from '../actions/code-block';import { CommandName, DialogType } from '../../common/enum';import { PopupUploader } from '../renderer/popup-uploader-renderer';
+import { Component, ModuleDeclaration, EventHandler, Complex, Browser, EmitType, addClass, detach, updateCSSText, isNullOrUndefined } from '@syncfusion/ej2-base';import { Property, NotifyPropertyChanges, INotifyPropertyChanged, formatUnit, L10n, closest } from '@syncfusion/ej2-base';import { setStyleAttribute, Event, removeClass, print as printWindow, attributes } from '@syncfusion/ej2-base';import { isNullOrUndefined as isNOU, compile, append, extend, debounce } from '@syncfusion/ej2-base';import { Touch as EJ2Touch, TapEventArgs, KeyboardEventArgs } from '@syncfusion/ej2-base';import { getScrollableParent, BeforeOpenEventArgs, BeforeCloseEventArgs } from '@syncfusion/ej2-popups';import * as events from '../base/constant';import * as EVENTS from './../../common/constant';import * as classes from '../base/classes';import { Render } from '../renderer/render';import { ViewSource } from '../renderer/view-source';import { IFormatter, IBaseQuickToolbar, SlashMenuItemSelectArgs, ImageFailedEventArgs, IRenderer, AIAssistantPromptRequestArgs, AIAssistantStopRespondingArgs, BeforePopupOpenCloseEventArgs, AIAssitantToolbarClickEventArgs } from './interface';import { executeGroup, ToolbarStatusEventArgs } from './interface';import { ChangeEventArgs, AfterImageDeleteEventArgs, AfterMediaDeleteEventArgs, PasteCleanupArgs } from './interface';import { ILinkCommandsArgs, ImageDropEventArgs, IImageCommandsArgs, IAudioCommandsArgs, IVideoCommandsArgs, BeforeSanitizeHtmlArgs, ITableCommandsArgs, ExecuteCommandOption, ICodeBlockCommandsArgs, IListCommandArgs, IToolbarItems, MediaDropEventArgs, IToolbarItemModel, NotifyArgs, ToolbarClickEventArgs, ExportingEventArgs } from '../../common/interface';import { PrintEventArgs, ActionCompleteEventArgs, ActionBeginEventArgs, ClipboardWriteEventArgs, IFormatPainterArgs, CleanupResizeElemArgs, ImageSuccessEventArgs, IExecutionGroup, ResizeArgs, StatusArgs, BeforeQuickToolbarOpenArgs, SelectionChangedEventArgs } from '../../common/interface';import { ServiceLocator } from '../services/service-locator';import { RendererFactory } from '../services/renderer-factory';import { RenderType } from './enum';import { EditorMode, ShiftEnterKey, EnterKey } from './../../common/types';import { Toolbar } from '../actions/toolbar';import { ExecCommandCallBack } from '../actions/execute-command-callback';import { KeyboardEvents } from '../actions/keyboard';import { FontFamilyModel, FontSizeModel, FontColorModel, FormatModel, BackgroundColorModel, NumberFormatListModel, BulletFormatListModel, CodeBlockSettingsModel, LineHeightModel } from '../../models/models';import { ToolbarSettingsModel, IFrameSettingsModel, ImageSettingsModel, AudioSettingsModel, VideoSettingsModel, TableSettingsModel, EmojiSettingsModel } from '../../models/models';import { QuickToolbarSettingsModel, InlineModeModel, PasteCleanupSettingsModel, FormatPainterSettingsModel, ImportWordModel, ExportWordModel, ExportPdfModel } from '../../models/models';import { ToolbarSettings, ImageSettings, AudioSettings, VideoSettings, QuickToolbarSettings, FontFamily, FontSize, Format, NumberFormatList, BulletFormatList, FormatPainterSettings, ImportWord, ExportWord, ExportPdf, CodeBlockSettings, LineHeight } from '../../models/toolbar-settings';import { AIAssistantSettingsModel, FileManagerSettingsModel } from '../models/models';import { EmojiSettings } from '../../models/emoji-settings';import { FileManagerSettings } from '../models/fileManager-settings';import { TableSettings, PasteCleanupSettings } from '../../models/toolbar-settings';import { FontColor, BackgroundColor } from '../../models/toolbar-settings';import { IFrameSettings } from '../../models/iframe-settings';import { InlineMode } from '../../models/inline-mode';import { Link } from '../renderer/link-module';import { Image } from '../renderer/image-module';import { Audio } from '../renderer/audio-module';import { Video } from '../renderer/video-module';import { Table } from '../renderer/table-module';import { Count } from '../actions/count';import { HtmlEditor } from '../actions/html-editor';import { MarkdownEditor } from '../actions/markdown-editor';import { defaultLocale } from '../models/default-locale';import { setAttributes } from '../actions/html-attributes';import { BaseToolbar } from '../actions/base-toolbar';import { QuickToolbar } from '../actions/quick-toolbar';import { FullScreen } from '../actions/full-screen';import { PasteCleanup } from '../actions/paste-clean-up';import { ImportExport } from '../actions/import-export';import { EnterKeyAction } from '../actions/enter-key';import * as CONSTANT from '../../common/constant';import { IHtmlKeyboardEvent, IHtmlUndoRedoData, BeforeInputEvent, ILineHeightProperties } from '../../editor-manager/base/interface';import { dispatchEvent, getEditValue, decode, isEditableValueEmpty, getDefaultValue } from '../base/util';import { cleanHTMLString, scrollToCursor, getStructuredHtml, isIDevice, alignmentHtml, openPrintWindow } from '../../common/util';import { DialogRenderer } from '../renderer/dialog-renderer';import { SelectedEventArgs, RemovingEventArgs, UploadingEventArgs, BeforeUploadEventArgs } from '@syncfusion/ej2-inputs';import { Resize } from '../actions/resize';import { FileManager } from '../actions/file-manager';import { FormatPainter } from '../actions/format-painter';import { EmojiPicker } from '../actions/emoji-picker';import { SlashMenuSettings } from '../../models/slash-menu-settings';import { SlashMenuSettingsModel } from '../../models/slash-menu-settings-model';import { SlashMenu } from '../renderer/slash-menu';import { mentionRestrictKeys } from '../../common/config';import { CustomUserAgentData } from '../../common/user-agent';import { cleanupInternalElements, removeSelectionClassStates, resetContentEditableElements } from '../../common/util';import { NodeSelection } from '../../selection/index';import { MarkdownUndoRedoData } from '../../markdown-parser/base/interface';import { ICodeBlockItem } from '../../common/interface';import { CodeBlock } from '../actions/code-block';import { ClipBoardCleanup } from '../actions/clipboard-cleanup';import { CommandName, DialogType } from '../../common/enum';import { AIAssistantSettings } from '../models/ai-assistant-settings';import { DEFAULT_AI_COMMANDS } from '../models/items';import { AIAssistant } from '../renderer/ai-assistant';import { PromptModel } from '@syncfusion/ej2-interactive-chat';import { PopupUploader } from '../renderer/popup-uploader-renderer';import { AutoFormat } from '../actions';
 import {ComponentModel} from '@syncfusion/ej2-base';
 
 /**
@@ -70,6 +70,34 @@ export interface RichTextEditorModel extends ComponentModel{
     slashMenuSettings?: SlashMenuSettingsModel;
 
     /**
+     * Configures the AI Assistant functionality settings for the Rich Text Editor component.
+     *
+     * This property allows you to customize various aspects of the AI Assistant feature including:
+     * * Predefined AI commands in the dropdown menu
+     * * Popup dimensions and appearance
+     * * Placeholder text for the AI prompt input
+     * * Toolbar configurations for different sections
+     * * Custom prompts and suggestions
+     * * Banner template customization
+     *
+     * @default {
+     * commands: DEFAULT_AI_COMMANDS,
+     * popupWidth: '600px',
+     * popupMaxHeight: '400px',
+     * placeholder: 'Ask AI to rewrite or generate content.' ,
+     * headerToolbarSettings : ['AIcommands', 'Close'],
+     * promptToolbarSettings: ['Edit', 'Copy'],
+     * responseToolbarSettings: ['Regenerate', 'Copy', '|', 'Insert'],
+     * prompts: [],
+     * suggestions: [],
+     * bannerTemplate: '',
+     * maxPromptHistory: 20
+     * }
+     *
+     */
+    aiAssistantSettings?: AIAssistantSettingsModel;
+
+    /**
      * Specifies the items to be rendered in the quick toolbar based on the target element.
      * Properties:
      * * enable: Boolean to show or hide the quick toolbar.
@@ -96,6 +124,13 @@ export interface RichTextEditorModel extends ComponentModel{
      * }
      */
     quickToolbarSettings?: QuickToolbarSettingsModel;
+
+    /**
+     * Enables or disables the Clipboard Cleanup feature. When set to `true`, copy and cut operations are intercepted to remove unwanted inline styles.
+     *
+     * @default true
+     */
+    enableClipboardCleanup?: boolean;
 
     /**
      * Configures paste options in the Rich Text Editor.
@@ -471,6 +506,16 @@ export interface RichTextEditorModel extends ComponentModel{
     enableXhtml?: boolean;
 
     /**
+     * Enables or disables the Markdown auto-formatting feature.
+     * When set to `true`, Markdown syntax typed by the user is automatically
+     * converted into the corresponding HTML formatting during keypress.
+     *
+     * @type {boolean}
+     * @default true
+     */
+    enableMarkdownAutoFormat?: boolean;
+
+    /**
      * Specifies the height of the Rich Text Editor component.
      *
      * @default "auto"
@@ -726,6 +771,27 @@ export interface RichTextEditorModel extends ComponentModel{
     fontSize?: FontSizeModel;
 
     /**
+     * Defines the predefined line heights that populate the Line Height dropdown in the Rich Text Editor toolbar.
+     *
+     * {% codeBlock src='rich-text-editor/line-height/index.md' %}{% endcodeBlock %}
+     *
+     * @default
+     * {
+     * default: '',
+     * items: [
+     * { text: '1', value: '1' },
+     * { text: '1.15', value: '1.15' },
+     * { text: '1.5', value: '1.5' },
+     * { text: '2', value: '2' },
+     * { text: '2.5', value: '2.5' },
+     * { text: '3', value: '3' }
+     * ],
+     * supportAllValues: false
+     * }
+     */
+    lineHeight?: LineHeightModel;
+
+    /**
      * Defines the color palette for the font color toolbar command.
      *
      * {% codeBlock src='rich-text-editor/font-color/index.md' %}{% endcodeBlock %}
@@ -803,6 +869,13 @@ export interface RichTextEditorModel extends ComponentModel{
      * @event 'actionComplete'
      */
     actionComplete?: EmitType<ActionCompleteEventArgs>;
+
+    /**
+     * This event triggers before setting copy or cut clipboard data to clipboard.
+     *
+     * @event 'beforeClipboardWrite'
+     */
+    beforeClipboardWrite?: EmitType<ClipboardWriteEventArgs>;
 
     /**
      * This event triggers before a dialog is opened.
@@ -1092,5 +1165,72 @@ export interface RichTextEditorModel extends ComponentModel{
      * @event 'selectionChanged'
      */
     selectionChanged?: EmitType<SelectionChangedEventArgs>;
+
+    /**
+     * Triggers when a user selects an item from the AI Assistant toolbar using mouse, touch, or keyboard navigation.
+     * Use this event to handle custom toolbar item click action.
+     *
+     *
+     * @event 'aiAssistantToolbarClick'
+     * @type {EmitType<AIAssitantToolbarClickEventArgs>}
+     *
+     */
+    aiAssistantToolbarClick?: EmitType<AIAssitantToolbarClickEventArgs>;
+
+    /**
+     * Triggers when a user sends a prompt to the AI Assistant using the slash menu item in the popup.
+     * Use this event to handle the request with your preferred AI Provider.
+     *
+     *
+     * @event aiAssistantPromptRequest
+     * @type {EmitType<AIAssistantPromptRequestArgs>}
+     *
+     */
+    aiAssistantPromptRequest?: EmitType<AIAssistantPromptRequestArgs>;
+
+    /**
+     * Triggers when the user clicks the stop responding button in the AI Assistant.
+     * This event helps to cancel the ongoing AI Query request when the stopResponding button is clicked.
+     *
+     *
+     * @event aiAssistantStopRespondingClick
+     * @type {EmitType<AIAssistantStopRespondingArgs>}
+     */
+    aiAssistantStopRespondingClick?: EmitType<AIAssistantStopRespondingArgs>;
+
+    /**
+     * Triggers before a popup is about to open in the editor.
+     * This event occurs when any popup is about to be displayed in the editor.
+     * It can be used to manipulate the popup content by adding additional elements or custom logics.
+     * The event can be canceled by setting `args.cancel` to `true` to prevent the popup from opening.
+     *
+     * @event beforePopupOpen
+     * @type {EmitType<BeforePopupOpenCloseEventArgs>}
+     */
+    beforePopupOpen?: EmitType<BeforePopupOpenCloseEventArgs>;
+
+    /**
+     * Triggers before a popup is about to close in the editor.
+     * Can be canceled by setting `args.cancel` to `true`.
+     * This event is useful for cleaning up custom elements which were added to the popup element.
+     *
+     * @event beforePopupClose
+     * @type {EmitType<BeforePopupOpenCloseEventArgs>}
+     */
+    beforePopupClose?: EmitType<BeforePopupOpenCloseEventArgs>;
+
+    /**
+     * This event triggers when a Word document `import` is initiated by the editor, letting you customize the outgoing HTTP request before it is sent.
+     *
+     * @event 'wordImporting'
+     */
+    wordImporting?: EmitType<UploadingEventArgs>;
+
+    /**
+     * This event triggers just before PDF or Word export requests are dispatched by the editor, allowing user to customize the outgoing request.
+     *
+     * @event 'documentExporting'
+     */
+    documentExporting?: EmitType<ExportingEventArgs>;
 
 }

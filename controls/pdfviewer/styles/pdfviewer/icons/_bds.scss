@@ -1,3 +1,5 @@
+@use 'ej2-base/styles/common/mixin' as *;
+@use '../bds-definition' as *;
 @include export-module('pdfviewer-bds-icons') {
   .e-pdfviewer {
     .e-pv-icon::before {
@@ -563,6 +565,10 @@
     content: '\e893';
     font-family: 'e-icons';
   }
+  .e-pv-text-redact-icon::before {
+    content: '\e94f';
+    font-family: 'e-icons';
+  }
   .e-pv-redaction-panel-icon::before {
     content: '\e821';
     font-family: 'e-icons';
@@ -577,6 +583,10 @@
   }
   .e-pv-multiple-comment::before {
     content: '\e8bc';
+    font-family: 'e-icons';
+  }
+  .e-pv-extract-page-icon::before {
+    content: '\e95a';
     font-family: 'e-icons';
   }
 }

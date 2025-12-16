@@ -61,11 +61,10 @@ describe('Diagram Control', () => {
         afterAll((): void => {
             diagram.destroy();
             ele.remove();
+            diagram = null;
+            ele = null;
         });
 
-        it('Checking basic shapes with size', (done: Function) => {
-            done();
-        });
         it('memory leak', () => { 
             profile.sample();
             let average: any = inMB(profile.averageChange)

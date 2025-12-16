@@ -1,3 +1,6 @@
+@use 'ej2-base/styles/common/mixin' as *;
+@use './theme-variables' as *;
+
 @mixin carousel-navigator-button-color($color) {
   .e-btn-icon {
     color: $color;
@@ -27,7 +30,7 @@
             box-shadow: $carousel-navigator-btn-focus-box-shadow;
             @include carousel-navigator-button-color($carousel-navigator-icon-color);
             @if $skin-name !='tailwind3' {
-              border-radius: 4px;
+              border-radius: $carousel-navigator-focus-visible-border-radius;
               @include carousel-navigator-button-color($carousel-navigator-btn-hover-color);
             }
           }

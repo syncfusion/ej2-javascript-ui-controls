@@ -5225,63 +5225,6 @@ StarSymbol"><span style="mso-list:Ignore"><span style="font:7.0pt &quot;Times Ne
         });
     });
 
-    describe("980885 - Fails to paste empty content from note pad.", () => {
-            let rteObj: RichTextEditor;
-            beforeAll((done: Function) => {
-                rteObj = renderRTE({
-                    pasteCleanupSettings: {
-                        prompt: false,
-                        keepFormat: true,
-                    },
-                });
-                done();
-            });
-            it("When pasting the empty P tag with BR, it should not be removed from the editor.", (done) => {
-                const clipboardHtml: string =  `<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
-    <html>
-    <head>
-    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-    <meta http-equiv="Content-Style-Type" content="text/css">
-    <title></title>
-    <meta name="Generator" content="Cocoa HTML Writer">
-    <meta name="CocoaVersion" content="2575.7">
-    <style type="text/css">
-    p.p1 {margin: 0.0px 0.0px 0.0px 0.0px; font: 20.0px 'Helvetica Neue'; min-height: 25.0px}
-    p.p2 {margin: 0.0px 0.0px 0.0px 0.0px; font: 13.0px 'Helvetica Neue'; min-height: 15.0px}
-    </style>
-    </head>
-    <body>
-    <p class="p1"><b></b><br></p>
-    <p class="p2"><br></p>
-    <p class="p2"><br></p>
-    <p class="p2"><br></p>
-    <p class="p2"><br></p>
-    <p class="p2"><br></p>
-    <p class="p2"><br></p>
-    <p class="p2"><br></p>
-    <p class="p2"><br></p>
-    </body>
-    </html>`;
-                const focusNode: Element = rteObj.inputElement.querySelector('p');
-                setCursorPoint(focusNode, 0);
-                const dataTransfer = new DataTransfer();
-                dataTransfer.setData('text/html', clipboardHtml);
-                const pasteEvent: ClipboardEvent = new ClipboardEvent('paste', {
-                    clipboardData: dataTransfer
-                } as ClipboardEventInit);
-                rteObj.onPaste(pasteEvent);
-                setTimeout(() => {
-                    debugger
-                    expect(rteObj.inputElement.querySelectorAll('p').length === 9).toBe(true);
-                    done();
-                }, 100);
-            });
-            afterAll((done: DoneFn) => {
-                destroy(rteObj);
-                done();
-            });
-        });
-
     describe('Should not merge inline span with existing anchor during paste', () => {
         let rteObj: RichTextEditor;
         const clipboardHtml: string = `<span style="font-size: 15px;">This is a paragraph.</span>`;
@@ -5310,6 +5253,63 @@ StarSymbol"><span style="mso-list:Ignore"><span style="font:7.0pt &quot;Times Ne
                 `<p><a href="https://www.syncfusion.com/" id="start">Syncfusion</a><span style="font-size: 15px;">This is a paragraph.</span></p>`;
             const expected: boolean = pastedElm.replace(/\s/g, '') === expectedElem.replace(/\s/g, '');
             expect(expected).toBe(true);
+            done();
+        });
+    });
+
+    describe("980885 - Fails to paste empty content from note pad.", () => {
+        let rteObj: RichTextEditor;
+        beforeAll((done: Function) => {
+            rteObj = renderRTE({
+                pasteCleanupSettings: {
+                    prompt: false,
+                    keepFormat: true,
+                },
+            });
+            done();
+        });
+        it("When pasting the empty P tag with BR, it should not be removed from the editor.", (done) => {
+            const clipboardHtml: string =  `<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<meta http-equiv="Content-Style-Type" content="text/css">
+<title></title>
+<meta name="Generator" content="Cocoa HTML Writer">
+<meta name="CocoaVersion" content="2575.7">
+<style type="text/css">
+p.p1 {margin: 0.0px 0.0px 0.0px 0.0px; font: 20.0px 'Helvetica Neue'; min-height: 25.0px}
+p.p2 {margin: 0.0px 0.0px 0.0px 0.0px; font: 13.0px 'Helvetica Neue'; min-height: 15.0px}
+</style>
+</head>
+<body>
+<p class="p1"><b></b><br></p>
+<p class="p2"><br></p>
+<p class="p2"><br></p>
+<p class="p2"><br></p>
+<p class="p2"><br></p>
+<p class="p2"><br></p>
+<p class="p2"><br></p>
+<p class="p2"><br></p>
+<p class="p2"><br></p>
+</body>
+</html>`;
+            const focusNode: Element = rteObj.inputElement.querySelector('p');
+            setCursorPoint(focusNode, 0);
+            const dataTransfer = new DataTransfer();
+            dataTransfer.setData('text/html', clipboardHtml);
+            const pasteEvent: ClipboardEvent = new ClipboardEvent('paste', {
+                clipboardData: dataTransfer
+            } as ClipboardEventInit);
+            rteObj.onPaste(pasteEvent);
+            setTimeout(() => {
+                debugger
+                expect(rteObj.inputElement.querySelectorAll('p').length === 9).toBe(true);
+                done();
+            }, 100);
+        });
+        afterAll((done: DoneFn) => {
+            destroy(rteObj);
             done();
         });
     });
@@ -5362,6 +5362,35 @@ StarSymbol"><span style="mso-list:Ignore"><span style="font:7.0pt &quot;Times Ne
 
         });
     });
+    describe("995198: Cursor position changes unexpectedly after pasting a inline contained content inside blockquote", () => {
+        let rteObj: RichTextEditor;
+        const pasteContent = `<html>\r\n<body>\r\n\x3C!--StartFragment--><em>Easily access Audio, Image, Link, Video, and Table operations through the quick toolbar by right-clicking on the corresponding element with your mouse.</em>\x3C!--EndFragment-->\r\n</body>\r\n</html>`;
+        const rtecontent = `<blockquote><p><em>Easily access Audio, Image, Link, Video, and Table operations through the quick toolbar by right-clicking on the corresponding element with your mouse.</em></p><p><em><br></em></p></blockquote>`;
+        beforeEach(() => {
+            rteObj = renderRTE({
+                pasteCleanupSettings: {},
+                value: rtecontent
+            });
+        });
+        afterEach(() => {
+            destroy(rteObj);
+        });
+        it(" - Paste the content inside the new p tag inside blockquote", (done: DoneFn) => {
+            const targetEle: HTMLElement = rteObj.inputElement.querySelectorAll('em')[1];
+            setCursorPoint(targetEle, 0);
+            const dataTransfer = new DataTransfer();
+            dataTransfer.setData('text/html', pasteContent);
+            const pasteEvent: ClipboardEvent = new ClipboardEvent('paste', { clipboardData: dataTransfer } as ClipboardEventInit);
+            rteObj.onPaste(pasteEvent);
+            setTimeout(() => {
+                const pastedBlockquote: HTMLElement = rteObj.inputElement.querySelector('blockquote');
+                let expectedInnerHtml: string = `<p><em>Easily access Audio, Image, Link, Video, and Table operations through the quick toolbar by right-clicking on the corresponding element with your mouse.</em></p><p><em>Easily access Audio, Image, Link, Video, and Table operations through the quick toolbar by right-clicking on the corresponding element with your mouse.</em></p>`;
+                expect(pastedBlockquote.innerHTML === expectedInnerHtml).toBe(true);
+                expect(window.getSelection().getRangeAt(0).startOffset).toBe(1);
+                done();
+            }, 100);
+        });
+    });
     describe("979944: List corruption when enterKey is set to 'div' and pasting multiple lines in RichTextEditor", () => {
         let rteObj: RichTextEditor;
         const pasteContent = `<div>First line</div><div>Second Line</div>`;
@@ -5394,7 +5423,7 @@ StarSymbol"><span style="mso-list:Ignore"><span style="font:7.0pt &quot;Times Ne
             } as ClipboardEventInit);
             rteObj.onPaste(pasteEvent);
             setTimeout(() => {
-                expect(rteObj.inputElement.innerHTML === `<div>First line</div><div>Second Line</div><div> <ul style="list-style-type: disc;"><li>List oneFirst line</li><li><div>Second Line</div></li><li>List two</li></ul> </div>`).toBe(true);
+                expect(rteObj.inputElement.innerHTML === `<div>First line</div><div>Second Line</div><div> <ul style="list-style-type: disc;"><li>List oneFirst line</li><li><div>Second Line</div> </li><li>List two</li></ul> </div>`).toBe(true);
                 done();
             }, 200);
         });
@@ -5478,6 +5507,195 @@ StarSymbol"><span style="mso-list:Ignore"><span style="font:7.0pt &quot;Times Ne
         afterAll((done: DoneFn) => {
             destroy(rteObj);
             done();
+        });
+    });
+    describe("994008: console error occurs while pasting content inside LI element", () => {
+        let rteObj: RichTextEditor;
+        const pasteContent = `<html>\r\n<body>\r\n\x3C!--StartFragment--><h1 style="font-size: 2.857em; font-weight: 600; line-height: 1.2; margin: 10px 0px; color: rgb(51, 51, 51); font-family: Roboto, &quot;Segoe UI&quot;, GeezaPro, &quot;DejaVu Serif&quot;, &quot;sans-serif&quot;, -apple-system, BlinkMacSystemFont; font-style: normal; font-variant-ligatures: normal; font-variant-caps: normal; letter-spacing: normal; orphans: 2; text-align: start; text-indent: 0px; text-transform: none; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; white-space: normal; background-color: rgb(255, 255, 255); text-decoration-thickness: initial; text-decoration-style: initial; text-decoration-color: initial;">Editor</h1>\x3C!--EndFragment-->\r\n</body>\r\n</html>`;
+        const rtecontent = `<ul>
+   <li>Basic features include headings, block quotes, numbered lists, bullet lists, and support to insert images, tables, audio, and video.</li>
+   <li>Inline styles include <b>bold</b>, <em>italic</em>, <span style="text-decoration: underline">underline</span>, <span style="text-decoration: line-through">strikethrough</span>, <a class="e-rte-anchor" href="https://ej2.syncfusion.com/demos/#/material/rich-text-editor/tools.html" title="https://ej2.syncfusion.com/demos/#/material/rich-text-editor/tools.html" aria-label="Open in new window">hyperlinks</a>, 😀 and more.</li>
+   <li>The toolbar has multi-row, expandable, and scrollable modes. The Editor supports an inline toolbar, a floating toolbar, and custom toolbar items.</li>
+   <li>Integration with Syncfusion Mention control lets users tag other users. To learn more, check out the <a class="e-rte-anchor" href="https://ej2.syncfusion.com/documentation/rich-text-editor/mention-integration" title="Mention Documentation" aria-label="Open in new window">documentation</a> and <a class="e-rte-anchor" href="https://ej2.syncfusion.com/demos/#/material/rich-text-editor/mention-integration.html" title="Mention Demos" aria-label="Open in new window">demos</a>.</li>
+   <li><b>Paste from MS Word</b> - helps to reduce the effort while converting the Microsoft Word content to HTML format with format and styles. To learn more, check out the documentation <a class="e-rte-anchor" href="https://ej2.syncfusion.com/documentation/rich-text-editor/paste-cleanup" title="Paste from MS Word Documentation" aria-label="Open in new window">here</a>.</li>
+   <li>Other features: placeholder text, character count, form validation, enter key configuration, resizable editor, IFrame rendering, tooltip, source code view, RTL mode, persistence, HTML Sanitizer, autosave, and <a class="e-rte-anchor" href="https://ej2.syncfusion.com/documentation/api/rich-text-editor/" title="Rich Text Editor API" aria-label="Open in new window">more</a>.</li>
+</ul>`;
+        beforeAll(() => {
+            rteObj = renderRTE({
+                enableClipboardCleanup: false,
+                pasteCleanupSettings: {},
+                value: rtecontent
+            });
+        });
+        afterAll(() => {
+            destroy(rteObj);
+        });
+        it("Should paste content when selecting single text from h1 tag and pasting inside list item", (done: DoneFn) => {
+            const targetEle: HTMLElement = rteObj.inputElement.querySelectorAll('li')[1];
+            setCursorPoint(targetEle.lastChild, targetEle.lastChild.textContent.length);
+            const dataTransfer = new DataTransfer();
+            dataTransfer.setData('text/html', pasteContent);
+            const pasteEvent: ClipboardEvent = new ClipboardEvent('paste', { clipboardData: dataTransfer } as ClipboardEventInit);
+            rteObj.onPaste(pasteEvent);
+            setTimeout(() => {
+                const pastedLi: HTMLElement = rteObj.inputElement.querySelectorAll('li')[1];
+                const expectedInnerHtml: string = `Inline styles include bold, italic, underline, strikethrough, hyperlinks, 😀 and more.Editor`;
+                expect(pastedLi.textContent === expectedInnerHtml).toBe(true);
+                done();
+            }, 200);
+        });
+    });
+    describe("994008: console error occurs while pasting content inside LI element", () => {
+        let rteObj: RichTextEditor;
+        const pasteContent = `<html>\r\n<body>\r\n\x3C!--StartFragment--><h1 style="font-size: 2.857em; font-weight: 600; line-height: 1.2; margin: 10px 0px; color: rgb(51, 51, 51); font-family: Roboto, &quot;Segoe UI&quot;, GeezaPro, &quot;DejaVu Serif&quot;, &quot;sans-serif&quot;, -apple-system, BlinkMacSystemFont; font-style: normal; font-variant-ligatures: normal; font-variant-caps: normal; letter-spacing: normal; orphans: 2; text-align: start; text-indent: 0px; text-transform: none; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; white-space: normal; background-color: rgb(255, 255, 255); text-decoration-thickness: initial; text-decoration-style: initial; text-decoration-color: initial;">Editor</h1>\x3C!--EndFragment-->\r\n</body>\r\n</html>`;
+        const rtecontent = `<ul>
+   <li>Basic features include headings, block quotes, numbered lists, bullet lists, and support to insert images, tables, audio, and video.</li>
+   <li style="font-weight: bold; font-style: italic;"><strong><em>Inline styles include </em></strong><b><em>bold</em></b><strong><em>, </em></strong><em><strong>italic</strong></em><strong><em>, </em></strong><span style="text-decoration: underline"><strong><em>underline</em></strong></span><strong><em>, </em></strong><span style="text-decoration: line-through"><strong><em>strikethrough</em></strong></span><strong><em>, </em></strong><a class="e-rte-anchor" href="https://ej2.syncfusion.com/demos/#/material/rich-text-editor/tools.html" title="https://ej2.syncfusion.com/demos/#/material/rich-text-editor/tools.html" aria-label="Open in new window"><strong><em>hyperlinks</em></strong></a><strong><em>, 😀 and more.</em></strong></li>
+   <li>The toolbar has multi-row, expandable, and scrollable modes. The Editor supports an inline toolbar, a floating toolbar, and custom toolbar items.</li>
+   <li>Integration with Syncfusion Mention control lets users tag other users. To learn more, check out the <a class="e-rte-anchor" href="https://ej2.syncfusion.com/documentation/rich-text-editor/mention-integration" title="Mention Documentation" aria-label="Open in new window">documentation</a> and <a class="e-rte-anchor" href="https://ej2.syncfusion.com/demos/#/material/rich-text-editor/mention-integration.html" title="Mention Demos" aria-label="Open in new window">demos</a>.</li>
+   <li><b>Paste from MS Word</b> - helps to reduce the effort while converting the Microsoft Word content to HTML format with format and styles. To learn more, check out the documentation <a class="e-rte-anchor" href="https://ej2.syncfusion.com/documentation/rich-text-editor/paste-cleanup" title="Paste from MS Word Documentation" aria-label="Open in new window">here</a>.</li>
+   <li>Other features: placeholder text, character count, form validation, enter key configuration, resizable editor, IFrame rendering, tooltip, source code view, RTL mode, persistence, HTML Sanitizer, autosave, and <a class="e-rte-anchor" href="https://ej2.syncfusion.com/documentation/api/rich-text-editor/" title="Rich Text Editor API" aria-label="Open in new window">more</a>.</li>
+</ul>`;
+        beforeAll(() => {
+            rteObj = renderRTE({
+                enableClipboardCleanup: false,
+                pasteCleanupSettings: {},
+                value: rtecontent
+            });
+        });
+        afterAll(() => {
+            destroy(rteObj);
+        });
+        it("Should paste content when selecting single text from h1 tag and pasting inside list item with inline elements", (done: DoneFn) => {
+            const targetEle: HTMLElement = rteObj.inputElement.querySelectorAll('li')[1].querySelectorAll('em')[10];
+            setCursorPoint(targetEle.lastChild, targetEle.lastChild.textContent.length);
+            const dataTransfer = new DataTransfer();
+            dataTransfer.setData('text/html', pasteContent);
+            const pasteEvent: ClipboardEvent = new ClipboardEvent('paste', { clipboardData: dataTransfer } as ClipboardEventInit);
+            rteObj.onPaste(pasteEvent);
+            setTimeout(() => {
+                const pastedLi: HTMLElement = rteObj.inputElement.querySelectorAll('li')[1];
+                const expectedInnerHtml: string = `Inline styles include bold, italic, underline, strikethrough, hyperlinks, 😀 and more.Editor`;
+                expect(pastedLi.textContent === expectedInnerHtml).toBe(true);
+                done();
+            }, 200);
+        });
+    });
+    describe("994008: console error occurs while pasting content inside LI element", () => {
+        let rteObj: RichTextEditor;
+        const pasteContent = `<html>\r\n<body>\r\n\x3C!--StartFragment--><h1 style="font-size: 40px; font-weight: 600; line-height: 48px; margin: 10px 0px; color: rgb(51, 51, 51); font-family: Roboto, &quot;Segoe UI&quot;, GeezaPro, &quot;DejaVu Serif&quot;, &quot;sans-serif&quot;, -apple-system, BlinkMacSystemFont; font-style: normal; font-variant-ligatures: normal; font-variant-caps: normal; letter-spacing: normal; orphans: 2; text-align: start; text-indent: 0px; text-transform: none; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; white-space: normal; background-color: rgb(255, 255, 255); text-decoration-thickness: initial; text-decoration-style: initial; text-decoration-color: initial;">Editor</h1><p style="margin: 0px 0px 10px; color: rgb(51, 51, 51); font-family: Roboto, &quot;Segoe UI&quot;, GeezaPro, &quot;DejaVu Serif&quot;, &quot;sans-serif&quot;, -apple-system, BlinkMacSystemFont; font-size: 14px; font-style: normal; font-variant-ligatures: normal; font-variant-caps: normal; font-weight: 400; letter-spacing: normal; orphans: 2; text-align: start; text-indent: 0px; text-transform: none; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; white-space: normal; background-color: rgb(255, 255, 255); text-decoration-thickness: initial; text-decoration-style: initial; text-decoration-color: initial;">The Rich Text Editor, a WYSIWYG (what you see is what you get) editor, is a user interface that allows you to create</p>\x3C!--EndFragment-->\r\n</body>\r\n</html>`;
+        const rtecontent = `<ul>
+   <li>Basic features include headings, block quotes, numbered lists, bullet lists, and support to insert images, tables, audio, and video.</li>
+   <li>Inline styles include <b>bold</b>, <em>italic</em>, <span style="text-decoration: underline">underline</span>, <span style="text-decoration: line-through">strikethrough</span>, <a class="e-rte-anchor" href="https://ej2.syncfusion.com/demos/#/material/rich-text-editor/tools.html" title="https://ej2.syncfusion.com/demos/#/material/rich-text-editor/tools.html" aria-label="Open in new window">hyperlinks</a>, 😀 and more.</li>
+   <li>The toolbar has multi-row, expandable, and scrollable modes. The Editor supports an inline toolbar, a floating toolbar, and custom toolbar items.</li>
+   <li>Integration with Syncfusion Mention control lets users tag other users. To learn more, check out the <a class="e-rte-anchor" href="https://ej2.syncfusion.com/documentation/rich-text-editor/mention-integration" title="Mention Documentation" aria-label="Open in new window">documentation</a> and <a class="e-rte-anchor" href="https://ej2.syncfusion.com/demos/#/material/rich-text-editor/mention-integration.html" title="Mention Demos" aria-label="Open in new window">demos</a>.</li>
+   <li><b>Paste from MS Word</b> - helps to reduce the effort while converting the Microsoft Word content to HTML format with format and styles. To learn more, check out the documentation <a class="e-rte-anchor" href="https://ej2.syncfusion.com/documentation/rich-text-editor/paste-cleanup" title="Paste from MS Word Documentation" aria-label="Open in new window">here</a>.</li>
+   <li>Other features: placeholder text, character count, form validation, enter key configuration, resizable editor, IFrame rendering, tooltip, source code view, RTL mode, persistence, HTML Sanitizer, autosave, and <a class="e-rte-anchor" href="https://ej2.syncfusion.com/documentation/api/rich-text-editor/" title="Rich Text Editor API" aria-label="Open in new window">more</a>.</li>
+</ul>`;
+        beforeAll(() => {
+            rteObj = renderRTE({
+                pasteCleanupSettings: {},
+                value: rtecontent
+            });
+        });
+        afterAll(() => {
+            destroy(rteObj);
+        });
+        it("Should paste content when selecting multiple block level elements and pasting inside list item", (done: DoneFn) => {
+            const targetEle: HTMLElement = rteObj.inputElement.querySelectorAll('li')[1];
+            setCursorPoint(targetEle.lastChild, targetEle.lastChild.textContent.length);
+            const dataTransfer = new DataTransfer();
+            dataTransfer.setData('text/html', pasteContent);
+            const pasteEvent: ClipboardEvent = new ClipboardEvent('paste', { clipboardData: dataTransfer } as ClipboardEventInit);
+            rteObj.onPaste(pasteEvent);
+            setTimeout(() => {
+                const pastedLi1: HTMLElement = rteObj.inputElement.querySelectorAll('li')[1];
+                let expectedInnerHtml: string = `Inline styles include bold, italic, underline, strikethrough, hyperlinks, 😀 and more.Editor`;
+                expect(pastedLi1.innerText === expectedInnerHtml).toBe(true);
+                const pastedLi2: HTMLElement = rteObj.inputElement.querySelectorAll('li')[2];
+                expectedInnerHtml = `The Rich Text Editor, a WYSIWYG (what you see is what you get) editor, is a user interface that allows you to create`;
+                expect(pastedLi2.innerText === expectedInnerHtml).toBe(true);
+                done();
+            }, 200);
+        });
+    });
+    describe("995648: Nested List Structure Lost After Copying Partial Selection Across li > span Elements and Pasting at End of Nested List", () => {
+        let rteObj: RichTextEditor;
+        const pasteContent = `<html>\r\n<body>\r\n\x3C!--StartFragment-->headings, block quotes, numbered lists, bullet lists, and support to insert images, tables, audio, and video. <ul> <li>Inline styles include <b>bold</b>, <em>italic</em>, <span style="text-decoration: underline">underline</span>, <span style="text-decoration: line-through">strikethrough</span>,</li></ul>\x3C!--EndFragment-->\r\n</body>\r\n</html>`;
+        const rtecontent = `<ul>
+   <li>Basic features include headings, block quotes, numbered lists, bullet lists, and support to insert images, tables, audio, and video. 
+      <ul>
+         <li>Inline styles include <b>bold</b>, <em>italic</em>, <span style="text-decoration: underline">underline</span>, <span style="text-decoration: line-through">strikethrough</span>, <a class="e-rte-anchor" href="https://ej2.syncfusion.com/demos/#/material/rich-text-editor/tools.html" title="https://ej2.syncfusion.com/demos/#/material/rich-text-editor/tools.html" aria-label="Open in new window">hyperlinks</a>, 😀 and more. 
+            <ul>
+               <li>The toolbar has multi-row, expandable, and scrollable modes. The Editor supports an inline toolbar, a floating toolbar, and custom toolbar items.</li>
+            </ul>
+         </li>
+      </ul>
+   </li>
+   <li>Integration with Syncfusion Mention control lets users tag other users. To learn more, check out the <a class="e-rte-anchor" href="https://ej2.syncfusion.com/documentation/rich-text-editor/mention-integration" title="Mention Documentation" aria-label="Open in new window">documentation</a> and <a class="e-rte-anchor" href="https://ej2.syncfusion.com/demos/#/material/rich-text-editor/mention-integration.html" title="Mention Demos" aria-label="Open in new window">demos</a>.</li>
+   <li><b>Paste from MS Word</b> - helps to reduce the effort while converting the Microsoft Word content to HTML format with format and styles. To learn more, check out the documentation <a class="e-rte-anchor" href="https://ej2.syncfusion.com/documentation/rich-text-editor/paste-cleanup" title="Paste from MS Word Documentation" aria-label="Open in new window">here</a>.</li>
+   <li>Other features: placeholder text, character count, form validation, enter key configuration, resizable editor, IFrame rendering, tooltip, source code view, RTL mode, persistence, HTML Sanitizer, autosave, and <a class="e-rte-anchor" href="https://ej2.syncfusion.com/documentation/api/rich-text-editor/" title="Rich Text Editor API" aria-label="Open in new window">more</a>.</li>
+</ul>`;
+        beforeAll(() => {
+            rteObj = renderRTE({
+                pasteCleanupSettings: {},
+                value: rtecontent
+            });
+        });
+        afterAll(() => {
+            destroy(rteObj);
+        });
+        it("Should paste content when selecting nested li elements and pasting inside list end point", (done: DoneFn) => {
+            const targetEle: HTMLElement = rteObj.inputElement.querySelectorAll('li')[2];
+            setCursorPoint(targetEle.firstChild, targetEle.firstChild.textContent.length);
+            const dataTransfer = new DataTransfer();
+            dataTransfer.setData('text/html', pasteContent);
+            const pasteEvent: ClipboardEvent = new ClipboardEvent('paste', { clipboardData: dataTransfer } as ClipboardEventInit);
+            rteObj.onPaste(pasteEvent);
+            setTimeout(() => {
+                const expectedInnerHtml: string = '<ul> <li>Basic features include headings, block quotes, numbered lists, bullet lists, and support to insert images, tables, audio, and video. <ul> <li>Inline styles include <b>bold</b>, <em>italic</em>, <span style="text-decoration: underline">underline</span>, <span style="text-decoration: line-through">strikethrough</span>, <a class="e-rte-anchor" href="https://ej2.syncfusion.com/demos/#/material/rich-text-editor/tools.html" title="https://ej2.syncfusion.com/demos/#/material/rich-text-editor/tools.html" aria-label="Open in new window">hyperlinks</a>, 😀 and more. <ul> <li>The toolbar has multi-row, expandable, and scrollable modes. The Editor supports an inline toolbar, a floating toolbar, and custom toolbar items.headings, block quotes, numbered lists, bullet lists, and support to insert images, tables, audio, and video. <ul><li>Inline styles include <b>bold</b>, <em>italic</em>, <span style="text-decoration: underline;">underline</span>, <span style="text-decoration: line-through;">strikethrough</span>,</li></ul></li></ul> </li> </ul> </li> <li>Integration with Syncfusion Mention control lets users tag other users. To learn more, check out the <a class="e-rte-anchor" href="https://ej2.syncfusion.com/documentation/rich-text-editor/mention-integration" title="Mention Documentation" aria-label="Open in new window">documentation</a> and <a class="e-rte-anchor" href="https://ej2.syncfusion.com/demos/#/material/rich-text-editor/mention-integration.html" title="Mention Demos" aria-label="Open in new window">demos</a>.</li> <li><b>Paste from MS Word</b> - helps to reduce the effort while converting the Microsoft Word content to HTML format with format and styles. To learn more, check out the documentation <a class="e-rte-anchor" href="https://ej2.syncfusion.com/documentation/rich-text-editor/paste-cleanup" title="Paste from MS Word Documentation" aria-label="Open in new window">here</a>.</li> <li>Other features: placeholder text, character count, form validation, enter key configuration, resizable editor, IFrame rendering, tooltip, source code view, RTL mode, persistence, HTML Sanitizer, autosave, and <a class="e-rte-anchor" href="https://ej2.syncfusion.com/documentation/api/rich-text-editor/" title="Rich Text Editor API" aria-label="Open in new window">more</a>.</li> </ul>';
+                expect(rteObj.inputElement.innerHTML === expectedInnerHtml).toBe(true);
+                done();
+            }, 200);
+        });
+    });
+    describe("983901: Improper List Structure When Pasting Mixed Content with enterKey Set to DIV", () => {
+        let rteObj: RichTextEditor;
+        const pasteContent = `<div>First line</div><div>Second Line</div>`;
+        const rtecontent = `<div>First line</div>
+                    <div>Second Line</div>
+                    <div>
+                        <ul style="list-style-type: disc;">
+                            <li>List one</li>
+                            <li>List two</li>
+                        </ul>
+                    </div>`;
+        beforeAll((done: Function) => {
+            rteObj = renderRTE({
+                pasteCleanupSettings: {},
+                value: rtecontent
+            });
+            done();
+        });
+        afterAll((done: Function) => {
+            destroy(rteObj);
+            done();
+        });
+        it("Should paste content when selecting multiple list item and maintain structure", (done: DoneFn) => {
+            const firstLi: HTMLElement = rteObj.inputElement.querySelectorAll('li')[0];
+            const secondLi: HTMLElement = rteObj.inputElement.querySelectorAll('li')[1];
+            rteObj.formatter.editorManager.nodeSelection.setSelectionText(document, firstLi, secondLi.firstChild, 0, 3);
+            const dataTransfer = new DataTransfer();
+            dataTransfer.setData('text/html', pasteContent);
+            const pasteEvent: ClipboardEvent = new ClipboardEvent('paste', {
+                clipboardData: dataTransfer
+            } as ClipboardEventInit);
+            rteObj.onPaste(pasteEvent);
+            setTimeout(() => {
+                const pastedFirstLi: HTMLElement = rteObj.inputElement.querySelectorAll('li')[0];
+                expect(pastedFirstLi.textContent === "First line").toBe(true);
+                done();
+            }, 200);
         });
     });
 });// Add the spec above this.

@@ -1,3 +1,5 @@
+@use 'ej2-base/styles/definition/material-dark' as *;
+@forward 'ej2-base/styles/definition/material-dark';
 $header-font-weight: 500 !default;
 $multicolumn-grid-height: 36px !default;
 $multicolumn-margin-top-value: 1px !default;
@@ -30,3 +32,18 @@ $altrow-bg-color: $grey-700 !default;
 $popup-box-shadow: 0 .6px 1.8px 0 rgba($grey-black, .1), 0 3.2px 7.2px 0 rgba($grey-black, .13) !default;
 $nodata-bg-color: $grey-800 !default;
 $nodata-border-color: $grey-800 !default;
+
+$padding-zero: 0;
+$multicolumn-nodata-padding: 14px 16px;
+$multicolumn-bigger-spin-pane-height: 26px !default;
+$multicolumn-bgr-small-font-size: 14px !default;
+$multicolumn-spin-pane-height: 20px !default;
+$multicolumn-grid-cation-font-weight: 600 !default;
+$multicolumn-font-size: 14px !default;
+$multicolumn-zero-height: 0 !default;
+$multicolumn-zero-border-radius: 0 !default;
+$multicolumn-small-grid-footer-font-size: 12px !default;
+$multicolumn-bigger-spinner-width: 26px !default;
+$multicolumn-spinner-width: 20px !default;
+$multicolumn-zero-width: 0 !default;
+$multicolumn-bigger-popup-footer-font-size: 16px !default;

@@ -184,8 +184,10 @@ export class WorkbookSave extends SaveWorker {
                     }
                 };
                 this.parent.notify(
-                    updateSheetFromDataSource, { sheet: sheet, sheetIndex: sheetIdx, loadComplete: loadCompleteHandler.bind(this, sheetIdx),
-                        loadFromStartCell: true, autoDetectFormat: autoDetectFormat });
+                    updateSheetFromDataSource, {
+                        sheet: sheet, sheetIndex: sheetIdx, loadComplete: loadCompleteHandler.bind(this, sheetIdx),
+                        loadFromStartCell: true, autoDetectFormat: autoDetectFormat
+                    });
             } else {
                 if (isSkipWorkerPipeline) {
                     const json: string = this.getStringifyObject(sheet, skipProps, sheetIdx, autoDetectFormat && isDataBinding, true);

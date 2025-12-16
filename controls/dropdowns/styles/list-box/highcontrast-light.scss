@@ -1,6 +1,6 @@
-@import 'ej2-base/styles/definition/highcontrast-light.scss';
-@import '../drop-down-base/highcontrast-light-definition.scss';
-@import 'highcontrast-light-definition.scss';
-@import 'icons/highcontrast-light.scss';
-@import 'all.scss';
-@import 'bigger.scss';
+@use 'ej2-base/styles/definition/highcontrast-light' as *;
+@use '../drop-down-base/highcontrast-light-definition' as *;
+@use 'highcontrast-light-definition' as *;
+@use 'icons/highcontrast-light' as *;
+@use 'all' as *;
+@use 'bigger' as *;

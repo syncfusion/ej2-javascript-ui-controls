@@ -1,3 +1,5 @@
+@use 'ej2-base/styles/definition/bootstrap5' as *;
+@forward 'ej2-base/styles/definition/bootstrap5';
 $sta-background-color: $content-bg-color !default;
 $sta-color: $content-text-color !default;
 $sta-box-shadow: $shadow-lg !default;

@@ -81,8 +81,10 @@ export const htmlKeyConfig: { [key: string]: string } = {
     'format-paste': 'alt+shift+v',
     'inlinecode': 'ctrl+`',
     'code-block': 'ctrl+shift+b',
+    'ai-query': 'alt+enter',
     'checklist': 'ctrl+shift+9',
-    'print': 'ctrl+p'
+    'print': 'ctrl+p',
+    'checklist-toggle': 'ctrl+enter'
 };
 /**
  * Default  markdown key config for adapter
@@ -168,6 +170,6 @@ export const mentionRestrictKeys: string[] = [
 
 /**
  * @hidden
- * @deprecated
+ * @private
  */
 export const TABLE_SELECTION_STATE_ALLOWED_ACTIONKEYS: string[] = ['Enter', 'ArrowRight', 'ArrowLeft'];

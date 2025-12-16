@@ -1379,7 +1379,8 @@ export class CheckBoxFilterBase {
     private queryGenerate(query: Query): void {
         if (this.parent.searchSettings && this.parent.searchSettings.key.length) {
             const moduleName : Function = (<{ getModuleName?: Function }>this.options.dataManager.adaptor).getModuleName;
-            if (!isNullOrUndefined((this.parent as IGrid).getDataModule) && moduleName && moduleName() === 'ODataV4Adaptor') {
+            if ((!isNullOrUndefined((this.parent as IGrid).getForeignKeyColumns()) && this.parent.getForeignKeyColumns().length) ||
+                (!isNullOrUndefined((this.parent as IGrid).getDataModule) && moduleName && moduleName() === 'ODataV4Adaptor')) {
                 (this.parent as IGrid).getDataModule().searchQuery(query);
             } else {
                 const searchSettings: SearchSettingsModel = this.parent.searchSettings;

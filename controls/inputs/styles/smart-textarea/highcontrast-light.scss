@@ -1,4 +1,4 @@
-@import 'ej2-base/styles/definition/highcontrast-light.scss';
-@import '../textarea/highcontrast-light-definition.scss';
-@import 'highcontrast-light-definition.scss';
-@import 'all.scss';
+@use 'ej2-base/styles/definition/highcontrast-light' as *;
+@use '../textarea/highcontrast-light-definition' as *;
+@use 'highcontrast-light-definition' as *;
+@use 'all' as *;

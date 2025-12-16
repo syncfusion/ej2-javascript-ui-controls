@@ -1,3 +1,5 @@
+@use 'ej2-base/styles/definition/bootstrap-dark' as *;
+@forward 'ej2-base/styles/definition/bootstrap-dark';
 $sta-background-color: $gray-base !default;
 $sta-color: $grey-dark-font !default;
 $sta-box-shadow: rgba(0, 0, 0, .5) !default;

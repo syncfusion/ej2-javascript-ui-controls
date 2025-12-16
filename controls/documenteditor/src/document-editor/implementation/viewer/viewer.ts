@@ -2110,7 +2110,6 @@ export class DocumentHelper {
                 this.owner.editorModule.isIncrementalSave = false;
                 this.owner.selectionModule.selectRange(this.owner.documentStart, this.owner.documentStart);
             }
-
             if (!this.isUpdatedWhileLoadAsync) {
                 this.performUpdateAfterLoad(isAsync, true);
             } else { // re update the track changes once document layout completed in async loading.

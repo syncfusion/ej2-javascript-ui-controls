@@ -1,3 +1,6 @@
+@use 'ej2-base/styles/definition/tailwind3' as *;
+@forward 'ej2-base/styles/definition/tailwind3';
+
 // uploader bootstrap theme
 $zero-value: 0 !default;
 $upload-root-font-family: $font-family !default;
@@ -111,8 +114,8 @@ $progress-bar-bottom-paddding: 11px !default;
 $progress-bar-text-right-smaller: $zero-value !default;
 $progress-bar-text-top-smaller: -33px !default;
 $li-min-height: 82px !default;
-$inner-wrap-radius: 4px !default;
-$progress-bar-radius: 4px !default;
+$inner-wrap-radius: $radius-4 !default;
+$progress-bar-radius: $radius-4 !default;
 $progress-inner-wrap-height-smaller: 4px !default;
 $progress-bar-height-smaller: 4px !default;
 $remove-icon-before-left-bigger: 12px !default;
@@ -142,10 +145,10 @@ $abort-icon-font-size: $font-icon-14 !default;
 $delete-icon-font-size-bigger-smaller: $font-icon-16 !default;
 $delete-icon-font-size-smaller: $font-icon-14 !default;
 $abort-icon-font-size-smaller: $font-icon-14 !default;
-$upload-border-radius: 6px !default;
+$upload-border-radius: $radius-6 !default;
 $remove-icon-padding-smaller: 10px !default;
 $remove-icon-margin-top-smaller: -9px !default;
-$uploader-icons-hover-radius: 50% !default;
+$uploader-icons-hover-radius: $radius-full !default;
 
 // mouse small
 $header-padding-small: 12px 0 12px 12px !default;
@@ -206,6 +209,16 @@ $upload-in-progress-color: $primary !default;
 $progress-background-color: $content-bg-color-alt3 !default;
 $progress-text-color: $content-text-color-alt2 !default;
 $clear-icon-focus-color: rgba($black, .12) !default;
-$list-bottom-border: 1px solid $border-light !default;
+$list-bottom-border: 1px solid light !default;
 $upload-border: 1px dashed $border-dark !default;
 $drag-hover-border: 1px dashed $primary !default;
+
+$upload-zer-padding-margin: 0 !default;
+$upload-zero-height: 0 !default;
+$upload-full-height: 100% !default;
+$upload-bgr-placeholder-min-height: 65px !default;
+$upload-bgr-content-placeholder-min-height: 80px !default;
+$upload-zero-width: 0 !default;
+$upload-full-width: 100% !default;
+$upload-auto-width: auto !default;
+$uploader-actions-border-radius: $radius-0 $radius-0 $radius-6 $radius-6 !default;

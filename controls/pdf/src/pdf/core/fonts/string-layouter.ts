@@ -1,6 +1,7 @@
 import { PdfStringFormat } from './pdf-string-format';
 import { PdfFont } from './pdf-standard-font';
 import { _PdfWordWrapType } from './../enumerator';
+import { Size } from '../pdf-type';
 export class _PdfStringLayouter {
     _font: PdfFont;
     _format: PdfStringFormat;
@@ -65,9 +66,9 @@ export class _PdfStringLayouter {
         return lineIndent;
     }
     _getLineHeight(): number {
-        let height: number = this._font._metrics._getHeight();
+        let height: number = this._font._getHeight();
         if (this._format && this._format.lineSpacing !== 0) {
-            height = this._format.lineSpacing + this._font._metrics._getHeight();
+            height = this._format.lineSpacing + this._font._getHeight();
         }
         return height;
     }
@@ -191,9 +192,9 @@ export class _PdfStringLayouter {
         info._width = lineWidth;
         info._lineType = breakType;
         lines.push(info);
-        const size: number[] = lineResult._actualSize;
-        size[1] = size[1] + this._getLineHeight();
-        size[0] = Math.max(size[0], lineWidth);
+        const size: Size = lineResult._actualSize;
+        size.height = size.height + this._getLineHeight();
+        size.width = Math.max(size.width, lineWidth);
         lineResult._size = size;
     }
     _copyToResult(result: _PdfStringLayoutResult,
@@ -202,7 +203,7 @@ export class _PdfStringLayouter {
                   flag: number): { success: boolean, flag: number } {
         let success: boolean = true;
         const allowPartialLines: boolean = (this._format && !this._format.lineLimit);
-        let height: number = result._actualSize[1];
+        let height: number = result._actualSize.height;
         let maxHeight: number = this._size[1];
         if ((this._pageHeight > 0) && (maxHeight + this._rectangle[1] > this._pageHeight)) {
             maxHeight = this._rectangle[1] - this._pageHeight;
@@ -218,8 +219,8 @@ export class _PdfStringLayouter {
                     flag += info._text.length;
                     info = this._trimLine(info, (lines.length === 0));
                     lines.push(info);
-                    const size: number[] = result._actualSize;
-                    size[0] = Math.max(size[0], info._width);
+                    const size: Size = result._actualSize;
+                    size.width = Math.max(size.width, info._width);
                     result._size = size;
                     height = expHeight;
                 } else {
@@ -228,8 +229,8 @@ export class _PdfStringLayouter {
                 }
             }
         }
-        if (height !== result._size[1]) {
-            result._size = [result._actualSize[0], height];
+        if (height !== result._size.height) {
+            result._size = {width: result._actualSize.width, height: height};
         }
         return { success: success, flag: flag };
     }
@@ -266,11 +267,11 @@ export class _PdfStringLayouter {
 export class _PdfStringLayoutResult {
     _layoutLines: _LineInfo[];
     _remainder: string;
-    _size: number[];
+    _size: Size;
     _lineHeight: number;
-    get _actualSize(): number[] {
+    get _actualSize(): Size {
         if (typeof this._size === 'undefined') {
-            this._size = [0, 0];
+            this._size = {width: 0, height: 0};
         }
         return this._size;
     }

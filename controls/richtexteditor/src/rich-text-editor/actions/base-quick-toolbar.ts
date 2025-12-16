@@ -18,6 +18,7 @@ import { QuickToolbarCollision, QuickToolbarType } from '../../common/types';
 import { QuickPopupRenderer } from '../renderer/quick-popup-renderer';
 import { SelectionDirection, TipPointerPosition, TriggerType } from '../../common/types';
 import { isIDevice } from '../../common/util';
+import { MenuButton } from './menu';
 /**
  * `Quick toolbar` module is used to handle Quick toolbar actions.
  */
@@ -30,6 +31,7 @@ export class BaseQuickToolbar implements IBaseQuickToolbar {
     private stringItems: (string | IToolbarItems)[];
     private dropDownButtons: DropDownButtons;
     private colorPickerObj: ColorPickerInput;
+    private menuButtons: MenuButton;
     private locator: ServiceLocator;
     private parent: IRichTextEditor;
     public toolbarElement: HTMLElement;
@@ -55,6 +57,7 @@ export class BaseQuickToolbar implements IBaseQuickToolbar {
         this.type = type;
         this.dropDownButtons = new DropDownButtons(this.parent, this.locator);
         this.colorPickerObj = new ColorPickerInput(this.parent, this.locator);
+        this.menuButtons = new MenuButton(this.parent, this.locator);
         this.popupWidth = null;
         this.popupHeight = null;
         this.tipPointerHeight = this.parent.userAgentData.isMobileDevice() ? 16 : 10;
@@ -210,7 +213,8 @@ export class BaseQuickToolbar implements IBaseQuickToolbar {
         } else {
             append([this.element], this.parent.contentModule.getPanel());
         }
-        this.dropDownButtons.renderDropDowns({ container: this.toolbarElement, containerType: 'quick', items: this.stringItems } as IDropDownRenderArgs, target as HTMLElement);
+        this.dropDownButtons.renderDropDowns({ container: this.toolbarElement, containerType: 'quick', items: this.stringItems } as IDropDownRenderArgs, target as HTMLElement, (this.type === 'Inline') as boolean);
+        this.menuButtons.renderMenu(this.stringItems, this.toolbarElement, 'Quick');
         if (this.type === 'Text' && this.dropDownButtons) {
             if (this.dropDownButtons.formatDropDown) {
                 const content: string = ('<span style="display: inline-flex;' + 'width:' + this.parent.format.width + '" >' +
@@ -331,6 +335,7 @@ export class BaseQuickToolbar implements IBaseQuickToolbar {
         if (this.isRendered) {
             this.dropDownButtons.destroyDropDowns();
             this.colorPickerObj.destroyColorPicker();
+            this.menuButtons.destroyMenu();
             detach(element);
             const args: QuickToolbarEventArgs | Popup = this.popupObj;
             this.parent.trigger(events.quickToolbarClose, args);

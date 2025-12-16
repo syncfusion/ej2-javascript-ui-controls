@@ -1,7 +1,6 @@
-@import 'ej2-base/styles/definition/bootstrap.scss';
-@import 'document-editor/bootstrap-definition.scss';
-@import 'document-editor/icons/bootstrap.scss';
-@import 'document-editor/all.scss';
-@import 'document-editor-container/bootstrap-definition.scss';
-@import 'document-editor-container/icons/bootstrap.scss';
-@import 'document-editor-container/all.scss';
+@use 'document-editor/bootstrap-definition' as *;
+@use 'document-editor/icons/bootstrap' as *;
+@use 'document-editor/all' as *;
+@use 'document-editor-container/bootstrap-definition' as *;
+@use 'document-editor-container/icons/bootstrap' as *;
+@use 'document-editor-container/all' as *;

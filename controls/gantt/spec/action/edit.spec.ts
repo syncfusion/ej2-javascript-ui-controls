@@ -1,3 +1,4 @@
+
 /**
  * Gantt taskbaredit spec
  */
@@ -3238,7 +3239,7 @@ describe('Indent predecessor task', () => {
        ganttObj.selectRow(4);
        ganttObj.indent();
        ganttObj.indent();
-       expect(ganttObj.getFormatedDate(ganttObj.currentViewData[4].ganttProperties.startDate,'M/d/yyyy')).toBe('4/8/2019');
+       expect(ganttObj.getFormatedDate(ganttObj.currentViewData[5].ganttProperties.startDate,'M/d/yyyy')).toBe('4/9/2019');
     }); 
     afterAll(() => {
         destroyGantt(ganttObj);       

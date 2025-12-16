@@ -1,5 +1,5 @@
-@import 'ej2-base/styles/definition/bootstrap.scss';
-@import 'ej2-buttons/styles/button/bootstrap-definition.scss';
-@import 'bootstrap-definition.scss';
-@import 'icons/bootstrap.scss';
-@import 'all.scss';
+@use 'ej2-base/styles/definition/bootstrap' as *;
+@use 'ej2-buttons/styles/button/bootstrap-definition' as *;
+@use 'bootstrap-definition' as *;
+@use 'icons/bootstrap' as *;
+@use 'all' as *;

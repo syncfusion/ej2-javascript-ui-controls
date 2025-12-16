@@ -1,3 +1,5 @@
+@use 'ej2-base/styles/definition/tailwind3' as *;
+@forward 'ej2-base/styles/definition/tailwind3';
 $grid-column-chosser-searchdiv-opactiy: .6 !default;
 $grid-column-chosser-searchdiv-fopactiy: 1 !default;
 $grid-columnchooser-search-border-color: $border-light !default;
@@ -43,7 +45,7 @@ $grid-bigger-xlfl-min-height: 362px !default;
 $grid-bigger-xlfl-fieldset-padding: 16px !default;
 $grid-bigger-xlfltable-border-spacing: 0 !default;
 $grid-bigger-xlfltd-padding: 16px !default;
-$grid-bigger-xlfl-radio-margin-left: 18px !default;
+$grid-bigger-xlfl-radio-margin-left: 15px !default;
 $grid-bigger-xlfl-dropdown-padding-right: 8px !default;
 $grid-bigger-xlfl-radiodiv-width: 141px !default;
 $grid-xlfl-radio-margin-left: 2px !default;
@@ -65,9 +67,11 @@ $sfgrid-xlfl-dlg-padding: 14px !default;
 $grid-excel-filter-separator: 0 !default;
 $grid-dialog-footer-color: $flyout-bg-color !default;
 $grid-xlfl-dlg-content-top-padding: 12px !default;
-$grid-xlfl-context-menu-border-radious: 5px 5px 0 0 !default;
+$grid-xlfl-context-menu-border-radious: $radius-5 $radius-5 $radius-0 $radius-0 !default;
 $grid-excel-filter-bottom-padding: 0 !default;
 $grid-xlfl-li-icon-margin-arrow-icon: 15px !default;
 $grid-bigger-xlfl-li-icon-margin-arrow-icon: 16.2px !default;
 $grid-xl-radio-margin-top: 0 !default;
 $grid-xlfl-skin: $skin-name !default;
+
+$grid-border-radius-0: $radius-0 !default;

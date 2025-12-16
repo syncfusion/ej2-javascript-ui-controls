@@ -1,3 +1,5 @@
+@use 'ej2-base/styles/common/mixin' as *;
+@use './theme-variables' as *;
 @include export-module('sidebar-theme') {
 
   ejs-sidebar {
@@ -12,7 +14,7 @@
     /* stylelint-disable property-no-vendor-prefix */
     -webkit-tap-highlight-color: transparent;
     background: $sidebar-background;
-    height: 100%;
+    height: $sidebar-height;
     overflow: auto;
     position: fixed;
     top: 0;
@@ -50,10 +52,10 @@
 
     &.e-right {
       @if ($skin-name == 'tailwind' or $skin-name == 'bootstrap5') {
-        border-left: 0 solid $sidebar-border;
+        border-left: $sidebar-border-width solid $sidebar-border;
       }
       @else {
-        border-left: 1px solid $sidebar-border;
+        border-left: $sidebar-border-width solid $sidebar-border;
       }
       left: auto;
       right: 0;
@@ -62,10 +64,10 @@
 
     &.e-left {
       @if ($skin-name == 'tailwind' or $skin-name == 'bootstrap5') {
-        border-right: 0 solid $sidebar-border;
+        border-right: $sidebar-border-width solid $sidebar-border;
       }
       @else {
-        border-right: 1px solid $sidebar-border;
+        border-right: $sidebar-border-width solid $sidebar-border;
       }
       left: 0;
       right: auto;
@@ -111,72 +113,72 @@
     }
 
     &.e-left.e-open.e-auto + div {
-      margin-right: 0;
+      margin-right: $sidebar-margin-none;
       transform: translateX(0);
       margin-left: var(--sidebar-width);
     }
 
     &.e-left.e-close.e-auto + div {
-      margin-right: 0;
+      margin-right: $sidebar-margin-none;
       transform: translateX(0);
-      margin-left: 0;
+      margin-left: $sidebar-margin-none;
     }
 
     &.e-right.e-open.e-auto + div {
-      margin-left: 0;
+      margin-left: $sidebar-margin-none;
       transform: translateX(0);
       margin-right: var(--sidebar-width);
     }
 
     &.e-right.e-close.e-auto + div {
-      margin-right: 0;
+      margin-right: $sidebar-margin-none;
       transform: translateX(0);
-      margin-left: 0;
+      margin-left: $sidebar-margin-none;
     }
 
     &.e-left.e-open.e-push + div {
-      margin-right: 0;
+      margin-right: $sidebar-margin-none;
       transform: translateX(0);
       margin-left: var(--sidebar-width);
     }
 
     &.e-left.e-close.e-push + div {
-      margin-right: 0;
+      margin-right: $sidebar-margin-none;
       transform: translateX(0);
-      margin-left: 0;
+      margin-left: $sidebar-margin-none;
     }
 
     &.e-right.e-open.e-push + div {
-      margin-left: 0;
+      margin-left: $sidebar-margin-none;
       transform: translateX(0);
       margin-right: var(--sidebar-width);
     }
 
     &.e-right.e-close.e-push + div {
-      margin-right: 0;
+      margin-right: $sidebar-margin-none;
       transform: translateX(0);
-      margin-left: 0;
+      margin-left: $sidebar-margin-none;
     }
 
     &.e-left.e-open.e-slide + div {
-      margin-left: 0;
+      margin-left: $sidebar-margin-none;
       transform: translate(var(--sidebar-width));
     }
 
     &.e-left.e-close.e-slide + div {
-      margin-left: 0;
+      margin-left: $sidebar-margin-none;
       transform: translate(0);
     }
 
     &.e-right.e-open.e-slide + div {
-      margin-right: 0;
-      margin-left: 0;
+      margin-right: $sidebar-margin-none;
+      margin-left: $sidebar-margin-none;
       transform: translate(calc(-1 * var(--sidebar-width)));
     }
 
     &.e-right.e-close.e-slide + div {
-      margin-right: 0;
-      margin-left: 0;
+      margin-right: $sidebar-margin-none;
+      margin-left: $sidebar-margin-none;
       transform: translate(0);
     }
   }
@@ -193,7 +195,7 @@
   .e-backdrop,
   .e-sidebar-overlay {
     background-color: $sidebar-overlay;
-    height: 100%;
+    height: $sidebar-height;
     left: 0;
     pointer-events: auto;
     top: 0;

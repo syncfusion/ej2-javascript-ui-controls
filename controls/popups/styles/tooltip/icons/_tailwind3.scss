@@ -1,3 +1,5 @@
+@use 'ej2-base/styles/definition/tailwind3' as *;
+
 .e-tooltip-wrap {
 
   /*! Tooltip icons */
@@ -10,7 +12,7 @@
     }
     
     @else {
-      font-size: 14px;
+      font-size: $text-sm;
       left: calc(50% - 7px);
       top: calc(50% - 7px);
     }

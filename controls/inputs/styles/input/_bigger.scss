@@ -1,3 +1,5 @@
+@use 'ej2-base/styles/common/mixin' as *;
+@use './theme-variables' as *;
 @include export-module('input-bigger') {
 
   .e-input-group.e-bigger .e-input,
@@ -293,7 +295,7 @@
   .e-bigger .e-float-input.e-control-wrapper:not(.e-input-focus) input:not(:focus):valid ~ label.e-float-text.e-label-bottom {
     font-size: $float-placeholder-bigger-font-size;
     @if $input-skin-name == 'material' or $input-skin-name == 'Material3' or $input-skin-name == 'fluent2' {
-      top: -8px;
+      top: $float-bgr-label-top;
     }
   }
 
@@ -331,7 +333,7 @@
   .e-float-input.e-control-wrapper.e-bigger.e-small:not(.e-input-focus) input:not(:focus):valid ~ label.e-float-text.e-label-bottom {
     font-size: $float-placeholder-bigger-small-font-size;
     @if $input-skin-name == 'material' or $input-skin-name == 'Material3' or $input-skin-name == 'fluent2' {
-      top: -9px;
+      top: $float-bgr-small-label-top;
     }
     font-style: $input-font-style;
   }
@@ -349,7 +351,7 @@
   .e-float-input.e-control-wrapper.e-bigger:not(.e-input-focus) .e-input-in-wrap input:not(:focus):valid ~ label.e-float-text.e-label-bottom,
   .e-bigger.e-float-input.e-control-wrapper:not(.e-input-focus) .e-input-in-wrap input:not(:focus):valid ~ label.e-float-text.e-label-bottom  {
     @if $input-skin-name == 'material' or $input-skin-name == 'Material3' or $input-skin-name == 'fluent2' or $input-skin-name == 'tailwind3' {
-      top: -8px;
+      top: $float-bigger-input-text-top;
     }
   }
 
@@ -359,32 +361,32 @@
   .e-bigger .e-float-input.e-control-wrapper.e-input-focus input ~ label.e-float-text {
     font-size: $float-label-font-size;
     @if $input-skin-name == 'material' or $input-skin-name == 'Material3' or $input-skin-name == 'fluent2' or $input-skin-name == 'tailwind3' {
-      top: -9px;
+      top: $float-bigger-label-font-top;
       transform: translate3d(0, -6px, 0) scale(.92);
     }
     @else if $input-skin-name == 'fabric' or $input-skin-name == 'highcontrast' {
       font-style: $input-font-normal;
-      padding-right: 0;
+      padding-right: $input-zero-padding-margin;
       transform: translate3d(-10px, -43px, 0) scale(1);
     }
     @else if ($input-skin-name == 'bootstrap' or $input-skin-name == 'bootstrap4') {
-      padding-right: 0;
+      padding-right: $input-zero-padding-margin;
       transform: translate3d(-10px, -39px, 0) scale(1);
     }
     @else if ($input-skin-name == 'tailwind') {
       font-weight: 500;
-      padding-right: 0;
+      padding-right: $input-zero-padding-margin;
       transform: translate3d(-10px, -34px, 0) scale(1);
     }
     @else if ($input-skin-name == 'bootstrap5' or $input-skin-name == 'bootstrap5.3') {
       font-weight: 500;
-      padding-right: 0;
+      padding-right: $input-zero-padding-margin;
       transform: translate3d(-10px, -35px, 0) scale(1);
     }
     @else if ($input-skin-name == 'FluentUI') {
       font-style: $input-font-normal;
       font-weight: 600;
-      padding-right: 0;
+      padding-right: $input-zero-padding-margin;
       transform: translate3d(-10px, -38px, 0) scale(1);
     }
   }
@@ -422,31 +424,31 @@
     }
     @else if $input-skin-name == 'fabric' or $input-skin-name == 'highcontrast' {
       font-style: $input-font-normal;
-      padding-right: 0;
+      padding-right: $input-zero-padding-margin;
       transform: translate3d(-10px, -43px, 0) scale(1);
     }
     @else if $input-skin-name == 'bootstrap' {
-      padding-right: 0;
+      padding-right: $input-zero-padding-margin;
       transform: translate3d(-10px, -39px, 0) scale(1);
     }
     @else if ($input-skin-name == 'bootstrap4') {
-      padding-right: 0;
+      padding-right: $input-zero-padding-margin;
       transform: translate3d(-10px, -42px, 0) scale(1);
     }
     @else if ($input-skin-name == 'tailwind') {
       font-weight: 500;
-      padding-right: 0;
+      padding-right: $input-zero-padding-margin;
       transform: translate3d(-10px, -37px, 0) scale(1);
     }
     @else if ($input-skin-name == 'bootstrap5' or $input-skin-name == 'bootstrap5.3') {
       font-weight: 500;
-      padding-right: 0;
+      padding-right: $input-zero-padding-margin;
       transform: translate3d(-10px, -39px, 0) scale(1);
     }
     @else if ($input-skin-name == 'FluentUI') {
       font-style: $input-font-normal;
       font-weight: 600;
-      padding-right: 0;
+      padding-right: $input-zero-padding-margin;
       transform: translate3d(-10px, -45px, 0) scale(1);
     }
   }
@@ -498,27 +500,27 @@
     }
     @else if $input-skin-name == 'fabric' or $input-skin-name == 'highcontrast' {
       font-style: $input-font-normal;
-      padding-right: 0;
+      padding-right: $input-zero-padding-margin;
       transform: translate3d(-10px, -43px, 0) scale(1);
     }
     @else if $input-skin-name == 'bootstrap' or $input-skin-name == 'bootstrap4' {
-      padding-right: 0;
+      padding-right: $input-zero-padding-margin;
       transform: translate3d(-10px, -39px, 0) scale(1);
     }
     @else if ($input-skin-name == 'tailwind') {
       font-weight: 500;
-      padding-right: 0;
+      padding-right: $input-zero-padding-margin;
       transform: translate3d(-10px, -34px, 0) scale(1);
     }
     @else if ($input-skin-name == 'bootstrap5' or $input-skin-name == 'bootstrap5.3') {
       font-weight: 500;
-      padding-right: 0;
+      padding-right: $input-zero-padding-margin;
       transform: translate3d(-10px, -36px, 0) scale(1);
     }
     @else if ($input-skin-name == 'FluentUI') {
       font-style: $input-font-normal;
       font-weight: 600;
-      padding-right: 0;
+      padding-right: $input-zero-padding-margin;
       transform: translate3d(-10px, -41px, 0) scale(1);
     }
   }
@@ -548,18 +550,15 @@
   .e-float-input.e-control-wrapper.e-bigger.e-input-focus input ~ label.e-float-text,
   .e-bigger .e-float-input.e-control-wrapper.e-input-focus input ~ label.e-float-text {
     font-size: $float-label-bigger-font-size;
-    @if $input-skin-name == 'material' or $input-skin-name == 'Material3' {
-      top: -9px;
-    }
-    @if $input-skin-name == 'fluent2' {
-      top: -14px;
+    @if $input-skin-name == 'material' or $input-skin-name == 'Material3' or $input-skin-name == 'fluent2' {
+      top: $float-label-bgr-top;
     }
     @else if $input-skin-name == 'fabric' or $input-skin-name == 'FluentUI' or $input-skin-name == 'bootstrap' or $input-skin-name == 'bootstrap4' or $input-skin-name == 'bootstrap5' or $input-skin-name == 'bootstrap5.3' or $input-skin-name == 'highcontrast' or $input-skin-name == 'tailwind' {
-      padding-right: 0;
-      top: 14px;
+      padding-right: $input-zero-padding-margin;
+      top: $float-label-bgr-top;
     }
     @else if $input-skin-name == 'tailwind3' {
-      top: -23px;
+      top: $float-label-bgr-top;
       left: 2px;
     }
   }
@@ -584,11 +583,8 @@
   .e-bigger .e-float-input.e-control-wrapper .e-input-in-wrap input ~ label.e-label-top.e-float-text,
   .e-bigger .e-float-input.e-control-wrapper .e-input-in-wrap input[readonly] ~ label.e-label-top.e-float-text,
   .e-bigger .e-float-input.e-control-wrapper .e-input-in-wrap input[disabled] ~ label.e-label-top.e-float-text {
-    @if $input-skin-name == 'material' or $input-skin-name == 'Material3' {
-      top: -7px;
-    }
-    @if $input-skin-name == 'fluent2' or $input-skin-name == 'tailwind3' {
-      top: -14px;
+    @if $input-skin-name == 'material' or $input-skin-name == 'Material3' or $input-skin-name == 'fluent2' or $input-skin-name == 'tailwind3' {
+      top: $bigger-float-input-focus-top;
     }
   }
 
@@ -623,14 +619,14 @@
   .e-bigger .e-float-input.e-control-wrapper.e-small.e-input-focus input ~ label.e-float-text {
     font-size: $float-label-bigger-small-font-size;
     @if $input-skin-name == 'material' or $input-skin-name == 'Material3' {
-      top: -7px;
+      top: $float-bgr-small-input-top;
     }
     @else if $input-skin-name == 'fluent2' or $input-skin-name == 'tailwind3' {
-      top: -10px;
+      top: $bigger-float-input-focus-label-top;
     }
     @else if $input-skin-name == 'fabric' or $input-skin-name == 'FluentUI' or $input-skin-name == 'bootstrap' or $input-skin-name == 'bootstrap4' or $input-skin-name == 'bootstrap5' or $input-skin-name == 'bootstrap5.3' or  $input-skin-name == 'highcontrast' or $input-skin-name == 'tailwind' {
-      padding-right: 0;
-      top: 16px;
+      padding-right: $input-zero-padding-margin;
+      top: $float-bgr-small-input-top;
     }
   }
 
@@ -675,7 +671,7 @@
   .e-float-input.e-control-wrapper.e-bigger.e-small:not(.e-input-focus) .e-input-in-wrap input:not(:focus):valid ~ label.e-float-text.e-label-bottom,
   .e-bigger.e-small .e-float-input.e-control-wrapper:not(.e-input-focus) .e-input-in-wrap input:not(:focus):valid ~ label.e-float-text.e-label-bottom {
     @if $input-skin-name == 'material' or $input-skin-name == 'Material3' or $input-skin-name == 'fluent2' or $input-skin-name == 'tailwind3' {
-      top: -10px;
+      top: $bigger-float-input-focus-label-top;
     }
   }
 
@@ -683,12 +679,12 @@
   .e-bigger .e-float-input,
   .e-float-input.e-control-wrapper.e-bigger,
   .e-bigger .e-float-input.e-control-wrapper {
-    line-height: 1.5;
+    line-height: $input-bgr-float-control-line-height;
     margin-bottom: $input-bigger-margin-bottom;
     margin-top: $input-bigger-margin-top;
     padding-top: $float-input-bigger-wrap-padding-top;
     position: relative;
-    width: 100%;
+    width: $input-full-position-width;
   }
 
   .e-float-input.e-small.e-bigger,
@@ -699,7 +695,7 @@
   .e-bigger.e-small .e-float-input.e-control-wrapper.e-small,
   .e-bigger .e-float-input.e-control-wrapper.e-small,
   .e-small .e-float-input.e-control-wrapper.e-bigger {
-    line-height: 1.4;
+    line-height: $input-bgr-float-line-height;
     margin-bottom: $input-small-bigger-margin-bottom;
     margin-top: $input-small-bigger-margin-top;
     padding-top: $float-input-bigger-small-wrap-padding-top;
@@ -709,7 +705,7 @@
   .e-bigger .e-input-group,
   .e-input-group.e-control-wrapper.e-bigger,
   .e-bigger .e-input-group.e-control-wrapper {
-    line-height: 1.5;
+    line-height: $input-bgr-float-control-line-height;
   }
 
   .e-input-group.e-small.e-bigger,
@@ -733,7 +729,7 @@
   .e-float-input.e-control-wrapper.e-small.e-bigger.e-no-float-label,
   .e-bigger .e-float-input.e-control-wrapper.e-small.e-no-float-label,
   .e-small .e-float-input.e-control-wrapper.e-bigger.e-no-float-label {
-    margin-top: $zero-value;
+    margin-top: $input-zero-padding-margin;
   }
 
   .e-float-input.e-bigger.e-disabled,
@@ -796,21 +792,21 @@
   .e-float-input.e-control-wrapper.e-small input.e-bigger,
   .e-bigger .e-float-input.e-control-wrapper.e-small input {
     font: inherit;
-    line-height: inherit;
+    line-height: $float-inherit-line-height;
     padding: $float-input-bigger-small-padding;
   }
 
   .e-bigger .e-float-input.e-outline.e-float-icon-left:not(.e-rtl) .e-input-in-wrap input ~ label.e-float-text.e-label-top {
     @if $input-skin-name == 'material' or $input-skin-name == 'Material3' {
-      left: -40px;
-      width: auto;
+      left: $float-ip-bgr-outline-rtl-left-right;
+      width: $input-auto-width;
     }
   }
 
   .e-bigger .e-float-input.e-outline.e-float-icon-left.e-rtl .e-input-in-wrap input ~ label.e-float-text.e-label-top {
     @if $input-skin-name == 'material' or $input-skin-name == 'Material3' {
-      right: -40px;
-      width: auto;
+      right: $float-ip-bgr-outline-rtl-left-right;
+      width: $input-auto-width;
     }
   }
 
@@ -894,7 +890,7 @@
   .e-bigger .e-float-input .e-input,
   .e-float-input.e-control-wrapper.e-bigger .e-input,
   .e-bigger .e-float-input.e-control-wrapper .e-input {
-    margin-bottom: $zero-value;
+    margin-bottom: $input-zero-padding-margin;
   }
 
   .e-input#{$css}.e-small.e-bigger,
@@ -903,7 +899,7 @@
   .e-bigger .e-input#{$css}.e-small,
   .e-bigger .e-input-group.e-small,
   .e-bigger .e-input-group.e-control-wrapper.e-small {
-    line-height: inherit;
+    line-height: $float-inherit-line-height;
     margin-bottom: $input-small-bigger-margin-bottom;
   }
 
@@ -972,10 +968,10 @@
   .e-bigger .e-input-group.e-control-wrapper.e-small .e-input-group-icon:last-child,
   .e-bigger .e-input-group.e-small .e-input-group-icon:last-child {
     @if $input-skin-name != 'fluent' {
-      margin-right: $zero-value;
+      margin-right: $input-zero-padding-margin;
     }
     @if $input-skin-name == 'fluent2' or $input-skin-name == 'tailwind3' {
-      margin: $zero-value;
+      margin: $input-zero-padding-margin;
     }
   }
 
@@ -1196,12 +1192,12 @@
   .e-bigger .e-float-input.e-control-wrapper.e-input-focus input,
   .e-bigger .e-float-input.e-input-focus input {
     @if $input-skin-name == 'fluent2' {
-      padding: 2px 4px;
+      padding: $input-bgr-flu2-input-padding;
     }
     @else {
       padding-left: $input-bigger-text-indent;
     }
-    text-indent: 0;
+    text-indent: $input-zero-padding-margin;
   }
 
   .e-rtl input.e-input.e-bigger#{$css},
@@ -1248,9 +1244,9 @@
   .e-bigger.e-rtl .e-float-input.e-input-focus input,
   .e-bigger .e-float-input.e-rtl.e-input-focus input,
   .e-bigger .e-float-input.e-control-wrapper.e-rtl.e-input-focus input {
-    padding-left: 0;
+    padding-left: $input-zero-padding-margin;
     padding-right: $input-bigger-text-indent;
-    text-indent: 0;
+    text-indent: $input-zero-padding-margin;
   }
 
   textarea.e-input.e-bigger#{$css},
@@ -1281,7 +1277,7 @@
     @else {
       padding-left: $input-bigger-text-indent;
     }
-    text-indent: 0;
+    text-indent: $input-zero-padding-margin;
   }
 
   .e-rtl textarea.e-input.e-bigger#{$css},
@@ -1321,7 +1317,7 @@
   .e-bigger .e-float-input:not(.e-outline).e-rtl textarea:focus,
   .e-bigger .e-float-input:not(.e-outline).e-control-wrapper.e-rtl textarea:focus {
     padding-right: $input-bigger-text-indent;
-    text-indent: 0;
+    text-indent: $input-zero-padding-margin;
   }
 
   input.e-input.e-bigger.e-small#{$css},
@@ -1389,7 +1385,7 @@
   .e-float-input.e-control-wrapper.e-bigger.e-small textarea:focus,
   .e-float-input.e-bigger.e-small textarea:focus {
     padding-left: $input-small-bigger-text-indent;
-    text-indent: 0;
+    text-indent: $input-zero-padding-margin;
   }
 
   .e-bigger input.e-input.e-small.e-rtl#{$css},
@@ -1466,9 +1462,9 @@
   .e-small.e-rtl .e-input-group.e-control-wrapper.e-bigger.e-input-focus input.e-input,
   .e-rtl .e-input-group.e-bigger.e-small.e-input-focus input.e-input,
   .e-rtl .e-input-group.e-control-wrapper.e-bigger.e-small.e-input-focus input.e-input {
-    padding-left: 0;
+    padding-left: $input-zero-padding-margin;
     padding-right: $input-small-bigger-text-indent;
-    text-indent: 0;
+    text-indent: $input-zero-padding-margin;
   }
 
   .e-bigger .e-input-group.e-small textarea.e-input:focus,
@@ -1543,7 +1539,7 @@
   .e-rtl .e-float-input:not(.e-outline).e-control-wrapper.e-bigger.e-small textarea:focus,
   .e-rtl .e-float-input:not(.e-outline).e-bigger.e-small textarea:focus {
     padding-right: $input-small-bigger-text-indent;
-    text-indent: 0;
+    text-indent: $input-zero-padding-margin;
   }
 
   .e-float-input.e-small.e-bigger .e-clear-icon,
@@ -1558,7 +1554,7 @@
   .e-small .e-float-input.e-bigger input:first-child ~ .e-clear-icon,
   .e-bigger .e-float-input.e-control-wrapper.e-small input:first-child ~ .e-clear-icon,
   .e-bigger .e-float-input.e-small input:first-child ~ .e-clear-icon {
-    padding-bottom: $zero-value;
+    padding-bottom: $input-zero-padding-margin;
   }
 
   .e-float-input.e-bigger .e-clear-icon::before,
@@ -1694,16 +1690,16 @@
   .e-bigger .e-float-input.e-control-wrapper textarea ~ label.e-label-top.e-float-text {
     font-size: $float-label-bigger-font-size;
     @if $input-skin-name == 'material' or $input-skin-name == 'Material3' {
-      top: -20px;
+      top: $bigger-input-float-label-top;
     }
     @else if $input-skin-name == 'fabric' or $input-skin-name == 'FluentUI' or $input-skin-name == 'bootstrap' or $input-skin-name == 'bootstrap4' or $input-skin-name == 'bootstrap5' or $input-skin-name == 'bootstrap5.3' or $input-skin-name == 'highcontrast' {
-      top: 14px;
+      top: $bigger-input-float-label-top;
     }
     @else if $input-skin-name == 'tailwind' {
-      top: 12px;
+      top: $bigger-input-float-label-top;
     }
     @else if $input-skin-name == 'fluent2' or $input-skin-name == 'tailwind3' {
-      top: -28px;
+      top: $bigger-input-float-label-top;
     }
   }
 
@@ -1721,13 +1717,13 @@
   .e-bigger .e-float-input.e-control-wrapper.e-small textarea ~ label.e-label-top.e-float-text {
     font-size: $float-label-bigger-small-font-size;
     @if $input-skin-name == 'material' or $input-skin-name == 'Material3' or $input-skin-name == 'fluent2' or $input-skin-name == 'tailwind3' {
-      top: -20px;
+      top: $bigger-small-textarea-text-top;
     }
     @else if $input-skin-name == 'fabric' or $input-skin-name == 'FluentUI' or $input-skin-name == 'bootstrap' or $input-skin-name == 'bootstrap4' or $input-skin-name == 'bootstrap5' or $input-skin-name == 'bootstrap5.3' or $input-skin-name == 'highcontrast' {
-      top: 16px;
+      top: $bigger-small-textarea-text-top;
     }
     @else if $input-skin-name == 'tailwind' {
-      top: 15px;
+      top: $bigger-small-textarea-text-top;
     }
   }
 
@@ -1745,13 +1741,13 @@
   .e-bigger .e-float-input.e-control-wrapper textarea:not(:focus):valid ~ label.e-float-text.e-label-bottom {
     font-size: $float-placeholder-bigger-font-size;
     @if $input-skin-name == 'material' or $input-skin-name == 'Material3' or $input-skin-name == 'fluent2' {
-      top: -8px;
+      top: $float-input-bgr-text-top;
     }
     @else if $input-skin-name == 'fabric' or $input-skin-name == 'FluentUI' or $input-skin-name == 'bootstrap' or $input-skin-name == 'bootstrap4' or $input-skin-name == 'bootstrap5' or $input-skin-name == 'bootstrap5.3' or $input-skin-name == 'highcontrast' {
-      top: 18px;
+      top: $float-input-bgr-text-top;
     }
     @else if $input-skin-name == 'tailwind' {
-      top: -11px;
+      top: $float-input-bgr-text-top;
     }
   }
 
@@ -1775,7 +1771,7 @@
       min-height: 27px;
     }
     @if $input-skin-name == 'Material3' or $input-skin-name == 'fluent2' or $input-skin-name == 'tailwind3' {
-      min-height: 28px;
+      min-height: $input-bgr-float-min-height;
     }
   }
 
@@ -1802,7 +1798,7 @@
       min-height: 28px;
     }
     @if $input-skin-name == 'Material3' or $input-skin-name == 'fluent2' or $input-skin-name == 'tailwind3' {
-      min-height: 26px;
+      min-height: $input-bgr-small-float-min-height;
     }
   }
 
@@ -1814,34 +1810,34 @@
   .e-bigger.e-float-input.e-control-wrapper.e-autofill:not(.e-input-focus):not(.e-outline) input:not(:focus):valid:-webkit-autofill ~ label.e-float-text.e-label-bottom {
     font-size: $float-label-bigger-font-size;
     @if $input-skin-name == 'material' or $input-skin-name == 'Material3' {
-      top: -8px;
+      top: $float-label-bgr-input-top;
       transform: translate3d(0, -6px, 0) scale(.86);
     }
     @else if $input-skin-name == 'fluent2' or $input-skin-name == 'tailwind3' {
-      top: -14px;
+      top: $bigger-float-input-focus-top;
       transform: translate3d(0, -6px, 0) scale(.86);
     }
     @else if $input-skin-name == 'fabric' or $input-skin-name == 'highcontrast' {
       font-style: $input-font-normal;
-      padding-right: 0;
-      top: 14px;
+      padding-right: $input-zero-padding-margin;
+      top: $float-label-bgr-input-top;
       transform: translate3d(-10px, -43px, 0) scale(1);
     }
     @else if $input-skin-name == 'bootstrap' or $input-skin-name == 'bootstrap4' or $input-skin-name == 'bootstrap5' or $input-skin-name == 'bootstrap5.3' {
       font-weight: bold;
-      padding-right: 0;
-      top: 14px;
+      padding-right: $input-zero-padding-margin;
+      top: $float-label-bgr-input-top;
       transform: translate3d(-10px, -39px, 0) scale(1);
     }
     @else if ($input-skin-name == 'tailwind') {
       font-weight: 500;
-      padding-right: 0;
+      padding-right: $input-zero-padding-margin;
       transform: translate3d(-10px, -40px, 0) scale(1);
     }
     @else if ($input-skin-name == 'FluentUI') {
       font-style: $input-font-normal;
       font-weight: 600;
-      padding-right: 0;
+      padding-right: $input-zero-padding-margin;
       transform: translate3d(-10px, -45px, 0) scale(1);
     }
     user-select: text;
@@ -1859,25 +1855,25 @@
   .e-small .e-bigger.e-float-input.e-control-wrapper.e-autofill:not(.e-input-focus):not(.e-outline) input:not(:focus):valid:-webkit-autofill ~ label.e-float-text.e-label-bottom {
     font-size: $float-label-bigger-small-font-size;
     @if $input-skin-name == 'material' or $input-skin-name == 'Material3' or $input-skin-name == 'fluent2' or $input-skin-name == 'tailwind3' {
-      top: -10px;
+      top: $bigger-float-input-focus-label-top;
       transform: translate3d(0, -6px, 0) scale(.92);
     }
     @else if $input-skin-name == 'fabric' or $input-skin-name == 'highcontrast' {
       font-style: $input-font-normal;
-      padding-right: 0;
+      padding-right: $input-zero-padding-margin;
       top: 16px;
       transform: translate3d(-10px, -43px, 0) scale(1);
     }
     @else if $input-skin-name == 'bootstrap' or $input-skin-name == 'bootstrap4' or $input-skin-name == 'bootstrap5' or $input-skin-name == 'bootstrap5.3' {
       font-weight: bold;
-      padding-right: 0;
-      top: 16px;
+      padding-right: $input-zero-padding-margin;
+      top: $bgr-small-float-label-autofill-top;
       transform: translate3d(-10px, -39px, 0) scale(1);
     }
     @else if ($input-skin-name == 'FluentUI') {
       font-style: $input-font-normal;
       font-weight: 600;
-      padding-right: 0;
+      padding-right: $input-zero-padding-margin;
       top: 16px;
       transform: translate3d(-10px, -41px, 0) scale(1);
     }
@@ -1916,7 +1912,7 @@
   .e-float-input.e-control-wrapper.e-bigger.e-small textarea:not(:focus):valid ~ label.e-float-text.e-label-bottom {
     font-size: $float-placeholder-bigger-small-font-size;
     @if $input-skin-name == 'material' or $input-skin-name == 'Material3' or $input-skin-name == 'fluent2' {
-      top: -10px;
+      top: $bigger-float-input-focus-label-top;
     }
     font-style: $input-font-style;
   }
@@ -1962,16 +1958,16 @@
     }
     @else if $input-skin-name == 'fabric' or $input-skin-name == 'highcontrast' {
       font-style: $input-font-normal;
-      padding-right: 0;
+      padding-right: $input-zero-padding-margin;
       transform: translate3d(-10px, -43px, 0) scale(1);
     }
     @else if $input-skin-name == 'bootstrap' or $input-skin-name == 'bootstrap4' or $input-skin-name == 'bootstrap5' or $input-skin-name == 'bootstrap5.3' {
-      padding-right: 0;
+      padding-right: $input-zero-padding-margin;
       transform: translate3d(-10px, -37px, 0) scale(1);
     }
     @else if ($input-skin-name == 'FluentUI') {
       font-style: $input-font-normal;
-      padding-right: 0;
+      padding-right: $input-zero-padding-margin;
       transform: translate3d(-10px, -41px, 0) scale(1);
     }
   }
@@ -1988,26 +1984,26 @@
   .e-small .e-bigger.e-float-input.e-control-wrapper.e-autofill textarea:not(:focus):valid:-webkit-autofill ~ label.e-float-text.e-label-bottom {
     font-size: $float-label-bigger-small-font-size;
     @if $input-skin-name == 'material' or $input-skin-name == 'Material3' or $input-skin-name == 'fluent2' or $input-skin-name == 'tailwind3' {
-      top: -10px;
+      top: $bigger-float-input-focus-label-top;
       transform: translate3d(0, -6px, 0) scale(.92);
     }
     @else if $input-skin-name == 'fabric' or $input-skin-name == 'highcontrast' {
       font-style: $input-font-normal;
-      padding-right: 0;
+      padding-right: $input-zero-padding-margin;
       top: 16px;
       transform: translate3d(-10px, -43px, 0) scale(1);
     }
 
     @else if $input-skin-name == 'bootstrap' {
       font-weight: $input-float-font-weight;
-      padding-right: 0;
+      padding-right: $input-zero-padding-margin;
       top: 16px;
       transform: translate3d(-10px, -39px, 0) scale(1);
     }
     @else if $input-skin-name == 'FluentUI' {
       font-style: $input-font-normal;
       font-weight: 600;
-      padding-right: 0;
+      padding-right: $input-zero-padding-margin;
       top: 16px;
       transform: translate3d(-10px, -41px, 0) scale(1);
     }
@@ -2022,25 +2018,25 @@
   .e-bigger.e-float-input.e-control-wrapper.e-autofill textarea:not(:focus):valid:-webkit-autofill ~ label.e-float-text.e-label-bottom {
     font-size: $float-label-bigger-font-size;
     @if $input-skin-name == 'material' or $input-skin-name == 'Material3' or $input-skin-name == 'fluent2' or $input-skin-name == 'tailwind3' {
-      top: -8px;
+      top: $bigger-float-autofill-top;
       transform: translate3d(0, -6px, 0) scale(.86);
     }
     @else if $input-skin-name == 'fabric' or $input-skin-name == 'highcontrast' {
       font-style: $input-font-normal;
-      padding-right: 0;
+      padding-right: $input-zero-padding-margin;
       top: 14px;
       transform: translate3d(-10px, -43px, 0) scale(1);
     }
     @else if $input-skin-name == 'bootstrap' {
       font-weight: $input-float-font-weight;
-      padding-right: 0;
+      padding-right: $input-zero-padding-margin;
       top: 14px;
       transform: translate3d(-10px, -39px, 0) scale(1);
     }
     @else if $input-skin-name == 'FluentUI' {
       font-style: $input-font-normal;
       font-weight: 600;
-      padding-right: 0;
+      padding-right: $input-zero-padding-margin;
       top: 14px;
       transform: translate3d(-10px, -45px, 0) scale(1);
     }
@@ -2076,27 +2072,27 @@
     }
     @else if $input-skin-name == 'fabric' or $input-skin-name == 'highcontrast' {
       font-style: $input-font-normal;
-      padding-right: 0;
+      padding-right: $input-zero-padding-margin;
       transform: translate3d(-10px, -43px, 0) scale(1);
     }
     @else if $input-skin-name == 'bootstrap' or $input-skin-name == 'bootstrap4' {
-      padding-right: 0;
+      padding-right: $input-zero-padding-margin;
       transform: translate3d(-10px, -39px, 0) scale(1);
     }
     @else if ($input-skin-name == 'tailwind') {
       font-weight: 500;
-      padding-right: 0;
+      padding-right: $input-zero-padding-margin;
       transform: translate3d(-10px, -35px, 0) scale(1);
     }
     @else if ($input-skin-name == 'bootstrap5' or $input-skin-name == 'bootstrap5.3') {
       font-weight: 500;
-      padding-right: 0;
+      padding-right: $input-zero-padding-margin;
       transform: translate3d(-10px, -39px, 0) scale(1);
     }
     @else if ($input-skin-name == 'FluentUI') {
       font-style: $input-font-normal;
       font-weight: 600;
-      padding-right: 0;
+      padding-right: $input-zero-padding-margin;
       transform: translate3d(-10px, -45px, 0) scale(1);
     }
   }
@@ -2130,27 +2126,27 @@
     }
     @else if $input-skin-name == 'fabric' or $input-skin-name == 'highcontrast' {
       font-style: $input-font-normal;
-      padding-right: 0;
+      padding-right: $input-zero-padding-margin;
       transform: translate3d(-10px, -43px, 0) scale(1);
     }
     @else if $input-skin-name == 'bootstrap' or $input-skin-name == 'bootstrap4' {
-      padding-right: 0;
+      padding-right: $input-zero-padding-margin;
       transform: translate3d(-10px, -39px, 0) scale(1);
     }
     @else if ($input-skin-name == 'tailwind') {
       font-weight: 500;
-      padding-right: 0;
+      padding-right: $input-zero-padding-margin;
       transform: translate3d(-10px, -33px, 0) scale(1);
     }
     @else if ($input-skin-name == 'bootstrap5' or $input-skin-name == 'bootstrap5.3') {
       font-weight: 500;
-      padding-right: 0;
+      padding-right: $input-zero-padding-margin;
       transform: translate3d(-10px, -36px, 0) scale(1);
     }
     @else if ($input-skin-name == 'FluentUI') {
       font-style: $input-font-normal;
       font-weight: 600;
-      padding-right: 0;
+      padding-right: $input-zero-padding-margin;
       transform: translate3d(-10px, -41px, 0) scale(1);
     }
   }
@@ -2174,7 +2170,7 @@
   .e-bigger .e-float-input textarea,
   .e-bigger .e-float-input.e-control-wrapper textarea {
     font: inherit;
-    line-height: 1.2;
+    line-height: $input-bigger-textarea-line-height;
     min-height: $textarea-bigger-min-height;
     padding: $textarea-bigger-padding;
   }
@@ -2196,7 +2192,7 @@
   .e-bigger .e-input-group.e-control-wrapper.e-input-focus textarea:focus,
   .e-bigger .e-input-group.e-control-wrapper textarea.e-input:focus {
     font: inherit;
-    line-height: 1.2;
+    line-height: $input-bigger-textarea-line-height;
     min-height: $textarea-bigger-min-height;
     padding: $textarea-bigger-padding;
   }
@@ -2233,7 +2229,7 @@
   .e-bigger.e-small .e-float-input.e-control-wrapper textarea,
   .e-bigger .e-small.e-float-input.e-control-wrapper textarea {
     font: inherit;
-    line-height: 1.2;
+    line-height: $input-bigger-textarea-line-height;
     min-height: $textarea-bigger-small-min-height;
     padding: $textarea-bigger-small-padding;
   }
@@ -2250,7 +2246,7 @@
   .e-bigger .e-small.e-input-group.e-control-wrapper.e-input-focus textarea.e-input,
   .e-small .e-input-group.e-control-wrapper.e-input-focus.e-bigger textarea.e-input {
     font: inherit;
-    line-height: 1.2;
+    line-height: $input-bigger-textarea-line-height;
     min-height: $textarea-bigger-small-min-height;
     padding: $textarea-bigger-small-padding;
   }
@@ -2540,7 +2536,7 @@
     }
     @if $input-skin-name == 'Material3' {
       font-size: $outline-bigger-clear-icon-font-size;
-      margin: 8px;
+      margin: $outline-input-clear-icon-margin;
       padding: $zero-value;
     }
   }
@@ -2776,7 +2772,7 @@
   .e-bigger .e-outline.e-input-group.e-control-wrapper.e-small .e-clear-icon {
     @if $input-skin-name == 'material' or $input-skin-name == 'Material3' {
       font-size: $outline-small-bigger-clear-icon-font-size;
-      padding: 9px $outline-small-bigger-icon-margin-left 9px $zero-value;
+      padding: $outline-input-bgr-small-clear-padding;
     }
   }
 
@@ -2841,7 +2837,7 @@
     @if $input-skin-name == 'material' or $input-skin-name == 'Material3' {
       box-sizing: border-box;
       display: flex;
-      left: $zero-value;
+      left: $input-zero-padding-margin;
       line-height: $outline-label-default-line-height;
       position: absolute;
       top: $outline-float-label-top;
@@ -3694,7 +3690,7 @@
   .e-bigger .e-filled.e-input-group.e-control-wrapper.e-rtl.e-input-focus input.e-input {
     @if $input-skin-name == 'material' or $input-skin-name == 'Material3' or $input-skin-name == 'fluent2' or $input-skin-name == 'tailwind3' {
       padding: $filled-bigger-input-rtl-padding;
-      text-indent: 0;
+      text-indent: $input-zero-padding-margin;
     }
   }
 
@@ -3720,7 +3716,7 @@
   .e-bigger .e-filled.e-float-input.e-control-wrapper.e-rtl input {
     @if $input-skin-name == 'material' or $input-skin-name == 'Material3' or $input-skin-name == 'fluent2' or $input-skin-name == 'tailwind3' {
       padding: $filled-bigger-float-input-rtl-padding;
-      text-indent: 0;
+      text-indent: $input-zero-padding-margin;
     }
   }
 
@@ -3764,7 +3760,7 @@
   .e-rtl .e-filled.e-input-group.e-control-wrapper.e-bigger.e-small.e-input-focus input.e-input {
     @if $input-skin-name == 'material' or $input-skin-name == 'Material3' or $input-skin-name == 'fluent2' or $input-skin-name == 'tailwind3' {
       padding: $filled-bigger-small-input-rtl-padding;
-      text-indent: 0;
+      text-indent: $input-zero-padding-margin;
     }
   }
 
@@ -3806,7 +3802,7 @@
   .e-rtl .e-filled.e-float-input.e-bigger.e-small.e-input-focus input {
     @if $input-skin-name == 'material' or $input-skin-name == 'Material3' or $input-skin-name == 'fluent2' or $input-skin-name == 'tailwind3' {
       padding: $filled-bigger-small-float-input-rtl-padding;
-      text-indent: 0;
+      text-indent: $input-zero-padding-margin;
     }
   }
 
@@ -3952,7 +3948,7 @@
       top: $bigger-filled-input-label-top-after-floating;
     }
     @if $input-skin-name == 'fluent2' or $input-skin-name == 'tailwind3' {
-      left: 2px;
+      left: $input-bigger-float-text-left;
     }
   }
 
@@ -4349,7 +4345,7 @@
   .e-rtl.e-small.e-bigger .e-filled.e-float-input:not(.e-input-focus) .e-input-in-wrap input:not(:focus):valid ~ label.e-float-text.e-label-bottom,
   .e-rtl.e-small.e-bigger .e-filled.e-float-input.e-control-wrapper:not(.e-input-focus) .e-input-in-wrap input:not(:focus):valid ~ label.e-float-text.e-label-bottom {
     @if $input-skin-name == 'material' or $input-skin-name == 'Material3' or $input-skin-name == 'fluent2' or $input-skin-name == 'tailwind3' {
-      right: $zero-value;
+      right: $input-zero-padding-margin;
     }
   }
 
@@ -4367,11 +4363,11 @@
   .e-bigger .e-filled.e-input-group.e-control-wrapper.e-small .e-input-group-icon {
     @if $input-skin-name == 'material' or $input-skin-name == 'Material3' or $input-skin-name == 'fluent2' or $input-skin-name == 'tailwind3' {
       font-size: $filled-input-icon-size;
-      margin-bottom: $zero-value;
-      margin-top: $zero-value;
+      margin-bottom: $input-zero-padding-margin;
+      margin-top: $input-zero-padding-margin;
       min-height: $filled-input-icon-min-height;
       min-width: $filled-input-icon-min-height;
-      padding: $zero-value $zero-value $zero-value 8px;
+      padding: $input-filled-icon-padding;
     }
   }
 
@@ -4424,7 +4420,7 @@
   .e-rtl .e-filled.e-float-input.e-control-wrapper.e-input-group.e-small .e-input-group-icon.e-bigger,
   .e-bigger.e-rtl .e-filled.e-float-input.e-control-wrapper.e-input-group.e-small .e-input-group-icon {
     @if $input-skin-name == 'material' or $input-skin-name == 'Material3' or $input-skin-name == 'fluent2' or $input-skin-name == 'tailwind3' {
-      padding: $zero-value 8px $zero-value $zero-value;
+      padding: $input-bgr-filled-control-icon-padding;
     }
   }
 
@@ -4457,7 +4453,7 @@
       font-size: $bigger-small-filled-input-icon-size;
       min-height: $bigger-small-filled-input-icon-min-height;
       min-width: $bigger-small-filled-input-icon-min-height;
-      padding: $zero-value $zero-value $zero-value 8px;
+      padding: $input-bgr-filled-group-icon-padding;
     }
   }
 
@@ -4475,12 +4471,14 @@
   .e-bigger .e-filled.e-float-input.e-control-wrapper.e-input-group.e-small .e-input-group-icon {
     @if $input-skin-name == 'material' or $input-skin-name == 'Material3' or $input-skin-name == 'fluent2' or $input-skin-name == 'tailwind3' {
       font-size: $filled-input-icon-size;
-      margin-bottom: $zero-value;
-      margin-top: $zero-value;
-      padding: 8px;
       @if $input-skin-name == 'Material3' or $input-skin-name == 'fluent2' or $input-skin-name == 'tailwind3' {
-        padding: 0;
-        margin: 9px 12px 9px 0;
+        padding: $input-bgr-small-filled-float-group-icon-padding;
+        margin: $input-bgr-small-filled-float-group-icon-margin;
+      }
+      @else {
+        margin-bottom: $input-zero-padding-margin;
+        margin-top: $input-zero-padding-margin;
+        padding: 8px;
       }
     }
   }
@@ -4493,7 +4491,7 @@
   .e-bigger .e-filled.e-float-input.e-control-wrapper.e-input-group .e-input-group-icon {
     @if $input-skin-name == 'material' or $input-skin-name == 'Material3' or $input-skin-name == 'fluent2' or $input-skin-name == 'tailwind3' {
       font-size: $bigger-filled-input-icon-size;
-      padding: $zero-value $zero-value $zero-value 8px;
+      padding: $input-bgr-filled-grp-icon-padding;
     }
   }
 
@@ -4505,7 +4503,7 @@
   .e-bigger .e-filled.e-float-input.e-control-wrapper.e-input-group.e-small .e-input-group-icon {
     @if $input-skin-name == 'material' or $input-skin-name == 'Material3' or $input-skin-name == 'fluent2' or $input-skin-name == 'tailwind3' {
       font-size: $bigger-small-filled-input-icon-size;
-      padding: $zero-value $zero-value $zero-value 8px;
+      padding: $input-bgr-filled-grp-icon-padding;
     }
   }
 
@@ -4539,7 +4537,7 @@
     }
     @if $input-skin-name == 'Material3' {
       padding: $zero-value;
-      margin: 8px;
+      margin: $outline-input-clear-icon-margin;
     }
     @if $input-skin-name == 'fluent2' or $input-skin-name == 'tailwind3' {
       padding: $input-clear-icon-padding;
@@ -4557,7 +4555,7 @@
       font-size: $bigger-small-filled-input-clear-icon-size;
       min-height: $bigger-small-filled-input-icon-min-height;
       min-width: $bigger-small-filled-input-icon-min-height;
-      padding: $zero-value $zero-value $zero-value 8px;
+      padding: $filled-input-small-bgr-clear-padding;
     }
     @if $input-skin-name == 'fluent2' or $input-skin-name == 'tailwind3' {
       font-size: $bigger-small-filled-input-clear-icon-size;
@@ -4580,7 +4578,7 @@
   .e-filled.e-input-group.e-control-wrapper.e-float-input.e-small .e-clear-icon.e-bigger,
   .e-bigger .e-filled.e-input-group.e-control-wrapper.e-float-input.e-small .e-clear-icon {
     @if $input-skin-name == 'material' or $input-skin-name == 'Material3' {
-      padding: $zero-value $zero-value $zero-value 8px;
+      padding: $filled-input-small-bgr-clear-padding;
     }
   }
 
@@ -4634,7 +4632,7 @@
   .e-rtl .e-filled.e-float-input.e-control-wrapper.e-input-group.e-small .e-clear-icon.e-bigger,
   .e-bigger.e-rtl .e-filled.e-float-input.e-control-wrapper.e-input-group.e-small .e-clear-icon {
     @if $input-skin-name == 'material' or $input-skin-name == 'Material3' {
-      padding: $zero-value 8px $zero-value $zero-value;
+      padding: $filled-rtl-input-small-bgr-clear-padding;
     }
   }
 
@@ -4848,7 +4846,7 @@
   .e-small.e-bigger .e-filled.e-float-input:not(.e-input-focus) .e-input-in-wrap input:not(:focus):valid ~ label.e-float-text.e-label-bottom,
   .e-small.e-bigger .e-filled.e-float-input.e-control-wrapper:not(.e-input-focus) .e-input-in-wrap input:not(:focus):valid ~ label.e-float-text.e-label-bottom {
     @if $input-skin-name == 'material' or $input-skin-name == 'Material3' or $input-skin-name == 'fluent2' or $input-skin-name == 'tailwind3' {
-      left: $zero-value;
+      left: $input-zero-padding-margin;
     }
   }
 
@@ -4869,7 +4867,7 @@
   .e-small.e-bigger .e-filled.e-input-group .e-input-group-icon,
   .e-small.e-bigger .e-filled.e-input-group.e-control-wrapper .e-input-group-icon {
     @if $input-skin-name == 'material' or $input-skin-name == 'Material3' or $input-skin-name == 'fluent2' or $input-skin-name == 'tailwind3' {
-      margin-right: $zero-value;
+      margin-right: $input-zero-padding-margin;
     }
   }
 
@@ -4898,7 +4896,7 @@
   .e-rtl.e-bigger .e-filled.e-input-group.e-small.e-control-wrapper .e-input-group-icon:last-child,
   .e-rtl.e-small .e-filled.e-input-group.e-bigger.e-control-wrapper .e-input-group-icon:last-child {
     @if $input-skin-name == 'material' or $input-skin-name == 'Material3' or $input-skin-name == 'fluent2' or $input-skin-name == 'tailwind3' {
-      margin-left: $zero-value;
+      margin-left: $input-zero-padding-margin;
     }
   }
 
@@ -4911,8 +4909,8 @@
   .e-rtl.e-small.e-bigger .e-filled.e-input-group .e-input-group-icon,
   .e-rtl.e-small.e-bigger .e-filled.e-input-group.e-control-wrapper .e-input-group-icon {
     @if $input-skin-name == 'material' or $input-skin-name == 'Material3' or $input-skin-name == 'fluent2' or $input-skin-name == 'tailwind3' {
-      margin-left: $zero-value;
-      margin-right: $zero-value;
+      margin-left: $input-zero-padding-margin;
+      margin-right: $input-zero-padding-margin;
     }
   }
 
@@ -5072,7 +5070,7 @@
   .e-bigger .e-filled.e-input-group.e-multi-line-input.e-control-wrapper.e-rtl textarea.e-input:focus {
     @if $input-skin-name == 'material' or $input-skin-name == 'Material3' or $input-skin-name == 'fluent2' or $input-skin-name == 'tailwind3' {
       padding: $filled-bigger-textarea-padding;
-      text-indent: 0;
+      text-indent: $input-zero-padding-margin;
     }
   }
 
@@ -5094,7 +5092,7 @@
   .e-bigger .e-filled.e-float-input.e-multi-line-input.e-control-wrapper.e-rtl textarea:focus {
     @if $input-skin-name == 'material' or $input-skin-name == 'Material3' or $input-skin-name == 'fluent2' or $input-skin-name == 'tailwind3' {
       padding: $filled-bigger-float-textarea-padding;
-      text-indent: 0;
+      text-indent: $input-zero-padding-margin;
     }
   }
 
@@ -5126,7 +5124,7 @@
   .e-rtl .e-filled.e-input-group.e-multi-line-input.e-control-wrapper.e-bigger.e-small textarea.e-input:focus {
     @if $input-skin-name == 'material' or $input-skin-name == 'Material3' or $input-skin-name == 'fluent2' or $input-skin-name == 'tailwind3' {
       padding: $filled-bigger-small-textarea-padding;
-      text-indent: 0;
+      text-indent: $input-zero-padding-margin;
     }
   }
 
@@ -5156,7 +5154,7 @@
   .e-rtl .e-filled.e-float-input.e-multi-line-input.e-bigger.e-small textarea:focus {
     @if $input-skin-name == 'material' or $input-skin-name == 'Material3' or $input-skin-name == 'fluent2' or $input-skin-name == 'tailwind3' {
       padding: $filled-bigger-small-float-textarea-padding;
-      text-indent: 0;
+      text-indent: $input-zero-padding-margin;
     }
   }
 
@@ -5171,7 +5169,7 @@
     @if $input-skin-name == 'material' or $input-skin-name == 'Material3' or $input-skin-name == 'fluent2' or $input-skin-name == 'tailwind3' {
       border: $input-group-full-border;
       border-width: $zero-value;
-      margin-left: 8px;
+      margin-left: $input-bgr-small-filled-wrap-margin-left;
     }
   }
 
@@ -5192,8 +5190,8 @@
   .e-bigger.e-small .e-filled.e-input-group.e-float-icon-left.e-rtl .e-input-in-wrap,
   .e-bigger.e-small .e-filled.e-input-group.e-control-wrapper.e-float-icon-left.e-rtl .e-input-in-wrap {
     @if $input-skin-name == 'material' or $input-skin-name == 'Material3' or $input-skin-name == 'fluent2' or $input-skin-name == 'tailwind3' {
-      margin-left: $zero-value;
-      margin-right: 8px;
+      margin-left: $input-zero-padding-margin;
+      margin-right: $input-bgr-small-rtl-wrap-margin-right;
     }
   }
 
@@ -5246,13 +5244,13 @@
 
   .e-bigger .e-input#{$css}:focus:not(.e-success):not(.e-warning):not(.e-error):not(.e-textarea) {
     @if $input-skin-name == 'fluent2' or $input-skin-name == 'tailwind3' {
-      padding-bottom: 0;
+      padding-bottom: $input-zero-padding-margin;
     }
   }
 
   .e-bigger textarea.e-input#{$css}:focus:not(.e-success):not(.e-warning):not(.e-error) {
     @if $input-skin-name == 'fluent2' or $input-skin-name == 'tailwind3' {
-      padding-bottom: 6px;
+      padding-bottom: $text-area-bgr-focus-padding-bottom;
     }
   }
 

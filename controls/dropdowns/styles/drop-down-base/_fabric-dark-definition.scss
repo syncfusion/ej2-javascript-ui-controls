@@ -1,3 +1,7 @@
+@use 'ej2-base/styles/common/mixin' as *;
+@use 'ej2-base/styles/definition/fabric-dark' as *;
+@forward 'ej2-base/styles/definition/fabric-dark';
+
 //default
 $ddl-header-font-weight: 600 !default;
 $ddl-last-child-bottom-border: 0 !default;
@@ -51,6 +55,9 @@ $ddl-multi-column-border-color: $neutral-light !default;
 $ddl-list-header-font-size: $ddl-group-list-font-size !default;
 $ddl-small-list-header-font-size: $ddl-group-list-font-size !default;
 $ddl-group-list-item-text-intent: 0 !default;
+$ddl-list-zero-padding: 0 !default;
+$ddl-list-nodata-padding: 14px 16px !default;
+$ddl-list-nodata-font-size: 14px !default;
 
 // Small Size
 
@@ -66,6 +73,21 @@ $ddl-bigger-small-line-height: 40px !default;
 $ddl-bigger-small-list-font-color: $neutral-light-font !default;
 $ddl-bigger-small-list-text-indent: 16px !default;
 $ddl-bigger-small-list-header-font-size: 14px !default;
+$ddl-bgr-list-item-icon-font-size: 20px !default;
+$ddl-nrml-list-item-icon-font-size: 16px !default;
+$bgr-drop-base-height: 45px !default;
+$ddl-base-min-height: 36px !default;
+$mention-popup-margin-top: 2px !default;
+$ddl-two-width: 2px !default;
+$ddl-mention-editable-min-height: 120px !default;
+$ddl-multi-column-popup-padding-right: 16px !default;
+$ddl-multi-column-popup-line-height: 36px !default;
+$ddl-multi-popup-scroll-head-pad-right: 16px !default;
+$ddl-zero-spacing: 0 !default;
+$ddl-auto-height: auto !default;
+$ddl-full-height: 100% !default;
+$ddl-full-width: 100% !default;
+$ddl-bgr-dropbase-list-icon-item-padding: 0 12px 0 0 !default;
 
 //enddefault
 

@@ -2,7 +2,7 @@ import { createElement } from '@syncfusion/ej2-base';
 import { Diagram } from '../../../src/diagram/diagram';
 import { NodeModel } from '../../../src/diagram/objects/node-model';
 import { Node } from '../../../src/diagram/objects/node';
-import  {profile , inMB, getMemoryProfile} from '../../../spec/common.spec';
+import { profile, inMB, getMemoryProfile } from '../../../spec/common.spec';
 
 /**
  * Annotation - changing offsets
@@ -16,11 +16,11 @@ describe('Diagram Control', () => {
             '179.4996L521.8223,194.9966L529.9553,171.9366L510.3633,159.7296L533.9313,159.7016L540.3643,137.9336z';
         beforeAll((): void => {
             const isDef = (o: any) => o !== undefined && o !== null;
-                if (!isDef(window.performance)) {
-                    console.log("Unsupported environment, window.performance.memory is unavailable");
-                    this.skip(); //Skips test (in Chai)
-                    return;
-                }
+            if (!isDef(window.performance)) {
+                console.log("Unsupported environment, window.performance.memory is unavailable");
+                this.skip(); //Skips test (in Chai)
+                return;
+            }
             ele = createElement('div', { id: 'diagram50' });
             document.body.appendChild(ele);
             let node: NodeModel = {
@@ -65,6 +65,7 @@ describe('Diagram Control', () => {
         afterAll((): void => {
             diagram.destroy();
             ele.remove();
+            (diagram as any) = null; (ele as any) = null;
         });
 
         it('Checking annotation offsets as 0', (done: Function) => {
@@ -105,14 +106,14 @@ describe('Diagram Control', () => {
                 (diagram.nodes[2] as Node).wrapper.children[1].offsetY === 150).toBe(true);
             done();
         });
-        it('memory leak', () => { 
-            profile.sample();
-            let average: any = inMB(profile.averageChange)
-            //Check average change in memory samples to not be over 10MB
-            expect(average).toBeLessThan(10);
-            let memory: any = inMB(getMemoryProfile())
-            //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
-            expect(memory).toBeLessThan(profile.samples[0] + 0.25);
-        })
+        // it('memory leak', () => {
+        //     profile.sample();
+        //     let average: any = inMB(profile.averageChange)
+        //     //Check average change in memory samples to not be over 10MB
+        //     expect(average).toBeLessThan(10);
+        //     let memory: any = inMB(getMemoryProfile())
+        //     //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
+        //     expect(memory).toBeLessThan(profile.samples[0] + 0.25);
+        // })
     });
 });

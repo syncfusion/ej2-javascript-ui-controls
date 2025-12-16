@@ -1,15 +1,19 @@
 import { Component, INotifyPropertyChanged, NotifyPropertyChanges, ChildProperty, L10n, Collection, Complex, isBlazor, Browser } from '@syncfusion/ej2-base';
 import { ModuleDeclaration, isNullOrUndefined, Property, Event, EmitType, SanitizeHtmlHelper } from '@syncfusion/ej2-base';
-import { PdfViewerModel, HighlightSettingsModel, UnderlineSettingsModel, SquigglySettingsModel, StrikethroughSettingsModel, LineSettingsModel, AnnotationDrawingOptionsModel, ArrowSettingsModel, RectangleSettingsModel, CircleSettingsModel, PolygonSettingsModel, StampSettingsModel, StickyNotesSettingsModel, CustomStampSettingsModel, VolumeSettingsModel, RadiusSettingsModel, AreaSettingsModel, PerimeterSettingsModel, DistanceSettingsModel, MeasurementSettingsModel, FreeTextSettingsModel, AnnotationSelectorSettingsModel, TextSearchColorSettingsModel, PageInfoModel, DocumentTextCollectionSettingsModel, TextDataSettingsModel, RectangleBoundsModel, SignatureFieldSettingsModel, InitialFieldSettingsModel, SignatureIndicatorSettingsModel, TextFieldSettingsModel, PasswordFieldSettingsModel, CheckBoxFieldSettingsModel, RadioButtonFieldSettingsModel, DropdownFieldSettingsModel, ListBoxFieldSettingsModel, ItemModel, SignatureDialogSettingsModel, PageOrganizerSettingsModel } from './pdfviewer-model';
+import { PdfViewerModel, HighlightSettingsModel, UnderlineSettingsModel, SquigglySettingsModel, StrikethroughSettingsModel, LineSettingsModel, AnnotationDrawingOptionsModel, ArrowSettingsModel, RectangleSettingsModel, RedactionSettingsModel, PdfAnnotationSettingsModel, CircleSettingsModel, PolygonSettingsModel, StampSettingsModel, StickyNotesSettingsModel, CustomStampSettingsModel, VolumeSettingsModel, RadiusSettingsModel, AreaSettingsModel, PerimeterSettingsModel, DistanceSettingsModel, MeasurementSettingsModel, FreeTextSettingsModel, AnnotationSelectorSettingsModel, TextSearchColorSettingsModel, PageInfoModel, DocumentTextCollectionSettingsModel, TextDataSettingsModel, RectangleBoundsModel, SignatureFieldSettingsModel, InitialFieldSettingsModel, SignatureIndicatorSettingsModel, TextFieldSettingsModel, PasswordFieldSettingsModel, CheckBoxFieldSettingsModel, RadioButtonFieldSettingsModel, DropdownFieldSettingsModel, ListBoxFieldSettingsModel, ItemModel, SignatureDialogSettingsModel, PageOrganizerSettingsModel } from './pdfviewer-model';
 import { ToolbarSettingsModel, ShapeLabelSettingsModel, KeyGestureModel, KeyboardCommandModel, CommandManagerModel } from './pdfviewer-model';
 import { ServerActionSettingsModel, AjaxRequestSettingsModel, CustomStampModel, CustomToolbarItemModel, HandWrittenSignatureSettingsModel, AnnotationSettingsModel, TileRenderingSettingsModel, ScrollSettingsModel, FormFieldModel, InkAnnotationSettingsModel } from './pdfviewer-model';
-import { IAnnotationPoint, IPoint, IPageAnnotations, PdfViewerBase, PdfiumRunner, TextMarkupAnnotation } from './index';
+import { IAnnotationPoint, IPoint, IPageAnnotations, PdfViewerBase, PdfiumRunner, TextMarkupAnnotation, ShapeAnnotation, MeasureAnnotation, OrganizeDetails } from './index';
 import { Navigation } from './index';
 import { Magnification } from './index';
 import { Toolbar } from './index';
+import { AnnotationToolbar } from './index';
+import { RedactionToolbar } from './toolbar/redaction-toolbar';
+import { FormDesignerToolbar } from './toolbar/formdesigner-toolbar';
+import { PdfRenderedFields } from './pdf-base/form-fields-base';
 import { ToolbarItem } from './index';
 import { PdfRenderer } from './index';
-import { LinkTarget, InteractionMode, SignatureFitMode, AnnotationType, AnnotationToolbarItem, LineHeadStyle, ContextMenuAction, FontStyle, TextAlignment, AnnotationResizerShape, AnnotationResizerLocation, ZoomMode, PrintMode, CursorType, ContextMenuItem, DynamicStampItem, SignStampItem, StandardBusinessStampItem, FormFieldType, AllowedInteraction, AnnotationDataFormat, SignatureType, CommentStatus, SignatureItem, FormDesignerToolbarItem, DisplayMode, Visibility, FormFieldDataFormat, PdfKeys, ModifierKeys, ExtractTextOption } from './base/types';
+import { LinkTarget, InteractionMode, SignatureFitMode, AnnotationType, AnnotationToolbarItem, RedactionToolbarItem, LineHeadStyle, ContextMenuAction, FontStyle, TextAlignment, AnnotationResizerShape, AnnotationResizerLocation, ZoomMode, PrintMode, CursorType, ContextMenuItem, DynamicStampItem, SignStampItem, StandardBusinessStampItem, FormFieldType, AllowedInteraction, AnnotationDataFormat, SignatureType, CommentStatus, SignatureItem, FormDesignerToolbarItem, DisplayMode, Visibility, FormFieldDataFormat, PdfKeys, ModifierKeys, ExtractTextOption } from './base/types';
 import { Annotation } from './index';
 import { LinkAnnotation } from './index';
 import { ThumbnailView } from './index';
@@ -31,7 +35,7 @@ import { PdfAnnotationBaseModel, PdfFormFieldBaseModel } from './drawing/pdf-ann
 import { Drawing, ClipBoardObject } from './drawing/drawing';
 import { Selector } from './drawing/selector';
 import { SelectorModel } from './drawing/selector-model';
-import { PointModel, IElement, Rect, Point, Size, processPathData, splitArrayCollection } from '@syncfusion/ej2-drawings';
+import { PointModel, IElement, Rect, Point, Size, processPathData, splitArrayCollection, getPathString } from '@syncfusion/ej2-drawings';
 import { renderAdornerLayer } from './drawing/dom-util';
 import { ThumbnailClickEventArgs } from './index';
 
@@ -42,6 +46,8 @@ import { ContextMenuSettingsModel } from './pdfviewer-model';
 import { IFormField, IFormFieldBound } from './form-designer/form-designer';
 import { ClickEventArgs, MenuItemModel } from '@syncfusion/ej2-navigations';
 import { PdfViewerUtils, PdfiumTaskScheduler, TaskPriorityLevel } from './base/pdfviewer-utlis';
+import { Rectangle } from '@syncfusion/ej2-pdf';
+import { PdfDocument, PdfPageImportOptions } from '@syncfusion/ej2-pdf';
 
 /**
  * The `ToolbarSettings` module is used to provide the toolbar settings of PDF viewer.
@@ -130,6 +136,13 @@ export class ToolbarSettings extends ChildProperty<ToolbarSettings> {
      */
     @Property()
     public annotationToolbarItems: AnnotationToolbarItem[];
+
+    /**
+     * Provide option to customize the redaction toolbar of the PDF Viewer.
+     * This redaction customization feature shall be available only when the PDF Viewer is operating in Standalone Mode.
+     */
+    @Property()
+    public redactionToolbarItems: RedactionToolbarItem[];
 
     /**
      * Customize the tools to be exposed in the form designer toolbar.
@@ -366,6 +379,46 @@ export class FormDesignerToolbarSettings extends ChildProperty<FormDesignerToolb
      */
     @Property()
     public formDesignerToolbarItem: FormDesignerToolbarItem[];
+}
+
+/**
+ * The `RedactionToolbarSettings` module is used to provide the Redaction toolbar settings of the PDF viewer.
+ * This redaction customization feature shall be available only when the PDF Viewer is operating in Standalone Mode.
+ *
+ * ```html
+ * <div id="pdfViewer" style="height: 100%;width: 100%;"></div>
+ * ```
+ * ```ts
+ *  let viewer: PdfViewer = new PdfViewer();
+ *  // Change the form field tool bar settings.
+ *  viewer.toolbarSettings = {
+ *      showTooltip: false,
+ *      redactionToolbarItems: [
+            'MarkForRedaction',
+            'RedactPages',
+            'RedactionPanel',
+            'Redact',
+            'RemoveAnnotation',
+            'CommentPanel',
+            'Close'
+ *      ]
+ *  };
+ * viewer.appendTo("#pdfViewer");
+ * ```
+ *
+ */
+export class RedactionToolbarSettings extends ChildProperty<RedactionToolbarSettings> {
+    /**
+     * Enable or disables the tooltip of the toolbar.
+     */
+    @Property(true)
+    public showTooltip: boolean;
+
+    /**
+     * Gets or sets the toolbar items available in the redaction toolbar of the PDF Viewer.
+     */
+    @Property()
+    public redactionToolbarItem: RedactionToolbarItem[];
 }
 
 /**
@@ -1890,6 +1943,223 @@ export class RectangleSettings extends ChildProperty<RectangleSettings> {
      */
     @Property('')
     public subject: string;
+}
+
+/**
+ * Represents the base class for annotation-specific information.
+ * This class serves as a foundation for specialized annotation information classes that provide additional properties and functionality for specific annotation types.
+ */
+export class PdfAnnotationSettings extends ChildProperty<PdfAnnotationSettings> {
+    /**
+     * Get or set the bounds of the annotation.
+     */
+    @Property({ x: 0, y: 0, width: 0, height: 0 })
+    public bound: Rectangle;
+
+    /**
+     * Get or set page number of the annotation.
+     */
+    @Property(1)
+    public pageNumber: number;
+
+    /**
+     * Gets or sets the fill color of the redacted area.
+     */
+    @Property('#ffffff00')
+    public fillColor: string;
+
+    /**
+     * specifies the author of the annotation.
+     */
+    @Property('Guest')
+    public author: string;
+
+    /**
+     * specified the thickness of the annotation.
+     */
+    @Property('1')
+    public thickness: number;
+
+    /**
+     * specifies the annotation selector settings of the annotation.
+     */
+    @Property('')
+    public annotationSelectorSettings: AnnotationSelectorSettingsModel;
+
+    /**
+     * specifies the minHeight of the annotation.
+     */
+    @Property(0)
+    public minHeight: number;
+
+    /**
+     * specifies the minWidth of the annotation.
+     */
+    @Property(0)
+    public minWidth: number;
+
+    /**
+     * specifies the minHeight of the annotation.
+     */
+    @Property(0)
+    public maxHeight: number;
+
+    /**
+     * specifies the maxWidth of the annotation.
+     */
+    @Property(0)
+    public maxWidth: number;
+
+    /**
+     * specifies the locked action of the annotation.
+     */
+    @Property(false)
+    public isLock: boolean;
+
+    /**
+     * specifies the custom data of the annotation.
+     */
+    @Property(null)
+    public customData: object;
+
+    /**
+     * Gets or sets the allowed interactions for the locked rectangle annotations.
+     * IsLock can be configured using rectangle settings.
+     *
+     * @default ['None']
+     */
+    @Property(['None'])
+    public allowedInteractions: AllowedInteraction[];
+
+    /**
+     * specifies whether the individual annotations are included or not in print actions.
+     */
+    @Property(true)
+    public isPrint: boolean;
+
+    /**
+     * specifies the subject of the annotation.
+     */
+    @Property('')
+    public subject: string;
+
+}
+
+/**
+ * Provides customization options for redaction annotations in the PDF Viewer.
+ * The RedactionSettingsModel class extends PdfViewerShapeSettings and includes additional properties specifically designed to control the appearance and behavior of redaction annotations.
+ * These settings include overlay text, fill color, font settings, and alignment, allowing users to configure how redacted content should be displayed in the PDF document.
+ * This redaction customization feature shall be available only when the PDF Viewer is operating in Standalone Mode.
+ *
+ * ```html
+ * <div id="pdfViewer" style="height: 100%;width: 100%;"></div>
+ * ```
+ * ```ts
+ *  let viewer: PdfViewer = new PdfViewer();
+ *  // Change the rectangle annotation settings.
+ *  viewer.redactionSettings = {
+ *      markerOpacity: 1,
+ *      markerBorderColor: '#ff0000',
+ *      markerFillColor: '#9c2592',
+ *      overlayText: 'Redact',
+ *      isRepeat: false,
+ *      fontColor: '#000',
+ *      fontColor: 16,
+ *      fontFamily: 'Helvetica',
+ *      textAlignment: 'Center',
+ *      fillColor: '#9c2592',
+ *      author: 'Guest',
+ *      thickness: 1,
+ *      annotationSelectorSettings: {
+ *          selectionBorderColor: '',
+ *          resizerBorderColor: 'black',
+ *          resizerFillColor: '#FF4081',
+ *          resizerSize: 8,
+ *          selectionBorderThickness: 1,
+ *          resizerShape: 'Square',
+ *          selectorLineDashArray: [],
+ *          resizerLocation: AnnotationResizerLocation.Corners | AnnotationResizerLocation.Edges,
+ *          resizerCursorType: null
+ *      },
+ *      minHeight: 0,
+ *      minWidth: 0,
+ *      maxWidth: 0,
+ *      maxHeight: 0,
+ *      isLock: false,
+ *      allowedInteractions: ['None'],
+ *      isPrint: true
+ *  };
+ *  viewer.appendTo("#pdfViewer");
+ * ```
+ */
+export class RedactionSettings extends PdfAnnotationSettings {
+    /**
+     * If true, disables the default redaction confirmation popup.
+     */
+    @Property(false)
+    public disableConfirmationPopup: boolean;
+
+    /**
+     * Gets or sets the opacity of the redaction marker.
+     * This property controls the transparency of the redaction marker's fill and border.
+     */
+    @Property(1)
+    public markerOpacity: number;
+
+    /**
+     * Gets or sets the border color of the redaction marker.
+     * This property defines the color of the border surrounding the redaction area.
+     */
+    @Property('rgba(255, 0, 0, 1)')
+    public markerBorderColor : string;
+
+    /**
+     * Gets or sets the fill color of the redaction marker.
+     * This property defines the color used to fill the redaction area.
+     */
+    @Property('rgba(255, 255, 255, 1)')
+    public markerFillColor: string;
+
+    /**
+     * Gets or sets the text to be displayed as an overlay in the redaction annotation.
+     * Specifies the string that will appear over the redacted area.
+     */
+    @Property('')
+    public overlayText : string;
+
+    /**
+     * Gets or sets a value indicating whether the overlay text should repeat to fill the redaction area.
+     */
+    @Property(false)
+    public isRepeat: boolean;
+
+    /**
+     * Gets or sets the font color of the overlay text in the redaction annotation.
+     * Specifies the color used for the overlay text displayed within the redacted area.
+     */
+    @Property('#000')
+    public fontColor: string;
+
+    /**
+     * Gets or sets the font size of the overlay text in the redaction annotation.
+     * This property determines the size of the overlay text displayed within the redacted area.
+     */
+    @Property(16)
+    public fontSize: number;
+
+    /**
+     * Gets or sets the font family used for the overlay text in the redaction annotation.
+     * Defines the font style of the overlay text that appears on the redacted area.
+     */
+    @Property('Helvetica')
+    public fontFamily: string;
+
+    /**
+     * Gets or sets the alignment of the overlay text displayed in the redaction annotation.
+     * This property defines how the overlay text is aligned within the bounds of the redaction area.
+     */
+    @Property('Center')
+    public textAlignment: TextAlignment;
 }
 
 /**
@@ -5903,6 +6173,21 @@ export class PageOrganizerSettings extends ChildProperty<PageOrganizerSettings> 
     @Property(1)
     public imageZoom: number;
 
+    /**
+     * Get or set a boolean value to show or hide the pages extract option in the page organizer dialog. TRUE by default.
+     * The showExtractPagesOption API for the Extract Pages feature will be available only when the PDF Viewer is operating in Standalone Mode.
+     */
+    @Property(true)
+    public showExtractPagesOption: boolean;
+
+    /**
+     * Specifies whether the pages can be extracted.
+     * The canExtractPages API for the Extract Pages feature will be available only when the PDF Viewer is operating in Standalone Mode.
+     * @default true
+     */
+    @Property(true)
+    public canExtractPages: boolean;
+
 }
 
 /**
@@ -5929,6 +6214,68 @@ export interface IPdfRectBounds {
      * Returns the rectangle height.
      */
     height: number
+}
+
+/**
+ * @hidden
+ * Represents the complete state structure for storing annotation-related data.
+ */
+export interface StoreAnnotationState {
+    /**
+     * Stores the z-index ordering of annotations to manage rendering layers.
+     */
+    zIndexTable: ZOrderPageTable[],
+    /**
+     * Holds the collection of all annotations present in the document.
+     */
+    annotationCollection: any[],
+    /**
+     * Holds the collection of all signature annotations present in the document.
+     */
+    signatureCollection: any[],
+    /**
+     * Holds the collection of documentAnnotationCollections.
+     */
+    documentAnnotationCollections: any,
+    /**
+     * Holds the collection of annotationsCollection.
+     */
+    annotationsCollection: Map<string, IPageAnnotations[]>,
+    /**
+     * Holds the collection of annotationComments.
+     */
+    annotationComments: any,
+    /**
+     * Holds the collection of importedAnnotation.
+     */
+    importedAnnotation: any,
+    /**
+     * Holds the collection of isImportedAnnotation.
+     */
+    isImportedAnnotation: boolean,
+}
+
+/**
+ * @hidden
+ * Represents the complete state structure for storing formField-related data.
+ */
+export interface StoreFormFieldState {
+    /**
+     * Holds the collection of all form fields present in the document.
+     */
+    formFieldCollection: any[],
+    /**
+     * Holds the collection of formFieldCollections
+     */
+    formFieldCollections: FormFieldModel[],
+    /**
+     * Holds the collection of formFieldValues
+     */
+    formFieldCollectionBase: any[]
+    /**
+     * Holds the session data of form designer
+     */
+    designerSessionData: any
 }
 
 /**
@@ -6277,6 +6624,18 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
     public isFormDesignerToolbarVisible: boolean;
 
     /**
+     * Opens the redaction toolbar when the PDF document is loaded in the PDF Viewer control initially
+     * and get the redaction Toolbar Visible status.
+     *
+     * {% codeBlock src='pdfviewer/isFormDesignerToolbarVisible/index.md' %}{% endcodeBlock %}
+     *
+     * @public
+     * @default false
+     */
+    @Property(false)
+    public isRedactionToolbarVisible: boolean;
+
+    /**
      * Enables or disables the multi-page text markup annotation selection in UI.
      *
      * {% codeBlock src='pdfviewer/enableMultiPageAnnotation/index.md' %}{% endcodeBlock %}
@@ -6361,7 +6720,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
      *
      */
     // eslint-disable-next-line max-len
-    @Property({canDelete: true, canInsert: true, canRotate: true, canCopy: true, canRearrange: true, canImport: true, showImageZoomingSlider: false, imageZoomMin: 1, imageZoomMax: 5, imageZoom: 1})
+    @Property({canDelete: true, canInsert: true, canRotate: true, canCopy: true, canRearrange: true, canImport: true, showImageZoomingSlider: false, imageZoomMin: 1, imageZoomMax: 5, imageZoom: 1, canExtractPages: true, showExtractPagesOption: true})
     public pageOrganizerSettings: PageOrganizerSettingsModel;
 
     /**
@@ -6758,6 +7117,16 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
     public enableFormDesignerToolbar: boolean;
 
     /**
+     * Opens the redaction designer toolbar when the PDF document is loaded in the PDF Viewer control initially.
+     *
+     * {% codeBlock src='pdfviewer/enableRedactionToolbar/index.md' %}{% endcodeBlock %}
+     *
+     * @default true
+     */
+    @Property(true)
+    public enableRedactionToolbar: boolean;
+
+    /**
      * Gets or sets a boolean value to show or hide the bookmark panel while loading a document.
      *
      * {% codeBlock src='pdfviewer/isBookmarkPanelOpen/index.md' %}{% endcodeBlock %}
@@ -6951,7 +7320,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
      *
      */
 
-    @Property({ showTooltip: true, toolbarItems: ['OpenOption', 'UndoRedoTool', 'PageNavigationTool', 'MagnificationTool', 'PanTool', 'SelectionTool', 'CommentTool', 'SubmitForm', 'AnnotationEditTool', 'FormDesignerEditTool', 'FreeTextAnnotationOption', 'InkAnnotationOption', 'ShapeAnnotationOption', 'StampAnnotation', 'SignatureOption', 'SearchOption', 'PrintOption', 'DownloadOption'], annotationToolbarItems: ['HighlightTool', 'UnderlineTool', 'StrikethroughTool', 'SquigglyTool', 'ColorEditTool', 'OpacityEditTool', 'AnnotationDeleteTool', 'StampAnnotationTool', 'HandWrittenSignatureTool', 'InkAnnotationTool', 'ShapeTool', 'CalibrateTool', 'StrokeColorEditTool', 'ThicknessEditTool', 'FreeTextAnnotationTool', 'FontFamilyAnnotationTool', 'FontSizeAnnotationTool', 'FontStylesAnnotationTool', 'FontAlignAnnotationTool', 'FontColorAnnotationTool', 'CommentPanelTool'], formDesignerToolbarItems: ['TextboxTool', 'PasswordTool', 'CheckBoxTool', 'RadioButtonTool', 'DropdownTool', 'ListboxTool', 'DrawSignatureTool', 'DeleteTool'] })
+    @Property({ showTooltip: true, toolbarItems: ['OpenOption', 'UndoRedoTool', 'PageNavigationTool', 'MagnificationTool', 'PanTool', 'SelectionTool', 'CommentTool', 'SubmitForm', 'AnnotationEditTool', 'FormDesignerEditTool', 'FreeTextAnnotationOption', 'InkAnnotationOption', 'ShapeAnnotationOption', 'StampAnnotation', 'SignatureOption', 'SearchOption', 'PrintOption', 'DownloadOption'], annotationToolbarItems: ['HighlightTool', 'UnderlineTool', 'StrikethroughTool', 'SquigglyTool', 'ColorEditTool', 'OpacityEditTool', 'AnnotationDeleteTool', 'StampAnnotationTool', 'HandWrittenSignatureTool', 'InkAnnotationTool', 'ShapeTool', 'CalibrateTool', 'StrokeColorEditTool', 'ThicknessEditTool', 'FreeTextAnnotationTool', 'FontFamilyAnnotationTool', 'FontSizeAnnotationTool', 'FontStylesAnnotationTool', 'FontAlignAnnotationTool', 'FontColorAnnotationTool', 'CommentPanelTool'], formDesignerToolbarItems: ['TextboxTool', 'PasswordTool', 'CheckBoxTool', 'RadioButtonTool', 'DropdownTool', 'ListboxTool', 'DrawSignatureTool', 'DeleteTool'], redactionToolbarItems: ['MarkForRedaction', 'RedactPages', 'RedactionPanel', 'Redact', 'RemoveAnnotation', 'CommentPanel', 'Close'] })
     public toolbarSettings: ToolbarSettingsModel;
 
     /**
@@ -7083,6 +7452,12 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
 
     @Property({ opacity: 1, fillColor: '#ffffff00', strokeColor: '#ff0000', author: 'Guest', thickness: 1, annotationSelectorSettings: { selectionBorderColor: '', resizerBorderColor: 'black', resizerFillColor: '#FF4081', resizerSize: 8, selectionBorderThickness: 1, resizerShape: 'Square', selectorLineDashArray: [], resizerLocation: AnnotationResizerLocation.Corners | AnnotationResizerLocation.Edges, resizerCursorType: null }, minHeight: 0, minWidth: 0, maxWidth: 0, maxHeight: 0, isLock: false, allowedInteractions: ['None'], isPrint: true, subject: 'Rectangle' })
     public rectangleSettings: RectangleSettingsModel;
+
+    /**
+     * Defines the settings of redaction annotation.
+     */
+    @Property({ markerFillColor: '#FFFFFF', markerBorderColor: '#ff0000', markerOpacity: 1, author: 'Guest', annotationSelectorSettings: { selectionBorderColor: '', resizerBorderColor: 'black', resizerFillColor: '#FF4081', resizerSize: 8, selectionBorderThickness: 1, resizerShape: 'Square', selectorLineDashArray: [], resizerLocation: AnnotationResizerLocation.Corners | AnnotationResizerLocation.Edges, resizerCursorType: null }, minHeight: 0, minWidth: 0, maxWidth: 0, maxHeight: 0, isLock: false, disableConfirmationPopup: false, allowedInteractions: ['None'], isPrint: true, overlayText: '', fontSize: 12, fontFamily: 'Helvetica', fontColor: '#ff0000', textAlignment: 'center', fillColor: 'rgba(0, 0, 0, 1)' })
+    public redactionSettings: RedactionSettingsModel;
 
     /**
      * Defines the settings of shape label.
@@ -8345,6 +8720,33 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
      */
     public annotationsCollection: Map<string, IPageAnnotations[]> = new Map();
 
+    private temporaryAnnotationState: StoreAnnotationState;
+    /**
+     * @private
+     */
+    public temporaryFormFieldState: StoreFormFieldState;
+    /**
+     * @private
+     */
+    public storePageData: any;
+    /**
+     * @private
+     */
+    public isClearCollections: boolean = false;
+    /**
+     * @private
+     */
+    private renderedFormFields: any[] = [];
+
+    /**
+     * @private
+     */
+    public isInsertBefore: boolean = false;
+    /**
+     * @private
+     */
+    public signCount: number = 0;
+
     /**
      * @private
      * @deprecated
@@ -8686,6 +9088,11 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
                             this.toolbarModule.annotationToolbarModule.showAnnotationToolbar();
                             this.toolbarModule.deSelectItem(this.toolbarModule.annotationItem);
                         }
+                        else if (this.toolbarModule.redactionToolbarModule && this.isRedactionToolbarVisible) {
+                            this.isRedactionToolbarVisible = false;
+                            this.toolbarModule.redactionToolbarModule.showRedactionToolbar();
+                            this.toolbarModule.deSelectItem(this.toolbarModule.redactionItem);
+                        }
                         else if (this.toolbarModule.formDesignerToolbarModule && this.isFormDesignerToolbarVisible) {
                             this.isFormDesignerToolbarVisible = false;
                             this.toolbarModule.formDesignerToolbarModule.showFormDesignerToolbar();
@@ -8706,6 +9113,46 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
                 break;
             case 'enableLocalStorage':
                 this.updateLocalStorage(this.enableLocalStorage);
+                break;
+            case 'enableHyperlink':
+                if (this.enableHyperlink) {
+                    const pagesToProcess: any = this.viewerBase.renderedPagesList;
+                    if (pagesToProcess && pagesToProcess.length > 0) {
+                        for (let i: number = 0; i < pagesToProcess.length; i++) {
+                            const pageIndex: number = pagesToProcess[parseInt(i.toString(), 10)];
+                            const data: any = this.pdfRendererModule.getHyperlinks(pageIndex);
+                            if (this.linkAnnotationModule) {
+                                this.linkAnnotationModule.renderHyperlinkContent(data, pageIndex);
+                            }
+                        }
+                    }
+                }
+                break;
+            case 'zoomValue':
+                if (!this.viewerBase.isSkipZoomValue) {
+                    if (newProp.zoomValue > 0) {
+                        this.magnificationModule.zoomTo(this.zoomValue);
+                        this.viewerBase.isSkipZoomValue = false;
+                    }
+                } else {
+                    this.viewerBase.isSkipZoomValue = false;
+                }
+                break;
+            case 'zoomMode':
+                if (this.zoomMode === 'FitToWidth') {
+                    this.magnificationModule.fitToWidth();
+                }
+                if (this.zoomMode === 'FitToPage') {
+                    this.magnificationModule.fitToPage();
+                }
+                if (this.zoomMode === 'Default') {
+                    this.magnificationModule.fitToAuto();
+                }
+                break;
+            case 'contextMenuOption':
+                if (!isNullOrUndefined(this.viewerBase.contextMenuModule)) {
+                    this.viewerBase.contextMenuModule.createContextMenu();
+                }
                 break;
             case 'enableMagnification':
                 if (!isNullOrUndefined(this.toolbarModule)) {
@@ -8734,6 +9181,42 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
             case 'enableDownload':
                 if (!isNullOrUndefined(this.toolbarModule)) {
                     this.toolbarModule.enableToolbarItem(['DownloadOption'], this.enableDownload);
+                }
+                break;
+            case 'minZoom' :
+                // eslint-disable-next-line no-case-declarations
+                const updateMinZoom: number = this.magnificationModule.zoomFactor * 100;
+                if (updateMinZoom < this.minZoom) {
+                    this.magnificationModule.zoomTo(this.minZoom);
+                }
+                this.toolbarModule.updateZoomDropDown = true;
+                this.toolbarModule.createZoomDropdown();
+                this.toolbarModule.updateZoomDropDown = false;
+                break;
+            case 'maxZoom':
+                // eslint-disable-next-line no-case-declarations
+                const updateMaxZoom: number = this.magnificationModule.zoomFactor * 100;
+                if (updateMaxZoom > this.maxZoom) {
+                    this.magnificationModule.zoomTo(updateMaxZoom);
+                }
+                this.toolbarModule.updateZoomDropDown = true;
+                this.toolbarModule.createZoomDropdown();
+                this.toolbarModule.updateZoomDropDown = false;
+                break;
+            case 'enableTextSearch':
+                if (!isNullOrUndefined(this.toolbarModule)) {
+                    this.toolbarModule.enableToolbarItem(['SearchOption'], this.enableTextSearch);
+                }
+                if (!this.enableTextSearch) {
+                    this.toolbarModule.deSelectItem(this.toolbarModule.textSearchItem);
+                    this.viewerBase.clearAllTextSearchOccurrences();
+                    this.viewerBase.navigationPane.goBackToToolbar();
+                }
+                if (this.enableTextSearch) {
+                    this.textSearchModule.createTextSearchBox();
+                }
+                if (this.textSearchModule && this.enableTextSearch && this.viewerBase.documentTextCollection.length !== this.pageCount) {
+                    this.textSearchModule.getPDFDocumentTexts();
                 }
                 break;
             case 'enableTextSelection':
@@ -8769,8 +9252,10 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
                 break;
             case 'documentPath':
                 if (!this.viewerBase.isSkipDocumentPath){
-                    if (!isBlazor()) {
-                        this.load(newProp.documentPath, null);
+                    if (!isBlazor())  {
+                        if (newProp.documentPath !== '') {
+                            this.load(newProp.documentPath, null);
+                        }
                     }
                     else {
                         this._dotnetInstance.invokeMethodAsync('LoadDocumentFromClient', newProp.documentPath);
@@ -8834,11 +9319,31 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
                 }
                 break;
             case 'designerMode':
-                if (this.designerMode) {
+                if (this.designerMode && this.formDesignerModule) {
                     this.formDesignerModule.setMode('designer');
-                } else {
-                    this.formDesignerModule.setMode('edit');
                 }
+                else {
+                    if (this.formDesignerModule) {
+                        this.formDesignerModule.setMode('edit');
+                    }
+                }
+                break;
+            case 'enableAutoComplete': {
+                const mode: string = this.enableAutoComplete ? 'on' : 'off';
+                const container: HTMLElement | null = (this.viewerBase && this.viewerBase.pageContainer)
+                    ? this.viewerBase.pageContainer : this.element;
+                if (container && container.isConnected) {
+                    const nodes: NodeListOf<HTMLElement> = container.querySelectorAll('input');
+                    if (nodes && nodes.length) {
+                        nodes.forEach((el: HTMLElement) => {
+                            if (el) {
+                                (el as any).autocomplete = mode;
+                                el.setAttribute('autocomplete', mode);
+                            }
+                        });
+                    }
+                }
+            }
                 break;
             case 'highlightSettings':
             case 'underlineSettings':
@@ -8900,6 +9405,10 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
                             this.isAnnotationToolbarVisible = false;
                             this.toolbarModule.annotationToolbarModule.showAnnotationToolbar();
                         }
+                        if (this.toolbarModule.redactionToolbarModule && this.isRedactionToolbarVisible) {
+                            this.isRedactionToolbarVisible = false;
+                            this.toolbarModule.redactionToolbarModule.showRedactionToolbar();
+                        }
                         this.toolbarModule.formDesignerToolbarModule.resetFormDesignerToolbar();
                     }
                     else {
@@ -8920,6 +9429,10 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
                             this.isFormDesignerToolbarVisible = false;
                             this.toolbarModule.formDesignerToolbarModule.showFormDesignerToolbar();
                         }
+                        if (this.toolbarModule.redactionToolbarModule && this.isRedactionToolbarVisible) {
+                            this.isRedactionToolbarVisible = false;
+                            this.toolbarModule.redactionToolbarModule.showRedactionToolbar();
+                        }
                         this.toolbarModule.annotationToolbarModule.resetToolbar();
                     }
                     else {
@@ -8932,7 +9445,45 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
                 else {
                     if (this.toolbarModule) {
                         this.toolbar.showAnnotationToolbar(newProp.isAnnotationToolbarVisible);
+                        if (this.toolbarModule.redactionToolbarModule && this.isRedactionToolbarVisible) {
+                            this.isRedactionToolbarVisible = false;
+                            this.toolbarModule.redactionToolbarModule.showRedactionToolbar();
+                        }
                     }
+                }
+                break;
+            case 'isRedactionToolbarVisible':
+                if (!Browser.isDevice || this.enableDesktopMode) {
+                    if (this.toolbarModule && this.annotationModule && !oldProp.isRedactionToolbarVisible &&
+                         newProp.isRedactionToolbarVisible) {
+                        if (this.toolbarModule.annotationToolbarModule && this.isAnnotationToolbarVisible) {
+                            this.isAnnotationToolbarVisible = false;
+                            this.toolbarModule.annotationToolbarModule.showAnnotationToolbar();
+                        }
+                        if (this.toolbarModule.formDesignerToolbarModule && this.isFormDesignerToolbarVisible) {
+                            this.isFormDesignerToolbarVisible = false;
+                            this.toolbarModule.formDesignerToolbarModule.showFormDesignerToolbar();
+                        }
+                        this.toolbarModule.redactionToolbarModule.resetToolbar();
+                    }
+                }
+                else {
+                    if (this.toolbarModule) {
+                        this.toolbar.showRedactionToolbar(newProp.isRedactionToolbarVisible);
+                        if (this.toolbarModule.annotationToolbarModule && this.isAnnotationToolbarVisible) {
+                            this.isAnnotationToolbarVisible = false;
+                            this.toolbarModule.annotationToolbarModule.showAnnotationToolbar();
+                        }
+                    }
+                }
+                break;
+            case 'isCommandPanelOpen':
+                if (this.toolbarModule && this.annotationModule && !oldProp.isCommandPanelOpen &&
+                    newProp.isCommandPanelOpen) {
+                    this.annotation.showCommentsPanel();
+                }
+                else if (this.viewerBase.navigationPane) {
+                    this.viewerBase.navigationPane.closeCommentPanelContainer();
                 }
                 break;
             case 'serviceUrl':
@@ -8946,7 +9497,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
             case 'pageOrganizerSettings':
                 if (!isNullOrUndefined(newProp.pageOrganizerSettings)){
                     if (!isNullOrUndefined(this.pageOrganizer)) {
-                        this.pageOrganizer.setPageOrganizerSettings(newProp.pageOrganizerSettings);
+                        this.pageOrganizer.setPageOrganizerSettings(newProp.pageOrganizerSettings, oldProp.pageOrganizerSettings);
                         if (oldProp.pageOrganizerSettings.imageZoomMax !== newProp.pageOrganizerSettings.imageZoomMax
                             || oldProp.pageOrganizerSettings.imageZoomMin !== newProp.pageOrganizerSettings.imageZoomMin) {
                             this.pageOrganizer.handleImageSizeBoundsChange(newProp.pageOrganizerSettings);
@@ -8958,12 +9509,191 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
                             this.pageOrganizer.handlePageZoomChange(
                                 newProp.pageOrganizerSettings.imageZoom, oldProp.pageOrganizerSettings.imageZoom);
                         }
+                        if (oldProp.pageOrganizerSettings.showExtractPagesOption !== newProp.pageOrganizerSettings.showExtractPagesOption)
+                        {
+                            this.pageOrganizer.showRemoveExtractIcon(newProp.pageOrganizerSettings.showExtractPagesOption);
+                        }
+                        if (oldProp.pageOrganizerSettings.canExtractPages !== newProp.pageOrganizerSettings.canExtractPages)
+                        {
+                            this.pageOrganizer.showHideExtractIcon(newProp.pageOrganizerSettings.canExtractPages);
+                        }
+                        if (oldProp.pageOrganizerSettings.canCopy !== newProp.pageOrganizerSettings.canCopy ||
+                            oldProp.pageOrganizerSettings.canDelete !== newProp.pageOrganizerSettings.canDelete ||
+                            oldProp.pageOrganizerSettings.canRotate !== newProp.pageOrganizerSettings.canRotate ||
+                            oldProp.pageOrganizerSettings.canInsert !== newProp.pageOrganizerSettings.canInsert) {
+                            this.pageOrganizer.updateToolbarItemState();
+                        }
+                        if (oldProp.pageOrganizerSettings.canImport !== newProp.pageOrganizerSettings.canImport) {
+                            this.pageOrganizer.updateToolbarItemState('canImport');
+                        }
                     }
+                }
+                break;
+            case 'enableInkAnnotation':
+                this.notify('annotation', { module: 'annotation', enable: this.enableInkAnnotation });
+                if (!isNullOrUndefined(this.toolbarModule) && !isNullOrUndefined(this.annotationModule) &&
+                    !isNullOrUndefined(this.toolbarModule.annotationToolbarModule)) {
+                    if (!newProp.enableInkAnnotation && oldProp.enableInkAnnotation) {
+                        if (this.annotationModule.inkAnnotationModule) {
+                            if (!Browser.isDevice) {
+                                this.toolbarModule.annotationToolbarModule.updateInteractionTools();
+                            }
+                            const currentPageNumber: string = this.annotationModule.inkAnnotationModule.currentPageNumber;
+                            if (currentPageNumber && currentPageNumber !== '') {
+                                this.annotationModule.inkAnnotationModule.drawInkAnnotation(parseInt(currentPageNumber, 10));
+                                this.toolbarModule.annotationToolbarModule.primaryToolbar.deSelectItem(
+                                    this.toolbarModule.annotationToolbarModule.inkAnnotationItem);
+                            }
+                        }
+                        if (this.enableToolbar && Browser.isDevice && !this.enableDesktopMode) {
+                            this.toolbarModule.showToolbar(true);
+                        }
+                        this.toolbarModule.annotationToolbarModule.selectAnnotationDeleteItem(true);
+                        if (Browser.isDevice) {
+                            this.showMobileAnnotationToolbar();
+                        }
+                    }
+                    this.toolbarModule.annotationToolbarModule.updateToolbarItems();
+                }
+                break;
+            case 'enableShapeAnnotation':
+                this.notify('annotation', { module: 'annotation', enable: this.enableShapeAnnotation });
+                if (!isNullOrUndefined(this.toolbarModule) && !isNullOrUndefined(this.annotationModule) &&
+                    !isNullOrUndefined(this.toolbarModule.annotationToolbarModule)) {
+                    if (this.enableShapeAnnotation && isNullOrUndefined(this.annotationModule.shapeAnnotationModule)) {
+                        this.annotationModule.shapeAnnotationModule = new ShapeAnnotation(this, this.viewerBase);
+                    }
+                    if (Browser.isDevice) {
+                        this.showMobileAnnotationToolbar();
+                        this.toolbarModule.annotationToolbarModule.enableShapeAnnotationTool(this.enableShapeAnnotation);
+                    }
+                    else {
+                        if (!newProp.enableShapeAnnotation && oldProp.enableShapeAnnotation) {
+                            const dropDown: HTMLElement = this.viewerBase.getElement('_annotation_shapes-popup');
+                            if (dropDown && dropDown.firstElementChild) {
+                                dropDown.classList.remove('e-popup-open');
+                                dropDown.classList.add('e-popup-close');
+                            }
+                        }
+                        this.toolbarModule.annotationToolbarModule.updateToolbarItems();
+                    }
+                }
+                break;
+            case 'enableStickyNotesAnnotation':
+                this.notify('annotation', { module: 'annotation', enable: this.enableStickyNotesAnnotation });
+                if (!isNullOrUndefined(this.toolbarModule) && !isNullOrUndefined(this.annotationModule)) {
+                    if (Browser.isDevice && this.toolbarModule.annotationToolbarModule.toolbar &&
+                        this.toolbarModule.annotationToolbarModule.toolbar.items) {
+                        this.toolbarModule.annotationToolbarModule.showStickyNoteToolInMobile(this.enableStickyNotesAnnotation);
+                    }
+                    else {
+                        if (!isNullOrUndefined(this.toolbarModule.toolbarElement)) {
+                            this.toolbarModule.showToolbarItem(['CommentTool'], this.enableStickyNotesAnnotation);
+                            this.toolbarModule.updateToolbarItems();
+                        }
+                    }
+                }
+                break;
+            case 'enableMeasureAnnotation':
+                this.notify('annotation', { module: 'annotation', enable: this.enableMeasureAnnotation });
+                if (!isNullOrUndefined(this.toolbarModule) && !isNullOrUndefined(this.annotationModule) &&
+                    !isNullOrUndefined(this.toolbarModule.annotationToolbarModule)) {
+                    if (this.enableMeasureAnnotation && isNullOrUndefined(this.annotationModule.measureAnnotationModule)) {
+                        this.annotationModule.measureAnnotationModule = new MeasureAnnotation(this, this.viewerBase);
+                    }
+                    if (Browser.isDevice) {
+                        this.showMobileAnnotationToolbar();
+                        this.toolbarModule.annotationToolbarModule.enableCalibrateAnnotationTool(this.enableMeasureAnnotation);
+                    }
+                    else {
+                        if (!newProp.enableMeasureAnnotation && oldProp.enableMeasureAnnotation) {
+                            const dropDown: HTMLElement = this.viewerBase.getElement('_annotation_calibrate-popup');
+                            if (dropDown && dropDown.firstElementChild) {
+                                dropDown.classList.remove('e-popup-open');
+                                dropDown.classList.add('e-popup-close');
+                            }
+                        }
+                        this.toolbarModule.annotationToolbarModule.updateToolbarItems();
+                    }
+                }
+                break;
+            case 'enableTextMarkupAnnotation':
+                this.notify('annotation', { module: 'annotation', enable: this.enableTextMarkupAnnotation });
+                if (!isNullOrUndefined(this.toolbarModule) && !isNullOrUndefined(this.annotationModule) &&
+                    !isNullOrUndefined(this.toolbarModule.annotationToolbarModule)) {
+                    if (this.enableTextMarkupAnnotation && isNullOrUndefined(this.annotationModule.textMarkupAnnotationModule)) {
+                        this.annotationModule.textMarkupAnnotationModule = new TextMarkupAnnotation(this, this.viewerBase);
+                    }
+                    const items: string[] = [this.element.id + '_contextmenu_highlight',
+                        this.element.id + '_contextmenu_underline',
+                        this.element.id + '_contextmenu_strikethrough', this.element.id + '_contextmenu_squiggly',
+                        this.element.id + '_contextmenu_redactText'];
+                    if (!isNullOrUndefined(this.viewerBase.contextMenuModule)) {
+                        this.viewerBase.contextMenuModule.updateContextMenuItems(items, this.enableTextMarkupAnnotation);
+                    }
+                    if (!newProp.enableTextMarkupAnnotation && oldProp.enableTextMarkupAnnotation) {
+                        if (Browser.isDevice) {
+                            this.toolbarModule.annotationToolbarModule.deselectAllItemsForMobile();
+                            this.showMobileAnnotationToolbar();
+                        }
+                        else {
+                            this.toolbarModule.annotationToolbarModule.deselectAllItems();
+                        }
+                    }
+                    this.toolbarModule.annotationToolbarModule.updateToolbarItems();
+                }
+                break;
+            case 'enableStampAnnotations':
+                this.notify('annotation', { module: 'annotation', enable: this.enableStampAnnotations });
+                if (!isNullOrUndefined(this.toolbarModule) && !isNullOrUndefined(this.annotationModule) &&
+                    !isNullOrUndefined(this.toolbarModule.annotationToolbarModule)) {
+                    if (Browser.isDevice && !newProp.enableStampAnnotations && oldProp.enableStampAnnotations) {
+                        const menuIds: NodeListOf<Element> = document.querySelectorAll('[id*="ej2menu-pdfViewercontextMenuElement-popup"]');
+                        menuIds.forEach((dropDown: HTMLElement) => {
+                            if (dropDown && dropDown.firstElementChild) {
+                                dropDown.classList.remove('e-popup-open');
+                                dropDown.classList.add('e-popup-close');
+                            }
+                        });
+                        this.showMobileAnnotationToolbar();
+                    }
+                    this.toolbarModule.annotationToolbarModule.updateToolbarItems();
+                }
+                break;
+            case 'enableFreeText':
+                this.notify('annotation', { module: 'annotation', enable: this.enableFreeText });
+                if (!isNullOrUndefined(this.toolbarModule) && !isNullOrUndefined(this.annotationModule) &&
+                    !isNullOrUndefined(this.toolbarModule.annotationToolbarModule)) {
+                    if (Browser.isDevice) {
+                        this.showMobileAnnotationToolbar();
+                    }
+                    this.toolbarModule.annotationToolbarModule.updateToolbarItems();
+                }
+                break;
+            case 'enableHandwrittenSignature':
+                this.notify('annotation', { module: 'annotation', enable: this.enableHandwrittenSignature });
+                if (!isNullOrUndefined(this.toolbarModule) && !isNullOrUndefined(this.annotationModule) &&
+                    !isNullOrUndefined(this.toolbarModule.annotationToolbarModule)) {
+                    if (!newProp.enableHandwrittenSignature && oldProp.enableHandwrittenSignature) {
+                        const dropDown: HTMLElement = this.viewerBase.getElement('_annotation_signature-popup');
+                        if (dropDown && dropDown.firstElementChild) {
+                            dropDown.classList.remove('e-popup-open');
+                            dropDown.classList.add('e-popup-close');
+                        }
+                        const signatureWindow: HTMLElement = this.viewerBase.getElement('_signature_window');
+                        if (signatureWindow && signatureWindow.firstElementChild) {
+                            this.viewerBase.signatureModule.closeSignaturePanel();
+                        }
+                        if (Browser.isDevice) {
+                            this.showMobileAnnotationToolbar();
+                        }
+                    }
+                    this.toolbarModule.annotationToolbarModule.updateToolbarItems();
                 }
                 break;
             case 'enableAnnotationToolbar':
                 if (!isNullOrUndefined(this.toolbarModule) && !isNullOrUndefined(this.annotationModule) &&
-                    !isNullOrUndefined(this.toolbarModule.annotationToolbarModule)) {
+                !isNullOrUndefined(this.toolbarModule.annotationToolbarModule)) {
                     if (!newProp.enableAnnotationToolbar && this.isAnnotationToolbarVisible) {
                         this.isAnnotationToolbarVisible = false;
                         this.toolbarModule.annotationToolbarModule.showAnnotationToolbar();
@@ -8981,7 +9711,921 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
                     this.toolbarModule.enableToolbarItem(['FormDesignerEditTool'], newProp.enableFormDesignerToolbar);
                 }
                 break;
+            case 'enableAnnotation':
+                if (newProp.enableAnnotation) {
+                    this.applySavedAnnotationState();
+                    if (this.annotationCollection.length > 0 || this.signatureCollection.length > 0) {
+                        const pagesWithAnnotations: number[] = this.getAnnotatedPages(this.annotationCollection, this.signatureCollection);
+                        pagesWithAnnotations.forEach((page: number) => this.renderDrawing(null, page));
+                    }
+                    if (this.toolbar && isNullOrUndefined(this.toolbar.annotationToolbarModule)) {
+                        this.toolbar.annotationToolbarModule = new AnnotationToolbar(this, this.viewerBase, this.toolbar);
+                        this.isInsertBefore = true;
+                        if (!Browser.isDevice || this.enableDesktopMode) {
+                            this.toolbar.annotationToolbarModule.initializeAnnotationToolbar();
+                        }
+                        if (isNullOrUndefined(this.toolbar.redactionToolbarModule)) {
+                            this.toolbar.redactionToolbarModule = new RedactionToolbar(this, this.viewerBase, this.toolbar);
+                            if (!Browser.isDevice || this.enableDesktopMode) {
+                                this.toolbar.redactionToolbarModule.initializeRedactionToolbar();
+                            }
+                        }
+                        if (!isNullOrUndefined(this.annotationModule.stickyNotesAnnotationModule)) {
+                            this.annotationModule.stickyNotesAnnotationModule.initializeAcccordionContainer();
+                        }
+                        this.isInsertBefore = false;
+                    }
+                    if (this.enableStickyNotesAnnotation && this.toolbar) {
+                        this.toolbar.enableToolbarItem(['CommentTool'], true);
+                    }
+                    if (this.viewerBase.contextMenuModule) {
+                        this.updateContextMenuItems(true);
+                    }
+                    this.resetAnnotationState();
+                    this.viewerBase.isAnnotationCollectionRemoved = false;
+                } else {
+                    this.clearAnnotations();
+                    if (this.toolbarModule) {
+                        if (this.isAnnotationToolbarVisible) {
+                            this.toolbarModule.showAnnotationToolbar(false);
+                        }
+                        if (this.isRedactionToolbarVisible) {
+                            this.toolbarModule.showRedactionToolbar(false);
+                        }
+                        if (this.enableStickyNotesAnnotation) {
+                            this.toolbarModule.enableToolbarItem(['CommentTool'], false);
+                        }
+                        this.toolbarModule.enableUndoRedoTool(false);
+                    }
+                    if (this.viewerBase.navigationPane) {
+                        this.viewerBase.navigationPane.closeCommentPanelContainer();
+                    }
+                    if (this.viewerBase.contextMenuModule) {
+                        this.updateContextMenuItems(false);
+                    }
+                }
+                if (this.toolbarModule) {
+                    this.toolbarModule.enableToolbarItem(['AnnotationEditTool'], newProp.enableAnnotation);
+                    this.toolbarModule.enableToolbarItem(['RedactionEditTool'], newProp.enableAnnotation);
+                }
+                break;
+            case 'isPageOrganizerOpen':
+                if (!isNullOrUndefined(newProp.isPageOrganizerOpen)) {
+                    if (this.pageOrganizer && this.enablePageOrganizer) {
+                        if (newProp.isPageOrganizerOpen) {
+                            this.pageOrganizer.openPageOrganizer();
+                        }
+                        else {
+                            this.pageOrganizer.closePageOrganizer();
+                        }
+                    }
+                }
+                break;
+            case 'isThumbnailViewOpen':
+                if (!isNullOrUndefined(newProp.isThumbnailViewOpen)) {
+                    const thumbnailButton: HTMLButtonElement | null = document.getElementById(this.element.id + '_thumbnail_view') as HTMLButtonElement;
+                    if (this.thumbnailView && this.enableThumbnail && !isNullOrUndefined(thumbnailButton)) {
+                        if (newProp.isThumbnailViewOpen) {
+                            this.thumbnailView.openThumbnailPane();
+                        }
+                        else {
+                            this.thumbnailView.closeThumbnailPane();
+                        }
+                    }
+                }
+                break;
+            case 'isBookmarkPanelOpen':
+                if (!isNullOrUndefined(newProp.isBookmarkPanelOpen)) {
+                    if (this.bookmark && this.enableBookmark) {
+                        if (newProp.isBookmarkPanelOpen) {
+                            this.bookmark.openBookmarkPane();
+                        }
+                        else {
+                            this.bookmark.closeBookmarkPane();
+                        }
+                    }
+                }
+                break;
+            case 'enableBookmark':
+                if (!isNullOrUndefined(newProp.enableBookmark)) {
+                    if (newProp.enableBookmark) {
+                        this.bookmark.createRequestForBookmarks();
+                    }
+                }
+                break;
+            case 'enableThumbnail':
+                if (!isNullOrUndefined(newProp.enableThumbnail)) {
+                    if (!(Browser.isDevice && !this.enableDesktopMode) && newProp.enableThumbnail) {
+                        this.thumbnailView.createThumbnailContainer();
+                        this.thumbnailView.createRequestForThumbnails();
+                    }
+                }
+                break;
+            case 'enableBookmarkStyles':
+                if (!isNullOrUndefined(newProp.enableBookmarkStyles)) {
+                    if (!(Browser.isDevice && !this.enableDesktopMode) && this.enableBookmark && this.bookmark) {
+                        this.bookmark.handleBookmarkStyles();
+                    }
+                }
+                break;
+            case 'enablePageOrganizer':
+                if (!isNullOrUndefined(newProp.enablePageOrganizer)) {
+                    if (Browser.isDevice && !this.enableDesktopMode && this.toolbar) {
+                        this.toolbar.showToolbarItem(['OrganizePagesTool'], newProp.enablePageOrganizer);
+                        if (newProp.enablePageOrganizer) {
+                            this.toolbar.enableToolbarItem(['OrganizePagesTool'], false);
+                        }
+                    }
+                    else {
+                        if (this.viewerBase.navigationPane) {
+                            this.viewerBase.navigationPane.addOrganizePageButton(newProp.enablePageOrganizer);
+                        }
+                    }
+                    if (newProp.enablePageOrganizer) {
+                        this.pageOrganizer.createRequestForPreview();
+                    }
+                }
+                break;
+            case 'enableFormDesigner':
+                if (newProp.enableFormDesigner) {
+                    this.updateValuesInDesignerData();
+                    this.applyFormFieldState();
+                    if (isNullOrUndefined(this.toolbarModule.formDesignerToolbarModule)) {
+                        this.formatDesignerFieldCollections();
+                    }
+                    const pageDetails: number[] = Array.from(
+                        new Set([
+                            ...this.formFieldCollections
+                                .filter((a: any) => !isNullOrUndefined(a.pageIndex))
+                                .map((a: any) => a.pageIndex)
+                        ])
+                    ).sort((a: number, b: number) => a - b);
+                    this.reRenderDesignerModeFields(pageDetails);
+                    this.resetFormFieldState();
+                } else {
+                    this.clearAllFormFields();
+                    if (!isNullOrUndefined(this.toolbarModule)) {
+                        if (this.toolbarModule.formDesignerToolbarModule && this.isFormDesignerToolbarVisible) {
+                            this.isFormDesignerToolbarVisible = false;
+                            this.toolbarModule.formDesignerToolbarModule.showFormDesignerToolbar();
+                            this.toolbarModule.deSelectItem(this.toolbarModule.formDesignerItem);
+                        }
+                        this.toolbarModule.enableUndoRedoTool(false);
+                    }
+                }
+                if (this.toolbarModule) {
+                    this.toolbarModule.enableToolbarItem(['FormDesignerEditTool'], newProp.enableFormDesigner);
+                }
+                break;
             }
+        }
+    }
+
+    /**
+     * Clears all form fields from the viewer and resets related collections.
+     * - Saves the current state for potential restoration.
+     * - Formats field collections before clearing.
+     * - Removes HTML elements for each field and re-renders the page.
+     * @returns {void}
+     */
+    private clearAllFormFields(): void {
+        this.saveFormFieldState();
+        this.formatFieldCollections();
+        const pageDetails: number[] = Array.from(
+            new Set([
+                ...this.formFieldCollection
+                    .filter((a: any) => !isNullOrUndefined(a.pageIndex))
+                    .map((a: any) => a.pageIndex)
+            ])
+        ).sort((a: number, b: number) => a - b);
+        this.formFieldsModule.renderedPageList = [];
+        for (let i: number = 0; i < pageDetails.length; i++) {
+            this.clearSelection(pageDetails[parseInt(i.toString(), 10)]);
+            const pageCollection: any[] = this.formFieldCollection.filter((field: any) =>
+                (field as any).pageIndex === pageDetails[parseInt(i.toString(), 10)]);
+            for (let j: number = 0; j < pageCollection.length; j++) {
+                const currentField: HTMLElement = document.getElementById('form_field_' +
+                    pageCollection[parseInt(j.toString(), 10)].id + '_content_html_element');
+                if (!isNullOrUndefined(currentField)) {
+                    currentField.remove();
+                }
+            }
+            this.renderDrawing(null, pageDetails[parseInt(i.toString(), 10)]);
+            if (!isNullOrUndefined(this.formFieldsModule)) {
+                this.formFieldsModule.renderFormFields(pageDetails[parseInt(i.toString(), 10)], false);
+            }
+        }
+        this.formFieldCollection = [];
+        this.viewerBase.formFieldCollection = [];
+    }
+
+    /**
+     * Formats and rebuilds form field collections from session storage data.
+     * - Reads stored form field data.
+     * - Creates FormFieldModel objects for each valid field.
+     * @returns {void}
+     */
+    private formatFieldCollections(): void {
+        this.formFieldCollections = [];
+        const data: string = this.viewerBase.getItemFromSessionStorage('_formfields');
+        const designData: string = this.viewerBase.getItemFromSessionStorage('_formDesigner');
+        if (!isNullOrUndefined(data) && !isNullOrUndefined(designData)) {
+            const parsedFieldData: any[] = JSON.parse(data);
+            const parsedDesignData: any[] = JSON.parse(designData);
+            if (parsedFieldData.length < parsedDesignData.length) {
+                this.renderedFormFields = [];
+                this.renderedFormFields = parsedFieldData;
+                for (let i: number = parsedFieldData.length; i < parsedDesignData.length; i++) {
+                    const currentData: any = this.formFieldCollection[parseInt(i.toString(), 10)];
+                    this.addFormFieldsData(currentData);
+                }
+                this.viewerBase.setItemInSessionStorage(this.renderedFormFields, '_formfields');
+            }
+        }
+        else if (isNullOrUndefined(data) && this.formFieldCollection.length > 0) {
+            const iterateData: any = this.formFieldCollection;
+            for (let i: number = 0; i < iterateData.length; i++) {
+                this.addFormFieldsData(this.formFieldCollection[parseInt(i.toString(), 10)]);
+            }
+            for (let i: number = 0; i < this.renderedFormFields.length; i++) {
+                const currentField: any = this.renderedFormFields[parseInt(i.toString(), 10)];
+                if (currentField.ActualFieldName !== null) {
+                    currentField['uniqueID'] = this.element.id + 'input_' + currentField.PageIndex + '_' + i;
+                }
+            }
+            this.viewerBase.setItemInSessionStorage(this.renderedFormFields, '_formfields');
+            if (!isNullOrUndefined(this.storePageData)) {
+                this.isClearCollections = true;
+                this.formFieldsModule.formFieldCollections(this.storePageData);
+                this.isClearCollections = false;
+            }
+        }
+        this.viewerBase.sessionStorageManager.removeItem(this.viewerBase.documentId + '_formDesigner');
+    }
+
+    private addFormFieldsData(fieldData: any): void {
+        const currentField: any = fieldData;
+        switch (currentField.formFieldAnnotationType) {
+        case 'Textbox':
+        case 'PasswordField':
+            this.addTextBoxField(currentField, currentField.pageIndex, currentField.bounds);
+            break;
+        case 'Checkbox':
+            this.addCheckBoxField(currentField, currentField.pageIndex, currentField.bounds);
+            break;
+        case 'RadioButton':
+            this.addRadioButtonField(currentField, currentField.pageIndex);
+            break;
+        case 'DropdownList':
+            this.addComboBoxField(currentField, currentField.pageIndex);
+            break;
+        case 'ListBox':
+            this.addListBoxField(currentField, currentField.pageIndex);
+            break;
+        case 'SignatureField':
+        case 'InitialField':
+            this.addSignatureField(currentField, currentField.pageIndex, currentField.bounds);
+            break;
+        }
+    }
+
+    private addTextBoxField(textBox: any, pageNumber: number, bounds: any): void {
+        const formFields: PdfRenderedFields = new PdfRenderedFields();
+        formFields.FieldName = textBox.name;
+        formFields.ActualFieldName = textBox.name;
+        if (textBox.formFieldAnnotationType === 'PasswordField') {
+            formFields.Name = 'Password';
+        } else {
+            formFields.Name = 'Textbox';
+        }
+        formFields.ToolTip = textBox.toolTip;
+        if (!isNullOrUndefined(bounds)) {
+            formFields.LineBounds = { X: this.viewerBase.ConvertPixelToPoint(bounds.x), Y: this.viewerBase.ConvertPixelToPoint(bounds.y),
+                Width: this.viewerBase.ConvertPixelToPoint(bounds.width), Height: this.viewerBase.ConvertPixelToPoint(bounds.height) };
+        } else {
+            formFields.LineBounds = {
+                X: textBox.bounds.x, Y: textBox.bounds.y, Width: textBox.bounds.width,
+                Height: textBox.bounds.height
+            };
+        }
+        formFields.TabIndex = textBox.tabIndex;
+        formFields.PageIndex = pageNumber;
+        formFields.BorderWidth = textBox.thickness;
+        if (!isNullOrUndefined(textBox.backgroundColor)) {
+            const backgroundColor: number[] = this.parseHexToRgbaValues(textBox.backgroundColor);
+            formFields.BackColor = { R: backgroundColor[0], G: backgroundColor[1], B: backgroundColor[2] };
+        }
+        else {
+            formFields.IsTransparent = true;
+        }
+        formFields.Alignment = this.getAlignmentValue(textBox.textAlignment);
+        formFields.MaxLength = textBox.maxLength;
+        formFields.Visible = textBox.visibility === 'visible' ? 0 : 1;
+        formFields.InsertSpaces = textBox.insertSpaces;
+        formFields.Rotation = textBox.rotationAngle;
+        formFields.IsReadonly = textBox.isReadonly;
+        formFields.IsRequired = textBox.isRequired;
+        if (!isNullOrUndefined(textBox.color)) {
+            if (textBox.color === 'black') {
+                formFields.FontColor = { R: 0, G: 0, B: 0 };
+            } else {
+                const color: number[] = this.parseHexToRgbaValues(textBox.color);
+                formFields.FontColor = { R: color[0], G: color[1], B: color[2] };
+            }
+        }
+        if (!isNullOrUndefined(textBox.borderColor)) {
+            const borderColor: number[] = this.parseHexToRgbaValues(textBox.borderColor);
+            formFields.BorderColor = { R: borderColor[0], G: borderColor[1], B: borderColor[2] };
+        }
+        formFields.Text = textBox.value;
+        formFields.Multiline = textBox.isMultiline;
+        formFields.RotationAngle = textBox.rotateAngle;
+        if (!isNullOrUndefined(textBox.customData)) {
+            formFields.CustomData = textBox.customData;
+        }
+        formFields.TextList = [];
+        formFields.Value = textBox.value;
+        this.renderedFormFields.push(formFields);
+    }
+
+    private addCheckBoxField(chkField: any, index: number, bounds: any): void {
+        const formFields: PdfRenderedFields = new PdfRenderedFields();
+        formFields.Name = 'CheckBox';
+        formFields.ToolTip = chkField.toolTip;
+        formFields.LineBounds = {
+            X: this.viewerBase.ConvertPixelToPoint(bounds.x), Y: this.viewerBase.ConvertPixelToPoint(bounds.y),
+            Width: this.viewerBase.ConvertPixelToPoint(bounds.width),
+            Height: this.viewerBase.ConvertPixelToPoint(bounds.height)
+        };
+        formFields.Selected = chkField.isChecked;
+        formFields.GroupName = chkField.name.replace(/[^0-9a-zA-Z]+/g, '');
+        formFields.ActualFieldName = chkField.name;
+        formFields.PageIndex = index;
+        if (!isNullOrUndefined(chkField.backgroundColor)) {
+            const backgroundColor: number[] = this.parseHexToRgbaValues(chkField.backgroundColor);
+            formFields.BackColor = { R: backgroundColor[0], G: backgroundColor[1], B: backgroundColor[2] };
+            formFields.IsTransparent = false;
+        }
+        else {
+            formFields.IsTransparent = true;
+        }
+        formFields.BorderWidth = chkField.thickness;
+        if (!isNullOrUndefined(chkField.borderColor)) {
+            const borderColor: number[] = this.parseHexToRgbaValues(chkField.borderColor);
+            formFields.BorderColor = { R: borderColor[0], G: borderColor[1], B: borderColor[2] };
+        }
+        formFields.RotationAngle = chkField.rotationAngle;
+        formFields.Rotation = chkField.rotationAngle;
+        formFields.IsReadonly = chkField.isReadonly;
+        formFields.IsRequired = chkField.isRequired;
+        formFields.Visible = chkField.visibility === 'visible' ? 0 : 1;
+        formFields.Value = chkField.value;
+        formFields.Selected = chkField.isChecked;
+        formFields.CustomData = chkField.customData;
+        this.renderedFormFields.push(formFields);
+    }
+
+    private addRadioButtonField(item: any, index: number): void {
+        const formFields: PdfRenderedFields = new PdfRenderedFields();
+        formFields.Name = 'RadioButton';
+        formFields.ToolTip = item.toolTip;
+        formFields.GroupName = parent.name.replace(/[^0-9a-zA-Z]+/g, '');
+        formFields.ActualFieldName = item.name;
+        formFields.Selected = item.isSelected;
+        formFields.LineBounds = { X: this.viewerBase.ConvertPixelToPoint(item.bounds.x),
+            Y: this.viewerBase.ConvertPixelToPoint(item.bounds.y),
+            Width: this.viewerBase.ConvertPixelToPoint(item.bounds.width),
+            Height: this.viewerBase.ConvertPixelToPoint(item.bounds.height) };
+        formFields.Value = item.value;
+        formFields.PageIndex = index;
+        if (!isNullOrUndefined(item.backgroundColor)) {
+            const backgroundColor: number[] = this.parseHexToRgbaValues(item.backgroundColor);
+            formFields.BackColor = { R: backgroundColor[0], G: backgroundColor[1], B: backgroundColor[2] };
+            formFields.IsTransparent = false;
+        }
+        else {
+            formFields.IsTransparent = true;
+        }
+        formFields.BorderWidth = item.thickness;
+        if (!isNullOrUndefined(item.borderColor)) {
+            const borderColor: number[] = this.parseHexToRgbaValues(item.borderColor);
+            formFields.BorderColor = { R: borderColor[0], G: borderColor[1], B: borderColor[2] };
+        }
+        formFields.Rotation = item.rotationAngle;
+        formFields.IsRequired = item.isRequired;
+        formFields.IsReadonly = item.isReadOnly;
+        formFields.Visible = item.visibility === 'visible' ? 0 : 1;
+        formFields.RotationAngle = item.rotationAngle;
+        formFields.CustomData = item.customData;
+        this.renderedFormFields.push(formFields);
+    }
+
+    private addComboBoxField(comboBoxField: any, pageNumber: number): void {
+        const formFields: PdfRenderedFields = new PdfRenderedFields();
+        formFields.Name = 'DropDown';
+        formFields.ToolTip = comboBoxField.toolTip;
+        formFields.FieldName = comboBoxField.name;
+        formFields.Selected = comboBoxField.isSelected;
+        formFields.ActualFieldName = comboBoxField.name;
+        formFields.selectedIndex = comboBoxField.selectedIndex as number;
+        formFields.LineBounds = {
+            X: this.viewerBase.ConvertPixelToPoint(comboBoxField.bounds.x), Y: this.viewerBase.ConvertPixelToPoint(comboBoxField.bounds.y),
+            Width: this.viewerBase.ConvertPixelToPoint(comboBoxField.bounds.width),
+            Height: this.viewerBase.ConvertPixelToPoint(comboBoxField.bounds.height)
+        };
+        formFields.PageIndex = pageNumber;
+        if (!isNullOrUndefined(comboBoxField.backgroundColor)) {
+            const backgroundColor: number[] = this.parseHexToRgbaValues(comboBoxField.backgroundColor);
+            formFields.BackColor = { R: backgroundColor[0], G: backgroundColor[1], B: backgroundColor[2] };
+            formFields.IsTransparent = false;
+        }
+        else {
+            formFields.IsTransparent = true;
+        }
+        formFields.BorderWidth = comboBoxField.thickness;
+        if (!isNullOrUndefined(comboBoxField.borderColor)) {
+            const borderColor: number[] = this.parseHexToRgbaValues(comboBoxField.borderColor);
+            formFields.BorderColor = { R: borderColor[0], G: borderColor[1], B: borderColor[2] };
+        }
+        if (!isNullOrUndefined(comboBoxField.color)) {
+            if (comboBoxField.color === 'black') {
+                formFields.FontColor = { R: 0, G: 0, B: 0 };
+            } else {
+                const color: number[] = this.parseHexToRgbaValues(comboBoxField.color);
+                formFields.FontColor = { R: color[0], G: color[1], B: color[2] };
+            }
+        }
+        formFields.Rotation = comboBoxField.rotationAngle;
+        formFields.IsRequired = comboBoxField.isRequired;
+        formFields.IsReadonly = comboBoxField.isReadOnly;
+        formFields.Visible = comboBoxField.visibility === 'visible' ? 0 : 1;
+        formFields.RotationAngle = comboBoxField.rotationAngle;
+        formFields.Alignment = this.getAlignmentValue(comboBoxField.textAlignment);
+        formFields.CustomData = comboBoxField.customData;
+        formFields.TextList = [];
+        const options: string[] = comboBoxField.options;
+        if (options.length > 0) {
+            for (let i: number = 0; i < comboBoxField.options.length; i++) {
+                const item: any = comboBoxField.options[parseInt(i.toString(), 10)];
+                if (item) {
+                    formFields.ComboBoxList.push({ itemName: item.itemName, itemValue: item.itemValue });
+                    formFields.TextList.push({ itemName: item.itemName, itemValue: item.itemValue });
+                }
+            }
+        }
+        if (comboBoxField.options.length > 0 && comboBoxField.selectedIndex < comboBoxField.options.length &&
+            comboBoxField.selectedIndex !== -1) {
+            formFields.SelectedValue = comboBoxField.options[comboBoxField.selectedIndex].itemValue;
+        } else {
+            formFields.SelectedValue = '';
+        }
+        this.renderedFormFields.push(formFields);
+    }
+
+    private addListBoxField(listBoxField: any, pageNumber: number): void {
+        const formFields: PdfRenderedFields = new PdfRenderedFields();
+        formFields.Name = 'ListBox';
+        formFields.ToolTip = listBoxField.toolTip;
+        formFields.Text = listBoxField.name.replace(/[^0-9a-zA-Z]+/g, '');
+        formFields.ActualFieldName = listBoxField.name;
+        formFields.selectedIndex = listBoxField.selectedIndex as number;
+        formFields.LineBounds = {
+            X: this.viewerBase.ConvertPixelToPoint(listBoxField.bounds.x), Y: this.viewerBase.ConvertPixelToPoint(listBoxField.bounds.y),
+            Width: this.viewerBase.ConvertPixelToPoint(listBoxField.bounds.width),
+            Height: this.viewerBase.ConvertPixelToPoint(listBoxField.bounds.height)
+        };
+        formFields.TabIndex = listBoxField.tabIndex;
+        formFields.PageIndex = pageNumber;
+        formFields.BorderWidth = listBoxField.thickness;
+        if (!isNullOrUndefined(listBoxField.backgroundColor)) {
+            const backgroundColor: number[] = this.parseHexToRgbaValues(listBoxField.backgroundColor);
+            formFields.BackColor = { R: backgroundColor[0], G: backgroundColor[1], B: backgroundColor[2] };
+            formFields.IsTransparent = false;
+        }
+        else {
+            formFields.IsTransparent = true;
+        }
+        if (!isNullOrUndefined(listBoxField.color)) {
+            if (listBoxField.color === 'black') {
+                formFields.FontColor = { R: 0, G: 0, B: 0 };
+            } else {
+                const color: number[] = this.parseHexToRgbaValues(listBoxField.color);
+                formFields.FontColor = { R: color[0], G: color[1], B: color[2] };
+            }
+        }
+        if (!isNullOrUndefined(listBoxField.borderColor)) {
+            const borderColor: number[] = this.parseHexToRgbaValues(listBoxField.borderColor);
+            formFields.BorderColor = { R: borderColor[0], G: borderColor[1], B: borderColor[2] };
+        }
+        formFields.Rotation = listBoxField.rotationAngle;
+        formFields.IsReadonly = listBoxField.isReadOnly;
+        formFields.IsRequired = listBoxField.isRequired;
+        formFields.Visible = listBoxField.visibility === 'visible' ? 0 : 1;
+        formFields.MultiSelect = listBoxField.isMultiSelect;
+        formFields.Alignment = this.getAlignmentValue(listBoxField.textAlignment);
+        formFields.RotationAngle = listBoxField.rotationAngle;
+        formFields.CustomData = listBoxField.customData;
+        const options: string[] = listBoxField.options;
+        if (options.length > 0) {
+            for (let i: number = 0; i < listBoxField.options.length; i++) {
+                const item: any = listBoxField.options[parseInt(i.toString(), 10)];
+                if (item) {
+                    formFields.TextList.push({ itemName: item.itemName, itemValue: item.itemValue });
+                }
+            }
+        }
+        this.renderedFormFields.push(formFields);
+    }
+
+    private addSignatureField(signatureField: any, index: number, bounds: any): void {
+        const formFields: PdfRenderedFields = new PdfRenderedFields();
+        formFields.Name = 'SignatureField';
+        formFields.ToolTip = signatureField.toolTip;
+        formFields.FieldName = signatureField.name;
+        formFields.ActualFieldName = signatureField.name;
+        formFields.LineBounds = { X: this.viewerBase.ConvertPixelToPoint(bounds.x), Y: this.viewerBase.ConvertPixelToPoint(bounds.y),
+            Width: this.viewerBase.ConvertPixelToPoint(bounds.width), Height: this.viewerBase.ConvertPixelToPoint(bounds.height) };
+        formFields.PageIndex = index;
+        formFields.TabIndex = signatureField.tabIndex;
+        formFields.BorderWidth = signatureField.thickness;
+        formFields.IsReadonly = signatureField.isReadOnly;
+        formFields.IsRequired = signatureField.isRequired;
+        formFields.Visible = signatureField.visibility === 'visible' ? 0 : 1;
+        if (!isNullOrUndefined(signatureField.backgroundColor)) {
+            const backgroundColor: number[] = this.parseHexToRgbaValues(signatureField.backgroundColor);
+            formFields.BackColor = { R: backgroundColor[0], G: backgroundColor[1], B: backgroundColor[2] };
+            formFields.IsTransparent = false;
+        }
+        else if (formFields.IsReadonly) {
+            formFields.IsTransparent = true;
+        }
+        formFields.IsSignatureField = true;
+        formFields.Rotation = signatureField.rotationAngle;
+        formFields.RotationAngle = signatureField.rotationAngle;
+        if (signatureField.formFieldAnnotationType === 'InitialField') {
+            formFields.IsInitialField = true;
+        }
+        formFields.CustomData = signatureField.customData;
+        this.renderedFormFields.push(formFields);
+        if (signatureField.value !== '') {
+            const supportField: PdfRenderedFields = new PdfRenderedFields();
+            supportField.LineBounds = signatureField.signatureBound;
+            supportField.ActualFieldName = null;
+            supportField.FieldName = formFields.FieldName + '_' + this.signCount + 1;
+            supportField.Value = signatureField.value;
+            supportField.PageIndex = index;
+            if (signatureField.signatureType === 'Image') {
+                supportField.Name = 'SignatureImage';
+            } else if (signatureField.signatureType === 'Path') {
+                supportField.Name = 'ink';
+                const collectionData: object[] = splitArrayCollection(JSON.parse(signatureField.value));
+                supportField.Value = getPathString(collectionData);
+            } else if (signatureField.signatureType === 'Text') {
+                supportField.Name = 'SignatureText';
+                supportField.FontSize = 40;
+            }
+            this.renderedFormFields.push(supportField);
+        }
+    }
+
+    private getAlignmentValue(alignment: string): number {
+        // Map alignment (IFormField uses string, PdfRenderedFields uses number)
+        let alignmentValue: number;
+        switch (alignment) {
+        case 'left':
+            alignmentValue = 0;
+            break;
+        case 'center':
+            alignmentValue = 1;
+            break;
+        case 'right':
+            alignmentValue = 2;
+            break;
+        case 'justify':
+            alignmentValue = 3;
+            break;
+        default:
+            alignmentValue = 0; // Default to left
+            break;
+        }
+        return alignmentValue;
+    }
+
+    /**
+     * @private
+     * @returns {void}
+     */
+    public updateValuesInDesignerData(): void {
+        if (this.temporaryFormFieldState && this.temporaryFormFieldState.designerSessionData &&
+            this.temporaryFormFieldState.designerSessionData.length > 0) {
+            const designerFields: any = JSON.parse(this.temporaryFormFieldState.designerSessionData);
+            const fillFields: any = JSON.parse(this.viewerBase.getItemFromSessionStorage('_formfields'));
+            const supportFields: any = fillFields.filter((item: any) => {
+                return item.ActualFieldName === null;
+            });
+            const actualFields: any = fillFields.filter((item: any) => {
+                return item.ActualFieldName !== null;
+            });
+            for (let i: number = 0; i < actualFields.length; i++) {
+                const currentField: any = actualFields[parseInt(i.toString(), 10)];
+                if (designerFields.length > 0) {
+                    for (let j: number = 0; j < designerFields.length; j++) {
+                        const currentDesignerField: any = designerFields[parseInt(j.toString(), 10)].FormField;
+                        if (currentField.ActualFieldName === currentDesignerField.name) {
+                            if (currentField.Name === 'CheckBox' && currentDesignerField.formFieldAnnotationType === 'Checkbox') {
+                                currentDesignerField.isSelected = currentField.Selected;
+                                currentDesignerField.isChecked = currentField.Selected;
+                            }
+                            else if (currentField.Name === 'RadioButton' && currentDesignerField.formFieldAnnotationType === 'RadioButton') {
+                                currentDesignerField.radiobuttonItem[0].isChecked = currentField.Selected;
+                            }
+                            else if ((currentField.Name === 'Textbox' && currentDesignerField.formFieldAnnotationType === 'Textbox') ||
+                                (currentField.Name === 'Password' && currentDesignerField.formFieldAnnotationType === 'PasswordField')) {
+                                currentDesignerField.value = currentField.Value;
+                            } else if ((currentField.Name === 'DropDown' && currentDesignerField.formFieldAnnotationType === 'DropdownList') ||
+                                (currentField.Name === 'ListBox' && currentDesignerField.formFieldAnnotationType === 'ListBox')) {
+                                currentDesignerField.value = currentField.SelectedValue;
+                                currentDesignerField.selectedIndex = [];
+                                currentDesignerField.selectedIndex.push(currentField.selectedIndex);
+                            }
+                            else if ((currentField.Name === 'SignatureField' && currentDesignerField.formFieldAnnotationType === 'SignatureField') ||
+                                (currentField.Name === 'InitialField' && currentDesignerField.formFieldAnnotationType === 'InitialField')) {
+                                if (currentDesignerField.value !== '') {
+                                    break;
+                                } else if (supportFields.length > 0) {
+                                    for (let k: number = 0; k < supportFields.length; k++) {
+                                        const signField: any = supportFields[parseInt(k.toString(), 10)];
+                                        if (signField.FieldName.split('_')[0] === currentField.FieldName) {
+                                            let value: any = signField.Value;
+                                            if (signField.Name === 'ink') {
+                                                value = JSON.stringify(processPathData(signField.Value));
+                                                currentDesignerField.signatureType = 'Path';
+                                            } else if (signField.Name === 'SignatureImage') {
+                                                currentDesignerField.signatureType = 'Image';
+                                            } else {
+                                                currentDesignerField.signatureType = 'Text';
+                                                currentDesignerField.fontSize = 40;
+                                            }
+                                            currentDesignerField.signatureBound = signField.LineBounds;
+                                            currentDesignerField.value = value;
+                                            break;
+                                        }
+                                    }
+                                } else if (currentDesignerField.value === '' && currentField.Value !== '' && currentField.Value !== null) {
+                                    // eslint-disable-next-line security/detect-unsafe-regex
+                                    const pathRegex: RegExp = /^([MLHVCSQTAZmlhvcsqtaz]\s*-?\d+(\.\d+)?(,?\s*-?\d+(\.\d+)?)*\s*)+$/;
+                                    const isPath: boolean = pathRegex.test(currentField.Value.trim());
+                                    const imageRegex: RegExp = /^data:image\/[a-zA-Z]+;base64,[A-Za-z0-9+/]+={0,2}$/;
+                                    const isImage: boolean = imageRegex.test(currentField.Value.trim());
+                                    let value: any = currentField.Value;
+                                    if (isPath) {
+                                        value = JSON.stringify(processPathData(currentField.Value));
+                                        currentDesignerField.signatureType = 'Path';
+                                    } else if (isImage) {
+                                        currentDesignerField.signatureType = 'Image';
+                                    } else {
+                                        currentDesignerField.signatureType = 'Text';
+                                        currentDesignerField.fontSize = 40;
+                                    }
+                                    currentDesignerField.signatureBound = currentField.Bounds;
+                                    currentDesignerField.value = value;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            this.temporaryFormFieldState.designerSessionData = JSON.stringify(designerFields);
+        }
+    }
+
+    /**
+     * Saves the current state of form fields and session data for restoration.
+     * @returns {void}
+     */
+    private saveFormFieldState(): void {
+        const designerData: string = this.viewerBase.getItemFromSessionStorage('_formDesigner');
+        const fieldData: string = this.viewerBase.getItemFromSessionStorage('_formfields');
+        this.temporaryFormFieldState = {
+            formFieldCollection: this.formFieldCollection ? this.formFieldCollection : [] as any,
+            formFieldCollections: this.formFieldCollections ? this.formFieldCollections : [] as FormFieldModel[],
+            formFieldCollectionBase: this.viewerBase.formFieldCollection ? this.viewerBase.formFieldCollection : [] as any[],
+            designerSessionData: designerData ? designerData : [] as any
+        };
+    }
+
+    /**
+     * Resets the temporary form field state to empty values.
+     * @returns {void}
+     */
+    private resetFormFieldState(): void {
+        this.temporaryFormFieldState = {
+            formFieldCollection: [] as any,
+            formFieldCollections: [] as FormFieldModel[],
+            formFieldCollectionBase: [] as any[],
+            designerSessionData: [] as any
+        };
+    }
+
+    /**
+     * Applies the previously saved form field state back to the viewer.
+     * - Restores collections and session storage data.
+     * @returns {void}
+     */
+    private applyFormFieldState(): void {
+        if (this.temporaryFormFieldState) {
+            const proxy: StoreFormFieldState = this.temporaryFormFieldState;
+            this.formFieldCollection = proxy.formFieldCollection.length > 1 ? proxy.formFieldCollection : this.formFieldCollection;
+            this.formFieldCollections = proxy.formFieldCollections.length > 1 ? proxy.formFieldCollections : this.formFieldCollections;
+            this.viewerBase.formFieldCollection = proxy.formFieldCollectionBase.length > 1 ?
+                proxy.formFieldCollectionBase : this.viewerBase.formFieldCollection;
+            if (proxy.designerSessionData && proxy.designerSessionData.length > 0) {
+                const designData: any = JSON.parse(proxy.designerSessionData);
+                this.viewerBase.setItemInSessionStorage(designData, '_formDesigner');
+            }
+        }
+    }
+
+    /**
+     * Formats designer-specific field collections and updates session storage.
+     * - Initializes form designer toolbar.
+     * - Cleans up unique IDs from stored fields.
+     * @returns {void}
+     */
+    private formatDesignerFieldCollections(): void {
+        this.toolbarModule.formDesignerToolbarModule = new FormDesignerToolbar(this, this.viewerBase, this.toolbarModule);
+        this.isInsertBefore = true;
+        if (!Browser.isDevice || this.enableDesktopMode) {
+            this.toolbarModule.formDesignerToolbarModule.initializeFormDesignerToolbar();
+        }
+        this.isInsertBefore = false;
+        const data: string = this.viewerBase.getItemFromSessionStorage('_formfields');
+        this.viewerBase.sessionStorageManager.removeItem(this.viewerBase.documentId + '_formfields');
+        if (data) {
+            const formFieldData: any[] = JSON.parse(data);
+            for (let i: number = 0; i < formFieldData.length; i++) {
+                const currentField: any = formFieldData[parseInt(i.toString(), 10)];
+                delete currentField['uniqueID'];
+            }
+            this.viewerBase.sessionStorageManager.setItem(this.viewerBase.documentId + '_formfields', JSON.stringify(formFieldData));
+        }
+        if (!isNullOrUndefined(this.storePageData)) {
+            this.isClearCollections = true;
+            this.formFieldsModule.formFieldCollections(this.storePageData);
+            this.isClearCollections = false;
+        }
+    }
+
+    /**
+     * @param {number[]} pageDetails - gets the page collection details
+     * Re-renders form fields in designer mode for the given pages.
+     * - Clears previous rendered pages.
+     * - Recreates canvas and form fields for each page.
+     * @returns {void}
+     */
+    private reRenderDesignerModeFields(pageDetails: number[]): void {
+        if (!isNullOrUndefined(this.formFieldsModule)) {
+            this.formFieldsModule.renderedPageList = [];
+            for (let i: number = 0; i < pageDetails.length; i++) {
+                if (!isNullOrUndefined(this.magnificationModule)) {
+                    this.magnificationModule.designNewCanvas(pageDetails[parseInt(i.toString(), 10)]);
+                }
+                this.formFieldsModule.renderFormFields(pageDetails[parseInt(i.toString(), 10)], false);
+            }
+        }
+    }
+
+    private parseHexToRgbaValues(hex: string): number[] {
+        if (!hex || !hex.startsWith('#')) {
+            throw new Error('Invalid hex color');
+        }
+        hex = hex.replace('#', '').trim();
+        // Expand shorthand hex like #abc or #abcd
+        if (hex.length === 3 || hex.length === 4) {
+            hex = hex.split('').map((c: string) => c + c).join('');
+        }
+        if (hex.length !== 6 && hex.length !== 8) {
+            throw new Error('Invalid hex length');
+        }
+        const r: number = parseInt(hex.slice(0, 2), 16);
+        const g: number = parseInt(hex.slice(2, 4), 16);
+        const b: number = parseInt(hex.slice(4, 6), 16);
+        const a: number = hex.length === 8 ? parseInt(hex.slice(6, 8), 16) : 255;
+        return [r, g, b, a];
+    }
+
+    // Clear annotations when enableAnnotation is set to false
+    private clearAnnotations(): void {
+        if (this.pageCount > 0) {
+            this.saveAnnotationState();
+            if (this.annotationCollection.length > 0 || this.signatureCollection.length > 0) {
+                const pagesWithAnnotations: number[] = this.getAnnotatedPages(this.annotationCollection, this.signatureCollection);
+                pagesWithAnnotations.forEach((pageIndex: number) => {
+                    const zoom: number = this.viewerBase.getZoomFactor();
+                    const ratio: number = this.viewerBase.getZoomRatio(zoom);
+                    const canvasIds: string[] = ['_annotationCanvas_', '_blendAnnotationsIntoCanvas_'];
+                    canvasIds.forEach((id: string) => {
+                        const canvas: HTMLElement = this.viewerBase.getElement(id + pageIndex) as HTMLCanvasElement;
+                        if (canvas) {
+                            const width: number = this.viewerBase.pageSize[parseInt(pageIndex.toString(), 10)].width;
+                            const height: number = this.viewerBase.pageSize[parseInt(pageIndex.toString(), 10)].height;
+                            (canvas as HTMLCanvasElement).width = width * ratio;
+                            (canvas as HTMLCanvasElement).height = height * ratio;
+                            (canvas as HTMLCanvasElement).style.width = width * zoom + 'px';
+                            (canvas as HTMLCanvasElement).style.height = height * zoom + 'px';
+                        }
+                    });
+                    this.clearSelection(pageIndex);
+                });
+                this.zIndexTable = [];
+                this.annotationsCollection = new Map();
+                this.annotationCollection = [];
+                this.signatureCollection = [];
+                this.viewerBase.importedAnnotation = [];
+                this.viewerBase.isAnnotationCollectionRemoved = true;
+                const annotationCollection: any = this.viewerBase.createAnnotationsCollection();
+                this.viewerBase.annotationComments = annotationCollection;
+                this.viewerBase.documentAnnotationCollections = annotationCollection;
+                this.viewerBase.isImportedAnnotation = false;
+            }
+        }
+    }
+
+    // Save current annotation state
+    private saveAnnotationState(): void {
+        this.temporaryAnnotationState = {
+            zIndexTable: this.zIndexTable ? this.zIndexTable : [] as ZOrderPageTable[],
+            annotationCollection: this.annotationCollection ? this.annotationCollection : [] as any,
+            signatureCollection: this.signatureCollection ? this.signatureCollection : [] as any,
+            documentAnnotationCollections: this.viewerBase.documentAnnotationCollections ?
+                this.viewerBase.documentAnnotationCollections : this.viewerBase.createAnnotationsCollection(),
+            annotationsCollection: this.annotationsCollection ? this.annotationsCollection : new Map(),
+            annotationComments: this.viewerBase.annotationComments ? this.viewerBase.annotationComments :
+                this.viewerBase.createAnnotationsCollection(),
+            importedAnnotation: this.viewerBase.importedAnnotation ? this.viewerBase.importedAnnotation : [] as any,
+            isImportedAnnotation: this.viewerBase.isImportedAnnotation ? this.viewerBase.isImportedAnnotation : false
+        };
+    }
+
+    // Reset annotation state to default
+    private resetAnnotationState(): void {
+        this.temporaryAnnotationState = {
+            zIndexTable: [] as ZOrderPageTable[],
+            annotationCollection: [] as any,
+            signatureCollection: [] as any,
+            documentAnnotationCollections: this.viewerBase.createAnnotationsCollection(),
+            annotationsCollection: new Map(),
+            annotationComments: this.viewerBase.createAnnotationsCollection(),
+            importedAnnotation: [] as any,
+            isImportedAnnotation: false
+        };
+    }
+
+    // Apply saved annotation state
+    private applySavedAnnotationState(): void {
+        if (this.temporaryAnnotationState) {
+            this.zIndexTable = this.temporaryAnnotationState.zIndexTable;
+            this.annotationCollection = this.temporaryAnnotationState.annotationCollection;
+            this.signatureCollection = this.temporaryAnnotationState.signatureCollection;
+            this.viewerBase.documentAnnotationCollections = this.temporaryAnnotationState.documentAnnotationCollections;
+            this.annotationsCollection = this.temporaryAnnotationState.annotationsCollection;
+            this.viewerBase.annotationComments = this.temporaryAnnotationState.annotationComments;
+            this.viewerBase.importedAnnotation = this.temporaryAnnotationState.importedAnnotation;
+        }
+    }
+
+    //Get pages with annotations
+    private getAnnotatedPages(annotationCollection: any[], signatureCollection: any[]): number[] {
+        const pagesWithAnnotations: number[] = Array.from(
+            new Set([
+                ...annotationCollection
+                    .filter((a: any) => !isNullOrUndefined(a.pageNumber))
+                    .map((a: any) => a.pageNumber),
+                ...signatureCollection
+                    .filter((a: any) => !isNullOrUndefined(a.pageNumber))
+                    .map((a: any) => a.pageNumber)
+            ])
+        ).sort((a: number, b: number) => a - b);
+        return pagesWithAnnotations;
+    }
+
+    //Updates contextmenu items based on enableAnnotation
+    private updateContextMenuItems(isEnable: boolean): void {
+        const proxy: any = this.viewerBase.contextMenuModule;
+        const items: string[] = [proxy.defaultHighlightId, proxy.defaultUnderlineId,
+            proxy.defaultStrikethroughId, proxy.defaultSquigglyId, proxy.redactTextId];
+        proxy.contextMenuObj.enableItems(items, isEnable, true);
+    }
+
+    private showMobileAnnotationToolbar(): void {
+        if (this.toolbarModule.annotationToolbarModule.toolbarElement &&
+            this.toolbarModule.annotationToolbarModule.toolbarElement.children.length > 0) {
+            this.toolbarModule.annotationToolbarModule.toolbarElement.style.display = 'block';
+        }
+        else if (this.toolbarModule.annotationToolbarModule.toolbar) {
+            this.toolbarModule.annotationToolbarModule.toolbarCreated = false;
+            this.toolbarModule.annotationToolbarModule.toolbar.destroy();
+            this.toolbarModule.annotationToolbarModule.createAnnotationToolbarForMobile();
         }
     }
 
@@ -9227,6 +10871,22 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
         'Page': 'Page',
         'Add a comment': 'Add a comment',
         'Add a reply': 'Add a reply',
+        'Redaction': 'Redaction',
+        'Redact Text': 'Redact Text',
+        'Apply Redactions': 'Apply Redactions',
+        'Invalid page range': 'Invalid page range',
+        'Apply Redaction': 'Apply Redaction',
+        'Redact Content': 'All content marked for redaction will be permanently removed from the document. This action cannot be undone.',
+        'Use Overlay Text': 'Use Overlay Text',
+        'Repeat Overlay Text': 'Repeat Overlay Text',
+        'REDACTED': 'REDACTED',
+        'Page Range': 'Page Range',
+        'Mark for Redaction': 'Mark for Redaction',
+        'Mark Page Range': 'Mark Page Range',
+        'Redact Pages': 'Redact Pages',
+        'Redaction Panel': 'Redaction Panel',
+        'Redact': 'Redact',
+        'Close': 'Close',
         'Import Annotations': 'Import annotations from JSON file',
         'Export Annotations': 'Export annotation to JSON file',
         'Export XFDF': 'Export annotation to XFDF file',
@@ -9331,7 +10991,12 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
         'pt': 'pt',
         'cu': 'cu',
         'sq': 'sq',
-        'Initial': 'Initial'
+        'Initial': 'Initial',
+        'Extract Pages' : 'Extract Pages',
+        'Delete Pages After Extracting' : 'Delete Pages After Extracting',
+        'Extract Pages As Separate Files' : 'Extract Pages As Separate Files',
+        'Extract': 'Extract',
+        'Example: 1,3,5-12': 'Example: 1,3,5-12'
     };
 
     /**
@@ -9360,6 +11025,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
         } else {
             this.viewerBase.clear(false);
         }
+        this.viewerBase.setNavigationSettings();
         this.pageCount = 0;
         this.currentPageNumber = 0;
         if (!isBlazor()) {
@@ -9927,6 +11593,22 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
         if (this.textSearchModule){
             this.textSearchModule.showSearchBox(false);
         }
+        if (this.temporaryAnnotationState) {
+            this.temporaryAnnotationState = {
+                zIndexTable: [],
+                annotationCollection: [],
+                signatureCollection: [],
+                documentAnnotationCollections: [],
+                annotationsCollection: new Map(),
+                annotationComments: [],
+                importedAnnotation: [],
+                isImportedAnnotation: false
+            };
+        }
+        if (this.temporaryFormFieldState) {
+            this.resetFormFieldState();
+        }
+        this.storePageData = null;
     }
 
     /**
@@ -9990,7 +11672,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
                             this.importAnnotationsAsJson(importData);
                         } else {
                             const newImportData: any = importData.split(',')[1] ? importData.split(',')[1] : importData.split(',')[0];
-                            importData = decodeURIComponent(escape(atob(newImportData)));
+                            importData = new TextDecoder('utf-8').decode(Uint8Array.from(atob(newImportData), (c: string) => c.charCodeAt(0)));
                             this.importAnnotationsAsJson(importData);
                         }
                     } else {
@@ -11597,14 +13279,14 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
     }
 
     /**
-     * @param {ClientRect} bounds - Gets the bounds values
+     * @param {DOMRect} bounds - Gets the bounds values
      * @param {string} commonStyle - Gets the common style value
      * @param {HTMLElement} cavas - Gets the canvas value
      * @param {number} index - Gets the index values
      * @private
      * @returns {void}
      */
-    public renderAdornerLayer(bounds: ClientRect, commonStyle: string, cavas: HTMLElement, index: number): void {
+    public renderAdornerLayer(bounds: DOMRect, commonStyle: string, cavas: HTMLElement, index: number): void {
         renderAdornerLayer(bounds, commonStyle, cavas, index, this);
     }
 
@@ -12004,4 +13686,250 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
         this.disableDefaultContextMenu = disableDefaultItems;
     }
 
+    /**
+     * Extracts and combines specific pages from the PDF viewer.
+     *
+     * @param {string} value - Specifies which pages to extract from the document.
+     * @returns {Uint8Array} - A byte array representing the extracted pages as a new PDF document.
+     *
+     * **Remarks:**
+     * The Extract Pages API will be available only when the PDF Viewer is operating in Standalone Mode.
+     * This method allows selective extraction and combination of pages from a loaded PDF document.
+     * The `value` parameter should follow a format that supports individual pages and ranges.
+     * For example, passing "1,3,5-7" will extract page 1, page 3, and pages 5 through 7.
+     */
+    public extractPages(value: string): Uint8Array {
+        if (!isNullOrUndefined(this.serviceUrl)) {
+            console.warn('extractPages is supported only in client-side rendering.');
+            return new Uint8Array(0);
+        }
+        if (!this.isValidPageRangeFormat(value)) {
+            console.error(`Invalid page range format: "${value}". Expected format like "1,3,5-7".`);
+            return new Uint8Array(0);
+        }
+        try {
+            return this.extractpagesFromPDF(value);
+        } catch (error) {
+            console.error(`Error extracting pages for range "${value}":`, error.message);
+            return new Uint8Array(0);
+        }
+    }
+
+    private isValidPageRangeFormat(value: string): boolean {
+        return value.split(',').every((part: string) => {
+            const trimmed: string = part.trim();
+            const [start, end]: string[] = trimmed.split('-');
+            const isNumber: (val: string) => boolean = (val: string): boolean =>
+                !isNaN(Number(val)) && Number.isInteger(Number(val));
+            if (!isNumber(start)) { return false; }
+            if (end !== undefined && !isNumber(end)) { return false; }
+            return true;
+        });
+
+    }
+
+    private extractpagesFromPDF(value: string): Uint8Array {
+        if (this.viewerBase.extractAction && this.pageOrganizerModule) {
+            this.pageOrganizer.updateOrganizePageActions();
+            const pages: OrganizeDetails[] = this.pageOrganizer.organizePagesCollection;
+            // Extract currentPageIndex for items where isImportedDoc is true
+            const importedPageIndexes: number[] = pages.filter((page: OrganizeDetails): boolean => page.isImportedDoc === true)
+                .map((page: OrganizeDetails): number => page.currentPageIndex + 1);
+            if (importedPageIndexes.length > 0) {
+                const imports: { page: number; count: number }[] = [];
+                // Ensure processing in ascending page order for deterministic shifts
+                importedPageIndexes.sort((a: number, b: number): number => a - b).forEach((index: number): void => {
+                    const pageData: OrganizeDetails = pages.find((p: OrganizeDetails): boolean => p.currentPageIndex + 1 === index);
+                    if (pageData && pageData.documentData) {
+                        const documentData: any = this.viewerBase.convertBase64(pageData.documentData);
+                        const document: PdfDocument = new PdfDocument(documentData, null);
+                        imports.push({ page: index, count: document.pageCount });
+                        document.destroy();
+                    }
+                });
+                if (imports.length) {
+                    value = this.updateValueString(value, imports);
+                    this.pageOrganizer.deleteExtractValue = value;
+                }
+            }
+        }
+        this.viewerBase.currentDocumentByteArray = this.viewerBase.saveDocument();
+        return this.importPagesFromRange(value, this.viewerBase.currentDocumentByteArray);
+    }
+
+    private updateValueString(value: string, imports: { page: number; count: number }[]): string {
+        // Prepare sorted imports and their deltas
+        const items: {page: number; delta: number; }[] = (imports || [])
+            .filter((i: { page: number; count: number }): boolean =>
+                typeof i.page === 'number' && typeof i.count === 'number' && i.count >= 1)
+            .map((i: { page: number; count: number }): { page: number; delta: number } =>
+                ({ page: i.page, delta: Math.max(0, i.count - 1) }))
+            .sort((a: { page: number; delta: number }, b: { page: number; delta: number }): number => a.page - b.page);
+        const prefixDelta: (n: number) => number = (n: number): number =>
+            items.reduce((s: number, it: { page: number; delta: number }): number => s + (it.page < n ? it.delta : 0), 0);
+        const inRangeDelta: (s: number, e: number) => number = (s: number, e: number): number =>
+            items.reduce((t: number, it: { page: number; delta: number }): number =>
+                t + (it.page >= s && it.page <= e ? it.delta : 0), 0
+            );
+        const deltaAt: (n: number) => number | undefined = (n: number): number | undefined => {
+            const hit: { page: number; delta: number } | undefined = items.find(
+                (it: { page: number; delta: number }): boolean => it.page === n
+            );
+            return hit ? hit.delta : undefined;
+        };
+        const parts: string[] = value
+            .split(',')
+            .map((p: string): string => p.trim())
+            .filter((p: string): boolean => p.length > 0);
+        const updatedParts: string[] = [];
+        for (const part of parts) {
+            if (part.includes('-')) {
+                let [start, end]: number[] = part
+                    .split('-')
+                    .map((n: string): number => Number(n));
+                if (isNaN(start) || isNaN(end)) { continue; }
+                if (start > end) { const t: number = start; start = end; end = t; }
+                const pre: number = prefixDelta(start);
+                const mid: number = inRangeDelta(start, end);
+                const shiftedStart: number = start + pre;
+                const shiftedEnd: number = end + pre + mid;
+                updatedParts.push(`${shiftedStart}-${shiftedEnd}`);
+            } else {
+                const num: number = Number(part);
+                if (isNaN(num)) { continue; }
+                const pre: number = prefixDelta(num);
+                const shifted: number = num + pre;
+                const d: number = deltaAt(num);
+                if (d && d > 0) {
+                    updatedParts.push(`${shifted}-${shifted + d}`);
+                } else {
+                    updatedParts.push(`${shifted}`);
+                }
+            }
+        }
+        return updatedParts.join(', ');
+    }
+
+    /**
+     * @private
+     * @param {string} rangeString - Specifies which pages to extract from the document.
+     * @param {Uint8Array} sourceBytes - The byte array of the saved PDF document.
+     * @param {boolean} deleteExtract - It's describes whether to delete the extracted pages from the source document.
+     * @returns {Uint8Array} - A byte array representing the extracted pages as a new PDF document.
+     */
+    public importPagesFromRange(
+        rangeString: string,
+        sourceBytes: Uint8Array,
+        deleteExtract?: boolean
+    ): Uint8Array {
+        if (isNullOrUndefined(sourceBytes)) {
+            return new Uint8Array(0);
+        }
+        const sourceDocument: PdfDocument = new PdfDocument(sourceBytes, this.pdfRendererModule.password);
+        let targetDocument: PdfDocument | undefined;
+        try {
+            const pageCount: number = sourceDocument.pageCount;
+            if (pageCount === 0) { return new Uint8Array(0); }
+            const ranges: Array<[number, number]> = this.normalizeAndMergeRanges1Based(rangeString, pageCount);
+            if (ranges.length === 0) {
+                console.error(`No valid pages found in range "${rangeString}".`);
+                return new Uint8Array(0);
+            }
+            if (!deleteExtract) {
+                targetDocument = new PdfDocument();
+                const options: PdfPageImportOptions = new PdfPageImportOptions();
+                options.groupFormFields = true;
+                options.optimizeResources = true;
+                for (const [startZero, endZero] of ranges) {
+                    targetDocument.importPageRange(sourceDocument, startZero, endZero, options);
+                }
+                return targetDocument.save();
+            }
+            // If deleteExtract is true
+            const pagesToRemove: Set<number> = new Set();
+            for (const [startZero, endZero] of ranges) {
+                for (let i: number = startZero; i <= endZero; i++) {
+                    pagesToRemove.add(i);
+                }
+            }
+            const sortedPages: number[] = Array.from(pagesToRemove).sort((a: number, b: number): number => b - a);
+            for (const pageIndex of sortedPages) {
+                sourceDocument.removePage(pageIndex);
+            }
+            return sourceDocument.save();
+        } finally {
+            try { sourceDocument.destroy(); }
+            catch {
+                // intentionally empty
+            }
+            try { targetDocument.destroy(); }
+            catch {
+                // intentionally empty
+            }
+        }
+    }
+
+    private normalizeAndMergeRanges1Based(
+        rangeString: string,
+        pageCount: number
+    ): Array<[number, number]> {
+        const maxIndex: number = pageCount - 1;
+        const raw: Array<[number, number]> = [];
+        if (!rangeString || !rangeString.trim()) {
+            console.error('Page range string is empty.');
+            return raw;
+        }
+        for (let token of rangeString.split(',')) {
+            token = token.trim();
+            if (!token) { continue; }
+            const hyphenIdx: number = token.indexOf('-');
+            if (hyphenIdx !== -1) {
+                const aStr: string = token.slice(0, hyphenIdx).trim();
+                const bStr: string = token.slice(hyphenIdx + 1).trim();
+                const a: number = parseInt(aStr, 10);
+                const b: number = parseInt(bStr, 10);
+                if (!Number.isFinite(a) || !Number.isFinite(b)) {
+                    console.error(`Invalid range token: "${token}"`);
+                    continue;
+                }
+                const start: number = Math.max(0, Math.min(a, b) - 1);
+                const end: number = Math.min(maxIndex, Math.max(a, b) - 1);
+                if (start > maxIndex || end < 0) {
+                    console.error(`Range "${token}" is out of bounds. Document has only ${pageCount} pages.`);
+                    continue;
+                }
+                if (start <= end) { raw.push([start, end]); }
+            } else {
+                const p: number = parseInt(token, 10);
+                if (!Number.isFinite(p)) {
+                    console.error(`Invalid page token: "${token}"`);
+                    continue;
+                }
+                const idx0: number = p - 1;
+                if (idx0 >= 0 && idx0 <= maxIndex) {
+                    raw.push([idx0, idx0]);
+                } else {
+                    console.error(`Page number "${p}" is out of bounds. Document has only ${pageCount} pages.`);
+                }
+            }
+        }
+        if (raw.length === 0) { return raw; }
+        raw.sort((r1: [number, number], r2: [number, number]): number =>
+            (r1[0] - r2[0]) || (r1[1] - r2[1])
+        );
+        const merged: Array<[number, number]> = [];
+        let [cs, ce]: [number, number] = raw[0];
+        for (let i: number = 1; i < raw.length; i++) {
+            // eslint-disable-next-line
+            const [s, e]: [number, number] = raw[i];
+            if (s <= ce + 1) {
+                ce = Math.max(ce, e);
+            } else {
+                merged.push([cs, ce]);
+                [cs, ce] = [s, e];
+            }
+        }
+        merged.push([cs, ce]);
+        return merged;
+    }
 }

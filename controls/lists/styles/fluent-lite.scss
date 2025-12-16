@@ -1,7 +1,7 @@
-@import 'ej2-base/styles/definition/fluent.scss';
-@import 'ej2-buttons/styles/check-box/fluent-definition.scss';
-@import 'list-view/fluent-definition.scss';
-@import 'list-view/icons/fluent.scss';
-@import 'list-view/all.scss';
-@import 'sortable/fluent-definition.scss';
-@import 'sortable/all.scss';
+@use 'ej2-base/styles/definition/fluent' as *;
+@use 'ej2-buttons/styles/check-box/fluent-definition' as *;
+@use 'list-view/fluent-definition' as *;
+@use 'list-view/icons/fluent' as *;
+@use 'list-view/all' as *;
+@use 'sortable/fluent-definition' as *;
+@use 'sortable/all' as *;

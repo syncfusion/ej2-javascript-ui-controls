@@ -1,4 +1,6 @@
 @use 'sass:color';
+@use 'ej2-base/styles/definition/highcontrast' as *;
+@forward 'ej2-base/styles/definition/highcontrast';
 
 /*! calendar fabric theme variables */
 $calendar-title-hover-color: $selection-bg !default;
@@ -159,6 +161,7 @@ $calendar-bigger-icon-margin: 0 !default;
 $calendar-selected-border-color: 1px solid $selection-bg !default;
 $calendar-week-number-font-weight: 500 !default;
 $calendar-header-title-padding: 0 5px !default;
+$border-zero: 0;
 
 //Focus related styles
 $calendar-title-focus-box-shadow: 0 0 0 1px $bg-base-100 !default;
@@ -199,3 +202,12 @@ $calendar-small-title-font-color: $selection-bg !default;
 $calendar-bigger-small-table-padding: 0 10px 10px 10px !default;
 $calendar-bigger-small-yeardecade-font-size: 12px !default;
 $calendar-small-font-size: 12px !default;
+
+$line-height: 14px;
+$margin-zero: 0;
+$padding-zero: 0;
+$calendar-bigger-rtl-header-text-indent: 6px !default;
+$calendar-zero-border-radius: 0 !default;
+$calendar-bigger-header-width: 60% !default;
+$calendar-bigger-placeholder-min-height: 392px !default;
+$calendar-small-min-height: 220px !default;

@@ -876,7 +876,7 @@ export class FormDesigner {
 
     private rgbToHex(rgb: number[]): string {
         return rgb.length ? ('#' + this.hex(rgb[0]) + this.hex(rgb[1]) + this.hex(rgb[2]) +
-            (!isNullOrUndefined(rgb[3]) ? (rgb[3] !== 0 ? (Math.round(rgb[3] * 255) + 0x10000).toString(16).substr(-2) : '00') : '')) : '';
+            (!isNullOrUndefined(rgb[3]) ? (rgb[3] !== 0 ? (Math.round(rgb[3] * 255) + 0x10000).toString(16).slice(-2) : '00') : '')) : '';
     }
 
     /**
@@ -2106,8 +2106,8 @@ export class FormDesigner {
                     oldValueIndex = formFieldsData[parseInt(i.toString(), 10)].FormField.selectedIndex.pop();
                     formFieldsData[parseInt(i.toString(), 10)].FormField.selectedIndex.push(oldValueIndex);
                 }
-                const oldValue: any = formFieldsData[parseInt(i.toString(), 10)].FormField.
-                    option[parseInt(oldValueIndex.toString(), 10)].itemValue;
+                const oldValue: any = oldValueIndex !== -1 ? formFieldsData[parseInt(i.toString(), 10)].FormField.
+                    option[parseInt(oldValueIndex.toString(), 10)].itemValue : 0;
                 this.pdfViewerBase.formFieldCollection[parseInt(i.toString(), 10)].FormField.selectedIndex.push(selectIndex);
                 formFieldsData[parseInt(i.toString(), 10)].FormField.selectedIndex =
                  this.pdfViewerBase.formFieldCollection[parseInt(i.toString(), 10)].FormField.selectedIndex;
@@ -2446,6 +2446,11 @@ export class FormDesigner {
             else if (this.pdfViewer.textFieldSettings.fontStyle) {
                 obj.font = this.setTextBoxFontStyle(this.pdfViewer.textFieldSettings.fontStyle);
             }
+            if (!isNullOrUndefined((options as any).value) || !isNullOrUndefined(obj.value)) {
+                const maxLen: number = (obj as any).maxLength as number;
+                const val: string = !isNullOrUndefined((options as any).value) ? (options as any).value : (obj.value as string);
+                obj.value = (!isNullOrUndefined(maxLen) && maxLen > 0) ? val.substring(0, maxLen) : val;
+            }
             break;
         case 'Password':
             obj.formFieldAnnotationType = 'PasswordField';
@@ -2454,6 +2459,11 @@ export class FormDesigner {
             obj.thickness = !isNullOrUndefined((options as PasswordFieldSettings).thickness) ?
                 (options as PasswordFieldSettings).thickness : 1;
             obj.borderColor = !isNullOrUndefined((options as PasswordFieldSettings).borderColor) ? (options as PasswordFieldSettings).borderColor : '#303030';
+            if (!isNullOrUndefined((options as any).value) || !isNullOrUndefined(obj.value)) {
+                const maxLenPwd: number = (obj as any).maxLength as number;
+                const pwdVal: string = !isNullOrUndefined((options as any).value) ? (options as any).value : (obj.value as string);
+                obj.value = (!isNullOrUndefined(maxLenPwd) && maxLenPwd > 0) ? pwdVal.substring(0, maxLenPwd) : pwdVal;
+            }
             break;
         case 'DropDown':
             obj.formFieldAnnotationType = 'DropdownList';
@@ -2616,6 +2626,9 @@ export class FormDesigner {
             signatureType : (node as any).signatureType, zIndex : (node as PdfFormFieldBaseModel).zIndex,
             pageNumber : node.pageNumber, customData: (node as PdfFormFieldBaseModel).customData
         };
+        if (this.pdfViewer.isClearCollections) {
+            this.pdfViewer.formFieldCollections = [];
+        }
         this.pdfViewer.formFieldCollections.push(formField);
     }
 
@@ -4669,9 +4682,14 @@ export class FormDesigner {
                 const currentData: any = formFieldsData[parseInt(i.toString(), 10)].FormField;
                 if (!isNullOrUndefined(currentData)) {
                     if ((currentData.formFieldAnnotationType === 'SignatureField' || currentData.formFieldAnnotationType === 'InitialField') && (isNullOrUndefined(currentData.signatureBound))) {
-                        const filteredField: FormFieldModel[] = this.pdfViewer.formFieldCollections.filter(function (field: any): any {
+                        let filteredField: FormFieldModel[] = this.pdfViewer.formFieldCollections.filter(function (field: any): any {
                             return field.id === currentData.id.split('_')[0];
                         });
+                        if (isNullOrUndefined(filteredField)) {
+                            filteredField = this.pdfViewer.formFieldCollections.filter(function (field: any): any {
+                                return field.id === currentData.id.replace(/_content$/, '');
+                            });
+                        }
                         if (!isNullOrUndefined(currentData.signatureType) && currentData.signatureType === '') {
                             currentData.signatureType = filteredField[0].signatureType;
                         }
@@ -4895,7 +4913,7 @@ export class FormDesigner {
      * @returns {any} - any
      */
     public loadedFormFieldValue(currentData: any): any {
-        const backgroundColor: any = this.getRgbCode(currentData.backgroundColor);
+        const backgroundColor: any = !isNullOrUndefined(currentData.backgroundColor) ? this.getRgbCode(currentData.backgroundColor) : null;
         const bounds: any = currentData.bounds;
         const backColor: any = currentData.backgroundColor ? { r: backgroundColor.r, g: backgroundColor.g,
             b: backgroundColor.b, a: backgroundColor.a } : { r: 218, g: 234, b: 247, a: 100 };
@@ -5402,7 +5420,7 @@ export class FormDesigner {
         inputElement.id = id;
         (inputElement as IElement).type = 'text';
         inputElement.className = 'e-pv-formfield-input';
-        (inputElement as IElement).autocomplete = 'off';
+        (inputElement as IElement).autocomplete = this.pdfViewer.enableAutoComplete ? 'on' : 'off';
         inputElement.style.width = '100%';
         inputElement.style.height = '100%';
         inputElement.style.position = 'absolute';
@@ -5853,6 +5871,12 @@ export class FormDesigner {
                     } else {
                         inputElement.maxLength = maxLength;
                         selectedItem.maxLength = this.maxLengthItem.value;
+                    }
+                    const currentValue: string = selectedItem.value;
+                    if (inputElement.maxLength > 0 && currentValue && currentValue.length > inputElement.maxLength) {
+                        const newValue: string = currentValue.substring(0, inputElement.maxLength);
+                        inputElement.value = newValue;
+                        selectedItem.value = newValue;
                     }
                 }
                 if (index > -1) {
@@ -7926,8 +7950,16 @@ export class FormDesigner {
             drawingObject.isRequired = textFieldSettings.isRequired;
         }
         if (textFieldSettings.value && this.textFieldPropertyChanged.isValueChanged) {
-            drawingObject.value = this.pdfViewer.enableHtmlSanitizer ?
-                SanitizeHtmlHelper.sanitize(textFieldSettings.value) : textFieldSettings.value;
+            const newValue: string = textFieldSettings.value;
+            const max: number = (!isNullOrUndefined(textFieldSettings.maxLength) && textFieldSettings.maxLength !== 0)
+                ? textFieldSettings.maxLength
+                : 0;
+            const finalValue: string = (max > 0 && newValue && newValue.length > max)
+                ? newValue.substring(0, max)
+                : newValue;
+            drawingObject.value = this.pdfViewer.enableHtmlSanitizer
+                ? SanitizeHtmlHelper.sanitize(finalValue)
+                : finalValue;
         }
         if ((textFieldSettings.backgroundColor && textFieldSettings.backgroundColor !== 'white') && this.textFieldPropertyChanged.isBackgroundColorChanged) {
             drawingObject.backgroundColor = this.pdfViewer.enableHtmlSanitizer ?
@@ -7997,7 +8029,15 @@ export class FormDesigner {
             drawingObject.isRequired = passwordFieldSettings.isRequired;
         }
         if (passwordFieldSettings.value && this.passwordFieldPropertyChanged.isValueChanged) {
-            drawingObject.value = passwordFieldSettings.value;
+            const newValue: string = passwordFieldSettings.value;
+            const max: number = (!isNullOrUndefined(passwordFieldSettings.maxLength) && passwordFieldSettings.maxLength !== 0)
+                ? passwordFieldSettings.maxLength
+                : 0;
+            if (max > 0 && newValue && newValue.length > max) {
+                drawingObject.value = newValue.substring(0, max);
+            } else {
+                drawingObject.value = newValue;
+            }
         }
         if ((passwordFieldSettings.backgroundColor && passwordFieldSettings.backgroundColor !== 'white') && this.passwordFieldPropertyChanged.isBackgroundColorChanged) {
             drawingObject.backgroundColor = this.pdfViewer.enableHtmlSanitizer ?

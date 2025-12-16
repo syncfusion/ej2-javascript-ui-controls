@@ -1,3 +1,6 @@
+@use 'ej2-base/styles/common/mixin' as *;
+@use 'ej2-base/styles/common/theme-vars' as *;
+
 // $diagram-endpoint-handle-color: #046ae5 ;
 // $diagram-endpoint-handle-connected-border: #0f0;
 // $diagram-endpoint-handle-connected-color: #0f0;;
@@ -39,7 +42,7 @@
   font-family: 'e-icons';
   font-style: normal;
   font-variant: normal;
-  font-weight: $font-weight;
+  //font-weight: $font-weight;
   line-height: 1;
   text-transform: none;
 }

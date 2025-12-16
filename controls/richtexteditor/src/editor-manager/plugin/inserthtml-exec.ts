@@ -11,7 +11,7 @@ import { NotifyArgs } from '../../common/interface';
  * Selection EXEC internal component
  *
  * @hidden
- * @deprecated
+ * @private
  */
 export class InsertHtmlExec {
     private parent: EditorManager;
@@ -20,7 +20,7 @@ export class InsertHtmlExec {
      *
      * @param {EditorManager} parent - sepcifies the parent element
      * @hidden
-     * @deprecated
+     * @private
      */
     public constructor(parent: EditorManager) {
         this.parent = parent;

@@ -1,3 +1,5 @@
+@use 'ej2-base/styles/common/mixin' as *;
+@use './theme-variables' as *;
 @include export-module('excel-filter-theme') {
 
   /*! Excel-Filter theme */
@@ -26,7 +28,7 @@
     .e-dlg-content {
       padding-bottom: $grid-excel-filter-bottom-padding;
       @if $grid-xlfl-skin == 'material3' {
-        border-radius: 0;
+        border-radius: $grid-border-radius-0;
       }
     }
   }

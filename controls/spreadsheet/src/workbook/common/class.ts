@@ -1,10 +1,10 @@
-import { ChildProperty, Property, Complex } from '@syncfusion/ej2-base';
+import { ChildProperty, Property, Complex, Collection } from '@syncfusion/ej2-base';
 import { FontFamily, TextAlign, VerticalAlign, FontWeight, FontStyle, TextDecoration, HighlightCell, ChartType, ChartTheme, AutoFillType } from './enum';
 import { ValidationType, ValidationOperator, TopBottom, DataBar, ColorScale, IconSet, CFColor } from './enum';
-import { CellStyleModel, FormatModel, LegendSettingsModel, AxisModel, DataLabelSettingsModel, ChartModel, MarkerSettingsModel, BorderModel } from './class-model';
+import { CellStyleModel, FormatModel, LegendSettingsModel, AxisModel, DataLabelSettingsModel, ChartModel, MarkerSettingsModel, BorderModel, ThreadedCommentModel } from './class-model';
 import { CellModel } from '../base';
 import { LabelPosition, LegendPosition, ChartShape } from './enum';
-import { MajorGridLinesModel, MinorGridLinesModel } from './class-model';
+import { MajorGridLinesModel, MinorGridLinesModel, CommentReplyModel } from './class-model';
 
 /**
  * Represents the cell style.
@@ -336,7 +336,6 @@ export class ProtectSettings extends ChildProperty<ProtectSettings> {
     @Property(false)
     public insertLink: boolean;
 }
-
 
 /**
  * Represents the Hyperlink.
@@ -906,6 +905,89 @@ export class Image extends ChildProperty<CellModel> {
      */
     @Property(0)
     public left: number;
+}
+
+/**
+ * Represents a reply in a cell comment.
+ */
+export class CommentReply extends ChildProperty<ThreadedCommentModel> {
+    /**
+     * Specifies the author of the reply.
+     * If not set, the reply will not display an author name.
+     *
+     * @default ''
+     */
+    @Property('')
+    public author: string;
+
+    /**
+     * Defines the text content of the reply.
+     *
+     * @default ''
+     */
+    @Property('')
+    public text: string;
+
+    /**
+     * Indicates the date and time when the reply was created.
+     * If not set, the reply will not show a timestamp.
+     *
+     * @default null
+     */
+    @Property(null)
+    public createdTime: string | Date;
+}
+
+/**
+ * Represents a threaded comment in a cell.
+ * A threaded comment includes the main comment and its associated replies.
+ */
+export class ThreadedComment extends ChildProperty<ThreadedComment> {
+    /**
+     * Specifies the author of the comment.
+     * If not set, the comment will not display an author name.
+     *
+     * @default ''
+     */
+    @Property('')
+    public author: string;
+
+    /**
+     * Defines the text content of the comment.
+     * If not set, the comment will appear blank until content is added.
+     *
+     * @default ''
+     */
+    @Property('')
+    public text: string;
+
+    /**
+     * Indicates the date and time when the comment was created.
+     * If not set, the comment will not show a timestamp.
+     *
+     * @default null
+     */
+    @Property(null)
+    public createdTime: string | Date;
+
+    /**
+     * Indicates whether the comment thread is marked as resolved.
+     * If not set, the thread remains active and unresolved.
+     * Set this to `true` when the discussion in the thread is complete and no further replies are expected.
+     *
+     * @default false
+     */
+    @Property(false)
+    public isResolved: boolean;
+
+    /**
+     * Contains the collection of replies associated with the comment.
+     * If not set, the comment has no replies.
+     *
+     * @default []
+     */
+    @Collection([], CommentReply)
+    public replies: CommentReplyModel[];
 }
 
 /**

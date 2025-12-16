@@ -1,6 +1,6 @@
-@import 'ej2-base/styles/definition/tailwind-dark.scss';
-@import 'ej2-popups/styles/tooltip/tailwind-dark-definition.scss';
-@import 'tailwind-dark-definition.scss';
-@import 'icons/tailwind-dark.scss';
-@import 'all.scss';
-@import 'bigger.scss';
+@use 'ej2-base/styles/definition/tailwind-dark' as *;
+@use 'ej2-popups/styles/tooltip/tailwind-dark-definition' as *;
+@use 'tailwind-dark-definition' as *;
+@use 'icons/tailwind-dark' as *;
+@use 'all' as *;
+@use 'bigger' as *;

@@ -2,6 +2,33 @@
 
 ## [Unreleased]
 
+### PDF Viewer
+
+#### Features
+
+- `#I628857` - Implemented [Redaction](https://help.syncfusion.com/document-processing/pdf/pdf-viewer/javascript-es6/redaction/overview) support in the EJ2 PDF Viewer.
+- `#I249427`  - Implemented Extract Page support in [Page Organizer](https://help.syncfusion.com/document-processing/pdf/pdf-viewer/javascript-es6/organize-pages/overview).
+- Enhanced [Print](https://help.syncfusion.com/document-processing/pdf/pdf-viewer/javascript-es6/print) preview performance, achieving up to 80% improvement.
+
+#### Bug Fixes
+
+- `#I788313` - Resolved an issue where free text justify alignment was not working properly.
+- `#I788324` - Resolved an issue where the post button was enabled even after clearing the text in comment panel.
+- `#I788308` - Resolved an issue where the free text border overlapped with text when changing the thickness.
+- `#I790733` - Resolved an issue where annotation toolbar items were not visible when `enableDesktop` API was set to true on devices with smaller widths.
+- `#I791260` - Resolved an issue where the comment panel did not open on double-click when the `enableDesktop` API was set to true on smaller-width devices.
+- `#I791261` - Resolved an issue where free text annotation color changed to black in the downloaded document when FillColor in `freeTextSettings` was set to transparent.
+- `#I788326` - Fixed an issue where the `previousText` value in the `annotationPropertiesChange` event was incorrect when updating annotation text from the Comments panel.
+- Resolved an issue where the signature was rendered twice in the same field after updating other form fields.
+- `#I783067` - Resolved an issue where page became unresponsive when `findTextAsync` was executed for non-existent words.
+- `#I783922` - Resolved an issue where programmatically updating the `isChecked` property for a checkbox field did not work on non-rendered pages.
+- `#I780028` - Resolved an issue where the last added reply was missing after exporting the sticky note annotations.
+- `#I783430` - Resolved an issue where form fields were not visible when opening a PDF document with exactly 100 pages.
+- `#I779883` - Fixed a script error that occurred after completing measurement annotations with the provided document.
+- `#I782204` - Fixed an issue where annotation property sliders were hidden when `toolbarSettings` was applied.
+- `#I790584` - Resolved an issue where the `previousText` value in the `annotationPropertiesChange` event was incorrect when double-clicking an existing annotation and adding a new annotation.
+- `#I788882` - Resolved an issue where sticky note annotations were not locking properly on non-rendered pages.
+
 ## 31.2.18 (2025-12-09)
 
 ### PDF Viewer

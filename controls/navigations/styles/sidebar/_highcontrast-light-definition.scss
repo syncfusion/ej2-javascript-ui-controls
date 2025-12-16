@@ -1,4 +1,9 @@
+@use 'ej2-base/styles/definition/highcontrast-light' as *;
+@forward 'ej2-base/styles/definition/highcontrast-light';
 $sidebar-background: $bg-base-100 !default;
 $sidebar-border: $border-default !default;
 $sidebar-box-shadow: 0 0 16px rgba(0, 0, 0, .3) !default;
 $sidebar-overlay: rgba(0, 0, 0, .6) !default;
+$sidebar-height: 100% !default;
+$sidebar-border-width: 1px !default;
+$sidebar-margin-none: 0 !default;

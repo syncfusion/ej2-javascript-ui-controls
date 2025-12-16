@@ -364,6 +364,9 @@ export class NodeSelection {
      * @deprecated
      */
     public restore(): Range {
+        if (!this || !this.range) {
+            return null;
+        }
         let range: Range = this.range.cloneRange();
         range = this.setRangePoint(range, true, this.startContainer, this.startOffset);
         range = this.setRangePoint(range, false, this.endContainer, this.endOffset);

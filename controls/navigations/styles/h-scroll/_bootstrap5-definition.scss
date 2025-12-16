@@ -1,3 +1,6 @@
+@use 'ej2-base/styles/definition/bootstrap5' as *;
+@forward 'ej2-base/styles/definition/bootstrap5';
+
 /*! component's theme wise override definitions and variables */
 $hscroll-skin: 'bootstrap5' !default;
 $border-type: solid;
@@ -11,6 +14,8 @@ $hscroll-nav-nrml-minheight: 38px !default;
 $hscroll-nav-bgr-minheight: 46px !default;
 $hscroll-mob-nav-nrml-width: 40px !default;
 $hscroll-nav-nrml-width: 32px !default;
+$hscroll-nav-bgr-left: 38px !default;
+$hscroll-nav-bgr-right: 38px !default;
 $hscroll-nav-bgr-width: 38px !default;
 $hscroll-nrml-padding: 0 $hscroll-nav-nrml-width !default;
 $hscroll-bgr-padding: 0 $hscroll-nav-bgr-width !default;
@@ -40,6 +45,9 @@ $hscroll-device-arrow-size: 18px !default;
 $hscroll-device-arrow-icon-size: 18px !default;
 $hscroll-device-arrow-size-bigger: 22px !default;
 $hscroll-device-arrow-width: 48px !default;
+$hscroll-border-none: 0 !default;
+$hscroll-item-height: inherit !default;
+$hscroll-item-line-height: normal !default;
 
 $hscroll-default-border: $hscroll-hover-border-color !default;
 $hscroll-ribble-animation-border-frame: rgba(255, 255, 255, .5) !default;

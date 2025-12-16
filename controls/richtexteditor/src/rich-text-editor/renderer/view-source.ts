@@ -245,6 +245,9 @@ export class ViewSource {
                 if (this.parent.getToolbar()) {
                     removeClass([this.parent.getToolbar()], [CLS_EXPAND_OPEN]);
                 }
+                if (this.parent.editorMode === 'HTML') {
+                    this.parent.formatter.saveData();
+                }
                 this.unWireEvent();
                 this.wireBaseKeyDown();
                 this.parent.updateValue();

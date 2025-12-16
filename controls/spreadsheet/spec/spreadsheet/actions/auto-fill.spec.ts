@@ -1,8 +1,8 @@
 import { SpreadsheetHelper } from "../util/spreadsheethelper.spec";
 import { defaultData } from '../util/datasource.spec';
-import { Spreadsheet } from '../../../src/spreadsheet/index';
+import { onContentScroll, Spreadsheet, positionAutoFillElement, checkMerge } from '../../../src/spreadsheet/index';
 import { L10n } from '@syncfusion/ej2-base';
-import { CellModel, getCell, getFormatFromType, ProtectSettingsModel, refreshCell, setRow } from "../../../src/index";
+import { CellModel, getCell, getFormatFromType, NoteModel, ProtectSettingsModel, refreshCell, setRow } from "../../../src/index";
 
 describe('Auto fill ->', () => {
     let helper: SpreadsheetHelper = new SpreadsheetHelper('spreadsheet');
@@ -37,18 +37,18 @@ describe('Auto fill ->', () => {
             helper.getInstance().selectionModule.mouseMoveHandler({ target: autoFill, clientX: autoFillCoords.right, clientY: autoFillCoords.bottom });
             helper.getInstance().selectionModule.mouseMoveHandler({ target: td, clientX: coords.left + 1, clientY: coords.top + 1 });
             helper.triggerMouseAction('mouseup', { x: coords.left + 1, y: coords.top + 1 }, document, td);
-            expect(instance.selectionModule.dAutoFillCell).toBe('G10:G13');
+            expect(instance.selectionModule.dAutoFillCell).toBe('G10:G14');
             expect(helper.invoke('getCell', [13, 6]).textContent).toBe('16');
             expect(helper.invoke('getCell', [14, 6]).textContent).toBe('17');
             expect(helper.invoke('getCell', [15, 6]).textContent).toBe('18');
             autoFillCoords = autoFill.getBoundingClientRect();
             helper.triggerMouseAction('mousedown', { x: autoFillCoords.left + 1, y: autoFillCoords.top + 1 }, null, autoFill);
             helper.triggerMouseAction('mouseup', { x: autoFillCoords.left + 1, y: autoFillCoords.top + 1 }, document, autoFill);
-            expect(instance.selectionModule.dAutoFillCell).toBe('G10:G13');
+            expect(instance.selectionModule.dAutoFillCell).toBe('G10:G14');
             helper.click('#spreadsheet_autofilloptionbtn');
             helper.click('.e-dragfill-ddb ul li:nth-child(3)');
             td = helper.invoke('getCell', [13, 6]);
-            expect(td.textContent).toBe('');
+            expect(td.textContent).toBe('16');
             expect(td.style.fontWeight).toBe('bold');
             td = helper.invoke('getCell', [14, 6]);
             expect(td.textContent).toBe('');
@@ -58,7 +58,7 @@ describe('Auto fill ->', () => {
             expect(td.style.fontWeight).toBe('bold');
             done();
         });
-        it('Autofill dropdown width not updated properly after horizontal scrolling in Spreadsheet', (done: Function) => {
+        it('Autofill dropdown  width not updated properly after horizontal scrolling in Spreadsheet', (done: Function) => {
             helper.invoke('goTo', ['Z5']);
             setTimeout((): void => {
                 const autoFill: HTMLElement = helper.getElementFromSpreadsheet('.e-autofill');
@@ -603,15 +603,15 @@ describe('Auto fill ->', () => {
             expect(sheet.rows[1].height).toBeUndefined();
             expect(sheet.rows[1].cells[0].value).toBe('Romona Heaslip Hello Taurus Pink Cargo jnwdnnc');
             virtualTrack = helper.getElementFromSpreadsheet('.e-sheet-content .e-virtualtrack');
-            expect(virtualTrack.style.height).toBe('2200px');
+            expect(virtualTrack.style.height).toBe('2060px');
             helper.invoke('wrap', ['A2:A2']);
-            expect(virtualTrack.style.height).toBe('2218px');
+            expect(virtualTrack.style.height).toBe('2078px');
             expect(sheet.rows[1].cells[0].wrap).toBeTruthy();
             expect(sheet.rows[1].height).toBe(38);
             expect(sheet.rows[2]).toBeUndefined();
             helper.invoke('autoFill', ['A3:A80', 'A2', 'Down', 'FillSeries']);
             expect(sheet.topLeftCell).toBe('A75');
-            expect(virtualTrack.style.height).toBe('3622px');
+            expect(virtualTrack.style.height).toBe('3482px');
             expect(sheet.rows[2].cells[0].wrap).toBeTruthy();
             expect(sheet.rows[2].cells[0].value).toBe('Romona Heaslip Hello Taurus Pink Cargo jnwdnnc');
             expect(sheet.rows[2].height).toBe(38);
@@ -631,10 +631,10 @@ describe('Auto fill ->', () => {
         });
         it('Fill without formatting down', (done: Function) => {
             helper.invoke('wrap', ['A3:A80', false]);
-            expect(virtualTrack.style.height).toBe('2218px');
+            expect(virtualTrack.style.height).toBe('2078px');
             helper.invoke('autoFill', ['A3:A80', 'A2', 'Down', 'FillWithoutFormatting']);
             expect(sheet.topLeftCell).toBe('A75');
-            expect(virtualTrack.style.height).toBe('2218px');
+            expect(virtualTrack.style.height).toBe('2078px');
             expect(sheet.rows[2].cells[0].wrap).toBeFalsy();
             expect(sheet.rows[2].cells[0].value).toBe('Romona Heaslip Hello Taurus Pink Cargo jnwdnnc');
             expect(sheet.rows[2].height).toBe(20);
@@ -655,7 +655,7 @@ describe('Auto fill ->', () => {
         it('Fill formatting only down', (done: Function) => {
             helper.invoke('autoFill', ['A3:A80', 'A2', 'Down', 'FillFormattingOnly']);
             expect(sheet.topLeftCell).toBe('A75');
-            expect(virtualTrack.style.height).toBe('3622px');
+            expect(virtualTrack.style.height).toBe('3482px');
             expect(sheet.rows[2].cells[0].wrap).toBeTruthy();
             expect(sheet.rows[2].cells[0].value).toBe('Romona Heaslip Hello Taurus Pink Cargo jnwdnnc');
             expect(sheet.rows[2].height).toBe(38);
@@ -675,10 +675,10 @@ describe('Auto fill ->', () => {
         });
         it('Copy cells down', (done: Function) => {
             helper.invoke('wrap', ['A3:A80', false]);
-            expect(virtualTrack.style.height).toBe('2218px');
+            expect(virtualTrack.style.height).toBe('2078px');
             helper.invoke('autoFill', ['A3:A80', 'A2', 'Down', 'CopyCells']);
             expect(sheet.topLeftCell).toBe('A75');
-            expect(virtualTrack.style.height).toBe('3622px');
+            expect(virtualTrack.style.height).toBe('3482px');
             expect(sheet.rows[2].cells[0].wrap).toBeTruthy();
             expect(sheet.rows[2].cells[0].value).toBe('Romona Heaslip Hello Taurus Pink Cargo jnwdnnc');
             expect(sheet.rows[2].height).toBe(38);
@@ -1421,7 +1421,7 @@ describe('Auto fill ->', () => {
                 helper.triggerMouseAction('mouseup', { x: coords.left + 1, y: coords.top + 1 }, document, td);
                 setTimeout(() => {
                     expect(helper.invoke('getCell', [1, 3]).textContent).toBe('19');
-                    helper.switchRibbonTab(5);
+                    helper.switchRibbonTab(6);
                     helper.click('#' + helper.id + '_freezepanes');
                     done();
                 });
@@ -2068,13 +2068,13 @@ describe('Auto fill ->', () => {
                 helper.getInstance().selectionModule.mouseMoveHandler({ target: td, clientX: coords.left + 1, clientY: coords.top + 1 });
                 helper.triggerMouseAction('mouseup', { x: coords.left + 1, y: coords.top + 1 }, document, td);
                 const spreadsheet: Spreadsheet = helper.getInstance();
-                expect(spreadsheet.sheets[0].selectedRange).toBe('A9:A14');
+                expect(spreadsheet.sheets[0].selectedRange).toBe('A9:A15');
                 const autoFillOptions: HTMLElement = helper.getElementFromSpreadsheet('.e-dragfill-ddb');
                 let autoFillOptionsCoords = autoFillOptions.getBoundingClientRect();
                 helper.triggerMouseAction('mousedown', { x: autoFillOptionsCoords.left + 1, y: autoFillOptionsCoords.top + 1 }, null, autoFillOptions);
                 helper.triggerMouseAction('mousemove', { x: autoFillOptionsCoords.left, y: autoFillOptionsCoords.top + 30 }, autoFillOptions);
                 helper.triggerMouseAction('mouseup', { x: coords.left + 1, y: coords.top + 1 }, document, td);
-                expect(spreadsheet.sheets[0].selectedRange).toBe('A9:A14');
+                expect(spreadsheet.sheets[0].selectedRange).toBe('A9:A15');
                 done();
             });
             it('The autoFill() method does not fill data in the expected sheet when using fill range and data range arguments.', function (done) {
@@ -2210,6 +2210,7 @@ describe('Auto fill ->', () => {
                 helper.triggerMouseAction('mousedown', { x: autoFillCoords.left + 1, y: autoFillCoords.top + 1 }, null, autoFill);
                 spreadsheet.selectionModule.mouseMoveHandler({ target: autoFill, clientX: autoFillCoords.right, clientY: autoFillCoords.bottom });
                 spreadsheet.selectionModule.mouseMoveHandler({ target: td, clientX: coords1.left, clientY: coords1.top });
+                expect(spreadsheet.selectionModule.isColSelected).toBeFalsy();
                 helper.triggerMouseAction('mouseup', { x: coords1.left, y: coords1.top }, document, td);
                 expect(spreadsheet.sheets[0].selectedRange).toBe('E1:E6');
                 expect(spreadsheet.sheets[0].rows[0].cells[4].value).toBe('Price');
@@ -2240,6 +2241,7 @@ describe('Auto fill ->', () => {
                 helper.triggerMouseAction('mousedown', { x: autoFillCoords.left + 1, y: autoFillCoords.top + 1 }, null, autoFill);
                 spreadsheet.selectionModule.mouseMoveHandler({ target: autoFill, clientX: autoFillCoords.right, clientY: autoFillCoords.bottom });
                 spreadsheet.selectionModule.mouseMoveHandler({ target: td, clientX: coords1.left, clientY: coords1.top });
+                expect(spreadsheet.selectionModule.isRowSelected).toBeFalsy();
                 helper.triggerMouseAction('mouseup', { x: coords1.left, y: coords1.top }, document, td);
                 expect(spreadsheet.sheets[0].selectedRange).toBe('A3:G3');
                 expect(spreadsheet.sheets[0].rows[2].cells[0].value).toBe('Sports Shoes');
@@ -2720,7 +2722,7 @@ describe('Auto fill ->', () => {
         let spreadsheet: any;
         beforeAll((done: Function) => {
             helper.initializeSpreadsheet({ sheets: [{ ranges: [{ dataSource: defaultData }],
-                rows: [{ index: 1, cells: [{ index: 5, notes: 'Syncfusion' }] }] }] }, done);
+                rows: [{ index: 1, cells: [{ index: 5, notes: { text: 'Syncfusion' } }] }] }] }, done);
         });
         afterAll(() => {
             helper.invoke('destroy');
@@ -2742,7 +2744,7 @@ describe('Auto fill ->', () => {
             helper.click('.e-dragfill-ddb ul li:nth-child(1)');
             expect(helper.invoke('getCell', [5, 5]).textContent).toBe('200');
             spreadsheet = helper.getInstance();
-            expect(spreadsheet.sheets[0].rows[1].cells[5].notes).toBe('Syncfusion');
+            expect((spreadsheet.sheets[0].rows[1].cells[5].notes as NoteModel).text).toBe('Syncfusion');
             done();
         });
         it('Change autoFill option', (done: Function) => {
@@ -2880,10 +2882,10 @@ describe('Auto fill ->', () => {
         it('916573- Notes are getting added while selecting the Fill Formatting only option in autofill drop down', (done: Function) => {
             helper.invoke('selectRange', ['C11']);
             helper.setAnimationToNone('#spreadsheet_contextmenu');
-            helper.openAndClickCMenuItem(0, 0, [9]);
+            helper.openAndClickCMenuItem(10, 2, [10]);
             helper.getElements('.e-addNoteContainer')[0].value = 'Syncfusion';
             helper.getInstance().spreadsheetNoteModule.updateNoteContainer();
-            expect(helper.getInstance().sheets[0].rows[10].cells[2].notes).toBe('Syncfusion');
+            expect((helper.getInstance().sheets[0].rows[10].cells[2].notes as NoteModel).text).toBe('Syncfusion');
             expect(helper.getInstance().sheets[0].rows[10].cells[3].notes).toBeUndefined;
             expect(helper.getInstance().sheets[0].rows[10].cells[4].notes).toBeUndefined;
             expect(helper.getInstance().sheets[0].rows[10].cells[5].notes).toBeUndefined;
@@ -2919,6 +2921,36 @@ describe('Auto fill ->', () => {
         });        
     });
 
+    describe('EJ2-991732 coverage test case->', () => {
+        beforeAll((done: Function) => {
+            helper.initializeSpreadsheet({ sheets: [{ ranges: [{ dataSource: defaultData }] }] }, done);
+        });
+        afterAll(() => {
+            helper.invoke('destroy');
+        });
+        it('Autofill Element removed case', (done: Function) => {
+            const spreadsheet: any = helper.getInstance();
+            let autoFill: HTMLElement = helper.getElementFromSpreadsheet('.e-autofill');
+            autoFill.remove();
+            spreadsheet.notify(positionAutoFillElement, { isSelection: true });
+            autoFill = helper.getElementFromSpreadsheet('.e-autofill')
+            helper.invoke('selectRange', ['A1']);
+            expect(autoFill).toBeNull();
+            done();
+        });
+        it('Row path: previous column hidden with visible left boundary should early-return', (done: Function) => {
+            helper.invoke('merge', ['B2:B6', 'Vertically']);
+            helper.invoke('hideRow', [4]);
+            setTimeout(() => {
+                helper.invoke('selectRange', ['B4']);
+                let tdB4: HTMLTableCellElement = helper.invoke('getCell', [3, 1]);
+                helper.getInstance().notify(checkMerge, { colIdx: 1, isFreezePane: true, rowIdx: 3, isRow: true, td: tdB4 });
+                expect(tdB4.style.display).toBe('');
+                done();
+            });
+        });
+    });
+    
     describe('EJ2-916365 -> Auto-fill drop-down button is not visible when finite mode is set to true', () => {
         beforeAll((done: Function) => {
             helper.initializeSpreadsheet({
@@ -2954,7 +2986,7 @@ describe('Auto fill ->', () => {
             helper.initializeSpreadsheet({
                 sheets: [{
                     ranges: [{ dataSource: defaultData }],
-                    rows: [{ index: 4, cells: [{ index: 7, notes: 'Syncfusion', isNoteEditable: false }] }]
+                    rows: [{ index: 4, cells: [{ index: 7, notes: { text: 'Syncfusion' }, isNoteEditable: false }] }]
                 }]
             }, done);
         });
@@ -2966,22 +2998,24 @@ describe('Auto fill ->', () => {
             helper.invoke('autoFill', ['H6:H10', 'H5:H5', 'Down', 'CopyCells']);
             let td: HTMLElement;
             helper.invoke('goTo', ['A100']);
+            spreadsheet.notify(onContentScroll, { scrollTop: 1980, scrollLeft: 0 });
             setTimeout(() => {
                 helper.invoke('goTo', ['A1']);
+                spreadsheet.notify(onContentScroll, { scrollTop: 0, scrollLeft: 0 });
                 setTimeout(() => {
                     td = helper.invoke('getCell', [4, 7]);
                     expect(td.querySelector('.e-addNoteIndicator')).not.toBeNull();
-                    expect(spreadsheet.sheets[0].rows[4].cells[7].notes).toBe('Syncfusion');
+                    expect((spreadsheet.sheets[0].rows[4].cells[7].notes as NoteModel).text).toBe('Syncfusion');
                     expect(spreadsheet.sheets[0].rows[4].cells[7].isNoteEditable).toBeFalsy();
-                    expect(spreadsheet.sheets[0].rows[5].cells[7].notes).toBeUndefined();
+                    expect((spreadsheet.sheets[0].rows[5].cells[7].notes as NoteModel)).toBeUndefined();
                     expect(spreadsheet.sheets[0].rows[5].cells[7].isNoteEditable).toBeUndefined();
-                    expect(spreadsheet.sheets[0].rows[6].cells[7].notes).toBeUndefined();
+                    expect((spreadsheet.sheets[0].rows[6].cells[7].notes as NoteModel)).toBeUndefined();
                     expect(spreadsheet.sheets[0].rows[6].cells[7].isNoteEditable).toBeUndefined();
-                    expect(spreadsheet.sheets[0].rows[7].cells[7].notes).toBeUndefined();
+                    expect((spreadsheet.sheets[0].rows[7].cells[7].notes as NoteModel)).toBeUndefined();
                     expect(spreadsheet.sheets[0].rows[7].cells[7].isNoteEditable).toBeUndefined();
-                    expect(spreadsheet.sheets[0].rows[8].cells[7].notes).toBeUndefined();
+                    expect((spreadsheet.sheets[0].rows[8].cells[7].notes as NoteModel)).toBeUndefined();
                     expect(spreadsheet.sheets[0].rows[8].cells[7].isNoteEditable).toBeUndefined();
-                    expect(spreadsheet.sheets[0].rows[9].cells[7].notes).toBeUndefined();
+                    expect((spreadsheet.sheets[0].rows[9].cells[7].notes as NoteModel)).toBeUndefined();
                     expect(spreadsheet.sheets[0].rows[9].cells[7].isNoteEditable).toBeUndefined();
                     td = helper.invoke('getCell', [5, 7]);
                     expect(td.querySelector('.e-addNoteIndicator')).toBeNull();

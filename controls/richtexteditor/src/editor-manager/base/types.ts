@@ -2,12 +2,13 @@
  * Types type for EditorManager
  *
  * @hidden
- * @deprecated
+ * @private
  */
 export type EditorExecCommand =
     'Indents' |
     'Lists' |
     'Formats' |
+    'lineHeight' |
     'Alignments' |
     'Links' |
     'Images' |

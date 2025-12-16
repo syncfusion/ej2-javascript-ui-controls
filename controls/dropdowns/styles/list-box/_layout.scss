@@ -1,3 +1,5 @@
+@use 'ej2-base/styles/common/mixin' as *;
+@use './theme-variables' as *;
 @include export-module('listbox-layout') {
   /* stylelint-disable property-no-vendor-prefix */
   .e-listbox-wrapper,
@@ -9,7 +11,7 @@
     display: block;
     position: relative;
     user-select: none;
-    width: 100%;
+    width: $listbox-full-width;
 
     * {
       box-sizing: border-box;
@@ -17,25 +19,25 @@
 
     @if $skin-name == 'fluent2' or $theme-name == 'bootstrap5.3' or $theme-name == 'bootstrap5.3-dark' {
       & {
-        border-radius: 4px;
+        border-radius: $list-box-nrml-border-radius;
       }
     }
     @if $skin-name == 'tailwind3' {
       & {
-        font-weight: $font-weight-medium;
-        border-radius: 6px;
+        font-weight: $list-font-weight-medium;
+        border-radius: $list-box-nrml-border-radius;
       }
     }
 
     &.e-listboxtool-container .e-list-wrap {
       @if $skin-name == 'FluentUI' or $skin-name == 'bootstrap5' or $skin-name == 'bootstrap5.3' or $skin-name == 'tailwind' {
-        width: calc(100% - 16%) !important; /* stylelint-disable-line declaration-no-important */
+        width: $list-tool-nrml-box-wrap-width !important; /* stylelint-disable-line declaration-no-important */
       }
       @else if $skin-name == 'material' or $skin-name == 'bootstrap4' or $skin-name == 'bootstrap' or $skin-name == 'fabric' {
-        width: calc(100% - 14%) !important; /* stylelint-disable-line declaration-no-important */
+        width: $list-tool-nrml-box-wrap-width !important; /* stylelint-disable-line declaration-no-important */
       }
       @else if $skin-name == 'highcontrast' {
-        width: calc(100% - 13%) !important; /* stylelint-disable-line declaration-no-important */
+        width: $list-tool-nrml-box-wrap-width !important; /* stylelint-disable-line declaration-no-important */
       }
     }
 
@@ -62,7 +64,7 @@
     }
 
     .e-list-parent {
-      height: 100%;
+      height: $listbox-full-height;
       min-height: $listbox-item-height;
     }
 
@@ -95,13 +97,13 @@
     & .e-list-group-item,
     & .e-list-item {
       @if $skin-name == 'fluent2' {
-        margin: 4px;
+        margin: $list-group-item-margin;
       }
     }
 
     & .e-list-parent {
-      margin: 0;
-      padding: 0;
+      margin: $listbox-zero-margin-padding;
+      padding: $listbox-zero-margin-padding;
     }
 
     & .e-list-header .e-text.header,
@@ -115,15 +117,15 @@
 
     & .e-list-header {
       align-items: center;
-      border-bottom: 1px solid;
+      border-bottom: $list-border solid;
       display: flex;
       font-weight: $listbox-header-font-weight;
       height: $listbox-header-height;
-      padding: 0 $listbox-header-text-padding;
+      padding: $listbox-header-text-padding;
     }
 
     & .e-has-header > .e-view {
-      top: 45px;
+      top: $list-box-header-view-top;
     }
 
     & .e-but-back {
@@ -133,7 +135,7 @@
 
     & .e-list-group-item:first-child {
       @if $theme-name != 'bootstrap5.3' and $theme-name != 'bootstrap5.3-dark' {
-        border: 0;
+        border: $zero-border;
         border-bottom: $listbox-group-first-border-bottom solid $listbox-border-bottom-color;
       }
     }
@@ -141,16 +143,11 @@
     & .e-list-group-item {
       border-bottom: $listbox-group-border-bottom solid $listbox-border-bottom-color;
       border-top: $listbox-group-border-top solid;
-      @if $skin-name == 'Material3' {
-        font-weight: 500;
-      }
-      @else {
-        font-weight: 600;
-      }
+      font-weight: $listbox-group-item-font-weight;
       height: $listbox-groupheader-item-height;
       line-height: $listbox-groupheader-item-line-height;
       @if $theme-name == 'bootstrap5.3' or $theme-name == 'bootstrap5.3-dark' {
-        padding: 7px 12px;
+        padding: $list-group-item-padding;
       }
       @else {
         padding: $listbox-item-padding;
@@ -159,15 +156,15 @@
 
     & .e-icon-collapsible {
       cursor: pointer;
-      font-size: 12px;
+      font-size: $listbox-icon-collapsible-font-size;
       position: absolute;
-      right: 0%;
-      top: 50%;
+      right: $zero-width;
+      top: $list-box-half-width;
       transform: translateY(-50%);
     }
 
     & .e-text-content {
-      height: 100%;
+      height: $listbox-full-height;
       position: relative;
       vertical-align: middle;
     }
@@ -178,21 +175,21 @@
     }
 
     & .e-text-content.e-checkbox .e-list-text {
-      width: calc(100% - 40px);
+      width: $list-text-checkbox-width;
     }
 
     & .e-text-content.e-checkbox.e-checkbox-left .e-list-icon + .e-list-text {
-      width: calc(100% - 90px);
+      width: $list-box-checkbox-icon-width;
     }
 
     & .e-text-content.e-checkbox.e-checkbox-right .e-list-icon + .e-list-text {
-      width: calc(100% - 80px);
+      width: $list-checkbox-right-icon-width;
     }
 
     & .e-list-item.e-checklist.e-has-child {
       .e-text-content.e-checkbox.e-checkbox-right {
         .e-list-icon + .e-list-text {
-          width: calc(100% - 92px);
+          width: $list-box-icon-child-width;
         }
       }
     }
@@ -212,19 +209,19 @@
       text-overflow: ellipsis;
       vertical-align: top;
       white-space: nowrap;
-      width: 100%;
+      width: $listbox-full-width;
     }
 
     & .e-list-icon + .e-list-text,
     & .e-icon-wrapper .e-list-text,
     & .e-icon-wrapper.e-text-content.e-checkbox .e-list-text {
-      width: calc(100% - 60px);
+      width: $list-box-text-width;
     }
 
     & .e-list-icon {
-      height: 30px;
+      height: $listbox-list-icon-height;
       margin-right: $listbox-icon-margin-right;
-      width: 30px;
+      width: $listbox-list-icon-width;
     }
 
     & .e-content {
@@ -234,7 +231,7 @@
 
     & .e-list-header .e-text {
       cursor: pointer;
-      text-indent: 0;
+      text-indent: $listbox-zero-padding-margin;
     }
 
     & .e-text .e-headertext {
@@ -246,14 +243,14 @@
       direction: rtl;
 
       & .e-list-icon {
-        margin-left: 16px;
-        margin-right: 0;
+        margin-left: $listbox-list-icon-margin-left;
+        margin-right: $listbox-zero-padding-margin;
       }
 
       & .e-icon-collapsible {
-        left: 0%;
+        left: $zero-width;
         right: initial;
-        top: 50%;
+        top: $list-box-half-width;
         transform: translateY(-50%) rotate(180deg);
       }
 
@@ -273,7 +270,7 @@
       .e-checkbox-wrapper {
         margin: $listbox-rtl-checkbox-left-margin;
         @if $skin-name == 'fluent2' {
-          padding: 2px 0 2px 12px;
+          padding: $list-check-box-left-padding;
           vertical-align: top;
         }
       }
@@ -285,17 +282,17 @@
 
     .e-checkbox-wrapper {
       margin: $listbox-checkbox-left-margin;
-      text-indent: 0;
+      text-indent: $listbox-zero-padding-margin;
       vertical-align: middle;
       @if $skin-name == 'Material3' {
         position: relative;
       }
       @if $skin-name == 'fluent2' {
-        padding: 2px 12px 2px 0;
+        padding: $list-checkbox-wrapper-padding;
         vertical-align: top;
 
         & .e-frame {
-          margin: 0 !important; /* stylelint-disable-line declaration-no-important */
+          margin: $listbox-zero-margin-padding !important; /* stylelint-disable-line declaration-no-important */
         }
       }
     }
@@ -303,54 +300,49 @@
     &.e-checkbox-right {
       .e-checkbox-wrapper {
         position: absolute;
-        right: 0;
-        top: 30%;
+        right: $listbox-zero-padding-margin;
+        top: $checkbox-wrapper-top;
       }
     }
 
     .e-filter-parent {
       @if $skin-name == 'tailwind3' {
-        padding: 8px 11px;
+        padding: $listbox-filter-parent-padding;
       }
     }
 
     .e-input-group {
       @if $skin-name != 'tailwind' {
-        padding: 4px 8px;
+        padding: $listbox-input-grp-padding;
       }
       @if $skin-name == 'tailwind3' {
-        padding: 0;
+        padding: $listbox-zero-margin-padding;
       }
     }
 
     .e-input-focus {
       @if $skin-name != 'tailwind' {
-        padding: 4px 4px 4px 8px;
+        padding: $listbox-input-focus-padding;
       }
       @if $skin-name == 'tailwind3' {
-        padding: 0;
+        padding: $listbox-zero-margin-padding;
       }
     }
 
     .e-hidden-select {
-      height: 1px;
+      height: $listbox-hidden-select-height;
       opacity: 0;
       position: absolute;
-      width: 100%;
+      width: $listbox-full-width;
     }
 
     .e-placeholder {
       background-color: $badge-bgcolor;
       display: block;
       @if $skin-name == 'fluent2' {
-        border: 2px solid $badge-bgcolor;
+        border: $placeholder-border solid $badge-bgcolor;
       }
-      @else if $theme-name == 'bootstrap5.3' or $theme-name == 'bootstrap5.3-dark' or $skin-name == 'tailwind3' {
-        height: 2px;
-      }
-      @else {
-        height: 1px;
-      }
+      height: $listbox-placeholder-height;
     }
   }
 
@@ -366,13 +358,13 @@
   .e-listbox-wrapper.e-sortableclone,
   .e-listbox-container.e-sortableclone,
   .e-listboxtool-wrapper.e-sortableclone {
-    border-width: 0;
+    border-width: $zero-border;
     overflow: visible;
 
     .e-list-item {
       list-style-type: none;
       @if $skin-name != 'fluent2' {
-        height: 38px !important; /* stylelint-disable-line declaration-no-important */
+        height: $list-box-list-item-height !important; /* stylelint-disable-line declaration-no-important */
       }
     }
 
@@ -387,17 +379,17 @@
     .e-list-badge {
       align-items: center;
       background-color: $badge-bgcolor;
-      border: 1px solid $badge-color;
-      border-radius: 50%;
+      border: $list-border-width solid $badge-color;
+      border-radius: $listbox-list-badge-border-radius;
       color: $badge-color;
       display: flex;
-      font-size: 12px;
-      height: 22px;
+      font-size: $listbox-list-badge-font-size;
+      height: $list-badge-height;
       justify-content: center;
       position: absolute;
-      right: -10px;
-      top: -10px;
-      width: 22px;
+      right: $list-box-list-badge-right;
+      top: $list-box-list-badge-top;
+      width: $list-badge-width;
     }
   }
 
@@ -426,38 +418,38 @@
 
     &.e-right {
       .e-listbox-tool {
-        margin-left: 15px;
+        margin-left: $listbox-wrapper-right-left-margin;
       }
     }
 
     &.e-left {
       .e-listbox-tool {
-        margin-right: 15px;
+        margin-right: $listbox-wrapper-right-left-margin;
       }
     }
 
     .e-listbox-tool {
-      border: 1px solid $listbox-border-color;
+      border: $list-border-width solid $listbox-border-color;
       overflow: auto;
-      padding: 8px;
+      padding: $listbox-tool-padding;
       @if $skin-name == 'tailwind3' {
-        border-radius: 8px;
+        border-radius: $list-box-tool-tail-radius;
         .e-btn-icon {
-          font-size: 16px;
+          font-size: $text-base;
         }
       }
       .e-btn {
         display: list-item;
         list-style-type: none;
-        margin-bottom: 10px;
+        margin-bottom: $listbox-tool-btn-margin-bottom;
       }
     }
 
     &.e-checkbox-right {
       .e-checkbox-wrapper {
         position: absolute;
-        right: 0;
-        top: 30%;
+        right: $listbox-zero-padding-margin;
+        top: $checkbox-wrapper-top;
       }
     }
   }
@@ -466,13 +458,13 @@
   .e-rtl.e-listboxtool-container {
     &.e-right {
       .e-listbox-tool {
-        margin-right: 15px;
+        margin-right: $listbox-wrapper-right-left-margin;
       }
     }
 
     &.e-left {
       .e-listbox-tool {
-        margin-left: 15px;
+        margin-left: $listbox-wrapper-right-left-margin;
       }
     }
   }
@@ -489,16 +481,16 @@
     padding: $listbox-item-padding;
     position: relative;
     @if $skin-name == 'fluent2' {
-      font-size: 14px;
-      border-radius: 4px !important; /* stylelint-disable-line declaration-no-important */
+      font-size: $list-box-item-font-size;
+      border-radius: $list-box-item-border-radius !important; /* stylelint-disable-line declaration-no-important */
     }
   }
   
   .e-list-icon {
-    display: inline-block;
+    display: inline;
     vertical-align: middle;
-    width: auto;
-    height: auto;
+    width: $list-icon-width;
+    height: $list-icon-height;
     padding-bottom: $listbox-icon-padding;
   }
 }

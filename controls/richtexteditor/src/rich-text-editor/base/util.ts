@@ -313,7 +313,9 @@ export function getTBarItemsIndex(items: string[], toolbarItems: IToolbarItemMod
                 } else if (typeof (items[i as number]) === 'object' && (items[i as number] as IToolbarItems).command === 'Custom') {
                     itemsIndex.push(i);
                     break;
-                } else if (items[i as number] === toolbarItems[j as number].subCommand) {
+                } else if (!isNOU(items[i as number]) && !isNOU(toolbarItems[j as number]) && !isNOU(toolbarItems[j as number].subCommand)
+                    && typeof items[i as number] === 'string' && typeof toolbarItems[j as number].subCommand === 'string' &&
+                    (items[i as number].toLowerCase() ===  toolbarItems[j as number].subCommand.toLowerCase())) {
                     itemsIndex.push(j);
                     break;
                 }

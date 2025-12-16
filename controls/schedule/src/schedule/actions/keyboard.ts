@@ -1236,6 +1236,7 @@ export class KeyboardInteraction {
             (navigator as any).clipboard.writeText(this.clipBoardTextArea.value)
                 .then(() => {
                     this.clipBoardTextArea.blur();
+                    this.clipBoardTextArea.selectionStart = this.clipBoardTextArea.selectionEnd;
                     window.getSelection().removeAllRanges();
                     if (e) {
                         const closestAppointment: Element = (e.target as HTMLElement).closest('.' + cls.APPOINTMENT_CLASS);

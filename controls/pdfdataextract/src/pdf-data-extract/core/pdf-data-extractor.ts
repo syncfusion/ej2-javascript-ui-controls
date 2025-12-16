@@ -2,11 +2,14 @@ import { _MatrixHelper, _TransformationStack } from './text-extraction/matrix-he
 import { TextGlyph, TextLine, TextWord } from './text-structure';
 import { _PdfContentParserHelper } from './content-parser-helper';
 import { _GraphicState } from './graphic-state';
-import { _FontStructure } from './text-extraction';
+import { _FontStructure } from './text-extraction/font-structure';
+import { PdfTagType } from './text-extraction/enumerator';
 import { _TextProcessingMode } from './enum';
-import { _addFontResources, _getXObject, _getXObjectResources, _ignoreEscapeSequence, _isArrayEqual, _parseEncodedText } from './utils';
-import { _PdfCrossReference, _PdfDictionary, _PdfRecord, PdfDocument, PdfFontStyle, PdfPage, PdfPath, PdfRotationAngle } from '@syncfusion/ej2-pdf';
+import { _addFontResources, _getXObject, _getXObjectResources, _ignoreEscapeSequence, _isArrayEqual, _parseEncodedText, canvasRenderCallback } from './utils';
+import { PdfDocument, _PdfDictionary, _PdfReference, PdfPage, PdfPath, _ContentParser, _PdfRecord, _PdfCrossReference, PdfFontStyle, PdfRotationAngle, _PdfName, Rectangle } from '@syncfusion/ej2-pdf';
 import { _PdfTextParser } from './pdf-text-parser';
+import { PdfStructureElement } from './pdf-structure-element';
+import { PdfEmbeddedImage } from './image-extraction/pdf-embedded-image';
 
 /**
  * Represents a utility for extracting data from a PDF document.
@@ -38,9 +41,9 @@ export class PdfDataExtractor {
     _identityMatrix: number[] = [1, 0, 0, 1, 0, 0];
     _currentLocation: number[] = [0, 0]
     _currentFont: string;
-    _tempBoundingRectangle: { x: number, y: number, width: number, height: number };
-    _boundingRectangle: { x: number, y: number, width: number, height: number } = {x: 0, y: 0, width: 0 , height: 0};
-    _previousRect: { x: number, y: number, width: number, height: number } = {x: 0, y: 0, width: 0 , height: 0};
+    _tempBoundingRectangle: Rectangle;
+    _boundingRectangle: Rectangle = {x: 0, y: 0, width: 0 , height: 0};
+    _previousRect: Rectangle = {x: 0, y: 0, width: 0 , height: 0};
     _fontSize: number;
     _textHorizontalScaling: number = 100;
     _previousTextMatrix: _MatrixHelper = new _MatrixHelper(0, 0, 0, 0, 0, 0);
@@ -77,26 +80,71 @@ export class PdfDataExtractor {
     _isExtractTextLines: boolean;
     _contentParser: _PdfContentParserHelper;
     _parser: _PdfTextParser = new _PdfTextParser();
+    _structureElement: PdfStructureElement;
+    _referenceCollection: _PdfReference[];
+    _elementOrder: number = 0;
+    _pageElements: PdfStructureElement[] = [];
+    _elementCollection: PdfStructureElement[] = [];
+    _orderSet: Set<number> = new Set<number>();
+    _mcidTextMap: Map<number, string[]> = new Map<number, string[]>();
+    _extractTaggedText: boolean = false;
+    _currentContentId: number;
+    _elementBoundsMap: Map<number[], number> = new Map<number[], number>();
+    _hasContentID: boolean  = false;
+    _imageInfo: PdfEmbeddedImage[] = [];
+    _canvasRenderCallback: canvasRenderCallback;
     /**
      * Initialize a new instance of the `PdfDataExtractor` class
      *
-     * @param {PdfDocument} document PDF document
+     * @param {PdfDocument} document PDF document to get pages
+     *
      * ```typescript
      * // Load an existing PDF document
-     * let document: PdfDocument = new PdfDocument(data1);
+     * let document: PdfDocument = new PdfDocument(data);
      * // Initialize a new instance of the `PdfDataExtractor` class
      * let extractor: PdfDataExtractor = new PdfDataExtractor(document);
-     * // Extracts text from the PDF Page based on its layout
-     * let text: string = extractor.extractText({isLayout: true});
-     * // Save the output PDF
-     * document.save(‘Output.pdf’);
+     * // Extract collection of `PdfEmbeddedImage` from the PDF document.
+     * let imageInfoCollection: PdfEmbeddedImage[] = extractor.extractImages({ startPageIndex: 0, endPageIndex: document.pageCount - 1});
+     * let imageInfo: PdfEmbeddedImage = imageInfoCollection[0];
+     * let data: Uint8Array = imageInfo.data;
      * // Destroy the documents
      * document.destroy();
      * ```
      */
-    constructor(document: PdfDocument) {
+    constructor(document: PdfDocument);
+    /**
+     * Initialize a new instance of the `PdfDataExtractor` class
+     *
+     * @param {PdfDocument} document PDF document to get pages
+     * @param {Function} callBack - A callback function that returns a canvas element for rendering.
+     *
+     * ```typescript
+     * // Load an existing PDF document
+     * let document: PdfDocument = new PdfDocument(data);
+     * // Define a canvas render callback that returns a canvas
+     * const canvasRenderCallback = (): HTMLCanvasElement => {
+     *     const canvas = document.createElement('canvas');
+     *     return canvas;
+     * };
+     * // Initialize a new instance of the `PdfDataExtractor` class
+     * let extractor: PdfDataExtractor = new PdfDataExtractor(document, callBack: canvasRenderCallback);
+     * // Extract collection of `PdfEmbeddedImage` from the PDF document.
+     * let imageInfoCollection: PdfEmbeddedImage[] = extractor.extractImages({ startPageIndex: 0, endPageIndex: document.pageCount - 1});
+     * let imageInfo: PdfEmbeddedImage = imageInfoCollection[0];
+     * let data: Uint8Array = imageInfo.data;
+     * // Destroy the documents
+     * document.destroy();
+     * ```
+     */
+    constructor(document: PdfDocument, callBack: canvasRenderCallback);
+    constructor(document: PdfDocument, callBack?: canvasRenderCallback) {
         this._document = document;
-        this._crossReference = document._crossReference;
+        if (document) {
+            this._crossReference = document._crossReference;
+        }
+        if (callBack) {
+            this._canvasRenderCallback = callBack;
+        }
         this._objects.push(this._ctm);
     }
     /**
@@ -175,7 +223,9 @@ export class PdfDataExtractor {
         this._hasTj = false;
         let textlineMatrix: _MatrixHelper = new _MatrixHelper(1, 0, 0, 1, 0, 0);
         let prevYLocation: number;
-        this._initialTransForm = new _MatrixHelper(1.3333333333333333, 0, 0, -1.3333333333333333, 0, page.size[1] * 1.3333333333333333);
+        const structElement: PdfStructureElement = new PdfStructureElement();
+        this._initialTransForm = new _MatrixHelper(1.3333333333333333, 0, 0, -1.3333333333333333, 0, page.size.height * 1.3333333333333333);
+        const mcidTextMap: Map<number, string[]> = new Map();
         recordCollection.forEach((record: _PdfRecord) => {
             const token: string = record._operator;
             const element: string[] = record._operands;
@@ -286,10 +336,19 @@ export class PdfDataExtractor {
                 prevCmY = currentCmY;
                 break;
             case 'BDC':
+            {
                 this._hasBeginMarkedContent = true;
                 this._hasET = true;
                 hexElement = element;
+                const markedContentId: number = structElement._parseContent(element);
+                if (this._currentContentId !== markedContentId) {
+                    this._currentContentId = markedContentId;
+                }
+                if (!mcidTextMap.has(this._currentContentId)) {
+                    mcidTextMap.set(this._currentContentId, []);
+                }
                 break;
+            }
             case 'TD':
                 this._setTextLeading(Number(-element[1]));
                 this._moveToNextLine(Number(element[0]), Number(element[1]), textlineMatrix);
@@ -356,6 +415,13 @@ export class PdfDataExtractor {
                 }
                 this._currentTextMatrix = this._textLineMatrix;
                 this._textMatrix = this._textLineMatrix;
+                if (this._currentContentId !== null && typeof this._currentContentId !== 'undefined') {
+                    const text: string = this._currentExtractedText;
+                    const textCollection: string[] = mcidTextMap.get(this._currentContentId);
+                    if (text && textCollection) {
+                        textCollection.push(text);
+                    }
+                }
                 break;
             }
             case 'TJ':
@@ -396,6 +462,13 @@ export class PdfDataExtractor {
                 this._textMatrix = this._textLineMatrix;
                 this._hasET = false;
                 this._hasBeginMarkedContent = true;
+                if (this._currentContentId !== null && typeof this._currentContentId !== 'undefined') {
+                    const text: string = this._currentExtractedText;
+                    const textCollection: string[] = mcidTextMap.get(this._currentContentId);
+                    if (text && textCollection) {
+                        textCollection.push(text);
+                    }
+                }
                 break;
             case 'Tj':
                 {
@@ -454,6 +527,13 @@ export class PdfDataExtractor {
                     }
                     this._textMatrix = this._textLineMatrix;
                     this._previousTextMatrix = this._textLineMatrix;
+                    if (this._currentContentId !== null && typeof this._currentContentId !== 'undefined') {
+                        const text: string = this._currentExtractedText;
+                        const textCollection: string[] = mcidTextMap.get(this._currentContentId);
+                        if (text && textCollection) {
+                            textCollection.push(text);
+                        }
+                    }
                 }
                 break;
             case 'Do':
@@ -469,8 +549,14 @@ export class PdfDataExtractor {
                 this._textColor = [red, green, blue];
             }
         });
+        if (mcidTextMap && mcidTextMap.size > 0) {
+            this._mcidTextMap = mcidTextMap;
+        }
     }
-    _renderText(page: PdfPage, fontCollection: Map<string, _FontStructure>, xObjectCollection: Map<string, any>, graphicState: _GraphicState): any { // eslint-disable-line
+    _renderText(page: PdfPage, fontCollection: Map<string, _FontStructure>, xObjectCollection: Map<string, any>, graphicState: _GraphicState, imageExtraction?: boolean): any { // eslint-disable-line
+        if (!(this._contentParser)) {
+            this._contentParser = new _PdfContentParserHelper(_TextProcessingMode.textLineExtraction);
+        }
         const recordCollection: _PdfRecord[] = this._contentParser._getPageRecordCollection(page);
         let text: any; // eslint-disable-line
         if (this._isLayout) {
@@ -478,10 +564,21 @@ export class PdfDataExtractor {
         } else if (this._isExtractTextLines) {
             text = this._contentParser._processRecordCollection(recordCollection, page, fontCollection, xObjectCollection, graphicState);
             this._textLine = text;
+        } else if (this._extractTaggedText) {
+            text = this._contentParser._processRecordCollection(recordCollection, page, fontCollection, xObjectCollection, graphicState);
+            this._textLine = text;
+            this._renderTextAsLayOut(recordCollection, page, fontCollection, xObjectCollection);
         } else {
             text = this._contentParser._processRecordCollection(recordCollection, page, fontCollection, xObjectCollection, graphicState);
             this._resultantText = text;
         }
+    }
+    async _extractImagcollection(page: PdfPage, fontCollection: Map<string, _FontStructure>,
+        xObjectCollection: Map<string, any>, graphicState: _GraphicState): Promise<any> { // eslint-disable-line
+        const recordCollection: _PdfRecord[] = this._contentParser._getPageRecordCollection(page);
+        this._imageInfo = await this._contentParser._processImageRecordCollection(recordCollection, page, fontCollection,
+                                                                                  xObjectCollection, graphicState,
+                                                                                  this._canvasRenderCallback);
     }
     _setTextLeading(textLeading: number): void {
         this._textLeading = -textLeading;
@@ -665,11 +762,11 @@ export class PdfDataExtractor {
             textWord._text = tempString;
             textWord._glyphs = this._textGlyph;
             if (this._isRotatePage) {
-                textWord._bounds = [this._textGlyph[0]._bounds[0], this._textGlyph[0]._bounds[1], this._textGlyph[0]._bounds[2],
-                    this._height];
+                textWord._bounds = {x: this._textGlyph[0]._bounds.x, y: this._textGlyph[0]._bounds.y,
+                    width: this._textGlyph[0]._bounds.width, height: this._height};
             } else {
-                textWord._bounds = [this._textGlyph[0]._bounds[0], this._textGlyph[0]._bounds[1], this._width,
-                    this._textGlyph[0]._bounds[2]];
+                textWord._bounds = {x: this._textGlyph[0]._bounds.x, y: this._textGlyph[0]._bounds.y, width: this._width,
+                    height: this._textGlyph[0]._bounds.width};
             }
             textWord._fontName = curretFont._name;
             textWord._fontStyle = curretFont._fontStyle;
@@ -688,14 +785,10 @@ export class PdfDataExtractor {
         textLine1._pageIndex = page._pageIndex;
         const pdfPath: PdfPath = new PdfPath();
         for (let i: number = 0; i < this._textWord.length; i++) {
-            pdfPath.addRectangle(this._textWord[Number.parseInt(i.toString(), 10)
-            ]._bounds[0]
-            , this._textWord[Number.parseInt(i.toString(), 10)
-            ]._bounds[1], this._textWord[Number.parseInt(i.toString(), 10)
-            ]._bounds[2],
-                                 this._textWord[Number.parseInt(i.toString(), 10)]._bounds[3]);
+            pdfPath.addRectangle(this._textWord[Number.parseInt(i.toString(), 10)]._bounds);
         }
-        textLine1._bounds = pdfPath._getBounds();
+        const pathBounds: number[] = pdfPath._getBounds();
+        textLine1._bounds = {x: pathBounds[0], y: pathBounds[1], width: pathBounds[2], height: pathBounds[3]};
         this._textLine.push(textLine1);
         this._textExtraction.push(this._extractedText);
         this._extractedText = '';
@@ -778,21 +871,17 @@ export class PdfDataExtractor {
         if (/\s/.test(glyph)) {
             isSpace = true;
         }
-        const currentRect: any = this._boundingRectangle; //eslint-disable-line
+        const currentRect: Rectangle = this._boundingRectangle;
         const addTextWord: any = (text: string, glyphs: TextGlyph[], width: number) => { //eslint-disable-line
             const textWord: TextWord = new TextWord();
             textWord._text = text;
             textWord._glyphs = glyphs;
             const pdfPath: PdfPath = new PdfPath();
             for (let i: number = 0; i < glyphs.length; i++) {
-                pdfPath.addRectangle(glyphs[Number.parseInt(i.toString(), 10)
-                ]._bounds[0]
-                , glyphs[Number.parseInt(i.toString(), 10)
-                ]._bounds[1], glyphs[Number.parseInt(i.toString(), 10)
-                ]._bounds[2],
-                                     glyphs[Number.parseInt(i.toString(), 10)]._bounds[3]);
+                pdfPath.addRectangle(glyphs[Number.parseInt(i.toString(), 10)]._bounds);
             }
-            textWord._bounds  = pdfPath._getBounds();
+            const pathBounds: number[] = pdfPath._getBounds();
+            textWord._bounds  = {x: pathBounds[0], y: pathBounds[1], width: pathBounds[2], height: pathBounds[3]};
             textWord._fontName = fontName;
             textWord._fontStyle = fontStyle;
             textWord._fontSize = this._fontSize;
@@ -810,11 +899,13 @@ export class PdfDataExtractor {
             }
             const textGlyph: TextGlyph = new TextGlyph();
             textGlyph._text = glyph;
-            textGlyph._bounds = [currentRect.x, currentRect.y, currentRect.width, currentRect.height];
+            textGlyph._bounds = currentRect;
             textGlyph._fontName = fontName;
             textGlyph._fontStyle = fontStyle;
             textGlyph._fontSize = this._fontSize;
-            textGlyph._color = textColor;
+            if (Array.isArray(textColor) && textColor.length === 3) {
+                textGlyph._color = {r: textColor[0], g: textColor[1], b: textColor[2]};
+            }
             if (page.rotation !== PdfRotationAngle.angle0) {
                 textGlyph._isRotated = true;
             } else {
@@ -866,11 +957,13 @@ export class PdfDataExtractor {
         if (!isSpace) {
             const textGlyph: TextGlyph = new TextGlyph();
             textGlyph._text = glyph;
-            textGlyph._bounds = [currentRect.x, currentRect.y, currentRect.width, currentRect.height];
+            textGlyph._bounds = currentRect;
             textGlyph._fontName = fontName;
             textGlyph._fontStyle = fontStyle;
             textGlyph._fontSize = this._fontSize;
-            textGlyph._color = textColor;
+            if (Array.isArray(textColor) && textColor.length === 3) {
+                textGlyph._color = {r: textColor[0], g: textColor[1], b: textColor[2]};
+            }
             if (page.rotation !== PdfRotationAngle.angle0) {
                 textGlyph._isRotated = true;
             } else {
@@ -958,7 +1051,87 @@ export class PdfDataExtractor {
         this._isExtractTextLines = false;
         return this._textLine;
     }
-    _processPages(startIndex: number, endIndex: number): void {
+    /**
+     * //Extract all image information from the PDF document
+     *
+     * @returns {Promise<PdfEmbeddedImage[]>} The extracted collection of image information
+     *
+     * ```typescript
+     * // Load an existing PDF document
+     * let document: PdfDocument = new PdfDocument(data);
+     * // Initialize a new instance of the `PdfDataExtractor` class
+     * let extractor: PdfDataExtractor = new PdfDataExtractor(document);
+     * // Extract collection of `PdfEmbeddedImage` from the PDF document.
+     * let imageInfoCollection: PdfEmbeddedImage[] = extractor.extractImages({ startPageIndex: 0, endPageIndex: document.pageCount - 1});
+     * let imageInfo: PdfEmbeddedImage = imageInfoCollection[0];
+     * let data: Uint8Array = imageInfo.data;
+     * // Destroy the documents
+     * document.destroy();
+     * ```
+     */
+    async extractImages(): Promise<PdfEmbeddedImage[]>;
+    /**
+     * Extract all image information from the PDF document
+     *
+     * @param {object} options The options to specify the page range to be selected.
+     * @returns {Promise<PdfEmbeddedImage[]>} The extracted collection of image information
+     *
+     * ```typescript
+     * // Load an existing PDF document
+     * let document: PdfDocument = new PdfDocument(data);
+     * // Initialize a new instance of the `PdfDataExtractor` class
+     * let extractor: PdfDataExtractor = new PdfDataExtractor(document);
+     * // Extract collection of `PdfEmbeddedImage` from the PDF document.
+     * let imageInfoCollection: PdfEmbeddedImage[] = extractor.extractImages({ startPageIndex: 0, endPageIndex: document.pageCount - 1});
+     * let imageInfo: PdfEmbeddedImage = imageInfoCollection[0];
+     * let data: Uint8Array = imageInfo.data;
+     * // Destroy the documents
+     * document.destroy();
+     * ```
+     */
+    async extractImages(options: { startPageIndex?: number, endPageIndex?: number }): Promise<PdfEmbeddedImage[]>;
+    async extractImages(options?: { startPageIndex?: number, endPageIndex?: number }): Promise<PdfEmbeddedImage[]> {
+        const isImageExtraction: boolean = true;
+        this._document._crossReference._isDecoderSupport = true;
+        let startIndex: number = 0;
+        this._contentParser = new _PdfContentParserHelper(_TextProcessingMode.imageExtraction);
+        if (options && typeof(options.startPageIndex) === 'number') {
+            startIndex = options.startPageIndex;
+        }
+        let endIndex: number = this._document.pageCount - 1;
+        if (options && typeof(options.endPageIndex) === 'number') {
+            endIndex = options.endPageIndex;
+        }
+        const fontCache: Map<string, Map<string, _FontStructure>> = new Map();
+        const xObjectCache: Map<string, Map<string, _FontStructure>> = new Map();
+        for (let pageIndex: number = startIndex; pageIndex <= endIndex; pageIndex++) {
+            const page: PdfPage = this._document.getPage(pageIndex);
+            if (page.rotation !== PdfRotationAngle.angle0 && !this._isLayout) {
+                this._isRotatePage = true;
+            }
+            const graphicState: _GraphicState = new _GraphicState();
+            const resource: _PdfDictionary = page._pageDictionary.get('Resources');
+            if (resource) {
+                const resourceId: any = resource._reference ? resource._reference.toString() : ''; //eslint-disable-line
+                let fontCollection: Map<string, _FontStructure>;
+                let xObjectCollection: Map<string, _FontStructure>;
+                if (resourceId && xObjectCache.has(resourceId)) {
+                    xObjectCollection = xObjectCache.get(resourceId);
+                } else {
+                    xObjectCollection = _getXObjectResources(resource, this._crossReference, isImageExtraction, page);
+                    if (resourceId) {
+                        xObjectCache.set(resourceId, xObjectCollection);
+                    }
+                }
+                await this._extractImagcollection(page, fontCollection, xObjectCollection,  graphicState);
+            }
+            this._isRotatePage = false;
+        }
+        fontCache.clear();
+        xObjectCache.clear();
+        return this._imageInfo;
+    }
+    _processPages(startIndex: number, endIndex: number, isImageExtraction?: boolean): void {
         const fontCache: Map<string, Map<string, _FontStructure>> = new Map();
         const xObjectCache: Map<string, Map<string, _FontStructure>> = new Map();
         for (let pageIndex: number = startIndex; pageIndex <= endIndex; pageIndex++) {
@@ -971,28 +1144,351 @@ export class PdfDataExtractor {
             if (resource !== null && typeof resource !== 'undefined') {
                 const resourceId: any = resource._reference ? resource._reference.toString() : ''; //eslint-disable-line
                 let fontCollection: Map<string, _FontStructure>;
-                if (resourceId && fontCache.has(resourceId)) {
-                    fontCollection = fontCache.get(resourceId);
-                } else {
-                    fontCollection = _addFontResources(resource, this._crossReference);
-                    if (resourceId) {
-                        fontCache.set(resourceId, fontCollection);
+                if (!isImageExtraction) {
+                    if (resourceId && fontCache.has(resourceId)) {
+                        fontCollection = fontCache.get(resourceId);
+                    } else {
+                        fontCollection = _addFontResources(resource, this._crossReference);
+                        if (resourceId) {
+                            fontCache.set(resourceId, fontCollection);
+                        }
                     }
                 }
                 let xObjectCollection: Map<string, _FontStructure>;
                 if (resourceId && xObjectCache.has(resourceId)) {
                     xObjectCollection = xObjectCache.get(resourceId);
                 } else {
-                    xObjectCollection = _getXObjectResources(resource, this._crossReference);
+                    xObjectCollection = _getXObjectResources(resource, this._crossReference, isImageExtraction, page);
                     if (resourceId) {
                         xObjectCache.set(resourceId, xObjectCollection);
                     }
                 }
-                this._renderText(page, fontCollection, xObjectCollection, graphicState);
+                this._renderText(page, fontCollection, xObjectCollection, graphicState, isImageExtraction);
             }
             this._isRotatePage = false;
         }
         fontCache.clear();
         xObjectCache.clear();
+    }
+    /**
+     * Gets the root structure element of the PDF document.
+     *
+     * @returns {PdfStructureElement} The root structure element of the PDF document.
+     *
+     * ```typescript
+     * // Load an existing PDF document
+     * let document: PdfDocument = new PdfDocument(data, password);
+     * // Initialize a new instance of the `PdfDataExtractor` class
+     * let extractor: PdfDataExtractor = new PdfDataExtractor(document);
+     * // Access the structure element of the PDF document
+     * let rootStructureElement: PdfStructureElement = extractor.getStructureElement();
+     * // Save the document
+     * document.save('output.pdf');
+     * // Destroy the document
+     * document.destroy();
+     * ```
+     */
+    getStructureElement(): PdfStructureElement {
+        if (!(this._structureElement)) {
+            this._structureElement = this._getStructureTreeRoot();
+        }
+        return this._structureElement;
+    }
+    /**
+     * Gets the structure elements of PDF page.
+     *
+     * @param {PdfPage} page PDF page
+     * @returns {PdfStructureElement[]} Structure elements
+     *
+     * ```typescript
+     * // Load an existing PDF document
+     * let document: PdfDocument = new PdfDocument(data, password);
+     * // Initialize a new instance of the `PdfDataExtractor` class
+     * let extractor: PdfDataExtractor = new PdfDataExtractor(document);
+     * // Retrieve structure elements from the first page
+     * let page: PdfPage = document.getPage(0);
+     * let structureElements: PdfStructureElement[] = extractor.getStructureElements(page);
+     * // Save the document
+     * document.save('output.pdf');
+     * // Destroy the document
+     * document.destroy();
+     * ```
+     */
+    getStructureElements(page: PdfPage): PdfStructureElement[] {
+        const loadedDocument: PdfDocument = this._document;
+        this._contentParser = new _PdfContentParserHelper(_TextProcessingMode.textLineExtraction);
+        if (this._pageElements.length === 0 && loadedDocument) {
+            const extractor: PdfDataExtractor = new PdfDataExtractor(loadedDocument);
+            const root: PdfStructureElement = extractor.getStructureElement();
+            if (root) {
+                this._getPageElements(root, page);
+            }
+        }
+        return this._pageElements;
+    }
+    _getPageElements(element: PdfStructureElement, page: PdfPage): void {
+        if (element.page === page && element.tagType !== PdfTagType.documentType) {
+            this._pageElements.push(element);
+        } else if (element.childElements.length > 0) {
+            for (let i: number = 0; i < element.childElements.length; i++) {
+                this._getPageElements(element.childElements[Number.parseInt(i.toString(), 10)], page);
+            }
+        }
+    }
+    _getStructureTreeRoot(): PdfStructureElement {
+        let structureRoot: PdfStructureElement;
+        const catalogDictionary: _PdfDictionary = this._document._catalog._catalogDictionary;
+        if (catalogDictionary && catalogDictionary.has('StructTreeRoot')) {
+            const treeRoot: _PdfDictionary = catalogDictionary.get('StructTreeRoot');
+            if (treeRoot) {
+                if (this._isSingleRootElement(treeRoot)) {
+                    structureRoot = this._getStructureElement(treeRoot);
+                } else {
+                    structureRoot = PdfStructureElement._load(this._document);
+                    this._getStructureElement(treeRoot, structureRoot);
+                }
+            }
+            const collection: PdfStructureElement[] = this._elementCollection;
+            if (collection && collection.length > 0) {
+                structureRoot._getTaggedContent(collection);
+            }
+        }
+        return structureRoot;
+    }
+    _getStructureElement(structureDictionary: _PdfDictionary, parent?: PdfStructureElement): PdfStructureElement {
+        let structureElement: PdfStructureElement;
+        if (structureDictionary.has('K')) {
+            const elements: any = structureDictionary.getArray('K'); // eslint-disable-line
+            if ((elements)) {
+                if (Array.isArray(elements)) {
+                    for (let i: number = 0; i < elements.length; i++) {
+                        const dictionary: _PdfDictionary = elements[Number.parseInt(i.toString(), 10)];
+                        if (dictionary instanceof _PdfDictionary) {
+                            if (parent) {
+                                structureElement = PdfStructureElement._load(this._document, dictionary, this._elementOrder, parent);
+                            } else {
+                                structureElement = PdfStructureElement._load(this._document, dictionary, this._elementOrder);
+                            }
+                            if (structureElement.tagType === PdfTagType.none && dictionary.has('S')) {
+                                const tagType: _PdfName = dictionary.get('S');
+                                if (tagType) {
+                                    structureElement._tagType = structureElement._getTagType(tagType.name);
+                                }
+                            } else if (structureElement.tagType === PdfTagType.none && structureElement.parent
+                                       && structureElement.parent.tagType !== PdfTagType.none) {
+                                structureElement._tagType = structureElement.parent.tagType;
+                            }
+                            if (!this._orderSet.has(structureElement._order)) {
+                                this._elementCollection.push(structureElement);
+                                this._orderSet.add(structureElement._order);
+                            }
+                            this._elementOrder++;
+                        }
+                        if (dictionary instanceof _PdfDictionary && dictionary.has('K')) {
+                            const tempElement: PdfStructureElement = this._getStructureElement(dictionary, structureElement);
+                            if (tempElement) {
+                                structureElement._childElements.push(tempElement);
+                                if (!this._orderSet.has(tempElement._order)) {
+                                    this._elementCollection.push(tempElement);
+                                    this._orderSet.add(tempElement._order);
+                                }
+                            }
+                            if (parent) {
+                                parent._childElements.push(structureElement);
+                            } else {
+                                return structureElement;
+                            }
+                        } else if (parent && structureElement && parent._childElements.indexOf(structureElement) === -1) {
+                            parent._childElements.push(structureElement);
+                        }
+                        if (dictionary instanceof _PdfDictionary && dictionary.has('Pg')) {
+                            structureElement._pageDictionary = dictionary.get('Pg');
+                        }
+                        if (typeof dictionary === 'number') {
+                            if (parent) {
+                                parent._contentId.push(dictionary);
+                            }
+                        }
+                    }
+                    return null;
+                } else if (typeof elements === 'number') {
+                    parent._contentId.push(elements);
+                } else if (elements instanceof _PdfDictionary) {
+                    if (parent) {
+                        structureElement = PdfStructureElement._load(this._document, elements, this._elementOrder, parent);
+                    } else {
+                        structureElement = PdfStructureElement._load(this._document, elements, this._elementOrder);
+                    }
+                    if (!this._orderSet.has(structureElement._order)) {
+                        this._elementCollection.push(structureElement);
+                        this._orderSet.add(structureElement._order);
+                    }
+                    this._elementOrder++;
+                    if (structureElement.tagType === PdfTagType.none && elements !== null &&
+                        typeof elements !== 'undefined' && elements.has('S')) {
+                        const tagType: _PdfName = elements.get('S');
+                        if (tagType) {
+                            structureElement._tagType = structureElement._getTagType(tagType.name);
+                        }
+                    } else if (structureElement.tagType === PdfTagType.none && structureElement.parent &&
+                               structureElement.parent.tagType !== PdfTagType.none) {
+                        structureElement._tagType = structureElement.parent.tagType;
+                    }
+                    if (elements.has('K')) {
+                        const tempElement: PdfStructureElement = this._getStructureElement(elements, structureElement);
+                        if (tempElement) {
+                            structureElement._childElements.push(tempElement);
+                            if (!this._orderSet.has(tempElement._order)) {
+                                this._elementCollection.push(tempElement);
+                                this._orderSet.add(tempElement._order);
+                            }
+                        }
+                    }
+                    if (elements.has('Pg') && structureElement.tagType !== PdfTagType.documentType) {
+                        structureElement._pageDictionary = elements.get('Pg');
+                    }
+                }
+            }
+        }
+        return structureElement;
+    }
+    _isSingleRootElement(treeRoot: _PdfDictionary): boolean {
+        let isSingle: boolean = true;
+        if (treeRoot.has('K')) {
+            const elements: any[] = treeRoot.get('K'); // eslint-disable-line
+            if (elements && elements.length > 1) {
+                isSingle = false;
+            }
+        }
+        return isSingle;
+    }
+    _getFigureBounds(structElement: PdfStructureElement, page: PdfPage): Rectangle {
+        const combinedContent: Uint8Array = page._combineContent();
+        const parser: _ContentParser = new _ContentParser(combinedContent);
+        const recordCollection: _PdfRecord[] = parser._readContent();
+        let currentCmY: number = 0;
+        let prevCmY: number = 0;
+        this._hasTm = false;
+        this._hasET = false;
+        this._hasBeginMarkedContent = false;
+        this._hasTj = false;
+        this._initialTransForm = new _MatrixHelper(1.3333333333333333, 0, 0, -1.3333333333333333, 0, page.size.height * 1.3333333333333333);
+        const id: number[] = [];
+        let elementBounds: Rectangle;
+        let hexElement: string[] = []; // eslint-disable-line
+        const objects: _MatrixHelper[] = [];
+        recordCollection.forEach((record: _PdfRecord) => {
+            const token: string = record._operator;
+            const element: string[] = record._operands;
+            let a: number;
+            let b: number;
+            let c: number;
+            let d: number;
+            let e: number;
+            let f: number;
+            let current: number;
+            let prev: number;
+            let locationY: number;
+            switch (token) {
+            case 'q':
+                this._hasET = false;
+                this._objects.unshift(this._objects[0]);
+                this._ctm = this._objects[0];
+                break;
+            case 'cm':
+            {
+                a = parseFloat(element[0]);
+                b = parseFloat(element[1]);
+                c = parseFloat(element[2]);
+                d = parseFloat(element[3]);
+                e = parseFloat(element[4]);
+                f = parseFloat(element[5]);
+                this._hasET = false;
+                currentCmY = Number(element[5]);
+                current = currentCmY;
+                prev = prevCmY;
+                const ctm: _MatrixHelper = new _MatrixHelper(a, b, c, d, e, f)._multiply(this._objects[0]);
+                objects[0] = ctm;
+                locationY = (current - prev) / 10;
+                if ((current !== prev) && this._hasTm && (locationY < 0 || locationY >= 1)) {
+                    this._resultantText += '\r\n';
+                    this._hasTm = false;
+                }
+                prevCmY = currentCmY;
+                break;
+            }
+            case 'BDC':
+            {
+                this._hasBeginMarkedContent = true;
+                this._hasET = true;
+                hexElement = element;
+                const markedContentId: number = structElement._parseContent(element);
+                if (id.indexOf(markedContentId) === -1) {
+                    id.push(markedContentId);
+                }
+                break;
+            }
+            case 'Do':
+                if (id.indexOf(structElement._contentId[0]) !== -1) {
+                    const scaleMatrix: _MatrixHelper = new _MatrixHelper(1, 0, 0, -1.01, 0, 1);
+                    let transformMatrix: _MatrixHelper = new _MatrixHelper(scaleMatrix._m11, scaleMatrix._m12,
+                                                                           scaleMatrix._m21, scaleMatrix._m22,
+                                                                           scaleMatrix._offsetX, scaleMatrix._offsetY).
+                        _multiply(objects[0]);
+                    const documentMatrix: _MatrixHelper = new _MatrixHelper(1.33, 0, 0, -1.33, 0, page.size.height * 1.33);
+                    transformMatrix = transformMatrix._multiply(documentMatrix);
+                    if (page.rotation === PdfRotationAngle.angle270) {
+                        if (transformMatrix._m11 !== 0 && transformMatrix._m12 !== 0) {
+                            elementBounds = {x: transformMatrix._offsetY / 1.33,
+                                y: page.size.width - (Math.round(transformMatrix._offsetX / 1.33), 5) + transformMatrix._m11 / 1.33,
+                                width: objects[0]._m22, height: objects[0]._m12};
+                        } else {
+                            elementBounds = {x: transformMatrix._offsetY / 1.33, y: Math.floor(page.size.width) -
+                                (Math.round(transformMatrix._offsetX / 1.33), 5) +
+                                    Math.floor(transformMatrix._m11 / 1.33), width: objects[0]._m12, height: objects[0]._m21};
+                        }
+                    } else if (page.rotation === PdfRotationAngle.angle90) {
+                        if (transformMatrix._m11 === 0 && transformMatrix._m21 === 0) {
+                            elementBounds = {x: page.size.height - (transformMatrix._offsetY / 1.33),
+                                y: (transformMatrix._offsetX / 1.33), width: objects[0]._m12, height: - objects[0]._m21};
+                        } else {
+                            elementBounds = {x: page.size.height - (transformMatrix._offsetY / 1.33) - objects[0]._m22,
+                                y: transformMatrix._offsetX / 1.33, width: objects[0]._m22, height: objects[0]._m11};
+                        }
+                    } else if (page.rotation === PdfRotationAngle.angle180) {
+                        elementBounds = {x: page.size.width - (transformMatrix._offsetX / 1.33) -
+                                objects[0]._m11 , y: page.size.height - objects[0]._m22 -
+                        Math.round((transformMatrix._offsetY / 1.33)),
+                        width: objects[0]._m11, height: objects[0]._offsetY};
+                    } else {
+                        if (transformMatrix._m11 === 0  && transformMatrix._m22 > 0) {
+                            if (transformMatrix._m12 < 0  && transformMatrix._m21 > 0) {
+                                elementBounds = {x: (page.size.height - (transformMatrix._offsetY /  1.33)),
+                                    y: Math.round((transformMatrix._offsetX / 1.33)),
+                                    width: - objects[0]._m21, height: objects[0]._m12};
+                            } else if (transformMatrix._m12 > 0 && transformMatrix._m21 < 0) {
+                                elementBounds = {x: (transformMatrix._offsetY / 1.33),
+                                    y: (page.size.width - transformMatrix._offsetX / 1.33),
+                                    width: - objects[0]._m21, height: objects[0]._m12};
+                            } else if (transformMatrix._m12 < 0 && transformMatrix._m21 < 0) {
+                                elementBounds = {x: (page.size.height - (transformMatrix._offsetY / 1.33) - objects[0]._m11),
+                                    y: (page.size.height - objects[0]._m21 - (transformMatrix._offsetY / 1.33)),
+                                    width: objects[0]._m11, height: objects[0]._m22};
+                            } else {
+                                elementBounds = {x: (page.size.width - (transformMatrix._offsetX / 1.33) - objects[0]._m11),
+                                    y: page.size.height - objects[0]._m22 - transformMatrix._offsetY / 1.33,
+                                    width: objects[0]._m11, height: objects[0]._m21};
+                            }
+                        } else {
+                            elementBounds = {x: transformMatrix._offsetX / 1.33,
+                                y: Math.round(transformMatrix._offsetY / 1.33),
+                                width: objects[0]._m11, height: objects[0]._m22};
+                        }
+                    }
+                }
+                break;
+            }
+        });
+        return elementBounds;
     }
 }

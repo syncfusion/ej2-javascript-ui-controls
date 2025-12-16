@@ -1,9 +1,14 @@
+@use 'ej2-base/styles/definition/bds' as *;
+@forward 'ej2-base/styles/definition/bds';
 $sidebar-box-shadow: $shadow-none !default;
 
 //color variables
 $sidebar-background: $content-bg-color !default;
 $sidebar-border: $border-light !default;
 $sidebar-overlay: $overlay-bg-color !default;
+$sidebar-height: 100% !default;
+$sidebar-border-width: 1px !default;
+$sidebar-margin-none: 0 !default;
 
 .e-sidebar {
   /* stylelint-disable property-no-vendor-prefix */

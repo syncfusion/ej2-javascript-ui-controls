@@ -1,3 +1,5 @@
+@use 'ej2-base/styles/common/mixin' as *;
+@use './theme-variables' as *;
 @include export-module('checkbox-theme') {
   .e-checkbox-wrapper,
   .e-css.e-checkbox-wrapper {
@@ -127,6 +129,9 @@
               background-color: $cbox-focussed-checkmark-bgcolor;
               border-color: $cbox-indeterminate-border-color;
             }
+            @if $skin-name == 'highcontrast' or $skin-name == 'highcontrast-light' {
+              background-color: $cbox-checkmark-bgcolor;
+            }
           }
         }
 
@@ -154,7 +159,7 @@
             @if $skin-name == 'Material3' {
               border: none;
               border-color: $cbox-checkmark-disabled-border-color;
-              line-height: 14px;
+              line-height: $cbox-mat3-check-line-height;
             }
             @else {
               border-color: $cbox-checkmark-disabled-border-color;
@@ -170,7 +175,7 @@
             @if $skin-name == 'Material3' {
               border: none;
               border: $cbox-indeterminate-disabled-border-color;
-              line-height: 14px;
+              line-height: $cbox-mat3-check-line-height;
             }
             @else {
               border-color: $cbox-indeterminate-disabled-border-color;

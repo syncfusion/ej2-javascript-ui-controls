@@ -1,4 +1,4 @@
-@import 'ej2-base/styles/definition/material-dark.scss';
-@import '../drop-down-list/material-dark-definition.scss';
-@import 'material-dark-definition.scss';
-@import 'all.scss';
+@use 'ej2-base/styles/definition/material-dark' as *;
+@use '../drop-down-list/material-dark-definition' as *;
+@use 'material-dark-definition' as *;
+@use 'all' as *;

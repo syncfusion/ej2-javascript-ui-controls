@@ -1,9 +1,9 @@
-@import 'ej2-base/styles/definition/highcontrast.scss';
-@import '../context-menu/highcontrast-definition.scss';
-@import '../h-scroll/highcontrast-definition.scss';
-@import '../v-scroll/highcontrast-definition.scss';
-@import 'ej2-popups/styles/popup/highcontrast-definition.scss';
-@import 'highcontrast-definition.scss';
-@import 'icons/highcontrast.scss';
-@import 'all.scss';
-@import 'bigger.scss';
+@use 'ej2-base/styles/definition/highcontrast' as *;
+@use '../context-menu/highcontrast-definition' as *;
+@use '../h-scroll/highcontrast-definition' as *;
+@use '../v-scroll/highcontrast-definition' as *;
+@use 'ej2-popups/styles/popup/highcontrast-definition' as *;
+@use 'highcontrast-definition' as *;
+@use 'icons/highcontrast' as *;
+@use 'all' as *;
+@use 'bigger' as *;

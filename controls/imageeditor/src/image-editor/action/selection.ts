@@ -2928,6 +2928,10 @@ export class Selection {
 
     private mouseDownEventHandler(e: MouseEvent & TouchEvent): void {
         const parent: ImageEditor = this.parent;
+        if (parent.isSafari && e.buttons === 0 && (this.parent.isShapeDrawing || this.parent.togglePen) && this.parent.drawingShape !== 'path') {
+            e.stopImmediatePropagation();
+            return;
+        }
         parent.isKBDNavigation = false;
         this.mouseDown = e.currentTarget === parent.lowerCanvas || e.currentTarget === parent.upperCanvas ?
             'canvas' : '';
@@ -3187,7 +3191,6 @@ export class Selection {
                 const objColl: SelectionPoint[] = extend([], parent.objColl, [], true) as SelectionPoint[];
                 if (!isNullOrUndefined(obj['index']) && obj['index'] > -1) {
                     parent.notify('freehand-draw', {prop: 'selectFhd', value: {type: 'ok' }});
-                    if (!this.isFhdPoint) { return; }
                     parent.notify('freehand-draw', { prop: 'hoverFhd', onPropertyChange: false,
                         value: { strokeColor: null, strokeWidth: null } });
                     parent.notify('toolbar', { prop: 'renderQAT', onPropertyChange: false, value: {isPenEdit: true} });
@@ -3676,9 +3679,7 @@ export class Selection {
                 this.currentDrawingShape = parent.drawingShape.toLowerCase();
                 if (dummyClick) {
                     parent.enableShapeDrawing(parent.toPascalCase(parent.drawingShape) as ShapeType, true);
-                    if (parent.cursor !== 'move') {
-                        parent.upperCanvas.style.cursor = 'crosshair';
-                    }
+                    parent.upperCanvas.style.cursor = 'crosshair';
                 }
             }
             parent.isShapeDrawing = false;
@@ -4627,13 +4628,7 @@ export class Selection {
                 }
                 if (!this.isCropSelection && parent.activeObj.shape !== 'redact') {
                     parent.trigger('shapeChanging', shapeChangingArgs);
-                    if (shapeChangingArgs.cancel) {
-                        parent.objColl.splice(i, 0, temp);
-                        parent.notify('shape', { prop: 'refreshActiveObj', onPropertyChange: false });
-                        parent.notify('draw', { prop: 'render-image', value: { isMouseWheel: null } });
-                    } else {
-                        this.shapeEvent(shapeChangingArgs);
-                    }
+                    this.shapeEvent(shapeChangingArgs);
                     parent.editCompleteArgs = shapeChangingArgs;
                 } else {
                     if (this.isMouseDown) {

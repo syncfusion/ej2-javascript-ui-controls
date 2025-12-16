@@ -1,6 +1,7 @@
 import { PdfLayoutType, PdfLayoutBreakType } from '../enumerator';
 import { PdfPage } from '../pdf-page';
 import { PdfGraphics } from './pdf-graphics';
+import { Rectangle } from './../pdf-type';
 /**
  * Represent the layout format class for pagination
  * // Load an existing PDF document
@@ -17,7 +18,7 @@ import { PdfGraphics } from './pdf-graphics';
  * layout.break = PdfLayoutBreakType.fitPage;
  * layout.layout = pdfLayoutType.paginate;
  * // Draw the items using specified bounds and layout format
- * list.draw(page, 0, 20, layout);
+ * list.draw(page, {x: 0, y: 20}, layout);
  * // Save the document
  * document.save('output.pdf');
  * // Destroy the document
@@ -26,7 +27,7 @@ import { PdfGraphics } from './pdf-graphics';
  */
 export class PdfLayoutFormat {
     _boundSet: boolean = false;
-    _paginateBounds: number[] = [];
+    _paginateBounds: Rectangle;
     _layout: PdfLayoutType;
     _break: PdfLayoutBreakType;
     /**
@@ -47,7 +48,7 @@ export class PdfLayoutFormat {
      * layout.break = PdfLayoutBreakType.fitPage;
      * layout.layout = pdfLayoutType.paginate;
      * // Draw the items using specified bounds and layout format
-     * list.draw(page, 0, 20, layout);
+     * list.draw(page, {x: 0, y: 20}, layout);
      * // Save the document
      * document.save('output.pdf');
      * // Destroy the document
@@ -81,7 +82,7 @@ export class PdfLayoutFormat {
      * // Create a layout format for drawing
      * let pageLayout: PdfLayoutFormat = new PdfLayoutFormat();
      * // Draw the items on the page with specified bounds and layout format
-     * list.draw(page, 0, 20, 500, 700, pageLayout);
+     * list.draw(page, {x: 0, y: 20, width: 500, height: 700}, pageLayout);
      * // Retrieve the layout type applied to the page layout format
      * let layoutType: PdfLayoutType = pageLayout.layout;
      * // Save the document
@@ -112,7 +113,7 @@ export class PdfLayoutFormat {
      * // Set the layout type to paginate for the page layout format
      * pageLayout.layout = PdfLayoutType.paginate;
      * // Draw the items on the page with specified bounds and layout format
-     * list.draw(page, 0, 20, 500, 700, pageLayout);
+     * list.draw(page, {x: 0, y: 20, width: 500, height: 700}, pageLayout);
      * // Save the document
      * document.save('output.pdf');
      * // Destroy the document
@@ -140,7 +141,7 @@ export class PdfLayoutFormat {
      * // Create an layout format for drawing
      * let pageLayout: PdfLayoutFormat = new PdfLayoutFormat();
      * // Draw the items on the page
-     * list.draw(page, 0, 20, 500, 700, pageLayout);
+     * list.draw(page, {x: 0, y: 20, width: 500, height: 700}, pageLayout);
      * // Get the layout break type of the list
      * let layoutType: PdfLayoutBreakType = pageLayout.break;
      * // Save the document
@@ -170,7 +171,7 @@ export class PdfLayoutFormat {
      * // Set the layout break type for the page
      * pageLayout.break = PdfLayoutBreakType.fitPage;
      * // Draw the items on the page
-     * list.draw(page, 0, 20, 500, 700, pageLayout);
+     * list.draw(page, {x: 0, y: 20, width: 500, height: 700}, pageLayout);
      * // Save the document
      * document.save('output.pdf');
      * // Destroy the document
@@ -183,7 +184,7 @@ export class PdfLayoutFormat {
     /**
      * Gets the paginate bounds of the page.
      *
-     * @returns {number[]} Array containing the paginate bounds.
+     * @returns {Rectangle} The paginate bounds.
      * ```typescript
      * // Load the existing document
      * let document: PdfDocument = new PdfDocument(data);
@@ -196,22 +197,22 @@ export class PdfLayoutFormat {
      * // Create an layout format for drawing
      * let pageLayout: PdfLayoutFormat = new PdfLayoutFormat();
      * // Draw the items on the page
-     * list.draw(page, 0, 20, 500, 700, pageLayout);
+     * list.draw(page, {x: 0, y: 20, width: 500, height: 700}, pageLayout);
      * // Get the paginate bounds
-     * let layoutType: paginateBounds = pageLayout.paginateBounds;
+     * let layoutType: Rectangle = pageLayout.paginateBounds;
      * // Save the document
      * document.save('output.pdf');
      * // Destroy the document
      * document.destroy();
      * ````
      */
-    get paginateBounds(): number[] {
+    get paginateBounds(): Rectangle {
         return this._paginateBounds;
     }
     /**
      * Sets the paginate bounds for the page.
      *
-     * @param {number[]} value Array representing the paginate bounds to set for the page.
+     * @param {Rectangle} value The paginate bounds to set for the page.
      * ```typescript
      * // Load the existing document
      * let document: PdfDocument = new PdfDocument(data);
@@ -224,16 +225,16 @@ export class PdfLayoutFormat {
      * // Create an layout format for page layout settings
      * let pageLayout: PdfLayoutFormat = new PdfLayoutFormat();
      * // Set the paginate bounds for the page
-     * pageLayout.paginateBounds = [0, 0, 500, 700];
+     * pageLayout.paginateBounds = {x: 0, y: 0, width: 500, height: 700};
      * // Draw the items on the page
-     * list.draw(page, 0, 20, 500, 700, pageLayout);
+     * list.draw(page, {x: 0, y: 20, width: 500, height: 700}, pageLayout);
      * // Save the document
      * document.save('output.pdf');
      * // Destroy the document
      * document.destroy();
      * ````
      */
-    set paginateBounds(value: number[]) {
+    set paginateBounds(value: Rectangle) {
         this._paginateBounds = value;
         this._boundSet = true;
     }
@@ -253,7 +254,7 @@ export class PdfLayoutFormat {
      * // Create an layout format for drawing
      * let pageLayout: PdfLayoutFormat = new PdfLayoutFormat();
      * // Draw the items on the page
-     * list.draw(page, 0, 20, 500, 700, pageLayout);
+     * list.draw(page, {x: 0, y: 20, width: 500, height: 700}, pageLayout);
      * // Get whether paginate bounds are used
      * let usePaginate:  boolean = pageLayout.usePaginateBounds;
      * // Save the document
@@ -278,7 +279,11 @@ export class PdfLayoutFormat {
  * // Create a new ordered list
  * let list: PdfOrderedList = new PdfOrderedList(items);
  * // Draw the list and access the layout result
- * let result: PdfLayoutResult = list.draw(result.page, result.bounds[0], result.bounds[1], result.bounds[2], result.bounds[3]);
+ * let result: PdfLayoutResult = list.draw(page, {x: 20, y: 20, width: 500, height: 300});
+ * // Create a new unordered list
+ * let list: PdfUnorderedList = new PdfUnorderedList(items);
+ * // Draw the list and access the layout result
+ * result = list.draw(result.page, {x: result.bounds.x, y: result.bounds.y + result.bounds.height + 10, width: 500, height: 300});
  * // Save the document
  * document.save('output.pdf');
  * // Destroy the document
@@ -287,13 +292,14 @@ export class PdfLayoutFormat {
  */
 export class PdfLayoutResult {
     _page: PdfPage;
-    _bounds: number[];
+    _bounds: Rectangle;
     /**
      * Initializes a new instance of the `PdfLayoutResult` class.
      * Remarks: Internal constructor used to create a new instance of a PDF layout result.
      *
+     * @private
      * @param {PdfPage} page The page where the circle annotation is to be placed.
-     * @param {number[]} bounds The bounds within which the list has been drawn.
+     * @param {Rectangle} bounds The bounds within which the list has been drawn.
      * ```typescript
      * // Load an existing document
      * let document: PdfDocument = new PdfDocument(data);
@@ -304,14 +310,18 @@ export class PdfLayoutResult {
      * // Create a new ordered list
      * let list: PdfOrderedList = new PdfOrderedList(items);
      * // Draw the list and access the layout result
-     * let result: PdfLayoutResult = list.draw(result.page, result.bounds[0], result.bounds[1], result.bounds[2], result.bounds[3]);
+     * let result: PdfLayoutResult = list.draw(page, {x: 20, y: 20, width: 500, height: 300});
+     * // Create a new unordered list
+     * let list: PdfUnorderedList = new PdfUnorderedList(items);
+     * // Draw the list and access the layout result
+     * result = list.draw(result.page, {x: result.bounds.x, y: result.bounds.y + result.bounds.height + 10, width: 500, height: 300});
      * // Save the document
      * document.save('output.pdf');
      * // Destroy the document
      * document.destroy();
      * ```
      */
-    constructor(page: PdfPage, bounds: number[]) {
+    constructor(page: PdfPage, bounds: Rectangle) {
         this._page = page;
         this._bounds = bounds;
     }
@@ -329,9 +339,11 @@ export class PdfLayoutResult {
      * // Create a new ordered list
      * let list: PdfOrderedList = new PdfOrderedList(items);
      * // Draw the list and access the layout result
-     * let result: PdfLayoutResult = list.draw(result.page, result.bounds[0], result.bounds[1], result.bounds[2], result.bounds[3]);
-     * // Access the page from the layout result
-     * let resultPage: PdfPage = result.page;
+     * let result: PdfLayoutResult = list.draw(page, {x: 20, y: 20, width: 500, height: 300});
+     * // Create a new unordered list
+     * let list: PdfUnorderedList = new PdfUnorderedList(items);
+     * // Draw the list and access the layout result
+     * result = list.draw(result.page, {x: result.bounds.x, y: result.bounds.y + result.bounds.height + 10, width: 500, height: 300});
      * // Save the document
      * document.save('output.pdf');
      * // Destroy the document
@@ -344,7 +356,7 @@ export class PdfLayoutResult {
     /**
      * Gets the bounds associated with the layout result.
      *
-     * @returns {number[]} The bounds of the layout result.
+     * @returns {Rectangle} The bounds of the layout result.
      * ```typescript
      * // Load an existing document
      * let document: PdfDocument = new PdfDocument(data);
@@ -355,16 +367,18 @@ export class PdfLayoutResult {
      * // Create a new ordered list
      * let list: PdfOrderedList = new PdfOrderedList(items);
      * // Draw the list and access the layout result
-     * let result: PdfLayoutResult = list.draw(result.page, result.bounds[0], result.bounds[1], result.bounds[2], result.bounds[3]);
-     * // Access the bounds associated with layout result
-     * let bounds: number[] = result.bounds;
+     * let result: PdfLayoutResult = list.draw(page, {x: 20, y: 20, width: 500, height: 300});
+     * // Create a new unordered list
+     * let list: PdfUnorderedList = new PdfUnorderedList(items);
+     * // Draw the list and access the layout result
+     * result = list.draw(result.page, {x: result.bounds.x, y: result.bounds.y + result.bounds.height + 10, width: 500, height: 300});
      * // Save the document
      * document.save('output.pdf');
      * // Destroy the document
      * document.destroy();
      * ```
      */
-    get bounds(): number[] {
+    get bounds(): Rectangle {
         return this._bounds;
     }
 }

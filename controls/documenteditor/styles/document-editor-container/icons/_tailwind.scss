@@ -1,3 +1,6 @@
+@use 'ej2-base/styles/common/mixin' as *;
+@use '../tailwind-definition' as *;
+@use '../../document-editor/tailwind-definition' as *;
 @include export-module('document-editor-container-tailwind-icons') {
   .e-de-ctnr-close::before {
     color: $icon-color;

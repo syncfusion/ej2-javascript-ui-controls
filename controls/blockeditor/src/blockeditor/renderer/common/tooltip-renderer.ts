@@ -1,6 +1,6 @@
-import { Tooltip, TooltipEventArgs } from '@syncfusion/ej2-popups';
+import { Tooltip } from '@syncfusion/ej2-popups';
 import { BlockEditor } from '../../base/index';
-import { ITooltipRenderOptions } from '../../base/interface';
+import { ITooltipRenderOptions } from '../../../common/interface';
 
 /**
  * `Tooltip renderer` module is used to render Tooltip in BlockEditor.
@@ -8,7 +8,7 @@ import { ITooltipRenderOptions } from '../../base/interface';
  * @hidden
  */
 export class TooltipRenderer {
-    protected editor: BlockEditor;
+    private editor: BlockEditor;
 
     constructor(editor?: BlockEditor) {
         this.editor = editor;
@@ -31,8 +31,11 @@ export class TooltipRenderer {
             position: args.position === 'RightCenter' ? (this.editor.enableRtl ? 'LeftCenter' : 'RightCenter') : args.position,
             showTipPointer: args.showTipPointer,
             windowCollision: args.windowCollision,
-            cssClass: args.cssClass,
-            beforeRender: args.beforeRender
+            beforeRender: args.beforeRender,
+            locale: this.editor.locale,
+            cssClass: (args.cssClass + (this.editor.cssClass ? (' ' + this.editor.cssClass) : '')),
+            enableRtl: this.editor.enableRtl,
+            enablePersistence: this.editor.enablePersistence
         };
         if (args.content) {
             tooltipOptions.content = args.content;
@@ -42,7 +45,7 @@ export class TooltipRenderer {
         return tooltipObj;
     }
 
-    destroyTooltip(tooltip: Tooltip): void {
+    public destroyTooltip(tooltip: Tooltip): void {
         if (tooltip) {
             tooltip.destroy();
         }

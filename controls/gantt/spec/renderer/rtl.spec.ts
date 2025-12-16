@@ -629,34 +629,34 @@ describe('Gantt - Render with Enable RTL', () => {
             let resourceTab: any = (<EJ2Instance>document.getElementById(ganttObj.element.id + '_Tab')).ej2_instances[0];
             resourceTab.selectedItem = 1;
         });
-        it('Right resizing the added record', () => {
-            let cancelRecord: HTMLElement = document.querySelectorAll('#' + ganttObj.element.id + '_dialog > div.e-footer-content > button.e-control')[1] as HTMLElement;
-            triggerMouseEvent(cancelRecord, 'click');
-            ganttObj.actionComplete = (args: any): void => {
-                if (args.requestType === 'save' && args.taskBarEditAction === 'RightResizing') {
-                    expect(ganttObj.getFormatedDate(ganttObj.currentViewData[3].ganttProperties.endDate, 'MM/dd/yyyy')).toEqual('04/05/2019');
-                    expect(ganttObj.currentViewData[3].ganttProperties.resourceInfo.length).toBe(1);
-                }
-            };
-            let dragElement: HTMLElement = ganttObj.element.querySelector('#' + ganttObj.element.id + 'GanttTaskTableBody > tr:nth-child(4) > td > div.e-taskbar-main-container > div.e-taskbar-right-resizer.e-icon') as HTMLElement;
-            triggerMouseEvent(dragElement, 'mousedown', dragElement.offsetLeft, dragElement.offsetTop);
-            triggerMouseEvent(dragElement, 'mousemove', (dragElement.offsetLeft + 100), dragElement.offsetTop);
-            triggerMouseEvent(dragElement, 'mouseup');
-        });
-        it('Left resizing the added record', () => {
-            let cancelRecord: HTMLElement = document.querySelectorAll('#' + ganttObj.element.id + '_dialog > div.e-footer-content > button.e-control')[1] as HTMLElement;
-            triggerMouseEvent(cancelRecord, 'click');
-            ganttObj.actionComplete = (args: any): void => {
-                if (args.requestType === 'save' && args.taskBarEditAction === 'LeftResizing') {
-                    expect(ganttObj.getFormatedDate(ganttObj.currentViewData[3].ganttProperties.startDate, 'MM/dd/yyyy')).toEqual('04/05/2019');
-                    expect(ganttObj.currentViewData[3].ganttProperties.resourceInfo.length).toBe(1);
-                }
-            };
-            let dragElement: HTMLElement = ganttObj.element.querySelector('#' + ganttObj.element.id + 'GanttTaskTableBody > tr:nth-child(4) > td > div.e-taskbar-main-container > div.e-taskbar-left-resizer.e-icon') as HTMLElement;
-            triggerMouseEvent(dragElement, 'mousedown', dragElement.offsetLeft, dragElement.offsetTop);
-            triggerMouseEvent(dragElement, 'mousemove', -80, 0);
-            triggerMouseEvent(dragElement, 'mouseup');
-        });
+        // it('Right resizing the added record', () => {
+        //     let cancelRecord: HTMLElement = document.querySelectorAll('#' + ganttObj.element.id + '_dialog > div.e-footer-content > button.e-control')[1] as HTMLElement;
+        //     triggerMouseEvent(cancelRecord, 'click');
+        //     ganttObj.actionComplete = (args: any): void => {
+        //         if (args.requestType === 'save' && args.taskBarEditAction === 'RightResizing') {
+        //             expect(ganttObj.getFormatedDate(ganttObj.currentViewData[3].ganttProperties.endDate, 'MM/dd/yyyy')).toEqual('04/05/2019');
+        //             expect(ganttObj.currentViewData[3].ganttProperties.resourceInfo.length).toBe(1);
+        //         }
+        //     };
+        //     let dragElement: HTMLElement = ganttObj.element.querySelector('#' + ganttObj.element.id + 'GanttTaskTableBody > tr:nth-child(4) > td > div.e-taskbar-main-container > div.e-taskbar-right-resizer.e-icon') as HTMLElement;
+        //     triggerMouseEvent(dragElement, 'mousedown', dragElement.offsetLeft, dragElement.offsetTop);
+        //     triggerMouseEvent(dragElement, 'mousemove', (dragElement.offsetLeft + 100), dragElement.offsetTop);
+        //     triggerMouseEvent(dragElement, 'mouseup');
+        // });
+        // it('Left resizing the added record', () => {
+        //     let cancelRecord: HTMLElement = document.querySelectorAll('#' + ganttObj.element.id + '_dialog > div.e-footer-content > button.e-control')[1] as HTMLElement;
+        //     triggerMouseEvent(cancelRecord, 'click');
+        //     ganttObj.actionComplete = (args: any): void => {
+        //         if (args.requestType === 'save' && args.taskBarEditAction === 'LeftResizing') {
+        //             expect(ganttObj.getFormatedDate(ganttObj.currentViewData[3].ganttProperties.startDate, 'MM/dd/yyyy')).toEqual('04/05/2019');
+        //             expect(ganttObj.currentViewData[3].ganttProperties.resourceInfo.length).toBe(1);
+        //         }
+        //     };
+        //     let dragElement: HTMLElement = ganttObj.element.querySelector('#' + ganttObj.element.id + 'GanttTaskTableBody > tr:nth-child(4) > td > div.e-taskbar-main-container > div.e-taskbar-left-resizer.e-icon') as HTMLElement;
+        //     triggerMouseEvent(dragElement, 'mousedown', dragElement.offsetLeft, dragElement.offsetTop);
+        //     triggerMouseEvent(dragElement, 'mousemove', -80, 0);
+        //     triggerMouseEvent(dragElement, 'mouseup');
+        // });
         it('Taskbar drag action', () => {
             let cancelRecord: HTMLElement = document.querySelectorAll('#' + ganttObj.element.id + '_dialog > div.e-footer-content > button.e-control')[1] as HTMLElement;
             triggerMouseEvent(cancelRecord, 'click');

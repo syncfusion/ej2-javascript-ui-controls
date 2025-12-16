@@ -32,3 +32,11 @@ export const profile = {
 export const getMemoryProfile = () => {
     return window.performance.memory.usedJSHeapSize; //Return used memory
 };
+
+export function measurePerformanceSync(actionName: string, action: () => void, thresholdMs: number): void {
+    const start = performance.now();
+    action();
+    const end = performance.now();
+    const duration = end - start;
+    expect(duration).toBeLessThan(thresholdMs, `${actionName} exceeded synchronous performance threshold of ${thresholdMs} ms. Took ${duration.toFixed(2)} ms.`);
+}

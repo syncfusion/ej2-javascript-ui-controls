@@ -1,4 +1,4 @@
-@import 'ej2-base/styles/definition/bds.scss';
-@import '../textarea/bds-definition.scss';
-@import 'bds-definition.scss';
-@import 'all.scss';
+@use 'ej2-base/styles/definition/bds' as *;
+@use '../textarea/bds-definition' as *;
+@use 'bds-definition' as *;
+@use 'all' as *;

@@ -1,3 +1,6 @@
+@use 'ej2-base/styles/definition/bds' as *;
+@forward 'ej2-base/styles/definition/bds';
+
 //Layout Variables Start
 $dialog-close-button-left: 0 !default;
 $dialog-header-border: 0 !default;
@@ -11,6 +14,7 @@ $dialog-content-font-size: $text-sm !default;
 $dialog-header-line-height: $leading-tight !default;
 $dialog-content-line-height: $leading-normal !default;
 $dialog-content-padding-top: 12px !default;
+$dialog-rtl-content-padding-top: -12px !default;
 $dialog-bigger-content-padding-top: 16px !default;
 $dialog-device-content-font-size: $text-base !default;
 $dialog-border-radius: 12px !default;
@@ -88,6 +92,18 @@ $dialog-footer-flat-hover-btn-bg-color: $secondary-bg-color-hover !default;
 $dialog-footer-flat-btn-border-color: $secondary-border-color !default;
 $dialog-footer-flat-btn-content-color: $secondary-text-color !default;
 $dialog-enable-resize-padding-bottom: 15px !default;
+
+$dialog-bigger-rtl-footer-btn-margin-left: 0 !default;
+$dialog-zero-padding-margin: 0 !default;
+$dialog-alert-popup-margin: 30px !default;
+$dialog-full-width: 100% !default;
+$dialog-header-width: 80% !default;
+$dialog-max-height: 98% !default;
+$dialog-full-height: 100% !default;
+$dialog-mobile-width: 600px !default;
+$dialog-auto-width: auto !default;
+$dialog-bigger-header-content-height: 60px !default;
+$dialog-normal-header-line-height: 30px !default;
 
 /* stylelint-disable */
 .e-dialog .e-dlg-header-content .e-btn.e-dlg-closeicon-btn{

@@ -1,4 +1,6 @@
-@import 'mixin.scss';
+@use 'ej2-base/styles/common/mixin' as *;
+@use './theme-variables' as *;
+@use 'mixin' as *;
 @include export-module('spreadsheet-ribbon-layout') {
   .e-spreadsheet .e-ribbon {
     border: $spreadsheet-ribbon-border;
@@ -132,7 +134,7 @@
       }
 
       &:focus {
-        font-weight: bold;
+        font-weight: $spread-ribbon-font-weight-bold;
       }
     }
 
@@ -194,7 +196,7 @@
         &.e-file-menu .e-menu {
           & .e-menu-item.e-selected,
           & .e-menu-item.e-focused {
-            border-radius: 4px 0 0 4px;
+            border-radius: $spread-ribbon-border-radius-4 $spread-ribbon-border-radius-0 $spread-ribbon-border-radius-0 $spread-ribbon-border-radius-4;
           }
         }
       }
@@ -230,7 +232,7 @@
         }
         @if $skin-name == 'Material3' {
           & .e-menu-item.e-menu-caret-icon {
-            border-radius: 4px;
+            border-radius: $spread-ribbon-border-radius-4;
             font-weight: 500;
 
             &.e-selected {

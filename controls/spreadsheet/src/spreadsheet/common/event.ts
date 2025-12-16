@@ -144,11 +144,41 @@ export const deleteNote: string = 'deleteNote';
 /** @hidden */
 export const showNote: string = 'showNote';
 /** @hidden */
+export const showHideNote: string = 'showHideNote';
+/** @hidden */
+export const navigateNextPrevNote: string = 'navigateNextPrevNote';
+/** @hidden */
+export const showAllNotes: string = 'showAllNotes';
+/** @hidden */
+export const processSheetNotes: string = 'processSheetNotes';
+/** @hidden */
+export const noteUndoRedo: string = 'noteUndoRedo';
+/** @hidden */
 export const createNoteIndicator: string = 'createNoteIndicator';
 /** @hidden */
 export const updateNoteContainer: string = 'updateNoteContainer';
 /** @hidden */
 export const removeNoteContainer: string = 'removeNoteContainer';
+/** @hidden */
+export const initiateComment: string = 'initiateComment';
+/** @hidden */
+export const replyToComment: string = 'replyToComment';
+/** @hidden */
+export const showCommentsPane: string = 'showCommentsPane';
+/** @hidden */
+export const navigateNextPrevComment: string = 'navigateNextPrevComment';
+/** @hidden */
+export const refreshCommentsPane: string = 'refreshCommentsPane ';
+/** @hidden */
+export const deleteComment: string = 'deleteComment';
+/** @hidden */
+export const createCommentIndicator: string = 'createCommentIndicator';
+/** @hidden */
+export const removeCommentContainer: string = 'removeCommentContainer';
+/** @hidden */
+export const processSheetComments: string = 'processSheetComments';
+/** @hidden */
+export const commentUndoRedo: string = 'commentUndoRedo';
 /** @hidden */
 export const removeHyperlink: string = 'removeHyperlink';
 /** @hidden */

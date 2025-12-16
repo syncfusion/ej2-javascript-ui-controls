@@ -1,3 +1,5 @@
+@use 'ej2-base/styles/definition/material3' as *;
+@forward 'ej2-base/styles/definition/material3';
 $theme: 'Material3';
 $spin-padding: 10px !default;
 $spin-label-margin-top: 10px !default;
@@ -19,6 +21,13 @@ $spin-bootstrap-stroke-color: rgba($primary) !default;
 $spin-tailwind-stroke-width: 4.5 !default;
 $spin-tailwind-arc-color: rgba($primary) !default;
 $spin-tailwind-stroke-color: rgba($primary-light) !default;
+$spin-tail-margin: 0 auto !default;
+$spin-bootstrap-border-radius: $radius-full !default;
+$spinner-zero-space: 0 !default;
+$spinner-full-width: 100% !default;
+$spinner-half-width: 50% !default;
+$spinner-full-height: 100% !default;
+
 @mixin boot5-spinner-rotate {
   animation: material-spinner-rotate .75s linear infinite;
 }

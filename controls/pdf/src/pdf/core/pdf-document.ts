@@ -1,7 +1,7 @@
 import { _PdfStream } from './base-stream';
 import { _PdfCrossReference } from './pdf-cross-reference';
 import { _Linearization } from './pdf-parser';
-import { _isWhiteSpace, FormatError, _decode, _getNewGuidString, _isNullOrUndefined, _updatePageSettings, _updatePageCount } from './utils';
+import { _isWhiteSpace, FormatError, _decode, _getNewGuidString, _isNullOrUndefined, _updatePageSettings, _updatePageCount, _convertDateToString, _convertStringToDate, _getCjkEncoding, _getCjkDescendantFont, _resolveStandardFontFamily, _resolveCjkFontFamily, _bytesToHex } from './utils';
 import { _PdfCatalog } from './pdf-catalog';
 import { _PdfDictionary, _PdfReference, _isName, _PdfName, _clearPrimitiveCaches } from './pdf-primitives';
 import { PdfDestination, PdfPage } from './pdf-page';
@@ -10,7 +10,7 @@ import { DataFormat, PdfPermissionFlag, PdfTextAlignment, PdfPageOrientation, Pd
 import { PdfForm } from './form/form';
 import { PdfField } from './form/field';
 import { PdfBrush, PdfGraphics } from './graphics/pdf-graphics';
-import { PdfFontFamily, PdfFontStyle, PdfStandardFont } from './fonts/pdf-standard-font';
+import { _FontData, _PdfCjkStandardFontMetricsFactory, _PdfFontPrimitive, _PdfStandardFontMetricsFactory, PdfCjkFontFamily, PdfCjkStandardFont, PdfFont, PdfFontFamily, PdfFontStyle, PdfStandardFont, PdfTrueTypeFont } from './fonts/pdf-standard-font';
 import { PdfStringFormat, PdfVerticalAlignment } from './fonts/pdf-string-format';
 import { _ExportHelper, _XfdfDocument } from './import-export/xfdf-document';
 import { _JsonDocument } from './import-export/json-document';
@@ -22,6 +22,12 @@ import { _PdfMergeHelper } from './pdf-merge';
 import { PdfPageImportOptions } from './pdf-page-import-options';
 import { PdfLayerCollection } from './layers/layer-collection';
 import { PdfSection } from './pdf-section';
+import { PdfDocumentInformation } from './pdf-document-information';
+import { _PdfFontMetrics } from './fonts/pdf-font-metrics';
+import { _UnicodeTrueTypeFont } from './fonts/unicode-true-type-font';
+import { _MD5 } from './security/encryptors/messageDigest5';
+import { PdfSignature } from './security/digital-signature/signature/pdf-signature';
+import { Size } from './pdf-type';
 /**
  * Represents a PDF document and can be used to parse an existing PDF document.
  * ```typescript
@@ -75,6 +81,9 @@ export class PdfDocument {
     _as: _PdfReference[] = [];
     _printLayer: _PdfReference[] = [];
     _isLoaded: boolean = true;
+    _fontCollection: Map<string, _PdfFontPrimitive>;
+    _startXRefParsedCache: number[];
+    private _revisions: number[];
     /*
      * An event triggered during the splitting process, providing access to split PDF data and split index.
      *
@@ -88,7 +97,7 @@ export class PdfDocument {
      * document.splitByFixedNumber(1);
      * // Event to invoke while splitting PDF document data
      * function documentSplitEvent(sender: PdfDocument, args: PdfDocumentSplitEventArgs): void {
-     *   Save.save(‘output_’ + args.splitIndex + ‘.pdf’, new Blob([args.pdfData], { type: 'application/pdf' }));
+     *   Save.save('output_' + args.splitIndex + '.pdf', new Blob([args.pdfData], { type: 'application/pdf' }));
      * }
      * // Destroy the document
      * document.destroy();
@@ -105,9 +114,9 @@ export class PdfDocument {
      * // Gets the graphics of the PDF page
      * let graphics: PdfGraphics = page.graphics;
      * // Create a new pen.
-     * let pen: PdfPen = new PdfPen([0, 0, 0], 1);
+     * let pen: PdfPen = new PdfPen({r: 0, g: 0, b: 0}, 1);
      * // Draw line on the page graphics.
-     * graphics.drawLine(pen, 10, 10, 100, 100);
+     * graphics.drawLine(pen, {x: 10, y: 10}, {x: 100, y: 100});
      * // Save the document
      * document.save('output.pdf');
      * // Destroy the document
@@ -194,6 +203,7 @@ export class PdfDocument {
      */
     constructor(data: Uint8Array, password: string)
     constructor(data?: string | Uint8Array, password?: string) {
+        this._fontCollection = new Map();
         if (data) {
             this._stream = new _PdfStream(typeof data === 'string' ? _decode(data) : data);
             this._fileStructure = new PdfFileStructure();
@@ -224,6 +234,7 @@ export class PdfDocument {
             const catalogDictionary: _PdfDictionary = new _PdfDictionary(this._crossReference);
             catalogDictionary.update('Type', _PdfName.get('Catalog'));
             const catalogReference: _PdfReference = this._crossReference._getNextReference();
+            catalogDictionary.objId = catalogReference.objectNumber + ' ' + catalogReference.generationNumber;
             this._crossReference._cacheMap.set(catalogReference, catalogDictionary);
             const trailerDictionary: _PdfDictionary = new _PdfDictionary();
             trailerDictionary.update('Root', catalogReference);
@@ -514,6 +525,260 @@ export class PdfDocument {
         return this._layers;
     }
     /**
+     * Gets an array of revision numbers for the PDF document.
+     *
+     * @returns {number[]} - The list of revisions in the document.
+     *
+     * ```typescript
+     * // Load an existing PDF document
+     * let document: PdfDocument = new PdfDocument(data);
+     * // Retrieve all revision indexes of the PDF document
+     * let revisions: number[] = document.getRevisions();
+     * // Destroy the document
+     * document.destroy();
+     * ```
+     */
+    getRevisions(): number[] {
+        if (!this._isLoaded) {
+            return undefined;
+        }
+        if (this._revisions) {
+            return this._revisions;
+        }
+        const startCrossReferences: number[] = this._startXRefParsedCache
+            ? this._startXRefParsedCache.sort((a: number, b: number) => a - b)
+            : [];
+        if (startCrossReferences.length === 0) {
+            return (this._revisions = []);
+        }
+        const eofSig: Uint8Array = new Uint8Array([0x25, 0x25, 0x45, 0x4F, 0x46]);
+        const stream: _PdfStream = this._stream;
+        const endOfFileSign: number[] = [];
+        startCrossReferences.forEach((entry: number) => {
+            stream.position = entry;
+            const remaining: number = stream.end - stream.position;
+            if (remaining < eofSig.length || !this._find(stream, eofSig, remaining, false)) {
+                return;
+            }
+            let j: number = stream.position + eofSig.length;
+            stream.position = j;
+            if (stream.position < stream.end) {
+                const nextCharacter: number = stream.getByte();
+                if (nextCharacter === 0x0d) {
+                    j++;
+                    if (stream.position < stream.end && stream.getByte() === 0x0a) {
+                        j++;
+                    }
+                } else if (nextCharacter === 0x0a) {
+                    j++;
+                }
+            }
+            endOfFileSign.push(j);
+        });
+        return (this._revisions = endOfFileSign);
+    }
+    /**
+     * Embed a standard font into the PDF document.
+     *
+     * @param {PdfFontFamily} fontFamily The font family.
+     * @param {number} size The font size.
+     * @param {PdfFontStyle } style The font style.
+     * @returns {PdfStandardFont} The embedded font object.
+     *
+     * ```typescript
+     * // Load an existing PDF document
+     * let document: PdfDocument = new PdfDocument(data);
+     * // Embed a font into the PDF document.
+     * const embedFont = document.embedFont(PdfFontFamily.helvetica, 12, PdfFontStyle.regular);
+     * // Draw string using embed font.
+     * page.graphics.drawString('value', embedFont, {x: 10, y: 10, width: 100, height: 100}, new PdfBrush({r: 255, g: 0, b: 0}));
+     * // Save the document
+     * document.save('output.pdf');
+     * // Destroy the document
+     * document.destroy();
+     * ```
+     */
+    embedFont(fontFamily: PdfFontFamily, size: number, style: PdfFontStyle): PdfStandardFont;
+    /**
+     * Embed a Cjk font into the PDF document.
+     *
+     * @param {PdfCjkFontFamily} fontFamily The Cjk font family.
+     * @param {number} size The font size.
+     * @param {PdfFontStyle} style The font style.
+     * @param {boolean} isCjk Set to true by default to embed the font as a CJK font.
+     * @returns {PdfCjkStandardFont} The embedded font object.
+     *
+     * ```typescript
+     * // Load an existing PDF document
+     * let document: PdfDocument = new PdfDocument(data);
+     * // Embed a font into the PDF document with CJK embedding enabled.
+     * const embedFont = document.embedFont(PdfCjkFontFamily.hanyangSystemsGothicMedium, 14, PdfFontStyle.bold, true);
+     * // Draw string using embed font.
+     * page.graphics.drawString('value', embedFont, {x: 10, y: 10, width: 100, height: 100});
+     * // Save the document
+     * document.save('output.pdf');
+     * // Destroy the document
+     * document.destroy();
+     * ```
+     */
+    embedFont(fontFamily: PdfCjkFontFamily, size: number, style: PdfFontStyle, isCjk: true): PdfCjkStandardFont;
+    /**
+     * Embed a true type font into the PDF document.
+     *
+     * @param {Uint8Array} fontData The font data as byte array.
+     * @param {number} size The font size.
+     * @param {object} options Optional object containing font style options.
+     * @param {boolean} options.shouldUnderline Indicates whether the font should be rendered with an underline style.
+     * @param {boolean} options.shouldStrikeout Indicates whether the font should be rendered with a strikeout style.
+     * @return {PdfTrueTypeFont} The embedded font object.
+     *
+     * ```typescript
+     * // Load an existing PDF document
+     * let document: PdfDocument = new PdfDocument(data);
+     * // Embed a font into the PDF document.
+     * let embedFont = document.embedFont(fontData, 14, { shouldUnderline: true });
+     * // Draw string using embed font.
+     * page.graphics.drawString('value', embedFont, {x: 10, y: 10, width: 100, height: 100});
+     * // Save the document
+     * document.save('output.pdf');
+     * // Destroy the document
+     * document.destroy();
+     * ```
+     */
+    embedFont(fontData: Uint8Array, size: number, options?: {shouldUnderline?: boolean, shouldStrikeout?: boolean}): PdfTrueTypeFont;
+    /**
+     * Embed a true type font into the PDF document.
+     *
+     * @param {string } fontData The font data as base64 string.
+     * @param {number} size The font size.
+     * @param {object} options Optional object containing font style options.
+     * @param {boolean} options.shouldUnderline Indicates whether the font should be rendered with an underline style.
+     * @param {boolean} options.shouldStrikeout Indicates whether the font should be rendered with a strikeout style.
+     * @return {PdfTrueTypeFont} The embedded font object.
+     *
+     * ```typescript
+     * // Load an existing PDF document
+     * let document: PdfDocument = new PdfDocument(data);
+     * // Embed a font into the PDF document.
+     * let embedFont = document.embedFont(fontData, 14, { shouldStrikeout: true });
+     * // Draw string using embed font.
+     * page.graphics.drawString('value', embedFont, {x: 10, y: 10, width: 100, height: 100});
+     * // Save the document
+     * document.save('output.pdf');
+     * // Destroy the document
+     * document.destroy();
+     * ```
+     */
+    embedFont(fontData: string, size: number, options?: {shouldUnderline?: boolean, shouldStrikeout?: boolean}): PdfTrueTypeFont;
+    embedFont(arg1: PdfFontFamily | PdfCjkFontFamily | Uint8Array | string,
+              arg2: PdfFontStyle | number,
+              arg3: number | boolean | { shouldUnderline?: boolean; shouldStrikeout?: boolean },
+              arg4?: number | boolean): PdfFont {
+        let key: string;
+        let primitive: _PdfFontPrimitive;
+        if (typeof arg1 === 'string' || arg1 instanceof Uint8Array) {
+            const fontData: Uint8Array = typeof arg1 === 'string' ? _decode(arg1) as Uint8Array : arg1;
+            const size: number = arg2 as number;
+            const options: { shouldUnderline?: boolean; shouldStrikeout?: boolean } = arg3 as { shouldUnderline?: boolean;
+                shouldStrikeout?: boolean };
+            primitive = this._getOrCreateFontPrimitive(key, { type: 'ttf', data: fontData });
+            this._fontCollection.set(key, primitive);
+            let style: PdfFontStyle = PdfFontStyle.regular;
+            if (options && options.shouldUnderline) {
+                style = PdfFontStyle.underline;
+            }
+            if (options && options.shouldStrikeout) {
+                style = PdfFontStyle.strikeout;
+            }
+            return new PdfTrueTypeFont(fontData, size, style, primitive);
+        }
+        const fontFamily: any = arg1; // eslint-disable-line
+        const style: PdfFontStyle = arg3 as PdfFontStyle;
+        const size: number = arg2 as number;
+        let isCjk: boolean = false;
+        if (typeof arg4 === 'boolean') {
+            isCjk = arg4;
+        }
+        if (isCjk) {
+            const cjkFamily: PdfCjkFontFamily = fontFamily as PdfCjkFontFamily;
+            key = `cjk_${cjkFamily}_${style}`;
+            primitive = this._getOrCreateFontPrimitive(key, { type: 'cjk', family: cjkFamily, style });
+        } else {
+            const standardFamily: PdfFontFamily = fontFamily as PdfFontFamily;
+            key = `standard_${standardFamily}_${style}`;
+            primitive = this._getOrCreateFontPrimitive(key, { type: 'standard', family: standardFamily, style });
+        }
+        return this._createFontFromPrimitive(primitive, size, style);
+    }
+    _getOrCreateFontPrimitive(key: string, fontData: _FontData): _PdfFontPrimitive {
+        if (this._fontCollection.has(key)) {
+            return this._fontCollection.get(key);
+        }
+        let dictionary: _PdfDictionary = new _PdfDictionary();
+        let primitive: _PdfFontPrimitive;
+        switch (fontData.type) {
+        case 'standard': {
+            const metrics: _PdfFontMetrics = _PdfStandardFontMetricsFactory._getMetrics(fontData.family,
+                                                                                        fontData.style);
+            dictionary._updated = true;
+            dictionary.set('Type', _PdfName.get('Font'));
+            dictionary.set('Subtype', _PdfName.get('Type1'));
+            dictionary.set('BaseFont', new _PdfName(metrics._postScriptName));
+            if (fontData.family !== PdfFontFamily.symbol && fontData.family !== PdfFontFamily.zapfDingbats) {
+                dictionary.set('Encoding', new _PdfName('WinAnsiEncoding'));
+            }
+            primitive = { dictionary, metrices: metrics };
+            break;
+        }
+        case 'cjk': {
+            const metrics: _PdfFontMetrics = _PdfCjkStandardFontMetricsFactory._getMetrics(fontData.family,
+                                                                                           fontData.style);
+            dictionary._updated = true;
+            dictionary.set('Type', _PdfName.get('Font'));
+            dictionary.set('Subtype', _PdfName.get('Type0'));
+            dictionary.set('BaseFont', new _PdfName(metrics._postScriptName));
+            dictionary.set('Encoding', _getCjkEncoding(fontData.family));
+            dictionary.set('DescendantFonts', _getCjkDescendantFont(fontData.family, fontData.style, metrics));
+            primitive = { dictionary, metrices: metrics };
+            break;
+        }
+        case 'ttf': {
+            const fontInternal: _UnicodeTrueTypeFont = new _UnicodeTrueTypeFont(fontData.data);
+            fontInternal._createInternals();
+            dictionary = fontInternal._getInternals();
+            fontInternal._metrics._isUnicodeFont = true;
+            primitive = {dictionary, metrices: fontInternal._metrics, fontInternal};
+            break;
+        }
+        default:
+            throw new Error('Unsupported font type.');
+        }
+        this._fontCollection.set(key, primitive);
+        return primitive;
+    }
+    _createFontFromPrimitive(primitive: _PdfFontPrimitive, size: number, style: PdfFontStyle): PdfFont {
+        const subtype: string = primitive.dictionary.get('Subtype').name;
+        const baseFontName: string = primitive.dictionary.get('BaseFont').name;
+        let font: PdfFont;
+        switch (subtype) {
+        case 'Type1':
+            font = new PdfStandardFont(_resolveStandardFontFamily(baseFontName), size, style, primitive);
+            break;
+        case 'Type0':
+            font = new PdfCjkStandardFont(_resolveCjkFontFamily(baseFontName), size, style, primitive);
+            break;
+        default:
+            throw new Error(`Unsupported font subtype: ${subtype}`);
+        }
+        font.style = style;
+        return font;
+    }
+    _computeFontHash(fontData: Uint8Array): string {
+        const md5: _MD5 = new _MD5();
+        const hashBytes: Uint8Array = md5.hash(fontData, 0, fontData.length);
+        return _bytesToHex(hashBytes);
+    }
+    /**
      * Gets the `PdfPage` at the specified index.
      *
      * @param {number} pageIndex Page index.
@@ -603,7 +868,7 @@ export class PdfDocument {
      * // Sets the margins
      * pageSettings.margins = new PdfMargins(40);
      * // Sets the page size
-     * pageSettings.size = [595, 842];
+     * pageSettings.size = {width: 595, height: 842};
      * // Sets the page orientation
      * pageSettings.orientation = PdfPageOrientation.landscape;
      * // Add a new PDF page with page settings
@@ -630,7 +895,7 @@ export class PdfDocument {
      * // Sets the margins
      * pageSettings.margins = new PdfMargins(40);
      * // Sets the page size
-     * pageSettings.size = [595, 842];
+     * pageSettings.size = {width: 595, height: 842};
      * // Sets the page orientation
      * pageSettings.orientation = PdfPageOrientation.landscape;
      * // Create and insert a new PDF page at 5th index with specified page settings
@@ -746,9 +1011,9 @@ export class PdfDocument {
      * // Gets the graphics of the PDF page
      * let graphics: PdfGraphics = page.graphics;
      * // Create a new pen.
-     * let pen: PdfPen = new PdfPen([0, 0, 0], 1);
+     * let pen: PdfPen = new PdfPen({r: 0, g: 0, b: 0}, 1);
      * // Draw line on the page graphics.
-     * graphics.drawLine(pen, 10, 10, 100, 100);
+     * graphics.drawLine(pen, {x: 10, y: 10}, {x: 100, y: 100});
      * // Save the document
      * document.save('output.pdf');
      * // Destroy the document
@@ -770,7 +1035,7 @@ export class PdfDocument {
      * // Sets the margins
      * pageSettings.margins = new PdfMargins(40);
      * // Sets the page size
-     * pageSettings.size = [595, 842];
+     * pageSettings.size = {width: 595, height: 842};
      * // Sets the page orientation
      * pageSettings.orientation = PdfPageOrientation.landscape;
      * // Add a new section to the document with page settings
@@ -780,9 +1045,9 @@ export class PdfDocument {
      * // Gets the graphics of the PDF page
      * let graphics: PdfGraphics = page.graphics;
      * // Create a new pen.
-     * let pen: PdfPen = new PdfPen([0, 0, 0], 1);
+     * let pen: PdfPen = new PdfPen({r: 0, g: 0, b: 0}, 1);
      * // Draw line on the page graphics.
-     * graphics.drawLine(pen, 10, 10, 100, 100);
+     * graphics.drawLine(pen, {x: 10, y: 10}, {x: 100, y: 100});
      * // Save the document
      * document.save('output.pdf');
      * // Destroy the document
@@ -837,6 +1102,144 @@ export class PdfDocument {
     removePage(argument: PdfPage | number): void {
         const targetPage: PdfPage = (argument instanceof PdfPage) ? argument : this.getPage(argument);
         this._removePage(targetPage);
+    }
+    /**
+     * Gets the document information of the PDF.
+     *
+     * @returns {PdfDocumentInformation} Document information.
+     *
+     * ```typescript
+     * // Load an existing PDF document
+     * let document: PdfDocument = new PdfDocument(data, password);
+     * // Gets the document information of the PDF
+     * let documentProperties: PdfDocumentInformation = document.getDocumentInformation();
+     * // Gets the title of the PDF document
+     * let title = documentProperties.title;
+     * // Gets the author of the PDF document
+     * let author = documentProperties.author;
+     * // Gets the subject of the PDF document
+     * let subject = documentProperties.subject;
+     * // Gets the keywords of the PDF document
+     * let keywords = documentProperties.keywords;
+     * // Gets the creator of the PDF document
+     * let creator = documentProperties.creator;
+     * // Gets the producer of the PDF document
+     * let producer = documentProperties.producer;
+     * // Gets the language of the PDF document
+     * let language = documentProperties.language;
+     * // Gets the creation date of the PDF document
+     * let creationDate = documentProperties.creationDate;
+     * // Gets the modification date of the PDF document
+     * let modificationDate = documentProperties.modificationDate;
+     * document.destroy();
+     * ```
+     */
+    public getDocumentInformation(): PdfDocumentInformation {
+        const infoDict: _PdfDictionary = this._getInfoDictionary(false);
+        const catalogDictionary: _PdfDictionary = this._catalog._catalogDictionary;
+        const result: PdfDocumentInformation = {};
+        if (!infoDict) {
+            return result;
+        }
+        result.title = this._readInfoString(infoDict, 'Title');
+        result.author = this._readInfoString(infoDict, 'Author');
+        result.subject = this._readInfoString(infoDict, 'Subject');
+        result.keywords = this._readInfoString(infoDict, 'Keywords');
+        result.creator = this._readInfoString(infoDict, 'Creator');
+        result.producer = this._readInfoString(infoDict, 'Producer');
+        result.language = this._readInfoString(catalogDictionary, 'Lang');
+        const creation: string = this._readInfoString(infoDict, 'CreationDate');
+        if (typeof creation === 'string') {
+            result.creationDate = _convertStringToDate(creation);
+        }
+        const mod: string = this._readInfoString(infoDict, 'ModDate');
+        if (typeof mod === 'string') {
+            result.modificationDate = _convertStringToDate(mod);
+        }
+        return result;
+    }
+    private _readInfoString(dict: _PdfDictionary, key: string): string | undefined {
+        if (dict && !dict.has(key)) {
+            return undefined;
+        }
+        const value: any = dict.get(key); // eslint-disable-line
+        return typeof value === 'string' ? value : undefined;
+    }
+    /**
+     * Sets the document information of the PDF.
+     *
+     * @param {PdfDocumentInformation} information Fields to set.
+     * @returns {void} Returns nothing.
+     *
+     * ```typescript
+     * // Load an existing PDF document
+     * let document: PdfDocument = new PdfDocument(data, password);
+     * // Sets the document information of the PDF
+     * document.setDocumentInformation({
+     *   author: 'Syncfusion',
+     *   modificationDate: Date.now(),
+     *   creator: 'Essential PDF',
+     *   keywords: 'PDF',
+     *   subject: 'Document information DEMO',
+     *   title: 'Essential PDF Sample',
+     *   producer: 'Syncfusion PDF'
+     * });
+     * // Save the document
+     * document.save('output.pdf);
+     * // Destroy the document
+     * document.destroy();
+     * ```
+     */
+    public setDocumentInformation(information: PdfDocumentInformation): void {
+        const infoDict: _PdfDictionary = this._getInfoDictionary(true);
+        const catalogDictionary: _PdfDictionary = this._catalog._catalogDictionary;
+        this._writeInfoString(infoDict, 'Title', information.title);
+        this._writeInfoString(infoDict, 'Author', information.author);
+        this._writeInfoString(infoDict, 'Subject', information.subject);
+        this._writeInfoString(infoDict, 'Keywords', information.keywords);
+        this._writeInfoString(infoDict, 'Creator', information.creator);
+        this._writeInfoString(infoDict, 'Producer', information.producer);
+        this._writeInfoString(catalogDictionary, 'Lang', information.language);
+        this._writeInfoDate(infoDict, 'CreationDate', information.creationDate);
+        this._writeInfoDate(infoDict, 'ModDate', information.modificationDate);
+        infoDict._updated = true;
+    }
+    _writeInfoString(dict: _PdfDictionary, key: string, value?: string): void {
+        if (value !== null && typeof value === 'string') {
+            dict.update(key, value);
+        }
+    }
+    _writeInfoDate(dict: _PdfDictionary, key: string, value?: Date): void {
+        if (value && value instanceof Date) {
+            dict.update(key, _convertDateToString(value));
+        }
+    }
+    private _getInfoDictionary(createIfMissing: boolean): _PdfDictionary {
+        let trailer: _PdfDictionary;
+        if (this._crossReference && this._crossReference._trailer) {
+            trailer = this._crossReference._trailer;
+        }
+        if (!trailer) {
+            return undefined;
+        }
+        if (trailer.has('Info')) {
+            const raw: any = trailer.get('Info'); // eslint-disable-line
+            if (raw instanceof _PdfReference) {
+                const dict: _PdfDictionary = this._crossReference._fetch(raw);
+                return dict;
+            } else if (raw instanceof _PdfDictionary) {
+                return raw;
+            }
+        }
+        if (!createIfMissing) {
+            return undefined;
+        }
+        const info: _PdfDictionary = new _PdfDictionary(this._crossReference);
+        const infoRef: _PdfReference = this._crossReference._getNextReference();
+        this._crossReference._cacheMap.set(infoRef, info);
+        info.objId = infoRef.toString();
+        trailer.update('Info', infoRef);
+        return info;
     }
     _checkPageNumber(index: number): void {
         if (index < 0 || index > this.pageCount) {
@@ -1358,7 +1761,7 @@ export class PdfDocument {
      * // Load an existing PDF document
      * let document: PdfDocument = new PdfDocument(data);
      * // Export form field to XFDF format
-     * let xfdf: Uint8Array = document.exportFormData(‘formData.xfdf’);
+     * let xfdf: Uint8Array = document.exportFormData('formData.xfdf');
      * // Save the document
      * document.save('output.pdf');
      * // Destroy the document
@@ -1563,6 +1966,7 @@ export class PdfDocument {
             this._form._fontCache = undefined;
             this._form = undefined;
         }
+        this._fontCollection.clear();
         _clearPrimitiveCaches();
         if (this._mergeHelperCache) {
             if (this._mergeHelperCache.size > 0) {
@@ -1728,7 +2132,7 @@ export class PdfDocument {
                         const graphics: PdfGraphics = page.graphics;
                         graphics.save();
                         graphics.setTransparency(0.20);
-                        graphics.drawRectangle(0, 0, page.size[0], 33.75, new PdfBrush([255, 255, 255]));
+                        graphics.drawRectangle({x: 0, y: 0, width: page.size.width, height: 33.75}, new PdfBrush({r: 255, g: 255, b: 255}));
                         graphics.restore();
                         graphics.save();
                         graphics.setTransparency(0.50);
@@ -1736,9 +2140,9 @@ export class PdfDocument {
                         const format: PdfStringFormat = new PdfStringFormat(PdfTextAlignment.center, PdfVerticalAlignment.middle);
                         graphics.drawString('Created with a trial version of Syncfusion Essential PDF',
                                             font,
-                                            [0, 0, page.size[0], 33.75],
+                                            {x: 0, y: 0, width: page.size.width, height: 33.75},
                                             null,
-                                            new PdfBrush([0, 0, 0]),
+                                            new PdfBrush({r: 0, g: 0, b: 0}),
                                             format);
                         graphics.restore();
                     } catch (e) { } // eslint-disable-line
@@ -1762,7 +2166,7 @@ export class PdfDocument {
      * // Import 5 pages from page index 2 to 6 into the destination document.
      * destination.importPageRange(sourceDocument, 2, 6);
      * // Save the output PDF
-     * destination.save(‘Output.pdf’);
+     * destination.save('Output.pdf');
      * // Destroy the documents
      * destination.destroy();
      * sourceDocument.destroy();
@@ -1790,7 +2194,7 @@ export class PdfDocument {
      * // Import 5 pages from page index 2 to 6 into the destination document and insert them at index 3.
      * destination.importPageRange(sourceDocument, 2, 6, options);
      * // Save the output PDF
-     * destination.save(‘Output.pdf’);
+     * destination.save('Output.pdf');
      * // Destroy the documents
      * destination.destroy();
      * sourceDocument.destroy();
@@ -1887,7 +2291,7 @@ export class PdfDocument {
      * // Copy the second page and add it as third page
      * sourceDocument.importPage(1);
      * // Save the output PDF
-     * sourceDocument.save(‘Output.pdf’);
+     * sourceDocument.save('Output.pdf');
      * // Destroy the documents
      * sourceDocument.destroy();
      * ```
@@ -1935,7 +2339,7 @@ export class PdfDocument {
      * // Import the page into the destination document as the last page.
      * destination.importPage(pageToImport, sourceDocument);
      * // Save the output PDF
-     * destination.save(‘Output.pdf’);
+     * destination.save('Output.pdf');
      * // Destroy the documents
      * destination.destroy();
      * sourceDocument.destroy();
@@ -1964,7 +2368,7 @@ export class PdfDocument {
      * // Imports the page into destination document as 5th page
      * destination.importPage(pageToImport, sourceDocument, options);
      * // Save the output PDF
-     * destination.save(‘Output.pdf’);
+     * destination.save('Output.pdf');
      * // Destroy the documents
      * destination.destroy();
      * sourceDocument.destroy();
@@ -1996,7 +2400,7 @@ export class PdfDocument {
      * document.split();
      * // Event to invoke while splitting PDF document data
      * function documentSplitEvent(sender: PdfDocument, args: PdfDocumentSplitEventArgs): void {
-     *   Save.save(‘output_’ + args.splitIndex + ‘.pdf’, new Blob([args.pdfData], { type: 'application/pdf' }));
+     *   Save.save('output_' + args.splitIndex + '.pdf', new Blob([args.pdfData], { type: 'application/pdf' }));
      * }
      * // Destroy the document
      * document.destroy();
@@ -2017,7 +2421,7 @@ export class PdfDocument {
      * document.splitByFixedNumber(1);
      * // Event to invoke while splitting PDF document data
      * function documentSplitEvent(sender: PdfDocument, args: PdfDocumentSplitEventArgs): void {
-     *   Save.save(‘output_’ + args.splitIndex + ‘.pdf’, new Blob([args.pdfData], { type: 'application/pdf' }));
+     *   Save.save('output_' + args.splitIndex + '.pdf', new Blob([args.pdfData], { type: 'application/pdf' }));
      * }
      * // Destroy the document
      * document.destroy();
@@ -2050,7 +2454,7 @@ export class PdfDocument {
      * document.splitByPageRanges([[0, 4], [5, 9]]);
      * // Event to invoke while splitting PDF document data
      * function documentSplitEvent(sender: PdfDocument, args: PdfDocumentSplitEventArgs): void {
-     *   Save.save(‘output_’ + args.splitIndex + ‘.pdf’, new Blob([args.pdfData], { type: 'application/pdf' }));
+     *   Save.save('output_' + args.splitIndex + '.pdf', new Blob([args.pdfData], { type: 'application/pdf' }));
      * }
      * // Destroy the document
      * document.destroy();
@@ -2088,6 +2492,11 @@ export class PdfDocument {
     private _invokeSplitEvent(splitIndex: number, pdfData: Uint8Array): void {
         const args: PdfDocumentSplitEventArgs = new PdfDocumentSplitEventArgs(splitIndex, pdfData);
         this.splitEvent(this, args);
+    }
+    _getSignature(dictionary: _PdfDictionary, field: any): PdfSignature { // eslint-disable-line
+        const signature: PdfSignature = new PdfSignature();
+        signature._initializeInternals(dictionary, field);
+        return signature;
     }
 }
 /**
@@ -2296,7 +2705,7 @@ export class PdfFormFieldExportSettings {
      * // Sets the form field data export settings with export name.
      * let settings: PdfFormFieldExportSettings = new PdfFormFieldExportSettings();
      * // Set the export name defined in form field export settings.
-     * settings.exportName = ‘JobApplication’.
+     * settings.exportName = 'JobApplication'.
      * // Export form field to JSON format
      * let json: Uint8Array = document.exportFormData(settings);
      * // Save the document
@@ -2363,7 +2772,7 @@ export class PdfFormFieldExportSettings {
  * // Sets the margins
  * pageSettings.margins = new PdfMargins(40);
  * // Sets the page size
- * pageSettings.size = [595, 842];
+ * pageSettings.size = {width: 595, height: 842};
  * // Sets the page orientation
  * pageSettings.orientation = PdfPageOrientation.landscape;
  * // Add a new PDF page with page settings
@@ -2376,7 +2785,7 @@ export class PdfFormFieldExportSettings {
  */
 export class PdfPageSettings {
     _orientation: PdfPageOrientation ;
-    _size: number[] = [595, 842];
+    _size: Size = {width: 595, height: 842};
     _isOrientation: boolean = false;
     _margins: PdfMargins;
     _rotation: PdfRotationAngle;
@@ -2390,7 +2799,7 @@ export class PdfPageSettings {
      * // Sets the margins
      * pageSettings.margins = new PdfMargins(40);
      * // Sets the page size
-     * pageSettings.size = [595, 842];
+     * pageSettings.size = {width: 595, height: 842};
      * // Sets the page orientation
      * pageSettings.orientation = PdfPageOrientation.landscape;
      * // Add a new PDF page with page settings
@@ -2401,11 +2810,80 @@ export class PdfPageSettings {
      * document.destroy();
      * ```
      */
-    constructor() {
-        this._orientation = PdfPageOrientation.portrait;
-        this._size = [595, 842];
-        this._margins = new PdfMargins();
-        this._rotation = PdfRotationAngle.angle0;
+    constructor()
+    /**
+     * Initializes a new instance of the `PdfPageSettings` class.
+     *
+     * @param {object} [options] Optional settings to initialize the page.
+     * @param {PdfPageOrientation} [options.orientation] Page orientation.
+     * @param {Size} [options.size] Page size.
+     * @param {PdfMargins} [options.margins] Page margins.
+     * @param {PdfRotationAngle} [options.rotation] Page rotation angle.
+     *
+     * ```typescript
+     * // Load an existing PDF document
+     * let document: PdfDocument = new PdfDocument(data, password);
+     * // Create a new PDF page settings with custom options
+     * let pageSettings = new PdfPageSettings({
+     *   orientation: PdfPageOrientation.landscape,
+     *   size: { width: 842, height: 595 },
+     *   margins: new PdfMargins(40),
+     *   rotation: PdfRotationAngle.angle90
+     * });
+     * // Add a new PDF page with page settings
+     * page = document.addPage(pageSettings);
+     * // Destroy the document
+     * document.destroy();
+     * ```
+     */
+    constructor(options: {orientation?: PdfPageOrientation, size?: Size, margins?: PdfMargins, rotation?: PdfRotationAngle})
+    /**
+     * Initializes a new instance of the `PdfPageSettings` class.
+     *
+     * @param {object} [options] Optional settings to initialize the page.
+     * @param {PdfPageOrientation} [options.orientation] Page orientation.
+     * @param {Size} [options.size] Page size.
+     * @param {PdfMargins} [options.margins] Page margins.
+     * @param {PdfRotationAngle} [options.rotation] Page rotation angle.
+     *
+     * ```typescript
+     * // Load an existing PDF document
+     * let document: PdfDocument = new PdfDocument(data, password);
+     * // Create a new PDF page settings with custom options
+     * let pageSettings = new PdfPageSettings({
+     *   orientation: PdfPageOrientation.landscape,
+     *   size: { width: 842, height: 595 },
+     *   margins: new PdfMargins(40),
+     *   rotation: PdfRotationAngle.angle90
+     * });
+     * // Add a new PDF page with page settings
+     * page = document.addPage(pageSettings);
+     * // Destroy the document
+     * document.destroy();
+     * ```
+     */
+    constructor(options?: {orientation?: PdfPageOrientation, size?: Size, margins?: PdfMargins, rotation?: PdfRotationAngle})
+    {
+        if (options && 'orientation' in options && options.orientation !== null && typeof options.orientation !== 'undefined') {
+            this.orientation = options.orientation;
+        } else {
+            this._orientation = PdfPageOrientation.portrait;
+        }
+        if (options && 'size' in options && options.size !== null && typeof options.size !== 'undefined') {
+            this.size = options.size;
+        } else {
+            this._size = {width: 595, height: 842};
+        }
+        if (options && 'margins' in options && options.margins !== null && typeof options.margins !== 'undefined') {
+            this.margins = options.margins;
+        } else {
+            this._margins = new PdfMargins();
+        }
+        if (options && 'rotation' in options && options.rotation !== null && typeof options.rotation !== 'undefined') {
+            this.rotation = options.rotation;
+        } else {
+            this._rotation = PdfRotationAngle.angle0;
+        }
     }
     /**
      * Gets the orientation of the page.
@@ -2417,7 +2895,7 @@ export class PdfPageSettings {
      * // Create a new PDF page settings instance
      * let pageSettings: PdfPageSettings = new PdfPageSettings();
      * // Sets the page size
-     * pageSettings.size = [842, 595];
+     * pageSettings.size = {width: 842, height: 595};
      * // Gets the page orientation
      * let orientation: PdfPageOrientation = pageSettings.orientation;
      * // Add a new PDF page with page settings
@@ -2460,34 +2938,34 @@ export class PdfPageSettings {
     /**
      * Gets the size of the page.
      *
-     * @returns {number[]} The width and height of the page as number array.
+     * @returns {Size} The width and height of the page as number array.
      * ```typescript
      * // Load an existing PDF document
      * let document: PdfDocument = new PdfDocument(data, password);
      * // Access the first page
      * let page: PdfPage = document.getPage(0);
      * // Gets the width and height of the PDF page as number array
-     * let size: number[] = page.size;
+     * let size: Size = page.size;
      * // Save the document
      * document.save('output.pdf');
      * // Destroy the document
      * document.destroy();
      * ```
      */
-    get size(): number[] {
+    get size(): Size {
         return this._size;
     }
     /**
      * Sets the width and height of the page.
      *
-     * @param {number[]} value The width and height of the page as number array.
+     * @param {Size} value The width and height of the page as number array.
      * ```typescript
      * // Load an existing PDF document
      * let document: PdfDocument = new PdfDocument(data, password);
      * // Create a new PDF page settings instance
      * let pageSettings: PdfPageSettings = new PdfPageSettings();
      * // Sets the page size
-     * pageSettings.size = [595, 842];
+     * pageSettings.size = {width: 595, height: 842};
      * // Sets the page orientation
      * pageSettings.orientation = PdfPageOrientation.landscape;
      * // Add a new PDF page with page settings
@@ -2498,7 +2976,7 @@ export class PdfPageSettings {
      * document.destroy();
      * ```
      */
-    set size(value: number[]) {
+    set size(value: Size) {
         if (this._isOrientation) {
             this._updateSize(value);
         } else {
@@ -2589,30 +3067,30 @@ export class PdfPageSettings {
             this._rotation = (value % 4) as PdfRotationAngle;
         }
     }
-    _updateSize(size: number[]): void
+    _updateSize(size: Size): void
     _updateSize(orientation: PdfPageOrientation): void
-    _updateSize(value: number[] | PdfPageOrientation): void {
+    _updateSize(value: Size | PdfPageOrientation): void {
         let pageOrientation: PdfPageOrientation;
-        let pageSize: number[];
-        if (Array.isArray(value)) {
+        let pageSize: Size;
+        if (typeof value !== 'number' && 'width' in value && 'height' in value && typeof value.width !== 'undefined' && typeof value.height !== 'undefined') {
             pageOrientation = this.orientation;
             pageSize = value;
         } else {
-            pageOrientation = value;
+            pageOrientation = value as PdfPageOrientation;
             pageSize = this._size;
         }
         if (pageOrientation === PdfPageOrientation.portrait) {
-            this._size = [Math.min(pageSize[0], pageSize[1]), Math.max(pageSize[0], pageSize[1])];
+            this._size = {width: Math.min(pageSize.width, pageSize.height), height: Math.max(pageSize.width, pageSize.height)};
         } else {
-            this._size = [Math.max(pageSize[0], pageSize[1]), Math.min(pageSize[0], pageSize[1])];
+            this._size = {width: Math.max(pageSize.width, pageSize.height), height: Math.min(pageSize.width, pageSize.height)};
         }
     }
     _updateOrientation(): void {
-        this._orientation = (this._size[1] >= this._size[0]) ? PdfPageOrientation.portrait : PdfPageOrientation.landscape;
+        this._orientation = (this._size.height >= this._size.width) ? PdfPageOrientation.portrait : PdfPageOrientation.landscape;
     }
     _getActualSize(): number[] {
-        const width: number = this._size[0] - (this._margins._left + this._margins._right);
-        const height: number = this._size[1] - (this._margins._top + this._margins._bottom);
+        const width: number = this._size.width - (this._margins._left + this._margins._right);
+        const height: number = this._size.height - (this._margins._top + this._margins._bottom);
         return [width, height];
     }
 }
@@ -2626,7 +3104,7 @@ export class PdfPageSettings {
  * // Sets the margins
  * pageSettings.margins = new PdfMargins(40);
  * // Sets the page size
- * pageSettings.size = [595, 842];
+ * pageSettings.size = {width: 595, height: 842};
  * // Sets the page orientation
  * pageSettings.orientation = PdfPageOrientation.landscape;
  * // Add a new PDF page with page settings
@@ -2652,7 +3130,7 @@ export class PdfMargins {
      * // Sets the margins
      * pageSettings.margins = new PdfMargins(40);
      * // Sets the page size
-     * pageSettings.size = [595, 842];
+     * pageSettings.size = {width: 595, height: 842};
      * // Sets the page orientation
      * pageSettings.orientation = PdfPageOrientation.landscape;
      * // Add a new PDF page with page settings
@@ -2676,7 +3154,7 @@ export class PdfMargins {
      * // Sets the margins
      * pageSettings.margins = new PdfMargins(40);
      * // Sets the page size
-     * pageSettings.size = [595, 842];
+     * pageSettings.size = {width: 595, height: 842};
      * // Sets the page orientation
      * pageSettings.orientation = PdfPageOrientation.landscape;
      * // Add a new PDF page with page settings
@@ -2730,7 +3208,7 @@ export class PdfMargins {
      * margins.bottom = 20;
      * pageSettings.margins = margins;
      * // Sets the page size
-     * pageSettings.size = [595, 842];
+     * pageSettings.size = {width: 595, height: 842};
      * // Sets the page orientation
      * pageSettings.orientation = PdfPageOrientation.landscape;
      * // Add a new PDF page with page settings
@@ -2779,7 +3257,7 @@ export class PdfMargins {
      * margins.bottom = 20;
      * pageSettings.margins = margins;
      * // Sets the page size
-     * pageSettings.size = [595, 842];
+     * pageSettings.size = {width: 595, height: 842};
      * // Sets the page orientation
      * pageSettings.orientation = PdfPageOrientation.landscape;
      * // Add a new PDF page with page settings
@@ -2828,7 +3306,7 @@ export class PdfMargins {
      * margins.bottom = 20;
      * pageSettings.margins = margins;
      * // Sets the page size
-     * pageSettings.size = [595, 842];
+     * pageSettings.size = {width: 595, height: 842};
      * // Sets the page orientation
      * pageSettings.orientation = PdfPageOrientation.landscape;
      * // Add a new PDF page with page settings
@@ -2877,7 +3355,7 @@ export class PdfMargins {
      * margins.bottom = 20;
      * pageSettings.margins = margins;
      * // Sets the page size
-     * pageSettings.size = [595, 842];
+     * pageSettings.size = {width: 595, height: 842};
      * // Sets the page orientation
      * pageSettings.orientation = PdfPageOrientation.landscape;
      * // Add a new PDF page with page settings
@@ -2903,7 +3381,7 @@ export class PdfMargins {
  * document.splitByFixedNumber(1);
  * // Event to invoke while splitting PDF document data
  * function documentSplitEvent(sender: PdfDocument, args: PdfDocumentSplitEventArgs): void {
- *  Save.save(‘output_’ + args.splitIndex + ‘.pdf’, new Blob([args.pdfData], { type: 'application/pdf' }));
+ *  Save.save('output_' + args.splitIndex + '.pdf', new Blob([args.pdfData], { type: 'application/pdf' }));
  * }
  * // Destroy the document
  * document.destroy();
@@ -2925,7 +3403,7 @@ export class PdfDocumentSplitEventArgs {
      * document.splitByFixedNumber(1);
      * // Event to invoke while splitting PDF document data
      * function documentSplitEvent(sender: PdfDocument, args: PdfDocumentSplitEventArgs): void {
-     *   Save.save(‘output_’ + args.splitIndex + ‘.pdf’, new Blob([args.pdfData], { type: 'application/pdf' }));
+     *   Save.save('output_' + args.splitIndex + '.pdf', new Blob([args.pdfData], { type: 'application/pdf' }));
      * }
      * // Destroy the document
      * document.destroy();
@@ -2947,7 +3425,7 @@ export class PdfDocumentSplitEventArgs {
      * document.splitByFixedNumber(1);
      * // Event to invoke while splitting PDF document data
      * function documentSplitEvent(sender: PdfDocument, args: PdfDocumentSplitEventArgs): void {
-     *  Save.save(‘output_’ + args.splitIndex + ‘.pdf’, new Blob([args.pdfData], { type: 'application/pdf' }));
+     *  Save.save('output_' + args.splitIndex + '.pdf', new Blob([args.pdfData], { type: 'application/pdf' }));
      * }
      * // Destroy the document
      * document.destroy();
@@ -2968,7 +3446,7 @@ export class PdfDocumentSplitEventArgs {
      * document.splitByFixedNumber(1);
      * // Event to invoke while splitting PDF document data
      * function documentSplitEvent(sender: PdfDocument, args: PdfDocumentSplitEventArgs): void {
-     *  Save.save(‘output_’ + args.splitIndex + ‘.pdf’, new Blob([args.pdfData], { type: 'application/pdf' }));
+     *  Save.save('output_' + args.splitIndex + '.pdf', new Blob([args.pdfData], { type: 'application/pdf' }));
      * }
      * // Destroy the document
      * document.destroy();

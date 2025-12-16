@@ -1,5 +1,5 @@
-@import 'ej2-base/styles/definition/bootstrap-dark.scss';
-@import 'ej2-popups/styles/tooltip/bootstrap-dark-definition.scss';
-@import 'bootstrap-dark-definition.scss';
-@import 'all.scss';
-@import 'bigger.scss';
+@use 'ej2-base/styles/definition/bootstrap-dark' as *;
+@use 'ej2-popups/styles/tooltip/bootstrap-dark-definition' as *;
+@use 'bootstrap-dark-definition' as *;
+@use 'all' as *;
+@use 'bigger' as *;

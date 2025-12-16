@@ -4,7 +4,6 @@ import { NodeModel } from '../../../src/diagram/objects/node-model';
 import { Node } from '../../../src/diagram/objects/node';
 import { TextElement } from '../../../src/diagram/core/elements/text-element';
 import { ShapeAnnotationModel } from '../../../src';
-import { getDiagramElement } from '../../../src/diagram/utility/dom-util';
 import { MouseEvents } from '../interaction/mouseevents.spec';
 import { profile, inMB, getMemoryProfile } from '../../../spec/common.spec';
 
@@ -109,8 +108,6 @@ describe('Diagram Control', () => {
     describe('Annotations with zero offsets ', () => {
         let diagram: Diagram;
         let ele: HTMLElement;
-        let pathData: string = 'M540.3643,137.9336L546.7973,159.7016L570.3633,159.7296L550.7723,171.9366L558.9053,194.9966L540.3643,' +
-            '179.4996L521.8223,194.9966L529.9553,171.9366L510.3633,159.7296L533.9313,159.7016L540.3643,137.9336z';
         beforeAll((): void => {
             const isDef = (o: any) => o !== undefined && o !== null;
             if (!isDef(window.performance)) {
@@ -213,7 +210,7 @@ describe('Diagram Control', () => {
     describe('Remove labels API ', () => {
         let diagram: Diagram;
         let ele: HTMLElement;
-
+        let mouseEvents: MouseEvents = new MouseEvents();
         beforeAll((): void => {
             const isDef = (o: any) => o !== undefined && o !== null;
             if (!isDef(window.performance)) {
@@ -238,11 +235,11 @@ describe('Diagram Control', () => {
         afterAll((): void => {
             diagram.destroy();
             ele.remove();
+            mouseEvents = null;
         });
 
         it('Checking remove labels API', (done: Function) => {
             let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
-            let mouseEvents: MouseEvents = new MouseEvents();
             let node: Node = diagram.nodes[0] as Node
             let label: ShapeAnnotationModel[] =
                 [{ id: 'label1', content: 'Default Shape', offset: { x: 0 }, style: { color: 'rgb(255,250,235)' } },

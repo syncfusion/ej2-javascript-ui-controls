@@ -124,8 +124,9 @@ describe('Diagram Control', () => {
             diagram.appendTo('#diagram');
         });
         afterAll((): void => {
-            diagram.destroy();
-            ele.remove();
+            if (diagram) { diagram.destroy(); diagram = null; }
+            if (ele && ele.parentNode) ele.parentNode.removeChild(ele);
+            ele = null;
         });
 
         it('Checking diagram instance creation', (done: Function) => {

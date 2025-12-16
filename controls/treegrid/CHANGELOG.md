@@ -2,56 +2,6 @@
 
 ## [Unreleased]
 
-## 31.2.15 (2025-11-25)
-
-### Tree Grid
-
-#### Bug Fixes
-
-- `#I779257` - Fixed an issue where dataSource was not updating when new records were added using add record, even if it was initially empty.
-- `#I779836` - Resolved the issue where column properties were not updated and accessible during the initial rendering of the TreeGrid.
-
-## 31.2.10 (2025-11-13)
-
-### Tree Grid
-
-#### Features
-
-- `#982773` - Provided support for partial selection with virtualization and introduced the `isRowSelectable` API to disable selection for specific records.
-
-### Tree Grid
-
-#### Bug Fixes
-
-- `#I778677` - Authorization token now passes correctly to remote endpoints when using middleware, even with offline: false.
-
-## 31.2.5 (2025-11-04)
-
-### Tree Grid
-
-#### Bug Fixes
-
-- `#I778239` - Resolved an issue that caused incorrect row ordering when multiple rows were moved simultaneously using drag-and-drop.
-
-## 31.1.22 (2025-10-01)
-
-### Tree Grid
-
-#### Bug Fixes
-
-- `#763935` - Fixed an issue where the child records position were wrong when expanding parent record in remote data case.
-
-## 31.1.20 (2025-09-10)
-
-### Tree Grid
-
-#### Bug Fixes
-
--`#I759266` - The `addRecord` method of the TreeGrid correctly adds a child record to the specified parent node.
-- `#F69767` - Fixed an issue where data was being duplicated when dragging and dropping items and refreshing in the treegrid.
-
-## 31.1.17 (2025-09-05)
-
 ### Tree Grid
 
 #### Features

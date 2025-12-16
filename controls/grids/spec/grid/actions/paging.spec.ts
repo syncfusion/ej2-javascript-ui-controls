@@ -1190,9 +1190,64 @@ describe('BUG-830382 - Page count is not increased while adding new records if t
         });
     });
 
-    describe('991898: Updating the Chrome version in coverage test cases of EJ2 components', () => {
+    describe('991898: Updating the Chrome version in coverage test cases of EJ2 components - 1', () => {
         let gridObj: Grid;
         let preventDefault: Function = new Function();
+        beforeAll((done: Function) => {
+            gridObj = createGrid(
+                {
+                dataSource: [
+                    { EmployeeID: 1, FirstName: 'Nancy', Country: 'USA' },
+                    { EmployeeID: 2, FirstName: 'Andrew', Country: 'USA' },
+                    { EmployeeID: 3, FirstName: 'Janet', Country: 'USA' },
+                    { EmployeeID: 4, FirstName: 'John', Country: 'UK' }
+                ],
+                allowPaging: true,
+                pageSettings: {
+                    pageCount: 5,
+                    pageSize: 3,
+                    pageSizes: [3, 5, 10, 'All'],
+                },
+                toolbar: ['Search'],
+                columns: [
+                    { field: 'EmployeeID', headerText: 'Employee ID', textAlign: 'Right', width: 125 },
+                    { field: 'FirstName', headerText: 'Name', width: 125 },
+                    { field: 'Country', headerText: 'Country', width: 110 }
+                ],
+                }, done);
+        });
+        it('Open Dropdown', function (done: Function) {
+            (gridObj.pagerModule.pagerObj.element.querySelector('.e-dropdownlist') as any).ej2_instances[0].showPopup();
+            done();
+        });
+        it('Set page size', (done: Function) => {
+            (document.querySelectorAll('.e-list-item')[2] as HTMLElement).click();
+            done();
+        });
+        it('Converage - 1', function (done: Function) {
+            let e: object = { target: (gridObj.pagerModule.pagerObj as any).element.querySelector('.e-pagerdropdown'), action: 'shiftTab', keyCode: 38, preventDefault };
+            gridObj.pagerModule.pagerObj.element.tabIndex = 0;
+            (gridObj.pagerModule.pagerObj as any).changeFocusByShiftTab(e);
+            done();
+        });
+        it('GoTo 2nd Page', function (done: Function) {
+            gridObj.goToPage(1);
+            done();
+        });
+        it('Converage - 2', function (done: Function) {
+            let e: object = { target: (gridObj.pagerModule.pagerObj as any).element.querySelector('.e-currentitem.e-active'), action: 'tab', keyCode: 9, preventDefault };
+            gridObj.pagerModule.pagerObj.element.tabIndex = 0;
+            (gridObj.pagerModule.pagerObj as any).changeFocusByTab(e);
+            done();
+        });
+        afterAll(() => {
+            destroy(gridObj);
+            gridObj = preventDefault = null;
+        });
+    });
+
+    describe('991898: Updating the Chrome version in coverage test cases of EJ2 components - 2', () => {
+        let gridObj: Grid;
         beforeAll((done: Function) => {
             gridObj = createGrid(
                 {
@@ -1234,7 +1289,7 @@ describe('BUG-830382 - Page count is not increased while adding new records if t
         });
         afterAll(() => {
             destroy(gridObj);
-            gridObj = preventDefault = null;
+            gridObj = null;
         });
     });
 });

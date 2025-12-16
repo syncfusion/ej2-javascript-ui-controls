@@ -49,6 +49,13 @@ export const TABLE_MOVE: string = 'TABLE_MOVE';
 export const ALIGNMENT_TYPE: string = 'alignment-type';
 
 /**
+ * LineHeight plugin events
+ *
+ * @hidden
+ */
+export const LINE_HEIGHT_TYPE: string = 'line-height-type';
+
+/**
  * Indents plugin events
  *
  * @hidden

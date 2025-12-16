@@ -514,11 +514,9 @@ export class EventBase {
                 if (memberCount > this.parent.control.maxNodeLimitInMemberEditor) {
                     this.parent.editorLabelElement.innerText = (memberCount - this.parent.control.maxNodeLimitInMemberEditor) +
                         this.parent.control.localeObj.getConstant('editorDataLimitMsg');
-                    this.parent.filterDialog.dialogPopUp.height = (this.parent.filterDialog.allowExcelLikeFilter ? '440px' : '400px');
                     this.parent.isDataOverflow = true;
                 } else {
                     this.parent.editorLabelElement.innerText = '';
-                    this.parent.filterDialog.dialogPopUp.height = (this.parent.filterDialog.allowExcelLikeFilter ? '400px' : '350px');
                     this.parent.isDataOverflow = false;
                 }
                 this.parent.isDataOverflow = (memberCount > this.parent.control.maxNodeLimitInMemberEditor);
@@ -595,7 +593,13 @@ export class EventBase {
                     engineModule.getFormattedValue(actualText, fieldName).formattedText,
                 isSelected: isInclude ? false : true
             };
-            const memberText: string | number = member.actualText;
+            let memberText: string | number;
+            if (this.parent && this.parent.engineModule instanceof PivotEngine) {
+                const isGroupedField: boolean = fieldName in this.parent.engineModule.groupingFields;
+                const useActualText: boolean = (this.parent.isDateField && !isGroupedField) ||
+                    (this.parent.dataSourceSettings.mode === 'Server');
+                memberText = useActualText ? member.actualText : member.formattedText;
+            }
             if (filterObj[this.parent.isDateField ? memberText as string : memberName as string] !== undefined) {
                 obj.isSelected = isInclude ? true : false;
             }

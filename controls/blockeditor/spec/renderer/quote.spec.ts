@@ -1,6 +1,8 @@
 import { createElement, remove } from "@syncfusion/ej2-base";
-import { BlockEditor, BlockModel, BlockType, ContentType } from "../../src/index";
 import { createEditor } from "../common/util.spec";
+import { BlockModel} from "../../src/models/index";
+import { BlockType, ContentType } from '../../src/models/enums';
+import { BlockEditor } from '../../src/index';
 
 describe('Quote Block', () => {
     beforeAll(() => {
@@ -20,7 +22,7 @@ describe('Quote Block', () => {
             editorElement = createElement('div', { id: 'editor' });
             document.body.appendChild(editorElement);
             const blocks: BlockModel[] = [
-                { id: 'quote', type: BlockType.Quote, content: [{ id: 'quote-content', type: ContentType.Text, content: 'Quote block' }] }
+                { id: 'quote', blockType: BlockType.Quote, content: [{ id: 'quote-content', contentType: ContentType.Text, content: 'Quote block' }] }
             ];
             editor = createEditor({ blocks: blocks });
             editor.appendTo('#editor');
@@ -40,119 +42,29 @@ describe('Quote Block', () => {
             const contentElement = blockElement.querySelector('blockquote');
             expect(contentElement).not.toBeNull();
             expect(contentElement.textContent).toContain('Quote block');
+
+            // Assert Model
+            expect(editor.blocks.length).toBe(1);
+            expect(editor.blocks[0].id).toBe("quote");
+            expect(editor.blocks[0].blockType).toBe(BlockType.Quote);
+            expect(editor.blocks[0].content.length).toBe(1);
+            expect(editor.blocks[0].content[0].content).toBe('Quote block');
         });
 
         it('should update the block model on interaction', (done) => {
             const paragraph = editorElement.querySelector('#quote-content');
             paragraph.textContent = 'Updated content';
-            editor.setFocusToBlock(paragraph.closest('.e-block') as HTMLElement);
-            editor.stateManager.updateContentOnUserTyping(paragraph.closest('.e-block') as HTMLElement);
+            editor.blockManager.setFocusToBlock(paragraph.closest('.e-block') as HTMLElement);
+            editor.blockManager.stateManager.updateContentOnUserTyping(paragraph.closest('.e-block') as HTMLElement);
             setTimeout(() => {
+                // Assert Model
+                expect(editor.blocks.length).toBe(1);
+                expect(editor.blocks[0].id).toBe("quote");
+                expect(editor.blocks[0].blockType).toBe(BlockType.Quote);
+                expect(editor.blocks[0].content.length).toBe(1);
                 expect(editor.blocks[0].content[0].content).toBe('Updated content');
                 done();
             }, 800);
-        });
-
-        it('should render quote with Node as existing content (with text node)', () => {
-            const quoteBlock: BlockModel = {
-                id: 'quote-new',
-                type: BlockType.Quote,
-                content: [{ id: 'quote-new-content', type: ContentType.Text, content: 'New quote' }],
-                props: { placeholder: 'Enter quotes here' }
-            };
-            
-            // Create a document fragment as Node
-            const docFragment = document.createDocumentFragment();
-            const textNode = document.createTextNode('New quote from Node');
-            docFragment.appendChild(textNode);
-            
-            const blockElement = editor.createElement('div', { 
-                className: 'e-block',
-                id: quoteBlock.id,
-                attrs: { 'data-block-type': quoteBlock.type }
-            });
-            
-            // Directly call the renderQuote method with the Node
-            const quoteElement = editor.blockRendererManager.quoteRenderer.renderQuote(
-                quoteBlock, 
-                blockElement,
-                docFragment
-            );
-            
-            expect(quoteElement.tagName).toBe('BLOCKQUOTE');
-            expect(quoteElement.textContent).toBe('New quote from Node');
-            expect(quoteElement.id).toBe('quote-new-content');
-            expect(blockElement.classList.contains('e-quote-block')).toBe(true);
-        });
-
-        it('should render quote with Node as existing content (with multiple nodes)', () => {
-            const quoteBlock: BlockModel = {
-                id: 'quote-multi',
-                type: BlockType.Quote,
-                content: [{ id: 'quote-multi-content', type: ContentType.Text, content: 'Multi-node quote' }],
-                props: { placeholder: 'Enter quotes here' }
-            };
-            
-            // Create a document fragment with multiple nodes
-            const docFragment = document.createDocumentFragment();
-            const strongNode = document.createElement('strong');
-            strongNode.textContent = 'Bold text';
-            
-            const emNode = document.createElement('em');
-            emNode.textContent = 'Italicized text';
-            
-            docFragment.appendChild(strongNode);
-            docFragment.appendChild(emNode);
-            
-            const blockElement = editor.createElement('div', { 
-                className: 'e-block',
-                id: quoteBlock.id,
-                attrs: { 'data-block-type': quoteBlock.type }
-            });
-            
-            // Directly call the renderQuote method with the Node
-            const quoteElement = editor.blockRendererManager.quoteRenderer.renderQuote(
-                quoteBlock, 
-                blockElement,
-                docFragment
-            );
-            
-            expect(quoteElement.tagName).toBe('BLOCKQUOTE');
-            expect(quoteElement.innerHTML).toContain('<strong>Bold text</strong>');
-            expect(quoteElement.innerHTML).toContain('<em>Italicized text</em>');
-            // Since multiple nodes, it shouldn't have the content ID
-            expect(quoteElement.id).not.toBe('quote-multi-content');
-            expect(blockElement.classList.contains('e-quote-block')).toBe(true);
-        });
-
-        it('should render quote with Node as existing content (empty node)', () => {
-            const quoteBlock: BlockModel = {
-                id: 'quote-empty',
-                type: BlockType.Quote,
-                content: [{ id: 'quote-empty-content', type: ContentType.Text, content: 'Empty node quote' }],
-                props: { placeholder: 'Enter quotes here' }
-            };
-            
-            // Create an empty document fragment
-            const docFragment = document.createDocumentFragment();
-            
-            const blockElement = editor.createElement('div', { 
-                className: 'e-block',
-                id: quoteBlock.id,
-                attrs: { 'data-block-type': quoteBlock.type }
-            });
-            
-            // Directly call the renderQuote method with the empty Node
-            const quoteElement = editor.blockRendererManager.quoteRenderer.renderQuote(
-                quoteBlock, 
-                blockElement,
-                docFragment
-            );
-            
-            expect(quoteElement.tagName).toBe('BLOCKQUOTE');
-            expect(quoteElement.textContent).toBe(''); // Should be empty
-            expect(quoteElement.id).toBe('quote-empty-content');
-            expect(blockElement.classList.contains('e-quote-block')).toBe(true);
         });
     });
 });

@@ -1,3 +1,2 @@
-@import 'ej2-base/styles/definition/bds.scss';
-@import 'diagram/bds-definition.scss';
-@import 'diagram/all.scss';
+@use 'diagram/bds-definition' as *;
+@use 'diagram/all' as *;

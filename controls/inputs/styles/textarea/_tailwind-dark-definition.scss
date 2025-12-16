@@ -1,1 +1,16 @@
-@import './tailwind-definition.scss';
+@use 'ej2-base/styles/definition/tailwind-dark' as *;
+@forward 'ej2-base/styles/definition/tailwind-dark';
+
+$textarea-VH-textarea-padding: 4px 10px 4px 10px !default;
+$textarea-outline-VH-textarea-padding: 3px 10px 3px 10px !default;
+$textarea-filled-VH-textarea-padding: 3px 10px 3px 10px !default;
+$textarea-VV-template-padding: 7px 8px !default;
+$textarea-outline-VV-template-padding: 7px 8px !default;
+$textarea-filled-VV-template-padding: 7px 8px !default;
+$textarea-HV-textarea-padding: 9px 5px 5px 5px !default;
+$textarea-HV-textarea-top: -9px !default;
+$textarea-outline-HV-textarea-padding: 9px 5px 5px 5px !default;
+$textarea-outline-HV-label-top: -8px !default;
+$textarea-filled-HV-textarea-padding: 9px 5px 5px 5px !default;
+$textarea-filled-HV-label-top: -5px !default;
+$textbox-icon-template-separator-color: $border-light;

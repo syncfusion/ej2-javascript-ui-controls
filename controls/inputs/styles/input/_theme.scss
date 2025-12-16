@@ -1,3 +1,5 @@
+@use 'ej2-base/styles/common/mixin' as *;
+@use './theme-variables' as *;
 @include export-module('input-theme') {
 
   /*! input theme */
@@ -39,7 +41,7 @@
       border-color: $input-group-icon-border-color;
     }
     @if ($input-skin-name == 'Material3' or $input-skin-name == 'fluent2') {
-      margin: 0;
+      margin: $input-zero-padding-margin;
     }
   }
 
@@ -719,16 +721,16 @@
     }
     @if $input-skin-name == 'fluent2' {
       border-bottom-color: $input-active-border-color;
-      padding-bottom: 2px;
-      border-bottom-width: 2px;
+      padding-bottom: $e-float-input-flu-padding-bottom;
+      border-bottom-width: $border-2;
     }
   }
 
   textarea.e-input#{$css}:focus:not(.e-success):not(.e-warning):not(.e-error) {
     @if $input-skin-name == 'fluent2' {
       border-bottom-color: $input-active-border-color;
-      padding-bottom: 4px;
-      border-bottom-width: 0;
+      padding-bottom: $text-area-focus-padding-bottom;
+      border-bottom-width: $border-0;
     }
   }
 

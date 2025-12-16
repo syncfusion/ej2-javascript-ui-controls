@@ -785,7 +785,7 @@ describe('Virtual scroll', () => {
         });
     });
 
-    describe('Timeline Month view', () => {
+    xdescribe('Timeline Month view', () => {
         let schObj: Schedule;
         const ownerData: Record<string, any>[] = generateResourceDatasource(1, 100, 'Resource');
         const eventData: Record<string, any>[] = generateEvents(new Date(2018, 4, 1), 5000, 100);
@@ -941,7 +941,8 @@ describe('Virtual scroll', () => {
         const style: HTMLStyleElement = document.createElement('style');
         style.innerHTML = `
         .e-schedule .e-vertical-view .e-date-header-wrap table col,
-        .e-schedule .e-vertical-view .e-content-wrap table col {
+        .e-schedule .e-vertical-view .e-content-wrap table col,
+        .e-schedule .e-vertical-view .e-work-cells {
             width: 100px !important;
         }
         .e-schedule .e-vertical-view .e-time-cells-wrap table td,

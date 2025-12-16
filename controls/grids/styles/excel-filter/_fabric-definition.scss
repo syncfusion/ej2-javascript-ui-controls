@@ -1,3 +1,5 @@
+@use 'ej2-base/styles/definition/fabric' as *;
+@forward 'ej2-base/styles/definition/fabric';
 $grid-grouped-headercell-padding: 1px 8px !default;
 $group-border-width: 1px solid !default;
 $grid-xlfl-fieldset-padding: 9px !default;
@@ -65,3 +67,5 @@ $grid-xlfl-li-icon-margin-arrow-icon: 25px !default;
 $grid-bigger-xlfl-li-icon-margin-arrow-icon: 0 !default;
 $grid-xl-radio-margin-top: 0 !default;
 $grid-xlfl-skin: 'fabric' !default;
+
+$grid-border-radius-0: 0 !default;

@@ -1,4 +1,5 @@
-@import 'definition/bootstrap5.scss';
+@use 'definition/bootstrap5' as *;
+@forward 'definition/bootstrap5';
 
 $font-size: 12px !default;
 $font-weight: 400 !default;

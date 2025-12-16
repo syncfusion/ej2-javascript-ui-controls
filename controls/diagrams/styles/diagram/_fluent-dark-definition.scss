@@ -1,1 +1,79 @@
-@import './fluent-definition.scss';
+@use 'ej2-base/styles/common/mixin' as *;
+@use 'definition' as *;
+@use 'ej2-base/styles/definition/fluent-dark' as *;
+@forward 'ej2-base/styles/definition/fluent-dark';
+
+//layout variables
+$diagram-border-stroke-width: 2;
+$diagram-lane-border-stroke-width: 2;
+$diagram-highlighter-border-stroke-width: 2;
+$diagram-symbolpalette-shape-radius: 4px;/* stylelint-disable-line length-zero-no-unit */
+$diagram-tooltip: none;
+
+//normal
+$diagram-endpoint-handle-color: $white;
+$diagram-endpoint-handle-connected-border: $white;
+
+$diagram-resize-handle-disable-color: $content-bg-color-alt4;
+$diagram-border-stroke-disabled:  $content-bg-color-alt4;
+$diagram-resize-handle-disable-stroke: $primary-text-color;
+$diagram-rotate-handle-color: $primary;
+$diagram-bezier-handle-color: $white;
+
+$diagram-symbolpalette-hover: $diagram-palette-hover-background;
+$diagram-symbolpalette-selected: $content-bg-color-alt4;
+
+$diagram-ruler-color: $content-text-color-alt3;
+$diagram-ruler-font-size: $text-xxs;
+$diagram-ruler-marker-background-color: $content-bg-color;
+$diagram-ruler-label-fill: $content-text-color-alt3;
+$diagram-ruler-tick-stroke: $border-dark;
+
+$palette-background-color: $diagram-palette-background;
+
+$diagram-editbox-fontcolor: $black;
+$diagram-overview-resizer-color:$primary;
+
+//end normal
+//primary
+$diagram-endpoint-handle-connected-color: $primary;
+
+$diagram-resize-handle-color: $primary;
+$diagram-resize-handle-stroke: $primary;
+
+$diagram-border-stroke: $primary;
+$diagram-bezier-line-color: $primary;
+$diagram-background-color: $white;
+$diagram-highlighter-stroke: $primary;
+$diagram-selected-region-stroke: $primary;
+$diagram-pivot-line-stroke: $primary;
+$diagram-ruler-marker-stroke: $primary;
+
+$diagram-helper-stroke: $primary;
+
+$diagram-text-edit-selection-background: $primary;
+$diagram-editbox-background: $white;
+
+$diagram-border-strokes: $primary;
+$diagram-lane-border-strokes: $primary;
+$diagram-text-edit-selection-color: $primary-text-color;
+
+$diagram-multiselect-stroke: $diagram-resize-handle-stroke;
+
+//end primary
+
+.e-icons {
+  font-family: 'e-icons';
+  font-style: normal;
+  font-variant: normal;
+  font-weight: $font-weight-normal;
+  line-height: 1;
+  text-transform: none;
+}
+
+@include export-module('diagram-bootstrap-icons') {
+
+  .e-symbolpalette {
+    .e-clear-searchtext::before{ content: '\e7e7'; }
+  }
+}

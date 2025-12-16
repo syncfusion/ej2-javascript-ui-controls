@@ -1,3 +1,5 @@
+@use 'ej2-base/styles/common/mixin' as *;
+@use './theme-variables' as *;
 @include export-module('image-editor-bigger') {
   .e-bigger .e-image-editor,
   .e-image-editor.e-bigger {
@@ -10,12 +12,22 @@
         }
       }
 
+      & .e-ie-head-wrapper {
+        align-content: center;
+        text-align: center;
+        height: auto;
+        min-height: $ie-bigger-head-wrapper-height;
+      }
+
       & .e-toolbar {
         @if $skin-name == 'Material3' {
           height: 140px !important; /* stylelint-disable-line declaration-no-important */
         }
         @else {
           height: 130px !important; /* stylelint-disable-line declaration-no-important */
+        }
+        @if $skin-name == 'tailwind3' {
+          height: auto !important; /* stylelint-disable-line declaration-no-important */
         }
       }
 
@@ -25,10 +37,19 @@
       }
     }
     
+    & .e-toolbar-area .e-toolbar {
+      @if $skin-name == 'tailwind3' {
+        border-radius: $ie-bigger-toolbar-border-radius;
+      }
+    }
+
     & .e-toolbar {
       height: $image-editor-bigger-tbar-height !important; /* stylelint-disable-line declaration-no-important */
       min-height: $image-editor-bigger-tbar-height !important; /* stylelint-disable-line declaration-no-important */
-
+      @if $skin-name == 'tailwind3' {
+        height: auto !important; /* stylelint-disable-line declaration-no-important */
+      }
+      
       & .e-toolbar-items {
         @if $skin-name == 'material' {
           height: $image-editor-bigger-tbar-height !important; /* stylelint-disable-line declaration-no-important */
@@ -39,8 +60,12 @@
       & .e-toolbar-items {
         & .e-toolbar-item {
           &.e-ie-resize-height span,
-          &.e-ie-resize-width span {
-            font-size: 16px;
+          &.e-ie-resize-width span,
+          & .filter-wrapper,
+          &.e-stroke,
+          &.e-frame-stroke,
+          &.e-size {
+            font-size: $ie-bigger-default-toolbar-font-size;
           }
         }
       }
@@ -82,14 +107,18 @@
         & .e-text-font-color.e-template {
           & .e-dropdown-btn {
             & .e-icons.e-caret {
-              margin-top: -4px;
+              @if $skin-name != 'tailwind3' {
+                margin-top: $ie-bigger-caret-margin-top;
+              }
             }
           }
         }
 
         & .e-btn-icon.e-dropdownbtn-preview {
-          margin-top: $image-editor-bigger-dropdown-btn-preview-top !important; /* stylelint-disable-line declaration-no-important */
-          margin-left: $image-editor-bigger-dropdown-btn-preview-left;
+          @if $skin-name != 'tailwind3' {
+            margin-top: $image-editor-bigger-dropdown-btn-preview-top !important; /* stylelint-disable-line declaration-no-important */
+            margin-left: $image-editor-bigger-dropdown-btn-preview-left;
+          }
         }
 
         & .e-dropdown-btn.e-icon-btn {
@@ -105,7 +134,7 @@
             font-size: $image-editor-bigger-tbar-btn-fontsize;
 
             & .e-icons.e-caret {
-              font-size: 10px;
+              font-size: $ie-bigger-dropdown-caret-font-size;
             }
           }
         }
@@ -115,14 +144,14 @@
             font-size: $image-editor-bigger-tbar-btn-fontsize;
 
             & .e-icons.e-caret {
-              font-size: 10px;
+              font-size: $ie-bigger-dropdown-caret-font-size;
             }
           }
         }
 
         &.e-tbar-pos {
           .e-toolbar-left {
-            line-height: 1;
+            line-height: $ie-bigger-toolbar-left-line-height;
           }
         }
       }
@@ -132,6 +161,29 @@
       @if $skin-name == 'Material3' {
         margin-top: 5px !important; /* stylelint-disable-line declaration-no-important */
       }
+    }
+
+    & .e-ie-save-dialog .e-ie-img-size {
+      @if $skin-name == 'tailwind3' {
+        font-size: $ie-bigger-img-size-font-size;
+        line-height: $ie-bigger-img-size-line-height;
+        margin: $ie-bigger-img-size-margin-top;
+      }
+    }
+
+    & .e-quick-access-toolbar-area .e-toolbar {
+      @if $skin-name == 'tailwind3' {
+        border-radius: $ie-bigger-qat-toolbar-border-radius;
+      }
+    }
+
+    & .e-ie-finetune-slider-label,
+    & .e-ie-finetune-value-span,
+    & .e-ie-redact-value-span {
+      font-size: $ie-bigger-device-finetune-font-size;
+      line-height: $ie-bigger-device-finetune-line-height;
+      letter-spacing: $ie-finetune-letter-spacing;
+      font-weight: $ie-finetune-letter-spacing;
     }
 
     & .e-ie-save-dialog .e-dialog .e-dlg-content .e-ie-dlg-right-content .e-dropdown-btn,

@@ -304,6 +304,56 @@ Tabs and shift-tabs work too`;
             expect(focusNode.classList.contains('e-rte-table')).toBe(true);
         });
     });
+    describe('Undo behavior with maxLength restriction', () => {
+        let rteObj: RichTextEditor;
+        let backSpaceEvent: any = { type: 'keydown', preventDefault: () => { }, ctrlKey: true, key: 'backspace', stopPropagation: () => { }, shiftKey: false, which: 8};
+        let undoEvent = {
+            preventDefault: function () { },
+            altKey: false,
+            ctrlKey: false,
+            shiftKey: false,
+            char: '',
+            key: '',
+            charCode: 22,
+            keyCode: 22,
+            which: 22,
+            code: 22,
+            action: ''
+        };
+        
+        beforeAll(() => {
+            rteObj = renderRTE({
+                value: '<ol><li id="firstli">list1</li><li>list2</li><li>list3</li><li id="lastli">list4</li></ol>',
+                maxLength: 5,
+                toolbarSettings: {
+                    items: ['Undo', 'Redo']
+                }
+            });
+        });
+
+        afterAll((done: DoneFn) => {
+            destroy(rteObj);
+            done();
+        });
+
+        it('should allow Undo to restore deleted character even when content exceeds maxLength)', (done: DoneFn) => {
+            let startNode: any = (rteObj as any).inputElement.querySelector('#firstli');
+            let endNode: any = (rteObj as any).inputElement.querySelector('#lastli');
+            let sel = new NodeSelection().setSelectionText(document, startNode.childNodes[0], endNode.childNodes[0], 0, 5);
+            (rteObj as any).mouseUp({ target: rteObj.inputElement, isTrusted: true });
+            backSpaceEvent.keyCode = 8;
+            backSpaceEvent.code = 'Backspace';
+            (rteObj as any).keyDown(backSpaceEvent);
+            rteObj.formatter.saveData();
+            setTimeout(() => {
+                expect((rteObj as any).inputElement.querySelectorAll('ol').length).toBe(0);
+                (<any>rteObj).formatter.editorManager.undoRedoManager.keyUp({ event: undoEvent });
+                (<any>rteObj).formatter.editorManager.execCommand("Actions", 'Undo', null);
+                expect((rteObj as any).inputElement.querySelector('#firstli')).not.toBeNull();
+                done();
+            }, 500);
+        });
+    });
     describe('Styles Applied Despite maxLength Restriction if all contents gets selected inside RTE ', () => {
         let rteObj: RichTextEditor;
         let innerHTML: `<p>RichTextEditor</p>`;
@@ -333,54 +383,6 @@ Tabs and shift-tabs work too`;
                 expect((paragraph as HTMLInputElement).value).not.toBe('<p><strong>RichTextEditor</strong></p>');
             }, 100);
             done();
-        });
-    });
-	    describe('Undo behavior with maxLength restriction', () => {
-        let rteObj: RichTextEditor;
-        let backSpaceEvent: any = { type: 'keydown', preventDefault: () => { }, ctrlKey: true, key: 'backspace', stopPropagation: () => { }, shiftKey: false, which: 8};
-        let undoEvent = {
-            preventDefault: function () { },
-            altKey: false,
-            ctrlKey: false,
-            shiftKey: false,
-            char: '',
-            key: '',
-            charCode: 22,
-            keyCode: 22,
-            which: 22,
-            code: 22,
-            action: ''
-        };
-        
-        beforeAll(() => {
-            rteObj = renderRTE({
-                value: '<ol><li id="firstli">list1</li><li>list2</li><li>list3</li><li id="lastli">list4</li></ol>',
-                maxLength: 5,
-                toolbarSettings: {
-                    items: ['Undo', 'Redo']
-                }
-            });
-        });
-        afterAll((done: DoneFn) => {
-            destroy(rteObj);
-            done();
-        });
-        it('should allow Undo to restore deleted character even when content exceeds maxLength)', (done: DoneFn) => {
-            let startNode: any = (rteObj as any).inputElement.querySelector('#firstli');
-            let endNode: any = (rteObj as any).inputElement.querySelector('#lastli');
-            let sel = new NodeSelection().setSelectionText(document, startNode.childNodes[0], endNode.childNodes[0], 0, 5);
-            (rteObj as any).mouseUp({ target: rteObj.inputElement, isTrusted: true });
-            backSpaceEvent.keyCode = 8;
-            backSpaceEvent.code = 'Backspace';
-            (rteObj as any).keyDown(backSpaceEvent);
-            rteObj.formatter.saveData();
-            setTimeout(() => {
-                expect((rteObj as any).inputElement.querySelectorAll('ol').length).toBe(0);
-                (<any>rteObj).formatter.editorManager.undoRedoManager.keyUp({ event: undoEvent });
-                (<any>rteObj).formatter.editorManager.execCommand("Actions", 'Undo', null);
-                expect((rteObj as any).inputElement.querySelector('#firstli')).not.toBeNull();
-                done();
-            }, 500);
         });
     });
 });

@@ -9,6 +9,7 @@ import { _PdfBaseStream, _PdfContentStream, _PdfStream } from './../base-stream'
 import { PdfForm } from './../form/form';
 import { PdfField } from './../form/field';
 import { PdfAnnotationFlag } from './../enumerator';
+import { Point } from '../pdf-type';
 export class _JsonDocument extends _ExportHelper {
     _isImport: boolean = false;
     _isColorSpace: boolean = false;
@@ -128,13 +129,13 @@ export class _JsonDocument extends _ExportHelper {
             this._table.set('type', type);
             this._table.set('page', index.toString());
             let lineAnnotation: PdfLineAnnotation;
-            let points: number[];
+            let points: Point[];
             switch (type) {
             case 'Line':
                 lineAnnotation = annotation as PdfLineAnnotation;
                 points = lineAnnotation.linePoints;
-                this._table.set('start', points[0].toString() + ',' + points[1].toString());
-                this._table.set('end', points[2].toString() + ',' + points[3].toString());
+                this._table.set('start', points[0].x.toString() + ',' + points[0].y.toString());
+                this._table.set('end', points[1].x.toString() + ',' + points[1].y.toString());
                 break;
             case 'Stamp':
                 hasAppearance = true;
@@ -1025,6 +1026,12 @@ export class _JsonDocument extends _ExportHelper {
                 value = _convertToColor(value);
                 if (value && value.length === 3) {
                     dictionary.update('C', [value[0] / 255, value[1] / 255, value[2] / 255]);
+                } else if (value && Object.keys(value).length === 3) {
+                    dictionary.update('C', [
+                        value.r / 255,
+                        value.g / 255,
+                        value.b / 255
+                    ]);
                 }
                 break;
             case 'oc':
@@ -1032,6 +1039,12 @@ export class _JsonDocument extends _ExportHelper {
                     value = _convertToColor(value);
                     if (value && value.length === 3) {
                         dictionary.update('OC', [value[0] / 255, value[1] / 255, value[2] / 255]);
+                    } else if (value && Object.keys(value).length === 3) {
+                        dictionary.update('OC', [
+                            value.r / 255,
+                            value.g / 255,
+                            value.b / 255
+                        ]);
                     }
                 }
                 break;
@@ -1039,12 +1052,24 @@ export class _JsonDocument extends _ExportHelper {
                 value = _convertToColor(value);
                 if (value && value.length === 3) {
                     dictionary.update('AFC', [value[0] / 255, value[1] / 255, value[2] / 255]);
+                } else if (value && Object.keys(value).length === 3) {
+                    dictionary.update('AFC', [
+                        value.r / 255,
+                        value.g / 255,
+                        value.b / 255
+                    ]);
                 }
                 break;
             case 'interior-color':
                 value = _convertToColor(value);
                 if (value && value.length === 3) {
                     dictionary.update('IC', [value[0] / 255, value[1] / 255, value[2] / 255]);
+                } else if (value && Object.keys(value).length === 3) {
+                    dictionary.update('IC', [
+                        value.r / 255,
+                        value.g / 255,
+                        value.b / 255
+                    ]);
                 }
                 break;
             case 'date':

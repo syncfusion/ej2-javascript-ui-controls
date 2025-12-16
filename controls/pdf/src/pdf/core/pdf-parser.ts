@@ -4,7 +4,16 @@ import { _PdfStream, _PdfNullStream, _PdfBaseStream } from './base-stream';
 import { PdfPredictorStream } from './predictor-stream';
 import { _PdfFlateStream } from './flate-stream';
 import { _PdfCrossReference } from './pdf-cross-reference';
-import { _CipherTransform, _PdfEncryptor } from './security/encryptor';
+import { _PdfEncryptor } from './security/encryptor';
+import { _PdfJpegStream } from './compression/jpeg-stream';
+import { _PdfLempelZivWelchStream } from './compression/lempel-ziv-welch-stream';
+import { _PdfJpxStream } from './compression/jpx-stream';
+import { _PdfAscii85Stream } from './compression/ascii-85-stream';
+import { _PdfAsciiHexStream } from './compression/ascii-hex-stream';
+import { _PdfFaxStream } from './compression/pdf-fax-stream';
+import { _PdfRunLengthStream } from './compression/run-length-stream';
+import { _PdfJbig2Stream } from './compression/jbig2-stream';
+import { _CipherTransform } from './security/encryptors/cipher-tranform';
 const maxCacheLength: number = 1000;
 const maxNumberLength: number = 5552;
 const endOfFile: string = 'EOF';
@@ -449,6 +458,7 @@ export class _PdfParser {
     private _isColorSpace: boolean = false;
     private _isPassword: boolean = false;
     _encryptor: _PdfEncryptor;
+    _isImageExtraction: boolean = false;
     constructor(lexicalOperator: _PdfLexicalOperator,
                 xref: _PdfCrossReference,
                 allowStreams: boolean = false,
@@ -947,14 +957,53 @@ export class _PdfParser {
         if (maybeLength === 0) {
             return new _PdfNullStream();
         }
+        let earlyChange: number = 1;
         try {
             if (name === 'Fl' || name === 'FlateDecode') {
                 if (params) {
                     return new PdfPredictorStream(new _PdfFlateStream(stream, maybeLength), maybeLength, params);
                 }
                 return new _PdfFlateStream(stream, maybeLength);
+            } else if (this._isImageExtraction) {
+                switch (name) {
+                case 'LZW':
+                case 'LZWDecode':
+                    if (params) {
+                        if (params.has('EarlyChange')) {
+                            earlyChange = params.get('EarlyChange');
+                        }
+                        return new PdfPredictorStream(
+                            new _PdfLempelZivWelchStream(stream, maybeLength, earlyChange),
+                            maybeLength,
+                            params);
+                    }
+                    return new _PdfLempelZivWelchStream(stream, maybeLength, earlyChange);
+                case 'DCT':
+                case 'DCTDecode':
+                    return new _PdfJpegStream(stream, maybeLength, params);
+                case 'JPX':
+                case 'JPXDecode':
+                    return new _PdfJpxStream(stream, maybeLength, params);
+                case 'A85':
+                case 'ASCII85Decode':
+                    return new _PdfAscii85Stream(stream, maybeLength);
+                case 'AHx':
+                case 'ASCIIHexDecode':
+                    return new _PdfAsciiHexStream(stream, maybeLength);
+                case 'CCF':
+                case 'CCITTFaxDecode':
+                    return new _PdfFaxStream(stream, maybeLength, params);
+                case 'RL':
+                case 'RunLengthDecode':
+                    return new _PdfRunLengthStream(stream, maybeLength);
+                case 'JBIG2Decode':
+                    return new _PdfJbig2Stream(stream, maybeLength, params);
+                default:
+                    return stream;
+                }
+            } else {
+                return stream;
             }
-            return stream;
         } catch (ex) {
             return new _PdfNullStream();
         }

@@ -51,7 +51,7 @@ export class FormatPainterActions implements IFormatPainterEditor{
      * @function destroy
      * @returns {void}
      * @hidden
-     * @deprecated
+     * @private
      */
     public destroy(): void {
         this.removeEventListener();

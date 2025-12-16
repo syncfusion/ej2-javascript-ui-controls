@@ -1,5 +1,8 @@
 @use 'sass:color';
-@import 'mixin.scss';
+@use 'ej2-base/styles/common/mixin' as *;
+@use './theme-variables' as *;
+@use './layout' as *;
+@use './mixin' as *;
 @include export-module('button-theme') {
 
   /* stylelint-disable property-no-vendor-prefix */

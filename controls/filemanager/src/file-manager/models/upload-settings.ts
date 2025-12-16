@@ -46,6 +46,15 @@ export class UploadSettings extends ChildProperty<UploadSettings> {
     public directoryUpload: boolean;
 
     /**
+     * Specifies a Boolean value that indicates whether files are uploaded sequentially in the FileManager component.
+     * This property allows to select or drop to upload the files. When enabled, files are uploaded one at a time, reducing network load for large files.
+     *
+     * @default false
+     */
+    @Property(false)
+    public sequentialUpload: boolean;
+
+    /**
      * Specifies the minimum file size to be uploaded in bytes.
      * The property is used to make sure that you cannot upload empty files and small files.
      *

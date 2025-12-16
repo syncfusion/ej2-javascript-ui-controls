@@ -6282,4 +6282,47 @@ describe('Change Event testing', () => {
             expect(input.value).toEqual('0.000000000560');
         });
     });
+    describe('Icon template rendering', () => {
+        let numerictextbox: any;
+        beforeEach(():void =>{
+            let ele: HTMLInputElement = <HTMLInputElement>createElement('input', {id: 'numeric'});
+            document.body.appendChild(ele);
+            numerictextbox = new NumericTextBox({ placeholder: 'Enter the value', floatLabelType: 'Auto',
+                prependTemplate: '<span class="e-icons e-user"></span>',
+                appendTemplate: '<span class="e-icons e-search"></span>'
+             });
+            numerictextbox.appendTo('#numeric');
+        });
+        afterEach((): void =>{
+            if (numerictextbox) {
+                numerictextbox.destroy();
+            }
+            document.body.innerHTML = '';
+        });
+        it('prependTemplate rendering', () => {
+            expect(numerictextbox.container.querySelector('.e-user')).not.toBe(null);
+        });
+        it('appendTemplate rendering', () => {
+            expect(numerictextbox.container.querySelector('.e-search')).not.toBe(null);
+        });
+        it('Dynamic prependTemplate rendering', () => {
+            numerictextbox.prependTemplate = '<span class="e-icons e-home"></span>';
+            numerictextbox.dataBind();
+            expect(numerictextbox.container.querySelector('.e-home')).not.toBe(null);
+        });
+        it('Dynamic appendTemplate rendering', () => {
+            numerictextbox.appendTemplate = '<span class="e-icons e-close"></span>';
+            numerictextbox.dataBind();
+            expect(numerictextbox.container.querySelector('.e-close')).not.toBe(null);
+        });
+        it('code coverage with function call',function() {
+            numerictextbox.isFocused = true;
+            numerictextbox.allowMouseWheel = false;
+            numerictextbox.dataBind();
+            numerictextbox.allowMouseWheel = true;
+            numerictextbox.dataBind();
+            numerictextbox.focusHandler();
+            numerictextbox.focusOutHandler();
+        });
+    });
 });

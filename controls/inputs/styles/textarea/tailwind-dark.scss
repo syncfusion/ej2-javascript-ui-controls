@@ -1,5 +1,5 @@
-@import 'ej2-base/styles/definition/tailwind-dark.scss';
-@import '../input/tailwind-dark-definition.scss';
-@import '../textbox/tailwind-dark-definition.scss';
-@import 'tailwind-dark-definition.scss';
-@import 'all.scss';
+@use 'ej2-base/styles/definition/tailwind-dark' as *;
+@use '../input/tailwind-dark-definition' as *;
+@use '../textbox/tailwind-dark-definition' as *;
+@use 'tailwind-dark-definition' as *;
+@use 'all' as *;

@@ -1094,7 +1094,16 @@ export class ShapeAnnotation {
                 this.pdfViewer.lineSettings.allowedInteractions : this.pdfViewer.annotationSettings.allowedInteractions;
             shapeAnnotationType = 'Line';
             if (annotationObject.vertexPoints)
-            {vertexPoints = annotationObject.vertexPoints; }
+            {
+                vertexPoints = annotationObject.vertexPoints;
+                if (vertexPoints.length === 1) {
+                    const createVertexPoint: any = {
+                        x: vertexPoints[0].x + 100,
+                        y: vertexPoints[0].y
+                    };
+                    vertexPoints.push(createVertexPoint);
+                }
+            }
             else
             {vertexPoints = [{x: offset.x, y: offset.y}, {x: offset.x + 100, y: offset.y}]; }
             annotationObject.width = annotationObject.width ? annotationObject.width : 1;
@@ -1113,7 +1122,16 @@ export class ShapeAnnotation {
             shapeAnnotationType = 'Line';
             isArrow = true;
             if (annotationObject.vertexPoints)
-            {vertexPoints = annotationObject.vertexPoints; }
+            {
+                vertexPoints = annotationObject.vertexPoints;
+                if (vertexPoints.length === 1) {
+                    const createVertexPoint: any = {
+                        x: vertexPoints[0].x + 100,
+                        y: vertexPoints[0].y
+                    };
+                    vertexPoints.push(createVertexPoint);
+                }
+            }
             else
             {vertexPoints = [{x: offset.x, y: offset.y}, {x: offset.x + 100, y: offset.y}]; }
             annotationObject.width = annotationObject.width ? annotationObject.width : 1;
@@ -1160,7 +1178,32 @@ export class ShapeAnnotation {
             shapeAnnotationType = 'Polygon';
             labelSettings = this.getLabelSettingsValues(annotationObject);
             if (annotationObject.vertexPoints)
-            {vertexPoints = annotationObject.vertexPoints; }
+            {
+                vertexPoints = annotationObject.vertexPoints;
+                if (vertexPoints.length === 1) {
+                    let createVertexPoint: any = {
+                        x: vertexPoints[0].x + 42,
+                        y: vertexPoints[0].y - 29
+                    };
+                    vertexPoints.push(createVertexPoint);
+                    createVertexPoint = {
+                        x: vertexPoints[0].x + 89,
+                        y: vertexPoints[0].y - 1
+                    };
+                    vertexPoints.push(createVertexPoint);
+                    createVertexPoint = {
+                        x: vertexPoints[0].x + 78,
+                        y: vertexPoints[0].y + 42
+                    };
+                    vertexPoints.push(createVertexPoint);
+                    createVertexPoint = {
+                        x: vertexPoints[0].x + 11,
+                        y: vertexPoints[0].y + 42
+                    };
+                    vertexPoints.push(createVertexPoint);
+                    vertexPoints.push(vertexPoints[0]);
+                }
+            }
             else
             {vertexPoints = [ {x: offset.x, y: offset.y}, {x: offset.x + 42, y: offset.y - 29},
                 {x: offset.x + 89, y: offset.y - 1}, {x: offset.x + 78, y: offset.y + 42},

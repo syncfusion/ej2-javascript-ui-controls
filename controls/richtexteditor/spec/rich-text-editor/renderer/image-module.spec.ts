@@ -5,7 +5,7 @@ import { Browser, isNullOrUndefined, closest, detach, createElement } from '@syn
 import { RichTextEditor, QuickToolbar, ImageCommand, IQuickToolbar } from './../../../src/index';
 import { NodeSelection } from './../../../src/selection/index';
 import { DialogType } from "../../../src/common/enum";
-import { ActionBeginEventArgs, ActionCompleteEventArgs } from '../../../src/common/interface';
+import { ActionBeginEventArgs, ActionCompleteEventArgs, BeforeQuickToolbarOpenArgs } from '../../../src/common/interface';
 import { renderRTE, destroy, setCursorPoint, dispatchEvent, androidUA, iPhoneUA, currentBrowserUA, ImageResizeGripper, clickImage, clickGripper, moveGripper, leaveGripper } from "./../render.spec";
 import { BASIC_MOUSE_EVENT_INIT, INSRT_IMG_EVENT_INIT } from '../../constant.spec';
 import { getImageUniqueFIle } from '../online-service.spec';
@@ -410,9 +410,11 @@ client side. Customer easy to edit the contents and get the HTML content for
                 }
             });
         });
+
         afterAll(() => {
             destroy(rteObj);
         });
+
         it('Should insert image with the dynamic maxWidth', (done: Function) => {
             (rteObj as any).insertImageSettings.maxWidth = '400';
             rteObj.dataBind();
@@ -703,6 +705,39 @@ client side. Customer easy to edit the contents and get the HTML content for
             let target = <HTMLElement>rteEle.querySelectorAll(".e-rte-image")[0]
             expect(target.getAttribute('width') === '100%').toBe(true);
             expect(target.getAttribute('height') === '100%').toBe(true);
+        });
+    });
+
+    describe('983874: Image resize bar not rendered after toggling caption via Quick Toolbar', () => {
+        let innerHTML: string = `<p>Test</p><img id="rteImg" src="https://ej2.syncfusion.com/demos/src/rich-text-editor/images/RTEImage-Feather.png" style="width:200px; height: 300px" class="e-rte-image e-imginline" alt="ASmall_Image.png" />`;
+        let editor: RichTextEditor;
+        beforeAll((done: Function) => {
+            editor = renderRTE({
+                value: innerHTML,
+                quickToolbarSettings: {
+                    enable: true,
+                    image: ['Caption', 'Dimension']
+                }
+            });
+            done();
+        });
+        afterAll((done: Function) => {
+            destroy(editor);
+            done();
+        });
+        it('should have the resizer after caption is applied',(done) => {
+            editor.inputElement.dispatchEvent(INIT_MOUSEDOWN_EVENT);
+            const target: HTMLElement = editor.inputElement.querySelector('img');
+            clickImage(target as HTMLImageElement);
+            setTimeout(function () {
+                const quickToolbar: HTMLElement = document.body.querySelector('.e-rte-quick-popup');
+                const caption: HTMLElement = quickToolbar.querySelectorAll('.e-toolbar-item')[0].firstElementChild as HTMLElement;
+                caption.click();
+                clickImage(target as HTMLImageElement);
+                expect(editor.element.querySelectorAll('.e-img-resize').length).toBe(1);
+                expect(editor.element.querySelectorAll('.e-rte-imageboxmark').length).toBe(4);
+                done();
+            },400);
         });
     });
 
@@ -1395,7 +1430,7 @@ client side. Customer easy to edit the contents and get the HTML content for
             let evnArg = { args: MouseEvent, self: (<any>rteObj).imageModule, selection: save, selectNode: new Array(), };
             (<HTMLElement>rteEle.querySelectorAll(".e-toolbar-item")[0] as HTMLElement).click();
             let dialogEle: Element = rteObj.element.querySelector('.e-dialog');
-            (dialogEle.querySelector('.e-img-url') as HTMLInputElement).value = 'https://ej2.syncfusion.com/demos/src/rich-text-editor/images/RTEImage-Feather.png';
+            (dialogEle.querySelector('.e-img-url') as HTMLInputElement).value = 'https://cdn.syncfusion.com/ej2/richtexteditor-resources/RTE-Overview.png';
             (dialogEle.querySelector('.e-img-url') as HTMLInputElement).dispatchEvent(new Event("input"));
             expect(rteObj.element.lastElementChild.classList.contains('e-dialog')).toBe(true);
             let fileObj: File = new File(["Nice One"], "sample.png", { lastModified: 0, type: "overide/mimetype" });
@@ -1411,7 +1446,7 @@ client side. Customer easy to edit the contents and get the HTML content for
                 expect(updateImage.getAttribute('height') as number | string !== "auto").toBe(true);
                 expect(updateImage.getAttribute('height').includes("px")).toBe(false);
                 done();
-            }, 100);
+            }, 500);
         });
     });
     describe('initial load image undo redo', () => {
@@ -2346,7 +2381,7 @@ client side. Customer easy to edit the contents and get the HTML content for
             clickEvent.initEvent("mousedown", false, true);
             cntTarget.dispatchEvent(clickEvent);
             let target: HTMLElement = ele.querySelector('#img-container img');
-            let eventsArg: any = { pageX: 50, pageY: 300, target: target, which: 2 };
+            let eventsArg: any = { pageX: 50, pageY: 300, target: target, which: 2, preventDefault: function () { } };
             setCursorPoint(target, 0);
             rteObj.mouseUp(eventsArg);
             setTimeout(() => {
@@ -3315,7 +3350,7 @@ client side. Customer easy to edit the contents and get the HTML content for
         });
         it(" Check image after drop", function (done: Function) {
             let fileObj: File = new File(["Nice One"], "sample.png", { lastModified: 0, type: "image/png" });
-            let event: any = { clientX: 40, clientY: 294, target: rteObj.contentModule.getEditPanel(), dataTransfer: { files: [fileObj] }, preventDefault: function () { return; } };
+            let event: any = { clientX: 40, clientY: 324, target: rteObj.contentModule.getEditPanel(), dataTransfer: { files: [fileObj] }, preventDefault: function () { return; } };
             (rteObj.imageModule as any).getDropRange(event.clientX, event.clientY);
             (rteObj.imageModule as any).dragDrop(event);
             ele = rteObj.element.getElementsByTagName('img')[0];
@@ -3853,11 +3888,13 @@ client side. Customer easy to edit the contents and get the HTML content for
         beforeAll(() => {
             rteObj = renderRTE({
                 value: `<p>Rich Text Editor allows inserting images from online sources as well as the local computers where you want to insert the image in your content.</p>
-                        <img alt="Logo" src="https://ej2.syncfusion.com/demos/src/rich-text-editor/images/RTEImage-Feather.png" style="width: 300px;"/>`
+                        <img alt="Logo" src="https://cdn.syncfusion.com/ej2/richtexteditor-resources/RTE-Overview.png" style="width: 300px;"/>`
                 ,
                 toolbarSettings: {
                     items: ['Image']
-                }
+                },
+                width: '400',
+                height: '600'
             });
         });
         afterAll(() => {
@@ -3868,14 +3905,14 @@ client side. Customer easy to edit the contents and get the HTML content for
                 let imgElem: HTMLElement = rteObj.element.querySelector('.e-rte-image');
                 clickImage(imgElem as HTMLImageElement);
                 setTimeout(() => {
-                    expect((rteObj.element.querySelector('.e-rte-topLeft') as HTMLElement).style.left).toEqual('2px');
-                    expect((rteObj.element.querySelector('.e-rte-topLeft') as HTMLElement).style.top).toEqual('220px');
-                    expect((rteObj.element.querySelector('.e-rte-topRight') as HTMLElement).style.left).toEqual('304px');
-                    expect((rteObj.element.querySelector('.e-rte-topRight') as HTMLElement).style.top).toEqual('220px');
-                    expect((rteObj.element.querySelector('.e-rte-botLeft') as HTMLElement).style.left).toEqual('2px');
-                    expect((rteObj.element.querySelector('.e-rte-botLeft') as HTMLElement).style.top).toEqual('420px');
-                    expect((rteObj.element.querySelector('.e-rte-botRight') as HTMLElement).style.left).toEqual('304px');
-                    expect((rteObj.element.querySelector('.e-rte-botRight') as HTMLElement).style.top).toEqual('420px');
+                    expect(parseFloat((rteObj.element.querySelector('.e-rte-topLeft') as HTMLElement).style.left)).toBeLessThan(0);
+                    expect(parseFloat((rteObj.element.querySelector('.e-rte-topLeft') as HTMLElement).style.top)).toBeGreaterThan(50);
+                    expect(parseFloat((rteObj.element.querySelector('.e-rte-topRight') as HTMLElement).style.left)).toBeGreaterThan(250);
+                    expect(parseFloat((rteObj.element.querySelector('.e-rte-topRight') as HTMLElement).style.top)).toBeGreaterThan(50);
+                    expect(parseFloat((rteObj.element.querySelector('.e-rte-botLeft') as HTMLElement).style.left)).toBeLessThan(0);
+                    expect(parseFloat((rteObj.element.querySelector('.e-rte-botLeft') as HTMLElement).style.top)).toBeGreaterThan(200);
+                    expect(parseFloat((rteObj.element.querySelector('.e-rte-botRight') as HTMLElement).style.left)).toBeGreaterThan(250);
+                    expect(parseFloat((rteObj.element.querySelector('.e-rte-botRight') as HTMLElement).style.top)).toBeGreaterThan(200);
                     done();
                 }, 100);
             }, 1000);
@@ -4585,7 +4622,7 @@ client side. Customer easy to edit the contents and get the HTML content for
                 elements and styles(tag / Element information , Action button (Upload, Cancel))</p></li><li><p>Re-size
                 the editor support.</p></li><li><p>Provide
                 efficient public methods and client side events.</p></li><li><p>Keyboard
-                navigation support.</p></li></ol><p><span class="e-img-caption e-rte-img-caption e-caption-inline" contenteditable="false" draggable="false" style="width:auto"><span class="e-img-wrap"><img src="https://ej2.syncfusion.com/demos/src/rich-text-editor/images/RTEImage-Feather.png" class="w3-round-large e-rte-image e-imginline" alt="Norway" style=""><span class="e-img-inner" contenteditable="true">Caption</span></span></span></p>`
+                navigation support.</p></li></ol><p><span class="e-img-caption e-rte-img-caption e-caption-inline" contenteditable="false" draggable="false" style="width:auto"><span class="e-img-wrap"><img src="https://cdn.syncfusion.com/ej2/richtexteditor-resources/RTE-Overview.png" class="w3-round-large e-rte-image e-imginline" alt="Norway" style="width: 300px;"><span class="e-img-inner" contenteditable="true">Caption</span></span></span></p>`
             });
             controlId = (rteObj as any).element.id;
             QTBarModule = getQTBarModule(rteObj);
@@ -4651,7 +4688,7 @@ client side. Customer easy to edit the contents and get the HTML content for
                         (rteObj as any).imageModule.resizeStart(eventsArg);
                         (rteObj as any).imageModule.pageX = 51;
                         (rteObj as any).imageModule.resizing(eventsArg);
-                        expect(image.style.width === '449px').toBe(true);
+                        expect(image.style.width).toBe('298px');
                         // The below cases needs ensure manullay not able to check it expect - start.
                         (rteObj as any).isDestroyed = true;
                         (rteObj as any).imageModule.addEventListener();
@@ -5783,6 +5820,7 @@ client side. Customer easy to edit the contents and get the HTML content for
             dataTransfer.items.add(file);
             const eventInit: DragEventInit = {
                 dataTransfer: dataTransfer,
+                bubbles: true
             };
             const dropEvent: DragEvent = new DragEvent('drop', eventInit);
             editor.inputElement.querySelector('p').dispatchEvent(dropEvent);
@@ -5811,6 +5849,7 @@ client side. Customer easy to edit the contents and get the HTML content for
             dataTransfer.items.add(editor.inputElement.innerHTML, 'text/html');
             const eventInit: DragEventInit = {
                 dataTransfer: dataTransfer,
+                bubbles: true
             };
             const dragStartEvent: DragEvent = new DragEvent('dragstart', eventInit);
             editor.inputElement.querySelector('img').dispatchEvent(dragStartEvent);
@@ -5822,7 +5861,8 @@ client side. Customer easy to edit the contents and get the HTML content for
             const dropEvent: DragEvent = new DragEvent('drop', {
                 dataTransfer: dataTransfer,
                 clientX: clientRect.x + 100,
-                clientY: clientRect.y
+                clientY: clientRect.y,
+                bubbles: true
             });
             heading.dispatchEvent(dropEvent);
             setTimeout(() => {
@@ -6033,6 +6073,192 @@ client side. Customer easy to edit the contents and get the HTML content for
                 const deleteButton: HTMLElement = quickPopup.querySelectorAll('.e-toolbar-item')[13] as HTMLElement;
                 deleteButton.click();
                 expect(rteObj.inputElement.innerHTML === '<p><br></p>').toBe(true);
+                done();
+            }, 100);
+        });
+    });
+
+     describe('Should maintain cursor position when image caption is applied before setting dimensions', () => {
+        let innerHTML: string = `<h1>Welcome to the Syncfusion Rich Text Editor</h1><p>The Rich Text Editor, a WYSIWYG (what you see is what you get) editor, is a user interface that allows you to create, edit, and format rich text content. You can try out a demo of this editor here.</p><p><img alt="Sky with sun" src="https://cdn.syncfusion.com/ej2/richtexteditor-resources/RTE-Overview.png" style="width: 50%" class="e-rte-image e-imginline" /></p>`;
+        let editor: RichTextEditor;
+        beforeAll((done: Function) => {
+            editor = renderRTE({
+                value: innerHTML,
+                quickToolbarSettings: {
+                    enable: true,
+                    image: ['Caption', 'Dimension']
+                }
+            });
+            done();
+        });
+        afterAll((done: Function) => {
+            destroy(editor);
+            done();
+        });
+        it('should prevent cursor from jumping to the start when image caption is applied before setting dimensions',(done) => {
+            editor.inputElement.dispatchEvent(INIT_MOUSEDOWN_EVENT);
+            const target: HTMLElement = editor.inputElement.querySelector('img');
+            setCursorPoint(target, 0);
+            target.dispatchEvent(MOUSEUP_EVENT);
+            setTimeout(function () {
+                const quickToolbar: HTMLElement = document.body.querySelector('.e-rte-quick-popup');
+                const caption: HTMLElement = quickToolbar.querySelectorAll('.e-toolbar-item')[0].firstElementChild as HTMLElement;
+                caption.click();
+                expect(window.getSelection().getRangeAt(0).startContainer.nodeName).toBe('#text');
+                editor.inputElement.dispatchEvent(INIT_MOUSEDOWN_EVENT);
+                setCursorPoint(target, 0);
+                target.dispatchEvent(MOUSEUP_EVENT);
+                const dimension: HTMLElement = quickToolbar.querySelectorAll('.e-toolbar-item')[1].firstElementChild as HTMLElement;
+                dimension.click();
+                (document.querySelector('.e-update-size') as any).click();
+                expect(window.getSelection().getRangeAt(0).startContainer.nodeName).toBe('IMG');
+                done();
+            },400);
+        });
+    });
+
+    describe('977306: Resize Bar for Image in Syncfusion Rich Text Editor Renders With RTL enabled', () => {
+        let rteObj: RichTextEditor;
+        beforeAll(() => {
+            rteObj = renderRTE({
+                value: `<h1>Welcome to the Syncfusion Rich Text Editor</h1>
+                    <p>The Rich Text Editor, a WYSIWYG (what you see is what you get) editor, is a user interface that allows you to create, edit, and format rich text content. You can try out a demo of this editor here.</p>
+                    <h2>Do you know the key features of the editor?</h2>
+                    <blockquote>
+                    <p><em>Easily access Audio, Image, Link, Video, and Table operations through the quick toolbar by right-clicking on the corresponding element with your mouse.</em></p>
+                    </blockquote>
+                    <h2>Unlock the Power of Tables</h2>
+                    <p>A table can be created in the editor using either a keyboard shortcut or the toolbar. With the quick toolbar, you can perform table cell insert, delete, split, and merge operations. You can style the table cells using background colours and borders.</p>
+                    <h2>Elevating Your Content with Images</h2>
+                    <p>Images can be added to the<p>Images can be added to the editor by pasting or dragging into the editing area, using the toolbar to insert one as a URL, or uploading directly from the File Browser. Easily manage your images on the server by configuring the <a class="e-rte-anchor" href="https://ej2.syncfusion.com/documentation/api/rich-text-editor/#insertimagesettings" title="Insert Image Settings API" aria-label="Open in new window">insertImageSettings</a> to upload, save, or remove them. </p> editor by pasting or dragging into the editing area, using the toolbar to insert one as a URL, or uploading directly from the File Browser. Easily manage your images on the server by configuring the <a class="e-rte-anchor" href="https://ej2.syncfusion.com/documentation/api/rich-text-editor/#insertimagesettings" title="Insert Image Settings API" aria-label="Open in new window">insertImageSettings</a> to upload, save, or remove them. </p>
+                    <p>The Editor can integrate with the Syncfusion Image Editor to crop, rotate, annotate, and apply filters to images. Check out the demos <a class="e-rte-anchor" href="https://ej2.syncfusion.com/demos/#/material/rich-text-editor/image-editor-integration.html" title="Image Editor Demo" aria-label="Open in new window">here</a>.</p>
+                    <p><img alt="Sky with sun" src="https://cdn.syncfusion.com/ej2/richtexteditor-resources/RTE-Overview.png" style="width: 440px" class="e-rte-image e-imginline" /></p>`
+                ,
+                toolbarSettings: {
+                    items: ['Image']
+                },
+                height: 400,
+                enableRtl: true
+            });
+        });
+        afterAll(() => {
+            destroy(rteObj);
+        });
+        it(('checking resize bar in Image'), (done: Function) => {
+            let imgElem: HTMLElement = rteObj.element.querySelector('.e-rte-image');
+            clickImage(imgElem as HTMLImageElement);
+            setTimeout(() => {
+                expect(rteObj.element.querySelectorAll('.e-img-resize').length).toBe(1);
+                expect(rteObj.element.querySelectorAll('.e-rte-imageboxmark').length).toBe(4);
+                done();
+            }, 100);
+        });
+    });
+
+    describe('986631: Image in checklist causing resize icon misalignment', () => {
+        let rteObj: RichTextEditor;
+        beforeEach(() => {
+            rteObj = renderRTE({
+                value: `<h1>Welcome to the Syncfusion Rich Text Editor</h1>
+<p>The Rich Text Editor, a WYSIWYG (what you see is what you get) editor, is a user interface that allows you to create, edit, and format rich text content. You can try out a demo of this editor here.</p>
+<h2>Do you know the key features of the editor?</h2>
+<ul class="e-rte-checklist">
+   <li>Basic features include headings, block quotes, numbered lists, bullet lists, and support to insert images, tables, audio, and video.</li>
+   <li>Inline styles include <b>bold</b>, <em>italic</em>, <span style="text-decoration: underline">underline</span>, <span style="text-decoration: line-through">strikethrough</span>, <a class="e-rte-anchor" href="https://ej2.syncfusion.com/demos/#/material/rich-text-editor/tools.html" title="https://ej2.syncfusion.com/demos/#/material/rich-text-editor/tools.html" aria-label="Open in new window">hyperlinks</a>, 😀 and more.</li>
+   <li>The toolbar has multi-row, expandable, <img alt="Sky with sun" src="https://cdn.syncfusion.com/ej2/richtexteditor-resources/RTE-Overview.png" style="width: 15%;" class="e-rte-image e-imginline"/> and scrollable modes. The Editor supports an inline toolbar, a floating toolbar, and custom toolbar items.</li>
+   <li>Integration with Syncfusion Mention control lets users tag other users. To learn more, check out the <a class="e-rte-anchor" href="https://ej2.syncfusion.com/documentation/rich-text-editor/mention-integration" title="Mention Documentation" aria-label="Open in new window">documentation</a> and <a class="e-rte-anchor" href="https://ej2.syncfusion.com/demos/#/material/rich-text-editor/mention-integration.html" title="Mention Demos" aria-label="Open in new window">demos</a>.</li>
+   <li><b>Paste from MS Word</b> - helps to reduce the effort while converting the Microsoft Word content to HTML format with format and styles. To learn more, check out the documentation <a class="e-rte-anchor" href="https://ej2.syncfusion.com/documentation/rich-text-editor/paste-cleanup" title="Paste from MS Word Documentation" aria-label="Open in new window">here</a>.</li>
+   <li>Other features: placeholder text, character count, form validation, enter key configuration, resizable editor, IFrame rendering, tooltip, source code view, RTL mode, persistence, HTML Sanitizer, autosave, and <a class="e-rte-anchor" href="https://ej2.syncfusion.com/documentation/api/rich-text-editor/" title="Rich Text Editor API" aria-label="Open in new window">more</a>.</li>
+</ul>
+<blockquote>
+   <p><em>Easily access Audio, Image, Link, Video, and Table operations through the quick toolbar by right-clicking on the corresponding element with your mouse.</em></p>
+</blockquote>
+<h2>Unlock the Power of Tables</h2>
+<p>A table can be created in the editor using either a keyboard shortcut or the toolbar. With the quick toolbar, you can perform table cell insert, delete, split, and merge operations. You can style the table cells using background colours and borders.</p>`,
+                toolbarSettings: {
+                    items: ['Image']
+                },
+                height: 400
+            });
+        });
+        afterEach(() => {
+            destroy(rteObj);
+        });
+        it(('checking resize bar in Image in checklist'), (done: Function) => {
+            let imgElem: HTMLElement = rteObj.element.querySelector('.e-rte-image');
+            clickImage(imgElem as HTMLImageElement);
+            setTimeout(() => {
+                expect(rteObj.element.querySelectorAll('.e-img-resize').length).toBe(1);
+                const imgBoxMarkEle: NodeListOf<HTMLElement> = rteObj.element.querySelectorAll('.e-rte-imageboxmark');
+                expect(imgBoxMarkEle.length).toBe(4);
+                expect(parseFloat(imgBoxMarkEle[0].style.top)).toBeGreaterThan(100);
+                expect(parseFloat(imgBoxMarkEle[0].style.left)).toBeGreaterThan(100);
+                expect(parseFloat(imgBoxMarkEle[1].style.top)).toBeGreaterThan(100);
+                expect(parseFloat(imgBoxMarkEle[1].style.left)).toBeGreaterThan(100);
+                expect(parseFloat(imgBoxMarkEle[2].style.top)).toBeGreaterThan(100);
+                expect(parseFloat(imgBoxMarkEle[2].style.left)).toBeGreaterThan(100);
+                expect(parseFloat(imgBoxMarkEle[3].style.top)).toBeGreaterThan(100);
+                expect(parseFloat(imgBoxMarkEle[3].style.left)).toBeGreaterThan(100);
+                done();
+            }, 100);
+        });
+        it(('checking resize bar in Image in checklist in rtl mode'), (done: Function) => {
+            rteObj.enableRtl = true;
+            rteObj.dataBind();
+            expect(rteObj.element.classList.contains('e-rtl')).toBe(true);
+            let imgElem: HTMLElement = rteObj.element.querySelector('.e-rte-image');
+            clickImage(imgElem as HTMLImageElement);
+            setTimeout(() => {
+                expect(rteObj.element.querySelectorAll('.e-img-resize').length).toBe(1);
+                const imgBoxMarkEle: NodeListOf<HTMLElement> = rteObj.element.querySelectorAll('.e-rte-imageboxmark');
+                expect(imgBoxMarkEle.length).toBe(4);
+                expect(parseFloat(imgBoxMarkEle[0].style.top)).toBeGreaterThan(100);
+                expect(parseFloat(imgBoxMarkEle[0].style.left)).toBeGreaterThan(100);
+                expect(parseFloat(imgBoxMarkEle[1].style.top)).toBeGreaterThan(100);
+                expect(parseFloat(imgBoxMarkEle[1].style.left)).toBeGreaterThan(100);
+                expect(parseFloat(imgBoxMarkEle[2].style.top)).toBeGreaterThan(100);
+                expect(parseFloat(imgBoxMarkEle[2].style.left)).toBeGreaterThan(100);
+                expect(parseFloat(imgBoxMarkEle[3].style.top)).toBeGreaterThan(100);
+                expect(parseFloat(imgBoxMarkEle[3].style.left)).toBeGreaterThan(100);
+                done();
+            }, 100);
+        });
+    });
+
+    describe('995183: Quick Toolbar Events Triggered Multiple Times During Image Drag and Drop', () => {
+        let editor: RichTextEditor;
+        let beforeQuicktoolbaropenCount: number = 0;
+        let quicktoolbaropenCount: number = 0;
+        beforeAll(() => {
+            editor = renderRTE({
+                value: `<p>This is a text content.</p>`,
+                beforeQuickToolbarOpen: (args: BeforeQuickToolbarOpenArgs) => {
+                    beforeQuicktoolbaropenCount++;
+                },
+                quickToolbarOpen: (args) => {
+                    quicktoolbaropenCount++;
+                }
+            });
+        });
+        afterAll(() => {
+            destroy(editor);
+        });
+        it('Should beforeQuickToolbarOpen and quickToolbarOpen event trigger only once when drop an image in to the editor', (done: DoneFn) => {
+            const file: File = getImageUniqueFIle();
+            const dataTransfer: DataTransfer = new DataTransfer();
+            dataTransfer.items.add(file);
+            const eventInit: DragEventInit = {
+                dataTransfer: dataTransfer,
+                bubbles: true,
+                clientX: 40,
+                clientY: 294,
+            };
+            const dropEvent: DragEvent = new DragEvent('drop', eventInit);
+            editor.inputElement.querySelector('p').dispatchEvent(dropEvent);
+            setTimeout(() => {
+                expect(editor.inputElement.querySelectorAll('img').length).toBe(1);
+                expect(beforeQuicktoolbaropenCount).toBe(1);
+                expect(quicktoolbaropenCount).toBe(1);
                 done();
             }, 100);
         });

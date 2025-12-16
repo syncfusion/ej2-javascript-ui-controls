@@ -293,8 +293,8 @@ export class HomeParagraphGroup extends RibbonGroupBase implements IRibbonGroup 
 
     private toggleHiddenMarks(): void {
         if (this.documentEditor) {
-            this.container.documentEditor.documentEditorSettings.showHiddenMarks =
-            !this.container.documentEditor.documentEditorSettings.showHiddenMarks;
+            this.container.documentEditor.documentEditorSettings.showHiddenMarks = !
+            this.container.documentEditor.documentEditorSettings.showHiddenMarks;
             setTimeout(() => {
                 this.documentEditor.focusIn();
             }, 30);

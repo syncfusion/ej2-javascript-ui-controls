@@ -1,9 +1,23 @@
+@use 'ej2-base/styles/definition/bds' as *;
+@forward 'ej2-base/styles/definition/bds';
 $appbar-bg-color-primary: $primary !default;
 $appbar-color-primary: $primary-text-color !default;
 $appbar-border-color-primary: $primary !default;
 $appbar-font-size: $text-sm !default;
 $appbar-bigger-font-size: $text-base !default;
 $appbar-border: $appbar-border-color-alt1 !default;
+$appbar-bigger-height: 56px !default;
+$appbar-bigger-dense-height: 48px !default;
+$appbar-bigger-prominent-height: 112px !default;
+$appbar-nrml-height: 48px !default;
+$appbar-nrml-padding: 8px !default;
+$appbar-border-radius: 4px !default;
+$appbar-content-height: 100% !default;
+$appbar-nrml-prominent-height: 94px !default;
+$appbar-nrml-dense-height: 40px !default;
+$appbar-separator-height: 24px !default;
+$appbar-border-width: 1px !default;
+$appbar-input-group-icon-border: none !default;
 
 /* stylelint-disable */
 .e-appbar {

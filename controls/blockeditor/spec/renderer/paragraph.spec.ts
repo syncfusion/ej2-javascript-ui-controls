@@ -1,6 +1,8 @@
 import { createElement, remove } from "@syncfusion/ej2-base";
-import { BlockEditor, BlockModel, BlockType, ContentType } from "../../src/index";
 import { createEditor } from "../common/util.spec";
+import { BlockModel} from "../../src/models/index";
+import { BlockType, ContentType } from '../../src/models/enums';
+import { BlockEditor } from '../../src/index';
 
 describe('Paragraph Block', () => {
     beforeAll(() => {
@@ -20,7 +22,7 @@ describe('Paragraph Block', () => {
             editorElement = createElement('div', { id: 'editor' });
             document.body.appendChild(editorElement);
             const blocks: BlockModel[] = [
-                { id: 'paragraph', type: BlockType.Paragraph, content: [{ id: 'paragraph-content', type: ContentType.Text, content: 'Hello world' }] }
+                { id: 'paragraph', blockType: BlockType.Paragraph, content: [{ id: 'paragraph-content', contentType: ContentType.Text, content: 'Hello world' }] }
             ];
             editor = createEditor({ blocks: blocks });
             editor.appendTo('#editor');
@@ -40,14 +42,25 @@ describe('Paragraph Block', () => {
             const contentElement = blockElement.querySelector('p');
             expect(contentElement).not.toBeNull();
             expect(contentElement.textContent).toContain('Hello world');
+
+            // Assert Model
+            expect(editor.blocks.length).toBe(1);
+            expect(editor.blocks[0].id).toBe("paragraph");
+            expect(editor.blocks[0].blockType).toBe(BlockType.Paragraph);
+            expect(editor.blocks[0].content.length).toBe(1);
+            expect(editor.blocks[0].content[0].content).toBe('Hello world');
         });
 
         it('should update the block model on interaction', (done) => {
             const paragraph = editorElement.querySelector('#paragraph-content');
             paragraph.textContent = 'Updated content';
-            editor.setFocusToBlock(paragraph.closest('.e-block') as HTMLElement);
-            editor.stateManager.updateContentOnUserTyping(paragraph.closest('.e-block') as HTMLElement);
+            editor.blockManager.setFocusToBlock(paragraph.closest('.e-block') as HTMLElement);
+            editor.blockManager.stateManager.updateContentOnUserTyping(paragraph.closest('.e-block') as HTMLElement);
             setTimeout(() => {
+                // Assert Model
+                expect(editor.blocks.length).toBe(1);
+                expect(editor.blocks[0].id).toBe("paragraph");
+                expect(editor.blocks[0].blockType).toBe(BlockType.Paragraph);
                 expect(editor.blocks[0].content[0].content).toBe('Updated content');
                 done();
             }, 800);

@@ -1,8 +1,11 @@
+@use 'ej2-base/styles/definition/material3' as *;
+@forward 'ej2-base/styles/definition/material3';
+
 /*! Form material 3 theme wise override definitions and variables */
 $field-label-color: $content-text-color-alt1 !default;
 $field-label-font-size: 12px !default;
 $field-label-margin-bottom: 4px !default;
-$field-label-font-weight: 400 !default;
+$field-label-font-weight: $font-weight-normal !default;
 $form-layout-margin-top: 20px !default;
 $field-label-right-margin-top: 6px !default;
 $group-title-color: $content-text-color-alt2 !default;
@@ -30,5 +33,15 @@ $form-label-text-align: center !default;
 $form-button-left-justify: flex-start !default;
 $form-button-right-justify: flex-end !default;
 $form-button-center-justify: center !default;
-$form-button-border-radius: 20px !default;
+$form-button-border-radius: $radius-20 !default;
 $form-button-padding: 7px 16px !default;
+
+$form-data-label-margin-right: 12px !default;
+$form-switch-wrapper-margin-top: 3px !default;
+$form-switch-wrapper-margin-left: 5px !default;
+$form-button-margin-top: 24px !default;
+$form-button-gap: 10px !default;
+$form-child-layout-margin-top: 0 !default;
+$form-item-wrapper-width: calc(75% - 12px);
+$form-label-q-width: 25%;
+$form-full-width: 100%;

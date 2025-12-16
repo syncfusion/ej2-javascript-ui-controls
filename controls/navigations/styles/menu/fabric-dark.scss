@@ -1,9 +1,9 @@
-@import 'ej2-base/styles/definition/fabric-dark.scss';
-@import '../context-menu/fabric-dark-definition.scss';
-@import '../h-scroll/fabric-dark-definition.scss';
-@import '../v-scroll/fabric-dark-definition.scss';
-@import 'ej2-popups/styles/popup/fabric-dark-definition.scss';
-@import 'fabric-dark-definition.scss';
-@import 'icons/fabric-dark.scss';
-@import 'all.scss';
-@import 'bigger.scss';
+@use 'ej2-base/styles/definition/fabric-dark' as *;
+@use '../context-menu/fabric-dark-definition' as *;
+@use '../h-scroll/fabric-dark-definition' as *;
+@use '../v-scroll/fabric-dark-definition' as *;
+@use 'ej2-popups/styles/popup/fabric-dark-definition' as *;
+@use 'fabric-dark-definition' as *;
+@use 'icons/fabric-dark' as *;
+@use 'all' as *;
+@use 'bigger' as *;

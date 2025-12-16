@@ -108,6 +108,13 @@ export const SPACE_ACTION: string = 'actionBegin';
 export const FORMAT_PAINTER_ACTIONS: string = 'format_painter_actions';
 
 /**
+ * AI Assistant Event constant
+ *
+ * @hidden
+ */
+export const AI_ASSISTANT_ACTIONS: string = 'ai_assistant_actions';
+
+/**
  * Blockquotes enter prevent when on list is applied event constant
  *
  * @hidden
@@ -121,6 +128,13 @@ export const BLOCKQUOTE_LIST_HANDLE: string = 'blockquote_list_handled';
  * @hidden
  */
 export const EMOJI_PICKER_ACTIONS: string = 'emoji_picker_actions';
+
+/**
+ * Auto format event constant
+ *
+ * @hidden
+ */
+export const AUTO_FORMAT_ACTIONS: string = 'auto_format_actions';
 
 /**
  * Mouse down event constant
@@ -155,84 +169,139 @@ export const CODEBLOCK_INDENTATION: string = 'codeblock_indentation';
 export const CODEBLOCK_DISABLETOOLBAR: string = 'codeblock_disabletoolbar';
 /**
  * @hidden
- * @deprecated
+ * @private
  */
 export const CLS_RTE_TABLE_RESIZE: string = 'e-rte-table-resize';
 /**
  * @hidden
- * @deprecated
+ * @private
  */
 export const CLS_TB_ROW_INSERT: string = 'e-tb-row-insert';
 /**
  * @hidden
- * @deprecated
+ * @private
  */
 export const CLS_TB_COL_INSERT: string = 'e-tb-col-insert';
 /**
  * @hidden
- * @deprecated
+ * @private
  */
 export const CLS_TB_DASH_BOR: string = 'e-dashed-border';
 
 /**
  * @hidden
- * @deprecated
+ * @private
  */
 export const CLS_TB_ALT_BOR: string = 'e-alternate-border';
 /**
  * @hidden
- * @deprecated
+ * @private
  */
 export const CLS_TB_COL_RES: string = 'e-column-resize';
 /**
  * @hidden
- * @deprecated
+ * @private
  */
 export const CLS_TB_ROW_RES: string = 'e-row-resize';
 /**
  * @hidden
- * @deprecated
+ * @private
  */
 export const CLS_TB_BOX_RES: string = 'e-table-box';
 /**
  * @hidden
- * @deprecated
+ * @private
  */
 export const CLS_IMG_FOCUS: string = 'e-img-focus';
 /**
  * @hidden
- * @deprecated
+ * @private
  */
 export const CLS_TABLE_SEL: string = 'e-cell-select';
 /**
  * @hidden
- * @deprecated
+ * @private
  */
 export const CLS_TABLE_SEL_END: string = 'e-cell-select-end';
 /**
  * @hidden
- * @deprecated
+ * @private
  */
 export const CLS_TABLE_MULTI_CELL: string = 'e-multi-cells-select';
 export const CLS_AUD_FOCUS: string = 'e-audio-focus';
 /**
  * @hidden
- * @deprecated
+ * @private
  */
 export const CLS_VID_FOCUS: string = 'e-video-focus';
 /**
  * @hidden
- * @deprecated
+ * @private
  */
 export const CLS_RTE_DRAG_IMAGE: string = 'e-rte-drag-image';
 /**
  * @hidden
- * @deprecated
+ * @private
  */
 export const CLS_RESIZE: string = 'e-resize';
 
 /**
  * @hidden
- * @deprecated
+ * @private
  */
 export const hideTableQuickToolbar: string = 'hideTableQuickToolbar';
+/**
+ * @hidden
+ * @private
+ */
+export const touchStart: string = 'touchStart';
+/**
+ * @hidden
+ * @private
+ */
+export const touchEnd: string = 'touchEnd';
+/**
+ * @hidden
+ * @private
+ */
+export const cut: string = 'cut';
+/**
+ * @hidden
+ * @private
+ */
+export const dragEnterEvent: string = 'dragEnter_Event';
+/**
+ * @hidden
+ * @private
+ */
+export const dragOverEvent: string = 'dragOver_Event';
+/**
+ * @hidden
+ * @private
+ */
+export const dragStartEvent: string = 'dragStart_Event';
+/**
+ * @hidden
+ * @private
+ */
+export const dropEvent: string = 'drop_Event';
+/**
+ * @hidden
+ * @private
+ */
+export const dragEnter: string = 'dragEnter';
+/**
+ * @hidden
+ * @private
+ */
+export const dragDrop: string = 'dragDrop';
+/**
+ * @hidden
+ * @private
+ */
+export const dragOver: string = 'dragOver';
+/**
+ * @hidden
+ * @private
+ */
+export const dropEventHandler: string = 'drop';

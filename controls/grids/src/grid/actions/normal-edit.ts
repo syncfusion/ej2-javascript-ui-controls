@@ -51,7 +51,7 @@ export class NormalEdit {
         const gObj: IGrid = this.parent;
         if (gObj.editSettings.showAddNewRow && isNullOrUndefined(gObj.element.querySelector('.' + literals.editedRow))) { return; }
         if ((((parentsUntil(target,  literals.gridContent) &&
-            parentsUntil(parentsUntil(target,  literals.gridContent), 'e-grid').id === gObj.element.id)) || (gObj.frozenRows
+            parentsUntil(parentsUntil(target,  literals.gridContent), 'e-grid').id === gObj.element.id)) || ((gObj.frozenRows || gObj.pinnedTopRecords.length)
                 && parentsUntil(target, literals.headerContent) && !parentsUntil(target, 'e-columnheader')))
                 && !parentsUntil(target, 'e-unboundcelldiv')) {
             this.rowIndex = parentsUntil(target, literals.rowCell)
@@ -160,7 +160,7 @@ export class NormalEdit {
             this.previousData = e.data;
         } else if (!this.parent.enableVirtualization) {
             this.previousData = extend({}, {}, this.parent.getForeignKeyColumns().length || (this.parent.allowGrouping
-                && this.parent.groupSettings.columns.length) ? this.parent.getRowObjectFromUID(tr.getAttribute('data-uid')).data :
+                && this.parent.groupSettings.columns.length) || this.parent.pinnedTopRowModels.length ? this.parent.getRowObjectFromUID(tr.getAttribute('data-uid')).data :
                 gObj.getCurrentViewRecords()[this.rowIndex], true);
         }
         const editedData: Object = extend({}, {}, e.data || this.previousData, true);
@@ -439,6 +439,7 @@ export class NormalEdit {
         this.parent.trigger(events.beforeDataBound, args);
         args.type = events.actionComplete;
         this.parent.isEdit = this.parent.editSettings.showAddNewRow ? true : false;
+        this.parent.renderModule.resetPartialRecords();
         this.refreshRow(args.data);
         this.parent.notify(events.virtualScrollEditSuccess, args);
         this.parent.editModule.checkLastRow(args.row);
@@ -565,6 +566,22 @@ export class NormalEdit {
             this.parent.notify(events.refreshVirtualCache, { data: data });
             refreshForeignData(rowObj, this.parent.getForeignKeyColumns(), rowObj.changes);
             if (this.needRefresh()) {
+                const primarykey: string = this.parent.getPrimaryKeyFieldNames()[0];
+                let pinRowObj: Row<Column>;
+                if (rowObj.index < this.parent.pinnedTopRowModels.length) {
+                    const rowIndex: number = this.parent.getRowIndexByPrimaryKey(data);
+                    const row: Element = this.parent.getRowByIndex(rowIndex);
+                    if (row) {
+                        pinRowObj = this.parent.getRowObjectFromUID(row.getAttribute('data-uid'));
+                    }
+                } else {
+                    pinRowObj = this.parent.getPinnedRowObjectByKey(data[`${primarykey}`]);
+                }
+                if (pinRowObj) {
+                    pinRowObj.changes = data;
+                    refreshForeignData(pinRowObj, this.parent.getForeignKeyColumns(), pinRowObj.changes);
+                    row.refresh(pinRowObj, this.parent.getColumns(), true);
+                }
                 row.refresh(rowObj, this.parent.getColumns() as Column[], true);
             }
             const tr: Element[] = [].slice.call(this.parent.element.querySelectorAll('[aria-rowindex="' + (rowObj.index + 1) + '"]'));
@@ -757,6 +774,17 @@ export class NormalEdit {
         if (!isNullOrUndefined(this.parent.commandDelIndex)) {
             (<{ data?: Object[] }>args).data[0] =
             this.parent.getRowObjectFromUID(this.parent.getRowByIndex(this.parent.commandDelIndex).getAttribute('data-uid')).data;
+        }
+        const rowData: Object[] = (<{ data?: Object[] }>args).data;
+        if (this.parent.pinnedTopRecords.length && rowData.length) {
+            const primaryKey: string = this.parent.getPrimaryKeyFieldNames()[0];
+            for (const row of rowData) {
+                const index: number = this.parent.pinnedTopRecords.findIndex( (rowObj: Object) => rowObj[`${primaryKey}`] === row[`${primaryKey}`]);
+                if (index !== -1 && this.parent.pinnedTopRowKeys[row[`${primaryKey}`]]) {
+                    this.parent.pinnedTopRecords.splice(index, 1);
+                    this.parent.pinnedTopRowKeys[row[`${primaryKey}`]] = false;
+                }
+            }
         }
         this.parent.notify(events.modelChanged, args);
     }

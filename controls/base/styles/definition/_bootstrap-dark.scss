@@ -1,7 +1,7 @@
 @use 'sass:color';
 @use 'sass:meta';
 @use 'sass:list';
-@import '../common/mixin.scss';
+@use '../common/mixin' as *;
 
 $brand-primary: #0070f0 !default;
 $brand-primary-darken-10: color.adjust($brand-primary, $lightness: -10%) !default;

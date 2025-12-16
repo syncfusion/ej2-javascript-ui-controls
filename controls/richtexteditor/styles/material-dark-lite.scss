@@ -1,4 +1,4 @@
-@import 'ej2-base/styles/definition/material-dark.scss';
-@import 'rich-text-editor/material-dark-definition.scss';
-@import 'rich-text-editor/icons/material-dark.scss';
-@import 'rich-text-editor/all.scss';
+@use 'ej2-base/styles/definition/material-dark' as *;
+@use 'rich-text-editor/material-dark-definition' as *;
+@use 'rich-text-editor/icons/material-dark' as *;
+@use 'rich-text-editor/all' as *;

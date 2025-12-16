@@ -1,3 +1,6 @@
+@use 'ej2-base/styles/common/mixin' as *;
+@use 'ej2-base/styles/definition/material' as *;
+@forward 'ej2-base/styles/definition/material';
 $ddl-list-line-height: 36px !default;
 $ddl-header-font-weight: 600 !default;
 $ddl-last-child-bottom-border: 0 !default;
@@ -5,6 +8,9 @@ $ddl-default-font-family: inherit !default;
 $ddl-line-height: 48px !default;
 $ddl-list-border-size: 0 !default;
 $ddl-list-bottom-border: $ddl-list-border-size !default;
+$ddl-list-zero-padding: 0 !default;
+$ddl-list-nodata-padding: 14px 16px !default;
+$ddl-list-nodata-font-size: 14px !default;
 
 $ddl-list-border-color: $grey-300 !default;
 $ddl-list-gradient-color: $grey-white !default;
@@ -69,6 +75,22 @@ $ddl-bigger-small-list-header-font-size: 13px !default;
 
 $ddl-list-header-font-size: $ddl-group-list-font-size !default;
 $ddl-small-list-header-font-size: $ddl-group-list-font-size !default;
+$ddl-bgr-list-item-icon-font-size: 20px !default;
+$ddl-nrml-list-item-icon-font-size: 16px !default;
+$bgr-drop-base-height: 45px !default;
+$ddl-base-min-height: 36px !default;
+$mention-popup-margin-top: 2px !default;
+$ddl-two-width: 2px !default;
+$ddl-mention-editable-min-height: 120px !default;
+$ddl-multi-column-popup-padding-right: 16px !default;
+$ddl-multi-column-popup-line-height: 36px !default;
+$ddl-multi-popup-scroll-head-pad-right: 16px !default;
+$ddl-zero-spacing: 0 !default;
+$ddl-auto-height: auto !default;
+$ddl-full-height: 100% !default;
+$ddl-full-width: 100% !default;
+$bigger-dropdown-base-list-item-icon-padding: 0 16px 0 0 !default;
+$ddl-bgr-dropbase-list-icon-item-padding: 0 12px 0 0 !default;
 
 @include export-module('dropdownbase-material') {
   .e-dropdownbase .e-list-item .e-list-icon {

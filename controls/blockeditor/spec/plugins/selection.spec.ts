@@ -1,7 +1,9 @@
 import { createElement } from '@syncfusion/ej2-base';
-import { BlockEditor, BlockModel, BlockType, ContentType } from '../../src/index';
+import { BlockModel } from '../../src/models/index';
 import { createEditor } from '../common/util.spec';
-import { NodeSelection } from '../../src/blockeditor/plugins/index';
+import { NodeSelection } from '../../src/selection/selection';
+import { BlockType, ContentType, CommandName } from '../../src/models/enums';
+import { BlockEditor } from '../../src/index';
 
 describe('Selection Plugin', () => {
     let editor: BlockEditor;
@@ -14,35 +16,35 @@ describe('Selection Plugin', () => {
         editorElement = createElement('div', { id: 'editor' });
         document.body.appendChild(editorElement);
 
-        // Create editor with paragraph that has multiple formatted content blocks
+        // Create editor with paragraph that has multiple formatted content blocks.
         editor = createEditor({
             blocks: [
                 {
                     id: 'testBlock',
-                    type: BlockType.Paragraph,
+                    blockType: BlockType.Paragraph,
                     content: [
                         {
                             id: 'plainText',
-                            type: ContentType.Text,
+                            contentType: ContentType.Text,
                             content: 'Plain text'
                         },
                         {
                             id: 'boldText',
-                            type: ContentType.Text,
+                            contentType: ContentType.Text,
                             content: 'Bold text',
-                            props: { styles: { bold: true } }
+                            properties: { styles: { bold: true } }
                         },
                         {
                             id: 'italicText',
-                            type: ContentType.Text,
+                            contentType: ContentType.Text,
                             content: 'Italic text',
-                            props: { styles: { italic: true } }
+                            properties: { styles: { italic: true } }
                         },
                         {
                             id: 'styledText',
-                            type: ContentType.Text,
+                            contentType: ContentType.Text,
                             content: 'Mixed styles',
-                            props: { styles: { bold: true, underline: true } }
+                            properties: { styles: { bold: true, underline: true } }
                         }
                     ]
                 }
@@ -52,7 +54,7 @@ describe('Selection Plugin', () => {
         editor.appendTo('#editor');
 
         // Access selection manager
-        selectionManager = editor.nodeSelection;
+        selectionManager = editor.blockManager.nodeSelection;
 
         // Get block element for testing
         blockElement = editorElement.querySelector('#testBlock') as HTMLElement;
@@ -85,13 +87,13 @@ describe('Selection Plugin', () => {
             selection.addRange(range);
 
             // Save the selection
-            selectionManager.saveSelection(contentElement);
+            selectionManager.saveSelection();
 
             // Modify the content
             contentElement.textContent = contentElement.textContent;
 
             // Restore the selection
-            selectionManager.restoreSelection(contentElement);
+            selectionManager.restoreSelection();
 
             const newSelection = window.getSelection();
             const newRange = newSelection.getRangeAt(0);
@@ -118,13 +120,13 @@ describe('Selection Plugin', () => {
             selection.addRange(range);
 
             // Save the selection
-            selectionManager.saveSelection(contentElement);
+            selectionManager.saveSelection();
 
             // Clear selection
             selection.removeAllRanges();
 
             // Restore the selection
-            selectionManager.restoreSelection(contentElement);
+            selectionManager.restoreSelection();
             const newSelection = window.getSelection();
             const selectedText = newSelection.toString();
 
@@ -358,8 +360,8 @@ describe('Selection Plugin', () => {
             selection.addRange(range);
 
             // Save and restore selection
-            selectionManager.saveSelection(contentElement);
-            selectionManager.restoreSelection(contentElement);
+            selectionManager.saveSelection();
+            selectionManager.restoreSelection();
             const restoredSelection = window.getSelection();
             const selectedText = restoredSelection.toString();
 
@@ -385,14 +387,14 @@ describe('Selection Plugin', () => {
             selection.addRange(range);
 
             // Save selection
-            selectionManager.saveSelection(contentElement);
+            selectionManager.saveSelection();
 
             // Modify content - add text at beginning
             const originalText = contentElement.innerHTML;
             contentElement.innerHTML = 'NEW ' + originalText;
 
             // Restore selection
-            selectionManager.restoreSelection(contentElement);
+            selectionManager.restoreSelection();
             const newSelection = window.getSelection();
             // Selection position will be adjusted to account for added text
             // The exact position depends on how the DOM was rebuilt
@@ -409,19 +411,12 @@ describe('Selection Plugin', () => {
         it('should handle edge cases properly', () => {
             // Spy on getRange method and return null
             spyOn(selectionManager, 'getRange').and.returnValue(null);
-            selectionManager.saveSelection(contentElement);
-            // expect(selectionManager.getStoredRange()).toBeNull();
+            selectionManager.saveSelection();
 
             expect(selectionManager.checkIsEntireEditorSelected()).toBe(false);
 
             contentElement.textContent = null;
-            selectionManager.restoreSelection(contentElement);
-
-            const range = (selectionManager as any).createRangeFromTextPositions(contentElement, 100, 100);
-            expect(range.startContainer).toBe(contentElement);
-            expect(range.startOffset).toBe(0);
-            expect(range.endContainer).toBe(contentElement);
-            expect(range.endOffset).toBe(0);
+            selectionManager.restoreSelection();
         });
 
         it('getNodeFromSelection should return nodes properly', () => {
@@ -468,21 +463,21 @@ describe('Selection Plugin', () => {
         });
 
         it('checkEntireEditorSelected should handle child blocks properly', (done) => {
-            editor.setFocusToBlock(blockElement);
+            editor.blockManager.setFocusToBlock(blockElement);
             const block: BlockModel = {
                 id: 'callout-block',
-                type: BlockType.Callout,
-                props: {
+                blockType: BlockType.Callout,
+                properties: {
                     children: [
                         {
                             id: 'first-child',
-                            type: BlockType.Paragraph,
-                            content: [ { type: ContentType.Text, content: '' } ]
+                            blockType: BlockType.Paragraph,
+                            content: [ { contentType: ContentType.Text, content: '' } ]
                         },
                         {
                             id: 'second-child',
-                            type: BlockType.Paragraph,
-                            content: [ { type: ContentType.Text, content: 'Second child' } ]
+                            blockType: BlockType.Paragraph,
+                            content: [ { contentType: ContentType.Text, content: 'Second child' } ]
                         }
                     ]
                 }
@@ -490,7 +485,7 @@ describe('Selection Plugin', () => {
             editor.addBlock(block);
             editor.removeBlock(blockElement.id);
             const newBlockElement = editorElement.querySelector('#callout-block') as HTMLElement;
-            editor.setFocusToBlock(newBlockElement);
+            editor.blockManager.setFocusToBlock(newBlockElement);
 
             const firstChildContent = editorElement.querySelector('#first-child').querySelector('.e-block-content');
             const secondChildContent = editorElement.querySelector('#second-child').querySelector('.e-block-content');

@@ -450,4 +450,31 @@ describe('Undo and Redo module', () => {
             destroy(rteObj);
         });
     });
+    describe('978841 - Undo toolbar item is not disabled in the source code view.', () => {
+        let keyBoardEvent: any = { type: 'keydown', preventDefault: () => { }, ctrlKey: true, key: 'backspace', stopPropagation: () => { }, shiftKey: true, which: 72 };
+        let rteObj: RichTextEditor;
+        beforeAll(() => {
+            rteObj = renderRTE({
+                toolbarSettings: {
+                    items: ['Undo', 'Redo', 'SourceCode']
+                },
+                value: `<p>Rich Text Editor</p>`
+            });
+        });
+        it('The undo toolbar items should be disabled when switching to source code.', (done) => {
+            let range: HTMLElement = rteObj.element.querySelector('p');
+            setCursorPoint(range.firstChild, 0);
+            keyBoardEvent.code = 'KeyH';
+            keyBoardEvent.action = 'html-source';
+            keyBoardEvent.which = 72;
+            (rteObj as any).keyDown(keyBoardEvent);
+            setTimeout(() => {
+                expect(rteObj.element.querySelectorAll('.e-rte-toolbar .e-toolbar-item')[0].classList.contains('e-overlay')).toBe(true);
+                done();
+            }, 50);
+        });
+        afterAll(() => {
+            destroy(rteObj);
+        });
+    });
 });

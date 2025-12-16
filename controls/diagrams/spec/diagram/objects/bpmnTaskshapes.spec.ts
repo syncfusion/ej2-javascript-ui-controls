@@ -14,7 +14,6 @@ describe('Diagram Control', () => {
 
     describe('BPMN Tasks', () => {
         let diagram: Diagram;
-        let shadow: ShadowModel = { angle: 135, distance: 10, opacity: 0.9 };
         let stops: StopModel[] = [{ color: 'white', offset: 0 }, { color: 'red', offset: 50 }];
         let gradient: RadialGradientModel = { cx: 50, cy: 50, fx: 50, fy: 50, stops: stops, type: 'Radial' };
 
@@ -207,8 +206,6 @@ describe('Diagram Control', () => {
         stopscol.push(stops1);
         let stops2: StopModel = { color: 'red', offset: 50 };
         stopscol.push(stops2);
-        let gradient1: RadialGradientModel = { cx: 50, cy: 50, fx: 50, fy: 50, stops: stopscol, type: 'Radial' };
-
 
         let ele: HTMLElement;
 
@@ -233,39 +230,9 @@ describe('Diagram Control', () => {
                     },
                 },
             };
-            let node6: NodeModel = {
-                id: 'node6', width: 100, height: 100, offsetX: 300, offsetY: 300,
-                shape: {
-                    type: 'Bpmn', shape: 'Activity', activity: {
-                        activity: 'Task', task: {
-                            type: 'Script', compensation: false,
-                        }
-                    },
-                },
-            };
-            let node7: NodeModel = {
-                id: 'node7', width: 100, height: 100, offsetX: 500, offsetY: 300,
-                shape: {
-                    type: 'Bpmn', shape: 'Activity', activity: {
-                        activity: 'Task', task: {
-                            type: 'Send', compensation: false,
-                        }
-                    },
-                },
-            };
-            let node8: NodeModel = {
-                id: 'node8', width: 100, height: 100, offsetX: 700, offsetY: 300,
-                shape: {
-                    type: 'Bpmn', shape: 'Activity', activity: {
-                        activity: 'Task', task: {
-                            type: 'User', compensation: false,
-                        }
-                    },
 
-                },
-            };
             diagram = new Diagram({
-                width: 1500, height: 500, nodes: [node5, node6, node7, node8]
+                width: 1500, height: 500, nodes: [node5]
             });
             diagram.appendTo('#diagram96tasks2');
         });
@@ -320,52 +287,9 @@ describe('Diagram Control', () => {
                     },
                 },
             };
-            let node1: NodeModel = {
-                id: 'node1', width: 100, height: 100, offsetX: 300, offsetY: 100,
-                style: { strokeColor: 'red', strokeWidth: 5, },
-                shape: {
-                    type: 'Bpmn', shape: 'Activity', activity: {
-                        activity: 'Task', task: {
-                            loop: 'ParallelMultiInstance',
-                        }
-                    },
-                },
-            };
-            let node2: NodeModel = {
-                id: 'node2', width: 100, height: 100, offsetX: 500, offsetY: 100,
-                style: { opacity: 0.6, fill: 'red' },
-                shape: {
-                    type: 'Bpmn', shape: 'Activity', activity: {
-                        activity: 'Task', task: {
-                            loop: 'SequenceMultiInstance',
-                        }
-                    },
-                },
-            };
-            let node3: NodeModel = {
-                id: 'node3', width: 100, height: 100, offsetX: 700, offsetY: 100,
-                style: { gradient: gradient1 },
-                shape: {
-                    type: 'Bpmn', shape: 'Activity', activity: {
-                        activity: 'Task', task: {
-                            type: 'InstantiatingReceive', loop: 'None',
-                        }
-                    },
-                },
-            };
-            let node4: NodeModel = {
-                id: 'node4', width: 100, height: 100, offsetX: 900, offsetY: 100,
-                shadow: shadow1,
-                shape: {
-                    type: 'Bpmn', shape: 'Activity', activity: {
-                        activity: 'Task', task: {
-                            type: 'InstantiatingReceive', loop: 'ParallelMultiInstance',
-                        }
-                    },
-                },
-            };
+
             diagram = new Diagram({
-                width: 1500, height: 500, nodes: [node, node1, node2, node3, node4]
+                width: 1500, height: 500, nodes: [node]
             });
             diagram.appendTo('#diagram961a');
         });
@@ -400,8 +324,6 @@ describe('Diagram Control', () => {
         stopscol.push(stops1);
         let stops2: StopModel = { color: 'red', offset: 50 };
         stopscol.push(stops2);
-        let gradient1: RadialGradientModel = { cx: 50, cy: 50, fx: 50, fy: 50, stops: stopscol, type: 'Radial' };
-
 
         let ele: HTMLElement;
         beforeAll((): void => {

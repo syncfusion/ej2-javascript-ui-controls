@@ -76,6 +76,9 @@ export class RowRenderer<T> implements IRowRenderer<T> {
         }
         const node: Element = this.parent.element.querySelector('[data-uid=' + row.uid + ']');
         const tr: Element = this.refreshRow(row, columns, attributes, rowTemplate, null, isChanged);
+        if (node.classList.contains('e-grid-pin-row')) {
+            tr.classList.add('e-grid-pin-row');
+        }
         if (isChanged) {
             addFixedColumnBorder(tr);
         }
@@ -128,7 +131,6 @@ export class RowRenderer<T> implements IRowRenderer<T> {
             if (selIndex.indexOf(row.index) === -1) {
                 selIndex.push(row.index);
             }
-
         }
         this.buildAttributeFromRow(tr, row);
 
@@ -191,7 +193,8 @@ export class RowRenderer<T> implements IRowRenderer<T> {
                     }
                     const isNotSpanable: boolean = this.parent.enableVirtualization || this.parent.enableColumnVirtualization
                     || this.parent.enableInfiniteScrolling || (this.parent.allowGrouping
-                    && this.parent.groupSettings.columns.length && this.parent.groupSettings.enableLazyLoading);
+                    && this.parent.groupSettings.columns.length && this.parent.groupSettings.enableLazyLoading)
+                    || row.index < this.parent.pinnedTopRecords.length;
                     if (!isNotSpanable) {
                         const field: string = 'field';
                         const dateTypes: string[] = ['date', 'datetime', 'dateonly'];
@@ -223,7 +226,8 @@ export class RowRenderer<T> implements IRowRenderer<T> {
                         }
                         if (row.isDataRow && this.parent.enableRowSpan && (<{ enableRowSpan?: boolean }>cell.column).enableRowSpan
                         && !cell.isSpanned && !cell.isTemplate && cell.visible && row.data[cell.column[`${field}`]] !== '' && !cell.isForeignKey) {
-                            const nxtRowIndex: number = this.parent.groupSettings.columns.length ? row.groupDataIndex : row.index;
+                            const index: number = row.index - this.parent.pinnedTopRecords.length;
+                            const nxtRowIndex: number = this.parent.groupSettings.columns.length ? row.groupDataIndex : index;
                             if (row.isDataRow && this.parent.groupSettings.columns.length && !isNullOrUndefined(row.parentUid)) {
                                 currentViewData = (<{ items?: Object[] }>this.parent.getRowObjectFromUID(row.parentUid).data).items;
                             }
@@ -251,18 +255,21 @@ export class RowRenderer<T> implements IRowRenderer<T> {
                         }
                     }
                     let isRowSpanned: boolean = false;
-                    if (row.index > 0 && (this.isSpan || (this.parent.isSpan && isEdit))) {
+                    if (row.index > this.parent.pinnedTopRecords.length && (this.isSpan || (this.parent.isSpan && isEdit))) {
+                        const index: number = row.index - this.parent.pinnedTopRecords.length;
                         const rowsObject: Row<Column>[] = this.parent.getRowsObject().filter((row: Row<Column>) => row.isDataRow);
-                        const prevRowCells: Cell<Column>[] = this.parent.groupSettings.columns.length > 0 &&
-                            !rowsObject[row.index - 1].isDataRow ? rowsObject[row.index].cells : rowsObject[row.index - 1].cells;
+                        const prevRowCells: Cell<Column>[] = this.parent.groupSettings.columns.length > 0
+                            && !rowsObject[index - 1].isDataRow ? rowsObject[parseInt(index.toString(), 10)].cells
+                            : rowsObject[parseInt(index.toString(), 10) - 1].cells;
                         const uid: string = 'uid';
                         const prevRowCell: Cell<Column> = prevRowCells.filter((cell: Cell<Column>) =>
                             cell.column.uid === row.cells[parseInt(i.toString(), 10)].column[`${uid}`])[0];
                         isRowSpanned = prevRowCell.isRowSpanned ? prevRowCell.isRowSpanned : prevRowCell.rowSpanRange > 1;
                     }
-                    if ((cellArgs.rowSpan > 1 || cellArgs.colSpan > 1)) {
-                        this.resetrowSpanvalue(this.parent.frozenRows > row.index ? this.parent.frozenRows :
-                            currentViewData.length, cellArgs, row.index);
+                    if ((cellArgs.rowSpan > 1 || cellArgs.colSpan > 1) && row.index >= this.parent.pinnedTopRecords.length) {
+                        const index: number = row.index - this.parent.pinnedTopRecords.length;
+                        this.resetrowSpanvalue(this.parent.frozenRows > index ? this.parent.frozenRows :
+                            currentViewData.length, cellArgs, index);
                         if (cellArgs.column.visible === false) {
                             cellArgs.colSpan = 1;
                         } else {
@@ -296,8 +303,8 @@ export class RowRenderer<T> implements IRowRenderer<T> {
                             }
                         }
                     }
-                    if (cellArgs.colSpan > 1 || row.cells[parseInt(i.toString(), 10)].cellSpan > 1 || cellArgs.rowSpan > 1
-                        || isRowSpanned) {
+                    if ((cellArgs.colSpan > 1 || row.cells[parseInt(i.toString(), 10)].cellSpan > 1 || cellArgs.rowSpan > 1
+                        || isRowSpanned) && row.index >= this.parent.pinnedTopRecords.length) {
                         this.parent.isSpan = true;
                         this.isSpan = true;
                         const cellMerge: CellMergeRender<T> = new CellMergeRender(this.serviceLocator, this.parent);
@@ -332,8 +339,9 @@ export class RowRenderer<T> implements IRowRenderer<T> {
                 if (this.isSpan) {
                     const rowsObject: Row<Column>[] = this.parent.getRowsObject();
                     const isRtl: boolean = this.parent.enableRtl;
-                    if (rowsObject[row.index - 1] && rowsObject[row.index - 1].isDataRow) {
-                        const prevRowCells: Cell<Column>[] = rowsObject[row.index - 1].cells;
+                    const index: number = row.index - this.parent.pinnedTopRecords.length;
+                    if (rowsObject[row.index - 1] && rowsObject[index - 1].isDataRow) {
+                        const prevRowCells: Cell<Column>[] = rowsObject[index - 1].cells;
                         const prevRowCell: Cell<Column> = prevRowCells[i - 1];
                         const currentRowCell: Cell<Column> = prevRowCells[parseInt(i.toString(), 10)];
                         const nextRowCell: Cell<Column> = prevRowCells[i + 1];
@@ -360,7 +368,8 @@ export class RowRenderer<T> implements IRowRenderer<T> {
                         }
                     }
                 }
-                if (cellArgs.rowSpan > 1 && currentViewData.length - row.index === cellArgs.rowSpan) {
+                if (cellArgs.rowSpan > 1
+                    && currentViewData.length - (row.index - this.parent.pinnedTopRecords.length) === cellArgs.rowSpan) {
                     td.classList.add('e-row-span-lastrowcell');
                 }
                 if (!row.cells[parseInt(i.toString(), 10)].isSpanned) {

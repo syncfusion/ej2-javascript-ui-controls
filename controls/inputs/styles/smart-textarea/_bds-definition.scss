@@ -1,3 +1,5 @@
+@use 'ej2-base/styles/definition/bds' as *;
+@forward 'ej2-base/styles/definition/bds';
 $sta-background-color: #{#ffffff} !default;
 $sta-color: #{#000000} !default;
 $sta-box-shadow: rgba(0, 0, 0, .4) !default;

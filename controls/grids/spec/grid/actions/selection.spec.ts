@@ -7780,4 +7780,39 @@ describe('EJ2-985690: Partial Selection module', () => {
             gridObj = null;
         });
     });
+
+    describe('Selection coverage =>', () => {
+        let gridObj: Grid;
+        beforeAll((done: Function) => {
+            gridObj = createGrid(
+                {
+                    dataSource: data,
+                    columns: [
+                        { field: 'OrderID', isPrimaryKey: true, headerText: 'Order ID' },
+                        { field: 'CustomerID', headerText: 'CustomerID', freeze: 'Right' },
+                        { field: 'EmployeeID', headerText: 'Employee ID' },
+                        { field: "ShipCity", headerText: "Ship City", width: 250, freeze: 'Left' },
+                    ],
+                    height: 700,
+                }, done);
+        });
+        it('Coverage for actionComplete', (done: Function) => {
+            gridObj.isPersistSelection = true;
+            gridObj.selectionModule.isPartialSelection  = true;
+            (gridObj.selectionModule as any).isHdrSelectAllClicked = true;
+            (<any>gridObj.selectionModule).actionComplete({ requestType : 'paging'});
+            done(); 
+        });
+
+        it('Coverage for setRowSelection', (done: Function) => {
+            gridObj.dataSource = { result : [] };
+            (<any>gridObj.selectionModule).setRowSelection(null);
+            done(); 
+        });
+
+        afterAll(() => {
+            destroy(gridObj);
+            gridObj = null;
+        });
+    });
 });

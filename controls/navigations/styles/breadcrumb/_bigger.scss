@@ -1,5 +1,6 @@
 @use 'sass:list';
-
+@use 'ej2-base/styles/common/mixin' as *;
+@use './theme-variables' as *;
 @include export-module('breadcrumb-bigger') {
   .e-bigger.e-breadcrumb,
   .e-bigger .e-breadcrumb {
@@ -33,7 +34,7 @@
 
       @if $breadcrumb-skin == 'tailwind3' {
         &.e-icon-item .e-breadcrumb-text {
-          padding: 5px !important; /* stylelint-disable-line declaration-no-important */
+          padding: $breadcrumb-text-padding !important; /* stylelint-disable-line declaration-no-important */
         }
       }
 
@@ -79,7 +80,7 @@
       font-size: $breadcrumb-collapsed-icon-bigger-font-size;
       padding: $breadcrumb-collapsed-icon-bigger-padding;
       @if $breadcrumb-skin == 'fluent2' {
-        line-height: 16px;
+        line-height: $breadcrumb-bigger-collapsed-menu-line-height;
       }
 
       @if $breadcrumb-skin == 'fabric' or $breadcrumb-skin == 'highcontrast' {
@@ -94,7 +95,7 @@
     &.e-rtl {
       .e-breadcrumb-text .e-breadcrumb-icon {
         padding-left: $breadcrumb-icon-bigger-right-padding;
-        padding-right: 0;
+        padding-right: $breadcrumb-padding-none;
 
         @if $breadcrumb-skin == 'fabric' or $breadcrumb-skin == 'highcontrast' {
           padding-right: $breadcrumb-icon-bigger-right-padding;
@@ -103,7 +104,7 @@
     }
 
     &.e-rtl .e-icon-right .e-breadcrumb-text .e-breadcrumb-icon {
-      padding-left: 0;
+      padding-left: $breadcrumb-padding-none;
       padding-right: $breadcrumb-icon-bigger-right-padding;
 
       @if $breadcrumb-skin == 'fabric' or $breadcrumb-skin == 'highcontrast' {
@@ -117,9 +118,9 @@
     .e-breadcrumb-text {
       font-size: $breadcrumb-bigger-font-size;
       height: $breadcrumb-popup-item-bigger-height;
-      line-height: $breadcrumb-popup-item-bigger-height;
+      line-height: $breadcrumb-popup-item-bigger-line-height;
       @if $skin-name == 'fluent2' {
-        padding: 8px 8px 10px !important; /* stylelint-disable-line declaration-no-important */
+        padding: $breadcrumb-bigger-popup-text-padding !important; /* stylelint-disable-line declaration-no-important */
       }
 
       .e-breadcrumb-icon {
@@ -129,7 +130,7 @@
     }
 
     .e-icon-item .e-breadcrumb-text .e-breadcrumb-icon {
-      padding: 0;
+      padding: $breadcrumb-padding-none;
     }
 
     &.e-icon-right,
@@ -137,32 +138,32 @@
     &.e-rtl {
       .e-breadcrumb-icon {
         padding-left: $breadcrumb-icon-bigger-right-padding;
-        padding-right: 0;
+        padding-right: $breadcrumb-padding-none;
       }
     }
 
     &.e-rtl.e-icon-right .e-breadcrumb-icon,
     &.e-rtl .e-icon-right .e-breadcrumb-icon {
-      padding-left: 0;
+      padding-left: $breadcrumb-padding-none;
       padding-right: $breadcrumb-icon-bigger-right-padding;
     }
   }
 
   @if $breadcrumb-skin == 'fluent2' {
     .e-bigger .e-breadcrumb .e-breadcrumb-item .e-breadcrumb-text .e-anchor-wrap {
-      line-height: 22px !important; /* stylelint-disable-line declaration-no-important */
+      line-height: $breadcrumb-bigger-anchor-wrap-line-height !important; /* stylelint-disable-line declaration-no-important */
     }
   
     .e-bigger .e-breadcrumb .e-breadcrumb-separator {
-      line-height: 16px !important; /* stylelint-disable-line declaration-no-important */
+      line-height: $breadcrumb-bigger-separator-line-height !important; /* stylelint-disable-line declaration-no-important */
     }
   
     .e-bigger .e-breadcrumb .e-breadcrumb-item.e-icon-item .e-breadcrumb-text {
-      padding: 12px !important; /* stylelint-disable-line declaration-no-important */
+      padding: $breadcrumb-bigger-icon-text-padding !important; /* stylelint-disable-line declaration-no-important */
     }
   
     .e-bigger .e-breadcrumb-popup .e-breadcrumb-item {
-      margin: 6px !important; /* stylelint-disable-line declaration-no-important */
+      margin: $breadcrumb-bigger-popup-item-margin !important; /* stylelint-disable-line declaration-no-important */
     }
   }
 }

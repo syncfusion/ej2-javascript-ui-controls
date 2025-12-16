@@ -1,3 +1,5 @@
+@use 'ej2-base/styles/common/mixin' as *;
+@use './theme-variables' as *;
 @mixin background-styles($color,$border-color) {
   background-color: $color;
   border-color: $border-color;
@@ -49,7 +51,6 @@ $applies-hover-bg: $theme-name == 'bootstrap5.3' or
   /*! Gantt theme */
 
   .e-gantt-single-timeline {
-    .e-timeline-header-container,
     .e-timeline-header-table-body tr {
       height: $gantt-chart-timeline-single-header-outer-div !important; /* stylelint-disable-line declaration-no-important */
     }
@@ -116,10 +117,6 @@ $applies-hover-bg: $theme-name == 'bootstrap5.3' or
       border-top-right-radius: $gantt-splitter-border-top-right-radius;
     }
 
-    .e-grid .e-focused:not(.e-menu-item) {
-      box-shadow: $grid-active-container-border !important; /* stylelint-disable-line declaration-no-important */
-    }
-
     .e-temp-content,
     .e-splitter-box,
     .e-gantt-temp-header,
@@ -161,7 +158,9 @@ $applies-hover-bg: $theme-name == 'bootstrap5.3' or
         background: $gantt-active-background;
         opacity: .9;
       }
-
+      .e-grid td.e-active:has(.e-tooltip-wrap) {
+        opacity: 1;
+      }
       .e-grid td.e-cellselectionbackground {
         @if ($theme-name == 'tailwind3' or $theme-name == 'tailwind3-dark') {
           background: $gantt-active-background;
@@ -175,6 +174,14 @@ $applies-hover-bg: $theme-name == 'bootstrap5.3' or
         td.e-active.e-fixedfreeze{
           background: $gantt-active-frozen-background;
           opacity: .9;
+        }
+      }
+      .e-grid{
+        td.e-active.e-leftfreeze:has(.e-tooltip-wrap),
+        td.e-active.e-unfreeze:has(.e-tooltip-wrap),
+        td.e-active.e-rightfreeze:has(.e-tooltip-wrap),
+        td.e-active.e-fixedfreeze:has(.e-tooltip-wrap){
+          opacity: 1;
         }
       }
       .e-headercell-hover .e-headercell:not(.e-active):hover{
@@ -192,7 +199,6 @@ $applies-hover-bg: $theme-name == 'bootstrap5.3' or
         border-right-color: $gantt-header-border-color;
         border-left-color: $gantt-header-border-color;
         color: $gantt-header-color;
-        height: $gantt-header-border-height;
       }
 
       .e-timeline-top-header-cell,
@@ -627,6 +633,15 @@ $applies-hover-bg: $theme-name == 'bootstrap5.3' or
 
   .e-gantt-dialog {
 
+    .e-btn.e-primary {
+      @if $skin-name =='Material3' or $skin-name =='Material3-dark'{
+        background: rgba(103, 80, 164, 1) !important; /* stylelint-disable-line declaration-no-important */
+        border-color: rgba(103, 80, 164, 1) !important; /* stylelint-disable-line declaration-no-important */
+        color: rgba(255, 255, 255, 1) !important; /* stylelint-disable-line declaration-no-important */
+        border-radius: 20px;
+      }
+    }
+    
     .e-tab .e-tab-header .e-indicator {
       @if $skin-name =='Material3' or $skin-name =='Material3-dark'{
         display: none;

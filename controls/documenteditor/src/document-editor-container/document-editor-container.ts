@@ -1513,7 +1513,6 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
     public getDefaultSectionFormat(): SectionFormatProperties {
         return this.sectionFormat;
     }
-
     
     /**
      * Sets the document default paragraph format for document editor
@@ -1525,7 +1524,6 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
         this.documentParagraphFormat = JSON.parse(HelperMethods.sanitizeString(JSON.stringify(paragraphFormat)));
         this.setFormat();
     }
-
     /**
      * Gets the document default paragraph format for document editor
      * @returns Returns the default paragraph format for document editor.
@@ -1535,7 +1533,6 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
         HelperMethods.writeParagraphFormatProperties(this.documentEditor.documentHelper.paragraphFormat, format);
         return format;
     }
-
     /**
      * Set the document character format for document editor container
      * @param characterFormat Specify the character format properties to be applied for document editor container.
@@ -1544,7 +1541,6 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
         this.documentCharacterFormat = characterFormat;
         this.setFormat();
     }
-
     /**
      * get the document character format for document editor container
      * @returns Returns the document character format for document editor container.

@@ -1,3 +1,5 @@
+@use 'ej2-base/styles/definition/material3' as *;
+@forward 'ej2-base/styles/definition/material3';
 $sta-background-color: rgba($content-bg-color) !default;
 $sta-color: rgba($primary) !default;
 $sta-box-shadow: $shadow-lg !default;

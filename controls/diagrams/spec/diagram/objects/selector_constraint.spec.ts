@@ -44,6 +44,8 @@ describe('Diagram Control', () => {
         afterAll((): void => {
             diagram.destroy();
             ele.remove();
+            diagram = null;
+            ele = null;
         });
 
         it('visibility of the selector element ', (done: Function) => {
@@ -87,7 +89,7 @@ describe('Diagram Control', () => {
             //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
             expect(memory).toBeLessThan(profile.samples[0] + 0.25);
         });
-        it('Checking size of the resize handler', () => {
+        it('Checking size of the resize handler', (done: Function) => {
             let elements = getAdornerLayer('diagram');
             let element = elements.childNodes[0].childNodes;
             for (let j = 0; j < element.length; j++) 
@@ -97,8 +99,10 @@ describe('Diagram Control', () => {
                 if(element[j].nodeName === 'rect'){
                 expect(width == '50').toBe(true);
                 expect(height == '50').toBe(true);
+                done();
                 }
             }
+            done();
         });
     });  
 });    

@@ -1,3 +1,5 @@
+@use 'ej2-base/styles/common/mixin' as *;
+@use './theme-variables' as *;
 @mixin resizer-styles($display, $position, $top, $width, $index) {
   display: $display;
   position: $position;
@@ -267,6 +269,10 @@
         border-top-width: 0;
         padding-right: 0 !important; /* stylelint-disable-line declaration-no-important */
         padding-left: 0 !important; /* stylelint-disable-line declaration-no-important */
+
+        .e-headercontent .e-table {
+          border-spacing: $gantt-header-border-spacing !important; /* stylelint-disable-line declaration-no-important */
+        }
       }
 
       .e-columnheader,
@@ -286,6 +292,10 @@
 
       .e-gridcontent .e-content.e-gantt-scroll-padding {
         width: calc(100% + 17px);
+      }
+
+      .e-gridcontent .e-content.e-yscroll .e-table {
+        border-spacing: $gantt-header-border-spacing !important; /* stylelint-disable-line declaration-no-important */
       }
 
       .e-ganttnotes-info {
@@ -366,6 +376,13 @@
         overflow: hidden;
         position: relative;
         z-index: 6;
+      }
+
+      .e-timeline-header-table-container:last-child thead tr td {
+        border-bottom: $gantt-event-markers-border-right; /* stylelint-disable-line declaration-no-important */
+      }
+      .e-timeline-header-table-container:last-child thead tr th {
+        border-bottom: $gantt-event-markers-border-right; /* stylelint-disable-line declaration-no-important */
       }
 
       .e-timeline-header-table-container thead tr th {
@@ -773,12 +790,12 @@
       }
       @if ($theme-name == 'fluent2' or $theme-name == 'fluent2-highcontrast' or $theme-name == 'fluent2-dark') {
         .e-baseline-bar {
-          border-radius: 4px;
+          border-radius: $gantt-baseline-bar-border-radius;
         }
       }
       @else {
         .e-baseline-bar {
-          border-radius: 2px;
+          border-radius: $gantt-baseline-bar-border-radius;
         }
       }
 
@@ -890,7 +907,7 @@
         z-index: 4;
         height: 100%;
         .e-span-label {
-          border-radius: 3px;
+          border-radius: $gantt-label-border-radius;
           font-weight: 500;
           height: $event-marker-label-height;
           line-height: $event-marker-line-height;
@@ -964,7 +981,7 @@
       .e-connectorpoint-left,
       .e-right-connectorpoint-outer-div,
       .e-left-connectorpoint-outer-div {
-        border-radius: 50%;
+        border-radius: $gantt-manual-parent-taskbar-border-radius;
         display: inline-block;
         position: absolute;
       }
@@ -986,7 +1003,7 @@
       .e-gantt-manualparenttaskbar-right {
         background-color: $gantt-manualparent-background-color;
         border-color: $gantt-manualparent-background-color;
-        border-radius: 50%;
+        border-radius: $gantt-manual-parent-taskbar-border-radius;
         display: inline-block;
         height: 10px;
         margin: -1px;
@@ -1032,6 +1049,22 @@
     }
   }
   
+  .sf-gantt.e-gantt {
+    .e-cloneproperties.e-draganddrop .e-row .e-icon-rowdragicon::before {
+      position: relative;
+      left: 0 !important; /* stylelint-disable-line declaration-no-important */
+    }
+  
+    .e-grid .e-row .e-icon-rowdragicon::before {
+      text-indent: 0 !important; /* stylelint-disable-line declaration-no-important */
+    }
+  
+    .e-grid .e-icon-rowdragicon {
+      text-align: center !important; /* stylelint-disable-line declaration-no-important */
+      text-indent: 0 !important; /* stylelint-disable-line declaration-no-important */
+    }
+  }
+
   .e-gantt-dialog .e-tab .e-tab-header {
     padding-left: $gantt-dialog-tab-padding-left;
     @if $skin-name =='fluent2' or $skin-name == 'bootstrap5.3' {
@@ -1066,7 +1099,18 @@
   .e-gantt-dialog .e-edit-form-column .error-message .e-error {
     margin-bottom: 0;
   }
-
+  
+  .e-gantt-dialog .e-tooltip-wrap.e-griderror .e-arrow-tip.e-tip-top {
+    left: 0;
+    right: 0;
+    margin-inline: auto;
+    top: -8px;
+  }
+  .e-gantt-dialog .e-tooltip-wrap.e-griderror .e-arrow-tip.e-tip-bottom {
+    left: 0;
+    right: 0;
+    margin-inline: auto;
+  }
   .e-gantt-dialog {
     border: 0;
     
@@ -1098,9 +1142,16 @@
       }
     }
 
-    .e-edit-form-row {
+    .e-edit-form-row:not(:has(.e-richtexteditor)) {
       height: $gantt-dialog-general-height;
       overflow-y: auto;
+      position: relative;
+    }
+
+    .e-edit-form-row .e-richtexteditor {
+      @if ($theme-name == 'fluent2-highcontrast') {
+        margin-top: 0;
+      }
     }
 
     .e-edit-form-row .e-grid {

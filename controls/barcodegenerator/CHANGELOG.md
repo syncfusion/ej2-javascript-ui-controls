@@ -2,8 +2,6 @@
 
 ## [Unreleased]
 
-## 30.1.37 (2025-06-25)
-
 ### Barcode
 
 #### Bug Fixes

@@ -1,4 +1,4 @@
-import { Component, Event, Property, EmitType, NotifyPropertyChanges, INotifyPropertyChanged, BaseEventArgs } from '@syncfusion/ej2-base';import { isNullOrUndefined, formatUnit, getValue, setValue, addClass, detach } from '@syncfusion/ej2-base';import { removeClass , Browser, closest} from '@syncfusion/ej2-base';import { Input, InputObject, FloatLabelType } from '../../input/input';import { regularExpressions, createMask, applyMask, wireEvents, unwireEvents, unstrippedValue, strippedValue } from '../base/index';import { setMaskValue, MaskUndo, setElementValue, bindClearEvent } from '../base/index';
+import { Component, Event, Property, EmitType, NotifyPropertyChanges, INotifyPropertyChanged, BaseEventArgs, selectAll, compile, select, append } from '@syncfusion/ej2-base';import { isNullOrUndefined, formatUnit, getValue, setValue, addClass, detach } from '@syncfusion/ej2-base';import { removeClass , Browser, closest} from '@syncfusion/ej2-base';import { Input, InputObject, FloatLabelType } from '../../input/input';import { regularExpressions, createMask, applyMask, wireEvents, unwireEvents, unstrippedValue, strippedValue } from '../base/index';import { setMaskValue, MaskUndo, setElementValue, bindClearEvent } from '../base/index';
 import {MaskChangeEventArgs,MaskFocusEventArgs,MaskBlurEventArgs} from "./maskedtextbox";
 import {ComponentModel} from '@syncfusion/ej2-base';
 
@@ -128,6 +128,30 @@ export interface MaskedTextBoxModel extends ComponentModel{
      * @default null
      */
     customCharacters?: { [x: string]: Object };
+
+    /**
+     * Specifies the HTML template string for custom elements to prepend to the MaskedTextBox input.
+     * Supports icons, buttons, or any valid HTML. Updates dynamically on property change.
+     *
+     * @default null
+     * @angularType string | object
+     * @reactType string | function | JSX.Element
+     * @vueType string | function
+     * @aspType string
+     */
+    prependTemplate?: string | Function;
+
+    /**
+     * Specifies the HTML template string for custom elements to append to the MaskedTextBox input.
+     * Supports icons, buttons, or any valid HTML. Updates dynamically on property change.
+     *
+     * @default null
+     * @angularType string | object
+     * @reactType string | function | JSX.Element
+     * @vueType string | function
+     * @aspType string
+     */
+    appendTemplate?: string | Function;
 
     /**
      * Triggers when the MaskedTextBox component is created.

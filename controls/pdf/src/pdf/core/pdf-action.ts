@@ -1,6 +1,6 @@
 import { PdfWidgetAnnotation } from './annotations/annotation';
 import { PdfDestinationMode } from './enumerator';
-import { PdfField } from './form';
+import { PdfField } from './form/field';
 import { _PdfDestinationHelper, PdfDestination, PdfPage } from './pdf-page';
 import { _PdfDictionary, _PdfName, _PdfReference } from './pdf-primitives';
 /**
@@ -183,7 +183,7 @@ export class PdfGoToAction extends PdfAction {
             this._page = arg.page;
         } else {
             this._page = arg;
-            this._destination = new PdfDestination(arg, [0, 0]);
+            this._destination = new PdfDestination(arg, {x: 0, y: 0});
         }
         this._dictionary = new _PdfDictionary();
         this._dictionary.update('Type', new _PdfName('Action'));
@@ -225,7 +225,7 @@ export class PdfGoToAction extends PdfAction {
      * // Create a new GoTo action with the specified page
      * let gotoAction: PdfGoToAction = new PdfGoToAction(secondPage);
      * // Set the destination location within the specified page for the PdfGoToAction
-     * gotoAction.Destination = new PdfDestination(secondPage, [0, 100]);
+     * gotoAction.Destination = new PdfDestination(secondPage, {x: 0, y: 100});
      * // Set the goto action to the button
      * field.actions.mouseEnter = gotoAction;
      * // Save the document
@@ -332,7 +332,7 @@ export class PdfFieldActions {
      * // Create a new GoTo action with the specified page
      * let gotoAction: PdfGoToAction = new PdfGoToAction(secondPage);
      * // Set the destination location within the specified page for the PdfGoToAction
-     * gotoAction.Destination = new PdfDestination(secondPage, [0, 100]);
+     * gotoAction.Destination = new PdfDestination(secondPage, {x: 0, y: 100});
      * // Set the GoTo action to the mouse enter property of the button field
      * field.actions.mouseEnter = gotoAction;
      * // Save the document
@@ -385,7 +385,7 @@ export class PdfFieldActions {
      * // Create a new GoTo action with the specified page
      * let gotoAction: PdfGoToAction = new PdfGoToAction(secondPage);
      * // Set the destination location within the specified page for the PdfGoToAction
-     * gotoAction.Destination = new PdfDestination(secondPage, [0, 100]);
+     * gotoAction.Destination = new PdfDestination(secondPage, {x: 0, y: 100});
      * // Set the GoTo action to the mouse leave property of the button field
      * field.actions.mouseLeave = gotoAction;
      * // Save the document
@@ -438,7 +438,7 @@ export class PdfFieldActions {
      * // Create a new GoTo action with the specified page
      * let gotoAction: PdfGoToAction = new PdfGoToAction(secondPage);
      * // Set the destination location within the specified page for the PdfGoToAction
-     * gotoAction.Destination = new PdfDestination(secondPage, [0, 100]);
+     * gotoAction.Destination = new PdfDestination(secondPage, {x: 0, y: 100});
      * // Set the GoTo action to the mouse up property of the button field
      * field.actions.mouseUp = gotoAction;
      * // Save the document
@@ -453,7 +453,7 @@ export class PdfFieldActions {
         }
     }
     /**
-     * Get the action to be performed when the mouse button is pressed inside the field’s area.
+     * Get the action to be performed when the mouse button is pressed inside the field's area.
      *
      * @returns {PdfAction} The action to be executed when the mouse button is pressed inside the field area.
      *
@@ -477,7 +477,7 @@ export class PdfFieldActions {
         return this._mouseDown;
     }
     /**
-     * Set the action to be performed when the mouse button is pressed inside the field’s area.
+     * Set the action to be performed when the mouse button is pressed inside the field's area.
      *
      * @param {PdfAction} value The action to be executed when the mouse button is pressed inside the field area.
      *
@@ -491,7 +491,7 @@ export class PdfFieldActions {
      * // Create a new GoTo action with the specified page
      * let gotoAction: PdfGoToAction = new PdfGoToAction(secondPage);
      * // Set the destination location within the specified page for the PdfGoToAction
-     * gotoAction.Destination = new PdfDestination(secondPage, [0, 100]);
+     * gotoAction.Destination = new PdfDestination(secondPage, {x: 0, y: 100});
      * // Set the GoTo action to the mouse down property of the button field
      * field.actions.mouseDown = gotoAction;
      * // Save the document
@@ -544,7 +544,7 @@ export class PdfFieldActions {
      * // Create a new GoTo action with the specified page
      * let gotoAction: PdfGoToAction = new PdfGoToAction(secondPage);
      * // Set the destination location within the specified page for the PdfGoToAction
-     * gotoAction.Destination = new PdfDestination(secondPage, [0, 100]);
+     * gotoAction.Destination = new PdfDestination(secondPage, {x: 0, y: 100});
      * // Set the GoTo action to the got focus property of the button field
      * field.actions.gotFocus = gotoAction;
      * // Save the document
@@ -597,7 +597,7 @@ export class PdfFieldActions {
      * // Create a new GoTo action with the specified page
      * let gotoAction: PdfGoToAction = new PdfGoToAction(secondPage);
      * // Set the destination location within the specified page for the PdfGoToAction
-     * gotoAction.Destination = new PdfDestination(secondPage, [0, 100]);
+     * gotoAction.Destination = new PdfDestination(secondPage, {x: 0, y: 100});
      * // Set the GoTo action to the lost focus property of the button field
      * field.actions.lostFocus = gotoAction;
      * // Save the document
@@ -620,11 +620,11 @@ export class PdfFieldActions {
                 const page: PdfPage = action._page;
                 const destination: PdfDestination = action.destination;
                 if (destination._destinationMode === PdfDestinationMode.location) {
-                    action._dictionary.update('D', [page._ref, new _PdfName('XYZ'), destination.location[0], page.size[1], destination.zoom]);
+                    action._dictionary.update('D', [page._ref, new _PdfName('XYZ'), destination.location.x, page.size.height, destination.zoom]);
                 } else if (destination._destinationMode === PdfDestinationMode.fitR) {
                     action._dictionary.update('D', [page._ref, new _PdfName('FitR'), 0, 0, 0, 0]);
                 } else if (destination._destinationMode === PdfDestinationMode.fitH) {
-                    action._dictionary.update('D', [page._ref, new _PdfName('FitH'), page.size[1]]);
+                    action._dictionary.update('D', [page._ref, new _PdfName('FitH'), page.size.height]);
                 } else if (destination._destinationMode === PdfDestinationMode.fitToPage) {
                     action._dictionary.update('D', [page._ref, new _PdfName('Fit')]);
                 }

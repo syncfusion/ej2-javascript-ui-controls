@@ -1,3 +1,8 @@
+@use 'ej2-base/styles/definition/fabric' as *;
+@forward 'ej2-base/styles/definition/fabric';
+
 //default
 //undefined
 //enddefault
+$popup-width: auto !default;
+$popup-height: auto !default;

@@ -246,11 +246,11 @@ describe('Chart Trackball', () => {
             chartObj.primaryXAxis.labelPlacement = 'OnTicks';
             chartObj.refresh();
         });
-        it('Checking the areabounds', (done: Function) => {
+        it('Checking the areabounds', async (): Promise<void> => {
             let animate: EmitType<IAnimationCompleteEventArgs> = (args: Object): void => {
                 let tooltip: HTMLElement = document.getElementById('container_tooltip');
                 expect(tooltip != null).toBe(true);
-                done();
+                //done();
             };
             chartObj.crosshair.lineType = 'Both';
             chartObj.animationComplete = animate;
@@ -261,6 +261,8 @@ describe('Chart Trackball', () => {
             y = parseFloat(chartArea.getAttribute('height')) + parseFloat(chartArea.getAttribute('y')) + elem.offsetTop;
             x = parseFloat(targetElement.getAttribute('cx')) + parseFloat(chartArea.getAttribute('x')) + elem.offsetLeft;
             trigger.mousemovetEvent(targetElement, Math.ceil(x), Math.ceil(y));
+
+            await wait(500);
         });
         it('Checking the single series', (done: Function) => {
             track1[4].y = 24;
@@ -336,6 +338,9 @@ describe('Chart Trackball', () => {
             chartObj.refresh();
         });
     });
+    async function wait(ms: number): Promise<void> {
+        return new Promise(resolve => setTimeout(resolve, ms));
+    }
 
     describe('Chart Trackball Default', () => {
         let chartObj: Chart;

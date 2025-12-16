@@ -46,8 +46,8 @@ Interactive chat controls are also offered in following list of frameworks.
 
 ## Resources
 
-* [AI AssistView Documentation](https://ej2.syncfusion.com/documentation/ai-assistview/getting-started)
-* [Chat UI Documentation](https://ej2.syncfusion.com/documentation/chat-ui/getting-started)
+* [AI AssistView  Documentation](https://ej2.syncfusion.com/documentation/ai-assistview/getting-started)
+* [Chat UI  Documentation](https://ej2.syncfusion.com/documentation/chat-ui/getting-started)
 * [Theme Studio](https://ej2.syncfusion.com/themestudio/)
 * [Custom Resource Generator](https://crg.syncfusion.com/)
 * [What's New](https://www.syncfusion.com/products/whatsnew/essential-js2?utm_medium=listing&utm_source=github)

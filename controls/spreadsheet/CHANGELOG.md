@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+### Spreadsheet
+
+#### Features
+
+- `#I766184` - Introduced rich, threaded cell comments, featuring reply, edit, delete, and resolve actions. Includes visual indicators, a dedicated review pane for streamlined collaboration, and a comprehensive API for creating, updating, and managing comment threads. Explore the demo [here](https://document.syncfusion.com/demos/spreadsheet-editor/javascript/#/tailwind3/spreadsheet/comment.html).
+- `#I766095`, `#I766088` - Added lightweight, non-threaded cell notes, designed for quick annotations with ribbon controls for easy navigation and visibility toggling. Provides full API support for integration and automation. Explore the demo [here](https://document.syncfusion.com/demos/spreadsheet-editor/javascript/#/tailwind3/spreadsheet/notes.html).
+- `#I764457` - Enhanced chunk processing, triggering the `beforeOpen` event for each chunk request to enable per-chunk header customization.
+
 ## 31.2.4 (2025-10-28)
 
 ### Spreadsheet

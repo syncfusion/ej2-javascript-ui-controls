@@ -17,7 +17,7 @@ import { _PngDecoder } from './png-decoder';
  * // Create new image object by using JPEG image data as Base64 string format
  * let image: PdfImage = new PdfBitmap('/9j/4AAQSkZJRgABAQEAkACQAAD/4....QB//Z');
  * //Draw the image.
- * graphics.drawImage(image, 10, 20, 400, 400);
+ * graphics.drawImage(image, {x: 10, y: 20, width: 400, height: 400});
  * // Save the document
  * document.save('output.pdf');
  * // Destroy the document
@@ -42,7 +42,7 @@ export class PdfBitmap extends PdfImage {
      * // Create new image object by using JPEG image data as Base64 string format
      * let image: PdfImage = new PdfBitmap('/9j/4AAQSkZJRgABAQEAkACQAAD/4....QB//Z');
      * //Draw the image.
-     * graphics.drawImage(image, 10, 20, 400, 400);
+     * graphics.drawImage(image, {x: 10, y: 20, width: 400, height: 400});
      * // Save the document
      * document.save('output.pdf');
      * // Destroy the document
@@ -64,7 +64,7 @@ export class PdfBitmap extends PdfImage {
      * // Create new image object by using JPEG image data as array of bytes
      * let image: PdfImage = new PdfBitmap(array);
      * //Draw the image.
-     * graphics.drawImage(image, 10, 20, 400, 400);
+     * graphics.drawImage(image, {x: 10, y: 20, width: 400, height: 400});
      * // Save the document
      * document.save('output.pdf');
      * // Destroy the document

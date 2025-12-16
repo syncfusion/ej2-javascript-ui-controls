@@ -1,9 +1,9 @@
-@import 'ej2-base/styles/definition/fluent2.scss';
-@import 'pivotfieldlist/fluent2-definition.scss';
-@import 'pivotview/fluent2-definition.scss';
-@import 'pivotview/icons/fluent2.scss';
-@import 'pivotview/all.scss';
-@import 'pivotview/bigger.scss';
-@import 'pivotfieldlist/icons/fluent2.scss';
-@import 'pivotfieldlist/all.scss';
-@import 'pivotfieldlist/bigger.scss';
+@use 'ej2-base/styles/definition/fluent2' as *;
+@use 'pivotfieldlist/fluent2-definition' as *;
+@use 'pivotview/fluent2-definition' as *;
+@use 'pivotview/icons/fluent2' as *;
+@use 'pivotview/all' as *;
+@use 'pivotview/bigger' as *;
+@use 'pivotfieldlist/icons/fluent2' as *;
+@use 'pivotfieldlist/all' as *;
+@use 'pivotfieldlist/bigger' as *;

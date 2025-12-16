@@ -1619,7 +1619,7 @@ describe('filter menu module =>', () => {
                 }
             };
             gridObj.actionComplete = actionComplete;
-            (gridObj.element.querySelectorAll('.e-filtermenudiv')[0] as HTMLElement).click();
+            (gridObj.element.querySelectorAll('.e-filtermenudiv')[1] as HTMLElement).click();
         });
 
         afterAll(() => {

@@ -1,3 +1,5 @@
+@use 'ej2-base/styles/definition/fluent' as *;
+@forward 'ej2-base/styles/definition/fluent';
 $theme: 'Fluent' !default;
 
 //Layout Variables Start
@@ -26,6 +28,12 @@ $spin-fabric-arc-color: $primary !default;
 $spin-bootstrap-stroke-color: $primary !default;
 $spin-tailwind-arc-color: $primary;
 $spin-tailwind-stroke-color: $primary-light;
+$spin-tail-margin: 0 auto !default;
+$spin-bootstrap-border-radius: 50% !default;
+$spinner-zero-space: 0 !default;
+$spinner-full-width: 100% !default;
+$spinner-half-width: 50% !default;
+$spinner-full-height: 100% !default;
 
 @mixin mat-spinner-rotate {
   animation: material-spinner-rotate 1568.63ms linear infinite;

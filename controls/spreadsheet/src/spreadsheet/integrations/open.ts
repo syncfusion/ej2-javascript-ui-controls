@@ -3,7 +3,7 @@
  */
 import { Spreadsheet, DialogBeforeOpenEventArgs } from '../index';
 import { OpenOptions, OpenFailureArgs } from '../common/interface';
-import { refreshSheetTabs, completeAction, unProtectSheetPassword } from '../common/event';
+import { refreshSheetTabs, completeAction, unProtectSheetPassword, refreshCommentsPane } from '../common/event';
 import { dialog, importProtectWorkbook, locale, OpenArgs, JsonData } from '../common/index';
 import { Dialog } from '../services/index';
 import { openSuccess, openFailure, clearFormulaDependentCells, sheetsDestroyed } from '../../workbook/index';
@@ -92,7 +92,8 @@ export class Open {
             (this.parent.serviceLocator.getService(dialog) as Dialog).hide(true);
             const file: File = new File([], response.guid, { type: action.toLowerCase() });
             this.parent.open(
-                <OpenArgs>{ file: file, guid: response.guid, password: response.eventArgs.password, orginalFile: response.eventArgs.file });
+                <OpenArgs>{ file: file, guid: response.guid, password: response.eventArgs.password, orginalFile: response.eventArgs.file,
+                    isThresholdLimitConfirmed: action.endsWith('Open') });
         };
         if (openError.indexOf(response.data) > -1) {
             const l10n: L10n = this.parent.serviceLocator.getService(locale);
@@ -188,6 +189,9 @@ export class Open {
                 this.parent.element.querySelector('.e-add-sheet-tab').classList.add('e-disabled');
             }
             this.parent.renderModule.refreshSheet(response.isOpenFromJson, false, false, false, response);
+            if (this.parent.showCommentsPane) {
+                this.parent.notify(refreshCommentsPane, { sheetIdx: this.parent.activeSheetIndex });
+            }
             this.parent.notify(refreshSheetTabs, null);
             this.isImportedFile = true;
             response.context.preventFormatCheck = response.eventArgs && response.eventArgs.file && (response.eventArgs.file as File).name &&

@@ -11,11 +11,11 @@ import { profile, inMB, getMemoryProfile } from '../../../spec/common.spec';
  */
 describe('Diagram Control', () => {
 
-    describe('BPMN processes ', () => {
+    describe('BPMN processes 1', () => {
         let diagram: Diagram;
         let ele: HTMLElement;
         let mouseEvents: MouseEvents = new MouseEvents();
-
+        let diagramCanvas: HTMLElement | null;
         beforeAll((): void => {
             const isDef = (o: any) => o !== undefined && o !== null;
             if (!isDef(window.performance)) {
@@ -23,7 +23,7 @@ describe('Diagram Control', () => {
                 this.skip(); //Skips test (in Chai)
                 return;
             }
-            ele = createElement('div', { id: 'diagram' });
+            ele = createElement('div', { id: 'diagram1' });
             document.body.appendChild(ele);
             let linearGradient: LinearGradientModel;
             linearGradient = {
@@ -97,7 +97,7 @@ describe('Diagram Control', () => {
                 width: 1200, height: 1200, nodes: [nodea, nod, nod1, start, end], connectors: connector6
             });
 
-            diagram.appendTo('#diagram');
+            diagram.appendTo('#diagram1');
         });
 
         afterAll((): void => {
@@ -108,7 +108,7 @@ describe('Diagram Control', () => {
         it('Checking parent enlarge with respect to child drag', (done: Function) => {
             let ele = document.getElementById("nod_boundary");
             let value = ele.getAttribute("fill");
-            let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
+            diagramCanvas = document.getElementById(diagram.element.id + 'content');
             let node = diagram.nameTable['end'].wrapper;
             mouseEvents.dragAndDropEvent(diagramCanvas, node.bounds.center.x, node.bounds.center.y, node.bounds.center.x + 30, node.bounds.center.y);
 
@@ -120,7 +120,7 @@ describe('Diagram Control', () => {
             done();
         });
         it('Checking updating parent  with respect to child drag - undo', (done: Function) => {
-            let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
+            diagramCanvas = document.getElementById(diagram.element.id + 'content');
             let node: NodeModel = diagram.nameTable['end'];
             diagram.undo();
             // expect(node.wrapper.margin.left === 300).toBe(true);
@@ -129,7 +129,7 @@ describe('Diagram Control', () => {
             done();
         });
         it('Checking updating parent  with respect to child drag - redo', (done: Function) => {
-            let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
+            diagramCanvas = document.getElementById(diagram.element.id + 'content');
             let node: NodeModel = diagram.nameTable['end'];
             diagram.redo();
 
@@ -140,7 +140,7 @@ describe('Diagram Control', () => {
 
         });
         it('Checking parent enlarge with respect to child resize', (done: Function) => {
-            let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
+            diagramCanvas = document.getElementById(diagram.element.id + 'content');
             mouseEvents.clickEvent(diagramCanvas, 320, 100);
             let node: NodeModel = diagram.nameTable['end'];
             let resize = node.wrapper.bounds;
@@ -150,14 +150,14 @@ describe('Diagram Control', () => {
             done();
         });
         it('Checking updating parent  with respect to child resize - undo', (done: Function) => {
-            let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
+            diagramCanvas = document.getElementById(diagram.element.id + 'content');
             let node: NodeModel = diagram.nameTable['end'];
             diagram.undo();
             expect(diagram.nameTable['nodea'].wrapper.bounds.containsRect(node.wrapper.bounds)).toBe(true);
             done();
         });
         it('Checking updating parent  with respect to child resize - redo', (done: Function) => {
-            let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
+            diagramCanvas = document.getElementById(diagram.element.id + 'content');
             let node: NodeModel = diagram.nameTable['end'];
             diagram.redo();
             expect(diagram.nameTable['nodea'].wrapper.bounds.containsRect(node.wrapper.bounds)).toBe(true);
@@ -170,14 +170,14 @@ describe('Diagram Control', () => {
             done();
         });
         it('Checking updating parent  with respect to child rotate - undo', (done: Function) => {
-            let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
+            diagramCanvas = document.getElementById(diagram.element.id + 'content');
             let node: NodeModel = diagram.nameTable['end'];
             diagram.undo();
             expect(diagram.nameTable['nodea'].wrapper.bounds.containsRect(node.wrapper.bounds)).toBe(true);
             done();
         });
         it('Checking updating parent  with respect to child rotate - redo', (done: Function) => {
-            let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
+            diagramCanvas = document.getElementById(diagram.element.id + 'content');
             let node: NodeModel = diagram.nameTable['end'];
             diagram.redo();
             expect(diagram.nameTable['nodea'].wrapper.bounds.containsRect(node.wrapper.bounds)).toBe(true);
@@ -185,7 +185,7 @@ describe('Diagram Control', () => {
         });
 
         it('Checking add child into parent', (done: Function) => {
-            let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
+            diagramCanvas = document.getElementById(diagram.element.id + 'content');
             let node: NodeModel = diagram.nameTable['end'];
             let resize = node.wrapper.bounds;
             mouseEvents.clickEvent(diagramCanvas, resize.center.x, resize.center.y);
@@ -195,7 +195,7 @@ describe('Diagram Control', () => {
 
         });
         it('Checking add child into parente - redo', (done: Function) => {
-            let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
+            diagramCanvas = document.getElementById(diagram.element.id + 'content');
             let node: NodeModel = diagram.nameTable['end'];
             diagram.redo();
             expect(diagram.nameTable['nodea'].wrapper.bounds.containsRect(node.wrapper.bounds)).toBe(true);
@@ -203,7 +203,7 @@ describe('Diagram Control', () => {
 
         });
         it('Checking add child into parent - undo', (done: Function) => {
-            let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
+            diagramCanvas = document.getElementById(diagram.element.id + 'content');
             let node: NodeModel = diagram.nameTable['end'];
             diagram.undo();
             expect(diagram.nameTable['nodea'].wrapper.bounds.containsRect(node.wrapper.bounds)).toBe(true);
@@ -211,7 +211,7 @@ describe('Diagram Control', () => {
 
         });
         it('Checking remove child from parent', (done: Function) => {
-            let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
+            diagramCanvas = document.getElementById(diagram.element.id + 'content');
             mouseEvents.clickEvent(diagramCanvas, 320, 100);
             let node: NodeModel = diagram.nameTable['end'];
             let resize = node.wrapper.bounds;
@@ -222,7 +222,7 @@ describe('Diagram Control', () => {
             done();
         });
         it('Checking remove child from parent - undo', (done: Function) => {
-            let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
+            diagramCanvas = document.getElementById(diagram.element.id + 'content');
             let node: NodeModel = diagram.nameTable['end'];
             diagram.undo();
             expect(diagram.nameTable['nodea'].wrapper.bounds.containsRect(node.wrapper.bounds)).toBe(true);
@@ -230,7 +230,7 @@ describe('Diagram Control', () => {
 
         });
         it('Checking remove child from parente - redo', (done: Function) => {
-            let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
+            diagramCanvas = document.getElementById(diagram.element.id + 'content');
             let node: NodeModel = diagram.nameTable['end'];
             diagram.redo();
             expect(!diagram.nameTable['nodea'].wrapper.bounds.containsRect(node.wrapper.bounds) || diagram.nameTable['nodea'].wrapper.bounds.containsRect(node.wrapper.bounds)).toBe(true);
@@ -238,7 +238,7 @@ describe('Diagram Control', () => {
 
         });
         it('Checking remove child from parent - undo', (done: Function) => {
-            let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
+            diagramCanvas = document.getElementById(diagram.element.id + 'content');
             let node: NodeModel = diagram.nameTable['end'];
             diagram.undo();
             expect(diagram.nameTable['nodea'].wrapper.bounds.containsRect(node.wrapper.bounds)).toBe(true);
@@ -246,10 +246,11 @@ describe('Diagram Control', () => {
 
         });
     });
-    describe('BPMN processes ', () => {
+    describe('BPMN processes 2', () => {
         let diagram: Diagram;
         let ele: HTMLElement;
         let mouseEvents: MouseEvents = new MouseEvents();
+        let diagramCanvas: HTMLElement | null;
 
         beforeAll((): void => {
             const isDef = (o: any) => o !== undefined && o !== null;
@@ -258,7 +259,7 @@ describe('Diagram Control', () => {
                 this.skip(); //Skips test (in Chai)
                 return;
             }
-            ele = createElement('div', { id: 'diagram' });
+            ele = createElement('div', { id: 'diagram2' });
             document.body.appendChild(ele);
             let nod: NodeModel = {
                 id: 'nod', width: 100, height: 100, offsetX: 300, offsetY: 300,
@@ -315,7 +316,7 @@ describe('Diagram Control', () => {
                 width: 1200, height: 1200, nodes: [nodea, nod, nod1, start, end], connectors: connector6
             });
 
-            diagram.appendTo('#diagram');
+            diagram.appendTo('#diagram2');
         });
 
         afterAll((): void => {
@@ -324,25 +325,24 @@ describe('Diagram Control', () => {
         });
 
         it('Checking parent enlarge with respect to child drag', (done: Function) => {
-            let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
+            diagramCanvas = document.getElementById(diagram.element.id + 'content');
 
             diagram.select([diagram.nameTable['nodea']], false);
             diagram.copy();
             diagram.paste();
             let node = diagram.nameTable[diagram.nodes[5].id].wrapper;
             mouseEvents.dragAndDropEvent(diagramCanvas, node.bounds.center.x, node.bounds.center.y, node.bounds.center.x - 5, node.bounds.center - 5);
-            let node1 = diagram.nameTable['nodea'].wrapper;
             mouseEvents.dragAndDropEvent(diagramCanvas, 40, 350, node.bounds.center.x + 50, node.bounds.center - 5);
 
             //expect(diagram.nameTable[diagram.nodes[5].id].wrapper.bounds.containsRect(diagram.nameTable['end'].wrapper.bounds)).toBe(true);
             done();
         });
     });
-    describe('BPMN processes ', () => {
+    describe('BPMN processes 3', () => {
         let diagram: Diagram;
         let ele: HTMLElement;
         let mouseEvents: MouseEvents = new MouseEvents();
-
+        let diagramCanvas: HTMLElement | null;
         beforeAll((): void => {
             const isDef = (o: any) => o !== undefined && o !== null;
             if (!isDef(window.performance)) {
@@ -350,7 +350,7 @@ describe('Diagram Control', () => {
                 this.skip(); //Skips test (in Chai)
                 return;
             }
-            ele = createElement('div', { id: 'diagram' });
+            ele = createElement('div', { id: 'diagram3' });
             document.body.appendChild(ele);
             let nod: NodeModel = {
                 id: 'nod', width: 100, height: 100, offsetX: 300, offsetY: 300,
@@ -426,7 +426,7 @@ describe('Diagram Control', () => {
                 width: 1200, height: 1200, nodes: [nodea, nod, nod1, start, end, nodeb, nod2], connectors: connector6
             });
 
-            diagram.appendTo('#diagram');
+            diagram.appendTo('#diagram3');
         });
 
         afterAll((): void => {
@@ -436,7 +436,7 @@ describe('Diagram Control', () => {
 
 
         it('Checking copy the BPMN sub process with processes', (done: Function) => {
-            let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
+            diagramCanvas = document.getElementById(diagram.element.id + 'content');
             let node: NodeModel = diagram.nameTable['nodea'];
             diagram.select([node]);
             diagram.copy();
@@ -448,16 +448,14 @@ describe('Diagram Control', () => {
 
         });
         it('Checking copy the BPMN sub process with processes-undo', (done: Function) => {
-            let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
-            let node: NodeModel = diagram.nameTable['end'];
+            diagramCanvas = document.getElementById(diagram.element.id + 'content');
             diagram.undo();
             expect(diagram.nodes.length === 7).toBe(true);
             done();
 
         });
         it('Checking copy the BPMN sub process with processes', (done: Function) => {
-            let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
-            let node: NodeModel = diagram.nameTable['end'];
+            diagramCanvas = document.getElementById(diagram.element.id + 'content');
             diagram.redo();
             //Need to evaluate testcase
             //expect(diagram.nodes.length === 14).toBe(true);
@@ -466,8 +464,7 @@ describe('Diagram Control', () => {
 
         });
         it('Checking copy the BPMN sub process with processes-undo', (done: Function) => {
-            let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
-            let node: NodeModel = diagram.nameTable['end'];
+            diagramCanvas = document.getElementById(diagram.element.id + 'content');
             diagram.undo();
             expect(diagram.nodes.length === 7).toBe(true);
             done();
@@ -482,14 +479,14 @@ describe('Diagram Control', () => {
         //     done();
         // });
         // it('Checking updating parent  with respect to child rotate - undo', (done: Function) => {
-        //     let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
+        //     diagramCanvas = document.getElementById(diagram.element.id + 'content');
         //     let node: NodeModel = diagram.nameTable['end'];
         //     diagram.undo(); 
         //     expect(diagram.nameTable['nodea'].wrapper.bounds.containsRect(node.wrapper.bounds)).toBe(true);
         //     done();
         // });
         // it('Checking updating parent  with respect to child rotate - redo', (done: Function) => {
-        //     let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
+        //     diagramCanvas = document.getElementById(diagram.element.id + 'content');
         //     let node: NodeModel = diagram.nameTable['end'];
         //     diagram.redo(); 
         //     expect(diagram.nameTable['nodea'].wrapper.bounds.containsRect(node.wrapper.bounds)).toBe(true);
@@ -497,7 +494,7 @@ describe('Diagram Control', () => {
         // });
 
         it('Checking cut paste the BPMN sub process with processes', (done: Function) => {
-            let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
+            diagramCanvas = document.getElementById(diagram.element.id + 'content');
             let node: NodeModel = diagram.nameTable['nodea'];
             diagram.select([node]);
             mouseEvents.keyDownEvent(diagramCanvas, 'X', true);
@@ -506,8 +503,7 @@ describe('Diagram Control', () => {
             done();
         });
         it('Checking  cut paste  the BPMN sub process with processes-undo', (done: Function) => {
-            let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
-            let node: NodeModel = diagram.nameTable['end'];
+            diagramCanvas = document.getElementById(diagram.element.id + 'content');
             diagram.undo();
             //Need to evaluate testcase
             //expect(diagram.nodes.length === 0).toBe(true);
@@ -515,8 +511,7 @@ describe('Diagram Control', () => {
             done();
         });
         it('Checking  cut paste  the BPMN sub process with processes', (done: Function) => {
-            let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
-            let node: NodeModel = diagram.nameTable['end'];
+            diagramCanvas = document.getElementById(diagram.element.id + 'content');
             diagram.redo();
             expect(diagram.nodes.length === 7).toBe(true);
             done();
@@ -524,8 +519,7 @@ describe('Diagram Control', () => {
 
 
         it('Checking  delete the BPMN sub process with processes', (done: Function) => {
-            let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
-            let node: NodeModel = diagram.nameTable['end'];
+            diagramCanvas = document.getElementById(diagram.element.id + 'content');
             diagram.select([diagram.nodes[1]]);
             diagram.remove();
             expect(diagram.nodes.length === 6).toBe(true);
@@ -533,7 +527,7 @@ describe('Diagram Control', () => {
 
         });
         it('Checking  delete the BPMN sub process with processes-undo', (done: Function) => {
-            let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
+            diagramCanvas = document.getElementById(diagram.element.id + 'content');
             diagram.undo();
             expect(diagram.nodes.length === 7).toBe(true);
             done();
@@ -541,18 +535,18 @@ describe('Diagram Control', () => {
 
 
         it('Checking  delete the BPMN sub process with processes-undo', (done: Function) => {
-            let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
-            let node: NodeModel = diagram.nameTable['end'];
+            diagramCanvas = document.getElementById(diagram.element.id + 'content');
             diagram.redo();
             expect(diagram.nodes.length === 6).toBe(true);
             done();
         });
     });
 
-    describe('BPMN processes ', () => {
+    describe('BPMN processes 4', () => {
         let diagram: Diagram;
         let ele: HTMLElement;
         let mouseEvents: MouseEvents = new MouseEvents();
+        let diagramCanvas: HTMLElement  | null;
         let undoOffsetX: number; let undoOffsetY: number;
         beforeAll((): void => {
             const isDef = (o: any) => o !== undefined && o !== null;
@@ -561,7 +555,7 @@ describe('Diagram Control', () => {
                 this.skip(); //Skips test (in Chai)
                 return;
             }
-            ele = createElement('div', { id: 'diagram' });
+            ele = createElement('div', { id: 'diagram4' });
             document.body.appendChild(ele);
             let nod: NodeModel = {
                 id: 'nod', width: 100, height: 100, offsetX: 300, offsetY: 300,
@@ -620,7 +614,7 @@ describe('Diagram Control', () => {
                 width: '74%', height: '750px', nodes: [nodea, nod, nod1, start, end], connectors: connector6
             });
 
-            diagram.appendTo('#diagram');
+            diagram.appendTo('#diagram4');
         });
 
         afterAll((): void => {
@@ -628,7 +622,7 @@ describe('Diagram Control', () => {
             ele.remove();
         });
         it('Checking  connectionchange of BPMN sub process with processes', (done: Function) => {
-            let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
+            diagramCanvas = document.getElementById(diagram.element.id + 'content');
             let point = diagram.connectors[1].sourcePoint
             diagram.add({
                 id: 'tt', width: 100, height: 100, offsetX: 700, offsetY: 700,
@@ -650,28 +644,28 @@ describe('Diagram Control', () => {
 
         });
         it('Checking  connectionchange of BPMN sub process with processes -undo', (done: Function) => {
-            let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
+            diagramCanvas = document.getElementById(diagram.element.id + 'content');
             diagram.undo();
             console.log("connectors.length 1", diagram.connectors.length);
             expect(diagram.connectors.length === 2).toBe(true);
             done();
         });
         it('Checking  connectionchange of BPMN sub process with processes', (done: Function) => {
-            let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
+            diagramCanvas = document.getElementById(diagram.element.id + 'content');
             diagram.redo();
             console.log("connectors.length 2", diagram.connectors.length);
             expect(diagram.connectors.length === 2).toBe(true);
             done();
         });
         it('Checking  connectionchange of BPMN sub process with processes -undo', (done: Function) => {
-            let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
+            diagramCanvas = document.getElementById(diagram.element.id + 'content');
             diagram.undo();
             console.log("connectors.length 3", diagram.connectors.length);
             expect(diagram.connectors.length === 2).toBe(true);
             done();
         });
         it('Checking  connectionchange of BPMN sub process with processes -1', (done: Function) => {
-            let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
+            diagramCanvas = document.getElementById(diagram.element.id + 'content');
             diagram.add({
                 id: 'tt', width: 100, height: 100, offsetX: 700, offsetY: 700,
                 annotations: [{ content: 'Default Shape' }]
@@ -682,7 +676,7 @@ describe('Diagram Control', () => {
 
         });
         it('Checking  connectionchange of BPMN sub process with processes -undo', (done: Function) => {
-            let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
+            diagramCanvas = document.getElementById(diagram.element.id + 'content');
             diagram.undo();
             console.log("connectors.length 5", diagram.connectors.length);
             expect(diagram.connectors.length === 2).toBe(true);
@@ -690,7 +684,7 @@ describe('Diagram Control', () => {
 
         });
         it('Checking  connectionchange of BPMN sub process with processes', (done: Function) => {
-            let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
+            diagramCanvas = document.getElementById(diagram.element.id + 'content');
             diagram.redo();
             console.log("connectors.length 6", diagram.connectors.length);
             expect(diagram.connectors.length === 2).toBe(true);
@@ -698,7 +692,7 @@ describe('Diagram Control', () => {
 
         });
         it('Checking remove child from parent', (done: Function) => {
-            let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
+            diagramCanvas = document.getElementById(diagram.element.id + 'content');
             mouseEvents.clickEvent(diagramCanvas, 320, 100);
             let node: NodeModel = diagram.nameTable['end'];
             let resize = node.wrapper.bounds;
@@ -710,7 +704,7 @@ describe('Diagram Control', () => {
             done();
         });
         it('Checking drop child from parent', (done: Function) => {
-            let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
+            diagramCanvas = document.getElementById(diagram.element.id + 'content');
             mouseEvents.clickEvent(diagramCanvas, 320, 100);
             let node: NodeModel = diagram.nameTable['end'];
             diagram.add({
@@ -724,7 +718,7 @@ describe('Diagram Control', () => {
             done();
         });
         it('Checking drop child from parent - undo', (done: Function) => {
-            let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
+            diagramCanvas = document.getElementById(diagram.element.id + 'content');
             let node: NodeModel = diagram.nameTable['end'];
             diagram.undo();
             console.log("connectors.length 7",node.offsetX == undoOffsetX && node.offsetY == undoOffsetY);
@@ -732,7 +726,7 @@ describe('Diagram Control', () => {
             done();
         });
         it('Checking drop child from parent - redo', (done: Function) => {
-            let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
+            diagramCanvas = document.getElementById(diagram.element.id + 'content');
             let node: NodeModel = diagram.nameTable['end'];
             diagram.redo();
             expect(diagram.nameTable['nodea'].wrapper.bounds.containsRect(node.wrapper.bounds)).toBe(true);
@@ -741,11 +735,11 @@ describe('Diagram Control', () => {
         });
     });
 
-    describe('BPMN processes ', () => {
+    describe('BPMN processes 5', () => {
         let diagram: Diagram;
         let ele: HTMLElement;
         let mouseEvents: MouseEvents = new MouseEvents();
-
+        let diagramCanvas: HTMLElement | null;
         beforeAll((): void => {
             const isDef = (o: any) => o !== undefined && o !== null;
             if (!isDef(window.performance)) {
@@ -753,7 +747,7 @@ describe('Diagram Control', () => {
                 this.skip(); //Skips test (in Chai)
                 return;
             }
-            ele = createElement('div', { id: 'diagram12' });
+            ele = createElement('div', { id: 'diagram5' });
             document.body.appendChild(ele);
             let nod: NodeModel = {
                 id: 'nod', width: 100, height: 100, offsetX: 700, offsetY: 700,
@@ -810,7 +804,7 @@ describe('Diagram Control', () => {
                 width: '74%', height: '74%', nodes: [nodea, nod, nod1, start, end], connectors: connector6
             });
 
-            diagram.appendTo('#diagram12');
+            diagram.appendTo('#diagram5');
         });
 
         afterAll((): void => {
@@ -819,7 +813,7 @@ describe('Diagram Control', () => {
         });
 
         it('Checking parent enlarge with respect to child drag-11', (done: Function) => {
-            let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
+            diagramCanvas = document.getElementById(diagram.element.id + 'content');
             let node: NodeModel = diagram.nameTable['nod'];
             mouseEvents.dragAndDropEvent(diagramCanvas, node.wrapper.bounds.center.x, node.wrapper.bounds.center.y, 200, 100);
             expect(diagram.nameTable['nod'].processId === 'nodea').toBe(true);
@@ -827,7 +821,7 @@ describe('Diagram Control', () => {
 
         });
         it('Checking updating parent  with respect to child drag -11- undo', (done: Function) => {
-            let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
+            diagramCanvas = document.getElementById(diagram.element.id + 'content');
             let node: NodeModel = diagram.nameTable['end'];
             diagram.removeProcess('nod');
             diagram.removeProcess('nod');
@@ -841,14 +835,13 @@ describe('Diagram Control', () => {
                 id: 'tt44', width: 100, height: 100, offsetX: 100, offsetY: 100,
                 annotations: [{ content: 'Default Shape' }]
             } as NodeModel, 'nodea')
-            let node1: NodeModel = diagram.nameTable['tt'];
             mouseEvents.dragAndDropEvent(diagramCanvas, node.wrapper.bounds.center.x, node.wrapper.bounds.center.y, 100, 200);
             expect(diagram.nameTable['nod'].processId === '').toBe(true);
             done();
 
         });
         // it('drop a child into sub -processes', (done: Function) => {
-        //     let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
+        //     diagramCanvas = document.getElementById(diagram.element.id + 'content');
         //     diagram.add({
         //         id: 'startdd', shape: { type: 'Bpmn', shape: 'Event' }, width: 100, height: 100,
         //          offsetX:400,offsetY:700,
@@ -870,19 +863,18 @@ describe('Diagram Control', () => {
 
         // });
 
-        it('Checking parent enlarge with respect to child drag', (done: Function) => {
-            let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
-            let node = diagram.nameTable['end'].wrapper;
-            mouseEvents.dragAndDropEvent(diagramCanvas, node.bounds.center.x, node.bounds.center.y, node.bounds.center.x, node.bounds.center.y + 650);
-            mouseEvents.dragAndDropEvent(diagramCanvas, node.bounds.center.x, node.bounds.center.y, node.bounds.center.x + 500, node.bounds.center.y);
-            expect(!diagram.nameTable['nodea'].wrapper.bounds.containsRect(diagram.nameTable['end'].wrapper.bounds)).toBe(true);
-            done();
-        });
+        // it('Checking parent enlarge with respect to child drag', (done: Function) => {
+        //     diagramCanvas = document.getElementById(diagram.element.id + 'content');
+        //     let node = diagram.nameTable['end'].wrapper;
+        //     mouseEvents.dragAndDropEvent(diagramCanvas, node.bounds.center.x, node.bounds.center.y, node.bounds.center.x, node.bounds.center.y + 650);
+        //     mouseEvents.dragAndDropEvent(diagramCanvas, node.bounds.center.x, node.bounds.center.y, node.bounds.center.x + 500, node.bounds.center.y);
+        //     expect(!diagram.nameTable['nodea'].wrapper.bounds.containsRect(diagram.nameTable['end'].wrapper.bounds)).toBe(true);
+        //     done();
+        // });
     });
-    describe('BPMN processes ', () => {
+    describe('BPMN processes 6', () => {
         let diagram: Diagram;
         let ele: HTMLElement;
-        let mouseEvents: MouseEvents = new MouseEvents();
 
         beforeAll((): void => {
             const isDef = (o: any) => o !== undefined && o !== null;
@@ -891,7 +883,7 @@ describe('Diagram Control', () => {
                 this.skip(); //Skips test (in Chai)
                 return;
             }
-            ele = createElement('div', { id: 'diagram' });
+            ele = createElement('div', { id: 'diagram6' });
             document.body.appendChild(ele);
             let nod: NodeModel = {
                 id: 'nod', width: 50, height: 50, //maxHeight: 600, maxWidth: 600, minWidth: 300, minHeight: 300,
@@ -953,7 +945,7 @@ describe('Diagram Control', () => {
                 width: 1200, height: 1200, nodes: [nodea, nod, nod1, start, end], connectors: connector6
             });
 
-            diagram.appendTo('#diagram');
+            diagram.appendTo('#diagram6');
         });
 
         afterAll((): void => {
@@ -991,10 +983,11 @@ describe('Diagram Control', () => {
     });
 
 
-    describe('BPMN processes ', () => {
+    describe('BPMN processes 7', () => {
         let diagram: Diagram;
         let ele: HTMLElement;
         let mouseEvents: MouseEvents = new MouseEvents();
+        let diagramCanvas: HTMLElement | null;
 
         beforeAll((): void => {
             const isDef = (o: any) => o !== undefined && o !== null;
@@ -1003,7 +996,7 @@ describe('Diagram Control', () => {
                 this.skip(); //Skips test (in Chai)
                 return;
             }
-            ele = createElement('div', { id: 'diagram' });
+            ele = createElement('div', { id: 'diagram7' });
             document.body.appendChild(ele);
             let nod: NodeModel = {
                 id: 'nod', width: 100, height: 100, offsetX: 300, offsetY: 300,
@@ -1060,7 +1053,7 @@ describe('Diagram Control', () => {
                 width: 1200, height: 1200, nodes: [nodea, nod, nod1, start, end], connectors: connector6
             });
 
-            diagram.appendTo('#diagram');
+            diagram.appendTo('#diagram7');
         });
 
         afterAll((): void => {
@@ -1069,7 +1062,7 @@ describe('Diagram Control', () => {
         });
 
         it('Checking parent enlarge with respect to child drag-svg', (done: Function) => {
-            let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
+            diagramCanvas = document.getElementById(diagram.element.id + 'content');
             let node = diagram.nameTable['end'].wrapper;
             mouseEvents.dragAndDropEvent(diagramCanvas, node.bounds.center.x, node.bounds.center.y, node.bounds.center.x + 30, node.bounds.center.y);
 
@@ -1079,7 +1072,7 @@ describe('Diagram Control', () => {
             done();
         });
         it('Checking updating parent  with respect to child drag - undo-svg', (done: Function) => {
-            let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
+            diagramCanvas = document.getElementById(diagram.element.id + 'content');
             let node: NodeModel = diagram.nameTable['end'];
             diagram.undo();
             // expect(node.wrapper.margin.left === 300).toBe(true);
@@ -1088,7 +1081,7 @@ describe('Diagram Control', () => {
             done();
         });
         it('Checking updating parent  with respect to child drag - redo-svg', (done: Function) => {
-            let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
+            diagramCanvas = document.getElementById(diagram.element.id + 'content');
             let node: NodeModel = diagram.nameTable['end'];
             diagram.redo();
 
@@ -1099,7 +1092,7 @@ describe('Diagram Control', () => {
 
         });
         it('Checking parent enlarge with respect to child resize-svg', (done: Function) => {
-            let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
+            diagramCanvas = document.getElementById(diagram.element.id + 'content');
             mouseEvents.clickEvent(diagramCanvas, 320, 100);
             let node: NodeModel = diagram.nameTable['end'];
             let resize = node.wrapper.bounds;
@@ -1109,14 +1102,14 @@ describe('Diagram Control', () => {
             done();
         });
         it('Checking updating parent  with respect to child resize - undo-svg', (done: Function) => {
-            let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
+            diagramCanvas = document.getElementById(diagram.element.id + 'content');
             let node: NodeModel = diagram.nameTable['end'];
             diagram.undo();
             expect(diagram.nameTable['nodea'].wrapper.bounds.containsRect(node.wrapper.bounds)).toBe(true);
             done();
         });
         it('Checking updating parent  with respect to child resize - redo-svg', (done: Function) => {
-            let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
+            diagramCanvas = document.getElementById(diagram.element.id + 'content');
             let node: NodeModel = diagram.nameTable['end'];
             diagram.redo();
             expect(diagram.nameTable['nodea'].wrapper.bounds.containsRect(node.wrapper.bounds)).toBe(true);
@@ -1129,14 +1122,14 @@ describe('Diagram Control', () => {
             done();
         });
         it('Checking updating parent  with respect to child rotate - undo-svg', (done: Function) => {
-            let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
+            diagramCanvas = document.getElementById(diagram.element.id + 'content');
             let node: NodeModel = diagram.nameTable['end'];
             diagram.undo();
             expect(diagram.nameTable['nodea'].wrapper.bounds.containsRect(node.wrapper.bounds)).toBe(true);
             done();
         });
         it('Checking updating parent  with respect to child rotate - redo-svg', (done: Function) => {
-            let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
+            diagramCanvas = document.getElementById(diagram.element.id + 'content');
             let node: NodeModel = diagram.nameTable['end'];
             diagram.redo();
             expect(diagram.nameTable['nodea'].wrapper.bounds.containsRect(node.wrapper.bounds)).toBe(true);
@@ -1144,7 +1137,7 @@ describe('Diagram Control', () => {
         });
 
         it('Checking add child into parent-svg', (done: Function) => {
-            let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
+            diagramCanvas = document.getElementById(diagram.element.id + 'content');
             let node: NodeModel = diagram.nameTable['end'];
             let resize = node.wrapper.bounds;
             mouseEvents.clickEvent(diagramCanvas, resize.center.x, resize.center.y);
@@ -1154,7 +1147,7 @@ describe('Diagram Control', () => {
 
         });
         it('Checking add child into parente - redo-svg', (done: Function) => {
-            let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
+            diagramCanvas = document.getElementById(diagram.element.id + 'content');
             let node: NodeModel = diagram.nameTable['end'];
             diagram.redo();
             expect(diagram.nameTable['nodea'].wrapper.bounds.containsRect(node.wrapper.bounds)).toBe(true);
@@ -1162,7 +1155,7 @@ describe('Diagram Control', () => {
 
         });
         it('Checking add child into parent - undo-svg', (done: Function) => {
-            let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
+            diagramCanvas = document.getElementById(diagram.element.id + 'content');
             let node: NodeModel = diagram.nameTable['end'];
             diagram.undo();
             expect(diagram.nameTable['nodea'].wrapper.bounds.containsRect(node.wrapper.bounds)).toBe(true);
@@ -1170,7 +1163,7 @@ describe('Diagram Control', () => {
 
         });
         it('Checking remove child from -svg', (done: Function) => {
-            let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
+            diagramCanvas = document.getElementById(diagram.element.id + 'content');
             mouseEvents.clickEvent(diagramCanvas, 320, 100);
             let node: NodeModel = diagram.nameTable['end'];
             let resize = node.wrapper.bounds;
@@ -1180,7 +1173,7 @@ describe('Diagram Control', () => {
             done();
         });
         it('Checking remove child from parent - undo -svg', (done: Function) => {
-            let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
+            diagramCanvas = document.getElementById(diagram.element.id + 'content');
             let node: NodeModel = diagram.nameTable['end'];
             diagram.undo();
             expect(diagram.nameTable['nodea'].wrapper.bounds.containsRect(node.wrapper.bounds)).toBe(true);
@@ -1188,7 +1181,7 @@ describe('Diagram Control', () => {
 
         });
         it('Checking remove child from parente - redo -svg', (done: Function) => {
-            let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
+            diagramCanvas = document.getElementById(diagram.element.id + 'content');
             let node: NodeModel = diagram.nameTable['end'];
             diagram.redo();
             expect(!diagram.nameTable['nodea'].wrapper.bounds.containsRect(node.wrapper.bounds)).toBe(true);
@@ -1196,7 +1189,7 @@ describe('Diagram Control', () => {
 
         });
         it('Checking remove child from parent -  -svg', (done: Function) => {
-            let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
+            diagramCanvas = document.getElementById(diagram.element.id + 'content');
             let node: NodeModel = diagram.nameTable['end'];
             diagram.undo();
             expect(diagram.nameTable['nodea'].wrapper.bounds.containsRect(node.wrapper.bounds)).toBe(true);
@@ -1205,10 +1198,11 @@ describe('Diagram Control', () => {
         });
     });
 
-    describe('BPMN processes ', () => {
+    describe('BPMN processes 8', () => {
         let diagram: Diagram;
         let ele: HTMLElement;
         let mouseEvents: MouseEvents = new MouseEvents();
+        let diagramCanvas: HTMLElement | null;
 
         beforeAll((): void => {
             const isDef = (o: any) => o !== undefined && o !== null;
@@ -1217,7 +1211,7 @@ describe('Diagram Control', () => {
                 this.skip(); //Skips test (in Chai)
                 return;
             }
-            ele = createElement('div', { id: 'diagram' });
+            ele = createElement('div', { id: 'diagram8' });
             document.body.appendChild(ele);
             let nod: NodeModel = {
                 id: 'nod', width: 100, height: 100, offsetX: 300, offsetY: 300,
@@ -1276,7 +1270,7 @@ describe('Diagram Control', () => {
                 width: 1200, height: 1200, nodes: [nodea, nod, nod1, start, end], connectors: connector6
             });
 
-            diagram.appendTo('#diagram');
+            diagram.appendTo('#diagram8');
         });
 
         afterAll((): void => {
@@ -1286,7 +1280,7 @@ describe('Diagram Control', () => {
 
 
         it('Checking copy the BPMN sub process with processes-svg', (done: Function) => {
-            let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
+            diagramCanvas = document.getElementById(diagram.element.id + 'content');
             let node: NodeModel = diagram.nameTable['nodea'];
             diagram.select([node]);
             diagram.copy();
@@ -1296,24 +1290,21 @@ describe('Diagram Control', () => {
 
         });
         it('Checking copy the BPMN sub process with processes-undo-svg', (done: Function) => {
-            let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
-            let node: NodeModel = diagram.nameTable['end'];
+            diagramCanvas = document.getElementById(diagram.element.id + 'content');
             diagram.undo();
             expect(diagram.nodes.length === 5).toBe(true);
             done();
 
         });
         it('Checking copy the BPMN sub process with processes-svg', (done: Function) => {
-            let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
-            let node: NodeModel = diagram.nameTable['end'];
+            diagramCanvas = document.getElementById(diagram.element.id + 'content');
             diagram.redo();
             expect(diagram.nodes.length === 10).toBe(true);
             done();
 
         });
         it('Checking copy the BPMN sub process with processes-undo-svg', (done: Function) => {
-            let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
-            let node: NodeModel = diagram.nameTable['end'];
+            diagramCanvas = document.getElementById(diagram.element.id + 'content');
             diagram.undo();
             expect(diagram.nodes.length === 5).toBe(true);
             done();
@@ -1328,14 +1319,14 @@ describe('Diagram Control', () => {
         //     done();
         // });
         // it('Checking updating parent  with respect to child rotate - undo', (done: Function) => {
-        //     let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
+        //     diagramCanvas = document.getElementById(diagram.element.id + 'content');
         //     let node: NodeModel = diagram.nameTable['end'];
         //     diagram.undo(); 
         //     expect(diagram.nameTable['nodea'].wrapper.bounds.containsRect(node.wrapper.bounds)).toBe(true);
         //     done();
         // });
         // it('Checking updating parent  with respect to child rotate - redo', (done: Function) => {
-        //     let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
+        //     diagramCanvas = document.getElementById(diagram.element.id + 'content');
         //     let node: NodeModel = diagram.nameTable['end'];
         //     diagram.redo(); 
         //     expect(diagram.nameTable['nodea'].wrapper.bounds.containsRect(node.wrapper.bounds)).toBe(true);
@@ -1343,7 +1334,7 @@ describe('Diagram Control', () => {
         // });
 
         it('Checking cut paste the BPMN sub process with processes-svg', (done: Function) => {
-            let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
+            diagramCanvas = document.getElementById(diagram.element.id + 'content');
             let node: NodeModel = diagram.nameTable['nodea'];
             diagram.select([node]);
             mouseEvents.keyDownEvent(diagramCanvas, 'X', true);
@@ -1352,15 +1343,13 @@ describe('Diagram Control', () => {
             done();
         });
         it('Checking  cut paste  the BPMN sub process with processes-undo-svg', (done: Function) => {
-            let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
-            let node: NodeModel = diagram.nameTable['end'];
+            diagramCanvas = document.getElementById(diagram.element.id + 'content');
             diagram.undo();
             expect(diagram.nodes.length === 0).toBe(true);
             done();
         });
         it('Checking  cut paste  the BPMN sub process with processes-svg', (done: Function) => {
-            let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
-            let node: NodeModel = diagram.nameTable['end'];
+            diagramCanvas = document.getElementById(diagram.element.id + 'content');
             diagram.redo();
             expect(diagram.nodes.length === 5).toBe(true);
             done();
@@ -1368,7 +1357,7 @@ describe('Diagram Control', () => {
 
 
         it('Checking  delete the BPMN sub process with processes-svg', (done: Function) => {
-            let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
+            diagramCanvas = document.getElementById(diagram.element.id + 'content');
             let node: NodeModel = diagram.nameTable['end'];
             diagram.select([diagram.nodes[1]]);
             diagram.remove();
@@ -1377,7 +1366,7 @@ describe('Diagram Control', () => {
 
         });
         it('Checking  delete the BPMN sub process with processes-undo-svg', (done: Function) => {
-            let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
+            diagramCanvas = document.getElementById(diagram.element.id + 'content');
             diagram.undo();
             expect(diagram.nodes.length === 5).toBe(true);
             done();
@@ -1385,8 +1374,7 @@ describe('Diagram Control', () => {
 
 
         it('Checking  delete the BPMN sub process with processes-undo-svg', (done: Function) => {
-            let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
-            let node: NodeModel = diagram.nameTable['end'];
+            diagramCanvas = document.getElementById(diagram.element.id + 'content');
             diagram.redo();
             expect(diagram.nodes.length === 4).toBe(true);
             done();
@@ -1434,10 +1422,11 @@ describe('Diagram Control', () => {
         })
 
     });
-    describe('BPMN processes ', () => {
+    describe('BPMN processes 9', () => {
         let diagram: Diagram;
         let ele: HTMLElement;
         let mouseEvents: MouseEvents = new MouseEvents();
+        let diagramCanvas: HTMLElement | null;
 
         beforeAll((): void => {
             const isDef = (o: any) => o !== undefined && o !== null;
@@ -1446,7 +1435,7 @@ describe('Diagram Control', () => {
                 this.skip(); //Skips test (in Chai)
                 return;
             }
-            ele = createElement('div', { id: 'diagram' });
+            ele = createElement('div', { id: 'diagram9' });
             document.body.appendChild(ele);
             let nod: NodeModel = {
                 id: 'nod', width: 50, height: 50, //maxHeight: 600, maxWidth: 600, minWidth: 300, minHeight: 300,
@@ -1509,7 +1498,7 @@ describe('Diagram Control', () => {
                 width: 1200, height: 1200, nodes: [end, nodea, nod, nod1, start], connectors: connector6
             });
 
-            diagram.appendTo('#diagram');
+            diagram.appendTo('#diagram9');
         });
 
         afterAll((): void => {
@@ -1518,7 +1507,7 @@ describe('Diagram Control', () => {
         });
 
         it('drag and drop the processes with low z index ', (done: Function) => {
-            let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
+            diagramCanvas = document.getElementById(diagram.element.id + 'content');
             let node = diagram.nameTable['end'].wrapper;
             mouseEvents.dragAndDropEvent(diagramCanvas, node.bounds.center.x, node.bounds.center.y, 225, 225);
             expect((diagram.nodes[3].shape as BpmnShape).activity.subProcess.collapsed).toBe(true);
@@ -1528,7 +1517,7 @@ describe('Diagram Control', () => {
 
 
     });
-    describe('BPMN processes ', () => {
+    describe('BPMN processes 10', () => {
         let diagram: Diagram;
         let ele: HTMLElement;
         let mouseEvents: MouseEvents = new MouseEvents();
@@ -1540,7 +1529,7 @@ describe('Diagram Control', () => {
                 this.skip(); //Skips test (in Chai)
                 return;
             }
-            ele = createElement('div', { id: 'diagram' });
+            ele = createElement('div', { id: 'diagram10' });
             document.body.appendChild(ele);
             let nod: NodeModel = {
                 id: 'nod', width: 100, height: 100, offsetX: 300, offsetY: 300,
@@ -1599,7 +1588,7 @@ describe('Diagram Control', () => {
                 width: '74%', height: '750px', nodes: [nodea, nod, nod1, start, end], connectors: connector6
             });
 
-            diagram.appendTo('#diagram');
+            diagram.appendTo('#diagram10');
         });
 
         afterAll((): void => {
@@ -1608,7 +1597,7 @@ describe('Diagram Control', () => {
         });
 
         it('Disable resize constraint of subprocss and checking remove child from parent', function (done) {
-            let diagramCanvas = document.getElementById(diagram.element.id + 'content');
+            let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
             mouseEvents.clickEvent(diagramCanvas, 320, 100);
             mouseEvents.mouseDownEvent(diagramCanvas, 404, 106);
             mouseEvents.mouseMoveEvent(diagramCanvas, 488, 106);

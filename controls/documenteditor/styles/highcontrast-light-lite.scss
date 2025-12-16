@@ -1,7 +1,7 @@
-@import 'ej2-base/styles/definition/highcontrast-light.scss';
-@import 'document-editor/highcontrast-light-definition.scss';
-@import 'document-editor/icons/highcontrast-light.scss';
-@import 'document-editor/all.scss';
-@import 'document-editor-container/highcontrast-light-definition.scss';
-@import 'document-editor-container/icons/highcontrast-light.scss';
-@import 'document-editor-container/all.scss';
+@use 'ej2-base/styles/definition/highcontrast-light' as *;
+@use 'document-editor/highcontrast-light-definition' as *;
+@use 'document-editor/icons/highcontrast-light' as *;
+@use 'document-editor/all' as *;
+@use 'document-editor-container/highcontrast-light-definition' as *;
+@use 'document-editor-container/icons/highcontrast-light' as *;
+@use 'document-editor-container/all' as *;

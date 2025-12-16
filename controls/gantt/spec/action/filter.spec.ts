@@ -681,8 +681,10 @@ describe('Gantt filter support', () => {
         });
         it('Filtering Taskname', () => {
             ganttObj.actionComplete = function (args: any): void {
-                if(args.searchString == 'Hatch closing') {
-                   expect(ganttObj.currentViewData.length).toBe(2);
+                if (args.searchString == 'Hatch closing') {
+                    setTimeout(() => {
+                        expect(ganttObj.currentViewData.length).toBe(2);
+                    }, 100);
                 }
             }
             ganttObj.search('Return');

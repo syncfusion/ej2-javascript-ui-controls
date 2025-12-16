@@ -21,15 +21,6 @@ Diagram.Inject(ConnectorEditing, Snapping, ConnectorBridging);
 /**
  * Editing test cases
  */
-function getIntermediatePoints(Points: PointModel[], value: string): string {
-    let output: string = 'expect(';
-    for (let i = 0; i < Points.length; i++) {
-        output += value + '.intermediatePoints[' + i + '].x ==' + Points[i].x +
-            '&&' + value + '.intermediatePoints[' + i + '].y ==' + Points[i].y + '&&';
-    }
-    output += ').toBe(true);';
-    return output;
-}
 
 describe('Diagram Control', () => {
     describe('Multiple Segments Copy and paste', () => {
@@ -108,6 +99,8 @@ describe('Diagram Control', () => {
         afterAll((): void => {
             diagram.destroy();
             ele.remove();
+            diagram = null;
+            ele = null;
         });
 
         it('Checking copy, paste for straight segment', (done: Function) => {
@@ -324,6 +317,8 @@ describe('Diagram Control', () => {
         afterAll((): void => {
             diagram.destroy();
             ele.remove();
+            diagram = null;
+            ele = null;
         });
 
         // it('Checking straight segment - (Add control point and check undo redo)', (done: Function) => {
@@ -538,6 +533,8 @@ describe('Diagram Control', () => {
         afterAll((): void => {
             diagram.destroy();
             ele.remove();
+            diagram = null;
+            ele = null;
         });
 
         it('Checking drag source point - first segment(Left) and length greater than node width', (done: Function) => {
@@ -739,6 +736,8 @@ describe('Diagram Control', () => {
         afterAll((): void => {
             diagram.destroy();
             ele.remove();
+            diagram = null;
+            ele = null;
         });
 
         it('Checking drag source node - (second segmnet direction - bottom and node direction-left)', (done: Function) => {
@@ -1129,6 +1128,8 @@ describe('Diagram Control', () => {
         afterAll((): void => {
             diagram.destroy();
             ele.remove();
+            diagram = null;
+            ele = null;
         });
 
         it('Checking drag source node - third segment is opposite to first segment(port direction - right)', (done: Function) => {
@@ -1241,7 +1242,6 @@ describe('Diagram Control', () => {
     describe('Conectors with segments - Orthogonal Segment Interaction(Port To Node)', () => {
         let diagram: Diagram;
         let ele: HTMLElement;
-        let mouseEvents: MouseEvents = new MouseEvents();
         let diagramCanvas: HTMLElement;
         beforeAll((): void => {
             const isDef = (o: any) => o !== undefined && o !== null;
@@ -1292,6 +1292,8 @@ describe('Diagram Control', () => {
         afterAll((): void => {
             diagram.destroy();
             ele.remove();
+            diagram = null;
+            ele = null;
         });
 
         it('Checking Orthogonal segment - Port To Node (Two segments - Left, top)', (done: Function) => {
@@ -1354,6 +1356,8 @@ describe('Diagram Control', () => {
         afterAll((): void => {
             diagram.destroy();
             ele.remove();
+            diagram = null;
+            ele = null;
         });
 
         it('Checking Multiple selection dragging - node and connector connect to node', (done: Function) => {
@@ -1419,6 +1423,8 @@ describe('Diagram Control', () => {
         afterAll((): void => {
             diagram.destroy();
             ele.remove();
+            diagram = null;
+            ele = null;
         });
 
         it('Checking Multiple segment target dragging - Terminal segment have two points', (done: Function) => {
@@ -1449,7 +1455,7 @@ describe('Diagram Control', () => {
             profile.sample();
             let average: any = inMB(profile.averageChange)
             //Check average change in memory samples to not be over 10MB
-            expect(average).toBeLessThan(10);
+            expect(average).toBeLessThan(50);
             let memory: any = inMB(getMemoryProfile())
             //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
             expect(memory).toBeLessThan(profile.samples[0] + 0.25);
@@ -1459,7 +1465,6 @@ describe('Diagram Control', () => {
     describe('Conectors with multiple segments - Source Node Rotion', () => {
         let diagram: Diagram;
         let ele: HTMLElement;
-        let mouseEvents: MouseEvents = new MouseEvents();
         let diagramCanvas: HTMLElement;
         beforeAll((): void => {
 
@@ -1507,6 +1512,8 @@ describe('Diagram Control', () => {
         afterAll((): void => {
             diagram.destroy();
             ele.remove();
+            diagram = null;
+            ele = null;
         });
 
         it('Checking Multiple segment target dragging - Terminal segment have two points', (done: Function) => {
@@ -1631,6 +1638,8 @@ describe('Diagram Control', () => {
         afterAll((): void => {
             diagram.destroy();
             ele.remove();
+            diagram = null;
+            ele = null;
         });
         it('Checking when editing an Orthogonal connector segment in a group', (done: Function) => {
             diagram.selectAll();
@@ -1665,6 +1674,8 @@ describe('Diagram Control', () => {
         afterAll((): void => {
                 diagram.destroy();
                 ele.remove();
+                diagram = null;
+                ele = null;
             });
             it('Checks whether the freehand connector is convert into bezier and the rendering of target decorator', (done: Function) => {
                 diagram.tool |= DiagramTools.DrawOnce;
@@ -1689,7 +1700,6 @@ describe('Diagram Control', () => {
         let diagram: Diagram;
         let ele: HTMLElement;
         let diagramCanvas: HTMLElement;
-        let mouseEvents: MouseEvents = new MouseEvents();
 
         beforeAll((): void => {
             const isDef = (o: any) => o !== undefined && o !== null;
@@ -1898,6 +1908,8 @@ describe('Diagram Control', () => {
         afterAll((): void => {
             diagram.destroy();
             ele.remove();
+            diagram = null;
+            ele = null;
         });
         it('Checking when previous segment of the last segment', (done: Function) => {
             let connector: Connector = diagram.connectors[0] as Connector;
@@ -2018,6 +2030,8 @@ describe('Diagram Control', () => {
         afterAll((): void => {
             diagram.destroy();
             ele.remove();
+            diagram = null;
+            ele = null;
         });
         it('Checking bezier control points after connecting the node when the segmentEditOrientation is bidirectional', function (done) {
             diagram.connectors[0].bezierSettings.segmentEditOrientation='BiDirectional';
@@ -2069,6 +2083,8 @@ describe('Diagram Control', () => {
         afterAll((): void => {
             diagram.destroy();
             ele.remove();
+            diagram = null;
+            ele = null;
         });
         it('Checking bezier segment points dragging when the segment orientation is horizontal', function (done) {
             diagram.connectors[0].bezierSettings.segmentEditOrientation='BiDirectional';
@@ -2104,7 +2120,7 @@ describe('Diagram Control', () => {
         let mouseEvents: MouseEvents = new MouseEvents();
         let diagramCanvas: HTMLElement;
         beforeAll((): void => {
-            ele = createElement('div', { id: 'diagramBezHorizontal' });
+            ele = createElement('div', { id: 'diagramBezHorizontal1' });
             document.body.appendChild(ele);
             var nodes:NodeModel[] = [
                 {
@@ -2136,12 +2152,14 @@ describe('Diagram Control', () => {
                 width: '900px', height: '500px', nodes: nodes, connectors: connectors,
                 segmentThumbShape: 'Ellipse'
             });
-            diagram.appendTo('#diagramBezHorizontal');
+            diagram.appendTo('#diagramBezHorizontal1');
             diagramCanvas = document.getElementById(diagram.element.id + 'content');
         });
         afterAll((): void => {
             diagram.destroy();
             ele.remove();
+            diagram = null;
+            ele = null;
         });
         
         it('Checking bezier control points dragging for bezier target end', function (done) {

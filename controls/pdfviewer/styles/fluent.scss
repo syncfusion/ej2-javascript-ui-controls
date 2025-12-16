@@ -1,5 +1,5 @@
-@import 'ej2-base/styles/definition/fluent.scss';
-@import 'pdfviewer/fluent-definition.scss';
-@import 'pdfviewer/icons/fluent.scss';
-@import 'pdfviewer/all.scss';
-@import 'pdfviewer/bigger.scss';
+@use 'ej2-base/styles/definition/fluent' as *;
+@use 'pdfviewer/fluent-definition' as *;
+@use 'pdfviewer/icons/fluent' as *;
+@use 'pdfviewer/all' as *;
+@use 'pdfviewer/bigger' as *;

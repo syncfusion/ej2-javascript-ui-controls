@@ -1,14 +1,16 @@
+@use 'ej2-base/styles/common/mixin' as *;
+@use './theme-variables' as *;
 @include export-module('dropdownbase-layout') {
   .e-dropdownbase {
     display: block;
-    height: 100%;
-    min-height: 36px;
+    height: $ddl-full-height;
+    min-height: $ddl-base-min-height;
     position: relative;
-    width: 100%;
+    width: $ddl-full-width;
     @at-root {
       #{if(&, '&', '*')} .e-list-parent {
-        margin: 0;
-        padding: 0;
+        margin: $ddl-list-zero-padding;
+        padding: $ddl-list-zero-padding;
       }
 
       #{if(&, '&', '*')} .e-list-group-item,
@@ -23,22 +25,17 @@
         text-overflow: ellipsis;
         vertical-align: middle;
         white-space: nowrap;
-        width: 100%;
+        width: $ddl-full-width;
       }
 
       #{if(&, '&', '*')} .e-list-item .e-list-icon {
-        @if $skin-name == 'fluent2' {
-          font-size: 14px;
-        }
-        @else {
-          font-size: 16px;
-        }
+        font-size: $ddl-nrml-list-item-icon-font-size;
         vertical-align: middle;
       }
 
       #{if(&, '&', '*')} .e-fixed-head {
         position: absolute;
-        top: 0;
+        top: $ddl-zero-spacing;
       }
     }
   }
@@ -46,6 +43,9 @@
   .e-dropdownbase.e-content {
     overflow: auto;
     position: relative;
+    @if $skin-name == 'tailwind3' {
+      border-radius: $dropdownbase-content-border-radius;
+    }
   }
 
   #{&}.e-popup.e-ddl .e-dropdownbase.e-nodata,
@@ -53,8 +53,8 @@
     color: $ddl-nodata-font-color;
     cursor: default;
     font-family: $ddl-list-font-family;
-    font-size: 14px;
-    padding: 14px 16px;
+    font-size: $ddl-list-nodata-font-size;
+    padding: $ddl-list-nodata-padding;
     text-align: center;
   }
 
@@ -62,7 +62,7 @@
     background: $mention-popup-bg-color;
     border: 0;
     box-shadow: 0 2px 3px 1px $mention-list-box-shadow-color;
-    margin-top: 2px;
+    margin-top: $mention-popup-margin-top;
     position: absolute;
   }
 
@@ -86,15 +86,15 @@
     color: $mention-active-font-color;
     cursor: default;
     @if $skin-name == 'tailwind3' {
-      font-weight: 500;
+      font-weight: $font-weight-medium;
     }
   }
 
   .e-mention.e-editable-element {
-    border: 2px solid $ddl-list-border-color;
-    height: auto;
-    min-height: 120px;
-    width: 100%;
+    border: $ddl-two-width solid $ddl-list-border-color;
+    height: $ddl-auto-height;
+    min-height: $ddl-mention-editable-min-height;
+    width: $ddl-full-width;
   }
 
   .e-form-mirror-div {
@@ -114,13 +114,13 @@
 
   .e-dropdownbase.e-dd-group .e-list-item {
     padding-left: $ddl-group-list-padding-left;
-    text-indent: 0;
+    text-indent: $ddl-zero-spacing;
   }
 
   .e-small .e-dropdownbase.e-dd-group .e-list-item {
     padding-left: $ddl-group-list-small-padding-left;
     @if $skin-name == 'tailwind' or $skin-name == 'FluentUI' {
-      text-indent: 0;
+      text-indent: $ddl-zero-spacing;
     }
   }
 
@@ -136,9 +136,9 @@
     text-overflow: ellipsis;
     vertical-align: middle;
     white-space: nowrap;
-    width: 100%;
+    width: $ddl-full-width;
     @if $skin-name == 'bootstrap5' or $skin-name == 'tailwind' or $skin-name == 'bootstrap5.3' {
-      font-weight: 500;
+      font-weight: $popup-multi-select-font-size;
     }
   }
 

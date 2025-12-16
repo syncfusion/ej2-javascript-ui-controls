@@ -1,5 +1,7 @@
 @use 'sass:math';
 @use 'sass:color';
+@use 'ej2-base/styles/definition/fabric' as *;
+@forward 'ej2-base/styles/definition/fabric';
 
 $grid-chart-border-color: $neutral-light !default;
 $grid-chart-list-hover-bg-color: $theme-lighter !default;

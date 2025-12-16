@@ -1,6 +1,6 @@
-@import 'ej2-base/styles/definition/tailwind.scss';
-@import '../document-editor/tailwind-definition.scss';
-@import 'tailwind-definition.scss';
-@import 'icons/tailwind.scss';
-@import 'all.scss';
-@import 'bigger.scss';
+@use 'ej2-base/styles/definition/tailwind' as *;
+@use '../document-editor/tailwind-definition' as *;
+@use 'tailwind-definition' as *;
+@use 'icons/tailwind' as *;
+@use 'all' as *;
+@use 'bigger' as *;

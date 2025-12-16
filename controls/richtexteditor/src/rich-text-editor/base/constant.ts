@@ -505,6 +505,16 @@ export const readOnlyMode: string = 'readOnlyMode';
  * @hidden
  * @deprecated
  */
+export const clipBoardCleanup: string = 'clipBoardCleanup';
+/**
+ * @hidden
+ * @deprecated
+ */
+export const beforeClipboardWrite: string = 'beforeClipboardWrite';
+/**
+ * @hidden
+ * @deprecated
+ */
 export const pasteClean: string = 'pasteClean';
 /**
  * @hidden
@@ -806,6 +816,26 @@ export const autoResize: string = 'autoResize';
  * @hidden
  * @deprecated
  */
+export const onAIAssistant: string = 'onAIAssistant';
+/**
+ * @hidden
+ * @deprecated
+ */
+export const menuItemselected: string = 'menuItemselected';
+/**
+ * @hidden
+ * @deprecated
+ */
+export const menuBeforeOpen: string = 'menuBeforeOpen';
+/**
+ * @hidden
+ * @deprecated
+ */
+export const menuBeforeClose: string = 'menuBeforeClose';
+/**
+ * @hidden
+ * @deprecated
+ */
 export const selectionChangeMouseUp: string = 'selectionChangeMouseUp';
 /**
  * @hidden
@@ -1019,3 +1049,13 @@ export const preventQuickToolbarClose: string = 'preventQuickToolbarClose';
  * @deprecated
  */
 export const selectionChanged: string = 'selectionChanged';
+/**
+ * @hidden
+ * @deprecated
+ */
+export const wordImporting: string = 'wordImporting';
+/**
+ * @hidden
+ * @deprecated
+ */
+export const documentExporting: string = 'documentExporting';

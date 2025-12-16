@@ -137,6 +137,9 @@ export class ContextMenu {
                 if (data[taskfields.startDate]) {
                     this.parent.setRecordValue(taskfields.startDate, this.rowData.ganttProperties.startDate, data, true);
                 }
+                if (this.rowData[taskfields.duration]) {
+                    this.parent.setRecordValue(taskfields.duration, this.rowData.ganttProperties.duration, data, true);
+                }
                 if (data[taskfields.endDate]) {
                     this.parent.setRecordValue(taskfields.endDate, this.rowData.ganttProperties.endDate, data, true);
                 }
@@ -395,6 +398,10 @@ export class ContextMenu {
         return contextMenuClickDate;
     }
     private contextMenuBeforeOpen(args: CMenuOpenEventArgs): void | Deferred {
+        if (this.parent.viewType === 'ResourceView') {
+            this.hideItems = [];
+            this.disableItems = [];
+        }
         const target: Element = args.event ? args.event.target as Element :
             !this.parent.focusModule ? this.parent.focusModule.getActiveElement() :
                 this.parent.ganttChartModule.targetElement;

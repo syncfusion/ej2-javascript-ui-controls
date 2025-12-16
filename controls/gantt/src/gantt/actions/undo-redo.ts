@@ -287,7 +287,8 @@ export class UndoRedo {
                     if (updateAction['deletedRecordsDetails'][i as number].data.ganttProperties.predecessor &&
                         updateAction['deletedRecordsDetails'][i as number].data.ganttProperties.predecessor.length > 0) {
                         updateAction['deletedRecordsDetails'][i as number].data.ganttProperties.predecessor.forEach((predecessor: IPredecessor) => {
-                            const restoredToRecord: IGanttData = this.parent.connectorLineModule.getRecordByID(predecessor.to);
+                            const restoredToRecord: IGanttData =
+                                this.parent.connectorLineModule.getRecordByID(predecessor.to);
                             if (restoredToRecord) {
                                 restoredToRecord.ganttProperties.predecessor.push(predecessor);
                                 const predecessorStringValue: string =

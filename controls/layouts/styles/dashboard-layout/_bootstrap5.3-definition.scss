@@ -1,8 +1,11 @@
+@use 'ej2-base/styles/definition/bootstrap5.3' as *;
+@forward 'ej2-base/styles/definition/bootstrap5.3';
+
 /*! component's theme wise override tailwind-definitions and variables */
 
 // Generic
 $icon-zero: 0 !default;
-$icon-border-radius: 50% !default;
+$icon-border-radius: $border-radius-50p !default;
 $grid-layout-position: relative !default;
 $panel-position: absolute !default;
 $panel-box-sizing: border-box !default;
@@ -13,7 +16,7 @@ $panel-box-sizing: border-box !default;
 $panel-header-height: 38px !default;
 $panel-header-padding: 8px 18px !default;
 $panel-header-line-height: 22px !default;
-$panel-header-border-radius: 4px !default;
+$panel-header-border-radius: $radius-4 !default;
 $panel-header-color: $content-text-color !default;
 $panel-header-font-size: $text-base !default;
 $panel-header-bg-color: $content-bg-color !default;
@@ -34,7 +37,7 @@ $panel-bigger-header-font-weight: $font-weight-normal !default;
 
 // Panel styles
 $panel-border: 1px solid $border-light !default;
-$panel-border-radius: 4px !default;
+$panel-border-radius: $radius-4 !default;
 $panel-full-height: 100% !default;
 $panel-full-width: 100% !default;
 $panel-hover-border: 1px solid $border-dark !default;
@@ -73,7 +76,7 @@ $panel-north-west-icon-left: 2px !default;
 $panel-north-west-icon-top: 2px !default;
 
 // droppable area border
-$panel-drop-border-radius: 4px !default;
+$panel-drop-border-radius: $radius-4 !default;
 
 // dragging element style
 $panel-dragging-cursor: move !default;
@@ -105,4 +108,5 @@ $panel-drop-border: 1px $primary-border-color dashed !default;
 //gridlines
 $gridline-background: $content-bg-color-alt1 !default;
 $gridline-border: $border-dark !default;
-$gridline-border-radius: 6px !default;
+$gridline-border-radius: $radius-6 !default;
+$gridline-border-width: 1px !default;

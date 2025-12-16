@@ -2,7 +2,7 @@
  * Is formatted or not.
  *
  * @hidden
- * @deprecated
+ * @private
  */
 export class IsFormatted {
     // Get Formatted Node
@@ -42,7 +42,7 @@ export class IsFormatted {
      * @param {Node} endNode - specifies the end node
      * @returns {Node} - returns the node
      * @hidden
-     * @deprecated
+     * @private
      */
     public getFormattedNode(node: Node, format: string, endNode: Node ): Node {
         const parentNode: Node = this.getFormatParent(node, format, endNode);
@@ -67,7 +67,7 @@ export class IsFormatted {
      * @param {string} format - specifies the format type.
      * @returns {boolean} - returns whether the node has the specified formatting
      * @hidden
-     * @deprecated
+     * @private
      */
     public isFormattedNode(node: Node, format: string): boolean {
         switch (format) {
@@ -104,7 +104,7 @@ export class IsFormatted {
      * @param {Node} node - specifies the node value
      * @returns {boolean} - returns the boolean value
      * @hidden
-     * @deprecated
+     * @private
      */
     public static isBold(node : Node): boolean {
         const validTags : string[] = ['strong', 'b'];
@@ -124,7 +124,7 @@ export class IsFormatted {
      * @param {Node} node - specifies the node value
      * @returns {boolean} - returns the boolean value
      * @hidden
-     * @deprecated
+     * @private
      */
     public static isItalic(node : Node): boolean {
         const validTags : string[] = ['em', 'i'];
@@ -144,7 +144,7 @@ export class IsFormatted {
      * @param {Node} node - specifies the node value
      * @returns {boolean} - returns the boolean value
      * @hidden
-     * @deprecated
+     * @private
      */
     public static isUnderline(node : Node): boolean {
         const validTags : string[] = ['u'];
@@ -167,7 +167,7 @@ export class IsFormatted {
      * @param {Node} node - specifies the node value
      * @returns {boolean} - returns the boolean value
      * @hidden
-     * @deprecated
+     * @private
      */
     public static isStrikethrough(node : Node): boolean {
         const validTags: string[] = ['del', 'strike', 's'];
@@ -190,7 +190,7 @@ export class IsFormatted {
      * @param {Node} node - specifies the node value
      * @returns {boolean} - returns the boolean value
      * @hidden
-     * @deprecated
+     * @private
      */
     public static isSuperscript(node : Node): boolean {
         const validTags : string[] = ['sup'];
@@ -207,7 +207,7 @@ export class IsFormatted {
      * @param {Node} node - specifies the node value
      * @returns {boolean} - returns the boolean value
      * @hidden
-     * @deprecated
+     * @private
      */
     public static isSubscript(node : Node): boolean {
         const validTags : string[] = ['sub'];
@@ -264,7 +264,7 @@ export class IsFormatted {
      * @param {Node} node - specifies the node value
      * @returns {boolean} - returns the boolean value
      * @hidden
-     * @deprecated
+     * @private
      */
     public static isCode(node: Node): boolean {
         const validTags: string[] = ['code'];

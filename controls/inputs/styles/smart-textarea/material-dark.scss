@@ -1,4 +1,4 @@
-@import 'ej2-base/styles/definition/material-dark.scss';
-@import '../textarea/material-dark-definition.scss';
-@import 'material-dark-definition.scss';
-@import 'all.scss';
+@use 'ej2-base/styles/definition/material-dark' as *;
+@use '../textarea/material-dark-definition' as *;
+@use 'material-dark-definition' as *;
+@use 'all' as *;

@@ -2,14 +2,6 @@
 
 ## [Unreleased]
 
-## 31.2.18 (2025-12-09)
-
-### MultiColumn ComboBox
-
-#### Bug Fixes
-
-- `#I775356` - Fixed an issue where multiple requests were triggered for the `MultiColumnComboBox` when remote data and a preselected value were bound.
-
 ## 27.1.48 (2024-09-18)
 
 ### MultiColumn ComboBox

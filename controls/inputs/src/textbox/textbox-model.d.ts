@@ -1,4 +1,4 @@
-import { Component, Property, Event, EmitType, EventHandler, L10n, setValue, getValue, isNullOrUndefined, Browser } from '@syncfusion/ej2-base';import { NotifyPropertyChanges, INotifyPropertyChanged, detach, Internationalization, getUniqueID, closest } from '@syncfusion/ej2-base';import { addClass, removeClass } from '@syncfusion/ej2-base';import { FloatLabelType, Input, InputObject, containerAttributes, TEXTBOX_FOCUS } from '../input/input';
+import { Component, Property, Event, EmitType, EventHandler, L10n, setValue, getValue, isNullOrUndefined, Browser, compile, select, selectAll, append } from '@syncfusion/ej2-base';import { NotifyPropertyChanges, INotifyPropertyChanged, detach, Internationalization, getUniqueID, closest } from '@syncfusion/ej2-base';import { addClass, removeClass } from '@syncfusion/ej2-base';import { FloatLabelType, Input, InputObject, containerAttributes, TEXTBOX_FOCUS } from '../input/input';
 import {ChangedEventArgs,FocusOutEventArgs,FocusInEventArgs,InputEventArgs} from "./textbox";
 import {ComponentModel} from '@syncfusion/ej2-base';
 
@@ -109,6 +109,30 @@ export interface TextBoxModel extends ComponentModel{
      * @default null
      */
     width?: number | string;
+
+    /**
+     * Specifies the HTML template string for custom elements to prepend to the TextBox input.
+     * Supports icons, buttons, or any valid HTML. Updates dynamically on property change.
+     *
+     * @default null
+     * @angularType string | object
+     * @reactType string | function | JSX.Element
+     * @vueType string | function
+     * @aspType string
+     */
+    prependTemplate?: string | Function;
+
+    /**
+     * Specifies the HTML template string for custom elements to append to the TextBox input.
+     * Supports icons, buttons, or any valid HTML. Updates dynamically on property change.
+     *
+     * @default null
+     * @angularType string | object
+     * @reactType string | function | JSX.Element
+     * @vueType string | function
+     * @aspType string
+     */
+    appendTemplate?: string | Function;
 
     /**
      * Triggers when the TextBox component is created.

@@ -1,5 +1,4 @@
-@import 'ej2-base/styles/definition/material.scss';
-@import 'rich-text-editor/material-definition.scss';
-@import 'rich-text-editor/icons/material.scss';
-@import 'rich-text-editor/all.scss';
-@import 'rich-text-editor/bigger.scss';
+@use 'rich-text-editor/material-definition' as *;
+@use 'rich-text-editor/icons/material' as *;
+@use 'rich-text-editor/all' as *;
+@use 'rich-text-editor/bigger' as *;

@@ -3,7 +3,7 @@ import { _PdfCrossReference } from './../pdf-cross-reference';
 import { PdfForm } from './form';
 import { PdfRadioButtonListItem, PdfStateItem, PdfWidgetAnnotation, PdfListFieldItem, _PaintParameter, PdfInteractiveBorder } from './../annotations/annotation';
 import { _getItemValue, _checkField, _removeReferences, _removeDuplicateReference, _updateVisibility, _styleToString, _getStateTemplate, _findPage, _getInheritableProperty, _getNewGuidString, _calculateBounds, _parseColor, _mapHighlightMode, _reverseMapHighlightMode, _mapBorderStyle, _getUpdatedBounds, _setMatrix, _obtainFontDetails, _isNullOrUndefined, _stringToPdfString, _mapFont, _isRightToLeftCharacters, _getFontStyle, _createFontStream, _encode, _getFontFromDescriptor, _decodeFontFamily, _updateDashedBorderStyle } from './../utils';
-import { _PdfCheckFieldState, PdfFormFieldVisibility, _FieldFlag, PdfAnnotationFlag, PdfTextAlignment, PdfHighlightMode, PdfBorderStyle, PdfRotationAngle, PdfCheckBoxStyle, PdfFormFieldsTabOrder, PdfFillMode, PdfTextDirection, _PdfWordWrapType } from './../enumerator';
+import { _PdfCheckFieldState, PdfFormFieldVisibility, _FieldFlag, PdfAnnotationFlag, PdfTextAlignment, PdfHighlightMode, PdfBorderStyle, PdfRotationAngle, PdfCheckBoxStyle, PdfFormFieldsTabOrder, PdfFillMode, PdfTextDirection, _PdfWordWrapType, _SignatureFlag } from './../enumerator';
 import { PdfPage } from './../pdf-page';
 import { PdfDocument } from './../pdf-document';
 import { _PdfBaseStream } from './../base-stream';
@@ -15,6 +15,8 @@ import { PdfAppearance } from './../annotations/pdf-appearance';
 import { PdfPath } from './../graphics/pdf-path';
 import { PdfAnnotationCollection } from '../annotations/annotation-collection';
 import { PdfFieldActions } from '../pdf-action';
+import { PdfSignature } from '../security/digital-signature/signature/pdf-signature';
+import { Point, Size, Rectangle, PdfColor } from './../pdf-type';
 /**
  * `PdfField` class represents the base class for form field objects.
  * ```typescript
@@ -205,7 +207,7 @@ export abstract class PdfField {
      * // Access the form field at index 0
      * let field: PdfField = document.form.fieldAt(0);
      * // Sets the mapping name of the field
-     * field.mappingName = ‘Author’;
+     * field.mappingName = 'Author';
      * // Save the document
      * document.save('output.pdf');
      * // Destroy the document
@@ -254,7 +256,7 @@ export abstract class PdfField {
      * // Access the form field at index 0
      * let field: PdfField = document.form.fieldAt(0);
      * // Sets the tool tip value of the field
-     * field.toolTip = ‘Author of the document’;
+     * field.toolTip = 'Author of the document';
      * // Save the document
      * document.save('output.pdf');
      * // Destroy the document
@@ -379,22 +381,22 @@ export abstract class PdfField {
     /**
      * Gets the bounds.
      *
-     * @returns {{ x: number, y: number, width: number, height: number }} Bounds.
+     * @returns {Rectangle} Bounds.
      * ```typescript
      * // Load an existing PDF document
      * let document: PdfDocument = new PdfDocument(data, password);
      * // Access the form field at index 0
      * let field: PdfField = document.form.fieldAt(0);
      * // Gets the bounds of list box field.
-     * let bounds: {x: number, y: number, width: number, height: number} = field.bounds;
+     * let bounds: Rectangle = field.bounds;
      * // Save the document
      * document.save('output.pdf');
      * // Destroy the document
      * document.destroy();
      * ```
      */
-    get bounds(): { x: number, y: number, width: number, height: number } {
-        let value: { x: number, y: number, width: number, height: number };
+    get bounds(): Rectangle {
+        let value: Rectangle;
         const widget: PdfWidgetAnnotation = this.itemAt(this._defaultIndex);
         if (widget) {
             widget._page = this.page;
@@ -412,7 +414,7 @@ export abstract class PdfField {
     /**
      * Sets the bounds.
      *
-     * @param {{ x: number, y: number, width: number, height: number }} value bounds.
+     * @param {Rectangle} value bounds.
      * ```typescript
      * // Load an existing PDF document
      * let document: PdfDocument = new PdfDocument(data, password);
@@ -426,7 +428,7 @@ export abstract class PdfField {
      * document.destroy();
      * ```
      */
-    set bounds(value: { x: number, y: number, width: number, height: number }) {
+    set bounds(value: Rectangle) {
         if (value.x === 0 && value.y === 0 && value.width === 0 && value.height === 0) {
             throw new Error('Cannot set empty bounds');
         }
@@ -512,22 +514,22 @@ export abstract class PdfField {
     /**
      * Gets the fore color of the field.
      *
-     * @returns {number[]} R, G, B color values in between 0 to 255.
+     * @returns {PdfColor} R, G, B color values in between 0 to 255.
      * ```typescript
      * // Load an existing PDF document
      * let document: PdfDocument = new PdfDocument(data, password);
      * // Access the form field at index 0
      * let field: PdfField = document.form.fieldAt(0);
      * // Gets the fore color of the field.
-     * let color: number[] = field.color;
+     * let color: PdfColor = field.color;
      * // Save the document
      * document.save('output.pdf');
      * // Destroy the document
      * document.destroy();
      * ```
      */
-    get color(): number[] {
-        let value: number[];
+    get color(): PdfColor {
+        let value: PdfColor;
         const widget: PdfWidgetAnnotation = this.itemAt(this._defaultIndex);
         if (widget && widget.color) {
             value = widget.color;
@@ -539,21 +541,21 @@ export abstract class PdfField {
     /**
      * Sets the fore color of the field.
      *
-     * @param {number[]} value R, G, B color values in between 0 to 255.
+     * @param {PdfColor} value R, G, B color values in between 0 to 255.
      * ```typescript
      * // Load an existing PDF document
      * let document: PdfDocument = new PdfDocument(data, password);
      * // Access the form field at index 0
      * let field: PdfField = document.form.fieldAt(0);
      * // Sets the fore color of the field.
-     * field.color = [255, 0, 0];
+     * field.color = {r: 255, g: 0, b: 0};
      * // Save the document
      * document.save('output.pdf');
      * // Destroy the document
      * document.destroy();
      * ```
      */
-    set color(value: number[]) {
+    set color(value: PdfColor) {
         const widget: PdfWidgetAnnotation = this.itemAt(this._defaultIndex);
         if (widget && widget.color && _isNullOrUndefined(value)) {
             widget.color = value;
@@ -572,81 +574,83 @@ export abstract class PdfField {
     /**
      * Gets the background color of the field.
      *
-     * @returns {number[]} R, G, B color values in between 0 to 255.
+     * @returns {PdfColor} R, G, B color values in between 0 to 255.
      * ```typescript
      * // Load an existing PDF document
      * let document: PdfDocument = new PdfDocument(data, password);
      * // Access the form field at index 0
      * let field: PdfField = document.form.fieldAt(0);
      * // Gets the background color of the field.
-     * let backColor: number[] = field.backColor;
+     * let backColor: PdfColor = field.backColor;
      * // Save the document
      * document.save('output.pdf');
      * // Destroy the document
      * document.destroy();
      * ```
      */
-    get backColor(): number[] {
+    get backColor(): PdfColor {
         return this._parseBackColor(false);
     }
     /**
      * Sets the background color of the field.
      *
-     * @param {number[]} value R, G, B color values in between 0 to 255.
+     * @param {PdfColor} value R, G, B color values in between 0 to 255.
      * ```typescript
      * // Load an existing PDF document
      * let document: PdfDocument = new PdfDocument(data, password);
      * // Access the form field at index 0
      * let field: PdfField = document.form.fieldAt(0);
      * // Sets the background color of the field.
-     * field.backColor = [255, 0, 0];
+     * field.backColor = {r: 255, g: 0, b: 0};
      * // Save the document
      * document.save('output.pdf');
      * // Destroy the document
      * document.destroy();
      * ```
      */
-    set backColor(value: number[]) {
+    set backColor(value: PdfColor) {
         this._updateBackColor(value);
     }
     /**
      * Gets the border color of the field.
      *
-     * @returns {number[]} R, G, B color values in between 0 to 255.
+     * @returns {PdfColor} R, G, B color values in between 0 to 255.
      * ```typescript
      * // Load an existing PDF document
      * let document: PdfDocument = new PdfDocument(data, password);
      * // Access the form field at index 0
      * let field: PdfField = document.form.fieldAt(0);
      * // Gets the border color of the field.
-     * let borderColor: number[] = field.borderColor;
+     * let borderColor: PdfColor = field.borderColor;
      * // Save the document
      * document.save('output.pdf');
      * // Destroy the document
      * document.destroy();
      * ```
      */
-    get borderColor(): number[] {
+    get borderColor(): PdfColor {
         return this._parseBorderColor(true);
     }
     /**
      * Sets the border color of the field.
      *
-     * @param {number[]} value Array with R, G, B, A color values in between 0 to 255. For optional A (0-254), it signifies transparency.
+     * @param {PdfColor} value Array with R, G, B, A color values in between 0 to 255.
      * ```typescript
      * // Load an existing PDF document
      * let document: PdfDocument = new PdfDocument(data, password);
      * // Access the form field at index 0
      * let field: PdfField = document.form.fieldAt(0);
      * // Sets the border color of the field.
-     * field.borderColor = [255, 0, 0];
+     * field.borderColor = {r: 255, g: 0, b: 0};
+     * // Sets the transparent border color of the field.
+     * field.borderColor = {r: 255, g: 255, b: 255, isTransparent: true};
      * // Save the document
      * document.save('output.pdf');
      * // Destroy the document
      * document.destroy();
      * ```
      */
-    set borderColor(value: number[]) {
+    set borderColor(value: PdfColor) {
         this._updateBorderColor(value, true);
     }
     /**
@@ -818,7 +822,7 @@ export abstract class PdfField {
         if (widget && widget._dictionary.has('BS')) {
             value = widget.border;
         } else {
-            value = new PdfInteractiveBorder();
+            value = new PdfInteractiveBorder({style: PdfBorderStyle.solid});
             if (!(this instanceof PdfButtonField)) {
                 value._width = 0;
             }
@@ -869,7 +873,7 @@ export abstract class PdfField {
      * // Access the form field at index 0
      * let field: PdfField = document.form.fieldAt(0);
      * // Sets the width, style and dash of the border of the field.
-     * field.border = new PdfInteractiveBorder(2, PdfBorderStyle.solid);
+     * field.border = new PdfInteractiveBorder({width: 2, style: PdfBorderStyle.solid});
      * // Save the document
      * document.save('output.pdf');
      * // Destroy the document
@@ -879,6 +883,8 @@ export abstract class PdfField {
     set border(value: PdfInteractiveBorder) {
         const widget: PdfWidgetAnnotation = this.itemAt(this._defaultIndex);
         if (widget) {
+            widget.border.width = value.width;
+            widget.border.style = value.style;
             this._updateBorder(widget._dictionary, value);
         } else {
             this._updateBorder(this._dictionary, value);
@@ -1159,25 +1165,25 @@ export abstract class PdfField {
     }
     get _grayBrush(): PdfBrush {
         if (!this._gray) {
-            this._gray = new PdfBrush([128, 128, 128]);
+            this._gray = new PdfBrush({r: 128, g: 128, b: 128});
         }
         return this._gray;
     }
     get _silverBrush(): PdfBrush {
         if (!this._silver) {
-            this._silver = new PdfBrush([198, 198, 198]);
+            this._silver = new PdfBrush({r: 198, g: 198, b: 198});
         }
         return this._silver;
     }
     get _whiteBrush(): PdfBrush {
         if (!this._white) {
-            this._white = new PdfBrush([255, 255, 255]);
+            this._white = new PdfBrush({r: 255, g: 255, b: 255});
         }
         return this._white;
     }
     get _blackBrush(): PdfBrush {
         if (!this._black) {
-            this._black = new PdfBrush([0, 0, 0]);
+            this._black = new PdfBrush({r: 0, g: 0, b: 0});
         }
         return this._black;
     }
@@ -1212,8 +1218,8 @@ export abstract class PdfField {
             return !this._isTransparentBorderColor;
         }
     }
-    _parseBackColor(hasTransparency: boolean): number[] {
-        let value: number[];
+    _parseBackColor(hasTransparency: boolean): PdfColor {
+        let value: PdfColor;
         if ((!hasTransparency) || ((this._isLoaded && this._hasBackColor) || (!this._isLoaded && !this._isTransparentBackColor))) {
             const widget: PdfWidgetAnnotation = this.itemAt(this._defaultIndex);
             if (widget && widget.backColor) {
@@ -1228,13 +1234,13 @@ export abstract class PdfField {
                 }
             }
             if (typeof value === 'undefined' || value === null) {
-                value = [255, 255, 255];
+                value = {r: 255, g: 255, b: 255};
             }
         }
         return value;
     }
-    _parseBorderColor(hasTransparency: boolean): number[] {
-        let value: number[];
+    _parseBorderColor(hasTransparency: boolean): PdfColor {
+        let value: PdfColor;
         if ((!hasTransparency) || ((this._isLoaded && this._hasBorderColor) || (!this._isLoaded && !this._isTransparentBorderColor))) {
             const widget: PdfWidgetAnnotation = this.itemAt(this._defaultIndex);
             if (widget && widget.borderColor) {
@@ -1248,14 +1254,14 @@ export abstract class PdfField {
                     }
                 }
             }
-            if (typeof value === 'undefined' || value === null) {
-                value = [0, 0, 0];
+            if (value === null || typeof value === 'undefined') {
+                value = {r: 0, g: 0, b: 0};
             }
         }
         return value;
     }
-    _updateBackColor(value: number[], hasTransparency: boolean = false): void {
-        if (hasTransparency && _isNullOrUndefined(value) && value.length === 4 && value[3] !== 255) {
+    _updateBackColor(value: PdfColor, hasTransparency: boolean = false): void {
+        if (hasTransparency && _isNullOrUndefined(value) && value.isTransparent) {
             this._isTransparentBackColor = true;
             if (this._dictionary && this._dictionary.has('BG')) {
                 delete this._dictionary._map.BG;
@@ -1278,21 +1284,21 @@ export abstract class PdfField {
                 const mkDictionary: _PdfDictionary = this._mkDictionary;
                 if (typeof mkDictionary === 'undefined') {
                     const dictionary: _PdfDictionary = new _PdfDictionary(this._crossReference);
-                    dictionary.update('BG', [Number.parseFloat((value[0] / 255).toFixed(3)),
-                        Number.parseFloat((value[1] / 255).toFixed(3)),
-                        Number.parseFloat((value[2] / 255).toFixed(3))]);
+                    dictionary.update('BG', [Number.parseFloat((value.r / 255).toFixed(3)),
+                        Number.parseFloat((value.g / 255).toFixed(3)),
+                        Number.parseFloat((value.b / 255).toFixed(3))]);
                     this._dictionary.update('MK', dictionary);
                 } else if (!mkDictionary.has('BG') || _parseColor(mkDictionary.getArray('BG')) !== value) {
-                    mkDictionary.update('BG', [Number.parseFloat((value[0] / 255).toFixed(3)),
-                        Number.parseFloat((value[1] / 255).toFixed(3)),
-                        Number.parseFloat((value[2] / 255).toFixed(3))]);
+                    mkDictionary.update('BG', [Number.parseFloat((value.r / 255).toFixed(3)),
+                        Number.parseFloat((value.g / 255).toFixed(3)),
+                        Number.parseFloat((value.b / 255).toFixed(3))]);
                     this._dictionary._updated = true;
                 }
             }
         }
     }
-    _updateBorderColor(value: number[], hasTransparency: boolean = false): void {
-        if (hasTransparency && value.length === 4 && value[3] !== 255) {
+    _updateBorderColor(value: PdfColor, hasTransparency: boolean = false): void {
+        if (hasTransparency && value.isTransparent) {
             this._isTransparentBorderColor = true;
             if (this._dictionary.has('BC')) {
                 delete this._dictionary._map.BC;
@@ -1321,14 +1327,14 @@ export abstract class PdfField {
                 const mkDictionary: _PdfDictionary = this._mkDictionary;
                 if (typeof mkDictionary === 'undefined') {
                     const dictionary: _PdfDictionary = new _PdfDictionary(this._crossReference);
-                    dictionary.update('BC', [Number.parseFloat((value[0] / 255).toFixed(3)),
-                        Number.parseFloat((value[1] / 255).toFixed(3)),
-                        Number.parseFloat((value[2] / 255).toFixed(3))]);
+                    dictionary.update('BC', [Number.parseFloat((value.r / 255).toFixed(3)),
+                        Number.parseFloat((value.g / 255).toFixed(3)),
+                        Number.parseFloat((value.b / 255).toFixed(3))]);
                     this._dictionary.update('MK', dictionary);
                 } else if (!mkDictionary.has('BC') || _parseColor(mkDictionary.getArray('BC')) !== value) {
-                    mkDictionary.update('BC', [Number.parseFloat((value[0] / 255).toFixed(3)),
-                        Number.parseFloat((value[1] / 255).toFixed(3)),
-                        Number.parseFloat((value[2] / 255).toFixed(3))]);
+                    mkDictionary.update('BC', [Number.parseFloat((value.r / 255).toFixed(3)),
+                        Number.parseFloat((value.g / 255).toFixed(3)),
+                        Number.parseFloat((value.b / 255).toFixed(3))]);
                     this._dictionary._updated = true;
                 }
             }
@@ -1651,7 +1657,7 @@ export abstract class PdfField {
         const defaultAppearance: _PdfDefaultAppearance = new _PdfDefaultAppearance();
         defaultAppearance.fontName = this._fontName;
         defaultAppearance.fontSize = this._font._size;
-        defaultAppearance.color = this.color ? this.color : [0, 0, 0];
+        defaultAppearance.color = this.color ? this.color : {r: 0, g: 0, b: 0};
         if (this._dictionary.has('Kids')) {
             const widgetDictionary: _PdfDictionary[] = this._dictionary.getArray('Kids');
             widgetDictionary.forEach((dictionary: _PdfDictionary, index: number) => {
@@ -1669,7 +1675,7 @@ export abstract class PdfField {
         }
     }
     _drawRectangularControl(g: PdfGraphics, parameter: _PaintParameter): void {
-        g.drawRectangle(parameter.bounds[0], parameter.bounds[1], parameter.bounds[2], parameter.bounds[3], parameter.backBrush);
+        g.drawRectangle(parameter.bounds, parameter.backBrush);
         this._drawBorder(g, parameter.bounds, parameter.borderPen, parameter.borderStyle, parameter.borderWidth);
         switch (parameter.borderStyle) {
         case PdfBorderStyle.inset:
@@ -1682,100 +1688,98 @@ export abstract class PdfField {
             break;
         }
     }
-    _drawBorder(g: PdfGraphics, bounds: number[], borderPen: PdfPen, style: PdfBorderStyle, borderWidth: number): void {
+    _drawBorder(g: PdfGraphics, bounds: Rectangle, borderPen: PdfPen, style: PdfBorderStyle, borderWidth: number): void {
         if (borderPen && borderWidth > 0) {
             if (style === PdfBorderStyle.underline) {
-                g.drawLine(borderPen, bounds[0],
-                           bounds[0] + bounds[3] - borderWidth / 2,
-                           bounds[0] + bounds[2],
-                           bounds[1] + bounds[3] - borderWidth / 2);
+                g.drawLine(borderPen,
+                           {x: bounds.x, y: bounds.x + bounds.height - borderWidth / 2},
+                           {x: bounds.x + bounds.width, y: bounds.y + bounds.height - borderWidth / 2});
             } else {
-                g.drawRectangle(bounds[0] + borderWidth / 2,
-                                bounds[1] + borderWidth / 2,
-                                bounds[2] - borderWidth,
-                                bounds[3] - borderWidth,
-                                borderPen);
+                const actual: Rectangle = {x: bounds.x + borderWidth / 2,
+                    y: bounds.y + borderWidth / 2,
+                    width: bounds.width - borderWidth,
+                    height: bounds.height - borderWidth};
+                g.drawRectangle(actual, borderPen);
             }
         }
     }
-    _drawLeftTopShadow(g: PdfGraphics, bounds: number[], width: number, brush: PdfBrush): void {
+    _drawLeftTopShadow(g: PdfGraphics, bounds: Rectangle, width: number, brush: PdfBrush): void {
         const path: PdfPath = new PdfPath();
-        const points: Array<number[]> = [];
-        points.push([bounds[0] + width, bounds[1] + width]);
-        points.push([bounds[0] + width, (bounds[1] + bounds[3]) - width]);
-        points.push([bounds[0] + 2 * width, (bounds[1] + bounds[3]) - 2 * width]);
-        points.push([bounds[0] + 2 * width, bounds[1] + 2 * width]);
-        points.push([(bounds[0] + bounds[2]) - 2 * width, bounds[1] + 2 * width]);
-        points.push([(bounds[0] + bounds[2]) - width, bounds[1] + width]);
+        const points: Array<Point> = [];
+        points.push({x: bounds.x + width, y: bounds.y + width});
+        points.push({x: bounds.x + width, y: (bounds.y + bounds.height) - width});
+        points.push({x: bounds.x + 2 * width, y: (bounds.y + bounds.height) - 2 * width});
+        points.push({x: bounds.x + 2 * width, y: bounds.y + 2 * width});
+        points.push({x: (bounds.x + bounds.width) - 2 * width, y: bounds.y + 2 * width});
+        points.push({x: (bounds.x + bounds.width) - width, y: bounds.y + width});
         path.addPolygon(points);
         g.drawPath(path, brush);
     }
-    _drawRightBottomShadow(g: PdfGraphics, bounds: number[], width: number, brush: PdfBrush): void {
+    _drawRightBottomShadow(g: PdfGraphics, bounds: Rectangle, width: number, brush: PdfBrush): void {
         const path: PdfPath = new PdfPath();
-        const points: Array<number[]> = [];
-        points.push([bounds[0] + width, (bounds[1] + bounds[3]) - width]);
-        points.push([bounds[0] + 2 * width, (bounds[1] + bounds[3]) - 2 * width]);
-        points.push([(bounds[0] + bounds[2]) - 2 * width, (bounds[1] + bounds[3]) - 2 * width]);
-        points.push([(bounds[0] + bounds[2]) - 2 * width, bounds[1] + 2 * width]);
-        points.push([bounds[0] + bounds[2] - width, bounds[1] + width]);
-        points.push([(bounds[0] + bounds[2]) - width, (bounds[1] + bounds[3]) - width]);
+        const points: Array<Point> = [];
+        points.push({x: bounds.x + width, y: (bounds.y + bounds.height) - width});
+        points.push({x: bounds.x + 2 * width, y: (bounds.y + bounds.height) - 2 * width});
+        points.push({x: (bounds.x + bounds.width) - 2 * width, y: (bounds.y + bounds.height) - 2 * width});
+        points.push({x: (bounds.x + bounds.width) - 2 * width, y: bounds.y + 2 * width});
+        points.push({x: bounds.x + bounds.width - width, y: bounds.y + width});
+        points.push({x: (bounds.x + bounds.width) - width, y: (bounds.y + bounds.height) - width});
         path.addPolygon(points);
         g.drawPath(path, brush);
     }
     _drawRadioButton(graphics: PdfGraphics, parameter: _PaintParameter, checkSymbol: string, state: _PdfCheckFieldState): void {
         if (checkSymbol === 'l') {
-            const bounds: number[] = parameter.bounds;
-            let diameter: number = bounds[2];
+            const bounds: Rectangle = parameter.bounds;
+            let diameter: number = bounds.width;
             if (this._enableGrouping) {
-                diameter = Math.min(bounds[2], bounds[3]);
+                diameter = Math.min(bounds.width, bounds.height);
             }
             switch (state) {
             case _PdfCheckFieldState.checked:
             case _PdfCheckFieldState.unchecked:
-                graphics.drawEllipse(bounds[0], bounds[1], diameter, bounds[3], parameter.backBrush);
+                graphics.drawEllipse({x: bounds.x, y: bounds.y, width: diameter, height: bounds.height}, parameter.backBrush);
                 break;
             case _PdfCheckFieldState.pressedChecked:
             case _PdfCheckFieldState.pressedUnchecked:
                 if ((parameter.borderStyle === PdfBorderStyle.beveled) || (parameter.borderStyle === PdfBorderStyle.underline)) {
-                    graphics.drawEllipse(bounds[0], bounds[1], bounds[2], bounds[3], parameter.backBrush);
+                    graphics.drawEllipse(bounds, parameter.backBrush);
                 } else {
-                    graphics.drawEllipse(bounds[0], bounds[1], diameter, bounds[3], parameter.shadowBrush);
+                    graphics.drawEllipse({x: bounds.x, y: bounds.y, width: diameter, height: bounds.height}, parameter.shadowBrush);
                 }
                 break;
             }
             this._drawRoundBorder(graphics, bounds, parameter.borderPen, parameter.borderWidth);
             this._drawRoundShadow(graphics, parameter, state);
             if (state === _PdfCheckFieldState.checked || state === _PdfCheckFieldState.pressedChecked) {
-                const outward: number[] = [bounds[0] + parameter.borderWidth / 2,
-                    bounds[1] + parameter.borderWidth / 2,
+                const outward: number[] = [bounds.x + parameter.borderWidth / 2,
+                    bounds.y + parameter.borderWidth / 2,
                     diameter - parameter.borderWidth,
-                    bounds[3] - parameter.borderWidth];
-                graphics.drawEllipse(outward[0] + (outward[2] / 4),
-                                     outward[1] + (outward[2] / 4),
-                                     outward[2] - (outward[2] / 2),
-                                     outward[3] - (outward[2] / 2),
-                                     parameter.foreBrush);
+                    bounds.height - parameter.borderWidth];
+                graphics.drawEllipse({x: outward[0] + (outward[2] / 4),
+                    y: outward[1] + (outward[2] / 4),
+                    width: outward[2] - (outward[2] / 2),
+                    height: outward[3] - (outward[2] / 2)}, parameter.foreBrush);
             }
         } else {
             this._drawCheckBox(graphics, parameter, checkSymbol, state);
         }
     }
-    _drawRoundBorder(graphics: PdfGraphics, bounds: number[], borderPen: PdfPen, borderWidth: number): void {
-        if (bounds[0] !== 0 || bounds[1] !== 0 || bounds[2] !== 0 || bounds[3] !== 0) {
-            graphics.drawEllipse(bounds[0] + borderWidth / 2, bounds[1] + borderWidth / 2, (this._enableGrouping ?
-                Math.min(bounds[2], bounds[3]) : bounds[2]) - borderWidth, bounds[3] - borderWidth, borderPen);
+    _drawRoundBorder(graphics: PdfGraphics, bounds: Rectangle, borderPen: PdfPen, borderWidth: number): void {
+        if (bounds.x !== 0 || bounds.y !== 0 || bounds.width !== 0 || bounds.height !== 0) {
+            graphics.drawEllipse({x: bounds.x + borderWidth / 2, y: bounds.y + borderWidth / 2, width: (this._enableGrouping ?
+                Math.min(bounds.width, bounds.height) : bounds.width) - borderWidth, height: bounds.height - borderWidth}, borderPen);
         }
     }
     _drawRoundShadow(graphics: PdfGraphics, parameter: _PaintParameter, state: _PdfCheckFieldState): void {
         const borderWidth: number = parameter.borderWidth;
         const inflateValue: number = -1.5 * borderWidth;
-        const x: number = parameter.bounds[0] + inflateValue;
-        const y: number = parameter.bounds[1] + inflateValue;
-        const width: number = parameter.bounds[2] + (2 * inflateValue);
-        const height: number = parameter.bounds[3] + (2 * inflateValue);
+        const x: number = parameter.bounds.x + inflateValue;
+        const y: number = parameter.bounds.y + inflateValue;
+        const width: number = parameter.bounds.width + (2 * inflateValue);
+        const height: number = parameter.bounds.height + (2 * inflateValue);
         const shadowBrush: PdfBrush = parameter.shadowBrush;
         if (shadowBrush) {
-            const shadowColor: number[] = shadowBrush._color;
+            const shadowColor: PdfColor = shadowBrush._color;
             let leftTop: PdfPen;
             let rightBottom: PdfPen;
             switch (parameter.borderStyle) {
@@ -1784,11 +1788,11 @@ export abstract class PdfField {
                 case _PdfCheckFieldState.pressedChecked:
                 case _PdfCheckFieldState.pressedUnchecked:
                     leftTop = new PdfPen(shadowColor, borderWidth);
-                    rightBottom = new PdfPen([255, 255, 255], borderWidth);
+                    rightBottom = new PdfPen({r: 255, g: 255, b: 255}, borderWidth);
                     break;
                 case _PdfCheckFieldState.checked:
                 case _PdfCheckFieldState.unchecked:
-                    leftTop = new PdfPen([255, 255, 255], borderWidth);
+                    leftTop = new PdfPen({r: 255, g: 255, b: 255}, borderWidth);
                     rightBottom = new PdfPen(shadowColor, borderWidth);
                     break;
                 }
@@ -1797,20 +1801,20 @@ export abstract class PdfField {
                 switch (state) {
                 case _PdfCheckFieldState.pressedChecked:
                 case _PdfCheckFieldState.pressedUnchecked:
-                    leftTop = new PdfPen([0, 0, 0], borderWidth);
-                    rightBottom = new PdfPen([0, 0, 0], borderWidth);
+                    leftTop = new PdfPen({r: 0, g: 0, b: 0}, borderWidth);
+                    rightBottom = new PdfPen({r: 0, g: 0, b: 0}, borderWidth);
                     break;
                 case _PdfCheckFieldState.checked:
                 case _PdfCheckFieldState.unchecked:
-                    leftTop = new PdfPen([128, 128, 128], borderWidth);
-                    rightBottom = new PdfPen([192, 192, 192], borderWidth);
+                    leftTop = new PdfPen({r: 128, g: 128, b: 128}, borderWidth);
+                    rightBottom = new PdfPen({r: 192, g: 192, b: 192}, borderWidth);
                     break;
                 }
                 break;
             }
             if (leftTop && rightBottom) {
-                graphics.drawArc(x, y, width, height, 135, 180, leftTop);
-                graphics.drawArc(x, y, width, height, -45, 180, rightBottom);
+                graphics.drawArc({x: x, y: y, width: width, height: height}, 135, 180, leftTop);
+                graphics.drawArc({x: x, y: y, width: width, height: height}, -45, 180, rightBottom);
             }
         }
     }
@@ -1823,11 +1827,7 @@ export abstract class PdfField {
         case _PdfCheckFieldState.unchecked:
         case _PdfCheckFieldState.checked:
             if (parameter.borderPen || parameter.backBrush) {
-                graphics.drawRectangle(parameter.bounds[0],
-                                       parameter.bounds[1],
-                                       parameter.bounds[2],
-                                       parameter.bounds[3],
-                                       parameter.backBrush);
+                graphics.drawRectangle(parameter.bounds, parameter.backBrush);
             }
             break;
         case _PdfCheckFieldState.pressedChecked:
@@ -1835,22 +1835,14 @@ export abstract class PdfField {
             if ((parameter.borderStyle === PdfBorderStyle.beveled || parameter.backBrush) ||
                 (parameter.borderStyle === PdfBorderStyle.underline)) {
                 if (parameter.borderPen || parameter.backBrush) {
-                    graphics.drawRectangle(parameter.bounds[0],
-                                           parameter.bounds[1],
-                                           parameter.bounds[2],
-                                           parameter.bounds[3],
-                                           parameter.backBrush);
+                    graphics.drawRectangle(parameter.bounds, parameter.backBrush);
                 }
             } else if (parameter.borderPen || parameter.shadowBrush) {
-                graphics.drawRectangle(parameter.bounds[0],
-                                       parameter.bounds[1],
-                                       parameter.bounds[2],
-                                       parameter.bounds[3],
-                                       parameter.shadowBrush);
+                graphics.drawRectangle(parameter.bounds, parameter.shadowBrush);
             }
             break;
         }
-        let rectangle: number[] = parameter.bounds;
+        let rectangle: Rectangle = parameter.bounds;
         this._drawBorder(graphics, parameter.bounds, parameter.borderPen, parameter.borderStyle, parameter.borderWidth);
         if ((state === _PdfCheckFieldState.pressedChecked) || (state === _PdfCheckFieldState.pressedUnchecked)) {
             switch (parameter.borderStyle) {
@@ -1889,82 +1881,81 @@ export abstract class PdfField {
                 }
                 const xPosition: number = Math.max((extraBorder ? 2 * parameter.borderWidth : parameter.borderWidth), 1);
                 const xOffset: number = Math.min(borderWidth, xPosition);
-                size = (parameter.bounds[2] > parameter.bounds[3]) ? parameter.bounds[3] : parameter.bounds[2];
+                size = (parameter.bounds.width > parameter.bounds.height) ? parameter.bounds.height : parameter.bounds.width;
                 const fontSize: number = size - 2 * xOffset;
                 font = new PdfStandardFont(PdfFontFamily.zapfDingbats, fontSize);
-                if (parameter.bounds[2] > parameter.bounds[3]) {
-                    yOffset = ((parameter.bounds[3] - font._metrics._getHeight()) / 2);
+                if (parameter.bounds.width > parameter.bounds.height) {
+                    yOffset = ((parameter.bounds.height - font._getHeight()) / 2);
                 }
             } else {
                 font = new PdfStandardFont(PdfFontFamily.zapfDingbats, font._size);
             }
             if (size === 0) {
-                size = parameter.bounds[3];
+                size = parameter.bounds.height;
             }
             if (parameter.pageRotationAngle !== PdfRotationAngle.angle0 || parameter.rotationAngle > 0) {
                 const state: PdfGraphicsState = graphics.save();
-                const size: number[] = graphics._size;
+                const size: Size = graphics._size;
                 if (parameter.pageRotationAngle !== PdfRotationAngle.angle0) {
                     if (parameter.pageRotationAngle === PdfRotationAngle.angle90) {
-                        graphics.translateTransform(size[1], 0);
+                        graphics.translateTransform({x: size.height, y: 0});
                         graphics.rotateTransform(90);
-                        const y: number = size[1] - (rectangle[0] + rectangle[2]);
-                        const x: number = rectangle[1];
-                        rectangle = [x, y, rectangle[3], rectangle[2]];
+                        const y: number = size.height - (rectangle.x + rectangle.width);
+                        const x: number = rectangle.y;
+                        rectangle = {x: x, y: y, width: rectangle.height, height: rectangle.width};
                     } else if (parameter.pageRotationAngle === PdfRotationAngle.angle180) {
-                        graphics.translateTransform(size[0], size[1]);
+                        graphics.translateTransform({x: size.width, y: size.height});
                         graphics.rotateTransform(-180);
-                        const x: number = size[0] - (rectangle[0] + rectangle[2]);
-                        const y: number = size[1] - (rectangle[1] + rectangle[3]);
-                        rectangle = [x, y, rectangle[2], rectangle[3]];
+                        const x: number = size.width - (rectangle.x + rectangle.width);
+                        const y: number = size.height - (rectangle.y + rectangle.height);
+                        rectangle = {x: x, y: y, width: rectangle.width, height: rectangle.height};
                     } else if (parameter.pageRotationAngle === PdfRotationAngle.angle270) {
-                        graphics.translateTransform(0, size[0]);
+                        graphics.translateTransform({x: 0, y: size.width});
                         graphics.rotateTransform(270);
-                        const x: number = size[0] - (rectangle[1] + rectangle[3]);
-                        const y: number = rectangle[0];
-                        rectangle = [x, y, rectangle[3], rectangle[2]];
+                        const x: number = size.width - (rectangle.y + rectangle.height);
+                        const y: number = rectangle.x;
+                        rectangle = {x: x, y: y, width: rectangle.height, height: rectangle.width};
                     }
                 }
                 if (parameter.rotationAngle > 0) {
                     if (parameter.rotationAngle === 90) {
                         if (parameter.pageRotationAngle === PdfRotationAngle.angle90) {
-                            graphics.translateTransform(0, size[1]);
+                            graphics.translateTransform({x: 0, y: size.height});
                             graphics.rotateTransform(-90);
-                            const x: number = size[1] - (rectangle[1] + rectangle[3]);
-                            const y: number = rectangle[0];
-                            rectangle = [x, y, rectangle[3], rectangle[2]];
+                            const x: number = size.height - (rectangle.y + rectangle.height);
+                            const y: number = rectangle.x;
+                            rectangle = {x: x, y: y, width: rectangle.height, height: rectangle.width};
                         } else {
-                            if (rectangle[2] > rectangle[3]) {
-                                graphics.translateTransform(0, size[1]);
+                            if (rectangle.width > rectangle.height) {
+                                graphics.translateTransform({x: 0, y: size.height});
                                 graphics.rotateTransform(-90);
-                                rectangle = [parameter.bounds[0], parameter.bounds[1], parameter.bounds[2], parameter.bounds[3]];
+                                rectangle = parameter.bounds;
                             } else {
-                                const z: number = rectangle[0];
-                                rectangle[0] = -(rectangle[1] + rectangle[3]);
-                                rectangle[1] = z;
-                                const height: number = rectangle[3];
-                                rectangle[3] = rectangle[2] > font._metrics._getHeight() ? rectangle[2] : font._metrics._getHeight();
-                                rectangle[2] = height;
+                                const z: number = rectangle.x;
+                                rectangle.x = -(rectangle.y + rectangle.height);
+                                rectangle.y = z;
+                                const height: number = rectangle.height;
+                                rectangle.height = rectangle.width > font._getHeight() ? rectangle.width : font._getHeight();
+                                rectangle.width = height;
                                 graphics.rotateTransform(-90);
-                                rectangle = [rectangle[0], rectangle[1], rectangle[2], rectangle[3]];
                             }
                         }
                     } else if (parameter.rotationAngle === 270) {
-                        graphics.translateTransform(size[0], 0);
+                        graphics.translateTransform({x: size.width, y: 0});
                         graphics.rotateTransform(-270);
-                        const x: number = rectangle[1];
-                        const y: number = size[0] - (rectangle[0] + rectangle[2]);
-                        rectangle = [x, y, rectangle[3], rectangle[2]];
+                        const x: number = rectangle.y;
+                        const y: number = size.width - (rectangle.x + rectangle.width);
+                        rectangle = {x: x, y: y, width: rectangle.height, height: rectangle.width};
                     } else if (parameter.rotationAngle === 180) {
-                        graphics.translateTransform(size[0], size[1]);
+                        graphics.translateTransform({x: size.width, y: size.height});
                         graphics.rotateTransform(-180);
-                        const x: number = size[0] - (rectangle[0] + rectangle[2]);
-                        const y: number = size[1] - (rectangle[1] + rectangle[3]);
-                        rectangle = [x, y, rectangle[2], rectangle[3]];
+                        const x: number = size.width - (rectangle.x + rectangle.width);
+                        const y: number = size.height - (rectangle.y + rectangle.height);
+                        rectangle = {x: x, y: y, width: rectangle.width, height: rectangle.height};
                     }
                     graphics.drawString(checkSymbol,
                                         font,
-                                        [rectangle[0], rectangle[1] - yOffset, rectangle[2], rectangle[3]],
+                                        {x: rectangle.x, y: rectangle.y - yOffset, width: rectangle.width, height: rectangle.height},
                                         null,
                                         parameter.foreBrush,
                                         new PdfStringFormat(PdfTextAlignment.center, PdfVerticalAlignment.middle));
@@ -1972,7 +1963,7 @@ export abstract class PdfField {
                 } else {
                     graphics.drawString(checkSymbol,
                                         font,
-                                        [rectangle[0], rectangle[1] - yOffset, rectangle[2], rectangle[3]],
+                                        {x: rectangle.x, y: rectangle.y - yOffset, width: rectangle.width, height: rectangle.height},
                                         null,
                                         parameter.foreBrush,
                                         new PdfStringFormat(PdfTextAlignment.center, PdfVerticalAlignment.middle));
@@ -2001,13 +1992,13 @@ export abstract class PdfField {
             const graphics: PdfGraphics = page.graphics;
             graphics.save();
             if (page.rotation === PdfRotationAngle.angle90) {
-                graphics.translateTransform(graphics._size[1], 0);
+                graphics.translateTransform({x: graphics._size.height, y: 0});
                 graphics.rotateTransform(90);
             } else if (page.rotation === PdfRotationAngle.angle180) {
-                graphics.translateTransform(graphics._size[0], graphics._size[1]);
+                graphics.translateTransform({x: graphics._size.width, y: graphics._size.height});
                 graphics.rotateTransform(-180);
             } else if (page.rotation === PdfRotationAngle.angle270) {
-                graphics.translateTransform(0, graphics._size[0]);
+                graphics.translateTransform({x: 0, y: graphics._size.width});
                 graphics.rotateTransform(270);
             }
             graphics._sw._setTextRenderingMode(_TextRenderingMode.fill);
@@ -2039,14 +2030,17 @@ export abstract class PdfField {
         this._crossReference._cacheMap.set(reference, template._content);
         appearance.update(key, reference);
     }
-    _rotateTextBox(rect: number[], size: number[], angle: PdfRotationAngle): number[] {
-        let rectangle: number[] = [0, 0, 0, 0];
+    _rotateTextBox(rect: Rectangle, size: Size, angle: PdfRotationAngle): Rectangle {
+        let rectangle: Rectangle = {x: 0, y: 0, width: 0, height: 0};
         if (angle === PdfRotationAngle.angle180) {
-            rectangle = [size[0] - (rect[0] + rect[2]), size[1] - (rect[1] + rect[3]), rect[2], rect[3]];
+            rectangle = {x: size.width - (rect.x + rect.width),
+                y: size.height - (rect.y + rect.height),
+                width: rect.width,
+                height: rect.height};
         } else if (angle === PdfRotationAngle.angle270) {
-            rectangle = [rect[1], size[0] - (rect[0] + rect[2]), rect[3], rect[2]];
+            rectangle = {x: rect.y, y: size.width - (rect.x + rect.width), width: rect.height, height: rect.width};
         } else if (angle === PdfRotationAngle.angle90) {
-            rectangle = [size[1] - (rect[1] + rect[3]), rect[0], rect[3], rect[2]];
+            rectangle = {x: size.height - (rect.y + rect.height), y: rect.x, width: rect.height, height: rect.width};
         }
         return rectangle;
     }
@@ -2154,7 +2148,7 @@ export class PdfTextBoxField extends PdfField {
      *
      * @param {PdfPage} page The page where the field is drawn.
      * @param {string} name The name of the field.
-     * @param {{x: number, y: number, width: number, height: number}} bounds The bounds of the field.
+     * @param {Rectangle} bounds The bounds of the field.
      * ```typescript
      * // Load an existing PDF document
      * let document: PdfDocument = new PdfDocument(data);
@@ -2172,11 +2166,92 @@ export class PdfTextBoxField extends PdfField {
      * document.destroy();
      * ```
      */
-    constructor(page: PdfPage, name: string, bounds: {x: number, y: number, width: number, height: number})
-    constructor(page?: PdfPage, name?: string, bounds?: {x: number, y: number, width: number, height: number}) {
+    constructor(page: PdfPage, name: string, bounds: Rectangle)
+    /**
+     * Represents a text box field of the PDF document.
+     *
+     * @param {PdfPage} page The page where the field is drawn.
+     * @param {string} name The unique name of the field.
+     * @param {Rectangle} bounds The bounds of the field.
+     * @param {object} [properties] Optional customization properties.
+     * @param {string} [properties.toolTip] Tooltip text.
+     * @param {PdfColor} [properties.color] Fore color (text color) of the field (RGB).
+     * @param {PdfColor} [properties.backColor] Background color of the field.
+     * @param {PdfColor} [properties.borderColor] Border color.
+     * @param {PdfInteractiveBorder} [properties.border] Border settings (width, style, dash).
+     * @param {string} [properties.text] Initial text value of the field.
+     * @param {PdfFont} [properties.font] Font applied to the field text.
+     *
+     * ```typescript
+     * // Load an existing PDF
+     * const document = new PdfDocument(data);
+     * // Gets the first page of the document
+     * const page = document.getPage(0);
+     * // Add new textbox field into PDF form
+     * document.form.add(new PdfTextBoxField(
+     *   page,
+     *   'FirstName',
+     *   { x: 50, y: 600, width: 200, height: 22 },
+     *   {
+     *     toolTip: 'Enter your first name',
+     *     color: { r: 0, g: 0, b: 0 },
+     *     backColor: { r: 255, g: 255, b: 255 },
+     *     borderColor: { r: 0, g: 122, b: 204 },
+     *     border: new PdfInteractiveBorder({width: 1, style: PdfBorderStyle.solid}),
+     *     text: 'John',
+     *     font: document.embedFont(PdfFontFamily.helvetica, 10, PdfFontStyle.regular)
+     *   }
+     * ));
+     * // Save the document
+     * document.save('output.pdf');
+     * // Destroy the document
+     * document.destroy();
+     * ```
+     */
+    constructor(page: PdfPage, name: string, bounds: Rectangle, properties: {
+        toolTip?: string,
+        color?: PdfColor,
+        backColor?: PdfColor,
+        borderColor?: PdfColor,
+        border?: PdfInteractiveBorder,
+        text?: string,
+        font?: PdfFont
+    })
+    constructor(page?: PdfPage, name?: string, bounds?: Rectangle, properties?: {
+        toolTip?: string,
+        color?: PdfColor,
+        backColor?: PdfColor,
+        borderColor?: PdfColor,
+        border?: PdfInteractiveBorder,
+        text?: string,
+        font?: PdfFont
+    }) {
         super();
         if (page && name && bounds) {
             this._initialize(page, name, bounds);
+        }
+        if (properties) {
+            if ('text' in properties && _isNullOrUndefined(properties.text)) {
+                this.text = properties.text;
+            }
+            if ('toolTip' in properties && _isNullOrUndefined(properties.toolTip)) {
+                this.toolTip = properties.toolTip;
+            }
+            if ('color' in properties && _isNullOrUndefined(properties.color)) {
+                this.color = properties.color;
+            }
+            if ('border' in properties && _isNullOrUndefined(properties.border)) {
+                this.border = properties.border;
+            }
+            if ('backColor' in properties && _isNullOrUndefined(properties.backColor)) {
+                this.backColor = properties.backColor;
+            }
+            if ('borderColor' in properties && _isNullOrUndefined(properties.borderColor)) {
+                this.borderColor = properties.borderColor;
+            }
+            if ('font' in properties && _isNullOrUndefined(properties.font)) {
+                this.font = properties.font;
+            }
         }
     }
     /**
@@ -2254,7 +2329,7 @@ export class PdfTextBoxField extends PdfField {
      * // Access text box field
      * let field: PdfTextBoxField = document.form.fieldAt(0) as PdfTextBoxField;
      * // Sets the text value to text box field
-     * field.text = ‘Syncfusion’;
+     * field.text = 'Syncfusion';
      * // Save the document
      * document.save('output.pdf');
      * // Destroy the document
@@ -2785,7 +2860,7 @@ export class PdfTextBoxField extends PdfField {
      * // Access the form field at index 0
      * let field: PdfTextBoxField = document.form.fieldAt(0) as PdfTextBoxField;
      * // Sets the font of the field
-     * field.font = new PdfStandardFont(PdfFontFamily.helvetica, 12, PdfFontStyle.bold);
+     * field.font = document.embedFont(PdfFontFamily.helvetica, 12, PdfFontStyle.bold);
      * // Save the document
      * document.save('output.pdf');
      * // Destroy the document
@@ -2801,48 +2876,48 @@ export class PdfTextBoxField extends PdfField {
     /**
      * Gets the background color of the field.
      *
-     * @returns {number[]} R, G, B color values in between 0 to 255.
+     * @returns {PdfColor} R, G, B color values in between 0 to 255.
      * ```typescript
      * // Load an existing PDF document
      * let document: PdfDocument = new PdfDocument(data, password);
      * // Access the form field at index 0
      * let field: PdfField = document.form.fieldAt(0);
      * // Gets the background color of the field.
-     * let backColor: number[] = field.backColor;
+     * let backColor: PdfColor = field.backColor;
      * // Save the document
      * document.save('output.pdf');
      * // Destroy the document
      * document.destroy();
      * ```
      */
-    get backColor(): number[] {
+    get backColor(): PdfColor {
         return this._parseBackColor(true);
     }
     /**
      * Sets the background color of the field.
      *
-     * @param {number[]} value Array with R, G, B, A color values in between 0 to 255. For optional A (0-254), it signifies transparency.
+     * @param {PdfColor} value Array with R, G, B, A color values in between 0 to 255.
      * ```typescript
      * // Load an existing PDF document
      * let document: PdfDocument = new PdfDocument(data, password);
      * // Access the text box field at index 0
      * let firstName: PdfField = document.form.fieldAt(0);
      * // Sets the background color of the field.
-     * firstName.backColor = [255, 0, 0];
+     * firstName.backColor = {r: 255, g: 0, b: 0};
      * // Access the text box field at index 1
      * let secondName: PdfField = document.form.fieldAt(1);
      * // Sets the background color of the field to transparent.
-     * secondName.backColor = [0, 0, 0, 0];
+     * secondName.backColor = {r: 0, g: 0, b: 0, isTransparent: true};
      * // Save the document
      * document.save('output.pdf');
      * // Destroy the document
      * document.destroy();
      * ```
      */
-    set backColor(value: number[]) {
+    set backColor(value: PdfColor) {
         this._updateBackColor(value, true);
     }
-    _initialize(page: PdfPage, name: string, bounds: {x: number, y: number, width: number, height: number}): void {
+    _initialize(page: PdfPage, name: string, bounds: Rectangle): void {
         this._crossReference = page._crossReference;
         this._page = page;
         this._name = name;
@@ -2864,7 +2939,7 @@ export class PdfTextBoxField extends PdfField {
         this._createItem(bounds);
         this._initializeFont(this._defaultFont);
     }
-    _createItem(bounds: {x: number, y: number, width: number, height: number}): void {
+    _createItem(bounds: Rectangle): void {
         const widget: PdfWidgetAnnotation = new PdfWidgetAnnotation();
         widget._create(this._page, bounds, this);
         widget.textAlignment = PdfTextAlignment.left;
@@ -2895,9 +2970,11 @@ export class PdfTextBoxField extends PdfField {
                     if (item && !this._checkFieldFlag(item._dictionary)) {
                         const template: PdfTemplate = this._createAppearance(isFlatten, item);
                         if (isFlatten) {
-                            this._drawTemplate(template,
-                                               item._page,
-                                               {x: item.bounds.x, y: item.bounds.y, width: template._size[0], height: template._size[1]});
+                            const bounds: Rectangle = {x: item.bounds.x,
+                                y: item.bounds.y,
+                                width: template._size.width,
+                                height: template._size.height};
+                            this._drawTemplate(template, item._page, bounds);
                         } else {
                             this._addAppearance(item._dictionary, template, 'N');
                         }
@@ -2937,16 +3014,16 @@ export class PdfTextBoxField extends PdfField {
                     const graphics: PdfGraphics = page.graphics;
                     graphics.save();
                     if (page.rotation === PdfRotationAngle.angle90) {
-                        graphics.translateTransform(graphics._size[0], graphics._size[1]);
+                        graphics.translateTransform({x: graphics._size.width, y: graphics._size.height});
                         graphics.rotateTransform(90);
                     } else if (page.rotation === PdfRotationAngle.angle180) {
-                        graphics.translateTransform(graphics._size[0], graphics._size[1]);
+                        graphics.translateTransform({x: graphics._size.width, y: graphics._size.height});
                         graphics.rotateTransform(-180);
                     } else if (page.rotation === PdfRotationAngle.angle270) {
-                        graphics.translateTransform(graphics._size[0], graphics._size[1]);
+                        graphics.translateTransform({x: graphics._size.width, y: graphics._size.height});
                         graphics.rotateTransform(270);
                     }
-                    bounds = {x: source.bounds.x, y: source.bounds.y, width: template._size[0], height: template._size[1]};
+                    bounds = {x: source.bounds.x, y: source.bounds.y, width: template._size.width, height: template._size.height};
                     graphics.drawTemplate(template, bounds);
                     graphics.restore();
                 }
@@ -2963,16 +3040,16 @@ export class PdfTextBoxField extends PdfField {
         template._writeTransformation = false;
         const graphics: PdfGraphics = template.graphics;
         const parameter: _PaintParameter = new _PaintParameter();
-        parameter.bounds = [0, 0, bounds.width, bounds.height];
-        const backcolor: number[] = widget.backColor;
-        if (backcolor) {
+        parameter.bounds = {x: 0, y: 0, width: bounds.width, height: bounds.height};
+        const backcolor: PdfColor = widget.backColor;
+        if (backcolor && !backcolor.isTransparent) {
             parameter.backBrush = new PdfBrush(backcolor);
         }
         parameter.foreBrush = new PdfBrush(widget.color);
         const border: PdfInteractiveBorder = widget.border;
         if (widget.borderColor) {
             if (border.width === 0) {
-                widget.borderColor = [255, 255, 255];
+                widget.borderColor = {r: 255, g: 255, b: 255};
             }
             parameter.borderPen = new PdfPen(widget.borderColor,  border.width);
             _updateDashedBorderStyle(border, parameter);
@@ -2980,10 +3057,10 @@ export class PdfTextBoxField extends PdfField {
         parameter.borderWidth = border.width;
         parameter.borderStyle = border.style;
         if (backcolor) {
-            const shadowColor: number[] = [backcolor[0] - 64, backcolor[1] - 64, backcolor[2] - 64];
-            const color: number[] = [shadowColor[0] >= 0 ? shadowColor[0] : 0,
-                shadowColor[1] >= 0 ? shadowColor[1] : 0,
-                shadowColor[2] >= 0 ? shadowColor[2] : 0];
+            const shadowColor: number[] = [backcolor.r - 64, backcolor.g - 64, backcolor.b - 64];
+            const color: PdfColor = {r: shadowColor[0] >= 0 ? shadowColor[0] : 0,
+                g: shadowColor[1] >= 0 ? shadowColor[1] : 0,
+                b: shadowColor[2] >= 0 ? shadowColor[2] : 0};
             parameter.shadowBrush = new PdfBrush(color);
         }
         parameter.rotationAngle = widget.rotate;
@@ -3059,13 +3136,8 @@ export class PdfTextBoxField extends PdfField {
             if (parameter.insertSpaces) {
                 let width: number = 0;
                 if (typeof maxLength !== 'undefined' && maxLength > 0 && this.borderColor) {
-                    width = parameter.bounds[2] / maxLength;
-                    g.drawRectangle(parameter.bounds[0],
-                                    parameter.bounds[1],
-                                    parameter.bounds[2],
-                                    parameter.bounds[3],
-                                    parameter.borderPen,
-                                    parameter.backBrush);
+                    width = parameter.bounds.width / maxLength;
+                    g.drawRectangle(parameter.bounds, parameter.borderPen, parameter.backBrush);
                     const current: string = text;
                     for (let i: number = 0; i < maxLength; i++) {
                         if (format.alignment === PdfTextAlignment.right) {
@@ -3090,16 +3162,14 @@ export class PdfTextBoxField extends PdfField {
                                 }
                             }
                         }
-                        parameter.bounds[2] = width;
+                        parameter.bounds.width = width;
                         const stringFormat: PdfStringFormat = new PdfStringFormat(PdfTextAlignment.center, PdfVerticalAlignment.middle);
                         this._drawTextBox(g, parameter, text, font, stringFormat, multiline, scroll);
-                        parameter.bounds[0] = parameter.bounds[0] + width;
+                        parameter.bounds.x = parameter.bounds.x + width;
                         if (parameter.borderWidth) {
                             g.drawLine(parameter.borderPen,
-                                       parameter.bounds[0],
-                                       parameter.bounds[1],
-                                       parameter.bounds[0],
-                                       parameter.bounds[1] + parameter.bounds[3]);
+                                       {x: parameter.bounds.x, y: parameter.bounds.y},
+                                       {x: parameter.bounds.x, y: parameter.bounds.y + parameter.bounds.height});
                         }
                     }
                 } else {
@@ -3122,34 +3192,34 @@ export class PdfTextBoxField extends PdfField {
                 g._sw._beginMarkupSequence('Tx');
                 g._initializeCoordinates();
             }
-            let rectangle: number[] = [parameter.bounds[0], parameter.bounds[1], parameter.bounds[2], parameter.bounds[3]];
+            let rectangle: Rectangle = parameter.bounds;
             const rotate: number = this.rotate;
             if (rotate !== null && typeof rotate !== 'undefined' && rotate === 90) {
-                rectangle[1] = rectangle[2] / 2;
+                rectangle.y = rectangle.width / 2;
             }
             if (parameter.borderStyle === PdfBorderStyle.beveled || parameter.borderStyle === PdfBorderStyle.inset) {
-                rectangle[0] = rectangle[0] + 4 * parameter.borderWidth;
-                rectangle[2] = rectangle[2] - 8 * parameter.borderWidth;
+                rectangle.x = rectangle.x + 4 * parameter.borderWidth;
+                rectangle.width = rectangle.width - 8 * parameter.borderWidth;
             } else {
-                rectangle[0] = rectangle[0] + 2 * parameter.borderWidth;
-                rectangle[2] = rectangle[2] - 4 * parameter.borderWidth;
+                rectangle.x = rectangle.x + 2 * parameter.borderWidth;
+                rectangle.width = rectangle.width - 4 * parameter.borderWidth;
             }
             if (multiline) {
                 const tempheight: number = (typeof format === 'undefined' || format === null || format.lineSpacing === 0) ?
-                    font._metrics._getHeight() :
+                    font._getHeight() :
                     format.lineSpacing;
-                const ascent: number = font._metrics._getAscent(format);
+                const ascent: number = font._getAscent(format);
                 const shift: number = tempheight - ascent;
                 if (text.indexOf('\n') !== -1) {
-                    if (rectangle[0] === 0 && rectangle[1] === 1) {
-                        rectangle[1] = -(rectangle[1] - shift);
+                    if (rectangle.x === 0 && rectangle.y === 1) {
+                        rectangle.y = -(rectangle.y - shift);
                     }
-                } else if (rectangle[0] === 0 && rectangle[1] === 1) {
-                    rectangle[1] = -(rectangle[1] - shift);
+                } else if (rectangle.x === 0 && rectangle.y === 1) {
+                    rectangle.y = -(rectangle.y - shift);
                 }
                 if (parameter.isAutoFontSize) {
                     if (parameter.borderWidth !== 0) {
-                        rectangle[1] = rectangle[1] + 2.5 * parameter.borderWidth;
+                        rectangle.y = rectangle.y + 2.5 * parameter.borderWidth;
                     }
                 }
             }
@@ -3160,61 +3230,61 @@ export class PdfTextBoxField extends PdfField {
                 const state: PdfGraphicsState = g.save();
                 if (typeof parameter.pageRotationAngle !== 'undefined' && parameter.pageRotationAngle !== PdfRotationAngle.angle0) {
                     if (parameter.pageRotationAngle === PdfRotationAngle.angle90) {
-                        g.translateTransform(g._size[1], 0);
+                        g.translateTransform({x: g._size.height, y: 0});
                         g.rotateTransform(90);
-                        const y: number = g._size[1] - (rectangle[0] + rectangle[2]);
-                        const x: number = rectangle[1];
-                        rectangle = [x, y, rectangle[3], rectangle[2]];
+                        const y: number = g._size.height - (rectangle.x + rectangle.width);
+                        const x: number = rectangle.y;
+                        rectangle = {x: x, y: y, width: rectangle.height, height: rectangle.width};
                     } else if (parameter.pageRotationAngle === PdfRotationAngle.angle180) {
-                        g.translateTransform(g._size[0], g._size[1]);
+                        g.translateTransform({x: g._size.width, y: g._size.height});
                         g.rotateTransform(-180);
-                        const x: number = g._size[0] - (rectangle[0] + rectangle[2]);
-                        const y: number = g._size[1] - (rectangle[1] + rectangle[3]);
-                        rectangle = [x, y, rectangle[2], rectangle[3]];
+                        const x: number = g._size.width - (rectangle.x + rectangle.width);
+                        const y: number = g._size.height - (rectangle.y + rectangle.height);
+                        rectangle = {x: x, y: y, width: rectangle.width, height: rectangle.height};
                     } else if (parameter.pageRotationAngle === PdfRotationAngle.angle270) {
-                        g.translateTransform(0, g._size[0]);
+                        g.translateTransform({x: 0, y: g._size.width});
                         g.rotateTransform(270);
-                        const x: number = g._size[0] - (rectangle[1] + rectangle[3]);
-                        const y: number = rectangle[0];
-                        rectangle = [x, y, rectangle[3], rectangle[2]];
+                        const x: number = g._size.width - (rectangle.y + rectangle.height);
+                        const y: number = rectangle.x;
+                        rectangle = {x: x, y: y, width: rectangle.height, height: rectangle.width};
                     }
                 }
                 if (parameter.rotationAngle) {
                     if (parameter.rotationAngle === 90) {
                         if (parameter.pageRotationAngle === PdfRotationAngle.angle90) {
-                            g.translateTransform(0, g._size[1]);
+                            g.translateTransform({x: 0, y: g._size.height});
                             g.rotateTransform(-90);
-                            const x: number = g._size[1] - (rectangle[1] + rectangle[3]);
-                            const y: number = rectangle[0];
-                            rectangle = [x, y, rectangle[3], rectangle[2]];
+                            const x: number = g._size.height - (rectangle.y + rectangle.height);
+                            const y: number = rectangle.x;
+                            rectangle = {x: x, y: y, width: rectangle.height, height: rectangle.width};
                             parameter.stringFormat = new PdfStringFormat(PdfTextAlignment.center, PdfVerticalAlignment.middle);
                         } else {
-                            if (rectangle[2] > rectangle[3]) {
-                                g.translateTransform(0, g._size[1]);
+                            if (rectangle.width > rectangle.height) {
+                                g.translateTransform({x: 0, y: g._size.height});
                                 g.rotateTransform(-90);
-                                rectangle = [parameter.bounds[0], parameter.bounds[1], parameter.bounds[2], parameter.bounds[3]];
-                                rectangle[1] = (rectangle[2] / 2) - (8 * parameter.borderWidth);
+                                rectangle = parameter.bounds;
+                                rectangle.y = (rectangle.width / 2) - (8 * parameter.borderWidth);
                             } else {
-                                const z: number = rectangle[0];
-                                rectangle[0] = -(rectangle[1] + rectangle[3]);
-                                rectangle[1] = z;
-                                const height: number = rectangle[3];
-                                rectangle[3] = rectangle[2] > font._metrics._getHeight() ? rectangle[2] : font._metrics._getHeight();
-                                rectangle[2] = height;
+                                const z: number = rectangle.x;
+                                rectangle.x = -(rectangle.y + rectangle.height);
+                                rectangle.y = z;
+                                const height: number = rectangle.height;
+                                rectangle.height = rectangle.width > font._getHeight() ? rectangle.width : font._getHeight();
+                                rectangle.width = height;
                                 g.rotateTransform(-90);
                             }
                         }
                     } else if (parameter.rotationAngle === 270) {
-                        g.translateTransform(g._size[0], 0);
+                        g.translateTransform({x: g._size.width, y: 0});
                         g.rotateTransform(-270);
-                        rectangle = [parameter.bounds[0], parameter.bounds[1], parameter.bounds[2], parameter.bounds[3]];
-                        rectangle[1] = (rectangle[2] / 2) - (8 * parameter.borderWidth);
+                        rectangle = parameter.bounds;
+                        rectangle.y = (rectangle.width / 2) - (8 * parameter.borderWidth);
                     } else if (parameter.rotationAngle === 180) {
-                        g.translateTransform(g._size[0], g._size[1]);
+                        g.translateTransform({x: g._size.width, y: g._size.height});
                         g.rotateTransform(-180);
-                        const x: number = g._size[0] - (rectangle[0] + rectangle[2]);
-                        const y: number = g._size[1] - (rectangle[1] + rectangle[3]);
-                        rectangle = [x, y, rectangle[2], rectangle[3]];
+                        const x: number = g._size.width - (rectangle.x + rectangle.width);
+                        const y: number = g._size.height - (rectangle.y + rectangle.height);
+                        rectangle = {x: x, y: y, width: rectangle.width, height: rectangle.height};
                     }
                 }
                 g.drawString(text, font, rectangle, null, parameter.foreBrush, format);
@@ -3263,7 +3333,7 @@ export class PdfButtonField extends PdfField {
      *
      * @param {PdfPage} page The page where the field is drawn.
      * @param {string} name The name of the field.
-     * @param {{x: number, y: number, width: number, height: number}} bounds The bounds of the field.
+     * @param {Rectangle} bounds The bounds of the field.
      * ```typescript
      * // Load an existing PDF document
      * let document: PdfDocument = new PdfDocument(data);
@@ -3281,11 +3351,94 @@ export class PdfButtonField extends PdfField {
      * document.destroy();
      * ```
      */
-    constructor(page: PdfPage, name: string, bounds: {x: number, y: number, width: number, height: number})
-    constructor(page?: PdfPage, name?: string, bounds?: {x: number, y: number, width: number, height: number}) {
+    constructor(page: PdfPage, name: string, bounds: Rectangle)
+    /**
+     * Represents a button field (push/submit/reset) of the PDF document.
+     *
+     * @param {PdfPage} page The page where the field is drawn.
+     * @param {string} name The unique name of the field.
+     * @param {Rectangle} bounds The bounds of the field.
+     * @param {object} properties Required properties bag.
+     * @param {string} [properties.toolTip] Tooltip text shown by the viewer.
+     * @param {PdfColor} [properties.color] Fore color (caption/text color) (RGB).
+     * @param {PdfColor} [properties.backColor] Background color.
+     * @param {PdfColor} [properties.borderColor] Border color.
+     * @param {PdfInteractiveBorder} [properties.border] Border settings (width, style, dash).
+     * @param {string} [properties.text] Button caption text.
+     * @param {PdfHighlightMode} [properties.highlightMode] Button highlight mode on click/hover (e.g., invert, push, outline, noHighlighting).
+     * @param {PdfFont} [properties.font] Font applied to the caption text.
+     *
+     * ```typescript
+     * // Load an existing PDF document
+     * let document: PdfDocument = new PdfDocument(data);
+     * // Get the first page of the document
+     * let page: PdfPage = document.getPage(0);
+     * // Add new button field into PDF form
+     * document.form.add(new PdfButtonField(
+     *   page,
+     *   'Submit',
+     *   { x: 50, y: 560, width: 120, height: 28 },
+     *   {
+     *     toolTip: 'Submit form',
+     *     color: { r: 255, g: 255, b: 255 },
+     *     backColor: { r: 0, g: 122, b: 204 },
+     *     borderColor: { r: 0, g: 0, b: 0 },
+     *     border: new PdfInteractiveBorder({width: 1, style: PdfBorderStyle.solid}),
+     *     text: 'Submit',
+     *     highlightMode: PdfHighlightMode.push,
+     *     font: document.embedFont(PdfFontFamily.helvetica, 10, PdfFontStyle.regular)
+     *   }
+     * ));
+     * // Save the document
+     * document.save('output.pdf');
+     * // Destroy the document
+     * document.destroy();
+     * ```
+     */
+    constructor(page: PdfPage, name: string, bounds: Rectangle, properties: {
+        toolTip?: string,
+        color?: PdfColor,
+        backColor?: PdfColor,
+        borderColor?: PdfColor,
+        border?: PdfInteractiveBorder,
+        text?: string,
+        highlightMode?: PdfHighlightMode
+    })
+    constructor(page?: PdfPage, name?: string, bounds?: Rectangle, properties?: {
+        toolTip?: string,
+        color?: PdfColor,
+        backColor?: PdfColor,
+        borderColor?: PdfColor,
+        border?: PdfInteractiveBorder,
+        text?: string,
+        highlightMode?: PdfHighlightMode
+    }) {
         super();
         if (page && name && bounds) {
             this._initialize(page, name, bounds);
+        }
+        if (properties) {
+            if ('text' in properties && _isNullOrUndefined(properties.text)) {
+                this.text = properties.text;
+            }
+            if ('toolTip' in properties && _isNullOrUndefined(properties.toolTip)) {
+                this.toolTip = properties.toolTip;
+            }
+            if ('color' in properties && _isNullOrUndefined(properties.color)) {
+                this.color = properties.color;
+            }
+            if ('border' in properties && _isNullOrUndefined(properties.border)) {
+                this.border = properties.border;
+            }
+            if ('backColor' in properties && _isNullOrUndefined(properties.backColor)) {
+                this.backColor = properties.backColor;
+            }
+            if ('borderColor' in properties && _isNullOrUndefined(properties.borderColor)) {
+                this.borderColor = properties.borderColor;
+            }
+            if ('highlightMode' in properties && _isNullOrUndefined(properties.highlightMode)) {
+                this.highlightMode = properties.highlightMode;
+            }
         }
     }
     /**
@@ -3361,7 +3514,7 @@ export class PdfButtonField extends PdfField {
      * // Access button field
      * let field: PdfButtonField = document.form.fieldAt(0) as PdfButtonField;
      * // Sets the text value of form field
-     * field.text = ’Click to submit’;
+     * field.text = 'Click to submit';
      * // Save the document
      * document.save('output.pdf');
      * // Destroy the document
@@ -3517,7 +3670,7 @@ export class PdfButtonField extends PdfField {
      * // Access the form field at index 0
      * let field: PdfButtonField = document.form.fieldAt(0) as PdfButtonField;
      * // Sets the font of the field
-     * field.font = new PdfStandardFont(PdfFontFamily.helvetica, 12, PdfFontStyle.bold);
+     * field.font = document.embedFont(PdfFontFamily.helvetica, 12, PdfFontStyle.bold);
      * // Save the document
      * document.save('output.pdf');
      * // Destroy the document
@@ -3533,45 +3686,45 @@ export class PdfButtonField extends PdfField {
     /**
      * Gets the background color of the field.
      *
-     * @returns {number[]} R, G, B color values in between 0 to 255.
+     * @returns {PdfColor} R, G, B color values in between 0 to 255.
      * ```typescript
      * // Load an existing PDF document
      * let document: PdfDocument = new PdfDocument(data, password);
      * // Access the form field at index 0
      * let field: PdfField = document.form.fieldAt(0);
      * // Gets the background color of the field.
-     * let backColor: number[] = field.backColor;
+     * let backColor: PdfColor = field.backColor;
      * // Save the document
      * document.save('output.pdf');
      * // Destroy the document
      * document.destroy();
      * ```
      */
-    get backColor(): number[] {
+    get backColor(): PdfColor {
         return this._parseBackColor(true);
     }
     /**
      * Sets the background color of the field.
      *
-     * @param {number[]} value Array with R, G, B, A color values in between 0 to 255. For optional A (0-254), it signifies transparency.
+     * @param {PdfColor} value Array with R, G, B, A color values in between 0 to 255.
      * ```typescript
      * // Load an existing PDF document
      * let document: PdfDocument = new PdfDocument(data, password);
      * // Access the button field at index 0
      * let submitButton: PdfField = document.form.fieldAt(0);
      * // Sets the background color of the field.
-     * submitButton.backColor = [255, 0, 0];
+     * submitButton.backColor = {r: 255, g: 0, b: 0};
      * // Access the button field at index 1
      * let cancelButton: PdfField = document.form.fieldAt(1);
      * // Sets the background color of the field to transparent.
-     * cancelButton.backColor = [0, 0, 0, 0];
+     * cancelButton.backColor = {r: 0, g: 0, b: 0, isTransparent: true};
      * // Save the document
      * document.save('output.pdf');
      * // Destroy the document
      * document.destroy();
      * ```
      */
-    set backColor(value: number[]) {
+    set backColor(value: PdfColor) {
         this._updateBackColor(value, true);
     }
     _assignText(fieldDictionary: _PdfDictionary, value: string): void {
@@ -3658,9 +3811,11 @@ export class PdfButtonField extends PdfField {
                     if (item && !this._checkFieldFlag(item._dictionary)) {
                         const template: PdfTemplate = this._createAppearance(item);
                         if (isFlatten) {
-                            this._drawTemplate(template,
-                                               item._getPage(),
-                                               {x: item.bounds.x, y: item.bounds.y, width: template._size[0], height: template._size[1]});
+                            const bounds: Rectangle = {x: item.bounds.x,
+                                y: item.bounds.y,
+                                width: template._size.width,
+                                height: template._size.height};
+                            this._drawTemplate(template, item._getPage(), bounds);
                         } else {
                             this._addAppearance(item._dictionary, template, 'N');
                             const pressed: PdfTemplate = this._createAppearance(item, true);
@@ -3715,16 +3870,16 @@ export class PdfButtonField extends PdfField {
                     const graphics: PdfGraphics = page.graphics;
                     graphics.save();
                     if (page.rotation === PdfRotationAngle.angle90) {
-                        graphics.translateTransform(graphics._size[0], graphics._size[1]);
+                        graphics.translateTransform({x: graphics._size.width, y: graphics._size.height});
                         graphics.rotateTransform(90);
                     } else if (page.rotation === PdfRotationAngle.angle180) {
-                        graphics.translateTransform(graphics._size[0], graphics._size[1]);
+                        graphics.translateTransform({x: graphics._size.width, y: graphics._size.height});
                         graphics.rotateTransform(-180);
                     } else if (page.rotation === PdfRotationAngle.angle270) {
-                        graphics.translateTransform(graphics._size[0], graphics._size[1]);
+                        graphics.translateTransform({x: graphics._size.width, y: graphics._size.height});
                         graphics.rotateTransform(270);
                     }
-                    bounds = {x: source.bounds.x, y: source.bounds.y, width: template._size[0], height: template._size[1]};
+                    bounds = {x: source.bounds.x, y: source.bounds.y, width: template._size.width, height: template._size.height};
                     graphics.drawTemplate(template, bounds);
                     graphics.restore();
                 }
@@ -3738,14 +3893,14 @@ export class PdfButtonField extends PdfField {
         const bounds: {x: number, y: number, width: number, height: number} = widget.bounds;
         const template: PdfTemplate = new PdfTemplate([0, 0, bounds.width, bounds.height], this._crossReference);
         const parameter: _PaintParameter = new _PaintParameter();
-        parameter.bounds = [0, 0, bounds.width, bounds.height];
+        parameter.bounds = {x: 0, y: 0, width: bounds.width, height: bounds.height};
         let text: string;
         let font: PdfFont;
         let stringFormat: PdfStringFormat;
         let enableGrouping: boolean = false;
         let isSizeZero: boolean = false;
-        const backcolor: number[] = widget.backColor;
-        if (backcolor) {
+        const backcolor: PdfColor = widget.backColor;
+        if (backcolor && !backcolor.isTransparent) {
             parameter.backBrush = new PdfBrush(backcolor);
         }
         parameter.foreBrush = new PdfBrush(widget.color);
@@ -3757,11 +3912,11 @@ export class PdfButtonField extends PdfField {
         parameter.borderWidth = border.width;
         parameter.borderStyle = border.style;
         if (backcolor) {
-            const shadowColor: number[] = [backcolor[0] - 64, backcolor[1] - 64, backcolor[2] - 64];
+            const shadowColor: number[] = [backcolor.r - 64, backcolor.g - 64, backcolor.b - 64];
             const color: number[] = [shadowColor[0] >= 0 ? shadowColor[0] : 0,
                 shadowColor[1] >= 0 ? shadowColor[1] : 0,
                 shadowColor[2] >= 0 ? shadowColor[2] : 0];
-            parameter.shadowBrush = new PdfBrush(color);
+            parameter.shadowBrush = new PdfBrush({r: color[0], g: color[1], b: color[2]});
         }
         parameter.rotationAngle = widget.rotate;
         if (widget !== null && typeof widget !== 'undefined' && widget instanceof PdfWidgetAnnotation && widget._enableGrouping) {
@@ -3806,16 +3961,16 @@ export class PdfButtonField extends PdfField {
             } else {
                 currentFont = this._defaultFont;
             }
-            let textWidth: number[] = currentFont.measureString(this.text, this._stringFormat);
+            let textWidth: Size = currentFont.measureString(this.text, this._stringFormat);
             if (isSizeZero && currentFont && currentFont instanceof PdfStandardFont) {
                 if (this._isLoaded && !widget._dictionary.has('AP')) {
                     const width: number = widget.bounds.width - 8 * border.width;
                     const height: number = widget.bounds.height - 8 * border.width;
-                    while (textWidth[0] < width || textWidth[1] < height) {
+                    while (textWidth.width < width || textWidth.height < height) {
                         previousFont = currentFont;
                         currentFont = new PdfStandardFont((currentFont as PdfStandardFont).fontFamily, currentFont._size + 1);
                         textWidth = currentFont.measureString(this.text, this._stringFormat);
-                        if (textWidth[0] > width || textWidth[1] > height) {
+                        if (textWidth.width > width || textWidth.height > height) {
                             currentFont = previousFont;
                             break;
                         }
@@ -3841,7 +3996,7 @@ export class PdfButtonField extends PdfField {
     }
     _drawButton(g: PdfGraphics, parameter: _PaintParameter, text: string, font: PdfFont, format: PdfStringFormat): void {
         this._drawRectangularControl(g, parameter);
-        let rectangle: number[] = parameter.bounds;
+        let rectangle: Rectangle = parameter.bounds;
         if ((g._page &&
             typeof g._page.rotation !== 'undefined' &&
             g._page.rotation !== PdfRotationAngle.angle0) ||
@@ -3849,64 +4004,64 @@ export class PdfButtonField extends PdfField {
             const state: PdfGraphicsState = g.save();
             if (typeof parameter.pageRotationAngle !== 'undefined' && parameter.pageRotationAngle !== PdfRotationAngle.angle0) {
                 if (parameter.pageRotationAngle === PdfRotationAngle.angle90) {
-                    g.translateTransform(g._size[1], 0);
+                    g.translateTransform({x: g._size.height, y: 0});
                     g.rotateTransform(90);
-                    const y: number = g._size[1] - (rectangle[0] + rectangle[2]);
-                    const x: number = rectangle[1];
-                    rectangle = [x, y, rectangle[3], rectangle[2]];
+                    const y: number = g._size.height - (rectangle.x + rectangle.width);
+                    const x: number = rectangle.y;
+                    rectangle = {x: x, y: y, width: rectangle.height, height: rectangle.width};
                 } else if (parameter.pageRotationAngle === PdfRotationAngle.angle180) {
-                    g.translateTransform(g._size[0], g._size[1]);
+                    g.translateTransform({x: g._size.width, y: g._size.height});
                     g.rotateTransform(-180);
-                    const x: number = g._size[0] - (rectangle[0] + rectangle[2]);
-                    const y: number = g._size[1] - (rectangle[1] + rectangle[3]);
-                    rectangle = [x, y, rectangle[2], rectangle[3]];
+                    const x: number = g._size.width - (rectangle.x + rectangle.width);
+                    const y: number = g._size.height - (rectangle.y + rectangle.height);
+                    rectangle = {x: x, y: y, width: rectangle.width, height: rectangle.height};
                 } else if (parameter.pageRotationAngle === PdfRotationAngle.angle270) {
-                    g.translateTransform(0, g._size[0]);
+                    g.translateTransform({x: 0, y: g._size.width});
                     g.rotateTransform(270);
-                    const x: number = g._size[0] - (rectangle[1] + rectangle[3]);
-                    const y: number = rectangle[0];
-                    rectangle = [x, y, rectangle[3], rectangle[2]];
+                    const x: number = g._size.width - (rectangle.y + rectangle.height);
+                    const y: number = rectangle.x;
+                    rectangle = {x: x, y: y, width: rectangle.height, height: rectangle.width};
                 }
             }
             if (parameter.rotationAngle) {
                 if (parameter.rotationAngle === 90) {
                     if (parameter.pageRotationAngle === PdfRotationAngle.angle90) {
-                        g.translateTransform(0, g._size[1]);
+                        g.translateTransform({x: 0, y: g._size.height});
                         g.rotateTransform(-90);
-                        const x: number = g._size[1] - (rectangle[1] + rectangle[3]);
-                        const y: number = rectangle[0];
-                        rectangle = [x, y, rectangle[3], rectangle[2]];
+                        const x: number = g._size.height - (rectangle.y + rectangle.height);
+                        const y: number = rectangle.x;
+                        rectangle = {x: x, y: y, width: rectangle.height, height: rectangle.width};
                     } else {
-                        if (rectangle[2] > rectangle[3]) {
-                            g.translateTransform(0, g._size[1]);
+                        if (rectangle.width > rectangle.height) {
+                            g.translateTransform({x: 0, y: g._size.height});
                             g.rotateTransform(-90);
-                            const x: number = g._size[1] - (rectangle[1] + rectangle[3]);
-                            const y: number = rectangle[0];
-                            rectangle = [x, y, rectangle[3], rectangle[2]];
+                            const x: number = g._size.height - (rectangle.y + rectangle.height);
+                            const y: number = rectangle.x;
+                            rectangle = {x: x, y, width: rectangle.height, height: rectangle.width};
                             format._wordWrapType = _PdfWordWrapType.none;
                         } else {
-                            const z: number = rectangle[0];
-                            rectangle[0] = -(rectangle[1] + rectangle[3]);
-                            rectangle[1] = z;
-                            const height: number = rectangle[3];
-                            rectangle[3] = rectangle[2] > font._metrics._getHeight() ? rectangle[2] : font._metrics._getHeight();
-                            rectangle[2] = height;
+                            const z: number = rectangle.x;
+                            rectangle.x = -(rectangle.y + rectangle.height);
+                            rectangle.y = z;
+                            const height: number = rectangle.height;
+                            rectangle.height = rectangle.width > font._getHeight() ? rectangle.width : font._getHeight();
+                            rectangle.width = height;
                             g.rotateTransform(-90);
                         }
                     }
                 } else if (parameter.rotationAngle === 270) {
-                    g.translateTransform(g._size[0], 0);
+                    g.translateTransform({x: g._size.width, y: 0});
                     g.rotateTransform(-270);
-                    const x: number = rectangle[1];
-                    const y: number = g._size[0] - (rectangle[0] + rectangle[2]);
-                    rectangle = [x, y, rectangle[3], rectangle[2]];
+                    const x: number = rectangle.y;
+                    const y: number = g._size.width - (rectangle.x + rectangle.width);
+                    rectangle = {x: x, y: y, width: rectangle.height, height: rectangle.width};
                     format._wordWrapType = _PdfWordWrapType.none;
                 } else if (parameter.rotationAngle === 180) {
-                    g.translateTransform(g._size[0], g._size[1]);
+                    g.translateTransform({x: g._size.width, y: g._size.height});
                     g.rotateTransform(-180);
-                    const x: number = g._size[0] - (rectangle[0] + rectangle[2]);
-                    const y: number = g._size[1] - (rectangle[1] + rectangle[3]);
-                    rectangle = [x, y, rectangle[2], rectangle[3]];
+                    const x: number = g._size.width - (rectangle.x + rectangle.width);
+                    const y: number = g._size.height - (rectangle.y + rectangle.height);
+                    rectangle = {x: x, y: y, width: rectangle.width, height: rectangle.height};
                 }
             }
             g.drawString(text, font, rectangle, null, parameter.foreBrush, format);
@@ -3918,17 +4073,17 @@ export class PdfButtonField extends PdfField {
     _drawPressedButton(g: PdfGraphics, parameter: _PaintParameter, text: string, font: PdfFont, format: PdfStringFormat): void {
         switch (parameter.borderStyle) {
         case PdfBorderStyle.inset:
-            g.drawRectangle(parameter.bounds[0], parameter.bounds[1], parameter.bounds[2], parameter.bounds[3], parameter.shadowBrush);
+            g.drawRectangle(parameter.bounds, parameter.shadowBrush);
             break;
         default:
-            g.drawRectangle(parameter.bounds[0], parameter.bounds[1], parameter.bounds[2], parameter.bounds[3], parameter.backBrush);
+            g.drawRectangle(parameter.bounds, parameter.backBrush);
             break;
         }
         this._drawBorder(g, parameter.bounds, parameter.borderPen, parameter.borderStyle, parameter.borderWidth);
-        const rectangle: number[] = [parameter.borderWidth,
-            parameter.borderWidth,
-            parameter.bounds[2] - parameter.borderWidth,
-            parameter.bounds[3] - parameter.borderWidth];
+        const rectangle: Rectangle = {x: parameter.borderWidth,
+            y: parameter.borderWidth,
+            width: parameter.bounds.width - parameter.borderWidth,
+            height: parameter.bounds.height - parameter.borderWidth};
         g.drawString(text, font, rectangle, null, parameter.foreBrush, format);
         switch (parameter.borderStyle) {
         case PdfBorderStyle.inset:
@@ -3980,7 +4135,7 @@ export class PdfCheckBoxField extends PdfField {
      * Represents a check box field of the PDF document.
      *
      * @param {string} name The name of the field.
-     * @param {{x: number, y: number, width: number, height: number}} bounds The bounds of the field.
+     * @param {Rectangle} bounds The bounds of the field.
      * @param {PdfPage} page The page where the field is drawn.
      * ```typescript
      * // Load an existing PDF document
@@ -4003,11 +4158,84 @@ export class PdfCheckBoxField extends PdfField {
      * document.destroy();
      * ```
      */
-    constructor(name: string, bounds: {x: number, y: number, width: number, height: number}, page: PdfPage)
-    constructor(name?: string, bounds?: {x: number, y: number, width: number, height: number}, page?: PdfPage) {
+    constructor(name: string, bounds: Rectangle, page: PdfPage)
+    /**
+     * Represents a check box field of the PDF document.
+     *
+     * @param {string} name The unique name of the field.
+     * @param {Rectangle} bounds The bounds of the field.
+     * @param {PdfPage} page The page where the field is drawn.
+     * @param {object} properties Required properties bag.
+     * @param {string} [properties.toolTip] Tooltip text shown by the viewer.
+     * @param {PdfColor} [properties.color] Fore color of the marker (RGB).
+     * @param {PdfColor} [properties.backColor] Background color.
+     * @param {PdfColor} [properties.borderColor] Border color.
+     * @param {PdfInteractiveBorder} [properties.border] Border settings (width, style, dash).
+     * @param {boolean} [properties.checked] Initial checked state (default: false).
+     *
+     * ```typescript
+     * // Load an existing PDF document
+     * let document: PdfDocument = new PdfDocument(data);
+     * // Get the first page of the document
+     * let page: PdfPage = document.getPage(0);
+     * // Add new checkbox field into PDF form
+     * document.form.add(new PdfCheckBoxField(
+     *   'AcceptTerms',
+     *   { x: 50, y: 520, width: 14, height: 14 },
+     *   page,
+     *   {
+     *     toolTip: 'Accept the terms and conditions',
+     *     backColor: { r: 255, g: 255, b: 255 },
+     *     borderColor: { r: 0, g: 0, b: 0 },
+     *     border: new PdfInteractiveBorder({width: 1, style: PdfBorderStyle.solid}),
+     *     checked: true
+     *   }
+     * ));
+     * // Save the document
+     * document.save('output.pdf');
+     * // Destroy the document
+     * document.destroy();
+     * ```
+     */
+    constructor(name: string, bounds: Rectangle, page: PdfPage, properties: {
+        toolTip?: string,
+        color?: PdfColor,
+        backColor?: PdfColor,
+        borderColor?: PdfColor,
+        border?: PdfInteractiveBorder,
+        checked?: boolean
+    })
+    constructor(name?: string, bounds?: Rectangle, page?: PdfPage, properties?: {
+        toolTip?: string,
+        color?: PdfColor,
+        backColor?: PdfColor,
+        borderColor?: PdfColor,
+        border?: PdfInteractiveBorder,
+        checked?: boolean
+    }) {
         super();
         if (page && name && bounds) {
             this._initialize(page, name, bounds);
+        }
+        if (properties) {
+            if ('toolTip' in properties && _isNullOrUndefined(properties.toolTip)) {
+                this.toolTip = properties.toolTip;
+            }
+            if ('color' in properties && _isNullOrUndefined(properties.color)) {
+                this.color = properties.color;
+            }
+            if ('border' in properties && _isNullOrUndefined(properties.border)) {
+                this.border = properties.border;
+            }
+            if ('backColor' in properties && _isNullOrUndefined(properties.backColor)) {
+                this.backColor = properties.backColor;
+            }
+            if ('borderColor' in properties && _isNullOrUndefined(properties.borderColor)) {
+                this.borderColor = properties.borderColor;
+            }
+            if ('checked' in properties && _isNullOrUndefined(properties.checked)) {
+                this.checked = properties.checked;
+            }
         }
     }
     /**
@@ -4126,7 +4354,7 @@ export class PdfCheckBoxField extends PdfField {
      * // Access the form field at index 0
      * let field: PdfCheckBoxField = document.form.fieldAt(0) as PdfCheckBoxField;
      * // Sets the font of the field
-     * field.font = new PdfStandardFont(PdfFontFamily.helvetica, 12, PdfFontStyle.bold);
+     * field.font = document.embedFont(PdfFontFamily.helvetica, 12, PdfFontStyle.bold);
      * // Save the document
      * document.save('output.pdf');
      * // Destroy the document
@@ -4317,91 +4545,93 @@ export class PdfCheckBoxField extends PdfField {
     /**
      * Gets the background color of the field.
      *
-     * @returns {number[]} R, G, B color values in between 0 to 255.
+     * @returns {PdfColor} R, G, B color values in between 0 to 255.
      * ```typescript
      * // Load an existing PDF document
      * let document: PdfDocument = new PdfDocument(data, password);
      * // Access the form field at index 0
      * let field: PdfField = document.form.fieldAt(0);
      * // Gets the background color of the field.
-     * let backColor: number[] = field.backColor;
+     * let backColor: PdfColor = field.backColor;
      * // Save the document
      * document.save('output.pdf');
      * // Destroy the document
      * document.destroy();
      * ```
      */
-    get backColor(): number[] {
+    get backColor(): PdfColor {
         return this._parseBackColor(true);
     }
     /**
      * Sets the background color of the field.
      *
-     * @param {number[]} value Array with R, G, B, A color values in between 0 to 255. For optional A (0-254), it signifies transparency.
+     * @param {PdfColor} value Array with R, G, B, A color values in between 0 to 255.
      * ```typescript
      * // Load an existing PDF document
      * let document: PdfDocument = new PdfDocument(data, password);
      * // Access the check box field at index 0
      * let checkBox1: PdfField = document.form.fieldAt(0);
      * // Sets the background color of the field.
-     * checkBox1.backColor = [255, 0, 0];
+     * checkBox1.backColor = {r: 255, g: 0, b: 0};
      * // Access the check box field at index 1
      * let checkBox2: PdfField = document.form.fieldAt(1);
      * // Sets the background color of the field to transparent.
-     * checkBox2.backColor = [0, 0, 0, 0];
+     * checkBox2.backColor = {r: 0, g: 0, b: 0, isTransparent: true};
      * // Save the document
      * document.save('output.pdf');
      * // Destroy the document
      * document.destroy();
      * ```
      */
-    set backColor(value: number[]) {
+    set backColor(value: PdfColor) {
         this._updateBackColor(value, true);
     }
     /**
      * Gets the border color of the field.
      *
-     * @returns {number[]} R, G, B color values in between 0 to 255.
+     * @returns {PdfColor} R, G, B color values in between 0 to 255.
      * ```typescript
      * // Load an existing PDF document
      * let document: PdfDocument = new PdfDocument(data, password);
      * // Access the form field at index 0
      * let field: PdfField = document.form.fieldAt(0);
      * // Gets the border color of the field.
-     * let borderColor: number[] = field.borderColor;
+     * let borderColor: PdfColor = field.borderColor;
      * // Save the document
      * document.save('output.pdf');
      * // Destroy the document
      * document.destroy();
      * ```
      */
-    get borderColor(): number[] {
+    get borderColor(): PdfColor {
         return this._parseBorderColor(true);
     }
     /**
      * Sets the border color of the field.
      *
-     * @param {number[]} value Array with R, G, B, A color values in between 0 to 255. For optional A (0-254), it signifies transparency.
+     * @param {PdfColor} value Array with R, G, B, A color values in between 0 to 255.
      * ```typescript
      * // Load an existing PDF document
      * let document: PdfDocument = new PdfDocument(data, password);
      * // Access the form field at index 0
      * let field: PdfField = document.form.fieldAt(0);
      * // Sets the border color of the field.
-     * field.borderColor = [255, 0, 0];
+     * field.borderColor = {r: 255, g: 0, b: 0};
+     * // Sets the background color of the field to transparent.
+     * field.backColor = {r: 0, g: 0, b: 0, isTransparent: true};
      * // Save the document
      * document.save('output.pdf');
      * // Destroy the document
      * document.destroy();
      * ```
      */
-    set borderColor(value: number[]) {
+    set borderColor(value: PdfColor) {
         this._updateBorderColor(value, true);
         if (this._isLoaded) {
             this._setAppearance = true;
         }
     }
-    _initialize(page: PdfPage, name: string, bounds: {x: number, y: number, width: number, height: number}): void {
+    _initialize(page: PdfPage, name: string, bounds: Rectangle): void {
         this._crossReference = page._crossReference;
         this._page = page;
         this._name = name;
@@ -4414,7 +4644,7 @@ export class PdfCheckBoxField extends PdfField {
         this._dictionary.update('T', name);
         this._createItem(bounds);
     }
-    _createItem(bounds: {x: number, y: number, width: number, height: number}): void {
+    _createItem(bounds: Rectangle): void {
         const widget: PdfStateItem = new PdfStateItem();
         widget._create(this._page, bounds, this);
         widget.textAlignment = PdfTextAlignment.center;
@@ -4480,9 +4710,9 @@ export class PdfCheckBoxField extends PdfField {
     _createAppearance(widget: PdfStateItem, state: _PdfCheckFieldState): PdfTemplate {
         const bounds: {x: number, y: number, width: number, height: number} = widget.bounds;
         const parameter: _PaintParameter = new _PaintParameter();
-        parameter.bounds = [0, 0, bounds.width, bounds.height];
-        const backcolor: number[] = widget.backColor;
-        if (backcolor) {
+        parameter.bounds = {x: 0, y: 0, width: bounds.width, height: bounds.height};
+        const backcolor: PdfColor = widget.backColor;
+        if (backcolor && !backcolor.isTransparent) {
             parameter.backBrush = new PdfBrush(backcolor);
         }
         parameter.foreBrush = new PdfBrush(widget.color);
@@ -4493,10 +4723,10 @@ export class PdfCheckBoxField extends PdfField {
         parameter.borderWidth = border.width;
         parameter.borderStyle = border.style;
         if (backcolor) {
-            const shadowColor: number[] = [backcolor[0] - 64, backcolor[1] - 64, backcolor[2] - 64];
-            const color: number[] = [shadowColor[0] >= 0 ? shadowColor[0] : 0,
-                shadowColor[1] >= 0 ? shadowColor[1] : 0,
-                shadowColor[2] >= 0 ? shadowColor[2] : 0];
+            const shadowColor: number[] = [backcolor.r - 64, backcolor.g - 64, backcolor.b - 64];
+            const color: PdfColor = {r: shadowColor[0] >= 0 ? shadowColor[0] : 0,
+                g: shadowColor[1] >= 0 ? shadowColor[1] : 0,
+                b: shadowColor[2] >= 0 ? shadowColor[2] : 0};
             parameter.shadowBrush = new PdfBrush(color);
         }
         parameter.rotationAngle = widget.rotate;
@@ -4631,10 +4861,98 @@ export class PdfRadioButtonListField extends PdfField {
      * ```
      */
     constructor(page: PdfPage, name: string)
-    constructor(page?: PdfPage, name?: string) {
+    /**
+     * Represents a radio button list field (group of mutually exclusive options).
+     *
+     * @param {PdfPage} page The page where the field dictionary is created.
+     * @param {string} name The unique name of the field.
+     * @param {object} properties Required properties bag.
+     * @param {{name: string, bounds: Rectangle}[]} properties.items Radio button items to create (each with a name/value and bounds).
+     * @param {string} [properties.toolTip] Tooltip text shown by the viewer.
+     * @param {PdfColor} [properties.color] Fore color of the marker (RGB).
+     * @param {PdfColor} [properties.backColor] Background color for items.
+     * @param {PdfColor} [properties.borderColor] Border color for items.
+     * @param {PdfInteractiveBorder} [properties.border] Border settings for items (width, style, dash).
+     * @param {number} [properties.selectedIndex] Zero-based selected index (default: 0).
+     * @param {boolean} [properties.allowUnisonSelection] When true, allows the group selection to synchronize across widgets with the same value (if supported).
+     *
+     * ```typescript
+     * // Load an existing PDF document
+     * let document: PdfDocument = new PdfDocument(data);
+     * // Get the first page of the document
+     * let page: PdfPage = document.getPage(0);
+     * // Add new radio button list field into PDF form
+     * document.form.add(new PdfRadioButtonListField(
+     *   page,
+     *   'AgeGroup',
+     *   {
+     *     items: [
+     *       { name: '18-25', bounds: { x: 50, y: 480, width: 14, height: 14 } },
+     *       { name: '26-35', bounds: { x: 50, y: 460, width: 14, height: 14 } },
+     *       { name: '36-45', bounds: { x: 50, y: 440, width: 14, height: 14 } }
+     *     ],
+     *     toolTip: 'Select an age range',
+     *     selectedIndex: 1,
+     *     allowUnisonSelection: false
+     *   }
+     * ));
+     * // Save the document
+     * document.save('output.pdf');
+     * // Destroy the document
+     * document.destroy();
+     * ```
+     */
+    constructor(page: PdfPage, name: string, properties: {
+        items: { name: string, bounds: Rectangle }[],
+        toolTip?: string,
+        color?: PdfColor,
+        backColor?: PdfColor,
+        borderColor?: PdfColor,
+        border?: PdfInteractiveBorder,
+        selectedIndex?: number,
+        allowUnisonSelection?: boolean
+    })
+    constructor(page?: PdfPage, name?: string, properties?: {
+        items: { name: string, bounds: Rectangle }[],
+        toolTip?: string,
+        color?: PdfColor,
+        backColor?: PdfColor,
+        borderColor?: PdfColor,
+        border?: PdfInteractiveBorder,
+        selectedIndex?: number,
+        allowUnisonSelection?: boolean
+    }) {
         super();
         if (page && name) {
             this._initialize(page, name);
+        }
+        if (properties) {
+            if ('items' in properties && _isNullOrUndefined(properties.items)) {
+                properties.items.forEach((item: {name: string, bounds: Rectangle}) => {
+                    this.add(new PdfRadioButtonListItem(item.name, item.bounds, this));
+                });
+            }
+            if ('toolTip' in properties && _isNullOrUndefined(properties.toolTip)) {
+                this.toolTip = properties.toolTip;
+            }
+            if ('color' in properties && _isNullOrUndefined(properties.color)) {
+                this.color = properties.color;
+            }
+            if ('border' in properties && _isNullOrUndefined(properties.border)) {
+                this.border = properties.border;
+            }
+            if ('backColor' in properties && _isNullOrUndefined(properties.backColor)) {
+                this.backColor = properties.backColor;
+            }
+            if ('borderColor' in properties && _isNullOrUndefined(properties.borderColor)) {
+                this.borderColor = properties.borderColor;
+            }
+            if ('allowUnisonSelection' in properties && _isNullOrUndefined(properties.allowUnisonSelection)) {
+                this.allowUnisonSelection = properties.allowUnisonSelection;
+            }
+            if ('selectedIndex' in properties && _isNullOrUndefined(properties.selectedIndex)) {
+                this.selectedIndex = properties.selectedIndex;
+            }
         }
     }
     /**
@@ -4844,41 +5162,40 @@ export class PdfRadioButtonListField extends PdfField {
     /**
      * Gets the border color of the field.
      *
-     * @returns {number[]} R, G, B color values in between 0 to 255.
+     * @returns {PdfColor} R, G, B color values in between 0 to 255.
      * ```typescript
      * // Load an existing PDF document
      * let document: PdfDocument = new PdfDocument(data, password);
      * // Access the form field at index 0
      * let field: PdfField = document.form.fieldAt(0);
      * // Gets the border color of the field.
-     * let borderColor: number[] = field.borderColor;
+     * let borderColor: PdfColor = field.borderColor;
      * // Save the document
      * document.save('output.pdf');
      * // Destroy the document
      * document.destroy();
      * ```
      */
-    get borderColor(): number[] {
+    get borderColor(): PdfColor {
         return this._parseBorderColor(!this._isLoaded);
     }
     /**
      * Sets the border color of the field.
      *
-     * @param {number[]} value Array with R, G, B, A color values in between 0 to 255. For optional A (0-254), it signifies transparency.
-     * ```typescript
+     * @param {PdfColor} value Array with R, G, B, A color values in between 0 to 255.
      * // Load an existing PDF document
      * let document: PdfDocument = new PdfDocument(data, password);
      * // Access the form field at index 0
      * let field: PdfField = document.form.fieldAt(0);
      * // Sets the border color of the field.
-     * field.borderColor = [255, 0, 0];
+     * field.borderColor = {r: 255, g: 0, b: 0};
      * // Save the document
      * document.save('output.pdf');
      * // Destroy the document
      * document.destroy();
      * ```
      */
-    set borderColor(value: number[]) {
+    set borderColor(value: PdfColor) {
         this._updateBorderColor(value, true);
     }
     /**
@@ -4962,7 +5279,7 @@ export class PdfRadioButtonListField extends PdfField {
      * Add list item to the field.
      *
      * @param {string} value Name of the list item.
-     * @param {{x: number, y: number, width: number, height: number}} bounds Bounds of the list item.
+     * @param {Rectangle} bounds Bounds of the list item.
      * @returns {PdfRadioButtonListItem} Added item.
      * ```typescript
      * // Load an existing PDF document
@@ -4989,9 +5306,9 @@ export class PdfRadioButtonListField extends PdfField {
      * document.destroy();
      * ```
      */
-    add(value: string, bounds: {x: number, y: number, width: number, height: number}): PdfRadioButtonListItem
+    add(value: string, bounds: Rectangle): PdfRadioButtonListItem
     add(value?: string | PdfRadioButtonListItem,
-        bounds?: {x: number, y: number, width: number, height: number}): PdfRadioButtonListItem | number {
+        bounds?: Rectangle): PdfRadioButtonListItem | number {
         if (value instanceof PdfRadioButtonListItem) {
             value._field = this;
             value._dictionary.update('Parent', this._ref);
@@ -5188,8 +5505,8 @@ export class PdfRadioButtonListField extends PdfField {
     _createAppearance(widget: PdfRadioButtonListItem, state: _PdfCheckFieldState): PdfTemplate {
         const bounds: {x: number, y: number, width: number, height: number} = widget.bounds;
         const parameter: _PaintParameter = new _PaintParameter();
-        parameter.bounds = [0, 0, bounds.width, bounds.height];
-        const backcolor: number[] = widget.backColor;
+        parameter.bounds = {x: 0, y: 0, width: bounds.width, height: bounds.height};
+        const backcolor: PdfColor = widget.backColor;
         if (backcolor) {
             parameter.backBrush = new PdfBrush(backcolor);
         }
@@ -5201,11 +5518,11 @@ export class PdfRadioButtonListField extends PdfField {
         parameter.borderWidth = border.width;
         parameter.borderStyle = border.style;
         if (backcolor) {
-            const shadowColor: number[] = [backcolor[0] - 64, backcolor[1] - 64, backcolor[2] - 64];
+            const shadowColor: number[] = [backcolor.r - 64, backcolor.g - 64, backcolor.b - 64];
             const color: number[] = [shadowColor[0] >= 0 ? shadowColor[0] : 0,
                 shadowColor[1] >= 0 ? shadowColor[1] : 0,
                 shadowColor[2] >= 0 ? shadowColor[2] : 0];
-            parameter.shadowBrush = new PdfBrush(color);
+            parameter.shadowBrush = new PdfBrush({r: color[0], g: color[1], b: color[2]});
         }
         parameter.rotationAngle = widget.rotate;
         const template: PdfTemplate = new PdfTemplate(parameter.bounds, this._crossReference);
@@ -5335,7 +5652,7 @@ export abstract class PdfListField extends PdfField {
     /**
      * Gets the bounds.
      *
-     * @returns {{ x: number, y: number, width: number, height: number }} Bounds.
+     * @returns {Rectangle} Bounds.
      * ```typescript
      * // Load an existing PDF document
      * let document: PdfDocument = new PdfDocument(data);
@@ -5346,19 +5663,19 @@ export abstract class PdfListField extends PdfField {
      * // Access the combo box field
      * let comboBoxField: PdfComboBoxField = form.fieldAt(0) as PdfComboBoxField;
      * // Gets the bounds of combo box field.
-     * let comboBoxBounds: {x: number, y: number, width: number, height: number} = comboBoxField.bounds;
+     * let comboBoxBounds: Rectangle = comboBoxField.bounds;
      * // Access the combo box field
      * let listBoxField: PdfListBoxField = form.fieldAt(1) as PdfListBoxField;
      * // Gets the bounds of list box field.
-     * let listBoxBounds: {x: number, y: number, width: number, height: number} = listBoxField.bounds;
+     * let listBoxBounds: Rectangle = listBoxField.bounds;
      * // Save the document
      * document.save('output.pdf');
      * // Destroy the document
      * document.destroy();
      * ```
      */
-    get bounds(): { x: number, y: number, width: number, height: number } {
-        let value: { x: number, y: number, width: number, height: number };
+    get bounds(): Rectangle {
+        let value: Rectangle;
         const widget: PdfWidgetAnnotation = this.itemAt(this._defaultIndex);
         if (widget) {
             widget._page = this.page;
@@ -5378,7 +5695,7 @@ export abstract class PdfListField extends PdfField {
     /**
      * Sets the bounds.
      *
-     * @param {{ x: number, y: number, width: number, height: number }} value bounds.
+     * @param {Rectangle} value bounds.
      * ```typescript
      * // Load an existing PDF document
      * let document: PdfDocument = new PdfDocument(data);
@@ -5400,7 +5717,7 @@ export abstract class PdfListField extends PdfField {
      * document.destroy();
      * ```
      */
-    set bounds(value: { x: number, y: number, width: number, height: number }) {
+    set bounds(value: Rectangle) {
         if (value.x === 0 && value.y === 0 && value.width === 0 && value.height === 0) {
             throw new Error('Cannot set empty bounds');
         }
@@ -5830,7 +6147,7 @@ export abstract class PdfListField extends PdfField {
      * // Access the form field at index 0
      * let field: PdfListBoxField = document.form.fieldAt(0) as PdfListBoxField;
      * // Sets the font of the field
-     * field.font = new PdfStandardFont(PdfFontFamily.helvetica, 12, PdfFontStyle.bold);
+     * field.font = document.embedFont(PdfFontFamily.helvetica, 12, PdfFontStyle.bold);
      * // Save the document
      * document.save('output.pdf');
      * // Destroy the document
@@ -5890,45 +6207,45 @@ export abstract class PdfListField extends PdfField {
     /**
      * Gets the background color of the field.
      *
-     * @returns {number[]} R, G, B color values in between 0 to 255.
+     * @returns {PdfColor} R, G, B color values in between 0 to 255.
      * ```typescript
      * // Load an existing PDF document
      * let document: PdfDocument = new PdfDocument(data, password);
      * // Access the form field at index 0
      * let field: PdfField = document.form.fieldAt(0);
      * // Gets the background color of the field.
-     * let backColor: number[] = field.backColor;
+     * let backColor: PdfColor = field.backColor;
      * // Save the document
      * document.save('output.pdf');
      * // Destroy the document
      * document.destroy();
      * ```
      */
-    get backColor(): number[] {
+    get backColor(): PdfColor {
         return this._parseBackColor(true);
     }
     /**
      * Sets the background color of the field.
      *
-     * @param {number[]} value Array with R, G, B, A color values in between 0 to 255. For optional A (0-254), it signifies transparency.
+     * @param {PdfColor} value Array with R, G, B, A color values in between 0 to 255.
      * ```typescript
      * // Load an existing PDF document
      * let document: PdfDocument = new PdfDocument(data, password);
      * // Access the list field at index 0
      * let list1: PdfField = document.form.fieldAt(0);
      * // Sets the background color of the field.
-     * list1.backColor = [255, 0, 0];
+     * list1.backColor = {r: 255, g: 0, b: 0};
      * // Access the list field at index 1
      * let list2: PdfField = document.form.fieldAt(1);
      * // Sets the background color of the field to transparent.
-     * list2.backColor = [0, 0, 0, 0];
+     * list2.backColor = {r: 0, g: 0, b: 0, isTransparent: true};
      * // Save the document
      * document.save('output.pdf');
      * // Destroy the document
      * document.destroy();
      * ```
      */
-    set backColor(value: number[]) {
+    set backColor(value: PdfColor) {
         this._updateBackColor(value, true);
     }
     get _options(): Array<string[]> {
@@ -6453,7 +6770,7 @@ export class PdfComboBoxField extends PdfListField {
      *
      * @param {PdfPage} page The page where the field is drawn.
      * @param {string} name The name of the field.
-     * @param {{x: number, y: number, width: number, height: number}} bounds The bounds of the field.
+     * @param {Rectangle} bounds The bounds of the field.
      * ```typescript
      * // Load an existing PDF document
      * let document: PdfDocument = new PdfDocument(data);
@@ -6479,12 +6796,107 @@ export class PdfComboBoxField extends PdfListField {
      * document.destroy();
      * ```
      */
-    constructor(page: PdfPage, name: string, bounds: {x: number, y: number, width: number, height: number})
-    constructor(page?: PdfPage, name?: string, bounds?: {x: number, y: number, width: number, height: number}) {
+    constructor(page: PdfPage, name: string, bounds: Rectangle)
+    /**
+     * Represents a combo box (drop-down) field of the PDF document.
+     *
+     * @param {PdfPage} page The page where the field is drawn.
+     * @param {string} [name] The unique name of the field.
+     * @param {Rectangle} bounds The bounds of the field.
+     * @param {object} properties Required properties bag.
+     * @param {{text: string, value: string}[]} properties.items List items to populate (text/value pairs).
+     * @param {string} [properties.toolTip] Tooltip text shown by the viewer.
+     * @param {PdfColor} [properties.color] Fore color (text color) of the field (RGB).
+     * @param {PdfColor} [properties.backColor] Background color.
+     * @param {PdfColor} [properties.borderColor] Border color.
+     * @param {PdfInteractiveBorder} [properties.border] Border settings (width, style, dash).
+     * @param {number|number[]} [properties.selectedIndex] Selected index (single) or indices (multi) if viewer supports it.
+     * @param {string|string[]} [properties.selectedValue] Selected value (single) or values (multi) matching items.
+     * @param {PdfFont} [properties.font] Font used for the drop-down text.
+     *
+     * ```typescript
+     * // Load an existing PDF document
+     * let document: PdfDocument = new PdfDocument(data);
+     * // Get the first page of the document
+     * let page: PdfPage = document.getPage(0);
+     * // Add new combobox field into PDF form
+     * document.form.add(new PdfComboBoxField(
+     *   page,
+     *   'Country',
+     *   { x: 50, y: 400, width: 180, height: 22 },
+     *   {
+     *     items: [
+     *       { text: 'United States', value: 'US' },
+     *       { text: 'Canada', value: 'CA' },
+     *       { text: 'Germany', value: 'DE' }
+     *     ],
+     *     toolTip: 'Choose a country',
+     *     color: { r: 0, g: 0, b: 0 },
+     *     backColor: { r: 255, g: 255, b: 255 },
+     *     borderColor: { r: 0, g: 0, b: 0 },
+     *     border: new PdfInteractiveBorder({width: 1, style: PdfBorderStyle.solid}),
+     *     selectedIndex: 0,
+     *     font: document.embedFont(PdfFontFamily.helvetica, 10, PdfFontStyle.regular)
+     *   }
+     * ));
+     * // Save the document
+     * document.save('output.pdf');
+     * // Destroy the document
+     * document.destroy();
+     * ```
+     */
+    constructor(page: PdfPage, name: string, bounds: Rectangle, properties: {
+        items: { text: string, value: string }[],
+        toolTip?: string,
+        color?: PdfColor,
+        backColor?: PdfColor,
+        borderColor?: PdfColor,
+        border?: PdfInteractiveBorder,
+        selectedIndex?: number,
+        font?: PdfFont
+    })
+    constructor(page?: PdfPage, name?: string, bounds?: Rectangle, properties?: {
+        items: { text: string, value: string }[],
+        toolTip?: string,
+        color?: PdfColor,
+        backColor?: PdfColor,
+        borderColor?: PdfColor,
+        border?: PdfInteractiveBorder,
+        selectedIndex?: number,
+        font?: PdfFont
+    }) {
         super();
         if (page && name && bounds) {
             this._initialize(page, name, bounds);
             this._fieldFlags |= _FieldFlag.combo;
+        }
+        if (properties) {
+            if ('items' in properties && _isNullOrUndefined(properties.items)) {
+                properties.items.forEach((item: { text: string, value: string }) => {
+                    this.addItem(new PdfListFieldItem(item.text, item.value));
+                });
+            }
+            if ('toolTip' in properties && _isNullOrUndefined(properties.toolTip)) {
+                this.toolTip = properties.toolTip;
+            }
+            if ('color' in properties && _isNullOrUndefined(properties.color)) {
+                this.color = properties.color;
+            }
+            if ('border' in properties && _isNullOrUndefined(properties.border)) {
+                this.border = properties.border;
+            }
+            if ('backColor' in properties && _isNullOrUndefined(properties.backColor)) {
+                this.backColor = properties.backColor;
+            }
+            if ('borderColor' in properties && _isNullOrUndefined(properties.borderColor)) {
+                this.borderColor = properties.borderColor;
+            }
+            if ('font' in properties && _isNullOrUndefined(properties.font)) {
+                this.font = properties.font;
+            }
+            if ('selectedIndex' in properties && _isNullOrUndefined(properties.selectedIndex)) {
+                this.selectedIndex = properties.selectedIndex;
+            }
         }
     }
     /**
@@ -6616,12 +7028,12 @@ export class PdfComboBoxField extends PdfListField {
             const bounds: {x: number, y: number, width: number, height: number} = item.bounds;
             const page: PdfPage = item._getPage();
             if (item._isLoaded && page && typeof page.rotation !== 'undefined' && page.rotation !== PdfRotationAngle.angle0) {
-                parameter.bounds = this._rotateTextBox([bounds.x, bounds.y, bounds.width, bounds.height], page.size, page.rotation);
+                parameter.bounds = this._rotateTextBox(bounds, page.size, page.rotation);
             } else {
-                parameter.bounds = [0, 0, bounds.width, bounds.height];
+                parameter.bounds = {x: 0, y: 0, width: bounds.width, height: bounds.height};
             }
-            const backcolor: number[] = item.backColor;
-            if (backcolor) {
+            const backcolor: PdfColor = item.backColor;
+            if (backcolor && !backcolor.isTransparent) {
                 parameter.backBrush = new PdfBrush(backcolor);
             }
             parameter.foreBrush = new PdfBrush(item.color);
@@ -6633,10 +7045,10 @@ export class PdfComboBoxField extends PdfListField {
             parameter.borderStyle = border.style;
             parameter.borderWidth = border.width;
             if (backcolor) {
-                const shadowColor: number[] = [backcolor[0] - 64, backcolor[1] - 64, backcolor[2] - 64];
-                const color: number[] = [shadowColor[0] >= 0 ? shadowColor[0] : 0,
-                    shadowColor[1] >= 0 ? shadowColor[1] : 0,
-                    shadowColor[2] >= 0 ? shadowColor[2] : 0];
+                const shadowColor: number[] = [backcolor.r - 64, backcolor.g - 64, backcolor.b - 64];
+                const color: PdfColor = {r: shadowColor[0] >= 0 ? shadowColor[0] : 0,
+                    g: shadowColor[1] >= 0 ? shadowColor[1] : 0,
+                    b: shadowColor[2] >= 0 ? shadowColor[2] : 0};
                 parameter.shadowBrush = new PdfBrush(color);
             }
             const alignment: PdfTextAlignment = typeof item.textAlignment !== 'undefined' ? item.textAlignment : PdfTextAlignment.left;
@@ -6649,15 +7061,13 @@ export class PdfComboBoxField extends PdfListField {
                     this.page &&
                     typeof this.page.rotation !== 'undefined' &&
                     this.page.rotation !== PdfRotationAngle.angle0) {
-                    parameter.bounds = this._rotateTextBox([bounds.x, bounds.y, bounds.width, bounds.height],
-                                                           this.page.size,
-                                                           this.page.rotation);
+                    parameter.bounds = this._rotateTextBox(bounds, this.page.size, this.page.rotation);
                 } else {
-                    parameter.bounds = [0, 0, bounds.width, bounds.height];
+                    parameter.bounds = {x: 0, y: 0, width: bounds.width, height: bounds.height};
                 }
             }
-            const backcolor: number[] = this.backColor;
-            if (backcolor) {
+            const backcolor: PdfColor = this.backColor;
+            if (backcolor && !backcolor.isTransparent) {
                 parameter.backBrush = new PdfBrush(backcolor);
             }
             parameter.foreBrush = new PdfBrush(this.color);
@@ -6669,10 +7079,10 @@ export class PdfComboBoxField extends PdfListField {
             parameter.borderStyle = border.style;
             parameter.borderWidth = border.width;
             if (backcolor) {
-                const shadowColor: number[] = [backcolor[0] - 64, backcolor[1] - 64, backcolor[2] - 64];
-                const color: number[] = [shadowColor[0] >= 0 ? shadowColor[0] : 0,
-                    shadowColor[1] >= 0 ? shadowColor[1] : 0,
-                    shadowColor[2] >= 0 ? shadowColor[2] : 0];
+                const shadowColor: number[] = [backcolor.r - 64, backcolor.g - 64, backcolor.b - 64];
+                const color: PdfColor = {r: shadowColor[0] >= 0 ? shadowColor[0] : 0,
+                    g: shadowColor[1] >= 0 ? shadowColor[1] : 0,
+                    b: shadowColor[2] >= 0 ? shadowColor[2] : 0};
                 parameter.shadowBrush = new PdfBrush(color);
             }
             parameter.rotationAngle = this.rotationAngle;
@@ -6685,7 +7095,7 @@ export class PdfComboBoxField extends PdfListField {
         }
         parameter.required = this.required;
         if (parameter.bounds === null || typeof parameter.bounds === 'undefined') {
-            parameter.bounds = [0, 0, 0, 0];
+            parameter.bounds = {x: 0, y: 0, width: 0, height: 0};
         }
         const template: PdfTemplate = new PdfTemplate(parameter.bounds, this._crossReference);
         const graphics: PdfGraphics = template.graphics;
@@ -6750,24 +7160,24 @@ export class PdfComboBoxField extends PdfListField {
                 offset[1] = 1 * borderWidth;
             }
             let brush: PdfBrush = parameter.foreBrush;
-            const rect: number[] = parameter.bounds;
-            let width: number = rect[2] - doubleBorderWidth;
-            let rectangle: number[] = rect;
+            const rect: Rectangle = parameter.bounds;
+            let width: number = rect.width - doubleBorderWidth;
+            let rectangle: Rectangle = rect;
             if (padding) {
-                rectangle[3] -= doubleBorderWidth;
+                rectangle.height -= doubleBorderWidth;
             } else {
-                rectangle[3] -= borderWidth;
+                rectangle.height -= borderWidth;
             }
             graphics.setClip(rectangle, PdfFillMode.winding);
             if (parameter.rotationAngle === 0) {
-                let x: number = rect[0] + borderWidth;
+                let x: number = rect.x + borderWidth;
                 if (padding) {
                     x += borderWidth;
                     width -= doubleBorderWidth;
                 }
-                brush = new PdfBrush([153, 193, 218]);
-                graphics.drawRectangle(x, offset[1], width, rect[3], brush);
-                brush = new PdfBrush([0, 0, 0]);
+                brush = new PdfBrush({r: 153, g: 193, b: 218});
+                graphics.drawRectangle({x: x, y: offset[1], width: width, height: rect.height}, brush);
+                brush = new PdfBrush({r: 0, g: 0, b: 0});
             }
             let value: string;
             if (item && Array.isArray(item)) {
@@ -6776,36 +7186,36 @@ export class PdfComboBoxField extends PdfListField {
                 value = item;
             }
             if (value) {
-                const itemTextBound: number[] = [offset[0], offset[1], width - offset[0], rect[3]];
+                const itemTextBound: Rectangle = {x: offset[0], y: offset[1], width: width - offset[0], height: rect.height};
                 if (parameter.rotationAngle > 0) {
                     const state: PdfGraphicsState = graphics.save();
                     if (parameter.rotationAngle === 90) {
-                        graphics.translateTransform(0, graphics._size[1]);
+                        graphics.translateTransform({x: 0, y: graphics._size.height});
                         graphics.rotateTransform(-90);
-                        const x: number = graphics._size[1] - (rectangle[1] + rectangle[3]);
-                        const y: number = rectangle[0];
-                        rectangle = [x, y, rectangle[3] + rectangle[2], rectangle[2]];
+                        const x: number = graphics._size.height - (rectangle.y + rectangle.height);
+                        const y: number = rectangle.x;
+                        rectangle = {x: x, y: y, width: rectangle.height + rectangle.width, height: rectangle.width};
                     } else if (parameter.rotationAngle === 270) {
-                        graphics.translateTransform(graphics._size[0], 0);
+                        graphics.translateTransform({x: graphics._size.width, y: 0});
                         graphics.rotateTransform(-270);
-                        const x: number = rectangle[1];
-                        const y: number = graphics._size[0] - (rectangle[0] + rectangle[2]);
-                        rectangle = [x, y, rectangle[3] + rectangle[2], rectangle[2]];
+                        const x: number = rectangle.y;
+                        const y: number = graphics._size.width - (rectangle.x + rectangle.width);
+                        rectangle = {x: x, y: y, width: rectangle.height + rectangle.width, height: rectangle.width};
                     } else if (parameter.rotationAngle === 180) {
-                        graphics.translateTransform(graphics._size[0], graphics._size[1]);
+                        graphics.translateTransform({x: graphics._size.width, y: graphics._size.height});
                         graphics.rotateTransform(-180);
-                        const x: number = graphics._size[0] - (rectangle[0] + rectangle[2]);
-                        const y: number = graphics._size[1] - (rectangle[1] + rectangle[3]);
-                        rectangle = [x, y, rectangle[2], rectangle[3]];
+                        const x: number = graphics._size.width - (rectangle.x + rectangle.width);
+                        const y: number = graphics._size.height - (rectangle.y + rectangle.height);
+                        rectangle = {x: x, y: y, width: rectangle.width, height: rectangle.height};
                     }
-                    let x: number = rect[0] + borderWidth;
+                    let x: number = rect.x + borderWidth;
                     if (padding) {
                         x += borderWidth;
                         width -= doubleBorderWidth;
                     }
-                    brush = new PdfBrush([153, 193, 218]);
-                    graphics.drawRectangle(x, offset[1], width, rect[3], brush);
-                    brush = new PdfBrush([0, 0, 0]);
+                    brush = new PdfBrush({r: 153, g: 193, b: 218});
+                    graphics.drawRectangle({x: x, y: offset[1], width: width, height: rect.height}, brush);
+                    brush = new PdfBrush({r: 0, g: 0, b: 0});
                     graphics.drawString(value, font, itemTextBound, null, brush, stringFormat);
                     graphics.restore(state);
                 } else {
@@ -6834,12 +7244,12 @@ export class PdfComboBoxField extends PdfListField {
             const widths: number[] = [];
             if (values && values.length > 0) {
                 values.forEach((entry: number) => {
-                    widths.push(itemFont.measureString(options[<number>entry][1], [0, 0], format, 0, 0)[0]);
+                    widths.push(itemFont.measureString(options[<number>entry][1], {width: 0, height: 0}, format, 0, 0).width);
                 });
             } else if (options.length > 0) {
-                let max: number = itemFont.measureString(options[0][1], [0, 0], format, 0, 0)[0];
+                let max: number = itemFont.measureString(options[0][1], {width: 0, height: 0}, format, 0, 0).width;
                 for (let i: number = 1; i < options.length; ++i) {
-                    const width: number = itemFont.measureString(options[<number>i][1], [0, 0], format, 0, 0)[0];
+                    const width: number = itemFont.measureString(options[<number>i][1], {width: 0, height: 0}, format, 0, 0).width;
                     max = Math.max(max, width);
                     widths.push(max);
                 }
@@ -6853,7 +7263,7 @@ export class PdfComboBoxField extends PdfListField {
                 options = this._dictionary.getArray('Opt');
                 const selectedValue: any = this.selectedValue; // eslint-disable-line
                 const width: number = itemFont.measureString((selectedValue !== null && typeof selectedValue === 'string') ? selectedValue :
-                    options[values[0]][1], [0, 0], format, 0, 0)[0];
+                    options[values[0]][1], {width: 0, height: 0}, format, 0, 0).width;
                 bounds = this.bounds;
                 if (width) {
                     s = (12 * (bounds.width - 4 * borderWidth)) / width;
@@ -6871,15 +7281,15 @@ export class PdfComboBoxField extends PdfListField {
                 const selectedValue: any = this.selectedValue; // eslint-disable-line
                 const text: string = (selectedValue !== null && typeof selectedValue === 'string') ? selectedValue :
                     options[values[0]][1];
-                const textSize: number[] = itemFont.measureString(text);
-                if (textSize[0] > bounds.width || textSize[1] > bounds.height) {
+                const textSize: Size = itemFont.measureString(text);
+                if (textSize.width > bounds.width || textSize.height > bounds.height) {
                     const width: number = bounds.width - 4 * borderWidth;
                     const h: number = bounds.height - 4 * borderWidth;
                     const min: number = 0.248;
                     for (let i: number = 1; i <= bounds.height; i++) {
                         itemFont = new PdfStandardFont(fontFamily, i);
-                        let size: number[] = itemFont.measureString(text);
-                        if (size[0] > bounds.width || size[1] > h) {
+                        let size: Size = itemFont.measureString(text);
+                        if (size.width > bounds.width || size.height > h) {
                             fontSize = i;
                             do {
                                 fontSize = fontSize - 0.001;
@@ -6889,8 +7299,8 @@ export class PdfComboBoxField extends PdfListField {
                                     itemFont._size = min;
                                     break;
                                 }
-                                size = itemFont.measureString(text, [0, 0], format, 0, 0);
-                                if (textWidth < width && size[1] < h) {
+                                size = itemFont.measureString(text, {width: 0, height: 0}, format, 0, 0);
+                                if (textWidth < width && size.height < h) {
                                     itemFont._size = fontSize;
                                     break;
                                 }
@@ -6946,7 +7356,7 @@ export class PdfListBoxField extends PdfListField {
      *
      * @param {PdfPage} page The page where the field is drawn.
      * @param {string} name The name of the field.
-     * @param {{x: number, y: number, width: number, height: number}} bounds The bounds of the field.
+     * @param {Rectangle} bounds The bounds of the field.
      * ```typescript
      * // Load an existing PDF document
      * let document: PdfDocument = new PdfDocument(data);
@@ -6972,11 +7382,113 @@ export class PdfListBoxField extends PdfListField {
      * document.destroy();
      * ```
      */
-    constructor(page: PdfPage, name: string, bounds: {x: number, y: number, width: number, height: number})
-    constructor(page?: PdfPage, name?: string, bounds?: {x: number, y: number, width: number, height: number}) {
+    constructor(page: PdfPage, name: string, bounds: Rectangle)
+    /**
+     * Represents a list box field of the PDF document.
+     *
+     * @param {PdfPage} page The page where the field is drawn.
+     * @param {string} name The unique name of the field.
+     * @param {Rectangle} bounds The bounds of the field.
+     * @param {object} properties Required properties bag.
+     * @param {{text: string, value: string}[]} properties.items List items to populate (text/value pairs).
+     * @param {string} [properties.toolTip] Tooltip text shown by the viewer.
+     * @param {PdfColor} [properties.color] Fore color (text color) of the field (RGB).
+     * @param {PdfColor} [properties.backColor] Background color.
+     * @param {PdfColor} [properties.borderColor] Border color.
+     * @param {PdfInteractiveBorder} [properties.border] Border settings (width, style, dash).
+     * @param {number|number[]} [properties.selectedIndex] Selected index or indices (for multi-select).
+     * @param {string|string[]} [properties.selectedValue] Selected value(s) matching items[].value.
+     * @param {boolean} [properties.multiSelect] Allow selecting multiple items (viewer dependent).
+     * @param {PdfFont} [properties.font] Font used for item text.
+     *
+     * ```typescript
+     * // Load an existing PDF document
+     * let document: PdfDocument = new PdfDocument(data);
+     * // Get the first page of the document
+     * let page: PdfPage = document.getPage(0);
+     * // Add new listbox field into PDF form
+     * document.form.add(new PdfListBoxField(
+     *   page,
+     *   'Languages',
+     *   { x: 50, y: 340, width: 180, height: 60 },
+     *   {
+     *     items: [
+     *       { text: 'English', value: 'en' },
+     *       { text: 'French', value: 'fr' },
+     *       { text: 'German', value: 'de' }
+     *     ],
+     *     toolTip: 'Select language(s)',
+     *     color: { r: 0, g: 0, b: 0 },
+     *     backColor: { r: 255, g: 255, b: 255 },
+     *     borderColor: { r: 0, g: 0, b: 0 },
+     *     border: new PdfInteractiveBorder({width: 1, style: PdfBorderStyle.solid}),
+     *     selectedIndex: [0, 2],
+     *     multiSelect: true,
+     *     font: document.embedFont(PdfFontFamily.helvetica, 10, PdfFontStyle.regular)
+     *   }
+     * ));
+     * // Save the document
+     * document.save('output.pdf');
+     * // Destroy the document
+     * document.destroy();
+     * ```
+     */
+    constructor(page: PdfPage, name: string, bounds: Rectangle, properties: {
+        items: { text: string, value: string }[],
+        toolTip?: string,
+        color?: PdfColor,
+        backColor?: PdfColor,
+        borderColor?: PdfColor,
+        border?: PdfInteractiveBorder,
+        selectedIndex?: number | number[],
+        multiSelect?: boolean,
+        font?: PdfFont
+    })
+    constructor(page?: PdfPage, name?: string, bounds?: Rectangle, properties?: {
+        items: { text: string, value: string }[],
+        toolTip?: string,
+        color?: PdfColor,
+        backColor?: PdfColor,
+        borderColor?: PdfColor,
+        border?: PdfInteractiveBorder,
+        selectedIndex?: number | number[],
+        multiSelect?: boolean,
+        font?: PdfFont
+    }) {
         super();
         if (page && name && bounds) {
             this._initialize(page, name, bounds);
+        }
+        if (properties) {
+            if ('items' in properties && _isNullOrUndefined(properties.items)) {
+                properties.items.forEach((item: { text: string, value: string }) => {
+                    this.addItem(new PdfListFieldItem(item.text, item.value));
+                });
+            }
+            if ('toolTip' in properties && _isNullOrUndefined(properties.toolTip)) {
+                this.toolTip = properties.toolTip;
+            }
+            if ('color' in properties && _isNullOrUndefined(properties.color)) {
+                this.color = properties.color;
+            }
+            if ('border' in properties && _isNullOrUndefined(properties.border)) {
+                this.border = properties.border;
+            }
+            if ('backColor' in properties && _isNullOrUndefined(properties.backColor)) {
+                this.backColor = properties.backColor;
+            }
+            if ('borderColor' in properties && _isNullOrUndefined(properties.borderColor)) {
+                this.borderColor = properties.borderColor;
+            }
+            if ('font' in properties && _isNullOrUndefined(properties.font)) {
+                this.font = properties.font;
+            }
+            if ('multiSelect' in properties && _isNullOrUndefined(properties.multiSelect)) {
+                this.multiSelect = properties.multiSelect;
+            }
+            if ('selectedIndex' in properties && _isNullOrUndefined(properties.selectedIndex)) {
+                this.selectedIndex = properties.selectedIndex;
+            }
         }
     }
     /**
@@ -7048,12 +7560,12 @@ export class PdfListBoxField extends PdfListField {
             const bounds: {x: number, y: number, width: number, height: number} = item.bounds;
             const page: PdfPage = item._getPage();
             if (item._isLoaded && page && typeof page.rotation !== 'undefined' && page.rotation !== PdfRotationAngle.angle0) {
-                parameter.bounds = this._rotateTextBox([bounds.x, bounds.y, bounds.width, bounds.height], page.size, page.rotation);
+                parameter.bounds = this._rotateTextBox(bounds, page.size, page.rotation);
             } else {
-                parameter.bounds = [0, 0, bounds.width, bounds.height];
+                parameter.bounds = {x: 0, y: 0, width: bounds.width, height: bounds.height};
             }
-            const backcolor: number[] = item.backColor;
-            if (backcolor) {
+            const backcolor: PdfColor = item.backColor;
+            if (backcolor && !backcolor.isTransparent) {
                 parameter.backBrush = new PdfBrush(backcolor);
             }
             parameter.foreBrush = new PdfBrush(item.color);
@@ -7065,10 +7577,10 @@ export class PdfListBoxField extends PdfListField {
             parameter.borderStyle = border.style;
             parameter.borderWidth = border.width;
             if (backcolor) {
-                const shadowColor: number[] = [backcolor[0] - 64, backcolor[1] - 64, backcolor[2] - 64];
-                const color: number[] = [shadowColor[0] >= 0 ? shadowColor[0] : 0,
-                    shadowColor[1] >= 0 ? shadowColor[1] : 0,
-                    shadowColor[2] >= 0 ? shadowColor[2] : 0];
+                const shadowColor: number[] = [backcolor.r - 64, backcolor.g - 64, backcolor.b - 64];
+                const color: PdfColor = {r: shadowColor[0] >= 0 ? shadowColor[0] : 0,
+                    g: shadowColor[1] >= 0 ? shadowColor[1] : 0,
+                    b: shadowColor[2] >= 0 ? shadowColor[2] : 0};
                 parameter.shadowBrush = new PdfBrush(color);
             }
             if (item._enableGrouping && typeof item.rotate === 'undefined') {
@@ -7085,14 +7597,12 @@ export class PdfListBoxField extends PdfListField {
                 this.page &&
                 typeof this.page.rotation !== 'undefined' &&
                 this.page.rotation !== PdfRotationAngle.angle0) {
-                parameter.bounds = this._rotateTextBox([bounds.x, bounds.y, bounds.width, bounds.height],
-                                                       this.page.size,
-                                                       this.page.rotation);
+                parameter.bounds = this._rotateTextBox(bounds, this.page.size, this.page.rotation);
             } else {
-                parameter.bounds = [0, 0, bounds.width, bounds.height];
+                parameter.bounds = {x: 0, y: 0, width: bounds.width, height: bounds.height};
             }
-            const backcolor: number[] = this.backColor;
-            if (backcolor) {
+            const backcolor: PdfColor = this.backColor;
+            if (backcolor && !backcolor.isTransparent) {
                 parameter.backBrush = new PdfBrush(backcolor);
             }
             parameter.foreBrush = new PdfBrush(this.color);
@@ -7104,10 +7614,10 @@ export class PdfListBoxField extends PdfListField {
             parameter.borderStyle = border.style;
             parameter.borderWidth = border.width;
             if (backcolor) {
-                const shadowColor: number[] = [backcolor[0] - 64, backcolor[1] - 64, backcolor[2] - 64];
-                const color: number[] = [shadowColor[0] >= 0 ? shadowColor[0] : 0,
-                    shadowColor[1] >= 0 ? shadowColor[1] : 0,
-                    shadowColor[2] >= 0 ? shadowColor[2] : 0];
+                const shadowColor: number[] = [backcolor.r - 64, backcolor.g - 64, backcolor.b - 64];
+                const color: PdfColor = {r: shadowColor[0] >= 0 ? shadowColor[0] : 0,
+                    g: shadowColor[1] >= 0 ? shadowColor[1] : 0,
+                    b: shadowColor[2] >= 0 ? shadowColor[2] : 0};
                 parameter.shadowBrush = new PdfBrush(color);
             }
             parameter.rotationAngle = this.rotationAngle;
@@ -7165,19 +7675,19 @@ export class PdfListBoxField extends PdfListField {
             const padding: boolean = (parameter.borderStyle === PdfBorderStyle.inset || parameter.borderStyle === PdfBorderStyle.beveled);
             if (padding) {
                 location.push(2 * doubleBorderWidth);
-                location.push((index + 2) * borderWidth + font._metrics._getHeight() * index);
+                location.push((index + 2) * borderWidth + font._getHeight() * index);
             } else {
                 location.push(doubleBorderWidth + defaultPadding);
-                location.push((index + 1) * borderWidth + font._metrics._getHeight() * index + (defaultPadding - 1));
+                location.push((index + 1) * borderWidth + font._getHeight() * index + (defaultPadding - 1));
             }
             let brush: PdfBrush = parameter.foreBrush;
-            const rect: number[] = parameter.bounds;
-            let width: number = rect[2] - doubleBorderWidth;
-            let rectangle: number[] = rect;
+            const rect: Rectangle = parameter.bounds;
+            let width: number = rect.width - doubleBorderWidth;
+            let rectangle: Rectangle = rect;
             if (padding) {
-                rectangle[3] -= doubleBorderWidth;
+                rectangle.height -= doubleBorderWidth;
             } else {
-                rectangle[3] -= borderWidth;
+                rectangle.height -= borderWidth;
             }
             graphics.setClip(rectangle, PdfFillMode.winding);
             let selected: boolean = false;
@@ -7189,14 +7699,14 @@ export class PdfListBoxField extends PdfListField {
             }
             if (parameter.rotationAngle === 0) {
                 if (selected) {
-                    let x: number = rect[0] + borderWidth;
+                    let x: number = rect.x + borderWidth;
                     if (padding) {
                         x += borderWidth;
                         width -= doubleBorderWidth;
                     }
-                    brush = new PdfBrush([153, 193, 218]);
-                    graphics.drawRectangle(x, location[1], width, font._metrics._getHeight(), brush);
-                    brush = new PdfBrush([0, 0, 0]);
+                    brush = new PdfBrush({r: 153, g: 193, b: 218});
+                    graphics.drawRectangle({x: x, y: location[1], width: width, height: font._getHeight()}, brush);
+                    brush = new PdfBrush({r: 0, g: 0, b: 0});
                 }
             }
             let value: string;
@@ -7205,37 +7715,37 @@ export class PdfListBoxField extends PdfListField {
             } else {
                 value = item[1] ? item[1] : item[0];
             }
-            const itemTextBound: number[] = [location[0], location[1], width - location[0], font._metrics._getHeight()];
+            const itemTextBound: Rectangle = {x: location[0], y: location[1], width: width - location[0], height: font._getHeight()};
             if (parameter.rotationAngle > 0) {
                 const state: PdfGraphicsState = graphics.save();
                 if (parameter.rotationAngle === 90) {
-                    graphics.translateTransform(0, graphics._size[1]);
+                    graphics.translateTransform({x: 0, y: graphics._size.height});
                     graphics.rotateTransform(-90);
-                    const x: number = graphics._size[1] - (rectangle[1] + rectangle[3]);
-                    const y: number = rectangle[0];
-                    rectangle = [x, y, rectangle[3] + rectangle[2], rectangle[2]];
+                    const x: number = graphics._size.height - (rectangle.y + rectangle.height);
+                    const y: number = rectangle.x;
+                    rectangle = {x: x, y: y, width: rectangle.height + rectangle.width, height: rectangle.width};
                 } else if (parameter.rotationAngle === 270) {
-                    graphics.translateTransform(graphics._size[0], 0);
+                    graphics.translateTransform({x: graphics._size.width, y: 0});
                     graphics.rotateTransform(-270);
-                    const x: number = rectangle[1];
-                    const y: number = graphics._size[0] - (rectangle[0] + rectangle[2]);
-                    rectangle = [x, y, rectangle[3] + rectangle[2], rectangle[2]];
+                    const x: number = rectangle.y;
+                    const y: number = graphics._size.width - (rectangle.x + rectangle.width);
+                    rectangle = {x: x, y: y, width: rectangle.height + rectangle.width, height: rectangle.width};
                 } else if (parameter.rotationAngle === 180) {
-                    graphics.translateTransform(graphics._size[0], graphics._size[1]);
+                    graphics.translateTransform({x: graphics._size.width, y: graphics._size.height});
                     graphics.rotateTransform(-180);
-                    const x: number = graphics._size[0] - (rectangle[0] + rectangle[2]);
-                    const y: number = graphics._size[1] - (rectangle[1] + rectangle[3]);
-                    rectangle = [x, y, rectangle[2], rectangle[3]];
+                    const x: number = graphics._size.width - (rectangle.x + rectangle.width);
+                    const y: number = graphics._size.height - (rectangle.y + rectangle.height);
+                    rectangle = {x: x, y: y, width: rectangle.width, height: rectangle.height};
                 }
                 if (selected) {
-                    let x: number = rect[0] + borderWidth;
+                    let x: number = rect.x + borderWidth;
                     if (padding) {
                         x += borderWidth;
                         width -= doubleBorderWidth;
                     }
-                    brush = new PdfBrush([153, 193, 218]);
-                    graphics.drawRectangle(x, location[1], width, font._metrics._getHeight(), brush);
-                    brush = new PdfBrush([0, 0, 0]);
+                    brush = new PdfBrush({r: 153, g: 193, b: 218});
+                    graphics.drawRectangle({x: x, y: location[1], width: width, height: font._getHeight()}, brush);
+                    brush = new PdfBrush({r: 0, g: 0, b: 0});
                 }
                 graphics.drawString(value, font, itemTextBound, null, brush, stringFormat);
                 graphics.restore(state);
@@ -7253,9 +7763,9 @@ export class PdfListBoxField extends PdfListField {
         const format: PdfStringFormat = new PdfStringFormat(PdfTextAlignment.left, PdfVerticalAlignment.middle);
         let s: number = 0;
         if (_isNullOrUndefined(this._listValues) && this._listValues.length > 0) {
-            let max: number = itemFont.measureString(this._listValues[0], [0, 0], format, 0, 0)[0];
+            let max: number = itemFont.measureString(this._listValues[0], {width: 0, height: 0}, format, 0, 0).width;
             for (let i: number = 1; i < this._listValues.length; ++i) {
-                const value: number = itemFont.measureString(this._listValues[<number>i], [0, 0], format, 0, 0)[0];
+                const value: number = itemFont.measureString(this._listValues[<number>i], {width: 0, height: 0}, format, 0, 0).width;
                 max = (max > value) ? max : value;
             }
             s = ((12 * (this.bounds.width - 4 * this.border.width)) / max);
@@ -7284,7 +7794,12 @@ export class PdfListBoxField extends PdfListField {
  * ```
  */
 export class PdfSignatureField extends PdfField {
+    _widgetAnnot: PdfWidgetAnnotation;
+    _appearance: PdfAppearance;
+    private _rotateAngle: number = 0;
+    _signature: PdfSignature;
     _isSigned: boolean = false;
+    private _revision: number = -1;
     /**
      * Represents a signature field of the PDF document.
      *
@@ -7297,7 +7812,7 @@ export class PdfSignatureField extends PdfField {
      * @private
      * @param {PdfPage} page The page to which the signature field is added.
      * @param {string} name The name of the signature field.
-     * @param {{x: number, y: number, width: number, height: number}} bounds The bounds of the signature field.
+     * @param {Rectangle} bounds The bounds of the signature field.
      * ```typescript
      * // Load an existing PDF document
      * let document: PdfDocument = new PdfDocument(data);
@@ -7315,11 +7830,78 @@ export class PdfSignatureField extends PdfField {
      * document.destroy();
      * ```
      */
-    constructor(page: PdfPage, name: string, bounds: {x: number, y: number, width: number, height: number})
-    constructor(page?: PdfPage, name?: string, bounds?: {x: number, y: number, width: number, height: number}) {
+    constructor(page: PdfPage, name: string, bounds: Rectangle)
+    /**
+     * Represents a signature field of the PDF document.
+     *
+     * @param {PdfPage} page The page where the field is drawn.
+     * @param {string} [name] The unique name of the field.
+     * @param {Rectangle} bounds The bounds of the field (typically a visible area for signature appearance).
+     * @param {object} properties Required properties bag.
+     * @param {string} [properties.toolTip] Tooltip text shown by the viewer.
+     * @param {PdfColor} [properties.color] Fore color used in the appearance (RGB).
+     * @param {PdfColor} [properties.backColor] Background color.
+     * @param {PdfColor} [properties.borderColor] Border color.
+     * @param {PdfInteractiveBorder} [properties.border] Border settings (width, style, dash).
+     *
+     * ```typescript
+     * // Load an existing PDF document
+     * let document: PdfDocument = new PdfDocument(data);
+     * // Get the first page of the document
+     * let page: PdfPage = document.getPage(0);
+     * // Add new signature field into PDF form
+     * document.form.add(new PdfSignatureField(
+     *   page,
+     *   'ApprovalSignature',
+     *   { x: 50, y: 260, width: 200, height: 40 },
+     *   {
+     *     toolTip: 'Sign here',
+     *     color: { r: 0, g: 0, b: 0 },
+     *     backColor: { r: 255, g: 255, b: 255 },
+     *     borderColor: { r: 0, g: 0, b: 0 },
+     *     border: new PdfInteractiveBorder({width: 1, style: PdfBorderStyle.solid})
+     *   }
+     * ));
+     * // Save the document
+     * document.save('output.pdf');
+     * // Destroy the document
+     * document.destroy();
+     * ```
+     */
+    constructor(page: PdfPage, name: string, bounds: Rectangle, properties: {
+        toolTip?: string,
+        color?: PdfColor,
+        backColor?: PdfColor,
+        borderColor?: PdfColor,
+        border?: PdfInteractiveBorder
+    })
+    constructor(page?: PdfPage, name?: string, bounds?: Rectangle, properties?: {
+        toolTip?: string,
+        color?: PdfColor,
+        backColor?: PdfColor,
+        borderColor?: PdfColor,
+        border?: PdfInteractiveBorder
+    }) {
         super();
         if (page && name && bounds) {
             this._initialize(page, name, bounds);
+        }
+        if (properties) {
+            if ('toolTip' in properties && _isNullOrUndefined(properties.toolTip)) {
+                this.toolTip = properties.toolTip;
+            }
+            if ('color' in properties && _isNullOrUndefined(properties.color)) {
+                this.color = properties.color;
+            }
+            if ('border' in properties && _isNullOrUndefined(properties.border)) {
+                this.border = properties.border;
+            }
+            if ('backColor' in properties && _isNullOrUndefined(properties.backColor)) {
+                this.backColor = properties.backColor;
+            }
+            if ('borderColor' in properties && _isNullOrUndefined(properties.borderColor)) {
+                this.borderColor = properties.borderColor;
+            }
         }
     }
     /**
@@ -7347,45 +7929,45 @@ export class PdfSignatureField extends PdfField {
     /**
      * Gets the background color of the field.
      *
-     * @returns {number[]} R, G, B color values in between 0 to 255.
+     * @returns {PdfColor} R, G, B color values in between 0 to 255.
      * ```typescript
      * // Load an existing PDF document
      * let document: PdfDocument = new PdfDocument(data, password);
      * // Access the form field at index 0
      * let field: PdfField = document.form.fieldAt(0);
      * // Gets the background color of the field.
-     * let backColor: number[] = field.backColor;
+     * let backColor: PdfColor = field.backColor;
      * // Save the document
      * document.save('output.pdf');
      * // Destroy the document
      * document.destroy();
      * ```
      */
-    get backColor(): number[] {
+    get backColor(): PdfColor {
         return this._parseBackColor(true);
     }
     /**
      * Sets the background color of the field.
      *
-     * @param {number[]} value Array with R, G, B, A color values in between 0 to 255. For optional A (0-254), it signifies transparency.
+     * @param {PdfColor} value Array with R, G, B color values in between 0 to 255.
      * ```typescript
      * // Load an existing PDF document
      * let document: PdfDocument = new PdfDocument(data, password);
      * // Access the signature field at index 0
      * let field1: PdfField = document.form.fieldAt(0);
      * // Sets the background color of the field.
-     * field1.backColor = [255, 0, 0];
+     * field1.backColor = {r: 255, g: 0, b: 0};
      * // Access the signature field at index 1
      * let field2: PdfField = document.form.fieldAt(1);
      * // Sets the background color of the field to transparent.
-     * field2.backColor = [0, 0, 0, 0];
+     * field2.backColor = {r: 0, g: 0, b: 0, isTransparent: true};
      * // Save the document
      * document.save('output.pdf');
      * // Destroy the document
      * document.destroy();
      * ```
      */
-    set backColor(value: number[]) {
+    set backColor(value: PdfColor) {
         this._updateBackColor(value, true);
     }
     static _load(form: PdfForm,
@@ -7405,6 +7987,143 @@ export class PdfSignatureField extends PdfField {
         field._parsedItems = new Map<number, PdfWidgetAnnotation>();
         return field;
     }
+    /**
+     * Gets the signature associated with the PDF signature field.
+     *
+     * @returns {PdfSignature} - The signature instance.
+     *
+     * ```typescript
+     * // Load the document
+     * let document: PdfDocument = new PdfDocument(data);
+     * // Gets the first page of the document
+     * let page: PdfPage = document.getPage(0);
+     * // Access the PDF form
+     * let form: PdfForm = document.form;
+     * // Gets the signature field
+     * let field: PdfSignatureField = form.fieldAt(0) as PdfSignatureField;
+     * // Gets the PDF signature
+     * let signature: PdfSignature = field.getSignature();
+     * // Gets the signature options
+     * let options: PdfSignatureOptions = signature.getSignatureOptions();
+     * // Gets the cryptographic standard of the signature
+     * let cryptographicStandard: CryptographicStandard = options.cryptographicStandard;
+     * // Destroy the document
+     * document.destroy();
+     * ```
+     */
+    getSignature(): PdfSignature {
+        if (!this._signature && this._dictionary.has('V')) {
+            this._signature = this._crossReference._document._getSignature(this._dictionary.get('V'), this);
+        }
+        return this._signature;
+    }
+    /**
+     * Sets the signature for the PDF signature field.
+     *
+     * @param {PdfSignature} signature - The signature to assign to the field.
+     * @returns {void} Nothing.
+     *
+     * ```typescript
+     * // Load the document
+     * let document: PdfDocument = new PdfDocument(data);
+     * // Gets the first page of the document
+     * let page: PdfPage = document.getPage(0);
+     * // Access the PDF form
+     * let form: PdfForm = document.form;
+     * // Create a new signature field
+     * let field: PdfSignatureField = new PdfSignatureField(page, 'Signature', {x: 10, y: 10, width: 100, height: 50});
+     * // Create a new signature using PFX data and private key
+     * const sign: PdfSignature = PdfSignature.create(certData, password, { cryptographicStandard: CryptographicStandard.cms, digestAlgorithm: DigestAlgorithm.sha256 });
+     * // Sets the signature to the field
+     * field.setSignature(sign);
+     * // Add the field into PDF form
+     * form.add(field);
+     * // Save the document
+     * document.save('output.pdf');
+     * // Destroy the document
+     * document.destroy();
+     * ```
+     */
+    setSignature(signature: PdfSignature): void {
+        if (this._crossReference) {
+            const form: PdfForm = this._crossReference._document.form;
+            form._signatureFlag = _SignatureFlag.signatureExists | _SignatureFlag.appendOnly;
+            signature._signatureField = this;
+            signature._signatureDictionary = signature._createDictionary(this._crossReference._document, signature);
+            this._signature = signature;
+            const ref: _PdfReference = this._crossReference._getNextReference();
+            this._crossReference._cacheMap.set(ref, signature._signatureDictionary._dictionary);
+            signature._reference = ref;
+            signature._signatureDictionary._dictionary._isSignature = true;
+            this._crossReference._signature = signature._signatureDictionary;
+            this._dictionary.update('V', ref);
+            this._dictionary.update('Ff', 0);
+            this._crossReference._signatureCollection.push(signature);
+        }
+    }
+    /**
+     * Gets the appearance of the PDF signature field.
+     *
+     * @returns {PdfAppearance} - The appearance of the PDF signature field.
+     *
+     * ```typescript
+     * // Load the document
+     * let document: PdfDocument = new PdfDocument(data);
+     * // Gets the first page of the document
+     * let page: PdfPage = document.getPage(0);
+     * // Access the PDF form
+     * let form: PdfForm = document.form;
+     * // Create a new signature field
+     * let field: PdfSignatureField = new PdfSignatureField(page, 'Signature', {x: 10, y: 10, width: 100, height: 50});
+     * // Create a new signature using PFX data and private key
+     * const sign: PdfSignature = PdfSignature.create(certData, password, { cryptographicStandard: CryptographicStandard.cms, digestAlgorithm: DigestAlgorithm.sha256 });
+     * // Sets the signature to the field
+     * field.setSignature(sign);
+     * // Gets the field Appearance
+     * let appearance = field.getAppearance();
+     * // Add the field into PDF form
+     * form.add(field);
+     * // Save the document
+     * document.save('output.pdf');
+     * // Destroy the document
+     * document.destroy();
+     * ```
+     */
+    getAppearance(): PdfAppearance {
+        if (this._isLoaded) {
+            return null;
+        }
+        if (!this._appearance) {
+            const nativeRectangle: Rectangle = {x: 0, y: 0, width: this.bounds.width, height: this.bounds.height};
+            this._appearance = new PdfAppearance(nativeRectangle, this._widgetAnnot);
+            this._appearance.normal = new PdfTemplate(nativeRectangle, this._crossReference);
+        }
+        return this._appearance;
+    }
+    /**
+     * Gets the revision index of the PDF signature field.
+     *
+     * @returns {number} - The revision index of the signature.
+     *
+     * ```typescript
+     * // Load an existing PDF document
+     * let document: PdfDocument = new PdfDocument(data);
+     * // Access the PDF form
+     * let form: PdfForm = document.form;
+     * // Gets the signature field
+     * let signature: PdfSignatureField = form.fieldAt(0) as PdfSignatureField;
+     * // Gets the revision number associated with the signature field
+     * let revision: number = signature.getRevision();
+     * // Destroy the document
+     * document.destroy();
+     * ```
+     */
+    getRevision(): number {
+        if (this.isSigned && this._revision === -1) {
+            this._revision = this._getSignedRevision();
+        }
+        return this._revision;
+    }
     _initialize(page: PdfPage, name: string, bounds: {x: number, y: number, width: number, height: number}): void {
         this._crossReference = page._crossReference;
         this._page = page;
@@ -7420,22 +8139,38 @@ export class PdfSignatureField extends PdfField {
         this._createItem(bounds);
     }
     _createItem(bounds: {x: number, y: number, width: number, height: number}): void {
-        const widget: PdfWidgetAnnotation = new PdfWidgetAnnotation();
-        widget._create(this._page, bounds, this);
-        widget._dictionary.update('MK', new _PdfDictionary(this._crossReference));
-        widget._mkDictionary.update('BC', [0, 0, 0]);
-        widget._mkDictionary.update('BG', [1, 1, 1]);
-        widget._dictionary.update('DA', `${this._fontName} 8 Tf 0 0 0 rg`);
-        this._addToKid(widget);
+        this._widgetAnnot = new PdfWidgetAnnotation();
+        this._widgetAnnot._create(this._page, bounds, this);
+        this._widgetAnnot._dictionary.update('MK', new _PdfDictionary(this._crossReference));
+        this._widgetAnnot._mkDictionary.update('BC', [0, 0, 0]);
+        this._widgetAnnot._mkDictionary.update('BG', [1, 1, 1]);
+        this._widgetAnnot._dictionary.update('DA', `${this._fontName} 8 Tf 0 0 0 rg`);
+        this._addToKid(this._widgetAnnot);
     }
     _doPostProcess(isFlatten: boolean = false): void {
+        if (this._signature && this._signature._isLocked &&
+        !this._signature._certify && !this._signature._signed) {
+            this._signature._lockSignature();
+        }
         const needAppearance: boolean = this._setAppearance || this._form._setAppearance;
-        if (isFlatten || needAppearance) {
+        if (isFlatten || needAppearance || this._appearance) {
             const count: number = this._kidsCount;
             if (count > 0) {
                 for (let i: number = 0; i < count; i++) {
                     const item: PdfWidgetAnnotation = this.itemAt(i);
-                    if (item && item._dictionary && (needAppearance || (isFlatten && !item._dictionary.has('AP')))) {
+                    if (this._appearance) {
+                        const template: PdfTemplate =  this._appearance.normal;
+                        this._rotateAngle = this._widgetAnnot._getRotationAngle();
+                        _setMatrix(template, this.rotate);
+                        const dictionary: _PdfDictionary = new _PdfDictionary();
+                        template._content.dictionary._updated = true;
+                        const reference: _PdfReference = this._crossReference._getNextReference();
+                        this._crossReference._cacheMap.set(reference, template._content);
+                        template._content.reference = reference;
+                        dictionary.set('N', reference);
+                        dictionary._updated = true;
+                        this._widgetAnnot._dictionary.set('AP', dictionary);
+                    } else if (item && item._dictionary && (needAppearance || (isFlatten && !item._dictionary.has('AP')))) {
                         const template: PdfTemplate = this._createAppearance(item, isFlatten);
                         this._addAppearance(item._dictionary, template, 'N');
                     }
@@ -7454,6 +8189,9 @@ export class PdfSignatureField extends PdfField {
                             if (!firstItemTemplate && i === 0) {
                                 firstItemTemplate = this._getItemTemplate(item._dictionary);
                             }
+                            if (this._appearance) {
+                                firstItemTemplate = this._appearance.normal;
+                            }
                             this._flattenSignature(item._dictionary, page, item.bounds, firstItemTemplate);
                         }
                     }
@@ -7470,9 +8208,9 @@ export class PdfSignatureField extends PdfField {
         template._writeTransformation = false;
         const graphics: PdfGraphics = template.graphics;
         const parameter: _PaintParameter = new _PaintParameter();
-        parameter.bounds = [0, 0, bounds.width, bounds.height];
-        const backcolor: number[] = widget.backColor;
-        if (isFlatten && backcolor) {
+        parameter.bounds = {x: 0, y: 0, width: bounds.width, height: bounds.height};
+        const backcolor: PdfColor = widget.backColor;
+        if (isFlatten && backcolor && !backcolor.isTransparent) {
             parameter.backBrush = new PdfBrush(backcolor);
         }
         parameter.foreBrush = new PdfBrush(widget.color);
@@ -7483,10 +8221,10 @@ export class PdfSignatureField extends PdfField {
         parameter.borderWidth = border.width;
         parameter.borderStyle = border.style;
         if (backcolor) {
-            const shadowColor: number[] = [backcolor[0] - 64, backcolor[1] - 64, backcolor[2] - 64];
-            const color: number[] = [shadowColor[0] >= 0 ? shadowColor[0] : 0,
-                shadowColor[1] >= 0 ? shadowColor[1] : 0,
-                shadowColor[2] >= 0 ? shadowColor[2] : 0];
+            const shadowColor: number[] = [backcolor.r - 64, backcolor.g - 64, backcolor.b - 64];
+            const color: PdfColor = {r: shadowColor[0] >= 0 ? shadowColor[0] : 0,
+                g: shadowColor[1] >= 0 ? shadowColor[1] : 0,
+                b: shadowColor[2] >= 0 ? shadowColor[2] : 0};
             parameter.shadowBrush = new PdfBrush(color);
         }
         parameter.rotationAngle = widget.rotate;
@@ -7554,23 +8292,23 @@ export class PdfSignatureField extends PdfField {
         if (page) {
             const graphicsRotation: number = this._obtainGraphicsRotation(page.graphics._matrix);
             if (graphicsRotation === 90) {
-                graphics.translateTransform(template._size[1], 0);
+                graphics.translateTransform({x: template._size.height, y: 0});
                 graphics.rotateTransform(90);
                 x = bounds.x;
-                y = -(page._size[1] - bounds.y - bounds.height);
+                y = -(page._size.height - bounds.y - bounds.height);
             } else if (graphicsRotation === 180) {
-                graphics.translateTransform(template._size[0], template._size[1]);
+                graphics.translateTransform({x: template._size.width, y: template._size.height});
                 graphics.rotateTransform(180);
-                x = -(page._size[0] - (bounds.x + template._size[0]));
-                y = -(page._size[1] - bounds.y - template._size[1]);
+                x = -(page._size.width - (bounds.x + template._size.width));
+                y = -(page._size.height - bounds.y - template._size.height);
             } else if (graphicsRotation === 270) {
-                graphics.translateTransform(0, template._size[0]);
+                graphics.translateTransform({x: 0, y: template._size.width});
                 graphics.rotateTransform(270);
-                if (page._size[0] > page._size[1] && template._content && template._content.dictionary && template._content.dictionary.has('Matrix')) {
-                    x = -(page._size[0] - bounds.x - template.size[0]);
+                if (page._size.width > page._size.height && template._content && template._content.dictionary && template._content.dictionary.has('Matrix')) {
+                    x = -(page._size.width - bounds.x - template.size.width);
                     y = bounds.y - bounds.height;
                 } else {
-                    x = -(page._size[0] - bounds.x - bounds.width);
+                    x = -(page._size.width - bounds.x - bounds.width);
                     y = bounds.y;
                 }
             }
@@ -7617,11 +8355,31 @@ export class PdfSignatureField extends PdfField {
             }
         }
     }
+    private _getSignedRevision(): number {
+        const signatureDictionary: _PdfDictionary = this._dictionary.get('V');
+        const range: number[] = signatureDictionary.getArray('ByteRange');
+        const start: number = range[0] + range[1];
+        const end: number = range[2] + range[3];
+        let revision: number = -1;
+        if (this._crossReference && this._crossReference._document) {
+            const eofOffsets: number[] = this._crossReference._document.getRevisions();
+            if (eofOffsets && Array.isArray(eofOffsets) && eofOffsets.length > 0) {
+                for (let i: number = 0; i < eofOffsets.length; i++) {
+                    const offset: number = eofOffsets[<number>i];
+                    if (offset > start && offset === end) {
+                        revision = i + 1;
+                        break;
+                    }
+                }
+            }
+        }
+        return revision;
+    }
 }
 export class _PdfDefaultAppearance {
     fontName: string;
     fontSize: number;
-    color: number[];
+    color: PdfColor;
     constructor(da?: string) {
         let color: number[];
         let fontName: string = '';
@@ -7652,12 +8410,12 @@ export class _PdfDefaultAppearance {
         }
         this.fontName = fontName;
         this.fontSize = fontSize;
-        this.color = (typeof color !== 'undefined') ? _parseColor(color) : [0, 0, 0];
+        this.color = (typeof color !== 'undefined') ? _parseColor(color) : {r: 0, g: 0, b: 0};
     }
     toString(): string {
-        const color: number[] = [Number.parseFloat((this.color[0] / 255).toFixed(3)),
-            Number.parseFloat((this.color[1] / 255).toFixed(3)),
-            Number.parseFloat((this.color[2] / 255).toFixed(3))];
+        const color: number[] = [Number.parseFloat((this.color.r / 255).toFixed(3)),
+            Number.parseFloat((this.color.g / 255).toFixed(3)),
+            Number.parseFloat((this.color.b / 255).toFixed(3))];
         return '/' +
             this.fontName +
             ' ' +

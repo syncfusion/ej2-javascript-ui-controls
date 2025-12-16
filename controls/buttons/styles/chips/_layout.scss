@@ -1,16 +1,12 @@
+@use 'ej2-base/styles/common/mixin' as *;
+@use './theme-variables' as *;
 @mixin align-chip($border-radius, $font-size, $margin) {
   border-radius: $border-radius;
   font-size: $font-size;
   margin: $margin;
   align-items: center;
   justify-content: center;
-  @if ($skin-name == 'bootstrap5.3') {
-    line-height: 12px;
-  }
-  
-  @else {
-    line-height: 1;
-  }
+  line-height: $chip-align-line-height;
 }
 
 @mixin icon-position {
@@ -142,7 +138,7 @@
       &::before {
         align-items: center;
         justify-content: center;
-        line-height: 1;
+        line-height: $chip-align-line-height;
         display: flex;
         font-family: 'e-icons';
         @include icon-style($chip-leading-icon-size, $chip-leading-icon-size);
@@ -154,7 +150,7 @@
 
       &:not(.e-chip-icon-wrap):not(.e-chip-avatar-wrap) {
         &::before {
-          width: 0;
+          width: $chip-zero-width;
         }
       }
 

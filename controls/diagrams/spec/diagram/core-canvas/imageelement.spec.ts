@@ -7,8 +7,8 @@ import { DiagramElement } from '../../../src/diagram/core/elements/diagram-eleme
 import { ShadowModel } from '../../../src/diagram/core/appearance-model';
 import { ImageElement } from '../../../src/diagram/core/elements/image-element';
 import { Stretch } from '../../../src/diagram/enum/enum';
-import { DiagramModel,ImageModel,NodeModel } from '../../../src/diagram/index';
-import  {profile , inMB, getMemoryProfile} from '../../../spec/common.spec';
+import { DiagramModel, ImageModel, NodeModel } from '../../../src/diagram/index';
+import { profile, inMB, getMemoryProfile } from '../../../spec/common.spec';
 
 //issue in image element without size
 describe('Diagram Control', () => {
@@ -17,11 +17,11 @@ describe('Diagram Control', () => {
         let ele: HTMLElement;
         beforeAll((): void => {
             const isDef = (o: any) => o !== undefined && o !== null;
-                if (!isDef(window.performance)) {
-                    console.log("Unsupported environment, window.performance.memory is unavailable");
-                    this.skip(); //Skips test (in Chai)
-                    return;
-                }
+            if (!isDef(window.performance)) {
+                console.log("Unsupported environment, window.performance.memory is unavailable");
+                this.skip(); //Skips test (in Chai)
+                return;
+            }
             ele = createElement('div', { id: 'diagram23' });
             document.body.appendChild(ele);
 
@@ -42,6 +42,7 @@ describe('Diagram Control', () => {
         afterAll((): void => {
             diagram.destroy();
             ele.remove();
+            (diagram as any) = null; (ele as any) = null;
         });
 
         it('Checking with width and height', (done: Function) => {
@@ -50,18 +51,18 @@ describe('Diagram Control', () => {
                 diagram.basicElements[0].actualSize.height == 200).toBe(true);
             done();
         });
-        });
+    });
 
     describe('Image Element without width and height', () => {
         let diagram: Diagram;
         let ele: HTMLElement;
         beforeAll((): void => {
             const isDef = (o: any) => o !== undefined && o !== null;
-                if (!isDef(window.performance)) {
-                    console.log("Unsupported environment, window.performance.memory is unavailable");
-                    this.skip(); //Skips test (in Chai)
-                    return;
-                }
+            if (!isDef(window.performance)) {
+                console.log("Unsupported environment, window.performance.memory is unavailable");
+                this.skip(); //Skips test (in Chai)
+                return;
+            }
             ele = createElement('div', { id: 'diagram24' });
             document.body.appendChild(ele);
             let nodes: DiagramElement;
@@ -77,6 +78,7 @@ describe('Diagram Control', () => {
         afterAll((): void => {
             diagram.destroy();
             ele.remove();
+            (diagram as any) = null; (ele as any) = null;
         });
 
         it('Checking without width and height', (done: Function) => {
@@ -85,18 +87,18 @@ describe('Diagram Control', () => {
             //     diagram.basicElements[0].actualSize.height == 142).toBe(true);
             done();
         });
-        });
+    });
 
     describe('Image Element ', () => {
         let diagram: Diagram;
         let ele: HTMLElement;
         beforeAll((): void => {
             const isDef = (o: any) => o !== undefined && o !== null;
-                if (!isDef(window.performance)) {
-                    console.log("Unsupported environment, window.performance.memory is unavailable");
-                    this.skip(); //Skips test (in Chai)
-                    return;
-                }
+            if (!isDef(window.performance)) {
+                console.log("Unsupported environment, window.performance.memory is unavailable");
+                this.skip(); //Skips test (in Chai)
+                return;
+            }
             ele = createElement('div', { id: 'diagram25' });
             document.body.appendChild(ele);
             let nodes: DiagramElement;
@@ -112,6 +114,7 @@ describe('Diagram Control', () => {
         afterAll((): void => {
             diagram.destroy();
             ele.remove();
+            (diagram as any) = null; (ele as any) = null;
         });
 
         it('Checking without width and height with stretch', (done: Function) => {
@@ -120,18 +123,18 @@ describe('Diagram Control', () => {
             //     diagram.basicElements[0].actualSize.height == 142).toBe(true);
             done();
         });
-       });
+    });
 
     describe('Checking with width and height and Stretch.stretch', () => {
         let diagram: Diagram;
         let ele: HTMLElement;
         beforeAll((): void => {
             const isDef = (o: any) => o !== undefined && o !== null;
-                if (!isDef(window.performance)) {
-                    console.log("Unsupported environment, window.performance.memory is unavailable");
-                    this.skip(); //Skips test (in Chai)
-                    return;
-                }
+            if (!isDef(window.performance)) {
+                console.log("Unsupported environment, window.performance.memory is unavailable");
+                this.skip(); //Skips test (in Chai)
+                return;
+            }
             ele = createElement('div', { id: 'diagram26' });
             document.body.appendChild(ele);
             let nodes: DiagramElement;
@@ -150,6 +153,7 @@ describe('Diagram Control', () => {
         afterAll((): void => {
             diagram.destroy();
             ele.remove();
+            (diagram as any) = null; (ele as any) = null;
         });
 
         it('Checking without size and with stretch', (done: Function) => {
@@ -158,18 +162,18 @@ describe('Diagram Control', () => {
             //     diagram.basicElements[0].actualSize.height == 200).toBe(true);
             done();
         });
-       });
+    });
 
     describe('Image Element with width and height and Stretch.Meet', () => {
         let diagram: Diagram;
         let ele: HTMLElement;
         beforeAll((): void => {
             const isDef = (o: any) => o !== undefined && o !== null;
-                if (!isDef(window.performance)) {
-                    console.log("Unsupported environment, window.performance.memory is unavailable");
-                    this.skip(); //Skips test (in Chai)
-                    return;
-                }
+            if (!isDef(window.performance)) {
+                console.log("Unsupported environment, window.performance.memory is unavailable");
+                this.skip(); //Skips test (in Chai)
+                return;
+            }
             ele = createElement('div', { id: 'diagram27' });
             document.body.appendChild(ele);
             let nodes: DiagramElement;
@@ -188,6 +192,7 @@ describe('Diagram Control', () => {
         afterAll((): void => {
             diagram.destroy();
             ele.remove();
+            (diagram as any) = null; (ele as any) = null;
         });
 
         it('Checking with size and meet', (done: Function) => {
@@ -196,18 +201,18 @@ describe('Diagram Control', () => {
                 diagram.basicElements[0].actualSize.height == 200).toBe(true);
             done();
         });
-      });
+    });
 
     describe('Image Element with width and height and Stretch.Slice', () => {
         let diagram: Diagram;
         let ele: HTMLElement;
         beforeAll((): void => {
             const isDef = (o: any) => o !== undefined && o !== null;
-                if (!isDef(window.performance)) {
-                    console.log("Unsupported environment, window.performance.memory is unavailable");
-                    this.skip(); //Skips test (in Chai)
-                    return;
-                }
+            if (!isDef(window.performance)) {
+                console.log("Unsupported environment, window.performance.memory is unavailable");
+                this.skip(); //Skips test (in Chai)
+                return;
+            }
             ele = createElement('div', { id: 'diagram28' });
             document.body.appendChild(ele);
             let nodes: DiagramElement;
@@ -226,6 +231,7 @@ describe('Diagram Control', () => {
         afterAll((): void => {
             diagram.destroy();
             ele.remove();
+            (diagram as any) = null; (ele as any) = null;
         });
 
         it('Checking with size and slice', (done: Function) => {
@@ -234,18 +240,18 @@ describe('Diagram Control', () => {
                 diagram.basicElements[0].actualSize.height == 200).toBe(true);
             done();
         });
-       });
+    });
 
     describe('Image Element with width and height and Stretch.None', () => {
         let diagram: Diagram;
         let ele: HTMLElement;
         beforeAll((): void => {
             const isDef = (o: any) => o !== undefined && o !== null;
-                if (!isDef(window.performance)) {
-                    console.log("Unsupported environment, window.performance.memory is unavailable");
-                    this.skip(); //Skips test (in Chai)
-                    return;
-                }
+            if (!isDef(window.performance)) {
+                console.log("Unsupported environment, window.performance.memory is unavailable");
+                this.skip(); //Skips test (in Chai)
+                return;
+            }
             ele = createElement('div', { id: 'diagram29' });
             document.body.appendChild(ele);
             let nodes: DiagramElement;
@@ -264,6 +270,7 @@ describe('Diagram Control', () => {
         afterAll((): void => {
             diagram.destroy();
             ele.remove();
+            (diagram as any) = null; (ele as any) = null;
         });
 
         it('Checking with size and Stretch.None', (done: Function) => {
@@ -272,18 +279,18 @@ describe('Diagram Control', () => {
                 diagram.basicElements[0].actualSize.height == 200).toBe(true);
             done();
         });
-      });
+    });
 
     describe('Image Element without width and height with Meet', () => {
         let diagram: Diagram;
         let ele: HTMLElement;
         beforeAll((): void => {
             const isDef = (o: any) => o !== undefined && o !== null;
-                if (!isDef(window.performance)) {
-                    console.log("Unsupported environment, window.performance.memory is unavailable");
-                    this.skip(); //Skips test (in Chai)
-                    return;
-                }
+            if (!isDef(window.performance)) {
+                console.log("Unsupported environment, window.performance.memory is unavailable");
+                this.skip(); //Skips test (in Chai)
+                return;
+            }
             ele = createElement('div', { id: 'diagram30' });
             document.body.appendChild(ele);
             let nodes: DiagramElement;
@@ -299,6 +306,7 @@ describe('Diagram Control', () => {
         afterAll((): void => {
             diagram.destroy();
             ele.remove();
+            (diagram as any) = null; (ele as any) = null;
         });
 
         it('Checking without size and with meet', (done: Function) => {
@@ -307,18 +315,18 @@ describe('Diagram Control', () => {
             //     diagram.basicElements[0].actualSize.height == 142).toBe(true);
             done();
         });
-       });
+    });
 
     describe('Image Element without width and height with Slice', () => {
         let diagram: Diagram;
         let ele: HTMLElement;
         beforeAll((): void => {
             const isDef = (o: any) => o !== undefined && o !== null;
-                if (!isDef(window.performance)) {
-                    console.log("Unsupported environment, window.performance.memory is unavailable");
-                    this.skip(); //Skips test (in Chai)
-                    return;
-                }
+            if (!isDef(window.performance)) {
+                console.log("Unsupported environment, window.performance.memory is unavailable");
+                this.skip(); //Skips test (in Chai)
+                return;
+            }
             ele = createElement('div', { id: 'diagram31' });
             document.body.appendChild(ele);
             let nodes: DiagramElement;
@@ -334,6 +342,7 @@ describe('Diagram Control', () => {
         afterAll((): void => {
             diagram.destroy();
             ele.remove();
+            (diagram as any) = null; (ele as any) = null;
         });
 
         it('Checking without size and with slice', (done: Function) => {
@@ -342,18 +351,18 @@ describe('Diagram Control', () => {
             //     diagram.basicElements[0].actualSize.height == 142).toBe(true);
             done();
         });
-       });
+    });
 
     describe('Image Element without width and height with Stretch.none', () => {
         let diagram: Diagram;
         let ele: HTMLElement;
         beforeAll((): void => {
             const isDef = (o: any) => o !== undefined && o !== null;
-                if (!isDef(window.performance)) {
-                    console.log("Unsupported environment, window.performance.memory is unavailable");
-                    this.skip(); //Skips test (in Chai)
-                    return;
-                }
+            if (!isDef(window.performance)) {
+                console.log("Unsupported environment, window.performance.memory is unavailable");
+                this.skip(); //Skips test (in Chai)
+                return;
+            }
             ele = createElement('div', { id: 'diagram32' });
             document.body.appendChild(ele);
             let nodes: DiagramElement;
@@ -369,6 +378,7 @@ describe('Diagram Control', () => {
         afterAll((): void => {
             diagram.destroy();
             ele.remove();
+            (diagram as any) = null; (ele as any) = null;
         });
 
         it('Checking without size and with stretch.none', (done: Function) => {
@@ -383,24 +393,24 @@ describe('Diagram Control', () => {
     describe('Image Alignment in canvas mode', () => {
         let diagram: Diagram;
         let ele: HTMLElement;
-        let diagramCanvas:HTMLElement;
+        let diagramCanvas: HTMLElement;
         beforeAll((): void => {
             const isDef = (o: any) => o !== undefined && o !== null;
-                if (!isDef(window.performance)) {
-                    console.log("Unsupported environment, window.performance.memory is unavailable");
-                    this.skip(); //Skips test (in Chai)
-                    return;
-                }
+            if (!isDef(window.performance)) {
+                console.log("Unsupported environment, window.performance.memory is unavailable");
+                this.skip(); //Skips test (in Chai)
+                return;
+            }
             ele = createElement('div', { id: 'diagram12' });
             document.body.appendChild(ele);
 
             diagram = new Diagram({
-                width: 1000, height: 1000,mode:'Canvas',
-                
-                 nodes: [
-                   {
+                width: 1000, height: 1000, mode: 'Canvas',
+
+                nodes: [
+                    {
                         id: 'node1',
-                        width: 100, height: 100, 
+                        width: 100, height: 100,
                         offsetX: 100, offsetY: 100,
                         shape: {
                             type: 'Image', source: 'https://www.w3schools.com/images/w3schools_green.jpg',
@@ -409,76 +419,76 @@ describe('Diagram Control', () => {
 
                     },
                     {
-                            id: 'node4',
-                            offsetX: 300, offsetY: 100,
-                            width: 100,
-                            height: 300,
-                            shape: {
-                                type: 'Image', source: 'https://www.w3schools.com/images/w3schools_green.jpg',
-                                align: 'XMinYMin', scale: 'Slice'
-                            }
-                        },
-                        {
-                            id: 'node6',
-                            offsetX: 100, offsetY: 300,
-                            width: 100,
-                            height: 100,
-                            shape: {
-                                type: 'Image', source: 'https://cdn.syncfusion.com/content/images/company-logos/Syncfusion_Logo_Image.png',
-                                align: 'XMinYMin', scale: 'Slice'
-                            }
-                        },
-                         {
-                            id: 'node7',
-                            offsetX: 500, offsetY: 500,
-                            width: 500,
-                            height: 400,
-                            shape: {
-                                type: 'Image', source: 'https://cdn.syncfusion.com/content/images/company-logos/Syncfusion_Logo_Image.png',
-                                align: 'XMidYMax', scale: 'Slice'
-                            }
-                        },
-                        {
-                            id: 'node34',
-                            width: 100, height: 100,
-                            offsetX: 100, offsetY: 100,
-                            shape: {
-                                type: 'Image', source: 'https://www.w3schools.com/images/w3schools_green.jpg',
-                                align: '', scale: 'Meet'
-                            }
-                        },
-                         {
-                            id: 'node344',
-                            width: 100, height: 100,
-                            offsetX: 600, offsetY: 100,
-                            shape: {
-                                type: 'Image', source: 'https://www.w3schools.com/images/w3schools_green.jpg',
-                                align: '', scale: 'Slice'
-                            }
-                        },
-                        {
+                        id: 'node4',
+                        offsetX: 300, offsetY: 100,
+                        width: 100,
+                        height: 300,
+                        shape: {
+                            type: 'Image', source: 'https://www.w3schools.com/images/w3schools_green.jpg',
+                            align: 'XMinYMin', scale: 'Slice'
+                        }
+                    },
+                    {
+                        id: 'node6',
+                        offsetX: 100, offsetY: 300,
+                        width: 100,
+                        height: 100,
+                        shape: {
+                            type: 'Image', source: 'https://cdn.syncfusion.com/content/images/company-logos/Syncfusion_Logo_Image.png',
+                            align: 'XMinYMin', scale: 'Slice'
+                        }
+                    },
+                    {
+                        id: 'node7',
+                        offsetX: 500, offsetY: 500,
+                        width: 500,
+                        height: 400,
+                        shape: {
+                            type: 'Image', source: 'https://cdn.syncfusion.com/content/images/company-logos/Syncfusion_Logo_Image.png',
+                            align: 'XMidYMax', scale: 'Slice'
+                        }
+                    },
+                    {
+                        id: 'node34',
+                        width: 100, height: 100,
+                        offsetX: 100, offsetY: 100,
+                        shape: {
+                            type: 'Image', source: 'https://www.w3schools.com/images/w3schools_green.jpg',
+                            align: '', scale: 'Meet'
+                        }
+                    },
+                    {
+                        id: 'node344',
+                        width: 100, height: 100,
+                        offsetX: 600, offsetY: 100,
+                        shape: {
+                            type: 'Image', source: 'https://www.w3schools.com/images/w3schools_green.jpg',
+                            align: '', scale: 'Slice'
+                        }
+                    },
+                    {
                         id: 'node1123',
-                        width: 100, height: 100, 
+                        width: 100, height: 100,
                         offsetX: 300, offsetY: 500,
                         shape: {
                             type: 'Image', source: 'https://www.w3schools.com/images/w3schools_green.jpg',
                             align: 'XMidYMin',
-                             scale: 'Meet'
+                            scale: 'Meet'
                         }
 
                     },
                     {
                         id: 'node321',
-                        width: 100, height: 100, 
+                        width: 100, height: 100,
                         offsetX: 350, offsetY: 450,
                         shape: {
                             type: 'Image', source: 'https://www.w3schools.com/images/w3schools_green.jpg',
                             align: 'XMidYMin',
-                             scale: 'None'
+                            scale: 'None'
                         }
 
                     },
-                ], 
+                ],
             });
 
             diagram.appendTo('#diagram12');
@@ -488,6 +498,7 @@ describe('Diagram Control', () => {
         afterAll((): void => {
             diagram.destroy();
             ele.remove();
+            (diagram as any) = null; (ele as any) = null;
         });
         it('Changing the image alignment at the run time', (done: Function) => {
 
@@ -502,7 +513,7 @@ describe('Diagram Control', () => {
                 (diagram.nodes[3].wrapper.children[0] as ImageElement).imageAlign === 'XMidYMax').toBe(true)
             done();
         })
-        it('memory leak', () => { 
+        it('memory leak', () => {
             profile.sample();
             let average: any = inMB(profile.averageChange)
             //Check average change in memory samples to not be over 10MB
@@ -524,7 +535,7 @@ describe('Diagram Control', () => {
                 this.skip(); //Skips test (in Chai)
                 return;
             }
-            ele = createElement('div', { id: 'diagram25' });
+            ele = createElement('div', { id: 'diagram35' });
             document.body.appendChild(ele);
             let nodes: NodeModel[] = [{
                 id: 'nativenode', width: 150, height: 100, offsetX: 700, offsetY: 300, style: { fill: 'none', strokeWidth: 0 },
@@ -534,12 +545,13 @@ describe('Diagram Control', () => {
                 width: '1000px', height: '1000px', nodes: nodes
             });
 
-            diagram.appendTo('#diagram25');
+            diagram.appendTo('#diagram35');
         });
 
         afterAll((): void => {
             diagram.destroy();
             ele.remove();
+            (diagram as any) = null; (ele as any) = null;
         });
 
         it('Checking preserveAspectRatio for Image Node if Scale is stretch', (done: Function) => {

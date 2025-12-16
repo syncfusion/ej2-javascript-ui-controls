@@ -127,8 +127,14 @@ export class Signature {
     private textValue : string = '';
     private signatureDrawString: string = '';
     private initialDrawString: string = '';
-    private signatureTextContentTop: number = 0.2;
-    private signatureTextContentLeft: number = 0.7;
+    /**
+     * @private
+     */
+    public signatureTextContentTop: number = 0.2;
+    /**
+     * @private
+     */
+    public signatureTextContentLeft: number = 0.7;
     private saveSignatureString: string = '';
     private saveInitialString : string = '';
     /**
@@ -1255,12 +1261,14 @@ export class Signature {
         fontDiv.style.marginTop = '8px';
         fontDiv.style.paddingRight = '0px';
         typeDiv.appendChild(fontDiv);
-        input = document.createElement('input');
-        input.type = 'checkbox';
-        input.id = 'checkbox1';
-        typeDiv.appendChild(input);
-        checkBoxObj = new CheckBox({ label: saveCheckBoxContent, disabled: false, checked: false });
-        checkBoxObj.appendTo(input);
+        if (!this.pdfViewer.hideSaveSignature) {
+            input = document.createElement('input');
+            input.type = 'checkbox';
+            input.id = 'checkbox1';
+            typeDiv.appendChild(input);
+            checkBoxObj = new CheckBox({ label: saveCheckBoxContent, disabled: false, checked: false });
+            checkBoxObj.appendTo(input);
+        }
         if (this.issaveTypeSignature && !this.pdfViewerBase.isInitialField && !this.pdfViewerBase.isToolbarSignClicked) {
             checkBoxObj.checked = true;
         }
@@ -1311,12 +1319,14 @@ export class Signature {
             uploadButton.element.style.display = 'hidden';
         }
         uploadDiv.appendChild(uploadCanvas);
-        input = document.createElement('input');
-        input.type = 'checkbox';
-        input.id = 'checkbox2';
-        uploadDiv.appendChild(input);
-        checkBoxObj = new CheckBox({ label: saveCheckBoxContent, disabled: false, checked: false });
-        checkBoxObj.appendTo(input);
+        if (!this.pdfViewer.hideSaveSignature) {
+            input = document.createElement('input');
+            input.type = 'checkbox';
+            input.id = 'checkbox2';
+            uploadDiv.appendChild(input);
+            checkBoxObj = new CheckBox({ label: saveCheckBoxContent, disabled: false, checked: false });
+            checkBoxObj.appendTo(input);
+        }
         if (this.issaveImageSignature && !this.pdfViewerBase.isInitialField && !this.pdfViewerBase.isToolbarSignClicked ) {
             checkBoxObj.checked = true;
         }
@@ -1640,7 +1650,7 @@ export class Signature {
         this.drawSignOnTabSwitch();
     }
 
-    private typeSignatureclick(): void {
+    private typeSignatureclick(event: MouseEvent): void {
         const eventTarget: HTMLElement = event.target as HTMLElement;
         if (eventTarget.textContent.trim() !== '') {
             const createButton: any = document.getElementsByClassName('e-pv-createbtn')[0];
@@ -1777,7 +1787,7 @@ export class Signature {
      * @private
      * @returns {void}
      */
-    public RenderSavedSignature(): void {
+    public RenderSavedSignature(event?: MouseEvent): void {
         this.pdfViewerBase.signatureCount++;
         const zoomvalue: number = this.pdfViewerBase.getZoomFactor();
         let annot: PdfAnnotationBaseModel;
@@ -2008,7 +2018,7 @@ export class Signature {
         this.newObject.push(this.mouseX, this.mouseY);
     }
 
-    private signaturePanelMouseUp(): void {
+    private signaturePanelMouseUp(event: MouseEvent): void {
         if (this.mouseDetection) {
             this.convertToPath(this.newObject);
         }
@@ -2564,6 +2574,10 @@ export class Signature {
                         pageAnnotations[parseInt(i.toString(), 10)].opacity = annotationBase.wrapper.children[0].style.opacity;
                         pageAnnotations[parseInt(i.toString(), 10)].strokeColor = annotationBase.wrapper.children[0].style.strokeColor;
                         pageAnnotations[parseInt(i.toString(), 10)].thickness = annotationBase.wrapper.children[0].style.strokeWidth;
+                        pageAnnotations[parseInt(i.toString(), 10)].bounds =
+                             { left: annotationBase.wrapper.bounds.left, top: annotationBase.wrapper.bounds.top,
+                                 width: annotationBase.bounds.width, height: annotationBase.bounds.height };
+                        pageAnnotations[parseInt(i.toString(), 10)].fontSize = annotationBase.fontSize;
                         this.storeSignatureCollections(pageAnnotations[parseInt(i.toString(), 10)], pageNumber);
                         break;
                     }

@@ -1200,6 +1200,59 @@ describe('Classic layout spec', () => {
         });
     });
 
+    describe('CSV data source', () => {
+        let pivotGridObj: PivotView;
+        let elem: HTMLElement = createElement('div', { id: 'PivotGrid', styles: 'height:200px; width:1000px' });
+        afterAll(() => {
+            if (pivotGridObj) {
+                pivotGridObj.destroy();
+            }
+            remove(elem);
+        });
+        beforeAll((done: Function) => {
+            if (!document.getElementById(elem.id)) {
+                document.body.appendChild(elem);
+            }
+            let dataBound: EmitType<Object> = () => { done(); };
+            pivotGridObj = new PivotView({
+                dataSourceSettings: {
+                    url: 'https://ej2services.syncfusion.com/js/development/api/product',
+                    dataSource: undefined,
+                    type: 'CSV',
+                    expandAll: false,
+                    enableSorting: true,
+                    formatSettings: [{ name: 'Total Cost', format: 'C0' }, { name: 'Total Revenue', format: 'C0' }, { name: 'Total Profit', format: 'C0' }],
+                    drilledMembers: [{ name: 'Item Type', items: ['Baby Food'] }],
+                    rows: [
+                        { name: 'Region' },
+                        { name: 'Country' }
+                    ],
+                    columns: [
+                        { name: 'Item Type' },
+                        { name: 'Sales Channel' }
+                    ],
+                    values: [
+                        { name: 'Total Cost' },
+                        { name: 'Total Revenue' },
+                        { name: 'Total Profit' }
+                    ],
+                    filters: []
+                },
+                height: 800,
+                width: 800,
+                enableValueSorting: true,
+                dataBound: dataBound
+            });
+            pivotGridObj.appendTo('#PivotGrid');
+        });
+        it('values testing', (done: Function) => {
+            setTimeout(() => {
+                expect((pivotGridObj.engineModule.pivotValues[0][1] as IDataSet).formattedText).toBe("Baby Food");
+                done();
+            }, 1000);
+        });
+        
+    });
     it('memory leak', () => {
         profile.sample();
         let average: any = inMB(profile.averageChange);

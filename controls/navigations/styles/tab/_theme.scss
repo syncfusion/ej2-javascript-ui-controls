@@ -1,3 +1,5 @@
+@use 'ej2-base/styles/common/mixin' as *;
+@use './theme-variables' as *;
 @include export-module('tab-theme') {
   .e-tab {
     background: $tab-bg-color;
@@ -5,8 +7,8 @@
 
     .e-tab-header {
       background: inherit;
-      border: 0;
-      border-radius: 0;
+      border: $tab-border-none;
+      border-radius: $tab-border-radius-none;
       box-shadow: none;
       font-weight: $tab-header-font-weight;
       border-bottom: $tab-header-border-bottom;
@@ -26,7 +28,7 @@
 
         .e-toolbar-item.e-active {
           border-bottom: $tab-item-active-border-bottom;
-          margin-bottom: 0;
+          margin-bottom: $tab-margin-none;
         }
       }
 
@@ -110,7 +112,7 @@
               position: $tab-active-wrap-before-position;
               width: $tab-active-wrap-before-width;
               @if ($skin-name == 'Material3' or $skin-name == 'tailwind3') {
-                border-radius: 3px 3px 0 0;
+                border-radius: $tab-text-wrap-border-radius;
                 bottom: $tab-active-wrap-before-top;
               }
               @else {
@@ -248,7 +250,7 @@
       .e-scroll-nav,
       .e-hscroll:not(.e-scroll-device) .e-scroll-nav {
         background: $tab-scroll-nav-bg;
-        border: 0;
+        border: $tab-border-none;
 
         .e-nav-arrow {
           color: $tab-scroll-nav-arrow-font;
@@ -316,7 +318,7 @@
       .e-hor-nav,
       .e-hor-nav:not(.e-expended-nav) {
         background: transparent;
-        border: 0;
+        border: $tab-border-none;
 
         .e-popup-up-icon,
         .e-popup-down-icon {
@@ -363,7 +365,7 @@
         }
 
         &:hover {
-          border: 0;
+          border: $tab-border-none;
           background: $tab-pop-hover-bg;
 
           &:active {
@@ -435,7 +437,7 @@
       }
 
       &.e-vertical {
-        border-bottom: 0;
+        border-bottom: $tab-border-none;
 
         &::before {
           border-width: $tab-vertical-before-border-width;
@@ -496,7 +498,7 @@
           }
 
           .e-nav-arrow {
-            border: 0;
+            border: $tab-border-none;
 
             &:hover {
               background: none;
@@ -535,7 +537,7 @@
 
               &:hover {
                 background: none;
-                border: 0;
+                border: $tab-border-none;
               }
             }
           }
@@ -551,11 +553,11 @@
 
           .e-popup-up-icon,
           .e-popup-down-icon {
-            border: 0;
+            border: $tab-border-none;
 
             &:hover {
               background: inherit;
-              border: 0;
+              border: $tab-border-none;
               color: $tab-vertical-pop-icon-hover-color;
             }
           }
@@ -565,13 +567,13 @@
             .e-popup-up-icon,
             .e-popup-down-icon {
               background: inherit;
-              border: 0;
+              border: $tab-border-none;
 
               &:hover,
               &:active,
               &:active:hover {
                 background: inherit;
-                border: 0;
+                border: $tab-border-none;
                 box-shadow: none;
               }
 
@@ -585,7 +587,7 @@
 
             .e-popup-up-icon,
             .e-popup-down-icon {
-              border: 0;
+              border: $tab-border-none;
             }
           }
         }
@@ -655,7 +657,7 @@
             border-color: $tab-vertical-focused-nav-focus-border-color;
 
             .e-nav-arrow {
-              border: 0;
+              border: $tab-border-none;
             }
           }
         }
@@ -664,7 +666,7 @@
 
           .e-popup-up-icon,
           .e-popup-down-icon {
-            border: 0;
+            border: $tab-border-none;
           }
 
           &:focus {
@@ -710,11 +712,11 @@
         border-bottom: $tab-fill-hdr-border;
 
         .e-toolbar-items.e-hscroll {
-          border: 0;
+          border: $tab-border-none;
         }
 
         .e-toolbar-item {
-          border: 0;
+          border: $tab-border-none;
 
           .e-ripple-element {
             background: $tab-fill-ripple-bg-color;
@@ -749,11 +751,11 @@
           }
 
           .e-text-wrap {
-            margin-top: 0;
+            margin-top: $tab-margin-none;
           }
 
           &.e-active {
-            border: 0;
+            border: $tab-border-none;
 
             &.e-disable.e-overlay {
 
@@ -775,7 +777,7 @@
             }
 
             .e-text-wrap {
-              margin-top: 0;
+              margin-top: $tab-margin-none;
             }
 
             .e-text-wrap::before {
@@ -826,19 +828,19 @@
         }
 
         &.e-horizontal-bottom {
-          border-bottom: 0;
+          border-bottom: $tab-border-none;
           border-top: $tab-fill-hdr-border;
 
           .e-toolbar-item {
 
             &.e-active .e-text-wrap {
-              margin-top: 0;
+              margin-top: $tab-margin-none;
             }
           }
         }
 
         &.e-vertical {
-          border-bottom: 0;
+          border-bottom: $tab-border-none;
 
           &.e-vertical-left {
             border-right: $tab-fill-hdr-border;
@@ -899,7 +901,7 @@
           }
 
           &.e-horizontal-bottom {
-            border-bottom: 0;
+            border-bottom: $tab-border-none;
             border-top: $tab-fill-disable-hdr-border;
           }
         }
@@ -940,14 +942,14 @@
 
       .e-tab-header {
         background: $tab-alt-hdr-bg-color;
-        border: 0;
+        border: $tab-border-none;
 
         .e-toolbar-items {
           background: $tab-alt-item-bg-color;
         }
 
         .e-toolbar-items.e-hscroll {
-          border: 0;
+          border: $tab-border-none;
         }
 
         .e-indicator {
@@ -956,7 +958,7 @@
         }
 
         .e-toolbar-item {
-          border: 0;
+          border: $tab-border-none;
 
           .e-ripple-element {
             background: $tab-alt-ripple-bg-color;
@@ -1004,8 +1006,8 @@
           }
 
           &.e-active {
-            border: 0;
-            margin: 0;
+            border: $tab-border-none;
+            margin: $tab-margin-none;
             background: $tab-background-active-bg;
 
             &.e-disable.e-overlay {
@@ -1092,7 +1094,7 @@
             .e-text-wrap::before {
               border: $tab-nrml-bottom-wrap-before-top;
               @if ($skin-name == 'Material3') {
-                border-radius: 3px 3px 0 0;
+                border-radius: $tab-text-wrap-border-radius;
               }
             }
 
@@ -1266,8 +1268,8 @@
 
         &.e-horizontal-bottom {
           .e-toolbar-item.e-active {
-            border: 0;
-            margin: 0;
+            border: $tab-border-none;
+            margin: $tab-margin-none;
 
             .e-tab-wrap {
               border-color: $tab-background-bottom-active-wrap-border-color;
@@ -1285,7 +1287,7 @@
               border-color: $tab-background-vertical-left-active-border-color;
               border-style: solid;
               border-width: $tab-background-vertical-left-active-border-width;
-              margin: 0;
+              margin: $tab-margin-none;
               @if ($skin-name == 'fluent2') {
                 &::before {
                   background-color: $tab-background-text-color;
@@ -1306,7 +1308,7 @@
               border-color: $tab-background-vertical-left-active-border-color;
               border-style: solid;
               border-width: $tab-background-vertical-right-active-border-width;
-              margin: 0;
+              margin: $tab-margin-none;
 
               @if ($skin-name == 'fluent2') {
                 &::before {
@@ -1326,13 +1328,13 @@
           .e-scroll-nav {
 
             .e-nav-arrow {
-              border: 0;
+              border: $tab-border-none;
             }
 
             &:focus {
 
               .e-nav-arrow {
-                border: 0;
+                border: $tab-border-none;
 
                 &:hover {
                   background: none;
@@ -1546,7 +1548,7 @@
         .e-hscroll.e-rtl {
 
           .e-scroll-nav {
-            border: 0;
+            border: $tab-border-none;
           }
         }
       }

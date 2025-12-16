@@ -1,14 +1,14 @@
-@import 'ej2-base/styles/definition/bootstrap5.3.scss';
-@import 'avatar/bootstrap5.3-definition.scss';
-@import 'avatar/all.scss';
+@use 'ej2-base/styles/definition/bootstrap5.3' as *;
+@use 'avatar/bootstrap5.3-definition' as *;
+@use 'avatar/all' as *;
 
-@import 'card/bootstrap5.3-definition.scss';
-@import 'card/all.scss';
-@import 'splitter/bootstrap5.3-definition.scss';
-@import 'splitter/icons/bootstrap5.3.scss';
-@import 'splitter/all.scss';
-@import 'dashboard-layout/bootstrap5.3-definition.scss';
-@import 'dashboard-layout/icons/bootstrap5.3.scss';
-@import 'dashboard-layout/all.scss';
-@import 'timeline/bootstrap5.3-definition.scss';
-@import 'timeline/all.scss';
+@use 'card/bootstrap5.3-definition' as *;
+@use 'card/all' as *;
+@use 'splitter/bootstrap5.3-definition' as *;
+@use 'splitter/icons/bootstrap5.3' as *;
+@use 'splitter/all' as *;
+@use 'dashboard-layout/bootstrap5.3-definition' as *;
+@use 'dashboard-layout/icons/bootstrap5.3' as *;
+@use 'dashboard-layout/all' as *;
+@use 'timeline/bootstrap5.3-definition' as *;
+@use 'timeline/all' as *;

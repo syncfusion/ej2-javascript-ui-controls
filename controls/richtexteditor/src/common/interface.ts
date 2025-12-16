@@ -2,16 +2,16 @@
  * Specifies  common models interfaces.
  *
  * @hidden
- * @deprecated
+ * @private
  */
 import { EmitType, KeyboardEventArgs, Observer } from '@syncfusion/ej2-base';
-import { EditorMode, EnterKey, SelectionDirection, TriggerType } from './types';
+import { EditorMode, EnterKey, ExportDocumentType, SelectionDirection, TriggerType } from './types';
 import { MarkdownSelection } from '../markdown-parser/plugin/markdown-selection';
 import { UndoRedoManager } from '../editor-manager/plugin/undo';
 import { UndoRedoCommands } from '../markdown-parser/plugin/undo';
 import { NodeSelection } from '../selection/selection';
 import { MDSelectionFormats } from '../markdown-parser/plugin/md-selection-formats';
-import { AudioCommand, CodeBlockPlugin, DOMNode, EmojiPickerAction, FormatPainterActions, IFormatPainterEditor, ImageCommand, LinkCommand, NodeCutter, PasteCleanupAction, TableCommand, VideoCommand } from '../editor-manager';
+import { AIAssistantActions, AutoFormatPlugin, AudioCommand, CodeBlockPlugin, DOMNode, EmojiPickerAction, FormatPainterActions, IFormatPainterEditor, ImageCommand, LinkCommand, NodeCutter, PasteCleanupAction, TableCommand, VideoCommand } from '../editor-manager';
 import { DOMMethods } from '../editor-manager/plugin/dom-tree';
 import { MDLink, MDTable } from '../markdown-parser';
 import { CustomUserAgentData } from './user-agent';
@@ -24,9 +24,8 @@ import { Popup, Dialog } from '@syncfusion/ej2-popups';
 import { ColorPickerEventArgs, ColorPickerModel } from '@syncfusion/ej2-inputs';
 import { ImageInputSource, MediaInputSource } from './enum';
 
-
 /**
- * @deprecated
+ * @private
  */
 export interface IAdvanceListItem {
     listStyle?: string
@@ -36,7 +35,7 @@ export interface IAdvanceListItem {
 }
 
 /**
- * @deprecated
+ * @private
  */
 export interface ICodeBlockItem {
     language?: string
@@ -49,7 +48,7 @@ export interface ICodeBlockItem {
 }
 
 /**
- * @deprecated
+ * @private
  */
 export interface IMarkdownFormatterCallBack {
     selectedText?: string
@@ -60,7 +59,7 @@ export interface IMarkdownFormatterCallBack {
 }
 
 /**
- * @deprecated
+ * @private
  */
 export interface IHtmlFormatterCallBack {
     selectedNode?: Element
@@ -75,7 +74,7 @@ export interface IHtmlFormatterCallBack {
 }
 
 /**
- * @deprecated
+ * @private
  */
 export interface IMarkdownToolbarStatus {
     OrderedList: boolean
@@ -83,7 +82,7 @@ export interface IMarkdownToolbarStatus {
     Formats: string
 }
 /**
- * @deprecated
+ * @private
  */
 export interface IUndoCallBack {
     callBack?: Function
@@ -91,7 +90,7 @@ export interface IUndoCallBack {
 }
 
 /**
- * @deprecated
+ * @private
  */
 export interface IToolbarStatus {
     bold?: boolean
@@ -106,6 +105,7 @@ export interface IToolbarStatus {
     backgroundcolor?: string
     formats?: string
     alignments?: string
+    lineHeight?: string
     orderedlist?: boolean
     unorderedlist?: boolean
     inlinecode?: boolean
@@ -121,7 +121,6 @@ export interface IToolbarStatus {
     isCheckList?: boolean
 }
 /**
- * @deprecated
  * @private
  *
  *
@@ -248,6 +247,7 @@ export interface IEditorModel {
     domTree?: DOMMethods
     linkObj?: LinkCommand | MDLink
     videoObj?: VideoCommand
+    autoFormatObj?: AutoFormatPlugin
     audioObj?: AudioCommand
     imgObj?: ImageCommand
     formatPainterObj?: FormatPainterActions
@@ -259,6 +259,7 @@ export interface IEditorModel {
     destroy?(): void
     beforeSlashMenuApplyFormat?(): void
     codeBlockObj?: CodeBlockPlugin
+    aiAssistantActionObj?: AIAssistantActions
 }
 /**
  * Interface for checklist item model
@@ -270,7 +271,7 @@ export interface IChecklistItemModel {
 }
 /**
  * @hidden
- * @deprecated
+ * @private
  */
 export interface IDropDownItemModel extends DropDownItemModel {
     cssClass?: string
@@ -282,7 +283,7 @@ export interface IDropDownItemModel extends DropDownItemModel {
 
 /**
  * @hidden
- * @deprecated
+ * @private
  */
 export interface IToolbarItemModel extends ItemModel {
     command?: string
@@ -366,7 +367,7 @@ export interface ITouchData {
  */
 export interface ITableCommandsArgs {
     /**
-     * @deprecated
+     * @private
      * This argument deprecated. Use `rows` argument.
      */
     row?: number
@@ -389,7 +390,7 @@ export interface ExecuteCommandOption {
 
 /**
  * @hidden
- * @deprecated
+ * @private
  */
 export interface StatusArgs {
     html: Object
@@ -398,7 +399,7 @@ export interface StatusArgs {
 
 /**
  * @hidden
- * @deprecated
+ * @private
  */
 export interface CleanupResizeElemArgs {
     name?: string,
@@ -408,7 +409,7 @@ export interface CleanupResizeElemArgs {
 
 /**
  * @hidden
- * @deprecated
+ * @private
  */
 export interface ICodeBlockLanguageModel {
     label?: string
@@ -426,7 +427,7 @@ export interface ActionBeginEventArgs {
     /**
      * Specifies the current toolbar or dropdown item involved in the action.
      *
-     * @deprecated
+     * @private
      */
     item?: IToolbarItemModel | IDropDownItemModel
     /** Specifies the event that initiated the action, such as mouse, keyboard, or drag events. */
@@ -438,19 +439,19 @@ export interface ActionBeginEventArgs {
     /**
      * Provides details about URL actions.
      *
-     * @deprecated
+     * @private
      */
     itemCollection?: IItemCollectionArgs
     /**
      * Defines the emoji picker details.
      *
-     * @deprecated
+     * @private
      */
     emojiPickerArgs?: IEmojiPickerArgs
     /**
      * Defines the content to be exported.
      *
-     * @deprecated
+     * @private
      */
     exportValue?: string
 }
@@ -469,7 +470,7 @@ export interface PrintEventArgs extends ActionBeginEventArgs {
 }
 
 /**
- * @deprecated
+ * @private
  */
 export interface IItemCollectionArgs {
     /** Defines the instance of the current selection */
@@ -491,7 +492,7 @@ export interface IItemCollectionArgs {
 }
 
 /**
- * @deprecated
+ * @private
  */
 export interface IExecutionGroup {
     command: string
@@ -562,7 +563,7 @@ export interface ILinkCommandsArgs {
 
 /**
  * @hidden
- * @deprecated
+ * @private
  */
 export interface IDropDownItem extends ItemModel {
     command?: string
@@ -575,14 +576,14 @@ export interface IDropDownItem extends ItemModel {
 
 /**
  * @hidden
- * @deprecated
+ * @private
  */
 export interface IDropDownClickArgs extends ClickEventArgs {
     item: IDropDownItem;
 }
 
 /**
- * @deprecated
+ * @private
  */
 export interface IToolsItems {
     id: string
@@ -591,6 +592,15 @@ export interface IToolsItems {
     command?: string
     subCommand?: string
     value?: string
+}
+
+/**
+ * @private
+ */
+export interface ClipboardWriteEventArgs {
+    htmlContent: string
+    plainTextContent: string,
+    operation?: string
 }
 
 /**
@@ -606,7 +616,7 @@ export interface ActionCompleteEventArgs {
     /**
      * Defines the selected elements.
      *
-     * @deprecated
+     * @private
      */
     elements?: Node[];
     /** Specifies the event associated with the action, such as a mouse or keyboard event. */
@@ -614,7 +624,7 @@ export interface ActionCompleteEventArgs {
     /**
      * Defines the selected range.
      *
-     * @deprecated
+     * @private
      */
     range?: Range
 }
@@ -695,7 +705,7 @@ export interface ToolbarClickEventArgs {
 }
 
 /**
- * @deprecated
+ * @private
  */
 export interface IShowPopupArgs {
     args?: MouseEvent | TouchEvent | KeyboardEvent
@@ -705,7 +715,7 @@ export interface IShowPopupArgs {
 }
 
 /**
- * @deprecated
+ * @private
  */
 export interface OffsetPosition {
     left: number
@@ -803,7 +813,7 @@ export interface IColorPickerModel extends ColorPickerModel {
 
 /**
  * @hidden
- * @deprecated
+ * @private
  */
 export interface IColorPickerEventArgs extends ColorPickerEventArgs {
     item?: IColorPickerModel
@@ -812,7 +822,7 @@ export interface IColorPickerEventArgs extends ColorPickerEventArgs {
 }
 
 /**
- * @deprecated
+ * @private
  */
 export interface ITableArgs {
     rows?: number
@@ -825,7 +835,7 @@ export interface ITableArgs {
 }
 
 /**
- * @deprecated
+ * @private
  */
 export interface ImageDragEvent extends DragEvent {
     rangeParent?: Element
@@ -833,7 +843,7 @@ export interface ImageDragEvent extends DragEvent {
 }
 
 /**
- * @deprecated
+ * @private
  */
 export interface IMarkdownFormatterModel {
     element?: Element
@@ -845,7 +855,7 @@ export interface IMarkdownFormatterModel {
 }
 
 /**
- * @deprecated
+ * @private
  */
 export interface IHtmlFormatterModel {
     currentDocument?: Document
@@ -906,7 +916,7 @@ export interface CropImageDataItem {
 }
 
 /**
- * @deprecated
+ * @private
  */
 export interface IDropDownModel {
     content?: string
@@ -919,7 +929,7 @@ export interface IDropDownModel {
 }
 
 /**
- * @deprecated
+ * @private
  */
 export interface ISplitButtonModel {
     content?: string
@@ -932,7 +942,7 @@ export interface ISplitButtonModel {
 
 /**
  * @hidden
- * @deprecated
+ * @private
  */
 export interface IFormatPainter {
     /** Stores the previous action. */
@@ -941,7 +951,7 @@ export interface IFormatPainter {
 }
 
 /**
- * @deprecated
+ * @private
  */
 export interface IFormatPainterArgs {
     /**
@@ -976,7 +986,7 @@ export interface IToolsItemConfigs {
 
 /**
  * @hidden
- * @deprecated
+ * @private
  */
 export interface IListDropDownModel extends DropDownItemModel {
     cssClass?: string
@@ -995,7 +1005,7 @@ export interface BeforeQuickToolbarOpenArgs {
     /**
      * Defines the instance of the current popup element.
      *
-     * @deprecated
+     * @private
      */
     popup?: Popup
     /** Determine whether the quick toolbar should be prevented from opening. */
@@ -1003,13 +1013,13 @@ export interface BeforeQuickToolbarOpenArgs {
     /** Defines the target element on which the quick toolbar is triggered. */
     targetElement?: Element
     /**
-     * @deprecated
+     * @private
      *
      * Defines the X-coordinate position where the quick toolbar will appear.
      */
     positionX?: number
     /**
-     * @deprecated
+     * @private
      *
      * Defines the Y-coordinate position where the quick toolbar will appear.
      */
@@ -1169,7 +1179,7 @@ export interface ResponseEventArgs {
 }
 
 /**
- * @deprecated
+ * @private
  */
 export interface IColorPickerRenderArgs {
     items?: string[]
@@ -1199,10 +1209,12 @@ export interface MediaDropEventArgs extends DragEvent {
     rangeParent?: Element
     /** Specifies the offset value for the drop range. */
     rangeOffset?: number
+    /** Determines the type of media */
+    mediaType?: string
 }
 
 /**
- * @deprecated
+ * @private
  */
 export interface ITableNotifyArgs {
     module?: string
@@ -1348,4 +1360,28 @@ export interface SelectionChangedEventArgs {
      * Indicates if the editor is currently in HTML or Markdown mode.
      */
     editorMode?: EditorMode | string;
+}
+
+/**
+ * Provides information about the exportingDocument event in the Rich Text Editor.
+ */
+export interface ExportingEventArgs {
+    /**
+     * Indicates whether the editor is exporting to PDF or Word.
+     */
+    exportType: ExportDocumentType;
+    /**
+     * Indicates the collection of form-data entries to include with the export request.
+     * Each entry represents a key/value pair appended to the request body.
+     */
+    customFormData?: {
+        [key: string]: Object;
+    }[];
+    /**
+     * Indicates set of HTTP headers that will be merged into the export request.
+     * Use this to add authentication tokens or any custom header values.
+     */
+    currentRequest?: {
+        [key: string]: string;
+    }[];
 }

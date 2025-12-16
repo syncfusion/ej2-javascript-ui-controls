@@ -3,16 +3,16 @@
  */
 import { createElement, L10n } from '@syncfusion/ej2-base';
 import { Diagram } from '../../../src/diagram/diagram'; import { BackgroundModel } from '../../../src/diagram/diagram/page-settings-model';
-import { DiagramModel, ConnectorModel, NodeModel, ContextMenuSettings } from '../../../src/diagram/index';
+import { DiagramModel, ConnectorModel, NodeModel, DiagramContextMenu } from '../../../src/diagram/index';
 import { MouseEvents } from '../interaction/mouseevents.spec';
 import { MenuItemModel, MenuEventArgs } from '@syncfusion/ej2-navigations';
 import { profile, inMB, getMemoryProfile } from '../../../spec/common.spec';
-;
 
+Diagram.Inject(DiagramContextMenu);
 
 /**
  * Page Background
- */
+ */
 describe('Diagram Control', () => {
     describe('Background', () => {
         let diagram: Diagram;
@@ -35,6 +35,7 @@ describe('Diagram Control', () => {
         afterAll((): void => {
             diagram.destroy();
             ele.remove();
+            (diagram as any) = null; (ele as any) = null;
         });
 
         it('Checking diagram without background', (done: Function) => {
@@ -64,6 +65,7 @@ describe('Diagram Control', () => {
         afterAll((): void => {
             diagram.destroy();
             ele.remove();
+            (diagram as any) = null; (ele as any) = null;
         });
 
         it('Checking with background image', (done: Function) => {
@@ -94,6 +96,7 @@ describe('Diagram Control', () => {
         afterAll((): void => {
             diagram.destroy();
             ele.remove();
+            (diagram as any) = null; (ele as any) = null;
         });
 
         it('Checking wiht background color', (done: Function) => {
@@ -170,6 +173,7 @@ describe('Diagram Control', () => {
         afterAll((): void => {
             diagram.destroy();
             ele.remove();
+            (diagram as any) = null; (ele as any) = null; (mouseEvents as any) = null;
         });
         it('check Context Menu - localization', (done: Function) => {
             let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
@@ -213,7 +217,6 @@ describe('Diagram Control', () => {
 
         let diagram: Diagram;
         let ele: HTMLElement;
-        let mouseEvents: MouseEvents = new MouseEvents();
 
         beforeAll((): void => {
             const isDef = (o: any) => o !== undefined && o !== null;
@@ -222,7 +225,7 @@ describe('Diagram Control', () => {
                 this.skip(); //Skips test (in Chai)
                 return;
             }
-            ele = createElement('div', { id: 'diagramdraw' });
+            ele = createElement('div', { id: 'diagramdraw2' });
             document.body.appendChild(ele);
             diagram = new Diagram({
                 width: '1000px', height: '1000px',
@@ -250,13 +253,14 @@ describe('Diagram Control', () => {
                     shortCutSpan.setAttribute('class', 'shortcut');
                 }
             });
-            diagram.appendTo('#diagramdraw');
+            diagram.appendTo('#diagramdraw2');
 
         });
 
         afterAll((): void => {
             diagram.destroy();
             ele.remove();
+            (diagram as any) = null; (ele as any) = null;
         });
         it('memory leak', () => {
             profile.sample();

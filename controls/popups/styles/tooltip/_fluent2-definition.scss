@@ -1,10 +1,13 @@
+@use 'ej2-base/styles/definition/fluent2' as *;
+@forward 'ej2-base/styles/definition/fluent2';
+
 //layout variables
 $tooltip-drop-shadow: 0 4px 6px rgba(0, 0, 0, .2) !default;
 $tooltip-drop-shadow-filter: drop-shadow(2px 2px 5px rgba(0, 0, 0, .25)) !default;
 $tooltip-close-icon-border: 1px solid $border !default;
 $tooltip-icon-box-shadow: $shadow-sm !default;
 $tooltip-font-size: $text-xs !default;
-$tooltip-border-radius: 4px !default;
+$tooltip-border-radius: $radius-4 !default;
 $border-size: 1px !default;
 $border-type: solid !default;
 $tooltip-opacity: 1 !default;
@@ -47,3 +50,16 @@ $tooltip-icon-bg-normal: $secondary-bg-color !default;
 $tooltip-hover-icon-color: $icon-color-hover !default;
 $tooltip-icon-bg-hover: $content-bg-color-hover !default;
 $tooltip-icon-border-color: $border !default;
+$tooltip-tip-content-line-height: 20px !default;
+$tooltip-zero-padding-margin: 0 !default;
+$tooltip-wrap-min-width: 30px !default;
+$tooltip-zero-height: 0 !default;
+$tooltip-one-line-height: 1 !default;
+$tooltip-close-right: -9px !default;
+$tooltip-close-top: -9px !default;
+$tooltip-full-height: 100% !default;
+$tooltip-full-width: 100% !default;
+$tooltip-nrml-close-border-radius: $radius-9 !default;
+$tooltip-nrml-close-border: 1px !default;
+$tooltip-nrml-close-height: 16px !default;
+$tooltip-nrml-close-width: 16px !default;

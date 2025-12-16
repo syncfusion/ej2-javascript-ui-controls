@@ -100,6 +100,7 @@ export function addObjectToGrid(
     node.parentId = parent.id;
     node.isHeader = (isHeader) ? true : false; node.isPhase = (isPhase) ? true : false;
     node.isLane = (isLane) ? true : false;
+    node.pivot = parent.pivot;
     const id: string = (isPhase) ? 'PhaseHeaderParent' : 'LaneHeaderParent';
     if (canvas) { node[`${id}`] = canvas; }
 
@@ -474,10 +475,13 @@ export function swimLaneMeasureAndArrange(obj: NodeModel): void {
     canvas.measure(new Size(obj.width, obj.height));
     if (canvas.children[0] instanceof GridPanel) {
         const grid: GridPanel = canvas.children[0] as GridPanel; let isMeasure: boolean = false;
-        if (grid.width && grid.width < grid.desiredSize.width) {
+        // 985493 - Diagram Becomes Unresponsive After Deleting Original Lane
+        if ((grid.width && grid.width < grid.desiredSize.width)
+            || grid.width === undefined && grid.desiredSize.width !== undefined) {
             isMeasure = true; grid.width = grid.desiredSize.width;
         }
-        if (grid.height && grid.height < grid.desiredSize.height) {
+        if ((grid.height && grid.height < grid.desiredSize.height)
+            || grid.height === undefined && grid.desiredSize.height !== undefined) {
             isMeasure = true; grid.height = grid.desiredSize.height;
         }
         if (isMeasure) { grid.measure(new Size(grid.width, grid.height)); }

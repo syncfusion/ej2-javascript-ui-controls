@@ -2,41 +2,6 @@
 
 ## [Unreleased]
 
-## 31.2.18 (2025-12-09)
-
-### DataManager
-
-#### Bug Fixes
-
-- `#I786132` - Resolved a script error that occurred when opening the filter dialog in a grid with `enableInfiniteScrolling` enabled in filterSettings while using the `RemoteSaveAdaptor`.
-- `#I786004` - The issue where changing the pageSize via the pager dropdown did not update the page size correctly when the `enableCache` property was set in the `DataManager` within the grid has been resolved.
-
-## 31.2.5 (2025-11-04)
-
-### DataManager
-
-#### Bug Fixes
-
-- `#I776799` - Resolved typing issue in `ReturnOption` interface.
-
-## 31.2.3 (2025-10-22)
-
-### DataManager
-
-#### Bug Fixes
-
-- `#I771544` - Fixed an issue that caused a maximum call stack size exceeded error when parsing stringified data using `DataUtil's parseJson` method.
-
-## 31.1.23 (2025-10-07)
-
-### DataManager
-
-#### Bug Fixes
-
-- `#I765580` -  Fixed an issue where `applyPreRequestMiddleWare` was not triggered when `DataManager` is offline.
-
-## 31.1.17 (2025-09-05)
-
 ### DataManager
 
 #### Features

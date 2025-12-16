@@ -54,9 +54,9 @@ export function updatePath(node: HTMLLIElement, data: Object, instance: IFileMan
     const text: string = getValue('name', data);
     const id: string = node.getAttribute('data-id');
     const newText: string = isNOU(id) ? text : id;
-    instance.setProperties({ path: getPath(node, newText, instance.hasId) }, true);
-    instance.pathId = getPathId(node);
-    instance.pathNames = getPathNames(node, text);
+    instance.setProperties({ path: getPath(node, newText, instance.hasId, instance) }, true);
+    instance.pathId = getPathId(node, instance);
+    instance.pathNames = getPathNames(node, text, instance);
 }
 /**
  * Functions for get path in FileManager
@@ -64,11 +64,12 @@ export function updatePath(node: HTMLLIElement, data: Object, instance: IFileMan
  * @param {Element | Node} element - specifies the element.
  * @param {string} text - specifies the text.
  * @param {boolean} hasId - specifies the id.
+ * @param {IFileManager} instance - specifies the control instance.
  * @returns {string} returns the path.
  * @private
  */
-export function getPath(element: Element | Node, text: string, hasId: boolean): string {
-    const matched: string[] = getParents(<Element>element, text, false, hasId);
+export function getPath(element: Element | Node, text: string, hasId: boolean, instance?: IFileManager): string {
+    const matched: string[] = getParents(<Element>element, text, false, hasId, instance);
     let path: string = '/';
     const len: number = matched.length - (2);
     for (let i: number = len; i >= 0; i--) {
@@ -80,11 +81,12 @@ export function getPath(element: Element | Node, text: string, hasId: boolean): 
  * Functions for get path id in FileManager
  *
  * @param {Element} node - specifies the node element.
+ * @param {IFileManager} instance - specifies the control instance.
  * @returns {string[]} returns the path ids.
  * @private
  */
-export function getPathId(node: Element): string[] {
-    const matched: string[] = getParents(node, node.getAttribute('data-uid'), true);
+export function getPathId(node: Element, instance?: IFileManager): string[] {
+    const matched: string[] = getParents(node, node.getAttribute('data-uid'), true, false, instance);
     const ids: string[] = [];
     for (let i: number = matched.length - 1; i >= 0; i--) {
         ids.push(matched[i as number]);
@@ -97,11 +99,12 @@ export function getPathId(node: Element): string[] {
  *
  * @param {Element} element - specifies the node element.
  * @param {string} text - specifies the text.
+ * @param {IFileManager} instance - specifies the control instance.
  * @returns {string[]} returns the path names.
  * @private
  */
-export function getPathNames(element: Element, text: string): string[] {
-    const matched: string[] = getParents(element, text, false);
+export function getPathNames(element: Element, text: string, instance?: IFileManager): string[] {
+    const matched: string[] = getParents(element, text, false, false, instance);
     const names: string[] = [];
     for (let i: number = matched.length - 1; i >= 0; i--) {
         names.push(matched[i as number]);
@@ -116,16 +119,20 @@ export function getPathNames(element: Element, text: string): string[] {
  * @param {string} text - specifies the text.
  * @param {boolean} isId - specifies the id.
  * @param {boolean} hasId - checks the id exists.
+ * @param {IFileManager} instance - specifies the control instance.
  * @returns {string[]} returns parent element.
  * @private
  */
-export function getParents(element: Element, text: string, isId: boolean, hasId?: boolean): string[] {
+export function getParents(element: Element, text: string, isId: boolean, hasId?: boolean, instance?: IFileManager): string[] {
     const matched: string[] = [text];
     let el: Element = <Element>element.parentNode;
     while (!isNOU(el)) {
         if (matches(el, '.' + CLS.LIST_ITEM)) {
-            const parentText: string = isId ? el.getAttribute('data-uid') : (hasId ? el.getAttribute('data-id') :
-                select('.' + CLS.LIST_TEXT, el).textContent);
+            let data: object[] = [{}];
+            if (!isNOU(instance) && !isNOU(instance.navigationpaneModule) && !isNOU(instance.navigationpaneModule.treeObj)) {
+                data = instance.navigationpaneModule.treeObj.getTreeData(el);
+            }
+            const parentText: string = isId ? el.getAttribute('data-uid') : (hasId ? el.getAttribute('data-id') : getValue('name', data[0]));
             matched.push(parentText);
         }
         el = <Element>el.parentNode;
@@ -393,7 +400,7 @@ export function getTargetModule(parent: IFileManager, element: Element): void {
         } else if (closest(element, '.' + CLS.LARGE_ICONS)) {
             tartgetModule = 'largeiconsview';
         } else if (element.classList.contains('e-fullrow') ||
-            element.classList.contains('e-icon-expandable')) {
+            element.classList.contains('e-icon-expandable') || element.classList.contains('e-text-content')) {
             tartgetModule = 'navigationpane';
         } else if (closest(element, '.e-address-list-item')) {
             tartgetModule = 'breadcrumbbar';
@@ -1532,9 +1539,17 @@ export function doDownloadFiles(parent: IFileManager, data: Object[], newIds: st
  * @private
  */
 export function createDeniedDialog(parent: IFileManager, data: Object, action: string): void {
-    let message: string = getValue('message', getValue('permission', data));
+    const permission: Object = getValue('permission', data);
+    let message: string = getValue('message', permission);
+    const restriction: string = getValue('uploadContentFilter', permission) === 1 ? 'Folder Upload' : 'File Upload';
     if (message === '') {
-        message = getLocaleText(parent, 'Access-Message').replace('{0}', getValue('name', data)).replace('{1}', action);
+        if (!isNOU(permission) && getValue('upload', permission) && getValue('uploadContentFilter', permission) === 1) {
+            message = getLocaleText(parent, 'FolderUpload-Access-Message').replace('{0}', getValue('name', data)).replace('{1}', restriction);
+        } else if (!isNOU(permission) && getValue('upload', permission) && getValue('uploadContentFilter', permission) === 2) {
+            message = getLocaleText(parent, 'FileUpload-Access-Message').replace('{0}', getValue('name', data)).replace('{1}', restriction);
+        } else {
+            message = getLocaleText(parent, 'Access-Message').replace('{0}', getValue('name', data)).replace('{1}', action);
+        }
     }
     const response: ReadArgs = {
         error: {

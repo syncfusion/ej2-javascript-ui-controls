@@ -2,62 +2,6 @@
 
 ## [Unreleased]
 
-## 31.2.18 (2025-12-09)
-
-### Tab
-
-#### Bug Fixes
-
-- `#I786111` - The issue where the tab component's overflow popup does not appear when global animation is disabled has been resolved.
-
-### Treeview
-
-#### Bug Fixes
-
-- `#I780323` -  The performance issue with `expandAll` method and `autoCheck` property in the TreeView component has been resolved.
-
-## 31.2.12 (2025-11-18)
-
-### ContextMenu
-
-#### Bug Fixes
-
-- `#I761398` - Resolved an issue where the context menu width increased every time it was opened using the public open method.
-
-## 31.2.5 (2025-11-04)
-
-### Treeview
-
-#### Bug Fixes
-
-- `#I776118` -  The issue where the parent node was automatically checked when dynamically adding a child node with `isChecked` set to true, even when `autoCheck` was set to false, has been resolved.
-
-## 31.2.3 (2025-10-22)
-
-### Breadcrumb
-
-#### Bug Fixes
-
-- `#I775259` - The issue with the aria-label attribute in the Breadcrumb component has been resolved.
-
-## 31.1.20 (2025-09-10)
-
-### Treeview
-
-#### Bug Fixes
-
-- `#I766330` - The issue where the ripple effect remained visible on the screen when the checkbox was checked rapidly and the mouse was moved quickly has been resolved in the TreeView component.
-
-## 31.1.18 (2025-09-10)
-
-### Menu
-
-#### Bug Fixes
-
-- `#I759090` -  Resolved an alignment issue with the `e-caret` icon in the Menu Component.
-
-## 31.1.17 (2025-09-05)
-
 ### Tab
 
 #### Bug Fixes

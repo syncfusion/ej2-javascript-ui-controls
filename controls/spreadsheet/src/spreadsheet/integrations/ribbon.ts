@@ -1,10 +1,10 @@
 import { Ribbon as RibbonComponent, RibbonItemModel, ExpandCollapseEventArgs } from '../../ribbon/index';
 import { Spreadsheet } from '../base/index';
-import { ribbon, MenuSelectEventArgs, beforeRibbonCreate, removeDataValidation, clearViewer, initiateFilterUI, readonlyAlert, removeElements, isLockedCells, showAggregate } from '../common/index';
+import { ribbon, MenuSelectEventArgs, beforeRibbonCreate, removeDataValidation, clearViewer, initiateFilterUI, readonlyAlert, removeElements, isLockedCells, showAggregate, initiateComment, deleteComment, showCommentsPane, navigateNextPrevComment, navigateNextPrevNote } from '../common/index';
 import { initiateDataValidation, invalidData, setUndoRedo, renderCFDlg, focus, freeze, toggleProtect } from '../common/index';
-import { dialog, reapplyFilter, enableFileMenuItems, protectCellFormat, protectWorkbook } from '../common/index';
-import { DialogBeforeOpenEventArgs, insertChart, chartDesignTab, unProtectWorkbook } from '../common/index';
-import { IRenderer, destroyComponent, performUndoRedo, completeAction, applySort, hideRibbonTabs } from '../common/index';
+import { dialog, reapplyFilter, enableFileMenuItems, protectCellFormat, protectWorkbook, showAllNotes } from '../common/index';
+import { DialogBeforeOpenEventArgs, insertChart, chartDesignTab, unProtectWorkbook, addNote, editNote, deleteNote } from '../common/index';
+import { IRenderer, destroyComponent, performUndoRedo, completeAction, applySort, hideRibbonTabs, showHideNote } from '../common/index';
 import { enableToolbarItems, ribbonClick, paste, locale, initiateCustomSort, getFilteredColumn } from '../common/index';
 import { tabSwitch, getUpdateUsingRaf, updateToggleItem, initiateHyperlink, editHyperlink, clearFilter } from '../common/index';
 import { addRibbonTabs, addToolbarItems, hideFileMenuItems, addFileMenuItems, hideToolbarItems, enableRibbonTabs } from '../common/index';
@@ -19,7 +19,7 @@ import { SheetModel, getCellIndexes, CellModel, getFormatFromType, getTypeFromFo
 import { DropDownButton, OpenCloseMenuEventArgs, SplitButton, ClickEventArgs as BtnClickEventArgs } from '@syncfusion/ej2-splitbuttons';
 import { ItemModel } from '@syncfusion/ej2-splitbuttons';
 import { calculatePosition, OffsetPosition } from '@syncfusion/ej2-popups';
-import { SortCollectionModel, applyNumberFormatting, getDataRange, getFormattedCellObject, getRangeIndexes, getSwapRange, isLocked, isReadOnlyCells, mergedRange, setMerge, unMerge, updateSortCollection, workbookFormulaOperation } from '../../workbook/common/index';
+import { ExtendedSheet, SortCollectionModel, applyNumberFormatting, getDataRange, getFormattedCellObject, getRangeIndexes, getSwapRange, isLocked, isReadOnlyCells, mergedRange, setMerge, unMerge, updateSortCollection, workbookFormulaOperation } from '../../workbook/common/index';
 import { activeCellChanged, textDecorationUpdate, BeforeCellFormatArgs, isNumber, MergeArgs, exportDialog } from '../../workbook/common/index';
 import { SortOrder, NumberFormatType, SetCellFormatArgs, CFArgs, clearCFRule, NumberFormatArgs } from '../../workbook/common/index';
 import { getCell, FontFamily, VerticalAlign, TextAlign, CellStyleModel, setCellFormat, selectionComplete } from '../../workbook/index';
@@ -29,7 +29,8 @@ import { Dialog } from '../services';
 import { BeforeOpenEventArgs } from '@syncfusion/ej2-popups';
 import { insertDesignChart, removeDesignChart, isMouseMove } from '../common/index';
 import { LocalizedFormatActionArgs, refreshRibbonIcons, ChartTheme, beginAction, setCFRule } from '../../workbook/common/index';
-import { findToolDlg, localizedFormatAction, convertToDefaultFormat, isImported } from '../../workbook/index';
+import { findToolDlg, localizedFormatAction, convertToDefaultFormat, isImported, ExtendedNoteModel } from '../../workbook/index';
+import { ExtendedThreadedCommentModel, ThreadedCommentModel } from '../../workbook/common/index';
 
 /**
  * Represents Ribbon for Spreadsheet.
@@ -45,6 +46,7 @@ export class Ribbon {
     private verticalAlignDdb: DropDownButton;
     private sortingDdb: DropDownButton;
     private datavalidationDdb: DropDownButton;
+    private notesDdb: DropDownButton;
     private bordersDdb: DropDownButton;
     private cfDdb: DropDownButton;
     private clearDdb: DropDownButton;
@@ -58,6 +60,7 @@ export class Ribbon {
     private preTabIdx: number = 1;
     private addChartDdb: DropDownButton;
     private cPickerEle: HTMLElement;
+    private commentDdb: DropDownButton;
     constructor(parent: Spreadsheet) {
         this.parent = parent;
         this.addEventListener();
@@ -207,6 +210,13 @@ export class Ribbon {
                     template: this.datavalidationDDB(id), tooltipText: l10n.getConstant('DataValidation'),
                     id: id + '_datavalidation'
                 }
+            ]
+        },
+        {
+            header: { text: l10n.getConstant('Review') }, content: [
+                { template: this.commentDDB(id), tooltipText: l10n.getConstant('Comment'), id: id + '_comment'},
+                { type: 'Separator', id: id + '_separator_16' },
+                { template: this.notesDDB(id), tooltipText: l10n.getConstant('Notes'), id: id + '_notes' }
             ]
         },
         {
@@ -1157,6 +1167,115 @@ export class Ribbon {
         return addChartMenu;
     }
 
+    private commentDDB(id: string): Element {
+        const l10n: L10n = this.parent.serviceLocator.getService(locale);
+        let commentFocus: boolean = false;
+        this.commentDdb = new DropDownButton({
+            iconCss: 'e-icons e-comment-add',
+            cssClass: 'e-comment-ddb',
+            content: l10n.getConstant('Comment'),
+            enableRtl: this.parent.enableRtl,
+            createPopupOnClick: true,
+            items: [
+                { id: 'cm_add', text: l10n.getConstant('NewComment'), iconCss: 'e-icons e-comment-add' },
+                { id: 'cm_show', text: l10n.getConstant('ShowComments'), iconCss: 'e-icons e-multiple-comment' },
+                { id: 'cm_prev', text: l10n.getConstant('PreviousComment'), iconCss: 'e-icons e-previous-comment' },
+                { id: 'cm_next', text: l10n.getConstant('NextComment'), iconCss: 'e-icons e-next-comment' },
+                { id: 'cm_delete', text: l10n.getConstant('DeleteComment'), iconCss: 'e-icons e-close-comment' }
+            ],
+            beforeItemRender: (args: MenuEventArgs): void => {
+                const state: { new: boolean, delete: boolean, prevNext: boolean, isNoteAvail?: boolean } = this.getCommentsState();
+                const disable: boolean =
+                    (args.item.id === 'cm_add' && (state.new || state.isNoteAvail)) ||
+                    (args.item.id === 'cm_delete' && state.delete) ||
+                    ((args.item.id === 'cm_prev' || args.item.id === 'cm_next') && state.prevNext);
+                if (disable) {
+                    args.element.classList.add('e-disabled');
+                    args.element.setAttribute('aria-disabled', 'true');
+                }
+            },
+            beforeOpen: (args: BeforeOpenCloseMenuEventArgs): void => {
+                args.element.setAttribute('aria-label', l10n.getConstant('Comment'));
+            },
+            select: (args: MenuEventArgs): void => {
+                if (args.element && args.element.classList.contains('e-disabled')) {
+                    return;
+                }
+                switch (args.item.id) {
+                case 'cm_add':
+                    this.parent.notify(initiateComment, null);
+                    commentFocus = true;
+                    break;
+                case 'cm_show':
+                    this.parent.notify(showCommentsPane, { show: !this.parent.spreadsheetCommentModule.isReviewPaneVisible });
+                    break;
+                case 'cm_prev':
+                    this.parent.notify(navigateNextPrevComment, { isNext: false });
+                    break;
+                case 'cm_next':
+                    this.parent.notify(navigateNextPrevComment, { isNext: true });
+                    break;
+                case 'cm_delete':
+                    this.parent.notify(deleteComment, null);
+                    break;
+                }
+                this.commentDdb.element.setAttribute('aria-label', args.item.text);
+            },
+            close: (): void => {
+                if (commentFocus) {
+                    getUpdateUsingRaf((): void => this.focusActiveCellComment());
+                    commentFocus = false;
+                } else {
+                    focus(this.parent.element);
+                }
+            }
+        });
+        this.commentDdb.createElement = this.parent.createElement;
+        this.commentDdb.appendTo(this.parent.createElement('button', { id: id + '_comment', attrs: { 'type': 'button' } }));
+        return this.commentDdb.element;
+    }
+
+    private getCommentsState(): { new: boolean, delete: boolean, prevNext: boolean, isNoteAvail?: boolean } {
+        const sheet: SheetModel = this.parent.getActiveSheet();
+        const indexes: number[] = getCellIndexes(sheet.activeCell);
+        const cell: CellModel = getCell(indexes[0], indexes[1], sheet);
+        const thread: ThreadedCommentModel = cell && cell.comment;
+        let hasCellComments: boolean; let isResolved: boolean; let isNoteAvail: boolean;
+        if (thread) {
+            hasCellComments = true;
+            isResolved = thread.isResolved;
+        } else {
+            isNoteAvail = !!(cell && cell.notes);
+        }
+        return { new: isResolved, delete: !hasCellComments, prevNext: !this.workbookHasComments(), isNoteAvail: isNoteAvail };
+    }
+
+    private workbookHasComments(): boolean {
+        const sheets: SheetModel[] = this.parent.sheets;
+        for (let i: number = 0; i < sheets.length; i++) {
+            const sheet: ExtendedSheet = sheets[i as number] as ExtendedSheet;
+            const coll: ExtendedThreadedCommentModel[] = sheet.comments;
+            if (Array.isArray(coll) && coll.length > 0) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private focusActiveCellComment(): void {
+        let container: HTMLElement = this.parent.element.querySelector('.e-comment-container') as HTMLElement;
+        if (!container) {
+            container = this.parent.element.querySelector('.e-thread-draft') as HTMLElement;
+        }
+        if (container) {
+            const input: HTMLTextAreaElement = container.querySelector('.e-comment-footer .e-comment-input') as HTMLTextAreaElement;
+            if (input) {
+                input.focus();
+                input.select();
+            }
+        }
+    }
+
     private getCFDBB(id: string): Element {
         const ul: HTMLElement = this.parent.createElement('ul', { id: id + '_cf_menu' });
         let cfMenu: Menu;
@@ -1519,6 +1638,9 @@ export class Ribbon {
                     const cPickerWrapper: HTMLElement = this.colorPicker.element.parentElement;
                     args.element.firstElementChild.appendChild(cPickerWrapper);
                     cPickerWrapper.style.display = 'inline-block';
+                    if (Browser.isDevice) {
+                        args.element.parentElement.style.visibility = 'hidden';
+                    }
                     args.element.parentElement.classList.add('e-border-color');
                     args.element.firstElementChild.removeAttribute('tabindex');
                     EventHandler.add(cPickerWrapper, 'keydown', keydownOnBorderColor, this);
@@ -1544,6 +1666,29 @@ export class Ribbon {
             onOpen: (args: OpenCloseMenuEventArgs): void => {
                 if (args.parentItem.id === `${id}_border_bordercolor`) {
                     args.element.parentElement.style.overflow = 'visible';
+                    if (Browser.isDevice) {
+                        const popup: HTMLElement = args.element.parentElement as HTMLElement;
+                        const colorPickerRect: ClientRect = popup.getBoundingClientRect();
+                        const spreadsheetRect: ClientRect = this.parent.element.getBoundingClientRect();
+                        const overflowBottom: number = (colorPickerRect.top + colorPickerRect.height)
+                            - (spreadsheetRect.top + spreadsheetRect.height);
+                        if (overflowBottom > 0) {
+                            const docTop: number = colorPickerRect.top + window.scrollY;
+                            const spreadsheetTop: number = spreadsheetRect.top + window.scrollY;
+                            let newTop: number = docTop - overflowBottom;
+                            newTop = Math.max(spreadsheetTop, newTop);
+                            getUpdateUsingRaf((): void => {
+                                const newTopPx: string = `${newTop}px`;
+                                if (popup.style.top !== newTopPx) {
+                                    popup.style.top = newTopPx;
+                                }
+                                popup.style.visibility = 'visible';
+                            });
+                        }
+                        else {
+                            popup.style.visibility = 'visible';
+                        }
+                    }
                     const colorPalatte: HTMLElement = args.element.querySelector('.e-color-palette .e-palette');
                     if (colorPalatte) {
                         focus(colorPalatte);
@@ -1701,6 +1846,102 @@ export class Ribbon {
             btnObj.element.addEventListener('click', this.toggleBtnClicked.bind(this));
         }
         return btnObj.element;
+    }
+    private pendingNoteFocus: boolean = false;
+    private notesDDB(id: string): Element {
+        const l10n: L10n = this.parent.serviceLocator.getService(locale);
+        this.notesDdb = new DropDownButton({
+            iconCss: 'e-icons e-notes',
+            cssClass: 'e-notes-ddb',
+            content: l10n.getConstant('Notes'),
+            enableRtl: this.parent.enableRtl,
+            items: [],
+            createPopupOnClick: true,
+            beforeOpen: (args: BeforeOpenCloseMenuEventArgs): void => {
+                this.refreshSelected(this.notesDdb, args.element, 'iconCss');
+                args.element.setAttribute('aria-label', l10n.getConstant('Notes'));
+                const sheet: SheetModel = this.parent.getActiveSheet();
+                const cellIndexes: number[] = getCellIndexes(sheet.activeCell);
+                const cell: CellModel = getCell(cellIndexes[0], cellIndexes[1], sheet);
+                if (cell && cell.notes) {
+                    this.notesDdb.items = [
+                        { id: 'nt_edit', text: l10n.getConstant('EditNote'), iconCss: 'e-icons e-edit-notes' },
+                        { id: 'nt_delte', text: l10n.getConstant('DeleteNote'), iconCss: 'e-icons e-delete-notes' },
+                        { id: 'nt_show', text: l10n.getConstant('ShowHideNote'), iconCss: 'e-icons e-notes' },
+                        { id: 'nt_prev', text: l10n.getConstant('PreviousNote'), iconCss: 'e-icons e-previous-note' },
+                        { id: 'nt_next', text: l10n.getConstant('NextNote'), iconCss: 'e-icons e-next-note' },
+                        { id: 'nt_showall', text: l10n.getConstant('ShowAllNotes'), iconCss: 'e-icons e-all-notes' }
+                    ];
+                } else if (cell && cell.comment) {
+                    this.notesDdb.items = [
+                        { id: 'nt_prev', text: l10n.getConstant('PreviousNote'), iconCss: 'e-icons e-previous-note' },
+                        { id: 'nt_next', text: l10n.getConstant('NextNote'), iconCss: 'e-icons e-next-note' },
+                        { id: 'nt_showall', text: l10n.getConstant('ShowAllNotes'), iconCss: 'e-icons e-all-notes' }
+                    ];
+                } else {
+                    this.notesDdb.items = [
+                        { id: 'nt_add', text: l10n.getConstant('AddNote'), iconCss: 'e-icons e-add-notes' },
+                        { id: 'nt_prev', text: l10n.getConstant('PreviousNote'), iconCss: 'e-icons e-previous-note' },
+                        { id: 'nt_next', text: l10n.getConstant('NextNote'), iconCss: 'e-icons e-next-note' },
+                        { id: 'nt_showall', text: l10n.getConstant('ShowAllNotes'), iconCss: 'e-icons e-all-notes' }
+                    ];
+                }
+                this.notesDdb.dataBind();
+            },
+            select: (args: MenuEventArgs): void => {
+                this.pendingNoteFocus = false;
+                switch (args.item.text) {
+                case l10n.getConstant('AddNote'):
+                    this.parent.notify(addNote, null);
+                    this.pendingNoteFocus = true;
+                    break;
+                case l10n.getConstant('EditNote'):
+                    this.parent.notify(editNote, null);
+                    this.pendingNoteFocus = true;
+                    break;
+                case l10n.getConstant('DeleteNote'):
+                    this.parent.notify(deleteNote, { rowIndex: null, columnIndex: null, isDeleteFromMenu: true });
+                    break;
+                case l10n.getConstant('ShowHideNote'):
+                    this.parent.notify(showHideNote, null);
+                    break;
+                case l10n.getConstant('NextNote'):
+                    this.parent.notify(navigateNextPrevNote, { isNext: true });
+                    break;
+                case l10n.getConstant('PreviousNote'):
+                    this.parent.notify(navigateNextPrevNote, { isNext: false });
+                    break;
+                case l10n.getConstant('ShowAllNotes'):
+                    this.parent.notify(showAllNotes, null);
+                    break;
+                }
+                this.notesDdb.element.setAttribute('aria-label', args.item.text);
+            },
+            close: (): void => {
+                if (this.pendingNoteFocus) {
+                    getUpdateUsingRaf(() => {
+                        this.focusActiveCellNote();
+                        this.pendingNoteFocus = false;
+                    });
+                }
+            }
+        });
+        this.notesDdb.createElement = this.parent.createElement;
+        this.notesDdb.appendTo(
+            this.parent.createElement('button', { id: id + '_notes', attrs: { 'type': 'button' }, className: 'e-ss-ddb' }));
+        return this.notesDdb.element;
+    }
+    private focusActiveCellNote(): void {
+        const sheet: ExtendedSheet = this.parent.getActiveSheet() as ExtendedSheet;
+        const indexes: number[] = getCellIndexes(sheet.activeCell);
+        const notes: ExtendedNoteModel[] = (sheet.notes || []);
+        const note: ExtendedNoteModel = notes.find((n: ExtendedNoteModel) => n.rowIdx === indexes[0] && n.colIdx === indexes[1]);
+        if (!note) { return; }
+        const noteContainerId: string = `e-note-container-${note.id}`;
+        const noteEl: HTMLElement = document.getElementById(noteContainerId) as HTMLElement;
+        if (noteEl) {
+            noteEl.focus();
+        }
     }
     private datavalidationDDB(id: string): Element {
         const l10n: L10n = this.parent.serviceLocator.getService(locale);
@@ -3399,6 +3640,7 @@ export class Ribbon {
         this.destroyComponent(id + '_chart_theme', 'menu'); this.destroyComponent(id + '_chart_theme', 'dropdown-btn');
         this.destroyComponent(id + '_chart-type-btn', 'menu'); this.destroyComponent(id + '_chart-type-btn', 'dropdown-btn');
         if (this.datavalidationDdb) { this.datavalidationDdb.destroy(); } this.datavalidationDdb = null;
+        if (this.commentDdb) { this.commentDdb.destroy(); } this.commentDdb = null;
         if (cPickerEle) {
             detach(cPickerEle);
         }

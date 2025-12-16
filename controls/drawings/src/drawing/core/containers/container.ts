@@ -20,6 +20,9 @@ export class Container extends DrawingElement {
     /** @private */
     public measureChildren: boolean = true;
 
+    /** @private */
+    public thickness?: number = undefined;
+
     /**
      * returns whether the container has child elements or not
      */

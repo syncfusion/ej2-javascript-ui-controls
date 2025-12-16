@@ -1,5 +1,5 @@
-import { EventHandler, INotifyPropertyChanged, Property, NotifyPropertyChanges, Collection, EmitType, Event, remove, L10n, SanitizeHtmlHelper } from '@syncfusion/ej2-base';import { ChildProperty, getUniqueID, isNullOrUndefined as isNOU, BaseEventArgs, Complex, removeClass, addClass } from '@syncfusion/ej2-base';import { ItemModel, Toolbar, ClickEventArgs } from '@syncfusion/ej2-navigations';import { InterActiveChatBase, ToolbarSettings, ToolbarItem, ToolbarItemClickedEventArgs, TextState } from '../interactive-chat-base/interactive-chat-base';import { ToolbarItemModel, ToolbarSettingsModel } from '../interactive-chat-base/interactive-chat-base-model';import { ActionCompleteEventArgs, FileInfo, Uploader, BeforeUploadEventArgs, UploadingEventArgs } from '@syncfusion/ej2-inputs';
-import {AssistViewType,PromptRequestEventArgs,PromptChangedEventArgs,StopRespondingEventArgs} from "./ai-assistview";
+import { EventHandler, INotifyPropertyChanged, Property, NotifyPropertyChanges, Collection, EmitType, Event, remove, L10n, SanitizeHtmlHelper } from '@syncfusion/ej2-base';import { ChildProperty, getUniqueID, isNullOrUndefined as isNOU, BaseEventArgs, Complex, removeClass, addClass } from '@syncfusion/ej2-base';import { ItemModel, Toolbar, ClickEventArgs } from '@syncfusion/ej2-navigations';import { InterActiveChatBase, ToolbarSettings, ToolbarItem, ToolbarItemClickedEventArgs, TextState } from '../interactive-chat-base/interactive-chat-base';import { ToolbarItemModel, ToolbarSettingsModel } from '../interactive-chat-base/interactive-chat-base-model';import { FileInfo, Uploader, BeforeUploadEventArgs, UploadingEventArgs } from '@syncfusion/ej2-inputs';
+import {AssistViewType,AttachmentClickEventArgs,ToolbarPosition,PromptRequestEventArgs,PromptChangedEventArgs,StopRespondingEventArgs} from "./ai-assistview";
 import {InterActiveChatBaseModel} from "../interactive-chat-base/interactive-chat-base-model";
 
 /**
@@ -129,6 +129,23 @@ export interface AttachmentSettingsModel {
      */
     maxFileSize?: number;
 
+    /**
+     * Specifies the maximum number of attachments allowed per prompt.
+     * Limits the number of files that can be uploaded and attached to a single prompt.
+     * Must be a positive integer.
+     *
+     * @type {number}
+     * @default 10
+     */
+    maximumCount?: number;
+
+    /**
+     * Event raised when a attachment item is clicked in the assistview component either before sending or after the attachment is sent.
+     *
+     * @event attachmentClick
+     */
+    attachmentClick?: EmitType<AttachmentClickEventArgs>;
+
 }
 
 /**
@@ -194,6 +211,39 @@ export interface ResponseToolbarSettingsModel {
      * @event itemClicked
      */
     itemClicked?: EmitType<ToolbarItemClickedEventArgs>;
+
+}
+
+/**
+ * Interface for a class FooterToolbarSettings
+ */
+export interface FooterToolbarSettingsModel {
+
+    /**
+     * Specifies the position of the footer toolbar in the editor.
+     * This property determines whether the toolbar is rendered inline with the content or at the bottom of the edit area.
+     *
+     * @isenumeration true
+     * @default ToolbarPosition.Inline
+     * @asptype ToolbarPosition
+     */
+    toolbarPosition?: ToolbarPosition | string;
+
+    /**
+     * Specifies the collection of toolbar items in the footer toolbar of the AIAssistView component.
+     * Represents the list of items to be displayed in the toolbar.
+     *
+     * @type {ToolbarItemModel[]}
+     * @default null
+     */
+    items?: ToolbarItemModel[];
+
+    /**
+     * Event raised when a toolbar item is clicked in the footer toolbar of the AIAssistView component.
+     *
+     * @event itemClick
+     */
+    itemClick?: EmitType<ToolbarItemClickedEventArgs>;
 
 }
 
@@ -347,6 +397,15 @@ export interface AIAssistViewModel extends InterActiveChatBaseModel{
      * @default []
      */
     responseToolbarSettings?: ResponseToolbarSettingsModel;
+
+    /**
+     * Configuration object for rendering a Syncfusion Toolbar in the footer.
+     * This property holds the settings required to initialize and display a custom Syncfusion Toolbar in the input field.
+     *
+     * @type {FooterToolbarSettingsModel | null}
+     * @default null
+     */
+    footerToolbarSettings?: FooterToolbarSettingsModel;
 
     /**
      * Specifies whether the attachments is enabled in the AIAssistView component.

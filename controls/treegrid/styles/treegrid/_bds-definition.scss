@@ -1,3 +1,5 @@
+@use 'ej2-base/styles/definition/bds' as *;
+@forward 'ej2-base/styles/definition/bds';
 $treegrid-right-arrow-icon-color: $icon-color !default;
 $treegrid-right-arrow-hover-color: $icon-color-hover !default;
 $childborder-color: $primary !default;

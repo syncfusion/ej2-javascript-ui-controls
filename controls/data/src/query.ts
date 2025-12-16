@@ -290,9 +290,10 @@ export class Query {
      * @param {string|string[]} fieldName - Defines the single or collection of column fields.
      * @param {string|Function} comparer - Defines the sort direction or custom sort comparer function.
      * @param isFromGroup
-     * @param {string} direction - Defines the sort direction .
+     * @param {string} direction - Defines the sort direction.
+     * @param {string|string[]} foreignKeyValue - Defines the foreignKeyValue.
      */
-    public sortByForeignKey(fieldName: string | string[], comparer?: string | Function, isFromGroup?: boolean, direction?: string): Query {
+    public sortByForeignKey(fieldName: string | string[], comparer?: string | Function, isFromGroup?: boolean, direction?: string, foreignKeyValue?: string): Query {
         let order: string = !isNullOrUndefined(direction) ? direction : 'ascending';
         let sorts: Object[];
         let temp: string | string[];
@@ -323,16 +324,26 @@ export class Query {
                 }
             }
         }
-
-        this.queries.push({
-            fn: 'onSortBy',
-            e: {
-                fieldName: (<string>fieldName),
-                comparer: comparer,
-                direction: order
-            }
-        });
-
+        if (!isNullOrUndefined(foreignKeyValue)) {
+            this.queries.push({
+                fn: 'onSortBy',
+                e: {
+                    fieldName: (<string>fieldName),
+                    foreignKeyValue: foreignKeyValue,
+                    comparer: comparer,
+                    direction: order
+                }
+            });
+        } else {
+            this.queries.push({
+                fn: 'onSortBy',
+                e: {
+                    fieldName: (<string>fieldName),
+                    comparer: comparer,
+                    direction: order
+                }
+            });
+        }
         return this;
     }
 
@@ -843,6 +854,7 @@ export interface QueryOptions {
     isComplex?: boolean;
     predicates?: Predicate[];
     condition?: string;
+    foreignKeyValue?: string;
 }
 /**
  * @hidden

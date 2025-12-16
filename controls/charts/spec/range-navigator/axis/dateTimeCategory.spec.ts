@@ -2,7 +2,7 @@ import { RangeNavigator  } from '../../../src/range-navigator/index';
 import { AreaSeries } from '../../../src/chart/index';
 import { Logarithmic, DateTime, LineSeries, DateTimeCategory } from '../../../src/chart/index';
 import { createElement } from '@syncfusion/ej2-base';
-import { profile, inMB, getMemoryProfile  } from '../../common.spec';
+import { profile, inMB, getMemoryProfile } from '../../common.spec';
 import { PeriodSelector, PeriodSelectorSettingsModel } from '../../../src/index';
 import { secureRandom } from '../../chart/base/data.spec';
 RangeNavigator.Inject(Logarithmic, DateTime, LineSeries, AreaSeries, DateTimeCategory, PeriodSelector);

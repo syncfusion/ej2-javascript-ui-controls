@@ -31,10 +31,12 @@ export class CellMergeRender<T> {
         const rowSpan: number = cellArgs.rowSpan;
         let visible: number = 0;
         let spannedCell: Cell<Column>;
-        if (row.index > 0) {
+        if (row.index > this.parent.pinnedTopRecords.length) {
+            const index: number = row.index - this.parent.pinnedTopRecords.length;
             const rowsObject: Row<Column>[] = this.parent.getRowsObject().filter((row: Row<Column>) => row.isDataRow);
-            const cells: Cell<Column>[] = this.parent.groupSettings.columns.length > 0 &&
-                !rowsObject[row.index - 1].isDataRow ? rowsObject[row.index].cells : rowsObject[row.index - 1].cells;
+            const cells: Cell<Column>[] = this.parent.groupSettings.columns.length > 0
+                && !rowsObject[parseInt(index.toString(), 10) - 1].isDataRow
+                ? rowsObject[parseInt(index.toString(), 10)].cells : rowsObject[parseInt(index.toString(), 10) - 1].cells;
             const targetCell: Cell<T> = row.cells[parseInt(i.toString(), 10)];
             const uid: string = 'uid';
             spannedCell = cells.filter((cell: Cell<Column>) => cell.column.uid === targetCell.column[`${uid}`])[0];
@@ -59,9 +61,10 @@ export class CellMergeRender<T> {
         }
         if (row.cells[parseInt(i.toString(), 10)].cellSpan) {
             row.data[cellArgs.column.field] = row.cells[parseInt(i.toString(), 10)].spanText;
+            const index: number = row.index - this.parent.pinnedTopRecords.length;
             td = cellRenderer.render(
                 row.cells[parseInt(i.toString(), 10)], row.data,
-                { 'index': !isNullOrUndefined(row.index) ? row.index.toString() : '' });
+                { 'index': !isNullOrUndefined(index) ? index.toString() : '' });
         }
         if (colSpan > 1) {
             attributes(td, { 'colSpan': colSpan.toString(), 'aria-colSpan': colSpan.toString() });
@@ -72,7 +75,7 @@ export class CellMergeRender<T> {
             row.cells[parseInt(i.toString(), 10)].rowSpanRange = Number(rowSpan);
             if (colSpan > 1) { row.cells[parseInt(i.toString(), 10)].colSpanRange = Number(colSpan); }
         }
-        if (row.index > 0 && (spannedCell.rowSpanRange > 1)) {
+        if (row.index > this.parent.pinnedTopRecords.length && (spannedCell.rowSpanRange > 1)) {
             row.cells[parseInt(i.toString(), 10)].isSpanned = true;
             row.cells[parseInt(i.toString(), 10)].rowSpanRange = Number(spannedCell.rowSpanRange - 1);
             row.cells[parseInt(i.toString(), 10)].colSpanRange = spannedCell.rowSpanRange > 0 ? spannedCell.colSpanRange : 1;

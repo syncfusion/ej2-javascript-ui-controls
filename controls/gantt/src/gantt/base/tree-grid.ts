@@ -6,7 +6,7 @@ import { setValue} from '@syncfusion/ej2-base';
 import { Deferred, Query} from '@syncfusion/ej2-data';
 import { TaskFieldsModel } from '../models/models';
 import { ColumnModel as GanttColumnModel, Column as GanttColumn } from '../models/column';
-import { ITaskData, IGanttData, IPredecessor } from './interface';
+import { ITaskData, IGanttData } from './interface';
 import { DataStateChangeEventArgs } from '@syncfusion/ej2-treegrid';
 import { QueryCellInfoEventArgs, HeaderCellInfoEventArgs, RowDataBoundEventArgs } from '@syncfusion/ej2-grids';
 import { ColumnMenuOpenEventArgs, ColumnMenuClickEventArgs } from '@syncfusion/ej2-grids';
@@ -30,6 +30,7 @@ export class GanttTreeGrid {
     private registeredTemplate: Object;
     public addedRecord: boolean;
     public setCancelArgs: boolean = false;
+    private isDateColumnCellEdit: boolean = false;
     private perviousStartDate: Date ;
     private perviousEndDate: Date ;
     private previousScroll: { top: number, left: number } = { top: 0, left: 0 };
@@ -148,6 +149,7 @@ export class GanttTreeGrid {
         this.parent.treeGrid[isJsComponent as string] = true;
         this.parent.treeGrid.height =
         this.parent.element.getElementsByClassName('e-chart-scroll-container e-content')[0]['offsetHeight'] - (this.parent.flatData.length === 0 ? 0 : 19);
+        this.parent.treeGrid.emptyRecordTemplate = this.parent.emptyRecordTemplate;
     }
     private getContentDiv(): HTMLElement {
         return this.treeGridElement.querySelector('.e-content');
@@ -248,6 +250,17 @@ export class GanttTreeGrid {
         }
         this.ensureScrollBar();
         this.parent.treeDataBound(args);
+        if (this.parent.dataOperation['validatedGanttData'] &&
+            this.parent.dataOperation['validatedGanttData'].size > 0 && this.parent.isLoad) {
+            const actionCompleteArgs: object = {
+                type: 'refresh',
+                modifiedTasks: this.parent.dataOperation['getValidatedTaskData']()
+            };
+            // Event trigger action to pass autoValidated task collection on initial load actions:
+            this.parent.trigger('actionComplete', actionCompleteArgs);
+            // Clear auto-validated task collections
+            this.parent.dataOperation['validatedGanttData'].clear();
+        }
         this.parent.isLoad = false;
         if (this.parent.isVirtualScroll) {
             if ((this.parent.enableVirtualMaskRow && this.parent.enableVirtualization) ||
@@ -396,6 +409,7 @@ export class GanttTreeGrid {
         if (args.requestType === 'filterchoicerequest') {
             const filterElement: HTMLElement = getValue('filterModel.dlg', args);
             if (filterElement) {
+                filterElement.classList.add('e-grid-popup');
                 filterElement.style.display = 'none';
             }
         }
@@ -610,6 +624,11 @@ export class GanttTreeGrid {
             }
             if (this.parent.editModule && this.parent.editModule.cellEditModule) {
                 const data: IGanttData = getValue('data', args);
+                if (!isNullOrUndefined(fieldName) && (fieldName === this.parent.taskFields.startDate ||
+                    fieldName === this.parent.taskFields.endDate) && args['previousData'] instanceof Date &&
+                    isNullOrUndefined(args['data'][fieldName as string])) {
+                    this.isDateColumnCellEdit = true;
+                }
                 if (!isNullOrUndefined(data) && !isNullOrUndefined(this.parent.getTaskByUniqueID(data.uniqueID))) {
                     /* eslint-disable-next-line */
                     this.parent.getTaskByUniqueID(data.uniqueID).taskData[this.parent.taskFields.duration] = data.taskData[this.parent.taskFields.duration];
@@ -722,8 +741,11 @@ export class GanttTreeGrid {
         if (getValue('requestType', args) === 'refresh') {
             this.parent.initiateEditAction(false);
         }
-        if (!preventEventTrigger && !this.setCancelArgs) {
+        if (!preventEventTrigger && !this.setCancelArgs && !this.parent['isDynamicDataUpdate']) {
             this.parent.trigger('actionComplete', updatedArgs);
+        }
+        if (this.parent['isDynamicDataUpdate']) {
+            this.parent['isDynamicDataUpdate'] = false;
         }
         if ( this.parent.showOverAllocation && !this.parent.allowTaskbarOverlap) {
             for (let i: number = 0; i < this.parent.currentViewData.length; i++) {
@@ -815,6 +837,8 @@ export class GanttTreeGrid {
             } else {
                 column = <GanttColumnModel>ganttObj.columns[i as number];
             }
+            column.isFrozen = column.isFrozen ? column.isFrozen : undefined;
+            column.freeze = column.freeze ? column.freeze : undefined;
             let columnName: string[] = [];
             if (tasksMapping.length > 0) {
                 columnName = tasksMapping.filter((name: string) => {
@@ -1394,7 +1418,10 @@ export class GanttTreeGrid {
         return '';
     }
     private resourceValueAccessor(field: string, data: IGanttData, column: GanttColumnModel): string {
-        const ganttProp: ITaskData = data.ganttProperties;
+        let ganttProp: ITaskData;
+        if (!isNullOrUndefined(data)) {
+            ganttProp = data.ganttProperties;
+        }
         if (!isNullOrUndefined(ganttProp)) {
             return ganttProp.resourceNames;
         }

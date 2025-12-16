@@ -1,5 +1,6 @@
 @use 'sass:meta';
-@import 'definition/bds.scss';
+@use 'definition/bds' as *;
+@forward 'definition/bds';
 
 @if not meta.variable-exists('is-inter-loaded') {
   //sass-lint:disable no-url-protocols,no-url-domains

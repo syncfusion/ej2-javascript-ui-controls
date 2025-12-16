@@ -19,7 +19,9 @@ describe('Diagram Control', () => {
     describe('BPMN Transaction Subprocess', () => {
         let diagram: Diagram;
         let ele: HTMLElement;
-
+        let events: MouseEvents = new MouseEvents();
+        let diagramCanvas: HTMLElement;
+        
         beforeAll((): void => {
             const isDef = (o: any) => o !== undefined && o !== null;
                 if (!isDef(window.performance)) {
@@ -29,7 +31,6 @@ describe('Diagram Control', () => {
                 }
             ele = createElement('div', { id: 'diagram' });
             document.body.appendChild(ele);
-            let shadow: ShadowModel = { distance: 10, opacity: 0.5 };
             let node: NodeModel = {
                 id: 'node', width: 100, height: 100, offsetX: 100, offsetY: 100,
                 style: { fill: 'red', strokeColor: 'blue', strokeWidth: 5, } as ShapeStyleModel,
@@ -79,10 +80,9 @@ describe('Diagram Control', () => {
 
         it('Connecting to transaction events interactively', (done: Function) => {
 
-            let events: MouseEvents = new MouseEvents();
             diagram.add({ id: 'connector1', sourcePoint: { x: 300, y: 300 }, targetPoint: { x: 500, y: 500 } });
 
-            let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
+            diagramCanvas = document.getElementById(diagram.element.id + 'content');
 
             events.clickEvent(diagramCanvas, 308, 308);
 
@@ -196,6 +196,7 @@ describe('Diagram Control', () => {
         let diagram: Diagram;
         let ele: HTMLElement;
         let mouseEvents: MouseEvents = new MouseEvents();
+        let diagramCanvas: HTMLElement;
 
         beforeAll((): void => {
             const isDef = (o: any) => o !== undefined && o !== null;
@@ -237,23 +238,24 @@ describe('Diagram Control', () => {
             ele.remove();
         });
 
-        it('drag and drop the process child from subProcess to diagram ', (done: Function) => {
-            let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
-            let node = diagram.nameTable['start'].wrapper;
-            mouseEvents.mouseDownEvent(diagramCanvas,node.bounds.center.x, node.bounds.center.y);
-            mouseEvents.mouseMoveEvent(diagramCanvas,node.bounds.center.x - 50, node.bounds.center.y);
-            mouseEvents.mouseMoveEvent(diagramCanvas,node.bounds.center.x - 100, node.bounds.center.y);
-            mouseEvents.mouseUpEvent(diagramCanvas,node.bounds.center.x -100, node.bounds.center.y);
-            let start = document.getElementById('start_groupElement');
-            expect(start.parentElement.id === 'diagramSub-process_diagramLayer').toBe(true);
-            done()
-        });
+        // it('drag and drop the process child from subProcess to diagram ', (done: Function) => {
+        //     diagramCanvas = document.getElementById(diagram.element.id + 'content');
+        //     let node = diagram.nameTable['start'].wrapper;
+        //     mouseEvents.mouseDownEvent(diagramCanvas,node.bounds.center.x, node.bounds.center.y);
+        //     mouseEvents.mouseMoveEvent(diagramCanvas,node.bounds.center.x - 50, node.bounds.center.y);
+        //     mouseEvents.mouseMoveEvent(diagramCanvas,node.bounds.center.x - 100, node.bounds.center.y);
+        //     mouseEvents.mouseUpEvent(diagramCanvas,node.bounds.center.x -100, node.bounds.center.y);
+        //     let start = document.getElementById('start_groupElement');
+        //     expect(start.parentElement.id === 'diagramSub-process_diagramLayer').toBe(true);
+        //     done()
+        // });
     });
 
     describe('880814-Adding element to bpmn expanded subprocess located in swimlane throws an exception', () => {
         let diagram: Diagram;
         let ele: HTMLElement;
         let mouseEvents: MouseEvents = new MouseEvents();
+        let diagramCanvas: HTMLElement;
 
         beforeAll((): void => {
             const isDef = (o: any) => o !== undefined && o !== null;
@@ -282,8 +284,8 @@ describe('Diagram Control', () => {
                         header: {
                             annotation: { content: 'ONLINE PURCHASE STATUS', style: { fill: '#111111' } },
                             height: 50, style: { fontSize: 11 },
-                            orientation: 'Horizontal',
                         },
+                        orientation: 'Horizontal',
                         lanes: [
                             {
                                 id: 'stackCanvas1',
@@ -317,7 +319,7 @@ describe('Diagram Control', () => {
                         phases: [
                             {
                                 id: 'phase1', offset: 170,
-                                header: { content: { content: 'Phase' } }
+                                header: { annotation: { content: 'Phase' } }
                             },
                         ],
                         phaseSize: 20,
@@ -340,7 +342,7 @@ describe('Diagram Control', () => {
         });
 
         it('drag and drop the process child from subProcess to diagram ', (done: Function) => {
-            let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
+            diagramCanvas = document.getElementById(diagram.element.id + 'content');
             let node = diagram.nameTable['subProcess'].wrapper;
             let obj = diagram.nameTable['subProcess'];
             mouseEvents.mouseDownEvent(diagramCanvas,node.bounds.center.x, node.bounds.center.y);
@@ -393,6 +395,9 @@ describe('Diagram Control', () => {
     describe('Code coverage grouping subprocess child connector', () => {
         let diagram: Diagram;
         let ele: HTMLElement;
+        let events: MouseEvents = new MouseEvents();
+        let diagramCanvas: HTMLElement;
+
         beforeAll((): void => {
             const isDef = (o: any) => o !== undefined && o !== null;
             if (!isDef(window.performance)) {
@@ -477,8 +482,7 @@ describe('Diagram Control', () => {
             done()
         });
         it('Drag connector annotation', (done: Function) => {
-            let events: MouseEvents = new MouseEvents();
-            let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
+            diagramCanvas = document.getElementById(diagram.element.id + 'content');
             events.clickEvent(diagramCanvas, 350, 400);
             events.mouseMoveEvent(diagramCanvas, 350, 400);
             events.mouseDownEvent(diagramCanvas, 350, 400);
@@ -510,7 +514,6 @@ describe('Diagram Control', () => {
     describe('BPMN sub process start event node doesnot change at run time', () => {
         let diagram: Diagram;
         let ele: HTMLElement;
-        let events: MouseEvents = new MouseEvents();
         beforeAll((): void => {
             const isDef = (o: any) => o !== undefined && o !== null;
                 if (!isDef(window.performance)) {

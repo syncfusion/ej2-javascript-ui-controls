@@ -1,15 +1,18 @@
+@use 'ej2-base/styles/common/mixin' as *;
+@use './theme-variables' as *;
+@use 'ej2-grids/styles/grid/theme-variables' as grid-theme-vars;
 @include export-module('grid-chart-layout') {
 
   #{&}.e-grid-context-menu-dialog {
 
     .e-dlg-content {
-      @if $grid-skin == 'fluent' {
+      @if grid-theme-vars.$grid-skin == 'fluent' {
         padding-bottom: 16px;
       }
     }
 
     &.e-dialog .e-grid-chart-min-max-btn.e-btn {
-      @if $grid-skin =='bootstrap5.3' or $grid-skin == 'bootstrap5' {
+      @if grid-theme-vars.$grid-skin =='bootstrap5.3' or grid-theme-vars.$grid-skin == 'bootstrap5' {
         margin: 0 8px;
       }
     }
@@ -17,20 +20,20 @@
     &.e-dialog .e-btn .e-btn-icon {
       &.e-grid-chart-min-icon,
       &.e-grid-chart-max-icon {
-        @if $grid-skin =='tailwind3' or $grid-skin =='bootstrap5.3' or $grid-skin == 'bootstrap5' {
+        @if grid-theme-vars.$grid-skin =='tailwind3' or grid-theme-vars.$grid-skin =='bootstrap5.3' or grid-theme-vars.$grid-skin == 'bootstrap5' {
           font-size: 12px;
         }
 
-        @if $grid-skin =='tailwind3' {
+        @if grid-theme-vars.$grid-skin =='tailwind3' {
           margin-left: -10px;
           margin-top: -21.5px;
         }
 
-        @if $grid-skin =='bootstrap5.3' {
+        @if grid-theme-vars.$grid-skin =='bootstrap5.3' {
           margin-top: -6.5px;
         }
 
-        @if $grid-skin =='bootstrap5' {
+        @if grid-theme-vars.$grid-skin =='bootstrap5' {
           margin-top: -15.5px;
         }
       }
@@ -97,7 +100,7 @@
       font-weight: normal;
     }
     
-    @if $grid-skin =='material3' {
+    @if grid-theme-vars.$grid-skin =='material3' {
       .e-grid-dialog-format-tab-container .e-accordion .e-acrdn-item .e-acrdn-header {
         margin: 5px;
         padding: 8px 7px;
@@ -139,7 +142,7 @@
       &.e-dialog .e-btn .e-btn-icon {
         &.e-grid-chart-min-icon,
         &.e-grid-chart-max-icon {
-          @if $grid-skin =='tailwind3' {
+          @if grid-theme-vars.$grid-skin =='tailwind3' {
             margin-left: 0;
             margin-right: -10px;
           }

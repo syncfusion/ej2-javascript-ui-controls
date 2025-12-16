@@ -1,3 +1,6 @@
+@use 'ej2-base/styles/common/mixin' as *;
+@use './theme-variables' as *;
+@use 'styles/pivotfieldlist/theme-variables' as error-font;
 @mixin wrap-styles {
   /* stylelint-disable */
   background-color: $gray-600 !important;
@@ -16,25 +19,25 @@
 @include export-module('pivotview-layout') {
   .e-pivotview {
     &.sf-pivotview {
-      height: 100%;
+      height: $pivotgrid-width-100p;
 
       &.e-pivot-gbar {
-        min-width: 400px;
+        min-width: $pivotgrid-width-400;
       }
   
       &:not(.e-pivot-gbar) {
-        min-width: 310px;
+        min-width: $pivotgrid-width-310;
       }
     }
 
     &.e-dialog .e-dlg-header-content .e-btn.e-dlg-closeicon-btn {
       @if ($skin-name =='Material3') {
-        padding: 0;
+        padding: $pivotgrid-padding-0;
       }
     }
 
     .e-pivot-view-port {
-      height: inherit;
+      height: $pivotgrid-height-inherit;
       display: flex;
       flex-direction: column;
 
@@ -47,7 +50,7 @@
       }
 
       .e-pivot-chart-view {
-        height: inherit;
+        height: $pivotgrid-height-inherit;
         
         .e-multi-axis-scroll-div {
           overflow: auto;
@@ -77,9 +80,9 @@
     .e-member-editor-dialog,
     .e-group-field-settings,
     .e-pivot-format-dialog {
-      max-height: 450px !important;
+      max-height: $pivotgrid-height-450 !important;
       border-radius: $pivotgrid-default-border-radius;
-      max-width: 400px !important;
+      max-width: $pivotgrid-width-400 !important;
     }
 
     /* stylelint-enable */
@@ -90,15 +93,15 @@
 
       .e-field-name-title {
         flex: none;
-        font-size: 13px;
-        font-weight: 500;
+        font-size: $pivotview-dialog-text-font-size;
+        font-weight: $pivotview-font-weight-medium;
       }
 
       .e-field-name-content {
         flex: auto;
-        font-size: 13px;
-        font-weight: 500;
-        width: 100%;
+        font-size: $pivotview-dialog-text-font-size;
+        font-weight: $pivotview-font-weight-medium;
+        width: $pivotgrid-width-100p;
       }
 
       .e-caption-input-container,
@@ -111,23 +114,23 @@
       .e-base-field-option-text,
       .e-base-item-option-text,
       .e-type-option-text {
-        font-size: 13px;
-        font-weight: 500;
-        width: 100%;
+        font-size: $pivotview-dialog-text-font-size;
+        font-weight: $pivotview-font-weight-medium;
+        width: $pivotgrid-width-100p;
 
         @if ($skin-name =='tailwind') or ($skin-name =='bootstrap5') or ($skin-name =='FluentUI') {
-          padding-bottom: 4px;
+          padding-bottom: $pivotgrid-padding-4;
         }
       }
 
       .e-caption-input-text {
-        font-size: 13px;
+        font-size: $pivotview-dialog-text-font-size;
       }
     }
 
     .e-group-field-settings {
       /* stylelint-disable */
-      width: auto !important;
+      width: $pivotgrid-width-auto !important;
       /* stylelint-enable */
 
       .e-caption-option-text,
@@ -145,9 +148,9 @@
       .e-input-option-text,
       .e-group-inerval-option-text,
       .e-checkbox-wrapper .e-label {
-        font-size: 13px;
-        font-weight: 500;
-        width: 100%;
+        font-size: $pivotview-dialog-text-font-size;
+        font-weight: $pivotview-font-weight-medium;
+        width: $pivotgrid-width-100p;
       }
 
       .e-group-input-container,
@@ -157,12 +160,12 @@
       }
 
       .e-group-field-div-content {
-        margin-bottom: 10px;
+        margin-bottom: $pivotgrid-margin-10;
       }
     }
 
     .e-member-editor-dialog {
-      min-width: 320px;
+      min-width: $pivotgrid-width-320;
 
       .e-editor-search-container {
         display: flex;
@@ -173,10 +176,10 @@
         }
       }
 
-      @if ($pivotgrid-skin =='bootstrap4') or ($skin-name =='bootstrap5') or ($skin-name =='tailwind') {
+      @if ($skin-name =='bootstrap4') or ($skin-name =='bootstrap5') or ($skin-name =='tailwind') {
         &:not(.e-excel-filter) {
           .e-editor-search-container {
-            padding: 5px $pivotgrid-editor-search-padding-size 10px;
+            padding: $pivotgrid-padding-5 $pivotgrid-editor-search-padding-size $pivotgrid-padding-10;
           }
         }
       }
@@ -186,37 +189,37 @@
         margin-left: $pivotgrid-sort-wrapper-padding-size;
 
         .e-member-sort {
-          @if ($pivotgrid-skin =='bootstrap4') {
+          @if ($skin-name =='bootstrap4') {
             background-color: $content-bg;
             border-color: $gray-400;
             color: $gray-700;
           }
 
           @if ($skin-name =='Material3') {
-            border: 1px solid $pivotgrid-border;
+            border: $pivotgrid-border-1 solid $pivotgrid-border;
             border-radius: $pivotgrid-member-sort-border-radius;
-            min-width: 40px;
+            min-width: $pivotgrid-width-40;
           }
 
           &:hover {
-            @if ($pivotgrid-skin =='bootstrap4') {
+            @if ($skin-name =='bootstrap4') {
               @include wrap-styles;
             }
           }
 
           &.e-active {
-            @if ($pivotgrid-skin =='bootstrap4') {
+            @if ($skin-name =='bootstrap4') {
               @include active-wrap-styles;
             }
           }
 
           .e-sort-ascend-icon,
           .e-sort-descend-icon {
-            font-size: 16px;
+            font-size: $pivotview-font-icon-16;
           }
 
           &:focus {
-            @if ($pivotgrid-skin =='bootstrap4') {
+            @if ($skin-name =='bootstrap4') {
               @include wrap-styles;
             }
 
@@ -230,9 +233,9 @@
       }
 
       .e-member-prompt {
-        padding: 15px $pivotgrid-editor-search-padding-size;
+        padding: $pivotgrid-padding-15 $pivotgrid-editor-search-padding-size;
         text-align: center;
-        width: 100%;
+        width: $pivotgrid-width-100p;
       }
 
       .e-select-all-container {
@@ -243,7 +246,7 @@
         
         @if ($skin-name =='fluent2' or $skin-name =='tailwind3') {
           .e-select-all {
-            border: none;
+            border: $pivotgrid-border-none;
           }
         }
       }
@@ -251,17 +254,17 @@
       .e-member-editor-container-outer-div {
         display: inline-block;
         height: $pivotgrid-member-filter-list-height;
-        max-width: 400px;
+        max-width: $pivotgrid-width-400;
         overflow: auto;
-        width: 100%;
+        width: $pivotgrid-width-100p;
       }
 
       .e-member-editor-container {
         display: inline-table;
-        width: 100%;
+        width: $pivotgrid-width-100p;
 
         @if ($skin-name =='fluent2' or $skin-name =='tailwind3') {
-          border: none;
+          border: $pivotgrid-border-none;
         }
 
         &.e-olap-field-list-tree {
@@ -272,7 +275,7 @@
       ul li .e-text-content .e-checkbox-wrapper {
         @if ($skin-name =='Material3') {
           /* stylelint-disable */
-          margin: 0 !important;
+          margin: $pivotgrid-margin-0 !important;
           /* stylelint-enable */
         }
 
@@ -294,20 +297,20 @@
           }
 
           .e-list-icon {
-            margin: 0;
+            margin: $pivotgrid-margin-0;
           }
         }
       }
 
       .e-excelfilter {
-        padding-top: 20px;
+        padding-top: $pivotgrid-padding-20;
 
         @if ($skin-name =='tailwind') {
-          padding-top: 12px;
+          padding-top: $pivotgrid-padding-12;
         }
 
         @if ($skin-name =='tailwind3') {
-          padding-top: 16px;
+          padding-top: $pivotgrid-padding-16;
         }
 
         .e-member-editor-container-outer-div {
@@ -323,25 +326,25 @@
       .e-value-filter {
         height: $pivotgrid-excel-filter-height;
         overflow: auto;
-        padding: 20px;
-        padding-bottom: 0;
+        padding: $pivotgrid-padding-20;
+        padding-bottom: $pivotgrid-padding-0;
 
         .e-filter-text-div {
           /* stylelint-disable */
           color: $pivotview-grid-header-font-color !important;
           /* stylelint-enable */
-          font-size: 13px;
-          font-weight: 500;
+          font-size: $pivotview-dialog-text-font-size;
+          font-weight: $pivotview-font-weight-medium;
         }
 
         .e-filter-option-container-1,
         .e-filter-option-container-2,
         .e-separator-div {
-          padding-top: 20px;
+          padding-top: $pivotgrid-padding-20;
         }
 
         .e-between-text-div {
-          padding: 8px 0;
+          padding: $pivotgrid-padding-8 $pivotgrid-padding-0;
         }
 
         .e-disable {
@@ -349,16 +352,16 @@
         }
 
         @if ($skin-name =='tailwind') {
-          padding-top: 0;
+          padding-top: $pivotgrid-padding-0;
         }
       }
 
       .e-filter-tab-container {
-        border: none;
+        border: $pivotgrid-border-none;
 
         .e-tab-header {
           .e-toolbar-item .e-icon-left + .e-tab-text {
-            margin: 0 0 0 6px;
+            margin: $pivotgrid-margin-0 $pivotgrid-margin-0 $pivotgrid-margin-0 $pivotgrid-margin-6;
           }
 
           .e-text-wrap {
@@ -366,7 +369,7 @@
               height: fit-content;
 
               &::before {
-                font-size: 14px;
+                font-size: $pivotview-font-icon-14;
                 /* stylelint-disable */
                 top: 0 !important;
                 /* stylelint-enable */
@@ -378,7 +381,7 @@
         &.e-rtl {
           .e-tab-header {
             .e-toolbar-item .e-icon-left + .e-tab-text {
-              margin: 0 6px 0 0;
+              margin: $pivotgrid-margin-0 $pivotgrid-margin-6 $pivotgrid-margin-0 $pivotgrid-margin-0;
             }
           }
         }
@@ -391,11 +394,11 @@
 
       .e-clear-filter-button {
         float: left;
-        margin: 0 !important;
+        margin: $pivotgrid-margin-0 !important;
 
         @if ($skin-name =='FluentUI') {
-          margin-left: 0 !important;
-          margin-right: 0 !important;
+          margin-left: $pivotgrid-margin-0 !important;
+          margin-right: $pivotgrid-margin-0 !important;
         }
 
         &.e-disable {
@@ -408,7 +411,7 @@
         background: $pivotgrid-editor-label-fill;
         display: flex !important;
         /* stylelint-enable */
-        height: 40px;
+        height: $pivotgrid-height-40;
         justify-content: center;
         opacity: $pivotgrid-editor-label-excel-opacity;
 
@@ -421,13 +424,15 @@
         }
 
         &.e-label-container-hide {
-          display: none;
+          /* stylelint-disable */
+          display: none !important;
+          /* stylelint-enable */
         }
 
         .e-editor-label {
           color: $pivotgrid-editor-label-color;
           font: $pivotgrid-editor-label-font;
-          margin-bottom: 0;
+          margin-bottom: $pivotgrid-margin-0;
           opacity: $pivotgrid-editor-label-opacity;
           overflow: hidden;
           text-overflow: ellipsis;
@@ -439,13 +444,13 @@
         .e-member-editor-outer-container {
           .e-editor-search-container {
             .e-filter-sort {
-              margin-left: 0;
+              margin-left: $pivotgrid-margin-0;
               margin-right: $pivotgrid-sort-wrapper-padding-size;
             }
           }
 
           ul {
-            margin-left: 0;
+            margin-left: $pivotgrid-margin-0;
             margin-right: $pivotgrid-member-filter-list-padding-size;
           }
         }
@@ -453,7 +458,7 @@
         .e-footer-content {
           .e-clear-filter-button {
             float: right;
-            margin: 0;
+            margin: $pivotgrid-margin-0;
           }
         }
       }
@@ -463,17 +468,17 @@
 
           .e-select-all-container ul,
           .e-member-editor-container ul {
-            margin-left: 0;
+            margin-left: $pivotgrid-margin-0;
           }
 
           .e-treeview ul:first-child {
-            padding-left: 10px;
-            padding-right: 10px;
+            padding-left: $pivotgrid-padding-10;
+            padding-right: $pivotgrid-padding-10;
           }
 
           .e-editor-search-container {
             .e-level-drop {
-              margin: 0 5px;
+              margin: $pivotgrid-margin-0 $pivotgrid-margin-5;
 
               .e-caret {
                 font-size: $pivotgrid-button-icon-size;
@@ -490,7 +495,7 @@
         &.e-rtl {
           .e-member-editor-outer-container {
             ul {
-              margin-right: 0;
+              margin-right: $pivotgrid-margin-0;
             }
           }
         }
@@ -500,14 +505,14 @@
       .e-member-editor-outer-container:not(.e-excelfilter) {
         .e-editor-search-container {
           @if ($skin-name !='tailwind3') {
-            padding-top: 4px !important;
+            padding-top: $pivotgrid-padding-4 !important;
           }       
         }
 
         @if ($skin-name =='fluent2' or $skin-name =='tailwind3') {
           .e-select-all-container {
             .e-select-all {
-              border: none;
+              border: $pivotgrid-border-none;
             }   
           }
         }
@@ -520,14 +525,14 @@
     .e-group-field-settings {
 
       .e-dlg-header-content {
-        border: 0;
+        border: $pivotgrid-border-0;
         border-radius: $pivotgrid-default-border-radius;
-        font-weight: normal;
+        font-weight: $pivotview-font-weight-normal;
       }
 
       .e-footer-content {
-        border-top-left-radius: 0;
-        border-top-right-radius: 0;
+        border-top-left-radius: $pivotgrid-radius-0;
+        border-top-right-radius: $pivotgrid-radius-0;
 
         @if ($skin-name !='FluentUI') and ($skin-name !='tailwind3') {
           padding-top: $pivotgrid-editor-dialog-footer-padding;
@@ -543,15 +548,15 @@
         overflow: hidden;
 
         @if ($skin-name =='Material3') {
-          border-radius: 0;
+          border-radius: $pivotgrid-radius-0;
         }
 
         .e-empty-field::-webkit-input-placeholder,
         .e-empty-field:-moz-placeholder,
         .e-empty-field::-moz-placeholder,
         .e-empty-field:-ms-input-placeholder {
-          color: $error-font-color !important;
-          font-weight: 600 !important;
+          color: error-font.$error-font-color !important;
+          font-weight: $pivotview-font-weight-semibold !important;
         }
       }
     }
@@ -560,12 +565,12 @@
     .e-pivot-format-dialog {
       .e-dlg-content {
         @if ($skin-name !='FluentUI') {
-          padding: 0;
+          padding: $pivotgrid-padding-0;
         }
 
         @if ($skin-name =='FluentUI') {
-          padding-left: 0 !important;
-          padding-right: 0 !important;
+          padding-left: $pivotgrid-padding-0 !important;
+          padding-right: $pivotgrid-padding-0 !important;
         }
       }
     }
@@ -577,71 +582,71 @@
         border-top: $pivotgrid-border-size $pivotgrid-border-type $pivotgrid-default-border-color;
 
         @if ($skin-name =='FluentUI') {
-          border-top: 0;
+          border-top: $pivotgrid-border-0;
         }
       }
     }
 
     .e-value-field-settings,
     .e-pivot-format-dialog {
-      min-width: 300px;
+      min-width: $pivotgrid-width-300;
 
       .e-dlg-content {
         overflow: auto;
 
         @if ($skin-name =='tailwind') {
-          padding-top: 12px;
+          padding-top: $pivotgrid-padding-12;
         }
       }
     }
 
     .e-pivotchart-type-dialog {
       /* stylelint-disable */
-      max-width: 350px !important;
-      max-height: 420px !important;
+      max-width: $pivotgrid-width-350 !important;
+      max-height: $pivotgrid-height-420 !important;
       /* stylelint-enable */
 
       .e-chart-type-option-container,
       .e-chart-type-option-text {
-        padding-bottom: 20px;
+        padding-bottom: $pivotgrid-padding-20;
 
         .e-chart-type-option-text {
-          padding-bottom: 5px;
+          padding-bottom: $pivotgrid-padding-5;
         }
       }
 
       .e-multiple-axes-mode-container {
-        padding-top: 20px;
+        padding-top: $pivotgrid-padding-20;
 
         .e-multiple-axes-mode-text {
-          padding-bottom: 5px;
+          padding-bottom: $pivotgrid-padding-5;
         }
       }
 
       .e-dialog-multiple-axis,
       .e-dialog-show-legend {
-        width: 49%;
+        width: $pivotgrid-width-49p;
       }
     }
 
     .e-pivot-format-dialog {
       /* stylelint-disable */
-      max-height: 570px !important;
-      max-width: 350px !important;
+      max-height: $pivotgrid-height-570 !important;
+      max-width: $pivotgrid-width-350 !important;
       /* stylelint-enable */
 
       .e-pivot-format-dialog-outer {
-        padding: 0 $pivotgrid-editor-search-padding-size;
+        padding: $pivotgrid-padding-0 $pivotgrid-editor-search-padding-size;
 
         .e-pivot-format-value-lable,
         .e-pivot-format-lable,
         .e-pivot-format-custom-lable,
         .e-pivot-format-grouping-lable,
         .e-pivot-format-decimal-lable {
-          font-weight: 500;
+          font-weight: $pivotview-font-weight-medium;
 
           @if ($skin-name =='tailwind') or ($skin-name =='bootstrap5') or ($skin-name =='FluentUI') {
-            padding-bottom: 4px;
+            padding-bottom: $pivotgrid-padding-4;
           }
         }
 
@@ -650,10 +655,10 @@
         .e-pivot-format-custom-text,
         .e-pivot-format-grouping-drop,
         .e-pivot-format-decimal-drop {
-          margin-bottom: 20px;
+          margin-bottom: $pivotgrid-margin-20;
 
           @if ($skin-name =='tailwind') {
-            margin-bottom: 12px;
+            margin-bottom: $pivotgrid-margin-12;
           }
         }
       }
@@ -664,11 +669,11 @@
       box-sizing: border-box !important;
       /* stylelint-enable */
       background: $pivotgrid-grp-bg-color;
-      border-bottom: 0;
+      border-bottom: $pivotgrid-border-0;
       border-style: solid;
 
       @if ($skin-name =='tailwind3') {
-        border-radius: 0;
+        border-radius: $pivotgrid-radius-0;
       }
 
       @if ($skin-name =='FluentUI') {
@@ -676,15 +681,15 @@
       }
 
       @if ($skin-name =='fluent2') {
-        border-top: 1px solid $pivotgrid-border-color;
-        border-left: 1px solid $pivotgrid-border-color;
-        border-right: 1px solid $pivotgrid-border-color;
+        border-top: $pivotgrid-border-1 solid $pivotgrid-border-color;
+        border-left: $pivotgrid-border-1 solid $pivotgrid-border-color;
+        border-right: $pivotgrid-border-1 solid $pivotgrid-border-color;
       }
 
       @if ($skin-name =='bootstrap5') or ($skin-name =='bootstrap5.3') or ($skin-name =='tailwind') or ($skin-name =='tailwind3') or ($skin-name =='FluentUI') or ($skin-name =='Material3') {
-        border-top: 1px solid $pivotgrid-border;
-        border-left: 1px solid $pivotgrid-border;
-        border-right: 1px solid $pivotgrid-border;
+        border-top: $pivotgrid-border-1 solid $pivotgrid-border;
+        border-left: $pivotgrid-border-1 solid $pivotgrid-border;
+        border-right: $pivotgrid-border-1 solid $pivotgrid-border;
       }
 
       .e-toolbar-items {
@@ -695,7 +700,7 @@
         .e-tbar-btn.e-btn {
           .e-icons.e-btn-icon {
             @if ($skin-name !='bootstrap5') and ($skin-name !='tailwind') and ($skin-name !='FluentUI') and ($skin-name !='Material3') {
-              font-size: 16px;
+              font-size: $pivotview-font-icon-16;
             }
           }
         }
@@ -706,10 +711,10 @@
 
       .e-pivot-toolbar-menu {
         background-color: $pivotgrid-table-background-color;
-        border: none;
+        border: $pivotgrid-border-none;
 
         @if ($skin-name =='fluent2' or $skin-name =='tailwind3') {
-          margin-bottom: 4px;
+          margin-bottom: $pivotgrid-margin-4;
         }
 
         ul .e-menu-item {
@@ -719,21 +724,21 @@
             /* stylelint-enable */
           }
           overflow: hidden;
-          padding-left: 10px;
+          padding-left: $pivotgrid-padding-10;
 
           .e-menu-icon {
-            margin-left: 0;
-            margin-right: 0;
+            margin-left: $pivotgrid-margin-0;
+            margin-right: $pivotgrid-margin-0;
 
             @if ($skin-name !='bootstrap5') and ($skin-name !='tailwind') and ($skin-name !='fluent2'){
-              font-size: 16px;
+              font-size: $pivotview-font-icon-16;
             }
 
-            @if ($pivotgrid-skin =='bootstrap4') {
+            @if ($skin-name =='bootstrap4') {
               color: $gray-700;
             }
 
-            @if ($pivotgrid-skin =='FluentUI') {
+            @if ($skin-name =='FluentUI') {
               color: $pivotgrid-active-color;
             }
 
@@ -742,20 +747,20 @@
             }
 
             @if ($skin-name =='FluentUI') {
-              line-height: 28px;
+              line-height: $pivotgrid-line-height-xl;
             }
 
             @if ($skin-name =='tailwind') {
-              line-height: 40px;
+              line-height: $pivotgrid-line-height-4xl;
             }
           }
 
           .e-caret {
-            @if ($pivotgrid-skin =='bootstrap4') {
+            @if ($skin-name =='bootstrap4') {
               color: $gray-700;
             }
 
-            @if ($pivotgrid-skin =='FluentUI') {
+            @if ($skin-name =='FluentUI') {
               color: $pivotgrid-active-color;
             }
 
@@ -764,13 +769,13 @@
             }
 
             @if ($skin-name =='tailwind') {
-              line-height: 40px;
+              line-height: $pivotgrid-line-height-4xl;
             }
           }
         }
 
         ul .e-menu-item.e-focused {
-          @if ($pivotgrid-skin =='bootstrap4') {
+          @if ($skin-name =='bootstrap4') {
             background-color: $gray-600;
             border-radius: $pivotgrid-default-border-radius;
           }
@@ -781,11 +786,11 @@
 
           .e-menu-icon,
           .e-icons {
-            @if ($pivotgrid-skin =='bootstrap4') {
+            @if ($skin-name =='bootstrap4') {
               color: $white;
             }
 
-            @if ($pivotgrid-skin =='FluentUI') {
+            @if ($skin-name =='FluentUI') {
               color: $pivotgrid-active-color;
             }
           }
@@ -793,9 +798,9 @@
 
         /* stylelint-disable */
         ul.e-menu {
-          @if ($pivotgrid-skin =='fabric') or ($pivotgrid-skin =='fabric-dark') or ($pivotgrid-skin =='highcontrast') or ($pivotgrid-skin =='highcontrast-light') {
-            padding-left: 0 !important;
-            padding-right: 0 !important;
+          @if ($skin-name =='fabric') or ($skin-name =='fabric-dark') or ($skin-name =='highcontrast') or ($skin-name =='highcontrast-light') {
+            padding-left: $pivotgrid-padding-0 !important;
+            padding-right: $pivotgrid-padding-0 !important;
           }
         }
 
@@ -805,7 +810,7 @@
       }
 
       .e-tab .e-tab-header .e-toolbar-item.e-active {
-        margin-left: 18px !important;
+        margin-left: $pivotgrid-margin-18 !important;
       }
 
       .e-toolbar-item.e-template .e-toolbar-template-container {
@@ -816,19 +821,22 @@
       .e-toolbar-item:not(.e-separator):not(.e-spacer)
       {
         @if ($skin-name != 'Material3') {
-          padding: 0 !important;
+          padding: $pivotgrid-padding-0 !important;
         }
         /* stylelint-enable */
       }
 
       .e-reportlist-label {
         float: left;
-        font-weight: 500;
+        font-weight: $pivotview-font-weight-medium;
       }
 
       .e-reportlist-drop {
         float: right;
-        margin: 0 8px;
+        margin: $pivotgrid-margin-0 $pivotgrid-margin-8;
+        /* stylelint-disable */
+        width: $pivotgrid-width-150 !important;
+        /* stylelint-enable */
 
         @if ($skin-name =='Material3') {
           background: $pivotgrid-grp-bg-color;
@@ -846,8 +854,8 @@
 
         .e-pivot-toolbar-menu {
           ul .e-menu-item {
-            padding-left: 30px;
-            padding-right: 10px;
+            padding-left: $pivotgrid-padding-30;
+            padding-right: $pivotgrid-padding-10;
           }
         }
       }
@@ -874,54 +882,54 @@
   }
 
   .e-pivotview-report-inner {
-    padding-top: 10px;
+    padding-top: $pivotgrid-padding-10;
   }
 
   .e-pivotview-report-dialog {
     /* stylelint-disable */
-    max-width: 350px !important;
+    max-width: $pivotgrid-width-350 !important;
   }
 
   .e-mdx-query-content {
     background-color: $pivotgrid-table-background-color;
     color: $pivotgrid-default-font-color;
-    font-size: 14px;
-    font-weight: 500;
-    height: 200px;
-    margin-top: 5px;
-    padding: 5px 10px;
+    font-size: $pivotview-font-size-14;
+    font-weight: $pivotview-font-weight-medium;
+    height: $pivotgrid-height-200;
+    margin-top: $pivotgrid-margin-5;
+    padding: $pivotgrid-padding-5 $pivotgrid-padding-10;
     resize: none;
-    width: 100%;
+    width: $pivotgrid-width-100p;
   }
 
   .e-pivotview-mdx-dialog {
-    max-width: 500px !important;
+    max-width: $pivotgrid-width-500 !important;
   }
 
   /* stylelint-enable */
   .e-report-outer {
     display: inline-block;
-    width: 100%;
+    width: $pivotgrid-width-100p;
 
     @if ($skin-name =='FluentUI') {
-      padding-top: 1px;
+      padding-top: $pivotgrid-padding-1;
     }
   }
 
   .e-pivotview-report-label {
     float: left;
     margin-top: $pivotgrid-report-label-margin-top;
-    width: 40%;
+    width: $pivotgrid-width-40p;
 
     @if ($skin-name =='bootstrap5') {
-      padding-left: 12px;
+      padding-left: $pivotgrid-padding-12;
     }
   }
 
   /* stylelint-disable */
   .e-pivotview-report-input {
     float: right;
-    width: 60% !important;
+    width: $pivotgrid-width-60p !important;
   }
 
   #{if(&, "&", "*")}.e-rtl {
@@ -941,7 +949,7 @@
   .e-pivotview-png-export,
   .e-pivotview-jpeg-export,
   .e-pivotview-svg-export {
-    font-size: 18px !important;
+    font-size: $pivotview-font-icon-18 !important;
   }
 
   /* stylelint-enable */
@@ -955,10 +963,10 @@
 
   .e-drillthrough-dialog {
     .e-drillthrough-body-header-container {
-      margin-bottom: 20px;
+      margin-bottom: $pivotgrid-margin-20;
 
       @if ($skin-name =='bootstrap5') {
-        margin-bottom: 18px;
+        margin-bottom: $pivotgrid-margin-18;
       }
     }
 
@@ -969,7 +977,7 @@
 
     .e-drillthrough-body-header-value {
       color: $pivotgrid-drillthrough-header-value-font-color;
-      margin-right: 20px;
+      margin-right: $pivotgrid-margin-20;
     }
 
     /* stylelint-disable */

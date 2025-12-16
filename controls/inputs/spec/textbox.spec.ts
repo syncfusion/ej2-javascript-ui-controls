@@ -3380,4 +3380,65 @@ describe('TextBox ', () => {
             textboxObj.destroy();
          });
     });
+    describe('Icon template rendering', () => {
+        let textbox: any;
+        beforeEach(():void =>{
+            let ele: HTMLInputElement = <HTMLInputElement>createElement('input', {id: 'numeric'});
+            document.body.appendChild(ele);
+            textbox = new TextBox({ placeholder: 'Enter the value', floatLabelType: 'Auto',
+                prependTemplate: '<span class="e-icons e-user"></span>',
+                appendTemplate: '<span class="e-icons e-search"></span>'
+            });
+            textbox.appendTo('#numeric');
+        });
+        afterEach((): void =>{
+            if (textbox) {
+                textbox.destroy();
+            }
+            document.body.innerHTML = '';
+        });
+        it('prependTemplate rendering', () => {
+            expect(textbox.textboxWrapper.container.querySelector('.e-user')).not.toBe(null);
+        });
+        it('appendTemplate rendering', () => {
+            expect(textbox.textboxWrapper.container.querySelector('.e-search')).not.toBe(null);
+        });
+        it('Dynamic prependTemplate rendering', () => {
+            textbox.prependTemplate = '<span class="e-icons e-home"></span>';
+            textbox.dataBind();
+            expect(textbox.textboxWrapper.container.querySelector('.e-home')).not.toBe(null);
+        });
+        it('Dynamic appendTemplate rendering', () => {
+            textbox.appendTemplate = '<span class="e-icons e-close"></span>';
+            textbox.dataBind();
+            expect(textbox.textboxWrapper.container.querySelector('.e-close')).not.toBe(null);
+        });
+    });
+    describe('Icon template rendering', () => {
+        let textbox: any;
+        beforeEach(():void =>{
+            let ele: HTMLInputElement = <HTMLInputElement>createElement('input', {id: 'numeric'});
+            document.body.appendChild(ele);
+            textbox = new TextBox({ placeholder: 'Enter the value', floatLabelType: 'Auto', multiline: true,
+                prependTemplate: '<span class="e-icons e-user"></span>',
+                appendTemplate: '<span class="e-icons e-search"></span>'
+            });
+            textbox.appendTo('#numeric');
+        });
+        afterEach((): void =>{
+            if (textbox) {
+                textbox.destroy();
+            }
+            document.body.innerHTML = '';
+        });
+        it('icon template rendering', () => {
+            expect(textbox.textboxWrapper.container.querySelector('.e-user')).not.toBe(null);
+            expect(textbox.textboxWrapper.container.querySelector('.e-search')).not.toBe(null);
+        });
+        it('code coverage function', () => {
+            textbox.focusHandler();
+            textbox.focusOutHandler();
+            textbox.animationHandler();
+        });
+    });
 });

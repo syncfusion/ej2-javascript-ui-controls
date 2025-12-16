@@ -939,14 +939,18 @@ export class FocusStrategy {
             if (!content && !this.header) {
                 this.header = new HeaderFocus(this.parent);
             }
+            if (content && this.parent.pinnedTopRowModels.length) {
+                e.rows = this.parent.pinnedTopRowModels.concat(e.rows);
+            }
             const cFocus: IFocus = content ? this.content : this.header;
-            let frozenRow: number = this.parent.frozenRows;
+            let frozenRow: number = this.parent.frozenRows  || this.parent.pinnedTopRowModels.length;
             let batchLen: number = 0;
             if (frozenRow && this.parent.editSettings.mode === 'Batch') {
                 batchLen = this.parent.getHeaderContent().querySelectorAll('.e-insertedrow').length +
                     this.parent.getHeaderContent().querySelectorAll('.e-hiddenrow').length;
             }
-            if (!isNullOrUndefined(this.parent.groupSettings.columns) && this.parent.groupSettings.columns.length && frozenRow && content) {
+            if (!isNullOrUndefined(this.parent.groupSettings.columns) && this.parent.groupSettings.columns.length
+                && frozenRow && !this.parent.pinnedTopRecords.length && content) {
                 frozenRow = 0;
                 for (let i: number = 0; i < e.rows.length; i++) {
                     frozenRow++;
@@ -962,9 +966,10 @@ export class FocusStrategy {
                 rows = rows.filter((x: Row<Column>) => x.visible !== false);
             }
             const isRowTemplate: boolean = !isNullOrUndefined(this.parent.rowTemplate);
-            if (frozenRow && ((this.parent.editSettings.mode === 'Batch' && content && (e.name === 'batchDelete' ||  e.name === 'batchAdd' ||
+            if ((frozenRow && ((this.parent.editSettings.mode === 'Batch' && content && (e.name === 'batchDelete' ||  e.name === 'batchAdd' ||
                 e.name === 'batchCancel' || (e.args && (e.args.requestType === 'batchsave' )))) ||
-                (e.args && (e.args.requestType === 'delete' || e.args.requestType === 'save')))) {
+                (e.args && (e.args.requestType === 'delete' || e.args.requestType === 'save')))) ||
+                (e.args && (e.args.requestType === 'pin-row' || e.args.requestType === 'unpin-row'))) {
                 const matrixcs: number[][] = this.header.matrix.matrix;
                 const hdrLen: number = (<{ rows?: Row<Column>[] }>this.parent.headerModule).rows.length;
                 matrixcs.splice(hdrLen, matrixcs.length - hdrLen);
@@ -1556,7 +1561,7 @@ export class ContentFocus implements IFocus {
             rowIndex--;
             cellIndex = gObj.getColumnIndexByField(gObj.getVisibleColumns()[gObj.getVisibleColumns().length - 1].field);
         }
-        return !cell.classList.contains(literals.rowCell) && !cell.classList.contains('e-headercell') &&
+        return cell && !cell.classList.contains(literals.rowCell) && !cell.classList.contains('e-headercell') &&
         !cell.classList.contains('e-groupcaption') && !cell.classList.contains('e-filterbarcell') ?
             this.editNextRow(rowIndex, cellIndex, action) : [rowIndex, cellIndex];
     }
@@ -1849,8 +1854,8 @@ export class HeaderFocus extends ContentFocus implements IFocus {
         let target: HTMLTableCellElement = <HTMLTableCellElement>e.target;
         this.target = target;
         target = <HTMLTableCellElement>(target.classList.contains('e-headercell') ? target : closest(target, 'th'));
-        if (!target && (this.parent.frozenRows !== 0 || ((this.parent.enableVirtualization || this.parent.enableInfiniteScrolling) &&
-            this.parent.editSettings.showAddNewRow))) {
+        if (!target && (this.parent.frozenRows !== 0 || this.parent.pinnedTopRecords.length !== 0 ||
+            ((this.parent.enableVirtualization || this.parent.enableInfiniteScrolling) && this.parent.editSettings.showAddNewRow))) {
             target = <HTMLTableCellElement>((<HTMLElement>e.target).classList.contains(literals.rowCell) ? e.target :
                 closest(<Element>e.target, 'td'));
         }

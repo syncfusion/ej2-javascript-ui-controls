@@ -3,7 +3,7 @@ import { setAttributeSvg, createSvgElement } from '@syncfusion/ej2-drawings';
 import { PdfViewer } from '../index';
 
 /**
- * @param {ClientRect} bounds - Specified the bounds of the annotation.
+ * @param {DOMRect} bounds - Specified the bounds of the annotation.
  * @param {string} commonStyle  - Specified the annotation styles.
  * @param {HTMLElement} cavas  - Specified the annotation canvas element.
  * @param {number} index - Specified the page index value.
@@ -12,7 +12,7 @@ import { PdfViewer } from '../index';
  * @returns {void}
  */
 export function renderAdornerLayer(
-    bounds: ClientRect, commonStyle: string, cavas: HTMLElement, index: number, pdfViewer: PdfViewer): void {
+    bounds: DOMRect, commonStyle: string, cavas: HTMLElement, index: number, pdfViewer: PdfViewer): void {
     const divElement: HTMLElement = createHtmlElement('div', {
         'id': pdfViewer.element.id + index + '_diagramAdornerLayer',
         'style': 'width:' + bounds.width + 'px;height:' + bounds.height + 'px;' + commonStyle

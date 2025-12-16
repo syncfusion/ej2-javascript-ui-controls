@@ -1,4 +1,4 @@
-@import 'ej2-base/styles/definition/tailwind.scss';
-@import '../drop-down-list/tailwind-definition.scss';
-@import 'tailwind-definition.scss';
-@import 'all.scss';
+@use 'ej2-base/styles/definition/tailwind' as *;
+@use '../drop-down-list/tailwind-definition' as *;
+@use 'tailwind-definition' as *;
+@use 'all' as *;

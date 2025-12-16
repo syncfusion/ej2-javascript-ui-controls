@@ -2,7 +2,6 @@ import { createElement } from '@syncfusion/ej2-base';
 import { Diagram } from '../../../src/diagram/diagram';
 import { NodeModel, TextModel, FlowShapeModel, BasicShapeModel, PathModel, UmlActivityShapeModel } from '../../../src/diagram/objects/node-model';
 import { ConnectorModel } from '../../../src/diagram/objects/connector-model';
-import { Segments } from '../../../src/diagram/enum/enum';
 import { PointPortModel } from '../../../src/diagram/objects/port-model';
 import { profile, inMB, getMemoryProfile } from '../../../spec/common.spec';
 
@@ -70,7 +69,6 @@ describe('Diagram Control', () => {
         });
 
         it('Checking connections with flow shape', (done: Function) => {
-            let failure: boolean = false;
             let connector: ConnectorModel = diagram.connectors[0];
             expect(Math.round(connector.sourcePoint.x) === 100 && Math.round(connector.sourcePoint.y) === 200 &&
                 Math.round(connector.targetPoint.x) === 200 && Math.round(connector.targetPoint.y) === 300).toBe(true);
@@ -132,7 +130,6 @@ describe('Diagram Control', () => {
         });
 
         it('Checking connections with complex shapes', (done: Function) => {
-            let failure: boolean = false;
             let connector: ConnectorModel = diagram.connectors[0];
             expect(connector.sourcePoint.x === 116.26 && connector.sourcePoint.y === 232.52 &&
                 connector.targetPoint.x === 175 && connector.targetPoint.y === 350).toBe(true);
@@ -192,7 +189,6 @@ describe('Diagram Control', () => {
         });
 
         it('Checking connections with rotated shapes', (done: Function) => {
-            let failure: boolean = false;
             let connector: ConnectorModel = diagram.connectors[0];
             expect(connector.sourcePoint.x === 144.71 && connector.sourcePoint.y === 222.35 &&
                 connector.targetPoint.x === 255.17 && connector.targetPoint.y === 277.58).toBe(true);
@@ -266,7 +262,6 @@ describe('Diagram Control', () => {
         });
 
         it('Checking connections with complex path', (done: Function) => {
-            let failure: boolean = false;
             let connector: ConnectorModel = diagram.connectors[0];
             expect(Math.round(connector.sourcePoint.x) === 143 && Math.round(connector.sourcePoint.y) === 221 &&
                 Math.round(connector.targetPoint.x) === 276 && Math.round(connector.targetPoint.y) === 288).toBe(true);
@@ -340,7 +335,6 @@ describe('Diagram Control', () => {
         });
 
         it('Checking straight connection with path shape', (done: Function) => {
-            let failure: boolean = false;
             let connector: ConnectorModel = diagram.connectors[0];
             expect(Math.round(connector.sourcePoint.x) === 120 && Math.round(connector.sourcePoint.y) === 210 &&
                 Math.round(connector.targetPoint.x) === 276 && Math.round(connector.targetPoint.y) === 288).toBe(true);
@@ -348,6 +342,7 @@ describe('Diagram Control', () => {
         });
 
     });
+    
     describe('Connect the flow shape with orthogonal connector', () => {
         let diagram: Diagram;
         let ele: HTMLElement;
@@ -408,7 +403,6 @@ describe('Diagram Control', () => {
         });
 
         it('Checking orthogonal connection with flow shapes', (done: Function) => {
-            let failure: boolean = false;
             let connector: ConnectorModel = diagram.connectors[0];
             expect(connector.sourcePoint.x === 51.72 && connector.sourcePoint.y === 200 &&
                 connector.targetPoint.x === 250 && connector.targetPoint.y === 300).toBe(true);
@@ -470,7 +464,6 @@ describe('Diagram Control', () => {
             ele.remove();
         });
         it('Checking orthogonal connection with complex flow shapes', (done: Function) => {
-            let failure: boolean = false;
             let connector: ConnectorModel = diagram.connectors[0];
             expect(connector.sourcePoint.x === 300 && connector.sourcePoint.y === 240.3 &&
                 connector.targetPoint.x === 100 && connector.targetPoint.y === 350).toBe(true);
@@ -532,7 +525,6 @@ describe('Diagram Control', () => {
         });
 
         it('Checking orthogonal segment with basic shapes', (done: Function) => {
-            let failure: boolean = false;
             let connector: ConnectorModel = diagram.connectors[0];
             expect(connector.sourcePoint.x === 150 && connector.sourcePoint.y === 200 &&
                 connector.targetPoint.x === 250 && connector.targetPoint.y === 300).toBe(true);
@@ -600,7 +592,6 @@ describe('Diagram Control', () => {
         });
 
         it('Checking connections with node and right port', (done: Function) => {
-            let failure: boolean = false;
             let connector: ConnectorModel = diagram.connectors[0];
             expect(connector.sourcePoint.x === 51.72 && connector.sourcePoint.y === 200 &&
                 connector.targetPoint.x === 250 && connector.targetPoint.y === 300).toBe(true);
@@ -672,7 +663,6 @@ describe('Diagram Control', () => {
         });
 
         it('Checking connections with node and bottom port', (done: Function) => {
-            let failure: boolean = false;
             let connector: ConnectorModel = diagram.connectors[0];
             expect(connector.sourcePoint.x === 150 && connector.sourcePoint.y === 200 &&
                 connector.targetPoint.x === 300 && connector.targetPoint.y === 350).toBe(true);
@@ -735,14 +725,12 @@ describe('Diagram Control', () => {
         });
 
         it('Checking connections with node and right port', (done: Function) => {
-            let failure: boolean = false;
             let connector: ConnectorModel = diagram.connectors[0];
             expect(connector.sourcePoint.x === 350 && connector.sourcePoint.y === 300 &&
                 connector.targetPoint.x === 150 && connector.targetPoint.y === 300).toBe(true);
             done();
         });
         it('Checking default property at run time', (done: Function) => {
-            let failure: boolean = false;
             diagram.add({
                 id: 'connector111q',
                 type: 'Straight',

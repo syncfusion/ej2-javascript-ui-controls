@@ -1,3 +1,6 @@
+@use 'ej2-base/styles/definition/bootstrap5.3' as *;
+@forward 'ej2-base/styles/definition/bootstrap5.3';
+
 //layout variables
 $btn-font-size: $text-sm !default;
 $btn-border: 1px solid !default;
@@ -18,7 +21,7 @@ $btn-font-size: $text-sm !default;
 $btn-small-font-size: $text-xs !default;
 $btn-bigger-font-size: $text-base !default;
 $btn-bigger-small-font-size: $text-sm !default;
-$btn-border-radius: 4px !default;
+$btn-border-radius: $radius-4 !default;
 $btn-text-transform: none !default;
 $btn-icon-font-size: $text-base !default;
 $btn-small-icon-font-size: $text-xs !default;
@@ -357,3 +360,12 @@ $btn-success-focus-box-shadow: $success-shadow-focus !default;
 $btn-danger-focus-box-shadow: $danger-shadow-focus !default;
 $btn-info-focus-box-shadow: $info-shadow-focus !default;
 $btn-warning-focus-box-shadow: $warning-shadow-focus !default;
+$btn-zero-padding: 0 !default;
+$btn-top-bottom-icon-line-height: 1 !default;
+$btn-round-line-height: 1 !default;
+$btn-round-border-radius: $radius-full !default;
+$btn-auto-width: auto !default;
+$btn-width-full: 100% !default;
+$btn-bigger-border-radius: $radius-6 !default;
+$btn-zero-border: 0 !default;
+$btn-zero-line-height: 0 !default;

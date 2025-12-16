@@ -1,4 +1,6 @@
 @use 'sass:color';
+@use 'ej2-base/styles/definition/bootstrap4' as *;
+@forward 'ej2-base/styles/definition/bootstrap4';
 
 $switch-wrapper-width: 38px !default;
 $switch-wrapper-height: 16px !default;
@@ -139,3 +141,11 @@ $switch-bigger-small-ripple-height: 36px !default;
 $switch-bigger-small-ripple-left: -10px !default;
 $switch-bigger-small-ripple-top: -10px !default;
 $switch-bigger-small-ripple-width: 36px !default;
+$switch-ripple-border-radius: 50% !default;
+$switch-height: 1px !default;
+$switch-ripple-container-height: 52px !default;
+$switch-width: 1px !default;
+$switch-ripple-container-width: 52px !default;
+$switch-ripple-container-bottom: -9px !default;
+$switch-ripple-container-left: -17px !default;
+$switch-ripple-container-top: -17px !default;

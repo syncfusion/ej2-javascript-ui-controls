@@ -679,7 +679,7 @@ export class Filter implements IAction {
                     this.parent.notify(events.modelChanged, args);
                     if ((<{ cancel?: boolean }>args).cancel) {
                         if ((this.filterSettings.type === 'CheckBox' || this.filterSettings.type === 'Excel') &&
-                           !(this.column && this.column.filter && this.column.filter.type === 'Menu')) {
+                            !(this.column && this.column.filter && this.column.filter.type === 'Menu')) {
                             this.filterSettings.columns = (this.actualData.length <= 1) ? this.checkboxPrevFilterObject :
                                 this.checkboxFilterObject;
                             this.actualPredicate[this.column.field] = this.filterSettings.columns;
@@ -1037,7 +1037,7 @@ export class Filter implements IAction {
             && isNullOrUndefined(this.parent.element.querySelector('.e-filter-popup')) && !this.parent.enableAdaptiveUI) {
             const element: HTMLElement = gObj.focusModule.currentInfo.element;
             if (element && element.classList.contains('e-headercell') && !element.classList.contains('e-stackedheadercell')) {
-                const column: Column = gObj.getColumnByUid(element.firstElementChild.getAttribute('data-mappinguid'));
+                const column: Column = gObj.getColumnByUid(element.querySelector('.e-headercelldiv').getAttribute('data-mappinguid'));
                 this.openMenuByField(column.field);
                 this.parent.focusModule.clearIndicator();
             }
@@ -1396,7 +1396,7 @@ export class Filter implements IAction {
             this.parent.filterSettings.type === 'CheckBox' || this.parent.filterSettings.type === 'Excel')) {
             const gObj: IGrid = this.parent;
             const col: Column = gObj.getColumnByUid(
-                parentsUntil(target, 'e-headercell').firstElementChild.getAttribute('data-mappinguid'));
+                parentsUntil(target, 'e-headercell').querySelector('.e-headercelldiv').getAttribute('data-mappinguid'));
             this.column = col;
             if (this.fltrDlgDetails.field === col.field && this.fltrDlgDetails.isOpen) {
                 return;

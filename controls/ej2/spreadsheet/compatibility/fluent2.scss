@@ -3,7 +3,7 @@ $imported-modules: () !default;
 .e-lib {
     @at-root
     {
-        @import "../fluent2.scss";
+        @use "../fluent2" as *;
     }
 
     & .e-js [class^='e-'], & .e-js [class*=' e-'] {

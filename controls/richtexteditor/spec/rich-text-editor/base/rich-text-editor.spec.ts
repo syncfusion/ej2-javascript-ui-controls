@@ -8,7 +8,7 @@ import { ToolbarType, DialogType } from '../../../src/common/enum';
 import { NodeSelection } from '../../../src/selection/index';
 import { setEditFrameFocus } from '../../../src/common/util';
 import { renderRTE, destroy, dispatchKeyEvent, setCursorPoint as setCursor, clickImage, clickVideo, currentBrowserUA } from './../render.spec';
-import { ESCAPE_KEY_EVENT_INIT, SPACE_EVENT_INIT, TAB_KEY_EVENT_INIT, BACKSPACE_EVENT_INIT, DELETE_EVENT_INIT } from '../../constant.spec';
+import { ESCAPE_KEY_EVENT_INIT, SPACE_EVENT_INIT, TAB_KEY_EVENT_INIT, BACKSPACE_EVENT_INIT, DELETE_EVENT_INIT, ENTERKEY_EVENT_INIT } from '../../constant.spec';
 
 function setCursorPoint(curDocument: Document, element: Element, point: number) {
     let range: Range = curDocument.createRange();
@@ -896,7 +896,7 @@ describe('RTE Base module ', () => {
         });
 
         afterAll(() => {
-            document.head.getElementsByClassName('toolbar-style15017')[0].remove();
+            document.head.querySelectorAll('#toolbar-style15017')[0].remove();
         });
 
         describe('RTE without iframe', () => {
@@ -2293,6 +2293,7 @@ describe('RTE Base module ', () => {
                         items: ['Bold', 'Italic', 'Underline', 'Print']
                     },
                     value: `<div><p class='first-p'>First p node-0</p><p class='second-p'>First p node-1</p></div>`,
+                    enableClipboardCleanup: false,
                     actionComplete: ((args) => {
                         afterCount = true;
                     }),
@@ -3015,7 +3016,7 @@ describe('RTE Base module ', () => {
         });
         describe('RTE iframe - value property', () => {
             let rteObj: RichTextEditor;
-            beforeAll((done: Function) => {
+            beforeAll(() => {
                 rteObj = renderRTE({
                     value: ` <p><b>Description:</b></p>
                     <p>The Rich Text Editor (RTE) control is an easy to render in
@@ -3037,7 +3038,6 @@ describe('RTE Base module ', () => {
                         enable: true
                     }
                 });
-                done();
             });
             it('check textarea', () => {
                 expect(rteObj.valueContainer).not.toBe(null);
@@ -3058,13 +3058,12 @@ describe('RTE Base module ', () => {
         });
         describe('RTE - Public Methods', () => {
             let rteObj: RichTextEditor;
-            beforeAll((done: Function) => {
+            beforeAll(() => {
                 rteObj = renderRTE({
                     height: '200px',
                     width: '400px',
                     value: '<p> adsafasdfsd <span> fdsfds </span></p>'
                 });
-                done();
             });
             it('focus method', () => {
                 rteObj.focusIn();
@@ -3108,55 +3107,49 @@ describe('RTE Base module ', () => {
 
         describe('RTE - getXHTML Public Methods', () => {
             let rteObj: RichTextEditor;
-            beforeAll((done: Function) => {
+            beforeAll(() => {
                 rteObj = renderRTE({
                     enableXhtml: true,
                     value: `<head><base href="https://www.w3schools.com/" target="_blank"></head><p><b>Description: with space</b></p><br><p>hello</p><hr><p>hey</p><br/><p>Are you fine</p><img src="workplace.jpg" alt="Workplace" usemap="#workmap" width="400" height="379"><area shape="rect" coords="34,44,270,350" alt="Computer" href="computer.htm"><base href="https://www.w3schools.com/" target="_blank"><embed type="image/jpg" src="pic_trulli.jpg" width="300" height="200"><input type="submit" value="Submit"><link rel="stylesheet" href="styles.css"><object title = "Test Object." classid = "java.class"><param name = "audio" value = "music.wav" /><param name = "width" value = "600" /><param name = "height" value = "400" /></object><video width="320" height="240" controls><source src="forrest_gump.mp4" type="video/mp4"><source src="forrest_gump.ogg" type="video/ogg"><track src="fgsubtitles_en.vtt" kind="subtitles" srclang="en" label="English"><track src="fgsubtitles_no.vtt" kind="subtitles" srclang="no" label="Norwegian"></video><p>This is a veryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryvery<wbr>longwordthatwillbreakatspecific<wbr>placeswhenthebrowserwindowisresized.</p><table><colgroup><col span="2" style="background-color:red"><col style="background-color:yellow"></colgroup><tr><th>ISBN</th><th>Title</th><th>Price</th></tr><tr><td>3476896</td><td>My first HTML</td><td>$53</td></tr></table>`
                 });
-                done();
             });
             it('getHtml method', () => {
                 expect(rteObj.getXhtml()).toBe(`<base href="https://www.w3schools.com/" /><p><b>Description: with space</b></p><p><br/></p><p>hello</p><hr/><p>hey</p><p><br/></p><p>Are you fine</p><p><img src="workplace.jpg" alt="Workplace" usemap="#workmap" width="400" height="379" class="e-rte-image e-imginline" /></p><area shape="rect" coords="34,44,270,350" alt="Computer" href="computer.htm" /><base href="https://www.w3schools.com/" /><p><embed type="image/jpg" src="pic_trulli.jpg" width="300" height="200" /><input type="submit" value="Submit" /></p><link rel="stylesheet" href="styles.css" /><p><object title="Test Object." classid="java.class"><param name="audio" value="music.wav" /><param name="width" value="600" /><param name="height" value="400" /></object><video width="320" height="240" controls=""><source src="forrest_gump.mp4" type="video/mp4" /><source src="forrest_gump.ogg" type="video/ogg" /><track src="fgsubtitles_en.vtt" kind="subtitles" srclang="en" label="English" /><track src="fgsubtitles_no.vtt" kind="subtitles" srclang="no" label="Norwegian" /></video></p><p>This is a veryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryvery<wbr />longwordthatwillbreakatspecific<wbr />placeswhenthebrowserwindowisresized.</p><table class="e-rte-table"><colgroup><col span="2" style="background-color:red" /><col style="background-color:yellow" /></colgroup><tbody><tr><th>ISBN</th><th>Title</th><th>Price</th></tr><tr><td>3476896</td><td>My first HTML</td><td>$53</td></tr></tbody></table>`);
             });
-            afterAll((done) => {
+            afterAll(() => {
                 destroy(rteObj);
-                done();
             });
         });
 
         describe('RTE - xhtml enabled and attribute - ', () => {
             let rteObj: RichTextEditor;
-            beforeAll((done: Function) => {
+            beforeAll(() => {
                 rteObj = renderRTE({
                     enableXhtml: true,
                     value: `<p>ik ben een verhaal tje over <span contenteditable="false" class="e-mention-chip"><a id="19062C5E" title="Bruin">@Mila  Hendriksma</a></span>  en dat lijkt tot nu toe prima te gaan . <span contenteditable="false" class="e-mention-chip"><a id="09340DCE" title="Groen">@Shirley  Andela</a></span>  kwam ook nog even langs. <br/></p><p><br/></p>`
                 });
-                done();
             });
             it('checking when being added in the editor', () => {
                 let expectedValue: string = `<p>ik ben een verhaal tje over <span contenteditable="false" class="e-mention-chip"><a id="19062C5E" title="Bruin">@Mila Hendriksma</a></span> en dat lijkt tot nu toe prima te gaan . <span contenteditable="false" class="e-mention-chip"><a id="09340DCE" title="Groen">@Shirley Andela</a></span> kwam ook nog even langs. <br/></p><p><br/></p>`;
                 expect(rteObj.value === expectedValue).toBe(true);
             });
-            afterAll((done) => {
+            afterAll(() => {
                 destroy(rteObj);
-                done();
             });
         });
 
         describe('RTE - getHtml Public Methods', () => {
             let rteObj: RichTextEditor;
-            beforeAll((done: Function) => {
+            beforeAll(() => {
                 rteObj = renderRTE({
                     enableXhtml: true
                 });
-                done();
             });
             it('getHtml method when xhtml is enabled and RTE is empty', () => {
                 expect(rteObj.getHtml()).toBe(null);
             });
-            afterAll((done) => {
+            afterAll(() => {
                 destroy(rteObj);
-                done();
             });
         });
 
@@ -3275,7 +3268,7 @@ describe('RTE Base module ', () => {
 
         describe('EJ2-59865 - CSS class property', () => {
             let rteObj: RichTextEditor;
-            beforeAll((done: Function) => {
+            beforeAll(() => {
                 rteObj = renderRTE({
                     cssClass: 'myClass',
                     toolbarSettings: {
@@ -3290,33 +3283,37 @@ describe('RTE Base module ', () => {
                             'SourceCode', '|', 'ClearFormat', 'Print', 'InsertCode']
                     }
                 });
-                done();
             });
-            it('Ensure cssClass property for dropdownpopup', () => {
+            it('Ensure cssClass property for dropdownpopup', (done: DoneFn) => {
                 expect(rteObj.element.classList.contains('myClass')).toBe(true);
                 let allDropDownPopups: NodeListOf<Element> = document.querySelectorAll('.e-dropdown-popup');
-                for (let i: number = 0; i < allDropDownPopups.length; i++) {
-                    //expect(allDropDownPopups[i].classList.contains('myClass')).toBe(true);
-                }
+                setTimeout(() => {
+                    for (let i: number = 0; i < allDropDownPopups.length; i++) {
+                        expect(allDropDownPopups[i].classList.contains('myClass')).toBe(true);
+                    }
+                    done();
+                }, 100);
             });
-            it('change cssClass property dropdownpopup', () => {
+            it('change cssClass property dropdownpopup', (done: DoneFn) => {
                 rteObj.cssClass = 'textClass';
                 rteObj.dataBind();
                 let allDropDownPopups: NodeListOf<Element> = document.querySelectorAll('.e-dropdown-popup');
-                for (let i: number = 0; i < allDropDownPopups.length; i++) {
-                    // expect(allDropDownPopups[i].classList.contains('textClass')).toBe(true);
-                    // expect(allDropDownPopups[i].classList.contains('myClass')).toBe(false);
-                }
+                setTimeout(() => {
+                    for (let i: number = 0; i < allDropDownPopups.length; i++) {
+                        expect(allDropDownPopups[i].classList.contains('textClass')).toBe(true);
+                        expect(allDropDownPopups[i].classList.contains('myClass')).toBe(false);
+                    }
+                    done();
+                }, 100);
             });
-            afterAll((done) => {
+            afterAll(() => {
                 destroy(rteObj);
-                done();
             });
         });
 
         describe('EJ2-59865 - CSS class property in Inline toolbar', () => {
             let rteObj: RichTextEditor;
-            beforeAll((done: Function) => {
+            beforeAll(() => {
                 rteObj = renderRTE({
                     cssClass: 'myClass',
                     toolbarSettings: {
@@ -3335,7 +3332,6 @@ describe('RTE Base module ', () => {
                         onSelection: true
                     }
                 });
-                done();
             });
             it('Ensure cssClass property in inline toolbar', (done) => {
                 rteObj.value = '<p>RTE sample content</p><p id="p2">This is a sample content used in the RTE test cases</p><ol><li>list samples</li></ol>';
@@ -3347,13 +3343,13 @@ describe('RTE Base module ', () => {
                 expect(rteObj.element.classList.contains('myClass')).toBe(true);
                 expect(document.querySelector('.e-rte-quick-toolbar').classList.contains('myClass')).toBe(true);
                 let allDropDownPopups: NodeListOf<Element> = document.querySelectorAll('.e-dropdown-popup');
-                for (let i: number = 0; i < allDropDownPopups.length; i++) {
-                    setTimeout(() => {
+                setTimeout(() => {
+                    for (let i: number = 0; i < allDropDownPopups.length; i++) {
                         expect(allDropDownPopups[i].classList.contains('myClass')).toBe(true);
-                        done();
-                    }, 100);
-                }
-                rteObj.hideInlineToolbar();
+                    }
+                    rteObj.hideInlineToolbar();
+                    done();
+                }, 100);
             });
             it('through onproperty change cssClass property in inline toolbar', (done) => {
                 rteObj.hideInlineToolbar();
@@ -3366,17 +3362,16 @@ describe('RTE Base module ', () => {
                 rteObj.showInlineToolbar();
                 expect(document.querySelector('.e-rte-quick-toolbar').classList.contains('textClass')).toBe(true);
                 let allDropDownPopups: NodeListOf<Element> = document.querySelectorAll('.e-dropdown-popup');
-                for (let i: number = 0; i < allDropDownPopups.length; i++) {
-                    setTimeout(() => {
+                setTimeout(() => {
+                    for (let i: number = 0; i < allDropDownPopups.length; i++) {
                         expect(allDropDownPopups[i].classList.contains('textClass')).toBe(true);
                         expect(allDropDownPopups[i].classList.contains('myClass')).toBe(false);
-                        done();
-                    }, 100);
-                }
+                    }
+                    done();
+                }, 100);
             });
-            afterAll((done) => {
+            afterAll(() => {
                 destroy(rteObj);
-                done();
             });
         });
         describe('RTE Properties', () => {
@@ -6924,6 +6919,100 @@ describe('RTE Base module ', () => {
         });
     });
 
+    describe('984057: Console error when pressing Enter after selecting all content using Ctrl + A in Rich Text Editor', () => {
+        let rteObj: RichTextEditor;
+        beforeAll(() => {
+            rteObj = renderRTE({
+                value: `<h2>Welcome to the Syncfusion<sup>®</sup> Rich Text Editor</h2>
+<p>The Rich Text Editor, a WYSIWYG (what you see is what you get) editor, is a user interface that allows you to create, edit, and format rich text content. You can try out a demo of this editor here.</p>
+<h3>Do you know the key features of the editor?</h3>
+<ul>
+   <li>Basic features include headings, block quotes, numbered lists, bullet lists, and support to insert images, tables, audio, and video.</li>
+   <li>Inline styles include <b>bold</b>, <em>italic</em>, <span style="text-decoration: underline;">underline</span>, <span style="text-decoration: line-through;">strikethrough</span>, <a class="e-rte-anchor" title="https://ej2.syncfusion.com/javascript/demos/#/material/rich-text-editor/tools.html" href="https://ej2.syncfusion.com/javascript/demos/#/material/rich-text-editor/tools.html" aria-label="Open in new window">hyperlinks</a>,<code>InlineCode</code>, 😀 and more.</li>
+   <li>The toolbar has multi-row, expandable, and scrollable modes. The Editor supports an inline toolbar, a floating toolbar, and custom toolbar items.</li>
+   <li>Integration with Syncfusion<sup>® </sup><span class="e-mention-chip"><a title="sales@syncfusion.com">@mention</a></span> control lets users tag other users. To learn more, check out the <a class="e-rte-anchor" title="Mention Documentation" href="https://ej2.syncfusion.com/javascript/documentation/rich-text-editor/mention-integration" aria-label="Open in new window">documentation</a> and <a class="e-rte-anchor" title="Mention Demos" href="https://ej2.syncfusion.com/javascript/demos/#/material/rich-text-editor/mention-integration.html" aria-label="Open in new window">demos</a>.</li>
+   <li><b>Paste from MS Word</b> - helps to reduce the effort while converting the Microsoft Word content to HTML format with format and styles. To learn more, check out the documentation <a class="e-rte-anchor" title="Paste from MS Word Documentation" href="https://ej2.syncfusion.com/javascript/documentation/rich-text-editor/paste-cleanup" aria-label="Open in new window">here</a>.</li>
+   <li>Other features: placeholder text, character count, form validation, enter key configuration, resizable editor, IFrame rendering, tooltip, source code view, RTL mode, persistence, HTML Sanitizer, autosave, and <a class="e-rte-anchor" title="Rich Text Editor API" href="https://helpej2.syncfusion.com/documentation/api/rich-text-editor/" aria-label="Open in new window">more</a>.</li>
+</ul>
+<blockquote>
+   <p><em>Easily access Audio, Image, Link, Video, and Table operations through the quick toolbar by right-clicking on the corresponding element with your mouse.</em></p>
+</blockquote>
+<h3>Unlock the Power of Tables</h3>
+<p>A table can be created in the editor using either a keyboard shortcut or the toolbar. With the quick toolbar, you can perform table cell insert, delete, split, and merge operations. You can style the table cells using background colours and borders.</p>
+<table class="e-rte-table" style="width: 100%; min-width: 0px; height: 151px;">
+   <thead style="height: 16.5563%;">
+      <tr style="height: 16.5563%;">
+         <th style="width: 12.1813%;">S No</th>
+         <th style="width: 23.2295%;">Name</th>
+         <th style="width: 9.91501%;">Age</th>
+         <th style="width: 15.5807%;">Gender</th>
+         <th style="width: 17.9887%;">Occupation</th>
+         <th style="width: 21.1048%;">Mode of Transport</th>
+      </tr>
+   </thead>
+   <tbody>
+      <tr style="height: 16.5563%;">
+         <td style="width: 12.1813%;">1</td>
+         <td style="width: 23.2295%;">Selma Rose</td>
+         <td style="width: 9.91501%;">30</td>
+         <td style="width: 15.5807%;">Female</td>
+         <td style="width: 17.9887%;">Engineer</td>
+         <td style="width: 21.1048%;"><span style="font-size: 14pt;">🚴</span></td>
+      </tr>
+      <tr style="height: 16.5563%;">
+         <td style="width: 12.1813%;">2</td>
+         <td style="width: 23.2295%;">Robert</td>
+         <td style="width: 9.91501%;">28</td>
+         <td style="width: 15.5807%;">Male</td>
+         <td style="width: 17.9887%;">Graphic Designer</td>
+         <td style="width: 21.1048%;"><span style="font-size: 14pt;">🚗</span></td>
+      </tr>
+      <tr style="height: 16.5563%;">
+         <td style="width: 12.1813%;">3</td>
+         <td style="width: 23.2295%;">William</td>
+         <td style="width: 9.91501%;">35</td>
+         <td style="width: 15.5807%;">Male</td>
+         <td style="width: 17.9887%;">Teacher</td>
+         <td style="width: 21.1048%;"><span style="font-size: 14pt;">🚗</span></td>
+      </tr>
+      <tr style="height: 16.5563%;">
+         <td style="width: 12.1813%;">4</td>
+         <td style="width: 23.2295%;">Laura Grace</td>
+         <td style="width: 9.91501%;">42</td>
+         <td style="width: 15.5807%;">Female</td>
+         <td style="width: 17.9887%;">Doctor</td>
+         <td style="width: 21.1048%;"><span style="font-size: 14pt;">🚌</span></td>
+      </tr>
+      <tr style="height: 16.5563%;">
+         <td style="width: 12.1813%;">5</td>
+         <td style="width: 23.2295%;">Andrew James</td>
+         <td style="width: 9.91501%;">45</td>
+         <td style="width: 15.5807%;">Male</td>
+         <td style="width: 17.9887%;">Lawyer</td>
+         <td style="width: 21.1048%;"><span style="font-size: 14pt;">🚕</span></td>
+      </tr>
+   </tbody>
+</table>
+<h3>Elevating Your Content with Images</h3>
+<p>Images can be added to the editor by pasting or dragging into the editing area, using the toolbar to insert one as a URL, or uploading directly from the File Browser. Easily manage your images on the server by configuring the <a class="e-rte-anchor" title="Insert Image Settings API" href="https://ej2.syncfusion.com/documentation/api/rich-text-editor/#insertimagesettings" aria-label="Open in new window">insertImageSettings</a> to upload, save, or remove them.</p>
+<p>The Editor can integrate with the Syncfusion<sup>®</sup> Image Editor to crop, rotate, annotate, and apply filters to images. Check out the demos <a class="e-rte-anchor" title="Image Editor Demo" href="https://ej2.syncfusion.com/javascript/demos/#/material/rich-text-editor/image-editor-integration.html" aria-label="Open in new window">here</a>.</p>`
+            });
+        });
+
+        it('984057 -  Console error when pressing Enter after selecting all content using Ctrl + A in Rich Text Editor', () => {
+            rteObj.focusIn();
+            rteObj.selectAll();
+            const enterKeyDownEvent: KeyboardEvent = new KeyboardEvent('keydown', ENTERKEY_EVENT_INIT);
+            document.activeElement.dispatchEvent(enterKeyDownEvent);
+            const enterKeyUpEvent: KeyboardEvent = new KeyboardEvent('keyup', ENTERKEY_EVENT_INIT);
+            document.activeElement.dispatchEvent(enterKeyUpEvent);
+            expect(rteObj.inputElement.innerHTML).toBe('<p><br></p><p><br></p>');
+        });
+        afterAll(() => {
+            destroy(rteObj);
+        });
+    });
+
     describe('846696 - Ctrl+Z undo doesn’t works in smart suggestion sample', () => {
         let rteObj: RichTextEditor;
         let keyBoardEvent: any = { preventDefault: () => { }, type: 'keydown', stopPropagation: () => { }, ctrlKey: false, shiftKey: false, action: null, which: 65, key: '' };
@@ -9056,6 +9145,7 @@ describe('RTE Base module ', () => {
             destroy(rteObj);
             done();
         });
+
         it('Image: resizer visible initially, hides after disabling insertImageSettings.resize dynamically', (done: DoneFn) => {
             rteObj = renderRTE({
                 value: '<p><img alt="Sky with sun" src="https://cdn.syncfusion.com/ej2/richtexteditor-resources/RTE-Overview.png" style="width: 300px;" class="e-rte-image e-imginline"></p>'
@@ -9073,6 +9163,7 @@ describe('RTE Base module ', () => {
                 }, 100);
             }, 100);
         });
+
         it('Image: resizer does not visible initially, visible after enabling insertImageSettings.resize dynamically', (done: DoneFn) => {
             rteObj = renderRTE({
                 value: '<p><img alt="Sky with sun" src="https://cdn.syncfusion.com/ej2/richtexteditor-resources/RTE-Overview.png" style="width: 300px;" class="e-rte-image e-imginline"></p>',
@@ -9093,6 +9184,7 @@ describe('RTE Base module ', () => {
                 }, 100);
             }, 100);
         });
+
         it('Video: resizer visible initially, hides after disabling insertVideoSettings.resize dynamically', (done: DoneFn) => {
             rteObj = renderRTE({
                 value: '<p><video controls style="width: 30%;"><source src="https://cdn.syncfusion.com/ej2/richtexteditor-resources/RTE-Ocean-Waves.mp4" type="video/mp4" /></video></p>'
@@ -9110,6 +9202,7 @@ describe('RTE Base module ', () => {
                 }, 100);
             }, 100);
         });
+
         it('Video: resizer does not visible initially, visible after enabling insertVideoSettings.resize dynamically', (done: DoneFn) => {
             rteObj = renderRTE({
                 value: '<p><video controls style="width: 30%;"><source src="https://cdn.syncfusion.com/ej2/richtexteditor-resources/RTE-Ocean-Waves.mp4" type="video/mp4" /></video></p>',
@@ -9140,6 +9233,7 @@ describe('RTE Base module ', () => {
                 }, 100);
             }, 100);
         });
+
         it('Table: resizer helpers visible initially, hides after disabling tableSettings.resize dynamically', (done: DoneFn) => {
             rteObj = renderRTE({
                 value: '<table class="e-rte-table" style="width: 100%; min-width: 0px;"><tbody><tr><td style="width: 50%;"><br></td><td style="width: 50%;"><br></td></tr></tbody></table>',
@@ -9159,6 +9253,7 @@ describe('RTE Base module ', () => {
                 done();
             }, 200);
         });
+
         it('Table: resizer helpers not visible initially, visible after enabling tableSettings.resize dynamically', (done: DoneFn) => {
             rteObj = renderRTE({
                 value: '<table class="e-rte-table" style="width: 100%; min-width: 0px;"><tbody><tr><td style="width: 50%;"><br></td><td style="width: 50%;"><br></td></tr></tbody></table>',
@@ -9178,6 +9273,7 @@ describe('RTE Base module ', () => {
                 done();
             }, 200);
         });
+
         it('Editor enableResize toggled dynamically adds/removes editor resizer handle', () => {
             rteObj = renderRTE({
                 enableResize: true,
@@ -9868,6 +9964,63 @@ Rich Text Editor 3`
             done();
         });
     });
+    describe('987028: Script error thrown when pressing the backspace key in the IFrame Editor -', () => {
+        let rteObj: RichTextEditor;
+        let originalError: jasmine.Spy;
+        beforeAll(() => {
+            originalError = jasmine.createSpy('error');
+            jasmine.clock().install();
+            rteObj = renderRTE({
+                iframeSettings: {
+                    enable: true
+                },
+                value: '<p><br></p>',
+            });
+        });
+        afterAll(() => {
+            jasmine.clock().uninstall();
+            destroy(rteObj);
+        });
+        it('press and hold backspace key on empty RTE', () => {
+            rteObj.focusIn();
+            // Simulate holding backspace for ~3.6s by firing repeated keydowns every 300ms
+            const repeats = 12; // 12 * 300ms = 3600ms (~3.6s)
+            for (let i = 0; i < repeats; i++) {
+                rteObj.inputElement.dispatchEvent(new KeyboardEvent('keydown', BACKSPACE_EVENT_INIT));
+                jasmine.clock().tick(300);
+            }
+            rteObj.inputElement.dispatchEvent(new KeyboardEvent('keyup', BACKSPACE_EVENT_INIT));
+            jasmine.clock().tick(300);
+            expect(originalError).not.toHaveBeenCalled();
+            expect(rteObj.inputElement).not.toBeNull();
+        });
+    });
+    describe('997035: Italic formatting not highlighted in toolbar when typing after inserting a horizontal line inside a blockquote', () => {
+        let rteObj: RichTextEditor;
+        let elem: HTMLElement;
+        let toolWrap: HTMLElement;
+        let view: HTMLElement;
+        beforeAll(() => {
+            rteObj = renderRTE({
+                value: `<blockquote>
+<p><em>Easily access Audio, Image, Link, Video, and Table operations through the quick toolbar by right-clicking on the corresponding element with your mouse.</em></p>
+<p><em><br/></em></p>
+</blockquote>`
+            });
+        });
+        it('Insert HR tag inside blockquotes inside inline tag contained p empty tag', () => {
+            const cursorEle: HTMLElement = rteObj.inputElement.querySelectorAll('em')[1] as HTMLElement;
+            const blockQuoteEle: HTMLElement = rteObj.inputElement.querySelector('blockquote') as HTMLElement;
+            setCursorPoint(document, cursorEle, 0);
+            rteObj.executeCommand("insertHorizontalRule");
+            expect(rteObj.inputElement.querySelector('hr').parentElement === blockQuoteEle).toBe(true);
+            expect(blockQuoteEle.childElementCount === 3).toBe(true);
+            expect(rteObj.inputElement.querySelectorAll('em').length === 1).toBe(true);
+        });
+        afterAll(() => {
+            destroy(rteObj);
+        });
+    });
     describe('960989 - Active formatting styles not reset after sending message in Bottom Toolbar sample', () => {
         let rteObj: RichTextEditor;
         beforeAll(() => {
@@ -9889,6 +10042,27 @@ Rich Text Editor 3`
             rteObj.dataBind();
             rteObj.focusIn();
             expect(boldButton.classList.contains('e-active')).toBe(false);
+        });
+    });
+    describe('994665 - Checklist toolbar icon remains enabled in Code View', () => {
+        let rteObj: RichTextEditor;
+        beforeAll(() => {
+            rteObj = renderRTE({
+                value: `<p><strong>RichTextEditor</strong></p>`,
+                toolbarSettings: {
+                    items: ['CheckList', 'SourceCode']
+                }
+            });
+        });
+        afterAll(() => {
+            destroy(rteObj);
+        });
+        it('Selecting sourceCode icon and checking the checklist icon has been disabled or not', () => {
+            rteObj.focusIn();
+            (rteObj.element.querySelectorAll(".e-toolbar-item")[1] as HTMLElement).querySelector('button').click();
+            expect(rteObj.element.querySelectorAll(".e-toolbar-item")[0].classList.contains('e-overlay')).toBe(true);
+            (rteObj.element.querySelectorAll(".e-toolbar-item")[1] as HTMLElement).querySelector('button').click();
+            expect(rteObj.element.querySelectorAll(".e-toolbar-item")[0].classList.contains('e-overlay')).toBe(false);
         });
     });
 });

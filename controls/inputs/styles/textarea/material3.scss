@@ -1,6 +1,5 @@
-@import 'ej2-base/styles/definition/material3.scss';
-
-@import '../input/material3-definition.scss';
-@import '../textbox/material3-definition.scss';
-@import 'material3-definition.scss';
-@import 'all.scss';
+@use 'ej2-base/styles/definition/material3' as *;
+@use '../input/material3-definition' as *;
+@use '../textbox/material3-definition' as *;
+@use 'material3-definition' as *;
+@use 'all' as *;

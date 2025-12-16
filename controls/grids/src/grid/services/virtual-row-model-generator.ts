@@ -78,6 +78,9 @@ export class VirtualRowModelGenerator implements IModelGenerator<Column> {
             isManualRefresh = true;
         }
         this.checkAndResetCache(e.requestType);
+        if (e.requestType === 'pin-row' || e.requestType === 'unpin-row') {
+            this.startIndex = null;
+        }
         if (isGroupAdaptive(this.parent) && this.parent.vcRows.length) {
             const dataRows: Row<Column>[] = this.parent.vcRows.filter((row: Row<Column>) => row.isDataRow);
             if ((this.parent.isManualRefresh && dataRows.length === data['records'].length) || !this.parent.isManualRefresh) {
@@ -195,6 +198,16 @@ export class VirtualRowModelGenerator implements IModelGenerator<Column> {
         return result;
     }
 
+    /**
+     *
+     * @param {Object} data - Defines row data
+     * @returns {Row<Column>} returns row model
+     * @hidden
+     */
+    public generatePinnedTopRows(data: Object): Row<Column>[] {
+        return this.rowModelGenerator.generatePinnedTopRows(data);
+    }
+
     private setBlockForManualRefresh(cache: { [x: number]: Row<Column>[] }, blocks: number[], rows: Row<Column>[]): void {
         const size: number = this.model.pageSize / 2;
         if (this.includePrevPage) {
@@ -233,7 +246,7 @@ export class VirtualRowModelGenerator implements IModelGenerator<Column> {
 
     private getStartIndex(blk: number, data: Object[], full: boolean = true): number {
         const page: number = this.getPage(blk); const even: boolean = blk % 2 === 0;
-        const index: number = (page - 1) * this.model.pageSize;
+        const index: number = (page - 1) * this.model.pageSize + this.parent.pinnedTopRowModels.length;
         return full || !even ? index : index + ~~(this.model.pageSize / 2);
     }
 
@@ -276,7 +289,7 @@ export class VirtualRowModelGenerator implements IModelGenerator<Column> {
 
     public checkAndResetCache(action: string): boolean {
         const actions: string[] = ['paging', 'refresh', 'sorting', 'filtering', 'searching', 'grouping', 'ungrouping', 'reorder',
-            'save', 'delete', 'refresh-aggregate-on-save'];
+            'save', 'delete', 'refresh-aggregate-on-save', 'pin-row', 'unpin-row'];
         const clear: boolean = actions.some((value: string) => action === value);
         if (clear) {
             this.cache = {}; this.data = {}; this.groups = {};

@@ -1,7 +1,12 @@
-import { PdfDocument, PdfPage, PdfPen } from '@syncfusion/ej2-pdf';
-import { pdfSuccinctly, annotations } from './inputs.spec';
+import { _ContentParser, _PdfContentStream, _PdfDictionary, _PdfRecord, _PdfReference, PdfBitmap, PdfDocument, PdfPage, PdfPen } from '@syncfusion/ej2-pdf';
+import { pdfSuccinctly, annotations, fillStroke, image } from './inputs.spec';
 import { PdfDataExtractor } from '../src/pdf-data-extract/core/pdf-data-extractor';
 import { TextLine } from '../src/pdf-data-extract/core/text-structure';
+import { PdfEmbeddedImage } from '../src/pdf-data-extract/core/image-extraction/pdf-embedded-image';
+import { PdfRedactionRegion } from '../src/pdf-data-extract/core/redaction/pdf-redaction-region';
+import { PdfRedactor } from '../src/pdf-data-extract/core/redaction/pdf-redactor';
+import { PdfTagType } from '../src/pdf-data-extract/core/text-extraction/enumerator';
+import { PdfStructureElement } from '../src/pdf-data-extract/core/pdf-structure-element';
 describe('Pdf Text Extraction', () => {
     it('Pdf Extract Text', () => {
         let document: PdfDocument = new PdfDocument(pdfSuccinctly);
@@ -38,17 +43,17 @@ describe('Pdf Text Extraction', () => {
         let document: PdfDocument = new PdfDocument(pdfSuccinctly);
         let extractor: PdfDataExtractor = new PdfDataExtractor(document);
         let textCollection: TextLine[] = extractor.extractTextLines({ startPageIndex: 0, endPageIndex: document.pageCount - 1});
-        expect(textCollection[0].bounds).toEqual([90.024, 733.416, 3.069119999999998, 11.039999999999964]);
-        expect(textCollection[1].bounds).toEqual([553.06, 763.6800000000001, 6.138239999999996, 11.039999999999964]);
-        expect(textCollection[2].bounds).toEqual([559.18, 763.6800000000001, 3.069119999999998, 11.039999999999964]);
-        expect(textCollection[3].bounds).toEqual([558.1, 672.816, 12, 48]);
-        expect(textCollection[4].bounds).toEqual([157.614, 12.11099999999999, 296.7720000000004, 12]);
-        expect(textCollection[5].bounds).toEqual([157.614, 12.11099999999999, 296.7720000000004, 12]);
-        expect(textCollection[6].bounds).toEqual([90.024, 733.416, 3.069119999999998, 11.039999999999964]);
-        expect(textCollection[7].bounds).toEqual([553.06, 759.48, 6.138239999999996, 11.039999999999964]);
-        expect(textCollection[8].bounds).toEqual([559.18, 759.48, 3.069119999999998, 11.039999999999964]);
-        expect(textCollection[9].bounds).toEqual([154.58, 92.65999999999997, 88.03200000000001, 48]);
-        expect(textCollection[10].bounds).toEqual([242.57, 92.65999999999997, 12, 48]);
+        expect(textCollection[0].bounds).toEqual({x: 90.024, y: 733.416, width: 3.069119999999998, height: 11.039999999999964});
+        expect(textCollection[1].bounds).toEqual({x: 553.06, y: 763.6800000000001, width: 6.138239999999996, height: 11.039999999999964});
+        expect(textCollection[2].bounds).toEqual({x: 559.18, y: 763.6800000000001, width: 3.069119999999998, height: 11.039999999999964});
+        expect(textCollection[3].bounds).toEqual({x: 558.1, y: 672.816, width: 12, height: 48});
+        expect(textCollection[4].bounds).toEqual({x: 157.614, y: 12.11099999999999, width: 296.7720000000004, height: 12});
+        expect(textCollection[5].bounds).toEqual({x: 157.614, y: 12.11099999999999, width: 296.7720000000004, height: 12});
+        expect(textCollection[6].bounds).toEqual({x: 90.024, y: 733.416, width: 3.069119999999998, height: 11.039999999999964});
+        expect(textCollection[7].bounds).toEqual({x: 553.06, y: 759.48, width: 6.138239999999996, height: 11.039999999999964});
+        expect(textCollection[8].bounds).toEqual({x: 559.18, y: 759.48, width: 3.069119999999998, height: 11.039999999999964});
+        expect(textCollection[9].bounds).toEqual({x: 154.58, y: 92.65999999999997, width: 88.03200000000001, height: 48});
+        expect(textCollection[10].bounds).toEqual({x: 242.57, y: 92.65999999999997, width: 12, height: 48});
         document.destroy();
 	});
     it('Pdf Extract Text Layout', () => {
@@ -59,4 +64,94 @@ describe('Pdf Text Extraction', () => {
         document.destroy();
     });
 });
-
+describe('Pdf Redaction Test', () => {
+    it('Pdf Redaction Region test', () => {
+        let document: PdfDocument =  new PdfDocument(pdfSuccinctly);
+        let page = document.getPage(1) as PdfPage;
+        let redactions: PdfRedactionRegion[] =  [];
+        let redactionOptions: PdfRedactionRegion;
+        page.graphics.drawRectangle({x: 185.20033264160156, y: 100, width: 335.3663635253906, height: 12.375}, new PdfPen({r: 255, g: 0, b: 0}, 1));
+        redactionOptions = new PdfRedactionRegion(1, { x: 185.20033264160156, y: 100, width: 335.3663635253906, height: 12.375 }, true);
+        redactions.push(redactionOptions);
+        let redactor: PdfRedactor = new PdfRedactor(document);
+        redactor.add(redactions);
+        redactor.redact();
+        let output = document.save(); 
+        document.destroy();
+        document = new PdfDocument(output);
+        page = document.getPage(1) as PdfPage;
+        let contents = page._pageDictionary.getArray('Contents');
+        expect(contents).toBeDefined();
+        if (contents) {
+            let parser: _ContentParser = new _ContentParser(contents[0].getBytes());
+            let result: _PdfRecord[] = parser._readContent();
+            expect(result[81]._operands[0]).toEqual('[(P) -1278 ]');
+        }
+        document.destroy();
+    });
+    it('Shape Redaction test', () => {
+        let document: PdfDocument = new PdfDocument(fillStroke);
+        let redactions: PdfRedactionRegion[] = [];
+        let redactionOptions = new PdfRedactionRegion(0, { x: 130.02, y: 113.61, width: 113.5, height: 98.63 }, false);
+        redactions.push(redactionOptions);
+        let redactor: PdfRedactor = new PdfRedactor(document);
+        redactor.add(redactions);
+        redactor.redact();
+        let page: PdfPage = document.getPage(0);
+        let resources: _PdfDictionary = page._pageDictionary.get('Resources');
+        let xobject = resources.get('XObject');
+        let ref = xobject._map['b021552d-91c2-4e5d-afe2-84d335ac617b'];
+        let text = xobject._crossReference._fetch(ref) as _PdfContentStream;
+        let parser: _ContentParser = new _ContentParser(text._bytes);
+        let result: _PdfRecord[] = parser._readContent();
+        expect(result).not.toBeUndefined();
+        expect(result[2]._operator).toEqual('m');
+        expect(result[2]._operands).toEqual(['130.020', '667.736']);
+        expect(result[3]._operator).toEqual('l');
+        expect(result[3]._operands).toEqual(['86.246', '667.736']);
+        document.destroy();
+    });
+});
+describe('Tagged PDF Test', () => {
+    it('Tagged PDF test', () => {
+        let document: PdfDocument = new PdfDocument(pdfSuccinctly);
+        let page: PdfPage = document.getPage(0);
+        let extractor: PdfDataExtractor = new PdfDataExtractor(document);
+        let pageElement: PdfStructureElement[] = extractor.getStructureElements(page);
+        expect(pageElement.length).toEqual(1);
+        let element: PdfStructureElement = pageElement[0];
+        expect(element.childElements.length).toEqual(2);
+        let tagType: PdfTagType = element.tagType;
+        expect(tagType).toEqual(PdfTagType.paragraph);
+        document.destroy();
+    });
+});
+describe('Image Extraction', () => {
+    it ('Image Extraction', async() => {
+        let loadocument: PdfDocument =  new PdfDocument(image);
+        let extractor: PdfDataExtractor = new PdfDataExtractor(loadocument, canvasRenderCallback);
+        let imageInfoCollection: PdfEmbeddedImage[] = await extractor.extractImages({ startPageIndex: 0, endPageIndex: loadocument.pageCount - 1});
+        expect(imageInfoCollection[0].data.length).toEqual(87781);
+        let doc: PdfDocument = new PdfDocument();
+        for (let i: number = 0; i < imageInfoCollection.length; i++) {
+            let imageInfo: PdfEmbeddedImage = imageInfoCollection[i];
+            let page: PdfPage = doc.addPage();
+            const image2 = new PdfBitmap(imageInfoCollection[i].data);
+            let bounds = imageInfo.bounds;
+            page.graphics.drawImage(image2, {x: bounds.x, y: bounds.y, width: bounds.width, height: bounds.height});
+        }        
+        let output = doc.save();
+        let ldoc: PdfDocument = new PdfDocument(output);
+        let ref: _PdfReference = new _PdfReference(8, 0);
+        ref._isNew = false;
+        let value = ldoc._crossReference._fetch(ref);
+        ref = new _PdfReference(14, 0);
+        let bytes = value.getBytes();
+        expect(bytes.length).toEqual(87781)
+        doc.destroy();
+    });
+    function canvasRenderCallback(): any {
+        const canvas: HTMLCanvasElement = document.createElement('canvas');
+        return canvas;
+    }
+});

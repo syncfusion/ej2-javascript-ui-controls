@@ -1,3 +1,5 @@
+@use 'ej2-base/styles/common/mixin' as *;
+@use './theme-variables' as *;
 @mixin btn-icon-layout {
   @if $skin-name == 'bootstrap5' or $skin-name == 'bootstrap5.3' {
     background-color: $cpicker-tile-active-border-color;
@@ -10,15 +12,15 @@
   .e-colorpicker-wrapper,
   .e-colorpicker-container {
     display: inline-block;
-    line-height: 0;
+    line-height: $color-zero-line-height;
     outline: none;
     user-select: none;
 
     & .e-colorpicker {
-      height: 1px;
+      height: $color-one-line-height;
       opacity: 0;
       position: absolute;
-      width: 1px;
+      width: $color-one-width;
     }
 
     & .e-dropdown-btn.e-icon-btn {
@@ -26,8 +28,8 @@
         background: $cpicker-split-btn-background-color;
         border-radius: $cpicker-split-btn-border-radius;
         @if $skin-name == 'Material3' {
-          border-bottom-left-radius: 0;
-          border-top-left-radius: 0;
+          border-bottom-left-radius: $color-zero-radius;
+          border-top-left-radius: $color-zero-radius;
         }
         box-shadow: none;
       }
@@ -53,8 +55,8 @@
         @else if $skin-name == 'Material3' {
           background: $cpicker-split-btn-background-color;
           border-radius: $cpicker-split-btn-border-radius;
-          border-bottom-right-radius: 0;
-          border-top-right-radius: 0;
+          border-bottom-right-radius: $color-zero-radius;
+          border-top-right-radius: $color-zero-radius;
           border-right-color: transparent;
           box-shadow: none;
           padding: $cpicker-split-btn-padding;
@@ -69,7 +71,7 @@
           background-size: 8px;
           border-radius: $btn-border-radius;
           height: $cpicker-split-btn-icon-height;
-          margin-top: 0;
+          margin-top: $color-zero-padding-margin;
           position: relative;
           width: $cpicker-split-btn-icon-height;
 
@@ -86,16 +88,16 @@
       &.e-rtl {
         & .e-split-colorpicker.e-split-btn {
           @if $skin-name == 'Material3' {
-            border-bottom-right-radius: 0;
-            border-top-right-radius: 0;
+            border-bottom-right-radius: $color-zero-radius;
+            border-top-right-radius: $color-zero-radius;
             padding: $cpicker-split-btn-padding;
           }
         }
 
         & .e-dropdown-btn.e-icon-btn {
           @if $skin-name == 'Material3' {
-            border-bottom-left-radius: 0;
-            border-top-left-radius: 0;
+            border-bottom-left-radius: $color-zero-radius;
+            border-top-left-radius: $color-zero-radius;
           }
         }
 
@@ -147,7 +149,7 @@
   }
 
   .e-colorpicker-popup:not(.e-split-btn-wrapper):not(.e-dropdown-btn) {
-    line-height: 0;
+    line-height: $color-zero-line-height;
   }
 
   /* stylelint-disable property-no-vendor-prefix */
@@ -155,11 +157,11 @@
     &.e-modal,
     &.e-hsv-model {
       -webkit-overflow-scrolling: touch;
-      height: 100%;
-      left: 0;
+      height: $color-full-height;
+      left: $color-zero-padding-margin;
       position: fixed;
-      top: 0;
-      width: 100%;
+      top: $color-zero-padding-margin;
+      width: $color-full-width;
     }
 
     &.e-modal {
@@ -180,7 +182,7 @@
   .e-show-value .sf-colorpicker.e-color-palette {
     & .e-selected-value,
     & .e-switch-ctrl-btn {
-      width: 270px;
+      width: $show-value-palette-width;
     }
   }
 
@@ -198,7 +200,7 @@
     border: $cpicker-border;
     border-radius: $cpicker-radius;
     display: inline-block;
-    line-height: 0;
+    line-height: $color-zero-line-height;
     outline: none;
     user-select: none;
     @if $skin-name == 'bootstrap4' {
@@ -229,7 +231,7 @@
       & .e-mode-switch-btn {
         background: $cpicker-mode-palette-icon;
         @if $theme-name == 'Matrial3' {
-          border-radius: 2px;
+          border-radius: $color-mode-switch-btn-border-radius;
         }
       }
     }
@@ -239,7 +241,7 @@
         background-color: $content-bg;
         border: 1px solid $cpicker-shadow;
       }
-      width: auto;
+      width: $color-auto-width;
 
       & .e-mode-switch-btn {
         background: $cpicker-mode-picker-icon;
@@ -247,10 +249,10 @@
     }
 
     & .e-custom-palette {
-      width: auto;
+      width: $color-auto-width;
 
       & .e-palette {
-        padding: 10px;
+        padding: $color-custom-palette-padding;
       }
 
       &.e-palette-group {
@@ -262,7 +264,7 @@
     & .e-palette {
       border-bottom: $cpicker-border;
       display: table;
-      line-height: 0;
+      line-height: $color-zero-line-height;
       outline: none;
       user-select: none;
 
@@ -326,7 +328,7 @@
 
     & .e-slider-preview {
       display: inline-block;
-      width: 100%;
+      width: $color-full-width;
       @if $skin-name == 'bootstrap4' {
         padding: $cpicker-slider-handle-size;
       }
@@ -349,19 +351,7 @@
           & .e-slider-track {
             height: $cpicker-slider-height !important; /* stylelint-disable-line declaration-no-important */
             top: $cpicker-slider-track-top;
-
-            @if $skin-name == 'tailwind' or $skin-name == 'tailwind-dark' {
-              border-radius: 6px;
-            }
-            @else if $skin-name == 'bootstrap5' or $skin-name == 'bootstrap5.3' or $skin-name == 'tailwind3' {
-              border-radius: 4px;
-            }
-            @else if $skin-name == 'Material3' {
-              border-radius: $cpicker-handler-height;
-            }
-            @else {
-              border-radius: 0;
-            }
+            border-radius: $color-slider-track-border-radius;
           }
 
           & .e-handle {
@@ -400,14 +390,14 @@
             height: $cpicker-slider-height;
             position: absolute;
             top: $cpicker-slider-track-top;
-            width: 100%;
+            width: $color-full-width;
             z-index: 1;
 
             @if $skin-name == 'tailwind' or $skin-name == 'bootstrap5' or $skin-name == 'bootstrap5.3' {
-              border-radius: 6px;
+              border-radius: $opacity-empty-track-border-radius;
             }
             @if $skin-name == 'tailwind3' {
-              border-radius: 4px;
+              border-radius: $color-slider-track-border-radius;
             }
           }
         }
@@ -427,22 +417,11 @@
         border: $cpicker-preview-container-border;
         cursor: pointer;
         display: inline-block;
-        @if $skin-name == 'FluentUI' or $skin-name == 'fluent2' {
-          height: 50px;
-        }
-        @else if $skin-name == 'Material3' {
-          height: 42px;
-        }
-        @else {
-          height: 32px;
-        }
+        height: $color-preview-container-height;
         margin-left: $cpicker-preview-margin-left;
         position: relative;
         top: $cpicker-preview-container-top;
         width: $cpicker-preview-size;
-        @if $skin-name == 'tailwind' or $skin-name == 'tailwind-dark' or $skin-name == 'tailwind3' {
-          height: 36px;
-        }
         @if $skin-name == 'tailwind3' {
           border-radius: $cpicker-preview-container-radius;
         }
@@ -451,11 +430,11 @@
           display: block;
           height: $cpicker-preview-height;
           position: absolute;
-          width: 100%;
+          width: $color-full-width;
 
           &.e-current {
             border-bottom: $cpicker-preview-border;
-            top: 0;
+            top: $color-zero-padding-margin;
             @if $skin-name == 'tailwind3' {
               border-top-right-radius: $cpicker-preview-container-radius;
               border-top-left-radius: $cpicker-preview-container-radius;
@@ -468,7 +447,7 @@
               top: 25px;
             }
             @if $skin-name == 'Material3' {
-              top: 20px;
+              top: $mat-color-previous-top;
             }
             @else {
               top: $cpicker-preview-height;
@@ -487,7 +466,7 @@
       display: flex;
       padding: $cpicker-input-picker-padding;
       user-select: none;
-      width: 100%;
+      width: $color-full-width;
       @if $skin-name == 'bootstrap5.3' {
         border-bottom: 1px solid $border-light;
       }
@@ -495,7 +474,7 @@
       & .e-input-container {
         & .e-float-input {
           & input {
-            padding-left: 0;
+            padding-left: $color-zero-padding-margin;
             @if $skin-name == 'Material3' {
               text-align: left;
             }
@@ -517,21 +496,12 @@
         @if $skin-name == 'Material3' {
           border: none;
         }
-        @if $skin-name == 'tailwind' or $skin-name == 'tailwind-dark' {
-          font-size: 22px;
-          line-height: 22px;
-        }
-        @else {
-          font-size: 16px;
-          line-height: 16px;
-        }
-        @if $skin-name == 'tailwind3' {
-          font-size: 14px;
-        }
+        font-size: $color-container-value-switch-font-size;
+        line-height: $color-container-value-switch-line-height;
 
         &::before {
           @if $skin-name == 'Material3' {
-            margin-left: 2px;
+            margin-left: $cpicker-mat-value-switch-margin-left;
           }
         }
       }
@@ -546,7 +516,7 @@
         margin-right: $cpicker-label-margin;
         vertical-align: baseline;
         @if $skin-name == 'bootstrap5' or $skin-name == 'bootstrap5.3' {
-          margin-top: 8px;
+          margin-top: $color-input-float-margin-top;
         }
 
         &:first-child {
@@ -586,7 +556,7 @@
       display: inline-block;
       padding: $cpicker-ctrl-btn-padding;
       white-space: nowrap;
-      width: 100%;
+      width: $color-full-width;
       @if $skin-name == 'tailwind3' {
         border-top: 1px $border-light solid;
       }
@@ -595,21 +565,9 @@
         float: right;
         text-align: right;
         white-space: nowrap;
-        @if $skin-name == 'bootstrap4' or $skin-name == 'Material3' or $skin-name == 'tailwind' or $skin-name == 'tailwind-dark' {
-          width: 86.913%;
-        }
-        @else if $skin-name == 'tailwind3' {
-          width: 84.913%;
-        }
-        @else if $skin-name == 'fluent2' {
-          width: 88%;
-          margin: 4px 0;
-        }
-        @else if $skin-name == 'bootstrap5.3' {
-          width: 87.913%;
-        }
-        @else {
-          width: 89.913%;
+        width: $color-picker-nrml-ctrl-btn-width;
+        @if $skin-name == 'fluent2' {
+          margin: $color-picker-nrml-ctrl-btn-margin;
         }
 
         & .e-btn {
@@ -621,8 +579,8 @@
             height: 30px;
           }
           @if $skin-name == 'tailwind3' {
-            font-size: $text-sm;
-            line-height: 18px;
+            font-size: $color-container-btn-font-size;
+            line-height: $color-container-btn-line-height;
           }
 
           &.e-cancel {
@@ -648,7 +606,7 @@
         overflow: hidden;
         white-space: nowrap;
         @if $skin-name == 'Material3' {
-          border-radius: 2px;
+          border-radius: $color-mode-switch-btn-border-radius;
         }
 
         &:hover {
@@ -674,7 +632,7 @@
       }
       @else if $skin-name == 'Material3' {
         height: $cpicker-switch-btn-height;
-        padding: 0;
+        padding: $color-zero-padding-margin;
       }
       @else {
         height: $cpicker-switch-btn-height;
@@ -683,7 +641,7 @@
 
     & .e-value-switch-btn {
       @if $skin-name == 'fluent2' {
-        border-radius: 4px;
+        border-radius: $color-pkr-value-switch-btn-border-radius;
 
         &:focus-visible {
           box-shadow: $secondary-shadow-focus !important; /* stylelint-disable-line declaration-no-important */
@@ -722,7 +680,7 @@
           @if $skin-name == 'tailwind' or $skin-name == 'Material3' {
             & .e-mode-switch-btn {
               @if $skin-name == 'Material3' {
-                height: 32px;
+                height: $color-palette-mode-switch-height;
               }
               width: $cpicker-palette-switch-btn-width;
             }
@@ -736,12 +694,7 @@
         & .e-recent-clr-span {
           display: block;
           font-weight: $cpicker-recent-color-span-weight;
-          @if $skin-name == 'bootstrap5' or $skin-name == 'bootstrap5.3' or $skin-name == 'Material3' {
-            font-size: 12px;
-          }
-          @else {
-            font-size: 14px;
-          }
+          font-size: $color-recent-clr-btn-font-size;
           height: $cpicker-recent-color-span-hgt;
           padding: $cpicker-recent-color-span-pad;
           line-height: $cpicker-recent-color-span-line-hgt;
@@ -784,7 +737,7 @@
       }
 
       & .e-preview-container {
-        top: 0;
+        top: $color-zero-padding-margin;
       }
     }
 
@@ -820,7 +773,7 @@
   .e-hide-valueswitcher {
     & .e-container {
       & .e-input-container {
-        width: 100%;
+        width: $color-full-width;
       }
 
       & .e-float-input {
@@ -833,7 +786,7 @@
         }
 
         &:last-child {
-          margin-right: 0;
+          margin-right: $color-zero-padding-margin;
         }
       }
     }
@@ -891,7 +844,7 @@
         }
 
         & .e-preview-container {
-          margin-left: 0;
+          margin-left: $color-zero-padding-margin;
           margin-right: $cpicker-preview-margin-left;
         }
 
@@ -907,14 +860,14 @@
       & .e-selected-value {
         & .e-float-input {
           margin-left: $cpicker-label-margin;
-          margin-right: 0;
+          margin-right: $color-zero-padding-margin;
 
           & input {
-            padding-right: 0;
+            padding-right: $color-zero-padding-margin;
           }
 
           .e-float-text {
-            right: -12px !important; /* stylelint-disable-line declaration-no-important */
+            right: $selected-value-float-text-right !important; /* stylelint-disable-line declaration-no-important */
           }
         }
 
@@ -933,7 +886,7 @@
           text-align: left;
 
           & .e-cancel {
-            margin-left: 0;
+            margin-left: $color-zero-padding-margin;
             margin-right: $cpicker-cancel-btn-margin;
           }
         }
@@ -949,7 +902,7 @@
       & .e-container {
         & .e-float-input {
           &:last-child {
-            margin-left: 0;
+            margin-left: $color-zero-padding-margin;
           }
         }
       }
@@ -960,7 +913,7 @@
     & .e-container {
       & .e-input-container {
         & .e-float-input:first-child {
-          width: 100%;
+          width: $color-full-width;
         }
       }
     }
@@ -968,10 +921,10 @@
 
   .e-popup.e-tooltip-wrap {
     &.e-color-picker-tooltip {
-      border-bottom-left-radius: 50%;
-      border-bottom-right-radius: 0%;
-      border-top-left-radius: 50%;
-      border-top-right-radius: 50%;
+      border-bottom-left-radius: $color-popup-radius-50;
+      border-bottom-right-radius: $color-popup-radius-0;
+      border-top-left-radius: $color-popup-radius-50;
+      border-top-right-radius: $color-popup-radius-50;
       box-shadow: $cpicker-slider-handler-box-shadow;
       cursor: pointer;
       min-width: 26px;
@@ -981,7 +934,7 @@
       & .e-tip-content {
         background: $cpicker-transparent-bg-pattern;
         background-size: 8px;
-        border-radius: 50%;
+        border-radius: $color-popup-radius-50;
         height: $cpicker-tooltip-preview-size;
         position: relative;
         transform: rotate(45deg);
@@ -992,26 +945,26 @@
 
   .e-split-preview,
   .e-tip-transparent {
-    height: 100%;
-    left: 0;
+    height: $color-full-height;
+    left: $color-zero-padding-margin;
     position: absolute;
-    top: 0;
-    width: 100%;
+    top: $color-zero-padding-margin;
+    width: $color-full-width;
   }
 
   @if $skin-name == 'fluent2' {
     .e-container.e-color-picker .e-colorpicker-slider:first-child .e-hue-slider {
-      top: calc(50% - 25px) !important; /* stylelint-disable-line declaration-no-important */
+      top: $cpicker-cont-color-slider-top !important; /* stylelint-disable-line declaration-no-important */
     }
 
     .e-container.e-color-picker .e-float-input {
-      margin-top: 22px;
+      margin-top: $color-container-float-input-margin-top;
     }
   }
 }
 
 .e-container.e-color-palette .e-clr-pal-rec-wpr + .e-switch-ctrl-btn {
   @if $skin-name == 'bootstrap' or $skin-name == 'bootstrap-dark' or $skin-name == 'fabric' or $skin-name == 'fabric-dark' or $skin-name == 'highcontrast' or $skin-name == 'highcontrast-light' or $skin-name == 'material' or $skin-name == 'material-dark' {
-    padding-top: 12px;
+    padding-top: $cpicker-cont-color-ctrl-btn-padding-top;
   }
 }

@@ -1,4 +1,5 @@
-@import 'definition/bootstrap-dark.scss';
+@use 'definition/bootstrap-dark' as *;
+@forward 'definition/bootstrap-dark';
 
 $font-family: 'Helvetica Neue', 'Helvetica', 'Arial', sans-serif, '-apple-system', 'BlinkMacSystemFont' !default;
 $font-size: 12px !default;

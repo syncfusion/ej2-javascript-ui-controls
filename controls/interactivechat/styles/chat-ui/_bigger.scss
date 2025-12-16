@@ -1,8 +1,11 @@
+@use 'ej2-base/styles/common/mixin' as *;
+@use './theme-variables' as *;
+@use './layout' as *;
 @include export-module('chatui-bigger') {
   .e-bigger.e-chat-ui,
   .e-bigger .e-chat-ui {
     .e-chat-content {
-      height: calc(100% - $chat-bigger-header-height);
+      height: $chat-content-bigger-height;
     }
     .e-chat-header {
       height: $chat-bigger-header-height;
@@ -12,29 +15,29 @@
     }
     .e-message-icon,
     .e-message-icon img {
-      font-size: 16px;
-      height: 40px;
-      width: 40px;
+      font-size: $bigger-message-icon-size;
+      height: $bigger-message-icon-height;
+      width: $bigger-message-icon-width;
     }
     .e-user-icon {
-      height: 32px;
-      width: 32px;
-      font-size: 14px;
+      height: $bigger-user-icon-font-height;
+      width: $bigger-user-icon-font-width;
+      font-size: $bigger-user-icon-font-size;
     }
     .e-left {
       &:not(.e-message-item-template) {
-        padding-left: calc(40px + $user-icon-bigger-gap);
+        padding-left: $chat-left-message-item-bigger-padding-left;
       }
     }
     .e-message-icon {
       top: 25px;
     }
     .e-user-text {
-      margin-left: 22px;
+      margin-left: $bigger-user-text-margin-left;
       font-size: $typing-user-font-size-bigger;
     }
     .e-user-icon {
-      margin-right: -18px;
+      margin-right: $bigger-user-icon-margin-right;
     }
     .e-text {
       font-size: $chat-text-font-size-bigger;
@@ -47,8 +50,8 @@
       font-size: $typing-user-font-size-bigger;
     }
     .e-status-icon {
-      height: 18px;
-      width: 18px;
+      height: $chat-status-icon-bigger-height;
+      width: $chat-status-icon-bigger-width;
       font-size: $chat-status-icon-bigger-size;
     }
     .e-footer {
@@ -68,7 +71,7 @@
         min-height: $chat-textarea-min-height-bigger;
         line-height: $chat-textarea-line-height-bigger;
         padding: $chat-textarea-padding-bigger;
-        font-size: 16px;
+        font-size: $bigger-chat-textarea-size;
       }
     }
     .e-timestamp {
@@ -85,22 +88,22 @@
     &.e-rtl {
       .e-left {
         &:not(.e-message-item-template) {
-          padding-right: calc(40px + $user-icon-bigger-gap);
-          padding-left: unset;
+          padding-right: $chat-left-message-item-bigger-padding-right;
+          padding-left: $bigger-rtl-left-padding-left;
         }
       }
       .e-user-text {
-        margin-right: 22px;
-        margin-left: unset;
+        margin-right: $bigger-rtl-user-text-margin-right;
+        margin-left: $bigger-rtl-user-text-margin-left;
       }
       .e-user-icon {
-        margin-left: -18px;
-        margin-right: unset;
+        margin-left: $bigger-rtl-user-icon-margin-left;
+        margin-right: $bigger-rtl-user-icon-margin-right;
       }
       .e-footer {
         .e-footer-icons-wrapper {
           padding: $chat-footer-icons-rtl-padding-bigger;
-          padding-right: unset;
+          padding-right: $bigger-rtl-icons-wrapper-padding-right;
         }
       }
     }
@@ -109,24 +112,24 @@
       width: $user-status-icon-bigger-font-size;
       font-size: $user-status-icon-bigger-font-size;
       border-radius: $user-status-icon-border-radius;
-      border: 1px solid;
+      border: $bigger-user-status-icon-border solid;
       border-color: $user-status-icon-border-color;
     }
 
     .e-message-item .e-chat-message-toolbar {
-      height: 40px !important; /* stylelint-disable-line declaration-no-important */
+      height: $chat-message-toolbar-bigger-height !important; /* stylelint-disable-line declaration-no-important */
       min-height: 40px;
       .e-toolbar-items .e-toolbar-item {
         &:first-child {
-          margin-left: 2px;
+          margin-left: $bigger-tbar-first-item-margin-left;
         }
         &:last-child {
-          margin-right: 2px;
+          margin-right: $bigger-tbar-last-item-margin-right;
         }
         min-height: 32px;
         .e-tbar-btn {
           min-height: 32px;
-          padding: 4px 2px;
+          padding: $bigger-tbar-btn-padding;
         }
       }
     }
@@ -137,40 +140,10 @@
         .e-image-wrapper,
         .e-video-wrapper {
           .e-play-icon-wrapper {
-            @include chat-wrapper-icon-alignment(44px, 44px);
-          }
-        }
-        .e-file-wrapper {
-          .e-chat-file-format-icon {
-            font-size: 24px;
-          }
-          .e-file-data-wrapper {
-            .e-file-name {
-              font-size: 13px;
-            }
-            .e-file-size {
-              font-size: 11px;
-            }
-          }
-          .e-chat-download {
-            font-size: 16px;
-          }
-        }
-        .e-video-wrapper,
-        .e-image-wrapper {
-          .e-progress-wrapper {
-            @include chat-wrapper-icon-alignment(44px, 44px);
-            .e-chat-progress-ring {
-              width: 44px;
-              height: 44px;
-              .e-progress-bg,
-              .e-progress-fill {
-                @include chat-progress-bar-display(20, 22, 22);
-              }
-              .e-progress-fill {
-                stroke-dasharray: 125.66;
-                stroke-dashoffset: 125.66;
-              }
+            @include chat-wrapper-icon-alignment(44px, $chat-video-wrapper-bigger-height);
+            .e-chat-video-play {
+              font-size: $progress-video-icon-size-bigger;
+              line-height: $progress-video-icon-height-bigger;
             }
           }
         }
@@ -179,29 +152,101 @@
     .e-pinned-message {
       .e-pinned-message-text{
         .e-pinned-img-thumb {
-          height: 32px;
-          width: 32px;
+          height: $pinned-img-thumb-bigger-height;
+          width: $pinned-img-thumb-bigger-width;
         }
-        .e-pinned-file-name {
-          font-size: 16px;
-        }
-        .e-chat-file-format-icon {
-          font-size: 18px;
+        .e-chat-file-icon {
+          font-size: $pin-file-icon-size-bigger;
+          line-height: $pin-file-icon-height-bigger;
         }
       }
     }
     .e-reply-wrapper {
       .e-reply-media-preview {
         .e-reply-media-thumb {
-          height: 30px;
-          width: 30px;
+          height: $reply-media-thumb-bigger-height;
+          width: $reply-media-thumb-bigger-width;
         }
         .e-reply-file-name {
-          font-size: 14px;
+          font-size: $bigger-reply-file-name-size;
         }
-        .e-chat-file-format-icon {
-          font-size: 18px;
+        .e-chat-file-icon {
+          font-size: $reply-file-icon-size-bigger;
+          line-height: $reply-file-icon-height-bigger;
         }
+      }
+    }
+    .e-preview-overlay {
+      .e-preview-header {
+        height: $preview-header-bigger-height;
+        .e-chat-back-icon {
+          font-size: $after-preview-close-size-bigger;
+          line-height: $after-preview-close-height-bigger;
+        }
+        .e-chat-download {
+          font-size: $after-preview-download-size-bigger;
+          line-height: $after-preview-download-height-bigger;
+        }
+        .e-preview-file-name {
+          font-size: $after-preview-file-size-bigger;
+          line-height: $after-preview-file-line-height-bigger;
+          font-weight: $after-preview-file-weight-bigger;
+          letter-spacing: $after-preview-file-letter-spacing-bigger;
+        }
+      }
+      .e-file-preview {
+        .e-preview-file-text {
+          font-size: $no-preview-text-size-bigger;
+          font-weight: $no-preview-font-weight-bigger;
+          line-height: $no-preview-line-height-bigger;
+          letter-spacing: $no-preview-letter-sapcing-bigger;
+        }
+        .e-file-details {
+          font-size: $preview-file-size-text-bigger;
+          line-height: $preview-file-size-height-bigger;
+          letter-spacing: $preview-file-size-spacing-bigger;
+          font-weight: $preview-file-size-weight-bigger;
+        }
+      }
+    }
+
+    .e-upload-failure-alert {
+      padding: $file-failure-padding-bigger;
+      border-radius: $file-failure-border-radius-bigger;
+      .e-chat-circle-close {
+        font-size: $file-failure-circle-icon-size-bigger;
+        line-height: $file-failure-circle-icon-height-bigger;
+        margin-right: $file-failure-circle-margin-bigger;
+        font-weight: $file-failure-circle-icon-weight-bigger;
+      }
+      .e-failure-message {
+        font-size: $file-failure-message-size-bigger;
+        line-height: $file-failure-message-bigger-height;
+        letter-spacing: $file-failure-message-spacing-bigger;
+        font-weight: $file-failure-message-weight-bigger;
+      }
+      .e-chat-close {
+        font-size: $file-failure-close-icon-size-bigger;
+        line-height: $file-failure-close-icon-height-bigger;
+        margin-left: $file-failure-close-margin-bigger;
+        font-weight: $file-failure-close-icon-weight-bigger;
+      }
+    }
+    .e-footer .e-chat-drop-area:has(.e-chat-uploaded-file-item) {
+      margin: 4px 8px;
+    }
+
+    .e-footer .e-chat-drop-area,
+    .e-attached-file {
+      .e-chat-uploaded-file-item {
+        margin: 0 4px 4px;
+        &:not(:has(.e-chat-close)) .e-chat-file-details {
+          padding-right: 15px;
+        }
+      }
+
+      .e-chat-file-details {
+        padding: 3px 0 2px 2px;
       }
     }
   }
@@ -209,23 +254,23 @@
   // Mention popup related styles for @mention support in chat ui
   .e-bigger.e-chat-mention .e-chat-mention-user-name,
   .e-bigger .e-chat-mention .e-chat-mention-user-name {
-    font-size: 16px;
-    line-height: 24px;
-    margin: 10px 8px;
+    font-size: $bigger-mention-user-name-size;
+    line-height: $bigger-mention-user-name-height;
+    margin: $bigger-mention-user-name-margin;
   }
 
   .e-bigger.e-chat-mention .e-chat-mention-user-icon,
   .e-bigger.e-chat-mention .e-chat-mention-user-icon img,
   .e-bigger .e-chat-mention .e-chat-mention-user-icon,
   .e-bigger .e-chat-mention .e-chat-mention-user-icon img {
-    height: 44px;
-    width: 44px;
-    font-size: 16px;
+    height: $bigger-mention-user-icon-height;
+    width: $bigger-mention-user-icon-width;
+    font-size: $bigger-mention-user-icon-size;
   }
 
   .e-bigger.e-chat-mention .e-list-item,
   .e-bigger .e-chat-mention .e-list-item {
     text-indent: 0;
-    height: 62px;
+    height: $chat-mention-list-item-bigger-height;
   }
 }

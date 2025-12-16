@@ -1,3 +1,5 @@
+@use 'ej2-base/styles/definition/material-dark' as *;
+@forward 'ej2-base/styles/definition/material-dark';
 $signature-border: 1px solid !default;
 $signature-border-color: $grey-700 !default;
 $signature-background-color: $grey-white !default;

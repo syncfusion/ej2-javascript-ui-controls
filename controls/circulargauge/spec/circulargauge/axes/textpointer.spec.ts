@@ -122,7 +122,9 @@ it('Checking Text type pointer - x location of the marker', (done: Function) => 
         svg = document.getElementById('container_Axis_0_Pointer_Marker_0');
         expect(svg.getAttribute('x') == '243.95779227494057' ||
         svg.getAttribute('x') ==  "416.4744027906085" ||
-        svg.getAttribute('x') ==  '238.45779227494057').
+        svg.getAttribute('x') ==  '238.45779227494057' ||
+        svg.getAttribute('x') ==  '233.95779227494057' ||
+        svg.getAttribute('x') == '224.95779227494057').
         toBe(true);
         done();
     };

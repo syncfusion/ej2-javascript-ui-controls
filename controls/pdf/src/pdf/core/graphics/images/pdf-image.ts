@@ -2,6 +2,7 @@ import { _PdfReference } from './../../pdf-primitives';
 import { _PdfStream } from './../../base-stream';
 import { _PdfGraphicsUnit } from './../../enumerator';
 import { PdfGraphics, _PdfUnitConvertor, PdfGraphicsState } from './../../graphics/pdf-graphics';
+import { Point, Size } from './../../pdf-type';
 /**
  * The 'PdfImage' contains methods and properties to handle the images.
  * ```typescript
@@ -14,7 +15,7 @@ import { PdfGraphics, _PdfUnitConvertor, PdfGraphicsState } from './../../graphi
  * // Create new image object by using JPEG image data as Base64 string format
  * let image: PdfImage = new PdfBitmap('/9j/4AAQSkZJRgABAQEAkACQAAD/4....QB//Z');
  * //Draw the image.
- * graphics.drawImage(image, 10, 20, 400, 400);
+ * graphics.drawImage(image, {x: 10, y: 20, width: 400, height: 400});
  * // Save the document
  * document.save('output.pdf');
  * // Destroy the document
@@ -140,7 +141,7 @@ export abstract class PdfImage {
     /**
      * Gets the physical dimension of the PDF image (Read only).
      *
-     * @returns {number[]} image physical dimension.
+     * @returns {Size} image physical dimension.
      * ```typescript
      * // Load an existing PDF document
      * let document: PdfDocument = new PdfDocument(data, password);
@@ -151,7 +152,7 @@ export abstract class PdfImage {
      * // Create new image object by using JPEG image data as Base64 string format
      * let image: PdfImage = new PdfBitmap('/9j/4AAQSkZJRgABAQEAkACQAAD/4....QB//Z');
      * // Gets the physical dimension of the image.
-     * let dimension: number[] = image.physicalDimension;
+     * let dimension: Size = image.physicalDimension;
      * //Draw the image.
      * image.draw(graphics);
      * // Save the document
@@ -160,9 +161,9 @@ export abstract class PdfImage {
      * document.destroy();
      * ```
      */
-    get physicalDimension(): number[] {
+    get physicalDimension(): Size {
         this._imagePhysicalDimension = this._getPointSize(this.width, this.height, this._horizontalResolution);
-        return [this.width, this.height];
+        return {width: this.width, height: this.height};
     }
     /**
      * Represents a method to draw a image on the PDF graphics.
@@ -191,8 +192,7 @@ export abstract class PdfImage {
      * Represents a method to draw a image on the PDF graphics.
      *
      * @param {PdfGraphics} graphics value.
-     * @param {number} x The x-coordinate of the image
-     * @param {number} y The y-coordinate of the image.
+     * @param {Point} location The (x, y) coordinates of the image
      * @returns {void} Draws a image on the page graphics.
      * ```typescript
      * // Load an existing PDF document
@@ -204,26 +204,29 @@ export abstract class PdfImage {
      * // Create new image object by using JPEG image data as Base64 string format
      * let image: PdfImage = new PdfBitmap('/9j/4AAQSkZJRgABAQEAkACQAAD/4....QB//Z');
      * //Draw the image.
-     * image.draw(graphics, 10, 10);
+     * image.draw(graphics, {x: 10, y: 10});
      * // Save the document
      * document.save('output.pdf');
      * // Destroy the document
      * document.destroy();
      * ```
      */
-    draw(graphics: PdfGraphics, x: number, y: number): void
-    draw(graphics: PdfGraphics, x?: number, y?: number): void {
-        if ((x === null || typeof x === 'undefined') && (y === null || typeof y === 'undefined')) {
-            x = 0;
-            y = 0;
+    draw(graphics: PdfGraphics, location: Point): void
+    draw(graphics: PdfGraphics, location?: Point): void {
+        if (location && (location.x === null || typeof location.x === 'undefined') && (location.y === null || typeof location.y === 'undefined')) {
+            location.x = 0;
+            location.y = 0;
         }
-        const needSave: boolean = (x !== 0 || y !== 0);
+        let needSave: boolean;
+        if (location) {
+            needSave = (location.x !== 0 || location.y !== 0);
+        }
         let state: PdfGraphicsState = null;
         if (needSave) {
             state = graphics.save();
-            graphics.translateTransform(x, y);
+            graphics.translateTransform(location);
         }
-        graphics.drawImage(this, 0, 0);
+        graphics.drawImage(this, {x: 0, y: 0});
         if (needSave) {
             graphics.restore(state);
         }

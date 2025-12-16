@@ -1,3 +1,5 @@
+@use 'ej2-base/styles/definition/bootstrap' as *;
+@forward 'ej2-base/styles/definition/bootstrap';
 $datetime-default-text-indent: 20px !default;
 $datetime-list-bigger-line-height: 40px !default;
 $datetime-list-normal-line-height: 26px !default;
@@ -57,3 +59,12 @@ $modal-datetime-wrapper-position: relative !default;
 $modal-datetime-wrapper-width: 100% !default;
 
 //enddefault
+
+$margin-zero: 0;
+$datetime-list-parent-padding: $datetime-list-normal-padding 0;
+$datetime-list-parent-bigger-padding: $datetime-list-bigger-padding 0;
+$datetime-full-height: 100% !default;
+$datetime-content-place-min-height: 33px !default;
+$datetime-bigger-content-place-min-height: 40px !default;
+$date-time-full-width: 100% !default;
+$date-time-border-width: 1px !default;

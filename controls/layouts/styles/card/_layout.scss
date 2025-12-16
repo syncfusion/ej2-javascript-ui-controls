@@ -1,3 +1,5 @@
+@use 'ej2-base/styles/common/mixin' as *;
+@use './theme-variables' as *;
 @include export-module('card-layout') {
  
   .e-card {
@@ -5,8 +7,8 @@
     box-sizing: border-box;
     display: flex;
     flex-direction: column;
-    font-family: $font-family;
-    font-size: 15px;
+    font-family: $card-font-family;
+    font-size: $card-nrml-font-size;
     justify-content: center;
     line-height: $card-nrml-lheight;
     min-height: $card-nrml-mheight;
@@ -47,8 +49,8 @@
       }
 
       + :not(.e-card-header-title) {
-        margin-top: 0;
-        padding-top: 0;
+        margin-top: $card-margin-none;
+        padding-top: $card-padding-none;
       }
     }
 
@@ -58,8 +60,8 @@
       padding: $card-title-nrml-padding;
 
       + :not(.e-card-title) {
-        margin-top: 0;
-        padding-top: 0;
+        margin-top: $card-margin-none;
+        padding-top: $card-padding-none;
       }
     }
 
@@ -70,7 +72,7 @@
     }
 
     .e-card-header-caption {
-      line-height: normal;
+      line-height: $card-normal-line-height;
 
       .e-card-header-title {
         font-size: $card-header-title-font;
@@ -101,8 +103,8 @@
     }
 
     .e-card-horizontal {
-      line-height: normal;
-      padding: 2px;
+      line-height: $card-normal-line-height;
+      padding: $card-horizontal-padding;
     }
 
     &.e-card-horizontal {
@@ -128,7 +130,7 @@
     }
 
     .e-card-corner  {
-      border-radius: 50%;
+      border-radius: $card-corner-border-radius;
     }
 
     .e-card-header {
@@ -136,7 +138,7 @@
       display: flex;
       flex-direction: row;
       justify-content: center;
-      line-height: normal;
+      line-height: $card-normal-line-height;
       min-height: $card-header-minheight;
       padding: $card-header-nrml-padding;
       width: inherit;
@@ -149,8 +151,8 @@
       }
 
       .e-card-content {
-        padding-left: 0;
-        padding-right: 0;
+        padding-left: $card-padding-none;
+        padding-right: $card-padding-none;
       }
 
       .e-card-actions {
@@ -174,7 +176,7 @@
         padding: $card-header-txt-nrml-padding;
 
         &:first-child {
-          padding: 0;
+          padding: $card-padding-none;
         }
 
         .e-card-header-title,
@@ -188,17 +190,17 @@
         .e-card-header-title {
           font-size: $card-header-txt-nrml-title-font;
           @if $skin-name == 'fabric' or $skin-name == 'highcontrast' or $skin-name == 'fluent2' or $skin-name == 'tailwind3' {
-            font-weight: 600;
+            font-weight: $card-header-title-font-weight;
           }
           @else {
-            font-weight: normal;
+            font-weight: $card-header-title-font-weight;
           }
           line-height: $card-header-txt-title-lheight;
         }
 
         .e-card-sub-title {
           font-size: $card-header-txt-nrml-subtitle-font;
-          font-weight: normal;
+          font-weight: $card-sub-title-font-weight;
           line-height: $card-header-txt-subtitle-lheight;
           padding: $card-header-txt-title-nrml-padding;
         }
@@ -240,7 +242,7 @@
         text-overflow: ellipsis;
         width: inherit;
         @if $skin-name == 'fluent2' {
-          font-weight: 600;
+          font-weight: $card-header-title-font-weight;
         }
 
         &.e-card-top-left,
@@ -266,7 +268,7 @@
       padding: $card-action-nrml-padding;
       @if $skin-name == 'tailwind3' {
         border-top: $card-normal-border-bottom;
-        line-height: 30px;
+        line-height: $card-action-line-height;
       }
 
       &.e-card-vertical {
@@ -285,7 +287,7 @@
           width: 100%;
 
           &:last-child {
-            margin-bottom: 0;
+            margin-bottom: $card-margin-none;
           }
         }
       }
@@ -325,27 +327,27 @@
       .e-card-btn,
       a {
         @if $skin-name == 'tailwind' {
-          border-radius: 4px;
+          border-radius: $card-btn-border-radius;
         }
 
         @else {
-          border-radius: 2px;
+          border-radius: $card-btn-border-radius;
         }
       }
 
       .e-card-btn,
       a {
-        font-family: $font-family;
+        font-family: $card-font-family;
         font-size: $card-action-btn-font;
-        line-height: $card-action-btn-nrml-height;
+        line-height: $card-action-btn-nrml-line-height;
         margin: $card-action-btn-nrml-margin;
-        min-height: $card-action-btn-nrml-height;
+        min-height: $card-action-btn-nrml-min-height;
         padding: $card-action-btn-nrml-padding;
         text-decoration: none;
         text-transform: $card-action-btn-txt-transform;
 
         &:first-child {
-          margin-left: 0;
+          margin-left: $card-margin-none;
         }
       }
     }
@@ -359,8 +361,8 @@
       + :not(.e-card-content),
       + .e-card-actions.e-card-vertical {
         @if $skin-name != 'tailwind3' {
-          margin-top: 0;
-          padding-top: 0;
+          margin-top: $card-margin-none;
+          padding-top: $card-padding-none;
         }
       }
       @if $skin-name == 'FluentUI' {
@@ -372,7 +374,7 @@
 
     @if $skin-name == 'tailwind' {
       .e-card-header .e-card-actions {
-        padding: 0;
+        padding: $card-padding-none;
       }
     }
 

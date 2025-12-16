@@ -9,9 +9,9 @@ import { ConnectorModel } from '../../../src/diagram/objects/connector-model';
 import { PointPortModel } from '../../../src/diagram/objects/port-model';
 import { ShapeAnnotationModel, AnnotationModel } from '../../../src/diagram/objects/annotation-model';
 import { GroupableView } from '../../../src/diagram/core/containers/container';
-import { Node, SwimLane } from '../../../src/diagram/objects/node'; 
+import { Node, SwimLane } from '../../../src/diagram/objects/node';
 import { Keys, KeyModifiers } from '../../../src/diagram/enum/enum';
-import  {profile , inMB, getMemoryProfile} from '../../../spec/common.spec';
+import { profile, inMB, getMemoryProfile } from '../../../spec/common.spec';
 import { ILoadedEventArgs } from '../../../src/diagram/objects/interface/IElement';
 
 describe('Diagram Control', () => {
@@ -21,11 +21,11 @@ describe('Diagram Control', () => {
         let ele: HTMLElement;
         beforeAll((): void => {
             const isDef = (o: any) => o !== undefined && o !== null;
-                if (!isDef(window.performance)) {
-                    console.log("Unsupported environment, window.performance.memory is unavailable");
-                    this.skip(); //Skips test (in Chai)
-                    return;
-                }
+            if (!isDef(window.performance)) {
+                console.log("Unsupported environment, window.performance.memory is unavailable");
+                this.skip(); //Skips test (in Chai)
+                return;
+            }
             ele = createElement('div', { id: 'diagram' });
             document.body.appendChild(ele);
             let node1: NodeModel = {
@@ -113,8 +113,7 @@ describe('Diagram Control', () => {
                     content: getcontent(), position: 'TopLeft', relativeMode: 'Object',
                     animation: { open: { effect: 'FadeZoomIn', delay: 0 }, close: { effect: 'FadeZoomOut', delay: 0 } }
                 },
-                loaded: function(args:ILoadedEventArgs)
-                {
+                loaded: function (args: ILoadedEventArgs) {
                     args.diagram.nodes[0].style.fill = 'red';
                 },
             });
@@ -131,6 +130,7 @@ describe('Diagram Control', () => {
         afterAll((): void => {
             diagram.destroy();
             ele.remove();
+            (diagram as any) = null; (ele as any) = null;
         });
 
         it('Checking before, after, Saving the diagram', (done: Function) => {
@@ -170,17 +170,17 @@ describe('Diagram Control', () => {
             expect(savedata != null).toBe(true);
             done();
         });
-      });
+    });
     describe('empty diagram', () => {
         let diagram2: Diagram; let savedata2: string;
         let ele: HTMLElement;
         beforeAll((): void => {
             const isDef = (o: any) => o !== undefined && o !== null;
-                if (!isDef(window.performance)) {
-                    console.log("Unsupported environment, window.performance.memory is unavailable");
-                    this.skip(); //Skips test (in Chai)
-                    return;
-                }
+            if (!isDef(window.performance)) {
+                console.log("Unsupported environment, window.performance.memory is unavailable");
+                this.skip(); //Skips test (in Chai)
+                return;
+            }
             ele = createElement('div', { id: 'diagram2a' });
             document.body.appendChild(ele);
             diagram2 = new Diagram({
@@ -191,6 +191,7 @@ describe('Diagram Control', () => {
         afterAll((): void => {
             diagram2.destroy();
             ele.remove();
+            (diagram2 as any) = null; (ele as any) = null;
         });
 
         it('Checking diagram with empty diagram', (done: Function) => {
@@ -200,7 +201,7 @@ describe('Diagram Control', () => {
             expect(savedata2 != null).toBe(true);
             done();
         });
-   });
+    });
 
     describe('Checking Swimlane', () => {
         let diagram2: Diagram;
@@ -268,6 +269,7 @@ describe('Diagram Control', () => {
         afterAll((): void => {
             diagram2.destroy();
             ele.remove();
+            (diagram2 as any) = null; (ele as any) = null;
         });
 
         it('Child after loading', (done: Function) => {
@@ -287,26 +289,27 @@ describe('Diagram Control', () => {
         let ele: HTMLElement;
         beforeAll((): void => {
             const isDef = (o: any) => o !== undefined && o !== null;
-                if (!isDef(window.performance)) {
-                    console.log("Unsupported environment, window.performance.memory is unavailable");
-                    this.skip(); //Skips test (in Chai)
-                    return;
-                }
+            if (!isDef(window.performance)) {
+                console.log("Unsupported environment, window.performance.memory is unavailable");
+                this.skip(); //Skips test (in Chai)
+                return;
+            }
 
             let node1: NodeModel = {
                 id: 'NewIdea', width: 150, height: 60, offsetX: 300, offsetY: 60,
                 shape: { type: 'Flow', shape: 'Terminator' },
             };
-            ele = createElement('div', { id: 'diagramport' });
+            ele = createElement('div', { id: 'diagramport2' });
             document.body.appendChild(ele);
             diagram2 = new Diagram({
                 width: '1000px', height: '600px', nodes: [node1],
             });
-            diagram2.appendTo('#diagramport');
+            diagram2.appendTo('#diagramport2');
         });
         afterAll((): void => {
             diagram2.destroy();
             ele.remove();
+            (diagram2 as any) = null; (ele as any) = null;
         });
 
         it('Checking port add', (done: Function) => {
@@ -371,23 +374,23 @@ describe('Diagram Control', () => {
             expect(node.annotations.length === 0).toBe(true)
             done()
         });
-       });
+    });
     describe('addport and label in canvas', () => {
         let diagram2: Diagram;
         let ele: HTMLElement;
         beforeAll((): void => {
             const isDef = (o: any) => o !== undefined && o !== null;
-                if (!isDef(window.performance)) {
-                    console.log("Unsupported environment, window.performance.memory is unavailable");
-                    this.skip(); //Skips test (in Chai)
-                    return;
-                }
+            if (!isDef(window.performance)) {
+                console.log("Unsupported environment, window.performance.memory is unavailable");
+                this.skip(); //Skips test (in Chai)
+                return;
+            }
 
             let node1: NodeModel = {
                 id: 'NewIdea', width: 150, height: 60, offsetX: 300, offsetY: 60,
                 shape: { type: 'Flow', shape: 'Terminator' },
             };
-            ele = createElement('div', { id: 'diagramport' });
+            ele = createElement('div', { id: 'diagramport3' });
             document.body.appendChild(ele);
             diagram2 = new Diagram({
                 width: '1000px', height: '600px', nodes: [node1],
@@ -416,11 +419,12 @@ describe('Diagram Control', () => {
                     ]
                 }
             });
-            diagram2.appendTo('#diagramport');
+            diagram2.appendTo('#diagramport3');
         });
         afterAll((): void => {
             diagram2.destroy();
             ele.remove();
+            (diagram2 as any) = null; (ele as any) = null;
         });
 
         it('Checking port add', (done: Function) => {
@@ -476,7 +480,7 @@ describe('Diagram Control', () => {
             expect(diagram2.commandManager.commands.length > 0).toBe(true)
             done()
         });
-        it('memory leak', () => { 
+        it('memory leak', () => {
             profile.sample();
             let average: any = inMB(profile.averageChange)
             //Check average change in memory samples to not be over 10MB
@@ -492,11 +496,11 @@ describe('Diagram Control', () => {
         let ele: HTMLElement;
         beforeAll((): void => {
             const isDef = (o: any) => o !== undefined && o !== null;
-                if (!isDef(window.performance)) {
-                    console.log("Unsupported environment, window.performance.memory is unavailable");
-                    this.skip(); //Skips test (in Chai)
-                    return;
-                }
+            if (!isDef(window.performance)) {
+                console.log("Unsupported environment, window.performance.memory is unavailable");
+                this.skip(); //Skips test (in Chai)
+                return;
+            }
             ele = createElement('div', { id: 'diagramloadWithoutTemplate' });
             document.body.appendChild(ele);
             diagram = new Diagram({
@@ -507,6 +511,7 @@ describe('Diagram Control', () => {
         afterAll((): void => {
             diagram.destroy();
             ele.remove();
+            (diagram as any) = null; (ele as any) = null;
         });
 
         it('Checking Add data with node template without defining nodeteamplate at application level', (done: Function) => {
@@ -530,22 +535,23 @@ describe('Diagram Control', () => {
                 this.skip(); //Skips test (in Chai)
                 return;
             }
-            ele = createElement('div', { id: 'diagram' });
+            ele = createElement('div', { id: 'diagram6' });
             document.body.appendChild(ele);
 
             diagram = new Diagram({
                 width: 1400, height: 900,
             });
-            diagram.appendTo('#diagram');
+            diagram.appendTo('#diagram6');
         });
 
         afterAll((): void => {
             diagram.destroy();
             ele.remove();
+            (diagram as any) = null; (ele as any) = null;
         });
 
         it('load EJ1 data', (done: Function) => {
-            let ej1Data: any = {"width":"100%","height":"100%","nodes":[{"type":"basic","name":"node1","width":100,"height":100,"offsetX":400,"offsetY":200,"zOrder":0,"shape":"rectangle"},{"type":"basic","name":"node2","width":100,"height":100,"offsetX":550,"offsetY":350,"zOrder":1,"shape":"rectangle"}],"serializationSettings":{"preventDefaultValues":true},"scrollSettings":{"viewPortHeight":17.986112594604492,"viewPortWidth":2117.361328125},"pageSettings":{"pageWidth":0,"pageHeight":0,"scrollableArea":{"x":0,"y":0,"width":0,"height":0}},"enableAutoScroll":false,"version":"13.3.0.8","tool":6,"selectedItems":{"tooltip":{"margin":{"top":10}}}};
+            let ej1Data: any = { "width": "100%", "height": "100%", "nodes": [{ "type": "basic", "name": "node1", "width": 100, "height": 100, "offsetX": 400, "offsetY": 200, "zOrder": 0, "shape": "rectangle" }, { "type": "basic", "name": "node2", "width": 100, "height": 100, "offsetX": 550, "offsetY": 350, "zOrder": 1, "shape": "rectangle" }], "serializationSettings": { "preventDefaultValues": true }, "scrollSettings": { "viewPortHeight": 17.986112594604492, "viewPortWidth": 2117.361328125 }, "pageSettings": { "pageWidth": 0, "pageHeight": 0, "scrollableArea": { "x": 0, "y": 0, "width": 0, "height": 0 } }, "enableAutoScroll": false, "version": "13.3.0.8", "tool": 6, "selectedItems": { "tooltip": { "margin": { "top": 10 } } } };
             diagram.loadDiagram(JSON.stringify(ej1Data), true);
             expect(diagram.nodes.length === 2).toBe(true);
             done();

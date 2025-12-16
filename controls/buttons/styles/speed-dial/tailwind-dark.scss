@@ -1,6 +1,6 @@
-@import 'ej2-base/styles/definition/tailwind-dark.scss';
-@import '../button/tailwind-dark-definition.scss';
-@import '../floating-action-button/tailwind-dark-definition.scss';
-@import 'tailwind-dark-definition.scss';
-@import 'all.scss';
-@import 'bigger.scss';
+@use 'ej2-base/styles/definition/tailwind-dark' as *;
+@use '../button/tailwind-dark-definition' as *;
+@use '../floating-action-button/tailwind-dark-definition' as *;
+@use 'tailwind-dark-definition' as *;
+@use 'all' as *;
+@use 'bigger' as *;

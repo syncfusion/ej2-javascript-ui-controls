@@ -1,4 +1,7 @@
-@import 'definition.scss';
+@use 'ej2-base/styles/common/mixin' as *;
+@use 'definition' as *;
+@use 'ej2-base/styles/definition/material-dark' as *;
+@forward 'ej2-base/styles/definition/material-dark';
 
 $diagram-endpoint-handle-color: $primary-font;
 $diagram-endpoint-handle-connected-border: $primary-font;

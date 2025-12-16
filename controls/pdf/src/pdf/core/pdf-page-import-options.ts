@@ -27,6 +27,43 @@ export class PdfPageImportOptions {
     _optimizeResources: boolean = true;
     _groupFormFields: boolean = false;
     /**
+     * Initializes a new instance of the `PdfPageImportOptions` class.
+     *
+     * @param {object} [options] Optional configuration.
+     * @param {number} [options.targetIndex] Target page index to import.
+     * @param {PdfRotationAngle} [options.rotation] Rotation angle of the page.
+     * @param {boolean} [options.optimizeResources] Whether to optimize resources.
+     * @param {boolean} [options.groupFormFields] Whether to group form fields.
+     *
+     * ```typescript
+     * // Load an existing PDF document
+     * let document: PdfDocument = new PdfDocument(data);
+     * // Options to customize the support of import PDF pages.
+     * let options: PdfPageImportOptions = new PdfPageImportOptions({
+     * targetIndex: 2, rotation: PdfRotationAngle.angle90, optimizeResources: true,
+     * groupFormFields: false});
+     * // Copy the first page and add it as second page with page rotation
+     * document.importPage(0, options);
+     * // Save the document
+     * document.save('output.pdf');
+     * // Destroy the document
+     * document.destroy();
+     */
+    constructor(options?: { targetIndex?: number, rotation?: PdfRotationAngle, optimizeResources?: boolean, groupFormFields?: boolean }) {
+        if (options && 'targetIndex' in options && options.targetIndex !== null && typeof options.targetIndex !== 'undefined') {
+            this._targetIndex = options.targetIndex;
+        }
+        if (options && 'rotation' in options && options.rotation !== null && typeof options.rotation !== 'undefined') {
+            this._rotation = options.rotation;
+        }
+        if (options && 'optimizeResources' in options && options.optimizeResources !== null && typeof options.optimizeResources !== 'undefined') {
+            this._optimizeResources = options.optimizeResources;
+        }
+        if (options && 'groupFormFields' in options && options.groupFormFields !== null && typeof options.groupFormFields !== 'undefined') {
+            this._groupFormFields = options.groupFormFields;
+        }
+    }
+    /**
      * Gets the target page index to import
      *
      * @returns {PdfRotationAngle} Page rotation angle.

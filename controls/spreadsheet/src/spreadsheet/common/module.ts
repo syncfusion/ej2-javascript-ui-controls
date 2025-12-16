@@ -131,6 +131,11 @@ function pushBasicModules(context: Spreadsheet, modules: ModuleDeclaration[]): v
         member: 'workbookEdit',
         args: [context]
     });
+    modules.push({
+        member: 'spreadsheetComment',
+        args: [context]
+    });
+
     if (context.allowHyperlink) {
         modules.push({
             member: 'spreadsheetHyperlink',

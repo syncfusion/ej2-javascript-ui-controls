@@ -52,7 +52,8 @@ export class Render {
     public lastColumn: ColumnModel;
     /** @hidden */
     public indentCollection: { [key: number]: number } = {};
-    private formatList: { [key: string]: string };
+    /** @hidden */
+    public formatList: { [key: string]: string };
     private colPos: number = 0;
     private colGrandPos: number;
     private rowGrandPos: number;
@@ -1053,7 +1054,8 @@ export class Render {
             if (vSort !== undefined && lock && (rCnt === len || (rCnt + 1) === len && cell.level > -1 &&
                 engine.headerContent[(rCnt + 1)][cCnt as number]
                 && engine.headerContent[(rCnt + 1)][cCnt as number].level === -1)) {
-                tCell.querySelector('div div').appendChild(createElement('span', {
+                const pivotContainer: HTMLElement = tCell.querySelector('.e-pivotcell-container');
+                pivotContainer.appendChild(createElement('span', {
                     className: (columnOrder === 'Descending' ?
                         'e-icon-descending e-icons e-descending e-sortfilterdiv e-value-sort-icon' :
                         'e-icon-ascending e-icons e-ascending e-sortfilterdiv e-value-sort-icon') + (cell.hasChild ? ' e-value-sort-align' : ''),
@@ -1775,8 +1777,14 @@ export class Render {
                 outerDiv.append(div);
             }
             outerDiv.append(innerDiv);
-            tCell.children[0].innerHTML = '';
-            tCell.children[0].append(outerDiv);
+            const headerCellDiv: HTMLElement = tCell.querySelector('.e-headercelldiv, .e-stackedheadercelldiv');
+            if (!isNullOrUndefined(headerCellDiv)) {
+                headerCellDiv.innerHTML = '';
+                headerCellDiv.append(outerDiv);
+            } else {
+                tCell.children[0].innerHTML = '';
+                tCell.children[0].append(outerDiv);
+            }
         }
         return tCell;
     }

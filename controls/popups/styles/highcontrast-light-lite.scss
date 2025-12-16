@@ -1,12 +1,12 @@
-@import 'ej2-base/styles/definition/highcontrast-light.scss';
-@import 'ej2-buttons/styles/button/highcontrast-light-definition.scss';
-@import 'popup/highcontrast-light-definition.scss';
-@import 'dialog/highcontrast-light-definition.scss';
-@import 'dialog/icons/highcontrast-light.scss';
-@import 'dialog/all.scss';
-@import 'popup/all.scss';
+@use 'ej2-base/styles/definition/highcontrast-light' as *;
+@use 'ej2-buttons/styles/button/highcontrast-light-definition' as *;
+@use 'popup/highcontrast-light-definition' as *;
+@use 'dialog/highcontrast-light-definition' as *;
+@use 'dialog/icons/highcontrast-light' as *;
+@use 'dialog/all' as *;
+@use 'popup/all' as *;
 
-@import 'tooltip/highcontrast-light-definition.scss';
-@import 'tooltip/all.scss';
-@import 'spinner/highcontrast-light-definition.scss';
-@import 'spinner/all.scss';
+@use 'tooltip/highcontrast-light-definition' as *;
+@use 'tooltip/all' as *;
+@use 'spinner/highcontrast-light-definition' as *;
+@use 'spinner/all' as *;

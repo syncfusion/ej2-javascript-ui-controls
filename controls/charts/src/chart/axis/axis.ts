@@ -1,15 +1,15 @@
-import { Property, Complex, ChildProperty, Collection, extend, Browser } from '@syncfusion/ej2-base';
+import { Property, Complex, ChildProperty, Collection, extend, Browser, createElement } from '@syncfusion/ej2-base';
 import { FontModel, BorderModel } from '../../common/model/base-model';
 import { Font, Border } from '../../common/model/base';
 import { AxisPosition } from '../utils/enum';
 import { EdgeLabelPlacement, ValueType, IntervalType, LabelIntersectAction, Orientation, ChartRangePadding, SkeletonType } from '../../common/utils/enum';
-import { rotateTextSize, firstToLowerCase, valueToCoefficient, inside, isBreakLabel, isZoomSet, getTitle, getElement, appendChildElement } from '../../common/utils/helper';
+import { rotateTextSize, firstToLowerCase, valueToCoefficient, inside, isBreakLabel, isZoomSet, getTitle, getElement, appendChildElement, createTemplate, measureElementRect } from '../../common/utils/helper';
 import { Size, Rect, measureText } from '@syncfusion/ej2-svg-base';
 import { DoubleRange } from '../utils/double-range';
 import { Chart } from '../chart';
 import { MajorGridLinesModel, MinorGridLinesModel, CrosshairTooltipModel } from '../axis/axis-model';
 import { AxisLineModel, MajorTickLinesModel, MinorTickLinesModel } from '../axis/axis-model';
-import { Series } from '../series/chart-series';
+import { Points, Series } from '../series/chart-series';
 import { Double } from '../axis/double-axis';
 import { DateTime } from '../axis/date-time-axis';
 import { Category } from '../axis/category-axis';
@@ -24,6 +24,7 @@ import { ScrollBar } from '../../common/scrollbar/scrollbar';
 import { isNullOrUndefined } from '@syncfusion/ej2-base';
 import { VisibleRangeModel } from '../../common/model/interface';
 import { CartesianAxisLayoutPanel } from './cartesian-panel';
+import { AccPoints } from '../../accumulation-chart';
 
 /**
  * Configures the `rows` of the chart to create multiple vertical rows within the chart area.
@@ -699,6 +700,34 @@ export class Axis extends ChildProperty<Axis> {
     public labelPosition: AxisPosition;
 
     /**
+     * Specifies the template used to render axis labels, allowing for customized labels with text, images, or other UI elements.
+     * The template is provided as a string with placeholders for interpolation. Use `${label}` to insert the axis label and `${value}` for the axis label value.
+     * For security, string templates use dangerouslySetInnerHTML in React—ensure input is trusted to avoid XSS vulnerabilities.
+     * If null or undefined, the axis will render default labels.
+     * Compatible with both categorical and numerical axes.
+     *
+     * @example
+     * ```html
+     * <div id='Chart'></div>
+     * ```
+     * ```typescript
+     * let chart: Chart = new Chart({
+     * ...
+     * primaryXAxis: {
+     * labelTemplate: '<div>Country: ${label}</div>'
+     * }
+     * ...
+     * });
+     * chart.appendTo('#Chart');
+     * ```
+     *
+     * @default null
+     */
+
+    @Property(null)
+    public labelTemplate: string | Function;
+
+    /**
      * A unique identifier for an axis. To associate an axis with a series, set this name to the `xAxisName` or `yAxisName` properties of the series.
      *
      * @default ''
@@ -1286,6 +1315,10 @@ export class Axis extends ChildProperty<Axis> {
         let isIntersect: boolean = false; let isAxisLabelBreak: boolean;
         this.angle = this.labelRotation; this.maxLabelSize = new Size(0, 0);
         const action: LabelIntersectAction = this.labelIntersectAction; let label: VisibleLabels;
+        if (this.labelTemplate && !isNullOrUndefined(this.labelTemplate)) {
+            this.getMaxTemplateLabelWidth(chart);
+            return;
+        }
         for (let i: number = 0, len: number = this.visibleLabels.length; i < len; i++) {
             label = this.visibleLabels[i as number];
             isAxisLabelBreak = isBreakLabel(label.originalText);
@@ -1414,6 +1447,90 @@ export class Axis extends ChildProperty<Axis> {
                 this.maxLabelSize = rotateTextSize(this.labelStyle, this.rotatedLabel, this.angle, chart, chart.themeStyle.axisLabelFont);
             }
         }
+        if (chart.multiLevelLabelModule && this.multiLevelLabels.length > 0) {
+            chart.multiLevelLabelModule.getMultilevelLabelsHeight(this);
+        }
+    }
+
+    private getMaxTemplateLabelWidth(chart: Chart): void {
+        let pointX: number;
+        let previousEnd: number = 0;
+        let isIntersect: boolean = false;
+        const defaultLabelHeight: number = 15.96;
+        const action: LabelIntersectAction = this.labelIntersectAction;
+        let label: VisibleLabels;
+
+        for (let i: number = 0, len: number = this.visibleLabels.length; i < len; i++) {
+            label = this.visibleLabels[i as number];
+            const childElement: HTMLElement = createTemplate(
+                createElement('div', {
+                    id: '_AxisLabelTemplate_',
+                    styles: 'position:absolute; cursor: default; white-space: nowrap;pointer-events:none; z-index:1;'
+                }), i, this.labelTemplate, chart, label);
+            const elementRect: ClientRect = measureElementRect(childElement, chart.redraw);
+
+            const width: number = elementRect.width;
+            const height: number = elementRect.height;
+
+            label.size = new Size(width, height);
+
+            if (width > this.maxLabelSize.width) {
+                this.maxLabelSize.width = width;
+            }
+            if (height > this.maxLabelSize.height) {
+                this.maxLabelSize.height = height;
+            }
+
+            if (action === 'None' || action === 'Hide') {
+                continue;
+            }
+
+            if (this.orientation === 'Horizontal' && this.rect.width > 0 && !isIntersect) {
+                const width1: number = label.size.width;
+                pointX = (valueToCoefficient(label.value, this) * this.rect.width) + this.rect.x;
+                pointX -= width1 / 2;
+
+                if (this.edgeLabelPlacement === 'Shift') {
+                    if (i === 0 && pointX < this.rect.x) {
+                        pointX = this.rect.x;
+                    }
+                    if (i === this.visibleLabels.length - 1 && ((pointX + width1) > (this.rect.x + this.rect.width))) {
+                        pointX = this.rect.x + this.rect.width - width1;
+                    }
+                }
+                switch (action) {
+                case 'Rotate45':
+                case 'Rotate90':
+                    if (i > 0 && (!this.isAxisInverse ? pointX <= previousEnd : pointX + width1 >= previousEnd)) {
+                        this.angle = (action === 'Rotate45') ? 45 : 90;
+                        isIntersect = true;
+                    }
+                    break;
+                }
+                previousEnd = this.isAxisInverse ? pointX : pointX + width1;
+            }
+        }
+
+        this.maxLabelSize.height = this.visibleLabels.length === 0 && this.crosshairTooltip.enable ?
+            defaultLabelHeight : this.maxLabelSize.height;
+
+        if (this.rect.height !== 0) {
+            this.maxLabelSize.height = Math.min(this.maxLabelSize.height, (this.rect.height / 2));
+        }
+        if (this.rect.width !== 0) {
+            this.maxLabelSize.width = Math.min(this.maxLabelSize.width, (this.rect.width / 2));
+        }
+
+        if (this.angle !== 0 && this.orientation === 'Horizontal') {
+            const angleInRad: number = this.angle * (Math.PI / 180);
+            const width: number = this.maxLabelSize.width;
+            const height: number = this.maxLabelSize.height;
+            this.maxLabelSize = new Size (
+                Math.abs(width * Math.cos(angleInRad)) + Math.abs(height * Math.sin(angleInRad)),
+                Math.abs(width * Math.sin(angleInRad)) + Math.abs(height * Math.cos(angleInRad))
+            );
+        }
+
         if (chart.multiLevelLabelModule && this.multiLevelLabels.length > 0) {
             chart.multiLevelLabelModule.getMultilevelLabelsHeight(this);
         }

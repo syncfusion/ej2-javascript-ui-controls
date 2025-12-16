@@ -5,6 +5,7 @@ import { ExtractTextOption, PdfViewer, PdfViewerBase, SearchResultModel } from '
 import { TextDataSettingsModel } from '../pdfviewer-model';
 import { Rect, Size } from '@syncfusion/ej2-drawings';
 import { PdfViewerUtils, TaskPriorityLevel } from '../base/pdfviewer-utlis';
+import { PdfRedactor } from '@syncfusion/ej2-pdf-data-extract';
 
 /**
  * PdfRenderer
@@ -128,7 +129,10 @@ export class PdfRenderer {
     public digitialByteArray: Uint8Array;
     private loadedByteArray: Uint8Array;
     private loadImportedBase64String: string;
-    private password: string;
+    /**
+     * @private
+     */
+    public password: string;
     private importedDocpassword: string;
     private isDummyInserted: boolean = false;
 
@@ -329,24 +333,15 @@ export class PdfRenderer {
 
     private getPageSizes(pageCount: number): { [key: string]: Size; } {
         const pageSizes: { [key: string]: Size } = {};
-        let pageLimit: number = pageCount;
-        if (pageCount > 100) {
-            pageLimit = 100;
-        }
-        if (this.isCompletePageSizeNotReceieved) {
-            for (let i: number = 0; i < pageLimit; i++) {
-                pageSizes[i.toString()] = this.getPageSize(i);
-                const page: PdfPage = this.loadedDocument.getPage(i);
-                const rotation: PdfRotationAngle = page.rotation % 4;
-                this.pageRotationCollection.push(rotation);
-            }
-        }
-        else {
-            for (let i: number = pageLimit; i < pageCount; i++) {
-                pageSizes[i.toString()] = this.getPageSize(i);
-                const page: PdfPage = this.loadedDocument.getPage(i);
-                const rotation: PdfRotationAngle = page.rotation % 4;
-                this.pageRotationCollection.push(rotation);
+        for (let i: number = 0; i < pageCount; i++) {
+            const page: PdfPage = this.loadedDocument.getPage(i);
+            const size: any = page.size;
+            const rotation: PdfRotationAngle = page.rotation % 4;
+            this.pageRotationCollection.push(rotation);
+            if (rotation === PdfRotationAngle.angle0 || rotation === PdfRotationAngle.angle180) {
+                pageSizes[i.toString()] = new Size(this.convertPointToPixel(size.width), this.convertPointToPixel(size.height));
+            } else {
+                pageSizes[i.toString()] = new Size(this.convertPointToPixel(size.height), this.convertPointToPixel(size.width));
             }
         }
         return pageSizes;
@@ -361,12 +356,12 @@ export class PdfRenderer {
         let newSize: Size = new Size();
         if (pageNumber >= 0 && pageNumber < this.loadedDocument.pageCount) {
             const page: PdfPage = this.loadedDocument.getPage(pageNumber);
-            const size: number[] = page.size;
+            const size: any = page.size;
             const rotation: PdfRotationAngle = page.rotation % 4;
             if (rotation === PdfRotationAngle.angle0 || rotation === PdfRotationAngle.angle180) {
-                newSize = new Size(this.convertPointToPixel(size[0]), this.convertPointToPixel(size[1]));
+                newSize = new Size(this.convertPointToPixel(size.width), this.convertPointToPixel(size.height));
             } else {
-                newSize = new Size(this.convertPointToPixel(size[1]), this.convertPointToPixel(size[0]));
+                newSize = new Size(this.convertPointToPixel(size.height), this.convertPointToPixel(size.width));
             }
         }
         return newSize;
@@ -385,7 +380,7 @@ export class PdfRenderer {
      * @private
      * @returns {void}
      */
-    public getDocumentAsBase64(jsonObject: { [key: string]: string }): Uint8Array {
+    public getDocumentAsUint8Array(jsonObject: { [key: string]: string }): Uint8Array {
         this.loadedDocument = new PdfDocument(this.loadedByteArray, this.password);
         let clonedDocument: PdfDocument = null;
         if (Object.prototype.hasOwnProperty.call(jsonObject, 'digitalSignatureDocumentEdited') &&
@@ -425,6 +420,37 @@ export class PdfRenderer {
                 }
                 clonedDocument.destroy();
                 clonedDocument = null;
+            }
+            if (Object.prototype.hasOwnProperty.call(jsonObject, 'canRedact')) {
+                const canRedact: boolean = JSON.parse(jsonObject.canRedact);
+                if (canRedact === true) {
+                    // Initialize a new instance of the `PdfRedactor` class
+                    const redactor: PdfRedactor = new PdfRedactor(this.loadedDocument);
+                    // Apply redactions on the PDF document
+                    redactor.redact();
+                }
+            }
+            if (Object.prototype.hasOwnProperty.call(jsonObject, 'canPrint') && (!Browser.isDevice && this.pdfViewerBase.clientSideRendering)) {
+                const canPrint: boolean = JSON.parse(jsonObject.canPrint);
+                if (this.pdfViewer.enablePrintRotation && canPrint === true) {
+                    for (let i: number = 0; i < this.pdfViewer.pageCount; i++) {
+                        const pageSize: Size = this.pdfViewer.pdfRendererModule.getPageSize(i);
+                        const page: PdfPage = this.loadedDocument.getPage(i);
+                        const currentRotation: number = this.pdfViewer.pdfRendererModule.pageRotationCollection[parseInt(i.toString(), 10)];
+                        if (pageSize.width > pageSize.height) {
+                            page.rotation = PdfRotationAngle.angle270;
+                        } else {
+                            switch (currentRotation) {
+                            case PdfRotationAngle.angle90:
+                                page.rotation = PdfRotationAngle.angle0;
+                                break;
+                            case PdfRotationAngle.angle270:
+                                page.rotation = PdfRotationAngle.angle180;
+                                break;
+                            }
+                        }
+                    }
+                }
             }
             const documentSaved: any = this.loadedDocument.save();
             if (this.document != null) {
@@ -492,10 +518,12 @@ export class PdfRenderer {
                 const isInserted: boolean = organizePages[parseInt(i.toString(), 10)].isInserted;
                 const isCopied: boolean = organizePages[parseInt(i.toString(), 10)].isCopied;
                 const isImportedDoc: boolean = organizePages[parseInt(i.toString(), 10)].isImportedDoc;
-                let pageSize: number[];
+                let pageSize: any;
                 if (!isNullOrUndefined(organizePages[parseInt(i.toString(), 10)].pageSize)) {
-                    pageSize = [this.convertPixelToPoint(organizePages[parseInt(i.toString(), 10)].pageSize.width),
-                        this.convertPixelToPoint(organizePages[parseInt(i.toString(), 10)].pageSize.height)];
+                    pageSize = {
+                        width: this.convertPixelToPoint(organizePages[parseInt(i.toString(), 10)].pageSize.width),
+                        height: this.convertPixelToPoint(organizePages[parseInt(i.toString(), 10)].pageSize.height)
+                    };
                 }
                 if (isCopied || isImportedDoc) {
                     copiedPageCount++;
@@ -661,6 +689,8 @@ export class PdfRenderer {
                     this.annotationDetailCollection[parseInt(i.toString(), 10)].signatureAnnotation = renderer.signatureAnnotationList;
                     this.annotationDetailCollection[parseInt(i.toString(), 10)].signatureInkAnnotation =
                         renderer.signatureInkAnnotationList;
+                    this.annotationDetailCollection[parseInt(i.toString(), 10)].redactionAnnotation =
+                        renderer.redactionAnnotationList;
                     this.annotationDetailCollection[parseInt(i.toString(), 10)].annotationOrder = renderer.annotationOrder;
                     this.removeAnnotationsFromCollection(renderer);
                 }
@@ -787,6 +817,21 @@ export class PdfRenderer {
                             if (shape) {
                                 details = shape;
                                 annotationRenderer.addShape(details, page);
+                            }
+                        }
+                        break;
+                    case 'Redaction':
+                        if (Object.prototype.hasOwnProperty.call(jsonObject, 'redactionAnnotations')) {
+                            const redactionDetails: any = JSON.parse(jsonObject.redactionAnnotations);
+                            const canRedact: boolean = jsonObject.canRedact ? JSON.parse(jsonObject.canRedact) : false;
+                            const pageNumber: string = details['pageNumber'].toString();
+                            const annotationCount: { [key: string]: object } = redactionDetails[parseInt(pageNumber, 10)];
+                            const pageAnnotations: any = annotationCount;
+                            const page: PdfPage = this.loadedDocument.getPage(parseInt(pageNumber, 10));
+                            const redact: any = pageAnnotations.find((obj: any) => obj['annotName'].toString() === details['annotationId'].toString());
+                            if (redact) {
+                                details = redact;
+                                annotationRenderer.addRedact(details, page, canRedact);
                             }
                         }
                         break;
@@ -919,6 +964,7 @@ export class PdfRenderer {
         try {
             const bookmark: PdfBookmarkBase = this.loadedDocument.bookmarks;
             if (!isNullOrUndefined(bookmark) && Object.prototype.hasOwnProperty.call(jsonObject, 'bookmarkStyles')) {
+                this.bookmarkStyles = [];
                 for (let i: number = 0; i < bookmark.count; i++) {
                     this.retrieveFontStyles(bookmark.at(i), false);
                 }
@@ -927,13 +973,15 @@ export class PdfRenderer {
                 return null;
             }
             else {
+                this.bookmarkCollection = [];
+                this.bookmarkDictionary = {};
                 for (let i: number = 0; i < bookmark.count; i++) {
                     const pdfLoadedBookmark: PdfBookmark = bookmark.at(i);
                     const parentBookmarkDestination: BookmarkDestination = new BookmarkDestination();
                     const bookmarkDestination: PdfDestination = pdfLoadedBookmark.destination ?
                         pdfLoadedBookmark.destination : pdfLoadedBookmark.namedDestination ?
                             pdfLoadedBookmark.namedDestination.destination ? pdfLoadedBookmark.namedDestination.destination : null : null;
-                    parentBookmarkDestination.X = !isNullOrUndefined(bookmarkDestination) ? bookmarkDestination.location[0] : 0;
+                    parentBookmarkDestination.X = !isNullOrUndefined(bookmarkDestination) ? bookmarkDestination.location.x : 0;
                     parentBookmarkDestination.PageIndex = !isNullOrUndefined(bookmarkDestination) ?
                         (!isNullOrUndefined(bookmarkDestination.pageIndex) ? bookmarkDestination.pageIndex : 0) : 0;
                     parentBookmarkDestination.Zoom = !isNullOrUndefined(bookmarkDestination) ? bookmarkDestination.zoom : 0;
@@ -944,15 +992,15 @@ export class PdfRenderer {
                     parentBookmark.FileName = !isNullOrUndefined((pdfLoadedBookmark as any).action) ? (pdfLoadedBookmark as any).action.toString() : '';
                     if (!isNullOrUndefined(bookmarkDestination) && !isNullOrUndefined(bookmarkDestination.page)) {
                         if (bookmarkDestination.page.rotation === PdfRotationAngle.angle90) {
-                            parentBookmarkDestination.Y = this.convertPointToPixel(bookmarkDestination.page.size[0]) -
-                                this.convertPointToPixel(Math.abs(bookmarkDestination.location[1]));
+                            parentBookmarkDestination.Y = this.convertPointToPixel(bookmarkDestination.page.size.width) -
+                                this.convertPointToPixel(Math.abs(bookmarkDestination.location.y));
                         }
                         else if (bookmarkDestination.page.rotation === PdfRotationAngle.angle270) {
-                            parentBookmarkDestination.Y = this.convertPointToPixel(Math.abs(bookmarkDestination.location[1]));
+                            parentBookmarkDestination.Y = this.convertPointToPixel(Math.abs(bookmarkDestination.location.y));
                         }
                         else {
-                            parentBookmarkDestination.Y = this.convertPointToPixel(bookmarkDestination.page.size[1]) -
-                                this.convertPointToPixel(Math.abs(bookmarkDestination.location[1]));
+                            parentBookmarkDestination.Y = this.convertPointToPixel(bookmarkDestination.page.size.height) -
+                                this.convertPointToPixel(Math.abs(bookmarkDestination.location.y));
                         }
                     }
                     else {
@@ -984,7 +1032,7 @@ export class PdfRenderer {
         const currentStyles: BookmarkStyles = new BookmarkStyles();
         if (!isNullOrUndefined(currentElement)) {
             if (!isNullOrUndefined(currentElement.color)) {
-                currentStyles.Color = 'rgba(' + currentElement.color[0] + ',' + currentElement.color[1] + ',' + currentElement.color[2] + ',' + 1 + ')';
+                currentStyles.Color = 'rgba(' + currentElement.color.r + ',' + currentElement.color.g + ',' + currentElement.color.b + ',' + 1 + ')';
             }
             currentStyles.FontStyle = this.getPdfTextStyleString(currentElement.textStyle);
             currentStyles.Text = currentElement.title;
@@ -1023,17 +1071,17 @@ export class PdfRenderer {
                 this.id++;
                 const title: string = child.title;
                 this.pageIndex = !isNullOrUndefined(childBookmarkDestination) ? childBookmarkDestination.pageIndex : 0;
-                this.x = !isNullOrUndefined(childBookmarkDestination) ? childBookmarkDestination.location[0] : 0;
-                const yPosition: number = !isNullOrUndefined(childBookmarkDestination) ? Math.abs(childBookmarkDestination.location[1]) : 0;
+                this.x = !isNullOrUndefined(childBookmarkDestination) ? childBookmarkDestination.location.x : 0;
+                const yPosition: number = !isNullOrUndefined(childBookmarkDestination) ? Math.abs(childBookmarkDestination.location.y) : 0;
                 if (!isNullOrUndefined(childBookmarkDestination) && !isNullOrUndefined(childBookmarkDestination.page)) {
                     if (childBookmarkDestination.page.rotation === PdfRotationAngle.angle90) {
-                        this.y = this.convertPointToPixel(childBookmarkDestination.page.size[0]) - this.convertPointToPixel(yPosition);
+                        this.y = this.convertPointToPixel(childBookmarkDestination.page.size.width) - this.convertPointToPixel(yPosition);
                     }
                     else if (childBookmarkDestination.page.rotation === PdfRotationAngle.angle270) {
                         this.y = this.convertPointToPixel(yPosition);
                     }
                     else {
-                        this.y = this.convertPointToPixel(childBookmarkDestination.page.size[1]) - this.convertPointToPixel(yPosition);
+                        this.y = this.convertPointToPixel(childBookmarkDestination.page.size.height) - this.convertPointToPixel(yPosition);
                     }
                     this.zoom = childBookmarkDestination.zoom;
                 }
@@ -1164,16 +1212,18 @@ export class PdfRenderer {
                         this.renderer.annotationDestPage.push(linkPageIndex);
                         this.renderer.annotationList.push(rectangle);
                         if (page.rotation === PdfRotationAngle.angle180) {
-                            this.renderer.annotationYPosition.push(this.convertPointToPixel(Math.abs(pdfLoadedDocumentLinkAnnotation.
-                                destination.location[1])));
+                            this.renderer.annotationYPosition.push(this.convertPointToPixel(
+                                Math.abs(pdfLoadedDocumentLinkAnnotation.destination.location.y)));
                         }
                         else if (page.rotation === PdfRotationAngle.angle90 || page.rotation === PdfRotationAngle.angle270) {
                             this.renderer.annotationYPosition.push(pageSize.width -
-                                this.convertPointToPixel(Math.abs(pdfLoadedDocumentLinkAnnotation.destination.location[1])));
+                                this.convertPointToPixel(
+                                    Math.abs(pdfLoadedDocumentLinkAnnotation.destination.location.y)));
                         }
                         else {
                             this.renderer.annotationYPosition.push(pageSize.height -
-                                this.convertPointToPixel(Math.abs(pdfLoadedDocumentLinkAnnotation.destination.location[1])));
+                                this.convertPointToPixel(Math.abs(
+                                    pdfLoadedDocumentLinkAnnotation.destination.location.y)));
                         }
                     }
                 }
@@ -1613,9 +1663,9 @@ export class PdfRenderer {
             endIndex = Math.min(endIndex, proxy.pdfViewer.pageCount - 1);
             const count: number = endIndex - startIndex + 1;
             const fetchTextCollection: any = (i: number) =>
-                proxy.pdfViewer.textSearch.documentTextCollection[parseInt(i.toString(), 10)]
+                proxy.pdfViewerBase.documentTextCollection[parseInt(i.toString(), 10)]
                     // eslint-disable-next-line max-len
-                    ? proxy.pdfViewer.textSearch.documentTextCollection[parseInt(i.toString(), 10)][parseInt(i.toString(), 10)]
+                    ? proxy.pdfViewerBase.documentTextCollection[parseInt(i.toString(), 10)][parseInt(i.toString(), 10)]
                     : null;
             const processPage: any = (i: number, msg: string) => {
                 const documentTextCollection: any = fetchTextCollection(i);
@@ -1674,7 +1724,7 @@ export class PdfRenderer {
 
     private getCharacterBounds(pageIndex: number): any {
         const documentIndex: any =
-        this.pdfViewer.textSearchModule.documentTextCollection[parseInt(pageIndex.toString(), 10)][parseInt(pageIndex.toString(), 10)];
+        this.pdfViewerBase.documentTextCollection[parseInt(pageIndex.toString(), 10)][parseInt(pageIndex.toString(), 10)];
         return documentIndex.textData || documentIndex.TextData;
     }
 
@@ -1836,5 +1886,6 @@ export class Annotations {
     public freeTextAnnotation: any;
     public signatureAnnotation: any;
     public signatureInkAnnotation: any;
+    public redactionAnnotation: any;
     public annotationOrder: any;
 }

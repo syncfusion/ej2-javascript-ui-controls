@@ -1,5 +1,5 @@
 import { NumberFormatOptions, DateFormatOptions, merge } from '@syncfusion/ej2-base';
-import { TextAlign, ClipMode, ValueAccessor, IEditCell, IFilter } from '@syncfusion/ej2-grids';
+import { TextAlign, ClipMode, ValueAccessor, IEditCell, IFilter, freezeDirection } from '@syncfusion/ej2-grids';
 import { IGanttCellFormatter } from '../base/interface';
 import { SortComparer} from '@syncfusion/ej2-grids';
 /**
@@ -233,6 +233,23 @@ export class Column {
      * @default {}
      */
     public edit: IEditCell = {};
+    /**
+     * Freezes the column if set to `true`.
+     *
+     * @default false
+     */
+    public isFrozen: boolean;
+    /**
+     * Indicates the column freeze position. Options include:
+     * * `Left` - Freeze the column on the left.
+     * * `Right` - Freeze the column on the right.
+     * * `Fixed` - Freeze the column in the center.
+     * * `None` - Does not freeze any columns.
+     *
+     * @default None
+     */
+    public freeze: freezeDirection;
+
 
     /**
      * Determines whether the column is locked in its current position.
@@ -487,6 +504,20 @@ export interface ColumnModel {
      * @default null
      */
     sortComparer?: SortComparer | string;
+    /**
+     * Freezes the column if set to `true`.
+     *
+     * @default false
+     */
+    isFrozen?: boolean;
+    /**
+     * Determines which side (left, right, or fixed) the column should be frozen on.
+     *
+     * @default Syncfusion.EJ2.Grids.FreezeDirection.None
+     * @isEnumeration true
+     * @aspType Syncfusion.EJ2.Grids.FreezeDirection
+     */
+    freeze?: freezeDirection;
     /**
      * Prevents column reordering when set to true, locking the column into a set position.
      *

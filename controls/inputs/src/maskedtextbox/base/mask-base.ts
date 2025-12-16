@@ -313,6 +313,14 @@ export function maskInputFocusHandler(event: MouseEvent | FocusEvent | TouchEven
             label.removeAttribute('style');
         }
     }
+    const floatLabelElement: HTMLElement = this.inputObj.container.querySelector('.e-float-text');
+    if (floatLabelElement && this.floatLabelType === 'Auto' && (this.prependTemplate || this.appendTemplate)) {
+        setTimeout(function(): void {
+            if (floatLabelElement) {
+                floatLabelElement.style.width = 'auto';
+            }
+        }.bind(this), 5);
+    }
     if (this.mask) {
         if (!(!(modelValue === null || modelValue === '') || this.floatLabelType === 'Always' ||
             this.placeholder === null || this.placeholder === '')) {
@@ -414,6 +422,19 @@ export function maskInputBlurHandler(event: MouseEvent | FocusEvent | TouchEvent
     };
     this.trigger('blur', this.blurEventArgs);
     this.updateFloatLabelOverflowWidth();
+    const floatLabelElement: HTMLElement = this.inputObj.container.querySelector('.e-float-text');
+    if (this.floatLabelType === 'Auto' && (this.prependTemplate || this.appendTemplate) && floatLabelElement) {
+        setTimeout(function(): void {
+            if (floatLabelElement && this.prependedElement && !this.enableRtl) {
+                floatLabelElement.style.marginLeft = `${this.prependedElement.offsetWidth}px`;
+            } else if (floatLabelElement && this.prependedElement && this.enableRtl) {
+                floatLabelElement.style.marginRight = `${this.prependedElement.offsetWidth}px`;
+            }
+            if (floatLabelElement) {
+                floatLabelElement.style.width = this.element.offsetWidth + 'px';
+            }
+        }.bind(this), 5);
+    }
     if (this.mask) {
         this.isFocus = false;
         if (this.placeholder && this.element.value === this.promptMask && this.floatLabelType !== 'Always') {

@@ -1,4 +1,4 @@
-import { Property, ChildProperty, Collection, ComplexFactory } from '@syncfusion/ej2-base';import { TextDecoration, TextWrap, TextAlign, GradientType, TextOverflow, WhiteSpace } from '../enum/enum';
+import { Property, ChildProperty, Collection, ComplexFactory } from '@syncfusion/ej2-base'; /*externalscript*/import { TextDecoration, TextWrap, TextAlign, GradientType, TextOverflow, WhiteSpace } from '../enum/enum';
 
 /**
  * Interface for a class Thickness

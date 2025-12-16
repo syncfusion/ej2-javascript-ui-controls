@@ -1,10 +1,10 @@
 import { createElement } from '@syncfusion/ej2-base';
 import { Diagram } from '../../../src/diagram/diagram';
-import { NodeModel ,BasicShapeModel} from '../../../src/diagram/objects/node-model';
+import { NodeModel, BasicShapeModel } from '../../../src/diagram/objects/node-model';
 import { ConnectorModel } from '../../../src/diagram/objects/connector-model';
 import { Point } from '../../../src/diagram/primitives/point';
 import { PointModel } from '../../../src/diagram/primitives/point-model';
-import  {profile , inMB, getMemoryProfile} from '../../../spec/common.spec';
+import { profile, inMB, getMemoryProfile } from '../../../spec/common.spec';
 /**
  * Node to node docking
  */
@@ -54,12 +54,12 @@ describe('Diagram Control', () => {
         let ele: HTMLElement;
         beforeAll((): void => {
             const isDef = (o: any) => o !== undefined && o !== null;
-                if (!isDef(window.performance)) {
-                    console.log("Unsupported environment, window.performance.memory is unavailable");
-                    this.skip(); //Skips test (in Chai)
-                    return;
-                }
-            ele = createElement('div', { id: 'diagram63' });
+            if (!isDef(window.performance)) {
+                console.log("Unsupported environment, window.performance.memory is unavailable");
+                this.skip(); //Skips test (in Chai)
+                return;
+            }
+            ele = createElement('div', { id: 'diagram6' });
             document.body.appendChild(ele);
 
 
@@ -91,12 +91,13 @@ describe('Diagram Control', () => {
                 width: 1000, height: 1000,
                 nodes: nodes, connectors: connectors
             });
-            diagram.appendTo('#diagram63');
+            diagram.appendTo('#diagram6');
         });
 
         afterAll((): void => {
             diagram.destroy();
             ele.remove();
+            (diagram as any) = null; (ele as any) = null;
         });
 
         it('Starting from center of the circle - Higher Distance', (done: Function) => {
@@ -203,24 +204,24 @@ describe('Diagram Control', () => {
             }
             done();
         });
-      });
+    });
 
     describe('Node to node docking', () => {
         let diagram: Diagram;
         let ele: HTMLElement;
         beforeAll((): void => {
             const isDef = (o: any) => o !== undefined && o !== null;
-                if (!isDef(window.performance)) {
-                    console.log("Unsupported environment, window.performance.memory is unavailable");
-                    this.skip(); //Skips test (in Chai)
-                    return;
-                }
+            if (!isDef(window.performance)) {
+                console.log("Unsupported environment, window.performance.memory is unavailable");
+                this.skip(); //Skips test (in Chai)
+                return;
+            }
             ele = createElement('div', { id: 'diagram633' });
             document.body.appendChild(ele);
 
             let shape2: BasicShapeModel = { type: 'Basic', shape: 'Ellipse' };
             let nodes: NodeModel[] = [{
-                id: 'node1', offsetX: 300, offsetY: 300, width: 100, height: 100,shape:shape2,
+                id: 'node1', offsetX: 300, offsetY: 300, width: 100, height: 100, shape: shape2,
                 style: { opacity: 0.5 }
             }];
 
@@ -235,7 +236,7 @@ describe('Diagram Control', () => {
             for (let i: number = 0; i < 8; i++) {
                 let newPoint: PointModel = Point.transform(sourcePt, angle, distance);
                 nodes.push({
-                    id: 'target_' + i, width: 100, height: 100, offsetX: newPoint.x, offsetY: newPoint.y,shape:shape2,
+                    id: 'target_' + i, width: 100, height: 100, offsetX: newPoint.x, offsetY: newPoint.y, shape: shape2,
                     style: { opacity: 0.5 }
                 });
                 connectors.push({ sourceID: 'node1', targetID: 'target_' + i, type: 'Orthogonal' });
@@ -253,6 +254,7 @@ describe('Diagram Control', () => {
         afterAll((): void => {
             diagram.destroy();
             ele.remove();
+            (diagram as any) = null; (ele as any) = null;
         });
 
         it('Docking rotated nodes', (done: Function) => {
@@ -262,9 +264,8 @@ describe('Diagram Control', () => {
                 && diagram.connectors[0].targetPoint.y == 391.66).toBe(true
                 );
             done();
-            diagram.nodes[0].rotateAngle = 0;
         });
-     });
+    });
 
 
     describe('Node to node docking - overlapped', () => {
@@ -273,11 +274,11 @@ describe('Diagram Control', () => {
 
         beforeAll((): void => {
             const isDef = (o: any) => o !== undefined && o !== null;
-                if (!isDef(window.performance)) {
-                    console.log("Unsupported environment, window.performance.memory is unavailable");
-                    this.skip(); //Skips test (in Chai)
-                    return;
-                }
+            if (!isDef(window.performance)) {
+                console.log("Unsupported environment, window.performance.memory is unavailable");
+                this.skip(); //Skips test (in Chai)
+                return;
+            }
             ele = createElement('div', { id: 'diagram63' });
             document.body.appendChild(ele);
             let connectors: ConnectorModel[] = [];
@@ -366,6 +367,7 @@ describe('Diagram Control', () => {
         afterAll((): void => {
             diagram.destroy();
             ele.remove();
+            (diagram as any) = null; (ele as any) = null;
         });
 
         it('Checking connections with overlapped nodes', (done: Function) => {
@@ -379,7 +381,7 @@ describe('Diagram Control', () => {
             }
             done();
         });
-        it('memory leak', () => { 
+        it('memory leak', () => {
             profile.sample();
             let average: any = inMB(profile.averageChange)
             //Check average change in memory samples to not be over 10MB

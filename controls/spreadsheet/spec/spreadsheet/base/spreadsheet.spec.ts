@@ -5,7 +5,7 @@ import { SpreadsheetModel, Spreadsheet, CellSaveEventArgs, onContentScroll, getS
 import { SpreadsheetHelper } from '../util/spreadsheethelper.spec';
 import { defaultData, productData, filterData, ScrollingData } from '../util/datasource.spec';
 import '../../../node_modules/es6-promise/dist/es6-promise';
-import { CellModel, getModel, SheetModel, RowModel, BeforeCellUpdateArgs, getRangeIndexes, getCell, ImageModel, Workbook, getSheetIndex, getSheetNameCount, getSelectedRange, duplicateSheet, getRangeAddress, processIdx } from '../../../src/workbook/index';
+import { CellModel, getModel, SheetModel, RowModel, BeforeCellUpdateArgs, getRangeIndexes, getCell, ImageModel, Workbook, getSheetIndex, getSheetNameCount, getSelectedRange, duplicateSheet, getRangeAddress, processIdx, goto } from '../../../src/workbook/index';
 import { getRowHeight, DataSourceChangedEventArgs, DialogBeforeOpenEventArgs, focus } from '../../../src/index';
 import { Dialog } from './../../../src//spreadsheet/services/dialog';
 import { EmitType, setCurrencyCode, L10n, createElement } from '@syncfusion/ej2-base';
@@ -1676,7 +1676,7 @@ describe('Spreadsheet base module ->', () => {
                     args.args.eventArgs.cancel = true; }
             }
             spreadsheet.selectRange('B2');
-            helper.switchRibbonTab(5);
+            helper.switchRibbonTab(6);
             helper.click('#' + helper.id + '_freezepanes');
             setTimeout(() => {
                 expect(spreadsheet.sheets[1].topLeftCell).toBe('A1');
@@ -2118,6 +2118,7 @@ describe('Spreadsheet base module ->', () => {
             it('Gridlines disappear when "Hide Headers" option is selected and sheet is scrolled to right', (done: Function) => {
                 expect(helper.getElement('#' + helper.id + '_sheet').classList).toContain('e-hide-headers');
                 helper.invoke('goTo', ['AA30']);
+                helper.getInstance().notify(onContentScroll, { scrollTop: 580, scrollLeft: 1664 });
                 setTimeout((): void => {
                     expect(helper.getInstance().sheets[0].topLeftCell).toBe('AA30');
                     expect(helper.invoke('getScrollElement').scrollLeft).toBeGreaterThan(0);
@@ -2162,6 +2163,7 @@ describe('Spreadsheet base module ->', () => {
                 const spreadsheet: Spreadsheet = helper.getInstance();
                 helper.invoke('getScrollElement').scrollLeft = 12508;
                 const cellsCount: number = helper.invoke('getContentTable').rows[0].cells.length;
+                spreadsheet.notify(onContentScroll, { scrollTop: 0, scrollLeft: 12508 });
                 setTimeout((): void => {
                     expect(spreadsheet.viewport.rightIndex).toBe(198);
                     let row: HTMLTableRowElement = helper.invoke('getContentTable').rows[0];
@@ -2181,11 +2183,13 @@ describe('Spreadsheet base module ->', () => {
                     'contextmenu', { x: cell.getBoundingClientRect().left + 1, y: cell.getBoundingClientRect().top + 1 }, null, cell);
                 setTimeout((): void => {
                     helper.getElement('#' + helper.id + '_cmenu_delete_column').click();
-                    helper.invoke('goTo', ['CE60']);
+                    spreadsheet.goTo('CE60');
                     setTimeout((): void => {
+                        spreadsheet.notify(onContentScroll, { scrollTop: 1180, scrollLeft: 5640 });
                         expect(spreadsheet.getActiveSheet().topLeftCell).toBe('CE60');
                         helper.triggerKeyNativeEvent(90, true);
                         setTimeout((): void => {
+                            spreadsheet.notify(onContentScroll, { scrollTop: 0, scrollLeft: 439 });
                             expect(spreadsheet.getActiveSheet().topLeftCell).toBe('D1');
                             expect(spreadsheet.viewport.leftIndex).toBe(0);
                             expect(spreadsheet.viewport.topIndex).toBe(0);
@@ -2845,10 +2849,12 @@ describe('Spreadsheet base module ->', () => {
             it('Rows are not rendered properly and appear hidden when calling the refresh() method after scrolling. ', (done: Function) => {
                 const spreadsheet: Spreadsheet = helper.getInstance();
                 spreadsheet.goTo('Sheet1!A125');
+                spreadsheet.notify(onContentScroll, { scrollTop: 2480, scrollLeft: 0 });
                 setTimeout((): void => {
                     expect(spreadsheet.sheets[0].paneTopLeftCell).toBe('A125');
                     expect(helper.invoke('getMainContent').querySelector('.e-virtualable').style.transform).toBe('translate(0px, 2180px)');
                     spreadsheet.goTo('Sheet1!A60');
+                    spreadsheet.notify(onContentScroll, { scrollTop: 1180, scrollLeft: 0 });
                     setTimeout((): void => {
                         expect(spreadsheet.sheets[0].paneTopLeftCell).toBe('A60');
                         expect(helper.invoke('getMainContent').querySelector('.e-virtualable').style.transform).toBe('translate(0px, 880px)');
@@ -2881,23 +2887,25 @@ describe('Spreadsheet base module ->', () => {
                 expect(spreadsheet.sheets[0].rows[92].hidden).toBeTruthy();
                 expect(spreadsheet.sheets[0].rows[99].hidden).toBeTruthy();
                 spreadsheet.goTo('Sheet1!BB1');
+                spreadsheet.notify(onContentScroll, { scrollTop: 0, scrollLeft: 3392 });
                 setTimeout((): void => {
                     expect(spreadsheet.sheets[0].paneTopLeftCell).toBe('BB103');
                     expect(spreadsheet.sheets[0].topLeftCell).toBe('BB1');
                     let col: HTMLTableRowElement = helper.invoke('getColHeaderTable').rows[0];
                     expect(col.firstElementChild.getAttribute('aria-colindex')).toBe('39');
                     expect(col.firstElementChild.textContent).toBe('AM');
-                    expect(col.lastElementChild.getAttribute('aria-colindex')).toBe('81');
-                    expect(col.lastElementChild.textContent).toBe('CC');
+                    expect(col.lastElementChild.getAttribute('aria-colindex')).toBe('80');
+                    expect(col.lastElementChild.textContent).toBe('CB');
                     spreadsheet.goTo('Sheet1!BB150');
+                    spreadsheet.notify(onContentScroll, { scrollTop: 980, scrollLeft: 3392 });     
                     setTimeout((): void => {
                         expect(spreadsheet.sheets[0].paneTopLeftCell).toBe('BB150');
                         expect(spreadsheet.sheets[0].topLeftCell).toBe('BB1');
                         col = helper.invoke('getColHeaderTable').rows[0];
                         expect(col.firstElementChild.getAttribute('aria-colindex')).toBe('39');
                         expect(col.firstElementChild.textContent).toBe('AM');
-                        expect(col.lastElementChild.getAttribute('aria-colindex')).toBe('81');
-                        expect(col.lastElementChild.textContent).toBe('CC');
+                        expect(col.lastElementChild.getAttribute('aria-colindex')).toBe('80');
+                        expect(col.lastElementChild.textContent).toBe('CB');
                         done();
                     }, 20);
                 }, 20);
@@ -3851,12 +3859,13 @@ describe('Spreadsheet base module ->', () => {
                 const spreadsheet: any = helper.getInstance();
                 helper.invoke('goTo', ['AF5']);
                 setTimeout(() => {
+                    spreadsheet.notify(onContentScroll, { scrollTop: 40, scrollLeft: 1920 });
                     expect(spreadsheet.sheets[0].paneTopLeftCell).toEqual('AF5');
                     helper.invoke('goTo', ['A1']);
                     setTimeout(() => {
                         expect(spreadsheet.sheets[0].paneTopLeftCell).toEqual('AF5');
                         done();
-                    },20);
+                    }, 20);
                 },20);
             });
         });
@@ -3867,24 +3876,28 @@ describe('Spreadsheet base module ->', () => {
             afterAll(() => {
                 helper.invoke('destroy');
             });
-            it('Scrolling in backwards with nearby cells Vertically.', (done: Function) => {               
+            it('Scrolling in backwards with nearby cells Vertically.', (done: Function) => {
                 const spreadsheet: any = helper.getInstance();
                 helper.invoke('goTo', ['A100']);
+                spreadsheet.notify(onContentScroll, { scrollTop: 1980, scrollLeft: 0 });
                 setTimeout(() => {
                     expect(spreadsheet.sheets[0].paneTopLeftCell).toEqual('A100');
                     helper.invoke('goTo', ['A88']);
+                    spreadsheet.notify(onContentScroll, { scrollTop: 1740, scrollLeft: 0 });
                     setTimeout(() => {
                         expect(spreadsheet.sheets[0].paneTopLeftCell).toEqual('A88');
                         done();
                     },20);
                 },20);
             });
-            it('Scrolling in backwards with nearby cells Horizontally.', (done: Function) => {               
+            it('Scrolling in backwards with nearby cells Horizontally.', (done: Function) => {
                 const spreadsheet: any = helper.getInstance();
                 helper.invoke('goTo', ['AK88']);
+                spreadsheet.notify(onContentScroll, { scrollTop: 1740, scrollLeft: 2350 });
                 setTimeout(() => {
                     expect(spreadsheet.sheets[0].paneTopLeftCell).toEqual('AK88');
                     helper.invoke('goTo', ['AA88']);
+                    spreadsheet.notify(onContentScroll, { scrollTop: 1740, scrollLeft: 1720 });
                     setTimeout(() => {
                         expect(spreadsheet.sheets[0].paneTopLeftCell).toEqual('AA88');
                         done();

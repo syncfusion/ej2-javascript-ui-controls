@@ -271,13 +271,20 @@ export class BatchEdit {
                 actualIndex = (e.row as HTMLTableRowElement).rowIndex;
                 focusModule.getContent().matrix.matrix = this.matrix as number[][];
             } else {
-                actualIndex = (table.getElementsByClassName('e-batchrow')[0] as HTMLTableRowElement).rowIndex;
+                if (this.parent.frozenRows) {
+                    actualIndex = this.batchIndex;
+                }else if (this.parent.editModule.isAddedMultipleRowsByMethod) {
+                    actualIndex = (e as any).index;
+                }else {
+                    actualIndex = (table.getElementsByClassName('e-batchrow')[0] as HTMLTableRowElement).rowIndex;
+                }
             // if (this.parent.frozenRows || this.parent.frozenColumns) {
             //   actualIndex = this.batchIndex;
             // }
             }
             focusModule.getContent().matrix.current = [actualIndex, focusModule.getContent().matrix.current[1]];
-            if (this.parent.editModule['isAddedRowByMethod'] && !isNullOrUndefined(this.parent.editModule['addRowIndex']) && !this.parent.editModule['isAddedRowByContextMenu']) {
+            if (this.parent.editModule['isAddedRowByMethod'] && !isNullOrUndefined(this.parent.editModule['addRowIndex']) &&
+            !this.parent.editModule['isAddedRowByContextMenu'] && !this.parent.editModule.isAddedMultipleRowsByMethod) {
                 const newlyAddedRecords: ITreeData[] = this.parent.getBatchChanges()['addedRecords'];
                 const index: number = parseInt(this.parent.getContentTable().getElementsByClassName('e-insertedrow')[newlyAddedRecords.length - 1].getAttribute('aria-rowindex'), 10) - 1;
                 this.batchRecords.splice(index, 0, newlyAddedRecords[newlyAddedRecords.length - 1]);
@@ -497,7 +504,11 @@ export class BatchEdit {
                     this.parent.editModule['previousNewRowPosition'] = rowPosition;
                 }
                 addRecords[parseInt(i.toString(), 10)].taskData = taskData;
-                addRowRecord = this.batchAddRowRecord[parseInt(i.toString(), 10)];
+                if (this.batchAddRowRecord.length > 1) {
+                    addRowRecord = this.batchAddRowRecord[parseInt(i.toString(), 10)];
+                } else {
+                    addRowRecord = this.batchAddRowRecord[0];
+                }
                 if (isNullOrUndefined(addRowRecord)) {
                     addRowRecord = this.batchAddRowRecord[i - 1];
                 }
@@ -511,6 +522,10 @@ export class BatchEdit {
                 }
                 if (isNullOrUndefined(addRecords[parseInt(i.toString(), 10)].index)) {
                     addRowIndex = 0;
+                }
+                if (this.parent.editModule.isAddedMultipleRowsByMethod && this.isSelfReference && (this.parent.editSettings.newRowPosition === 'Above' || this.parent.editSettings.newRowPosition === 'Below')) {
+                    addRowIndex = args.index;
+                    addRowRecord = this.parent.flatData[args.index];
                 }
                 if (this.parent.editSettings.newRowPosition !== 'Top' && this.parent.editSettings.newRowPosition !== 'Bottom') {
                     if (isNullOrUndefined(addRecords[parseInt(i.toString(), 10)].parentItem) && this.selectedIndex === -1) {

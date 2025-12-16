@@ -1,7 +1,9 @@
+@use 'ej2-base/styles/definition/tailwind3' as *;
+@forward 'ej2-base/styles/definition/tailwind3';
 $spreadsheet-ribbon-skin: $skin-name !default;
 $file-menu-wrap-padding: 0 !default;
 $drop-icon-margin: 15px 15px !default;
-$bigger-drop-icon-margin: 19px 19px !default;
+$bigger-drop-icon-margin: 18px 18px !default;
 $spreadsheet-ribbon-border-color: $border-light !default;
 $spreadsheet-ribbon-border: 1px solid $spreadsheet-ribbon-border-color !default;
 $spreadsheet-ribbon-content-bg-color: $content-bg-color !default;
@@ -29,3 +31,4 @@ $spreadsheet-file-drop-icon-font-size: $font-icon-14 !default;
 $spreadsheet-ribbon-toolbar-items-height: 40px !default;
 $bigger-spread-sheet-tab-nav-arrow-font: $font-icon-18 !default;
 $bigger-spread-file-drop-icon-font-size: $font-icon-14 !default;
+$spread-ribbon-font-weight-bold: bold !default;

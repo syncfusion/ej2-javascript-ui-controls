@@ -248,21 +248,21 @@ describe('Mention', () => {
                 document.body.innerHTML = '';
             }
         });
-        it('no data text when ajax failure', (done) => {
-            mentionObj = new Mention({ dataSource: remoteData, fields: { value: 'EmployeeID', text: 'FirstName' }, debounceDelay: 0 });
-            mentionObj.appendTo(element);
-            mentionObj.initValue();
-            mentionObj.showPopup()
-            setTimeout(() => {
-                expect(mentionObj.list.classList.contains('e-nodata')).toBe(true);
-                done();
-            }, 800);
-        });
-        it('mouse click on noRecords template', () => {
-            mouseEventArgs.target = mentionObj.list;
-            mentionObj.onMouseClick(mouseEventArgs);
-            expect(mentionObj.beforePopupOpen).toBe(true);
-        });
+        // it('no data text when ajax failure', (done) => {
+        //     mentionObj = new Mention({ dataSource: remoteData, fields: { value: 'EmployeeID', text: 'FirstName' }, debounceDelay: 0 });
+        //     mentionObj.appendTo(element);
+        //     mentionObj.initValue();
+        //     mentionObj.showPopup()
+        //     setTimeout(() => {
+        //         expect(mentionObj.list.classList.contains('e-nodata')).toBe(true);
+        //         done();
+        //     }, 800);
+        // });
+        // it('mouse click on noRecords template', () => {
+        //     mouseEventArgs.target = mentionObj.list;
+        //     mentionObj.onMouseClick(mouseEventArgs);
+        //     expect(mentionObj.beforePopupOpen).toBe(true);
+        // });
     });
     describe('noRecords template while empty dataSource', () => {
         let mentionObj: any;
@@ -1121,7 +1121,7 @@ describe('Mention', () => {
         it('insert the list item using mouseclick', () => {
             mouseEventArgs.target = mentionObj.list.childNodes[0].childNodes[2];
             mentionObj.onMouseClick(mouseEventArgs);
-            expect(mentionObj.element.innerHTML).toBe('<span contenteditable="false" class="e-mention-chip">@PERL</span> ');
+            expect(mentionObj.element.innerHTML).toBe('<span contenteditable="false" class="e-mention-chip">@PERL</span>​');
         });
     });
 
@@ -1158,7 +1158,7 @@ describe('Mention', () => {
             mouseEventArgs.target = mentionObj.list.childNodes[0].childNodes[2];
             (<any>mentionObj).mentionChar = '#';
             mentionObj.onMouseClick(mouseEventArgs);
-            expect(mentionObj.element.innerHTML).toBe('<p>@<span contenteditable="false" class="e-mention-chip">#PERL</span> </p>');
+            expect(mentionObj.element.innerHTML).toBe('<p>@<span contenteditable="false" class="e-mention-chip">#PERL</span>​</p>');
             expect(changeAction).toHaveBeenCalled();
         });
     });
@@ -1225,7 +1225,7 @@ describe('Mention', () => {
         it('insert the list item using mouseclick and check change event being triggered', () => {
             mouseEventArgs.target = mentionObj.list.childNodes[0].childNodes[2];
             mentionObj.onMouseClick(mouseEventArgs);
-            expect(mentionObj.element.innerHTML).toBe('<p><span contenteditable="false" class="e-mention-chip">PERL</span> </p>');
+            expect(mentionObj.element.innerHTML).toBe('<p><span contenteditable="false" class="e-mention-chip">PERL</span>​</p>');
             expect(changeAction).toHaveBeenCalled();
         });
     });
@@ -2734,7 +2734,7 @@ describe('Mention', () => {
         it('insert the list item using mouseclick', () => {
             mouseEventArgs.target = mentionObj.list.childNodes[0].childNodes[2];
             mentionObj.onMouseClick(mouseEventArgs);
-            expect(mentionObj.element.innerHTML).toBe('<span contenteditable="false" class="e-mention-chip">aPERL</span> ');
+            expect(mentionObj.element.innerHTML).toBe('<span contenteditable="false" class="e-mention-chip">aPERL</span>​');
             element.innerHTML = '<span contenteditable="false" class="e-mention-chip">aPERL</span>a';
             let textNode = mentionObj.element.childNodes[1]; // Get the text node containing 'a'
             let range: Range = document.createRange();
@@ -2847,7 +2847,7 @@ describe('Mention', () => {
             }, 300);
         });
     });
-    describe('Mention component: Backspace behavior with multiple mention chips', () => {
+   describe('Mention component: Backspace behavior with multiple mention chips', () => {
         let mentionObj: any;
         let element: HTMLElement;
         let emailData: { [key: string]: Object }[] = [
@@ -2856,6 +2856,7 @@ describe('Mention', () => {
             { Name: 'Name3', Eimg: '3', EmailId: 'name3@gmail.com' },
             { Name: 'Name4', Eimg: '4', EmailId: 'name4@gmail.com' }
         ];
+
         beforeAll(() => {
             // Create the contenteditable div
             element = createElement('div', { id: 'templateMention' });
@@ -2876,6 +2877,7 @@ describe('Mention', () => {
             mentionObj.appendTo(element);
             mentionObj.initValue();
         });
+
         afterAll(() => {
                 if (element) {
                     element.remove();

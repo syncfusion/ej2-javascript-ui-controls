@@ -1522,7 +1522,7 @@ describe('Schedule CRUD', () => {
                 const dataObj: Record<string, any>[] = schObj.eventsProcessed;
                 expect(dataObj[0].Id).toEqual(11);
                 expect(dataObj[0].Subject).toEqual('Edit following events');
-                expect(dataObj[0].RecurrenceRule as string).toEqual('FREQ=DAILY;INTERVAL=1;UNTIL=20171030T100000Z;');
+                expect(dataObj[0].RecurrenceRule as string).toEqual('FREQ=DAILY;INTERVAL=1;UNTIL=20171029T100000Z;');
                 done();
             };
             const data: Record<string, any> = extend({}, schObj.eventsProcessed[0], null, true) as Record<string, any>;
@@ -1557,7 +1557,7 @@ describe('Schedule CRUD', () => {
                 expect(eventObj[3].FollowingID).toEqual(11);
                 expect(dataObj[1].Id).toEqual(13);
                 expect(dataObj[1].Subject).toEqual('Edit future edited occurence');
-                expect(dataObj[1].RecurrenceRule as string).toEqual('FREQ=DAILY;INTERVAL=1;UNTIL=20171030T100000Z;');
+                expect(dataObj[1].RecurrenceRule as string).toEqual('FREQ=DAILY;INTERVAL=1;UNTIL=20171029T100000Z;');
                 done();
             };
             const data: Record<string, any> = extend({}, schObj.eventsProcessed[1], null, true) as Record<string, any>;
@@ -2322,9 +2322,9 @@ describe('Schedule CRUD', () => {
                 done();
             };
             const eventElementList: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
-            expect(eventElementList.length).toEqual(5);
-            util.triggerMouseEvent(eventElementList[4] as HTMLElement, 'click');
-            util.triggerMouseEvent(eventElementList[4] as HTMLElement, 'dblclick');
+            expect(eventElementList.length).toEqual(4);
+            util.triggerMouseEvent(eventElementList[3] as HTMLElement, 'click');
+            util.triggerMouseEvent(eventElementList[3] as HTMLElement, 'dblclick');
             let quickDialog: Element = document.querySelector('.e-dialog.e-quick-dialog');
             (quickDialog.querySelector('.e-quick-dialog-series-event') as HTMLButtonElement).click();
             const dialogElement: HTMLElement = document.querySelector('.' + cls.EVENT_WINDOW_DIALOG_CLASS) as HTMLElement;
@@ -2364,9 +2364,9 @@ describe('Schedule CRUD', () => {
                 done();
             };
             const eventElementList: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
-            expect(eventElementList.length).toEqual(5);
-            util.triggerMouseEvent(eventElementList[4] as HTMLElement, 'click');
-            util.triggerMouseEvent(eventElementList[4] as HTMLElement, 'dblclick');
+            expect(eventElementList.length).toEqual(4);
+            util.triggerMouseEvent(eventElementList[3] as HTMLElement, 'click');
+            util.triggerMouseEvent(eventElementList[3] as HTMLElement, 'dblclick');
             let quickDialog: Element = document.querySelector('.e-dialog.e-quick-dialog');
             (quickDialog.querySelector('.e-quick-dialog-series-event') as HTMLButtonElement).click();
             const dialogElement: HTMLElement = document.querySelector('.' + cls.EVENT_WINDOW_DIALOG_CLASS) as HTMLElement;

@@ -1861,7 +1861,7 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
             } else {
                 if (trgt.tagName !== 'UL' || (this.isMenu ? trgt.parentElement.classList.contains('e-menu-wrapper') &&
                 !this.getIndex(trgt.querySelector('.' + ITEM).id, true).length : trgt.parentElement !== wrapper)) {
-                    if (!cli) {
+                    if (!cli && !isNullOrUndefined(wrapper)) {
                         this.removeLIStateByClass([SELECTED], [wrapper]);
                     }
                     if (!this.isAnimationNone && !cli || (cli && !cli.querySelector('.' + CARET))) {

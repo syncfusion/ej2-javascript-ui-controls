@@ -236,6 +236,9 @@ export class RowDD {
             this.selectedItem = isNullOrUndefined(record) ?
                 tObj.getCurrentViewRecords()[parseInt(selectedItemIndex.toString(), 10)] as ITreeData : record as ITreeData;
             const primaryKeyField: string = this.parent.getPrimaryKeyFieldNames()[0];
+            if (!primaryKeyField) {
+                return;
+            }
             const rowIndex: number = this.parent.grid.getRowIndexByPrimaryKey(this.selectedItem[`${primaryKeyField}`]);
             this.selectedRow = this.parent[this.selectedRows] = selectedItemIndex !== -1 ?
                 this.parent.getSelectedRows()[0] as HTMLTableRowElement

@@ -2,7 +2,7 @@ import { Chart } from '../chart';
 import { DateFormatOptions, createElement, extend, isNullOrUndefined, Animation } from '@syncfusion/ej2-base';
 import { DataUtil } from '@syncfusion/ej2-data';
 import { Axis, Row, Column, VisibleLabels } from '../axis/axis';
-import { subtractThickness, valueToCoefficient, sum, redrawElement, isBreakLabel, ChartLocation, withInBounds, rotateTextSize, removeElement, calculateScrollbarOffset } from '../../common/utils/helper';
+import { subtractThickness, valueToCoefficient, sum, redrawElement, isBreakLabel, ChartLocation, withInBounds, rotateTextSize, removeElement, calculateScrollbarOffset , createTemplate} from '../../common/utils/helper';
 import { subArray, inside, appendChildElement, stringToNumber } from '../../common/utils/helper';
 import { Orientation, TextAlignment } from '../../common/utils/enum';
 import { Thickness, logBase, createZoomingLabels, getElement } from '../../common/utils/helper';
@@ -12,6 +12,8 @@ import { BorderModel } from '../../common/model/base-model';
 import { MajorGridLinesModel, MinorGridLinesModel, MajorTickLinesModel, MinorTickLinesModel } from './axis-model';
 import { IThemeStyle } from '../model/chart-interface';
 import { VisibleRangeModel } from '../../common/model/interface';
+import { AccPoints } from '../../accumulation-chart/model/acc-base';
+import { Points } from '../series/chart-series';
 /**
  * Specifies the Cartesian Axis Layout.
  */
@@ -972,8 +974,64 @@ export class CartesianAxisLayoutPanel {
             RotatedWidth = LabelMaxWidth * Math.cos(angle * Math.PI / 180);
             if (RotatedWidth < 0) { RotatedWidth = - RotatedWidth; }
         }
+        //Initializing the label template for yAxis
+        if (axis.labelTemplate) {
+            const templateId: string = chart.element.id + '_YAxisLabelTemplate_Collection';
+            chart.yAxisLabelTemplate = createElement('div', {
+                id: templateId
+            });
+        }
         for (let i: number = 0, len: number = axis.visibleLabels.length; i < len; i++) {
             label = axis.visibleLabels[i as number];
+            if (axis.labelTemplate) {
+                intervalLength = rect.height / len;
+                const templateWidth: number = (axis.maxLabelSize.width < label.size.width) ? axis.maxLabelSize.width : label.size.width;
+                const templateHeight: number = Math.min(label.size.height, intervalLength);
+
+                // Calculate exact X position for the template
+                if (isLabelInside) {
+                    pointX = rect.x - padding - (isOpposed ? templateWidth : 0);
+                } else {
+                    const scrollValue: number = (axis.crossesAt == null ? axis.scrollBarHeight * (isOpposed ? 1 : -1) : 0);
+                    pointX = rect.x + padding + scrollValue - (isOpposed ? 0 : templateWidth);
+                }
+
+                pointY = (valueToCoefficient(label.value, axis) * rect.height);
+                pointY = Math.floor((pointY * -1) + (rect.y + rect.height));
+
+                // Adjust Y for vertical centering
+                const yPadding: number = !isLabelInside ? -(templateHeight / 2) : 0;
+                pointY += yPadding;
+
+                // Edge Label Placement Logic for Templates
+                if (axis.edgeLabelPlacement === 'Hide') {
+                    const startEdge: number = pointY + templateHeight;
+                    const endEdge: number = pointY;
+                    if (((i === 0 || (isInverse && i === len - 1)) && startEdge > rect.y + rect.height) ||
+                        (((i === len - 1) || (isInverse && i === 0)) && endEdge < rect.y)) {
+                        continue; // Skip rendering this template
+                    }
+                } else if (axis.edgeLabelPlacement === 'Shift') {
+                    const chartBorder: number = chart.border.width * 0.5;
+                    const startLimit: number = isLabelInside ? rect.y + rect.height : chart.availableSize.height - chartBorder;
+                    const endLimit: number = isLabelInside ? rect.y : chartBorder;
+
+                    if ((i === 0 || (isInverse && i === len - 1)) && pointY + templateHeight > startLimit) {
+                        pointY -= (pointY + templateHeight) - startLimit;
+                    } else if (((i === len - 1) || (isInverse && i === 0)) && pointY < endLimit) {
+                        pointY += endLimit - pointY;
+                    }
+                }
+
+                const labelDiv: HTMLElement = createElement('div', {
+                    id: chart.element.id + axis.name + '_AxisLabelTemplate_' + i,
+                    styles: `position: absolute; pointer-events:none; cursor: default; white-space: nowrap; z-index:1; left: ${pointX}px; top: ${pointY}px; width: ${templateWidth}px; height: ${templateHeight}px;`
+                });
+                const templateElement: HTMLElement = createTemplate(labelDiv, i, axis.labelTemplate, chart, label);
+                chart.yAxisLabelTemplate.appendChild(templateElement);
+
+                continue; // Go to the next label
+            }
             isAxisBreakLabel = isBreakLabel(axis.visibleLabels[i as number].originalText);
             elementSize =  isAxisBreakLabel ? axis.visibleLabels[i as number].breakLabelSize : axis.visibleLabels[i as number].size;
             pointY = (valueToCoefficient(axis.visibleLabels[i as number].value, axis) * rect.height) + (chart.stockChart && axis.labelPosition !== 'Outside' ? 7 : 0);
@@ -1077,7 +1135,7 @@ export class CartesianAxisLayoutPanel {
         else {
             this.previousYLabel = axis.visibleLabels.length;
         }
-        if (!this.chart.enableCanvas) {
+        if (!this.chart.enableCanvas && !axis.labelTemplate) {
             if (!chart.delayRedraw) {
                 appendChildElement(chart.enableCanvas, parent, labelElement, chart.redraw);
             } else if (axis.visible && axis.internalVisibility) {
@@ -1660,8 +1718,158 @@ export class CartesianAxisLayoutPanel {
         const isEndAnchor: boolean = isLabelUnderAxisLine ?
             ((360 >= angle && angle >= 180) || (-1 >= angle && angle >= -180)) :
             ((1 <= angle && angle <= 180) || (-181 >= angle && angle >= -360));
+        //Initializing the label template for xAxis
+        if (axis.labelTemplate) {
+            const templateId: string = chart.element.id + '_XAxisLabelTemplate_Collection';
+            chart.xAxisLabelTemplate = createElement('div', {
+                id: templateId
+            });
+        }
+        const border: BorderModel = chart.border;
+        const chartBorderStartX: number = border.width * 0.5;
+        const chartBorderEndX: number = chart.initialClipRect.x + chart.initialClipRect.width - (border.width * 0.5);
         for (let i: number = 0, len: number = length; i < len; i++) {
             label = axis.visibleLabels[i as number];
+            if (axis.labelTemplate) {
+                pointX = (valueToCoefficient(label.value, axis) * rect.width) + rect.x;
+                let currentLabelWidth: number = label.size.width;
+                intervalLength = rect.width / len;
+                const finalWidth: number = Math.min(currentLabelWidth, intervalLength);
+
+                if (angle === 0) {
+                    pointX -= finalWidth / 2;
+                }
+
+                if (islabelInside && angle !== 0) {
+                    pointY = isOpposed ? (rect.y + padding + (label.size.height / 4)) : (rect.y + padding - axis.maxLabelSize.height);
+                } else {
+                    labelPadding = ((isOpposed && !islabelInside) || (!isOpposed && islabelInside)) ?
+                        (-(padding + (angle !== 0 ? 0 : label.size.height)) - scrollBarHeight) : padding + scrollBarHeight;
+                    pointY = rect.y + labelPadding - (isOpposed && angle !== 0 ?
+                        (axis.maxLabelSize.height) + labelPadding - (label.size.height / 4) : 0);
+                }
+
+                if (angle === 0) {
+                    const startBorder: number = chartBorderStartX;
+                    const endBorder: number = chartBorderEndX;
+                    let start: number = pointX;
+                    let width: number = finalWidth;
+                    let end: number = start + width;
+                    if (axis.edgeLabelPlacement === 'Shift') {
+                        let xValue: number = pointX;
+                        const edgeLabelPadding: number = 2;
+                        const maxAllowedWidth: number = intervalLength;
+                        if (currentLabelWidth > maxAllowedWidth) {
+                            currentLabelWidth = maxAllowedWidth;
+                        }
+
+                        const isFirstLabel: boolean = (!isInverse && i === 0) || (isInverse && i === len - 1);
+                        const isLastLabel: boolean = (!isInverse && i === len - 1) || (isInverse && i === 0);
+
+                        if (isFirstLabel && xValue < chartBorderStartX) {
+                            const shiftAmount: number = chartBorderStartX - xValue;
+                            xValue = chartBorderStartX + edgeLabelPadding;
+                            intervalLength -= shiftAmount;
+                        } else if (isLastLabel) {
+                            if (!isInverse && (xValue + currentLabelWidth) > chartBorderEndX) {
+                                const shiftAmount: number = (xValue + currentLabelWidth) - chartBorderEndX;
+                                xValue -= (shiftAmount + edgeLabelPadding);
+                                intervalLength -= shiftAmount;
+                                if (xValue <= previousEnd) {
+                                    const overlap: number = previousEnd - xValue + edgeLabelPadding;
+                                    xValue += overlap;
+                                    currentLabelWidth -= overlap;
+                                }
+                            } else if (isInverse && xValue < chartBorderStartX) {
+                                const shiftAmount: number = chartBorderStartX - xValue;
+                                xValue = chartBorderStartX + edgeLabelPadding;
+                                intervalLength -= shiftAmount;
+                                if (xValue + currentLabelWidth >= previousEnd) {
+                                    const overlap: number = (xValue + currentLabelWidth) - previousEnd + edgeLabelPadding;
+                                    xValue -= overlap;
+                                    currentLabelWidth -= overlap;
+                                }
+                            }
+                        }
+                        if (xValue + currentLabelWidth > chartBorderEndX) {
+                            const overflow: number = (xValue + currentLabelWidth) - chartBorderEndX;
+                            currentLabelWidth -= overflow;
+                        }
+                        if (xValue < chartBorderStartX) {
+                            const overflow: number = chartBorderStartX - xValue;
+                            xValue += overflow;
+                            currentLabelWidth -= overflow;
+                        }
+                        pointX = xValue;
+                        label.size.width = currentLabelWidth;
+                    } else if (axis.edgeLabelPlacement === 'Hide') {
+                        const overlapsPrev: boolean = (!isInverse && start < previousEnd) ||
+                            (isInverse && end > previousEnd);
+                        const crossesLeft: boolean = start < startBorder;
+                        const crossesRight: boolean = end > endBorder;
+
+                        if (overlapsPrev || crossesLeft || crossesRight) {
+                            continue;
+                        }
+                        label.size.width = width;
+                        pointX = start;
+                    } else {
+                        if (!isInverse && start < previousEnd) {
+                            const delta: number = previousEnd - start;
+                            start += delta;
+                            width = Math.max(0, width - delta);
+                            end = start + width;
+                        } else if (isInverse && end > previousEnd) {
+                            const delta: number = end - previousEnd;
+                            width = Math.max(0, width - delta);
+                            end = start + width;
+                        }
+                        if (start < startBorder) {
+                            const delta: number = startBorder - start;
+                            start = startBorder;
+                            width = Math.max(0, width - delta);
+                            end = start + width;
+                        }
+                        if (end > endBorder) {
+                            const delta: number = end - endBorder;
+                            width = Math.max(0, width - delta);
+                            end = start + width;
+                        }
+
+                        if (width <= 0) {
+                            continue;
+                        }
+                        label.size.width = width;
+                        pointX = start;
+                    }
+                }
+
+                let transform: string = '';
+                if (angle !== 0) {
+                    const translate: {x: number, y: number} = this.getRotateTemplateStyles(angle, label.size.width, label.size.height);
+                    pointX += translate.x / 2;
+                    pointY += translate.y;
+                    if (islabelInside && !isOpposed || !islabelInside && isOpposed) {
+                        pointY -= label.size.height;
+                    }
+                    transform = `rotate(${angle}deg)`;
+                }
+
+                const labelDiv: HTMLElement = createElement('div', {
+                    id: chart.element.id + axis.name + '_AxisLabelTemplate_' + i,
+                    styles: `position: absolute; pointer-events:none; cursor: default; white-space: nowrap; z-index:1; left: ${pointX}px; top: ${pointY}px; width: ${label.size.width}px; height: ${label.size.height}px;`
+                });
+                const templateElement: HTMLElement = createTemplate(labelDiv, i, axis.labelTemplate, chart, label);
+                templateElement.style.transform = transform;
+                if (transform === '') {
+                    templateElement.style.overflow = 'hidden';
+                }
+                templateElement.style.transformOrigin = '0 0';
+                chart.xAxisLabelTemplate.appendChild(templateElement);
+
+                previousEnd = isInverse ? pointX : pointX + label.size.width;
+                continue;
+            }
             isAxisBreakLabel = isBreakLabel(label.originalText) || (axis.labelIntersectAction === 'Wrap' && label.text.length > 1);
             pointX = (valueToCoefficient(label.value, axis) * rect.width) + rect.x;
             elementSize = label.size;
@@ -1674,7 +1882,6 @@ export class CartesianAxisLayoutPanel {
                     labelWidth > intervalLength) ? intervalLength : labelWidth;
             labelHeight = elementSize.height / 4;
             pointX -= (isAxisBreakLabel || angle !== 0) ? 0 : (width / 2);
-
             // label X value adjustment for label rotation (Start)
             if (angle !== 0) {
                 if (isAxisBreakLabel) {
@@ -1971,13 +2178,45 @@ export class CartesianAxisLayoutPanel {
         else {
             this.previousXLabel = length;
         }
-        if (!this.chart.enableCanvas) {
+        if (!this.chart.enableCanvas && !axis.labelTemplate) {
             if (!chart.delayRedraw) {
                 parent.appendChild(labelElement);
             } else if (axis.visible && axis.internalVisibility) {
                 this.createZoomingLabel(this.chart, labelElement, axis, index, rect);
             }
         }
+    }
+
+    /**
+     * Computes the rotated bounding-box size for a rectangle.
+     *
+     * @param {number} angleDegrees - Rotation angle in degrees (clockwise).
+     * @param {number} width - The original width in pixels.
+     * @param {number} height - The original height in pixels.
+     * @returns {{x: number, y: number}} - The width and height of the rotated bounding box.
+     * @private
+     */
+    private getRotateTemplateStyles(angleDegrees: number, width: number, height: number): { x: number; y: number } {
+        const angleRadians: number = (angleDegrees * Math.PI) / 180;
+        const corners: {x: number, y: number}[] = [
+            { x: 0, y: 0 },
+            { x: width, y: 0 },
+            { x: width, y: height },
+            { x: 0, y: height }
+        ];
+        const rotatedCorners: {x: number, y: number}[] = corners.map((corner: { x: number; y: number }): { x: number; y: number } => {
+            const x: number = corner.x * Math.cos(angleRadians) - corner.y * Math.sin(angleRadians);
+            const y: number = corner.x * Math.sin(angleRadians) + corner.y * Math.cos(angleRadians);
+            return { x, y };
+        });
+        const minX: number = Math.min(...rotatedCorners.map((c: { x: number; y: number }) => c.x));
+        const minY: number = Math.min(...rotatedCorners.map((c: { x: number; y: number }) => c.y));
+        const translateX: number = -minX;
+        const translateY: number = -minY;
+        return {
+            x: Math.round(translateX * 100) / 100,
+            y: Math.round(translateY * 100) / 100
+        };
     }
 
     /**

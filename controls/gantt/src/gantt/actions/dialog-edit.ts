@@ -41,6 +41,7 @@ import {
 } from '@syncfusion/ej2-treegrid';
 import { getUid } from '../base/utils';
 import { IToolbarItems } from '@syncfusion/ej2-richtexteditor/src/common/interface';
+import { CalendarContext } from '../base/calendar-context';
 interface EJ2Instance extends HTMLElement {
     // eslint-disable-next-line
     ej2_instances: Object[];
@@ -95,8 +96,8 @@ export class DialogEdit {
     private dialogConstraintValue: number;
     private idCollection: IDependencyEditData[];
     private disableUndo: boolean;
-    private dialogConstraintDate: Date;
     private currentResources: Object[];
+    private dialogConstraintDate: Date;
     /**
      * @private
      */
@@ -445,6 +446,9 @@ export class DialogEdit {
             this.rowIndex = ganttObj.selectedRowIndex;
         }
         this.isEdit = true;
+        if (this.parent.viewType === 'ResourceView' && this.rowData.level === 0) {
+            return;
+        }
         if (Object.keys(this.rowData).length !== 0) {
             this.editedRecord = extend({}, {}, this.rowData, true);
             this.isFromEditDialog = true;
@@ -742,7 +746,7 @@ export class DialogEdit {
                     }
                     tabItem.content = 'Segments';
                     this.beforeOpenArgs[tabItem.content] = this.getSegmentsModel(dialogField.fields);
-                } else if (dialogField.type === 'Dependency') {
+                } else if (dialogField.type === 'Dependency' && (this.parent && (this.parent.allowParentDependency || !this.rowData.hasChildRecords))) {
                     if (isNullOrUndefined(tasks.dependency)) {
                         continue;
                     }
@@ -1050,7 +1054,7 @@ export class DialogEdit {
             (document.querySelector('#' + ganttObj.element.id + '' + 'Resources' +
                 'TabContainer_gridcontrol') as any).ej2_instances[0].saveCell();
         }
-        else if (dialogModule.storeDependencyTab && hasEditedOrAddedRow) {
+        else if (hasEditedOrAddedRow && dialogModule.storeDependencyTab) {
             (document.querySelector('#' + ganttObj.element.id + '' + 'Dependency' +
                 'TabContainer') as any).ej2_instances[0].editModule.batchSave();
         }
@@ -1202,19 +1206,6 @@ export class DialogEdit {
                 if (taskSettings.progress === column.field) {
                     numeric.min = 0;
                     numeric.max = 100;
-                    const hasDecimalEdit: boolean = this.parent.dataOperation['isDecimalProgress'](column.field);
-                    if (hasDecimalEdit) {
-                        numeric.decimals = (column.edit.params as NumericTextBoxModel).decimals ?
-                            (column.edit.params as NumericTextBoxModel).decimals : 0;
-                        if (column.format && typeof column.format === 'string' && column.format.match(/^n(\d+)$/)) {
-                            numeric.format = column.format;
-                        }
-                    }
-                    else {
-                        numeric.decimals = 0;
-                        numeric.format = 'n2';
-                        numeric.validateDecimalOnType = true;
-                    }
                 }
                 numeric.change = (args: CObject): void => {
                     if (!this.isTriggered) {
@@ -2128,6 +2119,7 @@ export class DialogEdit {
     }
     private validateSegmentFields(ganttObj: Gantt, columnName: string, cellValue: string, args: CObject): void {
         const taskSettings: TaskFieldsModel = this.parent.taskFields;
+        const calendarContext: CalendarContext = this.parent.defaultCalendarContext;
         if (!isNullOrUndefined(taskSettings.duration) && taskSettings.duration.toLowerCase() === columnName.toLowerCase()) {
             if (!isNullOrUndefined(cellValue) && cellValue !== '') {
                 this.selectedSegment[taskSettings.duration] = Number(cellValue);
@@ -2165,7 +2157,7 @@ export class DialogEdit {
                 this.selectedSegment[taskSettings.duration] = this.parent.dataOperation.getDuration(
                     this.selectedSegment[taskSettings.startDate], this.selectedSegment[taskSettings.endDate],
                     this.editedRecord.ganttProperties.durationUnit,
-                    true, false, true
+                    true, false, true, calendarContext
                 );
             }
         }
@@ -2407,8 +2399,11 @@ export class DialogEdit {
                         duration = 1;
                     }
                     else {
+                        const calendarContext: CalendarContext = (this.beforeOpenArgs.rowData as IGanttData).ganttProperties
+                            ? (this.beforeOpenArgs.rowData as IGanttData).ganttProperties.calendarContext
+                            : this.parent.defaultCalendarContext;
                         duration = this.parent.dataOperation.getDuration(sDate, eDate,
-                                                                         rowData.durationUnit, true, false, true);
+                                                                         rowData.durationUnit, true, false, true, calendarContext);
                     }
                     if (!isNullOrUndefined(taskFields['duration'])) {
                         arg = {
@@ -2955,7 +2950,6 @@ export class DialogEdit {
         }
     }
     private gridActionComplete(args: GridActionEventArgs): void {
-        /* eslint-disable-next-line */
         if (args.requestType === 'save') {
             const dialogElement: HTMLElement = this.parent.editModule.dialogModule.dialog.querySelector('#' + this.parent.element.id + 'DependencyTabContainer');
             if (!isNullOrUndefined(dialogElement)) {
@@ -3054,7 +3048,12 @@ export class DialogEdit {
         };
         inputModel.rowDeselected = (args: RowSelectEventArgs): void => {
             this.updateResourceCollection(args, resourceTreeGridId);
-            this.currentResources = this.ganttResources;
+            if (this.ganttResources.length === 0) {
+                this.currentResources = null;
+            }
+            else {
+                this.currentResources = this.ganttResources;
+            }
         };
 
         const divElement: HTMLElement = this.createDivElement('e-resource-div', resourceTreeGridId);
@@ -3360,10 +3359,6 @@ export class DialogEdit {
                 }
                 else {
                     inputModel.value = ganttData[column.field];
-                    if (column.field === this.parent.taskFields.progress) {
-                        const hasDecimalEdit: boolean = this.parent.dataOperation['isDecimalProgress'](column.field);
-                        inputModel.value = hasDecimalEdit ? Number(ganttData[column.field]) : Math.floor(ganttData[column.field]);
-                    }
                 }
             }
         }
@@ -3949,7 +3944,7 @@ export class DialogEdit {
         for (let i: number = 0; i < dataSource.length; i++) {
             const preData: IPreData = dataSource[i as number];
             const splitString: string[] = this.getMatchingPrefix(preData, this.parent.ids);
-            if (isNullOrUndefined(preData.id) || (!isNullOrUndefined(splitString[0]) && preData.id !== splitString[0])) {
+            if (isNullOrUndefined(preData.id) || (preData.id !== splitString[0] && !isNullOrUndefined(splitString[0]))) {
                 preData.id = splitString[0];
             }
             if (ids.indexOf(preData.id) === -1) {

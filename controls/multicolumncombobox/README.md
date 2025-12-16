@@ -1,5 +1,3 @@
-[![coverage](http://ej2.syncfusion.com/badges/ej2-multicolumn-combobox/coverage.svg)](http://ej2.syncfusion.com/badges/ej2-multicolumn-combobox)
-
 # JavaScript MultiColumn ComboBox Control
 
 The [JavaScript MultiColumn ComboBox](https://www.syncfusion.com/javascript-ui-controls/js-multicolumn-combobox) control that displays detailed information about items in a table-like structure with multiple columns. It provides comprehensive data about the selected value, offering more context than typical single-string text lists.

@@ -1,10 +1,13 @@
+@use 'ej2-base/styles/common/mixin' as *;
+@use './theme-variables' as *;
+
 .e-numeric-container {
   width: 100%;
 }
 
 .e-content-placeholder.e-numeric.e-placeholder-numeric {
   background-size: 300px 33px;
-  min-height: 33px;
+  min-height: $numeric-min-height;
 }
 
 // Hidden element styles
@@ -15,10 +18,69 @@
 .e-input-group.e-control-wrapper.e-numeric.e-input-focus .e-numeric-hidden,
 .e-float-input.e-control-wrapper.e-numeric.e-input-focus .e-numeric-hidden {
   border: 0;
-  height: 0;
-  margin: 0;
-  padding: 0;
+  height: $numeric-zero-height;
+  margin: $numric-zero-padding-margin;
+  padding: $numric-zero-padding-margin;
   text-indent: 0;
   visibility: hidden;
-  width: 0;
+  width: $numric-zero-padding-margin;
+}
+
+div.e-numeric.e-input-group,
+span.e-numeric.e-input-group {
+  &.e-prepend-wrapper,
+  &.e-append-wrapper {
+    &.e-float-input.e-control-wrapper label.e-float-text.e-label-bottom {
+      top: $numeric-prepend-label-bottom-top;
+    }
+
+    &.e-float-input.e-control-wrapper label.e-float-text.e-label-top {
+      top: $numeric-prepend-label-top-top;
+    }
+
+    &.e-outline {
+      &.e-float-input.e-control-wrapper label.e-float-text.e-label-bottom {
+        top: $numeric-prepend-outline-label-bottom-top;
+      }
+
+      &.e-float-input.e-control-wrapper label.e-float-text.e-label-top {
+        top: $numeric-prepend-outline-label-top-top;
+      }
+    }
+
+    &.e-filled {
+      &.e-float-input.e-control-wrapper label.e-float-text.e-label-bottom {
+        top: $numeric-prepend-filled-label-bottom-top;
+      }
+
+      &.e-float-input.e-control-wrapper label.e-float-text.e-label-top {
+        top: $numeric-prepend-filled-label-top-top;
+      }
+      @if ($skin-name == 'Material3') {
+        div.e-prepend-template {
+          padding: 18px 8px 8px 0;
+        }
+        div.e-append-template {
+          padding: 18px 0 8px 8px;
+        }
+      }
+    }
+  }
+}
+
+@if ($skin-name == 'tailwind3' or $skin-name == 'fluent2' or $skin-name == 'FluentUI') {
+  .e-numeric.e-input-group.e-prepend-wrapper.e-filled input,
+  .e-numeric.e-input-group.e-append-wrapper.e-filled input {
+    height: auto;
+  }
+}
+
+.e-numeric.e-input-group.e-prepend-wrapper.e-input-focus input.e-input,
+.e-numeric.e-input-group.e-prepend-wrapper input.e-input {
+  padding-left: 0;
+}
+
+.e-numeric.e-rtl.e-input-group.e-prepend-wrapper.e-input-focus input.e-input,
+.e-numeric.e-rtl.e-input-group.e-prepend-wrapper input.e-input {
+  padding-right: 0;
 }

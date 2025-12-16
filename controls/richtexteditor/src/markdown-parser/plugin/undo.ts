@@ -58,7 +58,7 @@ export class UndoRedoCommands {
      * @function destroy
      * @returns {void}
      * @hidden
-     * @deprecated
+     * @private
      */
     public destroy(): void {
         this.removeEventListener();
@@ -70,7 +70,7 @@ export class UndoRedoCommands {
      * @param {IMarkdownSubCommands} e - specifies the sub commands
      * @returns {void}
      * @hidden
-     * @deprecated
+     * @private
      */
     public onAction(e: IMarkdownSubCommands): void {
         if (e.subCommand === 'Undo') {
@@ -106,7 +106,7 @@ export class UndoRedoCommands {
      * @function saveData
      * @returns {void}
      * @hidden
-     * @deprecated
+     * @private
      */
     public saveData(e?: KeyboardEvent | MouseEvent | IUndoCallBack): void {
         const textArea: HTMLTextAreaElement = this.parent.element as HTMLTextAreaElement;
@@ -139,7 +139,7 @@ export class UndoRedoCommands {
      * @function undo
      * @returns {void}
      * @hidden
-     * @deprecated
+     * @private
      */
     public undo(e?: IMarkdownSubCommands | IMDKeyboardEvent): void {
         if (this.steps > 0) {
@@ -160,7 +160,7 @@ export class UndoRedoCommands {
      * @function redo
      * @returns {void}
      * @hidden
-     * @deprecated
+     * @private
      */
     public redo(e?: IMarkdownSubCommands | IMDKeyboardEvent): void {
         if (this.undoRedoStack[this.steps + 1] != null) {
@@ -190,7 +190,7 @@ export class UndoRedoCommands {
      *
      * @returns {boolean} - returns the boolean value
      * @hidden
-     * @deprecated
+     * @private
      */
     public getUndoStatus(): { [key: string]: boolean } {
         const status: { [key: string]: boolean } = { undo: false, redo: false };

@@ -90,7 +90,6 @@ describe('Alignment Commands', () => {
             }
             ele = createElement('div', { id: 'diagram1' });
             document.body.appendChild(ele);
-            let selArray: (NodeModel | ConnectorModel)[] = [];
             let connector: ConnectorModel = {
                 id: 'connector1', sourcePoint: { x: 400, y: 500 }, targetPoint: { x: 600, y: 500 }
             };
@@ -393,7 +392,6 @@ describe('Alignment Commands', () => {
             }
             ele = createElement('div', { id: 'diagram7' });
             document.body.appendChild(ele);
-            let selArray: (NodeModel | ConnectorModel)[] = [];
             let connector: ConnectorModel = {
                 id: 'connector1', sourcePoint: { x: 400, y: 500 }, targetPoint: { x: 600, y: 500 }
             };
@@ -546,7 +544,7 @@ describe('Alignment Commands', () => {
         it('Checking diagram instance creation', (done: Function) => {
             expect((diagram.nodes[0].offsetX === 100 && diagram.nodes[0].offsetY === 450) &&
                 (diagram.connectors[0].sourcePoint.x === 400 && diagram.connectors[0].sourcePoint.y === 500) &&
-                (diagram.connectors[0].targetPoint.x === 600 && diagram.connectors[0].targetPoint.y === 500)).toBe
+                (diagram.connectors[0].targetPoint.x === 600 && diagram.connectors[0].targetPoint.y === 500)).toBe(true);
             done();
         });
     });
@@ -566,7 +564,6 @@ describe('Alignment Commands', () => {
             }
             ele = createElement('div', { id: 'diagram11' });
             document.body.appendChild(ele);
-            let selArray: (NodeModel | ConnectorModel)[] = [];
             let connector: ConnectorModel = {
                 id: 'connector1', sourcePoint: { x: 400, y: 500 }, targetPoint: { x: 600, y: 500 }
             };
@@ -679,6 +676,7 @@ describe('Alignment Commands', () => {
         afterAll((): void => {
             diagram.destroy();
             ele.remove();
+            mouseEvents = null;
         });
 
         it('Checking left and top align', (done: Function) => {

@@ -1,4 +1,6 @@
 @use 'sass:color';
+@use 'ej2-base/styles/definition/highcontrast-light' as *;
+@forward 'ej2-base/styles/definition/highcontrast-light';
 
 //default
 $btn-border: 1px solid !default;
@@ -325,3 +327,11 @@ $btn-link-bgcolor: transparent !default;
 $btn-link-border-color: transparent !default;
 $btn-link-disabled-bgcolor: transparent !default;
 $btn-focus-box-shadow: none !default;
+$btn-zero-padding: 0 !default;
+$btn-top-bottom-icon-line-height: 1 !default;
+$btn-round-line-height: 1 !default;
+$btn-round-border-radius: 50% !default;
+$btn-auto-width: auto !default;
+$btn-width-full: 100% !default;
+$btn-zero-border: 0 !default;
+$btn-zero-line-height: 0 !default;

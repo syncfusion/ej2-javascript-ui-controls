@@ -9,7 +9,7 @@ import * as EVENTS from './../../common/constant';
  * SelectionCommands internal component
  *
  * @hidden
- * @deprecated
+ * @private
  */
 export class MDSelectionFormats {
     private parent: MarkdownParser;

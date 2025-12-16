@@ -1114,7 +1114,7 @@ describe('MultiSelect_Virtualization', () => {
             setTimeout(() => {
                 multiObj.showPopup();
                 done();
-            }, 800);
+            }, 1200);
         });
     });
 

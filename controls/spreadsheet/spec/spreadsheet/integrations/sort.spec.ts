@@ -1,7 +1,7 @@
 import { SpreadsheetModel, Spreadsheet, locale } from '../../../src/spreadsheet/index';
 import { SpreadsheetHelper } from '../util/spreadsheethelper.spec';
 import { defaultData, virtualData, dataSource } from '../util/datasource.spec';
-import { CellModel, SortEventArgs, SortDescriptor, getCell, DialogBeforeOpenEventArgs, SheetModel, setCell, BeforeSortEventArgs, HyperlinkModel } from '../../../src/index';
+import { CellModel, SortEventArgs, SortDescriptor, getCell, DialogBeforeOpenEventArgs, SheetModel, setCell, BeforeSortEventArgs, HyperlinkModel, NoteModel } from '../../../src/index';
 import { L10n } from '@syncfusion/ej2-base';
 
 /**
@@ -1369,7 +1369,7 @@ describe('Spreadsheet sorting module ->', () => {
             spreadsheet.sheets[0].rows[0] = {
                 cells: [{
                     value: 'spreadsheet',
-                    notes: 'spreadsheet',
+                    notes: { text: 'spreadsheet' },
                     isReadOnly: false,
                     isLocked: false
                 }]
@@ -1389,7 +1389,7 @@ describe('Spreadsheet sorting module ->', () => {
             helper.triggerMouseAction('mousedown', { x: coords.left + 3, y: coords.top + 2 }, undefined, td);
             helper.triggerMouseAction('mouseup', { x: coords.left + 3, y: coords.top + 2 }, undefined, td);
             setTimeout((): void => {
-                expect(spreadsheet.sheets[0].rows[0].cells[0].notes).toBe('Syncfusion1');
+                expect((spreadsheet.sheets[0].rows[0].cells[0].notes as NoteModel).text).toBe('Syncfusion1');
                 done();
             });
         });

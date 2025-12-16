@@ -1,4 +1,4 @@
-import { Property, Complex, ChildProperty } from '@syncfusion/ej2-base';import { PageOrientation, BoundaryConstraints, ImageAlignment, ScrollLimit, Scale } from '../enum/enum';import { FitModes, DiagramRegions } from '../enum/enum';import { MarginModel } from '../core/appearance-model';import { Margin } from '../core/appearance';import { Rect } from '../primitives/rect';
+import { Property, Complex, ChildProperty } from '@syncfusion/ej2-base';import { PageOrientation, BoundaryConstraints, ImageAlignment, ScrollLimit, Scale } from '../enum/enum';import { FitModes, DiagramRegions } from '../enum/enum';import { MarginModel } from '../core/appearance-model';import { Margin } from '../core/appearance';import { Rect } from '../primitives/rect';import { ScrollValues } from '../objects/interface/IElement';
 
 /**
  * Interface for a class Background

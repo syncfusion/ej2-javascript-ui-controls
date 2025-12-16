@@ -218,7 +218,7 @@ describe('Chart Control - Box and Whisker Series', () => {
             chartObj.refresh(); unbindResizeEvents(chartObj);
         });
 
-        it('Checking animation complete event', (done: Function) => {
+        it('Checking animation complete event', async (): Promise<void> => {
             chartObj.animationComplete = (args: Object) => {
                 svg = getElement('container_Series_0_Point_0');
                 expect((svg as HTMLElement).style.visibility).toBe('visible');
@@ -230,6 +230,7 @@ describe('Chart Control - Box and Whisker Series', () => {
             };
             chartObj.series[0].animation.enable = true;
             chartObj.refresh(); unbindResizeEvents(chartObj);
+            await wait(500);
         });
 
         it('Checking single yValues', (done: Function) => {
@@ -1039,6 +1040,9 @@ describe('Chart Control - Box and Whisker Series', () => {
             chartObj.refresh(); unbindResizeEvents(chartObj);
         });
     });
+    async function wait(ms: number): Promise<void> {
+        return new Promise(resolve => setTimeout(resolve, ms));
+    }
     it('memory leak', () => {
         profile.sample();
         let average: any = inMB(profile.averageChange)

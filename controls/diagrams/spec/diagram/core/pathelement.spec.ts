@@ -228,8 +228,9 @@ describe('Diagram Control', () => {
         });
 
         afterAll((): void => {
-            diagram.destroy();
-            ele.remove();
+            if (diagram) { diagram.destroy(); diagram = null; }
+            if (ele && ele.parentNode) ele.parentNode.removeChild(ele);
+            ele = null;
         });
 
         it('Checking stack panel without children', (done: Function) => {

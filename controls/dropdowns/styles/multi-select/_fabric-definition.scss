@@ -1,3 +1,6 @@
+@use 'ej2-base/styles/common/mixin' as *;
+@use 'ej2-base/styles/definition/fabric' as *;
+@forward 'ej2-base/styles/definition/fabric';
 $ddl-chip-mobile-close-font: 16px !default;
 
 $ddl-multiselect-skin-name: 'fabric' !default;
@@ -133,6 +136,50 @@ $ddl-multiselect-group-list-group-item-rtl-padding-right: 10px !default;
 $ddl-multiselect-label-position: 15px !default;
 $multiselect-disable-font-color: $neutral-tertiary !default;
 
+$ddl-bigger-filled-wrapper-chip-padding: 0 12px !default;
+$ddl-rtl-bigger-small-wrapper-chips-padding: 0 0 0 4px !default;
+$ddl-bigger-small-filled-float-wrapper-chip-padding: 0 4px 0 0 !default;
+$ddl-bigger-filled-float-wrapper-chip-padding-right: 8px !default;
+$ddl-bgr-filled-float-wrapper-chip-font-size: 13px !default;
+$ddl-bigger-small-filled-float-wrapper-chip-font-size: 12px !default;
+$ddl-bgr-small-filled-wrapper-chip-padding: 0 8px 0 0 !default;
+$ddl-bgr-small-filled-wrapper-chip-font-size: 13px !default;
+$ddl-small-bgr-filled-float-chip-padding-left: 8px !default;
+$ddl-rtl-bgr-small-filled-chip-padding: 0 8px !default;
+$ddl-rtl-bgr-small-filled-chip-margin: 8px 0 0 8px !default;
+$ddl-bgr-small-filled-wrapper-chip-margin: 8px 8px 0 0 !default;
+$ddl-bgr-small-filled-wrapper-chip-padding: 0 8px !default;
+$ddl-bigger-filled-float-wrapper-delimiter-input-padding: 5px 0 !default;
+$ddl-bigger-filled-wrapper-padding-top: 3px !default;
+$ddl-bgr-filled-float-input-wrapper-padding: 19px 12px 0 16px !default;
+$ddl-bgr-small-filled-float-wrapper-padding: 11px 12px 0 !default;
+$ddl-multiselect-zero-padding-margin: 0 !default;
+$ddl-small-float-input-wrapper: 3px 12px 0 4px !default;
+
+$ddl-multi-wrapper-down-icon-padding: 0 48px 0 0 !default;
+$ddl-wrapper-down-icon-padding: 0 0 0 48px !default;
+$ddl-rtl-filled-wrapper-input: 5px !default;
+$ddl-popup-multi-filter-padding-left: 8px !default;
+$ddl-filled-wrapper-padding: 0 12px 0 8px !default;
+$ddl-filled-float-wrapper-padding: 11px 12px 0 !default;
+$ddl-small-filled-float-wrapper-padding: 12px 12px 0 8px !default;
+$ddl-filled-float-wrapper-chip-margin: 8px 8px 0 0 !default;
+$ddl-filled-float-wrapper-chip-padding: 0 8px !default;
+$ddl-rtl-filled-float-wrapper-chip-margin: 8px 0 0 8px !default;
+$ddl-small-filled-wrapper-chip-margin: 4px 4px 0 0 !default;
+$ddl-small-filled-wrapper-chip-padding-right: 8px !default;
+$ddl-rtl-small-filled-float-chip-margin: 4px 0 0 4px !default;
+$ddl-filled-chipcontent-font-size: 13px !default;
+$ddl-filled-chipcontent-padding: 0 8px 0 0 !default;
+$ddl-small-filled-chipcontent-font-size: 12px !default;
+$ddl-filled-float-chipcontent-font-size: 12px !default;
+$ddl-filled-float-chipcontent-padding: 0 4px 0 0 !default;
+$ddl-rtl-filled-chipcontent-padding: 0 0 0 4px !default;
+$ddl-small-filled-float-chiupcontent-font-size: 10px !default;
+$ddl-filled-float-mob-chipcontent-font-size: 13px !default;
+$ddl-filled-float-mob-chipcontent-padding-right: 4px !default;
+$ddl-filled-wrapper-chip-close-margin-top: -38px !default;
+
 // Small size
 $ddl-select-all-height-small: 26px !default;
 $ddl-small-chip-height: 20px !default;
@@ -160,6 +207,36 @@ $ddl-bigger-small-input-height: 34px !default;
 $ddl-delim-bigger-small-font-size: 14px !default;
 $ddl-delimviewheight-bigger-small: 34px !default;
 $ddl-closer-margin-top-bigger-small: -3.2em !default;
+
+$ddl-bigger-small-filled-chip-height: 28px !default;
+$ddl-bigger-filled-chip-height: 24px !default;
+$ddl-bigger-filled-not-chip-height: 32px !default;
+$ddl-bigger-small-filled-input-chip-height: 18px !default;
+$ddl-delimiter-height: 27px !default;
+$ddl-full-height: 100% !default;
+$ddl-zero-margin-padding: 0 !default;
+$multi-input-down-icon-margin-right: 30px !default;
+$multi-zero-height: 0 !default;
+$popup-multi-rtl-margin-left: 12px !default;
+$ddl-checkbox-delim-line-height: 20px !default;
+$ddl-checkbox-delim-padding-left: 10px !default;
+$multi-wrapper-chip-height: 28px !default;
+$multi-small-chip-height: 24px !default;
+$multi-filled-float-chip-height: 18px !default;
+$multi-small-filled-chip-height: 16px !default;
+$multi-filled-clear-icon-height: 38px !default;
+$multi-filled-clear-icon-margin-top: -38px !default;
+$popup-multi-resize-height: 15px !default;
+$multi-zero-width: 0 !default;
+$multi-auto-width: auto !default;
+$multi-filled-clear-icon-width: 16px !default;
+$popup-multi-resize-width: 15px !default;
+$multi-bgr-list-wrapper-padding-left: 8px !default;
+$multi-full-width: 100% !default;
+$multi-searcher-height: 1px !default;
+$multi-filled-close-right: 12px !default;
+$multi-one-width: 1px !default;
+$multi-select-wrapper-chip-width: 92%;
 
 @include export-module('multiselect-fabric') {
   .e-multi-select-wrapper.e-down-icon .e-input-group-icon.e-ddl-icon {

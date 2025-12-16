@@ -1,3 +1,6 @@
+@use 'ej2-base/styles/definition/bootstrap4' as *;
+@forward 'ej2-base/styles/definition/bootstrap4';
+
 /*! component's theme wise override bootstrap-definitions and variables */
 
 // Generic
@@ -100,3 +103,4 @@ $element-width-complete: 100% !important !default;
 //gridlines
 $gridline-background: $gray-100 !default;
 $gridline-border: $gray-400 !default;
+$gridline-border-width: 1px !default;

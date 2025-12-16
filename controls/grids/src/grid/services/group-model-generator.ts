@@ -38,7 +38,7 @@ export class GroupModelGenerator extends RowModelGenerator implements IModelGene
         }
         this.isInfiniteScroll = (args.requestType === 'infiniteScroll');
         this.rows = [];
-        this.index = this.parent.enableVirtualization || this.isInfiniteScroll ? args.startIndex : 0;
+        this.index = this.parent.enableVirtualization || this.isInfiniteScroll ? args.startIndex : this.parent.pinnedTopRowModels.length;
         for (let i: number = 0, len: number = data.length; i < len; i++) {
             this.infiniteChildCount = 0; this.renderInfiniteAgg = true;
             this.getGroupedRecords(0, data[parseInt(i.toString(), 10)], (<Group>data).level, i, undefined, this.rows.length);

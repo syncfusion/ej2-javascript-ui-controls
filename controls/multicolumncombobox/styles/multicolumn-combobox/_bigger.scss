@@ -1,3 +1,5 @@
+@use 'ej2-base/styles/common/mixin' as *;
+@use './theme-variables' as *;
 @mixin multicolumn-combobox-styles($margin-top-value) {
   &.e-multicolumn-list {
     margin-top: $margin-top-value;
@@ -8,7 +10,7 @@
   .e-bigger.e-popup,
   .e-bigger .e-popup {
     &.e-multicolumn-list .e-popup-footer {
-      font-size: 16px;
+      font-size: $multicolumn-bigger-popup-footer-font-size;
     }
     &.e-multicolumn-list .e-popup-footer,
     .e-multicolumn-grid .e-row,
@@ -21,8 +23,8 @@
   .e-bigger.e-multicolumn-list .e-multicolumn-list-icon .e-spinner-pane .e-spinner-inner svg,
   .e-bigger .e-multicolumn-list .e-multicolumn-list-icon .e-spinner-pane .e-spinner-inner svg {
     /* stylelint-disable declaration-no-important */
-    height: 26px !important;
-    width: 26px !important;
+    height: $multicolumn-bigger-spin-pane-height !important;
+    width: $multicolumn-bigger-spinner-width !important;
     transform-origin: 13px 13px 13px !important;
     /* stylelint-enable declaration-no-important */
   }
@@ -34,7 +36,7 @@
     .e-multicolumn-grid .e-headercelldiv,
     .e-multicolumn-grid .e-rowcell,
     &.e-multicolumn-list .e-popup-footer {
-      font-size: 14px;
+      font-size: $multicolumn-bgr-small-font-size;
     }
     &.e-multicolumn-list .e-popup-footer,
     .e-multicolumn-grid .e-row,

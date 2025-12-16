@@ -1,5 +1,5 @@
-@import 'ej2-base/styles/definition/material-dark.scss';
-@import 'pdfviewer/material-dark-definition.scss';
-@import 'pdfviewer/icons/material-dark.scss';
-@import 'pdfviewer/all.scss';
-@import 'pdfviewer/bigger.scss';
+@use 'ej2-base/styles/definition/material-dark' as *;
+@use 'pdfviewer/material-dark-definition' as *;
+@use 'pdfviewer/icons/material-dark' as *;
+@use 'pdfviewer/all' as *;
+@use 'pdfviewer/bigger' as *;

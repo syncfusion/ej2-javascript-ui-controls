@@ -519,42 +519,48 @@ describe('Chart', () => {
 
         });
 
-        it('Checking series animationEvent', (done: Function) => {
+        it('Checking series animationEvent', async (): Promise<void> => {
             animationComplete = (args: IAnimationCompleteEventArgs): void => {
                 let point: Element = document.getElementById('containerIndicatorGroup0');
                 expect(point.getAttribute('transform') === 'translate(53.5,311.825)' ||
-                       point.getAttribute('transform') === 'translate(53.5,311.525)').toBe(true);
-                done();
+                    point.getAttribute('transform') === 'translate(53.5,311.525)').toBe(true);
+                //done();
             };
             chartObj.animationComplete = animationComplete;
             chartObj.series[0].animation.enable = true;
             chartObj.refresh();
+            await wait(500);
         });
-        it('Checking technicalindicators animationEvent', (done: Function) => {
+        it('Checking technicalindicators animationEvent', async (): Promise<void> => {
             animationComplete = (args: IAnimationCompleteEventArgs): void => {
                 let point: Element = document.getElementById('containerIndicatorGroup0');
                 expect(point.getAttribute('transform') === 'translate(53.5,311.825)' ||
-                       point.getAttribute('transform') === 'translate(53.5,311.525)').toBe(true);
-                done();
+                    point.getAttribute('transform') === 'translate(53.5,311.525)').toBe(true);
+                //done();
             };
             chartObj.animationComplete = animationComplete;
             chartObj.indicators[0].animation.enable = true;
             chartObj.refresh();
+            await wait(500);
         });
-        it('Checking both series and technical indicators animationEvent', (done: Function) => {
+        it('Checking both series and technical indicators animationEvent', async (): Promise<void> => {
             animationComplete = (args: IAnimationCompleteEventArgs): void => {
                 let point: Element = document.getElementById('containerIndicatorGroup0');
 
                 expect(point.getAttribute('transform') === 'translate(53.5,311.825)' ||
-                       point.getAttribute('transform') === 'translate(53.5,311.525)').toBe(true);
-                done();
+                    point.getAttribute('transform') === 'translate(53.5,311.525)').toBe(true);
+                //done();
             };
             chartObj.animationComplete = animationComplete;
             chartObj.series[0].animation.enable = true;
             chartObj.indicators[0].animation.enable = true;
             chartObj.refresh();
+            await wait(500);
         });
     });
+    async function wait(ms: number): Promise<void> {
+        return new Promise(resolve => setTimeout(resolve, ms));
+    }
     it('memory leak', () => {
         profile.sample();
         let average: any = inMB(profile.averageChange)

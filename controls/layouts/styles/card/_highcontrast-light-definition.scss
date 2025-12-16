@@ -1,3 +1,6 @@
+@use 'ej2-base/styles/definition/highcontrast-light' as *;
+@forward 'ej2-base/styles/definition/highcontrast-light';
+
 /*! component's default definitions and variables */
 $skin-name: 'material' !default;
 $card-img-brdr-radious: 50% !default;
@@ -35,6 +38,8 @@ $card-action-nrml-btn-vertical-margin: 0 0 8px 0 !default;
 $card-action-btn-nrml-margin: 0 0 0 8px !default;
 $card-action-btn-nrml-padding: 0 6px !default;
 $card-action-btn-nrml-height: 36px !default;
+$card-action-btn-nrml-line-height: 36px !default;
+$card-action-btn-nrml-min-height: 36px !default;
 $card-nrml-mheight: 48px !default;
 $card-nrml-lheight: 16px !default;
 $card-nrml-padding: 16px 0 !default;
@@ -85,6 +90,8 @@ $card-action-bigger-padding: 6px !default;
 $card-action-bigger-vertical-padding: 0 6px !default;
 $card-action-bigger-btn-vertical-margin: 0 0 6px 0 !default;
 $card-action-btn-bigger-height: 27px !default;
+$card-action-btn-bigger-line-height: 27px !default;
+$card-action-btn-bigger-min-height: 27px !default;
 $card-action-btn-bigger-margin: 0 0 0 6px !default;
 $card-action-btn-bigger-padding: 0 6px !default;
 $card-bigger-content-padding: 12px !default;
@@ -93,6 +100,10 @@ $card-header-txt-bigger-subtitle-font: 14px !default;
 $card-image-title-bigger-font: 24px !default;
 $card-action-btn-bigger-icon-width: 24px !default;
 $card-action-btn-bigger-icon-height: 24px !default;
+
+$card-padding-none: 0 !default;
+$card-margin-none: 0 !default;
+$card-horizontal-padding: 2px !default;
 
 //color
 
@@ -162,6 +173,8 @@ $card-action-nrml-padding: 6px !default;
 $card-action-nrml-vertical-padding: 12px !default;
 $card-action-nrml-btn-vertical-margin: 0 0 6px 0 !default;
 $card-action-btn-nrml-height: 27px !default;
+$card-action-btn-nrml-line-height: 27px !default;
+$card-action-btn-nrml-min-height: 27px !default;
 $card-action-btn-nrml-margin: 0 0 0 6px !default;
 $card-action-btn-nrml-padding: 0 6px !default;
 $card-nrml-content-padding: 12px !default;
@@ -170,6 +183,13 @@ $card-header-txt-nrml-subtitle-font: 14px !default;
 $card-image-title-font: 17px !default;
 $card-action-btn-icon-width: 24px !default;
 $card-action-btn-icon-height: 24px !default;
+$card-nrml-font-size: 15px !default;
+$card-normal-line-height: normal !default;
+$card-corner-border-radius: 50% !default;
+$card-header-title-font-weight: normal !default;
+$card-sub-title-font-weight: normal !default;
+$card-btn-border-radius: 2px !default;
+$card-font-family: $font-family !default;
 
 // Touch
 
@@ -197,6 +217,8 @@ $card-action-bigger-padding: 16px !default;
 $card-action-bigger-vertical-padding: 16px !default;
 $card-action-bigger-btn-vertical-margin: 0 0 10px 0 !default;
 $card-action-btn-bigger-height: 36px !default;
+$card-action-btn-bigger-line-height: 36px !default;
+$card-action-btn-bigger-min-height: 36px !default;
 $card-action-btn-bigger-margin: 0 0 0 10px !default;
 $card-action-btn-bigger-padding: 0 6px !default;
 $card-bigger-content-padding: 16px !default;

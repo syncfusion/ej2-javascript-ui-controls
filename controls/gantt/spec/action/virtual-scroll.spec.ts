@@ -1,4 +1,3 @@
-
 /**
  * Gantt virtual scroll spec
  */

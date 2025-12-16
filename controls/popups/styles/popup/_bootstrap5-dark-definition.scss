@@ -1,1 +1,6 @@
-@import './bootstrap5-definition.scss';
+@use 'ej2-base/styles/definition/bootstrap5-dark' as *;
+@forward 'ej2-base/styles/definition/bootstrap5-dark';
+
+/* stylelint-disable-line no-empty-source */
+$popup-width: auto !default;
+$popup-height: auto !default;

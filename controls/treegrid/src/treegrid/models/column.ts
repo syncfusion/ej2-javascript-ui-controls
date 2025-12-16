@@ -337,6 +337,20 @@ export class Column {
     public lockColumn: boolean;
 
     /**
+     * Allows treegrid to perform row spanning on the specified column.
+     *
+     * @default true
+     */
+    public enableRowSpan: boolean = true;
+
+    /**
+     * Allows treegrid to perform column spanning on the specified column.
+     *
+     * @default true
+     */
+    public enableColumnSpan: boolean = true;
+
+    /**
      * Dictates the column freeze position. Options include:
      * * `Left` - Freeze the column on the left.
      * * `Right` - Freeze the column on the right.
@@ -752,6 +766,20 @@ export interface ColumnModel {
      * @default false
      */
     lockColumn?: boolean;
+
+    /**
+     * Allows treegrid to perform row spanning on the specified column.
+     *
+     * @default true
+     */
+    enableRowSpan?: boolean;
+
+    /**
+     * Allows treegrid to perform column spanning on the specified column.
+     *
+     * @default true
+     */
+    enableColumnSpan?: boolean
 
     /**
      * Determines which side (left, right, or center) the column should be frozen on.

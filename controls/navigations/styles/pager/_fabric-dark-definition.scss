@@ -1,3 +1,5 @@
+@use 'ej2-base/styles/definition/fabric-dark' as *;
+@forward 'ej2-base/styles/definition/fabric-dark';
 $pager-font-family: sans-serif !default;
 $pager-border-type: $border-type !default;
 $pager-mobile-icon-size: 11px !default;
@@ -147,3 +149,6 @@ $pager-adaptive-constant-pagesizeall-top: 13px !default;
 $pager-bigger-adaptive-constant-pagesizeall-top: 14px !default;
 $pager-rtl-adaptive-constant-pagesizeall-top: 12px !default;
 $pager-rtl-e-bigger-adaptive-constant-pagesizeall-top: 13px !default;
+
+$pager-border-radius-4: 4px !default;
+$pager-border-radius-5: 5px !default;

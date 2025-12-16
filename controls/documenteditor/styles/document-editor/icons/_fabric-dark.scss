@@ -1,3 +1,5 @@
+@use 'ej2-base/styles/common/mixin' as *;
+@use '../fabric-dark-definition' as *;
 @include export-module('documenteditor-fabric-icons') {
   .e-documenteditor {
     .e-close::before {

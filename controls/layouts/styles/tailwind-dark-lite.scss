@@ -1,14 +1,14 @@
-@import 'ej2-base/styles/definition/tailwind-dark.scss';
-@import 'avatar/tailwind-dark-definition.scss';
-@import 'avatar/all.scss';
+@use 'ej2-base/styles/definition/tailwind-dark' as *;
+@use 'avatar/tailwind-dark-definition' as *;
+@use 'avatar/all' as *;
 
-@import 'card/tailwind-dark-definition.scss';
-@import 'card/all.scss';
-@import 'splitter/tailwind-dark-definition.scss';
-@import 'splitter/icons/tailwind-dark.scss';
-@import 'splitter/all.scss';
-@import 'dashboard-layout/tailwind-dark-definition.scss';
-@import 'dashboard-layout/icons/tailwind-dark.scss';
-@import 'dashboard-layout/all.scss';
-@import 'timeline/tailwind-dark-definition.scss';
-@import 'timeline/all.scss';
+@use 'card/tailwind-dark-definition' as *;
+@use 'card/all' as *;
+@use 'splitter/tailwind-dark-definition' as *;
+@use 'splitter/icons/tailwind-dark' as *;
+@use 'splitter/all' as *;
+@use 'dashboard-layout/tailwind-dark-definition' as *;
+@use 'dashboard-layout/icons/tailwind-dark' as *;
+@use 'dashboard-layout/all' as *;
+@use 'timeline/tailwind-dark-definition' as *;
+@use 'timeline/all' as *;

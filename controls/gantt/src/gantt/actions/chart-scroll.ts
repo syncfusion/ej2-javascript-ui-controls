@@ -287,6 +287,7 @@ export class ChartScroll {
         this.parent.isToolBarClick = true;
         scrollArgs.requestType = 'scroll';
         this.parent.trigger('actionComplete', scrollArgs);
+        this.parent.isVirtualScroll = false;
     }
     /**
      * To set height for chart scroll container

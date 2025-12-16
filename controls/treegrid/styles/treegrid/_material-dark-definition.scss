@@ -1,3 +1,5 @@
+@use 'ej2-base/styles/definition/material-dark' as *;
+@forward 'ej2-base/styles/definition/material-dark';
 $treegrid-right-arrow-icon: '\e848' !default;
 $treegrid-toolbar-expand-icon: '\e556' !default;
 $treegrid-toolbar-collapse-icon: '\e554' !default;

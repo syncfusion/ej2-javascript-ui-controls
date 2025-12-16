@@ -1,3 +1,6 @@
+@use 'ej2-base/styles/definition/material-dark' as *;
+@forward 'ej2-base/styles/definition/material-dark';
+
 // Speechtotext component styles
 
 $stt-box-shadow: 0 4px 6px -1px rgba(0, 0, 0, .05), 0 10px 15px -3px rgba(0, 0, 0, .1) !default;
@@ -12,6 +15,9 @@ $stt-min-height: 40px !default;
 $stt-min-width: 40px !default;
 $stt-padding: 0 14px !default;
 $stt-margin-top: 0 !default;
+$stt-round-padding: 0 !default;
+$stt-round-btn-margin-top: 1px !default;
+$stt-btn-icon-line-height: 2px !default;
 
 $stt-bigger-border-radius: $stt-border-radius !default;
 $stt-bigger-font-weight: 500 !default;
@@ -24,3 +30,5 @@ $stt-bigger-min-height: 52px !default;
 $stt-bigger-min-width: 52px !default;
 $stt-bigger-padding: 0 22px !default;
 $stt-bigger-margin-top: -1px !default;
+$stt-bigger-round-padding: 0 !default;
+$stt-bigger-btn-icon-line-height: 1px !default;

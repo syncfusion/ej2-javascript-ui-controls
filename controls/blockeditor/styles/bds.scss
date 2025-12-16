@@ -1,5 +1,4 @@
-@import 'ej2-base/styles/definition/bds.scss';
-@import 'blockeditor/bds-definition.scss';
-@import 'blockeditor/icons/bds.scss';
-@import 'blockeditor/all.scss';
-@import 'blockeditor/bigger.scss';
+@use 'blockeditor/bds-definition' as *;
+@use 'blockeditor/icons/bds' as *;
+@use 'blockeditor/all' as *;
+@use 'blockeditor/bigger' as *;

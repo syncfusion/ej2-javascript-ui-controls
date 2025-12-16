@@ -1,3 +1,5 @@
+@use 'ej2-base/styles/common/mixin' as *;
+@use './theme-variables' as *;
 @include export-module('querybuilder-theme') {
   .e-query-builder {
     background: $qrybldr-bg-color;
@@ -235,28 +237,5 @@
       color: $icon-color !important; /* stylelint-disable-line declaration-no-important */
       box-shadow: $keyboard-focus-shadow !important; /* stylelint-disable-line declaration-no-important */
     }
-  }
-}
-
-.e-querybuilder-spinner::before {
-  content: '';
-  position: absolute;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 16px;
-  height: 16px;
-  border: 2px solid $spinner-border-light-color;
-  border-top: 2px solid $spinner-border-color;
-  border-radius: 50%;
-  animation: spin 1s linear infinite;
-}
-
-@keyframes spin {
-  0% {
-    transform: translateX(-50%) rotate(0deg);
-  }
-
-  100% {
-    transform: translateX(-50%) rotate(360deg);
   }
 }

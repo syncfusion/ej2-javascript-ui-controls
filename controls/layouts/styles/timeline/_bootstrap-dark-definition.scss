@@ -1,3 +1,5 @@
+@use 'ej2-base/styles/definition/bootstrap-dark' as *;
+@forward 'ej2-base/styles/definition/bootstrap-dark';
 $timeline-dot-size: 16px !default;
 $timeline-content-font-size: 14px !default;
 $timeline-dot-font-size: 16px !default;
@@ -9,6 +11,7 @@ $timeline-bigger-content-font-size: 16px !default;
 $timeline-bigger-opposite-content-font-size: 14px !default;
 $timeline-bigger-dot-font-size: 18px !default;
 $timeline-bigger-dot-icon-size: 40px !default;
+$timeline-content-font-weight: 500 !default;
 
 $timeline-dot-color: $grey-dark-font !default;
 $timeline-dot-background-color: $gray-light !default;
@@ -16,3 +19,10 @@ $timeline-dot-border-color: $grey-ad !default;
 $timeline-content-font-color: $grey-dark-font !default;
 $timeline-opposite-content-font-color: $grey-dark-font !default;
 $timeline-item-disabled-color: $grey-lighter !default;
+
+$timeline-dot-border: 1px !default;
+$timeline-dot-radius: 50% !default;
+$timeline-list-padding: 0 !default;
+$timeline-inherit-height: inherit !default;
+$timeline-auto-height: auto !default;
+$timeline-height-none: 0 !default;

@@ -1,6 +1,6 @@
 import { Browser, EventHandler, getComponent, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { Spreadsheet, FormulaBarEdit, ScrollEventArgs, isFormulaBarEdit, colWidthChanged, mouseDown, getUpdateUsingRaf } from '../index';
-import { contentLoaded, spreadsheetDestroyed, onVerticalScroll, onHorizontalScroll, getScrollBarWidth, IScrollArgs, updateNoteContainer, focusRenameInput } from '../common/index';
+import { contentLoaded, spreadsheetDestroyed, onVerticalScroll, onHorizontalScroll, getScrollBarWidth, IScrollArgs, updateNoteContainer, focusRenameInput, removeCommentContainer } from '../common/index';
 import { IOffset, onContentScroll, deInitProperties, updateScroll, selectionStatus } from '../common/index';
 import { virtualContentLoaded, updateScrollValue } from '../common/index';
 import { SheetModel, getRowHeight, getColumnWidth, getCellAddress, skipHiddenIdx } from '../../workbook/index';
@@ -65,7 +65,7 @@ export class Scroll {
             this.updateTopLeftCell(scrollRight, true);
             this.parent.notify(focusRenameInput, null);
             this.parent.notify(onHorizontalScroll, scrollArgs);
-            this.updateNoteContainer();
+            this.updateContainers();
             if (!this.parent.scrollSettings.enableVirtualization && scrollRight && !this.parent.scrollSettings.isFinite) {
                 this.updateNonVirtualCols();
             }
@@ -86,7 +86,7 @@ export class Scroll {
             } else if (!e.skipRowVirualScroll) {
                 this.parent.notify(focusRenameInput, null);
                 this.parent.notify(onVerticalScroll, scrollArgs);
-                this.updateNoteContainer();
+                this.updateContainers();
             } else {
                 scrollArgs.prev.idx = scrollArgs.cur.idx;
             }
@@ -105,9 +105,12 @@ export class Scroll {
         this.isKeyScroll = true;
     }
 
-    private updateNoteContainer(): void {
+    private updateContainers(): void {
         if (document.getElementsByClassName('e-addNoteContainer') && document.getElementsByClassName('e-addNoteContainer').length > 0) {
             this.parent.notify(updateNoteContainer, null);
+        }
+        if (document.getElementsByClassName('e-comment-container') && document.getElementsByClassName('e-comment-container').length > 0) {
+            this.parent.notify(removeCommentContainer, null);
         }
     }
 

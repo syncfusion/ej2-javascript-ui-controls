@@ -62,27 +62,32 @@ export class EventMarker {
             const customizedFontBrush: PdfPen = !isNullOrUndefined(ganttStyles.eventMarker.label.fontBrush) ?
                 new PdfPen(ganttStyles.eventMarker.label.fontBrush) : null;
             const left: number = this.parent.dataOperation.getTaskLeft(
-                this.parent.dateValidationModule.getDateFromFormat(eventMarker.date, true), false, true);
+                this.parent.dateValidationModule.getDateFromFormat(eventMarker.date, true),
+                false, this.parent.defaultCalendarContext, true
+            );
             const diff: number = 10;
             if (this.parent.pdfExportModule.gantt.taskbar.isAutoFit()) {
                 taskGraphics.drawLine(eventLine, new PointF(startPoint.x + (left - cumulativeWidth) + diff, cumulativeHeight),
                                       new PointF(startPoint.x + (left - cumulativeWidth) + diff, this.renderHeight));
                 if (!isNullOrUndefined(eventMarker.label) && eventMarker.label.length > 0) {
-                    const renderBox: number = cumulativeHeight + pixelToPoint(50) + (strSize.height * 2);
+                    const renderBox: number = cumulativeHeight + pixelToPoint(parseFloat(eventMarker.top)) + (strSize.height * 2);
                     if (renderBox < this.renderHeight) {
                         taskGraphics.save();
                         taskGraphics.translateTransform(
-                            startPoint.x + (left - cumulativeWidth) + 7 + diff, cumulativeHeight + pixelToPoint(50) + strSize.height / 2);
+                            startPoint.x + (left - cumulativeWidth) + 7 + diff, cumulativeHeight +
+                            pixelToPoint(parseFloat(eventMarker.top)) + strSize.height / 2);
                         taskGraphics.rotateTransform(45);
                         taskGraphics.drawRectangle(border, eventBrush, 0, 0, triangle, triangle);
                         taskGraphics.restore();
                         taskGraphics.drawRectangle(
-                            border, eventBrush, startPoint.x + (left - cumulativeWidth) + 7 + diff, cumulativeHeight + pixelToPoint(50),
+                            border, eventBrush, startPoint.x + (left - cumulativeWidth) + 7 + diff,
+                            cumulativeHeight + pixelToPoint(parseFloat(eventMarker.top)),
                             strSize.width + 10, strSize.height * 2);
                         taskGraphics.drawString(
                             eventMarker.label, customizedFont, customizedFontBrush, fontColor, (startPoint.x +
                                 (left - cumulativeWidth) + 12 + diff) - (padding.left + padding.right),
-                            (cumulativeHeight + pixelToPoint(50) + pixelToPoint(strSize.height / 2)) - (padding.top + padding.bottom),
+                            (cumulativeHeight + pixelToPoint(parseFloat(eventMarker.top)) +
+                            pixelToPoint(strSize.height / 2)) - (padding.top + padding.bottom),
                             strSize.width, strSize.height, textFormat);
                     }
                 }
@@ -92,22 +97,23 @@ export class EventMarker {
                     eventLine, new PointF(startPoint.x + pixelToPoint(left - cumulativeWidth) + diff, cumulativeHeight),
                     new PointF(startPoint.x + pixelToPoint(left - cumulativeWidth) + diff, this.renderHeight));
                 if (!isNullOrUndefined(eventMarker.label) && eventMarker.label.length > 0) {
-                    const renderBox: number = cumulativeHeight + pixelToPoint(50) + (strSize.height * 2);
+                    const renderBox: number = cumulativeHeight + pixelToPoint(parseFloat(eventMarker.top)) + (strSize.height * 2);
                     if (renderBox < this.renderHeight) {
                         taskGraphics.save();
                         taskGraphics.translateTransform(
                             startPoint.x + pixelToPoint(left - cumulativeWidth) + 7 + diff,
-                            cumulativeHeight + pixelToPoint(50) + strSize.height / 2);
+                            cumulativeHeight + pixelToPoint(parseFloat(eventMarker.top)) + strSize.height / 2);
                         taskGraphics.rotateTransform(45);
                         taskGraphics.drawRectangle(border, eventBrush, 0, 0, triangle, triangle);
                         taskGraphics.restore();
                         taskGraphics.drawRectangle(
                             border, eventBrush, startPoint.x + pixelToPoint(left - cumulativeWidth) + 7 + diff,
-                            cumulativeHeight + pixelToPoint(50), strSize.width + 10, strSize.height * 2);
+                            cumulativeHeight + pixelToPoint(parseFloat(eventMarker.top)), strSize.width + 10, strSize.height * 2);
                         taskGraphics.drawString(
                             eventMarker.label, customizedFont, customizedFontBrush, fontColor,
                             (startPoint.x + pixelToPoint(left - cumulativeWidth) + 12 + diff) - (padding.left + padding.right),
-                            (cumulativeHeight + pixelToPoint(51) + pixelToPoint(strSize.height / 2)) - (padding.top + padding.bottom),
+                            (cumulativeHeight + pixelToPoint(parseFloat(eventMarker.top) + 1) +
+                            pixelToPoint(strSize.height / 2)) - (padding.top + padding.bottom),
                             strSize.width, strSize.height, textFormat);
                     }
                 }

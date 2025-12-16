@@ -1,3 +1,5 @@
+@use 'ej2-base/styles/definition/fusionnew' as *;
+@forward 'ej2-base/styles/definition/fusionnew';
 $sta-background-color: $white !default;
 $sta-color: $white !default;
 $sta-box-shadow: rgba(0, 0, 0, .4) !default;

@@ -1,3 +1,6 @@
+@use 'ej2-base/styles/common/mixin' as *;
+@use '../bootstrap5-definition' as *;
+@use '../../document-editor/bootstrap5-definition' as *;
 @include export-module('document-editor-container-bootstrap5-icons') {
   .e-de-ctnr-close::before {
     color: $icon-color;

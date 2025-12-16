@@ -8,7 +8,7 @@ import * as CONSTANT from './../../markdown-parser/base/constant';
  * MDFormats internal plugin
  *
  * @hidden
- * @deprecated
+ * @private
  */
 export class MDFormats {
     private parent: MarkdownParser;
@@ -19,7 +19,7 @@ export class MDFormats {
      *
      * @param {IMDFormats} options - specifies the formats
      * @hidden
-     * @deprecated
+     * @private
      */
     public constructor(options: IMDFormats) {
         extend(this, this, options, true);

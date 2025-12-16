@@ -5,7 +5,7 @@ import { Node } from '../../../src/diagram/objects/node';
 import { ConnectorModel } from '../../../src/diagram/objects/connector-model';
 import { Connector } from '../../../src/diagram/objects/connector';
 import { PointPortModel } from '../../../src/diagram/objects/port-model';
-import  {profile , inMB, getMemoryProfile} from '../../../spec/common.spec';
+import { profile, inMB, getMemoryProfile } from '../../../spec/common.spec';
 /**
  * Node - Connector Relationships
  */
@@ -17,11 +17,11 @@ describe('Diagram Control', () => {
 
         beforeAll((): void => {
             const isDef = (o: any) => o !== undefined && o !== null;
-                if (!isDef(window.performance)) {
-                    console.log("Unsupported environment, window.performance.memory is unavailable");
-                    this.skip(); //Skips test (in Chai)
-                    return;
-                }
+            if (!isDef(window.performance)) {
+                console.log("Unsupported environment, window.performance.memory is unavailable");
+                this.skip(); //Skips test (in Chai)
+                return;
+            }
             ele = createElement('div', { id: 'diagram' });
             document.body.appendChild(ele);
             let node1: NodeModel = {
@@ -63,6 +63,7 @@ describe('Diagram Control', () => {
         afterAll((): void => {
             diagram.destroy();
             ele.remove();
+            (diagram as any) = null; (ele as any) = null;
         });
 
         it('Checking in - out edges', (done: Function) => {
@@ -94,7 +95,7 @@ describe('Diagram Control', () => {
             expect(node.outEdges.length === 0 && newSource.outEdges[0] === connector.id).toBe(true);
             done();
         });
-        it('memory leak', () => { 
+        it('memory leak', () => {
             profile.sample();
             let average: any = inMB(profile.averageChange)
             //Check average change in memory samples to not be over 10MB

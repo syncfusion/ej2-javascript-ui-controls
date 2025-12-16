@@ -8,7 +8,7 @@ import * as EVENTS from './../../common/constant';
  * Selection EXEC internal component
  *
  * @hidden
- * @deprecated
+ * @private
  */
 export class SelectionBasedExec {
     private parent: EditorManager;
@@ -17,7 +17,7 @@ export class SelectionBasedExec {
      *
      * @param {EditorManager} parent - specifies the parent element
      * @hidden
-     * @deprecated
+     * @private
      */
     public constructor(parent: EditorManager) {
         this.parent = parent;

@@ -1,4 +1,4 @@
-import { PdfFontStyle } from '@syncfusion/ej2-pdf';
+import { PdfFontStyle, Rectangle, PdfColor } from '@syncfusion/ej2-pdf';
 /**
  * Represents a single line of extracted text from the PDF page.
  * ```typescript
@@ -10,7 +10,7 @@ import { PdfFontStyle } from '@syncfusion/ej2-pdf';
  * let textLines: Array<TextLine> = extractor.extractTextLines({ startPageIndex: 0, endPageIndex: document.pageCount-1});
  * textLines.forEach((textLine: TextLine) => {
  *   // Gets the bounds of the text line.
- *   let lineBounds: number[] = textLine.bounds;
+ *   let lineBounds: Rectangle = textLine.bounds;
  *   // Gets the single line of extracted text from the PDF page.
  *   let line: string = textLine.text;
  *   // Gets the page index of the text line extracted.
@@ -36,7 +36,7 @@ export class TextLine {
     _fontName: string;
     _fontSize: number;
     _fontStyle: PdfFontStyle;
-    _bounds: number[];
+    _bounds: Rectangle;
     _pageIndex: number;
     /**
      * Gets the single line of extracted text from the PDF page.
@@ -165,7 +165,7 @@ export class TextLine {
     /**
      * Gets the bounds of the text line.
      *
-     *  @returns {number[]} The bounds of the text line.
+     *  @returns {Rectangle} The bounds of the text line.
      *
      * ```typescript
      * // Load an existing PDF document
@@ -176,7 +176,7 @@ export class TextLine {
      * let textLines: Array<TextLine> = extractor.extractTextLines({ startPageIndex: 0, endPageIndex: document.pageCount-1});
      * textLines.forEach((textLine: TextLine) => {
      *   // Gets the bounds of the text line.
-     *   let lineBounds: number[] = textLine.bounds;
+     *   let lineBounds: Rectangle = textLine.bounds;
      * });
      * // Save the document
      * document.save('output.pdf');
@@ -184,7 +184,7 @@ export class TextLine {
      * document.destroy();
      * ```
      */
-    get bounds(): number[] {
+    get bounds(): Rectangle {
         return this._bounds;
     }
     /**
@@ -225,7 +225,7 @@ export class TextLine {
  * textLines.forEach((textLine: TextLine) => {
  *   textLine.words.forEach((textWord: TextWord) => {
  *      // Gets the bounds of the text word.
- *      let wordBounds: number[] = textWord.bounds;
+ *      let wordBounds: Rectangle = textWord.bounds;
  *      // Gets the single word of extracted text from the PDF page.
  *      let word: string = textWord.text;
  *      // Gets the collection of text glyphs extracted from a specified page in a PDF document.
@@ -246,7 +246,7 @@ export class TextLine {
  */
 export class TextWord {
     _text: string;
-    _bounds: number[];
+    _bounds: Rectangle;
     _glyphs: TextGlyph[] = [];
     _fontName: string;
     _fontSize: number;
@@ -390,7 +390,7 @@ export class TextWord {
     /**
      * Gets the bounds of the text word.
      *
-     * @returns {number[]} The bounds of the text word.
+     * @returns {Rectangle} The bounds of the text word.
      *
      * ```typescript
      * // Load an existing PDF document
@@ -402,7 +402,7 @@ export class TextWord {
      * textLines.forEach((textLine: TextLine) => {
      *   textLine.words.forEach((textWord: TextWord) => {
      *      // Gets the bounds of the text word.
-     *      let wordBounds: number[] = textWord.bounds;
+     *      let wordBounds: Rectangle = textWord.bounds;
      *   });
      * });
      * // Save the document
@@ -411,7 +411,7 @@ export class TextWord {
      * document.destroy();
      * ```
      */
-    get bounds(): number[] {
+    get bounds(): Rectangle {
         return this._bounds;
     }
 }
@@ -428,7 +428,7 @@ export class TextWord {
  *   textLine.words.forEach((textWord: TextWord) => {
  *      textWord.glyphs.forEach((textGlyph: TextGlyph) => {
  *           // Gets the bounds of the text glyph
- *           let glyphBounds: number[] = textGlyph.bounds;
+ *           let glyphBounds: Rectangle = textGlyph.bounds;
  *           // Gets the single character of extracted text from the PDF page.
  *           let character: string = textGlyph.text;
  *           // Gets the font size used for a particular character of the text.
@@ -438,7 +438,7 @@ export class TextWord {
  *           // Gets the font style used for a particular character of the text.
  *           let fontStyle: PdfFontStyle = textGlyph.fontStyle;
  *           // Gets the text color of the text glyph.
- *           let color: number[] = textGlyph.color;
+ *           let color: PdfColor = textGlyph.color;
  *           // Gets the value indicating whether the glyph is rotated or not.
  *           let isRotated: boolean = textGlyph.isRotated;
  *      });
@@ -460,8 +460,8 @@ export class TextGlyph {
     _fontSize: number;
     _isReplace: boolean = false;
     _fontStyle: PdfFontStyle;
-    _bounds: number[];
-    _color: number[];
+    _bounds: Rectangle;
+    _color: PdfColor;
     _isRotated: boolean;
     /**
      * Gets the single character of extracted text from the PDF page.
@@ -594,7 +594,7 @@ export class TextGlyph {
      *   textLine.words.forEach((textWord: TextWord) => {
      *      textWord.glyphs.forEach((textGlyph: TextGlyph) => {
      *           // Gets the bounds of the text glyph
-     *           let glyphBounds: number[] = textGlyph.bounds;
+     *           let glyphBounds: Rectangle = textGlyph.bounds;
      *      });
      *   });
      * });
@@ -604,13 +604,13 @@ export class TextGlyph {
      * document.destroy();
      * ```
      */
-    get bounds(): number[] {
+    get bounds(): Rectangle {
         return this._bounds;
     }
     /**
      * Gets the color of the text glyph.
      *
-     *  @returns {number[]} Text color as an array of numbers.
+     *  @returns {PdfColor} Text color as an array of numbers.
      *
      * ```typescript
      * // Load an existing PDF document
@@ -623,7 +623,7 @@ export class TextGlyph {
      *   textLine.words.forEach((textWord: TextWord) => {
      *      textWord.glyphs.forEach((textGlyph: TextGlyph) => {
      *           // Gets the text color of the text glyph.
-     *           let color: number[] = textGlyph.color;
+     *           let color: PdfColor = textGlyph.color;
      *      });
      *   });
      * });
@@ -633,7 +633,7 @@ export class TextGlyph {
      * document.destroy();
      * ```
      */
-    get color(): number[] {
+    get color(): PdfColor {
         return this._color;
     }
     /**

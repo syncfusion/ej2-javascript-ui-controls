@@ -583,7 +583,7 @@ export class SymbolPalette extends Component<HTMLElement> implements INotifyProp
         }
         if (refresh) { this.refreshPalettes(); }
         if (this.isExpand && !refresh) {
-            this.refresh(); this.isExpand = false;
+            this.isExpand = false;
             for (let p: number = 0; p < this.palettes.length; p++) {
                 const paletteElement: string = this.palettes[parseInt(p.toString(), 10)].id;
                 if (window[`${paletteElement}`]) {

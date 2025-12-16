@@ -1022,10 +1022,7 @@ export class DragAndDrop extends ActionBase {
         }
         const event: Record<string, any> = this.getUpdatedEvent(this.actionObj.start, this.actionObj.end, this.actionObj.event);
         if (isNullOrUndefined(this.parent.eventDragArea)) {
-            const eventWrappers: HTMLElement[] = [].slice.call(this.parent.element.querySelectorAll('.' + cls.CLONE_ELEMENT_CLASS));
-            for (const wrapper of eventWrappers) {
-                remove(wrapper);
-            }
+            this.removeDragResizeClones();
         }
         if (this.multiData && this.multiData.length > 0) {
             const startTime: Date = util.resetTime(new Date(event[this.parent.eventFields.startTime] as Date));

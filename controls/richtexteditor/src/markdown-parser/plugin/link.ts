@@ -8,7 +8,7 @@ import * as EVENTS from './../../common/constant';
  * Link internal component
  *
  * @hidden
- * @deprecated
+ * @private
  */
 export class MDLink {
     private parent: MarkdownParser;
@@ -19,7 +19,7 @@ export class MDLink {
      *
      * @param {MarkdownParser} parent - specifies the parent element
      * @hidden
-     * @deprecated
+     * @private
      */
     public constructor(parent: MarkdownParser) {
         this.parent = parent;

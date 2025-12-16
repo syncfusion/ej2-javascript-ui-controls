@@ -14,6 +14,7 @@ export interface StyleAttributes {
     opacity: number;
     gradient?: GradientModel;
     class?: string;
+    thickness?: number;
 }
 
 /** @private */
@@ -86,6 +87,7 @@ export interface TextAttributes extends BaseAttributes {
     doWrap: boolean;
     wrapBounds: TextBounds;
     childNodes: SubTextElement[];
+    thickness: number;
 }
 
 /** @private */

@@ -116,8 +116,9 @@ describe('Diagram Control', () => {
         });
 
         afterAll((): void => {
-            diagram.destroy();
-            ele.remove();
+            if (diagram) { diagram.destroy(); diagram = null; }
+            if (ele && ele.parentNode) ele.parentNode.removeChild(ele);
+            ele = null;
         });
 
         it('Checking text wrapping', (done: Function) => {
@@ -237,8 +238,9 @@ describe('Diagram Control', () => {
             diagram.appendTo('#diagram47');
         });
         afterAll((): void => {
-            diagram.destroy();
-            ele.remove();
+            if (diagram) { diagram.destroy(); diagram = null; }
+            if (ele && ele.parentNode) ele.parentNode.removeChild(ele);
+            ele = null;
         });
         it('Checking text wrapping', (done: Function) => {
             let i: number = 0;
@@ -294,8 +296,9 @@ describe('Diagram Control', () => {
             diagram.appendTo('#diagramoverflow');
         });
         afterAll((): void => {
-            diagram.destroy();
-            ele.remove();
+            if (diagram) { diagram.destroy(); diagram = null; }
+            if (ele && ele.parentNode) ele.parentNode.removeChild(ele);
+            ele = null;
         });
 
         it('Checking Text overflow - Clip', (done: Function) => {
@@ -406,8 +409,9 @@ describe('Diagram Control', () => {
         });
 
         afterAll((): void => {
-            diagram.destroy();
-            ele.remove();
+            if (diagram) { diagram.destroy(); diagram = null; }
+            if (ele && ele.parentNode) ele.parentNode.removeChild(ele);
+            ele = null;
         });
 
 

@@ -1,8 +1,8 @@
-@import 'ej2-base/styles/definition/material-dark.scss';
-@import 'ej2-inputs/styles/input/material-dark-definition.scss';
-@import 'ej2-popups/styles/popup/material-dark-definition.scss';
-@import '../calendar/material-dark-definition.scss';
-@import 'material-dark-definition.scss';
-@import 'icons/material-dark.scss';
-@import 'all.scss';
-@import 'bigger.scss';
+@use 'ej2-base/styles/definition/material-dark' as *;
+@use 'ej2-inputs/styles/input/material-dark-definition' as *;
+@use 'ej2-popups/styles/popup/material-dark-definition' as *;
+@use '../calendar/material-dark-definition' as *;
+@use 'material-dark-definition' as *;
+@use 'icons/material-dark' as *;
+@use 'all' as *;
+@use 'bigger' as *;

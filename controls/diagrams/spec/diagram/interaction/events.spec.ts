@@ -24,14 +24,6 @@ Diagram.Inject(ConnectorEditing);
  * Interaction Specification Document
  */
 describe('Diagram Control', () => {
-    let TopLeft: string = 'topLeft';
-    let TopRight: string = 'topRight';
-    let MiddleLeft: string = 'middleLeft';
-    let MiddleRight: string = 'middleRight';
-    let TopCenter: string = 'topCenter';
-    let BottomLeft: string = 'bottomLeft';
-    let BottomCenter: string = 'bottomCenter';
-    let BottomRight: string = 'bottomRight';
 
     describe('Diagram Control', () => {
         describe('Testing events', () => {
@@ -45,9 +37,8 @@ describe('Diagram Control', () => {
                     this.skip(); //Skips test (in Chai)
                     return;
                 }
-                ele = createElement('div', { id: 'diagram2' });
+                ele = createElement('div', { id: 'diagram_events_001' });
                 document.body.appendChild(ele);
-                let selArray: (NodeModel | ConnectorModel)[] = [];
                 let node: NodeModel = { id: 'node1', width: 100, height: 100, offsetX: 100, offsetY: 100 };
                 let node1: NodeModel = { id: 'node2', width: 100, height: 100, offsetX: 150, offsetY: 150 };
                 let connector: ConnectorModel = { id: 'connector1', sourcePoint: { x: 200, y: 200 }, targetPoint: { x: 300, y: 300 } };
@@ -56,12 +47,20 @@ describe('Diagram Control', () => {
                     width: 1000, height: 1000, nodes: [node, node1],
                     connectors: [connector, connector1]
                 });
-                diagram.appendTo('#diagram2');
+                diagram.appendTo('#diagram_events_001');
             });
 
             afterAll((): void => {
-                diagram.destroy();
-                ele.remove();
+                if (diagram) {
+                    diagram.clearSelection();
+                    diagram.destroy();
+                }
+                if (ele && ele.parentElement) {
+                    ele.remove();
+                }
+                diagram = null;
+                ele = null;
+                mouseEvents = null;
             });
 
 
@@ -74,6 +73,7 @@ describe('Diagram Control', () => {
                     }
                 };
                 mouseEvents.clickEvent(diagramCanvas, 250 + 8, 250 + 8);
+                diagramCanvas = null;
                 done();
             });
 
@@ -96,7 +96,7 @@ describe('Diagram Control', () => {
                     this.skip(); //Skips test (in Chai)
                     return;
                 }
-                ele = createElement('div', { id: 'diagram2' });
+                ele = createElement('div', { id: 'diagram_events_002' });
                 document.body.appendChild(ele);
                 let node: NodeModel = { id: 'node1', width: 100, height: 100, offsetX: 100, offsetY: 100 };
                 let node1: NodeModel = { id: 'node2', width: 100, height: 100, offsetX: 350, offsetY: 100 };
@@ -105,12 +105,19 @@ describe('Diagram Control', () => {
                     width: 1000, height: 1000, nodes: [node, node1],
                     connectors: [connector]
                 });
-                diagram.appendTo('#diagram2');
+                diagram.appendTo('#diagram_events_002');
             });
 
             afterAll((): void => {
-                diagram.destroy();
-                ele.remove();
+                if (diagram) {
+                    diagram.clearSelection();
+                    diagram.destroy();
+                }
+                if (ele && ele.parentElement) {
+                    ele.remove();
+                }
+                diagram = null;
+                ele = null;
             });
 
             it('Checking selection Change after multiple select', (done: Function) => {
@@ -137,7 +144,7 @@ describe('Diagram Control', () => {
             }
             ele = createElement('div', { id: 'diagram11' });
             document.body.appendChild(ele);
-            let selArray: (NodeModel | ConnectorModel)[] = [];
+
             let node: NodeModel = { id: 'node1', width: 100, height: 100, offsetX: 300, offsetY: 300 };
             let node2: NodeModel = { id: 'node2', width: 100, height: 100, offsetX: 300, offsetY: 500 };
 
@@ -150,9 +157,18 @@ describe('Diagram Control', () => {
         });
 
         afterAll((): void => {
-            diagram.destroy();
-            ele.remove();
+            if (diagram) {
+                diagram.clearSelection();
+                diagram.destroy();
+            }
+            if (ele && ele.parentElement) {
+                ele.remove();
+            }
+            diagram = null;
+            ele = null;
+            mouseEvents = null;
         });
+        
         it('Checking size change event', (done: Function) => {
 
             let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
@@ -163,10 +179,7 @@ describe('Diagram Control', () => {
 
             let width: number = diagram.selectedItems.width;
             let height: number = diagram.selectedItems.height;
-            let offsetX: number = diagram.selectedItems.offsetX;
-            let offsetY: number = diagram.selectedItems.offsetY;
             let topLeft: PointModel = diagram.selectedItems.wrapper.bounds.bottomRight;
-            let topLeft1: PointModel = (diagram.nodes[0] as NodeModel).wrapper.bounds.middleRight;
             diagram.sizeChange = (args: ISizeChangeEventArgs) => {
                 args.cancel = true;
                 if (args.state === 'Completed') {
@@ -194,7 +207,6 @@ describe('Diagram Control', () => {
             }
             ele = createElement('div', { id: 'diagramSizeChange' });
             document.body.appendChild(ele);
-            let selArray: (NodeModel | ConnectorModel)[] = [];
             let node1: NodeModel = { id: 'node2', width: 100, height: 100, offsetX: 300, offsetY: 500 };
 
             diagram = new Diagram({
@@ -245,7 +257,6 @@ describe('Diagram Control', () => {
             }
             ele = createElement('div', { id: 'diagram10' });
             document.body.appendChild(ele);
-            let selArray: (NodeModel | ConnectorModel)[] = [];
             let node: NodeModel = { id: 'node1', width: 100, height: 100, offsetX: 300, offsetY: 300 };
             let node2: NodeModel = { id: 'node2', width: 100, height: 100, offsetX: 300, offsetY: 500 };
             let connector: ConnectorModel = { id: 'connector1', sourcePoint: { x: 400, y: 400 }, targetPoint: { x: 500, y: 500 } };
@@ -328,7 +339,7 @@ describe('Diagram Control', () => {
             let rotator: PointModel = { x: bounds.center.x, y: bounds.y - 30 };
             let matrix: Matrix = identityMatrix();
             rotateMatrix(matrix, 320, bounds.center.x, bounds.center.y);
-            let endPoint: PointModel = transformPointByMatrix(matrix, rotator);
+           
             diagram.rotateChange = (args: IRotationEventArgs) => {
                 if (args.state === 'Start') {
                     console.log('Start');
@@ -408,7 +419,7 @@ describe('Diagram Control', () => {
             }
             ele = createElement('div', { id: 'diagram2' });
             document.body.appendChild(ele);
-            let selArray: (NodeModel | ConnectorModel)[] = [];
+
             let node: NodeModel = { id: 'node1', width: 100, height: 100, offsetX: 500, offsetY: 500 };
             let connector: ConnectorModel = { id: 'connector1', sourcePoint: { x: 200, y: 200 }, targetPoint: { x: 300, y: 300 } };
 
@@ -485,7 +496,7 @@ describe('Diagram Control', () => {
             }
             ele = createElement('div', { id: 'diagram2' });
             document.body.appendChild(ele);
-            let selArray: (NodeModel | ConnectorModel)[] = [];
+
             let node: NodeModel = { id: 'node1', width: 100, height: 100, offsetX: 500, offsetY: 500 };
             let node1: NodeModel = { id: 'node11', width: 100, height: 100, offsetX: 100, offsetY: 500 };
 
@@ -539,7 +550,7 @@ describe('Diagram Control', () => {
             }
             ele = createElement('div', { id: 'diagram2' });
             document.body.appendChild(ele);
-            let selArray: (NodeModel | ConnectorModel)[] = [];
+
             let node: NodeModel = { id: 'node1', width: 100, height: 100, offsetX: 500, offsetY: 500 };
             let node1: NodeModel = { id: 'node11', width: 100, height: 100, offsetX: 100, offsetY: 500 };
 
@@ -596,7 +607,7 @@ describe('Diagram Control', () => {
             }
             ele = createElement('div', { id: 'diagram2' });
             document.body.appendChild(ele);
-            let selArray: (NodeModel | ConnectorModel)[] = [];
+
             let node: NodeModel = { id: 'node1', width: 100, height: 100, offsetX: 100, offsetY: 100, ports: [{ id: 'port1', visibility: PortVisibility.Visible, shape: 'Circle',width : 50, height : 50, offset: { x: 0, y: 0.3 } }] };
             let connector: ConnectorModel = { id: 'connector1', sourcePoint: { x: 200, y: 200 }, targetPoint: { x: 300, y: 300 } };
 
@@ -746,7 +757,7 @@ describe('Diagram Control', () => {
             diagram.collectionChange = function (args) {
                 event += 'CollectionChange'
             }
-            let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
+
             diagram.select([diagram.nodes[0]]);
             diagram.copy();
             diagram.paste();
@@ -1063,7 +1074,7 @@ describe('The node behind the scrollbar is not selected while clicking scrollbar
             this.skip(); //Skips test (in Chai)
             return;
         }
-        ele = createElement('div', { id: 'diagramscrollselection' });
+        ele = createElement('div', { id: 'diagramscrollselection1' });
         document.body.appendChild(ele);
         let mouseEvents: MouseEvents = new MouseEvents();
         let node: NodeModel = {
@@ -1074,7 +1085,7 @@ describe('The node behind the scrollbar is not selected while clicking scrollbar
             width: 1000, height: 1000, nodes: [node]
         });
 
-        diagram.appendTo('#diagramscrollselection');
+        diagram.appendTo('#diagramscrollselection1');
         
 
     });
@@ -1108,7 +1119,6 @@ describe('Mouse Enter, Mouse Over event does not get triggered for selected item
         }
         ele = createElement('div', { id: 'diagramscrollselection' });
         document.body.appendChild(ele);
-        let mouseEvents: MouseEvents = new MouseEvents();
         let node: NodeModel = {
         id: 'node1', width: 100, height: 100, offsetX: 100, offsetY: 100, annotations: [{ content: 'Node1' }]
         };
@@ -1211,8 +1221,7 @@ describe('Testing elementDraw events', () => {
         }
         ele = createElement('div', { id: 'diagramelementDraw' });
         document.body.appendChild(ele);
-        let nodeport1: PointPortModel = { offset: { x: 1, y: 0.5 } };
-let nodeport2: PointPortModel = { offset: { x: 0, y: 0.5 } };
+
 let shape: BasicShapeModel = { type: 'Basic', shape: 'Rectangle' };
 let node1: NodeModel = { id: 'node', offsetX: 100, offsetY: 100, shape: shape,ports: [{ id: 'port1', visibility: PortVisibility.Hover, shape: 'Circle', offset: { x: 0, y: 0.5 } },
 { id: 'port2', visibility: PortVisibility.Hover, shape: 'Circle', offset: { x: 0.5, y: 0 } },
@@ -1225,7 +1234,7 @@ let node2: NodeModel = { id: 'node2', offsetX: 300, offsetY: 300, shape: shape2,
 { id: 'port3', visibility: PortVisibility.Hover, shape: 'Circle', offset: { x: 1, y: 0.5 } },
 { id: 'port4', visibility: PortVisibility.Hover, shape: 'Circle', offset: { x: 0.5, y: 1 } }
 ] };
-let continuousDraw: any;
+
 let connectors: ConnectorModel[] = [{
     id: 'connector1',
     type: 'Straight',
@@ -1268,8 +1277,7 @@ diagram.appendTo('#diagramelementDraw');
 describe('positionChange event in completed state', () => {
     let diagram: Diagram;
     let ele: HTMLElement;
-    let getNewValue;
-    let getOldValue;
+
     let mouseEvents: MouseEvents = new MouseEvents();
     beforeAll((): void => {
         const isDef = (o: any) => o !== undefined && o !== null;
@@ -1327,8 +1335,7 @@ describe('History change id for changed properties', () => {
         }
         ele = createElement('div', { id: 'historyId' });
         document.body.appendChild(ele);
-        let mouseEvents: MouseEvents = new MouseEvents();
-        let selArray: (NodeModel | ConnectorModel)[] = [];
+       
         let node1: NodeModel = { id: 'node1', width: 100, height: 100, offsetX: 200, offsetY: 400 };
         let node2: NodeModel = { id: 'node2', width: 100, height: 100, offsetX: 500, offsetY: 400 };
         let node3: NodeModel = { id: 'node3', width: 100, height: 100, offsetX: 100, offsetY: 100 };
@@ -1397,8 +1404,7 @@ describe('Segment change event', () => {
     let diagram: Diagram;
     let ele: HTMLElement;
     let mouseEvents: MouseEvents = new MouseEvents();
-    let connector:ConnectorModel;
-    let seg:StraightSegment|BezierSegment|OrthogonalSegment;
+    
     let newValue:StraightSegment|BezierSegment|OrthogonalSegment;
     let oldValue:StraightSegment|BezierSegment|OrthogonalSegment;
     beforeAll((): void => {

@@ -1,3 +1,5 @@
+@use 'ej2-base/styles/common/mixin' as *;
+@use './theme-variables' as *;
 @mixin rating-container-properties($svg-font-size, $svg-line-height, $label-font-size, $label-line-height, $reset-icon-font-size) {
   .e-rating-item-container {
     &:has(svg) {
@@ -30,8 +32,8 @@
 
     .e-rating-item-list {
       display: inline-flex;
-      padding: 0;
-      margin: 4px;
+      padding: $rating-item-list-padding;
+      margin: $rating-item-list-margin;
 
       &:focus-visible:not(:hover) .e-rating-focus {
         &:not(:has(svg)),
@@ -86,9 +88,9 @@
 
     .e-reset {
       cursor: pointer;
-      margin: auto 2px 6px;
       font-size: $rating-reset-font-size;
-      padding: 2px;
+      padding: $rating-reset-padding;
+      margin: $rating-reset-margin;
 
       &.e-disabled {
         cursor: default;
@@ -106,32 +108,32 @@
 
       &.e-label-right,
       &.e-label-left {
-        min-width: 50px;
+        min-width: $rating-label-left-width;
       }
 
       &.e-label-bottom,
       &.e-label-top {
         flex-basis: 100%;
-        width: 0;
+        width: $rating-label-bottom-width;
         text-align: center;
       }
 
       &.e-label-right {
         text-align: left;
-        margin: auto $rating-label-right-margin;
+        margin: $rating-auto-width $rating-label-right-margin;
       }
 
       &.e-label-left {
         text-align: right;
-        margin: auto $rating-label-left-margin;
+        margin: $rating-auto-width $rating-label-left-margin;
       }
 
       &.e-label-top {
-        margin: $rating-label-top-margin 0;
+        margin: $rating-label-top-margin $rating-item-list-padding;
       }
 
       &.e-label-bottom {
-        margin: $rating-label-bottom-margin 0;
+        margin: $rating-label-bottom-margin $rating-item-list-padding;
       }
     }
 
@@ -150,8 +152,8 @@
     .e-tooltip-wrap.e-rating-tooltip {
       display: none;
       justify-content: center;
-      left: 50%;
-      top: -$rating-tooltip-tip-bottom-height;
+      left: $rating-half-width;
+      top: $rating-tooltip-tip-bottom-height;
       transform: translate(-50%, -100%);
 
       &.e-show-tooltip {
@@ -163,13 +165,13 @@
       }
 
       .e-arrow-tip.e-tip-bottom {
-        left: 50%;
-        top: 100%;
+        left: $rating-half-width;
+        top: $rating-full-width;
         transform: translate(-50%, 0);
       }
 
       .e-arrow-tip-inner.e-tip-bottom {
-        top: -6px;
+        top: $rating-arrow-tip-bottom-top;
       }
     }
   }

@@ -1,4 +1,3 @@
-
 // Karma configuration
 // Generated on Tue Apr 26 2016 09:56:05 GMT+0530 (India Standard Time)
 
@@ -40,7 +39,9 @@ module.exports = function (config) {
       { pattern: "node_modules/@syncfusion/ej2-grids/**/*.js", included: false },
       { pattern: "node_modules/@syncfusion/ej2-treegrid/**/*.js", included: false },
       { pattern: "node_modules/@syncfusion/ej2-richtexteditor/**/*.js", included: false },
-      { pattern: "node_modules/@syncfusion/ej2-svg-base/**/*.js", included: false }
+      { pattern: "node_modules/@syncfusion/ej2-svg-base/**/*.js", included: false },
+      { pattern: "node_modules/@syncfusion/ej2-interactive-chat/**/*.js", included: false },
+      { pattern: "node_modules/@syncfusion/ej2-markdown-converter/**/*.js", included: false }
       // Add dependent package's script files here              
     ],
 

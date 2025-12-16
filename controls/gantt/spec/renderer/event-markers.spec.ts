@@ -207,13 +207,14 @@ describe('Gantt spec for Event-Marker', () => {
                 height: 500,
                 projectStartDate: new Date('10/15/2017'),
                 projectEndDate: new Date('11/30/2017'),
-                eventMarkers: [{ day: '10/30/2017', label: 'project start', cssClass: 'stripLine' }],
+                eventMarkers: [{ day: '10/30/2017', label: 'project start', top:'5px', cssClass: 'stripLine' }],
             }, done);
         });
 
         it('Holiday Testing ', () => {
             expect(ganttObj.element.querySelector('.e-holiday-container').children[0][style].width).toBe('180px');
             expect(ganttObj.element.querySelector('.e-holiday-container').children[0].children[0].textContent).toBe('public holiday');
+            expect(ganttObj.element.querySelector('.e-event-markers.stripLine .e-span-label')['style'].top).toBe('5px');
         });
         afterAll(() => {
             if (ganttObj) {

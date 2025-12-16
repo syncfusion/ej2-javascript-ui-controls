@@ -8,7 +8,7 @@ import * as EVENTS from './../../common/constant';
  * Insert a Text Node or Text
  *
  * @hidden
- * @deprecated
+ * @private
  */
 export class InsertTextExec {
     private parent: EditorManager;
@@ -17,7 +17,7 @@ export class InsertTextExec {
      *
      * @param {EditorManager} parent - specifies the parent element
      * @hidden
-     * @deprecated
+     * @private
      */
     public constructor(parent: EditorManager) {
         this.parent = parent;

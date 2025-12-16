@@ -1,3 +1,3 @@
-@import 'ej2-base/styles/definition/fluent2.scss';
-@import 'drawing/fluent2-definition.scss';
-@import 'drawing/all.scss';
+@use 'ej2-base/styles/definition/fluent2' as *;
+@use 'drawing/fluent2-definition' as *;
+@use 'drawing/all' as *;

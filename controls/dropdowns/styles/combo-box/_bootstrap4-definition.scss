@@ -1,3 +1,6 @@
+@use 'ej2-base/styles/definition/bootstrap4' as *;
+@forward 'ej2-base/styles/definition/bootstrap4';
+
 //default
 
 .e-input-group.e-ddl .e-control.e-combobox ~ .e-ddl-icon {

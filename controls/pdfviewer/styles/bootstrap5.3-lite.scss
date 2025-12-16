@@ -1,4 +1,4 @@
-@import 'ej2-base/styles/definition/bootstrap5.3.scss';
-@import 'pdfviewer/bootstrap5.3-definition.scss';
-@import 'pdfviewer/icons/bootstrap5.3.scss';
-@import 'pdfviewer/all.scss';
+@use 'ej2-base/styles/definition/bootstrap5.3' as *;
+@use 'pdfviewer/bootstrap5.3-definition' as *;
+@use 'pdfviewer/icons/bootstrap5.3' as *;
+@use 'pdfviewer/all' as *;

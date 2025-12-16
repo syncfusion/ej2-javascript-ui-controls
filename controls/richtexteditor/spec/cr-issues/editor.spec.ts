@@ -778,7 +778,7 @@ describe('Editor specs', ()=> {
                 locale: 'de-DE',
                 quickToolbarSettings: {
                     table: ['TableHeader', 'TableRows', 'TableColumns', 'TableCell', '-',
-                    'BackgroundColor', 'TableRemove', 'TableCellVerticalAlign', 'Styles']
+                        'BackgroundColor', 'TableRemove', 'TableCellVerticalAlign', 'Styles']
                 },
                 value: `<table class="e-rte-table" style="width: 100%; min-width: 0px;"><tbody><tr><td class="td1" style="width: 25%;"><br></td><td style="width: 25%;"><br></td><td style="width: 25%;"><br></td><td style="width: 25%;"><br></td></tr><tr><td style="width: 25%;"><br></td><td style="width: 25%;"><br></td><td style="width: 25%;"><br></td><td style="width: 25%;"><br></td></tr><tr><td style="width: 25%;"><br></td><td style="width: 25%;"><br></td><td style="width: 25%;"><br></td><td style="width: 25%;"><br></td></tr></tbody></table><p><br></p>`
             });
@@ -895,7 +895,7 @@ describe('Editor specs', ()=> {
         let fireFox: string = "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:84.0) Gecko/20100101 Firefox/84.0";
         let element: HTMLElement = createElement('div', {
             id: "form-element", innerHTML:
-                    `<div id="defaultRTE">
+                `<div id="defaultRTE">
                     </div>
                 ` });
         beforeAll(() => {
@@ -910,7 +910,6 @@ describe('Editor specs', ()=> {
             detach(element);
             Browser.userAgent = defaultUserAgent;
         });
-
         it(' pasting content in firefox when rte is wrapped in span tag ', (done) => {
             rteObj.focusIn();
             const clipBoardData: string = '<!--StartFragment--><span><h1>Welcome </h1></span><!--EndFragment-->';
@@ -946,7 +945,6 @@ describe('Editor specs', ()=> {
             detach(element);
             Browser.userAgent = defaultUserAgent;
         });
-
         it(' pasting inline span content in firefox when rte is wrapped in span tag ', (done) => {
             rteObj.focusIn();
             const clipBoardData: string = '<!--StartFragment--><span>Welcome</span><!--EndFragment-->';

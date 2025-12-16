@@ -6,7 +6,6 @@ import { createElement } from '@syncfusion/ej2-base';
 import { Diagram } from '../../../src/diagram/diagram';
 import { NodeModel } from '../../../src/diagram/objects/node-model';
 import { ConnectorModel } from '../../../src/diagram/objects/connector-model';
-import { FlowShapes } from '../../../src/diagram/enum/enum';
 import { TextStyleModel } from '../../../src/diagram/core/appearance-model';
 import  {profile , inMB, getMemoryProfile} from '../../../spec/common.spec';
 
@@ -116,7 +115,9 @@ describe('Diagram Control', () => {
         });
         afterAll((): void => {
             diagram.destroy();
+            diagram = null;
             ele.remove();
+            ele = null;
         });
 
         it('Checking canvas panel without chidlren', (done: Function) => {

@@ -1,4 +1,5 @@
-@import 'definition/fusionnew.scss';
+@use 'definition/fusionnew' as *;
+@forward 'definition/fusionnew';
 
 $font-size: 12px !default;
 $font-weight: 400 !default;

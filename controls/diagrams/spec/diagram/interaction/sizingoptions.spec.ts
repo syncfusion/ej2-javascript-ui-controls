@@ -20,7 +20,7 @@ describe('SizingOptions Commands', () => {
                 this.skip(); //Skips test (in Chai)
                 return;
             }
-            ele = createElement('div', { id: 'diagram' });
+            ele = createElement('div', { id: 'diagram_sizing_width' });
             document.body.appendChild(ele);
             let connector: ConnectorModel = {
                 id: 'connector1', sourcePoint: { x: 350, y: 200 }, targetPoint: { x: 450, y: 200 }
@@ -38,7 +38,7 @@ describe('SizingOptions Commands', () => {
                 width: '1000px', height: '1000px', nodes: [node, node2, node3],
                 connectors: [connector]
             });
-            diagram.appendTo('#diagram');
+            diagram.appendTo('#diagram_sizing_width');
             let objects: (NodeModel | ConnectorModel)[] = [];
             objects.push(diagram.nodes[0], diagram.nodes[1], diagram.nodes[2], diagram.connectors[0]);
             diagram.sameSize('Width', objects);
@@ -48,6 +48,8 @@ describe('SizingOptions Commands', () => {
         afterAll((): void => {
             diagram.destroy();
             ele.remove();
+            diagram = null;
+            ele = null;
         });
 
         it('Checking diagram instance creation', (done: Function) => {
@@ -69,7 +71,7 @@ describe('SizingOptions Commands', () => {
                 this.skip(); //Skips test (in Chai)
                 return;
             }
-            ele = createElement('div', { id: 'diagram1' });
+            ele = createElement('div', { id: 'diagram_sizing_height' });
             document.body.appendChild(ele);
             let connector: ConnectorModel = {
                 id: 'connector1', sourcePoint: { x: 300, y: 400 }, targetPoint: { x: 500, y: 500 }
@@ -87,7 +89,7 @@ describe('SizingOptions Commands', () => {
                 width: '1000px', height: '1000px', nodes: [node, node2, node3],
                 connectors: [connector]
             });
-            diagram.appendTo('#diagram1');
+            diagram.appendTo('#diagram_sizing_height');
             let objects: (NodeModel | ConnectorModel)[] = [];
             objects.push(diagram.nodes[0], diagram.nodes[1], diagram.nodes[2], diagram.connectors[0]);
             diagram.sameSize('Height', objects);
@@ -97,6 +99,8 @@ describe('SizingOptions Commands', () => {
         afterAll((): void => {
             diagram.destroy();
             ele.remove();
+            diagram = null;
+            ele = null;
         });
 
         it('Checking diagram instance creation', (done: Function) => {
@@ -118,7 +122,7 @@ describe('SizingOptions Commands', () => {
                 this.skip(); //Skips test (in Chai)
                 return;
             }
-            ele = createElement('div', { id: 'diagram2' });
+            ele = createElement('div', { id: 'diagram_sizing_size' });
             document.body.appendChild(ele);
             let connector: ConnectorModel = {
                 id: 'connector1', sourcePoint: { x: 400, y: 200 }, targetPoint: { x: 600, y: 300 }
@@ -136,7 +140,7 @@ describe('SizingOptions Commands', () => {
                 width: '1000px', height: '1000px', nodes: [node, node2, node3],
                 connectors: [connector]
             });
-            diagram.appendTo('#diagram2');
+            diagram.appendTo('#diagram_sizing_size');
             let objects: (NodeModel | ConnectorModel)[] = [];
             objects.push(diagram.nodes[0], diagram.nodes[1], diagram.nodes[2], diagram.connectors[0]);
             diagram.sameSize('Size', objects);
@@ -146,6 +150,8 @@ describe('SizingOptions Commands', () => {
         afterAll((): void => {
             diagram.destroy();
             ele.remove();
+            diagram = null;
+            ele = null;
         });
 
         it('Checking diagram instance creation', (done: Function) => {

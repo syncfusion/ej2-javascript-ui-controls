@@ -1,3 +1,5 @@
+@use 'ej2-base/styles/common/mixin' as *;
+@use './theme-variables' as *;
 @include export-module('blockeditor-bigger') {
   .e-bigger.e-blockeditor,
   .e-bigger .e-blockeditor {
@@ -18,23 +20,10 @@
         }
 
         /* Checklist Block */
-        &[data-block-type = 'CheckList'] {
-          .e-checkmark {
-            min-width: $be-checkbox-width-bigger;
-            min-height: $be-checkbox-height-bigger;
-            width: $be-checkbox-width-bigger;
+        &[data-block-type = 'Checklist'] {
+          .e-checkmark-container {
             height: $be-checkbox-height-bigger;
-            border-width: $be-checkbox-border-bigger;
-            font-size: $be-checkmark-font-size-bigger;
-          }
-
-          &:has(.e-checked) {
-            .e-checkmark-checked {
-              &::after {
-                font-size: $be-checkmark-font-size-bigger;
-                line-height: $be-checkmark-line-height-bigger;
-              }
-            }
+            width: $be-checkbox-width-bigger;
           }
         }
       }
@@ -52,8 +41,8 @@
         }
 
         .e-callout-icon {
-          height: $be-callout-icon-size-bigger;
-          width: $be-callout-icon-size-bigger;
+          height: $be-callout-icon-height-bigger;
+          width: $be-callout-icon-width-bigger;
         }
       }
 
@@ -61,8 +50,8 @@
       &.e-toggle-block {
 
         .e-toggle-icon {
-          height: $be-toggle-icon-size-bigger;
-          width: $be-toggle-icon-size-bigger;
+          height: $be-toggle-icon-height-bigger;
+          width: $be-toggle-icon-width-bigger;
           margin-right: $be-toggle-icon-margin-bigger;
         }
       }
@@ -73,7 +62,7 @@
         padding: $be-user-mention-chip-padding-bigger;
         .em-avatar {
           height: $be-user-mention-avatar-height-bigger;
-          width: $be-user-mention-avatar-height-bigger;
+          width: $be-user-mention-avatar-width-bigger;
           font-size: $be-user-mention-chip-font-size-bigger;
           line-height: $be-user-mention-chip-line-height-bigger;
         }
@@ -116,8 +105,8 @@
 
     .e-code-block-copy-button {
       padding: $be-code-copy-btn-padding-bigger;
-      margin-left: 12px;
-      width: $be-code-copy-btn-height-bigger;
+      margin-left: $be-code-block-copy-btn-bigger-margin;
+      width: $be-code-copy-btn-width-bigger;
       height: $be-code-copy-btn-height-bigger;
       .e-icons {
         font-size: $be-code-copy-btn-font-size-bigger;
@@ -125,8 +114,8 @@
     }
 
     .e-code-block {
-      margin: 0;
-      padding-left: 24px;
+      margin: $be-code-block-bigger-margin;
+      padding-left: $be-code-block-bigger-padding-left;
       overflow-x: auto;
       font-size: $be-font-size-bigger;
       line-height: $be-line-height-bigger;
@@ -145,7 +134,34 @@
         padding: $be-table-col-padding-bigger;
         font-size: $be-table-col-font-size-bigger;
         line-height: $be-table-col-line-height-bigger;
+        &:has(.e-block) {
+          padding-top: 0;
+          padding-bottom: 0;
+        }
       }
+    }
+
+    .e-block {
+      .e-row-action-handle,
+      .e-col-action-handle {
+        font-size: $be-table-row-col-action-handle-size-bigger;
+        line-height: $be-table-action-handle-line-height-bigger;
+      }
+      .e-row-action-handle {
+        width: $be-table-row-gripper-width-bigger;
+        left: $be-table-row-gripper-left-bigger;
+      }
+      .e-col-action-handle {
+        height: $be-table-col-gripper-height-bigger;
+        top: $be-table-col-gripper-top-bigger;
+      }
+    }
+  }
+
+  .e-bigger .e-table-gripper-action-popup {
+    .e-icons {
+      font-size: 16px;
+      padding: 8px;
     }
   }
 
@@ -169,12 +185,13 @@
   /* ======== Block Action styles ======== */
   .e-bigger .e-blockeditor-blockaction-popup,
   .e-bigger.e-blockeditor-blockaction-popup {
-    .e-menu-wrapper {
+    .e-menu-wrapper,
+    .e-menu-container {
       padding: $be-mention-popup-padding-bigger;
       ul .e-menu-item {
-        height: 40px;
-        line-height: 40px;
-        padding: 0;
+        height: $be-menu-item-bigger-height;
+        line-height: $be-menu-item-bigger-line-height;
+        padding: $be-menu-item-bigger-padding;
         .e-blockaction-item-template {
           min-height: 40px;
           padding-left: $be-mention-popup-item-padding-left-bigger;
@@ -187,7 +204,7 @@
             line-height: $be-ctmenu-text-line-height-bigger;
           }
           .e-action-item-shortcut {
-            font-size: $be-ctmenu-shortcut-font-size-bigger;
+            font-size: $be-ctpupmenu-shortcut-font-size-bigger;
             line-height: $be-ctmenu-shortcut-line-height-bigger;
           }
         }
@@ -224,14 +241,14 @@
       .e-dropdownbase .e-list-group-item,
       .e-fixed-head {
         padding-right: $be-mention-popup-header-padding-bigger;
-        padding-left: 0;
+        padding-left: $be-fixed-head-bigger-padding-left;
       }
     }
   }
 
   /* Context menu styles */
-  .e-bigger .e-blockeditor-contextmenu,
-  .e-bigger.e-blockeditor-contextmenu {
+  .e-bigger .e-blockeditor-contextmenu ul,
+  .e-bigger.e-blockeditor-contextmenu ul {
     width: 220px;
     &.e-contextmenu {
       padding: $be-mention-popup-padding-bigger;
@@ -256,12 +273,23 @@
     .e-toolbar-item {
       .e-inline-color-icon,
       .e-inline-bgColor-icon {
-        font-size: 16px;
+        font-size: $be-inline-bgColor-icon-bigger-size;
       }
 
       .e-toolbar-color-dropdown .e-icons.e-btn-icon,
       .e-toolbar-bgcolor-dropdown .e-icons.e-btn-icon {
-        font-size: 14px;
+        font-size: $be-inline-btn-icon-bigger-size;
+      }
+    }
+
+    /* ======== Blazor specific Toolbar styles ======== */
+    .e-toolbar {
+      .e-item-first-child {
+        margin-left: $be-toolbar-child-bigger-margin-left;
+      }
+      &.e-rtl .e-item-first-child {
+        margin-left: $be-rtl-toolbar-child-bigger-margin-left;
+        margin-right: $be-rtl-toolbar-child-bigger-margin-right;
       }
     }
   }
@@ -271,7 +299,7 @@
   .e-bigger.e-blockeditor-mention-menu.e-popup {
     .e-user-mention-item-template,
     .e-label-mention-item-template {
-      gap: 8px;
+      gap: $be-label-mention-item-bigger-gap;
     }
     .e-user-mention-item-template {
       padding: $be-user-mention-item-padding-bigger;
@@ -294,7 +322,7 @@
     }
 
     .em-content {
-      gap: 8px;
+      gap: $be-em-content-bigger-gap;
       .em-text {
         font-size: $be-ctmenu-text-font-size-bigger;
         line-height: $be-ctmenu-text-line-height-bigger;

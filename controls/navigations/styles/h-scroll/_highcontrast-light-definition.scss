@@ -1,3 +1,6 @@
+@use 'ej2-base/styles/definition/highcontrast-light' as *;
+@forward 'ej2-base/styles/definition/highcontrast-light';
+
 //default
 $hscroll-skin: 'highcontrast' !default;
 $hscroll-nav-hover-border-color: $hover-border !default;
@@ -30,6 +33,8 @@ $hscroll-border-type: solid !default;
 $hscroll-hover-font: $hover-font-color !default;
 $hscroll-active-font-color: $active-font-color !default;
 $hscroll-nav-nrml-width: 40px !default;
+$hscroll-nav-bgr-left: 50px !default;
+$hscroll-nav-bgr-right: 50px !default;
 $hscroll-nav-bgr-width: 50px !default;
 $hscroll-nrml-padding: 0 $hscroll-nav-nrml-width !default;
 $hscroll-bgr-padding: 0 $hscroll-nav-bgr-width !default;
@@ -43,6 +48,9 @@ $hscroll-active-border: 0 !default;
 $hscroll-hover-border: 0 !default;
 $hscroll-active-box-shadow: none !default;
 $hscroll-default-icon-color: $selection-bg !default;
+$hscroll-border-none: 0 !default;
+$hscroll-item-height: inherit !default;
+$hscroll-item-line-height: normal !default;
 
 $hscroll-nav-hover-press-bg: $hscroll-press-bg !default;
 $hscroll-nav-hover-icons-color: $hscroll-default-icon-color !default;

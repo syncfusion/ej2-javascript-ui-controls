@@ -17,7 +17,7 @@ import { DOMMethods } from './dom-tree';
  * Lists internal component
  *
  * @hidden
- * @deprecated
+ * @private
  */
 export class Lists {
     private parent: EditorManager;
@@ -33,7 +33,7 @@ export class Lists {
      *
      * @param {EditorManager} parent - specifies the parent element
      * @hidden
-     * @deprecated
+     * @private
      */
     public constructor(parent: EditorManager) {
         this.parent = parent;
@@ -70,18 +70,44 @@ export class Lists {
         }
         return false;
     }
-    private testCurrentList(range: Range): boolean {
+    private isOrderedList(range: Range): boolean {
         const olListStartRegex: RegExp[] = [/^[1]+[.]+$/, /^[i]+[.]+$/, /^[a]+[.]+$/];
         if (!isNullOrUndefined(range.startContainer.textContent.slice(0, range.startOffset))) {
-            const currentContent : string = range.startContainer.textContent.replace(/\u200B/g, '').slice(0, range.startOffset).trim();
+            const editorValue: string = range.startContainer.textContent.replace(/\u200B/g, '').slice(0, range.startOffset).trim();
             for (let i: number = 0; i < olListStartRegex.length; i++) {
-                if (olListStartRegex[i as number].test(currentContent) && currentContent.length === 2) {
+                if (olListStartRegex[i as number].test(editorValue) && editorValue.length === 2) {
                     return true;
                 }
             }
         }
         return false;
     }
+    private isUnOrderedList(range: Range): boolean {
+        const ulListStartRegex: RegExp[] = [/^[*]$/, /^[-]$/];
+        if (!isNullOrUndefined(range.startContainer.textContent.slice(0, range.startOffset))) {
+            const editorValue: string = range.startContainer.textContent.replace(/\u200B/g, '').slice(0, range.startOffset).trim();
+            for (let i: number = 0; i < ulListStartRegex.length; i++) {
+                if (ulListStartRegex[i as number].test(editorValue)) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+    private isCheckList(range: Range): boolean {
+        // Updated regex to match checkbox patterns with at most one space: [], [x], [ ], [x ], [ x], [ x ]
+        const ulListStartRegex: RegExp[] = [/^\[\s?\]$/, /^\[\s?x\s?\]$/i];
+        if (!isNullOrUndefined(range.startContainer.textContent.slice(0, range.startOffset))) {
+            const editorValue: string = range.startContainer.textContent.replace(/\u200B/g, '').slice(0, range.startOffset).trim();
+            for (let i: number = 0; i < ulListStartRegex.length; i++) {
+                if (ulListStartRegex[i as number].test(editorValue)) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
     private createAutoList(enterKey: string, shiftEnterKey: string): boolean {
         const autoListRules: Record<string, Record<string, boolean>> = {
             BR: { BR: true, P: true, DIV: true },
@@ -93,7 +119,7 @@ export class Lists {
         }
         return false;
     }
-    private isInsideSameListType(startNode: Node | null, startElementOLTest: boolean): boolean {
+    private isInsideSameListType(startNode: Node | null, range: Range): boolean {
         if (!startNode) {
             return false;
         }
@@ -108,7 +134,15 @@ export class Lists {
             return false; // No valid list container found
         }
         // Check if parentList is OL or UL and compare with startElementOLTest
-        return (parentList.tagName === 'OL' && startElementOLTest) || (parentList.tagName === 'UL' && !startElementOLTest);
+        if (this.isOrderedList(range) && parentList.tagName === 'OL') {
+            return true;
+        } else if (this.isUnOrderedList(range) && parentList.tagName === 'UL' && !parentList.classList.contains('e-rte-checklist')) {
+            return true;
+        } else if (this.isCheckList(range) && parentList.tagName === 'UL' && parentList.classList.contains('e-rte-checklist')) {
+            return true;
+        } else {
+            return false;
+        }
     }
     private spaceList(e: IHtmlKeyboardEvent): void {
         const range: Range = this.parent.nodeSelection.getRange(this.parent.currentDocument);
@@ -122,10 +156,10 @@ export class Lists {
             (preElement as HTMLElement).innerText.trim().substring(0, 1) : null;
         const nextElemULStart: string =  !isNullOrUndefined(nextElement) ?
             (nextElement as HTMLElement).innerText.trim().substring(0, 1) : null;
-        const startElementOLTest: boolean = this.testCurrentList(range);
+        const startElementOLTest: boolean = this.isOrderedList(range);
         const preElementOLTest : boolean = this.testList(preElement);
         const nextElementOLTest : boolean = this.testList(nextElement);
-        const isInsideSameListType: boolean = this.isInsideSameListType(startNode, startElementOLTest);
+        const isInsideSameListType: boolean = this.isInsideSameListType(startNode, range);
         const nextElementBRTest : boolean = (range.startContainer as Element).previousElementSibling && (range.startContainer as Element).previousElementSibling.tagName === 'BR';
         if (!isInsideSameListType && !preElementOLTest && !nextElementOLTest && preElemULStart !== '*' && nextElemULStart !== '*' && (this.createAutoList(e.enterKey, e.shiftEnterKey) || !nextElementBRTest)) {
             const brElement: HTMLElement = createElement('br');
@@ -146,12 +180,21 @@ export class Lists {
                 }
                 this.applyListsHandler({ subCommand: 'UL', callBack: e.callBack, enterAction: e.enterKey });
                 e.event.preventDefault();
+            } else if (this.isCheckList(range)) {
+                const isChecked: boolean = /^\[\s*x\s*\]$/i.test(range.startContainer.textContent.replace(/\u200B/g, '').slice(0, range.startOffset).trim());
+                range.startContainer.textContent = range.startContainer.textContent.slice(
+                    range.startOffset, range.startContainer.textContent.length);
+                if (range.startContainer.nodeName === '#text' && range.startContainer.textContent.length === 0) {
+                    this.parent.domNode.insertAfter(brElement, range.startContainer as Element);
+                }
+                this.applyListsHandler({ subCommand: 'Checklist', callBack: e.callBack, enterAction: e.enterKey }, isChecked);
+                e.event.preventDefault();
             }
         }
     }
     private isCtrlEnterInChecklist(e: IHtmlKeyboardEvent): void {
         let storeIntoStack: boolean = false;
-        if (e.event && (e.event.ctrlKey || e.event.metaKey) && (e.event as KeyboardEventArgs).key === 'Enter') {
+        if (e.event && (e.event.ctrlKey || e.event.metaKey) && (e.event as KeyboardEventArgs).key === 'Enter' && e.event.action === 'checklist-toggle') {
             const domMethods: DOMMethods = new DOMMethods(this.parent.editableElement as HTMLDivElement);
             const li: HTMLElement[] = domMethods.getLiElementsInRange();
             for (let i: number = 0; i < li.length; i++) {
@@ -1164,8 +1207,32 @@ export class Lists {
             }
         }
     }
-    private applyListsHandler(e: IHtmlSubCommands): void {
+    private isCaretImmediatelyBeforeTable(range: Range): boolean {
+        let cursorBeforeTable: boolean = false;
+        let table: HTMLElement | null = null;
+        const isBeforeFirstTable: boolean = range.collapsed && range.startContainer === range.endContainer &&
+            range.startOffset === range.endOffset &&
+            range.startContainer.nodeType === Node.ELEMENT_NODE &&
+            range.startContainer.childNodes[range.startOffset] && range.startContainer.childNodes[range.startOffset].nodeName === 'TABLE';
+        if (isBeforeFirstTable) {
+            table = range.startContainer.childNodes[range.startOffset] as HTMLElement;
+            const newRange: Range = this.parent.editableElement.ownerDocument.createRange();
+            newRange.setStartBefore(table);
+            newRange.setEndBefore(table);
+            cursorBeforeTable = range.startContainer === newRange.startContainer &&
+                range.endContainer === newRange.endContainer &&
+                range.startOffset === newRange.startOffset &&
+                range.endOffset === newRange.endOffset;
+        }
+        if (cursorBeforeTable && !isNOU(table)) {
+            table.classList.add('temp-cursor-table');
+            return true;
+        }
+        return false;
+    }
+    private applyListsHandler(e: IHtmlSubCommands, isCheckedCheckList?: boolean): void {
         let range: Range = this.parent.nodeSelection.getRange(this.parent.currentDocument);
+        const isRangeBeforeTable: boolean = this.isCaretImmediatelyBeforeTable(range);
         const checkListToggleAction: boolean = e.subCommand === 'Checklist' && e.item && e.item.action === 'toggleChecklist';
         if (checkListToggleAction) {
             this.handleChecklistToggle(e);
@@ -1226,9 +1293,19 @@ export class Lists {
                     listsNodes[i as number] = listsNodes[i as number].parentNode;
                 }
             }
-            this.applyLists(listsNodes as HTMLElement[], this.currentAction, e.selector, e.item, e, checkCursorPointer);
+            this.applyLists(listsNodes as HTMLElement[], this.currentAction, e.selector, e.item, e, checkCursorPointer, isCheckedCheckList);
             if (lastSelectedNode && range.startContainer === range.endContainer && range.startOffset === range.endOffset) {
                 this.parent.nodeSelection.setCursorPoint(this.parent.currentDocument, lastSelectedNode, 0);
+            }
+            if (isRangeBeforeTable) {
+                const table: HTMLElement = this.parent.editableElement.ownerDocument.querySelector('.temp-cursor-table');
+                if (!isNullOrUndefined(table)) {
+                    const newRange: Range = this.parent.editableElement.ownerDocument.createRange();
+                    newRange.setStartBefore(table);
+                    newRange.setEndBefore(table);
+                    this.parent.nodeSelection.setRange(this.parent.currentDocument, newRange);
+                    removeClass([table], ['temp-cursor-table']);
+                }
             }
         }
         if (e.callBack) {
@@ -1279,7 +1356,7 @@ export class Lists {
     }
 
     private applyLists(elements: HTMLElement[], type: string, selector?: string,
-                       item?: IAdvanceListItem, e?: IHtmlSubCommands, checkCursorPointer?: boolean): void {
+                       item?: IAdvanceListItem, e?: IHtmlSubCommands, checkCursorPointer?: boolean, isCheckedCheckList?: boolean): void {
         let isReverse: boolean = true;
         if (type === 'Checklist') {
             type = 'UL';
@@ -1288,7 +1365,7 @@ export class Lists {
             const revertListELements: { commonList: HTMLElement[]; commonListParent: HTMLElement[] } = this.commonRevertList(elements);
             this.completeRevertList(revertListELements, e.enterAction);
         } else {
-            this.checkLists(elements, type, item, checkCursorPointer, e.subCommand);
+            this.checkLists(elements, type, item, checkCursorPointer, e.subCommand, isCheckedCheckList);
             const targetEl: HTMLElement = elements[0];
             const marginLeftAttribute: { [key: string]: string }[] = [];
             if (targetEl.style.marginLeft !== '') {
@@ -1309,7 +1386,8 @@ export class Lists {
                     }
                 }
                 elements[i as number].style.removeProperty('margin-left');
-                const elemAtt: Record<string, string> = elements[i as number].tagName === 'IMG' || elements[i as number].classList.contains('e-editor-select-start') ? {} : this.extractAllAttributes(elements[i as number]);                if (elements[i as number].getAttribute('contenteditable') === 'true'
+                const elemAtt: Record<string, string> = elements[i as number].tagName === 'IMG' || elements[i as number].classList.contains('e-editor-select-start') || elements[i as number].tagName === 'TABLE' ? {} : this.extractAllAttributes(elements[i as number]);
+                if (elements[i as number].getAttribute('contenteditable') === 'true'
                     && elements[i as number].childNodes.length === 1 && elements[i as number].childNodes[0].nodeName === 'TABLE') {
                     const listEle: Element = document.createElement(type);
                     listEle.innerHTML = '<li><br/></li>';
@@ -1321,9 +1399,13 @@ export class Lists {
                     const ul: HTMLElement = this.parent.editableElement.ownerDocument.createElement(type);
                     this.applyListStyles(ul, marginLeftAttribute);
                     this.applyListStyles(ul, listStyles);
+
                     const replaceHTML: string = elements[i as number].innerHTML;
                     const li: HTMLElement = this.parent.editableElement.ownerDocument.createElement('li');
                     this.applyAllAttributes(li, elemAtt);
+                    if (isCheckedCheckList) {
+                        li.classList.add('e-rte-checklist-checked');
+                    }
                     li.innerHTML = replaceHTML;
                     ul.appendChild(li);
                     tempElement.appendChild(ul);
@@ -1353,12 +1435,15 @@ export class Lists {
                     }
                     const li: HTMLElement = this.parent.editableElement.ownerDocument.createElement('li');
                     this.applyAllAttributes(li, elemAtt);
+                    if (isCheckedCheckList) {
+                        li.classList.add('e-rte-checklist-checked');
+                    }
                     li.innerHTML = replaceHTML;
                     let innerHTML: string = li.outerHTML;
                     innerHTML = this.setStyle(innerHTML);
                     ul.innerHTML = innerHTML;
                     let collectionString: string = ul.outerHTML;
-                    if  (e.subCommand === 'Checklist'){
+                    if (e.subCommand === 'Checklist') {
                         collectionString = this.addCheckListClass(collectionString);
                     }
                     this.domNode.replaceWith(elements[i as number], collectionString);
@@ -1378,6 +1463,9 @@ export class Lists {
                     }
                     const li: HTMLElement = this.parent.editableElement.ownerDocument.createElement('li');
                     this.applyAllAttributes(li, elemAtt);
+                    if (isCheckedCheckList) {
+                        li.classList.add('e-rte-checklist-checked');
+                    }
                     li.innerHTML = replaceHTML;
                     const innerHTML: string = li.outerHTML;
                     ul.innerHTML = innerHTML;
@@ -1474,7 +1562,6 @@ export class Lists {
                 if ((current.tagName === 'I' || current.tagName === 'EM') && !styleSnapshot.has('font-style')) {
                     styleSnapshot.set('font-style', 'italic');
                 }
-
                 current = current.parentElement;
             }
             // Merge text into styleTextMap
@@ -1521,7 +1608,7 @@ export class Lists {
     }
 
     private checkLists(nodes: Element[], tagName: string, item?: IAdvanceListItem, checkCursorPointer?: boolean,
-                       subCommand?: string): void {
+                       subCommand?: string, isCheckedCheckList?: boolean): void {
         const nodesTemp: Element[] = [];
         for (let i: number = 0; i < nodes.length; i++) {
             const node: Element = nodes[i as number].parentNode as Element;
@@ -1539,19 +1626,52 @@ export class Lists {
                 }
             }
         }
-        this.convertListType(nodes, tagName, nodesTemp, checkCursorPointer, item, subCommand);
+        this.convertListType(nodes, tagName, nodesTemp, checkCursorPointer, item, subCommand, isCheckedCheckList);
     }
     /*
      * Convert list type based on the different list
      * Transforms selected list items between ordered and unordered lists
      */
-    private convertListType(nodes: Element[], tagName: string, nodesTemp: Element[],
-                            checkCursorPointer: boolean, item?: IAdvanceListItem | null, subCommand?: string): void {
+    private convertListType(nodes: Element[], tagName: string, nodesTemp: Element[], checkCursorPointer: boolean,
+                            item?: IAdvanceListItem | null, subCommand?: string, isCheckedCheckList?: boolean): void {
         tagName = subCommand === 'Checklist' ? 'Checklist' : tagName;
-        const initialNodesTemp: Element[] = Array.from(new Set<Element>(
+        // Add classes to selected LI elements for tracking
+        for (let k: number = 0; k < nodes.length; k++) {
+            nodes[k as number].classList.add('list-temp-element');
+            if (isCheckedCheckList) {
+                nodes[k as number].classList.add('e-rte-checklist-checked');
+            }
+        }
+        // First call with reverse order because when elements are changed in the DOM during nested list usecase,
+        // the DOM element has already changed and we can no longer get that element in the collection.
+        // So the nested use case is not working. That's why we reverse and convert with the normal order.
+        // For the reverse order, most of them are converted however some of that not working because of nested list,
+        // so once again call the convert with the normal order - that way it works well.
+        const reversedParentLists: Element[] = Array.from(new Set<Element>(
             nodes.map((node: Element) => node.parentNode as Element)
                 .filter((parent: Element) => parent.tagName === 'OL' || parent.tagName === 'UL')
         )).reverse();
+        this.convertListTypeInternal(reversedParentLists, nodes, tagName, nodesTemp, checkCursorPointer, item, subCommand);
+        // Update nodes reference to point to converted elements in DOM
+        nodes = Array.from(this.parent.currentDocument.querySelectorAll('.list-temp-element'));
+        // Second call without reverse - process any remaining unconverted elements from first pass
+        const naturalOrderParentLists: Element[] = Array.from(new Set<Element>(
+            nodes.map((node: Element) => node.parentNode as Element)
+                .filter((parent: Element) => parent.tagName === 'OL' || parent.tagName === 'UL')
+        ));
+        this.convertListTypeInternal(naturalOrderParentLists, nodes, tagName, nodesTemp, checkCursorPointer, item, subCommand);
+        // Update nodes reference again after second conversion
+        nodes = Array.from(this.parent.currentDocument.querySelectorAll('.list-temp-element'));
+        nodes.forEach((el: Element) => {
+            el.classList.remove('list-temp-element');
+            if (el.classList.length === 0) {
+                el.removeAttribute('class');
+            }
+        });
+    }
+    private convertListTypeInternal(initialNodesTemp: Element[], nodes: Element[], tagName: string,
+                                    nodesTemp: Element[], checkCursorPointer: boolean,
+                                    item?: IAdvanceListItem | null, subCommand?: string): void {
         for (let i: number = 0; i < initialNodesTemp.length; i++) {
             const list: Element = initialNodesTemp[i as number];
             if (!checkCursorPointer && (list.tagName === 'UL' || list.tagName === 'OL')) {
@@ -1575,6 +1695,9 @@ export class Lists {
                         if ((currentTagName === (isTargetChecklist ? 'ul' : tagName.toLowerCase())) &&
                             (isCurrentChecklist === isTargetChecklist)) {
                             const clonedChild: HTMLElement = child.cloneNode(true) as HTMLElement;
+                            if (!isCurrentChecklist && clonedChild.classList.contains('e-rte-checklist-checked')) {
+                                clonedChild.classList.remove('e-rte-checklist-checked');
+                            }
                             newList.appendChild(clonedChild);
                         } else {
                             // Create new list for different type
@@ -1593,6 +1716,9 @@ export class Lists {
                             newFragment.appendChild(newList);
                             const clonedChild: HTMLElement = child.cloneNode(true) as HTMLElement;
                             this.applyListItemStyle(newList, item);
+                            if (!isCurrentChecklist && clonedChild.classList.contains('e-rte-checklist-checked')) {
+                                clonedChild.classList.remove('e-rte-checklist-checked');
+                            }
                             newList.appendChild(clonedChild);
                         }
                     } else {
@@ -1642,6 +1768,7 @@ export class Lists {
             }
         }
     }
+
     /*
      * Applies list style to a list item element
      * @param node The list item element to apply styles to
@@ -1691,8 +1818,10 @@ export class Lists {
                 listStyleType = preElement.style.listStyleType;
                 firstNodeOL = node.previousElementSibling;
             }
+            // Check if the current node is part of the same list structure as its previous sibling
+            const isSameList: boolean = this.domNode.isList(node.previousElementSibling) && node.parentElement === node.previousElementSibling.parentElement && node.parentElement.tagName === 'LI';
             if (this.domNode.isList(node.previousElementSibling as Element) &&
-                this.domNode.openTagString(node) === this.domNode.openTagString(node.previousElementSibling as Element)) {
+                (this.domNode.openTagString(node) === this.domNode.openTagString(node.previousElementSibling as Element)) || isSameList) {
                 const contentNodes: Node[] = this.domNode.contents(node);
                 for (let f: number = 0; f < contentNodes.length; f++) {
                     node.previousElementSibling.appendChild(contentNodes[f as number]);
@@ -1789,6 +1918,9 @@ export class Lists {
     public revertChecklistItem(li: Element): void {
         if (li && li.parentElement && li.parentElement.classList.contains('e-rte-checklist')) {
             li.parentElement.classList.remove('e-rte-checklist');
+        }
+        if (li && li.classList.contains('e-rte-checklist-checked')) {
+            li.classList.remove('e-rte-checklist-checked');
         }
     }
 
@@ -1928,7 +2060,7 @@ export class Lists {
                 element.setAttribute(key, newValue);
             }
         });
-        const classesToRemove: string[] = [ 'e-rte-checklist', 'e-rte-select-list-start', 'e-rte-select-list-end', 'e-rte-checklist-checked' ];
+        const classesToRemove: string[] = ['e-rte-checklist', 'e-rte-select-list-start', 'e-rte-select-list-end', 'e-rte-checklist-checked'];
         let classRemoved: boolean = false;
         classesToRemove.forEach((cls: string) => {
             if (element.classList.contains(cls)) {
@@ -1979,6 +2111,18 @@ export class Lists {
                 startElement = nextLi;
             } else {
                 startElement = startElement.nextElementSibling as HTMLElement;
+            }
+        }
+        if (startElement.classList.contains('e-rte-checklist')) {
+            const ulList: NodeList = startElement.querySelectorAll('ul');
+            for (let i: number = 0; i < ulList.length; i++) {
+                (ulList[i as number] as HTMLElement).classList.add('e-rte-checklist');
+            }
+            const liElements: NodeList = startElement.querySelectorAll('li');
+            for (let i: number = 0; i < liElements.length; i++) {
+                if ((liElements[i as number] as HTMLElement).style.listStyleType === 'none') {
+                    (liElements[i as number] as HTMLElement).classList.add('e-rte-checklist-hidden');
+                }
             }
         }
         const element: HTMLElement = tempElement.querySelector('.e-rte-insertAfterElement');
@@ -2110,7 +2254,7 @@ export class Lists {
                     inlineNodes = this.flushWrap(wrapElement, inlineNodes, tempElement);
                     const marker: HTMLElement = tempElement.querySelector('.e-rte-insertAfterElement');
                     if (marker) {
-                        if (liChildNodes.innerHTML.trim() !== '') {
+                        if (liChildNodes.innerHTML.trim() !== '' || liChildNodes.nodeName === 'HR') {
                             if (!isNOU(mainUlOlAttributes)) {
                                 this.addAllAttributes(liChildNodes, mainUlOlAttributes);
                             }

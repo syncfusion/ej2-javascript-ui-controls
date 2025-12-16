@@ -1,3 +1,5 @@
+@use 'ej2-base/styles/definition/bootstrap5.3' as *;
+@forward 'ej2-base/styles/definition/bootstrap5.3';
 $spreadsheet-ribbon-skin: $skin-name !default;
 $file-menu-wrap-padding: 0 !default;
 $drop-icon-margin: 8px 4px !default;
@@ -28,3 +30,4 @@ $spreadsheet-file-drop-icon-line-height: 32px !default;
 $spreadsheet-file-drop-icon-font-size: $font-icon-14 !default;
 $spreadsheet-ribbon-toolbar-items-height: 40px !default;
 $bigger-spread-sheet-tab-nav-arrow-font: $font-icon-18 !default;
+$spread-ribbon-font-weight-bold: bold !default;

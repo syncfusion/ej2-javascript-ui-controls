@@ -6,28 +6,37 @@ import { Property, ChildProperty } from '@syncfusion/ej2-base';
 export interface HolidayModel {
 
     /**
-     * Defines start date of holiday.
+     * Specifies the start date of the holiday.
+     *
+     * Accepts a `Date` object or ISO-formatted string.
      *
      * @default null
      */
     from?: Date | string;
 
     /**
-     * Defines end date of holiday.
+     * Specifies the end date of the holiday.
+     *
+     * Accepts a `Date` object or ISO-formatted string.
+     * If omitted, the holiday is treated as a single-day event.
      *
      * @default null
      */
     to?: Date | string;
 
     /**
-     * Defines label of holiday.
+     * Defines a label or description for the holiday.
+     *
+     * Useful for tooltips, annotations, and export metadata.
      *
      * @default null
      */
     label?: string;
 
     /**
-     * Defines custom css class of holiday to customize background and label.
+     * Defines a custom CSS class for styling the holiday marker and label.
+     *
+     * Use this to apply custom background, borders, or font styles.
      *
      * @default null
      */

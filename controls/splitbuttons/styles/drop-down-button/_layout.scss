@@ -1,3 +1,5 @@
+@use 'ej2-base/styles/common/mixin' as *;
+@use './theme-variables' as *;
 @include export-module('drop-down-button-layout') {
   .e-dropdown-btn,
   .e-dropdown-btn.e-btn {
@@ -9,7 +11,7 @@
     @if $skin-name == 'Material3' {
       border-radius: $btn-border-radius;
       box-shadow: $drop-down-btn-box-shadow;
-      line-height: 1;
+      line-height: $drop-down-btn-line-height;
     }
 
     &:hover {
@@ -51,7 +53,7 @@
     }
 
     &.e-vertical {
-      line-height: 1;
+      line-height: $drop-down-btn-line-height;
       padding: $drop-down-btn-vertical-btn-padding;
     }
 
@@ -74,7 +76,7 @@
       }
 
       &.e-vertical {
-        line-height: 1;
+        line-height: $drop-down-btn-line-height;
         padding: $drop-down-btn-vertical-btn-padding;
       }
 
@@ -86,7 +88,7 @@
 
       & .e-btn-icon.e-caret {
         @if $skin-name == 'fluent2' {
-          font-size: 12px;
+          font-size: $drop-down-btn-icon-caret-font-size;
         }
         @if $skin-name == 'material' or $skin-name == 'material-dark' or $skin-name == 'fabric' or $skin-name == 'fabric-dark' or $skin-name == 'FluentUI' or $skin-name == 'tailwind' or $skin-name == 'bootstrap5.3' or $skin-name == 'bootstrap5' or $skin-name == 'Material3' or $skin-name == 'bootstrap' or $skin-name == 'bootstrap-dark' or $skin-name == 'bootstrap4' or $skin-name == 'highcontrast' or $skin-name == 'highcontrast-light' {
           font-size: $drop-down-btn-small-caret-icon-font-size;
@@ -115,7 +117,7 @@
       border-radius: $drop-down-btn-ul-border-radius;
       margin-top: $drop-down-btn-popup-margin-top;
     }
-    @if $skin-name == 'fluent2' {
+    @if $skin-name == 'fluent2' or $skin-name == 'tailwind3' {
       border-radius: $drop-down-btn-ul-border-radius;
     }
 
@@ -129,7 +131,7 @@
       list-style-image: none;
       list-style-position: outside;
       list-style-type: none;
-      margin: 0;
+      margin: $dd-btn-zero-margin-padding;
       min-width: $drop-down-btn-min-width;
       overflow: hidden;
       padding: $drop-down-btn-ul-padding;
@@ -143,39 +145,39 @@
         line-height: $drop-down-btn-li-height;
         padding: $drop-down-btn-li-padding;
         @if $skin-name == 'fluent2' {
-          line-height: 19px;
-          margin: 4px;
-          border-radius: 4px;
+          line-height: $dropdown-btn-item-flu-line-height;
+          margin: $dropdown-btn-item-flu-margin;
+          border-radius: $dropdown-btn-item-flu-border-radius;
         }
 
         &.e-separator {
-          padding: 0 !important; /* stylelint-disable-line declaration-no-important */
+          padding: $dd-btn-zero-margin-padding !important; /* stylelint-disable-line declaration-no-important */
         }
 
         &.e-url {
-          padding: 0;
+          padding: $dd-btn-zero-margin-padding;
         }
 
         & .e-menu-url {
           display: block;
           padding: $drop-down-btn-li-padding;
           text-decoration: none;
-          width: 100%;
+          width: $dd-full-width;
         }
 
         & .e-menu-icon {
           float: left;
           font-size: $drop-down-btn-menu-icon-font-size;
           @if $skin-name == 'fluent2' {
-            line-height: 18px;
-            padding: 2px;
+            line-height: $dd-btn-menu-icon-line-height;
+            padding: $dd-btn-menu-icon-padding;
           }
           @else {
             line-height: $drop-down-btn-li-height;
           }
           margin-right: $drop-down-btn-icon-margin-right;
           vertical-align: middle;
-          width: 1em;
+          width: $dd-menu-icon-width;
         }
 
         &.e-disabled {
@@ -198,8 +200,8 @@
           border-bottom-style: $drop-down-btn-li-border-style;
           border-bottom-width: $drop-down-btn-li-border-width;
           cursor: auto;
-          height: auto;
-          line-height: normal;
+          height: $dd-auto-height;
+          line-height: $dd-bgr-seperator-line-height;
           margin: $drop-down-btn-seperator-padding;
           pointer-events: none;
         }
@@ -212,10 +214,10 @@
 
       & .e-dropdown-menu {
         border: 0;
-        height: 1px;
-        min-width: 0;
-        padding: 0;
-        width: 1px;
+        height: $dd-menu-height;
+        min-width: $dd-btn-zero-margin-padding;
+        padding: $dd-btn-zero-margin-padding;
+        width: $dd-menu-width;
       }
     }
 
@@ -228,12 +230,12 @@
     & .e-menu-icon {
       float: right;
       margin-left: $drop-down-btn-icon-margin-right;
-      margin-right: 0;
+      margin-right: $dd-btn-zero-margin-padding;
     }
   }
 
   .e-dropdown-popup-width ul {
-    min-width: 0 !important; /* stylelint-disable-line declaration-no-important */
+    min-width: $dd-btn-zero-margin-padding !important; /* stylelint-disable-line declaration-no-important */
   }
 
   .e-dropdown-popup-width ul li {

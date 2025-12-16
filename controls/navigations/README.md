@@ -280,7 +280,6 @@ Navigation controls are also offered in following list of frameworks.
 
 ## Resources
 
-* [Documentation](https://ej2.syncfusion.com/documentation/introduction)
 * [Theme Studio](https://ej2.syncfusion.com/themestudio/)
 * [Custom Resource Generator](https://crg.syncfusion.com/)
 * [What's New](https://www.syncfusion.com/products/whatsnew/essential-js2?utm_medium=listing&utm_source=github)

@@ -1,3 +1,5 @@
+@use 'ej2-base/styles/common/mixin' as *;
+@use './theme-variables' as *;
 @include export-module('daterangepicker-bigger') {
 
   .e-bigger #{&}.e-daterangepicker.e-range-modal,
@@ -8,13 +10,13 @@
     @if $skin-name == 'Material3' {
       background: $range-overlay;
     }
-    height: 100%;
-    left: 0;
+    height: $range-full-height;
+    left: $margin-zero;
     opacity: .5;
     pointer-events: auto;
     position: fixed;
-    top: 0;
-    width: 100%;
+    top: $margin-zero;
+    width: $range-full-width;
     z-index: 999;
   }
 
@@ -220,7 +222,7 @@
             margin: $range-device-indicator-margin;
             
             @if $skin-name == 'fluentUI' or $skin-name == 'bootstrap5' or $skin-name == 'bootstrap5.3' or $skin-name == 'bootstrap4' {
-              margin-bottom: 0;
+              margin-bottom: $margin-zero;
             }
           }
         }
@@ -240,7 +242,7 @@
   .e-bigger .e-content-placeholder.e-daterangepicker.e-placeholder-daterangepicker,
   .e-bigger.e-content-placeholder.e-daterangepicker.e-placeholder-daterangepicker {
     background-size: 250px 40px;
-    min-height: 40px;
+    min-height: $range-content-min-height;
   }
 
   .e-bigger .e-calendar .e-content.e-month td.e-today.e-range-hover span.e-day {
@@ -617,7 +619,7 @@
           color: $range-calendar-header-dark-color;
           text-decoration: none;
           @if $skin-name == 'fluent2' {
-            width: 72%;
+            width: $title-hover-width;
           }
         }
         #{if(&, '&', '*')} .e-content .e-range-hover {
@@ -912,7 +914,7 @@
         border-radius: $range-icon-bigger-border-radius;
       }
       @if $skin-name == 'fluent2' {
-        padding: 6px 12px 6px 6px;
+        padding: $date-range-icon-padding;
       }
       @if $skin-name == 'bootstrap-dark' or $skin-name == 'bootstrap' or $skin-name == 'fabric-dark' or $skin-name == 'fabric'  or $skin-name == 'highcontrast-light' or $skin-name == 'highcontrast' {
         font-size: $range-bigger-icon-font-size;

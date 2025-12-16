@@ -2018,6 +2018,7 @@ describe('Editing ->', () => {
         });
         it('Row update cell', (done: Function) => {
             helper.invoke('goTo', ['A100']);
+            spreadsheet.notify(onContentScroll, { scrollTop: spreadsheet.getMainContent().parentElement.scrollTop, scrollLeft: 0 });
             setTimeout((): void => {
                 expect(helper.invoke('getCell', [99, 0]).textContent).toBe('Sync');
                 helper.invoke('updateCell', [{ value: 'Sync' }, 'A150']);
@@ -2034,6 +2035,7 @@ describe('Editing ->', () => {
         });
         it('Column update cell', (done: Function) => {
             helper.invoke('goTo', ['A1']);
+            spreadsheet.notify(onContentScroll, { scrollTop: 0, scrollLeft: 0 });
             setTimeout((): void => {
                 expect(helper.invoke('getCell', [9, 20]).textContent).toBe('Sync');
                 helper.invoke('updateCell', [{ value: 'Sync' }, 'BC10']);

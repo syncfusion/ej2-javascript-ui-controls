@@ -1,3 +1,5 @@
+@use 'ej2-base/styles/definition/tailwind3' as *;
+@forward 'ej2-base/styles/definition/tailwind3';
 $treegrid-right-arrow-icon-color: $icon-color !default;
 $treegrid-right-arrow-hover-color: $icon-color-hover !default;
 $childborder-color: $primary !default;

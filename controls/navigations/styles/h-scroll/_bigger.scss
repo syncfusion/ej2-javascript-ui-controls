@@ -1,3 +1,5 @@
+@use 'ej2-base/styles/common/mixin' as *;
+@use './theme-variables' as *;
 @include export-module('h-scroll-bigger') {
   .e-bigger #{&}.e-hscroll,
   #{&}.e-hscroll.e-bigger {
@@ -21,13 +23,13 @@
     }
 
     &.e-rtl .e-scroll-overlay.e-scroll-right-overlay {
-      left: $hscroll-nav-bgr-width;
+      left: $hscroll-nav-bgr-left;
     }
 
     .e-scroll-overlay {
 
       &.e-scroll-right-overlay {
-        right: $hscroll-nav-bgr-width;
+        right: $hscroll-nav-bgr-right;
       }
     }
 

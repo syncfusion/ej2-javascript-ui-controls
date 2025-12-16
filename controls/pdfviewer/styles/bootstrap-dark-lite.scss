@@ -1,4 +1,3 @@
-@import 'ej2-base/styles/definition/bootstrap-dark.scss';
-@import 'pdfviewer/bootstrap-dark-definition.scss';
-@import 'pdfviewer/icons/bootstrap-dark.scss';
-@import 'pdfviewer/all.scss';
+@use 'pdfviewer/bootstrap-dark-definition' as *;
+@use 'pdfviewer/icons/bootstrap-dark' as *;
+@use 'pdfviewer/all' as *;

@@ -24,7 +24,6 @@ describe('Diagram Control', () => {
                 }
             ele = createElement('div', { id: 'diagram' });
             document.body.appendChild(ele);
-            let selArray: (NodeModel | ConnectorModel)[] = [];
             let node: NodeModel = { id: 'node1', width: 100, height: 100, offsetX: 500, offsetY: 400 };
             diagram = new Diagram({
                 width: '1000px', height: '500px', nodes: [node],
@@ -39,9 +38,7 @@ describe('Diagram Control', () => {
         });
 
         it('checking content,custom,page property', (done: Function) => {
-            let selectorModel: SelectorModel = diagram.selectedItems;
             let zoom: number = diagram.scroller.currentZoom;
-
             diagram.fitToPage({ mode: 'Page', region: 'Content', margin: { left: 50, right: 50 }, canZoomIn: false });
             expect(diagram.scroller.currentZoom == zoom).toBe(true);
             done();
@@ -95,8 +92,6 @@ describe('Diagram Control', () => {
                 }
             ele = createElement('div', { id: 'diagram' });
             document.body.appendChild(ele);
-            let selArray: (NodeModel | ConnectorModel)[] = [];
-            let node: NodeModel = { id: 'node1', width: 100, height: 100, offsetX: 500, offsetY: 400 };
             diagram = new Diagram({
                 width: '1000px', height: '500px'
             });
@@ -109,8 +104,8 @@ describe('Diagram Control', () => {
         });
 
         it('checking page settings', (done: Function) => {
-            let selectorModel: SelectorModel = diagram.selectedItems;
             diagram.fitToPage({ mode: 'Page', region: 'PageSettings', margin: { bottom: 50 }, canZoomIn: false });
+            expect(true).toBe(true);
             done();
         });
         it('memory leak', () => { 
@@ -138,7 +133,6 @@ describe('Diagram Control', () => {
             document.body.appendChild(ele);
             ele2 = createElement('div', { id: 'multiple_Diagram2' });
             document.body.appendChild(ele2);
-            let selArray: (NodeModel | ConnectorModel)[] = [];
             let node: NodeModel = { id: 'node1', width: 100, height: 100, offsetX: 100, offsetY: 100 };
             diagram = new Diagram({
                 width: '500px', height: '300px', nodes: [node]

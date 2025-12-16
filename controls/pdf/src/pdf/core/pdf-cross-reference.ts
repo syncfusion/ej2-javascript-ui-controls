@@ -5,7 +5,11 @@ import { _PdfParser, _PdfLexicalOperator } from './pdf-parser';
 import { _PdfBaseStream } from './base-stream';
 import { PdfCrossReferenceType } from './enumerator';
 import { PdfDocument } from './pdf-document';
-import { _CipherTransform, _MD5, _PdfEncryptor } from './security/encryptor';
+import { _PdfEncryptor } from './security/encryptor';
+import { _PdfSignatureDictionary } from './security/digital-signature/signature/signature-dictionary';
+import { PdfSignature } from './security/digital-signature/signature/pdf-signature';
+import { _CipherTransform } from './security/encryptors/cipher-tranform';
+import { _MD5 } from './security/encryptors/messageDigest5';
 export class _PdfCrossReference {
     _uint8Chunks: Array<Uint8Array> = [];
     _stream: _PdfStream;
@@ -37,6 +41,11 @@ export class _PdfCrossReference {
     _objectStream: _PdfArchievedStream;
     _currentLength: number;
     _bufferLength: number = 0;
+    _isDecoderSupport: boolean = false;
+    _signature: _PdfSignatureDictionary;
+    _signatureCollection: PdfSignature[] = [];
+    _isCrossReferenceTable: boolean = false;
+    _isCrossReferenceStream: boolean = false;
     constructor(document: PdfDocument, password?: string) {
         this._password = password;
         this._document = document;
@@ -175,6 +184,7 @@ export class _PdfCrossReference {
         }
         const stream: _PdfStream = this._stream.makeSubStream(xrefEntry.offset + this._stream.start, undefined);
         const parser: _PdfParser = new _PdfParser(new _PdfLexicalOperator(stream), this, true, false, this._encrypt);
+        parser._isImageExtraction = this._isDecoderSupport;
         const obj1: number = parser.getObject();
         const obj2: number = parser.getObject();
         const obj3: _PdfCommand = parser.getObject();
@@ -210,6 +220,7 @@ export class _PdfCrossReference {
             throw new FormatError('invalid first and n parameters for ObjStm stream');
         }
         let parser: _PdfParser = new _PdfParser(new _PdfLexicalOperator(stream), this, true);
+        parser._isImageExtraction = this._isDecoderSupport;
         const nums: Array<number> = new Array<number>(n);
         const offsets: Array<number> = new Array<number>(n);
         for (let i: number = 0; i < n; ++i) {
@@ -278,6 +289,7 @@ export class _PdfCrossReference {
                 if (_isCommand(obj, 'xref')) {
                     if (typeof this._document._fileStructure._crossReferenceType === 'undefined') {
                         this._document._fileStructure._crossReferenceType = PdfCrossReferenceType.table;
+                        this._isCrossReferenceTable = true;
                     }
                     dictionary = this._processXRefTable(parser);
                     if (!this._topDictionary) {
@@ -294,6 +306,7 @@ export class _PdfCrossReference {
                 } else if (Number.isInteger(obj)) {
                     if (typeof this._document._fileStructure._crossReferenceType === 'undefined') {
                         this._document._fileStructure._crossReferenceType = PdfCrossReferenceType.stream;
+                        this._isCrossReferenceStream = true;
                     }
                     const gen: number = parser.getObject();
                     const command: _PdfCommand = parser.getObject();
@@ -322,6 +335,9 @@ export class _PdfCrossReference {
                 }
                 this._startXRefQueue.shift();
             }
+            const startXRefParsed: number[] = [];
+            startXRefParsedCache.forEach((value: number) => startXRefParsed.push(value));
+            this._document._startXRefParsedCache = startXRefParsed;
             return this._topDictionary;
         } catch (e) {
             this._startXRefQueue.shift();
@@ -714,6 +730,17 @@ export class _PdfCrossReference {
         this._writeString(this._newLine, buffer);
         let result: Uint8Array;
         let offset: number = 0;
+        if (this._signatureCollection && this._signatureCollection.length > 0) {
+            if (this._isCrossReferenceStream) {
+                this._document.fileStructure.crossReferenceType = PdfCrossReferenceType.stream;
+            } else if (this._isCrossReferenceTable) {
+                this._document.fileStructure.crossReferenceType = PdfCrossReferenceType.table;
+            }
+            const totalSignatures: number = this._signatureCollection.length;
+            for (let i: number = 0; i < totalSignatures; i++) {
+                this._signatureCollection[<number>i]._catalogBeginSave();
+            }
+        }
         if (!this._document.fileStructure.isIncrementalUpdate) {
             this._currentLength = 0;
             const objectCollection: _PdfMainObjectCollection = new _PdfMainObjectCollection(this);
@@ -739,6 +766,13 @@ export class _PdfCrossReference {
         for (const chunk of this._uint8Chunks) {
             result.set(chunk, offset);
             offset += chunk.length;
+        }
+        if (this._signatureCollection && this._signatureCollection.length > 0) {
+            const totalSignatures: number = this._signatureCollection.length;
+            for (let i: number = 0; i < totalSignatures; i++) {
+                this._signature = this._signatureCollection[<number>i]._signatureDictionary;
+                this._signature._documentSaved(result);
+            }
         }
         if (!this._document.fileStructure.isIncrementalUpdate) {
             const stream: _PdfStream = new _PdfStream(result);
@@ -772,8 +806,12 @@ export class _PdfCrossReference {
         });
         this._cacheMap.forEach((value: _PdfDictionary | _PdfBaseStream, key: _PdfReference) => {
             if (value instanceof _PdfDictionary) {
-                if (value._updated && !value.isCatalog && !value._isProcessed) {
-                    this._writeArchiveStream(objectStreamCollection, key, value);
+                if (value._updated && !value.isCatalog && !value._isProcessed || value._isSignature) {
+                    if (value._isSignature) {
+                        this._updatedDictionary(currentLength, key, buffer, value);
+                    } else {
+                        this._writeArchiveStream(objectStreamCollection, key, value);
+                    }
                 } else if (value._updated && (value.isCatalog || this._allowCatalog)) {
                     this._updatedDictionary(currentLength, key, buffer, value);
                     if (buffer.length > flushThreshold) {
@@ -1015,6 +1053,13 @@ export class _PdfCrossReference {
             this._writeFontDictionary(dictionary);
         }
         this._writeString(`<<${spaceChar}`, buffer);
+        if (dictionary._isSignature && this._signatureCollection && this._signatureCollection.length > 0) {
+            const matchingSignature: PdfSignature = this._signatureCollection.find((signature: PdfSignature) =>
+                signature._signatureDictionary._dictionary.objId === dictionary.objId);
+            if (matchingSignature) {
+                matchingSignature._signatureDictionary._dictionarySave(buffer);
+            }
+        }
         dictionary.forEach((key: string, value: any) => { // eslint-disable-line
             this._writeString(`/${_escapePdfName(key)} `, buffer);
             this._writeValue(value, key, buffer, transform, isCrossReference);
@@ -1203,7 +1248,7 @@ export class _PdfCrossReference {
         const objectStreamCollection: Map<_PdfReference, _PdfArchievedStream> = new Map<_PdfReference, _PdfArchievedStream>();
         this._indexes = [];
         this._indexes.push(0, 1);
-        const flushThreshold: number = 512000; // 500KB threshold
+        const flushThreshold: number = 512000;
         objectCollection.forEach((value: any, key: _PdfReference) => { // eslint-disable-line
             this._writeObjectToBuffer(key, value, buffer, objectStreamCollection);
             if (buffer.length > flushThreshold) {
@@ -1239,14 +1284,16 @@ export class _PdfCrossReference {
             } else if (value instanceof _PdfBaseStream) {
                 dictionary = value.dictionary;
             }
-            if (dictionary && dictionary._updated && (!dictionary.isCatalog || this._allowCatalog)) {
-                const offsetString: string = this._processString((currentLength + this._bufferLength + buffer.length).toString(), 10);
-                const genString: string = this._processString(key.generationNumber.toString(), 5);
-                tempBuffer += `${key.objectNumber} 1${this._newLine}${offsetString} ${genString} n${this._newLine}`;
-                this._writeObject(value, buffer, key);
-                processedCount++;
-                if (buffer.length > flushThreshold || processedCount % 2 === 0) {
-                    this._flushBuffer(buffer);
+            if (dictionary) {
+                if (dictionary._updated && (!dictionary.isCatalog || this._allowCatalog) || dictionary._isSignature) {
+                    const offsetString: string = this._processString((currentLength + this._bufferLength + buffer.length).toString(), 10);
+                    const genString: string = this._processString(key.generationNumber.toString(), 5);
+                    tempBuffer += `${key.objectNumber} 1${this._newLine}${offsetString} ${genString} n${this._newLine}`;
+                    this._writeObject(value, buffer, key);
+                    processedCount++;
+                    if (buffer.length > flushThreshold || processedCount % 2 === 0) {
+                        this._flushBuffer(buffer);
+                    }
                 }
             }
         });
@@ -1275,7 +1322,7 @@ export class _PdfCrossReference {
             const type: _PdfName = value.get('Filter');
             const typeIsFilter: boolean = type && type.name === 'Standard';
             if (this._document.fileStructure._crossReferenceType === PdfCrossReferenceType.stream) {
-                if (!typeIsFilter) {
+                if (!typeIsFilter && !value._isSignature) {
                     this._writeArchiveStream(objectStreamCollection, key, value);
                 } else {
                     this._writeToBuffer(buffer, key, value);

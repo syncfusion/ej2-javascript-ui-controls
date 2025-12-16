@@ -110,16 +110,14 @@ describe('Spreadsheet Sheet tab integration module ->', () => {
             editorElem.value = '*Test';
             editorElem.setSelectionRange(1, 1);
             helper.triggerKeyNativeEvent(13, false, false, editorElem);
-            setTimeout(() => {
-                expect(helper.getElementFromSpreadsheet('.e-dialog.e-popup-open')).toBeNull();
-                expect(spreadsheet.sheets[0].name).toBe('Sheet1');
-                expect(document.activeElement).toBe(editorElem);
-                helper.triggerKeyNativeEvent(27, false, false, editorElem);
-                expect(spreadsheet.sheets[0].name).toBe('Sheet1');
-                spreadsheet.dialogBeforeOpen = undefined;
-                spreadsheet.dataBind();
-                done();
-            }, 10);
+            expect(helper.getElementFromSpreadsheet('.e-dialog.e-popup-open')).toBeNull();
+            expect(spreadsheet.sheets[0].name).toBe('Sheet1');
+            focus(editorElem);
+            helper.triggerKeyNativeEvent(27, false, false, editorElem);
+            expect(spreadsheet.sheets[0].name).toBe('Sheet1');
+            spreadsheet.dialogBeforeOpen = undefined;
+            spreadsheet.dataBind();
+            done();
         });
     });
 
@@ -510,7 +508,7 @@ describe('Spreadsheet Sheet tab integration module ->', () => {
                 expect(spreadsheet.sheets[0].rows[4].cells[0].value).toBe('Hyperlink');
                 helper.invoke('selectRange', ['A5']);
                 helper.setAnimationToNone('#' + helper.id + '_contextmenu');
-                helper.openAndClickCMenuItem(0, 2, [12]);
+                helper.openAndClickCMenuItem(0, 2, [13]);
                 setTimeout(() => {
                     expect(helper.getInstance().sheets[0].selectedRange).toBe('A45:A45');
                     spreadsheet.removeHyperlink('Sheet!12!34!A5');
@@ -763,7 +761,7 @@ describe('Spreadsheet Sheet tab integration module ->', () => {
         });
     });
 
-    describe('EJ2:967458,EJ2-990901 ->', () => {
+    describe('EJ2:967458->Spreadsheet Aggregate with discontinuous ranges->', () => {
         beforeAll((done: Function) => {
             helper.initializeSpreadsheet({
                 sheets: [{

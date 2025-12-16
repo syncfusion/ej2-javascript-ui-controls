@@ -1,5 +1,6 @@
 @use 'sass:list';
-
+@use 'ej2-base/styles/common/mixin' as *;
+@use './theme-variables' as *;
 @include export-module('breadcrumb-layout') {
   .e-breadcrumb {
     display: block;
@@ -11,13 +12,13 @@
     .e-breadcrumb-first-ol {
       align-items: flex-start;
       flex-shrink: 0;
-      padding-right: 0;
+      padding-right: $breadcrumb-padding-none;
     }
 
     .e-breadcrumb-wrapped-ol {
       flex-wrap: wrap;
       overflow: hidden;
-      padding-left: 0;
+      padding-left: $breadcrumb-padding-none;
     }
 
     &.e-breadcrumb-scroll-mode {
@@ -28,19 +29,19 @@
     ol {
       align-items: center;
       display: inline-flex;
-      line-height: normal;
-      margin: 0;
-      padding: 0;
+      line-height: $breadcrumb-normal-line-height;
+      margin: $breadcrumb-margin-none;
+      padding: $breadcrumb-padding-none;
       padding-left: $breadcrumb-padding-left;
       padding-right: $breadcrumb-padding-right;
       @if $breadcrumb-skin == 'tailwind3' {
-        font-weight: $font-weight-medium;
+        font-weight: $breadcrumb-ol-font-weight;
       }
     }
 
     @if $breadcrumb-skin == 'bootstrap' or $breadcrumb-skin == 'Material3' {
       background-color: $breadcrumb-bgcolor;
-      border-radius: 4px;
+      border-radius: $breadcrumb-border-radius;
     }
 
     li {
@@ -70,10 +71,10 @@
 
       &.e-icon-item .e-breadcrumb-text {
         @if $skin-name == 'fluent2' {
-          padding: 9px;
+          padding: $breadcrumb-item-text-padding;
         }
         @if $skin-name == 'tailwind3' {
-          padding: 3px;
+          padding: $breadcrumb-item-text-padding;
         }
       }
 
@@ -96,7 +97,7 @@
           align-items: inherit;
           display: inherit;
           @if $breadcrumb-skin == 'fluent2' {
-            line-height: 20px;
+            line-height: $breadcrumb-nrml-anchor-wrap-line-height;
           }
         }
       }
@@ -264,10 +265,10 @@
       font-size: $breadcrumb-font-size;
       padding: $breadcrumb-separator-padding;
       @if $breadcrumb-skin == 'fluent2' {
-        line-height: 14px;
+        line-height: $breadcrumb-nrml-separator-line-height;
       }
       @if $breadcrumb-skin == 'tailwind3' {
-        font-size: $text-xs;
+        font-size: $breadcrumb-separator-font-size;
       }
 
       + .e-breadcrumb-separator {
@@ -277,7 +278,7 @@
     }
 
     &.e-rtl .e-breadcrumb-separator + .e-breadcrumb-separator {
-      margin-left: 0;
+      margin-left: $breadcrumb-margin-none;
       margin-right: $breadcrumb-sibling-separator-margin-left;
       padding-left: list.nth($breadcrumb-separator-padding, 2);
       padding-right: $breadcrumb-sibling-separator-padding;
@@ -303,10 +304,10 @@
       }
 
       @if $breadcrumb-skin == 'fabric' or $breadcrumb-skin == 'highcontrast' or $breadcrumb-skin == 'bootstrap5' or $breadcrumb-skin == 'bootstrap5.3' or $breadcrumb-skin == 'FluentUI' {
-        margin-top: 2px;
+        margin-top: $breadcrumb-menu-margin-top;
       }
       @if $breadcrumb-skin == 'bootstrap5.3' {
-        border-radius: 4px;
+        border-radius: $breadcrumb-menu-border-radius;
       }
     }
 
@@ -323,7 +324,7 @@
     &.e-rtl {
       .e-breadcrumb-icon {
         padding-left: $breadcrumb-icon-right-padding;
-        padding-right: 0;
+        padding-right: $breadcrumb-padding-none;
 
         @if $breadcrumb-skin == 'fabric' or $breadcrumb-skin == 'highcontrast' {
           padding-right: $breadcrumb-icon-right-padding;
@@ -333,7 +334,7 @@
 
     &.e-rtl.e-icon-right .e-breadcrumb-icon,
     &.e-rtl .e-icon-right .e-breadcrumb-icon {
-      padding-left: 0;
+      padding-left: $breadcrumb-padding-none;
       padding-right: $breadcrumb-icon-right-padding;
 
       @if $breadcrumb-skin == 'fabric' or $breadcrumb-skin == 'highcontrast' {
@@ -360,8 +361,8 @@
     position: absolute;
 
     ul {
-      margin: 0;
-      padding: 0;
+      margin: $breadcrumb-margin-none;
+      padding: $breadcrumb-padding-none;
     }
 
     .e-breadcrumb-item {
@@ -376,11 +377,11 @@
         display: flex;
         font-size: $breadcrumb-font-size;
         height: $breadcrumb-popup-item-height;
-        line-height: $breadcrumb-popup-item-height;
+        line-height: $breadcrumb-popup-item-line-height;
         padding: $breadcrumb-popup-item-padding;
         width: 100%;
         @if $breadcrumb-skin == 'fluent2' {
-          border-radius: 4px;
+          border-radius: $breadcrumb-popup-item-margin;
         }
 
         .e-anchor-wrap {
@@ -396,7 +397,7 @@
       }
 
       &.e-icon-item .e-breadcrumb-icon {
-        padding: 0;
+        padding: $breadcrumb-padding-none;
       }
 
       a.e-breadcrumb-text {
@@ -409,7 +410,7 @@
     &.e-rtl {
       .e-breadcrumb-icon {
         padding-left: $breadcrumb-icon-right-padding;
-        padding-right: 0;
+        padding-right: $breadcrumb-padding-none;
       }
     }
 
@@ -424,14 +425,14 @@
 
     &.e-rtl.e-icon-right .e-breadcrumb-icon,
     &.e-rtl .e-icon-right .e-breadcrumb-icon {
-      padding-left: 0;
+      padding-left: $breadcrumb-padding-none;
       padding-right: $breadcrumb-icon-right-padding;
     }
   }
 
   @if $breadcrumb-skin == 'fluent2' {
     .e-breadcrumb .e-breadcrumb-item a.e-breadcrumb-text {
-      border-radius: 4px;
+      border-radius: $breadcrumb-item-text-border-radius;
     }
 
     .e-breadcrumb .e-breadcrumb-item.e-icon-item a.e-breadcrumb-text:active .e-breadcrumb-icon {
@@ -451,12 +452,12 @@
   .e-breadcrumb-menu-item {
     position: absolute;
     width: 1px;
-    height: 1px;
-    margin: -1px;
-    padding: 0;
+    height: $breadcrumb-menuitem-height;
+    margin: $breadcrumb-menu-item-margin;
+    padding: $breadcrumb-padding-none;
     overflow: hidden;
     clip: rect(0, 0, 0, 0);
-    border: 0;
+    border: $breadcrumb-border-none;
   }
 
   .e-hidden-popup {

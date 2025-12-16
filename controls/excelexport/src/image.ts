@@ -16,4 +16,8 @@ export class Image {
     public rotation: number;
     public lastRowOffset: number;
     public lastColOffset: number;
+
+    // New: starting offsets (in pixels, double)
+    public firstRowOffset: number;
+    public firstColumnOffset: number;
 }

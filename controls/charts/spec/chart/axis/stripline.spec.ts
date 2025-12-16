@@ -396,8 +396,8 @@ describe('Chart control checking', () => {
             loaded = () => {
                 stripLineElement = document.getElementById(stripLineId + '_Behind_rect_' + 'primaryXAxis_' + '0');
                 const d: string = stripLineElement.getAttribute('d');
-                expect(d === 'M 134.16191236878137 43.5 L 134.16191236878137 380.5' ||
-                    d === 'M 93.84744408945687 44.5 L 93.84744408945687 380.5').toBe(true);
+                expect(d === 'M 134.16191236878137 43.5 L 134.16191236878137 380.5' || d === 'M 92.18153811045184 44.5 L 92.18153811045184 380.5' ||
+                    d === 'M 93.84744408945687 44.5 L 93.84744408945687 380.5' || d === 'M 90.68222272934733 44.5 L 90.68222272934733 380.5').toBe(true);
                 done();
             };
             chart.primaryXAxis = {
@@ -417,8 +417,8 @@ describe('Chart control checking', () => {
             loaded = () => {
                 stripLineElement = document.getElementById(stripLineId + '_Behind_rect_' + 'primaryXAxis_' + '0');
                 const direction: string = stripLineElement.getAttribute('d');
-                expect(direction === 'M 41.13429940666362 43.5 L 41.13429940666362 380.5' ||
-                    direction === 'M 38.62539936102237 44.5 L 38.62539936102237 380.5').toBe(true);
+                expect(direction === 'M 41.13429940666362 43.5 L 41.13429940666362 380.5' || direction === 'M 38.48391145595618 44.5 L 38.48391145595618 380.5' ||
+                    direction === 'M 38.62539936102237 44.5 L 38.62539936102237 380.5' || direction === 'M 38.35657234139662 44.5 L 38.35657234139662 380.5').toBe(true);
                 done();
             };
             chart.primaryXAxis = {
@@ -435,8 +435,8 @@ describe('Chart control checking', () => {
             loaded = () => {
                 stripLineElement = document.getElementById(stripLineId + '_Behind_rect_' + 'primaryXAxis_' + '0');
                 const direction: string = stripLineElement.getAttribute('d');
-                expect(direction === 'M 40.85577361935189 43.5 L 40.85577361935189 380.5' ||
-                    direction === 'M 38.460063897763575 44.5 L 38.460063897763575 380.5').toBe(true);
+                expect(direction === 'M 40.85577361935189 43.5 L 40.85577361935189 380.5' || direction === 'M 38.323140118667276 44.5 L 38.323140118667276 380.5' ||
+                    direction === 'M 38.460063897763575 44.5 L 38.460063897763575 380.5' || direction === 'M 38.199908717480604 44.5 L 38.199908717480604 380.5').toBe(true);
                 done();
             };
             chart.primaryXAxis = {
@@ -453,8 +453,8 @@ describe('Chart control checking', () => {
             loaded = () => {
                 stripLineElement = document.getElementById(stripLineId + '_Behind_rect_' + 'primaryXAxis_' + '0');
                 const direction: string = stripLineElement.getAttribute('d');
-                expect(direction === 'M 40.85577361935189 43.5 L 40.85577361935189 380.5' ||
-                    direction === 'M 38.460063897763575 44.5 L 38.460063897763575 380.5').toBe(true);
+                expect(direction === 'M 40.85577361935189 43.5 L 40.85577361935189 380.5' || direction === 'M 38.323140118667276 44.5 L 38.323140118667276 380.5' ||
+                    direction === 'M 38.460063897763575 44.5 L 38.460063897763575 380.5' || direction === 'M 38.199908717480604 44.5 L 38.199908717480604 380.5').toBe(true);
                 done();
             };
             chart.primaryXAxis = {
@@ -471,8 +471,8 @@ describe('Chart control checking', () => {
             loaded = () => {
                 stripLineElement = document.getElementById(stripLineId + '_Behind_rect_' + 'primaryXAxis_' + '0');
                 const direction: string = stripLineElement.getAttribute('d');
-                expect(direction === 'M 40.85577361935189 43.5 L 40.85577361935189 380.5' ||
-                    direction === 'M 38.460063897763575 44.5 L 38.460063897763575 380.5').toBe(true);
+                expect(direction === 'M 40.85577361935189 43.5 L 40.85577361935189 380.5' || direction === 'M 38.323140118667276 44.5 L 38.323140118667276 380.5' ||
+                    direction === 'M 38.460063897763575 44.5 L 38.460063897763575 380.5' || direction === 'M 38.199908717480604 44.5 L 38.199908717480604 380.5').toBe(true);
                 done();
             };
             chart.primaryXAxis = {
@@ -489,8 +489,8 @@ describe('Chart control checking', () => {
             loaded = () => {
                 stripLineElement = document.getElementById(stripLineId + '_Behind_rect_' + 'primaryXAxis_' + '0');
                 const direction: string = stripLineElement.getAttribute('d');
-                expect(direction === 'M 40.85577361935189 43.5 L 40.85577361935189 380.5' ||
-                    direction === 'M 38.460063897763575 44.5 L 38.460063897763575 380.5').toBe(true);
+                expect(direction === 'M 40.85577361935189 43.5 L 40.85577361935189 380.5' || direction === 'M 38.323140118667276 44.5 L 38.323140118667276 380.5' ||
+                    direction === 'M 38.460063897763575 44.5 L 38.460063897763575 380.5' || direction === 'M 38.199908717480604 44.5 L 38.199908717480604 380.5').toBe(true);
                 done();
             };
             chart.primaryXAxis = {
@@ -507,8 +507,8 @@ describe('Chart control checking', () => {
             loaded = () => {
                 stripLineElement = document.getElementById(stripLineId + '_Behind_rect_' + 'primaryXAxis_' + '0');
                 const direction: string = stripLineElement.getAttribute('d');
-                expect(direction === 'M 117.17183934276585 43.5 L 117.17183934276585 380.5' ||
-                    direction === 'M 134.02396166134184 44.5 L 134.02396166134184 380.5').toBe(true);
+                expect(direction === 'M 117.17183934276585 43.5 L 117.17183934276585 380.5' || direction === 'M 131.2489730716568 44.5 L 131.2489730716568 380.5' ||
+                    direction === 'M 134.02396166134184 44.5 L 134.02396166134184 380.5' || direction === 'M 128.75148334094018 44.5 L 128.75148334094018 380.5').toBe(true);
                 done();
             };
             chart.primaryXAxis.valueType = 'DateTime';
@@ -559,13 +559,16 @@ describe('Chart control checking', () => {
             loaded = () => {
                 stripLineElement = document.getElementById(stripLineId + '_Behind_rect_' + 'primaryXAxis_' + '0');
                 let direction: string = stripLineElement.getAttribute('d');
-                expect( direction === 'M 64.64473684210526 43.25 L 64.64473684210526 381.5' || direction === 'M 51.618421052631575 43.25 L 51.618421052631575 381.5' ).toBe(true);
+                expect( direction === 'M 64.64473684210526 43.25 L 64.64473684210526 381.5' || direction === 'M 51.618421052631575 43.25 L 51.618421052631575 381.5' 
+                    || direction === 'M 50.618421052631575 43.25 L 50.618421052631575 381.5' || direction === 'M 51.09210526315789 43.25 L 51.09210526315789 381.5').toBe(true);
                 stripLineElement = document.getElementById(stripLineId + '_Behind_rect_' + 'primaryXAxis_' + '1');
                 direction = stripLineElement.getAttribute('d');
-                expect(direction === 'M 193.2236842105263 43.25 L 193.2236842105263 381.5' || direction === 'M 128.0921052631579 43.25 L 128.0921052631579 381.5').toBe(true);
+                expect(direction === 'M 193.2236842105263 43.25 L 193.2236842105263 381.5' || direction === 'M 128.0921052631579 43.25 L 128.0921052631579 381.5'
+                    || direction === 'M 123.09210526315789 43.25 L 123.09210526315789 381.5' || direction === 'M 125.46052631578947 43.25 L 125.46052631578947 381.5').toBe(true);
                 stripLineElement = document.getElementById(stripLineId + '_Behind_rect_' + 'primaryXAxis_' + '2');
                 direction = stripLineElement.getAttribute('d');
-                expect( direction === 'M 321.80263157894734 43.25 L 321.80263157894734 381.5' || direction === 'M 204.56578947368422 43.25 L 204.56578947368422 381.5' ).toBe(true);
+                expect( direction === 'M 321.80263157894734 43.25 L 321.80263157894734 381.5' || direction === 'M 204.56578947368422 43.25 L 204.56578947368422 381.5'
+                    || direction === 'M 195.56578947368422 43.25 L 195.56578947368422 381.5' || direction === 'M 199.82894736842104 43.25 L 199.82894736842104 381.5').toBe(true);
                 done();
             };
             chart.primaryXAxis = {
@@ -594,13 +597,16 @@ describe('Chart control checking', () => {
             loaded = () => {
                 stripLineElement = document.getElementById(stripLineId + '_Behind_rect_' + 'primaryXAxis_' + '0');
                 let direction : string = stripLineElement.getAttribute('d');
-                expect(direction === 'M 83.39583333333333 43.25 L 83.39583333333333 381.5' || direction === 'M 62.77083333333333 43.25 L 62.77083333333333 381.5').toBe(true);
+                expect(direction === 'M 83.39583333333333 43.25 L 83.39583333333333 381.5' || direction === 'M 62.77083333333333 43.25 L 62.77083333333333 381.5'
+                    || direction === 'M 61.1875 43.25 L 61.1875 381.5' || direction === 'M 61.9375 43.25 L 61.9375 381.5').toBe(true);
                 stripLineElement = document.getElementById(stripLineId + '_Behind_rect_' + 'primaryXAxis_' + '1');
                 direction = stripLineElement.getAttribute('d');
-                expect(direction === 'M 286.97916666666663 43.25 L 286.97916666666663 381.5'|| direction === 'M 183.85416666666666 43.25 L 183.85416666666666 381.5' ).toBe(true);
+                expect(direction === 'M 286.97916666666663 43.25 L 286.97916666666663 381.5'|| direction === 'M 183.85416666666666 43.25 L 183.85416666666666 381.5' 
+                    || direction === 'M 175.9375 43.25 L 175.9375 381.5' || direction === 'M 179.6875 43.25 L 179.6875 381.5').toBe(true);
                 stripLineElement = document.getElementById(stripLineId + '_Behind_rect_' + 'primaryXAxis_' + '2');
                 direction = stripLineElement.getAttribute('d');
-                expect(direction === 'M 490.5625 43.25 L 490.5625 381.5' || direction === 'M 304.9375 43.25 L 304.9375 381.5' ).toBe(true);
+                expect(direction === 'M 490.5625 43.25 L 490.5625 381.5' || direction === 'M 304.9375 43.25 L 304.9375 381.5' 
+                    || direction === 'M 290.6875 43.25 L 290.6875 381.5' || direction === 'M 297.4375 43.25 L 297.4375 381.5').toBe(true);
                 done();
             };
             chart.primaryXAxis = {
@@ -724,13 +730,16 @@ describe('Chart control checking', () => {
             loaded = () => {
                 stripLineElement = document.getElementById(stripLineId + '_Behind_rect_' + 'primaryXAxis_' + '0');
                 let direction: string = stripLineElement.getAttribute('d');
-                expect(direction === 'M 134.24520766773162 43.25 L 134.24520766773162 381.5' || direction === 'M 93.01403468735737 43.25 L 93.01403468735737 381.5').toBe(true);
+                expect(direction === 'M 134.24520766773162 43.25 L 134.24520766773162 381.5' || direction === 'M 93.01403468735737 43.25 L 93.01403468735737 381.5'
+                    || direction === 'M 89.84881332724783 43.25 L 89.84881332724783 381.5' || direction === 'M 91.34812870835235 43.25 L 91.34812870835235 381.5').toBe(true);
                 stripLineElement = document.getElementById(stripLineId + '_Behind_rect_' + 'primaryXAxis_' + '1');
                 direction = stripLineElement.getAttribute('d');
-                expect(direction === 'M 541.2260383386581 43.25 L 541.2260383386581 381.5' || direction === 'M 335.07017343678683 43.25 L 335.07017343678683 381.5').toBe(true);
+                expect(direction === 'M 541.2260383386581 43.25 L 541.2260383386581 381.5' || direction === 'M 335.07017343678683 43.25 L 335.07017343678683 381.5'
+                    || direction === 'M 319.24406663623915 43.25 L 319.24406663623915 381.5' || direction === 'M 326.74064354176176 43.25 L 326.74064354176176 381.5').toBe(true);
                 stripLineElement = document.getElementById(stripLineId + '_Behind_rect_' + 'primaryXAxis_' + '2');
                 direction = stripLineElement.getAttribute('d');
-                expect(direction === 'M 948.7643769968051 43.25 L 948.7643769968051 381.5' || direction === 'M 577.4578959379279 43.25 L 577.4578959379279 381.5').toBe(true);
+                expect(direction === 'M 948.7643769968051 43.25 L 948.7643769968051 381.5' || direction === 'M 577.4578959379279 43.25 L 577.4578959379279 381.5'
+                    || direction === 'M 548.9535600182564 43.25 L 548.9535600182564 381.5' || direction === 'M 562.455613874943 43.25 L 562.455613874943 381.5').toBe(true);
                 done();
             };
             chart.series = [{
@@ -771,13 +780,16 @@ describe('Chart control checking', () => {
             loaded = () => {
                 stripLineElement = document.getElementById(stripLineId + '_Behind_rect_' + 'primaryXAxis_' + '0');
                 let direction: string = stripLineElement.getAttribute('d');
-                expect(direction === 'M 93.57499999999999 43.25 L 93.57499999999999 381.5' || direction === 'M 68.82499999999999 43.25 L 68.82499999999999 381.5' ).toBe(true);
+                expect(direction === 'M 93.57499999999999 43.25 L 93.57499999999999 381.5' || direction === 'M 68.82499999999999 43.25 L 68.82499999999999 381.5' 
+                    || direction === 'M 66.92499999999998 43.25 L 66.92499999999998 381.5' || direction === 'M 67.82499999999999 43.25 L 67.82499999999999 381.5').toBe(true);
                 stripLineElement = document.getElementById(stripLineId + '_Behind_rect_' + 'primaryXAxis_' + '1');
                 direction = stripLineElement.getAttribute('d');
-                expect(direction === 'M 398.95 43.25 L 398.95 381.5' || direction === 'M 250.45 43.25 L 250.45 381.5').toBe(true);
+                expect(direction === 'M 398.95 43.25 L 398.95 381.5' || direction === 'M 250.45 43.25 L 250.45 381.5' 
+                    || direction === 'M 239.04999999999998 43.25 L 239.04999999999998 381.5' || direction === 'M 244.45 43.25 L 244.45 381.5').toBe(true);
                 stripLineElement = document.getElementById(stripLineId + '_Behind_rect_' + 'primaryXAxis_' + '2');
                 direction = stripLineElement.getAttribute('d');
-                expect(direction === 'M 704.325 43.25 L 704.325 381.5' || direction === 'M 432.07500000000005 43.25 L 432.07500000000005 381.5').toBe(true);
+                expect(direction === 'M 704.325 43.25 L 704.325 381.5' || direction === 'M 432.07500000000005 43.25 L 432.07500000000005 381.5'
+                    || direction === 'M 411.175 43.25 L 411.175 381.5' || direction === 'M 421.07500000000005 43.25 L 421.07500000000005 381.5').toBe(true);
                 done();
             };
             chart.series = [{
@@ -802,13 +814,16 @@ describe('Chart control checking', () => {
             loaded = () => {
                 stripLineElement = document.getElementById(stripLineId + '_Behind_rect_' + 'primaryXAxis_' + '0');
                 let direction: string = stripLineElement.getAttribute('d');
-                expect(direction === 'M 52.36666666666667 67.75 L 52.36666666666667 381.5' || direction === 'M 44.11666666666667 68.75 L 44.11666666666667 381.5').toBe(true);
+                expect(direction === 'M 52.36666666666667 67.75 L 52.36666666666667 381.5' || direction === 'M 44.11666666666667 68.75 L 44.11666666666667 381.5'
+                    || direction === 'M 43.483333333333334 68.75 L 43.483333333333334 381.5' || direction === 'M 43.78333333333333 68.75 L 43.78333333333333 381.5').toBe(true);
                 stripLineElement = document.getElementById(stripLineId + '_Behind_rect_' + 'primaryXAxis_' + '1');
                 direction = stripLineElement.getAttribute('d');
-                expect(direction === 'M 154.2 67.75 L 154.2 381.5' || direction === 'M 104.69999999999999 68.75 L 104.69999999999999 381.5').toBe(true);
+                expect(direction === 'M 154.2 67.75 L 154.2 381.5' || direction === 'M 104.69999999999999 68.75 L 104.69999999999999 381.5'
+                    || direction === 'M 100.89999999999999 68.75 L 100.89999999999999 381.5' || direction === 'M 102.69999999999999 68.75 L 102.69999999999999 381.5').toBe(true);
                 stripLineElement = document.getElementById(stripLineId + '_Behind_rect_' + 'primaryXAxis_' + '2');
                 direction = stripLineElement.getAttribute('d');
-                expect(direction === 'M 256.0333333333333 67.75 L 256.0333333333333 381.5' || direction === 'M 165.28333333333333 68.75 L 165.28333333333333 381.5').toBe(true);
+                expect(direction === 'M 256.0333333333333 67.75 L 256.0333333333333 381.5' || direction === 'M 165.28333333333333 68.75 L 165.28333333333333 381.5'
+                    || direction === 'M 158.31666666666663 68.75 L 158.31666666666663 381.5' || direction === 'M 161.61666666666665 68.75 L 161.61666666666665 381.5').toBe(true);
                 done();
             };
             chart.series = [{
@@ -857,13 +872,16 @@ describe('Chart control checking', () => {
             loaded = () => {
                 stripLineElement = document.getElementById(stripLineId + '_Behind_rect_' + 'primaryXAxis_' + '0');
                 let direction: string = stripLineElement.getAttribute('d');
-                expect(direction === 'M 38.11 53.75 L 38.11 414.5' || direction === 'M 35.635 53.75 L 35.635 413.5').toBe(true);
+                expect(direction === 'M 38.11 53.75 L 38.11 414.5' || direction === 'M 35.635 53.75 L 35.635 413.5'
+                    || direction === 'M 35.445 53.75 L 35.445 413.5' || direction === 'M 35.535 53.75 L 35.535 413.5').toBe(true);
                 stripLineElement = document.getElementById(stripLineId + '_Behind_rect_' + 'primaryXAxis_' + '1');
                 direction = stripLineElement.getAttribute('d');
-                expect(direction === 'M 68.66 53.75 L 68.66 414.5' || direction === 'M 53.809999999999995 53.75 L 53.809999999999995 413.5').toBe(true);
+                expect(direction === 'M 68.66 53.75 L 68.66 414.5' || direction === 'M 53.809999999999995 53.75 L 53.809999999999995 413.5'
+                    || direction === 'M 52.67 53.75 L 52.67 413.5' || direction === 'M 53.209999999999994 53.75 L 53.209999999999994 413.5').toBe(true);
                 stripLineElement = document.getElementById(stripLineId + '_Behind_rect_' + 'primaryXAxis_' + '2');
                 direction = stripLineElement.getAttribute('d');
-                expect(direction === 'M 99.21 53.75 L 99.21 414.5' || direction === 'M 71.98499999999999 53.75 L 71.98499999999999 413.5').toBe(true);
+                expect(direction === 'M 99.21 53.75 L 99.21 414.5' || direction === 'M 71.98499999999999 53.75 L 71.98499999999999 413.5'
+                    || direction === 'M 69.895 53.75 L 69.895 413.5' || direction === 'M 70.88499999999999 53.75 L 70.88499999999999 413.5').toBe(true);
                 done();
             };
             chart.primaryXAxis = {};
@@ -891,13 +909,16 @@ describe('Chart control checking', () => {
             loaded = () => {
                 stripLineElement = document.getElementById(stripLineId + '_Behind_rect_' + 'primaryXAxis_' + '0');
                 let direction: string = stripLineElement.getAttribute('d');
-                expect(direction === 'M 81.86666666666667 53.75 L 81.86666666666667 414.5' || direction === 'M 73.61666666666667 53.75 L 73.61666666666667 413.5').toBe(true);
+                expect(direction === 'M 81.86666666666667 53.75 L 81.86666666666667 414.5' || direction === 'M 73.61666666666667 53.75 L 73.61666666666667 413.5'
+                    || direction === 'M 72.98333333333333 53.75 L 72.98333333333333 413.5' || direction === 'M 73.28333333333333 53.75 L 73.28333333333333 413.5').toBe(true);
                 stripLineElement = document.getElementById(stripLineId + '_Behind_rect_' + 'primaryXAxis_' + '1');
                 direction = stripLineElement.getAttribute('d');
-                expect(direction === 'M 181.2 53.75 L 181.2 414.5' || direction === 'M 131.7 53.75 L 131.7 413.5').toBe(true);
+                expect(direction === 'M 181.2 53.75 L 181.2 414.5' || direction === 'M 131.7 53.75 L 131.7 413.5' || direction === 'M 127.89999999999999 53.75 L 127.89999999999999 413.5'
+                    || direction === 'M 129.7 53.75 L 129.7 413.5').toBe(true);
                 stripLineElement = document.getElementById(stripLineId + '_Behind_rect_' + 'primaryXAxis_' + '2');
                 direction = stripLineElement.getAttribute('d');
-                expect(direction === 'M 280.5333333333333 53.75 L 280.5333333333333 414.5' || direction === 'M 189.78333333333333 53.75 L 189.78333333333333 413.5').toBe(true);
+                expect(direction === 'M 280.5333333333333 53.75 L 280.5333333333333 414.5' || direction === 'M 189.78333333333333 53.75 L 189.78333333333333 413.5'
+                    || direction === 'M 182.81666666666663 53.75 L 182.81666666666663 413.5' || direction === 'M 186.11666666666665 53.75 L 186.11666666666665 413.5').toBe(true);
                 done();
             };
             chart.series = [{
@@ -960,7 +981,9 @@ describe('Chart control checking', () => {
                 stripLineElement = document.getElementById(stripLineId + '_Behind_rect_' + 'primaryYAxis_' + '0');
                 const direction: string = stripLineElement.getAttribute('d');
                 expect(direction === 'M 161.07894736842104 291.4166666666667 L 353.9473684210526 291.4166666666667' ||
-                direction === 'M 108.97368421052632 290.75 L 223.68421052631578 290.75').toBe(true);
+                direction === 'M 108.97368421052632 290.75 L 223.68421052631578 290.75' ||
+                direction === 'M 104.97368421052632 290.75 L 213.68421052631578 290.75' ||
+                direction === 'M 106.86842105263158 290.75 L 218.42105263157893 290.75').toBe(true);
                 done();
             };
             chart.primaryXAxis = {};
@@ -978,10 +1001,12 @@ describe('Chart control checking', () => {
                 stripLineElement = document.getElementById(stripLineId + '_Behind_rect_' + 'primaryYAxis_' + '0');
                 let direction: string = stripLineElement.getAttribute('d');
                 expect(direction === 'M 745.0416666666667 353.4583333333333 L 948.625 353.4583333333333' ||
-                    direction === 'M 456.2916666666667 352.625 L 577.375 352.625').toBe(true);
+                    direction === 'M 456.2916666666667 352.625 L 577.375 352.625' || direction === 'M 434.125 352.625 L 548.875 352.625'
+                    || direction === 'M 444.625 352.625 L 562.375 352.625').toBe(true);
                 stripLineElement = document.getElementById(stripLineId + '_Behind_rect_' + 'primaryYAxis_' + '1');
                 direction = stripLineElement.getAttribute('d');
-                expect(direction === 'M 337.875 403.0916666666667 L 541.4583333333334 403.0916666666667' || direction === 'M 214.125 402.125 L 335.20833333333337 402.125').toBe(true);
+                expect(direction === 'M 337.875 403.0916666666667 L 541.4583333333334 403.0916666666667' || direction === 'M 214.125 402.125 L 335.20833333333337 402.125'
+                    || direction === 'M 204.625 402.125 L 319.375 402.125' || direction === 'M 209.125 402.125 L 326.875 402.125').toBe(true);
                 done();
             };
             chart.primaryXAxis = { valueType: 'Category', };
@@ -1015,7 +1040,8 @@ describe('Chart control checking', () => {
             loaded = () => {
                 stripLineElement = document.getElementById(stripLineId + '_Behind_rect_' + 'primaryXAxis_' + '0');
                 const direction: string = stripLineElement.getAttribute('d');
-                expect(direction === 'M 439.6666666666667 43.25 L 439.6666666666667 415.5' || direction === 'M 274.6666666666667 43.25 L 274.6666666666667 414.5').toBe(true);
+                expect(direction === 'M 439.6666666666667 43.25 L 439.6666666666667 415.5' || direction === 'M 274.6666666666667 43.25 L 274.6666666666667 414.5'
+                    || direction === 'M 262 43.25 L 262 414.5' || direction === 'M 268 43.25 L 268 414.5').toBe(true);
                 done();
             };
             chart.primaryXAxis = {
@@ -1050,7 +1076,9 @@ describe('Chart control checking', () => {
                 stripLineElement = document.getElementById(stripLineId + '_Behind_rect_' + 'primaryYAxis_' + '0');
                 const direction: string = stripLineElement.getAttribute('d');
                 expect(direction === 'M 439.4808306709265 182.84375 L 1050.5095846645368 182.84375' ||
-                    direction === 'M 274.55613874942946 182.46875 L 637.9719306252853 182.46875').toBe(true);
+                    direction === 'M 274.55613874942946 182.46875 L 637.9719306252853 182.46875' ||
+                    direction === 'M 261.8952533089913 182.46875 L 606.3023733455044 182.46875' ||
+                    direction === 'M 267.8925148334094 182.46875 L 621.3037425832954 182.46875').toBe(true);
                 done();
             };
             chart.primaryXAxis = {
@@ -1093,7 +1121,9 @@ describe('Chart control checking', () => {
                 stripLineElement = document.getElementById(stripLineId + '_Behind_rect_' + 'primaryXAxis_' + '0');
                 const direction: string = stripLineElement.getAttribute('d');
                 expect(direction === 'M 643.2500028275463 129.08333333333331 L 643.2500028275463 214.91666666666663' ||
-                    direction === 'M 395.75000168171294 125.75 L 395.75000168171294 208.25').toBe(true);
+                    direction === 'M 395.75000168171294 125.75 L 395.75000168171294 208.25' ||
+                    direction === 'M 376.75000159375 129.08333333333331 L 376.75000159375 214.91666666666663' ||
+                    direction === 'M 385.75000163541665 125.75 L 385.75000163541665 208.25').toBe(true);
                 done();
             };
             chart.primaryXAxis = {
@@ -1125,7 +1155,8 @@ describe('Chart control checking', () => {
             loaded = () => {
                 stripLineElement = document.getElementById(stripLineId + '_Behind_rect_' + 'primaryXAxis_' + '0');
                 const direction: string = stripLineElement.getAttribute('d');
-                expect(direction === 'M 658.2500006895256 120.5 L 658.2500006895256 275' || direction === 'M 410.75000040306713 117.5 L 410.75000040306713 266').toBe(true);
+                expect(direction === 'M 658.2500006895256 120.5 L 658.2500006895256 275' || direction === 'M 410.75000040306713 117.5 L 410.75000040306713 266'
+                    || direction === 'M 391.75000038107635 120.5 L 391.75000038107635 275' || direction === 'M 400.750000391493 117.5 L 400.750000391493 266').toBe(true);
                 done();
             };
             chart.primaryXAxis = {
@@ -1154,7 +1185,8 @@ describe('Chart control checking', () => {
                 stripLineElement = document.getElementById(stripLineId + '_Behind_rect_' + 'primaryXAxis_' + '0');
                 const direction: string = stripLineElement.getAttribute('d');
                 expect(direction === 'M 635.0000017259838 214.91666666666666 L 635.0000017259838 322.2083333333333' ||
-                    direction === 'M 387.50000100983794 208.25 L 387.50000100983794 311.375').toBe(true);
+                    direction === 'M 387.50000100983794 208.25 L 387.50000100983794 311.375' || direction === 'M 377.50000098090277 208.25 L 377.50000098090277 311.375' ||
+                    direction === 'M 368.5000009548611 214.91666666666666 L 368.5000009548611 322.2083333333333').toBe(true);
                 done();
             };
             chart.primaryXAxis = {
@@ -1198,7 +1230,8 @@ describe('Chart control checking', () => {
 
                 stripLineElement = document.getElementById(stripLineId + '_Behind_rect_' + 'primaryYAxis_' + '0');
                 const direction: string = stripLineElement.getAttribute('d');
-                expect(direction === 'M 453.09999999999997 181.49004124019885 L 593.3 181.49004124019885' || direction === 'M 663.4000000000001 43.25 L 663.4000000000001 77.00000000000001').toBe(true);
+                expect(direction === 'M 453.09999999999997 181.49004124019885 L 593.3 181.49004124019885' || direction === 'M 663.4000000000001 43.25 L 663.4000000000001 77.00000000000001'
+                    || direction === 'M 430.3 181.49004124019885 L 562.9000000000001 181.49004124019885' || direction === 'M 441.09999999999997 181.49004124019885 L 577.3 181.49004124019885').toBe(true);
                 done();
             };
             chart.primaryXAxis = {
@@ -1227,7 +1260,8 @@ describe('Chart control checking', () => {
             loaded = () => {
                 stripLineElement = document.getElementById(stripLineId + '_Behind_rect_' + 'primaryXAxis_' + '0');
                 const direction: string = stripLineElement.getAttribute('d');
-                expect(direction === 'M 152.10000000000002 43.25 L 152.10000000000002 415.5' || direction === 'M 102.60000000000001 43.25 L 102.60000000000001 414.5').toBe(true);
+                expect(direction === 'M 152.10000000000002 43.25 L 152.10000000000002 415.5' || direction === 'M 102.60000000000001 43.25 L 102.60000000000001 414.5'
+                    || direction === 'M 98.80000000000001 43.25 L 98.80000000000001 414.5' || direction === 'M 100.60000000000001 43.25 L 100.60000000000001 414.5').toBe(true);
                 done();
             };
             chart.primaryXAxis = {
@@ -1675,7 +1709,8 @@ describe('Chart control checking', () => {
                 stripLineElement = document.getElementById(stripLineId + '_Behind_rect_' + 'xAxis_' + '0');
                 const direction: string = stripLineElement.getAttribute('d');
                 expect(direction === 'M 825.6071428571429 243.08333333333334 L 825.6071428571429 301.2916666666667' ||
-                    direction === 'M 507.0357142857143 243.75 L 507.0357142857143 302.125').toBe(true);
+                    direction === 'M 507.0357142857143 243.75 L 507.0357142857143 302.125' || direction === 'M 482.60714285714283 243.75 L 482.60714285714283 302.125'
+                    || direction === 'M 494.17857142857144 243.75 L 494.17857142857144 302.125').toBe(true);
                 done();
             };
             chart.axes[1].stripLines = [

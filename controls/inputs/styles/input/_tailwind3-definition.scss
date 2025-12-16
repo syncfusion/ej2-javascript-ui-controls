@@ -1,3 +1,6 @@
+@use 'ej2-base/styles/definition/tailwind3' as *;
+@use 'ej2-base/styles/common/mixin' as *;
+@forward 'ej2-base/styles/definition/tailwind3';
 $input-skin-name: $skin-name !default;
 $zero-value: 0 !default;
 $one-value: 1px !default;
@@ -28,16 +31,16 @@ $input-font-size: $text-sm !default;
 $input-bigger-font-size: $text-base !default;
 $input-small-font-size: $text-xs !default;
 $input-bigger-small-font-size: $text-sm !default;
-$input-box-border-radius: 6px !default;
-$input-small-border-radius: 4px !default;
-$input-bigger-border-radius: 6px !default;
-$input-bigger-small-border-radius: 6px !default;
-$input-groupo-focus-border-radius: 4px !default;
+$input-box-border-radius: $radius-6 !default;
+$input-small-border-radius: $radius-4 !default;
+$input-bigger-border-radius: $radius-6 !default;
+$input-bigger-small-border-radius: $radius-6 !default;
+$input-groupo-focus-border-radius: $radius-4 !default;
 $input-group-focus-box-shadow: 0 0 0 1px $primary !default;
 $input-success-focus-box-shadow: 0 0 0 1px $success !default;
 $input-warning-focus-box-shadow: 0 0 0 1px $warning !default;
 $input-error-focus-box-shadow: 0 0 0 1px $danger !default;
-$input-group-icon-border-radius: 3px !default;
+$input-group-icon-border-radius: $radius-3 !default;
 $input-group-child-border-width: $zero-value !default;
 $input-padding: $zero-value !default;
 $float-input-padding: $zero-value !default;
@@ -98,7 +101,7 @@ $input-disable-border-type: solid !default;
 $input-border-left-width: 1px !default;
 $input-group-border: 1px $border-type !default;
 $input-group-border-width: $zero-value !default;
-$input-group-border-radius: $zero-value !default;
+$input-group-border-radius: $radius-0 !default;
 $input-valid-group-border-width: 2px !default;
 $input-child-margin-bottom: $zero-value !default;
 $input-child-margin-top: $zero-value !default;
@@ -251,7 +254,7 @@ $underline-hover-border-color: $border-hover !default;
 $underline-border-color: $border !default;
 $input-error-text-color:$danger !default;
 $input-group-full-border-bottom-color: $border !default;
-$input-bigger-small-child-border-radius: 20px !default;
+$input-bigger-small-child-border-radius: $radius-20 !default;
 $input-bigger-small-child-margin: 0 !default;
 $outline-small-label-line-height: 46px !default;
 $outline-textarea-small-label-line-height: 60px !default;
@@ -267,6 +270,48 @@ $input-bigger-smaller-min-height: 25px !default;
 $input-clear-icon-margin: $zero-value !default;
 $outline-small-label-font-size: 12px !default;
 $outline-floating-label-font-size: 12px !default;
+
+$input-float-wrapper-label-text: 0 !default;
+
+$input-bgr-float-control-line-height: 1.5 !default;
+$input-zero-padding-margin: 0 !default;
+$input-bgr-filled-control-icon-padding: 0 8px 0 0 !default;
+$input-bgr-filled-group-icon-padding: 0 0 0 8px !default;
+$input-bgr-small-filled-float-group-icon-padding: 0 !default;
+$input-bgr-small-filled-float-group-icon-margin: 9px 12px 9px 0 !default;
+$input-bgr-filled-grp-icon-padding: 0 0 0 8px !default;
+$input-bgr-small-filled-wrap-margin-left: 8px !default;
+$input-bgr-small-rtl-wrap-margin-right: 8px !default;
+$input-grp-font-weight: normal !default;
+$input-grup-icon-line-height: 1 !default;
+$input-textarea-line-height: 1.5 !default;
+$input-filled-float-text-line-height: 1.15 !default;
+$input-small-filled-group-icon-padding: 0 0 0 4px !default;
+$input-rtl-small-filled-group-icon-padding: 0 4px 0 0 !default;
+$input-filled-small-float-group-icon-padding: 0 !default;
+$input-filled-small-float-group-icon-margin: 9px 12px 9px 0 !default;
+$small-filled-input-padding: 0 0 0 4px !default;
+$filled-float-input-clear-icon-margin: 2px !default;
+$filled-float-input-wrap-margin-left: 8px !default;
+$filled-float-input-wrap-margin-right: 8px !default;
+$small-filled-float-input-wrap-margin-left: 4px !default;
+$small-filled-float-input-wrap-margin-right: 4px !default;
+$input-filled-icon-padding: 0 0 0 8px !default;
+$text-area-bgr-focus-padding-bottom: 6px !default;
+$input-letter-spacing: 0 !default;
+
+$input-bgr-float-line-height: 1.4 !default;
+$input-group-line-height: 1.4 !default;
+$input-group-float-small-line-height: 1.35 !default;
+$input-bigger-textarea-line-height: 1.2 !default;
+$float-input-before-height: 2px !default;
+$input-bgr-float-min-height: 28px !default;
+$input-bgr-small-float-min-height: 26px !default;
+$filled-input-clear-icon-height: 32px !default;
+$input-float-top-label-top: -15px !default;
+$input-float-top-label-transform: translate3d(0, -6px, 0) scale(1) !default;
+$float-label-bgr-top: -23px !default;
+$input-group-control-border-radius: $radius-6 !default;
 
 @mixin input-sizing {
   box-sizing: border-box;
@@ -509,3 +554,77 @@ $input-bigger-clear-icon-border-radius: 20px !default;
 $input-small-clear-icon-border-radius: 16px !default;
 $float-label-top-font-color: $content-text-color !default;
 $textarea-float-top: -24px !default;
+$input-auto-width: auto !default;
+$input-zero-width: 0 !default;
+
+$input-bigger-float-text-left: 2px !default;
+$input-float-focus-label-left: 2px !default;
+$float-input-wrapper-top: 13px !default;
+$filled-input-icon-before-bottom: -.1px !default;
+$filled-float-input-text-left: 1px !default;
+$bigger-float-input-focus-top: -14px !default;
+$bigger-float-input-focus-label-top: -10px !default;
+$bigger-input-float-label-top: -28px !default;
+$bigger-small-textarea-text-top: -20px !default;
+$bigger-float-autofill-top: -8px !default;
+$input-half-position: 50% !default;
+$input-full-position-width: 100% !default;
+$input-float-label-top: -11px !default;
+$float-input-focus-text-top: 17px !default;
+$float-input-small-text-top: -7px !default;
+$float-placeholder-small-font-top: 15px !default;
+$float-input-group-line-bottom: -1px !default;
+$float-bigger-input-text-top: -8px !default;
+$float-bigger-label-font-top: -9px !default;
+$filled-float-letter-spacing: .009375em !default;
+$float-inherit-line-height: inherit;
+$float-auto-height: auto;
+$input-border-width: 1px !default;
+
+.e-underline.e-input-group.e-control-wrapper,
+.e-underline.e-input-group,
+.e-underline.e-input-group:not(.e-float-icon-left),
+.e-underline.e-float-input,
+.e-underline.e-float-input.e-control-wrapper,
+.e-underline.e-input-group:not(.e-float-icon-left),
+.e-underline.e-input-group.e-success:not(.e-float-icon-left),
+.e-underline.e-input-group.e-warning:not(.e-float-icon-left),
+.e-underline.e-input-group.e-error:not(.e-float-icon-left),
+.e-underline.e-input-group.e-control-wrapper:not(.e-float-icon-left),
+.e-underline.e-input-group.e-control-wrapper.e-success:not(.e-float-icon-left),
+.e-underline.e-input-group.e-control-wrapper.e-warning:not(.e-float-icon-left),
+.e-underline.e-input-group.e-control-wrapper.e-error:not(.e-float-icon-left) {
+  border: 1px solid $underline-border-color;
+  border-width: $input-group-full-border-width;
+  padding-top: 1px;
+  border-radius: $radius-0;
+}
+
+.e-filled.e-input-group,
+.e-filled.e-input-group.e-control-wrapper {
+  border-radius: $radius-4 $radius-4 $radius-0 $radius-0;
+  padding: $filled-wrapper-padding;
+}
+
+.e-filled.e-float-input,
+.e-filled.e-float-input.e-control-wrapper {
+  border: $input-group-full-border;
+  border-radius: $radius-4 $radius-4 $radius-0 $radius-0;
+  border-width: $input-group-full-border-width;
+  margin-top: $filled-wrapper-margin;
+  padding: $filled-float-input-wrapper-padding;
+}
+
+.e-underline.e-input-group:not(.e-float-icon-left),
+.e-underline.e-input-group.e-success:not(.e-float-icon-left),
+.e-underline.e-input-group.e-warning:not(.e-float-icon-left),
+.e-underline.e-input-group.e-error:not(.e-float-icon-left),
+.e-underline.e-input-group.e-control-wrapper:not(.e-float-icon-left),
+.e-underline.e-input-group.e-control-wrapper.e-success:not(.e-float-icon-left),
+.e-underline.e-input-group.e-control-wrapper.e-warning:not(.e-float-icon-left),
+.e-underline.e-input-group.e-control-wrapper.e-error:not(.e-float-icon-left) {
+  border: $input-group-full-border;
+  border-width: $input-group-full-border-width;
+  padding-top: 1px;
+  border-radius: $radius-0;
+}

@@ -1,3 +1,5 @@
+@use 'ej2-base/styles/common/mixin' as *;
+@use './theme-variables' as *;
 @include export-module('progress-button-bigger') {
   #{if(&, '&', '*')}.e-bigger .e-progress-btn,
   #{if(&, '&', '*')}.e-bigger.e-progress-btn {
@@ -10,7 +12,7 @@
         &.e-rtl {
           .e-spinner {
             padding-left: $progress-btn-spinner-padding-bigger;
-            padding-right: 0;
+            padding-right: $progress-btn-zero-padding-margin;
           }
         }
       }
@@ -22,7 +24,7 @@
 
         &.e-rtl {
           .e-spinner {
-            padding-left: 0;
+            padding-left: $progress-btn-zero-padding-margin;
             padding-right: $progress-btn-spinner-padding-bigger;
           }
         }
@@ -55,7 +57,7 @@
           &.e-rtl {
             .e-spinner {
               padding-left: $progress-btn-spinner-padding-bigger-small;
-              padding-right: 0;
+              padding-right: $progress-btn-zero-padding-margin;
             }
           }
         }
@@ -67,7 +69,7 @@
 
           &.e-rtl {
             .e-spinner {
-              padding-left: 0;
+              padding-left: $progress-btn-zero-padding-margin;
               padding-right: $progress-btn-spinner-padding-bigger-small;
             }
           }

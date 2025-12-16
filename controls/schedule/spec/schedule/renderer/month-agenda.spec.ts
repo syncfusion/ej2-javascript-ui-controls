@@ -737,8 +737,8 @@ describe('Month-agenda view rendering', () => {
                 height: '500px',
                 views: [
                     { option: 'MonthAgenda', isSelected: true },
-                    { option: 'MonthAgenda', interval: 2, displayName: '2 Months' },
-                    { option: 'MonthAgenda', interval: 3, displayName: '3 Months' }
+                    { option: 'MonthAgenda', interval: 2, displayName: '2 MONTHS' },
+                    { option: 'MonthAgenda', interval: 3, displayName: '3 MONTHS' }
                 ]
             };
             schObj = util.createSchedule(model, []);

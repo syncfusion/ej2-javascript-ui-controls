@@ -1,8 +1,7 @@
-@import 'ej2-base/styles/definition/material3-dark.scss';
-
-@import 'ej2-buttons/styles/button/material3-dark-definition.scss';
-@import 'ej2-popups/styles/popup/material3-dark-definition.scss';
-@import './../drop-down-button/material3-dark-definition.scss';
-@import 'material3-dark-definition.scss';
-@import 'all.scss';
-@import 'bigger.scss';
+@use 'ej2-base/styles/definition/material3-dark' as *;
+@use 'ej2-buttons/styles/button/material3-dark-definition' as *;
+@use 'ej2-popups/styles/popup/material3-dark-definition' as *;
+@use './../drop-down-button/material3-dark-definition' as *;
+@use 'material3-dark-definition' as *;
+@use 'all' as *;
+@use 'bigger' as *;

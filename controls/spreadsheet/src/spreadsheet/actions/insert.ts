@@ -1,5 +1,5 @@
 import { Spreadsheet } from '../base/index';
-import { completeAction, focus, insertSheetTab, refreshImagePosition, updateScrollValue } from '../common/index';
+import { completeAction, focus, insertSheetTab, refreshCommentsPane, refreshImagePosition, updateScrollValue } from '../common/index';
 import { beforeInsert, insert, InsertDeleteEventArgs, triggerDataChange, getRowsHeight, ActionEventArgs, RowModel, ChartModel, getChartRowIdxFromClientY, getChartColIdxFromClientX, refreshChartCellOnInit, addDPRValue } from '../../workbook/index';
 import { SheetModel, CellModel, getCell, getSheet, getCellIndexes, getCellAddress, getColumnsWidth } from '../../workbook/index';
 import { skipHiddenIdx } from '../../workbook/index';
@@ -28,6 +28,9 @@ export class Insert {
             this.parent.notify(
                 insertSheetTab, { startIdx: args.index, endIdx: args.index + (args.model.length - 1), preventUpdate: !args.isAction });
             this.parent.renderModule.refreshSheet();
+            if (this.parent.showCommentsPane) {
+                this.parent.notify(refreshCommentsPane, { sheetIdx: this.parent.activeSheetIndex });
+            }
             break;
         case 'Row':
             if (args.activeSheetIndex === this.parent.activeSheetIndex) {

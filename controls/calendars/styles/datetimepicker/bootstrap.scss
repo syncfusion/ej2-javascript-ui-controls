@@ -1,9 +1,9 @@
-@import 'ej2-base/styles/definition/bootstrap.scss';
-@import 'ej2-inputs/styles/input/bootstrap-definition.scss';
-@import 'ej2-popups/styles/popup/bootstrap-definition.scss';
-@import 'ej2-buttons/styles/button/bootstrap-definition.scss';
-@import '../datepicker/bootstrap-definition.scss';
-@import 'bootstrap-definition.scss';
-@import 'icons/bootstrap.scss';
-@import 'all.scss';
-@import 'bigger.scss';
+@use 'ej2-base/styles/definition/bootstrap' as *;
+@use 'ej2-inputs/styles/input/bootstrap-definition' as *;
+@use 'ej2-popups/styles/popup/bootstrap-definition' as *;
+@use 'ej2-buttons/styles/button/bootstrap-definition' as *;
+@use '../datepicker/bootstrap-definition' as *;
+@use 'bootstrap-definition' as *;
+@use 'icons/bootstrap' as *;
+@use 'all' as *;
+@use 'bigger' as *;

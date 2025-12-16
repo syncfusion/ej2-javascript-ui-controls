@@ -1,3 +1,8 @@
+@use 'ej2-base/styles/definition/material-dark' as *;
+@use 'ej2-inputs/styles/input/material-dark-definition' as *;
+@forward 'ej2-base/styles/definition/material-dark';
+@forward 'ej2-inputs/styles/input/material-dark-definition';
+
 //default
 $timepicker-skin-name: 'material-dark' !default;
 $timepicker-default-text-indent: 16px !default;
@@ -82,3 +87,14 @@ $modal-mobile-font-size: 14px !default;
 $modal-tablet-font-size: 24px !default;
 
 //enddefault
+
+$timepicker-list-parent-margin: 0;
+$timepicker-list-parent-padding: $timepicker-list-normal-padding 0;
+$timepicker-list-parent-bigger-padding: $timepicker-list-bigger-padding 0;
+$timepicker-zero-border-radius: 0 !default;
+$timepicker-model-title-font-weight: 500 !default;
+$timepicker-bigger-content-placeholder-min-height: 40px !default;
+$timepicker-full-height: 100% !default;
+$timepicker-content-placeholder-min-height: 33px !default;
+$timepicker-full-width: 100% !default;
+$timepicker-border: 1px !default;

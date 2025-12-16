@@ -515,6 +515,7 @@ describe('Bug 925863: When pressing Enter key after the link when text-wrap is a
         if (style) {
             style.innerHTML = '';
         }
+        style.remove();
     });
     it('Check the link availability after pressing enter key at the end after space', () => {
         const nodetext: any = rteObj.inputElement.childNodes[0];
@@ -3090,7 +3091,6 @@ describe('967217: Cursor position and scroll behavior with multiple line breaks 
                     const containerRect = editableElem.getBoundingClientRect();
                     const cursorTop = cursorRect.top - containerRect.top;
                     const containerHeight = editableElem.clientHeight;
-                    debugger;
                     expect(cursorTop).toBeLessThan(containerHeight);
                     done();
                 }, 100);

@@ -35,6 +35,32 @@ export interface FileManagerModel extends ComponentModel{
     allowDragAndDrop?: boolean;
 
     /**
+     * Specifies a template to render customized content for all the nodes. If the `navigationPaneTemplate` property
+     * is set, the template content overrides the displayed node text in the File Manager navigation pane.
+     * The property accepts a template string or HTML element ID holding the content.
+     *
+     * @default null
+     * @angularType string | object
+     * @reactType string | function | JSX.Element
+     * @vueType string | function
+     * @aspType string
+     */
+    navigationPaneTemplate?: string | Function;
+
+    /**
+     * Specifies a template to render customized content for all the files or folders in the large icons view. If the `largeIconsTemplate` property
+     * is set, the template content overrides the displayed files or folders text in the File Manager large icons view. The property accepts template string
+     * or HTML element ID holding the content.
+     *
+     * @default null
+     * @angularType string | object
+     * @reactType string | function | JSX.Element
+     * @vueType string | function
+     * @aspType string
+     */
+    largeIconsTemplate?: string | Function;
+
+    /**
      * Enables or disables the multiple files selection of the file manager.
      *
      * @default true
@@ -267,7 +293,8 @@ export interface FileManagerModel extends ComponentModel{
      *  maxFileSize: 30000000,
      *  allowedExtensions: '',
      *  autoClose: false,
-     *  directoryUpload: false
+     *  directoryUpload: false,
+     *  sequentialUpload: false
      * }
      */
     uploadSettings?: UploadSettingsModel;

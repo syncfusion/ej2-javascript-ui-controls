@@ -1,5 +1,5 @@
-@import 'ej2-base/styles/definition/fabric.scss';
-@import 'rich-text-editor/fabric-definition.scss';
-@import 'rich-text-editor/icons/fabric.scss';
-@import 'rich-text-editor/all.scss';
-@import 'rich-text-editor/bigger.scss';
+@use 'ej2-base/styles/definition/fabric' as *;
+@use 'rich-text-editor/fabric-definition' as *;
+@use 'rich-text-editor/icons/fabric' as *;
+@use 'rich-text-editor/all' as *;
+@use 'rich-text-editor/bigger' as *;

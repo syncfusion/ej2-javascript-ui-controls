@@ -1,3 +1,5 @@
+@use 'ej2-base/styles/definition/material3' as *;
+@forward 'ej2-base/styles/definition/material3';
 $spreadsheet-ribbon-skin: 'Material3' !default;
 $file-menu-wrap-padding: 0 !default;
 $drop-icon-margin: 12px 6px !default;
@@ -24,3 +26,5 @@ $spreadsheet-ribbon-tab-text-wrap-height: 32px !default;
 $bigger-spread-ribbon-tab-text-wrap-height: 48px !default;
 $bigger-spread-ribbon-tab-menu-items-height: 41px !default;
 $bigger-spread-ribbon-tab-menu-items-line-height: 41px !default;
+$spread-ribbon-font-weight-bold: bold !default;
+$spread-ribbon-border-radius-4: $radius-4 !default;

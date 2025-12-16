@@ -1,3 +1,6 @@
+@use 'ej2-base/styles/definition/definition' as *;
+@forward 'ej2-base/styles/definition/definition';
+
 // uploader definition styles
 $zero-value: 0;
 $upload-element-opacity: $zero-value;

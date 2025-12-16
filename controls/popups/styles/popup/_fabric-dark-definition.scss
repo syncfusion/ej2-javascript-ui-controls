@@ -1,2 +1,7 @@
+@use 'ej2-base/styles/definition/fabric-dark' as *;
+@forward 'ej2-base/styles/definition/fabric-dark';
+
 //default
 //enddefault
+$popup-width: auto !default;
+$popup-height: auto !default;

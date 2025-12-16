@@ -1,3 +1,6 @@
+@use 'ej2-base/styles/definition/fluent2' as *;
+@use 'ej2-base/styles/common/mixin' as *;
+@forward 'ej2-base/styles/definition/fluent2';
 $input-skin-name: 'fluent2' !default;
 $zero-value: 0 !default;
 $one-value: 1px !default;
@@ -28,13 +31,13 @@ $input-font-size: $text-sm !default;
 $input-bigger-font-size: $text-base !default;
 $input-small-font-size: $text-xs !default;
 $input-bigger-small-font-size: $text-sm !default;
-$input-box-border-radius: 0 !default;
-$input-small-border-radius: 6px !default;
-$input-bigger-border-radius: 8px !default;
-$input-bigger-small-border-radius: 8px !default;
-$input-groupo-focus-border-radius: 8px !default;
+$input-box-border-radius: $radius-0 !default;
+$input-small-border-radius: $radius-6 !default;
+$input-bigger-border-radius: $radius-8 !default;
+$input-bigger-small-border-radius: $radius-8 !default;
+$input-groupo-focus-border-radius: $radius-8 !default;
 $input-group-focus-box-shadow: $primary-shadow-focus !default;
-$input-group-icon-border-radius: 3px !default;
+$input-group-icon-border-radius: $radius-3 !default;
 $input-group-child-border-width: $zero-value !default;
 $input-padding: 4px 12px 4px 12px !default;
 $float-input-padding: $zero-value !default;
@@ -96,7 +99,7 @@ $input-disable-border-type: solid !default;
 $input-border-left-width: $zero-value !default;
 $input-group-border: 1px $border-type !default;
 $input-group-border-width: $zero-value !default;
-$input-group-border-radius: 2px !default;
+$input-group-border-radius: $radius-2 !default;
 $input-valid-group-border-width: 2px !default;
 $input-child-margin-bottom: 4px !default;
 $input-child-margin-right: 4px !default;
@@ -183,10 +186,10 @@ $input-success-border-shadow: none !default;
 $input-warning-border-shadow: none !default;
 $input-group-border-shadow: $shadow-sm !default;
 $float-label-rtl-value: 0 !default;
-$input-child-icon-border-radius: 16px !default;
-$input-bigger-icon-border-radius: 20px !default;
-$input-small-child-border-radius: 14px !default;
-$input-bigger-small-child-border-radius: 20px !default;
+$input-child-icon-border-radius: $radius-16 !default;
+$input-bigger-icon-border-radius: $radius-20 !default;
+$input-small-child-border-radius: $radius-14 !default;
+$input-bigger-small-child-border-radius: $radius-20 !default;
 $input-bigger-small-child-margin: 0 !default;
 $outline-small-label-line-height: 46px !default;
 $outline-textarea-small-label-line-height: 60px !default;
@@ -279,7 +282,7 @@ $outline-small-label-min-width: 7px !default;
 $outline-bigger-small-label-min-width: 9px !default;
 $outline-label-height: 8px !default;
 $outline-label-margin: 4px !default;
-$outline-label-border-radius: 5px !default;
+$outline-label-border-radius: $radius-5 !default;
 $outline-label-before-left: -1px !default;
 $outline-label-before-left-rtl: 5px !default;
 $outline-label-after-left-rtl: -6px !default;
@@ -320,7 +323,7 @@ $outline-bigger-label-min-width: 13px !default;
 $outline-bigger-small-label-min-width: 9px !default;
 $outline-label-height: 8px !default;
 $outline-label-margin: 4px !default;
-$outline-label-border-radius: 5px !default;
+$outline-label-border-radius: $radius-5 !default;
 $outline-label-before-left: -1px !default;
 $outline-label-after-left: 2px !default;
 $outline-input-icon-padding-top-bottom: 9px !default;
@@ -379,6 +382,77 @@ $outline-input-padding-left: 12px !default;
 $outline-input-padding-top: 10px !default;
 $outline-input-padding-bottom: 9px !default;
 $outline-input-min-height: 40px !default;
+
+$input-bgr-float-control-line-height: 1.5 !default;
+$input-zero-padding-margin: 0 !default;
+$input-bgr-filled-control-icon-padding: 0 8px 0 0 !default;
+$input-bgr-filled-group-icon-padding: 0 0 0 8px !default;
+$input-bgr-small-filled-float-group-icon-padding: 0 !default;
+$input-bgr-small-filled-float-group-icon-margin: 9px 12px 9px 0 !default;
+$input-bgr-filled-grp-icon-padding: 0 0 0 8px !default;
+$input-bgr-small-filled-wrap-margin-left: 8px !default;
+$input-bgr-small-rtl-wrap-margin-right: 8px !default;
+$input-grp-font-weight: normal !default;
+$input-grup-icon-line-height: 1 !default;
+$input-textarea-line-height: 1.5 !default;
+$input-filled-float-text-line-height: 1.15 !default;
+$input-small-filled-group-icon-padding: 0 0 0 4px !default;
+$input-rtl-small-filled-group-icon-padding: 0 4px 0 0 !default;
+$input-filled-small-float-group-icon-padding: 0 !default;
+$input-filled-small-float-group-icon-margin: 9px 12px 9px 0 !default;
+$small-filled-input-padding: 0 0 0 4px !default;
+$filled-float-input-clear-icon-margin: 2px !default;
+$filled-float-input-wrap-margin-left: 8px !default;
+$filled-float-input-wrap-margin-right: 8px !default;
+$small-filled-float-input-wrap-margin-left: 4px !default;
+$small-filled-float-input-wrap-margin-right: 4px !default;
+$input-filled-icon-padding: 0 0 0 8px !default;
+$text-area-bgr-focus-padding-bottom: 6px !default;
+$input-letter-spacing: 0 !default;
+
+$input-bgr-float-line-height: 1.4 !default;
+$input-group-line-height: 1.4 !default;
+$input-group-float-small-line-height: 1.35 !default;
+$input-bigger-textarea-line-height: 1.2 !default;
+$float-input-before-height: 2px !default;
+$input-bgr-float-min-height: 28px !default;
+$input-bgr-small-float-min-height: 26px !default;
+$filled-input-clear-icon-height: 32px !default;
+$input-auto-width: auto !default;
+$input-zero-width: 0 !default;
+$float-input-group-line-bottom: -.1px !default;
+$filled-input-icon-before-bottom: -.1px !default;
+$filled-float-input-text-left: 1px !default;
+$input-bigger-float-text-left: 2px !default;
+$bigger-float-input-focus-top: -14px !default;
+$bigger-float-input-focus-label-top: -10px !default;
+$bigger-input-float-label-top: -28px !default;
+$bigger-small-textarea-text-top: -20px !default;
+$bigger-float-autofill-top: -8px !default;
+$input-half-position: 50% !default;
+$input-full-position-width: 100% !default;
+$input-float-label-top: -11px !default;
+$float-input-focus-text-top: 17px !default;
+$float-input-small-text-top: -7px !default;
+$float-placeholder-small-font-top: 15px !default;
+$float-input-group-line-bottom: -1px !default;
+$float-bigger-input-text-top: -8px !default;
+$float-bigger-label-font-top: -9px !default;
+$float-label-bgr-top: -14px !default;
+$float-input-bgr-text-top: -8px !default;
+$rtl-float-input-flu2-padding-right: 8px !default;
+$input-group-focus-border-radius: $radius-10 !default;
+$input-grp-icon-margin-right: 4px !default;
+$textarea-input-padding-left: 12px !default;
+$input-float-border-radius: $radius-4 !default;
+$input-float-height: 30px !default;
+$float-input-label-padding-left: 7px !default;
+$float-textarea-small-text-top: -21px !default;
+$float-input-wrapper-top: -11px !default;
+$input-group-bottom: -.3px !default;
+$float-label-bgr-input-top: -8px !default;
+$filled-input-grp-border-radius: $radius-4 $radius-4 $radius-0 $radius-0 !default;
+$filled-float-letter-spacing: .009375em !default;
 
 @mixin input-sizing {
   box-sizing: border-box;
@@ -450,7 +524,7 @@ $outline-input-min-height: 40px !default;
 
 @mixin input-ripple-style {
   background: $grey-74;
-  border-radius: 100%;
+  border-radius: $radius-full;
   content: '';
   display: block;
   height: 40%;
@@ -742,10 +816,10 @@ $filled-input-clear-icon-active-color: rgba($icon-color) !default;
 
 // Icon hover
 $input-icon-hover-border: 1px !default;
-$input-icon-hover-border-radius: 16px !default;
+$input-icon-hover-border-radius: $radius-16 !default;
 $input-icon-hover-bg-color: rgba($content-text-color, .08) !default;
 $input-clear-icon-hover-border: 1px !default;
-$input-clear-icon-hover-border-radius: 16px !default;
+$input-clear-icon-hover-border-radius: $radius-16 !default;
 $input-clear-icon-hover-bg-color: rgba($content-text-color, .08) !default;
 
 $input-active-accent-color: rgba($primary) !default;
@@ -763,7 +837,53 @@ $outline-input-padding-left: 12px !default;
 $outline-input-padding-top: 10px !default;
 $outline-input-padding-bottom: 9px !default;
 
-$input-bigger-clear-icon-border-radius: 20px !default;
-$input-small-clear-icon-border-radius: 16px !default;
+$input-bigger-clear-icon-border-radius: $radius-20 !default;
+$input-small-clear-icon-border-radius: $radius-16 !default;
 $float-label-top-font-color: $content-text-color !default;
 $textarea-float-top: -28px !default;
+$input-bgr-flu2-input-padding: 2px 4px !default;
+$input-group-control-border-radius: $radius-4 !default;
+$float-label-text-top: -15px !default;
+$small-float-input-text-top: -9px !default;
+$float-input-small-label-top: -8px !default;
+$e-float-input-flu-padding-bottom: 2px !default;
+$text-area-focus-padding-bottom: 4px !default;
+$float-inherit-line-height: inherit;
+$float-auto-height: auto;
+$input-border-width: 1px !default;
+$float-bgr-label-top: -8px !default;
+$float-bgr-small-label-top: -9px !default;
+
+
+.e-underline.e-input-group.e-control-wrapper,
+.e-underline.e-input-group,
+.e-underline.e-input-group:not(.e-float-icon-left),
+.e-underline.e-float-input,
+.e-underline.e-float-input.e-control-wrapper,
+.e-underline.e-input-group:not(.e-float-icon-left),
+.e-underline.e-input-group.e-success:not(.e-float-icon-left),
+.e-underline.e-input-group.e-warning:not(.e-float-icon-left),
+.e-underline.e-input-group.e-error:not(.e-float-icon-left),
+.e-underline.e-input-group.e-control-wrapper:not(.e-float-icon-left),
+.e-underline.e-input-group.e-control-wrapper.e-success:not(.e-float-icon-left),
+.e-underline.e-input-group.e-control-wrapper.e-warning:not(.e-float-icon-left),
+.e-underline.e-input-group.e-control-wrapper.e-error:not(.e-float-icon-left) {
+  border: 1px solid $underline-border-color;
+  border-width: $input-group-full-border-width;
+  padding-top: 1px;
+  border-radius: $radius-0;
+}
+
+.e-underline.e-input-group:not(.e-float-icon-left),
+.e-underline.e-input-group.e-success:not(.e-float-icon-left),
+.e-underline.e-input-group.e-warning:not(.e-float-icon-left),
+.e-underline.e-input-group.e-error:not(.e-float-icon-left),
+.e-underline.e-input-group.e-control-wrapper:not(.e-float-icon-left),
+.e-underline.e-input-group.e-control-wrapper.e-success:not(.e-float-icon-left),
+.e-underline.e-input-group.e-control-wrapper.e-warning:not(.e-float-icon-left),
+.e-underline.e-input-group.e-control-wrapper.e-error:not(.e-float-icon-left) {
+  border: $input-group-full-border;
+  border-width: $input-group-full-border-width;
+  padding-top: 1px;
+  border-radius: $radius-0;
+}

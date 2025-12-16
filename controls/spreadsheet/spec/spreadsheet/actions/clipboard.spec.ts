@@ -1745,6 +1745,38 @@ describe('Clipboard ->', () => {
                 });
             });
         });
+        it('979245 - Cells get misaligned while pasting the copied content into the wrap applied cells', (done: Function) => {
+            const cellValue: number = helper.getInstance().sheets[0].rows[8].cells[4].value;
+            helper.edit('E11', 'This is wrap applied cell');
+            expect(helper.getInstance().sheets[0].rows[10].cells[4].value).toBe('This is wrap applied cell');
+            helper.invoke('wrap', ['E11']);
+            expect(helper.getInstance().sheets[0].rows[10].cells[4].wrap).toBeTruthy();
+            expect(helper.getInstance().sheets[0].rows[10].height).toBe(74);
+            helper.invoke('copy', ['E9']).then(() => {
+                helper.invoke('paste', ['E11']);
+                expect(helper.getInstance().sheets[0].rows[10].cells[4].wrap).toBeFalsy();
+                expect(helper.getInstance().sheets[0].rows[10].height).toBe(20);
+                expect(helper.getInstance().sheets[0].rows[10].cells[4].value).toBe(cellValue);
+                done();
+            });
+        });
+        it('979245 - Cells get misaligned while pasting the cut content into the wrap applied cells', (done: Function) => {
+            const cellValue: number = helper.getInstance().sheets[0].rows[8].cells[4].value;
+            helper.edit('E11', 'This is wrap applied cell');
+            expect(helper.getInstance().sheets[0].rows[10].cells[4].value).toBe('This is wrap applied cell');
+            helper.invoke('wrap', ['E11']);
+            expect(helper.getInstance().sheets[0].rows[10].cells[4].wrap).toBeTruthy();
+            expect(helper.getInstance().sheets[0].rows[10].height).toBe(74);
+            helper.invoke('cut', ['E9']).then(() => {
+                helper.invoke('paste', ['E11']);
+                expect(helper.getInstance().sheets[0].rows[10].cells[4].wrap).toBeFalsy();
+                expect(helper.getInstance().sheets[0].rows[10].height).toBe(20);
+                expect(helper.getInstance().sheets[0].rows[10].cells[4].value).toBe(cellValue);
+                expect(helper.getInstance().sheets[0].rows[8].cells[4]).toBeNull();
+                expect(helper.getInstance().sheets[0].rows[8].height).toBe(20);
+                done();
+            });
+        });
     });
     describe('EJ2-912034 -> Issue with copy-pasting the chart after resizing', () => {
         beforeAll((done: Function) => {
@@ -1909,18 +1941,19 @@ describe('Clipboard ->', () => {
             helper.invoke('copy', ['I2']).then(() => {
                 setTimeout(() => {
                     helper.invoke('paste', ['I2:I20']);
-                    expect(helper.getInstance().sheets[0].rows[2].cells[8].formula).toBe('=SUM(D3,E3)');
-                    expect(helper.getInstance().sheets[0].rows[3].cells[8].formula).toBe('=SUM(D4,E4)');
-                    expect(helper.getInstance().sheets[0].rows[4].cells[8].formula).toBe('=SUM(D5,E5)');
-                    expect(helper.getInstance().sheets[0].rows[5].cells[8].formula).toBe('=SUM(D6,E6)');
-                    expect(helper.getInstance().sheets[0].rows[6].cells[8].formula).toBe('=SUM(D7,E7)');
-                    expect(helper.getInstance().sheets[0].rows[7].cells[8].formula).toBe('=SUM(D8,E8)');
-                    expect(helper.getInstance().sheets[0].rows[8].cells[8].formula).toBe('=SUM(D9,E9)');
-                    expect(helper.getInstance().sheets[0].rows[9].cells[8].formula).toBe('=SUM(D10,E10)');
-                    expect(helper.getInstance().sheets[0].rows[10].cells[8].formula).toBe('=SUM(D11,E11)');
-                    expect(helper.getInstance().sheets[0].rows[11].cells[8].formula).toBe('=SUM(D12,E12)');
-                    expect(helper.getInstance().sheets[0].rows[12].cells[8].formula).toBe('=SUM(D13,E13)');
-                    expect(helper.getInstance().sheets[0].rows[13].cells[8].formula).toBe('=SUM(D14,E14)');
+                    const sheet: SheetModel = helper.getInstance().sheets[0];
+                    expect(sheet.rows[2].cells[8].formula).toBe('=SUM(D3,E3)');
+                    expect(sheet.rows[3].cells[8].formula).toBe('=SUM(D4,E4)');
+                    expect(sheet.rows[4].cells[8].formula).toBe('=SUM(D5,E5)');
+                    expect(sheet.rows[5].cells[8].formula).toBe('=SUM(D6,E6)');
+                    expect(sheet.rows[6].cells[8].formula).toBe('=SUM(D7,E7)');
+                    expect(sheet.rows[7].cells[8].formula).toBe('=SUM(D8,E8)');
+                    expect(sheet.rows[8].cells[8].formula).toBe('=SUM(D9,E9)');
+                    expect(sheet.rows[9].cells[8].formula).toBe('=SUM(D10,E10)');
+                    expect(sheet.rows[10].cells[8].formula).toBe('=SUM(D11,E11)');
+                    expect(sheet.rows[11].cells[8].formula).toBe('=SUM(D12,E12)');
+                    expect(sheet.rows[12].cells[8].formula).toBe('=SUM(D13,E13)');
+                    expect(sheet.rows[13].cells[8].formula).toBe('=SUM(D14,E14)');
                     done();
                 });
             });

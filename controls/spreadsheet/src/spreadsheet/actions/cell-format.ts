@@ -155,7 +155,7 @@ export class CellFormat {
                 args.style.color = cellStyleColor;
             }
             if (args.onActionUpdate && cellModel.format && cellModel.format.includes('*') && (args.style.fontFamily ||
-                args.style.fontSize || (args.style.borderRight && parseInt(args.style.borderRight, 10) > 1))) {
+                    args.style.fontSize || (args.style.borderRight && parseInt(args.style.borderRight, 10) > 1))) {
                 this.parent.notify(getFormattedCellObject, <NumberFormatArgs>{ value: cellModel.value, format: cellModel.format,
                     cell: cellModel, formattedText: cellModel.value, rowIndex: args.rowIdx, colIndex: args.colIdx, td: cell
                 });
@@ -495,7 +495,8 @@ export class CellFormat {
             if (options.type === 'Clear Hyperlinks') {
                 this.parent.removeHyperlink(sheet.name + '!' + range);
             }
-            this.parent.notify(clear, { range: sheet.name + '!' + range, type: options.type, isAction: args.isAction === true || args.isFromUpdateAction === false });
+            this.parent.notify(clear, { range: sheet.name + '!' + range, type: options.type,
+                isAction: args.isAction === true || args.isFromUpdateAction === false });
             this.parent.serviceLocator.getService<ICellRenderer>('cell').refreshRange(
                 getSwapRange(getRangeIndexes(range)), false, false, false, options.type === 'Clear Hyperlinks' ? true : false, isImported(this.parent), !isClearAll,
                 null, true, null, isSelectAll);

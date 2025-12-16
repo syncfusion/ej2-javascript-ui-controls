@@ -1,7 +1,7 @@
 import { isNullOrUndefined } from '@syncfusion/ej2-base';
 import { PdfViewer, PdfViewerBase } from '../index';
-import {AnnotationRenderer, ShapeAnnotationBase, PopupAnnotationBase, FreeTextAnnotationBase, MeasureShapeAnnotationBase, TextMarkupAnnotationBase, SignatureAnnotationBase, InkSignatureAnnotation, ImageStructureBase  } from './index';
-import { PdfDocument, PdfPage, PdfRotationAngle, PdfSquareAnnotation, PdfAnnotationFlag, PdfPopupAnnotation, PdfFreeTextAnnotation, PdfRubberStampAnnotation, PdfTextMarkupAnnotation, PdfInkAnnotation, PdfLineAnnotation, PdfRectangleAnnotation, PdfCircleAnnotation, PdfEllipseAnnotation, PdfPolygonAnnotation, PdfPolyLineAnnotation , PdfAnnotation, PdfAnnotationCollection, PdfAngleMeasurementAnnotation, _PdfDictionary, PdfRubberStampAnnotationIcon, PdfAnnotationState, PdfAnnotationStateModel, _ContentParser, _stringToBytes, _PdfRecord, _encode, _PdfBaseStream, PdfPageSettings, PdfMargins, PdfTemplate, _annotationFlagsToString } from '@syncfusion/ej2-pdf';
+import {AnnotationRenderer, ShapeAnnotationBase, PopupAnnotationBase, FreeTextAnnotationBase, MeasureShapeAnnotationBase, TextMarkupAnnotationBase, SignatureAnnotationBase, InkSignatureAnnotation, ImageStructureBase, RedactionAnnotationBase  } from './index';
+import { PdfDocument, PdfPage, PdfRotationAngle, PdfSquareAnnotation, PdfAnnotationFlag, PdfPopupAnnotation, PdfFreeTextAnnotation, PdfRubberStampAnnotation, PdfTextMarkupAnnotation, PdfInkAnnotation, PdfLineAnnotation, PdfRectangleAnnotation, PdfCircleAnnotation, PdfEllipseAnnotation, PdfPolygonAnnotation, PdfPolyLineAnnotation , PdfAnnotation, PdfAnnotationCollection, PdfAngleMeasurementAnnotation, _PdfDictionary, PdfRubberStampAnnotationIcon, PdfAnnotationState, PdfAnnotationStateModel, _ContentParser, _stringToBytes, _PdfRecord, _encode, _PdfBaseStream, PdfPageSettings, PdfMargins, PdfTemplate, _annotationFlagsToString, PdfRedactionAnnotation } from '@syncfusion/ej2-pdf';
 import { Matrix, Rect, Size } from '@syncfusion/ej2-drawings';
 import { TaskPriorityLevel } from '../base/pdfviewer-utlis';
 import { IPageAnnotations } from '../annotation';
@@ -18,6 +18,10 @@ export class PageRenderer{
      * @private
      */
     public shapeAnnotationList: ShapeAnnotationBase[] = [];
+    /**
+     * @private
+     */
+    public redactionAnnotationList: RedactionAnnotationBase[] = [];
     /**
      * @private
      */
@@ -312,6 +316,18 @@ export class PageRenderer{
                             }
                         }
                     }
+                    else if (annotation instanceof PdfRedactionAnnotation) {
+                        const redaction: RedactionAnnotationBase = annotRenderer.loadRedactionAnnotation(
+                            annotation as PdfRedactionAnnotation, height, width, pageRotation, loadedPage);
+                        const name: string = redaction.AnnotName;
+                        if (isNullOrUndefined(name) || name === '') {
+                            redaction.AnnotName = this.setAnnotationName(pageNumber);
+                        }
+                        if (!isNullOrUndefined(redaction)) {
+                            this.redactionAnnotationList[this.redactionAnnotationList.length] = redaction;
+                            this.annotationOrder[this.annotationOrder.length] = redaction;
+                        }
+                    }
                     if (annotation instanceof PdfRubberStampAnnotation) {
                         this.htmldata = [];
                         const stampAnnotation: PdfRubberStampAnnotation = annotation as PdfRubberStampAnnotation;
@@ -430,7 +446,8 @@ export class PageRenderer{
                                     const apDictionary: any = pdfReference.dictionary;
                                     if (!isNullOrUndefined(apDictionary)) {
                                         const template: PdfTemplate = annotation.createTemplate();
-                                        if (template.size[0] === 0 || template.size[1] === 0 || isNullOrUndefined(template._appearance))
+                                        if (template.size.width === 0 || template.size.height === 0 ||
+                                            isNullOrUndefined(template._appearance))
                                         {this.findStampImage(annotation); }
                                         else
                                         {this.findStampTemplate(annotation, rubberStampAnnotation, pageRotation,
@@ -440,7 +457,7 @@ export class PageRenderer{
                             }
                             else if (dictionary.has('N')) {
                                 const template: PdfTemplate = annotation.createTemplate();
-                                if (template.size[0] === 0 || template.size[1] === 0 || isNullOrUndefined(template._appearance))
+                                if (template.size.width === 0 || template.size.height === 0 || isNullOrUndefined(template._appearance))
                                 {this.findStampImage(annotation); }
                                 else
                                 {this.findStampTemplate(annotation, rubberStampAnnotation, pageRotation,
@@ -518,7 +535,7 @@ export class PageRenderer{
             measureShapeAnnotation : this.measureAnnotationList, stampAnnotations : this.rubberStampAnnotationList,
             stickyNotesAnnotation : this.stickyAnnotationList, freeTextAnnotation: this.freeTextAnnotationList,
             signatureAnnotation: this.signatureAnnotationList, signatureInkAnnotation: this.signatureInkAnnotationList,
-            annotationOrder: this.annotationOrder };
+            redactionAnnotation: this.redactionAnnotationList, annotationOrder: this.annotationOrder };
     }
 
     private formatDate(date: Date): string {
@@ -546,11 +563,13 @@ export class PageRenderer{
         const stream: any = annotation._dictionary.get('AP').get('N');
         if (!isNullOrUndefined(stream)) {
             const appearance: _PdfBaseStream = stream as _PdfBaseStream;
-            const data: string = appearance.getString();
-            const content: number[] = _stringToBytes(data, true) as number[];
-            const parser: _ContentParser = new _ContentParser(content);
-            const result: _PdfRecord[] = parser._readContent();
-            this.stampAnnoattionRender(result, stream);
+            if (!isNullOrUndefined(appearance) && typeof appearance.getString === 'function') {
+                const data: string = appearance.getString();
+                const content: number[] = _stringToBytes(data, true) as number[];
+                const parser: _ContentParser = new _ContentParser(content);
+                const result: _PdfRecord[] = parser._readContent();
+                this.stampAnnoattionRender(result, stream);
+            }
 
         }
     }
@@ -584,29 +603,38 @@ export class PageRenderer{
         pageSettings.margins = new PdfMargins(0);
         // pageSettings.rotation = this.getPageRotation(annotation);
         pageSettings.rotation = pageRotation;
-        pageSettings.size = [(template.size[0] + annotation.border.width * 2.3), (template.size[1] + annotation.border.width * 2.3)];
+        pageSettings.size =
+        {
+            width: (template.size.width + annotation.border.width * 2.3),
+            height: (template.size.height + annotation.border.width * 2.3)
+        };
         const page: PdfPage = stampDocument.addPage(pageSettings);
         // Draw template into new page graphics
-        page.graphics.drawTemplate(template, { x: 1, y: 1, width: template.size[0], height: template.size[1] });
+        page.graphics.drawTemplate(template, { x: 1, y: 1, width: template.size.width, height: template.size.height });
         // Remove existing PDF page at index 0
         stampDocument.removePage(0);
         // Save the PDF document which have appearance template
         let data: string = 'data:application/pdf;base64,' + _encode(stampDocument.save());
         data = this.pdfViewerBase.checkDocumentData(data, false);
         const fileByteArray: any = this.pdfViewerBase.convertBase64(data);
+        const pageSize: any = {
+            width: Math.round(page.size.width),
+            height: Math.round(page.size.height)
+        };
         if (isFormField) {
             this.pdfViewerBase.pdfViewerRunner.addTask({ uploadedFile: fileByteArray, message: 'LoadPageStampCollection', password: null,
                 pageIndex: 0, zoomFactor: this.pdfViewer.magnificationModule.zoomFactor, isTextNeed: false, isZoomMode: false,
                 AnnotName: rubberStampAnnotation.AnnotName, rubberStampAnnotationPageNumber: rubberStampAnnotation.pageNumber,
                 annotationOrder: JSON.stringify(this.annotationOrder), collectionOrder: collectionOrder, isFormField: isFormField,
                 formFieldName: formFieldName, formFieldList: JSON.stringify(formFieldList), rubberStampAnnotation: rubberStampAnnotation,
-                PageIndex: PageIndex }, TaskPriorityLevel.High);
+                PageIndex: PageIndex,  pageSize: pageSize, rotation: page.rotation }, TaskPriorityLevel.High);
         }
         else {
             this.pdfViewerBase.pdfViewerRunner.addTask({ uploadedFile: fileByteArray, message: 'LoadPageStampCollection', password: null,
                 pageIndex: 0, zoomFactor: this.pdfViewer.magnificationModule.zoomFactor, isTextNeed: false, isZoomMode: false,
                 AnnotName: rubberStampAnnotation.AnnotName, rubberStampAnnotationPageNumber: rubberStampAnnotation.pageNumber,
-                annotationOrder: JSON.stringify(this.annotationOrder), collectionOrder: collectionOrder }, TaskPriorityLevel.High);
+                annotationOrder: JSON.stringify(this.annotationOrder), collectionOrder: collectionOrder,
+                pageSize: pageSize, rotation: page.rotation }, TaskPriorityLevel.High);
         }
     }
 

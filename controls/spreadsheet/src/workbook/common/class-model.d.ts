@@ -1,4 +1,4 @@
-import { ChildProperty, Property, Complex } from '@syncfusion/ej2-base';import { FontFamily, TextAlign, VerticalAlign, FontWeight, FontStyle, TextDecoration, HighlightCell, ChartType, ChartTheme, AutoFillType } from './enum';import { ValidationType, ValidationOperator, TopBottom, DataBar, ColorScale, IconSet, CFColor } from './enum';import { CellModel } from '../base';import { LabelPosition, LegendPosition, ChartShape } from './enum';
+import { ChildProperty, Property, Complex, Collection } from '@syncfusion/ej2-base';import { FontFamily, TextAlign, VerticalAlign, FontWeight, FontStyle, TextDecoration, HighlightCell, ChartType, ChartTheme, AutoFillType } from './enum';import { ValidationType, ValidationOperator, TopBottom, DataBar, ColorScale, IconSet, CFColor } from './enum';import { CellModel } from '../base';import { LabelPosition, LegendPosition, ChartShape } from './enum';
 
 /**
  * Interface for a class CellStyle
@@ -807,6 +807,84 @@ export interface ImageModel {
      * @asptype double
      */
     left?: number;
+
+}
+
+/**
+ * Interface for a class CommentReply
+ */
+export interface CommentReplyModel {
+
+    /**
+     * Specifies the author of the reply.
+     * If not set, the reply will not display an author name.
+     *
+     * @default ''
+     */
+    author?: string;
+
+    /**
+     * Defines the text content of the reply.
+     *
+     * @default ''
+     */
+    text?: string;
+
+    /**
+     * Indicates the date and time when the reply was created.
+     * If not set, the reply will not show a timestamp.
+     *
+     * @default null
+     */
+    createdTime?: string | Date;
+
+}
+
+/**
+ * Interface for a class ThreadedComment
+ */
+export interface ThreadedCommentModel {
+
+    /**
+     * Specifies the author of the comment.
+     * If not set, the comment will not display an author name.
+     *
+     * @default ''
+     */
+    author?: string;
+
+    /**
+     * Defines the text content of the comment.
+     * If not set, the comment will appear blank until content is added.
+     *
+     * @default ''
+     */
+    text?: string;
+
+    /**
+     * Indicates the date and time when the comment was created.
+     * If not set, the comment will not show a timestamp.
+     *
+     * @default null
+     */
+    createdTime?: string | Date;
+
+    /**
+     * Indicates whether the comment thread is marked as resolved.
+     * If not set, the thread remains active and unresolved.
+     * Set this to `true` when the discussion in the thread is complete and no further replies are expected.
+     *
+     * @default false
+     */
+    isResolved?: boolean;
+
+    /**
+     * Contains the collection of replies associated with the comment.
+     * If not set, the comment has no replies.
+     *
+     * @default []
+     */
+    replies?: CommentReplyModel[];
 
 }
 

@@ -1,3 +1,6 @@
+@use 'ej2-base/styles/common/mixin' as *;
+@use '../fluent2-definition' as *;
+@use '../../document-editor/fluent2-definition' as *;
 @include export-module('document-editor-container-fluent2-icons') {
   .e-de-ctnr-close::before {
     color: $icon-color;

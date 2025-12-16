@@ -2185,8 +2185,8 @@ describe('Hierarchial data filter testing', () => {
                 expect(ddtreeObj.treeObj.checkedNodes.length).toBe(3);
                 done();
             }, 350);
-        });  
-         it('Select a node and perform filter the nested nodes and ensure the parent node check state', (done) => {
+        });
+        it('Select a node and perform filter the nested nodes and ensure the parent node check state', (done) => {
              ddtreeObj = new DropDownTree({
                 fields: { dataSource: nestedHierarchicalData, value: "code", text: "name", child: "countries" },
                 allowFiltering: true,
@@ -2300,7 +2300,7 @@ describe('Hierarchial data filter testing', () => {
                 expect(ddtreeObj.treeObj.element.querySelectorAll('li.e-list-item .e-frame.e-stop').length).toBe(1);
                 done();
             },350);
-        });
+        });   
     });
 });
 

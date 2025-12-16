@@ -1,3 +1,6 @@
+@use 'ej2-base/styles/definition/fusionnew' as *;
+@forward 'ej2-base/styles/definition/fusionnew';
+
 //layout
 $listview-icon-margin-right: 8px !default;
 $listview-icon-back-margin: 0 !default;
@@ -50,6 +53,22 @@ $listview-checkbox-right-margin: -2px 0 0 8px !default;
 $listview-checkbox-left-margin: 0 8px 0 0 !default;
 $listview-rtl-checkbox-left-margin: -2px 0 0 8px !default;
 $listview-rtl-checkbox-right-margin: -2px 8px 0 0 !default;
+$listview-list-margin: 0 !default;
+$listview-list-padding: 0 !default;
+$listview-header-border-bottom-size: 1px !default;
+$listview-group-item-font-weight: 600 !default;
+$listview-border-none: 0 !default;
+$listview-item-icon-margin-left: 16px !default;
+$listview-item-icon-margin-right: 0 !default;
+$listitem-header-font-weight: 500 !default;
+$listview-margin-none: 0 !default;
+$listview-padding-none: 0 !default;
+$listview-text-content-height: 100% !default;
+$listview-checkbox-text-content-width: calc(100% - 40px) !default;
+$listview-checkbox-left-list-icon-text-width: calc(100% - 90px) !default;
+$listview-checkbox-right-list-icon-text-width: calc(100% - 80px) !default;
+$listview-icon-text-width: calc(100% - 60px) !default;
+$listview-list-icon-size: 30px !default;
 
 //ListView In-built template variables
 $listview-template-padding: 10px 16px !default;
@@ -89,6 +108,7 @@ $listview-touch-template-badge-height: 20px !default;
 $listview-touch-template-badge-width: 34px !default;
 $listview-touch-template-badge-line-height: 18px !default;
 $listview-touch-template-badge-font-size: $text-xs !default;
+$listview-template-height: inherit !default;
 
 //color
 $listview-font-family: $font-family !default;

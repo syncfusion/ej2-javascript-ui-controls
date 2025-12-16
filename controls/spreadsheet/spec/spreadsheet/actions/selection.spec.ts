@@ -990,7 +990,7 @@ describe('Selection ->', () => {
                     let offset: DOMRect = headerCell.getBoundingClientRect() as DOMRect;
                     expect(spreadsheet.sheets[0].selectedRange).toBe('D100:D100');
                     verticalContent = spreadsheet.getMainContent().parentElement;
-                    expect(verticalContent.scrollTop).toBe(1920);
+                    expect(verticalContent.scrollTop).toBe(1763);
                     helper.triggerMouseAction('mousedown', { x: offset.left + 1, y: offset.top + 1 }, null, headerCell);
                     setTimeout((): void => {
                         headerCell = helper.invoke('getColHeaderTable').rows[0].cells[2];
@@ -999,7 +999,7 @@ describe('Selection ->', () => {
                         helper.triggerMouseAction('mouseup', { x: offset.left + 10, y: offset.top + 5, offsetX: 10 }, document, colHdrPanel);
                         setTimeout((): void => {
                             //expect(spreadsheet.sheets[0].selectedRange).toBe('D1:F132');
-                            expect(verticalContent.scrollTop).toBe(1920);
+                            expect(verticalContent.scrollTop).toBe(1763);
                             done();
                         });
                     });

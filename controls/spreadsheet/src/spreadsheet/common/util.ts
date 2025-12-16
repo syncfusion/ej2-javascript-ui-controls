@@ -1,5 +1,5 @@
 import { Browser, setStyleAttribute as setBaseStyleAttribute, getComponent, detach, isNullOrUndefined, removeClass, extend, isUndefined } from '@syncfusion/ej2-base';
-import { StyleType, CollaborativeEditArgs, CellSaveEventArgs, ICellRenderer, IAriaOptions, completeAction } from './index';
+import { StyleType, CollaborativeEditArgs, CellSaveEventArgs, ICellRenderer, IAriaOptions, completeAction, PreviousCellDetails } from './index';
 import { HideShowEventArgs, invalidData, refreshFilterCellsOnResize } from './../common/index';
 import { activeCellMergedRange, Cell, CellUpdateArgs, ColumnModel, duplicateSheet, ExtendedChartModel, getSheetIndex, getSheetIndexFromAddress, getSheetIndexFromId, getSheetNameFromAddress, hideShow, MergeArgs, moveSheet, protectsheetHandler, refreshChartSize, refreshRibbonIcons, replace, replaceAll, setLinkModel, setLockCells, updateSheetFromDataSource } from '../../workbook/index';
 import { IOffset, clearViewer, deleteImage, createImageElement, refreshImgCellObj, removeDataValidation } from './index';
@@ -12,7 +12,7 @@ import { getCell, setChart, ApplyCFArgs, VisibleMergeIndexArgs, setVisibleMergeI
 import { setCFRule, setMerge, Workbook, setAutoFill, getautofillDDB, getRowsHeight, ChartModel, deleteModel } from '../../workbook/index';
 import { workbookFormulaOperation, DefineNameModel, getAddressInfo, getSheet, setCellFormat, updateCFModel } from '../../workbook/index';
 import { checkUniqueRange, applyCF, ActionEventArgs, skipHiddenIdx, isFilterHidden, ConditionalFormat } from '../../workbook/index';
-import { applyProtect, chartDesignTab, copy, cut, getColIdxFromClientX, getRowIdxFromClientY, goToSheet, hideSheet, paste, performUndoRedo, refreshChartCellObj, removeHyperlink, removeWorkbookProtection, setProtectWorkbook, sheetNameUpdate, showSheet } from './event';
+import { applyProtect, chartDesignTab, commentUndoRedo, copy, cut, getColIdxFromClientX, getRowIdxFromClientY, goToSheet, hideSheet, noteUndoRedo, paste, performUndoRedo, refreshChartCellObj, removeHyperlink, removeWorkbookProtection, setProtectWorkbook, sheetNameUpdate, showSheet } from './event';
 import { keyCodes } from './constant';
 
 /**
@@ -24,7 +24,9 @@ import { keyCodes } from './constant';
  * @hidden
  */
 export function getUpdateUsingRaf(fn: Function, context?: Spreadsheet): void {
-    if (context) {
+    if (disableRaf) {
+        fn();
+    } else if (context) {
         if (context.rafIds.length > 0) {
             context.rafIds.forEach((id: number) => cancelAnimationFrame(id));
             context.rafIds.length = 0;
@@ -42,6 +44,18 @@ export function getUpdateUsingRaf(fn: Function, context?: Spreadsheet): void {
             fn();
         });
     }
+}
+
+let disableRaf: boolean;
+
+/**
+ * The function used to disable the `requestAnimationFrame` execution in the spreadsheet.
+ *
+ * @returns {void} - The function used to disable the `requestAnimationFrame` execution in the spreadsheet.
+ * @hidden
+ */
+export function disableSpreadsheetRaf(): void {
+    disableRaf = true;
 }
 
 /**
@@ -670,7 +684,7 @@ export function setStyleAttribute(styles: StyleType[], preventAnimation?: boolea
         if (preventAnimation) {
             setStyleFn();
         } else {
-            requestAnimationFrame(() => setStyleFn());
+            getUpdateUsingRaf(() => setStyleFn());
         }
     });
     return promise;
@@ -1358,6 +1372,7 @@ export function updateAction(
     { previousConditionalFormats: object, conditionalFormats: object } };
     const sheetIndex: number = getSheetIndexFromId(spreadsheet, eventArgs.index);
     let cellIndexes: number[];
+    let sheetIdx: number;
     switch (options.action) {
     case 'sorting':
         args = {
@@ -1386,14 +1401,51 @@ export function updateAction(
     case 'addNote':
     case 'editNote':
     case 'deleteNote':
-        cellIndexes = getIndexesFromAddress(options.eventArgs.address);
+        sheetIdx = getSheetIndex(spreadsheet as Workbook, eventArgs.address.split('!')[0]);
+        cellIndexes = getIndexesFromAddress(eventArgs.address.split('!')[1]);
+        cellValue = getCell(cellIndexes[0], cellIndexes[1], spreadsheet.sheets[sheetIdx as number], false, true);
+        delete cellValue.notes;
         if (isRedo) {
-            updateCell(
-                spreadsheet as Workbook, spreadsheet.getActiveSheet(), { rowIdx: cellIndexes[0], colIdx: cellIndexes[1], preventEvt: true,
-                    cell: { notes: options.eventArgs.notes }});
-            spreadsheet.serviceLocator.getService<ICellRenderer>('cell').refreshRange(
-                getIndexesFromAddress(eventArgs.address), false, false, true, true, isImported(spreadsheet));
+            updateCell(spreadsheet as Workbook, spreadsheet.sheets[sheetIdx as number], {
+                rowIdx: cellIndexes[0], colIdx: cellIndexes[1], preventEvt: true,
+                pvtExtend: true, cell: { ...cellValue, notes: options.action === 'deleteNote' ? null : eventArgs.notes }
+            });
+        } else {
+            const prev: PreviousCellDetails = (eventArgs.beforeActionData.cellDetails || []).find(
+                (d: PreviousCellDetails) => d.rowIndex === cellIndexes[0] && d.colIndex === cellIndexes[1]);
+            updateCell(spreadsheet as Workbook, spreadsheet.sheets[sheetIdx as number], {
+                rowIdx: cellIndexes[0], colIdx: cellIndexes[1], preventEvt: true, pvtExtend: true,
+                cell: { ...cellValue, notes: prev && prev.notes ? JSON.parse(JSON.stringify(prev.notes)) : null }
+            });
         }
+        spreadsheet.notify(noteUndoRedo, { cellIdx: cellIndexes, sheetIdx: sheetIdx });
+        break;
+    case 'addComment':
+    case 'editComment':
+    case 'deleteComment':
+    case 'resolveComment':
+    case 'reopenComment':
+    case 'addReply':
+    case 'editReply':
+    case 'deleteReply':
+        sheetIdx = getSheetIndex(spreadsheet as Workbook, eventArgs.address.split('!')[0]);
+        cellIndexes = getIndexesFromAddress(eventArgs.address.split('!')[1]);
+        cellValue = getCell(cellIndexes[0], cellIndexes[1], spreadsheet.sheets[sheetIdx as number], false, true);
+        delete cellValue.comment;
+        if (isRedo) {
+            updateCell(spreadsheet as Workbook, spreadsheet.sheets[sheetIdx as number], {
+                rowIdx: cellIndexes[0], colIdx: cellIndexes[1], preventEvt: true,
+                pvtExtend: true, cell: { ...cellValue, comment: eventArgs.comment }
+            });
+        } else {
+            const prev: PreviousCellDetails = (eventArgs.beforeActionData.cellDetails || []).find(
+                (d: PreviousCellDetails) => d.rowIndex === cellIndexes[0] && d.colIndex === cellIndexes[1]);
+            updateCell(spreadsheet as Workbook, spreadsheet.sheets[sheetIdx as number], {
+                rowIdx: cellIndexes[0], colIdx: cellIndexes[1], preventEvt: true, pvtExtend: true,
+                cell: { ...cellValue, comment: prev && prev.comment ? JSON.parse(JSON.stringify(prev.comment)) : null }
+            });
+        }
+        spreadsheet.notify(commentUndoRedo, { cellIdx: cellIndexes, sheetIdx: sheetIdx });
         break;
     case 'cellDelete':
         addrInfo = getAddressInfo(spreadsheet, options.eventArgs.address);

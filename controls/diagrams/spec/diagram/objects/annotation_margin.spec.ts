@@ -15,6 +15,7 @@ describe('Diagram Control', () => {
     describe('Annotations with margin', () => {
         let diagram: Diagram;
         let ele: HTMLElement;
+        let mouseEvents: MouseEvents = new MouseEvents();
         let annotation: ShapeAnnotationModel;
         let node: NodeModel;
         let node2: NodeModel;
@@ -108,6 +109,7 @@ describe('Diagram Control', () => {
         afterAll((): void => {
             diagram.destroy();
             ele.remove();
+            mouseEvents = null;
         });
         it('Checking different labels margin with different values in SVG rendering Mode', (done: Function) => {
             console.log('testcase7');
@@ -122,7 +124,6 @@ describe('Diagram Control', () => {
             done();
         });
         it('annotation OverFlow issue and node readonly issue', (done: Function) => {
-            let mouseEvents: MouseEvents = new MouseEvents();
             let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
             let nodes = diagram.nodes[3];
             let annotationBounds = diagram.getWrapper(nodes.wrapper, nodes.annotations[0].id);
@@ -143,7 +144,6 @@ describe('Diagram Control', () => {
         });
 
         it('Checking annotation margin wrapping', (done: Function) => {
-            let mouseEvents: MouseEvents = new MouseEvents();
             let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
             mouseEvents.clickEvent(diagramCanvas, 600, 64);
             mouseEvents.dragAndDropEvent(diagramCanvas, 630, 64, 550, 60);

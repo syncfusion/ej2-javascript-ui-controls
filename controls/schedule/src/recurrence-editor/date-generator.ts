@@ -141,10 +141,6 @@ export function generate(startDate: Date, rule: string, excludeDate: string, sta
     maxOccurrence = maximumCount;
     startDayOfWeek = startDayOfWeek || 0;
     setFirstDayOfWeek(DAYINDEX[parseInt(startDayOfWeek.toString(), 10)]);
-    if (ruleObject.until) {
-        const end: Date = resetTime(ruleObject.until);
-        ruleObject.until = new Date(end.getFullYear(), end.getMonth(), end.getDate(), 23, 59, 59);
-    }
     switch (ruleObject.freq) {
     case 'DAILY':
         dailyType(modifiedDate, ruleObject.until, data, ruleObject);

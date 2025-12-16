@@ -673,7 +673,7 @@ describe('Slash Menu ', () => {
                 done();
             }, 100);
         });
-        it ('Should open the image dialog.', (done: DoneFn) => {
+         it ('Should open the image dialog.', (done: DoneFn) => {
             editor.focusIn();
             const range: Range = new Range();
             range.setStart(editor.inputElement.firstChild.firstChild, 1);
@@ -683,14 +683,14 @@ describe('Slash Menu ', () => {
             const keyDownEvent: KeyboardEvent = new KeyboardEvent('keydown', SLASH_KEY_EVENT_INIT);
             editor.inputElement.dispatchEvent(keyDownEvent);
             const keyUpEvent: KeyboardEvent = new KeyboardEvent('keyup', SLASH_KEY_EVENT_INIT);
-            editor.inputElement.dispatchEvent(keyUpEvent);
-            const imageIterm: HTMLElement = document.querySelector('[data-value="Insert an image."]')
-            imageIterm.click();
-            setTimeout(() => {
-                expect(editor.element.querySelectorAll('.e-rte-img-dialog').length).toBe(1);
-                done();
-            }, 100);
-        });
+             editor.inputElement.dispatchEvent(keyUpEvent);
+             const imageIterm: HTMLElement = document.querySelector('[data-value="Insert an image."]')
+             imageIterm.click();
+             setTimeout(() => {
+                 expect(editor.element.querySelectorAll('.e-rte-img-dialog').length).toBe(1);
+                 done();
+             }, 100);
+         });
         it ('Should open the link dialog.', (done: DoneFn) => {
             editor.focusIn();
             const range: Range = new Range();
@@ -746,7 +746,6 @@ describe('Slash Menu ', () => {
             }, 100);
         });
     });
-
     describe('908869: Creating unwanted one line while pressing the slash key and select the heading 2 by enter key', () => {
         let editor: RichTextEditor;
         beforeEach((done: DoneFn) => {
@@ -792,7 +791,7 @@ describe('Slash Menu ', () => {
                 slashMenuSettings: {
                     enable: true,
                     items: ['Paragraph', 'Heading 1', 'Heading 2', 'Heading 3', 'Heading 4', 'Audio', 'Video', 'Image', 'Table', 'Link', 'CodeBlock',
-                        'OrderedList', 'UnorderedList', 'Blockquote', 'Emojipicker']
+                            'OrderedList', 'UnorderedList', 'Blockquote', 'Emojipicker']
                 },
                 value: '/'
             });

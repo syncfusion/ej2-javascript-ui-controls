@@ -37,12 +37,12 @@ let data: { [key: string]: Object }[] = [
     {
         OrderID: 10248, CustomerID: 'VINET', Role: 'Admin', EmployeeID: 5, OrderDate: new Date(8364186e5),
         ShipName: 'Vins et alcools Chevalier', ShipCity: 'Reims', ShipAddress: '59 rue de l Abbaye',
-        ShipRegion: 'CJ', Mask: '1111',ShipPostalCode: '51100', ShipCountry: 'France', Freight: 32.38, Verified: !0
+        ShipRegion: 'CJ', Mask: '1111', ShipPostalCode: '51100', ShipCountry: 'France', Freight: 32.38, Verified: !0
     },
     {
         OrderID: 10249, CustomerID: 'TOMSP', Role: 'Employee', EmployeeID: 6, OrderDate: new Date(836505e6),
         ShipName: 'Toms Spezialitäten', ShipCity: 'Münster', ShipAddress: 'Luisenstr. 48',
-        ShipRegion: 'CJ',  Mask: '2222', ShipPostalCode: '44087', ShipCountry: 'Germany', Freight: 11.61, Verified: !1
+        ShipRegion: 'CJ', Mask: '2222', ShipPostalCode: '44087', ShipCountry: 'Germany', Freight: 11.61, Verified: !1
     },
     {
         OrderID: 10250, CustomerID: 'HANAR', Role: 'Admin', EmployeeID: 4, OrderDate: new Date(8367642e5),
@@ -77,7 +77,7 @@ let data: { [key: string]: Object }[] = [
     {
         OrderID: 10256, CustomerID: 'WELLI', Role: 'Employee', EmployeeID: 3, OrderDate: new Date(837369e6),
         ShipName: 'Wellington Importadora', ShipCity: 'Resende', ShipAddress: 'Rua do Mercado, 12',
-        ShipRegion: 'SP',  Mask: '9999', ShipPostalCode: '08737-363', ShipCountry: 'Brazil', Freight: 13.97, Verified: !1
+        ShipRegion: 'SP', Mask: '9999', ShipPostalCode: '08737-363', ShipCountry: 'Brazil', Freight: 13.97, Verified: !1
     },
     {
         OrderID: 10257, CustomerID: 'HILAA', Role: 'Admin', EmployeeID: 4, OrderDate: new Date(8374554e5),
@@ -87,7 +87,7 @@ let data: { [key: string]: Object }[] = [
     {
         OrderID: 10258, CustomerID: 'ERNSH', Role: 'Manager', EmployeeID: 1, OrderDate: new Date(8375418e5),
         ShipName: 'Ernst Handel', ShipCity: 'Graz', ShipAddress: 'Kirchgasse 6',
-        ShipRegion: 'CJ',  Mask: '2345', ShipPostalCode: '8010', ShipCountry: 'Austria', Freight: 140.51, Verified: !0
+        ShipRegion: 'CJ', Mask: '2345', ShipPostalCode: '8010', ShipCountry: 'Austria', Freight: 140.51, Verified: !0
     },
     {
         OrderID: 10259, CustomerID: 'CENTC', Role: 'Admin', EmployeeID: 4, OrderDate: new Date(8376282e5),
@@ -97,12 +97,12 @@ let data: { [key: string]: Object }[] = [
     {
         OrderID: 10260, CustomerID: 'OTTIK', Role: 'Admin', EmployeeID: 4, OrderDate: new Date(8377146e5),
         ShipName: 'Ottilies Käseladen', ShipCity: 'Köln', ShipAddress: 'Mehrheimerstr. 369',
-        ShipRegion: 'CJ',  Mask: '4567', ShipPostalCode: '50739', ShipCountry: 'Germany', Freight: 55.09, Verified: !0
+        ShipRegion: 'CJ', Mask: '4567', ShipPostalCode: '50739', ShipCountry: 'Germany', Freight: 55.09, Verified: !0
     },
     {
         OrderID: 10261, CustomerID: 'QUEDE', Role: 'Manager', EmployeeID: 4, OrderDate: new Date(8377146e5),
         ShipName: 'Que Delícia', ShipCity: 'Rio de Janeiro', ShipAddress: 'Rua da Panificadora, 12',
-        ShipRegion: 'RJ',  Mask: '5678', ShipPostalCode: '02389-673', ShipCountry: 'Brazil', Freight: 3.05, Verified: !1
+        ShipRegion: 'RJ', Mask: '5678', ShipPostalCode: '02389-673', ShipCountry: 'Brazil', Freight: 3.05, Verified: !1
     },
     {
         OrderID: 10262, CustomerID: 'RATTC', Role: 'Employee', EmployeeID: 8, OrderDate: new Date(8379738e5),
@@ -114,81 +114,95 @@ let data: { [key: string]: Object }[] = [
 let complexData: Object[] = [{
     'EmployeeID': 1,
     'Name': {
-    'LastName': 'Davolio',
-    'FirstName': 'Nancy'},
+        'LastName': 'Davolio',
+        'FirstName': 'Nancy'
+    },
     'Names': [{
-        'LastName' : 'Davolio',
-        'FirstName': 'Nancy'}],
+        'LastName': 'Davolio',
+        'FirstName': 'Nancy'
+    }],
     'Title': 'Sales Representative'
 },
 {
     'EmployeeID': 2,
-    'Name':{
-    'LastName': 'Fuller',
-    'FirstName': 'Andrew'},
+    'Name': {
+        'LastName': 'Fuller',
+        'FirstName': 'Andrew'
+    },
     'Names': [{
-    'LastName': 'Fuller',
-    'FirstName': 'Andrew'}],
+        'LastName': 'Fuller',
+        'FirstName': 'Andrew'
+    }],
     'Title': 'Vice President, Sales'
 },
 {
     'EmployeeID': 3,
-    'Name':{
-    'LastName': 'Leverling',
-    'FirstName': 'Janet'},
+    'Name': {
+        'LastName': 'Leverling',
+        'FirstName': 'Janet'
+    },
     'Names': [{
         'LastName': 'Leverling',
-        'FirstName': 'Janet'}],
+        'FirstName': 'Janet'
+    }],
     'Title': 'Sales Representative'
 },
 {
     'EmployeeID': 4,
-    'Name':{
-    'LastName': 'Peacock',
-    'FirstName': 'Margaret'},
+    'Name': {
+        'LastName': 'Peacock',
+        'FirstName': 'Margaret'
+    },
     'Names': [{
         'LastName': 'Peacock',
-        'FirstName': 'Margaret'}],
+        'FirstName': 'Margaret'
+    }],
     'Title': 'Sales Representative'
 },
 {
     'EmployeeID': 5,
-    'Name':{
-    'LastName': 'Buchanan',
-    'FirstName': 'Steven'},
+    'Name': {
+        'LastName': 'Buchanan',
+        'FirstName': 'Steven'
+    },
     'Names': [{
         'LastName': 'Buchanan',
-        'FirstName': 'Steven'}],
+        'FirstName': 'Steven'
+    }],
     'Title': 'Sales Manager'
 },
 {
     'EmployeeID': 6,
-    'Name':{
-    'LastName': 'Suyama',
-    'FirstName': 'Michael'},
+    'Name': {
+        'LastName': 'Suyama',
+        'FirstName': 'Michael'
+    },
     'Title': 'Sales Representative',
     'TitleOfCourtesy': 'Mr.'
 },
 {
     'EmployeeID': 7,
-    'Name':{
-    'LastName': 'King',
-    'FirstName': 'Robert'},
+    'Name': {
+        'LastName': 'King',
+        'FirstName': 'Robert'
+    },
     'Title': 'Sales Representative',
     'TitleOfCourtesy': 'Mr.'
 },
 {
     'EmployeeID': 8,
     'Name': {
-    'LastName': 'Callahan',
-    'FirstName': 'Laura'},
+        'LastName': 'Callahan',
+        'FirstName': 'Laura'
+    },
     'Title': 'Inside Sales Coordinator'
 },
 {
     'EmployeeID': 9,
     'Name': {
-    'LastName': 'Dodsworth',
-    'FirstName': 'Anne'},
+        'LastName': 'Dodsworth',
+        'FirstName': 'Anne'
+    },
     'Title': 'Sales Representative'
 }];
 
@@ -241,7 +255,7 @@ describe('MultiColumnComboBox control', () => {
                 fields: { text: 'text', value: 'id' },
                 columns: [{ field: 'text', header: 'Language' }, { field: 'id', header: 'ID' }]
             });
-            const multiColEle: HTMLInputElement = <HTMLInputElement>createElement('input', { });
+            const multiColEle: HTMLInputElement = <HTMLInputElement>createElement('input', {});
             document.body.appendChild(multiColEle);
             multiColObj.appendTo(multiColEle);
             expect(multiColEle.getAttribute('id') !== element.getAttribute('id')).toEqual(true);
@@ -439,7 +453,7 @@ describe('MultiColumnComboBox control', () => {
             cancelable: true
         });
         beforeEach((): void => {
-            element = <HTMLInputElement>createElement('input', {id: 'basic_rendering_attributes'});
+            element = <HTMLInputElement>createElement('input', { id: 'basic_rendering_attributes' });
             document.body.appendChild(element);
         });
         afterEach((): void => {
@@ -754,7 +768,7 @@ describe('MultiColumnComboBox control', () => {
                 dataSource: languageData,
                 value: 'list1',
                 fields: { text: 'text', value: 'id', groupBy: 'subject' },
-                columns: [{ field: 'text', header: 'Language' }, { field: 'id', header: 'ID' }, { field: 'subject', header: 'Subject' }]                
+                columns: [{ field: 'text', header: 'Language' }, { field: 'id', header: 'ID' }, { field: 'subject', header: 'Subject' }]
             });
             multiColObj1.appendTo(element);
             // For coverage
@@ -794,7 +808,7 @@ describe('MultiColumnComboBox control', () => {
                     args.cancel = true;
                 }
             });
-    
+
             multiColObj1.appendTo(element);
             multiColObj1.value = 'list1';
             multiColObj1.dataBind();
@@ -802,7 +816,7 @@ describe('MultiColumnComboBox control', () => {
                 expect(changeTriggered).toBe(true);
                 expect(multiColObj1.value).toBe('list1');
                 expect(multiColObj1.text).toBe('JAVA');
-                
+
                 done();
             }, 1000);
         });
@@ -811,7 +825,7 @@ describe('MultiColumnComboBox control', () => {
                 dataSource: languageData,
                 index: 2,
                 fields: { text: 'text', value: 'id', groupBy: 'subject' },
-                columns: [{ field: 'text', header: 'Language' }, { field: 'id', header: 'ID' }, { field: 'subject', header: 'Subject' }]                
+                columns: [{ field: 'text', header: 'Language' }, { field: 'id', header: 'ID' }, { field: 'subject', header: 'Subject' }]
             });
             multiColObj1.appendTo(element);
             multiColObj1.showPopup();
@@ -991,7 +1005,7 @@ describe('MultiColumnComboBox control', () => {
             expect(multiColObj1.value).toBe('list1');
             expect(multiColObj1.index).toBe(3);
         });
-        it( 'index - property check ', () => {
+        it('index - property check ', () => {
             multiColObj1 = new MultiColumnComboBox({
                 dataSource: languageData,
                 index: 3,
@@ -1047,7 +1061,7 @@ describe('MultiColumnComboBox control', () => {
                 dataSource: data,
                 fields: { text: 'ContactName', value: 'CustomerID' },
                 columns: [{ field: 'ContactName', header: 'ContactName', width: 120 },
-                          { field: 'CustomerID', width: 140, header: 'Customer ID' }],
+                { field: 'CustomerID', width: 140, header: 'Customer ID' }],
                 value: 'EASTC'
             });
             multiColObj1.appendTo(element);
@@ -1087,7 +1101,7 @@ describe('MultiColumnComboBox control', () => {
                 query: query,
                 fields: { text: 'ContactName', value: 'CustomerID' },
                 columns: [{ field: 'ContactName', header: 'ContactName', width: 120 },
-                          { field: 'CustomerID', width: 140, header: 'Customer ID' }],
+                { field: 'CustomerID', width: 140, header: 'Customer ID' }],
                 text: 'Ana Trujillo'
             });
             multiColObj1.appendTo(element);
@@ -1125,7 +1139,7 @@ describe('MultiColumnComboBox control', () => {
                 dataSource: data,
                 fields: { text: 'ContactName', value: 'CustomerID' },
                 columns: [{ field: 'ContactName', header: 'ContactName', width: 120 },
-                          { field: 'CustomerID', width: 140, header: 'Customer ID' }],
+                { field: 'CustomerID', width: 140, header: 'Customer ID' }],
                 index: 2
             });
             multiColObj1.appendTo(element);
@@ -1293,7 +1307,7 @@ describe('MultiColumnComboBox control', () => {
             setTimeout(() => {
                 expect(document.querySelector('.e-no-records').innerHTML).toBe('Not found anything');
                 multiColObj.noRecordsTemplate = 'Found Nothing',
-                multiColObj.dataBind();
+                    multiColObj.dataBind();
                 setTimeout(() => {
                     expect(document.querySelector('.e-no-records').innerHTML).toBe('Found Nothing');
                     done();
@@ -1501,7 +1515,7 @@ describe('MultiColumnComboBox control', () => {
                 fields: { text: 'ContactName', value: 'CustomerID' },
                 query: new Query().take(9).requiresCount(),
                 columns: [{ field: 'ContactName', header: 'ContactName', width: 120 },
-                    { field: 'CustomerID', width: 140, header: 'Customer ID' }],
+                { field: 'CustomerID', width: 140, header: 'Customer ID' }],
             });
             multiColObj.appendTo(element);
             multiColObj.columns = [
@@ -1678,7 +1692,7 @@ describe('MultiColumnComboBox control', () => {
             multiColObj = new MultiColumnComboBox({
                 dataSource: dataValue(150),
                 enableVirtualization: true,
-                fields: { text: 'Engineer', value: 'TaskID'},
+                fields: { text: 'Engineer', value: 'TaskID' },
                 placeholder: 'Select an engineer',
                 popupHeight: '230px',
                 gridSettings: { rowHeight: 40 },
@@ -1715,20 +1729,20 @@ describe('MultiColumnComboBox control', () => {
                     }, 1200);
                 }, 1500);
             }, 2000);
-        });   
+        });
         it(' Enable Virtualization property  ', (done) => {
             multiColObj = new MultiColumnComboBox({
                 dataSource: dataValue(),
                 enableVirtualization: true,
                 gridSettings: { rowHeight: 40 },
-                fields: { text: 'Engineer', value: 'Designation'},
+                fields: { text: 'Engineer', value: 'Designation' },
                 columns: [
-                        { field: 'TaskID', header: 'Task ID', width: 100 },
-                        { field: 'Engineer', header: 'Engineer', width: 100 },
-                        { field: 'Designation', header: 'Designation', width: 100 },
-                        { field: 'Estimation', header: 'Estimation', width: 100 },
-                        { field: 'Status', header: 'Status', width: 100,}
-                    ],
+                    { field: 'TaskID', header: 'Task ID', width: 100 },
+                    { field: 'Engineer', header: 'Engineer', width: 100 },
+                    { field: 'Designation', header: 'Designation', width: 100 },
+                    { field: 'Estimation', header: 'Estimation', width: 100 },
+                    { field: 'Status', header: 'Status', width: 100, }
+                ],
                 open: (args: PopupEventArgs) => {
                     eventDetails = args.event;
                     isPopupOpen = true;
@@ -1790,7 +1804,7 @@ describe('MultiColumnComboBox control', () => {
                     isPopupClose = true;
                 },
                 enableVirtualization: true,
-                fields: { text: 'Engineer', value: 'TaskID'},
+                fields: { text: 'Engineer', value: 'TaskID' },
                 placeholder: 'Select an engineer',
                 popupHeight: '230px',
                 gridSettings: { rowHeight: 40 },
@@ -2630,7 +2644,7 @@ describe('MultiColumnComboBox control', () => {
         });
     });
 
-   describe('Events', () => {
+    describe('Events', () => {
         let multiColObj2: MultiColumnComboBox;
         let element: HTMLInputElement;
         // Manually dispatch the input event
@@ -2756,7 +2770,7 @@ describe('MultiColumnComboBox control', () => {
                 dataSource: dataSource,
                 fields: { text: 'ContactName', value: 'CustomerID' },
                 columns: [{ field: 'ContactName', header: 'ContactName', width: 120 },
-                          { field: 'CustomerID', width: 140, header: 'Customer ID' }],
+                { field: 'CustomerID', width: 140, header: 'Customer ID' }],
                 filtering: (args: FilteringEventArgs) => {
                     filtering = true;
                 }
@@ -2916,14 +2930,14 @@ describe('MultiColumnComboBox control', () => {
             setTimeout(() => {
                 multiColObj.showPopup();
                 multiColObj.actionFailureTemplate = 'Failed action',
-                multiColObj.dataBind();
+                    multiColObj.dataBind();
                 setTimeout(() => {
                     expect(multiColObj.popupEle.querySelector('.e-no-records').innerHTML).toBe('Failed action');
                     done();
                 }, 1000);
             }, 1500);
         });
-        it (' footer template property', () => {
+        it(' footer template property', () => {
             multiColObj = new MultiColumnComboBox({
                 dataSource: languageData,
                 fields: { text: 'text', value: 'id', groupBy: 'text' },
@@ -2974,7 +2988,7 @@ describe('MultiColumnComboBox control', () => {
                 columns: [{ field: 'text', header: 'Language' }, { field: 'id', header: 'ID' }]
             });
             multiColObj.appendTo(element);
-            multiColObj.addItems({subject: 'eee', id: 'list22', text: 'Physics'});
+            multiColObj.addItems({ subject: 'eee', id: 'list22', text: 'Physics' });
             setTimeout(() => {
                 expect((multiColObj as any).gridObj.dataSource[0].text).toBe('Physics');
                 done();
@@ -3155,7 +3169,7 @@ describe('MultiColumnComboBox control', () => {
                 dataSource: dataSource,
                 fields: { text: 'ContactName', value: 'CustomerID' },
                 columns: [{ field: 'ContactName', header: 'ContactName', width: 120 },
-                          { field: 'CustomerID', width: 140, header: 'Customer ID' }]
+                { field: 'CustomerID', width: 140, header: 'Customer ID' }]
             });
             multiColObj.appendTo(element);
             (multiColObj as any).showHideSpinner(true);
@@ -3230,7 +3244,7 @@ describe('MultiColumnComboBox control', () => {
                 let query = new Query();
                 (multiColObj as any).isCustomFilter = false;
                 (multiColObj as any).allowFiltering = true;
-                (multiColObj as any).typedString = 'J'; 
+                (multiColObj as any).typedString = 'J';
                 let result1 = (multiColObj as any).getQuery(query);
                 (multiColObj as any).isCustomFilter = true;
                 (multiColObj as any).customFilterQuery = new Query().where('text', 'startswith', 'J');
@@ -3421,6 +3435,5 @@ describe('MultiColumnComboBox control', () => {
                 done();
             }, 100); 
         });
-       
     });
 });

@@ -1,6 +1,11 @@
+@use 'ej2-base/styles/definition/fluent' as *;
+@forward 'ej2-base/styles/definition/fluent';
 $sidebar-box-shadow: $shadow-none !default;
 
 //color variables
 $sidebar-background: $content-bg-color-alt1 !default;
 $sidebar-border: $border-light !default;
 $sidebar-overlay: $overlay-bg-color !default;
+$sidebar-height: 100% !default;
+$sidebar-border-width: 1px !default;
+$sidebar-margin-none: 0 !default;

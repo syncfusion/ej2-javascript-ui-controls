@@ -2,8 +2,9 @@ import { _PdfDictionary, _PdfName } from './../pdf-primitives';
 import { _PdfBaseStream, _PdfContentStream } from './../base-stream';
 import { PdfGraphics } from './pdf-graphics';
 import { _PdfCrossReference } from './../pdf-cross-reference';
-import { _toRectangle, Rectangle, Size } from './../utils';
+import { _toRectangle } from './../utils';
 import { _JsonDocument } from './../import-export/json-document';
+import { Rectangle, Size } from './../pdf-type';
 /**
  * `PdfTemplate` class represents the template of the PDF.
  * ```typescript
@@ -12,13 +13,13 @@ import { _JsonDocument } from './../import-export/json-document';
  * // Get the first page
  * let page: PdfPage = document.getPage(0) as PdfPage;
  * // Create a new rubber stamp annotation
- * const annotation: PdfRubberStampAnnotation = new PdfRubberStampAnnotation(50, 100, 100, 50);
+ * const annotation: PdfRubberStampAnnotation = new PdfRubberStampAnnotation({x: 50, y: 100, width: 100, height: 50});
  * // Get the normal appearance of the annotation
  * let normalAppearance: PdfTemplate = annotation.appearance.normal;
  * // Create new image object by using JPEG image data as Base64 string format
  * let image: PdfImage = new PdfBitmap('/9j/4AAQSkZJRgABAQEAkACQAAD/4....QB//Z');
  * // Draw the image as the custom appearance for the annotation
- * normalAppearance.graphics.drawImage(image, 0, 0, 100, 50);
+ * normalAppearance.graphics.drawImage(image, {x: 0, y: 0, width: 100, height: 50});
  * // Add annotation to the page
  * page.annotations.add(annotation);
  * // Save the document
@@ -29,7 +30,7 @@ import { _JsonDocument } from './../import-export/json-document';
  */
 export class PdfTemplate {
     _content: any; // eslint-disable-line
-    _size: number[];
+    _size: Size;
     _writeTransformation: boolean;
     _isReadOnly: boolean;
     _isAnnotationTemplate: boolean;
@@ -40,7 +41,7 @@ export class PdfTemplate {
     _isResourceExport : boolean = false;
     _appearance: string;
     _pendingResources: string;
-    _templateOriginalSize: number[];
+    _templateOriginalSize: Size;
     _isSignature: boolean = false;
     _isNew: boolean = false;
     _key: string;
@@ -80,7 +81,7 @@ export class PdfTemplate {
      * // Create new image object by using JPEG image data as Base64 string format
      * let image: PdfImage = new PdfBitmap('/9j/4AAQSkZJRgABAQEAkACQAAD/4....QB//Z');
      * // Draw the image into the template graphics
-     * template.graphics.drawImage(image, 0, 0, 100, 50);
+     * template.graphics.drawImage(image, {x: 0, y: 0, width: 100, height: 50});
      * // Draw template to the page
      * page.graphics.drawTemplate(template, {x: 0, y: 0, width: 100, height: 50});
      * // Save the document
@@ -104,7 +105,7 @@ export class PdfTemplate {
      * // Create new image object by using JPEG image data as Base64 string format
      * let image: PdfImage = new PdfBitmap('/9j/4AAQSkZJRgABAQEAkACQAAD/4....QB//Z');
      * // Draw the image into the template graphics
-     * template.graphics.drawImage(image, 0, 0, 100, 50);
+     * template.graphics.drawImage(image, {x: 0, y: 0, width: 100, height: 50});
      * // Draw template to the page
      * page.graphics.drawTemplate(template, {x: 0, y: 0, width: 100, height: 50});
      * // Save the document
@@ -133,12 +134,12 @@ export class PdfTemplate {
                 const bounds: number[] = this._content.dictionary.getArray('BBox');
                 if (bounds && bounds.length > 3) {
                     const rect: Rectangle = _toRectangle(bounds);
-                    this._size = [rect.width, rect.height];
+                    this._size = {width: rect.width, height: rect.height};
                     this._templateOriginalSize = this._size;
                 }
                 this._isReadOnly = true;
             } else if (Array.isArray(value)) {
-                this._size = [value[2], value[3]];
+                this._size = {width: value[2], height: value[3]};
                 this._content = new _PdfContentStream([]);
                 this._content.dictionary._crossReference = this._crossReference;
                 this._initialize();
@@ -151,7 +152,7 @@ export class PdfTemplate {
                 } else {
                     bounds = { x: 0, y: 0, width: values.width, height: values.height };
                 }
-                this._size = [bounds.width, bounds.height];
+                this._size = {width: bounds.width, height: bounds.height};
                 this._content = new _PdfContentStream([]);
                 if (this._crossReference) {
                     this._content.dictionary._crossReference = this._crossReference;
@@ -174,13 +175,13 @@ export class PdfTemplate {
      * // Get the first page
      * let page: PdfPage = document.getPage(0) as PdfPage;
      * // Create a new rubber stamp annotation
-     * const annotation: PdfRubberStampAnnotation = new PdfRubberStampAnnotation(50, 100, 100, 50);
+     * const annotation: PdfRubberStampAnnotation = new PdfRubberStampAnnotation({x: 50, y: 100, width: 100, height: 50});
      * // Access the graphics of the normal appearance
      * let graphics: PdfGraphics = annotation.appearance.normal.graphics;
      * // Create new image object by using JPEG image data as Base64 string format
      * let image: PdfImage = new PdfBitmap('/9j/4AAQSkZJRgABAQEAkACQAAD/4....QB//Z');
      * // Draw the image as the custom appearance for the annotation
-     * graphics.drawImage(image, 0, 0, 100, 50);
+     * graphics.drawImage(image, {x: 0, y: 0, width: 100, height: 50});
      * // Add annotation to the page
      * page.annotations.add(annotation);
      * // Save the document
@@ -205,22 +206,22 @@ export class PdfTemplate {
     /**
      * Get the size of the PDF template. (Read only)
      *
-     * @returns {number[]} Template width and height as number array.
+     * @returns {Size} Template width and height as number array.
      * ```typescript
      * // Load an existing PDF document
      * let document: PdfDocument = new PdfDocument(data, password);
      * // Get the first page
      * let page: PdfPage = document.getPage(0) as PdfPage;
      * // Create a new rubber stamp annotation
-     * const annotation: PdfRubberStampAnnotation = new PdfRubberStampAnnotation(50, 100, 100, 50);
+     * const annotation: PdfRubberStampAnnotation = new PdfRubberStampAnnotation({x: 50, y: 100, width: 100, height: 50});
      * // Access the normal template of the appearance
      * let template: PdfTemplate = appearance.normal;
      * // Get the width and height of the PDF template as number array.
-     * let size: number[] = template.size;
+     * let size: Size = template.size;
      * // Create new image object by using JPEG image data as Base64 string format
      * let image: PdfImage = new PdfBitmap('/9j/4AAQSkZJRgABAQEAkACQAAD/4....QB//Z');
      * // Draw the image as the custom appearance for the annotation
-     * template.graphics.drawImage(image, 0, 0, size[0], size[1]);
+     * template.graphics.drawImage(image, {x: 0, y: 0, width: size.width, height: size.height});
      * // Add annotation to the page
      * page.annotations.add(annotation);
      * // Save the document
@@ -229,7 +230,7 @@ export class PdfTemplate {
      * document.destroy();
      * ```
      */
-    get size(): number[] {
+    get size(): Size {
         return this._size;
     }
     /**
@@ -237,22 +238,22 @@ export class PdfTemplate {
      *
      * Remarks: The `_originalSize` property is internal and provides access to the original dimensions of the PDF template.
      *
-     * @returns {number[]} Template original width and height as number array.
+     * @returns {Size} Template original width and height as number array.
      * ```typescript
      * // Load an existing PDF document
      * let document: PdfDocument = new PdfDocument(data, password);
      * // Get the first page
      * let page: PdfPage = document.getPage(0) as PdfPage;
      * // Create a new rubber stamp annotation
-     * const annotation: PdfRubberStampAnnotation = new PdfRubberStampAnnotation(50, 100, 100, 50);
+     * const annotation: PdfRubberStampAnnotation = new PdfRubberStampAnnotation({x: 50, y: 100, width: 100, height: 50});
      * // Access the normal template of the appearance
      * let template: PdfTemplate = appearance.normal;
      * // Get the width and height of the PDF template as number array
-     * let size: number[] = template._originalSize;
+     * let size: Size = template._originalSize;
      * // Create new image object by using JPEG image data as Base64 string format
      * let image: PdfImage = new PdfBitmap('/9j/4AAQSkZJRgABAQEAkACQAAD/4....QB//Z');
      * // Draw the image as the custom appearance for the annotation
-     * template.graphics.drawImage(image, 0, 0, size[0], size[1]);
+     * template.graphics.drawImage(image, {x: 0, y: 0, width: size.width, height: size.height});
      * // Add annotation to the page
      * page.annotations.add(annotation);
      * // Save the document
@@ -261,7 +262,7 @@ export class PdfTemplate {
      * document.destroy();
      * ```
      */
-    get _originalSize(): number[] {
+    get _originalSize(): Size {
         return this._templateOriginalSize;
     }
     _initialize(): void {

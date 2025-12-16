@@ -1,3 +1,5 @@
+@use 'ej2-base/styles/definition/bootstrap-dark' as *;
+@forward 'ej2-base/styles/definition/bootstrap-dark';
 $tooltip-drop-shadow: none !default;
 $tooltip-content-bg-color: $grey-dark-font !default;
 $tooltip-content-border-color: $grey-99 !default;
@@ -19,23 +21,32 @@ $tooltip-mobile-vertical-padding: 10px !default;
 $tooltip-line-height: 17px !default;
 $tooltip-arrow-icon-font-size: 16px !default;
 $tooltip-icon-border-color: $grey-base !default;
-
 $tooltip-tip-bottom-height: 8px !default;
 $tooltip-tip-bottom-left: 50% !default;
 $tooltip-tip-bottom-top: 100% !default;
 $tooltip-tip-bottom-width: 16px !default;
-
 $tooltip-tip-top-height: 8px !default;
 $tooltip-tip-top-left: 50% !default;
 $tooltip-tip-top-top: -9px !default;
 $tooltip-tip-top-width: 16px !default;
-
 $tooltip-tip-left-height: 16px !default;
 $tooltip-tip-left-left: -9px !default;
 $tooltip-tip-left-top: 48% !default;
 $tooltip-tip-left-width: 8px !default;
-
 $tooltip-tip-right-height: 16px !default;
 $tooltip-tip-right-left: 100% !default;
 $tooltip-tip-right-top: 50% !default;
 $tooltip-tip-right-width: 8px !default;
+$tooltip-tip-content-line-height: 20px !default;
+$tooltip-zero-padding-margin: 0 !default;
+$tooltip-wrap-min-width: 30px !default;
+$tooltip-zero-height: 0 !default;
+$tooltip-one-line-height: 1 !default;
+$tooltip-close-right: -9px !default;
+$tooltip-close-top: -9px !default;
+$tooltip-full-height: 100% !default;
+$tooltip-full-width: 100% !default;
+$tooltip-nrml-close-border-radius: 9px !default;
+$tooltip-nrml-close-border: 1px !default;
+$tooltip-nrml-close-height: 16px !default;
+$tooltip-nrml-close-width: 16px !default;

@@ -2322,7 +2322,7 @@ describe('Rendering critical task for SF connection', () => {
         height: '550px',
         allowUnscheduledTasks: true,
         projectStartDate: new Date('03/25/2019'),
-        // projectEndDate: new Date('05/30/2019'),
+        // projectEndDate: new Date('   05/30/2019'),
         }, done);
     });
     it('Checking for critical task SF', () => {
@@ -3084,7 +3084,6 @@ describe('resource view with predecessor', () => {
             expect(ganttObj.flatData[4].isCritical).toBe(true);
         });
     });
-
 describe('CR:979664-Critical path validation not working when two parent tasks are connected via predecessor', () => {
     let ganttObj: Gantt;
     beforeAll((done: Function) => {

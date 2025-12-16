@@ -1,3 +1,6 @@
+@use 'ej2-base/styles/definition/material-dark' as *;
+@forward 'ej2-base/styles/definition/material-dark';
+
 //default
 $hscroll-skin: 'material' !default;
 $hscroll-default-bg: $grey-900 !default;
@@ -28,6 +31,8 @@ $hscroll-border-type: solid !default;
 $hscroll-hover-font: $hover-font-color !default;
 $hscroll-active-font-color: $active-font-color !default;
 $hscroll-nav-nrml-width: 40px !default;
+$hscroll-nav-bgr-left: 50px !default;
+$hscroll-nav-bgr-right: 50px !default;
 $hscroll-nav-bgr-width: 50px !default;
 $hscroll-nrml-padding: 0 $hscroll-nav-nrml-width !default;
 $hscroll-bgr-padding: 0 $hscroll-nav-bgr-width !default;
@@ -40,6 +45,9 @@ $hscroll-focus-border: 0 !default;
 $hscroll-active-border: 0 !default;
 $hscroll-hover-border: 0 !default;
 $hscroll-active-box-shadow: none !default;
+$hscroll-border-none: 0 !default;
+$hscroll-item-height: inherit !default;
+$hscroll-item-line-height: normal !default;
 
 $hscroll-default-border: $hscroll-hover-border-color !default;
 $hscroll-ribble-animation-border-frame: rgba(255, 255, 255, .5) !default;

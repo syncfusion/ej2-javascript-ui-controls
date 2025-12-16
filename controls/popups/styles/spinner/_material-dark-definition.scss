@@ -1,3 +1,6 @@
+@use 'ej2-base/styles/definition/material-dark' as *;
+@forward 'ej2-base/styles/definition/material-dark';
+
 //default
 $theme: 'Material';
 $spin-overlay-background: rgba($grey-black, .4);
@@ -20,6 +23,12 @@ $spin-tailwind-stroke-width: 4.5;
 $spin-boot5-stroke-color: $accent;
 $spin-tailwind-arc-color: $accent;
 $spin-tailwind-stroke-color: rgba($accent, .4);
+$spin-tail-margin: 0 auto !default;
+$spin-bootstrap-border-radius: 50% !default;
+$spinner-zero-space: 0 !default;
+$spinner-full-width: 100% !default;
+$spinner-half-width: 50% !default;
+$spinner-full-height: 100% !default;
 
 //enddefault
 //dimensions

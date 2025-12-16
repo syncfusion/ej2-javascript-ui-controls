@@ -1,5 +1,5 @@
-@import 'ej2-base/styles/definition/fluent.scss';
-@import 'ej2-popups/styles/tooltip/fluent-definition.scss';
-@import 'fluent-definition.scss';
-@import 'all.scss';
-@import 'bigger.scss';
+@use 'ej2-base/styles/definition/fluent' as *;
+@use 'ej2-popups/styles/tooltip/fluent-definition' as *;
+@use 'fluent-definition' as *;
+@use 'all' as *;
+@use 'bigger' as *;
