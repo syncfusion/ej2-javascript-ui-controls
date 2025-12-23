@@ -201,6 +201,9 @@ export function insertRightButtonClick(event: MouseEvent): void {
         this.tileImageRender(buttonIndex, subIndex, pageOrder + 1, mainTileElement, true, false, true);
         updateTotalPageCount.call(this);
         updatePageNumber.call(this);
+        if (this.isExtractToolbarVisible) {
+            inputTextboxUpdate.call(this);
+        }
         disableTileDeleteButton.call(this);
         disableTileCopyButton.call(this);
         updateSelectAllCheckbox.call(this);
@@ -234,6 +237,9 @@ export function insertLeftButtonClick(event: MouseEvent): void {
         this.tileImageRender(buttonIndex, subIndex, pageOrder, mainTileElement, true, true, true);
         updateTotalPageCount.call(this);
         updatePageNumber.call(this);
+        if (this.isExtractToolbarVisible) {
+            inputTextboxUpdate.call(this);
+        }
         disableTileDeleteButton.call(this);
         disableTileCopyButton.call(this);
         updateSelectAllCheckbox.call(this);
@@ -267,6 +273,9 @@ export function copyButtonClick(event: MouseEvent): void {
         this.tileImageRender(buttonIndex, subIndex, pageOrder + 1, mainTileElement, true, false, false);
         updateTotalPageCount.call(this);
         updatePageNumber.call(this);
+        if (this.isExtractToolbarVisible) {
+            inputTextboxUpdate.call(this);
+        }
         disableTileDeleteButton.call(this);
         const clonedCollections: OrganizeDetails[] = [];
         clonedCollections.push(clonedCollection.call(this, this.tempOrganizePagesCollection.
@@ -290,8 +299,12 @@ export function deleteButtonClick(event: MouseEvent): void {
             find((item: OrganizeDetails) => { return item.currentPageIndex === pageOrder; })));
         this.addOrganizeAction(clonedCollections, 'Delete', [], [], null, false);
         this.deletePageElement(mainTileElement);
-        if (this.isExtractToolbarVisible) {
-            inputTextboxUpdate.call(this);
+        if (this.extractPagesInput) {
+            this.extractPagesInput.value = '';
+        }
+        const extractBtn: HTMLButtonElement = document.getElementsByClassName('e-pv-extractbtn')[0] as HTMLButtonElement;
+        if (extractBtn) {
+            extractBtn.disabled = true;
         }
     }
     updateSelectAllCheckbox.call(this);

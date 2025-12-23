@@ -61,12 +61,6 @@ describe('Gantt base module', () => {
         element.click();
         expect(ganttObj.ganttChartModule.scrollElement.scrollLeft).toBe(10);
     });
-    it('Column menu click', () => {
-        ganttObj.showColumnMenu = true;
-        ganttObj.refresh();
-        let element: HTMLElement = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol > div.e-gridheader.e-lib.e-droppable > div > table > thead > tr > th:nth-child(1) > div.e-headercell-container > div.e-icons.e-columnmenu') as HTMLElement;
-        element.click();
-    });
     afterAll(() => {
         if (ganttObj) {
             destroyGantt(ganttObj);
@@ -333,6 +327,51 @@ describe('Unscheduled task rendering with duration alone', () => {
         expect(ganttObj.treeGridModule['maxLimits']('minute')).toBe(24000);
         expect(ganttObj.treeGridModule['maxLimits']('hour')).toBe(1440000);
         expect(ganttObj.treeGridModule['maxLimits']('min')).toBe(1000);
+    });
+    afterAll(() => {
+        if (ganttObj) {
+            destroyGantt(ganttObj);
+        }
+    });
+});
+
+describe('Gantt base module', () => {
+    let ganttObj: Gantt;
+    beforeAll((done: Function) => {
+        ganttObj = createGantt({
+            dataSource: baselineData,
+            autoFocusTasks: true,
+            taskFields: {
+                id: 'TaskId',
+                name: 'TaskName',
+                startDate: 'StartDate',
+                endDate: 'EndDate',
+                duration: 'Duration',
+                progress: 'Progress',
+                child: 'Children',
+                baselineStartDate: 'BaselineStartDate',
+                baselineEndDate: 'BaselineEndDate'
+            },
+            renderBaseline: true,
+            timelineSettings: {
+                topTier: {
+                    unit: 'Week',
+                    format: 'dd/MM/yyyy'
+                },
+                bottomTier: {
+                    unit: 'Day'
+                },
+                timelineUnitSize: 60,
+                weekStartDay: 1
+            }
+        }, done);
+
+    });
+    it('Column menu click', () => {
+        ganttObj.showColumnMenu = true;
+        ganttObj.refresh();
+        let element: HTMLElement = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol > div.e-gridheader.e-lib.e-droppable > div > table > thead > tr > th:nth-child(1) > div.e-headercell-container > div.e-icons.e-columnmenu') as HTMLElement;
+        element.click();
     });
     afterAll(() => {
         if (ganttObj) {

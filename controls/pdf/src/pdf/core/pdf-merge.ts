@@ -101,7 +101,8 @@ export class _PdfMergeHelper {
         }
         if (pageDictionary.has('Annots')) {
             this._importAnnotation(page, newPage);
-            if (typeof this._options !== 'undefined' && this._options.groupFormFields && this._sourceDocument._catalog._catalogDictionary.has('AcroForm')) {
+            if (typeof this._options !== 'undefined' && this._options.groupFormFields && this._sourceDocument._catalog._catalogDictionary.has('AcroForm')
+                && this._destinationDocument.form.count > 0) {
                 this._formFieldsGroupingSupport(this._sourceDocument.form, page, newPage);
             } else if (this._sourceDocument._catalog._catalogDictionary.has('AcroForm')) {
                 this._importFormField(page, this._sourceDocument.form, newPage);
@@ -586,6 +587,7 @@ export class _PdfMergeHelper {
         const newReference: _PdfReference = this._crossReference._getNextReference();
         dictionary.objId = newReference.toString();
         const field: PdfField = form._parseFields(dictionary, ref);
+        field._ref = newReference;
         this._crossReference._cacheMap.set(newReference, field._dictionary);
         if (pdfField._dictionary.has('Kids')) {
             const oldKids: _PdfReference[] = pdfField._dictionary.get('Kids');

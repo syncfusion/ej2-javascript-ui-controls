@@ -947,7 +947,7 @@ export class CommandHandler {
      * moveObjects method\
      *
      * @returns { void }    moveObjects method .\
-     * @param {string[]]} objects - provide the objects value.
+     * @param {string[]} objects - provide the objects value.
      * @param {string} targetLayer - provide the targetLayer value.
      * @private
      */
@@ -972,8 +972,8 @@ export class CommandHandler {
         this.diagram.setActiveLayer(layer.id);
         let targerNodes: NodeModel | ConnectorModel;
         for (const i of objects) {
-            const layer: LayerModel = this.getObjectLayer(i);
-            const index: number = layer.objects.indexOf(i);
+            const objectLayer: LayerModel = this.getObjectLayer(i);
+            const index: number = objectLayer.objects.indexOf(i);
             if (index > -1) {
                 targerNodes = this.diagram.nameTable[`${i}`];
                 childNodes = [];
@@ -987,16 +987,28 @@ export class CommandHandler {
                 this.diagram.deleteDependentConnector = false;
                 this.diagram.remove(this.diagram.nameTable[`${i}`]);
                 this.diagram.deleteDependentConnector = true;
+                let maxZindex: number = null;
+                for (let objIndex: number = 0; objIndex < layer.objects.length; objIndex++) {
+                    const layerObject: string = layer.objects[parseInt(objIndex.toString(), 10)];
+                    const obj: NodeModel | ConnectorModel = this.diagram.nameTable[`${layerObject}`];
+                    if (obj && (maxZindex === null || obj.zIndex > maxZindex)) {
+                        maxZindex = obj.zIndex;
+                    }
+                }
                 if (childNodes.length > 0) {
                     let addedObj: Node | Connector;
-                    for (const node of childNodes) {
+                    for (let i: number = 0; i < childNodes.length; i++) {
+                        const node: NodeModel = childNodes[parseInt(i.toString(), 10)];
+                        node.zIndex = maxZindex + 2 + i;
                         addedObj = this.diagram.add(node as NodeModel);
                         this.setConnectorDetails(addedObj || node as NodeModel, connectorObjectsDetails);
                         (targerNodes as Node).children.push(addedObj.id);
                     }
+                    (targerNodes as Node).zIndex = maxZindex + 1;
                     addedObj = this.diagram.add(targerNodes);
                     this.setConnectorDetails(addedObj || targerNodes, connectorObjectsDetails);
                 } else {
+                    (targerNodes as Node).zIndex = maxZindex + 1;
                     const addedObj: Node | Connector = this.diagram.add(targerNodes);
                     this.setConnectorDetails(addedObj || targerNodes, connectorObjectsDetails);
                 }
@@ -2547,6 +2559,8 @@ export class CommandHandler {
             const temp: string = this.diagram.layerZIndexTable[parseInt(index.toString(), 10)];
             this.diagram.layerZIndexTable[parseInt(index.toString(), 10)] = this.diagram.layerZIndexTable[index - 1];
             this.diagram.layerZIndexTable[index - 1] = temp;
+            this.diagram.layers[targetLayer.zIndex] = targetLayer;
+            this.diagram.layers[layer.zIndex] = layer;
             if (this.diagram.mode === 'Canvas') {
                 this.diagram.refreshDiagramLayer();
             }
@@ -2578,7 +2592,8 @@ export class CommandHandler {
             const temp: string = this.diagram.layerZIndexTable[parseInt(index.toString(), 10)];
             this.diagram.layerZIndexTable[parseInt(index.toString(), 10)] = this.diagram.layerZIndexTable[index + 1];
             this.diagram.layerZIndexTable[index + 1] = temp;
-
+            this.diagram.layers[targetLayer.zIndex] = targetLayer;
+            this.diagram.layers[layer.zIndex] = layer;
             if (this.diagram.mode === 'Canvas') {
                 this.diagram.refreshDiagramLayer();
             }
@@ -7069,6 +7084,15 @@ Remove terinal segment in initial
             if (currentHeight > 0 && currentHeight * sy < minSize) {
                 sy = minSize / currentHeight;
             }
+        }
+        // Bug ID: 997519: Prevent selector scaling below minimum size during resize operations.
+        // When resizing nodes, the calculated scale factors (sx, sy) could shrink the selector 
+        // to less than 1 pixel in width or height, causing rendering issues and misalignment.
+        if ((obj as Selector).width * sx < 1) {
+            sx = 1;
+        }
+        if ((obj as Selector).height * sy < 1) {
+            sy = 1;
         }
         return this.diagram.scale(obj, sx, sy, pivot);
 

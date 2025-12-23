@@ -3029,21 +3029,25 @@ export class TaskbarEdit extends DateProcessor {
         const target: Element = this.getElementByPosition(e);
         const element: HTMLElement = target as HTMLElement;
         const uniqueId: string = this.parent.viewType === 'ResourceView' ? fromItem.taskId : fromItem.rowUniqueID;
-
+        let predType: string;
         if (this.taskBarEditAction === 'ConnectorPointLeftDrag') {
-            predecessor = uniqueId + (this.parent.enableRtl ? 'F' : 'S');
-        }
-        else if (this.taskBarEditAction === 'ConnectorPointRightDrag') {
-            predecessor = uniqueId + (this.parent.enableRtl ? 'S' : 'F');
+            predType = this.parent.enableRtl ? 'F' : 'S';
+            predecessor = uniqueId + predType;
+        } else if (this.taskBarEditAction === 'ConnectorPointRightDrag') {
+            predType = this.parent.enableRtl ? 'S' : 'F';
+            predecessor = uniqueId + predType;
         }
 
         if (this.connectorSecondAction) {
             if (this.connectorSecondAction === 'ConnectorPointLeftDrag') {
-                predecessor += this.parent.enableRtl ? 'F' : 'S';
+                const secondType: 'F' | 'S' = this.parent.enableRtl ? 'F' : 'S';
+                predecessor += secondType;
+                predType += secondType;
                 currentTarget = this.parent.enableRtl ? 'finish' : 'start';
-            }
-            else if (this.connectorSecondAction === 'ConnectorPointRightDrag') {
-                predecessor += this.parent.enableRtl ? 'S' : 'F';
+            } else if (this.connectorSecondAction === 'ConnectorPointRightDrag') {
+                const secondType: 'S' | 'F' = this.parent.enableRtl ? 'S' : 'F';
+                predecessor += secondType;
+                predType += secondType;
                 currentTarget = this.parent.enableRtl ? 'start' : 'finish';
             }
         }
@@ -3057,8 +3061,16 @@ export class TaskbarEdit extends DateProcessor {
         } else {
             this.finalPredecessor = predecessor;
         }
-        const isValidLink: boolean =
+        let isValidLink: boolean =
             this.parent.connectorLineEditModule.validatePredecessorRelation(this.connectorSecondRecord, this.finalPredecessor);
+        const predObj: IPredecessor = {
+            from: this.taskBarEditRecord.ganttProperties.taskId.toString(), to: toItem.taskId.toString(),
+            offset: 0, isDrawn: true, offsetUnit: this.parent.durationUnit.toLocaleLowerCase(), type: predType
+        };
+        if (isValidLink && this.parent.viewType === 'ProjectView' && this.parent.allowParentDependency) {
+            this.parent['cyclicValidator'].resolve();
+            isValidLink = !this.parent['cyclicValidator'].wouldCreateCycleWhenAdding(predObj).wouldCreate;
+        }
         // eslint-disable-next-line
         const predecessorArray: IPredecessor[] = this.parent.predecessorModule.calculatePredecessor(predecessor, this.connectorSecondRecord);
         const args: IDependencyEventArgs = {} as IDependencyEventArgs;

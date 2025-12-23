@@ -143,12 +143,164 @@ function getTextOptions(element: TextElement, maxWidth?: number): BaseAttributes
     (options as TextAttributes).color = element.style.color;
     (options as TextAttributes).italic = element.style.italic;
     (options as TextAttributes).bold = element.style.bold;
-    if (element.thickness !== undefined){
+    if (element.thickness !== undefined) {
         (options as TextAttributes).thickness = element.thickness;
     }
     options.dashArray = ''; options.strokeWidth = element.style.strokeWidth; options.fill = '';
     return options;
 }
+
+/** @private */
+function wrapSvgTextEJ2(text: TextAttributes, textValue?: string, maxHeight?: number): SubTextElement[] {
+    let childNodes: SubTextElement[] = []; let k: number = 0;
+    let txtValue: string; let bounds1: number;
+    let content: string = textValue || text.content;
+    if (text.whiteSpace !== 'nowrap' && text.whiteSpace !== 'pre') {
+        if (text.breakWord === 'breakall') {
+            txtValue = '';
+            txtValue += content[0];
+            for (k = 0; k < content.length; k++) {
+                bounds1 = bBoxText(txtValue, text);
+                if (bounds1 >= text.width && txtValue.length > 0) {
+                    childNodes[childNodes.length] = { text: txtValue, x: 0, dy: 0, width: bounds1 };
+                    txtValue = '';
+                } else {
+                    txtValue = txtValue + (content[k + 1] || '');
+                    // if (txtValue.indexOf('\n') > -1) {
+                    //     txtValue = txtValue.replace('\n', '');
+                    // }
+                    let width: number = bBoxText(txtValue, text);
+                    if ((Math.ceil(width) + 2 >= text.width && txtValue.length > 0) || (txtValue.indexOf('\n') > -1)) {
+                        childNodes[childNodes.length] = { text: txtValue, x: 0, dy: 0, width: width };
+                        txtValue = '';
+                    }
+                    if (k === content.length - 1 && txtValue.length > 0) {
+                        childNodes[childNodes.length] = { text: txtValue, x: 0, dy: 0, width: width };
+                        txtValue = '';
+                    }
+                }
+            }
+        } else {
+            childNodes = wordWrappingEJ2(text, textValue, maxHeight);
+        }
+    } else {
+        childNodes[childNodes.length] = { text: content, x: 0, dy: 0, width: bBoxText(content, text) };
+    }
+    return childNodes;
+}
+
+/** @private */
+function wordWrappingEJ2(text: TextAttributes, textValue?: string, maxHeight?: number): SubTextElement[] {
+    let childNodes: SubTextElement[] = []; let txtValue: string = ''; let j: number = 0;
+    let i: number = 0; let wrap: boolean = text.whiteSpace !== 'nowrap' ? true : false;
+    let content: string = textValue || text.content;
+    let bounds1: number;
+    let eachLine: string[] = content.split('\n'); let txt: string;
+    let words: Object[]; let newText: string;
+    let height: number = 0;
+    let existingWidth: number;
+    let existingText: string;
+    for (j = 0; j < eachLine.length; j++) {
+        txt = '';
+        words = text.textWrapping !== 'NoWrap' ? eachLine[parseInt(j.toString(), 10)].split(' ') : eachLine;
+        for (i = 0; i < words.length; i++) {
+            bounds1 = bBoxText(words[parseInt(i.toString(), 10)] as string, text);
+            if (bounds1 > text.width && (words[parseInt(i.toString(), 10)] as string).length > 0 && text.textWrapping !== 'NoWrap') {
+                if (eachLine.length > 1) {
+                    words[parseInt(i.toString(), 10)] = words[parseInt(i.toString(), 10)] + '\n';
+                }
+                let previousTextContent = text.content;
+                text.content = words[parseInt(i.toString(), 10)] as string;
+                //childNodes = wrapText(text, txtValue, childNodes, maxHeight, height);
+                const res = wrapTextEJ2(text, txtValue, childNodes, maxHeight, height);
+                childNodes = res.childNode;
+                height = res.height;
+                text.content = previousTextContent;
+            } else {
+                txtValue += (((i !== 0 || words.length === 1) && wrap && txtValue.length > 0) ? ' ' : '') + words[parseInt(i.toString(), 10)];
+                newText = txtValue + (words[i + 1] || '');
+                let width: number = bBoxText(newText, text);
+                if (text.content[text.content.indexOf(txtValue) + txtValue.length] === ' ') {
+                    width += bBoxText(' ', text);
+                }
+                if (eachLine.length > 1 && i === words.length - 1) {
+                    txtValue = txtValue + '\n';
+                }
+                if (Math.floor(width) > text.width - 2 && txtValue.length > 0) {
+                    textValue = txtValue;
+                    let differenceValue = (text.fontSize * 1.2) - bBoxTextHeight(txtValue, text);
+                    height = height + bBoxTextHeight(txtValue, text) + differenceValue;
+                    if (maxHeight === undefined || maxHeight === null || height <= maxHeight || (height > maxHeight && childNodes.length === 0)) {
+                        childNodes[childNodes.length] = {
+                            text: (txtValue.indexOf('\n') === -1 && i !== words.length - 1) ? txtValue + ' ' : textValue, x: 0, dy: 0,
+                            width: newText === txtValue ? width : (txtValue === existingText) ? existingWidth : bBoxText(txtValue, text)
+                        };
+                    }
+                    txtValue = '';
+                } else {
+                    if (i === words.length - 1) {
+                        let differenceValue = (text.fontSize * 1.2) - bBoxTextHeight(txtValue, text);
+                        height = height + bBoxTextHeight(txtValue, text) + differenceValue;
+                        if (maxHeight === undefined || height <= maxHeight || (height > maxHeight && childNodes.length === 0)) {
+                            childNodes[childNodes.length] = { text: txtValue, x: 0, dy: 0, width: width };
+                            txtValue = '';
+                        }
+                    }
+                }
+                existingText = newText;
+                existingWidth = width;
+            }
+        }
+    }
+    return childNodes;
+}
+
+/** @private */
+function wrapTextEJ2(txt: TextAttributes, textValue?: string, childNode?: SubTextElement[],
+    maxHeight?: number, height?: number): any {
+    let k: number = 0;
+    let txtValue: string; let bounds1: number;
+    let content: string = textValue || txt.content;
+    txtValue = '';
+    txtValue += content[0];
+    let isFreeTextHeightAllowed: boolean;
+    for (k = 0; k < content.length; k++) {
+        bounds1 = bBoxText(txtValue, txt);
+        if (bounds1 >= txt.width && txtValue.length > 0) {
+            let differenceValue = (txt.fontSize * 1.2) - bBoxTextHeight(txtValue, txt);
+            height = height + bBoxTextHeight(txtValue, txt) + differenceValue;
+            if (maxHeight === undefined || maxHeight === null || height <= maxHeight || (height > maxHeight && childNode.length === 0)) {
+                childNode[childNode.length] = { text: txtValue, x: 0, dy: 0, width: bounds1 };
+            }
+            txtValue = '';
+        } else {
+            txtValue = txtValue + (content[k + 1] || '');
+            let width: number = bBoxText(txtValue, txt);
+            if ((Math.ceil(width) + 2 >= txt.width && txtValue.length > 0)) {
+                txtValue = txtValue.slice(0, -1);
+                let differenceValue = (txt.fontSize * 1.2) - bBoxTextHeight(txtValue, txt);
+                height = height + bBoxTextHeight(txtValue, txt) + differenceValue;
+                width = bBoxText(txtValue, txt);
+                isFreeTextHeightAllowed = (maxHeight === undefined || maxHeight === null || height <= maxHeight || (height > maxHeight && childNode.length === 0));
+                if (isFreeTextHeightAllowed) {
+                    childNode[childNode.length] = { text: txtValue, x: 0, dy: 0, width: width };
+                }
+                txtValue = content[k + 1] || '';
+            }
+            if (k === content.length - 1 && txtValue.length > 0) {
+                let differenceValue = (txt.fontSize * 1.2) - bBoxTextHeight(txtValue, txt);
+                height = height + bBoxTextHeight(txtValue, txt) + differenceValue;
+                isFreeTextHeightAllowed = (maxHeight === undefined || maxHeight === null || height <= maxHeight || (height > maxHeight && childNode.length === 0));
+                if (isFreeTextHeightAllowed) {
+                    childNode[childNode.length] = { text: txtValue, x: 0, dy: 0, width: width };
+                }
+                txtValue = '';
+            }
+        }
+    }
+    return { childNode, height };
+}
+
 
 /** @private */
 function wrapSvgText(text: TextAttributes, textValue?: string, maxHeight?: number): SubTextElement[] {
@@ -161,7 +313,7 @@ function wrapSvgText(text: TextAttributes, textValue?: string, maxHeight?: numbe
             txtValue += content[0];
             for (k = 0; k < content.length; k++) {
                 bounds1 = bBoxText(txtValue, text);
-                if (txtValue == '\n'){
+                if (txtValue == '\n') {
                     txtValue = content[k + 1];
                     k++;
                 }
@@ -239,7 +391,7 @@ function wordWrapping(text: TextAttributes, textValue?: string, maxHeight?: numb
                     txtValue = txtValue + '\n';
                 }
                 const isNewlineOnly: boolean = txtValue === '\n';
-                const isLastWordAndNextLineEmpty: boolean = (i + 1 >= words.length &&  eachLine[parseInt((j + 1).toString(), 10)] === '');
+                const isLastWordAndNextLineEmpty: boolean = (i + 1 >= words.length && eachLine[parseInt((j + 1).toString(), 10)] === '');
                 let calculatedWidth: number = text.thickness !== undefined ? Math.ceil(thicknessInPixel) * 4 + Math.ceil(width) + 2 : Math.ceil(width) + 2;
                 let paddingBetweenWords: number = text.thickness !== undefined ? (thicknessInPixel) * 2 : 0;
                 if (childNodes.length == 0 && text.thickness !== undefined && topPadding !== 0 && topPadding > exactMaxHeight) {
@@ -273,12 +425,12 @@ function wordWrapping(text: TextAttributes, textValue?: string, maxHeight?: numb
                 } else {
                     if (i === words.length - 1) {
                         if ((maxHeight === undefined) || (exactTextHeight < exactMaxHeight) || childNodes.length === 0 && text.fontSize * 1.2 > maxHeight) {
-                            childNodes[childNodes.length] = { text: txtValue, x: 0, dy: 0, width: text.thickness !== undefined ? exactTextWidth : width };
+                            childNodes[childNodes.length] = { text: txtValue, x: 0, dy: 0, width: width };
                             if (text.textAlign === 'justify' && text.thickness !== undefined) {
                                 childNodes[childNodes.length - 1].width = Math.floor(text.width)
                             }
                         } else if (text.thickness !== undefined && exactTextHeight >= exactMaxHeight && bBoxTextHeight(txtValue, text) > paddingBetweenWords) {
-                            childNodes[childNodes.length] = { text: txtValue, x: 0, dy: 0, width: text.thickness !== undefined ? exactTextWidth : width };
+                            childNodes[childNodes.length] = { text: txtValue, x: 0, dy: 0, width: width };
                             if (text.textAlign === 'justify' && text.thickness !== undefined) {
                                 childNodes[childNodes.length - 1].width = Math.floor(text.width)
                             }
@@ -289,15 +441,15 @@ function wordWrapping(text: TextAttributes, textValue?: string, maxHeight?: numb
                         txtValue = '';
                     }
                 }
-            existingText = newText;
-            existingWidth = width;
+                existingText = newText;
+                existingWidth = width;
+            }
         }
     }
-}
     return childNodes;
 }
 /** @private */
-function getHeightMultiplier(text: string) : number{
+function getHeightMultiplier(text: string): number {
     const lines: string[] = text.split(/\r?\n/);
     const hasContent: boolean = lines.some(line => line.trim().length > 0);
     return hasContent ? lines.length : 1;
@@ -311,29 +463,29 @@ function wrapText(txt: TextAttributes, textValue?: string, childNode?: SubTextEl
     txtValue = '';
     let height: number = 0;
     txtValue += content[0];
-    let isFreeTextHeightAllowed: boolean; 
-    let additionalPadding: number = txt.thickness !== undefined ? Math.ceil(txt.thickness * (96 / 72)) * 4 : 0; 
+    let isFreeTextHeightAllowed: boolean;
+    let additionalPadding: number = txt.thickness !== undefined ? Math.ceil(txt.thickness * (96 / 72)) * 4 : 0;
     for (k = 0; k < content.length; k++) {
         bounds1 = bBoxText(txtValue, txt);
         if (bounds1 >= txt.width && txtValue.length > 0) {
             if (maxHeight + additionalPadding === undefined || maxHeight === null || height < maxHeight) {
                 childNode[childNode.length] = { text: txtValue, x: 0, dy: 0, width: bounds1 };
             }
-            height = height +  bBoxTextHeight(txtValue, txt) + additionalPadding;
+            height = height + bBoxTextHeight(txtValue, txt) + additionalPadding;
             additionalPadding = 0;
             txtValue = '';
         } else {
             txtValue = txtValue + (content[k + 1] || '');
             let width: number = bBoxText(txtValue, txt) + additionalPadding;
             if ((Math.ceil(width) + 2 >= txt.width && txtValue.length > 0)) {
-                height = height +  bBoxTextHeight(txtValue, txt) + additionalPadding;
-                additionalPadding = 0;  
+                height = height + bBoxTextHeight(txtValue, txt) + additionalPadding;
+                additionalPadding = 0;
                 txtValue = txtValue.slice(0, -1);
                 width = bBoxText(txtValue, txt);
                 isFreeTextHeightAllowed = ((maxHeight === undefined || maxHeight === null || height <= maxHeight));
                 if (isFreeTextHeightAllowed) {
                     childNode[childNode.length] = { text: txtValue, x: 0, dy: 0, width: width };
-                }                
+                }
                 txtValue = content[k + 1] || '';
             }
             if (k === content.length - 1 && txtValue.length > 0) {
@@ -346,43 +498,46 @@ function wrapText(txt: TextAttributes, textValue?: string, childNode?: SubTextEl
                     childNode[childNode.length] = { text: txtValue, x: 0, dy: 0, width: width };
                 }
                 txtValue = '';
-            }       
+            }
         }
     }
     return childNode;
 }
 
-function wrapSvgTextAlign(text: TextAttributes, childNodes: SubTextElement[]): TextBounds {
+function wrapSvgTextAlign(text: TextAttributes, childNodes: SubTextElement[], isEJ2?: boolean): TextBounds {
     let wrapBounds: TextBounds = { x: 0, width: 0 };
     let k: number = 0; let txtWidth: number;
     let width: number;
     for (k = 0; k < childNodes.length; k++) {
         txtWidth = childNodes[parseInt(k.toString(), 10)].width;
         width = txtWidth;
-        if (text.textAlign === 'left') {
-            txtWidth = 0 + text.strokeWidth / 2;
-        } else if (text.textAlign === 'center') {
-            if (txtWidth > text.width && (text.textOverflow === 'Ellipsis' || text.textOverflow === 'Clip')) {
-                txtWidth = 0;
-            } else {
-                if (childNodes.length === 1) {
-                    txtWidth = -txtWidth / 2;
+        if (isEJ2 === true) {
+            if (text.textAlign === 'left' || text.textAlign === 'justify') {
+                txtWidth = 0
+            } else if (text.textAlign === 'center') {
+                if (txtWidth > text.width && (text.textOverflow === 'Ellipsis' || text.textOverflow === 'Clip')) {
+                    txtWidth = 0;
                 } else {
-                    txtWidth = -txtWidth / 2 + text.strokeWidth / 2;
+                    txtWidth = -txtWidth / 2;
                 }
-            }
-        } else if (text.textAlign === 'right') {
-            if (childNodes.length === 1) {
-                txtWidth = -txtWidth - text.strokeWidth / 2;
+            } else if (text.textAlign === 'right') {
+                txtWidth = -txtWidth;
             } else {
-                txtWidth = -txtWidth + text.strokeWidth / 2;
+                txtWidth = childNodes.length > 1 ? 0 : -txtWidth / 2;
             }
         } else {
-            if (childNodes.length === 1) {
-                txtWidth = childNodes.length > 1 ? 0 : -txtWidth / 2;
+            if (text.textAlign === 'left') {
+                txtWidth = 0
+            } else if (text.textAlign === 'center') {
+                if (txtWidth > text.width && (text.textOverflow === 'Ellipsis' || text.textOverflow === 'Clip')) {
+                    txtWidth = 0;
+                } else {
+                    txtWidth = -txtWidth / 2;
+                }
+            } else if (text.textAlign === 'right') {
+                txtWidth = -txtWidth;
             } else {
                 txtWidth = childNodes.length > 1 ? 0 : -txtWidth / 2;
-                txtWidth += text.strokeWidth / 2;
             }
         }
         childNodes[parseInt(k.toString(), 10)].dy = text.fontSize * 1.2;
@@ -408,12 +563,15 @@ export function measureText(
     let childNodes: SubTextElement[];
     let wrapBounds: TextBounds;
     let options: TextAttributes = getTextOptions(text, maxWidth) as TextAttributes;
-    if (options.strokeWidth > 1 && text.relativeMode === 'Point') {
+    if (text.isEJ2 === true && text.isFreeText === true) {
         options.width -= options.strokeWidth;
         options.height -= options.strokeWidth;
+        maxHeight -= options.strokeWidth;
+        text.childNodes = childNodes = wrapSvgTextEJ2(options, textValue, maxHeight);
+    } else {
+        text.childNodes = childNodes = wrapSvgText(options, textValue, maxHeight);
     }
-    text.childNodes = childNodes = wrapSvgText(options, textValue, maxHeight);
-    text.wrapBounds = wrapBounds = wrapSvgTextAlign(options, childNodes);
+    text.wrapBounds = wrapBounds = wrapSvgTextAlign(options, childNodes, text.isEJ2);
     bounds.width = wrapBounds.width;
     if (text.wrapBounds.width >= maxWidth && options.textOverflow !== 'Wrap') {
         bounds.width = maxWidth;

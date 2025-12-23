@@ -1542,32 +1542,34 @@ export function _checkField(dictionary: _PdfDictionary): boolean {
 export function _getItemValue(itemDictionary: _PdfDictionary): string {
     let itemValue: string = '';
     let name: _PdfName;
-    if (itemDictionary.has('AS')) {
-        name = itemDictionary.get('AS');
-        if (name !== null && name.name !== 'Off') {
-            itemValue = name.name;
-        }
-    } else if (itemDictionary.has('V')) {
-        name = itemDictionary.get('V');
-        if (name !== null && name.name !== 'Off') {
-            itemValue = name.name;
-        }
-    }
-    if (itemValue === '' && itemDictionary.has('AP')) {
-        const dictionary: _PdfDictionary = itemDictionary.get('AP');
-        if (dictionary && dictionary.has('N')) {
-            let appearance: _PdfBaseStream | _PdfDictionary = dictionary.get('N');
-            if (appearance instanceof _PdfBaseStream) {
-                appearance = appearance.dictionary;
+    if (itemDictionary && itemDictionary instanceof _PdfDictionary) {
+        if (itemDictionary.has('AS')) {
+            name = itemDictionary.get('AS');
+            if (name !== null && name.name !== 'Off') {
+                itemValue = name.name;
             }
-            if (appearance && appearance instanceof _PdfDictionary) {
-                let hasKey: boolean = false;
-                appearance.forEach((key: string, value: any) => { // eslint-disable-line
-                    if (!hasKey && key !== 'Off') {
-                        itemValue = key;
-                        hasKey = true;
-                    }
-                });
+        } else if (itemDictionary.has('V')) {
+            name = itemDictionary.get('V');
+            if (name !== null && name.name !== 'Off') {
+                itemValue = name.name;
+            }
+        }
+        if (itemValue === '' && itemDictionary && itemDictionary.has('AP')) {
+            const dictionary: _PdfDictionary = itemDictionary.get('AP');
+            if (dictionary && dictionary.has('N')) {
+                let appearance: _PdfBaseStream | _PdfDictionary = dictionary.get('N');
+                if (appearance instanceof _PdfBaseStream) {
+                    appearance = appearance.dictionary;
+                }
+                if (appearance && appearance instanceof _PdfDictionary) {
+                    let hasKey: boolean = false;
+                    appearance.forEach((key: string, value: any) => { // eslint-disable-line
+                        if (!hasKey && key !== 'Off') {
+                            itemValue = key;
+                            hasKey = true;
+                        }
+                    });
+                }
             }
         }
     }

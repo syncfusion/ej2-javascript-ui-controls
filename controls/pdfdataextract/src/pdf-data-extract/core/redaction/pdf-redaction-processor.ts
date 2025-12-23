@@ -352,7 +352,7 @@ export class _PdfRedactionProcessor {
     _getBoundsFromPoints(points: number[], loadedPage: PdfPage): { bounds: { x: number; y: number; width: number; height: number };
         isValidAnnotation: boolean } {
         let isValidAnnotation: boolean = false;
-        if (points.length > 0) {
+        if (points && Array.isArray(points) && points.length > 0) {
             let minX: number = points[0];
             let maxX: number = points[0];
             let minY: number = loadedPage.graphics._size.height - points[1];

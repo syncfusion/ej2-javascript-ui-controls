@@ -4067,7 +4067,7 @@ export class FreeTextSettings extends ChildProperty<FreeTextSettings> {
     /**
      * specifies the border color of the annotation.
      */
-    @Property('#ffffff00')
+    @Property('#000000')
     public borderColor: string;
 
     /**
@@ -7575,7 +7575,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
      *
      */
 
-    @Property({ opacity: 1, fillColor: '#ffffff00', borderColor: '#ffffff00', author: 'Guest', borderWidth: 1, width: 151, fontSize: 16, height: 24.6, fontColor: '#000', fontFamily: 'Helvetica', defaultText: 'Type Here', textAlignment: 'Left', fontStyle: FontStyle.None, allowTextOnly: false, annotationSelectorSettings: { selectionBorderColor: '', resizerBorderColor: 'black', resizerFillColor: '#FF4081', resizerSize: 8, selectionBorderThickness: 1, resizerShape: 'Square', selectorLineDashArray: [], resizerLocation: AnnotationResizerLocation.Corners | AnnotationResizerLocation.Edges, resizerCursorType: null }, minHeight: 0, minWidth: 0, maxWidth: 0, maxHeight: 0, isLock: false, allowedInteractions: ['None'], isPrint: true, isReadonly: false, enableAutoFit: false, subject: 'Text Box' })
+    @Property({ opacity: 1, fillColor: '#ffffff00', borderColor: '#000000', author: 'Guest', borderWidth: 0, width: 151, fontSize: 16, height: 24.6, fontColor: '#000', fontFamily: 'Helvetica', defaultText: 'Type Here', textAlignment: 'Left', fontStyle: FontStyle.None, allowTextOnly: false, annotationSelectorSettings: { selectionBorderColor: '', resizerBorderColor: 'black', resizerFillColor: '#FF4081', resizerSize: 8, selectionBorderThickness: 1, resizerShape: 'Square', selectorLineDashArray: [], resizerLocation: AnnotationResizerLocation.Corners | AnnotationResizerLocation.Edges, resizerCursorType: null }, minHeight: 0, minWidth: 0, maxWidth: 0, maxHeight: 0, isLock: false, allowedInteractions: ['None'], isPrint: true, isReadonly: false, enableAutoFit: false, subject: 'Text Box' })
     public freeTextSettings: FreeTextSettingsModel;
 
     /**
@@ -13699,7 +13699,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
      * For example, passing "1,3,5-7" will extract page 1, page 3, and pages 5 through 7.
      */
     public extractPages(value: string): Uint8Array {
-        if (!isNullOrUndefined(this.serviceUrl)) {
+        if (!isNullOrUndefined(this.serviceUrl) && this.serviceUrl !== '') {
             console.warn('extractPages is supported only in client-side rendering.');
             return new Uint8Array(0);
         }
@@ -13742,14 +13742,26 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
                     const pageData: OrganizeDetails = pages.find((p: OrganizeDetails): boolean => p.currentPageIndex + 1 === index);
                     if (pageData && pageData.documentData) {
                         const documentData: any = this.viewerBase.convertBase64(pageData.documentData);
-                        const document: PdfDocument = new PdfDocument(documentData, null);
+                        const document: PdfDocument = new PdfDocument(documentData, pageData.password);
                         imports.push({ page: index, count: document.pageCount });
                         document.destroy();
                     }
                 });
                 if (imports.length) {
                     value = this.updateValueString(value, imports);
-                    this.pageOrganizer.deleteExtractValue = value;
+                    const elementID: string = this.element.id;
+                    const isSeparateChecked: boolean = document.getElementById(elementID + '_extract_separate') ?
+                        (document.getElementById(elementID + '_extract_separate') as any).checked : false;
+                    const isDeleteChecked: boolean = document.getElementById(elementID + '_extract_delete') ?
+                        (document.getElementById(elementID + '_extract_delete') as any).checked : false;
+                    if (isSeparateChecked && isDeleteChecked) {
+                        const previousValue: string = (this.pageOrganizer.deleteExtractValue || '').trim();
+                        this.pageOrganizer.deleteExtractValue = !isNullOrUndefined(previousValue) && previousValue !== '' ?
+                            `${previousValue}, ${value}` : value;
+                    }
+                    else {
+                        this.pageOrganizer.deleteExtractValue = value;
+                    }
                 }
             }
         }

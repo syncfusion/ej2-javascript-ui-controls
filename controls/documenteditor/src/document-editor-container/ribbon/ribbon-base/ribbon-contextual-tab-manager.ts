@@ -4,6 +4,7 @@ import { ContextType } from '../../../document-editor/base/index';
 import { TABLE_DESIGN_TAB_ID } from './../table-design-tab/table-design-tab';
 import { TABLE_LAYOUT_TAB_ID } from './../table-layout-tab/table-tab';
 import { HEADER_FOOTER_TAB_ID } from './../header-footer-tab/header-footer-tab';
+import { HOME_TAB_ID } from './../home-tab/home-tab';
 import { Ribbon as EJ2Ribbon, RibbonContextualTabSettingsModel } from '@syncfusion/ej2-ribbon';
 import { RIBBON_ID } from './ribbon-constants';
 import { PICTURE_FORMAT_TAB_ID } from '../picture-format-tab/picture-format-tab';
@@ -85,6 +86,15 @@ export class RibbonContextualTabManager {
 
         const currentContext: ContextType = this.container.documentEditor.selection.contextType;
 
+        const selectedTab: string = ribbon.tabs[ribbon.selectedTab].header;
+        const ribbonId: string = this.container.element.id + RIBBON_ID;
+        if ((selectedTab === this.container.ribbon.localObj.getConstant('Header & Footer')
+            || selectedTab === this.container.ribbon.localObj.getConstant('Table Design')
+            || selectedTab === this.container.ribbon.localObj.getConstant('Table Layout'))
+            && !(currentContext === 'HeaderText' || currentContext === 'HeaderImage' || currentContext === 'HeaderTableText' || currentContext === 'HeaderTableImage'
+            || currentContext === 'FooterText' || currentContext === 'FooterImage' || currentContext === 'FooterTableText' || currentContext === 'FooterTableImage')) {
+            ribbon.selectTab(ribbonId + HOME_TAB_ID);
+        }
         this.updateTableContextualTabs(ribbon, currentContext);
         this.updateHeaderFooterContextualTab(ribbon, currentContext);
         this.updatePictureFormatContextualTab(ribbon, currentContext);
@@ -147,6 +157,13 @@ export class RibbonContextualTabManager {
             return;
         }
         const ribbonId: string = this.container.element.id + RIBBON_ID;
+        const selectedTab: string = ribbon.tabs[ribbon.selectedTab].header;
+        if (selectedTab === this.container.ribbon.localObj.getConstant('Header & Footer')
+            || selectedTab === this.container.ribbon.localObj.getConstant('Table Design')
+            || selectedTab === this.container.ribbon.localObj.getConstant('Table Layout')
+            || selectedTab === this.container.ribbon.localObj.getConstant('Picture Format')) {
+            ribbon.selectTab(ribbonId + HOME_TAB_ID);
+        }
         ribbon.hideTab(ribbonId + TABLE_DESIGN_TAB_ID, true);
         ribbon.hideTab(ribbonId + TABLE_LAYOUT_TAB_ID, true);
         ribbon.hideTab(ribbonId + HEADER_FOOTER_TAB_ID, true);

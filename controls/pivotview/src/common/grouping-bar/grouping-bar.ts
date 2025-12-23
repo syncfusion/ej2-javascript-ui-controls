@@ -866,7 +866,10 @@ export class GroupingBar implements IAction {
             : 1;
         const groupRow: NodeListOf<HTMLElement> = this.parent.element.querySelector('.' + cls.HEADERCONTENT).querySelector('.e-columnheader').querySelectorAll('.e-group-rows');
         for (let i: number = 0; i < level; i++) {
-            if (!isNullOrUndefined(groupRow[i as number])) {
+            if (!isNullOrUndefined(groupRow[i as number]) && !isNullOrUndefined(groupRow[i as number].style) &&
+                !isNullOrUndefined(colGroupElement[i as number] as HTMLElement) &&
+                !isNullOrUndefined((colGroupElement[i as number] as HTMLElement).style) &&
+                !isNullOrUndefined((colGroupElement[i as number] as HTMLElement).style.width)) {
                 groupRow[i as number].style.width = (parseInt((colGroupElement[i as number] as HTMLElement).style.width, 10) - 6) + 'px';
             }
         }

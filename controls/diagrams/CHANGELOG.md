@@ -2,6 +2,17 @@
 
 ## [Unreleased]
 
+## 32.1.20 (2025-12-23)
+
+### Diagram
+
+#### Bug Fixes
+
+- `#I792576` - The NaN exception scaling error will no longer occur when resizing path nodes without dimensions.
+- `#I784056` - Issues in layer's moveObject function has been fixed.
+
+## 32.1.19 (2025-12-16)
+
 ### Diagram
 
 #### Bug Fixes

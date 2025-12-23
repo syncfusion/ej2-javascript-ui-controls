@@ -327,7 +327,7 @@ export class EventAction {
         this.handleBlockKeyActions(keyEvent);
     }
 
-    private isAnyPopupOpen(): boolean {
+    public isAnyPopupOpen(): boolean {
         const mentionPopupId: string = `${this.parent.blockContainer.id}_popup`;
         const commandPopupElement: HTMLElement = document.querySelector(`#${mentionPopupId}.e-blockeditor-command-menu`) as HTMLElement;
         const userMentionPopupElement: HTMLElement = document.querySelector(`#${mentionPopupId}.e-blockeditor-user-menu`) as HTMLElement;

@@ -806,10 +806,10 @@ export class ContextMenu {
             contextMenuItems.push({ separator: true, id: '_contextmenu_moreSuggestion_separator' });
         } else {
             contextMenuItems.push({ text: this.locale.getConstant('Add to Dictionary'), id: '_contextmenu_otherSuggestions_spellcheck_Add to Dictionary', iconCss: '' });
+            contextMenuItems.push({ text: this.locale.getConstant('Ignore Once'), id: '_contextmenu_otherSuggestions_spellcheck_Ignore Once', iconCss: '' });
+            contextMenuItems.push({ text: this.locale.getConstant('Ignore All'), id: '_contextmenu_otherSuggestions_spellcheck_Ignore All', iconCss: '' });
+            contextMenuItems.push({ separator: true, id: '_contextmenu_change_separator' });
         }
-        contextMenuItems.push({ text: this.locale.getConstant('Ignore Once'), id: '_contextmenu_otherSuggestions_spellcheck_Ignore Once', iconCss: '' });
-        contextMenuItems.push({ text: this.locale.getConstant('Ignore All'), id: '_contextmenu_otherSuggestions_spellcheck_Ignore All', iconCss: '' });
-        contextMenuItems.push({ separator: true, id: '_contextmenu_change_separator' });
         contextMenuItems.push({ text: this.locale.getConstant('Spelling'), id: CONTEXTMENU_SPELLING_DIALOG, iconCss: 'e-icons e-de-spellcheck', items: [] });
         contextMenuItems.push({ separator: true, id: '_contextmenu_spelling_separator' });
         return contextMenuItems;

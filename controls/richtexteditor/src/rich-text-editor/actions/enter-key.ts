@@ -293,7 +293,8 @@ export class EnterKeyAction {
                                     }
                                     let insertElem: HTMLElement;
                                     if (this.formatTags.indexOf(newElem.nodeName.toLocaleLowerCase()) < 0) {
-                                        insertElem = this.createInsertElement(shiftKey);
+                                        const isStylesNotNeeded: boolean = this.startNode === nearBlockNode;
+                                        insertElem = this.createInsertElement(shiftKey, isStylesNotNeeded);
                                     }
                                     else {
                                         insertElem = this.parent.createElement(newElem.nodeName);
@@ -778,7 +779,7 @@ export class EnterKeyAction {
         }
     }
 
-    private createInsertElement(shiftKey: boolean): HTMLElement {
+    private createInsertElement(shiftKey: boolean, isStylesNotNeeded?: boolean): HTMLElement {
         let insertElem: HTMLElement;
         if ((this.parent.enterKey === 'DIV' && !shiftKey) || (this.parent.shiftEnterKey === 'DIV' && shiftKey)) {
             insertElem = this.parent.createElement('div');
@@ -787,7 +788,7 @@ export class EnterKeyAction {
         }
         const previousBlockNode: Element = this.parent.formatter.editorManager.domNode.blockNodes()[0].previousSibling as Element;
         const nextBlockNode: Element = this.parent.formatter.editorManager.domNode.blockNodes()[0].nextSibling as Element;
-        if (!isNOU(previousBlockNode) && previousBlockNode.nodeName !== '#text' && previousBlockNode.hasAttribute('style') && previousBlockNode.nodeName !== 'TABLE') {
+        if (!isNOU(previousBlockNode) && previousBlockNode.nodeName !== '#text' && previousBlockNode.hasAttribute('style') && previousBlockNode.nodeName !== 'TABLE' && !isStylesNotNeeded) {
             insertElem.style.cssText = previousBlockNode.getAttribute('style');
         }
         if (isNOU(previousBlockNode) && !isNOU(nextBlockNode) && nextBlockNode.nodeName !== '#text' && nextBlockNode.hasAttribute('style') && nextBlockNode.nodeName !== 'TABLE') {

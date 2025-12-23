@@ -392,6 +392,39 @@ describe('RTE CR issues ', () => {
             expect(rteObj.inputElement.innerHTML === '<ol><li class="startNode" style="font-size: 24pt;"><span style="font-size: 24pt;">list 1</span></li><li style="font-size: 24pt;"><span style="font-size: 24pt;">list 2</span></li><li class="endNode" style="font-size: 24pt;"><span style="font-size: 24pt;">list 3</span></li></ol>').toBe(true);
         });
     });
+    describe('997817 - Target attribute got stripped out from the inserted link in the RichTextEditor', () => {
+        let rteEle: HTMLElement;
+        let rteObj: RichTextEditor;
+        beforeAll(() => {
+            rteObj = renderRTE({
+                value: `<p class="focusNode">The Rich Text Editor (RTE) control is an easy to render in the client side. Customer <a class="e-rte-anchor" href="http://fdbdfbdb" title="http://fdbdfbdb" target="_blank">easy</a> to edit the contents and get the HTML content for the displayed content. A rich text editor control provides users with a toolbar that helps them to apply rich text formats to the text entered in the text area.</p>`,
+                toolbarSettings: {
+                    items: ['CreateLink','SourceCode','Bold']
+                },
+                enableXhtml: true
+            });
+            rteEle = rteObj.element;
+        });
+        afterAll(() => {
+            destroy(rteObj);
+        });
+        it('target attribute should be preserved for anchor when enabiling xhtml', () => {
+            const INIT_MOUSEDOWN_EVENT: MouseEvent = new MouseEvent('mousedown', BASIC_MOUSE_EVENT_INIT);
+            rteObj.focusIn();
+            rteObj.inputElement.dispatchEvent(INIT_MOUSEDOWN_EVENT);
+            let focusNode = rteObj.element.querySelector('.focusNode');
+            let selObj: any = new NodeSelection();
+            selObj.setSelectionText(rteObj.contentModule.getDocument(), focusNode.childNodes[0], focusNode.childNodes[0], 76, 84);
+            (<HTMLElement>rteEle.querySelectorAll(".e-toolbar-item")[0] as HTMLElement).click();
+            (rteObj as any).linkModule.dialogObj.contentEle.querySelector('.e-rte-linkurl').value = 'https://www.syncfusion.com';
+            let target: any = (<any>rteObj).linkModule.dialogObj.primaryButtonEle;
+            (<any>rteObj).linkModule.dialogObj.primaryButtonEle.click({ target: target, preventDefault: function () { } });
+            expect(rteObj.inputElement.querySelector('a').hasAttribute('target')).toBe(true);
+            (<HTMLElement>rteEle.querySelectorAll(".e-toolbar-item")[1] as HTMLElement).click();
+            (<any>rteObj).element.querySelector('#'+rteObj.element.id+'_toolbar_Preview').click();
+            expect(rteObj.inputElement.querySelector('a').hasAttribute('target')).toBe(true);
+        });
+    });
     describe("966215 - Maximize Shortcut Does Not Work When Code View Is Enabled", () => {
             let rteObj: RichTextEditor;
             beforeAll(() => {

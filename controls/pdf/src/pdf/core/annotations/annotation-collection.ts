@@ -529,6 +529,9 @@ export class PdfAnnotationCollection {
             const annotation: PdfAnnotation = this.at(index);
             if (annotation) {
                 const flattenValue: boolean = annotation.flatten || isFlatten;
+                if (flattenValue && !annotation.flatten) {
+                    annotation.flatten = flattenValue;
+                }
                 annotation._isExport = this._isExport;
                 if (flattenValue && this._annotations.lastIndexOf(annotation._ref) === -1) {
                     index++;

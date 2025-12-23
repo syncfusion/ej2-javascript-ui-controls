@@ -319,7 +319,7 @@ export class FormattingAction {
             ? (getDeepestTextNode((contentElement.firstChild as HTMLElement)) || contentElement.firstChild) : contentElement.firstChild;
         const endTextNode: Node = contentElement.lastChild.nodeType === Node.ELEMENT_NODE ?
             (getDeepestTextNode((contentElement.lastChild as HTMLElement)) || contentElement.lastChild) : contentElement.lastChild;
-        const tableEle: HTMLElement = blockElement.closest('.e-table-block') as HTMLElement;
+        const tableEle: HTMLElement = blockElement.closest('.' + constants.TABLE_BLOCK_CLS) as HTMLElement;
         const hasActiveSel: boolean = this.parent.tableSelectionManager.hasActiveTableSelection(tableEle);
         blockRange.selectNodeContents(contentElement);
         blockRange.setStart(startTextNode, 0);

@@ -1944,6 +1944,10 @@ private calculatePathBounds(data: string): Rect {
                 this.renderBookmark(this.getScaledValue(bookmark.x, 1), this.getScaledValue(bookmark.y, 2), this.getScaledValue(bookmark.height), bookmark.type);
             }
         }
+        let isEnableParaMark: boolean = false;
+        let format: WParagraphFormat = lineWidget.paragraph.paragraphFormat;
+        const isEmptyHFWidget: boolean = lineWidget.paragraph.isInHeaderFooter && lineWidget.paragraph.isEmpty() && isNullOrUndefined(lineWidget.paragraph.nextWidget) && isNullOrUndefined(lineWidget.paragraph.previousWidget);
+        isEnableParaMark = this.documentHelper.owner.enableHeaderAndFooter || !isEmptyHFWidget || (isEmptyHFWidget && !isNullOrUndefined(format.uniqueParagraphFormat));
         if (this.documentHelper.owner.documentEditorSettings.showHiddenMarks && !this.isPrinting) {
             let text: string = '';
             let currentCharFormat: WCharacterFormat = lineWidget.paragraph.characterFormat;
@@ -2007,7 +2011,7 @@ private calculatePathBounds(data: string): Rect {
                 if (lineWidget.height != 0) { //The nested table parent cell mark is render the out bound ,So skip cell mark is linewidget height equal to zero 
                     text = String.fromCharCode(164);
                 }
-            } else if(isNullOrUndefined(lineWidget.nextLine)) {
+            } else if (isNullOrUndefined(lineWidget.nextLine) && isEnableParaMark) {
                 text = String.fromCharCode(182);
             }
             if (lineWidget.paragraph.containerWidget instanceof BodyWidget && !isNullOrUndefined(lineWidget.paragraph.nextRenderedWidget)) {

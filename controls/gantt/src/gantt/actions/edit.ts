@@ -3218,6 +3218,7 @@ export class Edit {
         }
         const deleteRecordIDs: string[] = [];
         if (deletedRecords.length > 0) {
+            this.parent['regenerateCycles'] = true;
             let recordIndex : number;
             let record : IGanttData;
             if (this.parent.enableVirtualization) {
@@ -3941,6 +3942,7 @@ export class Edit {
     private addSuccess(args: ITaskAddedEventArgs): void {
         // let addedRecords: IGanttData = args.addedRecord;
         // let eventArgs: IActionBeginEventArgs = {};
+        this.parent['regenerateCycles'] = true;
         this.parent.updatedConnectorLineCollection = [];
         this.parent.connectorLineIds = [];
         this.parent.predecessorModule.createConnectorLinesCollection(this.parent.flatData);
@@ -5016,6 +5018,9 @@ export class Edit {
     }
     private indentOutdentSuccess(args: RowDropEventArgs, isDrag: boolean): void {
         this.parent.treeGrid.parentData = [];
+        if (this.parent.viewType === 'ProjectView' && this.parent.allowParentDependency) {
+            this.parent['validateCycles']();
+        }
         if (this.parent.treeGrid.editModule) {
             this.parent.treeGrid.editModule['isOnBatch'] = false;
         }

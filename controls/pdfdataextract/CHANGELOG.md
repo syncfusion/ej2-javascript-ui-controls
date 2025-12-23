@@ -2,6 +2,17 @@
 
 ## [Unreleased]
 
+## 32.1.20 (2025-12-23)
+
+### PDF Data Extract
+
+#### Bug Fixes
+
+- Resolved a script error that occurred while adding annotations and redactions.
+- Resolved an issue where redaction was not applied correctly on rotated PDF documents.
+
+## 32.1.19 (2025-12-16)
+
 ### PDF Data Extract
 
 #### Key Features

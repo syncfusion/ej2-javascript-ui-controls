@@ -211,6 +211,9 @@ export class LayoutRender extends MobileLayout {
                 if (column.showAddButton) {
                     const button: HTMLElement = createElement('div', { className: cls.SHOW_ADD_BUTTON, attrs: { 'tabindex': '-1' } });
                     button.appendChild(createElement('div', { className: cls.SHOW_ADD_ICON + ' ' + cls.ICON_CLASS }));
+                    if (!column.isExpanded) {
+                        addClass([button], cls.COLLAPSED_CLASS);
+                    }
                     td.appendChild(button);
                 }
                 tr.appendChild(td);

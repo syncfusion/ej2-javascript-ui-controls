@@ -1365,8 +1365,12 @@ export class Toolbar {
                 let chartInstance: Chart | AccumulationChart = getInstance(emptyChartElement, Chart) as Chart;
                 chartInstance = !isNullOrUndefined(chartInstance) ? chartInstance : this.parent.chart;
                 if (this.parent.grid && chartInstance) {
-                    this.parent.grid.element.style.display = '';
-                    chartInstance.element.style.display = 'none';
+                    if (this.parent.grid.element && this.parent.grid.element.style) {
+                        this.parent.grid.element.style.display = '';
+                    }
+                    if (chartInstance.element && chartInstance.element.style) {
+                        chartInstance.element.style.display = 'none';
+                    }
                     if (this.parent.chartSettings.enableMultipleAxis && this.parent.chartSettings.enableScrollOnMultiAxis) {
                         (this.parent.element.querySelector('.e-pivotchart') as HTMLElement).style.display = 'none';
                     }
@@ -1640,8 +1644,12 @@ export class Toolbar {
             let chartInstance: Chart | AccumulationChart = getInstance(emptyChartElement, Chart) as Chart;
             chartInstance = !isNullOrUndefined(chartInstance) ? chartInstance : this.parent.chart;
             if (chartInstance) {
-                this.parent.grid.element.style.display = 'none';
-                chartInstance.element.style.display = '';
+                if (this.parent && this.parent.grid && this.parent.grid.element && this.parent.grid.element.style) {
+                    this.parent.grid.element.style.display = 'none';
+                }
+                if (chartInstance.element && chartInstance.element.style) {
+                    chartInstance.element.style.display = '';
+                }
                 this.parent.currentView = 'Chart';
                 this.parent.setProperties({ displayOption: { primary: 'Chart' } }, true);
                 if (this.parent.chartSettings.enableScrollOnMultiAxis && this.parent.chartSettings.enableMultipleAxis) {

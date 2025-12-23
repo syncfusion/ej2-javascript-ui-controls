@@ -1012,6 +1012,9 @@ export class PivotUtil {
                     (sortMembersOrder.sort((a: IAxisSet, b: IAxisSet): number => (a.actualText === 'Grand Total' || b.actualText === 'Grand Total') ? 0 : (a.actualText === 'Out of Range') ? -1 : (b.actualText === 'Out of Range') ? 1 : (Number(a.actualText.toString().match(/\d+/)) < Number(b.actualText.toString().match(/\d+/))) ? 1 : ((Number(b.actualText.toString().match(/\d+/)) < Number(a.actualText.toString().match(/\d+/))) ? -1 : 0))) :
                     sortMembersOrder;
         } else if (type === 'string') {
+            if (sortOrder === 'None') {
+                return sortMembersOrder;
+            }
             const sortElements: (a: IAxisSet, b: IAxisSet) => number = (a: IAxisSet, b: IAxisSet): number =>
                 sortOrder === 'Ascending'
                     ? (String(a.actualText) === 'Grand Total' || String(b.actualText) === 'Grand Total') ? 0 : (String(a.actualText)).localeCompare(String(b.actualText), undefined, { sensitivity: 'base' })

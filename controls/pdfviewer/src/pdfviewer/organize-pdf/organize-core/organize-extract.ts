@@ -5,8 +5,7 @@ import { ItemModel, Toolbar } from '@syncfusion/ej2-navigations';
 import { CheckBox } from '@syncfusion/ej2-buttons';
 import { selectTile, clearSelection } from './tile-interaction';
 import { isOrganizeDialogRendered } from './organize-initialization';
-import { enableToolbarItem } from './organize-toolbar';
-
+import { enableDisableToolbarItems, enableToolbarItem, updateSelectAllCheckbox } from './organize-toolbar';
 /**
  * @private
  * @returns { void }
@@ -395,7 +394,7 @@ export function onExtractConfirmClick(): void {
     // Case 2: Delete pages after extracting (combined PDF)
     else if (isDeleteChecked && !isSeparateChecked) {
         const byteArray: Uint8Array = this.pdfViewer.extractPages(value);
-        if (byteArray) {
+        if (byteArray && byteArray.length > 0) {
             this.pdfViewerBase.fileDownload(byteArray, this.pdfViewerBase, false, true);
             if (selectedPages.length === this.tileAreaDiv.childElementCount) {
                 this.pdfViewer.loadDocInternally(this.pdfViewerBase.currentDocumentByteArray, this.pdfViewer.pdfRendererModule.password,
@@ -621,8 +620,16 @@ export function showHideExtractIcon(canExtractPages: boolean): void {
 export function inputTextboxUpdate(): void {
     const selectedPages: number[] = selectedNodesInOrganizeWindow.call(this);
     if (!isNullOrUndefined(this.extractPagesInput)) {
-        this.extractPagesInput.value = formatPageRanges(selectedPages.join(','), this.tileAreaDiv.childElementCount);
+        const formatted: string = formatPageRanges(selectedPages.join(','), this.tileAreaDiv.childElementCount);
+        // Update component value
+        this.extractPagesInput.value = formatted;
         this.extractPagesInput.dataBind();
+        // Also ensure the native input reflects the latest value
+        if (this.extractPagesInput.element) {
+            this.extractPagesInput.element.value = formatted;
+        }
+        // Update Extract button enable state
+        try { updateExtractOkButtonState.call(this); } catch (_) { /* no-op */ }
     }
 }
 
@@ -645,6 +652,8 @@ function initExtractEventListeners(): void {
             if (tile) { selectTile.call(this, tile); }
         });
         updateExtractOkButtonState.call(this);
+        try { updateSelectAllCheckbox.call(this); } catch (_) { /* no-op */ }
+        try { enableDisableToolbarItems.call(this); } catch (_) { /* no-op */ }
     };
 
     this.boundExtractInputChange = changeHandler;

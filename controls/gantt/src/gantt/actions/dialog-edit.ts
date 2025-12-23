@@ -2950,8 +2950,33 @@ export class DialogEdit {
         }
     }
     private gridActionComplete(args: GridActionEventArgs): void {
+        const dialogElement: HTMLElement = this.parent.editModule.dialogModule.dialog.querySelector('#' + this.parent.element.id + 'DependencyTabContainer');
         if (args.requestType === 'save') {
-            const dialogElement: HTMLElement = this.parent.editModule.dialogModule.dialog.querySelector('#' + this.parent.element.id + 'DependencyTabContainer');
+            if (this.parent.viewType === 'ProjectView' && args['data']) {
+                const predObj: IPredecessor = {
+                    from: args['data'].id, to: this.editedRecord[this.parent.taskFields.id].toString(), offset: args['data'].offset, type: args['data'].type
+                };
+                this.parent['cyclicValidator'].resolve();
+                const cycles: { wouldCreate: boolean, cycles: string[][] } = this.parent['cyclicValidator'].wouldCreateCycleWhenAdding(predObj);
+                const gridDataSource: Object[] = this.beforeOpenArgs['Dependency']['dataSource'];
+                if (cycles.cycles.length > 0 && gridDataSource.length > 0) {
+                    const modifiedDataSource: Object[] = [];
+                    for (let i: number = 0; i < gridDataSource.length; i++) {
+                        const id: string = gridDataSource[i as number]['id'];
+                        const existsInCycles: boolean = cycles.cycles.some(
+                            (innerArr: string[]) => innerArr.indexOf(id) !== -1
+                        );
+                        if (!existsInCycles) {
+                            modifiedDataSource.push(gridDataSource[i as number]);
+                        }
+                    }
+                    const gridObj: Grid = <Grid>(<EJ2Instance>dialogElement).ej2_instances[0];
+                    gridObj.dataSource = this.beforeOpenArgs['Dependency']['dataSource'] = modifiedDataSource;
+                    /* eslint-disable-next-line */
+                    const err: string = `Cyclic Dependency is detected for the newly added dependency from the Task ID ${predObj.from} to Task ID ${predObj.to}. Please provide valid dependency.`;
+                    this.parent.trigger('actionFailure', { error: err });
+                }
+            }
             if (!isNullOrUndefined(dialogElement)) {
                 if (!isNullOrUndefined(args['rows']) && args['rows'].length === this.preTableCollection.length) {
                     /* eslint-disable-next-line */
@@ -3935,7 +3960,44 @@ export class DialogEdit {
         if (gridObj.isEdit) {
             gridObj.endEdit();
         }
-        const dataSource: IPreData[] = <IPreData[]>gridObj.dataSource;
+        this.parent['cyclicValidator'].resolve();
+        const cycleSet: Set<string> = new Set();
+
+        for (const item of gridObj.dataSource as IPreData[]) {
+            const predObj: {
+                from: string;
+                to: any;
+                offset: string | number;
+                type: string;
+            } = {
+                from: item.id,
+                to: this.editedRecord[this.parent.taskFields.id].toString(),
+                offset: item.offset,
+                type: item.type
+            };
+
+            const cycles: {
+                wouldCreate: boolean;
+                cycles: string[][];
+            } = this.parent['cyclicValidator'].wouldCreateCycleWhenAdding((predObj as IPredecessor));
+
+            for (const innerArr of cycles.cycles) {
+                for (const id of innerArr) {
+                    cycleSet.add(id);
+                }
+            }
+        }
+
+        // Filter out items whose id is in cycleSet
+        const dataSource: IPreData[] = (gridObj.dataSource as IPreData[]).filter(
+            (item: IPreData) => !cycleSet.has(item.id)
+        );
+        const removedItems: IPreData[] = (gridObj.dataSource as IPreData[]).filter((item: IPreData) => cycleSet.has(item.id));
+        if (removedItems.length > 0) {
+            const removedIds: string = removedItems.map((item: IPreData) => item.id).join(', ');
+            const err: string = `Cyclic Dependency detected. The following Task IDs were removed due to invalid dependencies: ${removedIds}. Please provide valid dependency.`;
+            this.parent.trigger('actionFailure', { error: err });
+        }
         const predecessorName: string[] = [];
         let newValues: IPredecessor[] = [];
         let predecessorString: string = '';

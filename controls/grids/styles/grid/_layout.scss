@@ -1086,8 +1086,8 @@
         border-bottom: 0;
       }
 
-      tr:last-child th.e-grouptopleftcell {
-        border-top: 0;
+      .e-filterbarcell {
+        border-top-width: 1px;
       }
     }
 
@@ -1580,6 +1580,11 @@
       .e-stackedheadercell {
         border-width: $grid-stackedheadercell-border-size;
       }
+
+      .e-stackedheadercell.e-leftfreeze.e-freezeleftborder,
+      .e-stackedheadercell.e-rightfreeze.e-freezerightborder {
+        border-top-width: 0;
+      }
   
       .e-stackedheadercell.e-leftfreeze.e-freezeleftborder {
         border-right-width: 2px;
@@ -1666,7 +1671,7 @@
       }
   
       .e-headercell.e-stackedheadercell {
-        border-bottom: $grid-border-size solid;
+        border-bottom: $grid-border-size solid $grid-header-border-color;
       }
     }
 
@@ -2435,8 +2440,20 @@
 
     &.e-default .e-gridheader {
       th.e-firstcell,
-      th.e-laststackcell:not(:has(.e-rhandler.e-rcursor)) {
+      th.e-laststackcell:not(:has(.e-rhandler.e-rcursor), :has(.e-rsuppress)) {
         @include grid-border-width-styles;
+      }
+    }
+
+    &.e-rtl.e-lib.e-default:not(.e-resize-lines, .e-verticallines, .e-bothlines) {
+      .e-gridheader th.e-headercell.e-firstcell.e-leftfreeze.e-freezeleftborder,
+      th.e-laststackcell:not(:has(.e-rhandler.e-rcursor), :has(.e-rsuppress)),
+      .e-stackedheadercell.e-leftfreeze.e-freezeleftborder {
+        border-right-width: 1px;
+        border-right-color: var(--color-sf-border-light);
+      }
+      .e-gridheader tr th:first-child:not(.e-firstcell) {
+        border-right-width: 0;
       }
     }
 
@@ -2452,6 +2469,18 @@
 
     &.e-default.e-hidelines .e-gridheader th.e-firstcell {
       border-left-width: 0;
+    }
+
+    &.e-default.e-hidelines:not(.e-rtl) {
+      .e-headercell.e-stackedheadercell {
+        border-bottom-width: 1px;
+        border-left-width: 1px;
+      }
+      &:not(.e-resize-lines, .e-rtl) {
+        .e-gridheader.e-stackedheader th.e-headercell.e-firstcell {
+          border-left-width: 1px;
+        }
+      }
     }
 
     &.e-hidelines,
@@ -3064,6 +3093,8 @@
       }
 
       &.e-lib.e-default .e-headercell.e-leftfreeze.e-freezeleftborder,
+      &.e-lib.e-default .e-rowcell.e-leftfreeze.e-freezeleftborder,
+      &.e-lib.e-default .e-filterbarcell.e-leftfreeze.e-freezeleftborder,
       &.e-lib .e-leftfreeze.e-freezeleftborder,
       .e-leftfreeze.e-freezeleftborder {
         border-left-width: 2px;
@@ -3071,6 +3102,8 @@
       }
     
       &.e-lib.e-default .e-headercell.e-rightfreeze.e-freezerightborder,
+      &.e-lib.e-default .e-rowcell.e-rightfreeze.e-freezerightborder,
+      &.e-lib.e-default .e-filterbarcell.e-rightfreeze.e-freezerightborder,
       &.e-lib .e-rightfreeze.e-freezerightborder,
       .e-rightfreeze.e-freezerightborder {
         border-right-width: 2px;
@@ -3280,6 +3313,7 @@
 
         .e-headercell.e-stackedheadercell {
           border-bottom: 1px solid;
+          border-bottom-color: $grid-header-border-color;
         }
       }
 
@@ -3306,7 +3340,14 @@
         }
       }
 
-      &.e-default.e-hidelines .e-gridheader th.e-firstcell {
+      &.e-default.e-hidelines {
+        .e-headercell.e-stackedheadercell {
+          border-bottom-width: 1px;
+          border-right-width: 1px;
+        }
+      }
+
+      &.e-default.e-hidelines .e-gridheader:not(.e-stackedheader) th.e-firstcell {
         border-left: 0;
         border-right: 0;
       }
@@ -3593,18 +3634,44 @@
     }
 
     &.e-resize-lines.e-rtl {
-      & tr.e-columnheader th:last-child.e-stackedheadercell .e-rhandler.e-rcursor,
-      & tr.e-columnheader th.e-lastcell .e-rhandler.e-rcursor,
-      & tr.e-columnheader th.e-laststackcell .e-rhandler.e-rcursor {
-        border-left: 0;
+      & tr.e-columnheader {
+        & th:last-child.e-stackedheadercell .e-rhandler.e-rcursor,
+        & th.e-lastcell .e-rhandler.e-rcursor,
+        & th.e-laststackcell .e-rhandler.e-rcursor,
+        & th.e-last-visible-stack-cell .e-rhandler.e-rcursor,
+        & th.e-last-visible-cell .e-rhandler.e-rcursor {
+          border-left: 0;
+        }
+        & th:last-child.e-stackedheadercell .e-rsuppress,
+        & th.e-lastcell .e-rsuppress,
+        & th.e-laststackcell .e-rsuppress,
+        & th.e-last-visible-stack-cell .e-rsuppress,
+        & th.e-last-visible-cell .e-rsuppress {
+          border-left: 0;
+        }
       }
     }
 
     &.e-resize-lines {
-      & tr.e-columnheader th:last-child.e-stackedheadercell .e-rhandler.e-rcursor,
-      & tr.e-columnheader th.e-lastcell .e-rhandler.e-rcursor,
-      & tr.e-columnheader th.e-laststackcell .e-rhandler.e-rcursor {
-        border-right: 0;
+      & tr.e-columnheader {
+        & th:last-child.e-stackedheadercell .e-rhandler.e-rcursor,
+        & th.e-lastcell .e-rhandler.e-rcursor,
+        & th.e-laststackcell .e-rhandler.e-rcursor,
+        & th.e-last-visible-stack-cell .e-rhandler.e-rcursor,
+        & th.e-last-visible-cell .e-rhandler.e-rcursor {
+          border-right: 0;
+        }
+        & th:last-child.e-stackedheadercell .e-rsuppress,
+        & th.e-lastcell .e-rsuppress,
+        & th.e-laststackcell .e-rsuppress,
+        & th.e-last-visible-stack-cell .e-rsuppress,
+        & th.e-last-visible-cell .e-rsuppress {
+          border-right: 0;
+        }
+      }
+      & th.e-headercell.e-stackedheadercell.e-leftfreeze.e-freezeleftborder,
+      & th.e-headercell.e-firstcell.e-leftfreeze.e-freezeleftborder {
+        border-left-width: 0;
       }
     }
 
@@ -3965,6 +4032,14 @@
           border-left: 0;
           border-right: 0;
           border-top: 0;
+        }
+      }
+
+      &.e-resize-lines.e-hidelines,
+      &.e-resize-lines.e-rtl.e-hidelines {
+        th.e-headercell.e-stackedheadercell.e-freezeleftborder,
+        th.e-headercell.e-stackedheadercell.e-freezerightborder {
+          border-bottom-width: 1px;
         }
       }
 

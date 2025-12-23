@@ -3380,7 +3380,7 @@ describe('Gantt editing action', () => {
         input.value = '1';
         let update: HTMLElement = ganttObj.element.querySelector('#' + ganttObj.element.id + '_Gantt_Toolbar > div > div:nth-child(3)') as HTMLElement;
         triggerMouseEvent(update, 'click');
-        expect(ganttObj.currentViewData[1].ganttProperties.predecessorsName).toBe(null);
+        expect(ganttObj.currentViewData[1].ganttProperties.predecessorsName).toBe('');
         expect(actionFailedFunction).toHaveBeenCalled();  
     });
     afterAll(() => {
@@ -4049,7 +4049,7 @@ describe('Gantt editing action', () => {
         input.value = '1';
         let update: HTMLElement = ganttObj.element.querySelector('#' + ganttObj.element.id + '_Gantt_Toolbar > div > div:nth-child(3)') as HTMLElement;
         triggerMouseEvent(update, 'click');
-        expect(ganttObj.currentViewData[1].ganttProperties.predecessorsName).toBe(null);
+        expect(ganttObj.currentViewData[1].ganttProperties.predecessorsName).toBe('');
         expect(actionFailedFunction).toHaveBeenCalled();  
     });
     afterAll(() => {

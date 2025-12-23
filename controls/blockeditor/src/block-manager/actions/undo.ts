@@ -158,6 +158,7 @@ export class UndoRedoAction {
      * @hidden
      */
     public processUndoRedoAction(currentState: IUndoRedoState): void {
+        this.parent.floatingIconAction.hideFloatingIcons();
         /* Perform core actions */
         this.applyUndoRedoChange(currentState);
 
@@ -169,6 +170,9 @@ export class UndoRedoAction {
             || action === actionType.blockMoved || action === actionType.formattingAction || isTableAction;
         if (!preventRestoreSelection) {
             this.restoreSelectionState(currentState);
+        }
+        if ((action === actionType.contentChanged || action === actionType.lineBreakAdded) && this.parent.currentFocusedBlock) {
+            this.parent.floatingIconAction.showFloatingIcons(this.parent.currentFocusedBlock);
         }
         this.parent.refreshPlaceholder();
     }
@@ -228,6 +232,7 @@ export class UndoRedoAction {
         case actionType.blockAdded:
         case actionType.blockRemoved:
             this.undoRedoManager.blockAdditionDeletionUndoRedo(currentState);
+            this.parent.floatingIconAction.showFloatingIcons(this.parent.currentFocusedBlock);
             break;
         case actionType.blockMoved:
             this.undoRedoManager.handleBlockMovement(currentState);

@@ -613,6 +613,17 @@ describe('Table Manager', () => {
             expect(focused ? focused.isEqualNode(nextCell) : false).toBe(true);
         });
 
+        it('ArrowRight inside empty cell moves focus to adjacent cell', () => {
+            const table = editorElement.querySelector('table');
+            editor.blockManager.tableService.clearCellContents(table, [getDataCell(editorElement, 1, 1)]);
+            const { cell, textNode } = focusCell(1, 1);
+            const target = getDataCell(editorElement, 1, 2);
+            setCaretPosition(textNode, 'end');
+            pressArrow('ArrowRight');
+            const focused = editorElement.querySelectorAll('.e-cell-focus');
+            expect((focused.length === 1 && (focused[0] as HTMLElement).isEqualNode(target))).toBe(true);
+        });
+
         it('ArrowRight at end of last column moves to first column of next row', () => {
             const { textNode } = focusCell(1, 2);
             setCaretPosition(textNode, 'end');

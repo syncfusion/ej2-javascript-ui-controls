@@ -471,7 +471,49 @@ describe('Slash Command Module', () => {
                 }, 100);
             }, 300);
         });
-        
+
+        it('should check tooltip while filtering', (done) => {            
+            const blockElement = editorElement.querySelector('.e-block') as HTMLElement;
+            const contentElement = getBlockContentElement(blockElement);
+            contentElement.textContent = '/';
+            setCursorPosition(contentElement, 1);
+            editor.blockManager.stateManager.updateContentOnUserTyping(blockElement);
+            editorElement.querySelector('.e-mention.e-editable-element').dispatchEvent(new KeyboardEvent('keyup', { 
+                key: '/', 
+                code: 'Slash', 
+                bubbles: true 
+            }));
+            
+            setTimeout(() => {
+                const commandItems = document.querySelectorAll('.e-blockeditor-command-menu li');
+                
+                commandItems[1].dispatchEvent(new MouseEvent('mouseover', { bubbles: true }));
+                
+                setTimeout(() => {
+                    const tooltip = document.querySelector('.e-blockeditor-command-menu-tooltip');
+                    expect(tooltip).not.toBeNull();
+                    expect(tooltip.querySelector('.e-tip-content').textContent).toBe("Create a checklist");
+                    editor.blockManager.setFocusToBlock(blockElement);
+                    const contentElement = getBlockContentElement(blockElement);
+                    setCursorPosition(contentElement, 0);
+                    contentElement.textContent = 'Bullet';
+                    setCursorPosition(contentElement, contentElement.textContent.length);
+                    editor.blockManager.isPopupOpenedOnAddIconClick = true;
+                    editorElement.dispatchEvent(new Event('input'));
+                    setTimeout(() => {
+                        const commandItems = document.querySelectorAll('.e-blockeditor-command-menu li');
+                        commandItems[1].dispatchEvent(new MouseEvent('mouseover', { bubbles: true }));
+                        setTimeout(() => {
+                            const tooltip = document.querySelector('.e-blockeditor-command-menu-tooltip');
+                            expect(tooltip).not.toBeNull();
+                            expect(tooltip.querySelector('.e-tip-content').textContent).not.toBe("Create a checklist");
+                            expect(tooltip.querySelector('.e-tip-content').textContent).toBe("Create a bullet list");
+                            done();
+                        }, 100);
+                    }, 300);
+                }, 100);
+            }, 300);
+        });
     });
 
     describe('Events and other testing', () => {

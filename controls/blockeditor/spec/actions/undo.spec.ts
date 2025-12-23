@@ -186,6 +186,65 @@ describe('UndoRedo', () => {
                 done();
             }, 10);
         });
+
+        it('Check Floating icons position during Undo & Redo action for paragraph content changed', (done) => {
+            let modelBlocks = editor.blocks;
+            let domBlocks = editor.element.querySelectorAll<HTMLElement>('.e-block');
+            const paragraph = editorElement.querySelector('#paragraph-content1');
+            paragraph.textContent = 'Updated content';
+            editor.blockManager.stateManager.updateContentOnUserTyping((paragraph.closest('.e-block') as HTMLElement));
+
+            setTimeout(() => {
+                editor.blockManager.setFocusToBlock(paragraph.closest('.e-block') as HTMLElement);
+                modelBlocks = editor.blocks;
+                domBlocks = editor.element.querySelectorAll<HTMLElement>('.e-block');
+
+                // check updated block content before undo action
+                expect(modelBlocks.length).toBe(3);
+                expect(domBlocks.length).toBe(3);
+                expect(paragraph.textContent).toBe('Updated content');
+                expect(modelBlocks[0].content[0].content).toBe('Updated content');
+                
+                //undo
+                const undoEvent: KeyboardEvent = new KeyboardEvent('keydown', { key: 'z', ctrlKey: true, code: 'KeyZ' });
+                editorElement.dispatchEvent(undoEvent);
+
+                // check floating icon present inside focused block
+                let floatingIcons = document.getElementById(`${editorElement.id}_floatingicons`);
+                let floatingIconsRect = floatingIcons.getBoundingClientRect();
+                let focusedBlockRect = editor.blockManager.currentFocusedBlock.getBoundingClientRect();
+                expect(floatingIconsRect.top).toBeGreaterThanOrEqual(focusedBlockRect.top);
+                expect(floatingIconsRect.bottom).not.toBeGreaterThanOrEqual(focusedBlockRect.bottom);
+
+                //undo check
+                modelBlocks = editor.blocks;
+                domBlocks = editor.element.querySelectorAll<HTMLElement>('.e-block');
+                expect(modelBlocks.length).toBe(3);
+                expect(domBlocks.length).toBe(3);
+                expect(paragraph.textContent).toBe('Block 1 content');
+                expect(modelBlocks[0].content[0].content).toBe('Block 1 content');
+
+                //redo
+                const redoEvent: KeyboardEvent = new KeyboardEvent('keydown', { key: 'y', ctrlKey: true, code: 'KeyY' });
+                editorElement.dispatchEvent(redoEvent);
+
+                // check floating icon present inside focused block
+                floatingIcons = document.getElementById(`${editorElement.id}_floatingicons`);
+                floatingIconsRect = floatingIcons.getBoundingClientRect();
+                focusedBlockRect = editor.blockManager.currentFocusedBlock.getBoundingClientRect();
+                expect(floatingIconsRect.top).toBeGreaterThanOrEqual(focusedBlockRect.top);
+                expect(floatingIconsRect.bottom).not.toBeGreaterThanOrEqual(focusedBlockRect.bottom);
+
+                //redo check
+                modelBlocks = editor.blocks;
+                domBlocks = editor.element.querySelectorAll<HTMLElement>('.e-block');
+                expect(modelBlocks.length).toBe(3);
+                expect(domBlocks.length).toBe(3);
+                expect(paragraph.textContent).toBe('Updated content');
+                expect(modelBlocks[0].content[0].content).toBe('Updated content');
+                done();
+            }, 10);
+        });
     });
 
     describe('Single-Block Formatting Action', () => {
@@ -818,6 +877,69 @@ describe('UndoRedo', () => {
             }, 10);
         });
 
+        it('Check Floating icons position during Undo & Redo action for block addition', (done) => {
+            // Initial block count
+            const initialBlockCount = editor.blocks.length;
+            expect(initialBlockCount).toBe(2);
+
+            const newBlock: BlockModel = {
+                id: 'block3',
+                blockType: BlockType.Paragraph,
+                content: [
+                    { id: 'content3', contentType: ContentType.Text, content: 'Block 3 content' }
+                ]
+            };
+
+            setTimeout(() => {
+                editor.blockManager.editorMethods.addBlock(newBlock, 'block2', true);
+                // Check if block was added
+                expect(editor.blocks.length).toBe(initialBlockCount + 1);
+                expect(editor.blocks[2].id).toBe('block3');
+                let updatedBlocks = editorElement.querySelectorAll('.e-block');
+                expect(updatedBlocks.length).toBe(3);
+                expect(updatedBlocks[2].id).toBe('block3');
+                // Undo the block addition
+                const undoEvent = new KeyboardEvent('keydown', { key: 'z', ctrlKey: true, code: 'KeyZ' });
+                editorElement.dispatchEvent(undoEvent);
+
+                // check floating icon present inside focused block
+                let floatingIcons = document.getElementById(`${editorElement.id}_floatingicons`);
+                let floatingIconsRect = floatingIcons.getBoundingClientRect();
+                let focusedBlockRect = editor.blockManager.currentFocusedBlock.getBoundingClientRect();
+                expect(floatingIconsRect.top).toBeGreaterThanOrEqual(focusedBlockRect.top);
+                expect(floatingIconsRect.bottom).not.toBeGreaterThanOrEqual(focusedBlockRect.bottom);
+
+                // Check if block was removed after undo
+                expect(editor.blocks.length).toBe(initialBlockCount);
+                expect(editor.blocks[2]).toBeUndefined();
+                // Redo the block addition
+                const redoEvent = new KeyboardEvent('keydown', { key: 'y', ctrlKey: true, code: 'KeyY' });
+                editorElement.dispatchEvent(redoEvent);
+
+                // check floating icon present inside focused block
+                floatingIcons = document.getElementById(`${editorElement.id}_floatingicons`);
+                floatingIconsRect = floatingIcons.getBoundingClientRect();
+                focusedBlockRect = editor.blockManager.currentFocusedBlock.getBoundingClientRect();
+                expect(floatingIconsRect.top).toBeGreaterThanOrEqual(focusedBlockRect.top);
+                expect(floatingIconsRect.bottom).not.toBeGreaterThanOrEqual(focusedBlockRect.bottom);
+
+                // Check if block was added back after redo
+                expect(editor.blocks.length).toBe(initialBlockCount + 1);
+                expect(editor.blocks[2].id).toBe('block3');
+
+                // Check DOM update
+                updatedBlocks = editorElement.querySelectorAll('.e-block');
+                expect(updatedBlocks.length).toBe(initialBlockCount + 1);
+                expect(updatedBlocks[0].id).toBe('block1');
+                expect(updatedBlocks[1].id).toBe('block2');
+                expect(updatedBlocks[2].id).toBe('block3');
+                expect(document.getElementById('block3')).not.toBeNull();
+                expect(updatedBlocks[2].textContent).toContain('Block 3 content');
+
+                done();
+            }, 10);
+        });
+
         it('Undo action for multiple block addition', (done) => {
             // Initial block count
             const initialBlockCount = editor.blocks.length;
@@ -1052,6 +1174,61 @@ describe('UndoRedo', () => {
             //redo
             const redoEvent = new KeyboardEvent('keydown', { key: 'y', ctrlKey: true, code: 'KeyY' });
             editorElement.dispatchEvent(redoEvent);
+
+            //redo check
+            modelBlocks = editor.blocks;
+            domBlocks = editor.element.querySelectorAll<HTMLElement>('.e-block');
+            expect(modelBlocks.length).toBe(3);
+            expect(modelBlocks[3]).toBeUndefined();
+            expect(domBlocks.length).toBe(3);
+            expect(document.getElementById('block4')).toBeNull();
+            done();
+        });
+
+        it('Check Floating icons position during Undo & Redo for block deletion', (done) => {
+            let modelBlocks = editor.blocks;
+            let domBlocks = editor.element.querySelectorAll<HTMLElement>('.e-block');
+            //before removal
+            expect(modelBlocks.length).toBe(4);
+            expect(domBlocks.length).toBe(4);
+
+            editor.blockManager.editorMethods.removeBlock('block4');
+
+            //after removal
+            modelBlocks = editor.blocks;
+            domBlocks = editor.element.querySelectorAll<HTMLElement>('.e-block');
+            expect(modelBlocks.length).toBe(3);
+            expect(modelBlocks[3]).toBeUndefined();
+            expect(domBlocks.length).toBe(3);
+            expect(document.getElementById('block4')).toBeNull();
+
+            //undo
+            const undoEvent = new KeyboardEvent('keydown', { key: 'z', ctrlKey: true, code: 'KeyZ' });
+            editorElement.dispatchEvent(undoEvent);
+
+            // check floating icon present inside focused block
+            let floatingIcons = document.getElementById(`${editorElement.id}_floatingicons`);
+            let floatingIconsRect = floatingIcons.getBoundingClientRect();
+            let focusedBlockRect = editor.blockManager.currentFocusedBlock.getBoundingClientRect();
+            expect(floatingIconsRect.top).toBeGreaterThanOrEqual(focusedBlockRect.top);
+            expect(floatingIconsRect.bottom).not.toBeGreaterThanOrEqual(focusedBlockRect.bottom);
+
+            //undo check
+            modelBlocks = editor.blocks;
+            domBlocks = editor.element.querySelectorAll<HTMLElement>('.e-block');
+            expect(modelBlocks.length).toBe(4);
+            expect(domBlocks.length).toBe(4);
+
+            //redo
+            const redoEvent = new KeyboardEvent('keydown', { key: 'y', ctrlKey: true, code: 'KeyY' });
+            editorElement.dispatchEvent(redoEvent);
+
+            // check floating icon present inside focused block
+            floatingIcons = document.getElementById(`${editorElement.id}_floatingicons`);
+            floatingIconsRect = floatingIcons.getBoundingClientRect();
+            focusedBlockRect = editor.blockManager.currentFocusedBlock.getBoundingClientRect();
+            expect(floatingIconsRect.top).toBeGreaterThanOrEqual(focusedBlockRect.top);
+            expect(floatingIconsRect.bottom).not.toBeGreaterThanOrEqual(focusedBlockRect.bottom);
 
             //redo check
             modelBlocks = editor.blocks;
@@ -2385,6 +2562,48 @@ describe('UndoRedo', () => {
 
             triggerRedo(editorElement);
             //redo check
+            modelBlocks = editor.blocks;
+            domBlocks = editor.element.querySelectorAll<HTMLElement>('.e-block');
+            expect(modelBlocks[1].content[0].content).toContain('\n');
+            done();
+        });
+
+        it('Check Floating icons position during Undo & Redo Line breaks addition removal', (done) => {
+            let modelBlocks = editor.blocks;
+            let domBlocks = editor.element.querySelectorAll<HTMLElement>('.e-block');
+            const blockElement = editorElement.querySelector('#block2') as HTMLElement;
+            const contentElement = getBlockContentElement(blockElement);
+            editor.blockManager.setFocusToBlock(blockElement);
+            setCursorPosition(contentElement, 8);
+            editorElement.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', shiftKey: true, code: 'Enter' }));
+
+            //line addition check
+            modelBlocks = editor.blocks;
+            domBlocks = editor.element.querySelectorAll<HTMLElement>('.e-block');
+            expect(modelBlocks[1].content[0].content).toContain('\n');
+
+            triggerUndo(editorElement);
+            //undo check
+            // check floating icon present inside focused block
+            let floatingIcons = document.getElementById(`${editorElement.id}_floatingicons`);
+            let floatingIconsRect = floatingIcons.getBoundingClientRect();
+            let focusedBlockRect = editor.blockManager.currentFocusedBlock.getBoundingClientRect();
+            expect(floatingIconsRect.top).toBeGreaterThanOrEqual(focusedBlockRect.top);
+            expect(floatingIconsRect.bottom).not.toBeGreaterThanOrEqual(focusedBlockRect.bottom);
+
+            modelBlocks = editor.blocks;
+            domBlocks = editor.element.querySelectorAll<HTMLElement>('.e-block');
+            expect(modelBlocks[1].content[0].content).not.toContain('\n');
+
+            triggerRedo(editorElement);
+            //redo check
+
+            // check floating icon present inside focused block
+            floatingIcons = document.getElementById(`${editorElement.id}_floatingicons`);
+            floatingIconsRect = floatingIcons.getBoundingClientRect();
+            focusedBlockRect = editor.blockManager.currentFocusedBlock.getBoundingClientRect();
+            expect(floatingIconsRect.top).toBeGreaterThanOrEqual(focusedBlockRect.top);
+            expect(floatingIconsRect.bottom).not.toBeGreaterThanOrEqual(focusedBlockRect.bottom);
             modelBlocks = editor.blocks;
             domBlocks = editor.element.querySelectorAll<HTMLElement>('.e-block');
             expect(modelBlocks[1].content[0].content).toContain('\n');

@@ -2,6 +2,22 @@
 
 ## [Unreleased]
 
+## 32.1.20 (2025-12-23)
+
+### PDF
+
+#### Bug Fixes
+
+- Fixed an exception that occurred when splitting a specific PDF.
+- Fixed an issue where stamp annotations were lost after saving the document multiple times.
+- Fixed a bad font error that appeared when incremental updates were disabled for a particular PDF.
+- Fixed a script error that occurred while importing a page range into a new PDF.
+- Fixed an issue where free text annotation appearance was not preserved during flattening.
+- Fixed an issue where redaction annotations with overlay text were not preserved correctly on rotated pages.
+- Fixed an issue where form fields were not visible in adobe acrobat while importing a page range into a new PDF.
+
+## 32.1.19 (2025-12-16)
+
 ### PDF
 
 #### Key Features

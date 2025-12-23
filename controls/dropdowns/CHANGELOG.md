@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 32.1.20 (2025-12-23)
+
+### DropDownTree
+
+#### Bug Fixes
+
+- `#I778358` - The issue with pre-filtered selections cleared When click on the close icon in Dropdown Tree Component has been resolved.
+
 ## 28.2.9 (2025-03-04)
 
 ### ComboBox

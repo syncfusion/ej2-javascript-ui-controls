@@ -1,4 +1,4 @@
-import { Browser, createElement, detach, print as printWindow } from '@syncfusion/ej2-base';
+import { Browser, createElement, detach, isNullOrUndefined, print as printWindow } from '@syncfusion/ej2-base';
 import { BlockType, CommandName } from '../../models/enums';
 import { BlockModel, IChecklistBlockSettings, StyleModel } from '../../models/index';
 import { getBlockContentElement, getBlockModelById, getInlineToolbarItems, getSelectedRange, isListTypeBlock, sanitizeBlock, setCursorPosition, setSelectionRange } from '../../common/utils/index';
@@ -152,7 +152,7 @@ export class BlockEditorMethods {
                 blockElement.classList.contains(constants.TABLE_BLOCK_CLS));
             const tableRootBlk: HTMLElement = blockElement.closest(`.${constants.TABLE_BLOCK_CLS}`) as HTMLElement;
             const isSelectionInsideTableCell: boolean = this.parent.currentFocusedBlock &&
-                this.parent.currentFocusedBlock.contains(range.commonAncestorContainer);
+                !isNullOrUndefined(this.parent.currentFocusedBlock.closest('.e-cell-blocks-container'));
             const canAllowTableBlks: boolean = (!tableRootBlk || blockElement.classList.contains('e-table-block')
                 || isSelectionInsideTableCell);
             if (block && range.intersectsNode(blockElement) && !isChildrenRootParent && canAllowTableBlks) {

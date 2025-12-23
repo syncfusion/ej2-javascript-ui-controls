@@ -847,30 +847,30 @@
         margin: $file-item-margin;
         cursor: pointer;
         &:not(:has(.e-chat-close)) .e-chat-file-details {
-          padding-right: $file-details-padding-right;
+          padding-right: $chat-file-details-padding-right;
         }
       }
 
       .e-chat-file-icon {
-        padding: $file-format-icon-padding;
+        padding: $chat-file-format-icon-padding;
         font-size: $chat-file-document-icon-font-size;
       }
       .e-chat-file-details {
         display: flex;
         flex-direction: column;
-        padding: $attached-file-details-padding;
+        padding: $chat-attached-file-details-padding;
         min-width: 0;
         flex: 1 1 auto;
       }
 
       .e-chat-file-name {
-        font-weight: $attached-file-text-font-weight;
+        font-weight: $chat-attached-file-text-font-weight;
       }
 
       .e-chat-file-name,
       .e-chat-file-size {
-        font-size: $attached-file-text-font-size;
-        line-height: $attached-file-text-line-height;
+        font-size: $chat-attached-file-text-font-size;
+        line-height: $chat-attached-file-text-line-height;
         overflow: hidden;
         text-overflow: ellipsis;
         white-space: nowrap;
@@ -879,9 +879,9 @@
       .e-chat-close {
         cursor: pointer;
         font-weight: bold;
-        padding: $attached-file-clear-icon-padding;
+        padding: $chat-attached-file-clear-icon-padding;
         border-radius: $chat-clear-icon-border-radius;
-        margin: $attached-file-clear-icon-margin;
+        margin: $chat-attached-file-clear-icon-margin;
       }
     }
 

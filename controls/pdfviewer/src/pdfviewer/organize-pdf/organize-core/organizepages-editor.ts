@@ -88,6 +88,9 @@ export function rearrangePages(selectedPagesIndexes: number[], dropIndex: number
         page.setAttribute('data-page-order', index.toString());
     });
     updatePageNumber.call(this);
+    if (this.isExtractToolbarVisible) {
+        inputTextboxUpdate.call(this);
+    }
 }
 
 /**

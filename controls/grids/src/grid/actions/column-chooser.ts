@@ -343,6 +343,11 @@ export class ColumnChooser implements IAction {
             if (!this.infiniteRenderMode) {
                 this.dlgObj.show();
             }
+            const dlgRect: ClientRect = this.dlgObj.element.getBoundingClientRect();
+            if (window.innerHeight < dlgRect.bottom) {
+                this.dlgObj.element.style.top = (window.innerHeight - dlgRect.bottom) +
+                    parseInt(this.dlgObj.element.style.top, 10) - 5 + 'px';
+            }
             if ((this.parent.getContent().firstElementChild as HTMLElement).offsetHeight < this.dlgObj.element.offsetHeight &&
                 !this.parent.element.classList.contains('e-drillthrough-grid')) {
                 resetDialogAppend(this.parent, this.dlgObj);
@@ -481,8 +486,10 @@ export class ColumnChooser implements IAction {
     private setOrderedColumns(): void {
         this.selectedColumnModels = [];
         for (let i: number = 0; i < this.selectedColumns.length; i++) {
-            const column: Column = this.parent.getColumnByField(this.selectedColumns[parseInt(i.toString(), 10)]);
-            if (column.showInColumnChooser) {
+            const column: Column = this.parent.getColumnByField(this.selectedColumns[parseInt(i.toString(), 10)]) ||
+                (<{columnModel?: Column[]}>this.parent).columnModel.find((col: Column) =>
+                    col.headerText === this.selectedColumns[parseInt(i.toString(), 10)] && col.type !== 'checkbox');
+            if (column && column.showInColumnChooser) {
                 this.selectedColumnModels.push(column);
             }
         }

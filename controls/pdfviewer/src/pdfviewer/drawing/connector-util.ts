@@ -125,7 +125,7 @@ export function updateDecoratorElement(
     (element as PathElement).canMeasurePath = true;
     element.width = size.width;
     element.height = size.height;
-    if (obj.sourceDecoraterShapes === 'Butt') {
+    if (obj.sourceDecoraterShapes === 'Butt' || obj.taregetDecoraterShapes === 'Butt') {
         element.width = size.width - 10;
         element.height = size.height + 10;
     }
@@ -176,6 +176,11 @@ export function clipDecorator(connector: PdfAnnotationBaseModel, points: PointMo
     const length: number = points.length;
     start = !isSource ? points[length - 1] : points[0];
     end = !isSource ? points[length - 2] : points[1];
+    // Avoid creating a visual gap at the end when the decorator is of type 'Butt'
+    const decoratorShape: any = isSource ? (connector as any).sourceDecoraterShapes : (connector as any).taregetDecoraterShapes;
+    if (decoratorShape === 'Butt') {
+        return start;
+    }
     let len: number = Point.distancePoints(start, end);
     len = (len === 0) ? 1 : len;
     const width: number = connector.thickness;

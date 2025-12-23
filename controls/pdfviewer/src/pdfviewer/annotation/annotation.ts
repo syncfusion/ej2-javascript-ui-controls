@@ -2816,6 +2816,7 @@ export class Annotation {
         const x: number = currentAnnotation.bounds.x;
         const y: number = currentAnnotation.bounds.y;
         currentAnnotation.fontSize = currentValue;
+        const previousText: string = currentAnnotation.dynamicText;
         if (freeTextAnnotation && !freeTextAnnotation.isNewFreeTextAnnot && currentAnnotation.dynamicText !== '') {
             freeTextAnnotation.addInuptElemet({ x: x, y: y }, currentAnnotation);
             if (currentAnnotation) {
@@ -2856,6 +2857,7 @@ export class Annotation {
                 }
                 currentAnnotation.bounds.width = inputEleWidth;
                 currentAnnotation.bounds.height = inputEleHeight;
+                currentAnnotation.dynamicText = previousText;
                 this.pdfViewer.nodePropertyChange(currentAnnotation, { fontSize: currentValue, bounds:
                     { width: currentAnnotation.bounds.width, height: currentAnnotation.bounds.height, y: y, x: x } });
                 this.pdfViewer.renderSelector(currentAnnotation.pageIndex, this.pdfViewer.annotationSelectorSettings);
@@ -3704,7 +3706,11 @@ export class Annotation {
                 const isSkip: boolean = this.pdfViewer.toolbar.annotationToolbarModule.inkAnnotationSelected;
                 if (this.pdfViewer.annotation.freeTextAnnotationModule &&
                     !this.pdfViewer.annotation.freeTextAnnotationModule.isInuptBoxInFocus && !isSkip) {
-                    if (!(this.pdfViewerBase.tool instanceof PolygonDrawingTool)) {
+                    const tmModule: any = this.pdfViewer.annotationModule ?
+                        this.pdfViewer.annotationModule.textMarkupAnnotationModule : null;
+                    const isTextMarkupContext: boolean = !!(tmModule && (tmModule.currentTextMarkupAnnotation ||
+                        tmModule.isTextMarkupAnnotationMode));
+                    if (!(this.pdfViewerBase.tool instanceof PolygonDrawingTool) && !isTextMarkupContext) {
                         this.pdfViewer.toolbar.annotationToolbarModule.enableAnnotationPropertiesTools(false);
                         this.pdfViewer.toolbar.annotationToolbarModule.enableFreeTextAnnotationPropertiesTools(false);
                     }
@@ -7895,19 +7901,28 @@ export class Annotation {
     /**
      * @param {string} text - text
      * @param {number} rectangle - rectangle
-     * @param {number} width - width
+     * @param {boolean} isDynamic - isDynamic
      * @private
      * @returns {number} - fontSize
      */
-    public calculateFontSize(text: string, rectangle: { width: number, height: number }): number {
+    public calculateFontSize(text: string, rectangle: { width: number, height: number }, isDynamic?: boolean): number {
         const canvasElement: HTMLElement  = document.createElement('canvas');
         const context: CanvasRenderingContext2D = (canvasElement as HTMLCanvasElement).getContext('2d');
-        let fontSize: number = 10;
+        let fontSize: number = 0;
         let contextWidth: number = 0;
-        while (rectangle.width > contextWidth) {
+        let rectangleWidth: number = rectangle.width;
+        if (isDynamic === true) {
+            if (text === 'REVISED' || text === 'REVIEWED' || text === 'RECEIVED' || text === 'APPROVED') {
+                rectangleWidth = rectangleWidth / 2;
+            }
+            else if (text === 'CONFIDENTIAL' || text === 'NOT APPROVED') {
+                rectangleWidth = rectangleWidth * (3 / 4);
+            }
+        }
+        while (rectangleWidth > contextWidth) {
             context.font = fontSize + 'px' + ' ' + 'Helvetica';
             contextWidth = context.measureText(text).width;
-            fontSize++;
+            fontSize += 0.1;
         }
         return fontSize;
     }

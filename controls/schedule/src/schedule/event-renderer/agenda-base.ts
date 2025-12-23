@@ -240,7 +240,7 @@ export class AgendaBase extends ViewBase {
                                         groupOrder: resData[parseInt(res.toString(), 10)].groupOrder.slice(0, -1),
                                         resourceData: resData[parseInt(res.toString(), 10)].resourceData,
                                         groupIndex: (lastLevelInfo.length - data.length), className: [cls.RESOURCE_NAME],
-                                        date: agendaDate
+                                        date: this.parent.activeViewOptions.group.byDate ? firstDate : agendaDate
                                     };
                                     lastLevelInfo[parseInt((lastLevelInfo.length - data.length).toString(), 10)].push(tempObj);
                                     tempLastLevelInfo.push(<TdData>extend({}, tempObj, null, true));
@@ -267,7 +267,8 @@ export class AgendaBase extends ViewBase {
                                 tempGroupedData[0].type = 'parentColumnLevel_' + (y + 1);
                                 tempGroupedData[0].resource = topResources[topResources.length - (y + 1)];
                                 tempGroupedData[0].resourceData = data[parseInt(x.toString(), 10)];
-                                tempGroupedData[0].date = agendaDate;
+                                tempGroupedData[0].date = this.parent.activeViewOptions.group.byDate ?
+                                    tempLastLevelInfo[parseInt(u.toString(), 10)].date : agendaDate;
                                 lastLevelInfo[tempGroupedData[0].groupIndex].push(tempGroupedData[0]);
                                 tempGroupedData = [];
                                 totalRowSpan = 0;

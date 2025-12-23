@@ -1,12 +1,15 @@
+@use 'ej2-base/styles/common/mixin' as *;
+@use './theme-variables' as *;
+
 // layout styles
 .e-bigger .e-kanban,
 .e-bigger.e-kanban {
   .e-swimlane-header-toolbar {
-    margin-bottom: 5px;
-    min-height: 56px;
+    margin-bottom: $kanban-big-swl-header-toolbar-margin-bottom;
+    min-height: $kanban-big-swl-header-min-height;
 
     .e-toolbar-swimlane-name {
-      font-size: 18px;
+      font-size: $kanban-big-mb-toolbar-swl-font-size;
     }
 
     .e-icon-menu {
@@ -106,13 +109,13 @@
         font-size: $kanban-swl-header-icon-bgr-font-size;
 
         @if $skin-name =='bootstrap5' {
-          padding-top: 4px;
+          padding-top: $kanban-swl-header-icon-bgr-small-padding-top;
         }
 
         &:hover,
         &:focus {
           @if $skin-name == 'bootstrap5' {
-            padding-top: 4px;
+            padding-top: $kanban-swl-header-icon-bgr-hover-padding-top;
           }
         }
       }

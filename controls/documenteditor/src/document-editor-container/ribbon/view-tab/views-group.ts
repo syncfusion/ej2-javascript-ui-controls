@@ -73,6 +73,7 @@ export class ViewsGroup extends RibbonGroupBase {
     private printLayoutHandler(): void {
         this.documentEditor.layoutType = 'Pages';
         this.toggleLayoutButton();
+        this.container.statusBar.toggleWebLayout();
     }
 
     /**
@@ -82,6 +83,7 @@ export class ViewsGroup extends RibbonGroupBase {
     private webLayoutHandler(): void {
         this.documentEditor.layoutType = 'Continuous';
         this.toggleLayoutButton();
+        this.container.statusBar.togglePageLayout();
     }
 
     /**

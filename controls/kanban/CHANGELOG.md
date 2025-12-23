@@ -2,7 +2,13 @@
 
 ## [Unreleased]
 
-## 31.1.17 (2025-09-05)
+## 32.1.20 (2025-12-23)
+
+### Kanban
+
+- `#F71773` - Now, auto horizontal scrolling works properly when dragging a card to the left or right side of the Kanban.
+
+## 32.1.19 (2025-12-16)
 
 ### Kanban
 

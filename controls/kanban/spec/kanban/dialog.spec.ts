@@ -2,12 +2,29 @@
 /**
  * Dialog actions spec
  */
-import { Kanban, KanbanModel, EJ2Instance, ActionEventArgs } from '../../src/kanban/index';
+import { Kanban, KanbanModel, EJ2Instance, ActionEventArgs, DialogFieldType } from '../../src/kanban/index';
 import { kanbanData } from './common/kanban-data.spec';
 import { profile, inMB, getMemoryProfile } from './common/common.spec';
 import * as util from './common/util.spec';
+import { createElement, remove } from '@syncfusion/ej2-base';
 
 Kanban.Inject();
+
+export const ENTERKEY_EVENT_INIT: KeyboardEventInit = {
+    bubbles: true,
+    key: 'Enter',
+    cancelable: true,
+    view: window,
+    keyCode: 13,
+    which: 13,
+    code: 'Enter',
+    location: 0,
+    altKey: false,
+    ctrlKey: false,
+    metaKey: false,
+    shiftKey: false,
+    repeat: false
+} as EventInit;
 
 describe('Dialog actions module', () => {
     beforeAll(() => {
@@ -668,13 +685,6 @@ describe('Dialog actions module', () => {
     describe('885268- Edited values in dialog dont get reflected in Cards when pressing the enter key in Kanban', () => {
         let kanbanObj: Kanban;
         let keyModule: any;
-        const ENTERKEY_EVENT_INIT: KeyboardEventInit = {
-            key: 'Enter',
-            code: 'Enter',
-            bubbles: true,
-            cancelable: true,
-            keyCode: 13
-        } as EventInit;
 
         beforeAll((done: DoneFn) => {
             const kanbanDatas: Record<string, any>[] = [
@@ -732,6 +742,7 @@ describe('Dialog actions module', () => {
                 setTimeout(() => {
                     RankId.value = '71';
                     RankId.dispatchEvent(new KeyboardEvent('keydown', ENTERKEY_EVENT_INIT));
+                    RankId.dispatchEvent(new KeyboardEvent('keyup', ENTERKEY_EVENT_INIT));
                     setTimeout(() => {
                         element1 = kanbanObj.element.querySelector('.e-card-content');
                         // expect(element1.textContent === '71').toBe(true);
@@ -741,6 +752,87 @@ describe('Dialog actions module', () => {
             }, 200);
         });
     });
+
+ describe('855102- covering for the case of the getcolumn name', () => {
+        let kanbanObj: Kanban;
+        let element1: HTMLElement;
+        beforeAll((done: DoneFn) => {
+            const model: KanbanModel = {
+                dialogSettings: {
+                    fields: [
+                        { text: 'ID', key: 'Id', type: 'Numeric' },
+                        { key: 'Status', type: 'DropDown' },
+                        { key: 'Assignee', type: 'DropDown' },
+                        { key: 'Estimate', type: 'Numeric' },
+                        { key: 'Summary', type: 'TextArea' }
+                    ]
+                },
+            };
+            kanbanObj = util.createKanban(model, kanbanData, done);
+        });
+
+        afterAll(() => {
+            util.destroy(kanbanObj);
+        });
+
+        it('covering for the case of the getcolumn name', () => {
+            // This test covers the branch where fieldSelector is 'e-multiselect'.
+            const multiSelectWrapper = createElement('div', { className: 'e-multiselect' });
+            const inputElement = createElement('input', { attrs: { name: 'Tags' } });
+            multiSelectWrapper.appendChild(inputElement);
+            document.body.appendChild(multiSelectWrapper);
+            const dialogModule = (kanbanObj as any).dialogModule;
+            const columnName = dialogModule.getColumnName(multiSelectWrapper);
+            expect(columnName).toBe('Tags');
+            remove(multiSelectWrapper);
+        });
+    });
+
+
+    describe('Covering for the case of default in rendercomponents method', () => {
+        let kanbanObj: Kanban;
+        beforeAll((done: DoneFn) => {
+            const model: KanbanModel = {
+                columns: [
+                    { headerText: 'Backlog', keyField: 'Open', allowToggle: true, showItemCount: true, minCount: 201 },
+                    { headerText: 'In Progress', keyField: 'InProgress', allowToggle: true, minCount: 2 },
+                    { headerText: 'Review', keyField: 'Review', allowToggle: true, maxCount: 3 },
+                    { headerText: 'Testing', keyField: 'Testing', allowToggle: true, maxCount: 2 },
+                    { headerText: 'Done', keyField: 'Close', allowToggle: true }
+                ],
+
+                dialogSettings: {
+                    fields: [
+                        { text: 'ID', key: 'Id', type: 'unknown' as DialogFieldType },
+                        { key: 'Status', type: 'DropDown' },
+                        { key: 'Estimate', type: 'Numeric', validationRules: { range: [0, 1000] } },
+                        { key: 'Summary', type: 'TextArea', validationRules: { required: true } }
+                    ]
+                },
+
+            };
+            kanbanObj = util.createKanban(model, kanbanData, done);
+
+        });
+
+        afterAll(() => {
+            util.destroy(kanbanObj);
+            let dialogWrapper: Element = document.getElementById("Kanban_dialog_wrapper");
+            if (dialogWrapper) {
+            let dialog: any = (dialogWrapper as EJ2Instance).ej2_instances[0];
+                if(dialog) {
+                    dialog.destroy();
+                }
+            }
+        });
+
+        it('Covering for the case of default in rendercomponents method', () => {
+            let element1 = kanbanObj.element.querySelector('.e-card[data-id="1"]') as HTMLElement;
+            util.triggerMouseEvent(element1, 'dblclick');
+        });
+    });
+
+
 
     it('memory leak', () => {
         profile.sample();

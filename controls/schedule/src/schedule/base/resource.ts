@@ -408,13 +408,15 @@ export class ResourceBase {
                         resourceId: levelId,
                         resourceName: treeLevel.resourceData[resource.textField] as string,
                         resource: treeLevel.resource,
-                        resourceData: treeLevel.resourceData
+                        resourceData: treeLevel.resourceData,
+                        date: this.parent.selectedDate
                     };
                 } else {
                     resObj = {
                         type: 'resourceHeader', resource: treeLevel.resource,
                         resourceData: treeLevel.resourceData, groupIndex: groupIndex,
-                        groupOrder: treeLevel.groupOrder
+                        groupOrder: treeLevel.groupOrder,
+                        date: this.parent.selectedDate
                     };
                     resTreeColl.push(resObj);
                     groupIndex++;
@@ -724,6 +726,11 @@ export class ResourceBase {
         }
         this.lastResourceLevel = headerLevels.slice(-1)[0] || [];
         if (!this.parent.activeViewOptions.group.byDate) {
+            for (let levelIndex: number = 0; levelIndex < headerLevels.length; levelIndex++) {
+                for (const levelItem of headerLevels[parseInt(levelIndex.toString(), 10)]) {
+                    levelItem.date = this.parent.selectedDate;
+                }
+            }
             let index: number = 0;
             for (const lastLevelResource of this.lastResourceLevel) {
                 for (let i: number = 0; i < lastLevelResource.colSpan; i++) {
@@ -818,6 +825,9 @@ export class ResourceBase {
             datesColumn.push(headerDate);
             const resGroup: TdData[][] = <TdData[][]>extend([], levels, null, true);
             for (let k: number = 0, length: number = resGroup.length; k < length; k++) {
+                for (const resTd of resGroup[parseInt(k.toString(), 10)]) {
+                    resTd.date = headerDate.date;
+                }
                 if (k === resGroup.length - 1) {
                     for (const resTd of resGroup[parseInt(k.toString(), 10)]) {
                         resTd.date = headerDate.date;

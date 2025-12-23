@@ -92,7 +92,7 @@ export class PdfDataExtractor {
     _elementBoundsMap: Map<number[], number> = new Map<number[], number>();
     _hasContentID: boolean  = false;
     _imageInfo: PdfEmbeddedImage[] = [];
-    _canvasRenderCallback: canvasRenderCallback;
+    _canvas: any; // eslint-disable-line 
     /**
      * Initialize a new instance of the `PdfDataExtractor` class
      *
@@ -121,10 +121,10 @@ export class PdfDataExtractor {
      * ```typescript
      * // Load an existing PDF document
      * let document: PdfDocument = new PdfDocument(data);
-     * // Define a canvas render callback that returns a canvas
-     * const canvasRenderCallback = (): HTMLCanvasElement => {
+     * // Define a canvas render callback that returns a canvas element and the application platform.
+     * const canvasRenderCallback = (): {canvas: any, applicationPlatform: ApplicationPlatform} => {
      *     const canvas = document.createElement('canvas');
-     *     return canvas;
+     *     return { canvas: canvas, applicationPlatform: ApplicationPlatform.typescript };
      * };
      * // Initialize a new instance of the `PdfDataExtractor` class
      * let extractor: PdfDataExtractor = new PdfDataExtractor(document, callBack: canvasRenderCallback);
@@ -143,7 +143,7 @@ export class PdfDataExtractor {
             this._crossReference = document._crossReference;
         }
         if (callBack) {
-            this._canvasRenderCallback = callBack;
+            this._canvas = callBack();
         }
         this._objects.push(this._ctm);
     }
@@ -578,7 +578,7 @@ export class PdfDataExtractor {
         const recordCollection: _PdfRecord[] = this._contentParser._getPageRecordCollection(page);
         this._imageInfo = await this._contentParser._processImageRecordCollection(recordCollection, page, fontCollection,
                                                                                   xObjectCollection, graphicState,
-                                                                                  this._canvasRenderCallback);
+                                                                                  this._canvas);
     }
     _setTextLeading(textLeading: number): void {
         this._textLeading = -textLeading;

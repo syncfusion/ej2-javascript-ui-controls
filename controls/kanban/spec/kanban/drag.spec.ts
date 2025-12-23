@@ -1786,6 +1786,45 @@ describe('835740 - The drop is not working on the empty column in the Kanban com
         }, 1000);
     });
 });
+describe('Bug 998504: Kanban auto horizontal scroll does not work properly when dragging a card', () => {
+    let kanbanObj: Kanban;
+    beforeAll((done: DoneFn) => {
+        const kanbanOptions: KanbanModel = {
+            dataSource: kanbanData,
+            keyField: 'Status',
+            width: '2000',
+            columns: [
+                { headerText: 'Backlog', keyField: 'Open' },
+                { headerText: 'In Progress', keyField: 'InProgress' },
+                { headerText: 'Review', keyField: 'Review' },
+                { headerText: 'Testing', keyField: 'Testing' },
+                { headerText: 'Done', keyField: 'Close' }
+            ],
+            cardSettings: {
+                contentField: 'Summary',
+                headerField: 'Id'
+            }
+        };
+        kanbanObj = util.createKanban(kanbanOptions, kanbanData, done);
+    });
+    afterAll(() => {
+        util.destroy(kanbanObj);
+    });
+    it('Drag and drop card across columns with horizontal scroll', () => {
+        const kanbanContent: HTMLElement = kanbanObj.element.querySelector('.e-kanban-content') as HTMLElement;
+        const dragElement: HTMLElement = (kanbanObj.element.querySelectorAll('.e-card[data-id="1"]') as NodeListOf<Element>).item(0) as HTMLElement;
+        const initialKey: string = dragElement.getAttribute('data-key');
+        util.triggerMouseEvent(dragElement, 'mousedown');
+        util.triggerMouseEvent(dragElement, 'mousemove', 1500, 150);
+        expect(dragElement.classList.contains('e-kanban-dragged-card')).toBeTruthy();
+        const targetCard: HTMLElement = kanbanObj.element.querySelectorAll('.e-card[data-id="12"]').item(0) as HTMLElement;
+        util.triggerMouseEvent(targetCard, 'mousemove', 500, 200);
+        util.triggerMouseEvent(dragElement, 'mouseup', 500, 200);
+        const data: Record<string, any> = kanbanObj.getCardDetails(dragElement);
+        const currentKey: string = data[kanbanObj.keyField] as string;
+        expect(currentKey).not.toBe(initialKey);
+    });
+});
 describe('925005 - Unable to Drop a Card at the Top of Another Column When Swimlane Enabled.', () => {
     let kanbanObj: Kanban;
     beforeAll((done: DoneFn) => {

@@ -152,7 +152,7 @@ describe('Diagram Control', () => {
             diagram.sendLayerBackward('default_layer');
             diagram.bringLayerForward('default_layer');
             diagram.bringLayerForward('layer2');
-            expect(diagram.layers[1].id === 'layer2').toBe(true);
+            expect(diagram.layers[1].id === 'layer3').toBe(true);
             done();
             diagram.moveObjects(['connector1'], 'layer2');
             expect(diagram.activeLayer.objects.length !== 0).toBe(true);
@@ -1132,7 +1132,7 @@ describe('Diagram-Layers - sendToBack Not functioning correctly for single node 
   it('bringLayerForward Command for a Multiple node in a layer',(done: Function)=>
   {
     let selectedDiagram=diagram.layers[1];
-    expect(selectedDiagram.zIndex).toBe(0);
+    expect(selectedDiagram.zIndex).toBe(1);
     let diagramLayer=diagram.layers[1].id;
     diagram.layerZIndexTable;
     diagram.bringLayerForward(diagramLayer);
@@ -1153,7 +1153,7 @@ describe('Diagram-Layers - sendToBack Not functioning correctly for single node 
   it('sendLayerBackward Command for a Single node in a layer',(done: Function)=>
   {
     let selectedDiagram=diagram.layers[0];
-    expect(selectedDiagram.zIndex).toBe(1);
+    expect(selectedDiagram.zIndex).toBe(0);
     let diagramLayer=diagram.layers[0].id;
     diagram.layerZIndexTable;
     diagram.sendLayerBackward(diagramLayer);

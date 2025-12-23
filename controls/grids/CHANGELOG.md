@@ -2,6 +2,20 @@
 
 ## [Unreleased]
 
+## 32.1.20 (2025-12-23)
+
+### Grid
+
+#### Bug fixes
+
+- `#I784568` - Resolved an issue where edited values were not saved when using `editTemplate` with `virtualization` in the Grid.
+- `#I788221` - Added support for ordering columns by `headerText` in the column chooser.
+- `#I782100` - Fixed an issue where the column chooser was not fully visible when the Grid was positioned at the bottom of the page.
+- `#I791047` - Fixed an issue where case sensitivity was ignored during lazy load grouping.
+- `#I795201` - Resolved an issue where the scrollbar position was not retained after toggling columns in the column chooser.
+
+## 32.1.19 (2025-12-16)
+
 ### Grid
 
 #### Features

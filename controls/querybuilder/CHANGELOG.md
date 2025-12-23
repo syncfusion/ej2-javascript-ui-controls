@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+## 32.1.20 (2025-12-23)
+
 ### QueryBuilder
 
 - `#I80058` - Issue with "String type between values not update properly in query builder rules" has been fixed.

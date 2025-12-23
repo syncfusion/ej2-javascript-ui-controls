@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+## 32.1.20 (2025-12-23)
+
 ### Svg Base
 
 #### Bug Fixes

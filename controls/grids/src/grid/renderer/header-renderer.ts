@@ -373,6 +373,17 @@ export class HeaderRender implements IRenderer {
         }
         for (let i: number = 0, len: number = this.colDepth; i < len; i++) {
             headerRow = rowRenderer.render(rows[parseInt(i.toString(), 10)], columns);
+            if (this.parent.allowResizing) {
+                const headerVisibleCell: Element[] =  Array.from(headerRow.querySelectorAll('.e-headercell:not(.e-hide)'));
+                if (headerRow.querySelector('.e-lastcell') && headerRow.querySelector('.e-lastcell').classList.contains('e-hide')) {
+                    const lastVisibleCell: Element = headerVisibleCell[headerVisibleCell.length - 1];
+                    lastVisibleCell.classList.add('e-last-visible-cell');
+                } else if (headerRow.querySelector('.e-laststackcell') &&
+                    headerRow.querySelector('.e-laststackcell').classList.contains('e-hide')) {
+                    const lastVisibleStackedCell: Element = headerVisibleCell[headerVisibleCell.length - 1];
+                    lastVisibleStackedCell.classList.add('e-last-visible-stack-cell');
+                }
+            }
             if (this.parent.rowHeight && headerRow.querySelector('.e-headercell')) {
                 (headerRow as HTMLElement).style.height = this.parent.rowHeight + 'px';
             }

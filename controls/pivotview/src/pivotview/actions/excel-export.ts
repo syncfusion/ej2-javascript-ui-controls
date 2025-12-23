@@ -192,7 +192,7 @@ export class ExcelExport {
                     this.isHeaderIncluded = true;
                 }
                 const includeHiddenColumn: boolean = args.excelExportProperties && args.excelExportProperties.includeHiddenColumn ?
-                    args.excelExportProperties.includeHiddenColumn : false;
+                    args.excelExportProperties.includeHiddenColumn : true;
                 const col: Column[] = currentPivotInstance ? currentPivotInstance.grid.getColumns() : this.parent.grid.getColumns();
                 const hiddenColumnsIndex: number[] = [];
                 if (!includeHiddenColumn) {
@@ -415,13 +415,18 @@ export class ExcelExport {
                     if (this.columns.length < col.length) {
                         this.columns = [];
                         for (let cCnt: number = 0; cCnt < colLen; cCnt++) {
-                            this.columns.push({ index: cCnt + 1, width: col[cCnt as number].width as number });
+                            let width: string | number = col[cCnt as number].width;
+                            if (typeof (width) === 'string' && width.indexOf('px') !== -1) {
+                                width = parseInt(width, 10);
+                            }
+                            this.columns.push({ index: cCnt + 1, width: width as number });
                         }
                     }
                     if (maxLevel > 0) {
                         this.columns[0].width = 100 + (maxLevel * 20);
                     }
-                    const sheet: Worksheet = { columns: this.columns, rows: this.rows, images: this.images } as Worksheet;
+                    const sheet: Worksheet = { columns: this.columns, rows: this.rows, images: this.images,
+                        enableRtl: this.parent.enableRtl } as Worksheet;
                     this.workSheet.push(sheet);
                     this.book['worksheets'] = this.workSheet;
                 }

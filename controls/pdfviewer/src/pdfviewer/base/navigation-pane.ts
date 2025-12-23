@@ -565,7 +565,7 @@ export class NavigationPane {
             if (this.pdfViewer.annotation && this.pdfViewer.annotation.textMarkupAnnotationModule) {
                 this.pdfViewer.annotation.textMarkupAnnotationModule.showHideDropletDiv(true);
             }
-            if (Browser.isDevice && !isBlazor()) {
+            if (Browser.isDevice && !isBlazor() && !this.pdfViewer.enableDesktopMode) {
                 if (this.pdfViewer.toolbarModule.annotationToolbarModule.toolbar) {
                     this.pdfViewer.toolbarModule.annotationToolbarModule.toolbar.element.style.display = 'block';
                     if (this.pdfViewer.toolbarModule.annotationToolbarModule.propertyToolbar) {

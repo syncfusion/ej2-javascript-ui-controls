@@ -3,7 +3,7 @@
  */
 import { getValue, isNullOrUndefined, L10n } from '@syncfusion/ej2-base';
 import {  Gantt, Selection, Toolbar, DayMarkers, Edit, Filter, Reorder, Resize, ColumnMenu, Sort, RowDD, ContextMenu, ExcelExport, PdfExport, ContextMenuClickEventArgs, UndoRedo, IGanttData  } from '../../src/index';
-import { dialogEditData, resourcesData, resources, scheduleModeData, projectData1, indentOutdentData, splitTasksData, projectData, crData, scheduleModeData1, splitTasksData2, dialogData1, splitTasksData3, CR886052, MT887459, resourcesDatas1, resourceCollections1, editingResources, workMT887459,resourceData, dialogEditDataLocale,showcaseDatasource,breakIssue, resourceResources, data931222, resource931222, baselinedurationdata, t974566, data987636 } from '../base/data-source.spec';
+import { dialogEditData, resourcesData, resources, scheduleModeData, projectData1, indentOutdentData, splitTasksData, projectData, crData, scheduleModeData1, splitTasksData2, dialogData1, splitTasksData3, CR886052, MT887459, resourcesDatas1, resourceCollections1, editingResources, workMT887459,resourceData, dialogEditDataLocale,showcaseDatasource,breakIssue, resourceResources, data931222, resource931222, baselinedurationdata, t974566, data987636, cr786381 } from '../base/data-source.spec';
 import { createGantt, destroyGantt, triggerMouseEvent, triggerKeyboardEvent } from '../base/gantt-util.spec';
 import { DropDownList } from '@syncfusion/ej2-dropdowns';
 import { DataManager } from '@syncfusion/ej2-data';
@@ -12475,7 +12475,8 @@ describe('Add predecessor for unscheduled tasks', () => {
     it('Checking for predecessor name', () => {
         ganttObj.actionComplete = function (args: any): void {
             if (args.requestType === "save") {
-                expect(ganttObj.flatData[1].ganttProperties.predecessorsName).toBe('7FS+3 days');
+                /// circular dependency so the predecessor will be removed
+                expect(ganttObj.flatData[1].ganttProperties.predecessorsName).toBe('');
             }
         };
         let dependency: HTMLElement = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table > tbody > tr:nth-child(2) > td:nth-child(7)') as HTMLElement;
@@ -15407,3 +15408,99 @@ describe('Dependency tab based on AllowParentDependency setting', () => {
             ganttObj.editModule.dialogModule.dialogClose();
         });
     });
+describe('Coverage for circular dependency', () => {
+    let ganttObj: Gantt;
+    beforeAll((done: Function) => {
+        ganttObj = createGantt({
+            dataSource: cr786381,
+                dateFormat: 'MMM dd, y',
+                taskFields: {
+                    id: 'TaskID',
+                    name: 'TaskName',
+                    startDate: 'StartDate',
+                    endDate: 'EndDate',
+                    duration: 'Duration',
+                    progress: 'Progress',
+                    dependency: 'Predecessor',
+                    parentID: 'ParentId',
+                    notes: 'info',
+                    resourceInfo: 'resources'
+                },
+                editSettings: {
+                    allowAdding: true,
+                    allowEditing: true,
+                    allowDeleting: true,
+                    allowTaskbarEditing: true,
+                    showDeleteConfirmDialog: true
+                },
+                toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll', 'Indent', 'Outdent'],
+                allowSelection: true,
+                gridLines: 'Both',
+                height: '650px',
+                rowHeight: 46,
+                enableHover: true,
+                taskbarHeight: 25,
+                treeColumnIndex: 1,
+                resourceFields: {
+                    id: 'resourceId',
+                    name: 'resourceName'
+                },
+                resources: editingResources,
+                highlightWeekends: true,
+                timelineSettings: {
+                    topTier: {
+                        unit: 'Week',
+                        format: 'MMM dd, y',
+                    },
+                    bottomTier: {
+                        unit: 'Day',
+                    },
+                },
+                labelSettings: {
+                    leftLabel: 'TaskName',
+                    rightLabel: 'resources'
+                },
+                splitterSettings: {
+                    columnIndex: 3
+                },
+                editDialogFields: [
+                    { type: 'General', headerText: 'General' },
+                    { type: 'Dependency' },
+                    { type: 'Resources' },
+                    { type: 'Notes' },
+                ],
+                projectStartDate: new Date('03/26/2025'),
+                projectEndDate: new Date('09/01/2025'),
+        }, done);
+    });
+    beforeEach((done: Function) => {
+        setTimeout(() => {
+            ganttObj.openEditDialog(1);
+            let tab: any = (<EJ2Instance>document.getElementById(ganttObj.element.id + '_Tab')).ej2_instances[0];
+            tab.selectedItem = 1;
+            tab.dataBind();
+            done();
+        }, 1000);
+    });
+    afterAll(() => {
+        if (ganttObj) {
+            destroyGantt(ganttObj);
+        }
+    });
+    it('Trigerring save action', () => {
+        debugger
+        ganttObj.actionComplete = (args: any): void => {
+            if (args.requestType === 'save') {
+                expect(ganttObj.currentViewData[0].ganttProperties.predecessorsName).toBe('5FS+3 days');
+            }
+        };
+        let row: HTMLElement = document.querySelector('#' + ganttObj.element.id + 'DependencyTabContainer_content_table > tbody > tr > td:nth-child(2)') as HTMLElement;
+        if (row) {
+            triggerMouseEvent(row, 'dblclick');
+            let toolbar: HTMLElement = document.querySelector('#' + ganttObj.element.id + 'DependencyTabContainer') as HTMLElement;
+            triggerMouseEvent(toolbar, 'click');
+            let saveRecord: HTMLElement = document.querySelector('#' + ganttObj.element.id + '_dialog > div.e-footer-content > button') as HTMLElement;
+            triggerMouseEvent(saveRecord, 'click');
+        }
+    });
+});

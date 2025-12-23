@@ -3,10 +3,10 @@ import { AIAssistantPromptRequestArgs, AIAssistantStopRespondingArgs, AICommands
 import * as events from '../base/constant';
 import * as classes from '../base/classes';
 import { Popup, Tooltip } from '@syncfusion/ej2-popups';
-import { AIAssistView, PromptModel, PromptRequestEventArgs } from '@syncfusion/ej2-interactive-chat';
+import { AIAssistView, PromptModel, PromptRequestEventArgs, ToolbarItemClickedEventArgs } from '@syncfusion/ej2-interactive-chat';
 import { ActionBeginEventArgs, IToolbarItemModel, NotifyArgs } from '../../common';
 import { MenuEventArgs as MenuBarItemSelectedArgs } from '@syncfusion/ej2-navigations';
-import { detach, Draggable, formatUnit, getComponent, isNullOrUndefined as isNOU, KeyboardEventArgs, L10n, select} from '@syncfusion/ej2-base';
+import { detach, extend, Draggable, formatUnit, getComponent, isNullOrUndefined as isNOU, KeyboardEventArgs, L10n, select} from '@syncfusion/ej2-base';
 import { NodeSelection } from '../../selection/selection';
 import { AssistantPromptToolbarItems, AssistantResponseToolbarItems, AssistantToolbarType, AssitantHeaderToolbarItems } from '../base/types';
 import { BeforePopupOpenCloseEventArgs, IMenuRenderArgs, RenderType, RichTextEditorModel } from '../base';
@@ -42,6 +42,7 @@ export class AIAssistant {
     private dragged: boolean;
     private L10n: L10n;
     private handlePopupEscapeBoundFn: () => void;
+    private isProcessWholeEditorContent: boolean;
     constructor(parent: IRichTextEditor, serviceLocator: ServiceLocator) {
         this.parent = parent;
         this.locator = serviceLocator;
@@ -182,28 +183,46 @@ export class AIAssistant {
             promptRequest: this.onPromptRequest.bind(this),
             responseToolbarSettings: {
                 items: this.getToolbarItems(this.parent.aiAssistantSettings.responseToolbarSettings as string[] | IAIAssistantToolbarItem[], 'Response') ,
-                itemClicked: (args: AIAssitantToolbarClickEventArgs) => {
-                    args.requestType = 'Response';
-                    this.onAssitantToolbarClick(args);
+                itemClicked: (args: ToolbarItemClickedEventArgs) => {
+                    const eventArgs: AIAssitantToolbarClickEventArgs = {
+                        requestType: 'Response',
+                        originalEvent: args.event,
+                        item: args.item as IAIAssistantToolbarItem,
+                        dataIndex: args.dataIndex,
+                        cancel: args.cancel
+                    };
+                    this.onAssitantToolbarClick(eventArgs);
                 }
             },
             promptToolbarSettings: {
                 items: this.getToolbarItems(this.parent.aiAssistantSettings.promptToolbarSettings as string[] | IAIAssistantToolbarItem[], 'Prompt') ,
-                itemClicked: (args: AIAssitantToolbarClickEventArgs) => {
-                    args.requestType = 'Prompt';
-                    this.onAssitantToolbarClick(args);
+                itemClicked: (args: ToolbarItemClickedEventArgs) => {
+                    const eventArgs: AIAssitantToolbarClickEventArgs = {
+                        requestType: 'Prompt',
+                        originalEvent: args.event,
+                        item: args.item as IAIAssistantToolbarItem,
+                        dataIndex: args.dataIndex,
+                        cancel: args.cancel
+                    };
+                    this.onAssitantToolbarClick(eventArgs);
                 }
             },
-            prompts: this.parent.aiAssistantSettings.prompts,
+            prompts: this.parsePromptResponses(this.parent.aiAssistantSettings.prompts),
             promptPlaceholder: this.parent.aiAssistantSettings.placeholder,
             promptSuggestions: this.parent.aiAssistantSettings.suggestions,
             bannerTemplate: this.parent.aiAssistantSettings.bannerTemplate,
             stopRespondingClick: this.handleStopResponse.bind(this),
             toolbarSettings: {
                 items: this.getToolbarItems(this.parent.aiAssistantSettings.headerToolbarSettings as string[] | IAIAssistantToolbarItem[], 'Header') ,
-                itemClicked: (args: AIAssitantToolbarClickEventArgs) => {
-                    args.requestType = 'Header';
-                    this.onAssitantToolbarClick(args);
+                itemClicked: (args: ToolbarItemClickedEventArgs) => {
+                    const eventArgs: AIAssitantToolbarClickEventArgs = {
+                        requestType: 'Header',
+                        originalEvent: args.event,
+                        item: args.item as IAIAssistantToolbarItem,
+                        dataIndex: args.dataIndex,
+                        cancel: args.cancel
+                    };
+                    this.onAssitantToolbarClick(eventArgs);
                 }
             },
             footerToolbarSettings: {
@@ -272,8 +291,10 @@ export class AIAssistant {
         const range: Range = this.parent.getRange();
         let htmlString: string;
         if (this.assistView.prompts.length === 1) {
+            this.isProcessWholeEditorContent = false;
             if (!this.parent.isRTEFocused) {
                 htmlString = this.parent.getHtml();
+                this.isProcessWholeEditorContent = true;
             } else if (range.collapsed && this.blockNodes.length > 0) {
                 htmlString = (this.blockNodes[0] as HTMLElement).outerHTML;
             } else {
@@ -316,6 +337,22 @@ export class AIAssistant {
 
     private parseMarkdown(text: string): string {
         return MarkdownConverter.toHtml(text) as string;
+    }
+
+    private parsePromptResponses(prompts: PromptModel[]): PromptModel[] {
+        if (!prompts || prompts.length === 0) {
+            return prompts;
+        }
+        const parsedPrompts: PromptModel[] = [];
+        for (let i: number = 0; i < prompts.length; i++) {
+            const prompt: PromptModel = prompts[i as number];
+            const newPrompt: PromptModel = extend(null, prompt, null, true);
+            if (newPrompt.response) {
+                newPrompt.response = this.parseMarkdown(newPrompt.response);
+            }
+            parsedPrompts.push(newPrompt);
+        }
+        return parsedPrompts;
     }
 
 
@@ -767,7 +804,7 @@ export class AIAssistant {
             name: 'InsertResponseContent',
             item: {
                 command: 'AIAssistant',
-                subCommand: 'InsertResponseContent',
+                subCommand: this.isProcessWholeEditorContent ? 'ReplaceEditorContent' : 'InsertResponseContent',
                 value: this.parent.htmlEditorModule.sanitizeHelper(response)
             }
         };

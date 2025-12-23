@@ -3133,7 +3133,10 @@ export class DropDownTree extends Component<HTMLElement> implements INotifyPrope
             selectedValues = selectedValues.filter((selectedValue: string) => {
                 const nodeData: any[] = this.treeObj.getTreeData(selectedValue);
                 if (Array.isArray(nodeData)) {
-                    return nodeData.every((nodeSelectedData: any) => nodeSelectedData.selected);
+                    return nodeData.every((nodeSelectedData: any) => {
+                        return nodeSelectedData.selected === true ||
+                            this.selectedData.some((sel: any) => sel.id === String(nodeSelectedData[this.fields.value]));
+                    });
                 }
                 return true;
             });

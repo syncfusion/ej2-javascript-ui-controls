@@ -5,6 +5,7 @@ import { _TextProcessingMode } from './enum';
 import { _PdfContentParserHelper } from './content-parser-helper';
 import { PdfDataExtractor } from './pdf-data-extractor';
 import { _ImageStructure } from './image-extraction/image-structure';
+import { ApplicationPlatform } from './image-extraction';
 
 /**
  * Removes escape sequences from a text string and returns the cleaned text.
@@ -634,12 +635,12 @@ export function _isArrayEqual(arr1: number[], arr2: number[]): boolean {
 /**
  * Represents a callback function that returns a canvas element.
  *
- * @returns {any} canvas instance.
+ * @returns {{canvas: any, applicationPlatform: ApplicationPlatform}} An object instance
  *
  * ```typescript
  * const canvasRenderCallback: canvasRenderCallback = () => {
- *   return document.createElement('canvas');
+ *   return { canvas: canvas, applicationPlatform: ApplicationPlatform.typescript};
  * };
  * ```
  */
-export type canvasRenderCallback = () => any; // eslint-disable-line
+export type canvasRenderCallback = () => {canvas: any, applicationPlatform: ApplicationPlatform}; // eslint-disable-line

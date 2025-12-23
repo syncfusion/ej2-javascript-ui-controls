@@ -154,7 +154,7 @@ describe('MultiSelect - changeonblur', () => {
                 dataSource: remoteData,
                 fields: { value: 'EmployeeID', text: 'FirstName' },
                 mode: 'CheckBox',
-                query: new Query().take(9),
+                query: new Query().take(9).requiresCount(),
                 changeOnBlur: false,
                 value: [5],
                 change: () => {

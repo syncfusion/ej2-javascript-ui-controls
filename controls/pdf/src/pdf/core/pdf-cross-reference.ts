@@ -788,6 +788,13 @@ export class _PdfCrossReference {
         this._indexes.push(0, 1);
         this._offsets = [];
         const flushThreshold: number = 512000; // 500KB threshold
+        this._cacheMap.forEach((value: _PdfDictionary | _PdfBaseStream) => {
+            const dictionary: _PdfDictionary = value instanceof _PdfBaseStream ? value.dictionary :
+                value instanceof _PdfDictionary ? value : undefined;
+            if (dictionary) {
+                dictionary._isProcessed = false;
+            }
+        });
         this._cacheMap.forEach((value: any, key: _PdfReference) => { // eslint-disable-line
             if (value instanceof _PdfBaseStream) {
                 const dictionary: _PdfDictionary = value.dictionary;
@@ -1036,6 +1043,8 @@ export class _PdfCrossReference {
             this._writeString('\n', buffer);
         } else if (typeof obj === 'number') {
             this._writeString(`${obj}\n`, buffer);
+        } else if (typeof obj === 'string') {
+            this._writeString(`(${_escapePdfName(obj)})\n`, buffer);
         }
         if (reference && reference instanceof _PdfReference) {
             this._writeString(`endobj${this._newLine}`, buffer);
@@ -1341,7 +1350,7 @@ export class _PdfCrossReference {
                     }
                     dictionary._updated = false;
                 }
-            } else if ((!Array.isArray(value) || value.length === 0) && typeof value !== 'number') {
+            } else if ((!Array.isArray(value) || value.length === 0) && typeof value !== 'number' && typeof value !== 'string') {
                 return;
             }
             this._writeToBuffer(buffer, key, value, cipher);

@@ -109,6 +109,14 @@ export class PathElement extends DiagramElement {
             //Measure the element only whent the path data is changed/ size is not specified
             this.absoluteBounds = measurePath(this.data ? this.data : '');
         }
+        // Bug 997519: Initialize zero width/height to strokeWidth to avoid 0/0 → NaN in scale math.
+        // When the wrapper's actual width/height is 0, scale calculations (e.g., 0/0) returned NaN.
+        if (this.relativeMode !== 'Point' && this.absoluteBounds && this.absoluteBounds.width === 0) {
+            this.absoluteBounds.width = this.style.strokeWidth;
+        }
+        if (this.relativeMode !== 'Point' && this.absoluteBounds && this.absoluteBounds.height === 0) {
+            this.absoluteBounds.height = this.style.strokeWidth;
+        }
         if (this.width === undefined) {
             this.desiredSize = new Size(this.absoluteBounds.width, this.height || this.absoluteBounds.height);
         } else if (this.height === undefined) {

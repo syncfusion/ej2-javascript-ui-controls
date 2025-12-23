@@ -234,6 +234,10 @@ export class Action {
                 const targetCol: Element = row.querySelector(`.${cls.CONTENT_CELLS_CLASS}:nth-child(${colIndex + 1})`);
                 removeClass([targetCol, target], cls.COLLAPSED_CLASS);
                 remove(targetCol.querySelector('.' + cls.COLLAPSE_HEADER_TEXT_CLASS));
+                const showAddButton: HTMLElement = targetCol.querySelector('.e-show-add-button');
+                if (showAddButton) {
+                    removeClass([showAddButton], cls.COLLAPSED_CLASS);
+                }
                 target.setAttribute('aria-expanded', 'true');
                 targetCol.setAttribute('aria-expanded', 'true');
                 const collapsedCell: HTMLElement[] = [].slice.call(targetCol.parentElement.querySelectorAll('.' + cls.COLLAPSED_CLASS));
@@ -262,6 +266,10 @@ export class Action {
             for (const row of targetRow) {
                 const targetCol: Element = row.querySelector(`.${cls.CONTENT_CELLS_CLASS}[data-key="${key}"]`);
                 const index: number = (targetCol as HTMLTableCellElement).cellIndex;
+                const showAddButton: HTMLElement = targetCol.querySelector('.e-show-add-button');
+                if (showAddButton) {
+                    addClass([showAddButton], cls.COLLAPSED_CLASS);
+                }
                 let text: string;
                 if (!this.parent.enableVirtualization) {
                     text = (this.parent.columns[index as number].showItemCount ? '[' +

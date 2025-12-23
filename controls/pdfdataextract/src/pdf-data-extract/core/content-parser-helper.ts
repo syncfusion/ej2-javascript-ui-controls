@@ -4,7 +4,7 @@ import { _TextProcessingMode } from './enum';
 import { PdfRedactor } from './redaction/pdf-redactor';
 import { _GraphicState, _TextState } from './graphic-state';
 import { _FontStructure } from './text-extraction';
-import { _decodeEncodedText, _getXObject, canvasRenderCallback } from './utils';
+import { _decodeEncodedText, _getXObject } from './utils';
 import { _PdfTextParser } from './pdf-text-parser';
 import { _PdfShapeParser } from './redaction/shape-parser-helper';
 import { _ImageStructure } from './image-extraction/image-structure';
@@ -243,7 +243,7 @@ export class _PdfContentParserHelper {
         return;
     }
     async _processImageRecordCollection(recordCollection: _PdfRecord[],  page: PdfPage, fontCollection: Map<string, _FontStructure>,
-                             xObjectCollection: Map<string, any>, graphicState: _GraphicState, callBack: canvasRenderCallback): Promise<any> { // eslint-disable-line 
+                             xObjectCollection: Map<string, any>, graphicState: _GraphicState, callBack: any): Promise<any> { // eslint-disable-line 
         let textState: _TextState;
         const red: number = 0;
         const green: number = 0;

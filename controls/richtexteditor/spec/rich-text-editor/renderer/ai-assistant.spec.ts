@@ -151,6 +151,79 @@ describe('AI Assistant Module', ()=> {
         });
     });
 
+    describe('998903: When Assigning Prompt property Response are not parsed from Markdown to HTML.', ()=> {
+        let editor: RichTextEditor;
+        beforeAll(()=> {
+            editor = renderRTE({
+                value: 'This is a content wiht improper format',
+                toolbarSettings: {
+                    items: ['aiquery']
+                },
+                aiAssistantSettings: {
+                    prompts: [
+                        {
+                            prompt: 'What is Essential Studio ?',
+                            response: '## Essential studio is a popuplar enterprise UI Component.'
+                        }
+                    ]
+                },
+                aiAssistantPromptRequest: (e) => {
+                    editor.addAIPromptResponse('This is a modified text content from LLM.', false);
+                    editor.addAIPromptResponse('This is a modified text content from LLM.', true);
+                }
+            });
+        });
+        afterAll(()=> {
+            destroy(editor);
+        });
+        it ('Should render the prompt response in HTML', (done: DoneFn) => {
+            editor.focusIn();
+            (editor.getToolbarElement().querySelector('.e-toolbar-item') as HTMLElement).click();
+            setTimeout(() => {
+                expect(editor.aiAssistantModule.queryPopup.element.classList.contains('e-popup-open')).toBe(true);
+                const insertButton: HTMLElement = document.querySelector('.e-btn-icon.e-icons.e-check.e-icon-left').parentElement;
+                insertButton.click();
+                setTimeout(() => {
+                    expect(editor.inputElement.querySelectorAll('h2').length).toBe(1);
+                    done();
+                }, 100);
+            }, 100);
+        });
+    });
+    describe('998903: Coverage for the parsePromptResponses.', ()=> {
+        let editor: RichTextEditor;
+        beforeAll(()=> {
+            editor = renderRTE({
+                value: 'This is a content wiht improper format',
+                toolbarSettings: {
+                    items: ['aiquery']
+                },
+                aiAssistantSettings: {
+                    prompts: [
+                        {
+                            prompt: 'What is Essential Studio ?'
+                        }
+                    ]
+                },
+                aiAssistantPromptRequest: (e) => {
+                    editor.addAIPromptResponse('This is a modified text content from LLM.', false);
+                    editor.addAIPromptResponse('This is a modified text content from LLM.', true);
+                }
+            });
+        });
+        afterAll(()=> {
+            destroy(editor);
+        });
+        it ('Coverage for the parsePromptResponses, when there is no response', (done: DoneFn) => {
+            editor.focusIn();
+            (editor.getToolbarElement().querySelector('.e-toolbar-item') as HTMLElement).click();
+            setTimeout(() => {
+                expect(editor.aiAssistantModule.queryPopup.element.classList.contains('e-popup-open')).toBe(true);
+                done();
+            }, 100);
+        });
+    });
+
     describe('Menu Command Streaming testing.', ()=> {
         let editor: RichTextEditor;
         beforeAll(()=> {
@@ -659,6 +732,45 @@ describe('AI Assistant Module', ()=> {
         });
     });
 
+    describe('998982: Event args need to be updated with the original event, as toolbar items is clicked, in aiAssistantModule popup.', ()=> {
+        let editor: RichTextEditor;
+        let isClicked: boolean = false;
+        beforeAll(()=> {
+            editor = renderRTE({
+                toolbarSettings: {
+                    items: ['aiquery', '|', 'Bold', 'Italic', 'StrikeThrough', 'Inlinecode', '|', 'Formats', 'NumberFormatList', '|', 'Undo', 'Redo']
+                },
+                aiAssistantSettings: {
+                    responseToolbarSettings: ['Insert', 'Regenerate', 'Copy'],
+                    prompts: [{
+                        prompt: 'This is the prompt to query with AI LLM.',
+                        response: 'This is the response from the AI LLM.'
+                    }]
+                },
+                aiAssistantToolbarClick: (args: AIAssitantToolbarClickEventArgs)=> {
+                    if (args.originalEvent) {
+                        isClicked = true;
+                    }
+                }
+            });
+        });
+        afterAll(()=> {
+            destroy(editor);
+        });
+        it('Should update the event args with the original event', (done: DoneFn)=> {
+            (editor.getToolbarElement().querySelector('.e-toolbar-item') as HTMLElement).click();
+            setTimeout(() => {
+                expect(editor.aiAssistantModule.queryPopup.element.classList.contains('e-popup-open')).toBe(true);
+                const cancelButton: HTMLElement = document.querySelectorAll('.e-toolbar-right')[0].childNodes[1].firstChild as HTMLElement;
+                cancelButton.click();
+                setTimeout(() => {
+                    expect(isClicked).toBe(true);
+                    done();
+                }, 100);
+            }, 100);
+        });
+    });
+
     describe('Menu Command Quick toolbar Menu action Testing.', ()=> {
         let editor: RichTextEditor;
         beforeAll(()=> {
@@ -1090,8 +1202,8 @@ describe('AI Assistant Module', ()=> {
                 setTimeout(() => {
                     expect(editor.aiAssistantModule.assistView.prompts[0].prompt).toBe('What is your favorite color?');
                     expect(editor.aiAssistantModule.assistView.prompts[1].prompt).toBe('Describe your ideal vacation.');
-                    expect(editor.aiAssistantModule.assistView.prompts[0].response).toBe('My favorite color is blue.');
-                    expect(editor.aiAssistantModule.assistView.prompts[1].response).toBe('A week in the mountains with a lake view and no internet.');
+                    expect(editor.aiAssistantModule.assistView.prompts[0].response).toBe('<p>My favorite color is blue.</p>\n');
+                    expect(editor.aiAssistantModule.assistView.prompts[1].response).toBe('<p>A week in the mountains with a lake view and no internet.</p>\n');
                     editor.aiAssistantSettings.prompts = [
                         {
                             prompt: "What are your thoughts on remote work?",
@@ -1647,8 +1759,8 @@ describe('AI Assistant Module', ()=> {
             setTimeout(() => {
                 expect(editor.aiAssistantModule.assistView.prompts[0].prompt).toBe('What is your favorite color?');
                 expect(editor.aiAssistantModule.assistView.prompts[1].prompt).toBe('Describe your ideal vacation.');
-                expect(editor.aiAssistantModule.assistView.prompts[0].response).toBe('My favorite color is blue.');
-                expect(editor.aiAssistantModule.assistView.prompts[1].response).toBe('A week in the mountains with a lake view and no internet.');
+                expect(editor.aiAssistantModule.assistView.prompts[0].response).toBe('<p>My favorite color is blue.</p>\n');
+                expect(editor.aiAssistantModule.assistView.prompts[1].response).toBe('<p>A week in the mountains with a lake view and no internet.</p>\n');
                 const clearButton: HTMLElement = document.querySelector('.e-rte-aiquery-popup .e-view-header .e-trash').parentElement.parentElement;
                 clearButton.click();
                 setTimeout(() => {
@@ -2091,6 +2203,7 @@ describe('AI Assistant Module', ()=> {
     describe('995534: AI Assistant should process the whole editor content when directly clicked the Toolbar button.', () => {
         let editor: RichTextEditor;
         let processedHtml: string = '';
+        const response: string = 'Processed by AI';
 
         beforeAll(() => {
             editor = renderRTE({
@@ -2113,8 +2226,8 @@ describe('AI Assistant Module', ()=> {
                     // Capture the html sent to AI to assert later
                     processedHtml = args.html;
                     // Simulate AI response and finalize (same style as other tests)
-                    editor.addAIPromptResponse('Processed by AI', false);
-                    editor.addAIPromptResponse('Processed by AI', true);
+                    editor.addAIPromptResponse(response, false);
+                    editor.addAIPromptResponse(response, true);
                 }
             });
         });
@@ -2147,5 +2260,15 @@ describe('AI Assistant Module', ()=> {
                 }, 100);
             }, 100);
         });
+
+        it('999875 :Should replace the editor content when the insert button is clicked.', (done: DoneFn) => {
+            const aiQueryPopup: HTMLElement = document.querySelector('.e-rte-aiquery-popup');
+            const insertButton: HTMLElement = aiQueryPopup.querySelector('.e-check').parentElement.parentElement;
+            insertButton.click();
+            setTimeout(() => {
+                expect(editor.inputElement.innerHTML).toBe('<p>Processed by AI</p>\n');
+                done();
+            }, 100);
+        })
     });
 });

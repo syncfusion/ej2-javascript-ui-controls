@@ -1,6 +1,6 @@
 @use 'ej2-base/styles/common/mixin' as *;
 @use './theme-variables' as *;
-@use 'styles/drop-down-base/theme-variables' as drop-down-vars;
+@use '../drop-down-base/theme-variables' as drop-down-vars;
 @include export-module('multiselect-bigger') {
   .e-bigger .e-multiselect.e-control-container.e-input-group .e-multi-select-wrapper .e-ddl-icon,
   .e-bigger.e-multiselect.e-control-container.e-input-group .e-multi-select-wrapper .e-ddl-icon {

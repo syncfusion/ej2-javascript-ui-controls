@@ -29,6 +29,7 @@ export interface BaseAttributes extends StyleAttributes {
     description?: string;
     canApplyStyle?: boolean;
     relativeMode?: string;
+    isEJ2?: boolean;
 }
 /** @private */
 export interface LineAttributes extends BaseAttributes {

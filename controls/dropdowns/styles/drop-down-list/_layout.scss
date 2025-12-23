@@ -5,7 +5,7 @@
   .e-ddl#{&}.e-popup {
     #{if(&, '&', '*')} .e-input-group {
       @if ($skin-name == 'Material3') {
-        margin-top: $ddl-popup-input-group-mat-margin-top;
+        padding-top: $ddl-popup-input-group-mat-margin-top;
       }
     }
   }

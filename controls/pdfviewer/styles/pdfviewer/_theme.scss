@@ -7661,7 +7661,7 @@ $lg-desktop: 1399.98;
   }
 
   .e-pv-blazor-comments-panel-text {
-    padding-top: $pv-spacing-55p;
+    padding-top: $pv-spacing-55p !important;/* stylelint-disable-line declaration-no-important */
     text-align: center;
     padding-left: $pv-spacing-0;
   }

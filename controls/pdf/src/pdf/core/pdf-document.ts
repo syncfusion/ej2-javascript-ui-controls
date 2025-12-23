@@ -2238,7 +2238,8 @@ export class PdfDocument {
             this._mergeHelperCache.set(sourceDocument._uniqueID, helper);
         }
         let isLayersPresent: boolean = false;
-        if ((!this ._isDuplicatePage && sourceDocument._catalog._catalogDictionary.has('OCProperties')) || (typeof options !== 'undefined' && !options.optimizeResources)) {
+        const hasOCProps: boolean = sourceDocument._catalog._catalogDictionary.has('OCProperties');
+        if (hasOCProps && (!this._isDuplicatePage || (options && !options.optimizeResources))) {
             isLayersPresent = true;
             sourceOCProperties = sourceDocument._catalog._catalogDictionary.get('OCProperties');
             ocProperties = new _PdfDictionary(this._crossReference);
@@ -2274,7 +2275,7 @@ export class PdfDocument {
         }
         helper._exportBookmarks(sourceDocument, correspondancePagecount);
         helper._mergeFormFieldsWithDocument();
-        if ((isLayersPresent && !this._isDuplicatePage) || (typeof options !== 'undefined' && !options.optimizeResources)){
+        if (isLayersPresent && (!this._isDuplicatePage || (options && !options.optimizeResources))) {
             helper._importLayers(ocProperties, true);
         }
         helper._objectDispose();

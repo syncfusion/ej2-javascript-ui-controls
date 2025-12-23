@@ -176,6 +176,7 @@ export class DropDownList extends DropDownBase implements IInput {
     private isUpdateFooterHeight: boolean = false;
     private filterArgs: KeyboardEventArgs;
     private isReactTemplateUpdate: boolean = false;
+    private iOSscrollPosition: {x: number, y: number};
 
     /**
      * Sets CSS classes to the root element of the component that allows customization of appearance.
@@ -3081,6 +3082,7 @@ export class DropDownList extends DropDownBase implements IInput {
         }
         const args: BeforeOpenEventArgs = { cancel: false };
         this.trigger('beforeOpen', args, (args: BeforeOpenEventArgs) => {
+            this.iOSscrollPosition = { x: document.documentElement.scrollLeft, y: document.documentElement.scrollTop};
             let initialPopupHeight: number;
             if (!args.cancel) {
                 const popupEle: HTMLElement = this.createElement('div', {
@@ -3296,6 +3298,9 @@ export class DropDownList extends DropDownBase implements IInput {
                                     }
                                 }
                             }, 15);
+                        }
+                        if (this.allowFiltering && this.isDeviceFullScreen && Browser.isDevice && Browser.isIos){
+                            document.documentElement.scrollIntoView();
                         }
                     } else {
                         this.beforePopupOpen = false;
@@ -3838,6 +3843,12 @@ export class DropDownList extends DropDownBase implements IInput {
                 this.fixedHeaderElement = null;
             }
             if (!eventArgs.cancel) {
+                if (this.isPopupOpen && this.allowFiltering && this.isDeviceFullScreen && Browser.isDevice && Browser.isIos){
+                    document.documentElement.scrollTo({
+                        top: this.iOSscrollPosition.y,
+                        left: this.iOSscrollPosition.x
+                    });
+                }
                 if (this.getModuleName() === 'autocomplete') {
                     this.rippleFun();
                 }

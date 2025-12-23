@@ -476,6 +476,21 @@ export class Dependency {
         return Array.from(seen.values());
     }
 
+    private generatePredecessorValue(currentValue: IPredecessor, temp: string): string {
+        if (currentValue.offset !== 0) {
+            temp += currentValue.offset > 0 ? ('+' + currentValue.offset + ' ') : (currentValue.offset + ' ');
+            const multiple: boolean = currentValue.offset !== 1;
+            if (currentValue.offsetUnit === 'day') {
+                temp += multiple ? this.parent.localeObj.getConstant('days') : this.parent.localeObj.getConstant('day');
+            } else if (currentValue.offsetUnit === 'hour') {
+                temp += multiple ? this.parent.localeObj.getConstant('hours') : this.parent.localeObj.getConstant('hour');
+            } else {
+                temp += multiple ? this.parent.localeObj.getConstant('minutes') : this.parent.localeObj.getConstant('minute');
+            }
+        }
+        return temp;
+    }
+
     /**
      * Get predecessor value as string with offset values
      *
@@ -927,6 +942,12 @@ export class Dependency {
             childPredecessor = predecessorsCollection.filter((data: IPredecessor) =>
                 data.to === currentTaskId
             );
+        }
+        if (childPredecessor.length === 0 && this.parent.undoRedoModule && this.parent.undoRedoModule['isUndoRedoPerformed']) {
+            if (parentGanttRecord.ganttProperties.predecessor.length > 0) {
+                childPredecessor = parentGanttRecord.ganttProperties.predecessor
+                    .filter((pred: IPredecessor) => pred.to === childGanttRecord.ganttProperties.taskId.toString());
+            }
         }
         const startDate: Date = this.getPredecessorDate(childGanttRecord, childPredecessor, flatDataCollection);
         this.parent.setRecordValue('startDate', startDate, childRecordProperty, true);

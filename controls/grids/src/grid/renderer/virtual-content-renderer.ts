@@ -1613,7 +1613,7 @@ export class VirtualContentRenderer extends ContentRender implements IRenderer {
                 if (!isNullOrUndefined(scrollTop)) {
                     const direction: ScrollDirection = this.content.scrollTop < scrollTop ? 'down' : 'up';
                     this.selectRowIndex = args.selectedIndex;
-                    this.content.scrollTop = scrollTop;
+                    this.content.scrollTop = scrollTop + 1;
                     this.isSelectionScroll = this.observer.check(direction);
                 }
             }

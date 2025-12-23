@@ -96,3 +96,9 @@ export const beforePaste: string = 'beforePaste';
  * @hidden
  */
 export const asyncPagesVisible: string = 'asyncPagesVisible';
+/**
+ * Triggered when the border style other than solid type is clicked
+ *
+ * @hidden
+ */
+export const unsupportedBorderStyleClick: string = 'unsupportedBorderStyleClick';

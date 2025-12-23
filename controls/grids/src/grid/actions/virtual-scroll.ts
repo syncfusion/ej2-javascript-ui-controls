@@ -1,4 +1,4 @@
-import { IGrid, IAction, CustomEditEventArgs } from '../base/interface';
+import { IGrid, IAction, CustomEditEventArgs, EJ2Intance } from '../base/interface';
 import { initialLoad } from '../base/constant';
 import { RenderType } from '../base/enum';
 import { ServiceLocator } from '../services/service-locator';
@@ -9,8 +9,9 @@ import { Column } from '../models/column';
 import { RowRenderer } from '../renderer/row-renderer';
 import { extend, getValue, isNullOrUndefined, remove } from '@syncfusion/ej2-base';
 import { Row } from '../models/row';
-import { setComplexFieldID, setValidationRuels, getColumnModelByUid } from '../base/util';
+import { setComplexFieldID, setValidationRuels, getColumnModelByUid, getComplexFieldID } from '../base/util';
 import { EditRender } from '../renderer/edit-renderer';
+import { ComboBox } from '@syncfusion/ej2-dropdowns';
 
 /**
  * Virtual Scrolling class
@@ -158,6 +159,26 @@ export class VirtualScroll implements IAction {
         }
     }
 
+    private setEditedDataToTemplate(form: Element, editedData: object): void {
+        if (this.parent.isAngular && this.parent.editSettings.mode === 'Normal') {
+            const columns: Column[] = (<{columnModel?: Column[]}>this.parent).columnModel.filter((col: Column) => col.editTemplate);
+            for (let i: number = 0, length: number = columns.length; i < length; i++) {
+                const field: string = getComplexFieldID(columns[parseInt(i.toString(), 10)].field);
+                if (isNullOrUndefined(field)) {
+                    continue;
+                }
+                const inputs: HTMLInputElement = form[field as keyof Element] as HTMLInputElement;
+                let value: string = getValue(columns[parseInt(i.toString(), 10)].field, editedData);
+                value = isNullOrUndefined(value) ? '' : value;
+                if (inputs && inputs.getAttribute('aria-label') === 'combobox' && inputs.closest('.e-combobox')) {
+                    const comboBoxObj: ComboBox = (<EJ2Intance>(inputs.closest('.e-combobox') as HTMLElement)).ej2_instances[0];
+                    comboBoxObj.value = value;
+                    comboBoxObj.dataBind();
+                }
+            }
+        }
+    }
+
     private setEditedDataToValidationForm(form: Element, editedData: object): void {
         const inputs: HTMLInputElement[] = [].slice.call(form.getElementsByClassName('e-field'));
         for (let i: number = 0, len: number = inputs.length; i < len; i++) {
@@ -168,6 +189,7 @@ export class VirtualScroll implements IAction {
                 inputs[parseInt(i.toString(), 10)].value = value;
             }
         }
+        this.setEditedDataToTemplate(form, editedData);
     }
 
     private refreshVirtualElement(args: {module: string}): void {

@@ -1591,7 +1591,10 @@ export abstract class PdfField {
     }
     abstract _doPostProcess(isFlatten?: boolean): void;
     _checkFieldFlag(dictionary: _PdfDictionary): boolean {
-        const flag: number = dictionary.get('F');
+        let flag: number;
+        if (dictionary && dictionary instanceof _PdfDictionary) {
+            flag = dictionary.get('F');
+        }
         return (typeof flag !== 'undefined' && flag === 6);
     }
     _initializeFont(font: PdfFont): void {

@@ -1721,4 +1721,92 @@ xdescribe('Timeline view events resizing', () => {
             }, 100);
         });
     });
+
+    describe('Resize does not work properly using startHour', () => {
+        let schObj: Schedule;
+        const appointmentData = [{
+            Id: 1,
+            Subject: 'Conference',
+            StartTime: new Date(2018, 6, 1, 9, 0),
+            EndTime: new Date(2018, 6, 1, 10, 0),
+            IsAllDay: false
+        }];
+        beforeAll((done: DoneFn) => {
+            const schOptions: ScheduleModel = {
+                width: '800px', height: '500px',
+                selectedDate: new Date(2018, 6, 1),
+                startHour: '05:00',
+                endHour: '18:00',
+                timeScale: {
+                    enable: true,
+                    interval: 60,
+                    slotCount: 1
+                },
+                currentView: 'TimelineDay',
+                views: ['TimelineDay', 'TimelineWeek', 'TimelineWorkWeek', 'TimelineMonth']
+            };
+            schObj = util.createSchedule(schOptions, appointmentData, done);
+        });
+        afterAll(() => {
+            util.destroy(schObj);
+        });
+        it('should resize appointment forward by expanding from right handler', (done: DoneFn) => {
+            schObj.dataBound = () => {
+                const resizeElement: HTMLElement = schObj.element.querySelector('[data-id="Appointment_1"]') as HTMLElement;
+                expect(resizeElement.offsetWidth).toEqual(184);
+                done();
+            };
+            const resizeElement: HTMLElement = schObj.element.querySelector('[data-id="Appointment_1"]') as HTMLElement;
+            expect(resizeElement.offsetWidth).toEqual(61);
+            const resizeHandler: HTMLElement = resizeElement.querySelector('.e-right-handler') as HTMLElement;
+            triggerMouseEvent(resizeHandler, 'mousedown');
+            triggerMouseEvent(resizeHandler, 'mousemove', 100, 0);
+            const cloneElement: HTMLElement = schObj.element.querySelector('.e-resize-clone') as HTMLElement;
+            expect(cloneElement).toBeTruthy();
+            expect(cloneElement.offsetWidth).toEqual(184);
+            triggerMouseEvent(resizeHandler, 'mouseup');
+            done();
+        });
+        it('should resize appointment backward by shrinking from right handler', (done: DoneFn) => {
+            schObj.dataBound = () => {
+                const resizeElement: HTMLElement = schObj.element.querySelector('[data-id="Appointment_1"]') as HTMLElement;
+                expect(resizeElement.offsetWidth).toEqual(123);
+                done();
+            };
+            const resizeElement: HTMLElement = schObj.element.querySelector('[data-id="Appointment_1"]') as HTMLElement;
+            expect(resizeElement.offsetWidth).toEqual(184);
+            const resizeHandler: HTMLElement = resizeElement.querySelector('.e-right-handler') as HTMLElement;
+            triggerMouseEvent(resizeHandler, 'mousedown');
+            triggerMouseEvent(resizeHandler, 'mousemove', -70, 0);
+            const cloneElement: HTMLElement = schObj.element.querySelector('.e-resize-clone') as HTMLElement;
+            expect(cloneElement).toBeTruthy();
+            expect(cloneElement.offsetWidth).toEqual(122);
+            triggerMouseEvent(resizeHandler, 'mouseup');
+            done();
+        });
+        it('should change the schedule start hour to 06:30', (done: DoneFn) => {
+            schObj.dataBound = () => {
+                done();
+            };
+            schObj.startHour = '06:30';
+            schObj.dataBind();
+        });
+        it('should resize the appointment with startHour 06:30', (done: DoneFn) => {
+            schObj.dataBound = () => {
+                const resizeElement: HTMLElement = schObj.element.querySelector('[data-id="Appointment_1"]') as HTMLElement;
+                expect(resizeElement.offsetWidth).toEqual(200);
+                done();
+            };
+            const resizeElement: HTMLElement = schObj.element.querySelector('[data-id="Appointment_1"]') as HTMLElement;
+            expect(resizeElement.offsetWidth).toEqual(133);
+            const resizeHandler: HTMLElement = resizeElement.querySelector('.e-right-handler') as HTMLElement;
+            triggerMouseEvent(resizeHandler, 'mousedown');
+            triggerMouseEvent(resizeHandler, 'mousemove', 25, 0);
+            const cloneElement: HTMLElement = schObj.element.querySelector('.e-resize-clone') as HTMLElement;
+            expect(cloneElement).toBeTruthy();
+            expect(cloneElement.offsetWidth).toEqual(199);
+            triggerMouseEvent(resizeHandler, 'mouseup');
+            done();
+        });
+    });
 });

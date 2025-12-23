@@ -4,7 +4,6 @@ import { _PdfImageProcessor } from '../import/decode-image';
 import { ImageFormat } from '../enum';
 import { _convertBlackAndWhiteToRGBA, _convertToRGBA, imageKind } from './image-utils';
 import { _isLittleEndian, _mathClamp, _PdfBaseStream, _PdfColorPalette, _PdfColorSpaceUtils, _PdfCrossReference, _PdfDecodeStream, _PdfDictionary, _PdfJpxStream, _PdfName, _PdfReference, FormatError } from '@syncfusion/ej2-pdf';
-import { canvasRenderCallback } from '../utils';
 export class _PdfImage {
     private image: any; // eslint-disable-line
     private width: number;
@@ -20,7 +19,7 @@ export class _PdfImage {
     private decodeCoefficients: number[];
     private decodeAddends: number[];
     private smask: _PdfImage | null;
-    _canvasRenderCallback: canvasRenderCallback;
+    _canvasRenderCallback: any; // eslint-disable-line 
     _imageFormat: ImageFormat;
     private imageResizer: _PdfImageResizer = new _PdfImageResizer();
     private mask: _PdfImage | any; // eslint-disable-line 
@@ -403,7 +402,7 @@ export class _PdfImage {
             }
             let canvas: any; // eslint-disable-line
             if (this._canvasRenderCallback) {
-                canvas = this._canvasRenderCallback();
+                canvas = this._canvasRenderCallback.canvas;
             }
             canvas.width = width;
             canvas.height = height;
@@ -670,7 +669,7 @@ export class _PdfImage {
         let imgData: any; // eslint-disable-line
         let canvas: any; // eslint-disable-line
         if (this._canvasRenderCallback) {
-            canvas = this._canvasRenderCallback();
+            canvas = this._canvasRenderCallback.canvas;
         } else {
             throw new Error('canvas is not defined');
         }
@@ -716,8 +715,12 @@ export class _PdfImage {
         let data: any; //eslint-disable-line
         const imageBytes: any = this._getImageData(length, this); // eslint-disable-line
         if (this.image instanceof _PdfJpxStream) {
+            let platform: ApplicationPlatform;
+            if (this._canvasRenderCallback) {
+                platform = this._canvasRenderCallback.applicationPlatform;
+            }
             const imagedata : _PdfImageProcessor = new _PdfImageProcessor();
-            data = await imagedata._decodeImage(imageBytes, this.image);
+            data = await imagedata._decodeImage(imageBytes, this.image, platform);
             return data;
         }
         if (internal || this.image instanceof _PdfDecodeStream) {
@@ -725,4 +728,54 @@ export class _PdfImage {
         }
         return new Uint8Array(imageBytes);
     }
+}
+/**
+ * Represents the application platform type.
+ *
+ * ```typescript
+ * // Load an existing PDF document
+ * let document: PdfDocument = new PdfDocument(data);
+ * // Define a canvas render callback that returns a canvas element and the application platform.
+ * const canvasRenderCallback = (): {canvas: any, applicationPlatform: ApplicationPlatform} => {
+ *     const canvas = document.createElement('canvas');
+ *     return { canvas: canvas, applicationPlatform: ApplicationPlatform.vue };
+ * };
+ * // Initialize a new instance of the `PdfDataExtractor` class
+ * let extractor: PdfDataExtractor = new PdfDataExtractor(document, callBack: canvasRenderCallback);
+ * // Extract collection of `PdfEmbeddedImage` from the PDF document.
+ * let imageInfoCollection: PdfEmbeddedImage[] = extractor.extractImages({ startPageIndex: 0, endPageIndex: document.pageCount - 1});
+ * let imageInfo: PdfEmbeddedImage = imageInfoCollection[0];
+ * let data: Uint8Array = imageInfo.data;
+ * // Destroy the documents
+ * document.destroy();
+ */
+export enum ApplicationPlatform {
+    /**
+     * Specifies the `typeScript` platform.
+     */
+    typescript = 'typescript',
+    /**
+     * Specifies the `javascript` platform.
+     */
+    javascript = 'javascript',
+    /**
+     * Specifies the `angular` platform.
+     */
+    angular = 'angular',
+    /**
+     * Specifies the `react` platform.
+     */
+    react = 'react',
+    /**
+     * Specifies the `vue` platform.
+     */
+    vue = 'vue',
+    /**
+     * Specifies the `aspnetcore` platform.
+     */
+    aspnetcore = 'aspnetcore',
+    /**
+     * Specifies the `aspnetmvc` platform.
+     */
+    aspnetmvc = 'aspnetmvc'
 }

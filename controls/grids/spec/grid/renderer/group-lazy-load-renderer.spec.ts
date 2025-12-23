@@ -1053,4 +1053,66 @@ describe('LazyLoadGroup module', () => {
             gridObj = null;
         });
     });
+
+    describe('EJ2-995736: LazyLoadGroup ignore case sensitivity during grouping => ', () => {
+        let gridObj: Grid;
+        let sampleData = [ 
+            {
+                item: `Item-${1}`,
+                id: 1,
+                type: "pipe"
+            },{
+                item: `Item-${2}`,
+                id: 2,
+                type: "Pipe"
+            },{
+                item: `Item-${3}`,
+                id: 3,
+                type: "PIPE"
+            },
+            {
+                item: `Item-${4}`,
+                id: 4,
+                type: "Equi"
+            },
+            {
+                item: `Item-${5}`,
+                id: 5,
+                type: "equi"
+            },
+            {
+                item: `Item-${6}`,
+                id: 6,
+                type: "EQUI"
+            }
+        ];
+        beforeAll((done: Function) => {
+            gridObj = createGrid(
+                {
+                    dataSource: sampleData,
+                    allowGrouping: true,
+                    groupSettings: { enableLazyLoading: true, columns: ['type'] },
+                    height: 400,
+                    columns: [
+                        { type: 'checkbox', width: 50 },
+                        { field: 'item', headerText: 'Item', width: 120, isPrimaryKey: true, },
+                        { field: 'id', headerText: 'ID', width: 160, textAlign: 'Right' },
+                        { field: 'type', headerText: 'Type', width: 120 },
+                    ],
+                }, done);
+        });
+        it('Expand the row', (done: Function) => {
+            let expandElem = gridObj.getContent().querySelectorAll('.e-recordpluscollapse');
+            gridObj.groupModule.expandCollapseRows(expandElem[0]);
+            done();
+        });
+        it('Get the data', (done: Function) => {
+            expect(gridObj.getDataRows().length).toBe(1);
+            done();
+        });
+        afterAll(() => {
+            destroy(gridObj);
+            gridObj = null;
+        });
+    });
 });

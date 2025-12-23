@@ -52,7 +52,7 @@ import { DatePickerDialog } from './implementation/dialogs/datepicker-dialog';
 import { ContentControlPropertiesDialog } from './implementation/dialogs/content-control-properties-dialog';
 import { PicContentControlDialog } from './implementation/dialogs/pic-contentControl-dialog';
 import { DialogUtility, hideSpinner, showSpinner } from '@syncfusion/ej2-popups';
-import { BeforePasteEventArgs, Comment, ContentControlFillEventArgs, DocumentLoadFailedEventArgs } from './base/events-helper';
+import { BeforePasteEventArgs, Comment, ContentControlFillEventArgs, DocumentLoadFailedEventArgs, UnsupportedBorderStyleClickEventArgs } from './base/events-helper';
 import { FieldSettingsModel } from '@syncfusion/ej2-dropdowns';
 /**
  * The `DocumentEditorSettings` module is used to provide the customize property of Document Editor.
@@ -1252,6 +1252,13 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
      */
     @Event()
     public beforePaste: EmitType<BeforePasteEventArgs>;
+    /**
+     * This event is triggered when the border style other than solid type is clicked.
+     *
+     * @event unsupportedBorderStyleClick
+     */
+    @Event()
+    public unsupportedBorderStyleClick: EmitType<UnsupportedBorderStyleClickEventArgs>;
     /**
      * @private
      */
@@ -3217,6 +3224,7 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
         'Shading': 'Shading',
         'Fill': 'Fill',
         'Apply To': 'Apply to',
+        'Border Style information':'The selected border style is not supported to display in this editor, so it will be displayed like solid borders. However, the selected border style will be maintained in the document and will render accurately when the document is opened in other Word Viewer/Editors.',
         'Table Properties': 'Table Properties',
         'Cell Options': 'Cell Options',
         'Table Options': 'Table Options',

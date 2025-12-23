@@ -34,6 +34,8 @@ export class AIAssistantActions {
             InsertHtml.Insert(this.parent.currentDocument,
                               args.value, this.parent.editableElement, true, args.enterAction, this.parent as EditorManager);
             this.callBack(args); // To trigger the actionComplete and then enable the undo redo.
+        } else if (subCommand === 'ReplaceEditorContent') {
+            this.parent.editableElement.innerHTML = args.value;
         }
     }
 

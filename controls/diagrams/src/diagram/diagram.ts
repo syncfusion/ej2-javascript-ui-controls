@@ -4949,7 +4949,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                         newObj.constraints = newObj.constraints & ~ConnectorConstraints.Delete;
                     }
                     updateDefaultValues(newObj, obj, this.connectorDefaults);
-                    (this.connectors as Connector[]).push(newObj); this.initObject(newObj);
+                    (this.connectors as Connector[]).push(newObj); this.initObject(newObj, layers);
                     //Removed isBlazor code
                     if (obj.visible === false) { this.updateElementVisibility(newObj.wrapper, newObj, obj.visible); }
                     this.updateEdges(newObj);
@@ -15327,24 +15327,49 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                 }
             }
             if (length - num > -1) {
-                this.commandHandler.moveSvgNode(node.id, currentLayer.objects[length - num]);
-                this.commandHandler.moveSvgNode(currentLayer.objects[length - num], node.id);
-            }
-        } else {
-            if (targetLayer) {
-                const targetObject: string = this.commandHandler.getLayer(this.layerZIndexTable[targetLayer.zIndex]).objects[0];
-                if (targetObject) {
-                    this.commandHandler.moveSvgNode(node.id, targetObject);
-                    this.commandHandler.updateNativeNodeIndex(node.id, targetObject);
-                } else {
-                    this.moveObjectsUp(node, currentLayer);
+                const targetObject = this.nameTable[currentLayer.objects[length - num]];
+                if (node.zIndex > targetObject.zIndex) {
+                    const target: string = targetObject.parentId !== (node as Node).parentId && (targetObject as Node).parentId
+                        ? this.getRootParentId(targetObject)
+                        : targetObject.id;
+                    this.commandHandler.moveSvgNode(node.id, target);
+                    this.commandHandler.moveSvgNode(target, node.id);
                 }
             } else {
-                this.moveObjectsUp(node, currentLayer);
+                this.moveNodeWithTargetLayer(node, currentLayer, targetLayer);
             }
+        } else {
+            this.moveNodeWithTargetLayer(node, currentLayer, targetLayer);
         }
     }
 
+    private moveNodeWithTargetLayer(node: NodeModel | ConnectorModel, currentLayer: LayerModel, targetLayer: LayerModel): void {
+        if (targetLayer) {
+            const targetObject: string = this.commandHandler.getLayer(this.layerZIndexTable[targetLayer.zIndex]).objects[0];
+            if (targetObject) {
+                this.commandHandler.moveSvgNode(node.id, targetObject);
+                this.commandHandler.updateNativeNodeIndex(node.id, targetObject);
+            } else {
+                this.moveObjectsUp(node, currentLayer);
+            }
+        } else {
+            this.moveObjectsUp(node, currentLayer);
+        }
+    }
+
+
+    private getRootParentId(node: NodeModel | ConnectorModel): string | undefined {
+        let currentNode: NodeModel | ConnectorModel = node;
+        while (currentNode && (currentNode as Node).parentId) {
+            const parentId: string = (currentNode as Node).parentId;
+            const parentNode: NodeModel = this.nameTable[`${parentId}`];
+            if (!parentNode) {
+                break;
+            }
+            currentNode = parentNode;
+        }
+        return currentNode.id;
+    }
 
     /**
      * Moves the node or connector forward within the given layer. \

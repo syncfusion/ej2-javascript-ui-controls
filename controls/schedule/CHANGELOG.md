@@ -2,6 +2,18 @@
 
 ## [Unreleased]
 
+## 32.1.20 (2025-12-23)
+
+### Schedule
+
+#### Bug fixes
+
+- `#I792237` - Fixed an issue where appointment resizing behaved incorrectly when the time scale was customized using `startHour` and `endHour` in `TimelineDay` view.
+
+- `#F197681` - The issue where the `resourceHeaderTemplate` did not receive the date value, when it was grouped has been fixed.
+
+## 32.1.19 (2025-12-16)
+
 ### Schedule
 
 #### Features

@@ -478,6 +478,73 @@ describe('Table Clipboard actions: ', () => {
         // DOM assertion
         expect(getDataCellEl(editorElement, 2, 2).textContent!.trim().length).toBeGreaterThan(0);
     });
+
+    it('Copy full row then paste into another row by selecting the gripper', () => {
+        selectRectangle(editorElement, 1, 0, 1, 2);
+        const tableBlockElement = editorElement.querySelector('.e-table-block') as HTMLElement;
+        const copyPayload = editor.blockManager.clipboardAction.getTablePayload(tableBlockElement);
+
+        const secondCell = getDataCellEl(editorElement, 2, 0);
+        secondCell.dispatchEvent(new MouseEvent('mousemove', { bubbles: true }));
+
+        const rowAction = tableBlockElement.querySelector('.e-row-action-handle');
+        expect(rowAction).not.toBeNull();
+        rowAction.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+
+        // Visual selection assertions
+        const secondRow = tableBlockElement.querySelectorAll('tbody tr')[1];
+        expect(secondRow.classList.contains('e-row-selected')).toBe(true);
+
+        const pinned = tableBlockElement.querySelector('.e-row-action-handle.e-pinned') as HTMLElement;
+        expect(pinned && pinned.style.display !== 'none').toBe(true);
+
+        // Perform paste
+        editor.blockManager.clipboardAction.performPasteOperation(copyPayload);
+
+        const model = editor.blocks[1] as BlockModel;
+        const props = model.properties as ITableBlockSettings;
+        expect(props.rows[1].cells[0].blocks[0].content[0].content).toBe('R1C1');
+        expect(props.rows[1].cells[1].blocks[0].content[0].content).toBe('R1C2');
+        expect(props.rows[1].cells[2].blocks[0].content[0].content).toBe('R1C3');
+
+        // DOM assertions
+        expect(getDataCellEl(editorElement, 2, 0).textContent!.trim()).toBe('R1C1');
+        expect(getDataCellEl(editorElement, 2, 1).textContent!.trim()).toBe('R1C2');
+        expect(getDataCellEl(editorElement, 2, 2).textContent!.trim()).toBe('R1C3');
+    });
+
+    it('Copy full column then paste into another column by selecting the gripper', () => {
+        selectRectangle(editorElement, 1, 0, 3, 0);
+        const tableBlockElement = editorElement.querySelector('.e-table-block') as HTMLElement;
+        const copyPayload = editor.blockManager.clipboardAction.getTablePayload(tableBlockElement);
+
+        const secondCell = getDataCellEl(editorElement, 1, 1);
+        secondCell.dispatchEvent(new MouseEvent('mousemove', { bubbles: true }));
+
+        const colAction = tableBlockElement.querySelector('.e-col-action-handle') as HTMLElement;
+        expect(colAction).not.toBeNull();
+        colAction.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+
+        // Visual selection assertions
+        const rows = tableBlockElement.querySelectorAll('tbody tr') as NodeListOf<HTMLTableRowElement>;
+        expect(rows[0].cells[2].classList.contains('e-col-selected')).toBe(true); // first data column
+        expect(rows[1].cells[2].classList.contains('e-col-selected')).toBe(true);
+
+        const pinned = tableBlockElement.querySelector('.e-col-action-handle.e-pinned') as HTMLElement;
+        expect(pinned && pinned.style.display !== 'none').toBe(true);
+
+        editor.blockManager.clipboardAction.performPasteOperation(copyPayload);
+
+        const model = editor.blocks[1] as BlockModel;
+        const props = model.properties as ITableBlockSettings;
+        expect(props.rows[0].cells[1].blocks[0].content[0].content).toBe('R1C1');
+        expect(props.rows[1].cells[1].blocks[0].content[0].content).toBe('R2C1');
+        expect(props.rows[2].cells[1].blocks[0].content[0].content).toBe('R3C1');
+        // DOM assertions
+        expect(getDataCellEl(editorElement, 1, 1).textContent!.trim()).toBe('R1C1');
+        expect(getDataCellEl(editorElement, 2, 1).textContent!.trim()).toBe('R2C1');
+        expect(getDataCellEl(editorElement, 3, 1).textContent!.trim()).toBe('R3C1');
+    });
 })
 
 describe('Table Clipboard Overlapping and growth scenarios: ', () => {

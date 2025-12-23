@@ -293,7 +293,7 @@
     &.e-default.e-horizontallines .e-headercell.e-firstheader,
     .e-filterbarcell input,
     .e-headercontent,
-    &.e-default.e-verticallines .e-headercell.e-stackedheadercell,
+    &.e-default.e-verticallines .e-headercell.e-stackedheadercell:not(.e-freezeleftborder, .e-freezerightborder),
     &.e-default.e-horizontallines .e-grouptopleftcell,
     &.e-default .e-gridheader.e-stackedfilter tr:last-child th.e-grouptopleftcell,
     &.e-default.e-horizontallines .e-gridheader.e-stackedfilter tr:last-child th.e-grouptopleftcell,
@@ -659,7 +659,7 @@
     }
 
     &.e-rtl.e-resize-lines {
-      .e-headercell.e-stackedheadercell,
+      .e-headercell.e-stackedheadercell:not(.e-freezeleftborder, .e-freezerightborder),
       .e-headercell .e-rhandler,
       .e-headercell .e-rsuppress {
         border-left: 1px solid $grid-header-border-color;
@@ -848,8 +848,8 @@
       &.e-default .e-gridheader .e-headercell.e-firstheader,
       &.e-default.e-horizontallines .e-headercell.e-firstheader,
       &.e-default.e-verticallines .e-gridheader .e-headercell.e-firstheader,
-      &.e-default.e-verticallines .e-headercell.e-stackedheadercell,
-      &.e-default.e-verticallines tr th:last-child,
+      &.e-default.e-verticallines .e-headercell.e-stackedheadercell:not(.e-freezeleftborder, .e-freezerightborder),
+      &.e-default.e-verticallines tr th:last-child:not(.e-freezeleftborder, .e-freezerightborder),
       &.e-default.e-verticallines .e-gridheader th.e-grouptopleftcell,
       &.e-default.e-verticallines .e-gridheader th.e-grouptopleftcell.e-lastgrouptopleftcell,
       &.e-default.e-bothlines .e-gridheader .e-headercell.e-firstheader,

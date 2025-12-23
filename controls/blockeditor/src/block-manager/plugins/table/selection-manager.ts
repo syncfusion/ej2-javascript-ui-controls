@@ -106,7 +106,19 @@ export class TableSelectionManager {
     }
 
     public getSelectedCells(tableBlock: HTMLElement): NodeListOf<HTMLTableCellElement> {
-        return tableBlock.querySelectorAll('td.' + constants.TABLE_CELL_FOCUS);
+        const table: HTMLTableElement = tableBlock.querySelector('table') as HTMLTableElement;
+        // 1. Whole row selection
+        if (table.querySelector('tr.e-row-selected')) {
+            return table.querySelectorAll('tr.e-row-selected td:not(.e-row-number)') as NodeListOf<HTMLTableCellElement>;
+        }
+
+        // 2. Whole column selection
+        if (table.querySelector('td.e-col-selected')) {
+            return table.querySelectorAll('td.e-col-selected') as NodeListOf<HTMLTableCellElement>;
+        }
+
+        // 3. Default: individually focused cells
+        return table.querySelectorAll(`td.${constants.TABLE_CELL_FOCUS}`) as NodeListOf<HTMLTableCellElement>;
     }
 
     public getSelectedCellBlocks(tableBlock: HTMLElement): BlockModel[] {
@@ -156,6 +168,8 @@ export class TableSelectionManager {
             || (focusedBlk && focusedBlk.closest(`.${constants.TABLE_BLOCK_CLS}`) as HTMLElement);
         if (!tableBlockElement) { return; }
 
+        if (focusedBlk && this.parent.eventAction.isAnyPopupOpen()) { return; }
+
         const table: HTMLTableElement = tableBlockElement.querySelector('table');
         const cell: HTMLElement = targetEl.closest('td, th') as HTMLElement
                     || (tableBlockElement.querySelector('td.e-cell-focus, th.e-cell-focus') as HTMLElement)
@@ -181,9 +195,11 @@ export class TableSelectionManager {
         case 'Backspace':
         case 'Delete': {
             if (this.hasActiveTableSelection(tableBlockElement)) {
+                const selectedCells: NodeListOf<HTMLTableCellElement> = this.getSelectedCells(tableBlockElement);
+                if (selectedCells.length <= 1) { return; }
+
                 e.preventDefault();
                 e.stopPropagation();
-                const selectedCells: NodeListOf<HTMLTableCellElement> = this.getSelectedCells(table);
                 if (e.key === 'Enter') {
                     // Focus last selected cell
                     this.parent.tableService.removeCellFocus(table);
@@ -337,10 +353,15 @@ export class TableSelectionManager {
         return null;
     }
 
-    // Move to adjacent cell only when caret is at boundary AND there is no adjacent block inside the cell
+    // Move to adjacent cell only when,
+    // * caret is at boundary AND there is no adjacent block inside the cell
+    // * cell is empty
     private shouldMoveToAdjacentCell(direction: string, cellBlock: HTMLElement, blockModel: BlockModel): boolean {
         const atStart: boolean = isAtStartOfBlock(cellBlock);
         const atEnd: boolean = isAtEndOfBlock(cellBlock);
+        const isEmptyCell: boolean = cellBlock.textContent.trim() === '';
+
+        if (isEmptyCell) { return true; }
         if (direction === 'left') {
             const prev: HTMLElement = getAdjacentBlock(cellBlock, 'previous');
             const firstCellBlockId: string = (blockModel.properties as ITableBlockSettings).rows[0].cells[0].blocks[0].id;
@@ -353,8 +374,10 @@ export class TableSelectionManager {
     // Returns true if there is any visual selection in the table block
     public hasActiveTableSelection(tableBlockElement: HTMLElement): boolean {
         if (!tableBlockElement) { return false; }
+
+        const selectedCells: NodeListOf<HTMLTableCellElement> = this.getSelectedCells(tableBlockElement);
         // Rectangle selection
-        if (tableBlockElement.querySelector('td.' + constants.TABLE_CELL_FOCUS)) { return true; }
+        if (selectedCells && selectedCells.length > 1) { return true; }
         // Row selection
         if (tableBlockElement.querySelector('tbody tr.e-row-selected')) { return true; }
         // Column selection

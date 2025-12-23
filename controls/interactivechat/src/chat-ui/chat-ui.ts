@@ -2125,7 +2125,7 @@ export class ChatUI extends InterActiveChatBase implements INotifyPropertyChange
             wrapper = this.createFileItem(msg.attachedFile, false);
             fileElement.appendChild(wrapper);
         }
-        EventHandler.add(fileElement, 'click', () => this.handleAttachmentPreview(file, true));
+        EventHandler.add(fileElement, 'click', (event: MouseEvent) => this.handleAttachmentPreview(event, file, true));
         return fileElement;
     }
 
@@ -2556,7 +2556,7 @@ export class ChatUI extends InterActiveChatBase implements INotifyPropertyChange
                 if (closeButton && (event.target === closeButton || (event.target as HTMLElement).classList.contains('e-chat-close'))) {
                     return;
                 }
-                this.handleAttachmentPreview(fileData, false);
+                this.handleAttachmentPreview(event, fileData, false);
             });
         }
         return fileItem;
@@ -2572,8 +2572,12 @@ export class ChatUI extends InterActiveChatBase implements INotifyPropertyChange
         this.activateSendIcon(totalLength);
     }
 
-    private handleAttachmentPreview(file: FileInfo, isAfterPreview: boolean): void {
-        const eventArgs: ChatAttachmentClickEventArgs = { cancel: false };
+    private handleAttachmentPreview(event: MouseEvent, file: FileInfo, isAfterPreview: boolean): void {
+        const eventArgs: ChatAttachmentClickEventArgs = {
+            cancel: false,
+            file: file,
+            event: event
+        };
         if (this.attachmentSettings.attachmentClick) {
             this.attachmentSettings.attachmentClick.call(this, eventArgs);
         }

@@ -120,7 +120,9 @@ export class SlashCommandModule {
     }
 
     private clearTooltipState(): void {
-        this.slashMenuTooltip.destroy();
+        if (this.slashMenuTooltip) {
+            this.slashMenuTooltip.destroy();
+        }
     }
 
     private handleSlashCommandChange(args: MentionChangeEventArgs): void {
@@ -163,6 +165,7 @@ export class SlashCommandModule {
     private handleSlashCommandOpened(args: PopupEventArgs): void {
         const mentionPopupId: string = `${this.editor.blockContainer.id}_popup`;
         const popupEle: HTMLElement = document.querySelector(`#${mentionPopupId}.e-blockeditor-command-menu`) as HTMLElement;
+        this.clearTooltipState();
         this.bindTooltipForSlashPopup(popupEle);
         this.setActiveItem(popupEle);
         const tableBlock: HTMLElement = this.editor.blockManager.currentFocusedBlock
@@ -177,7 +180,9 @@ export class SlashCommandModule {
     private restrictItemsOnSpecificBlock(blockTypes: string[], popupEle: HTMLElement): void {
         blockTypes.forEach((blockType: string) => {
             const listItem: HTMLElement = popupEle.querySelector(`[data-value=${blockType}]`);
-            listItem.classList.add(constants.HIDDEN_CLS);
+            if (listItem) {
+                listItem.classList.add(constants.HIDDEN_CLS);
+            }
         });
     }
 

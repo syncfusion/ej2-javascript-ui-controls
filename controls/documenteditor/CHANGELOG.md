@@ -2,6 +2,29 @@
 
 ## [Unreleased]
 
+## 32.1.20 (2025-12-23)
+
+### DocumentEditor
+
+#### Bug Fixes
+
+`#785176` - Fixed misalignment of spell-check underline caused by leading space in the error element.
+`#772957` - Resolved issue where bookmarks were removed when inserting text.
+`#785511` - Corrected highlight color behaviour during text insertion in highlighted paragraphs.
+`#788338` - Updated bookmark behaviour to move to the next paragraph when pressing Enter.
+`#792266` - Fixed script error occurring when pasting text inside a table.
+`#789132` - Resolved paragraph and bookmark position issues during rendering.
+`#791795` - Fixed table overlap after inserting columns and rows in Blazor WASM.
+`#792760` - Corrected gap at the right corner when applying table shading.
+`#779998` - Fixed table border toggle issue when applied from the toolbar.
+`#784718` - Resolved spell-check "Ignore" and "Ignore All" issue when selecting.
+
+#### Features
+
+- `#I725773`- Added support for retrieving bookmarks in positional order.
+
+## 32.1.19 (2025-12-16)
+
 ### DocumentEditor
 
 #### Bug Fixes

@@ -127,7 +127,7 @@ describe('Tagged PDF Test', () => {
     });
 });
 describe('Image Extraction', () => {
-    it ('Image Extraction', async() => {
+    it ('Image Extraction - 1', async() => {
         let loadocument: PdfDocument =  new PdfDocument(image);
         let extractor: PdfDataExtractor = new PdfDataExtractor(loadocument, canvasRenderCallback);
         let imageInfoCollection: PdfEmbeddedImage[] = await extractor.extractImages({ startPageIndex: 0, endPageIndex: loadocument.pageCount - 1});
@@ -152,6 +152,6 @@ describe('Image Extraction', () => {
     });
     function canvasRenderCallback(): any {
         const canvas: HTMLCanvasElement = document.createElement('canvas');
-        return canvas;
+        return { canvas: canvas, applicationPlatform: undefined};
     }
 });

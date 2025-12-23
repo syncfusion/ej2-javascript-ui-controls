@@ -3651,7 +3651,7 @@ export class AnnotationToolbar {
         case this.pdfViewer.element.id + '_highlight':
         case this.pdfViewer.element.id + '_highlightIcon':
             this.pdfViewer.tool = '';
-            if (!Browser.isDevice) {
+            if (!Browser.isDevice || this.pdfViewer.enableDesktopMode) {
                 this.pdfViewer.tool = '';
                 this.resetFreeTextAnnot();
                 this.showPropertiesTools('highlight');
@@ -3682,8 +3682,9 @@ export class AnnotationToolbar {
         case this.pdfViewer.element.id + '_underline':
         case this.pdfViewer.element.id + '_underlineIcon':
             this.pdfViewer.tool = '';
-            if (!Browser.isDevice) {
+            if (!Browser.isDevice || this.pdfViewer.enableDesktopMode) {
                 this.pdfViewer.tool = '';
+                this.pdfViewerBase.isToolbarInkClicked = false;
                 this.resetFreeTextAnnot();
                 this.showPropertiesTools('underline');
                 this.handleUnderline();
@@ -3713,8 +3714,9 @@ export class AnnotationToolbar {
         case this.pdfViewer.element.id + '_strikethrough':
         case this.pdfViewer.element.id + '_strikethroughIcon':
             this.pdfViewer.tool = '';
-            if (!Browser.isDevice) {
+            if (!Browser.isDevice || this.pdfViewer.enableDesktopMode) {
                 this.pdfViewer.tool = '';
+                this.pdfViewerBase.isToolbarInkClicked = false;
                 this.resetFreeTextAnnot();
                 this.showPropertiesTools('strikethrough');
                 this.handleStrikethrough();
@@ -3744,8 +3746,9 @@ export class AnnotationToolbar {
         case this.pdfViewer.element.id + '_squiggly':
         case this.pdfViewer.element.id + '_squigglyIcon':
             this.pdfViewer.tool = '';
-            if (!Browser.isDevice) {
+            if (!Browser.isDevice || this.pdfViewer.enableDesktopMode) {
                 this.pdfViewer.tool = '';
+                this.pdfViewerBase.isToolbarInkClicked = false;
                 this.resetFreeTextAnnot();
                 this.showPropertiesTools('squiggly');
                 this.handleSquiggly();

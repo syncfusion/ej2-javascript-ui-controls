@@ -6,7 +6,7 @@ import { setValue} from '@syncfusion/ej2-base';
 import { Deferred, Query} from '@syncfusion/ej2-data';
 import { TaskFieldsModel } from '../models/models';
 import { ColumnModel as GanttColumnModel, Column as GanttColumn } from '../models/column';
-import { ITaskData, IGanttData } from './interface';
+import { ITaskData, IGanttData, IPredecessor } from './interface';
 import { DataStateChangeEventArgs } from '@syncfusion/ej2-treegrid';
 import { QueryCellInfoEventArgs, HeaderCellInfoEventArgs, RowDataBoundEventArgs } from '@syncfusion/ej2-grids';
 import { ColumnMenuOpenEventArgs, ColumnMenuClickEventArgs } from '@syncfusion/ej2-grids';
@@ -403,6 +403,81 @@ export class GanttTreeGrid {
         this.parent['isExpandPerformed'] = true;
     }
     private actionBegin(args: FilterEventArgs | SortEventArgs): void {
+        if (args.type === 'save' && args['column'] && args['columnName'] === this.parent.taskFields.dependency && args['value'] &&
+            this.parent.viewType === 'ProjectView') {
+            const rawValue: string = args['value'];
+            const predecessors: string[] = rawValue
+                .split(',')
+                .map((p: string) => p.trim())
+                .filter(Boolean);
+            if (predecessors.length === 0) {
+                return;
+            }
+            const ids: string[] = this.parent.ids;
+            const guidRegex: RegExp = /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/;
+            const alphaRegex: RegExp = /[A-Za-z]/;
+            const validTypes: Set<string> = new Set(['FS', 'FF', 'SF', 'SS']);
+            const toTaskId: string = args['rowData'].ganttProperties.taskId.toString();
+            interface ICyclicDependency {
+                from: string;
+                to: string;
+                type: string;
+                text: string;
+            }
+            const cyclicDependencies: ICyclicDependency[] = [];
+            // Process each predecessor
+            for (const predText of predecessors) {
+                const result: { match: string[], predecessorText: string, offsetValue: string, values: string[] } = this.parent.predecessorModule['processPredecessorElement'](
+                    predText,
+                    ids,
+                    false,
+                    guidRegex,
+                    alphaRegex,
+                    validTypes
+                );
+                if (isNullOrUndefined(result)) {
+                    break;
+                }
+                const fromIdMatch: string[] = this.parent.connectorLineEditModule['idFromPredecessor'](predText);
+                if (!fromIdMatch || fromIdMatch.length === 0) {
+                    continue;
+                }
+                const predObj: IPredecessor = {
+                    from: fromIdMatch[0],
+                    to: toTaskId,
+                    type: result.predecessorText
+                };
+                if (this.parent.allowParentDependency) {
+                    this.parent['cyclicValidator'].resolve();
+                    const cycleCheck: boolean = this.parent['cyclicValidator'].wouldCreateCycleWhenAdding(predObj).wouldCreate;
+                    if (cycleCheck) {
+                        cyclicDependencies.push({
+                            from: predObj.from,
+                            to: predObj.to,
+                            type: predObj.type,
+                            text: predText
+                        });
+                    }
+                }
+            }
+            // If any cyclic dependency found → cancel and clean
+            if (cyclicDependencies.length > 0) {
+                // Build error message
+                const errorLines: string[] = cyclicDependencies.map((dep: ICyclicDependency) =>
+                    `Task ID ${dep.from} to Task ID ${dep.to} (${dep.type})`
+                );
+                const errMsg: string = `Cyclic dependency detected for: ${errorLines.join(', ')}. Please provide valid dependency.`;
+                // Extract cyclic predecessor texts for fast lookup
+                const cyclicTextSet: Set<string> = new Set(cyclicDependencies.map((dep: ICyclicDependency) => dep.text));
+                // Keep only non-cyclic predecessors
+                const remainingPredecessors: string[] = predecessors.filter((text: string) => !cyclicTextSet.has(text));
+                // Update the actual task dependency field
+                const cleanedValue: string = remainingPredecessors.join(',');
+                args['rowData'][this.parent.taskFields.dependency] = args['rowData'].ganttProperties.predecessorsName = (cleanedValue === '' ? null : cleanedValue);
+                // Trigger single failure event
+                this.parent.trigger('actionFailure', { error: errMsg });
+            }
+        }
         if (this.parent.undoRedoModule && (args.requestType === 'filtering' || args.requestType === 'searching' || args.requestType === 'sorting'  || args.requestType === 'filterAfterOpen')) {
             this.parent.undoRedoModule['canUpdateIndex'] = false;
         }

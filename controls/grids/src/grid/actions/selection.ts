@@ -3037,7 +3037,7 @@ export class Selection implements IAction {
                 const rowObj: Row<Column> = this.getRowObj(rows[parseInt(j.toString(), 10)]);
                 const pKey: string = rowObj ? rowObj.data ? this.getPkValue(this.primaryKey, rowObj.data) : null : null;
                 if (pKey === null) { return; }
-                if (this.isPartialSelection && !rowObj.isSelectable) { continue; }
+                if (this.isPartialSelection && !rowObj.isSelectable && !this.selectedRowState.hasOwnProperty(pKey)) { continue; }
                 let checkState: boolean;
                 const chkBox: HTMLInputElement = (rows[parseInt(j.toString(), 10)].querySelector('.e-checkselect') as HTMLInputElement);
                 if (this.selectedRowState[`${pKey}`] || (this.parent.checkAllRows === 'Check' && this.selectedRowState[`${pKey}`] &&
@@ -3336,6 +3336,10 @@ export class Selection implements IAction {
             this.totalRecordsCount = this.parent.pageSettings.totalRecordsCount;
         }
         this.checkSelectAllAction(!state);
+        this.partialSelectableRecordsCount = this.parent.partialSelectedRecords.length &&
+            this.getAvailableDataCount(this.parent.partialSelectedRecords);
+        this.disableSelectableRecordsCount = this.parent.disableSelectedRecords.length &&
+            this.getAvailableDataCount(this.parent.disableSelectedRecords);
         this.target = null;
         if (this.getCurrentBatchRecordChanges().length > 0) {
             this.setCheckAllState();

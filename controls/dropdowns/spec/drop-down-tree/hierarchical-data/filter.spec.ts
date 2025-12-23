@@ -821,6 +821,73 @@ describe('Hierarchial data filter testing', () => {
                 }, 100);
             },350);
         });
+        it('Box mode: remove a previously selected chip after filtering and ensure only that item is removed', function (done) {
+            ddtreeObj = new DropDownTree({
+                fields: { dataSource: hierarchicalData3, value: "id", text: "name", parentValue: "pid", hasChildren: "hasChild" },
+                mode: 'Box',
+                showCheckBox: true,
+                allowFiltering: true,
+                allowMultiSelection: true,
+                treeSettings: { autoCheck: true },
+                value: ['8', '9']
+            }, '#ddtree');
+            ddtreeObj.showPopup();
+            expect(document.querySelectorAll('#' + ddtreeObj.element.id + '_filter_wrap').length).toBe(1);
+            expect(document.querySelectorAll('#' + ddtreeObj.element.id + '_filter').length).toBe(1);
+            expect(ddtreeObj.treeObj.element.querySelectorAll('li.e-list-item').length).toBe(24);
+            
+            expect(ddtreeObj.value.length).toBe(2);
+            expect(ddtreeObj.value.indexOf('8') !== -1).toBe(true);
+            expect(ddtreeObj.value.indexOf('9') !== -1).toBe(true);
+            expect(ddtreeObj.treeObj.element.querySelectorAll('li.e-list-item.e-active').length).toBe(1);
+            expect(document.querySelectorAll('.e-chips-wrapper .e-chipcontent').length).toBe(2);
+            expect((document.querySelectorAll('.e-chips-wrapper .e-chipcontent')[0] as HTMLElement).innerText).toBe("Paraná");
+            expect((document.querySelectorAll('.e-chips-wrapper .e-chipcontent')[1] as HTMLElement).innerText).toBe("Ceará");
+            var filterEle = ddtreeObj.popupObj.element.querySelector('#' + ddtreeObj.element.id + "_filter");
+            var filterObj = filterEle.ej2_instances[0];
+            filterEle.value = 'bi';
+            filterObj.value = 'bi';
+            var eventArgs = { value: 'bi', container: filterEle };
+            filterObj.input(eventArgs);
+            setTimeout(function () {
+                expect(ddtreeObj.treeObj.element.querySelectorAll('li.e-list-item').length).toBe(2);
+                var li = ddtreeObj.treeObj.element.querySelectorAll('li');
+                mouseEventArgs.ctrlKey = true;
+                mouseEventArgs.target = li[1].querySelector('.e-list-text');
+                tapEvent.tapCount = 1;
+                ddtreeObj.treeObj.touchClickObj.tap(tapEvent);
+                expect(ddtreeObj.value.length).toBe(3);
+                expect(ddtreeObj.value.indexOf('8') !== -1).toBe(true);
+                expect(ddtreeObj.value.indexOf('9') !== -1).toBe(true);
+                expect(ddtreeObj.value.indexOf('23') !== -1).toBe(true);
+                expect(ddtreeObj.value.length).toBe(3);
+                expect(document.querySelectorAll('.e-chips-wrapper .e-chipcontent').length).toBe(3);
+                var checkEle = document.querySelectorAll('.e-chips-wrapper .e-chips-close')[0];
+                var e = new MouseEvent("mousedown", { view: window, bubbles: true, cancelable: true });
+                checkEle.dispatchEvent(e);
+                e = new MouseEvent("mouseup", { view: window, bubbles: true, cancelable: true });
+                checkEle.dispatchEvent(e);
+                e = new MouseEvent("click", { view: window, bubbles: true, cancelable: true });
+                checkEle.dispatchEvent(e);
+                setTimeout(function () {
+                    expect(ddtreeObj.value.length).toBe(2);
+                    expect(document.querySelectorAll('.e-chips-wrapper .e-chipcontent').length).toBe(2);
+                    filterEle.value = '';
+                    filterObj.value = '';
+                    eventArgs = { value: '', container: filterEle };
+                    filterObj.input(eventArgs);
+                    setTimeout(function () {
+                        expect(document.querySelectorAll('.e-chips-wrapper .e-chipcontent').length).toBe(2);
+                        expect((document.querySelectorAll('.e-chips-wrapper .e-chipcontent')[0]as HTMLElement).innerText).toBe("Ceará");
+                        expect((document.querySelectorAll('.e-chips-wrapper .e-chipcontent')[1]as HTMLElement).innerText).toBe("Bihar");
+                        expect(ddtreeObj.value.length).toBe(2);
+                        expect(ddtreeObj.value.indexOf('9') !== -1).toBe(true);
+                        expect(ddtreeObj.value.indexOf('23') !== -1).toBe(true);
+                        done();
+                    }, 350);
+                }, 100);
+            }, 350);
+        });
     });
 
     describe('filter (checkbox) testing ', () => {

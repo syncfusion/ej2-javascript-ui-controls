@@ -5120,12 +5120,24 @@ export class PivotEngine {
             }
             break;
         }
+        const rowClone: IAxisSet = !isNullOrUndefined(rows[rln as number]) ? { ...rows[rln as number] } as IAxisSet : null;
+        const columnClone: IAxisSet = !isNullOrUndefined(columns[cln as number]) ? { ...columns[cln as number] } as IAxisSet : null;
+        if (!isNullOrUndefined(rowClone) && !rowClone.isSum) {
+            rowClone.isSum = (rowClone.hasChild && rowClone.isDrilled) || rowClone.type === 'grand sum';
+        }
+        if (!isNullOrUndefined(columnClone) && !columnClone.isSum) {
+            columnClone.isSum = (columnClone.hasChild && columnClone.isDrilled) || columnClone.type === 'grand sum';
+        }
         const cellDetails: AggregateEventArgs = {
-            fieldName: this.dataSourceSettings.values[vln as number].name, row: rows[rln as number], column: columns[cln as number],
+            fieldName: this.dataSourceSettings.values[vln as number].name, row: rowClone, column: columnClone,
             value: value,
             cellSets: this.getValueCellInfo ? this.getCellSet(this.rawIndexObject) : [],
-            rowCellType: (rows[rln as number].hasChild && rows[rln as number].isDrilled ? 'subTotal' : rows[rln as number].type === 'grand sum' ? 'grandTotal' : 'value'),
-            columnCellType: (columns[cln as number].hasChild && columns[cln as number].isDrilled ? 'subTotal' : columns[cln as number].type === 'grand sum' ? 'grandTotal' : 'value'),
+            rowCellType: (rows[rln as number].type === 'grand sum' ? 'grandTotal' : ((rows[rln as number].hasChild &&
+                rows[rln as number].isDrilled) || (this.showSubTotalsAtBottom && rows[rln as number].type === 'sum' &&
+                    rows[rln as number].isSum)) ? 'subTotal' : 'value'),
+            columnCellType: (columns[cln as number].type === 'grand sum' ? 'grandTotal' : ((columns[cln as number].hasChild &&
+                columns[cln as number].isDrilled) || (this.showSubTotalsAtBottom && columns[cln as number].type === 'sum' &&
+                    columns[cln as number].isSum)) ? 'subTotal' : 'value'),
             aggregateType: aggregate as SummaryTypes, skipFormatting: false
         };
         if (this.getValueCellInfo) {

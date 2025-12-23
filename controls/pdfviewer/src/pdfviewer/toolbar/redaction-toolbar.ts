@@ -1815,8 +1815,8 @@ export class RedactionToolbar {
                 ({ prefixIcon: 'e-pv-redaction-panel-icon e-pv-icon', className: 'e-pv-redaction-panel-container', id: this.pdfViewer.element.id + '_redactionPanel', align: 'Left', tabIndex: '0' }),
                 ({ prefixIcon: 'e-pv-redaction-icon e-pv-icon', className: 'e-pv-redaction-container', id: this.pdfViewer.element.id + '_redact', align: 'Left', tabIndex: '0' }),
                 ({ prefixIcon: 'e-pv-annotation-delete-icon e-pv-icon', className: 'e-pv-annotation-delete-container', id: this.pdfViewer.element.id + '_redaction_delete', align: 'Left', tabIndex: '0' }),
-                ({ prefixIcon: 'e-pv-comment-panel-icon e-pv-icon', className: 'e-pv-comment-panel-icon-container', id: this.pdfViewer.element.id + '_annotation_commentPanel', align: 'Right', tabIndex: '0' }),
-                ({ prefixIcon: 'e-pv-annotation-tools-close-icon e-pv-icon', className: 'e-pv-annotation-tools-close-container', id: this.pdfViewer.element.id + '_annotation_close', align: 'Right', tabIndex: '0' })
+                ({ prefixIcon: 'e-pv-comment-panel-icon e-pv-icon', className: 'e-pv-comment-panel-icon-container', id: this.pdfViewer.element.id + '_redaction_commentPanel', align: 'Right', tabIndex: '0' }),
+                ({ prefixIcon: 'e-pv-annotation-tools-close-icon e-pv-icon', className: 'e-pv-annotation-tools-close-container', id: this.pdfViewer.element.id + '_redaction_close', align: 'Right', tabIndex: '0' })
             ];
             if (this.toolbarCreated && this.toolbar) {
                 this.toolbar.destroy();

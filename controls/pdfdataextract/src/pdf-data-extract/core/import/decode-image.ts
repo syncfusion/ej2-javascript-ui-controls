@@ -1,21 +1,36 @@
 import { _PdfOpenJpegRunner } from './openjpeg-runner';
 export class _PdfImageProcessor {
-    async _decodeImage(bytes: Uint8Array, jpxStream: any): Promise<Uint8Array> { //eslint-disable-line
+    async _decodeImage(bytes: Uint8Array, jpxStream: any, platform: string): Promise<Uint8Array> { //eslint-disable-line
         const workerBob: Blob = new Blob([_PdfOpenJpegRunner.toString().replace(/^[^{]*{([\s\S]*)}$/m, '$1')], { type: 'text/javascript' });
         const workerBlobUrl: string = URL.createObjectURL(workerBob);
         const worker: Worker = new Worker(workerBlobUrl);
-        (window as any).getRunningScript = (): (() => string) => { //eslint-disable-line
-            return (): string => {
-                const stackTrace: string = new Error().stack;
-                // eslint-disable-next-line
-                const match: any = stackTrace && stackTrace.match(/(?:http[s]?:\/\/(?:[^\/\s]+\/))(.*\.js)/);
-                return match ? match[0] : 'src/pdf-data-extract/core/openjpeg/openjpeg.js';
+        const { protocol, host, pathname } = document.location;
+        // Remove trailing slashes from the pathname using a regular expression
+        const trimmedPathname: string = pathname.replace(/\/+$/, '');
+        let baseUrl: string = `${protocol}//${host}${trimmedPathname}`;
+        if (platform === 'angular') {
+            baseUrl =  baseUrl + '/assets/openjpeg';
+        }  else if (platform === 'vue') {
+            baseUrl = baseUrl + '/public/js/openjpeg';
+        } else {
+            (window as any).getRunningScript = (): (() => string) => { //eslint-disable-line
+                return (): string => {
+                    const stackTrace: string = new Error().stack;
+                    // eslint-disable-next-line
+                    const match: any = stackTrace && stackTrace.match(/(?:http[s]?:\/\/(?:[^\/\s]+\/))(.*\.js)/);
+                    return match ? match[0] : location.href;
+                };
             };
-        };
-        const scriptLinkURL: string = (window as any).getRunningScript()(); //eslint-disable-line
-        const splitURL: any = scriptLinkURL.split('/'); // eslint-disable-line
-        const path: string = scriptLinkURL.replace('/' + splitURL[splitURL.length - 1], '');
-        const baseUrl: string = path.replace('import', 'openjpeg');
+            const scriptLinkURL: string = (window as any).getRunningScript()(); // eslint-disable-line
+            const splitURL: any = scriptLinkURL.split('/'); // eslint-disable-line
+            const path: string = scriptLinkURL.replace('/' + splitURL[splitURL.length - 1], '');
+            if (platform === 'javascript' || platform === 'typescript' || platform === 'react' || platform === 'react' ||
+                platform === 'aspnetcore' || platform === 'aspnetmvc') {
+                baseUrl = path + '/openjpeg';
+            } else {
+                baseUrl = path.replace('import', 'openjpeg');
+            }
+        }
         await new Promise<void>((resolve: any, reject: any) => { //eslint-disable-line
             worker.onmessage = (event: any) => { //eslint-disable-line
             const msg: any = event.data; //eslint-disable-line

@@ -397,6 +397,8 @@ export interface ResourceDetails {
     resourceData: Record<string, any>;
     /** Returns the respective resource fields data. */
     groupData?: Record<string, any>;
+    /** Returns the respective resource date. */
+    date?: Date;
     /** It returns the child level resources in compact mode. */
     resourceChild?: ResourceDetails[];
     /** It returns the Id of current resource in compact mode. */

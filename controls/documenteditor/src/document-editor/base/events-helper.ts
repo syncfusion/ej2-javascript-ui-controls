@@ -597,3 +597,21 @@ export interface BeforePasteEventArgs {
      */
     pasteType: PasteType;
 }
+/**
+ * Defines the Unsupported border style click event args
+ */
+export interface UnsupportedBorderStyleClickEventArgs {
+    /**
+     * Gets or sets a value indicating whether to cancel the built-in alert dialog.
+     * Set to true to suppress the default dialog when an unsupported border style is clicked.
+     * @default false
+     * @returns {boolean}
+     */
+    cancel: boolean;
+    /**
+     * Gets or sets the display text shown in the built-in alert dialog.
+     * This allows customization of the message when an unsupported border style is selected.
+     * @returns {string}
+     */
+    alertMessage: string;
+}

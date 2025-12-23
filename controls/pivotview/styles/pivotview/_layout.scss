@@ -1,6 +1,6 @@
 @use 'ej2-base/styles/common/mixin' as *;
 @use './theme-variables' as *;
-@use 'styles/pivotfieldlist/theme-variables' as error-font;
+@use '../pivotfieldlist/theme-variables' as error-font;
 @mixin wrap-styles {
   /* stylelint-disable */
   background-color: $gray-600 !important;

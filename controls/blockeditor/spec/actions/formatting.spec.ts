@@ -15,12 +15,54 @@ describe('Formatting Actions', () => {
         }
     });
 
+    const domHelpers = {
+        query(el: Element | Document, sel: string): HTMLElement { return el.querySelector(sel) as HTMLElement; },
+        queryAll(el: Element | Document, sel: string): HTMLElement[] { return Array.from(el.querySelectorAll(sel)) as HTMLElement[]; },
+        dispatch(el: Element, type: string, init?: any) {
+            const evt = new (window as any).Event(type, { bubbles: true, cancelable: true, ...init });
+            el.dispatchEvent(evt);
+            return evt;
+        },
+        input(el: Element, value: string) {
+            (el as HTMLElement).textContent = value;
+        },
+        key(el: Element, key: string, opts: any = {}) {
+            const ev = new KeyboardEvent('keydown', { key, bubbles: true, cancelable: true, ...opts });
+            el.dispatchEvent(ev);
+            const up = new KeyboardEvent('keyup', { key, bubbles: true, cancelable: true, ...opts });
+            el.dispatchEvent(up);
+        },
+        paste(el: Element, text: string) {
+            const pasteEvt = new ClipboardEvent('paste', { bubbles: true, cancelable: true } as any);
+            Object.defineProperty(pasteEvt, 'clipboardData', { value: { getData: () => text } });
+            el.dispatchEvent(pasteEvt);
+        }
+    };
+
     function triggerUndo(editorElement: HTMLElement): void {
         editorElement.dispatchEvent(new KeyboardEvent('keydown', { key: 'z', ctrlKey: true, code: 'KeyZ' }));
     }
 
     function triggerRedo(editorElement: HTMLElement): void {
         editorElement.dispatchEvent(new KeyboardEvent('keydown', { key: 'y', ctrlKey: true, code: 'KeyY' }));
+    }
+    
+    function getTable(editorElement: HTMLElement): HTMLTableElement {
+        return editorElement.querySelector('.e-table-block table') as HTMLTableElement;
+    }
+
+    // NOTE: row is 1-based, col is 0-based
+    function getDataCellEl(editorElement: HTMLElement, row: number, col: number): HTMLTableCellElement {
+        const table = getTable(editorElement);
+        return table.querySelector(`td[data-row="${row}"][data-col="${col}"]`) as HTMLTableCellElement;
+    }
+
+    function selectRectangle(el: HTMLElement, startRow: number, startCol: number, endRow: number, endCol: number): void {
+        const start = getDataCellEl(el, startRow, startCol);
+        const end = getDataCellEl(el, endRow, endCol);
+        start.dispatchEvent(new MouseEvent('mousedown', { bubbles: true }));
+        end.dispatchEvent(new MouseEvent('mousemove', { bubbles: true }));
+        document.dispatchEvent(new MouseEvent('mouseup', { bubbles: true }));
     }
 
     function setRange(start: Node, end: Node, startOffset: number, endOffset: number) {
@@ -1053,26 +1095,8 @@ describe('Formatting Actions', () => {
                     blocks: [{ id: `b_${r + 1}_${cIdx + 1}`, blockType: BlockType.Paragraph, content: [{ id: `c_${r + 1}_${cIdx + 1}`, contentType: ContentType.Text, content: withText ? `R${r + 1}C${cIdx + 1}` : '' }] }]
                 }))
             }));
-            const props: any = { columns, rows: bodyRows, width: '100%', enableHeader, enableRowNumbers };
-            return { id, blockType: BlockType.Table, properties: props } as any as BlockModel;
-        }
-
-        function getTable(el: HTMLElement): HTMLTableElement {
-            return el.querySelector('.e-table-block table') as HTMLTableElement;
-        }
-
-        // row is 1-based, col is 0-based (data-col matches visual index excluding row-number column)
-        function getDataCellEl(el: HTMLElement, row: number, col: number): HTMLTableCellElement {
-            const table = getTable(el);
-            return table.querySelector(`td[data-row="${row}"][data-col="${col}"]`) as HTMLTableCellElement;
-        }
-
-        function selectRectangle(el: HTMLElement, startRow: number, startCol: number, endRow: number, endCol: number): void {
-            const start = getDataCellEl(el, startRow, startCol);
-            const end = getDataCellEl(el, endRow, endCol);
-            start.dispatchEvent(new MouseEvent('mousedown', { bubbles: true }));
-            end.dispatchEvent(new MouseEvent('mousemove', { bubbles: true }));
-            document.dispatchEvent(new MouseEvent('mouseup', { bubbles: true }));
+            const properties: any = { columns, rows: bodyRows, width: '100%', enableHeader, enableRowNumbers };
+            return { id, blockType: BlockType.Table, properties: properties } as any as BlockModel;
         }
 
         beforeEach(() => {
@@ -1102,10 +1126,10 @@ describe('Formatting Actions', () => {
 
             // Assert Model: Only selected 4 cells should have bold style on their inner content model
             const tableModel = editor.blocks[1] as BlockModel; // [before, table, after]
-            const props: ITableBlockSettings = tableModel.properties as ITableBlockSettings;
+            const properties: ITableBlockSettings = tableModel.properties as ITableBlockSettings;
             for (let r = 0; r < 3; r++) {
                 for (let c = 0; c < 3; c++) {
-                    const content = props.rows[r].cells[c].blocks[0].content[0];
+                    const content = properties.rows[r].cells[c].blocks[0].content[0];
                     // The selected visual rectangle was rows 1-2 and cols 1-2 (data-col 1..2 map to model cell index 1..2)
                     const shouldBeBold = (r <= 1) && (c >= 1 && c <= 2);
                     if (shouldBeBold) {
@@ -1137,10 +1161,10 @@ describe('Formatting Actions', () => {
 
             // Assert Model: Only selected 4 cells should have italic style on their inner content model
             const tableModel = editor.blocks[1] as BlockModel; // [before, table, after]
-            const props: ITableBlockSettings = tableModel.properties as ITableBlockSettings;
+            const properties: ITableBlockSettings = tableModel.properties as ITableBlockSettings;
             for (let r = 0; r < 3; r++) {
                 for (let c = 0; c < 3; c++) {
-                    const content = props.rows[r].cells[c].blocks[0].content[0];
+                    const content = properties.rows[r].cells[c].blocks[0].content[0];
                     // The selected visual rectangle was rows 1-2 and cols 1-2 (data-col 1..2 map to model cell index 1..2)
                     const shouldBeItalic = (r <= 1) && (c >= 1 && c <= 2);
                     if (shouldBeItalic) {
@@ -1172,10 +1196,10 @@ describe('Formatting Actions', () => {
 
             // Assert Model: Only selected 4 cells should have underline style on their inner content model
             const tableModel = editor.blocks[1] as BlockModel; // [before, table, after]
-            const props: ITableBlockSettings = tableModel.properties as ITableBlockSettings;
+            const properties: ITableBlockSettings = tableModel.properties as ITableBlockSettings;
             for (let r = 0; r < 3; r++) {
                 for (let c = 0; c < 3; c++) {
-                    const content = props.rows[r].cells[c].blocks[0].content[0];
+                    const content = properties.rows[r].cells[c].blocks[0].content[0];
                     // The selected visual rectangle was rows 1-2 and cols 1-2 (data-col 1..2 map to model cell index 1..2)
                     const shouldBeunderline = (r <= 1) && (c >= 1 && c <= 2);
                     if (shouldBeunderline) {
@@ -1207,10 +1231,10 @@ describe('Formatting Actions', () => {
 
             // Assert Model: Only selected 4 cells should have strikethrough style on their inner content model
             const tableModel = editor.blocks[1] as BlockModel; // [before, table, after]
-            const props: ITableBlockSettings = tableModel.properties as ITableBlockSettings;
+            const properties: ITableBlockSettings = tableModel.properties as ITableBlockSettings;
             for (let r = 0; r < 3; r++) {
                 for (let c = 0; c < 3; c++) {
-                    const content = props.rows[r].cells[c].blocks[0].content[0];
+                    const content = properties.rows[r].cells[c].blocks[0].content[0];
                     // The selected visual rectangle was rows 1-2 and cols 1-2 (data-col 1..2 map to model cell index 1..2)
                     const shouldBestrikethrough = (r <= 1) && (c >= 1 && c <= 2);
                     if (shouldBestrikethrough) {
@@ -1249,8 +1273,8 @@ describe('Formatting Actions', () => {
 
             // Assert model: before and after have italic where selected; all table cells are italic per implementation
             const tableModel = editor.blocks[1] as BlockModel;
-            const props: ITableBlockSettings = tableModel.properties as ITableBlockSettings;
-            props.rows.forEach((row) => row.cells.forEach((cell) => {
+            const properties: ITableBlockSettings = tableModel.properties as ITableBlockSettings;
+            properties.rows.forEach((row) => row.cells.forEach((cell) => {
                 const content = cell.blocks[0].content[0];
                 expect(((content.properties as BaseStylesProp).styles).italic).toBe(true);
             }));
@@ -1282,8 +1306,8 @@ describe('Formatting Actions', () => {
 
             // Model: the cell's paragraph content should split and last part has underline
             const tableModel = editor.blocks[1] as BlockModel;
-            const props: ITableBlockSettings = tableModel.properties as ITableBlockSettings;
-            const modelContent = props.rows[1].cells[1].blocks[0].content; // row2 col2 in 1-based model indexing
+            const properties: ITableBlockSettings = tableModel.properties as ITableBlockSettings;
+            const modelContent = properties.rows[1].cells[1].blocks[0].content; // row2 col2 in 1-based model indexing
             expect(modelContent.length).toBeGreaterThan(1);
             const appliedSegment = modelContent[1];
             expect(((appliedSegment.properties as BaseStylesProp).styles).bold).toBe(true);
@@ -1296,6 +1320,520 @@ describe('Formatting Actions', () => {
             expect(innerContent.querySelector('em')).not.toBeNull();
             expect(innerContent.querySelector('u')).not.toBeNull();
             expect(innerContent.querySelector('s')).not.toBeNull();
+        });
+
+        it('select whole row using gripper and apply formatting', (done) => {
+            const table = domHelpers.query(editorElement, '.e-table-element');
+            const blockElement = table.closest('.e-block');
+            const firstCell = domHelpers.query(blockElement, 'tbody tr td[role="gridcell"]');
+            firstCell.dispatchEvent(new MouseEvent('mousemove', { bubbles: true }));
+
+            const rowAction = domHelpers.query(blockElement, '.e-row-action-handle');
+            expect(rowAction).not.toBeNull();
+            rowAction.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+
+            // Visual selection assertions
+            const firstRow = domHelpers.query(blockElement, 'tbody tr');
+            expect(firstRow.classList.contains('e-row-selected')).toBe(true);
+
+            const pinned = domHelpers.query(blockElement, '.e-row-action-handle.e-pinned') as HTMLElement;
+            expect(pinned && pinned.style.display !== 'none').toBe(true);
+
+            // Apply bold formatting
+            editor.blockManager.formattingAction.execCommand({ command: 'bold' });
+
+            setTimeout(() => {
+                const tableModel = editor.blocks[1] as BlockModel;
+                const props = tableModel.properties as ITableBlockSettings;
+
+                // Model assertions: All cells in the first data row (row index 0) should have bold content
+                const firstDataRow = props.rows[0];
+                firstDataRow.cells.forEach(cell => {
+                    expect(cell.blocks.length).toBeGreaterThan(0);
+                    const textContent = cell.blocks[0].content.find(c => c.contentType === ContentType.Text);
+                    expect(textContent).toBeDefined();
+                    const styles = (textContent.properties as BaseStylesProp).styles;
+                    expect(styles.bold).toBe(true);
+                });
+
+                // DOM assertions: All <p> elements in the first row cells should contain <strong>
+                const dataCellsInRow = firstRow.querySelectorAll('td[role="gridcell"] .e-block-content');
+                dataCellsInRow.forEach(p => {
+                    expect(p.querySelector('strong')).not.toBeNull();
+                    // Ensure the entire text is wrapped in <strong>
+                    const strong = p.querySelector('strong');
+                    expect(strong.textContent).toBe(p.textContent);
+                });
+
+                done();
+            }, 100);
+        });
+
+        it('select whole column using gripper and apply formatting', (done) => {
+            const table = domHelpers.query(editorElement, '.e-table-element');
+            const blockElement = table.closest('.e-block');
+            const firstCell = domHelpers.query(editorElement, 'tbody tr td[role="gridcell"]');
+            firstCell.dispatchEvent(new MouseEvent('mousemove', { bubbles: true }));
+
+            const colAction = domHelpers.query(editorElement, '.e-col-action-handle');
+            expect(colAction).not.toBeNull();
+            colAction.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+
+            // Visual selection assertions
+            const rows = domHelpers.queryAll(blockElement, 'tbody tr') as HTMLTableRowElement[];
+            expect(rows[0].cells[1].classList.contains('e-col-selected')).toBe(true); // first data column
+            expect(rows[1].cells[1].classList.contains('e-col-selected')).toBe(true);
+
+            const pinned = domHelpers.query(blockElement, '.e-col-action-handle.e-pinned') as HTMLElement;
+            expect(pinned && pinned.style.display !== 'none').toBe(true);
+
+            // Apply bold formatting
+            editor.blockManager.formattingAction.execCommand({ command: 'bold' });
+
+            setTimeout(() => {
+                const tableModel = editor.blocks[1] as BlockModel;
+                const props = tableModel.properties as ITableBlockSettings;
+
+                // Model assertions: All cells in the first data column (column index 0) should have bold content
+                props.rows.forEach(row => {
+                    const cell = row.cells[0]; // first data column
+                    expect(cell.blocks.length).toBeGreaterThan(0);
+                    const textContent = cell.blocks[0].content.find(c => c.contentType === ContentType.Text);
+                    expect(textContent). toBeDefined();
+                    const styles = (textContent.properties as BaseStylesProp).styles;
+                    expect(styles.bold).toBe(true);
+                });
+
+                // DOM assertions: All <p> elements in the first data column should contain <strong>
+                rows.forEach(row => {
+                    const dataCell = row.cells[1]; // first data column (skip row-number)
+                    const p = dataCell.querySelector('.e-block-content');
+                    expect(p).not.toBeNull();
+                    expect(p.querySelector('strong')).not.toBeNull();
+
+                    const strong = p.querySelector('strong');
+                    expect(strong.textContent).toBe(p.textContent);
+                });
+
+                done();
+            }, 100);
+        });
+    });
+
+    describe('Multi-Block Formatting Inside Table Cell', () => {
+        let editor: BlockEditor;
+        let editorElement: HTMLElement;
+
+        beforeEach(() => {
+            editorElement = createElement('div', { id: 'editor-table-formatting' });
+            document.body.appendChild(editorElement);
+
+            // Create nested blocks inside first cell of a table
+            const tableBlock: BlockModel = {
+                id: 'table1',
+                blockType: BlockType.Table,
+                properties: {
+                    columns: [{ id: 'col1', headerText: 'Content' }],
+                    rows: [{
+                        id: 'row1',
+                        cells: [{
+                            id: 'cell1',
+                            columnId: 'col1',
+                            blocks: [
+                                {
+                                    id: 'paragraph1',
+                                    blockType: BlockType.Paragraph,
+                                    content: [{
+                                        id: 'p1-content',
+                                        contentType: ContentType.Text,
+                                        content: 'First paragraph content'
+                                    }]
+                                },
+                                {
+                                    id: 'heading1',
+                                    blockType: BlockType.Heading,
+                                    properties: { level: 2 },
+                                    content: [{
+                                        id: 'h1-content',
+                                        contentType: ContentType.Text,
+                                        content: 'Second heading content'
+                                    }]
+                                },
+                                {
+                                    id: 'quote1',
+                                    blockType: BlockType.Quote,
+                                    content: [{
+                                        id: 'q1-content',
+                                        contentType: ContentType.Text,
+                                        content: 'Third quote content'
+                                    }]
+                                },
+                                {
+                                    id: 'list1',
+                                    blockType: BlockType.BulletList,
+                                    content: [{
+                                        id: 'l1-content',
+                                        contentType: ContentType.Text,
+                                        content: 'Fourth list content'
+                                    }]
+                                }
+                            ]
+                        }]
+                    }]
+                } as ITableBlockSettings
+            };
+
+            editor = createEditor({ blocks: [tableBlock] });
+            editor.appendTo('#editor-table-formatting');
+        });
+
+        afterEach(() => {
+            if (editor) {
+                editor.destroy();
+                editor = undefined;
+            }
+            if (editorElement.parentElement) {
+                editorElement.parentElement.removeChild(editorElement);
+            }
+        });
+
+        it('should apply bold formatting to multiple nested blocks inside table cell', (done) => {
+            const firstCell = getDataCellEl(editorElement, 1, 0);
+            const firstBlock = firstCell.querySelector('.e-block') as HTMLElement;
+            editor.blockManager.setFocusToBlock(firstBlock);
+            const firstContent = firstCell.querySelector('#paragraph1 .e-block-content') as HTMLElement;
+            const secondContent = firstCell.querySelector('#heading1 .e-block-content') as HTMLElement;
+
+            const range = document.createRange();
+            range.setStart(firstContent.firstChild, 6); // "paragraph"
+            range.setEnd(secondContent.firstChild, 13); // "heading"
+
+            const selection = window.getSelection();
+            selection.removeAllRanges();
+            selection.addRange(range);
+
+            editor.blockManager.formattingAction.execCommand({ command: 'bold' });
+
+            setTimeout(() => {
+                const tableModel = editor.blocks[0] as BlockModel;
+                const cellBlocks = (tableModel.properties as ITableBlockSettings).rows[0].cells[0].blocks;
+
+                const paraBlock = cellBlocks.find(b => b.id === 'paragraph1');
+                const headingBlock = cellBlocks.find(b => b.id === 'heading1');
+
+                expect(paraBlock.content.some(c => ((c.properties as BaseStylesProp).styles.bold) as boolean)).toBe(true);
+                expect(headingBlock.content.some(c => ((c.properties as BaseStylesProp).styles.bold) as boolean)).toBe(true);
+
+                expect(firstContent.querySelector('strong')).not.toBeNull();
+                expect(secondContent.querySelector('strong')).not.toBeNull();
+
+                done();
+            }, 100);
+        });
+
+        it('should apply italic formatting to multiple different nested block types inside table cell', (done) => {
+            const firstCell = getDataCellEl(editorElement, 1, 0);
+            const firstBlock = firstCell.querySelector('.e-block') as HTMLElement;
+            editor.blockManager.setFocusToBlock(firstBlock);
+            const headingContent = firstCell.querySelector('#heading1 .e-block-content') as HTMLElement;
+            const listContent = firstCell.querySelector('#list1 .e-block-content') as HTMLElement;
+
+            const range = document.createRange();
+            range.setStart(headingContent.firstChild, 0);
+            range.setEnd(listContent.firstChild, 6); // "Fourth"
+
+            const selection = window.getSelection();
+            selection.removeAllRanges();
+            selection.addRange(range);
+
+            editor.blockManager.formattingAction.execCommand({ command: 'italic' });
+
+            setTimeout(() => {
+                const tableModel = editor.blocks[0] as BlockModel;
+                const cellBlocks = (tableModel.properties as ITableBlockSettings).rows[0].cells[0].blocks;
+
+                expect(cellBlocks[1].content.some(c => ((c.properties as BaseStylesProp).styles.italic) as boolean)).toBe(true); // heading
+                expect(cellBlocks[2].content.some(c => ((c.properties as BaseStylesProp).styles.italic) as boolean)).toBe(true); // quote
+                expect(cellBlocks[3].content.some(c => ((c.properties as BaseStylesProp).styles.italic) as boolean)).toBe(true); // list
+
+                expect(headingContent.querySelector('em')).not.toBeNull();
+                expect(firstCell.querySelector('#quote1 em')).not.toBeNull();
+                expect(listContent.querySelector('em')).not.toBeNull();
+
+                done();
+            }, 100);
+        });
+
+        it('should apply underline formatting when entire cell content is selected', (done) => {
+            const firstCell = getDataCellEl(editorElement, 1, 0);
+            const firstBlock = firstCell.querySelector('.e-block') as HTMLElement;
+            editor.blockManager.setFocusToBlock(firstBlock);
+            const firstContent = firstCell.querySelector('#paragraph1 .e-block-content') as HTMLElement;
+            const lastContent = firstCell.querySelector('#list1 .e-block-content') as HTMLElement;
+
+            const range = document.createRange();
+            range.setStart(firstContent.firstChild, 0);
+            range.setEnd(lastContent.firstChild, lastContent.textContent.length);
+
+            const selection = window.getSelection();
+            selection.removeAllRanges();
+            selection.addRange(range);
+
+            editor.blockManager.formattingAction.execCommand({ command: 'underline' });
+
+            setTimeout(() => {
+                const tableModel = editor.blocks[0] as BlockModel;
+                const cellBlocks = (tableModel.properties as ITableBlockSettings).rows[0].cells[0].blocks;
+
+                cellBlocks.forEach(block => {
+                    expect(block.content.some(c => ((c.properties as BaseStylesProp).styles.underline) as boolean)).toBe(true);
+                });
+
+                expect(firstCell.querySelectorAll('u').length).toBeGreaterThan(0);
+
+                done();
+            }, 100);
+        });
+
+        it('should apply multiple formats (bold and italic) to nested multi-block selection', (done) => {
+            const firstCell = getDataCellEl(editorElement, 1, 0);
+            const firstBlock = firstCell.querySelector('.e-block') as HTMLElement;
+            editor.blockManager.setFocusToBlock(firstBlock);
+            const firstContent = firstCell.querySelector('#paragraph1 .e-block-content') as HTMLElement;
+            const thirdContent = firstCell.querySelector('#quote1 .e-block-content') as HTMLElement;
+
+            const range = document.createRange();
+            range.setStart(firstContent.firstChild, 0);
+            range.setEnd(thirdContent.firstChild, 5);
+
+            const selection = window.getSelection();
+            selection.removeAllRanges();
+            selection.addRange(range);
+
+            editor.blockManager.formattingAction.execCommand({ command: 'bold' });
+            editor.blockManager.formattingAction.execCommand({ command: 'italic' });
+
+            setTimeout(() => {
+                const cellBlocks = (editor.blocks[0].properties as ITableBlockSettings).rows[0].cells[0].blocks;
+
+                [0, 1, 2].forEach(idx => {
+                    const block = cellBlocks[idx];
+                    expect(block.content.some(c => ((c.properties as BaseStylesProp).styles.bold) as boolean)).toBe(true);
+                    expect(block.content.some(c => ((c.properties as BaseStylesProp).styles.italic) as boolean)).toBe(true);
+                });
+
+                expect(firstContent.querySelector('strong')).not.toBeNull();
+                expect(firstContent.querySelector('em')).not.toBeNull();
+
+                done();
+            }, 100);
+        });
+
+        it('should remove formatting when applied to already formatted nested content', (done) => {
+            const firstCell = getDataCellEl(editorElement, 1, 0);
+            const firstBlock = firstCell.querySelector('.e-block') as HTMLElement;
+            editor.blockManager.setFocusToBlock(firstBlock);
+            const firstContent = firstCell.querySelector('#paragraph1 .e-block-content') as HTMLElement;
+            const secondContent = firstCell.querySelector('#heading1 .e-block-content') as HTMLElement;
+
+            let range = document.createRange();
+            range.setStart(firstContent.firstChild, 0);
+            range.setEnd(secondContent.firstChild, secondContent.textContent.length);
+
+            let selection = window.getSelection();
+            selection.removeAllRanges();
+            selection.addRange(range);
+
+            // Apply bold
+            editor.blockManager.formattingAction.execCommand({ command: 'bold' });
+
+            // Apply bold again to remove
+            editor.blockManager.formattingAction.execCommand({ command: 'bold' });
+
+            setTimeout(() => {
+                const cellBlocks = (editor.blocks[0].properties as ITableBlockSettings).rows[0].cells[0].blocks;
+
+                expect(cellBlocks[0].content.every(c => !((c.properties as BaseStylesProp).styles.bold) as boolean)).toBe(true);
+                expect(cellBlocks[1].content.every(c => !((c.properties as BaseStylesProp).styles.bold) as boolean)).toBe(true);
+
+                expect(firstContent.querySelector('strong')).toBeNull();
+                expect(secondContent.querySelector('strong')).toBeNull();
+
+                done();
+            }, 100);
+        });
+
+        it('should apply color formatting to nested multi-block selection', (done) => {
+            const firstCell = getDataCellEl(editorElement, 1, 0);
+            const firstBlock = firstCell.querySelector('.e-block') as HTMLElement;
+            editor.blockManager.setFocusToBlock(firstBlock);
+            const firstContent = firstCell.querySelector('#paragraph1 .e-block-content') as HTMLElement;
+            const secondContent = firstCell.querySelector('#heading1 .e-block-content') as HTMLElement;
+
+            const range = document.createRange();
+            range.setStart(firstContent.firstChild, 5);
+            range.setEnd(secondContent.firstChild, 10);
+
+            const selection = window.getSelection();
+            selection.removeAllRanges();
+            selection.addRange(range);
+
+            editor.blockManager.formattingAction.execCommand({ command: 'color', value: '#FF0000' });
+
+            setTimeout(() => {
+                const cellBlocks = (editor.blocks[0].properties as ITableBlockSettings).rows[0].cells[0].blocks;
+
+                expect(cellBlocks[0].content.some(c => (c.properties as BaseStylesProp).styles.color === '#FF0000')).toBe(true);
+                expect(cellBlocks[1].content.some(c => (c.properties as BaseStylesProp).styles.color === '#FF0000')).toBe(true);
+
+                expect(firstContent.querySelector('span[style*="color"]')).not.toBeNull();
+                expect(secondContent.querySelector('span[style*="color"]')).not.toBeNull();
+
+                done();
+            }, 100);
+        });
+
+        it('should apply superscript and subscript formatting to nested multi-block selection', (done) => {
+            const firstCell = getDataCellEl(editorElement, 1, 0);
+            const firstBlock = firstCell.querySelector('.e-block') as HTMLElement;
+            editor.blockManager.setFocusToBlock(firstBlock);
+            const firstContent = firstCell.querySelector('#paragraph1 .e-block-content') as HTMLElement;
+            const secondContent = firstCell.querySelector('#heading1 .e-block-content') as HTMLElement;
+
+            const range = document.createRange();
+            range.setStart(firstContent.firstChild, 0);
+            range.setEnd(secondContent.firstChild, 5);
+
+            const selection = window.getSelection();
+            selection.removeAllRanges();
+            selection.addRange(range);
+
+            editor.blockManager.formattingAction.execCommand({ command: 'superscript' });
+
+            setTimeout(() => {
+                const cellBlocks = (editor.blocks[0].properties as ITableBlockSettings).rows[0].cells[0].blocks;
+
+                expect(cellBlocks[0].content.some(c => ((c.properties as BaseStylesProp).styles.superscript) as boolean)).toBe(true);
+                expect(cellBlocks[1].content.some(c => ((c.properties as BaseStylesProp).styles.superscript) as boolean)).toBe(true);
+
+                expect(firstContent.querySelector('sup')).not.toBeNull();
+                expect(secondContent.querySelector('sup')).not.toBeNull();
+
+                // Apply subscript (should toggle off superscript)
+                editor.blockManager.formattingAction.execCommand({ command: 'subscript' });
+
+                setTimeout(() => {
+                    expect(cellBlocks[0].content.some(c => ((c.properties as BaseStylesProp).styles.subscript) as boolean)).toBe(true);
+                    expect(cellBlocks[0].content.every(c =>( !(c.properties as BaseStylesProp).styles.superscript) as boolean)).toBe(true);
+
+                    expect(firstContent.querySelector('sup')).toBeNull();
+                    expect(firstContent.querySelector('sub')).not.toBeNull();
+
+                    done();
+                }, 100);
+            }, 100);
+        });
+
+        it('should handle partial content selection in nested multi-block formatting', (done) => {
+            const firstCell = getDataCellEl(editorElement, 1, 0);
+            const firstBlock = firstCell.querySelector('.e-block') as HTMLElement;
+            editor.blockManager.setFocusToBlock(firstBlock);
+            const firstContent = firstCell.querySelector('#paragraph1 .e-block-content') as HTMLElement;
+            const thirdContent = firstCell.querySelector('#quote1 .e-block-content') as HTMLElement;
+
+            const range = document.createRange();
+            range.setStart(firstContent.firstChild, 6);
+            range.setEnd(thirdContent.firstChild, 5);
+
+            const selection = window.getSelection();
+            selection.removeAllRanges();
+            selection.addRange(range);
+
+            editor.blockManager.formattingAction.execCommand({ command: 'strikethrough' });
+
+            setTimeout(() => {
+                const cellBlocks = (editor.blocks[0].properties as ITableBlockSettings).rows[0].cells[0].blocks;
+
+                // Should have split content in first and last blocks
+                expect(cellBlocks[0].content.length).toBeGreaterThan(1);
+                expect(cellBlocks[2].content.length).toBeGreaterThan(1);
+                expect(cellBlocks[1].content.some(c => ((c.properties as BaseStylesProp).styles.strikethrough) as boolean)).toBe(true);
+
+                expect(firstContent.querySelector('s')).not.toBeNull();
+                expect(thirdContent.querySelector('s')).not.toBeNull();
+
+                done();
+            }, 100);
+        });
+
+        it('should skip non-formattable block types in nested multi-block selection', (done) => {
+            // Insert divider inside cell
+            const firstCell = getDataCellEl(editorElement, 1, 0);
+            const firstBlock = firstCell.querySelector('.e-block') as HTMLElement;
+            editor.blockManager.setFocusToBlock(firstBlock);
+            const cellBlocks = (editor.blocks[0].properties as ITableBlockSettings).rows[0].cells[0].blocks;
+
+            const dividerBlock: BlockModel = {
+                id: 'divider1',
+                blockType: BlockType.Divider,
+                content: []
+            };
+
+            editor.addBlock(dividerBlock, 'heading1', true);
+
+            setTimeout(() => {
+                const firstContent = firstCell.querySelector('#paragraph1 .e-block-content') as HTMLElement;
+                const quoteContent = firstCell.querySelector('#quote1 .e-block-content') as HTMLElement;
+
+                const range = document.createRange();
+                range.setStart(firstContent.firstChild, 0);
+                range.setEnd(quoteContent.firstChild, 5);
+
+                const selection = window.getSelection();
+                selection.removeAllRanges();
+                selection.addRange(range);
+
+                editor.blockManager.formattingAction.execCommand({ command: 'bold' });
+
+                setTimeout(() => {
+                    // Divider should remain untouched
+                    const dividerBlock = cellBlocks.find(b => b.id === 'divider1');
+                    expect(dividerBlock.content.length).toBe(0);
+
+                    // Other blocks should be formatted
+                    expect(cellBlocks[0].content.some(c => ((c.properties as BaseStylesProp).styles.bold) as boolean)).toBe(true);
+                    expect(cellBlocks[3].content.some(c => ((c.properties as BaseStylesProp).styles.bold) as boolean)).toBe(true);
+
+                    done();
+                }, 100);
+            }, 100);
+        });
+
+        it('should preserve selection state during nested multi-block formatting', (done) => {
+            const firstCell = getDataCellEl(editorElement, 1, 0);
+            const firstBlock = firstCell.querySelector('.e-block') as HTMLElement;
+            editor.blockManager.setFocusToBlock(firstBlock);
+            const firstContent = firstCell.querySelector('#paragraph1 .e-block-content') as HTMLElement;
+            const secondContent = firstCell.querySelector('#heading1 .e-block-content') as HTMLElement;
+
+            const range = document.createRange();
+            range.setStart(firstContent.firstChild, 3);
+            range.setEnd(secondContent.firstChild, 8);
+
+            const selection = window.getSelection();
+            selection.removeAllRanges();
+            selection.addRange(range);
+
+            const initialText = range.toString();
+
+            editor.blockManager.formattingAction.execCommand({ command: 'bold' });
+
+            setTimeout(() => {
+                const newRange = getSelectedRange();
+                expect(newRange.toString()).toBe(initialText);
+
+                done();
+            }, 100);
         });
     });
 

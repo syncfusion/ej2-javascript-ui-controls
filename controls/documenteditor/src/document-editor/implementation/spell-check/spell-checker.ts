@@ -455,6 +455,9 @@ export class SpellChecker {
         if (this.ignoreAllItems.indexOf(retrievedText) === -1) {
             this.ignoreAllItems.push(retrievedText);
             this.removeErrorsFromCollection(contextItem);
+            if(!isNullOrUndefined(contextItem.element)) {
+                this.handleErrorCollection(contextItem.element as TextElementBox);
+            }
             this.documentHelper.triggerSpellCheck = true;
             this.documentHelper.owner.editorModule.reLayout(this.documentHelper.selection);
             this.documentHelper.triggerSpellCheck = false;

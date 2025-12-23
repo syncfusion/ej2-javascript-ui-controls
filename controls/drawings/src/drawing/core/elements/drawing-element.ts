@@ -198,6 +198,12 @@ export class DrawingElement {
     /** @private */
     public elementActions: ElementAction = ElementAction.None;
 
+     /** @private */
+    public isEJ2?: boolean;
+
+     /** @private */
+    public isFreeText?: boolean;
+
     /** @private */
     public thickness?: number;
 

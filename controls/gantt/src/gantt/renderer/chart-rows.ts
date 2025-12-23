@@ -25,6 +25,7 @@ export class ChartRows extends DateProcessor {
     public baselineTop: number = 0;
     public baselineHeight: number = 8;
     private baselineColor: string;
+    private isGridRowRefreshed: boolean = false;
     private parentTaskbarTemplateFunction: Function;
     private leftTaskLabelTemplateFunction: Function;
     private rightTaskLabelTemplateFunction: Function;
@@ -1507,6 +1508,9 @@ export class ChartRows extends DateProcessor {
 
     private getExpandDisplayProp(data: IGanttData): string {
         data = this.templateData;
+        if (!isNullOrUndefined(data['filterLevel'])) {
+            return 'table-row';
+        }
         if (this.parent.getExpandStatus(data)) {
             return 'table-row';
         }
@@ -2618,7 +2622,7 @@ export class ChartRows extends DateProcessor {
                 }
             }
             const dataId: number | string = this.parent.viewType === 'ProjectView' ? data.ganttProperties.taskId : data.ganttProperties.rowUniqueID;
-            if (!this.parent.ganttChartModule.isExpandAll && !this.parent.ganttChartModule.isCollapseAll) {
+            if (!this.parent.ganttChartModule.isExpandAll && !this.parent.ganttChartModule.isCollapseAll && !this.isGridRowRefreshed) {
                 this.parent.treeGrid.grid.setRowData(dataId, data);
             }
             if (data.hasChildRecords && !data.expanded && this.parent.enableMultiTaskbar && !this.parent.allowTaskbarOverlap) {
@@ -2692,6 +2696,11 @@ export class ChartRows extends DateProcessor {
                     .sortBy('expanded', 'Descending'));
                 items = sortedRecords;
             }
+            if (!this.parent.ganttChartModule.isExpandAll && !this.parent.ganttChartModule.isCollapseAll &&
+                this.parent.treeGrid.grid.element.querySelectorAll('.e-templatecell').length > 0 && this.parent.isReact) {
+                this.isGridRowRefreshed = true;
+                this.parent.treeGrid.grid.refresh();
+            }
             for (let i: number = 0; i < items.length; i++) {
                 let index: number;
                 if (isUndoRedo) {
@@ -2705,6 +2714,7 @@ export class ChartRows extends DateProcessor {
                     this.refreshRow(index, isValidateRange, isUndoRedo);
                 }
             }
+            this.isGridRowRefreshed = false;
             this.parent.ganttChartModule.updateLastRowBottomWidth();
         }
     }

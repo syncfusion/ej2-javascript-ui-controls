@@ -199,14 +199,18 @@ export class ViewBase {
     }
 
     public getHeaderBarHeight(): number {
-        let headerBarHeight: number = 2;
+        const computedStyle: CSSStyleDeclaration = getComputedStyle(this.parent.element);
+        const borderTop: number = parseFloat(computedStyle.borderTopWidth) || 1;
+        const borderBottom: number = parseFloat(computedStyle.borderBottomWidth) || 1;
+        const border: number = Math.round(borderTop + borderBottom);
+        let headerBarHeight: number = border;
         if (this.parent.headerModule) {
             headerBarHeight += util.getOuterHeight(this.parent.headerModule.getHeaderElement());
         }
         if (this.parent.uiStateValues.isGroupAdaptive) {
             const resHeader: HTMLElement = (<HTMLElement>this.parent.element.querySelector('.' + cls.RESOURCE_HEADER_TOOLBAR));
             if (resHeader) {
-                headerBarHeight += resHeader.offsetHeight;
+                headerBarHeight += util.getOuterHeight(resHeader);
             }
         }
         return headerBarHeight;
@@ -504,7 +508,7 @@ export class ViewBase {
 
     public setResourceHeaderContent(tdElement: Element, tdData: TdData, className: string = cls.TEXT_ELLIPSIS): void {
         if (this.parent.activeViewOptions.resourceHeaderTemplate) {
-            const data: ResourceDetails = { resource: tdData.resource, resourceData: tdData.resourceData };
+            const data: ResourceDetails = { resource: tdData.resource, resourceData: tdData.resourceData, date: tdData.date };
             const scheduleId: string = this.parent.element.id + '_';
             const viewName: string = this.parent.activeViewOptions.resourceHeaderTemplateName;
             const templateId: string = scheduleId + viewName + 'resourceHeaderTemplate';

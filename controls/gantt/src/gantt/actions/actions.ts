@@ -19,3 +19,4 @@ export * from './rowdragdrop';
 export * from './pdf-export';
 export * from './virtual-scroll';
 export * from './freeze-column';
+export * from './validator';

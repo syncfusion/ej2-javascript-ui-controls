@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+## 32.1.20 (2025-12-23)
+
 ### Markdown Converter
 
 The JavaScript Markdown Converter is a lightweight, stateless, and efficient utility for converting Markdown content to HTML.

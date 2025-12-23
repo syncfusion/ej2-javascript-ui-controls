@@ -144,38 +144,30 @@ export class XhtmlValidation {
     }
     private RemoveAttributeByName(attrName: string): void {
         if (this.currentElement.firstChild !== null) {
-            if (this.currentElement.firstChild.nodeType !== 3) {
-                for (let i: number = 0; i < this.currentElement.childNodes.length; i++) {
-                    const ele: Node = this.currentElement.childNodes[i as number];
-                    if (ele.nodeType !== 3 && ele.nodeName !== 'TABLE' && ele.nodeName !== 'TBODY' && ele.nodeName !== 'THEAD' &&
-                        ele.nodeName !== 'TH' && ele.nodeName !== 'TR' && ele.nodeName !== 'TD') {
-                        if ((ele as HTMLElement).hasAttribute(attrName)) {
-                            (ele as HTMLElement).removeAttribute(attrName);
-                        }
-                        if (ele.hasChildNodes()) {
-                            for (let j: number = 0; j < ele.childNodes.length; j++) {
-                                const childEle: Node = ele.childNodes[j as number];
-                                if (childEle.nodeType !== 3 && childEle.nodeName !== 'TABLE' && childEle.nodeName !== 'TBODY' &&
-                                    childEle.nodeName !== 'THEAD' && childEle.nodeName !== 'TH' && childEle.nodeName !== 'TR' &&
-                                    childEle.nodeName !== 'TD' && (childEle as HTMLElement).hasAttribute(attrName) &&
-                                   !(childEle as HTMLElement).classList.contains('e-mention-chip')) {
-                                    (childEle as HTMLElement).removeAttribute(attrName);
-                                }
-                                if (childEle.hasChildNodes()) {
-                                    for (let k: number = 0; k < childEle.childNodes.length; k++) {
-                                        if (childEle.childNodes[k as number].nodeType !== 3 && childEle.childNodes[k as number].nodeName !== 'TABLE' &&
-                                            childEle.childNodes[k as number].nodeName !== 'TBODY' && childEle.childNodes[k as number].nodeName !== 'THEAD' &&
-                                            childEle.childNodes[k as number].nodeName !== 'TH' && childEle.childNodes[k as number].nodeName !== 'TR'
-                                            && childEle.childNodes[k as number].nodeName !== 'TD'
-                                            && (childEle.childNodes[k as number] as HTMLElement).hasAttribute(attrName)) {
-                                            (childEle.childNodes[k as number] as HTMLElement).removeAttribute(attrName);
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
+            for (let i: number = 0; i < this.currentElement.childNodes.length; i++) {
+                this.processNodeAndDescendants(this.currentElement.childNodes[i as number], attrName);
+            }
+        }
+    }
+
+    private shouldRemoveAttribute(ele: Node, attrName: string): boolean {
+        const htmlEle: HTMLElement = ele as HTMLElement;
+        const isTableElement: boolean = ele.nodeName === 'TABLE' || ele.nodeName === 'TBODY' ||
+            ele.nodeName === 'THEAD' || ele.nodeName === 'TH' || ele.nodeName === 'TR' || ele.nodeName === 'TD';
+        const isAnchorWithTarget: boolean = ele.nodeName === 'A' && attrName === 'target';
+        const isMentionChip: boolean = htmlEle.nodeType !== 3 && htmlEle.hasAttribute(attrName) && htmlEle.classList.contains('e-mention-chip');
+
+        return ele.nodeType !== 3 && !isTableElement && !isAnchorWithTarget && !isMentionChip && htmlEle.hasAttribute(attrName);
+    }
+
+    private processNodeAndDescendants(ele: Node, attrName: string): void {
+        if (this.shouldRemoveAttribute(ele, attrName)) {
+            (ele as HTMLElement).removeAttribute(attrName);
+        }
+        // Process all descendants recursively at all levels
+        if (ele.hasChildNodes()) {
+            for (let i: number = 0; i < ele.childNodes.length; i++) {
+                this.processNodeAndDescendants(ele.childNodes[i as number], attrName);
             }
         }
     }

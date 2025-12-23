@@ -2583,8 +2583,11 @@
   .e-outline.e-input-group.e-control-wrapper.e-bigger .e-input-group-icon,
   .e-outline.e-input-group.e-control-wrapper .e-input-group-icon.e-bigger,
   .e-bigger .e-outline.e-input-group.e-control-wrapper .e-input-group-icon {
-    @if $input-skin-name == 'material' or $input-skin-name == 'Material3' {
+    @if $input-skin-name == 'material' {
       margin: $outline-bigger-input-icon-padding $outline-bigger-input-icon-margin-left  $outline-bigger-input-icon-padding $zero-value;
+    }
+    @if $input-skin-name == 'Material3' {
+      margin: 2px;
     }
   }
 

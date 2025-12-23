@@ -1065,7 +1065,7 @@ export class TextArea extends Component<HTMLTextAreaElement> implements INotifyP
         const container: HTMLElement = this.textareaWrapper.container;
         const label: HTMLElement | null = container.querySelector('.e-float-text-overflow') || container.querySelector('.e-float-text');
         const calculateWidth: number = (container.clientWidth - this.getRightIconsWidth());
-        if (label && calculateWidth && (!this.prependTemplate || !this.appendTemplate)) {
+        if (label && calculateWidth && !(this.cssClass && this.cssClass.split(' ').indexOf('e-outline') !== -1) && (!this.prependTemplate || !this.appendTemplate)) {
             label.style.width = calculateWidth + 'px';
         } else if (this.floatLabelType === 'Auto' && (this.prependTemplate || this.appendTemplate)) {
             setTimeout(function(): void {

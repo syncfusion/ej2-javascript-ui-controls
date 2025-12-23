@@ -1506,13 +1506,13 @@ export class AIAssistView extends InterActiveChatBase implements INotifyProperty
             if (closeButton && (event.target === closeButton || (event.target as HTMLElement).classList.contains('e-assist-clear-icon'))) {
                 return;
             }
-            this.handleAttachmentPreview(fileData);
+            this.handleAttachmentPreview(event, fileData);
         });
         return fileItem;
     }
 
-    private handleAttachmentPreview(file: FileInfo): void {
-        const eventArgs: AttachmentClickEventArgs = {};
+    private handleAttachmentPreview(event: MouseEvent, file: FileInfo): void {
+        const eventArgs: AttachmentClickEventArgs = {file: file, event: event};
         if (this.attachmentSettings.attachmentClick) {
             this.attachmentSettings.attachmentClick.call(this, eventArgs);
         }

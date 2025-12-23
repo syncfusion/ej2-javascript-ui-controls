@@ -96,7 +96,10 @@ export class StylesGroup extends RibbonGroupBase implements IRibbonGroup {
         );
 
         if (prevSelectedItemIndex !== galleryItem.gallerySettings.selectedItemIndex
-            || prevItemLength !== galleryItem.gallerySettings.groups[0].items.length) {
+            || prevItemLength !== galleryItem.gallerySettings.groups[0].items.length
+            || (this.container.documentEditor && this.container.documentEditor.editorHistory
+            && this.container.documentEditor.editorHistory.lastOperation
+            && this.container.documentEditor.editorHistory.lastOperation.action === 'ModifyStyle')) {
             // Update the gallery
             this.container.ribbon.ribbon.updateItem(galleryItem);
         }

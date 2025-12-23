@@ -921,7 +921,11 @@ export class FormDesigner {
             if (formFieldsData !== null && canvasElement !== null && textLayer !== null) {
                 for (let i: number = 0; i < formFieldsData.length; i++) {
                     const currentData: any = formFieldsData[parseInt(i.toString(), 10)].FormField;
-                    if (currentData.pageNumber === pageIndex + 1) {
+                    let isRadioButtonItem: boolean;
+                    if (currentData) {
+                        isRadioButtonItem = this.isRadioButton(currentData, pageIndex);
+                    }
+                    if (currentData.pageNumber === pageIndex + 1 || isRadioButtonItem) {
                         const domElementId: HTMLElement = document.getElementById('form_field_' + currentData.id + '_html_element');
                         if (!domElementId) {
                             let signatureField: PdfFormFieldBaseModel = (this.pdfViewer.nameTable as any)[formFieldsData[parseInt(i.toString(), 10)].Key.split('_')[0]];
@@ -1020,6 +1024,21 @@ export class FormDesigner {
         }
     }
 
+    private isRadioButton(currentData: any, currentPageIndex: number): boolean {
+        if (currentData && currentData.formFieldAnnotationType === 'RadioButton' &&
+            Array.isArray(currentData.radiobuttonItem) &&
+            currentData.radiobuttonItem.length > 0) {
+            for (let i: number = 0; i < currentData.radiobuttonItem.length; i++) {
+                if (currentData.radiobuttonItem[parseInt(i.toString(), 10)].pageNumber === currentPageIndex + 1) {
+                    return true;
+                }
+            }
+            return false;
+        } else {
+            return false;
+        }
+    }
+
     private renderFormFieldsInZooming(element: DiagramHtmlElement, currentData: any, signatureField: PdfFormFieldBaseModel,
                                       zoomValue: number): any {
         if (element) {
@@ -1069,7 +1088,9 @@ export class FormDesigner {
             htmlElement.appendChild(divElement);
             parentHtmlElement.appendChild(htmlElement);
             const textLayer: HTMLElement = document.getElementById(this.pdfViewer.element.id + '_textLayer_' + (currentData.pageNumber - 1));
-            textLayer.appendChild(parentHtmlElement);
+            if (textLayer) {
+                textLayer.appendChild(parentHtmlElement);
+            }
             if (signatureField.formFieldAnnotationType === 'RadioButton') {
                 if (document.getElementsByClassName('e-pv-radiobtn-span').length > 0) {
                     // this.renderRadioButtonSpan(spanElement, bounds, zoomValue);

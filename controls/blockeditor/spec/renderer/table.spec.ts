@@ -1053,6 +1053,74 @@ describe('Table Block', () => {
             expect(editor.blockManager.currentFocusedBlock.id).toBe(modelBlocks[1].id);
             done();
         });
+
+        it('Navigate on slash popup using arrow keys and insert', (done) => {
+            setupTwoByTwo();
+            const firstCell = domHelpers.query(editorElement, 'tbody tr:first-child td[role="gridcell"]');
+            const tableProps = editor.blocks[0].properties as ITableBlockSettings;
+            let domBlocks = firstCell.querySelectorAll<HTMLElement>('.e-block');
+            let modelBlocks = tableProps.rows[0].cells[0].blocks;
+            const blockElement = firstCell.querySelector('.e-block') as HTMLElement;
+            openSlashMenuOn(blockElement);
+            // Arrow down twice and Enter → select NumberedList
+            setTimeout(() => {
+                blockElement.dispatchEvent(new KeyboardEvent('keydown', ({ keyCode: 40, key: 'ArrowDown', bubbles: true } as any)));
+                blockElement.dispatchEvent(new KeyboardEvent('keydown', ({ keyCode: 40, key: 'ArrowDown', bubbles: true } as any)));
+                blockElement.dispatchEvent(new KeyboardEvent('keydown', ({ keyCode: 13, key: 'Enter', bubbles: true } as any)));
+
+                setTimeout(() => {
+                    domBlocks = firstCell.querySelectorAll<HTMLElement>('.e-block');
+                    modelBlocks = tableProps.rows[0].cells[0].blocks;
+                    expect(modelBlocks.length).toBe(1);
+                    expect(domBlocks.length).toBe(1);
+                    expect(modelBlocks[0].blockType).toBe(BlockType.NumberedList);
+                    const bulletBlock = firstCell.querySelector('.e-block') as HTMLElement;
+                    const listElement = bulletBlock.querySelector('ol') as HTMLElement;
+                    const listItem = listElement.querySelector('li') as HTMLElement;
+                    expect(listElement).not.toBeNull(); // UL should exist
+                    expect(listItem).not.toBeNull();
+                    expect(getBlockContentElement(bulletBlock).style.getPropertyValue('list-style-type')).toBe('"1. "');
+                    expect(listItem.textContent).toBe('Cell 1');
+                    expect(modelBlocks[0].content[0].content).toBe('Cell 1');
+                    done();
+                }, 50);
+            }, 100);
+        });
+
+        it('should filter commands properly and show filtered results', (done) => {
+            setupTwoByTwo();
+            const firstCell = domHelpers.query(editorElement, 'tbody tr:first-child td[role="gridcell"]');
+            const blockElement = firstCell.querySelector('.e-block') as HTMLElement;
+            editor.blockManager.setFocusToBlock(blockElement);
+
+            // Open slash command popup
+            const contentElement = getBlockContentElement(blockElement);
+            contentElement.textContent = '/head';
+            setCursorPosition(contentElement, contentElement.textContent.length);
+            editor.blockManager.stateManager.updateContentOnUserTyping(blockElement);
+            editorElement.querySelector('.e-mention.e-editable-element').dispatchEvent(new KeyboardEvent('keyup', {
+                key: 'd', 
+                code: 'KeyD', 
+                bubbles: true 
+            }));
+            
+            setTimeout(() => {
+                // Check that only heading items are shown
+                const menuItems = document.querySelectorAll('.e-blockeditor-command-menu li');
+                let headingItemFound = false;
+                
+                menuItems.forEach(item => {
+                    const itemValue = item.getAttribute('data-value');
+                    if (itemValue && itemValue.toLowerCase().includes('head')) {
+                        headingItemFound = true;
+                    }
+                });
+                
+                expect(headingItemFound).toBe(true);
+                
+                done();
+            }, 300);
+        });
     });
 
     describe('Row/Column interactions and hover UI', () => {
@@ -1251,6 +1319,40 @@ describe('Table Block', () => {
             }, 0);
         });
 
+        it('hover on row insert handle shows hoverline and on mouseleave should hide', () => {
+            setupTable();
+            const table = domHelpers.query(editorElement, '.e-table-element');
+            const blockElement = table.closest('.e-block');
+            const firstCell = domHelpers.query(blockElement, 'tbody tr td[role="gridcell"]');
+            firstCell.dispatchEvent(new MouseEvent('mousemove', { bubbles: true }));
+            const topDot = domHelpers.query(blockElement, '.e-row-dot-hit');
+            topDot.dispatchEvent(new MouseEvent('mouseenter', { bubbles: true }));
+            const insert = domHelpers.query(blockElement, '.e-row-insert-handle');
+            expect(insert.style.display).not.toBe('none');
+            const line = domHelpers.query(blockElement, '.e-row-hover-line');
+            expect(insert.style.display).not.toBe('none');
+            insert.dispatchEvent(new MouseEvent('mouseleave', { bubbles: true }));
+            expect(insert.style.display).toBe('none');
+            expect(line.style.display).toBe('none');
+        });
+
+        it('hover on col insert handle shows hoverline and on mouseleave should hide', () => {
+            setupTable();
+            const table = domHelpers.query(editorElement, '.e-table-element');
+            const blockElement = table.closest('.e-block');
+            const firstCell = domHelpers.query(blockElement, 'tbody tr td[role="gridcell"]');
+            firstCell.dispatchEvent(new MouseEvent('mousemove', { bubbles: true }));
+            const topDot = domHelpers.query(blockElement, '.e-col-dot-hit');
+            topDot.dispatchEvent(new MouseEvent('mouseenter', { bubbles: true }));
+            const insert = domHelpers.query(blockElement, '.e-col-insert-handle');
+            expect(insert.style.display).not.toBe('none');
+            const line = domHelpers.query(blockElement, '.e-col-hover-line');
+            expect(insert.style.display).not.toBe('none');
+            insert.dispatchEvent(new MouseEvent('mouseleave', { bubbles: true }));
+            expect(insert.style.display).toBe('none');
+            expect(line.style.display).toBe('none');
+        });
+
         it('insert handle shows on top row-dot hover and inserts row on click (DOM + model + focus)', (done) => {
             setupTable();
             const table = domHelpers.query(editorElement, '.e-table-element');
@@ -1365,6 +1467,36 @@ describe('Table Block', () => {
             }, 0);
         });
 
+        it('Check row insert handles visibility when moving mouse between right and left row hit zones', () => {
+            setupTable();
+            const table = domHelpers.query(editorElement, '.e-table-element');
+            const blockElement = table.closest('.e-block');
+            const firstCell = domHelpers.query(blockElement, 'tbody tr td[role="gridcell"]');
+            firstCell.dispatchEvent(new MouseEvent('mousemove', { bubbles: true }));
+            const topDot = domHelpers.query(blockElement, '.e-row-dot-hit');
+            topDot.dispatchEvent(new MouseEvent('mouseenter', { bubbles: true }));
+            const topDotInsert = domHelpers.query(blockElement, '.e-row-insert-handle');
+            expect(topDotInsert.style.display).not.toBe('none');
+            const bottomDotInsert = domHelpers.queryAll(blockElement, '.e-row-insert-handle')[0];
+            expect(bottomDotInsert.style.display).not.toBe('none');
+        });
+
+        it('Check column insert handles visibility when moving mouse between right and left column hit zones', () => {
+            setupTable();
+            const table = domHelpers.query(editorElement, '.e-table-element');
+            const blockElement = table.closest('.e-block');
+            const firstCell = domHelpers.query(blockElement, 'tbody tr td[role="gridcell"]');
+            firstCell.dispatchEvent(new MouseEvent('mousemove', { bubbles: true }));
+            const leftDot = domHelpers.query(blockElement, '.e-col-dot-hit');
+            leftDot.dispatchEvent(new MouseEvent('mouseenter', { bubbles: true }));
+            const leftDotInsert = domHelpers.query(blockElement, '.e-col-insert-handle');
+            expect(leftDotInsert.style.display).not.toBe('none');
+            const rightDot = domHelpers.queryAll(blockElement, '.e-col-dot-hit')[1];
+            rightDot .dispatchEvent(new MouseEvent('mouseenter', { bubbles: true }));
+            const rightColinsert = domHelpers.queryAll(blockElement, '.e-col-insert-handle')[0];
+            expect(rightColinsert.style.display).not.toBe('none');
+        });
+
         it('insert column with enable header as false', (done) => {
             setupTable({ enableHeader: false });
             const table = domHelpers.query(editorElement, '.e-table-element');
@@ -1477,6 +1609,10 @@ describe('Table Block', () => {
             nextCell.dispatchEvent(new MouseEvent('mousedown', { bubbles: true }));
 
             expect(firstCell.classList.contains('e-cell-focus')).toBe(false);
+            expect(nextCell.classList.contains('e-cell-focus')).toBe(true);
+
+            //Should ignore if clicked same cell again
+            nextCell.dispatchEvent(new MouseEvent('mousedown', { bubbles: true }));
             expect(nextCell.classList.contains('e-cell-focus')).toBe(true);
         });
         it('should not focus row number cell when clicked', function (done) {

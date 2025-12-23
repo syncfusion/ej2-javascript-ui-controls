@@ -174,6 +174,36 @@ describe('EJ2-59705 - Console error thrown when pressing enter key at firefox br
     });
 });
 
+describe('Bug 998779: Multiple dividers added when pressing Enter after pasting from Word', () => {
+    let defaultUserAgent = navigator.userAgent;
+    let fireFox: string = "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:84.0) Gecko/20100101 Firefox/84.0";
+    let rteObj: RichTextEditor;
+    keyboardEventArgs.shiftKey = false;
+    beforeAll((done: Function) => {
+        Browser.userAgent = fireFox;
+        rteObj = renderRTE({
+            enterKey: 'P',
+            value: `<div style="border-top: none; border-right: none; border-left: none; border-bottom: 1.5pt solid rgb(204, 204, 204); padding: 0in 0in 1pt;"> <p style="margin: 0in 0in 8pt; line-height: 115%; font-size: 12pt; font-family: Aptos, sans-serif; border: none; padding: 0in;">&nbsp;</p> </div><p><br></p><p><br></p>`
+        });
+        done();
+    });
+
+    it('Enterkey should not add styles to the new p tag', function (): void {
+        rteObj.focusIn();
+        const startNode: any = rteObj.inputElement.childNodes[1];
+        const sel: void = new NodeSelection().setSelectionText(
+            document, startNode, startNode, 0, 0);
+        (<any>rteObj).keyDown(keyboardEventArgs);
+        (<any>rteObj).keyDown(keyboardEventArgs);
+        expect(rteObj.inputElement.innerHTML === `<div style="border-top: none; border-right: none; border-left: none; border-bottom: 1.5pt solid rgb(204, 204, 204); padding: 0in 0in 1pt;"> <p style="margin: 0in 0in 8pt; line-height: 115%; font-size: 12pt; font-family: Aptos, sans-serif; border: none; padding: 0in;">&nbsp;</p> </div><p><br></p><p><br></p><p><br></p><p><br></p>`).toBe(true);
+    });
+
+    afterAll(() => {
+        destroy(rteObj);
+        Browser.userAgent = defaultUserAgent;
+    });
+});
+
 describe('927517: Link functionality breaks with enter action in Firefox browser.', () => {
     let defaultUserAgent= navigator.userAgent;
     let fireFox: string = "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:84.0) Gecko/20100101 Firefox/84.0";

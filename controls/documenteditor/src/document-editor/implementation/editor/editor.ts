@@ -3802,12 +3802,12 @@ export class Editor {
                 isInsertPositionUpdated = true;
             }
             this.skipReplace = false;
-            if (this.removedBookmarkElements.length === 1 && this.removedBookmarkElements[0].bookmarkType === 0) {
+            if (this.removedBookmarkElements.length > 0) {
                 let position: TextPosition = selection.start.clone();
                 if (!selection.isForward) {
                     position = selection.end.clone();
                 }
-                position.offset += 1;
+                position.offset += text.length;
                 this.updateHistoryPosition(position, false);
                 this.insertRemoveBookMarkElements(false);
             }
@@ -3875,10 +3875,6 @@ export class Editor {
                 let inline: ElementBox = inlineObj.element;
                 indexInInline = inlineObj.index;
                 inline.isChangeDetected = true;
-                if (!inline.paragraph.isInsideTable && inline instanceof BookmarkElementBox && inline.bookmarkType === 1 
-                    && !isNullOrUndefined(inline.properties) && inline.properties.hasOwnProperty('isAfterParagraphMark')) {
-                    delete inline.properties['isAfterParagraphMark'];
-                }
                 if (inline instanceof TextElementBox && text !== ' ' && this.documentHelper.owner.isSpellCheck) {
                     this.owner.spellCheckerModule.removeErrorsFromCollection({ 'element': inline, 'text': (inline as TextElementBox).text });
                     if (!isReplace) {
@@ -9836,6 +9832,7 @@ export class Editor {
             let newCell: TableCellWidget = undefined;
             let columnCount: number = count ? count : this.getColumnCountToInsert();
             let rowSpannedCells: TableCellWidget[] = [];
+            let tableShadings: WShading = table.tableFormat.shading;
             //let rowSpanCellIndex: number = cellIndex;
             for (let i: number = 0; i < columnCount; i++) {
                 for (let j: number = 0; j < table.childWidgets.length; j++) {
@@ -9845,6 +9842,8 @@ export class Editor {
                     newCell.rowIndex = row.rowIndex;
                     newCell.containerWidget = row;
                     newCell.cellFormat.copyFormat(startCell.cellFormat);
+                    newCell.cellFormat.shading = tableShadings;
+                    newCell.cellFormat.borders.clearFormat();
                     newCell.cellFormat.rowSpan = 1;
                     if (isNullOrUndefined(startParagraph)) {
                         startParagraph = this.selection.getFirstParagraph(newCell);
@@ -9890,18 +9889,18 @@ export class Editor {
     private copyCellFormats(row: TableRowWidget, index: number) {
         let newCell: TableCellWidget = row.childWidgets[index] as TableCellWidget;
         if (!isNullOrUndefined(newCell)) {
-            let newCellPara: ParagraphWidget = newCell.childWidgets[0] as ParagraphWidget;
+            let newCellPara: ParagraphWidget = newCell.firstChild as ParagraphWidget;
             (index == (row.childWidgets.length - 1)) ? --index : ++index;
             let nextCell: TableCellWidget = row.childWidgets[index] as TableCellWidget;
-            let widget: BlockWidget = nextCell.childWidgets[0] as BlockWidget;
+            let widget: BlockWidget = nextCell.firstChild as BlockWidget;
             while (widget instanceof TableWidget) {
-                widget = ((widget.childWidgets[0] as TableRowWidget).childWidgets[0] as TableCellWidget).childWidgets[0] as BlockWidget;
+                widget = ((widget.firstChild as TableRowWidget).firstChild as TableCellWidget).firstChild as BlockWidget;
             }
-            let nextCellpara: ParagraphWidget = nextCell.childWidgets[0] as ParagraphWidget;
+            let nextCellpara: ParagraphWidget = widget as ParagraphWidget;
             let line: LineWidget;
             let nextCellTextBox: TextElementBox;
             if (nextCellpara.childWidgets.length > 0) {
-                line = nextCellpara.childWidgets[0] as LineWidget;
+                line = nextCellpara.firstChild as LineWidget;
                 if (line.children.length > 0) {
                     nextCellTextBox = line.children[0] as TextElementBox;
                 }
@@ -10095,7 +10094,13 @@ export class Editor {
             : this.selection.start.paragraph.associatedCell;
         cell = startCell;
         let owner: TableWidget = cell.ownerTable;
-        while (!isNullOrUndefined(owner) && owner.containerWidget instanceof TableCellWidget && owner !== endCell.ownerTable) {
+        let isSplittedTable: boolean = false;
+        if (!isNullOrUndefined(owner) && ((!isNullOrUndefined(owner.nextSplitWidget) && owner.nextSplitWidget === endCell.ownerTable)
+            || (!isNullOrUndefined(owner.previousSplitWidget) && owner.previousSplitWidget === endCell.ownerTable))) {
+            isSplittedTable = true;
+        }
+        while (!isNullOrUndefined(owner) && owner.containerWidget instanceof TableCellWidget && owner !== endCell.ownerTable
+            && !isSplittedTable) {
             cell = (owner.containerWidget as TableCellWidget);
             owner = cell.ownerTable;
         }
@@ -12054,6 +12059,9 @@ export class Editor {
             if (selection.isParagraphLastLine(lastLine) && end.currentWidget === lastLine
                 && ((endOffset === selection.getLineLength(lastLine) + 1) || (selection.isEmpty && selection.end.isAtParagraphEnd))) {
                 this.applyCharFormatValue(paragraph.characterFormat, property, value, update);
+                if (!(lastLine.children && lastLine.children[0] instanceof ListTextElementBox)) {
+                    paragraph.characterFormat.highlightColor = 'NoColor';
+                }
             } 
         }
         // let count: number = 0;
@@ -16761,7 +16769,7 @@ export class Editor {
             }
         }
         if (deletePreviousBlock) {
-            let sectionAdv: BodyWidget = previousBlock.bodyWidget instanceof BodyWidget ? previousBlock.bodyWidget : undefined;
+            // let sectionAdv: BodyWidget = previousBlock.bodyWidget instanceof BodyWidget ? previousBlock.bodyWidget : undefined;
             // this.deleteContent(cellAdv.ownerTable, selection, editAction);
             if (!isNullOrUndefined(previousBlock)) {
                 // let nextSection: WSection = blockAdv.section instanceof WSection ? blockAdv.section as WSection : undefined;
@@ -22033,7 +22041,8 @@ export class Editor {
         if (this.documentHelper.owner.enableHeaderAndFooter) {
             this.updateHeaderFooterWidget();
         }
-        this.documentHelper.bookmarks.add(name, bookmark);
+        // Insert bookmark into dictionary in position-sorted order.
+        this.updateBookmarkCollection(name, bookmark);
         if (!isNullOrUndefined(bookmark.properties)) {
             this.selection.selectBookmarkInTable(bookmark);
             this.documentHelper.owner.isShiftingEnabled = false;
@@ -22061,6 +22070,60 @@ export class Editor {
         if (this.owner.documentEditorSettings.showBookmarks == true) {
             this.viewer.updateScrollBars();
         }
+    }
+
+    private updateBookmarkCollection(name: string, bookmark: BookmarkElementBox): void {
+        const dict: Dictionary<string, BookmarkElementBox> = this.documentHelper.bookmarks;
+
+        // If name already exists, remove first to re-insert.
+        if (dict.containsKey(name)) {
+            // Remove existing entry while keeping relative order of others intact.
+            const index: number = dict.keys.indexOf(name);
+            if (index > -1) {
+                dict.keys.splice(index, 1);
+                dict.values.splice(index, 1);
+            }
+        }
+        // Get the start position of the newly inserted bookmark.
+        const newBookmarkStart: TextPosition = this.selection.getElementPosition(bookmark, false, false).startPosition;
+
+        // Fallback to append if position is not resolvable.
+        if (isNullOrUndefined(newBookmarkStart)) {
+            dict.add(name, bookmark);
+            return;
+        }
+
+        const keys: string[] = dict.keys;
+        const values: BookmarkElementBox[] = dict.values;
+        let insertIndex: number = values.length;
+
+        // Binary search for insertion point based on document position.
+        let low: number = 0;
+        let high: number = values.length - 1;
+
+        while (low <= high) {
+            const mid: number = Math.floor((low + high) / 2);
+            const existingBookmark: BookmarkElementBox = values[parseInt(mid.toString(), 10)];
+            // Get start position of the existing bookmark.
+            const existingBookmarkStart: TextPosition = this.selection.getElementPosition(existingBookmark, false, false).startPosition;
+            if (isNullOrUndefined(existingBookmarkStart)) {
+                // If we can't resolve existing position, treat it as after newStart to keep moving left.
+                high = mid - 1;
+                insertIndex = mid;
+                continue;
+            }
+            // If new bookmark is before existing, move left.
+            if (newBookmarkStart.isExistBefore(existingBookmarkStart)) {
+                high = mid - 1;
+                insertIndex = mid;
+            } else {
+                // Else move right.
+                low = mid + 1;
+            }
+        }
+        // Insert at computed index to preserve sorted order.
+        keys.splice(insertIndex, 0, name);
+        values.splice(insertIndex, 0, bookmark);
     }
 
     /**
@@ -22545,6 +22608,122 @@ export class Editor {
         }
     }
 
+    private getLineStyle(border: WBorder, oldBorder: WBorder) : LineStyle {
+        const lineStyle: LineStyle = border.lineStyle === oldBorder.lineStyle && border.lineWidth === oldBorder.lineWidth && border.color === oldBorder.color ? "Cleared" : border.lineStyle;
+        return lineStyle;
+    }
+
+    private getBorders(type: BorderType, cells: TableCellWidget[]) : any {
+        let borders: any = [];
+        // For empty selection - selected cells will be null
+        if (this.selection.isEmpty) {            
+            if (type === 'InsideBorders' || type === 'InsideVerticalBorder' || type === 'InsideHorizontalBorder') {
+                return 0;
+            }
+            const endPos: TextPosition = this.selection.isForward ? this.selection.end : this.selection.start;
+            cells[0] = endPos.paragraph.associatedCell;
+        }
+        for (let i: number = 0; i < cells.length; i++) {            
+            const cell: TableCellWidget = cells[i];
+            const isFirstSelectedRow: boolean = cell.ownerRow === cells[0].ownerRow;
+            const isFirstSelectedCol: boolean = cell.columnIndex === cells[0].columnIndex;
+            const isLastSelectedRow: boolean = cell.ownerRow === cells[cells.length - 1].ownerRow;
+            const isLastSelectedCol: boolean = (cell.columnIndex + cell.cellFormat.columnSpan - 1) === cells[cells.length - 1].columnIndex;
+            // Based on the border type to be applied - specific borders of the selected cells are added to borders collection
+            if ((type === 'TopBorder' || type === 'OutsideBorders' || type === 'AllBorders') && isFirstSelectedRow) {
+                borders.push({border: cell.cellFormat.borders.top,  type: 'top'});
+            }
+            if ((type === 'BottomBorder' || type === 'OutsideBorders' || type === 'AllBorders') && isLastSelectedRow) {
+                borders.push({border: cell.cellFormat.borders.bottom,  type: 'bottom'});
+            }
+            if ((type === 'LeftBorder' || type === 'OutsideBorders' || type === 'AllBorders') && isFirstSelectedCol) {
+                borders.push({border: cell.cellFormat.borders.left,  type: 'left'});
+            }
+            if ((type === 'RightBorder' || type === 'OutsideBorders' || type === 'AllBorders') && isLastSelectedCol) {
+                borders.push({border: cell.cellFormat.borders.right,  type: 'right'});
+            }
+            if (type === 'InsideBorders' || type === 'InsideVerticalBorder' || type === 'InsideHorizontalBorder' || type === 'AllBorders') {
+                if (!isLastSelectedCol && type !== 'InsideHorizontalBorder') {
+                    borders.push({border: cell.cellFormat.borders.right,  type: 'vertical'});
+                }
+                if (!isLastSelectedRow && type !== 'InsideVerticalBorder') {
+                    borders.push({border: cell.cellFormat.borders.bottom,  type: 'horizontal'});
+                }
+            }
+        }
+        return borders;
+    }
+
+    /**
+     * Applies the line styles based on given settings.
+     * 
+     * @param {WBorder} border Specify the border to be applied
+     * @param {BorderSettings} settings Specify the border settings to be applied.
+     * @param {WBorders} oldBorder Specify the existing border
+     * @returns {LineStyle}
+     */
+    private applyLineStyles(border: WBorder, settings: BorderSettings, oldBorder?: WBorders): LineStyle {
+        if (settings.borderStyle === 'Cleared') {
+            return settings.borderStyle;
+        }
+        const type: BorderType = settings.type;
+        let lineStyle: LineStyle = border.lineStyle;
+        const cells: TableCellWidget[] = this.selection.getSelectedCells();
+        let borders: any = [];
+        let isStyle: boolean = true;
+        borders = this.getBorders(type, cells);
+        if (borders.length > 0) {
+            let tableFormat: WBorders = cells[0].ownerTable.tableFormat.borders;
+            for (let i: number = 0; i < borders.length; i++) {
+                // Compares each cell borders
+                if (borders[i].border.lineStyle !== borders[0].border.lineStyle || borders[i].border.lineWidth !== borders[0].border.lineWidth || borders[i].border.color !== borders[0].border.color) {
+                    isStyle = false;
+                    // Compare the table border and the first cell border, if the linestyle of the cell is 'None'
+                    if (borders[i].border.lineStyle === "None") {
+                        let borderType: string = borders[i].type;
+                        let tableBorder: WBorder = borderType === 'top' ? tableFormat.top : borderType === 'bottom' ? tableFormat.bottom : borderType === 'left' ? tableFormat.left : borderType === 'right' ?
+                            tableFormat.right : borderType === 'vertical' ? tableFormat.vertical : borderType === 'horizontal' ? tableFormat.horizontal : borders[i].border;
+                        // Return the new linestyle, if table format and first cell format mismatches
+                        if (tableBorder.lineStyle !== borders[0].border.lineStyle || tableBorder.lineWidth !== borders[0].border.lineWidth || tableBorder.color !== borders[0].border.color) {
+                            return lineStyle;
+                        }
+                        // Compare the table border and first cell border
+                        lineStyle = this.getLineStyle(border, tableBorder);
+                    }
+                    return lineStyle;
+                }
+            }
+            // isStyle remains true, if the above for loop is executed and no value is returned.
+            // Updates linestyle, if Line styles of all the cell formats are not 'None'
+            if (isStyle && borders[0].border.lineStyle !== "None") {
+                lineStyle = this.getLineStyle(border, borders[0].border);
+            }
+            // Updates linestyle, if Line styles of all the cell formats are 'None'
+            else {
+                // Update oldborder with the table format if cells are selected, as cell formats are none
+                if (!this.documentHelper.selection.isTableSelected()) {
+                    oldBorder = tableFormat;
+                }
+                lineStyle = type === 'TopBorder' ? this.getLineStyle(border, oldBorder.top) : type === 'BottomBorder' ? this.getLineStyle(border, oldBorder.bottom) : type === 'LeftBorder' ?
+                    this.getLineStyle(border, oldBorder.left) : type === 'RightBorder' ? this.getLineStyle(border, oldBorder.right) : type === 'InsideHorizontalBorder' ?
+                    lineStyle = this.getLineStyle(border, oldBorder.horizontal) : type === 'InsideVerticalBorder' ? this.getLineStyle(border, oldBorder.vertical) : lineStyle;
+                if (type === 'InsideBorders') {
+                    lineStyle = lineStyle = this.getLineStyle(border, oldBorder.horizontal) === "Cleared" && this.getLineStyle(border, oldBorder.vertical) === "Cleared" ? "Cleared" : lineStyle;
+                }
+                else if (type === 'OutsideBorders' || (type === 'AllBorders' && this.selection.isEmpty)) {
+                    const isStyleEqual: boolean = [this.getLineStyle(border, oldBorder.bottom), this.getLineStyle(border, oldBorder.right), this.getLineStyle(border, oldBorder.left)].every(val => val === this.getLineStyle(border, oldBorder.top));
+                    lineStyle = !isStyleEqual ? lineStyle: this.getLineStyle(border, oldBorder.top);
+                }
+                else if (type === 'AllBorders') {
+                    const isStyleEqual: boolean = [this.getLineStyle(border, oldBorder.bottom), this.getLineStyle(border, oldBorder.right), this.getLineStyle(border, oldBorder.left), this.getLineStyle(border, oldBorder.horizontal),
+                        this.getLineStyle(border, oldBorder.vertical)].every(val => val === this.getLineStyle(border, oldBorder.top));
+                    lineStyle = !isStyleEqual ? lineStyle: this.getLineStyle(border, oldBorder.top);
+                }
+            }
+        }
+        return lineStyle;
+    }
+
     /**
      * Applies the borders based on given settings.
      *
@@ -22568,50 +22747,141 @@ export class Editor {
             this.editorHistory.currentBaseHistoryInfo.insertedFormat = startPos.paragraph.associatedCell.cellFormat.borders;
         }
         if (this.documentHelper.selection.isTableSelected()) {
+            border.lineStyle = this.applyLineStyles(border, settings, table.tableFormat.borders);
             if (settings.type === 'TopBorder' || settings.type === 'OutsideBorders' || settings.type === 'AllBorders') {
                 table.tableFormat.borders.top.copyFormat(border);
                 for (let i = 0; i < table.childWidgets.length; i++) {
-                    (table.childWidgets[i] as TableRowWidget).rowFormat.borders.top.clearFormat();
+                    let rowWidget: TableRowWidget = table.childWidgets[i] as TableRowWidget;
+                    rowWidget.rowFormat.borders.top.clearFormat();
+                    if (rowWidget.childWidgets && i === 0) {
+                        for (let j = 0; j < rowWidget.childWidgets.length; j++) {
+                            (rowWidget.childWidgets[j] as TableCellWidget).cellFormat.borders.top.clearFormat();
+                        }
+                    }
+                }
+                let selectedCell: TableCellWidget[] = this.getTopBorderCellsOnSelection();
+                if (!isNullOrUndefined(selectedCell) && selectedCell.length > 0) {
+                    for (let i: number = 0; i < selectedCell.length; i++) {
+                        if (selectedCell[i].cellFormat.borders.top) {
+                            selectedCell[i].cellFormat.borders.top.clearFormat();
+                        }
+                    }
                 }
             }
             if (settings.type === 'BottomBorder' || settings.type === 'OutsideBorders' || settings.type === 'AllBorders') {
                 table.tableFormat.borders.bottom.copyFormat(border);
                 for (let i = 0; i < table.childWidgets.length; i++) {
-                    (table.childWidgets[i] as TableRowWidget).rowFormat.borders.bottom.clearFormat();
+                    let rowWidget: TableRowWidget = table.childWidgets[i] as TableRowWidget;
+                    rowWidget.rowFormat.borders.bottom.clearFormat();
+                    if(rowWidget.childWidgets && i === table.childWidgets.length - 1) {
+                        for (let j = 0; j < rowWidget.childWidgets.length; j++) {
+                            (rowWidget.childWidgets[j] as TableCellWidget).cellFormat.borders.bottom.clearFormat();
+                        }
+                    }
+                }
+                let selectedCell: TableCellWidget[] = this.getBottomBorderCellsOnSelection();
+                if (!isNullOrUndefined(selectedCell) && selectedCell.length > 0) {
+                    for (let i: number = 0; i < selectedCell.length; i++) {
+                        if (selectedCell[i].cellFormat.borders.bottom) {
+                            selectedCell[i].cellFormat.borders.bottom.clearFormat();
+                        }
+                    }
                 }
             }
             if (settings.type === 'LeftBorder' || settings.type === 'OutsideBorders' || settings.type === 'AllBorders') {
                 table.tableFormat.borders.left.copyFormat(border);
                 for (let i = 0; i < table.childWidgets.length; i++) {
-                    (table.childWidgets[i] as TableRowWidget).rowFormat.borders.left.clearFormat();
+                    let rowWidget: TableRowWidget = table.childWidgets[i] as TableRowWidget;
+                    rowWidget.rowFormat.borders.left.clearFormat();
+                    if (rowWidget.childWidgets) {
+                        for (let j = 0; j < rowWidget.childWidgets.length; j++) {
+                            let isFirstSelectedCol: boolean = (rowWidget.childWidgets[j] as TableCellWidget).columnIndex === (rowWidget.childWidgets[0] as TableCellWidget).columnIndex;
+                            if (isFirstSelectedCol) {
+                                (rowWidget.childWidgets[j] as TableCellWidget).cellFormat.borders.left.clearFormat();
+                            }
+                        }
+                    }
+                }
+                let selectedCell: TableCellWidget[] = this.getLeftBorderCellsOnSelection();
+                if (!isNullOrUndefined(selectedCell) && selectedCell.length > 0) {
+                    for (let i: number = 0; i < selectedCell.length; i++) {
+                        if (selectedCell[i].cellFormat.borders.left) {
+                            selectedCell[i].cellFormat.borders.left.clearFormat();
+                        }
+                    }
                 }
             }
             if (settings.type === 'RightBorder' || settings.type === 'OutsideBorders' || settings.type === 'AllBorders') {
                 table.tableFormat.borders.right.copyFormat(border);
                 for (let i = 0; i < table.childWidgets.length; i++) {
-                    (table.childWidgets[i] as TableRowWidget).rowFormat.borders.right.clearFormat();
+                    let rowWidget: TableRowWidget = table.childWidgets[i] as TableRowWidget;
+                    rowWidget.rowFormat.borders.right.clearFormat();
+                    if (rowWidget.childWidgets) {
+                        for (let j = 0; j < rowWidget.childWidgets.length; j++) {
+                            let isLastSelectedCol: boolean = ((rowWidget.childWidgets[j] as TableCellWidget).columnIndex + (rowWidget.childWidgets[j] as TableCellWidget).cellFormat.columnSpan - 1) === (rowWidget.childWidgets[rowWidget.childWidgets.length - 1] as TableCellWidget).columnIndex;
+                            if (isLastSelectedCol) {
+                                (rowWidget.childWidgets[j] as TableCellWidget).cellFormat.borders.right.clearFormat();
+                            }
+                        }
+                    }
+                }
+                let selectedCell: TableCellWidget[] = this.getRightBorderCellsOnSelection();
+                if (!isNullOrUndefined(selectedCell) && selectedCell.length > 0) {
+                    for (let i: number = 0; i < selectedCell.length; i++) {
+                        if (selectedCell[i].cellFormat.borders.right) {
+                            selectedCell[i].cellFormat.borders.right.clearFormat();
+                        }
+                    }
                 }
             }
             if (settings.type === 'InsideHorizontalBorder' || settings.type === 'AllBorders' || settings.type === 'InsideBorders') {
                 table.tableFormat.borders.horizontal.copyFormat(border);
                 for (let i = 0; i < table.childWidgets.length; i++) {
-                    (table.childWidgets[i] as TableRowWidget).rowFormat.borders.horizontal.clearFormat();
+                    let rowWidget: TableRowWidget = table.childWidgets[i] as TableRowWidget;
+                    rowWidget.rowFormat.borders.horizontal.clearFormat();
+                    if (rowWidget.childWidgets) {
+                        for (let j = 0; j < rowWidget.childWidgets.length; j++) {
+                            if (i !== table.childWidgets.length - 1) {
+                                (rowWidget.childWidgets[j] as TableCellWidget).cellFormat.borders.bottom.clearFormat();
+                            }
+                            if (i !== 0) {
+                                (rowWidget.childWidgets[j] as TableCellWidget).cellFormat.borders.top.clearFormat();
+                            }
+                        }
+                    }
                 }
+                this.applyInsideBorders(border, settings.type, table);
             }
             if (settings.type === 'InsideVerticalBorder' || settings.type === 'AllBorders' || settings.type === 'InsideBorders') {
                 table.tableFormat.borders.vertical.copyFormat(border);
                 for (let i = 0; i < table.childWidgets.length; i++) {
-                    (table.childWidgets[i] as TableRowWidget).rowFormat.borders.vertical.clearFormat();
+                    let rowWidget: TableRowWidget = table.childWidgets[i] as TableRowWidget;
+                    rowWidget.rowFormat.borders.vertical.clearFormat();
+                    if (rowWidget.childWidgets) {
+                        for (let j = 0; j < rowWidget.childWidgets.length; j++) {
+                            let isLastSelectedCol: boolean = ((rowWidget.childWidgets[j] as TableCellWidget).columnIndex + (rowWidget.childWidgets[j] as TableCellWidget).cellFormat.columnSpan - 1) === (rowWidget.childWidgets[rowWidget.childWidgets.length - 1] as TableCellWidget).columnIndex;
+                            let isFirstSelectedCol: boolean = (rowWidget.childWidgets[j] as TableCellWidget).columnIndex === (rowWidget.childWidgets[0] as TableCellWidget).columnIndex;
+                            if (!isFirstSelectedCol) {  
+                                (rowWidget.childWidgets[j] as TableCellWidget).cellFormat.borders.left.clearFormat();
+                            }
+                            if (!isLastSelectedCol) {
+                                (rowWidget.childWidgets[j] as TableCellWidget).cellFormat.borders.right.clearFormat();
+                            }
+                        }
+                    }
                 }
+                this.applyInsideBorders(border, settings.type, table);
             }
              if (settings.type === 'NoBorder') {
                 this.clearAllBorderValues(table.tableFormat.borders);
                 for (let i = 0; i < table.childWidgets.length; i++) {
                     (table.childWidgets[i] as TableRowWidget).rowFormat.borders.clearFormat();
                 }
+                this.applyAllBorders(border,settings.type);
             }
         } else {
             if (this.selection.isEmpty) {
+                border.lineStyle = this.applyLineStyles(border, settings, endCell.cellFormat.borders);
                 //Apply borders for current selected cell initially.
                 if (settings.type === 'OutsideBorders' || settings.type === 'AllBorders' ||
                     settings.type === 'LeftBorder') {
@@ -22641,6 +22911,7 @@ export class Editor {
                     this.clearAllBorderValues(endCell.cellFormat.borders);
                 }
             } else {
+                border.lineStyle = this.applyLineStyles(border, settings);
                 if (settings.type === 'OutsideBorders' || settings.type === 'TopBorder') {
                     const selectedCell: TableCellWidget[] = this.getTopBorderCellsOnSelection();
                     for (let i: number = 0; i < selectedCell.length; i++) {
@@ -22679,6 +22950,18 @@ export class Editor {
                     }
                 }
             }
+            if (settings.type === 'TopBorder' || settings.type === 'AllBorders' || settings.type === 'OutsideBorders'
+                || settings.type === 'NoBorder') {
+                cells = this.getAdjacentCellToApplyTopBorder();
+                for (let i: number = 0; i < cells.length; i++) {
+                    const cell: TableCellWidget = cells[i];
+                    if (settings.type === 'NoBorder') {
+                        cell.cellFormat.borders.bottom.copyFormat(this.clearBorder());
+                    } else {
+                        cell.cellFormat.borders.bottom.copyFormat(border);
+                    }
+                }
+            }
             if (settings.type === 'AllBorders' || settings.type === 'OutsideBorders' || settings.type === 'RightBorder'
                 || settings.type === 'NoBorder') {
                 cells = this.getAdjacentCellToApplyRightBorder();
@@ -22688,6 +22971,18 @@ export class Editor {
                         cell.cellFormat.borders.left.copyFormat(this.clearBorder());
                     } else {
                         cell.cellFormat.borders.left.copyFormat(border);
+                    }
+                }
+            }
+            if (settings.type === 'AllBorders' || settings.type === 'OutsideBorders' || settings.type === 'LeftBorder'
+                || settings.type === 'NoBorder') {
+                cells = this.getAdjacentCellToApplyLeftBorder();
+                for (let i: number = 0; i < cells.length; i++) {
+                    const cell: TableCellWidget = cells[i];
+                    if (settings.type === 'NoBorder') {
+                        cell.cellFormat.borders.right.copyFormat(this.clearBorder());
+                    } else {
+                        cell.cellFormat.borders.right.copyFormat(border);
                     }
                 }
             }
@@ -22725,15 +23020,24 @@ export class Editor {
             const cell: TableCellWidget = cells[i];
             const isLastSelectedRow: boolean = cell.ownerRow === cells[cells.length - 1].ownerRow;
             const isLastRightCell: boolean = (cell.columnIndex + cell.cellFormat.columnSpan - 1) === cells[cells.length - 1].columnIndex;
+            const isTableSelected : boolean = this.documentHelper.selection.isTableSelected();
             if (borderType === 'NoBorder') {
                 cell.cellFormat.borders.right.copyFormat(this.clearBorder());
                 cell.cellFormat.borders.bottom.copyFormat(this.clearBorder());
             } else {
                 if (!isLastRightCell && borderType !== 'InsideHorizontalBorder') {
-                    cell.cellFormat.borders.right.copyFormat(border);
+                    if (isTableSelected) {
+                        cell.cellFormat.borders.right.clearFormat();
+                    } else {
+                        cell.cellFormat.borders.right.copyFormat(border);
+                    }
                 }
                 if (!isLastSelectedRow && borderType !== 'InsideVerticalBorder') {
-                    cell.cellFormat.borders.bottom.copyFormat(border);
+                    if (isTableSelected) {
+                        cell.cellFormat.borders.bottom.clearFormat();
+                    } else {
+                        cell.cellFormat.borders.bottom.copyFormat(border);
+                    }
                 }
             }
             if (!isLastSelectedRow && borderType !== 'InsideVerticalBorder') {
@@ -22745,6 +23049,8 @@ export class Editor {
                     for (let j: number = 0; j < selectedCells.length; j++) {
                         if (borderType === 'NoBorder') {
                             selectedCells[j].cellFormat.borders.top.copyFormat(this.clearBorder());
+                        } else if (isTableSelected) {
+                            selectedCells[j].cellFormat.borders.top.clearFormat();
                         } else {
                             selectedCells[j].cellFormat.borders.top.copyFormat(border);
                         }
@@ -22757,6 +23063,8 @@ export class Editor {
                 for (let k: number = 0; k < rightBorderCells.length; k++) {
                     if (borderType === 'NoBorder') {
                         rightBorderCells[k].cellFormat.borders.left.copyFormat(this.clearBorder());
+                    } else if (isTableSelected) {
+                        rightBorderCells[k].cellFormat.borders.left.clearFormat();
                     } else {
                         rightBorderCells[k].cellFormat.borders.left.copyFormat(border);
                     }
@@ -22828,6 +23136,102 @@ export class Editor {
         const border: WBorder = new WBorder();
         border.lineStyle = 'Cleared';
         return border;
+    }
+
+    private getAdjacentCellToApplyTopBorder(): TableCellWidget[] {
+        let cells: TableCellWidget[] = [];
+        let startPos: TextPosition = this.selection.start;
+        let endPos: TextPosition = this.selection.end;
+        if (!this.selection.isForward) {
+            startPos = this.selection.end;
+            endPos = this.selection.start;
+        }
+        let table: TableWidget = startPos.paragraph.associatedCell.ownerTable;
+        table = table.combineWidget(this.owner.viewer) as TableWidget;
+        const startCell: TableCellWidget = startPos.paragraph.associatedCell as TableCellWidget;
+        const endCell: TableCellWidget = endPos.paragraph.associatedCell as TableCellWidget;
+        if (this.selection.isEmpty) {
+            cells = this.getSelectedCellsAboveWidgets(startCell, table);
+        } else {
+            const topBorderCells: TableCellWidget[] = this.getTopBorderCellsOnSelection();
+            for (let i = 0; i < topBorderCells.length; i++) {
+                const cell = topBorderCells[i] as TableCellWidget;
+                cells = cells.concat(this.getSelectedCellsAboveWidgets(cell, table));
+            }
+        }
+        return cells;
+    }
+
+    private getSelectedCellsAboveWidgets(selectedCell: TableCellWidget, table: TableWidget): TableCellWidget[] {
+        const result: TableCellWidget[] = [];
+        const previousRowIndex: number = selectedCell.ownerRow.rowIndex - 1;
+        const previousRow: TableRowWidget | undefined = table.childWidgets[previousRowIndex] as TableRowWidget;
+        if (!previousRow) {
+            return result;
+        }
+        let columnSpan = 1;
+        if (selectedCell.cellFormat && typeof selectedCell.cellFormat.columnSpan === 'number' && selectedCell.cellFormat.columnSpan > 0) {
+            columnSpan = selectedCell.cellFormat.columnSpan;
+        }
+        for (let spanOffset = 0; spanOffset < columnSpan; spanOffset++) {
+            const targetColIndex = selectedCell.columnIndex + spanOffset;
+            for (let j = 0; j < previousRow.childWidgets.length; j++) {
+                const candidate = previousRow.childWidgets[j] as TableCellWidget;
+                if (candidate.columnIndex === targetColIndex) {
+                    result.push(candidate);
+                    break;
+                }
+            }
+        }
+        return result;
+    }
+
+    private getAdjacentCellToApplyLeftBorder(): TableCellWidget[] {
+        let cells: TableCellWidget[] = [];
+        let startPosIn: TextPosition = this.selection.start;
+        let endPosIn: TextPosition = this.selection.end;
+        if (!this.selection.isForward) {
+            startPosIn = this.selection.end;
+            endPosIn = this.selection.start;
+        }
+        let table: TableWidget = startPosIn.paragraph.associatedCell.ownerTable;
+        table = table.combineWidget(this.owner.viewer) as TableWidget;
+        const startCell: TableCellWidget = startPosIn.paragraph.associatedCell;
+        const endCell: TableCellWidget = endPosIn.paragraph.associatedCell;
+        if (this.selection.isEmpty) {
+            const selectedCell: TableCellWidget = startCell;
+            cells = this.getSelectedCellsPrevWidgets(selectedCell, table);
+        } else {
+            const selectedCells: TableCellWidget[] = this.getLeftBorderCellsOnSelection();
+            for (let i: number = 0; i < selectedCells.length; i++) {
+                const cell: TableCellWidget = selectedCells[i] as TableCellWidget;
+                cells = cells.concat(this.getSelectedCellsPrevWidgets(cell, table));
+            }
+        }
+        return cells;
+    }
+
+    private getSelectedCellsPrevWidgets(selectedCell: TableCellWidget, table: TableWidget): TableCellWidget[] {
+        const cells: TableCellWidget[] = [];
+        if (!isNullOrUndefined(selectedCell.previousWidget)) {
+            const prevCell = selectedCell.previousWidget as TableCellWidget;
+            cells.push(prevCell);
+            if (selectedCell.cellFormat.rowSpan > 1) {
+                const nextRowIndex: number = selectedCell.ownerRow.rowIndex + selectedCell.cellFormat.rowSpan;
+                for (let i: number = selectedCell.ownerRow.rowIndex + 1; i < nextRowIndex; i++) {
+                    const nextRow: TableRowWidget = table.childWidgets[i] as TableRowWidget;
+                    if (nextRow) {
+                        for (let j: number = 0; j < nextRow.childWidgets.length; j++) {
+                            const candidate = nextRow.childWidgets[j] as TableCellWidget;
+                            if (candidate.columnIndex === prevCell.columnIndex) {
+                                cells.push(candidate);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        return cells;
     }
 
     private getAdjacentCellToApplyBottomBorder(): TableCellWidget[] {

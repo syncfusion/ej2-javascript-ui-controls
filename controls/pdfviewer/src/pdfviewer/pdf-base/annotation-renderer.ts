@@ -478,7 +478,7 @@ export class AnnotationRenderer {
             }
             const labelWidth: number = this.convertPixelToPoint(labelBounds.width);
             const labelHeight: number = this.convertPixelToPoint(labelBounds.height);
-            const annotation: PdfFreeTextAnnotation = new PdfFreeTextAnnotation({x: top, y: left, width: labelWidth, height: labelHeight});
+            const annotation: PdfFreeTextAnnotation = new PdfFreeTextAnnotation({x: left, y: top, width: labelWidth, height: labelHeight});
             annotation.author = shapeAnnotation.author;
             let dateValue: Date;
             if (!isNullOrUndefined(shapeAnnotation.modifiedDate) && !isNaN(Date.parse(shapeAnnotation.modifiedDate))) {
@@ -496,7 +496,8 @@ export class AnnotationRenderer {
             const fontFamily: PdfFontFamily = this.getFontFamily(shapeAnnotation.fontFamily);
             const fontJson: { [key: string]: boolean } = {};
             const fontStyle: PdfFontStyle = this.getFontStyle(fontJson);
-            annotation.font = new PdfStandardFont(fontFamily, fontSize, fontStyle);
+            const modifiedFontSize: number = this.convertPixelToPoint(fontSize);
+            annotation.font = new PdfStandardFont(fontFamily, modifiedFontSize, fontStyle);
             annotation.subject = 'Text Box';
             annotation.text = '';
             if (!isNullOrUndefined(shapeAnnotation.labelContent)) {
@@ -1920,17 +1921,16 @@ export class AnnotationRenderer {
     private renderSignHereStamp(rubberStampAnnotation: PdfRubberStampAnnotation, rectangle: Rect, icon: string, textBrush:
     PdfBrush, page: PdfPage, pens: PdfPen, graphicsPath: PdfPath): void {
         const stringFormat: PdfStringFormat = new PdfStringFormat();
-        const font: PdfFont = new PdfStandardFont(PdfFontFamily.helvetica, 20, PdfFontStyle.bold | PdfFontStyle.italic);
+        const font: PdfFont = new PdfStandardFont(PdfFontFamily.helvetica,
+                                                  this.pdfViewer.annotationModule.calculateFontSize(icon.toUpperCase(), rectangle) - 6,
+                                                  PdfFontStyle.bold | PdfFontStyle.italic);
         stringFormat.alignment = PdfTextAlignment.center;
         stringFormat.lineAlignment = PdfVerticalAlignment.middle;
         let point1: number[] = [0, 0];
         let point2: number[] = [0, 0];
         const drawingPath: PdfPath = new PdfPath();
         const appearance: PdfTemplate = rubberStampAnnotation.appearance.normal;
-        if (this.defaultHeight > 0 && this.defaultWidth > 0) {
-            appearance.graphics.scaleTransform(rectangle.width / (this.defaultWidth + 4), rectangle.height / 28.00);
-        }
-        point1 = [(this.defaultWidth / 2 + 1), 15, 0, 0];
+        point1 = [(rectangle.width / 2), (rectangle.height / 2), 0, 0];
         point2 = [0, 0];
         drawingPath.addLine({x: point1[0], y: point1[1]}, {x: point2[0], y: point2[1]});
         const pointValues: number[] = [drawingPath._points[0].x, drawingPath._points[0].y, 0, 0];
@@ -1983,11 +1983,11 @@ export class AnnotationRenderer {
             this.defaultHeight = 16.84;
             break;
         case 'Initial Here':
-            this.defaultWidth = 151.345;
+            this.defaultWidth = 153.345;
             this.defaultHeight = 16.781;
             break;
         case 'Sign Here':
-            this.defaultWidth = 121.306;
+            this.defaultWidth = 130.306;
             this.defaultHeight = 16.899;
             break;
         default:
@@ -2023,11 +2023,11 @@ export class AnnotationRenderer {
         else {
             stampFont = new PdfStandardFont(PdfFontFamily.helvetica,
                                             Browser.isDevice && Browser.isAndroid ?
-                                                this.pdfViewer.annotationModule.calculateFontSize(icon.toUpperCase(), rectangle) - 10 :
-                                                this.pdfViewer.annotationModule.calculateFontSize(icon.toUpperCase(), rectangle) - 5,
+                                                this.pdfViewer.annotationModule.calculateFontSize(icon.toUpperCase(), rectangle, true) - 4 :
+                                                this.pdfViewer.annotationModule.calculateFontSize(icon.toUpperCase(), rectangle, true) - 4,
                                             PdfFontStyle.bold | PdfFontStyle.italic);
             detailsFont = new PdfStandardFont(PdfFontFamily.helvetica,
-                                              this.pdfViewer.annotationModule.calculateFontSize(text, rectangle) - 5,
+                                              this.pdfViewer.annotationModule.calculateFontSize(text, rectangle) - 2,
                                               PdfFontStyle.bold | PdfFontStyle.italic);
         }
         const appearance: PdfTemplate = rubberStampAnnotation.appearance.normal;
@@ -2035,12 +2035,12 @@ export class AnnotationRenderer {
         let point2: number[] = [0, 0];
         const drawingPath: PdfPath = new PdfPath();
         point1 = [5, (rectangle.height / 3)];
-        point2 = [5, (rectangle.height - (detailsFont.size * 2))];
+        point2 = [5, (rectangle.height - (detailsFont.size * 3))];
         drawingPath.addLine({x: point1[0], y: point1[1]}, {x: point2[0], y: point2[1]});
         const stampTypeBounds: number[] = [drawingPath._points[0].x, drawingPath._points[0].y, 0, 0];
         const stampTypeBoundsVal: Rectangle = this.convertNumberToRectangle(stampTypeBounds);
         const stampTimeStampbounds: number[] = [drawingPath._points[1].x, drawingPath._points[1].y,
-            (rectangle.width - drawingPath._points[1].x), (rectangle.height - drawingPath._points[1].y)];
+            (rectangle.width + drawingPath._points[1].x), (rectangle.height - drawingPath._points[1].y)];
         const stampTimeStampboundsVal: Rectangle = this.convertNumberToRectangle(stampTimeStampbounds);
         appearance.graphics.drawString(icon.toUpperCase(), stampFont, stampTypeBoundsVal, pens, textBrush, stringFormat);
         appearance.graphics.drawString(text, detailsFont, stampTimeStampboundsVal, null, textBrush, stringFormat);
@@ -2861,7 +2861,8 @@ export class AnnotationRenderer {
             shapeAnnotation.LabelFillColor = 'rgba(' + shapeFreeText.color.r + ',' + shapeFreeText.color.g + ',' + shapeFreeText.color.b + ',' + this.getTransparentValue(shapeFreeText.color) + ')';
             shapeAnnotation.FontColor = 'rgba(' + shapeFreeText.textMarkUpColor.r + ',' + shapeFreeText.textMarkUpColor.g + ',' + shapeFreeText.textMarkUpColor.b + ',' + this.getTransparentValue(shapeFreeText.textMarkUpColor) + ')';
             shapeAnnotation.LabelBorderColor = 'rgba(' + shapeFreeText.borderColor.r + ',' + shapeFreeText.borderColor.g + ',' + shapeFreeText.borderColor.b + ',' + this.getTransparentValue(shapeFreeText.borderColor) + ')';
-            shapeAnnotation.FontSize = shapeFreeText.font.size;
+            const modifiedFontSize: number = this.convertPointToPixel(shapeFreeText.font.size);
+            shapeAnnotation.FontSize = modifiedFontSize;
         }
         if (squareAnnot._dictionary.has('CustomData') && !isNullOrUndefined(squareAnnot._dictionary.get('CustomData'))) {
             const customData: any = squareAnnot._dictionary.get('CustomData');
@@ -3030,7 +3031,8 @@ export class AnnotationRenderer {
             shapeAnnotation.LabelFillColor = 'rgba(' + shapeFreeText.color.r + ',' + shapeFreeText.color.g + ',' + shapeFreeText.color.b + ',' + this.getTransparentValue(shapeFreeText.color) + ')';
             shapeAnnotation.FontColor = 'rgba(' + shapeFreeText.textMarkUpColor.r + ',' + shapeFreeText.textMarkUpColor.g + ',' + shapeFreeText.textMarkUpColor.b + ',' + this.getTransparentValue(shapeFreeText.textMarkUpColor) + ')';
             shapeAnnotation.LabelBorderColor = 'rgba(' + shapeFreeText.borderColor.r + ',' + shapeFreeText.borderColor.g + ',' + shapeFreeText.borderColor.b + ',' + this.getTransparentValue(shapeFreeText.borderColor) + ')';
-            shapeAnnotation.FontSize = shapeFreeText.font.size;
+            const modifiedFontSize: number = this.convertPointToPixel(shapeFreeText.font.size);
+            shapeAnnotation.FontSize = modifiedFontSize;
             shapeAnnotation.FontFamily = this.getFontFamilyString((shapeFreeText.font as PdfStandardFont)._fontFamily);
         }
         for (let i: number = 0; i < lineAnnot.reviewHistory.count; i++) {
@@ -3251,7 +3253,8 @@ export class AnnotationRenderer {
             shapeAnnotation.LabelFillColor = 'rgba(' + shapeFreeText.color.r + ',' + shapeFreeText.color.g + ',' + shapeFreeText.color.b + ',' + this.getTransparentValue(shapeFreeText.color) + ')';
             shapeAnnotation.FontColor = 'rgba(' + shapeFreeText.textMarkUpColor.r + ',' + shapeFreeText.textMarkUpColor.g + ',' + shapeFreeText.textMarkUpColor.b + ',' + this.getTransparentValue(shapeFreeText.textMarkUpColor) + ')';
             shapeAnnotation.LabelBorderColor = 'rgba(' + shapeFreeText.borderColor.r + ',' + shapeFreeText.borderColor.g + ',' + shapeFreeText.borderColor.b + ',' + this.getTransparentValue(shapeFreeText.borderColor) + ')';
-            shapeAnnotation.FontSize = shapeFreeText.font.size;
+            const modifiedFontSize: number = this.convertPointToPixel(shapeFreeText.font.size);
+            shapeAnnotation.FontSize = modifiedFontSize;
         }
         if (ellipseAnnot._dictionary.has('CustomData') && !isNullOrUndefined(ellipseAnnot._dictionary.get('CustomData'))) {
             const customData: any = ellipseAnnot._dictionary.get('CustomData');
@@ -3366,7 +3369,8 @@ export class AnnotationRenderer {
             shapeAnnotation.LabelFillColor = 'rgba(' + shapeFreeText.color.r + ',' + shapeFreeText.color.g + ',' + shapeFreeText.color.b + ',' + this.getTransparentValue(shapeFreeText.color) + ')';
             shapeAnnotation.FontColor = 'rgba(' + shapeFreeText.textMarkUpColor.r + ',' + shapeFreeText.textMarkUpColor.g + ',' + shapeFreeText.textMarkUpColor.b + ',' + this.getTransparentValue(shapeFreeText.textMarkUpColor) + ')';
             shapeAnnotation.LabelBorderColor = 'rgba(' + shapeFreeText.borderColor.r + ',' + shapeFreeText.borderColor.g + ',' + shapeFreeText.borderColor.b + ',' + this.getTransparentValue(shapeFreeText.borderColor) + ')';
-            shapeAnnotation.FontSize = shapeFreeText.font.size;
+            const modifiedFontSize: number = this.convertPointToPixel(shapeFreeText.font.size);
+            shapeAnnotation.FontSize = modifiedFontSize;
         }
         if (!isNullOrUndefined(polygonAnnot.borderEffect)){
             if (polygonAnnot.borderEffect.style === PdfBorderEffectStyle.cloudy){
@@ -3511,7 +3515,8 @@ export class AnnotationRenderer {
             shapeAnnotation.LabelFillColor = 'rgba(' + shapeFreeText.color.r + ',' + shapeFreeText.color.g + ',' + shapeFreeText.color.b + ',' + this.getTransparentValue(shapeFreeText.color) + ')';
             shapeAnnotation.FontColor = 'rgba(' + shapeFreeText.textMarkUpColor.r + ',' + shapeFreeText.textMarkUpColor.g + ',' + shapeFreeText.textMarkUpColor.b + ',' + this.getTransparentValue(shapeFreeText.textMarkUpColor) + ')';
             shapeAnnotation.LabelBorderColor = 'rgba(' + shapeFreeText.borderColor.r + ',' + shapeFreeText.borderColor.g + ',' + shapeFreeText.borderColor.b + ',' + this.getTransparentValue(shapeFreeText.borderColor) + ')';
-            shapeAnnotation.FontSize = shapeFreeText.font.size;
+            const modifiedFontSize: number = this.convertPointToPixel(shapeFreeText.font.size);
+            shapeAnnotation.FontSize = modifiedFontSize;
         }
         if (!isNullOrUndefined(polyLineAnnot._borderEffect)){
             if (polyLineAnnot._borderEffect.style === PdfBorderEffectStyle.cloudy){

@@ -5,7 +5,7 @@ import { createElement, remove, L10n } from '@syncfusion/ej2-base';
 import { Gantt, Selection, Toolbar, DayMarkers, Edit, Filter, Reorder, Resize, ColumnMenu, VirtualScroll, Sort, RowDD, ContextMenu, ExcelExport, PdfExport } from '../../src/index';
 import { destroyGantt, createGantt, triggerMouseEvent } from './gantt-util.spec';
 import { ContextMenuClickEventArgs} from './../../src/gantt/base/interface';
-import { columnTemplateData, data15, editingData13, editingData14, editingData15, editingData16, editingData17, predData1, predData2, predData3, predData4, predData5, predData6, predData8,resourceResourcesUndo,localizationData, CR927012, dataCollection, cr969720 } from './data-source.spec';
+import { columnTemplateData, data15, editingData13, editingData14, editingData15, editingData16, editingData17, predData1, predData2, predData3, predData4, predData5, predData6, predData8,resourceResourcesUndo,localizationData, CR927012, dataCollection, cr969720, editingResources, cr786381 } from './data-source.spec';
 Gantt.Inject(Selection, Toolbar, DayMarkers, Edit, Filter, Reorder, Resize, ColumnMenu, VirtualScroll, Sort, RowDD, ContextMenu, ExcelExport, PdfExport);
 
 
@@ -766,7 +766,8 @@ describe('predecessor validation', () => {
             }, done);
     });
     it('Check date', () => {
-        expect(ganttObj.getFormatedDate(ganttObj.currentViewData[2].ganttProperties.startDate, 'M/d/yyy')).toBe('2/13/2024');
+        /// circular dependency so the taskbar was not moved
+        expect(ganttObj.getFormatedDate(ganttObj.currentViewData[2].ganttProperties.startDate, 'M/d/yyy')).toBe('2/7/2024');
     });
     afterAll(() => {
         if (ganttObj) {
@@ -2215,4 +2216,79 @@ describe('CR-969720', () => {
             destroyGantt(ganttObj);
         }
     });
-});	
+});
+describe('CR-786381', () => {
+    let ganttObj: Gantt;
+    beforeAll((done: Function) => {
+        ganttObj = createGantt(
+            {
+                dataSource: cr786381,
+                dateFormat: 'MMM dd, y',
+                taskFields: {
+                    id: 'TaskID',
+                    name: 'TaskName',
+                    startDate: 'StartDate',
+                    endDate: 'EndDate',
+                    duration: 'Duration',
+                    progress: 'Progress',
+                    dependency: 'Predecessor',
+                    parentID: 'ParentId',
+                    notes: 'info',
+                    resourceInfo: 'resources'
+                },
+                editSettings: {
+                    allowAdding: true,
+                    allowEditing: true,
+                    allowDeleting: true,
+                    allowTaskbarEditing: true,
+                    showDeleteConfirmDialog: true
+                },
+                toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll', 'Indent', 'Outdent'],
+                allowSelection: true,
+                gridLines: 'Both',
+                height: '650px',
+                rowHeight: 46,
+                enableHover: true,
+                taskbarHeight: 25,
+                treeColumnIndex: 1,
+                resourceFields: {
+                    id: 'resourceId',
+                    name: 'resourceName'
+                },
+                resources: editingResources,
+                highlightWeekends: true,
+                timelineSettings: {
+                    topTier: {
+                        unit: 'Week',
+                        format: 'MMM dd, y',
+                    },
+                    bottomTier: {
+                        unit: 'Day',
+                    },
+                },
+                labelSettings: {
+                    leftLabel: 'TaskName',
+                    rightLabel: 'resources'
+                },
+                splitterSettings: {
+                    columnIndex: 3
+                },
+                editDialogFields: [
+                    { type: 'General', headerText: 'General' },
+                    { type: 'Dependency' },
+                    { type: 'Resources' },
+                    { type: 'Notes' },
+                ],
+                projectStartDate: new Date('03/26/2025'),
+                projectEndDate: new Date('09/01/2025'),
+            }, done);
+    });
+    it('Cheching predecessor length', () => {
+        expect(ganttObj.flatData[5].ganttProperties.predecessor.length).toBe(0);
+    });
+    afterAll(() => {
+        if (ganttObj) {
+            destroyGantt(ganttObj);
+        }
+    });
+});

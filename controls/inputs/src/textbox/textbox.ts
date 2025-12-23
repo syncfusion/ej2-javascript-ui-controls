@@ -791,7 +791,8 @@ export class TextBox extends Component<HTMLInputElement | HTMLTextAreaElement> i
     }
 
     private keydownHandler (args: KeyboardEvent): void {
-        if ((args.keyCode === 13 || args.keyCode === 9) && !((this.previousValue === null || this.previousValue === '') && (this.value === null || this.value === '') && this.respectiveElement.value === '')) {
+        const isUndoAction: boolean = args.ctrlKey && args.keyCode === 90;
+        if ((args.keyCode === 13 || args.keyCode === 9 || isUndoAction) && !((this.previousValue === null || this.previousValue === '') && (this.value === null || this.value === '') && this.respectiveElement.value === '')) {
             this.setProperties({ value: this.respectiveElement.value }, true);
         }
     }

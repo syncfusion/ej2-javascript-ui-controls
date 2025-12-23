@@ -319,7 +319,6 @@ export class Redaction {
     public handleRedactionHover(annotation: PdfAnnotationBaseModel, pageIndex: number, currentAnnot?: any): void {
         const currentAnnotationId: string = (annotation.id as string) || '';
         this.previousTool = this.pdfViewer.tool;
-        this.pdfViewer.tool = '';
         this.hoveredRedactionAnnotName = annotation.annotName;
         let selectedAnnotationIsRedaction: boolean = false;
         if (this.pdfViewer.selectedItems.annotations && this.pdfViewer.selectedItems.annotations.length > 0 && this.pdfViewer.selectedItems.annotations[0].id === 'diagram_helper') {
@@ -1428,11 +1427,11 @@ export class Redaction {
                     }
                 }
                 this.handleRedactionHover(annotObject, annotObject.pageNumber, currentAnnot);
-                this.pdfViewerBase.isMousedOver = true;
+                this.pdfViewerBase.isRedactionMousedOver = true;
             }
             else {
                 this.resetRedactionHover();
-                this.pdfViewerBase.isMousedOver = false;
+                this.pdfViewerBase.isRedactionMousedOver = false;
             }
         }
     }
@@ -1453,10 +1452,7 @@ export class Redaction {
                                                                                        touchCanvas);
             if (currentAnnot) {
                 this.onTextRedactTouchEnd(currentAnnot, touchCanvas, event, pageNumber);
-            } else {
-                this.pdfViewer.annotationModule.textMarkupAnnotationModule.clearCurrentAnnotation();
             }
-            this.pdfViewer.annotationModule.textMarkupAnnotationModule.clearCurrentAnnotationSelection(pageNumber);
         } else if (Browser.isDevice && !this.pdfViewer.enableDesktopMode) {
             this.clearAnnotationSelection(pageNumber);
         } else {

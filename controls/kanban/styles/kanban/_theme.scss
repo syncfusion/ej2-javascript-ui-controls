@@ -1,3 +1,5 @@
+@use 'ej2-base/styles/common/mixin' as *;
+@use './theme-variables' as *;
 @include export-module('kanban-theme') {
 
   /*! kanban component theme */
@@ -22,7 +24,7 @@
 
         .e-column-expand,
         .e-column-collapse {
-          border: 1px solid transparent;
+          border: $kanban-header-column-border;
           color: $kanban-icons-color;
 
           &:hover,
@@ -139,14 +141,14 @@
         min-width: 70%;
 
         @if $skin-name == 'fabric' or $skin-name == 'fabric-dark' or $skin-name == 'bootstrap5' or $skin-name == 'highcontrast' or $skin-name == 'tailwind' {
-          font-weight: normal;
+          font-weight: $kanban-dialog-text-areas-font-weight;
         }
 
         @if ($skin-name == 'tailwind' or $skin-name == 'bootstrap5') {
           border-color: $kanban-dialog-text-areas-border-color;
-          border-radius: 4px;
+          border-radius: $kanban-dialog-text-areas-border-radius;
           outline: none;
-          padding: 4px 8px 4px 12px;
+          padding: $kanban-dialog-text-areas-padding;
         }
 
         &:focus {
@@ -165,7 +167,7 @@
   .e-kanban-dialog .e-dialog-delete,
   .e-kanban-dialog .e-dialog-edit.e-primary,
   .e-kanban-dialog .e-dialog-cancel{
-    border: 1px solid;
+    border: $kanban-delete-border;
     border-color: $secondary-border-color-hover;
   }
 

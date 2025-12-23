@@ -1,7 +1,7 @@
 import { DocumentEditor } from '../../src/document-editor/document-editor';
 import { createElement } from '@syncfusion/ej2-base';
 import { TestHelper } from '../test-helper.spec';
-import { Selection, SpellChecker } from '../../src/index';
+import { ContextMenu, Search, Selection, SpellCheckDialog, SpellChecker } from '../../src/index';
 import { Editor } from '../../src/index';
 import { EditorHistory } from '../../src/document-editor/implementation/editor-history/editor-history';
 describe('Insert text while spellcheck enabled', () => {
@@ -9,7 +9,7 @@ describe('Insert text while spellcheck enabled', () => {
     beforeAll(() => {
         let ele: HTMLElement = createElement('div', { id: 'container', styles: 'width:1100px;height:700px' });
         document.body.appendChild(ele);
-        DocumentEditor.Inject(Editor, Selection, SpellChecker);
+        DocumentEditor.Inject(Editor, Selection, ContextMenu, SpellChecker, Search, SpellCheckDialog);
         editor = new DocumentEditor({ enableEditor: true, enableSelection: true, enableContextMenu: true, enableSpellCheck: true, enableSearch: true, isReadOnly: false });
         (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
         (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;

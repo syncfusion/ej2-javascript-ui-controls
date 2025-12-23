@@ -5446,7 +5446,9 @@ export class DocumentHelper {
             previousBodyWidget = bodyWidget;
             if (bodyWidget.lastChild) {
                 (bodyWidget.lastChild as BlockWidget).combineWidget(this.owner.viewer);
-                this.removeEmptyPages();
+                if (this.layout.isMultiColumnDoc) {
+                    this.removeEmptyPages();
+                }
             }
             bodyWidget = bodyWidget.nextRenderedWidget as BodyWidget;
             for (let j: number = 0; j < previousBodyWidget.childWidgets.length; j++) {

@@ -72,7 +72,7 @@ export class GroupLazyLoadRenderer extends ContentRender implements IRenderer {
     /** @hidden */
     public ignoreAccent: boolean = this.parent.allowFiltering ? this.parent.filterSettings.ignoreAccent : false;
     /** @hidden */
-    public allowCaseSensitive: boolean = false;
+    public allowCaseSensitive: boolean = true;
     /** @hidden */
     public lazyLoadQuery: Object[] = [];
 
@@ -327,9 +327,9 @@ export class GroupLazyLoadRenderer extends ContentRender implements IRenderer {
     }
 
     private actionComplete(args: NotifyArgs): void {
-        if (!args.cancel && args.requestType !== 'columnstate' && args.requestType !== 'beginEdit'
-            && args.requestType !== 'delete' && args.requestType !== 'save' && args.requestType !== 'reorder'
-            && args.requestType !== 'infiniteScroll') {
+        const requestTypes: string[] = ['columnstate', 'reorder', 'save', 'beginEdit', 'delete',
+            'infiniteScroll', 'columnVisibilityUpdate', 'columnChooserClose'];
+        if (!args.cancel && requestTypes.indexOf(args.requestType) === -1) {
             this.scrollReset();
         }
     }

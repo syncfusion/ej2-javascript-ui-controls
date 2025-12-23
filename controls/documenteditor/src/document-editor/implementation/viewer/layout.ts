@@ -13547,7 +13547,7 @@ export class Layout {
                     } else {
                         characterRangeTypes.push((textRange as TextElementBox).characterRange);
                     }
-                    element.isRightToLeft = characterRangeTypes[characterRangeTypes.length - 1] == CharacterRangeType.RightToLeft;
+                    element.isRightToLeft = (characterRangeTypes[characterRangeTypes.length - 1] == CharacterRangeType.RightToLeft) || ((characterRangeTypes[characterRangeTypes.length - 1] == CharacterRangeType.WordSplit) && textRange.characterFormat.bidi);
                 } else if (element instanceof CommentCharacterElementBox
                     || element instanceof BookmarkElementBox || element instanceof EditRangeStartElementBox
                     || element instanceof EditRangeEndElementBox || element instanceof ContentControl

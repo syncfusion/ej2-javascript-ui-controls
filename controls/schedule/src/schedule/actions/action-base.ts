@@ -108,7 +108,7 @@ export class ActionBase {
         const startHour: Date = this.parent.activeView.getStartHour();
         const intervalInMS: number = util.MS_PER_MINUTE * this.actionObj.interval;
         dateInMS += (startHour.getHours() * 60 + startHour.getMinutes()) * util.MS_PER_MINUTE + startHour.getSeconds() * 1000;
-        dateInMS = dateInMS + Math.floor((date.getTime() - dateInMS) / intervalInMS) * intervalInMS;
+        dateInMS = dateInMS + ((date.getTime() - dateInMS) / intervalInMS) * intervalInMS;
         return new Date(dateInMS);
     }
 

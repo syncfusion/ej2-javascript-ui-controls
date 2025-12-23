@@ -2,6 +2,16 @@
 
 ## [Unreleased]
 
+## 32.1.20 (2025-12-23)
+
+### Pivot Table
+
+#### Bug Fixes
+
+- `I792577` - The Pivot Table now renders correctly when a parent field member is expanded while the tabular layout is enabled.
+- `I791186` - The Pivot Table now preserves the original data order when sorting is disabled, ensuring a consistent display without unintended reordering.
+- `I787359`, `I795042` - The Pivot Table subtotal cells now have consistent properties in the `aggregateCellInfo` event for both tabular and compact layouts.
+
 ## 31.1.17 (2025-09-05)
 
 ### Pivot Table

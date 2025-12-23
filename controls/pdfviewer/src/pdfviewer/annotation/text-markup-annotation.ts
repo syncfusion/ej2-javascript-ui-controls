@@ -2786,7 +2786,7 @@ export class TextMarkupAnnotation {
                     const mousePositions: any = { left: currentPosition.x, top: currentPosition.y };
                     const annotationSettings: any = { opacity: currentAnnot.opacity, color: currentAnnot.color,
                         author: currentAnnot.author, subject: currentAnnot.subject, modifiedDate: currentAnnot.modifiedDate };
-                    this.pdfViewerBase.isMousedOver = true;
+                    this.pdfViewerBase.isTextMarkupMousedOver = true;
                     this.pdfViewer.fireAnnotationMouseover(currentAnnot.annotName, currentAnnot.pageNumber,
                                                            currentAnnot.textMarkupAnnotationType as AnnotationType, currentAnnot.bounds,
                                                            annotationSettings, mousePositions, viewerPositions);
@@ -2796,9 +2796,9 @@ export class TextMarkupAnnotation {
                     if (this.pdfViewerBase.isPanMode && !this.pdfViewerBase.getAnnotationToolStatus()) {
                         eventTarget.style.cursor = 'grab';
                     }
-                    if (this.pdfViewerBase.isMousedOver && !this.pdfViewerBase.isFormFieldMousedOver) {
+                    if (this.pdfViewerBase.isTextMarkupMousedOver && !this.pdfViewerBase.isFormFieldMousedOver) {
                         this.pdfViewer.fireAnnotationMouseLeave(pageIndex);
-                        this.pdfViewerBase.isMousedOver = false;
+                        this.pdfViewerBase.isTextMarkupMousedOver = false;
                     }
                 }
             });

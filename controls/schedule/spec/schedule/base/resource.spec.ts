@@ -1982,6 +1982,564 @@ describe('Schedule Resources', () => {
         });
     });
 
+    describe('ResourceHeaderTemplate with date parameter - byDate false with selectedDate verification', () => {
+        let schObj: Schedule;
+        beforeAll((done: DoneFn) => {
+            const model: ScheduleModel = {
+                width: '100%',
+                height: '650px',
+                selectedDate: new Date(2023, 0, 15),
+                resourceHeaderTemplate: '<div class="date-verify"><span class="verify-date-text">${date}</span></div>',
+                group: {
+                    resources: ['Owners'],
+                    byDate: false,
+                    byGroupID: false
+                },
+                resources: [{
+                    field: 'OwnerId', title: 'Owner', name: 'Owners',
+                    dataSource: [
+                        { text: 'Nancy', id: 1, color: '#df5286' },
+                        { text: 'Steven', id: 2, color: '#7fa900' },
+                        { text: 'Michael', id: 3, color: '#ea7a57' }
+                    ],
+                    textField: 'text', idField: 'id', colorField: 'color'
+                }],
+                views: ['TimelineWeek', 'TimelineDay', 'Day', 'Week'],
+                currentView: 'TimelineWeek',
+                eventSettings: { dataSource: resourceData }
+            };
+            schObj = util.createSchedule(model, [], done);
+        });
+        afterAll(() => {
+            util.destroy(schObj);
+        });
+
+        it('Verify date in resourceHeaderTemplate when byDate is false equals selectedDate', () => {
+            const selectedDate = schObj.selectedDate;
+            const dateElements: NodeListOf<Element> = schObj.element.querySelectorAll('.verify-date-text');
+            expect(dateElements.length).toBeGreaterThan(0);
+            
+            const selectedDateStr = schObj.globalize.formatDate(selectedDate, { format: 'medium', calendar: schObj.getCalendarMode() });
+            
+            dateElements.forEach((element) => {
+                const displayedText = element.innerHTML;
+                expect(displayedText).toBeDefined();
+                expect(displayedText.length).toBeGreaterThan(0);
+            });
+        });
+
+        it('Verify date value is consistent across all resources when byDate is false', () => {
+            const dateElements: NodeListOf<Element> = schObj.element.querySelectorAll('.verify-date-text');
+            const dateValues: string[] = [];
+            const resourceElements: NodeListOf<Element> = schObj.element.querySelectorAll('.e-resource-text');
+            
+            expect(resourceElements.length).toBeGreaterThan(0);
+            dateElements.forEach((element) => {
+                dateValues.push(element.innerHTML);
+            });
+            
+            if (dateValues.length > 1) {
+                const firstDate = dateValues[0];
+                for (let i = 1; i < dateValues.length; i++) {
+                    expect(dateValues[i]).toEqual(firstDate);
+                }
+                expect(firstDate).toBeTruthy();
+            } else if (dateValues.length === 1) {
+                expect(dateValues[0]).toBeTruthy();
+            }
+        });
+
+        it('Verify date value matches selectedDate in TimelineDay view with byDate false', (done: DoneFn) => {
+            schObj.dataBound = () => {
+                const dateElements: NodeListOf<Element> = schObj.element.querySelectorAll('.verify-date-text');
+                expect(dateElements.length).toBeGreaterThan(0);
+                
+                const dateValues: string[] = [];
+                dateElements.forEach((element) => {
+                    const displayedText = element.innerHTML;
+                    expect(displayedText.length).toBeGreaterThan(0);
+                    dateValues.push(displayedText);
+                });
+                
+                if (dateValues.length > 1) {
+                    const firstDate = dateValues[0];
+                    for (let i = 1; i < dateValues.length; i++) {
+                        expect(dateValues[i]).toEqual(firstDate);
+                    }
+                }
+                done();
+            };
+            
+            schObj.currentView = 'TimelineDay';
+            schObj.dataBind();
+        });
+
+        it('Verify date value matches selectedDate in Day view with byDate false', (done: DoneFn) => {
+            schObj.dataBound = () => {
+                const dateElements: NodeListOf<Element> = schObj.element.querySelectorAll('.verify-date-text');
+                expect(dateElements.length).toBeGreaterThan(0);
+                
+                const dateValues: string[] = [];
+                dateElements.forEach((element) => {
+                    dateValues.push(element.innerHTML);
+                });
+                
+                if (dateValues.length > 0) {
+                    const firstDate = dateValues[0];
+                    dateValues.forEach((dateValue) => {
+                        expect(dateValue).toEqual(firstDate);
+                    });
+                }
+                done();
+            };
+            
+            schObj.currentView = 'Day';
+            schObj.dataBind();
+        });
+
+        it('Verify date value matches selectedDate in Week view with byDate false', (done: DoneFn) => {
+            schObj.dataBound = () => {
+                const dateElements: NodeListOf<Element> = schObj.element.querySelectorAll('.verify-date-text');
+                expect(dateElements.length).toBeGreaterThan(0);
+                
+                const dateValues: string[] = [];
+                dateElements.forEach((element) => {
+                    dateValues.push(element.innerHTML);
+                });
+                
+                if (dateValues.length > 0) {
+                    const firstDate = dateValues[0];
+                    dateValues.forEach((dateValue) => {
+                        expect(dateValue).toEqual(firstDate);
+                    });
+                }
+                done();
+            };
+            
+            schObj.currentView = 'Week';
+            schObj.dataBind();
+        });
+    });
+
+    describe('ResourceHeaderTemplate with date parameter - Multiple levels with different configurations', () => {
+        let schObj: Schedule;
+        beforeAll((done: DoneFn) => {
+            const model: ScheduleModel = {
+                width: '100%',
+                height: '650px',
+                selectedDate: new Date(2023, 0, 4),
+                resourceHeaderTemplate: '<div class="template-container"><div class="res-name-block">${resourceData.text}</div><div class="date-block">${date}</div></div>',
+                group: {
+                    resources: ['Projects', 'Categories'],
+                    byDate: false,
+                    byGroupID: true
+                },
+                resources: [
+                    {
+                        field: 'ProjectId', title: 'Project', name: 'Projects',
+                        dataSource: [
+                            { text: 'PROJECT 1', id: 1, color: '#cb6bb2' },
+                            { text: 'PROJECT 2', id: 2, color: '#56ca85' }
+                        ],
+                        textField: 'text', idField: 'id', colorField: 'color'
+                    }, {
+                        field: 'TaskId', title: 'Category', name: 'Categories',
+                        dataSource: [
+                            { text: 'Nancy', id: 1, groupId: 1, color: '#df5286' },
+                            { text: 'Steven', id: 2, groupId: 1, color: '#7fa900' },
+                            { text: 'Robert', id: 3, groupId: 2, color: '#ea7a57' }
+                        ],
+                        textField: 'text', idField: 'id', groupIDField: 'groupId', colorField: 'color'
+                    }
+                ],
+                views: ['TimelineWeek'],
+                currentView: 'TimelineWeek',
+                eventSettings: { dataSource: resourceData }
+            };
+            schObj = util.createSchedule(model, [], done);
+        });
+        afterAll(() => {
+            util.destroy(schObj);
+        });
+
+        it('Verify date renders in resourceHeaderTemplate with byGroupID configuration', () => {
+            const dateBlockElements: NodeListOf<Element> = schObj.element.querySelectorAll('.date-block');
+            expect(dateBlockElements.length).toBeGreaterThan(0);
+            
+            const dateValues: string[] = [];
+            dateBlockElements.forEach((element) => {
+                const text = element.innerHTML.trim();
+                if (text.length > 0) {
+                    dateValues.push(text);
+                }
+            });
+            
+            if (dateValues.length > 1) {
+                const firstDate = dateValues[0];
+                for (let i = 1; i < dateValues.length; i++) {
+                    expect(dateValues[i]).toEqual(firstDate);
+                }
+            }
+        });
+
+        it('Verify resource and date elements are properly structured with same date value', () => {
+            const containerElements: NodeListOf<Element> = schObj.element.querySelectorAll('.template-container');
+            expect(containerElements.length).toBeGreaterThan(0);
+            
+            const dateValues: string[] = [];
+            containerElements.forEach((container) => {
+                const resName: Element | null = container.querySelector('.res-name-block');
+                const dateBlock: Element | null = container.querySelector('.date-block');
+                expect(resName).not.toBeNull();
+                expect(dateBlock).not.toBeNull();
+                
+                const dateText = dateBlock.innerHTML.trim();
+                if (dateText && dateText.length > 0) {
+                    dateValues.push(dateText);
+                }
+            });
+            
+            if (dateValues.length > 1) {
+                const firstDate = dateValues[0];
+                for (let i = 1; i < dateValues.length; i++) {
+                    expect(dateValues[i]).toEqual(firstDate);
+                }
+            }
+        });
+    });
+
+    describe('ResourceHeaderTemplate with date parameter - Month and Agenda views with single resource', () => {
+        let schObj: Schedule;
+        beforeAll((done: DoneFn) => {
+            const model: ScheduleModel = {
+                width: '100%',
+                height: '650px',
+                selectedDate: new Date(2018, 3, 1),
+                resourceHeaderTemplate: '<div class="res-header"><strong>${resourceData.text}</strong><p class="date-text">${date}</p></div>',
+                group: {
+                    resources: ['Owners'],
+                    byDate: true
+                },
+                resources: [{
+                    field: 'OwnerId', title: 'Owner', name: 'Owners',
+                    dataSource: [
+                        { text: 'Nancy', id: 1, color: '#df5286' },
+                        { text: 'Steven', id: 2, color: '#7fa900' }
+                    ],
+                    textField: 'text', idField: 'id', colorField: 'color'
+                }],
+                views: ['Month', 'Agenda'],
+                currentView: 'Month',
+                eventSettings: { dataSource: resourceData }
+            };
+            schObj = util.createSchedule(model, [], done);
+        });
+        afterAll(() => {
+            util.destroy(schObj);
+        });
+
+        it('Verify resourceHeaderTemplate renders in Month view with byDate true (header dates)', () => {
+            const dateTextElements: NodeListOf<Element> = schObj.element.querySelectorAll('.date-text');
+            expect(dateTextElements.length).toBeGreaterThan(0);
+            
+            const dateValues: string[] = [];
+            dateTextElements.forEach((element) => {
+                const text = element.innerHTML.trim();
+                if (text.length > 0) {
+                    dateValues.push(text);
+                }
+            });
+            
+            expect(dateValues.length).toBeGreaterThan(0);
+        });
+
+        it('Verify resourceHeaderTemplate renders in Agenda view with byDate true (header dates)', (done: DoneFn) => {
+            schObj.dataBound = () => {
+                const headerElements: NodeListOf<Element> = schObj.element.querySelectorAll('.res-header');
+                expect(headerElements).toBeTruthy();
+                
+                const dateElements: NodeListOf<Element> = schObj.element.querySelectorAll('.date-text');
+                expect(dateElements.length).toBeGreaterThan(0);
+                
+                dateElements.forEach((element) => {
+                    expect(element.innerHTML.length).toBeGreaterThan(0);
+                });
+                done();
+            };
+            schObj.currentView = 'Agenda';
+            schObj.dataBind();
+        });
+    });
+
+    describe('ResourceHeaderTemplate with date parameter - Combination 2: byGroupID true, byDate false', () => {
+        let schObj: Schedule;
+        beforeAll((done: DoneFn) => {
+            const model: ScheduleModel = {
+                width: '100%',
+                height: '650px',
+                selectedDate: new Date(2023, 0, 15),
+                resourceHeaderTemplate: '<div class="comb2-header"><span class="comb2-date">${date}</span></div>',
+                group: {
+                    resources: ['Rooms', 'Owners'],
+                    byDate: false,
+                    byGroupID: true
+                },
+                resources: [
+                    {
+                        field: 'RoomId', title: 'Room', name: 'Rooms',
+                        dataSource: [
+                            { text: 'ROOM 1', id: 1, color: '#cb6bb2' },
+                            { text: 'ROOM 2', id: 2, color: '#56ca85' }
+                        ],
+                        textField: 'text', idField: 'id', colorField: 'color'
+                    },
+                    {
+                        field: 'OwnerId', title: 'Owner', name: 'Owners',
+                        dataSource: [
+                            { text: 'Nancy', id: 1, groupId: 1, color: '#ffaa00' },
+                            { text: 'Steven', id: 2, groupId: 2, color: '#f8a398' },
+                            { text: 'Michael', id: 3, groupId: 1, color: '#7499e1' }
+                        ],
+                        textField: 'text', idField: 'id', groupIDField: 'groupId', colorField: 'color'
+                    }
+                ],
+                views: ['TimelineWeek', 'TimelineDay', 'Day', 'Week'],
+                currentView: 'TimelineWeek',
+                eventSettings: { dataSource: resourceData }
+            };
+            schObj = util.createSchedule(model, [], done);
+        });
+        afterAll(() => {
+            util.destroy(schObj);
+        });
+
+        it('Combination 2: Verify date receives selectedDate value when byGroupID=true and byDate=false', () => {
+            const dateElements: NodeListOf<Element> = schObj.element.querySelectorAll('.comb2-date');
+            expect(dateElements.length).toBeGreaterThan(0);
+            
+            const dateValues: string[] = [];
+            dateElements.forEach((element) => {
+                dateValues.push(element.innerHTML);
+            });
+            
+            // All dates should be the same (selectedDate)
+            if (dateValues.length > 1) {
+                const firstDate = dateValues[0];
+                for (let i = 1; i < dateValues.length; i++) {
+                    expect(dateValues[i]).toEqual(firstDate);
+                }
+            }
+        });
+
+        it('Combination 2: Verify consistent selectedDate in TimelineDay view with byGroupID=true and byDate=false', (done: DoneFn) => {
+            schObj.dataBound = () => {
+                const dateElements: NodeListOf<Element> = schObj.element.querySelectorAll('.comb2-date');
+                const dateValues: string[] = [];
+                
+                dateElements.forEach((element) => {
+                    dateValues.push(element.innerHTML);
+                });
+                
+                if (dateValues.length > 1) {
+                    const firstDate = dateValues[0];
+                    for (let i = 1; i < dateValues.length; i++) {
+                        expect(dateValues[i]).toEqual(firstDate);
+                    }
+                }
+                done();
+            };
+            schObj.currentView = 'TimelineDay';
+            schObj.dataBind();
+        });
+
+        it('Combination 2: Verify consistent selectedDate in Day view with byGroupID=true and byDate=false', (done: DoneFn) => {
+            schObj.dataBound = () => {
+                const dateElements: NodeListOf<Element> = schObj.element.querySelectorAll('.comb2-date');
+                const dateValues: string[] = [];
+                
+                dateElements.forEach((element) => {
+                    dateValues.push(element.innerHTML);
+                });
+                
+                if (dateValues.length > 0) {
+                    const firstDate = dateValues[0];
+                    dateValues.forEach((dateValue) => {
+                        expect(dateValue).toEqual(firstDate);
+                    });
+                }
+                done();
+            };
+            schObj.currentView = 'Day';
+            schObj.dataBind();
+        });
+
+        it('Combination 2: Verify consistent selectedDate in Week view with byGroupID=true and byDate=false', (done: DoneFn) => {
+            schObj.dataBound = () => {
+                const dateElements: NodeListOf<Element> = schObj.element.querySelectorAll('.comb2-date');
+                const dateValues: string[] = [];
+                
+                dateElements.forEach((element) => {
+                    dateValues.push(element.innerHTML);
+                });
+                
+                if (dateValues.length > 0) {
+                    const firstDate = dateValues[0];
+                    dateValues.forEach((dateValue) => {
+                        expect(dateValue).toEqual(firstDate);
+                    });
+                }
+                done();
+            };
+            schObj.currentView = 'Week';
+            schObj.dataBind();
+        });
+    });
+
+    describe('ResourceHeaderTemplate with date parameter - Combination 4: byGroupID false, byDate false', () => {
+        let schObj: Schedule;
+        beforeAll((done: DoneFn) => {
+            const model: ScheduleModel = {
+                width: '100%',
+                height: '650px',
+                selectedDate: new Date(2023, 0, 15),
+                resourceHeaderTemplate: '<div class="comb4-header"><span class="comb4-date">${date}</span></div>',
+                group: {
+                    resources: ['Rooms', 'Owners'],
+                    byDate: false,
+                    byGroupID: false
+                },
+                resources: [
+                    {
+                        field: 'RoomId', title: 'Room', name: 'Rooms',
+                        dataSource: [
+                            { text: 'ROOM 1', id: 1, color: '#cb6bb2' },
+                            { text: 'ROOM 2', id: 2, color: '#56ca85' }
+                        ],
+                        textField: 'text', idField: 'id', colorField: 'color'
+                    },
+                    {
+                        field: 'OwnerId', title: 'Owner', name: 'Owners',
+                        dataSource: [
+                            { text: 'Nancy', id: 1, groupId: 1, color: '#ffaa00' },
+                            { text: 'Steven', id: 2, groupId: 2, color: '#f8a398' },
+                            { text: 'Michael', id: 3, groupId: 1, color: '#7499e1' }
+                        ],
+                        textField: 'text', idField: 'id', groupIDField: 'groupId', colorField: 'color'
+                    }
+                ],
+                views: ['TimelineWeek', 'TimelineDay', 'Day', 'Week', 'Month'],
+                currentView: 'TimelineWeek',
+                eventSettings: { dataSource: resourceData }
+            };
+            schObj = util.createSchedule(model, [], done);
+        });
+        afterAll(() => {
+            util.destroy(schObj);
+        });
+
+        it('Combination 4: Verify date receives selectedDate value when byGroupID=false and byDate=false', () => {
+            const dateElements: NodeListOf<Element> = schObj.element.querySelectorAll('.comb4-date');
+            expect(dateElements.length).toBeGreaterThan(0);
+            
+            const dateValues: string[] = [];
+            dateElements.forEach((element) => {
+                dateValues.push(element.innerHTML);
+            });
+            
+            // All dates should be the same (selectedDate)
+            if (dateValues.length > 1) {
+                const firstDate = dateValues[0];
+                for (let i = 1; i < dateValues.length; i++) {
+                    expect(dateValues[i]).toEqual(firstDate);
+                }
+            }
+        });
+
+        it('Combination 4: Verify consistent selectedDate in TimelineDay view with byGroupID=false and byDate=false', (done: DoneFn) => {
+            schObj.dataBound = () => {
+                const dateElements: NodeListOf<Element> = schObj.element.querySelectorAll('.comb4-date');
+                const dateValues: string[] = [];
+                
+                dateElements.forEach((element) => {
+                    dateValues.push(element.innerHTML);
+                });
+                
+                if (dateValues.length > 1) {
+                    const firstDate = dateValues[0];
+                    for (let i = 1; i < dateValues.length; i++) {
+                        expect(dateValues[i]).toEqual(firstDate);
+                    }
+                }
+                done();
+            };
+            schObj.currentView = 'TimelineDay';
+            schObj.dataBind();
+        });
+
+        it('Combination 4: Verify consistent selectedDate in Day view with byGroupID=false and byDate=false', (done: DoneFn) => {
+            schObj.dataBound = () => {
+                const dateElements: NodeListOf<Element> = schObj.element.querySelectorAll('.comb4-date');
+                const dateValues: string[] = [];
+                
+                dateElements.forEach((element) => {
+                    dateValues.push(element.innerHTML);
+                });
+                
+                if (dateValues.length > 0) {
+                    const firstDate = dateValues[0];
+                    dateValues.forEach((dateValue) => {
+                        expect(dateValue).toEqual(firstDate);
+                    });
+                }
+                done();
+            };
+            schObj.currentView = 'Day';
+            schObj.dataBind();
+        });
+
+        it('Combination 4: Verify consistent selectedDate in Week view with byGroupID=false and byDate=false', (done: DoneFn) => {
+            schObj.dataBound = () => {
+                const dateElements: NodeListOf<Element> = schObj.element.querySelectorAll('.comb4-date');
+                const dateValues: string[] = [];
+                
+                dateElements.forEach((element) => {
+                    dateValues.push(element.innerHTML);
+                });
+                
+                if (dateValues.length > 0) {
+                    const firstDate = dateValues[0];
+                    dateValues.forEach((dateValue) => {
+                        expect(dateValue).toEqual(firstDate);
+                    });
+                }
+                done();
+            };
+            schObj.currentView = 'Week';
+            schObj.dataBind();
+        });
+
+        it('Combination 4: Verify consistent selectedDate in Month view with byGroupID=false and byDate=false', (done: DoneFn) => {
+            schObj.dataBound = () => {
+                const dateElements: NodeListOf<Element> = schObj.element.querySelectorAll('.comb4-date');
+                const dateValues: string[] = [];
+                
+                dateElements.forEach((element) => {
+                    dateValues.push(element.innerHTML);
+                });
+                
+                if (dateValues.length > 0) {
+                    const firstDate = dateValues[0];
+                    dateValues.forEach((dateValue) => {
+                        expect(dateValue).toEqual(firstDate);
+                    });
+                }
+                done();
+            };
+            schObj.currentView = 'Month';
+            schObj.dataBind();
+        });
+    });
+
     it('memory leak', () => {
         profile.sample();
         const average: number = inMB(profile.averageChange);

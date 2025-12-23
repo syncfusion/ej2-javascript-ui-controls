@@ -3,7 +3,7 @@ import { Popup } from '@syncfusion/ej2-popups';
 import { BlockManager } from '../../base/block-manager';
 import { BlockModel, ITableBlockSettings } from '../../../models/index';
 import { IPopupRenderOptions } from '../../../common';
-import { getDataCell, toModelRow } from '../../../common/utils/index';
+import { getBlockContentElement, getDataCell, setCursorPosition, toModelRow } from '../../../common/utils/index';
 
 export class TableUIManager {
     private parent: BlockManager;
@@ -233,6 +233,8 @@ export class TableUIManager {
             this.rowInsertHandle.style.display = 'none';
             this.rowTopDot.style.visibility = '';
             this.rowBottomDot.style.visibility = '';
+            this.rowTopHit.style.display = 'block';
+            this.rowBottomHit.style.display = 'block';
         };
 
         this.rowTopHit.addEventListener('mouseenter', () => showRowLine('top'));
@@ -287,6 +289,8 @@ export class TableUIManager {
             this.colInsertHandle.style.display = 'none';
             this.colLeftDot.style.visibility = '';
             this.colRightDot.style.visibility = '';
+            this.colLeftHit.style.display = 'block';
+            this.colRightHit.style.display = 'block';
         };
 
         this.colLeftHit.addEventListener('mouseenter', () => showColLine('left'));
@@ -316,14 +320,17 @@ export class TableUIManager {
             if (this.rowInsertHandle.style.display !== 'none') { return; }
             e.preventDefault();
             const domRowIdx: number = parseInt(this.rowActionHandle.dataset.rowIndex, 10);
-            this.parent.tableService.removeCellFocus(this.table);
-            this.applyRowSelection(this.table, domRowIdx);
-
             const rowEl: HTMLTableRowElement = this.table.rows[domRowIdx as number] as HTMLTableRowElement;
+            const cellBlock: HTMLElement = rowEl.querySelector('.e-block');
             const props: ITableBlockSettings = this.blockModel.properties as ITableBlockSettings;
             const modelIndex: number = toModelRow(domRowIdx, props.enableHeader);
             const rowRect: DOMRect = rowEl.getBoundingClientRect() as DOMRect;
             const blockRect: DOMRect = this.blockElement.getBoundingClientRect() as DOMRect;
+
+            this.parent.tableService.removeCellFocus(this.table);
+            this.applyRowSelection(this.table, domRowIdx);
+            setCursorPosition(getBlockContentElement(cellBlock), 0);
+            this.parent.setFocusToBlock(cellBlock);
 
             this.rowPinned.style.top = `${Math.round(rowRect.top - blockRect.top - 1)}` + 'px';
             this.rowPinned.style.height = `${rowRect.height + 1}` + 'px';
@@ -349,16 +356,20 @@ export class TableUIManager {
             if (this.colInsertHandle.style.display !== 'none') { return; }
             e.preventDefault();
             const domColIdx: number = parseInt(this.colActionHandle.dataset.colIndex, 10);
-            this.parent.tableService.removeCellFocus(this.table);
-            this.applyColumnSelection(this.table, domColIdx);
 
             const headerCell: HTMLTableCellElement = this.table.querySelectorAll('thead th:not(.e-row-number)')[domColIdx as number] as HTMLTableCellElement;
             const blockRect: DOMRect = this.blockElement.getBoundingClientRect() as DOMRect;
-            const cell: HTMLTableCellElement = getDataCell(this.table, 0, this.hoveredColIndex);
+            const cell: HTMLTableCellElement = getDataCell(this.table, (headerCell ? 1 : 0), this.hoveredColIndex);
+            const cellBlock: HTMLElement = cell.querySelector('.e-block');
             const cellRect: DOMRect = cell.getBoundingClientRect() as DOMRect;
             const cellBorderValue: number = Math.round(parseFloat(getComputedStyle(cell).borderWidth));
             let colPinnedLeftOffset: number = (cellRect.left - cellBorderValue) - blockRect.left;
             let colPinnedWidth: number = cellRect.width + cellBorderValue;
+
+            this.parent.tableService.removeCellFocus(this.table);
+            this.applyColumnSelection(this.table, domColIdx);
+            setCursorPosition(getBlockContentElement(cellBlock), 0);
+            this.parent.setFocusToBlock(cellBlock);
             if (headerCell) {
                 const headerRect: DOMRect = headerCell.getBoundingClientRect() as DOMRect;
                 const headerBorderValue: number = Math.round(parseFloat(getComputedStyle(headerCell).borderWidth));

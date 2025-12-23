@@ -395,7 +395,7 @@ export class Resize extends ActionBase {
                     const offsetWidth: number = (Math.round(offset / this.actionObj.cellWidth) *
                         this.actionObj.cellWidth) + (isLeft ? 0 : (this.parent.getElementWidth(this.actionObj.clone) -
                             this.actionObj.cellWidth));
-                    cellIndex = Math.floor(offsetWidth / this.actionObj.cellWidth);
+                    cellIndex = Math.ceil(offsetWidth / this.actionObj.cellWidth);
                 }
                 isLastCell = cellIndex === tdCollections.length;
                 cellIndex = this.getIndex(cellIndex);
@@ -411,13 +411,29 @@ export class Resize extends ActionBase {
                 resizeTime = new Date(resizeDate.setHours(resizeTime.getHours(), resizeTime.getMinutes(), resizeTime.getSeconds()));
             } else {
                 if (!isLeft) {
-                    offset += this.parent.getElementWidth(this.actionObj.clone);
+                    let cloneWidth: number = this.parent.getElementWidth(this.actionObj.clone);
+                    const pixelsPerInterval: number = this.actionObj.cellWidth /
+                        (this.actionObj.slotInterval / this.actionObj.interval);
+                    const numIntervals: number = Math.round(cloneWidth / pixelsPerInterval);
+                    cloneWidth = numIntervals * pixelsPerInterval;
+                    offset = offset + cloneWidth;
                 }
-                let spanMinutes: number = Math.floor((this.actionObj.slotInterval / this.actionObj.cellWidth) *
+                let spanMinutes: number = Math.ceil((this.actionObj.slotInterval / this.actionObj.cellWidth) *
                     (offset - Math.floor(offset / this.actionObj.cellWidth) * this.actionObj.cellWidth));
                 spanMinutes = (isLastCell || (!isLeft && spanMinutes === 0)) ? this.actionObj.slotInterval : spanMinutes;
                 resizeTime = new Date(resizeDate.getTime());
                 resizeTime = new Date(resizeDate.getTime() + (spanMinutes * util.MS_PER_MINUTE));
+                const isCustomResizeInterval: boolean = this.actionObj.interval !== this.actionObj.slotInterval;
+                const initialCellTime: Date = new Date(resizeTime.getTime());
+                const intervalInMS: number = this.actionObj.interval * 60000;
+                if (intervalInMS > 0 && isCustomResizeInterval) {
+                    if (this.resizeEdges.right || this.resizeEdges.left) {
+                        const eventTime: Date = this.resizeEdges.right ? eventEnd : eventStart;
+                        const timeDifferenceMs: number = initialCellTime.getTime() - eventTime.getTime();
+                        const intervalCount: number = Math.round(timeDifferenceMs / intervalInMS);
+                        resizeTime = new Date(eventTime.getTime() + intervalCount * intervalInMS);
+                    }
+                }
                 this.updateTimePosition(resizeTime);
             }
         } else {

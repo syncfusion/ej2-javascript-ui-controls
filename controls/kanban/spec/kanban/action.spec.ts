@@ -69,6 +69,13 @@ describe('Action module', () => {
 
         it('dialog close after card double click', () => {
             kanbanObj.closeDialog();
+            const dialogWrapper: Element = document.getElementById('Kanban_dialog_wrapper');
+            if (dialogWrapper) {
+                let dialog: any = (dialogWrapper as EJ2Instance).ej2_instances[0];
+                if (dialog) {
+                    dialog.destroy();
+                }
+            }
         });
     });
 
@@ -1113,6 +1120,13 @@ describe('Action module', () => {
             expect((idEle as any).value == '1').toBe(true);
             kanbanObj.closeDialog();
             expect(popup.classList.contains('e-popup-open')).toBe(false);
+            const dialogWrapper: Element = document.getElementById('Kanban_dialog_wrapper');
+            if (dialogWrapper) {
+                let dialog: any = (dialogWrapper as EJ2Instance).ej2_instances[0];
+                if (dialog) {
+                    dialog.destroy();
+                }
+            }
         });
     });
 
@@ -1159,6 +1173,13 @@ describe('Action module', () => {
             let idEle: HTMLElement = popup.querySelector('.e-field.e-control.e-textbox.e-lib.e-input.e-disabled');
             expect((idEle as any).value == kanbanData.length + 1).toBe(true);
             kanbanObj.closeDialog();
+            const dialogWrapper: Element = document.getElementById('Kanban_dialog_wrapper');
+            if (dialogWrapper) {
+                let dialog: any = (dialogWrapper as EJ2Instance).ej2_instances[0];
+                if (dialog) {
+                    dialog.destroy();
+                }
+            }
         });
 
         it('Popup closing and functionalities', () => {
@@ -1326,6 +1347,13 @@ describe('Action module', () => {
         });
         it('dialog close after card double click', () => {
             kanbanObj.closeDialog();
+            const dialogWrapper: Element = document.getElementById('Kanban_dialog_wrapper');
+            if (dialogWrapper) {
+                let dialog: any = (dialogWrapper as EJ2Instance).ej2_instances[0];
+                if (dialog) {
+                    dialog.destroy();
+                }
+            }
         });
         it('testing to show and hide column  ', () => {
             expect(kanbanObj.columns.length).toEqual(4);
@@ -1342,6 +1370,13 @@ describe('Action module', () => {
         });
         it('dialog close after card double click', () => {
             kanbanObj.closeDialog();
+            const dialogWrapper: Element = document.getElementById('Kanban_dialog_wrapper');
+            if (dialogWrapper) {
+                let dialog: any = (dialogWrapper as EJ2Instance).ej2_instances[0];
+                if (dialog) {
+                    dialog.destroy();
+                }
+            }
         });
     });
 
@@ -1408,6 +1443,39 @@ describe('Action module', () => {
             };
             kanbanObj.addCard(curData);
             expect(kanbanObj.element.querySelector('.e-swimlane-row[data-key="NewName"]').nextElementSibling.querySelector('.e-card-content').textContent === '').toBe(true);
+        });
+    });
+
+    describe('986591 - Resolve Visibility of Add New Card Button When Kanban Column Is Collapsed', () => {
+        let kanbanObj: Kanban;
+        beforeAll((done: DoneFn) => {
+            const model: KanbanModel = {
+                dataSource: kanbanData,
+                keyField: 'Status',
+                columns: [
+                    { headerText: 'Backlog', keyField: 'Open', allowToggle: true, showAddButton: true },
+                    { headerText: 'In Progress', keyField: 'InProgress'},
+                    { headerText: 'Testing', keyField: 'Testing'},
+                    { headerText: 'Done', keyField: 'Close'}
+                ],
+                cardSettings: {
+                    contentField: 'Summary',
+                    headerField: 'Id'
+                }
+            };
+            kanbanObj = util.createKanban(model, kanbanData, done);
+        });
+        afterAll((done: DoneFn) => {
+            util.destroy(kanbanObj);
+            done();
+        });
+        it('Columns toggle when you click the toggle icon.', (done: DoneFn) => {
+            const element: Element = kanbanObj.element.querySelectorAll('.e-header-cells')[0].children[0].lastElementChild;
+            (<HTMLElement>element).click();
+            expect(kanbanObj.element.querySelector('.e-show-add-button.e-collapsed')).not.toBeNull();
+            (<HTMLElement>element).click();
+            expect(kanbanObj.element.querySelector('.e-show-add-button.e-collapsed')).toBeNull();
+            done();
         });
     });
 

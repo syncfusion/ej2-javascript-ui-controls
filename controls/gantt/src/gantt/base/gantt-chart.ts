@@ -100,6 +100,7 @@ export class GanttChart {
      * @returns {void} .
      */
     private renderInitialContents(): void {
+        this.parent.ganttChartModule.chartTimelineContainer.innerHTML = '';
         this.parent.timelineModule.createTimelineSeries();
     }
     /**

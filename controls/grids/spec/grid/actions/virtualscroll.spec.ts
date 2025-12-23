@@ -2283,3 +2283,48 @@ describe('EJ2-977352: Issue with aggregate calculation in Grid with Virtual Scro
         gObj = null;
     });
 });
+
+describe('EJ2-993266: Edited values are not saved when using editTemplate with virtualization in Grid.', function () {
+    let gridObj: Grid;
+    let actionComplete: () => void;
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: data,
+                allowPaging: true,
+                editSettings: { allowEditing: true, allowAdding: true, allowDeleting: true, mode: 'Normal' },
+                toolbar: ['Add', 'Edit', 'Delete', 'Update', 'Cancel'],
+                enableVirtualization: true,
+                height: "200",
+                columns: [
+                    { field: 'OrderID', headerText: 'Order ID', isPrimaryKey: true, textAlign: 'Right', width: 90, validationRules: { required: true } },
+                    { field: 'ShipCountry', headerText: 'ShipCountry', width: 100, editTemplate: "<ejs-combobox id='ShipCountry'></ejs-combobox>" },
+                ],
+                actionComplete: actionComplete
+            }, done);
+    });
+    it('Coverage - 1', (done: Function) => {
+            const editedData: any = {
+                "OrderID": 10248,
+                "CustomerID": "VINET",
+                "OrderDate": "1996-07-04T00:00:00.000Z",
+                "ShippedDate": "1996-07-16T00:00:00.000Z",
+                "Freight": 32.38,
+                "ShipName": "Vins et alcools Chevalier",
+                "ShipAddress": "59 rue de l'Abbaye",
+                "ShipCity": "Reims",
+                "ShipRegion": null,
+                "isVerified": true,
+                "ShipCountry": 6
+            };
+            (<any>gridObj).selectRow(2);
+            (<any>gridObj).startEdit();
+            (<any>gridObj).isAngular = true;
+            (<any>gridObj).virtualscrollModule.setEditedDataToTemplate(<any>gridObj.editModule.virtualFormObj.element, editedData);
+        done();
+    });
+    afterAll(() => {
+        destroy(gridObj);
+        gridObj = actionComplete = null;
+    });
+});

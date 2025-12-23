@@ -70,6 +70,7 @@ import { UndoRedo } from '../actions/undo-redo';
 import { WeekWorkingTimeModel } from '../models/week-working-time-model';
 import { WeekWorkingTime } from '../models/week-working-time';
 import {CellSaveArgs} from '@syncfusion/ej2-grids';
+import { cyclicValidator } from '../actions/validator';
 import { CalendarModule } from './calendar-module';
 import { CalendarContext } from './calendar-context';
 /**
@@ -104,6 +105,8 @@ export class Gantt extends Component<HTMLElement>
     private isRowSelected: boolean = false;
     public showIndicator: boolean = true;
     public singleTier: number = 0;
+    private cyclicValidator: cyclicValidator;
+    private regenerateCycles: boolean = false;
     public isVirtualScroll: boolean;
     public expandedRecords: IGanttData[] = [];
     public scrollLeftValue: number;
@@ -2997,15 +3000,14 @@ export class Gantt extends Component<HTMLElement>
             this.dataOperation.calculateProjectDates();
             this.timelineModule.validateTimelineProp();
         }
-        const flatData: IGanttData[] = this.flatData;
         const flatDataCollection: Map<string, IGanttData> = new Map();
-        if (flatData != null)
-        {
-            for (const record of flatData) {
-                flatDataCollection.set(record.ganttProperties.rowUniqueID.toString(), record);
-            }
-        }
+        this.cyclicValidator = new cyclicValidator(this, flatDataCollection);
         if (this.allowParentDependency) {
+            this.cyclicValidator.resolve();
+            if (this.cyclicValidator['cycles'].length > 0) {
+                const err: string = this.cyclicValidator['getCyclesWithDetails'](this.cyclicValidator['cycles']);
+                this.trigger('actionFailure', { error: err });
+            }
             this.predecessorModule.updateParentPredecessor(flatDataCollection);
         }
         if (this.predecessorModule && this.taskFields.dependency) {
@@ -3615,6 +3617,15 @@ export class Gantt extends Component<HTMLElement>
             this.treeGrid.setProperties({ columns: this.columns }, true);
         }
     }
+    private validateCycles(): void {
+        this.cyclicValidator['buildMaps']();
+        this.cyclicValidator.resolve();
+        if (this.cyclicValidator['cycles'].length > 0) {
+            const err: string = this.cyclicValidator['getCyclesWithDetails'](this.cyclicValidator['cycles']);
+            this.trigger('actionFailure', { error: err });
+        }
+        this.regenerateCycles = false;
+    }
     /**
      *
      * @param {object} args .
@@ -3634,6 +3645,7 @@ export class Gantt extends Component<HTMLElement>
         // let gridHeight: string = this.element.getElementsByClassName('e-gridcontent')[0]['style'].height;
         const gridContent: HTMLElement = this.element.getElementsByClassName('e-gridcontent')[0].childNodes[0] as HTMLElement;
         gridContent.setAttribute('tabindex', '0');
+        gridContent.classList.add('e-yscroll');
         const treeGridrole: HTMLElement = this.element.getElementsByClassName('e-gridcontent')[0].childNodes[0].childNodes[0] as HTMLElement;
         treeGridrole.setAttribute('role', 'treegrid');
         const timelineContainer: number = this.element.getElementsByClassName('e-timeline-header-container')[0]['offsetHeight'];
@@ -3662,6 +3674,9 @@ export class Gantt extends Component<HTMLElement>
                     column.properties.uid = matchedObject['uid'];
                 }
             });
+        }
+        if (this.regenerateCycles && this.viewType === 'ProjectView' && this.allowParentDependency) {
+            this.validateCycles();
         }
         if (this.isLoad) {
             if (this.enablePersistence) {
@@ -3744,12 +3759,6 @@ export class Gantt extends Component<HTMLElement>
         }
         if (this.undoRedoModule && this.undoRedoModule['isUndoRedoPerformed']) {
             this.undoRedoModule['isUndoRedoPerformed'] = false;
-        }
-        if (navigator.userAgent.includes('Firefox')) {
-            const tableContent: HTMLElement = this.treeGrid.element.querySelector('.e-content')!.children[0] as HTMLElement;
-            const tableHeader: HTMLElement = this.treeGrid.element.querySelector('.e-headercontent .e-table');
-            tableContent.style.borderSpacing = '0';
-            tableHeader.style.borderSpacing = '0';
         }
         this.trigger('dataBound', args);
     }
@@ -6463,5 +6472,13 @@ export class Gantt extends Component<HTMLElement>
      */
     private getFrozenColumnsCount(): number {
         return this.treeGrid.getFrozenColumns();
+    }
+
+    private normalizeTranslate(transform: string): string {
+        if (!transform.includes(',') && navigator.userAgent.includes('Firefox')) {
+            const xvalue: string = transform.substring(transform.lastIndexOf('(') + 1, transform.lastIndexOf(')'));
+            transform = `translate(${xvalue}, 0px)`;
+        }
+        return transform;
     }
 }

@@ -8,6 +8,8 @@
 
 ## [Unreleased]
 
+## 32.1.20 (2025-12-23)
+
 ### Maps
 
 #### Bug fixes

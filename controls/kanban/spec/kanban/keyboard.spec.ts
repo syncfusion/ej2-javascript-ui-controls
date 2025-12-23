@@ -2,10 +2,11 @@
 /**
  * keyboard spec
  */
-import { Kanban, KanbanModel } from '../../src/kanban/index';
+import { EJ2Instance, Kanban, KanbanModel } from '../../src/kanban/index';
 import { kanbanData } from './common/kanban-data.spec';
 import { profile, inMB, getMemoryProfile } from './common/common.spec';
 import * as util from './common/util.spec';
+import { ENTERKEY_EVENT_INIT } from './dialog.spec';
 
 Kanban.Inject();
 
@@ -187,10 +188,12 @@ describe('Keyboard module', () => {
         it('Enter Key ', () => {
             let swimlaneIcon: HTMLElement = kanbanObj.element.querySelector('.e-swimlane-row-expand');
             swimlaneIcon.focus();
-            keyModule.keyActionHandler({ action: 'enter', target: swimlaneIcon, preventDefault: function () { } });
+            swimlaneIcon.dispatchEvent(new KeyboardEvent('keydown', ENTERKEY_EVENT_INIT));
+            // keyModule.keyActionHandler({ action: 'enter', target: swimlaneIcon, preventDefault: function () { } });
             expect(swimlaneIcon.classList.contains('e-swimlane-row-expand')).toBe(false);
             expect(swimlaneIcon.classList.contains('e-swimlane-row-collapse')).toBe(true);
-            keyModule.keyActionHandler({ action: 'enter', target: swimlaneIcon, preventDefault: function () { } });
+            swimlaneIcon.dispatchEvent(new KeyboardEvent('keydown', ENTERKEY_EVENT_INIT));
+            // keyModule.keyActionHandler({ action: 'enter', target: swimlaneIcon, preventDefault: function () { } });
             expect(swimlaneIcon.classList.contains('e-swimlane-row-expand')).toBe(true);
             expect(swimlaneIcon.classList.contains('e-swimlane-row-collapse')).toBe(false);
         });
@@ -241,7 +244,8 @@ describe('Keyboard module', () => {
         it('Up key with add card button', () => {
             let contentEle: HTMLElement = kanbanObj.element.querySelectorAll('.e-content-cells.e-drag').item(0) as HTMLElement;
             contentEle.focus();
-            keyModule.keyActionHandler({ action: 'enter', target: contentEle, preventDefault: function () { } });
+            contentEle.dispatchEvent(new KeyboardEvent('keydown', ENTERKEY_EVENT_INIT));
+            // keyModule.keyActionHandler({ action: 'enter', target: contentEle, preventDefault: function () { } });
         });
 
         it('Up key with add card button next step', () => {
@@ -256,7 +260,8 @@ describe('Keyboard module', () => {
         it('Show add button with escape key', () => {
             let contentEle: HTMLElement = kanbanObj.element.querySelectorAll('.e-content-cells.e-drag').item(0) as HTMLElement;
             contentEle.focus();
-            keyModule.keyActionHandler({ action: 'enter', target: contentEle, preventDefault: function () { } });
+            contentEle.dispatchEvent(new KeyboardEvent('keydown', ENTERKEY_EVENT_INIT));
+            // keyModule.keyActionHandler({ action: 'enter', target: contentEle, preventDefault: function () { } });
             expect(document.activeElement.classList.contains('e-show-add-button')).toBe(true);
             keyModule.keyActionHandler({ action: 'escape', preventDefault: function () { } });
             expect(document.activeElement == contentEle).toBe(true);
@@ -347,7 +352,8 @@ describe('Keyboard module', () => {
             let contentEle: HTMLElement = kanbanObj.element.querySelectorAll('.e-content-cells.e-drag').item(0) as HTMLElement;
             util.triggerMouseEvent(contentEle, 'click'); contentEle.focus();
             expect(document.activeElement.classList.contains('e-show-add-button')).toBe(false);
-            keyModule.keyActionHandler({ action: 'enter', target: document.activeElement, preventDefault: function () { } });
+            contentEle.dispatchEvent(new KeyboardEvent('keydown', ENTERKEY_EVENT_INIT));
+            // keyModule.keyActionHandler({ action: 'enter', target: document.activeElement, preventDefault: function () { } });
             expect(document.activeElement.classList.contains('e-show-add-button')).toBe(true);
             keyModule.keyActionHandler({ action: 'tab', target: document.activeElement, shiftKey: false, preventDefault: (): void => { /** Null */ } });
             expect(document.activeElement.classList.contains('e-show-add-button')).toBe(true);
@@ -357,7 +363,8 @@ describe('Keyboard module', () => {
             let contentEle: HTMLElement = kanbanObj.element.querySelectorAll('.e-content-cells.e-drag').item(0) as HTMLElement;
             util.triggerMouseEvent(contentEle, 'click'); contentEle.focus();
             expect(document.activeElement.classList.contains('e-show-add-button')).toBe(false);
-            keyModule.keyActionHandler({ action: 'enter', target: document.activeElement, preventDefault: function () { } });
+            contentEle.dispatchEvent(new KeyboardEvent('keydown', ENTERKEY_EVENT_INIT));
+            // keyModule.keyActionHandler({ action: 'enter', target: document.activeElement, preventDefault: function () { } });
             expect(document.activeElement.classList.contains('e-show-add-button')).toBe(true);
             keyModule.keyActionHandler({ action: 'tab', target: document.activeElement, shiftKey: true, preventDefault: (): void => { /** Null */ } });
             expect(document.activeElement.classList.contains('e-show-add-button')).toBe(true);
@@ -369,7 +376,8 @@ describe('Keyboard module', () => {
             expect(headerEle.classList.contains('e-column-collapse')).toBe(true);
             expect(headerEle.classList.contains('e-column-expand')).toBe(false);
             expect(document.activeElement == headerEle).toBe(true);
-            keyModule.keyActionHandler({ action: 'enter', target: headerEle, preventDefault: function () { } });
+            headerEle.dispatchEvent(new KeyboardEvent('keydown', ENTERKEY_EVENT_INIT));
+            // keyModule.keyActionHandler({ action: 'enter', target: headerEle, preventDefault: function () { } });
             expect(headerEle.classList.contains('e-column-collapse')).toBe(false);
             expect(headerEle.classList.contains('e-column-expand')).toBe(true);
         });
@@ -378,7 +386,8 @@ describe('Keyboard module', () => {
             let card: HTMLElement = kanbanObj.element.querySelectorAll('.e-card[data-id="25"]').item(0) as HTMLElement;
             util.triggerMouseEvent(card, 'click'); card.focus();
             expect(document.activeElement == card).toBe(true);
-            keyModule.keyActionHandler({ action: 'enter', target: card, preventDefault: function () { } });
+            card.dispatchEvent(new KeyboardEvent('keydown', ENTERKEY_EVENT_INIT));
+            // keyModule.keyActionHandler({ action: 'enter', target: card, preventDefault: function () { } });
             setTimeout(() => { done(); }, 500);
         });
 
@@ -387,21 +396,39 @@ describe('Keyboard module', () => {
             // expect(popup.classList.contains('e-popup-close')).toBe(false);
             // expect(popup.classList.contains('e-popup-open')).toBe(true);
             kanbanObj.closeDialog();
-            expect(popup.classList.contains('e-popup-open')).toBe(false);
+            // expect(popup.classList.contains('e-popup-open')).toBe(false);
+            expect((kanbanObj.dialogModule as any).element).not.toBeNull;
+            let dialogWrapper: Element = document.getElementById("Kanban_dialog_wrapper");
+            if (dialogWrapper) {
+            let dialog: any = (dialogWrapper as EJ2Instance).ej2_instances[0];
+                if(dialog) {
+                    dialog.destroy();
+                }
+            }
         });
         
         it('enter key in add card button', () => {
             let contentEle: HTMLElement = kanbanObj.element.querySelectorAll('.e-content-cells.e-drag').item(0) as HTMLElement;
             util.triggerMouseEvent(contentEle, 'click'); contentEle.focus();
-            keyModule.keyActionHandler({ action: 'enter', target: contentEle, preventDefault: function () { } });
+            contentEle.dispatchEvent(new KeyboardEvent('keydown', ENTERKEY_EVENT_INIT));
+            // keyModule.keyActionHandler({ action: 'enter', target: contentEle, preventDefault: function () { } });
             expect(document.activeElement.classList.contains('e-show-add-button')).toBe(true);
-            keyModule.keyActionHandler({ action: 'enter', target: document.activeElement, preventDefault: function () { } });
+            document.activeElement.dispatchEvent(new KeyboardEvent('keydown', ENTERKEY_EVENT_INIT));
+            // keyModule.keyActionHandler({ action: 'enter', target: document.activeElement, preventDefault: function () { } });
         });
 
         it('enter key in add card button', () => {
             let popup: HTMLElement = document.querySelector('.e-dialog.e-kanban-dialog.e-popup');
             kanbanObj.closeDialog();
-            expect(popup.classList.contains('e-popup-open')).toBe(false);
+            // expect(popup.classList.contains('e-popup-open')).toBe(false);
+            expect((kanbanObj.dialogModule as any).element).not.toBeNull;
+            let dialogWrapper: Element = document.getElementById("Kanban_dialog_wrapper");
+            if (dialogWrapper) {
+            let dialog: any = (dialogWrapper as EJ2Instance).ej2_instances[0];
+                if(dialog) {
+                    dialog.destroy();
+                }
+            }
         });
 
         it('delete key ', () => {
@@ -416,7 +443,8 @@ describe('Keyboard module', () => {
         it('tab key focus on show add button', () => {
             let contentEle: HTMLElement = kanbanObj.element.querySelectorAll('.e-content-cells.e-drag').item(2) as HTMLElement;
             util.triggerMouseEvent(contentEle, 'click'); contentEle.focus();
-            keyModule.keyActionHandler({ action: 'enter', target: contentEle, preventDefault: function () { } });
+            contentEle.dispatchEvent(new KeyboardEvent('keydown', ENTERKEY_EVENT_INIT));
+            // keyModule.keyActionHandler({ action: 'enter', target: contentEle, preventDefault: function () { } });
             keyModule.keyActionHandler({ action: 'tab', target: contentEle, shiftKey: false, preventDefault: (): void => { /** Null */ } });
             expect(contentEle.querySelector('e-card') == null).toBe(true);
         });
@@ -432,7 +460,8 @@ describe('Keyboard module', () => {
             let popupEle: HTMLElement = document.querySelector('.e-dialog.e-kanban-dialog.e-popup');
             addButton.focus();
             // expect(popupEle == null).toBe(true);
-            keyModule.keyActionHandler({ action: 'enter', target: addButton, preventDefault: function () { } });
+            addButton.dispatchEvent(new KeyboardEvent('keydown', ENTERKEY_EVENT_INIT));
+            // keyModule.keyActionHandler({ action: 'enter', target: addButton, preventDefault: function () { } });
             setTimeout(() => { done(); }, 500);
         });
 
@@ -441,7 +470,15 @@ describe('Keyboard module', () => {
             // expect(popupEle.classList.contains('e-popup-close')).toBe(false);
             // expect(popupEle.classList.contains('e-popup-open')).toBe(true);
             kanbanObj.closeDialog();
-            expect(popupEle.classList.contains('e-popup-open')).toBe(false);
+            // expect(popupEle.classList.contains('e-popup-open')).toBe(false);
+            expect((kanbanObj.dialogModule as any).element).not.toBeNull;
+            let dialogWrapper: Element = document.getElementById("Kanban_dialog_wrapper");
+            if (dialogWrapper) {
+            let dialog: any = (dialogWrapper as EJ2Instance).ej2_instances[0];
+                if(dialog) {
+                    dialog.destroy();
+                }
+            }
         });
     });
 

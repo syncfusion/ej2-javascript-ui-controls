@@ -1082,7 +1082,7 @@ export class BaseHistoryInfo {
                 editor.insertColumn(true);
                 break;
             case 'InsertColumnRight':
-                editor.insertColumn(true);
+                editor.insertColumn(false);
                 break;
             case 'SectionBreak':
                 editor.insertSection(this.owner.selectionModule, true);

@@ -1,3 +1,6 @@
+@use 'ej2-base/styles/definition/bootstrap' as *;
+@forward 'ej2-base/styles/definition/bootstrap';
+
 /*! Kanban component's bootstrap theme definitions and variables */
 $kanban-column-bg-color: $grey-f5 !default;
 $kanban-border-color: $grey-e6 !default;
@@ -222,3 +225,110 @@ $skeleton-card-color: $kanban-col-expand-collapse-bg-color;
 $skelton-box-shadow: none;
 
 //Color End
+
+//Start of Typography Variables Implementation
+//font-size
+$kanban-dialog-form-table-td-font-size: 14px !default;
+$kanban-swl-header-text-font-size: 14px !default;
+$kanban-big-mb-toolbar-swl-font-size: 18px !default;
+$kanban-mb-popup-content-font-size: 15px !default;
+$kanban-collapsed-header-item-count-font-size: 13px !default;
+
+//font-weight
+$kanban-mb-popup-content-font-weight: 500 !default;
+$kanban-dialog-text-areas-font-weight: 400 !default;
+$kanban-frozen-swimlane-row-header-font-weight: 400 !default;
+$kanban-header-item-count-font-weight: 400 !default;
+$kanban-swl-header-text-font-weight: 400 !default;
+
+//border-radius
+$kanban-mb-popup-container-border-radius: 2px !default;
+$kanban-default-border-radius: 4px !default;
+$skelton-box-border-radius: 4px !default;
+$kanban-dialog-text-areas-border-radius: 4px !default;
+$kanban-skeleton-header-small-border-radius: 4px 4px 0 0 !default;
+$kanban-skeleton-header-large-border-radius: 4px !default;
+$kanban-not-swl-content-border-radius: 4px !default;
+
+//padding
+$kanban-cells-add-icon-padding: 11px !default;
+$kanban-swimlane-header-toolbar-padding: 10px !default;
+$kanban-mb-swl-menu-icon-padding: 7px !default;
+$Kanban-popup-device-padding: 15px !default;
+$kanban-header-min-max-count-padding: 4px 8px !default;
+$kanban-dialog-text-areas-padding: 4px 8px 4px 12px !default;
+
+//padding top
+$kanban-header-limits-padding-top: 3px !default;
+$kanban-mobile-popup-header-padding-top: 3px !default;
+$kanban-swl-header-icon-bgr-small-padding-top: 4px !default;
+$kanban-swl-header-icon-bgr-hover-padding-top: 4px !default;
+$kanban-swimlane-toolbar-menu-title-padding-top: 6px !default;
+$kanban-frozen-toolbar-swl-item-count-padding-top: 9px !default;
+
+//padding left
+$rte-kanban-form-table-padding-left: 10px !default;
+$kanban-multi-card-text-padding-left: 8px !default;
+$kanban-header-text-padding-left: 5px !default;
+$kanban-mb-swl-menu-icon-padding-left: 4px !default;
+
+//padding right
+$rte-kanban-form-table-padding-right: 0 !default;
+$kanban-header-text-padding-right: 5px !default;
+$kanban-dialog-form-table-padding-right: 10px !default;
+$kanban-header-text-padding-right-rtl: initial;
+
+//margin
+$kanban-skeleton-card-margin: 8px !default;
+$kanban-cells-add-button-margin: 8px 8px 0 !default;
+$kanban-mb-popup-container-margin: 0 !default;
+
+//margin bottom
+$kanban-swimlane-header-toolbar-margin-bottom: 3px !default;
+$kanban-big-swl-header-toolbar-margin-bottom: 5px !default;
+
+//margin left
+$kanban-dialog-delete-btn-margin-left: 0 !default;
+
+//border
+$kanban-table-border: 0 !default;
+$kanban-mobile-popup-border: 0 !default;
+$kanban-column-border: 1px dashed $kanban-border-color;
+$kanban-cells-add-button-border: 1px dashed $kanban-dropped-clone-border-color;
+$kanban-cells-add-button-focus-border: 1px dashed $kanban-border-color;
+$kanban-multi-card-clone-border: 1px solid $kanban-dragged-clone-border-color;
+$kanban-dragged-clone-border: 1px dashed $kanban-dragged-clone-border-color;
+$kanban-dropped-clone-border: 1px dashed $kanban-dropped-clone-border-color;
+$kanban-not-swl-content-border: 1px solid transparent;
+$kanban-not-swl-content-dropping-border: 1px dashed $kanban-border-color;
+$kanban-swl-resource-border: 1px solid $kanban-header-border-color;
+$kanban-delete-border: 1px solid !default;
+$kanban-header-column-border: 1px solid transparent !default;
+
+//border top
+$kanban-skeleton-content-border-top: 1px solid $kanban-border-color;
+$kanban-target-clone-border-top: 1px solid $kanban-border-color;
+
+//border bottom
+$kanban-card-header-border-bottom: 0 !default;
+$kanban-collapsed-not-swl-border-bottom: 0 !default;
+$kanban-swimlane-header-toolbar-border-bottom: 0 !default;
+$kanban-header-swl-cells-border-bottom: 0 !default;
+$kanban-target-column-key-border-bottom: 1px dashed $kanban-border-color;
+
+//border left
+$kanban-target-column-key-border-left: 1px dashed $kanban-border-color;
+
+//border right
+$kanban-target-column-key-border-right: 1px dashed $kanban-border-color;
+
+// height
+$kanban-limits-height: 26px !default;
+$kanban-add-button-height: 36px !default;
+$card-wrapper-container-height: inherit !default;
+$kanban-multi-card-clone-height: 34px !default;
+$kanban-swl-resource-height: 100% !default;
+$kanban-mb-popup-container-height: 60px !default;
+$kanban-big-swl-header-min-height: 56px !default;
+
+//End of Typography Variables Implementation

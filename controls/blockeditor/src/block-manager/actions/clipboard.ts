@@ -1,8 +1,8 @@
 import { isNullOrUndefined } from '@syncfusion/ej2-base';
-import { BeforePasteCleanupEventArgs, BlockModel, ContentModel, ITableBlockSettings, TableRowModel } from '../../models/index';
+import { BeforePasteCleanupEventArgs, BlockModel, ContentModel, ITableBlockSettings, TableCellModel, TableRowModel } from '../../models/index';
 import { BlockType } from '../../models/enums';
 import { generateUniqueId, decoupleReference, getAbsoluteOffset } from '../../common/utils/common';
-import { getBlockContentElement, getBlockModelById, getClosestContentElementInDocument, getContentElementBasedOnId, getContentModelById, isAtStartOfBlock } from '../../common/utils/block';
+import { findCellById, getBlockContentElement, getBlockModelById, getClosestContentElementInDocument, getContentElementBasedOnId, getContentModelById, isAtStartOfBlock } from '../../common/utils/block';
 import { findClosestParent, isElementEmpty } from '../../common/utils/dom';
 import { convertHtmlElementToBlocks, getBlockDataAsHTML, convertInlineElementsToContentModels } from '../../common/utils/html-parser';
 import { sanitizeBlock, sanitizeContent, sanitizeContents } from '../../common/utils/transform';
@@ -95,8 +95,7 @@ export class ClipboardAction {
         const focusedEl: HTMLElement = this.parent.currentFocusedBlock;
         const tableBlockEl: HTMLElement = focusedEl && focusedEl.closest('.' + constants.TABLE_BLOCK_CLS) as HTMLElement;
         const range: Range = getSelectedRange();
-        const tableEle: HTMLTableElement = tableBlockEl ? tableBlockEl.querySelector('table') : null;
-        const hasActiveSel: boolean = this.parent.tableSelectionManager.hasActiveTableSelection(tableEle);
+        const hasActiveSel: boolean = this.parent.tableSelectionManager.hasActiveTableSelection(tableBlockEl);
         if (tableBlockEl && (hasActiveSel || findClosestParent(range.startContainer, '.e-action-handle'))) {
             const { payload, html, plainText } = this.getTablePayload(tableBlockEl);
 
@@ -427,7 +426,8 @@ export class ClipboardAction {
         const contentElement: HTMLElement = getBlockContentElement(cursorBlockElement);
         const isContentEmpty: boolean = contentElement && isElementEmpty(contentElement);
         const isCursorAtStart: boolean = isAtStartOfBlock(contentElement);
-        const parentBlock: BlockModel = getBlockModelById(cursorBlock.parentId, editorBlocks);
+        const parentBlock: BlockModel | TableCellModel = getBlockModelById(cursorBlock.parentId, editorBlocks)
+            || findCellById(cursorBlock.parentId, editorBlocks);
         const specialTypes: string[] = [BlockType.Table, BlockType.Image];
         const isFirstBlkSpecialType: boolean = specialTypes.indexOf(blocks[0].blockType) !== -1;
         let isFirstBlkProcessed: boolean = false;
@@ -578,7 +578,7 @@ export class ClipboardAction {
 
     private performCellCut(tableCtx: TableContext): void {
         const selectedCells: HTMLTableCellElement[] = Array.from(
-            this.parent.tableSelectionManager.getSelectedCells(tableCtx.tableEl)
+            this.parent.tableSelectionManager.getSelectedCells(tableCtx.tableBlockEl)
         );
         const tableEl: HTMLTableElement = tableCtx.tableEl;
         const props: ITableBlockSettings = tableCtx.props;

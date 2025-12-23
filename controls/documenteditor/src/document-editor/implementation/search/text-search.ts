@@ -112,6 +112,13 @@ export class TextSearch {
         let previousElementCount: number = 0;
         do {
             if (inlineElement instanceof TextElementBox && (!isNullOrUndefined((inlineElement as TextElementBox).text) && (inlineElement as TextElementBox).text !== '')) {
+                // Skip the empty spaces in spell check mode
+                if (isSpellCheck && inlineElement.text.trim().length === 0) {
+                    stringBuilder = stringBuilder + inlineElement.text;
+                    previousElementCount = 0;
+                    inlineElement = inlineElement.nextNode;
+                    continue;
+                }
                 spans.add(inlineElement as TextElementBox,
                           isSpellCheck ? stringBuilder.length + previousElementCount : stringBuilder.length);
                 previousElementCount = 0;

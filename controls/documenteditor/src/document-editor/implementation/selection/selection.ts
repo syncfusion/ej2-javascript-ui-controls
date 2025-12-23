@@ -5736,7 +5736,7 @@ export class Selection {
                             right = this.getLeftInternal(startLineWidget, element, index);
                         }
                         if (element instanceof TextElementBox) {
-                            elementIsRTL = element.isRightToLeft;
+                            elementIsRTL = element.isRightToLeft && element.characterRange === CharacterRangeType.RightToLeft;
                         }
                         width = Math.abs(right - left);
                         // Handled the paragraph mark highliting as special case.
@@ -5815,7 +5815,7 @@ export class Selection {
                             let index: number = element instanceof TextElementBox ? (element as TextElementBox).length : 1;
                             right = this.getLeftInternal(startLineWidget, element, index);
                             if (element instanceof TextElementBox) {
-                                elementIsRTL = element.isRightToLeft;
+                               elementIsRTL = element.isRightToLeft && element.characterRange === CharacterRangeType.RightToLeft;
                             }
                             width = Math.abs(right - left);
                             this.createHighlightBorder(startLineWidget, width, elementIsRTL ? right : left, top, true, contentControl);
@@ -9363,6 +9363,18 @@ export class Selection {
                         inline = previousNode;
                     }
                     this.characterFormat.copyFormat(inline.characterFormat, this.documentHelper.textHelper.getFontNameToRender((inline as TextElementBox).scriptType, inline.characterFormat));
+                    let nextNodeInfo: ElementInfo = startPos.currentWidget.getInline(startOffset + 1, index);
+                    let paraInfo: ParagraphInfo = this.getParagraphInfo(this.start);
+                    let lineInfo: LineInfo = this.getLineInfoBasedOnParagraph(paraInfo.paragraph, paraInfo.offset);
+                    let lineLength: number = this.getLineLength(lineInfo.line);
+                    if (lineInfo.offset >= lineLength && !(paraInfo.offset >= length)) {
+                        if (!(lineInfo.line.nextLine && lineInfo.line.nextLine.children[0] && lineInfo.line.nextLine.children[0].characterFormat.highlightColor !== 'NoColor')){
+                            this.characterFormat.highlightColor = 'NoColor';
+                        }
+                    }
+                    if ((inline !== nextNodeInfo.element && inline.characterFormat.highlightColor !== 'NoColor' && nextNodeInfo.element.characterFormat.highlightColor === 'NoColor') || paraInfo.offset >= length) {
+                        this.characterFormat.highlightColor = 'NoColor';
+                    }
                 } else {
                     if (!isNullOrUndefined(this.getPreviousTextElement(inline))) {
                         let element: ElementBox = this.getPreviousTextElement(inline);
@@ -9404,6 +9416,7 @@ export class Selection {
             if (length === endPos.offset) {
                 if ((inline instanceof TextElementBox && !(inline instanceof FootnoteElementBox)) || inline instanceof FieldElementBox) {
                     this.characterFormat.copyFormat(inline.characterFormat, this.documentHelper.textHelper.getFontNameToRender((inline as TextElementBox).scriptType, inline.characterFormat));
+                    this.characterFormat.highlightColor = para.characterFormat.highlightColor;
                 } else if (!isNullOrUndefined(inline)) {
                     inline = this.getPreviousTextElement(inline);
                     while (inline instanceof FootnoteElementBox) {

@@ -30,6 +30,9 @@ export class Drawing {
     private renderer: DrawingRenderer;
     private svgRenderer: SvgRenderer;
     private isDynamicStamps: boolean = false;
+    private stampPreviousSize: DrawingElement[];
+    private stampOriginalWidth: number;
+    private stampOriginalHeight: number;
     /**
      * @private
      */
@@ -140,6 +143,12 @@ export class Drawing {
             this.initNode(obj);
         } else {
             this.initLine(obj);
+            if (obj.wrapper.children[1] instanceof TextElement) {
+                obj.wrapper.children[1].isEJ2 = true;
+                if ((obj as PdfAnnotationBaseModel).shapeAnnotationType === 'FreeText') {
+                    obj.wrapper.children[1].isFreeText = true;
+                }
+            }
             obj.wrapper.measure(new Size(undefined, undefined));
             obj.wrapper.arrange(obj.wrapper.desiredSize);
         }
@@ -157,6 +166,15 @@ export class Drawing {
      * @returns {void}
      */
     public initNode(obj: PdfAnnotationBaseModel | PdfFormFieldBaseModel): void {
+        if (this.pdfViewer.annotationModule.isUndoRedoAction && (obj as PdfAnnotationBaseModel).shapeAnnotationType === 'Stamp') {
+            const id: string = obj.id;
+            const stampObject: any = (this.pdfViewer.nameTable as any)[`${id}`].wrapper.children;
+            this.stampPreviousSize = JSON.parse(JSON.stringify(stampObject));
+        }
+        if (this.isPasted && (obj as PdfAnnotationBaseModel).shapeAnnotationType === 'Stamp') {
+            this.stampOriginalWidth = obj.wrapper.actualSize.width;
+            this.stampOriginalHeight = obj.wrapper.actualSize.height;
+        }
         const canvas: Container = this.initContainer(obj);
         let content: DrawingElement;
         if (!canvas.children) {
@@ -167,6 +185,12 @@ export class Drawing {
         }
         //canvas.children.push(content);
         canvas.rotateAngle = obj.rotateAngle;
+        if (obj.wrapper.children[1] instanceof TextElement) {
+            obj.wrapper.children[1].isEJ2 = true;
+            if ((obj as PdfAnnotationBaseModel).shapeAnnotationType === 'FreeText') {
+                obj.wrapper.children[1].isFreeText = true;
+            }
+        }
 
         canvas.measure(new Size((obj as PdfAnnotationBaseModel | PdfFormFieldBaseModel).wrapper.width,
                                 (obj as PdfAnnotationBaseModel | PdfFormFieldBaseModel).wrapper.height));
@@ -317,9 +341,14 @@ export class Drawing {
             content = pathContent;
             canvas.children.push(content);
             break;
-        case 'Stamp':
+        case 'Stamp': {
             isStamp = true;
             this.isDynamicStamps = true;
+            let copiedObject: any;
+            if (this.isPasted) {
+                const id: string = (this.pdfViewer.clipboardData.clipObject as any)[0].id;
+                copiedObject = (this.pdfViewer.nameTable as any)[`${id}`];
+            }
             if (obj && obj.annotationAddMode && (obj.annotationAddMode === 'Existing Annotation' || obj.annotationAddMode === 'Imported Annotation')) {
                 obj.bounds.width = obj.bounds.width - 20;
                 obj.bounds.height = obj.bounds.height - 20;
@@ -332,8 +361,7 @@ export class Drawing {
                 content.style.fill = obj.stampFillColor;
                 content.style.strokeColor = obj.stampStrokeColor;
                 canvas.children.push(content);
-                let textele: TextElement = this.textElement(obj);
-                textele = new TextElement();
+                const textele: TextElement = new TextElement();
                 textele.style.fontFamily = 'Helvetica';
                 textele.style.fontSize = 14;
                 textele.style.italic = true;
@@ -341,41 +369,109 @@ export class Drawing {
                 textele.style.color = obj.fillColor;
                 textele.rotateValue = undefined;
                 textele.content = obj.dynamicText;
+                textele.style.textAlign = 'Left';
                 textele.relativeMode = 'Point';
                 textele.margin.left = 10;
-                textele.margin.bottom = -7;
-                textele.setOffsetWithRespectToBounds(0, 0.57, null);
-                textele.relativeMode = 'Point';
+                textele.margin.bottom = 3;
+                textele.setOffsetWithRespectToBounds(0, 0.75, null);
                 if (obj.annotationAddMode === 'Existing Annotation' || obj.annotationAddMode === 'Imported Annotation') {
-                    textele.style.fontSize = this.fontSizeCalculation(obj, textele, obj.bounds.width - 10);
+                    const targetWidth: number = obj.bounds.width + 20;
+                    const targetHeight: number = obj.bounds.height + 20;
+                    const iconPadding: number = targetWidth * 0.05;
+                    const iconInnerWidth: number = Math.max(0, targetWidth - 2 * iconPadding);
+                    textele.style.fontSize = this.fontSizeCalculation(obj, textele, iconInnerWidth, textele.content);
+                    const metrics: {
+                        width: number;
+                        height: number;
+                        ascent: number;
+                        descent: number;
+                    } = this.measureTextMetrics(obj, textele.content,
+                                                textele.style.fontSize, textele.style.fontFamily);
+                    const bottomOffset: number = (targetHeight * 0.25 - metrics.height) / 8;
+                    textele.margin.bottom = Math.max(0, bottomOffset);
+                    if (textele.margin.bottom < 1) {
+                        textele.margin.bottom = 5;
+                    }
+                    textele.margin.left = 10;
+                }
+                if (this.isPasted)
+                {
+                    textele.style.fontSize = copiedObject.wrapper.children[1].style.fontSize;
+                    textele.margin = copiedObject.wrapper.children[1].margin;
+                }
+                if (this.pdfViewer.annotationModule.isUndoRedoAction) {
+                    textele.margin = this.stampPreviousSize[1].margin;
+                    textele.style.fontSize = (this.stampPreviousSize[1].style as any).fontSize;
                 }
                 canvas.children.push(textele);
-                const pathContent1: PathElement = new PathElement();
-                pathContent1.id = randomId() + '_stamp';
-                pathContent1.data = obj.data;
-                pathContent1.width = obj.bounds.width;
                 if (isAnnotationSet && (obj.bounds.width > annotationMaxWidth)) {
-                    pathContent1.width = annotationMaxWidth;
                     obj.bounds.width = annotationMaxWidth;
                 }
-                pathContent1.height = obj.bounds.height / 2;
                 if (isAnnotationSet && (obj.bounds.height > annotationMaxHeight)) {
-                    pathContent1.height = annotationMaxHeight / 2;
                     obj.bounds.height = annotationMaxHeight / 2;
                 }
-                pathContent1.rotateValue = undefined;
-                pathContent1.margin.left = 10;
-                pathContent1.margin.bottom = -5;
-                pathContent1.relativeMode = 'Point';
-                pathContent1.setOffsetWithRespectToBounds(0, 0.1, null);
-                const content1: any = pathContent1;
-                pathContent1.style.fill = obj.fillColor;
-                pathContent1.style.strokeColor = obj.strokeColor;
-                pathContent1.style.opacity = obj.opacity;
-                content.width = obj.bounds.width + 20;
-                content.height = obj.bounds.height + 20;
+                const textele1: TextElement = new TextElement();
+                textele1.style.fontFamily = 'Helvetica';
+                textele1.style.fontSize = obj.fontSize;
+                textele1.style.italic = true;
+                textele1.style.bold = true;
+                textele1.style.color = obj.fillColor;
+                textele1.rotateValue = undefined;
+                textele1.content = obj.icon.toUpperCase();
+                textele1.style.textAlign = 'Left';
+                textele1.relativeMode = 'Point';
+                textele1.margin.left = 10;
+                textele1.margin.top = 4;
+                textele1.setOffsetWithRespectToBounds(0, 0.1, null);
+                if (obj.annotationAddMode === 'Existing Annotation' || obj.annotationAddMode === 'Imported Annotation') {
+                    const targetWidth: number = obj.bounds.width + 20;
+                    const targetHeight: number = obj.bounds.height + 20;
+                    let iconWidth: number = targetWidth;
+                    if (textele1.content === 'REVISED' || textele1.content === 'REVIEWED' ||
+                        textele1.content === 'RECEIVED' || textele1.content === 'APPROVED') {
+                        iconWidth = iconWidth / 2;
+                    }
+                    else if (textele1.content === 'CONFIDENTIAL' || textele1.content === 'NOT APPROVED') {
+                        iconWidth = iconWidth * (3 / 4);
+                    }
+                    const iconPadding: number = iconWidth * 0.05;
+                    const iconInnerWidth: number = Math.max(0, iconWidth - 2 * iconPadding);
+                    textele1.style.fontSize = this.fontSizeCalculation(obj, textele1, iconInnerWidth, textele1.content);
+                    const metrics: {
+                        width: number;
+                        height: number;
+                        ascent: number;
+                        descent: number;
+                    } = this.measureTextMetrics(obj, textele1.content,
+                                                textele1.style.fontSize, textele1.style.fontFamily);
+                    const topOffset: number = (targetHeight * 0.75 - metrics.height) / 4;
+                    textele1.margin.top = Math.max(0, topOffset);
+                    if (textele1.content === 'CONFIDENTIAL' || textele1.content === 'NOT APPROVED') {
+                        textele1.margin.left = (targetWidth - (metrics.width * (4 / 3))) / 2;
+                    }
+                    else {
+                        textele1.margin.left = (targetWidth - (metrics.width * 2)) / 2;
+                    }
+                }
+                if (this.isPasted) {
+                    textele1.style.fontSize = copiedObject.wrapper.children[2].style.fontSize;
+                    textele1.margin = copiedObject.wrapper.children[2].margin;
+                }
+                if (this.pdfViewer.annotationModule.isUndoRedoAction) {
+                    textele1.margin = this.stampPreviousSize[2].margin;
+                    textele1.style.fontSize = (this.stampPreviousSize[2].style as any).fontSize;
+                }
+                if (this.isPasted) {
+                    content.width = this.stampOriginalWidth;
+                    content.height = this.stampOriginalHeight;
+                }
+                else {
+                    content.width = obj.bounds.width + 20;
+                    content.height = obj.bounds.height + 20;
+                }
                 content.style.opacity = obj.opacity;
-                canvas.children.push(content1);
+                textele1.id = randomId() + '_stamp';
+                canvas.children.push(textele1);
             } else {
                 canvas.horizontalAlignment = 'Left';
                 basicElement = new DrawingElement();
@@ -384,35 +480,112 @@ export class Drawing {
                 content.style.fill = obj.stampFillColor;
                 content.style.strokeColor = obj.stampStrokeColor;
                 canvas.children.push(content);
-                const pathContent1: PathElement = new PathElement();
-                pathContent1.id = randomId() + '_stamp';
-                pathContent1.data = obj.data;
-                pathContent1.width = obj.bounds.width;
-                if (isAnnotationSet && (obj.bounds.width > annotationMaxWidth)) {
-                    pathContent1.width = annotationMaxWidth;
-                    obj.bounds.width = annotationMaxWidth;
+                if (obj.icon === 'Accepted' || obj.icon === 'Rejected') {
+                    const pathContent1: PathElement = new PathElement();
+                    pathContent1.id = randomId() + '_stamp';
+                    pathContent1.data = obj.data;
+                    pathContent1.width = obj.bounds.width;
+                    if (isAnnotationSet && (obj.bounds.width > annotationMaxWidth)) {
+                        pathContent1.width = annotationMaxWidth;
+                        obj.bounds.width = annotationMaxWidth;
+                    }
+                    pathContent1.height = obj.bounds.height;
+                    if (isAnnotationSet && (obj.bounds.height > annotationMaxHeight)) {
+                        pathContent1.height = annotationMaxHeight;
+                        obj.bounds.height = annotationMaxHeight;
+                    }
+                    pathContent1.minWidth = pathContent1.width / 2;
+                    pathContent1.minHeight = pathContent1.height / 2;
+                    const content1: any = pathContent1;
+                    pathContent1.style.fill = obj.fillColor;
+                    pathContent1.style.strokeColor = obj.strokeColor;
+                    pathContent1.style.opacity = obj.opacity;
+                    content.width = obj.bounds.width + 20;
+                    content.height = obj.bounds.height + 20;
+                    content.minWidth = pathContent1.width / 2;
+                    content.minHeight = pathContent1.height / 2;
+                    content.style.opacity = obj.opacity;
+                    canvas.children.push(content1);
+                    canvas.minHeight = content.minHeight + 20;
+                    canvas.minWidth = content.minWidth + 20;
                 }
-                pathContent1.height = obj.bounds.height;
-                if (isAnnotationSet && (obj.bounds.height > annotationMaxHeight)) {
-                    pathContent1.height = annotationMaxHeight;
-                    obj.bounds.height = annotationMaxHeight;
+                else{
+                    if (isAnnotationSet && (obj.bounds.width > annotationMaxWidth)) {
+                        obj.bounds.width = annotationMaxWidth;
+                    }
+                    if (isAnnotationSet && (obj.bounds.height > annotationMaxHeight)) {
+                        obj.bounds.height = annotationMaxHeight / 2;
+                    }
+                    const textele1: TextElement = new TextElement();
+                    textele1.style.fontFamily = 'Helvetica';
+                    textele1.style.fontSize = obj.fontSize;
+                    textele1.style.italic = true;
+                    textele1.style.bold = true;
+                    textele1.style.color = obj.fillColor;
+                    textele1.rotateValue = undefined;
+                    textele1.style.textAlign = 'Left';
+                    textele1.content = obj.icon.toUpperCase();
+                    textele1.relativeMode = 'Point';
+                    textele1.setOffsetWithRespectToBounds(0, 0.1, null);
+                    const metrics: {
+                        width: number;
+                        height: number;
+                        ascent: number;
+                        descent: number;
+                    } = this.measureTextMetrics(obj, textele1.content,
+                                                textele1.style.fontSize, textele1.style.fontFamily);
+                    textele1.margin.top = 5;
+                    textele1.margin.left = ((obj.bounds.width + 20) - metrics.width) / 2;
+                    if (obj.annotationAddMode === 'Existing Annotation' || obj.annotationAddMode === 'Imported Annotation') {
+                        const targetWidth: number = obj.bounds.width + 20;
+                        const targetHeight: number = obj.bounds.height + 20;
+                        const paddingX: number = targetWidth * 0.05;
+                        const innerWidth: number = Math.max(0, targetWidth - 2 * paddingX);
+                        textele1.style.fontSize = this.fontSizeCalculation(obj, textele1, innerWidth, textele1.content);
+                        const metrics: {
+                            width: number;
+                            height: number;
+                            ascent: number;
+                            descent: number;
+                        } = this.measureTextMetrics(obj, textele1.content,
+                                                    textele1.style.fontSize, textele1.style.fontFamily);
+                        if (textele1.content === 'INITIAL HERE' || textele1.content === 'NOT APPROVED' ||
+                            textele1.content === 'FOR COMMENT') {
+                            textele1.margin.top = 8;
+                        }
+                        else if (textele1.content === 'FOR PUBLIC RELEASE' || textele1.content === 'NOT FOR PUBLIC RELEASE' ||
+                            textele1.content === 'PRELIMINARY RESULTS' || textele1.content === 'INFORMATION ONLY') {
+                            textele1.margin.top = 10;
+                        }
+                        else {
+                            textele1.margin.top = 5;
+                        }
+                        const leftOffset: number = (targetWidth - metrics.width) / 2;
+                        textele1.margin.left = Math.max(0, leftOffset);
+                    }
+                    if (this.isPasted) {
+                        textele1.style.fontSize = copiedObject.wrapper.children[1].style.fontSize;
+                        textele1.margin = copiedObject.wrapper.children[1].margin;
+                    }
+                    if (this.pdfViewer.annotationModule.isUndoRedoAction) {
+                        textele1.margin = this.stampPreviousSize[1].margin;
+                        textele1.style.fontSize = (this.stampPreviousSize[1].style as any).fontSize;
+                    }
+                    if (this.isPasted) {
+                        content.width = this.stampOriginalWidth;
+                        content.height = this.stampOriginalHeight;
+                    }
+                    else {
+                        content.width = obj.bounds.width + 20;
+                        content.height = obj.bounds.height + 20;
+                    }
+                    content.style.opacity = obj.opacity;
+                    textele1.id = randomId() + '_stamp';
+                    canvas.children.push(textele1);
                 }
-                pathContent1.minWidth = pathContent1.width / 2;
-                pathContent1.minHeight = pathContent1.height / 2;
-                const content1: any = pathContent1;
-                pathContent1.style.fill = obj.fillColor;
-                pathContent1.style.strokeColor = obj.strokeColor;
-                pathContent1.style.opacity = obj.opacity;
-                content.width = obj.bounds.width + 20;
-                content.height = obj.bounds.height + 20;
-                content.minWidth = pathContent1.width / 2;
-                content.minHeight = pathContent1.height / 2;
-                content.style.opacity = obj.opacity;
-                canvas.children.push(content1);
-                canvas.minHeight = content.minHeight + 20;
-                canvas.minWidth = content.minWidth + 20;
             }
             break;
+        }
         case 'Image':
         case 'SignatureImage': {
             const pathContent11: ImageElement = new ImageElement();
@@ -562,6 +735,12 @@ export class Drawing {
             freeTextEle.margin.left = 4;
             freeTextEle.margin.right = 5;
             freeTextEle.margin.top = 5 * (obj.fontSize / 16);
+            if (this.isPasted) {
+                const halfStroke: number = (obj.thickness || 0) / 2;
+                freeTextEle.margin.left = halfStroke;
+                freeTextEle.margin.right = halfStroke;
+            }
+            this.isPasted = false;
             if (this.pdfViewer.freeTextSettings.enableAutoFit) {
                 freeTextEle.style.textWrapping = 'Wrap';
             } else {
@@ -755,7 +934,9 @@ export class Drawing {
             for (let i: number = 0; i < container.children.length; i++) {
                 const child: any = container.children[parseInt(i.toString(), 10)];
                 if (child.id.includes('srcDec') || child.id.includes('tarDec')) {
-                    child.width = 12 * obj.thickness;
+                    if (!(obj.sourceDecoraterShapes === 'Butt' || obj.taregetDecoraterShapes === 'Butt')) {
+                        child.width = 12 * obj.thickness;
+                    }
                     child.height = 12 * obj.thickness;
                 }
             }
@@ -972,6 +1153,9 @@ export class Drawing {
                                 (<any>window).signatureCollection.set(renderElement.id, image);
                             }
                         }
+                        if ((renderElement as any).children[1] instanceof TextElement) {
+                            (renderElement as any).children[1].isEJ2 = true;
+                        }
                         refreshDiagramElements(diagramLayer, [renderElement], this.renderer);
                     }
                 }
@@ -1089,6 +1273,12 @@ export class Drawing {
                 this.pdfViewer.toolbarModule.annotationToolbarModule.isRedactAnnotSelected = false;
             }
             if (selectorModel.wrapper) {
+                if (selectorModel.wrapper.children[1] instanceof TextElement) {
+                    selectorModel.wrapper.children[1].isEJ2 = true;
+                    if (selectorModel.annotations[0].shapeAnnotationType === 'FreeText') {
+                        selectorModel.wrapper.children[1].isFreeText = true;
+                    }
+                }
                 selectorModel.wrapper.measure(size);
                 const zoom: number = this.pdfViewer.viewerBase.getZoomFactor();
                 selectorModel.wrapper.arrange(selectorModel.wrapper.desiredSize);
@@ -2440,9 +2630,74 @@ export class Drawing {
                                 heightRatio = 2.9;
                             }
                             if (actualObject.isDynamicStamp) {
-                                children[parseInt(i.toString(), 10)].width = actualObject.bounds.width - ratio;
-                                children[parseInt(i.toString(), 10)].height = (actualObject.bounds.height / 2) - ratio;
                                 const element: any = children[1] as TextElement;
+                                const iconElement: any = children[parseInt(i.toString(), 10)] as TextElement;
+                                const annotationSettings: any = this.pdfViewer.stampSettings ?
+                                    this.pdfViewer.stampSettings : this.pdfViewer.annotationSettings;
+                                if (annotationSettings && (annotationSettings.maxHeight ||
+                                     annotationSettings.maxWidth) && (actualObject.bounds.height > 60)) {
+                                    if (ratio !== 0) {
+                                        element.style.fontSize = (actualObject.bounds.width / ratio);
+                                        iconElement.style.fontSize = (actualObject.bounds.width / ratio);
+                                    } else {
+                                        element.style.fontSize = (actualObject.wrapper.bounds.width / 20);
+                                        iconElement.style.fontSize = (actualObject.wrapper.bounds.width / 20);
+                                    }
+                                } else {
+                                    let targetWidth: number;
+                                    let targetHeight: number;
+                                    if (ratio !== 0) {
+                                        targetWidth = actualObject.bounds.width;
+                                        targetHeight = actualObject.bounds.height;
+                                        let iconWidth: number = targetWidth;
+                                        if (iconElement.content === 'REVISED' || iconElement.content === 'REVIEWED' || iconElement.content === 'RECEIVED' || iconElement.content === 'APPROVED') {
+                                            iconWidth = iconWidth / 2;
+                                        }
+                                        else if (iconElement.content === 'CONFIDENTIAL' || iconElement.content === 'NOT APPROVED') {
+                                            iconWidth = iconWidth * (3 / 4);
+                                        }
+                                        const elementPpadding: number = targetWidth * 0.02;
+                                        const elementInnerWidth: number = Math.max(0, targetWidth - 2 * elementPpadding);
+                                        const iconPadding: number = iconWidth * 0.02;
+                                        const iconInnerWidth: number = Math.max(0, iconWidth - 2 * iconPadding);
+                                        element.style.fontSize = this.
+                                            fontSizeCalculation(actualObject, element, elementInnerWidth, element.content);
+                                        iconElement.style.fontSize = this.
+                                            fontSizeCalculation(actualObject, iconElement, iconInnerWidth, iconElement.content);
+                                        const metrics: {
+                                            width: number;
+                                            height: number;
+                                            ascent: number;
+                                            descent: number;
+                                        } = this.measureTextMetrics(actualObject, iconElement.content,
+                                                                    iconElement.style.fontSize, iconElement.style.fontFamily);
+                                        const topOffset: number = (targetHeight * 0.75 - metrics.height) / 4;
+                                        iconElement.margin.top = Math.max(0, topOffset);
+                                        if (iconElement.content === 'CONFIDENTIAL' || iconElement.content === 'NOT APPROVED') {
+                                            iconElement.margin.left = (targetWidth - (metrics.width * (4 / 3))) / 2;
+                                        }
+                                        else {
+                                            iconElement.margin.left = (targetWidth - (metrics.width * 2)) / 2;
+                                        }
+                                        iconElement.desiredSize.width = metrics.width;
+                                        iconElement.desiredSize.height = metrics.height;
+                                        const elementMetrics: {
+                                            width: number;
+                                            height: number;
+                                            ascent: number;
+                                            descent: number;
+                                        } = this.measureTextMetrics(actualObject, element.content,
+                                                                    element.style.fontSize, element.style.fontFamily);
+                                        const bottomOffset: number = (targetHeight * 0.25 - elementMetrics.height) / 8;
+                                        element.margin.bottom = Math.max(0, bottomOffset);
+                                        if (element.margin.bottom < 1) {
+                                            element.margin.bottom = 7;
+                                        }
+                                        element.margin.left = (targetWidth - elementMetrics.width) / 2;
+                                    }
+                                }
+                            } else {
+                                const element: any = children[parseInt(i.toString(), 10)] as TextElement;
                                 const annotationSettings: any = this.pdfViewer.stampSettings ?
                                     this.pdfViewer.stampSettings : this.pdfViewer.annotationSettings;
                                 if (annotationSettings && (annotationSettings.maxHeight ||
@@ -2453,28 +2708,34 @@ export class Drawing {
                                         element.style.fontSize = (actualObject.wrapper.bounds.width / 20);
                                     }
                                 } else {
+                                    let targetWidth: number;
+                                    let targetHeight: number;
                                     if (ratio !== 0) {
-                                        const targetWidth: number = actualObject.rotateAngle > 0 ?
-                                            actualObject.wrapper.actualSize.width : actualObject.bounds.width;
-                                        element.style.fontSize = this.fontSizeCalculation(actualObject,
-                                                                                          element, (targetWidth - 20));
-                                    } else {
-                                        const targetWidth: number = actualObject.rotateAngle > 0 ?
-                                            actualObject.wrapper.actualSize.width : actualObject.wrapper.bounds.width;
+                                        targetWidth = actualObject.bounds.width;
+                                        targetHeight = actualObject.bounds.height;
+                                        let paddingX: number = targetWidth * 0.04;
+                                        if (element.content === 'DRAFT') {
+                                            paddingX = targetWidth * 0.06;
+                                        }
+                                        const innerWidth: number = Math.max(0, targetWidth - 2 * paddingX);
                                         element.style.fontSize = this.
-                                            fontSizeCalculation(actualObject, element, (targetWidth - 20));
+                                            fontSizeCalculation(actualObject, element, innerWidth, element.content);
+                                        const metrics: {
+                                            width: number;
+                                            height: number;
+                                            ascent: number;
+                                            descent: number;
+                                        } = this.measureTextMetrics(actualObject, element.content,
+                                                                    element.style.fontSize, element.style.fontFamily);
+                                        const topOffset: number = (targetHeight - metrics.height) / 2;
+                                        element.margin.top = Math.max(0, topOffset);
+                                        const leftOffset: number = (targetWidth - metrics.width) / 2;
+                                        element.margin.left = Math.max(0, leftOffset);
+                                        element.desiredSize.width = metrics.width;
+                                        element.desiredSize.height = metrics.height;
                                     }
                                 }
-                                if (ratio !== 0) {
-                                    element.margin.bottom = -(children[parseInt(i.toString(), 10)].height / 2);
-                                }
-                            } else {
-                                children[parseInt(i.toString(), 10)].width = actualObject.bounds.width - ratio;
-                                children[parseInt(i.toString(), 10)].height = actualObject.bounds.height - ratio;
                             }
-                            children[parseInt(i.toString(), 10)].offsetX = actualObject.wrapper.offsetX;
-                            children[parseInt(i.toString(), 10)].offsetY = actualObject.wrapper.offsetX;
-                            children[parseInt(i.toString(), 10)].isDirt = true;
                         }
                     }
                 }
@@ -2711,26 +2972,23 @@ export class Drawing {
                 actualObject.textAlign = node.textAlign;
                 redoClonedObject.textAlign = node.textAlign;
                 if (actualObject.shapeAnnotationType === 'FreeText' && actualObject.wrapper && actualObject.wrapper.children && actualObject.wrapper.children.length) {
-                    const children: any[] = actualObject.wrapper.children;
+                    const children: any = actualObject.wrapper.children;
                     children[1].style.textAlign = node.textAlign;
-                    if (children[1].childNodes.length === 1) {
+                    if (children[1].childNodes.length >= 1) {
                         if (actualObject.textAlign === 'Justify') {
                             children[1].horizontalAlignment = 'Left';
-                            children[1].setOffsetWithRespectToBounds(0.01, 0, null);
+                            children[1].setOffsetWithRespectToBounds(0, 0, null);
                         } else if (actualObject.textAlign === 'Right') {
                             children[1].horizontalAlignment = 'Right';
                             children[1].setOffsetWithRespectToBounds(1, 0, null);
                         } else if (actualObject.textAlign === 'Left') {
                             children[1].horizontalAlignment = 'Left';
-                            children[1].setOffsetWithRespectToBounds(0.01, 0, null);
+                            children[1].setOffsetWithRespectToBounds(0, 0, null);
                         } else if (actualObject.textAlign === 'Center') {
                             children[1].horizontalAlignment = 'Center';
                             children[1].setOffsetWithRespectToBounds(0.51, 0, null);
                         }
-                    } else if (children[1].childNodes.length > 1 && actualObject.textAlign === 'Justify') {
-                        children[1].horizontalAlignment = 'Center';
-                    }
-                    else {
+                    } else {
                         children[1].horizontalAlignment = 'Auto';
                     }
                     if (!this.pdfViewer.annotation.isUndoRedoAction) {
@@ -2874,6 +3132,12 @@ export class Drawing {
                 actualObject.wrapper.children[1].isDirt = true;
             }
         }
+        if (actualObject.wrapper.children[1] instanceof TextElement) {
+            actualObject.wrapper.children[1].isEJ2 = true;
+            if (actualObject.shapeAnnotationType === 'FreeText') {
+                actualObject.wrapper.children[1].isFreeText = true;
+            }
+        }
         if (actualObject && actualObject.shapeAnnotationType === 'FreeText' && this.pdfViewer.annotationModule.stickyNotesAnnotationModule.textFromCommentPanel) {
             actualObject.wrapper.width = undefined;
             actualObject.wrapper.height = undefined;
@@ -2891,46 +3155,46 @@ export class Drawing {
                 children.actualSize.height = actualObject.wrapper.desiredSize.height;
             }
         }
-        if (actualObject && actualObject.shapeAnnotationType === 'FreeText' && !isNullOrUndefined(actualObject.subject)) {
+        if (actualObject && actualObject.shapeAnnotationType === 'FreeText' && actualObject.subject === 'Text Box') {
             if (actualObject.wrapper && actualObject.wrapper.children && actualObject.wrapper.children.length) {
-                const children: any[] = actualObject.wrapper.children;
-                if (children[1].childNodes.length > 1 && actualObject.textAlign === 'Justify') {
-                    children[1].horizontalAlignment = 'Center';
-                } else if (children[1].childNodes.length === 1) {
+                const children: any = actualObject.wrapper.children;
+                if (children[1].childNodes.length >= 1) {
                     if (actualObject.textAlign === 'Justify') {
                         children[1].horizontalAlignment = 'Left';
-                        children[1].setOffsetWithRespectToBounds(0.01, 0, null);
+                        children[1].setOffsetWithRespectToBounds(0, 0, null);
                     } else if (actualObject.textAlign === 'Right') {
                         children[1].horizontalAlignment = 'Right';
                         children[1].setOffsetWithRespectToBounds(1, 0, null);
                     } else if (actualObject.textAlign === 'Left') {
                         children[1].horizontalAlignment = 'Left';
-                        children[1].setOffsetWithRespectToBounds(0.01, 0, null);
+                        children[1].setOffsetWithRespectToBounds(0, 0, null);
                     } else if (actualObject.textAlign === 'Center') {
                         children[1].horizontalAlignment = 'Center';
                         children[1].setOffsetWithRespectToBounds(0.51, 0, null);
                     }
+                } else {
+                    children[1].horizontalAlignment = 'Auto';
                 }
                 for (let i: number = 0; i < children.length; i++) {
-                    if (children[parseInt(i.toString(), 10)].textNodes && children[parseInt(i.toString(), 10)].textNodes.length > 0) {
-                        children[parseInt(i.toString(), 10)].isDirt = true;
-                        let childNodeHeight: number = children[parseInt(i.toString(), 10)].textNodes.length *
-                         children[parseInt(i.toString(), 10)].textNodes[0].dy;
+                    if (children[i as number].textNodes && children[i as number].textNodes.length > 0) {
+                        children[i as number].isDirt = true;
+                        let childNodeHeight: number = children[i as number].textNodes.length * children[i as number].textNodes[0].dy;
                         const heightDiff: number = actualObject.bounds.height - childNodeHeight;
-                        if (heightDiff > 0 && heightDiff < children[parseInt(i.toString(), 10)].textNodes[0].dy) {
-                            childNodeHeight = childNodeHeight + children[parseInt(i.toString(), 10)].textNodes[0].dy;
+                        if (heightDiff > 0 && heightDiff < children[i as number].textNodes[0].dy) {
+                            childNodeHeight = childNodeHeight + children[i as number].textNodes[0].dy;
                         }
                         if (childNodeHeight > actualObject.bounds.height) {
                             let contString: string = '';
-                            for (let index: number = 0; index < children[parseInt(i.toString(), 10)].textNodes.length; index++) {
-                                contString = contString + children[parseInt(i.toString(), 10)].
-                                    textNodes[parseInt(index.toString(), 10)].text;
+                            for (let index: number = 0; index < children[i as number].textNodes.length; index++) {
+                                const childHeight: number = children[i as number].textNodes[0].dy * (index + 1);
+                                contString = contString + children[i as number].textNodes[index as number].text;
                             }
-                            children[parseInt(i.toString(), 10)].content = contString;
+                            if (heightDiff < 0) {
+                                children[i as number].content = contString;
+                            }
                         }
-                    }
-                    /** set text node width less than the parent */
-                    children[parseInt(i.toString(), 10)].width = actualObject.bounds.width;
+                    } /** set text node width less than the parent */
+                    children[i as number].width = actualObject.bounds.width;
                 }
             }
             actualObject.wrapper.measure(new Size(actualObject.bounds.width, actualObject.bounds.height));
@@ -2943,18 +3207,47 @@ export class Drawing {
             if (actualObject.wrapper && actualObject.wrapper.children && actualObject.wrapper.children.length) {
                 const children: any[] = actualObject.wrapper.children;
                 if (children[1].childNodes.length === 1 && actualObject.textAlign === 'Justify') {
-                    children[1].horizontalAlignment = 'Left';
-                    children[1].setOffsetWithRespectToBounds(0.5, 0, null);
-                } else if (children[1].childNodes.length > 1 && actualObject.textAlign === 'Justify') {
                     children[1].horizontalAlignment = 'Center';
+                    children[1].setOffsetWithRespectToBounds(0.5, 0, null);
+                }
+                else if (children[1].childNodes.length > 1 && actualObject.textAlign === 'Justify') {
+                    children[1].horizontalAlignment = 'Left';
                     children[1].setOffsetWithRespectToBounds(0, 0, null);
                 }
             }
         }
     }
 
-    private fontSizeCalculation(actualObject: any, element: any, boundsWidth: number): number {
-        const canvas: HTMLCanvasElement = <HTMLCanvasElement>this.pdfViewer.viewerBase.getAnnotationCanvas('_annotationCanvas_', actualObject.pageIndex);
+    private measureTextMetrics(actualObject: any, text: string, fontSize: number, fontFamily: string):
+    { width: number; height: number; ascent: number; descent: number }{
+        let canvas: HTMLCanvasElement = <HTMLCanvasElement>this.pdfViewer.viewerBase.getAnnotationCanvas('_annotationCanvas_', actualObject.pageIndex);
+        if (isNullOrUndefined(canvas)) {
+            canvas = <HTMLCanvasElement>document.createElement('canvas');
+        }
+        const ctx: CanvasRenderingContext2D = canvas.getContext('2d');
+        ctx.font = `${'bold'} ${fontSize}px ${fontFamily}`;
+
+        const metrics: TextMetrics = ctx.measureText(text);
+        const width: number = metrics.width;
+        // Height from font metrics if available, fallback to line-height ~1.2 * fontSize
+        const ascent: number =
+            (metrics.actualBoundingBoxAscent !== null && metrics.actualBoundingBoxAscent !== undefined)
+                ? metrics.actualBoundingBoxAscent
+                : fontSize * 0.8;
+        const descent: number =
+            (metrics.actualBoundingBoxDescent !== null && metrics.actualBoundingBoxDescent !== undefined)
+                ? metrics.actualBoundingBoxDescent
+                : fontSize * 0.2;
+        const height: number = ascent + descent;
+        canvas = null;
+        return { width, height, ascent, descent };
+    }
+
+    private fontSizeCalculation(actualObject: any, element: any, boundsWidth: number, text: string): number {
+        let canvas: HTMLCanvasElement = <HTMLCanvasElement>this.pdfViewer.viewerBase.getAnnotationCanvas('_annotationCanvas_', actualObject.pageIndex);
+        if (isNullOrUndefined(canvas)) {
+            canvas = <HTMLCanvasElement>document.createElement('canvas');
+        }
         const context: CanvasRenderingContext2D = canvas.getContext('2d');
         let textwidth: number = 0;
         let newsize: number = 0;
@@ -2968,10 +3261,11 @@ export class Drawing {
         }
         while (boundsWidth > textwidth) {
             context.font = fontStyle + newsize + 'px ' + element.style.fontFamily;
-            textwidth = context.measureText(actualObject.dynamicText).width;
+            textwidth = context.measureText(text).width;
             newsize += 0.1;
         }
         newsize -= 0.1;
+        canvas = null;
         return newsize;
     }
 
@@ -3572,8 +3866,9 @@ export class Drawing {
         let fieldId: string;
         this.isPasted = true;
         if (obj || this.pdfViewer.clipboardData.clipObject) {
+            const clippedData: PdfAnnotationBaseModel[] = this.pdfViewer.clipboardData.clipObject as (PdfAnnotationBaseModel)[];
             const copiedItems: PdfAnnotationBaseModel[] = obj ? this.getNewObject(obj) :
-                this.pdfViewer.clipboardData.clipObject as (PdfAnnotationBaseModel)[];
+                this.getNewObject(clippedData);
             if (copiedItems) {
                 const objectTable: {} = {};
                 if (this.pdfViewer.clipboardData.pasteIndex !== 0) {
@@ -3725,6 +4020,7 @@ export class Drawing {
             this.pdfViewer.clipboardData.pasteIndex++;
         }
         this.pdfViewer.enableServerDataBinding(allowServerDataBind, true);
+        this.isPasted = false;
     }
 
     private splitFormFieldName(obj: any): string {

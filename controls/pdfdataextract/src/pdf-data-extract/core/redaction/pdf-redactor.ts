@@ -1,4 +1,4 @@
-import { _PdfContentStream, _PdfCrossReference, _PdfDictionary, _PdfRecord, PdfAnnotation, PdfDocument, PdfPage, PdfRedactionAnnotation, PdfTemplate, Rectangle} from '@syncfusion/ej2-pdf';
+import { _PdfContentStream, _PdfCrossReference, _PdfDictionary, _PdfRecord, PdfAnnotation, PdfDocument, PdfPage, PdfRedactionAnnotation, PdfRotationAngle, PdfTemplate, Rectangle} from '@syncfusion/ej2-pdf';
 import { _GraphicState } from '../graphic-state';
 import { TextGlyph } from '../text-structure';
 import { _PdfContentParserHelper } from '../content-parser-helper';
@@ -214,15 +214,19 @@ export class PdfRedactor {
             if (annotation && annotation instanceof PdfRedactionAnnotation) {
                 const redactionAnnotation: PdfRedactionAnnotation = annotation as PdfRedactionAnnotation;
                 redactionAnnotation.flatten = true;
+                const rotation: PdfRotationAngle = page.rotation;
                 if (redactionAnnotation.boundsCollection && redactionAnnotation.boundsCollection.length > 1) {
-                    redactionAnnotation.boundsCollection.forEach((value: Rectangle, index: number) => {
-                        const redact: PdfRedactionRegion = new PdfRedactionRegion(page._pageIndex, value);
-                        redact.appearance.normal = redactionAnnotation._createNormalAppearance(index);
+                    redactionAnnotation.boundsCollection.forEach((rawRect: Rectangle, index: number) => {
+                        const normRect: Rectangle = this._calculateRotatedBounds(page, rawRect);
+                        const appearance: PdfTemplate = redactionAnnotation._createNormalAppearance(index, normRect, rotation);
+                        const redact: PdfRedactionRegion = new PdfRedactionRegion(page._pageIndex, normRect);
+                        redact.appearance.normal = appearance;
                         redactRegions.push(redact);
                     });
                 } else {
-                    const appearance: PdfTemplate = redactionAnnotation._createNormalAppearance();
-                    const redact: PdfRedactionRegion = new PdfRedactionRegion(page._pageIndex, redactionAnnotation.bounds);
+                    const normRect: Rectangle = this._calculateRotatedBounds(page, redactionAnnotation.bounds);
+                    const appearance: PdfTemplate = redactionAnnotation._createNormalAppearance(undefined, normRect, rotation);
+                    const redact: PdfRedactionRegion = new PdfRedactionRegion(page._pageIndex, normRect);
                     redact.appearance.normal = appearance;
                     redactRegions.push(redact);
                 }
@@ -233,6 +237,38 @@ export class PdfRedactor {
         if (redactRegions.length > 0) {
             const existingRedactions: PdfRedactionRegion[] = this._redaction.get(page._pageIndex) || [];
             this._redaction.set(page._pageIndex, existingRedactions.concat(redactRegions));
+        }
+    }
+    _calculateRotatedBounds(page: PdfPage, bounds: Rectangle): Rectangle {
+        const rotation: PdfRotationAngle = page.rotation;
+        const pageWidth: number = page.size.width;
+        const pageHeight: number = page.size.height;
+        switch (rotation) {
+        case PdfRotationAngle.angle0:
+            return bounds;
+        case PdfRotationAngle.angle90:
+            return {
+                x: pageHeight - (bounds.y + bounds.height),
+                y: bounds.x,
+                width: bounds.height,
+                height: bounds.width
+            };
+        case PdfRotationAngle.angle180:
+            return {
+                x: pageWidth - (bounds.x + bounds.width),
+                y: pageHeight - (bounds.y + bounds.height),
+                width: bounds.width,
+                height: bounds.height
+            };
+        case PdfRotationAngle.angle270:
+            return {
+                x: bounds.y,
+                y: pageWidth - bounds.x - bounds.width,
+                width: bounds.height,
+                height: bounds.width
+            };
+        default:
+            return bounds;
         }
     }
     _combineBounds(options: PdfRedactionRegion[]): void {

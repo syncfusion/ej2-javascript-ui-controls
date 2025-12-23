@@ -1247,6 +1247,17 @@ describe('Column chooser module', () => {
                 }, done);
         });
 
+        it('Coverage Improvement for selectedColumns using headerText', (done: Function) => {
+            beforeOpenColumnChooser = (args): void => {
+                args.selectedColumns = ['Order ID', 'Freight', 'Ship Country'];
+            };
+            gridObj.beforeOpenColumnChooser = beforeOpenColumnChooser;
+            gridObj.columnChooserModule.openColumnChooser();
+            expect((gridObj.columnChooserModule as any).selectedColumnModels.length).toBe(3);
+            (<HTMLElement>document.querySelector('.e-cc_okbtn')).click();
+            done();
+        });
+
         it('Coverage Improvement for selectedColumns', (done: Function) => {
             beforeOpenColumnChooser = (args): void => {
                 args.selectedColumns = ['OrderID', 'Freight', 'ShipCountry'];

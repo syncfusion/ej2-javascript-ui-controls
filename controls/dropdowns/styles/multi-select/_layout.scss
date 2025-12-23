@@ -1,6 +1,6 @@
 @use 'ej2-base/styles/common/mixin' as *;
 @use './theme-variables' as *;
-@use 'styles/drop-down-base/theme-variables' as ddb-vars;
+@use '../drop-down-base/theme-variables' as ddb-vars;
 
 .e-multi-select-wrapper {
   box-sizing: border-box;

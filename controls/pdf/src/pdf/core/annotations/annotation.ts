@@ -15133,11 +15133,19 @@ export class PdfRedactionAnnotation extends PdfComment {
     private _getLineHeight(): number {
         return this.font._getHeight();
     }
-    _createNormalAppearance(index?: number): PdfTemplate {
+    _createNormalAppearance(
+        index?: number,
+        rotatedBounds?: Rectangle,
+        pageRotation?: PdfRotationAngle
+    ): PdfTemplate {
         const pdfPath: PdfPath = new PdfPath();
         let hasIndex: boolean = false;
         let bounds: Rectangle;
-        if (typeof index === 'number' && index >= 0 && index < this.boundsCollection.length) {
+        if (rotatedBounds) {
+            bounds = rotatedBounds;
+            pdfPath.addRectangle(bounds);
+            hasIndex = typeof index === 'number' && index >= 0;
+        } else if (typeof index === 'number' && index >= 0 && index < this.boundsCollection.length) {
             bounds = this.boundsCollection[<number>index];
             pdfPath.addRectangle(bounds);
             hasIndex = true;
@@ -15148,13 +15156,12 @@ export class PdfRedactionAnnotation extends PdfComment {
         }
         const rect: number[] = pdfPath._getBounds();
         if (rect[2] === 0 && rect[3] === 0) {
-            rect[0] = this.bounds.x;
-            rect[1] = this.bounds.y;
-            rect[2] = this.bounds.width;
-            rect[3] = this.bounds.height;
+            rect[0] = rotatedBounds ? rotatedBounds.x : this.bounds.x;
+            rect[1] = rotatedBounds ? rotatedBounds.y : this.bounds.y;
+            rect[2] = rotatedBounds ? rotatedBounds.width : this.bounds.width;
+            rect[3] = rotatedBounds ? rotatedBounds.height : this.bounds.height;
         }
-        const rectangle: { x: number, y: number, width: number, height: number } =
-            { x: rect[0], y: rect[1], width: rect[2], height: rect[3] };
+        const rectangle: Rectangle = {x: rect[0], y: rect[1], width: rect[2], height: rect[3]};
         this.bounds = rectangle;
         const nativeRectangle: number[] = [0, 0, rectangle.width, rectangle.height];
         const template: PdfTemplate = new PdfTemplate(nativeRectangle, this._crossReference);
@@ -15169,37 +15176,83 @@ export class PdfRedactionAnnotation extends PdfComment {
         if (this.innerColor) {
             backBrush = new PdfBrush(this.innerColor);
         }
-        let state: PdfGraphicsState | undefined;
+        let alphaState: PdfGraphicsState;
         const shouldSetTransparency: boolean = this.opacity < 1;
         if (shouldSetTransparency) {
-            state = graphics.save();
+            alphaState = graphics.save();
             graphics.setTransparency(this.opacity);
         }
         if (this.boundsCollection && this.boundsCollection.length > 0) {
             if (hasIndex && bounds) {
-                graphics.drawRectangle({
-                    x: bounds.x - rectangle.x, y: bounds.y - rectangle.y, width: bounds.width,
-                    height: bounds.height
-                }, borderPen, backBrush);
-            } else {
-                for (const bounds of this.boundsCollection) {
-                    graphics.drawRectangle({
-                        x: bounds.x - rectangle.x, y: bounds.y - rectangle.y, width: bounds.width,
+                graphics.drawRectangle(
+                    {
+                        x: bounds.x - rectangle.x,
+                        y: bounds.y - rectangle.y,
+                        width: bounds.width,
                         height: bounds.height
-                    }, borderPen, backBrush);
+                    },
+                    borderPen,
+                    backBrush
+                );
+            } else {
+                for (const b of this.boundsCollection) {
+                    graphics.drawRectangle(
+                        {
+                            x: b.x - rectangle.x,
+                            y: b.y - rectangle.y,
+                            width: b.width,
+                            height: b.height
+                        },
+                        borderPen,
+                        backBrush
+                    );
                 }
             }
         } else {
-            graphics.drawRectangle({
-                x: nativeRectangle[0] + width, y: nativeRectangle[1] + width, width: nativeRectangle[2] -
-                    widths, height: nativeRectangle[3] - widths
-            }, borderPen, backBrush);
+            graphics.drawRectangle(
+                {
+                    x: nativeRectangle[0] + width,
+                    y: nativeRectangle[1] + width,
+                    width: nativeRectangle[2] - widths,
+                    height: nativeRectangle[3] - widths
+                },
+                borderPen,
+                backBrush
+            );
         }
-        if (shouldSetTransparency) {
-            graphics.restore(state);
+        if (shouldSetTransparency && alphaState) {
+            graphics.restore(alphaState);
         }
         if (this.overlayText) {
-            this._drawText(graphics, rectangle);
+            const state: PdfGraphicsState = graphics.save();
+            const width: number = nativeRectangle[2];
+            const height: number = nativeRectangle[3];
+            switch (pageRotation) {
+            case PdfRotationAngle.angle90:
+                graphics.rotateTransform(90);
+                graphics.translateTransform({ x: 0, y: -width });
+                break;
+            case PdfRotationAngle.angle180:
+                graphics.rotateTransform(180);
+                graphics.translateTransform({ x: -width, y: -height });
+                break;
+            case PdfRotationAngle.angle270:
+                graphics.rotateTransform(270);
+                graphics.translateTransform({ x: -height, y: 0 });
+                break;
+            case PdfRotationAngle.angle0:
+            default:
+                break;
+            }
+            const rotatedRect: Rectangle = rectangle;
+            if (typeof pageRotation !== 'undefined' && pageRotation !== null &&
+                (pageRotation === PdfRotationAngle.angle90 ||
+                pageRotation === PdfRotationAngle.angle270)) {
+                rotatedRect.width = rectangle.height;
+                rotatedRect.height = rectangle.width;
+            }
+            this._drawText(graphics, rotatedRect);
+            graphics.restore(state);
         }
         return template;
     }

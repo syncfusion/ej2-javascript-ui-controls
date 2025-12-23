@@ -1719,7 +1719,7 @@ export class ResizeTool extends ToolBase {
             annotationMinWidth = annotationSettings.minWidth ? annotationSettings.minWidth : 0;
         }
         if (source instanceof Selector && source.annotations.length === 1 &&
-            (source.annotations[0].shapeAnnotationType === 'Perimeter' || source.annotations[0].shapeAnnotationType === 'Radius' || (source as PdfAnnotationBaseModel).shapeAnnotationType === 'Stamp')) {
+            (source.annotations[0].shapeAnnotationType === 'Perimeter' || source.annotations[0].shapeAnnotationType === 'Radius')) {
             if (!(deltaHeight === 1 && deltaWidth === 1)) {
                 deltaHeight = deltaWidth = Math.max(deltaHeight === 1 ? 0 : deltaHeight, deltaWidth === 1 ? 0 : deltaWidth);
             } else if (startPoint !== endPoint) {
@@ -1727,7 +1727,7 @@ export class ResizeTool extends ToolBase {
             } else {
                 deltaHeight = deltaWidth = 0;
             }
-        } else if ((source as PdfAnnotationBaseModel).shapeAnnotationType === 'Image' || ((source as PdfAnnotationBaseModel).shapeAnnotationType === 'HandWrittenSignature' || (source as PdfAnnotationBaseModel).shapeAnnotationType === 'SignatureText' || (source as PdfAnnotationBaseModel).shapeAnnotationType === 'SignatureImage')) {
+        } else if ((source as PdfAnnotationBaseModel).shapeAnnotationType === 'Image' || ((source as PdfAnnotationBaseModel).shapeAnnotationType === 'HandWrittenSignature' || (source as PdfAnnotationBaseModel).shapeAnnotationType === 'SignatureText' || (source as PdfAnnotationBaseModel).shapeAnnotationType === 'SignatureImage') || (source as PdfAnnotationBaseModel).shapeAnnotationType === 'Stamp') {
             if (!(deltaHeight === 1 && deltaWidth === 1)) {
                 if (isCtrlKeyPressed){
                     if (width >= annotationMaxWidth && height < annotationMaxHeight) {
@@ -1745,20 +1745,10 @@ export class ResizeTool extends ToolBase {
                 deltaHeight = deltaWidth = Math.max(deltaHeight, deltaWidth);
             }
         } else {
-            if ((source as PdfAnnotationBaseModel).shapeAnnotationType === 'Perimeter' || (source as PdfAnnotationBaseModel).shapeAnnotationType === 'Radius'
-                || (source as PdfAnnotationBaseModel).shapeAnnotationType === 'Stamp') {
-                if ((source as PdfAnnotationBaseModel).shapeAnnotationType === 'Stamp') {
-                    if (!annotationMaxHeight && !deltaHeight) {
-                        deltaHeight = Math.max(deltaHeight === 1 ? 0 : deltaHeight);
-                    }
-                    if (!annotationMaxWidth && !deltaWidth) {
-                        deltaWidth = Math.max(deltaWidth === 1 ? 0 : deltaWidth);
-                    }
-                } else {
-                    if (!annotationMaxHeight || !annotationMaxWidth) {
-                        if (!(deltaHeight === 1 && deltaWidth === 1)) {
-                            deltaHeight = deltaWidth = Math.max(deltaHeight === 1 ? 0 : deltaHeight, deltaWidth === 1 ? 0 : deltaWidth);
-                        }
+            if ((source as PdfAnnotationBaseModel).shapeAnnotationType === 'Perimeter' || (source as PdfAnnotationBaseModel).shapeAnnotationType === 'Radius') {
+                if (!annotationMaxHeight || !annotationMaxWidth) {
+                    if (!(deltaHeight === 1 && deltaWidth === 1)) {
+                        deltaHeight = deltaWidth = Math.max(deltaHeight === 1 ? 0 : deltaHeight, deltaWidth === 1 ? 0 : deltaWidth);
                     }
                 }
             }

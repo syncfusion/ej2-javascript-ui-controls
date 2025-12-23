@@ -779,7 +779,7 @@ export class MaskedTextBox extends Component<HTMLInputElement> implements INotif
         const container: HTMLElement = this.inputObj.container;
         const label: HTMLElement | null = container.querySelector('.e-float-text-overflow') || container.querySelector('.e-float-text');
         const calculateWidth: number = (container.clientWidth - this.getRightIconsWidth());
-        if (label && calculateWidth) {
+        if (label && calculateWidth && !(this.cssClass && this.cssClass.split(' ').indexOf('e-outline') !== -1)) {
             label.style.width = calculateWidth + 'px';
         }
     }

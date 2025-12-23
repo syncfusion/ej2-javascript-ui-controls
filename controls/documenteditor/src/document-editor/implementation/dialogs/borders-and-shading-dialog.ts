@@ -1,4 +1,4 @@
-import { Dialog } from '@syncfusion/ej2-popups';
+import { Dialog, DialogUtility } from '@syncfusion/ej2-popups';
 import { classList, createElement, initializeCSPTemplate, isNullOrUndefined, L10n, Property } from '@syncfusion/ej2-base';
 import { ChangeEventArgs, NumericTextBox } from '@syncfusion/ej2-inputs';
 import { WTableFormat, WBorder, WBorders, WShading, WCellFormat, WParagraphFormat } from '../format/index';
@@ -8,7 +8,7 @@ import { DropDownList } from '@syncfusion/ej2-dropdowns';
 import { ParagraphWidget, TableCellWidget, TableRowWidget, TableWidget } from '../viewer/page';
 import { Editor } from '../index';
 import { ColorPicker, ColorPickerEventArgs } from '@syncfusion/ej2-inputs';
-import { DocumentHelper, SelectionBorders, SelectionBorder } from '../../index';
+import { DocumentHelper, SelectionBorders, SelectionBorder, UnsupportedBorderStyleClickEventArgs, unsupportedBorderStyleClick } from '../../index';
 import { BordersHelper } from '../../../document-editor-container/helper/borders-helper';
 
 /**
@@ -554,7 +554,8 @@ export class BordersAndShadingDialog {
             itemTemplate: itemTemplate,
             valueTemplate: itemTemplate,
             placeholder: localeValue.getConstant('Style'),
-            enableRtl: isRtl
+            enableRtl: isRtl,
+            change : this.borderStyleChange.bind(this)
         });
         this.borderStyle.appendTo(this.dropDownList);
         this.dropDownList.setAttribute('aria-lablledby', localeValue.getConstant('Style'));
@@ -771,6 +772,51 @@ export class BordersAndShadingDialog {
             }
         }
         return border;
+    }
+
+    /**
+     * Triggers the onUnsupportedBorderStyleClick event.
+     * @returns {UnsupportedBorderStyleClickEventArgs} Returns UnsupportedBorderStyleClickEventArgs args.
+     * @private
+     */
+    private triggeronUnsupportedBorderStyleClickEvent(): UnsupportedBorderStyleClickEventArgs {
+        const localValue: L10n = new L10n('documenteditor', this.documentHelper.owner.defaultLocale);
+        localValue.setLocale(this.documentHelper.owner.locale);
+        if (!isNullOrUndefined(this.documentHelper.owner) && !isNullOrUndefined(this.documentHelper.owner.unsupportedBorderStyleClick)) {
+            // Create event args object
+            const eventArgs: UnsupportedBorderStyleClickEventArgs = {
+                cancel: false,
+                alertMessage: localValue.getConstant('Border Style information')
+            };
+            // Trigger event
+            this.documentHelper.owner.trigger(unsupportedBorderStyleClick, eventArgs);
+            return eventArgs;
+        }
+        return undefined;
+    }
+
+    private initAlertDialog(args: UnsupportedBorderStyleClickEventArgs): void {
+        const localValue: L10n = new L10n('documenteditor', this.documentHelper.owner.defaultLocale);
+        localValue.setLocale(this.documentHelper.owner.locale);
+        const dialogContent: string = args.alertMessage !== '' ? args.alertMessage : localValue.getConstant('Border Style information');
+        DialogUtility.alert({
+            title: localValue.getConstant('Information'),
+            content: dialogContent,
+            closeOnEscape: true,
+            showCloseIcon: true,
+            position: { X: 'center', Y: 'center' }
+        }).enableRtl = this.documentHelper.owner.enableRtl;
+    }
+
+    private borderStyleChange(args: any): void {
+        if (args.value !== 'Single') {
+            const eventArgs: UnsupportedBorderStyleClickEventArgs = this.triggeronUnsupportedBorderStyleClickEvent();
+            if (eventArgs && eventArgs.cancel) {
+                return;
+            } else {
+                this.initAlertDialog(eventArgs);
+            }
+        }
     }
 
     private checkClassName(element: HTMLDivElement): boolean {

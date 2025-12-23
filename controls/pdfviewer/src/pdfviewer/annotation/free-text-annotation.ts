@@ -183,7 +183,17 @@ export class FreeTextAnnotation {
     private freeTextPaddingLeft: number = 4;
     private freeTextPaddingTop: number = 5;
     private defaultFontSize: number = 16;
+    private inputBoxValue: string;
+    private freetextHeight: number = 0;
+    private freetextWidth: number = 0;
+    private inputBoxHeight: any = 0;
+    private inputBoxWidth: any = 0;
+    private wrapperOffsetX: number = 0;
+    private wrapperOffsetY: number = 0;
+    private prevFontsize: number = 0;
     private lineGap: number = 1.8;
+    private initialStrokeWidth: number = 0;
+    private initialStrokeThickness: number = 0;
     /**
      * @private
      */
@@ -603,6 +613,8 @@ export class FreeTextAnnotation {
                         pageAnnotations[parseInt(i.toString(), 10)].opacity = annotationBase.wrapper.children[0].style.opacity;
                     } else if (property === 'thickness') {
                         pageAnnotations[parseInt(i.toString(), 10)].thickness = annotationBase.wrapper.children[0].style.strokeWidth;
+                        this.initialStrokeWidth = annotationBase.wrapper.children[0].style.strokeWidth;
+                        this.initialStrokeThickness = annotationBase.wrapper.children[0].style.strokeWidth;
                     } else if (property === 'notes') {
                         pageAnnotations[parseInt(i.toString(), 10)].note = annotationBase.notes;
                     } else if (property === 'delete') {
@@ -928,7 +940,17 @@ export class FreeTextAnnotation {
                 this.selectedAnnotation = annotation;
             }
             this.isInuptBoxInFocus = false;
-            if (this.selectedAnnotation && this.pdfViewer.selectedItems.annotations) {
+            let isFreetextValueEqual: boolean = false;
+            if (inputValue === this.inputBoxValue) {
+                isFreetextValueEqual = true;
+            }
+            let isFontSizeEqual: boolean = true;
+            if (this.selectedAnnotation.fontSize !== this.prevFontsize) {
+                isFontSizeEqual = false;
+            }
+            this.prevFontsize = this.selectedAnnotation.fontSize;
+            if (this.selectedAnnotation && this.pdfViewer.selectedItems.annotations &&
+                (!isFontSizeEqual || !isFreetextValueEqual || isNewlyAdded)) {
                 const isRotated: boolean = (Math.abs(this.selectedAnnotation.rotateAngle) !== 0 &&
                 Math.abs(this.selectedAnnotation.rotateAngle) !== 180);
                 inputEleHeight = parseFloat(isRotated ? this.inputBoxElement.style.width : this.inputBoxElement.style.height) / zoomFactor;
@@ -950,6 +972,25 @@ export class FreeTextAnnotation {
                 }
                 this.selectedAnnotation.bounds.width = inputEleWidth;
                 this.selectedAnnotation.bounds.height = inputEleHeight;
+                if (inputEleHeight > this.freetextHeight) {
+                    if (zoomFactor > 1) {
+                        this.selectedAnnotation.bounds.height = (parseFloat(this.inputBoxElement.style.height) / zoomFactor) +
+                            this.selectedAnnotation.wrapper.children[0].style.strokeWidth;
+                    }
+                    else if (parseFloat(this.inputBoxElement.style.height) !== inputEleHeight) {
+                        this.selectedAnnotation.bounds.height = parseFloat(this.inputBoxElement.style.height) +
+                            this.selectedAnnotation.wrapper.children[0].style.strokeWidth;
+                    }
+                }
+                if (this.pdfViewer.freeTextSettings.borderWidth !== 0) {
+                    this.initialStrokeThickness = this.pdfViewer.freeTextSettings.borderWidth;
+                }
+                if (this.initialStrokeThickness !== this.selectedAnnotation.wrapper.children[0].style.strokeWidth) {
+                    const strokeDifference: number = this.selectedAnnotation.wrapper.children[0].style.strokeWidth -
+                        this.initialStrokeThickness;
+                    this.selectedAnnotation.bounds.height = parseFloat(this.inputBoxElement.style.height) + strokeDifference;
+                }
+                this.inputBoxElement.style.height = this.selectedAnnotation.bounds.height + 'px';
                 let lineSpace: any = 0;
                 lineSpace = ((parseFloat(this.inputBoxElement.style.fontSize) / zoomFactor) / (this.defaultFontSize / 2));
                 this.selectedAnnotation.wrapper.children[1].margin.left = this.freeTextPaddingLeft + 1;
@@ -959,6 +1000,52 @@ export class FreeTextAnnotation {
                 this.selectedAnnotation.dynamicText = inputValue;
                 this.modifyInCollection('dynamicText', pageIndex, this.selectedAnnotation, isNewlyAdded);
                 this.modifyInCollection('bounds', pageIndex, this.selectedAnnotation, isNewlyAdded);
+                this.pdfViewer.nodePropertyChange(this.selectedAnnotation, { bounds: { width: this.selectedAnnotation.bounds.width,
+                    height: this.selectedAnnotation.bounds.height, y: y, x: x } });
+                const commentsDiv: any = document.getElementById(this.selectedAnnotation.annotName);
+                if (commentsDiv && commentsDiv.childNodes) {
+                    if (commentsDiv.childNodes[0].ej2_instances) {
+                        commentsDiv.childNodes[0].ej2_instances[0].value = inputValue;
+                        commentsDiv.childNodes[0].ej2_instances[0].dataBind();
+                    } else if (commentsDiv.childNodes[0].childNodes && commentsDiv.childNodes[0].childNodes[1].ej2_instances) {
+                        commentsDiv.childNodes[0].childNodes[1].ej2_instances[0].value = inputValue;
+                        commentsDiv.childNodes[0].childNodes[1].ej2_instances[0].dataBind();
+                    }
+                }
+                this.pdfViewer.renderSelector(this.selectedAnnotation.pageIndex, this.selectedAnnotation.annotationSelectorSettings);
+            } else {
+                const isRotated: boolean = (Math.abs(this.selectedAnnotation.rotateAngle) !== 0 &&
+                Math.abs(this.selectedAnnotation.rotateAngle) !== 180);
+                inputEleHeight = parseFloat(isRotated ? this.inputBoxWidth : this.inputBoxHeight) / zoomFactor;
+                inputEleWidth = parseFloat(isRotated ? this.inputBoxHeight : this.inputBoxWidth) / zoomFactor;
+                const heightDiff: number = (inputEleHeight - this.freetextHeight);
+                let y: number = undefined;
+                if (heightDiff > 0) {
+                    y = this.wrapperOffsetY + (heightDiff / 2);
+                    y = y > 0 ? y : undefined;
+                }
+                let widthDiff: number = (inputEleWidth - this.freetextWidth);
+                let x: number = undefined;
+                if (widthDiff > 0) {
+                    x = this.wrapperOffsetX + (widthDiff / 2);
+                    x = x > 0 ? x : undefined;
+                } else {
+                    widthDiff = Math.abs(widthDiff);
+                    x = this.wrapperOffsetX - (widthDiff / 2);
+                }
+                this.selectedAnnotation.bounds.width = inputEleWidth;
+                this.selectedAnnotation.bounds.height = inputEleHeight;
+                let lineSpace: any = 0;
+                lineSpace = ((parseFloat(this.inputBoxElement.style.fontSize) / zoomFactor) / (this.defaultFontSize / 2));
+                this.selectedAnnotation.wrapper.children[1].margin.left = this.freeTextPaddingLeft + 1;
+                this.selectedAnnotation.wrapper.children[1].margin.top =
+                 ((parseFloat(this.inputBoxElement.style.paddingTop) / zoomFactor)) + lineSpace;
+                this.pdfViewer.annotation.modifyDynamicTextValue(inputValue, this.selectedAnnotation.annotName, this.previousText);
+                this.selectedAnnotation.dynamicText = inputValue;
+                this.modifyInCollection('dynamicText', pageIndex, this.selectedAnnotation, isNewlyAdded);
+                this.modifyInCollection('bounds', pageIndex, this.selectedAnnotation, isNewlyAdded);
+                this.selectedAnnotation.wrapper.offsetX = this.wrapperOffsetX;
+                this.selectedAnnotation.wrapper.offsetY = this.wrapperOffsetY;
                 this.pdfViewer.nodePropertyChange(this.selectedAnnotation, { bounds: { width: this.selectedAnnotation.bounds.width,
                     height: this.selectedAnnotation.bounds.height, y: y, x: x } });
                 const commentsDiv: any = document.getElementById(this.selectedAnnotation.annotName);
@@ -1015,12 +1102,13 @@ export class FreeTextAnnotation {
                 this.isNewFreeTextAnnot ? this.pdfViewer.selectedItems.annotations[0]
                 : this.selectedAnnotation;
             setTimeout(() => {
-                if (inuptEleObj.defaultHeight < inuptEleObj.inputBoxElement.scrollHeight
-
-                    && parseInt(inuptEleObj.inputBoxElement.style.height, 10) < inuptEleObj.inputBoxElement.scrollHeight) {
+                if (inuptEleObj.defaultHeight < inuptEleObj.inputBoxElement.scrollHeight &&
+                    Math.ceil(inuptEleObj.inputBoxElement.clientHeight) < inuptEleObj.inputBoxElement.scrollHeight) {
                     inuptEleObj.updateFreeTextAnnotationSize(true);
                 } else {
-                    inuptEleObj.updateFreeTextAnnotationSize(false);
+                    if (!event.ctrlKey) {
+                        inuptEleObj.updateFreeTextAnnotationSize(false);
+                    }
                 }
 
             }, 0);
@@ -1039,13 +1127,19 @@ export class FreeTextAnnotation {
         if (this.isMaximumWidthReached) {
             const previousHeight: number = inuptEleObj.inputBoxElement.getBoundingClientRect().height;
             if (!isSize && !inuptEleObj.inputBoxElement.readOnly) {
-                inuptEleObj.inputBoxElement.style.height = 'auto';
+                inuptEleObj.inputBoxElement.style.height = inuptEleObj.defaultHeight + 'px';
             }
             const currentHeight: number = inuptEleObj.inputBoxElement.getBoundingClientRect().height;
             const difference: number = currentHeight - previousHeight;
             const fontSize: number = parseFloat(inuptEleObj.inputBoxElement.style.fontSize);
-            inuptEleObj.inputBoxElement.style.height = inuptEleObj.inputBoxElement.readOnly ? inuptEleObj.inputBoxElement.style.height : inuptEleObj.inputBoxElement.scrollHeight + (fontSize / 2) + 'px';
-            inuptEleObj.inputBoxElement.style.height = (difference < 0 && !inuptEleObj.inputBoxElement.readOnly) ? (previousHeight + 'px') : inuptEleObj.inputBoxElement.style.height;
+            const zoomFactor: number = inuptEleObj.pdfViewerBase.getZoomFactor();
+            if (((inuptEleObj.defaultHeight * zoomFactor) < inuptEleObj.inputBoxElement.scrollHeight) &&
+            (Math.ceil(inuptEleObj.inputBoxElement.clientHeight) < inuptEleObj.inputBoxElement.scrollHeight)) {
+                inuptEleObj.inputBoxElement.style.height = inuptEleObj.inputBoxElement.readOnly ? inuptEleObj.inputBoxElement.style.height : inuptEleObj.inputBoxElement.scrollHeight + (fontSize / 2) + 'px';
+                if (parseFloat(inuptEleObj.inputBoxElement.style.borderWidth) >= 1) {
+                    inuptEleObj.inputBoxElement.style.height = parseFloat(inuptEleObj.inputBoxElement.style.height) + (parseFloat(inuptEleObj.inputBoxElement.style.borderWidth) * 2) + 'px';
+                }
+            }
         }
         const zoomFactor: number = inuptEleObj.pdfViewerBase.getZoomFactor();
         const isRotated: boolean = this.selectedAnnotation && (Math.abs(this.selectedAnnotation.rotateAngle) !== 0 &&
@@ -1246,6 +1340,7 @@ export class FreeTextAnnotation {
             this.inputBoxElement.style.opacity = annotation.wrapper.children[0].style.opacity;
         }
         if (this.isNewFreeTextAnnot === true) {
+            this.initialStrokeWidth = 0;
             this.pdfViewer.clearSelection(pageIndex);
         }
         if (annotation && annotation.wrapper && annotation.wrapper.bounds) {
@@ -1284,6 +1379,13 @@ export class FreeTextAnnotation {
             }
             this.inputBoxElement.style.fontSize = (this.selectedAnnotation.fontSize * zoomFactor) + 'px';
             this.inputBoxElement.style.fontFamily = this.selectedAnnotation.fontFamily;
+            this.freetextHeight = this.selectedAnnotation.bounds.height;
+            this.freetextWidth = this.selectedAnnotation.bounds.width;
+            this.inputBoxHeight = this.inputBoxElement.style.height;
+            this.inputBoxWidth = this.inputBoxElement.style.width;
+            this.inputBoxValue = this.inputBoxElement.value;
+            this.wrapperOffsetX = this.selectedAnnotation.wrapper.offsetX;
+            this.wrapperOffsetY = this.selectedAnnotation.wrapper.offsetY;
             this.pdfViewer.nodePropertyChange(this.selectedAnnotation, {});
         }
         if (this.pdfViewerBase.isMixedSizeDocument) {
@@ -1298,10 +1400,59 @@ export class FreeTextAnnotation {
         let lineSpace: any = 0;
         lineSpace = ((parseFloat(this.inputBoxElement.style.fontSize) / Math.max(1, zoomFactor)) / (this.defaultFontSize / 2));
         this.inputBoxElement.style.paddingTop = ((parseFloat(this.inputBoxElement.style.paddingTop)) - lineSpace) + 'px';
+        if (this.selectedAnnotation && this.selectedAnnotation.wrapper.children[0].style.strokeWidth) {
+            if (!this.isNewFreeTextAnnot) {
+                this.inputBoxElement.style.borderWidth = this.selectedAnnotation.wrapper.children[0].style.strokeWidth / 2 + 'px';
+            }
+            if (this.pdfViewer.freeTextSettings.borderWidth !== 0) {
+                this.initialStrokeWidth = this.pdfViewer.freeTextSettings.borderWidth;
+            }
+            if (this.initialStrokeWidth !== this.selectedAnnotation.wrapper.children[0].style.strokeWidth) {
+                const strokeDifference: number = this.selectedAnnotation.wrapper.children[0].style.strokeWidth - this.initialStrokeWidth;
+                this.inputBoxElement.style.height = parseFloat(this.inputBoxElement.style.height) + strokeDifference + 'px';
+                this.initialStrokeWidth = this.selectedAnnotation.wrapper.children[0].style.strokeWidth;
+            }
+        }
         pageDiv.appendChild(this.inputBoxElement);
+        if (this.isNewFreeTextAnnot) {
+            this.freetextHeight = this.inputBoxElement.style.height;
+        }
         if (!this.pdfViewer.freeTextSettings.enableAutoFit && (this.defaultHeight * zoomFactor)
          < this.inputBoxElement.scrollHeight && parseInt(this.inputBoxElement.style.height, 10) < this.inputBoxElement.scrollHeight) {
             this.inputBoxElement.style.height = this.inputBoxElement.scrollHeight + 'px';
+            if (annotation && annotation.wrapper && annotation.wrapper.children[0]) {
+                this.inputBoxElement.style.height = parseFloat(this.inputBoxElement.style.height) + annotation.wrapper.children[0].style.strokeWidth + 'px';
+            }
+        }
+        if (annotation && annotation.wrapper && annotation.wrapper.bounds) {
+            let inputEleHeight: number = parseFloat(this.inputBoxElement.style.height);
+            let inputEleWidth: number = parseFloat(this.inputBoxElement.style.width);
+            const isRotated: boolean = this.selectedAnnotation.pageRotation === 90 || this.selectedAnnotation.pageRotation === 270;
+            inputEleHeight = parseFloat(isRotated ? this.inputBoxElement.style.width : this.inputBoxElement.style.height) / zoomFactor;
+            inputEleWidth = parseFloat(isRotated ? this.inputBoxElement.style.height : this.inputBoxElement.style.width) / zoomFactor;
+            const heightDiff: number = (inputEleHeight - this.selectedAnnotation.bounds.height);
+            let y: number = undefined;
+            if (heightDiff > 0) {
+                y = this.selectedAnnotation.wrapper.offsetY + (heightDiff / 2);
+                y = y > 0 ? y : undefined;
+            }
+            let widthDiff: number = (inputEleWidth - this.selectedAnnotation.bounds.width);
+            let x: number = undefined;
+            if (widthDiff > 0) {
+                x = this.selectedAnnotation.wrapper.offsetX + (widthDiff / 2);
+                x = x > 0 ? x : undefined;
+            } else {
+                widthDiff = Math.abs(widthDiff);
+                x = this.selectedAnnotation.wrapper.offsetX - (widthDiff / 2);
+            }
+            this.selectedAnnotation.bounds.width = inputEleWidth;
+            this.selectedAnnotation.bounds.height = inputEleHeight;
+            this.pdfViewer.nodePropertyChange(this.selectedAnnotation, {
+                bounds: {
+                    width: this.selectedAnnotation.bounds.width, height: this.selectedAnnotation.bounds.height, y: y, x: x
+                }
+            });
+            this.pdfViewer.renderSelector(this.selectedAnnotation.pageIndex, this.selectedAnnotation.annotationSelectorSettings);
         }
         this.isInuptBoxInFocus = true;
         this.inputBoxElement.focus();

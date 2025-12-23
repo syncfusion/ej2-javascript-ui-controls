@@ -786,6 +786,16 @@ export class DragAndDrop {
                 window.scrollTo(window.scrollX, window.scrollY + scrollSensitivity);
             }
         }
+        const x: number = this.dragObj.pageX - window.scrollX;
+        const scrollStep: number = 30;
+        // Near left edge?
+        if (x < scrollSensitivity) {
+            window.scrollTo(window.scrollX - scrollStep, window.scrollY);
+        }
+        // Near right edge?
+        else if (window.innerWidth - x < scrollSensitivity) {
+            window.scrollTo(window.scrollX + scrollStep, window.scrollY);
+        }
     }
 
     public unWireDragEvents(element: HTMLElement): void {

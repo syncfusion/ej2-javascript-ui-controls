@@ -160,13 +160,20 @@ export class DrawingRenderer {
         (options as TextAttributes).doWrap = element.doWrap;
         (options as TextAttributes).wrapBounds = element.wrapBounds;
         (options as TextAttributes).childNodes = element.childNodes;
+        options.relativeMode = element.relativeMode;
         options.dashArray = ''; options.strokeWidth = 0; options.fill = element.style.fill;
         if (element.thickness !== undefined) {
             (options as TextAttributes).thickness = element.thickness;
         }
         let ariaLabel: Object = element.content ? element.content : element.id;
         this.renderer.drawRectangle(canvas as HTMLCanvasElement, options as RectAttributes);
-        this.renderer.drawText(canvas as HTMLCanvasElement, options as TextAttributes, this.freeTextMaxHeight, this.isFreeTextAnnotation, this.zoomFactor);
+        if(element.isEJ2 === true) {
+            options.strokeWidth = element.style.strokeWidth;
+            options.isEJ2 = element.isEJ2;
+            this.renderer.drawTextEJ2(canvas as HTMLCanvasElement, options as TextAttributes);
+        } else {
+            this.renderer.drawText(canvas as HTMLCanvasElement, options as TextAttributes, this.freeTextMaxHeight, this.isFreeTextAnnotation, this.zoomFactor);
+        }
     }
 
 
