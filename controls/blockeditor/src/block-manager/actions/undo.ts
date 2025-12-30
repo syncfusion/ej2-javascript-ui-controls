@@ -27,6 +27,12 @@ export class UndoRedoAction {
     public isUndoing: boolean = false;
     /** @hidden */
     public isRedoing: boolean = false;
+    private preventRestores: Set<actionType> = new Set<actionType>([
+        actionType.tableRowInserted, actionType.tableRowDeleted, actionType.tableColumnDeleted, actionType.tableColumnInserted,
+        actionType.tableCellsCleared,
+        actionType.blockAdded, actionType.blockRemoved, actionType.blockMoved, actionType.formattingAction,
+        actionType.blockTransformed
+    ]);
 
     constructor(manager: BlockManager) {
         this.parent = manager;
@@ -85,10 +91,10 @@ export class UndoRedoAction {
             // Case 1: Formatting while typing (Press ctrlB and type)
             (siblingAction.data as IFormattingOperation).isTypingWithFormat ||
 
-            // Case 2: Clipboard paste - (with blocks, not at start) or (selective paste)
+            // Case 2: Clipboard paste - (with blocks) or (selective paste)
             (siblingAction.action === 'clipboardPaste' &&
-                ((siblingAction.data as IClipboardPasteOperation).type === 'blocks' &&
-                !(siblingAction.data as IClipboardPasteOperation).isPastedAtStart) ||
+                (siblingAction.data as IClipboardPasteOperation).type === 'blocks'
+                ||
                 (siblingAction.data as IClipboardPasteOperation).isSelectivePaste
             )
         );
@@ -163,12 +169,9 @@ export class UndoRedoAction {
         this.applyUndoRedoChange(currentState);
 
         /* UI and selection refresh */
-        const action: string = currentState.action;
-        const isTableAction: boolean = action === actionType.tableRowInserted || action === actionType.tableRowDeleted
-            || action === actionType.tableColumnDeleted || action === actionType.tableColumnInserted;
-        const preventRestoreSelection: boolean = action === actionType.blockAdded || action === actionType.blockRemoved
-            || action === actionType.blockMoved || action === actionType.formattingAction || isTableAction;
-        if (!preventRestoreSelection) {
+        const action: actionType = currentState.action;
+        const shouldPreventRestore: boolean = this.preventRestores.has(action);
+        if (!shouldPreventRestore) {
             this.restoreSelectionState(currentState);
         }
         if ((action === actionType.contentChanged || action === actionType.lineBreakAdded) && this.parent.currentFocusedBlock) {
@@ -324,8 +327,9 @@ export class UndoRedoAction {
         /* The block model stored on stack might not have proper src since it is pushed before user uploads
             a file. Hence we are updating here as it surely has updated src in current block model in the editor */
         const validTypes: string[] = [BlockType.Image];
-        const blockModel: BlockModel = (state.data as ITransformOperation).newBlockModel;
-        const isValid: boolean = (state.action === actionType.blockTransformed
+        const blockModel: BlockModel = state.action === actionType.blockAdded ?
+            state.oldBlockModel : (state.data as ITransformOperation).newBlockModel;
+        const isValid: boolean = ((state.action === actionType.blockTransformed || state.action === actionType.blockAdded)
             && validTypes.indexOf(blockModel.blockType) !== -1);
 
         if (isValid) {

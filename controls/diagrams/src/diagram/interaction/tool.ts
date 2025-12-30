@@ -843,6 +843,9 @@ export class ConnectTool extends ToolBase {
                 };
                 this.commandHandler.showTooltip(args.source, args.position, initializeCSPTemplate(contentTemp), 'ConnectTool', this.isTooltipVisible);
                 this.isTooltipVisible = false;
+            } else if (this.isTooltipVisible) {
+                this.commandHandler.closeTooltip();
+                this.isTooltipVisible = false;
             }
             if (tempArgs) {
                 this.tempArgs = tempArgs as IBlazorConnectionChangeEventArgs;
@@ -1469,6 +1472,9 @@ export class MoveTool extends ToolBase {
                 };
                 this.commandHandler.showTooltip(args.source, args.position, initializeCSPTemplate(contentTemp), 'MoveTool', this.isTooltipVisible);
                 this.isTooltipVisible = false;
+            } else if (this.isTooltipVisible) {
+                this.commandHandler.closeTooltip();
+                this.isTooltipVisible = false;
             }
         } else {
             const matrix: Matrix = identityMatrix(); const node: NodeModel = args.source as Node;
@@ -1842,6 +1848,9 @@ export class ResizeTool extends ToolBase {
                 return content;
             };
             this.commandHandler.showTooltip(args.source, args.position, initializeCSPTemplate(contentTemp), 'ResizeTool', this.isTooltipVisible);
+            this.isTooltipVisible = false;
+        } else if (this.isTooltipVisible) {
+            this.commandHandler.closeTooltip();
             this.isTooltipVisible = false;
         }
         this.prevPosition = this.currentPosition;

@@ -785,10 +785,10 @@ export class Mention extends DropDownBase {
             this.searchLists(e);
             if (!this.isPopupOpen && this.queryString.length >= this.minLength) {
                 if (!this.isContentEditable(this.inputElement)) {
-                    this.showPopup();
+                    this.showPopupWithDebounce();
                 } else if (this.isContentEditable(this.inputElement) && this.range &&
                            this.range.startContainer !== this.inputElement && e.keyCode !== 9) {
-                    this.showPopup();
+                    this.showPopupWithDebounce();
                 }
             }
         } else if ((!this.requireLeadingSpace ? (lastWordRange as any).includes(this.mentionChar)
@@ -820,6 +820,14 @@ export class Mention extends DropDownBase {
             }
         }
         this.isListResetted = false;
+    }
+
+    private showPopupWithDebounce(): void {
+        if (this.minLength > 0 && this.minLength === this.queryString.length) {
+            setTimeout(() => { this.showPopup(); }, this.debounceDelay);
+        } else {
+            this.showPopup();
+        }
     }
 
     private isMatchedText(): boolean {

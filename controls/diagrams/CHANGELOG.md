@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 32.1.21 (2025-12-30)
+
+### Diagram
+
+#### Bug Fixes
+
+- `#I197766` - The Node or connector tooltip will now close after dragging when selector tooltip is disabled.
+
 ## 32.1.20 (2025-12-23)
 
 ### Diagram

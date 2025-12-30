@@ -33,6 +33,8 @@ export class Drawing {
     private stampPreviousSize: DrawingElement[];
     private stampOriginalWidth: number;
     private stampOriginalHeight: number;
+    private stampPreviousWidth: number;
+    private stampPerviousHeight: number;
     /**
      * @private
      */
@@ -41,6 +43,14 @@ export class Drawing {
      * @private
      */
     public isPasted: boolean = false;
+    /**
+     * @private
+     */
+    public isLineInHorizontalBounds: boolean = true;
+    /**
+     * @private
+     */
+    public isLineInVerticalBounds: boolean = true;
     constructor(viewer: PdfViewer) {
         this.pdfViewer = viewer;
         this.renderer = new DrawingRenderer('this.pdfViewer.element.id', false);
@@ -170,6 +180,8 @@ export class Drawing {
             const id: string = obj.id;
             const stampObject: any = (this.pdfViewer.nameTable as any)[`${id}`].wrapper.children;
             this.stampPreviousSize = JSON.parse(JSON.stringify(stampObject));
+            this.stampPreviousWidth = obj.wrapper.actualSize.width;
+            this.stampPerviousHeight = obj.wrapper.actualSize.height;
         }
         if (this.isPasted && (obj as PdfAnnotationBaseModel).shapeAnnotationType === 'Stamp') {
             this.stampOriginalWidth = obj.wrapper.actualSize.width;
@@ -349,10 +361,6 @@ export class Drawing {
                 const id: string = (this.pdfViewer.clipboardData.clipObject as any)[0].id;
                 copiedObject = (this.pdfViewer.nameTable as any)[`${id}`];
             }
-            if (obj && obj.annotationAddMode && (obj.annotationAddMode === 'Existing Annotation' || obj.annotationAddMode === 'Imported Annotation')) {
-                obj.bounds.width = obj.bounds.width - 20;
-                obj.bounds.height = obj.bounds.height - 20;
-            }
             if (obj.isDynamicStamp) {
                 canvas.horizontalAlignment = 'Left';
                 basicElement = new DrawingElement();
@@ -371,13 +379,13 @@ export class Drawing {
                 textele.content = obj.dynamicText;
                 textele.style.textAlign = 'Left';
                 textele.relativeMode = 'Point';
-                textele.margin.left = 10;
+                textele.margin.left = 5;
                 textele.margin.bottom = 3;
                 textele.setOffsetWithRespectToBounds(0, 0.75, null);
                 if (obj.annotationAddMode === 'Existing Annotation' || obj.annotationAddMode === 'Imported Annotation') {
                     const targetWidth: number = obj.bounds.width + 20;
                     const targetHeight: number = obj.bounds.height + 20;
-                    const iconPadding: number = targetWidth * 0.05;
+                    const iconPadding: number = targetWidth * 0.02;
                     const iconInnerWidth: number = Math.max(0, targetWidth - 2 * iconPadding);
                     textele.style.fontSize = this.fontSizeCalculation(obj, textele, iconInnerWidth, textele.content);
                     const metrics: {
@@ -392,15 +400,14 @@ export class Drawing {
                     if (textele.margin.bottom < 1) {
                         textele.margin.bottom = 5;
                     }
-                    textele.margin.left = 10;
+                    textele.margin.left = (targetWidth - metrics.width) / 2;
                 }
                 if (this.isPasted)
                 {
                     textele.style.fontSize = copiedObject.wrapper.children[1].style.fontSize;
-                    textele.margin = copiedObject.wrapper.children[1].margin;
+                    textele.margin.left = copiedObject.wrapper.children[1].margin.left;
                 }
                 if (this.pdfViewer.annotationModule.isUndoRedoAction) {
-                    textele.margin = this.stampPreviousSize[1].margin;
                     textele.style.fontSize = (this.stampPreviousSize[1].style as any).fontSize;
                 }
                 canvas.children.push(textele);
@@ -420,7 +427,7 @@ export class Drawing {
                 textele1.content = obj.icon.toUpperCase();
                 textele1.style.textAlign = 'Left';
                 textele1.relativeMode = 'Point';
-                textele1.margin.left = 10;
+                textele1.margin.left = 5;
                 textele1.margin.top = 4;
                 textele1.setOffsetWithRespectToBounds(0, 0.1, null);
                 if (obj.annotationAddMode === 'Existing Annotation' || obj.annotationAddMode === 'Imported Annotation') {
@@ -434,7 +441,7 @@ export class Drawing {
                     else if (textele1.content === 'CONFIDENTIAL' || textele1.content === 'NOT APPROVED') {
                         iconWidth = iconWidth * (3 / 4);
                     }
-                    const iconPadding: number = iconWidth * 0.05;
+                    const iconPadding: number = iconWidth * 0.02;
                     const iconInnerWidth: number = Math.max(0, iconWidth - 2 * iconPadding);
                     textele1.style.fontSize = this.fontSizeCalculation(obj, textele1, iconInnerWidth, textele1.content);
                     const metrics: {
@@ -444,7 +451,7 @@ export class Drawing {
                         descent: number;
                     } = this.measureTextMetrics(obj, textele1.content,
                                                 textele1.style.fontSize, textele1.style.fontFamily);
-                    const topOffset: number = (targetHeight * 0.75 - metrics.height) / 4;
+                    const topOffset: number = (targetHeight * 0.75 - metrics.height) / 10;
                     textele1.margin.top = Math.max(0, topOffset);
                     if (textele1.content === 'CONFIDENTIAL' || textele1.content === 'NOT APPROVED') {
                         textele1.margin.left = (targetWidth - (metrics.width * (4 / 3))) / 2;
@@ -455,15 +462,16 @@ export class Drawing {
                 }
                 if (this.isPasted) {
                     textele1.style.fontSize = copiedObject.wrapper.children[2].style.fontSize;
-                    textele1.margin = copiedObject.wrapper.children[2].margin;
-                }
-                if (this.pdfViewer.annotationModule.isUndoRedoAction) {
-                    textele1.margin = this.stampPreviousSize[2].margin;
-                    textele1.style.fontSize = (this.stampPreviousSize[2].style as any).fontSize;
-                }
-                if (this.isPasted) {
+                    textele1.margin.left = copiedObject.wrapper.children[2].margin.left;
+                    textele1.margin.top = copiedObject.wrapper.children[2].margin.top -
+                        (copiedObject.wrapper.children[2].margin.top * 0.5);
                     content.width = this.stampOriginalWidth;
                     content.height = this.stampOriginalHeight;
+                }
+                else if (this.pdfViewer.annotationModule.isUndoRedoAction) {
+                    textele1.style.fontSize = (this.stampPreviousSize[2].style as any).fontSize;
+                    content.width = this.stampPreviousWidth;
+                    content.height = this.stampPerviousHeight;
                 }
                 else {
                     content.width = obj.bounds.width + 20;
@@ -481,6 +489,10 @@ export class Drawing {
                 content.style.strokeColor = obj.stampStrokeColor;
                 canvas.children.push(content);
                 if (obj.icon === 'Accepted' || obj.icon === 'Rejected') {
+                    if (obj && obj.annotationAddMode && (obj.annotationAddMode === 'Existing Annotation' || obj.annotationAddMode === 'Imported Annotation')) {
+                        obj.bounds.width = obj.bounds.width - 20;
+                        obj.bounds.height = obj.bounds.height - 20;
+                    }
                     const pathContent1: PathElement = new PathElement();
                     pathContent1.id = randomId() + '_stamp';
                     pathContent1.data = obj.data;
@@ -549,31 +561,22 @@ export class Drawing {
                             descent: number;
                         } = this.measureTextMetrics(obj, textele1.content,
                                                     textele1.style.fontSize, textele1.style.fontFamily);
-                        if (textele1.content === 'INITIAL HERE' || textele1.content === 'NOT APPROVED' ||
-                            textele1.content === 'FOR COMMENT') {
-                            textele1.margin.top = 8;
-                        }
-                        else if (textele1.content === 'FOR PUBLIC RELEASE' || textele1.content === 'NOT FOR PUBLIC RELEASE' ||
-                            textele1.content === 'PRELIMINARY RESULTS' || textele1.content === 'INFORMATION ONLY') {
-                            textele1.margin.top = 10;
-                        }
-                        else {
-                            textele1.margin.top = 5;
-                        }
                         const leftOffset: number = (targetWidth - metrics.width) / 2;
                         textele1.margin.left = Math.max(0, leftOffset);
                     }
                     if (this.isPasted) {
                         textele1.style.fontSize = copiedObject.wrapper.children[1].style.fontSize;
-                        textele1.margin = copiedObject.wrapper.children[1].margin;
-                    }
-                    if (this.pdfViewer.annotationModule.isUndoRedoAction) {
-                        textele1.margin = this.stampPreviousSize[1].margin;
-                        textele1.style.fontSize = (this.stampPreviousSize[1].style as any).fontSize;
-                    }
-                    if (this.isPasted) {
+                        textele1.margin.left = copiedObject.wrapper.children[1].margin.left;
+                        textele1.margin.top = copiedObject.wrapper.children[1].margin.top -
+                        (copiedObject.wrapper.children[1].margin.top * 0.5);
                         content.width = this.stampOriginalWidth;
                         content.height = this.stampOriginalHeight;
+                    }
+                    else if (this.pdfViewer.annotationModule.isUndoRedoAction) {
+                        textele1.style.fontSize = (this.stampPreviousSize[1].style as any).fontSize;
+                        textele1.margin.left = (this.stampPreviousWidth - metrics.width) / 2;
+                        content.width = this.stampPreviousWidth;
+                        content.height = this.stampPerviousHeight;
                     }
                     else {
                         content.width = obj.bounds.width + 20;
@@ -2649,52 +2652,57 @@ export class Drawing {
                                     if (ratio !== 0) {
                                         targetWidth = actualObject.bounds.width;
                                         targetHeight = actualObject.bounds.height;
-                                        let iconWidth: number = targetWidth;
-                                        if (iconElement.content === 'REVISED' || iconElement.content === 'REVIEWED' || iconElement.content === 'RECEIVED' || iconElement.content === 'APPROVED') {
-                                            iconWidth = iconWidth / 2;
-                                        }
-                                        else if (iconElement.content === 'CONFIDENTIAL' || iconElement.content === 'NOT APPROVED') {
-                                            iconWidth = iconWidth * (3 / 4);
-                                        }
-                                        const elementPpadding: number = targetWidth * 0.02;
-                                        const elementInnerWidth: number = Math.max(0, targetWidth - 2 * elementPpadding);
-                                        const iconPadding: number = iconWidth * 0.02;
-                                        const iconInnerWidth: number = Math.max(0, iconWidth - 2 * iconPadding);
-                                        element.style.fontSize = this.
-                                            fontSizeCalculation(actualObject, element, elementInnerWidth, element.content);
-                                        iconElement.style.fontSize = this.
-                                            fontSizeCalculation(actualObject, iconElement, iconInnerWidth, iconElement.content);
-                                        const metrics: {
-                                            width: number;
-                                            height: number;
-                                            ascent: number;
-                                            descent: number;
-                                        } = this.measureTextMetrics(actualObject, iconElement.content,
-                                                                    iconElement.style.fontSize, iconElement.style.fontFamily);
-                                        const topOffset: number = (targetHeight * 0.75 - metrics.height) / 4;
-                                        iconElement.margin.top = Math.max(0, topOffset);
-                                        if (iconElement.content === 'CONFIDENTIAL' || iconElement.content === 'NOT APPROVED') {
-                                            iconElement.margin.left = (targetWidth - (metrics.width * (4 / 3))) / 2;
-                                        }
-                                        else {
-                                            iconElement.margin.left = (targetWidth - (metrics.width * 2)) / 2;
-                                        }
-                                        iconElement.desiredSize.width = metrics.width;
-                                        iconElement.desiredSize.height = metrics.height;
-                                        const elementMetrics: {
-                                            width: number;
-                                            height: number;
-                                            ascent: number;
-                                            descent: number;
-                                        } = this.measureTextMetrics(actualObject, element.content,
-                                                                    element.style.fontSize, element.style.fontFamily);
-                                        const bottomOffset: number = (targetHeight * 0.25 - elementMetrics.height) / 8;
-                                        element.margin.bottom = Math.max(0, bottomOffset);
-                                        if (element.margin.bottom < 1) {
-                                            element.margin.bottom = 7;
-                                        }
-                                        element.margin.left = (targetWidth - elementMetrics.width) / 2;
                                     }
+                                    else {
+                                        targetWidth = actualObject.wrapper.bounds.width;
+                                        targetHeight = actualObject.wrapper.bounds.height;
+                                    }
+                                    let iconWidth: number = targetWidth;
+                                    if (iconElement.content === 'REVISED' || iconElement.content === 'REVIEWED' || iconElement.content === 'RECEIVED' || iconElement.content === 'APPROVED') {
+                                        iconWidth = iconWidth / 2;
+                                    }
+                                    else if (iconElement.content === 'CONFIDENTIAL' || iconElement.content === 'NOT APPROVED') {
+                                        iconWidth = iconWidth * (3 / 4);
+                                    }
+                                    const elementPpadding: number = targetWidth * 0.02;
+                                    const elementInnerWidth: number = Math.max(0, targetWidth - 2 * elementPpadding);
+                                    const iconPadding: number = iconWidth * 0.02;
+                                    const iconInnerWidth: number = Math.max(0, iconWidth - 2 * iconPadding);
+                                    element.style.fontSize = this.
+                                        fontSizeCalculation(actualObject, element, elementInnerWidth, element.content);
+                                    iconElement.style.fontSize = this.
+                                        fontSizeCalculation(actualObject, iconElement, iconInnerWidth, iconElement.content);
+                                    const metrics: {
+                                        width: number;
+                                        height: number;
+                                        ascent: number;
+                                        descent: number;
+                                    } = this.measureTextMetrics(actualObject, iconElement.content,
+                                                                iconElement.style.fontSize, iconElement.style.fontFamily);
+                                    const topOffset: number = (targetHeight * 0.75 - metrics.height) / 4;
+                                    iconElement.margin.top = Math.max(0, topOffset);
+                                    if (iconElement.content === 'CONFIDENTIAL' || iconElement.content === 'NOT APPROVED') {
+                                        iconElement.margin.left = (targetWidth - (metrics.width * (4 / 3))) / 2;
+                                    }
+                                    else {
+                                        iconElement.margin.left = (targetWidth - (metrics.width * 2)) / 2;
+                                    }
+                                    iconElement.desiredSize.width = metrics.width;
+                                    iconElement.desiredSize.height = metrics.height;
+                                    const elementMetrics: {
+                                        width: number;
+                                        height: number;
+                                        ascent: number;
+                                        descent: number;
+                                    } = this.measureTextMetrics(actualObject, element.content,
+                                                                element.style.fontSize, element.style.fontFamily);
+                                    const bottomOffset: number = (targetHeight * 0.25 - elementMetrics.height) / 8;
+                                    element.margin.bottom = Math.max(0, bottomOffset);
+                                    if (element.margin.bottom < 1) {
+                                        element.margin.bottom = 4;
+                                    }
+                                    element.margin.left = (targetWidth - elementMetrics.width) / 2;
+                                    element.desiredSize.height = elementMetrics.height;
                                 }
                             } else {
                                 const element: any = children[parseInt(i.toString(), 10)] as TextElement;
@@ -2713,27 +2721,31 @@ export class Drawing {
                                     if (ratio !== 0) {
                                         targetWidth = actualObject.bounds.width;
                                         targetHeight = actualObject.bounds.height;
-                                        let paddingX: number = targetWidth * 0.04;
-                                        if (element.content === 'DRAFT') {
-                                            paddingX = targetWidth * 0.06;
-                                        }
-                                        const innerWidth: number = Math.max(0, targetWidth - 2 * paddingX);
-                                        element.style.fontSize = this.
-                                            fontSizeCalculation(actualObject, element, innerWidth, element.content);
-                                        const metrics: {
-                                            width: number;
-                                            height: number;
-                                            ascent: number;
-                                            descent: number;
-                                        } = this.measureTextMetrics(actualObject, element.content,
-                                                                    element.style.fontSize, element.style.fontFamily);
-                                        const topOffset: number = (targetHeight - metrics.height) / 2;
-                                        element.margin.top = Math.max(0, topOffset);
-                                        const leftOffset: number = (targetWidth - metrics.width) / 2;
-                                        element.margin.left = Math.max(0, leftOffset);
-                                        element.desiredSize.width = metrics.width;
-                                        element.desiredSize.height = metrics.height;
                                     }
+                                    else {
+                                        targetWidth = actualObject.wrapper.bounds.width;
+                                        targetHeight = actualObject.wrapper.bounds.height;
+                                    }
+                                    let paddingX: number = targetWidth * 0.04;
+                                    if (element.content === 'DRAFT') {
+                                        paddingX = targetWidth * 0.06;
+                                    }
+                                    const innerWidth: number = Math.max(0, targetWidth - 2 * paddingX);
+                                    element.style.fontSize = this.
+                                        fontSizeCalculation(actualObject, element, innerWidth, element.content);
+                                    const metrics: {
+                                        width: number;
+                                        height: number;
+                                        ascent: number;
+                                        descent: number;
+                                    } = this.measureTextMetrics(actualObject, element.content,
+                                                                element.style.fontSize, element.style.fontFamily);
+                                    const topOffset: number = (targetHeight - metrics.height) / 2;
+                                    element.margin.top = Math.max(0, topOffset);
+                                    const leftOffset: number = (targetWidth - metrics.width) / 2;
+                                    element.margin.left = Math.max(0, leftOffset);
+                                    element.desiredSize.width = metrics.width;
+                                    element.desiredSize.height = metrics.height;
                                 }
                             }
                         }
@@ -3500,12 +3512,32 @@ export class Drawing {
                 }
             }
             if (right <= width - 3 && left >= 1 && bottom <= height - 3 && top >= heightDifference) {
+                this.isLineInHorizontalBounds = true;
+                this.isLineInVerticalBounds = true;
                 return true;
             }
             if (isSkip) {
                 heightDifference = 10;
                 if (right <= width - 10 && left >= 10 && bottom <= height - 10 && top >= heightDifference) {
+                    this.isLineInHorizontalBounds = true;
+                    this.isLineInVerticalBounds = true;
                     return true;
+                }
+            }
+            if (isSkip) {
+                if (!(right <= width - 10 && left >= 10)) {
+                    this.isLineInHorizontalBounds = false;
+                }
+                if (!(bottom <= height - 10 && top >= heightDifference)) {
+                    this.isLineInVerticalBounds = false;
+                }
+            }
+            else {
+                if (!(right <= width - 3 && left >= 1)) {
+                    this.isLineInHorizontalBounds = false;
+                }
+                if (!(bottom <= height - 3 && top >= heightDifference)) {
+                    this.isLineInVerticalBounds = false;
                 }
             }
         }

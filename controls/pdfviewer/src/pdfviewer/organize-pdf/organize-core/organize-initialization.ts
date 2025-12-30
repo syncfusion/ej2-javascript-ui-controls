@@ -59,7 +59,7 @@ export function createOrganizeWindow(isReConstruct?: boolean): void {
                 destroyDialogWindow.call(this);
                 this.pdfViewer.isPageOrganizerOpen = false;
                 this.isExtractToolbarVisible = false;
-                this.createOrganizeWindow(true);
+                //this.createOrganizeWindow(true);
             }
             else {
                 this.isSkipRevert = false;

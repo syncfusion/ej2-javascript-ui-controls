@@ -188,6 +188,12 @@ export function convertInlineElementsToContentModels(element: HTMLElement, keepF
             return;
         }
 
+        // <br> → insert linebreak
+        if (el.tagName === 'BR') {
+            content.push(createContentModel('\n', styleStack[styleStack.length - 1], linkProps));
+            return;
+        }
+
         const newStyles: Styles = extractStylesFromElement(el, styleStack[styleStack.length - 1]);
         if (newStyles && Object.keys(newStyles).length > 0) {
             styleStack.push(newStyles);

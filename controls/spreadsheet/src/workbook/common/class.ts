@@ -930,7 +930,7 @@ export class CommentReply extends ChildProperty<ThreadedCommentModel> {
 
     /**
      * Indicates the date and time when the reply was created.
-     * If not set, the reply will not show a timestamp.
+     * If not set, the reply will not show a time-stamp.
      *
      * @default null
      */
@@ -963,7 +963,7 @@ export class ThreadedComment extends ChildProperty<ThreadedComment> {
 
     /**
      * Indicates the date and time when the comment was created.
-     * If not set, the comment will not show a timestamp.
+     * If not set, the comment will not show a time-stamp.
      *
      * @default null
      */

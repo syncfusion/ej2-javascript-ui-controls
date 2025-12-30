@@ -443,6 +443,28 @@ describe('Context Menu', () => {
             (editor.blockManager.contextMenuModule as any).toggleDisabledItems();
             done();
         });
+
+        it('should disable increase/decrease indent item inside table cell', (done) => {
+            const blockElement = editor.element.querySelector('#paragraph2') as HTMLElement;
+            editor.blockManager.setFocusToBlock(blockElement);
+            setCursorPosition(getBlockContentElement(blockElement), 0);
+            editor.addBlock({ id: 'table-blk', blockType: BlockType.Table }, 'paragraph2');
+
+            const firstCellBlock = editor.element.querySelector('table .e-block') as HTMLElement;
+            editor.blockManager.setFocusToBlock(firstCellBlock);
+            setCursorPosition(getBlockContentElement(firstCellBlock), 0);
+            const menuWrapperElement = document.querySelector('.e-blockeditor-contextmenu') as HTMLElement;
+            const menuElement = menuWrapperElement.querySelector('ul') as HTMLElement;
+            expect(menuElement).not.toBeNull();
+
+            editorElement.dispatchEvent(new MouseEvent('contextmenu', { bubbles: true, cancelable: true }));
+            setTimeout(() => {
+                expect(menuElement.style.display).toBe('block');
+                expect(menuElement.querySelector('#increaseindent').classList.contains('e-disabled')).toBe(true);
+                expect(menuElement.querySelector('#decreaseindent').classList.contains('e-disabled')).toBe(true);
+                done();
+            }, 200);
+        });
     });
 
     describe('Events', () => {

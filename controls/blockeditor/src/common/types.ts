@@ -3,7 +3,7 @@
  *
  * @hidden
  */
-export type EditorExecCommand = 'AddBlock' | 'DeleteBlock' | 'SplitBlock' | 'IndentBlock' | 'DeleteAtCursor' | 'MoveBlock' | 'DuplicateBlock' | 'FormattingAction';
+export type EditorExecCommand = 'AddBlock' | 'DeleteBlock' | 'SplitBlock' | 'IndentBlock' | 'DeleteAtCursor' | 'MoveBlock' | 'DuplicateBlock' | 'FormattingAction' | 'DeleteNonMergableBlock';
 
 /**
  * Defines the direction of the selection.

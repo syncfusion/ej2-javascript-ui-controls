@@ -700,6 +700,187 @@ describe('Note ->', () => {
             done();
         });
     });
+
+    describe('UI Interaction - Insert and Delete with notes->', () => {
+        beforeAll((done: Function) => {
+            helper.initializeSpreadsheet({ sheets: [{ ranges: [{ dataSource: defaultData }] }] }, done);
+        });
+        afterAll(() => {
+            helper.invoke('destroy');
+        });
+        it('Add notes using the update cell to check the insert and delete with the notes', (done: Function) => {
+            helper.getInstance().updateCell({ notes: 'Spreadsheet' }, 'Sheet1!C3');
+            helper.getInstance().updateCell({ notes: 'Medical?' }, 'Sheet1!G2');
+            helper.getInstance().updateCell({ notes: 'IsCheeked' }, 'Sheet1!B10');
+            helper.getInstance().updateCell({ notes: 'Allright' }, 'Sheet1!J1');
+            expect(helper.invoke('getCell', [2, 2]).querySelector('.e-addNoteIndicator')).not.toBeNull();
+            expect(helper.invoke('getCell', [1, 6]).querySelector('.e-addNoteIndicator')).not.toBeNull();
+            expect(helper.invoke('getCell', [9, 1]).querySelector('.e-addNoteIndicator')).not.toBeNull();
+            expect(helper.invoke('getCell', [0, 9]).querySelector('.e-addNoteIndicator')).not.toBeNull();
+            done();
+        });
+        it('Insert Row ABOVE on notes inserted cell moves indicator down + Undo/Redo', (done: Function) => {
+            helper.invoke('selectRange', ['C3']);
+            helper.setAnimationToNone('#' + helper.id + '_contextmenu');
+            helper.openAndClickCMenuItem(2, 0, [6, 1], true);
+            setTimeout(() => {
+                expect(helper.invoke('getCell', [2, 2]).querySelector('.e-addNoteIndicator')).toBeNull();
+                expect(helper.invoke('getCell', [3, 2]).querySelector('.e-addNoteIndicator')).not.toBeNull();
+                helper.click('#spreadsheet_undo');
+                setTimeout(() => {
+                    expect(helper.invoke('getCell', [2, 2]).querySelector('.e-addNoteIndicator')).not.toBeNull();
+                    helper.click('#spreadsheet_redo');
+                    setTimeout(() => {
+                        expect(helper.invoke('getCell', [3, 2]).querySelector('.e-addNoteIndicator')).not.toBeNull();
+                        done();
+                    });
+                });
+            });
+        });
+        it('Insert Row BELOW on notes inserted cell (C4) leaves indicator unchanged + Undo/Redo', (done: Function) => {
+            helper.invoke('selectRange', ['C4']);
+            helper.setAnimationToNone('#' + helper.id + '_contextmenu');
+            helper.openAndClickCMenuItem(3, 0, [6, 2], true);
+            setTimeout(() => {
+                expect(helper.invoke('getCell', [3, 2]).querySelector('.e-addNoteIndicator')).not.toBeNull();
+                helper.click('#spreadsheet_undo');
+                setTimeout(() => {
+                    expect(helper.invoke('getCell', [3, 2]).querySelector('.e-addNoteIndicator')).not.toBeNull();
+                    helper.click('#spreadsheet_redo');
+                    setTimeout(() => {
+                        expect(helper.invoke('getCell', [3, 2]).querySelector('.e-addNoteIndicator')).not.toBeNull();
+                        done();
+                    });
+                });
+            });
+        });
+        it('Delete ROW containing notes (B12) removes indicator + Undo/Redo', (done: Function) => {
+            helper.invoke('selectRange', ['B12']);
+            helper.setAnimationToNone('#' + helper.id + '_contextmenu');
+            helper.openAndClickCMenuItem(11, 0, [7], true);
+            setTimeout(() => {
+                expect(helper.invoke('getCell', [11, 1]).querySelector('.e-addNoteIndicator')).toBeNull();
+                helper.click('#spreadsheet_undo');
+                setTimeout(() => {
+                    expect(helper.invoke('getCell', [11, 1]).querySelector('.e-addNoteIndicator')).not.toBeNull();
+                    helper.click('#spreadsheet_redo');
+                    setTimeout(() => {
+                        expect(helper.invoke('getCell', [11, 1]).querySelector('.e-addNoteIndicator')).toBeNull();
+                        done();
+                    });
+                });
+            });
+        });
+        it('Insert Column BEFORE on notes inserted cell (G2) shifts indicator right + Undo/Redo', (done: Function) => {
+            helper.invoke('selectRange', ['G2']);
+            helper.setAnimationToNone('#' + helper.id + '_contextmenu');
+            helper.openAndClickCMenuItem(0, 6, [6, 1], false, true);
+            setTimeout(() => {
+                expect(helper.invoke('getCell', [1, 6]).querySelector('.e-addNoteIndicator')).toBeNull();
+                expect(helper.invoke('getCell', [1, 7]).querySelector('.e-addNoteIndicator')).not.toBeNull();
+                helper.click('#spreadsheet_undo');
+                setTimeout(() => {
+                    expect(helper.invoke('getCell', [1, 6]).querySelector('.e-addNoteIndicator')).not.toBeNull();
+                    helper.click('#spreadsheet_redo');
+                    setTimeout(() => {
+                        expect(helper.invoke('getCell', [1, 7]).querySelector('.e-addNoteIndicator')).not.toBeNull();
+                        done();
+                    });
+                });
+            });
+        });
+        it('Insert Column AFTER on notes inserted cell (H2) leaves indicator unchanged + Undo/Redo', (done: Function) => {
+            helper.invoke('selectRange', ['H2']);
+            helper.setAnimationToNone('#' + helper.id + '_contextmenu');
+            helper.openAndClickCMenuItem(0, 7, [6, 2], false, true);
+            setTimeout(() => {
+                expect(helper.invoke('getCell', [1, 7]).querySelector('.e-addNoteIndicator')).not.toBeNull();
+                helper.click('#spreadsheet_undo');
+                setTimeout(() => {
+                    expect(helper.invoke('getCell', [1, 7]).querySelector('.e-addNoteIndicator')).not.toBeNull();
+                    helper.click('#spreadsheet_redo');
+                    setTimeout(() => {
+                        expect(helper.invoke('getCell', [1, 7]).querySelector('.e-addNoteIndicator')).not.toBeNull();
+                        done();
+                    });
+                });
+            });
+        });
+        it('Delete COLUMN containing notes (L1) removes indicator + Undo/Redo', (done: Function) => {
+            helper.invoke('selectRange', ['L1']);
+            helper.setAnimationToNone('#' + helper.id + '_contextmenu');
+            helper.openAndClickCMenuItem(0, 11, [7], false, true);
+            setTimeout(() => {
+                expect(helper.invoke('getCell', [0, 11]).querySelector('.e-addNoteIndicator')).toBeNull();
+                helper.click('#spreadsheet_undo');
+                setTimeout(() => {
+                    expect(helper.invoke('getCell', [0, 11]).querySelector('.e-addNoteIndicator')).not.toBeNull();
+                    helper.click('#spreadsheet_redo');
+                    setTimeout(() => {
+                        expect(helper.invoke('getCell', [0, 11]).querySelector('.e-addNoteIndicator')).toBeNull();
+                        done();
+                    });
+                });
+            });
+        });
+        it('Delete ROW without notess should not affect other notes indicators + Undo/Redo', (done: Function) => {
+            const sheet: ExtendedSheet = helper.getInstance().sheets[0] as ExtendedSheet;
+            helper.invoke('selectRange', ['B5']);
+            helper.setAnimationToNone('#' + helper.id + '_contextmenu');
+            helper.openAndClickCMenuItem(4, 0, [7], true);
+            setTimeout(() => {
+                expect(sheet.notes.length).toBe(2);
+                expect(helper.invoke('getCell', [3, 2]).querySelector('.e-addNoteIndicator')).not.toBeNull();
+                expect(helper.invoke('getCell', [1, 7]).querySelector('.e-addNoteIndicator')).not.toBeNull();
+                helper.click('#spreadsheet_undo');
+                setTimeout(() => {
+                    expect(sheet.notes.length).toBe(2);
+                    helper.click('#spreadsheet_redo');
+                    setTimeout(() => {
+                        expect(sheet.notes.length).toBe(2);
+                        done();
+                    });
+                });
+            });
+        });
+        it('Delete COLUMN without notess should not affect other notes indicators + Undo/Redo', (done: Function) => {
+            const sheet: ExtendedSheet = helper.getInstance().sheets[0] as ExtendedSheet;
+            helper.invoke('selectRange', ['E3']);
+            helper.setAnimationToNone('#' + helper.id + '_contextmenu');
+            helper.openAndClickCMenuItem(0, 4, [7], false, true);
+            setTimeout(() => {
+                expect(sheet.notes.length).toBe(2);
+                helper.click('#spreadsheet_undo');
+                setTimeout(() => {
+                    expect(sheet.notes.length).toBe(2);
+                    helper.click('#spreadsheet_redo');
+                    setTimeout(() => {
+                        expect(sheet.notes.length).toBe(2);
+                        done();
+                    });
+                });
+            });
+        });
+        it('Delete ROW and testing Undo/Redo', (done: Function) => {
+            helper.invoke('selectRange', ['B2']);
+            helper.setAnimationToNone('#' + helper.id + '_contextmenu');
+            helper.openAndClickCMenuItem(1, 0, [7], true);
+            const sheet: ExtendedSheet = helper.getInstance().sheets[0] as ExtendedSheet;
+            setTimeout(() => {
+                expect(sheet.notes.length).toBe(1);
+                helper.click('#spreadsheet_undo');
+                setTimeout(() => {
+                    expect(sheet.notes.length).toBe(2);
+                    helper.click('#spreadsheet_redo');
+                    setTimeout(() => {
+                        expect(sheet.notes.length).toBe(1);
+                        done();
+                    });
+                });
+            });
+        });
+    });
+
     describe('Notes Data bind testing ->', () => {
         beforeAll((done: Function) => {
             helper.initializeSpreadsheet({

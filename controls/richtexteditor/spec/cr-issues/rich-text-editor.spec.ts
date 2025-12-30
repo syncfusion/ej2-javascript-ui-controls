@@ -465,6 +465,77 @@ describe('RTE CR issues ', () => {
                 destroy(rteObj);
             });
         });
+    describe('Bug 998768: Rich Text Editor height reduces when toolbar is expanded/collapsed in code view', function () {
+            let rteObj: RichTextEditor;
+            let clickEvent: any;
+            beforeAll(() => {
+                rteObj = renderRTE({
+                    height: 300,
+                    width: 500,
+                    toolbarSettings: {
+                        items: ['FormatPainter', 'SourceCode', 'Bold', 'Italic', 'Underline', 'StrikeThrough',
+                            'FontName', 'FontSize', 'FontColor', 'BackgroundColor',
+                            'LowerCase', 'UpperCase', 'SuperScript', 'SubScript', 'EmojiPicker', '|',
+                            'Formats', 'Alignments', 'NumberFormatList', 'BulletFormatList',
+                            'Outdent', 'Indent', '|', 'CreateTable', 'CreateLink', 'Image', 'Audio', 'Video', 'FileManager', '|', 'ClearFormat', 'Print',
+                            'FullScreen', '|', 'Undo', 'Redo'
+                        ]
+                    },
+                    value: `<p><b>Description:</b></p>
+                    <p>The Rich Text Editor (RTE) control is an easy to render in the
+                    client side. Customer easy to edit the contents and get the HTML content for
+                    the displayed content. A rich text editor control provides users with a toolbar
+                    that helps them to apply rich text formats to the text entered in the text
+                    area. </p>
+                    <p><b>Functional
+                    Specifications/Requirements:</b></p>
+                    <ol><li><p>Provide
+                    the tool bar support, it’s also customizable.</p></li><li><p>Options
+                    to get the HTML elements with styles.</p></li><li><p>Support
+                    to insert image from a defined path.</p></li><li><p>Footer
+                    elements and styles(tag / Element information , Action button (Upload, Cancel))</p></li><li><p>Re-size
+                    the editor support.</p></li><li><p>Provide
+                    efficient public methods and client side events.</p></li><li><p>Keyboard
+                    navigation support.</p></li></ol>
+                    <p><b>Description:</b></p>
+                    <p>The Rich Text Editor (RTE) control is an easy to render in
+                    client side. Customer easy to edit the contents and get the HTML content for
+                    the displayed content. A rich text editor control provides users with a toolbar
+                    that helps them to apply rich text formats to the text entered in the text
+                    area. </p>
+                    <p><b>Functional
+                    Specifications/Requirements:</b></p>
+                    <ol><li><p>Provide
+                    the tool bar support, it’s also customizable.</p></li><li><p>Options
+                    to get the HTML elements with styles.</p></li><li><p>Support
+                    to insert image from a defined path.</p></li><li><p>Footer
+                    elements and styles(tag / Element information , Action button (Upload, Cancel))</p></li><li><p>Re-size
+                    the editor support.</p></li><li><p>Provide
+                    efficient public methods and client side events.</p></li><li><p>Keyboard
+                    navigation support.</p></li></ol><img class="e-rte-image" src="https://ej2.syncfusion.com/angular/demos/assets/rich-text-editor/images/RTEImage-Feather.png" alt="Flowers in Chania" />
+                    `,
+                });
+            });
+            afterAll(() => {
+                destroy(rteObj);
+            });
+            it('Collapsing the toolbar should not affect the source code text area height.', (done: Function) => {
+                (document.querySelector(".e-richtexteditor .e-toolbar-wrapper .e-expended-nav") as any).click();
+                const initialInputElementHeight: number = rteObj.inputElement.getBoundingClientRect().height;
+                const toolbarElems: NodeListOf<HTMLElement> = rteObj.element.querySelectorAll('.e-toolbar-item');
+                toolbarElems[1].click();
+                let textarea: HTMLTextAreaElement = (rteObj as any).element.querySelector('.e-source-content');
+                expect(textarea).not.toBe(null);
+                const initialHeight: number = textarea.getBoundingClientRect().height;
+                expect(initialInputElementHeight).toBe(initialHeight);
+                (document.querySelector(".e-richtexteditor .e-toolbar-wrapper .e-expended-nav") as any).click();
+                const afterCollapseHeight: number = textarea.getBoundingClientRect().height;
+                toolbarElems[1].click();
+                const afterCollapseInputElementHeight: number = rteObj.inputElement.getBoundingClientRect().height;
+                expect(afterCollapseInputElementHeight).toBe(afterCollapseHeight);
+                done();
+            });
+        });
     describe('877787 - InsertHtml executeCommand deletes the entire content when we insert html by selection in RichTextEditor', () => {
         let rteObj: RichTextEditor;
         beforeAll(() => {
@@ -1276,6 +1347,39 @@ describe('RTE CR issues ', () => {
             (rteObj as any).keyDown(keyBoardEvent);
             value = rteObj.inputElement.querySelector('#ul');
             expect(value.innerHTML=== `<li style="list-style-type: none;"><ul><li id="one">Basic&nbsp;&nbsp;&nbsp;&nbsp; features include headings, block quotes, numbered lists, bullet lists, and support to insert images, tables, audio, and video.</li></ul></li><li id="two">The t&nbsp;&nbsp;&nbsp;&nbsp;oolbar has multi-row, expandable, and scrollable modes.</li><li>The Editor supports an inline toolbar, a floating toolbar, and custom toolbar items.</li>`).toBe(true);
+            done();
+        });
+        afterEach((done) => {
+            destroy(rteObj);
+            done();
+        });
+    });
+
+    describe('Bug 999426: Focus cannot move away from the editor using the keyboard when maxLength is reached', () => {
+        let rteObj: RichTextEditor;
+        let keyBoardEvent: any = { type: 'keydown', preventDefault: () => { }, stopPropagation: () => { }, shiftKey: false, which: 9, key: 'Tab', keyCode: 9, target: document.body };
+        let ShiftTab: any = { type: 'keydown', preventDefault: () => { }, stopPropagation: () => { }, shiftKey: true, which: 9, key: 'Tab', keyCode: 9, target: document.body };
+        beforeEach((done: DoneFn) => {
+            rteObj = renderRTE({
+                value: `<p>hello world this is me</p>`,
+                toolbarSettings: {
+                    items: ['Undo', 'Redo']
+                },
+                maxLength: 10
+            });
+            done();
+        });
+        it('while pressing tab key, focus should be changed when maxLength is reached', (done: DoneFn) => {
+            rteObj.focusIn();
+            setCursorPoint(rteObj.inputElement.firstChild.firstChild as Element, 5);
+            spyOn(keyBoardEvent, 'preventDefault');
+            (rteObj as any).restrict(keyBoardEvent);
+            expect(keyBoardEvent.preventDefault).not.toHaveBeenCalled();
+            rteObj.focusIn();
+            setCursorPoint(rteObj.inputElement.firstChild.firstChild as Element, 10);
+            spyOn(ShiftTab, 'preventDefault');
+            (rteObj as any).restrict(ShiftTab);
+            expect(ShiftTab.preventDefault).not.toHaveBeenCalled();
             done();
         });
         afterEach((done) => {

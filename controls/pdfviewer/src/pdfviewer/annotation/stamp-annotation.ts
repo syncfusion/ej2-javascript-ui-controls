@@ -1651,46 +1651,74 @@ export class StampAnnotation {
             stampName = dynamicStampItem.toString();
             apperarance[0] = {baseFontName: 'Helvetica-BoldOblique', currentFontname: '95b303ab-d397-438a-83af-e2ff8a9900f1', fontSize: 10, isImport: true, text: 'By ' + author + ' at ' + dateTime[1] + dateTime[2] + ' , ' + dateTime[0], type: 'string'};
             isDynamic = true;
-            annotationObject.width = annotationObject.width ? annotationObject.width : 170.33;
-            annotationObject.height = annotationObject.height ? annotationObject.height : 56.88;
+            const defaultWidth: number = 166.33;
+            const defaultHeight: number = 41.8845;
+            if (!isNullOrUndefined(annotationObject.width) || !isNullOrUndefined(annotationObject.height))
+            {
+                const metrics: { width: number, height: number} =
+                this.calculateStampWidthAndHeight(annotationObject.width, annotationObject.height, defaultWidth, defaultHeight);
+                annotationObject.width = metrics.width;
+                annotationObject.height = metrics.height;
+            }
+            else{
+                annotationObject.width = defaultWidth;
+                annotationObject.height = defaultHeight;
+            }
+
         }
         else if (signStampItem)
         {
             stampName = signStampItem.toString();
-            if (signStampItem === SignStampItem.Accepted || signStampItem === SignStampItem.Rejected)
+            const defaults: Record<number | string, { width: number; height: number }> = {
+                [SignStampItem.Accepted]: { width: 35, height: 35 },
+                [SignStampItem.Rejected]: { width: 35, height: 35 },
+                [SignStampItem.SignHere]: { width: 97.5, height: 12.75 },
+                [SignStampItem.Witness]: { width: 72.75, height: 12.75 },
+                [SignStampItem.InitialHere]: { width: 114.75, height: 12.75 }
+            };
+            const defaultWidth: number = defaults[`${signStampItem}`] ? defaults[`${signStampItem}`].width : null;
+            const defaultHeight: number = defaults[`${signStampItem}`] ? defaults[`${signStampItem}`].height : null;
+            if (!isNullOrUndefined(annotationObject.width) || !isNullOrUndefined(annotationObject.height))
             {
-                annotationObject.width = annotationObject.width ? annotationObject.width : 35;
-                annotationObject.height = annotationObject.height ? annotationObject.height : 35;
+                const metrics: { width: number, height: number} =
+                this.calculateStampWidthAndHeight(annotationObject.width, annotationObject.height, defaultWidth, defaultHeight);
+                annotationObject.width = metrics.width;
+                annotationObject.height = metrics.height;
             }
-            else if (signStampItem === SignStampItem.SignHere){
-                annotationObject.width = annotationObject.width ? annotationObject.width : 110;
-                annotationObject.height = annotationObject.height ? annotationObject.height : 30;
-            }
-            else if (signStampItem === SignStampItem.Witness){
-                annotationObject.width = annotationObject.width ? annotationObject.width : 130;
-                annotationObject.height = annotationObject.height ? annotationObject.height : 30;
-            }
-            else if (signStampItem === SignStampItem.InitialHere){
-                annotationObject.width = annotationObject.width ? annotationObject.width : 90;
-                annotationObject.height = annotationObject.height ? annotationObject.height : 30;
+            else{
+                annotationObject.width = defaultWidth;
+                annotationObject.height = defaultHeight;
             }
         }
         else if (standardBusinessStampItem)
         {
             stampName = standardBusinessStampItem.toString();
-            if (standardBusinessStampItem === StandardBusinessStampItem.Final ||
-                 standardBusinessStampItem === StandardBusinessStampItem.Draft)
+            const defaults: Record<number | string, { width: number; height: number }> = {
+                [StandardBusinessStampItem.Draft]: { width: 57, height: 17.25 },
+                [StandardBusinessStampItem.Final]: { width: 48, height: 15.75 },
+                [StandardBusinessStampItem.Void]: { width: 40.5, height: 15.75 },
+                [StandardBusinessStampItem.Confidential]: { width: 126.75, height: 15.75 },
+                [StandardBusinessStampItem.NotApproved]: { width: 140.25, height: 15.75 },
+                [StandardBusinessStampItem.Completed]: { width: 110.25, height: 15.75 },
+                [StandardBusinessStampItem.ForPublicRelease]: { width: 202.5, height: 15.75 },
+                [StandardBusinessStampItem.NotForPublicRelease]: { width: 240, height: 15.75 },
+                [StandardBusinessStampItem.ForComment]: { width: 134.25, height: 15.75 },
+                [StandardBusinessStampItem.PreliminaryResults]: { width: 210.75, height: 15.75 },
+                [StandardBusinessStampItem.InformationOnly]: { width: 180, height: 15.75 },
+                [StandardBusinessStampItem.Approved]: { width: 96.75, height: 15.75 }
+            };
+            const defaultWidth: number = defaults[`${standardBusinessStampItem}`] ? defaults[`${standardBusinessStampItem}`].width : null;
+            const defaultHeight: number = defaults[`${standardBusinessStampItem}`] ? defaults[`${standardBusinessStampItem}`].height : null;
+            if (!isNullOrUndefined(annotationObject.width) || !isNullOrUndefined(annotationObject.height))
             {
-                annotationObject.width = annotationObject.width ? annotationObject.width : 110;
-                annotationObject.height = annotationObject.height ? annotationObject.height : 30;
-            }
-            else if (standardBusinessStampItem === StandardBusinessStampItem.Void){
-                annotationObject.width = annotationObject.width ? annotationObject.width : 100;
-                annotationObject.height = annotationObject.height ? annotationObject.height : 30;
+                const metrics: { width: number, height: number} =
+                this.calculateStampWidthAndHeight(annotationObject.width, annotationObject.height, defaultWidth, defaultHeight);
+                annotationObject.width = metrics.width;
+                annotationObject.height = metrics.height;
             }
             else{
-                annotationObject.width = annotationObject.width ? annotationObject.width : 130;
-                annotationObject.height = annotationObject.height ? annotationObject.height : 30;
+                annotationObject.width = defaultWidth;
+                annotationObject.height = defaultHeight;
             }
         }
         //Creating Annotation objects with it's proper properties
@@ -1736,6 +1764,32 @@ export class StampAnnotation {
         return {stampAnnotations};
     }
 
+    private calculateStampWidthAndHeight(requestedWidth: number, requestedHeight: number,
+                                         defaultWidth: number, defaultHeight: number): { width: number; height: number } {
+        const aspectRatio: number = defaultWidth / defaultHeight;
+        const hasW: boolean = typeof requestedWidth === 'number' && requestedWidth > 0;
+        const hasH: boolean = typeof requestedHeight === 'number' && requestedHeight > 0;
+
+        // Neither provided -> use base size
+        if (!hasW && !hasH) {return { width: defaultWidth, height: defaultHeight }; }
+
+        // Width-only -> compute height from width
+        if (hasW && !hasH) {return { width: requestedWidth, height: requestedWidth / aspectRatio }; }
+
+        // Height-only -> compute width from height
+        if (!hasW && hasH) {return { width: requestedHeight * aspectRatio, height: requestedHeight }; }
+
+        // Both provided -> aspect-FILL:
+        // If height from width is less than requested height, use height-first (cover vertically).
+        const heightFromWidth: number = requestedWidth / aspectRatio;
+        if (heightFromWidth > requestedHeight) {
+            // compute width from height
+            return { width: requestedHeight * aspectRatio, height: requestedHeight };
+        } else {
+            // Height is enough -> use width-first
+            return { width: requestedWidth, height: heightFromWidth };
+        }
+    }
     /**
      * @param {any} annot - It describes about the annotaion properties
      * @param {any} annotation - It describes about the annotation

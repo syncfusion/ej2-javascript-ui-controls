@@ -1,6 +1,6 @@
 import { Spreadsheet, ICellRenderer, clearViewer, getTextHeightWithBorder } from '../../spreadsheet/index';
 import { getExcludedColumnWidth, selectRange, getLineHeight, getBorderHeight, completeAction, readonlyAlert, CellRenderArgs } from '../common/index';
-import { setRowEleHeight, setMaxHgt, getTextHeight, getMaxHgt, getLines } from '../common/index';
+import { setRowEleHeight, setMaxHgt, getTextHeight, getMaxHgt, getLines, IRowRenderer } from '../common/index';
 import { CellFormatArgs, getRowHeight, applyCellFormat, CellStyleModel, Workbook, clearFormulaDependentCells, isReadOnlyCells, addListValidationDropdown } from '../../workbook/index';
 import { SheetModel, isHiddenRow, getCell, getRangeIndexes, getSheetIndex, activeCellChanged, clearCFRule } from '../../workbook/index';
 import { wrapEvent, getRangeAddress, ClearOptions, clear, activeCellMergedRange, cellValidation } from '../../workbook/index';
@@ -14,6 +14,7 @@ import { deleteChart, deleteImage } from '../common/index';
 export class CellFormat {
     private parent: Spreadsheet;
     private checkHeight: boolean = false;
+    private borders: { cell: HTMLElement, borderWidth: number, rowIdx: number }[];
     constructor(parent: Spreadsheet) {
         this.parent = parent;
         this.addEventListener();
@@ -24,11 +25,15 @@ export class CellFormat {
                 this.checkHeight = true;
             }
             this.updateRowHeight(args.rowIdx, args.colIdx, args.lastCell, args.onActionUpdate, args.outsideViewport, args.rowHeight);
+            if (args.lastCell) {
+                this.updateBorderLineHeight();
+            }
             return;
         }
         const keys: string[] = Object.keys(args.style);
         const sheet: SheetModel = this.parent.getActiveSheet();
         if (args.lastCell && !keys.length && (getMaxHgt(sheet, args.rowIdx) <= (sheet.standardHeight || 20))) {
+            this.updateBorderLineHeight();
             return;
         }
         const cell: HTMLElement = args.td || this.parent.getCell(args.rowIdx, args.colIdx);
@@ -169,6 +174,22 @@ export class CellFormat {
         } else {
             this.updateRowHeight(args.rowIdx, args.colIdx, true, args.onActionUpdate, null, args.rowHeight);
         }
+        if (args.lastCell) {
+            this.updateBorderLineHeight();
+        }
+    }
+    private updateBorderLineHeight(): void {
+        if (this.borders) {
+            const sheet: SheetModel = this.parent.getActiveSheet();
+            const rowRenderer: IRowRenderer = this.parent.serviceLocator.getService<IRowRenderer>('row');
+            const borderHgt: number = rowRenderer.getBorderWidth();
+            this.borders.forEach((info: { cell: HTMLElement, borderWidth: number, rowIdx: number }) => {
+                const borderWidth: number = borderHgt * info.borderWidth;
+                const hgt: number = getRowHeight(sheet, info.rowIdx, true);
+                info.cell.style.lineHeight = hgt > borderWidth ? `${hgt - borderWidth}px` : '0px';
+            });
+            this.borders = null;
+        }
     }
     private updateRowHeight(
         rowIdx: number, colIdx: number, isLastCell: boolean, onActionUpdate: boolean, outsideViewport?: boolean, rHeight?: number): void {
@@ -216,7 +237,7 @@ export class CellFormat {
                     const maxHgt: number = rHeight ? rHeight : getMaxHgt(sheet, rowIdx);
                     const prevHgt: number = getRowHeight(sheet, rowIdx);
                     if (onActionUpdate ? maxHgt !== prevHgt : maxHgt > prevHgt) {
-                        setRowEleHeight(this.parent, sheet, maxHgt, rowIdx, null, null, true, outsideViewport);
+                        setRowEleHeight(this.parent, sheet, maxHgt, rowIdx, null, null, true, outsideViewport, maxHgt < 20);
                     }
                 }
             }
@@ -367,20 +388,32 @@ export class CellFormat {
                 this.updateRowHeight(rowIdx, colIdx, lastCell, actionUpdate);
             } else {
                 const prevHeight: number = getRowHeight(sheet, rowIdx);
+                const rowRenderer: IRowRenderer = this.parent.serviceLocator.getService<IRowRenderer>('row');
                 const height: number = Math.ceil(this.parent.calculateHeight(
-                    this.parent.getCellStyleValue(['fontFamily', 'fontSize'], [rowIdx, colIdx]), 1, 3));
+                    this.parent.getCellStyleValue(['fontFamily', 'fontSize'], [rowIdx, colIdx]), 1, 3 * rowRenderer.getBorderWidth()));
                 if (height > prevHeight) {
+                    setMaxHgt(sheet, rowIdx, colIdx, height);
                     setRowEleHeight(this.parent, sheet, height, rowIdx, row, hRow);
                 }
             }
         }
+        const cellModel: CellModel = getCell(rowIdx, colIdx, sheet, null, true);
         if (!sheet.rows[rowIdx as number] || !sheet.rows[rowIdx as number].customHeight) {
             if (actionUpdate && (lastCell || !this.checkHeight) && size < 3) {
                 if (!this.checkHeight) { this.checkHeight = true; }
                 this.updateRowHeight(rowIdx, colIdx, lastCell, actionUpdate);
             }
+            if (!cellModel.wrap) {
+                if (size > 1 && getRowHeight(sheet, rowIdx) < 20) {
+                    if (!this.borders) {
+                        this.borders = [];
+                    }
+                    this.borders.push({ cell: cell, borderWidth: size, rowIdx: rowIdx });
+                } else if (cell.style.lineHeight) {
+                    cell.style.lineHeight = '';
+                }
+            }
         } else {
-            const cellModel: CellModel = getCell(rowIdx, colIdx, sheet, null, true);
             if (!cellModel.wrap) {
                 if (size > 1) {
                     const hgt: number = getRowHeight(sheet, rowIdx, true) - getBorderHeight(rowIdx, colIdx, sheet);

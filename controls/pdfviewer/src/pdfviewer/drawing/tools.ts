@@ -899,7 +899,29 @@ export class MoveTool extends ToolBase {
                 this.prevNode = this.helper;
                 this.prevPosition = this.currentPosition;
             } else {
-                this.currentPosition = this.prevPosition;
+                if (this.helper && isLineShapes(this.helper)) {
+                    if (!this.commandHandler.drawing.isLineInVerticalBounds && !this.commandHandler.drawing.isLineInHorizontalBounds) {
+                        this.currentPosition = this.prevPosition;
+                        this.startPosition = { x: this.startPosition.x + diffX, y: this.startPosition.y + diffY };
+                    }
+                    else if (!this.commandHandler.drawing.isLineInVerticalBounds) {
+                        this.commandHandler.dragSelectedObjects(
+                            diffX, 0, this.pdfViewerBase.activeElements.activePageID, currentSelctor, this.helper);
+                        this.currentPosition = { x: this.currentPosition.x, y: this.prevPosition.y };
+                        this.startPosition = { x: this.startPosition.x, y: this.startPosition.y + diffY };
+                    }
+                    else if (!this.commandHandler.drawing.isLineInHorizontalBounds) {
+                        this.commandHandler.dragSelectedObjects(
+                            0, diffY, this.pdfViewerBase.activeElements.activePageID, currentSelctor, this.helper);
+                        this.currentPosition = { x: this.prevPosition.x, y: this.currentPosition.y };
+                        this.startPosition = { x: this.startPosition.x + diffX, y: this.startPosition.y };
+                    }
+                    this.prevNode = this.helper;
+                    this.prevPosition = this.currentPosition;
+                }
+                else {
+                    this.currentPosition = this.prevPosition;
+                }
             }
             if (selectedItem && selectedItem.annotName) {
                 this.commandHandler.annotation.triggerAnnotationMove(selectedItem, true);

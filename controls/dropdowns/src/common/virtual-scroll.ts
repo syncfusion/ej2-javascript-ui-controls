@@ -240,6 +240,10 @@ export class VirtualScroll {
             this.parent.totalItemsCount();
         }
         if (isListUpdated) {
+            if (this.component === 'multiselect' && this.parent.itemCount * 2 > this.parent.totalItemCount) {
+                this.parent.viewPortInfo.endIndex = endIndex = this.parent.totalItemCount;
+                this.parent.isVirtualTrackHeight = true;
+            }
             for (let i: number = this.parent.viewPortInfo.startIndex; i < endIndex; i++) {
                 const index: number = i;
                 if (this.component === 'multiselect' && this.parent.mode === 'CheckBox') {

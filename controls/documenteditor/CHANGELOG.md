@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 32.1.21 (2025-12-30)
+
+### DocumentEditor
+
+#### Bug Fixes
+
+`#794438` - Fixed system frozen after importing the document.
+
 ## 32.1.20 (2025-12-23)
 
 ### DocumentEditor

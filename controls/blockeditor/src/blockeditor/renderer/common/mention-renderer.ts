@@ -27,6 +27,7 @@ export class MentionRenderer {
             mentionChar: args.mentionChar,
             dataSource: args.dataSource,
             highlight: args.highlight,
+            allowSpaces: true,
             fields: args.fields,
             itemTemplate: args.itemTemplate,
             displayTemplate: args.displayTemplate,

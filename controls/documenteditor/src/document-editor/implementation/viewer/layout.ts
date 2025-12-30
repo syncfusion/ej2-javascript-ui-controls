@@ -6179,7 +6179,7 @@ export class Layout {
                 let childWidget = previousBlock.childWidgets[0] as TableCellWidget;
                 if (childWidget.childWidgets.length > 0) {
                     let firstBlock: ParagraphWidget = this.documentHelper.getFirstParagraphInCell(childWidget as TableCellWidget);
-                    if (firstBlock.paragraphFormat.keepWithNext) {
+                    if (!isNullOrUndefined(firstBlock) && firstBlock.paragraphFormat.keepWithNext) {
                         if (isNullOrUndefined(this.getPreviousBlock(previousBlock as BlockWidget))) {
                             startBlock = undefined;
                         } else {
@@ -12644,6 +12644,7 @@ export class Layout {
             }
             if (paragraphWidget.containerWidget !== nextBodyWidget || keepWithNext) {
                 let prevPage: Page = paragraphWidget.bodyWidget.page;
+                paragraphWidget.height = this.getHeight(paragraphWidget as BlockWidget);
                 nextBodyWidget = this.moveBlocksToNextPage(paragraphWidget, true);
                 if (previousBodyWidget !== nextBodyWidget) {
                     viewer.updateClientArea(nextBodyWidget, nextBodyWidget.page);

@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 32.1.21 (2025-12-30)
+
+### Mention
+
+#### Bug Fixes
+
+- `#F197891` - Resolved the issue where the popup closes immediately after typing '@a'.
+
 ## 32.1.20 (2025-12-23)
 
 ### DropDownTree

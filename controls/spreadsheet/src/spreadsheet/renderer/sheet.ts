@@ -361,9 +361,12 @@ export class SheetRender implements IRenderer {
             if (visibleNotes.length) {
                 setTimeout((): void => {
                     visibleNotes.forEach((notes: ExtendedNoteModel) => {
-                        this.parent.notify(
-                            showNote, { rowIndex: notes.rowIdx, columnIndex: notes.colIdx, isNoteEditable: false, isScrollWithNote: true,
-                                isRender: true });
+                        if (this.parent) {
+                            this.parent.notify(showNote, {
+                                rowIndex: notes.rowIdx, columnIndex: notes.colIdx, isNoteEditable: false,
+                                isScrollWithNote: true, isRender: true
+                            });
+                        }
                     });
                 });
             }
@@ -863,7 +866,8 @@ export class SheetRender implements IRenderer {
                     }
                 }
                 if (firstcell) {
-                    this.refreshFirstCell(indexes[0] + (range[2] - range[0]) + 1, indexes[1], sheet, firstcell);
+                    this.refreshFirstCell(indexes[0] + (range[2] - range[0]) + 1, indexes[1], sheet, firstcell,
+                                          firstcell.previousElementSibling as HTMLTableCellElement);
                 }
             } else if (model.rowSpan > 1) {
                 const prevTopIdx: number = range[2] + 1;
@@ -879,14 +883,16 @@ export class SheetRender implements IRenderer {
             = this.parent.getCell(prevTopIdx, colIndex, this.parent.getRow(currTopIdx ?
                 currTopIdx : 0, null, colIndex)) as HTMLTableCellElement;
         if (td) {
-            this.cellRenderer.refresh(prevTopIdx, colIndex, null, td);
+            this.cellRenderer.refresh(prevTopIdx, colIndex, null, td, false, false, false, false, undefined,
+                                      td.previousElementSibling as HTMLTableCellElement);
         }
     }
 
-    private refreshFirstCell(rowIdx: number, colIdex: number, sheet: SheetModel, firstcell?: Element): void {
+    private refreshFirstCell(rowIdx: number, colIdex: number, sheet: SheetModel, firstcell?: Element,
+                             prevCell?: HTMLTableCellElement): void {
         const cell: CellModel = getCell(rowIdx, colIdex, sheet, false, true);
         if (cell.rowSpan < 0 || cell.colSpan < 0) {
-            this.cellRenderer.refresh(rowIdx, colIdex, null, firstcell);
+            this.cellRenderer.refresh(rowIdx, colIdex, null, firstcell, false, false, false, false, undefined, prevCell);
         }
     }
 

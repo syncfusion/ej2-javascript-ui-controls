@@ -1,7 +1,7 @@
-import { activeCellChanged, beginAction, CellModel, ExtendedSheet, ExtendedThreadedCommentModel, getCell, getCellAddress, getCellIndexes, getRowHeight, getSheetName, importModelUpdate, setCell, SheetModel, Workbook } from '../../workbook/index';
+import { activeCellChanged, beginAction, CellModel, ExtendedSheet, ExtendedThreadedCommentModel, getCell, getCellAddress, getCellIndexes, getSortedIndex, getRowHeight, getSheetName, importModelUpdate, setCell, SheetModel, Workbook } from '../../workbook/index';
 import { initiateComment, completeAction, createCommentIndicator, deleteComment, Spreadsheet, removeCommentContainer, locale, replyToComment, showCommentsPane, refreshCommentsPane, commentUndoRedo, getDPRValue, processSheetComments } from '../index';
 import { Browser, closest, detach, enableRipple, EventHandler, getComponent, getUniqueID, isNullOrUndefined, L10n } from '@syncfusion/ej2-base';
-import { getUpdateUsingRaf, navigateNextPrevComment, updateNoteContainer } from './../common/index';
+import { getUpdateUsingRaf, navigateNextPrevComment, updateNoteContainer, destroyComponent } from './../common/index';
 import { CommentSaveEventArgs, getRangeAddress, ThreadedCommentModel, updateCell } from '../../workbook/index';
 import { Button } from '@syncfusion/ej2-buttons';
 import { DropDownButton, ItemModel, MenuEventArgs } from '@syncfusion/ej2-splitbuttons';
@@ -384,6 +384,7 @@ export class SpreadsheetComment {
         ];
         const menuItem: DropDownButton = new DropDownButton({
             items: userOption,
+            createPopupOnClick: true,
             iconCss: 'e-icons e-more-horizontal-1',
             cssClass: 'e-caret-hide e-menu-popup',
             enableRtl: this.parent.enableRtl,
@@ -572,6 +573,7 @@ export class SpreadsheetComment {
         ];
         const ddb: DropDownButton = new DropDownButton({
             items: items,
+            createPopupOnClick: true,
             iconCss: 'e-icons e-more-horizontal-1',
             cssClass: 'e-caret-hide e-menu-popup',
             enableRtl: this.parent.enableRtl,
@@ -710,6 +712,7 @@ export class SpreadsheetComment {
         }
         if (this.isReviewPaneVisible) {
             if (container && container.classList.contains('e-thread-draft')) {
+                this.destoryCommentDdb(container);
                 container.remove();
             }
         }
@@ -769,15 +772,17 @@ export class SpreadsheetComment {
         const cancelBtn: Button = new Button({ cssClass: 'e-flat', iconCss: 'e-icons e-close' }, cancelBtnEl);
         cancelBtn.createElement = this.parent.createElement;
         EventHandler.add(textArea, 'input', () => this.adjustTextareaHeight(textArea, true), this);
-        EventHandler.add(postBtn.element, 'click', () => {
+        const postCommentFn: Function = (): void => {
             this.applyInlineEdit(isReply, textArea.value, textEl, editorWrap, originalText, replyId, container);
-        }, this);
-        EventHandler.add(cancelBtn.element, 'click', () => {
+        };
+        EventHandler.add(postBtn.element, 'click', postCommentFn, this);
+        const cancelBtnFn: Function = (): void => {
             textEl.textContent = originalText;
             textEl.style.display = '';
             editorWrap.remove();
             this.endEdit(container);
-        }, this);
+        };
+        EventHandler.add(cancelBtn.element, 'click', cancelBtnFn, this);
         btnBar.appendChild(postBtnEl);
         btnBar.appendChild(cancelBtnEl);
         editorWrap.appendChild(textArea);
@@ -969,20 +974,29 @@ export class SpreadsheetComment {
         }
         comment = JSON.parse(JSON.stringify(eventArgs.comment));
         this.processSheetComments({ sheet: sheet, comment: comment, isDelete: false });
-        updateCell(this.parent, sheet, { rowIdx: rIdx, colIdx: cIdx, preventEvt: true, cell: { comment: comment } });
-        const td: HTMLElement = this.parent.getCell(rIdx, cIdx);
-        if (td && !td.querySelector('.e-comment-indicator')) {
-            this.createCommentIndicator({ targetEle: td, rIdx: rIdx, cIdx: cIdx });
-        }
-        if (this.isReviewPaneVisible) {
+        const cancel: boolean = updateCell(this.parent, sheet, {
+            rowIdx: rIdx, colIdx: cIdx, preventEvt: true, cell: { comment: comment }
+        });
+        if (!cancel) {
+            const cell: CellModel = getCell(rIdx, cIdx, sheet, null, true);
+            cell.comment = comment;
             if (actionName === 'addComment') {
-                this.insertThreadIntoPanel(comment);
-                this.scrollToThreadInPanel(comment.id);
-            } else if (!isPanel && actionName !== 'addComment') {
-                this.syncThreadInPanel(comment);
+                this.parent.setUsedRange(rIdx, cIdx, sheet);
             }
+            const td: HTMLElement = this.parent.getCell(rIdx, cIdx);
+            if (td && !td.querySelector('.e-comment-indicator')) {
+                this.createCommentIndicator({ targetEle: td, rIdx: rIdx, cIdx: cIdx });
+            }
+            if (this.isReviewPaneVisible) {
+                if (actionName === 'addComment') {
+                    this.insertThreadIntoPanel(comment);
+                    this.scrollToThreadInPanel(comment.id);
+                } else if (!isPanel && actionName !== 'addComment') {
+                    this.syncThreadInPanel(comment);
+                }
+            }
+            this.parent.notify(completeAction, { eventArgs: eventArgs, action: actionName });
         }
-        this.parent.notify(completeAction, { eventArgs: eventArgs, action: actionName });
     }
 
     private detachCommentIndicator(rowIdx: number, colIdx: number): void {
@@ -1035,13 +1049,19 @@ export class SpreadsheetComment {
     }
 
     private deleteComment(args?: { rowIndex?: number; columnIndex?: number; sourceEl?: HTMLElement }): void {
-        let container: HTMLElement;
+        let container: HTMLElement; let rIdx: number; let cIdx: number;
         if (args && args.sourceEl) {
             container = this.getContainer(args.sourceEl);
         }
-        const [rIdx, cIdx] = this.getIndexesFromContainer(container);
+        if (args && !isNullOrUndefined(args.rowIndex) && !isNullOrUndefined(args.columnIndex)) {
+            rIdx = args.rowIndex; cIdx = args.columnIndex;
+        } else {
+            const index: number[] = this.getIndexesFromContainer(container);
+            rIdx = index[0]; cIdx = index[1];
+        }
         const sheet: ExtendedSheet = this.parent.getActiveSheet() as ExtendedSheet;
         const cell: CellModel = getCell(rIdx, cIdx, sheet);
+        this.detachCommentIndicator(rIdx, cIdx);
         if (!isNullOrUndefined(cell) && cell.comment) {
             const address: string = getSheetName(this.parent as Workbook, this.parent.activeSheetIndex) + '!' +
                 getRangeAddress([rIdx, cIdx]);
@@ -1051,7 +1071,6 @@ export class SpreadsheetComment {
                 return;
             }
             this.processSheetComments({ sheet: sheet, id: (cell.comment as ExtendedThreadedCommentModel).id, isDelete: true });
-            this.detachCommentIndicator(rIdx, cIdx);
             delete cell.comment;
             updateCell(this.parent, sheet, { rowIdx: rIdx, colIdx: cIdx, preventEvt: true, cell: cell });
             if (this.isReviewPaneVisible) {
@@ -1076,11 +1095,12 @@ export class SpreadsheetComment {
                 this.unwireFooterEvents(footerEl);
                 this.removeFooterButtons(footerEl);
             }
-            detach(container);
             if (this.activeReplyDdb) {
                 this.activeReplyDdb.destroy();
                 this.activeReplyDdb = null;
             }
+            this.destoryCommentDdb(container);
+            detach(container);
         }
         if (this.isEditing) {
             this.isEditing = false;
@@ -1586,6 +1606,7 @@ export class SpreadsheetComment {
                 this.unwireFooterEvents(footerEl);
                 this.removeFooterButtons(footerEl);
             }
+            this.destoryCommentDdb(container);
             detach(container);
             if (!isNullOrUndefined(rIdx) && !isNullOrUndefined(cIdx)) {
                 const cell: CellModel = getCell(rIdx, cIdx, this.parent.getActiveSheet());
@@ -1602,6 +1623,15 @@ export class SpreadsheetComment {
             this.bodyHost = null;
             this.isEditing = false;
         }
+    }
+
+    private destoryCommentDdb(container: HTMLElement): void {
+        [].slice.call(container.querySelectorAll('.e-comment-menu')).forEach((commentDdb: HTMLElement) => {
+            destroyComponent(commentDdb, DropDownButton);
+        });
+        [].slice.call(container.querySelectorAll('.e-reply-ddb')).forEach((replyDdb: HTMLElement) => {
+            destroyComponent(replyDdb, DropDownButton);
+        });
     }
 
     private processSheetComments(args: {
@@ -1638,7 +1668,7 @@ export class SpreadsheetComment {
                 if (existingIdx > -1) {
                     sheet.comments[existingIdx as number] = comment;
                 } else {
-                    const idx: number = this.lowerBoundByAddress(sheet.comments, this.getThreadAddr(comment));
+                    const idx: number = getSortedIndex(sheet.comments, comment.address, true);
                     sheet.comments.splice(idx, 0, comment);
                 }
             }
@@ -1942,6 +1972,7 @@ export class SpreadsheetComment {
     private destroyReviewBodyListView(): void {
         const lv: ListView = this.getReviewListView();
         if (lv) {
+            this.destoryCommentDdb(lv.element);
             lv.destroy();
         }
     }
@@ -2026,8 +2057,8 @@ export class SpreadsheetComment {
     }
 
     private findThreadPositionById(threadId: string): { row: number, col: number } {
-        const sheet: ExtendedSheet = this.parent.getActiveSheet() as ExtendedSheet;
-        const coll: ExtendedThreadedCommentModel[] = sheet.comments || [];
+        const sheet: ExtendedSheet = this.parent && this.parent.getActiveSheet() as ExtendedSheet;
+        const coll: ExtendedThreadedCommentModel[] = sheet && sheet.comments || [];
         const thread: ExtendedThreadedCommentModel = coll.find((t: ExtendedThreadedCommentModel) => t.id === threadId);
         let row: number; let col: number;
         if (thread && thread.address && Array.isArray(thread.address)) {
@@ -2133,25 +2164,6 @@ export class SpreadsheetComment {
                 }
             }
         }
-    }
-
-    private lowerBoundByAddress(coll: ExtendedThreadedCommentModel[], addr: number[]): number {
-        let low: number = 0;
-        let high: number = coll.length;
-        while (low < high) {
-            const mid: number = Math.floor((low + high) / 2);
-            const [midRow, midCol] = this.getThreadAddr(coll[mid as number]);
-            if (midRow < addr[0] || (midRow === addr[0] && midCol < addr[1])) {
-                low = mid + 1;
-            } else {
-                high = mid;
-            }
-        }
-        return low;
-    }
-
-    private getThreadAddr(thread: ExtendedThreadedCommentModel): number[] {
-        return [thread.address[0], thread.address[1]];
     }
 
     private refreshReviewListFromSheet(): void {
@@ -2284,7 +2296,17 @@ export class SpreadsheetComment {
                 if (!Array.isArray(model.address)) {
                     model.address = [row, col];
                 }
-                this.processSheetComments({ sheet: sheet, comment: model, isDelete: false });
+                if (existing) {
+                    const idxInColl: number = sheet.comments.findIndex((c: ExtendedThreadedCommentModel) => c.id === existing.id);
+                    if (idxInColl > -1) {
+                        if (model.id !== existing.id) {
+                            model.id = existing.id;
+                        }
+                        sheet.comments[idxInColl as number] = model;
+                    }
+                } else {
+                    this.processSheetComments({ sheet: sheet, comment: model, isDelete: false });
+                }
                 if (this.parent.activeSheetIndex === args.sheetIdx) {
                     const td: HTMLElement = this.parent.getCell(row, col);
                     if (td && !td.querySelector('.e-comment-indicator')) {
@@ -2348,7 +2370,7 @@ export class SpreadsheetComment {
             return false;
         };
         if (currentColl.length > 0) { // Try within the current sheet first
-            const pos: number = this.lowerBoundByAddress(currentColl, [address[0], address[1]]);
+            const pos: number = getSortedIndex(currentColl, address, true);
             let exactIdx: number = -1;
             if (pos < currentColl.length) {
                 const comment: ExtendedThreadedCommentModel = currentColl[pos as number];
@@ -2395,6 +2417,34 @@ export class SpreadsheetComment {
      */
     public destroy(): void {
         this.removeEventListener();
+        if (this.scheduleMountId) {
+            cancelAnimationFrame(this.scheduleMountId);
+            this.scheduleMountId = 0;
+        }
+        if (this.activeReplyDdb) {
+            this.activeReplyDdb.destroy();
+        }
+        this.activeReplyDdb = null;
+        if (this.reviewFilterDdb) {
+            this.reviewFilterDdb.destroy();
+        }
+        this.reviewFilterDdb = null;
+        if (this.reviewInstances && this.reviewInstances.length) {
+            this.reviewInstances.forEach((inst: { destroy: () => void }) => { inst.destroy(); });
+        }
+        this.reviewInstances = [];
+        if (this.commentListView) {
+            this.commentListView.destroy();
+        }
+        this.commentListView = null;
+        if (this.reviewPaneEl && this.reviewPaneEl.parentElement) {
+            this.reviewPaneEl.parentElement.removeChild(this.reviewPaneEl);
+        }
+        this.reviewPaneEl = null;
+        this.reviewFilter = null;
+        this.reviewHeaderEl = null;
+        this.reviewBodyEl = null;
+        this.isReviewPaneVisible = null;
         if (!this.parent.isDestroyed && !(this.parent as unknown as { refreshing?: boolean }).refreshing) {
             const commentIndicators: HTMLCollectionOf<Element> = this.parent.element.getElementsByClassName('e-comment-indicator');
             while (commentIndicators.length) {
@@ -2410,13 +2460,11 @@ export class SpreadsheetComment {
             }
             this.removeCommentContainer();
         }
-        if (this.reviewPaneEl && this.reviewPaneEl.parentElement) {
-            this.reviewPaneEl.parentElement.removeChild(this.reviewPaneEl);
-        }
-        this.reviewPaneEl = null;
-        this.isReviewPaneVisible = null;
         this.isCommentVisible = null;
+        this.activeCommentCell = null;
+        this.isEditing = null;
         this.editingState = null;
+        this.bodyHost = null;
         this.parent = null;
     }
 

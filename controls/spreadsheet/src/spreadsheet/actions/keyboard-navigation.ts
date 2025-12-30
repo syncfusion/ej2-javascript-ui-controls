@@ -1,5 +1,5 @@
 import { Spreadsheet } from '../base/index';
-import { keyDown, cellNavigate, filterCellKeyDown, getUpdateUsingRaf, isLockedCells, focus, dialog, getRightIdx, addressHandle, initiateCur, rangeSelectionByKeydown, editOperation, isNavigationKey } from '../common/index';
+import { keyDown, cellNavigate, filterCellKeyDown, getUpdateUsingRaf, isLockedCells, focus, dialog, getRightIdx, addressHandle, initiateCur, rangeSelectionByKeydown, editOperation, isNavigationKey, removeCommentContainer } from '../common/index';
 import { SheetModel, getCellIndexes, getRangeAddress, getRowHeight, getColumnWidth, CellModel, isHiddenCol, checkIsFormula, ExtendedNoteModel, ExtendedSheet } from '../../workbook/index';
 import { getRangeIndexes, getSwapRange, isHiddenRow, isColumnSelected, isRowSelected, skipHiddenIdx, getCell } from '../../workbook/index';
 import { getRowsHeight, getColumnsWidth, isLocked, getColumn, ColumnModel, updateCell, getSheetName, Workbook } from '../../workbook/index';
@@ -56,43 +56,55 @@ export class KeyboardNavigation {
             return;
         }
         const textarea: HTMLTextAreaElement = e.target as HTMLTextAreaElement;
-        if (!isNullOrUndefined(textarea) && textarea.classList.contains('e-addNoteContainer')) {
-            if (e.key === 'Escape' || e.keyCode === 27) {
-                /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
-                const noteModule: any = this.parent.spreadsheetNoteModule as any;
-                const isNoteCellIndex: boolean = this.parent.enableNotes && !isNullOrUndefined(noteModule.activeNoteCell);
-                const cellIndexes: number[] = isNoteCellIndex ? this.parent.spreadsheetNoteModule.activeNoteCell :
-                    getCellIndexes(this.parent.getActiveSheet().activeCell);
-                const noteModel: ExtendedNoteModel = noteModule.getNoteByCellIndex(cellIndexes[0], cellIndexes[1]);
-                const cell: CellModel = getCell(cellIndexes[0], cellIndexes[1], this.parent.getActiveSheet());
-                const targetElement: HTMLElement = this.parent.getCell(cellIndexes[0], cellIndexes[1]);
-                const address: string = getSheetName(this.parent as Workbook, this.parent.activeSheetIndex) + '!' + getRangeAddress(cellIndexes);
-                if (!isNullOrUndefined(textarea) && !isNullOrUndefined(textarea.value) && ((isNullOrUndefined(cell)
-                    || isNullOrUndefined(cell.notes)) || ((cell.notes as ExtendedNoteModel).text !== textarea.value))
-                    && document.activeElement.className.indexOf('e-addNoteContainer') > -1) {
-                    const eventAction: string = !isNullOrUndefined(cell) && cell.notes ? 'editNote' : 'addNote';
-                    this.parent.notify(setActionData, { args: { action: 'beforeCellSave', eventArgs: { address: address } } });
-                    const updatedNote: ExtendedNoteModel = {
-                        id: noteModel.id,
-                        rowIdx: cellIndexes[0],
-                        colIdx: cellIndexes[1],
-                        text: textarea.value,
-                        isVisible: noteModel.isVisible
-                    };
-                    updateCell(
-                        this.parent, this.parent.getActiveSheet(), { rowIdx: cellIndexes[0], colIdx: cellIndexes[1], preventEvt: true,
-                            cell: { notes: updatedNote, isNoteEditable: false }});
-                    const sheetExt: ExtendedSheet = this.parent.getActiveSheet() as ExtendedSheet;
-                    noteModule.syncNoteToSheetArray(sheetExt, cellIndexes[0], cellIndexes[1], updatedNote);
-                    const eventArgs : NoteSaveEventArgs =  { notes: updatedNote, address: address};
-                    this.parent.notify(completeAction, { eventArgs: eventArgs, action: eventAction });
+        if (!isNullOrUndefined(textarea)) {
+            if ((e.key === 'Escape' || e.keyCode === 27)) {
+                if (textarea.classList.contains('e-comment-input')) {
+                    textarea.blur();
+                    return;
+                } else if (textarea.classList.contains('e-comment-container')) {
+                    this.parent.notify(removeCommentContainer, null);
+                    return;
+                } else if (textarea.classList.contains('e-addNoteContainer')) {
+                    /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
+                    const noteModule: any = this.parent.spreadsheetNoteModule as any;
+                    const isNoteCellIndex: boolean = this.parent.enableNotes && !isNullOrUndefined(noteModule.activeNoteCell);
+                    const cellIndexes: number[] = isNoteCellIndex ? this.parent.spreadsheetNoteModule.activeNoteCell :
+                        getCellIndexes(this.parent.getActiveSheet().activeCell);
+                    const noteModel: ExtendedNoteModel = noteModule.getNoteByCellIndex(cellIndexes[0], cellIndexes[1]);
+                    const cell: CellModel = getCell(cellIndexes[0], cellIndexes[1], this.parent.getActiveSheet());
+                    const targetElement: HTMLElement = this.parent.getCell(cellIndexes[0], cellIndexes[1]);
+                    const address: string = getSheetName(this.parent as Workbook, this.parent.activeSheetIndex) + '!' + getRangeAddress(cellIndexes);
+                    if (!isNullOrUndefined(textarea) && !isNullOrUndefined(textarea.value) && ((isNullOrUndefined(cell)
+                        || isNullOrUndefined(cell.notes)) || ((cell.notes as ExtendedNoteModel).text !== textarea.value))
+                        && document.activeElement.className.indexOf('e-addNoteContainer') > -1) {
+                        const eventAction: string = !isNullOrUndefined(cell) && cell.notes ? 'editNote' : 'addNote';
+                        this.parent.notify(setActionData, { args: { action: 'beforeCellSave', eventArgs: { address: address } } });
+                        const updatedNote: ExtendedNoteModel = {
+                            id: noteModel.id,
+                            rowIdx: cellIndexes[0],
+                            colIdx: cellIndexes[1],
+                            text: textarea.value,
+                            isVisible: noteModel.isVisible
+                        };
+                        updateCell(
+                            this.parent, this.parent.getActiveSheet(), {
+                                rowIdx: cellIndexes[0], colIdx: cellIndexes[1], preventEvt: true,
+                                cell: { notes: updatedNote, isNoteEditable: false }
+                            });
+                        const sheetExt: ExtendedSheet = this.parent.getActiveSheet() as ExtendedSheet;
+                        noteModule.syncNoteToSheetArray(sheetExt, cellIndexes[0], cellIndexes[1], updatedNote);
+                        const eventArgs: NoteSaveEventArgs = { notes: updatedNote, address: address };
+                        this.parent.notify(completeAction, { eventArgs: eventArgs, action: eventAction });
+                    }
+                    if (cell && !(cell.notes as ExtendedNoteModel).isVisible) {
+                        this.parent.notify(removeNoteContainer, { rowIndex: cellIndexes[0], columnIndex: cellIndexes[1] });
+                    }
+                    focus(targetElement);
+                    return;
                 }
-                if (cell && !(cell.notes as ExtendedNoteModel).isVisible) {
-                    this.parent.notify(removeNoteContainer, { rowIndex: cellIndexes[0], columnIndex: cellIndexes[1] });
-                }
-                focus(targetElement);
+            } else if (textarea.classList.contains('e-addNoteContainer')) {
+                return;
             }
-            return;
         }
         const dlgInst: { element: Element } = this.parent.serviceLocator.getService<Dialog>(dialog).dialogInstance;
         const isNameBox: boolean = target.id === `${this.parent.element.id}_name_box`;

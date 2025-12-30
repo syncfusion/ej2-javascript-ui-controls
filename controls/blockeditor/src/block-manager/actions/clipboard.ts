@@ -1,7 +1,7 @@
 import { isNullOrUndefined } from '@syncfusion/ej2-base';
 import { BeforePasteCleanupEventArgs, BlockModel, ContentModel, ITableBlockSettings, TableCellModel, TableRowModel } from '../../models/index';
 import { BlockType } from '../../models/enums';
-import { generateUniqueId, decoupleReference, getAbsoluteOffset } from '../../common/utils/common';
+import { generateUniqueId, decoupleReference, getAbsoluteOffset, isNodeAroundSpecialElements } from '../../common/utils/common';
 import { findCellById, getBlockContentElement, getBlockModelById, getClosestContentElementInDocument, getContentElementBasedOnId, getContentModelById, isAtStartOfBlock } from '../../common/utils/block';
 import { findClosestParent, isElementEmpty } from '../../common/utils/dom';
 import { convertHtmlElementToBlocks, getBlockDataAsHTML, convertInlineElementsToContentModels } from '../../common/utils/html-parser';
@@ -302,7 +302,8 @@ export class ClipboardAction {
             range.deleteContents();
             const contentElement: HTMLElement = getBlockContentElement(blockElement);
             Array.from(contentElement.childNodes).forEach((node: Node) => {
-                if (node.textContent.trim() === '') {
+                const isNodeAroundMention: boolean = isNodeAroundSpecialElements(node);
+                if (node.textContent.trim() === '' && !isNodeAroundMention) {
                     (node as HTMLElement).remove();
                 }
             });
@@ -311,7 +312,11 @@ export class ClipboardAction {
             this.parent.setFocusAndUIForNewBlock(blockElement);
             setCursorPosition(contentElement, getAbsoluteOffset(contentElement, range.startContainer, range.startOffset));
 
-            if (selectedBlocks[0].blockType === BlockType.Code && contentElement && contentElement.textContent.trim() === '') {
+            const isCodeBlk: boolean = selectedBlocks[0].blockType === BlockType.Code;
+            const isTableChild: HTMLElement = this.parent.currentFocusedBlock.closest(`.${constants.TABLE_BLOCK_CLS}`) as HTMLElement;
+            const isEmptyAfterDeletion: boolean = contentElement && contentElement.textContent.trim() === '';
+            const shouldRenderBr: boolean = isEmptyAfterDeletion && (isCodeBlk || !isNullOrUndefined(isTableChild));
+            if (shouldRenderBr) {
                 contentElement.innerHTML = '<br>';
             }
             return;
@@ -450,7 +455,7 @@ export class ClipboardAction {
                 preventEventTrigger: true
             }});
         }
-        else if (!isCursorAtStart && !isFirstBlkSpecialType) {
+        else if (!isFirstBlkSpecialType) {
             isFirstBlkProcessed = true;
             this.parent.execCommand({ command: 'SplitBlock', state: { preventEventTrigger: true } });
 

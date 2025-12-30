@@ -1,5 +1,5 @@
 import { Spreadsheet } from '../base/index';
-import { keyDown, cut, paste, copy, clearCopy, performUndoRedo, initiateHyperlink, editHyperlink, HideShowEventArgs, renderInsertDlg, getRightIdx, getBottomOffset, keyUp } from '../common/index';
+import { keyDown, cut, paste, copy, clearCopy, performUndoRedo, initiateHyperlink, editHyperlink, HideShowEventArgs, renderInsertDlg, getRightIdx, getBottomOffset, keyUp, initiateComment } from '../common/index';
 import { findDlg, gotoDlg, initiateFilterUI, getFilterRange, FilterInfoArgs, FillRangeInfo, performAutoFill, focus, addNote, editNote } from '../common/index';
 import { setCellFormat, textDecorationUpdate, FontWeight, getCellIndexes, FontStyle, findToolDlg, getRangeIndexes, InsertDeleteModelArgs, hideShow, applyNumberFormatting, insertModel, getSwapRange, getRangeAddress, beginAction, BeforeCellFormatArgs, isReadOnlyCells } from '../../workbook/common/index';
 import { CellModel, SheetModel, getColumn, isLocked as isCellLocked, exportDialog, getFormatFromType } from '../../workbook/index';
@@ -302,13 +302,20 @@ export class KeyboardShortcut {
         }
 
         if (e.shiftKey && !isSelectionNone) {
-            if (e.keyCode === 113 && !sheet.isProtected) { /*shift + F2(Add note)*/
+            if (e.keyCode === 113) {
                 e.preventDefault();
-                if ((e.target as HTMLElement).children.length > 0 && typeof (e.target as HTMLElement).children[(e.target as HTMLElement).children.length - 1].className === 'string' &&
-                    (e.target as HTMLElement).children[(e.target as HTMLElement).children.length - 1].className.indexOf('e-addNoteIndicator') > -1) {
-                    this.parent.notify(editNote, null);
-                } else {
-                    this.parent.notify(addNote, null);
+                const activeCell: number[] = getCellIndexes(this.parent.getActiveSheet().activeCell);
+                const cell: HTMLElement = this.parent.getCell(activeCell[0], activeCell[1]);
+                if (e.ctrlKey || e.metaKey) { /*ctrl + shift + F2(Add Comment)*/
+                    if (cell && !cell.querySelector('.e-addNoteIndicator')) {
+                        this.parent.notify(initiateComment, null);
+                    }
+                } else if (!sheet.isProtected && cell && !cell.querySelector('.e-comment-indicator')) { /*shift + F2(Add note)*/
+                    if (cell.querySelector('.e-addNoteIndicator')) {
+                        this.parent.notify(editNote, null);
+                    } else {
+                        this.parent.notify(addNote, null);
+                    }
                 }
             } else if (e.keyCode === 114) { /*shift + F3(insert-function dialog)*/
                 e.preventDefault();

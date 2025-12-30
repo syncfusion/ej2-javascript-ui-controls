@@ -1,5 +1,5 @@
 import { Spreadsheet } from '../base/index';
-import { completeAction, focus, insertSheetTab, refreshCommentsPane, refreshImagePosition, updateScrollValue } from '../common/index';
+import { completeAction, focus, insertSheetTab, refreshCommentsPane, refreshImagePosition, updateNoteContainer, updateScrollValue } from '../common/index';
 import { beforeInsert, insert, InsertDeleteEventArgs, triggerDataChange, getRowsHeight, ActionEventArgs, RowModel, ChartModel, getChartRowIdxFromClientY, getChartColIdxFromClientX, refreshChartCellOnInit, addDPRValue } from '../../workbook/index';
 import { SheetModel, CellModel, getCell, getSheet, getCellIndexes, getCellAddress, getColumnsWidth } from '../../workbook/index';
 import { skipHiddenIdx } from '../../workbook/index';
@@ -119,6 +119,10 @@ export class Insert {
             break;
         }
         this.refreshImgChartElement(args.model.length, this.parent.activeSheetIndex, args.modelType, args.index);
+        if (args.modelType !== 'Sheet' && args.activeSheetIndex === this.parent.activeSheetIndex) {
+            this.parent.notify(refreshCommentsPane, { sheetIdx: args.activeSheetIndex });
+            this.parent.notify(updateNoteContainer, null);
+        }
         if (args.isAction) {
             delete args.isAction;
             this.parent.notify(completeAction, actionArgs);

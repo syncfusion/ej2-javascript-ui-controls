@@ -1006,6 +1006,13 @@ export class SfdtReader {
                         let blockWidget: BlockWidget;
                         if (para instanceof ParagraphWidget) {
                             blockWidget = para as BlockWidget;
+                            if (j === 0) {
+                                (blockWidget.firstChild as LineWidget).children.splice(0, 0, blockStartContentControl);
+                                blockStartContentControl.line = blockWidget.firstChild as LineWidget;
+                            } else {
+                                (blockWidget.lastChild as LineWidget).children.push(blockEndContentControl);
+                                blockEndContentControl.line = blockWidget.lastChild as LineWidget;
+                            }
                         } else if (para instanceof TableWidget) {
                             if (j === 0) {
                                 blockWidget = ((para.firstChild as TableRowWidget).firstChild as TableCellWidget).firstChild as BlockWidget;
@@ -1017,13 +1024,6 @@ export class SfdtReader {
                         if (!isNullOrUndefined(blockWidget) && blockWidget.childWidgets.length === 0) {
                             const lineWidget: LineWidget = new LineWidget(blockWidget as ParagraphWidget);
                             blockWidget.childWidgets.push(lineWidget);
-                        }
-                        if (j === 0) {
-                            (blockWidget.firstChild as LineWidget).children.splice(0, 0, blockStartContentControl);
-                            blockStartContentControl.line = blockWidget.firstChild as LineWidget;
-                        } else {
-                            (blockWidget.lastChild as LineWidget).children.push(blockEndContentControl);
-                            blockEndContentControl.line = blockWidget.lastChild as LineWidget;
                         }
                     }
                 }

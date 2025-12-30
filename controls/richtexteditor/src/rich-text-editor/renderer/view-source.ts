@@ -145,7 +145,8 @@ export class ViewSource {
             if (!actionBeginArgs.cancel) {
                 const tbItems: HTMLElement[] = selectAll('.' + CLS_TB_ITEM, this.parent.element);
                 this.contentModule = this.rendererFactory.getRenderer(RenderType.Content);
-                const height: number = this.parent.inputElement.getBoundingClientRect().height;
+                const height: number = this.parent.inputElement.getBoundingClientRect().height +
+                this.parent.toolbarModule.getExpandTBarPopHeight();
                 this.parent.rootContainer.classList.add('e-source-code-enabled');
                 this.parent.notify(events.updateToolbarItem, {
                     targetItem: 'SourceCode', updateItem: 'Preview',

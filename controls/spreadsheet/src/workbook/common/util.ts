@@ -1,5 +1,5 @@
 import { CellModel, ColumnModel, getCell, SheetModel, setCell, Workbook, getSheetIndex, CellStyleModel, getCellIndexes, RowModel, getRow, getColumn } from './../index';
-import { getCellAddress, getRangeIndexes, BeforeCellUpdateArgs, beforeCellUpdate, workbookEditOperation, CellUpdateArgs, getRangeAddress, getSwapRange, workbookReadonlyAlert } from './index';
+import { getCellAddress, getRangeIndexes, BeforeCellUpdateArgs, beforeCellUpdate, workbookEditOperation, CellUpdateArgs, getRangeAddress, getSwapRange, workbookReadonlyAlert, ExtendedThreadedCommentModel } from './index';
 import { InsertDeleteModelArgs, getColumnHeaderText, ConditionalFormat, ConditionalFormatModel, clearFormulaDependentCells } from './index';
 import { isHiddenCol, isHiddenRow, VisibleMergeIndexArgs, checkDateFormat, checkNumberFormat, DateFormatCheckArgs } from './../index';
 import { isUndefined, getNumberDependable, getNumericObject, Internationalization, defaultCurrencyCode, isNullOrUndefined } from '@syncfusion/ej2-base';
@@ -539,17 +539,36 @@ export function updateCell(context: Workbook, sheet: SheetModel, prop: CellUpdat
             }
             const isPaste: boolean = prop.requestType === 'paste';
             if (isPaste) {
-                if (prevCell && prevCell.notes) {
-                    context.notify('processSheetNotes', { sheet: sheet, id: (prevCell.notes as ExtendedNoteModel).id, isDelete: true });
+                if (prevCell) {
+                    if (prevCell.notes) {
+                        context.notify('processSheetNotes', {
+                            sheet: sheet, id: (prevCell.notes as ExtendedNoteModel).id, isDelete: true
+                        });
+                    }
+                    if (prevCell.comment) {
+                        context.notify('processSheetComments', {
+                            sheet: sheet, id: (prevCell.comment as ExtendedThreadedCommentModel).id, isDelete: true
+                        });
+                    }
                 }
-                if (args.cell && args.cell.notes) {
-                    const note: ExtendedNoteModel = {};
-                    Object.assign(note, <ExtendedNoteModel>args.cell.notes);
-                    delete note.id;
-                    note.rowIdx = args.rowIndex;
-                    note.colIdx = args.colIndex;
-                    context.notify('processSheetNotes', { sheet: sheet, note: note });
-                    args.cell.notes = note;
+                if (args.cell) {
+                    if (args.cell.notes) {
+                        const note: ExtendedNoteModel = {};
+                        Object.assign(note, <ExtendedNoteModel>args.cell.notes);
+                        delete note.id;
+                        note.rowIdx = args.rowIndex;
+                        note.colIdx = args.colIndex;
+                        context.notify('processSheetNotes', { sheet: sheet, note: note });
+                        args.cell.notes = note;
+                    }
+                    if (args.cell.comment) {
+                        const comment: ExtendedThreadedCommentModel = {};
+                        Object.assign(comment, <ExtendedThreadedCommentModel>args.cell.comment);
+                        delete comment.id;
+                        comment.address = [args.rowIndex, args.colIndex];
+                        context.notify('processSheetComments', { sheet: sheet, comment: comment });
+                        args.cell.comment = comment;
+                    }
                 }
             }
             const evtArgs: { [key: string]: string | boolean | number[] | number | BeforeActionData } = {
@@ -621,6 +640,32 @@ function cleanEmptyBorderProperties(style: CellStyleModel): void {
         if (style.borderLeft === '') { delete style.borderLeft; }
         if (style.borderRight === '') { delete style.borderRight; }
     }
+}
+
+/**
+ * @param {(ExtendedThreadedCommentModel | ExtendedNoteModel)[]} items - Specifies comment or note model
+ * @param {number[]} address - Specifies the comment or note address
+ * @param {boolean} isComment - Specifies whether the model is comment or not.
+ * @returns {number} - retruns the comment insert index
+ * @hidden
+ */
+export function getSortedIndex(items: (ExtendedThreadedCommentModel | ExtendedNoteModel)[],
+                               address: number[], isComment: boolean): number {
+    let low: number = 0;
+    let high: number = items.length;
+    while (low < high) {
+        const mid: number = Math.floor((low + high) / 2);
+        const midRow: number = isComment ? (items[mid as number] as ExtendedThreadedCommentModel).address[0] :
+            (items[mid as number] as ExtendedNoteModel).rowIdx;
+        const midCol: number = isComment ? (items[mid as number] as ExtendedThreadedCommentModel).address[1] :
+            (items[mid as number] as ExtendedNoteModel).colIdx;
+        if (midRow < address[0] || (midRow === address[0] && midCol < address[1])) {
+            low = mid + 1;
+        } else {
+            high = mid;
+        }
+    }
+    return low;
 }
 
 /**
@@ -1195,11 +1240,12 @@ export function updateMergeBorder(context: Workbook, rowIndexes: number[], colIn
             if (col === frozenCol) {
                 col += parent.viewport.leftIndex;
             }
+            style = getCell(rowIdx, col, sheet, false, true).style;
             const prevModel: CellModel = getCell(rowIdx - 1, col, sheet, false, true);
             if (((!prevModel.rowSpan || prevModel.rowSpan === 1)
                 || (!prevModel.colSpan || prevModel.colSpan === 1)) &&
-                (!prevModel.style || !prevModel.style.borderBottom || prevModel.style.borderBottom === 'none')) {
-                style = getCell(rowIdx, col, sheet, false, true).style;
+                (!prevModel.style || !prevModel.style.borderBottom || prevModel.style.borderBottom === 'none' ||
+                    (style && style.borderTop === prevModel.style.borderBottom))) {
                 if (style && style.borderTop) {
                     const prevCell: HTMLElement = context.getCell(rowIdx - 1, col);
                     if (prevCell && prevCell.style.borderBottom) {

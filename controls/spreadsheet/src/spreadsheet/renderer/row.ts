@@ -30,14 +30,7 @@ export class RowRenderer implements IRowRenderer {
             return row;
         }
         row.classList.add('e-row');
-        if (!this.bottomBorderWidth) {
-            let width: number = 1;
-            if (window.devicePixelRatio % 1 > 0) {
-                const pointValue: number = (1 * window.devicePixelRatio) % 1;
-                width = 1 + (pointValue ? ((pointValue > 0.5 ? (1 - pointValue) : -1 * pointValue) / window.devicePixelRatio) : 0);
-            }
-            this.bottomBorderWidth = width;
-        }
+        this.getBorderWidth();
         const rowHeight: number = getRowHeight(sheet, index, true);
         const actualRowHgt: number = getRowHeight(sheet, index);
         const rowStyles: { height: string, lineHeight: string } = {
@@ -64,6 +57,18 @@ export class RowRenderer implements IRowRenderer {
             }
         }
         return row;
+    }
+
+    public getBorderWidth(): number {
+        if (!this.bottomBorderWidth) {
+            let width: number = 1;
+            if (window.devicePixelRatio % 1 > 0) {
+                const pointValue: number = (1 * window.devicePixelRatio) % 1;
+                width = 1 + (pointValue ? ((pointValue > 0.5 ? (1 - pointValue) : -1 * pointValue) / window.devicePixelRatio) : 0);
+            }
+            this.bottomBorderWidth = width;
+        }
+        return this.bottomBorderWidth;
     }
 
     public refresh(index: number, pRow: Element, hRow?: Element, header?: boolean, preventHiddenCls?: boolean): Element {

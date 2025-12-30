@@ -433,7 +433,7 @@ export class LayoutParagraphGroup extends RibbonGroupBase {
         }
 
         const spacingBefore: number = this.spacingBeforeNumericBox.value;
-        if (spacingBefore !== null) {
+        if (spacingBefore !== null && Math.round(this.container.documentEditor.selection.paragraphFormat.beforeSpacing * 1000) !== Math.round(spacingBefore * 1000)) {
             this.container.documentEditor.selection.paragraphFormat.beforeSpacing = spacingBefore;
         }
     }
@@ -444,7 +444,7 @@ export class LayoutParagraphGroup extends RibbonGroupBase {
         }
 
         const spacingAfter: number = this.spacingAfterNumericBox.value;
-        if (spacingAfter !== null) {
+        if (spacingAfter !== null && Math.round(this.container.documentEditor.selection.paragraphFormat.afterSpacing * 1000) !== Math.round(spacingAfter * 1000)) {
             this.container.documentEditor.selection.paragraphFormat.afterSpacing = spacingAfter;
         }
     }

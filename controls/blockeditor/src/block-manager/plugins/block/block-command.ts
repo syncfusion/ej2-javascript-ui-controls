@@ -1,7 +1,7 @@
 import { isNullOrUndefined as isNOU, detach, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { BaseChildrenProp, BlockModel, BlockProperties, ContentModel } from '../../../models/index';
 import { IAddBlockInteraction, IAddBulkBlocksInteraction, IDeleteBlockInteraction, IToBlockData, IFromBlockData, IIndentOperation, IMoveBlocksInteraction, ISplitContentData, ITransformBlockInteraction, RangePath } from '../../../common/interface';
-import { getBlockModelById, getBlockIndexById, getBlockContentElement, isListTypeBlock, isDividerBlock, getClosestContentElementInDocument, getContentElementBasedOnId, cleanCheckmarkElement } from '../../../common/utils/block';
+import { getBlockModelById, getBlockIndexById, getBlockContentElement, isListTypeBlock, isDividerBlock, getClosestContentElementInDocument, getContentElementBasedOnId, cleanCheckmarkElement, isNonMergableBlock, getAdjacentBlock, getContainerInfo } from '../../../common/utils/block';
 import { generateUniqueId, decoupleReference, sanitizeBlock, sanitizeContent, setCursorPosition, sanitizeContents, getSelectedRange, getAbsoluteOffset, captureSelectionState, extractBlockTypeFromElement } from '../../../common/utils/index';
 import * as constants from '../../../common/constant';
 import { actionType, events } from '../../../common/constant';
@@ -11,7 +11,6 @@ import { BlockFactory } from '../../services/index';
 import { BlockManager } from '../../base/block-manager';
 import { clearBreakTags, findClosestParent } from '../../../common/utils/dom';
 import { NodeCutter } from '../common/node';
-
 
 /**
  * Manages all block-related commands in the BlockEditor
@@ -36,6 +35,7 @@ export class BlockCommand {
         this.parent.observer.on(constants.MOVEBLOCK, this.moveBlock, this);
         this.parent.observer.on(constants.DUPLICATEBLOCK, this.duplicateBlock, this);
         this.parent.observer.on(constants.INDENTBLOCK, this.handleBlockIndentation, this);
+        this.parent.observer.on(constants.DELETE_NON_MERGABLEBLOCK, this.deleteNonMergableBlock, this);
         this.parent.observer.on(events.destroy, this.destroy, this);
     }
 
@@ -47,6 +47,7 @@ export class BlockCommand {
         this.parent.observer.off(constants.MOVEBLOCK, this.moveBlock);
         this.parent.observer.off(constants.DUPLICATEBLOCK, this.duplicateBlock);
         this.parent.observer.off(constants.INDENTBLOCK, this.handleBlockIndentation);
+        this.parent.observer.off(constants.DELETE_NON_MERGABLEBLOCK, this.deleteNonMergableBlock);
         this.parent.observer.off(events.destroy, this.destroy);
     }
 
@@ -203,31 +204,6 @@ export class BlockCommand {
         const { blockElement, mergeDirection } = args;
         if (!blockElement) { return; }
         const editorBlocks: BlockModel[] = this.parent.getEditorBlocks();
-        const childTypes: string[] = [BlockType.CollapsibleParagraph, BlockType.CollapsibleHeading,
-            BlockType.Callout, BlockType.Table];
-        const isChildrenBlock: boolean = (childTypes.indexOf(extractBlockTypeFromElement(blockElement.closest('.e-block') as HTMLElement)) !== -1)
-            || !isNullOrUndefined(blockElement.closest('.' + constants.TABLE_BLOCK_CLS));
-
-        if (isDividerBlock(blockElement) || (!isChildrenBlock && editorBlocks.length === 1)) {
-            const adjacentBlockElement: HTMLElement = blockElement.nextElementSibling as HTMLElement;
-            const isDivider: boolean = isDividerBlock(blockElement);
-
-            /* When there is only single block in editor, on deletion of it, we should create a default empty paragraph */
-            this.deleteBlock({ ...args, blockElement: blockElement });
-            this.createDefaultEmptyBlock(true);
-
-            if (isDivider && !isNOU(adjacentBlockElement)) {
-                const adjacentContent: HTMLElement = getBlockContentElement(adjacentBlockElement);
-                if (adjacentContent.innerHTML === '<br>') {
-                    clearBreakTags(adjacentBlockElement);
-                }
-                this.parent.setFocusToBlock(adjacentBlockElement);
-                this.parent.togglePlaceholder(adjacentBlockElement, true);
-                setCursorPosition(adjacentContent, 0);
-                this.parent.floatingIconAction.showFloatingIcons(adjacentBlockElement);
-            }
-            return;
-        }
 
         if (blockElement.getAttribute('data-block-type').startsWith('Collapsible')) {
             this.transformToggleBlocksAsRegular(blockElement);
@@ -302,6 +278,38 @@ export class BlockCommand {
 
         if (isListTypeBlock(sourceBlockModel.blockType) || isListTypeBlock(targetBlockModel.blockType)) {
             this.parent.listPlugin.recalculateMarkersForListItems();
+        }
+    }
+
+    /**
+     * Deletes non mergable block
+     *
+     * @param {IDeleteBlockInteraction} args Optional additional arguments
+     * @returns {void}
+     * @hidden
+     */
+    public deleteNonMergableBlock(args: IDeleteBlockInteraction): void {
+        if (!args.blockElement) { return; }
+        const { array, containerType } = getContainerInfo(args.blockElement.id, this.parent.getEditorBlocks());
+        if ((containerType === 'cell' || containerType === 'children') && (array && array.length === 1)) {
+            this.transformBlock({
+                block: getBlockModelById(args.blockElement.id, this.parent.getEditorBlocks()),
+                blockElement: args.blockElement,
+                newBlockType: BlockType.Paragraph
+            });
+            return;
+        }
+        else {
+            const adjacentBlockElement: HTMLElement = getAdjacentBlock(args.blockElement, 'next')
+                || getAdjacentBlock(args.blockElement, 'previous');
+
+            this.deleteBlock({ ...args, blockElement: args.blockElement });
+            /* When there is only single block in editor, on deletion of it, we should create a default empty paragraph */
+
+            if (!isNOU(adjacentBlockElement)) {
+                this.parent.setFocusAndUIForNewBlock(adjacentBlockElement);
+            }
+            return;
         }
     }
 
@@ -663,24 +671,32 @@ export class BlockCommand {
         const rangePath: RangePath = this.parent.nodeSelection.getStoredBackupRange();
         this.parent.mentionAction.cleanMentionArtifacts(blockElement, true);
         this.parent.mentionAction.removeMentionQueryKeysFromModel('/', args.isUndoRedoAction);
-        const specialTypes: string[] = [BlockType.Divider, BlockType.CollapsibleParagraph, BlockType.CollapsibleHeading,
-            BlockType.Callout, BlockType.Table, BlockType.Code];
-        const isClosestCallout: HTMLElement = findClosestParent(blockElement, '.' + constants.CALLOUT_BLOCK_CLS);
-        const isClosestToggle: HTMLElement = findClosestParent(blockElement, '.' + constants.TOGGLE_BLOCK_CLS);
+        const nestedTypes: Set<string> = new Set<string>([BlockType.CollapsibleParagraph, BlockType.CollapsibleHeading,
+            BlockType.Callout, BlockType.Table]);
+        const specialTypes: Set<string> = new Set<string>([BlockType.Divider , BlockType.Code, BlockType.Image]);
+        const nestedSelectors: string = `.${constants.CALLOUT_BLOCK_CLS}, .${constants.TOGGLE_BLOCK_CLS}`;
+        const closestParentEle: HTMLElement = blockElement.closest(nestedSelectors) as HTMLElement;
         let transformedElement: HTMLElement = blockElement;
-        const isSpecialType: boolean = (specialTypes.indexOf(newBlockType) > -1) || (specialTypes.indexOf(block.blockType) > -1);
-        const isBlockNotEmpty: boolean = blockElement.textContent.length > 0;
+        const doesBlockHasContent: boolean = blockElement.textContent.length > 0;
         let nextSiblingOfTransformedEle: HTMLElement;
+        const isSpecialType: boolean = specialTypes.has(newBlockType) || specialTypes.has(block.blockType);
+        const isNestedType: boolean = nestedTypes.has(newBlockType) || nestedTypes.has(block.blockType);
 
         // Proceed to add new block rather than transforming current block for below conditions
-        if (isSpecialType && (isBlockNotEmpty || (isClosestCallout || isClosestToggle))) {
+        if ((isSpecialType || isNestedType) && (doesBlockHasContent || (isNestedType &&  closestParentEle))) {
             const addedBlock: BlockModel = this.parent.blockCommand.addBlock({
-                targetBlock: isClosestCallout || isClosestToggle || blockElement,
+                blockID: isUndoRedoAction ? block.id : '',
+                targetBlock: isNestedType ? closestParentEle || blockElement : blockElement,
                 blockType: newBlockType,
                 properties: args.props,
                 preventEventTrigger: true,
-                forceIgnoreTargetUpdate: true
+                forceIgnoreTargetUpdate: true,
+                isUndoRedoAction: isUndoRedoAction
             });
+            // Delete the special block dom after adding a block of it's older type
+            if (isUndoRedoAction) {
+                this.deleteBlock({ blockElement, isUndoRedoAction: true });
+            }
             transformedElement = this.parent.getBlockElementById(addedBlock.id);
         } else {
             cleanCheckmarkElement(blockElement);
@@ -695,7 +711,7 @@ export class BlockCommand {
         }
 
         // Add a new paragraph block after the transformed block if it is a special type block.
-        if (isSpecialType && !isUndoRedoAction) {
+        if ((isSpecialType || isNestedType) && !isUndoRedoAction) {
             const addedBlock: BlockModel = this.parent.blockCommand.addBlock({
                 targetBlock: transformedElement,
                 blockType: BlockType.Paragraph,
@@ -723,7 +739,7 @@ export class BlockCommand {
         this.parent.listPlugin.recalculateMarkersForListItems();
         this.parent.floatingIconAction.showFloatingIcons(transformedElement);
 
-        if (newBlockType === BlockType.Divider && nextSiblingOfTransformedEle) {
+        if ((newBlockType === BlockType.Divider || newBlockType === BlockType.Image) && nextSiblingOfTransformedEle) {
             this.parent.setFocusAndUIForNewBlock(nextSiblingOfTransformedEle);
         }
         else if (newBlockType === 'Table') {

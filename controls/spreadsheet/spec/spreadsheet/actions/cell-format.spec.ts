@@ -2319,38 +2319,119 @@ describe('Cell Format ->', () => {
             });
         });
     });
-    describe('EJ2-972438: Accounting Cell Formatting Breaks with Font Style/Size Change ->', () => {
+    describe('EJ2-972438, EJ2-999080 ->', () => {
         beforeAll((done: Function) => {
             helper.initializeSpreadsheet({ sheets: [{ ranges: [{ dataSource: defaultData }] }] }, done);
         });
         afterAll(() => {
             helper.invoke('destroy');
         });
-        it('Accounting formatted cell should not break', (done: Function) => {
+        it('EJ2-972438: Accounting Cell Formatting Breaks with Font Style/Size Change', (done: Function) => {
             helper.invoke('numberFormat', ['_($* #,##0.00_);_($* (#,##0.00);_($* "-"??_);_(@_)', 'D2:D11']);
             helper.invoke('updateCell', [{ style: { fontFamily: 'Arial Black' } }, 'D2']);
             helper.invoke('updateCell', [{ style: { fontSize: '14pt' } }, 'D3']);
             done();
         });
+        it('EJ2-999080: Top borders are applied incorrectly when the adjacent top cell is merged', (done: Function) => {
+            helper.invoke('merge', ['E12:G12', 'Horizontally']);
+            helper.invoke('selectRange', ['E10:I10']);
+            helper.click('#spreadsheet_borders');
+            helper.click('.e-borders-menu ul li:nth-child(1)');
+            helper.invoke('selectRange', ['E10:E12']);
+            helper.click('#spreadsheet_borders');
+            helper.click('.e-borders-menu ul li:nth-child(2)');
+            helper.invoke('selectRange', ['I10:I12']);
+            helper.click('#spreadsheet_borders');
+            helper.click('.e-borders-menu ul li:nth-child(3)');
+            helper.invoke('selectRange', ['E13:I13']);
+            helper.click('#spreadsheet_borders');
+            helper.click('.e-borders-menu ul li:nth-child(1)');
+            const sheet: SheetModel = helper.getInstance().sheets[0];
+            expect(sheet.rows[12].cells[4].style.borderTop).toBe('1px solid #000000');
+            expect(sheet.rows[12].cells[5].style.borderTop).toBe('1px solid #000000');
+            expect(sheet.rows[12].cells[6].style.borderTop).toBe('1px solid #000000');
+            expect(sheet.rows[12].cells[7].style.borderTop).toBe('1px solid #000000');
+            expect(sheet.rows[12].cells[8].style.borderTop).toBe('1px solid #000000');
+            helper.invoke('selectRange', ['F13:J13']);
+            helper.click('#spreadsheet_borders');
+            helper.click('.e-borders-menu ul li:nth-child(1)');
+            expect(sheet.rows[12].cells[8].style.borderTop).toBe('1px solid #000000');
+            expect(sheet.rows[12].cells[9].style.borderTop).toBe('1px solid #000000');
+            helper.getElement('#' + helper.id + '_undo').click();
+            expect(sheet.rows[12].cells[8].style.borderTop).toBe('1px solid #000000');
+            expect(sheet.rows[12].cells[9].style).toBeUndefined();
+            helper.getElement('#' + helper.id + '_redo').click();
+            expect(sheet.rows[12].cells[8].style.borderTop).toBe('1px solid #000000');
+            expect(sheet.rows[12].cells[9].style.borderTop).toBe('1px solid #000000');
+            done();
+        });
     });
     describe('EJ2- 991003: Row Height Not Adjusted Correctly When Thick Borders Are Applied in Spreadsheet ->', () => {
         beforeAll((done: Function) => {
-            helper.initializeSpreadsheet({ sheets: [{ ranges: [{ dataSource: defaultData }] }] }, done);
+            helper.initializeSpreadsheet({
+                sheets: [{
+                    columns: [{
+                        width: 360,
+                    },
+                    {
+                        width: 360,
+                    },
+                    {
+                        width: 360,
+                    }],
+                    rows: [{
+                        height: 17.333333333333332,
+                        customHeight: false,
+                        cells: [{ value: 'A1' },
+                        { value: 'B1', style: { borderLeft: '3px solid rgb(0, 0, 0)', borderRight: '3px solid rgb(0, 0, 0)', borderTop: '3px solid rgb(0, 0, 0)', borderBottom: '3px solid rgb(0, 0, 0)' } }]
+                    },
+                    {
+                        height: 17.333333333333332,
+                        customHeight: false,
+                        cells: [{ value: 'A2' },
+                        { value: 'B2', style: { borderLeft: '3px solid rgb(0, 0, 0)', borderRight: '3px solid rgb(0, 0, 0)', borderTop: '3px solid rgb(0, 0, 0)', borderBottom: '3px solid rgb(0, 0, 0)' } }]
+                    },
+                    {
+                        height: 17.333333333333332,
+                        customHeight: false,
+                        cells: [{ value: 'A3', style: { fontFamily: "Arial", fontSize: '9pt', verticalAlign: 'middle' } }, { value: 'B3' }]
+                    },
+                    {
+                        height: 17.333333333333332,
+                        customHeight: false,
+                        cells: [{ value: 'Landi, Robert C', style: { fontFamily: "Arial", fontSize: '9pt', verticalAlign: 'middle' } }, { value: 'B4' }]
+                    }],
+                    standardHeight: 17,
+                }],
+            }, done);
         });
         afterAll(() => {
             helper.invoke('destroy');
         });
         it('Row Height Should Adjusted Correctly When Thick Borders Are Applied on merged cells', (done: Function) => {
             let spreadsheet: Spreadsheet = helper.getInstance();
-            spreadsheet.setRowHeight(15, 1);
-            spreadsheet.setRowHeight(15, 2);
-            spreadsheet.setRowHeight(15, 3);
-            helper.invoke('merge', ['D2:F2', 'Horizontally']);
-            helper.invoke('merge', ['D3:F3', 'Horizontally']);
-            helper.invoke('merge', ['D4:F4', 'Horizontally']);
-            helper.invoke('cellFormat', [{ border: '2px solid #000' }, 'D2:F4']);
-            let rowHdr: HTMLElement = helper.invoke('getRowHeaderTable').rows[1];
-            expect(rowHdr.offsetHeight).toBe(spreadsheet.sheets[0].rows[1].height);
+            let rowHdr: HTMLElement = helper.invoke('getRowHeaderTable').rows[0];
+            expect(rowHdr.offsetHeight).toBe(spreadsheet.sheets[0].rows[0].height);
+            spreadsheet.setRowHeight(15, 6);
+            spreadsheet.setRowHeight(15, 7);
+            spreadsheet.setRowHeight(15, 8);
+            helper.invoke('merge', ['D7:F7', 'Horizontally']);
+            helper.invoke('merge', ['D8:F8', 'Horizontally']);
+            helper.invoke('merge', ['D9:F9', 'Horizontally']);
+            helper.invoke('cellFormat', [{ border: '2px solid #000' }, 'D7:F9']);
+            rowHdr = helper.invoke('getRowHeaderTable').rows[6];
+            expect(rowHdr.offsetHeight).toBe(spreadsheet.sheets[0].rows[6].height);
+            spreadsheet.notify(setCellFormat, { style: { borderLeft: '1px solid rgb(0, 0, 0)', borderRight: '1px solid rgb(0, 0, 0)', borderTop: '1px solid rgb(0, 0, 0)', borderBottom: '1px solid rgb(0, 0, 0)' }, range: 'A4', onActionUpdate: true });
+            rowHdr = helper.invoke('getRowHeaderTable').rows[3];
+            expect(rowHdr.offsetHeight).toBe(spreadsheet.sheets[0].rows[3].height);
+            done();
+        });
+        it('Line height for a border applied cell should be removed on applying no border', (done: Function) => {
+            helper.getInstance().notify(setCellFormat, { style: { borderLeft: '2px solid rgb(0, 0, 0)', borderRight: '2px solid rgb(0, 0, 0)', borderTop: '2px solid rgb(0, 0, 0)', borderBottom: '2px solid rgb(0, 0, 0)' }, range: 'A4', onActionUpdate: true });
+            helper.invoke('selectRange', ['A4']);
+            helper.getElement('#' + helper.id + '_borders').click();
+            helper.getElement('.e-menu-item[aria-label="No Borders"]').click();
+            expect(helper.getInstance().sheets[0].rows[3].cells[0].style.lineHeight).toBe(undefined);
             done();
         });
     });

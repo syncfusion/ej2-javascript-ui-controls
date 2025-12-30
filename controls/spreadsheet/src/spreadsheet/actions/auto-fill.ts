@@ -1,8 +1,8 @@
 import { getColIdxFromClientX, getClientY, getClientX, selectAutoFillRange, setPosition, completeAction, showAggregate, dialog, locale, hideAutoFillOptions, performUndoRedo, hideAutoFillElement, removeAllChildren } from '../../spreadsheet/index';
 import { Spreadsheet, contentLoaded, positionAutoFillElement, getCellPosition, getRowIdxFromClientY } from '../../spreadsheet/index';
 import { performAutoFill, isLockedCells } from '../../spreadsheet/index';
-import { ICellRenderer, editAlert, AutoFillEventArgs, FillRangeInfo, readonlyAlert, getUpdateUsingRaf } from '../common/index';
-import { updateSelectedRange, isHiddenRow, setAutoFill, AutoFillType, AutoFillDirection, refreshCell, getFillInfo, getautofillDDB, isReadOnlyCells } from '../../workbook/index';
+import { ICellRenderer, editAlert, AutoFillEventArgs, FillRangeInfo, readonlyAlert, getUpdateUsingRaf, editOperation } from '../common/index';
+import { updateSelectedRange, isHiddenRow, setAutoFill, AutoFillType, AutoFillDirection, refreshCell, getFillInfo, getautofillDDB, isReadOnlyCells, checkIsFormula } from '../../workbook/index';
 import { getRangeIndexes, getSwapRange, Workbook, getRowsHeight, getColumnsWidth, isInRange } from '../../workbook/index';
 import { getCell, CellModel, SheetModel, getRangeAddress, isHiddenCol, beginAction, refreshRibbonIcons } from '../../workbook/index';
 import { addClass, isNullOrUndefined, L10n, removeClass } from '@syncfusion/ej2-base';
@@ -169,7 +169,24 @@ export class AutoFill {
         }
         let top: number = 0; let left: number = 0;
         const sheet: SheetModel = this.parent.getActiveSheet();
-        const indexes: number[] = getSwapRange(getRangeIndexes(sheet.selectedRange));
+        let indexes: number[] = getSwapRange(getRangeIndexes(sheet.selectedRange));
+        if (this.parent.isEdit) {
+            const eventArgs: { action: string, editedValue: string, endFormulaRef: boolean, editSheetIndex: number } = {
+                action: 'getCurrentEditValue', editedValue: '',
+                endFormulaRef: false, editSheetIndex: null
+            };
+            this.parent.notify(editOperation, eventArgs);
+            const isFormulaEdit: boolean = checkIsFormula(eventArgs.editedValue, true) && !eventArgs.endFormulaRef;
+            if (isFormulaEdit) {
+                const isEditingDifferentSheet: boolean = this.parent.activeSheetIndex !== eventArgs.editSheetIndex;
+                if (isEditingDifferentSheet) {
+                    this.hideAutoFillElement();
+                    return;
+                } else {
+                    indexes = getRangeIndexes(sheet.activeCell);
+                }
+            }
+        }
         let tdiff: number = -5;
         let ldiff: number = -5;
         let otdiff: number = 6;
@@ -181,9 +198,8 @@ export class AutoFill {
         let height: number; let width: number;
         let pos: { top: number, left: number };
         const isRtl: boolean = this.parent.enableRtl;
-        const cell: HTMLElement = this.parent.getCell(rowIdx, colIdx);
         if (isHiddenCol(sheet, indexes[3]) || isHiddenRow(sheet, indexes[2]) ||
-            (cell && cell.classList.contains('e-formularef-selection')) || (sheet.isProtected && sheet.protectSettings.selectUnLockedCells
+            (sheet.isProtected && sheet.protectSettings.selectUnLockedCells
                 && isLockedCells(this.parent, indexes))) {
             this.hideAutoFillElement();
             return;

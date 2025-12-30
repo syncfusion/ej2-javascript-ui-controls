@@ -7160,3 +7160,35 @@ describe("Task 985326: Testing getPageSizeByHeight method", () => {
     destroy(treegrid);
   });
 });
+
+describe("998943: Script error when call the selectRow method when datasource is empty with virtualization", () => {
+     let treegrid: TreeGrid;
+     beforeAll((done: Function) => {
+        treegrid = createGrid(
+          {
+            dataSource: addVirtualData,
+            childMapping: "Crew",
+            treeColumnIndex: 1,
+            enableVirtualization: true,
+            enableVirtualMaskRow: true,
+            frozenRows: 2,
+            height: 400,
+            columns: [
+              { field: "TaskID", headerText: "ID", isPrimaryKey: true, width: 140 },
+              { field: "FIELD1", headerText: "Name", width: 140 },
+              { field: "FIELD2", headerText: "Year", width: 120, textAlign: "Right" },
+              { field: "FIELD3", headerText: "Stint", width: 120, textAlign: "Right" },
+              { field: "FIELD4", headerText: "TMID", width: 120, textAlign: "Right" }
+            ],
+          },
+          done
+        );
+     });
+    it('should not throw script error on selectRow method call', (done: Function) => {
+        expect( () => { treegrid.selectRow(0, false) }).not.toThrowError();
+        done();
+    });
+    afterAll( () => {
+       destroy(treegrid);
+    });
+});

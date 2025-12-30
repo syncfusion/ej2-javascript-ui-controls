@@ -1,6 +1,6 @@
 import { Browser, setStyleAttribute as setBaseStyleAttribute, getComponent, detach, isNullOrUndefined, removeClass, extend, isUndefined } from '@syncfusion/ej2-base';
 import { StyleType, CollaborativeEditArgs, CellSaveEventArgs, ICellRenderer, IAriaOptions, completeAction, PreviousCellDetails } from './index';
-import { HideShowEventArgs, invalidData, refreshFilterCellsOnResize } from './../common/index';
+import { HideShowEventArgs, invalidData, refreshFilterCellsOnResize, IRowRenderer } from './../common/index';
 import { activeCellMergedRange, Cell, CellUpdateArgs, ColumnModel, duplicateSheet, ExtendedChartModel, getSheetIndex, getSheetIndexFromAddress, getSheetIndexFromId, getSheetNameFromAddress, hideShow, MergeArgs, moveSheet, protectsheetHandler, refreshChartSize, refreshRibbonIcons, replace, replaceAll, setLinkModel, setLockCells, updateSheetFromDataSource } from '../../workbook/index';
 import { IOffset, clearViewer, deleteImage, createImageElement, refreshImgCellObj, removeDataValidation } from './index';
 import { Spreadsheet, removeSheetTab, rowHeightChanged, initiateFilterUI, deleteChart, IRenderer } from '../index';
@@ -1617,8 +1617,9 @@ export function updateAction(
                 insertModel, <InsertDeleteModelArgs>{ model: sheet, start: options.eventArgs.deletedModel, modelType:
                     options.eventArgs.modelType, columnCellsModel: options.eventArgs.deletedCellsModel, definedNames:
                     options.eventArgs.definedNames, activeSheetIndex: options.eventArgs.activeSheetIndex, isUndoRedo: true,
-                insertType: options.eventArgs.modelType === 'Row' ? 'above' : 'before',
-                conditionalFormats: options.eventArgs.conditionalFormats, prevAction: options.action, freezePane: eventArgs.freezePane  });
+                insertType: options.eventArgs.modelType === 'Row' ? 'above' : 'before', comments: options.eventArgs.comments,
+                notes: options.eventArgs.notesCol, conditionalFormats: options.eventArgs.conditionalFormats,
+                prevAction: options.action, freezePane: eventArgs.freezePane });
         } else {
             spreadsheet.notify(
                 deleteModel, <InsertDeleteModelArgs>{ model: sheet, start: options.eventArgs.startIndex,
@@ -1918,11 +1919,12 @@ export function hasTemplate(workbook: Workbook, rowIdx: number, colIdx: number, 
  * @param {HTMLElement} hRow - specify the hRow.
  * @param {boolean} notifyRowHgtChange - specify boolean value.
  * @param {boolean} outsideViewport - Specify whether the row is outside the viewport.
+ * @param {boolean} updateLineHeight - specify the lineHeight need to be added for a row or not.
  * @returns {void} - Setting row height in view an model.
  */
 export function setRowEleHeight(
     parent: Spreadsheet, sheet: SheetModel, height: number, rowIdx: number, row?: HTMLElement,
-    hRow?: HTMLElement, notifyRowHgtChange: boolean = true, outsideViewport?: boolean): void {
+    hRow?: HTMLElement, notifyRowHgtChange: boolean = true, outsideViewport?: boolean, updateLineHeight?: boolean): void {
     const prevHgt: number = getRowHeight(sheet, rowIdx, true);
     const dprHgt: number = getDPRValue(height);
     if (!outsideViewport) {
@@ -1930,6 +1932,15 @@ export function setRowEleHeight(
         row = row || (sheet.frozenRows ? parent.getRow(rowIdx, null, frozenCol) : parent.getRow(rowIdx));
         if (row) {
             row.style.height = `${dprHgt}px`;
+            if (updateLineHeight !== undefined) {
+                if (updateLineHeight) {
+                    const rowRenderer: IRowRenderer = parent.serviceLocator.getService<IRowRenderer>('row');
+                    const lineHeight: number = rowRenderer.getBorderWidth();
+                    row.style.lineHeight = dprHgt > lineHeight ? `${dprHgt - lineHeight}px` : '0px';
+                } else if (row.style.lineHeight) {
+                    row.style.lineHeight = '';
+                }
+            }
         }
         if (sheet.frozenColumns) {
             hRow = hRow || parent.getRow(rowIdx, null, frozenCol - 1);

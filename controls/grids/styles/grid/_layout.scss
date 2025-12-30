@@ -1096,6 +1096,10 @@
       .e-rowdragheader {
         border-top: $grid-grouptopleftcell-border-top;
       }
+
+      &:not(.e-verticallines) tr.e-grid-pin-row .e-grouptopleftcell {
+        border-top: 1px solid $grid-cell-border-color;
+      }
     }
 
     &.e-default .e-gridheader .e-headercell.e-firstheader,

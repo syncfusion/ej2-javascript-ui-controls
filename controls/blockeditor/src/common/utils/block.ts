@@ -201,10 +201,16 @@ export function getAdjacentBlock(currentBlock: HTMLElement, direction: string): 
     const adjacentBlock: Element | null = direction === 'previous'
         ? currentBlock.previousElementSibling
         : currentBlock.nextElementSibling;
+
+    /* Return the first cell block if it is Table block */
+    if (adjacentBlock && adjacentBlock.classList.contains(constants.TABLE_BLOCK_CLS)) {
+        return adjacentBlock.querySelector('.' + constants.BLOCK_CLS);
+    }
+
     if (adjacentBlock instanceof HTMLElement && adjacentBlock.classList.contains('e-block')) {
         return adjacentBlock;
     }
-    const calloutBlock: HTMLElement | null = findClosestParent(currentBlock, '.' + constants.CALLOUT_BLOCK_CLS);
+    const calloutBlock: HTMLElement = findClosestParent(currentBlock, '.' + constants.CALLOUT_BLOCK_CLS);
     if (calloutBlock) {
         const calloutContent: HTMLElement = calloutBlock.querySelector('.' + constants.CALLOUT_CONTENT_CLS);
         if (direction === 'previous' && currentBlock === calloutContent.firstElementChild) {
@@ -445,4 +451,10 @@ export function isChildrenProp(block: BlockModel): boolean {
 export function isAlwaysOnPlaceHolderBlk(blockType: string): boolean {
     const showPlaceholdersAlwaysFor: string[] = [BlockType.BulletList, BlockType.Checklist, BlockType.NumberedList, BlockType.Quote];
     return blockType && (showPlaceholdersAlwaysFor.indexOf(blockType) >= 0);
+}
+
+const nonMergableBlockTypes: Set<string> = new Set<string>([ BlockType.Image, BlockType.Divider ]);
+
+export function isNonMergableBlock(blockElement: HTMLElement): boolean {
+    return nonMergableBlockTypes.has(extractBlockTypeFromElement(blockElement));
 }

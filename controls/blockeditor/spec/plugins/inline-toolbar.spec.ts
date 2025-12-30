@@ -62,7 +62,23 @@ describe('Inline Toolbar Module', () => {
                 }, 100);
             }, 200);
         });
-        
+
+        it('should hide inline tbar popup on document click', (done) => {
+            const blockElement = editor.element.querySelector('#paragraph-1') as HTMLElement;
+            editor.blockManager.setFocusToBlock(blockElement);
+            editor.setSelection('paragraph-content-1', 2, 8);
+            editor.element.dispatchEvent(new MouseEvent('mouseup', { bubbles: true }));
+            setTimeout(() => {
+                const popup = document.querySelector('.e-blockeditor-inline-toolbar-popup');
+                expect(popup).not.toBeNull();
+                blockElement.dispatchEvent(new MouseEvent('mousedown', { bubbles: true }));
+                setTimeout(() => {
+                    expect(popup.classList.contains('e-popup-close')).toBe(true);
+                    done();
+                }, 50);
+            }, 50);
+        });
+
         it('should handle inline toolbar item click', (done) => {
             setTimeout(() => {
                 const blockElement = editorElement.querySelector('#paragraph-1') as HTMLElement;

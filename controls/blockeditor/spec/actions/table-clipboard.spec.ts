@@ -205,6 +205,19 @@ describe('Table Clipboard actions: ', () => {
         expect(header.cells.length).toBe(3);
     });
 
+    it('br should be maintained on cutting a whole block inside cell by selection', () => {
+        const targetCell = getDataCellEl(editorElement, 1, 0);
+        const targetBlock = targetCell.querySelector('.e-block') as HTMLElement;
+        const content = getBlockContentElement(targetBlock);
+        editor.blockManager.setFocusToBlock(targetBlock);
+        editor.setSelection(content.id, 0, content.textContent.length);
+
+        editor.blockManager.clipboardAction.performCutOperation();
+
+        expect(content.innerHTML).toContain('br');
+        expect(editor.blockManager.currentFocusedBlock.id).toBe(targetBlock.id);
+    });
+
     it('Paste HTML table outside creates a new Table block', () => {
         const html = '<table><thead><tr><th>X</th><th>Y</th></tr></thead><tbody>' +
             '<tr><td>p</td><td>q</td></tr>' +

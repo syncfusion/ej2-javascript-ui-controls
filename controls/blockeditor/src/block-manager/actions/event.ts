@@ -1,6 +1,6 @@
 import { captureSelectionState, decoupleReference, getAbsoluteOffset, getAdjacentBlock, getBlockContentElement,
-    getBlockModelById, getClosestContentElementInDocument, getNormalizedKey, getParentBlock, getSelectedRange,
-    isCursorAtEdge, isListTypeBlock, sanitizeBlock, sanitizeContents, setCursorPosition } from '../../common/utils/index';
+    getBlockModelById, getClosestContentElementInDocument, getNormalizedKey, getParentBlock, getParentElement, getSelectedRange,
+    isCursorAtEdge, isListTypeBlock, isNonMergableBlock, sanitizeBlock, sanitizeContents, setCursorPosition } from '../../common/utils/index';
 import { BlockModel, ICollapsibleBlockSettings, ContentModel } from '../../models/index';
 import { findClosestParent, getElementRect } from '../../common/utils/dom';
 import * as constants from '../../common/constant';
@@ -119,7 +119,10 @@ export class EventAction {
 
     private handleMouseUpActions(mouseEvent: MouseEvent): void {
         if (this.parent.readOnly || ((mouseEvent.target as HTMLElement).tagName === 'TD')) { return; }
-        const blockElement: HTMLElement = (mouseEvent.target as HTMLElement).closest('.' + constants.BLOCK_CLS) as HTMLElement;
+        const range: Range = getSelectedRange();
+        const startContainerParent: HTMLElement = range ? getParentElement(range.startContainer) : null;
+        const blockElement: HTMLElement = (((startContainerParent.closest('.' + constants.BLOCK_CLS)) as HTMLElement) ||
+            (mouseEvent.target as HTMLElement).closest('.' + constants.BLOCK_CLS) as HTMLElement);
         if (blockElement && (this.parent.currentFocusedBlock !== blockElement)) {
             this.parent.togglePlaceholder(this.parent.currentFocusedBlock, false);
             this.parent.setFocusToBlock(blockElement);
@@ -335,7 +338,7 @@ export class EventAction {
         const blockModel: BlockModel = getBlockModelById(this.parent.currentFocusedBlock.id, this.parent.getEditorBlocks());
         const actionPopupElement: HTMLElement = this.parent.rootEditorElement.querySelector(`#${this.parent.rootEditorElement.id + constants.BLOCKACTION_POPUP_ID}`);
         const linkDialogElement: HTMLElement = this.parent.rootEditorElement.querySelector(`#${this.parent.rootEditorElement.id + constants.LINKDIALOG_ID}`);
-        const notAllowedTypes: string[] = [BlockType.Code, BlockType.Image];
+        const notAllowedTypes: string[] = [BlockType.Code];
 
         return this.parent.slashCommandModule.isPopupOpen() || (commandPopupElement && commandPopupElement.classList.contains('e-popup-open')) ||
             (userMentionPopupElement && userMentionPopupElement.classList.contains('e-popup-open')) ||
@@ -465,15 +468,21 @@ export class EventAction {
     ): void {
         if (!getSelectedRange()) { return; }
         const mergeDirection: 'previous' | 'next' = (event.key === 'Backspace') ? 'previous' : 'next';
-        const allowedSpecialTypes: string[] = [BlockType.Divider];
-        const isAllowedSpecialType: boolean = allowedSpecialTypes.indexOf(blockType) !== -1;
 
         this.parent.inlineToolbarModule.hideInlineToolbar();
 
         const isDeletionPerformed: boolean = this.parent.blockCommand.handleSelectiveDeletions(event);
 
+        if (isNonMergableBlock(blockElement)) {
+            this.parent.execCommand({
+                command: 'DeleteNonMergableBlock',
+                state: { blockElement: blockElement }
+            });
+            event.preventDefault();
+        }
+
         // If no selective deletion was performed, handle normal deletions (Single block deletion)
-        if (!isDeletionPerformed && (isAllowedSpecialType || isCursorAtEdge(contentElement, event.key === 'Backspace'))) {
+        else if (!isDeletionPerformed && isCursorAtEdge(contentElement, event.key === 'Backspace')) {
             this.parent.execCommand({
                 command: 'DeleteAtCursor',
                 state: {

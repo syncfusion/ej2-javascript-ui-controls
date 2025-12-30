@@ -2,6 +2,34 @@
 
 ## [Unreleased]
 
+## 32.1.21 (2025-12-30)
+
+### PDF Viewer
+
+#### Bug Fixes
+
+- `#I793332` - Resolved an issue where form field styles were incorrectly applied to other fields.
+- `#I792254` - Resolved an issue where dragging line annotations was difficult when the annotation width reached the edge of the page.
+- `#I795012`, `#I789583` - Resolved an issue where annotation toolbar property items were not hiding properly when `toolbarSettings` was applied.
+- `F197872` - Resolved an issue where the Add Initial option did not hide when configured through the `handWrittenSignatureSettings` API.
+- `#I792605` - Resolved an issue where organize PDF would get stuck when loading a large document, causing the page to become unresponsive.
+
+## 32.1.20 (2025-12-23)
+
+### PDF Viewer
+
+#### Bug Fixes
+
+- `#I796714` - Resolved an issue where the annotation property tool UI was displayed incorrectly after repeatedly switching between the Text Markup tool and Ink Annotation tool on iPad devices when `enableDesktopMode` API was set to true.
+- `#I788303` - Resolved an issue where the stamp annotation appearance was incorrect after rotating, dragging, and resizing.
+- `#I778410` - Fixed an issue where the `annotationMouseLeave` event was triggered unexpectedly when hovering over annotations.
+- `#I793903` - Resolved an issue where the text area expanded while typing in a Free Text annotation.
+- `#I788306` - Fixed an issue where the shape label position and font size were incorrect in the downloaded document.
+- `#I790403` - Resolved an issue where clicking the last comment scrolled to the top of the comment panel.
+- `#I791590` - Resolved an issue where a gap appeared between the line and end style when `lineHeadStyle` was set to `Butt`.
+- `#I796761` - Resolved an issue where Free Text annotations could not be edited via double tap and long press on iPad devices when `enableDesktopMode` API was set to true.
+- Resolved an issue where radio button groups across different pages caused a null-reference error and broke page rendering.
+
 ## 32.1.19 (2025-12-16)
 
 ### PDF Viewer

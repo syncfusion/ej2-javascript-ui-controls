@@ -1,5 +1,10 @@
 import { createElement, remove } from '@syncfusion/ej2-base';
-import { createEditor } from '../common/util.spec';
+import {
+    createEditor,
+    getDataCellEl,
+    getHeaderCell,
+    selectHeaderRectangle
+} from "../common/util.spec";
 import { BlockEditor } from '../../src/index';
 import { BlockModel } from '../../src/models/block/block-model';
 import { BlockType, ContentType } from '../../src/models/enums';
@@ -732,6 +737,91 @@ describe('Table Undo/Redo - Row/Column/Clear Cells', () => {
             expect(((editor.blocks[0].properties as ITableBlockSettings).rows[0].cells[0].blocks[0] as any).blockType).toBe(BlockType.Paragraph);
             expect(((editor.blocks[0].properties as ITableBlockSettings).rows[1].cells[0].blocks[0] as any).blockType).toBe(BlockType.Paragraph);
             done();
+        });
+
+        it('clears header cells → undo → redo', () => {
+            setupTable();
+            selectHeaderRectangle(editorElement, 0, 1);
+            editorElement.dispatchEvent(new KeyboardEvent('keydown', { key: 'Backspace', code: 'Backspace' }));
+
+            const props = (editor.blocks[0] as BlockModel).properties as ITableBlockSettings;
+
+            //Model
+            expect(props.columns[0].headerText).toBe('');
+            expect(props.columns[1].headerText).toBe('');
+            // DOM
+            const headerCells = editorElement.querySelectorAll('table thead th:not(.e-row-number)');
+            expect(headerCells[0].textContent.trim()).toBe('');
+            expect(headerCells[1].textContent.trim()).toBe('');
+
+            triggerUndo(editorElement);
+            //Model
+            expect(props.columns[0].headerText).toBe('A');
+            expect(props.columns[1].headerText).toBe('B');
+            // DOM
+            const headerCellsAfterUndo = editorElement.querySelectorAll('table thead th:not(.e-row-number)');
+            expect(headerCellsAfterUndo[0].textContent.trim()).toBe('A');
+            expect(headerCellsAfterUndo[1].textContent.trim()).toBe('B');
+
+            triggerRedo(editorElement);
+            //Model
+            expect(props.columns[0].headerText).toBe('');
+            expect(props.columns[1].headerText).toBe('');
+            // DOM
+            const headerCellsAfterRedo = editorElement.querySelectorAll('table thead th:not(.e-row-number)');
+            expect(headerCellsAfterRedo[0].textContent.trim()).toBe('');
+            expect(headerCellsAfterRedo[1].textContent.trim()).toBe('');
+        });
+
+        it('clears both data and header cells in mixed selection on backspace', () => {
+            setupTable();
+            const start = getHeaderCell(editorElement, 0);
+            const end = getDataCellEl(editorElement, 1, 1); 
+            start.dispatchEvent(new MouseEvent('mousedown', { bubbles: true }));
+            end.dispatchEvent(new MouseEvent('mousemove', { bubbles: true }));
+            document.dispatchEvent(new MouseEvent('mouseup', { bubbles: true }));
+
+            editorElement.dispatchEvent(new KeyboardEvent('keydown', { key: 'Backspace', code: 'Backspace' }));
+    
+            const props = (editor.blocks[0] as BlockModel).properties as ITableBlockSettings;
+
+            //Model
+            expect(props.columns[0].headerText).toBe('');
+            expect(props.columns[1].headerText).toBe('');
+            expect(props.rows[0].cells[0].blocks[0].content.length).toBe(0);
+            expect(props.rows[0].cells[1].blocks[0].content.length).toBe(0);
+            // DOM
+            const headerCells = editorElement.querySelectorAll('table thead th:not(.e-row-number)');
+            expect(headerCells[0].textContent.trim()).toBe('');
+            expect(headerCells[1].textContent.trim()).toBe('');
+            expect(getDataCellEl(editorElement, 1, 0).textContent!.trim()).toBe('');
+            expect(getDataCellEl(editorElement, 1, 1).textContent!.trim()).toBe('');
+
+            triggerUndo(editorElement);
+            //Model
+            expect(props.columns[0].headerText).toBe('A');
+            expect(props.columns[1].headerText).toBe('B');
+            expect(props.rows[0].cells[0].blocks[0].content[0].content).toBe('R1C1');
+            expect(props.rows[0].cells[1].blocks[0].content[0].content).toBe('R1C2');
+            // DOM
+            const headerCellsAfterUndo = editorElement.querySelectorAll('table thead th:not(.e-row-number)');
+            expect(headerCellsAfterUndo[0].textContent.trim()).toBe('A');
+            expect(headerCellsAfterUndo[1].textContent.trim()).toBe('B');
+            expect(getDataCellEl(editorElement, 1, 0).textContent!.trim()).toBe('R1C1');
+            expect(getDataCellEl(editorElement, 1, 1).textContent!.trim()).toBe('R1C2');
+
+            triggerRedo(editorElement);
+            //Model
+            expect(props.columns[0].headerText).toBe('');
+            expect(props.columns[1].headerText).toBe('');
+            expect(props.rows[0].cells[0].blocks[0].content.length).toBe(0);
+            expect(props.rows[0].cells[1].blocks[0].content.length).toBe(0);
+            // DOM
+            const headerCellsAfterRedo = editorElement.querySelectorAll('table thead th:not(.e-row-number)');
+            expect(headerCellsAfterRedo[0].textContent.trim()).toBe('');
+            expect(headerCellsAfterRedo[1].textContent.trim()).toBe('');
+            expect(getDataCellEl(editorElement, 1, 0).textContent!.trim()).toBe('');
+            expect(getDataCellEl(editorElement, 1, 1).textContent!.trim()).toBe('');
         });
     });
 

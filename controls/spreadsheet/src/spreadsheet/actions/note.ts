@@ -2,9 +2,9 @@ import { Spreadsheet } from '../index';
 import { addNote, editNote, deleteNote, showNote, removeNoteContainer, createNoteIndicator, NoteSaveEventArgs, updateNoteContainer, completeAction, setActionData, showHideNote, navigateNextPrevNote, showAllNotes, processSheetNotes, noteUndoRedo } from '../common/index';
 import { isNullOrUndefined, EventHandler, closest, detach, getUniqueID } from '@syncfusion/ej2-base';
 import { SheetModel } from '../../workbook/base/sheet-model';
-import { getCellIndexes, getRangeAddress, NoteModel, sheetsDestroyed } from '../../workbook/common/index';
+import { getCellIndexes, getSortedIndex, getRangeAddress, NoteModel, sheetsDestroyed } from '../../workbook/common/index';
 import { CellModel, getCell, updateCell, getSheetName, Workbook, getRowHeight, ExtendedNoteModel } from '../../workbook/index';
-import { ExtendedSheet, setCell, importModelUpdate, insert, deleteAction } from '../../workbook/index';
+import { ExtendedSheet, setCell, importModelUpdate } from '../../workbook/index';
 /**
  * `Note` module
  */
@@ -64,8 +64,6 @@ export class SpreadsheetNote {
         this.parent.on(importModelUpdate, this.updateNotesFromSheet, this);
         this.parent.on(navigateNextPrevNote, this.navigateNextPrevNote, this);
         this.parent.on(showAllNotes, this.showAllNotes, this);
-        this.parent.on(insert, this.rowColumnInsertDeleteHandler, this);
-        this.parent.on(deleteAction, this.rowColumnInsertDeleteHandler, this);
         this.parent.on(processSheetNotes, this.processSheetNotes, this);
         this.parent.on(noteUndoRedo, this.noteUndoRedo, this);
         this.parent.on(sheetsDestroyed, this.sheetDestroyHandler, this);
@@ -84,8 +82,6 @@ export class SpreadsheetNote {
             this.parent.off(importModelUpdate, this.updateNotesFromSheet);
             this.parent.off(navigateNextPrevNote, this.navigateNextPrevNote);
             this.parent.off(showAllNotes, this.showAllNotes);
-            this.parent.off(insert, this.rowColumnInsertDeleteHandler);
-            this.parent.off(deleteAction, this.rowColumnInsertDeleteHandler);
             this.parent.off(processSheetNotes, this.processSheetNotes);
             this.parent.off(noteUndoRedo, this.noteUndoRedo);
             this.parent.off(sheetsDestroyed, this.sheetDestroyHandler);
@@ -99,100 +95,6 @@ export class SpreadsheetNote {
      */
     protected getModuleName(): string {
         return 'spreadsheetNote';
-    }
-
-    /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
-    private rowColumnInsertDeleteHandler(args: { action: string, eventArgs: any }): void {
-        const sheetIndex: number = args.eventArgs.activeSheetIndex;
-        const sheet: ExtendedSheet = this.parent.sheets[sheetIndex as number] as ExtendedSheet;
-        if (!sheet || !sheet.notes || sheet.notes.length === 0) {
-            return;
-        }
-        if (args.action === 'insert') {
-            const { modelType, index, model } = args.eventArgs;
-            const count: number = model.length;
-            if (modelType === 'Row') {
-                this.handleRowsOperation(index, count, sheetIndex, true);
-            } else if (modelType === 'Column') {
-                this.handleColumnsOperation(index, count, sheetIndex, true);
-            }
-        } else if (args.action === 'delete') {
-            const { modelType, startIndex, deletedModel } = args.eventArgs;
-            const count: number = deletedModel.length;
-            if (modelType === 'Row') {
-                this.handleRowsOperation(startIndex, count, sheetIndex, false);
-            } else if (modelType === 'Column') {
-                this.handleColumnsOperation(startIndex, count, sheetIndex, false);
-            }
-        }
-    }
-
-    private handleRowsOperation(startIndex: number, count: number, sheetIndex: number, isInsert: boolean): void {
-        const sheet: ExtendedSheet = this.parent.sheets[sheetIndex as number] as ExtendedSheet;
-        if (!sheet.notes || sheet.notes.length === 0) {
-            return;
-        }
-        if (isInsert) {
-            sheet.notes.forEach((note: ExtendedNoteModel) => {
-                if (note.rowIdx >= startIndex) {
-                    note.rowIdx += count;
-                }
-            });
-        } else {
-            const notesToRemove: ExtendedNoteModel[] = [];
-            const notesToKeep: ExtendedNoteModel[] = [];
-            sheet.notes.forEach((note: ExtendedNoteModel) => {
-                if (note.rowIdx >= startIndex) {
-                    if (note.rowIdx < startIndex + count) {
-                        notesToRemove.push(note);
-                    } else {
-                        note.rowIdx -= count;
-                        notesToKeep.push(note);
-                    }
-                } else {
-                    notesToKeep.push(note);
-                }
-            });
-            if (notesToRemove.length > 0) {
-                notesToRemove.forEach((note: ExtendedNoteModel) => this.removeNoteElement(note));
-                sheet.notes = notesToKeep;
-            }
-        }
-        this.parent.notify(updateNoteContainer, null);
-    }
-
-    private handleColumnsOperation(startIndex: number, count: number, sheetIndex: number, isInsert: boolean): void {
-        const sheet: ExtendedSheet = this.parent.sheets[sheetIndex as number] as ExtendedSheet;
-        if (!sheet.notes || sheet.notes.length === 0) {
-            return;
-        }
-        if (isInsert) {
-            sheet.notes.forEach((note: ExtendedNoteModel) => {
-                if (note.colIdx >= startIndex) {
-                    note.colIdx += count;
-                }
-            });
-        } else {
-            const notesToRemove: ExtendedNoteModel[] = [];
-            const notesToKeep: ExtendedNoteModel[] = [];
-            sheet.notes.forEach((note: ExtendedNoteModel) => {
-                if (note.colIdx >= startIndex) {
-                    if (note.colIdx < startIndex + count) {
-                        notesToRemove.push(note);
-                    } else {
-                        note.colIdx -= count;
-                        notesToKeep.push(note);
-                    }
-                } else {
-                    notesToKeep.push(note);
-                }
-            });
-            if (notesToRemove.length > 0) {
-                notesToRemove.forEach((note: ExtendedNoteModel) => this.removeNoteElement(note));
-                sheet.notes = notesToKeep;
-            }
-        }
-        this.parent.notify(updateNoteContainer, null);
     }
 
     public getNoteId(note: ExtendedNoteModel): string {
@@ -239,6 +141,7 @@ export class SpreadsheetNote {
             this.activeNoteCell = [cellIndexes[0], cellIndexes[1]];
             updateCell(
                 this.parent, sheet, { rowIdx: cellIndexes[0], colIdx: cellIndexes[1], preventEvt: true, cell: { isNoteEditable: true }});
+            this.parent.setUsedRange(cellIndexes[0], cellIndexes[1], sheet);
             this.insertNoteSorted(sheet, note);
             this.createNoteIndicator({targetElement: targetElement, rowIndex: cellIndexes[0], columnIndex: cellIndexes[1] });
             this.createNoteContainer(note, targetElement, false, true, false, `${sheet.name}!${sheet.activeCell}`);
@@ -694,31 +597,12 @@ export class SpreadsheetNote {
         });
     }
 
-    private lowerBoundByAddress(coll: ExtendedNoteModel[], addr: number[]): number {
-        let low: number = 0;
-        let high: number = coll.length;
-        while (low < high) {
-            const mid: number = Math.floor((low + high) / 2);
-            const [midRow, midCol] = this.getNoteAddr(coll[mid as number]);
-            if (midRow < addr[0] || (midRow === addr[0] && midCol < addr[1])) {
-                low = mid + 1;
-            } else {
-                high = mid;
-            }
-        }
-        return low;
-    }
-
     private insertNoteSorted(sheet: ExtendedSheet, note: ExtendedNoteModel): void {
         if (!sheet.notes) {
             sheet.notes = [];
         }
-        const idx: number = this.lowerBoundByAddress(sheet.notes, this.getNoteAddr(note));
+        const idx: number = getSortedIndex(sheet.notes, [note.rowIdx, note.colIdx], false);
         sheet.notes.splice(idx, 0, note);
-    }
-
-    private getNoteAddr(note: ExtendedNoteModel): number[] {
-        return [note.rowIdx, note.colIdx];
     }
 
     private navigateNextPrevNote(args: { isNext: boolean }): void {
@@ -728,7 +612,7 @@ export class SpreadsheetNote {
         const addr: number[] = getCellIndexes(activeSheet.activeCell);
         const currentColl: ExtendedNoteModel[] = activeSheet.notes ? activeSheet.notes : [];
         if (currentColl.length > 0) {
-            const pos: number = this.lowerBoundByAddress(currentColl, [addr[0], addr[1]]);
+            const pos: number = getSortedIndex(currentColl, addr, false);
             let exactIdx: number = -1;
             if (pos < currentColl.length) {
                 const note: ExtendedNoteModel = currentColl[pos as number];
@@ -804,15 +688,17 @@ export class SpreadsheetNote {
         this.parent.sheets.forEach((sheet: ExtendedSheet) => {
             if (sheet.notes && sheet.notes.length > 0) {
                 sheet.notes.forEach((note: ExtendedNoteModel) => {
-                    note.rowIdx = note.address[0];
-                    note.colIdx = note.address[1];
-                    delete note.address;
-                    note.id = getUniqueID('e_note');
-                    cell = getCell(note.rowIdx, note.colIdx, sheet);
-                    if (cell) {
-                        cell.notes = note;
-                    } else {
-                        setCell(note.rowIdx, note.colIdx, sheet, { notes: note });
+                    if (note.address) {
+                        note.rowIdx = note.address[0];
+                        note.colIdx = note.address[1];
+                        delete note.address;
+                        note.id = getUniqueID('e_note');
+                        cell = getCell(note.rowIdx, note.colIdx, sheet);
+                        if (cell) {
+                            cell.notes = note;
+                        } else {
+                            setCell(note.rowIdx, note.colIdx, sheet, { notes: note });
+                        }
                     }
                 });
             }

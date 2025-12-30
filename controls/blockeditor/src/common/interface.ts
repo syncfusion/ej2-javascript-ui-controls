@@ -11,6 +11,7 @@ import { BlockService } from '../block-manager/services/block-service';
 import { BlockActionMenuModule, ContextMenuModule, InlineContentInsertionModule, InlineToolbarModule, SlashCommandModule } from '../blockeditor/renderer/index';
 import { SelectionDirection } from './types';
 import { ITableRowInsertOptions, ITableCellsClearOperation, ITableColumnInsertOptions, ITableCellsPasteOperation, IBulkRowsDeleteOperation, IBulkColumnsDeleteOperation, ITableHeaderInputOperation } from '../block-manager/base/interface';
+import { actionType } from './constant';
 
 export interface BlockManagerModel {
     observer?: Observer
@@ -333,7 +334,7 @@ export interface IUndoRedoState {
     newContentModel?: ContentModel;
     oldContents?: ContentModel[]
     newContents?: ContentModel[]
-    action?: string;
+    action?: actionType;
     data?: IBlockData | IMoveOperation | IIndentOperation | IDeleteOperation | IAddOperation |
     ITransformOperation | IMultiDeleteOperation | IClipboardPasteOperation | IFormattingOperation |
     ITableRowInsertOptions | ITableColumnInsertOptions | ITableCellsClearOperation | ITableCellsPasteOperation |

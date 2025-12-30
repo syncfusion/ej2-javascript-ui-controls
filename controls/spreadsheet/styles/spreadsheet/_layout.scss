@@ -160,11 +160,11 @@
                 color: var(--color-sf-content-text-color);
               }
               .e-dropdown-btn.e-mergecell {
-                @if $skin-name == 'tailwind' or $skin-name == 'tailwind-dark' && $skin-name == 'tailwind-dark-lite' && $skin-name == 'tailwind-lite' {
-                  padding-bottom: $bigger-cpicker-btn-padding-bottom !important; /* stylelint-disable-line declaration-no-important */
-                }
-                @else{
+                @if $skin-name =='fluent2' {
                   padding-bottom: $spreadsheet-padding-5 !important; /* stylelint-disable-line declaration-no-important */
+                }
+                @else {
+                  padding-bottom: $bigger-cpicker-btn-padding-bottom !important; /* stylelint-disable-line declaration-no-important */
                 }
               }
               .e-split-btn.e-color-picker,
@@ -2284,7 +2284,7 @@
         @else {
           background-color: $spread-comment-resolved-background-color;
         }
-        @if $skin-name =='material' or $skin-name =='material-dark' or $skin-name =='bootstrap' or $skin-name =='bootstrap-dark' {
+        @if $skin-name =='material' or $skin-name =='material-dark' or $skin-name =='bootstrap' or $skin-name =='bootstrap-dark' or $skin-name =='bootstrap4' {
           .e-comment-body .e-list-item {
             background-color: $spread-comment-resolved-background-color;
           }
@@ -2504,8 +2504,9 @@
           padding: 4px 3px;
 
           .e-comment-edit-input {
-            border-bottom: $spread-comment-input-border-bottom;
             border-radius: 4px;
+            background-color: transparent;
+            color: $spread-comment-title-color;
             padding: 6px 10px;
             font-size: 14px;
             line-height: 18px;
@@ -2545,6 +2546,9 @@
         .e-ripple.e-active {
           background-color: transparent;
           border: 1px dotted;
+          @if $theme-name == 'fluent2-highcontrast' or $theme-name == 'fluent2-highcontrast-lite' {
+            border-color: $spread-comment-listview-active-border-color;
+          }
           @if $skin-name == 'bootstrap5' or $skin-name == 'bootstrap5.3' or $skin-name == 'bootstrap4' {
             color: unset;
           }
@@ -2575,7 +2579,6 @@
 
       .e-comment-input {
         height: $spread-comment-input-height;
-        border-bottom: $spread-comment-input-border-bottom;
         background-color: transparent;
         color: $spread-comment-title-color;
         border-radius: 4px;
@@ -2711,7 +2714,7 @@
               @else {
                 background-color: $spread-comment-resolved-background-color;
               }
-              @if $skin-name =='material' or $skin-name =='material-dark' or $skin-name =='bootstrap' or $skin-name =='bootstrap-dark' {
+              @if $skin-name =='material' or $skin-name =='material-dark' or $skin-name =='bootstrap' or $skin-name =='bootstrap-dark' or $skin-name =='bootstrap4' {
                 .e-comment-body .e-list-item {
                   background-color: $spread-comment-resolved-background-color;
                 }

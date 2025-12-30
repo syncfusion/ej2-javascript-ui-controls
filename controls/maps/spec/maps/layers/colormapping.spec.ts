@@ -451,3 +451,59 @@ describe('Map layer testing', () => {
         expect(delta).toBeLessThan(30);
     });
 });
+
+describe('Equal color mapping testing spec for out of range at starting', () => {
+    let id: string = 'maps';
+    let colormap: Maps;
+    let ele: HTMLDivElement;
+    let spec: Element;
+    beforeAll(() => {
+        ele = <HTMLDivElement>createElement('div', { id: id, styles: 'height: 512px; width: 512px;' });
+        document.body.appendChild(ele);
+        colormap = new Maps({
+            theme: 'HighContrast',
+            zoomSettings: {
+                enable: true
+            },
+            layers: [
+                {
+                    shapeData: usMap,
+                    dataSource: electiondata,
+                    shapeDataPath: 'State',
+                    shapePropertyPath: 'name',
+                    shapeSettings: {
+                        valuePath: 'Electors',
+                        fill: 'Orange',
+                        colorValuePath: 'Candidate',
+                        colorMapping: [
+                            {
+                                color: '#FF4500'
+                            },
+                            {
+                                value: 'Romney', color: '#33CCFF'
+                            },
+                        ]
+                    }
+                }
+            ],
+            legendSettings: {
+                visible: true,
+                toggleLegendSettings: {
+                    enable: true,
+                }
+            }
+        }, '#' + id);
+    });
+    afterAll(() => {
+        remove(ele);
+        colormap.destroy();
+    });
+    it('Equal color mappping testing spec for out of the ranges at start', (done: Function) => {
+        colormap.loaded = (args: ILoadedEventArgs) => {
+            spec = getElementByID(id + '_LayerIndex_0_shapeIndex_10_dataIndex_28');
+            expect(spec.getAttribute('fill')).toBe('#FF4500');
+            done();
+        };
+        colormap.refresh();
+    });
+});

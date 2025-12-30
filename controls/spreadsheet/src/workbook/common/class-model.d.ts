@@ -832,7 +832,7 @@ export interface CommentReplyModel {
 
     /**
      * Indicates the date and time when the reply was created.
-     * If not set, the reply will not show a timestamp.
+     * If not set, the reply will not show a time-stamp.
      *
      * @default null
      */
@@ -863,7 +863,7 @@ export interface ThreadedCommentModel {
 
     /**
      * Indicates the date and time when the comment was created.
-     * If not set, the comment will not show a timestamp.
+     * If not set, the comment will not show a time-stamp.
      *
      * @default null
      */

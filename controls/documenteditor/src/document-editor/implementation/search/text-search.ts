@@ -117,6 +117,9 @@ export class TextSearch {
                     stringBuilder = stringBuilder + inlineElement.text;
                     previousElementCount = 0;
                     inlineElement = inlineElement.nextNode;
+                    if (isNullOrUndefined(inlineElement)) {
+                        break;
+                    }
                     continue;
                 }
                 spans.add(inlineElement as TextElementBox,

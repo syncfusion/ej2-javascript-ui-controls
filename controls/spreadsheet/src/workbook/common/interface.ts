@@ -81,7 +81,7 @@ export interface pdfLayoutSettings {
      * Determines whether the content should fit into a single page in the PDF.
      *
      * - **true**: Content will automatically scale to fit within one page.
-     * - **false**: Content may span across multiple pages if it doesn’t fit.
+     * - **false**: Content may span across multiple pages if it does not fit.
      *
      */
     fitSheetOnOnePage?: boolean;
@@ -416,7 +416,7 @@ export interface NoteModel {
     text?: string;
 
     /**
-     * Indicates whether the note popup container is visible.
+     * Indicates whether the note pop-up container is visible.
      * When `true`, the note behaves like a sticky note—remaining open until explicitly closed.
      * When `false`, the note appears on hover and closes automatically.
      *
@@ -754,6 +754,8 @@ export interface InsertDeleteModelArgs {
     isUndoRedo?: boolean;
     refreshSheet?: boolean;
     conditionalFormats?: ConditionalFormatModel[];
+    comments?: ExtendedThreadedCommentModel[];
+    notes?: ExtendedNoteModel[];
     prevAction?: string;
     freezePane?: boolean;
     isRedo?: boolean;
@@ -1176,7 +1178,7 @@ export interface SerializationOptions {
      */
     ignoreStyle?: boolean;
     /**
-     * Specifies whether to exclude formulwhen loading or saving JSON data.
+     * Specifies whether to exclude formula when loading or saving JSON data.
      */
     ignoreFormula?: boolean;
     /**

@@ -208,6 +208,9 @@ export class BlockManager {
         case 'FormattingAction':
             this.observer.notify(constants.FORMATTINGACTION, options.state);
             break;
+        case 'DeleteNonMergableBlock':
+            this.observer.notify(constants.DELETE_NON_MERGABLEBLOCK, options.state);
+            break;
         }
     }
 
@@ -419,7 +422,7 @@ export class BlockManager {
      * @hidden
      */
     public serializeValue(value: string): string {
-        if (!isNOU(value)) {
+        if (!isNOU(value) && value.trim() !== '') {
             if (this.enableHtmlEncode) {
                 value = sanitizeHelper(decode(value), this.enableHtmlSanitizer);
                 value = encode(value);

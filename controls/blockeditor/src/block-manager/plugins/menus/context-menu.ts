@@ -2,6 +2,7 @@ import { BeforeOpenCloseMenuEventArgs, MenuEventArgs } from '@syncfusion/ej2-nav
 import { BlockModel, ContextMenuItemModel } from '../../../models/index';
 import { BlockType } from '../../../models/enums';
 import { events } from '../../../common/constant';
+import * as constants from '../../../common/constant';
 import { getNormalizedKey } from '../../../common/utils/common';
 import { getAdjacentBlock, getBlockModelById } from '../../../common/utils/block';
 import { getSelectedRange } from '../../../common/utils/selection';
@@ -120,15 +121,16 @@ export class ContextMenuModule {
     private toggleDisabledItems(): void {
         if (!getSelectedRange() || !this.parent.currentFocusedBlock) { return; }
         const blockModel: BlockModel = getBlockModelById(this.parent.currentFocusedBlock.id, this.parent.getEditorBlocks());
+        const tableBlk: HTMLElement = this.parent.currentFocusedBlock.closest(`.${constants.TABLE_BLOCK_CLS}`) as HTMLElement;
         const notAllowedTypes: string[] = [BlockType.Image, BlockType.Code];
         const isNotAllowedType: boolean = notAllowedTypes.indexOf(blockModel.blockType) !== -1;
         const previousBlockElement: HTMLElement = getAdjacentBlock(this.parent.currentFocusedBlock, 'previous');
         const previousBlockModel: BlockModel = previousBlockElement
             ? getBlockModelById(previousBlockElement.id, this.parent.getEditorBlocks())
             : null;
-        const canIndent: boolean = (!previousBlockModel ||
-            (previousBlockModel && blockModel.indent <= previousBlockModel.indent) && !isNotAllowedType);
-        const canOutdent: boolean = blockModel.indent > 0 && !isNotAllowedType;
+        const canIndent: boolean = (!tableBlk && (!previousBlockModel ||
+            (previousBlockModel && blockModel.indent <= previousBlockModel.indent) && !isNotAllowedType));
+        const canOutdent: boolean = !tableBlk && (blockModel.indent > 0 && !isNotAllowedType);
         const isSelection: boolean = getSelectedRange().toString().trim().length > 0;
         const selectedBlocks: BlockModel[] = this.parent.editorMethods.getSelectedBlocks();
         const canAllowLink: boolean = isSelection && !isNotAllowedType && (selectedBlocks && selectedBlocks.length === 1);

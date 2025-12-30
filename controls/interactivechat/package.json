@@ -47,7 +47,22 @@
 		"ej2",
 		"syncfusion",
 		"ej2-interactive-chat",
-		"ej2-interactive-chat-components"
+		"ej2-interactive-chat-components",
+		"assistant",
+		"openai",
+		"ai",
+		"chat",
+		"chatbot",
+		"copilot",
+		"ai-chat",
+		"ai-chatbot",
+		"ai-assistant",
+		"ai-copilot",
+		"chatgpt",
+		"gpt4",
+		"gpt-4",
+		"conversational-ui",
+		"conversational-ai"
 	],
 	"repository": {
 		"type": "git",

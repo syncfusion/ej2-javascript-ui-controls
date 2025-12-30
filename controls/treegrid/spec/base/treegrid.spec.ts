@@ -5668,3 +5668,30 @@ describe('Task 985326: Testing getPageSizeByHeight method', () => {
         destroy(gridObj);
     });
 });
+
+describe('Bug 998336: Error throws on binding action failure event with frozen columns', () => {
+    let gridObj: TreeGrid;
+    let actionFailedFunction: () => void = jasmine.createSpy('actionFailure');
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: sampleData,
+                childMapping: 'subtasks',
+                treeColumnIndex: 1,
+                frozenColumns: 1,
+                columns: [
+                { field: 'taskID', headerText: 'Task ID', textAlign: 'Right', width: 100 },
+                { field: 'taskName', headerText: 'Task Name', width: 260 },
+                ],
+                actionFailure: actionFailedFunction
+            },
+            done
+        );
+    });
+    it('actionFailure testing', () => {
+        expect(actionFailedFunction).not.toHaveBeenCalled();
+    });
+    afterAll(() => {
+        destroy(gridObj);
+    });
+});

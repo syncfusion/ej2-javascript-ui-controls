@@ -1,4 +1,4 @@
-import { CellModel, BeforeSortEventArgs, SheetModel, ImageModel, ChartType, ConditionalFormatModel, AutoFillDirection, AutoFillType, ChartModel, MarkerSettingsModel, DataLabelSettingsModel, LegendSettingsModel, AxisModel, ColumnModel } from './../../workbook/index';
+import { CellModel, BeforeSortEventArgs, SheetModel, ImageModel, ChartType, ConditionalFormatModel, AutoFillDirection, AutoFillType, ChartModel, MarkerSettingsModel, DataLabelSettingsModel, LegendSettingsModel, AxisModel, ColumnModel, ExtendedThreadedCommentModel } from './../../workbook/index';
 import { ValidationType, ValidationOperator, MergeArgs, InsertDeleteEventArgs, HyperlinkModel } from './../../workbook/index';
 import { Spreadsheet, RefreshType } from '../index';
 import { MenuEventArgs } from '@syncfusion/ej2-navigations';
@@ -133,6 +133,7 @@ export interface IScrollArgs {
 export interface IRowRenderer {
     render(index?: number, isRowHeader?: boolean, preventHiddenCls?: boolean): Element;
     refresh(index: number, pRow: Element, hRow?: Element, header?: boolean, preventHiddenCls?: boolean): Element;
+    getBorderWidth(): number;
 }
 
 /**
@@ -145,10 +146,11 @@ export interface ICellRenderer {
     refreshRange(
         range: number[], refreshing?: boolean, checkWrap?: boolean, checkHeight?: boolean, checkCF?: boolean,
         skipFormatCheck?: boolean, checkFormulaAdded?: boolean, isFromAutoFillOption?: boolean,
-        isHeightCheckNeeded?: boolean, isSortAction?: boolean, isSelectAll?: boolean, cells?: PreviousCellDetails[]): void;
+        isHeightCheckNeeded?: boolean, isSortAction?: boolean, isSelectAll?: boolean, cells?: PreviousCellDetails[],
+        mergeBorderRows?: number[]): void;
     refresh(
         rowIdx: number, colIdx: number, lastCell?: boolean, element?: Element, checkCF?: boolean, checkWrap?: boolean,
-        skipFormatCheck?: boolean): void;
+        skipFormatCheck?: boolean, isRandomFormula?: boolean, fillType?: string, prevCell?: HTMLTableCellElement): void;
 }
 
 /**
@@ -217,7 +219,7 @@ export interface BeforeOpenEventArgs {
      * The possible values are:
      * - 'initial' - Default open fetch request.
      * - 'chunk' - A follow-up request to fetch a workbook chunk. Occurs only when chunking
-     *   is enabled by the app, and the server returns a chunk plan from the initial request.
+     *   is enabled by the application, and the server returns a chunk plan from the initial request.
      * - 'thresholdLimitConfirmed' - A request sent after the user confirms a threshold warning
      *   (e.g., maximumDataLimit or maximumFileSizeLimit) and chooses to continue.
      */
@@ -331,6 +333,7 @@ export interface CellRenderArgs {
     col?: ColumnModel;
     mergeBorderRows?: number[];
     visibleNotes?: ExtendedNoteModel[];
+    prevCell?: HTMLTableCellElement;
 }
 /** @hidden */
 export interface IAriaOptions<T> {
@@ -494,6 +497,8 @@ export interface UndoRedoEventArgs extends CellSaveEventArgs, BeforeSortEventArg
     validation?: CellValidationEventArgs;
     previousSort?: SortCollectionModel;
     conditionalFormats: ConditionalFormatModel[];
+    comments: ExtendedThreadedCommentModel[];
+    notesCol: ExtendedNoteModel[];
     /** Specifies the previous sorted cells. */
     cellDetails?: PreviousCellDetails[];
     /** Specifies the sorted cells. */
@@ -572,6 +577,7 @@ export interface BeforePasteEventArgs {
     requestType: string;
     type: string;
     BeforeActionData?: BeforeActionData;
+    repeatOnPaste?: boolean;
 }
 
 export interface BeforeWrapEventArgs {

@@ -32,7 +32,7 @@ export class EventManager {
     wireGlobalEvents(): void {
         // Document events
         EventHandler.add(document, 'selectionchange', this.handleEditorSelection, this);
-        EventHandler.add(document, 'click', this.handleDocumentClickActions, this);
+        EventHandler.add(document, 'mousedown', this.handleDocumentClickActions, this);
         EventHandler.add(document, 'mousemove', this.handleMouseMoveActions, this);
         EventHandler.add(<HTMLElement & Window><unknown>window, 'resize', this.onResizeHandler, this);
 
@@ -59,7 +59,7 @@ export class EventManager {
     unWireGlobalEvents(): void {
         // Document events
         EventHandler.remove(document, 'selectionchange', this.handleEditorSelection);
-        EventHandler.remove(document, 'click', this.handleDocumentClickActions);
+        EventHandler.remove(document, 'mousedown', this.handleDocumentClickActions);
         EventHandler.remove(document, 'mousemove', this.handleMouseMoveActions);
         EventHandler.remove(<HTMLElement & Window><unknown>window, 'resize', this.onResizeHandler);
         // Editor events

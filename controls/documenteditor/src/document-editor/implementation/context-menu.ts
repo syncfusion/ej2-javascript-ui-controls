@@ -637,10 +637,17 @@ export class ContextMenu {
     private callSelectedOption(content: string): void {
         if (content === 'Add to Dictionary') {
             this.spellChecker.handleAddToDictionary();
-        } else if (content === 'Ignore All') {
-            this.spellChecker.handleIgnoreAllItems();
         } else {
-            this.spellChecker.manageReplace(content);
+            if (content === 'Ignore All') {
+                this.spellChecker.handleIgnoreAllItems();
+            } else {
+                this.spellChecker.manageReplace(content);
+            }
+            this.documentHelper.triggerSpellCheck = true;
+            if (!isNullOrUndefined(this.documentHelper.owner.editorModule)) {
+                this.documentHelper.owner.editorModule.reLayout(this.documentHelper.selection);
+            }
+            this.documentHelper.triggerSpellCheck = false;
         }
     }
 
@@ -793,19 +800,21 @@ export class ContextMenu {
     public constructContextmenu(allSuggestion: any[], splittedSuggestion: any): any[] {
         let contextMenuItems: any[] = this.customItems.length > 0 ? this.customItems.slice() : [];
         // classList(this.noSuggestion,['e-disabled'],[]);
-        if (isNullOrUndefined(allSuggestion) || allSuggestion.length === 0) {
-            contextMenuItems.push({ text: this.locale.getConstant('No suggestions'), id: CONTEXTMENU_NO_SUGGESTION, classList: ['e-focused'], iconCss: '' });
-        } else {
-            for (let i: number = 0; i < allSuggestion.length; i++) {
-                contextMenuItems.push({ text: allSuggestion[i], id: CONTEXTMENU_SPELLCHECK_OTHERSUGGESTIONS + allSuggestion[i], iconCss: '' });
+        if (!isNullOrUndefined(this.documentHelper.selection) && this.documentHelper.selection.isEmpty) {
+            if (isNullOrUndefined(allSuggestion) || allSuggestion.length === 0) {
+                contextMenuItems.push({ text: this.locale.getConstant('No suggestions'), id: CONTEXTMENU_NO_SUGGESTION, classList: ['e-focused'], iconCss: '' });
+            } else {
+                for (let i: number = 0; i < allSuggestion.length; i++) {
+                    contextMenuItems.push({ text: allSuggestion[i], id: CONTEXTMENU_SPELLCHECK_OTHERSUGGESTIONS + allSuggestion[i], iconCss: '' });
+                }
             }
-        }
-        contextMenuItems.push({ separator: true, id: '_contextmenu_suggestion_separator' });
-        if (!isNullOrUndefined(splittedSuggestion) && splittedSuggestion.length > 1) {
-            contextMenuItems.push({ text: this.locale.getConstant('More Suggestion'), items: splittedSuggestion });
-            contextMenuItems.push({ separator: true, id: '_contextmenu_moreSuggestion_separator' });
-        } else {
-            contextMenuItems.push({ text: this.locale.getConstant('Add to Dictionary'), id: '_contextmenu_otherSuggestions_spellcheck_Add to Dictionary', iconCss: '' });
+            contextMenuItems.push({ separator: true, id: '_contextmenu_suggestion_separator' });
+            if (!isNullOrUndefined(splittedSuggestion) && splittedSuggestion.length > 1) {
+                contextMenuItems.push({ text: this.locale.getConstant('More Suggestion'), items: splittedSuggestion });
+                contextMenuItems.push({ separator: true, id: '_contextmenu_moreSuggestion_separator' });
+            } else {
+                contextMenuItems.push({ text: this.locale.getConstant('Add to Dictionary'), id: '_contextmenu_otherSuggestions_spellcheck_Add to Dictionary', iconCss: '' });
+            }
             contextMenuItems.push({ text: this.locale.getConstant('Ignore Once'), id: '_contextmenu_otherSuggestions_spellcheck_Ignore Once', iconCss: '' });
             contextMenuItems.push({ text: this.locale.getConstant('Ignore All'), id: '_contextmenu_otherSuggestions_spellcheck_Ignore All', iconCss: '' });
             contextMenuItems.push({ separator: true, id: '_contextmenu_change_separator' });

@@ -1,5 +1,5 @@
 import { RangeModel, Workbook, getCell, SheetModel, RowModel, CellModel, getSheetIndex, getSheetName, Cell } from '../base/index';
-import { insertModel, ExtendedRange, InsertDeleteModelArgs, workbookFormulaOperation, ConditionalFormatModel, updateSheetFromDataSource, refreshChart } from '../../workbook/common/index';
+import { insertModel, ExtendedRange, InsertDeleteModelArgs, workbookFormulaOperation, ConditionalFormatModel, updateSheetFromDataSource, refreshChart, ExtendedSheet, ExtendedThreadedCommentModel, ExtendedNoteModel, getSortedIndex } from '../../workbook/common/index';
 import { insert, insertMerge, MergeArgs, InsertDeleteEventArgs, refreshClipboard, refreshInsertDelete } from '../../workbook/common/index';
 import { ModelType, CellStyleModel, updateRowColCount, beginAction, ActionEventArgs, getRangeIndexes, getRangeAddress } from '../../workbook/common/index';
 import { insertFormatRange } from '../../workbook/index';
@@ -295,6 +295,10 @@ export class WorkbookInsert {
         }
         if (args.modelType !== 'Sheet') {
             this.insertConditionalFormats(args);
+            const start: number = args.isUndoRedo ? insertArgs.startIndex : args.start as number;
+            const end: number = args.isUndoRedo ? insertArgs.endIndex : args.end as number;
+            this.insertComments(args, start, end);
+            this.insertNotes(args, start, end);
             this.parent.notify(
                 refreshClipboard,
                 { start: index, end: index + model.length - 1, modelType: args.modelType, model: args.model, isInsert: true });
@@ -353,6 +357,105 @@ export class WorkbookInsert {
             }
         }
     }
+
+    private insertComments(args: InsertDeleteModelArgs, startIdx: number, endIdx: number): void {
+        if (args.prevAction === 'delete') {
+            const insertCount: number = (endIdx + 1) - startIdx;
+            const existing: ExtendedThreadedCommentModel[] = (args.model as ExtendedSheet).comments;
+            for (let i: number = 0; i < existing.length; i++) {
+                const comment: ExtendedThreadedCommentModel = existing[i as number];
+                if (args.modelType === 'Row' && comment.address[0] >= startIdx) {
+                    comment.address[0] += insertCount;
+                    const commentModel: ExtendedThreadedCommentModel = getCell(comment.address[0], comment.address[1],
+                                                                               args.model, null, true).comment;
+                    if (commentModel) {
+                        commentModel.address[0] = comment.address[0];
+                    }
+                } else if (args.modelType === 'Column' && comment.address[1] >= startIdx) {
+                    comment.address[1] += insertCount;
+                    const commentModel: ExtendedThreadedCommentModel = getCell(comment.address[0], comment.address[1],
+                                                                               args.model, null, true).comment;
+                    if (commentModel) {
+                        commentModel.address[1] = comment.address[1];
+                    }
+                }
+            }
+            for (let j: number = 0; j < args.comments.length; j++) {
+                const restored: ExtendedThreadedCommentModel = args.comments[j as number];
+                const idx: number = getSortedIndex((args.model as ExtendedSheet).comments,
+                                                   [restored.address[0], restored.address[1]], true);
+                (args.model as ExtendedSheet).comments.splice(idx, 0, restored);
+            }
+            return;
+        }
+        const comments: ExtendedThreadedCommentModel[] = (args.model as ExtendedSheet).comments;
+        if (comments) {
+            for (let i: number = 0; i < comments.length; i++) {
+                const address: number[] = comments[i as number].address;
+                if ((args.modelType === 'Row' && address[0] >= startIdx) || (args.modelType === 'Column' && address[1] >= startIdx)) {
+                    const commentAddress: number[] = [address[0], address[1], address[0], address[1]];
+                    const updatedaddress: number[] = insertFormatRange(args, commentAddress, !args.isAction && !args.isUndoRedo);
+                    comments[i as number].address = [updatedaddress[2], updatedaddress[3]];
+                    const comment: ExtendedThreadedCommentModel = getCell(updatedaddress[2], updatedaddress[3],
+                                                                          args.model, null, true).comment;
+                    if (comment) {
+                        comment.address = [updatedaddress[2], updatedaddress[3]];
+                    }
+                }
+            }
+        }
+    }
+
+    private insertNotes(args: InsertDeleteModelArgs, startIdx: number, endIdx: number): void {
+        if (args.prevAction === 'delete') {
+            const insertCount: number = (endIdx + 1) - startIdx;
+            const existing: ExtendedNoteModel[] = (args.model as ExtendedSheet).notes;
+            for (let i: number = 0; i < existing.length; i++) {
+                const note: ExtendedNoteModel = existing[i as number];
+                if (args.modelType === 'Row' && note.rowIdx >= startIdx) {
+                    note.rowIdx = note.rowIdx + insertCount;
+                    const noteModel: ExtendedNoteModel = getCell(note.rowIdx, note.colIdx,
+                                                                 args.model, null, true).notes as ExtendedNoteModel;
+                    if (noteModel) {
+                        noteModel.rowIdx = note.rowIdx;
+                    }
+                } else if (args.modelType === 'Column' && note.colIdx >= startIdx) {
+                    note.colIdx = note.colIdx + insertCount;
+                    const noteModel: ExtendedNoteModel = getCell(note.rowIdx, note.colIdx,
+                                                                 args.model, null, true).notes as ExtendedNoteModel;
+                    if (noteModel) {
+                        noteModel.colIdx = note.colIdx;
+                    }
+                }
+            }
+            for (let j: number = 0; j < args.notes.length; j++) {
+                const restored: ExtendedNoteModel = args.notes[j as number];
+                const idx: number = getSortedIndex((args.model as ExtendedSheet).notes,
+                                                   [restored.rowIdx, restored.colIdx], false);
+                (args.model as ExtendedSheet).notes.splice(idx, 0, restored);
+            }
+            return;
+        }
+        const notes: ExtendedNoteModel[] = (args.model as ExtendedSheet).notes;
+        if (notes) {
+            for (let i: number = 0; i < notes.length; i++) {
+                const note: ExtendedNoteModel = notes[i as number];
+                if ((args.modelType === 'Row' && note.rowIdx >= startIdx) || (args.modelType === 'Column' && note.colIdx >= startIdx)) {
+                    const noteAddress: number[] = [note.rowIdx, note.colIdx, note.rowIdx, note.colIdx];
+                    const updatedaddress: number[] = insertFormatRange(args, noteAddress, !args.isAction && !args.isUndoRedo);
+                    notes[i as number].rowIdx = updatedaddress[2];
+                    notes[i as number].colIdx = updatedaddress[3];
+                    const noteModel: ExtendedNoteModel = getCell(updatedaddress[2], updatedaddress[3],
+                                                                 args.model, null, true).notes as ExtendedNoteModel;
+                    if (noteModel) {
+                        noteModel.rowIdx = updatedaddress[2];
+                        noteModel.colIdx = updatedaddress[3];
+                    }
+                }
+            }
+        }
+    }
+
     private addEventListener(): void {
         this.parent.on(insertModel, this.insertModel, this);
     }

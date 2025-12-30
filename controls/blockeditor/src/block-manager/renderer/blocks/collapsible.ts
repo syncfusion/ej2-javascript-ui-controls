@@ -1,7 +1,6 @@
 import { BlockModel, ICollapsibleHeadingBlockSettings, ICollapsibleBlockSettings } from '../../../models/index';
 import { getBlockModelById, createBaseSvg, createSvgElement } from '../../../common/utils/index';
 import * as constants from '../../../common/constant';
-import { BlockFactory } from '../../services/index';
 import { BlockType } from '../../../models/enums';
 import { BlockManager } from '../../base/block-manager';
 import { createElement, updateCSSText } from '@syncfusion/ej2-base';
@@ -52,13 +51,6 @@ export class CollapsibleRenderer {
             attrs: { contenteditable: 'true' }
         });
         updateCSSText(contentContainer, `display: ${collapsibleProps.isExpanded ? 'block' : 'none'};`);
-        if (!collapsibleProps.children || (collapsibleProps.children && collapsibleProps.children.length === 0)) {
-            if (!collapsibleProps.children) { collapsibleProps.children = []; }
-            collapsibleProps.children[0] = BlockFactory.createParagraphBlock({
-                parentId: block.id,
-                content: [BlockFactory.createTextContent()]
-            });
-        }
         collapsibleProps.children.forEach((childBlock: BlockModel) => {
             const childBlockElement: HTMLElement = this.parent.blockRenderer.createBlockElement(childBlock);
             contentContainer.appendChild(childBlockElement);

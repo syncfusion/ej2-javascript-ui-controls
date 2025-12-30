@@ -306,6 +306,19 @@ describe('Block Editor', () => {
             remove(editorElement);
         });
 
+        it('should not clear content when pressed delete at start of text -> single block', () => {
+            const blockElement = editorElement.querySelector('.e-block') as HTMLElement;
+            expect(blockElement).not.toBeNull();
+            editor.blockManager.setFocusToBlock(blockElement);
+            const contentElement = getBlockContentElement(blockElement);
+            setCursorPosition(contentElement, 0);
+            editorElement.dispatchEvent(new KeyboardEvent('keydown', { key: 'Delete', bubbles: true }));
+            expect(editor.blocks.length).toBe(1);
+            expect(editor.blocks[0].content[0].content).toBe('Hello world');
+            expect(editorElement.querySelectorAll('.e-block').length).toBe(1);
+            expect(editorElement.querySelectorAll('.e-block')[0].textContent).toBe('Hello world');
+        });
+
         it('should create new block on enter', () => {
             const blockElement = editorElement.querySelector('.e-block') as HTMLElement;
             expect(blockElement).not.toBeNull();

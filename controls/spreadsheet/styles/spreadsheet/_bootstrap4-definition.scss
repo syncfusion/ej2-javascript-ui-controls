@@ -399,7 +399,7 @@ $spreadsheet-padding-5: 5px !default;
 
 // Threaded Comment
 $spread-comment-indicator-color: $blue !default;
-$spread-comment-background-color: #ffffff !default;
+$spread-comment-background-color: $white !default;
 $spread-comment-resolved-background-color: $gray-200 !default;
 $spread-comment-review-pane-background-color: $gray-100 !default;
 $spread-comment-review-title-color: $gray-900 !default;
@@ -407,7 +407,6 @@ $spread-comment-title-color: $gray-900 !default;
 $spread-comment-text-color: $gray-900 !default;
 $spread-comment-timestamp-color: $gray-700 !default;
 $spread-comment-input-height: 32px !default;
-$spread-comment-input-border-bottom: 2px solid #616161 !default;
 $spread-comment-input-border-bottom-focused: 2px solid $blue !default;
 $spread-comment-border: 1px solid $gray-300 !default;
 $spread-comment-menu-height: 32px !default;

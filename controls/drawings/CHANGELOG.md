@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 32.1.21 (2025-12-30)
+
+### Drawings
+
+#### Bug Fixes
+
+- `#I793903` - Resolved an issue where the text area expanded while typing in a Free Text annotation.
+
 ## 32.1.19 (2025-12-16)
 
 ### Drawings

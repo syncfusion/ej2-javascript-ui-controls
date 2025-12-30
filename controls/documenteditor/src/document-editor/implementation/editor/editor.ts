@@ -1763,7 +1763,8 @@ export class Editor {
             }
             this.selection.showHidePasteOptions(undefined, undefined);
         }
-        if (this.documentHelper.owner.isLayoutEnabled && !this.documentHelper.owner.editorModule.isUserInsert && !this.documentHelper.owner.isShiftingEnabled && !this.isSkipOperationsBuild && !this.isRemoteAction) {
+        if (this.documentHelper.owner.isLayoutEnabled && !this.documentHelper.owner.editorModule.isUserInsert && !this.documentHelper.owner.isShiftingEnabled && !this.isSkipOperationsBuild && !this.isRemoteAction
+            && !(!isNullOrUndefined(this.owner.optionsPaneModule) && this.owner.optionsPaneModule.isUpdateHeading)) {
             this.documentHelper.owner.fireContentChange();
         }
         if (!isNullOrUndefined(this.owner.optionsPaneModule) && this.owner.optionsPaneModule.isOptionsPaneShow
@@ -3730,7 +3731,7 @@ export class Editor {
         let initComplexHistory: boolean = false;
         if (selection.isEmpty) {
             const inlineObj: ElementInfo = selection.start.currentWidget.getInline(selection.start.offset, 0);
-            const element: ElementBox = inlineObj.element;
+            let element: ElementBox = inlineObj.element;
             if (element instanceof BookmarkElementBox && element.bookmarkType === 1
                 && !isNullOrUndefined(element.properties) && element.properties.hasOwnProperty('isAfterParagraphMark') && element.properties['isAfterParagraphMark']) {
                 selection.start.setPositionParagraph(element.line, element.line.getOffset(element, 0));
@@ -3751,6 +3752,13 @@ export class Editor {
                         }
                     }
                 }
+            }
+            if (element instanceof BookmarkElementBox && element.bookmarkType === 0) {
+                while (!isNullOrUndefined(element.nextNode) && element.nextNode instanceof BookmarkElementBox && element.nextNode.bookmarkType === 0) {
+                    element = element.nextNode;
+                }
+                selection.start.setPositionParagraph(element.line, element.line.getOffset(element, element.length));
+                selection.end.setPositionInternal(selection.start);
             }
         }
         if (this.documentHelper.isDoubleTap && HelperMethods.endsWith(selection.text)) {
@@ -13664,7 +13672,7 @@ export class Editor {
      * @private
      * @returns {void}
      */
-    public applyParaFormatProperty(paragraph: ParagraphWidget, property: string, value: Object, update: boolean): void {
+    public applyParaFormatProperty(paragraph: ParagraphWidget, property: string, value: Object, update: boolean, isNeedtoSkipLayoutingListFormatPara?: boolean): void {
         let format: WParagraphFormat = paragraph.paragraphFormat;
         if (update && property === 'leftIndent') {
             value = format.leftIndent + (value as number);
@@ -13786,7 +13794,9 @@ export class Editor {
             if (format.listFormat.listId >= 0) {
                 format.clearIndent();
             }
-            this.layoutItemBlock(format.ownerBase as ParagraphWidget, false);
+            if(!isNeedtoSkipLayoutingListFormatPara) {
+                this.layoutItemBlock(format.ownerBase as ParagraphWidget, false);
+            }
             return;
         } else if (property === 'bidi') {
             format.bidi = value as boolean;
@@ -14100,7 +14110,7 @@ export class Editor {
             this.applyParagraphFormatRow(wCell.ownerRow, start, end, property, value, update);
         }
     }
-    private applyParaFormatCellInternal(cell: TableCellWidget, property: string, value: Object, update: boolean, isNext?: boolean): void {
+    private applyParaFormatCellInternal(cell: TableCellWidget, property: string, value: Object, update: boolean, isNext?: boolean, isNeedtoSkipLayoutingListFormatPara?: boolean): void {
 
         for (let i: number = 0; i < cell.childWidgets.length; i++) {
             let block: BlockWidget = cell.childWidgets[i] as BlockWidget;
@@ -14109,10 +14119,10 @@ export class Editor {
                     value["listLevelNumber"] = block.paragraphFormat.listFormat.listLevelNumber;
                 }
                 this.isMeasureParaWidth = true;
-                this.applyParaFormatProperty((block as ParagraphWidget), property, value, update);
+                this.applyParaFormatProperty((block as ParagraphWidget), property, value, update, isNeedtoSkipLayoutingListFormatPara);
                 this.isMeasureParaWidth = false;
             } else {
-                this.applyParagraphFormatTableInternal(block as TableWidget, property, value, update, isNext);
+                this.applyParagraphFormatTableInternal(block as TableWidget, property, value, update, isNext, isNeedtoSkipLayoutingListFormatPara);
             }
         }
     }
@@ -14160,10 +14170,13 @@ export class Editor {
                         value = this.getParaFormatValueInCell((row.childWidgets[j] as TableCellWidget), property, value);
                         isStarted = true;
                     }
-                    this.applyParaFormatCellInternal((row.childWidgets[j] as TableCellWidget), property, value, update);
+                    this.applyParaFormatCellInternal((row.childWidgets[j] as TableCellWidget), property, value, update, false, true);
                 }
             }
         }
+        this.isMeasureParaWidth = true;
+        this.documentHelper.layout.reLayoutTable(table);
+        this.isMeasureParaWidth = false;
     }
 
     private applyParaFormatTable(table: TableWidget, start: TextPosition, end: TextPosition, property: string, value: Object, update: boolean, isNext?: boolean): void {
@@ -14207,11 +14220,11 @@ export class Editor {
             }
         }
     }
-    private applyParagraphFormatTableInternal(table: TableWidget, property: string, value: Object, update: boolean, isNext?: boolean): void {
+    private applyParagraphFormatTableInternal(table: TableWidget, property: string, value: Object, update: boolean, isNext?: boolean, isNeedtoSkipLayoutingListFormatPara?: boolean): void {
         for (let x: number = 0; x < table.childWidgets.length; x++) {
             let row: TableRowWidget = table.childWidgets[x] as TableRowWidget;
             for (let y: number = 0; y < row.childWidgets.length; y++) {
-                this.applyParaFormatCellInternal((row.childWidgets[y] as TableCellWidget), property, value, update, isNext);
+                this.applyParaFormatCellInternal((row.childWidgets[y] as TableCellWidget), property, value, update, isNext, isNeedtoSkipLayoutingListFormatPara);
             }
         }
     }
@@ -14582,7 +14595,7 @@ export class Editor {
         let selection: Selection = this.documentHelper.selection;
         let table: TableWidget = selection.start.paragraph.associatedCell.ownerTable;
         table = table.combineWidget(this.owner.viewer) as TableWidget;
-        if (selection.isEmpty) {
+        if (selection.isEmpty && property !== 'preferredWidthType' && property !== 'preferredWidth') {
             this.initHistory(action);
             this.applyCellPropertyValue(selection, property, value, selection.start.paragraph.associatedCell.cellFormat);
             table.calculateGrid();
@@ -22663,46 +22676,48 @@ export class Editor {
      * @returns {LineStyle}
      */
     private applyLineStyles(border: WBorder, settings: BorderSettings, oldBorder?: WBorders): LineStyle {
-        if (settings.borderStyle === 'Cleared') {
-            return settings.borderStyle;
+        if (settings.type === "NoBorder" || border.lineStyle === 'Cleared') {
+            return border.lineStyle;
         }
         const type: BorderType = settings.type;
         let lineStyle: LineStyle = border.lineStyle;
         const cells: TableCellWidget[] = this.selection.getSelectedCells();
         let borders: any = [];
-        let isStyle: boolean = true;
         borders = this.getBorders(type, cells);
         if (borders.length > 0) {
-            let tableFormat: WBorders = cells[0].ownerTable.tableFormat.borders;
-            for (let i: number = 0; i < borders.length; i++) {
-                // Compares each cell borders
-                if (borders[i].border.lineStyle !== borders[0].border.lineStyle || borders[i].border.lineWidth !== borders[0].border.lineWidth || borders[i].border.color !== borders[0].border.color) {
+            let tableBorder: WBorders = cells[0].ownerTable.tableFormat.borders;
+            let firstBorder: WBorder = borders[0].border;
+            let borderType: string = borders[0].type;
+            let isStyle: boolean = true;
+            // Update cell border with the table border if linestyle is none
+            if (firstBorder.lineStyle === "None") {
+                isStyle = false;
+                firstBorder = borderType === 'top' ? tableBorder.top : borderType === 'bottom' ? tableBorder.bottom : borderType === 'left' ? tableBorder.left : borderType === 'right' ?
+                    tableBorder.right : borderType === 'vertical' ? tableBorder.vertical : borderType === 'horizontal' ? tableBorder.horizontal : firstBorder;
+            }
+            for (var i = 1; i < borders.length; i++) {
+                let nextBorder: WBorder = borders[i].border;
+                // Update cell border with the table border if linestyle is none             
+                if (nextBorder.lineStyle === "None") {
                     isStyle = false;
-                    // Compare the table border and the first cell border, if the linestyle of the cell is 'None'
-                    if (borders[i].border.lineStyle === "None") {
-                        let borderType: string = borders[i].type;
-                        let tableBorder: WBorder = borderType === 'top' ? tableFormat.top : borderType === 'bottom' ? tableFormat.bottom : borderType === 'left' ? tableFormat.left : borderType === 'right' ?
-                            tableFormat.right : borderType === 'vertical' ? tableFormat.vertical : borderType === 'horizontal' ? tableFormat.horizontal : borders[i].border;
-                        // Return the new linestyle, if table format and first cell format mismatches
-                        if (tableBorder.lineStyle !== borders[0].border.lineStyle || tableBorder.lineWidth !== borders[0].border.lineWidth || tableBorder.color !== borders[0].border.color) {
-                            return lineStyle;
-                        }
-                        // Compare the table border and first cell border
-                        lineStyle = this.getLineStyle(border, tableBorder);
-                    }
+                    borderType = borders[i].type;
+                    nextBorder = borderType === 'top' ? tableBorder.top : borderType === 'bottom' ? tableBorder.bottom : borderType === 'left' ? tableBorder.left : borderType === 'right' ?
+                        tableBorder.right : borderType === 'vertical' ? tableBorder.vertical : borderType === 'horizontal' ? tableBorder.horizontal : nextBorder;
+                }
+                // Compare cell borders and return the linestyle if values mismatch
+                if (nextBorder.lineStyle !== firstBorder.lineStyle || nextBorder.lineWidth !== firstBorder.lineWidth || nextBorder.color !== firstBorder.color ) {
                     return lineStyle;
                 }
             }
-            // isStyle remains true, if the above for loop is executed and no value is returned.
             // Updates linestyle, if Line styles of all the cell formats are not 'None'
-            if (isStyle && borders[0].border.lineStyle !== "None") {
-                lineStyle = this.getLineStyle(border, borders[0].border);
+            if (isStyle) {
+                lineStyle = this.getLineStyle(border, firstBorder);
             }
-            // Updates linestyle, if Line styles of all the cell formats are 'None'
+            // Updates linestyle, if Line styles of the cell is None
             else {
                 // Update oldborder with the table format if cells are selected, as cell formats are none
                 if (!this.documentHelper.selection.isTableSelected()) {
-                    oldBorder = tableFormat;
+                    oldBorder = tableBorder;
                 }
                 lineStyle = type === 'TopBorder' ? this.getLineStyle(border, oldBorder.top) : type === 'BottomBorder' ? this.getLineStyle(border, oldBorder.bottom) : type === 'LeftBorder' ?
                     this.getLineStyle(border, oldBorder.left) : type === 'RightBorder' ? this.getLineStyle(border, oldBorder.right) : type === 'InsideHorizontalBorder' ?

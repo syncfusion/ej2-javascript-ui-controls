@@ -4,6 +4,7 @@ import { getBlockContentElement, getBlockText, IClipboardPayloadOptions, setCurs
 import { createEditor } from '../common/util.spec';
 import { BlockEditor } from '../../src/index';
 import { BlockType, ContentType } from '../../src/models/enums';
+import { mswordContentType1, mswordContentType2, vscodeContentType1 } from '../common/data.spec';
 
 function createMockClipboardEvent(type: string, clipboardData: any = {}): ClipboardEvent {
     const event: any = {
@@ -77,8 +78,8 @@ describe('Clipboard Actions', () => {
                 }
             };
 
-            editor.blockManager.clipboardAction.handleCopy(createMockClipboardEvent('copy', mockClipboard));
-            editor.blockManager.clipboardAction.handlePaste(createMockClipboardEvent('paste', mockClipboard));
+            (editor.blockManager.eventAction as any).clipboardActionHandler(createMockClipboardEvent('copy', mockClipboard));
+            (editor.blockManager.eventAction as any).clipboardActionHandler(createMockClipboardEvent('paste', mockClipboard));
 
             setTimeout(() => {
                 expect(editor.blocks.length).toBe(3);
@@ -112,7 +113,7 @@ describe('Clipboard Actions', () => {
                 }
             };
 
-            editor.blockManager.clipboardAction.handleCut(createMockClipboardEvent('cut', mockClipboard));
+            (editor.blockManager.eventAction as any).clipboardActionHandler(createMockClipboardEvent('cut', mockClipboard));
 
             setTimeout(() => {
                 expect(editor.blocks.length).toBe(initialBlockCount - 1);
@@ -121,7 +122,7 @@ describe('Clipboard Actions', () => {
                 const blockElement2 = editorElement.querySelector('#paragraph2') as HTMLElement;
                 editor.blockManager.setFocusToBlock(blockElement2);
                 setCursorPosition(getBlockContentElement(blockElement2), 0);
-                editor.blockManager.clipboardAction.handlePaste(createMockClipboardEvent('paste', mockClipboard));
+                (editor.blockManager.eventAction as any).clipboardActionHandler(createMockClipboardEvent('paste', mockClipboard));
                 expect(editor.blocks.length).toBe(2);
                 expect(editor.blocks[1].content[0].content).toBe('First paragraph');
                 expect(blockElement2.nextElementSibling.id).toBe(editor.blocks[1].id);
@@ -267,19 +268,19 @@ describe('Clipboard Actions', () => {
 
             editor.blockManager.clipboardAction.handlePaste(createMockClipboardEvent('paste', mockClipboard));
 
-            // All Clipboard blocks will be pasted after the focused block
+            // All Clipboard blocks will be pasted at the cursor block
             // So, total blocks will be 4
             setTimeout(() => {
                 expect(editor.blocks.length).toBe(4);
                 expect(editor.blocks[0].content[0].content).toBe('First paragraph');
-                expect(editor.blocks[1].content[0].content).toBe('First paragraph');
-                expect(editor.blocks[2].content[0].content).toBe('Second paragraph');
+                expect(editor.blocks[1].content[0].content).toBe('Second paragraph');
+                expect(editor.blocks[2].content[0].content).toBe('First paragraph');
                 expect(editor.blocks[3].content[0].content).toBe('Second paragraph');
 
                 expect(editorElement.querySelectorAll('.e-block').length).toBe(4);
                 expect(editorElement.querySelectorAll('.e-block')[0].querySelector('p').textContent).toBe('First paragraph');
-                expect(editorElement.querySelectorAll('.e-block')[1].querySelector('p').textContent).toBe('First paragraph');
-                expect(editorElement.querySelectorAll('.e-block')[2].querySelector('p').textContent).toBe('Second paragraph');
+                expect(editorElement.querySelectorAll('.e-block')[1].querySelector('p').textContent).toBe('Second paragraph');
+                expect(editorElement.querySelectorAll('.e-block')[2].querySelector('p').textContent).toBe('First paragraph');
                 expect(editorElement.querySelectorAll('.e-block')[3].querySelector('p').textContent).toBe('Second paragraph');
                 done();
             });
@@ -533,6 +534,70 @@ describe('Clipboard Actions', () => {
                 done();
             }, 100);
         });
+
+        it('copy and paste content along the edges of Mention content without cursor change', (done) => {
+            if (editor) editor.destroy();
+            editor = createEditor({
+                blocks: [
+                    {
+                        id: 'block-1',
+                        blockType: BlockType.Paragraph,
+                        content: [
+                            { id: 'content-1', contentType: ContentType.Text, content: 'Hello ' },
+                            { id: 'content-2', contentType: ContentType.Label, properties: { labelId: 'progress' } },
+                            { id: 'content-3', contentType: ContentType.Text, content: ' World' }
+                        ]
+                    }
+                ]
+            });
+            editor.appendTo('#editor');
+
+            // Copy content from the first block
+            const sourceBlock = editorElement.querySelector('#block-1') as HTMLElement;
+            editor.blockManager.setFocusToBlock(sourceBlock);
+            const sourceRange = document.createRange();
+            const sourceContent = sourceBlock.querySelector('#content-1').firstChild as HTMLElement;
+            sourceRange.selectNodeContents(sourceContent);
+
+            const selection = window.getSelection();
+            selection.removeAllRanges();
+            selection.addRange(sourceRange);
+
+            const copiedData = editor.blockManager.clipboardAction.getClipboardPayload();
+
+            const mockClipboard: any = {
+                setData: jasmine.createSpy(),
+                getData: (format: string) => {
+                    if (format === 'text/blockeditor') {
+                        return copiedData.blockeditorData;
+                    } else if (format === 'text/html') {
+                        return copiedData.html;
+                    } else if (format === 'text/plain') {
+                        return copiedData.text;
+                    }
+                    return '';
+                }
+            };
+
+            //Content should be same even after paste
+            editor.blockManager.clipboardAction.handlePaste(createMockClipboardEvent('paste', mockClipboard));
+
+            setTimeout(() => {
+                const updatedContent = editor.blocks[0].content;
+                expect(updatedContent.length).toBe(4); // Along with cursor span
+                expect(updatedContent[0].content).toBe(''); // Empty span
+                expect(updatedContent[1].content).toBe('Hello '); // Selected and pasted text
+                expect(updatedContent[2].contentType).toBe('Label'); // Label
+                expect(updatedContent[3].content).toBe(' World'); // After content
+
+                const contentEle = getBlockContentElement(editorElement.querySelector('#block-1'));
+                expect(contentEle.childNodes[0].textContent).toBe(''); // Empty span
+                expect(contentEle.childNodes[1].textContent).toBe('Hello '); // Selected and pasted text
+                expect((contentEle.childNodes[2] as HTMLElement).classList).toContain('e-mention-chip');
+                expect(contentEle.childNodes[3].textContent).toBe(' World'); // After content
+                done();
+            }, 100);
+        });
     });
 
     describe('Paste Plain Text', () => {
@@ -579,18 +644,18 @@ describe('Clipboard Actions', () => {
             editor.blockManager.clipboardAction.handlePaste(mockEvent);
 
             setTimeout(() => {
-                expect(editor.blocks.length).toBe(4); // Original + 3 new lines
-                expect(editor.blocks[0].content[0].content).toBe('Hello world');
-                expect(editor.blocks[1].content[0].content).toBe('Line 1');
-                expect(editor.blocks[2].content[0].content).toBe('Line 2');
-                expect(editor.blocks[3].content[0].content).toBe('Line 3');
+                expect(editor.blocks.length).toBe(4); // 3 new lines + Original
+                expect(editor.blocks[0].content[0].content).toBe('Line 1');
+                expect(editor.blocks[1].content[0].content).toBe('Line 2');
+                expect(editor.blocks[2].content[0].content).toBe('Line 3');
+                expect(editor.blocks[3].content[0].content).toBe('Hello world');
 
                 const blockElements = editor.blockContainer.querySelectorAll('.e-block');
                 expect(blockElements.length).toBe(4);
-                expect(blockElements[0].textContent).toBe('Hello world');
-                expect(blockElements[1].textContent).toBe('Line 1');
-                expect(blockElements[2].textContent).toBe('Line 2');
-                expect(blockElements[3].textContent).toBe('Line 3');
+                expect(blockElements[0].textContent).toBe('Line 1');
+                expect(blockElements[1].textContent).toBe('Line 2');
+                expect(blockElements[2].textContent).toBe('Line 3');
+                expect(blockElements[3].textContent).toBe('Hello world');
                 done();
             }, 100);
         });
@@ -628,13 +693,15 @@ describe('Clipboard Actions', () => {
                 // Verify the created blocks match the raw plain text
                 // Since this will create a new block for the pasted content
                 expect(editor.blocks.length).toBe(2);
+                expect(editor.blocks[0].blockType).toBe(BlockType.Paragraph);
+                expect(editor.blocks[0].content[0].content).toBe(plainText);
                 expect(editor.blocks[1].blockType).toBe(BlockType.Paragraph);
-                expect(editor.blocks[1].content.length).toBe(1);
-                expect(editor.blocks[1].content[0].content).toBe(plainText);
-                
+                expect(editor.blocks[1].content[0].content).toBe('Hello world');
+
                 const blockElements = editor.blockContainer.querySelectorAll('.e-block');
                 expect(blockElements.length).toBe(2);
-                expect(blockElements[1].textContent).toBe(plainText);
+                expect(blockElements[0].textContent).toBe(plainText);
+                expect(blockElements[1].textContent).toBe('Hello world');
                 done();
             }, 100);
         });
@@ -658,17 +725,23 @@ describe('Clipboard Actions', () => {
             editor.blockManager.clipboardAction.handlePaste(mockEvent);
 
             setTimeout(() => {
-                expect(editor.blocks.length).toBe(4); // Original + 3 new list items
+                expect(editor.blocks.length).toBe(4); // 3 new list items(1st merge as content) + Original
+                expect(editor.blocks[0].blockType).toBe(BlockType.Paragraph);
                 expect(editor.blocks[1].blockType).toBe(BlockType.BulletList);
                 expect(editor.blocks[2].blockType).toBe(BlockType.BulletList);
-                expect(editor.blocks[3].blockType).toBe(BlockType.BulletList);
+                expect(editor.blocks[3].blockType).toBe(BlockType.Paragraph);
+
+                expect(editor.blocks[0].content[0].content).toBe('Item 1');
+                expect(editor.blocks[1].content[0].content).toBe('Item 2');
+                expect(editor.blocks[2].content[0].content).toBe('Item 3');
+                expect(editor.blocks[3].content[0].content).toBe('Hello world');
                 
                 const blockElements = editor.blockContainer.querySelectorAll('.e-block');
                 expect(blockElements.length).toBe(4);
-                expect(blockElements[0].textContent).toBe('Hello world');
-                expect(blockElements[1].textContent).toBe('Item 1');
-                expect(blockElements[2].textContent).toBe('Item 2');
-                expect(blockElements[3].textContent).toBe('Item 3');
+                expect(blockElements[0].textContent).toBe('Item 1');
+                expect(blockElements[1].textContent).toBe('Item 2');
+                expect(blockElements[2].textContent).toBe('Item 3');
+                expect(blockElements[3].textContent).toBe('Hello world');
                 done();
             }, 100);
         });
@@ -692,17 +765,23 @@ describe('Clipboard Actions', () => {
             editor.blockManager.clipboardAction.handlePaste(mockEvent);
 
             setTimeout(() => {
-                expect(editor.blocks.length).toBe(4); // Original + 3 new list items
+                expect(editor.blocks.length).toBe(4); // 3 new list items(1st merge as content) + Original
+                expect(editor.blocks[0].blockType).toBe(BlockType.Paragraph);
                 expect(editor.blocks[1].blockType).toBe(BlockType.NumberedList);
                 expect(editor.blocks[2].blockType).toBe(BlockType.NumberedList);
-                expect(editor.blocks[3].blockType).toBe(BlockType.NumberedList);
+                expect(editor.blocks[3].blockType).toBe(BlockType.Paragraph);
 
+                expect(editor.blocks[0].content[0].content).toBe('Item 1');
+                expect(editor.blocks[1].content[0].content).toBe('Item 2');
+                expect(editor.blocks[2].content[0].content).toBe('Item 3');
+                expect(editor.blocks[3].content[0].content).toBe('Hello world');
+                
                 const blockElements = editor.blockContainer.querySelectorAll('.e-block');
                 expect(blockElements.length).toBe(4);
-                expect(blockElements[0].textContent).toBe('Hello world');
-                expect(blockElements[1].textContent).toBe('Item 1');
-                expect(blockElements[2].textContent).toBe('Item 2');
-                expect(blockElements[3].textContent).toBe('Item 3');
+                expect(blockElements[0].textContent).toBe('Item 1');
+                expect(blockElements[1].textContent).toBe('Item 2');
+                expect(blockElements[2].textContent).toBe('Item 3');
+                expect(blockElements[3].textContent).toBe('Hello world');
                 done();
             }, 100);
         });
@@ -751,17 +830,18 @@ describe('Clipboard Actions', () => {
 
             setTimeout(() => {
                 expect(editor.blocks.length).toBe(2);
-                expect(editor.blocks[1].blockType).toBe(BlockType.Paragraph);
-                expect(editor.blocks[1].content.length).toBe(5);
-                expect(editor.blocks[1].content[0].content).toBe('Formatted ');
-                expect(editor.blocks[1].content[1].content).toBe('bold');
-                expect((editor.blocks[1].content[1].properties as BaseStylesProp).styles.bold).toBe(true);
-                expect(editor.blocks[1].content[2].content).toBe(' and ');
-                expect(editor.blocks[1].content[3].content).toBe('italic');
-                expect((editor.blocks[1].content[3].properties as BaseStylesProp).styles.italic).toBe(true);
-                expect(editor.blocks[1].content[4].content).toBe(' text');
+                expect(editor.blocks[0].blockType).toBe(BlockType.Paragraph);
+                expect(editor.blocks[0].content.length).toBe(5);
+                expect(editor.blocks[0].content[0].content).toBe('Formatted ');
+                expect(editor.blocks[0].content[1].content).toBe('bold');
+                expect((editor.blocks[0].content[1].properties as BaseStylesProp).styles.bold).toBe(true);
+                expect(editor.blocks[0].content[2].content).toBe(' and ');
+                expect(editor.blocks[0].content[3].content).toBe('italic');
+                expect((editor.blocks[0].content[3].properties as BaseStylesProp).styles.italic).toBe(true);
+                expect(editor.blocks[0].content[4].content).toBe(' text');
+                expect(editor.blocks[1].content[0].content).toBe('Hello world');
 
-                const contentElement1 = getBlockContentElement(document.getElementById(editor.blocks[1].id));
+                const contentElement1 = getBlockContentElement(document.getElementById(editor.blocks[0].id));
                 expect(contentElement1.childNodes.length).toBe(5);
                 expect(contentElement1.childNodes[0].textContent).toBe('Formatted ');
                 expect(contentElement1.childNodes[1].textContent).toBe('bold');
@@ -770,6 +850,9 @@ describe('Clipboard Actions', () => {
                 expect((contentElement1.childNodes[3] as HTMLElement).textContent).toBe('italic');
                 expect((contentElement1.childNodes[3] as HTMLElement).tagName).toBe('EM');
                 expect((contentElement1.childNodes[4] as HTMLElement).textContent).toBe(' text');
+
+                const contentElement2 = getBlockContentElement(document.getElementById(editor.blocks[1].id));
+                expect(contentElement2.childNodes[0].textContent).toBe('Hello world');
                 done();
             }, 100);
         });
@@ -793,32 +876,34 @@ describe('Clipboard Actions', () => {
             editor.blockManager.clipboardAction.handlePaste(mockEvent);
 
             setTimeout(() => {
-                expect(editor.blocks.length).toBe(6); // Original + 5 list items
+                expect(editor.blocks.length).toBe(6); //5 list items + Original
+                expect(editor.blocks[0].blockType).toBe(BlockType.Paragraph);
                 expect(editor.blocks[1].blockType).toBe(BlockType.NumberedList);
                 expect(editor.blocks[2].blockType).toBe(BlockType.NumberedList);
                 expect(editor.blocks[3].blockType).toBe(BlockType.NumberedList);
                 expect(editor.blocks[4].blockType).toBe(BlockType.NumberedList);
-                expect(editor.blocks[5].blockType).toBe(BlockType.NumberedList);
+                expect(editor.blocks[5].blockType).toBe(BlockType.Paragraph);
 
-                expect(editor.blocks[1].content[0].content).toBe('Item 1');
-                expect(editor.blocks[2].content[0].content).toBe('Item 2');
+                expect(editor.blocks[0].content[0].content).toBe('Item 1');
+                expect(editor.blocks[1].content[0].content).toBe('Item 2');
+                expect(editor.blocks[2].indent).toBe(1);
+                expect(editor.blocks[2].content[0].content).toBe('Subitem 2.1');
                 expect(editor.blocks[3].indent).toBe(1);
-                expect(editor.blocks[3].content[0].content).toBe('Subitem 2.1');
-                expect(editor.blocks[4].indent).toBe(1);
-                expect(editor.blocks[4].content[0].content).toBe('Subitem 2.2');
-                expect(editor.blocks[5].content[0].content).toBe('Item 3');
+                expect(editor.blocks[3].content[0].content).toBe('Subitem 2.2');
+                expect(editor.blocks[4].content[0].content).toBe('Item 3');
+                expect(editor.blocks[5].content[0].content).toBe('Hello world');
 
                 //DOm check
                 const blockElements = editor.blockContainer.querySelectorAll('.e-block');
                 expect(blockElements.length).toBe(6);
-                expect(blockElements[0].textContent).toBe('Hello world');
-                expect(blockElements[1].textContent).toBe('Item 1');
-                expect(blockElements[2].textContent).toBe('Item 2');
-                expect(blockElements[3].textContent).toBe('Subitem 2.1');
+                expect(blockElements[0].textContent).toBe('Item 1');
+                expect(blockElements[1].textContent).toBe('Item 2');
+                expect(blockElements[2].textContent).toBe('Subitem 2.1');
+                expect((blockElements[2] as HTMLElement).style.getPropertyValue('--block-indent')).toBe('20');
+                expect(blockElements[3].textContent).toBe('Subitem 2.2');
                 expect((blockElements[3] as HTMLElement).style.getPropertyValue('--block-indent')).toBe('20');
-                expect(blockElements[4].textContent).toBe('Subitem 2.2');
-                expect((blockElements[4] as HTMLElement).style.getPropertyValue('--block-indent')).toBe('20');
-                expect(blockElements[5].textContent).toBe('Item 3');
+                expect(blockElements[4].textContent).toBe('Item 3');
+                expect(blockElements[5].textContent).toBe('Hello world');
 
                 done();
             }, 100);
@@ -881,6 +966,183 @@ describe('Clipboard Actions', () => {
                 contentElement = getBlockContentElement(blockElement);
                 expect(contentElement.childNodes[0].textContent).not.toContain('script');
                 expect(contentElement.childNodes[0].textContent).not.toContain('script');
+                done();
+            }, 100);
+        });
+    });
+
+    describe('Paste from External', () => {
+        let editor: BlockEditor;
+        let editorElement: HTMLElement;
+        const blocks: BlockModel[] = [
+            { id: 'paragraph', blockType: BlockType.Paragraph, content: [{ id: 'paragraph-content', contentType: ContentType.Text, content: 'Hello world' }] }
+        ];
+
+        beforeEach((done) => {
+            editorElement = createElement('div', { id: 'editor' });
+            document.body.appendChild(editorElement);
+            editor = createEditor({
+                blocks: blocks
+            });
+            editor.appendTo('#editor');
+            done();
+        });
+
+        afterEach(() => {
+            if (editor) {
+                editor.destroy();
+            }
+            document.body.removeChild(editorElement);
+        });
+
+        it('should paste msword content - type1', (done) => {
+            // Mock clipboard event with HTML content
+            const mockEvent = createMockClipboardEvent('paste', {
+                getData: (format: string) => {
+                    if (format === 'text/html') {
+                        return mswordContentType1;
+                    }
+                    return '';
+                }
+            });
+            const blockElement: HTMLElement = editorElement.querySelector('#paragraph') as HTMLElement;
+            let contentElement: HTMLElement = getBlockContentElement(blockElement);
+            editor.blockManager.setFocusToBlock(blockElement);
+            setCursorPosition(contentElement, 0);
+            // Trigger paste event
+            editor.blockManager.clipboardAction.handlePaste(mockEvent);
+
+            setTimeout(() => {
+                expect(editor.blocks.length).toBe(3);
+                expect(editor.blocks[0].blockType).toBe(BlockType.Paragraph);
+                expect(editor.blocks[0].content[0].content).toBe('Collision Detection:');
+                expect((editor.blocks[0].content[0].properties as BaseStylesProp).styles.bold).toBe(true);
+                expect(editor.blocks[1].blockType).toBe(BlockType.BulletList);
+                expect(editor.blocks[1].content[0].content).toBe('If tooltip would go off-screen → Move to other side');
+
+                const contentElement1 = getBlockContentElement(document.getElementById(editor.blocks[0].id));
+                expect(contentElement1.childNodes[0].textContent).toBe('Collision Detection:');
+                expect((contentElement1.childNodes[0] as HTMLElement).tagName).toBe('STRONG');
+
+                const contentElement2 = getBlockContentElement(document.getElementById(editor.blocks[1].id));
+                expect(contentElement2.childNodes[0].textContent).toBe('If tooltip would go off-screen → Move to other side');
+                done();
+            }, 100);
+        });
+
+        it('should paste msword content - type2', (done) => {
+            // Mock clipboard event with HTML content
+            const mockEvent = createMockClipboardEvent('paste', {
+                getData: (format: string) => {
+                    if (format === 'text/html') {
+                        return mswordContentType2;
+                    }
+                    return '';
+                }
+            });
+            const blockElement: HTMLElement = editorElement.querySelector('#paragraph') as HTMLElement;
+            let contentElement: HTMLElement = getBlockContentElement(blockElement);
+            editor.blockManager.setFocusToBlock(blockElement);
+            setCursorPosition(contentElement, 0);
+            // Trigger paste event
+            editor.blockManager.clipboardAction.handlePaste(mockEvent);
+
+            setTimeout(() => {
+                expect(editor.blocks.length).toBe(3);
+                expect(editor.blocks[0].blockType).toBe(BlockType.Paragraph);
+                expect(editor.blocks[0].content[0].content).toBe('Toolbar Item Tooltips');
+                expect(editor.blocks[1].blockType).toBe(BlockType.Paragraph);
+
+                expect(editor.blocks[1].content[0].content).toBe('new');
+                expect(editor.blocks[1].content[2].content).toBe('InlineToolbarItemModel');
+                expect(editor.blocks[1].content[5].content).toBe('{');
+                expect(editor.blocks[1].content[8].content).toBe('&nbsp;&nbsp;&nbsp; ID');
+                expect(editor.blocks[1].content[12].content).toBe('"bold"');
+                expect(editor.blocks[1].content[16].content).toBe('&nbsp;&nbsp;&nbsp; Tooltip');
+
+
+                const contentElement1 = getBlockContentElement(document.getElementById(editor.blocks[0].id));
+                expect(contentElement1.childNodes[0].textContent).toBe('Toolbar Item Tooltips');
+
+                const contentElement2 = getBlockContentElement(document.getElementById(editor.blocks[1].id));
+                expect(contentElement2.childNodes[0].textContent).toBe('new');
+                expect(contentElement2.childNodes[2].textContent).toBe('InlineToolbarItemModel');
+                expect(contentElement2.childNodes[5].textContent).toBe('{');
+                expect(contentElement2.childNodes[8].textContent).toContain(' ID');
+                expect(contentElement2.childNodes[12].textContent).toBe('"bold"');
+                expect(contentElement2.childNodes[16].textContent).toContain(' Tooltip');
+                done();
+            }, 100);
+        });
+
+        it('should paste vscode content - type1', (done) => {
+            // Mock clipboard event with HTML content
+            const mockEvent = createMockClipboardEvent('paste', {
+                getData: (format: string) => {
+                    if (format === 'text/html') {
+                        return vscodeContentType1;
+                    }
+                    return '';
+                }
+            });
+            const blockElement: HTMLElement = editorElement.querySelector('#paragraph') as HTMLElement;
+            let contentElement: HTMLElement = getBlockContentElement(blockElement);
+            editor.blockManager.setFocusToBlock(blockElement);
+            setCursorPosition(contentElement, 0);
+            // Trigger paste event
+            editor.blockManager.clipboardAction.handlePaste(mockEvent);
+
+            setTimeout(() => {
+                expect(editor.blocks.length).toBe(5);
+                //Block 1
+                expect(editor.blocks[0].blockType).toBe(BlockType.Paragraph);
+                expect(editor.blocks[0].content[0].content).toBe('export');
+                expect(editor.blocks[0].content[2].content).toBe('function');
+                expect(editor.blocks[0].content[4].content).toBe('isMacOS');
+                expect(editor.blocks[0].content[5].content).toBe('()');
+                expect(editor.blocks[0].content[6].content).toBe(':');
+                expect(editor.blocks[0].content[8].content).toBe('boolean');
+                expect(editor.blocks[0].content[9].content).toBe(' {');
+                const contentElement1 = getBlockContentElement(document.getElementById(editor.blocks[0].id));
+                expect(contentElement1.childNodes[0].textContent).toBe('export');
+                expect(contentElement1.childNodes[2].textContent).toBe('function');
+                expect(contentElement1.childNodes[4].textContent).toBe('isMacOS');
+                expect(contentElement1.childNodes[5].textContent).toBe('()');
+                expect(contentElement1.childNodes[6].textContent).toBe(':');
+                expect(contentElement1.childNodes[8].textContent).toBe('boolean');
+                expect(contentElement1.childNodes[9].textContent).toBe(' {');
+
+                //Block 2
+                expect(editor.blocks[1].blockType).toBe(BlockType.Paragraph);
+                expect(editor.blocks[1].content[1].content).toBe('const');
+                expect(editor.blocks[1].content[3].content).toBe('userAgent');
+                expect(editor.blocks[1].content[6].content).toBe('string');
+                expect(editor.blocks[1].content[10].content).toBe('navigator');
+                expect(editor.blocks[1].content[12].content).toBe('userAgent');
+                const contentElement2 = getBlockContentElement(document.getElementById(editor.blocks[1].id));
+                expect(contentElement2.childNodes[1].textContent).toBe('const');
+                expect(contentElement2.childNodes[3].textContent).toBe('userAgent');
+                expect(contentElement2.childNodes[6].textContent).toBe('string');
+                expect(contentElement2.childNodes[10].textContent).toBe('navigator');
+                expect(contentElement2.childNodes[12].textContent).toBe('userAgent');
+
+                //Block 3
+                expect(editor.blocks[2].blockType).toBe(BlockType.Paragraph);
+                expect(editor.blocks[2].content[1].content).toBe('return');
+                expect(editor.blocks[2].content[2].content).toBe(' userAgent');
+                expect(editor.blocks[2].content[4].content).toBe('indexOf');
+                expect(editor.blocks[2].content[7].content).toBe('Mac OS');
+                const contentElement3 = getBlockContentElement(document.getElementById(editor.blocks[2].id));
+                expect(contentElement3.childNodes[1].textContent).toBe('return');
+                expect(contentElement3.childNodes[2].textContent).toBe(' userAgent');
+                expect(contentElement3.childNodes[4].textContent).toBe('indexOf');
+                expect(contentElement3.childNodes[7].textContent).toBe('Mac OS');
+
+                //Block 4
+                expect(editor.blocks[3].blockType).toBe(BlockType.Paragraph);
+                expect(editor.blocks[3].content[0].content).toBe('}');
+                const contentElement4 = getBlockContentElement(document.getElementById(editor.blocks[3].id));
+                expect(contentElement4.childNodes[0].textContent).toBe('}');
                 done();
             }, 100);
         });

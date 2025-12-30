@@ -126,8 +126,8 @@ describe('Block Command Manager:', () => {
             const blockElement = editorElement.querySelector('#divider') as HTMLElement;
             editor.blockManager.setFocusToBlock(blockElement);
 
-            editor.blockManager.blockCommand.deleteBlockAtCursor({
-                blockElement, mergeDirection: 'previous'
+            editor.blockManager.blockCommand.deleteNonMergableBlock({
+                blockElement
             });
             // Assert Model - one block remains
             expect(editor.blocks.length).toBe(1);
@@ -842,9 +842,8 @@ describe('Block Command Manager:', () => {
             // Delete the divider block
             const dividerElement = editorElement.querySelector('.e-divider-block') as HTMLElement;
             editor.blockManager.setFocusToBlock(dividerElement);
-            editor.blockManager.blockCommand.deleteBlockAtCursor({
-                blockElement: dividerElement,
-                mergeDirection: 'previous'
+            editor.blockManager.blockCommand.deleteNonMergableBlock({
+                blockElement: dividerElement
             });
 
             // Deleting the divider, focus should be set to next block

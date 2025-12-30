@@ -2273,7 +2273,7 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
         if (RecordsCount === 0 && this.columns.length === 0) {
             failureCases.push('Either of the Data source or columns should be given.');
         }
-        if (this.frozenColumns > 0 && this.columnModel.filter((col: any) => col.isFrozen)) {
+        if (this.frozenColumns > 0 && this.columnModel.filter((col: any) => col.isFrozen).length > 0) {
             failureCases.push('Use only one attribute for Frozen either IsFrozen or FrozenColumns.');
         }
         if (this.enableVirtualization && !isNullOrUndefined(this.detailTemplate)) {
@@ -2283,7 +2283,7 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
             && (!isNullOrUndefined(this.detailTemplate) || !isNullOrUndefined(this.rowTemplate))) {
             failureCases.push('Frozen rows and columns are not supported with the Detail template and row template.');
         }
-        if ((this.frozenColumns > 0 || this.columnModel.filter((col: any) => col.isFrozen).length > 0 || this.frozenRows > 0) && this.editSettings.mode === 'Cell') {
+        if ((this.frozenColumns > 0 || this.columnModel.filter((col: any) => col.isFrozen).length > 0 || this.frozenRows > 0) && this.editSettings.allowEditing && this.editSettings.mode === 'Cell') {
             failureCases.push('Frozen rows and columns are not supported with cell editing.');
         }
         if (this.allowSelection && !isNullOrUndefined(this.rowTemplate)) {

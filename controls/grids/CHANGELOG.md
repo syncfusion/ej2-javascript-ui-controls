@@ -2,6 +2,16 @@
 
 ## [Unreleased]
 
+## 32.1.21 (2025-12-30)
+
+### Grid
+
+#### Bug fixes
+
+- `#I791512` - The issue where the selected row was not visible in the viewport when `virtualization` is enabled in the Grid and a row is selected programmatically using the `selectRow` method with specific index has been resolved.
+- `#I793520` - Resolved an inconsistency in keyboard navigation when using `Shift+Tab` to focus on the Grid component with command columns enabled.
+- `#I791818` - Resolved an issue where the border of stacked column headers was misaligned when frozen columns are enabled in the Grid.
+
 ## 32.1.20 (2025-12-23)
 
 ### Grid

@@ -5,7 +5,7 @@ import { setCursorPosition, decoupleReference, generateUniqueId, getBlockContent
 import { createElement } from '@syncfusion/ej2-base';
 import { BlockFactory } from './block-factory';
 import { findClosestParent } from '../../common/utils/dom';
-import { ITableColumnDeletionOptions, ITableColumnInsertOptions, ITableRowDeletionOptions, ITableRowInsertOptions } from '../base/interface';
+import { ITableColumnDeletionOptions, ITableColumnInsertOptions, ITableRowDeletionOptions, ITableRowInsertOptions, PayloadCell } from '../base/interface';
 
 
 /**
@@ -324,32 +324,41 @@ export class TableService {
         const oldBlock: BlockModel = decoupleReference(sanitizeBlock(getBlockModelById(blockId, this.parent.getEditorBlocks())));
         const block: BlockModel = getBlockModelById(blockId, this.parent.getEditorBlocks());
         const props: ITableBlockSettings = block.properties as ITableBlockSettings;
-        const emptyBlock: BlockModel = BlockFactory.createParagraphBlock({});
 
-        type PayloadCells = Array<{ dataRow: number; dataCol: number; prevBlocks: BlockModel[] }>;
-        const payloadCells: PayloadCells = Array.from(domCells).map((cell: HTMLTableCellElement) => {
-            if (!cell || cell.tagName !== 'TD' || cell.classList.contains('e-row-number')) { return { dataRow: -1, dataCol: -1, prevBlocks: [] }; }
+        const payloadCells: PayloadCell[] = Array.from(domCells).map((cell: HTMLTableCellElement) => {
+            if (!cell || cell.classList.contains('e-row-number')) { return { dataRow: -1, dataCol: -1, prevBlocks: [] }; }
             const domRow: number = parseInt(cell.dataset.row, 10);
             const domCol: number = parseInt(cell.dataset.col, 10);
             const dataRow: number = props.enableHeader ? domRow - 1 : domRow;
             const dataCol: number = domCol;
-            const prevBlocks: BlockModel[] = props
-                .rows[dataRow as number]
-                .cells[dataCol as number]
-                .blocks.map((b: BlockModel) => ({ ...b }));
+
+            // Header
+            if (domRow === 0 && props.enableHeader && cell.tagName === 'TH') {
+                const prevHeaderText: string = props.columns[dataCol as number].headerText;
+                return { dataRow: -1, dataCol, prevBlocks: [], prevHeaderText, isHeader: true } as PayloadCell;
+            }
+
+            // Body
+            const prevBlocks: BlockModel[] = props.rows[dataRow as number].cells[dataCol as number].blocks.map(
+                (b: BlockModel) => ({ ...b })
+            );
             return { dataRow, dataCol, prevBlocks };
         });
-        payloadCells.forEach((cell: { dataRow: number; dataCol: number; }) => {
-            const dataRow: number = cell.dataRow;
-            const dataCol: number = cell.dataCol;
 
-            this.setCellBlocks(table, dataRow, dataCol, [emptyBlock]);
-        });
+        payloadCells.forEach((cell: PayloadCell) => this.applyCellChange(table, cell, 'clear'));
 
-        this.parent.undoRedoAction.trackTableCellsClearForUndoRedo({
-            blockId, cells: payloadCells
-        });
+        this.parent.undoRedoAction.trackTableCellsClearForUndoRedo({ blockId, cells: payloadCells });
         this.triggerBlockUpdate(block, oldBlock);
+    }
+
+    public applyCellChange(table: HTMLTableElement, cell: PayloadCell, mode: 'clear' | 'restore'): void {
+        if (cell.isHeader) {
+            const headerText: string = mode === 'restore' ? (cell.prevHeaderText) : '';
+            this.setHeaderText(table, cell.dataCol, headerText);
+        } else {
+            const blocks: BlockModel[] = mode === 'restore' ? (cell.prevBlocks) : [BlockFactory.createParagraphBlock()];
+            this.setCellBlocks(table, cell.dataRow, cell.dataCol, blocks);
+        }
     }
 
     /**
@@ -386,6 +395,32 @@ export class TableService {
             const innerEl: HTMLElement = this.parent.blockRenderer.createBlockElement(innerBlock);
             container.appendChild(innerEl);
         });
+    }
+
+    /**
+     * Sets the header content with the provided value
+     * Updates both the data model and the DOM cell content.
+     *
+     * @param {HTMLTableElement} table - The table element
+     * @param {number} dataColIndex - The data column index in the model (0-based, excludes row-number column)
+     * @param {string} text - Value to set
+     * @returns {void}
+     *
+     * @hidden
+     */
+    public setHeaderText(table: HTMLTableElement, dataColIndex: number, text: string): void {
+        const blockId: string = table.getAttribute('data-block-id');
+        const block: BlockModel = getBlockModelById(blockId, this.parent.getEditorBlocks());
+        const props: ITableBlockSettings = block.properties as ITableBlockSettings;
+
+        if (!props.columns[dataColIndex as number]) { return; }
+
+        // Model
+        props.columns[dataColIndex as number].headerText = text;
+
+        // DOM
+        const th: HTMLTableCellElement = table.querySelector(`th[data-col="${dataColIndex}"]`) as HTMLTableCellElement;
+        th.textContent = text;
     }
 
     /**

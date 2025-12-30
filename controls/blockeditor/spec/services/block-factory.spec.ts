@@ -172,7 +172,14 @@ describe('BlockFactory', () => {
             });
 
             expect(block.blockType).toBe(BlockType.Callout);
-            expect((block.properties as ICalloutBlockSettings).children).toEqual([]);
+            expect((block.properties as ICalloutBlockSettings).children).not.toEqual([]);
+            // create default paragraph block as its children
+            const childProps = (block.properties as ICalloutBlockSettings).children;
+            expect(childProps.length).toBe(1);
+            expect(childProps[0].parentId).toBe(block.id);
+            expect(childProps[0].blockType).toBe(BlockType.Paragraph);
+            expect(childProps[0].content.length).toBe(1);
+            expect(childProps[0].content[0].contentType).toBe(ContentType.Text);
         });
 
         it('should create a callout block with child blocks', () => {
@@ -213,7 +220,13 @@ describe('BlockFactory', () => {
 
             expect(block.blockType).toBe(BlockType.CollapsibleParagraph);
             expect((block.properties as ICollapsibleBlockSettings).isExpanded).toBe(false);
-            expect((block.properties as ICollapsibleBlockSettings).children).toEqual([]);
+            // create default paragraph block as its children
+            const childProps = (block.properties as ICollapsibleBlockSettings).children;
+            expect(childProps.length).toBe(1);
+            expect(childProps[0].parentId).toBe(block.id);
+            expect(childProps[0].blockType).toBe(BlockType.Paragraph);
+            expect(childProps[0].content.length).toBe(1);
+            expect(childProps[0].content[0].contentType).toBe(ContentType.Text);
             expect((block.properties as ICollapsibleBlockSettings).placeholder).toBe('');
         });
 
@@ -250,7 +263,13 @@ describe('BlockFactory', () => {
             expect(block.blockType).toBe(BlockType.CollapsibleHeading);
             expect((block.properties as ICollapsibleHeadingBlockSettings).isExpanded).toBe(false);
             expect((block.properties as ICollapsibleHeadingBlockSettings).level).toBe(1);
-            expect((block.properties as ICollapsibleHeadingBlockSettings).children).toEqual([]);
+            // create default paragraph block as its children
+            const childProps = (block.properties as ICollapsibleHeadingBlockSettings).children;
+            expect(childProps.length).toBe(1);
+            expect(childProps[0].parentId).toBe(block.id);
+            expect(childProps[0].blockType).toBe(BlockType.Paragraph);
+            expect(childProps[0].content.length).toBe(1);
+            expect(childProps[0].content[0].contentType).toBe(ContentType.Text);
         });
 
         it('should create a collapsible heading block with custom values', () => {
@@ -1086,7 +1105,13 @@ describe('BlockFactory', () => {
             expect(block.blockType).toBe(BlockType.Callout);
             expect(block.id).toContain(constants.BLOCK_ID_PREFIX);
             expect(block.content).toEqual([]);
-            expect((block.properties as ICalloutBlockSettings).children).toEqual([]);
+            // create default paragraph block as its children
+            const childProps = (block.properties as ICalloutBlockSettings).children;
+            expect(childProps.length).toBe(1);
+            expect(childProps[0].parentId).toBe(block.id);
+            expect(childProps[0].blockType).toBe(BlockType.Paragraph);
+            expect(childProps[0].content.length).toBe(1);
+            expect(childProps[0].content[0].contentType).toBe(ContentType.Text);
         });
 
         it('should create divider block', () => {
@@ -1107,7 +1132,13 @@ describe('BlockFactory', () => {
             expect(block.id).toContain(constants.BLOCK_ID_PREFIX);
             expect(block.content).toEqual([]);
             expect((block.properties as ICollapsibleBlockSettings).isExpanded).toBe(false);
-            expect((block.properties as ICollapsibleBlockSettings).children).toEqual([]);
+            // create default paragraph block as its children
+            const childProps = (block.properties as ICollapsibleBlockSettings).children;
+            expect(childProps.length).toBe(1);
+            expect(childProps[0].parentId).toBe(block.id);
+            expect(childProps[0].blockType).toBe(BlockType.Paragraph);
+            expect(childProps[0].content.length).toBe(1);
+            expect(childProps[0].content[0].contentType).toBe(ContentType.Text);
             expect((block.properties as ICollapsibleBlockSettings).placeholder).toBe('');
         });
 
@@ -1120,7 +1151,13 @@ describe('BlockFactory', () => {
             expect(block.content).toEqual([]);
             expect((block.properties as ICollapsibleHeadingBlockSettings).isExpanded).toBe(false);
             expect((block.properties as ICollapsibleHeadingBlockSettings).level).toBe(1);
-            expect((block.properties as ICollapsibleHeadingBlockSettings).children).toEqual([]);
+            // create default paragraph block as its children
+            const childProps = (block.properties as ICollapsibleHeadingBlockSettings).children;
+            expect(childProps.length).toBe(1);
+            expect(childProps[0].parentId).toBe(block.id);
+            expect(childProps[0].blockType).toBe(BlockType.Paragraph);
+            expect(childProps[0].content.length).toBe(1);
+            expect(childProps[0].content[0].contentType).toBe(ContentType.Text);
             expect((block.properties as ICollapsibleHeadingBlockSettings).placeholder).toBe('');
         });
 

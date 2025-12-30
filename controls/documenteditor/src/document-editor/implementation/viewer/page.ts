@@ -2580,7 +2580,7 @@ export class TableWidget extends BlockWidget {
         }
         // For continuous layout, window width should be considered. 
         // If preferred width exceeds this limit, it can take upto maximum of 2112 pixels (1584 points will be assigned by Microsoft Word).
-        if (((!isNullOrUndefined(this.bodyWidget.page)) && this.bodyWidget.page.viewer instanceof WebLayoutViewer && isAutoFit && !this.isInsideTable && !(this.containerWidget instanceof TextFrame))) {
+        if (((!isNullOrUndefined(this.bodyWidget.page)) && this.bodyWidget.page.viewer instanceof WebLayoutViewer && (isAutoFit || this.tableFormat.preferredWidthType === 'Percent') && !this.isInsideTable && !(this.containerWidget instanceof TextFrame))) {
             containerWidth = HelperMethods.convertPixelToPoint(this.bodyWidget.page.viewer.clientArea.width - this.bodyWidget.page.viewer.padding.right * 3);
         } else {
             containerWidth = this.getOwnerWidth(true);
@@ -6051,6 +6051,11 @@ export class TextElementBox extends ElementBox {
         textEle.text = this.text;
         if (this.margin) {
             textEle.margin = this.margin.clone();
+        }
+        if (!isNullOrUndefined(this.paragraph) && this.paragraph.isInHeaderFooter) {
+            for (let i: number = 0; i < this.ignoreOnceItems.length; i++) {
+                textEle.ignoreOnceItems.push(this.ignoreOnceItems[i]);
+            }
         }
         textEle.baselineOffset = this.baselineOffset;
         // if (!isNullOrUndefined(this.paragraph) && this.paragraph.isInHeaderFooter) {

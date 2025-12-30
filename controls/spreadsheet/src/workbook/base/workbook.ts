@@ -755,11 +755,11 @@ export class Workbook extends Component<HTMLElement> implements INotifyPropertyC
                     this.notify(events.workbookFormulaOperation, { action: 'unRegisterSheet', propertyChange: true });
                     this.sheetNameCount = 1;
                     this.notify(events.sheetsDestroyed, {});
-                    initSheet(this);
+                    initSheet(this, undefined, undefined, true);
                     this.notify(sheetCreated, null);
                     this.notify(events.workbookFormulaOperation, { action: 'registerSheet' });
                 } else {
-                    initSheet(this);
+                    initSheet(this, undefined, undefined, true);
                 }
                 break;
             case 'listSeparator':
@@ -1699,6 +1699,9 @@ export class Workbook extends Component<HTMLElement> implements INotifyPropertyC
                     this.notify(addListValidationDropdown, eventArgs);
                 }
             }
+        }
+        if (!valChange && cell.comment || cell.notes) {
+            this.setUsedRange(range[0], range[1], sheet);
         }
     }
 

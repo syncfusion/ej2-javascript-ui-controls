@@ -36,14 +36,6 @@ export class CalloutRenderer {
             attrs: { contenteditable: 'true' }
         });
         const props: ICalloutBlockSettings = block.properties as ICalloutBlockSettings;
-        if (!props.children || (props.children && props.children.length === 0)) {
-            if (!props.children) { props.children = []; }
-
-            props.children[0] = BlockFactory.createParagraphBlock({
-                parentId: block.id,
-                content: [BlockFactory.createTextContent()]
-            });
-        }
         props.children.forEach((childBlock: BlockModel) => {
             const childBlockElement: HTMLElement = this.parent.blockRenderer.createBlockElement(childBlock);
             contentContainer.appendChild(childBlockElement);

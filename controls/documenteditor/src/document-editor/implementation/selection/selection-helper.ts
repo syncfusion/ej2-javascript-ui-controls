@@ -1006,8 +1006,12 @@ export class TextPosition {
         } else {
             inline = this.selection.getPreviousValidElement(fieldEnd);
         }
+        if (inline instanceof BookmarkElementBox) {
+            while (!isNullOrUndefined(inline.previousNode) && inline.previousNode instanceof BookmarkElementBox && inline.previousNode.bookmarkType === 0) {
+                inline = inline.previousNode;
+            }
+        }
         this.currentWidget = inline.line;
-
         const index: number = inline instanceof FieldElementBox || inline instanceof BookmarkElementBox ? 0 : inline.length;
         this.offset = this.currentWidget.getOffset(inline, index);
     }
@@ -1238,7 +1242,7 @@ export class TextPosition {
     }
 
     private getNextWordOffsetFieldEnd(fieldEnd: FieldElementBox, indexInInline: number, type: number, isInField: boolean, endSelection: boolean, endPosition: TextPosition, excludeSpace: boolean): void {
-        const startOffset: number = fieldEnd.line.getOffset(fieldEnd, 0);
+        let startOffset: number = fieldEnd.line.getOffset(fieldEnd, 0);
         const endOffset: number = startOffset + fieldEnd.length;
         if (endPosition.offset === startOffset) {
             endPosition.setPositionParagraph(fieldEnd.line, endOffset);
@@ -1248,6 +1252,7 @@ export class TextPosition {
         }
         if (!isNullOrUndefined(fieldEnd.nextNode)) {
             this.getNextWordOffset(fieldEnd.nextNode, 0, type, false, endSelection, endPosition, excludeSpace);
+            startOffset = fieldEnd.line.getOffset(fieldEnd.nextNode, 0);
             if (endPosition.offset === endOffset) {
                 endPosition.setPositionParagraph(fieldEnd.line, startOffset);
             }

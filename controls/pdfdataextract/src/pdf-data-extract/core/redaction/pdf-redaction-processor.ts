@@ -1,4 +1,4 @@
-import { _FieldFlag, _getInheritableProperty, _PdfAnnotationType, _PdfBaseStream, _PdfContentStream, _PdfDictionary, _PdfName, _PdfReference, PdfAnnotation, PdfBrush, PdfButtonField, PdfCheckBoxField, PdfComboBoxField, PdfDocument, PdfField, PdfForm, PdfInkAnnotation, PdfLineAnnotation, PdfListBoxField, PdfPage, PdfPolygonAnnotation, PdfPolyLineAnnotation, PdfRadioButtonListField, PdfSignatureField, PdfTextBoxField, PdfTextMarkupAnnotation, Point, Rectangle, _convertPointToNumberArray, _convertPointsToNumberArrays } from '@syncfusion/ej2-pdf';
+import { _FieldFlag, _getInheritableProperty, _PdfAnnotationType, _PdfBaseStream, _PdfContentStream, _PdfDictionary, _PdfName, _PdfReference, PdfAnnotation, PdfBrush, PdfButtonField, PdfCheckBoxField, PdfComboBoxField, PdfDocument, PdfField, PdfForm, PdfInkAnnotation, PdfLineAnnotation, PdfListBoxField, PdfPage, PdfPolygonAnnotation, PdfPolyLineAnnotation, PdfRadioButtonListField, PdfSignatureField, PdfTextBoxField, PdfTextMarkupAnnotation, Point, Rectangle, _convertPointToNumberArray, _convertPointsToNumberArrays, PdfRectangleAnnotation, PdfSquareAnnotation, PdfCircleAnnotation, PdfEllipseAnnotation } from '@syncfusion/ej2-pdf';
 import { PdfRedactionRegion } from './pdf-redaction-region';
 export class _PdfRedactionProcessor {
     _updateContentStream(page: PdfPage, stream: _PdfContentStream, options: PdfRedactionRegion[], document: PdfDocument): void {
@@ -193,6 +193,19 @@ export class _PdfRedactionProcessor {
             return false;
         }
     }
+    _checkAnnotationType(annotation: PdfAnnotation): _PdfAnnotationType {
+        let annotationType: _PdfAnnotationType;
+        if (annotation instanceof PdfRectangleAnnotation) {
+            annotationType = _PdfAnnotationType.rectangleAnnotation;
+        } else if (annotation instanceof PdfSquareAnnotation) {
+            annotationType = _PdfAnnotationType.squareAnnotation;
+        } else if (annotation instanceof PdfCircleAnnotation) {
+            annotationType = _PdfAnnotationType.circleAnnotation;
+        } else if (annotation instanceof PdfEllipseAnnotation) {
+            annotationType = _PdfAnnotationType.ellipseAnnotation;
+        }
+        return annotationType;
+    }
     _processAnnotation(page: PdfPage, options: PdfRedactionRegion[]): void {
         let markupAnnotation: PdfTextMarkupAnnotation;
         const annotbounds: Array<Rectangle> = [];
@@ -205,6 +218,9 @@ export class _PdfRedactionProcessor {
                 type = this._getAnnotationType(annotation._dictionary);
                 rect = annotation.bounds;
                 bounds = rect;
+                if (typeof type === 'undefined' && !annotation._isLoaded) {
+                    type = this._checkAnnotationType(annotation);
+                }
             } else {
                 type = _PdfAnnotationType.widgetAnnotation;
             }
@@ -306,7 +322,10 @@ export class _PdfRedactionProcessor {
                     const inkList: Array<Point[]> = inkAnnotation.inkPointsCollection;
                     const inkPointsToNumberArray: number[][] = _convertPointsToNumberArrays(inkList);
                     inkBounds = this._getBoundsFromPoints(inkPointsToNumberArray[0], page);
-                    bounds = inkBounds.bounds;
+                    bounds = inkAnnotation.bounds;
+                    if (!inkAnnotation._isLoaded) {
+                        inkBounds.isValidAnnotation = true;
+                    }
                     isValidAnnotation = inkBounds.isValidAnnotation;
                 }
                 break;

@@ -282,14 +282,20 @@ export class BlockFactory {
         rootProps: Partial<BlockModel> = {},
         innerProps: Partial<ICollapsibleBlockSettings> = {}
     ): BlockModel {
+        const blockId: string = isEmptyString(rootProps.id) ? generateUniqueId(constants.BLOCK_ID_PREFIX) : rootProps.id;
         return {
             blockType: BlockType.CollapsibleParagraph,
             ...this.defaultRootBlockProps,
             ...sanitizeBlock(rootProps),
-            ...(isEmptyString(rootProps.id) ? { id: generateUniqueId(constants.BLOCK_ID_PREFIX) } : {}),
+            id: blockId,
             properties: {
                 isExpanded: false,
-                children: [],
+                children: [
+                    BlockFactory.createParagraphBlock({
+                        parentId: blockId,
+                        content: [BlockFactory.createTextContent()]
+                    })
+                ],
                 ...this.defaultInnerBlockProps,
                 ...innerProps
             }
@@ -308,15 +314,21 @@ export class BlockFactory {
         innerProps: Partial<ICollapsibleHeadingBlockSettings> = {}
     ): BlockModel {
         const sanitizedInnerProps: Partial<ICollapsibleHeadingBlockSettings> = sanitizeHeadingProps(innerProps);
+        const blockId: string = isEmptyString(rootProps.id) ? generateUniqueId(constants.BLOCK_ID_PREFIX) : rootProps.id;
         return {
             blockType: BlockType.CollapsibleHeading,
             ...this.defaultRootBlockProps,
             ...sanitizeBlock(rootProps),
-            ...(isEmptyString(rootProps.id) ? { id: generateUniqueId(constants.BLOCK_ID_PREFIX) } : {}),
+            id: blockId,
             properties: {
                 isExpanded: false,
                 level: 1,
-                children: [],
+                children: [
+                    BlockFactory.createParagraphBlock({
+                        parentId: blockId,
+                        content: [BlockFactory.createTextContent()]
+                    })
+                ],
                 ...this.defaultInnerBlockProps,
                 ...sanitizedInnerProps
             }
@@ -334,14 +346,20 @@ export class BlockFactory {
         rootProps: Partial<BlockModel> = {},
         innerProps: Partial<ICalloutBlockSettings> = {}
     ): BlockModel {
+        const blockId: string = isEmptyString(rootProps.id) ? generateUniqueId(constants.BLOCK_ID_PREFIX) : rootProps.id;
         return {
             blockType: BlockType.Callout,
             ...this.defaultRootBlockProps,
             ...sanitizeBlock(rootProps),
-            ...(isEmptyString(rootProps.id) ? { id: generateUniqueId(constants.BLOCK_ID_PREFIX) } : {}),
+            id: blockId,
             content: [],
             properties: {
-                children: [],
+                children: [
+                    BlockFactory.createParagraphBlock({
+                        parentId: blockId,
+                        content: [BlockFactory.createTextContent()]
+                    })
+                ],
                 ...innerProps
             }
         };

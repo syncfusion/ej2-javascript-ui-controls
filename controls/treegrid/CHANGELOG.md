@@ -2,7 +2,15 @@
 
 ## [Unreleased]
 
-## 32.1.20 (2025-12-23)
+## 32.1.21 (2025-12-30)
+
+### Tree Grid
+
+#### Bug Fixes
+
+- `#F71755` - Fixed an error that occurred when binding the action failure event with frozen columns in the Tree Grid.
+
+## 32.1.19 (2025-12-16)
 
 ### Tree Grid
 

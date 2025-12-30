@@ -41,7 +41,7 @@ export interface ITableColumnDeletionOptions {
 
 export interface ITableCellsClearOperation {
     blockId: string;
-    cells: Array<{ dataRow: number; dataCol: number; prevBlocks: BlockModel[] }>
+    cells: PayloadCell[]
 }
 
 export type RowMeta = { index: number; rowModel: TableRowModel };
@@ -95,4 +95,12 @@ export interface TableContext {
     props: ITableBlockSettings
     startDataRow: number
     startDataCol: number
+}
+
+export type PayloadCell = {
+    dataRow: number;
+    dataCol: number;
+    prevBlocks: BlockModel[];
+    prevHeaderText?: string;
+    isHeader?: boolean;
 }

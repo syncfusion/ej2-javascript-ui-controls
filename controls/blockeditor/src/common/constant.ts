@@ -66,6 +66,7 @@ export const DUPLICATEBLOCK: string = 'DUPLICATEBLOCK';
 export const FORMATTINGACTION: string = 'FORMATTINGACTION';
 
 export const CLEAREVENTCHANGES: string = 'CLEAREVENTCHANGES';
+export const DELETE_NON_MERGABLEBLOCK: string = 'DELETE_NON_MERGABLEBLOCK';
 
 /* Constant string values */
 export const RTL_CLS: string = 'e-rtl';

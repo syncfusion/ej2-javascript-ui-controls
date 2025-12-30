@@ -1955,7 +1955,7 @@ export class AnnotationRenderer {
             }
             rubberStampAnnotation.appearance.normal.graphics.drawPath(graphicsPath, pens, textBrush);
         } else {
-            appearance.graphics.drawString(icon.toUpperCase(), font, pointsval, pens, textBrush, stringFormat);
+            appearance.graphics.drawString(icon.toUpperCase(), font, pointsval, null, textBrush, stringFormat);
         }
     }
 
@@ -2023,8 +2023,8 @@ export class AnnotationRenderer {
         else {
             stampFont = new PdfStandardFont(PdfFontFamily.helvetica,
                                             Browser.isDevice && Browser.isAndroid ?
-                                                this.pdfViewer.annotationModule.calculateFontSize(icon.toUpperCase(), rectangle, true) - 4 :
-                                                this.pdfViewer.annotationModule.calculateFontSize(icon.toUpperCase(), rectangle, true) - 4,
+                                                this.pdfViewer.annotationModule.calculateFontSize(icon.toUpperCase(), rectangle, true) - 2 :
+                                                this.pdfViewer.annotationModule.calculateFontSize(icon.toUpperCase(), rectangle, true) - 2,
                                             PdfFontStyle.bold | PdfFontStyle.italic);
             detailsFont = new PdfStandardFont(PdfFontFamily.helvetica,
                                               this.pdfViewer.annotationModule.calculateFontSize(text, rectangle) - 2,
@@ -2042,7 +2042,7 @@ export class AnnotationRenderer {
         const stampTimeStampbounds: number[] = [drawingPath._points[1].x, drawingPath._points[1].y,
             (rectangle.width + drawingPath._points[1].x), (rectangle.height - drawingPath._points[1].y)];
         const stampTimeStampboundsVal: Rectangle = this.convertNumberToRectangle(stampTimeStampbounds);
-        appearance.graphics.drawString(icon.toUpperCase(), stampFont, stampTypeBoundsVal, pens, textBrush, stringFormat);
+        appearance.graphics.drawString(icon.toUpperCase(), stampFont, stampTypeBoundsVal, null, textBrush, stringFormat);
         appearance.graphics.drawString(text, detailsFont, stampTimeStampboundsVal, null, textBrush, stringFormat);
     }
 

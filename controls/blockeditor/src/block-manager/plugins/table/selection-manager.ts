@@ -114,11 +114,13 @@ export class TableSelectionManager {
 
         // 2. Whole column selection
         if (table.querySelector('td.e-col-selected')) {
-            return table.querySelectorAll('td.e-col-selected') as NodeListOf<HTMLTableCellElement>;
+            return table.querySelectorAll('td.e-col-selected, th.e-col-selected') as NodeListOf<HTMLTableCellElement>;
         }
 
         // 3. Default: individually focused cells
-        return table.querySelectorAll(`td.${constants.TABLE_CELL_FOCUS}`) as NodeListOf<HTMLTableCellElement>;
+        return table.querySelectorAll(
+            `td.${constants.TABLE_CELL_FOCUS}, th.${constants.TABLE_CELL_FOCUS}`
+        ) as NodeListOf<HTMLTableCellElement>;
     }
 
     public getSelectedCellBlocks(tableBlock: HTMLElement): BlockModel[] {
@@ -127,6 +129,8 @@ export class TableSelectionManager {
         const selectedBlocks: BlockModel[] = [];
 
         selectedCells.forEach((cell: HTMLTableCellElement) => {
+            if (cell.tagName === 'TH') { return; }
+
             const cellId: string = cell.querySelector(`.${constants.TABLE_CELL_BLK_CONTAINER}`).id;
             const cellModel: TableCellModel = findCellById(cellId, [tableBlockModel]);
             selectedBlocks.push(...cellModel.blocks);
@@ -529,18 +533,18 @@ export class TableSelectionManager {
         const domCol: number = toDomCol(targetCol, settings.enableRowNumbers);
         const rowEl: HTMLTableRowElement = table.rows[targetRow as number];
         const nextCell: HTMLElement = rowEl && rowEl.cells[domCol as number];
+        const cursorAtStart: boolean = direction === 'right' || direction === 'up' || direction === 'down';
         if (nextCell) {
             this.parent.tableService.removeCellFocus(table);
-            this.parent.tableService.addCellFocus(nextCell, true, direction === 'right');
+            this.parent.tableService.addCellFocus(nextCell, true, cursorAtStart);
 
             // If header cell, set caret directly in TH so cursor doesn’t remain in previous row’s TD
             if (nextCell.tagName && nextCell.tagName.toLowerCase() === 'th') {
                 const th: HTMLElement = nextCell as HTMLElement;
                 const placeAtEnd: boolean = direction === 'left' ? true : false; // moving left -> end, right -> start
                 // For vertical moves, default to start
-                const finalAtEnd: boolean = direction === 'left' ? true : false;
                 requestAnimationFrame(() => {
-                    setCursorPosition(th, finalAtEnd ? (th.textContent || '').length : 0);
+                    setCursorPosition(th, placeAtEnd ? (th.textContent).length : 0);
                 });
             }
         }

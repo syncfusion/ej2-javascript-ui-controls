@@ -568,8 +568,9 @@ export class PivotEngine {
                 let len: number = data.length;
                 while (len--) {
                     const item: IDataSet = data[len as number];
-                    if (item[this.fieldKeys[fieldName as string] as string | number] && group.type === 'Date') {
-                        const date: Date = new Date(item[this.fieldKeys[fieldName as string] as string | number].toString());
+                    const fieldValue: string | number | Date = item[this.fieldKeys[fieldName as string] as string | number];
+                    if ((fieldValue || fieldValue === '') && group.type === 'Date') {
+                        const date: Date = new Date(fieldValue.toString());
                         if (!isNullOrUndefined(date) && group.groupInterval.length > 0) {
                             for (let i: number = 0, len: number = group.groupInterval.length; i < len; i++) {
                                 const interval: DateGroup = group.groupInterval[i as number];

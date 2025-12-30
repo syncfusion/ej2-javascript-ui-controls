@@ -1738,14 +1738,22 @@ export class Legend {
                     // eslint-disable-next-line @typescript-eslint/no-explicit-any
                     Array.prototype.forEach.call(dataSource, (data: any, dataIndex: number) => {
                         range = false;
-                        const rangeValue: number = data[colorValuePath as string];
+                        const colorValue: string = data[colorValuePath as string];
+                        const isEmpty: boolean = colorValue === '' || isNullOrUndefined(colorValue);
+                        const rangeValue: number = !isEmpty ? Number(colorValue) : NaN;
+                        const hasNumeric: boolean = !isEmpty && Number.isFinite(rangeValue);
+                        const equalValue: string | null = !isEmpty ? colorValue : null;
                         for (let z: number = 0; z < colorMapping.length; z++) {
-                            if (!isNullOrUndefined(rangeValue) && !isNaN(rangeValue)) {
-                                if (rangeValue >= colorMapping[z as number].from && rangeValue <= colorMapping[z as number].to) {
+                            const colorMap: ColorMappingSettings = colorMapping[z as number];
+                            if (hasNumeric && !isNaN(rangeValue) && colorMap.from != null && colorMap.to != null) {
+                                if (rangeValue >= colorMap.from && rangeValue <= colorMap.to) {
                                     range = true;
+                                    break;
                                 }
-                            } else if (!range) {
-                                range = false;
+                            } else if (!hasNumeric && equalValue !== null && !isNullOrUndefined(colorMap.value)
+                                       && equalValue === colorMap.value) {
+                                range = true;
+                                break;
                             }
                         }
                         if (!range) {

@@ -4149,7 +4149,8 @@ export class Annotation {
                     this.pdfViewer.toolbar.annotationToolbarModule.enableSignaturePropertiesTools(true);
                 } else {
                     if (this.pdfViewer.selectedItems.annotations.length === 1 &&
-                         this.pdfViewer.selectedItems.annotations[0].formFieldAnnotationType === null) {
+                         this.pdfViewer.selectedItems.annotations[0].formFieldAnnotationType === null &&
+                         this.pdfViewer.selectedItems.annotations[0].shapeAnnotationType !== 'Redaction') {
                         this.pdfViewer.toolbar.annotationToolbarModule.enableAnnotationPropertiesTools(true);
                     }
                 }

@@ -1,5 +1,5 @@
 import { Spreadsheet } from '../base/index';
-import { completeAction, refreshSheetTabs, refreshImagePosition, focus } from '../common/index';
+import { completeAction, refreshSheetTabs, refreshImagePosition, focus, refreshCommentsPane, updateNoteContainer } from '../common/index';
 import { skipHiddenIdx, deleteAction, InsertDeleteEventArgs, triggerDataChange, ActionEventArgs, ChartModel, getChartRowIdxFromClientY, getChartColIdxFromClientX, refreshChartCellOnInit, addDPRValue } from '../../workbook/common/index';
 import { SheetModel, CellModel, getCell, getCellIndexes, RowModel } from '../../workbook/index';
 
@@ -112,6 +112,8 @@ export class Delete {
                 }
                 delete args.refreshSheet;
             }
+            this.parent.notify(refreshCommentsPane, { sheetIdx: args.activeSheetIndex });
+            this.parent.notify(updateNoteContainer, null);
         }
         this.refreshImgChartElement(args.deletedModel.length, this.parent.activeSheetIndex, args.modelType, args.startIndex);
         if (args.isAction) {

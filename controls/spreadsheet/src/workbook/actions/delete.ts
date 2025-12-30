@@ -1,5 +1,5 @@
 import { Workbook, RowModel, CellModel, getCell, setCell, ActionEventArgs } from '../index';
-import { deleteAction, InsertDeleteModelArgs, refreshClipboard, MergeArgs, beforeDelete, refreshChart } from '../../workbook/common/index';
+import { deleteAction, InsertDeleteModelArgs, refreshClipboard, MergeArgs, beforeDelete, refreshChart, ExtendedSheet, ExtendedThreadedCommentModel, ExtendedNoteModel } from '../../workbook/common/index';
 import { activeCellMergedRange, setMerge, workbookFormulaOperation, InsertDeleteEventArgs, deleteModel } from '../../workbook/common/index';
 import { SheetModel, refreshInsertDelete, updateRowColCount, getSheetIndex, beginAction } from '../../workbook/index';
 import { deleteFormatRange, ConditionalFormatModel, getRangeIndexes, getRangeAddress } from '../../workbook/index';
@@ -266,8 +266,12 @@ export class WorkbookDelete {
             this.parent.notify(refreshClipboard, args);
             eventArgs.refreshSheet = args.refreshSheet;
             eventArgs.activeSheetIndex = getSheetIndex(this.parent, args.model.name);
-            eventArgs['conditionalFormats']  = [];
+            eventArgs['conditionalFormats'] = [];
             this.deleteConditionalFormats(args, eventArgs);
+            eventArgs['comments'] = [];
+            this.deleteComments(args, eventArgs);
+            eventArgs['notesCol'] = [];
+            this.deletenotes(args, eventArgs);
         }
         eventArgs.definedNames = insertArgs.definedNames;
         eventArgs.isAction = args.isAction;
@@ -304,6 +308,55 @@ export class WorkbookDelete {
             }
         }
     }
+
+    private deleteComments(args: InsertDeleteModelArgs, eventArgs: InsertDeleteEventArgs): void {
+        const comments: ExtendedThreadedCommentModel[] = (args.model as ExtendedSheet).comments;
+        if (comments) {
+            for (let i: number = 0; i < comments.length; i++) {
+                const address: number[] = comments[i as number].address;
+                if ((args.modelType === 'Row' && address[0] >= (args.start as number) && address[0] <= (args.end as number)) ||
+                    (args.modelType === 'Column' && address[1] >= (args.start as number) && address[1] <= (args.end as number))) {
+                    eventArgs['comments'].push(extend({}, comments[i as number], null, true));
+                    comments.splice(i, 1);
+                    i--;
+                    continue;
+                }
+                const updatedaddress: number[] = deleteFormatRange(args, [address[0], address[1], address[0], address[1]]);
+                comments[i as number].address = [updatedaddress[2], updatedaddress[3]];
+                const comment: ExtendedThreadedCommentModel = getCell(updatedaddress[2], updatedaddress[3],
+                                                                      args.model, null, true).comment;
+                if (comment) {
+                    comment.address = [updatedaddress[2], updatedaddress[3]];
+                }
+            }
+        }
+    }
+
+    private deletenotes(args: InsertDeleteModelArgs, eventArgs: InsertDeleteEventArgs): void {
+        const notes: ExtendedNoteModel[] = (args.model as ExtendedSheet).notes;
+        if (notes) {
+            for (let i: number = 0; i < notes.length; i++) {
+                const note: ExtendedNoteModel = notes[i as number];
+                if ((args.modelType === 'Row' && note.rowIdx >= (args.start as number) && note.rowIdx <= (args.end as number)) ||
+                    (args.modelType === 'Column' && note.colIdx >= (args.start as number) && note.colIdx <= (args.end as number))) {
+                    eventArgs['notesCol'].push(extend({}, notes[i as number], null, true));
+                    notes.splice(i, 1);
+                    i--;
+                    continue;
+                }
+                const updatedaddress: number[] = deleteFormatRange(args, [note.rowIdx, note.colIdx, note.rowIdx, note.colIdx]);
+                notes[i as number].rowIdx = updatedaddress[2];
+                notes[i as number].colIdx = updatedaddress[3];
+                const noteModel: ExtendedNoteModel = getCell(updatedaddress[2], updatedaddress[3],
+                                                             args.model, null, true).notes as ExtendedNoteModel;
+                if (noteModel) {
+                    noteModel.rowIdx = updatedaddress[2];
+                    noteModel.colIdx = updatedaddress[3];
+                }
+            }
+        }
+    }
+
     private addEventListener(): void {
         this.parent.on(deleteModel, this.deleteModel, this);
     }

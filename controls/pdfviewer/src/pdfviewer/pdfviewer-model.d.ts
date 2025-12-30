@@ -1510,11 +1510,23 @@ export interface StampSettingsModel {
 
     /**
      * specifies the width of the annotation.
+     * The final rendered size preserves the base aspect ratio and is scaled
+     * to fit within the requested width × height.
+     *
+     * - If only width is provided, height is computed from the aspect ratio.
+     * - If both width and height are provided, the smaller limiting dimension
+     *   is used so the annotation fits entirely within the container.
      */
     width?: number;
 
     /**
      * specifies the height of the annotation.
+     * The final rendered size preserves the base aspect ratio and is scaled
+     * to fit within the requested width × height.
+     *
+     * - If only height is provided, height is computed from the aspect ratio.
+     * - If both width and height are provided, the smaller limiting dimension
+     *   is used so the annotation fits entirely within the container.
      */
     height?: number;
 

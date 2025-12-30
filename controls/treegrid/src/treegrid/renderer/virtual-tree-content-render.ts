@@ -84,7 +84,8 @@ export class VirtualTreeContentRenderer extends VirtualContentRenderer {
      */
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     public getRowCollection(index: number, isMovable: boolean, isRowObject?: boolean, isFrozenRight?: boolean): Element | Object {
-        const startIdx: number = parseInt(this.parent.getRows()[0].getAttribute(literals.ariaRowIndex), 10) - 1;
+        const rows: Element[] = this.parent.getRows();
+        const startIdx: number = rows.length > 0 ? parseInt(rows[0].getAttribute(literals.ariaRowIndex), 10) - 1 : 0;
         const rowCollection: Element[] = this.parent.getDataRows();
         const collection: Element[] | Object[] = isRowObject ? this.parent.getCurrentViewRecords() : rowCollection;
         let selectedRow: Element | Object = collection[index - startIdx];

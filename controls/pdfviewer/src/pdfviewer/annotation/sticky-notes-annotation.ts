@@ -82,6 +82,10 @@ export class StickyNotesAnnotation {
     /**
      * @private
      */
+    public isAnnotCommentClicked: boolean = false;
+    /**
+     * @private
+     */
     public isAddAnnotationProgramatically: boolean = false;
     /**
      * @private
@@ -2375,6 +2379,7 @@ export class StickyNotesAnnotation {
     private commentsAnnotationSelect(event: any): void {
         const element: HTMLElement = event.currentTarget;
         const isLocked: boolean = this.checkAnnotationSettings(element.id);
+        this.isAnnotCommentClicked = true;
         // When the isLock is set to true, it comes and checks whether the allowedInteractions is select and set the isLock to false, In that case if enters the condition and makes the comment panel to editable mode. So, have removed the condition in openEditorElement, commentsDivClickEvent, openTextEditor,commentAnnotationSelect methods. (Task id: 835410)
         if (!isLocked) {
             if (element.classList.contains('e-pv-comments-border')) {
@@ -2546,6 +2551,7 @@ export class StickyNotesAnnotation {
     public selectCommentsAnnotation(pageIndex: number): void {
         if (this.selectAnnotationObj && !this.isCommentsSelected) {
             if ((this.selectAnnotationObj.pageNumber - 1) === pageIndex) {
+                this.isAnnotCommentClicked = true;
                 this.setAnnotationType(this.selectAnnotationObj.id, this.selectAnnotationObj.annotType,
                                        this.selectAnnotationObj.pageNumber);
                 this.selectAnnotationObj = null;

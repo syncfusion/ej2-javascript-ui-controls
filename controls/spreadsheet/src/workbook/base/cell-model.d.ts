@@ -18,7 +18,7 @@ export interface CellModel {
      * Each cell supports a single comment thread, which includes:
      * - **author**: The name of the person who created the comment.
      * - **text**: The main content of the comment.
-     * - **createdTime**: The timestamp indicating when the comment was added.
+     * - **createdTime**: The time-stamp indicating when the comment was added.
      * - **isResolved**: Indicates whether the thread is marked as resolved.
      * - **replies**: A collection of reply comments, each with its own `author`, `text`, and `createdTime`.
      *

@@ -6602,7 +6602,7 @@ export class MultiSelect extends DropDownBase implements IInput {
                         if (this.hideSelectedItem && this.value && Array.isArray(this.value) && this.value.length > 0) {
                             this.totalItemsCount();
                         }
-                        if (!this.preventSetCurrentData && this.totalItemCount > (this.itemCount * 2) &&
+                        if (!this.preventSetCurrentData &&
                            !isNullOrUndefined(this.viewPortInfo.startIndex) &&
                             !isNullOrUndefined(this.viewPortInfo.endIndex)) {
                             this.notify('setCurrentViewDataAsync', {

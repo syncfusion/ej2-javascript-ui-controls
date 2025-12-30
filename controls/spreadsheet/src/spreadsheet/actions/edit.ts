@@ -204,6 +204,7 @@ export class Edit {
             break;
         case 'getCurrentEditValue':
             args.editedValue = this.editCellData.value;
+            args.editSheetIndex = this.editCellData.sheetIndex;
             if (args.endFormulaRef !== undefined) { args.endFormulaRef = this.endFormulaRef; }
             break;
         case 'refreshDependentCellValue':

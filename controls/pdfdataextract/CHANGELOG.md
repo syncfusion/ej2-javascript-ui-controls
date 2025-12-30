@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 32.1.21 (2025-12-30)
+
+### PDF Data Extract
+
+#### Bug Fixes
+
+- Resolved an issue where shape annotations were not properly redacted during the redaction process.
+
 ## 32.1.20 (2025-12-23)
 
 ### PDF Data Extract

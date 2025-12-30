@@ -46,6 +46,16 @@ export function cleanupElement(element: HTMLElement | null): void {
 }
 
 /**
+ * Returns the parent element if node is given or returns the element itself
+ *
+ * @param {Node} node - Node to get parent element.
+ * @returns {HTMLElement} - The parent element
+ */
+export function getParentElement(node: Node): HTMLElement {
+    return (node.nodeType === Node.TEXT_NODE) ? node.parentElement : (node as HTMLElement);
+}
+
+/**
  * Gets template content based on the template property value.
  *
  * @param {string | Function} template - Template property value.

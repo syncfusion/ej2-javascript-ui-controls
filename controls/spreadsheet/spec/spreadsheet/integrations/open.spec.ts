@@ -9,8 +9,8 @@ describe('Open & Save ->', () => {
     describe('public method ->', () => {
         beforeAll((done: Function) => {
             helper.initializeSpreadsheet({
-                openUrl: 'https://document.syncfusion.com/web-services/spreadsheet-editor/api/spreadsheet/open',
-                saveUrl: 'https://document.syncfusion.com/web-services/spreadsheet-editor/api/spreadsheet/save', sheets: [{ ranges: [{ dataSource: defaultData }] }],
+                openUrl: 'https://documentsdkapp.azurewebsites.net/web-services/spreadsheet-editor/development/api/spreadsheet/open',
+                saveUrl: 'https://documentsdkapp.azurewebsites.net/web-services/spreadsheet-editor/development/api/spreadsheet/save', sheets: [{ ranges: [{ dataSource: defaultData }] }],
                 beforeSave: (args: any) => { args.isFullPost = false }
             }, done);
         });
@@ -88,8 +88,8 @@ describe('Open & Save ->', () => {
     describe('Save method ->', () => {
         beforeAll((done: Function) => {
             helper.initializeSpreadsheet({
-                openUrl: 'https://document.syncfusion.com/web-services/spreadsheet-editor/api/spreadsheet/open',
-                saveUrl: 'https://document.syncfusion.com/web-services/spreadsheet-editor/api/spreadsheet/save', sheets: [{ ranges: [{ dataSource: defaultData }] }]
+                openUrl: 'https://documentsdkapp.azurewebsites.net/web-services/spreadsheet-editor/development/api/spreadsheet/open',
+                saveUrl: 'https://documentsdkapp.azurewebsites.net/web-services/spreadsheet-editor/development/api/spreadsheet/save', sheets: [{ ranges: [{ dataSource: defaultData }] }]
             }, done);
         });
         afterAll(() => {
@@ -208,7 +208,7 @@ describe('EJ2-56416 ->', () => {
     const helper: SpreadsheetHelper = new SpreadsheetHelper('spreadsheet');
     beforeAll((done: Function) => {
         helper.initializeSpreadsheet({
-            openUrl: 'https://document.syncfusion.com/web-services/spreadsheet-editor/api/spreadsheet/open',
+            openUrl: 'https://documentsdkapp.azurewebsites.net/web-services/spreadsheet-editor/development/api/spreadsheet/open',
             sheets: [{ ranges: [{ dataSource: defaultData }] }],
             beforeOpen: (args: BeforeOpenEventArgs) => { args.cancel = true }
         }, done);
@@ -585,8 +585,8 @@ describe('Opening document using chunk processing', () => {
     const helper: SpreadsheetHelper = new SpreadsheetHelper('spreadsheet');
     beforeAll((done: Function) => {
         helper.initializeSpreadsheet({
-            openUrl: 'https://document.syncfusion.com/web-services/spreadsheet-editor/api/spreadsheet/open',
-            saveUrl: 'https://document.syncfusion.com/web-services/spreadsheet-editor/api/spreadsheet/save',
+            openUrl: 'https://documentsdkapp.azurewebsites.net/web-services/spreadsheet-editor/development/api/spreadsheet/open',
+            saveUrl: 'https://documentsdkapp.azurewebsites.net/web-services/spreadsheet-editor/development/api/spreadsheet/save',
             openSettings: {
                 chunkSize: 10000,
                 retryCount: 3

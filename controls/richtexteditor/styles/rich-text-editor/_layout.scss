@@ -422,6 +422,10 @@
         border-collapse: collapse;
         border-spacing: 0;
         empty-cells: show;
+
+        &:not(:first-child):not(table table) {
+          margin-top: $rte-content-table-margin-top;
+        }
       }
 
       .e-content pre {

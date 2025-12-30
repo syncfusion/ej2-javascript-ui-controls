@@ -1,86 +1,21 @@
 import { createElement, remove } from "@syncfusion/ej2-base";
-import { createEditor } from "../common/util.spec";
+import {
+    createEditor,
+    getDataCell,
+    buildTableBlock,
+    getTable,
+    getHeaderCell,
+    getRowNumberCell,
+    getDataCellEl,
+    selectRectangle,
+    selectHeaderRectangle,
+} from "../common/util.spec";
 import { BaseStylesProp, BlockModel } from "../../src/models/index";
 import { BlockType, CommandName, ContentType } from '../../src/models/enums';
 import { BlockEditor } from '../../src/index';
 import { IHeadingBlockSettings, TableCellModel, TableColumnModel, ITableBlockSettings, TableRowModel } from '../../src/models/block/block-props';
 import { getBlockContentElement, setCursorPosition } from "../../src/common/utils/index";
 
-const domHelpers = {
-    query(el: Element | Document, sel: string): HTMLElement { return el.querySelector(sel) as HTMLElement; },
-    queryAll(el: Element | Document, sel: string): HTMLElement[] { return Array.from(el.querySelectorAll(sel)) as HTMLElement[]; },
-    dispatch(el: Element, type: string, init?: any) {
-        const evt = new (window as any).Event(type, { bubbles: true, cancelable: true, ...init });
-        el.dispatchEvent(evt);
-        return evt;
-    },
-    input(el: Element, value: string) {
-        (el as HTMLElement).textContent = value;
-    },
-    key(el: Element, key: string, opts: any = {}) {
-        const ev = new KeyboardEvent('keydown', { key, bubbles: true, cancelable: true, ...opts });
-        el.dispatchEvent(ev);
-        const up = new KeyboardEvent('keyup', { key, bubbles: true, cancelable: true, ...opts });
-        el.dispatchEvent(up);
-    },
-    paste(el: Element, text: string) {
-        const pasteEvt = new ClipboardEvent('paste', { bubbles: true, cancelable: true } as any);
-        Object.defineProperty(pasteEvt, 'clipboardData', { value: { getData: () => text } });
-        el.dispatchEvent(pasteEvt);
-    }
-};
-
-function buildTableBlock(id: string, cols: number, rows: number, enableHeader = true, enableRowNumbers = true): BlockModel {
-    const columns: TableColumnModel[] = Array.from({ length: cols }).map((_, i) => ({ id: `col${i + 1}`, headerText: `Col ${i + 1}` }));
-    const bodyRows: TableRowModel[] = Array.from({ length: rows }).map((_, r) => ({
-        id: `row${r + 1}`,
-        cells: columns.map((c, cIdx) => ({
-            id: `cell_${r + 1}_${cIdx + 1}`,
-            columnId: c.id,
-            blocks: [{ id: `b_${r + 1}_${cIdx + 1}`, blockType: BlockType.Paragraph, content: [{ id: `c_${r + 1}_${cIdx + 1}`, contentType: ContentType.Text, content: `R${r + 1}C${cIdx + 1}` }] }]
-        } as TableCellModel))
-    } as TableRowModel));
-    const properties: ITableBlockSettings = { columns, rows: bodyRows, width: '100%', enableHeader, enableRowNumbers } as ITableBlockSettings;
-    return { id, blockType: BlockType.Table, properties } as BlockModel;
-}
-
-function getTable(editorElement: HTMLElement): HTMLTableElement {
-    return editorElement.querySelector('.e-table-block table') as HTMLTableElement;
-}
-
-function getDataCell(editorElement: HTMLElement, row: number, col: number): HTMLTableCellElement {
-    const table = getTable(editorElement);
-    return table.querySelector(`td[data-row="${row}"][data-col="${col}"]`) as HTMLTableCellElement;
-}
-
-function getHeaderCell(editorElement: HTMLElement, col: number): HTMLTableCellElement | null {
-    const table = getTable(editorElement);
-    const thead = table.tHead;
-    if (!thead) { return null; }
-    // Try both dataset and index fallback
-    let cell = thead.querySelector(`th[data-row="0"][data-col="${col}"]`) as HTMLTableCellElement;
-    if (!cell) { cell = thead.querySelectorAll('th')[col] as HTMLTableCellElement; }
-    return cell || null;
-}
-
-function getRowNumberCell(editorElement: HTMLElement, bodyRowIndex: number): HTMLTableCellElement {
-    const table = getTable(editorElement);
-    const tbodyRow = table.tBodies[0].rows[bodyRowIndex];
-    return tbodyRow.querySelector('td.e-row-number') as HTMLTableCellElement;
-}
-
-function getDataCellEl(editorElement: HTMLElement, row: number, col: number): HTMLTableCellElement {
-    const table = getTable(editorElement);
-    return table.querySelector(`td[data-row="${row}"][data-col="${col}"]`) as HTMLTableCellElement;
-}
-
-function selectRectangle(editorElement: HTMLElement, startRow: number, startCol: number, endRow: number, endCol: number): void {
-    const start = getDataCellEl(editorElement, startRow, startCol);
-    const end = getDataCellEl(editorElement, endRow, endCol);
-    start.dispatchEvent(new MouseEvent('mousedown', { bubbles: true }));
-    end.dispatchEvent(new MouseEvent('mousemove', { bubbles: true }));
-    document.dispatchEvent(new MouseEvent('mouseup', { bubbles: true }));
-}
 
 describe('Table Manager', () => {
     beforeAll(() => {
@@ -769,6 +704,98 @@ describe('Table Manager', () => {
             expect(getDataCellEl(editorElement, 1, 1).textContent!.trim()).toBe('');
             expect(getDataCellEl(editorElement, 2, 0).textContent!.trim()).toBe('');
             expect(getDataCellEl(editorElement, 2, 1).textContent!.trim()).toBe('');
+        });
+
+        it('clears header cells when on backspace', () => {
+            selectHeaderRectangle(editorElement, 0, 2);
+            const targetCell = getHeaderCell(editorElement, 0);
+            targetCell.focus();
+            
+            editorElement.dispatchEvent(new KeyboardEvent('keydown', { key: 'Backspace', code: 'Backspace' }));
+    
+            const props = (editor.blocks[0] as BlockModel).properties as ITableBlockSettings;
+
+            //Model
+            expect(props.columns[0].headerText).toBe('');
+            expect(props.columns[1].headerText).toBe('');
+            expect(props.columns[2].headerText).toBe('');
+
+            // DOM
+            const headerCells = editorElement.querySelectorAll('table thead th');
+            expect(headerCells[0].textContent.trim()).toBe('');
+            expect(headerCells[1].textContent.trim()).toBe('');
+            expect(headerCells[2].textContent.trim()).toBe('');
+        });
+
+        it('clears header cells when on delete', () => {
+            selectHeaderRectangle(editorElement, 0, 2);
+            const targetCell = getHeaderCell(editorElement, 0);
+            targetCell.focus();
+            
+            editorElement.dispatchEvent(new KeyboardEvent('keydown', { key: 'Delete', code: 'Delete' }));
+    
+            const props = (editor.blocks[0] as BlockModel).properties as ITableBlockSettings;
+
+            //Model
+            expect(props.columns[0].headerText).toBe('');
+            expect(props.columns[1].headerText).toBe('');
+            expect(props.columns[2].headerText).toBe('');
+
+            // DOM
+            const headerCells = editorElement.querySelectorAll('table thead th');
+            expect(headerCells[0].textContent.trim()).toBe('');
+            expect(headerCells[1].textContent.trim()).toBe('');
+            expect(headerCells[2].textContent.trim()).toBe('');
+        });
+
+        it('clears both data and header cells in mixed selection on backspace', () => {
+            const start = getHeaderCell(editorElement, 0);
+            const end = getDataCellEl(editorElement, 1, 1); 
+            start.dispatchEvent(new MouseEvent('mousedown', { bubbles: true }));
+            end.dispatchEvent(new MouseEvent('mousemove', { bubbles: true }));
+            document.dispatchEvent(new MouseEvent('mouseup', { bubbles: true }));
+
+            editorElement.dispatchEvent(new KeyboardEvent('keydown', { key: 'Backspace', code: 'Backspace' }));
+    
+            const props = (editor.blocks[0] as BlockModel).properties as ITableBlockSettings;
+
+            //Model
+            expect(props.columns[0].headerText).toBe('');
+            expect(props.columns[1].headerText).toBe('');
+            expect(props.rows[0].cells[0].blocks[0].content.length).toBe(0);
+            expect(props.rows[0].cells[1].blocks[0].content.length).toBe(0);
+
+            // DOM
+            const headerCells = editorElement.querySelectorAll('table thead th');
+            expect(headerCells[0].textContent.trim()).toBe('');
+            expect(headerCells[1].textContent.trim()).toBe('');
+            expect(getDataCellEl(editorElement, 1, 0).textContent!.trim()).toBe('');
+            expect(getDataCellEl(editorElement, 1, 1).textContent!.trim()).toBe('');
+        });
+
+        it('clears both data and header cells in mixed selection on delete', () => {
+            const start = getHeaderCell(editorElement, 0);
+            const end = getDataCellEl(editorElement, 1, 1); 
+            start.dispatchEvent(new MouseEvent('mousedown', { bubbles: true }));
+            end.dispatchEvent(new MouseEvent('mousemove', { bubbles: true }));
+            document.dispatchEvent(new MouseEvent('mouseup', { bubbles: true }));
+
+            editorElement.dispatchEvent(new KeyboardEvent('keydown', { key: 'Delete', code: 'Delete' }));
+    
+            const props = (editor.blocks[0] as BlockModel).properties as ITableBlockSettings;
+
+            //Model
+            expect(props.columns[0].headerText).toBe('');
+            expect(props.columns[1].headerText).toBe('');
+            expect(props.rows[0].cells[0].blocks[0].content.length).toBe(0);
+            expect(props.rows[0].cells[1].blocks[0].content.length).toBe(0);
+
+            // DOM
+            const headerCells = editorElement.querySelectorAll('table thead th');
+            expect(headerCells[0].textContent.trim()).toBe('');
+            expect(headerCells[1].textContent.trim()).toBe('');
+            expect(getDataCellEl(editorElement, 1, 0).textContent!.trim()).toBe('');
+            expect(getDataCellEl(editorElement, 1, 1).textContent!.trim()).toBe('');
         });
     });
 

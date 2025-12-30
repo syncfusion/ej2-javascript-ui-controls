@@ -4724,7 +4724,7 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
             const element: string = this.editorMode === 'Markdown' ? this.contentModule.getText() :
                 (this.getText().replace(/(\r\n|\n|\r|\t)/gm, '').replace(/\u200B/g, ''));
             if (!element) { return; }
-            const array: number[] = [8, 16, 17, 37, 38, 39, 40, 46, 65];
+            const array: number[] = [8, 9, 16, 17, 37, 38, 39, 40, 46, 65];
             let arrayKey: number;
             for (let i: number = 0; i <= array.length - 1; i++) {
                 if ((e as MouseEvent).which === array[i as number]) {
@@ -5058,7 +5058,7 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
         if (this.isSelectionInRTE() && !this.isSelectionCollapsed() && this.isSelectionStartInRTE) {
             this.isSelecting = true;
         }
-        if (this.isSelectionInRTE()) {
+        if (this.isSelectionInRTE() && !this.isSelectionCollapsed()) {
             this.updateUndoRedoStack(event, true);
         }
     }

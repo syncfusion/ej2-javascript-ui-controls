@@ -6762,6 +6762,9 @@ export class FormDesigner {
             this.setFontStyleValues(selectedItem, 'None', 'line-through', inputElement, false, '', index, formFieldsData);
         }
         newValue += selectedItem.font.isStrikeout ? 'Strikethrough' + ', ' : '';
+        if (oldValue === newValue) {
+            isFontStyleChanged = false;
+        }
         return [isFontStyleChanged, oldValue, newValue];
     }
 
@@ -6800,7 +6803,9 @@ export class FormDesigner {
             (this.pdfViewer.nameTable as any)[selectedItem.id.split('_')[0]].font.isUnderline = isFontStyleEnabled;
         } else if (fontStyleType === 'line-through') {
             this.setDropdownFontStyleValue(inputElement, fontStyleType, fontStyleValue);
-            inputElement.style.textDecoration = fontStyleValue;
+            if (!(this.formFieldUnderline === 'underline') || (this.formFieldUnderline === 'underline' && isFontStyleEnabled)) {
+                inputElement.style.textDecoration = fontStyleValue;
+            }
             selectedItem.fontStyle = selectedItemFontStyle;
             selectedItem.font.isStrikeout = isFontStyleEnabled;
             if (index > -1) {
@@ -8708,14 +8713,26 @@ export class FormDesigner {
         if (font.isBold) {
             this.formFieldBold = 'bold';
         }
+        else {
+            this.formFieldBold = 'normal';
+        }
         if (font.isItalic) {
             this.formFieldItalic = 'italic';
+        }
+        else {
+            this.formFieldItalic = 'normal';
         }
         if (font.isUnderline) {
             this.formFieldUnderline = 'underline';
         }
+        else {
+            this.formFieldUnderline = 'none';
+        }
         if (font.isStrikeout) {
             this.formFieldStrikeOut = 'line-through';
+        }
+        else {
+            this.formFieldStrikeOut = 'none';
         }
     }
 }

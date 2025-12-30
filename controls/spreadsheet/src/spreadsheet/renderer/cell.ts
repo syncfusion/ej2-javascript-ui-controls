@@ -3,7 +3,7 @@ import { ICellRenderer, CellRenderEventArgs, inView, CellRenderArgs, renderFilte
 import { createHyperlinkElement, checkPrevMerge, createImageElement, IRenderer, createNoteIndicator } from '../common/index';
 import { removeAllChildren, setRowEleHeight } from '../common/index';
 import { getColumnHeaderText, CellStyleModel, CellFormatArgs, getRangeIndexes, getRangeAddress, ExtendedImageModel, NoteModel, ExtendedNoteModel } from '../../workbook/common/index';
-import { CellStyleExtendedModel, setChart, refreshChart, getCellAddress, ValidationModel, MergeArgs } from '../../workbook/common/index';
+import { CellStyleExtendedModel, setChart, refreshChart, getCellAddress, ValidationModel, MergeArgs, updateMergeBorder } from '../../workbook/common/index';
 import { CellModel, SheetModel, skipDefaultValue, isHiddenRow, RangeModel, isHiddenCol, isImported } from '../../workbook/index';
 import { getRowHeight, getCell, getColumnWidth, getSheet, setCell, ColumnModel, checkColumnValidation } from '../../workbook/base/index';
 import { addClass, attributes, extend, compile, isNullOrUndefined, detach, append } from '@syncfusion/ej2-base';
@@ -733,12 +733,14 @@ export class CellRenderer implements ICellRenderer {
      * @param {boolean} isSortAction - Specifies whether to check the sort action performed or not.
      * @param {boolean} isSelectAll - Specifies the all sheet cells selected or not.
      * @param {PreviousCellDetails[]} cells - Specifies the undo redo cell collections.
+     * @param {number[]} mergeBorderRows - Specifies the rows with the top borders, and adjacent cells containing merged cells have to be updated.
      * @returns {void}
      */
     public refreshRange(
         range: number[], refreshing?: boolean, checkWrap?: boolean, checkHeight?: boolean, checkCF?: boolean,
         skipFormatCheck?: boolean, checkFormulaAdded?: boolean, isFromAutoFillOption?: boolean,
-        isHeightCheckNeeded: boolean = true, isSortAction?: boolean, isSelectAll?: boolean, cells?: PreviousCellDetails[]): void {
+        isHeightCheckNeeded: boolean = true, isSortAction?: boolean, isSelectAll?: boolean, cells?: PreviousCellDetails[],
+        mergeBorderRows?: number[]): void {
         const sheet: SheetModel = this.parent.getActiveSheet();
         const cRange: number[] = range.slice(); let args: CellRenderArgs; let cell: HTMLTableCellElement;
         if (inView(this.parent, cRange, true)) {
@@ -754,7 +756,8 @@ export class CellRenderer implements ICellRenderer {
                             lastCell: j === cRange[3], isRefresh: true, isHeightCheckNeeded: isHeightCheckNeeded,
                             manualUpdate: true, first: '', onActionUpdate: checkHeight, skipFormatCheck: skipFormatCheck,
                             isFromAutoFillOption: isFromAutoFillOption, isSelectAll: isSelectAll,
-                            rowHeight: cells && cells[cellIdx as number] && cells[cellIdx as number].rowHeight
+                            rowHeight: cells && cells[cellIdx as number] && cells[cellIdx as number].rowHeight,
+                            mergeBorderRows: mergeBorderRows
                         };
                         cellIdx++;
                         if (checkFormulaAdded) {
@@ -786,12 +789,15 @@ export class CellRenderer implements ICellRenderer {
                     }
                 }
             }
+            if (mergeBorderRows) {
+                updateMergeBorder(this.parent, args.mergeBorderRows);
+            }
         }
     }
 
     public refresh(
         rowIdx: number, colIdx: number, lastCell?: boolean, element?: Element, checkCF?: boolean, checkWrap?: boolean,
-        skipFormatCheck?: boolean, isRandomFormula?: boolean, fillType?: string): void {
+        skipFormatCheck?: boolean, isRandomFormula?: boolean, fillType?: string, prevCell?: HTMLTableCellElement): void {
         const sheet: SheetModel = this.parent.getActiveSheet();
         if (!element && (isHiddenRow(sheet, rowIdx) || isHiddenCol(sheet, colIdx))) {
             return;
@@ -803,7 +809,7 @@ export class CellRenderer implements ICellRenderer {
             }
             const args: CellRenderArgs = { rowIdx: rowIdx, colIdx: colIdx, td: cell, cell: getCell(rowIdx, colIdx, sheet), isRefresh: true,
                 lastCell: lastCell, isHeightCheckNeeded: true, manualUpdate: true, first: '', skipFormatCheck: skipFormatCheck,
-                isRandomFormula: isRandomFormula, fillType: fillType };
+                isRandomFormula: isRandomFormula, fillType: fillType, prevCell: prevCell };
             this.update(args);
             if (checkCF && sheet.conditionalFormats && sheet.conditionalFormats.length) {
                 this.parent.notify(applyCF, <ApplyCFArgs>{ indexes: [rowIdx, colIdx], isAction: true });

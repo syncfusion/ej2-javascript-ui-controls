@@ -1,4 +1,4 @@
-import { Spreadsheet, SpreadsheetModel, CellSaveEventArgs, RowModel, SheetModel, getCell, ImageModel, PasteModelArgs } from '../../../src/index';
+import { Spreadsheet, SpreadsheetModel, CellSaveEventArgs, RowModel, SheetModel, getCell, ImageModel, PasteModelArgs, paste } from '../../../src/index';
 import { SpreadsheetHelper } from '../util/spreadsheethelper.spec';
 import { defaultData } from '../util/datasource.spec';
 import { createElement, EventHandler } from '@syncfusion/ej2-base';
@@ -982,6 +982,92 @@ describe('Clipboard ->', () => {
                     });
                 });
             });
+            it('EJ2-998364 -> Value is pasted repeatedly after cut and paste in multi-range selection in Spreadsheet', (done: Function) => {
+                helper.invoke('cut', ['D2']).then(() => {
+                    helper.invoke('selectRange', ['I2:I13']);
+                    helper.invoke('paste');
+                    setTimeout(() => {
+                        const sheet: SheetModel = helper.getInstance().sheets[0];
+                        expect(sheet.rows[1].cells[8].value.toString()).toBe('10');
+                        expect(sheet.rows[2].cells[8]).toBeUndefined();
+                        expect(sheet.rows[4].cells[8]).toBeUndefined();
+                        expect(sheet.rows[5].cells[8]).toBeUndefined();
+                        expect(sheet.rows[6].cells[8]).toBeUndefined();
+                        expect(sheet.rows[7].cells[8]).toBeUndefined();
+                        helper.click('#spreadsheet_undo');
+                        expect(sheet.rows[1].cells[3].value.toString()).toBe('10');
+                        expect(sheet.rows[1].cells[8].value).toBe('');
+                        expect(sheet.rows[2].cells[8].value).toBe('');
+                        expect(sheet.rows[3].cells[8].value).toBe('');
+                        expect(sheet.rows[4].cells[8].value).toBe('');
+                        expect(sheet.rows[5].cells[8].value).toBe('');
+                        expect(sheet.rows[6].cells[8].value).toBe('');
+                        helper.click('#spreadsheet_redo');
+                        setTimeout(function () {
+                            expect(sheet.rows[1].cells[8].value.toString()).toBe('10');
+                            expect(sheet.rows[2].cells[8].value).toBe('');
+                            expect(sheet.rows[3].cells[8].value).toBe('');
+                            expect(sheet.rows[4].cells[8].value).toBe('');
+                            expect(sheet.rows[5].cells[8].value).toBe('');
+                            expect(sheet.rows[6].cells[8].value).toBe('');
+                            done();
+                        });
+                    });
+                });
+            });
+            it('EJ2-998364 -> cut multiple range and paste in multi-range selection in Spreadsheet', (done: Function) => {
+                helper.invoke('cut', ['E2:E7']).then(() => {
+                    helper.invoke('selectRange', ['J2:J13']);
+                    helper.invoke('paste');
+                    setTimeout(() => {
+                        const sheet: SheetModel = helper.getInstance().sheets[0];
+                        expect(sheet.rows[1].cells[4]).toBeNull();
+                        expect(sheet.rows[2].cells[4]).toBeNull();
+                        expect(sheet.rows[3].cells[4]).toBeNull();
+                        expect(sheet.rows[4].cells[4]).toBeNull();
+                        expect(sheet.rows[5].cells[4]).toBeNull();
+                        expect(sheet.rows[6].cells[4]).toBeNull();
+                        expect(sheet.rows[1].cells[9].value.toString()).toBe('20');
+                        expect(sheet.rows[2].cells[9].value.toString()).toBe('30');
+                        expect(sheet.rows[3].cells[9].value.toString()).toBe('15');
+                        expect(sheet.rows[4].cells[9].value.toString()).toBe('20');
+                        expect(sheet.rows[5].cells[9].value.toString()).toBe('10');
+                        expect(sheet.rows[6].cells[9].value.toString()).toBe('20');
+                        expect(sheet.rows[7].cells[9]).toBeUndefined();
+                        helper.click('#spreadsheet_undo');
+                        expect(sheet.rows[1].cells[4].value.toString()).toBe('20');
+                        expect(sheet.rows[2].cells[4].value.toString()).toBe('30');
+                        expect(sheet.rows[3].cells[4].value.toString()).toBe('15');
+                        expect(sheet.rows[4].cells[4].value.toString()).toBe('20');
+                        expect(sheet.rows[5].cells[4].value.toString()).toBe('10');
+                        expect(sheet.rows[6].cells[4].value.toString()).toBe('20');
+                        expect(sheet.rows[1].cells[9].value).toBe('');
+                        expect(sheet.rows[2].cells[9].value).toBe('');
+                        expect(sheet.rows[3].cells[9].value).toBe('');
+                        expect(sheet.rows[4].cells[9].value).toBe('');
+                        expect(sheet.rows[5].cells[9].value).toBe('');
+                        expect(sheet.rows[6].cells[9].value).toBe('');
+                        expect(sheet.rows[7].cells[9].value).toBe('');
+                        helper.click('#spreadsheet_redo');
+                        setTimeout(function () {
+                            expect(sheet.rows[1].cells[4]).toBeNull();
+                            expect(sheet.rows[2].cells[4]).toBeNull();
+                            expect(sheet.rows[3].cells[4]).toBeNull();
+                            expect(sheet.rows[4].cells[4]).toBeNull();
+                            expect(sheet.rows[5].cells[4]).toBeNull();
+                            expect(sheet.rows[6].cells[4]).toBeNull();
+                            expect(sheet.rows[1].cells[9].value.toString()).toBe('20');
+                            expect(sheet.rows[2].cells[9].value.toString()).toBe('30');
+                            expect(sheet.rows[3].cells[9].value.toString()).toBe('15');
+                            expect(sheet.rows[4].cells[9].value.toString()).toBe('20');
+                            expect(sheet.rows[5].cells[9].value.toString()).toBe('10');
+                            expect(sheet.rows[6].cells[9].value.toString()).toBe('20');
+                            expect(sheet.rows[7].cells[9].value).toBe('');
+                            done();
+                        });
+                    });
+                });
+            });
         });
         describe('EJ2-56522 ->', () => {
             beforeEach((done: Function) => {
@@ -1097,6 +1183,65 @@ describe('Clipboard ->', () => {
                         });
                     });
                 });
+            });
+        });
+        describe('1000050 - Bullet points are not visible when copy-pasting a table from PowerPoint into Spreadsheet', () => {
+            beforeAll((done: Function) => {
+                helper.initializeSpreadsheet({ sheets: [{ ranges: [{ dataSource: defaultData }] }] }, done);
+            });
+            afterAll(() => {
+                helper.invoke('destroy');
+            });
+            it('preserve bullet points when pasting PowerPoint table with bullet formatting have negative text indent value', (done: Function) => {
+                const spreadsheet: Spreadsheet = helper.getInstance();
+                const tableContent: string = `<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns="http://www.w3.org/TR/REC-html40">
+                    <head>
+                    <meta http-equiv=Content-Type content="text/html; charset=utf-8">
+                    <style>
+                        td {padding-top:1.0px; padding-right:1.0px; padding-left:1.0px; color:windowtext; font-size:18.0pt;
+                        font-family:Arial; text-align:general; vertical-align:bottom; border:none;}
+                        .oa2 {border:1.0pt solid white; background:#CCD2D8; text-align:center; vertical-align:top;}
+                    </style>
+                    </head>
+                    <body>
+                        <table border=0 cellpadding=0 cellspacing=0 style='border-collapse: collapse;'>
+                            <tr>
+                                <td class=oa2>
+                                    <div style='margin-left:.31in;text-indent:-.31in;text-align:center;'>
+                                        <span style='font-size:18.0pt'><span style='mso-special-format:bullet;font-family:Arial'>•</span></span>
+                                        <span style='font-size:18.0pt;font-family:Aptos;color:black;'>Hello</span>
+                                    </div>
+                                </td>
+                                <td class=oa2>
+                                    <div style='margin-left:.31in;text-indent:-.31in;text-align:center;'>
+                                        <span style='font-size:18.0pt'><span style='mso-special-format:bullet;font-family:Arial'>•</span></span>
+                                        <span style='font-size:18.0pt;font-family:Aptos;color:black;'>World</span>
+                                    </div>
+                                </td>
+                            </tr>
+                        </table>
+                    </body>
+                </html>`;
+                const ClipboardData: { getData: (format: string) => string; types: string[] } = { getData: (format: string): string => (format === 'text/html' ? tableContent : ''),
+                    types: ['text/html', 'text/plain']
+                };
+                helper.invoke('selectRange', ['E1']);
+                spreadsheet.notify(paste, { type: 'paste', isAction: true, isInternal: false, isTrusted: true, clipboardData: ClipboardData
+                });
+                const sheet: SheetModel = spreadsheet.sheets[0];
+                expect(sheet.rows[0].cells[4].value).toContain('•');
+                expect(sheet.rows[0].cells[4].value.toString().trim()).toBe('• Hello');
+                let style: string = '{"backgroundColor":"#CCD2D8","textAlign":"center","verticalAlign":"top",' +
+                '"fontSize":"18pt","fontFamily":"Aptos","color":"black","borderBottom":"1.33px solid white",' +
+                '"borderTop":"1.33px solid white","borderLeft":"1.33px solid white","borderRight":"1.33px solid white"}';
+                expect(JSON.stringify(sheet.rows[0].cells[4].style)).toBe(style);
+                expect(sheet.rows[0].cells[5].value).toContain('•');
+                expect(sheet.rows[0].cells[5].value.toString().trim()).toBe('• World');
+                style = '{"backgroundColor":"#CCD2D8","textAlign":"center","verticalAlign":"top",' +
+                '"fontSize":"18pt","fontFamily":"Aptos","color":"black","borderBottom":"1.33px solid white",' +
+                '"borderTop":"1.33px solid white","borderLeft":"1.33px solid white","borderRight":"1.33px solid white"}';
+                expect(JSON.stringify(sheet.rows[0].cells[5].style)).toBe(style);
+                done();
             });
         });
         describe('SF-367525, SF-367519 ->', () => {

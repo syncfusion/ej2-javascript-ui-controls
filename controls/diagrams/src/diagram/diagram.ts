@@ -3891,6 +3891,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
      * @param {NodeModel[] | ConnectorModel[]}objects - A collection of NodeModel or ConnectorModel objects, from which the target object has to be found.
      * @param {Actions} action - Defines the action used to find the relevant object.
      * @param {boolean} inAction - A boolean indicating the active state of the action.
+     * @private
      */
     public findObjectUnderMouse(
         objects: (NodeModel | ConnectorModel)[], action: Actions, inAction: boolean): IElement {
@@ -3906,6 +3907,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
      * @param {boolean} inAction - A boolean indicating the active state of the action.
      * @param {PointModel} position - The PointModel that defines the position
      * @param {IElement} source - Representing the source element.
+     * @private
      */
     public findTargetObjectUnderMouse(
         objects: (NodeModel | ConnectorModel)[], action: Actions, inAction: boolean, position: PointModel, source?: IElement): IElement {

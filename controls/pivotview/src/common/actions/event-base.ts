@@ -230,10 +230,24 @@ export class EventBase {
                     members = this.parent.dataType === 'olap' ? field.members :
                         PivotUtil.getFormattedMembers(field.members, fieldName, engineModule);
                 }
-                for (const item of filterObj.items) {
-                    if (members[item as string]) {
-                        isItemAvail = true;
-                        break;
+                const engine: PivotEngine = this.parent.engineModule as PivotEngine | undefined;
+                if (this.parent.isDateField && engine && (fieldName in engine.groupingFields)) {
+                    const captions: string[] = [];
+                    for (const key of Object.keys(members)) {
+                        captions.push(members[key as string].caption);
+                    }
+                    for (const item of filterObj.items) {
+                        if (captions.indexOf(item) !== -1) {
+                            isItemAvail = true;
+                            break;
+                        }
+                    }
+                } else {
+                    for (const item of filterObj.items) {
+                        if (members[item as string]) {
+                            isItemAvail = true;
+                            break;
+                        }
                     }
                 }
             }
@@ -580,10 +594,11 @@ export class EventBase {
         }
         const modifiedFieldName: string = fieldName.replace(/[^a-zA-Z0-9 ]/g, '_');
         for (const member of members) {
-            let memberName: string = member.actualText.toString();
+            const mActualText: string | number = member.actualText || '';
+            let memberName: string = mActualText.toString();
             memberName = this.parent.enableHtmlSanitizer ? SanitizeHtmlHelper.sanitize(memberName) : memberName;
             const actualText: string | number = this.parent.enableHtmlSanitizer ?
-                SanitizeHtmlHelper.sanitize(member.actualText as string) : member.actualText;
+                SanitizeHtmlHelper.sanitize(mActualText as string) : mActualText;
             const nodeAttr: { [key: string]: string } = { 'data-fieldName': fieldName, 'data-memberId': actualText.toString() };
             const obj: { [key: string]: Object } = {
                 id: modifiedFieldName + '_' + memberCount,
@@ -598,7 +613,7 @@ export class EventBase {
                 const isGroupedField: boolean = fieldName in this.parent.engineModule.groupingFields;
                 const useActualText: boolean = (this.parent.isDateField && !isGroupedField) ||
                     (this.parent.dataSourceSettings.mode === 'Server');
-                memberText = useActualText ? member.actualText : member.formattedText;
+                memberText = useActualText ? mActualText : member.formattedText;
             }
             if (filterObj[this.parent.isDateField ? memberText as string : memberName as string] !== undefined) {
                 obj.isSelected = isInclude ? true : false;

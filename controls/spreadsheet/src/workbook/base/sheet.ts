@@ -531,9 +531,10 @@ export function getMaxSheetId(sheets: SheetModel[]): number {
  * @param {Workbook} context - Specifies the context.
  * @param {SheetModel[]} sheet - Specifies the sheet.
  * @param {boolean} isImport - Specifies is Import or not.
+ * @param {boolean} isRefresh - Specifies if this is a refresh operation.
  * @returns {void} - To initiate sheet.
  */
-export function initSheet(context: Workbook, sheet?: SheetModel[], isImport?: boolean): void {
+export function initSheet(context: Workbook, sheet?: SheetModel[], isImport?: boolean, isRefresh?: boolean): void {
     const sheets: SheetModel[] = sheet ? sheet : context.sheets;
     sheets.forEach((sheet:  ExtendedSheet) => {
         sheet.id = sheet.id || 0;
@@ -566,7 +567,7 @@ export function initSheet(context: Workbook, sheet?: SheetModel[], isImport?: bo
                 sheet.frozenColumns ? indexes[1] + sheet.frozenColumns : indexes[1]));
         }
         processIdx(sheet.columns);
-        initRow(sheet, sheet.rows, isImport);
+        initRow(sheet, sheet.rows, isImport, isRefresh);
     });
     processIdx(sheets, true, context);
 }
@@ -585,9 +586,10 @@ export function initSheet(context: Workbook, sheet?: SheetModel[], isImport?: bo
  * Return a util function to push the cell comment into the sheet comments model.
  *
  * @param {ExtendedSheet} sheet - Specifies the sheet model.
+ * @param {boolean} isRefresh - Specifies if this is a refresh operation.
  * @returns {Function} - Return a util function to push the cell comment into the sheet comments model.
  */
-function processComments(sheet: ExtendedSheet): (cell: CellModel, rowIdx: number, colIdx: number) => void {
+function processComments(sheet: ExtendedSheet, isRefresh?: boolean): (cell: CellModel, rowIdx: number, colIdx: number) => void {
     return (cell: CellModel, rowIdx: number, colIdx: number): void => {
         const updatedThread: ExtendedThreadedCommentModel = { ...(cell.comment as ExtendedThreadedCommentModel) };
         if (!updatedThread.id) {
@@ -602,7 +604,9 @@ function processComments(sheet: ExtendedSheet): (cell: CellModel, rowIdx: number
             });
         }
         cell.comment = updatedThread;
-        sheet.comments.push(updatedThread);
+        if (!isRefresh || !sheet.comments.some((comment: ExtendedThreadedCommentModel) => comment.id === updatedThread.id)) {
+            sheet.comments.push(updatedThread);
+        }
     };
 }
 
@@ -610,9 +614,10 @@ function processComments(sheet: ExtendedSheet): (cell: CellModel, rowIdx: number
  * Return a util function to push the cell note into the sheet notes model.
  *
  * @param {ExtendedSheet} sheet - Specifies the sheet model.
+ * @param {boolean} isRefresh - Specifies if this is a refresh operation.
  * @returns {Function} - Return a util function to push the cell note into the sheet notes model.
  */
-function processNotes(sheet: ExtendedSheet): (cell: CellModel, rowIdx: number, colIdx: number) => void {
+function processNotes(sheet: ExtendedSheet, isRefresh?: boolean): (cell: CellModel, rowIdx: number, colIdx: number) => void {
     return (cell: CellModel, rowIdx: number, colIdx: number): void => {
         let updatedNote: ExtendedNoteModel;
         if (typeof cell.notes === 'string') {
@@ -640,7 +645,9 @@ function processNotes(sheet: ExtendedSheet): (cell: CellModel, rowIdx: number, c
             }
             cell.notes = updatedNote;
         }
-        sheet.notes.push(updatedNote);
+        if (!isRefresh || !sheet.notes.some((note: ExtendedNoteModel) => note.id === updatedNote.id)) {
+            sheet.notes.push(updatedNote);
+        }
     };
 }
 
@@ -648,9 +655,10 @@ function processNotes(sheet: ExtendedSheet): (cell: CellModel, rowIdx: number, c
  * @param {ExtendedSheet} sheet - Specifies the sheet.
  * @param {RowModel[]} rows - Specifies the rows.
  * @param {boolean} isImport - Specifies the operation is from Import or not.
+ * @param {boolean} isRefresh - Specifies if this is a refresh operation.
  * @returns {void} - Specifies the row.
  */
-function initRow(sheet: ExtendedSheet, rows: RowModel[], isImport?: boolean): void {
+function initRow(sheet: ExtendedSheet, rows: RowModel[], isImport?: boolean, isRefresh?: boolean): void {
     let processComment: Function; let processNote: Function;
     if (isImport) {
         if (!sheet.comments.length) {
@@ -660,8 +668,8 @@ function initRow(sheet: ExtendedSheet, rows: RowModel[], isImport?: boolean): vo
             processNote = processNotes(sheet);
         }
     } else {
-        processComment = processComments(sheet);
-        processNote = processNotes(sheet);
+        processComment = processComments(sheet, isRefresh);
+        processNote = processNotes(sheet, isRefresh);
     }
     let rowIdx: number = -1;
     rows.forEach((row: RowModel) => {

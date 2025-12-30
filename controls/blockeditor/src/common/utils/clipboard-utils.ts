@@ -113,17 +113,13 @@ export function isBlockLevelContent(container: HTMLElement): boolean {
 export function unWrapContainer(container: HTMLElement): HTMLElement {
     const firstChild: HTMLElement = container.firstElementChild as HTMLElement;
 
-    if (
-        container.childElementCount === 1 &&
-        firstChild.tagName === 'SPAN'
+    if (container.childElementCount === 1
+        && isBlockLevelContent(firstChild)
+        && (firstChild.tagName === 'SPAN' || firstChild.tagName === 'DIV')
     ) {
-        const innerHasBlock: boolean = isBlockLevelContent(firstChild);
-
-        if (innerHasBlock) {
-            const newContainer: HTMLElement = document.createElement('div');
-            Array.from(firstChild.childNodes).forEach((child: ChildNode) => newContainer.appendChild(child.cloneNode(true)));
-            return newContainer;
-        }
+        const newContainer: HTMLElement = document.createElement('div');
+        Array.from(firstChild.childNodes).forEach((child: ChildNode) => newContainer.appendChild(child.cloneNode(true)));
+        return newContainer;
     }
     return container;
 }

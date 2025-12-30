@@ -376,7 +376,7 @@ export class BlockRenderer {
             const { addedBlock, targetBlockModel, preventUIUpdate, isAfter, preventEventTrigger,
                 preventUpdateAction, forceIgnoreTargetUpdate } = options.state;
             const isIgnoredTypes: string[] = [BlockType.Callout, BlockType.CollapsibleHeading, BlockType.CollapsibleParagraph,
-                BlockType.Divider];
+                BlockType.Divider, BlockType.Image];
             const isIgnored: boolean = forceIgnoreTargetUpdate ||
                 (targetBlockModel && isIgnoredTypes.indexOf(targetBlockModel.blockType) !== -1);
 

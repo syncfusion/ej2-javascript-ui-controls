@@ -101,6 +101,11 @@ export class SpellCheckDialog {
             this.parent.spellCheckerModule.manageReplace('Ignore Once', this.elementBox);
             this.removeErrors();
             this.parent.spellCheckerModule.checkForNextError();
+            this.documentHelper.triggerSpellCheck = true;
+            if (!isNullOrUndefined(this.documentHelper.owner.editorModule)) {
+                this.documentHelper.owner.editorModule.reLayout(this.documentHelper.selection);
+            }
+            this.documentHelper.triggerSpellCheck = false;
             // this.documentHelper.hideDialog();
             hideSpinner(this.documentHelper.dialog.element);
         }
@@ -144,6 +149,11 @@ export class SpellCheckDialog {
             this.isSpellChecking = true;
             this.parent.spellCheckerModule.handleIgnoreAllItems({ element: this.elementBox, text: text });
             this.parent.spellCheckerModule.checkForNextError();
+            this.documentHelper.triggerSpellCheck = true;
+            if (!isNullOrUndefined(this.documentHelper.owner.editorModule)) {
+                this.documentHelper.owner.editorModule.reLayout(this.documentHelper.selection);
+            }
+            this.documentHelper.triggerSpellCheck = false;
             if (this.parent.spellCheckerModule.errorWordCollection.length === 0) {
                 this.documentHelper.hideDialog();
             }

@@ -2,7 +2,7 @@ import { isNullOrUndefined as isNOU } from '@syncfusion/ej2-base';
 import { BlockType, ContentType } from '../../../models/enums';
 import { DeletionType } from '../../../common/enums';
 import { BaseChildrenProp, BlockModel, ContentModel, TableCellModel, ITableBlockSettings, TableColumnModel } from '../../../models/index';
-import { getBlockContentElement, getBlockModelById, isNonContentEditableBlock } from '../../../common/utils/block';
+import { getAdjacentBlock, getBlockContentElement, getBlockModelById, isNonContentEditableBlock } from '../../../common/utils/block';
 import { IUndoRedoState, IMoveOperation, IBlockData, IAddOperation, IMoveBlocksInteraction, ITransformOperation, IMultiDeleteOperation, IClipboardPasteOperation, IDeleteBlockInteraction, IFromBlockData, IFormattingOperation } from '../../../common/interface';
 import { UndoRedoAction } from '../../actions/undo';
 import * as constants from '../../../common/constant';
@@ -10,7 +10,7 @@ import { actionType } from '../../../common/constant';
 import { setCursorPosition } from '../../../common/utils/selection';
 import { BlockManager } from '../../base/block-manager';
 import { decoupleReference, findCellById, getDataCell, getTableElements, sanitizeBlock, toDomRow } from '../../../common/index';
-import { ColMeta, IBulkColumnsDeleteOperation, IBulkRowsDeleteOperation, ITableCellsClearOperation, ITableCellsPasteOperation, ITableColumnInsertOptions, ITableHeaderInputOperation, ITableRowInsertOptions, PastedCellContext, RowMeta } from '../../base/interface';
+import { ColMeta, IBulkColumnsDeleteOperation, IBulkRowsDeleteOperation, ITableCellsClearOperation, ITableCellsPasteOperation, ITableColumnInsertOptions, ITableHeaderInputOperation, ITableRowInsertOptions, PastedCellContext, PayloadCell, RowMeta } from '../../base/interface';
 
 /**
  * Manages undo redo actions for the BlockEditor component
@@ -469,19 +469,13 @@ export class UndoRedoManager {
         if (!ctx) { return; }
         const { table } = ctx;
         const oldBlock: BlockModel = decoupleReference(getBlockModelById(data.blockId, this.parent.getEditorBlocks()));
-        if (this.undoRedoAction.isUndoing) {
-            data.cells.forEach((cell: { dataRow: number; dataCol: number; prevBlocks: BlockModel[] }) => {
-                this.parent.tableService.setCellBlocks(table, cell.dataRow, cell.dataCol, cell.prevBlocks);
-            });
-        } else {
-            data.cells.forEach((cell: { dataRow: number; dataCol: number; prevBlocks: BlockModel[] }) => {
-                this.parent.tableService.setCellBlocks(table, cell.dataRow, cell.dataCol, []);
-            });
-        }
+
+        const mode: 'clear' | 'restore' = this.undoRedoAction.isUndoing ? 'restore' : 'clear';
+        data.cells.forEach((cell: PayloadCell) => this.parent.tableService.applyCellChange(table, cell, mode));
+
         const updatedBlock: BlockModel = decoupleReference(getBlockModelById(data.blockId, this.parent.getEditorBlocks()));
         this.parent.tableService.triggerBlockUpdate(updatedBlock, oldBlock);
     }
-
 
     public handleTableCellsPasted(state: IUndoRedoState): void {
         const data: ITableCellsPasteOperation = state.data as ITableCellsPasteOperation;
@@ -657,7 +651,7 @@ export class UndoRedoManager {
                     preventEventTrigger: true
                 }});
             }
-            else if (!isPastedAtStart) {
+            else {
                 const pastedContentIds: Set<string> = new Set(clipboardBlocks[0].content.map((c: ContentModel) => c.id));
                 const newContent: ContentModel[] = targetBlock.content.filter((content: ContentModel) => !pastedContentIds.has(content.id));
                 this.parent.blockService.updateContent(targetBlock.id, newContent);
@@ -666,7 +660,9 @@ export class UndoRedoManager {
                     data: [ { block: targetBlock, oldBlock: oldTargetBlock } ],
                     preventEventTrigger: true
                 }});
-                this.undoRedoAction.applyNextUndoSibling();
+                if (!isSelectivePaste) {
+                    this.undoRedoAction.applyNextUndoSibling();
+                }
             }
         }
         else if (type === 'block') {
@@ -732,9 +728,11 @@ export class UndoRedoManager {
                     preventEventTrigger: true
                 }});
             }
-            else if (!isPastedAtStart && !isFirstBlkSpecialType) {
+            else if (!isFirstBlkSpecialType) {
                 isFirstBlkProcessed = true;
-                this.undoRedoAction.applyNextRedoSibling();
+                if (!isSelectivePaste) {
+                    this.undoRedoAction.applyNextRedoSibling();
+                }
 
                 const originalBlock: BlockModel = getBlockModelById(targetBlockId, this.parent.getEditorBlocks());
                 const originalClone: BlockModel = decoupleReference(sanitizeBlock(originalBlock));
@@ -832,7 +830,8 @@ export class UndoRedoManager {
             block: isSplitting ? blocksAfterSplit[1] : currentState.oldBlockModel,
             isAfter: deletedBLockIndex > 0,
             isUndoRedoAction: true,
-            preventEventTrigger: true
+            preventEventTrigger: true,
+            forceIgnoreTargetUpdate: true
         });
 
         if (isSplitting && blocksAfterSplit) {
@@ -906,7 +905,7 @@ export class UndoRedoManager {
             setCursorPosition(getBlockContentElement(targetBlockElement), newCursorPos);
         }
         else {
-            const adjacentBlock: HTMLElement = (blockElement.nextElementSibling || blockElement.previousElementSibling) as HTMLElement;
+            const adjacentBlock: HTMLElement = getAdjacentBlock(blockElement, 'next') || getAdjacentBlock(blockElement, 'previous');
             if (adjacentBlock) {
                 this.parent.setFocusAndUIForNewBlock(adjacentBlock);
             }

@@ -1549,7 +1549,7 @@ describe('UndoRedo', () => {
             done();
         });
 
-        it('Undo & Redo of transforming block paragraph into specialType', (done) => {
+        it('Undo & Redo of transforming empty paragraph into Divider', (done) => {
             let modelBlocks = editor.blocks;
             let domBlocks = editor.element.querySelectorAll<HTMLElement>('.e-block');
             const blockElement = editorElement.querySelector('#block1') as HTMLElement;
@@ -1677,6 +1677,266 @@ describe('UndoRedo', () => {
             expect(domBlocks[0].querySelector('p')).not.toBeNull();
             expect(domBlocks[1].querySelector('p')).toBeNull();
             expect(domBlocks[1].querySelector('hr')).not.toBeNull();
+            expect(domBlocks[2].querySelector('p')).not.toBeNull();
+            done();
+        });
+
+        it('Undo & Redo of transforming empty paragraph into Callout', (done) => {
+            let modelBlocks = editor.blocks;
+            let domBlocks = editor.element.querySelectorAll<HTMLElement>('.e-block');
+            const blockElement = editorElement.querySelector('#block1') as HTMLElement;
+            expect(blockElement).not.toBeNull();
+            const contentElement = getBlockContentElement(blockElement);
+            editor.blockManager.setFocusToBlock(blockElement);
+            setCursorPosition(contentElement, blockElement.textContent.length);
+            editorElement.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true }));
+
+            //ui change
+            modelBlocks = editor.blocks;
+            domBlocks = editor.element.querySelectorAll<HTMLElement>('.e-block');
+            expect(modelBlocks.length).toBe(2);
+            expect(modelBlocks[0].content[0].content).toBe('Hello world');
+            expect(domBlocks.length).toBe(2);
+            expect(domBlocks[0].textContent).toBe('Hello world');
+            expect(domBlocks[1].textContent).toBe('');
+            domBlocks = editor.element.querySelectorAll<HTMLElement>('.e-block');
+            const transFormBlockElement = domBlocks[1] as HTMLElement;
+            expect(transFormBlockElement).not.toBeNull();
+            const newContentElement = getBlockContentElement(transFormBlockElement);
+            setCursorPosition(newContentElement, 0);
+            newContentElement.textContent = '/' + newContentElement.textContent;
+            setCursorPosition(newContentElement, 1);
+            editor.blockManager.stateManager.updateContentOnUserTyping(transFormBlockElement);
+            editorElement.querySelector('.e-mention.e-editable-element').dispatchEvent(new KeyboardEvent('keyup', { key: '/', code: 'Slash', bubbles: true }));
+            const slashCommandElement = document.querySelector('.e-popup.e-blockeditor-command-menu') as HTMLElement;
+            expect(slashCommandElement).not.toBeNull();
+
+            // click heading li element inside the popup
+            const calloutEle = slashCommandElement.querySelector('li[data-value="Callout"]') as HTMLElement;
+            expect(calloutEle).not.toBeNull();
+            calloutEle.dispatchEvent(new MouseEvent('mousedown', { bubbles: true }));
+
+            //after transform
+            modelBlocks = editor.blocks;
+            domBlocks = editor.element.querySelectorAll('.e-block-container >.e-block');
+            expect(modelBlocks.length).toBe(3);
+            expect(modelBlocks[0].blockType).toBe(BlockType.Paragraph);
+            expect(modelBlocks[1].blockType).toBe(BlockType.Callout);
+            expect(modelBlocks[2].blockType).toBe(BlockType.Paragraph);
+            expect(domBlocks.length).toBe(3);
+            expect(domBlocks[0].querySelector('p')).not.toBeNull();
+            expect(domBlocks[1].querySelector('.e-callout-content')).not.toBeNull(); // Divider
+            expect(domBlocks[2].querySelector('p')).not.toBeNull();
+
+            //undo1
+            const undoEvent = new KeyboardEvent('keydown', { key: 'z', ctrlKey: true, code: 'KeyZ' });
+            editorElement.dispatchEvent(undoEvent);
+
+            //undo1 check
+            modelBlocks = editor.blocks;
+            domBlocks = editor.element.querySelectorAll('.e-block-container >.e-block');
+            expect(modelBlocks.length).toBe(2);
+            expect(modelBlocks[0].blockType).toBe(BlockType.Paragraph);
+            expect(modelBlocks[1].blockType).toBe(BlockType.Callout);
+            expect(domBlocks.length).toBe(2);
+            expect(domBlocks[0].querySelector('p')).not.toBeNull();
+            expect(domBlocks[1].querySelector('.e-callout-content')).not.toBeNull();
+
+            //undo2
+            editorElement.dispatchEvent(undoEvent);
+
+            //undo2 check
+            modelBlocks = editor.blocks;
+            domBlocks = editor.element.querySelectorAll('.e-block-container >.e-block');
+            expect(modelBlocks.length).toBe(2);
+            expect(modelBlocks[0].blockType).toBe(BlockType.Paragraph);
+            expect(modelBlocks[1].blockType).toBe(BlockType.Paragraph);
+            expect(domBlocks.length).toBe(2);
+            expect(domBlocks[0].querySelector('p')).not.toBeNull();
+            expect(domBlocks[1].querySelector('.e-callout-content')).toBeNull();
+            expect(domBlocks[1].querySelector('p')).not.toBeNull();
+
+            //undo3
+            editorElement.dispatchEvent(undoEvent);
+
+            //undo3 check
+            modelBlocks = editor.blocks;
+            domBlocks = editor.element.querySelectorAll('.e-block-container >.e-block');
+            expect(modelBlocks.length).toBe(1);
+            expect(modelBlocks[0].blockType).toBe(BlockType.Paragraph);
+            expect(domBlocks.length).toBe(1);
+            expect(domBlocks[0].querySelector('p')).not.toBeNull()
+
+            // Redo1 to remove the last added empty paragraph block
+            const redoEvent = new KeyboardEvent('keydown', { key: 'y', ctrlKey: true, code: 'KeyY' });
+            editorElement.dispatchEvent(redoEvent);
+
+            //redo1 check
+            modelBlocks = editor.blocks;
+            domBlocks = editor.element.querySelectorAll('.e-block-container >.e-block');
+            expect(modelBlocks.length).toBe(2);
+            expect(modelBlocks[0].blockType).toBe(BlockType.Paragraph);
+            expect(modelBlocks[1].blockType).toBe(BlockType.Paragraph);
+            expect(domBlocks.length).toBe(2);
+            expect(domBlocks[0].querySelector('p')).not.toBeNull();
+            expect(domBlocks[1].querySelector('p')).not.toBeNull()
+
+            // Redo2 to transform paragraph into divider block
+            editorElement.dispatchEvent(redoEvent);
+
+            //redo2 check
+            modelBlocks = editor.blocks;
+            domBlocks = editor.element.querySelectorAll('.e-block-container >.e-block');
+            expect(modelBlocks.length).toBe(2);
+            expect(modelBlocks[0].blockType).toBe(BlockType.Paragraph);
+            expect(modelBlocks[1].blockType).toBe(BlockType.Callout);
+            expect(domBlocks.length).toBe(2);
+            expect(domBlocks[0].querySelector('p')).not.toBeNull();
+            expect(domBlocks[1].querySelector('.e-callout-content')).not.toBeNull();
+
+            // Redo3 to add a new paragraph block
+            editorElement.dispatchEvent(redoEvent);
+
+            //redo3 check
+            modelBlocks = editor.blocks;
+            domBlocks = editor.element.querySelectorAll('.e-block-container >.e-block');
+            expect(modelBlocks.length).toBe(3);
+            expect(modelBlocks[0].blockType).toBe(BlockType.Paragraph);
+            expect(modelBlocks[1].blockType).toBe(BlockType.Callout);
+            expect(modelBlocks[2].blockType).toBe(BlockType.Paragraph);
+            expect(domBlocks.length).toBe(3);
+            expect(domBlocks[0].querySelector('p')).not.toBeNull();
+            expect(domBlocks[1].querySelector('.e-callout-content')).not.toBeNull();
+            expect(domBlocks[2].querySelector('p')).not.toBeNull();
+            done();
+        });
+
+        it('Undo & Redo of transforming empty paragraph into Table', (done) => {
+            let modelBlocks = editor.blocks;
+            let domBlocks = editor.element.querySelectorAll<HTMLElement>('.e-block');
+            const blockElement = editorElement.querySelector('#block1') as HTMLElement;
+            expect(blockElement).not.toBeNull();
+            const contentElement = getBlockContentElement(blockElement);
+            editor.blockManager.setFocusToBlock(blockElement);
+            setCursorPosition(contentElement, blockElement.textContent.length);
+            editorElement.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true }));
+
+            //ui change
+            modelBlocks = editor.blocks;
+            domBlocks = editor.element.querySelectorAll<HTMLElement>('.e-block');
+            expect(modelBlocks.length).toBe(2);
+            expect(modelBlocks[0].content[0].content).toBe('Hello world');
+            expect(domBlocks.length).toBe(2);
+            expect(domBlocks[0].textContent).toBe('Hello world');
+            expect(domBlocks[1].textContent).toBe('');
+            domBlocks = editor.element.querySelectorAll<HTMLElement>('.e-block');
+            const transFormBlockElement = domBlocks[1] as HTMLElement;
+            expect(transFormBlockElement).not.toBeNull();
+            const newContentElement = getBlockContentElement(transFormBlockElement);
+            setCursorPosition(newContentElement, 0);
+            newContentElement.textContent = '/' + newContentElement.textContent;
+            setCursorPosition(newContentElement, 1);
+            editor.blockManager.stateManager.updateContentOnUserTyping(transFormBlockElement);
+            editorElement.querySelector('.e-mention.e-editable-element').dispatchEvent(new KeyboardEvent('keyup', { key: '/', code: 'Slash', bubbles: true }));
+            const slashCommandElement = document.querySelector('.e-popup.e-blockeditor-command-menu') as HTMLElement;
+            expect(slashCommandElement).not.toBeNull();
+
+            // click heading li element inside the popup
+            const tableEle = slashCommandElement.querySelector('li[data-value="Table"]') as HTMLElement;
+            expect(tableEle).not.toBeNull();
+            tableEle.dispatchEvent(new MouseEvent('mousedown', { bubbles: true }));
+
+            //after transform
+            modelBlocks = editor.blocks;
+            domBlocks = editor.element.querySelectorAll('.e-block-container >.e-block');
+            expect(modelBlocks.length).toBe(3);
+            expect(modelBlocks[0].blockType).toBe(BlockType.Paragraph);
+            expect(modelBlocks[1].blockType).toBe(BlockType.Table);
+            expect(modelBlocks[2].blockType).toBe(BlockType.Paragraph);
+            expect(domBlocks.length).toBe(3);
+            expect(domBlocks[0].querySelector('p')).not.toBeNull();
+            expect(domBlocks[1].querySelector('table')).not.toBeNull(); // Divider
+            expect(domBlocks[2].querySelector('p')).not.toBeNull();
+
+            //undo1
+            const undoEvent = new KeyboardEvent('keydown', { key: 'z', ctrlKey: true, code: 'KeyZ' });
+            editorElement.dispatchEvent(undoEvent);
+
+            //undo1 check
+            modelBlocks = editor.blocks;
+            domBlocks = editor.element.querySelectorAll('.e-block-container >.e-block');
+            expect(modelBlocks.length).toBe(2);
+            expect(modelBlocks[0].blockType).toBe(BlockType.Paragraph);
+            expect(modelBlocks[1].blockType).toBe(BlockType.Table);
+            expect(domBlocks.length).toBe(2);
+            expect(domBlocks[0].querySelector('p')).not.toBeNull();
+            expect(domBlocks[1].querySelector('table')).not.toBeNull();
+
+            //undo2
+            editorElement.dispatchEvent(undoEvent);
+
+            //undo2 check
+            modelBlocks = editor.blocks;
+            domBlocks = editor.element.querySelectorAll('.e-block-container >.e-block');
+            expect(modelBlocks.length).toBe(2);
+            expect(modelBlocks[0].blockType).toBe(BlockType.Paragraph);
+            expect(modelBlocks[1].blockType).toBe(BlockType.Paragraph);
+            expect(domBlocks.length).toBe(2);
+            expect(domBlocks[0].querySelector('p')).not.toBeNull();
+            expect(domBlocks[1].querySelector('table')).toBeNull();
+            expect(domBlocks[1].querySelector('p')).not.toBeNull();
+
+            //undo3
+            editorElement.dispatchEvent(undoEvent);
+
+            //undo3 check
+            modelBlocks = editor.blocks;
+            domBlocks = editor.element.querySelectorAll('.e-block-container >.e-block');
+            expect(modelBlocks.length).toBe(1);
+            expect(modelBlocks[0].blockType).toBe(BlockType.Paragraph);
+            expect(domBlocks.length).toBe(1);
+            expect(domBlocks[0].querySelector('p')).not.toBeNull()
+
+            // Redo1 to remove the last added empty paragraph block
+            const redoEvent = new KeyboardEvent('keydown', { key: 'y', ctrlKey: true, code: 'KeyY' });
+            editorElement.dispatchEvent(redoEvent);
+
+            //redo1 check
+            modelBlocks = editor.blocks;
+            domBlocks = editor.element.querySelectorAll('.e-block-container >.e-block');
+            expect(modelBlocks.length).toBe(2);
+            expect(modelBlocks[0].blockType).toBe(BlockType.Paragraph);
+            expect(modelBlocks[1].blockType).toBe(BlockType.Paragraph);
+            expect(domBlocks.length).toBe(2);
+            expect(domBlocks[0].querySelector('p')).not.toBeNull();
+            expect(domBlocks[1].querySelector('p')).not.toBeNull()
+
+            // Redo2 to transform paragraph into divider block
+            editorElement.dispatchEvent(redoEvent);
+
+            //redo2 check
+            modelBlocks = editor.blocks;
+            domBlocks = editor.element.querySelectorAll('.e-block-container >.e-block');
+            expect(modelBlocks.length).toBe(2);
+            expect(modelBlocks[0].blockType).toBe(BlockType.Paragraph);
+            expect(modelBlocks[1].blockType).toBe(BlockType.Table);
+            expect(domBlocks.length).toBe(2);
+            expect(domBlocks[0].querySelector('p')).not.toBeNull();
+            expect(domBlocks[1].querySelector('table')).not.toBeNull();
+
+            // Redo3 to add a new paragraph block
+            editorElement.dispatchEvent(redoEvent);
+
+            //redo3 check
+            modelBlocks = editor.blocks;
+            domBlocks = editor.element.querySelectorAll('.e-block-container >.e-block');
+            expect(modelBlocks.length).toBe(3);
+            expect(modelBlocks[0].blockType).toBe(BlockType.Paragraph);
+            expect(modelBlocks[1].blockType).toBe(BlockType.Table);
+            expect(modelBlocks[2].blockType).toBe(BlockType.Paragraph);
+            expect(domBlocks.length).toBe(3);
+            expect(domBlocks[0].querySelector('p')).not.toBeNull();
+            expect(domBlocks[1].querySelector('table')).not.toBeNull();
             expect(domBlocks[2].querySelector('p')).not.toBeNull();
             done();
         });
@@ -2076,12 +2336,12 @@ describe('UndoRedo', () => {
             expect(modelBlocks.length).toBe(4);
             expect(domBlocks.length).toBe(4);
             expect(modelBlocks[0].content[0].content).toBe('First paragraph');
-            expect(modelBlocks[1].content[0].content).toBe('First paragraph');
-            expect(modelBlocks[2].content[0].content).toBe('Second paragraph');
+            expect(modelBlocks[1].content[0].content).toBe('Second paragraph');
+            expect(modelBlocks[2].content[0].content).toBe('First paragraph');
             expect(modelBlocks[3].content[0].content).toBe('Second paragraph');
             expect(domBlocks[0].querySelector('p').textContent).toBe('First paragraph');
-            expect(domBlocks[1].querySelector('p').textContent).toBe('First paragraph');
-            expect(domBlocks[2].querySelector('p').textContent).toBe('Second paragraph');
+            expect(domBlocks[1].querySelector('p').textContent).toBe('Second paragraph');
+            expect(domBlocks[2].querySelector('p').textContent).toBe('First paragraph');
             expect(domBlocks[3].querySelector('p').textContent).toBe('Second paragraph');
 
             //undo
@@ -2104,13 +2364,13 @@ describe('UndoRedo', () => {
             domBlocks = editor.element.querySelectorAll<HTMLElement>('.e-block');
             expect(modelBlocks.length).toBe(4);
             expect(domBlocks.length).toBe(4);
-            expect(modelBlocks[0].content[0].content).toBe('First paragraph');
-            expect(modelBlocks[1].content[0].content).toBe('First paragraph');
-            expect(modelBlocks[2].content[0].content).toBe('Second paragraph');
+            expect(modelBlocks[0].content[1].content).toBe('First paragraph');
+            expect(modelBlocks[1].content[0].content).toBe('Second paragraph');
+            expect(modelBlocks[2].content[0].content).toBe('First paragraph');
             expect(modelBlocks[3].content[0].content).toBe('Second paragraph');
             expect(domBlocks[0].querySelector('p').textContent).toBe('First paragraph');
-            expect(domBlocks[1].querySelector('p').textContent).toBe('First paragraph');
-            expect(domBlocks[2].querySelector('p').textContent).toBe('Second paragraph');
+            expect(domBlocks[1].querySelector('p').textContent).toBe('Second paragraph');
+            expect(domBlocks[2].querySelector('p').textContent).toBe('First paragraph');
             expect(domBlocks[3].querySelector('p').textContent).toBe('Second paragraph');
             done();
         });

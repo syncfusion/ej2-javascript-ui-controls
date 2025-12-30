@@ -71,6 +71,24 @@ describe('Block Action Menu', () => {
             }, 200);
         });
 
+        it('should hide action popup on document click', (done) => {
+            const blockElement = editor.element.querySelector('#paragraph1') as HTMLElement;
+            editor.blockManager.setFocusToBlock(blockElement);
+            triggerMouseMove(blockElement, 10, 10);
+            const dragIcon = editor.floatingIconRenderer.floatingIconContainer.querySelector('.e-block-drag-icon') as HTMLElement;
+            expect(dragIcon).not.toBeNull();
+            dragIcon.click();
+            setTimeout(() => {
+                const popup = document.querySelector('.e-blockeditor-blockaction-popup');
+                expect(popup).not.toBeNull();
+                blockElement.dispatchEvent(new MouseEvent('mousedown', { bubbles: true }));
+                setTimeout(() => {
+                    expect(popup.classList.contains('e-popup-close')).toBe(true);
+                    done();
+                }, 50);
+            }, 50);
+        });
+
         it('should duplicate the block properly', (done) => {
             let domBlocks = editor.element.querySelectorAll<HTMLElement>('.e-block');
             let modelBlocks = editor.blocks;

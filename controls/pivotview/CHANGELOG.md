@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 32.1.21 (2025-12-30)
+
+### Pivot Table
+
+#### Bug Fixes
+
+- `I790108` - Pivot Table filtering now functions correctly, even when date grouping members include empty strings.
+
 ## 32.1.20 (2025-12-23)
 
 ### Pivot Table

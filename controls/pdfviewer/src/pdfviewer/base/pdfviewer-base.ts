@@ -4626,7 +4626,8 @@ export class PdfViewerBase {
                 this.pdfViewer.toolbar.annotationToolbarModule.enableSignaturePropertiesTools(isEnable);
             } else {
                 if (this.pdfViewer.selectedItems.annotations.length === 1 &&
-                    this.pdfViewer.selectedItems.annotations[0].formFieldAnnotationType === null) {
+                    this.pdfViewer.selectedItems.annotations[0].formFieldAnnotationType === null &&
+                    this.pdfViewer.selectedItems.annotations[0].shapeAnnotationType !== 'Redaction') {
                     this.pdfViewer.toolbar.annotationToolbarModule.enableAnnotationPropertiesTools(isEnable);
                 }
             }
@@ -5712,8 +5713,10 @@ export class PdfViewerBase {
                             this.eventArgs.source = lastValue;
                         }
                     }
-                    this.diagramMouseUp(event);
-                    this.isAnnotationAdded = true;
+                    if (this.isAnnotationDrawn && (this.action !== 'Ink' && this.action !== 'DrawTool' && this.action !== 'Rotate')) {
+                        this.diagramMouseUp(event);
+                        this.isAnnotationAdded = true;
+                    }
                 }
             }
             if (this.pdfViewer.enableStampAnnotations) {
@@ -6328,6 +6331,10 @@ export class PdfViewerBase {
      */
     private viewerContainerOnTouchStart = (event: TouchEvent): void => {
         const touchPoints: TouchList = event.touches;
+        if (this.pdfViewer.enableDesktopMode && Browser.isDevice) {
+            // Get current action
+            this.action = this.findToolToActivate(null, this.getMousePosition(event));
+        }
         if (this.pdfViewer.magnificationModule) {
             this.pdfViewer.magnificationModule.setTouchPoints(touchPoints[0].clientX, touchPoints[0].clientY);
         }
@@ -8557,10 +8564,13 @@ export class PdfViewerBase {
                     }, timer);
             }
         }
-        // Commented out this line to prevent the comment panel from scrolling to the top. #995423
-        // if (this.pdfViewer.annotation && this.navigationPane.commentPanelContainer) {
-        //     this.pdfViewer.annotation.stickyNotesAnnotationModule.updateCommentPanelScrollTop(this.currentPageNumber);
-        // }
+        if (this.pdfViewer.annotation && this.navigationPane.commentPanelContainer &&
+            !this.pdfViewer.annotation.stickyNotesAnnotationModule.isAnnotCommentClicked) {
+            this.pdfViewer.annotation.stickyNotesAnnotationModule.updateCommentPanelScrollTop(this.currentPageNumber);
+        }
+        if (this.pdfViewer.annotation && this.pdfViewer.annotation.stickyNotesAnnotationModule) {
+            this.pdfViewer.annotation.stickyNotesAnnotationModule.isAnnotCommentClicked = false;
+        }
         if ((Browser.isDevice && !this.pdfViewer.enableDesktopMode) && event.touches && event.touches[0].target.className !== 'e-pv-touch-ellipse') {
             setTimeout(
                 () => {
@@ -11571,6 +11581,8 @@ export class PdfViewerBase {
             eventTarget.style.cursor = 'crosshair';
         } else if (this.tool instanceof MoveTool) {
             eventTarget.style.cursor = 'move';
+        } else if (this.tool instanceof RotateTool) {
+            eventTarget.style.cursor = 'grab';
         }
         else if (this.tool instanceof NodeDrawingTool || this.tool instanceof LineTool ||
             this.tool instanceof PolygonDrawingTool || (freeTextAnnotModule && freeTextAnnotModule.isNewAddedAnnot) ||

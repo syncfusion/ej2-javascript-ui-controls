@@ -43,6 +43,18 @@ export function isNodeInsideElement(node: Node, container: HTMLElement): boolean
 }
 
 /**
+ * Renders the given string in a temp element and returns the Dom text node.
+ *
+ * @param {string} content - The content to render
+ * @returns {Node} - Rendered dom text node
+ */
+export function getDomTextNode(content: string): Node {
+    const temp: HTMLElement = document.createElement('div');
+    temp.innerHTML = content;
+    return temp.childNodes[0];
+}
+
+/**
  * Creates formatting element based on the content model.
  *
  * @param {ContentModel} content - Content model.
@@ -50,15 +62,17 @@ export function isNodeInsideElement(node: Node, container: HTMLElement): boolean
  * @returns {HTMLElement} - Returns the formatted element.
  *
  */
-export function createFormattingElement(
-    content: ContentModel,
-    value?: string | LinkData): HTMLElement {
-    let formattedElement: Node = document.createTextNode(content.content);
+export function createFormattingElement(content: ContentModel, value?: string | LinkData): HTMLElement {
+    const isInlineCode: boolean = (content.properties as BaseStylesProp).styles.inlineCode as boolean;
+    const textNode: Node = document.createTextNode(content.content);
     const isLinkType: boolean = content.contentType === ContentType.Link;
-
-    // Apply styles based on recorded style order
     const styles: Partial<Record<keyof StyleModel, string | boolean>> = (content.properties as BaseStylesProp).styles || {};
     const keys: string[] = Object.keys(styles);
+
+    // For code: preserve raw entities (&lt;, &gt;, &nbsp;, etc.)
+    // For normal text: decode entities (allow &nbsp; → space)
+    let formattedElement: Node = isInlineCode ? (textNode) : (getDomTextNode(content.content) || textNode);
+
     if (keys.length > 0) {
         for (const styleType of keys) {
             switch (styleType.toLowerCase()) {
@@ -88,7 +102,6 @@ export function createFormattingElement(
             case 'backgroundcolor':
             case 'uppercase':
             case 'lowercase':
-            case 'custom':
                 {
                     const val: string | boolean = styles[styleType as keyof StyleModel];
                     formattedElement = wrapNodeWithSpan(formattedElement, styleType, val);
@@ -98,9 +111,7 @@ export function createFormattingElement(
         }
     } else if (!isLinkType) {
         // No style applied, wrap in <span>
-        const span: HTMLSpanElement = createElement('span');
-        span.appendChild(formattedElement);
-        formattedElement = span;
+        formattedElement = wrapNodeWithSpan(formattedElement, '', '');
     }
     if (isLinkType) {
         const linkData: LinkData = value as LinkData;
@@ -157,9 +168,6 @@ export function wrapNodeWithSpan(node: Node, styleType: string, value: string | 
         break;
     case 'lowercase':
         updateCSSText(span, `text-transform: ${value ? 'lowercase' : 'none'};`);
-        break;
-    case 'custom':
-        updateCSSText(span, value as string);
         break;
     }
 

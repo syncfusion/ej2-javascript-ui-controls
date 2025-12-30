@@ -1097,7 +1097,8 @@ export function getDatePredicate(filterObject: PredicateModel, type?: string): P
     const value: Date = new Date(filterObject.value as string);
     if (type === 'dateonly') {
         if (typeof (prevObj.value) === 'string') {
-            prevObj.value = new Date(prevObj.value);
+            const arr: string[] = (prevObj.value as string).split(/[^0-9.]/);
+            prevObj.value = new Date(parseInt(arr[0], 10), parseInt(arr[1], 10) - 1, parseInt(arr[2], 10));
         }
         const dateOnlyString: string = (prevObj.value as Date).getFullYear() + '-' + padZero((prevObj.value as Date).getMonth() + 1) + '-' + padZero((prevObj.value as Date).getDate());
         const predicates: Predicate = new Predicate(prevObj.field, prevObj.operator, dateOnlyString, false);

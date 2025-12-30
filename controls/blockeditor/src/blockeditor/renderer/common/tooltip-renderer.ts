@@ -35,7 +35,8 @@ export class TooltipRenderer {
             locale: this.editor.locale,
             cssClass: (args.cssClass + (this.editor.cssClass ? (' ' + this.editor.cssClass) : '')),
             enableRtl: this.editor.enableRtl,
-            enablePersistence: this.editor.enablePersistence
+            enablePersistence: this.editor.enablePersistence,
+            opensOn: 'Hover'
         };
         if (args.content) {
             tooltipOptions.content = args.content;

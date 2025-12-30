@@ -1255,7 +1255,7 @@ export class AnnotationToolbar {
         // eslint-disable-next-line
         const proxy: any = this;
         let items: ItemModel[] = [];
-        if (this.pdfViewer.handWrittenSignatureSettings ||
+        if (!this.pdfViewer.handWrittenSignatureSettings ||
             this.pdfViewer.handWrittenSignatureSettings.signatureItem.length === 0 ||
             this.pdfViewer.handWrittenSignatureSettings.signatureItem.length === 2) {
             items = [
@@ -3653,6 +3653,7 @@ export class AnnotationToolbar {
             this.pdfViewer.tool = '';
             if (!Browser.isDevice || this.pdfViewer.enableDesktopMode) {
                 this.pdfViewer.tool = '';
+                this.pdfViewerBase.isToolbarInkClicked = false;
                 this.resetFreeTextAnnot();
                 this.showPropertiesTools('highlight');
                 this.handleHighlight();
@@ -4133,6 +4134,10 @@ export class AnnotationToolbar {
             if (isRedaction) {
                 this.pdfViewer.toolbarModule.redactionToolbarModule.showRedactionToolbar(this.pdfViewer.toolbarModule.redactionItem);
             }
+        } else {
+            if (isRedaction) {
+                this.pdfViewer.toolbarModule.redactionToolbarModule.showRedactionToolbar(this.pdfViewer.toolbarModule.redactionItem);
+            }
         }
     }
 
@@ -4260,10 +4265,10 @@ export class AnnotationToolbar {
                 this.showOpacityEditTool(false, opacityIndex, opacityIndex);
             }
             if (annotationToolbarItems.indexOf('AnnotationDeleteTool') !== -1) {
-                const deleteIndex: number = this.getIndexByCssClass('e-pv-delete-template-container');
+                const deleteIndex: number = this.getIndexByClassName('e-pv-annotation-delete-container');
                 this.showAnnotationDeleteTool(true, deleteIndex, deleteIndex);
             } else {
-                const deleteIndex: number = this.getIndexByCssClass('e-pv-delete-template-container');
+                const deleteIndex: number = this.getIndexByClassName('e-pv-annotation-delete-container');
                 this.showAnnotationDeleteTool(false, deleteIndex, deleteIndex);
             }
             if (annotationToolbarItems.indexOf('StampAnnotationTool') !== -1) {
@@ -4488,9 +4493,24 @@ export class AnnotationToolbar {
         if ((!this.isHighlightBtnVisible && !this.isUnderlineBtnVisible && !this.isStrikethroughBtnVisible && !this.isSquigglyBtnVisible)) {
             const highlightSeparator: number = this.getIndexByCssClass('e-pv-hightlight-separator-container');
             this.applyHideToToolbar(false, highlightSeparator, highlightSeparator);
-
+        }
+        else if (this.isshowTextMarkUpSeparator()) {
+            const highlightSeparator: number = this.getIndexByCssClass('e-pv-hightlight-separator-container');
+            this.applyHideToToolbar(true, highlightSeparator, highlightSeparator);
+        }
+        else {
+            const highlightSeparator: number = this.getIndexByCssClass('e-pv-hightlight-separator-container');
+            this.applyHideToToolbar(false, highlightSeparator, highlightSeparator);
         }
         if (!this.isShapeBtnVisible) {
+            const shapeSeparator: number = this.getIndexByCssClass('e-pv-shape-separator-container');
+            this.applyHideToToolbar(false, shapeSeparator, shapeSeparator);
+        }
+        else if (this.isshowShapeSeparator()) {
+            const shapeSeparator: number = this.getIndexByCssClass('e-pv-shape-separator-container');
+            this.applyHideToToolbar(true, shapeSeparator, shapeSeparator);
+        }
+        else {
             const shapeSeparator: number = this.getIndexByCssClass('e-pv-shape-separator-container');
             this.applyHideToToolbar(false, shapeSeparator, shapeSeparator);
         }
@@ -4498,19 +4518,60 @@ export class AnnotationToolbar {
             const calibrateSeparator: number = this.getIndexByCssClass('e-pv-calibrate-separator-container');
             this.applyHideToToolbar(false, calibrateSeparator, calibrateSeparator);
         }
+        else if (this.isshowCalibrateSeparator()) {
+            const calibrateSeparator: number = this.getIndexByCssClass('e-pv-calibrate-separator-container');
+            this.applyHideToToolbar(true, calibrateSeparator, calibrateSeparator);
+        }
+        else {
+            const calibrateSeparator: number = this.getIndexByCssClass('e-pv-calibrate-separator-container');
+            this.applyHideToToolbar(false, calibrateSeparator, calibrateSeparator);
+        }
         if (!this.isFreeTextBtnVisible) {
             const freeTextSeparator: number = this.getIndexByCssClass('e-pv-freetext-separator-container');
             this.applyHideToToolbar(false, freeTextSeparator, freeTextSeparator);
+        }
+        else if (this.isshowFreeTextSeparator()) {
+            const freeTextSeparator: number = this.getIndexByCssClass('e-pv-freetext-separator-container');
+            this.applyHideToToolbar(true, freeTextSeparator, freeTextSeparator);
+        }
+        else {
+            const calibrateSeparator: number = this.getIndexByCssClass('e-pv-calibrate-separator-container');
+            this.applyHideToToolbar(false, calibrateSeparator, calibrateSeparator);
         }
         if (!this.isStampBtnVisible) {
             const stampSeparator: number = this.getIndexByCssClass('e-pv-stamp-separator-container');
             this.applyHideToToolbar(false, stampSeparator, stampSeparator);
         }
+        else if (this.isshowStampSeparator()) {
+            const stampSeparator: number = this.getIndexByCssClass('e-pv-stamp-separator-container');
+            this.applyHideToToolbar(true, stampSeparator, stampSeparator);
+        }
+        else {
+            const stampSeparator: number = this.getIndexByCssClass('e-pv-stamp-separator-container');
+            this.applyHideToToolbar(false, stampSeparator, stampSeparator);
+
+        }
         if (!this.isSignatureBtnVisible) {
             const signatureSeparator: number = this.getIndexByCssClass('e-pv-sign-separator-container');
             this.applyHideToToolbar(false, signatureSeparator, signatureSeparator);
         }
+        else if (this.isshowHandWrittenSeparator()) {
+            const signatureSeparator: number = this.getIndexByCssClass('e-pv-sign-separator-container');
+            this.applyHideToToolbar(true, signatureSeparator, signatureSeparator);
+        }
+        else {
+            const signatureSeparator: number = this.getIndexByCssClass('e-pv-sign-separator-container');
+            this.applyHideToToolbar(false, signatureSeparator, signatureSeparator);
+        }
         if (!this.isInkBtnVisible) {
+            const inkSeparator: number = this.getIndexByCssClass('e-pv-ink-separator-container');
+            this.applyHideToToolbar(false, inkSeparator, inkSeparator);
+        }
+        else if (this.isshowInkSeparator()) {
+            const inkSeparator: number = this.getIndexByCssClass('e-pv-ink-separator-container');
+            this.applyHideToToolbar(true, inkSeparator, inkSeparator);
+        }
+        else {
             const inkSeparator: number = this.getIndexByCssClass('e-pv-ink-separator-container');
             this.applyHideToToolbar(false, inkSeparator, inkSeparator);
         }
@@ -4519,11 +4580,92 @@ export class AnnotationToolbar {
             const textSeparator: number = this.getIndexByCssClass('e-pv-text-separator-container');
             this.applyHideToToolbar(false, textSeparator, textSeparator);
         }
+        else {
+            const textSeparator: number = this.getIndexByCssClass('e-pv-text-separator-container');
+            this.applyHideToToolbar(true, textSeparator, textSeparator);
+        }
         if ((!this.isColorToolVisible && !this.isStrokeColorToolVisible && !this.isThicknessToolVisible &&
             !this.isOpacityToolVisible) || !this.isDeleteAnnotationToolVisible) {
             const propertiesSeparator: number = this.getIndexByCssClass('e-pv-opacity-separator-container');
             this.applyHideToToolbar(false, propertiesSeparator, propertiesSeparator);
         }
+        else {
+            const propertiesSeparator: number = this.getIndexByCssClass('e-pv-opacity-separator-container');
+            this.applyHideToToolbar(true, propertiesSeparator, propertiesSeparator);
+        }
+    }
+
+    private hasAny(items: string[], tools: string[]): boolean {
+        // Return true if any tool exists in items
+        return tools.some((tool: string) => items.indexOf(tool) !== -1);
+    }
+
+    private isshowTextMarkUpSeparator(): boolean {
+        const items: any = this.pdfViewer.toolbarSettings.annotationToolbarItems as string[];
+        // FIX: always compare indexOf(...) !== -1
+        return this.hasAny(items, [
+            'ShapeTool',
+            'CalibrateTool',
+            'FreeTextAnnotationTool',
+            'StampAnnotationTool',
+            'HandWrittenSignatureTool',
+            'InkAnnotationTool',
+            'AnnotationDeleteTool'
+        ]);
+    }
+
+    private isshowShapeSeparator(): boolean {
+        const items: any = this.pdfViewer.toolbarSettings.annotationToolbarItems as string[];
+        return this.hasAny(items, [
+            'CalibrateTool',
+            'FreeTextAnnotationTool',
+            'StampAnnotationTool',
+            'HandWrittenSignatureTool',
+            'InkAnnotationTool',
+            'AnnotationDeleteTool'
+        ]);
+    }
+
+    private isshowCalibrateSeparator(): boolean {
+        const items: any = this.pdfViewer.toolbarSettings.annotationToolbarItems as string[];
+        return this.hasAny(items, [
+            'FreeTextAnnotationTool',
+            'StampAnnotationTool',
+            'HandWrittenSignatureTool',
+            'InkAnnotationTool',
+            'AnnotationDeleteTool'
+        ]);
+    }
+
+    private isshowFreeTextSeparator(): boolean {
+        const items: any = this.pdfViewer.toolbarSettings.annotationToolbarItems as string[];
+        return this.hasAny(items, [
+            'StampAnnotationTool',
+            'HandWrittenSignatureTool',
+            'InkAnnotationTool',
+            'AnnotationDeleteTool'
+        ]);
+    }
+
+    private isshowStampSeparator(): boolean {
+        const items: any = this.pdfViewer.toolbarSettings.annotationToolbarItems as string[];
+        return this.hasAny(items, [
+            'HandWrittenSignatureTool',
+            'InkAnnotationTool', 'AnnotationDeleteTool'
+        ]);
+    }
+
+    private isshowHandWrittenSeparator(): boolean {
+        const items: any = this.pdfViewer.toolbarSettings.annotationToolbarItems as string[];
+        return this.hasAny(items, [
+            'InkAnnotationTool', 'AnnotationDeleteTool'
+        ]);
+    }
+    private isshowInkSeparator(): boolean {
+        const items: any = this.pdfViewer.toolbarSettings.annotationToolbarItems as string[];
+        return this.hasAny(items, [
+            'AnnotationDeleteTool'
+        ]);
     }
 
     private showHighlightTool(isShow: boolean, startIndex: number, endIndex: number): void {
@@ -5050,7 +5192,7 @@ export class AnnotationToolbar {
             if (this.toolbar) {
                 if (isEnable) {
                     const annotation: any = this.pdfViewer.annotationModule.findCurrentAnnotation();
-                    if (annotation) {
+                    if (annotation && annotation.shapeAnnotationType !== 'Redaction') {
                         if (annotation.annotationSettings && annotation.annotationSettings.isLock) {
                             if (this.pdfViewer.annotationModule.checkAllowedInteractions('Delete', annotation)) {
                                 this.enableItems(this.deleteItem.parentElement, isEnable);
@@ -5117,9 +5259,42 @@ export class AnnotationToolbar {
         }
     }
 
-    private hidePropertiesTools(isEnable: boolean, annotProperty: string): void {
+    private hasAnnoItem(itemKey: string): boolean {
+        const items: any = this.pdfViewer.toolbarSettings && this.pdfViewer.toolbarSettings.annotationToolbarItems;
+        if (!items || !Array.isArray(items) || items.length === 0) {
+            return true;
+        }
+        const normalized: string[] = items.map((x: any) => String(x));
+        return normalized.indexOf(itemKey) !== -1;
+    }
+
+    private updateSeparator(lastElement: string): void {
+        if (lastElement === 'e-pv-highlight-container' || lastElement === 'e-pv-underline-container' ||
+            lastElement === 'e-pv-strikethrough-container' || lastElement === 'e-pv-squiggly-container') {
+            this.applyHideToToolbar(true, 4, 4);
+        }
+        else if (lastElement === 'e-pv-shape-template-container') {
+            this.applyHideToToolbar(true, 6, 6);
+        }
+        else if (lastElement === 'e-pv-calibrate-template-container') {
+            this.applyHideToToolbar(true, 8, 8);
+        }
+        else if (lastElement === 'e-pv-annotation-freetextedit-container') {
+            this.applyHideToToolbar(true, 10, 10);
+        }
+        else if (lastElement === 'e-pv-stamp-template-container') {
+            this.applyHideToToolbar(true, 12, 12);
+        }
+        else if (lastElement === 'e-pv-sign-template-container') {
+            this.applyHideToToolbar(true, 14, 14);
+        }
+        else if (lastElement === 'e-pv-annotation-ink-container') {
+            this.applyHideToToolbar(true, 16, 16);
+        }
+    }
+
+    private hidePropertiesTools(isEnable: boolean, annotProperty: string, reset?: boolean): void {
         if (this.toolbar && this.toolbar.items) {
-            let enableColorTool: any = isEnable;
             const colorIndex: number = this.getIndexByCssClass('e-pv-color-template-container');
             const strokeIndex: number = this.getIndexByCssClass('e-pv-stroke-template-container');
             const thicknessIndex: number = this.getIndexByCssClass('e-pv-thickness-template-container');
@@ -5131,80 +5306,201 @@ export class AnnotationToolbar {
             const fontColorIndex: number = this.getIndexByCssClass('e-pv-text-color-container');
             const textSeparator: number = this.getIndexByCssClass('e-pv-text-separator-container');
             const propertiesSeparator: number = this.getIndexByCssClass('e-pv-opacity-separator-container');
-            if ((annotProperty === 'line' && (this.pdfViewer.lineSettings.lineHeadStartStyle === 'None' ||
-                this.pdfViewer.lineSettings.lineHeadEndStyle === 'None')) && !(this.pdfViewer.annotation && this.pdfViewer.annotation.isLineAnnotationFillColorEnabled())) {
+            const canColor: boolean = this.hasAnnoItem('ColorEditTool');
+            const canStroke: boolean = this.hasAnnoItem('StrokeColorEditTool');
+            const canThickness: boolean = this.hasAnnoItem('ThicknessEditTool');
+            const canOpacity: boolean = this.hasAnnoItem('OpacityEditTool');
+            const canFontFamily: boolean = this.hasAnnoItem('FontFamilyAnnotationTool');
+            const canFontSize: boolean = this.hasAnnoItem('FontSizeAnnotationTool');
+            const canFontStyles: boolean = this.hasAnnoItem('FontStylesAnnotationTool');
+            const canFontAlign: boolean = this.hasAnnoItem('FontAlignAnnotationTool');
+            const canFontColor: boolean = this.hasAnnoItem('FontColorAnnotationTool');
+            let enableColorTool: boolean = isEnable;
+            reset = !reset;
+            const elementId: string = this.pdfViewer.element.id;
+            let toolbarContainer: Element = document.getElementById(elementId + '_annotation_toolbar');
+            let visibleToolbarItems: Element[];
+            if (toolbarContainer && toolbarContainer.children &&
+                toolbarContainer.children[0] && toolbarContainer.children[0].children &&
+                toolbarContainer.children[0].children[0]) {
+                toolbarContainer = toolbarContainer.children[0].children[0];
+                visibleToolbarItems = Array.from(toolbarContainer.children)
+                    .filter((item: Element) => !item.classList.contains('e-hidden'));
+            }
+            if (annotProperty === 'line' && (this.pdfViewer.lineSettings.lineHeadStartStyle === 'None' || this.pdfViewer.lineSettings.lineHeadEndStyle === 'None') && !(this.pdfViewer.annotation && this.pdfViewer.annotation.isLineAnnotationFillColorEnabled())) {
                 enableColorTool = false;
             }
+            const applyGroups: any = (propsVisible: boolean, textVisible: boolean) => {
+                this.applyHideToToolbar(propsVisible, propertiesSeparator, propertiesSeparator);
+                this.applyHideToToolbar(textVisible, textSeparator, textSeparator);
+            };
             if (annotProperty === 'textMarkup') {
-                this.showColorEditTool(isEnable, colorIndex, colorIndex);
-                this.showStrokeColorEditTool(false, strokeIndex, strokeIndex);
-                this.showThicknessEditTool(false, thicknessIndex, thicknessIndex);
-                this.showOpacityEditTool(isEnable, opacityIndex, opacityIndex);
-                this.showFontFamilyAnnotationTool(false, fontFamilyIndex, fontFamilyIndex);
-                this.showFontSizeAnnotationTool(false, fontSizeIndex, fontSizeIndex);
-                this.showFontStylesAnnotationTool(false, fontStyleIndex, fontStyleIndex);
-                this.showFontAlignAnnotationTool(false, fontAlignIndex, fontAlignIndex);
-                this.showFontColorAnnotationTool(false, fontColorIndex, fontColorIndex);
-                this.applyHideToToolbar(isEnable, propertiesSeparator, propertiesSeparator);
-                this.applyHideToToolbar(false, textSeparator, textSeparator);
-            } else if (annotProperty === 'line') {
-                this.showColorEditTool(enableColorTool, colorIndex, colorIndex);
-            } else if (annotProperty === 'shapeAndCalibrate') {
-                if (!(this.pdfViewer.selectedItems.annotations[0] && (this.pdfViewer.selectedItems.annotations[0].shapeAnnotationType === 'Line')) && (this.pdfViewer.annotation && this.pdfViewer.annotation.isLineAnnotationFillColorEnabled())) {
-                    this.showColorEditTool(isEnable, colorIndex, colorIndex);
+                const showColor: boolean = isEnable && canColor;
+                const showOpacity: boolean = isEnable && canOpacity;
+                if (showColor || showOpacity) {
+                    if (visibleToolbarItems.length > 0 && visibleToolbarItems[visibleToolbarItems.length - 1].classList &&
+                        visibleToolbarItems[visibleToolbarItems.length - 1].classList[2]) {
+                        let lastElement: string = visibleToolbarItems[visibleToolbarItems.length - 1].classList[2];
+                        if (visibleToolbarItems[visibleToolbarItems.length - 1].classList[1] === 'e-pv-sign-template-container' ||
+                            visibleToolbarItems[visibleToolbarItems.length - 1].classList[1] === 'e-pv-stamp-template-container') {
+                            lastElement = visibleToolbarItems[visibleToolbarItems.length - 1].classList[1];
+                        }
+                        this.updateSeparator(lastElement);
+                    }
                 }
-                this.showStrokeColorEditTool(isEnable, strokeIndex, strokeIndex);
-                this.showThicknessEditTool(isEnable, thicknessIndex, thicknessIndex);
-                this.showOpacityEditTool(isEnable, opacityIndex, opacityIndex);
+                this.showColorEditTool(showColor, colorIndex, colorIndex);
+                this.showStrokeColorEditTool(false, strokeIndex, strokeIndex);
+                this.showThicknessEditTool(false, thicknessIndex, thicknessIndex);
+                this.showOpacityEditTool(showOpacity, opacityIndex, opacityIndex);
+                this.showFontFamilyAnnotationTool(false, fontFamilyIndex, fontFamilyIndex);
+                this.showFontSizeAnnotationTool(false, fontSizeIndex, fontSizeIndex);
+                this.showFontStylesAnnotationTool(false, fontStyleIndex, fontStyleIndex);
+                this.showFontAlignAnnotationTool(false, fontAlignIndex, fontAlignIndex);
+                this.showFontColorAnnotationTool(false, fontColorIndex, fontColorIndex);
+                applyGroups(showColor || showOpacity, false);
+            } else if (annotProperty === 'line') {
+                const showLineColor: boolean = enableColorTool && canColor;
+                if (showLineColor && reset) {
+                    if (visibleToolbarItems.length > 0 && visibleToolbarItems[visibleToolbarItems.length - 1].classList &&
+                        visibleToolbarItems[visibleToolbarItems.length - 1].classList[2]) {
+                        let lastElement: string = visibleToolbarItems[visibleToolbarItems.length - 1].classList[2];
+                        if (visibleToolbarItems[visibleToolbarItems.length - 1].classList[1] === 'e-pv-sign-template-container' ||
+                            visibleToolbarItems[visibleToolbarItems.length - 1].classList[1] === 'e-pv-stamp-template-container') {
+                            lastElement = visibleToolbarItems[visibleToolbarItems.length - 1].classList[1];
+                        }
+                        this.updateSeparator(lastElement);
+                    }
+                }
+                this.showColorEditTool(showLineColor, colorIndex, colorIndex);
+                this.showStrokeColorEditTool(false, strokeIndex, strokeIndex);
+                this.showThicknessEditTool(false, thicknessIndex, thicknessIndex);
+                this.showOpacityEditTool(false, opacityIndex, opacityIndex);
+                this.showFontFamilyAnnotationTool(false, fontFamilyIndex, fontFamilyIndex);
+                this.showFontSizeAnnotationTool(false, fontSizeIndex, fontSizeIndex);
+                this.showFontStylesAnnotationTool(false, fontStyleIndex, fontStyleIndex);
+                this.showFontAlignAnnotationTool(false, fontAlignIndex, fontAlignIndex);
+                this.showFontColorAnnotationTool(false, fontColorIndex, fontColorIndex);
+                applyGroups(showLineColor, false);
+            } else if (annotProperty === 'shapeAndCalibrate') {
+                let canShowFillColor: boolean = isEnable && canColor;
+                if ((this.pdfViewer.selectedItems.annotations[0] &&
+                    this.pdfViewer.selectedItems.annotations[0].shapeAnnotationType === 'Line') || !(this.pdfViewer.annotation &&
+                        this.pdfViewer.annotation.isLineAnnotationFillColorEnabled())) {
+                    canShowFillColor = false;
+                }
+                const showStroke: boolean = isEnable && canStroke;
+                const showThickness: boolean = isEnable && canThickness;
+                const showOpacity: boolean = isEnable && canOpacity;
+                if ((canShowFillColor || showStroke || showThickness || showOpacity) && reset) {
+                    if (visibleToolbarItems.length > 0 && visibleToolbarItems[visibleToolbarItems.length - 1].classList &&
+                        visibleToolbarItems[visibleToolbarItems.length - 1].classList[2]) {
+                        let lastElement: string = visibleToolbarItems[visibleToolbarItems.length - 1].classList[2];
+                        if (visibleToolbarItems[visibleToolbarItems.length - 1].classList[1] === 'e-pv-sign-template-container' ||
+                            visibleToolbarItems[visibleToolbarItems.length - 1].classList[1] === 'e-pv-stamp-template-container') {
+                            lastElement = visibleToolbarItems[visibleToolbarItems.length - 1].classList[1];
+                        }
+                        this.updateSeparator(lastElement);
+                    }
+                }
+                this.showColorEditTool(canShowFillColor, colorIndex, colorIndex);
+                this.showStrokeColorEditTool(showStroke, strokeIndex, strokeIndex);
+                this.showThicknessEditTool(showThickness, thicknessIndex, thicknessIndex);
+                this.showOpacityEditTool(showOpacity, opacityIndex, opacityIndex);
                 this.showFontAlignAnnotationTool(false, fontAlignIndex, fontAlignIndex);
                 this.showFontColorAnnotationTool(false, fontColorIndex, fontColorIndex);
                 this.showFontFamilyAnnotationTool(false, fontFamilyIndex, fontFamilyIndex);
                 this.showFontSizeAnnotationTool(false, fontSizeIndex, fontSizeIndex);
                 this.showFontStylesAnnotationTool(false, fontStyleIndex, fontStyleIndex);
-                this.applyHideToToolbar(isEnable, propertiesSeparator, propertiesSeparator);
-                this.applyHideToToolbar(false, textSeparator, textSeparator);
+                applyGroups(canShowFillColor || showStroke || showThickness || showOpacity, false);
             } else if (annotProperty === 'ink' || annotProperty === 'signature') {
-                this.showStrokeColorEditTool(isEnable, strokeIndex, strokeIndex);
-                this.showThicknessEditTool(isEnable, thicknessIndex, thicknessIndex);
-                this.showOpacityEditTool(isEnable, opacityIndex, opacityIndex);
+                const showStroke: boolean = isEnable && canStroke;
+                const showThickness: boolean = isEnable && canThickness;
+                const showOpacity: boolean = isEnable && canOpacity;
+                this.applyHideToToolbar(true, 16, 16);
+                this.showStrokeColorEditTool(showStroke, strokeIndex, strokeIndex);
+                this.showThicknessEditTool(showThickness, thicknessIndex, thicknessIndex);
+                this.showOpacityEditTool(showOpacity, opacityIndex, opacityIndex);
                 this.showColorEditTool(false, colorIndex, colorIndex);
                 this.showFontAlignAnnotationTool(false, fontAlignIndex, fontAlignIndex);
                 this.showFontColorAnnotationTool(false, fontColorIndex, fontColorIndex);
                 this.showFontFamilyAnnotationTool(false, fontFamilyIndex, fontFamilyIndex);
                 this.showFontSizeAnnotationTool(false, fontSizeIndex, fontSizeIndex);
                 this.showFontStylesAnnotationTool(false, fontStyleIndex, fontStyleIndex);
-                this.applyHideToToolbar(isEnable, propertiesSeparator, propertiesSeparator);
-                this.applyHideToToolbar(false, textSeparator, textSeparator);
+                applyGroups(showStroke || showThickness || showOpacity, false);
             } else if (annotProperty === 'freeText') {
-                this.showColorEditTool(isEnable, colorIndex, colorIndex);
-                this.showStrokeColorEditTool(isEnable, strokeIndex, strokeIndex);
-                this.showThicknessEditTool(isEnable, thicknessIndex, thicknessIndex);
-                this.showOpacityEditTool(isEnable, opacityIndex, opacityIndex);
-                this.showFontFamilyAnnotationTool(isEnable, fontFamilyIndex, fontFamilyIndex);
-                this.showFontSizeAnnotationTool(isEnable, fontSizeIndex, fontSizeIndex);
-                this.showFontStylesAnnotationTool(isEnable, fontStyleIndex, fontStyleIndex);
-                this.showFontAlignAnnotationTool(isEnable, fontAlignIndex, fontAlignIndex);
-                this.showFontColorAnnotationTool(isEnable, fontColorIndex, fontColorIndex);
-                this.applyHideToToolbar(isEnable, textSeparator, textSeparator);
-                this.applyHideToToolbar(isEnable, propertiesSeparator, propertiesSeparator);
+                const showColor: boolean = isEnable && canColor;
+                const showStroke: boolean = isEnable && canStroke;
+                const showThickness: boolean = isEnable && canThickness;
+                const showOpacity: boolean = isEnable && canOpacity;
+                const showFontFamily: boolean = isEnable && canFontFamily;
+                const showFontSize: boolean = isEnable && canFontSize;
+                const showFontStyles: boolean = isEnable && canFontStyles;
+                const showFontAlign: boolean = isEnable && canFontAlign;
+                const showFontColor: boolean = isEnable && canFontColor;
+                if (showColor || showStroke || showThickness || showOpacity || showFontFamily || showFontSize || showFontStyles ||
+                    showFontAlign || showFontColor && reset) {
+                    if (visibleToolbarItems.length > 0 && visibleToolbarItems[visibleToolbarItems.length - 1].classList &&
+                        visibleToolbarItems[visibleToolbarItems.length - 1].classList[2]) {
+                        let lastElement: string = visibleToolbarItems[visibleToolbarItems.length - 1].classList[2];
+                        if (visibleToolbarItems[visibleToolbarItems.length - 1].classList[1] === 'e-pv-sign-template-container' ||
+                            visibleToolbarItems[visibleToolbarItems.length - 1].classList[1] === 'e-pv-stamp-template-container') {
+                            lastElement = visibleToolbarItems[visibleToolbarItems.length - 1].classList[1];
+                        }
+                        this.updateSeparator(lastElement);
+                    }
+                }
+                this.showColorEditTool(showColor, colorIndex, colorIndex);
+                this.showStrokeColorEditTool(showStroke, strokeIndex, strokeIndex);
+                this.showThicknessEditTool(showThickness, thicknessIndex, thicknessIndex);
+                this.showOpacityEditTool(showOpacity, opacityIndex, opacityIndex);
+                this.showFontFamilyAnnotationTool(showFontFamily, fontFamilyIndex, fontFamilyIndex);
+                this.showFontSizeAnnotationTool(showFontSize, fontSizeIndex, fontSizeIndex);
+                this.showFontStylesAnnotationTool(showFontStyles, fontStyleIndex, fontStyleIndex);
+                this.showFontAlignAnnotationTool(showFontAlign, fontAlignIndex, fontAlignIndex);
+                this.showFontColorAnnotationTool(showFontColor, fontColorIndex, fontColorIndex);
+                applyGroups(showColor || showStroke || showThickness || showOpacity, showFontFamily || showFontSize || showFontStyles ||
+                    showFontAlign || showFontColor);
             } else if (annotProperty === 'stamp') {
+                const showOpacity: boolean = isEnable && canOpacity;
+                if (showOpacity && reset) {
+                    if (visibleToolbarItems.length > 0 && visibleToolbarItems[visibleToolbarItems.length - 1].classList &&
+                        visibleToolbarItems[visibleToolbarItems.length - 1].classList[2]) {
+                        let lastElement: string = visibleToolbarItems[visibleToolbarItems.length - 1].classList[2];
+                        if (visibleToolbarItems[visibleToolbarItems.length - 1].classList[1] === 'e-pv-sign-template-container' ||
+                            visibleToolbarItems[visibleToolbarItems.length - 1].classList[1] === 'e-pv-stamp-template-container') {
+                            lastElement = visibleToolbarItems[visibleToolbarItems.length - 1].classList[1];
+                        }
+                        this.updateSeparator(lastElement);
+                    }
+                }
                 this.showColorEditTool(false, colorIndex, colorIndex);
                 this.showStrokeColorEditTool(false, strokeIndex, strokeIndex);
                 this.showThicknessEditTool(false, thicknessIndex, thicknessIndex);
-                this.showOpacityEditTool(isEnable, opacityIndex, opacityIndex);
+                this.showOpacityEditTool(showOpacity, opacityIndex, opacityIndex);
                 this.showFontFamilyAnnotationTool(false, fontFamilyIndex, fontFamilyIndex);
                 this.showFontSizeAnnotationTool(false, fontSizeIndex, fontSizeIndex);
                 this.showFontStylesAnnotationTool(false, fontStyleIndex, fontStyleIndex);
                 this.showFontAlignAnnotationTool(false, fontAlignIndex, fontAlignIndex);
                 this.showFontColorAnnotationTool(false, fontColorIndex, fontColorIndex);
-                this.applyHideToToolbar(isEnable, propertiesSeparator, propertiesSeparator);
-                this.applyHideToToolbar(false, textSeparator, textSeparator);
+                applyGroups(showOpacity, false);
             } else if (annotProperty === 'enableShapeLabel') {
-                this.showFontFamilyAnnotationTool(isEnable, fontFamilyIndex, fontFamilyIndex);
-                this.showFontSizeAnnotationTool(isEnable, fontSizeIndex, fontSizeIndex);
-                this.showFontColorAnnotationTool(isEnable, fontColorIndex, fontColorIndex);
-                this.applyHideToToolbar(isEnable, textSeparator, textSeparator);
-                this.applyHideToToolbar(isEnable, propertiesSeparator, propertiesSeparator);
+                const showFontFamily: boolean = isEnable && canFontFamily;
+                const showFontSize: boolean = isEnable && canFontSize;
+                const showFontColor: boolean = isEnable && canFontColor;
+                this.showFontFamilyAnnotationTool(showFontFamily, fontFamilyIndex, fontFamilyIndex);
+                this.showFontSizeAnnotationTool(showFontSize, fontSizeIndex, fontSizeIndex);
+                this.showFontColorAnnotationTool(showFontColor, fontColorIndex, fontColorIndex);
+                applyGroups(false, showFontFamily || showFontSize || showFontColor);
+            }
+            if (toolbarContainer && toolbarContainer.children) {
+                const lastVisibleToolbarItems: Element[] = Array.from(toolbarContainer.children)
+                    .filter((item: Element) => !item.classList.contains('e-hidden'));
+                if (visibleToolbarItems[visibleToolbarItems.length - 1] &&
+                    lastVisibleToolbarItems[lastVisibleToolbarItems.length - 1].classList &&
+                    lastVisibleToolbarItems[lastVisibleToolbarItems.length - 1].classList.contains('e-separator')) {
+                    const index: number = this.getIndexByCssClass(lastVisibleToolbarItems[lastVisibleToolbarItems.length - 1].classList[1]);
+                    this.applyHideToToolbar(false, index, index);
+                }
             }
         }
     }
@@ -5222,51 +5518,141 @@ export class AnnotationToolbar {
             const fontColorIndex: number = this.getIndexByCssClass('e-pv-text-color-container');
             const textSeparator: number = this.getIndexByCssClass('e-pv-text-separator-container');
             const propertiesSeparator: number = this.getIndexByCssClass('e-pv-opacity-separator-container');
+            let items: any;
+            if (this.pdfViewer.toolbarSettings.annotationToolbarItems.length > 0) {
+                items = this.pdfViewer.toolbarSettings.annotationToolbarItems;
+            }
+            const elementId: string = this.pdfViewer.element.id;
+            let toolbarContainer: Element = document.getElementById(elementId + '_annotation_toolbar');
+            let visibleToolbarItems: Element[];
+            if (toolbarContainer && toolbarContainer.children &&
+                toolbarContainer.children[0] && toolbarContainer.children[0].children &&
+                toolbarContainer.children[0].children[0]) {
+                toolbarContainer = toolbarContainer.children[0].children[0];
+                visibleToolbarItems = Array.from(toolbarContainer.children)
+                    .filter((item: Element) => !item.classList.contains('e-hidden'));
+            }
+            if (visibleToolbarItems.length > 0 && visibleToolbarItems[visibleToolbarItems.length - 1].classList &&
+                visibleToolbarItems[visibleToolbarItems.length - 1].classList[2]) {
+                let lastElement: string = visibleToolbarItems[visibleToolbarItems.length - 1].classList[2];
+                if (visibleToolbarItems[visibleToolbarItems.length - 1].classList[1] === 'e-pv-sign-template-container' ||
+                    visibleToolbarItems[visibleToolbarItems.length - 1].classList[1] === 'e-pv-stamp-template-container') {
+                    lastElement = visibleToolbarItems[visibleToolbarItems.length - 1].classList[1];
+                }
+                this.updateSeparator(lastElement);
+            }
             if (idString === 'highlight' || idString === 'underline' || idString === 'strikethrough' || idString === 'squiggly') {
-                this.showColorEditTool(true, colorIndex, colorIndex);
-                this.showOpacityEditTool(true, opacityIndex, opacityIndex);
-                this.applyHideToToolbar(true, propertiesSeparator, propertiesSeparator);
-            } else if (idString === 'shapeLabel') {
-                if ((this.pdfViewer.tool === 'Line' || this.pdfViewer.tool === 'Perimeter') &&
-                    (this.pdfViewer.lineSettings.lineHeadStartStyle === 'None' || this.pdfViewer.lineSettings.lineHeadEndStyle === 'None')) {
+                if (items.indexOf('ColorEditTool') !== -1) {
                     this.showColorEditTool(true, colorIndex, colorIndex);
                 }
-                this.showStrokeColorEditTool(true, strokeIndex, strokeIndex);
-                this.showThicknessEditTool(true, thicknessIndex, thicknessIndex);
-                this.showOpacityEditTool(true, opacityIndex, opacityIndex);
-                this.showFontFamilyAnnotationTool(true, fontFamilyIndex, fontFamilyIndex);
-                this.showFontSizeAnnotationTool(true, fontSizeIndex, fontSizeIndex);
-                this.showFontColorAnnotationTool(true, fontColorIndex, fontColorIndex);
-                this.applyHideToToolbar(true, textSeparator, textSeparator);
-                this.applyHideToToolbar(true, propertiesSeparator, propertiesSeparator);
+                if (items.indexOf('OpacityEditTool') !== -1) {
+                    this.showOpacityEditTool(true, opacityIndex, opacityIndex);
+                }
+                if (items.indexOf('AnnotationDeleteTool') !== -1) {
+                    this.applyHideToToolbar(true, propertiesSeparator, propertiesSeparator);
+                }
+            } else if (idString === 'shapeLabel') {
+                if (((this.pdfViewer.tool === 'Line' || this.pdfViewer.tool === 'Perimeter') &&
+                    (this.pdfViewer.lineSettings.lineHeadStartStyle === 'None' || this.pdfViewer.lineSettings.lineHeadEndStyle === 'None'))
+                    && items.indexOf('ColorEditTool') !== -1) {
+                    this.showColorEditTool(true, colorIndex, colorIndex);
+                }
+                if (items.indexOf('StrokeColorEditTool') !== -1) {
+                    this.showStrokeColorEditTool(true, strokeIndex, strokeIndex);
+                }
+                if (items.indexOf('ThicknessEditTool') !== -1) {
+                    this.showThicknessEditTool(true, thicknessIndex, thicknessIndex);
+                }
+                if (items.indexOf('OpacityEditTool') !== -1) {
+                    this.showOpacityEditTool(true, opacityIndex, opacityIndex);
+                }
+                if (items.indexOf('FontFamilyAnnotationTool') !== -1) {
+                    this.showFontFamilyAnnotationTool(true, fontFamilyIndex, fontFamilyIndex);
+                }
+                if (items.indexOf('FontSizeAnnotationTool') !== -1) {
+                    this.showFontSizeAnnotationTool(true, fontSizeIndex, fontSizeIndex);
+                }
+                if (items.indexOf('FontColorAnnotationTool') !== -1) {
+                    this.showFontColorAnnotationTool(true, fontColorIndex, fontColorIndex);
+                }
+                if (items.indexOf('AnnotationDeleteTool') !== -1) {
+                    this.applyHideToToolbar(true, textSeparator, textSeparator);
+                    this.applyHideToToolbar(true, propertiesSeparator, propertiesSeparator);
+                }
             } else if (idString === 'shapeLine') {
-                this.showStrokeColorEditTool(true, strokeIndex, strokeIndex);
-                this.showThicknessEditTool(true, thicknessIndex, thicknessIndex);
-                this.showOpacityEditTool(true, opacityIndex, opacityIndex);
-                this.applyHideToToolbar(true, propertiesSeparator, propertiesSeparator);
+                if (items.indexOf('StrokeColorEditTool') !== -1) {
+                    this.showStrokeColorEditTool(true, strokeIndex, strokeIndex);
+                }
+                if (items.indexOf('ThicknessEditTool') !== -1) {
+                    this.showThicknessEditTool(true, thicknessIndex, thicknessIndex);
+                }
+                if (items.indexOf('OpacityEditTool') !== -1) {
+                    this.showOpacityEditTool(true, opacityIndex, opacityIndex);
+                }
+                if (items.indexOf('AnnotationDeleteTool') !== -1) {
+                    this.applyHideToToolbar(true, propertiesSeparator, propertiesSeparator);
+                }
             } else if (idString === 'shape' || idString === 'calibrate') {
-                this.showColorEditTool(true, colorIndex, colorIndex);
-                this.showStrokeColorEditTool(true, strokeIndex, strokeIndex);
-                this.showThicknessEditTool(true, thicknessIndex, thicknessIndex);
-                this.showOpacityEditTool(true, opacityIndex, opacityIndex);
-                this.applyHideToToolbar(true, propertiesSeparator, propertiesSeparator);
+                if (items.indexOf('ColorEditTool') !== -1) {
+                    this.showColorEditTool(true, colorIndex, colorIndex);
+                }
+                if (items.indexOf('StrokeColorEditTool') !== -1) {
+                    this.showStrokeColorEditTool(true, strokeIndex, strokeIndex);
+                }
+                if (items.indexOf('ThicknessEditTool') !== -1) {
+                    this.showThicknessEditTool(true, thicknessIndex, thicknessIndex);
+                }
+                if (items.indexOf('OpacityEditTool') !== -1) {
+                    this.showOpacityEditTool(true, opacityIndex, opacityIndex);
+                }
+                if (items.indexOf('AnnotationDeleteTool') !== -1) {
+                    this.applyHideToToolbar(true, propertiesSeparator, propertiesSeparator);
+                }
             } else if (idString === 'ink' || idString === 'signature') {
-                this.showStrokeColorEditTool(true, strokeIndex, strokeIndex);
-                this.showThicknessEditTool(true, thicknessIndex, thicknessIndex);
-                this.showOpacityEditTool(true, opacityIndex, opacityIndex);
-                this.applyHideToToolbar(true, propertiesSeparator, propertiesSeparator);
+                if (items.indexOf('StrokeColorEditTool') !== -1) {
+                    this.showStrokeColorEditTool(true, strokeIndex, strokeIndex);
+                }
+                if (items.indexOf('ThicknessEditTool') !== -1) {
+                    this.showThicknessEditTool(true, thicknessIndex, thicknessIndex);
+                }
+                if (items.indexOf('OpacityEditTool') !== -1) {
+                    this.showOpacityEditTool(true, opacityIndex, opacityIndex);
+                }
+                if (items.indexOf('AnnotationDeleteTool') !== -1) {
+                    this.applyHideToToolbar(true, propertiesSeparator, propertiesSeparator);
+                }
             } else if (idString === 'freeText') {
-                this.showColorEditTool(true, colorIndex, colorIndex);
-                this.showStrokeColorEditTool(true, strokeIndex, strokeIndex);
-                this.showThicknessEditTool(true, thicknessIndex, thicknessIndex);
-                this.showOpacityEditTool(true, opacityIndex, opacityIndex);
-                this.showFontFamilyAnnotationTool(true, fontFamilyIndex, fontFamilyIndex);
-                this.showFontSizeAnnotationTool(true, fontSizeIndex, fontSizeIndex);
-                this.showFontStylesAnnotationTool(true, fontStyleIndex, fontStyleIndex);
-                this.showFontAlignAnnotationTool(true, fontAlignIndex, fontAlignIndex);
-                this.showFontColorAnnotationTool(true, fontColorIndex, fontColorIndex);
-                this.applyHideToToolbar(true, propertiesSeparator, propertiesSeparator);
-                this.applyHideToToolbar(true, textSeparator, textSeparator);
+                if (items.indexOf('ColorEditTool') !== -1) {
+                    this.showColorEditTool(true, colorIndex, colorIndex);
+                }
+                if (items.indexOf('StrokeColorEditTool') !== -1) {
+                    this.showStrokeColorEditTool(true, strokeIndex, strokeIndex);
+                }
+                if (items.indexOf('ThicknessEditTool') !== -1) {
+                    this.showThicknessEditTool(true, thicknessIndex, thicknessIndex);
+                }
+                if (items.indexOf('OpacityEditTool') !== -1) {
+                    this.showOpacityEditTool(true, opacityIndex, opacityIndex);
+                }
+                if (items.indexOf('FontFamilyAnnotationTool') !== -1) {
+                    this.showFontFamilyAnnotationTool(true, fontFamilyIndex, fontFamilyIndex);
+                }
+                if (items.indexOf('FontSizeAnnotationTool') !== -1) {
+                    this.showFontSizeAnnotationTool(true, fontSizeIndex, fontSizeIndex);
+                }
+                if (items.indexOf('FontStylesAnnotationTool') !== -1) {
+                    this.showFontStylesAnnotationTool(true, fontStyleIndex, fontStyleIndex);
+                }
+                if (items.indexOf('FontAlignAnnotationTool') !== -1) {
+                    this.showFontAlignAnnotationTool(true, fontAlignIndex, fontAlignIndex);
+                }
+                if (items.indexOf('FontColorAnnotationTool') !== -1) {
+                    this.showFontColorAnnotationTool(true, fontColorIndex, fontColorIndex);
+                }
+                if (items.indexOf('AnnotationDeleteTool') !== -1) {
+                    this.applyHideToToolbar(true, propertiesSeparator, propertiesSeparator);
+                    this.applyHideToToolbar(true, textSeparator, textSeparator);
+                }
             }
         }
     }
@@ -5313,7 +5699,9 @@ export class AnnotationToolbar {
                         (this.pdfViewer.lineSettings.lineHeadStartStyle === 'None' || this.pdfViewer.lineSettings.lineHeadEndStyle === 'None')) {
                         this.hidePropertiesTools(isEnable, 'line');
                     } else {
-                        this.hidePropertiesTools(isEnable, 'shapeAndCalibrate');
+                        if (this.pdfViewer.selectedItems.annotations[0] && this.pdfViewer.selectedItems.annotations[0].shapeAnnotationType !== 'Redaction') {
+                            this.hidePropertiesTools(isEnable, 'shapeAndCalibrate', false);
+                        }
                     }
                     if (this.pdfViewer.enableShapeLabel) {
                         this.enableItems(this.fontFamilyElement.parentElement, isEnable);
@@ -5412,7 +5800,7 @@ export class AnnotationToolbar {
                 this.enableItems(this.fontColorElement.parentElement, isEnable);
                 this.enableItems(this.textAlignElement.parentElement, isEnable);
                 this.enableItems(this.textPropElement.parentElement, isEnable);
-                this.hidePropertiesTools(isEnable, 'freeText');
+                this.hidePropertiesTools(isEnable, 'freeText', false);
             }
         } else {
             //this.pdfViewer._dotnetInstance.invokeMethodAsync('EnableFreeTextAnnotationPropertiesTools', isEnable, isPropertiesChanges);

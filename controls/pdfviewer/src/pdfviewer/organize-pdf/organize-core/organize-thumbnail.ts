@@ -173,12 +173,6 @@ export function tileImageRender(pageIndex: number, subIndex?: number, pageOrder?
     this.deleteButton.setAttribute('type', 'button');
     const deleteButtonSpan: HTMLElement = createElement('span', { id: this.pdfViewer.element.id + '_delete' + '_icon', className: 'e-pv-delete-icon e-pv-icon' });
     this.deleteButton.appendChild(deleteButtonSpan);
-    const deleteButtonTooltip: Tooltip = new Tooltip({
-        content: initializeCSPTemplate(
-            function (): string { return this.pdfViewer.localeObj.getConstant('Delete Page'); }, this
-        ), opensOn: 'Hover', beforeOpen: onTooltipBeforeOpen.bind(this)
-    });
-    deleteButtonTooltip.appendTo(this.deleteButton);
     this.rotateRightButton = createElement('button', { id: this.pdfViewer.element.id + '_rotate_page_' + pageIndex, attrs: { 'aria-label': this.pdfViewer.localeObj.getConstant('Rotate Right'), 'tabindex': '-1' } }) as HTMLButtonElement;
     if (isNewPage) {
         this.rotateRightButton.id = this.rotateRightButton.id + '_' + subIndex;
@@ -187,12 +181,6 @@ export function tileImageRender(pageIndex: number, subIndex?: number, pageOrder?
     this.rotateRightButton.setAttribute('type', 'button');
     const rotateButtonSpan: HTMLElement = createElement('span', { id: this.pdfViewer.element.id + '_rotate-right' + '_icon', className: 'e-pv-rotate-right-icon e-pv-icon' });
     this.rotateRightButton.appendChild(rotateButtonSpan);
-    const rotateButtonTooltip: Tooltip = new Tooltip({
-        content: initializeCSPTemplate(
-            function (): string { return this.pdfViewer.localeObj.getConstant('Rotate Right'); }, this
-        ), opensOn: 'Hover', beforeOpen: onTooltipBeforeOpen.bind(this)
-    });
-    rotateButtonTooltip.appendTo(this.rotateRightButton);
     this.rotateLeftButton = createElement('button', { id: this.pdfViewer.element.id + '_rotate_page_' + pageIndex, attrs: { 'aria-label': this.pdfViewer.localeObj.getConstant('Rotate Left'), 'tabindex': '-1' } }) as HTMLButtonElement;
     if (isNewPage) {
         this.rotateLeftButton.id = this.rotateLeftButton.id + '_' + subIndex;
@@ -201,12 +189,6 @@ export function tileImageRender(pageIndex: number, subIndex?: number, pageOrder?
     this.rotateLeftButton.setAttribute('type', 'button');
     const rotateLeftButtonSpan: HTMLElement = createElement('span', { id: this.pdfViewer.element.id + '_rotate_left' + '_icon', className: 'e-pv-rotate-left-icon e-pv-icon' });
     this.rotateLeftButton.appendChild(rotateLeftButtonSpan);
-    const rotateLeftButtonTooltip: Tooltip = new Tooltip({
-        content: initializeCSPTemplate(
-            function (): string { return this.pdfViewer.localeObj.getConstant('Rotate Left'); }, this
-        ), opensOn: 'Hover', beforeOpen: onTooltipBeforeOpen.bind(this)
-    });
-    rotateLeftButtonTooltip.appendTo(this.rotateLeftButton);
     this.copyButton = createElement('button', { id: this.pdfViewer.element.id + '_copy_page_' + pageIndex, attrs: { 'aria-label': this.pdfViewer.localeObj.getConstant('Copy Page'), 'tabindex': '-1' } }) as HTMLButtonElement;
     if (isNewPage) {
         this.copyButton.id = this.copyButton.id + '_' + subIndex;
@@ -215,12 +197,6 @@ export function tileImageRender(pageIndex: number, subIndex?: number, pageOrder?
     this.copyButton.setAttribute('type', 'button');
     const copyButtonSpan: HTMLElement = createElement('span', { id: this.pdfViewer.element.id + '_copy' + '_icon', className: 'e-pv-copy-icon e-pv-icon' });
     this.copyButton.appendChild(copyButtonSpan);
-    const copyButtonTooltip: Tooltip = new Tooltip({
-        content: initializeCSPTemplate(
-            function (): string { return this.pdfViewer.localeObj.getConstant('Copy Page'); }, this
-        ), opensOn: 'Hover', beforeOpen: onTooltipBeforeOpen.bind(this)
-    });
-    copyButtonTooltip.appendTo(this.copyButton);
     this.insertRightButton = createElement('button', { id: this.pdfViewer.element.id + '_insert_page_' + pageIndex, attrs: { 'aria-label': this.pdfViewer.localeObj.getConstant('Insert Right'), 'tabindex': '-1' } }) as HTMLButtonElement;
     if (isNewPage) {
         this.insertRightButton.id = this.insertRightButton.id + '_' + subIndex;
@@ -229,10 +205,6 @@ export function tileImageRender(pageIndex: number, subIndex?: number, pageOrder?
     this.insertRightButton.setAttribute('type', 'button');
     const insertRightButtonSpan: HTMLElement = createElement('span', { id: this.pdfViewer.element.id + '_insert_right' + '_icon', className: 'e-icons e-plus' });
     this.insertRightButton.appendChild(insertRightButtonSpan);
-    const insertRightButtonTooltip: Tooltip = new Tooltip({
-        content: initializeCSPTemplate(function (): any { return this.pdfViewer.localeObj.getConstant('Insert Right'); }, this), opensOn: 'Hover', beforeOpen: onTooltipBeforeOpen.bind(this)
-    });
-    insertRightButtonTooltip.appendTo(this.insertRightButton);
     this.insertLeftButton = createElement('button', { id: this.pdfViewer.element.id + '_insert_page_' + pageIndex, attrs: { 'aria-label': this.pdfViewer.localeObj.getConstant('Insert Left'), 'tabindex': '-1' } }) as HTMLButtonElement;
     if (isNewPage) {
         this.insertLeftButton.id = this.insertLeftButton.id + '_' + subIndex;
@@ -241,10 +213,6 @@ export function tileImageRender(pageIndex: number, subIndex?: number, pageOrder?
     this.insertLeftButton.setAttribute('type', 'button');
     const insertLeftButtonSpan: HTMLElement = createElement('span', { id: this.pdfViewer.element.id + '_insert_left' + '_icon', className: 'e-icons e-plus' });
     this.insertLeftButton.appendChild(insertLeftButtonSpan);
-    const insertLeftButtonTooltip: Tooltip = new Tooltip({
-        content: initializeCSPTemplate(function (): any { return this.pdfViewer.localeObj.getConstant('Insert Left'); }, this), opensOn: 'Hover', beforeOpen: onTooltipBeforeOpen.bind(this)
-    });
-    insertLeftButtonTooltip.appendTo(this.insertLeftButton);
     if (!this.pdfViewer.pageOrganizerSettings.canInsert) {
         this.insertLeftButton.setAttribute('disabled', 'disabled');
         this.insertLeftButton.firstElementChild.classList.add('e-disabled');
@@ -297,6 +265,41 @@ export function tileImageRender(pageIndex: number, subIndex?: number, pageOrder?
     }
 }
 
+export function addTooltipToButtons(button: HTMLElement | null): void {
+    if (!button || button.getAttribute('data-tooltip-attached') === 'true') {
+        return;
+    }
+    const cls: any = button.classList;
+    const classToTextKey: any = {
+        'e-pv-delete-button': 'Delete Page',
+        'e-pv-rotate-right-button': 'Rotate Right',
+        'e-pv-rotate-left-button': 'Rotate Left',
+        'e-pv-copy-button': 'Copy Page',
+        'e-pv-insert-right-button': 'Insert Right',
+        'e-pv-insert-left-button': 'Insert Left'
+    };
+    let tooltipName: string | null = null;
+    const keys: any = Object.keys(classToTextKey) as Array<keyof typeof classToTextKey>;
+    for (const className of keys) {
+        if (cls.contains(className)) {
+            tooltipName = classToTextKey[`${className}`];
+            break;
+        }
+    }
+    if (!tooltipName) {
+        return;
+    }
+    const tooltip: Tooltip = new Tooltip({
+        content: initializeCSPTemplate(function (): any {
+            return this.pdfViewer.localeObj.getConstant(tooltipName);
+        }, this),
+        opensOn: 'Hover',
+        beforeOpen: onTooltipBeforeOpen.bind(this)
+    });
+    tooltip.appendTo(button);
+    button.setAttribute('data-tooltip-attached', 'true');
+}
+
 /**
  * @param {MouseEvent} event - It describes about the event
  * @private
@@ -336,6 +339,7 @@ export function thumbnailMouseOver(event: MouseEvent): void {
                             if (targetClassList.contains('e-pv-insert-left-button') || targetClassList.contains('e-pv-insert-right-button')) {
                                 (childelement as HTMLElement).style.top = '-' + (parseFloat(this.pageLink.style.height.replace('px', '')) / 2) + 'px';
                             }
+                            addTooltipToButtons.call(this, childelement as HTMLElement);
                             setTileButtonEnableState.call(this, childelement as HTMLElement);
                         }
                     }

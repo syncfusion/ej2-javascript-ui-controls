@@ -156,6 +156,69 @@ describe('Group By Date feature', () => {
                 done();
             }, 100);
         });
+        it('Date grouping with empty string - initial', (done: Function) => {
+            pivotGridObj.dataSourceSettings = {
+                dataSource: [
+                    {
+                        PeriodStartDate: new Date(2021, 0, 1),
+                        AccountName: "Accounts Receivable",
+                        DebitAmount: 661247.55,
+                        CreditAmount: 366527.5,
+                    },
+                    {
+                        PeriodStartDate: new Date(2021, 5, 1),
+                        AccountName: "Billed A/R - 24x7 Toll Free",
+                        DebitAmount: 30.0,
+                        CreditAmount: 0,
+                    },
+                    {
+                        PeriodStartDate: "",
+                        AccountName: "Deferred Revenue - Maintenance",
+                        DebitAmount: 14000,
+                        CreditAmount: 0,
+                    },
+                ],
+                rows: [
+                    {
+                        name: "PeriodStartDate", caption: "Period Start Date",
+                    },
+                ],
+                values: [
+                    { name: "DebitAmount", caption: "Debit Amount" },
+                ],
+                formatSettings: [
+                    { name: "PeriodStartDate", type: "date", format: "yyyy-MM-dd" },
+                ],
+                groupSettings: [
+                    {
+                        name: "PeriodStartDate", type: "Date",
+                        groupInterval: ["Years"],
+                    }
+                ],
+                filterSettings: [
+                    {
+                        name: "PeriodStartDate", type: "Include",
+                        items: ["2021"]
+                    }
+                ]
+            }
+            setTimeout(() => {
+                pivotGridObj.showGroupingBar = true;
+                done();
+            }, 500);
+        });
+        it('Date grouping with empty string - opening filter', (done: Function) => {
+            setTimeout(() => {
+                (document.querySelectorAll('.e-pv-filtered')[0] as HTMLButtonElement).click();
+                done();
+            }, 500);
+        });
+        it('Date grouping with empty string - ensuring', (done: Function) => {
+            setTimeout(() => {
+                expect(pivotGridObj.element.querySelectorAll('.e-member-editor-dialog').length).toBe(1);
+                done();
+            }, 100);
+        });
     });
     describe(' -  Initial Rendering with range - PivotChart', () => {
         let pivotGridObj: PivotView;

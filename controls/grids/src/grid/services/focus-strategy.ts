@@ -286,6 +286,16 @@ export class FocusStrategy {
         if (this.parent.showColumnChooser) {
             this.handleFilterNavigation(e, '.e-ccdlg .e-ccsearch.e-cc.e-input', '.e-ccdlg .e-footer-content button:nth-child(2)');
         }
+        if (e.action === 'shiftTab' && e.target && parentsUntil(e.target as Element, 'e-gridcontent') && (e.target as HTMLElement).closest('.e-unboundcell')) {
+            const rows: HTMLElement[] = [].slice.call((this.parent.getContentTable() as HTMLTableElement).rows);
+            const lastCell: HTMLElement = rows[rows.length - 1].lastElementChild as HTMLElement;
+            if ((e.target as HTMLElement).closest('.e-unboundcell') === lastCell &&
+                this.commandColumnFocusElement((e.target as HTMLElement).closest('.e-unboundcell') as HTMLElement, true) === e.target) {
+                this.currentInfo.skipAction = true;
+                this.setActive(true);
+                this.setLastContentCellActive();
+            }
+        }
         if (this.skipOn(e)) {
             return;
         }

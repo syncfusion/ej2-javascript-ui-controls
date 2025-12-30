@@ -1810,8 +1810,9 @@ export class CheckBoxFilterBase {
                 this.values[`${uid}`] = getValue(key, data[parseInt(i.toString(), 10)]);
                 let value: string | number | Date = getValue(this.options.field, data[parseInt(i.toString(), 10)]);
                 if (this.options.formatFn) {
-                    if (this.options.type === 'dateonly') {
-                        value = new Date(value);
+                    if (this.options.type === 'dateonly' && !isNullOrUndefined(value)) {
+                        const arr: string[] = (value as string).split(/[^0-9.]/);
+                        value = new Date(parseInt(arr[0], 10), parseInt(arr[1], 10) - 1, parseInt(arr[2], 10));
                     }
                     value = this.valueFormatter.toView(value as number, this.options.formatFn) as string;
                 }

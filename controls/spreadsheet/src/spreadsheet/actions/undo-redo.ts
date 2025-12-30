@@ -1,5 +1,5 @@
 import { Spreadsheet, locale, deleteImage, createImageElement, positionAutoFillElement, showAggregate, paste, undoRedoForChartDesign, cut, copy } from '../../spreadsheet/index';
-import { performUndoRedo, updateUndoRedoCollection, enableToolbarItems, ICellRenderer, completeAction, BeforeActionDataInternal, isColumnRange, processSheetComments } from '../common/index';
+import { performUndoRedo, updateUndoRedoCollection, enableToolbarItems, ICellRenderer, completeAction, BeforeActionDataInternal, isColumnRange, processSheetComments, refreshCommentsPane } from '../common/index';
 import { UndoRedoEventArgs, setActionData, getBeforeActionData, updateAction, processSheetNotes } from '../common/index';
 import { BeforeActionData, PreviousCellDetails, CollaborativeEditArgs, setUndoRedo, getUpdateUsingRaf } from '../common/index';
 import { selectRange, clearUndoRedoCollection, setMaxHgt, getMaxHgt, setRowEleHeight } from '../common/index';
@@ -12,7 +12,7 @@ import { SheetModel, MergeArgs, setMerge, getRangeAddress, replaceAll, applyCell
 import { addClass, extend, isNullOrUndefined, isObject, isUndefined, L10n, select } from '@syncfusion/ej2-base';
 import { CellStyleModel, TextDecoration, setCellFormat, refreshRibbonIcons, isFilterHidden, getRowHeight } from '../../workbook/index';
 import { SortDescriptor, getColIndex, beginAction, ActionEventArgs, ConditionalFormat, updateCFModel, applyCF, getCellIndexes, getFormattedCellObject, NumberFormatArgs } from '../../workbook/index';
-import { ExtendedSheet, NoteModel, sheetRenameUpdate, ExtendedNoteModel } from '../../workbook/common/index';
+import { ExtendedSheet, NoteModel, sheetRenameUpdate, ExtendedNoteModel, ExtendedThreadedCommentModel } from '../../workbook/common/index';
 /**
  * UndoRedo module allows to perform undo redo functionalities.
  */
@@ -1061,8 +1061,17 @@ export class UndoRedo {
             if (cells[i as number].colSpan) { currentCell.colSpan = cells[i as number].colSpan; }
             if (cells[i as number].hyperlink) { currentCell.hyperlink = cells[i as number].hyperlink; }
             if (cells[i as number].image) { currentCell.image = cells[i as number].image; }
-            if (args.action === 'clipboard' && prevCell.notes) {
-                this.parent.notify(processSheetNotes, { sheet: sheet, id: (prevCell.notes as ExtendedNoteModel).id, isDelete: true });
+            if (args.action === 'clipboard') {
+                if (prevCell.notes) {
+                    this.parent.notify(processSheetNotes, {
+                        sheet: sheet, id: (prevCell.notes as ExtendedNoteModel).id, isDelete: true
+                    });
+                }
+                if (prevCell.comment) {
+                    this.parent.notify(processSheetComments, {
+                        sheet: sheet, id: (prevCell.comment as ExtendedThreadedCommentModel).id, isDelete: true
+                    });
+                }
             }
             if (cells[i as number].notes) {
                 currentCell.notes = cells[i as number].notes;
@@ -1070,17 +1079,14 @@ export class UndoRedo {
                     this.parent.notify(processSheetNotes, { sheet: sheet as ExtendedSheet, note: currentCell.notes });
                 }
             }
-            if (cells[i as number].isReadOnly) { currentCell.isReadOnly = cells[i as number].isReadOnly; }
-            if (cells[i as number].formattedText) { currentCell.formattedText = cells[i as number].formattedText; }
             if (cells[i as number].comment) {
                 currentCell.comment = cells[i as number].comment;
-                if (args.action === 'clear') {
-                    this.parent.notify(processSheetComments, {
-                        sheet: sheet as ExtendedSheet, comment: currentCell.comment, isDelete: false, isRefresh: true,
-                        sheetIdx: getSheetIndexFromId(this.parent as Workbook, sheet.id)
-                    });
+                if ((args.action === 'clear' && args.eventArgs.type === 'Clear All') || args.action === 'clipboard') {
+                    this.parent.notify(processSheetComments, { sheet: sheet as ExtendedSheet, comment: currentCell.comment });
                 }
             }
+            if (cells[i as number].isReadOnly) { currentCell.isReadOnly = cells[i as number].isReadOnly; }
+            if (cells[i as number].formattedText) { currentCell.formattedText = cells[i as number].formattedText; }
             setCell(cells[i as number].rowIndex, cells[i as number].colIndex, sheet, currentCell);
             evtArgs = {
                 action: 'updateCellValue', address: [cells[i as number].rowIndex, cells[i as number].colIndex,
@@ -1155,9 +1161,12 @@ export class UndoRedo {
             }
             this.parent.serviceLocator.getService<ICellRenderer>('cell').refreshRange(
                 range, false, false, true, false, isImported(this.parent), null, isFromAutoFillOption,
-                isHeightCheckFromUndo, null, null, cells);
+                isHeightCheckFromUndo, null, null, cells, []);
             if (cfRule.length || cfRefreshAll) {
                 this.parent.notify(applyCF, <ApplyCFArgs>{ cfModel: !cfRefreshAll && cfRule, refreshAll: cfRefreshAll, isAction: true });
+            }
+            if ((args.action === 'clear' && args.eventArgs.type === 'Clear All') || args.action === 'clipboard') {
+                this.parent.notify(refreshCommentsPane, { sheetIdx: this.parent.activeSheetIndex });
             }
             if (select) { getUpdateUsingRaf((): void => this.parent.selectRange(sheet.selectedRange)); }
         }

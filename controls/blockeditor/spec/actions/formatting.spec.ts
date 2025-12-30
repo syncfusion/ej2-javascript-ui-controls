@@ -4258,6 +4258,87 @@ describe('Formatting Actions', () => {
             expect(p1Model.content[0].content).toBe('Hello ');
             expect(p1Model.content[2].content).toBe(' world');
         });
+
+        it('Select multi blocks including mention, apply bold and remove bold', () => {
+            const p1 = editorElement.querySelector('#paragraph1') as HTMLElement;
+            editor.blockManager.setFocusToBlock(p1);
+            const contentEl = getBlockContentElement(p1);
+
+            editor.addBlock(
+                { id: 'before', blockType: 'Paragraph', content: [ { id: 'before-c', contentType: 'Text', content: 'Before' } ] },
+                'paragraph1',
+                false
+            );
+
+            const before = editorElement.querySelector('#before') as HTMLElement;
+            const beforeContent = getBlockContentElement(before);
+            editor.blockManager.setFocusToBlock(before);
+
+            const startNode = beforeContent.firstChild as Text; // "Before"
+            const endNode = (contentEl.querySelector('#content3') as HTMLElement).firstChild as Text;   // "world"
+
+            // Select from index 0 of "Before" to end index 6 of " world"
+            setRange(startNode, endNode, 0, 6);
+            editor.blockManager.formattingAction.execCommand({ command: 'bold' });
+
+            // DOM expectations:
+            // Before block
+            expect(beforeContent.querySelectorAll('strong').length).toBe(1);
+            const strongTags: HTMLElement[] = Array.from(beforeContent.querySelectorAll('strong'));
+            expect(strongTags[0].textContent).toBe('Before');
+            // Mention block
+            expect(contentEl.querySelectorAll('strong').length).toBe(2);
+            const strongTags1: HTMLElement[] = Array.from(contentEl.querySelectorAll('strong'));
+            expect(strongTags1[0].textContent).toBe('Hello ');
+            expect(strongTags1[1].textContent).toBe(' world');
+
+            // Model expectations
+            expect(editor.blocks.length).toBe(3);
+            const beforeBlkModel = editor.blocks[0];
+            expect(beforeBlkModel.content.length).toBe(1);
+            expect(((beforeBlkModel.content[0].properties as BaseStylesProp).styles.bold)).toBe(true);
+
+            const p1Model = editor.blocks[1];
+            // Mention should not have bold applied as it lies within the selection
+            const mentionItem = p1Model.content.find(c => c.id === 'content2');
+            expect(((mentionItem.properties as BaseStylesProp).styles)).toBeUndefined();
+
+            // other selected contents should have bold
+            expect(((p1Model.content[0].properties as BaseStylesProp).styles).bold).toBe(true);
+            expect(((p1Model.content[2].properties as BaseStylesProp).styles).bold).toBe(true);
+            expect(p1Model.content[0].content).toBe('Hello ');
+            expect(p1Model.content[2].content).toBe(' world');
+
+            //Remove bold now
+            editor.blockManager.formattingAction.execCommand({ command: 'bold' });
+
+            // DOM expectations:
+            // Before block
+            expect(beforeContent.querySelectorAll('strong').length).toBe(0);
+            expect(beforeContent.textContent).toBe('Before');
+            // Mention block
+            expect(contentEl.querySelectorAll('strong').length).toBe(0);
+            const childNodes = contentEl.childNodes;
+            expect(childNodes[0].textContent).toBe('Hello ');
+            expect(childNodes[2].textContent).toBe(' world');
+
+            // Model expectations
+            expect(editor.blocks.length).toBe(3);
+            const beforeBlkModelRM = editor.blocks[0];
+            expect(beforeBlkModelRM.content.length).toBe(1);
+            expect(((beforeBlkModelRM.content[0].properties as BaseStylesProp).styles.bold)).toBeUndefined();
+
+            const p1ModelRM = editor.blocks[1];
+            // Mention should not have bold applied as it lies within the selection
+            const mentionItemRM = p1ModelRM.content.find(c => c.id === 'content2');
+            expect(((mentionItemRM.properties as BaseStylesProp).styles)).toBeUndefined();
+
+            // other selected contents should have bold
+            expect(((p1ModelRM.content[0].properties as BaseStylesProp).styles).bold).toBeUndefined();
+            expect(((p1ModelRM.content[2].properties as BaseStylesProp).styles).bold).toBeUndefined();
+            expect(p1ModelRM.content[0].content).toBe('Hello ');
+            expect(p1ModelRM.content[2].content).toBe(' world');
+        });
     });
 
     describe('Block Formatting should not be applied for Label content type', () => {

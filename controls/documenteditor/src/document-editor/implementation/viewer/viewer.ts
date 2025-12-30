@@ -5772,7 +5772,9 @@ export abstract class LayoutViewer {
                             if (!this.documentHelper.isRowOrCellResizing) {
                                 tableWidth = block.getTableCellWidth();
                             }
-                            leftIndent = (this.clientArea.width - tableWidth) / 2;
+                            if (this.owner.viewer instanceof PageLayoutViewer) {
+                                leftIndent = (this.clientArea.width - tableWidth) / 2;
+                            }
                         } else {
                             leftIndent = this.clientArea.width - tableWidth;
                         }

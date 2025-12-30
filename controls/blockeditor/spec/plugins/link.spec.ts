@@ -641,7 +641,7 @@ describe('Link Module', () => {
             setTimeout(() => {
                 const popup = document.querySelector('.e-blockeditor-link-dialog');
                 expect(popup).not.toBeNull();
-                blockElement.click();
+                blockElement.dispatchEvent(new MouseEvent('mousedown', { bubbles: true }));
                 setTimeout(() => {
                     expect(popup.classList.contains('e-popup-close')).toBe(true);
                     done();

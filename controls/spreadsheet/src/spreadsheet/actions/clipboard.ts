@@ -5,7 +5,7 @@ import { SheetModel, getRangeIndexes, getCell, getSheet, CellModel, getSwapRange
 import { CellStyleModel, getRangeAddress, getSheetIndexFromId, getSheetName, NumberFormatArgs } from '../../workbook/index';
 import { RowModel, getFormattedCellObject, workbookFormulaOperation, checkIsFormula, Sheet, mergedRange } from '../../workbook/index';
 import { ExtendedSheet, Cell, setMerge, MergeArgs, getCellIndexes, ChartModel } from '../../workbook/index';
-import { ribbonClick, ICellRenderer, copy, paste, PasteSpecialType, initiateFilterUI, setPosition, isLockedCells, focus, readonlyAlert, BeforeActionData, isValidUrl } from '../common/index';
+import { ribbonClick, ICellRenderer, copy, paste, PasteSpecialType, initiateFilterUI, setPosition, isLockedCells, focus, readonlyAlert, BeforeActionData, isValidUrl, refreshCommentsPane } from '../common/index';
 import { BeforePasteEventArgs, hasTemplate, getTextHeightWithBorder, getLines, getExcludedColumnWidth, editAlert } from '../common/index';
 import { enableToolbarItems, rowHeightChanged, completeAction, DialogBeforeOpenEventArgs, insertImage } from '../common/index';
 import { clearCopy, selectRange, dialog, contentLoaded, tabSwitch, cMenuBeforeOpen, createImageElement, setMaxHgt } from '../common/index';
@@ -294,6 +294,9 @@ export class Clipboard {
                 } else {
                     isRepeative = !notRemoveMerge && !isRowSelected && (selIdx[2] - selIdx[0] + 1) % (cIdx[2] - cIdx[0] + 1) === 0
                         && !isColSelected && (selIdx[3] - selIdx[1] + 1) % (cIdx[3] - cIdx[1] + 1) === 0;
+                    if (this.copiedInfo.isCut && !beginEventArgs.repeatOnPaste) {
+                        isRepeative = false;
+                    }
                 }
                 rfshRange = isRepeative ? selIdx : [selIdx[0], selIdx[1]].concat(
                     [selIdx[0] + cIdx[2] - cIdx[0], selIdx[1] + cIdx[3] - cIdx[1] || selIdx[1]]);
@@ -509,8 +512,7 @@ export class Clipboard {
                                     }
                                     cell = extend({}, cell ? cell : {}, null, true);
                                     if (!isExtend && this.copiedInfo && !this.copiedInfo.isCut && cell.formula) {
-                                        const newFormula: string = getUpdatedFormula([x + l, colInd], [i, j], prevSheet,
-                                                                                     this.parent);
+                                        const newFormula: string = getUpdatedFormula([x + l, colInd], [i, j], prevSheet, this.parent);
                                         if (!isNullOrUndefined(newFormula)) {
                                             cell.formula = newFormula;
                                         }
@@ -663,6 +665,7 @@ export class Clipboard {
                     this.parent.notify(workbookFormulaOperation, { action: 'refreshRandomFormula' });
                 }
                 this.parent.notify(refreshRibbonIcons, null);
+                this.parent.notify(refreshCommentsPane, { sheetIdx: this.parent.activeSheetIndex });
                 const hiddenDiff: number = rfshRange[2] - hiddenCount;
                 const selHiddenDiff: number = selectionRange[2] - hiddenCount;
                 rfshRange[2] = hiddenDiff;
@@ -1530,6 +1533,12 @@ export class Clipboard {
             }
             if (cellStyle.fontWeight && ['bold', 'normal'].indexOf(cellStyle.fontWeight) === -1) {
                 cellStyle.fontWeight = cellStyle.fontWeight > '599' ? 'bold' : 'normal';
+            }
+            if (cellStyle.textIndent) {
+                const indentValue: number = parseFloat(cellStyle.textIndent);
+                if (indentValue < 0) {
+                    delete cellStyle.textIndent;
+                }
             }
             return cellStyle;
         };

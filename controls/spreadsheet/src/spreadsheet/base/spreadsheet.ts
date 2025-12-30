@@ -2410,8 +2410,7 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
     public calculateHeight(style: CellStyleModel, lines: number = 1, borderWidth: number = 1): number {
         const fontSize: string = (style && style.fontSize) || this.cellStyle.fontSize;
         const threshold: number = style.fontFamily === 'Arial Black' ? 1.44 : 1.24;
-        return ((fontSize.indexOf('pt') > -1 ? parseInt(fontSize, 10) * 1.33 : parseInt(fontSize, 10)) * threshold * lines) +
-            (borderWidth * threshold);
+        return ((fontSize.indexOf('pt') > -1 ? parseInt(fontSize, 10) * 1.33 : parseInt(fontSize, 10)) * threshold * lines) + borderWidth;
     }
 
     /**

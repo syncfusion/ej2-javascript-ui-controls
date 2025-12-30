@@ -10,12 +10,12 @@ The JavaScript Block Editor package includes the following,
 
 ### JavaScript Block Editor
 
-The [JavaScript Block Editor](https://www.syncfusion.com/javascript-ui-controls/js-blockeditor?utm_source=npm&utm_medium=listing&utm_campaign=javascript-blockeditor-npm) is a modern, block-based editor for composing rich, structured documents. It’s ideal for document editing, knowledge bases, note-taking, and content creation tools. The editor provides an intuitive UI with mobile support and modular architecture. It offers multiple block types, inline content (mentions, links, labels), slash commands, and contextual menus, returning well-structured content models and valid HTML when needed.
+The [JavaScript Block Editor](https://www.syncfusion.com/javascript-ui-controls/js-block-editor?utm_source=npm&utm_medium=listing&utm_campaign=javascript-blockeditor-npm) is a modern, block-based editor for composing rich, structured documents. It’s ideal for document editing, knowledge bases, note-taking, and content creation tools. The editor provides an intuitive UI with mobile support and modular architecture. It offers multiple block types, inline content (mentions, links, labels), slash commands, and contextual menus, returning well-structured content models and valid HTML when needed.
 
 <p align="center">
   <a href="https://ej2.syncfusion.com/documentation/block-editor/getting-started/?utm_source=npm&utm_medium=listing&utm_campaign=javascript-blockeditor-npm">Getting Started</a> .
   <a href="https://ej2.syncfusion.com/demos/?utm_source=npm&utm_medium=listing&utm_campaign=javascript-blockeditor-npm#/fluent2/block-editor/overview.html">Online demos</a> .
-  <a href="https://www.syncfusion.com/javascript-ui-controls/js-blockeditor?utm_source=npm&utm_medium=listing&utm_campaign=javascript-blockeditor-npm">Learn more</a>
+  <a href="https://www.syncfusion.com/javascript-ui-controls/js-block-editor?utm_source=npm&utm_medium=listing&utm_campaign=javascript-blockeditor-npm">Learn more</a>
 </p>
 
 <p align="center">
@@ -82,18 +82,17 @@ Now, open your project in a browser, and the Block Editor will be displayed! �
 
 ## ✨ Key features
 
-* **Multiple block types**: Includes Heading levels 1-4, Table, Paragraph, Table, Lists, Checklist, Quote, Callout, Divider, Code block, and more.
-* **Inline conten**: Insert mentions, anchors, and labels; includes cleanup of mention artifacts.
-* **Slash commands**: Interactive `/` commands to insert or transform content blocks, with filtering and keyboard shortcuts.
-* **Drag and drop**: Reorder blocks effortlessly with built-in drag-and-drop support.
-* **Rich text formatting**: Apply styles such as Bold, Italic, Underline, Strikethrough, Uppercase and more.
-* **Action menu**: Perform block-level operations such as Move, Delete, and Duplicate.
-* **Contextmenu support**: Right-click context menus for quick block actions.
-* **Inline content support**: Insert inline elements like Links, Labels and Mention directly within blocks.
-* **Undo/Redo operations**: Undo and redo support for the user interactions.
-* **Events for Customization**: The Block Editor includes a rich set of events such as block addition, removal, update, selection change, command execution, paste, and mention selection allowing developers to customize and extend functionality easily.
+* [Multiple block types](https://ej2.syncfusion.com/documentation/block-editor/built-in-blocks/built-in-blocks?utm_source=npm&utm_medium=listing&utm_campaign=javascript-blockeditor-npm#block-types): Includes Heading levels 1-4, Table, Paragraph, Table, Lists, Checklist, Quote, Callout, Divider, Code block, and more.
+* [Slash commands](https://ej2.syncfusion.com/documentation/block-editor/editor-menus?utm_source=npm&utm_medium=listing&utm_campaign=javascript-blockeditor-npm#slash-command-menu): Interactive `/` commands to insert or transform content blocks, with filtering and keyboard shortcuts.
+* [Drag and drop](https://ej2.syncfusion.com/documentation/block-editor/drag-drop?utm_source=npm&utm_medium=listing&utm_campaign=javascript-blockeditor-npm): Reorder blocks effortlessly with built-in drag-and-drop support.
+* [Rich text formatting](https://ej2.syncfusion.com/documentation/block-editor/editor-menus?utm_source=npm&utm_medium=listing&utm_campaign=javascript-blockeditor-npm#inline-toolbar): Apply styles such as Bold, Italic, Underline, Strikethrough, Uppercase and more.
+* [Action menu](https://ej2.syncfusion.com/documentation/block-editor/editor-menus?utm_source=npm&utm_medium=listing&utm_campaign=javascript-blockeditor-npm#block-action-menu): Perform block-level operations such as Move, Delete, and Duplicate.
+* [Contextmenu support](https://ej2.syncfusion.com/documentation/block-editor/editor-menus?utm_source=npm&utm_medium=listing&utm_campaign=javascript-blockeditor-npm#context-menu): Right-click context menus for quick block actions.
+* [Inline content support](https://ej2.syncfusion.com/documentation/block-editor/built-in-blocks/inline-content?utm_source=npm&utm_medium=listing&utm_campaign=javascript-blockeditor-npm): Insert inline elements like Links, Labels and Mention directly within blocks.
+* [Undo/Redo operations](https://ej2.syncfusion.com/documentation/block-editor/undo-redo?utm_source=npm&utm_medium=listing&utm_campaign=javascript-blockeditor-npm): Undo and redo support for the user interactions.
+* [Events for Customization](https://ej2.syncfusion.com/documentation/block-editor/events?utm_source=npm&utm_medium=listing&utm_campaign=javascript-blockeditor-npm): The Block Editor includes a rich set of events such as block addition, removal, update, selection change, command execution, paste, and mention selection allowing developers to customize and extend functionality easily.
 * **Accessibility & WCAG 2.0 Compliance**: Accessibility support for assistive technologies and keyboard navigation.
-* **Keyboard Navigation**: Navigate and manage blocks efficiently using intuitive keyboard shortcuts for a faster editing experience.
+* [Keyboard Navigation](https://ej2.syncfusion.com/documentation/block-editor/keyboard-shortcuts?utm_source=npm&utm_medium=listing&utm_campaign=javascript-blockeditor-npm): Navigate and manage blocks efficiently using intuitive keyboard shortcuts for a faster editing experience.
 
 
 <p align="center">

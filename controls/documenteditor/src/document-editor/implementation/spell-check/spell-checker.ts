@@ -412,7 +412,6 @@ export class SpellChecker {
             }
             this.handleErrorElements.push(textElement);
         }
-        this.documentHelper.owner.editorModule.reLayout(this.documentHelper.selection);
     }
     /**
      * Method to handle to ignore error Once intenral
@@ -454,13 +453,9 @@ export class SpellChecker {
         const retrievedText: string = this.manageSpecialCharacters(contextItem.text, undefined, true);
         if (this.ignoreAllItems.indexOf(retrievedText) === -1) {
             this.ignoreAllItems.push(retrievedText);
-            this.removeErrorsFromCollection(contextItem);
             if(!isNullOrUndefined(contextItem.element)) {
                 this.handleErrorCollection(contextItem.element as TextElementBox);
             }
-            this.documentHelper.triggerSpellCheck = true;
-            this.documentHelper.owner.editorModule.reLayout(this.documentHelper.selection);
-            this.documentHelper.triggerSpellCheck = false;
             this.documentHelper.clearSelectionHighlight();
         }
     }
@@ -1341,6 +1336,9 @@ export class SpellChecker {
                 if (isNullOrUndefined(element)) {
                     start = this.documentHelper.selection.getDocumentStart();
                     element = this.checkSelectionNextError(start);
+                    if (!isNullOrUndefined(element) && !start.currentWidget.paragraph.isInHeaderFooter && this.documentHelper.owner.enableHeaderAndFooter) {
+                        this.documentHelper.selection.closeHeaderFooter();
+                    }
                 }
                 if (isNullOrUndefined(element)) {
                     element = this.checkForHeaderFooterNextError();

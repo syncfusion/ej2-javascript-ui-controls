@@ -2,6 +2,18 @@
 
 ## [Unreleased]
 
+## 32.1.21 (2025-12-30)
+
+### RichTextEditor
+
+#### Bug Fixes
+
+- `#I795310` - Now, collapsing the extended toolbar after clicking the code view icons works properly without decreasing the Rich Text Editor height.
+
+- `#I796071` - Now, the tab key navigation across the Rich Text Editor works properly even after the maximum content length is reached.
+
+- `#I794986` - Now, the divider element remains separate and works properly without merging with a table when pasted from a Word document into the Rich Text Editor.
+
 ## 32.1.20 (2025-12-23)
 
 ### RichTextEditor

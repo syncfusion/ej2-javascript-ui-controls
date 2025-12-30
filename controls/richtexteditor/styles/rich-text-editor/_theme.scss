@@ -336,10 +336,16 @@
     }
   }
 
+  .e-richtexteditor .e-rte-toolbar .e-toolbar-item,
+  .e-rte-quick-popup .e-rte-quick-toolbar .e-toolbar-item {
+    .e-rte-dropdown {
+      box-shadow: none;
+    }
+  }
+
   .e-richtexteditor .e-rte-toolbar .e-toolbar-item:not(.e-overlay),
   .e-rte-quick-popup .e-rte-quick-toolbar .e-toolbar-item:not(.e-overlay) {
     .e-rte-dropdown {
-      box-shadow: none;
       color: $rte-dropdown-color;
     }
     .e-split-btn-wrapper {

@@ -256,7 +256,50 @@ describe('Comments ->', () => {
                 container.querySelector<HTMLButtonElement>('.e-comment-footer .e-comment-post').click();
                 expect(helper.invoke('getCell', [0, 1]).querySelector('.e-comment-indicator')).not.toBeNull();
                 expect(helper.getInstance().sheets[0].rows[0].cells[1].comment.text).toBe('Hello World');
+                closeContainer();
                 done();
+            });
+        });
+        it('Testing comments indicator with list validation and filter icon', (done: Function) => {
+            helper.invoke('addDataValidation', [{ type: 'List', value1: '1,2,3' }, 'D2']);
+            helper.invoke('selectRange', ['B1']);
+            helper.invoke('applyFilter');
+            setTimeout(() => {
+                helper.getInstance().updateCell({
+                    comment: { author: 'JC', id: 'uuid-1', isResolved: false, createdTime: 'November 18, 2025 at 10:35 AM', replies: [] }
+                }, 'Sheet1!A1');
+                helper.invoke('selectRange', ['D2']);
+                helper.getInstance().updateCell({
+                    comment: { author: 'JC', id: 'uuid-1', isResolved: false, createdTime: 'November 18, 2025 at 10:35 AM', replies: [] }
+                }, 'Sheet1!D2');
+                expect(helper.invoke('getCell', [0, 0]).querySelector('.e-comment-indicator')).not.toBeNull();
+                expect(helper.getInstance().sheets[0].rows[0].cells[0].comment).toBeDefined();
+                expect(helper.invoke('getCell', [1, 3]).querySelector('.e-comment-indicator')).not.toBeNull();
+                expect(helper.getInstance().sheets[0].rows[1].cells[3].comment).toBeDefined();
+                done();
+            });
+        });
+        it('Open comment container using Ctrl + Shift + F2 and check the Esc key behavior', (done: Function) => {
+            helper.invoke('selectRange', ['C3']);
+            helper.triggerKeyNativeEvent(113, true, true);
+            setTimeout(() => {
+                const container: HTMLElement = document.querySelector('.e-comment-container') as HTMLElement;
+                expect(container).not.toBeNull();
+                const textarea: HTMLTextAreaElement = container.querySelector('.e-comment-footer .e-comment-input') as HTMLTextAreaElement;
+                expect(textarea).not.toBeNull();
+                textarea.focus();
+                expect(document.activeElement).toBe(textarea);
+                helper.triggerKeyNativeEvent(27, false, false, null, 'keydown', false, textarea);
+                setTimeout(() => {
+                    expect(document.activeElement).not.toBe(textarea);
+                    const container1 = document.querySelector('.e-comment-container') as HTMLElement;
+                    expect(container1).not.toBeNull();
+                    helper.triggerKeyNativeEvent(27, false, false, null, 'keydown', false, container1);
+                    setTimeout(() => {
+                        expect(document.querySelector('.e-comment-container') as HTMLElement).toBeNull();
+                        done();
+                    });
+                });
             });
         });
     });
@@ -515,6 +558,301 @@ describe('Comments ->', () => {
             expect(helper.invoke('getCell', [0, 0]).querySelector('.e-comment-indicator')).toBeNull();
             expect((helper.getInstance().sheets[0] as ExtendedSheet).comments.length).toBe(0);
             done();
+        });
+    });
+
+    describe('UI Interaction - IV - Insert and Delete with comments->', () => {
+        beforeAll((done: Function) => {
+            helper.initializeSpreadsheet({ sheets: [{ ranges: [{ dataSource: defaultData }] }] }, done);
+        });
+        afterAll(() => {
+            helper.invoke('destroy');
+        });
+        it('Add comment using the update cell to check the insert and delete with the comments', (done: Function) => {
+            helper.getInstance().updateCell({ comment: { text: 'Medical unused—why?', createdTime: 'November 18, 2025 at 5:00 PM', isResolved: true, replies: [] } }, 'Sheet1!C3');
+            helper.getInstance().updateCell({ comment: { text: 'unused—why?', createdTime: 'November 18, 2025 at 5:00 PM', isResolved: false, replies: [] } }, 'Sheet1!G2');
+            helper.getInstance().updateCell({ comment: { text: 'Medical?', createdTime: 'November 18, 2025 at 5:00 PM', isResolved: true, replies: [] } }, 'Sheet1!B10');
+            helper.getInstance().updateCell({ comment: { text: 'why?', createdTime: 'November 18, 2025 at 5:00 PM', isResolved: false, replies: [] } }, 'Sheet1!J1');
+            expect(helper.invoke('getCell', [2, 2]).querySelector('.e-comment-indicator')).not.toBeNull();
+            expect(helper.invoke('getCell', [1, 6]).querySelector('.e-comment-indicator')).not.toBeNull();
+            expect(helper.invoke('getCell', [9, 1]).querySelector('.e-comment-indicator')).not.toBeNull();
+            expect(helper.invoke('getCell', [0, 9]).querySelector('.e-comment-indicator')).not.toBeNull();
+            done();
+        });
+        it('Insert Row ABOVE on comment inserted cell moves indicator down + Undo/Redo', (done: Function) => {
+            helper.invoke('selectRange', ['C3']);
+            helper.setAnimationToNone('#' + helper.id + '_contextmenu');
+            helper.openAndClickCMenuItem(2, 0, [6, 1], true);
+            setTimeout(() => {
+                expect(helper.invoke('getCell', [2, 2]).querySelector('.e-comment-indicator')).toBeNull();
+                expect(helper.invoke('getCell', [3, 2]).querySelector('.e-comment-indicator')).not.toBeNull();
+                helper.click('#spreadsheet_undo');
+                setTimeout(() => {
+                    expect(helper.invoke('getCell', [2, 2]).querySelector('.e-comment-indicator')).not.toBeNull();
+                    helper.click('#spreadsheet_redo');
+                    setTimeout(() => {
+                        expect(helper.invoke('getCell', [3, 2]).querySelector('.e-comment-indicator')).not.toBeNull();
+                        done();
+                    });
+                });
+            });
+        });
+        it('Insert Row BELOW on comment inserted cell (C4) leaves indicator unchanged + Undo/Redo', (done: Function) => {
+            helper.invoke('selectRange', ['C4']);
+            helper.setAnimationToNone('#' + helper.id + '_contextmenu');
+            helper.openAndClickCMenuItem(3, 0, [6, 2], true);
+            setTimeout(() => {
+                expect(helper.invoke('getCell', [3, 2]).querySelector('.e-comment-indicator')).not.toBeNull();
+                helper.click('#spreadsheet_undo');
+                setTimeout(() => {
+                    expect(helper.invoke('getCell', [3, 2]).querySelector('.e-comment-indicator')).not.toBeNull();
+                    helper.click('#spreadsheet_redo');
+                    setTimeout(() => {
+                        expect(helper.invoke('getCell', [3, 2]).querySelector('.e-comment-indicator')).not.toBeNull();
+                        done();
+                    });
+                });
+            });
+        });
+        it('Delete ROW containing comment (B12) removes indicator + Undo/Redo', (done: Function) => {
+            helper.invoke('selectRange', ['B12']);
+            helper.setAnimationToNone('#' + helper.id + '_contextmenu');
+            helper.openAndClickCMenuItem(11, 0, [7], true);
+            setTimeout(() => {
+                expect(helper.invoke('getCell', [11, 1]).querySelector('.e-comment-indicator')).toBeNull();
+                helper.click('#spreadsheet_undo');
+                setTimeout(() => {
+                    expect(helper.invoke('getCell', [11, 1]).querySelector('.e-comment-indicator')).not.toBeNull();
+                    helper.click('#spreadsheet_redo');
+                    setTimeout(() => {
+                        expect(helper.invoke('getCell', [11, 1]).querySelector('.e-comment-indicator')).toBeNull();
+                        done();
+                    });
+                });
+            });
+        });
+        it('Insert Column BEFORE on comment inserted cell (G2) shifts indicator right + Undo/Redo', (done: Function) => {
+            helper.invoke('selectRange', ['G2']);
+            helper.setAnimationToNone('#' + helper.id + '_contextmenu');
+            helper.openAndClickCMenuItem(0, 6, [6, 1], false, true);
+            setTimeout(() => {
+                expect(helper.invoke('getCell', [1, 6]).querySelector('.e-comment-indicator')).toBeNull();
+                expect(helper.invoke('getCell', [1, 7]).querySelector('.e-comment-indicator')).not.toBeNull();
+                helper.click('#spreadsheet_undo');
+                setTimeout(() => {
+                    expect(helper.invoke('getCell', [1, 6]).querySelector('.e-comment-indicator')).not.toBeNull();
+                    helper.click('#spreadsheet_redo');
+                    setTimeout(() => {
+                        expect(helper.invoke('getCell', [1, 7]).querySelector('.e-comment-indicator')).not.toBeNull();
+                        done();
+                    });
+                });
+            });
+        });
+        it('Insert Column AFTER on comment inserted cell (H2) leaves indicator unchanged + Undo/Redo', (done: Function) => {
+            helper.invoke('selectRange', ['H2']);
+            helper.setAnimationToNone('#' + helper.id + '_contextmenu');
+            helper.openAndClickCMenuItem(0, 7, [6, 2], false, true);
+            setTimeout(() => {
+                expect(helper.invoke('getCell', [1, 7]).querySelector('.e-comment-indicator')).not.toBeNull();
+                helper.click('#spreadsheet_undo');
+                setTimeout(() => {
+                    expect(helper.invoke('getCell', [1, 7]).querySelector('.e-comment-indicator')).not.toBeNull();
+                    helper.click('#spreadsheet_redo');
+                    setTimeout(() => {
+                        expect(helper.invoke('getCell', [1, 7]).querySelector('.e-comment-indicator')).not.toBeNull();
+                        done();
+                    });
+                });
+            });
+        });
+        it('Delete COLUMN containing comment (L1) removes indicator + Undo/Redo', (done: Function) => {
+            helper.invoke('selectRange', ['L1']);
+            helper.setAnimationToNone('#' + helper.id + '_contextmenu');
+            helper.openAndClickCMenuItem(0, 11, [7], false, true);
+            setTimeout(() => {
+                expect(helper.invoke('getCell', [0, 11]).querySelector('.e-comment-indicator')).toBeNull();
+                helper.click('#spreadsheet_undo');
+                setTimeout(() => {
+                    expect(helper.invoke('getCell', [0, 11]).querySelector('.e-comment-indicator')).not.toBeNull();
+                    helper.click('#spreadsheet_redo');
+                    setTimeout(() => {
+                        expect(helper.invoke('getCell', [0, 11]).querySelector('.e-comment-indicator')).toBeNull();
+                        done();
+                    });
+                });
+            });
+        });
+        it('Delete ROW without comments should not affect other comment indicators + Undo/Redo', (done: Function) => {
+            const sheet: ExtendedSheet = helper.getInstance().sheets[0] as ExtendedSheet;
+            helper.invoke('selectRange', ['B5']);
+            helper.setAnimationToNone('#' + helper.id + '_contextmenu');
+            helper.openAndClickCMenuItem(4, 0, [7], true);
+            setTimeout(() => {
+                expect(sheet.comments.length).toBe(2);
+                expect(helper.invoke('getCell', [3, 2]).querySelector('.e-comment-indicator')).not.toBeNull();
+                expect(helper.invoke('getCell', [1, 7]).querySelector('.e-comment-indicator')).not.toBeNull();
+                helper.click('#spreadsheet_undo');
+                setTimeout(() => {
+                    expect(sheet.comments.length).toBe(2);
+                    helper.click('#spreadsheet_redo');
+                    setTimeout(() => {
+                        expect(sheet.comments.length).toBe(2);
+                        done();
+                    });
+                });
+            });
+        });
+        it('Delete COLUMN without comments should not affect other comment indicators + Undo/Redo', (done: Function) => {
+            const sheet: ExtendedSheet = helper.getInstance().sheets[0] as ExtendedSheet;
+            helper.invoke('selectRange', ['E3']);
+            helper.setAnimationToNone('#' + helper.id + '_contextmenu');
+            helper.openAndClickCMenuItem(0, 4, [7], false, true);
+            setTimeout(() => {
+                expect(sheet.comments.length).toBe(2);
+                helper.click('#spreadsheet_undo');
+                setTimeout(() => {
+                    expect(sheet.comments.length).toBe(2);
+                    helper.click('#spreadsheet_redo');
+                    setTimeout(() => {
+                        expect(sheet.comments.length).toBe(2);
+                        done();
+                    });
+                });
+            });
+        });
+        it('Delete ROW and testing Undo/Redo', (done: Function) => {
+            helper.invoke('selectRange', ['B2']);
+            helper.setAnimationToNone('#' + helper.id + '_contextmenu');
+            helper.openAndClickCMenuItem(1, 0, [7], true);
+            const sheet: ExtendedSheet = helper.getInstance().sheets[0] as ExtendedSheet;
+            setTimeout(() => {
+                expect(sheet.comments.length).toBe(1);
+                helper.click('#spreadsheet_undo');
+                setTimeout(() => {
+                    expect(sheet.comments.length).toBe(2);
+                    helper.click('#spreadsheet_redo');
+                    setTimeout(() => {
+                        expect(sheet.comments.length).toBe(1);
+                        done();
+                    });
+                });
+            });
+        });
+    });
+
+    describe('UI Interaction - V - Clipboard action with comments->', () => {
+        beforeAll((done: Function) => {
+            helper.initializeSpreadsheet({ sheets: [{ ranges: [{ dataSource: defaultData }] }] }, done);
+        });
+        afterAll(() => {
+            helper.invoke('destroy');
+        });
+        it('Add comment using the update cell method to check the clipboard action with the comments', (done: Function) => {
+            helper.getInstance().updateCell({ comment: { text: 'Medical unused—why?', createdTime: 'November 18, 2025 at 5:00 PM', isResolved: true, replies: [] } }, 'Sheet1!A1');
+            helper.getInstance().updateCell({ comment: { text: 'unused—why?', createdTime: 'November 18, 2025 at 5:00 PM', isResolved: false, replies: [] } }, 'Sheet1!C3');
+            helper.getInstance().updateCell({ comment: { text: 'Medical?', createdTime: 'November 18, 2025 at 5:00 PM', isResolved: true, replies: [] } }, 'Sheet1!E5');
+            expect(helper.invoke('getCell', [0, 0]).querySelector('.e-comment-indicator')).not.toBeNull();
+            expect(helper.invoke('getCell', [2, 2]).querySelector('.e-comment-indicator')).not.toBeNull();
+            expect(helper.invoke('getCell', [4, 4]).querySelector('.e-comment-indicator')).not.toBeNull();
+            done();
+        });
+        it('Copy the comment cell to empty cell and perform undo and redo', (done: Function) => {
+            const sheet: ExtendedSheet = helper.getInstance().sheets[0] as ExtendedSheet;
+            expect(sheet.comments.length).toBe(3);
+            helper.invoke('copy', ['C3']).then(() => {
+                helper.invoke('paste', ['B2']);
+                setTimeout(() => {
+                    expect(helper.invoke('getCell', [1, 1]).querySelector('.e-comment-indicator')).not.toBeNull();
+                    expect(sheet.comments.length).toBe(4);
+                    helper.click('#spreadsheet_undo');
+                    setTimeout(() => {
+                        expect(helper.invoke('getCell', [1, 1]).querySelector('.e-comment-indicator')).toBeNull();
+                        expect(sheet.comments.length).toBe(3);
+                        helper.click('#spreadsheet_redo');
+                        setTimeout(() => {
+                            expect(helper.invoke('getCell', [1, 1]).querySelector('.e-comment-indicator')).not.toBeNull();
+                            expect(sheet.comments.length).toBe(4);
+                            done();
+                        });
+                    });
+                });
+            });
+        });
+        it('Copy the comment cell to another comment cell and perform undo and redo', (done: Function) => {
+            const sheet: ExtendedSheet = helper.getInstance().sheets[0] as ExtendedSheet;
+            expect(sheet.comments.length).toBe(4);
+            helper.invoke('copy', ['E5']).then(() => {
+                helper.invoke('paste', ['A1']);
+                setTimeout(() => {
+                    expect(helper.invoke('getCell', [0, 0]).querySelector('.e-comment-indicator')).not.toBeNull();
+                    expect(helper.invoke('getCell', [4, 4]).querySelector('.e-comment-indicator')).not.toBeNull();
+                    expect(sheet.comments.length).toBe(4);
+                    helper.click('#spreadsheet_undo');
+                    setTimeout(() => {
+                        expect(helper.invoke('getCell', [0, 0]).querySelector('.e-comment-indicator')).not.toBeNull();
+                        expect(helper.invoke('getCell', [4, 4]).querySelector('.e-comment-indicator')).not.toBeNull();
+                        expect(sheet.comments.length).toBe(4);
+                        helper.click('#spreadsheet_redo');
+                        setTimeout(() => {
+                            expect(helper.invoke('getCell', [0, 0]).querySelector('.e-comment-indicator')).not.toBeNull();
+                            expect(helper.invoke('getCell', [4, 4]).querySelector('.e-comment-indicator')).not.toBeNull();
+                            expect(sheet.comments.length).toBe(4);
+                            done();
+                        });
+                    });
+                });
+            });
+        });
+        it('Cut the comment cell to empty cell and perform undo and redo ', (done: Function) => {
+            const sheet: ExtendedSheet = helper.getInstance().sheets[0] as ExtendedSheet;
+            expect(sheet.comments.length).toBe(4);
+            helper.invoke('cut', ['C3']).then(() => {
+                helper.invoke('paste', ['D4']);
+                setTimeout(() => {
+                    expect(helper.invoke('getCell', [2, 2]).querySelector('.e-comment-indicator')).toBeNull();
+                    expect(helper.invoke('getCell', [3, 3]).querySelector('.e-comment-indicator')).not.toBeNull();
+                    expect(sheet.comments.length).toBe(4);
+                    helper.click('#spreadsheet_undo');
+                    setTimeout(() => {
+                        expect(helper.invoke('getCell', [2, 2]).querySelector('.e-comment-indicator')).not.toBeNull();
+                        expect(helper.invoke('getCell', [3, 3]).querySelector('.e-comment-indicator')).toBeNull();
+                        expect(sheet.comments.length).toBe(4);
+                        helper.click('#spreadsheet_redo');
+                        setTimeout(() => {
+                            expect(helper.invoke('getCell', [2, 2]).querySelector('.e-comment-indicator')).toBeNull();
+                            expect(helper.invoke('getCell', [3, 3]).querySelector('.e-comment-indicator')).not.toBeNull();
+                            expect(sheet.comments.length).toBe(4);
+                            done();
+                        });
+                    });
+                });
+            });
+        });
+        it('Cut the comment cell to another comment cell and perform undo and redo ', (done: Function) => {
+            const sheet: ExtendedSheet = helper.getInstance().sheets[0] as ExtendedSheet;
+            expect(sheet.comments.length).toBe(4);
+            helper.invoke('cut', ['E5']).then(() => {
+                helper.invoke('paste', ['A1']);
+                setTimeout(() => {
+                    expect(helper.invoke('getCell', [4, 4]).querySelector('.e-comment-indicator')).toBeNull();
+                    expect(helper.invoke('getCell', [0, 0]).querySelector('.e-comment-indicator')).not.toBeNull();
+                    expect(sheet.comments.length).toBe(3);
+                    helper.click('#spreadsheet_undo');
+                    setTimeout(() => {
+                        expect(helper.invoke('getCell', [4, 4]).querySelector('.e-comment-indicator')).not.toBeNull();
+                        expect(helper.invoke('getCell', [0, 0]).querySelector('.e-comment-indicator')).not.toBeNull();
+                        expect(sheet.comments.length).toBe(4);
+                        helper.click('#spreadsheet_redo');
+                        setTimeout(() => {
+                            expect(helper.invoke('getCell', [4, 4]).querySelector('.e-comment-indicator')).toBeNull();
+                            expect(helper.invoke('getCell', [0, 0]).querySelector('.e-comment-indicator')).not.toBeNull();
+                            expect(sheet.comments.length).toBe(3);
+                            done();
+                        });
+                    });
+                });
+            });
         });
     });
 

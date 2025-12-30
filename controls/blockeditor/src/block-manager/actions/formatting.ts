@@ -23,6 +23,8 @@ export class FormattingAction {
     /** @hidden */
     public activeInlineFormats: Set<keyof StyleModel> = new Set();
     private formatCache: WeakMap<HTMLElement, Set<keyof StyleModel>> = new WeakMap<HTMLElement, Set<keyof StyleModel>>();
+    private ignoredContentTypes: Set<string> = new Set<string>([ ContentType.Mention, ContentType.Label ]);
+    private ignoredBlockTypes: Set<string> = new Set<string>([ BlockType.Callout, BlockType.Image, BlockType.Divider, BlockType.Code ]);
 
     constructor(manager?: BlockManager) {
         this.parent = manager;
@@ -80,10 +82,9 @@ export class FormattingAction {
         const oldBlockModels: BlockModel[] = [];
         const updatedBlockModels: BlockModel[] = [];
 
-        const ignoredTypes: Set<string> = new Set<string>([ BlockType.Callout, BlockType.Image, BlockType.Divider, BlockType.Code ]);
 
         for (const block of blocks) {
-            if (ignoredTypes.has(block.blockType) || block.content.length <= 0) {
+            if (this.ignoredBlockTypes.has(block.blockType) || block.content.length <= 0) {
                 continue;
             }
 
@@ -127,7 +128,6 @@ export class FormattingAction {
         const range: Range = this.getBlockSpecificRange(getSelectedRange(), blockElement);
         const selectedContents: ContentModel[] = this.getSelectedContents(range, block.content, blockElement);
         const formatIntent: boolean = this.getFormatIntent(selectedContents, options.command);
-        const ignoredTypes: Set<string> = new Set<string>([ ContentType.Mention, ContentType.Label ]);
         for (const content of block.content) {
             const contentText: string = content.content;
             const contentLength: number = contentText.length;
@@ -136,7 +136,8 @@ export class FormattingAction {
             const isStartInsideContent: boolean = isNodeInsideElement(range.startContainer, contentElement);
             const isEndInsideContent: boolean = isNodeInsideElement(range.endContainer, contentElement);
             const isContentFullyInsideSelection: boolean = this.isContentFullyInsideSelection(contentElement, range);
-            if ((!isStartInsideContent && !isEndInsideContent && !isContentFullyInsideSelection) || ignoredTypes.has(content.contentType)) {
+            if ((!isStartInsideContent && !isEndInsideContent && !isContentFullyInsideSelection)
+                || this.ignoredContentTypes.has(content.contentType)) {
                 // Fully outside selection — just copy as-it-is
                 newContent.push({ ...content });
                 continue;
@@ -374,7 +375,7 @@ export class FormattingAction {
         // If even one content doesn't have the format, we intend to apply it
         for (const content of selectedContents) {
             const styles: Styles = (content.properties as BaseStylesProp).styles;
-            if (styles && format in styles && styles[format as keyof StyleModel]) {
+            if (this.ignoredContentTypes.has(content.contentType) || (styles && format in styles && styles[format as keyof StyleModel])) {
                 // Continue checking others
                 continue;
             }
@@ -503,5 +504,7 @@ export class FormattingAction {
         this.nodeSelection = null;
         this.formatCache = null;
         this.activeInlineFormats = null;
+        this.ignoredContentTypes = null;
+        this.ignoredBlockTypes = null;
     }
 }
