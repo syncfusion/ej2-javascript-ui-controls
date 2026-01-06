@@ -1,3 +1,6 @@
+@use 'ej2-base/styles/definition/material' as *;
+@forward 'ej2-base/styles/definition/material';
+
 // Base Badge
 $badge-theme : $skin-name !default;
 $badge-base-border-radius: .25em !default;
@@ -70,3 +73,6 @@ $badge-secondary-font-color: $accent-font !default;
 $badge-light-font-color: $grey-light-font !default;
 $badge-dark-font-color: $grey-dark-font !default;
 $badge-warning-font-color: $grey-dark-font !default;
+$badge-zero-padding-margin: 0 !default;
+$badge-notification-width: auto !default;
+$badge-button-nrml-line-height: .9 !default;

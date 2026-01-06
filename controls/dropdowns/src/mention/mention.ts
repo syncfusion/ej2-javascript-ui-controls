@@ -755,13 +755,29 @@ export class Mention extends DropDownBase {
             this.hidePopup();
             return;
         }
+        const prevSiblingIsChip: boolean = (() => {
+            if (!this.isContentEditable(this.inputElement) || !this.range || !this.range.startContainer) { return false; }
+            const startContainer: Node = this.range.startContainer as Node;
+            const textNode: Node | null = startContainer.nodeType === Node.TEXT_NODE ? startContainer : (() => {
+                const idx: number = Math.min(this.range.startOffset, startContainer.childNodes.length - 1);
+                const child: ChildNode = startContainer.childNodes[idx as number] || startContainer.firstChild;
+                return child && child.nodeType === Node.TEXT_NODE ? child : null;
+            })();
+            if (!textNode) { return false; }
+            const firstChar: string = ((textNode as Text).data || '').replace(/\u200B/g, '').replace(/\u00A0/g, ' ').charAt(0);
+            let previousSibling: Node | null = (textNode as ChildNode).previousSibling;
+            while (previousSibling && ((previousSibling.nodeType === Node.TEXT_NODE && !((previousSibling as Text).data || '').trim()) || ((previousSibling as HTMLElement).tagName === 'BR'))) {
+                previousSibling = previousSibling.previousSibling;
+            }
+            return firstChar === this.mentionChar && !!(previousSibling && (previousSibling as HTMLElement).classList && (previousSibling as HTMLElement).classList.contains('e-mention-chip'));
+        })() as boolean;
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         if (((!currentRange || !lastWordRange) || (!(lastWordRange as any).includes(this.mentionChar) && !this.requireLeadingSpace && !this.allowSpaces)) || e.code === 'Enter' || e.keyCode === 27 ||
             (lastWordRange.match(Regex) && lastWordRange.match(Regex).length > 1) ||
             (this.isContentEditable(this.inputElement) && this.range.startContainer &&
             (this.range.startContainer as HTMLElement).previousElementSibling && (this.range.startContainer as HTMLElement).previousElementSibling.tagName !== 'BR' && this.range.startContainer.textContent.split('').length > 0 &&
             (rangetextContent.length === 1 || rangetextContent[rangetextContent.length - 2].indexOf('') === -1 ||
-            this.range.startContainer.nodeType === 1))) {
+            this.range.startContainer.nodeType === 1)) && !prevSiblingIsChip) {
             if (isValid && this.isPopupOpen && this.allowSpaces && currentRange && currentRange.trim() !== '' && charRegex.test(currentRange) && currentRange.indexOf(this.mentionChar) !== -1
                 && !this.isMatchedText() && this.list && e.code !== 'ArrowDown' && e.code !== 'ArrowUp' && e.code !== 'Enter') {
                 this.queryString = currentRange.substring(currentRange.lastIndexOf(this.mentionChar) + 1).replace('\u00a0', ' ');
@@ -1237,15 +1253,13 @@ export class Mention extends DropDownBase {
     }
 
     private checkCollision(popupEle: HTMLElement): void {
-        if (!Browser.isDevice || (Browser.isDevice && !(this.getModuleName() === 'mention'))) {
-            const coordinates: { [key: string]: number } = this.getCoordinates(this.inputElement, this.getTriggerCharPosition());
-            this.collision = isCollide(popupEle, null, coordinates.left, coordinates.top);
-            if (this.collision.length > 0) {
-                popupEle.style.marginTop = -parseInt(getComputedStyle(popupEle).marginTop, 10) + 'px';
-                this.isCollided = true;
-            }
-            this.popupObj.resolveCollision();
+        const coordinates: { [key: string]: number } = this.getCoordinates(this.inputElement, this.getTriggerCharPosition());
+        this.collision = isCollide(popupEle, null, coordinates.left, coordinates.top);
+        if (this.collision.length > 0) {
+            popupEle.style.marginTop = -parseInt(getComputedStyle(popupEle).marginTop, 10) + 'px';
+            this.isCollided = true;
         }
+        this.popupObj.resolveCollision();
     }
 
     private getTriggerCharPosition(): number  {
@@ -1297,7 +1311,7 @@ export class Mention extends DropDownBase {
             this.popupObj.element.removeAttribute('style');
             this.popupObj.element.removeAttribute('aria-disabled');
         }
-        if (this.list.classList.contains('e-nodata')) {
+        if (this.list && this.list.classList.contains('e-nodata')) {
             this.list = null;
         }
     }
@@ -1743,14 +1757,15 @@ export class Mention extends DropDownBase {
             value = this.displayTempElement.innerHTML;
         }
         if (this.isContentEditable(this.inputElement)) {
+            const defaultSuffix: string = this.isRTE ? '&#8203;' : '';
             if (Browser.isAndroid) {
-                return '<span contenteditable="true" class="e-mention-chip">' + showChar + value + '</span>'.concat(typeof this.suffixText === 'string' ? this.suffixText : '&#8203;');
+                return '<span contenteditable="true" class="e-mention-chip">' + showChar + value + '</span>'.concat(typeof this.suffixText === 'string' ? this.suffixText : defaultSuffix);
             }
             else if (Browser.info.name === 'mozilla') {
-                return '<span>&#65279;<span contenteditable="false" class="e-mention-chip">' + showChar + value + '</span>&#65279;</span>'.concat(typeof this.suffixText === 'string' ? this.suffixText : '&#8203;');
+                return '<span>&#65279;<span contenteditable="false" class="e-mention-chip">' + showChar + value + '</span>&#65279;</span>'.concat(typeof this.suffixText === 'string' ? this.suffixText : defaultSuffix);
             }
             else {
-                return '<span contenteditable="false" class="e-mention-chip">' + showChar + value + '</span>'.concat(typeof this.suffixText === 'string' ? this.suffixText : '&#8203;');
+                return '<span contenteditable="false" class="e-mention-chip">' + showChar + value + '</span>'.concat(typeof this.suffixText === 'string' ? this.suffixText : defaultSuffix);
             }
         } else {
             return showChar + value;

@@ -1,3 +1,6 @@
+@use 'ej2-base/styles/definition/bds' as *;
+@forward 'ej2-base/styles/definition/bds';
+
 //layout variables
 $badge-theme : 'Material3' !default;
 
@@ -100,7 +103,6 @@ $badge-warning-bg-color: $warning-light !default;
 $badge-info-bg-color: $info-light !default;
 $badge-light-bg-color: $content-bg-color-alt2 !default;
 $badge-dark-bg-color: $content-text-color-alt2 !default;
-
 $badge-primary-font-color: $primary_alt !default;
 $badge-secondary-font-color: $content-text-color-alt1 !default;
 $badge-success-font-color: $success !default;
@@ -109,7 +111,6 @@ $badge-info-font-color: $info !default;
 $badge-light-font-color: $content-text-color !default;
 $badge-dark-font-color: $content-bg-color-alt1 !default;
 $badge-warning-font-color: $warning !default;
-
 $badge-primary-border-color: 1px solid $primary-light !default;
 $badge-secondary-border-color: 1px solid $border !default;
 $badge-success-border-color: 1px solid $success-lighter !default;
@@ -118,7 +119,6 @@ $badge-warning-border-color: 1px solid $warning-lighter !default;
 $badge-info-border-color: 1px solid $info-lighter !default;
 $badge-light-border-color: 1px solid  $content-bg-color-alt2 !default;
 $badge-dark-border-color: 1px solid  $content-text-color-alt2 !default;
-
 $badge-primary-ghost-border: $badge-primary-ghost-border-color !default;
 $badge-primary-ghost-color: $badge-primary-ghost-text-color !default;
 $badge-success-ghost-border: $badge-success-ghost-border-color !default;
@@ -129,8 +129,13 @@ $badge-info-ghost-border: $badge-info-ghost-border-color !default;
 $badge-info-ghost-color: $badge-info-ghost-text-color !default;
 $badge-danger-ghost-border: $badge-danger-ghost-border-color !default;
 $badge-danger-ghost-color: $badge-danger-ghost-text-color !default;
-
 $badge-darkren: $badge-secondary-bg-color !default;
+$badge-zero-padding-margin: 0 !default;
+$badge-notification-width: auto !default;
+
+$badge-boot-line-height: 18px !default;
+$badge-normal-padding: 1px 4px !default;
+$badge-button-nrml-line-height: .9 !default;
 
 /* stylelint-disable */
 .e-badge {

@@ -364,8 +364,9 @@ export class StripLine {
     ): void {
         const textSize: Size = measureText(stripline.text, stripline.textStyle, chart.themeStyle.stripLineLabelFont);
         const isRotationNull: boolean = (stripline.rotation === null);
-        const textMid: number = isRotationNull ? 3 * (textSize.height / 8) : 0;
-        let ty: number = rect.y + (rect.height / 2) + textMid;
+        const textMid: number = 3 * (textSize.height / 8);
+        const rectMid: number = (textSize.height / 4);
+        let ty: number = rect.y + (rect.height / 2) + rectMid;
         const rotation: number = isRotationNull ? ((axis.orientation === 'Vertical') ? 0 : -90) : stripline.rotation;
         let tx: number = rect.x + (rect.width / 2);
         let anchor: Anchor;

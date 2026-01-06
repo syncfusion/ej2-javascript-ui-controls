@@ -113,7 +113,9 @@ describe('Chart Control', () => {
             };
             chartObj.loaded = loaded;
             chartObj.series[0].dataSource = data;
+            chartObj.enableSideBySidePlacement = true;
             chartObj.series[0].dataSource[3].y = null;
+            chartObj.series[0].columnWidthInPixel = null;
             chartObj.refresh();
         });
 

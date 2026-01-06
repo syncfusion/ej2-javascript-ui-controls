@@ -188,6 +188,7 @@ export class DataLabel3D {
      * @param {boolean} redraw - Indicates whether the template should be redrawn.
      * @param {Chart3DLocation} location - The location values for the data label.
      * @returns {void}
+     * @private
      */
     public createDataLabelTemplate(
         parentElement: HTMLElement, series: Chart3DSeries,
@@ -219,6 +220,7 @@ export class DataLabel3D {
      * @param {Chart3DLocation} location - The location values for the data label.
      * @param {boolean} isReactCallback - Indicates whether the callback is associated with React.
      * @returns {void}
+     * @private
      */
     public calculateTemplateLabelSize(
         parentElement: HTMLElement, childElement: HTMLElement, point: Chart3DPoint, series: Chart3DSeries,

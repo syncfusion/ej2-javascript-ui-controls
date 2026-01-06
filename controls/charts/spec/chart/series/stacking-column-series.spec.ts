@@ -613,6 +613,7 @@ describe('Chart Control', () => {
                 done();
             };
             chartObj.loaded = loaded;
+            chartObj.enableSideBySidePlacement = true;
             chartObj.series[0].dataSource = data;
             chartObj.series[0].dataSource[3].y = null;
             chartObj.series[0].dataSource[3].x = null;

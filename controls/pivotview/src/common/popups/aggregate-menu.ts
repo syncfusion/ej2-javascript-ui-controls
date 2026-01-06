@@ -23,11 +23,12 @@ import { AggregateMenuOpenEventArgs } from '../base/interface';
 export class AggregateMenu {
     /** @hidden */
     public parent: PivotView | PivotFieldList;
+    /** @hidden */
+    public stringAggregateTypes: AggregateTypes[] = ['Count', 'DistinctCount'];
     private menuInfo: Menu[] = [];
     private parentElement: HTMLElement;
     private buttonElement: HTMLElement;
     private currentMenu: Element;
-    private stringAggregateTypes: AggregateTypes[] = ['Count', 'DistinctCount'];
 
     /**
      * Constructor for the rener action.

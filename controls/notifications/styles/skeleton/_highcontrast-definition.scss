@@ -1,3 +1,5 @@
+@use 'ej2-base/styles/definition/highcontrast' as *;
+@forward 'ej2-base/styles/definition/highcontrast';
 $skeleton-background-color: $bg-base-0 !default;
 $shimmer-wave-color: $bg-base-100 !default;
 $shimmer-background-color: transparent !default;
@@ -11,3 +13,6 @@ $shimmer-effect-duration: 2s !default;
 $shimmer-effect-timing-function: ease-in-out !default;
 $skeleton-boder: 2px solid $border-fg !default;
 $skeleton-text-boder-width: 2px 0 !default;
+$skeleton-circle-border-radius: 50% !default;
+$skeleton-value-zero: 0 !default;
+$skeleton-wave-after-width: calc(200% + 200px);

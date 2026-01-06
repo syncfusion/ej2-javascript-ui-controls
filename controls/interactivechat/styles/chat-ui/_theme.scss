@@ -394,7 +394,7 @@
       .e-chat-progress-fill {
         background-color: $file-progress-bar-success-color;
       }
-      .e-chat-progress-fill.failed {
+      .e-chat-progress-fill.e-chat-upload-failed {
         background-color: $file-progress-bar-failure-color;
       }
     }

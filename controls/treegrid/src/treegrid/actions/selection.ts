@@ -602,7 +602,7 @@ export class Selection {
         const newSelectedUidMap: Map<string, boolean> = new Map<string, boolean>();
         const newSelectedIndexes: number[] = [];
         for (const item of currentlySelectedItemsInOrder) {
-            if (item.hasChildRecords && isFilterOrSearch && item.level === 0) {
+            if (item.hasChildRecords && isFilterOrSearch && item.level === 0 && this.parent.autoCheckHierarchy) {
                 this.updateParentSelection(item);
             }
             if (item.uniqueID && item.checkboxState === 'check') {
@@ -914,9 +914,14 @@ export class Selection {
                 if ((requestType === 'filtering' || requestType === 'searching' || requestType === 'refresh' ||
                     requestType === 'sorting' || requestType === 'paging' || requestType === 'expanding' ||
                     requestType === 'expand' || requestType === 'collapsing' || requestType === 'collapse') && !isRemoteData(this.parent)) {
-                    this.selectedItems = [];
-                    this.selectedUidMap = new Map<string, boolean>();
-                    this.selectedIndexes = [];
+                    if (!(isCheckboxcolumn(this.parent) && (requestType === 'refresh' && this.parent['isVirtualExpandCollapse']))) {
+                        this.selectedItems = [];
+                        this.selectedUidMap = new Map<string, boolean>();
+                        this.selectedIndexes = [];
+                    }
+                    if (requestType === 'filtering' || requestType === 'searching' || requestType === 'sorting') {
+                        this.headerSelection(false);
+                    }
                     this.refreshVisibleCheckboxes();
                     if (this.parent.autoCheckHierarchy) {
                         this.updateHeaderCheckboxState();

@@ -45,7 +45,9 @@ export class QuickPopups {
     private render(): void {
         this.renderQuickPopup();
         this.renderMorePopup();
-        this.renderQuickDialog();
+        if (this.parent.prerenderDialogs) {
+            this.renderQuickDialog();
+        }
     }
 
     private renderQuickPopup(): void {
@@ -105,7 +107,7 @@ export class QuickPopups {
         EventHandler.add(this.morePopup.element.querySelector('.' + cls.MORE_EVENT_HEADER_DATE_CLASS), 'click', this.navigationClick, this);
     }
 
-    private renderQuickDialog(): void {
+    public renderQuickDialog(): void {
         const buttonModel: ButtonPropsModel[] = [
             { buttonModel: { cssClass: 'e-quick-alertok e-flat', isPrimary: true }, click: this.dialogButtonClick.bind(this) },
             { buttonModel: { cssClass: 'e-quick-alertcancel e-flat', isPrimary: false }, click: this.dialogButtonClick.bind(this) },
@@ -209,6 +211,9 @@ export class QuickPopups {
     }
 
     public openRecurrenceAlert(): void {
+        if (!this.parent.prerenderDialogs) {
+            this.renderQuickDialog();
+        }
         const editDeleteOnly: Element = this.quickDialog.element.querySelector('.' + cls.QUICK_DIALOG_ALERT_OK);
         if (editDeleteOnly) {
             editDeleteOnly.innerHTML = this.l10n.getConstant(this.parent.currentAction === 'Delete' ? 'deleteEvent' : 'editEvent');
@@ -231,6 +236,9 @@ export class QuickPopups {
     }
 
     public openRecurrenceValidationAlert(type: string): void {
+        if (!this.parent.prerenderDialogs) {
+            this.renderQuickDialog();
+        }
         this.quickDialogClass('Alert');
         const okButton: Element = this.quickDialog.element.querySelector('.' + cls.QUICK_DIALOG_ALERT_OK);
         okButton.innerHTML = this.l10n.getConstant('ok');
@@ -275,6 +283,9 @@ export class QuickPopups {
         if (this.parent.activeViewOptions.readonly) {
             return;
         }
+        if (!this.parent.prerenderDialogs) {
+            this.renderQuickDialog();
+        }
         const okButton: Element = this.quickDialog.element.querySelector('.' + cls.QUICK_DIALOG_ALERT_OK);
         if (okButton) {
             okButton.innerHTML = this.l10n.getConstant('delete');
@@ -294,6 +305,9 @@ export class QuickPopups {
     }
 
     public openValidationError(type: string, eventData?: Record<string, any> | Record<string, any>[]): void {
+        if (!this.parent.prerenderDialogs) {
+            this.renderQuickDialog();
+        }
         this.quickDialog.header = this.l10n.getConstant('alert');
         this.quickDialog.content = this.l10n.getConstant(type);
         const okButton: Element = this.quickDialog.element.querySelector('.' + cls.QUICK_DIALOG_ALERT_OK);
@@ -322,6 +336,9 @@ export class QuickPopups {
         this.parent.trigger(event.popupOpen, eventProp, (popupArgs: PopupOpenEventArgs) => {
             if (!popupArgs.cancel) {
                 this.quickDialog.show();
+            }
+            if (!this.parent.prerenderDialogs && popupArgs.cancel) {
+                this.destroyQuickDialog();
             }
         });
     }
@@ -635,6 +652,7 @@ export class QuickPopups {
             let cellDetails: Record<string, any>;
             let argsData: Record<string, any>;
             const resourceText: string = this.getResourceText(args, type.toLowerCase());
+            const isResourceEmpty: boolean = this.parent.isResourceCollectionEmpty();
             switch (type) {
             case 'Cell':
                 cellDetails = this.getFormattedString(data);
@@ -670,7 +688,7 @@ export class QuickPopups {
                     content += '<div class="' + cls.DESCRIPTION_CLASS + '"><div class="' + cls.DESCRIPTION_ICON_CLASS + ' ' + cls.ICON +
                     '"></div><div class="' + cls.DESCRIPTION_DETAILS_CLASS + ' ' + cls.TEXT_ELLIPSIS + '"></div></div>';
                 }
-                if (this.parent.resourceCollection.length > 0) {
+                if (this.parent.resourceCollection.length > 0 && !isResourceEmpty) {
                     content += '<div class="' + cls.RESOURCE_CLASS + '"><div class="' + cls.RESOURCE_ICON_CLASS + ' ' + cls.ICON +
                     '"></div><div class="' + cls.RESOURCE_DETAILS_CLASS + ' ' + cls.TEXT_ELLIPSIS + '"></div></div>';
                 }
@@ -736,7 +754,8 @@ export class QuickPopups {
     }
 
     public getResourceText(args: CellClickEventArgs | EventClickArgs, type: string): string {
-        if (this.parent.resourceCollection.length === 0) {
+        const isResourceEmpty: boolean = this.parent.isResourceCollectionEmpty();
+        if (this.parent.resourceCollection.length === 0 || isResourceEmpty) {
             return null;
         }
         let resourceValue: string = '';
@@ -966,7 +985,6 @@ export class QuickPopups {
 
     private dialogButtonClick(event: Event): void {
         this.dialogEvent = event;
-        this.quickDialog.hide();
         const target: HTMLElement = event.target as HTMLElement;
         const cancelBtn: Element = this.quickDialog.element.querySelector('.' + cls.QUICK_DIALOG_ALERT_CANCEL);
         const eventData: Record<string, any> = this.parent.activeEventData.event as Record<string, any>;
@@ -1006,6 +1024,9 @@ export class QuickPopups {
             (target.classList.contains(cls.QUICK_DIALOG_ALERT_CANCEL) && !cancelBtn.classList.contains(cls.QUICK_DIALOG_CANCEL_CLASS)))) {
             this.parent.uiStateValues.isIgnoreOccurrence = target.classList.contains(cls.QUICK_DIALOG_ALERT_CANCEL);
             this.parent.eventWindow.eventSave(event, this.l10n.getConstant('ok'));
+        }
+        if (!isNullOrUndefined(this.quickDialog)) {
+            this.quickDialog.hide();
         }
     }
 
@@ -1080,6 +1101,9 @@ export class QuickPopups {
         this.parent.trigger(event.popupClose, args, (popupCloseArgs: PopupCloseEventArgs) => {
             if (!popupCloseArgs.cancel) {
                 this.parent.eventBase.focusElement(true);
+                if (!this.parent.prerenderDialogs) {
+                    this.destroyQuickDialog();
+                }
             }
         });
     }
@@ -1412,7 +1436,9 @@ export class QuickPopups {
 
     public refreshQuickDialog(): void {
         this.destroyQuickDialog();
-        this.renderQuickDialog();
+        if (this.parent.prerenderDialogs) {
+            this.renderQuickDialog();
+        }
     }
 
     public refreshQuickPopup(): void {
@@ -1425,8 +1451,8 @@ export class QuickPopups {
         this.renderMorePopup();
     }
 
-    private destroyQuickDialog(): void {
-        if (this.quickDialog.element) {
+    public destroyQuickDialog(): void {
+        if (this.quickDialog && this.quickDialog.element) {
             this.quickDialog.destroy();
             remove(this.quickDialog.element);
             this.quickDialog = null;

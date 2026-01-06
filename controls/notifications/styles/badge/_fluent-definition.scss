@@ -1,3 +1,6 @@
+@use 'ej2-base/styles/definition/fluent' as *;
+@forward 'ej2-base/styles/definition/fluent';
+
 // layout variable
 $badge-theme : $skin-name !default;
 
@@ -109,3 +112,6 @@ $badge-info-font-color: $white !default;
 $badge-light-font-color: $content-text-color-alt1 !default;
 $badge-dark-font-color: $white !default;
 $badge-warning-font-color: $white !default;
+$badge-zero-padding-margin: 0 !default;
+$badge-notification-width: auto !default;
+$badge-button-nrml-line-height: .9 !default;

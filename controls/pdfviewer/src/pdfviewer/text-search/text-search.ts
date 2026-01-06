@@ -122,6 +122,11 @@ export class TextSearch {
     private isLastOccurrenceCompleted: boolean = false;
     private isInitialSearch: boolean;
     /**
+     * @private
+     */
+    public isAwaitingSearchResult: boolean = false;
+    private skipFilteringOnEnter: boolean = false;
+    /**
      * @param {PdfViewer} pdfViewer - It describes about the pdf viewer
      * @param {PdfViewerBase} pdfViewerBase - It describes about the pdfviewer base
      * @private
@@ -189,6 +194,11 @@ export class TextSearch {
                 }
             },
             filtering: (event: any) => {
+                if (this.skipFilteringOnEnter) {
+                    (event as any).preventDefaultAction = true;
+                    this.skipFilteringOnEnter = false;
+                    return;
+                }
                 updatedTypedString = event.text;
                 if (!this.isDocumentTextCollectionReady) {
                     this.resetVariablesTextSearch();
@@ -241,9 +251,13 @@ export class TextSearch {
             created: (event: any) => {
                 this.searchAutocompleteObj.element.addEventListener('keydown', (args: any) => {
                     if (args.key === 'Enter') {
+                        this.skipFilteringOnEnter = true;
                         this.isSingleSearch = true;
                         this.isExactMatch = this.isSelectedFromPopup;
                         this.isMultiSearch = false;
+                        if (this.pdfViewerBase.documentTextCollection.length === this.pdfViewerBase.pageCount) {
+                            this.isDocumentTextCollectionReady = true;
+                        }
                         if (!this.isDocumentTextCollectionReady) {
                             if ((this.searchInput as HTMLInputElement).value !== '' && (this.searchInput as HTMLInputElement).value !== this.searchString) {
                                 this.isTextSearchHandled = false;
@@ -260,7 +274,7 @@ export class TextSearch {
                         else {
                             this.initiateTextSearch((this.searchInput as HTMLInputElement).value);
                         }
-                        if (this.searchCount === 0 && !this.isMessagePopupOpened &&
+                        if (this.searchCount === 0 && !this.isMessagePopupOpened && !this.isAwaitingSearchResult &&
                             this.pdfViewerBase.documentTextCollection.length === this.pdfViewerBase.pageCount) {
                             this.onMessageBoxOpen();
                         }
@@ -424,6 +438,7 @@ export class TextSearch {
             };
         }
         if (this.pdfViewerBase.clientSideRendering) {
+            this.isAwaitingSearchResult = true;
             this.pdfViewerBase.pdfViewerRunner.addTask({
                 message: 'searchText',
                 zoomFactor: this.pdfViewerBase.getZoomFactor(),
@@ -2259,6 +2274,8 @@ export class TextSearch {
     private onTextSearchClose(): void {
         this.isPrevSearch = false;
         this.isTextSearch = false;
+        this.searchIndex = 0;
+        this.searchString = '';
         if (this.pdfViewerBase.pageCount > 0) {
             this.pdfViewerBase.clearAllTextSearchOccurrences();
         }

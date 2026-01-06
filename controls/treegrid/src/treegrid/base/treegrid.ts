@@ -166,6 +166,7 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
     private freezeColumnRefresh: boolean = true;
     private componentRefresh: Function = Component.prototype.refresh;
     private isComponentRefresh: Boolean = false;
+    private isVirtualExpandCollapse: boolean = false;
     private isExcel: boolean;
     /** @hidden */
     public initialRender: boolean;
@@ -2940,6 +2941,7 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
                 this.notify(events.batchSave, args);
             }
             this.notify('updateGridActions', args);
+            this.isVirtualExpandCollapse = false;
             if (args.requestType === 'save' && this.aggregates.map((ag: AggregateRow) => ag.showChildSummary === true).length) {
                 this.grid.refresh();
             }

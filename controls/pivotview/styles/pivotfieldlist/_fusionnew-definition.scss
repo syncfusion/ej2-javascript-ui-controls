@@ -130,6 +130,7 @@ $field-list-button-hover-color: $table-bg-color-hover !default;
 $field-list-button-focus-color: $table-bg-color-selected !default;
 $field-list-button-active-color: $content-text-color-alt1 !default;
 $field-list-drag-clone-text-color: $content-text-color-alt1 !default;
+$field-list-treeview-text-color: $field-list-drag-clone-text-color !default;
 $field-list-drag-clone-bg-color: $content-bg-color-alt3 !default;
 $field-list-toggle-hover-color: $field-list-default-border-color !default;
 $pivot-formula-background: $content-bg-color !default;
@@ -142,6 +143,7 @@ $field-list-default-header-icon-font-color: $field-list-default-header-font-colo
 $field-list-button-icon-color: $icon-color !default;
 $field-list-icon-hover-color: $icon-color !default;
 $field-list-toggle-font-color: $icon-color !default;
+$field-list-filter-text-color: $field-list-button-icon-color !default;
 $error-font-color: $danger !default;
 $format-label-font-color: $content-text-color !default;
 $format-preview-border-color: $border-light !default;

@@ -1,9 +1,12 @@
+@use 'ej2-base/styles/definition/tailwind3' as *;
+@forward 'ej2-base/styles/definition/tailwind3';
+
 // Dimension variables
 $msg-font-family: $font-family !default;
 $msg-font-weight: 400 !default;
 $msg-font-style: normal !default;
 $msg-padding: 11px 7px !default;
-$msg-border-radius: 6px !default;
+$msg-border-radius: $radius-6 !default;
 $msg-icon-size: 16px !default;
 $msg-icon-margin: 3px 4px !default;
 $msg-close-icon-margin: 1px 2px 1px auto !default;
@@ -13,7 +16,8 @@ $msg-close-icon-height: 20px !default;
 $msg-content-font-size: 14px !default;
 $msg-content-line-height: 22px !default;
 $msg-content-padding: 0 4px !default;
-
+$message-border: 1px !default;
+$message-zero-border: 0 !default;
 $msg-rtl-close-icon-margin: 1px auto 1px 2px !default;
 
 $msg-bigger-padding: 16px 9px !default;
@@ -127,3 +131,4 @@ $msg-filled-info-close-icon-color: $msg-info-close-icon-color-alt2 !default;
 $msg-filled-info-close-icon-hover-bg-color: rgba($msg-filled-info-close-icon-color, .12) !default;
 $msg-filled-error-close-icon-color: $msg-danger-close-icon-color-alt2 !default;
 $msg-filled-error-close-icon-hover-bg-color: rgba($msg-filled-error-close-icon-color, .12) !default;
+$message-full-radius: $radius-full !default;

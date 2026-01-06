@@ -87,7 +87,6 @@ export interface IPeriodSelectorControl {
 /**
  * Header Footer Content.
  *
- * @private
  */
 
 export interface IPDFArgs {

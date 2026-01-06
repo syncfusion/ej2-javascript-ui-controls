@@ -2,6 +2,18 @@
 
 ## [Unreleased]
 
+## 32.1.22 (2026-01-06)
+
+### Mention
+
+#### Bug Fixes
+
+- `#I797154` - Resolved an issue where the Mention component popup was partially hidden off-screen in mobile view, ensuring the popup is fully visible within the viewport.
+
+- `#I796358` - Fixed the error that occurred when scrolling after rendering the 'No Records Found' mention popup.
+
+- `#I757895` - Resolved the issue where the first backspace key press did not delete any text.
+
 ## 32.1.21 (2025-12-30)
 
 ### Mention

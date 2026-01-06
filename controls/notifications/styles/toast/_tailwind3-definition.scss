@@ -1,3 +1,6 @@
+@use 'ej2-base/styles/definition/tailwind3' as *;
+@forward 'ej2-base/styles/definition/tailwind3';
+
 //Layout Variables Start
 //Mouse Mode Start
 $toast-icon-nrml-height: 20px !default;
@@ -15,7 +18,7 @@ $toast-action-btn-nrml-padding: 12px 0 !default;
 $toast-action-btn-nrml-margin: 10px !default;
 $toast-progressbar-nrml-height: 4px !default;
 $toast-content-nrml-padding: 12px 12px 12px 0 !default;
-$toast-nrml-border-radious: 4px !default;
+$toast-nrml-border-radious: $radius-4 !default;
 $toast-font-nrml-size: $text-sm !default;
 $toast-title-font-nrml-size: 16px !default;
 
@@ -36,7 +39,7 @@ $toast-action-btn-bgr-padding: 16px 0 !default;
 $toast-action-btn-bgr-margin: 10px !default;
 $toast-progressbar-bgr-height: 4px !default;
 $toast-content-bgr-padding: 6px 16px 16px 0 !default;
-$toast-bgr-border-radious: 4px !default;
+$toast-bgr-border-radious: $radius-4 !default;
 $toast-font-bgr-size: $text-sm !default;
 $toast-title-font-weight: 600 !default;
 
@@ -100,6 +103,27 @@ $toast-danger-hover-box-shadow: $shadow !default;
 
 $toast-close-icon-hover-bg-color: $transparent !default;
 $toast-close-icon-hover-color: $icon-color-hover !default;
+$toast-bigger-bottom-margin: 0 auto $multitoast-bgr-gap-distance !default;
+$toast-bigger-top-margin: 0 auto $multitoast-bgr-gap-distance !default;
+$toast-bigger-full-width-margin: 0 auto $multitoast-bgr-gap-distance !default;
+$toast-bigger-margin: 0 0 $multitoast-bgr-gap-distance !default;
+$toast-zero-padding-margin: 0 !default;
+$toast-normal-bottom-margin: 0 auto $multitoast-nrml-gap-distance !default;
+$toast-normal-top-margin: 0 auto $multitoast-nrml-gap-distance !default;
+$toast-normal-full-width-margin: 0 auto $multitoast-nrml-gap-distance !default;
+$toast-normal-margin: 0 0 $multitoast-nrml-gap-distance !default;
+$toast-action-margin: 1px !default;
+$toast-close-icon-border-radius: $radius-full !default;
+$toast-bigger-min-height: 100px !default;
+$toast-zero-padding-margin: 0 !default;
+$toast-close-icon-height: 20px !default;
+$toast-close-icon-width: 22px !default;
+$toast-auto-margin: auto !default;
+$toast-close-icon-bottom: 6px !default;
+$toast-full-width: 100% !default;
+$toast-tittle-letter-spacing: .5px !default;
+$toast-half-full-width: 96% !default;
+$toast-border: 1px !default;
 
 // Toast Type Definitions End
 //Theme Variables End

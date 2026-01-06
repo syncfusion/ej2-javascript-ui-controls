@@ -4283,6 +4283,82 @@ describe('Schedule event window initial load', () => {
         });
     });
 
+    describe('Schedule: EventWindow creation behavior controlled by prerenderDialogs', () => {
+        let schObj: Schedule;
+        beforeAll((done: DoneFn) => {
+            const model: ScheduleModel = {
+                height: '500px',
+                currentView: 'Week',
+                views: ['Week'],
+                selectedDate: new Date(2017, 10, 1),
+            };
+            schObj = util.createSchedule(model, [], done);
+        });
+
+        afterAll(() => {
+            util.destroy(schObj);
+        });
+
+        it('Pre-create EventWindow when prerenderDialogs=true', () => {
+            expect(schObj.eventWindow).toBeDefined();
+            expect(schObj.eventWindow.dialogObject).toBeDefined();
+        });
+
+        it('Does not pre-create EventWindow when prerenderDialogs=false', () => {
+            schObj.prerenderDialogs = false;
+            schObj.dataBind();
+            expect(schObj.eventWindow).toBeDefined();
+            expect(schObj.eventWindow.dialogObject).toBeNull();
+        });
+
+        it('Lazily creates EventWindow on cell double-click and destroys it on close when prerenderDialogs=false', () => {
+            const cell = schObj.element.querySelectorAll('.e-work-cells')[33] as HTMLElement;
+            util.triggerMouseEvent(cell, 'click');
+            util.triggerMouseEvent(cell, 'dblclick');
+            expect(schObj.eventWindow.dialogObject).toBeDefined();
+            expect(schObj.eventWindow.dialogObject.visible).toBeTruthy();
+            const cancelBtn = schObj.eventWindow.dialogObject.element.querySelector('.e-event-cancel') as HTMLElement;
+            cancelBtn.click();
+            expect(schObj.eventWindow.dialogObject).toBeNull();
+        });
+
+        it('Maintains EventWindow instance after close when prerenderDialogs=true', () => {
+            schObj.prerenderDialogs = true;
+            schObj.dataBind();
+            expect(schObj.eventWindow.dialogObject).toBeDefined();
+            const firstCell = schObj.element.querySelectorAll('.e-work-cells')[33] as HTMLElement;
+            util.triggerMouseEvent(firstCell, 'click');
+            util.triggerMouseEvent(firstCell, 'dblclick');
+            expect(schObj.eventWindow.dialogObject.visible).toBeTruthy();
+            const cancelBtn = schObj.eventWindow.dialogObject.element.querySelector('.e-event-cancel') as HTMLElement;
+            cancelBtn.click();
+            expect(schObj.eventWindow.dialogObject).toBeDefined();
+        });
+
+        it('Edits existing event with prerenderDialogs=false by lazy create and destroy', (done: DoneFn) => {
+            schObj.prerenderDialogs = false;
+            schObj.dataBind();
+            schObj.dataBound = () => {
+                const appt = schObj.element.querySelector('[data-id="Appointment_1"]') as HTMLElement;
+                util.triggerMouseEvent(appt, 'click');
+                util.triggerMouseEvent(appt, 'dblclick');
+                expect(schObj.eventWindow.dialogObject).toBeDefined();
+                expect(schObj.eventWindow.dialogObject.visible).toBeTruthy();
+                const cancelBtn = schObj.eventWindow.dialogObject.element.querySelector('.e-event-cancel') as HTMLElement;
+                cancelBtn.click();
+                expect(schObj.eventWindow.dialogObject).toBeNull();
+                done();
+            };
+            const cell = schObj.element.querySelectorAll('.e-work-cells')[33] as HTMLElement;
+            util.triggerMouseEvent(cell, 'click');
+            const qp = schObj.element.querySelector('.e-quick-popup-wrapper') as HTMLElement;
+            const subject = qp ? (qp.querySelector('.e-subject') as HTMLInputElement) : null;
+            if (subject) subject.value = 'Add Title';
+            const saveBtn = qp ? (qp.querySelector('.e-event-create') as HTMLElement) : null;
+            if (saveBtn) saveBtn.click();
+        });
+    });
+
     it('memory leak', () => {
         profile.sample();
         const average: number = inMB(profile.averageChange);

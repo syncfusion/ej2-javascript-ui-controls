@@ -1,9 +1,12 @@
+@use 'ej2-base/styles/definition/material3' as *;
+@forward 'ej2-base/styles/definition/material3';
+
 // Dimension variables
 $msg-font-family: $font-family !default;
 $msg-font-weight: 400 !default;
 $msg-font-style: normal !default;
 $msg-padding: 7px 5px !default;
-$msg-border-radius: 0 !default;
+$msg-border-radius: $radius-0 !default;
 $msg-icon-size: 14px !default;
 $msg-icon-margin: 2px 6px !default;
 $msg-close-icon-margin: 0 4px 0 auto !default;
@@ -26,7 +29,8 @@ $msg-bigger-close-icon-height: 20px !default;
 $msg-bigger-content-font-size: $text-sm !default;
 $msg-bigger-content-line-height: 1.5 !default;
 $msg-bigger-content-padding: 0 6px !default;
-
+$message-border: 1px !default;
+$message-zero-border: 0 !default;
 $msg-bigger-rtl-close-icon-margin: 0 auto 0 4px !default;
 
 // Color variables
@@ -127,3 +131,4 @@ $msg-filled-info-close-icon-color: $msg-info-close-icon-color-alt2 !default;
 $msg-filled-info-close-icon-hover-bg-color: rgba($on-info, .12) !default;
 $msg-filled-error-close-icon-color: $msg-danger-close-icon-color-alt2 !default;
 $msg-filled-error-close-icon-hover-bg-color: rgba($on-error, .12) !default;
+$message-full-radius: $radius-full !default;

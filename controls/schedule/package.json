@@ -1,6 +1,6 @@
 {
 	"name": "@syncfusion/ej2-schedule",
-	"version": "32.1.19",
+	"version": "32.1.20",
 	"author": "Syncfusion Inc.",
 	"license": "SEE LICENSE IN license",
 	"main": "./dist/ej2-schedule.umd.min.js",

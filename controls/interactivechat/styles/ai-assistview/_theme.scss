@@ -311,7 +311,7 @@
       .e-assist-progress-fill {
         background-color: $file-progress-bar-success-color;
       }
-      .e-assist-progress-fill.failed {
+      .e-assist-progress-fill.e-assist-upload-failed {
         background-color: $file-progress-bar-failure-color;
       }
     }

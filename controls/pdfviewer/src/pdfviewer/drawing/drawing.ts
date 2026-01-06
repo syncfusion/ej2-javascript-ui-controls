@@ -738,10 +738,10 @@ export class Drawing {
             freeTextEle.margin.left = 4;
             freeTextEle.margin.right = 5;
             freeTextEle.margin.top = 5 * (obj.fontSize / 16);
-            if (this.isPasted) {
+            if (this.isPasted || this.pdfViewer.viewerBase.isImportAction || this.pdfViewer.viewerBase.isInitialLoad) {
                 const halfStroke: number = (obj.thickness || 0) / 2;
-                freeTextEle.margin.left = halfStroke;
-                freeTextEle.margin.right = halfStroke;
+                freeTextEle.margin.left = halfStroke >= freeTextEle.margin.left ? halfStroke : freeTextEle.margin.left;
+                freeTextEle.margin.right = halfStroke >= freeTextEle.margin.left ? halfStroke : freeTextEle.margin.right;
             }
             this.isPasted = false;
             if (this.pdfViewer.freeTextSettings.enableAutoFit) {

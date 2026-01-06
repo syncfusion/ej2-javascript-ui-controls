@@ -1,3 +1,5 @@
+@use 'ej2-base/styles/common/mixin' as *;
+@use './theme-variables' as *;
 @include export-module('toast-bigger') {
 
   .e-bigger .e-toast-container,
@@ -26,7 +28,7 @@
       bottom: $toast-position-bgr-distance;
 
       .e-toast {
-        margin: 0 auto $multitoast-bgr-gap-distance;
+        margin: $toast-bigger-bottom-margin;
       }
     }
 
@@ -34,16 +36,16 @@
       top: $toast-position-bgr-distance;
 
       .e-toast {
-        margin: 0 auto $multitoast-bgr-gap-distance;
+        margin: $toast-bigger-top-margin;
       }
     }
 
     &.e-toast-full-width {
-      left: 0;
-      right: 0;
+      left: $toast-zero-padding-margin;
+      right: $toast-zero-padding-margin;
 
       .e-toast {
-        margin: 0 auto $multitoast-bgr-gap-distance;
+        margin: $toast-bigger-full-width-margin;
       }
     }
 
@@ -60,7 +62,7 @@
 
         .e-toast-close-icon {
           margin-left: initial;
-          margin-right: auto;
+          margin-right: $toast-auto-margin;
         }
 
         .e-toast-icon {
@@ -69,8 +71,8 @@
         }
 
         .e-toast-progress {
-          left: auto;
-          right: 0;
+          left: $toast-auto-margin;
+          right: $toast-zero-padding-margin;
         }
       }
     }
@@ -78,7 +80,7 @@
     .e-toast {
       border-radius: $toast-bgr-border-radious;
       font-size: $toast-font-bgr-size;
-      margin: 0 0 $multitoast-bgr-gap-distance;
+      margin: $toast-bigger-margin;
       min-height: $toast-bgr-min-height;
 
       .e-toast-message {
@@ -86,26 +88,30 @@
           padding: $toast-content-bgr-padding;
 
           &:first-child {
-            padding: 0;
             @if $skin-name == 'bootstrap5' or $skin-name == 'bootstrap5.3' {
-              padding-bottom: 8px;
-              padding-left: 48px;
-              padding-right: 12px;
-              padding-top: 8px;
+              padding-bottom: $toast-bgr-content-first-child-padding-bottom;
+              padding-left: $toast-bgr-content-first-child-padding-left;
+              padding-right: $toast-bgr-content-first-child-padding-right;
+              padding-top: $toast-bgr-content-first-child-padding-top;
+            }
+            @else {
+              padding: $toast-zero-padding-margin;
             }
           }
 
           &:last-child {
-            padding-bottom: 0;
+            padding-bottom: $toast-zero-padding-margin;
             @if $skin-name == 'bootstrap5' or $skin-name == 'bootstrap5.3' {
-              padding-bottom: 16px;
+              padding-bottom: $toast-bgr-last-child-padding-bottom;
             }
           }
 
           + .e-toast-actions {
-            padding: 0;
             @if $skin-name == 'bootstrap5' or $skin-name == 'bootstrap5.3' {
               padding: $toast-action-btn-bgr-padding;
+            }
+            @else {
+              padding: $toast-zero-padding-margin;
             }
           }
           @if $skin-name == 'tailwind' or $skin-name == 'bootstrap5' or $skin-name == 'bootstrap5.3' {
@@ -119,9 +125,9 @@
           padding: $toast-action-btn-bgr-padding;
           text-align: right;
           @if $skin-name == 'bootstrap5' or $skin-name == 'bootstrap5.3' {
-            border-top: 1px solid $border;
-            margin-left: 16px;
-            margin-right: 16px;
+            border-top: $toast-border solid $border;
+            margin-left: $toast-bgr-actions-margin;
+            margin-right: $toast-bgr-actions-margin;
           }
 
           > * {
@@ -135,9 +141,9 @@
         height: $toast-close-icon-bgr-height;
         width: $toast-close-icon-bgr-width;
         @if $skin-name == 'bootstrap5' or $skin-name == 'bootstrap5.3' {
-          margin-top: 13px;
+          margin-top: $toast-bgr-close-icon-margin-top;
           position: absolute;
-          right: 12px;
+          right: $toast-bgr-close-icon-right;
         }
       }
 
@@ -147,9 +153,9 @@
         margin-right: $toast-icon-bgr-right-margin;
         width: $toast-icon-bgr-width;
         @if $skin-name == 'bootstrap5' or $skin-name == 'bootstrap5.3' {
-          left: 0;
-          margin-top: 14px;
-          margin-left: 12px;
+          left: $toast-zero-padding-margin;
+          margin-top: $toast-bgr-toast-icon-margin-top;
+          margin-left: $toast-bgr-toast-icon-margin-left;
         }
       }
 
@@ -162,7 +168,7 @@
   .e-bigger .e-content-placeholder.e-toast.e-placeholder-toast,
   .e-bigger.e-content-placeholder.e-toast.e-placeholder-toast {
     background-size: 400px 100px;
-    min-height: 100px;
+    min-height: $toast-bigger-min-height;
   }
 
   @if $skin-name == 'tailwind' {

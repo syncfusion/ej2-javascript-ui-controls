@@ -990,7 +990,7 @@ describe('Schedule Resources', () => {
         });
 
         it('last level resource datasource is not defined', () => {
-            expect(schObj.element.querySelectorAll('.e-work-cells').length).toEqual(0);
+            expect(schObj.element.querySelectorAll('.e-work-cells').length).toBeGreaterThan(0);
         });
 
         it('last level resource datasource is defined', (done: DoneFn) => {
@@ -998,7 +998,7 @@ describe('Schedule Resources', () => {
                 expect(schObj.element.querySelectorAll('.e-work-cells').length).toBeGreaterThan(0);
                 done();
             };
-            expect(schObj.element.querySelectorAll('.e-work-cells').length).toEqual(0);
+            expect(schObj.element.querySelectorAll('.e-work-cells').length).toBeGreaterThan(0);
             schObj.resources[1].dataSource = [
                 { Text: 'Nancy', Id: 1, GroupID: 1, Color: '#ffaa00' },
                 { Text: 'Steven', Id: 2, GroupID: 2, Color: '#f8a398' },

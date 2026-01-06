@@ -1,3 +1,6 @@
+@use 'ej2-base/styles/common/mixin' as *;
+@use './theme-variables' as *;
+
 @include export-module('message-theme') {
   .e-message {
     background: $msg-bg-color;
@@ -16,12 +19,22 @@
     .e-msg-close-icon {
       background: transparent;
       color: $msg-close-icon-color;
-
-      &:hover,
-      &:focus {
-        background-color: $msg-close-icon-hover-bg-color;
-        box-shadow: 0 0 0 2px $msg-close-icon-hover-bg-color;
-        border-radius: 50%;
+      @if $skin-name == 'bootstrap5.3' {
+        &:hover {
+          color: $msg-close-icon-hover-color;
+        }
+        &:focus {
+          color: $msg-close-icon-focus-color;
+          box-shadow: $msg-close-icon-focus-shadow;
+        }
+      }
+      @else {
+        &:hover,
+        &:focus {
+          background-color: $msg-close-icon-hover-bg-color;
+          box-shadow: 0 0 0 2px $msg-close-icon-hover-bg-color;
+          border-radius: $message-full-radius;
+        }
       }
     }
 
@@ -36,11 +49,20 @@
 
       .e-msg-close-icon {
         color: $msg-success-close-icon-color;
-
-        &:hover,
-        &:focus {
-          background-color: $msg-success-close-icon-hover-bg-color;
-          box-shadow: 0 0 0 2px $msg-success-close-icon-hover-bg-color;
+        @if $skin-name == 'bootstrap5.3' {
+          &:hover {
+            color: $msg-close-icon-hover-color;
+          }
+          &:focus {
+            box-shadow: $msg-close-icon-focus-shadow;
+          }
+        }
+        @else {
+          &:hover,
+          &:focus {
+            background-color: $msg-success-close-icon-hover-bg-color;
+            box-shadow: 0 0 0 2px $msg-success-close-icon-hover-bg-color;
+          }
         }
       }
     }
@@ -49,18 +71,27 @@
       background-color: $msg-warning-bg-color;
       border-color: $msg-warning-border-color;
       color: $msg-warning-color;
-    
+  
       .e-msg-icon {
         color: $msg-warning-icon-color;
       }
 
       .e-msg-close-icon {
         color: $msg-warning-close-icon-color;
-
-        &:hover,
-        &:focus {
-          background-color: $msg-warning-close-icon-hover-bg-color;
-          box-shadow: 0 0 0 2px $msg-warning-close-icon-hover-bg-color;
+        @if $skin-name == 'bootstrap5.3' {
+          &:hover {
+            color: $msg-close-icon-hover-color;
+          }
+          &:focus {
+            box-shadow: $msg-close-icon-focus-shadow;
+          }
+        }
+        @else {
+          &:hover,
+          &:focus {
+            background-color: $msg-warning-close-icon-hover-bg-color;
+            box-shadow: 0 0 0 2px $msg-warning-close-icon-hover-bg-color;
+          }
         }
       }
     }
@@ -76,11 +107,20 @@
 
       .e-msg-close-icon {
         color: $msg-info-close-icon-color;
-
-        &:hover,
-        &:focus {
-          background-color: $msg-info-close-icon-hover-bg-color;
-          box-shadow: 0 0 0 2px $msg-info-close-icon-hover-bg-color;
+        @if $skin-name == 'bootstrap5.3' {
+          &:hover {
+            color: $msg-close-icon-hover-color;
+          }
+          &:focus {
+            box-shadow: $msg-close-icon-focus-shadow;
+          }
+        }
+        @else {
+          &:hover,
+          &:focus {
+            background-color: $msg-info-close-icon-hover-bg-color;
+            box-shadow: 0 0 0 2px $msg-info-close-icon-hover-bg-color;
+          }
         }
       }
     }
@@ -96,11 +136,20 @@
 
       .e-msg-close-icon {
         color: $msg-error-close-icon-color;
-
-        &:hover,
-        &:focus {
-          background-color: $msg-error-close-icon-hover-bg-color;
-          box-shadow: 0 0 0 2px $msg-error-close-icon-hover-bg-color;
+        @if $skin-name == 'bootstrap5.3' {
+          &:hover {
+            color: $msg-close-icon-hover-color;
+          }
+          &:focus {
+            box-shadow: $msg-close-icon-focus-shadow;
+          }
+        }
+        @else {
+          &:hover,
+          &:focus {
+            background-color: $msg-error-close-icon-hover-bg-color;
+            box-shadow: 0 0 0 2px $msg-error-close-icon-hover-bg-color;
+          }
         }
       }
     }
@@ -119,11 +168,20 @@
 
       .e-msg-close-icon {
         color: $msg-outline-close-icon-color;
-
-        &:hover,
-        &:focus {
-          background-color: $msg-outline-close-icon-hover-bg-color;
-          box-shadow: 0 0 0 2px $msg-outline-close-icon-hover-bg-color;
+        @if $skin-name == 'bootstrap5.3' {
+          &:hover {
+            color: $msg-close-icon-hover-color;
+          }
+          &:focus {
+            box-shadow: $msg-close-icon-focus-shadow;
+          }
+        }
+        @else {
+          &:hover,
+          &:focus {
+            background-color: $msg-outline-close-icon-hover-bg-color;
+            box-shadow: 0 0 0 2px $msg-outline-close-icon-hover-bg-color;
+          }
         }
       }
 
@@ -137,11 +195,20 @@
 
         .e-msg-close-icon {
           color: $msg-outline-success-close-icon-color;
-
-          &:hover,
-          &:focus {
-            background-color: $msg-outline-success-close-icon-hover-bg-color;
-            box-shadow: 0 0 0 2px $msg-outline-success-close-icon-hover-bg-color;
+          @if $skin-name == 'bootstrap5.3' {
+            &:hover {
+              color: $msg-close-icon-hover-color;
+            }
+            &:focus {
+              box-shadow: $msg-close-icon-focus-shadow;
+            }
+          }
+          @else {
+            &:hover,
+            &:focus {
+              background-color: $msg-outline-success-close-icon-hover-bg-color;
+              box-shadow: 0 0 0 2px $msg-outline-success-close-icon-hover-bg-color;
+            }
           }
         }
       }
@@ -156,11 +223,20 @@
 
         .e-msg-close-icon {
           color: $msg-outline-warning-close-icon-color;
-
-          &:hover,
-          &:focus {
-            background-color: $msg-outline-warning-close-icon-hover-bg-color;
-            box-shadow: 0 0 0 2px $msg-outline-warning-close-icon-hover-bg-color;
+          @if $skin-name == 'bootstrap5.3' {
+            &:hover {
+              color: $msg-close-icon-hover-color;
+            }
+            &:focus {
+              box-shadow: $msg-close-icon-focus-shadow;
+            }
+          }
+          @else {
+            &:hover,
+            &:focus {
+              background-color: $msg-outline-warning-close-icon-hover-bg-color;
+              box-shadow: 0 0 0 2px $msg-outline-warning-close-icon-hover-bg-color;
+            }
           }
         }
       }
@@ -175,11 +251,20 @@
 
         .e-msg-close-icon {
           color: $msg-outline-info-close-icon-color;
-
-          &:hover,
-          &:focus {
-            background-color: $msg-outline-info-close-icon-hover-bg-color;
-            box-shadow: 0 0 0 2px $msg-outline-info-close-icon-hover-bg-color;
+          @if $skin-name == 'bootstrap5.3' {
+            &:hover {
+              color: $msg-close-icon-hover-color;
+            }
+            &:focus {
+              box-shadow: $msg-close-icon-focus-shadow;
+            }
+          }
+          @else {
+            &:hover,
+            &:focus {
+              background-color: $msg-outline-info-close-icon-hover-bg-color;
+              box-shadow: 0 0 0 2px $msg-outline-info-close-icon-hover-bg-color;
+            }
           }
         }
       }
@@ -194,11 +279,20 @@
 
         .e-msg-close-icon {
           color: $msg-outline-error-close-icon-color;
-
-          &:hover,
-          &:focus {
-            background-color: $msg-outline-error-close-icon-hover-bg-color;
-            box-shadow: 0 0 0 2px $msg-outline-error-close-icon-hover-bg-color;
+          @if $skin-name == 'bootstrap5.3' {
+            &:hover {
+              color: $msg-close-icon-hover-color;
+            }
+            &:focus {
+              box-shadow: $msg-close-icon-focus-shadow;
+            }
+          }
+          @else {
+            &:hover,
+            &:focus {
+              background-color: $msg-outline-error-close-icon-hover-bg-color;
+              box-shadow: 0 0 0 2px $msg-outline-error-close-icon-hover-bg-color;
+            }
           }
         }
       }
@@ -218,11 +312,20 @@
 
       .e-msg-close-icon {
         color: $msg-filled-close-icon-color;
-
-        &:hover,
-        &:focus {
-          background-color: $msg-filled-close-icon-hover-bg-color;
-          box-shadow: 0 0 0 2px $msg-filled-close-icon-hover-bg-color;
+        @if $skin-name == 'bootstrap5.3' {
+          &:hover {
+            color: $msg-close-icon-hover-color;
+          }
+          &:focus {
+            box-shadow: $msg-close-icon-focus-shadow;
+          }
+        }
+        @else {
+          &:hover,
+          &:focus {
+            background-color: $msg-filled-close-icon-hover-bg-color;
+            box-shadow: 0 0 0 2px $msg-filled-close-icon-hover-bg-color;
+          }
         }
       }
 
@@ -237,11 +340,20 @@
 
         .e-msg-close-icon {
           color: $msg-filled-success-close-icon-color;
-
-          &:hover,
-          &:focus {
-            background-color: $msg-filled-success-close-icon-hover-bg-color;
-            box-shadow: 0 0 0 2px $msg-filled-success-close-icon-hover-bg-color;
+          @if $skin-name == 'bootstrap5.3' {
+            &:hover {
+              color: $msg-close-icon-hover-color;
+            }
+            &:focus {
+              box-shadow: $msg-close-icon-focus-shadow;
+            }
+          }
+          @else {
+            &:hover,
+            &:focus {
+              background-color: $msg-filled-success-close-icon-hover-bg-color;
+              box-shadow: 0 0 0 2px $msg-filled-success-close-icon-hover-bg-color;
+            }
           }
         }
       }
@@ -257,11 +369,20 @@
 
         .e-msg-close-icon {
           color: $msg-filled-warning-close-icon-color;
-
-          &:hover,
-          &:focus {
-            background-color: $msg-filled-warning-close-icon-hover-bg-color;
-            box-shadow: 0 0 0 2px $msg-filled-warning-close-icon-hover-bg-color;
+          @if $skin-name == 'bootstrap5.3' {
+            &:hover {
+              color: $msg-close-icon-hover-color;
+            }
+            &:focus {
+              box-shadow: $msg-close-icon-focus-shadow;
+            }
+          }
+          @else {
+            &:hover,
+            &:focus {
+              background-color: $msg-filled-warning-close-icon-hover-bg-color;
+              box-shadow: 0 0 0 2px $msg-filled-warning-close-icon-hover-bg-color;
+            }
           }
         }
       }
@@ -277,11 +398,20 @@
 
         .e-msg-close-icon {
           color: $msg-filled-info-close-icon-color;
-
-          &:hover,
-          &:focus {
-            background-color: $msg-filled-info-close-icon-hover-bg-color;
-            box-shadow: 0 0 0 2px $msg-filled-info-close-icon-hover-bg-color;
+          @if $skin-name == 'bootstrap5.3' {
+            &:hover {
+              color: $msg-close-icon-hover-color;
+            }
+            &:focus {
+              box-shadow: $msg-close-icon-focus-shadow;
+            }
+          }
+          @else {
+            &:hover,
+            &:focus {
+              background-color: $msg-filled-info-close-icon-hover-bg-color;
+              box-shadow: 0 0 0 2px $msg-filled-info-close-icon-hover-bg-color;
+            }
           }
         }
       }
@@ -297,11 +427,20 @@
 
         .e-msg-close-icon {
           color: $msg-filled-error-close-icon-color;
-
-          &:hover,
-          &:focus {
-            background-color: $msg-filled-error-close-icon-hover-bg-color;
-            box-shadow: 0 0 0 2px $msg-filled-error-close-icon-hover-bg-color;
+          @if $skin-name == 'bootstrap5.3' {
+            &:hover {
+              color: $msg-close-icon-hover-color;
+            }
+            &:focus {
+              box-shadow: $msg-close-icon-focus-shadow;
+            }
+          }
+          @else {
+            &:hover,
+            &:focus {
+              background-color: $msg-filled-error-close-icon-hover-bg-color;
+              box-shadow: 0 0 0 2px $msg-filled-error-close-icon-hover-bg-color;
+            }
           }
         }
       }

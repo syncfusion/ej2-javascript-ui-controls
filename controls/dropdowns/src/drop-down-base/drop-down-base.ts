@@ -1291,7 +1291,7 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
                             const newQuery: Query = this.getQuery(eventArgs.query as Query);
                             // eslint-disable-next-line @typescript-eslint/no-explicit-any
                             if (this.isVirtualizationEnabled && ((listItems as any).count !== 0 &&
-                                (listItems as any).count < (this.itemCount * 2)) && !this.appendUncheckList) {
+                                (listItems as any).count < (this.itemCount * 2))) {
                                 if (newQuery) {
                                     for (let queryElements: number = 0; queryElements < newQuery.queries.length; queryElements++) {
                                         if (this.getModuleName() === 'multiselect' && this.isCheckBoxSelection && (newQuery.queries[queryElements as number].e && (newQuery.queries[queryElements as number].e.operator === 'notequal' ||

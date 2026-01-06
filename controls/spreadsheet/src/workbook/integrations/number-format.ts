@@ -367,7 +367,7 @@ export class WorkbookNumberFormat {
             const orgFormat: string = cell.format;
             cell.format = cell.format.split('\\').join('');
             const formats: string[] = cell.format.split(';');
-            if (isCustomDateTime(formats[0], true, option, true)) {
+            if (isCustomDateTime(formats[0], true, option, true) || cell.format === 'aaaa' || cell.format === 'aaa') {
                 if (fResult !== '') {
                     args.result = this.processCustomDateTime(args, cell, option.type !== 'time', formats);
                     isCustomText = !args.formatApplied;
@@ -669,7 +669,10 @@ export class WorkbookNumberFormat {
             custFormat = custFormat.split('A/P').join('AM/PM').split('AM/PM').join('a');
             type = 'time';
         }
-        if (cell.format.indexOf('d') > -1) {
+        if (cell.format.indexOf('d') > -1 || cell.format.indexOf('a') > -1) {
+            if (custFormat === 'aaaa' || custFormat === 'aaa') {
+                custFormat = custFormat.split('a').join('d');
+            }
             type = 'date';
             // Split the format with ' ' for replacing d with E only for a day of the week in the MMM d, yyyy ddd format
             const formatArr: string[] = custFormat.split(' ');
@@ -1900,10 +1903,10 @@ export class WorkbookNumberFormat {
                 formatArr[0] = 'MMM';
                 if (Number(secVal) <= 31 && Number(secVal) > 0) {
                     val = secVal + separator + val;
-                    if (this.localeObj.dateSeparator !== '/' && separator !== '-') {
+                    if (this.parent.locale !== 'en-US' && separator !== '-') {
                         val += separator + new Date().getFullYear();
                     }
-                    formatArr.splice(0, 0, 'dd');
+                    formatArr.splice(0, 0, (secVal.length === 1 ? 'd' : 'dd'));
                     updateFormat(this.customFormats[21]);
                 } else {
                     if (secVal.length === 2 && isNumber(secVal) && Number(secVal) > -1) {

@@ -1585,8 +1585,8 @@
         border-width: $grid-stackedheadercell-border-size;
       }
 
-      .e-stackedheadercell.e-leftfreeze.e-freezeleftborder,
-      .e-stackedheadercell.e-rightfreeze.e-freezerightborder {
+      .e-stackedheadercell.e-leftfreeze,
+      .e-stackedheadercell.e-rightfreeze {
         border-top-width: 0;
       }
   

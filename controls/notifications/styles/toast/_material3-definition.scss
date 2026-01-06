@@ -1,3 +1,6 @@
+@use 'ej2-base/styles/definition/material3' as *;
+@forward 'ej2-base/styles/definition/material3';
+
 //Layout Variables Start
 //Mouse Mode Start
 $toast-icon-nrml-height: 24px !default;
@@ -15,7 +18,7 @@ $toast-action-btn-nrml-padding: 14px 20px !default;
 $toast-action-btn-nrml-margin: 10px !default;
 $toast-progressbar-nrml-height: 4px !default;
 $toast-content-nrml-padding: 8px 0 18px 0 !default;
-$toast-nrml-border-radious: 4px !default;
+$toast-nrml-border-radious: $radius-4 !default;
 $toast-font-nrml-size: $text-sm !default;
 $toast-title-font-nrml-size: $text-base !default;
 
@@ -36,7 +39,7 @@ $toast-action-btn-bgr-padding: 18px 28px !default;
 $toast-action-btn-bgr-margin: 10px !default;
 $toast-progressbar-bgr-height: 4px !default;
 $toast-content-bgr-padding: 8px 0 6px 0 !default;
-$toast-bgr-border-radious: 4px !default;
+$toast-bgr-border-radious: $radius-4 !default;
 $toast-font-bgr-size: $text-sm !default;
 $toast-title-font-weight: 500 !default;
 
@@ -100,7 +103,28 @@ $toast-danger-hover-box-shadow: rgba($shadow) !default;
 
 $toast-close-icon-hover-bg-color: rgba($grey-white, .18) !default;
 $toast-close-icon-hover-color: rgba($on-primary) !default;
-$toast-icon-hover-border-radius: 50% !default;
+$toast-icon-hover-border-radius: $radius-full !default;
+$toast-bigger-bottom-margin: 0 auto $multitoast-bgr-gap-distance !default;
+$toast-bigger-top-margin: 0 auto $multitoast-bgr-gap-distance !default;
+$toast-bigger-full-width-margin: 0 auto $multitoast-bgr-gap-distance !default;
+$toast-bigger-margin: 0 0 $multitoast-bgr-gap-distance !default;
+$toast-zero-padding-margin: 0 !default;
+$toast-normal-bottom-margin: 0 auto $multitoast-nrml-gap-distance !default;
+$toast-normal-top-margin: 0 auto $multitoast-nrml-gap-distance !default;
+$toast-normal-full-width-margin: 0 auto $multitoast-nrml-gap-distance !default;
+$toast-normal-margin: 0 0 $multitoast-nrml-gap-distance !default;
+$toast-action-margin: 1px !default;
+$toast-close-icon-border-radius: $radius-full !default;
+$toast-bigger-min-height: 100px !default;
+$toast-zero-padding-margin: 0 !default;
+$toast-close-icon-height: 20px !default;
+$toast-close-icon-width: 22px !default;
+$toast-auto-margin: auto !default;
+$toast-close-icon-bottom: 6px !default;
+$toast-full-width: 100% !default;
+$toast-tittle-letter-spacing: .5px !default;
+$toast-half-full-width: 96% !default;
+$toast-border: 1px !default;
 
 // Toast Type Definitions End
 //icon Variable

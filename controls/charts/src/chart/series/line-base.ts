@@ -437,7 +437,7 @@ export class LineBase {
         const effect: Function = getAnimationFunction('Linear');
         const elementHeight: number = +clipRect.getAttribute('height');
         const elementWidth: number = +clipRect.getAttribute('width');
-        const xCenter: number = +clipRect.getAttribute('x');
+        const xCenter: number = +clipRect.getAttribute('x') + (series.chart.enableRtl ? elementWidth : 0);
         const yCenter: number = series.chart.requireInvertedAxis ? +clipRect.getAttribute('height') + +clipRect.getAttribute('y') :
             +clipRect.getAttribute('y');
         let value: number;

@@ -73,9 +73,6 @@ export function getSkeletonVal(value: string): string {
     case 'h tt':
         value = 'h';
         break;
-    case 'dddd':
-        value = 'E';
-        break;
     case 'h:mm:ss tt':
         value = 'hms';
         break;

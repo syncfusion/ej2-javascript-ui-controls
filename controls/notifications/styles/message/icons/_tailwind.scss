@@ -1,3 +1,4 @@
+@use 'ej2-base/styles/common/mixin' as *;
 @include export-module('message-tailwind-icons') {
   .e-message {
     .e-msg-icon::before,

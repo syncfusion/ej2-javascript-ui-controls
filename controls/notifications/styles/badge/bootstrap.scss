@@ -1,4 +1,4 @@
-@import 'ej2-base/styles/definition/bootstrap.scss';
-@import 'bootstrap-definition.scss';
-@import 'all.scss';
-@import 'bigger.scss';
+@use 'ej2-base/styles/definition/bootstrap' as *;
+@use 'bootstrap-definition' as *;
+@use 'all' as *;
+@use 'bigger' as *;

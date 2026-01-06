@@ -4,6 +4,7 @@ import { DoubleRange } from '../utils/double-range';
 import { Points, Series } from './chart-series';
 import { ColumnBase } from './column-base';
 import { IPointRenderEventArgs } from '../../chart/model/chart-interface';
+import { isNullOrUndefined } from '@syncfusion/ej2-base';
 /**
  * The `RangeColumnSeries` module is used to render the range column series.
  */

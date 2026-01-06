@@ -1,3 +1,6 @@
+@use 'ej2-base/styles/common/mixin' as *;
+@use './theme-variables' as *;
+
 .e-toast-container {
   .e-toast {
     background-color: $toast-bg-color;

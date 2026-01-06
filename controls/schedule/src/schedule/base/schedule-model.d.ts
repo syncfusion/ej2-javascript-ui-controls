@@ -451,6 +451,28 @@ export interface ScheduleModel extends ComponentModel{
     showQuickInfo?: boolean;
 
     /**
+     * Indicates whether the editor window and quick dialog popups are created and rendered in the DOM by default.
+     *
+     * When set to `true`, the popups are created during Scheduler initialization and reused throughout
+     * the component's lifetime. When set to `false`, the popups are created on demand when opened and
+     * destroyed when closed, reducing initial load but adding per-open creation cost.
+     *
+     * @remarks
+     * - Use `true` to minimize runtime allocations during interactions at the cost of higher initial setup.
+     * - Use `false` to reduce initial render cost and memory footprint when popups are infrequently used.
+     * - Toggling from `false` to `true` will keep subsequently created popups alive for reuse.
+     * *
+     * @example
+     * // Configure the editor to defer default popup creation.
+     * const options: ScheduleOptions= {
+     *   prerenderDialogs: false
+     * };
+     *
+     * @default true
+     */
+    prerenderDialogs?: boolean;
+
+    /**
      * This property helps user to add/edit the event in inline. By default, it is set to `false`.
      *
      * @default false

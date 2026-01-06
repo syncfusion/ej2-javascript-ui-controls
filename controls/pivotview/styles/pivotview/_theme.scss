@@ -321,7 +321,7 @@
         color: $gray-700 !important;
       }
 
-      @if ($skin-name == 'bootstrap5') {
+      @if ($skin-name =='bootstrap5') or ($skin-name =='bootstrap5.3') {
         color: $pivotview-grid-header-font-color !important;
       }
 

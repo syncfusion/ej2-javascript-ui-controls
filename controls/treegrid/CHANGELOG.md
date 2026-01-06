@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 32.1.22 (2026-01-06)
+
+### Tree Grid
+
+#### Bug Fixes
+
+- `#I789011` - Fixed the issue where `getCheckedRecords` method returns empty after expanding / collapsing a record.
+
 ## 32.1.21 (2025-12-30)
 
 ### Tree Grid

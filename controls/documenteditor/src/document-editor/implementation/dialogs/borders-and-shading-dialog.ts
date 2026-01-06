@@ -809,7 +809,7 @@ export class BordersAndShadingDialog {
     }
 
     private borderStyleChange(args: any): void {
-        if (args.value !== 'Single') {
+        if (args.value !== 'Single' && args.value !== 'Dot' && args.value !== 'DashSmallGap' && args.value !== 'DashLargeGap') {
             const eventArgs: UnsupportedBorderStyleClickEventArgs = this.triggeronUnsupportedBorderStyleClickEvent();
             if (eventArgs && eventArgs.cancel) {
                 return;

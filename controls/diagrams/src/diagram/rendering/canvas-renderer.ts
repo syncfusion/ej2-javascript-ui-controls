@@ -61,9 +61,9 @@ export class CanvasRenderer implements IRenderer {
         let grd: CanvasGradient;
         if (options.gradient.type !== 'None') {
             for (let i: number = 0; i < options.gradient.stops.length; i++) {
-                max = max !== undefined ? options.gradient.stops[parseInt(i.toString(), 10)].offset
+                max = !max ? options.gradient.stops[parseInt(i.toString(), 10)].offset
                     : Math.max(max, options.gradient.stops[parseInt(i.toString(), 10)].offset);
-                min = min !== undefined ? options.gradient.stops[parseInt(i.toString(), 10)].offset
+                min = !min ? options.gradient.stops[parseInt(i.toString(), 10)].offset
                     : Math.min(min, options.gradient.stops[parseInt(i.toString(), 10)].offset);
             }
             if (options.gradient.type === 'Linear') {
@@ -372,8 +372,16 @@ export class CanvasRenderer implements IRenderer {
         const pivotY: number = options.y + options.height * options.pivotY;
         const pivotX: number = options.x + options.width * options.pivotX;
         this.applyFlipAndRotate(ctx, options, canvas, pivotX, pivotY, renderer, element);
-        this.setStyle(canvas, options as StyleAttributes);
         ctx.translate(options.x, options.y);
+        const backupX: number = options.x;
+        const backupY: number = options.y;
+        if (options.shapeType === 'Rectangle') {
+            options.x = 0;
+            options.y = 0;
+        }
+        this.setStyle(canvas, options as StyleAttributes);
+        options.x = backupX;
+        options.y = backupY;
         this.renderPath(canvas, options, collection);
         ctx.fill();
         ctx.translate(-options.x, -options.y);

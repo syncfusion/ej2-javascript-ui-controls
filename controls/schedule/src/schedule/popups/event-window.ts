@@ -55,10 +55,12 @@ export class EventWindow {
         this.l10n = this.parent.localeObj;
         this.fields = this.parent.eventFields;
         this.eventWindowTime = { startTime: new Date(), endTime: new Date() };
-        this.renderEventWindow();
+        if (this.parent.prerenderDialogs) {
+            this.renderEventWindow();
+        }
     }
 
-    private renderEventWindow(): void {
+    public renderEventWindow(): void {
         this.element = createElement('div', { id: this.parent.element.id + '_dialog_wrapper' });
         this.parent.element.appendChild(this.element);
         const dialogModel: DialogModel = {
@@ -149,6 +151,9 @@ export class EventWindow {
     }
 
     public openEditor(data: Record<string, any>, type: CurrentAction, isEventData?: boolean, repeatType?: number): void {
+        if (!this.parent.prerenderDialogs) {
+            this.renderEventWindow();
+        }
         this.parent.currentAction = type;
         this.parent.removeNewEventElement();
         if (this.parent.quickPopup) {
@@ -335,6 +340,9 @@ export class EventWindow {
             }
             callBackPromise.resolve(args);
         });
+        if (!this.parent.prerenderDialogs && args.cancel) {
+            this.destroy(true);
+        }
         return callBackPromise;
     }
 
@@ -362,6 +370,9 @@ export class EventWindow {
                     this.resetForm();
                     this.parent.eventBase.focusElement(true);
                     this.eventCrudData = null;
+                    if (!this.parent.prerenderDialogs) {
+                        this.destroy(true);
+                    }
                 }
             }
             callBackPromise.resolve(args);
@@ -458,7 +469,8 @@ export class EventWindow {
         } else {
             this.createRecurrenceEditor(parentDiv);
         }
-        if (this.parent.resourceCollection.length > 0) {
+        const isResourceEmpty: boolean = this.parent.isResourceCollectionEmpty();
+        if (this.parent.resourceCollection.length > 0 && !isResourceEmpty) {
             const resourceParentDiv: HTMLElement = this.createDivElement(cls.EVENT_WINDOW_RESOURCES_DIV_CLASS);
             for (const resource of this.parent.resourceBase.resourceCollection) {
                 resourceParentDiv.appendChild(this.renderResourceDetails(resource));
@@ -1014,7 +1026,8 @@ export class EventWindow {
         if (cellsData.RecurrenceRule) {
             eventObj[this.fields.recurrenceRule] = cellsData.RecurrenceRule;
         }
-        if (this.parent.resourceCollection.length > 0 || this.parent.activeViewOptions.group.resources.length > 0) {
+        const isResourceEmpty: boolean = this.parent.isResourceCollectionEmpty();
+        if ((this.parent.resourceCollection.length > 0 && !isResourceEmpty) || this.parent.activeViewOptions.group.resources.length > 0) {
             this.parent.resourceBase.setResourceValues(eventObj);
         }
     }
@@ -1613,7 +1626,7 @@ export class EventWindow {
             if (endDate.getTime() >= new Date(+startDate).setMonth(startDate.getMonth() + interval)) {
                 alertMessage = 'createError';
             }
-            if (isNullOrUndefined(alertMessage)) {
+            if (isNullOrUndefined(alertMessage) && !isNullOrUndefined(this.parent.quickPopup.quickDialog)) {
                 this.parent.quickPopup.quickDialog.hide();
             }
         }

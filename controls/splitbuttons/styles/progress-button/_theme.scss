@@ -1,6 +1,7 @@
 @use 'sass:color';
 @use 'ej2-base/styles/common/mixin' as *;
 @use './theme-variables' as *;
+
 @include export-module('progress-button-theme') {
 
   /*! Progress Button Theme */
@@ -467,20 +468,33 @@
   }
 
   .e-progress {
-    background: $progress-btn-bgcolor-normal;
+    @if $skin-name == 'bootstrap5.3'  {
+      background: currentColor;
+    }
+    @else {
+      background: $progress-btn-bgcolor-normal;
+    }
   }
 
   #{if(&, '&', '*')}.e-primary,
   #{if(&, '&', '*')}.e-success,
   #{if(&, '&', '*')}.e-danger {
     .e-progress {
-      background: $progress-btn-bgcolor;
+      @if $skin-name == 'bootstrap5.3'  {
+        background: currentColor;
+      }
+      @else {
+        background: $progress-btn-bgcolor;
+      }
     }
   }
 
   #{if(&, '&', '*')}.e-info {
     .e-progress {
-      @if $skin-name != 'fluent2' {
+      @if $skin-name == 'bootstrap5.3'  {
+        background: currentColor;
+      }
+      @else if $skin-name != 'fluent2' {
         background: $progress-btn-bgcolor;
       }
     }

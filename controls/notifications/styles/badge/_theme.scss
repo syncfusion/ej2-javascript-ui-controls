@@ -1,5 +1,6 @@
 @use 'sass:color';
-
+@use 'ej2-base/styles/common/mixin' as *;
+@use './theme-variables' as *;
 @include export-module('badge-theme') {
   //sass-lint:disable no-color-literals
   .e-badge {

@@ -1,3 +1,5 @@
+@use 'ej2-base/styles/definition/fluent' as *;
+@forward 'ej2-base/styles/definition/fluent';
 $skeleton-background-color: $content-bg-color-alt2 !default;
 $shimmer-wave-color: $content-bg-color !default;
 $shimmer-background-color: transparent !default;
@@ -10,3 +12,6 @@ $shimmer-wave-angle-rtl: 45deg !default;
 $shimmer-effect-duration: 2s !default;
 $shimmer-effect-timing-function: ease-in-out !default;
 $skeleton-boder: none;
+$skeleton-circle-border-radius: 50% !default;
+$skeleton-value-zero: 0 !default;
+$skeleton-wave-after-width: calc(200% + 200px);

@@ -2369,6 +2369,38 @@ class HelloWorld
             }, 1000);
         });
 
+        it('should handle attachment removal even if wrong removeUrl is provided', (done: DoneFn) => {
+            let isAttachmentRemoved: boolean = false;
+            aiAssistView = new AIAssistView({
+                enableAttachments: true,
+                attachmentSettings: {
+                    saveUrl: 'https://services.syncfusion.com/js/production/api/FileUploader/Save',
+                    removeUrl: 'FileUploader/Remove'
+                },
+                attachmentRemoved: () => {
+                    expect((aiAssistView as any).uploadedFiles.length).toBe(0);
+                    isAttachmentRemoved = true;
+                }
+            });
+
+            aiAssistView.appendTo(aiAssistViewElem);
+
+            // Simulate adding a file to the uploader and uploading
+            const uploadObj: any = (aiAssistView as any).uploaderObj as Uploader;
+            let fileObj: File = new File(["Nice One"], "last.txt", {lastModified: 0, type: "overide/mimetype"});
+            let eventArgs = { type: 'click', target: {files: [fileObj]}, preventDefault: (): void => { } };
+            uploadObj.onSelectFiles(eventArgs);
+            setTimeout(() => {
+                const uploadedFileItem = (aiAssistView as any).footer.querySelector('.e-assist-uploaded-file-item');
+                const closeIcon = uploadedFileItem.querySelector('.e-icons.e-assist-clear-icon');
+                closeIcon.click();
+                setTimeout(() => {
+                    expect(isAttachmentRemoved).toBe(true);
+                    done();
+                }, 800);
+            }, 1000);
+        });
+
         it('should initialize with default attachment settings and handle dynamic property changes', () => {
             aiAssistView = new AIAssistView({
                 enableAttachments: true
@@ -2491,6 +2523,45 @@ class HelloWorld
                 }, 450);
             }
 
+        });
+
+        it('should upload an image with incorrect saveUrl for checking failure case', (done) => {
+            aiAssistView = new AIAssistView({
+                enableAttachments: true,
+                attachmentSettings: {
+                    saveUrl: 'https://services.syncfusion.com/js/production/api/FileUploader/Saves',
+                    removeUrl: 'https://services.syncfusion.com/js/production/api/FileUploader/Removes'
+                }
+            });
+            aiAssistView.appendTo(aiAssistViewElem);
+
+            const file: File = new File(['sample image data'], 'sample.png', { type: 'image/png' });
+            const fileInput: HTMLInputElement = aiAssistViewElem.querySelector('.e-assist-file-upload') as HTMLInputElement;
+            const dt = new DataTransfer();
+            dt.items.add(file);
+            fileInput.files = dt.files;
+
+            const changeEvent = new Event('change');
+            fileInput.dispatchEvent(changeEvent);
+
+            setTimeout(() => {
+                const dropArea: HTMLElement = aiAssistViewElem.querySelector('.e-assist-drop-area') as HTMLElement;
+                const attachedFile: HTMLElement = dropArea.querySelector('.e-assist-uploaded-file-item') as HTMLElement;
+                expect(attachedFile).not.toBeNull();
+                const progressBar: HTMLElement = attachedFile.querySelector('.e-assist-progress-bar') as HTMLElement;
+                expect(progressBar).not.toBeNull();
+                const progressFill: HTMLElement = progressBar.querySelector('.e-assist-progress-fill') as HTMLElement;
+                const uploaderObj = (aiAssistView as any).uploaderObj;
+                uploaderObj.trigger('failure', {
+                    operation: 'upload',
+                    file: { name: 'sample.png', size: file.size, type: file.type }
+                });
+                expect(progressFill.classList).toContain('e-assist-upload-failed');
+                const sendIcon: HTMLElement = aiAssistViewElem.querySelector('.e-assist-send') as HTMLElement;
+                expect(sendIcon).not.toBeNull();
+                expect(sendIcon.classList).toContain('disabled');
+                done();
+            }, 500);
         });
 
         it('should handle an attachment upload failure and failure element display', () => {

@@ -943,6 +943,20 @@ export class CommandHandler {
             }
         }
     }
+    private collectAllDescendants(nodeId: string, diagram: Diagram, allDescendants:
+    { [key: string]: (NodeModel | ConnectorModel)[] } = {}): { [key: string]: (NodeModel | ConnectorModel)[] } {
+        const node: NodeModel | ConnectorModel = this.diagram.nameTable[`${nodeId}`];
+        const descendants: {} = allDescendants;
+        if (node && (node as Node).children && (node as Node).children.length > 0) {
+            descendants[`${nodeId}`] = [];
+            for (const childId of (node as Node).children) {
+                descendants[`${nodeId}`].push(diagram.nameTable[`${childId}`]);
+                // Recursively collect children of this child
+                this.collectAllDescendants(childId, diagram, descendants);
+            }
+        }
+        return descendants;
+    }
     /**
      * moveObjects method\
      *
@@ -954,9 +968,11 @@ export class CommandHandler {
     public moveObjects(objects: string[], targetLayer?: string): void {
         this.diagram.startGroupAction();
         const connectorObjectsDetails: any = {};
-        let childNodes: any = [];
         for (let i: number = 0; i < objects.length; i++) {
             const obj: Node | Connector = this.diagram.nameTable[objects[parseInt(i.toString(), 10)]];
+            if ((obj as Node).parentId) {
+                continue;
+            }
             if (obj instanceof Node) {
                 const detail: object = { inEdges: obj.inEdges, outEdges: obj.outEdges };
                 connectorObjectsDetails[`${obj.id}`] = cloneObject(detail);
@@ -972,16 +988,15 @@ export class CommandHandler {
         this.diagram.setActiveLayer(layer.id);
         let targerNodes: NodeModel | ConnectorModel;
         for (const i of objects) {
+            const nameTableObj: NodeModel | ConnectorModel = this.diagram.nameTable[`${i}`];
+            if ((nameTableObj as Node).parentId) {
+                continue;
+            }
             const objectLayer: LayerModel = this.getObjectLayer(i);
             const index: number = objectLayer.objects.indexOf(i);
             if (index > -1) {
                 targerNodes = this.diagram.nameTable[`${i}`];
-                childNodes = [];
-                if ((targerNodes as Node).children) {
-                    for (const node of (targerNodes as Node).children) {
-                        childNodes.push(this.diagram.nameTable[`${node}`]);
-                    }
-                }
+                const allDescendantsMap: {} = this.collectAllDescendants(`${i}`, this.diagram);
                 this.diagram.unSelect(targerNodes);
                 //875087 - Restrict removing dependent connectors when moveing between layers
                 this.diagram.deleteDependentConnector = false;
@@ -995,18 +1010,20 @@ export class CommandHandler {
                         maxZindex = obj.zIndex;
                     }
                 }
-                if (childNodes.length > 0) {
-                    let addedObj: Node | Connector;
-                    for (let i: number = 0; i < childNodes.length; i++) {
-                        const node: NodeModel = childNodes[parseInt(i.toString(), 10)];
-                        node.zIndex = maxZindex + 2 + i;
-                        addedObj = this.diagram.add(node as NodeModel);
-                        this.setConnectorDetails(addedObj || node as NodeModel, connectorObjectsDetails);
-                        (targerNodes as Node).children.push(addedObj.id);
+                if (Object.keys(allDescendantsMap).length) {
+                    for (const parentId in allDescendantsMap) {
+                        if (allDescendantsMap.hasOwnProperty(parentId)) {
+                            if (!this.diagram.nameTable[`${parentId}`]) {
+                                const childrenNodes: (NodeModel | ConnectorModel)[] = allDescendantsMap[`${parentId}`];
+                                const childArray: string[] = this.assignZindexAndAddNode(allDescendantsMap, childrenNodes, maxZindex + 2,
+                                                                                         connectorObjectsDetails);
+                                (targerNodes as Node).children = childArray;
+                                (targerNodes as Node).zIndex = maxZindex + 1;
+                                const addedObj: Node | Connector = this.diagram.add(targerNodes);
+                                this.setConnectorDetails(addedObj || targerNodes, connectorObjectsDetails);
+                            }
+                        }
                     }
-                    (targerNodes as Node).zIndex = maxZindex + 1;
-                    addedObj = this.diagram.add(targerNodes);
-                    this.setConnectorDetails(addedObj || targerNodes, connectorObjectsDetails);
                 } else {
                     (targerNodes as Node).zIndex = maxZindex + 1;
                     const addedObj: Node | Connector = this.diagram.add(targerNodes);
@@ -1020,6 +1037,30 @@ export class CommandHandler {
             }
         }
         this.diagram.endGroupAction();
+    }
+    private assignZindexAndAddNode(allDescendantsMap: { [key: string]: ( NodeModel | ConnectorModel )[] },
+                                   childNodes: ( NodeModel | ConnectorModel )[], maxZindex: number, connectorObjectsDetails: {}): string[] {
+        const childArray: string[] = [];
+        for (let childIndex: number = 0; childIndex < childNodes.length; childIndex++) {
+            const childNode: NodeModel | ConnectorModel = childNodes[parseInt(childIndex.toString(), 10)];
+            if (childNode) {
+                if ((childNode as Node).children) {
+                    // process the children loop for here.
+                    const child: string[] = this.assignZindexAndAddNode(allDescendantsMap, allDescendantsMap[childNode.id],
+                                                                        maxZindex + 1, connectorObjectsDetails);
+                    (childNode as Node).children = child;
+                }
+                childNode.zIndex = maxZindex;
+                maxZindex++;
+                if ((childNode as Node).children && (childNode as Node).children.length) {
+                    maxZindex += (childNode as Node).children.length;
+                }
+                const addedObj: NodeModel | ConnectorModel = this.diagram.add(childNode);
+                childArray.push(addedObj.id);
+                this.setConnectorDetails(addedObj || childNode, connectorObjectsDetails);
+            }
+        }
+        return childArray;
     }
     private setConnectorDetails(obj: ConnectorModel | NodeModel, connectorObjectsDetails: object): void {
         const details: any = connectorObjectsDetails[obj.id];

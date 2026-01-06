@@ -1,5 +1,6 @@
 @use 'ej2-base/styles/common/mixin' as *;
 @use './theme-variables' as *;
+
 @include export-module('progress-button-layout') {
   .e-progress-btn {
     position: relative;
@@ -49,9 +50,34 @@
     &.e-progress-active {
       overflow: hidden;
       pointer-events: none;
+     
+      @if $skin-name == 'bootstrap5.3' {
+        .e-progress,
+        .e-primary .e-progress,
+        .e-success .e-progress,
+        .e-danger .e-progress {
+          opacity: .3;
+        }
 
-      .e-progress {
-        opacity: 1;
+        .e-warning .e-progress,
+        .e-info .e-progress,
+        .e-primary.e-outline .e-progress,
+        .e-primary.e-flat .e-progress,
+        .e-success.e-outline .e-progress,
+        .e-success.e-flat .e-progress,
+        .e-danger.e-outline .e-progress,
+        .e-danger.e-flat .e-progress,
+        .e-warning.e-outline .e-progress,
+        .e-warning.e-flat .e-progress,
+        .e-info.e-outline .e-progress,
+        .e-info.e-flat .e-progress {
+          opacity: .2;
+        }
+      }
+      @else {
+        .e-progress {
+          opacity: 1;
+        }
       }
 
       .e-animate-end {

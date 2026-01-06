@@ -2820,20 +2820,27 @@ export class Annotation {
         if (freeTextAnnotation && !freeTextAnnotation.isNewFreeTextAnnot && currentAnnotation.dynamicText !== '') {
             freeTextAnnotation.addInuptElemet({ x: x, y: y }, currentAnnotation);
             if (currentAnnotation) {
+                const zoomFactor: number = this.pdfViewerBase.getZoomFactor();
                 if (currentAnnotation.previousFontSize !== currentValue) {
-                    freeTextAnnotation.inputBoxElement.style.height = 'auto';
-                    if (isInteracted || this.isFreeTextFontsizeChanged
-                        || freeTextAnnotation.inputBoxElement.scrollHeight + 5 > currentAnnotation.bounds.height) {
-                        this.isFreeTextFontsizeChanged = false;
-                        freeTextAnnotation.inputBoxElement.style.height = freeTextAnnotation.inputBoxElement.scrollHeight + 5 + 'px';
+                    const previousHeight: number = freeTextAnnotation.inputBoxElement.getBoundingClientRect().height;
+                    if (!freeTextAnnotation.inputBoxElement.readOnly) {
+                        freeTextAnnotation.inputBoxElement.style.height = freeTextAnnotation.defaultHeight + 'px';
                     }
-                    else {
-                        freeTextAnnotation.inputBoxElement.style.height = currentAnnotation.bounds.height + 'px';
+                    const currentHeight: number = freeTextAnnotation.inputBoxElement.getBoundingClientRect().height;
+                    const difference: number = currentHeight - previousHeight;
+                    const fontSize: number = parseFloat(freeTextAnnotation.inputBoxElement.style.fontSize);
+                    if (((freeTextAnnotation.defaultHeight * zoomFactor) < freeTextAnnotation.inputBoxElement.scrollHeight) &&
+                        (Math.ceil(freeTextAnnotation.inputBoxElement.clientHeight) < freeTextAnnotation.inputBoxElement.scrollHeight)) {
+                        freeTextAnnotation.inputBoxElement.style.height = freeTextAnnotation.inputBoxElement.readOnly ? freeTextAnnotation.inputBoxElement.style.height : freeTextAnnotation.inputBoxElement.scrollHeight + (fontSize / 2) + 'px';
+                        if (parseFloat(freeTextAnnotation.inputBoxElement.style.borderWidth) >= 1) {
+                            freeTextAnnotation.inputBoxElement.style.height = parseFloat(freeTextAnnotation.inputBoxElement.style.height) + (parseFloat(freeTextAnnotation.inputBoxElement.style.borderWidth) * 2) + 'px';
+                        }
                     }
+                } else {
+                    freeTextAnnotation.inputBoxElement.style.height = currentAnnotation.bounds.height + 'px';
                 }
                 let inputEleHeight: number = parseFloat(freeTextAnnotation.inputBoxElement.style.height);
                 let inputEleWidth: number = parseFloat(freeTextAnnotation.inputBoxElement.style.width);
-                const zoomFactor: number = this.pdfViewerBase.getZoomFactor();
                 inputEleWidth = ((inputEleWidth) / zoomFactor);
                 inputEleHeight = ((inputEleHeight) / zoomFactor);
                 let heightDiff: number = (inputEleHeight - currentAnnotation.bounds.height);

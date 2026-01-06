@@ -2786,7 +2786,7 @@ export class TimePicker extends Component<HTMLElement> implements IInput {
         }
         if (label) {
             const labelWidth: number = (this.element.parentElement.offsetWidth) - width;
-            if (labelWidth) {
+            if (labelWidth && !(this.cssClass && this.cssClass.split(' ').indexOf('e-outline') !== -1)) {
                 label.style.width = `${labelWidth}px`;
             }
         }

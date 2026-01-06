@@ -1121,7 +1121,7 @@ describe('Mention', () => {
         it('insert the list item using mouseclick', () => {
             mouseEventArgs.target = mentionObj.list.childNodes[0].childNodes[2];
             mentionObj.onMouseClick(mouseEventArgs);
-            expect(mentionObj.element.innerHTML).toBe('<span contenteditable="false" class="e-mention-chip">@PERL</span>​');
+            expect(mentionObj.element.innerHTML).toBe('<span contenteditable="false" class="e-mention-chip">@PERL</span>');
         });
     });
 
@@ -1158,7 +1158,7 @@ describe('Mention', () => {
             mouseEventArgs.target = mentionObj.list.childNodes[0].childNodes[2];
             (<any>mentionObj).mentionChar = '#';
             mentionObj.onMouseClick(mouseEventArgs);
-            expect(mentionObj.element.innerHTML).toBe('<p>@<span contenteditable="false" class="e-mention-chip">#PERL</span>​</p>');
+            expect(mentionObj.element.innerHTML).toBe('<p>@<span contenteditable="false" class="e-mention-chip">#PERL</span></p>');
             expect(changeAction).toHaveBeenCalled();
         });
     });
@@ -1225,7 +1225,7 @@ describe('Mention', () => {
         it('insert the list item using mouseclick and check change event being triggered', () => {
             mouseEventArgs.target = mentionObj.list.childNodes[0].childNodes[2];
             mentionObj.onMouseClick(mouseEventArgs);
-            expect(mentionObj.element.innerHTML).toBe('<p><span contenteditable="false" class="e-mention-chip">PERL</span>​</p>');
+            expect(mentionObj.element.innerHTML).toBe('<p><span contenteditable="false" class="e-mention-chip">PERL</span></p>');
             expect(changeAction).toHaveBeenCalled();
         });
     });
@@ -2734,7 +2734,7 @@ describe('Mention', () => {
         it('insert the list item using mouseclick', () => {
             mouseEventArgs.target = mentionObj.list.childNodes[0].childNodes[2];
             mentionObj.onMouseClick(mouseEventArgs);
-            expect(mentionObj.element.innerHTML).toBe('<span contenteditable="false" class="e-mention-chip">aPERL</span>​');
+            expect(mentionObj.element.innerHTML).toBe('<span contenteditable="false" class="e-mention-chip">aPERL</span>');
             element.innerHTML = '<span contenteditable="false" class="e-mention-chip">aPERL</span>a';
             let textNode = mentionObj.element.childNodes[1]; // Get the text node containing 'a'
             let range: Range = document.createRange();

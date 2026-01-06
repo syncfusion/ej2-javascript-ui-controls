@@ -9,6 +9,14 @@
 #### Bug Fixes
 
 `#794438` - Fixed system frozen after importing the document.
+`#784675` - Resolved script error occurring when double-clicking and deleting the bookmarked word.
+`#786777` - Resolved the alignment issue after moving content to next page
+`#786596` - Resolved text in the header does not get ignored on the first attempt
+`#781721` - Resolved list format issue in splitted table.
+`#784296` - Resolved the text inserted outside the bookmarks when moving the cursor
+`#784718` - Resolved the spellcheck ignore and ignore All issue when select Ctrl+A
+`#789254` - Resolved the table layout issue when modify the cells preferred width using the selection cell format API
+`#784719` - Resolved the undo issue on newly added error word
 
 ## 32.1.20 (2025-12-23)
 

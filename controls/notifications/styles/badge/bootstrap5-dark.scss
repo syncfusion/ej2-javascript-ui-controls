@@ -1,4 +1,4 @@
-@import 'ej2-base/styles/definition/bootstrap5-dark.scss';
-@import 'bootstrap5-dark-definition.scss';
-@import 'all.scss';
-@import 'bigger.scss';
+@use 'ej2-base/styles/definition/bootstrap5-dark' as *;
+@use 'bootstrap5-dark-definition' as *;
+@use 'all' as *;
+@use 'bigger' as *;

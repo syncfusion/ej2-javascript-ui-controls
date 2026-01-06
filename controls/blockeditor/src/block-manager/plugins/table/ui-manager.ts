@@ -233,8 +233,6 @@ export class TableUIManager {
             this.rowInsertHandle.style.display = 'none';
             this.rowTopDot.style.visibility = '';
             this.rowBottomDot.style.visibility = '';
-            this.rowTopHit.style.display = 'block';
-            this.rowBottomHit.style.display = 'block';
         };
 
         this.rowTopHit.addEventListener('mouseenter', () => showRowLine('top'));
@@ -289,8 +287,6 @@ export class TableUIManager {
             this.colInsertHandle.style.display = 'none';
             this.colLeftDot.style.visibility = '';
             this.colRightDot.style.visibility = '';
-            this.colLeftHit.style.display = 'block';
-            this.colRightHit.style.display = 'block';
         };
 
         this.colLeftHit.addEventListener('mouseenter', () => showColLine('left'));

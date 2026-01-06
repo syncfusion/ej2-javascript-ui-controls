@@ -1,9 +1,12 @@
+@use 'ej2-base/styles/definition/bootstrap5.3' as *;
+@forward 'ej2-base/styles/definition/bootstrap5.3';
+
 // Dimension variables
 $msg-font-family: $font-family !default;
 $msg-font-weight: 400 !default;
 $msg-font-style: normal !default;
 $msg-padding: 11px 7px !default;
-$msg-border-radius: 6px !default;
+$msg-border-radius: $radius-6 !default;
 $msg-icon-size: 16px !default;
 $msg-icon-margin: 3px 4px !default;
 $msg-close-icon-margin: 1px 2px 1px auto !default;
@@ -54,15 +57,13 @@ $msg-info-icon-color: $msg-info-icon-color !default;
 $msg-error-icon-color: $msg-danger-icon-color !default;
 
 $msg-close-icon-color: $msg-close-icon-color !default;
-$msg-close-icon-hover-bg-color: rgba($msg-close-icon-color, .12) !default;
 $msg-success-close-icon-color: $msg-success-close-icon-color !default;
-$msg-success-close-icon-hover-bg-color: rgba($msg-success-close-icon-color, .12) !default;
 $msg-warning-close-icon-color: $msg-warning-close-icon-color !default;
-$msg-warning-close-icon-hover-bg-color: rgba($msg-warning-close-icon-color, .12) !default;
 $msg-info-close-icon-color: $msg-info-close-icon-color !default;
-$msg-info-close-icon-hover-bg-color: rgba($msg-info-close-icon-color, .12) !default;
 $msg-error-close-icon-color: $msg-danger-close-icon-color !default;
-$msg-error-close-icon-hover-bg-color: rgba($msg-error-close-icon-color, .12) !default;
+$msg-close-icon-hover-color: $close-icon-color-hover !default;
+$msg-close-icon-focus-shadow: $primary-shadow-focus !default;
+$msg-close-icon-focus-color: $close-icon-color-pressed !default;
 
 // Outlined
 $msg-outline-color: $msg-color-alt1 !default;
@@ -84,15 +85,10 @@ $msg-outline-info-icon-color: $msg-info-icon-color-alt1 !default;
 $msg-outline-error-icon-color: $msg-danger-icon-color-alt1 !default;
 
 $msg-outline-close-icon-color: $msg-close-icon-color-alt1 !default;
-$msg-outline-close-icon-hover-bg-color: rgba($msg-outline-close-icon-color, .12) !default;
 $msg-outline-success-close-icon-color: $msg-success-close-icon-color-alt1 !default;
-$msg-outline-success-close-icon-hover-bg-color: rgba($msg-outline-success-close-icon-color, .12) !default;
 $msg-outline-warning-close-icon-color: $msg-warning-close-icon-color-alt1 !default;
-$msg-outline-warning-close-icon-hover-bg-color: rgba($msg-outline-warning-close-icon-color, .12) !default;
 $msg-outline-info-close-icon-color: $msg-info-close-icon-color-alt1 !default;
-$msg-outline-info-close-icon-hover-bg-color: rgba($msg-outline-info-close-icon-color, .12) !default;
 $msg-outline-error-close-icon-color: $msg-danger-close-icon-color-alt1 !default;
-$msg-outline-error-close-icon-hover-bg-color: rgba($msg-outline-error-close-icon-color, .12) !default;
 
 // Filled
 $msg-filled-color: $msg-color-alt2 !default;
@@ -118,12 +114,10 @@ $msg-filled-info-icon-color: $msg-info-icon-color-alt2 !default;
 $msg-filled-error-icon-color: $msg-danger-icon-color-alt2 !default;
 
 $msg-filled-close-icon-color: $msg-close-icon-color-alt2 !default;
-$msg-filled-close-icon-hover-bg-color: rgba($msg-filled-close-icon-color, .12) !default;
 $msg-filled-success-close-icon-color: $msg-success-close-icon-color-alt2 !default;
-$msg-filled-success-close-icon-hover-bg-color: rgba($msg-filled-success-close-icon-color, .12) !default;
 $msg-filled-warning-close-icon-color: $msg-warning-icon-color-alt2 !default;
-$msg-filled-warning-close-icon-hover-bg-color: rgba($msg-filled-warning-close-icon-color, .12) !default;
 $msg-filled-info-close-icon-color: $msg-info-close-icon-color-alt2 !default;
-$msg-filled-info-close-icon-hover-bg-color: rgba($msg-filled-info-close-icon-color, .12) !default;
 $msg-filled-error-close-icon-color: $msg-danger-close-icon-color-alt2 !default;
-$msg-filled-error-close-icon-hover-bg-color: rgba($msg-filled-error-close-icon-color, .12) !default;
+$message-border: 1px !default;
+$message-zero-border: 0 !default;
+$message-full-radius: $radius-full !default;

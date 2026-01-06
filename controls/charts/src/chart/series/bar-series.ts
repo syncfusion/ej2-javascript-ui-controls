@@ -1,6 +1,7 @@
 import { withInRange } from '../../common/utils/helper';
 import { Rect } from '@syncfusion/ej2-svg-base';
 import { DoubleRange } from '../utils/double-range';
+import { isNullOrUndefined } from '@syncfusion/ej2-base';
 import { Points, Series } from './chart-series';
 import { ColumnBase } from './column-base';
 import { IPointRenderEventArgs } from '../../chart/model/chart-interface';

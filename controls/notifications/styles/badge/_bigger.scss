@@ -1,3 +1,5 @@
+@use 'ej2-base/styles/common/mixin' as *;
+@use './theme-variables' as *;
 @mixin badge-size($border-radius, $height, $line-height, $min-width, $padding, $width) {
   border-radius: $border-radius;
   height: $height;

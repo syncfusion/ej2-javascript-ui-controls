@@ -1,3 +1,5 @@
+@use 'ej2-base/styles/common/mixin' as *;
+@use './theme-variables' as *;
 @mixin badge-size($border-radius, $height, $line-height, $min-width, $padding, $width) {
   border-radius: $border-radius;
   height: $height;
@@ -27,8 +29,8 @@
     font-size: $badge-base-font-size;
     font-weight: $badge-base-font-weight;
     @if ($badge-theme == 'bootstrap5.3') {
-      line-height: 18px;
-      padding: 1px 4px;
+      line-height: $badge-boot-line-height;
+      padding: $badge-normal-padding;
     }
     @else {
       line-height: $badge-base-line-height;
@@ -62,7 +64,7 @@
     }
 
     &.e-badge-notification {
-      @include badge-size($badge-notification-border-radius, $badge-notification-height, $badge-notification-line-height, $badge-notification-min-width, $badge-notification-padding, auto);
+      @include badge-size($badge-notification-border-radius, $badge-notification-height, $badge-notification-line-height, $badge-notification-min-width, $badge-notification-padding, $badge-notification-width);
       font-size: $badge-notification-font-size;
       @include position(absolute, $badge-notification-top, $badge-notification-left, null);
 
@@ -90,7 +92,7 @@
     &.e-badge-dot {
       @include badge-size($badge-dot-border-radius, $badge-dot-height, $badge-dot-line-height, $badge-dot-min-width, $badge-dot-padding, $badge-dot-width);
       box-shadow: $badge-dot-box-shadow;
-      margin: 0;
+      margin: $badge-zero-padding-margin;
       overflow: visible;
       @include position(absolute, $badge-dot-top, $badge-dot-left, null);
     }
@@ -111,7 +113,7 @@
           line-height: $leading-none;
         }
         @else {
-          line-height: .9;
+          line-height: $badge-button-nrml-line-height;
         }
         @include position(relative, $badge-button-top, null, null);
 

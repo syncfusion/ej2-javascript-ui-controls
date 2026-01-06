@@ -2,6 +2,16 @@
 
 ## [Unreleased]
 
+## 32.1.22 (2026-01-06)
+
+### PDF Viewer
+
+#### Bug Fixes
+
+- `#I795929` - Resolved an issue where the No matches found `popup` appeared when searching the text using enter key after rapid input.
+- `#I795163` - Fixed an issue where programmatically importing annotations as XFDF was not working properly.
+- `#I794404` , `#I794680` - Fixed an issue where less-than and greater-than characters were converted to HTML entities in Free Text annotations and the comment panel.
+
 ## 32.1.21 (2025-12-30)
 
 ### PDF Viewer

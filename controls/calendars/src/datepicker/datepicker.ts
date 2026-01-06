@@ -2274,7 +2274,7 @@ export class DatePicker extends Calendar implements IInput {
         }
         if (label) {
             const labelWidth: number = (this.element.parentElement.offsetWidth) - width;
-            if (labelWidth) {
+            if (labelWidth && !(this.cssClass && this.cssClass.split(' ').indexOf('e-outline') !== -1)) {
                 label.style.width = `${labelWidth}px`;
             }
         }
@@ -2529,15 +2529,19 @@ export class DatePicker extends Calendar implements IInput {
                     }
                 }
                 break;
-            default:
-                if (this.calendarElement && this.isCalendar()) {
-                    super.onPropertyChanged(newProp, oldProp);
-                }
+            case 'min':
+            case 'max':
                 if (prop === 'min' && isNullOrUndefined(this.min)) {
                     this.min = new Date(1900, 0, 1);
                 }
                 if (prop === 'max' && isNullOrUndefined(this.max)) {
                     this.max = new Date(2099, 11, 31);
+                }
+                this.errorClass();
+                break;
+            default:
+                if (this.calendarElement && this.isCalendar()) {
+                    super.onPropertyChanged(newProp, oldProp);
                 }
                 break;
             }

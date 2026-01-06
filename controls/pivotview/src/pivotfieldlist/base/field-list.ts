@@ -497,7 +497,7 @@ export class PivotFieldList extends Component<HTMLElement> implements INotifyPro
      * [`editing`](../../pivotview/calculated-field/#editing-through-the-field-list-and-the-groupingbar),
      * [`sorting`](../../pivotview/field-list/#sorting-members),
      * [`filtering`](../../pivotview/field-list/#filtering-members) and
-     * [`aggregation`](pivotview/field-list/#changing-aggregation-type-of-value-fields-at-runtime).
+     * [`aggregation`](../../pivotview/field-list/#changing-aggregation-type-of-value-fields-at-runtime).
      *
      * @event actionBegin
      */
@@ -512,7 +512,7 @@ export class PivotFieldList extends Component<HTMLElement> implements INotifyPro
      * [`editing`](../../pivotview/calculated-field/#editing-through-the-field-list-and-the-groupingbar),
      * [`sorting`](../../pivotview/field-list/#sorting-members),
      * [`filtering`](../../pivotview/field-list/#filtering-members) and
-     * [`aggregation`](pivotview/field-list/#changing-aggregation-type-of-value-fields-at-runtime).
+     * [`aggregation`](../../pivotview/field-list/#changing-aggregation-type-of-value-fields-at-runtime).
      *
      * @event actionComplete
      */
@@ -527,7 +527,7 @@ export class PivotFieldList extends Component<HTMLElement> implements INotifyPro
      * [`editing`](../../pivotview/calculated-field/#editing-through-the-field-list-and-the-groupingbar),
      * [`sorting`](../../pivotview/field-list/#sorting-members),
      * [`filtering`](../../pivotview/field-list/#filtering-members) and
-     * [`aggregation`](pivotview/field-list/#changing-aggregation-type-of-value-fields-at-runtime).
+     * [`aggregation`](../../pivotview/field-list/#changing-aggregation-type-of-value-fields-at-runtime).
      *
      * @event actionFailure
      */

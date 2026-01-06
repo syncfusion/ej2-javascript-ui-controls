@@ -2150,24 +2150,29 @@ describe('Table Block', () => {
             }, 0);
         });
 
-        it('Table insert handles/hover lines hidden after applying addColumnAt', (done) => {
+        it('Table insert handles/hover lines hidden after applying addColumnAt (click + mouseleave)', (done) => {
             setupTable();
             const cell = domHelpers.query(editorElement, 'tbody tr td[role="gridcell"]');
             cell.dispatchEvent(new MouseEvent('mousemove', { bubbles: true }));
             domHelpers.query(editorElement, '.e-block .e-col-dot-hit').dispatchEvent(new MouseEvent('mouseenter', { bubbles: true }));
             const insert = domHelpers.query(editorElement, '.e-block .e-col-insert-handle') as HTMLElement;
             expect(insert.style.display !== 'none').toBe(true);
+            
             insert.dispatchEvent(new MouseEvent('click', { bubbles: true }));
-            setTimeout(() => {
-                const insert2 = domHelpers.query(editorElement, '.e-block .e-col-insert-handle') as HTMLElement;
-                const line = domHelpers.query(editorElement, '.e-block .e-col-hover-line') as HTMLElement;
-                expect(insert2.style.display === 'none' || insert2.style.display === '').toBe(true);
-                expect(line.style.display === 'none' || line.style.display === '').toBe(true);
-                done();
-            }, 0);
+            let insert2 = domHelpers.query(editorElement, '.e-block .e-col-insert-handle') as HTMLElement;
+            let line = domHelpers.query(editorElement, '.e-block .e-col-hover-line') as HTMLElement;
+            expect(insert2.style.display === 'none' || insert2.style.display === '').toBe(true);
+            expect(line.style.display === 'none' || line.style.display === '').toBe(true);
+
+            insert.dispatchEvent(new MouseEvent('mouseleave', { bubbles: true }));
+            insert2 = domHelpers.query(editorElement, '.e-block .e-col-insert-handle') as HTMLElement;
+            line = domHelpers.query(editorElement, '.e-block .e-col-hover-line') as HTMLElement;
+            expect(insert2.style.display === 'none' || insert2.style.display === '').toBe(true);
+            expect(line.style.display === 'none' || line.style.display === '').toBe(true);
+            done();
         });
 
-        it('Table insert handles/hover lines hidden after applying addRowAt', (done) => {
+        it('Table insert handles/hover lines hidden after applying addRowAt (click + mouseleave)', (done) => {
             setupTable();
             const firstDataCell = domHelpers.query(editorElement, 'tbody tr:first-child td[role="gridcell"]');
             firstDataCell.dispatchEvent(new MouseEvent('mousemove', { bubbles: true }));
@@ -2180,11 +2185,18 @@ describe('Table Block', () => {
             expect(insertHandle.style.display !== 'none').toBe(true);
             insertHandle.dispatchEvent(new MouseEvent('click', { bubbles: true }));
             setTimeout(() => {
-                const insertHandleAfter = domHelpers.query(editorElement, '.e-block .e-row-insert-handle') as HTMLElement;
-                const hoverLineAfter = domHelpers.query(editorElement, '.e-block .e-row-hover-line') as HTMLElement;
+                let insertHandleAfter = domHelpers.query(editorElement, '.e-block .e-row-insert-handle') as HTMLElement;
+                let hoverLineAfter = domHelpers.query(editorElement, '.e-block .e-row-hover-line') as HTMLElement;
                 expect(insertHandleAfter && (insertHandleAfter.style.display === 'none' || insertHandleAfter.style.display === '')).toBe(true);
                 expect(hoverLineAfter && (hoverLineAfter.style.display === 'none' || hoverLineAfter.style.display === '')).toBe(true);
-                done();
+                insertHandle.dispatchEvent(new MouseEvent('mouseleave', { bubbles: true }));
+                setTimeout(() => {
+                    insertHandleAfter = domHelpers.query(editorElement, '.e-block .e-row-insert-handle') as HTMLElement;
+                    hoverLineAfter = domHelpers.query(editorElement, '.e-block .e-row-hover-line') as HTMLElement;
+                    expect(insertHandleAfter && (insertHandleAfter.style.display === 'none' || insertHandleAfter.style.display === '')).toBe(true);
+                    expect(hoverLineAfter && (hoverLineAfter.style.display === 'none' || hoverLineAfter.style.display === '')).toBe(true);
+                    done();
+                }, 0);
             }, 0);
         });
 

@@ -1,7 +1,9 @@
+@use 'ej2-base/styles/common/mixin' as *;
+@use './theme-variables' as *;
 @include export-module('message-layout') {
 
   .e-message {
-    border: 1px solid;
+    border: $message-border solid;
     border-radius: $msg-border-radius;
     box-sizing: border-box;
     font-family: $msg-font-family;
@@ -26,19 +28,19 @@
       height: $msg-icon-size;
       margin: $msg-icon-margin;
       @if $skin-name == 'fluent2' {
-        padding: 0 4px 0 2px;
+        padding: $message-msg-icon-padding;
       }
     }
 
     .e-msg-close-icon {
-      border-width: 0;
+      border-width: $message-zero-border;
       cursor: pointer;
       font-size: $msg-close-icon-size;
       margin: $msg-close-icon-margin;
       padding: $msg-close-icon-padding;
       height: $msg-close-icon-height;
       @if $skin-name == 'fluent2' {
-        line-height: 12px;
+        line-height: $message-nrml-close-icon-line-height;
       }
     }
 

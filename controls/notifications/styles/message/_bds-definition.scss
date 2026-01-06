@@ -1,3 +1,6 @@
+@use 'ej2-base/styles/definition/bds' as *;
+@forward 'ej2-base/styles/definition/bds';
+
 // Dimension variables
 $msg-font-family: $font-family !default;
 $msg-font-weight: 400 !default;
@@ -127,3 +130,11 @@ $msg-filled-info-close-icon-color: $msg-info-close-icon-color-alt2 !default;
 $msg-filled-info-close-icon-hover-bg-color: rgba($msg-filled-info-close-icon-color, .12) !default;
 $msg-filled-error-close-icon-color: $msg-danger-close-icon-color-alt2 !default;
 $msg-filled-error-close-icon-hover-bg-color: rgba($msg-filled-error-close-icon-color, .12) !default;
+$message-bigger-msg-icon-padding: 2px 5px 0 6px !default;
+$message-close-icon-line-height: 14px !default;
+$message-msg-icon-padding: 0 4px 0 2px !default;
+$message-nrml-close-icon-line-height: 12px !default;
+
+$message-border: 1px !default;
+$message-zero-border: 0 !default;
+$message-full-radius: 50% !default;

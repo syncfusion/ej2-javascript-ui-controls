@@ -1010,7 +1010,7 @@ export class DropDownButton extends Component<HTMLButtonElement> implements INot
             EventHandler.remove(this.getPopUpElement(), 'keydown', this.keyBoardHandler);
         }
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        EventHandler.remove(window as any, 'resize', this.windowResize);
+        EventHandler.remove(window as any, 'resize', this.windowResize.bind(this));
     }
 
     /**

@@ -1,3 +1,5 @@
+@use 'ej2-base/styles/common/mixin' as *;
+@use './theme-variables' as *;
 @mixin shimmer-animation($animation-name) {
   animation: $animation-name $shimmer-effect-duration infinite;
   animation-timing-function: $shimmer-effect-timing-function;
@@ -24,7 +26,7 @@
       }
 
       &.e-skeleton-circle {
-        border-radius: 50%;
+        border-radius: $skeleton-circle-border-radius;
       }
 
       &.e-visible-none {
@@ -35,10 +37,10 @@
         @include shimmer-animation(e-shimmer-wave);
         content: '';
         position: absolute;
-        top: 0;
-        bottom: 0;
-        right: 0;
-        width: calc(200% + 200px);
+        top: $skeleton-value-zero;
+        bottom: $skeleton-value-zero;
+        right: $skeleton-value-zero;
+        width: $skeleton-wave-after-width;
       }
 
       &.e-shimmer-fade {

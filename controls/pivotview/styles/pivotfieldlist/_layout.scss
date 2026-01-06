@@ -1208,7 +1208,7 @@
 
         .e-filter-text-div {
           /* stylelint-disable */
-          color: $field-list-button-icon-color !important;
+          color: $field-list-filter-text-color !important;
           /* stylelint-enable */
           font-size: $field-list-font-size-14;
           font-weight: $field-list-font-weight-medium;
@@ -1541,7 +1541,7 @@
       }
 
       .e-list-text {
-        color: $field-list-drag-clone-text-color;
+        color: $field-list-treeview-text-color;
         font-size: $field-list-drag-clone-font-size;
         width: $field-list-width-100p;
         @if ($skin-name == 'Material3') {

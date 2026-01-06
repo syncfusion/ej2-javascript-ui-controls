@@ -1,8 +1,11 @@
+@use 'ej2-base/styles/definition/fluent2' as *;
+@forward 'ej2-base/styles/definition/fluent2';
+
 //layout variables
 $badge-theme : 'fluent2' !default;
 
 // Base Badge
-$badge-base-border-radius: 4px !default;
+$badge-base-border-radius: $radius-4 !default;
 $badge-base-font-size: $text-xs !default;
 $badge-base-line-height: 16px !default;
 $badge-base-height: 22px !default;
@@ -12,21 +15,21 @@ $badge-base-text-color: $content-text-color-alt1 !default;
 $badge-base-background-color: $content-bg-color-alt1 !default;
 
 // Pill Badge
-$badge-pill-border-radius: 10px !default;
+$badge-pill-border-radius: $radius-10 !default;
 $badge-pill-padding: 4px 10px 4px 10px !default;
 
 // Notification Badge
 $badge-notification-top: -10px !default;
 $badge-notification-left: 100% !default;
 $badge-notification-font-size: $text-xs !default;
-$badge-notification-border-radius: 12px !default;
+$badge-notification-border-radius: $radius-12 !default;
 $badge-notification-min-width: 32px !default;
 $badge-notification-height: 20px !default;
 
 // Circle Badge
 $badge-circle-width: 20px !default;
 $badge-circle-height: 20px !default;
-$badge-circle-border-radius: 12px !default;
+$badge-circle-border-radius: $radius-12 !default;
 $badge-circle-padding: 2px 4px !default;
 $badge-circle-min-width: 0 !default;
 $badge-circle-ghost-line-height: 1.2 !default;
@@ -49,7 +52,7 @@ $badge-dot-top: -3px !default;
 $badge-dot-width: 10px !default;
 $badge-dot-height: 10px !default;
 $badge-dot-line-height: 1.2 !default;
-$badge-dot-border-radius: 10px !default;
+$badge-dot-border-radius: $radius-10 !default;
 $badge-dot-padding: 0 !default;
 $badge-dot-min-width: 0 !default;
 $badge-dot-left: 100% !default;
@@ -65,7 +68,7 @@ $badge-ghost-padding: 3px 10px 3px 10px !default;
 
 //bigger styles
 // Base Badge
-$badge-touch-base-border-radius: 4px !default;
+$badge-touch-base-border-radius: $radius-4 !default;
 $badge-touch-base-font-size: $text-sm !default;
 $badge-touch-base-line-height: 20px !default;
 $badge-touch-base-height: 24px !default;
@@ -131,3 +134,6 @@ $badge-danger-ghost-border: $badge-danger-ghost-border-color !default;
 $badge-danger-ghost-color: $badge-danger-ghost-text-color !default;
 
 $badge-darkren: $badge-secondary-bg-color !default;
+$badge-zero-padding-margin: 0 !default;
+$badge-notification-width: auto !default;
+$badge-button-nrml-line-height: .9 !default;

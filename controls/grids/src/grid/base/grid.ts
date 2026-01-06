@@ -8028,6 +8028,9 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
                 this.print();
             }
             this.notify(events.keyPressed, e);
+        } else if (e.action === 'enter' && this.editModule && this.editSettings.mode === 'Batch' && this.isEdit &&
+            parentsUntil(e.target as Element, 'e-editedbatchcell')) {
+            e.preventDefault();
         }
     }
     /**

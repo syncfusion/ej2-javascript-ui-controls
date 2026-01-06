@@ -1674,7 +1674,7 @@ export class FormFieldsBase {
                 }
                 formFields.TextList.push({ itemName: item[1], itemValue: item[0] });
                 if (i === 0) {
-                    formFields.Alignment = item.textAlignment;
+                    formFields.Alignment = !isNullOrUndefined(item.textAlignment) ? item.textAlignment : comboBoxField.textAlignment;
                 }
             }
         }

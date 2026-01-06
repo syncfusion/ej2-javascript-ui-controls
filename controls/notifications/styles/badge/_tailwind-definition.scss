@@ -1,3 +1,6 @@
+@use 'ej2-base/styles/definition/tailwind' as *;
+@forward 'ej2-base/styles/definition/tailwind';
+
 //layout variables
 $badge-theme : $skin-name !default;
 
@@ -109,3 +112,6 @@ $badge-info-font-color: $info !default;
 $badge-light-font-color: $content-text-color-alt1 !default;
 $badge-dark-font-color: $content-bg-color-alt2 !default;
 $badge-warning-font-color: $warning !default;
+$badge-zero-padding-margin: 0 !default;
+$badge-notification-width: auto !default;
+$badge-button-nrml-line-height: .9 !default;

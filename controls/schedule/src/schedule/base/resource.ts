@@ -880,10 +880,13 @@ export class ResourceBase {
         if (isNullOrUndefined(groupOrder) && this.parent.activeViewOptions.group.allowGroupEdit && resource.allowMultiple) {
             return undefined;
         }
-        const id: string = isNullOrUndefined(groupOrder) ? <string>eventObj[resource.field] : <string>groupOrder[parseInt(colorFieldIndex.toString(), 10)];
-        const data: Record<string, any>[] = this.filterData(resource.dataSource as Record<string, any>[], resource.idField, id);
-        if (data.length > 0) {
-            return data[0][resource.colorField] as string;
+        const isResourceEmpty: boolean = this.parent.isResourceCollectionEmpty();
+        if (!isResourceEmpty) {
+            const id: string = isNullOrUndefined(groupOrder) ? <string>eventObj[resource.field] : <string>groupOrder[parseInt(colorFieldIndex.toString(), 10)];
+            const data: Record<string, any>[] = this.filterData(resource.dataSource as Record<string, any>[], resource.idField, id);
+            if (data.length > 0) {
+                return data[0][resource.colorField] as string;
+            }
         }
         return undefined;
     }

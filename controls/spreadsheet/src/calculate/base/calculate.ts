@@ -3096,8 +3096,7 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
     }
 
     public checkDateFormat(date: string, pvtParse?: boolean): Date {
-        if ((this.parentObject as { getModuleName: Function }).getModuleName() === 'spreadsheet' &&
-            (this.parentObject as { locale: string }).locale !== 'en-US') {
+        if ((this.parentObject as { getModuleName: Function }).getModuleName() === 'spreadsheet') {
             const dateEventArgs: { value: string, cell: { value: string }, isDate?: boolean, dateObj?: Date } = { value: date,
                 cell: { value: date } };
             (this.parentObject as { notify?: Function }).notify('checkDateFormat', dateEventArgs);

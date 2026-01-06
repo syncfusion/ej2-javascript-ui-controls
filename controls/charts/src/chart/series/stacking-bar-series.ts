@@ -5,6 +5,7 @@ import { Points, Series } from './chart-series';
 import { ColumnBase } from './column-base';
 import { IPointRenderEventArgs } from '../../chart/model/chart-interface';
 import { CylinderSeriesOption } from './column-series';
+import { isNullOrUndefined } from '@syncfusion/ej2-base';
 
 
 /**

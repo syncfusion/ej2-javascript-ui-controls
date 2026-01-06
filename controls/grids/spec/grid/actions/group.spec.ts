@@ -3335,3 +3335,34 @@ describe('991898: Updating the Chrome version in coverage test cases of EJ2 comp
         gridObj = actionComplete = null;
     });
 });
+
+describe('EJ2-1000496: Script Error When Calling expandAll or collapseAll on Grouped Columns with Empty DataSource', () => {
+    let gridObj: Grid;
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: [],
+                allowGrouping: true,
+                groupSettings: { columns: ['ShipCity'] },
+                allowPaging: true,
+                columns: [
+                    { field: 'OrderID', headerText: 'Order ID', textAlign: 'Right', width: 120 },
+                    { field: 'CustomerID', headerText: 'Customer ID', width: 150 },
+                    { field: 'ShipCity', headerText: 'Ship City', width: 150 },
+                    { field: 'ShipName', headerText: 'Ship Name', width: 150 },
+                ],
+            },
+            done
+        );
+    });
+
+    it('should not throw script error when calling collapseAll/expandAll on empty grouped grid', () => {
+        expect(() => gridObj.groupModule.collapseAll()).not.toThrow();
+        expect(() => gridObj.groupModule.expandAll()).not.toThrow();
+    });
+
+    afterAll(() => {
+        destroy(gridObj);
+        gridObj = null;
+    });
+});

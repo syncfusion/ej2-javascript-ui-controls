@@ -1,3 +1,6 @@
+@use 'ej2-base/styles/definition/bootstrap-dark' as *;
+@forward 'ej2-base/styles/definition/bootstrap-dark';
+
 //dimention variables
 
 //Mouse Mode
@@ -57,7 +60,7 @@ $toast-content-color: $grey-dark-font !default;
 // Toast Types theme definitions
 
 $toast-border: 1px solid $grey-base !default;
-
+$toast-border: 1px !default;
 $toast-success-bg-color: $brand-success-dark !default;
 $toast-success-color: $grey-light-font !default;
 $toast-success-title-color: $toast-success-color !default;
@@ -104,5 +107,25 @@ $toast-danger-hover-box-shadow: 0 6px 12px rgba($base-font, .5) !default;
 
 $toast-close-icon-hover-bg-color: transparent !default;
 $toast-close-icon-hover-color: $grey-dark-font !default;
+$toast-bigger-bottom-margin: 0 auto $multitoast-bgr-gap-distance !default;
+$toast-bigger-top-margin: 0 auto $multitoast-bgr-gap-distance !default;
+$toast-bigger-full-width-margin: 0 auto $multitoast-bgr-gap-distance !default;
+$toast-bigger-margin: 0 0 $multitoast-bgr-gap-distance !default;
+$toast-zero-padding-margin: 0 !default;
+$toast-normal-bottom-margin: 0 auto $multitoast-nrml-gap-distance !default;
+$toast-normal-top-margin: 0 auto $multitoast-nrml-gap-distance !default;
+$toast-normal-full-width-margin: 0 auto $multitoast-nrml-gap-distance !default;
+$toast-normal-margin: 0 0 $multitoast-nrml-gap-distance !default;
+$toast-action-margin: 1px !default;
+$toast-close-icon-border-radius: 50% !default;
+$toast-bigger-min-height: 100px !default;
+$toast-zero-padding-margin: 0 !default;
+$toast-close-icon-height: 20px !default;
+$toast-close-icon-width: 22px !default;
+$toast-auto-margin: auto !default;
+$toast-close-icon-bottom: 6px !default;
+$toast-full-width: 100% !default;
+$toast-tittle-letter-spacing: .5px !default;
+$toast-half-full-width: 96% !default;
 
 //enddefault

@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 32.1.22 (2026-01-06)
+
+### Pivot Table
+
+#### Bug Fixes
+
+- `I798298` - Pivot Tables now correctly preserve custom aggregate types for string fields in the value axis.
+
 ## 32.1.21 (2025-12-30)
 
 ### Pivot Table

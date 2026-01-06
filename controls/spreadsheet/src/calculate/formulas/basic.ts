@@ -4012,7 +4012,7 @@ export class BasicFormulas {
             || (condition.includes(this.parent.getParseDecimalSeparator()) && !isWildCardCondition)) {
             condition = this.parent.getValueFromArg(condition);
         }
-        if (argArr[0].indexOf(':') > -1 && this.parent.isCellReference(argArr[0])) {
+        if (this.parent.isCellReference(argArr[0])) {
             cellColl = this.parent.getCellCollection(argArr[0].split(this.parent.tic).join(''));
             for (let j: number = 0; j < cellColl.length; j++) {
                 cellValue = this.parent.getValueFromArg(cellColl[j as number]);

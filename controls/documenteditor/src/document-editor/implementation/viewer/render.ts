@@ -3422,8 +3422,22 @@ private calculatePathBounds(data: string): Rect {
         }
         return colorValue;
     }
-
+    private setLineDashBasedOnStyle(lineStyle: string, lineWidth: number): void {
+        const scaledLineWidth: number = this.getScaledValue(lineWidth);
+        switch (lineStyle) {
+            case 'Dot':
+                this.pageContext.setLineDash([this.getScaledValue(1) * scaledLineWidth, this.getScaledValue(1) * scaledLineWidth]);
+                break;
+            case 'DashSmallGap':
+                this.pageContext.setLineDash([this.getScaledValue(4) * scaledLineWidth, this.getScaledValue(2) * scaledLineWidth]);
+                break;
+            case 'DashLargeGap':
+                this.pageContext.setLineDash([(this.getScaledValue(4) * scaledLineWidth), this.getScaledValue(4) * scaledLineWidth]);
+                break;
+        }
+    }
     private renderSingleBorder(color: string, startX: number, startY: number, endX: number, endY: number, lineWidth: number, lineStyle: string): void {
+        this.setLineDashBasedOnStyle(lineStyle, lineWidth);
         this.pageContext.beginPath();
         this.pageContext.moveTo(this.getScaledValue(startX, 1), this.getScaledValue(startY, 2));
         this.pageContext.lineTo(this.getScaledValue(endX, 1), this.getScaledValue(endY, 2));
@@ -3434,6 +3448,9 @@ private calculatePathBounds(data: string): Rect {
             this.pageContext.stroke();
         }
         this.pageContext.closePath();
+        if (lineStyle === 'Dot' || lineStyle === 'DashSmallGap' || lineStyle === 'DashLargeGap') {
+            this.pageContext.setLineDash([]);
+        }
     }
     public getScaledValue(value: number, type?: number): number {
         if (this.isPrinting) {

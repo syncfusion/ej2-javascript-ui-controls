@@ -92,6 +92,7 @@ export class VirtualScroll {
             count: this.parent.flatData.length
         };
         this.handleSelection();
+        this.parent['isVirtualExpandCollapse'] = true;
         const requestType: string = getValue('isCollapseAll', this.parent) ? 'collapseAll' : 'refresh';
         getValue('grid.renderModule', this.parent).dataManagerSuccess(actionDetails , <NotifyArgs>{ requestType: requestType });
     }

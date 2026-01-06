@@ -1,3 +1,5 @@
+@use 'ej2-base/styles/common/mixin' as *;
+@use './theme-variables' as *;
 @include export-module('toast-layout') {
   /* stylelint-disable property-no-vendor-prefix */
   .e-toast-container {
@@ -28,35 +30,35 @@
     &.e-toast-bottom-center {
       bottom: $toast-position-nrml-distance;
       pointer-events: none;
-      right: 0;
-      width: 100%;
+      right: $toast-zero-padding-margin;
+      width: $toast-full-width;
 
       .e-toast {
-        margin: 0 auto $multitoast-nrml-gap-distance;
+        margin: $toast-normal-bottom-margin;
         pointer-events: auto;
       }
     }
 
     &.e-toast-top-center {
       pointer-events: none;
-      right: 0;
+      right: $toast-zero-padding-margin;
       top: $toast-position-nrml-distance;
-      width: 100%;
+      width: $toast-full-width;
 
       .e-toast {
-        margin: 0 auto $multitoast-nrml-gap-distance;
+        margin: $toast-normal-top-margin;
         pointer-events: auto;
       }
     }
 
     &.e-toast-full-width {
-      left: 0;
-      right: 0;
-      width: 100%;
+      left: $toast-zero-padding-margin;
+      right: $toast-zero-padding-margin;
+      width: $toast-full-width;
 
       .e-toast {
-        margin: 0 auto $multitoast-nrml-gap-distance;
-        width: 96%;
+        margin: $toast-normal-full-width-margin;
+        width: $toast-half-full-width;
       }
     }
 
@@ -73,7 +75,7 @@
 
         .e-toast-close-icon {
           margin-left: initial;
-          margin-right: auto;
+          margin-right: $toast-auto-margin;
         }
 
         .e-toast-icon {
@@ -82,8 +84,8 @@
         }
 
         .e-toast-progress {
-          left: auto;
-          right: 0;
+          left: $toast-auto-margin;
+          right: $toast-zero-padding-margin;
         }
       }
     }
@@ -92,7 +94,7 @@
       border-radius: $toast-nrml-border-radious;
       display: inline-flex;
       font-size: $toast-font-nrml-size;
-      margin: 0 0 $multitoast-nrml-gap-distance;
+      margin: $toast-normal-margin;
       overflow: hidden;
       padding: $toast-nrml-padding;
       position: relative;
@@ -122,19 +124,19 @@
           text-overflow: ellipsis;
 
           &:first-child {
-            padding: 0;
+            padding: $toast-zero-padding-margin;
             @if $skin-name == 'bootstrap5' or $skin-name == 'bootstrap5.3' {
-              padding-bottom: 8px;
-              padding-left: 12px;
-              padding-right: 12px;
-              padding-top: 8px;
+              padding-bottom: $toast-content-first-child-padding-bottom;
+              padding-left: $toast-content-first-child-padding-left;
+              padding-right: $toast-content-first-child-padding-right;
+              padding-top: $toast-content-first-child-padding-top;
             }
           }
 
           &:last-child {
-            padding-bottom: 0;
+            padding-bottom: $toast-zero-padding-margin;
             @if $skin-name == 'bootstrap5' or $skin-name == 'bootstrap5.3' {
-              padding-bottom: 12px;
+              padding-bottom: $toast-content-last-padding-bottom;
             }
           }
 
@@ -147,7 +149,7 @@
         .e-toast-title {
           font-size: $toast-title-font-nrml-size;
           font-weight: $toast-title-font-weight;
-          letter-spacing: .5px;
+          letter-spacing: $toast-tittle-letter-spacing;
           @if $skin-name == 'bootstrap5' or $skin-name == 'bootstrap5.3' {
             border-bottom: 1px solid $border;
           }
@@ -159,7 +161,7 @@
           word-wrap: break-word;
 
           + .e-toast-actions {
-            padding-top: 0;
+            padding-top: $toast-zero-padding-margin;
             @if $skin-name == 'bootstrap5' or $skin-name == 'bootstrap5.3' {
               padding: $toast-action-btn-bgr-padding;
             }
@@ -167,16 +169,11 @@
         }
 
         .e-toast-actions {
-          @if $skin-name == 'highcontrast' {
-            margin: 1px 0 0 3px;
-          }
-          @else {
-            margin: 1px;
-          }
+          margin: $toast-action-margin;
           @if $skin-name == 'bootstrap5' or $skin-name == 'bootstrap5.3' {
             border-top: 1px solid $border;
-            margin-left: 12px;
-            margin-right: 12px;
+            margin-left: $toast-actions-margin;
+            margin-right: $toast-actions-margin;
           }
           @if $skin-name != 'tailwind3' {
             padding: $toast-action-btn-nrml-padding;
@@ -195,7 +192,7 @@
           .e-toast-content {
             &:first-child {
               @if $skin-name == 'bootstrap5' or $skin-name == 'bootstrap5.3' {
-                padding-left: 44px;
+                padding-left: $toast-header-padding-left;
               }
             }
           }
@@ -208,7 +205,7 @@
           .e-toast-content {
             &:first-child {
               @if $skin-name == 'bootstrap5' or $skin-name == 'bootstrap5.3' {
-                padding-right: 30px;
+                padding-right: $toast-header-padding-right;
               }
             }
           }
@@ -222,15 +219,15 @@
         font-size: $toast-close-icon-nrml-size;
         height: $toast-close-icon-nrml-height;
         justify-content: center;
-        margin-left: auto;
+        margin-left: $toast-auto-margin;
         width: $toast-close-icon-nrml-width;
         @if $skin-name == 'material' {
           opacity: .7;
         }
         @if $skin-name == 'bootstrap5' or $skin-name == 'bootstrap5.3' {
-          margin-top: 13px;
+          margin-top: $toast-close-icon-margin-top;
           position: absolute;
-          right: 8px;
+          right: $toast-close-icon-right;
         }
       }
 
@@ -242,21 +239,21 @@
         margin-right: $toast-icon-nrml-right-margin;
         width: $toast-icon-nrml-width;
         @if $skin-name == 'bootstrap5' or $skin-name == 'bootstrap5.3' {
-          left: 0;
-          margin-left: 12px;
-          margin-top: 15px;
-          padding-bottom: 6px;
+          left: $toast-zero-padding-margin;
+          margin-left: $toast-icon-margin-left;
+          margin-top: $toast-icon-top;
+          padding-bottom: $toast-icon-padding-bottom;
           position: absolute;
         }
         @if $skin-name == 'fluent2' {
-          margin-top: 2px;
+          margin-top: $toast-icon-top;
         }
       }
 
       .e-toast-progress {
-        bottom: 0;
+        bottom: $toast-zero-padding-margin;
         height: $toast-progressbar-nrml-height;
-        left: 0;
+        left: $toast-zero-padding-margin;
         position: absolute;
       }
     }
@@ -264,7 +261,7 @@
 
   .e-content-placeholder.e-toast.e-placeholder-toast {
     background-size: 400px 100px;
-    min-height: 100px;
+    min-height: $toast-bigger-min-height;
   }
 
   .e-blazor-toast-hidden {
@@ -274,10 +271,10 @@
   .e-toast-container .e-toast .e-toast-close-icon.blazor-toast-close-icon {
     background-color: transparent;
     border-color: transparent;
-    border-radius: 50%;
-    bottom: 6px;
-    height: 20px;
+    border-radius: $toast-close-icon-border-radius;
+    bottom: $toast-close-icon-bottom;
+    height: $toast-close-icon-height;
     position: relative;
-    width: 22px;
+    width: $toast-close-icon-width;
   }
 }

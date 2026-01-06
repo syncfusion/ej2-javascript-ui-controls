@@ -660,11 +660,13 @@ export class StickyNotesAnnotation {
             this.renderAnnotationComments(pageCollections, pageNumber);
         }
         if (isInitialRender || renderAnnot) {
+            this.pdfViewer.viewerBase.isInitialLoad = true;
             for (let i: number = 0; i < this.pdfViewerBase.renderedPagesList.length; i++) {
                 if (this.pdfViewerBase.renderedPagesList[parseInt(i.toString(), 10)] === pageNumber) {
                     this.pdfViewerBase.renderAnnotations(pageNumber, pageAnnotations, false);
                 }
             }
+            this.pdfViewer.viewerBase.isInitialLoad = false;
         }
     }
 
@@ -1137,7 +1139,10 @@ export class StickyNotesAnnotation {
         this.getButtonState(commentObj, newCommentDiv);
         if (args.valueEle) {
             if (this.pdfViewer.enableHtmlSanitizer && args.value){
-                args.value = SanitizeHtmlHelper.sanitize(args.value);
+                const sanitizedText: string = SanitizeHtmlHelper.sanitize(args.value);
+                if (args.value === sanitizedText) {
+                    args.value = sanitizedText;
+                }
             }
             const annotationName: any = args.valueEle.parentNode.parentNode.parentNode.parentNode.id;
             const currentAnnotation: any = this.pdfViewer.annotationCollection.filter(function (annot: any): any
@@ -1308,7 +1313,10 @@ export class StickyNotesAnnotation {
         let lastElement: any;
         let commentValue: string;
         if (this.pdfViewer.enableHtmlSanitizer && args.value){
-            args.value = SanitizeHtmlHelper.sanitize(args.value);
+            const sanitizedText: string = SanitizeHtmlHelper.sanitize(args.value);
+            if (args.value === sanitizedText) {
+                args.value = sanitizedText;
+            }
         }
         if (comment.name && args.value !== '') {
             commentsContainer = args.valueEle.parentElement.parentElement.parentElement;

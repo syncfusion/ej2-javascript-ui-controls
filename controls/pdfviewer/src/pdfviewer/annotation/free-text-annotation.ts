@@ -190,7 +190,7 @@ export class FreeTextAnnotation {
     private inputBoxWidth: any = 0;
     private wrapperOffsetX: number = 0;
     private wrapperOffsetY: number = 0;
-    private prevFontsize: number = 0;
+    private prevFontsize: number = 16;
     private lineGap: number = 1.8;
     private initialStrokeWidth: number = 0;
     private initialStrokeThickness: number = 0;
@@ -247,7 +247,7 @@ export class FreeTextAnnotation {
         this.fillColor = this.pdfViewer.freeTextSettings.fillColor ? this.pdfViewer.freeTextSettings.fillColor : '#fff';
         this.borderStyle = this.pdfViewer.freeTextSettings.borderStyle ? this.pdfViewer.freeTextSettings.borderStyle : 'solid';
         this.borderWidth = !isNullOrUndefined(this.pdfViewer.freeTextSettings.borderWidth) ?
-            this.pdfViewer.freeTextSettings.borderWidth : 1;
+            this.pdfViewer.freeTextSettings.borderWidth : 0;
         this.fontSize = this.pdfViewer.freeTextSettings.fontSize ? this.pdfViewer.freeTextSettings.fontSize : 16;
         this.opacity = this.pdfViewer.freeTextSettings.opacity ? this.pdfViewer.freeTextSettings.opacity : 1;
         this.fontColor = this.pdfViewer.freeTextSettings.fontColor ? this.pdfViewer.freeTextSettings.fontColor : '#000';
@@ -824,7 +824,10 @@ export class FreeTextAnnotation {
         if (!this.pdfViewerBase.isFreeTextContextMenu) {
             this.pdfViewer.fireBeforeAddFreeTextAnnotation(this.inputBoxElement.value);
             if (this.pdfViewer.enableHtmlSanitizer && this.inputBoxElement){
-                this.inputBoxElement.value = SanitizeHtmlHelper.sanitize(this.inputBoxElement.value);
+                const sanitizedString: string = SanitizeHtmlHelper.sanitize(this.inputBoxElement.value);
+                if (sanitizedString === this.inputBoxElement.value) {
+                    this.inputBoxElement.value = sanitizedString;
+                }
             }
             const pageIndex: number = this.inputBoxElement.id && this.inputBoxElement.id.split('_freeText_')[1] && this.inputBoxElement.id.split('_freeText_')[1].split('_')[0] ? parseFloat(this.inputBoxElement.id.split('_freeText_')[1].split('_')[0]) : this.pdfViewerBase.currentPageNumber - 1;
             const pageDiv: HTMLElement = this.pdfViewerBase.getElement('_pageDiv_' + (pageIndex));
@@ -972,20 +975,11 @@ export class FreeTextAnnotation {
                 }
                 this.selectedAnnotation.bounds.width = inputEleWidth;
                 this.selectedAnnotation.bounds.height = inputEleHeight;
-                if (inputEleHeight > this.freetextHeight) {
-                    if (zoomFactor > 1) {
-                        this.selectedAnnotation.bounds.height = (parseFloat(this.inputBoxElement.style.height) / zoomFactor) +
-                            this.selectedAnnotation.wrapper.children[0].style.strokeWidth;
-                    }
-                    else if (parseFloat(this.inputBoxElement.style.height) !== inputEleHeight) {
-                        this.selectedAnnotation.bounds.height = parseFloat(this.inputBoxElement.style.height) +
-                            this.selectedAnnotation.wrapper.children[0].style.strokeWidth;
-                    }
-                }
-                if (this.pdfViewer.freeTextSettings.borderWidth !== 0) {
+                if (!isNullOrUndefined(this.pdfViewer.freeTextSettings.borderWidth) && this.pdfViewer.freeTextSettings.borderWidth !== 0) {
                     this.initialStrokeThickness = this.pdfViewer.freeTextSettings.borderWidth;
                 }
-                if (this.initialStrokeThickness !== this.selectedAnnotation.wrapper.children[0].style.strokeWidth) {
+                if (!isNullOrUndefined(this.initialStrokeThickness) && !this.selectedAnnotation.isAddAnnotationProgrammatically &&
+                    this.initialStrokeThickness !== this.selectedAnnotation.wrapper.children[0].style.strokeWidth) {
                     const strokeDifference: number = this.selectedAnnotation.wrapper.children[0].style.strokeWidth -
                         this.initialStrokeThickness;
                     this.selectedAnnotation.bounds.height = parseFloat(this.inputBoxElement.style.height) + strokeDifference;
@@ -1004,10 +998,19 @@ export class FreeTextAnnotation {
                     height: this.selectedAnnotation.bounds.height, y: y, x: x } });
                 const commentsDiv: any = document.getElementById(this.selectedAnnotation.annotName);
                 if (commentsDiv && commentsDiv.childNodes) {
+                    const sanitizedString: string = SanitizeHtmlHelper.sanitize(inputValue);
                     if (commentsDiv.childNodes[0].ej2_instances) {
+                        if (sanitizedString !== inputValue) {
+                            commentsDiv.childNodes[0].ej2_instances[0].enableHtmlSanitizer = false;
+                            commentsDiv.childNodes[0].ej2_instances[0].enableHtmlParse = false;
+                        }
                         commentsDiv.childNodes[0].ej2_instances[0].value = inputValue;
                         commentsDiv.childNodes[0].ej2_instances[0].dataBind();
                     } else if (commentsDiv.childNodes[0].childNodes && commentsDiv.childNodes[0].childNodes[1].ej2_instances) {
+                        if (sanitizedString !== inputValue) {
+                            commentsDiv.childNodes[0].childNodes[1].ej2_instances[0].enableHtmlSanitizer = false;
+                            commentsDiv.childNodes[0].childNodes[1].ej2_instances[0].enableHtmlParse = false;
+                        }
                         commentsDiv.childNodes[0].childNodes[1].ej2_instances[0].value = inputValue;
                         commentsDiv.childNodes[0].childNodes[1].ej2_instances[0].dataBind();
                     }
@@ -1404,10 +1407,11 @@ export class FreeTextAnnotation {
             if (!this.isNewFreeTextAnnot) {
                 this.inputBoxElement.style.borderWidth = this.selectedAnnotation.wrapper.children[0].style.strokeWidth / 2 + 'px';
             }
-            if (this.pdfViewer.freeTextSettings.borderWidth !== 0) {
+            if (!isNullOrUndefined(this.pdfViewer.freeTextSettings.borderWidth) && this.pdfViewer.freeTextSettings.borderWidth !== 0) {
                 this.initialStrokeWidth = this.pdfViewer.freeTextSettings.borderWidth;
             }
-            if (this.initialStrokeWidth !== this.selectedAnnotation.wrapper.children[0].style.strokeWidth) {
+            if (!isNullOrUndefined(this.initialStrokeWidth) && !isNullOrUndefined(annotation) && !annotation.isAddAnnotationProgrammatically
+                && this.initialStrokeWidth !== this.selectedAnnotation.wrapper.children[0].style.strokeWidth) {
                 const strokeDifference: number = this.selectedAnnotation.wrapper.children[0].style.strokeWidth - this.initialStrokeWidth;
                 this.inputBoxElement.style.height = parseFloat(this.inputBoxElement.style.height) + strokeDifference + 'px';
                 this.initialStrokeWidth = this.selectedAnnotation.wrapper.children[0].style.strokeWidth;

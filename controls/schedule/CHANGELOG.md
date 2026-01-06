@@ -2,11 +2,22 @@
 
 ## [Unreleased]
 
-## 32.1.21 (2025-12-30)
+## 32.1.22 (2026-01-06)
 
 ### Schedule
 
 #### Bug fixes
+
+- `#I786056` - Fixed an issue in which enabling `byDate` with an empty resource collection prevented the Schedule from rendering.
+- `#I786762` - Resolved an issue where default popup elements were retained in the DOM in the Scheduler.
+
+## 32.1.20 (2025-12-23)
+
+### Schedule
+
+#### Bug fixes
+
+- `#I781882` - Fixed an issue where appointment resizing behaved incorrectly when browser zoom is set to 90%.
 
 - `#I792237` - Fixed an issue where appointment resizing behaved incorrectly when the time scale was customized using `startHour` and `endHour` in `TimelineDay` view.
 

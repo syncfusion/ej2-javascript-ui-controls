@@ -1405,8 +1405,8 @@
             }
 
             .e-draggable-prompt {
-              border: $field-list-border-1 dashed $field-list-header-background-color;
-              color: $field-list-header-background-color;
+              border: $field-list-border-1 dashed $field-list-default-prompt-color;
+              color: $field-list-default-prompt-color;
               font-size: $field-list-drag-clone-font-size;
               height: $field-list-adaptive-drag-prompt-height;
               left: 15%;
@@ -1429,7 +1429,7 @@
               background-color: $pivot-formula-background;
               border: $field-list-border-1 solid $pivot-formula-border;
               border-radius: $field-list-default-border-radius;
-              color: $field-list-default-font-color;
+              color: $field-list-default-formula-font-color;
               height: $field-list-height-200;
               margin-left: $field-list-spacing-20;
               margin-right: $field-list-spacing-20;

@@ -669,7 +669,12 @@ export class PdfRenderer {
                     this.loadedDocument.importAnnotations(annotData, DataFormat.json);
                     break;
                 case 'xfdf':
-                    this.loadedDocument.importAnnotations(annotData, DataFormat.xfdf);
+                    if (typeof annotData === 'string' && !this.isBase64(annotData)) {
+                        this.loadedDocument.importAnnotations(new TextEncoder().encode(annotData), DataFormat.xfdf);
+                    }
+                    else {
+                        this.loadedDocument.importAnnotations(annotData, DataFormat.xfdf);
+                    }
                     break;
                 default:
                     break;

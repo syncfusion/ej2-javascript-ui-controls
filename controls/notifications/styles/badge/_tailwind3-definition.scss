@@ -1,8 +1,11 @@
+@use 'ej2-base/styles/definition/tailwind3' as *;
+@forward 'ej2-base/styles/definition/tailwind3';
+
 // layout variable
 $badge-theme : $skin-name !default;
 
 // Base Badge
-$badge-base-border-radius: 4px !default;
+$badge-base-border-radius: $radius-4 !default;
 $badge-base-font-size: $text-xxs !default;
 $badge-base-line-height: 16px !default;
 $badge-base-height: 20px !default;
@@ -14,21 +17,21 @@ $badge-secondary-bg-color: $secondary-bg-color !default;
 $badge-secondary-border-color: $secondary-border-color !default;
 
 // Pill Badge
-$badge-pill-border-radius: 20px !default;
+$badge-pill-border-radius: $radius-20 !default;
 $badge-pill-padding: 3px 11px 3px 11px !default;
 
 // Notification Badge
 $badge-notification-top: -10px !default;
 $badge-notification-left: 100% !default;
 $badge-notification-font-size: $text-xs !default;
-$badge-notification-border-radius: 10px !default;
+$badge-notification-border-radius: $radius-24 !default;
 $badge-notification-min-width: 32px !default;
 $badge-notification-height: 18px !default;
 
 // Circle Badge
 $badge-circle-width: 20px !default;
 $badge-circle-height: 20px !default;
-$badge-circle-border-radius: 20px !default;
+$badge-circle-border-radius: $radius-20 !default;
 $badge-circle-padding: 1px 3px 4px 3px !default;
 $badge-circle-min-width: 0 !default;
 $badge-circle-ghost-line-height: 16px !default;
@@ -51,7 +54,7 @@ $badge-dot-top: -3px !default;
 $badge-dot-width: 12px !default;
 $badge-dot-height: 12px !default;
 $badge-dot-line-height: 16px !default;
-$badge-dot-border-radius: 10px !default;
+$badge-dot-border-radius: $radius-24 !default;
 $badge-dot-padding: 0 !default;
 $badge-dot-min-width: 0 !default;
 $badge-dot-left: 100% !default;
@@ -67,7 +70,7 @@ $badge-ghost-padding: 3px 10px 3px 10px !default;
 
 //bigger styles
 // Base Badge
-$badge-touch-base-border-radius: 4px !default;
+$badge-touch-base-border-radius: $radius-4 !default;
 $badge-touch-base-font-size: $text-sm !default;
 $badge-touch-base-line-height: 16px !default;
 $badge-touch-base-height: 24px !default;
@@ -115,3 +118,6 @@ $badge-info-font-color: $info-text !default;
 $badge-light-font-color: $content-text-color-alt1 !default;
 $badge-dark-font-color: $secondary-text-color !default;
 $badge-warning-font-color: $warning-text !default;
+$badge-zero-padding-margin: 0 !default;
+$badge-notification-width: auto !default;
+$badge-button-nrml-line-height: .9 !default;

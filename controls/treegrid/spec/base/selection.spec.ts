@@ -1570,3 +1570,42 @@ describe('Bug-980640: Script error on repeated expand/collapse actions', () => {
         destroy(gridObj);
     });
 });
+describe('getCheckedRecords returns empty after expand/collapse', () => {
+    let gridObj: TreeGrid;
+    let actionComplete: () => void;
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: sampleData1,
+                childMapping: 'subtasks',
+                treeColumnIndex: 1,
+                height: '410',
+                enableVirtualization:true,
+                autoCheckHierarchy: false,
+                columns: [
+                    { field: 'taskID', headerText: 'Order ID', isPrimaryKey: true, width: 120 },
+                    { field: 'taskName', headerText: 'Customer ID', width: 150, showCheckbox: true },
+                    { field: 'duration', headerText: 'Freight', type: 'number', width: 150 },
+                    { field: 'progress', headerText: 'Ship Name', width: 150 }
+                ]
+            },
+            done
+        );
+    });
+
+    it('Check getCheckedRecords after expand collapse', (done: Function) => {
+        actionComplete = (args?: CellSaveEventArgs): void => {
+            if (args.requestType === 'refresh') {
+                expect(gridObj.getCheckedRecords().length !== 0).toBe(true);
+                gridObj.actionComplete = null;
+                done();
+            }
+        };
+        (gridObj.element.querySelectorAll('.e-row')[0].getElementsByClassName('e-frame e-icons')[0] as any).click();
+        (gridObj.getRows()[0].getElementsByClassName('e-treegridexpand')[0] as HTMLElement).click();
+        gridObj.actionComplete = actionComplete;  
+    });
+    afterAll(() => {
+        destroy(gridObj);
+    });
+});

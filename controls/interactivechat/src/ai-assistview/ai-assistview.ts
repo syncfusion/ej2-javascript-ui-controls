@@ -1472,13 +1472,18 @@ export class AIAssistView extends InterActiveChatBase implements INotifyProperty
     }
 
     private onUploadFailure(args: any): void {
-        this.trigger('attachmentUploadFailure', args);
-        this.uploaderObj.remove(args.file);
-        this.uploadedFiles = this.uploadedFiles.filter((file: FileInfo) => file.name !== args.file.name);
-        const progressFill: HTMLElement = this.footer.querySelector(`#e-assist-progress-${CSS.escape(args.file.name)}`) as HTMLElement;
-        if (progressFill) {
-            progressFill.style.width = '100%';
-            progressFill.classList.add('failed');
+        if (args.operation === 'remove') {
+            this.trigger('attachmentRemoved', args);
+        }
+        else {
+            this.trigger('attachmentUploadFailure', args);
+            this.uploaderObj.remove(args.file);
+            this.uploadedFiles = this.uploadedFiles.filter((file: FileInfo) => file.name !== args.file.name);
+            const progressFill: HTMLElement = this.footer.querySelector(`#e-assist-progress-${CSS.escape(args.file.name)}`) as HTMLElement;
+            if (progressFill) {
+                progressFill.style.width = '100%';
+                progressFill.classList.add('e-assist-upload-failed');
+            }
         }
     }
 
@@ -2294,7 +2299,7 @@ SanitizeHtmlHelper.sanitize(this.prompts[parseInt(promptIndex.toString(), 10)].p
                 this.suggestionsElement.hidden = false;
             }
             if (isFinalUpdate) { this.renderPreTag(outputContentBodyEle); }
-            if (isFinalUpdate){
+            if (isFinalUpdate && outputEle.querySelector('.e-content-footer') === null){
                 this.renderOutputToolbarItems(index, isFinalUpdate);
                 this.appendChildren(outputEle, this.contentFooterEle);
             }

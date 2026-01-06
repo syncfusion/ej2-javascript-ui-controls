@@ -440,21 +440,28 @@ export class PivotButton implements IAction {
         } else {
             engineModule = this.parent.engineModule;
         }
-        if (engineModule.fieldList && engineModule.fieldList[field[i as number].name] !== undefined) {
-            aggregation = engineModule.fieldList[field[i as number].name].aggregateType;
-            if ((aggregation !== 'DistinctCount') && (engineModule.fieldList[field[i as number].name].type !== 'number' || engineModule.fieldList[field[i as number].name].type === 'include' ||
-                engineModule.fieldList[field[i as number].name].type === 'exclude')) {
-                aggregation = 'Count';
+        let fieldObj: IField | IOlapField;
+        if (engineModule.fieldList) {
+            fieldObj = engineModule.fieldList[field[i as number].name];
+        }
+        if (!isNullOrUndefined(fieldObj)) {
+            aggregation = fieldObj.aggregateType;
+            if (aggregation !== 'DistinctCount' && fieldObj.type !== 'number') {
+                if (fieldObj.type === 'string' &&
+                    this.menuOption.stringAggregateTypes.indexOf(fieldObj.aggregateType as AggregateTypes) !== -1) {
+                    aggregation = fieldObj.aggregateType;
+                } else {
+                    aggregation = 'Count';
+                }
             } else {
-                aggregation = aggregation === undefined ? 'Sum' :
-                    engineModule.fieldList[field[i as number].name].aggregateType;
+                aggregation = aggregation === undefined ? 'Sum' : fieldObj.aggregateType;
             }
         }
         let text: string = field[i as number].caption ? field[i as number].caption : field[i as number].name;
         text = this.parent.enableHtmlSanitizer ? SanitizeHtmlHelper.sanitize(text) : text;
         const buttonText: HTMLElement = createElement('span', {
             attrs: {
-                title: axis === 'filters' ? (this.parent.dataType === 'olap' && engineModule.fieldList[field[i as number].name].type === 'CalculatedField') ?
+                title: axis === 'filters' ? (this.parent.dataType === 'olap' && fieldObj && fieldObj.type === 'CalculatedField') ?
                     text : (text + ' (' + filterMem + ')') : (this.parent.dataType === 'olap' ?
                     text : (((!this.parent.dataSourceSettings.showAggregationOnValueField || axis !== 'values' || aggregation === 'CalculatedField') ?
                         text : this.parent.localeObj.getConstant(aggregation) + ' ' + this.parent.localeObj.getConstant('of') + ' ' + text))),
@@ -465,7 +472,7 @@ export class PivotButton implements IAction {
                 (this.parent.getModuleName() === 'pivotview' ?
                     (this.parent as PivotView).groupingBarSettings.allowDragAndDrop && (field[i as number].allowDragAndDrop || field[i as number].allowDragAndDrop === undefined) ? '' : cls.DRAG_DISABLE_CLASS : '')
         });
-        buttonText.innerText = axis === 'filters' ? (this.parent.dataType === 'olap' && engineModule.fieldList[field[i as number].name].type === 'CalculatedField') ?
+        buttonText.innerText = axis === 'filters' ? (this.parent.dataType === 'olap' && fieldObj && fieldObj.type === 'CalculatedField') ?
             text : (text + ' (' + filterMem + ')') : (this.parent.dataType === 'olap' ?
             text : (!this.parent.dataSourceSettings.showAggregationOnValueField || axis !== 'values' || aggregation === 'CalculatedField' ?
                 text : this.parent.localeObj.getConstant(aggregation) + ' ' + this.parent.localeObj.getConstant('of') + ' ' + text));

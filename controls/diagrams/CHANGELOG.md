@@ -2,6 +2,15 @@
 
 ## [Unreleased]
 
+## 32.1.22 (2026-01-06)
+
+### Diagram
+
+#### Bug Fixes
+
+- `#I784056` - The moveObject function in the layer will now work correctly for nested groups.
+- `#I795676` - The exported diagram will properly apply the gradient style to nodes with corner radius.
+
 ## 32.1.21 (2025-12-30)
 
 ### Diagram

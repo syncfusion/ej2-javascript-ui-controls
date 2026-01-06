@@ -3288,6 +3288,120 @@ describe('Quick Popups', () => {
         });
     });
 
+    describe('Schedule: QuickDialog lazy behavior controlled by prerenderDialogs', () => {
+        let schObj: Schedule;
+        beforeAll((done: DoneFn) => {
+            const model: ScheduleModel = {
+                height: '500px',
+                currentView: 'Week',
+                views: ['Week'],
+                selectedDate: new Date(2017, 10, 1),
+            };
+            const events: Record<string, any>[] = [{
+                Id: 11,
+                Subject: 'R-Event',
+                StartTime: new Date(2017, 10, 1, 10, 0),
+                EndTime: new Date(2017, 10, 1, 11, 0),
+                RecurrenceRule: 'FREQ=DAILY;INTERVAL=1;COUNT=3'
+            }];
+            schObj = util.createSchedule(model, events, done);
+        });
+        
+        afterAll(() => {
+            util.destroy(schObj)
+        });
+
+        it('Pre-create QuickDialog when prerenderDialogs=true', () => {
+            expect(schObj.quickPopup.quickDialog).toBeDefined();
+        });
+
+        it('Opens Recurrence Delete alert lazily and destroys it on close when prerenderDialogs=false', () => {
+            schObj.prerenderDialogs = false;
+            schObj.dataBind();
+            const appt = schObj.element.querySelector('[data-id="Appointment_11"]') as HTMLElement;
+            util.triggerMouseEvent(appt, 'click');
+            const quick = document.querySelector('.e-quick-popup-wrapper') as HTMLElement;
+            expect(quick).toBeTruthy();
+            const delBtn = quick.querySelector('.e-event-delete') as HTMLElement;
+            delBtn.click();
+            expect(schObj.quickPopup.quickDialog).toBeDefined();
+            expect(schObj.quickPopup.quickDialog.visible).toBeTruthy();
+            const closeIcon = schObj.quickPopup.quickDialog.element.querySelector('.e-dlg-closeicon-btn') as HTMLElement;
+            closeIcon.click();
+            expect(schObj.quickPopup.quickDialog).toBeNull();
+        });
+
+        it('Edit an occurrence and save, then edit entire series and accept seriesChangeAlert', () => {
+            const recurIcon = schObj.element.querySelector('.e-recurrence-icon, .e-recurrence-edit-icon') as HTMLElement;
+            expect(recurIcon).toBeTruthy();
+            const appt = closest(recurIcon, '.e-appointment') as HTMLElement;
+            util.triggerMouseEvent(appt, 'click');
+            util.triggerMouseEvent(appt, 'dblclick');
+            expect(schObj.quickPopup.quickDialog).toBeDefined();
+            const editOccBtn = schObj.quickPopup.quickDialog.element.querySelector('.e-quick-dialog-occurrence-event') as HTMLElement;
+            expect(editOccBtn).toBeTruthy();
+            editOccBtn.click();
+            expect(schObj.quickPopup.quickDialog).toBeNull();
+            expect(schObj.eventWindow.dialogObject).toBeDefined();
+            const desc = schObj.eventWindow.dialogObject.element.querySelector('.' + cls.DESCRIPTION_CLASS) as HTMLInputElement;
+            if (desc) { desc.value = 'Edited single occurrence'; }
+            const saveBtn = schObj.eventWindow.dialogObject.element.querySelector('.' + cls.EVENT_WINDOW_SAVE_BUTTON_CLASS) as HTMLElement;
+            expect(saveBtn).toBeTruthy();
+            saveBtn.click();
+            expect(schObj.eventWindow.dialogObject).toBeNull();
+        });
+
+        it('edit an occurrence and save, then edit entire series and accept seriesChangeAlert', () => {
+            const recurIcon2 = schObj.element.querySelector('.e-recurrence-icon, .e-recurrence-edit-icon') as HTMLElement;
+            const appt2 = closest(recurIcon2, '.e-appointment') as HTMLElement;
+            util.triggerMouseEvent(appt2, 'click');
+            util.triggerMouseEvent(appt2, 'dblclick');
+            expect(schObj.quickPopup.quickDialog).toBeDefined();
+            const editSeriesBtn = schObj.quickPopup.quickDialog.element.querySelector('.e-quick-dialog-series-event') as HTMLElement;
+            expect(editSeriesBtn).toBeTruthy();
+            editSeriesBtn.click();
+            expect(schObj.quickPopup.quickDialog).toBeNull();
+            expect(schObj.eventWindow.dialogObject).toBeDefined();
+            const subj = schObj.eventWindow.dialogObject.element.querySelector('.' + cls.SUBJECT_CLASS) as HTMLInputElement;
+            if (subj) { subj.value = 'Series Edited'; }
+            const saveBtn2 = schObj.eventWindow.dialogObject.element.querySelector('.' + cls.EVENT_WINDOW_SAVE_BUTTON_CLASS) as HTMLElement;
+            saveBtn2.click();
+            expect(schObj.quickPopup.quickDialog).toBeDefined();
+            const yesBtn = schObj.quickPopup.quickDialog.element.querySelector('.e-quick-alertok') as HTMLElement; // this becomes "Yes"
+            expect(yesBtn).toBeTruthy();
+            yesBtn.click();
+            expect(schObj.quickPopup.quickDialog).toBeNull();
+        });
+
+        it('shows validation alert when end date is before start date and close', () => {
+            const firstCell = schObj.element.querySelectorAll('.e-work-cells')[33] as HTMLElement;
+            util.triggerMouseEvent(firstCell, 'click');
+            util.triggerMouseEvent(firstCell, 'dblclick');
+            expect(schObj.eventWindow.dialogObject).toBeTruthy();
+            const editorEl = schObj.eventWindow.dialogObject.element as HTMLElement;
+            const startEl = editorEl.querySelector('.' + cls.EVENT_WINDOW_START_CLASS) as HTMLElement;
+            const endEl = editorEl.querySelector('.' + cls.EVENT_WINDOW_END_CLASS) as HTMLElement;
+            const startPicker = ((startEl as EJ2Instance).ej2_instances[0]) as DateTimePicker;
+            const endPicker = ((endEl as EJ2Instance).ej2_instances[0]) as DateTimePicker;
+            const start = new Date(2017, 10, 15, 10, 0);
+            const end = new Date(2017, 10, 15, 9, 0);
+            startPicker.value = start;
+            endPicker.value = end;
+            startPicker.dataBind();
+            endPicker.dataBind();
+            const saveBtn = editorEl.querySelector('.' + cls.EVENT_WINDOW_SAVE_BUTTON_CLASS) as HTMLElement;
+            saveBtn.click();
+            expect(schObj.quickPopup.quickDialog.visible).toBeTruthy();
+            const content = schObj.quickPopup.quickDialog.element.querySelector('.e-dlg-content') as HTMLElement;
+            expect(content.innerText.trim()).toBe('The selected end date occurs before the start date.');
+            const okBtn = schObj.quickPopup.quickDialog.element.querySelector('.e-quick-alertok') as HTMLElement;
+            (okBtn || schObj.quickPopup.quickDialog.element.querySelector('.e-dlg-closeicon-btn') as HTMLElement).click();
+            const cancelBtn = editorEl.querySelector('.' + cls.EVENT_WINDOW_CANCEL_BUTTON_CLASS) as HTMLElement;
+            cancelBtn.click();
+            expect(schObj.eventWindow.dialogObject).toBeNull();
+        });
+    });
+
     it('memory leak', () => {
         profile.sample();
         const average: number = inMB(profile.averageChange);

@@ -5601,7 +5601,7 @@ describe('ChatUI Component', () => {
                     operation: 'upload',
                     file: { name: 'sample.png', size: file.size, type: file.type }
                 });
-                expect(progressFill.classList).toContain('failed');
+                expect(progressFill.classList).toContain('e-chat-upload-failed');
                 const sendIcon: HTMLElement = chatUIElem.querySelector('.e-chat-send') as HTMLElement;
                 expect(sendIcon).not.toBeNull();
                 expect(sendIcon.classList).toContain('disabled');
@@ -6752,6 +6752,38 @@ describe('ChatUI Component', () => {
                 done();
             }, 200, done);
         });
+
+        it('should handle attachment removal even if wrong removeUrl is provided', (done: DoneFn) => {
+            let isAttachmentRemoved: boolean = false;
+            const chatUI = new ChatUI({
+                user: { id: 'user1', user: 'Albert' },
+                enableAttachments: true,
+                attachmentSettings: {
+                    saveUrl: 'https://services.syncfusion.com/js/production/api/FileUploader/Save',
+                    removeUrl: 'FileUploader/Remove'
+                },
+                attachmentRemoved: () => {
+                    expect((chatUI as any).uploadedFiles.length).toBe(0);
+                    isAttachmentRemoved = true;
+                }
+            });
+            chatUI.appendTo(chatUIElem);
+            // Simulate adding a file to the uploader and uploading
+            const uploadObj: any = (chatUI as any).uploaderObj as Uploader;
+            let fileObj: File = new File(["Nice One"], "last.txt", {lastModified: 0, type: "overide/mimetype"});
+            let eventArgs = { type: 'click', target: {files: [fileObj]}, preventDefault: (): void => { } };
+            uploadObj.onSelectFiles(eventArgs);
+            setTimeout(() => {
+                const uploadedFileItem = (chatUI as any).footer.querySelector('.e-chat-uploaded-file-item');
+                const closeIcon = uploadedFileItem.querySelector('.e-icons.e-chat-close');
+                closeIcon.click();
+                setTimeout(() => {
+                    expect(isAttachmentRemoved).toBe(true);
+                    done();
+                }, 800);
+            }, 1000);
+        });
+
     });
 
     describe('Footer interactions - keyboard and focus states', () => {

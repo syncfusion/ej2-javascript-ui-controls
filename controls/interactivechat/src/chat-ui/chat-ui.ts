@@ -2518,13 +2518,18 @@ export class ChatUI extends InterActiveChatBase implements INotifyPropertyChange
     }
 
     private onUploadFailure(args: any): void {
-        this.trigger('attachmentUploadFailure', args);
-        this.uploaderObj.remove(args.file);
-        this.uploadedFiles = this.uploadedFiles.filter((file: FileInfo) => file.name !== args.file.name);
-        const progressFill: HTMLElement = this.element.querySelector(`#e-chat-progress-${CSS.escape(args.file.name)}`) as HTMLElement;
-        if (progressFill) {
-            progressFill.style.width = '100%';
-            progressFill.classList.add('failed');
+        if (args.operation === 'remove') {
+            this.trigger('attachmentRemoved', args);
+        }
+        else {
+            this.trigger('attachmentUploadFailure', args);
+            this.uploaderObj.remove(args.file);
+            this.uploadedFiles = this.uploadedFiles.filter((file: FileInfo) => file.name !== args.file.name);
+            const progressFill: HTMLElement = this.footer.querySelector(`#e-chat-progress-${CSS.escape(args.file.name)}`) as HTMLElement;
+            if (progressFill) {
+                progressFill.style.width = '100%';
+                progressFill.classList.add('e-chat-upload-failed');
+            }
         }
     }
 

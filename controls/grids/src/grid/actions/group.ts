@@ -717,14 +717,14 @@ export class Group implements IAction {
     }
 
     private expandCollapse(isExpand: boolean): void {
-        if (!this.parent.groupSettings.columns.length) {
+        const rowObjs: Row<Column>[] = this.parent.getRowsObject();
+        if (!this.parent.groupSettings.columns.length || !rowObjs.length) {
             return;
         }
         if (!isExpand) {
             this.parent.notify(events.initialCollapse, isExpand);
         }
         const rowNodes: HTMLCollection = this.parent.getContentTable().querySelector( literals.tbody).children;
-        const rowObjs: Row<Column>[] = this.parent.getRowsObject();
         let row: Element;
         for (let i: number = 0, len: number = rowNodes.length; i < len; i++) {
             if (rowNodes[parseInt(i.toString(), 10)].querySelectorAll('.e-recordplusexpand, .e-recordpluscollapse').length) {

@@ -642,6 +642,29 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
     public showQuickInfo: boolean;
 
     /**
+     * Indicates whether the editor window and quick dialog popups are created and rendered in the DOM by default.
+     *
+     * When set to `true`, the popups are created during Scheduler initialization and reused throughout
+     * the component's lifetime. When set to `false`, the popups are created on demand when opened and
+     * destroyed when closed, reducing initial load but adding per-open creation cost.
+     *
+     * @remarks
+     * - Use `true` to minimize runtime allocations during interactions at the cost of higher initial setup.
+     * - Use `false` to reduce initial render cost and memory footprint when popups are infrequently used.
+     * - Toggling from `false` to `true` will keep subsequently created popups alive for reuse.
+     * *
+     * @example
+     * // Configure the editor to defer default popup creation.
+     * const options: ScheduleOptions= {
+     *   prerenderDialogs: false
+     * };
+     *
+     * @default true
+     */
+    @Property(true)
+    public prerenderDialogs: boolean;
+
+    /**
      * This property helps user to add/edit the event in inline. By default, it is set to `false`.
      *
      * @default false
@@ -1476,6 +1499,20 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
         }
     }
 
+    /**
+     * Checks if resources have empty dataSource
+     *
+     * @returns {boolean} Returns true if resources have empty dataSource, otherwise false
+     * @private
+     */
+    public isResourceCollectionEmpty(): boolean {
+        return this.resourceCollection.length > 0 &&
+            this.resourceCollection.some((res: ResourcesModel) => {
+                const ds: any = res && (res.dataSource as any);
+                return Array.isArray(ds) ? ds.length === 0 : !ds;
+            });
+    }
+
     private getActiveViewOptions(): ViewsData {
         const timeScale: TimeScaleModel = {
             enable: this.timeScale.enable,
@@ -1484,12 +1521,19 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
             majorSlotTemplate: this.timeScale.majorSlotTemplate,
             minorSlotTemplate: this.timeScale.minorSlotTemplate
         };
+        const isResourceEmpty: boolean = this.isResourceCollectionEmpty();
         const isYearView: boolean = this.viewCollections[this.viewIndex].option.indexOf('Year') > -1;
+        let groupResources: string[] = [];
+        if ((!isNullOrUndefined(this.group.resources) && this.group.resources.length > 0) && !isResourceEmpty) {
+            groupResources = this.group.resources;
+        } else if (this.resources.length > 0 && !isResourceEmpty) {
+            groupResources = [];
+        }
         const group: GroupModel = {
-            byDate: isYearView ? false : this.group.byDate,
+            byDate: (isYearView || isResourceEmpty) ? false : this.group.byDate,
             byGroupID: this.group.byGroupID,
             allowGroupEdit: this.group.allowGroupEdit,
-            resources: isNullOrUndefined(this.group.resources) ? [] : this.group.resources,
+            resources: groupResources,
             headerTooltipTemplate: this.group.headerTooltipTemplate,
             enableCompactView: this.group.enableCompactView,
             hideNonWorkingDays: ['Day', 'Week', 'WorkWeek', 'Month'].indexOf(this.currentView)  > -1 ? this.group.hideNonWorkingDays : false
@@ -2689,6 +2733,17 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
                     state.isLayout = true;
                 }
                 break;
+            case 'prerenderDialogs': {
+                if (newProp.prerenderDialogs) {
+                    this.eventWindow.renderEventWindow();
+                    this.quickPopup.renderQuickDialog();
+                }
+                else {
+                    this.eventWindow.destroy(true);
+                    this.quickPopup.destroyQuickDialog();
+                }
+                break;
+            }
             case 'showWeekend':
             case 'startHour':
             case 'endHour':
@@ -3994,6 +4049,9 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
      * @returns {void}
      */
     public openOverlapAlert(args: PopupOpenEventArgs): void {
+        if (!this.prerenderDialogs) {
+            return;
+        }
         if (this.quickPopup) {
             const eventProp: PopupOpenEventArgs = {
                 type: 'OverlapAlert',
@@ -4017,6 +4075,9 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
      * @returns {void}
      */
     public closeOverlapAlert(): void {
+        if (!this.prerenderDialogs) {
+            return;
+        }
         if (this.quickPopup) {
             const args: PopupCloseEventArgs = {
                 type: 'OverlapAlert',

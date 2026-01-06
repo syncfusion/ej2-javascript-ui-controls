@@ -407,6 +407,10 @@ export class PdfViewerBase {
     /**
      * @private
      */
+    /**
+     * @private
+     */
+    public isInitialLoad: boolean = false;
     public tool: ToolBase = null;
 
     public action: | any = 'Select';
@@ -3080,6 +3084,7 @@ export class PdfViewerBase {
         proxy.isDocumentLoaded = false;
         proxy.isInitialLoaded = false;
         proxy.isImportAction = false;
+        proxy.isInitialLoad = false;
         proxy.navigationPane.isThumbnailAddedProgrammatically = false;
         proxy.navigationPane.isThumbnail = false;
         proxy.annotationPageList = [];
@@ -10082,6 +10087,7 @@ export class PdfViewerBase {
                                             proxy.pdfViewer.printModule.printOnMessage(event);
                                             break;
                                         case 'textSearched':
+                                            proxy.pdfViewer.textSearchModule.isAwaitingSearchResult = false;
                                             proxy.pdfViewer.textSearchModule.searchTextAfteresult(event.data.resultPages,
                                                                                                   event.data.totalSearchCount,
                                                                                                   event.data.searchWord,

@@ -1,9 +1,12 @@
+@use 'ej2-base/styles/definition/fluent2' as *;
+@forward 'ej2-base/styles/definition/fluent2';
+
 // Dimension variables
 $msg-font-family: $font-family !default;
 $msg-font-weight: 400 !default;
 $msg-font-style: normal !default;
 $msg-padding: 9.2px !default;
-$msg-border-radius: 4px !default;
+$msg-border-radius: $radius-4 !default;
 $msg-icon-size: 16px !default;
 $msg-icon-margin: 0 !default;
 $msg-close-icon-margin: 2px 2px 2px auto !default;
@@ -127,3 +130,10 @@ $msg-filled-info-close-icon-color: $msg-info-close-icon-color-alt2 !default;
 $msg-filled-info-close-icon-hover-bg-color: rgba($msg-filled-info-close-icon-color, .12) !default;
 $msg-filled-error-close-icon-color: $msg-danger-close-icon-color-alt2 !default;
 $msg-filled-error-close-icon-hover-bg-color: rgba($msg-filled-error-close-icon-color, .12) !default;
+$message-bigger-msg-icon-padding: 2px 5px 0 6px !default;
+$message-close-icon-line-height: 14px !default;
+$message-msg-icon-padding: 0 4px 0 2px !default;
+$message-nrml-close-icon-line-height: 12px !default;
+$message-border: 1px !default;
+$message-zero-border: 0 !default;
+$message-full-radius: $radius-full !default;

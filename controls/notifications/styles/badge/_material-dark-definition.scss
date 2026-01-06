@@ -1,3 +1,6 @@
+@use 'ej2-base/styles/definition/material-dark' as *;
+@forward 'ej2-base/styles/definition/material-dark';
+
 //default
 $badge-theme : $skin-name !default;
 $badge-padding: .25em .4em .25em .4em !default;
@@ -91,5 +94,8 @@ $badge-secondary-font-color: $accent-font !default;
 $badge-light-font-color: $grey-light-font !default;
 $badge-dark-font-color: $grey-dark-font !default;
 $badge-warning-font-color: $grey-dark-font !default;
+$badge-zero-padding-margin: 0 !default;
+$badge-notification-width: auto !default;
+$badge-button-nrml-line-height: .9 !default;
 
 //enddefault

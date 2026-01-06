@@ -2,7 +2,15 @@
 
 ## [Unreleased]
 
-## 32.1.21 (2025-12-30)
+## 32.1.22 (2026-01-06)
+
+### Chart
+
+#### Bug Fixes
+
+- `I798374` - Fixed an issue where series animations did not animate from right to left when RTL mode was enabled.
+
+## 32.1.19 (2025-12-16)
 
 ### Chart
 

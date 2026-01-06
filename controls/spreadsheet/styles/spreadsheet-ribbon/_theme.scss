@@ -30,7 +30,7 @@
         }
 
         .e-tab-wrap:focus {
-          @if $skin-name != 'Material3' and $skin-name != 'tailwind3' {
+          @if $skin-name != 'Material3' and $skin-name != 'tailwind3' and $skin-name != 'bootstrap5.3' and $skin-name != 'bootstrap5.3-dark' and $skin-name != 'fluent2' and $skin-name != 'fluent2-dark' and $skin-name != 'fluent2-highcontrast' {
             background: $spreadsheet-ribbon-focus-bg-color;
           }
           @if $spreadsheet-ribbon-skin == 'fabric' or $spreadsheet-ribbon-skin == 'highcontrast' {

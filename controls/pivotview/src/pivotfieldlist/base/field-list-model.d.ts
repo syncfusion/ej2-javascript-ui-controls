@@ -336,7 +336,7 @@ export interface PivotFieldListModel extends ComponentModel{
      * [`editing`](../../pivotview/calculated-field/#editing-through-the-field-list-and-the-groupingbar),
      * [`sorting`](../../pivotview/field-list/#sorting-members),
      * [`filtering`](../../pivotview/field-list/#filtering-members) and
-     * [`aggregation`](pivotview/field-list/#changing-aggregation-type-of-value-fields-at-runtime).
+     * [`aggregation`](../../pivotview/field-list/#changing-aggregation-type-of-value-fields-at-runtime).
      *
      * @event actionBegin
      */
@@ -350,7 +350,7 @@ export interface PivotFieldListModel extends ComponentModel{
      * [`editing`](../../pivotview/calculated-field/#editing-through-the-field-list-and-the-groupingbar),
      * [`sorting`](../../pivotview/field-list/#sorting-members),
      * [`filtering`](../../pivotview/field-list/#filtering-members) and
-     * [`aggregation`](pivotview/field-list/#changing-aggregation-type-of-value-fields-at-runtime).
+     * [`aggregation`](../../pivotview/field-list/#changing-aggregation-type-of-value-fields-at-runtime).
      *
      * @event actionComplete
      */
@@ -364,7 +364,7 @@ export interface PivotFieldListModel extends ComponentModel{
      * [`editing`](../../pivotview/calculated-field/#editing-through-the-field-list-and-the-groupingbar),
      * [`sorting`](../../pivotview/field-list/#sorting-members),
      * [`filtering`](../../pivotview/field-list/#filtering-members) and
-     * [`aggregation`](pivotview/field-list/#changing-aggregation-type-of-value-fields-at-runtime).
+     * [`aggregation`](../../pivotview/field-list/#changing-aggregation-type-of-value-fields-at-runtime).
      *
      * @event actionFailure
      */
