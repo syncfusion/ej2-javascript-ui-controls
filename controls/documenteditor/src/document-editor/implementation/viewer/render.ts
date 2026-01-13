@@ -1809,12 +1809,12 @@ private calculatePathBounds(data: string): Rect {
                 }
             }
             if (elementBox instanceof BookmarkElementBox && this.documentHelper.owner.documentEditorSettings.showBookmarks && !HelperMethods.startsWith(elementBox.name, '_')) {
-                var height = elementBox.line.height - elementBox.line.margin.bottom;
+                var height = elementBox.line.height - (elementBox.line.margin.bottom + elementBox.line.margin.top);
                 let xLeft = left;
                 if (!isNullOrUndefined(elementBox.margin) && elementBox.margin.left > 0) {
                     xLeft += elementBox.margin.left;
                 }
-                let yTop = top;
+                let yTop = top + elementBox.line.margin.top;
                 if(elementBox.bookmarkType == 1){
                     if(this.isBookmarkEndAtStart(elementBox) && isNullOrUndefined(elementBox.properties)){
                         let previousParaElement: ParagraphWidget = elementBox.paragraph;
@@ -1961,7 +1961,7 @@ private calculatePathBounds(data: string): Rect {
                 pageIndex = this.documentHelper.pages.indexOf(lineWidget.paragraph.bodyWidget.page);
             }
             if ((children.length == 0 && !lineWidget.isEndsWithLineBreak && !isNullOrUndefined(lineWidget.paragraph)) || (lineWidget.paragraph.childWidgets.length === 1)) {
-                y = lineWidget.paragraph.y + (this.documentHelper.textHelper.getHeight(currentCharFormat)).BaselineOffset + this.documentHelper.layout.getBeforeSpacing(lineWidget.paragraph, pageIndex);
+                y = lineWidget.paragraph.y + (this.documentHelper.textHelper.getHeight(currentCharFormat)).BaselineOffset + lineWidget.margin.top;
                 //Paragraph with empty linewidgets with mutiple line breaks
                 if (!lineWidget.isEndsWithLineBreak && lineWidget.indexInOwner > 0 && children.length == 0) {
                     y = top + lineWidget.previousLine.maxBaseLine;
@@ -2487,7 +2487,7 @@ private calculatePathBounds(data: string): Rect {
      * @private
      */
     public triggerSpellChecker(elementBox: TextElementBox, containerWidget: Widget, isRTL: boolean, left: number, top: number, underlineY: number, baselineAlignment: BaselineAlignment): void {
-        if (((this.documentHelper.owner.isSpellCheck && !this.spellChecker.removeUnderline) && (this.documentHelper.triggerSpellCheck || elementBox.canTrigger) && elementBox.text !== ' ' && elementBox.text.trim() !== '' && !this.documentHelper.textHelper.containsSpecialCharAlone(elementBox.text) && (this.documentHelper.owner.documentEditorSettings.enableSpellCheckOnScroll || !this.documentHelper.isScrollHandler) && (isNullOrUndefined(elementBox.previousNode) || !(elementBox.previousNode instanceof FieldElementBox && (elementBox.previousNode as FieldElementBox).fieldType === 2)))) {
+        if (((this.documentHelper.owner.isSpellCheck && !this.spellChecker.removeUnderline) && (this.documentHelper.triggerSpellCheck || elementBox.canTrigger || (elementBox.paragraph.isInHeaderFooter && this.documentHelper.triggerSpellCheckForHF)) && elementBox.text !== ' ' && elementBox.text.trim() !== '' && !this.documentHelper.textHelper.containsSpecialCharAlone(elementBox.text) && (this.documentHelper.owner.documentEditorSettings.enableSpellCheckOnScroll || !this.documentHelper.isScrollHandler) && (isNullOrUndefined(elementBox.previousNode) || !(elementBox.previousNode instanceof FieldElementBox && (elementBox.previousNode as FieldElementBox).fieldType === 2)))) {
             elementBox.canTrigger = true;
             this.leftPosition = this.pageLeft;
             this.topPosition = this.pageTop;
@@ -3326,7 +3326,7 @@ private calculatePathBounds(data: string): Rect {
     private renderCellBackground(height: number, cellWidget: TableCellWidget, leftMargin: number, rightMargin: number, lineWidth: number): void {
         let cellFormat: WCellFormat = cellWidget.cellFormat;
 
-        let left: number = cellWidget.x - leftMargin - lineWidth;
+        let left: number = cellWidget.x - leftMargin - lineWidth / 2;
         let topMargin: number = (cellWidget.margin.top - (cellWidget.containerWidget as TableRowWidget).topBorderWidth);
         let top: number = cellWidget.y - topMargin;
         let width: number = cellWidget.width + leftMargin + rightMargin + lineWidth / 2;

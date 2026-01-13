@@ -1810,7 +1810,7 @@ export class DataUtil {
          * @returns boolean
          */
         isempty: (actual: string): boolean => {
-            return actual === undefined || actual === '';
+            return actual === undefined || actual === '' || actual === null;
         },
         /**
          * Returns true when the given input value is not empty.
@@ -1819,7 +1819,7 @@ export class DataUtil {
          * @returns boolean
          */
         isnotempty: (actual: string): boolean => {
-            return actual !== undefined && actual !== '';
+            return actual !== undefined && actual !== '' && actual !== null;
         },
         /**
          * Returns true when the actual input pattern(wildcard) matches with the given string.

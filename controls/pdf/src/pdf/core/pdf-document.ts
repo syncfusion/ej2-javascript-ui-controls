@@ -678,6 +678,7 @@ export class PdfDocument {
         let primitive: _PdfFontPrimitive;
         if (typeof arg1 === 'string' || arg1 instanceof Uint8Array) {
             const fontData: Uint8Array = typeof arg1 === 'string' ? _decode(arg1) as Uint8Array : arg1;
+            key = this._computeFontHash(fontData);
             const size: number = arg2 as number;
             const options: { shouldUnderline?: boolean; shouldStrikeout?: boolean } = arg3 as { shouldUnderline?: boolean;
                 shouldStrikeout?: boolean };
@@ -711,7 +712,7 @@ export class PdfDocument {
         return this._createFontFromPrimitive(primitive, size, style);
     }
     _getOrCreateFontPrimitive(key: string, fontData: _FontData): _PdfFontPrimitive {
-        if (this._fontCollection.has(key)) {
+        if (typeof key === 'string' && this._fontCollection.has(key)) {
             return this._fontCollection.get(key);
         }
         let dictionary: _PdfDictionary = new _PdfDictionary();

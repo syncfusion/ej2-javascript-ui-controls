@@ -597,7 +597,7 @@ export interface GroupSettingsModel {
     /**
      * The Caption Template allows user to display the string or HTML element in group caption.
      * > It accepts either the
-     * [template string](https://ej2.syncfusion.com/documentation/common/template-engine/) or the HTML element ID.
+     * [template string](../../common/template/) or the HTML element ID.
      *
      * @default null
      * @aspType string
@@ -1221,7 +1221,7 @@ export interface GridModel extends ComponentModel{
     /**
      * The row template that renders customized rows from the given template.
      * By default, Grid renders a table row for every data source item.
-     * > * It accepts either [template string](../../common/template-engine/) or HTML element ID.
+     * > * It accepts either [template string](../../common/template/) or HTML element ID.
      * > * The row template must be a table row.
      *
      * > Check the [`Row Template`](../../grid/row/) customization.
@@ -1233,7 +1233,7 @@ export interface GridModel extends ComponentModel{
 
     /**
      * The empty record template that renders customized element or text or image instead of displaying the empty record message in the grid.
-     * > It accepts either the [template string](../../common/template-engine/) or the HTML element ID.
+     * > It accepts either the [template string](../../common/template/) or the HTML element ID.
      *
      * @default null
      * @aspType string
@@ -1243,7 +1243,7 @@ export interface GridModel extends ComponentModel{
     /**
      * The detail template allows you to show or hide additional information about a particular row.
      *
-     * > It accepts either the [template string](../../common/template-engine/) or the HTML element ID.
+     * > It accepts either the [template string](../../common/template/) or the HTML element ID.
      *
      * {% codeBlock src="grid/detail-template-api/index.ts" %}{% endcodeBlock %}
      *
@@ -1316,7 +1316,7 @@ export interface GridModel extends ComponentModel{
     rowHeight?: number;
 
     /**
-     * Defines the external [`Query`](https://ej2.syncfusion.com/documentation/data/api-query.html)
+     * Defines the external [`Query`](https://ej2.syncfusion.com/documentation/api/data/query)
      * that will be executed along with data processing.
      * {% codeBlock src='grid/query/index.md' %}{% endcodeBlock %}
      *

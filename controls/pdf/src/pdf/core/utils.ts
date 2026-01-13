@@ -1387,37 +1387,123 @@ export function _getNewGuidString(): string {
  * @returns {string} equal and processed name value;
  */
 export function _escapePdfName(value: string): string {
-    const buffer: string[] = [];
-    let start: number = 0;
-    for (let i: number = 0; i < value.length; i++) {
-        const char: number = value.charCodeAt(i);
-        if (char < 0x21 ||
-            char > 0x7e ||
-            char === 0x23 ||
-            char === 0x28 ||
-            char === 0x29 ||
-            char === 0x3c ||
-            char === 0x3e ||
-            char === 0x5b ||
-            char === 0x5d ||
-            char === 0x7b ||
-            char === 0x7d ||
-            char === 0x2f ||
-            char === 0x25) {
-            if (start < i) {
-                buffer.push(value.substring(start, i));
-            }
-            buffer.push(`#${char.toString(16)}`);
-            start = i + 1;
-        }
-    }
-    if (buffer.length === 0) {
+    if (!value || value.length === 0) {
         return value;
     }
-    if (start < value.length) {
-        buffer.push(value.substring(start, value.length));
+    const out: string[] = [];
+    let i: number = 0;
+    while (i < value.length) {
+        const ch: string = value[<number>i];
+        const code: number = value.charCodeAt(i);
+        if (ch === '#' && i + 2 < value.length) {
+            const c1: string = value[i + 1];
+            const c2: string = value[i + 2];
+            if (_isHexDigit(c1) && _isHexDigit(c2)) {
+                out.push('#', c1.toUpperCase(), c2.toUpperCase());
+                i += 3;
+                continue;
+            }
+        }
+        const isVisible: boolean = (code >= 0x21 && code <= 0x7E);
+        const isDelimiter: boolean =
+            ch === '(' || ch === ')' ||
+            ch === '<' || ch === '>' ||
+            ch === '[' || ch === ']' ||
+            ch === '{' || ch === '}' ||
+            ch === '/' || ch === '%' ||
+            ch === '#';
+        if (isVisible && !isDelimiter) {
+            out.push(ch);
+            i++;
+            continue;
+        }
+        if (code <= 0x7F) {
+            out.push('#', _toHex2(code));
+            i += 1;
+            continue;
+        }
+        let codePoint: number;
+        if (code >= 0xD800 && code <= 0xDBFF) {
+            if (i + 1 < value.length) {
+                const low: number = value.charCodeAt(i + 1);
+                if (low >= 0xDC00 && low <= 0xDFFF) {
+                    codePoint = ((code - 0xD800) << 10) + (low - 0xDC00) + 0x10000;
+                    i += 2;
+                } else {
+                    codePoint = 0xFFFD;
+                    i += 1;
+                }
+            } else {
+                codePoint = 0xFFFD;
+                i += 1;
+            }
+        } else if (code >= 0xDC00 && code <= 0xDFFF) {
+            codePoint = 0xFFFD;
+            i += 1;
+        } else {
+            codePoint = code;
+            i += 1;
+        }
+        const bytes: number[] = _encodeCodePointToUtf8(codePoint);
+        for (let k: number = 0; k < bytes.length; k++) {
+            out.push('#', _toHex2(bytes[<number>k]));
+        }
     }
-    return buffer.join('');
+    return out.join('');
+}
+/**
+ * Encodes a single Unicode code point (U+0000 to U+10FFFF) into UTF-8 bytes.
+ *
+ * @param {number} codePoint - The Unicode code point to encode.
+ * @returns {number[]} An array of UTF-8 byte values (0 to 255).
+ */
+export function _encodeCodePointToUtf8(codePoint: number): number[] {
+    if (codePoint <= 0x7F) {
+        return [codePoint];
+    }
+    if (codePoint <= 0x7FF) {
+        return [
+            0xC0 | (codePoint >> 6),
+            0x80 | (codePoint & 0x3F)
+        ];
+    }
+    if (codePoint <= 0xFFFF) {
+        return [
+            0xE0 | (codePoint >> 12),
+            0x80 | ((codePoint >> 6) & 0x3F),
+            0x80 | (codePoint & 0x3F)
+        ];
+    }
+    return [
+        0xF0 | (codePoint >> 18),
+        0x80 | ((codePoint >> 12) & 0x3F),
+        0x80 | ((codePoint >> 6) & 0x3F),
+        0x80 | (codePoint & 0x3F)
+    ];
+}
+/**
+ * Converts a number to a two-character uppercase hexadecimal string.
+ *
+ * @param {number} n - The number to convert (0 to 255 recommended).
+ * @returns {string} A two-character uppercase hexadecimal string.
+ */
+export function _toHex2(n: number): string {
+    const h: string = n.toString(16).toUpperCase();
+    return h.length === 1 ? '0' + h : h;
+}
+/**
+ * Checks whether a given character is a valid hexadecimal digit.
+ *
+ * @param {string} ch - The character to check.
+ * @returns {boolean} True if the character is a hex digit; otherwise, false.
+ */
+export function _isHexDigit(ch: string): boolean {
+    const cc: number = ch.charCodeAt(0);
+    return (
+        (cc >= 0x30 && cc <= 0x39) ||
+        (cc >= 0x41 && cc <= 0x46) ||
+        (cc >= 0x61 && cc <= 0x66)
+    );
 }
 /**
  * Calculate bezier arc points.

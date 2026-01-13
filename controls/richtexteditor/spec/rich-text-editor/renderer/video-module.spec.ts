@@ -10,6 +10,7 @@ import { BASIC_MOUSE_EVENT_INIT, DELETE_EVENT_INIT, BACKSPACE_EVENT_INIT } from 
 import { MACOS_USER_AGENT } from '../user-agent.spec';
 import * as classes from '../../../src/rich-text-editor/base/classes';
 import * as events from '../../../src/rich-text-editor/base/constant';
+import { pointInside } from '../../rich-text-editor/renderer/audio-module.spec';
 
 function getQTBarModule(rteObj: RichTextEditor): QuickToolbar {
     return rteObj.quickToolbarModule;
@@ -4761,6 +4762,9 @@ describe('962339: Script error and improper video selection removal after alignm
             }
             document.body.appendChild(element);
             rteObj = new RichTextEditor({
+                toolbarSettings: {
+                    items: ['Video']
+                },
                 insertVideoSettings: {
                     saveUrl: 'http://aspnetmvc.syncfusion.com/services/api/uploadbox/Save',
                 },
@@ -4784,18 +4788,17 @@ describe('962339: Script error and improper video selection removal after alignm
             detach(document.querySelector('.e-video-inline'));
             done();
         });
-        it(" Check video after drop", function (done: Function) {
+        it(" Check video after drop", function () {
+            rteObj.focusIn();
+            const {x, y} = pointInside(rteObj.contentModule.getEditPanel());
             let fileObj: File = new File(["Nice One"], "sample.mp4", { lastModified: 0, type: "video/mp4" });
-            let event: any = { clientX: 40, clientY: 324, target: rteObj.contentModule.getEditPanel(), dataTransfer: { files: [fileObj] }, preventDefault: function () { return; } };
+            let event: any = { clientX: x, clientY: y, target: rteObj.contentModule.getEditPanel(), dataTransfer: { files: [fileObj] }, preventDefault: function () { return; } };
             (rteObj.videoModule as any).getDropRange(event.clientX, event.clientY);
             (rteObj.videoModule as any).dragDrop(event);
             ele = rteObj.element.getElementsByTagName('video')[0];
-            setTimeout(() => {
-                expect(rteObj.element.getElementsByTagName('video').length).toBe(1);
-                expect(ele.classList.contains('e-rte-video')).toBe(true);
-                expect(ele.classList.contains('e-video-inline')).toBe(true);
-                done();
-            }, 1000);
+            expect(rteObj.element.getElementsByTagName('video').length).toBe(1);
+            expect(ele.classList.contains('e-rte-video')).toBe(true);
+            expect(ele.classList.contains('e-video-inline')).toBe(true);
         });
     });
     describe('Provide event to restrict the video insertion when drag and drop', () => {
@@ -4833,8 +4836,10 @@ describe('962339: Script error and improper video selection removal after alignm
             done();
         });
         it(" videoDrop event args.cancel as `true` check", function () {
+            rteObj.focusIn();
+            const {x, y} = pointInside(rteObj.contentModule.getEditPanel());
             let fileObj: File = new File(["Nice One"], "sample.mp4", { lastModified: 0, type: "video/mp4" });
-            let event: any = { clientX: 40, clientY: 294, target: rteObj.contentModule.getEditPanel(), dataTransfer: { files: [fileObj] }, preventDefault: function () { return; } };
+            let event: any = { clientX: x, clientY: y, target: rteObj.contentModule.getEditPanel(), dataTransfer: { files: [fileObj] }, preventDefault: function () { return; } };
             (rteObj.videoModule as any).getDropRange(event.clientX, event.clientY);
             (rteObj.videoModule as any).dragDrop(event);
             ele = rteObj.element.getElementsByTagName('video')[0];
@@ -5413,7 +5418,7 @@ describe('962339: Script error and improper video selection removal after alignm
             done();
         });
 
-        it('Verified that the video is dropping correctly and the target is set to the currently dropped video', (done: Function) => {
+        it('Verified that the video is dropping correctly and the target is set to the currently dropped video', () => {
             // Place cursor after the existing video
             const editPanel = rteObj.contentModule.getEditPanel();
             const range = document.createRange();
@@ -5424,17 +5429,14 @@ describe('962339: Script error and improper video selection removal after alignm
             selection.removeAllRanges();
             selection.addRange(range);
             // Simulate drag and drop
-                let fileObj: File = new File(["Nice One"], "sample.mp4", { lastModified: 0, type: "video/mp4" });
-                let event: any = { clientX: 40, clientY: 294, dataTransfer: { files: [fileObj] }, preventDefault: function () { return; } };
-                rteObj.focusIn();
-                (rteObj.videoModule as any).insertDragVideo(event);
-            setTimeout(() => {
-                ele = rteObj.element.getElementsByTagName('video')[1]; // second video
-                expect(rteObj.element.getElementsByTagName('video').length).toBe(2);
-                expect(ele.classList.contains('e-rte-video')).toBe(true);
-                expect(ele.classList.contains('e-video-inline')).toBe(true);
-                done();
-            }, 1000);
+            let fileObj: File = new File(["Nice One"], "sample.mp4", { lastModified: 0, type: "video/mp4" });
+            let event: any = { clientX: 40, clientY: 294, dataTransfer: { files: [fileObj] }, preventDefault: function () { return; } };
+            rteObj.focusIn();
+            (rteObj.videoModule as any).insertDragVideo(event);
+            ele = rteObj.element.getElementsByTagName('video')[1]; // second video
+            expect(rteObj.element.getElementsByTagName('video').length).toBe(2);
+            expect(ele.classList.contains('e-rte-video')).toBe(true);
+            expect(ele.classList.contains('e-video-inline')).toBe(true);
         });
     });
 });

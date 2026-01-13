@@ -2622,7 +2622,7 @@ export class ChartRows extends DateProcessor {
                 }
             }
             const dataId: number | string = this.parent.viewType === 'ProjectView' ? data.ganttProperties.taskId : data.ganttProperties.rowUniqueID;
-            if (!this.parent.ganttChartModule.isExpandAll && !this.parent.ganttChartModule.isCollapseAll && !this.isGridRowRefreshed) {
+            if (!this.parent.ganttChartModule.isExpandAll && !this.parent.ganttChartModule.isCollapseAll) {
                 this.parent.treeGrid.grid.setRowData(dataId, data);
             }
             if (data.hasChildRecords && !data.expanded && this.parent.enableMultiTaskbar && !this.parent.allowTaskbarOverlap) {
@@ -2696,11 +2696,12 @@ export class ChartRows extends DateProcessor {
                     .sortBy('expanded', 'Descending'));
                 items = sortedRecords;
             }
-            if (!this.parent.ganttChartModule.isExpandAll && !this.parent.ganttChartModule.isCollapseAll &&
-                this.parent.treeGrid.grid.element.querySelectorAll('.e-templatecell').length > 0 && this.parent.isReact) {
-                this.isGridRowRefreshed = true;
-                this.parent.treeGrid.grid.refresh();
-            }
+            // if (!this.parent.ganttChartModule.isExpandAll && !this.parent.ganttChartModule.isCollapseAll &&
+            //     this.parent.treeGrid.grid.element.querySelectorAll('.e-templatecell').length > 0 && this.parent.isReact) {
+            //     this.isGridRowRefreshed = true;
+            //     this.parent.treeGrid.grid['portals'] = [];
+            //     this.parent.treeGrid.grid.refresh();
+            // }
             for (let i: number = 0; i < items.length; i++) {
                 let index: number;
                 if (isUndoRedo) {

@@ -42,6 +42,7 @@ import { CodeBlock } from '../actions/code-block';
 import { AssistantToolbarType, EditorPopupType, IMenuRenderTargetType } from './types';
 import { ToolbarItemModel } from '@syncfusion/ej2-interactive-chat';
 import { ILineHeightProperties } from '../../editor-manager/base/interface';
+import { PopupUploader } from '../renderer/popup-uploader-renderer';
 
 /**
  * Specifies Rich Text Editor interfaces.
@@ -1217,6 +1218,13 @@ export interface AIAssitantToolbarClickEventArgs {
     dataIndex?: number;
 }
 
+/**
+ * @private
+ */
+export interface PopupRootBound {
+    popupRoot: HTMLElement
+    self: PopupUploader | PasteCleanup
+}
 
 /**
  * Represents the Menu Rendering args of the Toolbar renderer.

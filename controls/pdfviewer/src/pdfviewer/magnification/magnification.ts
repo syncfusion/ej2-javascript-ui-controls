@@ -478,7 +478,9 @@ export class Magnification {
                 }
                 if (!this.isInitialLoading) {
                     if (this.previousZoomFactor !== this.zoomFactor) {
-                        this.pdfViewerBase.isSkipZoomValue = true;
+                        if (this.pdfViewer.zoomValue !== zoomValue) {
+                            this.pdfViewerBase.isSkipZoomValue =  true;
+                        }
                         this.pdfViewer.zoomValue = parseInt((this.zoomFactor * 100).toString(), 10);
                         this.pdfViewer.fireZoomChange();
                     }
@@ -489,7 +491,9 @@ export class Magnification {
             }
             if (!this.isInitialLoading) {
                 if (this.previousZoomFactor !== this.zoomFactor) {
-                    this.pdfViewerBase.isSkipZoomValue = true;
+                    if (this.pdfViewer.zoomValue !== zoomValue) {
+                        this.pdfViewerBase.isSkipZoomValue =  true;
+                    }
                     this.pdfViewer.zoomValue = parseInt((this.zoomFactor * 100).toString(), 10);
                     this.pdfViewer.fireZoomChange();
                 }

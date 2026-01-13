@@ -7178,8 +7178,6 @@ export class PdfComboBoxField extends PdfListField {
                     x += borderWidth;
                     width -= doubleBorderWidth;
                 }
-                brush = new PdfBrush({r: 153, g: 193, b: 218});
-                graphics.drawRectangle({x: x, y: offset[1], width: width, height: rect.height}, brush);
                 brush = new PdfBrush({r: 0, g: 0, b: 0});
             }
             let value: string;
@@ -7216,8 +7214,6 @@ export class PdfComboBoxField extends PdfListField {
                         x += borderWidth;
                         width -= doubleBorderWidth;
                     }
-                    brush = new PdfBrush({r: 153, g: 193, b: 218});
-                    graphics.drawRectangle({x: x, y: offset[1], width: width, height: rect.height}, brush);
                     brush = new PdfBrush({r: 0, g: 0, b: 0});
                     graphics.drawString(value, font, itemTextBound, null, brush, stringFormat);
                     graphics.restore(state);

@@ -2,7 +2,25 @@
 
 ## [Unreleased]
 
-## 32.1.22 (2026-01-06)
+## 32.1.23 (2026-01-13)
+
+### GanttChart
+
+#### Bug fix
+
+- `#I797272` - Fixed issue where the critical path was rendered incorrectly when `updateOffsetOnTaskbarEdit` was set to false.
+
+## 32.1.21 (2025-12-30)
+
+### GanttChart
+
+#### Bug fixes
+
+- `#I792826` - The issue of an exception being thrown when adding a record after enabling frozen columns has been resolved.
+- `#I796421` - Fixed resource mapping issue in source where `resourceName` was used instead of `resourceId`.
+- `#I741056` - Fixed issue where the `ShowColumnMenu` property was not working properly.
+
+## 32.1.20 (2025-12-23)
 
 ### GanttChart
 

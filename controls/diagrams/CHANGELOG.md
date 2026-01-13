@@ -2,6 +2,15 @@
 
 ## [Unreleased]
 
+## 32.1.23 (2026-01-13)
+
+### Diagram
+
+#### Bug Fixes
+
+- `#I794589` - Connectors no longer overlap nodes when the data contains self-loop relationships between parent and child.
+- `#I798381` - The UML Classifier nodes now move correctly without breaking when dragged rapidly.
+
 ## 32.1.22 (2026-01-06)
 
 ### Diagram

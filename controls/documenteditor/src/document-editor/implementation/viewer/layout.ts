@@ -1826,10 +1826,7 @@ export class Layout {
 
     private addParagraphWidget(area: Rect, paragraphWidget: ParagraphWidget): ParagraphWidget {
         // const ownerParaWidget: ParagraphWidget = undefined;
-        if (paragraphWidget.isEmpty() && !isNullOrUndefined(paragraphWidget.paragraphFormat) &&
-            (paragraphWidget.paragraphFormat.textAlignment === 'Center' || paragraphWidget.paragraphFormat.textAlignment === 'Right' 
-            || (paragraphWidget.paragraphFormat.textAlignment === 'Justify' && paragraphWidget.paragraphFormat.bidi)) 
-            && paragraphWidget.paragraphFormat.listFormat.listId === -1) {
+        if (this.isNeedToUpdateXPositionForEmptyParagraph(paragraphWidget)) {
             this.updateXPositionForEmptyParagraph(area, paragraphWidget);
             paragraphWidget.y = area.y;
         } else {
@@ -1861,7 +1858,12 @@ export class Layout {
         }
         return paragraphWidget;
     }
-
+    public isNeedToUpdateXPositionForEmptyParagraph(paragraphWidget: ParagraphWidget): boolean {
+        return (paragraphWidget.isEmpty() && !isNullOrUndefined(paragraphWidget.paragraphFormat) &&
+            (paragraphWidget.paragraphFormat.textAlignment === 'Center' || paragraphWidget.paragraphFormat.textAlignment === 'Right' 
+            || (paragraphWidget.paragraphFormat.textAlignment === 'Justify' && paragraphWidget.paragraphFormat.bidi)) 
+            && paragraphWidget.paragraphFormat.listFormat.listId === -1);
+    }
     // update the x position for bidi empty paragraph.
     private updateXPositionForEmptyParagraph(area: Rect, paragraph: ParagraphWidget): void {
         if (paragraph.isEmpty() && !isNullOrUndefined(paragraph.paragraphFormat)) {
@@ -6447,7 +6449,12 @@ export class Layout {
                 cellWidget.height = HelperMethods.convertPointToPixel(paragraphWidget.associatedCell.ownerRow.rowFormat.height);
             } else {
                 if ([cellWidget].length <= 1 && paragraphWidget.associatedCell.ownerRow.rowFormat.heightType === 'AtLeast' && !skipCellContentHeightCalc) {
-                    cellWidget.height = Math.max(HelperMethods.convertPointToPixel(paragraphWidget.associatedCell.ownerRow.rowFormat.height), this.getCellContentHeight(cellWidget, false, paragraphWidget.indexInOwner));
+                    if (this.documentHelper.isRowOrCellResizing && this.documentHelper.owner.editorModule.tableResize.resizeNode !== 0) {
+                        cellWidget.height = Math.max(paragraphWidget.associatedCell.ownerRow.rowFormat.height, this.getCellContentHeight(cellWidget, false, paragraphWidget.indexInOwner));
+                    } else {
+                        cellWidget.height =
+                            Math.max(HelperMethods.convertPointToPixel(paragraphWidget.associatedCell.ownerRow.rowFormat.height), this.getCellContentHeight(cellWidget, false, paragraphWidget.indexInOwner));
+                    }
                 } else {
                         cellWidget.height = cellWidget.height + paragraphWidget.height;
                 }
@@ -7345,9 +7352,12 @@ export class Layout {
         if (tabs.length === 0 && (position > 0 && defaultTabWidth > Math.round(position) && isList ||
             defaultTabWidth === this.defaultTabWidthPixel && defaultTabWidth > Math.round(position) && position > 0)) {
             return defaultTabWidth - position;
-        } else if (paragraph.paragraphFormat.firstLineIndent < 0 && leftIndent === 0 && ((this.viewer.clientActiveArea.x - leftMargin) < firstLineIndent) && this.documentHelper.compatibilityMode === 'Word2013' && !(tabs.length > 0 && paragraph.paragraphFormat.firstLineIndent < 0 && tabs[0].position === 0 && firstLineIndent > 0 && this.viewer.clientActiveArea.x < leftMargin)) {
+        } else if (paragraph.paragraphFormat.firstLineIndent < 0 && leftIndent === 0 && ((this.viewer.clientActiveArea.x - leftMargin) < firstLineIndent) && !(tabs.length > 0 && paragraph.paragraphFormat.firstLineIndent < 0 && tabs[0].position === 0 && firstLineIndent > 0 && this.viewer.clientActiveArea.x < leftMargin)) {
             //Special behaviour when first line indent is less than zero. Ported the logic from DOCIO.
             let tabWidth: number = firstLineIndent - (this.viewer.clientActiveArea.x - leftMargin);
+            if (this.documentHelper.compatibilityMode !== 'Word2013' && tabs.length > 0 && tabWidth < HelperMethods.convertPointToPixel(tabs[0].position)) {
+                tabWidth += HelperMethods.convertPointToPixel(tabs[0].position);
+            }
             // Checks whether left and first line indent set for the paragraph and its in text box.
             if (paragraph.paragraphFormat.firstLineIndent < 0 && lineWidget.isFirstLine() && leftIndent < 0 && paragraph.containerWidget instanceof BodyWidget) {
                 tabWidth += paragraph.margin.left
@@ -8989,7 +8999,11 @@ export class Layout {
         cell.containerWidget = rowWidget;
         //If the row height is set as Atleast then height is set to atleast height for the first cell of the row.
         if (!isNullOrUndefined(cell.ownerRow) && cell.ownerRow.rowFormat.heightType !== 'Exactly' && HelperMethods.convertPointToPixel(cell.ownerRow.rowFormat.height) > 0 && cell.cellIndex === 0) {
-            rowWidget.height = rowWidget.height + HelperMethods.convertPointToPixel(cell.ownerRow.rowFormat.height);
+            if (this.documentHelper.isRowOrCellResizing && this.documentHelper.owner.editorModule.tableResize.resizeNode !== 0) {
+                rowWidget.height = rowWidget.height + cell.ownerRow.rowFormat.height;
+            } else {
+                rowWidget.height = rowWidget.height + HelperMethods.convertPointToPixel(cell.ownerRow.rowFormat.height);
+            }
         }
         //Add condition not cell merged vertically.
         if (cell.cellFormat.rowSpan === 1) {
@@ -10758,6 +10772,7 @@ export class Layout {
                     let prevWidget: Widget = curretBlock.getSplitWidgets()[0].previousRenderedWidget as Widget;
                     if (!isNullOrUndefined(prevWidget) && (prevWidget as TableWidget).wrapTextAround && !isNullOrUndefined(prevWidget.getSplitWidgets()[0].previousRenderedWidget) &&
                         (prevWidget as BlockWidget).bodyWidget.index === (prevWidget.getSplitWidgets()[0].previousRenderedWidget as BlockWidget).bodyWidget.index &&
+                        (prevWidget as BlockWidget).bodyWidget.page.index === (prevWidget.getSplitWidgets()[0].previousRenderedWidget as BlockWidget).bodyWidget.page.index &&
                         prevWidget.y < (prevWidget.getSplitWidgets()[0].previousRenderedWidget as BlockWidget).y) {
                         prevWidget = prevWidget.getSplitWidgets()[0].previousRenderedWidget as Widget;
                     }
@@ -11962,10 +11977,7 @@ export class Layout {
                 //Check whether this widget is moved to previous container widget.
                 prevWidget = widget;
                 viewer.updateClientAreaForBlock(widget, true, undefined, false, true);
-                if (widget.isEmpty() && !isNullOrUndefined(widget.paragraphFormat) &&
-                    (widget.paragraphFormat.textAlignment === 'Center' || widget.paragraphFormat.textAlignment === 'Right'
-                        || (widget.paragraphFormat.textAlignment === 'Justify' && widget.paragraphFormat.bidi))
-                    && widget.paragraphFormat.listFormat.listId === -1) {
+                if (this.isNeedToUpdateXPositionForEmptyParagraph(widget)) {
                     this.updateXPositionForEmptyParagraph(viewer.clientActiveArea, widget);
                 } else {
                     widget.x = viewer.clientActiveArea.x;

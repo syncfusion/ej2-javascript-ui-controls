@@ -1411,6 +1411,41 @@ export class Workbook {
             this.addToArchive(drawings.getBlob(), 'xl/drawings/drawing'+ this.drawingCount +'.xml');
         }
     }
+	// Returns row height in pixels for the given 1-based row index.
+	// Uses explicit row.height (pixels) if present; otherwise 15pt -> pixels.
+	private getRowHeightPx(sheet: Worksheet, rowIndex1Based: number): number {
+	const rows = sheet.rows;
+	if (rows !== undefined && rows !== null) {
+		for (let i = 0; i < rows.length; i++) {
+		const r = rows[i];
+		if (r && r.index === rowIndex1Based) {
+			if (r.height !== undefined && r.height !== null) {
+			return r.height; // already pixels
+			}
+			break;
+		}
+		}
+	}
+	return this.convertToPixels(15); // default 15pt -> px
+	}
+	
+	// Returns column width in pixels for the given 1-based column index.
+	// Uses explicit column.width (pixels) if present; otherwise 8.43 -> pixels.
+	private getColWidthPx(sheet: Worksheet, colIndex1Based: number): number {
+	const cols = sheet.columns;
+	if (cols !== undefined && cols !== null) {
+		for (let i = 0; i < cols.length; i++) {
+		const c = cols[i];
+		if (c && c.index === colIndex1Based) {
+			if (c.width !== undefined && c.width !== null) {
+			return c.width; // already pixels
+			}
+			break;
+		}
+		}
+	}
+	return this.ColumnWidthToPixels(8.43);
+	}
     private updatelastRowOffset(sheet : Worksheet, picture: Image) : void{
         let iCurHeight = picture.height;
         let iCurRow = picture.row;
@@ -1418,26 +1453,16 @@ export class Workbook {
 		let iCurOffset = 0;
 		{
 			let iRowHeightPx = 0;
-			if (sheet.rows !== undefined && sheet.rows[iCurRow - 1] !== undefined) {
-			iRowHeightPx = this.convertToPixels(sheet.rows[iCurRow - 1].height === undefined ? 15 : sheet.rows[iCurRow - 1].height);
-			} else {
-			iRowHeightPx = this.convertToPixels(15);
-			}
+			iRowHeightPx = this.getRowHeightPx(sheet, iCurRow);
 			if (picture.firstRowOffset !== undefined && picture.firstRowOffset > 0) {
 			iCurOffset = Math.round((picture.firstRowOffset * 256) / iRowHeightPx);
-			// Reduce available height in the first cell by the starting offset
-			const consumedPx = (iCurOffset * iRowHeightPx) / 256;
-			iCurHeight = Math.max(0, iCurHeight - consumedPx);
 			}
 		}
   
         while( iCurHeight >= 0 )
         {
             let iRowHeight = 0;
-            if(sheet.rows !== undefined && sheet.rows[iCurRow - 1] !== undefined)
-            iRowHeight = this.convertToPixels(sheet.rows[iCurRow - 1].height === undefined? 15: sheet.rows[iCurRow - 1].height);
-            else
-            iRowHeight = this.convertToPixels(15);
+            iRowHeight = this.getRowHeightPx(sheet, iCurRow);
           let iSpaceInCell = iRowHeight - (iCurOffset * iRowHeight / 256);
   
           if( iSpaceInCell > iCurHeight )
@@ -1445,10 +1470,7 @@ export class Workbook {
             picture.lastRow = iCurRow;
             picture.lastRowOffset = iCurOffset + (iCurHeight * 256 / iRowHeight);
             let rowHiddenHeight = 0;
-            if(sheet.rows !== undefined && sheet.rows[iCurRow - 1] !== undefined)
-            rowHiddenHeight = this.convertToPixels(sheet.rows[iCurRow - 1].height === undefined ? 15 :sheet.rows[iCurRow - 1].height );
-            else
-            rowHiddenHeight = this.convertToPixels(15);
+            rowHiddenHeight = this.getRowHeightPx(sheet, iCurRow);
 
             picture.lastRowOffset = (rowHiddenHeight *  picture.lastRowOffset)/256;
             picture.lastRowOffset = Math.round(picture.lastRowOffset / this.unitsProportions[7]);
@@ -1469,26 +1491,17 @@ export class Workbook {
 		let iCurOffset = 0;
 		{
 			let iColWidthPx = 0;
-			if (sheet.columns !== undefined && sheet.columns[iCurCol - 1] !== undefined)
-			iColWidthPx = this.ColumnWidthToPixels(sheet.columns[iCurCol - 1].width === undefined ? 8.43 : sheet.columns[iCurCol - 1].width);
-			else
-			iColWidthPx = this.ColumnWidthToPixels(8.43);
+			iColWidthPx = this.getColWidthPx(sheet, iCurCol);
 		
 			if (picture.firstColumnOffset !== undefined && picture.firstColumnOffset > 0) {
 			iCurOffset = Math.round((picture.firstColumnOffset * 1024) / iColWidthPx);
-			// Reduce available width in the first cell by the starting offset
-			const consumedPx = (iCurOffset * iColWidthPx) / 1024;
-			iCurWidth = Math.max(0, iCurWidth - consumedPx);
 			}
 		}
   
         while( iCurWidth >= 0 )
         {
             let iColWidth = 0;
-            if(sheet.columns !== undefined && sheet.columns[iCurCol - 1] !== undefined)
-            iColWidth = this.ColumnWidthToPixels(sheet.columns[iCurCol - 1].width === undefined ? 8.43 :sheet.columns[iCurCol - 1].width );
-            else
-            iColWidth = this.ColumnWidthToPixels(8.43);
+            iColWidth = this.getColWidthPx(sheet, iCurCol);
           let iSpaceInCell = iColWidth - (iCurOffset * iColWidth / 1024);
   
           if( iSpaceInCell > iCurWidth )
@@ -1496,10 +1509,7 @@ export class Workbook {
             picture.lastColumn = iCurCol;
             picture.lastColOffset = iCurOffset + (iCurWidth * 1024 / iColWidth);
             let colHiddenWidth = 0;
-            if(sheet.columns !== undefined && sheet.columns[iCurCol - 1] !== undefined)
-            colHiddenWidth = this.ColumnWidthToPixels(sheet.columns[iCurCol - 1].width === undefined ? 8.43 :sheet.columns[iCurCol - 1].width );
-            else
-            colHiddenWidth = this.ColumnWidthToPixels(8.43);
+            colHiddenWidth = this.getColWidthPx(sheet, iCurCol);
 
             picture.lastColOffset = (colHiddenWidth *  picture.lastColOffset)/1024;
             picture.lastColOffset = Math.round(picture.lastColOffset / this.unitsProportions[7]);

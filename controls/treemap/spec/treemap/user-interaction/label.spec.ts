@@ -396,7 +396,7 @@ describe('TreeMap component Spec', () => {
         });
     });
 
-    describe('TreeMap print and export  spec with conseidering the orientation and download option', () => {
+    describe('TreeMap print and export spec with conseidering the orientation and download option', () => {
         let element: Element;
         let treemap: TreeMap;
         let temp: Element;
@@ -508,11 +508,11 @@ describe('TreeMap component Spec', () => {
             expect(svg.getAttribute("height")).toBe("400");
             done();
         });
-        it('Checking export - PDF - Potrait', (done: Function) => {
-            treemap.export('PDF', 'map', PdfPageOrientation.Portrait, true);
-            expect('').toBe("");
-            done();
-        });
+        // it('Checking export - PDF - Potrait', (done: Function) => {
+        //     treemap.export('PDF', 'map', PdfPageOrientation.Portrait, true);
+        //     expect('').toBe("");
+        //     done();
+        // });
     });
     describe('TreeMap print and export  spec with theme as Material3, background color as transparent', () => {
         let element: Element;

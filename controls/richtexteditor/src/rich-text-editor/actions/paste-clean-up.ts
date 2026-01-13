@@ -4,7 +4,7 @@ import { PasteCleanupArgs } from '../base/interface';
 import { Dialog, DialogModel, Popup } from '@syncfusion/ej2-popups';
 import { RadioButton } from '@syncfusion/ej2-buttons';
 import { RendererFactory } from '../services/renderer-factory';
-import { isNullOrUndefined as isNOU, L10n, isNullOrUndefined, detach, extend, addClass, removeClass } from '@syncfusion/ej2-base';
+import { isNullOrUndefined as isNOU, L10n, isNullOrUndefined, detach, extend, addClass, removeClass, getComponent } from '@syncfusion/ej2-base';
 import { getUniqueID, Browser, closest} from '@syncfusion/ej2-base';
 import { CLS_RTE_PASTE_KEEP_FORMAT, CLS_RTE_PASTE_REMOVE_FORMAT, CLS_RTE_PASTE_PLAIN_FORMAT } from '../base/classes';
 import { CLS_RTE_PASTE_OK, CLS_RTE_PASTE_CANCEL, CLS_RTE_DIALOG_MIN_HEIGHT } from '../base/classes';
@@ -22,6 +22,8 @@ import { sanitizeHelper } from '../base/util';
 import { cleanHTMLString, scrollToCursor } from '../../common/util';
 import { PasteCleanupSettingsModel } from '../../models/models';
 import { PasteCleanupAction } from '../../editor-manager/plugin/paste-clean-up-action';
+import { PopupRootBound } from '../../rich-text-editor/base/interface';
+import { PopupUploader } from '../renderer/popup-uploader-renderer';
 /**
  * PasteCleanup module called when pasting content in RichTextEditor
  */
@@ -35,8 +37,6 @@ export class PasteCleanup {
     private saveSelection: NodeSelection;
     private nodeSelectionObj: NodeSelection;
     private dialogRenderObj: DialogRenderer;
-    private popupObj: Popup;
-    private uploadObj: Uploader;
     private dialogObj: Dialog;
     private keepRadioButton : RadioButton;
     private cleanRadioButton : RadioButton;
@@ -46,7 +46,6 @@ export class PasteCleanup {
     private cropImageData: CropImageDataItem[] = [];
     private fireFoxUploadTime: number;
     private refreshPopupTime: number;
-    private popupCloseTime: number;
     private failureTime: number;
     private plainTextContent: string = '';
     private isDestroyed: boolean;
@@ -77,16 +76,18 @@ export class PasteCleanup {
         if (this.isDestroyed) { return; }
         if (this.fireFoxUploadTime) { clearTimeout(this.fireFoxUploadTime); this.fireFoxUploadTime = null; }
         if (this.refreshPopupTime) { clearTimeout(this.refreshPopupTime); this.refreshPopupTime = null; }
-        if (this.popupCloseTime) { clearTimeout(this.popupCloseTime); this.popupCloseTime = null; }
         if (this.failureTime) { clearTimeout(this.failureTime); this.failureTime = null; }
         this.removeEventListener();
-        if (this.popupObj && !this.popupObj.isDestroyed) {
-            this.popupObj.destroy();
-            this.popupObj = null;
-        }
-        if (this.uploadObj && !this.uploadObj.isDestroyed){
-            this.uploadObj.destroy();
-            this.uploadObj = null;
+        const mediaPopups: NodeListOf<Element> = this.parent.element.querySelectorAll('.e-rte-upload-popup');
+        for (let i: number = 0; i < mediaPopups.length; i++) {
+            const uploader: Uploader = this.getUploaderInstance(mediaPopups[i as number] as HTMLElement);
+            if (uploader && !uploader.isDestroyed) {
+                uploader.destroy();
+            }
+            const popup: Popup = getComponent(mediaPopups[i as number] as HTMLElement, 'popup') as Popup;
+            if (popup && !popup.isDestroyed) {
+                popup.destroy();
+            }
         }
         if (this.keepRadioButton && !this.keepRadioButton.isDestroyed){
             this.keepRadioButton.destroy();
@@ -454,27 +455,37 @@ export class PasteCleanup {
 
     /* Enables or disables the toolbar based on state */
     private toolbarEnableDisable(state: boolean): void {
-        if (!this.parent.inlineMode.enable) {
-            this.parent.toolbarModule.baseToolbar.toolbarObj.disable(state);
+        if (!this.parent.inlineMode.enable && this.parent.toolbarModule && this.parent.toolbarModule.baseToolbar) {
+            if (state) {
+                // To disable toolbar items
+                this.parent.toolbarModule.baseToolbar.toolbarObj.disable(state);
+            } else {
+                const mediaPopups: NodeListOf<Element> = this.parent.element.querySelectorAll('.e-rte-upload-popup');
+                if (mediaPopups.length === 0) {
+                    //To enable Toolbar items
+                    this.parent.toolbarModule.baseToolbar.toolbarObj.disable(state);
+                }
+            }
         }
     }
 
     /* Handles the upload process for an image file */
     private uploadMethod(file: File, imgElem: Element): void {
         this.pasteObj.setImageOpacity(imgElem);
-        const popupEle: HTMLElement = this.pasteObj.createPopupElement();
-        this.createPopupObject(popupEle, imgElem, file);
-        this.createUploader(imgElem);
-        this.initializeUpload(file);
-        this.hideFileSelectWrapper();
+        const popupObj: Popup = this.createPopupObject(imgElem, file);
+        this.createUploader(imgElem, popupObj, file);
+        this.hideFileSelectWrapper(popupObj);
     }
 
     /* Creates and configures the popup object */
-    private createPopupObject(popupEle: HTMLElement, imgElem: Element, file: File): void {
+    private createPopupObject(imgElem: Element, file: File): Popup {
+        const popupEle: HTMLElement = this.pasteObj.createPopupElement();
+        popupEle.setAttribute('id', getUniqueID(this.parent.getID() + '_upload_popup'));
+        const boundObj: PopupRootBound = { popupRoot: popupEle, self: this };
         const contentEle: HTMLInputElement | HTMLElement = this.parent.createElement('input', {
-            id: this.parent.getID() + '_upload', attrs: { type: 'File', name: 'UploadFiles' }
+            id: getUniqueID(this.parent.getID() + '_upload'), attrs: { type: 'File', name: 'UploadFiles' }
         });
-        this.popupObj = new Popup(popupEle, {
+        const popup: Popup = new Popup(popupEle, {
             relateTo: imgElem as HTMLElement,
             height: '85px',
             width: '300px',
@@ -482,69 +493,88 @@ export class PasteCleanup {
             viewPortElement: this.parent.inputElement,
             enableRtl: this.parent.enableRtl,
             zIndex: 10001,
-            close: () => {
-                this.parent.isBlur = false;
-                this.popupObj.destroy();
-                detach(this.popupObj.element);
-            }
+            close: this.onPopupClose.bind(boundObj)
         });
-        this.configurePopupStyles();
-        this.schedulePopupRefresh(imgElem, file);
+        this.configurePopupStyles(popup);
+        this.schedulePopupRefresh(imgElem, file, popup);
+        return popup;
+    }
+
+    /* Handle uploader popup close behavior */
+    private onPopupClose(): void {
+        const currentPopupElem: HTMLElement = (this as unknown as PopupRootBound).popupRoot;
+        const currentPasteCleanupObj: PopupUploader | PasteCleanup = (this as unknown as PopupRootBound).self;
+        if (!isNOU(currentPopupElem) && !isNOU(currentPasteCleanupObj)) {
+            const popupObj: Popup = getComponent(currentPopupElem, 'popup') as Popup;
+            (currentPasteCleanupObj as PasteCleanup).parent.isBlur = false;
+            if (isNOU(popupObj)) { return; }
+            const uploaderObj : Uploader = (currentPasteCleanupObj as PasteCleanup).getUploaderInstance(currentPopupElem);
+            if (isNOU(uploaderObj)) { return; }
+            uploaderObj.destroy();
+            popupObj.destroy();
+            detach(currentPopupElem);
+        }
+    }
+
+    /* To get the uploader object from popup element */
+    private getUploaderInstance(element: HTMLElement): Uploader {
+        const currentUploader: HTMLElement = element.querySelector('.e-uploader') as HTMLElement;
+        return getComponent(currentUploader, 'uploader');
     }
 
     /* Configures popup styles and CSS classes */
-    private configurePopupStyles(): void {
-        this.popupObj.element.style.display = 'none';
-        addClass([this.popupObj.element], [classes.CLS_POPUP_OPEN, classes.CLS_RTE_UPLOAD_POPUP]);
+    private configurePopupStyles(popup: Popup): void {
+        if (isNOU(popup) || isNOU(popup.element)) { return; }
+        popup.element.style.display = 'none';
+        addClass([popup.element], [classes.CLS_POPUP_OPEN, classes.CLS_RTE_UPLOAD_POPUP]);
         if (!isNOU(this.parent.cssClass)) {
-            addClass([this.popupObj.element], this.parent.cssClass.replace(/\s+/g, ' ').trim().split(' '));
+            addClass([popup.element], this.parent.cssClass.replace(/\s+/g, ' ').trim().split(' '));
         }
     }
 
     /* Schedules popup refresh based on file size */
-    private schedulePopupRefresh(imgElem: Element, file: File): void {
+    private schedulePopupRefresh(imgElem: Element, file: File, popupObj: Popup): void {
         const timeOut: number = file.size > 1000000 ? 300 : 100;
         this.refreshPopupTime = setTimeout(() => {
-            this.refreshPopup(imgElem as HTMLElement, this.popupObj);
+            this.refreshPopup(imgElem as HTMLElement, popupObj);
         }, timeOut);
     }
 
     /* Creates and configures the uploader component */
-    private createUploader(imgElem: Element): void {
-        this.uploadObj = new Uploader({
+    private createUploader(imgElem: Element, popup: Popup, file: File): Uploader {
+        const uploadObj: Uploader = new Uploader({
             asyncSettings: {
                 saveUrl: this.parent.insertImageSettings.saveUrl,
                 removeUrl: this.parent.insertImageSettings.removeUrl
             },
             cssClass: classes.CLS_RTE_DIALOG_UPLOAD,
-            dropArea: this.parent.inputElement,
             allowedExtensions: this.parent.insertImageSettings.allowedTypes.toString(),
             success: (e: ImageSuccessEventArgs) => {
-                this.popupClose(this.popupObj, this.uploadObj, imgElem, e);
+                this.popupClose(popup, imgElem, e);
             },
-            uploading: (e: UploadingEventArgs) => this.handleUploading(e, imgElem),
+            uploading: (e: UploadingEventArgs) => this.handleUploading(e, imgElem, popup),
             beforeUpload: (args: BeforeUploadEventArgs) => this.handleBeforeUpload(args),
-            failure: (e: Object) => this.handleFailure(e, imgElem),
-            canceling: () => this.handleCanceling(imgElem),
+            failure: (e: Object) => this.handleFailure(e, imgElem, popup),
+            canceling: () => this.handleCanceling(imgElem, popup),
             selected: (e: SelectedEventArgs) => { e.cancel = true; },
-            removing: () => this.handleRemoving(imgElem)
+            removing: () => this.handleRemoving(imgElem, popup)
         });
-        this.uploadObj.appendTo(this.popupObj.element.childNodes[0] as HTMLElement);
+        uploadObj.appendTo(popup.element.childNodes[0] as HTMLElement);
+        this.initializeUpload(file, uploadObj);
+        return uploadObj;
     }
 
     /* Handles the uploading event */
-    private handleUploading(e: UploadingEventArgs, imgElem: Element): void {
+    private handleUploading(e: UploadingEventArgs, imgElem: Element, popupObj: Popup): void {
         if (!this.parent.isServerRendered) {
             this.parent.trigger(events.imageUploading, e, (imageUploadingArgs: UploadingEventArgs) => {
                 if (imageUploadingArgs.cancel) {
                     if (!isNullOrUndefined(imgElem)) {
                         detach(imgElem);
                     }
-                    if (!isNullOrUndefined(this.popupObj.element)) {
-                        detach(this.popupObj.element);
+                    if (!isNullOrUndefined(popupObj.element)) {
+                        detach(popupObj.element);
                     }
-                } else {
-                    this.parent.inputElement.contentEditable = 'false';
                 }
             });
         }
@@ -557,34 +587,32 @@ export class PasteCleanup {
     }
 
     /* Handles upload failure */
-    private handleFailure(e: Object, imgElem: Element): void {
+    private handleFailure(e: Object, imgElem: Element, popupObj: Popup): void {
         this.failureTime = setTimeout(() => {
-            this.uploadFailure(imgElem, this.uploadObj, this.popupObj, e);
+            this.uploadFailure(imgElem, popupObj, e);
         }, 900);
     }
 
     /* Handles upload cancellation */
-    private handleCanceling(imgElem: Element): void {
-        this.parent.inputElement.contentEditable = 'true';
+    private handleCanceling(imgElem: Element, popupObj: Popup): void {
         if (imgElem.nextSibling && imgElem.nextSibling.textContent === ' ') {
             detach(imgElem.nextSibling);
         }
         detach(imgElem);
-        this.popupObj.close();
+        popupObj.close();
     }
 
     /* Handles file removal */
-    private handleRemoving(imgElem: Element): void {
-        this.parent.inputElement.contentEditable = 'true';
+    private handleRemoving(imgElem: Element, popupObj: Popup): void {
         if (imgElem.nextSibling && imgElem.nextSibling.textContent === ' ') {
             detach(imgElem.nextSibling);
         }
         detach(imgElem);
-        this.popupObj.close();
+        popupObj.close();
     }
 
     /* Initializes the upload process */
-    private initializeUpload(file: File): void {
+    private initializeUpload(file: File, uploadObj: Uploader): void {
         const fileInfo: FileInfo[] = [{
             name: file.name,
             rawFile: file,
@@ -594,61 +622,34 @@ export class PasteCleanup {
             validationMessages: { minSize: '', maxSize: ''},
             statusCode: '1'
         }];
-        this.uploadObj.createFileList(fileInfo);
-        this.uploadObj.upload(fileInfo);
+        uploadObj.createFileList(fileInfo);
+        uploadObj.upload(fileInfo);
     }
 
     /* Hides the file select wrapper */
-    private hideFileSelectWrapper(): void {
-        const fileSelectWrap: HTMLElement = this.popupObj.element.getElementsByClassName('e-file-select-wrap')[0] as HTMLElement;
+    private hideFileSelectWrapper(popupObj: Popup): void {
+        if (isNOU(popupObj) || isNOU(popupObj.element)) { return; }
+        const fileSelectWrap: HTMLElement = popupObj.element.getElementsByClassName('e-file-select-wrap')[0] as HTMLElement;
         if (fileSelectWrap) {
             fileSelectWrap.style.display = 'none';
-        }
-        const dialogUploadWrap: HTMLElement = this.popupObj.element.querySelector('.e-rte-dialog-upload .e-file-select-wrap') as HTMLElement;
-        if (dialogUploadWrap) {
-            detach(dialogUploadWrap);
         }
     }
 
     /* Handles image upload failure */
-    private uploadFailure(imgElem: Element, uploadObj: Uploader, popupObj: Popup, e: Object): void {
-        if (this.parent && this.parent.isDestroyed) {
+    private uploadFailure(imgElem: Element, popupObj: Popup, e: Object): void {
+        if ((this.parent && this.parent.isDestroyed) || isNOU(popupObj)) {
             return;
         }
-        // Re-enable content editing
-        this.parent.inputElement.contentEditable = 'true';
         detach(imgElem);
-        // Destroy popup if it exists
-        this.cleanupPopup(popupObj);
+        popupObj.close();
         this.parent.trigger(events.imageUploadFailed, e);
-        // Destroy uploader if it exists
-        this.cleanupUploader(uploadObj);
-    }
-
-    /* Cleans up popup object */
-    private cleanupPopup(popupObj: Popup): void {
-        if (popupObj) {
-            this.parent.isBlur = false;
-            popupObj.destroy();
-            if (!isNullOrUndefined(popupObj.element)) {
-                detach(popupObj.element);
-            }
-        }
-    }
-
-    /* Cleans up uploader object */
-    private cleanupUploader(uploadObj: Uploader): void {
-        if (uploadObj && !uploadObj.isDestroyed && uploadObj.element) {
-            uploadObj.destroy();
-        }
     }
 
     /* Handles popup close after successful upload */
-    private popupClose(popupObj: Popup, uploadObj: Uploader, imgElem: Element, e: ImageSuccessEventArgs): void {
-        this.parent.inputElement.contentEditable = 'true';
+    private popupClose(popupObj: Popup, imgElem: Element, e: ImageSuccessEventArgs): void {
         this.prepareEventArgs(e, imgElem);
         this.handleUploadStatus(e, imgElem);
-        this.scheduleCleanup(popupObj, uploadObj, imgElem);
+        this.scheduleCleanup(popupObj, imgElem);
     }
 
     /* Prepares event arguments for upload events */
@@ -660,6 +661,7 @@ export class PasteCleanup {
     /* Handles different upload status codes */
     private handleUploadStatus(e: ImageSuccessEventArgs, imgElem: Element): void {
         const element: FileInfo = e.file;
+        if (isNOU(element)) { return; }
         if (element.statusCode === '2') {
             this.handleSuccessfulUpload(e, imgElem);
         } else if (element.statusCode === '5') {
@@ -710,13 +712,10 @@ export class PasteCleanup {
     }
 
     /* Schedules cleanup after upload completion */
-    private scheduleCleanup(popupObj: Popup, uploadObj: Uploader, imgElem: Element): void {
-        this.popupCloseTime = setTimeout(() => {
-            this.cleanupPopup(popupObj);
-            this.resetImageOpacity(imgElem);
-            this.toolbarEnableDisable(false);
-            this.cleanupUploader(uploadObj);
-        }, 1500);
+    private scheduleCleanup(popupObj: Popup, imgElem: Element): void {
+        popupObj.close();
+        this.resetImageOpacity(imgElem);
+        this.toolbarEnableDisable(false);
     }
 
     /* Resets image opacity after upload */
@@ -938,14 +937,21 @@ export class PasteCleanup {
 
     // eslint-disable-next-line @typescript-eslint/tslint/config
     private setCssClass(e: ICssClassArgs) {
-        if (this.popupObj && e.cssClass) {
-            if (e.oldCssClass) {
-                removeClass([this.popupObj.element], e.oldCssClass);
+        const mediaPopups: NodeListOf<Element> = this.parent.element.querySelectorAll('.e-rte-upload-popup');
+        for (let i: number = 0; i < mediaPopups.length; i++) {
+            const uploader: Uploader = this.getUploaderInstance(mediaPopups[i as number] as HTMLElement);
+            if (uploader && !uploader.isDestroyed) {
+                this.updateCss(uploader, e);
             }
-            addClass([this.popupObj.element], e.cssClass);
+            const popup: Popup = getComponent(mediaPopups[i as number] as HTMLElement, 'popup') as Popup;
+            if (popup && !popup.isDestroyed && e.cssClass) {
+                if (e.oldCssClass) {
+                    removeClass([popup.element], e.oldCssClass);
+                }
+                addClass([popup.element], e.cssClass);
+            }
         }
         this.updateCss(this.dialogObj, e);
-        this.updateCss(this.uploadObj, e);
         this.updateCss(this.plainTextRadioButton, e);
         this.updateCss(this.cleanRadioButton, e);
         this.updateCss(this.keepRadioButton, e);

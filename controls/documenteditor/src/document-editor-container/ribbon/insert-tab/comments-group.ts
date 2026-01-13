@@ -57,7 +57,7 @@ export class CommentsGroup extends RibbonGroupBase {
         const shouldDisable: boolean = isHeaderFooter ||
             this.container.documentEditor.selection.isinFootnote ||
             this.container.documentEditor.selection.isinEndnote ||
-            this.container.documentEditor.commentReviewPane.commentPane.isEditMode;
+            this.container.documentEditor.commentReviewPane.commentPane.isEditMode || this.container.documentEditor.selection.isInShape;
 
         this.enableDisableComment(!shouldDisable);
     }

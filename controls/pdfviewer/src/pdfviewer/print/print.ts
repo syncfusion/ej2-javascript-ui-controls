@@ -49,7 +49,7 @@ export class Print {
     public print(): void {
         let pageIndex: number;
         if (this.pdfViewerBase.pageCount > 0) {
-            if (Browser.isDevice || !this.pdfViewerBase.clientSideRendering) {
+            if (Browser.isDevice || !this.pdfViewerBase.clientSideRendering || this.pdfViewerBase.isPasswordProtected) {
                 this.printViewerContainer = createElement('div', {
                     id: this.pdfViewer.element.id + '_print_viewer_container',
                     className: 'e-pv-print-viewer-container'

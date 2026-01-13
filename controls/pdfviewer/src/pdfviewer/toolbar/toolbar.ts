@@ -1482,8 +1482,14 @@ export class Toolbar {
             let id: string;
             if (typeof (toolbarItem) === 'object' && toolbarItem.tooltipText) {
                 if (toolbarItem.template) {
-                    const match: RegExpMatchArray = toolbarItem.template.match(/id="([^"]+)"/);
-                    id = match ? match[1] : null;
+                    let match: any;
+                    if (typeof toolbarItem.template === 'string') {
+                        match = toolbarItem.template.match(/id="([^"]+)"/);
+                        id = match ? match[1] : null;
+                    }
+                    else if (toolbarItem.template instanceof HTMLElement) {
+                        id = (toolbarItem.template.id ? toolbarItem.template.id : (toolbarItem.id ? toolbarItem.id : null));
+                    }
                 }
                 else {
                     id = toolbarItem.id;

@@ -94,7 +94,7 @@ export class DiagramEventHandler {
 
     private set action(action: Actions) {
         if (action !== this.currentAction) {
-            if (this.currentAction === 'PortDraw') {
+            if (this.currentAction === 'PortDraw' && !this.inAction) {
                 this.diagram.tool &= ~DiagramTools.DrawOnce;
                 //EJ2-70550 - Connector disconnected from source and target while dragging mutliple selected element
                 if (this.diagram.currentDrawingObject) {
@@ -554,7 +554,7 @@ export class DiagramEventHandler {
             if (this.action === 'Select' || this.action === 'Drag') {
                 this.diagram.updatePortVisibility(this.hoverElement as Node, PortVisibility.Hover, true);
             }
-            if (((this.tool instanceof PolygonDrawingTool || this.tool instanceof PolyLineDrawingTool)
+            if (this.tool && ((this.tool instanceof PolygonDrawingTool || this.tool instanceof PolyLineDrawingTool)
                 && (evt.button === 2 || evt.buttons === 2))) {
                 // eslint-disable-next-line
                 const arg: IClickEventArgs = {
@@ -564,7 +564,7 @@ export class DiagramEventHandler {
                 };
                 this.inAction = false;
                 this.tool.mouseUp(this.eventArgs);
-            } else if (((this.inAction === true) && this.isMouseDown === true &&
+            } else if (this.tool && ((this.inAction === true) && this.isMouseDown === true &&
                 (this.tool instanceof PolygonDrawingTool || this.tool instanceof PolyLineDrawingTool))) {
                 this.isMouseDown = true;
                 this.eventArgs = {};
@@ -612,7 +612,9 @@ export class DiagramEventHandler {
                 this.eventArgs.position = this.currentPosition;
                 //834641 -  Support to unselect the diagram element that is already selected
                 const prevSelectedNode: NodeModel[] = this.diagram.selectedItems.nodes;
-                this.tool.mouseDown(this.eventArgs);
+                if (this.tool) {
+                    this.tool.mouseDown(this.eventArgs);
+                }
                 if (this.diagram.selectedItems.canToggleSelection && prevSelectedNode
                     && this.diagram.selectedItems.nodes && this.tool instanceof MoveTool) {
                     for (let i: number = 0; i < prevSelectedNode.length; i++) {
@@ -992,7 +994,7 @@ export class DiagramEventHandler {
                     this.getMouseEventArgs(this.currentPosition, this.eventArgs);
                     this.tool = this.getTool(this.action);
                     this.mouseEvents();
-                    if (this.tool instanceof ConnectorDrawingTool ||
+                    if (this.tool && this.tool instanceof ConnectorDrawingTool ||
                         this.tool instanceof PolyLineDrawingTool ||
                         this.tool instanceof PolygonDrawingTool) {
                         this.tool.mouseMove(this.eventArgs);
@@ -1285,9 +1287,9 @@ export class DiagramEventHandler {
                         }
                         this.isSwimlaneSelected = false;
                         // 948882: Improper Selection Behavior When Node Drag Constraint is Disabled
-                        if (this.tool instanceof SelectTool) {
+                        if (this.tool && this.tool instanceof SelectTool) {
                             this.tool.mouseUp(this.eventArgs, evt.button);
-                        } else {
+                        } else if(this.tool) {
                             this.tool.mouseUp(this.eventArgs);
                         }
                         if (this.diagram.constraints & DiagramConstraints.AutomaticPortCreation && evt.ctrlKey) {
@@ -2802,8 +2804,8 @@ export class DiagramEventHandler {
                     let undoElement: StackEntryObject;
                     if (parentNode && parentNode.container && parentNode.container.type === 'Stack') {
                         this.diagram.startGroupAction(); hasGroup = true;
-                    }
-                    if (!target && parentNode && parentNode.container && parentNode.container.type === 'Stack' && this.action === 'Drag') {
+                    }//1001268-UML Classifier Nodes break when moved rapidly
+                    if (!target && parentNode && parentNode.container && parentNode.container.type === 'Stack' && this.action === 'Drag' && parentNode.shape.type !== 'UmlClassifier') {
                         const index: number = parentNode.wrapper.children.indexOf(obj.wrapper);
                         undoElement = { targetIndex: undefined, target: undefined, sourceIndex: index, source: clone(obj) };
                         if (index > -1) {

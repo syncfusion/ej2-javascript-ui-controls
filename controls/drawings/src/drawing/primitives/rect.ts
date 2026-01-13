@@ -108,7 +108,7 @@ export class Rect {
     /**   @private  */
     public uniteRect(rect: Rect): Rect {
         let right: number = Math.max(Number.NaN === this.right || this.x === Number.MAX_VALUE ? rect.right : this.right, rect.right);
-        let bottom: number = Math.max(Number.NaN === this.bottom || this.y === Number.MAX_VALUE ? rect.bottom : this.bottom, rect.bottom);
+        let bottom: number = this.bottom;
         this.x = Math.min(this.left, rect.left);
         this.y = Math.min(this.top, rect.top);
         this.width = right - this.x;

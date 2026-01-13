@@ -865,6 +865,7 @@ export class Virtualization {
                 }
             }
         }
+        this.setItemContext(args.item, args.curData as DataSource, !!(args.curData as any).isHeader);
     }
 
     public reRenderUiVirtualization(): void {
@@ -887,8 +888,11 @@ export class Virtualization {
             element.dataset.uid = (curViewDS[this.listViewInstance.fields.id]) as any ?
                 (curViewDS[this.listViewInstance.fields.id]) as any : ListBase.generateId() as any;
             onChange(curViewDS, element, this);
+            this.setItemContext(element, curViewDS, !!(curViewDS as any).isHeader);
         } else {
             this.updateUiContent(element, index);
+            const curViewDS: DataSource = (this.listViewInstance.curViewDS as DataSource[])[index as number];
+            this.setItemContext(element, curViewDS, !!(curViewDS as any).isHeader);
         }
         this.changeElementAttributes(element, index);
         if (targetElement) {
@@ -918,6 +922,7 @@ export class Virtualization {
         [].slice.call(liItem[0].children).forEach((ele: HTMLElement): void => {
             listElement.appendChild(ele);
         });
+        virtualThis.setItemContext(listElement, newData, !!(newData as any).isHeader);
     }
 
     private onNgChange(newData: DataSource, listElement: ElementContext, virtualThis: Virtualization): void {
@@ -928,6 +933,7 @@ export class Virtualization {
             listElement.removeChild(listElement.lastChild);
         }
         listElement.appendChild(resultElement[0]);
+        virtualThis.setItemContext(listElement, newData, !!(newData as any).isHeader);
     }
 
     public getModuleName(): string {
@@ -938,6 +944,20 @@ export class Virtualization {
         this.wireScrollEvent(true);
         this.topElement = null;
         this.bottomElement = null;
+    }
+
+    private setItemContext(item: HTMLElement, curData: DataSource, isHeader: boolean): void {
+        const el: ElementContext = item as ElementContext;
+        const existing: any = (el.context || {}) as any;
+        el.context = {
+            ...existing,
+            data: curData,
+            nodes: existing.nodes || { flatTemplateNodes: [], groupTemplateNodes: [] },
+            type: isHeader ? 'groupList' : 'flatList'
+        };
+        if (item.firstElementChild) {
+            (el.context as any).template = item.firstElementChild;
+        }
     }
 }
 

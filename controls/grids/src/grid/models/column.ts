@@ -139,7 +139,7 @@ export class Column {
 
     /**
      * Defines the column template that renders customized element in each cell of the column.
-     * It accepts either [template string](https://ej2.syncfusion.com/documentation/common/template-engine/) or HTML element ID.
+     * It accepts either [template string](../../common/template/) or HTML element ID.
      *
      * @default null
      * @aspType string
@@ -887,7 +887,7 @@ export interface ColumnModel {
 
     /**
      * Defines the column template that renders customized element in each cell of the column.
-     * It accepts either [template string](../../common/template-engine/) or HTML element ID.
+     * It accepts either [template string](../../common/template/) or HTML element ID.
      *
      * @default null
      * @aspType string

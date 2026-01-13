@@ -2045,6 +2045,9 @@ describe("EJ2-57352 - Image paste upload toolbar disable check", () => {
 
     beforeAll((done: Function) => {
         rteObj = renderRTE({
+            toolbarSettings: {
+                items: ['Image']
+            },
             insertImageSettings: {
                 saveUrl: 'https://aspnetmvc.syncfusion.com/services/api/uploadbox/Save',
                 path: '/api/uploadbox/Save'
@@ -2053,7 +2056,6 @@ describe("EJ2-57352 - Image paste upload toolbar disable check", () => {
                 if (rteObj.toolbarModule.baseToolbar.toolbarObj.element.className.indexOf('e-overlay') > 0) {
                     toolbarDisabled = true;
                 }
-                
             }
         });
         done();
@@ -3452,17 +3454,12 @@ describe('850189 - code coverage', () => {
         expect(myObj.oldCssClass === '_imageNewClass imageUpdatedClass').toBe(true);
         (editor as any).pasteCleanupModule.updateCss(myObj, { oldCssClass: null, cssClass: 'imageUpdatedClass'});
         expect(myObj.oldCssClass === 'imageOldClass_imageNewClass imageUpdatedClass').toBe(true);
-        (editor as any).pasteCleanupModule.popupObj = editor;
-        (editor as any).pasteCleanupModule.setCssClass ({ oldCssClass: 'imageOldClass', cssClass: 'imageUpdatedClass'});
-        expect((editor as any).element.classList.contains('imageUpdatedClass')).toBe(true);
-        (editor as any).pasteCleanupModule.setCssClass ({ oldCssClass: null, cssClass: 'imageUpdatedClassNew'});
-        expect((editor as any).element.classList.contains('imageUpdatedClassNew')).toBe(true);
         (editor as any).pasteCleanupModule.popupObj = null;
         div = document.createElement('div');
         (editor as any).pasteCleanupModule.parent.pasteCleanupSettings.keepFormat = false;
         (editor as any).pasteCleanupModule.imageFormatting( {}, { elements: [div] });
         (editor as any).pasteCleanupModule.refreshPopup(div, null);
-        (editor as any).pasteCleanupModule.uploadFailure(div, null, null, {});
+        (editor as any).pasteCleanupModule.uploadFailure(div, null, {});
         (editor as any).pasteCleanupModule.isNotFromHtml = true;
         (editor as any).pasteCleanupModule.containsHtml = true;
         (editor as any).pasteCleanupModule.parent.pasteCleanupSettings.allowedStyleProps = null;
@@ -4119,9 +4116,12 @@ describe("896253 - ImageRemoving event not get triggered when we delete the past
 
     beforeAll((done: Function) => {
         rteObj = renderRTE({
+            toolbarSettings: {
+                items: ['Image']
+            },
             insertImageSettings: {
-                saveUrl: 'https://blazor.syncfusion.com/services/development/api/RichTextEditor/SaveFile',
-                path:   'https://blazor.syncfusion.com/services/development/RichTextEditor/'
+                saveUrl: 'https://ej2services.syncfusion.com/js/development/api/RichTextEditor/SaveFile',
+                path:   'https://ej2services.syncfusion.com/js/development/RichTextEditor/'
             },
             imageUploading: function (args) {
                 if (rteObj.toolbarModule.baseToolbar.toolbarObj.element.className.indexOf('e-overlay') > 0) {
@@ -5657,6 +5657,75 @@ p.p2 {margin: 0.0px 0.0px 0.0px 0.0px; font: 13.0px 'Helvetica Neue'; min-height
                 expect(rteObj.inputElement.innerHTML === expectedInnerHtml).toBe(true);
                 done();
             }, 200);
+        });
+    });
+    describe('PasteCleanup popup and uploader code coverage -', () => {
+        let rteObj: RichTextEditor;
+        let pasteCleanupModuleRef: any;
+        beforeAll(() => {
+            rteObj = renderRTE({
+                toolbarSettings: {
+                    items: ['Image']
+                },
+                value: `<h1 style="cursor: auto;">Welcome to the Syncfusion Rich Text<img src="blob:null/33ba739c-99a3-44fe-b430-3f7004cd0d03" class="e-rte-image e-imginline" alt="image" width="229" height="127" style="min-width: 0px; max-width: 1535px; min-height: 0px; width: 229px; height: 127px;"/> </h1>`,
+            });
+            pasteCleanupModuleRef = rteObj.pasteCleanupModule;
+        });
+        afterAll(() => {
+            destroy(rteObj);
+        });
+        it(' Uploader Removing use case', () => {
+            let imgElement = document.createElement('img');
+            const imgFile = getImageUniqueFIle();
+            const imgPopup = pasteCleanupModuleRef.createPopupObject(imgElement, imgFile);
+            const imgUploader = pasteCleanupModuleRef.createUploader(imgElement, imgPopup, imgFile);
+            imgElement = document.querySelector('.e-rte-image');
+            pasteCleanupModuleRef.handleRemoving(imgElement, imgPopup);
+        });
+        it(' Uploader Canceling use case', () => {
+            rteObj.inputElement.innerHTML = `<h1 style="cursor: auto;">Welcome to the Syncfusion Rich Text<img src="blob:null/33ba739c-99a3-44fe-b430-3f7004cd0d03" class="e-rte-image e-imginline" alt="image" width="229" height="127" style="min-width: 0px; max-width: 1535px; min-height: 0px; width: 229px; height: 127px;"/> </h1>`;
+            let imgElement = document.createElement('img');
+            const imgFile = getImageUniqueFIle();
+            const imgPopup = pasteCleanupModuleRef.createPopupObject(imgElement, imgFile);
+            const imgUploader = pasteCleanupModuleRef.createUploader(imgElement, imgPopup, imgFile);
+            imgElement = document.querySelector('.e-rte-image');
+            pasteCleanupModuleRef.handleCanceling(imgElement, imgPopup);
+        });
+        it(' Uploader Failing use case', () => {
+            const imgElement = document.createElement('img');
+            const triggerSpy = spyOn(rteObj, 'trigger').and.callThrough();
+            const imgFile = getImageUniqueFIle();
+            const imgPopup = pasteCleanupModuleRef.createPopupObject(imgElement, imgFile);
+            const imgUploader = pasteCleanupModuleRef.createUploader(imgElement, imgPopup, imgFile);
+            // Create complete failure event args
+            const failureArgs = {
+                e: {
+                    currentTarget: {
+                        status: 400,
+                        response: 'Error uploading file'
+                    }
+                },
+                file: {
+                    name: 'test-image.jpg',
+                    rawFile: new File(['dummy content'], 'test-image.jpg', { type: 'image/jpeg' }),
+                    size: 1024,
+                    status: 'failed',
+                    statusCode: '400',
+                    type: 'image/jpeg',
+                    validationMessages: { minSize: 'File size too small' }
+                },
+                operation: 'upload'
+            };
+            pasteCleanupModuleRef.uploadFailure(imgElement, imgPopup, failureArgs);
+            expect(triggerSpy).toHaveBeenCalledWith('imageUploadFailed', failureArgs);
+        });
+        it(' Handle Upload Status use case', () => {
+            rteObj.inputElement.innerHTML = `<h1 style="cursor: auto;">Welcome to the Syncfusion Rich Text<img src="blob:null/33ba739c-99a3-44fe-b430-3f7004cd0d03" class="e-rte-image e-imginline" alt="image" width="229" height="127" style="min-width: 0px; max-width: 1535px; min-height: 0px; width: 229px; height: 127px;"/> </h1>`;
+            const imgElement = document.querySelector('.e-rte-image');
+            pasteCleanupModuleRef.handleUploadStatus({
+                element: imgElement,
+                file: { statusCode: '5', name: 'test.png' }
+            }, imgElement);
         });
     });
     describe("983901: Improper List Structure When Pasting Mixed Content with enterKey Set to DIV", () => {

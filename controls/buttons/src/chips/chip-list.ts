@@ -1375,6 +1375,17 @@ export class ChipList extends Component<HTMLElement> implements INotifyPropertyC
         this.trigger('deleted', deletedChipData as ChipDeletedEventArgs);
     }
 
+    private getSelectedChipIndex(): number[] {
+        const chips: NodeListOf<HTMLElement> = this.element.querySelectorAll('.' + classNames.chip);
+        const indexes: number[] = [];
+        for (let i: number = 0; i < chips.length; i++) {
+            if ((chips[i as number] as HTMLElement).classList.contains(classNames.active)) {
+                indexes.push(i);
+            }
+        }
+        return indexes;
+    }
+
     /**
      * Removes the component from the DOM and detaches all its related event handlers. Also, it removes the attributes and classes.
      * {% codeBlock src='chips/destroy/index.md' %}{% endcodeBlock %}
@@ -1421,6 +1432,7 @@ export class ChipList extends Component<HTMLElement> implements INotifyPropertyC
 
     public onPropertyChanged(newProp: ChipList, oldProp: ChipList): void {
         for (const prop of Object.keys(newProp)) {
+            let indexes: number[];
             switch (prop) {
             case 'chips':
             case 'text':
@@ -1428,9 +1440,29 @@ export class ChipList extends Component<HTMLElement> implements INotifyPropertyC
             case 'avatarIconCss':
             case 'leadingIconCss':
             case 'trailingIconCss':
-            case 'selection':
             case 'enableDelete':
             case 'enabled':
+                this.refresh();
+                break;
+            case 'selection':
+                indexes = this.getSelectedChipIndex();
+                if (newProp.selection === 'Single') {
+                    let chipValue: string | number = null;
+                    if (indexes && typeof(indexes) === 'number') {
+                        chipValue = indexes;
+                    } else if (indexes && Array.isArray(indexes)) {
+                        chipValue = indexes.length > 0 ? indexes[indexes.length - 1] : null;
+                    }
+                    this.setProperties({ selectedChips: chipValue }, true);
+                } else if (newProp.selection === 'Multiple') {
+                    let chipsValue: string[] | number[] = [];
+                    if (Array.isArray(indexes)) {
+                        chipsValue = indexes;
+                    } else {
+                        chipsValue = [indexes];
+                    }
+                    this.setProperties({ selectedChips: chipsValue }, true);
+                }
                 this.refresh();
                 break;
             case 'cssClass':
@@ -1445,7 +1477,35 @@ export class ChipList extends Component<HTMLElement> implements INotifyPropertyC
                 removeClass(this.element.querySelectorAll('.e-active'), 'e-active');
                 if (this.selection === 'Multiple') {
                     this.multiSelectedChip = [];
-                    this.multiSelection(newProp.selectedChips as number[] | string[]);
+                    let isTextValue: boolean = false;
+                    const newSelectedChips: number[] = [];
+                    const items: NodeListOf<Element> = this.element.querySelectorAll('.' + classNames.chip);
+                    const selectedChips: Array<number | string> = Array.isArray(newProp.selectedChips)
+                        ? (newProp.selectedChips as Array<number | string>)
+                        : (isNullOrUndefined(newProp.selectedChips) ? []
+                            : [newProp.selectedChips as number | string]);
+                    for (let i: number = 0; i < selectedChips.length; i++) {
+                        const value: number | string = selectedChips[i as number];
+                        for (let k: number = 0; k < items.length; k++) {
+                            const attrVal: string = (items[k as number] as Element).attributes[5].value;
+                            if (attrVal === String(value)) {
+                                isTextValue = true;
+                            }
+                        }
+                    }
+                    if (!isTextValue) {
+                        for (let i: number = 0; i < selectedChips.length; i++) {
+                            const value: number | string = selectedChips[i as number];
+                            for (let k: number = 0; k < items.length; k++) {
+                                if (k === parseInt(String(value), 10)) {
+                                    newSelectedChips.push(k);
+                                }
+                            }
+                        }
+                        this.multiSelection(newSelectedChips);
+                    } else {
+                        this.multiSelection(newProp.selectedChips as number[] | string[]);
+                    }
                     this.onSelect(this.multiSelectedChip, true);
                     this.updateSelectedChips();
                 } else {

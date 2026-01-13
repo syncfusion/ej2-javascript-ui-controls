@@ -665,7 +665,7 @@ export class Gantt extends Component<HTMLElement>
     @Property('day')
     public durationUnit: DurationUnit;
     /**
-     * Defines an external [`Query`](https://ej2.syncfusion.com/documentation/data/api-query.html)
+     * Defines an external [`Query`](https://ej2.syncfusion.com/documentation/api/data/query)
      * that will be executed in conjunction with data processing to filter, sort the data.
      * This allows for advanced data manipulation before binding the data to the Gantt chart.
      *

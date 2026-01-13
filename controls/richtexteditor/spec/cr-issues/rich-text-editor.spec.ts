@@ -719,7 +719,7 @@ describe('RTE CR issues ', () => {
             let mouseEvent = new MouseEvent('mousedown', { bubbles: true, cancelable: true });
             clearFormatButton.dispatchEvent(mouseEvent);
             clearFormatButton.click();
-            expect(rteObj.inputElement.innerHTML).toEqual(`<p><br></p><p>Welcome to the Syncfusion Rich Text Editor</p><p>The Rich Text Editor, a WYSIWYG (what you see is what you get) editor, is a user interface that allows you to create, edit, and format rich text content. You can try out a demo of this editor here.</p><p>Do you know the key features of the editor?</p> <p>Basic features include headings, block quotes, numbered lists, bullet lists, and support to insert images, tables, audio, and video.</p> <p>Inline styles include bold, italic, underline, strikethrough, hyperlinks, 😀 and more.</p> <p>The toolbar has multi-row, expandable, and scrollable modes. The Editor supports an inline toolbar, a floating toolbar, and custom toolbar items.</p> <p>Integration with Syncfusion Mention control lets users tag other users. To learn more, check out the documentation and demos.</p> <p>Paste from MS Word - helps to reduce the effort while converting the Microsoft Word content to HTML format with format and styles. To learn more, check out the documentation here.</p> <p>Other features: placeholder text, character count, form validation, enter key configuration, resizable editor, IFrame rendering, tooltip, source code view, RTL mode, persistence, HTML Sanitizer, autosave, and more.</p><p>Easily access Audio, Image, Link, Video, and Table operations through the quick toolbar by right-clicking on the corresponding element with your mouse.</p><p>Unlock the Power of Tables</p><p>A table can be created in the editor using either a keyboard shortcut or the toolbar. With the quick toolbar, you can perform table cell insert, delete, split, and merge operations. You can style the table cells using background colours and borders.</p><table class="e-rte-table">   <th>S No<br></th> <th>Name<br></th> <th>Age<br></th> <th>Gender<br></th> <th>Occupation<br></th> <th>Mode of Transport</th>   <tbody> <tr style="height: 16.5563%"> <td>1</td> <td>Selma Rose</td> <td>30</td> <td>Female</td> <td>Engineer<br></td> <td>🚴</td> </tr> <tr style="height: 16.5563%"> <td>2</td> <td>Robert<br></td> <td>28</td> <td>Male</td> <td>Graphic Designer</td> <td>🚗</td> </tr> <tr style="height: 16.5563%"> <td>3</td> <td>William<br></td> <td>35</td> <td>Male</td> <td>Teacher</td> <td>🚗</td> </tr> <tr style="height: 16.5563%"> <td>4</td> <td>Laura Grace<br></td> <td>42</td> <td>Female</td> <td>Doctor</td> <td>🚌</td> </tr> <tr style="height: 16.5563%"> <td>5</td><td>Andrew James<br></td><td>45</td><td>Male</td><td>Lawyer</td><td>🚕</td></tr></tbody></table><p>Elevating Your Content with Images</p><p>Images can be added to the editor by pasting or dragging into the editing area, using the toolbar to insert one as a URL, or uploading directly from the File Browser. Easily manage your images on the server by configuring the insertImageSettings to upload, save, or remove them. </p><p>The Editor can integrate with the Syncfusion Image Editor to crop, rotate, annotate, and apply filters to images. Check out the demos here.</p><p><img alt="Sky with sun" src="https://cdn.syncfusion.com/ej2/richtexteditor-resources/RTE-Overview.png" style="width: 50%" class="e-rte-image e-imginline"></p>`);
+            expect(rteObj.inputElement.innerHTML).toEqual(`<p><br></p><p>Welcome to the Syncfusion Rich Text Editor</p><p>The Rich Text Editor, a WYSIWYG (what you see is what you get) editor, is a user interface that allows you to create, edit, and format rich text content. You can try out a demo of this editor here.</p><p>Do you know the key features of the editor?</p> <p>Basic features include headings, block quotes, numbered lists, bullet lists, and support to insert images, tables, audio, and video.</p> <p>Inline styles include bold, italic, underline, strikethrough, hyperlinks, 😀 and more.</p> <p>The toolbar has multi-row, expandable, and scrollable modes. The Editor supports an inline toolbar, a floating toolbar, and custom toolbar items.</p> <p>Integration with Syncfusion Mention control lets users tag other users. To learn more, check out the documentation and demos.</p> <p>Paste from MS Word - helps to reduce the effort while converting the Microsoft Word content to HTML format with format and styles. To learn more, check out the documentation here.</p> <p>Other features: placeholder text, character count, form validation, enter key configuration, resizable editor, IFrame rendering, tooltip, source code view, RTL mode, persistence, HTML Sanitizer, autosave, and more.</p><p>Easily access Audio, Image, Link, Video, and Table operations through the quick toolbar by right-clicking on the corresponding element with your mouse.</p><p>Unlock the Power of Tables</p><p>A table can be created in the editor using either a keyboard shortcut or the toolbar. With the quick toolbar, you can perform table cell insert, delete, split, and merge operations. You can style the table cells using background colours and borders.</p><table class="e-rte-table">  <tr> <th>S No<br></th> <th>Name<br></th> <th>Age<br></th> <th>Gender<br></th> <th>Occupation<br></th> <th>Mode of Transport</th> </tr>  <tbody> <tr> <td>1</td> <td>Selma Rose</td> <td>30</td> <td>Female</td> <td>Engineer<br></td> <td>🚴</td> </tr> <tr> <td>2</td> <td>Robert<br></td> <td>28</td> <td>Male</td> <td>Graphic Designer</td> <td>🚗</td> </tr> <tr> <td>3</td> <td>William<br></td> <td>35</td> <td>Male</td> <td>Teacher</td> <td>🚗</td> </tr> <tr> <td>4</td> <td>Laura Grace<br></td> <td>42</td> <td>Female</td> <td>Doctor</td> <td>🚌</td> </tr> <tr> <td>5</td><td>Andrew James<br></td><td>45</td><td>Male</td><td>Lawyer</td><td>🚕</td></tr></tbody></table><p>Elevating Your Content with Images</p><p>Images can be added to the editor by pasting or dragging into the editing area, using the toolbar to insert one as a URL, or uploading directly from the File Browser. Easily manage your images on the server by configuring the insertImageSettings to upload, save, or remove them. </p><p>The Editor can integrate with the Syncfusion Image Editor to crop, rotate, annotate, and apply filters to images. Check out the demos here.</p><p><img alt="Sky with sun" src="https://cdn.syncfusion.com/ej2/richtexteditor-resources/RTE-Overview.png" style="width: 50%" class="e-rte-image e-imginline"></p>`);
             done();
         });
     });
@@ -3475,6 +3475,48 @@ describe('RTE CR issues ', () => {
         });
     });
 
+    describe('Bug 1001510: Inline toolbar popup gets hidden in the RichTextEditor', () => {
+        let rteObj: RichTextEditor;
+        let defaultRTE: HTMLElement = createElement('div', { id: 'defaultRTE', styles: 'height: 75px;' });
+        beforeAll(() => {
+            document.body.appendChild(defaultRTE);
+            rteObj = new RichTextEditor({
+                value: `
+    <h2>Inline Rich Text Editor</h2>
+  `,
+                inlineMode: {
+                    enable: true,
+                    onSelection: true
+                },
+                toolbarSettings: {
+                    items: ['Formats', '|', 'Bold', 'Italic', 'Fontcolor', 'BackgroundColor', '|', 'CreateLink', 'Image', 'CreateTable', '|', 'Unorderedlist', 'Orderedlist']
+                }
+            });
+            rteObj.appendTo('#defaultRTE');
+        });
+        afterAll(() => {
+            destroy(rteObj);
+            defaultRTE.remove();
+        });
+        it(' Check that the inline toolbar displays inside the editor.', (done) => {
+            rteObj.focusIn();
+            const mouseUpEvent: MouseEvent = new MouseEvent('mouseup', BASIC_MOUSE_EVENT_INIT);
+            const mouseDownEvent: MouseEvent = new MouseEvent('mousedown', BASIC_MOUSE_EVENT_INIT);
+            rteObj.inputElement.dispatchEvent(mouseDownEvent);
+            const target: HTMLElement = rteObj.inputElement.childNodes[0] as HTMLElement;
+            rteObj.formatter.editorManager.nodeSelection.setSelectionText(document, target.firstChild, target.firstChild, 10, 12);
+            target.dispatchEvent(mouseUpEvent);
+            setTimeout(() => {
+                const inlinePopup: HTMLElement = rteObj.element.querySelector('.e-rte-inline-popup') as HTMLElement;
+                const editorRect: DOMRect = rteObj.element.getBoundingClientRect() as DOMRect;
+                const popupRect: DOMRect = inlinePopup.getBoundingClientRect() as DOMRect;
+                expect(popupRect.bottom).toBeLessThanOrEqual(editorRect.bottom);
+                expect(popupRect.top).toBeGreaterThanOrEqual(editorRect.top);
+                done();
+            }, 100);
+        });
+    });
+
     describe('Bug 991487: Inline Toolbar popup cuts off at the edges in RichTextEditor', () => {
         let rteObj: RichTextEditor;
         let defaultRTE: HTMLElement = createElement('div', { id: 'defaultRTE' });
@@ -3613,6 +3655,42 @@ describe('RTE CR issues ', () => {
             rteObj.value = undefined;
             rteObj.dataBind();
             expect((rteObj as any).inputElement.innerHTML === '<p><br></p>').toBe(true);
+            done();
+        });
+        afterAll((done: DoneFn) => {
+            destroy(rteObj);
+            done();
+        });
+    });
+    describe('1001073: Toolbar items remain active after editor value becomes null', () => {
+        let rteObj: RichTextEditor;
+        beforeAll((done: Function) => {
+            rteObj = renderRTE({
+                value: `<p>Hello</p>`,
+                toolbarSettings: {
+                    items: [
+                        'Bold',
+                        'Italic',
+                        'Underline',
+                        'StrikeThrough']
+                }
+            });
+            done();
+        });
+        it('when value is set to empty RTE shold clear the toolbar status', (done) => {
+            rteObj.focusIn();
+            rteObj.dataBind();
+            ((rteObj.element.querySelectorAll(".e-toolbar-item")[0] as HTMLElement).querySelector('button') as HTMLButtonElement).click();
+            ((rteObj.element.querySelectorAll(".e-toolbar-item")[1] as HTMLElement).querySelector('button') as HTMLButtonElement).click();
+            ((rteObj.element.querySelectorAll(".e-toolbar-item")[2] as HTMLElement).querySelector('button') as HTMLButtonElement).click();
+            ((rteObj.element.querySelectorAll(".e-toolbar-item")[3] as HTMLElement).querySelector('button') as HTMLButtonElement).click();
+            expect(((rteObj.element.querySelectorAll(".e-toolbar-item")[0] as HTMLElement).classList.contains('e-active'))).toBe(true);
+            rteObj.value = '';
+            rteObj.dataBind();
+            expect(((rteObj.element.querySelectorAll(".e-toolbar-item")[0] as HTMLElement).classList.contains('e-active'))).toBe(false);
+            expect(((rteObj.element.querySelectorAll(".e-toolbar-item")[1] as HTMLElement).classList.contains('e-active'))).toBe(false);
+            expect(((rteObj.element.querySelectorAll(".e-toolbar-item")[2] as HTMLElement).classList.contains('e-active'))).toBe(false);
+            expect(((rteObj.element.querySelectorAll(".e-toolbar-item")[3] as HTMLElement).classList.contains('e-active'))).toBe(false);
             done();
         });
         afterAll((done: DoneFn) => {

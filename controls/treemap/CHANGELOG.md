@@ -8,6 +8,14 @@
 
 ## [Unreleased]
 
+## 32.1.23 (2026-01-13)
+
+### TreeMap
+
+#### Bug Fixes
+
+- `#I800564` - Treemap labels render properly across multiple lines when `<br>` tags are used in `labelFormat`.
+
 ## 18.2.44 (2020-07-07)
 
 ### TreeMap

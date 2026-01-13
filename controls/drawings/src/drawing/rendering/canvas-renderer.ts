@@ -16,6 +16,7 @@ import { DrawingRenderer } from './renderer';
 export class CanvasRenderer {
      /** @private */
      public imageList: Record<string, ImageEntry[]> = {};
+     private rectWidth: number = 0;
     /**   @private  */
     public static getContext(canvas: HTMLCanvasElement): CanvasRenderingContext2D {
         return canvas.getContext('2d');
@@ -79,6 +80,9 @@ export class CanvasRenderer {
 
     /**   @private  */
     public drawRectangle(canvas: HTMLCanvasElement, options: RectAttributes): void {
+        if((options as any).childNodes === undefined) {
+            this.rectWidth = options.width;
+        }
         if (options.visible === true) {
             if (options.cornerRadius) {
                 (options as PathAttributes).data = getRectanglePath(options.cornerRadius, options.height, options.width);
@@ -280,12 +284,12 @@ export class CanvasRenderer {
                     if (options.textAlign === 'justify') {
                         if (child.text === '\n') continue;
                         let baseSpaceWidth: number = ctx.measureText(' ').width;
-                        let targetWidth: number = wrapBounds.width;
+                        let targetWidth: number = this.rectWidth - options.strokeWidth - 2;
                         offsetX = position.x + child.x - wrapBounds.x + options.strokeWidth / 2;
                         offsetY = position.y + child.dy * i + ((options.fontSize) * 0.8) + options.strokeWidth / 2;
                         let isLastLine: boolean = i === childNodes.length - 1;
                         if (!isLastLine && targetWidth > 0) {
-                            let leftEdge: number = position.x + child.x + options.strokeWidth / 2;
+                            let leftEdge: number = position.x + child.x - wrapBounds.x + options.strokeWidth / 2;
                             const words: string[] = child.text.trim().split(/\s+/);
                             if (words.length <= 1) {
                                 ctx.fillText(child.text, leftEdge, offsetY);
@@ -339,7 +343,7 @@ export class CanvasRenderer {
                     }
                     else if (child.text !== '\n') {
                         if (options.textAlign == "right") {
-                            offsetX = position.x + child.x - wrapBounds.x - options.strokeWidth / 2;
+                            offsetX = position.x + child.x - wrapBounds.x - options.strokeWidth / 2 - 2;
                         } else if (options.textAlign == "center") {
                             offsetX = position.x + child.x - wrapBounds.x;
                         } else {

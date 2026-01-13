@@ -1179,8 +1179,10 @@ export class TaskbarEdit extends DateProcessor {
                 this.taskBarEditedAction(e);
             }
             this.parent.trigger('taskbarEditing', args, (arg: ITaskbarEditedEventArgs) => {
+                const isContraintMapped: boolean = !!this.parent.taskFields.constraintType && !!this.parent.taskFields.constraintDate;
                 if (
                     arg.cancel !== true &&
+                    isContraintMapped &&
                     arg.data.ganttProperties.constraintType !== 2 &&
                     arg.data.ganttProperties.constraintType !== 3 &&
                     ['ChildDrag', 'ParentDrag', 'MilestoneDrag', 'LeftResizing', 'RightResizing'].indexOf(arg.taskBarEditAction) !== -1

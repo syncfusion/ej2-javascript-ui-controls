@@ -101,7 +101,7 @@ export class FocusStrategy {
             }
         }
         this.firstHeaderCellClick = false;
-        if (e.target && (<HTMLElement>e.target).classList.contains('e-detailcell')) {
+        if (e.target && (<HTMLElement>e.target).classList.contains('e-detailcell') && !isNullOrUndefined(this.currentInfo.element)) {
             this.currentInfo.skipAction = false;
             addClass([this.currentInfo.element], ['e-focused', 'e-focus']);
         }

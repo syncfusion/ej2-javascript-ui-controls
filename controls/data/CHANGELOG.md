@@ -2,7 +2,15 @@
 
 ## [Unreleased]
 
-## 32.1.22 (2026-01-06)
+## 32.1.23 (2026-01-13)
+
+### DataManager
+
+#### Bug Fixes
+
+- `#I797404` - Resolved an issue where the `isEmpty` operator did not filter null or undefined values in string type columns.
+
+## 32.1.19 (2025-12-16)
 
 ### DataManager
 

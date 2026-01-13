@@ -2,7 +2,15 @@
 
 ## [Unreleased]
 
-## 32.1.22 (2026-01-06)
+## 32.1.23 (2026-01-13)
+
+### ListView
+
+#### Bug Fixes
+
+- `#I758967` -  The issue where the context value of the selected item was returning `undefined` in the ListView `select` event when virtualization was enabled has been resolved.
+
+## 32.1.19 (2025-12-16)
 
 ### ListView
 

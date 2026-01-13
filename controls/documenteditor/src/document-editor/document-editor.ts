@@ -1362,10 +1362,6 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
     /**
      * @private
      */
-    public isInitializedContainerComponent: boolean = false;
-    /**
-     * @private
-     */
     public serverActionSettingsImport: string = 'Import';
     /**
      * @private
@@ -2383,13 +2379,24 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
         }
         if (this.commentReviewPane) {
             hideSpinner(this.commentReviewPane.reviewPane);
+            this.removeSpinner(this.commentReviewPane.reviewPane);
+            
         }
         if (this.trackChangesPane) {
             hideSpinner(this.trackChangesPane.trackChangeDiv);
+            this.removeSpinner(this.trackChangesPane.trackChangeDiv);
         }
-        hideSpinner(this.documentHelper.optionsPaneContainer);
+        hideSpinner(this.documentHelper.viewerContainer);
+        this.removeSpinner(this.documentHelper.viewerContainer);
         const eventArgs: DocumentChangeEventArgs = { source: this };
         this.trigger(documentChangeEvent, eventArgs);
+    }
+
+    private removeSpinner(element: HTMLElement): void {
+        const spinnerPane = element.querySelector('.e-spinner-pane') as HTMLElement;
+        if (spinnerPane) {
+            spinnerPane.remove();
+        }
     }
     /**
      * @private

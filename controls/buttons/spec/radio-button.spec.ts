@@ -346,6 +346,51 @@ describe('RadioButton', () => {
             expect(radio.element.parentElement.getAttribute('data-containerid').indexOf('error-agreement')).toEqual(0);
             expect(radio.element.parentElement.getAttribute('test').indexOf('test')).toEqual(0);
         });
+        it('HtmlAttributes id should apply to input and sync label for, while other attributes apply to wrapper', () => {
+            // Arrange: create a fresh input for this test
+            const inputEl: HTMLInputElement = createElement('input', { id: 'rb-htmlattr' }) as HTMLInputElement;
+            inputEl.setAttribute('type', 'radio');
+            document.body.appendChild(inputEl);
+            radio = new RadioButton({
+                htmlAttributes: {
+                id: 'custom-radio-id',
+                title: 'Custom Title',
+                'data-extra': 'extra'
+            }
+        }, '#rb-htmlattr');
+            const wrapper: Element = radio.element.parentElement as Element;
+            const label: Element = radio.element.nextElementSibling as Element;
+
+            expect(radio.element.id).toBe('custom-radio-id');
+            expect(label.getAttribute('for')).toBe('custom-radio-id');
+    
+            expect(wrapper.getAttribute('title')).toBe('Custom Title');
+            expect(wrapper.getAttribute('data-extra')).toBe('extra');
+    
+            // Ensure wrapper does not receive the id attribute
+            expect(wrapper.getAttribute('id')).toBeNull();
+    
+            // Update htmlAttributes and ensure synchronization continues to work
+            radio.htmlAttributes = {
+                id: 'custom-radio-id-2',
+                title: 'Updated Title',
+                'data-extra': 'updated-extra'
+            };
+            radio.dataBind();
+    
+            // Re-acquire label in case of any DOM changes
+            const updatedLabel: Element = radio.element.nextElementSibling as Element;
+    
+            expect(radio.element.id).toBe('custom-radio-id-2');
+            expect(updatedLabel.getAttribute('for')).toBe('custom-radio-id-2');
+            expect(wrapper.getAttribute('title')).toBe('Updated Title');
+            expect(wrapper.getAttribute('data-extra')).toBe('updated-extra');
+    
+            // Cleanup
+            radio.destroy();
+            inputEl.remove();
+        });
+
     });
 
     describe('RadioButton in HTML5 forms', () => {

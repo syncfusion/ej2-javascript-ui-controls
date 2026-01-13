@@ -58,7 +58,7 @@ export namespace IntlBase {
     const fractionRegex: RegExp = /[0-9]/g;
     export const defaultCurrency: string = '$';
     const mapper: string[] = ['infinity', 'nan', 'group', 'decimal'];
-    const patternRegex: RegExp = /G|M|L|H|c|'| a|yy|y|EEEE|E/g;
+    const patternRegex: RegExp = /G|M|L|H|c|'| a|B|yy|y|EEEE|E/g;
     const patternMatch: Object = {
         'G': '',
         'M': 'm',
@@ -67,6 +67,7 @@ export namespace IntlBase {
         'c': 'd',
         '\'': '"',
         ' a': ' AM/PM',
+        'B': 'AM/PM',
         'yy': 'yy',
         'y': 'yyyy',
         'EEEE': 'dddd',

@@ -626,8 +626,9 @@ export function moveChildInStack(sourceNode: Node, target: Node, diagram: Diagra
     const obj: Node = sourceNode;
     const parent: Node = diagram.nameTable[(obj as Node).parentId];
     const sourceParent: Node = diagram.nameTable[(obj as Node).parentId];
+    //1001268-UML Classifier Nodes break when moved rapidly
     if (target && sourceParent && sourceParent.container && sourceParent.container.type === 'Stack' &&
-        target.container && target.container.type === 'Stack' && (sourceParent.id !== target.parentId)) {
+        target.container && target.container.type === 'Stack' && (sourceParent.id !== target.parentId) && sourceParent.shape.type !== 'UmlClassifier') {
         const value: number = sourceParent.wrapper.children.indexOf(obj.wrapper);
         if (value > -1) {
             diagram.nameTable[obj.id].parentId = target.id;

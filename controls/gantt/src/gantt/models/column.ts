@@ -23,6 +23,13 @@ export class Column {
     public allowReordering: boolean = true;
 
     /**
+     * Disables column menu for the column if set to `false`. By default, column menus are enabled for all columns.
+     *
+     * @default true
+     */
+    public showColumnMenu: boolean = true;
+
+    /**
      * If `allowResizing` is set to false, it disables resize option of a particular column.
      * By default, all the columns can be resized.
      *
@@ -249,8 +256,6 @@ export class Column {
      * @default None
      */
     public freeze: freezeDirection;
-
-
     /**
      * Determines whether the column is locked in its current position.
      * When set to true, the column becomes fixed and cannot be reordered by the user.
@@ -283,6 +288,13 @@ export interface ColumnModel {
      * @default true
      */
     allowReordering?: boolean;
+
+    /**
+     * Disables column menu for the column if set to `false`. By default, column menus are enabled for all columns.
+     *
+     * @default true
+     */
+    showColumnMenu?: boolean;
 
     /**
      * If `allowResizing` is set to false, it disables resize option of a particular column.

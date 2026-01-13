@@ -1062,8 +1062,11 @@ export class Dependency {
                     this.parent.connectorLineModule.getRecordByID(predecessor.from),
                     childGanttRecord
                 );
-                if (predecessor.offset !== offset && offset >= 0) {
-                    return childGanttRecord.ganttProperties.startDate;
+                if (predecessor.offset <= offset && offset >= 0) {
+                    const tempStartDate: Date = childGanttRecord.ganttProperties.startDate;
+                    if (maxStartDate === null || this.dateValidateModule.compareDates(tempStartDate, maxStartDate) === 1) {
+                        maxStartDate = tempStartDate;
+                    }
                 }
             }
             if (childGanttRecord && parentGanttRecord) {

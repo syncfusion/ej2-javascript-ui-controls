@@ -7815,4 +7815,41 @@ describe('EJ2-985690: Partial Selection module', () => {
             gridObj = null;
         });
     });
+
+    describe('EJ2-999604 - getSelectedRecords() returns empty array on header checkbox selection when persistSelection is enabled with partial selection', () => {
+        let gridObj: Grid;
+        beforeAll((done: Function) => {
+            gridObj = createGrid(
+                {
+                    dataSource: partialData,
+                    selectionSettings: { persistSelection: true, type: 'Multiple' },
+                    rowDataBound: (args) => {
+                        if (args.data.Freight > 20) {
+                            args.isSelectable = false;
+                        }
+                    },
+                    columns: [
+                        { type: "checkbox", width: 50 },
+                        { field: 'OrderID', isPrimaryKey: true, headerText: 'Order ID' },
+                        { field: 'CustomerID', headerText: 'CustomerID' },
+                        { field: 'EmployeeID', headerText: 'Employee ID' },
+                        { field: "ShipCity", headerText: "Ship City", width: 250 },
+                    ],
+                }, done);
+        });
+        it('Click header to chek the selected records length', (done: Function) => {
+            (gridObj.element.querySelector('.e-checkselectall') as HTMLElement).click();
+            done();
+        });
+
+        it('getSelectedRecords', function (done) {
+            expect(gridObj.getSelectedRecords().length).toBe(4);
+            done();
+        });
+
+        afterAll(() => {
+            destroy(gridObj);
+            gridObj = null;
+        });
+    });
 });

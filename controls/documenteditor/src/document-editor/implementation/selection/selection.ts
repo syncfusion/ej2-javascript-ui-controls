@@ -59,6 +59,10 @@ export class Selection {
     /**
      * @private
      */
+    public upDownSelLength: number = 0;
+    /**
+     * @private
+     */
     public isSkipLayouting: boolean = false;
     /**
     * @private
@@ -2162,6 +2166,10 @@ export class Selection {
             this.upDownSelectionLength = this.start.location.x;
         }
         this.upDownSelectionLength = this.start.location.x;
+        if (this.isMoveDownOrMoveUp) {
+            this.upDownSelLength = this.upDownSelLength === 0 ? this.upDownSelectionLength : this.upDownSelLength;
+            this.upDownSelectionLength = this.upDownSelLength;
+        }
         let beforeUp = this.start.currentWidget.paragraph.bodyWidget.columnIndex;
         let isMultiColumn: boolean = this.start.currentWidget.paragraph.bodyWidget.sectionFormat.numberOfColumns > 1 ? true : false;
         let beforeIndex: number = this.start.currentWidget.paragraph.bodyWidget.index;
@@ -2207,6 +2215,10 @@ export class Selection {
             this.upDownSelectionLength = this.start.location.x;
         }
         this.upDownSelectionLength = this.start.location.x;
+        if (this.isMoveDownOrMoveUp) {
+            this.upDownSelLength = this.upDownSelLength === 0 ? this.upDownSelectionLength : this.upDownSelLength;
+            this.upDownSelectionLength = this.upDownSelLength;
+        }
         let beforeDown = this.start.currentWidget.paragraph.bodyWidget.columnIndex;
         let beforeIndex: number = this.start.currentWidget.paragraph.bodyWidget.index;
         let isMultiColumn: boolean = this.start.currentWidget.paragraph.bodyWidget.sectionFormat.numberOfColumns > 1 ? true : false;
@@ -8158,6 +8170,9 @@ export class Selection {
      * @private
      */
     public fireSelectionChanged(isSelectionChanged: boolean, isKeyBoardNavigation?: boolean, isBookmark?: boolean): void {
+        if (!this.isMoveDownOrMoveUp) {
+            this.upDownSelLength = 0;
+        }
         if (!this.isSelectBookmark) {
             this.isExcludeBookmarkStartEnd = false;
         }

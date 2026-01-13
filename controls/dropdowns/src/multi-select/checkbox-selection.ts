@@ -294,13 +294,11 @@ export class CheckBoxSelection {
             prepend([this.parent.filterParent], args.popupElement);
             attributes(this.filterInput, {
                 'aria-disabled': 'false',
-                'role': 'combobox',
+                'role': 'searchbox',
                 'autocomplete': 'off',
                 'autocapitalize': 'off',
                 'spellcheck': 'false',
-                'aria-label': 'multiselect',
-                'aria-expanded': 'true',
-                'aria-controls': args.popupElement.id
+                'aria-label': 'multiselect'
             });
             this.clearIconElement = this.filterInput.parentElement.querySelector('.' + clearIcon);
             if (!Browser.isDevice && this.clearIconElement) {

@@ -102,11 +102,13 @@ export class TableResizer {
                 this.currentResizingTable = cellWidget.ownerTable;
                 /* eslint-disable-next-line max-len */
                 if (this.documentHelper.isInsideRect(cellWidget.x - cellWidget.margin.left - resizerBoundaryWidth / 2, cellWidget.y - cellWidget.margin.top, resizerBoundaryWidth, cellWidget.height + cellWidget.margin.top + cellWidget.margin.bottom, touchPoint)) {
-                    return position = cellWidget.columnIndex;
-                } else if (isNullOrUndefined(cellWidget.nextRenderedWidget)
+                    return position = this.currentResizingTable.isBidiTable ? (cellWidget.columnIndex + cellWidget.cellFormat.columnSpan) :
+                        cellWidget.columnIndex;
+                } else if ((isNullOrUndefined(cellWidget.nextRenderedWidget) || this.currentResizingTable.isBidiTable)
                     /* eslint-disable-next-line max-len */
                     && this.documentHelper.isInsideRect(cellWidget.x + cellWidget.margin.right + cellWidget.width - resizerBoundaryWidth / 2, cellWidget.y - cellWidget.margin.top, resizerBoundaryWidth, cellWidget.height + cellWidget.margin.top + cellWidget.margin.bottom, touchPoint)) {
-                    return position = (cellWidget.columnIndex + cellWidget.cellFormat.columnSpan);
+                    return position = this.currentResizingTable.isBidiTable ? cellWidget.columnIndex :
+                        (cellWidget.columnIndex + cellWidget.cellFormat.columnSpan);
                 } else if (cellWidget.childWidgets.length > 0) {
                     return this.getCellReSizerPositionInternal(cellWidget, touchPoint); // Gets the nested table resizer position.
                 }
@@ -251,7 +253,13 @@ export class TableResizer {
             this.owner.isLayoutEnabled = true; //layouting is enabled to layout the parent table of the nested table.
             table = parentTable;
         }
-        this.startingPoint.y += HelperMethods.convertPointToPixel(dragValue);
+        if (!isNullOrUndefined(row)) {
+            if (row.rowFormat.heightType === 'Exactly') {
+                this.startingPoint.y += HelperMethods.convertPointToPixel(dragValue);
+            } else {
+                this.startingPoint.y += dragValue + row.topBorderWidth + row.bottomBorderWidth;
+            }
+        }
         this.owner.documentHelper.layout.reLayoutTable(table);
         this.owner.editorModule.isSkipOperationsBuild = this.owner.enableCollaborativeEditing;
         this.owner.editorModule.reLayout(this.owner.selectionModule);
@@ -349,14 +357,18 @@ export class TableResizer {
             }
         } else {
             //the minimum height of the Row in MS word is 2.7 points which is equal to 3.6 pixel.
-            if (rowFormat.height !== rowFormat.height + dragValue) {
-                rowFormat.height = rowFormat.height + dragValue < 2.7 ? 2.7 : rowFormat.height + dragValue;
+            const currentHeight: number = this.owner.documentHelper.layout.getRowHeight(row, [row]);
+            if (rowFormat.height !== currentHeight + dragValue) {
+                rowFormat.height = currentHeight + dragValue < 2.7 ? 2.7 : currentHeight + dragValue;
             }
         }
     }
     //Resize Table cell
     public resizeTableCellColumn(dragValue: number): void {
         let table: TableWidget = this.currentResizingTable;
+        if (!this.owner.isTableMarkerDragging) {
+            dragValue = table.isBidiTable && this.resizerPosition !== 0 ? -dragValue : dragValue;
+        }
         if (isNullOrUndefined(table) || dragValue === 0 || isNullOrUndefined(table.childWidgets) || this.resizerPosition < 0) {
             return;
         }
@@ -384,7 +396,7 @@ export class TableResizer {
         const cellwidget: TableCellWidget = this.getTableCellWidget(this.startingPoint) as TableCellWidget;
         const spannedCell: TableCellWidget = this.isCellSpannedFromPreviousRows(cellwidget) as TableCellWidget;
         if (this.resizerPosition === 0 || (!isNullOrUndefined(cellwidget) && isNullOrUndefined(cellwidget.previousWidget)
-            && cellwidget.x >= this.startingPoint.x) && !spannedCell) {
+            && (table.isBidiTable ? cellwidget.x <= this.startingPoint.x : cellwidget.x >= this.startingPoint.x)) && !spannedCell) {
             // Todo: need to handle the resizing of first column and table indent.
             const columnIndex: number = this.resizerPosition;
             const rightColumn: WColumn = table.tableHolder.columns[parseInt(columnIndex.toString(), 10)];
@@ -400,8 +412,14 @@ export class TableResizer {
                 }
                 const rowFormat: WRowFormat = currentRow.rowFormat as WRowFormat;
                 const minWidth: number = cell.getMinimumPreferredWidth();
-                if (cell.cellFormat.preferredWidth - dragValue <= minWidth) {
-                    dragValue = HelperMethods.round(cell.cellFormat.preferredWidth - minWidth, 2);
+                if (table.isBidiTable) {
+                    dragValue = dragValue > 0 ? dragValue : cell.cellFormat.preferredWidth + dragValue <= minWidth ?
+                        -HelperMethods.round(cell.cellFormat.preferredWidth - minWidth, 2) : dragValue;
+                }
+                else {
+                    if (cell.cellFormat.preferredWidth - dragValue <= minWidth) {
+                        dragValue = HelperMethods.round(cell.cellFormat.preferredWidth - minWidth, 2);
+                    }
                 }
                 if (rowFormat.beforeWidth > 0) {
                     newGridBefore = rowFormat.beforeWidth + dragValue;
@@ -419,9 +437,14 @@ export class TableResizer {
                 } else {
                     const currentIndent: number = table.tableFormat.leftIndent;
                     if (leastGridBefore === 0) {
-                        // Normal table cell resizing scenario
-                        newIndent = currentIndent + dragValue;
-                        this.increaseOrDecreaseWidth(cell, dragValue, false);
+                        if (table.isBidiTable && !this.owner.isTableMarkerDragging) {
+                            this.increaseOrDecreaseWidth(cell, -dragValue, false);
+                        }
+                        else {
+                            // Normal table cell resizing scenario
+                            newIndent = currentIndent + dragValue;
+                            this.increaseOrDecreaseWidth(cell, dragValue, false);
+                        }
                     } else {
                         const difference: number = leastGridBefore - dragValue;
                         if (difference >= 0) {
@@ -496,6 +519,12 @@ export class TableResizer {
             || this.owner.isTableMarkerDragging) {
             const selectedCells: TableCellWidget[] = selection.getSelectedCells();
             if (this.resizerPosition === 0) {
+                if (table.isBidiTable) {
+                    dragValue = dragValue > 0 ? dragValue :
+                        cellwidget.cellFormat.preferredWidth + dragValue <= cellwidget.getMinimumPreferredWidth() ?
+                            -HelperMethods.round(cellwidget.cellFormat.preferredWidth - cellwidget.getMinimumPreferredWidth(), 2) :
+                            dragValue;
+                }
                 this.resizeColumnAtStart(table, dragValue, selectedCells);
             } else if (table !== null && (this.resizerPosition === table.tableHolder.columns.length || (!isNullOrUndefined(cellwidget)
                 && isNullOrUndefined(cellwidget.nextWidget) && cellwidget.x + cellwidget.margin.left <= this.startingPoint.x
@@ -611,9 +640,13 @@ export class TableResizer {
             }
         } else {
             if (dragValue < 0) {
-                newIndent = table.leftIndent + dragValue;
-                table.tableFormat.leftIndent = newIndent >= -1440 ? (newIndent <= 1440 ? newIndent : 1440) : -1440;
-                this.updateWidthForCells(table, selectedCells, dragValue);
+                if (table.isBidiTable) {
+                    this.updateWidthForCells(table, selectedCells, -dragValue);
+                } else {
+                    newIndent = table.leftIndent + dragValue;
+                    table.tableFormat.leftIndent = newIndent >= -1440 ? (newIndent <= 1440 ? newIndent : 1440) : -1440;
+                    this.updateWidthForCells(table, selectedCells, dragValue);
+                }
             } else {
                 const leastGridBefore: number = this.getLeastGridBefore(table, selectedRow);
                 const currentTableIndent: number = table.tableFormat.leftIndent;
@@ -636,8 +669,12 @@ export class TableResizer {
                                     }
                                 }
                             }
-                            this.updateGridBefore(tableRow, dragValue);
-                            this.increaseOrDecreaseWidth(tableRow.childWidgets[0] as TableCellWidget, dragValue, false);
+                            if (table.isBidiTable) {
+                                this.increaseOrDecreaseWidth(tableRow.childWidgets[0] as TableCellWidget, -dragValue, false);
+                            } else {
+                                this.updateGridBefore(tableRow, dragValue);
+                                this.increaseOrDecreaseWidth(tableRow.childWidgets[0] as TableCellWidget, dragValue, false);
+                            }
                         }
                     }
                 } else {
@@ -833,7 +870,11 @@ export class TableResizer {
         this.owner.editorModule.reLayout(this.owner.selectionModule);
         this.owner.editorModule.isSkipOperationsBuild = false;
         if (dragValue) {
-            this.startingPoint.x += HelperMethods.convertPointToPixel(dragValue);
+            if (table.isBidiTable && this.resizerPosition !== 0) {
+                this.startingPoint.x -= HelperMethods.convertPointToPixel(dragValue);
+            } else {
+                this.startingPoint.x += HelperMethods.convertPointToPixel(dragValue);
+            }
             // if (!this.documentHelper.selection.isEmpty) {
             this.resizerPosition = this.getCellReSizerPosition(this.startingPoint);
             // }

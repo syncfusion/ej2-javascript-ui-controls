@@ -2,6 +2,35 @@
 
 ## [Unreleased]
 
+## 32.1.23 (2026-01-13)
+
+### DocumentEditor
+
+#### Bug Fixes
+
+`#787906` - Fixed an issue where table width was not applied correctly when opening a document.
+`#789132` - Corrected the rendering position of paragraph marks and bookmark elements.
+`#786543` - Resolved text overlapping issue when font changes were applied.
+`#790535` - Ensured consistent X-coordinate for selection during down arrow navigation.
+`#794399` - Improved performance to display the loading indicator promptly when pasting large content.
+`#794438` - Fixed an issue where the system froze after importing a document.
+`#789016` - Resolved layout issues with RTF document tab elements.
+`#785134` - Corrected inconsistent selection behaviour when selecting table headers or split rows.
+`#783579` - Fixed an issue where nested content controls were not preserved properly when exporting as SFDT.
+`#787986` - Corrected table direction property to LTR when inserting an RTL-direction table in the Document Editor.
+`#781641` - Fixed table resizing issues in RTL documents.
+
+## 32.1.22 (2026-01-06)
+
+### DocumentEditor
+
+#### Bug Fixes
+
+`#787822` - Fixed issue where error words were underlined when typing new words.
+`#789001` - Resolved spell check issue where the loader appeared during "Change" and "Ignore" actions.
+`#792760` - Fixed problem where applying table shading left a gap at the right corner of the table.
+`#786142` - Resolved exception occurring during SFDT to DOCX conversion after adding a comment.
+
 ## 32.1.21 (2025-12-30)
 
 ### DocumentEditor

@@ -9,6 +9,7 @@ import { ActionBeginEventArgs, ActionCompleteEventArgs, BeforeQuickToolbarOpenAr
 import { renderRTE, destroy, setCursorPoint, dispatchEvent, androidUA, iPhoneUA, currentBrowserUA, ImageResizeGripper, clickImage, clickGripper, moveGripper, leaveGripper } from "./../render.spec";
 import { BASIC_MOUSE_EVENT_INIT, INSRT_IMG_EVENT_INIT } from '../../constant.spec';
 import { getImageUniqueFIle } from '../online-service.spec';
+import { pointInside } from '../../rich-text-editor/renderer/audio-module.spec';
 
 function getQTBarModule(rteObj: RichTextEditor): QuickToolbar {
     return rteObj.quickToolbarModule;
@@ -3325,6 +3326,9 @@ client side. Customer easy to edit the contents and get the HTML content for
                     ` });
             document.body.appendChild(element);
             rteObj = new RichTextEditor({
+                toolbarSettings: {
+                    items: ['Image']
+                },
                 insertImageSettings: {
                     saveUrl: 'http://aspnetmvc.syncfusion.com/services/api/uploadbox/Save',
                 },
@@ -3348,29 +3352,30 @@ client side. Customer easy to edit the contents and get the HTML content for
             detach(document.querySelector('.e-imginline'))
             done();
         });
-        it(" Check image after drop", function (done: Function) {
+        it(" Check image after drop", function () {
+            rteObj.focusIn();
+            const {x, y} = pointInside(rteObj.contentModule.getEditPanel());
             let fileObj: File = new File(["Nice One"], "sample.png", { lastModified: 0, type: "image/png" });
-            let event: any = { clientX: 40, clientY: 324, target: rteObj.contentModule.getEditPanel(), dataTransfer: { files: [fileObj] }, preventDefault: function () { return; } };
+            let event: any = { clientX: x, clientY: y, target: rteObj.contentModule.getEditPanel(), dataTransfer: { files: [fileObj] }, preventDefault: function () { return; } };
             (rteObj.imageModule as any).getDropRange(event.clientX, event.clientY);
             (rteObj.imageModule as any).dragDrop(event);
             ele = rteObj.element.getElementsByTagName('img')[0];
-            setTimeout(() => {
-                expect(rteObj.element.getElementsByTagName('img').length).toBe(1);
-                expect(ele.classList.contains('e-rte-image')).toBe(true);
-                expect(ele.classList.contains('e-imginline')).toBe(true);
-                expect(ele.classList.contains('e-resize')).toBe(true);
-                done();
-            }, 1000);
+            expect(rteObj.element.getElementsByTagName('img').length).toBe(1);
+            expect(ele.classList.contains('e-rte-image')).toBe(true);
+            expect(ele.classList.contains('e-imginline')).toBe(true);
+            expect(ele.classList.contains('e-resize')).toBe(true);
 
         });
         it(" Check image being removed with args.cancel as true", function (done: Function) {
+            rteObj.focusIn();
+            const {x, y} = pointInside(rteObj.contentModule.getEditPanel());
             size = 7;
             let image: HTMLElement = createElement("IMG");
             image.classList.add('upload-image');
             var popupEle = createElement('div', { className: 'e-popup-open' });
             rteObj.inputElement.appendChild(popupEle);
             rteObj.inputElement.appendChild(image);
-            let event: any = { clientX: 40, clientY: 294, dataTransfer: { files: [] }, preventDefault: function () { return; } };
+            let event: any = { clientX: x, clientY: y, dataTransfer: { files: [] }, preventDefault: function () { return; } };
             rteObj.notify('drop', { args: event });
             let fileObj: File = new File(["Nice One"], "sample.png", { lastModified: 0, type: "overide/mimetype" });
             let eventArgs = { type: 'click', target: { files: [fileObj] }, preventDefault: (): void => { } };
@@ -3378,7 +3383,7 @@ client side. Customer easy to edit the contents and get the HTML content for
             setTimeout(() => {
                 expect((rteObj.inputElement.querySelectorAll("img")[0] as HTMLImageElement).classList.contains('e-rte-image')).toBe(false);
                 done();
-            }, 50);
+            }, 1000);
         });
     });
 
@@ -3545,8 +3550,10 @@ client side. Customer easy to edit the contents and get the HTML content for
             done();
         });
         it(" imageDrop event args.cancel as `true` check", function () {
+            rteObj.focusIn();
+            const {x, y} = pointInside(rteObj.contentModule.getEditPanel());
             let fileObj: File = new File(["Nice One"], "sample.png", { lastModified: 0, type: "image/png" });
-            let event: any = { clientX: 40, clientY: 294, target: rteObj.contentModule.getEditPanel(), dataTransfer: { files: [fileObj] }, preventDefault: function () { return; } };
+            let event: any = { clientX: x, clientY: y, target: rteObj.contentModule.getEditPanel(), dataTransfer: { files: [fileObj] }, preventDefault: function () { return; } };
             (rteObj.imageModule as any).getDropRange(event.clientX, event.clientY);
             (rteObj.imageModule as any).dragDrop(event);
             ele = rteObj.element.getElementsByTagName('img')[0];
@@ -5027,8 +5034,8 @@ client side. Customer easy to edit the contents and get the HTML content for
             editor = renderRTE({
                 insertImageSettings: {
                     display: 'Break',
-                    saveUrl: 'https://blazor.syncfusion.com/services/development/api/RichTextEditor/SaveFile',
-                    path: 'https://blazor.syncfusion.com/services/development/RichTextEditor/'
+                    saveUrl: 'https://ej2services.syncfusion.com/js/development/api/RichTextEditor/SaveFile',
+                    path: 'https://ej2services.syncfusion.com/js/development/RichTextEditor/'
                 }
             });
             done();
@@ -5159,9 +5166,9 @@ client side. Customer easy to edit the contents and get the HTML content for
             editor = renderRTE({
                 insertImageSettings: {
                     display: 'Break',
-                    saveUrl: 'https://blazor.syncfusion.com/services/development/api/RichTextEditor/SaveFile',
-                    removeUrl: 'https://blazor.syncfusion.com/services/development/api/RichTextEditor/DeleteFile',
-                    path: 'https://blazor.syncfusion.com/services/development/RichTextEditor/'
+                    saveUrl: 'https://ej2services.syncfusion.com/js/development/api/RichTextEditor/SaveFile',
+                    removeUrl: 'https://ej2services.syncfusion.com/js/development/api/RichTextEditor/DeleteFile',
+                    path: 'https://ej2services.syncfusion.com/js/development/RichTextEditor/'
                 },
                 imageUploadSuccess: (e: any) => {
                     if (editor.inputElement.querySelector('img').src === 'RTE-Landscape.png') {

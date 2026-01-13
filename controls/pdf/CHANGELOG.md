@@ -2,7 +2,26 @@
 
 ## [Unreleased]
 
-## 32.1.22 (2026-01-06)
+## 32.1.23 (2026-01-13)
+
+### PDF
+
+#### Bug Fixes
+
+- Fixed an issue where line measurement annotations with leader lines were not being preserved correctly.
+- Fixed an issue where ink annotations were not preserved when importing a page range into a new PDF document.
+- Resolved an issue with rendering RTL text when using embedded fonts.
+- Fixed an issue where the combo box field was incorrectly highlighted during form filling and flattening.
+
+## 32.1.21 (2025-12-30)
+
+### PDF
+
+#### Bug Fixes
+
+- Fixed an issue where radio button field were not visible in adobe acrobat.
+
+## 32.1.20 (2025-12-23)
 
 ### PDF
 

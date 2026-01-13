@@ -4055,8 +4055,11 @@ export class Annotation {
                         }
                     }
                 }
-                this.enableBasedOnType();
-                this.pdfViewer.toolbar.annotationToolbarModule.selectAnnotationDeleteItem(true);
+                // 796761 - Freetext double tab issue on iPad device.
+                if (!this.pdfViewerBase.isDeviceiOS) {
+                    this.enableBasedOnType();
+                    this.pdfViewer.toolbar.annotationToolbarModule.selectAnnotationDeleteItem(true);
+                }
             }
         } else if (this.pdfViewer.enableToolbar && this.pdfViewer.enableAnnotationToolbar && this.pdfViewer.annotationModule &&
                                 (!isNullOrUndefined(this.pdfViewer.annotationModule.textMarkupAnnotationModule) &&

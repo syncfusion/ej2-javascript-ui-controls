@@ -921,7 +921,7 @@ export class _PdfParser {
         let params: any = dictionary.get('DP', 'DecodeParms'); // eslint-disable-line
         if (filter instanceof _PdfName) {
             return this.makeFilter(stream, filter.name, length, params);
-        } else if (Array.isArray(filter)) {
+        } else if (Array.isArray(filter) && !this._isImageExtraction) {
             const item: any = filter[0]; // eslint-disable-line
             if (item instanceof _PdfName) {
                 return this.makeFilter(stream, item.name, length, params);

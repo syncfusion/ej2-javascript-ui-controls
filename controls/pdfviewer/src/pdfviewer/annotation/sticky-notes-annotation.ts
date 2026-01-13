@@ -986,7 +986,8 @@ export class StickyNotesAnnotation {
             for (let j: number = 0; j < textBox.length; j++) {
                 textBox[parseInt(j.toString(), 10)].style.display = 'none';
             }
-            if (!data && type !== 'freeText') {
+            const commentPanel: HTMLElement = document.getElementById(this.pdfViewer.element.id + '_commantPanel');
+            if (!data && type !== 'freeText' && !(type === 'shape_measure' && commentPanel.style.display === 'block')) {
                 editObj.enableEditMode = true;
             }
             if (editObj.enableEditMode && type === 'ink') {

@@ -168,7 +168,7 @@ export class TextSearch {
                 if (isSpellCheck) {
                     stringBuilder = stringBuilder + CONTROL_CHARACTERS.Marker_Start;
                 }
-                if (!(isSpellCheck && inlineElement instanceof ImageElementBox)) {
+                else if (!(isSpellCheck && inlineElement instanceof ImageElementBox)) {
                     previousElementCount += inlineElement.length;
                 }
             }

@@ -366,6 +366,47 @@ describe('Bug 969820: Clear format doesnot remove the highlighted color in the n
     });
 });
 
+describe('Bug 1003130: Clear Format Does Not Remove Inline Styles from Table Content specifically for tbody and tr tags', () => {
+    let domSelection: NodeSelection = new NodeSelection();
+    let divElement: HTMLDivElement = document.createElement('div');
+    divElement.id = 'divElement';
+    divElement.contentEditable = 'true';
+    beforeAll(() => {
+        document.body.appendChild(divElement);
+    });
+    afterAll(() => {
+        detach(divElement);
+    });
+    it('clear format should remove the inline styles of tbody and tr tags', () => {
+        divElement.innerHTML = `<p style="color: red; background: yellow;">First line</p>
+        <table data-mc-module-version="2019-10-22" data-muid="65921ceb-990e-4437-838c-c7b8ba7a420d" width="100%" cellspacing="0" cellpadding="0" border="0" data-type="text" role="module" class="x_module e-rte-paste-table" style="font-style: normal; font-weight: 400; font-size: 16px; line-height: inherit; font-family: arial, helvetica, sans-serif; text-align: left; white-space: normal; table-layout: fixed;">
+        <tbody style="background: aqua;">
+            <tr style="height: 40%">
+                <td role="module-content" bgcolor="#ffffff" valign="top" height="100%" style="padding: 18px 75px 12px;line-height: 22px;text-align: inherit;white-space: normal !important;background: grey;">
+                    <p><br/></p>
+                    <p style="color: red; background: yellow;">Thank you for choosing BoldDesk. We're happy to have you.</p>
+                    <p><br/></p>
+                </td>
+            </tr>
+            <tr style="height: 60%">
+                <td role="module-content" bgcolor="#ffffff" valign="top" height="100%" style="padding: 0px 75px 4px;line-height: 22px;text-align: inherit;white-space: normal !important;background: grey;">
+                    <p><br/></p>
+                    <p style="color: red; background: yellow;">Please verify your email address to activate your BoldDesk account.</p>
+                    <p><br/></p>
+                </td>
+            </tr>
+        </tbody>
+        </table>
+        <p style="color: red; background: yellow;">Last line</p>`;
+        new ClearFormat();
+        let node1: Node = document.getElementById('divElement').childNodes[0];
+        let node2: Node = document.getElementById('divElement').childNodes[4].lastChild;
+        domSelection.setSelectionText(document, node1, node2, 0, node2.textContent.length);
+        ClearFormat.clear(document, divElement, 'P');
+        expect(document.getElementById('divElement').innerHTML === `<p>First line</p>\n        <table data-mc-module-version="2019-10-22" data-muid="65921ceb-990e-4437-838c-c7b8ba7a420d" width="100%" cellspacing="0" cellpadding="0" border="0" data-type="text" role="module" class="e-rte-paste-table">\n        <tbody>\n            <tr>\n                <td role="module-content" bgcolor="#ffffff" valign="top" height="100%">\n                    <p><br></p>\n                    <p>Thank you for choosing BoldDesk. We're happy to have you.</p>\n                    <p><br></p>\n                </td>\n            </tr>\n            <tr>\n                <td role="module-content" bgcolor="#ffffff" valign="top" height="100%">\n                    <p><br></p>\n                    <p>Please verify your email address to activate your BoldDesk account.</p>\n                    <p><br></p>\n                </td>\n            </tr>\n        </tbody>\n        </table>\n        <p>Last line</p>`).toBe(true);
+    });
+});
+
 describe('Bug 978745: Clear Format Does Not Remove Inline Styles from Table Content', () => {
     let domSelection: NodeSelection = new NodeSelection();
     let divElement: HTMLDivElement = document.createElement('div');

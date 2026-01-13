@@ -671,14 +671,19 @@ export class CriticalPath {
                         true, undefined, record.ganttProperties.calendarContext );
                 }
                 else if (record.ganttProperties.predecessor[i as number].type === 'SF') {
+                    let startDate: Date = record.ganttProperties.endDate;
+                    let endDate: Date = fromRecord.ganttProperties.startDate;
+                    if (startDate > endDate && !this.parent.updateOffsetOnTaskbarEdit) {
+                        [startDate, endDate] = [endDate, startDate];
+                    }
                     durationDiff = this.parent.dataOperation.getDuration(
-                        record.ganttProperties.endDate, fromRecord.ganttProperties.startDate,
+                        startDate, endDate,
                         fromRecord.ganttProperties.durationUnit, fromRecord.ganttProperties.isAutoSchedule,
                         true, undefined, record.ganttProperties.calendarContext );
                 }
                 const isValidDuration: boolean = this.parent.updateOffsetOnTaskbarEdit
                     ? durationDiff >= 0
-                    : durationDiff === 0 && durationDiff <= record.ganttProperties.predecessor[i as number].offset;
+                    : durationDiff <= record.ganttProperties.predecessor[i as number].offset;
                 if ( isValidDuration && this.validatedids.indexOf(parseInt(fromRecord.ganttProperties.taskId, 10)) === -1 &&
                 fromRecord.ganttProperties.taskId !== record.ganttProperties.taskId) {
                     fromRecord.ganttProperties.slack = record.ganttProperties.slack;
@@ -738,6 +743,61 @@ export class CriticalPath {
             }
         }
     }
+    private updateSlackByDependency(
+        index: number,
+        toID: number,
+        dateDifference: number,
+        flatRecords: IGanttData[],
+        noSlackValue: string
+    ): void {
+        if (toID !== -1) {
+            if (dateDifference === 0 && index !== toID && flatRecords[index as number].slack !== noSlackValue) {
+                flatRecords[index as number].slack = flatRecords[toID as number].slack;
+                flatRecords[index as number].ganttProperties.slack = flatRecords[toID as number].slack;
+            } else if (dateDifference !== 0 && index !== toID && flatRecords[toID as number].isCritical) {
+                flatRecords[index as number].slack = dateDifference + ' ' + flatRecords[index as number].ganttProperties.durationUnit;
+                flatRecords[index as number].ganttProperties.slack = dateDifference + ' ' + flatRecords[index as number].ganttProperties.durationUnit;
+            }
+        }
+    }
+    private adjustSlackByMaxEndDate(
+        dateDifference: number,
+        currentData: ITaskData,
+        maxEndDate: Date,
+        flatRecords: IGanttData[],
+        toID: number
+    ): number {
+        // Always use endDate for simulation as you correctly pointed out
+        const validatedDate: Date = this.parent.dataOperation.getEndDate(
+            currentData.endDate,
+            Math.abs(dateDifference),
+            currentData.durationUnit,
+            currentData,
+            false
+        );
+
+        // This condition was missing - thanks for catching it!
+        if (validatedDate.getTime() > maxEndDate.getTime()) {
+            // Ensure proper order for getDuration
+            let startDate: Date = maxEndDate;
+            let endDate: Date = validatedDate;
+            if (startDate > endDate) {
+                [startDate, endDate] = [endDate, startDate];
+            }
+            const correctedDifference: number = this.parent.dataOperation.getDuration(
+                startDate,
+                endDate,
+                currentData.durationUnit,
+                currentData.isAutoSchedule,
+                currentData.isMilestone,
+                undefined,
+                flatRecords[toID as number].ganttProperties.calendarContext
+            );
+            dateDifference -= correctedDifference;
+            dateDifference = Math.max(0, dateDifference);
+        }
+        return dateDifference;
+    }
 
     /* eslint-disable-next-line */
     private finalCriticalPath(collection: object[], taskBeyondEnddate: number[], flatRecords: IGanttData[], modelRecordIds: string[], checkEndDate: Date) {
@@ -745,6 +805,7 @@ export class CriticalPath {
         let criticalPathIds: any = [];
         let index: number;
         let predecessorFrom: number | string;
+        const updateOffset: boolean = this.parent.updateOffsetOnTaskbarEdit;
         for (let x: number = collection.length - 1; x >= 0; x--) {
             if (this.parent.viewType === 'ProjectView') {
                 index = modelRecordIds.indexOf(collection[x as number]['taskid'].toString());
@@ -765,12 +826,23 @@ export class CriticalPath {
                     }
                     let dateDifference: number;
                     const currentData: ITaskData = flatRecords[index as number].ganttProperties;
+                    const offsetValue: number = predecessorLength[i as number].offset || 0;
                     if (toID !== -1) {
                         if (predecessorLength[i as number].type === 'FS') {
                             if (predecessorLength[i as number].to !== currentData.taskId.toString()) {
                                 if (this.parent.viewType === 'ResourceView' || predecessorLength[i as number].to !== currentData.taskId.toString()) {
                                     /* eslint-disable-next-line */
                                     dateDifference = this.parent.dataOperation.getDuration(currentData.endDate, flatRecords[toID as number].ganttProperties.startDate, currentData.durationUnit, currentData.isAutoSchedule, currentData.isMilestone, undefined, flatRecords[toID as number].ganttProperties.calendarContext);
+                                    if (!updateOffset) {
+                                        dateDifference -= offsetValue;
+                                        dateDifference = this.adjustSlackByMaxEndDate(
+                                            dateDifference,
+                                            currentData,
+                                            this.maxEndDate,
+                                            flatRecords,
+                                            toID
+                                        );
+                                    }
                                 }
                                 else {
                                     toID = this.parent.ids.indexOf(predecessorLength[i as number].from);
@@ -779,35 +851,69 @@ export class CriticalPath {
                                             flatRecords[toID as number].ganttProperties.endDate, currentData.startDate,
                                             currentData.durationUnit, currentData.isAutoSchedule, currentData.isMilestone,
                                             undefined, flatRecords[toID as number].ganttProperties.calendarContext);
+                                        if (!updateOffset) {
+                                            dateDifference -= offsetValue;
+                                            dateDifference = this.adjustSlackByMaxEndDate(
+                                                dateDifference,
+                                                currentData,
+                                                this.maxEndDate,
+                                                flatRecords,
+                                                toID
+                                            );
+                                        }
                                         if (dateDifference === 0 && index !== toID && flatRecords[index as number].slack === noSlackValue) {
                                             flatRecords[toID as number].slack = flatRecords[index as number].slack;
                                             flatRecords[toID as number].ganttProperties.slack = flatRecords[index as number].slack;
                                         }
                                     }
                                 }
-                                if (toID !== -1) {
-                                    if (dateDifference === 0 && index !== toID && flatRecords[index as number].slack !== noSlackValue) {
-                                        flatRecords[index as number].slack = flatRecords[toID as number].slack;
-                                        flatRecords[index as number].ganttProperties.slack = flatRecords[toID as number].slack;
-                                    }
-                                    else if (dateDifference !== 0 && index !== toID && flatRecords[toID as number].isCritical) {
-                                        flatRecords[index as number].slack = dateDifference + ' ' + flatRecords[index as number].ganttProperties.durationUnit;
-                                        flatRecords[index as number].ganttProperties.slack = dateDifference + ' ' + flatRecords[index as number].ganttProperties.durationUnit;
-                                    }
-                                }
+                                this.updateSlackByDependency(index, toID, dateDifference, flatRecords, noSlackValue);
                             }
                         }
                         else if (predecessorLength[i as number].type === 'SF') {
                             /* eslint-disable-next-line */
                             dateDifference = this.parent.dataOperation.getDuration(currentData.startDate, flatRecords[toID as number].ganttProperties.endDate, currentData.durationUnit, currentData.isAutoSchedule, currentData.isMilestone, undefined, flatRecords[toID as number].ganttProperties.calendarContext);
+                            if (!updateOffset) {
+                                dateDifference -= offsetValue;
+                                dateDifference = this.adjustSlackByMaxEndDate(
+                                    dateDifference,
+                                    currentData,
+                                    this.maxEndDate,
+                                    flatRecords,
+                                    toID
+                                );
+                                this.updateSlackByDependency(index, toID, dateDifference, flatRecords, noSlackValue);
+                            }
                         }
                         else if (predecessorLength[i as number].type === 'SS') {
                             /* eslint-disable-next-line */
                             dateDifference = this.parent.dataOperation.getDuration(currentData.startDate, flatRecords[toID as number].ganttProperties.startDate, currentData.durationUnit, currentData.isAutoSchedule, currentData.isMilestone, undefined, flatRecords[toID as number].ganttProperties.calendarContext);
+                            if (!updateOffset) {
+                                dateDifference -= offsetValue;
+                                dateDifference = this.adjustSlackByMaxEndDate(
+                                    dateDifference,
+                                    currentData,
+                                    this.maxEndDate,
+                                    flatRecords,
+                                    toID
+                                );
+                                this.updateSlackByDependency(index, toID, dateDifference, flatRecords, noSlackValue);
+                            }
                         }
                         else {
                             /* eslint-disable-next-line */
                             dateDifference = this.parent.dataOperation.getDuration(currentData.endDate, flatRecords[toID as number].ganttProperties.endDate, currentData.durationUnit, currentData.isAutoSchedule, currentData.isMilestone, undefined, flatRecords[toID as number].ganttProperties.calendarContext);
+                            if (!updateOffset) {
+                                dateDifference -= offsetValue;
+                                dateDifference = this.adjustSlackByMaxEndDate(
+                                    dateDifference,
+                                    currentData,
+                                    this.maxEndDate,
+                                    flatRecords,
+                                    toID
+                                );
+                                this.updateSlackByDependency(index, toID, dateDifference, flatRecords, noSlackValue);
+                            }
                         }
                         if (typeof (flatRecords[index as number][this.parent.taskFields.id]) === 'number') {
                             predecessorFrom = parseInt(predecessorLength[i as number].from, 10);

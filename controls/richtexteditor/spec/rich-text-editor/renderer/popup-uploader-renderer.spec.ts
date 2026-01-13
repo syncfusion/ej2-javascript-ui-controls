@@ -8,6 +8,23 @@ import { Browser, detach, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { Popup } from '@syncfusion/ej2-popups';
 import { Uploader } from '@syncfusion/ej2-inputs';
 import * as baseModule from '@syncfusion/ej2-base';
+import { getImageUniqueFIle, secureRandom } from '../../rich-text-editor/online-service.spec';
+import { AUDIO_WAV_BASE64, VIDEO_WEBM_BASE64 } from "../../constant.spec";
+
+export function getMediaUniqueFIle(data: string, mimeType: string, fileName: string): File {
+    const number: number = Math.floor(100000 + secureRandom() * 900000);;
+    const base64Data = data;
+    const bytecharacters = atob(base64Data);
+    const baseName: string = 'RTE-Feather_';
+    const byteNumbers = new Array(bytecharacters.length);
+    for (let i = 0; i < bytecharacters.length; i++) {
+        byteNumbers[i] = bytecharacters.charCodeAt(i);
+    }
+    const byteArray: Uint8Array = new Uint8Array(byteNumbers);
+    const blob: Blob = new Blob([byteArray], { type: mimeType });
+    const file: File = new File([blob], fileName, { type: mimeType});
+    return file;
+}
 
 describe('PopupUploader Renderer', () => {
     describe('Constructor initialization and rendering', () => {
@@ -188,8 +205,12 @@ describe('PopupUploader Renderer', () => {
                 mediaElement.style.height = '100px';
                 rteObj.inputElement.appendChild(mediaElement);
 
+                const imageFile = getImageUniqueFIle();
+                const dataTransfer = new DataTransfer();
+                dataTransfer.items.add(imageFile);
+
                 const dragEventInit: DragEventInit = {
-                    dataTransfer: new DataTransfer()
+                    dataTransfer: dataTransfer
                 };
                 mockDragEvent = new DragEvent('drop', dragEventInit);
 
@@ -209,13 +230,12 @@ describe('PopupUploader Renderer', () => {
         });
 
         it('createUploader should create and return an uploader for image upload', () => {
-            uploadObj = popupUploaderObj.createUploader('Images', mockDragEvent, mediaElement, popupObj.element);
+            uploadObj = popupUploaderObj.createUploader('Images', mockDragEvent, mediaElement, popupObj.element, popupObj);
             expect(uploadObj).toBeDefined();
             expect(uploadObj instanceof Uploader).toBe(true);
             expect(uploadObj.allowedExtensions).toBe(rteObj.insertImageSettings.allowedTypes.toString());
             expect(uploadObj.asyncSettings.saveUrl).toBe(rteObj.insertImageSettings.saveUrl);
             expect(uploadObj.asyncSettings.removeUrl).toBe(rteObj.insertImageSettings.removeUrl);
-            expect(uploadObj.dropArea).toBe(rteObj.element);
         });
 
         it('createUploader should create and return an uploader for video upload', () => {
@@ -228,7 +248,7 @@ describe('PopupUploader Renderer', () => {
             videoElement.style.height = '150px';
             rteObj.inputElement.appendChild(videoElement);
 
-            uploadObj = popupUploaderObj.createUploader('Videos', mockDragEvent, videoElement, popupObj.element);
+            uploadObj = popupUploaderObj.createUploader('Videos', mockDragEvent, videoElement, popupObj.element, popupObj);
             expect(uploadObj).toBeDefined();
             expect(uploadObj instanceof Uploader).toBe(true);
             expect(uploadObj.allowedExtensions).toBe(rteObj.insertVideoSettings.allowedTypes.toString());
@@ -246,7 +266,7 @@ describe('PopupUploader Renderer', () => {
             audioElement.style.height = '50px';
             rteObj.inputElement.appendChild(audioElement);
 
-            uploadObj = popupUploaderObj.createUploader('Audios', mockDragEvent, audioElement, popupObj.element);
+            uploadObj = popupUploaderObj.createUploader('Audios', mockDragEvent, audioElement, popupObj.element, popupObj);
             expect(uploadObj).toBeDefined();
             expect(uploadObj instanceof Uploader).toBe(true);
             expect(uploadObj.allowedExtensions).toBe(rteObj.insertAudioSettings.allowedTypes.toString());
@@ -304,7 +324,7 @@ describe('PopupUploader Renderer', () => {
             (successArgs as any).detectMediaSource = 'URL';
 
             // Directly call uploadSuccess for video
-            popupUploaderObj.uploadSuccess(videoElement, mockDragEvent, videoPopupArgs, successArgs);
+            popupUploaderObj.uploadSuccess(videoElement, mockDragEvent, videoPopupArgs, successArgs, popupObj);
 
             //detectMediaSource variable is changed before uploadSuccess method calling so commenting this
             // Verify the detectMediaSource was changed
@@ -312,13 +332,13 @@ describe('PopupUploader Renderer', () => {
 
             // Test audio handling
             (successArgs as any).detectMediaSource = 'URL';
-            popupUploaderObj.uploadSuccess(audioElement, mockDragEvent, audioPopupArgs, successArgs);
+            popupUploaderObj.uploadSuccess(audioElement, mockDragEvent, audioPopupArgs, successArgs, popupObj);
             //detectMediaSource variable is changed before uploadSuccess method calling so commenting this
             // expect((successArgs as any).detectMediaSource).toBe('Dropped');
 
             // Test image handling
             (successArgs as any).detectImageSource = 'URL';
-            popupUploaderObj.uploadSuccess(imageElement, mockDragEvent, imagePopupArgs, successArgs);
+            popupUploaderObj.uploadSuccess(imageElement, mockDragEvent, imagePopupArgs, successArgs, popupObj);
             //detectMediaSource variable is changed before uploadSuccess method calling so commenting this
             // expect((successArgs as any).detectImageSource).toBe('Dropped');
 
@@ -328,7 +348,7 @@ describe('PopupUploader Renderer', () => {
             // Create image element
             const imageElement = document.createElement('img');
             const popupObj = popupUploaderObj.renderPopup('Images', imageElement);
-            const uploadObj = popupUploaderObj.createUploader('Images', mockDragEvent, imageElement, popupObj.element);
+            const uploadObj = popupUploaderObj.createUploader('Images', mockDragEvent, imageElement, popupObj.element, popupObj);
 
             // Create args for selected event
             const selectedArgs = {
@@ -369,7 +389,7 @@ describe('PopupUploader Renderer', () => {
             // Create image element
             const imageElement = document.createElement('img');
             const popupObj = popupUploaderObj.renderPopup('Images', imageElement);
-            const uploadObj = popupUploaderObj.createUploader('Images', mockDragEvent, imageElement, popupObj.element);
+            const uploadObj = popupUploaderObj.createUploader('Images', mockDragEvent, imageElement, popupObj.element, popupObj);
 
             // Spy on uploadSuccess method
             const uploadSuccessSpy = spyOn(popupUploaderObj, 'uploadSuccess').and.callThrough();
@@ -428,9 +448,9 @@ describe('PopupUploader Renderer', () => {
             const audioPopup = popupUploaderObj.renderPopup('Audios', audioElement);
 
             // Create uploaders
-            const imageUploader = popupUploaderObj.createUploader('Images', mockDragEvent, imageElement, imagePopup.element);
-            const videoUploader = popupUploaderObj.createUploader('Videos', mockDragEvent, videoElement, videoPopup.element);
-            const audioUploader = popupUploaderObj.createUploader('Audios', mockDragEvent, audioElement, audioPopup.element);
+            const imageUploader = popupUploaderObj.createUploader('Images', mockDragEvent, imageElement, imagePopup.element, popupObj);
+            const videoUploader = popupUploaderObj.createUploader('Videos', mockDragEvent, videoElement, videoPopup.element, popupObj);
+            const audioUploader = popupUploaderObj.createUploader('Audios', mockDragEvent, audioElement, audioPopup.element, popupObj);
 
             // Spy on uploadSuccess method to see when it's called
             const uploadSuccessSpy = spyOn(popupUploaderObj, 'uploadSuccess').and.callThrough();
@@ -536,6 +556,7 @@ describe('PopupUploader Renderer', () => {
                     path: 'https://aspnetmvc.syncfusion.com/services/api/uploadbox/'
                 }
             });
+            jasmine.getEnv().allowRespy(true);
 
             setTimeout(() => {
                 popupUploaderObj = (rteObj as any).serviceLocator.getService('popupUploaderObject');
@@ -579,7 +600,7 @@ describe('PopupUploader Renderer', () => {
             Object.defineProperty(rteObj.element, 'offsetTop', { value: 100, configurable: true });
             Object.defineProperty(mediaElement, 'offsetTop', { value: 500, configurable: true });
 
-            popupUploaderObj.refreshPopup(mediaElement);
+            popupUploaderObj.refreshPopup(mediaElement, popupObj);
 
             expect(popupObj.offsetY).toBeLessThan(0);
             expect(popupObj.element.style.display).toBe('block');
@@ -591,7 +612,7 @@ describe('PopupUploader Renderer', () => {
         it('refreshPopup should update popup position when target element is within rte position', () => {
             const spy = spyOn(popupObj, 'refreshPosition').and.callThrough();
 
-            popupUploaderObj.refreshPopup(mediaElement);
+            popupUploaderObj.refreshPopup(mediaElement, popupObj);
 
             expect(spy).toHaveBeenCalledWith(mediaElement);
             expect(popupObj.element.style.display).toBe('block');
@@ -636,7 +657,7 @@ describe('PopupUploader Renderer', () => {
             const triggerSpy = spyOn(rteObj, 'trigger').and.callThrough();
             const notifySpy = spyOn(rteObj, 'notify').and.callThrough();
 
-            popupUploaderObj.uploadSuccess(videoElement, mockDragEvent, popupArgs, successArgs);
+            popupUploaderObj.uploadSuccess(videoElement, mockDragEvent, popupArgs, successArgs, popupObj);
 
             expect(videoElement.style.opacity).toBe('1');
             expect(videoElement.classList.contains('e-video-focus')).toBe(true);
@@ -695,10 +716,18 @@ describe('PopupUploader Renderer', () => {
                 return true;
             });
 
+            // Create a mock DragEvent
+            const dragEventInit: DragEventInit = {
+                dataTransfer: new DataTransfer()
+            };
+            const audioFile = getMediaUniqueFIle(AUDIO_WAV_BASE64, 'audio/mpeg', 'song.mp3');
+            dragEventInit.dataTransfer.items.add(audioFile);
+            mockDragEvent = new DragEvent('drop', dragEventInit);
+
             const notifySpy = spyOn(rteObj, 'notify').and.callThrough();
             const loadSpy = spyOn(HTMLAudioElement.prototype, 'load').and.callThrough();
 
-            popupUploaderObj.uploadSuccess(audioElement, mockDragEvent, popupArgs, successArgs);
+            popupUploaderObj.uploadSuccess(audioElement, mockDragEvent, popupArgs, successArgs, popupObj);
 
             expect(audioElement.style.opacity).toBe('1');
             expect(audioElement.classList.contains('e-audio-focus')).toBe(true);
@@ -753,7 +782,10 @@ describe('PopupUploader Renderer', () => {
             const popupCloseSpy = spyOn(popupObj, 'close').and.callThrough();
             const triggerSpy = spyOn(rteObj, 'trigger').and.callThrough();
 
-            popupUploaderObj.uploadFailure(mediaElement, popupArgs, failureArgs);
+            //for coverage purpose
+            popupUploaderObj.uploadFailure(null, popupArgs, failureArgs, null);
+
+            popupUploaderObj.uploadFailure(mediaElement, popupArgs, failureArgs, popupObj);
 
             expect(popupCloseSpy).toHaveBeenCalled();
             expect(triggerSpy).toHaveBeenCalledWith('imageUploadFailed', failureArgs);
@@ -774,7 +806,7 @@ describe('PopupUploader Renderer', () => {
             // Create spy
             const refreshPositionSpy = spyOn(popupObj, 'refreshPosition').and.callThrough();
 
-            popupUploaderObj.refreshPopup(mediaElement);
+            popupUploaderObj.refreshPopup(mediaElement, popupObj);
 
             expect(popupObj.element.style.display).toBe('block');
 
@@ -816,7 +848,7 @@ describe('PopupUploader Renderer', () => {
             // Set detectImageSource to test this property
             (successArgs as any).detectImageSource = undefined;
 
-            popupUploaderObj.uploadSuccess(mediaElement, mockDragEvent, popupArgs, successArgs);
+            popupUploaderObj.uploadSuccess(mediaElement, mockDragEvent, popupArgs, successArgs, popupObj);
 
             setTimeout(() => {
                 //detectMediaSource variable is changed before uploadSuccess method calling so commenting this
@@ -863,7 +895,7 @@ describe('PopupUploader Renderer', () => {
 
             const triggerSpy = spyOn(rteObj, 'trigger').and.callThrough();
 
-            popupUploaderObj.uploadFailure(videoElement, popupArgs, failureArgs);
+            popupUploaderObj.uploadFailure(videoElement, popupArgs, failureArgs, popupObj);
 
             expect(triggerSpy).toHaveBeenCalledWith('fileUploadFailed', failureArgs);
         });
@@ -875,7 +907,7 @@ describe('PopupUploader Renderer', () => {
             }
 
             // Create uploader
-            uploadObj = popupUploaderObj.createUploader('Images', mockDragEvent, mediaElement, popupObj.element);
+            uploadObj = popupUploaderObj.createUploader('Images', mockDragEvent, mediaElement, popupObj.element, popupObj);
 
             // Spy on parent methods, but don't call through to allow proper checking
             const triggerSpy = spyOn(rteObj, 'trigger').and.returnValue(true);
@@ -926,8 +958,16 @@ describe('PopupUploader Renderer', () => {
                 popupObj = popupUploaderObj.renderPopup('Images', mediaElement);
             }
 
+            // Create a mock DragEvent
+            const dragEventInit: DragEventInit = {
+                dataTransfer: new DataTransfer()
+            };
+            const imageFile = getImageUniqueFIle();
+            dragEventInit.dataTransfer.items.add(imageFile);
+            mockDragEvent = new DragEvent('drop', dragEventInit);
+
             // Create uploader
-            uploadObj = popupUploaderObj.createUploader('Images', mockDragEvent, mediaElement, popupObj.element);
+            uploadObj = popupUploaderObj.createUploader('Images', mockDragEvent, mediaElement, popupObj.element, popupObj);
 
             // Set mediaElement as uploaded to test canceling
             mediaElement.style.opacity = '0.5';
@@ -948,7 +988,7 @@ describe('PopupUploader Renderer', () => {
                 popupObj = popupUploaderObj.renderPopup('Images', mediaElement);
             }
             const uploadFailureSpy = spyOn(popupUploaderObj, 'uploadFailure').and.callThrough();
-            const uploadObj = popupUploaderObj.createUploader('Images', mockDragEvent, mediaElement, popupObj.element);
+            const uploadObj = popupUploaderObj.createUploader('Images', mockDragEvent, mediaElement, popupObj.element, popupObj);
 
             const failureArgs = {
                 e: {
@@ -1001,7 +1041,7 @@ describe('PopupUploader Renderer', () => {
             const uploadSuccessSpy = spyOn(popupUploaderObj, 'uploadSuccess').and.callThrough();
 
             // Create uploader after spying
-            uploadObj = popupUploaderObj.createUploader('Images', mockDragEvent, mediaElement, popupObj.element);
+            uploadObj = popupUploaderObj.createUploader('Images', mockDragEvent, mediaElement, popupObj.element, popupObj);
 
             // Create success event args
             const successArgs = {
@@ -1066,7 +1106,7 @@ describe('PopupUploader Renderer', () => {
             rteObj.dataBind();
 
             // Call uploadSuccess
-            popupUploaderObj.uploadSuccess(videoElement, mockDragEvent, videoPopupArgs, videoSuccessArgs);
+            popupUploaderObj.uploadSuccess(videoElement, mockDragEvent, videoPopupArgs, videoSuccessArgs, popupObj);
 
             // Reset path
             rteObj.insertVideoSettings.path = originalVideoPath;
@@ -1106,7 +1146,7 @@ describe('PopupUploader Renderer', () => {
             rteObj.dataBind();
 
             // Call uploadSuccess
-            popupUploaderObj.uploadSuccess(audioElement, mockDragEvent, audioPopupArgs, audioSuccessArgs);
+            popupUploaderObj.uploadSuccess(audioElement, mockDragEvent, audioPopupArgs, audioSuccessArgs, popupObj);
 
             // Reset path
             rteObj.insertAudioSettings.path = originalAudioPath;
@@ -1163,7 +1203,7 @@ describe('PopupUploader Renderer', () => {
             rteObj.dataBind();
 
             // Call uploadSuccess
-            popupUploaderObj.uploadSuccess(imgElement, mockDragEvent, popupArgs, successArgs);
+            popupUploaderObj.uploadSuccess(imgElement, mockDragEvent, popupArgs, successArgs, popupObj);
         });
 
         it('should test specific path conditions and file extension handling in uploadSuccess', () => {
@@ -1217,7 +1257,7 @@ describe('PopupUploader Renderer', () => {
             rteObj.dataBind();
 
             // Call uploadSuccess
-            popupUploaderObj.uploadSuccess(videoElement, mockDragEvent, popupArgs, successArgs);
+            popupUploaderObj.uploadSuccess(videoElement, mockDragEvent, popupArgs, successArgs, popupObj);
 
             // Now test with a different extension
             const webmSuccessArgs = {
@@ -1237,7 +1277,7 @@ describe('PopupUploader Renderer', () => {
             };
 
             // Call uploadSuccess again with webm file
-            popupUploaderObj.uploadSuccess(videoElement, mockDragEvent, popupArgs, webmSuccessArgs);
+            popupUploaderObj.uploadSuccess(videoElement, mockDragEvent, popupArgs, webmSuccessArgs, popupObj);
         });
 
         it('should verify detach is called in uploadFailure', () => {
@@ -1276,7 +1316,7 @@ describe('PopupUploader Renderer', () => {
             const detachSpy = spyOn(baseModule, 'detach').and.callThrough();
 
             // Call uploadFailure
-            popupUploaderObj.uploadFailure(imgElement, popupArgs, failureArgs);
+            popupUploaderObj.uploadFailure(imgElement, popupArgs, failureArgs, popupObj);
 
             // Verify detach was called with the element
             expect(detachSpy).toHaveBeenCalledWith(imgElement);
@@ -1313,7 +1353,7 @@ describe('PopupUploader Renderer', () => {
             };
 
             // Call uploadSuccess
-            popupUploaderObj.uploadSuccess(videoElement, mockDragEvent, videoPopupArgs, videoSuccessArgs);
+            popupUploaderObj.uploadSuccess(videoElement, mockDragEvent, videoPopupArgs, videoSuccessArgs, popupObj);
 
             // Verify detectMediaSource was updated
             //detectMediaSource variable is changed before uploadSuccess method calling so commenting this
@@ -1350,7 +1390,7 @@ describe('PopupUploader Renderer', () => {
             };
 
             // Call uploadSuccess
-            popupUploaderObj.uploadSuccess(audioElement, mockDragEvent, audioPopupArgs, audioSuccessArgs);
+            popupUploaderObj.uploadSuccess(audioElement, mockDragEvent, audioPopupArgs, audioSuccessArgs, popupObj);
 
             //detectMediaSource variable is changed before uploadSuccess method calling so commenting this
             // Verify detectMediaSource was updated
@@ -1385,7 +1425,7 @@ describe('PopupUploader Renderer', () => {
             };
 
             // Call uploadSuccess
-            popupUploaderObj.uploadSuccess(imageElement, mockDragEvent, imagePopupArgs, imageSuccessArgs);
+            popupUploaderObj.uploadSuccess(imageElement, mockDragEvent, imagePopupArgs, imageSuccessArgs, popupObj);
 
             //detectMediaSource variable is changed before uploadSuccess method calling so commenting this
             // Verify detectImageSource was updated
@@ -1398,6 +1438,7 @@ describe('PopupUploader Renderer', () => {
         let popupUploaderObj: PopupUploader;
         let mediaElement: HTMLImageElement;
         let uploadObj: Uploader;
+        let imageModuleRef: any;
         let popupObj: Popup;
         let mockDragEvent: DragEvent;
 
@@ -1405,25 +1446,40 @@ describe('PopupUploader Renderer', () => {
             rteObj = renderRTE({
                 toolbarSettings: {
                     items: ['Image', 'Video', 'Audio']
-                }
+                },
+                insertImageSettings: {
+                    saveUrl: 'https://aspnetmvc.syncfusion.com/services/api/uploadbox/Save',
+                    path: 'https://aspnetmvc.syncfusion.com/services/api/uploadbox/'
+                },
             });
 
             setTimeout(() => {
                 popupUploaderObj = (rteObj as any).serviceLocator.getService('popupUploaderObject');
+                imageModuleRef = (rteObj as any).imageModule;
 
                 // Create image element
                 mediaElement = document.createElement('img');
                 mediaElement.src = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=';
                 rteObj.inputElement.appendChild(mediaElement);
 
-                // Create a mock DragEvent
-                const dragEventInit: DragEventInit = {
-                    dataTransfer: new DataTransfer()
-                };
-                mockDragEvent = new DragEvent('drop', dragEventInit);
+                const imageFile = getImageUniqueFIle();
+                const dataTransfer = new DataTransfer();
+                dataTransfer.items.add(imageFile);
+                // Create mock event for drag drop with all necessary properties
+                const dropEvent = new MouseEvent('drop', {
+                    bubbles: true,
+                    cancelable: true,
+                    view: window,
+                    clientX: 100,
+                    clientY: 100
+                }) as any;
 
-                popupObj = popupUploaderObj.renderPopup('Images', mediaElement);
-                uploadObj = popupUploaderObj.createUploader('Images', mockDragEvent, mediaElement, popupObj.element);
+                // Add required properties for dragDrop
+                Object.defineProperty(dropEvent, 'dataTransfer', {
+                    value: dataTransfer,
+                    writable: true
+                });
+                imageModuleRef.uploadMethod(dropEvent, mediaElement)
 
                 done();
             }, 100);
@@ -1435,36 +1491,21 @@ describe('PopupUploader Renderer', () => {
 
         it('destroy should clean up all resources properly', () => {
             // Setup some timeout properties for testing cleanup
-            (popupUploaderObj as any).uploadCancelTime = setTimeout(() => { }, 1000);
             (popupUploaderObj as any).uploadFailureTime = setTimeout(() => { }, 1000);
             (popupUploaderObj as any).uploadSuccessTime = setTimeout(() => { }, 1000);
 
-            // Create spy for the component destroys
-            const popupDestroySpy = spyOn(popupObj, 'destroy').and.callThrough();
-            const uploadDestroySpy = spyOn(uploadObj, 'destroy').and.callThrough();
-            const detachSpy = spyOn(baseModule, 'detach').and.callThrough();
-
             // Create spy for clearTimeout
             const clearTimeoutSpy = spyOn(window, 'clearTimeout').and.callThrough();
+
+            expect((popupUploaderObj as any).isDestroyed).toBe(false);
 
             // Call destroy
             popupUploaderObj.destroy();
 
             // Verify timers are cleared
-            expect(clearTimeoutSpy).toHaveBeenCalledTimes(3);
-            expect((popupUploaderObj as any).uploadCancelTime).toBeNull();
+            expect(clearTimeoutSpy).toHaveBeenCalledTimes(2);
             expect((popupUploaderObj as any).uploadFailureTime).toBeNull();
             expect((popupUploaderObj as any).uploadSuccessTime).toBeNull();
-
-            // Verify popup is destroyed
-            expect(popupDestroySpy).toHaveBeenCalled();
-            expect(detachSpy).toHaveBeenCalledWith(popupObj.element);
-            expect((popupUploaderObj as any).popupObj).toBeNull();
-
-            // Verify uploader is destroyed
-            expect(uploadDestroySpy).toHaveBeenCalled();
-            expect(detachSpy).toHaveBeenCalledWith(uploadObj.element);
-            expect((popupUploaderObj as any).uploadObj).toBeNull();
 
             // Verify isDestroyed flag
             expect((popupUploaderObj as any).isDestroyed).toBe(true);
@@ -1613,29 +1654,25 @@ describe('PopupUploader Renderer', () => {
 
             // Call uploadMethod directly - this is more reliable than event dispatch
             videoModuleRef.uploadMethod(dropEvent, videoElement);
+            try {
+                // Since we called uploadMethod directly, it should have been called
+                expect(uploadMethodSpy).toHaveBeenCalled();
+                expect(uploadMethodSpy.calls.mostRecent().args[0]).toBe(dropEvent);
+                expect(uploadMethodSpy.calls.mostRecent().args[1]).toBe(videoElement);
 
-            // Check results with a reasonable timeout
-            setTimeout(() => {
-                try {
-                    // Since we called uploadMethod directly, it should have been called
-                    expect(uploadMethodSpy).toHaveBeenCalled();
-                    expect(uploadMethodSpy.calls.mostRecent().args[0]).toBe(dropEvent);
-                    expect(uploadMethodSpy.calls.mostRecent().args[1]).toBe(videoElement);
+                // Check if popup methods were called
+                expect(renderPopupSpy).toHaveBeenCalled();
+                expect(createUploaderSpy).toHaveBeenCalled();
 
-                    // Check if popup methods were called
-                    expect(renderPopupSpy).toHaveBeenCalled();
-                    expect(createUploaderSpy).toHaveBeenCalled();
+                // Check for popup element
+                const popupElement = document.querySelector('.e-rte-video-upload-popup, .e-rte-upload-popup');
+                expect(popupElement).not.toBeNull();
 
-                    // Check for popup element
-                    const popupElement = document.querySelector('.e-rte-video-upload-popup, .e-rte-upload-popup');
-                    expect(popupElement).not.toBeNull();
-
-                    done();
-                } catch (e) {
-                    const error = new Error(e instanceof Error ? e.message : String(e));
-                    done(error);
-                }
-            }, 1000); // Increase timeout for stability
+                done();
+            } catch (e) {
+                const error = new Error(e instanceof Error ? e.message : String(e));
+                done(error);
+            }
         });
 
         describe('Integration with Audio Module', () => {
@@ -1703,29 +1740,25 @@ describe('PopupUploader Renderer', () => {
                 const audioElement = document.createElement('audio');
 
                 audioModuleRef.uploadMethod(dropEvent, audioElement);
+                try {
+                    // Since we called uploadMethod directly, it should have been called
+                    expect(uploadMethodSpy).toHaveBeenCalled();
+                    expect(uploadMethodSpy.calls.mostRecent().args[0]).toBe(dropEvent);
+                    expect(uploadMethodSpy.calls.mostRecent().args[1]).toBe(audioElement);
 
-                // Check results with a reasonable timeout
-                setTimeout(() => {
-                    try {
-                        // Since we called uploadMethod directly, it should have been called
-                        expect(uploadMethodSpy).toHaveBeenCalled();
-                        expect(uploadMethodSpy.calls.mostRecent().args[0]).toBe(dropEvent);
-                        expect(uploadMethodSpy.calls.mostRecent().args[1]).toBe(audioElement);
+                    // Check if popup methods were called
+                    expect(renderPopupSpy).toHaveBeenCalled();
+                    expect(createUploaderSpy).toHaveBeenCalled();
 
-                        // Check if popup methods were called
-                        expect(renderPopupSpy).toHaveBeenCalled();
-                        expect(createUploaderSpy).toHaveBeenCalled();
+                    // Check for popup element
+                    const popupElement = document.querySelector('.e-rte-audio-upload-popup, .e-rte-upload-popup');
+                    expect(popupElement).not.toBeNull();
 
-                        // Check for popup element
-                        const popupElement = document.querySelector('.e-rte-audio-upload-popup, .e-rte-upload-popup');
-                        expect(popupElement).not.toBeNull();
-
-                        done();
-                    } catch (e) {
-                        const error = new Error(e instanceof Error ? e.message : String(e));
-                        done(error);
-                    }
-                }, 1000);
+                    done();
+                } catch (e) {
+                    const error = new Error(e instanceof Error ? e.message : String(e));
+                    done(error);
+                }
             });
         });
 
@@ -1787,11 +1820,21 @@ describe('PopupUploader Renderer', () => {
                     isNotify: false
                 };
 
+                // Create a mock DragEvent
+                const dragEventInit: DragEventInit = {
+                    dataTransfer: new DataTransfer()
+                };
+                const imageFile = getImageUniqueFIle();
+                dragEventInit.dataTransfer.items.add(imageFile);
+                mockDragEvent = new DragEvent('drop', dragEventInit);
+
+                const popupObj = popupUploaderObj.renderPopup('Videos', videoElement);
+
                 // No actions should be performed for cancel operation
                 const triggerSpy = spyOn(rteObj, 'trigger').and.callThrough();
                 const notifySpy = spyOn(rteObj, 'notify').and.callThrough();
 
-                popupUploaderObj.uploadSuccess(videoElement, mockDragEvent, popupArgs, successArgs);
+                popupUploaderObj.uploadSuccess(videoElement, mockDragEvent, popupArgs, successArgs, popupObj);
 
                 // Verify no events were triggered
                 expect(triggerSpy).not.toHaveBeenCalled();
@@ -1817,27 +1860,22 @@ describe('PopupUploader Renderer', () => {
                 // Save original browser.isIE value
                 const originalIsIE = Browser.isIE;
 
-                // Mock Browser.isIE to true
-                Object.defineProperty(Browser, 'isIE', { value: true, configurable: true });
+                // Create a mock DragEvent
+                const dragEventInit: DragEventInit = {
+                    dataTransfer: new DataTransfer()
+                };
+                const imageFile = getImageUniqueFIle();
+                dragEventInit.dataTransfer.items.add(imageFile);
+                mockDragEvent = new DragEvent('drop', dragEventInit);
 
                 const mediaElement = document.createElement('img');
-                const popupElement = document.createElement('div');
-                document.body.appendChild(popupElement);
-                // Create spy for contentEditable property
-                const inputElementSpy = jasmine.createSpy('contentEditableSpy');
-                Object.defineProperty(rteObj.inputElement, 'contentEditable', {
-                    set: inputElementSpy,
-                    get: () => 'true'
-                });
+                const popupObj = popupUploaderObj.renderPopup('Images', mediaElement);
 
                 // Create uploader with IE browser mock
-                const uploader = popupUploaderObj.createUploader('Images', mockDragEvent, mediaElement, popupElement);
+                const uploader = popupUploaderObj.createUploader('Images', mockDragEvent, mediaElement, popupObj.element, popupObj);
 
                 // Trigger removing event
                 uploader.trigger('removing');
-
-                // Verify IE behavior was applied
-                expect(inputElementSpy).toHaveBeenCalledWith('true');
 
                 // Restore original browser.isIE
                 Object.defineProperty(Browser, 'isIE', { value: originalIsIE, configurable: true });
@@ -1860,9 +1898,17 @@ describe('PopupUploader Renderer', () => {
                     audioQTBar: { hidePopup: jasmine.createSpy('audioHidePopup') }
                 } as any;
 
+                // Create a mock DragEvent
+                const dragEventInit: DragEventInit = {
+                    dataTransfer: new DataTransfer()
+                };
+                const imageFile = getImageUniqueFIle();
+                dragEventInit.dataTransfer.items.add(imageFile);
+                mockDragEvent = new DragEvent('drop', dragEventInit);
+
                 // Create popup and uploader for each media type
                 const imagePopup = popupUploaderObj.renderPopup('Images', imageElement);
-                const imageUploader = popupUploaderObj.createUploader('Images', mockDragEvent, imageElement, imagePopup.element);
+                const imageUploader = popupUploaderObj.createUploader('Images', mockDragEvent, imageElement, imagePopup.element, imagePopup);
 
                 // Trigger canceling for Images
                 imageUploader.trigger('canceling');
@@ -1874,8 +1920,12 @@ describe('PopupUploader Renderer', () => {
                 imageUploader.destroy();
                 imagePopup.destroy();
 
+                const videoFile = getMediaUniqueFIle(VIDEO_WEBM_BASE64, 'video/mp4', 'movie.mp4');
+                dragEventInit.dataTransfer.items.add(videoFile);
+                mockDragEvent = new DragEvent('drop', dragEventInit);
+
                 const videoPopup = popupUploaderObj.renderPopup('Videos', videoElement);
-                const videoUploader = popupUploaderObj.createUploader('Videos', mockDragEvent, videoElement, videoPopup.element);
+                const videoUploader = popupUploaderObj.createUploader('Videos', mockDragEvent, videoElement, videoPopup.element, videoPopup);
 
                 // Trigger canceling for Videos
                 videoUploader.trigger('canceling');
@@ -1887,8 +1937,12 @@ describe('PopupUploader Renderer', () => {
                 videoUploader.destroy();
                 videoPopup.destroy();
 
+                const audioFile = getMediaUniqueFIle(AUDIO_WAV_BASE64, 'audio/mpeg', 'song.mp3');
+                dragEventInit.dataTransfer.items.add(audioFile);
+                mockDragEvent = new DragEvent('drop', dragEventInit);
+
                 const audioPopup = popupUploaderObj.renderPopup('Audios', audioElement);
-                const audioUploader = popupUploaderObj.createUploader('Audios', mockDragEvent, audioElement, audioPopup.element);
+                const audioUploader = popupUploaderObj.createUploader('Audios', mockDragEvent, audioElement, audioPopup.element, audioPopup);
 
                 // Trigger canceling for Audios
                 audioUploader.trigger('canceling');

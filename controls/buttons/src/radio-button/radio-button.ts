@@ -513,6 +513,9 @@ export class RadioButton extends Component<HTMLInputElement> implements INotifyP
                         wrapper.setAttribute(key, this.htmlAttributes[`${key}`]);
                     } else {
                         this.element.setAttribute(key, this.htmlAttributes[`${key}`]);
+                        if (key === 'id') {
+                            (this.getLabel() as Element).setAttribute('for', this.htmlAttributes[`${key}`]);
+                        }
                     }
                 } else {
                     wrapper.setAttribute(key, this.htmlAttributes[`${key}`]);

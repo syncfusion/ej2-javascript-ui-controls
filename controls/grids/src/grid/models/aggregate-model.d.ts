@@ -42,8 +42,8 @@ export interface AggregateColumnModel {
     /**
      * Format is applied to a calculated value before it is displayed.
      * Gets the format from the user, which can be standard or custom
-     * [`number`](../../common/internationalization/#number-formatting/)
-     * and [`date`](../../common/internationalization/#number-formatting/) formats.
+     * [`number`](../../common/internationalization/#manipulating-numbers)
+     * and [`date`](../../common/internationalization/#manipulating-numbers) formats.
      *
      * @aspType string
      * @blazorType string

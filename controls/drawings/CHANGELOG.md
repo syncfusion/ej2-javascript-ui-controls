@@ -2,7 +2,15 @@
 
 ## [Unreleased]
 
-## 32.1.22 (2026-01-06)
+## 32.1.23 (2026-01-13)
+
+### Drawings
+
+#### Bug Fixes
+
+- `#I800927` - Resolved an issue where Free Text Justify was not working properly when the right side had extra space.
+
+## 32.1.21 (2025-12-30)
 
 ### Drawings
 

@@ -941,7 +941,7 @@ export class ContextMenu {
         let isSelectionEmpty: boolean = selection.isEmpty;
         classList(cut, isSelectionEmpty ? ['e-disabled'] : [], !isSelectionEmpty ? ['e-disabled'] : []);
         classList(copy, isSelectionEmpty ? ['e-disabled'] : [], !isSelectionEmpty ? ['e-disabled'] : []);
-        let isHideComment: boolean = this.documentHelper.owner.isReadOnlyMode || this.documentHelper.owner.enableHeaderAndFooter || !this.documentHelper.owner.enableComment;
+        let isHideComment: boolean = this.documentHelper.owner.isReadOnlyMode || this.documentHelper.owner.enableHeaderAndFooter || !this.documentHelper.owner.enableComment || this.documentHelper.selection.isInShape;
         addComment.style.display = isHideComment ? 'none' : 'block';
         if (this.documentHelper.isCommentOnlyMode) {
             addComment.style.display = 'block';

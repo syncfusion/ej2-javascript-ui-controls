@@ -13,8 +13,8 @@ export class ClearFormat {
     private static BLOCK_TAGS: string[] = ['address', 'article', 'aside', 'blockquote',
         'details', 'dd', 'div', 'dl', 'dt', 'fieldset', 'figcaption', 'figure', 'footer',
         'form', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'header', 'hgroup', 'li', 'main', 'nav',
-        'noscript', 'ol', 'p', 'pre', 'section', 'ul', 'table', 'td', 'th'];
-    private static NONVALID_PARENT_TAGS: string[] = ['thead', 'tbody', 'ul', 'ol', 'tfoot', 'tr'];
+        'noscript', 'ol', 'p', 'pre', 'section', 'ul', 'table', 'td', 'th', 'tbody', 'tr'];
+    private static NONVALID_PARENT_TAGS: string[] = ['thead', 'ul', 'ol', 'tfoot'];
     private static IGNORE_PARENT_TAGS: string[] = ['ul', 'ol', 'table'];
     private static NONVALID_TAGS: string[] = ['thead', 'figcaption', 'tr', 'tfoot', 'figcaption', 'li'  ];
     private static defaultTag: string = 'p';
@@ -228,7 +228,7 @@ export class ClearFormat {
                     && !(parentNodes[index1 as number].childNodes.length === 1
                         && parentNodes[index1 as number].childNodes[0].nodeName.toLocaleLowerCase() === 'p')) {
                     const target: HTMLElement = parentNodes[index1 as number] as HTMLElement;
-                    if (['TABLE', 'TD', 'TH'].indexOf(target.nodeName) !== -1) {
+                    if (['TABLE', 'TD', 'TH', 'TBODY', 'TR'].indexOf(target.nodeName) !== -1) {
                         if (target.hasAttribute('style')) {
                             target.removeAttribute('style'); // Remove style if present
                         }
@@ -249,7 +249,8 @@ export class ClearFormat {
                     }
                 }
                 let childNodes: Node[] = [];
-                if (parentNodes[index1 as number].nodeName === 'TABLE' || parentNodes[index1 as number].nodeName === 'TD' || parentNodes[index1 as number].nodeName === 'TH') {
+                if (parentNodes[index1 as number].nodeName === 'TABLE' || parentNodes[index1 as number].nodeName === 'TD' || parentNodes[index1 as number].nodeName === 'TH' ||
+                    parentNodes[index1 as number].nodeName === 'TBODY' || parentNodes[index1 as number].nodeName === 'TR') {
                     childNodes = Array.from(parentNodes[index1 as number].childNodes);
                 } else {
                     childNodes = InsertMethods.unwrap(parentNodes[index1 as number]);

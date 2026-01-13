@@ -1920,4 +1920,64 @@ describe('Chips', () => {
             done();
         });
     });
+    describe('Property change - selection and selectedChips', () => {
+        afterEach(() => {
+            chips.destroy();
+            element.innerText = '';
+        });
+
+        it('Multiple to Single should keep only last selected and coerce selectedChips to number', () => {
+            chips = new ChipList({ chips: stringArray.slice(), selection: 'Multiple', selectedChips: [0, 1] }, '#chip');
+            let chipCollection: HTMLElement[] = Array.prototype.slice.call(element.querySelectorAll('.e-chip'));
+            let active: HTMLElement[] = Array.prototype.slice.call(element.querySelectorAll('.e-active'));
+            expect(active.length).toBe(2);
+            chips.selection = 'Single';
+            chips.dataBind();
+            chipCollection = Array.prototype.slice.call(element.querySelectorAll('.e-chip'));
+            active = Array.prototype.slice.call(element.querySelectorAll('.e-active'));
+            expect(active.length).toBe(1);
+            expect(active[0]).toBe(chipCollection[1]);
+            expect(chips.selectedChips as number).toBe(1);
+        });
+
+        it('Single to Multiple should keep previous selection as array', () => {
+            chips = new ChipList({ chips: stringArray.slice(), selection: 'Single', selectedChips: 1 }, '#chip');
+            let chipCollection: HTMLElement[] = Array.prototype.slice.call(element.querySelectorAll('.e-chip'));
+            let active: HTMLElement[] = Array.prototype.slice.call(element.querySelectorAll('.e-active'));
+            expect(active.length).toBe(1);
+            expect(active[0]).toBe(chipCollection[1]);
+            chips.selection = 'Multiple';
+            chips.dataBind();
+            active = Array.prototype.slice.call(element.querySelectorAll('.e-active'));
+            expect(active.length).toBe(1);
+            expect((chips.selectedChips as number[]).length).toBe(1);
+            expect((chips.selectedChips as number[])[0]).toBe(1);
+        });
+
+        it('selectedChips by value with Multiple selection', () => {
+            chips = new ChipList({ chips: deepCloning(jsonArrayValue), selection: 'Multiple' }, '#chip');
+            chips.selectedChips = ['22', '33'];
+            chips.dataBind();
+            let chipCollection: HTMLElement[] = Array.prototype.slice.call(element.querySelectorAll('.e-chip'));
+            let active: HTMLElement[] = Array.prototype.slice.call(element.querySelectorAll('.e-active'));
+            expect(active.length).toBe(2);
+            expect(active[0]).toBe(chipCollection[1]);
+            expect(active[1]).toBe(chipCollection[2]);
+            const result = chips.getSelectedChips() as SelectedItems;
+            expect(result.Indexes).toEqual([1, 2]);
+        });
+
+        it('selectedChips by indexes with Multiple selection', () => {
+            chips = new ChipList({ chips: stringArray.slice(), selection: 'Multiple' }, '#chip');
+            chips.selectedChips = [0, 2];
+            chips.dataBind();
+            let chipCollection: HTMLElement[] = Array.prototype.slice.call(element.querySelectorAll('.e-chip'));
+            let active: HTMLElement[] = Array.prototype.slice.call(element.querySelectorAll('.e-active'));
+            expect(active.length).toBe(2);
+            expect(active[0]).toBe(chipCollection[0]);
+            expect(active[1]).toBe(chipCollection[2]);
+            const result = chips.getSelectedChips() as SelectedItems;
+            expect(result.Indexes).toEqual([0, 2]);
+        });
+    });
 });

@@ -111,7 +111,11 @@ export class DocumentHelper {
     /**
      * @private
      */
-     public isSpellCheckPending: boolean = false;
+    public isSpellCheckPending: boolean = false;
+    /**
+     * @private
+     */
+    public triggerSpellCheckForHF: boolean = false;
     /**
      * @private
      */
@@ -1110,6 +1114,7 @@ export class DocumentHelper {
         this.isHeaderFooter = false;
         this.defaultTabWidth = 36;
         this.isDocumentProtected = false;
+        this.isRowOrCellResizing = false;
         this.protectionType = 'NoProtection';
         this.restrictFormatting = false;
         this.hashValue = '';
@@ -1772,7 +1777,9 @@ export class DocumentHelper {
             if (char !== ' ' && char !== '\r' && char !== '\b' && char !== String.fromCharCode(27) && !ctrl) {
                 this.triggerSpellCheck = false;
                 this.isSpellCheckPending = true;
+                this.triggerSpellCheckForHF = true;
                 this.owner.editorModule.handleTextInput(char);
+                this.triggerSpellCheckForHF = false;
             } else if (char === ' ') {
                 this.isSpellCheckPending = false;
                 this.triggerSpellCheck = true;
@@ -2163,13 +2170,11 @@ export class DocumentHelper {
     public performUpdateAfterLoad(isAsync: boolean, skipSelection?: boolean): void {
         if (isAsync) {
             hideSpinner(this.owner.element);
-            if (!this.owner.isInitializedContainerComponent) {
-                createSpinner({ target: this.owner.documentHelper.optionsPaneContainer });
-                showSpinner(this.owner.documentHelper.optionsPaneContainer);
-                const spinnerPane = this.owner.documentHelper.optionsPaneContainer.querySelector('.e-spinner-pane') as HTMLElement;
-                if (spinnerPane) {
-                    spinnerPane.style.pointerEvents = 'none';
-                }
+            createSpinner({ target: this.viewerContainer });
+            showSpinner(this.viewerContainer);
+            const spinnerPane = this.viewerContainer.querySelector('.e-spinner-pane') as HTMLElement;
+            if (spinnerPane) {
+                spinnerPane.style.pointerEvents = 'none';
             }
             if (!skipSelection && this.owner.selectionModule) {
                 this.owner.selectionModule.selectRange(this.owner.documentStart, this.owner.documentStart);
@@ -2266,6 +2271,12 @@ export class DocumentHelper {
         const vtHeight: number = this.owner.viewer.containerTop + this.visibleBounds.height - (this.owner.viewer.padding.top + this.owner.viewer.padding.bottom);
         if (vtHeight > this.pageContainer.offsetHeight) {
             this.viewerContainer.scrollTop = this.owner.viewer.containerTop - (vtHeight - this.pageContainer.offsetHeight);
+        }
+        if (this.isDocumentLoadAsynchronously) {
+            const spinnerPane: HTMLElement = this.viewerContainer.querySelector('.e-spinner-pane');
+            if (spinnerPane) {
+                spinnerPane.style.top = this.viewerContainer.scrollTop + 'px';
+            }
         }
         if (!isNullOrUndefined(this.owner) && this.owner.viewer instanceof PageLayoutViewer) {
             this.owner.fireViewChange();

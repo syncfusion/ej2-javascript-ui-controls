@@ -519,23 +519,31 @@ export function convertElement(element: HTMLCollection, labelId: string, data: a
  * @param {Size} labelSize - Specifies the label size.
  * @param {string} type - Specifies the type.
  * @param {TreeMap} treemap - Specifies the treemap instance.
+ * @param {number} textCount - Specifies the number of text.
  * @returns {Location} - Returns the text location.
  */
-export function findLabelLocation(rect: Rect, position: LabelPosition, labelSize: Size, type: string, treemap: TreeMap): Location {
+export function findLabelLocation(rect: Rect, position: LabelPosition, labelSize: Size, type: string,
+                                  treemap: TreeMap, textCount: number = 0): Location {
     const location: Location = new Location(0, 0);
     const padding: number = 5;
     const paddings: number = 2;
     const x: number = (type === 'Template') ? treemap.areaRect.x : 0;
     const y: number = (type === 'Template') ? treemap.areaRect.y : 0;
+    const isTopLabel: boolean = (treemap.leafItemSettings.labelPosition === 'TopCenter' ||
+                                 treemap.leafItemSettings.labelPosition === 'TopLeft' ||
+                                 treemap.leafItemSettings.labelPosition === 'TopRight');
+    const textHeight: number = (textCount > 1 && !isTopLabel &&
+                                (treemap.renderDirection === 'BottomLeftTopRight' ||
+                                 treemap.renderDirection === 'BottomRightTopLeft')) ? (labelSize.height * textCount) : labelSize.height;
     location.x = (Math.abs(x - ((position.indexOf('Left') > -1) ? rect.x + padding : !(position.indexOf('Right') > -1) ?
         rect.x + ((rect.width / 2) - (labelSize.width / 2)) : (rect.x + rect.width) - labelSize.width))) - paddings;
     if (treemap.enableDrillDown && (treemap.renderDirection === 'BottomLeftTopRight'
         || treemap.renderDirection === 'BottomRightTopLeft')) {
-        location.y = Math.abs((rect.y + rect.height) - labelSize.height + padding);
+        location.y = Math.abs((rect.y + rect.height) - textHeight + padding);
     } else {
-        location.y = Math.abs(y - ((position.indexOf('Top') > -1) ? (type === 'Template' ? rect.y : rect.y + labelSize.height) :
-            !(position.indexOf('Bottom') > -1) ? type === 'Template' ? (rect.y + ((rect.height / 2) - (labelSize.height / 2))) :
-                (rect.y + (rect.height / 2) + labelSize.height / 4) : (rect.y + rect.height) - labelSize.height));
+        location.y = Math.abs(y - ((position.indexOf('Top') > -1) ? (type === 'Template' ? rect.y : rect.y + textHeight) :
+            !(position.indexOf('Bottom') > -1) ? type === 'Template' ? (rect.y + ((rect.height / 2) - (textHeight / 2))) :
+                (rect.y + (rect.height / 2) + textHeight / 4) : (rect.y + rect.height) - textHeight));
     }
 
     return location;

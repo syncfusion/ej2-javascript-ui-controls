@@ -4207,7 +4207,9 @@ export class PdfLineAnnotation extends PdfComment {
                 this._dictionary.update('IT', new _PdfName('LineDimension'));
                 this._dictionary.update('LLE', this.leaderExt);
                 this._dictionary.update('LLO', offset);
-                this._dictionary.update('LL', this.leaderLine);
+                if (typeof this.leaderLine !== 'undefined' && this.leaderLine !== null) {
+                    this._dictionary.update('LL', this.leaderLine);
+                }
                 this._dictionary.update('CP', _PdfName.get(this.caption.type === PdfLineCaptionType.top ? 'Top' : 'Inline'));
                 this._dictionary.update('Cap', this.caption.cap);
                 const bounds: number[] = [nativeRectangle[0],
@@ -8382,13 +8384,13 @@ export class PdfInkAnnotation extends PdfComment {
     }
     _createInkAppearance(template: PdfTemplate): PdfTemplate {
         const graphics: PdfGraphics = template.graphics;
-        if (this._inkPointsCollection !== null &&
-            this._inkPointsCollection.length > 0 &&
+        if (this.inkPointsCollection !== null &&
+            this.inkPointsCollection.length > 0 &&
             this.color !== null &&
             typeof this._color !== 'undefined') {
-            for (let l: number = 0; l < this._inkPointsCollection.length; l++) {
+            for (let l: number = 0; l < this.inkPointsCollection.length; l++) {
                 let isDot: boolean = false;
-                const inkPointsCollection: number[][] = _convertPointsToNumberArrays(this._inkPointsCollection);
+                const inkPointsCollection: number[][] = _convertPointsToNumberArrays(this.inkPointsCollection);
                 let inkPoints: number[] = inkPointsCollection[<number>l];
                 if (inkPoints.length === 2) {
                     const locx: number = inkPoints[0] - 0.5;

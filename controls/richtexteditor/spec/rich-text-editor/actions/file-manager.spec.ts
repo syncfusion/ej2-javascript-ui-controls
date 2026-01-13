@@ -8,6 +8,8 @@ import { renderRTE, destroy, setCursorPoint, hostURL } from "./../render.spec";
 import { Popup } from "@syncfusion/ej2-popups";
 import { Uploader } from "@syncfusion/ej2-inputs";
 import { BASIC_MOUSE_EVENT_INIT } from "../../constant.spec";
+import { PopupUploader } from '../../../src/rich-text-editor/renderer/popup-uploader-renderer';
+import { getImageUniqueFIle } from '../../rich-text-editor/online-service.spec';
 
 
 function getQTBarModule(rteObj: RichTextEditor): QuickToolbar {
@@ -48,7 +50,7 @@ describe('FileManager module', () => {
         });
         it('image - fileSelect as true', () => {
             (rteObj.fileManagerModule as any).fileObj.trigger('fileSelect', { fileDetails: { filterPath: '\\Pictures', isFile: true, type: '.png' } });
-            expect((document.body.querySelector('.e-rte-file-manager-dialog .e-input.e-img-url') as HTMLInputElement).value).toContain('https://blazor.syncfusion.com/services/development/api/RichTextEditor/GetImage?path=/Pictures');
+            expect((document.body.querySelector('.e-rte-file-manager-dialog .e-input.e-img-url') as HTMLInputElement).value).toContain('https://ej2services.syncfusion.com/js/development/api/RichTextEditor/GetImage?path=/Pictures');
         });
         it('image FileSelect as false', () => {
             (rteObj.fileManagerModule as any).fileObj.trigger('fileSelect', { fileDetails: { isFile: false, type: '.png' } });
@@ -113,7 +115,7 @@ describe('FileManager module', () => {
         });
         it('image - fileSelect as true', () => {
             (rteObj.fileManagerModule as any).fileObj.trigger('fileSelect', { fileDetails: { filterPath: '\\Pictures', isFile: true, type: '.png' } });
-            expect((document.body.querySelector('.e-rte-file-manager-dialog .e-input.e-img-url') as HTMLInputElement).value).toContain('https://blazor.syncfusion.com/services/development/api/RichTextEditor/GetImage?path=/Pictures');
+            expect((document.body.querySelector('.e-rte-file-manager-dialog .e-input.e-img-url') as HTMLInputElement).value).toContain('https://ej2services.syncfusion.com/js/development/api/RichTextEditor/GetImage?path=/Pictures');
         });
         it('image FileSelect as false', () => {
             (rteObj.fileManagerModule as any).fileObj.trigger('fileSelect', { fileDetails: { isFile: false, type: '.png' } });
@@ -152,8 +154,10 @@ describe('FileManager module', () => {
         let uploadObj: Uploader;
         let imgElem: HTMLImageElement;
         let e: ImageSuccessEventArgs;
+        let popupUploaderObj: PopupUploader;
+        let mockDragEvent: DragEvent;
 
-        beforeEach(() => {
+        beforeEach((done: Function) => {
             rteObj = renderRTE({
                 value: '<p>RTE content</p>',
                 toolbarSettings: {
@@ -163,28 +167,38 @@ describe('FileManager module', () => {
                     enable: true
                 }
             });
-            pasteCleanup = (rteObj as any).pasteCleanupModule;
-            popupObj = new Popup(rteObj.element, {
-                height: '85px',
-                width: '300px'
-            });
-            uploadObj = new Uploader();
-            imgElem = document.createElement('img');
-            e = {
-                element: imgElem,
-                file: { statusCode: '2', name: 'test.png' } as any
-            } as unknown as ImageSuccessEventArgs;
+            setTimeout(() => {
+                popupUploaderObj = (rteObj as any).serviceLocator.getService('popupUploaderObject');
+                imgElem = document.createElement('img');
+                const imageFile = getImageUniqueFIle();
+                const dataTransfer = new DataTransfer();
+                dataTransfer.items.add(imageFile);
+
+                const dragEventInit: DragEventInit = {
+                    dataTransfer: dataTransfer
+                };
+                mockDragEvent = new DragEvent('drop', dragEventInit);
+                e = {
+                    element: imgElem,
+                    file: { statusCode: '2', name: 'test.png' } as any
+                } as unknown as ImageSuccessEventArgs;
+                pasteCleanup = (rteObj as any).pasteCleanupModule;
+                popupObj = popupUploaderObj.renderPopup('Images', imgElem);
+                uploadObj = popupUploaderObj.createUploader('Images', mockDragEvent, imgElem, popupObj.element, popupObj);
+                    done();
+            }, 100);
         });
 
-        afterEach(() => {
+        afterEach((done: Function) => {
             destroy(rteObj);
+            done();
         });
 
         it('PasteCleanup - popupClose method', (done: Function) => {
-            (pasteCleanup as any).popupClose(popupObj, uploadObj, imgElem, e);
+            (pasteCleanup as any).popupClose(popupObj, imgElem, e);
             rteObj.insertImageSettings.path = "/test/";
-            (pasteCleanup as any).popupClose(popupObj, uploadObj, imgElem, e);
-            (pasteCleanup as any).popupClose(popupObj, uploadObj, imgElem, {
+            (pasteCleanup as any).popupClose(popupObj, imgElem, e);
+            (pasteCleanup as any).popupClose(popupObj, imgElem, {
                 element: imgElem,
                 file: { statusCode: '3', name: 'test.png' }
             });
@@ -450,13 +464,13 @@ describe('FileManager module', () => {
                 insertBtn.click();
                 setTimeout(() => {
                     let imageElement: HTMLImageElement = document.body.querySelector('.e-rte-image');
-                    expect(imageElement.src).toBe('https://blazor.syncfusion.com/services/development/api/RichTextEditor/GetImage/Pictures/Employees/Adam.png');
+                    expect(imageElement.src).toBe('https://ej2services.syncfusion.com/js/development/api/RichTextEditor/GetImage/Pictures/Employees/Adam.png');
                     done();
                 }, 100);
             }, 500);
         });
         it('Check the image src when replace image', (done: Function) => {
-            editor.inputElement.innerHTML = '<img src="https://blazor.syncfusion.com/services/development/api/RichTextEditor/GetImage/Pictures/Employees/Adam.png" class="e-rte-image" />';
+            editor.inputElement.innerHTML = '<img src="https://ej2services.syncfusion.com/js/development/api/RichTextEditor/GetImage/Pictures/Employees/Adam.png" class="e-rte-image" />';
             let imageElement: HTMLImageElement = editor.element.querySelector('.e-content .e-rte-image') as HTMLImageElement;
             editor.formatter.editorManager.nodeSelection.setSelectionNode(document, imageElement);
             const target: HTMLElement = editor.inputElement.querySelector('img');
@@ -471,7 +485,7 @@ describe('FileManager module', () => {
                     insertBtn.click();
                     setTimeout(() => {
                         let imageElement: HTMLImageElement = document.body.querySelector('.e-rte-image');
-                        expect(imageElement.src).toBe('https://blazor.syncfusion.com/services/development/api/RichTextEditor/GetImage/Pictures/Employees/Andrew.png');
+                        expect(imageElement.src).toBe('https://ej2services.syncfusion.com/js/development/api/RichTextEditor/GetImage/Pictures/Employees/Andrew.png');
                         done();
                     }, 100);
                 }, 100);

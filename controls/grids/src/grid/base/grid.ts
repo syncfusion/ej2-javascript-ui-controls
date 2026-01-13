@@ -720,7 +720,7 @@ export class GroupSettings extends ChildProperty<GroupSettings> {
     /**
      * The Caption Template allows user to display the string or HTML element in group caption.
      * > It accepts either the
-     * [template string](https://ej2.syncfusion.com/documentation/common/template-engine/) or the HTML element ID.
+     * [template string](../../common/template/) or the HTML element ID.
      *
      * @default null
      * @aspType string
@@ -1755,7 +1755,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     /**
      * The row template that renders customized rows from the given template.
      * By default, Grid renders a table row for every data source item.
-     * > * It accepts either [template string](../../common/template-engine/) or HTML element ID.
+     * > * It accepts either [template string](../../common/template/) or HTML element ID.
      * > * The row template must be a table row.
      *
      * > Check the [`Row Template`](../../grid/row/) customization.
@@ -1768,7 +1768,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
 
     /**
      * The empty record template that renders customized element or text or image instead of displaying the empty record message in the grid.
-     * > It accepts either the [template string](../../common/template-engine/) or the HTML element ID.
+     * > It accepts either the [template string](../../common/template/) or the HTML element ID.
      *
      * @default null
      * @aspType string
@@ -1779,7 +1779,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     /**
      * The detail template allows you to show or hide additional information about a particular row.
      *
-     * > It accepts either the [template string](../../common/template-engine/) or the HTML element ID.
+     * > It accepts either the [template string](../../common/template/) or the HTML element ID.
      *
      * {% codeBlock src="grid/detail-template-api/index.ts" %}{% endcodeBlock %}
      *
@@ -1859,7 +1859,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     public rowHeight: number;
 
     /**
-     * Defines the external [`Query`](https://ej2.syncfusion.com/documentation/data/api-query.html)
+     * Defines the external [`Query`](https://ej2.syncfusion.com/documentation/api/data/query)
      * that will be executed along with data processing.
      * {% codeBlock src='grid/query/index.md' %}{% endcodeBlock %}
      *
@@ -4162,6 +4162,9 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
             case 'enableColumnVirtualization':
             case 'currencyCode':
             case 'locale':
+                if (prop === 'frozenColumns' && newProp.frozenColumns === null) {
+                    this.resetFrozenColumns();
+                }
                 if (this.isFrozenGrid()) {
                     this.log('frozen_rows_columns');
                 }
@@ -4423,6 +4426,11 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
      */
     public setProperties(prop: Object, muteOnChange?: boolean): void {
         const previousGroupColumns: string[] = this.groupSettings.columns;
+        const columns: string = 'columns';
+        const frozenColumns: string = 'frozenColumns';
+        if ((prop[`${frozenColumns}`] === null || prop[`${frozenColumns}`] === 0) && muteOnChange) {
+            this.resetFrozenColumns();
+        }
         super.setProperties(prop, muteOnChange);
         const filterSettings: string = 'filterSettings';
         const groupSettings: string = 'groupSettings';
@@ -4430,7 +4438,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
             this.filterModule.refreshFilter();
         }
         if (prop[`${groupSettings}`] && prop[`${groupSettings}`].columns && this.groupModule && muteOnChange) {
-            if (!this.groupSettings.showGroupedColumn) {
+            if (!this.groupSettings.showGroupedColumn && isNullOrUndefined(prop[`${columns}`])) {
                 for (let i: number = 0; i < previousGroupColumns.length; i++) {
                     const column: Column = this.getColumnByField(previousGroupColumns[parseInt(i.toString(), 10)]);
                     column.visible = true;
@@ -6151,6 +6159,16 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
         }
     }
 
+    private resetFrozenColumns(): void {
+        const columns: Column[] = this.columnModel;
+        if (columns && columns.length) {
+            for (let i: number = 0; i < columns.length; i++) {
+                if ( columns[parseInt(i.toString(), 10)] && columns[parseInt(i.toString(), 10)].freeze === 'Left') {
+                    columns[parseInt(i.toString(), 10)].freeze = undefined;
+                }
+            }
+        }
+    }
 
     private splitFrozenCount(columns: Column[]): void {
         if (this.frozenColumns || (this.changedProperties && this.changedProperties.frozenColumns === 0)) {

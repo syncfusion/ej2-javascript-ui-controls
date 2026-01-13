@@ -1,6 +1,5 @@
 import { _PdfBaseStream } from '../base-stream';
 import { _PdfDecodeStream } from '../decode-stream';
-import { _PdfJpegImage } from '../graphics/images/jpeg-image';
 export class _PdfJpegStream extends _PdfDecodeStream {
     stream: _PdfBaseStream;
     maybeLength: number;
@@ -11,8 +10,6 @@ export class _PdfJpegStream extends _PdfDecodeStream {
     bytes: Uint8Array;
     drawWidth: number;
     drawHeight: number;
-    forceRgba: boolean;
-    forceRgb: boolean;
     constructor(stream: _PdfBaseStream, maybeLength: number, params: any) { // eslint-disable-line
         super(maybeLength);
         this.stream = stream;
@@ -27,12 +24,8 @@ export class _PdfJpegStream extends _PdfDecodeStream {
             return this.buffer;
         }
         bytes = this.skipUselessBytes(bytes || this.stream.getBytes(this.maybeLength));
-        const jpegImage: _PdfJpegImage = new _PdfJpegImage();
-        jpegImage.parse(bytes);
-        const data: any = jpegImage._getData(this.drawWidth, this.drawHeight, this.forceRgba, this.forceRgb, // eslint-disable-line 
-                                             true);
-        this.buffer = data;
-        this.bufferLength = data.length;
+        this.buffer = bytes;
+        this.bufferLength = bytes.length;
         this.eof = true;
         return this.buffer;
     }

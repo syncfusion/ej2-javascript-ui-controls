@@ -366,7 +366,7 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
     @Property([])
     public dataSource: Object | DataManager;
     /**
-     * Defines the external [Query](https://ej2.syncfusion.com/documentation/data/api-query.html)
+     * Defines the external [Query](https://ej2.syncfusion.com/documentation/api/data/query)
      * that will be executed along with data processing.
      *
      * @default null
@@ -546,7 +546,7 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
     /**
      * The detail template allows you to show or hide additional information about a particular row.
      *
-     * > It accepts either the [template string](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Template_literals)
+     * > It accepts either the [template string](../../common/template/)
      * or the HTML element ID.
      *
      * @aspType string
@@ -651,7 +651,7 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
     /**
      * The row template that renders customized rows from the given template.
      * By default, TreeGrid renders a table row for every data source item.
-     * > * It accepts either [template string](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Template_literals)
+     * > * It accepts either [template string](../../common/template/)
      * or HTML element ID.
      * > * The row template must be a table row.
      *
@@ -746,7 +746,7 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
     /**
      * The empty record template that renders customized element or text or image instead of displaying the empty record message in the TreeGrid.
      *
-     * > It accepts either the [template string](../../common/template-engine/) or the HTML element ID.
+     * > It accepts either the [template string](../../common/template/) or the HTML element ID.
      *
      * @default null
      * @aspType string
@@ -3921,6 +3921,7 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
             const table: Element = this.getContentTable();
             const sHeight: number = table.scrollHeight;
             const clientHeight: number = this.getContent().clientHeight;
+            removeClass(table.querySelectorAll('td.e-lastrowcell'), 'e-lastrowcell');
             this.lastRowBorder(this.getRows()[currentRecords.indexOf(record)], sHeight <= clientHeight);
         }
     }

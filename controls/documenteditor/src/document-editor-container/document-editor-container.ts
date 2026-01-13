@@ -1078,7 +1078,6 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
         this.showPane = this.showPropertiesPane;
         this.editorContainer.insertBefore(documentEditorTarget, this.editorContainer.firstChild);
         this.setFormat();
-        this.documentEditor.isInitializedContainerComponent = true;
         this.documentEditor.appendTo(documentEditorTarget);
         this.documentEditor.resize();
     }
@@ -1457,7 +1456,7 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
         this.previousContext = this.documentEditor.selectionModule.contextType;
         if (this.toolbarHandler) {
             this.toolbarModule.enableDisableInsertComment(!this.documentEditor.enableHeaderAndFooter && this.enableComment && (!this.documentEditor.isReadOnlyMode || this.documentEditor.documentHelper.isDocumentLoadAsynchronously) && !this.documentEditor.selectionModule.isinFootnote && !this.documentEditor.selectionModule.isinEndnote &&
-                !this.documentEditor.selectionModule.isPlainContentControl());
+                !this.documentEditor.selectionModule.isPlainContentControl() && !this.documentEditor.selectionModule.isInShape);
         }
     }
     /**

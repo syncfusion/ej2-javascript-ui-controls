@@ -2216,6 +2216,16 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
         return value as string;
     }
 
+    private isMediaUploading(): boolean {
+        // To prevent any editor content changes while uploading is happening
+        if (isNOU(this.element)) { return false; }
+        const mediaPopups: NodeListOf<Element> = this.element.querySelectorAll('.e-rte-upload-popup');
+        if (mediaPopups.length > 0) {
+            return true;
+        }
+        return false;
+    }
+
     private encode(value: string): string {
         const divNode: HTMLElement = this.createElement('div');
         divNode.innerText = value.trim();
@@ -2398,6 +2408,11 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
      * @hidden
      */
     public keyDown(e: KeyboardEvent): void {
+        if (this.isMediaUploading()) {
+            // To prevent any editor content changes while uploading is happening
+            e.preventDefault();
+            return;
+        }
         this.isSelectionStartInRTE = true;
         const isMacDev: boolean = this.userAgentData.getPlatform() === 'macOS';
         if (((e.ctrlKey || (e.metaKey && isMacDev)) && e.shiftKey && e.keyCode === 86) ||
@@ -2607,6 +2622,11 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
     }
 
     private keyUp(e: KeyboardEvent): void {
+        if (this.isMediaUploading()) {
+            // To prevent any editor content changes while uploading is happening
+            e.preventDefault();
+            return;
+        }
         if (this.inputElement.classList.contains('e-mention')) {
             const mentionPopup: HTMLElement = this.element.ownerDocument.getElementById(this.inputElement.id + '_popup');
             const slashMenuPopup: HTMLElement = this.element.ownerDocument.getElementById(this.inputElement.id + '_slash_menu_popup');
@@ -3401,6 +3421,9 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
                         this.countModule.refresh();
                     }
                     this.addAudioVideoWrapper();
+                    if (newProp.value === '' || isNOU(newProp.value)) {
+                        this.notify(events.toolbarRefresh, { });
+                    }
                     break;
                 }
                 case 'valueTemplate':

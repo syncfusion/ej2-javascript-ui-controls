@@ -533,4 +533,30 @@ describe('Column freeze render module', () => {
             destroy(gridObj as any);
         });
     });
+
+describe('EJ2-999591: Issue with dynamically updating frozen columns using setProperties method in Grid', () => {
+        let gridObj: Grid;
+        beforeAll((done: Function) => {
+            gridObj = createGrid(
+                {
+                    dataSource: data,
+                    frozenColumns: 1,
+                    columns: [
+                        { headerText: 'OrderID', field: 'OrderID', width: 120, isPrimaryKey: true },
+                        { headerText: 'CustomerID', width: 150, },
+                    ]
+                }, done);
+        });
+        it('Set the frozenColumn using setProperties', (done: Function) => {
+            gridObj.setProperties({frozenColumns: 0 }, true);
+            gridObj.freezeRefresh();
+            done();
+        });
+        it('Ensure 1st column', () => {
+            expect((gridObj.columns[0] as any).freeze).toBe(undefined);
+        });
+        afterAll(() => {
+            destroy(gridObj as any);
+        });
+    });
 });

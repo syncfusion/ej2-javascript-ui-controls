@@ -5695,3 +5695,33 @@ describe('Bug 998336: Error throws on binding action failure event with frozen c
         destroy(gridObj);
     });
 });
+
+describe('Bug 1001204: e-lastrowcell class getting added for more than one row when using setrowdata method', ()=> {
+    let gridObj: TreeGrid;
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: sampleData,
+                childMapping: 'subtasks',
+                treeColumnIndex: 1,
+                height: 1200,
+                columns: [
+                    { field: 'taskID', headerText: 'Task ID', width: 110, isPrimaryKey: true },
+                    { field: 'taskName', headerText: 'Task Name', width: 150 },
+                ]
+            },
+            done
+        );
+    });
+    it('Checking the last visible row cell class after using setrowdata method', (done: Function) => {
+        gridObj.collapseAll();
+        gridObj.setRowData(12, gridObj.getCurrentViewRecords()[11]);
+        let rows: any = gridObj.getRows();
+        expect(rows[11].cells[0].classList.contains('e-lastrowcell')).toBe(true);
+        expect(rows[35].cells[0].classList.contains('e-lastrowcell')).toBe(false);
+        done();
+    });
+    afterAll(() => {
+        destroy(gridObj);
+    });
+});

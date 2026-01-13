@@ -11,7 +11,7 @@ export let currentBrowserUA: string = navigator.userAgent;
 export let ieUA: string = 'Mozilla/5.0 (Windows NT 6.3; Trident/7.0; rv:11.0) like Gecko';
 export let androidUA: string = 'Mozilla/5.0 (Linux; <Android Version>; <Build Tag etc.>) AppleWebKit/<WebKit Rev> (KHTML, like Gecko) Chrome/<Chrome Rev> Mobile Safari/<WebKit Rev>';
 export let iPhoneUA: string = 'Mozilla/5.0 (iPhone; CPU iPhone OS 7_0 like Mac OS X) AppleWebKit/537.51.1 (KHTML, like Gecko) Mobile/11A465 Twitter for iPhone';
-export const hostURL: string = 'https://blazor.syncfusion.com/services/development/';
+export const hostURL: string = 'https://ej2services.syncfusion.com/js/development/';
 
 export function renderRTE(options: RichTextEditorModel): RichTextEditor {
     let element: HTMLElement = createElement('div', { id: getUniqueID('rte-test') });

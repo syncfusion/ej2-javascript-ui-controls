@@ -2,6 +2,17 @@
 
 ## [Unreleased]
 
+## 32.1.23 (2026-01-13)
+
+### PDF Viewer
+
+#### Bug Fixes
+
+- `#I799300` - Resolved an issue where the print preview was not displayed for password-protected documents in the `standalone` PDF Viewer.
+- `#I793340` - Fixed an issue where bounds in the `annotationCollection` deviated when adding a free text annotation using the `addAnnotation` method.
+- `#I792304` - Fixed an issue where free text positions were misaligned when importing annotations as XFDF file.
+- `#I800927` - Resolved an issue where Free Text Justify was not working properly when the right side had extra space.
+
 ## 32.1.22 (2026-01-06)
 
 ### PDF Viewer

@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 32.1.23 (2026-01-13)
+
+### Button
+
+#### Bug Fixes
+
+- `#I795532` - The issue with "Button font-weight in Fluent2 not proper" has now been fixed.
+
 ## 32.1.19 (2025-12-16)
 
 ### Chip

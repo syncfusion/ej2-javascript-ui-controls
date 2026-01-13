@@ -11,6 +11,14 @@ import * as classes from '../../../src/rich-text-editor/base/classes';
 import * as events from '../../../src/rich-text-editor/base/constant';
 import { ActionBeginEventArgs } from "./../../../src/common/interface";
 
+export function pointInside(el: Element, pad = 5) {
+    const r = el.getBoundingClientRect();
+    return {
+        x: Math.floor(r.left + Math.min(pad, Math.max(1, r.width - 2))),
+        y: Math.floor(r.top  + Math.min(pad, Math.max(1, r.height - 2)))
+    };
+}
+
 function getQTBarModule(rteObj: RichTextEditor): QuickToolbar {
     return rteObj.quickToolbarModule;
 }
@@ -2753,6 +2761,9 @@ describe('Audio Module', () => {
                     ` });
             document.body.appendChild(element);
             rteObj = new RichTextEditor({
+                toolbarSettings: {
+                    items: ['Audio']
+                },
                 insertAudioSettings: {
                     saveUrl: 'http://aspnetmvc.syncfusion.com/services/api/uploadbox/Save',
                 },
@@ -2776,18 +2787,17 @@ describe('Audio Module', () => {
             detach(document.querySelector('.e-audio-inline'));
             done();
         });
-        it(" Check audio after drop", function (done: Function) {
+        it(" Check audio after drop", function () {
+            rteObj.focusIn();
+            const {x, y} = pointInside(rteObj.contentModule.getEditPanel());
             let fileObj: File = new File(["Nice One"], "sample.mp3", { lastModified: 0, type: "audio/mp3" });
-            let event: any = { clientX: 40, clientY: 324, target: rteObj.contentModule.getEditPanel(), dataTransfer: { files: [fileObj] }, preventDefault: function () { return; } };
+            let event: any = { clientX: x, clientY: y, target: rteObj.contentModule.getEditPanel(), dataTransfer: { files: [fileObj] }, preventDefault: function () { return; } };
             (rteObj.audioModule as any).getDropRange(event.clientX, event.clientY);
             (rteObj.audioModule as any).dragDrop(event);
             ele = rteObj.element.getElementsByTagName('audio')[0];
-            setTimeout(() => {
-                expect(rteObj.element.getElementsByTagName('audio').length).toBe(1);
-                expect(ele.classList.contains('e-rte-audio')).toBe(true);
-                expect(ele.classList.contains('e-audio-inline')).toBe(true);
-                done();
-            }, 1000);
+            expect(rteObj.element.getElementsByTagName('audio').length).toBe(1);
+            expect(ele.classList.contains('e-rte-audio')).toBe(true);
+            expect(ele.classList.contains('e-audio-inline')).toBe(true);
         });
     });
 
@@ -2827,8 +2837,10 @@ describe('Audio Module', () => {
             done();
         });
         it("audioDrop event args.cancel as `true` check", function () {
+            rteObj.focusIn();
+            const {x, y} = pointInside(rteObj.contentModule.getEditPanel());
             let fileObj: File = new File(["Nice One"], "sample.mp3", { lastModified: 0, type: "audio/mp3" });
-            let event: any = { clientX: 40, clientY: 294, target: rteObj.contentModule.getEditPanel(), dataTransfer: { files: [fileObj] }, preventDefault: function () { return; } };
+            let event: any = { clientX: x, clientY: y, target: rteObj.contentModule.getEditPanel(), dataTransfer: { files: [fileObj] }, preventDefault: function () { return; } };
             (rteObj.audioModule as any).getDropRange(event.clientX, event.clientY);
             (rteObj.audioModule as any).dragDrop(event);
             ele = rteObj.element.getElementsByTagName('audio')[0];
@@ -3327,9 +3339,7 @@ describe('Audio Module', () => {
             insertAudioSettings: {
                 saveUrl: 'http://aspnetmvc.syncfusion.com/services/api/uploadbox/Save'
             },
-            value: `
-            <p><span class="e-audio-wrap" contenteditable="false" style="width: 300px; margin: 0px auto;"><span class="e-clickelem"><audio controls="" class="e-rte-audio e-audio-inline"><source src="https://cdn.syncfusion.com/ej2/richtexteditor-resources/RTE-Audio.wav" type="audio/mp3"/></audio></span></span><br/></p>
-            `,
+            value: `<p>First p node-0</p>`,
             placeholder: 'Type something'
         });
 
@@ -3347,18 +3357,17 @@ describe('Audio Module', () => {
         done();
     });
 
-    it('Verified that the audio is dropping correctly and the target is set to the currently dropped audio', (done: Function) => {
+    it('Verified that the audio is dropping correctly and the target is set to the currently dropped audio', () => {
+        rteObj.focusIn();
+        const {x, y} = pointInside(rteObj.contentModule.getEditPanel());
         let fileObj: File = new File(["Nice One"], "sample.mp3", { lastModified: 0, type: "audio/mp3" });
-        let event: any = { clientX: 40, clientY: 294, target: rteObj.contentModule.getEditPanel(), dataTransfer: { files: [fileObj] }, preventDefault: function () { return; } };
+        let event: any = { clientX: x, clientY: y, target: rteObj.contentModule.getEditPanel(), dataTransfer: { files: [fileObj] }, preventDefault: function () { return; } };
         (rteObj.audioModule as any).getDropRange(event.clientX, event.clientY);
         (rteObj.audioModule as any).dragDrop(event);
         ele = rteObj.element.getElementsByTagName('audio')[0];
-        setTimeout(() => {
-            expect(rteObj.element.getElementsByTagName('audio').length).toBe(2);
-            expect(ele.classList.contains('e-rte-audio')).toBe(true);
-            expect(ele.classList.contains('e-audio-inline')).toBe(true);
-            done();
-        }, 1000);
+        expect(rteObj.element.getElementsByTagName('audio').length).toBe(1);
+        expect(ele.classList.contains('e-rte-audio')).toBe(true);
+        expect(ele.classList.contains('e-audio-inline')).toBe(true);
     });
     });
     describe('976200: Backspace deletes only audio when video is before audio', () => {

@@ -3252,7 +3252,8 @@ export class Selection implements IAction {
                 this.virtualSelectedData = this.virtualCheckBoxData().slice();
                 this.selectedRowIndexes = Object.keys(this.virtualSelectedData).map((key: string) => parseInt(key, 10));
             } else if (!(this.parent.getDataModule().isRemote() || (!isNullOrUndefined(this.parent.dataSource)
-                && (<{result: object[]}>this.parent.dataSource).result)) && this.parent.isCheckBoxSelection && this.isPartialSelection) {
+                && (<{result: object[]}>this.parent.dataSource).result)) && this.parent.isCheckBoxSelection && this.isPartialSelection &&
+                this.parent.partialSelectedRecords.length > 0) {
                 if (this.parent.isPersistSelection) {
                     this.persistSelectedData = [...this.parent.partialSelectedRecords];
                     this.persistSelectedRecordsCount = this.persistSelectedData.length &&

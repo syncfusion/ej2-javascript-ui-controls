@@ -823,7 +823,7 @@ export class BaseQuickToolbar implements IBaseQuickToolbar {
             case 'ParentElement':
             case 'ScrollableContainer':  // When the toolbar is floating at top.
                 if (this.parent.inlineMode.enable && this.type === 'Inline') {
-                    spaceAbove = blockRect.top;
+                    spaceAbove = blockRect.top - parentRect.top;
                 } else {
                     spaceAbove = blockRect.top - toolbarRect.top - toolbarRect.height;
                 }
@@ -911,17 +911,20 @@ export class BaseQuickToolbar implements IBaseQuickToolbar {
         const totalPopupHeight: number = (this.tipPointerHeight + this.popupHeight);
         const isTopPosition: boolean = this.isElemVisible(blockRect, 'top', false) && spaceAbove > totalPopupHeight && topViewPortSpace > totalPopupHeight;
         const isBotPosition: boolean = offsetParams.direction === 'Backward'  && isTopPosition ? false : this.isElemVisible(blockRect, 'bottom', false) && spaceBelow > totalPopupHeight && botViewPortSpace > totalPopupHeight;
+        const isInlineMode: boolean = this.parent.inlineMode.enable && this.type === 'Inline';
         if (isBotPosition) {
             this.currentTipPosition = this.currentTipPosition.replace('Bottom', 'Top') as TipPointerPosition;
         } else if (isTopPosition) {
             args.positionY = -(this.popupHeight + 10) + (offsetParams.rangeRect.top - offsetParams.blockRect.top);
             this.currentTipPosition = this.currentTipPosition.replace('Top', 'Bottom') as TipPointerPosition;
-        } else if ((spaceAbove < totalPopupHeight && spaceBelow < totalPopupHeight) && containsMedia) {
+        } else if ((spaceAbove < totalPopupHeight && spaceBelow < totalPopupHeight) && (containsMedia || isInlineMode)) {
             const withToolbarHeight: number = -(offsetParams.blockRect.top) + toolbarRect.bottom; // When floating Main toolbar will hide the quick toolbar so need to add the main toolbar height.
             const withOutToolbarHeight: number = scrollTopParentElement === this.parent.inputElement ?
                 -(offsetParams.blockRect.top) : (-offsetParams.blockRect.top) + parentRect.top; // When there is no floating Main toolbar wont hide the quick toolbar so no need to add main toolbar height.
-            if (isBottomToolbar || (this.parent.inlineMode.enable && this.type === 'Inline')) {
+            if (isBottomToolbar) {
                 args.positionY = withOutToolbarHeight;
+            } else if (isInlineMode) {
+                args.positionY = offsetParams.rangeRect.top - offsetParams.blockRect.top - this.tipPointerHeight;
             } else {
                 if (isFloating) {
                     if (toolbarRect.top < 0) { // When the Toolbar is hidden beyond a viewport inside a scrollable container with overflow auto and static height.

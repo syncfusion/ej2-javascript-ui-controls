@@ -5,7 +5,7 @@ import { IntlBase as base, setDateFormat } from './intl-base';
 import { isUndefined, throwError, getValue, isBlazor } from '../util';
 import { HijriParser } from '../hijri-parser';
 import { isNullOrUndefined, extend } from '../util';
-const abbreviateRegexGlobal: RegExp = /\/MMMMM|MMMM|MMM|a|LLLL|LLL|EEEEE|EEEE|E|K|cccc|ccc|WW|W|G+|z+/gi;
+const abbreviateRegexGlobal: RegExp = /\/MMMMM|MMMM|MMM|a|B|LLLL|LLL|EEEEE|EEEE|E|K|cccc|ccc|WW|W|G+|z+/gi;
 const standalone: string = 'stand-alone';
 const weekdayKey: string[] = ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat'];
 export const basicPatterns: string[] = ['short', 'medium', 'long', 'full'];
@@ -48,6 +48,7 @@ export const datePartMatcher: { [key: string]: Object } = {
     's': 'second',
     'L': 'month',
     'a': 'designator',
+    'B': 'designator',
     'z': 'timeZone',
     'Z': 'timeZone',
     'G': 'era',
@@ -117,6 +118,10 @@ export class DateFormat {
                     }
                     break;
                 case 'a':
+                    formatOptions.designator = isBlazor() ?
+                        getValue('dayPeriods', dateObject) : getValue('dayPeriods.format.wide', dateObject);
+                    break;
+                case 'B': 
                     formatOptions.designator = isBlazor() ?
                         getValue('dayPeriods', dateObject) : getValue('dayPeriods.format.wide', dateObject);
                     break;
@@ -216,6 +221,11 @@ export class DateFormat {
             case 'a': {
                 const desig: string = value.getHours() < 12 ? 'am' : 'pm';
                 ret += (<any>options).designator[`${desig}`];
+                break;
+            }
+            case 'B': {
+                const desigs: string = value.getHours() < 12 ? 'am' : 'pm';
+                ret += (<any>options).designator[`${desigs}`];
                 break;
             }
             case 'G': {

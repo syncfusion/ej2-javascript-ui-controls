@@ -2,6 +2,15 @@
 
 ## [Unreleased]
 
+## 32.1.23 (2026-01-13)
+
+### Common
+
+#### Bug Fixes
+
+- `#I798285` - Resolved an issue where the Time Picker control became read-only when switching the culture to Traditional Chinese.
+- `#I798573` - Resolved Date Parsing Error Where "01/01/0001" Was Incorrectly Normalized to "01/01/2001" in DatePicker
+
 ## 32.1.19 (2025-12-16)
 
 ### Common

@@ -1308,4 +1308,47 @@ describe('UI virtualization', () => {
             ele.remove();
         });
     });
+    describe('args.item.context with virtualization and template', () => {
+        let listObj: any;
+        let ele: HTMLElement = createElement('div', { id: 'ListView_ctx_tpl' });
+        ele.style.overflow = 'auto';
+        setStyle(ele, 48);
+        const data: { [key: string]: Object }[] = [];
+        for (let i = 0; i < 30; i++) {
+            data.push({ text: `Item ${i}`, id: `${i}` });
+        }
+        let capturedArgs: any;
+        beforeAll(() => {
+            document.body.appendChild(ele);
+            listObj = new ListView({
+                dataSource: data,
+                enableVirtualization: true,
+                height: 400,
+                fields: { id: 'id', text: 'text' },
+                template: '<div class="row"><span class="label">${text}</span></div>',
+                select: (args: any) => { capturedArgs = args; }
+            });
+            listObj.appendTo(ele);
+        });
+        it('should set context on select with template', () => {
+            const li = ele.querySelector('.e-list-item') as HTMLElement;
+            expect(li).toBeTruthy();
+            li.click();
+            expect(capturedArgs).toBeDefined();
+            expect(capturedArgs.item).toBeDefined();
+            expect(capturedArgs.item.context).toBeDefined();
+            const ctx = capturedArgs.item.context as any;
+            expect(ctx.data).toBeDefined();
+            expect(ctx.data.text).toBe('Item 0');
+            expect(typeof ctx.type).toBe('string');
+            expect(ctx.template instanceof HTMLElement).toBe(true);
+            expect(ctx.nodes).toBeDefined();
+            expect(Array.isArray(ctx.nodes.flatTemplateNodes)).toBe(true);
+            expect(Array.isArray(ctx.nodes.groupTemplateNodes)).toBe(true);
+        });
+        afterAll(() => {
+            listObj.destroy();
+            ele.remove();
+        });
+    });
 });

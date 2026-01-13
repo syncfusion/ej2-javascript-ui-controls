@@ -7422,6 +7422,10 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
         let exist: boolean = false;
         //Removed isBlazor code
         obj = this.nameTable[obj.id] || obj;
+        if (!(obj instanceof Node) && !(obj instanceof Connector)) {
+            this.protectPropertyChange(false);
+            return;
+        }
         let newObj: PointPort | PathPort;
         if (ports.length > 1) {
             this.startGroupAction();
@@ -13370,15 +13374,17 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
      * @private
      */
     public updateConnectorProperties(connector: ConnectorModel): void {
-        if (this.preventConnectorsUpdate) {
-            const index: number = this.selectionConnectorsList.indexOf(connector);
-            if (index === -1 && connector) { this.selectionConnectorsList.push(connector); }
-        } else {
-            const conn: Connector = {
-                sourcePoint: connector.sourcePoint, targetPoint: connector.targetPoint, sourceID: connector.sourceID,
-                targetID: connector.targetID, sourcePortID: connector.sourcePortID, targetPortID: connector.targetPortID
-            } as Connector;
-            this.connectorPropertyChange(connector as Connector, {} as Connector, conn, undefined, true);
+        if (connector) {
+            if (this.preventConnectorsUpdate) {
+                const index: number = this.selectionConnectorsList.indexOf(connector);
+                if (index === -1 && connector) { this.selectionConnectorsList.push(connector); }
+            } else {
+                const conn: Connector = {
+                    sourcePoint: connector.sourcePoint, targetPoint: connector.targetPoint, sourceID: connector.sourceID,
+                    targetID: connector.targetID, sourcePortID: connector.sourcePortID, targetPortID: connector.targetPortID
+                } as Connector;
+                this.connectorPropertyChange(connector as Connector, {} as Connector, conn, undefined, true);
+            }
         }
     }
 
@@ -13399,7 +13405,11 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
             for (let j: number = 0; j < actualObject.inEdges.length; j++) {
                 const inEdgeId: string = actualObject.inEdges[parseInt(j.toString(), 10)];
                 if ((this.eventHandler as any).currentAction !== 'Drag' || selectedConIds.indexOf(inEdgeId) === -1) {
-                    this.updateConnectorProperties(this.nameTable[`${inEdgeId}`]);
+                    if (actualObject && actualObject.id !== inEdgeId && this.nameTable[`${inEdgeId}`]) {
+                        this.updateConnectorProperties(this.nameTable[`${inEdgeId}`]);
+                    } else {
+                        return;
+                    }
                 }
             }
         }
@@ -13407,7 +13417,11 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
             for (let k: number = 0; k < actualObject.outEdges.length; k++) {
                 const outEdgeId: string = actualObject.outEdges[parseInt(k.toString(), 10)];
                 if ((this.eventHandler as any).currentAction !== 'Drag' || selectedConIds.indexOf(outEdgeId) === -1) {
-                    this.updateConnectorProperties(this.nameTable[`${outEdgeId}`]);
+                    if (actualObject && actualObject.id !== outEdgeId && this.nameTable[`${outEdgeId}`]) {
+                        this.updateConnectorProperties(this.nameTable[`${outEdgeId}`]);
+                    } else {
+                        return;
+                    }
                 }
             }
         }

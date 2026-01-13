@@ -2,6 +2,15 @@
 
 ## [Unreleased]
 
+## 32.1.22 (2026-01-06)
+
+### Grid
+
+#### Bug fixes
+
+- `#I795454` - The issue where the page refreshes during batch editing when `allowKeyboard` is set to false has been resolved.
+- `#I797312` - Resolved an issue where calling `expandAll` or `collapseAll` on grouped columns would throw a script error when the data source was empty.
+
 ## 32.1.21 (2025-12-30)
 
 ### Grid

@@ -312,7 +312,7 @@ export class FreeTextAnnotation {
             if (shapeAnnotations.length >= 1) {
                 this.freeTextPageNumbers.push(pageNumber);
                 for (let i: number = 0; i < shapeAnnotations.length; i++) {
-                    const annotation: AnnotationsBase = shapeAnnotations[parseInt(i.toString(), 10)];
+                    const annotation: any = shapeAnnotations[parseInt(i.toString(), 10)];
                     annotation.annotationAddMode = this.pdfViewer.annotationModule.
                         findAnnotationMode(annotation, pageNumber, annotation.AnnotType);
                     if (annotation.AnnotType) {
@@ -330,7 +330,12 @@ export class FreeTextAnnotation {
                         if (annotation.IsLocked) {
                             annotation.AnnotationSettings.isLock = annotation.IsLocked;
                         }
-                        const paddingValue: number = 0.5;
+                        let paddingValue: number;
+                        if (annotation.AnnotationIntent && annotation.AnnotationIntent === 'None') {
+                            paddingValue = 0.5;
+                        } else {
+                            paddingValue = 0;
+                        }
                         let annotationBoundsX: number = !isNullOrUndefined((annotation.Bounds as AnnotBoundsBase).X) ?
                             (annotation.Bounds as AnnotBoundsBase).X - paddingValue : (annotation.Bounds as IRect).x;
                         let annotationBoundsY: number = !isNullOrUndefined((annotation.Bounds as AnnotBoundsBase).Y) ?
@@ -519,6 +524,19 @@ export class FreeTextAnnotation {
                         this.pdfViewer.annotation.freeTextAnnotationModule.isFreeTextValueChange = true;
                         const isNeedToRender: boolean = ((isImportAction && isLastAnnot) || isNullOrUndefined(isImportAction) ||
                         !isImportAction) ? true : false;
+                        if (annotation.AnnotationIntent && annotation.AnnotationIntent !== 'None') {
+                            let lineSpace: any = 0;
+                            this.inputBoxElement.style.fontSize = (addedAnnot.fontSize * this.pdfViewerBase.getZoomFactor()) + 'px';
+                            lineSpace = ((parseFloat(this.inputBoxElement.style.fontSize) / this.pdfViewerBase.getZoomFactor()) /
+                                (this.defaultFontSize / 2));
+                            this.inputBoxElement.style.paddingTop = ((((parseFloat(this.inputBoxElement.style.fontSize) /
+                                Math.max(1, this.pdfViewerBase.getZoomFactor())) / this.defaultFontSize) / Math.max(1, this.pdfViewerBase.getZoomFactor()))) * this.freeTextPaddingTop + 'px';
+                            this.inputBoxElement.style.paddingTop = parseFloat(this.inputBoxElement.style.paddingTop) - lineSpace + 'px';
+                            addedAnnot.wrapper.children[1].margin.left = this.freeTextPaddingLeft + 1;
+                            addedAnnot.wrapper.children[1].margin.top =
+                                ((parseFloat(this.inputBoxElement.style.paddingTop) /
+                                    Math.max(1, this.pdfViewerBase.getZoomFactor()))) + lineSpace - 1;
+                        }
                         this.pdfViewer.nodePropertyChange(addedAnnot, {}, isNeedToRender);
                         this.pdfViewer.annotation.freeTextAnnotationModule.isFreeTextValueChange = false;
                     }
@@ -755,7 +773,7 @@ export class FreeTextAnnotation {
     private getBoundsBasedOnRotation(bounds: AnnotBoundsRect, rotateAngle: number, pageIndex: number,
                                      annotation: AnnotationsInternal, isAddedProgrammatically?: boolean): any {
         const rotateValue: number = this.getRotationValue(pageIndex, isAddedProgrammatically);
-        const paddingValue: number = 0.5;
+        const paddingValue: number = 0;
         annotation.rotateAngle = rotateAngle - rotateValue;
         annotation.pageRotation = rotateValue;
         if (rotateAngle === 90 || rotateAngle === -90 || rotateAngle === 270 || rotateAngle === -270) {
@@ -1042,7 +1060,7 @@ export class FreeTextAnnotation {
                 lineSpace = ((parseFloat(this.inputBoxElement.style.fontSize) / zoomFactor) / (this.defaultFontSize / 2));
                 this.selectedAnnotation.wrapper.children[1].margin.left = this.freeTextPaddingLeft + 1;
                 this.selectedAnnotation.wrapper.children[1].margin.top =
-                 ((parseFloat(this.inputBoxElement.style.paddingTop) / zoomFactor)) + lineSpace;
+                 ((parseFloat(this.inputBoxElement.style.paddingTop) / zoomFactor)) + lineSpace - 1;
                 this.pdfViewer.annotation.modifyDynamicTextValue(inputValue, this.selectedAnnotation.annotName, this.previousText);
                 this.selectedAnnotation.dynamicText = inputValue;
                 this.modifyInCollection('dynamicText', pageIndex, this.selectedAnnotation, isNewlyAdded);

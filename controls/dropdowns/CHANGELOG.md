@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 32.1.23 (2026-01-13)
+
+### MultiSelect
+
+#### Bug Fixes
+
+- `#I792156` - Resolved an issue where the multi-select search filter input did not work on the first attempt when Narrator was enabled.
+
 ## 32.1.22 (2026-01-06)
 
 ### Mention

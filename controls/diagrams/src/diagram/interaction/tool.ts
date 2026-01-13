@@ -575,7 +575,7 @@ export class ConnectTool extends ToolBase {
         this.checkPropertyValue();
         this.commandHandler.updateSelector();
         this.commandHandler.removeSnap();
-        if ((!(this instanceof ConnectorDrawingTool)) && ((this.endPoint === 'ConnectorSourceEnd' &&
+        if (args.source && (args.source as SelectorModel).connectors && (!(this instanceof ConnectorDrawingTool)) && ((this.endPoint === 'ConnectorSourceEnd' &&
             (args.source as SelectorModel).connectors.length &&
             ((!Point.equals((args.source as SelectorModel).connectors[0].sourcePoint, this.undoElement.connectors[0].sourcePoint) ||
                 ((args.source as SelectorModel).connectors[0].sourceID !== this.undoElement.connectors[0].sourceID)))) ||
@@ -1286,16 +1286,20 @@ export class MoveTool extends ToolBase {
         if (selectedElement instanceof Selector && selectedElement.nodes.length > 0) {
             for (let i: number = 0; i < selectedElement.nodes.length; i++) {
                 let node: NodeModel = selectedElement.nodes[parseInt(i.toString(), 10)];
-                if(node && (node as any).inEdges.length > 0) {
-                    for (let j: number =0; j < (node as any).inEdges.length; j++) {
+                if (node && (node as any).inEdges.length > 0) {
+                    for (let j: number = 0; j < (node as any).inEdges.length; j++) {
                         let connector: ConnectorModel = this.commandHandler.diagram.getObject((node as any).inEdges[parseInt(j.toString(), 10)]);
-                        this.triggerEndPointEvent(connector, arg, snappedPoint, 'targetPointChange');
+                        if (connector) {
+                            this.triggerEndPointEvent(connector, arg, snappedPoint, 'targetPointChange');
+                        }
                     }
                 }
-                if(node && (node as any).outEdges.length > 0) {
-                    for (let j: number =0; j < (node as any).outEdges.length; j++) {
+                if (node && (node as any).outEdges.length > 0) {
+                    for (let j: number = 0; j < (node as any).outEdges.length; j++) {
                         let connector: ConnectorModel = this.commandHandler.diagram.getObject((node as any).outEdges[parseInt(j.toString(), 10)]);
-                        this.triggerEndPointEvent(connector, arg, snappedPoint, 'sourcePointChange');
+                        if (connector) {
+                            this.triggerEndPointEvent(connector, arg, snappedPoint, 'sourcePointChange');
+                        }
                     }
                 }
             }
@@ -1338,18 +1342,21 @@ export class MoveTool extends ToolBase {
         super.mouseMove(args); let isSame: boolean = false; let object: NodeModel | ConnectorModel | SelectorModel;
         object = (this.commandHandler.renderContainerHelper(args.source as NodeModel) as Node) ||
             args.source as Node | Connector | Selector;
+        if (!object) {
+            return false;
+        }
         if (object instanceof Node || object instanceof Connector) {
-            if (object instanceof Node) {
+            if (object instanceof Node && this.undoElement.nodes[0]) {
                 if (object.offsetX === this.undoElement.nodes[0].offsetX &&
                     object.offsetY === this.undoElement.nodes[0].offsetY) {
                     isSame = true;
                 }
             } else {
-                if (Point.equals(object.sourcePoint, this.undoElement.connectors[0].sourcePoint) &&
-                    Point.equals(object.targetPoint, this.undoElement.connectors[0].targetPoint)) { isSame = true; }
+                if (this.undoElement.connectors[0] && Point.equals((object as Connector).sourcePoint, this.undoElement.connectors[0].sourcePoint) &&
+                    Point.equals((object as Connector).targetPoint, this.undoElement.connectors[0].targetPoint)) { isSame = true; }
             }
         } else {
-            if (object.wrapper.offsetX === this.undoElement.wrapper.offsetX &&
+            if (object && object.wrapper && object.wrapper.offsetX === this.undoElement.wrapper.offsetX &&
                 object.wrapper.offsetY === this.undoElement.wrapper.offsetY) { isSame = true; }
         }
         let oldValues: SelectorModel;
@@ -2109,7 +2116,7 @@ export class ConnectorDrawingTool extends ConnectTool {
                     const portId: string = (args.sourceWrapper.id).split('_')[1];
                     const targetPort: PortModel = (args.actualObject as Node).ports.find((port: PortModel) => port.id === portId);
                     const isInConnectOnly: boolean = targetPort && canPortInConnect(targetPort) && !(canPortOutConnect(targetPort));
-                    if (isInConnectOnly && args.sourceWrapper instanceof PathElement) {
+                    if (this.commandHandler && isInConnectOnly && args.sourceWrapper instanceof PathElement) {
                         // Reverse: connect target end, move source end with mouse
                         this.endPoint = 'ConnectorTargetEnd';
                         args.targetWrapper = args.sourceWrapper;
@@ -2120,7 +2127,7 @@ export class ConnectorDrawingTool extends ConnectTool {
                         }
                         this.commandHandler.connect(this.endPoint, args);
                         this.endPoint = 'ConnectorSourceEnd';
-                    } else {
+                    } else if (this.commandHandler) {
                         // Default: connect source end, move target end with mouse
                         this.commandHandler.connect(this.endPoint, args);
                         this.endPoint = 'ConnectorTargetEnd';

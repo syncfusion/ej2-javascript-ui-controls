@@ -859,7 +859,7 @@ export class SpellChecker {
                 } else {
                     const currentElement: ErrorTextElementBox = copyElement[i] as ErrorTextElementBox;
 
-                    if (errorElement.start.offset === currentElement.start.offset && errorElement.end.offset === currentElement.end.offset) {
+                    if (errorElement.start.offset === currentElement.start.offset && errorElement.end.offset === currentElement.end.offset && currentElement === errorElement) {
                         return true;
                     }
                 }

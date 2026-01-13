@@ -1,23 +1,22 @@
-import { addClass, detach, extend, isNullOrUndefined as isNOU } from '@syncfusion/ej2-base';
+import { addClass, detach, extend, isNullOrUndefined as isNOU, getComponent, getUniqueID } from '@syncfusion/ej2-base';
 import { Popup } from '@syncfusion/ej2-popups';
-import { BeforeUploadEventArgs, MetaData, SelectedEventArgs, SuccessEventArgs, FailureEventArgs, Uploader, UploadingEventArgs } from '@syncfusion/ej2-inputs';
+import { BeforeUploadEventArgs, MetaData, SelectedEventArgs, SuccessEventArgs, FailureEventArgs, Uploader, UploadingEventArgs, FileInfo } from '@syncfusion/ej2-inputs';
 import * as classes from '../base/classes';
 import * as events from '../base/constant';
 import { MediaType } from '../../common/types';
 import { IRichTextEditor } from '../base/interface';
+import { PopupRootBound } from '../../rich-text-editor/base/interface';
 import { IShowPopupArgs } from '../../common/interface';
 import { ImageInputSource, MediaInputSource  } from '../../common/enum';
 import { ImageSuccessEventArgs, MediaSuccessEventArgs } from '../../common/interface';
 import { CLS_IMG_FOCUS, CLS_AUD_FOCUS, CLS_VID_FOCUS} from '../../common/constant';
+import { PasteCleanup } from '../actions';
 
 
 export class PopupUploader {
     private parent: IRichTextEditor;
-    public popupObj: Popup;
-    public uploadObj: Uploader;
     private rteID: string;
     private isDestroyed: boolean = false;
-    private uploadCancelTime: number;
     private uploadFailureTime: number;
     private uploadSuccessTime: number;
 
@@ -36,15 +35,16 @@ export class PopupUploader {
      */
     public renderPopup(type: MediaType, element: HTMLElement): Popup {
         const popupElement: HTMLElement = this.parent.createElement('div');
+        popupElement.setAttribute('id', getUniqueID(this.rteID + '_' + type.toLowerCase() + '_upload_popup'));
         this.parent.rootContainer.appendChild(popupElement);
-
+        const boundObj: PopupRootBound = { popupRoot: popupElement, self: this };
         const uploadEle: HTMLInputElement | HTMLElement = this.parent.createElement('input', {
-            id: this.rteID + '_' + type.toLowerCase() + '_upload',
+            id: getUniqueID(this.rteID + '_' + type.toLowerCase() + '_upload'),
             attrs: { type: 'File', name: 'UploadFiles' }
         });
 
         // Create popup based on type
-        this.popupObj = new Popup(popupElement, {
+        const popup: Popup = new Popup(popupElement, {
             relateTo: element,
             viewPortElement: this.parent.inputElement,
             zIndex: 10001,
@@ -53,41 +53,31 @@ export class PopupUploader {
             height: '85px',
             width: '300px',
             actionOnScroll: 'none',
-            close: () => {
-                this.parent.isBlur = false;
-                if (this.popupObj) {
-                    this.popupObj.destroy();
-                    detach(this.popupObj.element);
-                    this.popupObj = null;
-                }
-                if (!this.parent.inlineMode.enable && this.parent.toolbarModule && this.parent.toolbarModule.baseToolbar) {
-                    this.parent.toolbarModule.baseToolbar.toolbarObj.disable(false);
-                }
-            }
+            close: this.onPopupClose.bind(boundObj)
         });
 
-        this.popupObj.element.style.display = 'none';
-        addClass([this.popupObj.element], classes.CLS_POPUP_OPEN);
-        addClass([this.popupObj.element], classes.CLS_RTE_UPLOAD_POPUP);
+        popup.element.style.display = 'none';
+        addClass([popup.element], classes.CLS_POPUP_OPEN);
+        addClass([popup.element], classes.CLS_RTE_UPLOAD_POPUP);
 
         // Add type-specific class
         switch (type) {
         case 'Images':
-            this.popupObj.element.classList.add(classes.CLS_RTE_IMAGE_UPLOAD_POPUP);
+            popup.element.classList.add(classes.CLS_RTE_IMAGE_UPLOAD_POPUP);
             break;
         case 'Videos':
-            this.popupObj.element.classList.add(classes.CLS_RTE_VIDEO_UPLOAD_POPUP);
+            popup.element.classList.add(classes.CLS_RTE_VIDEO_UPLOAD_POPUP);
             break;
         case 'Audios':
-            this.popupObj.element.classList.add(classes.CLS_RTE_AUDIO_UPLOAD_POPUP);
+            popup.element.classList.add(classes.CLS_RTE_AUDIO_UPLOAD_POPUP);
             break;
         }
 
         if (!isNOU(this.parent.cssClass)) {
-            addClass([this.popupObj.element], this.parent.cssClass.replace(/\s+/g, ' ').trim().split(' '));
+            addClass([popup.element], this.parent.cssClass.replace(/\s+/g, ' ').trim().split(' '));
         }
 
-        return this.popupObj;
+        return popup;
     }
 
     /**
@@ -97,10 +87,12 @@ export class PopupUploader {
      * @param {DragEvent} dragEvent - Drag event data
      * @param {HTMLElement} [mediaElement] - Optional media element for upload
      * @param {HTMLElement} target - Target element to append uploader
+     * @param {Popup} popup - Uploader popup object
      * @returns {Uploader} - Returns the created uploader
      * @hidden
      */
-    public createUploader(type: MediaType, dragEvent: DragEvent, mediaElement: HTMLElement, target: HTMLElement): Uploader {
+    public createUploader(
+        type: MediaType, dragEvent: DragEvent, mediaElement: HTMLElement, target: HTMLElement, popup: Popup): Uploader {
         let isUploading: boolean = false;
         let allowedExtensions: string = '';
         let saveUrl: string;
@@ -130,36 +122,35 @@ export class PopupUploader {
         }
 
         // Create uploader with standard configuration
-        this.uploadObj = new Uploader({
+        const uploader: Uploader = new Uploader({
             asyncSettings: {
                 saveUrl: saveUrl,
                 removeUrl: removeUrl
             },
             cssClass: classes.CLS_RTE_DIALOG_UPLOAD + this.parent.getCssClass(true),
-            dropArea: this.parent.element,
             allowedExtensions: allowedExtensions,
             maxFileSize: maxFileSize,
             multiple: false,
             enableRtl: this.parent.enableRtl,
 
             removing: () => {
-                this.parent.inputElement.contentEditable = 'true';
                 isUploading = false;
                 if (mediaElement) {
                     detach(mediaElement);
                 }
-                if (this.popupObj) {
-                    this.popupObj.close();
+                if (popup) {
+                    popup.close();
+                    this.enableToolbarItems();
                 }
             },
             canceling: () => {
-                this.parent.inputElement.contentEditable = 'true';
                 isUploading = false;
                 if (mediaElement) {
                     detach(mediaElement);
                 }
-                if (this.popupObj) {
-                    this.popupObj.close();
+                if (popup) {
+                    popup.close();
+                    this.enableToolbarItems();
                 }
                 // Handle all media type quickToolbars
                 if (this.parent.quickToolbarModule) {
@@ -171,11 +162,6 @@ export class PopupUploader {
                         this.parent.quickToolbarModule.audioQTBar.hidePopup();
                     }
                 }
-                this.uploadCancelTime = setTimeout(() => {
-                    if (this.uploadObj && !this.uploadObj.isDestroyed) {
-                        this.uploadObj.destroy();
-                    }
-                }, 900);
             },
             beforeUpload: (args: BeforeUploadEventArgs) => {
                 const eventName: string = type === 'Images' ? events.beforeImageUpload : events.beforeFileUpload;
@@ -193,11 +179,9 @@ export class PopupUploader {
                             if (mediaElement && !isNOU(mediaElement)) {
                                 detach(mediaElement);
                             }
-                            if (this.popupObj && this.popupObj.element && !isNOU(this.popupObj.element)) {
-                                detach(this.popupObj.element);
+                            if (popup && popup.element && !isNOU(popup.element)) {
+                                detach(popup.element);
                             }
-                        } else {
-                            this.parent.inputElement.contentEditable = 'false';
                         }
                     });
                 }
@@ -209,7 +193,6 @@ export class PopupUploader {
             },
             failure: (args: FailureEventArgs) => {
                 isUploading = false;
-                this.parent.inputElement.contentEditable = 'true';
                 const popupArgs: IShowPopupArgs = {
                     args: dragEvent as MouseEvent,
                     type: type,
@@ -218,7 +201,7 @@ export class PopupUploader {
                 };
 
                 this.uploadFailureTime = setTimeout(() => {
-                    this.uploadFailure(mediaElement, popupArgs, args);
+                    this.uploadFailure(mediaElement, popupArgs, args, popup);
                 }, 900);
             },
             success: (args: SuccessEventArgs) => {
@@ -226,7 +209,6 @@ export class PopupUploader {
                     return;
                 }
                 isUploading = false;
-                this.parent.inputElement.contentEditable = 'true';
                 const popupArgs: IShowPopupArgs = {
                     args: dragEvent as MouseEvent,
                     type: type,
@@ -259,15 +241,27 @@ export class PopupUploader {
                 this.uploadSuccessTime = setTimeout(() => {
                     // Cast args based on the type of media
                     if (type === 'Images') {
-                        this.uploadSuccess(mediaElement, dragEvent, popupArgs, imageArgs);
+                        this.uploadSuccess(mediaElement, dragEvent, popupArgs, imageArgs, popup);
                     } else if (type === 'Videos' || type === 'Audios') {
-                        this.uploadSuccess(mediaElement, dragEvent, popupArgs, mediaArgs);
+                        this.uploadSuccess(mediaElement, dragEvent, popupArgs, mediaArgs, popup);
                     }
                 }, 900);
             }
         });
-        this.uploadObj.appendTo(target);
-        return this.uploadObj;
+        uploader.appendTo(target);
+        const file: File = dragEvent.dataTransfer.files[0];
+        const fileInfo: FileInfo[] = [{
+            name: file.name,
+            rawFile: file,
+            size: file.size,
+            type: file.type,
+            status: 'Ready to Upload',
+            validationMessages: { minSize: '', maxSize: ''},
+            statusCode: '1'
+        }];
+        uploader.createFileList(fileInfo);
+        uploader.upload(fileInfo);
+        return uploader;
     }
 
     /**
@@ -276,21 +270,20 @@ export class PopupUploader {
      * @param {HTMLElement} mediaEle - The media element
      * @param {IShowPopupArgs} args - Popup arguments
      * @param {FailureEventArgs} e - Failure event arguments
+     * @param {Popup} popup - Uploader popup object
      * @returns {void}
      * @hidden
      */
-    public uploadFailure(mediaEle: HTMLElement, args: IShowPopupArgs, e: FailureEventArgs): void {
-        if (mediaEle) {
-            detach(mediaEle);
-        }
-        if (this.popupObj) {
-            this.popupObj.close();
-        }
+    public uploadFailure(mediaEle: HTMLElement, args: IShowPopupArgs, e: FailureEventArgs, popup: Popup): void {
         // Trigger appropriate event based on type
         const eventName: string = args.type === 'Images' ? events.imageUploadFailed : events.fileUploadFailed;
         this.parent.trigger(eventName, e);
-        if (this.uploadObj && !this.uploadObj.isDestroyed) {
-            this.uploadObj.destroy();
+        if (!isNOU(mediaEle) && !isNOU(popup)) {
+            detach(mediaEle);
+            popup.close();
+            this.enableToolbarItems();
+        } else {
+            return;
         }
     }
 
@@ -301,11 +294,12 @@ export class PopupUploader {
      * @param {DragEvent} dragEvent - The drag event
      * @param {IShowPopupArgs} args - Popup arguments
      * @param {ImageSuccessEventArgs | MediaSuccessEventArgs} e - Success event arguments
+     * @param {Popup} popup - Uploader popup object
      * @returns {void}
      * @hidden
      */
     public uploadSuccess(mediaElement: HTMLElement, dragEvent: DragEvent, args: IShowPopupArgs,
-                         e: ImageSuccessEventArgs | MediaSuccessEventArgs): void {
+                         e: ImageSuccessEventArgs | MediaSuccessEventArgs, popup: Popup): void {
         if (e.operation === 'cancel') {
             return;
         }
@@ -375,11 +369,9 @@ export class PopupUploader {
                 }
             }
         });
-        if (this.popupObj) {
-            this.popupObj.close();
-        }
-        if (this.uploadObj && !this.uploadObj.isDestroyed) {
-            this.uploadObj.destroy();
+        if (popup) {
+            popup.close();
+            this.enableToolbarItems();
         }
 
         // Show appropriate quick toolbar and handle element based on type
@@ -388,14 +380,14 @@ export class PopupUploader {
             if (this.parent.insertImageSettings.resize) {
                 this.parent.notify(events.resizeStart, {
                     event: (dragEvent as MouseEvent) as PointerEvent,
-                    element: mediaElement
+                    target: mediaElement
                 }); }
         } else if (args.type === 'Videos') {
             this.parent.notify(events.insertCompleted, args);
             setTimeout(() => {
                 this.parent.notify(events.resizeStart, {
                     event: (dragEvent as MouseEvent) as PointerEvent,
-                    element: mediaElement as HTMLVideoElement
+                    target: mediaElement as HTMLVideoElement
                 });
             }, 100);
         } else if (args.type === 'Audios') {
@@ -407,22 +399,51 @@ export class PopupUploader {
      * Refreshes popup position relative to element
      *
      * @param {HTMLElement} targetElement - Element to position popup relative to
+     * @param {Popup} popup - Uploader popup object
      * @returns {void}
      * @hidden
      */
-    public refreshPopup(targetElement: HTMLElement): void {
+    public refreshPopup(targetElement: HTMLElement, popup: Popup): void {
         const targetPosition: number = this.parent.iframeSettings.enable ?
             this.parent.element.offsetTop + targetElement.offsetTop : targetElement.offsetTop;
         const rtePosition: number = this.parent.element.offsetTop + this.parent.element.offsetHeight;
         if (targetPosition > rtePosition) {
-            this.popupObj.offsetY = this.parent.iframeSettings.enable ? -30 : -65;
-            this.popupObj.element.style.display = 'block';
+            popup.offsetY = this.parent.iframeSettings.enable ? -30 : -65;
+            popup.element.style.display = 'block';
         } else {
-            if (this.popupObj) {
-                this.popupObj.refreshPosition(targetElement);
-                this.popupObj.element.style.display = 'block';
+            if (popup) {
+                popup.refreshPosition(targetElement);
+                popup.element.style.display = 'block';
             }
         }
+    }
+
+    private enableToolbarItems(): void {
+        const mediaPopups: NodeListOf<Element> = this.parent.element.querySelectorAll('.e-rte-upload-popup');
+        if (!this.parent.inlineMode.enable && this.parent.toolbarModule &&
+            this.parent.toolbarModule.baseToolbar && mediaPopups.length === 0) {
+            this.parent.toolbarModule.baseToolbar.toolbarObj.disable(false);
+        }
+    }
+
+    private onPopupClose(): void {
+        const currentPopupElem : HTMLElement = (this as unknown as PopupRootBound).popupRoot;
+        const currentPopupUploderObj : PopupUploader | PasteCleanup = (this as unknown as PopupRootBound).self;
+        if (!isNOU(currentPopupElem ) && !isNOU(currentPopupUploderObj )) {
+            const popupObj: Popup = getComponent(currentPopupElem , 'popup') as Popup;
+            (currentPopupUploderObj  as PopupUploader).parent.isBlur = false;
+            if (isNOU(popupObj)) { return; }
+            const uploaderObj: Uploader = (currentPopupUploderObj as PopupUploader).getUploaderInstance(currentPopupElem);
+            if (isNOU(uploaderObj)) { return; }
+            uploaderObj.destroy();
+            popupObj.destroy();
+            detach(currentPopupElem);
+        }
+    }
+
+    private getUploaderInstance(element: HTMLElement): Uploader {
+        const currentUploader: HTMLElement = element.querySelector('.e-uploader') as HTMLElement;
+        return getComponent(currentUploader, 'uploader');
     }
 
     /**
@@ -433,11 +454,6 @@ export class PopupUploader {
      */
     public destroy(): void {
         if (this.isDestroyed) { return; }
-
-        if (!isNOU(this.uploadCancelTime)) {
-            clearTimeout(this.uploadCancelTime);
-            this.uploadCancelTime = null;
-        }
         if (!isNOU(this.uploadFailureTime)) {
             clearTimeout(this.uploadFailureTime);
             this.uploadFailureTime = null;
@@ -446,16 +462,16 @@ export class PopupUploader {
             clearTimeout(this.uploadSuccessTime);
             this.uploadSuccessTime = null;
         }
-
-        if (this.popupObj && !this.popupObj.isDestroyed) {
-            this.popupObj.destroy();
-            detach(this.popupObj.element);
-            this.popupObj = null;
-        }
-        if (this.uploadObj && !this.uploadObj.isDestroyed) {
-            this.uploadObj.destroy();
-            detach(this.uploadObj.element);
-            this.uploadObj = null;
+        const mediaPopups: NodeListOf<Element> = this.parent.element.querySelectorAll('.e-rte-upload-popup');
+        for (let i: number = 0; i < mediaPopups.length; i++) {
+            const uploader: Uploader = this.getUploaderInstance(mediaPopups[i as number] as HTMLElement);
+            if (uploader && !uploader.isDestroyed) {
+                uploader.destroy();
+            }
+            const popup: Popup = getComponent(mediaPopups[i as number] as HTMLElement, 'popup') as Popup;
+            if (popup && !popup.isDestroyed) {
+                popup.destroy();
+            }
         }
         this.isDestroyed = true;
     }

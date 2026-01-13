@@ -213,7 +213,7 @@ export class TaskProcessor extends DateProcessor {
                     this.isResourceString = true;
                     const id: string = resourceData;
                     for (let j: number = 0; j < resources.length; j++) {
-                        if (resources[j as number][this.parent.resourceFields.name as string].toString() === id.toString()) {
+                        if (resources[j as number][resourceIdMapping as string].toString() === id.toString()) {
                             if (resources[j as number][child as string]) {
                                 resources[j as number][child as string].push(tempData);
                             } else {
@@ -2696,6 +2696,9 @@ export class TaskProcessor extends DateProcessor {
     private updateTaskDataResource(ganttData: IGanttData): void {
         const resourceData: Object[] = ganttData.ganttProperties.resourceInfo;
         let preTaskResources: Object[] = ganttData.taskData[this.parent.taskFields.resourceInfo];
+        if (typeof (preTaskResources) === 'string') {
+            preTaskResources = [parseInt(ganttData.taskData[this.parent.taskFields.resourceInfo], 10)];
+        }
         const resourceSettings: ResourceFieldsModel = this.parent.resourceFields;
         if (isNullOrUndefined(preTaskResources)) {
             ganttData.taskData[this.parent.taskFields.resourceInfo] = resourceData;
@@ -2991,7 +2994,7 @@ export class TaskProcessor extends DateProcessor {
             const resourceIds: string = data[this.parent.taskFields.resourceInfo].split(',');
             if (resourceIds) {
                 resourceData.forEach((resourceInfo: Object) => {
-                    if (resourceIds.includes(resourceInfo[this.parent.resourceFields.name as string])) {
+                    if (resourceIds.includes(resourceInfo[resourceIDMapping as string].toString())) {
                         resource.push(resourceInfo);
                     }
                 });
@@ -3061,7 +3064,8 @@ export class TaskProcessor extends DateProcessor {
         if (resourceInfo && resourceInfo.length > 0) {
             const resourceLength: number = resourceInfo.length;
             if (typeof data.taskData[this.parent.taskFields.resourceInfo] === 'string') {
-                const taskResources: string = data.taskData[this.parent.taskFields.resourceInfo];
+                //To update the resource name instead of resource id, while resource mapping is string format in datasource
+                const taskResources: string = resourceInfo[0][this.parent.resourceFields.name];
                 const stringResourceName: string = taskResources;
                 this.parent.setRecordValue('resourceNames', stringResourceName, data.ganttProperties, true);
                 this.parent.setRecordValue(this.parent.taskFields.resourceInfo, stringResourceName, data, true);

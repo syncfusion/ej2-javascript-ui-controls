@@ -2763,6 +2763,7 @@ export class TextSearch {
             this.pdfViewerBase.clearAllTextSearchOccurrences();
             const inputString: string = (this.searchInput as HTMLInputElement).value;
             this.searchIndex = 0;
+            this.isMultiSearch = false;
             this.initiateTextSearch(inputString);
             if (this.searchCount === 0 && !this.isMessagePopupOpened) {
                 this.onMessageBoxOpen();

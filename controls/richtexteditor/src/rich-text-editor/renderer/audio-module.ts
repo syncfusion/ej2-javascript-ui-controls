@@ -1100,9 +1100,10 @@ export class Audio {
         const range: Range = this.parent.formatter.editorManager.nodeSelection.getRange(this.parent.contentModule.getDocument());
         const timeOut: number = dragEvent.dataTransfer.files[0].size > 1000000 ? 300 : 100;
         this.audioDragPopupTime = setTimeout(() => {
-            this.popupUploaderObj.refreshPopup(audioElement);
+            this.popupUploaderObj.refreshPopup(audioElement, this.popupObj);
         }, timeOut);
-        this.uploadObj = this.popupUploaderObj.createUploader('Audios', dragEvent, audioElement, this.popupObj.element.childNodes[0] as HTMLElement);
+        this.uploadObj = this.popupUploaderObj.createUploader(
+            'Audios', dragEvent, audioElement, this.popupObj.element.childNodes[0] as HTMLElement, this.popupObj);
         (this.popupObj.element.querySelector('.e-rte-dialog-upload .e-file-select-wrap') as HTMLElement).style.display = 'none';
         range.selectNodeContents(audioElement);
         this.parent.formatter.editorManager.nodeSelection.setRange(this.contentModule.getDocument(), range);

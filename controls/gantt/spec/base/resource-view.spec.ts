@@ -2904,8 +2904,90 @@ describe('CR-917356: An invalid resource collection is being passed, resulting i
         }, done);
     });
     it('Checking resource with invalid string format', () => {
-       expect(ganttObj.currentViewData[1].ganttProperties.resourceNames).toBe('1');
+       expect(ganttObj.currentViewData[1].ganttProperties.resourceNames).toBe('Rose Fuller');
        expect(ganttObj.currentViewData[2].ganttProperties.resourceNames).toBe('Rose Fuller');
+    });
+    afterAll(() => {
+        if (ganttObj) {
+            destroyGantt(ganttObj);
+        }
+    });
+});
+describe('CR-1000002: Resource mapping wrong in source, it uses resourceName instead of resourceId', () => {
+    let ganttObj: Gantt;
+    beforeAll((done: Function) => {
+        ganttObj = createGantt({
+            dataSource: [
+               {
+                    TaskID: 1,
+                    TaskName: 'Project initiation',
+                    StartDate: new Date('03/29/2019'),
+                    EndDate: new Date('04/21/2019'),
+                    subtasks: [
+                        {
+                            TaskID: 2, TaskName: 'Identify site location', StartDate: new Date('03/29/2019'), Duration: 3,
+                            Progress: 30, work: 10, resources: "1"
+                        },
+                        {
+                            TaskID: 3, TaskName: 'Perform soil test', StartDate: new Date('03/29/2019'), Duration: 4,
+                            resources: "2", Progress: 30, work: 20
+                        },
+                        {
+                            TaskID: 4, TaskName: 'Soil test approval', StartDate: new Date('03/29/2019'), Duration: 4,
+                            resources: "3", Predecessor: 2, Progress: 30, work: 10,
+                        },
+                    ]
+                }
+            ],
+            resources: [
+                { resourceId: 1, resourceName: 'Martin Tamer', resourceGroup: 'Planning Team' },
+                { resourceId: 2, resourceName: 'Rose Fuller', resourceGroup: 'Testing Team' },
+                { resourceId: 3, resourceName: 'Margaret Buchanan', resourceGroup: 'Approval Team' }
+            ],
+            taskFields: {
+                id: 'TaskID',
+                name: 'TaskName',
+                startDate: 'StartDate',
+                endDate: 'EndDate',
+                duration: 'Duration',
+                progress: 'Progress',
+                dependency: 'Predecessor',
+                child: 'subtasks',
+                work: 'work',
+                resourceInfo: 'resources'
+            },
+            viewType: 'ResourceView',
+            resourceFields: {
+                id: 'resourceId',
+                name: 'resourceName',
+                unit: 'resourceUnit',
+                group: 'resourceGroup'
+            },
+            editSettings: {
+                allowAdding: true,
+                allowEditing: true,
+                allowDeleting: true,
+                allowTaskbarEditing: true,
+                showDeleteConfirmDialog: true
+            },
+            toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll'],
+            labelSettings: {
+                taskLabel: 'TaskName'
+            },
+            splitterSettings: {
+                columnIndex: 2
+            },
+            allowResizing: true,
+            allowSelection: true,
+            highlightWeekends: true,
+            treeColumnIndex: 1,
+            height: '450px'
+        }, done);
+    });
+    it('Checking resource task rendered in string format', () => {
+       expect(ganttObj.currentViewData.length).toBe(6);
+       expect(ganttObj.currentViewData[3].ganttProperties.resourceNames).toBe('Rose Fuller');
+       expect(ganttObj.currentViewData[3].ganttProperties.taskName).toBe('Perform soil test');
     });
     afterAll(() => {
         if (ganttObj) {

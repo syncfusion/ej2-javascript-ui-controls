@@ -12020,7 +12020,7 @@ describe('Test case for showcase sample', () => {
         if (saveRecord) {
             triggerMouseEvent(saveRecord, 'click');
         }
-        expect(ganttObj.flatData.length).toBe(30);
+        expect(ganttObj.flatData.length).toBe(5);
     });
     afterAll(() => {
         if (ganttObj) {

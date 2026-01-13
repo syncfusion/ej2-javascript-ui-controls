@@ -1042,7 +1042,20 @@ export abstract class BlockWidget extends Widget {
                     return containerWidth;
                 }
             }
-            return this.associatedCell.getCellWidth(this);
+            let width: number = this.associatedCell.getCellWidth(this);
+            const ownerCell: TableCellWidget = this.associatedCell;		
+            const cellSpacing: number = !isNullOrUndefined(ownerCell.ownerRow) && !isNullOrUndefined(ownerCell.ownerRow.ownerTable) ?		
+            ownerCell.ownerRow.ownerTable.tableFormat.cellSpacing : 0;		
+            let leftPad: number = 0;		
+            let rightPad: number = 0;		
+            if (block instanceof TableWidget && cellSpacing > 0)		
+            {		
+                leftPad = cellSpacing * 2 + block.tableFormat.borders.left.getLineWidth();		
+                rightPad = cellSpacing * 2 + block.tableFormat.borders.right.getLineWidth();		
+                width -= leftPad + rightPad;		
+            }		
+            //Calculates the cell client width reducing padding and cell spacing.		
+            return width;
         }
         if (this.containerWidget instanceof TextFrame) {
             let shape: ShapeElementBox = this.containerWidget.containerShape as ShapeElementBox;
@@ -1169,6 +1182,10 @@ export class ParagraphWidget extends BlockWidget {
      * @private
      */
     public isChangeDetected: boolean = false;
+    /**
+     * @private
+     */
+    public ischildContentControl: boolean = false;
     /**
      * @private
      */
@@ -2571,6 +2588,7 @@ export class TableWidget extends BlockWidget {
         let containerWidth: number = 0;
         let tableWidth: number = 0;
         let rowSpannedCells: TableCellWidget[] = [];
+        let gridBeforeWidth: boolean = false;
         /* eslint-disable-next-line max-len */
         let isAutoWidth: boolean = (this.tableFormat.preferredWidthType === 'Auto' || (this.tableFormat.preferredWidthType === "Point" && this.tableFormat.preferredWidth === 0));
         let isAutoFit: boolean = this.tableFormat.allowAutoFit;
@@ -2604,6 +2622,7 @@ export class TableWidget extends BlockWidget {
             let sizeInfo: ColumnSizeInfo = new ColumnSizeInfo();
             let offset: number = 0;
             if (rowFormat.gridBefore > 0 && (row.rowFormat.beforeWidth !== 0 || row.rowFormat.gridBeforeWidth !== 0) && ((this.bodyWidget.page.documentHelper.alignTablesRowByRow) ? row.ownerTable.tableFormat.tableAlignment === 'Left' || (this.bodyWidget.page.documentHelper.compatibilityMode === 'Word2003' && (row.ownerTable.firstChild as TableRowWidget).rowFormat.gridAfter > 0) : true)) {
+                gridBeforeWidth = true;
                 cellWidth = this.getCellWidth(rowFormat.gridBeforeWidth, row.rowFormat.gridAfterWidthType, tableWidth, null);
                 sizeInfo.minimumWidth = cellWidth;
                 this.tableHolder.addColumns(columnSpan, columnSpan = rowFormat.gridBefore, cellWidth, sizeInfo, offset = cellWidth, 'Point', isAutoWidth);
@@ -2683,12 +2702,19 @@ export class TableWidget extends BlockWidget {
             this.isDefaultFormatUpdated = true;
         }
         this.tableHolder.validateColumnWidths();
-        if (isAutoFit) {
-            // Fits the column width automatically based on contents.
-            this.tableHolder.autoFitColumn(containerWidth, tableWidth, isAutoWidth, this.isInsideTable, isAutoFit, hasSpannedCells, this.bodyWidget.page.viewer.clientArea.width, this.leftIndent + this.rightIndent, pageContainerWidth, this.tableFormat.preferredWidthType);
-        } else {
-            // Fits the column width based on preferred width. i.e. Fixed layout.
-            this.tableHolder.fitColumns(containerWidth, tableWidth, isAutoWidth, isAutoFit, this.leftIndent + this.rightIndent);
+        let isCurrentTableResizing: boolean = false;
+        if (!isNullOrUndefined(this.bodyWidget.page) && this.bodyWidget.page.documentHelper && this.bodyWidget.page.documentHelper.owner
+            && (this.bodyWidget.page.documentHelper.owner.isTableMarkerDragging || this.bodyWidget.page.documentHelper.isRowOrCellResizing)) {
+            isCurrentTableResizing = this.bodyWidget.page.documentHelper.owner.editorModule.tableResize.currentResizingTable === this;
+        }
+        if (!isCurrentTableResizing) {
+            if (isAutoFit) {
+                // Fits the column width automatically based on contents.
+                this.tableHolder.autoFitColumn(containerWidth, tableWidth, isAutoWidth, this.isInsideTable, isAutoFit, hasSpannedCells, this.bodyWidget.page.viewer.clientArea.width, this.leftIndent + this.rightIndent, pageContainerWidth, this.tableFormat.preferredWidthType, gridBeforeWidth);
+            } else {
+                // Fits the column width based on preferred width. i.e. Fixed layout.
+                this.tableHolder.fitColumns(containerWidth, tableWidth, isAutoWidth, isAutoFit, this.leftIndent + this.rightIndent);
+            }
         }
         // if (!isAutoFit && isAutoWidth) {
         //     tableWidth = this.tableHolder.tableWidth;
@@ -3417,10 +3443,13 @@ export class TableRowWidget extends BlockWidget {
      * @private
      */
     public getTableCellWidget(point: Point): TableCellWidget {
+        const isBidiTable : boolean = this.ownerTable.isBidiTable;
         for (let i: number = 0; i < this.childWidgets.length; i++) {
             let x: number = Math.round((this.childWidgets[i] as TableCellWidget).x);
             if (x - (this.childWidgets[i] as TableCellWidget).margin.left - 1 <= point.x
-                && (x + (this.childWidgets[i] as TableCellWidget).width) >= point.x) {
+                && (isBidiTable ? x + (this.childWidgets[i] as TableCellWidget).width + (this.childWidgets[i] as TableCellWidget).margin.left
+                    + (this.childWidgets[i] as TableCellWidget).margin.right >= point.x
+                    : x + (this.childWidgets[i] as TableCellWidget).width >= point.x)) {
                 return (this.childWidgets[i] as TableCellWidget);
             } else if (i === this.childWidgets.length - 1
                 && ((this.childWidgets[i] as TableCellWidget).x + (this.childWidgets[i] as TableCellWidget).width) + 1 <= point.x) {
@@ -3936,6 +3965,8 @@ export class TableCellWidget extends BlockWidget {
             } else {
                 cellWidth = this.cellFormat.preferredWidth - leftMargin - rightMargin;
             }
+        } else if (!isNullOrUndefined(ownerTable) && ownerTable.tableFormat.preferredWidthType === 'Percent' && ownerTable.tableFormat.allowAutoFit && this.cellFormat.preferredWidthType === 'Auto' && block instanceof TableWidget && block.tableFormat.preferredWidthType === 'Percent' && block.tableFormat.allowAutoFit) {		
+            cellWidth = this.cellFormat.cellWidth - leftMargin - rightMargin;		
         }
         // For grid before and grid after with auto width, no need to calculate minimum preferred width.
         return cellWidth;
@@ -4545,7 +4576,14 @@ export class TableCellWidget extends BlockWidget {
             if (widget instanceof ParagraphWidget) {
                 const leftIndent = HelperMethods.convertPointToPixel(widget.leftIndent);
                 const rightIndent = HelperMethods.convertPointToPixel(widget.rightIndent);
-                widget.x = left + (widget.bidi ? rightIndent : leftIndent);
+                if ( widget.isInsideTable && widget.associatedCell.ownerTable.isBidiTable && this.bodyWidget.page.documentHelper.layout.isNeedToUpdateXPositionForEmptyParagraph(widget)) {
+                    const tableCellWidth = widget.associatedCell.width;
+                    const paragraphMarkWidth: number = this.bodyWidget.page.documentHelper.textHelper.getParagraphMarkWidth(widget.characterFormat);
+                    widget.x += tableCellWidth - paragraphMarkWidth - leftIndent;
+                }
+                else {
+                    widget.x = left + (widget.bidi ? rightIndent : leftIndent);
+                }
             }
             if (widget instanceof TableWidget) {
                 let tableWidget: TableWidget = widget as TableWidget;
@@ -6056,6 +6094,7 @@ export class TextElementBox extends ElementBox {
             for (let i: number = 0; i < this.ignoreOnceItems.length; i++) {
                 textEle.ignoreOnceItems.push(this.ignoreOnceItems[i]);
             }
+            textEle.isChangeDetected = this.isChangeDetected;
         }
         textEle.baselineOffset = this.baselineOffset;
         // if (!isNullOrUndefined(this.paragraph) && this.paragraph.isInHeaderFooter) {
@@ -10142,7 +10181,7 @@ export class WTableHolder {
     /**
      * @private
      */
-    public autoFitColumn(containerWidth: number, preferredTableWidth: number, isAuto: boolean, isNestedTable: boolean, isAutoFit: boolean, hasSpannedCells: boolean, clientWidth: number, indent?: number, pageContainerWidth?: number, tablePreferredWidthType?: WidthType): void {
+    public autoFitColumn(containerWidth: number, preferredTableWidth: number, isAuto: boolean, isNestedTable: boolean, isAutoFit: boolean, hasSpannedCells: boolean, clientWidth: number, indent?: number, pageContainerWidth?: number, tablePreferredWidthType?: WidthType, gridBeforeWidth?: boolean): void {
         // Cell's preferred width should be considered until the table width fits to the container width.
         let maxTotal: number = 0;
         let minTotal: number = 0;
@@ -10302,7 +10341,8 @@ export class WTableHolder {
                     let availableWidth: number = 0;
                     if (((totalMinWidth < containerWidth) && ((containerWidth - totalMinWidth) >= 1) && !isAllColumnPointWidth)
                         || (isAllColumnPointWidth && !hasSpannedCells && totalMinimumWordWidth > containerWidth)
-                        || (hasSpannedCells && Math.round(totalPreferredWidth) > Math.round(containerWidth) && totalMaximumWordWidth > clientWidth)) {
+                        || (hasSpannedCells && Math.round(totalPreferredWidth) > Math.round(containerWidth) && totalMaximumWordWidth > clientWidth)
+                        || (hasSpannedCells && isAuto && totalMinimumWordWidth > totalPreferredWidth && Math.round(containerWidth) > Math.round(totalPreferredWidth) && !gridBeforeWidth && totalMinimumWordWidth < clientWidth)) {
                         if (isNestedTable || !hasSpannedCells || !isAllColumnPointWidth) {
                             availableWidth = containerWidth - totalMinWidth;
                             for (let i: number = 0; i < this.columns.length; i++) {

@@ -1018,12 +1018,14 @@ export class SfdtReader {
                             const lineWidget: LineWidget = new LineWidget(blockWidget as ParagraphWidget);
                             blockWidget.childWidgets.push(lineWidget);
                         }
-                        if (j === 0) {
+                        if (j === 0 && !isNullOrUndefined(blockWidget) && !isNullOrUndefined(blockWidget.firstChild) && !isNullOrUndefined((blockWidget.firstChild as LineWidget).children)) {
                             (blockWidget.firstChild as LineWidget).children.splice(0, 0, blockStartContentControl);
                             blockStartContentControl.line = blockWidget.firstChild as LineWidget;
                         } else {
-                            (blockWidget.lastChild as LineWidget).children.push(blockEndContentControl);
-                            blockEndContentControl.line = blockWidget.lastChild as LineWidget;
+                            if (!isNullOrUndefined(blockWidget) && !isNullOrUndefined(blockWidget.lastChild) && !isNullOrUndefined((blockWidget.lastChild as LineWidget).children)) {
+                                (blockWidget.lastChild as LineWidget).children.push(blockEndContentControl);
+                                blockEndContentControl.line = blockWidget.lastChild as LineWidget;
+                            }
                         }
                     }
                 }

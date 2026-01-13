@@ -919,7 +919,7 @@ export class Editor {
      */
     public insertComment(text?: string, commentProperties?: CommentProperties): Comment | void {
         if (isNullOrUndefined(this.selection.start) || (this.owner.isReadOnlyMode && !this.documentHelper.isCommentOnlyMode) || this.viewer.owner.enableHeaderAndFooter
-            || !this.viewer.owner.enableComment || this.selection.isPlainContentControl()) {
+            || !this.viewer.owner.enableComment || this.selection.isPlainContentControl() || this.selection.isInShape) {
             return;
         }
         if (this.viewer.owner.commentReviewPane.commentPane.isEditMode) {
@@ -6382,6 +6382,7 @@ export class Editor {
      * @private
      */
     public pasteInternal(event: ClipboardEvent, pasteWindow?: any): void {
+        showSpinner(this.owner.element);
         this.currentPasteOptions = this.owner.defaultPasteOption;
         this.isHtmlPaste = false;
         if (this.documentHelper.owner.enableLocalPaste) {
@@ -6439,9 +6440,11 @@ export class Editor {
                         this.pasteImage(item.getAsFile());
                     }
                 }
+                hideSpinner(this.owner.element);
             } else if (Browser.info.name === 'msie' && clipbordData.files !== undefined && clipbordData.files.length !== 0 &&
                 (clipbordData.files[0].type === 'image/png')) {
                 this.pasteImage(clipbordData.files[0] as File);
+                hideSpinner(this.owner.element);
             }
             // if (textContent !== '') {
             //     this.pasteContents(textContent);
@@ -6481,7 +6484,6 @@ export class Editor {
         let editor: any = this;
         this.pasteRequestHandler = new XmlHttpRequestHandler();
         this.owner.documentHelper.viewerContainer.focus();
-        showSpinner(this.owner.element);
         this.pasteRequestHandler.url = proxy.owner.serviceUrl + this.owner.serverActionSettings.systemClipboard;
         this.pasteRequestHandler.responseType = 'json';
         this.pasteRequestHandler.contentType = 'application/json;charset=UTF-8';
@@ -9186,6 +9188,7 @@ export class Editor {
             removedComment = this.checkAndRemoveComments();
             this.initHistory('InsertTable');
             this.documentHelper.owner.isShiftingEnabled = true;
+            table.tableFormat.bidi = startPos.paragraph.paragraphFormat.bidi;
             this.insertBlock(table);
             if (!isNullOrUndefined(table.containerWidget) && !isNullOrUndefined(table.containerWidget.containerWidget) && table.containerWidget.containerWidget instanceof FootNoteWidget) {
                 table.containerWidget.containerWidget.height += table.height;
@@ -18755,7 +18758,12 @@ export class Editor {
         //Copies the format to new paragraph.
         paragraph.paragraphFormat.ownerBase = paragraph;
         if (paragraphAdv.contentControlProperties) {
-            paragraph.contentControlProperties = paragraphAdv.contentControlProperties;
+            if (offset !== selection.getLineLength(currentLine) || (paragraphAdv.nextRenderedWidget && paragraphAdv.nextRenderedWidget instanceof ParagraphWidget && paragraphAdv.nextRenderedWidget.ischildContentControl)) {
+                paragraph.ischildContentControl = true;
+            }
+            if (!isNullOrUndefined(paragraph) && paragraph.ischildContentControl) {
+                paragraph.contentControlProperties = paragraphAdv.contentControlProperties;
+            }
         }
         if (currentLine === paragraphAdv.lastChild && offset === selection.getLineLength(currentLine) && !paragraphAdv.isContainsShapeAlone()) {
             if (!isInsertParaBeforeTable) {

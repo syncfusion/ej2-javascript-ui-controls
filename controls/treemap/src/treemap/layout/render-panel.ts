@@ -588,7 +588,18 @@ export class LayoutPanel {
         const tspanText: string[] = []; let height: number = 0; let textName: string;
         textCollection = ((text.indexOf('<br>')) !== -1) ? text.split('<br>') : null;
         customText = this.labelInterSectAction(rect, text, textStyle, interSectAction);
-        textSize = measureText(textCollection && textCollection[0] || customText[0], textStyle);
+        let largerText: string = '';
+        let largerTextWidth: number = 0;
+        if (!isNullOrUndefined(textCollection) && textCollection.length > 0) {
+            for (let i: number = 0; i < textCollection.length; i++) {
+                const currentTextWidth: number = measureText(textCollection[i as number], textStyle).width;
+                if (currentTextWidth > largerTextWidth) {
+                    largerTextWidth = currentTextWidth;
+                    largerText = textCollection[i as number];
+                }
+            }
+        }
+        textSize = measureText(textCollection && largerText || customText[0], textStyle);
         if (this.treemap.enableRtl) {
             const labelSize: Size = measureText(text, textStyle);
             const drillSymbolCount: number = text.search('[+]') || text.search('[-]');
@@ -598,9 +609,9 @@ export class LayoutPanel {
                 const drillSymbolSize: Size = measureText(drillSymbol, textStyle);
                 customText['0'] = textTrim(rect.width - drillSymbolSize.width - padding, customText[0], textStyle) + label;
             }
-
         }
-        const textLocation: Location = findLabelLocation(rect, position, textSize, 'Text', this.treemap);
+        const textCount: number = (!isNullOrUndefined(textCollection) && textCollection.length > 1) ? textCollection.length : 0;
+        const textLocation: Location = findLabelLocation(rect, position, textSize, 'Text', this.treemap, textCount);
         if (!isNullOrUndefined(textCollection)) {
             const collection: string[] = [];
             let texts: string = null;

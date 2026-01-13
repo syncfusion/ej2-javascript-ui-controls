@@ -943,16 +943,27 @@ export class CommandHandler {
             }
         }
     }
-    private collectAllDescendants(nodeId: string, diagram: Diagram, allDescendants:
+    private collectAllDescendants(nodeId: string, diagram: Diagram, connectorObjectsDetails: any, allDescendants:
     { [key: string]: (NodeModel | ConnectorModel)[] } = {}): { [key: string]: (NodeModel | ConnectorModel)[] } {
         const node: NodeModel | ConnectorModel = this.diagram.nameTable[`${nodeId}`];
         const descendants: {} = allDescendants;
         if (node && (node as Node).children && (node as Node).children.length > 0) {
             descendants[`${nodeId}`] = [];
             for (const childId of (node as Node).children) {
+                const child: Node | Connector = this.diagram.nameTable[`${childId}`];
+                if (child instanceof Node) {
+                    const detail: object = { inEdges: child.inEdges, outEdges: child.outEdges };
+                    connectorObjectsDetails[`${child.id}`] = cloneObject(detail);
+                } else if (child instanceof Connector) {
+                    const detail: object = {
+                        sourceID: child.sourceID, targetID: child.targetID,
+                        sourcePortID: child.sourcePortID, targetPortID: child.targetPortID
+                    };
+                    connectorObjectsDetails[`${child.id}`] = cloneObject(detail);
+                }
                 descendants[`${nodeId}`].push(diagram.nameTable[`${childId}`]);
                 // Recursively collect children of this child
-                this.collectAllDescendants(childId, diagram, descendants);
+                this.collectAllDescendants(childId, diagram, connectorObjectsDetails, descendants);
             }
         }
         return descendants;
@@ -996,7 +1007,7 @@ export class CommandHandler {
             const index: number = objectLayer.objects.indexOf(i);
             if (index > -1) {
                 targerNodes = this.diagram.nameTable[`${i}`];
-                const allDescendantsMap: {} = this.collectAllDescendants(`${i}`, this.diagram);
+                const allDescendantsMap: {} = this.collectAllDescendants(`${i}`, this.diagram, connectorObjectsDetails);
                 this.diagram.unSelect(targerNodes);
                 //875087 - Restrict removing dependent connectors when moveing between layers
                 this.diagram.deleteDependentConnector = false;
@@ -5493,6 +5504,9 @@ Remove terinal segment in initial
         update?: boolean, segment?: OrthogonalSegmentModel | BezierSegmentModel | StraightSegmentModel):
         boolean {
         const connector: ConnectorModel = this.diagram.nameTable[obj.id];
+        if (!connector) {
+            return false;
+        }
         let oldChanges: Connector;
         const boundaryConstraints: boolean = this.checkBoundaryConstraints(tx, ty, connector.wrapper.bounds);
         if (canDragTargetEnd(connector as Connector) && endPoint !== 'BezierTargetThumb'

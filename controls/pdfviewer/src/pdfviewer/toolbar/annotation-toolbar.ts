@@ -5338,7 +5338,8 @@ export class AnnotationToolbar {
                 const showColor: boolean = isEnable && canColor;
                 const showOpacity: boolean = isEnable && canOpacity;
                 if (showColor || showOpacity) {
-                    if (visibleToolbarItems.length > 0 && visibleToolbarItems[visibleToolbarItems.length - 1].classList &&
+                    if (!isNullOrUndefined(visibleToolbarItems) && visibleToolbarItems.length > 0 &&
+                        visibleToolbarItems[visibleToolbarItems.length - 1].classList &&
                         visibleToolbarItems[visibleToolbarItems.length - 1].classList[2]) {
                         let lastElement: string = visibleToolbarItems[visibleToolbarItems.length - 1].classList[2];
                         if (visibleToolbarItems[visibleToolbarItems.length - 1].classList[1] === 'e-pv-sign-template-container' ||
@@ -5361,7 +5362,8 @@ export class AnnotationToolbar {
             } else if (annotProperty === 'line') {
                 const showLineColor: boolean = enableColorTool && canColor;
                 if (showLineColor && reset) {
-                    if (visibleToolbarItems.length > 0 && visibleToolbarItems[visibleToolbarItems.length - 1].classList &&
+                    if (!isNullOrUndefined(visibleToolbarItems) && visibleToolbarItems.length > 0 &&
+                        visibleToolbarItems[visibleToolbarItems.length - 1].classList &&
                         visibleToolbarItems[visibleToolbarItems.length - 1].classList[2]) {
                         let lastElement: string = visibleToolbarItems[visibleToolbarItems.length - 1].classList[2];
                         if (visibleToolbarItems[visibleToolbarItems.length - 1].classList[1] === 'e-pv-sign-template-container' ||
@@ -5392,7 +5394,8 @@ export class AnnotationToolbar {
                 const showThickness: boolean = isEnable && canThickness;
                 const showOpacity: boolean = isEnable && canOpacity;
                 if ((canShowFillColor || showStroke || showThickness || showOpacity) && reset) {
-                    if (visibleToolbarItems.length > 0 && visibleToolbarItems[visibleToolbarItems.length - 1].classList &&
+                    if (!isNullOrUndefined(visibleToolbarItems) && visibleToolbarItems.length > 0 &&
+                        visibleToolbarItems[visibleToolbarItems.length - 1].classList &&
                         visibleToolbarItems[visibleToolbarItems.length - 1].classList[2]) {
                         let lastElement: string = visibleToolbarItems[visibleToolbarItems.length - 1].classList[2];
                         if (visibleToolbarItems[visibleToolbarItems.length - 1].classList[1] === 'e-pv-sign-template-container' ||
@@ -5439,7 +5442,8 @@ export class AnnotationToolbar {
                 const showFontColor: boolean = isEnable && canFontColor;
                 if (showColor || showStroke || showThickness || showOpacity || showFontFamily || showFontSize || showFontStyles ||
                     showFontAlign || showFontColor && reset) {
-                    if (visibleToolbarItems.length > 0 && visibleToolbarItems[visibleToolbarItems.length - 1].classList &&
+                    if (!isNullOrUndefined(visibleToolbarItems) && visibleToolbarItems.length > 0 &&
+                        visibleToolbarItems[visibleToolbarItems.length - 1].classList &&
                         visibleToolbarItems[visibleToolbarItems.length - 1].classList[2]) {
                         let lastElement: string = visibleToolbarItems[visibleToolbarItems.length - 1].classList[2];
                         if (visibleToolbarItems[visibleToolbarItems.length - 1].classList[1] === 'e-pv-sign-template-container' ||
@@ -5463,7 +5467,8 @@ export class AnnotationToolbar {
             } else if (annotProperty === 'stamp') {
                 const showOpacity: boolean = isEnable && canOpacity;
                 if (showOpacity && reset) {
-                    if (visibleToolbarItems.length > 0 && visibleToolbarItems[visibleToolbarItems.length - 1].classList &&
+                    if (!isNullOrUndefined(visibleToolbarItems) && visibleToolbarItems.length > 0 &&
+                        visibleToolbarItems[visibleToolbarItems.length - 1].classList &&
                         visibleToolbarItems[visibleToolbarItems.length - 1].classList[2]) {
                         let lastElement: string = visibleToolbarItems[visibleToolbarItems.length - 1].classList[2];
                         if (visibleToolbarItems[visibleToolbarItems.length - 1].classList[1] === 'e-pv-sign-template-container' ||
@@ -5495,8 +5500,8 @@ export class AnnotationToolbar {
             if (toolbarContainer && toolbarContainer.children) {
                 const lastVisibleToolbarItems: Element[] = Array.from(toolbarContainer.children)
                     .filter((item: Element) => !item.classList.contains('e-hidden'));
-                if (visibleToolbarItems[visibleToolbarItems.length - 1] &&
-                    lastVisibleToolbarItems[lastVisibleToolbarItems.length - 1].classList &&
+                if (!isNullOrUndefined(visibleToolbarItems) && visibleToolbarItems[visibleToolbarItems.length - 1] &&
+                    !isNullOrUndefined(lastVisibleToolbarItems) && lastVisibleToolbarItems[lastVisibleToolbarItems.length - 1].classList &&
                     lastVisibleToolbarItems[lastVisibleToolbarItems.length - 1].classList.contains('e-separator')) {
                     const index: number = this.getIndexByCssClass(lastVisibleToolbarItems[lastVisibleToolbarItems.length - 1].classList[1]);
                     this.applyHideToToolbar(false, index, index);
@@ -5532,7 +5537,8 @@ export class AnnotationToolbar {
                 visibleToolbarItems = Array.from(toolbarContainer.children)
                     .filter((item: Element) => !item.classList.contains('e-hidden'));
             }
-            if (visibleToolbarItems.length > 0 && visibleToolbarItems[visibleToolbarItems.length - 1].classList &&
+            if (!isNullOrUndefined(visibleToolbarItems) && visibleToolbarItems.length > 0 &&
+                visibleToolbarItems[visibleToolbarItems.length - 1].classList &&
                 visibleToolbarItems[visibleToolbarItems.length - 1].classList[2]) {
                 let lastElement: string = visibleToolbarItems[visibleToolbarItems.length - 1].classList[2];
                 if (visibleToolbarItems[visibleToolbarItems.length - 1].classList[1] === 'e-pv-sign-template-container' ||

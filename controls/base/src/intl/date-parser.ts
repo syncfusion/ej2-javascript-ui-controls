@@ -258,9 +258,14 @@ export class DateParser {
         const tzone: number = options.timeZone;
         if (!isUndefined(y)) {
             const len: number = (y + '').length;
-            if (len <= 2) {
+            const typedYearString: string = (options as any).typedYearString || '';
+            const isPaddedAncientYear: boolean = /^0{2,3}\d{1,2}$/.test(typedYearString);
+            if (len <= 2 && !isPaddedAncientYear) {
                 const century: number = Math.floor(res.getFullYear() / 100) * 100;
                 y += century;
+            }
+            if (isPaddedAncientYear) {
+                return null;
             }
             res.setFullYear(y);
         }
@@ -339,6 +344,9 @@ export class DateParser {
                 let matchString: string = matches[curObject.pos];
                 if (curObject.isNumber) {
                     (<any>retOptions)[`${prop}`] = this.internalNumberParser(matchString, num);
+                    if (prop === 'year' && !isNullOrUndefined(matchString)) {
+                        (retOptions as any).typedYearString = matchString.trim();
+                    }
                 } else {
                     if (prop === 'timeZone' && !isUndefined(matchString)) {
                         const pos: number = curObject.pos;

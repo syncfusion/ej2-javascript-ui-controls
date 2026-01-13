@@ -3141,3 +3141,309 @@ describe('CR:979664-Critical path validation not working when two parent tasks a
         }
     });
 });
+describe('CR:797272-Critical path', () => {
+    let ganttObj: Gantt;
+    beforeAll((done: Function) => {
+        ganttObj = createGantt(
+            {
+                dataSource: [
+                    {
+                        TaskID: 31,
+                        TaskName: 'New Task',
+                        StartDate: new Date(2025, 11, 8),
+                        Duration: 1,
+                        Progress: 0,
+                    },
+                    {
+                        TaskID: 32,
+                        TaskName: 'M4',
+                        StartDate: new Date(2025, 11, 9),
+                        Duration: 0,
+                        Progress: 0,
+                        Dependency: '31FS',
+                    },
+                    {
+                        TaskID: 33,
+                        TaskName: 'New Task',
+                        StartDate: new Date(2025, 11, 10),
+                        Duration: 1,
+                        Progress: 0,
+                        Dependency: '32FS',
+                    },
+                    {
+                        TaskID: 34,
+                        TaskName: 'New Task',
+                        StartDate: new Date(2025, 11, 11),
+                        Duration: 3,
+                        Progress: 0,
+                        Dependency: '33FS',
+                    },
+                    {
+                        TaskID: 35,
+                        TaskName: 'New Task',
+                        StartDate: new Date(2025, 11, 16),
+                        Duration: 3,
+                        Progress: 0,
+                        Dependency: '34FS',
+                    },
+                    {
+                        TaskID: 36,
+                        TaskName: 'New Task',
+                        StartDate: new Date(2025, 11, 10),
+                        Duration: 1,
+                        Progress: 0,
+                        Dependency: '32FS',
+                    },
+                    {
+                        TaskID: 37,
+                        TaskName: 'New Task',
+                        StartDate: new Date(2025, 11, 11),
+                        Duration: 1,
+                        Progress: 0,
+                        Dependency: '36FS',
+                    },
+                    {
+                        TaskID: 38,
+                        TaskName: 'New Task',
+                        StartDate: new Date(2025, 11, 12),
+                        Duration: 1,
+                        Progress: 0,
+                        Dependency: '37FS',
+                    },
+                    {
+                        TaskID: 39,
+                        TaskName: 'New Task',
+                        StartDate: new Date(2025, 11, 19),
+                        Duration: 1,
+                        Progress: 0,
+                        Dependency: '35FS,38FS',
+                    },
+                ],
+                dateFormat: 'MMM dd, y',
+                treeColumnIndex: 1,
+                allowSelection: true,
+                showColumnMenu: false,
+                highlightWeekends: true,
+                enableHover: true,
+                updateOffsetOnTaskbarEdit: false,
+                taskFields: {
+                    id: 'TaskID',
+                    name: 'TaskName',
+                    startDate: 'StartDate',
+                    duration: 'Duration',
+                    progress: 'Progress',
+                    dependency: 'Dependency',
+                },
+                timelineSettings: {
+                    topTier: {
+                        unit: 'Week',
+                        format: 'MMM dd, y',
+                    },
+                    bottomTier: {
+                        unit: 'Day',
+                    },
+                },
+                splitterSettings: {
+                    columnIndex: 3,
+                },
+                height: "650px",
+                taskbarHeight: 25,
+                rowHeight: 46,
+                editSettings: {
+                    allowAdding: true,
+                    allowEditing: true,
+                    allowDeleting: true,
+                    allowTaskbarEditing: true,
+                    showDeleteConfirmDialog: true,
+                },
+                gridLines: 'Both',
+                toolbar: [
+                    'Add',
+                    'Edit',
+                    'Update',
+                    'Delete',
+                    'Cancel',
+                    'ExpandAll',
+                    'CollapseAll',
+                    'Indent',
+                    'Outdent',
+                ],
+                resourceFields: {
+                    id: 'resourceId',
+                    name: 'resourceName',
+                },
+                resources: [
+                    { resourceId: 1, resourceName: 'Martin Tamer' },
+                    { resourceId: 2, resourceName: 'Rose Fuller' },
+                    { resourceId: 3, resourceName: 'Margaret Buchanan' },
+                    { resourceId: 4, resourceName: 'Fuller King' },
+                    { resourceId: 5, resourceName: 'Davolio Fuller' },
+                    { resourceId: 6, resourceName: 'Van Jack' },
+                    { resourceId: 7, resourceName: 'Fuller Buchanan' },
+                    { resourceId: 8, resourceName: 'Jack Davolio' },
+                    { resourceId: 9, resourceName: 'Tamer Vinet' },
+                    { resourceId: 10, resourceName: 'Vinet Fuller' },
+                    { resourceId: 11, resourceName: 'Bergs Anton' },
+                    { resourceId: 12, resourceName: 'Construction Supervisor' }
+                ],
+                enableCriticalPath: true
+            }, done);
+    });
+    it('Checking for Critical Path', () => {
+        expect(ganttObj.flatData[7].isCritical).toBe(false);
+    });
+    afterAll(() => {
+        if (ganttObj) {
+            destroyGantt(ganttObj);
+        }
+    });
+});
+describe('CR:797272-Critical path-2', () => {
+    let ganttObj: Gantt;
+    beforeAll((done: Function) => {
+        ganttObj = createGantt(
+            {
+                dataSource: [
+                    {
+                        TaskID: 1,
+                        TaskName: 'Project Start',
+                        StartDate: new Date(2025, 11, 8),
+                        Duration: 1,
+                        Progress: 0,
+                    },
+                    {
+                        TaskID: 2,
+                        TaskName: 'FS Task',
+                        StartDate: new Date(2025, 11, 9),
+                        Duration: 2,
+                        Progress: 0,
+                        Dependency: '1FS',
+                    },
+                    {
+                        TaskID: 3,
+                        TaskName: 'SS Task',
+                        StartDate: new Date(2025, 11, 11),
+                        Duration: 2,
+                        Progress: 0,
+                        Dependency: '2SS',
+                    },
+                    {
+                        TaskID: 4,
+                        TaskName: 'SF Task',
+                        StartDate: new Date(2025, 11, 13),
+                        Duration: 2,
+                        Progress: 0,
+                        Dependency: '3SF',
+                    },
+                    {
+                        TaskID: 5,
+                        TaskName: 'FF Task',
+                        StartDate: new Date(2025, 11, 15),
+                        Duration: 2,
+                        Progress: 0,
+                        Dependency: '4FF',
+                    },
+                    {
+                        TaskID: 6,
+                        TaskName: 'Critical Path End',
+                        StartDate: new Date(2025, 11, 17),
+                        Duration: 1,
+                        Progress: 0,
+                        Dependency: '2FS,3SS,4SF,5FF',
+                    },
+                    {
+                        TaskID: 7,
+                        TaskName: 'Non-Critical Task',
+                        StartDate: new Date(2025, 11, 10),
+                        Duration: 1,
+                        Progress: 0,
+                    },
+                    {
+                        TaskID: 8,
+                        TaskName: 'Another Non-Critical',
+                        StartDate: new Date(2025, 11, 12),
+                        Duration: 1,
+                        Progress: 0,
+                        Dependency: '7FS',
+                    },
+                ],
+                dateFormat: 'MMM dd, y',
+                treeColumnIndex: 1,
+                allowSelection: true,
+                showColumnMenu: false,
+                highlightWeekends: true,
+                enableHover: true,
+                updateOffsetOnTaskbarEdit: false,
+                taskFields: {
+                    id: 'TaskID',
+                    name: 'TaskName',
+                    startDate: 'StartDate',
+                    duration: 'Duration',
+                    progress: 'Progress',
+                    dependency: 'Dependency',
+                },
+                timelineSettings: {
+                    topTier: {
+                        unit: 'Week',
+                        format: 'MMM dd, y',
+                    },
+                    bottomTier: {
+                        unit: 'Day',
+                    },
+                },
+                splitterSettings: {
+                    columnIndex: 3,
+                },
+                height: "650px",
+                taskbarHeight: 25,
+                rowHeight: 46,
+                editSettings: {
+                    allowAdding: true,
+                    allowEditing: true,
+                    allowDeleting: true,
+                    allowTaskbarEditing: true,
+                    showDeleteConfirmDialog: true,
+                },
+                gridLines: 'Both',
+                toolbar: [
+                    'Add',
+                    'Edit',
+                    'Update',
+                    'Delete',
+                    'Cancel',
+                    'ExpandAll',
+                    'CollapseAll',
+                    'Indent',
+                    'Outdent',
+                ],
+                resourceFields: {
+                    id: 'resourceId',
+                    name: 'resourceName',
+                },
+                resources: [
+                    { resourceId: 1, resourceName: 'Martin Tamer' },
+                    { resourceId: 2, resourceName: 'Rose Fuller' },
+                    { resourceId: 3, resourceName: 'Margaret Buchanan' },
+                    { resourceId: 4, resourceName: 'Fuller King' },
+                    { resourceId: 5, resourceName: 'Davolio Fuller' },
+                    { resourceId: 6, resourceName: 'Van Jack' },
+                    { resourceId: 7, resourceName: 'Fuller Buchanan' },
+                    { resourceId: 8, resourceName: 'Jack Davolio' },
+                    { resourceId: 9, resourceName: 'Tamer Vinet' },
+                    { resourceId: 10, resourceName: 'Vinet Fuller' },
+                    { resourceId: 11, resourceName: 'Bergs Anton' },
+                    { resourceId: 12, resourceName: 'Construction Supervisor' }
+                ],
+                enableCriticalPath: true
+            }, done);
+    });
+    it('Checking for Critical Path', () => {
+        expect(ganttObj.flatData[6].isCritical).toBe(true);
+        expect(ganttObj.flatData[7].isCritical).toBe(true);
+    });
+    afterAll(() => {
+        if (ganttObj) {
+            destroyGantt(ganttObj);
+        }
+    });
+});

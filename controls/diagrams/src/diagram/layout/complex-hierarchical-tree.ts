@@ -410,6 +410,16 @@ class HierarchicalLayoutUtil {
             model = new MultiParentModel(this, tmp, candidateRoots, layout);
             this.cycleStage(model);
             this.layeringStage(model);
+            //999538 - Connectors overlap nodes when data contains self loop relationships between parent and child.
+            const reversedConnectorIds: string[] = Object.keys(model.edgeMapper.map).filter(key => {
+                return model.edgeMapper.map[`${key}`].isReversed === true;
+            });
+            reversedConnectorIds.forEach(id => {
+                const connector: ConnectorModel = diagram.connectors.find(conn => conn.id === id);
+                if (connector) {
+                    connector['levelSkip'] = true;
+                }
+            });
             const ranks: IVertex[][] = model.ranks;
             for (let x = ranks.length - 1; x >= 0; x--) {
                 let maxWidth = 0;
@@ -1957,13 +1967,14 @@ class MultiParentModel {
             for (let j: number = 0; j < conns.length; j++) {
                 const cell: Vertex = layout.getVisibleTerminal(conns[parseInt(j.toString(), 10)], false);
                 if (cell !== vertices[parseInt(i.toString(), 10)]) {
-                    const undirectedEdges: IConnector[] = layout.getEdgesBetween(vertices[parseInt(i.toString(), 10)], cell, false);
+                    //999538 - Connectors overlap nodes when data contains self loop relationships between parent and child.
+                    //const undirectedEdges: IConnector[] = layout.getEdgesBetween(vertices[parseInt(i.toString(), 10)], cell, false);
                     const directedEdges: IConnector[] = layout.getEdgesBetween(vertices[parseInt(i.toString(), 10)], cell, true);
-                    if (undirectedEdges != null && undirectedEdges.length > 0 && directedEdges.length * 2 >= undirectedEdges.length) {
-                        const internalEdge: IEdge = { x: [], y: [], temp: [], edges: undirectedEdges, ids: [] };
+                    if (directedEdges != null && directedEdges.length > 0) {
+                        const internalEdge: IEdge = { x: [], y: [], temp: [], edges: directedEdges, ids: [] };
                         if (dlayout.enableLayoutRouting) {
-                            for (let k: number = 0; k < undirectedEdges.length; k++) {
-                                const edge: IConnector = undirectedEdges[parseInt(k.toString(), 10)];
+                            for (let k: number = 0; k < directedEdges.length; k++) {
+                                const edge: IConnector = directedEdges[parseInt(k.toString(), 10)];
                                 this.setDictionary(this.edgeMapper, undefined, internalEdge, edge.id);
                                 // Resets all point on the edge and disables the edge style
                                 // without deleting it from the cell style
@@ -1971,8 +1982,8 @@ class MultiParentModel {
                             }
                         }
                         internalEdge.source = internalVertices[parseInt(i.toString(), 10)];
-                        for (let m: number = 0; m < undirectedEdges.length; m++) {
-                            internalEdge.ids.push(undirectedEdges[parseInt(m.toString(), 10)].id);
+                        for (let m: number = 0; m < directedEdges.length; m++) {
+                            internalEdge.ids.push(directedEdges[parseInt(m.toString(), 10)].id);
                         }
                         internalEdge.source = internalVertices[parseInt(i.toString(), 10)];
                         if (!internalVertices[parseInt(i.toString(), 10)].connectsAsSource) {
