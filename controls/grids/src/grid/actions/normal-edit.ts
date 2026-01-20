@@ -390,6 +390,9 @@ export class NormalEdit {
         if (!gObj.editSettings.showAddNewRow || (gObj.editSettings.showAddNewRow && gObj.element.querySelector('.e-editedrow'))) {
             gObj.editModule.destroyWidgets();
             gObj.editModule.destroyForm();
+            if (gObj.editSettings.mode !== 'Dialog' && isNullOrUndefined(gObj.editSettings.template)) {
+                gObj.editModule.formObj = null;
+            }
         }
         this.parent.notify(events.dialogDestroy, {});
     }
@@ -550,7 +553,7 @@ export class NormalEdit {
 
     private needRefresh(): boolean {
         let refresh: boolean = true;
-        const editedRow: Element = this.parent.element.querySelector('.e-gridform');
+        const editedRow: Element = this.parent.element.querySelector('.e-normaledit');
         if ((this.parent.enableVirtualization || this.parent.infiniteScrollSettings.enableCache)
             && this.parent.editSettings.mode === 'Normal' && !editedRow) {
             refresh = false;

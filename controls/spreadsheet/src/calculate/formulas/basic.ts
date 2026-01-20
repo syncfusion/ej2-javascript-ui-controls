@@ -1903,11 +1903,7 @@ export class BasicFormulas {
         if (args.length !== 1 || args[0] !== '') {
             return this.parent.formulaErrorStrings[FormulasErrorsStrings.InvalidArguments];
         }
-        const date: Date = new Date(Date.now());
-        const intl: Internationalization = new Internationalization();
-        const dFormatter: Function = intl.getDateFormat({ format: 'M/d/yyyy h:mm:ss a' });
-        const dt: number = (this.parent.parentObject as { dateToInt: Function }).dateToInt(dFormatter(date), true);
-        return dt.toString();
+        return (this.parent.parentObject as { dateToInt: Function }).dateToInt(new Date(Date.now()), true).toString();
     }
 
     /**
@@ -2754,22 +2750,13 @@ export class BasicFormulas {
         if (value.getFullYear() < 1900) {
             return this.parent.getErrorStrings()[CommonErrors.Num];
         }
-        const hh: string | number = value.getHours();
+        let h: string | number = value.getHours();
         let m: string | number = value.getMinutes();
         let s: string | number = value.getSeconds();
-        let dd: string = 'AM';
-        let h: string | number = hh;
-        if (h >= 12) {
-            h = hh - 12;
-            dd = 'PM';
-        }
-        if (h === 0) {
-            h = 12;
-        }
         m = m < 10 ? '0' + m : m;
         s = s < 10 ? '0' + s : s;
         h = h < 10 ? '0' + h : h;
-        result = h + ':' + m + ':' + s + ' ' + dd;
+        result = h + ':' + m + ':' + s;
         const timeCheck: DateFormatCheckArgs = { value: result.toString() };
         (<{ notify: Function }>this.parent.parentObject).notify(
             checkDateFormat, timeCheck);

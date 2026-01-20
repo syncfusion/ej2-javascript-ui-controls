@@ -10,5 +10,5 @@
 @use 'ej2-popups/styles/spinner/tailwind-definition' as *;
 @use 'image-editor/tailwind-definition' as *;
 @use 'image-editor/icons/tailwind' as *;
-@use 'image-editor/all' as *;
-@use 'image-editor/bigger' as *;
+@use 'image-editor/all.tailwind' as *;
+@use 'image-editor/bigger.tailwind' as *;

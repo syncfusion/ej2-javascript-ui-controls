@@ -2458,7 +2458,8 @@ export class TableWidget extends BlockWidget {
         this.tableCellInfo = undefined;
     }
     private updateValidPreferredWidth(cell: TableCellWidget): void {
-        if (cell.cellFormat.preferredWidthType === 'Point' && cell.cellFormat.preferredWidth !== cell.cellFormat.cellWidth && cell.cellFormat.preferredWidth < cell.getMinimumPreferredWidth()) {
+        if (cell.cellFormat.preferredWidthType === 'Point' && cell.cellFormat.preferredWidth !== cell.cellFormat.cellWidth
+            && cell.cellFormat.preferredWidth < HelperMethods.round(cell.getMinimumPreferredWidth(), 2)) {
             if (cell.indexInOwner === 0) {
                 cell.cellFormat.preferredWidth = cell.ownerColumn.endOffset;
             } else {
@@ -2748,7 +2749,7 @@ export class TableWidget extends BlockWidget {
             }
             if (rowFormat.gridAfter > 0) {
                 const lastCell: TableCellWidget = rw.lastChild as TableCellWidget;
-                let gridAfterStartIndex: number = lastCell.columnIndex + lastCell.cellFormat.columnSpan;
+                let gridAfterStartIndex: number = lastCell.index + lastCell.cellFormat.columnSpan;
                 rowFormat.afterWidth = this.tableHolder.getCellWidth(gridAfterStartIndex, rowFormat.gridAfter, tableWidth);
             }
         }
@@ -4954,7 +4955,7 @@ export class LineWidget implements IWidget {
                     inlineElement = !isNullOrUndefined(currentElement) ? currentElement : inlineElement;
                     indexInInline = isNullOrUndefined(currentElement) ? (offset - count) : 0;
                     return { 'element': inlineElement, 'index': indexInInline };
-                } else if (offset === count + inlineElement.length && this.children[i + 1] instanceof FootnoteElementBox) {
+                } else if (offset === inlineElement.length && this.children[i + 1] instanceof FootnoteElementBox) {
                     return { 'element': this.children[i + 1], 'index': indexInInline };
                 } else {
                     indexInInline = (offset - count);

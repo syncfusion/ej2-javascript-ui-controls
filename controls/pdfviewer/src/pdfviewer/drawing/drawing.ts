@@ -176,16 +176,20 @@ export class Drawing {
      * @returns {void}
      */
     public initNode(obj: PdfAnnotationBaseModel | PdfFormFieldBaseModel): void {
-        if (this.pdfViewer.annotationModule.isUndoRedoAction && (obj as PdfAnnotationBaseModel).shapeAnnotationType === 'Stamp') {
+        if (!isNullOrUndefined(this.pdfViewer.annotationModule) && this.pdfViewer.annotationModule.isUndoRedoAction && (obj as PdfAnnotationBaseModel).shapeAnnotationType === 'Stamp') {
             const id: string = obj.id;
             const stampObject: any = (this.pdfViewer.nameTable as any)[`${id}`].wrapper.children;
             this.stampPreviousSize = JSON.parse(JSON.stringify(stampObject));
-            this.stampPreviousWidth = obj.wrapper.actualSize.width;
-            this.stampPerviousHeight = obj.wrapper.actualSize.height;
+            this.stampPreviousWidth = !isNullOrUndefined(obj.wrapper.actualSize) && !isNullOrUndefined(obj.wrapper.actualSize.width) ?
+                obj.wrapper.actualSize.width : null;
+            this.stampPerviousHeight = !isNullOrUndefined(obj.wrapper.actualSize) && !isNullOrUndefined(obj.wrapper.actualSize.height) ?
+                obj.wrapper.actualSize.height : null;
         }
         if (this.isPasted && (obj as PdfAnnotationBaseModel).shapeAnnotationType === 'Stamp') {
-            this.stampOriginalWidth = obj.wrapper.actualSize.width;
-            this.stampOriginalHeight = obj.wrapper.actualSize.height;
+            this.stampOriginalWidth = !isNullOrUndefined(obj.wrapper.actualSize) && !isNullOrUndefined(obj.wrapper.actualSize.width) ?
+                obj.wrapper.actualSize.width : null;
+            this.stampOriginalHeight = !isNullOrUndefined(obj.wrapper.actualSize) && !isNullOrUndefined(obj.wrapper.actualSize.height) ?
+                obj.wrapper.actualSize.height : null;
         }
         const canvas: Container = this.initContainer(obj);
         let content: DrawingElement;
@@ -210,6 +214,14 @@ export class Drawing {
         if (this.isDynamicStamps) {
             this.pdfViewer.annotation.stampAnnotationModule.updateSessionStorage(obj, null, 'dynamicStamp');
             this.isDynamicStamps = false;
+        }
+        if (obj.wrapper instanceof DrawingElement) {
+            if ((obj as PdfAnnotationBaseModel).shapeAnnotationType === 'Stamp') {
+                obj.bounds.width = obj.wrapper.bounds.width;
+                obj.bounds.height = obj.wrapper.bounds.height;
+                obj.bounds.x = obj.wrapper.bounds.x;
+                obj.bounds.y = obj.wrapper.bounds.y;
+            }
         }
     }
 
@@ -361,6 +373,10 @@ export class Drawing {
                 const id: string = (this.pdfViewer.clipboardData.clipObject as any)[0].id;
                 copiedObject = (this.pdfViewer.nameTable as any)[`${id}`];
             }
+            if (obj && obj.annotationAddMode && obj.id === 'diagram_helper' && obj.icon !== 'Accepted' && obj.icon !== 'Rejected') {
+                obj.bounds.width = obj.bounds.width - 20;
+                obj.bounds.height = obj.bounds.height - 20;
+            }
             if (obj.isDynamicStamp) {
                 canvas.horizontalAlignment = 'Left';
                 basicElement = new DrawingElement();
@@ -407,10 +423,12 @@ export class Drawing {
                     textele.style.fontSize = copiedObject.wrapper.children[1].style.fontSize;
                     textele.margin.left = copiedObject.wrapper.children[1].margin.left;
                 }
-                if (this.pdfViewer.annotationModule.isUndoRedoAction) {
+                if (!isNullOrUndefined(this.pdfViewer.annotationModule) && this.pdfViewer.annotationModule.isUndoRedoAction) {
                     textele.style.fontSize = (this.stampPreviousSize[1].style as any).fontSize;
                 }
-                canvas.children.push(textele);
+                if (obj.id !== 'diagram_helper') {
+                    canvas.children.push(textele);
+                }
                 if (isAnnotationSet && (obj.bounds.width > annotationMaxWidth)) {
                     obj.bounds.width = annotationMaxWidth;
                 }
@@ -468,7 +486,7 @@ export class Drawing {
                     content.width = this.stampOriginalWidth;
                     content.height = this.stampOriginalHeight;
                 }
-                else if (this.pdfViewer.annotationModule.isUndoRedoAction) {
+                else if (!isNullOrUndefined(this.pdfViewer.annotationModule) && this.pdfViewer.annotationModule.isUndoRedoAction) {
                     textele1.style.fontSize = (this.stampPreviousSize[2].style as any).fontSize;
                     content.width = this.stampPreviousWidth;
                     content.height = this.stampPerviousHeight;
@@ -479,7 +497,9 @@ export class Drawing {
                 }
                 content.style.opacity = obj.opacity;
                 textele1.id = randomId() + '_stamp';
-                canvas.children.push(textele1);
+                if (obj.id !== 'diagram_helper') {
+                    canvas.children.push(textele1);
+                }
             } else {
                 canvas.horizontalAlignment = 'Left';
                 basicElement = new DrawingElement();
@@ -489,10 +509,8 @@ export class Drawing {
                 content.style.strokeColor = obj.stampStrokeColor;
                 canvas.children.push(content);
                 if (obj.icon === 'Accepted' || obj.icon === 'Rejected') {
-                    if (obj && obj.annotationAddMode && (obj.annotationAddMode === 'Existing Annotation' || obj.annotationAddMode === 'Imported Annotation')) {
-                        obj.bounds.width = obj.bounds.width - 20;
-                        obj.bounds.height = obj.bounds.height - 20;
-                    }
+                    content.style.fill = 'transparent';
+                    content.style.strokeColor = 'transparent';
                     const pathContent1: PathElement = new PathElement();
                     pathContent1.id = randomId() + '_stamp';
                     pathContent1.data = obj.data;
@@ -506,20 +524,14 @@ export class Drawing {
                         pathContent1.height = annotationMaxHeight;
                         obj.bounds.height = annotationMaxHeight;
                     }
-                    pathContent1.minWidth = pathContent1.width / 2;
-                    pathContent1.minHeight = pathContent1.height / 2;
                     const content1: any = pathContent1;
                     pathContent1.style.fill = obj.fillColor;
                     pathContent1.style.strokeColor = obj.strokeColor;
                     pathContent1.style.opacity = obj.opacity;
-                    content.width = obj.bounds.width + 20;
-                    content.height = obj.bounds.height + 20;
-                    content.minWidth = pathContent1.width / 2;
-                    content.minHeight = pathContent1.height / 2;
+                    content.width = obj.bounds.width;
+                    content.height = obj.bounds.height;
                     content.style.opacity = obj.opacity;
                     canvas.children.push(content1);
-                    canvas.minHeight = content.minHeight + 20;
-                    canvas.minWidth = content.minWidth + 20;
                 }
                 else{
                     if (isAnnotationSet && (obj.bounds.width > annotationMaxWidth)) {
@@ -572,9 +584,11 @@ export class Drawing {
                         content.width = this.stampOriginalWidth;
                         content.height = this.stampOriginalHeight;
                     }
-                    else if (this.pdfViewer.annotationModule.isUndoRedoAction) {
+                    else if (!isNullOrUndefined(this.pdfViewer.annotationModule) && this.pdfViewer.annotationModule.isUndoRedoAction) {
                         textele1.style.fontSize = (this.stampPreviousSize[1].style as any).fontSize;
-                        textele1.margin.left = (this.stampPreviousWidth - metrics.width) / 2;
+                        textele1.margin.top = this.stampPreviousSize[1].margin.top -
+                                    (this.stampPreviousSize[1].margin.top * 0.5);
+                        textele1.margin.left = this.stampPreviousSize[1].margin.left;
                         content.width = this.stampPreviousWidth;
                         content.height = this.stampPerviousHeight;
                     }
@@ -584,7 +598,9 @@ export class Drawing {
                     }
                     content.style.opacity = obj.opacity;
                     textele1.id = randomId() + '_stamp';
-                    canvas.children.push(textele1);
+                    if (obj.id !== 'diagram_helper') {
+                        canvas.children.push(textele1);
+                    }
                 }
             }
             break;
@@ -2649,60 +2665,63 @@ export class Drawing {
                                 } else {
                                     let targetWidth: number;
                                     let targetHeight: number;
-                                    if (ratio !== 0) {
-                                        targetWidth = actualObject.bounds.width;
-                                        targetHeight = actualObject.bounds.height;
+                                    if (actualObject.rotateAngle === 0 || (actualObject.rotateAngle > 0 && ratio !== 0))
+                                    {
+                                        if (ratio !== 0) {
+                                            targetWidth = actualObject.bounds.width;
+                                            targetHeight = actualObject.bounds.height;
+                                        }
+                                        else {
+                                            targetWidth = actualObject.wrapper.bounds.width;
+                                            targetHeight = actualObject.wrapper.bounds.height;
+                                        }
+                                        let iconWidth: number = targetWidth;
+                                        if (iconElement.content === 'REVISED' || iconElement.content === 'REVIEWED' || iconElement.content === 'RECEIVED' || iconElement.content === 'APPROVED') {
+                                            iconWidth = iconWidth / 2;
+                                        }
+                                        else if (iconElement.content === 'CONFIDENTIAL' || iconElement.content === 'NOT APPROVED') {
+                                            iconWidth = iconWidth * (3 / 4);
+                                        }
+                                        const elementPpadding: number = targetWidth * 0.02;
+                                        const elementInnerWidth: number = Math.max(0, targetWidth - 2 * elementPpadding);
+                                        const iconPadding: number = iconWidth * 0.02;
+                                        const iconInnerWidth: number = Math.max(0, iconWidth - 2 * iconPadding);
+                                        element.style.fontSize = this.
+                                            fontSizeCalculation(actualObject, element, elementInnerWidth, element.content);
+                                        iconElement.style.fontSize = this.
+                                            fontSizeCalculation(actualObject, iconElement, iconInnerWidth, iconElement.content);
+                                        const metrics: {
+                                            width: number;
+                                            height: number;
+                                            ascent: number;
+                                            descent: number;
+                                        } = this.measureTextMetrics(actualObject, iconElement.content,
+                                                                    iconElement.style.fontSize, iconElement.style.fontFamily);
+                                        const topOffset: number = (targetHeight * 0.75 - metrics.height) / 4;
+                                        iconElement.margin.top = Math.max(0, topOffset);
+                                        if (iconElement.content === 'CONFIDENTIAL' || iconElement.content === 'NOT APPROVED') {
+                                            iconElement.margin.left = (targetWidth - (metrics.width * (4 / 3))) / 2;
+                                        }
+                                        else {
+                                            iconElement.margin.left = (targetWidth - (metrics.width * 2)) / 2;
+                                        }
+                                        iconElement.desiredSize.width = metrics.width;
+                                        iconElement.desiredSize.height = metrics.height;
+                                        const elementMetrics: {
+                                            width: number;
+                                            height: number;
+                                            ascent: number;
+                                            descent: number;
+                                        } = this.measureTextMetrics(actualObject, element.content,
+                                                                    element.style.fontSize, element.style.fontFamily);
+                                        const bottomOffset: number = (targetHeight * 0.25 - elementMetrics.height) / 8;
+                                        element.margin.bottom = Math.max(0, bottomOffset);
+                                        if (element.margin.bottom < 1) {
+                                            element.margin.bottom = 4;
+                                        }
+                                        element.margin.left = (targetWidth - elementMetrics.width) / 2;
+                                        element.desiredSize.height = elementMetrics.height;
                                     }
-                                    else {
-                                        targetWidth = actualObject.wrapper.bounds.width;
-                                        targetHeight = actualObject.wrapper.bounds.height;
-                                    }
-                                    let iconWidth: number = targetWidth;
-                                    if (iconElement.content === 'REVISED' || iconElement.content === 'REVIEWED' || iconElement.content === 'RECEIVED' || iconElement.content === 'APPROVED') {
-                                        iconWidth = iconWidth / 2;
-                                    }
-                                    else if (iconElement.content === 'CONFIDENTIAL' || iconElement.content === 'NOT APPROVED') {
-                                        iconWidth = iconWidth * (3 / 4);
-                                    }
-                                    const elementPpadding: number = targetWidth * 0.02;
-                                    const elementInnerWidth: number = Math.max(0, targetWidth - 2 * elementPpadding);
-                                    const iconPadding: number = iconWidth * 0.02;
-                                    const iconInnerWidth: number = Math.max(0, iconWidth - 2 * iconPadding);
-                                    element.style.fontSize = this.
-                                        fontSizeCalculation(actualObject, element, elementInnerWidth, element.content);
-                                    iconElement.style.fontSize = this.
-                                        fontSizeCalculation(actualObject, iconElement, iconInnerWidth, iconElement.content);
-                                    const metrics: {
-                                        width: number;
-                                        height: number;
-                                        ascent: number;
-                                        descent: number;
-                                    } = this.measureTextMetrics(actualObject, iconElement.content,
-                                                                iconElement.style.fontSize, iconElement.style.fontFamily);
-                                    const topOffset: number = (targetHeight * 0.75 - metrics.height) / 4;
-                                    iconElement.margin.top = Math.max(0, topOffset);
-                                    if (iconElement.content === 'CONFIDENTIAL' || iconElement.content === 'NOT APPROVED') {
-                                        iconElement.margin.left = (targetWidth - (metrics.width * (4 / 3))) / 2;
-                                    }
-                                    else {
-                                        iconElement.margin.left = (targetWidth - (metrics.width * 2)) / 2;
-                                    }
-                                    iconElement.desiredSize.width = metrics.width;
-                                    iconElement.desiredSize.height = metrics.height;
-                                    const elementMetrics: {
-                                        width: number;
-                                        height: number;
-                                        ascent: number;
-                                        descent: number;
-                                    } = this.measureTextMetrics(actualObject, element.content,
-                                                                element.style.fontSize, element.style.fontFamily);
-                                    const bottomOffset: number = (targetHeight * 0.25 - elementMetrics.height) / 8;
-                                    element.margin.bottom = Math.max(0, bottomOffset);
-                                    if (element.margin.bottom < 1) {
-                                        element.margin.bottom = 4;
-                                    }
-                                    element.margin.left = (targetWidth - elementMetrics.width) / 2;
-                                    element.desiredSize.height = elementMetrics.height;
                                 }
                             } else {
                                 const element: any = children[parseInt(i.toString(), 10)] as TextElement;
@@ -2715,37 +2734,48 @@ export class Drawing {
                                     } else {
                                         element.style.fontSize = (actualObject.wrapper.bounds.width / 20);
                                     }
-                                } else {
+                                }
+                                else if (isNullOrUndefined(element.content)) {
+                                    children[parseInt(i.toString(), 10)].width = actualObject.bounds.width;
+                                    children[parseInt(i.toString(), 10)].height = actualObject.bounds.height;
+                                    children[parseInt(i.toString(), 10)].offsetX = actualObject.wrapper.offsetX;
+                                    children[parseInt(i.toString(), 10)].offsetY = actualObject.wrapper.offsetX;
+                                    children[parseInt(i.toString(), 10)].isDirt = true;
+                                }
+                                else {
                                     let targetWidth: number;
                                     let targetHeight: number;
-                                    if (ratio !== 0) {
-                                        targetWidth = actualObject.bounds.width;
-                                        targetHeight = actualObject.bounds.height;
+                                    if (actualObject.rotateAngle === 0 || (actualObject.rotateAngle > 0 && ratio !== 0))
+                                    {
+                                        if (ratio !== 0) {
+                                            targetWidth = actualObject.bounds.width;
+                                            targetHeight = actualObject.bounds.height;
+                                        }
+                                        else {
+                                            targetWidth = actualObject.wrapper.bounds.width;
+                                            targetHeight = actualObject.wrapper.bounds.height;
+                                        }
+                                        let paddingX: number = targetWidth * 0.04;
+                                        if (element.content === 'DRAFT') {
+                                            paddingX = targetWidth * 0.06;
+                                        }
+                                        const innerWidth: number = Math.max(0, targetWidth - 2 * paddingX);
+                                        element.style.fontSize = this.
+                                            fontSizeCalculation(actualObject, element, innerWidth, element.content);
+                                        const metrics: {
+                                            width: number;
+                                            height: number;
+                                            ascent: number;
+                                            descent: number;
+                                        } = this.measureTextMetrics(actualObject, element.content,
+                                                                    element.style.fontSize, element.style.fontFamily);
+                                        const topOffset: number = (targetHeight - metrics.height) / 2;
+                                        element.margin.top = Math.max(0, topOffset);
+                                        const leftOffset: number = (targetWidth - metrics.width) / 2;
+                                        element.margin.left = Math.max(0, leftOffset);
+                                        element.desiredSize.width = metrics.width;
+                                        element.desiredSize.height = metrics.height;
                                     }
-                                    else {
-                                        targetWidth = actualObject.wrapper.bounds.width;
-                                        targetHeight = actualObject.wrapper.bounds.height;
-                                    }
-                                    let paddingX: number = targetWidth * 0.04;
-                                    if (element.content === 'DRAFT') {
-                                        paddingX = targetWidth * 0.06;
-                                    }
-                                    const innerWidth: number = Math.max(0, targetWidth - 2 * paddingX);
-                                    element.style.fontSize = this.
-                                        fontSizeCalculation(actualObject, element, innerWidth, element.content);
-                                    const metrics: {
-                                        width: number;
-                                        height: number;
-                                        ascent: number;
-                                        descent: number;
-                                    } = this.measureTextMetrics(actualObject, element.content,
-                                                                element.style.fontSize, element.style.fontFamily);
-                                    const topOffset: number = (targetHeight - metrics.height) / 2;
-                                    element.margin.top = Math.max(0, topOffset);
-                                    const leftOffset: number = (targetWidth - metrics.width) / 2;
-                                    element.margin.left = Math.max(0, leftOffset);
-                                    element.desiredSize.width = metrics.width;
-                                    element.desiredSize.height = metrics.height;
                                 }
                             }
                         }
@@ -3424,43 +3454,37 @@ export class Drawing {
 
     //bug (EJ2-62649) : Implemnted method for calculating optimal bound for free text annotation that outside viewer container
     private moveInsideViewer(obj: PdfAnnotationBaseModel, tx?: number, ty?: number): any {
-        tx = tx ? tx : 0;
-        ty = ty ? ty : 0;
-        if ((obj as any).shapeAnnotationType === 'FreeText' && ((obj as any).id.slice(0, 9) === 'free_text' || (obj as any).id.slice(0, 8) === 'freetext')) {
-            const canvas: HTMLElement = this.pdfViewer.viewerBase.getAnnotationCanvas('_annotationCanvas_', (obj as any).pageIndex);
-            if (canvas) {
-                const bounds: Rect = obj.wrapper.bounds;
-                const width: number = canvas.clientWidth / this.pdfViewer.viewerBase.getZoomFactor();
-                const height: number = canvas.clientHeight / this.pdfViewer.viewerBase.getZoomFactor();
-                const right: number = bounds.right;
-                const left: number = bounds.left;
-                const top: number = bounds.top;
-                const bottom: number = bounds.bottom;
-                if (!(right + tx <= width - 3 && left + tx >= 1 && bottom + ty <= height - 3 && top + ty >= 1)) {
-                    let txNew: number = 0;
-                    let tyNew: number = 0;
-                    if (!(right <= width - 3)) {
-                        txNew = width - right - 3;
-                    }
-                    if (!(left >= 1)) {
-                        txNew = txNew - left + 1;
-                    }
-                    if (!(bottom <= height - 3)) {
-                        tyNew = height - bottom - 3;
-                    }
-                    if (!(top >= 1)) {
-                        tyNew = tyNew - top + 1;
-                    }
-                    if (txNew !== 0) {
-                        tx = txNew;
-                    }
-                    if (tyNew !== 0) {
-                        ty = tyNew;
-                    }
-                }
-            }
+        tx = tx || 0;
+        ty = ty || 0;
+        if (!obj || (obj as any).shapeAnnotationType !== 'FreeText') {
+            return {
+                tx: tx,
+                ty: ty
+            };
         }
-        return { tx: tx, ty: ty };
+        const canvas: HTMLElement = this.pdfViewer.viewerBase.getAnnotationCanvas('_annotationCanvas_', (obj as any).pageIndex);
+        if (!canvas) {
+            return {
+                tx: tx,
+                ty: ty
+            };
+        }
+        const zoom: number = this.pdfViewer.viewerBase.getZoomFactor();
+        const pageW: number = canvas.clientWidth / zoom;
+        const pageH: number = canvas.clientHeight / zoom;
+        const b: any = obj.wrapper.bounds;
+        const maxTxRight: number = (pageW - 3) - b.right;
+        const maxTxLeft: number = 1 - b.left;
+        const maxTyDown: number = (pageH - 3) - b.bottom;
+        const maxTyUp: number = 1 - b.top;
+        if (tx > maxTxRight) { tx = maxTxRight; }
+        if (tx < maxTxLeft) { tx = maxTxLeft; }
+        if (ty > maxTyDown) { ty = maxTyDown; }
+        if (ty < maxTyUp) { ty = maxTyUp; }
+        return {
+            tx: tx,
+            ty: ty
+        };
     }
 
     /**

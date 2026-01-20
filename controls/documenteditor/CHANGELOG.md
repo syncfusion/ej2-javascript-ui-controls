@@ -2,6 +2,15 @@
 
 ## [Unreleased]
 
+## 32.1.24 (2026-01-20)
+
+### DocumentEditor
+
+#### Bug Fixes
+
+`#I791620` - Resolved the issue in delete a space between endnote references and the endnote itself disappears.
+`#I793341` - Spell Check Options is not visible in Context Menu Even After 'Ignore Once' Action.
+
 ## 32.1.23 (2026-01-13)
 
 ### DocumentEditor

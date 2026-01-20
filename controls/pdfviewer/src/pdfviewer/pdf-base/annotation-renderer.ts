@@ -1367,8 +1367,11 @@ export class AnnotationRenderer {
             page.annotations.add(rubberStampAnnotation);
             if (!isIconExists) {
                 const appearance: PdfTemplate = rubberStampAnnotation.appearance.normal;
-                appearance.graphics.drawRoundedRectangle({x: 0, y: 0, width: rectangle.width,
-                    height: rectangle.height}, 10, pens, stampBrush);
+                const isVectorStamp: boolean = icon.trim() === 'Accepted' || icon.trim() === 'Rejected';
+                if (!isVectorStamp) {
+                    appearance.graphics.drawRoundedRectangle({x: 0.5, y: 0.5, width: rectangle.width - 1,
+                        height: rectangle.height - 1}, 10, pens, stampBrush);
+                }
                 if (isDynamic === 'true') {
                     const text: string = stampAnnotation.dynamicText.toString();
                     const state: PdfGraphicsState = appearance.graphics.save();
@@ -1917,6 +1920,87 @@ export class AnnotationRenderer {
         page.annotations.add(annotation);
     }
 
+    private getPathBounds(Path: PdfPath): { x: number; y: number; width: number; height: number; } {
+        if (!Path || !Path._points || Path._points.length === 0) {
+            return null;
+        }
+        let minX: number = Number.MAX_VALUE;
+        let minY: number = Number.MAX_VALUE;
+        let maxX: number = Number.MIN_VALUE;
+        let maxY: number = Number.MIN_VALUE;
+        for (let i: number = 0; i < Path._points.length; i++) {
+            const point: Point = Path._points[parseInt(i.toString(), 10)];
+            if (!point) { continue; }
+            if (point.x < minX) { minX = point.x; }
+            if (point.y < minY) { minY = point.y; }
+            if (point.x > maxX) { maxX = point.x; }
+            if (point.y > maxY) { maxY = point.y; }
+        }
+        if (!isFinite(minX) || !isFinite(minY) || !isFinite(maxX) || !isFinite(maxY)) {
+            return null;
+        }
+        return { x: minX, y: minY, width: Math.max(0, maxX - minX), height: Math.max(0, maxY - minY) };
+    }
+
+    private scalePathToBounds(
+        path: PdfPath,
+        target: { x: number; y: number; width: number; height: number; },
+        preserveAspect: boolean = true,
+        padding: number = 0,
+        align: 'center'
+    ): void {
+        const src: {
+            x: number;
+            y: number;
+            width: number;
+            height: number;
+        } = this.getPathBounds(path);
+        if (!src || src.width === 0 || src.height === 0) {
+            // Nothing to scale
+            return;
+        }
+
+        // Available area after padding
+        const availW: number = Math.max(0, target.width - 2 * padding);
+        const availH: number = Math.max(0, target.height - 2 * padding);
+        if (availW === 0 || availH === 0) {
+            return;
+        }
+
+        // Compute scale
+        let sx: number = availW / src.width;
+        let sy: number = availH / src.height;
+        if (preserveAspect) {
+            const s: number = Math.min(sx, sy);
+            sx = s;
+            sy = s;
+        }
+
+        // Final content size after scaling
+        const scaledW: number = src.width * sx;
+        const scaledH: number = src.height * sy;
+
+        // Base translation (top-left padding inside target)
+        let tx: number = target.x + padding;
+        let ty: number = target.y + padding;
+
+        // Adjust by alignment inside the free space
+        const extraX: number = availW - scaledW;
+        const extraY: number = availH - scaledH;
+
+        if (align) {
+            tx += extraX / 2;
+            ty += extraY / 2;
+        }
+        // Normalize -> scale -> translate (in-place)
+        for (let i: number = 0; i < path._points.length; i++) {
+            const p: Point = path._points[parseInt(i.toString(), 10)];
+            const nx: number = (p.x - src.x) * sx + tx;
+            const ny: number = (p.y - src.y) * sy + ty;
+            p.x = nx;
+            p.y = ny;
+        }
+    }
 
     private renderSignHereStamp(rubberStampAnnotation: PdfRubberStampAnnotation, rectangle: Rect, icon: string, textBrush:
     PdfBrush, page: PdfPage, pens: PdfPen, graphicsPath: PdfPath): void {
@@ -1936,24 +2020,14 @@ export class AnnotationRenderer {
         const pointValues: number[] = [drawingPath._points[0].x, drawingPath._points[0].y, 0, 0];
         const pointsval: Rectangle = this.convertNumberToRectangle(pointValues);
         if (graphicsPath) {
-            let minX: number = Number.MAX_VALUE;
-            let minY: number = Number.MAX_VALUE;
-            let maxX: number = Number.MIN_VALUE;
-            let maxY: number = Number.MIN_VALUE;
-            for (let i: number = 0; i < graphicsPath._points.length; i++) {
-                const point: Point = graphicsPath._points[parseInt(i.toString(), 10)];
-                minX = Math.min(minX, point.x);
-                minY = Math.min(minY, point.y);
-                maxX = Math.max(maxX, point.x);
-                maxY = Math.max(maxY, point.y);
-            }
-            const offsetX: number = (rectangle.width - (maxX - minX)) / 2 - minX;
-            const offsetY: number = (rectangle.height - (maxY - minY)) / 2 - minY;
-            for (let i: number = 0; i < graphicsPath._points.length; i++) {
-                graphicsPath._points[parseInt(i.toString(), 10)].x += offsetX;
-                graphicsPath._points[parseInt(i.toString(), 10)].y += offsetY;
-            }
-            rubberStampAnnotation.appearance.normal.graphics.drawPath(graphicsPath, pens, textBrush);
+            this.scalePathToBounds(
+                graphicsPath,
+                { x: 0, y: 0, width: rectangle.width, height: rectangle.height },
+                true,      // preserve aspect ratio
+                0,         // padding in points (optional)
+                'center'   // alignment when aspect is preserved (optional)
+            );
+            rubberStampAnnotation.appearance.normal.graphics.drawPath(graphicsPath, null, textBrush);
         } else {
             appearance.graphics.drawString(icon.toUpperCase(), font, pointsval, null, textBrush, stringFormat);
         }
@@ -2199,24 +2273,20 @@ export class AnnotationRenderer {
                 currentPoint = { x: val.x, y: val.y };
             }
             if (path === 'C') {
-                const array2: PointBase[] = [
-                    currentPoint,
-                    { x: val.x, y: val.y },
-                    { x: val.x1, y: val.y1 },
-                    { x: val.x2, y: val.y2 }
-                ];
-                this.transformPoints(array2);
-                const array21: PointBase[] = [
-                    { x: array2[0].x, y: array2[0].y },
-                    { x: array2[1].x, y: array2[1].y },
-                    { x: array2[2].x, y: array2[2].y },
-                    { x: array2[3].x, y: array2[3].y }
-                ];
-                graphicsPath.addBezier({x: this.convertPixelToPoint(array21[0].x), y: this.convertPixelToPoint(array21[0].y)},
-                                       {x: this.convertPixelToPoint(array21[1].x), y: this.convertPixelToPoint(array21[1].y)},
-                                       {x: this.convertPixelToPoint(array21[2].x), y: this.convertPixelToPoint(array21[2].y)},
-                                       {x: this.convertPixelToPoint(array21[3].x), y: this.convertPixelToPoint(array21[3].y)});
-                currentPoint = { x: val.x, y: val.y };
+                const start: PointBase = currentPoint;
+                const cp1: PointBase = { x: val.x1, y: val.y1 };
+                const cp2: PointBase = { x: val.x2, y: val.y2 };
+                const end: PointBase = { x: val.x, y: val.y };
+                const pts: PointBase[] = [start, cp1, cp2, end];
+                this.transformPoints(pts);
+                graphicsPath.addBezier(
+                    { x: this.convertPixelToPoint(pts[0].x), y: this.convertPixelToPoint(pts[0].y) }, // start
+                    { x: this.convertPixelToPoint(pts[1].x), y: this.convertPixelToPoint(pts[1].y) }, // cp1
+                    { x: this.convertPixelToPoint(pts[2].x), y: this.convertPixelToPoint(pts[2].y) }, // cp2
+                    { x: this.convertPixelToPoint(pts[3].x), y: this.convertPixelToPoint(pts[3].y) }  // end
+                );
+
+                currentPoint = end; currentPoint = { x: val.x, y: val.y };
             }
             if (path === 'Z' || path === 'z') {
                 graphicsPath.closeFigure();

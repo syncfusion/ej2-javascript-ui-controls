@@ -149,6 +149,9 @@ export class Selection {
         this.parent.trigger('rowSelected', args);
     }
     private rowDeselecting(args: RowDeselectEventArgs): void {
+        if (this.parent.chartRowsModule['isGridRowRefreshed']) {
+            args['cancel'] = true;
+        }
         args.target = this.actualTarget as Element;
         args.isInteracted = this.isInteracted;
         const undoRedo: UndoRedo = this.parent.undoRedoModule;

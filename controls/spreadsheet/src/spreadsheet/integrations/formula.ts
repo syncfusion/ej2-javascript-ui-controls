@@ -5,7 +5,7 @@ import { AutoComplete } from '@syncfusion/ej2-dropdowns';
 import { BeforeOpenEventArgs } from '@syncfusion/ej2-popups';
 import { PopupEventArgs, SelectEventArgs, AutoCompleteModel } from '@syncfusion/ej2-dropdowns';
 import { KeyboardEventArgs, L10n, detach, isNullOrUndefined, select } from '@syncfusion/ej2-base';
-import { checkIsFormula, getSheet, SheetModel, getSheetName, DefineNameModel, getCellIndexes, isCellReference } from '../../workbook/index';
+import { checkIsFormula, getSheet, SheetModel, getSheetName, DefineNameModel, getCellIndexes, isCellReference, isChar } from '../../workbook/index';
 import { workbookFormulaOperation, Workbook } from '../../workbook/index';
 import { Dialog } from '../services/index';
 
@@ -446,7 +446,33 @@ export class Formula {
             definedName.refersTo = sheetName + '!' + selectRange;
             definedName.scope = 'Workbook';
         }
-        if (name.length > 0 && (/^([a-zA-Z_0-9.]){0,255}$/.test(name))) {
+        const isValidDefinedName: Function = (name: string): boolean => {
+            if (!name || name.length > 255) {
+                return false;
+            }
+            const isBooleanName: string = name.toUpperCase();
+            if (isBooleanName === 'TRUE' || isBooleanName === 'FALSE') {
+                return false;
+            }
+            const firstChar: string = name[0];
+            const isOtherLangChar: Function = () => {
+                return (code >= 192 && code <= 214) || (code >= 216 && code <= 246) || (code >= 248 && code <= 255);
+            };
+            let code: number = firstChar.charCodeAt(0);
+            if (!(firstChar === '_' || firstChar === '\\' || isChar(firstChar) || isOtherLangChar())) {
+                return false;
+            }
+            let char: string;
+            for (let i: number = 1; i < name.length; i++) {
+                char = name[i as number]; code = char.charCodeAt(0);
+                if (!(char === '_' || char === '\\' || char === '.' || char === '?' || (code >= 48 && code <= 57) || isChar(char) ||
+                    isOtherLangChar())) {
+                    return false;
+                }
+            }
+            return true;
+        };
+        if (isValidDefinedName(name)) {
             const eventArgs: { [key: string]: Object } = {
                 action: 'addDefinedName', definedName: definedName, isAdded: false
             };

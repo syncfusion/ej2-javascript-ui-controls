@@ -30,8 +30,8 @@ $hscroll-hover-border: 0 !default;
 $hscroll-active-box-shadow: none !default;
 $hscroll-overlay-opacity: .5 !default;
 $hscroll-overlay-bg: rgba($content-bg-color) !default;
-$hscroll-overlay-start: ($hscroll-overlay-bg, 0) !default;
-$hscroll-overlay-end: ($hscroll-overlay-bg, 1) !default;
+$hscroll-overlay-start: transparent !default;
+$hscroll-overlay-end: $hscroll-overlay-bg !default;
 $hscroll-right-bg: linear-gradient(-270deg, $hscroll-overlay-start 0%, $hscroll-overlay-end 100%) !default;
 $hscroll-left-bg:  linear-gradient(-270deg, $hscroll-overlay-end 0%, $hscroll-overlay-start 100%) !default;
 

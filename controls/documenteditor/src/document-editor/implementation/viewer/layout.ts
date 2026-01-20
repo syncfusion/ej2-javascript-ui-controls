@@ -10036,6 +10036,8 @@ export class Layout {
         for (let i: number = 0; i < cellWidget.childWidgets.length; i++) {
             if (cellWidget.childWidgets[i] instanceof ParagraphWidget) {
                 const para: ParagraphWidget = cellWidget.childWidgets[i] as ParagraphWidget;
+                const lastPara: ParagraphWidget = cellWidget.childWidgets[cellWidget.childWidgets.length - 1] as ParagraphWidget;
+                const lastParaBottom: number = lastPara.y + lastPara.height;
                 contentHeight += (cellWidget.childWidgets[i] as ParagraphWidget).height;
                 if (!isDisplacement && para.floatingElements.length > 0 && paraIndex === para.indexInOwner) {
                     let totalShapeHeight: number = this.getFloatingItemsHeight(para, cellWidget);
@@ -10052,7 +10054,7 @@ export class Layout {
                         withShapeContentHeight = Math.abs(cellY - shapeBottom);
                         withShapeBottom = shapeBottom;
                         considerAsTop = false;
-                    } else if (shapeBottom > paraBottom && para.x + para.width > floatElement.x && shapeBottom > withShapeBottom
+                    } else if (shapeBottom > lastParaBottom && para.x + para.width > floatElement.x && shapeBottom > withShapeBottom
                         && textWrappingStyle !== 'InFrontOfText' && textWrappingStyle !== 'Behind'
                         && (this.documentHelper.compatibilityMode === 'Word2013' || para.floatingElements[k].layoutInCell)) {
                         let height: number = (withShapeBottom === 0) ? shapeBottom - paraBottom : shapeBottom - withShapeBottom;
@@ -14555,7 +14557,7 @@ export class Layout {
         // ILayoutSpacingsInfo spacings = cellLayoutInfo as ILayoutSpacingsInfo;
         let cell: TableCellWidget = paragraph.associatedCell;
         let cellWidth: number = cellWid - cell.leftMargin - cell.rightMargin;
-        let cellInnerWidth: number = cell.cellFormat.cellWidth;
+        let cellInnerWidth: number = cell.width;
         let marginLeft: number = cell.x;
         let pageLeft: number = marginLeft - cell.leftMargin;
         switch (horzOrigin) {

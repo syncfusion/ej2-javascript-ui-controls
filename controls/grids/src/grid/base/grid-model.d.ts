@@ -1185,7 +1185,7 @@ export interface GridModel extends ComponentModel{
     /**
      * If `enableHeaderFocus` set to true, then header element will be focused when focus moves to grid.
      *
-     * @default false
+     * @default true
      */
     enableHeaderFocus?: boolean;
 

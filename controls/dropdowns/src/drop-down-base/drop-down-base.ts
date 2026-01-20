@@ -1296,7 +1296,7 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
                                     for (let queryElements: number = 0; queryElements < newQuery.queries.length; queryElements++) {
                                         if (this.getModuleName() === 'multiselect' && this.isCheckBoxSelection && (newQuery.queries[queryElements as number].e && (newQuery.queries[queryElements as number].e.operator === 'notequal' ||
                                             newQuery.queries[queryElements as number].e.operator === 'equal' || newQuery.queries[queryElements as number].e.condition === 'or' || newQuery.queries[queryElements as number].e.condition === 'and') && !this.isCustomFiltering)) {
-                                            if (this.totalItemCount > (this.itemCount * 2)) {
+                                            if (this.totalItemCount >= (this.itemCount * 2)) {
                                                 isReOrder = false;
                                                 break;
                                             }

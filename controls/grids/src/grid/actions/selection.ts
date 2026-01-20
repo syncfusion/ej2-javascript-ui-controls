@@ -3107,8 +3107,9 @@ export class Selection implements IAction {
                     this.getAvailableDataCount(this.parent.partialSelectedRecords);
                 this.disableSelectableRecordsCount = this.parent.disableSelectedRecords.length &&
                     this.getAvailableDataCount(this.parent.disableSelectedRecords);
-                if (!isNullOrUndefined(e.row.querySelector('.e-checkselect')) &&
-                e.row.querySelector('.e-checkselect').parentElement.classList.contains('e-checkbox-disabled')) {
+                if ((!isNullOrUndefined(this.getCheckAllBox()) && this.getCheckAllBox().nextElementSibling.classList.contains('e-check'))
+                    || (!isNullOrUndefined(e.row.querySelector('.e-checkselect')) &&
+                    e.row.querySelector('.e-checkselect').parentElement.classList.contains('e-checkbox-disabled'))) {
                     this.updatePersistCollection(e.row, true);
                     this.setCheckAllState();
                 }

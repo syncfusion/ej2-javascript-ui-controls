@@ -1,5 +1,4 @@
 @use 'ej2-base/styles/common/mixin' as *;
-@use './theme-variables' as *;
 @mixin shimmer-animation($animation-name) {
   animation: $animation-name $shimmer-effect-duration infinite;
   animation-timing-function: $shimmer-effect-timing-function;

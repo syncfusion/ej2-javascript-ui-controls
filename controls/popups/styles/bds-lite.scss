@@ -2,11 +2,11 @@
 @use 'popup/bds-definition' as *;
 @use 'dialog/bds-definition' as *;
 @use 'dialog/icons/bds' as *;
-@use 'dialog/all' as *;
-@use 'popup/all' as *;
+@use 'dialog/all.bds' as *;
+@use 'popup/all.bds' as *;
 
 @use 'tooltip/bds-definition' as *;
 @use 'tooltip/icons/bds' as *;
-@use 'tooltip/all' as *;
+@use 'tooltip/all.bds' as *;
 @use 'spinner/bds-definition' as *;
-@use 'spinner/all' as *;
+@use 'spinner/all.bds' as *;

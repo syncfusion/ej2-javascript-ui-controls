@@ -2,11 +2,11 @@
 @use 'popup/material-definition' as *;
 @use 'dialog/material-definition' as *;
 @use 'dialog/icons/material' as *;
-@use 'dialog/all' as *;
-@use 'popup/all' as *;
+@use 'dialog/all.material' as *;
+@use 'popup/all.material' as *;
 
 @use 'tooltip/material-definition' as *;
 @use 'tooltip/icons/material' as *;
-@use 'tooltip/all' as *;
+@use 'tooltip/all.material' as *;
 @use 'spinner/material-definition' as *;
-@use 'spinner/all' as *;
+@use 'spinner/all.material' as *;

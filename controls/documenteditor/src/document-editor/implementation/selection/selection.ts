@@ -1218,7 +1218,10 @@ export class Selection {
         const bodyWgt: BodyWidget = paragraph.bodyWidget;
         const sectionFormat: WSectionFormat = bodyWgt.sectionFormat;
         const pageHt: number = sectionFormat.pageHeight - sectionFormat.footerDistance;
-        const headerFooterHt: number = bodyWgt.page.boundingRectangle.height / 100 * 40;
+        const headerFooterHt: number = this.documentHelper.compatibilityMode === 'Word2013'
+            && bodyWgt.page.headerWidget && bodyWgt.page.footerWidget
+            && bodyWgt.page.headerWidget.height + bodyWgt.page.footerWidget.height < bodyWgt.page.boundingRectangle.height / 100 * 80 ?
+            bodyWgt.page.boundingRectangle.height / 100 * 80 : bodyWgt.page.boundingRectangle.height / 100 * 40;
         return this.contextType.indexOf('Footer') >= 0
             && (paragraph.y + paragraph.height > HelperMethods.convertPointToPixel(pageHt))
             || this.contextType.indexOf('Header') >= 0 && paragraph.y + paragraph.height > headerFooterHt;
@@ -7235,6 +7238,13 @@ export class Selection {
                 }
             }
         }
+        if (isNullOrUndefined(lineWidget)) {
+            const childWidget: IWidget = widget.firstChild;
+            if (widget.header && !isNullOrUndefined(childWidget) && (childWidget as TableRowWidget).y >= point.y) {
+                const newPoint: Point = new Point(point.x, (childWidget as TableRowWidget).y);
+                return this.getLineWidgetRowWidget((childWidget as TableRowWidget), newPoint);
+            }
+        }
         return lineWidget;
     }
     /**
@@ -7355,7 +7365,7 @@ export class Selection {
         }
         let lineWidget: LineWidget = undefined;
         if (widget.childWidgets.length > 0) {
-            if ((widget.childWidgets[0] as Widget).y - widget.margin.top <= point.y) {
+            if (widget.y - widget.margin.top <= point.y) {
                 if ((widget.childWidgets[widget.childWidgets.length - 1] as Widget) instanceof ParagraphWidget) {
 
                     lineWidget = this.getLineWidgetParaWidget((widget.childWidgets[widget.childWidgets.length - 1] as ParagraphWidget), point);
@@ -8301,7 +8311,7 @@ export class Selection {
     }
     
     private triggerSpellCheckWhenSelectionChanges(): void {
-        if (this.documentHelper.isSpellCheckPending && this.documentHelper.owner.isSpellCheck && !this.documentHelper.isTextInput && !this.owner.editorModule.isDeleteOrBackSpace) {
+        if (this.documentHelper.isSpellCheckPending && this.documentHelper.owner.isSpellCheck && !this.documentHelper.isTextInput && !this.owner.editorModule.isDeleteOrBackSpace && !this.owner.editorModule.handledEnter) {
             this.documentHelper.triggerElementsOnLoading = true;
             this.documentHelper.triggerSpellCheck = true;
             this.viewer.updateScrollBars();
@@ -11371,7 +11381,9 @@ export class Selection {
             let isEmpty: boolean = header.isEmpty && !this.owner.enableHeaderAndFooter;
             let topMargin: number = HelperMethods.convertPointToPixel(page.bodyWidgets[0].sectionFormat.topMargin);
             let pageHeight: number = HelperMethods.convertPointToPixel(page.bodyWidgets[0].sectionFormat.pageHeight);
-            let height: number = isEmpty ? topMargin : Math.min(Math.max(headerHeight, topMargin), pageHeight / 100 * 40);
+            let height: number = isEmpty ? topMargin : Math.min(Math.max(headerHeight, topMargin), (this.documentHelper.compatibilityMode === 'Word2013'
+                && header.height + page.footerWidget.height < page.boundingRectangle.height / 100 * 80 ?
+                page.boundingRectangle.height / 100 * 80 : pageHeight / 100 * 40));
             height = height * this.documentHelper.zoomFactor;
             if ((this.viewer.containerTop + point.y) >= pageTop && (this.viewer.containerTop + point.y) <= pageTop + height) {
                 return true;

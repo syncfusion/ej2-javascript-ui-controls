@@ -1,5 +1,4 @@
 @use 'ej2-base/styles/common/mixin' as *;
-@use './theme-variables' as *;
 
 .e-toast-container {
   .e-toast {
@@ -257,5 +256,11 @@
         }
       }
     }
+  }
+}
+
+.e-toast-container .e-toast.e-toast-danger .e-toast-close-icon.e-icons:hover {
+  @if ($skin-name == 'tailwind3' or $skin-name == 'tailwind' or $skin-name == 'fluent2' or $skin-name == 'FluentUI' or $skin-name == 'bootstrap5' or $skin-name == 'bootstrap5.3') {
+    color: $toast-danger-icon-hover-dark;
   }
 }

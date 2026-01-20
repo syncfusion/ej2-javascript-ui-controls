@@ -1505,6 +1505,82 @@ describe('Spreadsheet formula module ->', () => {
         });
     });
 
+    describe('1003477- VLOOKUP Formula ->', function () {
+        beforeAll(function (done: Function) {
+            model = {
+                sheets: [
+                    {
+                        name: 'VLOOKUP',
+                        ranges: [{ dataSource: defaultData }]
+                    },
+                    {
+                        name: 'Sheet1',
+                        rows: [
+                            { index: 1, cells: [{ index: 4, value: '20' }, { index: 5, value: '200' }] },
+                            { index: 2, cells: [{ index: 4, value: '30' }, { index: 5, value: '600' }] },
+                            { index: 3, cells: [{ index: 4, value: '15' }, { index: 5, value: '300' }] },
+                            { index: 4, cells: [{ index: 4, value: '20' }, { index: 5, value: '300' }] },
+                            { index: 5, cells: [{ index: 4, value: '25' }, { index: 5, value: '400' }] },
+                            { index: 6, cells: [{ index: 4, value: '18' }, { index: 5, value: '250' }] },
+                            { index: 7, cells: [{ index: 4, value: '22' }, { index: 5, value: '350' }] },
+                            { index: 8, cells: [{ index: 4, value: '28' }, { index: 5, value: '500' }] },
+                            { index: 9, cells: [{ index: 4, value: '17' }, { index: 5, value: '280' }] },
+                            { index: 10, cells: [{ index: 4, value: '32' }, { index: 5, value: '650' }] }
+                        ]
+                    }
+                ],
+                activeSheetIndex: 0
+            };
+            helper.initializeSpreadsheet(model, done);
+        });
+        afterAll(function () {
+            helper.invoke('destroy');
+        });
+        it('VLOOKUP formula #REF! error occure when formula not referenced sheet insert and delete', function (done: Function) {
+            const spreadsheet: Spreadsheet = helper.getInstance();
+            helper.invoke('selectRange', ['H1:H10']);
+            helper.switchRibbonTab(4);
+            helper.getElementFromSpreadsheet('#' + helper.id + '_datavalidation').click();
+            helper.click('.e-datavalidation-ddb li:nth-child(1)');
+            setTimeout(() => {
+                const ddlElem: any = helper.getElements('.e-datavalidation-dlg .e-allow .e-dropdownlist')[0];
+                ddlElem.ej2_instances[0].value = 'Custom';
+                ddlElem.ej2_instances[0].dataBind();
+                helper.getElements('.e-datavalidation-dlg .e-values .e-input')[0].value = '=VLOOKUP(D5,Sheet1!E2:G11,2,FALSE)';
+                helper.setAnimationToNone('.e-datavalidation-dlg.e-dialog');
+                helper.click('.e-datavalidation-dlg .e-footer-content button:nth-child(2)');
+                expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[7].validation)).toBe('{"type":"Custom","value1":"=VLOOKUP(D5,Sheet1!E2:G11,2,FALSE)","ignoreBlank":true,"inCellDropDown":null}');
+                helper.edit('I5', '=VLOOKUP(D5,Sheet1!E2:G11,2,FALSE)');
+                expect(spreadsheet.sheets[0].rows[4].cells[8].formula).toBe('=VLOOKUP(D5,Sheet1!E2:G11,2,FALSE)');
+                expect(helper.invoke('getCell', [4, 8]).textContent).toBe('300');
+                expect(spreadsheet.sheets[0].rows[4].cells[8].value).toBe('300');
+                const td: HTMLElement = helper.getElement('.e-sheet-tab .e-active .e-text-wrap');
+                const coords: ClientRect | DOMRect = td.getBoundingClientRect();
+                helper.triggerMouseAction('contextmenu', { x: coords.left, y: coords.top }, null, td);
+                helper.setAnimationToNone('#' + helper.id + '_contextmenu');
+                helper.click('#' + helper.id + '_contextmenu li:nth-child(1)');
+                setTimeout(() => {
+                    const sheetTabs: NodeListOf<Element> = helper.getElements('.e-sheet-tab .e-toolbar-item');
+                    expect(sheetTabs.length).toBe(3);
+                    expect(spreadsheet.sheets[1].rows[4].cells[8].formula).toBe('=VLOOKUP(D5,Sheet1!E2:G11,2,FALSE)');
+                    expect(spreadsheet.sheets[1].rows[4].cells[8].value).toBe('300');
+                    const activeTd: HTMLElement = helper.getElement('.e-sheet-tab .e-active .e-text-wrap');
+                    const activeCoords: ClientRect | DOMRect = activeTd.getBoundingClientRect();
+                    helper.triggerMouseAction('contextmenu', { x: activeCoords.left, y: activeCoords.top }, null, activeTd);
+                    helper.setAnimationToNone('#' + helper.id + '_contextmenu');
+                    helper.click('#' + helper.id + '_contextmenu li:nth-child(2)');
+                    setTimeout(() => {
+                        expect(spreadsheet.sheets.length).toBe(2);
+                        expect(spreadsheet.sheets[0].rows[4].cells[8].formula).toBe('=VLOOKUP(D5,Sheet1!E2:G11,2,FALSE)');
+                        expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[7].validation)).toBe('{"type":"Custom","value1":"=VLOOKUP(D5,Sheet1!E2:G11,2,FALSE)","ignoreBlank":true,"inCellDropDown":null}');
+                        expect(spreadsheet.sheets[0].rows[4].cells[8].value).toBe('300');
+                        done();
+                    });
+                });
+            });
+        });
+    });
+
     describe('MINUTE Formula Checking ->', () => {
         beforeAll((done: Function) => {
             helper.initializeSpreadsheet({
@@ -12830,11 +12906,11 @@ describe('Spreadsheet formula module ->', () => {
             setTimeout(() => {
                 let nameBox: HTMLInputElement = <HTMLInputElement>helper.getElementFromSpreadsheet('#' + helper.id + '_name_box');
                 nameBox.click();
-                nameBox.value = '123';
+                nameBox.value = 'Name123';
                 helper.triggerKeyEvent('keydown', 13, null, false, false, nameBox);
                 nameBox.classList.remove('e-name-editing');
                 expect(helper.getInstance().definedNames.length).toBe(2);
-                expect(helper.getInstance().definedNames[1].name).toBe('123');
+                expect(helper.getInstance().definedNames[1].name).toBe('Name123');
                 done();
             }, 20);
         });
@@ -15457,6 +15533,10 @@ describe('Spreadsheet formula module ->', () => {
                 expect(sheet.rows[11].cells[6].value).toBe('Sunday');
                 helper.edit('G13', '=TEXT(B9,"aaa")');
                 expect(sheet.rows[12].cells[6].value).toBe('Sun');
+                helper.edit('G14', '=TEXT(B9,"mmmm")');
+                expect(sheet.rows[13].cells[6].value).toBe('November');
+                helper.edit('G15', '=TEXT(B9,"mmm")');
+                expect(sheet.rows[14].cells[6].value).toBe('Nov');
                 done();
             });
             it('Editing formula is not working after sheets updated dynamically', (done: Function) => {
@@ -25495,7 +25575,7 @@ describe('Spreadsheet formula module ->', () => {
             });
         });
     });
-    describe('EJ2-974770: Aggegrate formula Not displayed the values correctly ->', () => {
+    describe('EJ2-974770,EJ2-1000521: Aggegrate formula Not displayed the values correctly ->', () => {
         beforeAll((done: Function) => {
             helper.initializeSpreadsheet({ sheets: [{ ranges: [{ dataSource: defaultData }] }] }, done);
         });
@@ -25523,6 +25603,21 @@ describe('Spreadsheet formula module ->', () => {
                 expect(Element[4].textContent).toBe('Max: 0.967896889');
                 done();
             });
+        });
+        it('Defined Names do not work correctly when non-ASCII characters are included in Spreadsheet', (done: Function) => {
+            helper.getInstance().addDefinedName({name: 'testÆ', refersTo: 'D1:D10'});
+            helper.getInstance().addDefinedName({name: 'test', refersTo: 'E1:E10'});
+            helper.edit('J1', '=Sum(testÆ)');
+            helper.edit('J2', '=Sum(test)');
+            expect(helper.invoke('getCell', [0, 9]).textContent).toBe('227');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[9])).toBe('{"value":227,"formula":"=Sum(testÆ)"}');
+            expect(helper.invoke('getCell', [1, 9]).textContent).toBe('165');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[1].cells[9])).toBe('{"value":165,"formula":"=Sum(test)"}');
+            helper.edit('D2', '100');
+            expect(helper.invoke('getCell', [0, 9]).textContent).toBe('317');
+            helper.edit('E2', '100');
+            expect(helper.invoke('getCell', [1, 9]).textContent).toBe('245');
+            done();
         });
     });
 

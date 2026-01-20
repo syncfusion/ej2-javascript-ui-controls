@@ -1029,7 +1029,12 @@ export class MultiSelect extends DropDownBase implements IInput {
         this.isPreventScrollAction = true;
     }
     private setScrollPosition(): void {
-        if (((!this.hideSelectedItem && this.mode !== 'CheckBox') || (this.mode === 'CheckBox' && !this.enableSelectionOrder)) &&
+        if (this.enableVirtualization){
+            const focusedItem: HTMLElement = <HTMLElement>this.list.querySelector('.' + dropDownBaseClasses.focus);
+            this.isKeyBoardAction = false;
+            this.scrollBottom(focusedItem, undefined, false, null, true);
+        }
+        else if (((!this.hideSelectedItem && this.mode !== 'CheckBox') || (this.mode === 'CheckBox' && !this.enableSelectionOrder)) &&
             (!isNullOrUndefined(this.value) && ( this.value.length > 0 ))) {
             const value: string | number | boolean = this.allowObjectBinding
                 ? getValue(
@@ -1045,11 +1050,6 @@ export class MultiSelect extends DropDownBase implements IInput {
             if (!isNullOrUndefined(valueEle)) {
                 this.scrollBottom(valueEle, undefined, false, null, true);
             }
-        }
-        if (this.enableVirtualization){
-            const focusedItem: HTMLElement = <HTMLElement>this.list.querySelector('.' + dropDownBaseClasses.focus);
-            this.isKeyBoardAction = false;
-            this.scrollBottom(focusedItem, undefined, false, null, true);
         }
     }
     private updatePopupHeightOnFilter(): void {
@@ -4015,6 +4015,13 @@ export class MultiSelect extends DropDownBase implements IInput {
                             setTimeout(() => {
                                 if (this.value) {
                                     this.updateSelectionList();
+                                    if (!this.enableSelectionOrder && this.mode === 'CheckBox') {
+                                        const selectedItem: HTMLElement = this.list.querySelector('.' + dropDownBaseClasses.selected);
+                                        if (!isNullOrUndefined(selectedItem)) {
+                                            this.isKeyBoardAction = false;
+                                            this.scrollBottom(selectedItem, undefined, true, null, true);
+                                        }
+                                    }
                                 }
                                 else if (this.viewPortInfo && this.viewPortInfo.offsets.top) {
                                     this.list.scrollTop = this.viewPortInfo.offsets.top;
@@ -6554,7 +6561,7 @@ export class MultiSelect extends DropDownBase implements IInput {
                         this.renderItems(this.mainData as any[], this.fields);
                     }
                     this.virtualCustomData = null;
-                    this.isVirtualTrackHeight = this.totalItemCount > (this.itemCount * 2) ? false : true;
+                    this.isVirtualTrackHeight = this.totalItemCount >= (this.itemCount * 2) ? false : true;
                 }
             });
         }

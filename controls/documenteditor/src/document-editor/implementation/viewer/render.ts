@@ -190,7 +190,10 @@ export class Renderer {
         let cliped: boolean = false;
         let height: number = 0;
         let pageHt: number = 0;
-        const headerFooterHeight: number = page.boundingRectangle.height / 100 * 40;
+        // Calculating header/footer height based on Word 2013 mode.
+        const headerFooterHeight: number = this.documentHelper.compatibilityMode === 'Word2013'
+            && page.headerWidget.height + page.footerWidget.height < page.boundingRectangle.height / 100 * 80 ?
+            page.boundingRectangle.height / 100 * 80 : page.boundingRectangle.height / 100 * 40;
         if (isHeader) {
             const topMargin: number = HelperMethods.convertPointToPixel(page.bodyWidgets[0].sectionFormat.topMargin);
             const widgetHeight: number = Math.max((widget.y + widget.height), topMargin);
@@ -242,7 +245,10 @@ export class Renderer {
         const ctx: CanvasRenderingContext2D | DocumentCanvasRenderingContext2D = this.pageContext;
         ctx.save();
         ctx.globalAlpha = 0.85;
-        const headerFooterHeight: number = (this.getScaledValue(page.boundingRectangle.height) / 100) * 40;
+        // calculating header/footer height based on Word 2013 mode.
+        const headerFooterHeight: number = this.documentHelper.compatibilityMode === 'Word2013'
+            && page.headerWidget.height + page.footerWidget.height < page.boundingRectangle.height / 100 * 80 ?
+            this.getScaledValue(page.boundingRectangle.height) / 100 * 80 : this.getScaledValue(page.boundingRectangle.height) / 100 * 40;
         //Maximum header height limit
         y = Math.min(y, headerFooterHeight);
         //Dash line Separator
@@ -2963,19 +2969,11 @@ private calculatePathBounds(data: string): Rect {
             }
         }
         if (elementBox.isMetaFile && !isNullOrUndefined(elementBox.metaFileImageString)) {
-            if (!elementBox.isCrop) {
+            if (elementBox.isCrop && elementBox.cropWidth < width && elementBox.cropHeight < height) {
+                this.pageContext.drawImage(elementBox.element, elementBox.cropX, elementBox.cropY, elementBox.cropWidth, elementBox.cropHeight, imgX, imgY, width, height);
+            }
+            else {
                 this.pageContext.drawImage(elementBox.element, imgX, imgY, width, height);
-            } else {
-                this.pageContext.drawImage(elementBox.element,
-                    elementBox.cropX,
-                    elementBox.cropY,
-                    elementBox.cropWidth,
-                    elementBox.cropHeight,
-                    imgX,
-                    imgY,
-                    width,
-                    height
-                );
             }
         } else {
             const fallbackImage: string = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAOEAAADhCAMAAAAJbSJIAAAAgVBMVEX///8AAADgAADY2Njl5eVcXFxjY2NZWVl/f3+wsLCmpqb4+PiioqKpqam7u7vV1dX2uLj2wsLhFRXzpKT3vb30sbHhCwv74+P40dH+9vbkIyO2trbBwcHLy8tsbGycnJz529v4zMzrbGzlLS3qZmblNzfrdXXoRkbvi4vvgYHlHh7CZsBOAAADpUlEQVR4nO3da1faQBSF4ekAUQlUEFs14AXxVv7/D6yaQiZx5mSEYXF2ut+PNKzyyK5diYDmR9czx34AB49C/CjE759w3jvvWr15Tdgz3atXE54f++EcIArxoxA/CvGjED8K8aMQPwrxoxA/CvGLEeZ9jPJdhfk4GyCUjb3ECGE/Q6m/q3DwfudjP0ERZYN9hKdn2hvd3+0jHJz5/kBVuTk96bbQUEjhYR9ckiikUH8UUqg/CinUH4UU6o9CCvVHIYX6o5BC/VFIof4opFB/FFKoPwop1B+FFOqPQgrjyxfjVC38Lxk9tnAxGqZqdKtSOE4GHA5/fuNJpDCtcNHbv4VqYYqPLjgfUViPQgrjozA2CptRSGF8/59w+Wrt+rr1btNna1cPzg0wwuXavncxabnX7PfHYYXzlYARvlobQZyUR9mXm+1NMEK7SSLONgcVV9vb8IQXv4J3KSeKKlxXxNCzONkeYp8AV3p9UT1+P3FWHVAsq5thhGZSEb1DrSZq7dS5HUdoLiuBZ6jORG3tCwAkNJfCUJ2Jrqe1P0ESCkMNTdSACYNDDU7UoAkDQw1P1MAJvUMVJmrwhJ6hShM1gMIvQxUnahCFjaHKEzWQQneoxR95ogZTWBuqPFEDKnSHKk/UoArdoYoTNbDC5lBDEzW4QjMpYiZqgIXG/S76JhwHK5zVVipcnkIVuv/RW/HyFKhwYhuFr6NiCmdNoDBUSGFjovJQEYXuRN9ahwoorJ8uSZenPsMTNk+X2q6jwgm/ntHL11HhhL4zenmoYEL/Gb04VCxh6KKTNFQoYfiikzBUJKF00Sk8VCChfF00OFQcYdt10dBQYYRT5xn0n9G7Q0X8GfCzNNEyZ6iPgD/HlydaVg11DfhajJaJlm2HugIUrlomWrYZKuJKHz6vHhbSM/hROdRnxNe1meuXYvW0DB6+aflYrB7dlzDiCM3N1dVN6GDhMCDhjlHYjEIK46MwNgqbUUhhfJ/vA07wO8N1vw94ONo/3e/lTpVOYfc/UyG//ZmqW52fi/FuTNW3/lZ+eguF+qOQQv1RSKH+KKRQfxRSqD8KKdQfhRTqj0IK9UchhfqjkEL9UUih/iikUH8UUqg/CmXh6Hsv3jlK+wnvD/vgkrSHMMuyu1P9ZdmuwnycDQYn+svG3n9KEUKT9zHyf6+IEWJHIX4U4kchfhTiRyF+FOJHIX4U4kchfnVhijeZa6sunCf4ZdPamteEHY5C/CjEr/vCv0ec0g+AtS1QAAAAAElFTkSuQmCC';

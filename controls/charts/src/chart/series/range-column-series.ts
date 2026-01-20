@@ -38,8 +38,8 @@ export class RangeColumnSeries extends ColumnBase {
                 if (series.chart.columns.length === 1) {
                     rect.x =
                         rect.x -
-                        ((series.columnWidthInPixel / 2) * series.rectCount -
-                            series.columnWidthInPixel * series.index);
+                        ((series.columnWidthInPixel / 2) * (isNullOrUndefined(series.rectCount) ? 0 : series.rectCount)) -
+                        (series.columnWidthInPixel * (isNullOrUndefined(series.index) ? 0 : series.index));
                 } else {
                     rect.x = rect.x + rect.width / 2 - series.columnWidthInPixel;
                 }

@@ -1,3 +1,3 @@
 @use 'ej2-icons/styles/highcontrast' as *;
-@use 'highcontrast-light-definition' as *;
-@use 'all' as *;
+@forward 'highcontrast-light-definition';
+@use 'all.highcontrast-light' as *;

@@ -3,11 +3,11 @@
 @use 'popup/fabric-dark-definition' as *;
 @use 'dialog/fabric-dark-definition' as *;
 @use 'dialog/icons/fabric-dark' as *;
-@use 'dialog/all' as *;
-@use 'popup/all' as *;
+@use 'dialog/all.fabric-dark' as *;
+@use 'popup/all.fabric-dark' as *;
 
 @use 'tooltip/fabric-dark-definition' as *;
 @use 'tooltip/icons/fabric-dark' as *;
-@use 'tooltip/all' as *;
+@use 'tooltip/all.fabric-dark' as *;
 @use 'spinner/fabric-dark-definition' as *;
-@use 'spinner/all' as *;
+@use 'spinner/all.fabric-dark' as *;

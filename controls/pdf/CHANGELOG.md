@@ -2,6 +2,15 @@
 
 ## [Unreleased]
 
+## 32.1.24 (2026-01-20)
+
+### PDF
+
+#### Bug Fixes
+
+- Fixed missing word spacing when adding a stamp icon to rubber stamp annotations.
+- Fixed incorrect case conversion of allowed interactions when exporting annotations to XFDF.
+
 ## 32.1.23 (2026-01-13)
 
 ### PDF

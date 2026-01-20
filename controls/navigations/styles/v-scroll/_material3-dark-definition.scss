@@ -19,8 +19,8 @@ $vscroll-bgr-padding: $vscroll-nav-bgr-width 0 !default;
 $vscroll-box-shadow: none !default;
 $vscroll-overlay-opacity: .5 !default;
 $vscroll-overlay-bg: rgba($content-bg-color) !default;
-$vscroll-overlay-start: ($vscroll-overlay-bg, 0) !default;
-$vscroll-overlay-end: ($vscroll-overlay-bg, 1) !default;
+$vscroll-overlay-start: transparent !default;
+$vscroll-overlay-end: $vscroll-overlay-bg !default;
 $vscroll-right-bg: linear-gradient(-270deg, $vscroll-overlay-start 0%, $vscroll-overlay-end 100%) !default;
 $vscroll-left-bg:  linear-gradient(-270deg, $vscroll-overlay-end 0%, $vscroll-overlay-start 100%) !default;
 

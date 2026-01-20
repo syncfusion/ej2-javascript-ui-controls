@@ -1715,9 +1715,9 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     /**
      * If `enableHeaderFocus` set to true, then header element will be focused when focus moves to grid.
      *
-     * @default false
+     * @default true
      */
-    @Property(false)
+    @Property(true)
     public enableHeaderFocus: boolean;
 
     /**
@@ -3950,7 +3950,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
         }
         const modules: string[] = ['renderModule', 'headerModule', 'contentModule', 'valueFormatterService',
             'serviceLocator', 'ariaService', 'keyboardModule', 'widthService', 'searchModule', 'showHider',
-            'scrollModule', 'printModule', 'clipboardModule', 'focusModule'];
+            'scrollModule', 'printModule', 'clipboardModule', 'focusModule', 'editModule'];
         for (let i: number = 0; i < modules.length; i++) {
             if (this[modules[parseInt(i.toString(), 10)]]) {
                 this[modules[parseInt(i.toString(), 10)]] = null;

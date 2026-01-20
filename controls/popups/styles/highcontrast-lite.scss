@@ -3,11 +3,11 @@
 @use 'popup/highcontrast-definition' as *;
 @use 'dialog/highcontrast-definition' as *;
 @use 'dialog/icons/highcontrast' as *;
-@use 'dialog/all' as *;
-@use 'popup/all' as *;
+@use 'dialog/all.highcontrast' as *;
+@use 'popup/all.highcontrast' as *;
 
 @use 'tooltip/highcontrast-definition' as *;
 @use 'tooltip/icons/highcontrast' as *;
-@use 'tooltip/all' as *;
+@use 'tooltip/all.highcontrast' as *;
 @use 'spinner/highcontrast-definition' as *;
-@use 'spinner/all' as *;
+@use 'spinner/all.highcontrast' as *;

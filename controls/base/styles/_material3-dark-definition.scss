@@ -2,7 +2,9 @@
 @use 'definition/material3-dark' as *;
 @forward 'definition/material3-dark';
 
-@if not meta.variable-exists('is-roboto-loaded') {
+$is-roboto-loaded: false !default;
+
+@if not $is-roboto-loaded{
   //sass-lint:disable no-url-protocols,no-url-domains
   @import url('https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100;0,300;0,400;0,500;0,700;0,900;1,100;1,900&display=swap');// stylelint-disable-line no-invalid-position-at-import-rule
 }

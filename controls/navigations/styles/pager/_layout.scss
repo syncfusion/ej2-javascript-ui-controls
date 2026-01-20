@@ -1,5 +1,4 @@
 @use 'ej2-base/styles/common/mixin' as *;
-@use './theme-variables' as *;
 @mixin padding-bottom-right-top-styles($bottom, $right, $top) {
   padding-bottom: $bottom;
   padding-right: $right;

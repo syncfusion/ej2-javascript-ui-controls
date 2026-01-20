@@ -2,6 +2,15 @@
 
 ## [Unreleased]
 
+## 32.1.24 (2026-01-20)
+
+### Diagram
+
+#### Bug Fixes
+
+- `#I798751` - The offsetY value applied through programmatically is now working well for group node.
+- `#F197953` - The document undefined error in Next JS platform has been resolved.
+
 ## 32.1.23 (2026-01-13)
 
 ### Diagram

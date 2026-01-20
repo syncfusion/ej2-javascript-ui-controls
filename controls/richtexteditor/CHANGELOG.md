@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 32.1.24 (2026-01-20)
+
+### RichTextEditor
+
+#### Bug Fixes
+
+- `#I801343` - Now images copied using the browser context menu and pasted into the editor will be uploaded to the server with an `uploader` popup when `saveUrl` is configured.
+
 ## 32.1.23 (2026-01-13)
 
 ### RichTextEditor

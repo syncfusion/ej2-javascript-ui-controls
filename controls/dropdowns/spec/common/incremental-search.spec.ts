@@ -142,5 +142,66 @@ describe('Incremental search', () => {
         let memory: any = inMB(getMemoryProfile())
         //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
         expect(memory).toBeLessThan(profile.samples[0] + 0.25);
-    })
+    });
+    describe('Autofill with special characters at start', () => {
+        const data: string[] = ['(Apple', '{Beta', '[Gamma', '@Delta', '#Echo', '$Foxtrot', '(apricot'];
+        let li: HTMLLIElement[] = [];
+
+        beforeAll(() => {
+            li = [];
+            for (const txt of data) {
+                const ele: HTMLLIElement = document.createElement('li');
+                ele.innerText = txt;
+                li.push(ele);
+            }
+        });
+
+        // Bracket special characters - should work with StartsWith (autofill scenario)
+        it('StartsWith - "(" should match "(Apple"', () => {
+            const result = Search('(', li, 'StartsWith', true).item as Element;
+            expect(result && result.innerHTML).toBe('(Apple');
+        });
+
+        it('StartsWith - "{", should match "{Beta"', () => {
+            const result = Search('{', li, 'StartsWith', true).item as Element;
+            expect(result && result.innerHTML).toBe('{Beta');
+        });
+
+        it('StartsWith - "[" should match "[Gamma"', () => {
+            const result = Search('[', li, 'StartsWith', true).item as Element;
+            expect(result && result.innerHTML).toBe('[Gamma');
+        });
+
+        it('StartsWith - "(a" (ignoreCase) should match "(Apple"', () => {
+            const result = Search('(a', li, 'StartsWith', true).item as Element;
+            expect(result && result.innerHTML).toBe('(Apple');
+        });
+
+        it('StartsWith - "(ap" (ignoreCase) should match "(Apple" first before "(apricot"', () => {
+            const result = Search('(ap', li, 'StartsWith', true).item as Element;
+            expect(result && result.innerHTML).toBe('(Apple');
+        });
+
+        it('StartsWith - "@" should match "@Delta"', () => {
+            const result = Search('@', li, 'StartsWith', true).item as Element;
+            expect(result && result.innerHTML).toBe('@Delta');
+        });
+
+        it('StartsWith - "#" should match "#Echo"', () => {
+            const result = Search('#', li, 'StartsWith', true).item as Element;
+            expect(result && result.innerHTML).toBe('#Echo');
+        });
+
+        it('StartsWith - "$" should match "$Foxtrot"', () => {
+            const result = Search('$', li, 'StartsWith', true).item as Element;
+            expect(result && result.innerHTML).toBe('$Foxtrot');
+        });
+
+        // Negative case - no match
+        it('StartsWith - "(z" should return null', () => {
+            const result = Search('(z', li, 'StartsWith', true).item as Element;
+            expect(result).toBe(null);
+        });
+    });
+
 });

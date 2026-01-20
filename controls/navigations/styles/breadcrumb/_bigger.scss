@@ -1,6 +1,5 @@
 @use 'sass:list';
 @use 'ej2-base/styles/common/mixin' as *;
-@use './theme-variables' as *;
 @include export-module('breadcrumb-bigger') {
   .e-bigger.e-breadcrumb,
   .e-bigger .e-breadcrumb {

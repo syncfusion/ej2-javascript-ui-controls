@@ -2,11 +2,11 @@
 @use 'popup/bootstrap4-definition' as *;
 @use 'dialog/bootstrap4-definition' as *;
 @use 'dialog/icons/bootstrap4' as *;
-@use 'dialog/all' as *;
-@use 'popup/all' as *;
+@use 'dialog/all.bootstrap4' as *;
+@use 'popup/all.bootstrap4' as *;
 
 @use 'tooltip/bootstrap4-definition' as *;
 @use 'tooltip/icons/bootstrap4' as *;
-@use 'tooltip/all' as *;
+@use 'tooltip/all.bootstrap4' as *;
 @use 'spinner/bootstrap4-definition' as *;
-@use 'spinner/all' as *;
+@use 'spinner/all.bootstrap4' as *;

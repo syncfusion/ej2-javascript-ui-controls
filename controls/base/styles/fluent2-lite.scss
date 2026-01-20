@@ -1,3 +1,3 @@
 @use 'ej2-icons/styles/fluent2' as *;
-@use 'fluent2-definition' as *;
-@use 'all' as *;
+@forward 'fluent2-definition';
+@use 'all.fluent2' as *;

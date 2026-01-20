@@ -1,0 +1,6 @@
+@use 'sass:color';
+@use 'ej2-base/styles/common/mixin' as *;
+@import 'ej2-buttons/styles/button/theme-variables.highcontrast-light';
+@import 'ej2-navigations/styles/toolbar/theme-variables.highcontrast-light';
+@import './theme-variables.highcontrast-light';
+@import './_theme';

@@ -1,5 +1,4 @@
 @use 'ej2-base/styles/common/mixin' as *;
-@use './theme-variables' as *;
 @mixin speeddial-popup-styles($padding, $li-margin, $li-text-margin, $speeddial-li-text-height, $li-icon-height, $li-icon-width, $li-icon-font-size, $ul-padding, $sd-li-margin, $speeddial-text-li-padding) {
   .e-speeddial-ul {
     padding: $padding;

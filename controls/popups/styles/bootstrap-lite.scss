@@ -2,11 +2,11 @@
 @use 'popup/bootstrap-definition' as *;
 @use 'dialog/bootstrap-definition' as *;
 @use 'dialog/icons/bootstrap' as *;
-@use 'dialog/all' as *;
-@use 'popup/all' as *;
+@use 'dialog/all.bootstrap' as *;
+@use 'popup/all.bootstrap' as *;
 
 @use 'tooltip/bootstrap-definition' as *;
 @use 'tooltip/icons/bootstrap' as *;
-@use 'tooltip/all' as *;
+@use 'tooltip/all.bootstrap' as *;
 @use 'spinner/bootstrap-definition' as *;
-@use 'spinner/all' as *;
+@use 'spinner/all.bootstrap' as *;

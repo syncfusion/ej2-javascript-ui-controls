@@ -18,9 +18,8 @@ $vscroll-nrml-padding: 0 $vscroll-nav-nrml-width !default;
 $vscroll-bgr-padding: $vscroll-nav-bgr-width 0 !default;
 $vscroll-box-shadow: none !default;
 $vscroll-overlay-opacity: .5 !default;
-$vscroll-overlay-bg: $content-bg-color-alt2 !default;
-$vscroll-overlay-start: rgba($vscroll-overlay-bg, 0) !default;
-$vscroll-overlay-end: rgba($vscroll-overlay-bg, 1) !default;
+$vscroll-overlay-start: transparent !default;
+$vscroll-overlay-end: $content-bg-color-alt2 !default;
 $vscroll-right-bg: linear-gradient(-270deg, $vscroll-overlay-start 0%, $vscroll-overlay-end 100%) !default;
 $vscroll-left-bg:  linear-gradient(-270deg, $vscroll-overlay-end 0%, $vscroll-overlay-start 100%) !default;
 

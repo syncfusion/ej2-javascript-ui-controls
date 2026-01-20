@@ -1639,11 +1639,12 @@ export class FormDesigner {
         this.updateSignatureSettings(this.pdfViewer.initialFieldSettings, this.isInitialField);
         this.updateSignInitialFieldProperties(signatureField, signatureField.isInitialField,
                                               this.pdfViewer.isFormDesignerToolbarVisible, this.isSetFormFieldMode);
-        if (!isNullOrUndefined(signatureField.tooltip) && signatureField.tooltip !== '') {
+        if (!this.isDrawHelper && !isNullOrUndefined(signatureField.tooltip) && signatureField.tooltip !== '') {
             this.setToolTip(signatureField.tooltip, element.firstElementChild);
         }
         this.updateSignatureSettings(this.pdfViewer.signatureFieldSettings, this.isInitialField);
         this.updateSignatureFieldProperties(signatureField, element, isPrint);
+        this.isDrawHelper = false;
         return element;
     }
 
@@ -1751,6 +1752,7 @@ export class FormDesigner {
         element.style.width = '100%';
         element.style.height = '100%';
         element.style.backgroundColor = drawingObject.backgroundColor;
+        element.style.visibility = drawingObject.visibility;
         const select: HTMLSelectElement = document.createElement('select');
         select.addEventListener('change', this.dropdownChange.bind(this));
         select.addEventListener('focus', this.focusFormFields.bind(this));
@@ -1781,9 +1783,10 @@ export class FormDesigner {
             select.selectedIndex = !isNullOrUndefined((drawingObject as any).selectedIndex) ? (drawingObject as any).selectedIndex : 0;
         }
         element.appendChild(select);
-        if (!isNullOrUndefined(drawingObject.tooltip) && drawingObject.tooltip !== '') {
+        if (!this.isDrawHelper && !isNullOrUndefined(drawingObject.tooltip) && drawingObject.tooltip !== '') {
             this.setToolTip(drawingObject.tooltip, element.firstElementChild);
         }
+        this.isDrawHelper = false;
         return element;
     }
 
@@ -1801,6 +1804,7 @@ export class FormDesigner {
         element.style.width = '100%';
         element.style.height = '100%';
         element.style.backgroundColor = drawingObject.backgroundColor;
+        element.style.visibility = drawingObject.visibility;
         const select: HTMLSelectElement = document.createElement('select');
         select.addEventListener('click', this.listBoxChange.bind(this));
         select.addEventListener('focus', this.focusFormFields.bind(this));
@@ -1832,9 +1836,10 @@ export class FormDesigner {
             select.appendChild(option);
         }
         element.appendChild(select);
-        if (!isNullOrUndefined(drawingObject.tooltip) && drawingObject.tooltip !== '') {
+        if (!this.isDrawHelper && !isNullOrUndefined(drawingObject.tooltip) && drawingObject.tooltip !== '') {
             this.setToolTip(drawingObject.tooltip, element.firstElementChild);
         }
+        this.isDrawHelper = false;
         return element;
     }
 
@@ -2048,7 +2053,7 @@ export class FormDesigner {
                 element.appendChild(inputElement);
             }
         }
-        if (!isNullOrUndefined(drawingObject.tooltip) && drawingObject.tooltip !== '') {
+        if (!this.isDrawHelper && !isNullOrUndefined(drawingObject.tooltip) && drawingObject.tooltip !== '') {
             if (formFieldAnnotationType === 'RadioButton')
             {this.setToolTip(drawingObject.tooltip, labelElement); }
             else if (formFieldAnnotationType === 'Textbox' || formFieldAnnotationType === 'PasswordField') {
@@ -3339,7 +3344,8 @@ export class FormDesigner {
             }
             formFieldObject.visibility = options.visibility;
             htmlElement.style.visibility = options.visibility;
-            if (formFieldObject.formFieldAnnotationType === 'RadioButton') {
+            if (formFieldObject.formFieldAnnotationType === 'RadioButton' || formFieldObject.formFieldAnnotationType === 'ListBox' ||
+                formFieldObject.formFieldAnnotationType === 'DropdownList') {
                 (htmlElement as any).parentElement.style.visibility = formFieldObject.visibility;
             }
             if (formFieldObject.formFieldAnnotationType === 'SignatureField' || formFieldObject.formFieldAnnotationType === 'InitialField') {
@@ -6377,7 +6383,8 @@ export class FormDesigner {
             selectedItem.visibility = this.formFieldVisibility.value as Visibility;
         }
         element.style.visibility = selectedItem.visibility;
-        if (selectedItem.formFieldAnnotationType === 'RadioButton') {
+        if (selectedItem.formFieldAnnotationType === 'RadioButton' || selectedItem.formFieldAnnotationType === 'ListBox' ||
+            selectedItem.formFieldAnnotationType === 'DropdownList') {
             element.parentElement.style.visibility = selectedItem.visibility;
         }
         if (selectedItem.formFieldAnnotationType === 'SignatureField' || selectedItem.formFieldAnnotationType === 'InitialField') {

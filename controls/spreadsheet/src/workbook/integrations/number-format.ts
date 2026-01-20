@@ -367,7 +367,8 @@ export class WorkbookNumberFormat {
             const orgFormat: string = cell.format;
             cell.format = cell.format.split('\\').join('');
             const formats: string[] = cell.format.split(';');
-            if (isCustomDateTime(formats[0], true, option, true) || cell.format === 'aaaa' || cell.format === 'aaa') {
+            if (isCustomDateTime(formats[0], true, option, true) || cell.format === 'aaaa' || cell.format === 'aaa'
+                || cell.format.toLowerCase() === 'mmmm') {
                 if (fResult !== '') {
                     args.result = this.processCustomDateTime(args, cell, option.type !== 'time', formats);
                     isCustomText = !args.formatApplied;

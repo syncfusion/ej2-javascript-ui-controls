@@ -7173,9 +7173,7 @@ export class PdfComboBoxField extends PdfListField {
             }
             graphics.setClip(rectangle, PdfFillMode.winding);
             if (parameter.rotationAngle === 0) {
-                let x: number = rect.x + borderWidth;
                 if (padding) {
-                    x += borderWidth;
                     width -= doubleBorderWidth;
                 }
                 brush = new PdfBrush({r: 0, g: 0, b: 0});
@@ -7209,9 +7207,7 @@ export class PdfComboBoxField extends PdfListField {
                         const y: number = graphics._size.height - (rectangle.y + rectangle.height);
                         rectangle = {x: x, y: y, width: rectangle.width, height: rectangle.height};
                     }
-                    let x: number = rect.x + borderWidth;
                     if (padding) {
-                        x += borderWidth;
                         width -= doubleBorderWidth;
                     }
                     brush = new PdfBrush({r: 0, g: 0, b: 0});

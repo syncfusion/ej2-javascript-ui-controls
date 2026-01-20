@@ -1,5 +1,4 @@
 @use 'ej2-base/styles/common/mixin' as *;
-@use './theme-variables' as *;
 @mixin icon-left-right {
   @if $skin-name == 'bootstrap4' {
     padding: $btn-zero-padding $btn-bigger-icon-top-bottom-padding;

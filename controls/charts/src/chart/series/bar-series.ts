@@ -37,9 +37,15 @@ export class BarSeries extends ColumnBase {
         if (pointBar.visible && withInRange(series.points[pointBar.index - 1], pointBar, series.points[pointBar.index + 1], series)) {
             this.rect = this.getRectangle(pointBar.xValue + sideBySideInfo.start, pointBar.yValue,
                                           pointBar.xValue + sideBySideInfo.end, origin, series);
-            this.rect.height = series.columnWidthInPixel ? series.columnWidthInPixel : this.rect.height;
-            this.rect.y = series.columnWidthInPixel ? this.rect.y - (((series.columnWidthInPixel / 2) * series.rectCount) -
-                (series.columnWidthInPixel * series.index)) : this.rect.y;
+            if (series.columnWidthInPixel) {
+                const widthInPixel: number = series.columnWidthInPixel;
+                const halfWidth: number = widthInPixel ? (widthInPixel / 2) : 0;
+                const rectCount: number = isNullOrUndefined(series.rectCount) ? 0 : series.rectCount;
+                const position: number = isNullOrUndefined(series.position) ? 0 : series.position;
+                const sideBySideEnabled: number = series.chart.enableSideBySidePlacement ? 0 : halfWidth;
+                this.rect.height = widthInPixel;
+                this.rect.y = this.rect.y - ((halfWidth * rectCount) - (widthInPixel * (rectCount - position - 1))) + (sideBySideEnabled);
+            }
             const argsData: IPointRenderEventArgs = this.triggerEvent(series, pointBar, series.interior,
                                                                       { width: series.border.width, color: series.border.color });
             if (!argsData.cancel) {

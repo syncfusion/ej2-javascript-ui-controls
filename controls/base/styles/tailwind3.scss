@@ -1,3 +1,3 @@
 @use 'ej2-icons/styles/tailwind3' as *;
-@use 'tailwind3-definition' as *;
-@use 'all' as *;
+@forward 'tailwind3-definition';
+@use 'all.tailwind3' as *;

@@ -830,6 +830,8 @@ export class MoveTool extends ToolBase {
                     cobject.fillColor = 'transparent';
                     cobject.stampFillColor = 'transparent';
                     cobject.data = '';
+                    cobject.bounds.width = this.commandHandler.selectedItems.annotations[0].wrapper.actualSize.width;
+                    cobject.bounds.height = this.commandHandler.selectedItems.annotations[0].wrapper.actualSize.height;
                 } else if (cobject.shapeAnnotationType === 'FreeText') {
                     cobject.strokeColor = 'blue';
                     cobject.fillColor = 'transparent';

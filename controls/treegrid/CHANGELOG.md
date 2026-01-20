@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 32.1.24 (2026-01-20)
+
+### Tree Grid
+
+#### Bug Fixes
+
+- `I792894` - Resolved TreeGrid scroll reset after cell editing with aggregates enabled
+
 ## 32.1.22 (2026-01-06)
 
 ### Tree Grid

@@ -18,7 +18,10 @@ export class SpellCheckDialog {
      * @private
      */
     public localValue: L10n;
-    private errorText: string;
+    /**
+     * @private
+     */
+    public errorText: string;
     private spellingListView: ListView;
     private suggestionListView: ListView;
     private selectedText: string;
@@ -111,7 +114,10 @@ export class SpellCheckDialog {
         }
     };
 
-    private removeErrors(): void {
+    /**
+     * @private
+     */
+    public removeErrors(): void {
         if (!isNullOrUndefined(this.errorText) && this.parent.spellCheckerModule.errorWordCollection.containsKey(this.errorText)) {
             const textElement: ElementBox[] = this.parent.spellCheckerModule.errorWordCollection.get(this.errorText);
             if (this.parent.spellCheckerModule.handleErrorElements.indexOf(this.elementBox) === -1) {
@@ -189,8 +195,10 @@ export class SpellCheckDialog {
     public changeButtonClicked = (): void => {
         if (!isNullOrUndefined(this.selectedText)) {
             this.isSpellChecking = true;
+            this.parent.spellCheckerModule.isChange = true;
             showSpinner(this.documentHelper.dialog.element);
             this.parent.spellCheckerModule.manageReplace(this.selectedText, this.elementBox);
+            this.parent.spellCheckerModule.isChange = true;
             this.removeErrors();
             this.parent.spellCheckerModule.checkForNextError();
             hideSpinner(this.documentHelper.dialog.element);

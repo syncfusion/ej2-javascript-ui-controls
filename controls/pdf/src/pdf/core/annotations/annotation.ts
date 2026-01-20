@@ -12010,7 +12010,7 @@ export class PdfRubberStampAnnotation extends PdfComment {
     set icon(value: PdfRubberStampAnnotationIcon) {
         if (typeof value !== 'undefined') {
             this._icon = value;
-            this._dictionary.update('Name', _PdfName.get('#' + this._obtainIconName(this._icon)));
+            this._dictionary.update('Name', _PdfName.get('#' + this._obtainIconName(this._icon).replace(/\s+/g, '')));
         }
     }
     /**
@@ -12232,7 +12232,7 @@ export class PdfRubberStampAnnotation extends PdfComment {
             }
         } else {
             this._iconString = this._obtainIconName(this.icon);
-            this._dictionary.update('Name', _PdfName.get('#23' + this._iconString));
+            this._dictionary.update('Name', _PdfName.get('#23' + this._iconString.replace(/\s+/g, '')));
             appearance = new PdfAppearance(nativeRectangle, this);
             appearance.normal = new PdfTemplate(nativeRectangle, this._crossReference);
         }
@@ -12288,7 +12288,7 @@ export class PdfRubberStampAnnotation extends PdfComment {
             this._stampWidth = 126;
             break;
         case PdfRubberStampAnnotationIcon.asIs:
-            this._iconString = 'AsIs';
+            this._iconString = 'As Is';
             this._stampWidth = 75;
             break;
         case PdfRubberStampAnnotationIcon.confidential:
@@ -12316,19 +12316,19 @@ export class PdfRubberStampAnnotation extends PdfComment {
             this._stampWidth = 90;
             break;
         case PdfRubberStampAnnotationIcon.forComment:
-            this._iconString = 'ForComment';
+            this._iconString = 'For Comment';
             this._stampWidth = 166;
             break;
         case PdfRubberStampAnnotationIcon.forPublicRelease:
-            this._iconString = 'ForPublicRelease';
+            this._iconString = 'For Public Release';
             this._stampWidth = 240;
             break;
         case PdfRubberStampAnnotationIcon.notApproved:
-            this._iconString = 'NotApproved';
+            this._iconString = 'Not Approved';
             this._stampWidth = 186;
             break;
         case PdfRubberStampAnnotationIcon.notForPublicRelease:
-            this._iconString = 'NotForPublicRelease';
+            this._iconString = 'Not For Public Release';
             this._stampWidth = 290;
             break;
         case PdfRubberStampAnnotationIcon.sold:
@@ -12336,7 +12336,7 @@ export class PdfRubberStampAnnotation extends PdfComment {
             this._stampWidth = 75;
             break;
         case PdfRubberStampAnnotationIcon.topSecret:
-            this._iconString = 'TopSecret';
+            this._iconString = 'Top Secret';
             this._stampWidth = 146;
             break;
         case PdfRubberStampAnnotationIcon.completed:
@@ -12348,11 +12348,11 @@ export class PdfRubberStampAnnotation extends PdfComment {
             this._stampWidth = 75;
             break;
         case PdfRubberStampAnnotationIcon.informationOnly:
-            this._iconString = 'InformationOnly';
+            this._iconString = 'Information Only';
             this._stampWidth = 230;
             break;
         case PdfRubberStampAnnotationIcon.preliminaryResults:
-            this._iconString = 'PreliminaryResults';
+            this._iconString = 'Preliminary Results';
             this._stampWidth = 260;
             break;
         }

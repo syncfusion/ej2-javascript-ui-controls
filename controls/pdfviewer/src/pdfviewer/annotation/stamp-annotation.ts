@@ -1176,13 +1176,16 @@ export class StampAnnotation {
                             const bounds: any = pageAnnotationObject.annotations[parseInt(z.toString(), 10)].bounds;
                             let iconSize: number =
                             this.pdfViewer.annotationModule.calculateFontSize(pageAnnotationObject.
-                                annotations[parseInt(z.toString(), 10)].icon.toUpperCase(), bounds);
-                            iconSize = Browser.isDevice && Browser.isAndroid ? iconSize - 11 : iconSize - 5;
+                                annotations[parseInt(z.toString(), 10)].icon.toUpperCase(), bounds, true);
+                            iconSize = Browser.isDevice && Browser.isAndroid ? iconSize - 11 : iconSize - 2;
+                            if (!pageAnnotationObject.annotations[parseInt(z.toString(), 10)].isDynamicStamp) {
+                                iconSize = iconSize - 6;
+                            }
                             pageAnnotationObject.annotations[parseInt(z.toString(), 10)].iconFontSize = iconSize;
                             let textSize: number = 10;
                             const dynamicText: string = pageAnnotationObject.annotations[parseInt(z.toString(), 10)].dynamicText;
                             if (dynamicText.trim().length !== 0) {
-                                textSize = this.pdfViewer.annotationModule.calculateFontSize(dynamicText, bounds) - 5;
+                                textSize = this.pdfViewer.annotationModule.calculateFontSize(dynamicText, bounds) - 2;
                             }
                             pageAnnotationObject.annotations[parseInt(z.toString(), 10)].textFontSize = textSize;
                         }
@@ -1670,8 +1673,8 @@ export class StampAnnotation {
         {
             stampName = signStampItem.toString();
             const defaults: Record<number | string, { width: number; height: number }> = {
-                [SignStampItem.Accepted]: { width: 35, height: 35 },
-                [SignStampItem.Rejected]: { width: 35, height: 35 },
+                [SignStampItem.Accepted]: { width: 20.90475, height: 18.2595 },
+                [SignStampItem.Rejected]: { width: 16.941, height: 16.9395 },
                 [SignStampItem.SignHere]: { width: 97.5, height: 12.75 },
                 [SignStampItem.Witness]: { width: 72.75, height: 12.75 },
                 [SignStampItem.InitialHere]: { width: 114.75, height: 12.75 }

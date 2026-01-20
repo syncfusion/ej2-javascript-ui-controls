@@ -780,7 +780,7 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
                 const height: number = this.elementSize.height + (2 * this.marginY);
                 rect = new Rect(location.x, location.y, width, height);
             }
-            else if (this.content.length > 1 || this.element.id.indexOf('stripline_tooltip') > -1) {
+            else if (this.content.length > 1) {
                 rect = this.sharedTooltipLocation(areaBounds, this.location.x, this.location.y);
                 isTop = true;
             } else {
@@ -1193,7 +1193,7 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
             tooltipRect.y = Math.max((bounds.y + bounds.height) - (tooltipRect.height + 2 * this.padding), bounds.y);
         }
         if (tooltipRect.x + tooltipRect.width > bounds.x + bounds.width) {
-            tooltipRect.x = (bounds.x + bounds.width) - (tooltipRect.width + 4 * this.padding);
+            tooltipRect.x = (bounds.x + this.location.x) - (tooltipRect.width + 4 * this.padding);
         }
         if (tooltipRect.x < bounds.x) {
             tooltipRect.x = bounds.x;

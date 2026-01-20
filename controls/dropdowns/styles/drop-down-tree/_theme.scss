@@ -1,5 +1,4 @@
 @use 'ej2-base/styles/common/mixin' as *;
-@use './theme-variables' as *;
 @mixin chip-style($bg-color, $close-color, $font-color) {
 
   @if $ddt-skin-name == 'Material3' {

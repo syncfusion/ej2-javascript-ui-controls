@@ -36,6 +36,8 @@ const inputObject: InputObject = {
  */
 @NotifyPropertyChanges
 export class ComboBox extends DropDownList {
+    private boundResizeHandler: () => void;
+
     /**
      * Specifies whether suggest a first matched item in input when searching. No action happens when no matches found.
      *
@@ -117,7 +119,7 @@ export class ComboBox extends DropDownList {
     public showClearButton: boolean;
     /**
      * Triggers on set a
-     * [`custom value`](../../combo-box/getting-started#custom-values) to this component.
+     * [`custom value`](https://ej2.syncfusion.com/javascript/documentation/combo-box/es5-getting-started#custom-values) to this component.
      *
      * @event customValueSpecifier
      */
@@ -309,7 +311,8 @@ export class ComboBox extends DropDownList {
             EventHandler.add(this.inputElement, 'keyup', this.onFilterUp, this);
             EventHandler.add(this.inputElement, 'keydown', this.onFilterDown, this);
             EventHandler.add(this.inputElement, 'paste', this.pasteHandler, this);
-            EventHandler.add(<HTMLElement & Window><unknown>window, 'resize', this.windowResize, this);
+            this.boundResizeHandler = this.windowResize.bind(this);
+            window.addEventListener('resize', this.boundResizeHandler);
         }
         this.bindCommonEvent();
     }
@@ -887,7 +890,10 @@ export class ComboBox extends DropDownList {
                 EventHandler.remove(this.inputElement, 'keyup', this.onFilterUp);
                 EventHandler.remove(this.inputElement, 'keydown', this.onFilterDown);
                 EventHandler.remove(this.inputElement, 'paste', this.pasteHandler);
-                EventHandler.remove(<HTMLElement & Window><unknown>window, 'resize', this.windowResize);
+                if (this.boundResizeHandler) {
+                    window.removeEventListener('resize', this.boundResizeHandler);
+                    this.boundResizeHandler = null;
+                }
             }
         }
         this.unBindCommonEvent();

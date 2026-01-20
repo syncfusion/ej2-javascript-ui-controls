@@ -126,7 +126,8 @@ export class RowRenderer<T> implements IRowRenderer<T> {
         }
         let currentViewData: Object[] = this.parent.currentViewData;
         if (row.isDataRow && this.parent.isCheckBoxSelection
-            && this.parent.checkAllRows === 'Check' && (this.parent.enableVirtualization || this.parent.enableInfiniteScrolling)) {
+            && this.parent.checkAllRows === 'Check' && (this.parent.enableVirtualization || this.parent.enableInfiniteScrolling ||
+            (this.parent.allowPaging && this.parent.selectionModule && this.parent.selectionModule.isPartialSelection))) {
             row.isSelected = true;
             if (selIndex.indexOf(row.index) === -1) {
                 selIndex.push(row.index);

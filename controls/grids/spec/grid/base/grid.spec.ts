@@ -5523,3 +5523,110 @@ describe('991898: Updating the Chrome version in coverage test cases of EJ2 comp
         gridObj = null;
     });
 });
+
+describe('EJ2-1000957: Grid focus behavior not working correctly when enableHeaderFocus is set to false', () => {
+    let gridObj: Grid;
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: data,
+                enableHeaderFocus: false,
+                columns: [
+                    { headerText: 'OrderID', field: 'OrderID', width: 150 },
+                    { headerText: 'CustomerID', field: 'CustomerID', width: 150 },
+                    { headerText: 'EmployeeID', field: 'EmployeeID', width: 150 },
+                    { headerText: 'ShipCountry', field: 'ShipCountry', width: 150 },
+                    { headerText: 'ShipCity', field: 'ShipCity', width: 150 },
+                ],
+            }, done);
+    });
+    it('click the header cell - tab and shiftTab', function (done: Function) {
+        (gridObj as any).getHeaderContent().querySelector('.e-headercell').click();
+        done();
+    });
+
+    it('enableHeaderFocus - tab and shiftTab', function (done: Function) {
+        (gridObj.focusModule as any).onKeyPress({ action: 'tab', preventDefault: function () { }, target: (gridObj as any).getHeaderContent().querySelector('.e-headercell') });
+        expect(gridObj.getContent().querySelector('.e-rowcell').classList.contains('e-focused')).toBeTruthy();
+        (gridObj.focusModule as any).onKeyPress({ action: 'shiftTab', preventDefault: function () { }, target: (gridObj as any).getContent().querySelector('.e-rowcell') });
+        expect(gridObj.element.querySelectorAll('.e-headercell')[4].classList.contains('e-focused')).toBeFalsy();
+        done();
+    });
+
+    it('click the header cell - upArrow', function (done: Function) {
+        (gridObj as any).getContent().querySelector('.e-rowcell').click();
+        done();
+    });
+
+    it('enableHeaderFocus - upArrow', function (done: Function) {
+        (gridObj.focusModule as any).onKeyPress({ action: 'upArrow', preventDefault: function () { }, target: (gridObj as any).getContent().querySelector('.e-rowcell') });
+        expect(gridObj.getContent().querySelector('.e-rowcell').classList.contains('e-focused')).toBeTruthy();
+        done();
+    });
+
+    it('enable the frozenRows', function (done: Function) {
+        gridObj.frozenRows = 2;
+        gridObj.freezeRefresh();
+        done();
+    });
+
+    it('click the header cell with frozen row - tab and shiftTab', function (done: Function) {
+        (gridObj as any).getHeaderContent().querySelector('.e-headercell').click();
+        done();
+    });
+
+    it('enableHeaderFocus false with frozen row - tab and shiftTab', function (done: Function) {
+        (gridObj.focusModule as any).onKeyPress({ action: 'leftArrow', preventDefault: function () { }, target: (gridObj as any).getHeaderContent().querySelector('.e-headercell') });
+        (gridObj.focusModule as any).onKeyPress({ action: 'tab', preventDefault: function () { }, target: (gridObj as any).getHeaderContent().querySelector('.e-headercell') });
+        (gridObj.focusModule as any).onKeyPress({ action: 'shiftTab', preventDefault: function () { }, target: (gridObj as any).getHeaderContent().querySelector('.e-rowcell') });
+        expect(gridObj.element.querySelectorAll('.e-headercell')[4].classList.contains('e-focused')).toBeFalsy();
+        done();
+    });
+
+    it('click the header cell with frozen row - upArrow', function (done: Function) {
+        (gridObj as any).getHeaderContent().querySelector('.e-rowcell').click();
+        done();
+    });
+
+    it('enableHeaderFocus false with frozen row - upArrow', function (done: Function) {
+        (gridObj.focusModule as any).onKeyPress({ action: 'upArrow', preventDefault: function () { }, target: (gridObj as any).getHeaderContent().querySelector('.e-rowcell') });
+        done();
+    });
+
+    it('enable filtering', function (done: Function) {
+        gridObj.allowFiltering = true;
+        gridObj.freezeRefresh()
+        done();
+    });
+
+    it('click the header cell filter with frozen row', function (done: Function) {
+        let e = { target: (gridObj as any).getHeaderContent().querySelector('.e-filterbarcell'), preventDefault: function () { } };
+        (gridObj.focusModule as any).focusIn(e);
+        (gridObj as any).getHeaderContent().querySelector('.e-headercell').click();
+        done();
+    });
+
+    it('enableHeaderFocus false filter with frozen row - tab and shiftTab', function (done: Function) {
+        (gridObj.focusModule as any).onKeyPress({ action: 'tab', preventDefault: function () { }, target: (gridObj as any).getHeaderContent().querySelector('.e-headercell') });
+        (gridObj.focusModule as any).onKeyPress({ action: 'shiftTab', preventDefault: function () { }, target: (gridObj as any).getHeaderContent().querySelector('.e-rowcell') });
+        expect(gridObj.element.querySelectorAll('.e-filterbarcell')[4].classList.contains('e-focused')).toBeFalsy();
+        done();
+    });
+
+    it('click the filter bar cell filter with frozen row', function (done: Function) {
+        (gridObj as any).getHeaderContent().querySelector('.e-filterbarcell').click();
+        done();
+    });
+
+    it('enableHeaderFocus false - focus to filter with frozen row - tab and shiftTab', function (done: Function) {
+        (gridObj.focusModule as any).onKeyPress({ action: 'leftArrow', preventDefault: function () { }, target: (gridObj as any).getHeaderContent().querySelector('.e-filterbarCell') });
+        (gridObj.focusModule as any).onKeyPress({ action: 'shiftTab', preventDefault: function () { }, target: (gridObj as any).getHeaderContent().querySelector('.e-filterbarcell') });
+        expect(gridObj.element.querySelector('.e-filterbarcell').classList.contains('e-focused')).toBeFalsy();
+        done();
+    });
+
+    afterAll(() => {
+        destroy(gridObj);
+        gridObj = null;
+    });
+});

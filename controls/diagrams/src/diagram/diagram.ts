@@ -12928,6 +12928,18 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
 
                 parent.offsetX = parent.wrapper.offsetX;
                 parent.offsetY = parent.wrapper.offsetY;
+            } else {
+                // Bug 1001807 - Programmatic offset updates will now work correctly for nested group nodes by recalculating and applying the group’s bounds.
+                if (actualObject.children) {
+                    for (i = 0; i < actualObject.children.length; i++) {
+                        const childNode: NodeModel = this.nameTable[actualObject.children[parseInt(i.toString(), 10)]];
+                        if (childNode && childNode.children && childNode.children.length > 0) {
+                            actualObject.offsetX = actualObject.wrapper.offsetX;
+                            actualObject.offsetY = actualObject.wrapper.offsetY;
+                            break;
+                        }
+                    }
+                }
             }
             // }
             if (existingInnerBounds.equals(existingInnerBounds, actualObject.wrapper.bounds) === false) {

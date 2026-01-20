@@ -106,7 +106,20 @@ export function findObjectUnderMouse(
     let boundsDiff: number = 0;
     for (let i: number = 0; i < objects.length; i++) {
         if (!(objects[parseInt(i.toString(), 10)].shapeAnnotationType === 'Distance' || objects[parseInt(i.toString(), 10)].shapeAnnotationType === 'Line' || objects[parseInt(i.toString(), 10)].shapeAnnotationType === 'LineWidthArrowHead' || pdfBase.tool instanceof LineTool)) {
-            const bounds: PdfBoundsModel = objects[parseInt(i.toString(), 10)].wrapper.bounds;
+            let bounds: PdfBoundsModel = objects[parseInt(i.toString(), 10)].wrapper.bounds;
+            let target: boolean;
+            const object: Container = objects[parseInt(i.toString(), 10)].wrapper;
+            if (objects[parseInt(i.toString(), 10)].shapeAnnotationType === 'Polygon' &&
+                objects[parseInt(i.toString(), 10)].enableShapeLabel) {
+                for (let x: number = 0; x < object.children.length; x++) {
+                    target = object.children[parseInt(x.toString(), 10)].
+                        bounds.containsPoint(pdfBase.currentPosition, pdfViewer.touchPadding);
+                    if (target) {
+                        bounds = object.children[parseInt(x.toString(), 10)].bounds;
+                        break;
+                    }
+                }
+            }
             let rotationValue: number = 0;
             if (objects[parseInt(i.toString(), 10)].shapeAnnotationType === 'Stamp' || objects[parseInt(i.toString(), 10)].shapeAnnotationType === 'Image') {
                 rotationValue = 25;

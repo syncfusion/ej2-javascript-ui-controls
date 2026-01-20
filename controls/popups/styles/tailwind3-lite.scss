@@ -3,11 +3,11 @@
 @use 'popup/tailwind3-definition' as *;
 @use 'dialog/tailwind3-definition' as *;
 @use 'dialog/icons/tailwind3' as *;
-@use 'dialog/all' as *;
-@use 'popup/all' as *;
+@use 'dialog/all.tailwind3' as *;
+@use 'popup/all.tailwind3' as *;
 
 @use 'tooltip/tailwind3-definition' as *;
 @use 'tooltip/icons/tailwind3' as *;
-@use 'tooltip/all' as *;
+@use 'tooltip/all.tailwind3' as *;
 @use 'spinner/tailwind3-definition' as *;
-@use 'spinner/all' as *;
+@use 'spinner/all.tailwind3' as *;

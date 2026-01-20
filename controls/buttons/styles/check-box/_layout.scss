@@ -1,5 +1,4 @@
 @use 'ej2-base/styles/common/mixin' as *;
-@use './theme-variables' as *;
 @mixin ripple-container {
   bottom: $cbox-ripple-small-size;
   height: $cbox-ripple-small-height;

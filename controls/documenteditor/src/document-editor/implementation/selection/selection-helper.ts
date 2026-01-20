@@ -1257,7 +1257,7 @@ export class TextPosition {
                 endPosition.setPositionParagraph(fieldEnd.line, startOffset);
             }
         } else {
-            endPosition.setPositionParagraph(fieldEnd.line, startOffset);
+            endPosition.setPositionParagraph(fieldEnd.line, endOffset);
         }
         endSelection = true;
     }
@@ -1384,12 +1384,7 @@ export class TextPosition {
                 }
             }
         } else {
-            if (fieldBegin.fieldSeparator) {
-
-                endPosition.setPositionParagraph(fieldBegin.line, fieldBegin.fieldSeparator.line.getOffset(fieldBegin.fieldSeparator, fieldBegin.fieldSeparator.length));
-            } else {
-                endPosition.setPositionParagraph(fieldBegin.line, selection.getStartLineOffset(fieldBegin.line));
-            }
+            endPosition.setPositionParagraph(fieldBegin.line, selection.getStartLineOffset(fieldBegin.line));
         }
     }
 

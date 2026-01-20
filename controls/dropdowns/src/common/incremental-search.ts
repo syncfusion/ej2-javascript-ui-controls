@@ -146,7 +146,7 @@ export function Search(
     if (inputVal && inputVal.length && items) {
         const strLength: number = inputVal.length;
         let queryStr: string = ignoreCase ? inputVal.toLocaleLowerCase() : inputVal;
-        queryStr = escapeCharRegExp(queryStr);
+        let escQueryString: string = escapeCharRegExp(queryStr);
         for (let i: number = 0, itemsData: Element[] = listItems; i < itemsData.length; i++) {
             const item: Element = itemsData[i as number];
 
@@ -171,8 +171,9 @@ export function Search(
             if (ignoreAccent && text && queryStr) {
                 text = (text as any).normalize('NFD').replace(/[\u0300-\u036f]/g, '');
                 queryStr = (queryStr as any).normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+                escQueryString = (queryStr as any).normalize('NFD').replace(/[\u0300-\u036f]/g, '');
             }
-            if ((searchType === 'Equal' && text === queryStr) || (searchType === 'StartsWith' && text.substr(0, strLength) === queryStr) || (searchType === 'EndsWith' && text.substr(text.length - queryStr.length) === queryStr) || (searchType === 'Contains' && new RegExp(queryStr, 'g').test(text))) {
+            if ((searchType === 'Equal' && text === queryStr) || (searchType === 'StartsWith' && text.substr(0, strLength) === queryStr) || (searchType === 'EndsWith' && text.substr(text.length - queryStr.length) === queryStr) || (searchType === 'Contains' && new RegExp(escQueryString, 'g').test(text))) {
                 itemData.item = item;
                 itemData.index = i;
                 return { item: item, index: i };

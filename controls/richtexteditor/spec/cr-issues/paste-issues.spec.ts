@@ -1,6 +1,8 @@
 import { RichTextEditor } from "../../src/rich-text-editor/base/rich-text-editor";
 import { destroy, renderRTE, setCursorPoint, dispatchEvent } from "../rich-text-editor/render.spec";
 import { BASIC_MOUSE_EVENT_INIT, ENTERKEY_EVENT_INIT } from "../constant.spec";
+import { getImageUniqueFIle } from '../rich-text-editor/online-service.spec';
+
 
 describe('Paste CR issues ', ()=> {
     describe(' EJ2-65988 - Code block doesnt work properly when pasting contents into the pre tag in RTE' , () => {
@@ -150,6 +152,41 @@ describe('Paste CR issues ', ()=> {
                 }
                 done();
             }, 100 );
+        });
+    });
+
+    describe('Bug 1003319: Support for Remote URL Images in Rich Text Editor.', () => {
+        let editor: RichTextEditor;
+        const hostUrl: string = 'https://services.syncfusion.com/js/production/';
+        beforeAll(() => {
+            editor = renderRTE({
+                pasteCleanupSettings: {
+                    prompt: false
+                },
+                insertImageSettings: {
+                    saveUrl: hostUrl + 'api/RichTextEditor/SaveFile',
+                    removeUrl: hostUrl + 'api/RichTextEditor/DeleteFile',
+                    path: hostUrl + 'RichTextEditor/'
+                }
+            });
+        });
+        afterAll(() => {
+            destroy(editor);
+        });
+        it('need to give support for remote url images', (done: DoneFn) => {
+            editor.focusIn();
+            const clipBoardData: string = '<html>\r\n<body>\r\n\x3C!--StartFragment--><img src="https://api.engage.cloud.microsoft/api/v1/uploaded_files/2695124885504/preview?fallback_to_icon=false&amp;client_application_id=40443904&amp;storage=SHAREPOINT&amp;file_type=image&amp;network_id=2084053&amp;uid=3929527730176&amp;use_compression=true" alt="Attached image - No description set"/>\x3C!--EndFragment-->\r\n</body>\r\n</html>';
+            const dataTransfer: DataTransfer = new DataTransfer();
+            dataTransfer.setData('text/html', clipBoardData);
+            const file: File = getImageUniqueFIle();
+            dataTransfer.items.add(file);
+            const pasteEvent: ClipboardEvent = new ClipboardEvent('paste', { clipboardData: dataTransfer } as ClipboardEventInit);
+            editor.onPaste(pasteEvent);
+            setTimeout(() => {
+                const imgElem: HTMLElement = editor.inputElement.querySelector('img');
+                expect(imgElem.getAttribute('src').indexOf('https://api.engage.cloud.microsoft/')).toBe(-1);
+                done();
+            }, 100);
         });
     });
 

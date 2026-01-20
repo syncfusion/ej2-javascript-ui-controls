@@ -44,7 +44,7 @@ export interface DropDownListModel extends DropDownBaseModel{
     /**
      * Specifies the height of the popup list.
      * > For more details about the popup configuration refer to
-     * [`Popup Configuration`](../../drop-down-list/getting-started#configure-the-popup-list) documentation.
+     * [`Popup Configuration`](https://ej2.syncfusion.com/javascript/documentation/drop-down-list/es5-getting-started#configure-the-popup-list) documentation.
      *
      * @default '300px'
      * @aspType string
@@ -55,7 +55,7 @@ export interface DropDownListModel extends DropDownBaseModel{
      * Specifies the width of the popup list. By default, the popup width sets based on the width of
      * the component.
      * > For more details about the popup configuration refer to
-     * [`Popup Configuration`](../../drop-down-list/getting-started#configure-the-popup-list) documentation.
+     * [`Popup Configuration`](https://ej2.syncfusion.com/javascript/documentation/drop-down-list/es5-getting-started#configure-the-popup-list) documentation.
      *
      * @default '100%'
      * @aspType string

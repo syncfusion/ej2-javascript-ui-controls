@@ -1,6 +1,4 @@
 @use 'ej2-base/styles/common/mixin' as *;
-@use './theme-variables' as *;
-@use '../context-menu/layout-mixin' as *;
 @include export-module('menu-layout') {
   .e-menu-wrapper,
   .e-menu-container {

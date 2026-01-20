@@ -532,7 +532,7 @@ export class TaskProcessor extends DateProcessor {
         this.parent.setRecordValue('taskId', id, ganttProperties, true);
         this.parent.setRecordValue('taskName', name, ganttProperties, true);
         if (taskSettings.calendarId) {
-            if (data[taskSettings.child] || (taskSettings.parentID && data['Children'])) {
+            if ((data[taskSettings.child] && data[taskSettings.child].length > 0) || (taskSettings.parentID && data['Children'])) {
                 if (data[taskSettings.calendarId]) {
                     data[taskSettings.calendarId] = undefined;
                 }

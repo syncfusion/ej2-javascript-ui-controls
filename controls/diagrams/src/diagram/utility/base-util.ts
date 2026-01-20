@@ -435,9 +435,7 @@ export function wordBreakToString(value: TextWrap | TextDecoration): string {
     return state;
 }
 
-// Create an offscreen canvas
-const canvas: HTMLCanvasElement = document.createElement('canvas');
-const context: CanvasRenderingContext2D = canvas.getContext('2d');
+let context: CanvasRenderingContext2D | null = null;
 
 /**
  * measures the width of text
@@ -449,6 +447,10 @@ const context: CanvasRenderingContext2D = canvas.getContext('2d');
  * @private
  */
 export function bBoxText(textContent: string, options: TextAttributes): number {
+    if (!context) {
+        const canvas: HTMLCanvasElement = document.createElement('canvas');
+        context = canvas.getContext('2d');
+    }
     // Set the font with specified style options
     context.font = `${options.bold ? 'bold' : 'normal'} ${options.fontSize}px ${options.fontFamily}`;
     // Measure the text

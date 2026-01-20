@@ -429,8 +429,8 @@ export class ColumnMenu implements IAction {
             if (this.parent.allowFiltering && (this.parent.filterSettings.type !== 'FilterBar')
                 && this.parent.ensureModuleInjected(Filter) && this.targetColumn && this.targetColumn.allowFiltering) {
                 status = false;
-            } else if (this.parent.ensureModuleInjected(Filter) && this.parent.allowFiltering
-                && this.targetColumn && (!this.targetColumn.allowFiltering || this.parent.filterSettings.type === 'FilterBar')) {
+            } else if (this.parent.ensureModuleInjected(Filter) && this.targetColumn
+                && (!(this.targetColumn.allowFiltering && this.parent.allowFiltering) || this.parent.filterSettings.type === 'FilterBar')) {
                 status = true;
             }
         }

@@ -411,7 +411,7 @@ export class TableResizer {
                     leastGridBefore = this.getLeastGridBefore(table, currentRow);
                 }
                 const rowFormat: WRowFormat = currentRow.rowFormat as WRowFormat;
-                const minWidth: number = cell.getMinimumPreferredWidth();
+                const minWidth: number = HelperMethods.round(cell.getMinimumPreferredWidth(), 2);
                 if (table.isBidiTable) {
                     dragValue = dragValue > 0 ? dragValue : cell.cellFormat.preferredWidth + dragValue <= minWidth ?
                         -HelperMethods.round(cell.cellFormat.preferredWidth - minWidth, 2) : dragValue;
@@ -521,7 +521,7 @@ export class TableResizer {
             if (this.resizerPosition === 0) {
                 if (table.isBidiTable) {
                     dragValue = dragValue > 0 ? dragValue :
-                        cellwidget.cellFormat.preferredWidth + dragValue <= cellwidget.getMinimumPreferredWidth() ?
+                        cellwidget.cellFormat.preferredWidth + dragValue <= HelperMethods.round(cellwidget.getMinimumPreferredWidth(), 2) ?
                             -HelperMethods.round(cellwidget.cellFormat.preferredWidth - cellwidget.getMinimumPreferredWidth(), 2) :
                             dragValue;
                 }
@@ -924,7 +924,7 @@ export class TableResizer {
             preferredWidth = cell.cellFormat.cellWidth;
             cell.cellFormat.preferredWidthType = 'Point';
         }
-        let minimumWidth: number = cell.getMinimumPreferredWidth();
+        let minimumWidth: number = HelperMethods.round(cell.getMinimumPreferredWidth(), 2);
         if (cell.cellFormat.preferredWidthType === 'Percent') {
             minimumWidth = cell.convertPointToPercent(minimumWidth);
         }

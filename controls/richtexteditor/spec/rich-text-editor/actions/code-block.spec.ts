@@ -1775,7 +1775,7 @@ describe('Code Block Toolbar Preselect', () => {
             2
         );
         var toolbar = rteObj.element.querySelector('.e-toolbar');
-        var formatBtn: HTMLElement = toolbar.querySelectorAll('.e-toolbar-item')[0].querySelectorAll('button')[1];
+        var formatBtn: HTMLElement = toolbar.querySelectorAll('.e-toolbar-item')[0].querySelectorAll('button')[0];
         formatBtn.click();
         setTimeout(function () {
             const codeBlockBtn = toolbar.querySelectorAll('.e-toolbar-item')[0];

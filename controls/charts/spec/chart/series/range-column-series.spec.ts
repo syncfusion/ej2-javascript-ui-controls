@@ -1400,6 +1400,128 @@ describe('Chart', () => {
             chartObj.refresh();
         });
     });
+    describe('Checking Range column series with columnWidthInPixel.', () => {
+        let chartObj: Chart;
+        let loaded: EmitType<ILoadedEventArgs>;
+        let element: HTMLElement;
+        element = createElement('div', { id: 'container' });
+        beforeAll(() => {
+            document.body.appendChild(element);
+            chartObj = new Chart(
+                {
+                    primaryXAxis: { title: 'primaryXAxis', valueType: 'Category' },
+                    primaryYAxis: { title: 'PrimaryYAxis' },
+                    enableSideBySidePlacement: false,
+                    series: [
+                        {
+                            // Series type as range column series
+                            type: 'RangeColumn',
+                            name: 'India',
+                            dataSource: [
+                                { x: 'Jan', low: 0.7, high: 6.1 }, { x: 'Feb', low: 1.3, high: 6.3 }, { x: 'Mar', low: 1.9, high: 8.5 },
+                                { x: 'Apr', low: 3.1, high: 10.8 }, { x: 'May', low: 5.7, high: 14.40 }, { x: 'Jun', low: 8.4, high: 16.90 },
+                                { x: 'Jul', low: 10.6, high: 19.20 }, { x: 'Aug', low: 10.5,high: 18.9 }, { x: 'Sep', low: 8.5, high: 16.1 },
+                                { x: 'Oct', low: 6.0, high: 12.5 }, { x: 'Nov', low: 1.5, high: 6.9  }, { x: 'Dec', low: 5.1, high: 12.1 }
+                            ], columnWidthInPixel: 20,
+                            xName: 'x', high: 'high', low: 'low', animation: { enable: false}
+                        }, {
+                            type: 'RangeColumn', name: 'India',
+                            dataSource: [
+                                { x: 'Jan', low: 1.7, high: 7.1 }, { x: 'Feb', low: 1.9, high: 7.7 }, { x: 'Mar', low: 1.2, high: 7.5 },
+                                { x: 'Apr', low: 2.5, high: 9.8 }, { x: 'May', low: 4.7, high: 11.4 }, { x: 'Jun', low: 6.4, high: 14.4 },
+                                { x: 'Jul', low: 9.6, high: 17.2 }, { x: 'Aug', low: 10.7, high: 17.9 }, { x: 'Sep', low: 7.5, high: 15.1 },
+                                { x: 'Oct', low: 3.0, high: 10.5 }, { x: 'Nov', low: 1.2, high: 7.9 }, { x: 'Dec', low: 4.1, high: 9.1 }
+                            ], columnWidthInPixel: 20,
+                            xName: 'x', high: 'high', low: 'low', animation: { enable: false}
+                        }
+                    ],
+                    width: '700'
+                });
+            chartObj.appendTo('#container');
+
+        });
+
+        afterAll((): void => {
+            chartObj.destroy();
+            element.remove();
+        });
+        it('checking with columnWidthInPixel', (done: Function) => {
+            loaded = (args: Object): void => {
+                let svg = document.getElementById('container_Series_0_Point_1');
+                let path = svg.getAttribute('d');
+                expect(path).toBe('M 59.5625 261.987 Q 59.5625 261.987 59.5625 261.987 L 79.5625 261.987 Q 79.5625 261.987 79.5625 261.987 L 79.5625 332.037 Q 79.5625 332.037 79.5625 332.037 L 59.5625 332.037 Q 59.5625 332.037 59.5625 332.037 L 59.5625 261.987 Z');
+                done();
+            };
+            chartObj.loaded = loaded;
+            chartObj.refresh();
+        });
+    });
+    // Add near the existing "Checking Range column series setData method." block or after it,
+    // to specifically enable data labels and ensure updateDirection path is covered.
+
+    describe('RangeColumn setData should render marker and data label via updateDirection', () => {
+        let chartObj: Chart;
+        let loaded: EmitType<ILoadedEventArgs>;
+        let element: HTMLElement;
+
+        beforeAll(() => {
+            element = createElement('div', { id: 'updateDirectionContainer' });
+            document.body.appendChild(element);
+            chartObj = new Chart({
+                primaryXAxis: { valueType: 'Category' },
+                primaryYAxis: {},
+                series: [{
+                    type: 'RangeColumn',
+                    dataSource: [
+                        { x: 'A', low: 1, high: 5 },
+                        { x: 'B', low: 2, high: 6 },
+                        { x: 'C', low: 3, high: 7 }
+                    ],
+                    xName: 'x',
+                    low: 'low',
+                    high: 'high',
+                    animation: { enable: false },
+                    marker: { visible: true, dataLabel: { visible: true } }
+                }],
+                width: '700'
+            });
+            chartObj.appendTo('#updateDirectionContainer');
+        });
+
+        afterAll((): void => {
+            chartObj.destroy();
+            element.remove();
+        });
+
+        it('should render both markers and data labels for updated points after setData', (done: Function) => {
+            loaded = (): void => {
+                // After setData and refresh, markers and datalabels should exist for updated points
+                // Check point index 1 and 2 to be safe
+                const m1 = document.getElementById('updateDirectionContainer_Series_0_Point_1_Symbol');
+                const m2 = document.getElementById('updateDirectionContainer_Series_0_Point_2_Symbol');
+                expect(m1).not.toBeNull();
+                expect(m2).not.toBeNull();
+
+                const dl1_0 = document.getElementById('updateDirectionContainer_Series_0_Point_1_Text_0');
+                const dl2_0 = document.getElementById('updateDirectionContainer_Series_0_Point_2_Text_0');
+                // At least the first label for each point should exist (high or low label)
+                expect(dl1_0).not.toBeNull();
+                expect(dl2_0).not.toBeNull();
+
+                done();
+            };
+            chartObj.loaded = loaded;
+
+            // Change the data for multiple points to trigger updateDirection on more indices
+            const newData = [
+                { x: 'B', low: 1, high: 5 },
+                { x: 'C', low: 4, high: 9 },
+                { x: 'A', low: 5, high: 10 }
+            ];
+            chartObj.series[0].setData(newData);
+            chartObj.refresh();
+        });
+    });
     async function wait(ms: number): Promise<void> {
         return new Promise(resolve => setTimeout(resolve, ms));
     }

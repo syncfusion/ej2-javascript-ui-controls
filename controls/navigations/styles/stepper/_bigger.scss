@@ -1,5 +1,4 @@
 @use 'ej2-base/styles/common/mixin' as *;
-@use './theme-variables' as *;
 @mixin stepper-styles($step-font-size, $step-height, $step-width, $icon-size, $text-size, $optional-size) {
   &.e-step-type-indicator .e-step-container:not(.e-step-item.e-step-label.e-step-text) {
     .e-icons.e-step-indicator {

@@ -2897,3 +2897,73 @@ describe('Bug 886881: Exception throws while ungrouping a group node with annota
     //     done();
     // });
 });
+
+describe('Bug 1001807: OffsetY value applied through programmatically is not working well for group nodes', function () {
+    let diagram: Diagram;
+    let ele: HTMLElement;
+    beforeAll((): void => {
+        const isDef = (o: any) => o !== undefined && o !== null;
+        if (!isDef(window.performance)) {
+            console.log("Unsupported environment, window.performance.memory is unavailable");
+            this.skip(); //Skips test (in Chai)
+            return;
+        }
+        ele = createElement('div', { id: 'diagram_group4' });
+        document.body.appendChild(ele);
+        let nodes: NodeModel[] = [
+            {
+                id: 'node1',
+                width: 100,
+                height: 100,
+                offsetX: 100,
+                offsetY: 200,
+                pivot: { x: 0, y: 0 },
+            },
+            {
+                id: 'node2',
+                width: 100,
+                height: 100,
+                offsetX: 300,
+                offsetY: 200,
+                pivot: { x: 0, y: 0 },
+            },
+            {
+                id: 'Group1',
+                children: ['node1'],
+                pivot: { x: 0, y: 0 },
+            },
+            {
+                id: 'Group2',
+                children: [
+                    'node2',
+                    'Group1',
+                ],
+                pivot: { x: 0, y: 0 },
+            },]
+
+        diagram = new Diagram({
+            width: '800px', height: '500px', nodes: nodes,
+            mode: "SVG",
+        });
+        diagram.appendTo('#diagram_group4');
+    });
+    afterAll(function () {
+        diagram.destroy();
+        diagram = null;
+        ele.remove();
+        ele = null;
+    });
+    it('updating group node offset at runtime', function (done: Function) {
+        debugger;
+        diagram.nodes[3].offsetX = 50;
+        diagram.dataBind();
+        diagram.nodes[3].offsetX = 250;
+        diagram.dataBind();
+        diagram.nodes[3].offsetY = 400;
+        diagram.dataBind();
+        diagram.nodes[3].offsetY = 250;
+        diagram.dataBind();
+        expect((diagram.nodes[3].offsetX === 250) && (diagram.nodes[3].offsetY === 250)).toBe(true);
+        done();
+    });
+});

@@ -9140,6 +9140,22 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
                     }
                 }
                 break;
+            case 'stampSettings':
+                this.stampSettings = { ...oldProp.stampSettings, ...newProp.stampSettings };
+                if (!isNullOrUndefined(this.toolbar)) {
+                    if (this.toolbarModule.annotationToolbarModule) {
+                        if (!isNullOrUndefined(newProp.stampSettings.dynamicStamps)) {
+                            this.toolbar.annotationToolbarModule.updateStampList('Dynamic');
+                        }
+                        if (!isNullOrUndefined(newProp.stampSettings.signStamps)) {
+                            this.toolbar.annotationToolbarModule.updateStampList('Sign Here');
+                        }
+                        if (!isNullOrUndefined(newProp.stampSettings.standardBusinessStamps)) {
+                            this.toolbar.annotationToolbarModule.updateStampList('Standard Business');
+                        }
+                    }
+                }
+                break;
             case 'zoomValue':
                 if (!this.viewerBase.isSkipZoomValue) {
                     if (newProp.zoomValue > 0) {

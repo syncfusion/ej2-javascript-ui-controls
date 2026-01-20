@@ -1,5 +1,4 @@
 @use 'ej2-base/styles/common/mixin' as *;
-@use './theme-variables' as *;
 @mixin align-chip($border-radius, $font-size, $margin) {
   border-radius: $border-radius;
   font-size: $font-size;

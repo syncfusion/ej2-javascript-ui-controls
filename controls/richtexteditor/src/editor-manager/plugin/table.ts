@@ -2650,7 +2650,6 @@ export class TableCommand {
         const styles: string[] = value.split(';');
         const newStyles: string[] = [];
         const deniedFormats: string[] = [
-            'background-color',
             'vertical-align',
             'text-align'
         ];

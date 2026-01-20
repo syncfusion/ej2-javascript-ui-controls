@@ -1,3 +1,3 @@
 @use 'ej2-icons/styles/material' as *;
-@use 'material-dark-definition' as *;
-@use 'all' as *;
+@forward 'material-dark-definition';
+@use 'all.material-dark' as *;

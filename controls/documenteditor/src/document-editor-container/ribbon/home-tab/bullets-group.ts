@@ -114,6 +114,9 @@ export class BulletsGroup {
             },
             click: () => {
                 this.applyLastAppliedBullet();
+            },
+            close: (): void => {
+                this.refreshHomeSelection();
             }
         };
     }
@@ -200,11 +203,13 @@ export class BulletsGroup {
         const appliedStyle: any = { value: this.appliedBulletStyle };
         BulletListHelper.applyBulletStyle(this.documentEditor, style, appliedStyle);
         this.appliedBulletStyle = appliedStyle.value;
+        this.refreshHomeSelection();
     }
 
 
     private bulletNoneClick(): void {
         BulletListHelper.clearList(this.documentEditor);
+        this.refreshHomeSelection();
     }
 
 
@@ -231,6 +236,7 @@ export class BulletsGroup {
     private bulletTickClick(): void {
         this.applyBulletStyle('tick');
     }
+
     public destroy(): void {
         // Remove event listeners
         const keys: any = Object.keys(this.eventHandlers);
@@ -241,9 +247,15 @@ export class BulletsGroup {
                 item.element.removeEventListener('click', item.handler);
             }
         }
-
         // Clear references
         this.eventHandlers = {};
         this.bulletElements = {};
+    }
+
+    private refreshHomeSelection(): void {
+        const ribbonModule: any = (this.container as any).ribbonModule;
+        if (ribbonModule && ribbonModule.tabManager && ribbonModule.tabManager.homeTab) {
+            ribbonModule.tabManager.homeTab.updateSelection();
+        }
     }
 }

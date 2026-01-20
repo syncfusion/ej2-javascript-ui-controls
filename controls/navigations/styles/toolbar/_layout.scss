@@ -1,5 +1,4 @@
 @use 'ej2-base/styles/common/mixin' as *;
-@use './theme-variables' as *;
 @include export-module('toolbar-layout') {
   .e-toolbar {
     border-radius: $tbar-radius;
@@ -52,7 +51,12 @@
 
     &.e-overlay {
       .e-toolbar-item:not(.e-separator):not(.e-spacer) {
-        .e-tbar-btn {
+        > * {
+          pointer-events: none;
+        }
+      }
+      &.e-extended-toolbar {
+        .e-toolbar-items .e-toolbar-item.e-toolbar-item > * {
           pointer-events: none;
         }
       }

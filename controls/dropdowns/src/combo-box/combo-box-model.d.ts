@@ -88,7 +88,7 @@ export interface ComboBoxModel extends DropDownListModel{
 
     /**
      * Triggers on set a
-     * [`custom value`](../../combo-box/getting-started#custom-values) to this component.
+     * [`custom value`](https://ej2.syncfusion.com/javascript/documentation/combo-box/es5-getting-started#custom-values) to this component.
      *
      * @event customValueSpecifier
      */

@@ -5,6 +5,9 @@ import { NumberingGroup, NUMBER_LIST_ID } from './numbering-group';
 import { LineSpacingGroup, LINE_SPACING_ID } from './line-spacing-group';
 import { DocumentEditorContainer } from '../../document-editor-container';
 import { SelectionParagraphFormat } from '../../../document-editor/implementation';
+import { BulletListHelper } from '../../helper/bullet-list-helper';
+import { getInstance } from '@syncfusion/ej2-base';
+import { SplitButton } from '@syncfusion/ej2-splitbuttons';
 
 // Paragraph group constants
 export const PARAGRAPH_GROUP_ID: string = '_paragraph_group';
@@ -226,6 +229,21 @@ export class HomeParagraphGroup extends RibbonGroupBase implements IRibbonGroup 
             // Update line spacing
             this.lineSpacingGroup.setLineSpacing();
 
+            // Update bullets/numbering toggle state based on current selection
+            let isBulletActive: boolean = false;
+            let isNumberActive: boolean = false;
+            const hasList: boolean = !(paragraphFormat.listId === undefined || paragraphFormat.listId === -1);
+            if (hasList) {
+                const pattern: string = BulletListHelper.getCurrentListPattern(this.documentEditor);
+                if (pattern === 'Bullet') {
+                    isBulletActive = true;
+                } else if (pattern && pattern !== 'None') {
+                    isNumberActive = true;
+                }
+            }
+            this.updateSplitButtonState(id + BULLET_LIST_ID, isBulletActive);
+            this.updateSplitButtonState(id + NUMBER_LIST_ID, isNumberActive);
+
             // Disable buttons in read-only mode
             if (this.documentEditor.isReadOnly) {
                 ribbon.disableItem(id + INCREASE_INDENT_ID);
@@ -253,6 +271,22 @@ export class HomeParagraphGroup extends RibbonGroupBase implements IRibbonGroup 
                 buttonElement.classList.remove('e-active');
             }
         }
+    }
+
+    private updateSplitButtonState(buttonId: string, isActive: boolean): void {
+        const element: HTMLElement = document.getElementById(buttonId);
+        if (!element) { return; }
+
+        const splitButton: any = getInstance(element, SplitButton);
+        if (!splitButton) { return; }
+        const isCurrentlyActive: boolean = /\be-active\b/.test(splitButton.cssClass );
+        if (isCurrentlyActive) {
+            splitButton.cssClass = splitButton.cssClass.replace(/\be-active\b/, '').replace(/\s{2,}/g, ' ').trim();
+        }
+        if (isActive) {
+            splitButton.cssClass = `${splitButton.cssClass} e-active`.trim();
+        }
+        splitButton.dataBind();
     }
 
     private leftAlignmentAction(): void {

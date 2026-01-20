@@ -84,6 +84,15 @@ describe('TreeGrid base module', () => {
             (rows[0].getElementsByClassName('e-treegridcollapse')[0] as HTMLElement).click();
             expect(rows[1].classList.contains('e-childrow-visible')).toBe(true);
         });
+        it('code coverage for sanitize method', () => {
+            gridObj.enableHtmlSanitizer = true;
+            expect(gridObj['sanitize']("game")).toBe("game");
+        });
+        it('code coverage for updateTreeColumnTextAlign method', () => {
+            gridObj['treeColumnField'] = gridObj.getColumns()[gridObj.treeColumnIndex as number].field;
+            gridObj.enableRtl = true;
+            gridObj.dataBind();
+        });
         afterAll(() => {
             destroy(gridObj);
         });

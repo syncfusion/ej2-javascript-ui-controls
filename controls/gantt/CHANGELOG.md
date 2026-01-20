@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 32.1.24 (2026-01-20)
+
+### GanttChart
+
+#### Bug fix
+
+- `#I800500` - Resolved the issue where `calendarSettings` were not applied correctly when child tasks property were mapped with an empty array.
+
 ## 32.1.23 (2026-01-13)
 
 ### GanttChart

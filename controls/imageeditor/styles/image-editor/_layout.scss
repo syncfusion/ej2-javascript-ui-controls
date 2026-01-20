@@ -1,5 +1,4 @@
 @use 'ej2-base/styles/common/mixin' as *;
-@use './theme-variables' as *;
 @include export-module('image-editor-layout') {
   .e-ie-toolbar-upload-div.e-hide,
   .e-ie-toolbar-upload-btn.e-hide,

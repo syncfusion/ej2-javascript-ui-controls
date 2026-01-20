@@ -513,9 +513,7 @@ export class Edit {
             type: 'save', column: this.parent.getColumnByField(args.columnName), data: args.rowData,
             previousData: args.previousValue, row: row, target: (args.cell as HTMLElement)
         };
-        if (this.parent.aggregates.map((ag: AggregateRow) => ag.showChildSummary === true).length) {
-            this.parent.grid.refresh();
-        }
+        if (this.parent.aggregates.some((ag: AggregateRow) => ag.showChildSummary === true)) {this.parent.grid.refresh(); }
         this.parent.trigger(events.actionComplete, saveArgs);
     }
 

@@ -3421,9 +3421,7 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
                         this.countModule.refresh();
                     }
                     this.addAudioVideoWrapper();
-                    if (newProp.value === '' || isNOU(newProp.value)) {
-                        this.notify(events.toolbarRefresh, { });
-                    }
+                    this.notify(events.toolbarRefresh, {});
                     break;
                 }
                 case 'valueTemplate':

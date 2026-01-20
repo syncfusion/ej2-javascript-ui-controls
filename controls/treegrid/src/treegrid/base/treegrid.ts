@@ -2249,7 +2249,14 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
             destroyTemplateFn.apply(this.grid);
             const portals: string = 'portals';
             if (!((<{ isReact?: boolean }>this).isReact && isNullOrUndefined(this[`${portals}`]))) {
-                this.clearTemplate(args, index, callback);
+                const isGantt: boolean = this['isFromGantt'] && !isNullOrUndefined(this['root'].clearTemplate) &&
+                    (this['root'] as any).chartRowsModule['isGridRowRefreshed'];
+                if (isGantt) {
+                    this['root'].clearTemplate(args, index, callback);
+                }
+                else {
+                    this.clearTemplate(args, index, callback);
+                }
             }
             else if (!isNullOrUndefined(callback)) {
                 callback();

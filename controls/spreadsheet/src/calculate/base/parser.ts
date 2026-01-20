@@ -309,8 +309,9 @@ export class Parser {
                     formula[i as number] === ')') {
                     form = form + formula[i as number];
                     i = i + 1;
-                } else if (this.parent.isUpperChar(formula[i as number]) || formula[i as number].indexOf(':') > -1 || formula[i as number]
-                    === this.parent.getParseArgumentSeparator() || (formula[i as number] === '%' && this.parent.isDigit(formula[i - 1]))) {
+                } else if (this.parent.isUpperChar(formula[i as number]) || formula[i as number].indexOf(':') > -1 ||
+                    formula[i as number] === this.parent.getParseArgumentSeparator() || (formula[i as number] === '%' &&
+                        this.parent.isDigit(formula[i - 1])) || this.isOtherLangChar(formula[i as number])) {
                     form = form + formula[i as number];
                     i = i + 1;
                 } else if (formula[i as number] === this.parent.tic || formula[i as number] === ' ' || formula[i as number] ===
@@ -1393,5 +1394,11 @@ export class Parser {
         const dotFormulaNames: string[] = ['STDEV.P', 'STDEV.S', 'VAR.S', 'VAR.P', 'T.TEST', 'F.TEST', 'Z.TEST', 'CHISQ.TEST',
             'COVARIANCE.S', 'COVARIANCE.P', 'CHISQ.DIST', 'F.DIST', 'T.DIST'];
         return dotFormulaNames.some((formula: string) => formulaName === formula);
+    }
+
+    private isOtherLangChar(char: string): boolean {
+        const code: number = char.charCodeAt(0);
+        // checking for Latin characters.
+        return (code >= 192 && code <= 214) || (code >= 216 && code <= 246) || (code >= 248 && code <= 255);
     }
 }

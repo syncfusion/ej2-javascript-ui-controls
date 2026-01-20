@@ -1,5 +1,4 @@
 @use 'ej2-base/styles/common/mixin' as *;
-@use './theme-variables' as *;
 @include export-module('tab-theme') {
   .e-tab {
     background: $tab-bg-color;

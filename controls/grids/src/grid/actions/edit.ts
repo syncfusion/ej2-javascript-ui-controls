@@ -597,9 +597,18 @@ export class Edit implements IAction {
 
     private destroyEditComponents(): void {
         if (this.parent.isEdit) {
+            if (this.editModule && !isNullOrUndefined((<{ editRowIndex?: number }>this.editModule).editRowIndex) &&
+                isNullOrUndefined(this.parent.editSettings.template)) {
+                const cellEditColumns: Column[] = (<{columnModel?: Column[]}>this.parent).columnModel.filter((col: Column) =>
+                    !(<{obj?: Object}>col.edit).obj);
+                if (isNullOrUndefined(cellEditColumns) || cellEditColumns.length === 0) {
+                    this.closeEdit();
+                }
+            }
             this.destroyWidgets();
             this.destroyForm();
         }
+        this.formObj = null;
         this.destroy();
     }
 
@@ -840,17 +849,19 @@ export class Edit implements IAction {
                 }
             }
         }
-        const elements: HTMLInputElement[] = [].slice.call((<HTMLFormElement>this.formObj.element).elements);
-        for (let i: number = 0; i < elements.length; i++) {
-            const element: HTMLInputElement = elements[parseInt(i.toString(), 10)];
-            if (element.hasAttribute('name')) {
-                const instanceElement: HTMLInputElement = isNullOrUndefined(element.parentElement) ? null :  element.parentElement.classList.contains('e-ddl') ?
-                    element.parentElement.querySelector('input') : element;
-                if (<EJ2Intance>(instanceElement as Element) && (<EJ2Intance>(instanceElement as Element)).ej2_instances &&
-                    (<Object[]>(<EJ2Intance>(instanceElement as Element)).ej2_instances).length &&
-                    !(<EJ2Intance>(instanceElement as Element)).ej2_instances[0].isDestroyed) {
-                    (<EJ2Intance>(instanceElement as Element)).ej2_instances[0].destroy();
-                    instanceElement.remove();
+        if (this.formObj && this.formObj.element) {
+            const elements: HTMLInputElement[] = [].slice.call((<HTMLFormElement>this.formObj.element).elements);
+            for (let i: number = 0; i < elements.length; i++) {
+                const element: HTMLInputElement = elements[parseInt(i.toString(), 10)];
+                if (element.hasAttribute('name') || element.classList.contains('e-field')) {
+                    const instanceElement: HTMLInputElement = isNullOrUndefined(element.parentElement) ? null : element.parentElement.classList.contains('e-ddl') ?
+                        element.parentElement.querySelector('input') : element;
+                    if (<EJ2Intance>(instanceElement as Element) && (<EJ2Intance>(instanceElement as Element)).ej2_instances &&
+                        (<Object[]>(<EJ2Intance>(instanceElement as Element)).ej2_instances).length &&
+                        !(<EJ2Intance>(instanceElement as Element)).ej2_instances[0].isDestroyed) {
+                        (<EJ2Intance>(instanceElement as Element)).ej2_instances[0].destroy();
+                        instanceElement.remove();
+                    }
                 }
             }
         }
@@ -865,13 +876,16 @@ export class Edit implements IAction {
         const formObjects: FormValidator[] = [this.formObj, this.virtualFormObj];
         const col: Column[] = (<{columnModel?: Column[]}>this.parent).columnModel.filter((col: Column) => col.editTemplate);
         for (let i: number = 0; i < formObjects.length; i++) {
-            if (formObjects[parseInt(i.toString(), 10)] && formObjects[parseInt(i.toString(), 10)].element
-                && !formObjects[parseInt(i.toString(), 10)].isDestroyed) {
-                formObjects[parseInt(i.toString(), 10)].destroy();
+            const formObj: FormValidator = formObjects[parseInt(i.toString(), 10)];
+            if (formObj && formObj.element && !formObj.isDestroyed) {
+                formObj.destroy();
                 const parentIns: IGrid = getParentIns(this.parent);
                 if (parentIns.isReact && this.parent.editSettings.mode === 'Dialog'
                     && (!isNullOrUndefined(this.parent.editSettings.template) || col.length)) {
-                    formObjects[parseInt(i.toString(), 10)].element.remove();
+                    formObj.element.remove();
+                }
+                if (formObj && formObj.element && isNullOrUndefined(this.parent.editSettings.template)) {
+                    formObj.element.innerHTML = '';
                 }
             }
         }

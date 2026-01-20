@@ -3662,6 +3662,39 @@ describe('RTE CR issues ', () => {
             done();
         });
     });
+    describe('Bug 1003495: Toolbar items remain active after editor value changes dynamically.', () => {
+        let rteObj: RichTextEditor;
+        beforeAll(() => {
+            rteObj = renderRTE({
+                value: `<p>Hello</p>`,
+                toolbarSettings: {
+                    items: [
+                        'Bold',
+                        'Italic',
+                        'Underline',
+                        'StrikeThrough']
+                }
+            });
+        });
+        it('when value is set dynamically to RTE should clear the toolbar status', () => {
+            rteObj.focusIn();
+            rteObj.dataBind();
+            ((rteObj.element.querySelectorAll(".e-toolbar-item")[0] as HTMLElement).querySelector('button') as HTMLButtonElement).click();
+            ((rteObj.element.querySelectorAll(".e-toolbar-item")[1] as HTMLElement).querySelector('button') as HTMLButtonElement).click();
+            ((rteObj.element.querySelectorAll(".e-toolbar-item")[2] as HTMLElement).querySelector('button') as HTMLButtonElement).click();
+            ((rteObj.element.querySelectorAll(".e-toolbar-item")[3] as HTMLElement).querySelector('button') as HTMLButtonElement).click();
+            expect(((rteObj.element.querySelectorAll(".e-toolbar-item")[0] as HTMLElement).classList.contains('e-active'))).toBe(true);
+            rteObj.value = 'Hi';
+            rteObj.dataBind();
+            expect(((rteObj.element.querySelectorAll(".e-toolbar-item")[0] as HTMLElement).classList.contains('e-active'))).toBe(false);
+            expect(((rteObj.element.querySelectorAll(".e-toolbar-item")[1] as HTMLElement).classList.contains('e-active'))).toBe(false);
+            expect(((rteObj.element.querySelectorAll(".e-toolbar-item")[2] as HTMLElement).classList.contains('e-active'))).toBe(false);
+            expect(((rteObj.element.querySelectorAll(".e-toolbar-item")[3] as HTMLElement).classList.contains('e-active'))).toBe(false);
+        });
+        afterAll(() => {
+            destroy(rteObj);
+        });
+    });
     describe('1001073: Toolbar items remain active after editor value becomes null', () => {
         let rteObj: RichTextEditor;
         beforeAll((done: Function) => {

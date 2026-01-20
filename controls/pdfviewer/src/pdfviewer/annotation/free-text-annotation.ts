@@ -1294,6 +1294,25 @@ export class FreeTextAnnotation {
         }
     }
 
+    private focusInputWithoutScroll(el: any): void {
+        const container: any = this.pdfViewerBase.viewerContainer || document.scrollingElement || document.documentElement;
+        const prevLeft: any = container.scrollLeft;
+        const prevTop: any = container.scrollTop;
+        try {
+            // Modern browsers: prevent automatic scroll on focus
+            el.focus({ preventScroll: true });
+        } catch (e) {
+            // Older browsers: focus then restore scroll position
+            el.focus();
+            if (typeof container.scrollTo === 'function') {
+                container.scrollTo(prevLeft, prevTop);
+            } else {
+                container.scrollLeft = prevLeft;
+                container.scrollTop = prevTop;
+            }
+        }
+    }
+
     /**
      * @param {PointModel} currentPosition - This is current position
      * @param {PdfAnnotationBaseModel} annotation - This is annotation
@@ -1477,7 +1496,7 @@ export class FreeTextAnnotation {
             this.pdfViewer.renderSelector(this.selectedAnnotation.pageIndex, this.selectedAnnotation.annotationSelectorSettings);
         }
         this.isInuptBoxInFocus = true;
-        this.inputBoxElement.focus();
+        this.focusInputWithoutScroll(this.inputBoxElement);
         if (this.isNewFreeTextAnnot === true || this.inputBoxElement.value === this.defaultText) {
             this.inputBoxElement.select();
             this.pdfViewerBase.isFreeTextSelected = true;

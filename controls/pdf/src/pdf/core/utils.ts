@@ -2452,7 +2452,7 @@ export function _mapGraphicsUnit(unitString: string): _PdfGraphicsUnit {
  */
 export function _mapRubberStampIcon(iconString: string): PdfRubberStampAnnotationIcon {
     if (iconString.includes('23')) {
-        iconString = iconString.replace('23', '');
+        iconString = iconString.replace(/\s+/g, '').replace(/23/g, '');
     }
     let icon: PdfRubberStampAnnotationIcon;
     switch (iconString) {

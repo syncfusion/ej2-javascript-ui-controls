@@ -5476,6 +5476,33 @@ describe('Change Event testing', () => {
             setModelNumeric.dataBind();
             expect(setModelNumeric.inputWrapper.clearButton == null).toBe(true);
         });
+        it('click clear icon updates DOM value text to empty and value to null', () => {
+            const inputEl: HTMLInputElement = document.getElementById('clrNumeric') as HTMLInputElement;
+            const domValueEl: HTMLElement = document.createElement('span');
+            domValueEl.id = 'age-dom-value';
+            document.body.appendChild(domValueEl);
+
+            function renderDomValue() {
+                domValueEl.textContent = inputEl.value;
+            }
+            numeric.change = () => renderDomValue();
+            inputEl.addEventListener('input', renderDomValue);
+
+            document.getElementById('clrNumeric').focus();
+            inputEl.value = '42';
+            const inputEvent: Event = document.createEvent('HTMLEvents');
+            inputEvent.initEvent('input', true, true);
+            inputEl.dispatchEvent(inputEvent);
+            expect(domValueEl.textContent).toBe('42');
+
+            const clearBtn = document.getElementById('clrNumeric').parentElement.querySelector('.e-clear-icon');
+            clearBtn.dispatchEvent(clickEvent);
+            clearBtn.dispatchEvent(mouseEvent2);
+
+            expect(inputEl.value).toBe('');
+            expect(numeric.value).toBeNull();
+            expect(domValueEl.textContent).toBe('');
+        });
     });
     describe('Readonly NumericTextBox', () => {
         let numerictextbox: any;

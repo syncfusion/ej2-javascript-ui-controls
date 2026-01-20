@@ -1,6 +1,4 @@
 @use 'ej2-base/styles/common/mixin' as *;
-@use './theme-variables' as *;
-@use '../drop-down-base/theme-variables' as ddb-vars;
 
 .e-multi-select-wrapper {
   box-sizing: border-box;
@@ -643,7 +641,7 @@
   line-height: $ddl-select-all-height;
   overflow: hidden;
   text-overflow: ellipsis;
-  padding-right: ddb-vars.$ddl-list-padding-right;
+  padding-right: $ddl-list-padding-right;
   position: relative;
   text-indent: $ddl-check-right;
   white-space: nowrap;
@@ -658,7 +656,7 @@
 
 .e-rtl .e-multi-select-list-wrapper .e-selectall-parent,
 .e-multi-select-list-wrapper.e-rtl .e-selectall-parent {
-  padding-left: ddb-vars.$ddl-list-rtl-padding-left;
+  padding-left: $ddl-list-rtl-padding-left;
   padding-right: $ddl-list-rtl-padding-right;
 }
 

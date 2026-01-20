@@ -1874,6 +1874,27 @@ export class AnnotationToolbar {
         }
         return contextMenuElement;
     }
+    /**
+     * @private
+     * @returns {void}
+     */
+    public updateStampList(stampGroup: string): void {
+        if (!isNullOrUndefined(this.menuItems)) {
+            const stampListGroup: any = this.menuItems.items[0].items.find(
+                (grp: any) => grp.label === stampGroup
+            );
+            if (stampListGroup) {
+                stampListGroup.items = [];
+                this.menuItems.destroy();
+            }
+            const menuHost: HTMLElement = this.pdfViewerBase.getElement('_annotation_stamp');
+            const ul: Element = menuHost.querySelector('ul#' + this.pdfViewer.element.id + 'contextMenuElement');
+            if (ul) {
+                ul.remove();
+            }
+            this.createStampContainer();
+        }
+    }
 
     /**
      * @private
@@ -3651,7 +3672,7 @@ export class AnnotationToolbar {
         case this.pdfViewer.element.id + '_highlight':
         case this.pdfViewer.element.id + '_highlightIcon':
             this.pdfViewer.tool = '';
-            if (!Browser.isDevice || this.pdfViewer.enableDesktopMode) {
+            if (!Browser.isDevice  || this.pdfViewer.enableDesktopMode) {
                 this.pdfViewer.tool = '';
                 this.pdfViewerBase.isToolbarInkClicked = false;
                 this.resetFreeTextAnnot();
@@ -5705,7 +5726,9 @@ export class AnnotationToolbar {
                         (this.pdfViewer.lineSettings.lineHeadStartStyle === 'None' || this.pdfViewer.lineSettings.lineHeadEndStyle === 'None')) {
                         this.hidePropertiesTools(isEnable, 'line');
                     } else {
-                        if (this.pdfViewer.selectedItems.annotations[0] && this.pdfViewer.selectedItems.annotations[0].shapeAnnotationType !== 'Redaction') {
+                        if (this.pdfViewer.selectedItems.annotations[0] &&
+                            this.pdfViewer.selectedItems.annotations[0].shapeAnnotationType !== 'Redaction' &&
+                            this.pdfViewer.selectedItems.annotations[0].shapeAnnotationType !== 'StickyNotes') {
                             this.hidePropertiesTools(isEnable, 'shapeAndCalibrate', false);
                         }
                     }

@@ -2,6 +2,15 @@
 
 ## [Unreleased]
 
+## 32.1.24 (2026-01-20)
+
+### PDF Viewer
+
+#### Bug Fixes
+
+- `#I802591` - Fixed an issue where the freetext annotation moved outside the PDF page when using a large font size and resizing or dragging it beyond the page boundaries.
+- `#I798752` - Fixed an issue that caused difficulties in resizing the newly added Calibrate Area annotation when the `enableShapeLabel` API was set to true.
+
 ## 32.1.23 (2026-01-13)
 
 ### PDF Viewer

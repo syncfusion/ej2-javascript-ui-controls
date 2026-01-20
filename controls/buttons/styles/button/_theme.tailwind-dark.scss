@@ -1,0 +1,6 @@
+@use 'sass:color';
+@use 'ej2-base/styles/common/mixin' as *;
+@import './layout.tailwind-dark';
+@import './theme-variables.tailwind-dark';
+@import './mixin';
+@import './_theme';

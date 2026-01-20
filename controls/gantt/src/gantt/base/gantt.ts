@@ -3641,6 +3641,7 @@ export class Gantt extends Component<HTMLElement>
                 this.undoRedoModule['searchString'] = this.searchSettings.key;
             }
         }
+        this.chartRowsModule['isGridRowRefreshed'] = false;
         this.element.getElementsByClassName('e-chart-root-container')[0]['style'].height = '100%';
         // let gridHeight: string = this.element.getElementsByClassName('e-gridcontent')[0]['style'].height;
         const gridContent: HTMLElement = this.element.getElementsByClassName('e-gridcontent')[0].childNodes[0] as HTMLElement;

@@ -1,0 +1,6 @@
+@use 'sass:color';
+@use 'ej2-base/styles/common/mixin' as *;
+@import './layout.highcontrast-light';
+@import './theme-variables.highcontrast-light';
+@import './mixin';
+@import './_theme';

@@ -440,8 +440,10 @@ export class PageSetupDialog {
         this.footerBox.value = sectionFormat.footerDistance;
         if (this.widthBox.value > this.heightBox.value) {
             this.landscape.checked = true;
+            this.portrait.checked = false;
         } else {
             this.portrait.checked = true;
+            this.landscape.checked = false;
         }
         /* eslint-disable-next-line max-len */
         this.setPageSize(this.portrait.checked, parseFloat(sectionFormat.pageWidth.toFixed(1)), parseFloat(sectionFormat.pageHeight.toFixed(1)));

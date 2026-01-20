@@ -2500,6 +2500,16 @@ export class DocumentHelper {
             const cursorPoint: Point = new Point(event.offsetX, event.offsetY);
             const touchPoint: Point = this.owner.viewer.findFocusedPage(cursorPoint, !this.owner.enableHeaderAndFooter);
             const widget: LineWidget = this.getLineWidget(touchPoint);
+            const startWidget: LineWidget = this.getLineWidget(this.mouseDownOffset);
+            if (this.isMouseDown
+                && this.isLeftButtonPressed(event)
+                && !this.isDragStarted
+                && isNullOrUndefined(startWidget)
+                && !this.isRowOrCellResizing) {
+                this.isSelectionChangedOnMouseMoved = true;
+                this.updateFocus();
+                return;
+            }
             if (this.isMouseDown) {
                 if (!isNullOrUndefined(this.currentPage)) {
                     const xPosition: number = touchPoint.x;
@@ -2660,8 +2670,9 @@ export class DocumentHelper {
         if (this.viewerContainer) {
             const touchPoint: Point = this.owner.viewer.findFocusedPage(cursorPoint, !this.owner.enableHeaderAndFooter);
             const textPosition: TextPosition = this.owner.selectionModule.end;
-            if (!this.owner.enableImageResizerMode || !this.owner.imageResizerModule.isImageResizerVisible
-                || this.owner.imageResizerModule.isShapeResize) {
+            const startWidget : LineWidget = this.getLineWidget(this.mouseDownOffset);
+            if ((!this.owner.enableImageResizerMode || !this.owner.imageResizerModule.isImageResizerVisible
+                || this.owner.imageResizerModule.isShapeResize) && !isNullOrUndefined(startWidget)) {
                 this.skipScrollToPosition = true;
                 this.owner.selectionModule.moveTextPosition(touchPoint, textPosition, true);
             }
@@ -2671,8 +2682,9 @@ export class DocumentHelper {
     private scrollBackwardOnSelection(cursorPoint: Point): void {
         const touchPoint: Point = this.owner.viewer.findFocusedPage(cursorPoint, !this.owner.enableHeaderAndFooter);
         const textPosition: TextPosition = this.owner.selectionModule.end;
-        if (!this.owner.enableImageResizerMode || !this.owner.imageResizerModule.isImageResizerVisible
-            || this.owner.imageResizerModule.isShapeResize) {
+        const startWidget : LineWidget = this.getLineWidget(this.mouseDownOffset);
+        if ((!this.owner.enableImageResizerMode || !this.owner.imageResizerModule.isImageResizerVisible
+            || this.owner.imageResizerModule.isShapeResize) && !isNullOrUndefined(startWidget)) {
             this.skipScrollToPosition = true;
             this.owner.selectionModule.moveTextPosition(touchPoint, textPosition, true);
         }
@@ -2828,6 +2840,15 @@ export class DocumentHelper {
         let cursorPoint: Point = new Point(event.offsetX, event.offsetY);
         let touchPoint: Point = this.owner.viewer.findFocusedPage(cursorPoint, true);
         if (!isNullOrUndefined(this.selection)) {
+            const startWidget = this.getLineWidget(this.mouseDownOffset);
+            if (this.isMouseDown
+                && this.isLeftButtonPressed(event)
+                && isNullOrUndefined(startWidget)
+                && !this.isRowOrCellResizing) {
+                this.isSelectionChangedOnMouseMoved = true;
+                this.isMouseDown = false;
+                return;
+            }
             let tapCount: number = 1;
             if (!Browser.isIE) {
                 if (event.detail > 2) {
@@ -5593,7 +5614,13 @@ export abstract class LayoutViewer {
                 isEmptyWidget = page.headerWidget.isEmpty;
                 if(top >= 0) {
                     if (!isEmptyWidget || isEmptyWidget && this.owner.enableHeaderAndFooter) {
-                        top = Math.min(Math.max(headerDistance + page.headerWidget.height, top), pageHeight / 100 * 40);
+                        // For Word 2013, header can able to placed beyond 40% of page height.
+                        if (this.documentHelper.compatibilityMode === 'Word2013') {
+                            top = Math.max(headerDistance + page.headerWidget.height, top);
+                        }
+                        else {
+                            top = Math.min(Math.max(headerDistance + page.headerWidget.height, top), pageHeight / 100 * 40);
+                        }
                     }
                 } else {
                     top = Math.abs(top);

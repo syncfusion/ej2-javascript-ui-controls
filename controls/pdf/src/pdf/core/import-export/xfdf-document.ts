@@ -1489,6 +1489,10 @@ export class _XfdfDocument extends _ExportHelper {
                 bytes = _stringToBytes(primitive) as Uint8Array;
                 this._writeAttributeString(writer, key.toLowerCase(), _byteArrayToHexString(bytes));
                 break;
+            case 'AllowedInteractions':
+            case 'AnnotationSelectorSettings':
+                this._writeAttributeString(writer, key, primitive);
+                break;
             default:
                 this._writeAttributeString(writer, key.toLowerCase(), primitive);
                 break;

@@ -1,5 +1,5 @@
 @use 'ej2-base/styles/definition/tailwind-dark' as *;
 @use 'rich-text-editor/tailwind-dark-definition' as *;
 @use 'rich-text-editor/icons/tailwind-dark' as *;
-@use 'rich-text-editor/all' as *;
-@use 'rich-text-editor/bigger' as *;
+@use 'rich-text-editor/all.tailwind-dark' as *;
+@use 'rich-text-editor/bigger.tailwind-dark' as *;

@@ -2338,12 +2338,26 @@ export class StickyNotesAnnotation {
     public drawIcons(event: any): void {
         if (this.pdfViewerBase.isCommentIconAdded) {
             const pageIndex: number = this.pdfViewer.annotation.getEventPageNumber(event);
+            const pageDiv: HTMLElement = this.pdfViewer.viewerBase.getElement('_pageDiv_' + pageIndex);
             const pageCurrentRect: DOMRect = this.pdfViewerBase.getElement('_pageDiv_' + pageIndex).getBoundingClientRect() as DOMRect;
             const zoomValue: number = this.pdfViewerBase.getZoomFactor();
             this.pdfViewer.annotationModule.isFormFieldShape = false;
+            let xPosition: any;
+            let yPosition: any;
+            if ((pageCurrentRect.right - event.clientX) < 30 * zoomValue) {
+                xPosition = (pageDiv.clientWidth - 30 * zoomValue) / zoomValue;
+            }
+            else {
+                xPosition = (event.clientX - pageCurrentRect.left) / zoomValue;
+            }
+            if ((pageCurrentRect.bottom - event.clientY) > 30 * zoomValue) {
+                yPosition = (event.clientY - pageCurrentRect.top) / zoomValue;
+            }
+            else {
+                yPosition = (pageDiv.clientHeight - 30 * zoomValue) / zoomValue;
+            }
             this.pdfViewer.annotation.stickyNotesAnnotationModule.
-                drawStickyNotes((event.clientX - pageCurrentRect.left) / zoomValue,
-                                (event.clientY - pageCurrentRect.top) / zoomValue, 30, 30, pageIndex, null);
+                drawStickyNotes(xPosition, yPosition, 30, 30, pageIndex, null);
             this.pdfViewerBase.isCommentIconAdded = false;
             let commentsButton: HTMLElement = document.getElementById(this.pdfViewer.element.id + '_comment');
             if (isBlazor()) {

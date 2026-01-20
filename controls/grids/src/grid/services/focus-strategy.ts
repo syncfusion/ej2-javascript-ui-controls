@@ -60,12 +60,23 @@ export class FocusStrategy {
         this.skipFocus = target.classList.contains('e-grid');
     }
 
+    protected focusIn(e: FocusEvent): void {
+        if (!this.parent.enableHeaderFocus) {
+            if (!this.focusByClick && (closest((e.target as Element), '.e-filterbarcell') || closest((e.target as Element), '.e-checkselectall'))) {
+                const firstContentCell: HTMLElement = this.parent.element.querySelector('.e-rowcell:not(.e-hide)');
+                if (firstContentCell) {
+                    firstContentCell.focus();
+                }
+            }
+        }
+    }
+
     protected onFocus(e?: FocusEvent): void {
         if (this.parent.isDestroyed || Browser.isDevice || this.parent.enableVirtualization
             || this.parent.element.querySelector('.e-masked-table') || (!this.parent.isInitialLoad && e
             && e.target === this.parent.element && this.parent.element.querySelector('.e-spin-show'))) { return; }
-        this.setActive(!this.parent.enableHeaderFocus && this.parent.frozenRows === 0);
-        if (!this.parent.enableHeaderFocus && !this.parent.getCurrentViewRecords().length && ((this.parent.editSettings.mode !== 'Batch')
+        this.setActive(this.parent.enableHeaderFocus && this.parent.frozenRows === 0);
+        if (this.parent.enableHeaderFocus && !this.parent.getCurrentViewRecords().length && ((this.parent.editSettings.mode !== 'Batch')
             || (this.parent.editSettings.mode === 'Batch' && this.parent.editModule && !this.parent.editModule.getBatchChanges()[literals.addedRecords].length))) {
             this.getContent().matrix.
                 generate(
@@ -156,15 +167,30 @@ export class FocusStrategy {
             }
         }
         if (gObj.getColumns().length) {
-            const firstHeaderCell: HTMLElement = gObj.getHeaderContent().querySelector('.e-headercell:not(.e-hide)');
-            firstHeaderCell.tabIndex = 0;
-            this.setActive(false);
-            if (!isNullOrUndefined(this.active) && (isNullOrUndefined(this.active.target) || !this.active.target.classList.contains('e-columnmenu'))) {
-                let firstHeaderCellIndex: number[] = [0, 0];
-                if (this.active.matrix.matrix[firstHeaderCellIndex[0]][firstHeaderCellIndex[1]] === 0) {
-                    firstHeaderCellIndex = findCellIndex(this.active.matrix.matrix, firstHeaderCellIndex, true);
+            if (this.parent.enableHeaderFocus) {
+                const firstHeaderCell: HTMLElement = gObj.getHeaderContent().querySelector('.e-headercell:not(.e-hide)');
+                firstHeaderCell.tabIndex = 0;
+                this.setActive(false);
+                if (!isNullOrUndefined(this.active) && (isNullOrUndefined(this.active.target) || !this.active.target.classList.contains('e-columnmenu'))) {
+                    let firstHeaderCellIndex: number[] = [0, 0];
+                    if (this.active.matrix.matrix[firstHeaderCellIndex[0]][firstHeaderCellIndex[1]] === 0) {
+                        firstHeaderCellIndex = findCellIndex(this.active.matrix.matrix, firstHeaderCellIndex, true);
+                    }
+                    this.active.matrix.current = firstHeaderCellIndex;
                 }
-                this.active.matrix.current = firstHeaderCellIndex;
+            }
+            else {
+                const firstContentCell: HTMLElement = gObj.element.querySelector('.e-rowcell:not(.e-hide)');
+                if (firstContentCell) {
+                    firstContentCell.tabIndex = 0;
+                }
+                if (gObj.frozenRows > 0 || gObj.pinnedTopRowModels.length > 0) {
+                    this.setActive(false);
+                    this.active.matrix.current = gObj.element.querySelector('.e-filterbarcell') ? [2, 0] : [1, 0];
+                } else {
+                    this.setActive(true);
+                    this.active.matrix.current = [0, 0];
+                }
             }
             return;
         }
@@ -404,9 +430,34 @@ export class FocusStrategy {
             this.prevIndexes = {};
         }
         this.setActiveByKey(e.action, this.getContent());
-        let returnVal: boolean = this.content.lastIdxCell ? false : this.getContent().onKeyPress(e);
+        let returnVal: boolean = this.content && this.content.lastIdxCell ? false : this.getContent().onKeyPress(e);
+        if (e.target && !this.parent.enableHeaderFocus) {
+            if (e.action === 'tab' && ((e.target as Element).classList.contains('e-grid') ||
+                closest((e.target as Element), '.e-groupdroparea') || closest((e.target as Element), '.e-toolbar-item') ||
+                closest((e.target as Element), '.e-headercell') || closest((e.target as Element), '.e-filterbarcell'))) {
+                if (this.parent.frozenRows > 0 || this.parent.pinnedTopRowModels.length > 0) {
+                    this.setActive(false);
+                    this.active.matrix.current = this.parent.element.querySelector('.e-filterbarcell') ? [2, 0] : [1, 0];
+                } else {
+                    this.setActive(true);
+                    this.active.matrix.current = [0, 0];
+                }
+            } else if ((e.action === 'leftArrow' || e.action === 'rightArrow') &&
+                (closest((e.target as Element), '.e-headercell') || closest((e.target as Element), '.e-filterbarcell'))) {
+                this.active.matrix.current = bValue;
+                return;
+            } else if (e.action === 'upArrow' && parseInt((e.target as Element).getAttribute('data-index'), 10) === 0) {
+                if (this.parent.frozenRows > 0 || this.parent.pinnedTopRowModels.length > 0) {
+                    this.active.matrix.current = bValue;
+                } else {
+                    this.setActive(true);
+                }
+                return;
+            }
+        }
         if (e.target && parentsUntil(e.target as Element, 'e-gridheader')) {
-            if (!isNullOrUndefined(this.active) && e.action === 'tab' && bValue.toString() === this.active.matrix.current.toString()) {
+            if ((this.parent.enableHeaderFocus || this.parent.frozenRows > 0 || this.parent.pinnedTopRowModels.length > 0) &&
+                !isNullOrUndefined(this.active) && e.action === 'tab' && bValue.toString() === this.active.matrix.current.toString()) {
                 const nextHeaderCellIndex: number[] = findCellIndex(this.active.matrix.matrix, this.active.matrix.current, true);
                 let lastHeaderCellIndex: number[] = [this.active.matrix.matrix.length - 1,
                     this.active.matrix.matrix[this.active.matrix.matrix.length - 1].length - 1];
@@ -462,7 +513,8 @@ export class FocusStrategy {
                     this.active.matrix.current = nextHeaderCellIndex;
                 }
             }
-            if (!isNullOrUndefined(this.active) && e.action === 'shiftTab' && bValue.toString() === this.active.matrix.current.toString()) {
+            if (!isNullOrUndefined(this.active) && e.action === 'shiftTab' && (bValue.toString() === this.active.matrix.current.toString() ||
+                (!this.parent.enableHeaderFocus && (closest((e.target as Element), '.e-headercell') || closest((e.target as Element), '.e-filterbarcell'))))) {
                 let previousCellIndex: number[] = findCellIndex(this.active.matrix.matrix, this.active.matrix.current, false);
                 const prevCell: Element = getValue(`${previousCellIndex[0]}.cells.${previousCellIndex[1]}`, this.active.matrix.getRowsFromIndex(previousCellIndex[0], this.active));
                 if (prevCell && prevCell.getBoundingClientRect().width === 0 && previousCellIndex[0] === 0) {
@@ -475,7 +527,8 @@ export class FocusStrategy {
                         this.active.matrix.current[1]
                     );
                 }
-                if (previousCellIndex.toString() === this.active.matrix.current.toString()) {
+                if (previousCellIndex.toString() === this.active.matrix.current.toString() ||
+                    (!this.parent.enableHeaderFocus && !prevCell.classList.contains('e-rowcell'))) {
                     this.focusOutFromHeader(e);
                     return;
                 }
@@ -507,8 +560,9 @@ export class FocusStrategy {
                 }
             }
             if (e.action === 'shiftTab' && bValue.toString() === this.active.matrix.current.toString()) {
-                if (this.parent.allowGrouping && !isNullOrUndefined(this.parent.groupSettings.columns)
-                    && this.parent.groupSettings.columns.length === this.parent.columns.length) {
+                if ((!this.parent.enableHeaderFocus && !(this.parent.frozenRows || this.parent.pinnedTopRowModels.length)) ||
+                    (this.parent.allowGrouping && !isNullOrUndefined(this.parent.groupSettings.columns)
+                    && this.parent.groupSettings.columns.length === this.parent.columns.length)) {
                     this.focusOutFromHeader(e);
                     return;
                 }
@@ -756,12 +810,6 @@ export class FocusStrategy {
         if ((th && closest(document.activeElement, '.e-filterbarcell') !== null) || addNewRow) {
             this.removeFocus();
         }
-        let filterCell: boolean = closest(document.activeElement, '.e-filterbarcell') !== null;
-        if (this.parent.enableHeaderFocus && filterCell) {
-            const matrix: Matrix = this.active.matrix;
-            const current: number[] = matrix.current;
-            filterCell = matrix.matrix[current[0]].lastIndexOf(1) !== current[1];
-        }
         if (this.parent.isEdit && (e.action === 'tab' || e.action === 'shiftTab') && this.parent.editSettings.mode === 'Normal'
             && !this.parent.editSettings.showAddNewRow && !isNullOrUndefined(parentsUntil(target, 'e-addedrow'))) {
             const inputElements: NodeListOf<Element> = this.parent.editModule.formObj.element.querySelectorAll(
@@ -782,7 +830,7 @@ export class FocusStrategy {
                 (!isNullOrUndefined(parentsUntil(target, 'e-addedrow')) && !isNullOrUndefined(closest((e.target as HTMLElement), 'input')) && !isNullOrUndefined(document.querySelector('.e-popup-open'))) ||
                 (!isNullOrUndefined(parentsUntil(target, 'e-addedrow')) && (target && !target.querySelector('.e-cancel-icon')) &&
                 !isNullOrUndefined(parentsUntil(target, 'e-unboundcell')))))))) || ['insert', 'f2'].indexOf(e.action) > -1))
-            || ((filterCell && this.parent.enableHeaderFocus) || ((filterCell || addNewRow) && e.action !== 'tab' && e.action !== 'shiftTab') ||
+            || ((addNewRow && e.action !== 'tab' && e.action !== 'shiftTab') ||
                 closest(document.activeElement, '#' + this.parent.element.id + '_searchbar') !== null
                 && ['enter', 'leftArrow', 'rightArrow',
                     'shiftLeft', 'shiftRight', 'ctrlPlusA'].indexOf(e.action) > -1)
@@ -1103,6 +1151,7 @@ export class FocusStrategy {
         EventHandler.add(this.parent.element, 'mousedown', this.focusCheck, this);
         EventHandler.add(this.parent.element, 'touchstart', this.focusCheck, this);
         EventHandler.add(this.parent.element, 'focus', this.onFocus, this);
+        EventHandler.add(this.parent.element, 'focusin', this.focusIn, this);
         this.parent.element.addEventListener('focus', this.passiveHandler = (e: FocusEvent) => this.passiveFocus(e), true);
         EventHandler.add(this.parent.element, 'focusout', this.onBlur, this);
         this.evtHandlers = [{ event: event.keyPressed, handler: this.onKeyPress },
@@ -1177,6 +1226,7 @@ export class FocusStrategy {
         EventHandler.remove(this.parent.element, 'mousedown', this.focusCheck);
         EventHandler.remove(this.parent.element, 'touchstart', this.focusCheck);
         EventHandler.remove(this.parent.element, 'focus', this.onFocus);
+        EventHandler.remove(this.parent.element, 'focusin', this.focusIn);
         EventHandler.remove(this.parent.element, 'focusout', this.onBlur);
         this.parent.element.removeEventListener('focus', this.passiveHandler, true);
         addRemoveEventListener(this.parent, this.evtHandlers, false);

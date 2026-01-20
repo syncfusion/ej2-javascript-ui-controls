@@ -25,8 +25,9 @@ import  {profile , inMB, getMemoryProfile} from '../base/common.spec';
 import { largeDataset, employeeData, filterData } from '../base/datasource.spec';
 import * as events from '../../../src/grid/base/constant';
 import { EditEventArgs, NotifyArgs } from '../../../src';
+import { Freeze } from '../../../src/grid/actions/freeze';
 
-Grid.Inject(VirtualScroll, Sort, Filter, Selection, Group, Aggregate, Edit, Toolbar);
+Grid.Inject(VirtualScroll, Sort, Filter, Selection, Group, Aggregate, Edit, Toolbar, Freeze);
 
 let createGrid: Function = (options: GridModel, done: Function): Grid => {
     let grid: Grid;
@@ -2112,7 +2113,7 @@ describe('EJ2-889406: White space occurs in virtual scroll', () => {
     it('Press Tab', (done: Function) => {
         let e: object = { target: (gObj.getHeaderTable() as HTMLTableElement).rows[0].cells[3], action: 'tab', preventDefault };
         (gObj.focusModule as any).onKeyPress(e);
-        setTimeout(done, 200);
+        done();
     })
 
     it('Check activeElement', () => {
@@ -2326,5 +2327,41 @@ describe('EJ2-993266: Edited values are not saved when using editTemplate with v
     afterAll(() => {
         destroy(gridObj);
         gridObj = actionComplete = null;
+    });
+});
+
+describe('Coverage for virtualization with pinned the row.', function () {
+    let gridObj: Grid;
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: filterData,
+                allowGrouping: true,
+                groupSettings: {columns: ['ShipCountry']},
+                isRowPinned: function (args: any) {
+                    if (args['OrderID'] === 10248 || args['OrderID'] === 10249) {
+                        return true;
+                    }
+                    return false;
+                },
+                enableVirtualization: true,
+                height: "400",
+                columns: [
+                    { field: 'OrderID', headerText: 'Order ID', isPrimaryKey: true, textAlign: 'Right', width: 90, validationRules: { required: true } },
+                    { field: 'ShipCountry', headerText: 'ShipCountry', width: 100 },
+                ],
+            }, done);
+    });
+    it('Coverage - isRowObject is true', (done: Function) => {
+        (gridObj as any).contentModule.getRowCollection(2, true)
+        done();
+    });
+    it('Coverage - isRowObject is false', (done: Function) => {
+        (gridObj as any).contentModule.getRowCollection(2, false)
+        done();
+    });
+    afterAll(() => {
+        destroy(gridObj);
+        gridObj = null;
     });
 });

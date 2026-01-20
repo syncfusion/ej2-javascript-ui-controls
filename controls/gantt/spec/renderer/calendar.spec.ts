@@ -1355,4 +1355,68 @@ describe('Calendar Setting', () => {
            }
        });
     });
+    describe('CR:800500 Calendar settings not working properly for empty child mapped record', () => {
+        Gantt.Inject(DayMarkers, Selection, Edit);
+        let ganttObj: Gantt;
+        beforeAll((done: Function) => {
+            ganttObj = createGantt({
+                dataSource: [
+                    {
+                      taskID: 1,
+                      task_name: 'test',
+                      start_date: new Date('12/13/2025'),
+                      end_date: new Date('12/13/2025'),
+                      child: [], 
+                      calendarId: 'task-calendar-1',
+                    },
+                ],
+                taskFields: {
+                    id: 'taskID',
+                    name: 'task_name',
+                    startDate: 'start_date',
+                    endDate: 'end_date',
+                    duration: 'Duration',
+                    child: 'child',
+                    calendarId: 'calendarId',
+                },
+                calendarSettings: {
+                    taskCalendars: [
+                        {
+                          calendarId: 'task-calendar-1',
+                          exceptions: [
+                            {
+                              from: '12/13/2025',
+                              to: '12/14/2025',
+                              label: 'Weekendarbejde',
+                            },
+                          ],
+                        },
+                    ],
+                },
+                editSettings: {
+                    allowAdding: true,
+                    allowEditing: true,
+                    allowDeleting: true,
+                    allowTaskbarEditing: true,
+                    showDeleteConfirmDialog: true
+                },
+                treeColumnIndex: 1,
+                allowSelection: true,
+                dateFormat: "MMM dd, y",
+                highlightWeekends: true,
+                gridLines: "Both",
+                toolbar: ['Add','Edit','Update','Delete','Cancel','ExpandAll','CollapseAll','Indent','Outdent'],
+                projectStartDate: new Date('03/25/2019'),
+                projectEndDate: new Date('05/30/2019'),
+            }, done);
+        });
+        it('checking start date of task ', () => {
+            expect(ganttObj.getFormatedDate(ganttObj.flatData[0].ganttProperties.startDate, 'M/d/yyyy')).toBe('12/13/2025');
+        });
+        afterAll(() => {
+           if(ganttObj){
+               destroyGantt(ganttObj);
+           }
+       });
+    });
 });

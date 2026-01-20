@@ -79,6 +79,7 @@ export class DropDownButton extends Component<HTMLButtonElement> implements INot
     private delegateMousedownHandler: Function;
     private isPopupCreated: boolean = true;
     private popupContent: HTMLElement;
+    private windowResizeBound: () => void;
 
     /**
      * Defines the content of the DropDownButton element that can either be a text or HTML elements.
@@ -682,7 +683,8 @@ export class DropDownButton extends Component<HTMLButtonElement> implements INot
         EventHandler.add(this.element, 'click', this.clickHandler, this);
         EventHandler.add(this.element, 'keydown', this.keyBoardHandler, this);
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        EventHandler.add(window as any, 'resize', this.windowResize, this);
+        this.windowResizeBound = this.windowResize.bind(this);
+        window.addEventListener('resize', this.windowResizeBound);
     }
 
     protected windowResize(): void {
@@ -1010,7 +1012,10 @@ export class DropDownButton extends Component<HTMLButtonElement> implements INot
             EventHandler.remove(this.getPopUpElement(), 'keydown', this.keyBoardHandler);
         }
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        EventHandler.remove(window as any, 'resize', this.windowResize.bind(this));
+        if (this.windowResizeBound) {
+            window.removeEventListener('resize', this.windowResizeBound);
+            this.windowResizeBound = null;
+        }
     }
 
     /**

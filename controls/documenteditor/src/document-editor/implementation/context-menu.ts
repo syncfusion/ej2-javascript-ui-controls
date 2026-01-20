@@ -642,6 +642,11 @@ export class ContextMenu {
                 this.spellChecker.handleIgnoreAllItems();
             } else {
                 this.spellChecker.manageReplace(content);
+                if (content === 'Ignore Once') {
+                    this.documentHelper.owner.spellCheckDialogModule.errorText = this.currentContextInfo.text;
+                    this.documentHelper.owner.spellCheckDialogModule.removeErrors();
+                }
+                this.documentHelper.owner.spellCheckDialogModule.errorText = undefined;
             }
             this.documentHelper.triggerSpellCheck = true;
             if (!isNullOrUndefined(this.documentHelper.owner.editorModule)) {
@@ -702,7 +707,8 @@ export class ContextMenu {
             /* eslint-disable @typescript-eslint/no-explicit-any */
             let allSuggestions: any;
             let exactData: string = this.spellChecker.manageSpecialCharacters(this.currentContextInfo.text, undefined, true);
-            if (!isNullOrUndefined(exactData) && this.spellChecker.errorWordCollection.containsKey(exactData)) {
+            if (!isNullOrUndefined(exactData) && this.spellChecker.errorWordCollection.containsKey(exactData)  &&
+            this.spellChecker.errorWordCollection.get(exactData).indexOf(this.currentContextInfo.element) !== -1) {
                 this.spellChecker.currentContextInfo = this.currentContextInfo;
                 if (this.spellChecker.errorSuggestions.containsKey(exactData)) {
                     allSuggestions = this.spellChecker.errorSuggestions.get(exactData).slice();

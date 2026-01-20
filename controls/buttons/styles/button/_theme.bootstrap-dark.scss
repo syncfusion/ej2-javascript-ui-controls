@@ -1,0 +1,6 @@
+@use 'sass:color';
+@use 'ej2-base/styles/common/mixin' as *;
+@import './layout.bootstrap-dark';
+@import './theme-variables.bootstrap-dark';
+@import './mixin';
+@import './_theme';

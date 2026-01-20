@@ -222,7 +222,7 @@ describe('Inline Editing module', () => {
 
         it('Add start - args.cancel', (done: Function) => {
             //form destroy check for last action
-            expect(gridObj.editModule.formObj.isDestroyed).toBeTruthy();
+            expect(gridObj.editModule.formObj).toBeNull();
             actionBegin = (args?: any): void => {
                 if (args.requestType === 'add') {
                     args.cancel = true;
@@ -295,7 +295,7 @@ describe('Inline Editing module', () => {
                     expect(gridObj.element.querySelectorAll('form').length).toBe(0);
 
                     //form destroy check
-                    expect(gridObj.editModule.formObj.isDestroyed).toBeTruthy();
+                    expect(gridObj.editModule.formObj).toBeNull();
                     //updatated data cehck
                     expect((gridObj.currentViewData[0] as any).OrderID).toBe(10247);
                     expect((gridObj.currentViewData[0] as any).CustomerID).toBe('updated');
@@ -1487,7 +1487,7 @@ describe('Inline Editing module', () => {
                     expect(gridObj.element.querySelectorAll('form').length).toBe(0);
 
                     //form destroy check
-                    expect(gridObj.editModule.formObj.isDestroyed).toBeTruthy();
+                    expect(gridObj.editModule.formObj).toBeNull();
                     //updatated data cehck
                     expect((gridObj.currentViewData[0] as any).OrderID).toBe(10247);
                     expect((gridObj.currentViewData[0] as any).CustomerID).toBe('updated');
@@ -2648,7 +2648,7 @@ describe('Inline Editing module', () => {
                     expect(gridObj.element.querySelectorAll('.e-gridform').length).toBe(0);
                     expect(gridObj.element.querySelectorAll('form').length).toBe(0);
                     //form destroy check
-                    expect(gridObj.editModule.formObj.isDestroyed).toBeTruthy();
+                    expect(gridObj.editModule.formObj).toBeNull();
                     //updatated data cehck
                     expect((gridObj.currentViewData[0] as any).FIELD2).toBe(1234567);
                     expect((gridObj.currentViewData[0] as any).FIELD1).toBe('updated');
@@ -2700,7 +2700,7 @@ describe('Inline Editing module', () => {
         it('Add complete - 2', (done: Function) => {
             actionComplete = (args?: any): void => {
                 if (args.requestType === 'save') {
-                    expect(gridObj.editModule.formObj.isDestroyed).toBeTruthy();
+                    expect(gridObj.editModule.formObj).toBeNull();
                     //updatated data cehck
                     expect((gridObj.currentViewData[0] as any).FIELD2).toBe(12345678);
                     expect((gridObj.currentViewData[0] as any).FIELD1).toBe('updated');

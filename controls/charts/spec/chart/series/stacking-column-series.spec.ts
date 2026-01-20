@@ -606,6 +606,18 @@ describe('Chart Control', () => {
             chartObj.series[1].border.color = 'black';
             chartObj.refresh();
         });
+        it('checking with columnWidthInPixel', (done: Function) => {
+            loaded = (args: Object): void => {
+                let svg = document.getElementById('container_Series_0_Point_1');
+                let path = svg.getAttribute('d');
+                expect(path).toBe('M 126.21875 200.14285714285714 Q 126.21875 200.14285714285714 126.21875 200.14285714285714 L 146.21875 200.14285714285714 Q 146.21875 200.14285714285714 146.21875 200.14285714285714 L 146.21875 240.17142857142858 Q 146.21875 240.17142857142858 146.21875 240.17142857142858 L 126.21875 240.17142857142858 Q 126.21875 240.17142857142858 126.21875 240.17142857142858 L 126.21875 200.14285714285714 Z');
+                done();
+            };
+            chartObj.loaded = loaded;
+            chartObj.enableSideBySidePlacement = false;
+            chartObj.series[0].columnWidthInPixel = 20;
+            chartObj.refresh();
+        });
         it('Checking with empty data', (done: Function) => {
             loaded = (args: Object): void => {
                 svg = document.getElementById('containerSeriesGroup0');

@@ -325,7 +325,7 @@ export class WorkbookFormula {
             keyArray = Array.from(definedNames.keys());
             valueArray = Array.from(definedNames.values());
         }
-        return (delSheetName: string, formula: string): { value: string, isNamedRange?: boolean } => {
+        return (delSheetName: string, formula: string): { value: string, isNamedRange?: boolean, isUpdate?: boolean } => {
             let isNamedRange: boolean;
             if (isDefinedNamesAvail && !formula.includes(delSheetName)) {
                 formula = formula.replace(/\w+/g, (key: string) => {
@@ -340,13 +340,15 @@ export class WorkbookFormula {
             const sheetName: string = delSheetName.toUpperCase();
             formula = formula.toUpperCase();
             let idx: number = formula.indexOf(sheetName);
+            let isUpdate: boolean;
             while (idx > -1) {
+                isUpdate = true;
                 formula = formula.split(
                     (formula[idx - 1] === '\'' && formula[idx + sheetName.length] === '\'' ? `'${sheetName}'` : sheetName) +
                     this.calculateInstance.sheetToken).join(this.referenceError());
                 idx = formula.indexOf(sheetName);
             }
-            return { value: formula, isNamedRange };
+            return { value: formula, isNamedRange, isUpdate: isUpdate };
         };
     }
 
@@ -356,13 +358,13 @@ export class WorkbookFormula {
         const family: CalcSheetFamilyItem = this.calculateInstance.getSheetFamilyItem(sheetId);
         const updateSheetRef: (delSheetName: string, formula: string) => { value: string, isNamedRange?: boolean } =
             this.getSheetRefUpdateOnDelete();
-        let updatedInfo: { value: string, isNamedRange?: boolean, sheetId?: number };
+        let updatedInfo: { value: string, isNamedRange?: boolean, sheetId?: number, isUpdate?: boolean };
         dependentCell.forEach((dependentCellRefs: string[], cellRef: string) => {
             dependentCellRefs.forEach((dependentCellRef: string): void => {
                 fInfo = this.calculateInstance.getFormulaInfoTable().get(dependentCellRef);
                 if (!isNullOrUndefined(fInfo)) {
                     updatedInfo = updateSheetRef(delSheetName, fInfo.formulaText);
-                    if (updatedInfo.value !== fInfo.formulaText) {
+                    if (updatedInfo.value !== fInfo.formulaText && updatedInfo.isUpdate) {
                         token = dependentCellRef.slice(0, dependentCellRef.lastIndexOf(this.calculateInstance.sheetToken) + 1);
                         updatedInfo.sheetId = family.tokenToParentObject.has(token) ? Number(family.tokenToParentObject.get(token)) :
                             parseInt(dependentCellRef.split('!')[1], 10) + 1;
@@ -1286,7 +1288,10 @@ export class WorkbookFormula {
             const previousFormula: string = this.parseSheetRef(args.cell.formula, false);
             let formula: string = previousFormula;
             args.sheetNames.forEach((sheetName: string): void => {
-                formula = args.updateSheetRef(sheetName, formula).value;
+                const updatedInfo: { value: string, isNamedRange?: boolean, isUpdate?: boolean} = args.updateSheetRef(sheetName, formula);
+                if (updatedInfo.isUpdate) {
+                    formula = updatedInfo.value;
+                }
             });
             if (formula !== previousFormula) {
                 args.cell.formula = formula;

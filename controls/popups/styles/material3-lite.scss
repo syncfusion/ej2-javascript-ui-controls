@@ -3,11 +3,11 @@
 @use 'popup/material3-definition' as *;
 @use 'dialog/material3-definition' as *;
 @use 'dialog/icons/material3' as *;
-@use 'dialog/all' as *;
-@use 'popup/all' as *;
+@use 'dialog/all.material3' as *;
+@use 'popup/all.material3' as *;
 
 @use 'tooltip/material3-definition' as *;
 @use 'tooltip/icons/material3' as *;
-@use 'tooltip/all' as *;
+@use 'tooltip/all.material3' as *;
 @use 'spinner/material3-definition' as *;
-@use 'spinner/all' as *;
+@use 'spinner/all.material3' as *;

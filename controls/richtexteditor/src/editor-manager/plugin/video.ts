@@ -268,8 +268,11 @@ export class VideoCommand {
         }
         if (!e.item.isEmbedUrl) {
             (sourceElement as HTMLSourceElement).type = e.item.fileName && e.item.fileName.split('.').length > 0 ?
-                'video/' + e.item.fileName.split('.')[e.item.fileName.split('.').length - 1] :
-                e.item.url && e.item.url.split('.').length > 0  ? 'video/' + e.item.url.split('.')[e.item.url.split('.').length - 1] : '';
+                (e.item.fileName.split('.')[e.item.fileName.split('.').length - 1].toLowerCase() === 'mov' ? 'video/mp4'
+                    : 'video/' + e.item.fileName.split('.')[e.item.fileName.split('.').length - 1])
+                : e.item.url && e.item.url.split('.').length > 0
+                    ? (e.item.url.split('.')[e.item.url.split('.').length - 1].toLowerCase() === 'mov'
+                        ? 'video/mp4' : 'video/' + e.item.url.split('.')[e.item.url.split('.').length - 1]) : '';
         }
         if (!isNOU(e.item.width) && !isNOU(e.item.width.width)) {
             videoEle.setAttribute('width', formatUnit(e.item.width.width));

@@ -767,6 +767,7 @@ export class NumericTextBox extends Component<HTMLInputElement> implements INoti
     }
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     private clear(event: MouseEvent): void {
+        this.prevValue = this.instance.getNumberParser({ format: 'n' })(this.element.value);
         this.setProperties({ value: null }, true);
         this.setElementValue('');
         this.hiddenInput.value = '';

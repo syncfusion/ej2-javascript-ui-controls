@@ -217,8 +217,9 @@ export class PasteCleanup {
     ): boolean {
         let processedValue: string = value;
         let shouldContinue: boolean = true;
+        const files: FileList = (e.args as ClipboardEvent).clipboardData.files;
         // Handle empty HTML content (plain text or image)
-        if (value.length === 0) {
+        if (value.length === 0 || (!isNOU(files) && files.length > 0)) {
             const result: { value: string, shouldContinue: boolean } =
                 this.handleEmptyHtmlValue(e, value, args, allowedTypes, imageproperties);
             processedValue = result.value;

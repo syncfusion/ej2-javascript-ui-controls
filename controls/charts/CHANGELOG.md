@@ -2,7 +2,15 @@
 
 ## [Unreleased]
 
-## 32.1.23 (2026-01-13)
+## 32.1.24 (2026-01-20)
+
+### Chart
+
+#### Bug Fixes
+
+- `I801695` - Multi-series chart data now exports properly to Excel.
+
+## 32.1.20 (2025-12-20)
 
 ### Chart
 

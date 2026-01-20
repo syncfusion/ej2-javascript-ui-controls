@@ -1,6 +1,4 @@
 @use 'ej2-base/styles/common/mixin' as *;
-@use './theme-variables' as *;
-@use '../drop-down-base/theme-variables' as drop-down-vars;
 @include export-module('multiselect-bigger') {
   .e-bigger .e-multiselect.e-control-container.e-input-group .e-multi-select-wrapper .e-ddl-icon,
   .e-bigger.e-multiselect.e-control-container.e-input-group .e-multi-select-wrapper .e-ddl-icon {
@@ -296,7 +294,7 @@
 
   .e-bigger .e-popup.e-multi-select-list-wrapper.e-multiselect-group.e-rtl .e-dropdownbase.e-rtl.e-dd-group .e-list-group-item {
     @if $ddl-multiselect-skin-name == 'highcontrast' or $ddl-multiselect-skin-name == 'fabric' {
-      padding-right: drop-down-vars.$ddl-list-padding-right;
+      padding-right: $ddl-list-padding-right;
     }
   }
   

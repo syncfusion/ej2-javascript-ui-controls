@@ -1,5 +1,4 @@
 @use 'ej2-base/styles/common/mixin' as *;
-@use './theme-variables' as *;
 @include export-module('listbox-layout') {
   /* stylelint-disable property-no-vendor-prefix */
   .e-listbox-wrapper,

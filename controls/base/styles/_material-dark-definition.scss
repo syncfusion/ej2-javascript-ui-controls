@@ -2,12 +2,13 @@
 @use 'definition/material-dark' as *;
 @forward 'definition/material-dark';
 
-@if not meta.variable-exists('is-roboto-loaded') {
+$is-roboto-loaded: false !default;
+
+@if not $is-roboto-loaded {
   //sass-lint:disable no-url-protocols,no-url-domains
   @import url('https://fonts.googleapis.com/css?family=Roboto:400,500,700');// stylelint-disable-line no-invalid-position-at-import-rule
 }
 
-$is-roboto-loaded: 'true' !default;
 $font-family: 'Roboto', 'Segoe UI', 'GeezaPro', 'DejaVu Serif', 'sans-serif', '-apple-system', 'BlinkMacSystemFont' !default;
 $font-size: 12px !default;
 $font-weight: normal !default;

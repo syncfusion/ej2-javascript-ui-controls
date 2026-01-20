@@ -61,7 +61,8 @@ export class StackingColumnSeries extends ColumnBase {
                 this.rect.width = series.columnWidthInPixel ? series.columnWidthInPixel : this.rect.width;
             }
             this.rect.x = series.columnWidthInPixel ? series.chart.isTransposed ? this.rect.x : this.rect.x -
-                (((series.columnWidthInPixel / 2) * series.rectCount) - (series.columnWidthInPixel * series.position)) : this.rect.x;
+                (((series.columnWidthInPixel / 2) * (isNullOrUndefined(series.rectCount) ? 0 : series.rectCount)) -
+                (series.columnWidthInPixel * (isNullOrUndefined(series.position) ? 0 : series.position))) : this.rect.x;
             const argsData: IPointRenderEventArgs = this.triggerEvent(series, point, series.interior, { width: series.visible ?
                 series.border.width : 0, color: series.visible ? series.border.color : '' });
             if (!argsData.cancel) {

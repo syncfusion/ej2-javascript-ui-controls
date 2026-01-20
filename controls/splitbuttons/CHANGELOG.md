@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 32.1.24 (2026-01-20)
+
+### DropDownButton
+
+#### Bug Fixes
+
+- `I801275` - Resolved memory leak issue in the window resize handler of DropDownButton.
+
 ## 28.1.33 (2024-12-12)
 
 ### DropDownButton

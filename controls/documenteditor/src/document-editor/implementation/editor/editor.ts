@@ -3846,7 +3846,13 @@ export class Editor {
             insertPosition = selection.start;
             if (insertPosition.paragraph.isEmpty()) {
                 let span: TextElementBox = new TextElementBox();
-                let insertFormat: WCharacterFormat = this.copyInsertFormat(insertPosition.paragraph.characterFormat, true);
+                let insertFormat: WCharacterFormat;
+                if (this.owner.spellCheckerModule && (this.owner.spellCheckerModule.isChangeAll || this.owner.spellCheckerModule.isChange)) {
+                    insertFormat = insertPosition.paragraph.characterFormat;
+                }
+                else {
+                    insertFormat = this.copyInsertFormat(insertPosition.paragraph.characterFormat, true);
+                }
                 span.characterFormat.copyFormat(insertFormat);
                 span.text = text;
                 let isBidi: boolean = this.documentHelper.textHelper.getRtlLanguage(text).isRtl || this.selection.characterFormat.bidi;
@@ -3892,8 +3898,15 @@ export class Editor {
                 if (inline.canTrigger && (inline as TextElementBox).text.length <= 1) {
                     inline.canTrigger = false;
                 }
-                // Todo: compare selection format
-                let insertFormat: WCharacterFormat = this.copyInsertFormat(inline.characterFormat, true);
+                let insertFormat: WCharacterFormat;
+                if (this.owner.spellCheckerModule && (this.owner.spellCheckerModule.isChangeAll || this.owner.spellCheckerModule.isChange)) {
+                    // ignore: compare selection format for spell check change/change all action
+                    insertFormat = inline.characterFormat;
+                }
+                else {
+                    // Todo: compare selection format
+                    insertFormat = this.copyInsertFormat(inline.characterFormat, true);
+                }
                 if (insertFormat.hidden) {
                     insertFormat.hidden = false;
                 }
@@ -12876,7 +12889,11 @@ export class Editor {
         }
         return x;
     }
-    private updateRevisionForFormattedContent(inline: ElementBox, tempSpan: ElementBox, indexCount: number): any {
+    /**
+     * @private
+     * @returns {any}
+     */
+    public updateRevisionForFormattedContent(inline: ElementBox, tempSpan: ElementBox, indexCount: number): any {
         for (let i: number = 0; i < inline.revisionLength; i++) {
             let currentRevision: Revision = inline.getRevision(i);
             tempSpan.insertRevisionAt(0, currentRevision);
@@ -19755,11 +19772,13 @@ export class Editor {
             if (isSelectionAtParagraphStart) {
             if (paragraph.paragraphFormat.listFormat && paragraph.paragraphFormat.listFormat.listId !== -1) {
                 // BUG_859140 - handled backspace for list as per word desktop behaviour
+                selection.skipFormatRetrieval = false;
                 if (!isNullOrUndefined(this.editorHistory) && !isNullOrUndefined(this.editorHistory.undoStack) && this.editorHistory.undoStack.length > 0 &&
                 this.editorHistory.undoStack[this.editorHistory.undoStack.length - 1].action === 'ListFormat') {
                     this.onApplyListInternal(this.documentHelper.getListById(paragraph.paragraphFormat.listFormat.listId), paragraph.paragraphFormat.listFormat.listLevelNumber - 1);
                 } else {
                     this.onApplyList(undefined);
+                    this.reLayout(selection, true);
                 }
                 return;
             }

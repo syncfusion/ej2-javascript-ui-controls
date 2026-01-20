@@ -3488,7 +3488,13 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
                 metaData.file.statusCode = '3';
             }
             if (metaData.file.statusCode === '5') {
-                const eventArgs: CancelEventArgs = { event: e, fileData: metaData.file, cancel: false, customFormData: [] };
+                const eventArgs: CancelEventArgs = {
+                    event: e,
+                    fileData: metaData.file,
+                    cancel: false,
+                    customFormData: [],
+                    currentRequest : null
+                };
                 this.trigger('canceling', eventArgs, (eventArgs: CancelEventArgs) => {
                     /* istanbul ignore next */
                     if (eventArgs.cancel) {
@@ -3510,6 +3516,11 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
                         this.updateFormData(formData, eventArgs.customFormData);
                         const ajax: Ajax = new Ajax(this.asyncSettings.removeUrl, 'POST', true, null);
                         ajax.emitError = false;
+                        ajax.beforeSend = (e: BeforeSendEventArgs) => {
+                            if (Array.isArray(eventArgs.currentRequest)) {
+                                this.updateCustomheader(ajax.httpRequest, eventArgs.currentRequest);
+                            }
+                        };
                         ajax.onLoad = (e: Event): object => {
                             this.removeChunkFile(e, metaData, custom); return {};
                         };

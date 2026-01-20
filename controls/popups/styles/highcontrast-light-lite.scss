@@ -3,10 +3,10 @@
 @use 'popup/highcontrast-light-definition' as *;
 @use 'dialog/highcontrast-light-definition' as *;
 @use 'dialog/icons/highcontrast-light' as *;
-@use 'dialog/all' as *;
-@use 'popup/all' as *;
+@use 'dialog/all.highcontrast-light' as *;
+@use 'popup/all.highcontrast-light' as *;
 
 @use 'tooltip/highcontrast-light-definition' as *;
-@use 'tooltip/all' as *;
+@use 'tooltip/all.highcontrast-light' as *;
 @use 'spinner/highcontrast-light-definition' as *;
-@use 'spinner/all' as *;
+@use 'spinner/all.highcontrast-light' as *;

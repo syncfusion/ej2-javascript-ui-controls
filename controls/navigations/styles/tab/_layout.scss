@@ -1,5 +1,4 @@
 @use 'ej2-base/styles/common/mixin' as *;
-@use './theme-variables' as *;
 @mixin tab-mob-last-item-margin {
   @media screen and (max-width: 480px) {
     margin: $tab-mob-last-item-margin;

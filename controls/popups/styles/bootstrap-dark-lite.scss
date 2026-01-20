@@ -2,11 +2,11 @@
 @use 'popup/bootstrap-dark-definition' as *;
 @use 'dialog/bootstrap-dark-definition' as *;
 @use 'dialog/icons/bootstrap-dark' as *;
-@use 'dialog/all' as *;
-@use 'popup/all' as *;
+@use 'dialog/all.bootstrap-dark' as *;
+@use 'popup/all.bootstrap-dark' as *;
 
 @use 'tooltip/bootstrap-dark-definition' as *;
 @use 'tooltip/icons/bootstrap-dark' as *;
-@use 'tooltip/all' as *;
+@use 'tooltip/all.bootstrap-dark' as *;
 @use 'spinner/bootstrap-dark-definition' as *;
-@use 'spinner/all' as *;
+@use 'spinner/all.bootstrap-dark' as *;

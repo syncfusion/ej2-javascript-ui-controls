@@ -442,6 +442,7 @@ export class Export {
         }
         this.requiredValuesLength = index - 1;
     }
+
     /**
      * Gets the X values for the Excel sheet.
      *
@@ -453,41 +454,85 @@ export class Export {
      * @private
      */
 
-    private getXValue(requiredValues: string[][], control: Chart | AccumulationChart | RangeNavigator | StockChart,
-                      isRangeNavigator: boolean, isAccumulation: boolean): number[][] {
+    private getXValue(
+        requiredValues: string[][],
+        control: Chart | AccumulationChart | RangeNavigator | StockChart,
+        isRangeNavigator: boolean,
+        isAccumulation: boolean
+    ): number[][] {
         const xValues: number[][] = [];
-        for (let axisCount: number = 0; axisCount < this.axisCollection.length; axisCount++) {
-            const xValue: number[] = [];
-            const valueType: string = isAccumulation ? '' : isRangeNavigator ? (control as RangeNavigator).valueType : this.axisCollection[axisCount as number].valueType;
-            for (let seriesCount: number = 0; seriesCount < this.series.length; seriesCount++) {
-                const axisName: string = this.axisCollection[axisCount as number] !== null ? (this.axisCollection[axisCount as number].name === 'primaryXAxis' || (this.axisCollection[axisCount as number].name === 'primaryYAxis' && this.series[seriesCount as number].type.indexOf('Bar') > -1)) ? null : this.axisCollection[axisCount as number].name : '';
-                if ((!isRangeNavigator && ((!isAccumulation && (axisName !==
-                    (this.series[seriesCount as number] as SeriesModel | StockSeriesModel).xAxisName)) ||
-                    !(this.series[seriesCount as number] as SeriesModel | AccumulationSeriesModel | StockSeriesModel).visible) ||
-                    (this.series[seriesCount as number] as Series).category === 'TrendLine' || (this.series[seriesCount as number] as Series).type === 'Histogram')) {
+        for (let axisIndex: number = 0; axisIndex < this.axisCollection.length; axisIndex++) {
+            const concatenated: number[] = [];
+            const quota: { [key: string]: number } = {};
+            const valueType: string = isAccumulation
+                ? ''
+                : isRangeNavigator
+                    ? (control as RangeNavigator).valueType
+                    : this.axisCollection[axisIndex as number].valueType;
+            for (let seriesIndex: number = 0; seriesIndex < this.series.length; seriesIndex++) {
+                const axisName: string = this.axisCollection[axisIndex as number] !== null
+                    ? (this.axisCollection[axisIndex as number].name === 'primaryXAxis' ||
+                        (this.axisCollection[axisIndex as number].name === 'primaryYAxis' &&
+                            (this.series[seriesIndex as number] as Series).type.indexOf('Bar') > -1))
+                        ? null
+                        : this.axisCollection[axisIndex as number].name
+                    : '';
+
+                if (
+                    (!isRangeNavigator &&
+                        ((!isAccumulation &&
+                            (axisName !== (this.series[seriesIndex as number] as SeriesModel | StockSeriesModel).xAxisName)) ||
+                            !(this.series[seriesIndex as number] as SeriesModel | AccumulationSeriesModel | StockSeriesModel).visible)) ||
+                    (this.series[seriesIndex as number] as Series).category === 'TrendLine' ||
+                    (this.series[seriesIndex as number] as Series).type === 'Histogram'
+                ) {
                     continue;
                 }
-                const dataSource: Object[] | Object = (this.series[seriesCount as number].dataSource instanceof DataManager) ?
-                    (isAccumulation ? (this.series[seriesCount as number] as AccumulationSeries).resultData as Object[] :
-                        (this.series[seriesCount as number] as Series).currentViewData) :
-                    this.series[seriesCount as number].dataSource as Object[];
-                for (let dataCount: number = 0; dataCount < (dataSource as Object[]).length;
-                    dataCount++) {
-                    if (isAccumulation && !(this.series[seriesCount as number] as AccumulationSeries).points[dataCount as number].visible) {
+
+                const dataSource: Object[] = (this.series[seriesIndex as number].dataSource instanceof DataManager)
+                    ? (isAccumulation
+                        ? (this.series[seriesIndex as number] as AccumulationSeries).resultData as Object[]
+                        : (this.series[seriesIndex as number] as Series).currentViewData as Object[])
+                    : this.series[seriesIndex as number].dataSource as Object[];
+                const freq: { [key: string]: number } = {};
+
+                for (let dataCount: number = 0; dataCount < dataSource.length; dataCount++) {
+                    if (isAccumulation &&
+                        !(this.series[seriesIndex as number] as AccumulationSeries).points[dataCount as number].visible) {
                         continue;
                     }
-                    xValue.push((valueType.indexOf('DateTime') > -1) ? new Date(dataSource[dataCount as number][requiredValues[seriesCount as number][0]]).getTime() :
-                        dataSource[dataCount as number][requiredValues[seriesCount as number][0]]);
+
+                    const raw: number = (dataSource as Object)[dataCount as number][requiredValues[seriesIndex as number][0]];
+                    const xVal: number = (valueType.indexOf('DateTime') > -1)
+                        ? new Date(raw).getTime()
+                        : raw;
+                    concatenated.push(xVal);
+                    freq[String(xVal)] = (freq[String(xVal)] || 0) + 1;
+                }
+                for (const k in freq) {
+                    if (!Object.prototype.hasOwnProperty.call(freq, k)) { continue; }
+                    const count: number = freq[k as string];
+                    const current: number = quota[k as string] || 0;
+                    if (count > current) { quota[k as string] = count; }
                 }
             }
-            xValues.push(xValue);
+            const used: { [key: string]: number } = {};
+            const rebuilt: number[] = [];
+            for (let i: number = 0; i < concatenated.length; i++) {
+                const x: number = concatenated[i as number];
+                const usedCount: number = used[String(x)] || 0;
+                const allowed: number = quota[String(x)] || 0;
+                if (usedCount < allowed) {
+                    rebuilt.push(x);
+                    used[String(x)] = usedCount + 1;
+                }
+            }
+            xValues.push(rebuilt);
         }
-        for (let xValuesLength: number = 0; xValuesLength < xValues.length ; xValuesLength++) {
-            xValues[xValuesLength as number] = xValues[xValuesLength as number].filter((item: number, index: number) =>
-                xValues[xValuesLength as number].indexOf(item) === index);
-        }
-        return (xValues);
+
+        return xValues;
     }
+
     /**
      * Creates an Excel sheet.
      *
@@ -506,66 +551,73 @@ export class Export {
                              controls: Chart | AccumulationChart | RangeNavigator | StockChart): void {
         let startIndex: number = 0;
         let index: number = 0;
+        const nextIndexMap: { [key: string]: number } = {};
         for (let axisCount: number = 0; axisCount < this.axisCollection.length; axisCount++) {
             const valueType: string = isAccumulation ? '' : isRangeNavigator ? (controls[0] as RangeNavigator).valueType : this.axisCollection[axisCount as number].valueType;
-            for (let seriesCount: number = 0; seriesCount < this.series.length; seriesCount++) {
-                const axisName: string = this.axisCollection[axisCount as number] !== null ? (this.axisCollection[axisCount as number].name === 'primaryXAxis' || (this.axisCollection[axisCount as number].name === 'primaryYAxis' && this.series[seriesCount as number].type.indexOf('Bar') > -1)) ? null : this.axisCollection[axisCount as number].name : '';
-                if ((!isRangeNavigator &&
-                    ((!isAccumulation &&
+            for (let xValueLength: number = 0; xValueLength < xValues[axisCount as number].length; xValueLength++) {
+                index = startIndex ? startIndex : 1;
+                const cells: ExcelCell[] = [];
+                let isXValue: boolean = true;
+                for (let seriesCount: number = 0; seriesCount < this.series.length; seriesCount++) {
+                    const axisName: string = this.axisCollection[axisCount as number] !== null ? (this.axisCollection[axisCount as number].name === 'primaryXAxis' || (this.axisCollection[axisCount as number].name === 'primaryYAxis' && this.series[seriesCount as number].type.indexOf('Bar') > -1)) ? null : this.axisCollection[axisCount as number].name : '';
+                    if ((!isRangeNavigator && ((!isAccumulation &&
                         (this.series[seriesCount as number] as SeriesModel | StockSeriesModel).xAxisName !== axisName) ||
-                        !(this.series[seriesCount as number] as SeriesModel | AccumulationSeriesModel | StockSeriesModel).visible)) ||
-                    (this.series[seriesCount as number] as Series).category === 'TrendLine' ||
-                    (this.series[seriesCount as number] as Series).type === 'Histogram') {
-                    continue;
-                }
-                const dataSource: Object[] | Object = (this.series[seriesCount as number].dataSource instanceof DataManager) ?
-                    (isAccumulation ? (this.series[seriesCount as number] as AccumulationSeries).resultData as Object[] :
-                        (this.series[seriesCount as number] as Series).currentViewData) :
-                    this.series[seriesCount as number].dataSource as Object[];
-                for (let dataCount: number = 0; dataCount < (dataSource as Object[]).length; dataCount++) {
-                    const xValue: number = (valueType.indexOf('DateTime') > -1)
-                        ? (this.series[seriesCount as number] as Series).category === 'Pareto'
-                            ? new Date((this.series[seriesCount as number] as Series).
-                                points[dataCount as number][requiredValues[seriesCount as number][0]]).getTime()
-                            : new Date(dataSource[dataCount as number][requiredValues[seriesCount as number][0]]).getTime()
-                        : (this.series[seriesCount as number] as Series).category === 'Pareto'
-                            ? (this.series[seriesCount as number] as Series).
-                                points[dataCount as number][requiredValues[seriesCount as number][0]]
-                            : dataSource[dataCount as number][requiredValues[seriesCount as number][0]];
-
-                    if (xValues[axisCount as number].indexOf(xValue) > -1) {
-                        index = startIndex ? startIndex : 1;
-                        const cells: ExcelCell[] = [];
-                        const usedValueLength: number = this.series[seriesCount as number].type === 'BoxAndWhisker'
-                            ? requiredValues[seriesCount as number].length - 1
-                            : requiredValues[seriesCount as number].length;
-
-                        for (let usedValueCount: number = 0; usedValueCount < usedValueLength; usedValueCount++) {
-                            const cellValue: Object = (this.series[seriesCount as number] as Series).enableComplexProperty ?
-                                getValue(requiredValues[seriesCount as number][usedValueCount as number], dataSource[dataCount as number]) :
-                                dataSource[dataCount as number][requiredValues[seriesCount as number][usedValueCount as number]];
-                            let value: string | boolean | number | Date = (usedValueCount !== 0 && (this.series[seriesCount as number].type === 'BoxAndWhisker' || (this.series[seriesCount as number] as Series).category === 'Pareto')) ? (this.series[seriesCount as number] as Series).points[dataCount as number][requiredValues[seriesCount as number][usedValueCount as number]] : cellValue;
-                            if (value === null && type === 'CSV') {
-                                value = '';
+                        !(this.series[seriesCount as number] as SeriesModel | AccumulationSeriesModel | StockSeriesModel).visible) ||
+                        (this.series[seriesCount as number] as Series).category === 'TrendLine' || (this.series[seriesCount as number] as Series).type === 'Histogram')) {
+                        continue;
+                    }
+                    let isExist: boolean = false;
+                    const dataSource: Object[] | Object = (this.series[seriesCount as number].dataSource instanceof DataManager) ?
+                        (isAccumulation ? (this.series[seriesCount as number] as AccumulationSeries).resultData as Object[] :
+                            (this.series[seriesCount as number] as Series).currentViewData) :
+                        this.series[seriesCount as number].dataSource as Object[];
+                    const currentX: number = xValues[axisCount as number][xValueLength as number];
+                    const key: string = axisCount + '|' + seriesCount + '|' + String(currentX);
+                    const startDataIndex: number = nextIndexMap[key as string] || 0;
+                    for (let dataCount: number = startDataIndex; dataCount < (dataSource as Object[]).length; dataCount++) {
+                        const xValue: number = (valueType.indexOf('DateTime') > -1) ? (this.series[seriesCount as number] as Series).category === 'Pareto' ? new Date((this.series[seriesCount as number] as Series).points[dataCount as number][requiredValues[seriesCount as number][0]]).getTime() :
+                            new Date(dataSource[dataCount as number][requiredValues[seriesCount as number][0]]).getTime() :
+                            (this.series[seriesCount as number] as Series).category === 'Pareto' ? (this.series[seriesCount as number] as Series).points[dataCount as number][requiredValues[seriesCount as number][0]] : dataSource[dataCount as number][requiredValues[seriesCount as number][0]];
+                        if (xValues[axisCount as number][xValueLength as number] === xValue) {
+                            let usedValueCount: number = isXValue ? 0 : 1;
+                            const usedValueLength: number = this.series[seriesCount as number].type === 'BoxAndWhisker' ? requiredValues[seriesCount as number].length - 1 : requiredValues[seriesCount as number].length;
+                            for (; usedValueCount < usedValueLength; usedValueCount++) {
+                                const cellValue: Object = (this.series[seriesCount as number] as Series).enableComplexProperty ?
+                                    getValue(requiredValues[seriesCount as number][usedValueCount as number],
+                                             dataSource[dataCount as number]) :
+                                    dataSource[dataCount as number][requiredValues[seriesCount as number][usedValueCount as number]];
+                                let value: string | boolean | number | Date = (usedValueCount !== 0 && (this.series[seriesCount as number].type === 'BoxAndWhisker' || (this.series[seriesCount as number] as Series).category === 'Pareto')) ? (this.series[seriesCount as number] as Series).points[dataCount as number][requiredValues[seriesCount as number][usedValueCount as number]] : cellValue;
+                                if (value === null && type === 'CSV') {
+                                    value = '';
+                                }
+                                cells.push({
+                                    index: (usedValueCount === 0 ? startIndex === 0 ? 1 : startIndex : index), value: value,
+                                    colSpan: 1, rowSpan: 1, style: usedValueCount === 0 ? headerStyle : {}
+                                });
+                                index++;
                             }
-                            cells.push({
-                                index: (usedValueCount === 0 ? (startIndex === 0 ? 1 : startIndex) : index), value: value, colSpan: 1,
-                                rowSpan: 1, style: usedValueCount === 0 ? headerStyle : {}
-                            });
-                            index++;
+                            if (this.series[seriesCount as number].type === 'BoxAndWhisker') {
+                                cells.push({ index: index, value: (this.series[seriesCount as number] as Series).points[dataCount as number]['outliers'][0], colSpan: 1, rowSpan: 1, style: {} });
+                                index++;
+                            }
+                            isXValue = false;
+                            isExist = true;
+                            nextIndexMap[key as string] = dataCount + 1;
+                            break;
                         }
-                        if (this.series[seriesCount as number].type === 'BoxAndWhisker') {
-                            cells.push({ index: index, value: (this.series[seriesCount as number] as Series).points[dataCount as number]['outliers'][0], colSpan: 1, rowSpan: 1, style: {} });
-                            index++;
-                        }
-                        this.rows.push({ index: this.actualRowCount, cells: cells });
-                        this.actualRowCount++;
+                    }
+                    if (!isExist) {
+                        index += (requiredValues[seriesCount as number].length - 1);
                     }
                 }
+                this.rows.push({ index: this.actualRowCount, cells: cells });
+                this.actualRowCount++;
             }
             startIndex = index;
         }
     }
+
+
     /**
      * Gets the data URL of the chart or accumulation chart.
      *

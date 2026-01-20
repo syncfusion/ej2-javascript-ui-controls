@@ -3,11 +3,11 @@
 @use 'popup/fluent-dark-definition' as *;
 @use 'dialog/fluent-dark-definition' as *;
 @use 'dialog/icons/fluent-dark' as *;
-@use 'dialog/all' as *;
-@use 'popup/all' as *;
+@use 'dialog/all.fluent-dark' as *;
+@use 'popup/all.fluent-dark' as *;
 
 @use 'tooltip/fluent-dark-definition' as *;
 @use 'tooltip/icons/fluent-dark' as *;
-@use 'tooltip/all' as *;
+@use 'tooltip/all.fluent-dark' as *;
 @use 'spinner/fluent-dark-definition' as *;
-@use 'spinner/all' as *;
+@use 'spinner/all.fluent-dark' as *;

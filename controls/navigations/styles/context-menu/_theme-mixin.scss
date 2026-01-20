@@ -1,5 +1,4 @@
 @use 'ej2-base/styles/common/mixin' as *;
-@use './theme-variables' as *;
 @mixin focused-icon-color {
   @if $skin-name != 'bootstrap5' {
     & .e-caret {
@@ -71,13 +70,7 @@
 @mixin disabled-color {
   & .e-disabled {
     color: $cmenu-disable-text;
-    @if $skin-name == 'bootstrap5' or $skin-name == 'bootstrap5.3' {
-      opacity: $cmenu-disabled-item-opacity;
-    }
-    @else{
-      opacity: 1;
-    }
-
+    opacity: $cmenu-disabled-item-opacity;
     & .e-menu-icon {
       color: $cmenu-icon-disabled-color;
     }

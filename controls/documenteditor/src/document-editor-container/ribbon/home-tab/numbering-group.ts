@@ -143,6 +143,9 @@ export class NumberingGroup {
             },
             click: () => {
                 this.applyLastAppliedNumbering();
+            },
+            close: (): void => {
+                this.refreshHomeSelection();
             }
         };
     }
@@ -208,6 +211,7 @@ export class NumberingGroup {
 
     private bulletNoneClick(): void {
         BulletListHelper.clearList(this.documentEditor);
+        this.refreshHomeSelection();
     }
 
     private numberedNumberDotClick(): void {
@@ -237,9 +241,17 @@ export class NumberingGroup {
             this.documentEditor.editorModule.applyNumbering(format, pattern);
             setTimeout((): void => {
                 this.documentEditor.focusIn();
+                this.refreshHomeSelection();
             }, 30);
         }
     }
+    private refreshHomeSelection(): void {
+        const ribbonModule: any = (this.container as any).ribbonModule;
+        if (ribbonModule && ribbonModule.tabManager && ribbonModule.tabManager.homeTab) {
+            ribbonModule.tabManager.homeTab.updateSelection();
+        }
+    }
+
     public destroy(): void {
         // Remove event listeners for numbering tags
         if (this.noneNumberTag) {
