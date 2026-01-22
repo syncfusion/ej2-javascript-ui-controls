@@ -64,6 +64,7 @@ Real-world demos built with Syncfusion JavaScript / TypeScript components:
 - **Document Explorer** — File management and PDF viewing  
   [Demo](https://ej2.syncfusion.com/showcase/javascript/documentexplorer/)
 
+More showcases and code examples: https://www.syncfusion.com/showcase-apps/javascript
 ---
 
 ## Supported Frameworks
