@@ -8,7 +8,7 @@
 <a href="https://www.npmjs.com/package/@syncfusion/ej2">
 <img src="https://ej2.syncfusion.com/github/images/npm-logo.png" alt="npm" style="height:20px;"></a>&nbsp;&nbsp;<a href="https://www.syncfusion.com/eula/es/"><img src="https://ej2.syncfusion.com/github/images/license.svg" alt="license"></a>
 
-The Syncfusion JavaScript UI controls library is the only suite that you will ever need to build an application since it contains over 65 high-performance, lightweight, modular, and responsive UI components in a single package.
+The Syncfusion JavaScript UI controls library is the only suite that you will ever need to build an application since it contains over 145+ high-performance, lightweight, modular, and responsive UI components in a single package.
 
  [![Screens of showcase applications](https://ej2.syncfusion.com/products/ej2-banner.gif)](https://syncfusion.com/javascript-ui-controls/)
  
@@ -18,8 +18,10 @@ The Syncfusion JavaScript UI controls library is the only suite that you will ev
 * [Framework highlights](#framework-highlights)
 * [Control list](#control-list)
     * [Grids](#grids)
+    * [Smart Components](#smart-components)
     * [Editors](#editors)
     * [Dropdowns](#dropdowns)
+    * [Interactive Chat](#interactive-chat)
     * [Data Visualization](#data-visualization)
     * [Calendars](#calendars)
     * [Navigation](#navigation)
@@ -65,7 +67,7 @@ The Syncfusion JavaScript UI controls library is the only suite that you will ev
             <a href="controls/grids/src">Source</a>
         </td>
         <td>
-            <a href="https://ej2.syncfusion.com/demos#/material/grid/grid-overview.html">Live demo</a>
+            <a href="https://ej2.syncfusion.com/demos#/tailwind3/grid/grid-overview.html">Live demo</a>
         </td>
         <td>
             <a href="https://ej2.syncfusion.com/documentation/grid/getting-started/">Documentation</a>
@@ -82,27 +84,10 @@ The Syncfusion JavaScript UI controls library is the only suite that you will ev
             <a href="controls/pivotview/src">Source</a>
         </td>
         <td>
-            <a href="https://ej2.syncfusion.com/demos#/material/pivot-view/default.html">Live demo</a>
+            <a href="https://ej2.syncfusion.com/demos#/tailwind3/pivot-view/default.html">Live demo</a>
         </td>
         <td>
             <a href="https://ej2.syncfusion.com/documentation/pivotview/getting-started/">Documentation</a>
-        </td>
-    </tr>
-    <tr>
-        <td>
-            <a href="https://www.syncfusion.com/javascript-ui-controls/js-spreadsheet?utm_medium=listing&utm_source=github"><b>Spreadsheet</b></a>
-        </td>
-        <td>
-            <a href="https://www.npmjs.com/package/@syncfusion/ej2-spreadsheet"><img src="https://ej2.syncfusion.com/github/images/npm-logo.png" alt="npm package @syncfusion/ej2-spreadsheet" title="@syncfusion/ej2-spreadsheet" style="height:20px;" /></a>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="https://ej2.syncfusion.com/badges/ej2-spreadsheet"><img src="https://ej2.syncfusion.com/badges/ej2-spreadsheet/coverage.svg" alt="code coverage of @syncfusion/ej2-spreadsheet" title="@syncfusion/ej2-spreadsheet" /></a>
-        </td>
-        <td>
-            <a href="controls/spreadsheet/src">Source</a>
-        </td>
-        <td>
-            <a href="https://ej2.syncfusion.com/demos/#/material/spreadsheet/default.html">Live demo</a>
-        </td>
-        <td>
-            <a href="https://ej2.syncfusion.com/documentation/spreadsheet/getting-started/">Documentation</a>
         </td>
     </tr>
     <tr>
@@ -116,12 +101,38 @@ The Syncfusion JavaScript UI controls library is the only suite that you will ev
             <a href="controls/treegrid/src">Source</a>
         </td>
         <td>
-            <a href="https://ej2.syncfusion.com/demos/#/material/tree-grid/default.html">Live demo</a>
+            <a href="https://ej2.syncfusion.com/demos/#/tailwind3/tree-grid/default.html">Live demo</a>
         </td>
         <td>
             <a href="https://ej2.syncfusion.com/documentation/treegrid/getting-started/">Documentation</a>
         </td>
     </tr>
+</table>
+
+### Smart Components
+<table>
+    <tr>
+       <td>
+           <a href="https://www.syncfusion.com/javascript-ui-controls/js-smart-paste-button?utm_medium=listing&utm_source=github"><b>Smart Paste Button</b></a>
+       </td>
+       <td>
+           <a href="https://ej2.syncfusion.com/demos/#/tailwind3/ai-smart-paste/default.html">Live demo</a>
+       </td>
+       <td>
+           <a href="https://ej2.syncfusion.com/documentation/smart-paste-button/getting-started">Documentation</a>
+       </td>
+   </tr>
+   <tr>
+       <td>
+           <a href="https://www.syncfusion.com/javascript-ui-controls/js-smart-textarea?utm_medium=listing&utm_source=github"><b>Smart Text Area</b></a>
+       </td>
+       <td>
+           <a href="https://ej2.syncfusion.com/demos/#/tailwind3/ai-smart-textarea/default.html">Live demo</a>
+       </td>
+       <td>
+           <a href="https://ej2.syncfusion.com/documentation/smart-textarea/getting-started">Documentation</a>
+       </td>
+   </tr>
 </table>
 
 ### Editors
@@ -138,7 +149,7 @@ The Syncfusion JavaScript UI controls library is the only suite that you will ev
             <a href="controls/inplaceeditor/src">Source</a>
         </td>
         <td>
-            <a href="https://ej2.syncfusion.com/demos/#/material/inplace-editor/default.html">Live demo</a>
+            <a href="https://ej2.syncfusion.com/demos/#/tailwind3/inplace-editor/default.html">Live demo</a>
         </td>
         <td>
             <a href="https://ej2.syncfusion.com/documentation/in-place-editor/getting-started/">Documentation</a>
@@ -155,29 +166,46 @@ The Syncfusion JavaScript UI controls library is the only suite that you will ev
             <a href="controls/richtexteditor/src">Source</a>
         </td>
         <td>
-            <a href="https://ej2.syncfusion.com/demos#/material/rich-text-editor/tools.html">Live demo</a>
+            <a href="https://ej2.syncfusion.com/demos#/tailwind3/rich-text-editor/tools.html">Live demo</a>
         </td>
         <td>
             <a href="https://ej2.syncfusion.com/documentation/rich-text-editor/getting-started/">Documentation</a>
         </td>
     </tr>
     <tr>
-        <td>
-            <a href="https://www.syncfusion.com/javascript-ui-controls/js-word-processor?utm_medium=listing&utm_source=github"><b>Word Processor</b></a>
-        </td>
-        <td>
-            <a href="https://www.npmjs.com/package/@syncfusion/ej2-documenteditor"><img src="https://ej2.syncfusion.com/github/images/npm-logo.png" alt="npm package @syncfusion/ej2-documenteditor" title="@syncfusion/ej2-documenteditor" style="height:20px;" /></a>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="https://ej2.syncfusion.com/badges/ej2-documenteditor"><img src="https://ej2.syncfusion.com/badges/ej2-documenteditor/coverage.svg" alt="code coverage of @syncfusion/ej2-documenteditor" title="@syncfusion/ej2-documenteditor" /></a>
-        </td>
-        <td>
-            <a href="controls/documenteditor/src">Source</a>
-        </td>
-        <td>
-            <a href="https://ej2.syncfusion.com/demos#/material/document-editor/default.html">Live demo</a>
-        </td>
-        <td>
-            <a href="https://ej2.syncfusion.com/documentation/document-editor/getting-started/">Documentation</a>
-        </td>
-    </tr>
+       <td>
+           <a href="https://www.syncfusion.com/javascript-ui-controls/js-block-editor?utm_medium=listing&utm_source=github"><b>Block Editor</b></a>
+       </td>
+       <td>
+           <a href="https://www.npmjs.com/package/@syncfusion/ej2-blockeditor"><img src="https://ej2.syncfusion.com/github/images/npm-logo.png" alt="npm package @syncfusion/ej2-blockeditor" title="@syncfusion/ej2-blockeditor" style="height:20px;" /></a>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="https://ej2.syncfusion.com/badges/ej2-blockeditor"><img src="https://ej2.syncfusion.com/badges/ej2-blockeditor/coverage.svg" alt="code coverage of @syncfusion/ej2-blockeditor" title="@syncfusion/ej2-blockeditor" /></a>
+       </td>
+       <td>
+           <a href="controls/blockeditor/src">Source</a>
+       </td>
+       <td>
+           <a href="https://ej2.syncfusion.com/demos/#/tailwind3/block-editor/overview.html">Live demo</a>
+       </td>
+       <td>
+           <a href="https://ej2.syncfusion.com/documentation/block-editor/getting-started/">Documentation</a>
+       </td>
+   </tr>
+   <tr>
+       <td>
+           <a href="https://www.syncfusion.com/javascript-ui-controls/js-image-editor?utm_medium=listing&utm_source=github"><b>Image Editor</b></a>
+       </td>
+       <td>
+           <a href="https://www.npmjs.com/package/@syncfusion/ej2-image-editor"><img src="https://ej2.syncfusion.com/github/images/npm-logo.png" alt="npm package @syncfusion/ej2-image-editor" title="@syncfusion/ej2-image-editor" style="height:20px;" /></a>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="https://ej2.syncfusion.com/badges/ej2-image-editor"><img src="https://ej2.syncfusion.com/badges/ej2-image-editor/coverage.svg" alt="code coverage of @syncfusion/ej2-image-editor" title="@syncfusion/ej2-image-editor" /></a>
+       </td>
+       <td>
+           <a href="controls/imageeditor/src">Source</a>
+       </td>
+       <td>
+           <a href="https://ej2.syncfusion.com/demos/#/tailwind3/image-editor/default.html">Live demo</a>
+       </td>
+       <td>
+           <a href="https://ej2.syncfusion.com/documentation/image-editor/getting-started/">Documentation</a>
+       </td>
+   </tr>
 </table>
 
 ### Dropdowns
@@ -194,7 +222,7 @@ The Syncfusion JavaScript UI controls library is the only suite that you will ev
             <a href="controls/dropdowns/src/auto-complete">Source</a>
         </td>
         <td>
-            <a href="https://ej2.syncfusion.com/demos#/material/auto-complete/default.html">Live demo</a>
+            <a href="https://ej2.syncfusion.com/demos#/tailwind3/auto-complete/default.html">Live demo</a>
         </td>
         <td>
             <a href="https://ej2.syncfusion.com/documentation/auto-complete/getting-started/">Documentation</a>
@@ -208,7 +236,7 @@ The Syncfusion JavaScript UI controls library is the only suite that you will ev
             <a href="controls/dropdowns/src/combo-box">Source</a>
         </td>
         <td>
-            <a href="https://ej2.syncfusion.com/demos#/material/combo-box/default.html">Live demo</a>
+            <a href="https://ej2.syncfusion.com/demos#/tailwind3/combo-box/default.html">Live demo</a>
         </td>
         <td>
             <a href="https://ej2.syncfusion.com/documentation/combo-box/getting-started/">Documentation</a>
@@ -222,7 +250,7 @@ The Syncfusion JavaScript UI controls library is the only suite that you will ev
             <a href="controls/dropdowns/src/drop-down-list">Source</a>
         </td>
         <td>
-            <a href="https://ej2.syncfusion.com/demos#/material/drop-down-list/default.html">Live demo</a>
+            <a href="https://ej2.syncfusion.com/demos#/tailwind3/drop-down-list/default.html">Live demo</a>
         </td>
         <td>
             <a href="https://ej2.syncfusion.com/documentation/drop-down-list/getting-started/">Documentation</a>
@@ -236,7 +264,7 @@ The Syncfusion JavaScript UI controls library is the only suite that you will ev
             <a href="controls/dropdowns/src/drop-down-tree">Source</a>
         </td>
         <td>
-            <a href="https://ej2.syncfusion.com/demos/#/material/drop-down-tree/default.html">Live demo</a>
+            <a href="https://ej2.syncfusion.com/demos/#/tailwind3/drop-down-tree/default.html">Live demo</a>
         </td>
         <td>
             <a href="https://ej2.syncfusion.com/documentation/drop-down-tree/getting-started/">Documentation</a>
@@ -250,7 +278,7 @@ The Syncfusion JavaScript UI controls library is the only suite that you will ev
             <a href="controls/dropdowns/src/list-box">Source</a>
         </td>
         <td>
-            <a href="https://ej2.syncfusion.com/demos/#/material/list-box/default.html">Live demo</a>
+            <a href="https://ej2.syncfusion.com/demos/#/tailwind3/list-box/default.html">Live demo</a>
         </td>
         <td>
             <a href="https://ej2.syncfusion.com/documentation/list-box/getting-started/">Documentation</a>
@@ -264,12 +292,40 @@ The Syncfusion JavaScript UI controls library is the only suite that you will ev
             <a href="controls/dropdowns/src/multi-select">Source</a>
         </td>
         <td>
-            <a href="https://ej2.syncfusion.com/demos#/material/multi-select/default.html">Live demo</a>
+            <a href="https://ej2.syncfusion.com/demos#/tailwind3/multi-select/default.html">Live demo</a>
         </td>
         <td>
             <a href="https://ej2.syncfusion.com/documentation/multi-select/getting-started/">Documentation</a>
         </td>
     </tr>
+    <tr>
+       <td>
+           <a href="https://www.syncfusion.com/javascript-ui-controls/js-mention?utm_medium=listing&utm_source=github"><b>Mention</b></a>
+       </td>
+       <td>
+           <a href="controls/dropdowns/src/mention">Source</a>
+       </td>
+       <td>
+           <a href="https://ej2.syncfusion.com/demos/#/tailwind3/mention/default.html">Live demo</a>
+       </td>
+       <td>
+           <a href="https://ej2.syncfusion.com/documentation/mention/getting-started/">Documentation</a>
+       </td>
+   </tr>
+   <tr>
+       <td>
+           <a href="https://www.syncfusion.com/javascript-ui-controls/js-multicolumn-combobox?utm_medium=listing&utm_source=github"><b>MultiColumn ComboBox</b></a>
+       </td>
+       <td>
+           <a href="controls/multicolumncombobox/src">Source</a>
+       </td>
+       <td>
+           <a href="https://ej2.syncfusion.com/demos/#/tailwind3/multicolumn-combobox/default.html">Live demo</a>
+       </td>
+       <td>
+           <a href="https://ej2.syncfusion.com/documentation/multicolumn-combobox/getting-started/">Documentation</a>
+       </td>
+   </tr>
 </table>
 
 ### Inputs
@@ -286,7 +342,7 @@ The Syncfusion JavaScript UI controls library is the only suite that you will ev
             <a href="controls/buttons/src/check-box">Source</a>
         </td>
         <td>
-            <a href="https://ej2.syncfusion.com/demos/#/material/button/checkbox.html">Live demo</a>
+            <a href="https://ej2.syncfusion.com/demos/#/tailwind3/button/checkbox.html">Live demo</a>
         </td>
         <td>
             <a href="https://ej2.syncfusion.com/documentation/check-box/getting-started/">Documentation</a>
@@ -300,7 +356,7 @@ The Syncfusion JavaScript UI controls library is the only suite that you will ev
             <a href="controls/buttons/src/radio-button">Source</a>
         </td>
         <td>
-            <a href="https://ej2.syncfusion.com/demos#/material/button/radio-button.html">Live demo</a>
+            <a href="https://ej2.syncfusion.com/demos#/tailwind3/button/radio-button.html">Live demo</a>
         </td>
         <td>
             <a href="https://ej2.syncfusion.com/documentation/radio-button/getting-started/">Documentation</a>
@@ -314,7 +370,7 @@ The Syncfusion JavaScript UI controls library is the only suite that you will ev
             <a href="controls/buttons/src/switch">Source</a>
         </td>
         <td>
-            <a href="https://ej2.syncfusion.com/demos#/material/button/switch.html">Live demo</a>
+            <a href="https://ej2.syncfusion.com/demos#/tailwind3/button/switch.html">Live demo</a>
         </td>
         <td>
             <a href="https://ej2.syncfusion.com/documentation/switch/getting-started/">Documentation</a>
@@ -331,7 +387,7 @@ The Syncfusion JavaScript UI controls library is the only suite that you will ev
             <a href="controls/inputs/src/color-picker">Source</a>
         </td>
         <td>
-            <a href="https://ej2.syncfusion.com/demos#/material/color-picker/default.html">Live demo</a>
+            <a href="https://ej2.syncfusion.com/demos#/tailwind3/color-picker/default.html">Live demo</a>
         </td>
         <td>
             <a href="https://ej2.syncfusion.com/documentation/color-picker/getting-started/">Documentation</a>
@@ -345,7 +401,7 @@ The Syncfusion JavaScript UI controls library is the only suite that you will ev
             <a href="controls/inputs/src/uploader">Source</a>
         </td>
         <td>
-            <a href="https://ej2.syncfusion.com/demos#/material/uploader/default.html">Live demo</a>
+            <a href="https://ej2.syncfusion.com/demos#/tailwind3/uploader/default.html">Live demo</a>
         </td>
         <td>
             <a href="https://ej2.syncfusion.com/documentation/uploader/getting-started/">Documentation</a>
@@ -359,7 +415,7 @@ The Syncfusion JavaScript UI controls library is the only suite that you will ev
             <a href="controls/inputs/src/form-validator">Source</a>
         </td>
         <td>
-            <a href="https://ej2.syncfusion.com/demos#/material/form-validator/default.html">Live demo</a>
+            <a href="https://ej2.syncfusion.com/demos#/tailwind3/form-validator/default.html">Live demo</a>
         </td>
         <td>
             <a href="https://ej2.syncfusion.com/documentation/form-validator/validation-rules/">Documentation</a>
@@ -373,7 +429,7 @@ The Syncfusion JavaScript UI controls library is the only suite that you will ev
             <a href="controls/inputs/src/maskedtextbox">Source</a>
         </td>
         <td>
-            <a href="https://ej2.syncfusion.com/demos#/material/maskedtextbox/default.html">Live demo</a>
+            <a href="https://ej2.syncfusion.com/demos#/tailwind3/maskedtextbox/default.html">Live demo</a>
         </td>
         <td>
             <a href="https://ej2.syncfusion.com/documentation/maskedtextbox/getting-started/">Documentation</a>
@@ -387,7 +443,7 @@ The Syncfusion JavaScript UI controls library is the only suite that you will ev
             <a href="controls/inputs/src/numerictextbox">Source</a>
         </td>
         <td>
-            <a href="https://ej2.syncfusion.com/demos#/material/numerictextbox/default.html">Live demo</a>
+            <a href="https://ej2.syncfusion.com/demos#/tailwind3/numerictextbox/default.html">Live demo</a>
         </td>
         <td>
             <a href="https://ej2.syncfusion.com/documentation/numerictextbox/getting-started/">Documentation</a>
@@ -401,7 +457,7 @@ The Syncfusion JavaScript UI controls library is the only suite that you will ev
             <a href="controls/inputs/src/slider">Source</a>
         </td>
         <td>
-            <a href="https://ej2.syncfusion.com/demos#/material/slider/default.html">Live demo</a>
+            <a href="https://ej2.syncfusion.com/demos#/tailwind3/slider/default.html">Live demo</a>
         </td>
         <td>
             <a href="https://ej2.syncfusion.com/documentation/range-slider/getting-started/">Documentation</a>
@@ -415,7 +471,7 @@ The Syncfusion JavaScript UI controls library is the only suite that you will ev
             <a href="controls/inputs/src/textbox">Source</a>
         </td>
         <td>
-            <a href="https://ej2.syncfusion.com/demos#/material/textbox/default.html">Live demo</a>
+            <a href="https://ej2.syncfusion.com/demos#/tailwind3/textbox/default.html">Live demo</a>
         </td>
         <td>
             <a href="https://ej2.syncfusion.com/documentation/textbox/getting-started/">Documentation</a>
@@ -423,18 +479,109 @@ The Syncfusion JavaScript UI controls library is the only suite that you will ev
     </tr>
     <tr>
         <td>
-            <a href="https://www.syncfusion.com/javascript-ui-controls/Signature?utm_medium=listing&utm_source=github"><b>Signature</b></a>
+            <a href="https://www.syncfusion.com/javascript-ui-controls/js-signature?utm_medium=listing&utm_source=github"><b>Signature</b></a>
         </td>
         <td>
             <a href="controls/inputs/src/signature">Source</a>
         </td>
         <td>
-            <a href="https://ej2.syncfusion.com/javascript/demos/#/material/signature/default.html?utm_medium=listing&utm_source=github">Live demo</a>
+            <a href="https://ej2.syncfusion.com/javascript/demos/#/tailwind3/signature/default.html?utm_medium=listing&utm_source=github">Live demo</a>
         </td>
         <td>
             <a href="https://ej2.syncfusion.com/documentation/signature/getting-started/?utm_medium=listing&utm_source=github">Documentation</a>
         </td>
     </tr>
+    <tr>
+       <td>
+           <a href="https://www.syncfusion.com/javascript-ui-controls/js-textarea?utm_medium=listing&utm_source=github"><b>TextArea</b></a>
+       </td>
+       <td>
+           <a href="controls/inputs/src/textarea">Source</a>
+       </td>
+       <td>
+           <a href="https://ej2.syncfusion.com/demos/#/tailwind3/textarea/default.html">Live demo</a>
+       </td>
+       <td>
+           <a href="https://ej2.syncfusion.com/documentation/textarea/getting-started/">Documentation</a>
+       </td>
+   </tr>
+   <tr>
+       <td>
+           <a href="https://www.syncfusion.com/javascript-ui-controls/js-rating?utm_medium=listing&utm_source=github"><b>Rating</b></a>
+       </td>
+       <td>
+           <a href="controls/inputs/src/rating">Source</a>
+       </td>
+       <td>
+           <a href="https://ej2.syncfusion.com/demos/#/tailwind3/rating/default.html.html">Live demo</a>
+       </td>
+       <td>
+           <a href="https://ej2.syncfusion.com/documentation/rating/getting-started/">Documentation</a>
+       </td>
+   </tr>
+   <tr>
+       <td>
+           <a href="https://www.syncfusion.com/javascript-ui-controls/js-otp-input?utm_medium=listing&utm_source=github"><b>OTP Input</b></a>
+       </td>
+       <td>
+           <a href="controls/inputs/src/otp-input">Source</a>
+       </td>
+       <td>
+           <a href="https://ej2.syncfusion.com/demos/#/tailwind3/otp-input/default.html">Live demo</a>
+       </td>
+       <td>
+           <a href="https://ej2.syncfusion.com/documentation/otp-input/getting-started/">Documentation</a>
+       </td>
+   </tr>
+   <tr>
+       <td>
+           <a href="https://www.syncfusion.com/javascript-ui-controls/js-speech-to-text?utm_medium=listing&utm_source=github"><b>Speech to Text</b></a>
+       </td>
+       <td>
+           <a href="controls/inputs/src/speech-to-text">Source</a>
+       </td>
+       <td>
+           <a href="https://ej2.syncfusion.com/demos/#/tailwind3/speech-to-text/default.html">Live demo</a>
+       </td>
+       <td>
+           <a href="https://ej2.syncfusion.com/documentation/speech-to-text/getting-started/">Documentation</a>
+       </td>
+   </tr>
+</table>
+
+### Interactive Chat
+<table>
+    <tr>
+       <td>
+           <a href="https://www.syncfusion.com/javascript-ui-controls/ai-assistview?utm_medium=listing&utm_source=github"><b>AI Assist View</b></a>
+       </td>
+       <td>
+           <a href="https://www.npmjs.com/package/@syncfusion/ej2-interactive-chat"><img src="https://ej2.syncfusion.com/github/images/npm-logo.png" alt="npm package @syncfusion/ej2-interactive-chat" title="@syncfusion/ej2-interactive-chat" style="height:20px;" /></a>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="https://ej2.syncfusion.com/badges/ej2-interactive-chat"><img src="https://ej2.syncfusion.com/badges/ej2-interactive-chat/coverage.svg" alt="code coverage of @syncfusion/ej2-interactive-chat" title="@syncfusion/ej2-interactive-chat" /></a>
+       </td>
+       <td>
+           <a href="controls/interactivechat/src/ai-assistview">Source</a>
+       </td>
+       <td>
+           <a href="https://ej2.syncfusion.com/demos/#/tailwind3/ai-assistview/default.html">Live demo</a>
+       </td>
+       <td>
+           <a href="https://ej2.syncfusion.com/documentation/ai-assistview/getting-started/">Documentation</a>
+       </td>
+   </tr>
+   <tr>
+       <td>
+           <a href="https://www.syncfusion.com/javascript-ui-controls/js-chat-ui?utm_medium=listing&utm_source=github"><b>Chat UI</b></a>
+       </td>
+       <td>
+           <a href="controls/interactivechat/src/chat-ui">Source</a>
+       </td>
+       <td>
+           <a href="https://ej2.syncfusion.com/demos/#/tailwind3/chat-ui/default.html">Live demo</a>
+       </td>
+       <td>
+           <a href="https://ej2.syncfusion.com/documentation/chat-ui/getting-started/">Documentation</a>
+       </td>
+   </tr>
 </table>
 
 ### Data Visualization
@@ -451,7 +598,7 @@ The Syncfusion JavaScript UI controls library is the only suite that you will ev
             <a href="controls/barcodegenerator/src">Source</a>
         </td>
         <td>
-            <a href="https://ej2.syncfusion.com/javascript/demos/#/material/barcode/ean8.html">Live demo</a>
+            <a href="https://ej2.syncfusion.com/javascript/demos/#/tailwind3/barcode/ean8.html">Live demo</a>
         </td>
         <td>
             <a href="https://ej2.syncfusion.com/documentation/barcode/getting-started/">Documentation</a>
@@ -468,7 +615,7 @@ The Syncfusion JavaScript UI controls library is the only suite that you will ev
             <a href="controls/circulargauge/src">Source</a>
         </td>
         <td>
-            <a href="https://ej2.syncfusion.com/demos#/material/circular-gauge/default.html">Live demo</a>
+            <a href="https://ej2.syncfusion.com/demos#/tailwind3/circular-gauge/default.html">Live demo</a>
         </td>
         <td>
             <a href="https://ej2.syncfusion.com/documentation/circular-gauge/getting-started/">Documentation</a>
@@ -485,7 +632,7 @@ The Syncfusion JavaScript UI controls library is the only suite that you will ev
             <a href="controls/diagrams/src">Source</a>
         </td>
         <td>
-            <a href="https://ej2.syncfusion.com/demos#/material/diagram/default-functionalities.html">Live demo</a>
+            <a href="https://ej2.syncfusion.com/demos#/tailwind3/diagram/default-functionalities.html">Live demo</a>
         </td>
         <td>
             <a href="https://ej2.syncfusion.com/documentation/diagram/getting-started/">Documentation</a>
@@ -502,7 +649,7 @@ The Syncfusion JavaScript UI controls library is the only suite that you will ev
             <a href="controls/heatmap/src">Source</a>
         </td>
         <td>
-            <a href="https://ej2.syncfusion.com/demos#/material/heatmap/default.html">Live demo</a>
+            <a href="https://ej2.syncfusion.com/demos#/tailwind3/heatmap/default.html">Live demo</a>
         </td>
         <td>
             <a href="https://ej2.syncfusion.com/documentation/heatmap-chart/getting-started/">Documentation</a>
@@ -519,7 +666,7 @@ The Syncfusion JavaScript UI controls library is the only suite that you will ev
             <a href="controls/kanban/src">Source</a>
         </td>
         <td>
-            <a href="https://ej2.syncfusion.com/demos/#/material/kanban/overview.html">Live demo</a>
+            <a href="https://ej2.syncfusion.com/demos/#/tailwind3/kanban/overview.html">Live demo</a>
         </td>
         <td>
             <a href="https://ej2.syncfusion.com/documentation/kanban/getting-started/">Documentation</a>
@@ -536,7 +683,7 @@ The Syncfusion JavaScript UI controls library is the only suite that you will ev
             <a href="controls/lineargauge/src">Source</a>
         </td>
         <td>
-            <a href="https://ej2.syncfusion.com/demos#/material/linear-gauge/default.html">Live demo</a>
+            <a href="https://ej2.syncfusion.com/demos#/tailwind3/linear-gauge/default.html">Live demo</a>
         </td>
         <td>
             <a href="https://ej2.syncfusion.com/documentation/linear-gauge/getting-started/">Documentation</a>
@@ -553,7 +700,7 @@ The Syncfusion JavaScript UI controls library is the only suite that you will ev
             <a href="controls/maps/src">Source</a>
         </td>
         <td>
-            <a href="https://ej2.syncfusion.com/demos#/material/maps/default.html">Live demo</a>
+            <a href="https://ej2.syncfusion.com/demos#/tailwind3/maps/default.html">Live demo</a>
         </td>
         <td>
             <a href="https://ej2.syncfusion.com/documentation/maps/getting-started/">Documentation</a>
@@ -570,7 +717,7 @@ The Syncfusion JavaScript UI controls library is the only suite that you will ev
             <a href="controls/treemap/src">Source</a>
         </td>
         <td>
-            <a href="https://ej2.syncfusion.com/demos#/material/treemap/default.html">Live demo</a>
+            <a href="https://ej2.syncfusion.com/demos#/tailwind3/treemap/default.html">Live demo</a>
         </td>
         <td>
             <a href="https://ej2.syncfusion.com/documentation/treemap/getting-started/">Documentation</a>
@@ -587,7 +734,7 @@ The Syncfusion JavaScript UI controls library is the only suite that you will ev
             <a href="controls/charts/src/bullet-chart">Source</a>
         </td>
         <td>
-            <a href="https://ej2.syncfusion.com/demos/#/material/bullet-chart/default.html">Live demo</a>
+            <a href="https://ej2.syncfusion.com/demos/#/tailwind3/bullet-chart/default.html">Live demo</a>
         </td>
         <td>
             <a href="https://ej2.syncfusion.com/documentation/bullet-chart/getting-started/">Documentation</a>
@@ -601,12 +748,40 @@ The Syncfusion JavaScript UI controls library is the only suite that you will ev
             <a href="controls/charts/src/chart">Source</a>
         </td>
         <td>
-            <a href="https://ej2.syncfusion.com/demos#/material/chart/line.html">Live demo</a>
+            <a href="https://ej2.syncfusion.com/demos#/tailwind3/chart/line.html">Live demo</a>
         </td>
         <td>
             <a href="https://ej2.syncfusion.com/documentation/chart/getting-started/">Documentation</a>
         </td>
     </tr>
+    <tr>
+       <td>
+           <a href="https://www.syncfusion.com/javascript-ui-controls/js-3d-charts?utm_medium=listing&utm_source=github"><b>3D Chart</b></a>
+       </td>
+       <td>
+           <a href="controls/charts/src/chart3d">Source</a>
+       </td>
+       <td>
+           <a href="https://ej2.syncfusion.com/demos/#/tailwind3/three-dimension-chart/column.html">Live demo</a>
+       </td>
+       <td>
+           <a href="https://ej2.syncfusion.com/documentation/3d-chart/getting-started/">Documentation</a>
+       </td>
+   </tr>
+   <tr>
+       <td>
+           <a href="https://www.syncfusion.com/javascript-ui-controls/js-3d-circular-charts?utm_medium=listing&utm_source=github"><b>3D Cirular Chart</b></a>
+       </td>
+       <td>
+           <a href="controls/charts/src/circularchart3d">Source</a>
+       </td>
+       <td>
+           <a href="https://ej2.syncfusion.com/demos/#/tailwind3/circular-3d-chart/pie.html">Live demo</a>
+       </td>
+       <td>
+           <a href="https://ej2.syncfusion.com/documentation/circular-chart-3d/getting-started/">Documentation</a>
+       </td>
+   </tr>
     <tr>
         <td>
             <a href="https://www.syncfusion.com/javascript-ui-controls/js-range-selector?utm_medium=listing&utm_source=github"><b>Range Selector</b></a>
@@ -615,7 +790,7 @@ The Syncfusion JavaScript UI controls library is the only suite that you will ev
             <a href="controls/charts/src/range-navigator">Source</a>
         </td>
         <td>
-            <a href="https://ej2.syncfusion.com/demos#/material/range-navigator/default.html">Live demo</a>
+            <a href="https://ej2.syncfusion.com/demos#/tailwind3/range-navigator/default.html">Live demo</a>
         </td>
         <td>
             <a href="https://ej2.syncfusion.com/documentation/range-navigator/getting-started/">Documentation</a>
@@ -629,7 +804,7 @@ The Syncfusion JavaScript UI controls library is the only suite that you will ev
             <a href="controls/charts/src/smithchart">Source</a>
         </td>
         <td>
-            <a href="https://ej2.syncfusion.com/demos#/material/smith-chart/default.html">Live demo</a>
+            <a href="https://ej2.syncfusion.com/demos#/tailwind3/smith-chart/default.html">Live demo</a>
         </td>
         <td>
             <a href="https://ej2.syncfusion.com/documentation/smithchart/getting-started/">Documentation</a>
@@ -643,7 +818,7 @@ The Syncfusion JavaScript UI controls library is the only suite that you will ev
             <a href="controls/charts/src/sparkline">Source</a>
         </td>
         <td>
-            <a href="https://ej2.syncfusion.com/demos#/material/sparkline/default.html">Live demo</a>
+            <a href="https://ej2.syncfusion.com/demos#/tailwind3/sparkline/default.html">Live demo</a>
         </td>
         <td>
             <a href="https://ej2.syncfusion.com/documentation/sparkline/getting-started/">Documentation</a>
@@ -657,7 +832,7 @@ The Syncfusion JavaScript UI controls library is the only suite that you will ev
             <a href="controls/charts/src/stock-chart">Source</a>
         </td>
         <td>
-            <a href="https://ej2.syncfusion.com/demos/#/material/stock-chart/default.html">Live demo</a>
+            <a href="https://ej2.syncfusion.com/demos/#/tailwind3/stock-chart/default.html">Live demo</a>
         </td>
         <td>
             <a href="https://ej2.syncfusion.com/documentation/stock-chart/getting-started/">Documentation</a>
@@ -679,7 +854,7 @@ The Syncfusion JavaScript UI controls library is the only suite that you will ev
             <a href="controls/calendars/src/calendar">Source</a>
         </td>
         <td>
-            <a href="https://ej2.syncfusion.com/demos#/material/calendar/default.html">Live demo</a>
+            <a href="https://ej2.syncfusion.com/demos#/tailwind3/calendar/default.html">Live demo</a>
         </td>
         <td>
             <a href="https://ej2.syncfusion.com/documentation/calendar/getting-started/">Documentation</a>
@@ -693,7 +868,7 @@ The Syncfusion JavaScript UI controls library is the only suite that you will ev
             <a href="controls/calendars/src/datepicker">Source</a>
         </td>
         <td>
-            <a href="https://ej2.syncfusion.com/demos#/material/datepicker/default.html">Live demo</a>
+            <a href="https://ej2.syncfusion.com/demos#/tailwind3/datepicker/default.html">Live demo</a>
         </td>
         <td>
             <a href="https://ej2.syncfusion.com/documentation/datepicker/getting-started/">Documentation</a>
@@ -707,7 +882,7 @@ The Syncfusion JavaScript UI controls library is the only suite that you will ev
             <a href="controls/calendars/src/daterangepicker">Source</a>
         </td>
         <td>
-            <a href="https://ej2.syncfusion.com/demos#/material/daterangepicker/default.html">Live demo</a>
+            <a href="https://ej2.syncfusion.com/demos#/tailwind3/daterangepicker/default.html">Live demo</a>
         </td>
         <td>
             <a href="https://ej2.syncfusion.com/documentation/daterangepicker/getting-started/">Documentation</a>
@@ -721,7 +896,7 @@ The Syncfusion JavaScript UI controls library is the only suite that you will ev
             <a href="controls/calendars/src/datetimepicker">Source</a>
         </td>
         <td>
-            <a href="https://ej2.syncfusion.com/demos#/material/datetimepicker/default.html">Live demo</a>
+            <a href="https://ej2.syncfusion.com/demos#/tailwind3/datetimepicker/default.html">Live demo</a>
         </td>
         <td>
             <a href="https://ej2.syncfusion.com/documentation/datetimepicker/getting-started/">Documentation</a>
@@ -735,7 +910,7 @@ The Syncfusion JavaScript UI controls library is the only suite that you will ev
             <a href="controls/calendars/src/timepicker">Source</a>
         </td>
         <td>
-            <a href="https://ej2.syncfusion.com/demos#/material/timepicker/default.html">Live demo</a>
+            <a href="https://ej2.syncfusion.com/demos#/tailwind3/timepicker/default.html">Live demo</a>
         </td>
         <td>
             <a href="https://ej2.syncfusion.com/documentation/timepicker/getting-started/">Documentation</a>
@@ -752,7 +927,7 @@ The Syncfusion JavaScript UI controls library is the only suite that you will ev
             <a href="controls/gantt/src">Source</a>
         </td>
         <td>
-            <a href="https://ej2.syncfusion.com/demos/#/material/gantt/default.html">Live demo</a>
+            <a href="https://ej2.syncfusion.com/demos/#/tailwind3/gantt/default.html">Live demo</a>
         </td>
         <td>
             <a href="https://ej2.syncfusion.com/documentation/gantt/getting-started/">Documentation</a>
@@ -769,7 +944,7 @@ The Syncfusion JavaScript UI controls library is the only suite that you will ev
             <a href="controls/schedule/src">Source</a>
         </td>
         <td>
-            <a href="https://ej2.syncfusion.com/demos#/material/schedule/default.html">Live demo</a>
+            <a href="https://ej2.syncfusion.com/demos#/tailwind3/schedule/default.html">Live demo</a>
         </td>
         <td>
             <a href="https://ej2.syncfusion.com/documentation/schedule/getting-started/">Documentation</a>
@@ -791,12 +966,26 @@ The Syncfusion JavaScript UI controls library is the only suite that you will ev
             <a href="controls/navigations/src/accordion">Source</a>
         </td>
         <td>
-            <a href="https://ej2.syncfusion.com/demos#/material/accordion/default.html">Live demo</a>
+            <a href="https://ej2.syncfusion.com/demos#/tailwind3/accordion/default.html">Live demo</a>
         </td>
         <td>
             <a href="https://ej2.syncfusion.com/documentation/accordion/getting-started/">Documentation</a>
         </td>
     </tr>
+    <tr>
+       <td>
+           <a href="https://www.syncfusion.com/javascript-ui-controls/js-appbar?utm_medium=listing&utm_source=github"><b>Appbar</b></a>
+       </td>
+       <td>
+           <a href="controls/navigations/src/appbar">Source</a>
+       </td>
+       <td>
+           <a href="https://ej2.syncfusion.com/demos/#/tailwind3/appbar/default.html">Live demo</a>
+       </td>
+       <td>
+           <a href="https://ej2.syncfusion.com/documentation/appbar/getting-started/">Documentation</a>
+       </td>
+   </tr>
      <tr>
         <td>
             <a href="https://www.syncfusion.com/javascript-ui-controls/breadcrumb?utm_medium=listing&utm_source=github"><b>Breadcrumb</b></a>
@@ -805,7 +994,7 @@ The Syncfusion JavaScript UI controls library is the only suite that you will ev
             <a href="controls/navigations/src/breadcrumb">Source</a>
         </td>
         <td>
-            <a href="https://ej2.syncfusion.com/demos#/material/breadcrumb/default.html">Live demo</a>
+            <a href="https://ej2.syncfusion.com/demos#/tailwind3/breadcrumb/default.html">Live demo</a>
         </td>
         <td>
             <a href="https://ej2.syncfusion.com/documentation/breadcrumb/getting-started/">Documentation</a>
@@ -819,7 +1008,7 @@ The Syncfusion JavaScript UI controls library is the only suite that you will ev
             <a href="controls/navigations/src/carousel">Source</a>
         </td>
         <td>
-            <a href="https://ej2.syncfusion.com/demos#/material/carousel/default.html">Live demo</a>
+            <a href="https://ej2.syncfusion.com/demos#/tailwind3/carousel/default.html">Live demo</a>
         </td>
         <td>
             <a href="https://ej2.syncfusion.com/documentation/carousel/getting-started/">Documentation</a>
@@ -833,7 +1022,7 @@ The Syncfusion JavaScript UI controls library is the only suite that you will ev
             <a href="controls/navigations/src/context-menu">Source</a>
         </td>
         <td>
-            <a href="https://ej2.syncfusion.com/demos#/material/context-menu/default.html">Live demo</a>
+            <a href="https://ej2.syncfusion.com/demos#/tailwind3/context-menu/default.html">Live demo</a>
         </td>
         <td>
             <a href="https://ej2.syncfusion.com/documentation/context-menu/getting-started/">Documentation</a>
@@ -847,7 +1036,7 @@ The Syncfusion JavaScript UI controls library is the only suite that you will ev
             <a href="controls/navigations/src/menu">Source</a>
         </td>
         <td>
-            <a href="https://ej2.syncfusion.com/demos#/material/menu/default.html">Live demo</a>
+            <a href="https://ej2.syncfusion.com/demos#/tailwind3/menu/default.html">Live demo</a>
         </td>
         <td>
             <a href="https://ej2.syncfusion.com/documentation/menu/getting-started/">Documentation</a>
@@ -861,12 +1050,26 @@ The Syncfusion JavaScript UI controls library is the only suite that you will ev
             <a href="controls/navigations/src/sidebar">Source</a>
         </td>
         <td>
-            <a href="https://ej2.syncfusion.com/demos#/material/sidebar/default.html">Live demo</a>
+            <a href="https://ej2.syncfusion.com/demos#/tailwind3/sidebar/default.html">Live demo</a>
         </td>
         <td>
             <a href="https://ej2.syncfusion.com/documentation/sidebar/getting-started/">Documentation</a>
         </td>
     </tr>
+    <tr>
+       <td>
+           <a href="https://www.syncfusion.com/javascript-ui-controls/js-stepper?utm_medium=listing&utm_source=github"><b>Stepper</b></a>
+       </td>
+       <td>
+           <a href="controls/navigations/src/stepper">Source</a>
+       </td>
+       <td>
+           <a href="https://ej2.syncfusion.com/demos/#/tailwind3/stepper/default.html">Live demo</a>
+       </td>
+       <td>
+           <a href="https://ej2.syncfusion.com/documentation/stepper/getting-started/">Documentation</a>
+       </td>
+   </tr>
     <tr>
         <td>
             <a href="https://www.syncfusion.com/javascript-ui-controls/js-tabs?utm_medium=listing&utm_source=github"><b>Tabs</b></a>
@@ -875,7 +1078,7 @@ The Syncfusion JavaScript UI controls library is the only suite that you will ev
             <a href="controls/navigations/src/tab">Source</a>
         </td>
         <td>
-            <a href="https://ej2.syncfusion.com/demos#/material/tab/default.html">Live demo</a>
+            <a href="https://ej2.syncfusion.com/demos#/tailwind3/tab/default.html">Live demo</a>
         </td>
         <td>
             <a href="https://ej2.syncfusion.com/documentation/tab/getting-started/">Documentation</a>
@@ -889,7 +1092,7 @@ The Syncfusion JavaScript UI controls library is the only suite that you will ev
             <a href="controls/navigations/src/toolbar">Source</a>
         </td>
         <td>
-            <a href="https://ej2.syncfusion.com/demos#/material/toolbar/default.html">Live demo</a>
+            <a href="https://ej2.syncfusion.com/demos#/tailwind3/toolbar/default.html">Live demo</a>
         </td>
         <td>
             <a href="https://ej2.syncfusion.com/documentation/toolbar/getting-started/">Documentation</a>
@@ -903,7 +1106,7 @@ The Syncfusion JavaScript UI controls library is the only suite that you will ev
             <a href="controls/navigations/src/treeview">Source</a>
         </td>
         <td>
-            <a href="https://ej2.syncfusion.com/demos#/material/treeview/default.html">Live demo</a>
+            <a href="https://ej2.syncfusion.com/demos#/tailwind3/treeview/default.html">Live demo</a>
         </td>
         <td>
             <a href="https://ej2.syncfusion.com/documentation/treeview/getting-started/">Documentation</a>
@@ -920,12 +1123,29 @@ The Syncfusion JavaScript UI controls library is the only suite that you will ev
             <a href="controls/filemanager/src">Source</a>
         </td>
         <td>
-            <a href="https://ej2.syncfusion.com/demos/#/material/file-manager/overview.html">Live demo</a>
+            <a href="https://ej2.syncfusion.com/demos/#/tailwind3/file-manager/overview.html">Live demo</a>
         </td>
         <td>
             <a href="https://ej2.syncfusion.com/documentation/file-manager/getting-started/">Documentation</a>
         </td>
     </tr>
+    <tr>
+       <td>
+           <a href="https://www.syncfusion.com/javascript-ui-controls/js-ribbon?utm_medium=listing&utm_source=github"><b>Ribbon</b></a>
+       </td>
+       <td>
+           <a href="https://www.npmjs.com/package/@syncfusion/ej2-ribbon"><img src="https://ej2.syncfusion.com/github/images/npm-logo.png" alt="npm package @syncfusion/ej2-ribbon" title="@syncfusion/ej2-ribbon" style="height:20px;" /></a>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="https://ej2.syncfusion.com/badges/ej2-ribbon"><img src="https://ej2.syncfusion.com/badges/ej2-ribbon/coverage.svg" alt="code coverage of @syncfusion/ej2-ribbon" title="@syncfusion/ej2-ribbon" /></a>
+       </td>
+       <td>
+           <a href="controls/ribbon/src">Source</a>
+       </td>
+       <td>
+           <a href="https://ej2.syncfusion.com/demos/#/tailwind3/ribbon/default.html">Live demo</a>
+       </td>
+       <td>
+           <a href="https://ej2.syncfusion.com/documentation/ribbon/getting-started/">Documentation</a>
+       </td>
+   </tr>
 </table>
 
 ### Buttons
@@ -942,7 +1162,7 @@ The Syncfusion JavaScript UI controls library is the only suite that you will ev
             <a href="controls/buttons/src/button">Source</a>
         </td>
         <td>
-            <a href="https://ej2.syncfusion.com/demos#/material/button/default.html">Live demo</a>
+            <a href="https://ej2.syncfusion.com/demos#/tailwind3/button/default.html">Live demo</a>
         </td>
         <td>
             <a href="https://ej2.syncfusion.com/documentation/button/getting-started/">Documentation</a>
@@ -956,7 +1176,7 @@ The Syncfusion JavaScript UI controls library is the only suite that you will ev
             <a href="controls/buttons/src/chips">Source</a>
         </td>
         <td>
-            <a href="https://ej2.syncfusion.com/demos/#/material/chips/default.html">Live demo</a>
+            <a href="https://ej2.syncfusion.com/demos/#/tailwind3/chips/default.html">Live demo</a>
         </td>
         <td>
             <a href="https://ej2.syncfusion.com/documentation/chips/getting-started/">Documentation</a>
@@ -973,7 +1193,7 @@ The Syncfusion JavaScript UI controls library is the only suite that you will ev
             <a href="controls/splitbuttons/src/button-group">Source</a>
         </td>
         <td>
-            <a href="https://ej2.syncfusion.com/demos#/material/button/button-group.html">Live demo</a>
+            <a href="https://ej2.syncfusion.com/demos#/tailwind3/button/button-group.html">Live demo</a>
         </td>
         <td>
             <a href="https://ej2.syncfusion.com/documentation/button-group/getting-started/">Documentation</a>
@@ -987,7 +1207,7 @@ The Syncfusion JavaScript UI controls library is the only suite that you will ev
             <a href="controls/splitbuttons/src/drop-down-button">Source</a>
         </td>
         <td>
-            <a href="https://ej2.syncfusion.com/demos#/material/button/dropdown-button.html">Live demo</a>
+            <a href="https://ej2.syncfusion.com/demos#/tailwind3/button/dropdown-button.html">Live demo</a>
         </td>
         <td>
             <a href="https://ej2.syncfusion.com/documentation/drop-down-button/getting-started/">Documentation</a>
@@ -1001,7 +1221,7 @@ The Syncfusion JavaScript UI controls library is the only suite that you will ev
             <a href="controls/splitbuttons/src/progress-button">Source</a>
         </td>
         <td>
-            <a href="https://ej2.syncfusion.com/demos#/material/button/progress-button.html">Live demo</a>
+            <a href="https://ej2.syncfusion.com/demos#/tailwind3/button/progress-button.html">Live demo</a>
         </td>
         <td>
             <a href="https://ej2.syncfusion.com/documentation/progress-button/getting-started/">Documentation</a>
@@ -1015,12 +1235,40 @@ The Syncfusion JavaScript UI controls library is the only suite that you will ev
             <a href="controls/splitbuttons/src/split-button">Source</a>
         </td>
         <td>
-            <a href="https://ej2.syncfusion.com/demos#/material/button/split-button.html">Live demo</a>
+            <a href="https://ej2.syncfusion.com/demos#/tailwind3/button/split-button.html">Live demo</a>
         </td>
         <td>
             <a href="https://ej2.syncfusion.com/documentation/split-button/getting-started/">Documentation</a>
         </td>
     </tr>
+    <tr>
+       <td>
+           <a href="https://www.syncfusion.com/javascript-ui-controls/js-fab?utm_medium=listing&utm_source=github"><b>FAB</b></a>
+       </td>
+       <td>
+           <a href="controls/buttons/src/floating-action-button">Source</a>
+       </td>
+       <td>
+           <a href="https://ej2.syncfusion.com/demos/#/tailwind3/floating-action-button/overview.html">Live demo</a>
+       </td>
+       <td>
+           <a href="https://ej2.syncfusion.com/documentation/floating-action-button/getting-started">Documentation</a>
+       </td>
+   </tr>
+   <tr>
+       <td>
+           <a href="https://www.syncfusion.com/javascript-ui-controls/js-speed-dial?utm_medium=listing&utm_source=github"><b>Speed Dial</b></a>
+       </td>
+       <td>
+           <a href="controls/buttons/src/speed-dial">Source</a>
+       </td>
+       <td>
+           <a href="https://ej2.syncfusion.com/demos/#/tailwind3/speed-dial/default.html">Live demo</a>
+       </td>
+       <td>
+           <a href="https://ej2.syncfusion.com/documentation/speed-dial/getting-started">Documentation</a>
+       </td>
+   </tr>
 </table>
 
 ### Layout
@@ -1037,7 +1285,7 @@ The Syncfusion JavaScript UI controls library is the only suite that you will ev
             <a href="controls/layouts/styles/avatar">Styles</a>
         </td>
         <td>
-            <a href="https://ej2.syncfusion.com/demos#/material/avatar/default.html">Live demo</a>
+            <a href="https://ej2.syncfusion.com/demos#/tailwind3/avatar/default.html">Live demo</a>
         </td>
         <td>
             <a href="https://ej2.syncfusion.com/documentation/avatar/getting-started/">Documentation</a>
@@ -1051,7 +1299,7 @@ The Syncfusion JavaScript UI controls library is the only suite that you will ev
             <a href="controls/layouts/styles/card">Styles</a>
         </td>
         <td>
-            <a href="https://ej2.syncfusion.com/demos#/material/card/basic.html">Live demo</a>
+            <a href="https://ej2.syncfusion.com/demos#/tailwind3/card/basic.html">Live demo</a>
         </td>
         <td>
             <a href="https://ej2.syncfusion.com/documentation/card/getting-started/">Documentation</a>
@@ -1065,7 +1313,7 @@ The Syncfusion JavaScript UI controls library is the only suite that you will ev
             <a href="controls/layouts/src/dashboard-layout">Source</a>
         </td>
         <td>
-            <a href="https://ej2.syncfusion.com/demos/#/material/dashboard-layout/default.html">Live demo</a>
+            <a href="https://ej2.syncfusion.com/demos/#/tailwind3/dashboard-layout/default.html">Live demo</a>
         </td>
         <td>
             <a href="https://ej2.syncfusion.com/documentation/dashboard-layout/getting-started/">Documentation</a>
@@ -1079,7 +1327,7 @@ The Syncfusion JavaScript UI controls library is the only suite that you will ev
             <a href="controls/layouts/src/splitter">Source</a>
         </td>
         <td>
-            <a href="https://ej2.syncfusion.com/demos/#/material/splitter/default.html">Live demo</a>
+            <a href="https://ej2.syncfusion.com/demos/#/tailwind3/splitter/default.html">Live demo</a>
         </td>
         <td>
             <a href="https://ej2.syncfusion.com/documentation/splitter/getting-started/">Documentation</a>
@@ -1096,7 +1344,7 @@ The Syncfusion JavaScript UI controls library is the only suite that you will ev
             <a href="controls/popups/src/dialog">Source</a>
         </td>
         <td>
-            <a href="https://ej2.syncfusion.com/demos#/material/dialog/default.html">Live demo</a>
+            <a href="https://ej2.syncfusion.com/demos#/tailwind3/dialog/default.html">Live demo</a>
         </td>
         <td>
             <a href="https://ej2.syncfusion.com/documentation/dialog/getting-started/">Documentation</a>
@@ -1110,12 +1358,26 @@ The Syncfusion JavaScript UI controls library is the only suite that you will ev
             <a href="controls/popups/src/tooltip">Source</a>
         </td>
         <td>
-            <a href="https://ej2.syncfusion.com/demos#/material/tooltip/default.html">Live demo</a>
+            <a href="https://ej2.syncfusion.com/demos#/tailwind3/tooltip/default.html">Live demo</a>
         </td>
         <td>
             <a href="https://ej2.syncfusion.com/documentation/tooltip/getting-started/">Documentation</a>
         </td>
     </tr>
+    <tr>
+       <td>
+           <a href="https://www.syncfusion.com/javascript-ui-controls/js-timeline?utm_medium=listing&utm_source=github"><b>Timeline</b></a>
+       </td>
+       <td>
+           <a href="controls/layouts/src/timeline">Source</a>
+       </td>
+       <td>
+           <a href="https://ej2.syncfusion.com/demos/#/tailwind3/timeline/default.html">Live demo</a>
+       </td>
+       <td>
+           <a href="https://ej2.syncfusion.com/documentation/timeline/getting-started/">Documentation</a>
+       </td>
+   </tr>
     <tr>
         <td>
             <a href="https://www.syncfusion.com/javascript-ui-controls/js-listview?utm_medium=listing&utm_source=github"><b>ListView</b></a>
@@ -1127,7 +1389,7 @@ The Syncfusion JavaScript UI controls library is the only suite that you will ev
             <a href="controls/lists/src">Source</a>
         </td>
         <td>
-            <a href="https://ej2.syncfusion.com/demos#/material/listview/default.html">Live demo</a>
+            <a href="https://ej2.syncfusion.com/demos#/tailwind3/listview/default.html">Live demo</a>
         </td>
         <td>
             <a href="https://ej2.syncfusion.com/documentation/listview/getting-started/">Documentation</a>
@@ -1149,7 +1411,7 @@ The Syncfusion JavaScript UI controls library is the only suite that you will ev
             <a href="controls/notifications/styles/badge">Styles</a>
         </td>
         <td>
-            <a href="https://ej2.syncfusion.com/demos#/material/badge/default.html">Live demo</a>
+            <a href="https://ej2.syncfusion.com/demos#/tailwind3/badge/default.html">Live demo</a>
         </td>
         <td>
             <a href="https://ej2.syncfusion.com/documentation/badge/getting-started/">Documentation</a>
@@ -1163,12 +1425,40 @@ The Syncfusion JavaScript UI controls library is the only suite that you will ev
             <a href="controls/notifications/src/toast">Source</a>
         </td>
         <td>
-            <a href="https://ej2.syncfusion.com/demos#/material/toast/default.html">Live demo</a>
+            <a href="https://ej2.syncfusion.com/demos#/tailwind3/toast/default.html">Live demo</a>
         </td>
         <td>
             <a href="https://ej2.syncfusion.com/documentation/toast/getting-started/">Documentation</a>
         </td>
     </tr>
+    <tr>
+       <td>
+           <a href="https://www.syncfusion.com/javascript-ui-controls/js-message?utm_medium=listing&utm_source=github"><b>Message</b></a>
+       </td>
+       <td>
+           <a href="controls/notifications/src/message">Source</a>
+       </td>
+       <td>
+           <a href="https://ej2.syncfusion.com/demos/#/tailwind3/message/default.html">Live demo</a>
+       </td>
+       <td>
+           <a href="https://ej2.syncfusion.com/documentation/message/getting-started">Documentation</a>
+       </td>
+   </tr>
+   <tr>
+       <td>
+           <a href="https://www.syncfusion.com/javascript-ui-controls/js-skeleton?utm_medium=listing&utm_source=github"><b>Skeleton</b></a>
+       </td>
+       <td>
+           <a href="controls/notifications/src/skeleton">Source</a>
+       </td>
+       <td>
+           <a href="https://ej2.syncfusion.com/demos/#/tailwind3/skeleton/default.html">Live demo</a>
+       </td>
+       <td>
+           <a href="https://ej2.syncfusion.com/documentation/skeleton/getting-started">Documentation</a>
+       </td>
+   </tr>
     <tr>
         <td>
             <a href="https://www.syncfusion.com/javascript-ui-controls/js-progressbar?utm_medium=listing&utm_source=github"><b>Progress Bar</b></a>
@@ -1180,7 +1470,7 @@ The Syncfusion JavaScript UI controls library is the only suite that you will ev
             <a href="controls/progressbar/src">Source</a>
         </td>
         <td>
-            <a href="https://ej2.syncfusion.com/demos/#/material/progress-bar/linear/">Live demo</a>
+            <a href="https://ej2.syncfusion.com/demos/#/tailwind3/progress-bar/linear/">Live demo</a>
         </td>
         <td>
             <a href="https://ej2.syncfusion.com/documentation/progress-bar/getting-started/">Documentation</a>
@@ -1202,32 +1492,10 @@ The Syncfusion JavaScript UI controls library is the only suite that you will ev
             <a href="controls/querybuilder/src">Source</a>
         </td>
         <td>
-            <a href="https://ej2.syncfusion.com/demos/#/material/query-builder/default.html">Live demo</a>
+            <a href="https://ej2.syncfusion.com/demos/#/tailwind3/query-builder/default.html">Live demo</a>
         </td>
         <td>
             <a href="https://ej2.syncfusion.com/documentation/query-builder/getting-started/">Documentation</a>
-        </td>
-    </tr>
-</table>
-
-### Viewer
-
-<table>
-    <tr>
-        <td>
-            <a href="https://www.syncfusion.com/javascript-ui-controls/js-pdf-viewer?utm_medium=listing&utm_source=github"><b>PDF Viewer</b></a>
-        </td>
-        <td>
-            <a href="https://www.npmjs.com/package/@syncfusion/ej2-pdfviewer"><img src="https://ej2.syncfusion.com/github/images/npm-logo.png" alt="npm package @syncfusion/ej2-pdfviewer" title="@syncfusion/ej2-pdfviewer" style="height:20px;" /></a>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="https://ej2.syncfusion.com/badges/ej2-pdfviewer"><img src="https://ej2.syncfusion.com/badges/ej2-pdfviewer/coverage.svg" alt="code coverage of @syncfusion/ej2-pdfviewer" title="@syncfusion/ej2-pdfviewer" /></a>
-        </td>
-        <td>
-            <a href="controls/pdfviewer/src">Source</a>
-        </td>
-        <td>
-            <a href="https://ej2.syncfusion.com/demos/#/material/pdfviewer/default.html">Live demo</a>
-        </td>
-        <td>
-            <a href="https://ej2.syncfusion.com/documentation/pdfviewer/getting-started/">Documentation</a>
         </td>
     </tr>
 </table>
@@ -1364,5 +1632,5 @@ The Syncfusion JavaScript UI controls library is the only suite that you will ev
 ## License
  This is a commercial product and requires a paid license for possession or use. Syncfusion’s licensed software, including this component, is subject to the terms and conditions of Syncfusion's EULA (https://www.syncfusion.com/eula/es/). To acquire a license, you can purchase one at https://www.syncfusion.com/sales/products or start a free 30-day trial here (https://www.syncfusion.com/account/manage-trials/start-trials).
  A free community license (https://www.syncfusion.com/products/communitylicense) is also available for companies and individuals whose organizations have less than $1 million USD in annual gross revenue and five or fewer developers.
-     © Copyright 2021 Syncfusion, Inc. All Rights Reserved. 
+     © Copyright 2026 Syncfusion, Inc. All Rights Reserved. 
     The Syncfusion Essential Studio license and copyright applies to this distribution.
