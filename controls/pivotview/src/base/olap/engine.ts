@@ -2728,7 +2728,7 @@ export class OlapEngine {
                         currCell.valueSort[currCell.valueSort.levelName.toString()] = 1;
                     } else {
                         currCell.type = 'grand sum';
-                        currCell.formattedText = 'Grand Total';
+                        currCell.formattedText = this.localeObj.getConstant('grandTotal');
                         if (rowPos < this.measureIndex) {
                             const levelName: string | number | Date = 'Grand Total';
                             currCell.valueSort.levelName = levelName;

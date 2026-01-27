@@ -886,6 +886,9 @@ export class Edit implements IAction {
                 }
                 if (formObj && formObj.element && isNullOrUndefined(this.parent.editSettings.template)) {
                     formObj.element.innerHTML = '';
+                    if (this.parent.editSettings.showAddNewRow && formObj.element.closest('.e-addedrow')) {
+                        formObj.element.closest('.e-addedrow').innerHTML = '';
+                    }
                 }
             }
         }

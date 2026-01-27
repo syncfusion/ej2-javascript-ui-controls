@@ -1,6 +1,4 @@
 @use 'ej2-base/styles/common/mixin' as *;
-@use './theme-variables' as *;
-@use '../excel-filter/theme-variables' as excel-vars;
 @mixin hover-color-styles($grid-skin, $material, $bootstrap) {
   @if $grid-skin == 'material3' {
     background: $material;
@@ -154,13 +152,13 @@
     .e-checkboxfilter {
       & .e-dlg-content {
         padding-left: $grid-bigger-checkbox-content-padding-left;
-        @if excel-vars.$grid-xlfl-skin == 'fluent2' {
+        @if $grid-xlfl-skin == 'fluent2' {
           padding-right: 24px;
         }
       }
 
       & .e-footer-content {
-        @if excel-vars.$grid-xlfl-skin == 'fluent2' {
+        @if $grid-xlfl-skin == 'fluent2' {
           padding-right: 24px;
           padding-left: 24px;
         }
@@ -2168,9 +2166,9 @@
         }
       }
 
-      @if excel-vars.$grid-xlfl-skin == 'fluent2' {
+      @if $grid-xlfl-skin == 'fluent2' {
         .e-checkbox-wrapper .e-frame {
-          @if excel-vars.$grid-xlfl-skin == 'fluent2' {
+          @if $grid-xlfl-skin == 'fluent2' {
             margin: 0 0 1px 4px;
           }
         }

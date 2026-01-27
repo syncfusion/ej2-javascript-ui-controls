@@ -1,5 +1,4 @@
 @use 'ej2-base/styles/common/mixin' as *;
-@use './theme-variables' as *;
 @mixin wrap-styles {
   float: right;
   height: $field-list-adaptive-btn-size;
@@ -1405,7 +1404,6 @@
             }
 
             .e-draggable-prompt {
-              border: $field-list-border-1 dashed $field-list-default-prompt-color;
               color: $field-list-default-prompt-color;
               font-size: $field-list-drag-clone-font-size;
               height: $field-list-adaptive-drag-prompt-height;

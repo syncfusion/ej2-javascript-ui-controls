@@ -3,5 +3,5 @@
 @use 'ej2-popups/styles/popup/bootstrap-definition' as *;
 @use './../drop-down-button/bootstrap-definition' as *;
 @use 'bootstrap-definition' as *;
-@use 'all' as *;
-@use 'bigger' as *;
+@use 'all.bootstrap' as *;
+@use 'bigger.bootstrap' as *;

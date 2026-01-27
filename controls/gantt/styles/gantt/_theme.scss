@@ -1,5 +1,4 @@
 @use 'ej2-base/styles/common/mixin' as *;
-@use './theme-variables' as *;
 @mixin background-styles($color,$border-color) {
   background-color: $color;
   border-color: $border-color;
@@ -632,6 +631,14 @@ $applies-hover-bg: $theme-name == 'bootstrap5.3' or
   }
 
   .e-gantt-dialog {
+    .e-btn.e-primary {
+      @if $skin-name =='Material3' or $skin-name =='Material3-dark'{
+        background: rgba(103, 80, 164, 1) !important; /* stylelint-disable-line declaration-no-important */
+        border-color: rgba(103, 80, 164, 1) !important; /* stylelint-disable-line declaration-no-important */
+        color: rgba(255, 255, 255, 1) !important; /* stylelint-disable-line declaration-no-important */
+        border-radius: 20px;
+      }
+    }
 
     .e-btn.e-primary {
       @if $skin-name =='Material3' or $skin-name =='Material3-dark'{

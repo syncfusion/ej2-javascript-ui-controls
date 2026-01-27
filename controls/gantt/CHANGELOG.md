@@ -2,6 +2,15 @@
 
 ## [Unreleased]
 
+## 32.1.25 (2026-01-27)
+
+### GanttChart
+
+#### Bug fixes
+
+- `#I802590` - Fixed issue where task dates were rendered incorrectly when adding a dependency with timezone set to UTC.
+- `#I803975` - Fixed the console error triggered by dragging rows and hovering over the chart in Firefox browser.
+
 ## 32.1.24 (2026-01-20)
 
 ### GanttChart

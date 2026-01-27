@@ -1,4 +1,4 @@
-import { Component, Property, setStyleAttribute, ChildProperty, compile } from '@syncfusion/ej2-base';
+import { Component, Property, setStyleAttribute, ChildProperty, compile, L10n } from '@syncfusion/ej2-base';
 import { NotifyPropertyChanges, addClass, Collection, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { Event, EmitType, EventHandler, selectAll, removeClass, select, Browser, detach, formatUnit } from '@syncfusion/ej2-base';
 import { SanitizeHtmlHelper, extend } from '@syncfusion/ej2-base';
@@ -37,6 +37,9 @@ const PANE_HIDDEN: string = 'e-pane-hidden';
 const RESIZABLE_PANE: string = 'e-resizable';
 const LAST_BAR: string = 'e-last-bar';
 const BAR_SIZE_DEFAULT: number = 1;
+const splitterDefaultLocale: { [key: string]: string } = {
+    'ToggleNavigation': 'Toggle navigation'
+};
 
 /**
  * Interface to configure pane properties such as its content, size, min, max, resizable, collapsed and collapsible.
@@ -228,6 +231,7 @@ export class Splitter extends Component<HTMLElement> {
     private templateElement: HTMLElement[];
     private collapseFlag: boolean;
     private expandFlag: boolean;
+    public localeObj: L10n;
 
     /**
      * Specifies the height of the Splitter component that accepts both string and number values.
@@ -533,6 +537,9 @@ export class Splitter extends Component<HTMLElement> {
             case 'enableRtl':
                 this.setRTL(newProp.enableRtl);
                 break;
+            case 'locale':
+                this.localeSetModelOption(newProp);
+                break;
             }
         }
     }
@@ -585,6 +592,7 @@ export class Splitter extends Component<HTMLElement> {
 
     protected preRender(): void {
         this.initializeValues();
+        this.localeObj = new L10n(this.getModuleName(), splitterDefaultLocale, this.locale);
         this.onReportWindowSize = this.reportWindowSize.bind(this);
         this.onMouseMoveHandler = this.onMouseMove.bind(this);
         this.onMouseUpHandler = this.onMouseUp.bind(this);
@@ -1206,8 +1214,9 @@ export class Splitter extends Component<HTMLElement> {
         const arrow2: HTMLElement = this.createElement('button');
         arrow1.setAttribute('tabindex', '-1');
         arrow2.setAttribute('tabindex', '-1');
-        arrow1.setAttribute('aria-label', 'Toggle navigation');
-        arrow2.setAttribute('aria-label', 'Toggle navigation');
+        const toggleLabel: string = this.getLocaleText('ToggleNavigation');
+        arrow1.setAttribute('aria-label', toggleLabel);
+        arrow2.setAttribute('aria-label', toggleLabel);
         arrow1.setAttribute('type', 'button');
         arrow2.setAttribute('type', 'button');
         const size: string = isNullOrUndefined(this.separatorSize) ? '1px' : this.separatorSize + 'px';
@@ -2670,6 +2679,17 @@ export class Splitter extends Component<HTMLElement> {
         this.setPaneOrder();
         this.removeSeparator();
         this.addSeparator(this.element);
+    }
+
+    private getLocaleText(text: string): string {
+        const locale: string = this.localeObj.getConstant(text);
+        return (locale === '') ? text : locale;
+    }
+
+    private localeSetModelOption(newProp: SplitterModel): void {
+        const newLocale: any = newProp && newProp.locale && typeof newProp.locale === 'object' ? newProp.locale : this.locale;
+        this.localeObj = new L10n(this.getModuleName(), splitterDefaultLocale, newLocale);
+        this.refresh();
     }
 
     /**

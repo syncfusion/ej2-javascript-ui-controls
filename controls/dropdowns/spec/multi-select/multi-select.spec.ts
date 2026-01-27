@@ -2308,7 +2308,7 @@ describe('MultiSelect', () => {
             jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
             document.body.innerHTML = '';
             document.body.appendChild(element);
-            listObj = new MultiSelect({ hideSelectedItem: false, query: new Query().take(9), dataSource: remoteData, fields: { value: 'EmployeeID', text: 'FirstName' } });
+            listObj = new MultiSelect({ hideSelectedItem: false, query: new Query().take(9).requiresCount(), dataSource: remoteData, fields: { value: 'EmployeeID', text: 'FirstName' } });
             listObj.appendTo(element);
             done();
         });
@@ -2433,7 +2433,7 @@ describe('MultiSelect', () => {
                 hideSelectedItem: true, dataSource: remoteData,
                 fields: { value: 'EmployeeID', text: 'FirstName' },
                 closePopupOnSelect: true,
-                query: new Query().take(9),
+                query: new Query().take(9).requiresCount(),
             });
             listObj.appendTo(element);
             done();
@@ -2513,7 +2513,7 @@ describe('MultiSelect', () => {
             document.body.appendChild(element);
             originalTimeout = jasmine.DEFAULT_TIMEOUT_INTERVAL;
             jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
-            listObj = new MultiSelect({ hideSelectedItem: false, dataSource: remoteData, query: new Query().take(9), mode: 'Delimiter', fields: { text: "FirstName", value: "EmployeeID" }, value: [1] });
+            listObj = new MultiSelect({ hideSelectedItem: false, dataSource: remoteData, query: new Query().take(9).requiresCount(), mode: 'Delimiter', fields: { text: "FirstName", value: "EmployeeID" }, value: [1] });
             listObj.appendTo(element);
             done();
         });
@@ -2546,7 +2546,7 @@ describe('MultiSelect', () => {
             document.body.appendChild(element);
             originalTimeout = jasmine.DEFAULT_TIMEOUT_INTERVAL;
             jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
-            listObj = new MultiSelect({ hideSelectedItem: false, dataSource: remoteData, query: new Query().take(9), mode: 'Box', fields: { text: "FirstName", value: "EmployeeID" }, value: [4], closePopupOnSelect: false });
+            listObj = new MultiSelect({ hideSelectedItem: false, dataSource: remoteData, query: new Query().take(9).requiresCount(), mode: 'Box', fields: { text: "FirstName", value: "EmployeeID" }, value: [4], closePopupOnSelect: false });
             listObj.appendTo(element);
             done();
         });
@@ -2581,7 +2581,7 @@ describe('MultiSelect', () => {
         beforeAll((done) => {
             document.body.innerHTML = '';
             document.body.appendChild(element);
-            listObj = new MultiSelect({ hideSelectedItem: false, dataSource: remoteData, mode: 'Delimiter', query: new Query().take(9), fields: { text: "FirstName", value: "EmployeeID" }, value: [1] });
+            listObj = new MultiSelect({ hideSelectedItem: false, dataSource: remoteData, mode: 'Delimiter', query: new Query().take(9).requiresCount(), fields: { text: "FirstName", value: "EmployeeID" }, value: [1] });
             listObj.appendTo(element);
             done();
         });
@@ -2624,7 +2624,7 @@ describe('MultiSelect', () => {
            * allowCustomValue.
           */
         it('allowCustomValue.-remote data', (done) => {
-            listObj = new MultiSelect({ hideSelectedItem: false, dataSource: remoteData, query: new Query().take(9).requiresCount(), mode: 'Box', fields: { value: 'EmployeeID', text: 'FirstName' }, allowCustomValue: true });
+            listObj = new MultiSelect({ hideSelectedItem: false, dataSource: remoteData, query: new Query().take(9).requiresCount().requiresCount(), mode: 'Box', fields: { value: 'EmployeeID', text: 'FirstName' }, allowCustomValue: true });
             listObj.appendTo(element);
             listObj.showPopup();
             (<any>listObj).inputFocus = true;
@@ -2651,7 +2651,7 @@ describe('MultiSelect', () => {
         it('allowCustomValue.-remote data without filter', (done) => {
             let status: boolean = false;
             listObj = new MultiSelect({
-                hideSelectedItem: false, dataSource: remoteData, query: new Query().take(9), popupHeight: "auto", mode: 'Box', fields: { value: 'EmployeeID', text: 'FirstName' },
+                hideSelectedItem: false, dataSource: remoteData, query: new Query().take(9).requiresCount(), popupHeight: "auto", mode: 'Box', fields: { value: 'EmployeeID', text: 'FirstName' },
                 customValueSelection: function () {
                     status = true;
                     this.remoteCustomValue = true;
@@ -2745,7 +2745,7 @@ describe('MultiSelect', () => {
          * remoteData binding with index
          */
         it('with initial Value ', (done) => {
-            listObj = new MultiSelect({ hideSelectedItem: false, dataSource: remoteData, query: new Query().take(9), fields: { value: 'EmployeeID', text: 'FirstName' }, value: [3] });
+            listObj = new MultiSelect({ hideSelectedItem: false, dataSource: remoteData, query: new Query().take(9).requiresCount(), fields: { value: 'EmployeeID', text: 'FirstName' }, value: [3] });
             listObj.appendTo(element);
             setTimeout(() => {
                 (<any>listObj).moveByList(1);
@@ -2775,7 +2775,7 @@ describe('MultiSelect', () => {
         });
 
         it('value update with remote datasource.', (done) => {
-            listObj = new MultiSelect({ hideSelectedItem: false, dataSource: remoteData, query: new Query().take(9), value: [1004], fields: { value: 'text', text: 'text' } });
+            listObj = new MultiSelect({ hideSelectedItem: false, dataSource: remoteData, query: new Query().take(9).requiresCount(), value: [1004], fields: { value: 'text', text: 'text' } });
             listObj.appendTo(element);
             setTimeout(() => {
                 listObj.value = ['JAVA'];
@@ -4385,7 +4385,7 @@ describe('MultiSelect', () => {
             document.body.appendChild(element);
             originalTimeout = jasmine.DEFAULT_TIMEOUT_INTERVAL;
             jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
-            listObj = new MultiSelect({ hideSelectedItem: false, dataSource: remoteData, query: new Query().take(9), mode: 'Delimiter', fields: { text: "FirstName", value: "EmployeeID" } });
+            listObj = new MultiSelect({ hideSelectedItem: false, dataSource: remoteData, query: new Query().take(9).requiresCount(), mode: 'Delimiter', fields: { text: "FirstName", value: "EmployeeID" } });
             listObj.appendTo(element);
             done();
         });
@@ -4473,7 +4473,7 @@ describe('MultiSelect', () => {
             let isDataBound: boolean = false;
             dropDowns = new MultiSelect({
                 dataSource: remoteData,
-                query: new Query().take(9),
+                query: new Query().take(9).requiresCount(),
                 fields: { value: 'FirstName' },
                 dataBound: () => {
                     isDataBound = true;
@@ -4520,7 +4520,7 @@ describe('MultiSelect', () => {
             let isDataBound: boolean = false;
             dropDowns = new MultiSelect({
                 dataSource: remoteData,
-                query: new Query().take(9),
+                query: new Query().take(9).requiresCount(),
                 fields: { value: 'FirstName' },
                 value: ['Nancy'],
                 dataBound: () => {
@@ -4590,7 +4590,7 @@ describe('MultiSelect', () => {
                 crossDomain: true });
             dropDowns = new MultiSelect({
                 dataSource: remoteData,
-                query: new Query().take(9),
+                query: new Query().take(9).requiresCount(),
                 allowFiltering: true,
                 debounceDelay: 0,
                 fields: { value: 'FirstName' },
@@ -4632,7 +4632,7 @@ describe('MultiSelect', () => {
             dropDowns = new MultiSelect({
                 dataSource: remoteData,
                 allowFiltering: true,
-                query: new Query().take(9),
+                query: new Query().take(9).requiresCount(),
                 debounceDelay: 0,
                 fields: { value: 'FirstName' },
                 actionComplete: (e: any) => {
@@ -6422,7 +6422,7 @@ describe('MultiSelect', () => {
             }
         });
         it('allowCustomValue.-remote data', (done) => {
-            listObj = new MultiSelect({ hideSelectedItem: false, dataSource: remoteData, query: new Query().take(9), mode: 'Box', fields: { value: 'EmployeeID', text: 'FirstName' }, allowCustomValue: true });
+            listObj = new MultiSelect({ hideSelectedItem: false, dataSource: remoteData, query: new Query().take(9).requiresCount(), mode: 'Box', fields: { value: 'EmployeeID', text: 'FirstName' }, allowCustomValue: true });
             listObj.appendTo(element);
             listObj.showPopup();
             (<any>listObj).focusInHandler();
@@ -6501,7 +6501,7 @@ describe('MultiSelect', () => {
             }
         });
         it('allowCustomValue.-remote data', (done) => {
-            listObj = new MultiSelect({ hideSelectedItem: false, query: new Query().take(9), dataSource: remoteData, mode: 'Box', fields: { value: 'EmployeeID', text: 'FirstName' }, allowCustomValue: true });
+            listObj = new MultiSelect({ hideSelectedItem: false, query: new Query().take(9).requiresCount(), dataSource: remoteData, mode: 'Box', fields: { value: 'EmployeeID', text: 'FirstName' }, allowCustomValue: true });
             listObj.appendTo(element);
             listObj.showPopup();
             (<any>listObj).focusInHandler();
@@ -7637,7 +7637,7 @@ describe('MultiSelect', () => {
             }
         });
         it('Checkbox mode with allowFiltering for remote data', (done) => {
-            listObj = new MultiSelect({ hideSelectedItem: false, dataSource: remoteData, query: new Query().take(9), mode: "CheckBox", fields: { value: 'EmployeeID', text: 'FirstName' }, allowFiltering: true, debounceDelay: 0 });
+            listObj = new MultiSelect({ hideSelectedItem: false, dataSource: remoteData, query: new Query().take(9).requiresCount(), mode: "CheckBox", fields: { value: 'EmployeeID', text: 'FirstName' }, allowFiltering: true, debounceDelay: 0 });
             listObj.appendTo(element);
             listObj.showPopup();
             setTimeout(() => {
@@ -7656,7 +7656,7 @@ describe('MultiSelect', () => {
             }, 2000);
         });
         it('Checkbox mode without allowFiltering for remote data', (done) => {
-            listObj = new MultiSelect({ hideSelectedItem: false, dataSource: remoteData,query: new Query().take(9), mode: "CheckBox", fields: { value: 'EmployeeID', text: 'FirstName' }, allowFiltering: false, debounceDelay: 0 });
+            listObj = new MultiSelect({ hideSelectedItem: false, dataSource: remoteData,query: new Query().take(9).requiresCount(), mode: "CheckBox", fields: { value: 'EmployeeID', text: 'FirstName' }, allowFiltering: false, debounceDelay: 0 });
             listObj.appendTo(element);
             listObj.showPopup();
             setTimeout(() => {
@@ -7729,7 +7729,7 @@ describe('MultiSelect', () => {
             let listObj: MultiSelect = new MultiSelect({
                 dataSource: remoteData,
                 fields: { value: 'EmployeeID', text: 'FirstName' },
-                query: new Query().take(4),
+                query: new Query().take(4).requiresCount(),
                 width: '250px',
                 popupWidth: '250px',
                 popupHeight: '300px',
@@ -7895,7 +7895,7 @@ describe('MultiSelect', () => {
                 dataSource: remoteData,
                 fields: {text: 'FirstName', value: 'FirstName'},
                 value: ['Andrew Fuller', 'Sync'],
-                query: new Query().take(9),
+                query: new Query().take(9).requiresCount(),
                 allowCustomValue: true
             });
             listObj.appendTo(mEle);
@@ -7929,7 +7929,7 @@ describe('MultiSelect', () => {
             listObj = new MultiSelect({
                 dataSource: remoteData,
                 fields: {text: 'FirstName', value: 'FirstName'},
-                query: new Query().take(9),
+                query: new Query().take(9).requiresCount(),
                 value: ['Andrew Fuller'],
             });
             listObj.appendTo(mEle);
@@ -11019,7 +11019,7 @@ describe('MultiSelect', () => {
             listObj = new MultiSelect({
                 dataSource: remoteData,
                 fields: { text: 'ProductName', value: 'ProductID', groupBy: 'CategoryID' },
-                query: new Query().take(9),
+                query: new Query().take(9).requiresCount(),
                 mode: 'CheckBox',
                 changeOnBlur: false,
                 groupTemplate: "<strong>${CategoryID}</strong>"
@@ -12079,6 +12079,18 @@ describe('MultiSelect', () => {
                 dataSource: datasource2, value:[{ id: 'id2', text: 'PHP' }, { id: 'id1', text: 'HTML' }]});
             listObj.appendTo(element);
             listObj.updateOldPropCssClass('e-custom-class');
+        });
+        it('Multiselect Popup Does Not Close on Outside Click when using showPopup method', (done) => {
+            listObj = new MultiSelect({ dataSource: datasource, fields: { text: "text", value: "id" }});
+            listObj.appendTo(element);
+            listObj.showPopup();
+            mouseEventArgs.type = 'click';
+            mouseEventArgs.target = document.body;
+            (listObj as any).onBlurHandler(mouseEventArgs);
+            setTimeout(() => {
+                expect((<any>listObj).isPopupOpen()).toBe(false);
+                done();
+            }, 100);
         });
     });
     describe('preselect Custom value object binding', () => {

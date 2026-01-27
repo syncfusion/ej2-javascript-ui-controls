@@ -19,5 +19,5 @@
 @use 'ej2-dropdowns/styles/drop-down-list/highcontrast-light-definition' as *;
 @use 'ej2-dropdowns/styles/combo-box/highcontrast-light-definition' as *;
 @use 'spreadsheet/highcontrast-light-definition' as *;
-@use 'spreadsheet/all' as *;
-@use 'spreadsheet-ribbon/all' as *;
+@use 'spreadsheet/all.highcontrast-light' as *;
+@use 'spreadsheet-ribbon/all.highcontrast-light' as *;

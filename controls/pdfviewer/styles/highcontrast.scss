@@ -1,5 +1,5 @@
 @use 'ej2-base/styles/definition/highcontrast' as *;
 @use 'pdfviewer/highcontrast-definition' as *;
 @use 'pdfviewer/icons/highcontrast' as *;
-@use 'pdfviewer/all' as *;
-@use 'pdfviewer/bigger' as *;
+@use 'pdfviewer/all.highcontrast' as *;
+@use 'pdfviewer/bigger.highcontrast' as *;

@@ -381,6 +381,10 @@ export class NormalEdit {
                 if (this.parent.enableVirtualization || this.parent.enableInfiniteScrolling) {
                     this.disabledShowAddRow(true, true);
                 }
+                if (gObj.editSettings.mode !== 'Dialog' && isNullOrUndefined(gObj.editSettings.template)) {
+                    gObj.editModule.destroyWidgets();
+                    gObj.editModule.destroyForm();
+                }
             }
         }
     }

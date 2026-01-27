@@ -1,7 +1,7 @@
 /**
  * Splitter test cases
  */
-import { createElement, Browser, isNullOrUndefined, detach} from '@syncfusion/ej2-base';
+import { createElement, Browser, isNullOrUndefined, detach, L10n} from '@syncfusion/ej2-base';
 import {Splitter, ResizeEventArgs, BeforeExpandEventArgs, BeforeSanitizeHtmlArgs} from '../src/splitter/splitter';
 import {SplitterModel, PanePropertiesModel} from '../src/splitter/splitter-model';
 
@@ -6421,6 +6421,62 @@ describe('Splitter Control', () => {
             Browser.info.name = 'chrome';
             splitterObj.getBorder();
             expect(splitterObj.border).toBe(8);
+        });
+    });
+    describe('Localization for Toggle Navigation', () => {
+        let splitterObj: Splitter;
+        beforeEach((): void => {
+            const host: HTMLElement = createElement('div', { id: 'test-host' });
+            host.appendChild(createElement('div'));
+            host.appendChild(createElement('div'));
+            document.body.appendChild(host);
+            L10n.load({
+                'en-US': {
+                    'splitter': {
+                        'ToggleNavigation': 'Toggle navigation'
+                    }
+                }
+            });
+            splitterObj = new Splitter({
+                width: '300px',
+                height: '200px',
+                paneSettings: [
+                    { size: '50%', collapsible: true },
+                    { size: '50%', collapsible: true }
+                ]
+            });
+        });
+        afterEach((): void => {
+            if (splitterObj) {
+                splitterObj.destroy();
+            }
+            document.body.innerHTML = '';
+            (L10n as any).defaultLocale = {};
+        });
+        it('should display "Toggle navigation" in default English for aria-label', () => {
+            splitterObj.appendTo('#test-host');
+            const separatorBar = document.querySelector('.e-split-bar') as HTMLElement;
+            const toggleArrows = separatorBar.querySelectorAll('.e-navigate-arrow') as NodeListOf<HTMLButtonElement>;
+            expect(toggleArrows.length).toBe(2);
+            expect(toggleArrows[0].getAttribute('aria-label')).toBe('Toggle navigation');
+            expect(toggleArrows[1].getAttribute('aria-label')).toBe('Toggle navigation');
+        });
+        it('should update aria-label to French after locale property change', () => {
+            splitterObj.appendTo('#test-host');
+            L10n.load({
+                'fr': {
+                    'splitter': {
+                        'ToggleNavigation': 'Basculer la navigation'
+                    }
+                }
+            });
+            splitterObj.locale = 'fr';
+            splitterObj.dataBind();
+            const separatorBar = document.querySelector('.e-split-bar') as HTMLElement;
+            const toggleArrows = separatorBar.querySelectorAll('.e-navigate-arrow') as NodeListOf<HTMLButtonElement>;
+            expect(toggleArrows.length).toBe(2);
+            expect(toggleArrows[0].getAttribute('aria-label')).toBe('Basculer la navigation');
+            expect(toggleArrows[1].getAttribute('aria-label')).toBe('Basculer la navigation');
         });
     });
  });

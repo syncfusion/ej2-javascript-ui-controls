@@ -419,7 +419,12 @@ export class FormFields {
         let divElement: HTMLDivElement;
         if (data['Name'] === 'Textbox' || data['Name'] === 'Password') {
             divElement = document.createElement('div');
-            divElement.style.background = 'white';
+            if (data.IsTransparent === true) {
+                divElement.style.background = 'transparent';
+            }
+            else {
+                divElement.style.background = data['BackColor'];
+            }
             if (data.InsertSpaces) {
                 divElement.style.background = 'transparent';
             }

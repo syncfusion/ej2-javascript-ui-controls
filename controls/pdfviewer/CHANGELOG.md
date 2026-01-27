@@ -2,6 +2,15 @@
 
 ## [Unreleased]
 
+## 32.1.25 (2026-01-27)
+
+### PDF Viewer
+
+#### Bug Fixes
+
+- `#I801378` - Fixed an issue where annotations and comments were missing in a customer provided document due to a duplicate annotation name.
+- `#I802177` - Fixed an issue where form field content was not fully visible when the `enableFormDesigner` API was set to false.
+
 ## 32.1.24 (2026-01-20)
 
 ### PDF Viewer

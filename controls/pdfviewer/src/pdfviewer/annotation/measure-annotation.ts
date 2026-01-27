@@ -374,7 +374,8 @@ export class MeasureAnnotation {
                                 labelSettings: annotation.LabelSettings, annotationSettings: annotation.AnnotationSettings,
                                 customData: this.pdfViewer.annotation.getCustomData(annotation),
                                 isPrint: annotation.IsPrint, isCommentLock: annotation.IsCommentLock,
-                                isAnnotationRotated: isAnnotationRotated
+                                isAnnotationRotated: isAnnotationRotated,
+                                originalName: annotation.OriginalName ? annotation.OriginalName : null
                             };
                             let vPoints: PointModel[] = annotationObject.vertexPoints;
                             if (vertexPoints == null) {
@@ -596,7 +597,7 @@ export class MeasureAnnotation {
     }
 
     private updateMeasureproperties(): void {
-        this.distanceFillColor = this.pdfViewer.distanceSettings.fillColor ? this.pdfViewer.distanceSettings.fillColor : '#ff0000';
+        this.distanceFillColor = this.pdfViewer.distanceSettings.fillColor ? this.pdfViewer.distanceSettings.fillColor : '#ffffff00';
         this.distanceStrokeColor = this.pdfViewer.distanceSettings.strokeColor ? this.pdfViewer.distanceSettings.strokeColor : '#ff0000';
         this.distanceOpacity = this.pdfViewer.distanceSettings.opacity ? this.pdfViewer.distanceSettings.opacity : 1;
         this.distanceThickness = this.pdfViewer.distanceSettings.thickness ? this.pdfViewer.distanceSettings.thickness : 1;
@@ -779,7 +780,12 @@ export class MeasureAnnotation {
         return shapeType;
     }
 
-    private getMeasureType(shape: IMeasureShapeAnnotation): string {
+    /**
+     * @private
+     * @param {IMeasureShapeAnnotation} shape - It describes about the shape annotation
+     * @returns {string} - string
+     */
+    public getMeasureType(shape: IMeasureShapeAnnotation): string {
         let measureType: string;
         if (shape.shapeAnnotationType === 'Line') {
             measureType = 'Distance';

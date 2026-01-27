@@ -1774,6 +1774,13 @@ export class PivotChart {
         let delimiter: string = (this.dataSourceSettings.drilledMembers[0] && this.dataSourceSettings.drilledMembers[0].delimiter) ?
             this.dataSourceSettings.drilledMembers[0].delimiter : '**';
         const fieldName: string = labelInfo.fieldName as string;
+        const fieldInfo: ReturnType<typeof PivotUtil.getFieldInfo> = PivotUtil.getFieldInfo(fieldName, this.parent);
+        const actionName: string = labelInfo.isDrilled ? events.drillUp : events.drillDown;
+        this.parent.actionObj.actionName = actionName;
+        this.parent.actionObj.fieldInfo = fieldInfo.fieldItem;
+        if (this.parent.actionBeginMethod()) {
+            return;
+        }
         const currentColIndex: number = (this.parent.gridSettings.layout === 'Tabular' ? (!this.parent.dataSourceSettings.showSubTotals ||
             (!this.parent.dataSourceSettings.showRowSubTotals && this.parent.dataSourceSettings.showColumnSubTotals) ||
             this.engineModule && !this.engineModule.fieldList[labelInfo.fieldName as string].showSubTotals) ?
@@ -1783,6 +1790,7 @@ export class PivotChart {
         let memberUqName: string =
             (currentCell.valueSort.levelName as string).
                 split(this.engineModule.valueSortSettings.headerDelimiter).join(delimiter);
+        const clonedDrillMembers: DrillOptionsModel[] = PivotUtil.cloneDrillMemberSettings(this.dataSourceSettings.drilledMembers);
         let fieldAvail: boolean = false;
         if (this.dataSourceSettings.drilledMembers.length === 0) {
             this.parent.setProperties(
@@ -1813,7 +1821,6 @@ export class PivotChart {
         }
         this.parent.showWaitingPopup();
         const pivot: PivotChart = this as PivotChart;
-        //setTimeout(() => {
         const drilledItem: IDrilledItem = {
             fieldName: fieldName, memberName: memberUqName, delimiter: delimiter,
             axis: 'row',
@@ -1822,37 +1829,49 @@ export class PivotChart {
         };
         const drillArgs: DrillArgs = {
             drillInfo: drilledItem,
-            pivotview: pivot.parent
+            pivotview: pivot.parent,
+            cancel: false
         };
-        pivot.parent.trigger(events.drill, drillArgs);
-        const enginePopulatingEventArgs: EnginePopulatingEventArgs = {
-            dataSourceSettings: PivotUtil.getClonedDataSourceSettings(this.parent.dataSourceSettings)
-        };
-        this.parent.trigger(events.enginePopulating, enginePopulatingEventArgs);
-        this.parent.setProperties({ dataSourceSettings: enginePopulatingEventArgs.dataSourceSettings }, true);
-        if (pivot.parent.enableVirtualization || pivot.parent.enablePaging) {
-            if (pivot.parent.dataSourceSettings.mode === 'Server') {
-                pivot.parent.getEngine('onDrill', drilledItem, null, null, null, null, null);
-            } else {
-                pivot.engineModule.drilledMembers = pivot.dataSourceSettings.drilledMembers;
-                (pivot.engineModule as PivotEngine).onDrill(drilledItem);
-            }
-        } else if (pivot.parent.dataSourceSettings.mode === 'Server') {
-            pivot.parent.getEngine('onDrill', drilledItem, null, null, null, null, null);
-        } else {
-            (pivot.engineModule as PivotEngine).generateGridData(pivot.dataSourceSettings, true);
+        try {
+            pivot.parent.trigger(events.drill, drillArgs, (observedArgs: DrillArgs) => {
+                if (observedArgs.cancel) {
+                    this.parent.setProperties({ dataSourceSettings: { drilledMembers: clonedDrillMembers } }, true);
+                    this.parent.hideWaitingPopup();
+                    return;
+                }
+                const enginePopulatingEventArgs: EnginePopulatingEventArgs = {
+                    dataSourceSettings: PivotUtil.getClonedDataSourceSettings(this.parent.dataSourceSettings)
+                };
+                this.parent.trigger(events.enginePopulating, enginePopulatingEventArgs);
+                this.parent.setProperties({ dataSourceSettings: enginePopulatingEventArgs.dataSourceSettings }, true);
+                if (pivot.parent.enableVirtualization || pivot.parent.enablePaging) {
+                    if (pivot.parent.dataSourceSettings.mode === 'Server') {
+                        pivot.parent.getEngine('onDrill', drilledItem, null, null, null, null, null);
+                    } else {
+                        pivot.engineModule.drilledMembers = pivot.dataSourceSettings.drilledMembers;
+                        (pivot.engineModule as PivotEngine).onDrill(drilledItem);
+                    }
+                } else if (pivot.parent.dataSourceSettings.mode === 'Server') {
+                    pivot.parent.getEngine('onDrill', drilledItem, null, null, null, null, null);
+                } else {
+                    (pivot.engineModule as PivotEngine).generateGridData(pivot.dataSourceSettings, true);
+                }
+                pivot.parent.allowServerDataBinding = false;
+                this.parent.setProperties({ pivotValues: pivot.engineModule.pivotValues }, true);
+                pivot.parent.allowServerDataBinding = true;
+                const eventArgs: EnginePopulatedEventArgs = {
+                    dataSourceSettings: PivotUtil.getClonedDataSourceSettings(this.parent.dataSourceSettings),
+                    pivotValues: this.parent.pivotValues
+                };
+                this.parent.trigger(events.enginePopulated, eventArgs);
+                pivot.engineModule.pivotValues = eventArgs.pivotValues;
+                this.parent.renderPivotGrid();
+            });
+        } catch (exception) {
+            this.parent.setProperties({ dataSourceSettings: { drilledMembers: clonedDrillMembers } }, true);
+            this.parent.hideWaitingPopup();
+            this.parent.actionFailureMethod(exception);
         }
-        pivot.parent.allowServerDataBinding = false;
-        pivot.parent.setProperties({ pivotValues: pivot.engineModule.pivotValues }, true);
-        pivot.parent.allowServerDataBinding = true;
-        const eventArgs: EnginePopulatedEventArgs = {
-            dataSourceSettings: PivotUtil.getClonedDataSourceSettings(this.parent.dataSourceSettings),
-            pivotValues: this.parent.pivotValues
-        };
-        this.parent.trigger(events.enginePopulated, eventArgs);
-        pivot.engineModule.pivotValues = eventArgs.pivotValues;
-        pivot.parent.renderPivotGrid();
-        //});
     }
 
     private isAttributeDrill(hierarchy: string, drillInfo: IDrillInfo[]): boolean {

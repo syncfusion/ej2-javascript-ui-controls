@@ -50,7 +50,8 @@ export class ColumnSeries extends ColumnBase {
                 series.columnWidthInPixel * series.columnSpacing : 0)) : this.rect.width;
             const rectCount: number = isNullOrUndefined(series.rectCount) ? 0 : series.rectCount;
             this.rect.x = series.columnWidthInPixel ? this.rect.x - (((series.columnWidthInPixel / 2) * rectCount) -
-                (series.columnWidthInPixel * (isNullOrUndefined(series.index) ? 0 : series.index))) : this.rect.x;
+                    (series.columnWidthInPixel * ((isNullOrUndefined(series.position) ? 0 : series.position)))) -
+                    (series.chart.enableSideBySidePlacement ? 0 : (series.columnWidthInPixel / 2)) : this.rect.x;
             const color: string = series.category === 'Indicator' ? pointColumn.color : series.interior;
             const argsData: IPointRenderEventArgs = this.triggerEvent(
                 series, pointColumn, color,

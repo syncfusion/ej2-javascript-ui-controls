@@ -1057,6 +1057,9 @@ export class MultiColumnComboBox extends Component<HTMLElement> implements INoti
                     this.gridData = listItems;
                     this.trigger('actionComplete', { result: listItems }, (e: Object) => {
                         if (!this.isMainDataUpdated) {
+                            if (this.isCustomFilter && (isNOU(this.dataSource) || (this.dataSource as any).length === 0)) {
+                                this.setProperties({ dataSource: listItems }, true);
+                            }
                             this.mainData = this.gridData;
                             this.remoteDataLength = (this.gridData as any).length;
                             this.isMainDataUpdated = true;
@@ -1302,6 +1305,8 @@ export class MultiColumnComboBox extends Component<HTMLElement> implements INoti
             removeClass([this.popupDiv], [NODATA]);
             const noRecordEle: HTMLElement = this.popupDiv.querySelector('.e-no-records');
             if (noRecordEle) { this.popupDiv.removeChild(noRecordEle); }
+        } else if (this.isCustomFilter && !hasNoDataClass && dataCount > 0) {
+            this.popupDiv.appendChild(this.gridEle);
         }
         if (this.isInitialRender) {
             const gridContentRow: HTMLElement | null = this.popupDiv.querySelector('.e-gridcontent tr');
@@ -1836,7 +1841,12 @@ export class MultiColumnComboBox extends Component<HTMLElement> implements INoti
                     if (eventArgs.cancel) { return; }
                     this.isCustomFilter = true;
                     this.customFilterQuery = query ? query.clone() : query;
-                    this.setGridData(dataSource, query);
+                    this.isMainDataUpdated = false;
+                    if (query) { this.setGridData(dataSource, query); } else {
+                        const filtered: Object | DataManager = this.filterDatas(dataSource as { [key: string]: Object }[],
+                                                                                this.typedString).data;
+                        this.setGridData(this.typedString !== '' ? filtered : dataSource, query);
+                    }
                 },
                 event: e,
                 cancel: false
@@ -2158,6 +2168,7 @@ export class MultiColumnComboBox extends Component<HTMLElement> implements INoti
                                     oldDataSource: Object | DataManager | DataResult): void {
         if (this.gridObj) {
             let dataLength: number;
+            this.isMainDataUpdated = false;
             this.isShowSpinner = true;
             this.setGridData(newDataSource);
             const isRemoteData: boolean = oldDataSource instanceof DataManager;

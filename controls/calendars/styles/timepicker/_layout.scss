@@ -1,5 +1,4 @@
 @use 'ej2-base/styles/common/mixin' as *;
-@use './theme-variables' as *;
 @include export-module('timepicker-layout') {
   //   timepicker layout
   .e-input-group.e-control-wrapper.e-time-wrapper.e-non-edit.e-input-focus .e-input:focus ~ .e-clear-icon,

@@ -1,5 +1,4 @@
 @use 'ej2-base/styles/common/mixin' as *;
-@use './theme-variables' as *;
 @mixin resizer-styles($display, $position, $top, $width, $index) {
   display: $display;
   position: $position;
@@ -547,6 +546,7 @@
         display: inline-flex;
         justify-content: flex-end;
         width: 100%;
+        height: 100%;
       }
 
       .e-label {
@@ -569,6 +569,7 @@
         float: left;
         outline: none;
         overflow: hidden;
+        height: 100%;
       }
 
       .e-indicator-span {
@@ -849,6 +850,11 @@
         text-overflow: ellipsis;
         vertical-align: middle;
         white-space: nowrap;
+      }
+
+      .e-task-label-inner-div {
+        align-content: center;
+        height: 100%;
       }
 
       .e-task-table {

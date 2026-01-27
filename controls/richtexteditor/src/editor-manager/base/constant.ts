@@ -76,7 +76,7 @@ export const BLOCK_TAGS: string[] = ['address', 'article', 'aside', 'audio', 'bl
     'canvas', 'details', 'dd', 'div', 'dl', 'dt', 'fieldset', 'figcaption', 'figure', 'footer',
     'form', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'header', 'hgroup', 'hr', 'li', 'main', 'nav',
     'noscript', 'ol', 'output', 'p', 'pre', 'section', 'table', 'tbody', 'td', 'tfoot', 'th',
-    'thead', 'tr', 'ul', 'video', 'body'];
+    'thead', 'tr', 'ul', 'video', 'body', 'colgroup', 'summary', 'legend', 'dialog', 'menu'];
 
 /**
  * @hidden

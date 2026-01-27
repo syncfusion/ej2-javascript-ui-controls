@@ -7745,7 +7745,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
      *
      */
 
-    @Property({ contextMenuAction: 'RightClick', contextMenuItems: [ContextMenuItem.Comment, ContextMenuItem.Copy, ContextMenuItem.Cut, ContextMenuItem.Delete, ContextMenuItem.Highlight, ContextMenuItem.Paste, ContextMenuItem.Properties, ContextMenuItem.ScaleRatio, ContextMenuItem.Strikethrough, ContextMenuItem.Underline, ContextMenuItem.Squiggly] })
+    @Property({ contextMenuAction: 'RightClick', contextMenuItems: [ContextMenuItem.Comment, ContextMenuItem.Copy, ContextMenuItem.Cut, ContextMenuItem.Delete, ContextMenuItem.Highlight, ContextMenuItem.Paste, ContextMenuItem.Properties, ContextMenuItem.ScaleRatio, ContextMenuItem.Strikethrough, ContextMenuItem.Underline, ContextMenuItem.Squiggly, ContextMenuItem.TextRedact] })
     public contextMenuSettings: ContextMenuSettingsModel;
     /**
      * Defines the custom context menu items.

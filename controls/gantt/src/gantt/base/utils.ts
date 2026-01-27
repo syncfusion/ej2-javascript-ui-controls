@@ -112,11 +112,13 @@ export function isRemoteData(dataSource: object): boolean {
  * @param {boolean} isNotExtend .
  * @param {ITaskAddedEventArgs} eventArgs .
  * @param {Gantt} parent .
+ * @param {boolean} isRecordAdded .
  * @returns {object[]} .
  * @hidden
  */
 export function getTaskData(
-    records: IGanttData[], isNotExtend?: boolean, eventArgs?: ITaskAddedEventArgs, parent?: Gantt): object[] | object {
+    records: IGanttData[], isNotExtend?: boolean, eventArgs?: ITaskAddedEventArgs, parent?: Gantt,
+    isRecordAdded?: boolean): object[] | object {
     if (eventArgs)
     {
         let result: object;
@@ -130,7 +132,7 @@ export function getTaskData(
     else {
         const result: object[] = [];
         for (let i: number = 0; i < records.length; i++) {
-            if (!isNullOrUndefined(parent) && parent.timezone) {
+            if (!isNullOrUndefined(parent) && parent.timezone && !isRecordAdded) {
                 updateDates(records[i as number], parent);
             }
             const data: object = isNotExtend ? (records[parseInt(i.toString(), 10)].taskData) :

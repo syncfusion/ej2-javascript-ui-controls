@@ -19,5 +19,5 @@
 @use 'ej2-layouts/styles/splitter/tailwind3-definition' as *;
 @use 'gantt/tailwind3-definition' as *;
 @use 'gantt/icons/tailwind3' as *;
-@use 'gantt/all' as *;
-@use 'gantt/bigger' as *;
+@use 'gantt/all.tailwind3' as *;
+@use 'gantt/bigger.tailwind3' as *;

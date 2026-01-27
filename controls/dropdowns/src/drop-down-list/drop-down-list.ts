@@ -1998,7 +1998,7 @@ export class DropDownList extends DropDownBase implements IInput {
         }
         if (this.allowFiltering && !this.enableVirtualization && this.getModuleName() !== 'autocomplete') {
             const filterIndex: number = this.getIndexByValueFilter(value, this.actionCompleteData.ulElement);
-            if (!isNullOrUndefined(filterIndex)) {
+            if (!isNullOrUndefined(filterIndex) && (this.getModuleName() !== 'combobox' || !this.autoFill)) {
                 this.activeIndex = filterIndex;
             }
             else {

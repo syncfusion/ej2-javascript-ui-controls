@@ -98,9 +98,17 @@ export class Editor {
     private endOffset: number;
     private pasteRequestHandler: XmlHttpRequestHandler;
     /**
+    * @private
+    */
+    public positionForPasteIcon: TextPosition = undefined;
+    /**
      * @private
      */
     public endParagraph: ParagraphWidget = undefined;
+    /**
+    * @private
+    */
+    public lastElementForPasteIcon: TextElementBox = undefined;
     private currentProtectionType: ProtectionType;
     private alertDialog: Dialog;
     private formFieldCounter: number = 1;
@@ -6395,12 +6403,12 @@ export class Editor {
      * @private
      */
     public pasteInternal(event: ClipboardEvent, pasteWindow?: any): void {
-        showSpinner(this.owner.element);
         this.currentPasteOptions = this.owner.defaultPasteOption;
         this.isHtmlPaste = false;
         if (this.documentHelper.owner.enableLocalPaste) {
             this.paste();
         } else {
+            showSpinner(this.owner.element);
             this.selection.isViewPasteOptions = true;
             if (this.selection.pasteElement) {
                 this.selection.pasteElement.style.display = 'none';
@@ -6446,6 +6454,7 @@ export class Editor {
                 this.applyPasteOptions(this.currentPasteOptions, true);
                 this.copiedContent = undefined;
                 this.documentHelper.editableDiv.innerHTML = '';
+                hideSpinner(this.owner.element);
             } else if (Browser.info.name !== 'msie' && clipbordData.items !== undefined && clipbordData.items.length !== 0) {
                 for (let m: number = 0; m < clipbordData.items.length; m++) {
                     let item: DataTransferItem = clipbordData.items[m];
@@ -7398,6 +7407,7 @@ export class Editor {
             }
         }
         this.isPaste = false;
+        this.positionForPasteIcon = undefined;
     }
 
     private pasteAsNewColumn(data: TableWidget): void {
@@ -7922,6 +7932,7 @@ export class Editor {
             }
             layoutWholeDocument = true;
         }
+        let pasteContentInsideTable: boolean = this.selection.start.paragraph.isInsideTable;
         this.documentHelper.layout.isPastingContent = true;
         for (let k: number = 0; k < bodyWidget.length; k++) {
             if (k !== 0) {
@@ -8007,8 +8018,17 @@ export class Editor {
                         }
                     }
                     this.insertBlockInternal(block, undefined, isSelectionInsideTable, this.isRemoteAction, true);
+                    if (block instanceof TableWidget) {
+                        this.lastElementForPasteIcon = undefined;
+                    }
                 }
             }
+        }
+        if (this.lastElementForPasteIcon && this.lastElementForPasteIcon instanceof TextElementBox && !pasteContentInsideTable) {
+            let offset = this.lastElementForPasteIcon.line.getOffset(this.lastElementForPasteIcon, this.lastElementForPasteIcon.length);
+            this.positionForPasteIcon = new TextPosition(this.owner);
+            this.positionForPasteIcon.setPositionParagraph(this.lastElementForPasteIcon.line, offset, true);
+            this.lastElementForPasteIcon = undefined;
         }
         this.documentHelper.layout.isPastingContent = false;
         if (!isNullOrUndefined(this.documentHelper.currentPage)) {
@@ -10796,6 +10816,12 @@ export class Editor {
      * @returns {void}
      */
     public reLayout(selection: Selection, isSelectionChanged?: boolean, isLayoutChanged?: boolean, isFromGroupAcceptReject?: boolean): void {
+        if (this.owner.isSpellCheck && selection.start && selection.start.currentWidget) {
+            const currentLineWidget: LineWidget = selection.start.currentWidget;
+            if (currentLineWidget.paragraph && currentLineWidget.paragraph.isInHeaderFooter) {
+                this.documentHelper.triggerSpellCheckForHF = true;
+            }
+        }
         if (!isNullOrUndefined(this.previousBlockToLayout)) {
             // Layout content for previous page to fix content based on KeepWithNext format.
             let previousBlock: BlockWidget = this.previousBlockToLayout;
@@ -10932,6 +10958,7 @@ export class Editor {
             this.owner.viewer.updateScrollBars();
         }
         this.owner.documentHelper.layout.isRelayout = false;
+        this.documentHelper.triggerSpellCheckForHF = false;
         this.isFootnoteElementRemoved = false;
         this.isEndnoteElementRemoved = false;
     }
@@ -13980,6 +14007,37 @@ export class Editor {
                     }
                 } else {
                     return this.getParagraphFormat(paragraph.previousRenderedWidget, levelNumber, listType);
+                }
+            }
+            else {
+                let tableParagraphFormat: WParagraphFormat = this.getTableFormat(paragraph.previousRenderedWidget as TableWidget, levelNumber, listType);
+                if (!isNullOrUndefined(tableParagraphFormat)) {
+                    return tableParagraphFormat;
+                }
+                else {
+                    return this.getParagraphFormat(paragraph.previousRenderedWidget as ParagraphWidget, levelNumber, listType);
+                }
+            }
+        }
+        return undefined;
+    }
+    private getTableFormat(table: TableWidget, levelNumber: number, listType: string): WParagraphFormat {
+        if (!isNullOrUndefined(table)) {
+            for (let i = table.childWidgets.length - 1; i >= 0; i--) {
+                let row = table.childWidgets[i] as TableRowWidget;
+                for (let j = row.childWidgets.length - 1; j >= 0; j--) {
+                    let cell = row.childWidgets[j] as TableCellWidget;
+                    for (let k = cell.childWidgets.length - 1; k >= 0; k--) {
+                        let block = cell.childWidgets[k] as BlockWidget;
+                        if (block instanceof ParagraphWidget && !isNullOrUndefined(block.paragraphFormat.listFormat)
+                            && block.paragraphFormat.listFormat.listId !== -1) {
+                            if (levelNumber === block.paragraphFormat.listFormat.listLevelNumber) {
+                                return block.paragraphFormat;
+                            }
+                        } else if (block instanceof TableWidget) {
+                            return this.getTableFormat(block, levelNumber, listType);
+                        }
+                    }
                 }
             }
         }

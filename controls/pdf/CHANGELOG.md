@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 32.1.25 (2026-01-27)
+
+### PDF
+
+#### Bug Fixes
+
+- Resolved an issue where incorrect padding was applied to stamp icons in rubber stamp annotations.
+
 ## 32.1.24 (2026-01-20)
 
 ### PDF

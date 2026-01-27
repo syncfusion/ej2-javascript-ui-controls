@@ -1499,6 +1499,17 @@ describe('MultiColumnComboBox control', () => {
                 done();
             }, 1200);
         });
+        it('DataSource change then reopen popup should retain items', () => {
+            multiColObj = new MultiColumnComboBox({
+                dataSource: [],
+                fields: { text: 'text', value: 'id' },
+                columns: [{ field: 'text', header: 'Language' }, { field: 'id', header: 'ID' }]
+            });
+            multiColObj.appendTo(element);
+            multiColObj.dataSource = languageData;
+            multiColObj.dataBind();
+            expect(multiColObj.mainData.length).toBeGreaterThan(0);
+        });
         it(' DataSource property dynamic change with remotedata data ', function (done) {
             let dataSource: DataManager = new DataManager({
                 url: 'https://services.odata.org/V4/Northwind/Northwind.svc/Customers',
@@ -2852,10 +2863,29 @@ describe('MultiColumnComboBox control', () => {
             });
             multiColObj2.appendTo(element);
             expect((multiColObj2 as any).gridObj.dataSource.length).toBe(9);
+            element.value = 'p';
+            element.dispatchEvent(event);
+            setTimeout(() => {
+                expect((multiColObj2 as any).gridObj.dataSource.length).toBe(1);
+                done();
+            }, 1200);
+        });
+        it('DataSource Not Updating When Using updateData Method with Custom Filtering - 1', (done) => {
+            multiColObj2 = new MultiColumnComboBox({
+                fields: { text: 'text', value: 'id' },
+                columns: [{ field: 'text', header: 'Language' }, { field: 'id', header: 'ID' }],
+                allowFiltering: true,
+                filtering: (args: FilteringEventArgs) => {
+                    args.preventDefaultAction = true;
+                    args.updateData(languageData);
+                }
+            });
+            multiColObj2.appendTo(element);
+            multiColObj2.focusIn();
             element.value = 'c';
             element.dispatchEvent(event);
             setTimeout(() => {
-                expect((multiColObj2 as any).gridObj.dataSource.length).toBe(3);
+                expect((multiColObj2 as any).gridObj.dataSource.length).toBe(1);
                 done();
             }, 1200);
         });

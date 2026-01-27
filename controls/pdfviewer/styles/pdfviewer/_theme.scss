@@ -1,6 +1,5 @@
 @use 'sass:math';
 @use 'ej2-base/styles/common/mixin' as *;
-@use './theme-variables' as *;
 $sm-mobile: 575.98;
 $mobile: 767.98;
 $medium-mobile: 375;
@@ -3069,6 +3068,22 @@ $lg-desktop: 1399.98;
     }
   }
 
+  .e-pv-blazor-main-container .e-pv-annotation-shapes-container.e-btn.e-icon-btn,
+  .e-pv-blazor-main-container .e-pv-annotation-calibrate-container.e-btn.e-icon-btn,
+  .e-pv-blazor-main-container .e-pv-annotation-color-container.e-dropdown-btn.e-btn,
+  .e-pv-blazor-main-container .e-pv-annotation-opacity-container.e-dropdown-btn.e-btn,
+  .e-pv-blazor-main-container .e-pv-annotation-stroke-container.e-dropdown-btn.e-btn,
+  .e-pv-blazor-main-container .e-pv-custom-annotation-thickness-container.e-dropdown-btn.e-btn,
+  .e-pv-blazor-main-container .e-pv-custom-annotation-opacity-container.e-dropdown-btn.e-btn,
+  .e-pv-blazor-main-container .e-pv-annotation-thickness-container.e-dropdown-btn.e-btn,
+  .e-pv-blazor-main-container .e-pv-annotation-textcolor-container.e-dropdown-btn.e-btn,
+  .e-pv-blazor-main-container .e-pv-annotation-textalign-container.e-dropdown-btn.e-btn,
+  .e-pv-blazor-main-container .e-pv-annotation-textprop-container.e-dropdown-btn.e-btn {
+    @if ($skin-name == 'fluent2') {
+      font-weight: $pv-font-weight-medium;
+    }
+  }
+
   .e-pv-blazor-main-container .e-menu-container ul.e-menu:not(.e-vertical) {
     @if ($skin-name == 'fabric') {
       padding: $pv-spacing-0;
@@ -4713,6 +4728,13 @@ $lg-desktop: 1399.98;
   .e-pv-stamp-template-container .e-pv-custom-annotation-stamp-container.e-menu-container ul .e-menu-item .e-caret {
     @if ($skin-name == 'fluent2') {
       line-height: $pv-line-height-36;
+    }
+  }
+
+  .e-bigger .e-pv-blazor-main-container .e-pv-custom-annotation-stamp-container.e-menu-container ul .e-menu-item .e-pv-stamp-icon,
+  .e-bigger .e-pv-blazor-main-container .e-pv-stamp-template-container .e-pv-custom-annotation-stamp-container.e-menu-container ul .e-menu-item .e-caret {
+    @if ($skin-name == 'fluent2') {
+      line-height: $pv-line-height-55;
     }
   }
 
@@ -7627,6 +7649,10 @@ $lg-desktop: 1399.98;
     position: absolute;
     width: $pv-width-p100;
     float: left;
+  }
+
+  .e-blazor-pdfviewer .e-overlay .e-pv-organize-view-icon {
+    color: $pv-thumbnail-icon-disable-color;
   }
 
   .e-blazor-pdfviewer .e-mobile-more-option {

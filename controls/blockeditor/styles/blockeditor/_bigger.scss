@@ -1,5 +1,4 @@
 @use 'ej2-base/styles/common/mixin' as *;
-@use './theme-variables' as *;
 @include export-module('blockeditor-bigger') {
   .e-bigger.e-blockeditor,
   .e-bigger .e-blockeditor {
@@ -160,8 +159,8 @@
 
   .e-bigger .e-table-gripper-action-popup {
     .e-icons {
-      font-size: 16px;
-      padding: 8px;
+      font-size: $be-table-popup-icon-size-bigger;
+      padding: $be-table-popup-icon-padding-bigger;
     }
   }
 

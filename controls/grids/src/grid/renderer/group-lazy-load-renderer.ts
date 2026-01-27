@@ -329,7 +329,7 @@ export class GroupLazyLoadRenderer extends ContentRender implements IRenderer {
     private actionComplete(args: NotifyArgs): void {
         const requestTypes: string[] = ['columnstate', 'reorder', 'save', 'beginEdit', 'delete',
             'infiniteScroll', 'columnVisibilityUpdate', 'columnChooserClose'];
-        if (!args.cancel && requestTypes.indexOf(args.requestType) === -1) {
+        if (!args.cancel && requestTypes.indexOf(args.requestType) === -1 && this.parent.groupSettings.columns.length) {
             this.scrollReset();
         }
     }

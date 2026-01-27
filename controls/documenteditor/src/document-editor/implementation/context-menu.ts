@@ -1,4 +1,4 @@
-import { ContextMenu as Menu, ContextMenuModel, MenuItemModel, MenuEventArgs, Item } from '@syncfusion/ej2-navigations';
+import { ContextMenu as Menu, ContextMenuModel, MenuItemModel, MenuEventArgs, Item, BeforeOpenCloseMenuEventArgs } from '@syncfusion/ej2-navigations';
 import { LayoutViewer, DocumentHelper } from './viewer';
 import { isNullOrUndefined, L10n, classList, Browser } from '@syncfusion/ej2-base';
 import { DocumentEditor } from '../document-editor';
@@ -368,13 +368,15 @@ export class ContextMenu {
             enableRtl: isRtl,
             items: this.addMenuItems(this.menuItems),
             cssClass: 'e-de-contextmenu-wrapper',
+            enableScrolling: true,
             select: (args: MenuEventArgs) => {
+                this.contextMenuInstance.element.parentElement.style.height = '';
                 let item: string = args.element.id;
                 this.handleContextMenuItem(item);
             },
         };
         this.contextMenuInstance = new Menu(menuOptions, '#' + this.documentHelper.owner.containerId + 'e-de-contextmenu-list');
-        this.contextMenuInstance.beforeOpen = (args: MenuEventArgs) => {
+        this.contextMenuInstance.beforeOpen = (args: BeforeOpenCloseMenuEventArgs) => {
             for (let index: number = 0; index < this.customMenuItems.length; index++) {
                 if (typeof this.customMenuItems[index].id !== 'undefined') {
                     this.ids[index] = this.customMenuItems[index].id;
@@ -395,6 +397,11 @@ export class ContextMenu {
             if (this.viewer && this.documentHelper.selection) {
                 classList(this.documentHelper.selection.caret, [], ['e-de-cursor-animation']);
                 this.documentHelper.selection.showCaret();
+            }
+            if (args.parentItem == null) {			
+                this.contextMenuInstance.element.parentElement.style.height = this.documentHelper.viewerContainer.style.height;
+                this.contextMenuInstance.element.parentElement.style.top = '0px';
+                this.contextMenuInstance.element.parentElement.style.position = 'absolute';
             }
         };
         if (!isNullOrUndefined(this.documentHelper.owner.documentEditorSettings.popupTarget)) {
@@ -708,7 +715,8 @@ export class ContextMenu {
             let allSuggestions: any;
             let exactData: string = this.spellChecker.manageSpecialCharacters(this.currentContextInfo.text, undefined, true);
             if (!isNullOrUndefined(exactData) && this.spellChecker.errorWordCollection.containsKey(exactData)  &&
-            this.spellChecker.errorWordCollection.get(exactData).indexOf(this.currentContextInfo.element) !== -1) {
+            (this.spellChecker.errorWordCollection.get(exactData).indexOf(this.currentContextInfo.element) !== -1 ||
+            this.documentHelper.selection.start.paragraph.isInHeaderFooter)) {
                 this.spellChecker.currentContextInfo = this.currentContextInfo;
                 if (this.spellChecker.errorSuggestions.containsKey(exactData)) {
                     allSuggestions = this.spellChecker.errorSuggestions.get(exactData).slice();

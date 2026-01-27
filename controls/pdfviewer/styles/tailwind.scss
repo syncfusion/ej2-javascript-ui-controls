@@ -1,5 +1,5 @@
 @use 'ej2-base/styles/definition/tailwind' as *;
 @use 'pdfviewer/tailwind-definition' as *;
 @use 'pdfviewer/icons/tailwind' as *;
-@use 'pdfviewer/all' as *;
-@use 'pdfviewer/bigger' as *;
+@use 'pdfviewer/all.tailwind' as *;
+@use 'pdfviewer/bigger.tailwind' as *;

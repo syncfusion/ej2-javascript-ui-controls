@@ -1,4 +1,5 @@
 @use 'ej2-base/styles/common/mixin' as *;
+
 @mixin tip-size($height, $left, $top, $width) {
   height: $height;
   left: $left;

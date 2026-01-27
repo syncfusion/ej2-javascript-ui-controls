@@ -941,7 +941,8 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
                             args = [''];
                         }
                         if (nestedFormula && libFormula) {
-                            const formulas: string[] = ['IF', 'INDEX', 'SORT', 'T', 'EXACT', 'PROPER', 'DOLLAR', 'DATE', 'TEXT'];
+                            const formulas: string[] = ['IF', 'INDEX', 'SORT', 'T', 'EXACT',
+                                'PROPER', 'DOLLAR', 'DATE', 'TEXT', 'ISNUMBER'];
                             if (formulas.some((formula: string): boolean => formula === libFormula)) {
                                 args.push('nestedFormulaTrue');
                             }
@@ -1927,6 +1928,9 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
                         }
                     }
                     stack.push(textName);
+                    if (textName === '') {
+                        emptyStack[stack.length - 1] = '0';
+                    }
                 } else if (pFormula[i as number] === 'q') {
                     const leftIdx: number = pFormula.substring(i + 1).indexOf(this.leftBracket);
                     const j: number = pFormula.substring(i + leftIdx + 1).indexOf(this.rightBracket);
@@ -2091,7 +2095,8 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
                         break;
                     case this.parser.tokenNotEqual:
                         {
-                            this.processLogical(stack, 'notEq');
+                            this.processLogical(stack, 'notEq', emptyStack);
+                            emptyStack.length = 0;
                             i = i + 1;
                         }
                         break;
@@ -2217,7 +2222,7 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
         let isOnlyAsterisk: boolean;
         let result: string;
         let isErrorString: boolean = false;
-        if (operator !== 'and' && operator !== 'equal') {
+        if (operator !== 'and' && operator !== 'equal' && operator !== 'notEq') {
             val1 = stack.pop();
             val2 = stack.pop();
             if (this.getErrorStrings().indexOf(val1) > -1) {
@@ -2273,12 +2278,6 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
                     this.trueValue : this.falseValue;
             }
         }
-        if (operator === 'notEq' && !isErrorString) {
-            result = (val2 !== val1) ? this.trueValue : this.falseValue;
-            if (isOnlyAsterisk) {
-                result = this.falseValue;
-            }
-        }
         if (operator === 'and' && !isErrorString) {
             val1 = stack.pop().toString();
             val2 = '';
@@ -2294,7 +2293,7 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
                 result = result.split(this.tic).join('');
             }
         }
-        if (operator === 'equal' && !isErrorString) {
+        if ((operator === 'equal' || operator === 'notEq') && !isErrorString) {
             let emptyValue1: string;
             let emptyValue2: string;
             if (emptyStack) {
@@ -2311,6 +2310,8 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
             } else if (this.getErrorStrings().indexOf(val2) > -1) {
                 result = val2;
             } else {
+                val1 = (val1 === 'TRUE') ? '1' : (val1 === 'FALSE') ? '0' : val1;
+                val2 = (val2 === 'TRUE') ? '1' : (val2 === 'FALSE') ? '0' : val2;
                 if (this.isNaN(this.parseFloat(val1)) && this.isNaN(this.parseFloat(val2))) {
                     val1 = val1.toString().toLowerCase();
                     val2 = val2.toString().toLowerCase();
@@ -2318,8 +2319,17 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
                 if (val1 === '*' && this.isNaN(this.parseFloat(val2)) && val2 !== '') {
                     isOnlyAsterisk = true;
                 }
-                result = val1 === val2 || (emptyValue1 !== undefined && emptyValue1 === val2) ||
-                    (emptyValue2 !== undefined && emptyValue2 === val1) || isOnlyAsterisk ? this.trueValue : this.falseValue;
+                if (operator === 'equal') {
+                    result = val1 === val2 || (emptyValue1 !== undefined && emptyValue1 === val2) ||
+                        (emptyValue2 !== undefined && emptyValue2 === val1) || isOnlyAsterisk ? this.trueValue : this.falseValue;
+                } else {
+                    if (isOnlyAsterisk) {
+                        result = this.falseValue;
+                    } else {
+                        result = val2 !== val1 && (!emptyValue1 || emptyValue1 !== val2) &&
+                            (!emptyValue2 || emptyValue2 !== val1) ? this.trueValue : this.falseValue;
+                    }
+                }
             }
         }
         if (operator === 'or' && !isErrorString) {

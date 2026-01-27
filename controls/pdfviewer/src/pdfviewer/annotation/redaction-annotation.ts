@@ -614,7 +614,8 @@ export class Redaction {
                             modifiedDate: annotation.ModifiedDate, author: annotation.Author
                         } as IReviewCollection,
                         isCommentLock: false,
-                        isReadonly: annotation.IsReadonly || false
+                        isReadonly: annotation.IsReadonly || false,
+                        originalName: annotation.OriginalName ? annotation.OriginalName : null
                     };
 
                     // Create PdfAnnotationBaseModel for redaction

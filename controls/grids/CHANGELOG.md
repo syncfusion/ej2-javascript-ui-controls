@@ -2,6 +2,15 @@
 
 ## [Unreleased]
 
+## 32.1.25 (2026-01-27)
+
+### Grid
+
+#### Bug fixes
+
+- `#I795201` - Resolved an issue where the scrollbar position was not retained after toggling columns in the column chooser when using `virtualization` along with lazy load grouping.
+- `#I803519` - Fixed an issue where a visual glitch occurred during vertical scrolling when Grid has fixed height and frozen rows.
+
 ## 32.1.24 (2026-01-20)
 
 ### Grid

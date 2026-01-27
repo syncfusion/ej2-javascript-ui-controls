@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 32.1.25 (2026-01-27)
+
+### Splitter
+
+#### Bug Fixes
+
+- `#I796885` - Resolved the issue where the aria-label on splitter resize buttons was not updating when changing culture.
+
 ## 25.1.35 (2024-03-15)
 
 ### Timeline

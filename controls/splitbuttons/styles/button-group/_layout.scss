@@ -1,6 +1,6 @@
 @use 'ej2-base/styles/common/mixin' as *;
 @use 'ej2-buttons/styles/button/mixin' as *;
-@use './theme-variables' as *;
+
 @include export-module('button-group-layout') {
 /* stylelint-disable */
   #{if(&, '&', '*')}.e-btn-group,

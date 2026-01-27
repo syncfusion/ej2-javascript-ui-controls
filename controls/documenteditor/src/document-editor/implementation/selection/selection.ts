@@ -969,11 +969,13 @@ export class Selection {
      */
     public selectContentControlInternal(fieldStart: ContentControl): void {
         if (fieldStart) {
-            const offset: number = fieldStart.line.getOffset(fieldStart, 1);
+            const offset: number = fieldStart.nextElement instanceof EditRangeStartElementBox ?
+                fieldStart.line.getOffset(fieldStart, 2) : fieldStart.line.getOffset(fieldStart, 1);
             const startPosition: TextPosition = new TextPosition(this.owner);
             let fieldEnd: ContentControl = fieldStart.reference;
             startPosition.setPositionParagraph(fieldStart.line, offset);
-            const endoffset: number = fieldEnd.line.getOffset(fieldEnd, 0);
+            const endoffset: number = fieldEnd.previousElement instanceof EditRangeEndElementBox ?
+                fieldEnd.line.getOffset(fieldEnd, -1) : fieldEnd.line.getOffset(fieldEnd, 0);
             const endPosition: TextPosition = new TextPosition(this.owner);
             endPosition.setPositionParagraph(fieldEnd.line, endoffset);
             //selects the field range
@@ -6477,7 +6479,8 @@ export class Selection {
             if (element.margin.top + element.height - measureObj.BaselineOffset > 0) {
                 top += element.margin.top + element.height - measureObj.BaselineOffset;
             }
-        } else if (!(element instanceof FieldElementBox)) {
+        } else if (!(element instanceof FieldElementBox || element instanceof EditRangeStartElementBox
+            || element instanceof EditRangeEndElementBox)) {
             top += margin.top > 0 ? margin.top : 0;
         }
         left = (isNullOrUndefined(element) || isNullOrUndefined(lineWidget)) ? 0 : this.getLeftInternal(lineWidget, element, index);
@@ -7624,6 +7627,9 @@ export class Selection {
                 if (element instanceof ContentControl) {
                     if ((element.type == 0 && element.nextNode == element.reference) || (element.type == 1 && element.previousNode == element.reference) || this.isMoveDownOrMoveUp) {
                         index = element.type === 0 ? (index + 1) : (index - 1);
+                    }
+                    if ((element.type === 0 && element.nextNode instanceof EditRangeStartElementBox) || (element.type === 1 && element.previousNode instanceof EditRangeEndElementBox)) {
+                        index = element.type === 0 ? (index + 2) : (index - 2);
                     }
                 }
                 if (!isNullOrUndefined(inline.previousElement) && inline.previousElement instanceof ShapeBase && inline.previousElement.textWrappingStyle !== 'Inline' && index == 0) {
@@ -9412,6 +9418,15 @@ export class Selection {
                         if (inline instanceof EditRangeStartElementBox) {    
                             this.characterFormat.highlightColor = inline.characterFormat.highlightColor;
                         }
+                        if (inline instanceof BookmarkElementBox && (inline as BookmarkElementBox).bookmarkType === 1) {
+                            this.characterFormat.highlightColor = 'NoColor';
+                            let preNodeInfo: ElementInfo = startPos.currentWidget.getInline(startOffset - 1, index);
+                            let nextNodeInfo: ElementInfo = startPos.currentWidget.getInline(startOffset + 1, index);
+                            if (!isNullOrUndefined(preNodeInfo.element) && preNodeInfo.element.characterFormat.highlightColor !== 'NoColor' && !isNullOrUndefined(nextNodeInfo.element)
+                                && nextNodeInfo.element.characterFormat.highlightColor !== 'NoColor') {
+                                this.characterFormat.highlightColor = preNodeInfo.element.characterFormat.highlightColor;
+                            }
+                        }
                     } else if (!isNullOrUndefined(this.getNextTextElement(inline))) {
                         let element: ElementBox = this.getNextTextElement(inline);
                         while (element instanceof FootnoteElementBox) {
@@ -9443,12 +9458,19 @@ export class Selection {
                     this.characterFormat.copyFormat(inline.characterFormat, this.documentHelper.textHelper.getFontNameToRender((inline as TextElementBox).scriptType, inline.characterFormat));
                     this.characterFormat.highlightColor = para.characterFormat.highlightColor;
                 } else if (!isNullOrUndefined(inline)) {
+                    let isBookmark: boolean = false;
+                    if (inline instanceof BookmarkElementBox && (inline as BookmarkElementBox).bookmarkType === 1) {
+                        isBookmark = true;
+                    }
                     inline = this.getPreviousTextElement(inline);
                     while (inline instanceof FootnoteElementBox) {
                         inline = this.getPreviousTextElement(inline);
                     }
                     if (!isNullOrUndefined(inline)) {
                         this.characterFormat.copyFormat(inline.characterFormat, this.documentHelper.textHelper.getFontNameToRender((inline as TextElementBox).scriptType, inline.characterFormat));
+                    }
+                    if (isBookmark) {
+                        this.characterFormat.highlightColor = para.characterFormat.highlightColor;
                     }
                 } else {
                     this.characterFormat.copyFormat(para.characterFormat);
@@ -10927,7 +10949,17 @@ export class Selection {
                     this.documentHelper.editableDiv.style.top = top + "px";
                 }
         }
-        this.showHidePasteOptions(this.caret.style.top, this.caret.style.left);
+        if (!isNullOrUndefined(this.owner.editorModule) && !isNullOrUndefined(this.owner.editorModule.positionForPasteIcon)) {
+            let page: Page = (this.owner.editorModule.positionForPasteIcon.paragraph.containerWidget as BlockContainer).page;
+            let caretInfo: CaretHeightInfo = this.updateCaretSize(this.owner.editorModule.positionForPasteIcon);
+            let top: number = (page.boundingRectangle.y - (this.viewer as PageLayoutViewer).pageGap * (this.documentHelper.pages.indexOf(page) + 1)) * this.documentHelper.zoomFactor + (this.viewer as PageLayoutViewer).pageGap * (this.documentHelper.pages.indexOf(page) + 1);
+            let topValue = top + (Math.round(this.owner.editorModule.positionForPasteIcon.location.y + caretInfo.topMargin) * this.documentHelper.zoomFactor);
+            let leftValue = page.boundingRectangle.x + (Math.round(this.owner.editorModule.positionForPasteIcon.location.x) * this.documentHelper.zoomFactor);
+            this.showHidePasteOptions(topValue + "px", leftValue + "px");
+        }
+        else {
+            this.showHidePasteOptions(this.caret.style.top, this.caret.style.left);
+        }
     }
     /**
      * @private

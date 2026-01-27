@@ -2061,7 +2061,7 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
      * @private
      */
     public removeSelectedClass(): void {
-        const selectedCells: Element[] = this.getSelectedCells();
+        const selectedCells: Element[] = [].slice.call(this.element.querySelectorAll('.' + cls.SELECTED_CELL_CLASS));
         for (const cell of selectedCells) {
             cell.removeAttribute('tabindex');
         }
@@ -2526,7 +2526,24 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
      * @private
      */
     public getSelectedCells(): Element[] {
-        return [].slice.call(this.element.querySelectorAll('.' + cls.SELECTED_CELL_CLASS));
+        const selectedCells: Element[] = [].slice.call(this.element.querySelectorAll('.' + cls.SELECTED_CELL_CLASS));
+        if (!selectedCells || selectedCells.length === 0) {
+            return [];
+        } else if (selectedCells.length === 1) {
+            return selectedCells;
+        }
+        if (selectedCells && selectedCells.length > 1) {
+            const hasAnyWorkCells: boolean = selectedCells.some((cell: Element) => cell.classList.contains(cls.WORK_CELLS_CLASS));
+            const workCells: Element[] = hasAnyWorkCells ?
+                selectedCells.filter((cell: Element) => !cell.classList.contains(cls.ALLDAY_CELLS_CLASS)) : selectedCells;
+            if (!workCells || workCells.length === 0) {
+                return [];
+            }
+            return [...workCells].sort(
+                (a: HTMLElement, b: HTMLElement) => (+a.dataset.date! || 0) - (+b.dataset.date! || 0)
+            );
+        }
+        return selectedCells;
     }
 
     /**

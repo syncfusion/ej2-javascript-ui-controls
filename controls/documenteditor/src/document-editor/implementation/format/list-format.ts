@@ -142,7 +142,8 @@ export class WListFormat {
     }
     public copyFormat(format: WListFormat): void {
         if (!isNullOrUndefined(format)) {
-            if (!isNullOrUndefined(format.uniqueListFormat)) {
+            if (!isNullOrUndefined(format.uniqueListFormat) || (!isNullOrUndefined(format.baseStyle) && !isNullOrUndefined((format.baseStyle as WParagraphStyle).paragraphFormat.listFormat)
+                && !isNullOrUndefined((format.baseStyle as WParagraphStyle).paragraphFormat.listFormat.uniqueListFormat) && isNullOrUndefined(format.list))) {
                 this.listId = format.listId;
                 this.listLevelNumber = format.listLevelNumber;
                 this.nsid = format.nsid;

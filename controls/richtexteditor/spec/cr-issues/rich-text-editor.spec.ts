@@ -630,6 +630,43 @@ describe('RTE CR issues ', () => {
             destroy(rteObj);
         });
     });
+    describe('Bug 1004553: Toolbar font-size indicator stays 10 after pasting word text at 12.', () => {
+        let rteObj: RichTextEditor;
+        beforeAll(() => {
+            rteObj = renderRTE({
+                value: `<p style="margin: 0in 0in 8pt; line-height: 107%; font-size: 12pt; font-family: &quot;Times New Roman&quot;, serif;">Font Size 12</p>
+<p style="margin: 0in 0in 8pt; line-height: 107%; font-size: 12pt; font-family: &quot;Times New Roman&quot;, serif;"><span style="font-size: 10pt; line-height: 107%;">Font Size 10</span></p>
+<p style="margin: 0in 0in 8pt; line-height: 107%; font-size: 12pt; font-family: &quot;Times New Roman&quot;, serif;"><span style="font-size: 14pt; line-height: 107%;">Font Size 14</span></p>`,
+                toolbarSettings: {
+                    items: ['FontSize']
+                },
+                fontSize: {
+                    items: [
+                        { text: '8', value: '8pt' },
+                        { text: '10', value: '10pt' },
+                        { text: '12', value: '12pt' },
+                        { text: '14', value: '14pt' },
+                        { text: '42', value: '42pt' }
+                    ],
+                    width: '40px',
+                    default: '10pt',
+                }
+            });
+        });
+        it('When the cursor is placed on text with font size 12, the toolbar status should update accordingly.', (done) => {
+            const startNode: Element = rteObj.inputElement.firstChild.firstChild as Element;
+            setCursorPoint(startNode, 2);
+            const mouseUpEvent: MouseEvent = new MouseEvent('mouseup', BASIC_MOUSE_EVENT_INIT);
+            rteObj.inputElement.dispatchEvent(mouseUpEvent);
+            setTimeout(() => {
+                expect(rteObj.element.querySelectorAll('.e-toolbar-item')[0].textContent).toBe('12');
+                done();
+            }, 100);
+        });
+        afterAll(() => {
+            destroy(rteObj);
+        });
+    });
     describe('Bug 992064: Editor gets broken when pressing the backspace key after a link in the RichTextEditor', () => {
         let rteObj: RichTextEditor;
         beforeAll(() => {
@@ -659,6 +696,107 @@ describe('RTE CR issues ', () => {
             rteObj.inputElement.dispatchEvent(backSpaceKeyUp);
             expect(rteObj.inputElement).not.toBe(null);
             expect(rteObj.inputElement.textContent.length).not.toBe(0);
+        });
+        afterAll(() => {
+            destroy(rteObj);
+        });
+    });
+    describe('Bug 1004322: Unexpected Image Deletion and Cursor Behavior in RTE When Using Shift + Enter.', () => {
+        let rteObj: RichTextEditor;
+        let keyboardEventArgs = {
+            preventDefault: function () { },
+            altKey: false,
+            ctrlKey: false,
+            shiftKey: true,
+            char: '',
+            key: '',
+            charCode: 13,
+            keyCode: 13,
+            which: 13,
+            code: 'Enter',
+            action: 'enter',
+            type: 'keydown'
+        };
+        beforeAll(() => {
+            rteObj = renderRTE({
+                value: `<p class="startNode"><img src="https://services.syncfusion.com/js/production/RichTextEditor/rte_image_33.jpeg" class="e-rte-image e-imginline" width="auto" height="auto" style="min-width: 0px; max-width: 1193px; min-height: 0px; opacity: 1;" alt="rte_image_33.jpeg"> </p>`
+            });
+        });
+        it('when pressing shift + enter after the image, br should be inserted at the end', () => {
+            const startNode: Element = rteObj.inputElement.querySelector('.startNode') as Element;
+            setCursorPoint((startNode.lastChild as Element), 0);
+            (<any>rteObj).keyDown(keyboardEventArgs);
+            expect(rteObj.inputElement.firstChild.nodeName).not.toBe('br');
+        });
+        afterAll(() => {
+            destroy(rteObj);
+        });
+    });
+    describe('Bug 1004322: Unexpected Image Deletion and Cursor Behavior in RTE When Using Shift + Enter.', () => {
+        let rteObj: RichTextEditor;
+        let keyboardEventArgs = {
+            preventDefault: function () { },
+            altKey: false,
+            ctrlKey: false,
+            shiftKey: true,
+            char: '',
+            key: '',
+            charCode: 13,
+            keyCode: 13,
+            which: 13,
+            code: 'Enter',
+            action: 'enter',
+            type: 'keydown'
+        };
+        const divElement: HTMLElement = createElement('div', {
+                    className: 'defaultRTE' });
+        beforeAll(() => {
+            document.body.appendChild(divElement);
+            rteObj = new RichTextEditor({
+                value: `<p class="startNode"><img src="blob:http://127.0.0.1:5501/44bbec2f-a189-40f8-b730-88d644d7389f" class="e-rte-image e-imginline" width="362" height="362" style="min-width: 0px; max-width: 1193px; min-height: 0px;"/></p>`
+            });
+            rteObj.appendTo(divElement);
+        });
+        it('when pressing shift + enter after the image, br should be inserted at the end', () => {
+            const startNode: Element = rteObj.inputElement.querySelector('.startNode') as Element;
+            setCursorPoint((startNode as Element), 1);
+            (<any>rteObj).keyDown(keyboardEventArgs);
+            expect(rteObj.inputElement.lastChild.nodeName).not.toBe('br');
+        });
+        afterAll(() => {
+            destroy(rteObj);
+            divElement.parentElement.removeChild(divElement);
+        });
+    });
+    describe('Bug 1004541: Pressing Enter and shift Enter doesn\'t work properly and throws script error in RichTextEditor.', () => {
+        let rteObj: RichTextEditor;
+        let keyboardEventArgs = {
+            preventDefault: function () { },
+            altKey: false,
+            ctrlKey: false,
+            shiftKey: false,
+            char: '',
+            key: '',
+            charCode: 13,
+            keyCode: 13,
+            which: 13,
+            code: 'Enter',
+            action: 'enter',
+            type: 'keydown'
+        };
+        beforeAll(() => {
+            rteObj = renderRTE({
+                value: `<p style="cursor: auto;" class="startNode"><span class="e-img-caption e-rte-img-caption e-caption-inline" contenteditable="false" draggable="false" style="width:auto"><span class="e-img-wrap"><img alt="Sky with sun" src="https://cdn.syncfusion.com/ej2/richtexteditor-resources/RTE-Overview.png" style="width: 480px;" class="e-rte-image e-imginline" width="480"/><span class="e-img-inner" contenteditable="false">Caption</span></span></span></p>`
+            });
+        });
+        it('when pressing enter and shift + enter after the image, br should be inserted at the end', () => {
+            const startNode: Element = rteObj.inputElement.querySelector('.startNode') as Element;
+            setCursorPoint((startNode as Element), 1);
+            (<any>rteObj).keyDown(keyboardEventArgs);
+            expect(rteObj.inputElement.lastChild.firstChild.nodeName.toLowerCase()).toBe('br');
+            keyboardEventArgs.shiftKey = true;
+            (<any>rteObj).keyDown(keyboardEventArgs);
+            expect(rteObj.inputElement.lastChild.firstChild.nextSibling.nodeName.toLowerCase()).toBe('br');
         });
         afterAll(() => {
             destroy(rteObj);
@@ -2869,6 +3007,42 @@ describe('RTE CR issues ', () => {
                 setTimeout(() => {
                     expect(rteObj.value).toBe('<p><br><br></p><div id="user_email_signature_content"><p style="line-height: 1.5;"><span style="font-size: 12pt;"><span style="font-family: Trebuchet MS;">Testing</span></span></p></div>');
                     done();
+                }, 100);
+            }, 100);
+        });
+        afterAll(() => {
+            destroy(rteObj);
+        });
+    });
+
+    describe('1003932 - Extra line breaks getting added when switching between preview and source view', () => {
+        let rteObj: RichTextEditor;
+        beforeAll(() => {
+            rteObj = renderRTE({
+                value: `<details _ngcontent-ng-c3380909316=""><summary _ngcontent-ng-c3380909316="">More info</summary>
+<p _ngcontent-ng-c3380909316="">This is the details content.</p>
+</details>`,
+                toolbarSettings: {
+                    items: ['SourceCode']
+                }
+            });
+        });
+        it('Press Enter at the start of the details element and switch to codeview', (done: Function) => {
+            rteObj.focusIn();
+            let targetElement = rteObj.element.querySelector('details') as HTMLElement;
+            rteObj.formatter.editorManager.nodeSelection.setCursorPoint(document, targetElement, 0);
+            rteObj.inputElement.dispatchEvent(new KeyboardEvent('keydown', ENTERKEY_EVENT_INIT));
+            rteObj.inputElement.dispatchEvent(new KeyboardEvent('keyup', ENTERKEY_EVENT_INIT));
+            setTimeout(() => {
+                const sourceCodeItem: HTMLElement = rteObj.element.querySelector('#' + rteObj.element.id + '_toolbar_SourceCode');
+                sourceCodeItem.click();
+                setTimeout(() => {
+                    const previewBtn: HTMLElement = rteObj.element.querySelector('#' + rteObj.element.id + '_toolbar_Preview');
+                    previewBtn.click();
+                    setTimeout(() => {
+                        expect(rteObj.inputElement.querySelectorAll('br').length).toBe(1);
+                        done();
+                    }, 100);
                 }, 100);
             }, 100);
         });

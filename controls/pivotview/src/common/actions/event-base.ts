@@ -594,7 +594,8 @@ export class EventBase {
         }
         const modifiedFieldName: string = fieldName.replace(/[^a-zA-Z0-9 ]/g, '_');
         for (const member of members) {
-            const mActualText: string | number = member.actualText || '';
+            const mActualText: string | number =
+                (isNullOrUndefined(member.actualText) || member.actualText === '') ? '' : member.actualText;
             let memberName: string = mActualText.toString();
             memberName = this.parent.enableHtmlSanitizer ? SanitizeHtmlHelper.sanitize(memberName) : memberName;
             const actualText: string | number = this.parent.enableHtmlSanitizer ?

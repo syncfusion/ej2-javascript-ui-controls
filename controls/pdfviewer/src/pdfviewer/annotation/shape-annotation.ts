@@ -262,7 +262,8 @@ export class ShapeAnnotation {
                                 labelBounds: annotation.LabelBounds,  annotationSelectorSettings: this.getSettings(annotation),
                                 labelSettings: annotation.LabelSettings, annotationSettings: annotation.AnnotationSettings,
                                 customData: this.pdfViewer.annotation.getCustomData(annotation), isPrint: annotation.IsPrint,
-                                isCommentLock: annotation.IsCommentLock, isAnnotationRotated: isAnnotationRotated
+                                isCommentLock: annotation.IsCommentLock, isAnnotationRotated: isAnnotationRotated,
+                                originalName: annotation.OriginalName ? annotation.OriginalName : null
                             };
                             let vPoints: PointModel[] = annotationObject.vertexPoints;
                             if (vertexPoints == null) {

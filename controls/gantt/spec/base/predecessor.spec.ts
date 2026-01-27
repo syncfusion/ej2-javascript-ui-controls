@@ -2292,3 +2292,139 @@ describe('CR-786381', () => {
         }
     });
 });
+describe('CR-802590', () => {
+    let ganttObj: Gantt;
+    beforeAll((done: Function) => {
+        ganttObj = createGantt(
+            {
+                dataSource: [
+                    { TaskID: 1, TaskName: "Planning and Permits", StartDate: new Date("12/01/2025"), Duration: 1, },
+                    { TaskID: 2, TaskName: "Site Evaluation", StartDate: new Date("12/01/2025"), Duration: 1, ParentId: 1 },
+                    { TaskID: 3, TaskName: "Obtain Permits", StartDate: new Date("12/02/2025"), Duration: 1, },
+                    { TaskID: 4, TaskName: "Finalize Planning", StartDate: new Date("12/03/2025"), Duration: 1, },
+                ],
+                dateFormat: 'MMM dd, y',
+                taskFields: {
+                    id: 'TaskID',
+                    name: 'TaskName',
+                    startDate: 'StartDate',
+                    endDate: 'EndDate',
+                    duration: 'Duration',
+                    progress: 'Progress',
+                    dependency: 'Predecessor',
+                    parentID: 'ParentId',
+                    notes: 'info',
+                    resourceInfo: 'resources'
+                },
+                enablePredecessorValidation: false,
+                durationUnit: "Day",
+                workUnit: "Day",
+                taskType: "FixedDuration",
+                taskMode: "Auto",
+                editSettings: {
+                    allowAdding: true,
+                    allowEditing: true,
+                    allowDeleting: true,
+                    allowTaskbarEditing: true,
+                    showDeleteConfirmDialog: true,
+                    newRowPosition: "Below"
+                },
+                toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll', 'Indent', 'Outdent'],
+                allowSelection: true,
+                gridLines: 'Both',
+                height: '650px',
+                rowHeight: 46,
+                enableHover: true,
+                taskbarHeight: 25,
+                treeColumnIndex: 1,
+                resourceFields: {
+                    id: 'resourceId',
+                    name: 'resourceName'
+                },
+                timezone: "UTC",
+                includeWeekend: true,
+                actionBegin: function (args) {
+                    if (args.requestType == "beforeOpenAddDialog") {
+
+                    }
+                },
+                created: function () {
+                    if (document.querySelector('.e-bigger')) {
+                        ganttObj.rowHeight = 48;
+                        ganttObj.taskbarHeight = 28;
+                    }
+                },
+                resources: [
+                    { resourceId: 1, resourceName: 'Martin Tamer' },
+                    { resourceId: 2, resourceName: 'Rose Fuller' },
+                    { resourceId: 3, resourceName: 'Margaret Buchanan' },
+                    { resourceId: 4, resourceName: 'Fuller King' },
+                    { resourceId: 5, resourceName: 'Davolio Fuller' },
+                    { resourceId: 6, resourceName: 'Van Jack' },
+                    { resourceId: 7, resourceName: 'Fuller Buchanan' },
+                    { resourceId: 8, resourceName: 'Jack Davolio' },
+                    { resourceId: 9, resourceName: 'Tamer Vinet' },
+                    { resourceId: 10, resourceName: 'Vinet Fuller' },
+                    { resourceId: 11, resourceName: 'Bergs Anton' },
+                    { resourceId: 12, resourceName: 'Construction Supervisor' },
+                    { resourceId: 13, resourceName: 'Nancy Davolio' },
+                    { resourceId: 14, resourceName: 'Anne Dodsworth' },
+
+                ],
+                highlightWeekends: true,
+                timelineSettings: {
+                    topTier: {
+                        unit: 'Week',
+                        format: 'MMM dd, y',
+                    },
+                    bottomTier: {
+                        unit: 'Day',
+                    },
+                },
+                columns: [
+                    { field: 'TaskID', width: 80 },
+                    { field: 'TaskName', headerText: 'Job Name', width: '250', clipMode: 'EllipsisWithTooltip', validationRules: { required: true, minLength: [5, 'Task name should have a minimum length of 5 characters'], } },
+                    { field: 'StartDate' },
+                    { field: 'EndDate' },
+                    { field: 'Duration', validationRules: { required: true } },
+                    { field: 'Progress', validationRules: { required: true, min: 0, max: 100 } },
+                    { field: 'Predecessor' }
+                ],
+                labelSettings: {
+                    leftLabel: 'TaskName',
+                    rightLabel: 'resources'
+                },
+                splitterSettings: {
+                    columnIndex: 3
+                },
+                editDialogFields: [
+                    { type: 'General', headerText: 'General' },
+                    { type: 'Dependency' },
+                    { type: 'Resources' },
+                    { type: 'Notes' },
+                ],
+            }, done);
+    });
+    it('Checking for startdate', (done: Function) => {
+        var record = {
+            TaskID: 10,
+            TaskName: 'Identify Site location',
+            StartDate: new Date("12/03/2025"),
+            Duration: 3,
+            Progress: 50,
+            Predecessor: "4FS"
+        };
+        ganttObj.editModule.addRecord(record);
+        ganttObj.actionComplete = (args: any): void => {
+            if (args.requestType == "add") {
+                expect(ganttObj.getFormatedDate( ganttObj.currentViewData[0].ganttProperties.startDate, 'hh:mm')).toBe('08:00');
+            }
+            done();
+        }
+    });
+    afterAll(() => {
+        if (ganttObj) {
+            destroyGantt(ganttObj);
+        }
+    });
+});

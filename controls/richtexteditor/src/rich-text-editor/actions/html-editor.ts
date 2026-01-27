@@ -1,6 +1,6 @@
 import { addClass, attributes, Browser, closest, detach, isNullOrUndefined as isNOU, isNullOrUndefined, KeyboardEventArgs, L10n, MouseEventArgs, removeClass } from '@syncfusion/ej2-base';
 import { ClickEventArgs } from '@syncfusion/ej2-navigations';
-import { hasAnyFormatting, isIDevice, removeClassWithAttr, scrollToCursor } from '../../common/util';
+import { hasAnyFormatting, isIDevice, removeClassWithAttr, scrollToCursor, convertFontSize } from '../../common/util';
 import { EditorManager } from '../../editor-manager';
 import { CodeBlockPosition, IHtmlKeyboardEvent } from '../../editor-manager/base/interface';
 import { InsertHtml } from '../../editor-manager/plugin/inserthtml';
@@ -197,7 +197,7 @@ export class HtmlEditor {
                 const index: number = items.findIndex(({ value }: { value: string }) => parseInt(value, 10) >= size);
                 activeElem = items[index as number].text;
             } else {
-                const convertedSize: number = this.convertFontSize(size, unit, defaultFontValues[2]);
+                const convertedSize: number = convertFontSize(size, unit, defaultFontValues[2]);
                 const index: number = items.findIndex(({ value }: { value: string }) => parseInt(value, 10) >= convertedSize);
                 activeElem = items[index as number].text;
             }
@@ -229,14 +229,6 @@ export class HtmlEditor {
             }
         }
         this.parent.formatter.process(this.parent, args, keyboardArgs);
-    }
-
-    private convertFontSize(value: number, originalUnit: string, targetUnit: string): number {
-        if (CONSTANT.supportedUnits.indexOf(originalUnit) !== -1 || CONSTANT.supportedUnits.indexOf(targetUnit) !== -1) {
-            originalUnit = 'px';
-        }
-        const convertedValue: number = value * CONSTANT.conversionFactors[originalUnit as string][targetUnit as string];
-        return convertedValue;
     }
 
     private onKeyUp(e: NotifyArgs): void {

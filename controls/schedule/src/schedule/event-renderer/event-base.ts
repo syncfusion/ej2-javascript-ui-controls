@@ -439,6 +439,8 @@ export class EventBase {
                 app.data = { index: index, count: eventLength };
                 app.Guid = this.generateGuid();
                 app.isSpanned = true;
+                app.data[eventFields.startTime] = event[eventFields.startTime];
+                app.data[eventFields.endTime] = event[eventFields.endTime];
                 data.push(app);
                 start = end;
                 if ((util.resetTime(new Date(start.getTime())).getTime() === util.resetTime(new Date(eventEndTime.getTime())).getTime())
@@ -994,8 +996,10 @@ export class EventBase {
         }
         let eventObject: Record<string, any> = this.getEventByGuid(guid);
         if (eventObject && eventObject.isSpanned) {
-            eventObject = this.parent.eventsData.filter((obj: Record<string, any>) =>
-                obj[this.parent.eventFields.id] === eventObject[this.parent.eventFields.id])[0];
+            const clonedEventObject: Record<string, any> = extend({}, eventObject, null, true) as Record<string, any>;
+            clonedEventObject[this.parent.eventFields.startTime] = eventObject.data[this.parent.eventFields.startTime];
+            clonedEventObject[this.parent.eventFields.endTime] = eventObject.data[this.parent.eventFields.endTime];
+            eventObject = clonedEventObject;
         }
         this.parent.activeEventData = { event: eventObject, element: target } as EventClickArgs;
     }

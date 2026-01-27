@@ -19,5 +19,5 @@
 @use 'ej2-layouts/styles/splitter/fluent2-definition' as *;
 @use 'gantt/fluent2-definition' as *;
 @use 'gantt/icons/fluent2' as *;
-@use 'gantt/all' as *;
-@use 'gantt/bigger' as *;
+@use 'gantt/all.fluent2' as *;
+@use 'gantt/bigger.fluent2' as *;

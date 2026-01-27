@@ -1492,7 +1492,7 @@ export class Drawing {
             const annotation: any = this.pdfViewer.selectedItems.annotations[0];
             const allowedInteraction: any = this.pdfViewer.annotationModule.updateAnnotationAllowedInteractions(annotation);
             const isLock: boolean = this.pdfViewer.annotationModule.checkIsLockSettings(annotation);
-            isSelectInAllowed = !isNullOrUndefined(allowedInteraction) && (allowedInteraction.includes('Select') || !isLock);
+            isSelectInAllowed = !isNullOrUndefined(allowedInteraction) && (!(allowedInteraction.length === 1 && allowedInteraction[0] === 'None') || !isLock);
         }
         return isSelectInAllowed;
     }
@@ -2125,15 +2125,12 @@ export class Drawing {
             this.pdfViewer.selectedItems.annotations[0].shapeAnnotationType as PdfAnnotationBaseModel :
             this.pdfViewer.selectedItems.formFields[0].formFieldAnnotationType as PdfFormFieldBaseModel;
         let allowPermission: boolean = false;
-        if (!this.pdfViewer.formDesignerModule) {
+        if (!(this.pdfViewer.formDesignerModule && this.pdfViewer.designerMode)) {
             const annotation: any = this.pdfViewer.selectedItems.annotations[0];
             const allowedInteraction: any = this.pdfViewer.annotationModule.updateAnnotationAllowedInteractions(annotation);
             const isLock: boolean = this.pdfViewer.annotationModule.checkIsLockSettings(annotation);
             if ((isLock || annotation.annotationSettings.isLock) && this.getAllowedInteractions(allowedInteraction)) {
                 allowPermission = true;
-            }
-            if (allowedInteraction[0] === 'Select'){
-                allowPermission = false;
             }
         }
         let resizerLocation: AnnotationResizerLocation = this.getResizerLocation(shapeType, currentSelector);
@@ -2476,7 +2473,7 @@ export class Drawing {
                     if (!(isReadOnly && isSign)) {
                         selectorModel.annotations.push(obj);
                         const checkBorder: boolean = this.shownBorder();
-                        if (checkBorder) {
+                        if (checkBorder && !isLock) {
                             this.initSelectorWrapper();
                             selectorModel.wrapper.rotateAngle = selectorModel.rotateAngle = 0;
                             selectorModel.wrapper.children.push(obj.wrapper);

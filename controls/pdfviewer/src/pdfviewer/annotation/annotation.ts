@@ -108,6 +108,7 @@ export interface IAnnotation {
     annotationSelectorSettings: AnnotationSelectorSettingsModel
     annotationSettings?: any
     isCommentLock?: boolean
+    originalName?: string
 }
 
 /**
@@ -999,8 +1000,16 @@ export class Annotation {
             if (annotation && pageIndex >= 0) {
                 if (annotation.shapeAnnotationType === 'textMarkup') {
                     if (annotation.rect || annotation.bounds) {
-                        const scrollValue: number = this.pdfViewerBase.pageSize[parseInt(pageIndex.toString(), 10)].top *
+                        let scrollValue: number = this.pdfViewerBase.pageSize[parseInt(pageIndex.toString(), 10)].top *
                         this.pdfViewerBase.getZoomFactor() + (this.getAnnotationTop(annotation)) * this.pdfViewerBase.getZoomFactor();
+                        const zoomFactor: number = this.pdfViewerBase.getZoomFactor();
+                        if (zoomFactor >= 2) {
+                            const boundingBox: any = this.getTextMarkupBounds(annotation);
+                            if (boundingBox) {
+                                scrollValue = this.pdfViewerBase.pageSize[parseInt(pageIndex.toString(), 10)].top *
+                                    zoomFactor + (boundingBox.top * zoomFactor);
+                            }
+                        }
                         if (!this.isAnnotDeletionApiCall) {
                             const scroll: string = (scrollValue - 20).toString();
                             this.pdfViewerBase.viewerContainer.scrollTop = parseInt(scroll, 10);
@@ -1108,6 +1117,42 @@ export class Annotation {
                 }
             }
         }
+    }
+
+    /**
+     * It returns the text markup annotation bounds.
+     * @param {any} markup - annotation
+     * @private
+     * @returns {any} - any
+     */
+    public getTextMarkupBounds(markup: any): any {
+        const segments: any = Array.isArray(markup.bounds) ? markup.bounds
+            : Array.isArray(markup.rect) ? markup.rect
+                : null;
+        if (segments && segments.length) {
+            let minLeft: number = Number.POSITIVE_INFINITY;
+            let minTop: number = Number.POSITIVE_INFINITY;
+            let maxRight: number = Number.NEGATIVE_INFINITY;
+            let maxBottom: number = Number.NEGATIVE_INFINITY;
+
+            for (const seg of segments) {
+                const left: number = !isNullOrUndefined(seg.Left) ? seg.Left : !isNullOrUndefined(seg.left) ?
+                    seg.left : !isNullOrUndefined(seg.x) ? seg.x : 0;
+                const top: number = !isNullOrUndefined(seg.Top) ? seg.Top : !isNullOrUndefined(seg.top) ?
+                    seg.top : !isNullOrUndefined(seg.y) ? seg.y : 0;
+                const right: number = !isNullOrUndefined(seg.Right) ? seg.Right :
+                    (left + (!isNullOrUndefined(seg.Width) ? seg.Width : (!isNullOrUndefined(seg.width) ? seg.width : 0)));
+                const bottom: number = !isNullOrUndefined(seg.Bottom) ? seg.Bottom :
+                    (top + (!isNullOrUndefined(seg.Height) ? seg.Height : (!isNullOrUndefined(seg.height) ? seg.height : 0)));
+
+                minLeft = Math.min(minLeft, left);
+                minTop = Math.min(minTop, top);
+                maxRight = Math.max(maxRight, right);
+                maxBottom = Math.max(maxBottom, bottom);
+            }
+            return { left: minLeft, top: minTop, width: Math.max(0, maxRight - minLeft), height: Math.max(0, maxBottom - minTop) };
+        }
+        return { left: 0, top: 0, width: 0, height: 0 };
     }
 
     // To update the collections for the non-rendered pages.
@@ -3717,7 +3762,8 @@ export class Annotation {
                         this.pdfViewer.annotationModule.textMarkupAnnotationModule : null;
                     const isTextMarkupContext: boolean = !!(tmModule && (tmModule.currentTextMarkupAnnotation ||
                         tmModule.isTextMarkupAnnotationMode));
-                    if (!(this.pdfViewerBase.tool instanceof PolygonDrawingTool) && !isTextMarkupContext) {
+                    const skipClearing: boolean = Browser.isDevice && this.pdfViewer.enableDesktopMode;
+                    if (!(this.pdfViewerBase.tool instanceof PolygonDrawingTool) && !(isTextMarkupContext && skipClearing)) {
                         this.pdfViewer.toolbar.annotationToolbarModule.enableAnnotationPropertiesTools(false);
                         this.pdfViewer.toolbar.annotationToolbarModule.enableFreeTextAnnotationPropertiesTools(false);
                     }
@@ -4032,7 +4078,9 @@ export class Annotation {
             this.pdfViewer.selectedItems.annotations[0].formFieldAnnotationType === null &&
             this.pdfViewer.selectedItems.annotations[0].shapeAnnotationType !== 'Redaction' &&
             this.pdfViewer.selectedItems.annotations[0] && this.pdfViewer.selectedItems.annotations[0].annotationSettings &&
-            !(this.pdfViewer.selectedItems.annotations[0].annotationSettings as any).isLock) {
+            (!(this.pdfViewer.selectedItems.annotations[0].annotationSettings as any).isLock  ||
+                this.checkAllowedInteractions('Delete', this.pdfViewer.selectedItems.annotations[0]) ||
+                this.checkAllowedInteractions('PropertyChange', this.pdfViewer.selectedItems.annotations[0]))) {
             if (this.pdfViewer.toolbar && this.pdfViewer.toolbar.annotationToolbarModule) {
                 if (!isBlazor() && Browser.isDevice && !this.pdfViewer.enableDesktopMode) {
                     const commentPanel: HTMLElement = document.getElementById(this.pdfViewer.element.id + '_commantPanel');
@@ -7195,7 +7243,13 @@ export class Annotation {
         }
         return isLocked;
     }
-    private checkLockSettings(locked: boolean): boolean {
+
+    /**
+     * @private
+     * @param {boolean} locked - locked
+     * @returns {boolean} - boolean
+     */
+    public checkLockSettings(locked: boolean): boolean {
         let islock: boolean = false;
         if (locked || this.pdfViewer.annotationSettings.isLock) {
             islock = true;

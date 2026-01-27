@@ -5276,5 +5276,72 @@ describe(' Islamic Calendar', () => {
             calendarObj.destroy();
         });
     });
+    describe('Tab key behavior for DatePicker/DateTimePicker context', () => {
+        let calendar: any;
+
+        beforeEach(() => {
+            const ele: HTMLElement = createElement('div', { id: 'calendar' });
+            document.body.appendChild(ele);
+        });
+
+        afterEach(() => {
+            if (calendar) {
+                calendar.destroy();
+            }
+            document.body.innerHTML = '';
+        });
+
+        it('should focus input and hide popup when pressing Tab on Today button (showTodayButton: true)', () => {
+            calendar = new Calendar({ showTodayButton: true, value: new Date() });
+            debugger;
+            calendar.appendTo('#calendar');
+
+            spyOn(calendar as any, 'getModuleName').and.returnValue('datepicker');
+
+            expect(calendar.todayElement).toBeTruthy();
+
+            const hideSpy = jasmine.createSpy('hide');
+            (calendar as any).hide = hideSpy;
+            const preventDefaultSpy = jasmine.createSpy('preventDefault');
+
+            const keyEventArgs: any = {
+                preventDefault: preventDefaultSpy,
+                target: calendar.todayElement,
+                action: 'tab'
+            };
+
+            calendar.keyActionHandle(keyEventArgs);
+
+            expect(preventDefaultSpy).toHaveBeenCalled();
+            expect(hideSpy).toHaveBeenCalled();
+            expect(document.activeElement).toBe(calendar.element);
+        });
+
+        it('should focus input and hide popup when pressing Tab on table (showTodayButton: false)', () => {
+            debugger;
+            calendar = new Calendar({ showTodayButton: false, value: new Date() });
+            calendar.appendTo('#calendar');
+
+            spyOn(calendar as any, 'getModuleName').and.returnValue('datepicker');
+
+            expect(calendar.todayElement).toBeUndefined();
+
+            const hideSpy = jasmine.createSpy('hide');
+            (calendar as any).hide = hideSpy;
+            const preventDefaultSpy = jasmine.createSpy('preventDefault');
+
+            const keyEventArgs: any = {
+                preventDefault: preventDefaultSpy,
+                target: calendar.table,
+                action: 'tab'
+            };
+
+            calendar.keyActionHandle(keyEventArgs);
+
+            expect(preventDefaultSpy).toHaveBeenCalled();
+            expect(hideSpy).toHaveBeenCalled();
+            expect(document.activeElement).toBe(calendar.element);
+        });
+    });
 });
 

@@ -2,5 +2,5 @@
 @use 'ej2-buttons/styles/button/highcontrast-definition' as *;
 @use 'ej2-popups/styles/spinner/highcontrast-definition' as *;
 @use 'highcontrast-definition' as *;
-@use 'all' as *;
-@use 'bigger' as *;
+@use 'all.highcontrast' as *;
+@use 'bigger.highcontrast' as *;

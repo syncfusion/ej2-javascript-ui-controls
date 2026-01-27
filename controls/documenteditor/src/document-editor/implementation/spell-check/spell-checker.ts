@@ -2,7 +2,7 @@
 import { LayoutViewer, ContextElementInfo, TextPosition, ElementInfo, ErrorInfo, WCharacterFormat, SpecialCharacterInfo, SpaceCharacterInfo, TextSearchResults, TextInLineInfo, TextSearchResult, MatchResults, SfdtExport, TextExport, WordSpellInfo, TextSearch, HelperMethods } from '../index';
 import { ServiceFailureArgs, XmlHttpRequestEventArgs, beforeXmlHttpRequestSend } from './../../index';
 import { Dictionary } from '../../base/dictionary';
-import { ElementBox, TextElementBox, ErrorTextElementBox, LineWidget, TableCellWidget, Page, FieldElementBox, ParagraphWidget, TableWidget, TableRowWidget, HeaderFooterWidget, BlockWidget, ShapeBase, ShapeElementBox, GroupShapeElementBox, BodyWidget, Widget, FootNoteWidget } from '../viewer/page';
+import { ElementBox, TextElementBox, ErrorTextElementBox, LineWidget, TableCellWidget, Page, FieldElementBox, ParagraphWidget, TableWidget, TableRowWidget, HeaderFooterWidget, BlockWidget, ShapeBase, ShapeElementBox, GroupShapeElementBox, BodyWidget, Widget, FootNoteWidget, FootnoteElementBox } from '../viewer/page';
 import { isNullOrUndefined } from '@syncfusion/ej2-base';
 import { BaselineAlignment, TextWrappingStyle } from '../../base/types';
 import { DocumentHelper } from '../viewer';
@@ -273,6 +273,9 @@ export class SpellChecker {
             this.documentHelper.selection.start = (dialogElement as ErrorTextElementBox).start.clone();
             this.documentHelper.selection.end = (dialogElement as ErrorTextElementBox).end.clone();
             if (content !== 'Ignore Once') {
+                if(this.documentHelper.selection.start.paragraph.isFieldCodeBlock){
+                    return;
+                }
                 content = this.manageSpecialCharacters(exactText, content);
                 this.addRemovedElements(isChangeAll, dialogElement);
                 this.documentHelper.owner.editorModule.insertTextInternal(content, true);
@@ -425,16 +428,9 @@ export class SpellChecker {
     public handleIgnoreOnceInternal(errorElement: ErrorTextElementBox, isundoing: boolean): void {
         const startPosition: TextPosition = errorElement.start;
         const endPosition: TextPosition = errorElement.end;
-        const inlineObj: ElementInfo = (startPosition.currentWidget as LineWidget).getInline(startPosition.offset, 0, false, true);
-        let startInlineObj: ElementBox = inlineObj.element;
-        let endInlineObj: ElementBox = (endPosition.currentWidget as LineWidget).getInline(endPosition.offset, 0, false, true).element;
+        let startInlineObj: ElementBox = (startPosition.currentWidget as LineWidget).getInline(startPosition.offset, 0, false, true).element;
+        const endInlineObj: ElementBox = (endPosition.currentWidget as LineWidget).getInline(endPosition.offset, 0, false, true).element;
         this.handleErrorElements.push(errorElement);
-        this.splitTextBoxElement(startInlineObj, inlineObj.index, errorElement.text.length + inlineObj.index);
-        const currentErrorElement: ElementBox = this.updateErroElement(errorElement);
-        if (currentErrorElement) {
-            startInlineObj = currentErrorElement;
-            endInlineObj = currentErrorElement;
-        }
         while (true) {
             const exactText: string = this.manageSpecialCharacters(errorElement.text, undefined, true);
             const textIndex: number = (startInlineObj as TextElementBox).ignoreOnceItems.indexOf(exactText)
@@ -520,67 +516,6 @@ export class SpellChecker {
         });
     }
 
-
-    private splitTextBoxElement(inline: ElementBox, startIndex: number, endIndex: number): ElementBox {
-        let currentElement: ElementBox = inline;
-        let node: ElementBox = inline;
-        let index: number = inline.line.children.indexOf(node);
-        let paragraph: ParagraphWidget = inline.paragraph;
-        let textElement: TextElementBox;
-        let indexCountForRevision: number = 0;
-        if (startIndex > 0) {
-            indexCountForRevision += 1;
-            textElement = new TextElementBox();
-            textElement.characterFormat.copyFormat(inline.characterFormat);
-            if(!isNullOrUndefined(inline.contentControlProperties)){
-                textElement.contentControlProperties = inline.contentControlProperties;
-            }
-            textElement.line = inline.line;
-            textElement.text = (inline as TextElementBox).text.substr(startIndex, endIndex - startIndex);
-            textElement.isRightToLeft = inline.isRightToLeft;
-            this.updateErrorCollectionForSplitElement((inline as TextElementBox), textElement);
-            index++;
-            node.line.children.splice(index, 0, textElement);
-            this.documentHelper.owner.editorModule.updateRevisionForFormattedContent(inline, textElement, indexCountForRevision);
-            // currentElement = textElement;
-            inline.isWidthUpdated = false;
-        }
-        if (endIndex < node.length) {
-            indexCountForRevision += 1;
-            textElement = new TextElementBox();
-            textElement.characterFormat.copyFormat(inline.characterFormat);
-            if(!isNullOrUndefined(inline.contentControlProperties)){
-                textElement.contentControlProperties = inline.contentControlProperties;
-            }
-            textElement.text = (node as TextElementBox).text.substring(endIndex);
-            textElement.line = inline.line;
-            this.updateErrorCollectionForSplitElement((inline as TextElementBox), textElement);
-            textElement.isRightToLeft = inline.isRightToLeft;
-            index++;
-            node.line.children.splice(index, 0, textElement);
-            this.documentHelper.owner.editorModule.updateRevisionForFormattedContent(inline, textElement, indexCountForRevision);
-            inline.isWidthUpdated = false;                    
-        }
-        if (startIndex === 0) {
-            (inline as TextElementBox).text = (inline as TextElementBox).text.substr(0, endIndex);
-        } else {
-            (inline as TextElementBox).text = (inline as TextElementBox).text.substr(0, startIndex);
-        }
-        this.documentHelper.layout.reLayoutParagraph(paragraph, inline.line.indexInOwner, 0);
-        return currentElement;
-    }
-
-    private updateErroElement(errorElement: ErrorTextElementBox): TextElementBox {
-        const startPosition: TextPosition = errorElement.start;
-        const endPosition: TextPosition = errorElement.end;
-        for (let i: number =0; i < (startPosition.currentWidget as LineWidget).children.length; i++) {
-            const errorCollection = ((startPosition.currentWidget as LineWidget).children[i] as TextElementBox).errorCollection;
-            if (errorCollection && errorCollection.indexOf(errorElement) === 0) {
-                return (startPosition.currentWidget as LineWidget).children[i] as TextElementBox;
-            }
-        }
-        return null;
-    }
     /**
      * Method to append/remove special characters
      *
@@ -980,7 +915,7 @@ export class SpellChecker {
         }
         if (jsonObject.HasSpellingError && isSamePage) {
             this.addErrorCollection(currentText, elementBox, jsonObject.Suggestions);
-            if (currentText === elementBox.text.trim()) {
+            if (currentText.trim() === elementBox.text.trim()) {
                 const backgroundColor: string = (elementBox.line.paragraph.containerWidget instanceof TableCellWidget) ? (elementBox.line.paragraph.containerWidget as TableCellWidget).cellFormat.shading.backgroundColor : this.documentHelper.backgroundColor;
                 this.documentHelper.render.renderWavyLine(elementBox, left, top, underlineY, '#FF0000', 'Single', baselineAlignment, backgroundColor);
                 elementBox.isSpellChecked = true;
@@ -1020,7 +955,7 @@ export class SpellChecker {
                     if (!isNullOrUndefined(textElement) && textElement.revisionLength > 0 && textElement.getRevision(0).revisionType === "Deletion") {
                         break;
                     }
-                    if (textElement instanceof TextElementBox && !isPrevField) {
+                    if (textElement instanceof TextElementBox && !isPrevField && !(textElement instanceof FootnoteElementBox)) {
                         if (prevText.indexOf(' ') !== 0 && textElement.text.lastIndexOf(' ') !== textElement.text.length - 1) {
                             prevCombined = !isNullOrUndefined(textToCombine) ? true : false;
                             currentText = textElement.text + currentText;
@@ -1044,10 +979,12 @@ export class SpellChecker {
                     return true;
                 }
             }
-            if (isPrevious) {
-                currentText = (prevCombined) ? currentText : elementBox.text + currentText;
-            } else {
-                currentText += elementBox.text;
+            if (!(elementBox instanceof FootnoteElementBox)) {
+                if (isPrevious) {
+                    currentText = (prevCombined) ? currentText : elementBox.text + currentText;
+                } else {
+                    currentText += elementBox.text;
+                }
             }
             isPrevField = false;
             let nextText: string = elementBox.text;
@@ -1059,7 +996,7 @@ export class SpellChecker {
                     if (!isNullOrUndefined(element) && element.revisionLength > 0 && element.getRevision(0).revisionType === "Deletion") {
                         break;
                     }
-                    if (element instanceof TextElementBox && !isPrevField) {
+                    if (element instanceof TextElementBox && !isPrevField && !(element instanceof FootnoteElementBox)) {
                         if (nextText.lastIndexOf(' ') !== nextText.length - 1 && element.text.indexOf(' ') !== 0) {
                             currentText += element.text;
                             nextText = element.text;
@@ -1575,7 +1512,7 @@ export class SpellChecker {
         let matchObject: RegExpExecArray;
         // eslint-disable  no-cond-assign
         while (!isNullOrUndefined(matchObject = pattern.exec(text))) {
-            if (this.isChangeAll) {
+            if (this.isChangeAll  && !(errorElement instanceof ErrorTextElementBox)) {
                 matchObject.index = spans.get(errorElement);
             }
             matches.push(matchObject);
@@ -1705,30 +1642,6 @@ export class SpellChecker {
                 if (currentElement.text.indexOf(errorCollection[i].text) === -1) {
                     splittedElement.isChangeDetected = true;
                     currentElement.errorCollection.splice(0, 1);
-                }
-            }
-        }
-    }
-    /**
-     * Method to update error collection
-     *
-     * @private
-     * @param {TextElementBox} currentElement - Specifies current element.
-     * @param {TextElementBox} splittedElement - Specifies splitted element.
-     * @returns {void}
-     */
-    public updateErrorCollectionForSplitElement(currentElement: TextElementBox, splittedElement: TextElementBox): void {
-        const errorCount: number = (currentElement && currentElement.errorCollection) ? currentElement.errorCollection.length : 0;
-        if (errorCount > 0) {
-            const errorCollection: ErrorTextElementBox[] = [];
-            for (let i: number = 0; i < errorCount; i++) {
-                errorCollection.push(currentElement.errorCollection[i]);
-            }
-            for (let i: number = 0; i < errorCount; i++) {
-                if (splittedElement && splittedElement.text.indexOf(errorCollection[i].text) !== -1) {
-                    splittedElement.errorCollection.push(errorCollection[i]);
-                    splittedElement.isChangeDetected = true;
-                    currentElement.errorCollection.splice(i, 1);
                 }
             }
         }

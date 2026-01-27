@@ -232,6 +232,9 @@ export class InkAnnotation {
                 this.pdfViewer.inkAnnotationSettings.allowedInteractions : this.pdfViewer.annotationSettings.allowedInteractions;
             const annotationSettings: any = this.pdfViewer.annotationSettings ? this.pdfViewer.annotationSettings :
                 this.pdfViewer.annotationModule.updateAnnotationSettings(this.pdfViewer.inkAnnotationSettings);
+            if (isLock) {
+                annotationSettings.isLock = true;
+            }
             annot = {
                 id: 'ink' + this.pdfViewerBase.inkCount, bounds: { x: currentBounds.x, y: currentBounds.y, width: currentBounds.width, height: currentBounds.height }, pageIndex: pageIndex, data: this.outputString, customData: customData,
                 shapeAnnotationType: 'Ink', opacity: opacity, strokeColor: strokeColor, thickness: thickness, annotName: annotationName, comments: [],
@@ -487,7 +490,8 @@ export class InkAnnotation {
                             modifiedDate: currentAnnotation.ModifiedDate, author: currentAnnotation.Author }, notes:
                                 currentAnnotation.Note, annotationSettings: currentAnnotation.AnnotationSettings,
                         annotationSelectorSettings: selectorSettings, customData: customData, isPrint: isPrint,
-                        isCommentLock: currentAnnotation.IsCommentLock
+                        isCommentLock: currentAnnotation.IsCommentLock,
+                        originalName: currentAnnotation.OriginalName ? currentAnnotation.OriginalName : null
                     };
                     this.pdfViewer.add(annot as PdfAnnotationBase);
                     const canvasPageIndex: any = currentAnnotation.pageIndex ? currentAnnotation.pageIndex : currentAnnotation.PageNumber;

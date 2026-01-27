@@ -36,10 +36,11 @@ export class RangeColumnSeries extends ColumnBase {
             rect.width = series.columnWidthInPixel ? series.columnWidthInPixel : rect.width;
             if (series.columnWidthInPixel) {
                 if (series.chart.columns.length === 1) {
+                    const rectCount: number = isNullOrUndefined(series.rectCount) ? 0 : series.rectCount;
                     rect.x =
-                        rect.x -
-                        ((series.columnWidthInPixel / 2) * (isNullOrUndefined(series.rectCount) ? 0 : series.rectCount)) -
-                        (series.columnWidthInPixel * (isNullOrUndefined(series.index) ? 0 : series.index));
+                        rect.x - (((series.columnWidthInPixel / 2) * rectCount) -
+                        (series.columnWidthInPixel * (rectCount - (isNullOrUndefined(series.position) ? 0 : series.position) - 1))) +
+                        (series.chart.enableSideBySidePlacement ? 0 : (series.columnWidthInPixel / 2));
                 } else {
                     rect.x = rect.x + rect.width / 2 - series.columnWidthInPixel;
                 }

@@ -12411,10 +12411,10 @@ export class PdfRubberStampAnnotation extends PdfComment {
         return color;
     }
     _drawRubberStamp(graphics: PdfGraphics, pen: PdfPen, brush: PdfBrush, font: PdfStandardFont, format: PdfStringFormat): void {
-        graphics.drawRoundedRectangle({x: 2, y: 1, width: this._stampWidth, height: 26}, 3, pen, brush);
+        const bounds: Rectangle = {x: 2, y: 1, width: this._stampWidth, height: 26};
+        graphics.drawRoundedRectangle(bounds, 3, pen, brush);
         const pdfBrush: PdfBrush = new PdfBrush(this._obtainBorderColor());
-        graphics.drawString(this._iconString.toUpperCase(), font, {x: (this._stampWidth / 2) + 1, y: 15,
-            width: 0, height: 0}, null, pdfBrush, format);
+        graphics.drawString(this._iconString.toUpperCase(), font, bounds, null, pdfBrush, format);
     }
     _obtainInnerBounds(): {x: number, y: number, width: number, height: number} {
         let bounds: {x: number, y: number, width: number, height: number} = {x: 0, y: 0, width: 0, height: 0};

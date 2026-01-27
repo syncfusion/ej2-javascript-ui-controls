@@ -1,5 +1,4 @@
 @use 'ej2-base/styles/common/mixin' as *;
-@use './theme-variables' as *;
 @include export-module('blockeditor-layout') {
 
   /* ======== Main Editor ======== */
@@ -7,6 +6,10 @@
     overflow: auto;
     overflow-x: hidden;
     position: relative;
+
+    &:has([data-resizing = 'true']) {
+      cursor: col-resize;
+    }
     .e-block-container {
       font-family: $be-font-family;
       font-size: $be-font-size;
@@ -95,6 +98,13 @@
       }
     }
 
+    /* ======== Horizontal Scrollable Block styles ======== */
+    .e-scrollable-block {
+      overflow-x: auto;
+      scroll-behavior: smooth;
+      position: relative;
+    }
+
     /* ======== Divider Blocks Level styles ======== */
     .e-divider-block {
       display: flex;
@@ -124,6 +134,7 @@
       }
 
       &[data-block-type = 'Table'] {
+        user-select: none;
         padding: $be-block-table-padding;
         padding-left: $be-block-table-padding-left;
       }
@@ -172,7 +183,7 @@
           }
 
           &:has(.e-checked) {
-            li {
+            li.e-checked:not(:empty) {
               text-decoration: line-through;
             }
           }
@@ -437,6 +448,9 @@
 
     /* ======== Table Block Styles ======== */
     .e-table-block {
+      .e-table-container {
+        padding-bottom: 10px;
+      }
       table {
         width: 100%;
         border-collapse: collapse;
@@ -453,6 +467,9 @@
         font-weight: $be-table-heading-font-weight;
         font-size: $be-table-heading-font-size;
         line-height: $be-table-heading-line-height;
+        text-overflow: ellipsis;
+        overflow: hidden;
+        white-space: nowrap;
       }
       td {
         height: $be-table-col-height;
@@ -534,10 +551,22 @@
       .e-row-dot-hit,
       .e-col-dot-hit {
         position: absolute;
-        width: 12px;
-        height: 12px;
-        border-radius: $be-table-icons-border-radius;
         z-index: 7;
+      }
+      .e-col-resize-handle {
+        position: absolute;
+        width: 5px;
+        cursor: col-resize;
+        z-index: 20;
+        display: none;
+      }
+      .e-row-dot-hit {
+        width: 22px;
+        height: 26px;
+      }
+      .e-col-dot-hit {
+        width: 26px;
+        height: 22px;
       }
     }
 
@@ -551,20 +580,6 @@
       }
     }
 
-    .e-row-add-indicator,
-    .e-col-add-indicator {
-      border-radius: $be-row-col-indicator-border-radius;
-      width: $be-col-add-indicator-width;
-      height: $be-col-add-indicator-height;
-      font-size: $be-row-col-indicator-font-size;
-      text-align: center;
-      align-items: center;
-      justify-content: center;
-      display: flex;
-      cursor: pointer;
-      user-select: none;
-      position: absolute;
-    }
     .e-row-hover-line {
       height: $be-row-hover-line-height;
     }
@@ -575,6 +590,7 @@
     /* ======== Image Block Styles ======== */
     .e-image-container {
       margin: $be-image-container-margin;
+      max-width: 100%;
       .e-image-rsz-handle.e-resize-nw {
         top: -4px;
         left: -4px;
@@ -670,16 +686,15 @@
 
   .e-table-gripper-action-popup {
     display: flex;
-    gap: 10px;
     padding: $be-table-gripper-action-popup-padding;
     border-radius: $be-table-gripper-action-popup-border-radius;
     justify-content: center;
     align-items: center;
     .e-icons {
       cursor: pointer;
-      font-size: 14px;
+      font-size: $be-table-popup-icon-size;
       line-height: 100%;
-      padding: 6px;
+      padding: $be-table-popup-icon-padding;
       border-radius: 4px;
     }
   }

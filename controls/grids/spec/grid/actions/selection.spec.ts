@@ -7852,4 +7852,42 @@ describe('EJ2-985690: Partial Selection module', () => {
             gridObj = null;
         });
     });
+
+    describe('EJ2-1005209 - Uneven selection is maintained after sort action when single selection and persistselection enabled', () => {
+        let gridObj: Grid;
+        beforeAll((done: Function) => {
+            gridObj = createGrid(
+                {
+                    dataSource: data,
+                    selectionSettings: { persistSelection: true, type: 'Single' },
+                    allowSorting: true,
+                    columns: [
+                        { field: 'OrderID', isPrimaryKey: true, headerText: 'Order ID' },
+                        { field: 'CustomerID', headerText: 'CustomerID' },
+                        { field: 'EmployeeID', headerText: 'Employee ID' },
+                        { field: "ShipCity", headerText: "Ship City", width: 250 },
+                    ],
+                }, done);
+        });
+        it('select the row', (done: Function) => {
+            let rowSelected = (e: any) => {
+                expect(gridObj.getSelectedRecords().length).toBe(1);
+                gridObj.rowSelected = null;
+                done();
+            };
+            gridObj.rowSelected = rowSelected;
+            (gridObj.getRows()[1].querySelector('.e-rowcell') as HTMLElement).click();
+        });
+
+        it('Sort the column', (done: Function) => {
+            (gridObj as any).getHeaderContent().querySelectorAll('.e-headercell')[0].click();
+            expect(gridObj.getSelectedRecords().length).toBe(0);
+            done();
+        });
+
+        afterAll(() => {
+            destroy(gridObj);
+            gridObj = null;
+        });
+    });
 });

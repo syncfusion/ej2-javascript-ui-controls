@@ -18,5 +18,5 @@
 @use 'ej2-layouts/styles/splitter/bootstrap4-definition' as *;
 @use 'gantt/bootstrap4-definition' as *;
 @use 'gantt/icons/bootstrap4' as *;
-@use 'gantt/all' as *;
-@use 'gantt/bigger' as *;
+@use 'gantt/all.bootstrap4' as *;
+@use 'gantt/bigger.bootstrap4' as *;

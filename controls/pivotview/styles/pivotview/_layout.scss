@@ -1,6 +1,4 @@
 @use 'ej2-base/styles/common/mixin' as *;
-@use './theme-variables' as *;
-@use '../pivotfieldlist/theme-variables' as error-font;
 @mixin wrap-styles {
   /* stylelint-disable */
   background-color: $gray-600 !important;
@@ -555,7 +553,7 @@
         .e-empty-field:-moz-placeholder,
         .e-empty-field::-moz-placeholder,
         .e-empty-field:-ms-input-placeholder {
-          color: error-font.$error-font-color !important;
+          color: $error-font-color !important;
           font-weight: $pivotview-font-weight-semibold !important;
         }
       }

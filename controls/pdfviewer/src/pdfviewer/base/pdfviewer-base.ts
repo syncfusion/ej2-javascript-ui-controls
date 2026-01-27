@@ -12053,7 +12053,11 @@ export class PdfViewerBase {
         }
         this.eventArgs = {};
         this.pdfViewer.enableServerDataBinding(allowServerDataBind, true);
-        if ((this.pdfViewer.contextMenuSettings.contextMenuAction === 'MouseUp' || this.pdfViewer.contextMenuOption === 'MouseUp') && this.pdfViewer.selectedItems && (this.pdfViewer.selectedItems.annotations && this.pdfViewer.selectedItems.annotations.length > 0 ||
+        if ((this.pdfViewer.contextMenuSettings.contextMenuAction === 'MouseUp' ||
+            ((this.pdfViewer.contextMenuSettings.contextMenuAction === 'None' ||
+                this.pdfViewer.contextMenuSettings.contextMenuAction === 'RightClick') && this.pdfViewer.contextMenuOption === 'MouseUp'))
+                && this.pdfViewer.selectedItems && (this.pdfViewer.selectedItems.annotations &&
+                    this.pdfViewer.selectedItems.annotations.length > 0 ||
             this.pdfViewer.selectedItems.formFields && this.pdfViewer.selectedItems.formFields.length > 0)) {
             this.contextMenuModule.open(this.mouseY, this.mouseX, this.viewerContainer);
         }

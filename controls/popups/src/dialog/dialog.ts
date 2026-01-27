@@ -1019,9 +1019,25 @@ export class Dialog extends Component<HTMLElement> implements INotifyPropertyCha
             this.element.classList.remove(DLG_RESIZABLE);
         }
     }
+    private isActiveBtn(btnArray: Button[] | NodeListOf<HTMLElement>, isButton: boolean): Button | HTMLElement {
+        let buttonObj: Button | HTMLElement;
+        if (!isNullOrUndefined(btnArray) && btnArray.length > 0) {
+            for (let i: number = 0; i < btnArray.length; i++) {
+                const btn: Button | HTMLElement = btnArray[i as number];
+                if (btn) {
+                    const isDisabled: boolean = isButton ? (btn as Button).element.disabled : (btn as HTMLButtonElement).disabled;
+                    const isHidden: boolean = isButton ? (btn as Button).element.hidden : (btn as HTMLButtonElement).hidden;
+                    if (!isDisabled && !isHidden) {
+                        buttonObj = btn;
+                    }
+                }
+            }
+        }
+        return buttonObj;
+    }
     private getFocusElement(target: HTMLElement): Button {
         const items: NodeListOf<HTMLElement> = target.querySelectorAll(FOCUSABLE_ELEMENTS_SELECTOR);
-        return { element: items[items.length - 1] as HTMLElement } as Button;
+        return { element: this.isActiveBtn(items, false) as HTMLElement} as Button;
     }
     /* istanbul ignore next */
     private keyDown(event: KeyboardEvent): void {
@@ -1029,7 +1045,7 @@ export class Dialog extends Component<HTMLElement> implements INotifyPropertyCha
             if (this.isModal) {
                 let buttonObj: Button;
                 if (!isNullOrUndefined(this.btnObj)) {
-                    buttonObj = this.btnObj[this.btnObj.length - 1];
+                    buttonObj = this.isActiveBtn(this.btnObj, true) as Button;
                 }
                 if ((isNullOrUndefined(this.btnObj)) && (!isNullOrUndefined(this.ftrTemplateContent))) {
                     buttonObj = this.getFocusElement(this.ftrTemplateContent);
@@ -1054,7 +1070,10 @@ export class Dialog extends Component<HTMLElement> implements INotifyPropertyCha
                 if (isNullOrUndefined(this.btnObj) && isNullOrUndefined(this.ftrTemplateContent) && !isNullOrUndefined(this.contentEle)) {
                     buttonObj = this.getFocusElement(this.contentEle);
                 }
-                if (!isNullOrUndefined(buttonObj) && document.activeElement === buttonObj.element && !event.shiftKey) {
+                if (!event.shiftKey &&
+                    ((!isNullOrUndefined(this.btnObj) && isNullOrUndefined(buttonObj)) ||
+                     (isNullOrUndefined(this.btnObj) && isNullOrUndefined(buttonObj.element)) ||
+                     (document.activeElement === buttonObj.element || isNullOrUndefined(buttonObj)))) {
                     event.preventDefault();
                     this.focusableElements(this.element).focus();
                 }
@@ -1200,11 +1219,11 @@ export class Dialog extends Component<HTMLElement> implements INotifyPropertyCha
                 if (this.isModal) {
                     this.dlgContainer.style.display = 'none';
                 }
-                this.trigger('close', this.closeArgs);
                 const activeEle: HTMLElement = document.activeElement as HTMLElement;
                 if (!isNullOrUndefined(activeEle) && !isNullOrUndefined((activeEle).blur)) {
                     activeEle.blur();
                 }
+                this.trigger('close', this.closeArgs);
                 if (!isNullOrUndefined(this.storeActiveElement) && !isNullOrUndefined(this.storeActiveElement.focus)
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 && !(this.closeArgs as any).preventFocus) {

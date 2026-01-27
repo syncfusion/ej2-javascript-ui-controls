@@ -1,0 +1,5 @@
+@use 'ej2-base/styles/common/mixin' as *;
+@import '../spreadsheet-ribbon/theme-variables.tailwind';
+@import '../spreadsheet-ribbon/mixin';
+@import './_theme-variables.tailwind';
+@import './_layout';

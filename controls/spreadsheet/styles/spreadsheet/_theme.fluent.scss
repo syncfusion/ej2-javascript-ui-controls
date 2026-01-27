@@ -1,0 +1,9 @@
+@use 'sass:color';
+@use 'ej2-base/styles/common/mixin' as *;
+@import '../spreadsheet-ribbon/theme-variables.fluent';
+@import 'ej2-navigations/styles/toolbar/theme-variables.fluent';
+@import 'ej2-navigations/styles/context-menu/theme-variables.fluent';
+@import 'ej2-navigations/styles/tab/theme-variables.fluent';
+@import 'ej2-buttons/styles/button/theme-variables.fluent';
+@import './theme-variables.fluent';
+@import './_theme';

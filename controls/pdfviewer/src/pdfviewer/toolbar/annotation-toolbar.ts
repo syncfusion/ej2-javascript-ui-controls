@@ -238,6 +238,8 @@ export class AnnotationToolbar {
      */
     public freetextToolbarElement: HTMLElement;
     private signatureInkToolbarElement: HTMLElement;
+    private isToolItemClicked: boolean = false;
+    private currentAnnotType: string;
     constructor(viewer: PdfViewer, viewerBase: PdfViewerBase, toolbar: Toolbar) {
         this.pdfViewer = viewer;
         this.pdfViewerBase = viewerBase;
@@ -3059,6 +3061,8 @@ export class AnnotationToolbar {
     private onShapeToolbarClicked = (args: ClickEventArgs): void => {
         const elementId: string = this.pdfViewer.element.id;
         const shapeAnnotationModule: ShapeAnnotation = this.pdfViewer.annotation.shapeAnnotationModule;
+        let isPropertyChange: boolean = true;
+        this.isToolItemClicked = true;
         if (Browser.isDevice && !this.pdfViewer.enableDesktopMode) {
             if (this.pdfViewerBase.action === 'Polygon') {
                 (this.pdfViewerBase.tool as PolygonDrawingTool).mouseUp((args as MouseEventArgs), true, true);
@@ -3075,12 +3079,16 @@ export class AnnotationToolbar {
         switch ((args.originalEvent.target as HTMLElement).id) {
         case elementId + '_shape_line':
         case elementId + '_shape_lineIcon':
+            this.currentAnnotType = 'line';
+            isPropertyChange = this.getAnnotationSettings('line');
             shapeAnnotationModule.setAnnotationType('Line');
             this.onShapeDrawSelection(true);
-            if (this.pdfViewer.enableShapeLabel) {
-                this.showPropertiesTools('shapeLabel');
-            } else {
-                this.showPropertiesTools('shapeLine');
+            if (isPropertyChange) {
+                if (this.pdfViewer.enableShapeLabel) {
+                    this.showPropertiesTools('shapeLabel');
+                } else {
+                    this.showPropertiesTools('shapeLine');
+                }
             }
             this.updateColorInIcon(this.colorDropDownElement, shapeAnnotationModule.lineFillColor);
             this.updateColorInIcon(this.strokeDropDownElement, shapeAnnotationModule.lineStrokeColor);
@@ -3088,12 +3096,16 @@ export class AnnotationToolbar {
             break;
         case elementId + '_shape_arrow':
         case elementId + '_shape_arrowIcon':
+            this.currentAnnotType = 'arrow';
+            isPropertyChange = this.getAnnotationSettings('arrow');
             shapeAnnotationModule.setAnnotationType('Arrow');
             this.onShapeDrawSelection(true);
-            if (this.pdfViewer.enableShapeLabel) {
-                this.showPropertiesTools('shapeLabel');
-            } else {
-                this.showPropertiesTools('shape');
+            if (isPropertyChange) {
+                if (this.pdfViewer.enableShapeLabel) {
+                    this.showPropertiesTools('shapeLabel');
+                } else {
+                    this.showPropertiesTools('shape');
+                }
             }
             this.updateColorInIcon(this.colorDropDownElement, shapeAnnotationModule.arrowFillColor);
             this.updateColorInIcon(this.strokeDropDownElement, shapeAnnotationModule.arrowStrokeColor);
@@ -3101,12 +3113,16 @@ export class AnnotationToolbar {
             break;
         case elementId + '_shape_rectangle':
         case elementId + '_shape_rectangleIcon':
+            this.currentAnnotType = 'rectangle';
+            isPropertyChange = this.getAnnotationSettings('rectangle');
             shapeAnnotationModule.setAnnotationType('Rectangle');
             this.onShapeDrawSelection(true);
-            if (this.pdfViewer.enableShapeLabel) {
-                this.showPropertiesTools('shapeLabel');
-            } else {
-                this.showPropertiesTools('shape');
+            if (isPropertyChange) {
+                if (this.pdfViewer.enableShapeLabel) {
+                    this.showPropertiesTools('shapeLabel');
+                } else {
+                    this.showPropertiesTools('shape');
+                }
             }
             this.updateColorInIcon(this.colorDropDownElement, shapeAnnotationModule.rectangleFillColor);
             this.updateColorInIcon(this.strokeDropDownElement, shapeAnnotationModule.rectangleStrokeColor);
@@ -3114,12 +3130,16 @@ export class AnnotationToolbar {
             break;
         case elementId + '_shape_circle':
         case elementId + '_shape_circleIcon':
+            this.currentAnnotType = 'circle';
+            isPropertyChange = this.getAnnotationSettings('circle');
             shapeAnnotationModule.setAnnotationType('Circle');
             this.onShapeDrawSelection(true);
-            if (this.pdfViewer.enableShapeLabel) {
-                this.showPropertiesTools('shapeLabel');
-            } else {
-                this.showPropertiesTools('shape');
+            if (isPropertyChange) {
+                if (this.pdfViewer.enableShapeLabel) {
+                    this.showPropertiesTools('shapeLabel');
+                } else {
+                    this.showPropertiesTools('shape');
+                }
             }
             this.updateColorInIcon(this.colorDropDownElement, shapeAnnotationModule.circleFillColor);
             this.updateColorInIcon(this.strokeDropDownElement, shapeAnnotationModule.circleStrokeColor);
@@ -3127,12 +3147,16 @@ export class AnnotationToolbar {
             break;
         case elementId + '_shape_pentagon':
         case elementId + '_shape_pentagonIcon':
+            this.currentAnnotType = 'polygon';
+            isPropertyChange = this.getAnnotationSettings('polygon');
             shapeAnnotationModule.setAnnotationType('Polygon');
             this.onShapeDrawSelection(true);
-            if (this.pdfViewer.enableShapeLabel) {
-                this.showPropertiesTools('shapeLabel');
-            } else {
-                this.showPropertiesTools('shape');
+            if (isPropertyChange) {
+                if (this.pdfViewer.enableShapeLabel) {
+                    this.showPropertiesTools('shapeLabel');
+                } else {
+                    this.showPropertiesTools('shape');
+                }
             }
             this.isPolygonClicked = true;
             this.updateColorInIcon(this.colorDropDownElement, shapeAnnotationModule.polygonFillColor);
@@ -3140,12 +3164,16 @@ export class AnnotationToolbar {
             this.handleShapeTool(elementId + '_shape_pentagon');
             break;
         }
+        this.currentAnnotType = '';
+        this.isToolItemClicked = false;
         // this.pdfViewer.clearSelection();
     };
 
     private onCalibrateToolbarClicked(args: ClickEventArgs): void {
         const elementId: string = this.pdfViewer.element.id;
         const measureModule: MeasureAnnotation = this.pdfViewer.annotation.measureAnnotationModule;
+        let isPropertyChange: boolean = true;
+        this.isToolItemClicked = true;
         this.deselectAllItems();
         this.deselectAllItemsForMobile();
         this.resetFreeTextAnnot();
@@ -3156,12 +3184,16 @@ export class AnnotationToolbar {
         switch ((args.originalEvent.target as HTMLElement).id) {
         case elementId + '_calibrate_distance':
         case elementId + '_calibrate_distanceIcon':
+            this.currentAnnotType = 'distance';
+            isPropertyChange = this.getAnnotationSettings('distance');
             measureModule.setAnnotationType('Distance');
             this.onShapeDrawSelection(false);
-            if (this.pdfViewer.enableShapeLabel) {
-                this.showPropertiesTools('shapeLabel');
-            } else {
-                this.showPropertiesTools('calibrate');
+            if (isPropertyChange) {
+                if (this.pdfViewer.enableShapeLabel) {
+                    this.showPropertiesTools('shapeLabel');
+                } else {
+                    this.showPropertiesTools('calibrate');
+                }
             }
             this.updateColorInIcon(this.colorDropDownElement, measureModule.distanceFillColor);
             this.updateColorInIcon(this.strokeDropDownElement, measureModule.distanceStrokeColor);
@@ -3169,12 +3201,16 @@ export class AnnotationToolbar {
             break;
         case elementId + '_calibrate_perimeter':
         case elementId + '_calibrate_perimeterIcon':
+            this.currentAnnotType = 'perimeter';
+            isPropertyChange = this.getAnnotationSettings('perimeter');
             measureModule.setAnnotationType('Perimeter');
             this.onShapeDrawSelection(false);
-            if (this.pdfViewer.enableShapeLabel) {
-                this.showPropertiesTools('shapeLabel');
-            } else {
-                this.showPropertiesTools('shapeLine');
+            if (isPropertyChange) {
+                if (this.pdfViewer.enableShapeLabel) {
+                    this.showPropertiesTools('shapeLabel');
+                } else {
+                    this.showPropertiesTools('shapeLine');
+                }
             }
             this.isPolygonClicked = true;
             this.updateColorInIcon(this.colorDropDownElement, measureModule.perimeterFillColor);
@@ -3183,12 +3219,16 @@ export class AnnotationToolbar {
             break;
         case elementId + '_calibrate_area':
         case elementId + '_calibrate_areaIcon':
+            this.currentAnnotType = 'area';
+            isPropertyChange = this.getAnnotationSettings('area');
             measureModule.setAnnotationType('Area');
             this.onShapeDrawSelection(false);
-            if (this.pdfViewer.enableShapeLabel) {
-                this.showPropertiesTools('shapeLabel');
-            } else {
-                this.showPropertiesTools('calibrate');
+            if (isPropertyChange) {
+                if (this.pdfViewer.enableShapeLabel) {
+                    this.showPropertiesTools('shapeLabel');
+                } else {
+                    this.showPropertiesTools('calibrate');
+                }
             }
             this.isPolygonClicked = true;
             this.updateColorInIcon(this.colorDropDownElement, measureModule.areaFillColor);
@@ -3197,12 +3237,16 @@ export class AnnotationToolbar {
             break;
         case elementId + '_calibrate_radius':
         case elementId + '_calibrate_radiusIcon':
+            this.currentAnnotType = 'radius';
+            isPropertyChange = this.getAnnotationSettings('radius');
             measureModule.setAnnotationType('Radius');
             this.onShapeDrawSelection(false);
-            if (this.pdfViewer.enableShapeLabel) {
-                this.showPropertiesTools('shapeLabel');
-            } else {
-                this.showPropertiesTools('calibrate');
+            if (isPropertyChange) {
+                if (this.pdfViewer.enableShapeLabel) {
+                    this.showPropertiesTools('shapeLabel');
+                } else {
+                    this.showPropertiesTools('calibrate');
+                }
             }
             this.updateColorInIcon(this.colorDropDownElement, measureModule.radiusFillColor);
             this.updateColorInIcon(this.strokeDropDownElement, measureModule.radiusStrokeColor);
@@ -3211,11 +3255,15 @@ export class AnnotationToolbar {
         case elementId + '_calibrate_volume':
         case elementId + '_calibrate_volumeIcon':
             measureModule.setAnnotationType('Volume');
+            this.currentAnnotType = 'volume';
+            isPropertyChange = this.getAnnotationSettings('volume');
             this.onShapeDrawSelection(false);
-            if (this.pdfViewer.enableShapeLabel) {
-                this.showPropertiesTools('shapeLabel');
-            } else {
-                this.showPropertiesTools('calibrate');
+            if (isPropertyChange) {
+                if (this.pdfViewer.enableShapeLabel) {
+                    this.showPropertiesTools('shapeLabel');
+                } else {
+                    this.showPropertiesTools('calibrate');
+                }
             }
             this.isPolygonClicked = true;
             this.updateColorInIcon(this.colorDropDownElement, measureModule.volumeFillColor);
@@ -3223,6 +3271,8 @@ export class AnnotationToolbar {
             this.handleShapeTool(elementId + '_calibrate_volume');
             break;
         }
+        this.currentAnnotType = '';
+        this.isToolItemClicked = false;
     }
 
 
@@ -3663,6 +3713,7 @@ export class AnnotationToolbar {
 
     private onToolbarClicked(args: ClickEventArgs): void {
         const annotation: any = this.pdfViewer.selectedItems.annotations[0];
+        let isPropertyChange: boolean = true;
         if ((args.originalEvent.target as HTMLElement).id) {
             this.pdfViewer.toolbarModule.updateStampItems();
         }
@@ -3671,12 +3722,17 @@ export class AnnotationToolbar {
         switch ((args.originalEvent.target as HTMLElement).id) {
         case this.pdfViewer.element.id + '_highlight':
         case this.pdfViewer.element.id + '_highlightIcon':
+            this.isToolItemClicked = true;
+            this.currentAnnotType = 'highlight';
+            isPropertyChange = this.getAnnotationSettings('highlight');
             this.pdfViewer.tool = '';
             if (!Browser.isDevice  || this.pdfViewer.enableDesktopMode) {
                 this.pdfViewer.tool = '';
                 this.pdfViewerBase.isToolbarInkClicked = false;
                 this.resetFreeTextAnnot();
-                this.showPropertiesTools('highlight');
+                if (isPropertyChange) {
+                    this.showPropertiesTools('highlight');
+                }
                 this.handleHighlight();
             } else {
                 if (!this.isMobileHighlightEnabled) {
@@ -3703,12 +3759,17 @@ export class AnnotationToolbar {
             break;
         case this.pdfViewer.element.id + '_underline':
         case this.pdfViewer.element.id + '_underlineIcon':
+            this.isToolItemClicked = true;
+            this.currentAnnotType = 'underline';
+            isPropertyChange = this.getAnnotationSettings('underline');
             this.pdfViewer.tool = '';
             if (!Browser.isDevice || this.pdfViewer.enableDesktopMode) {
                 this.pdfViewer.tool = '';
                 this.pdfViewerBase.isToolbarInkClicked = false;
                 this.resetFreeTextAnnot();
-                this.showPropertiesTools('underline');
+                if (isPropertyChange) {
+                    this.showPropertiesTools('underline');
+                }
                 this.handleUnderline();
             } else {
                 if (!this.isMobileUnderlineEnabled) {
@@ -3735,12 +3796,17 @@ export class AnnotationToolbar {
             break;
         case this.pdfViewer.element.id + '_strikethrough':
         case this.pdfViewer.element.id + '_strikethroughIcon':
+            this.isToolItemClicked = true;
+            this.currentAnnotType = 'strikethrough';
+            isPropertyChange = this.getAnnotationSettings('strikethrough');
             this.pdfViewer.tool = '';
             if (!Browser.isDevice || this.pdfViewer.enableDesktopMode) {
                 this.pdfViewer.tool = '';
                 this.pdfViewerBase.isToolbarInkClicked = false;
                 this.resetFreeTextAnnot();
-                this.showPropertiesTools('strikethrough');
+                if (isPropertyChange) {
+                    this.showPropertiesTools('strikethrough');
+                }
                 this.handleStrikethrough();
             } else {
                 if (!this.isMobileStrikethroughEnabled) {
@@ -3767,12 +3833,17 @@ export class AnnotationToolbar {
             break;
         case this.pdfViewer.element.id + '_squiggly':
         case this.pdfViewer.element.id + '_squigglyIcon':
+            this.isToolItemClicked = true;
+            this.currentAnnotType = 'squiggly';
+            isPropertyChange = this.getAnnotationSettings('squiggly');
             this.pdfViewer.tool = '';
             if (!Browser.isDevice || this.pdfViewer.enableDesktopMode) {
                 this.pdfViewer.tool = '';
                 this.pdfViewerBase.isToolbarInkClicked = false;
                 this.resetFreeTextAnnot();
-                this.showPropertiesTools('squiggly');
+                if (isPropertyChange) {
+                    this.showPropertiesTools('squiggly');
+                }
                 this.handleSquiggly();
             } else {
                 if (!this.isMobileSquigglyEnabled) {
@@ -3832,9 +3903,14 @@ export class AnnotationToolbar {
         }
         case this.pdfViewer.element.id + '_annotation_freeTextEdit':
         case this.pdfViewer.element.id + '_annotation_freeTextEditIcon':
+            this.isToolItemClicked = true;
+            this.currentAnnotType = 'freeText';
+            isPropertyChange = this.getAnnotationSettings('freeText');
             if (!Browser.isDevice || this.pdfViewer.enableDesktopMode) {
                 this.resetFreeTextAnnot();
-                this.showPropertiesTools('freeText');
+                if (isPropertyChange) {
+                    this.showPropertiesTools('freeText');
+                }
                 this.isFreetextClicked = true ;
                 this.handleFreeTextEditor();
             } else {
@@ -3854,6 +3930,9 @@ export class AnnotationToolbar {
             break;
         case this.pdfViewer.element.id + '_annotation_ink':
         case this.pdfViewer.element.id + '_annotation_inkIcon':
+            this.isToolItemClicked = true;
+            this.currentAnnotType = 'ink';
+            isPropertyChange = this.getAnnotationSettings('ink');
             if (annotation) {
                 this.pdfViewer.annotation.triggerAnnotationUnselectEvent();
                 this.pdfViewer.annotation.triggerSignatureUnselectEvent();
@@ -3862,7 +3941,9 @@ export class AnnotationToolbar {
             if (this.pdfViewer.annotationModule.inkAnnotationModule) {
                 if (!Browser.isDevice || this.pdfViewer.enableDesktopMode) {
                     this.updateInteractionTools();
-                    this.showPropertiesTools('ink');
+                    if (isPropertyChange) {
+                        this.showPropertiesTools('ink');
+                    }
                 }
                 const currentPageNumber: string = this.pdfViewer.annotationModule.inkAnnotationModule.currentPageNumber;
                 if (currentPageNumber && currentPageNumber !== '') {
@@ -3902,6 +3983,8 @@ export class AnnotationToolbar {
             break;
         }
         }
+        this.currentAnnotType = '';
+        this.isToolItemClicked = false;
     }
 
     private addInkAnnotation(): void {
@@ -5686,6 +5769,9 @@ export class AnnotationToolbar {
 
     private checkAnnotationPropertiesChange(): boolean {
         const annotation: any = this.pdfViewer.selectedItems.annotations[0];
+        if (this.isToolItemClicked && this.currentAnnotType !== '') {
+            return this.getAnnotationSettings(this.currentAnnotType);
+        }
         if (annotation && annotation.annotationSettings) {
             const isLock: boolean = annotation.annotationSettings.isLock;
             if (isLock) {
@@ -5697,6 +5783,61 @@ export class AnnotationToolbar {
             }
         }
         return true;
+    }
+
+    private checkLockedInteractions(settings: any): boolean {
+        if (!settings) {
+            return true;
+        }
+        const isLock: boolean = settings.isLock ? settings.isLock : false;
+        if (isLock) {
+            const allowedInteractions: string[] = Array.isArray(settings.allowedInteractions) ? settings.allowedInteractions : [];
+            return allowedInteractions.length > 0 && allowedInteractions.indexOf('PropertyChange') !== -1;
+        }
+        return true;
+    }
+
+    private getAnnotationSettings(type: any): boolean {
+        if (!type) { return true; }
+        const defaultLock: boolean = false;
+        const defaultInteraction: string[] = ['None'];
+        const hasCustomLockOrInteractions: (settings: any) => boolean = (settings: any): boolean => {
+            if (!settings) {return false; }
+            const isLockCustom: boolean = typeof settings.isLock === 'boolean' && settings.isLock !== defaultLock;
+            const isInteractionsCustom: boolean = Array.isArray(settings.allowedInteractions) &&
+                (
+                    settings.allowedInteractions.length !== defaultInteraction.length ||
+                    (settings.allowedInteractions.length === 1 && settings.allowedInteractions[0] !== defaultInteraction[0])
+                );
+            return isLockCustom || isInteractionsCustom;
+        };
+        const settingsMap: Record<string, any> = {
+            highlight: this.pdfViewer.highlightSettings,
+            underline: this.pdfViewer.underlineSettings,
+            strikethrough: this.pdfViewer.strikethroughSettings,
+            squiggly: this.pdfViewer.squigglySettings,
+            line: this.pdfViewer.lineSettings,
+            arrow: this.pdfViewer.arrowSettings,
+            rectangle: this.pdfViewer.rectangleSettings,
+            circle: this.pdfViewer.circleSettings,
+            polygon: this.pdfViewer.polygonSettings,
+            distance: this.pdfViewer.distanceSettings,
+            perimeter: this.pdfViewer.perimeterSettings,
+            area: this.pdfViewer.areaSettings,
+            radius: this.pdfViewer.radiusSettings,
+            volume: this.pdfViewer.volumeSettings,
+            freeText: this.pdfViewer.freeTextSettings,
+            ink: this.pdfViewer.inkAnnotationSettings
+        };
+        const settings: any = settingsMap[type as string];
+        const commonSettings: any = this.pdfViewer.annotationSettings;
+        if (hasCustomLockOrInteractions(settings)) {
+            return this.checkLockedInteractions(settings);
+        } else if (hasCustomLockOrInteractions(commonSettings)) {
+            return this.checkLockedInteractions(commonSettings);
+        } else {
+            return this.checkLockedInteractions(settings);
+        }
     }
 
     /**

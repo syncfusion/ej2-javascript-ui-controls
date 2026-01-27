@@ -1,4 +1,5 @@
 @use 'ej2-base/styles/common/mixin' as *;
+
 @include export-module('tooltip-theme') {
 
   .e-tooltip-wrap {

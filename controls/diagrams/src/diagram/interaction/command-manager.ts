@@ -4390,7 +4390,7 @@ export class CommandHandler {
                 return this.dragTargetEnd(connector, tx, ty, null, point, endPoint, undefined, segment);
             }
         } else {
-            return false;
+            return true;
         }
     }
 

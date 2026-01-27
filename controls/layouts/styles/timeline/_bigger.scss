@@ -1,5 +1,4 @@
 @use 'ej2-base/styles/common/mixin' as *;
-@use './theme-variables' as *;
 @include export-module('timeline-bigger') {
   .e-bigger.e-timeline,
   .e-bigger .e-timeline {

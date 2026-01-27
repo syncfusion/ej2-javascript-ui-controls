@@ -1,5 +1,5 @@
 @use 'ej2-base/styles/common/mixin' as *;
-@use './theme-variables' as *;
+
 @include export-module('progress-button-bigger') {
   #{if(&, '&', '*')}.e-bigger .e-progress-btn,
   #{if(&, '&', '*')}.e-bigger.e-progress-btn {

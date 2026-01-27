@@ -961,14 +961,20 @@ export class CalendarBase extends Component<HTMLElement> implements INotifyPrope
             e.preventDefault();
             break;
         case 'tab':
-            if ((this.getModuleName() === 'datepicker' || this.getModuleName() === 'datetimepicker') && e.target === this.todayElement) {
-                e.preventDefault();
-                if ((this as any).isAngular) {
-                    (this as any).inputElement.focus();
-                } else {
-                    (this as any).element.focus();
+            if (this.getModuleName() === 'datepicker' || this.getModuleName() === 'datetimepicker') {
+                const hasToday: boolean = this.showTodayButton && !isNullOrUndefined(this.todayElement);
+                const isLastFocusable: boolean = hasToday
+                    ? (e.target === this.todayElement)
+                    : (e.target === this.table);
+                if (isLastFocusable) {
+                    e.preventDefault();
+                    if ((this as any).isAngular) {
+                        (this as any).inputElement.focus();
+                    } else {
+                        (this as any).element.focus();
+                    }
+                    (this as any).hide();
                 }
-                (this as any).hide();
             }
             break;
         case 'shiftTab':

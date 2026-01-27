@@ -1,10 +1,4 @@
 @use 'ej2-base/styles/common/mixin' as *;
-@use './theme-variables' as *;
-@use '../spreadsheet-ribbon/theme-variables' as ribbon-vars;
-@use 'ej2-navigations/styles/toolbar/theme-variables' as theme-vars;
-@use 'ej2-navigations/styles/context-menu/theme-variables' as cmenu-vars;
-@use 'ej2-navigations/styles/tab/theme-variables' as tab-vars;
-@use 'ej2-buttons/styles/button/theme-variables' as btn-vars;
 @include export-module('spreadsheet-theme') {
 
   /*! spreadsheet theme */
@@ -181,7 +175,7 @@
           & .e-toolbar-item {
             & .e-tab-wrap:hover .e-tab-text,
             &.e-active .e-tab-wrap .e-tab-text {
-              color: tab-vars.$tab-text-color;
+              color: $tab-text-color;
             }
           }
         }
@@ -244,12 +238,12 @@
         &:hover {
           @if $skin-name == 'bootstrap5' or $skin-name == 'bootstrap5.3' {
             & .e-btn-icon {
-              color: btn-vars.$btn-color;
+              color: $btn-color;
             }
           }
           @if $skin-name == 'Material3' {
             & .e-btn-icon {
-              color: btn-vars.$btn-color;
+              color: $btn-color;
               border-radius: $spread-border-radius-8;
             }
           }
@@ -258,7 +252,7 @@
         &:disabled {
           @if $skin-name == 'bootstrap5' or $skin-name == 'bootstrap5.3' or $skin-name == 'Material3' or $skin-name == 'tailwind3' {
             & .e-btn-icon {
-              color: btn-vars.$btn-disabled-color;
+              color: $btn-disabled-color;
             }
           }
         }
@@ -270,7 +264,7 @@
           background: $sheet-tab-button-active-bg-color;
         }
         @if $skin-name == 'bootstrap4' {
-          color: btn-vars.$btn-color;
+          color: $btn-color;
         }
         @if $skin-name == 'fluent2' or $skin-name == 'bootstrap5.3' {
           & .e-btn-icon {
@@ -337,7 +331,7 @@
         }
         @if $skin-name == 'bootstrap4' or $skin-name == 'bootstrap' {
           &:focus {
-            background: theme-vars.$tbar-focus-bg;
+            background: $tbar-focus-bg;
           }
         }
       }
@@ -359,7 +353,7 @@
 
       &:hover:not(.e-active) {
         @if $skin-name != 'fluent2' {
-          background: theme-vars.$tbar-hover-bg;
+          background: $tbar-hover-bg;
         }
         @else {
           background: $sheet-tab-aggr-bg-color-hover;
@@ -373,19 +367,19 @@
           border-radius: $spread-border-radius-4;
         }
         @if $skin-name == 'bootstrap4' {
-          color: theme-vars.$tbar-hover-font;
+          color: $tbar-hover-font;
 
           & .e-icons,
           & .e-dropdown-btn {
-            color: theme-vars.$tbar-active-font-color;
+            color: $tbar-active-font-color;
           }
         }
         @if $skin-name == 'bootstrap5' or $skin-name == 'bootstrap5.3' or $skin-name == 'FluentUI' {
-          color: btn-vars.$btn-flat-hover-color;
+          color: $btn-flat-hover-color;
 
           & .e-icons,
           & .e-dropdown-btn {
-            color: btn-vars.$btn-flat-hover-color;
+            color: $btn-flat-hover-color;
           }
         }
       }
@@ -408,11 +402,11 @@
       @if $skin-name == 'bootstrap4' or $skin-name == 'highcontrast' {
         &.e-active,
         &:focus {
-          color: theme-vars.$tbar-active-font-color;
+          color: $tbar-active-font-color;
 
           & .e-icons,
           &.e-dropdown-btn {
-            color: theme-vars.$tbar-active-font-color;
+            color: $tbar-active-font-color;
           }
         }
       }
@@ -426,7 +420,7 @@
       @if $skin-name == 'bootstrap5' or $skin-name == 'bootstrap5.3' or $skin-name == 'FluentUI' {
         &.e-active,
         &:focus {
-          color: btn-vars.$btn-flat-active-color;
+          color: $btn-flat-active-color;
         }
       }
     }
@@ -478,10 +472,10 @@
           background: transparent;
         }
         border-color: transparent;
-        box-shadow: theme-vars.$tbar-btn-box-shadow;
+        box-shadow: $tbar-btn-box-shadow;
         @if $skin-name != 'Material3' {
           background-color: transparent;
-          color: theme-vars.$tbar-default-font;
+          color: $tbar-default-font;
         }
         @if $skin-name == 'bootstrap5.3' or $skin-name == 'tailwind3' {
           &:not(:hover):not(.e-active):not(.e-overlay) .e-btn-icon.e-icons {
@@ -516,7 +510,7 @@
             }
           }
           @if $skin-name == 'bootstrap4' {
-            color: theme-vars.$tbar-hover-font;
+            color: $tbar-hover-font;
 
             & .e-icons,
             &.e-dropdown-btn .e-tbar-btn-text {
@@ -551,7 +545,7 @@
             }
           }
           @if $skin-name == 'bootstrap4' {
-            color: theme-vars.$tbar-hover-font;
+            color: $tbar-hover-font;
           }
         }
 
@@ -586,7 +580,7 @@
       @if $skin-name == 'bootstrap4' or $skin-name == 'highcontrast' {
         &.e-active,
         &:focus {
-          color: theme-vars.$tbar-active-font-color;
+          color: $tbar-active-font-color;
 
           & .e-icons,
           &.e-dropdown-btn .e-tbar-btn-text {
@@ -597,7 +591,7 @@
       @if $skin-name == 'bootstrap5' {
         &.e-active,
         &:focus {
-          color: theme-vars.$tbar-active-icon-color;
+          color: $tbar-active-icon-color;
 
           & .e-icons,
           &.e-dropdown-btn .e-tbar-btn-text {
@@ -607,7 +601,7 @@
 
         &.e-split-colorpicker {
           @if $skin-name == 'bootstrap5' or $skin-name == 'bootstrap5.3' {
-            color: theme-vars.$tbar-default-font;
+            color: $tbar-default-font;
           }
         }
       }
@@ -643,7 +637,7 @@
           color: $formula-bar-color;
         }
         @else {
-          color: ribbon-vars.$expand-icon-color;
+          color: $expand-icon-color;
         }
       }
 
@@ -1037,7 +1031,7 @@
       & .e-border-style {
         & .e-menu-item {
           &::after {
-            border-bottom-color: cmenu-vars.$cmenu-color;
+            border-bottom-color: $cmenu-color;
           }
         }
       }
@@ -2211,7 +2205,7 @@
 
   @if $skin-name != 'fluent2' and $skin-name != 'tailwind3' {
     .e-spreadsheet .e-ribbon .e-content .e-toolbar .e-toolbar-items .e-toolbar-item.e-overlay .e-icons {
-      color: theme-vars.$tbar-default-icon-color;
+      color: $tbar-default-icon-color;
     }
   }
 
@@ -2248,7 +2242,7 @@
 
     &.e-align-ddb ul .e-item:not(.e-selected) .e-menu-icon {
       @if $skin-name != 'fluent2' and $skin-name != 'bootstrap5.3' {
-        color: theme-vars.$tbar-default-icon-color;
+        color: $tbar-default-icon-color;
       }
     }
 

@@ -290,7 +290,7 @@ describe('Viewer Reported Issues', () => {
         expect(loadedAnnotation._dictionary.get('AllowedInteractions')).toEqual('["Move"]');
         document.destroy();
     });
-    it('1003547 - RubberStamp annotations Word Space Issue', () => {
+	it('1003547 - RubberStamp annotations Word Space Issue', () => {
         let document: PdfDocument = new PdfDocument(crossReferenceTable);
         let page: PdfPage = document.getPage(0) as PdfPage;
         const icons: PdfRubberStampAnnotationIcon[] = [
@@ -342,7 +342,7 @@ describe('Viewer Reported Issues', () => {
         let appearance = loadedStamp._dictionary.get('AP').get('N')
         let parser: _ContentParser = new _ContentParser(appearance.getBytes());
         let result: _PdfRecord[] = parser._readContent();
-        expect(result.length).toBe(33);
+        expect(result.length).toBe(34);
         expect(result[0]._operator).toEqual('cm');
         expect(result[0]._operands).toEqual(['1.00', '.00', '.00', '1.00', '.00', '48.00']);
         expect(result[1]._operator).toEqual('q');
@@ -399,21 +399,23 @@ describe('Viewer Reported Issues', () => {
         expect(result[27]._operator).toEqual('Tz');
         expect(result[27]._operands).toEqual(['100.000']);
         expect(result[28]._operator).toEqual('Tm');
-        expect(result[28]._operands).toEqual(['1.00', '.00', '.00', '1.00', '12.38', '-22.34']);
-        expect(result[29]._operator).toEqual("'");
-        expect(result[29]._operands).toEqual(['(AS IS)']);
-        expect(result[30]._operator).toEqual('Td');
-        expect(result[30]._operands).toEqual(['0.000', '-9.580']);
-        expect(result[31]._operator).toEqual('ET');
-        expect(result[31]._operands.length).toBe(0);
-        expect(result[32]._operator).toEqual('Q');
+        expect(result[28]._operands).toEqual(['1.00', '.00', '.00', '1.00', '2.00', '-21.34']);
+        expect(result[29]._operator).toEqual('Td');
+        expect(result[29]._operands).toEqual(['11.380', '0.000']);
+        expect(result[30]._operator).toEqual("'");
+        expect(result[30]._operands).toEqual(['(AS IS)']);
+        expect(result[31]._operator).toEqual('Td');
+        expect(result[31]._operands).toEqual(['0.000', '-22.700']);
+        expect(result[32]._operator).toEqual('ET');
         expect(result[32]._operands.length).toBe(0);
+        expect(result[33]._operator).toEqual('Q');
+        expect(result[33]._operands.length).toBe(0);
         loadedStamp = page.annotations.at(1);
         appearance = loadedStamp._dictionary.get('AP').get('N')
         parser = new _ContentParser(appearance.getBytes());
         result = parser._readContent();
         expect((loadedStamp._dictionary.getRaw('Name') as _PdfName).name).toEqual('#ForComment');
-        expect(result.length).toBe(33);
+        expect(result.length).toBe(34);
         expect(result[0]._operator).toEqual('cm');
         expect(result[0]._operands).toEqual(['1.00', '.00', '.00', '1.00', '.00', '48.00']);
         expect(result[1]._operator).toEqual('q');
@@ -470,21 +472,23 @@ describe('Viewer Reported Issues', () => {
         expect(result[27]._operator).toEqual('Tz');
         expect(result[27]._operands).toEqual(['100.000']);
         expect(result[28]._operator).toEqual('Tm');
-        expect(result[28]._operands).toEqual(['1.00', '.00', '.00', '1.00', '8.45', '-22.34']);
-        expect(result[29]._operator).toEqual("'");
-        expect(result[29]._operands).toEqual(['(FOR COMMENT)']);
-        expect(result[30]._operator).toEqual('Td');
-        expect(result[30]._operands).toEqual(['0.000', '39.850']);
-        expect(result[31]._operator).toEqual('ET');
-        expect(result[31]._operands.length).toBe(0);
-        expect(result[32]._operator).toEqual('Q');
+        expect(result[28]._operands).toEqual(['1.00', '.00', '.00', '1.00', '2.00', '-21.34']);
+        expect(result[29]._operator).toEqual('Td');
+        expect(result[29]._operands).toEqual(['7.450', '0.000']);
+        expect(result[30]._operator).toEqual("'");
+        expect(result[30]._operands).toEqual(['(FOR COMMENT)']);
+        expect(result[31]._operator).toEqual('Td');
+        expect(result[31]._operands).toEqual(['0.000', '-22.700']);
+        expect(result[32]._operator).toEqual('ET');
         expect(result[32]._operands.length).toBe(0);
+        expect(result[33]._operator).toEqual('Q');
+        expect(result[33]._operands.length).toBe(0);
         loadedStamp = page.annotations.at(2);
         appearance = loadedStamp._dictionary.get('AP').get('N')
         parser = new _ContentParser(appearance.getBytes());
         expect((loadedStamp._dictionary.getRaw('Name') as _PdfName).name).toEqual('#ForPublicRelease');
         result = parser._readContent();
-        expect(result.length).toBe(33);
+        expect(result.length).toBe(34);
         expect(result[0]._operator).toEqual('cm');
         expect(result[0]._operands).toEqual(['1.00', '.00', '.00', '1.00', '.00', '48.00']);
         expect(result[1]._operator).toEqual('q');
@@ -541,21 +545,23 @@ describe('Viewer Reported Issues', () => {
         expect(result[27]._operator).toEqual('Tz');
         expect(result[27]._operands).toEqual(['100.000']);
         expect(result[28]._operator).toEqual('Tm');
-        expect(result[28]._operands).toEqual(['1.00', '.00', '.00', '1.00', '9.88', '-22.34']);
-        expect(result[29]._operator).toEqual("'");
-        expect(result[29]._operands).toEqual(['(FOR PUBLIC RELEASE)']);
-        expect(result[30]._operator).toEqual('Td');
-        expect(result[30]._operands).toEqual(['0.000', '75.420']);
-        expect(result[31]._operator).toEqual('ET');
-        expect(result[31]._operands.length).toBe(0);
-        expect(result[32]._operator).toEqual('Q');
+        expect(result[28]._operands).toEqual(['1.00', '.00', '.00', '1.00', '2.00', '-21.34']);
+        expect(result[29]._operator).toEqual('Td');
+        expect(result[29]._operands).toEqual(['8.880', '0.000']);
+        expect(result[30]._operator).toEqual("'");
+        expect(result[30]._operands).toEqual(['(FOR PUBLIC RELEASE)']);
+        expect(result[31]._operator).toEqual('Td');
+        expect(result[31]._operands).toEqual(['0.000', '-22.700']);
+        expect(result[32]._operator).toEqual('ET');
         expect(result[32]._operands.length).toBe(0);
+        expect(result[33]._operator).toEqual('Q');
+        expect(result[33]._operands.length).toBe(0);
         loadedStamp = page.annotations.at(3);
         expect((loadedStamp._dictionary.getRaw('Name') as _PdfName).name).toEqual('#NotApproved');
         appearance = loadedStamp._dictionary.get('AP').get('N')
         parser = new _ContentParser(appearance.getBytes());
         result = parser._readContent();
-        expect(result.length).toBe(33);
+        expect(result.length).toBe(34);
         expect(result[0]._operator).toEqual('cm');
         expect(result[0]._operands).toEqual(['1.00', '.00', '.00', '1.00', '.00', '48.00']);
         expect(result[1]._operator).toEqual('q');
@@ -612,21 +618,23 @@ describe('Viewer Reported Issues', () => {
         expect(result[27]._operator).toEqual('Tz');
         expect(result[27]._operands).toEqual(['100.000']);
         expect(result[28]._operator).toEqual('Tm');
-        expect(result[28]._operands).toEqual(['1.00', '.00', '.00', '1.00', '13.99', '-22.34']);
-        expect(result[29]._operator).toEqual("'");
-        expect(result[29]._operands).toEqual(['(NOT APPROVED)']);
-        expect(result[30]._operator).toEqual('Td');
-        expect(result[30]._operands).toEqual(['0.000', '44.310']);
-        expect(result[31]._operator).toEqual('ET');
-        expect(result[31]._operands.length).toBe(0);
-        expect(result[32]._operator).toEqual('Q');
+        expect(result[28]._operands).toEqual(['1.00', '.00', '.00', '1.00', '2.00', '-21.34']);
+        expect(result[29]._operator).toEqual('Td');
+        expect(result[29]._operands).toEqual(['12.990', '0.000']);
+        expect(result[30]._operator).toEqual("'");
+        expect(result[30]._operands).toEqual(['(NOT APPROVED)']);
+        expect(result[31]._operator).toEqual('Td');
+        expect(result[31]._operands).toEqual(['0.000', '-22.700']);
+        expect(result[32]._operator).toEqual('ET');
         expect(result[32]._operands.length).toBe(0);
+        expect(result[33]._operator).toEqual('Q');
+        expect(result[33]._operands.length).toBe(0);
         loadedStamp = page.annotations.at(4);
         expect((loadedStamp._dictionary.getRaw('Name') as _PdfName).name).toEqual('#NotForPublicRelease');
         appearance = loadedStamp._dictionary.get('AP').get('N')
         parser = new _ContentParser(appearance.getBytes());
         result = parser._readContent();
-        expect(result.length).toBe(33);
+        expect(result.length).toBe(34);
         expect(result[0]._operator).toEqual('cm');
         expect(result[0]._operands).toEqual(['1.00', '.00', '.00', '1.00', '.00', '48.00']);
         expect(result[1]._operator).toEqual('q');
@@ -683,21 +691,23 @@ describe('Viewer Reported Issues', () => {
         expect(result[27]._operator).toEqual('Tz');
         expect(result[27]._operands).toEqual(['100.000']);
         expect(result[28]._operator).toEqual('Tm');
-        expect(result[28]._operands).toEqual(['1.00', '.00', '.00', '1.00', '10.99', '-22.34']);
-        expect(result[29]._operator).toEqual("'");
-        expect(result[29]._operands).toEqual(['(NOT FOR PUBLIC RELEASE)']);
-        expect(result[30]._operator).toEqual('Td');
-        expect(result[30]._operands).toEqual(['0.000', '99.310']);
-        expect(result[31]._operator).toEqual('ET');
-        expect(result[31]._operands.length).toBe(0);
-        expect(result[32]._operator).toEqual('Q');
+        expect(result[28]._operands).toEqual(['1.00', '.00', '.00', '1.00', '2.00', '-21.34']);
+        expect(result[29]._operator).toEqual('Td');
+        expect(result[29]._operands).toEqual(['9.990', '0.000']);
+        expect(result[30]._operator).toEqual("'");
+        expect(result[30]._operands).toEqual(['(NOT FOR PUBLIC RELEASE)']);
+        expect(result[31]._operator).toEqual('Td');
+        expect(result[31]._operands).toEqual(['0.000', '-22.700']);
+        expect(result[32]._operator).toEqual('ET');
         expect(result[32]._operands.length).toBe(0);
+        expect(result[33]._operator).toEqual('Q');
+        expect(result[33]._operands.length).toBe(0);
         loadedStamp = page.annotations.at(5);
         appearance = loadedStamp._dictionary.get('AP').get('N')
         parser = new _ContentParser(appearance.getBytes());
         result = parser._readContent();
         expect((loadedStamp._dictionary.getRaw('Name') as _PdfName).name).toEqual('#TopSecret');
-        expect(result.length).toBe(33);
+        expect(result.length).toBe(34);
         expect(result[0]._operator).toEqual('cm');
         expect(result[0]._operands).toEqual(['1.00', '.00', '.00', '1.00', '.00', '48.00']);
         expect(result[1]._operator).toEqual('q');
@@ -754,21 +764,23 @@ describe('Viewer Reported Issues', () => {
         expect(result[27]._operator).toEqual('Tz');
         expect(result[27]._operands).toEqual(['100.000']);
         expect(result[28]._operator).toEqual('Tm');
-        expect(result[28]._operands).toEqual(['1.00', '.00', '.00', '1.00', '10.10', '-22.34']);
-        expect(result[29]._operator).toEqual("'");
-        expect(result[29]._operands).toEqual(['(TOP SECRET)']);
-        expect(result[30]._operator).toEqual('Td');
-        expect(result[30]._operands).toEqual(['0.000', '28.200']);
-        expect(result[31]._operator).toEqual('ET');
-        expect(result[31]._operands.length).toBe(0);
-        expect(result[32]._operator).toEqual('Q');
+        expect(result[28]._operands).toEqual(['1.00', '.00', '.00', '1.00', '2.00', '-21.34']);
+        expect(result[29]._operator).toEqual('Td');
+        expect(result[29]._operands).toEqual(['9.100', '0.000']);
+        expect(result[30]._operator).toEqual("'");
+        expect(result[30]._operands).toEqual(['(TOP SECRET)']);
+        expect(result[31]._operator).toEqual('Td');
+        expect(result[31]._operands).toEqual(['0.000', '-22.700']);
+        expect(result[32]._operator).toEqual('ET');
         expect(result[32]._operands.length).toBe(0);
+        expect(result[33]._operator).toEqual('Q');
+        expect(result[33]._operands.length).toBe(0);
         loadedStamp = page.annotations.at(6);
         expect((loadedStamp._dictionary.getRaw('Name') as _PdfName).name).toEqual('#InformationOnly');
         appearance = loadedStamp._dictionary.get('AP').get('N');
         parser = new _ContentParser(appearance.getBytes());
         result = parser._readContent();
-        expect(result.length).toBe(33);
+        expect(result.length).toBe(34);
         expect(result[0]._operator).toEqual('cm');
         expect(result[0]._operands).toEqual(['1.00', '.00', '.00', '1.00', '.00', '48.00']);
         expect(result[1]._operator).toEqual('q');
@@ -825,21 +837,23 @@ describe('Viewer Reported Issues', () => {
         expect(result[27]._operator).toEqual('Tz');
         expect(result[27]._operands).toEqual(['100.000']);
         expect(result[28]._operator).toEqual('Tm');
-        expect(result[28]._operands).toEqual(['1.00', '.00', '.00', '1.00', '14.89', '-22.34']);
-        expect(result[29]._operator).toEqual("'");
-        expect(result[29]._operands).toEqual(['(INFORMATION ONLY)']);
-        expect(result[30]._operator).toEqual('Td');
-        expect(result[30]._operands).toEqual(['0.000', '65.410']);
-        expect(result[31]._operator).toEqual('ET');
-        expect(result[31]._operands.length).toBe(0);
-        expect(result[32]._operator).toEqual('Q');
+        expect(result[28]._operands).toEqual(['1.00', '.00', '.00', '1.00', '2.00', '-21.34']);
+        expect(result[29]._operator).toEqual('Td');
+        expect(result[29]._operands).toEqual(['13.890', '0.000']);
+        expect(result[30]._operator).toEqual("'");
+        expect(result[30]._operands).toEqual(['(INFORMATION ONLY)']);
+        expect(result[31]._operator).toEqual('Td');
+        expect(result[31]._operands).toEqual(['0.000', '-22.700']);
+        expect(result[32]._operator).toEqual('ET');
         expect(result[32]._operands.length).toBe(0);
+        expect(result[33]._operator).toEqual('Q');
+        expect(result[33]._operands.length).toBe(0);
         loadedStamp = page.annotations.at(7);
         appearance = loadedStamp._dictionary.get('AP').get('N');
         parser = new _ContentParser(appearance.getBytes());
         result = parser._readContent();
         expect((loadedStamp._dictionary.getRaw('Name') as _PdfName).name).toEqual('#PreliminaryResults');
-        expect(result.length).toBe(33);
+        expect(result.length).toBe(34);
         expect(result[0]._operator).toEqual('cm');
         expect(result[0]._operands).toEqual(['1.00', '.00', '.00', '1.00', '.00', '48.00']);
         expect(result[1]._operator).toEqual('q');
@@ -896,15 +910,516 @@ describe('Viewer Reported Issues', () => {
         expect(result[27]._operator).toEqual('Tz');
         expect(result[27]._operands).toEqual(['100.000']);
         expect(result[28]._operator).toEqual('Tm');
-        expect(result[28]._operands).toEqual(['1.00', '.00', '.00', '1.00', '12.66', '-22.34']);
-        expect(result[29]._operator).toEqual("'");
-        expect(result[29]._operands).toEqual(['(PRELIMINARY RESULTS)']);
-        expect(result[30]._operator).toEqual('Td');
-        expect(result[30]._operands).toEqual(['0.000', '82.640']);
-        expect(result[31]._operator).toEqual('ET');
-        expect(result[31]._operands.length).toBe(0);
-        expect(result[32]._operator).toEqual('Q');
+        expect(result[28]._operands).toEqual(['1.00', '.00', '.00', '1.00', '2.00', '-21.34']);
+        expect(result[29]._operator).toEqual('Td');
+        expect(result[29]._operands).toEqual(['11.660', '0.000']);
+        expect(result[30]._operator).toEqual("'");
+        expect(result[30]._operands).toEqual(['(PRELIMINARY RESULTS)']);
+        expect(result[31]._operator).toEqual('Td');
+        expect(result[31]._operands).toEqual(['0.000', '-22.700']);
+        expect(result[32]._operator).toEqual('ET');
         expect(result[32]._operands.length).toBe(0);
+        expect(result[33]._operator).toEqual('Q');
+        expect(result[33]._operands.length).toBe(0);
+        document.destroy();
+    });
+	it('1004242 - RubberStamp annotations Padding Issue', () => {
+        let document: PdfDocument = new PdfDocument();
+        let page: PdfPage = document.addPage() as PdfPage;
+        const annot: PdfRubberStampAnnotation = new PdfRubberStampAnnotation({
+          x: 20,
+          y: 60,
+          width: 200,
+          height: 50,
+        });
+        annot.icon = PdfRubberStampAnnotationIcon.approved;
+        annot.setAppearance(true);
+        page.annotations.add(annot);
+        const annot1: PdfRubberStampAnnotation = new PdfRubberStampAnnotation({
+          x: 250,
+          y: 60,
+          width: 200,
+          height: 50,
+        });
+        annot1.icon = PdfRubberStampAnnotationIcon.approved;
+        annot1.setAppearance(true);
+        annot1.flatten = true;
+        page.annotations.add(annot1);
+        const annot2: PdfRubberStampAnnotation = new PdfRubberStampAnnotation({
+          x: 20,
+          y: 150,
+          width: 200,
+          height: 50,
+        });
+        annot2.icon = PdfRubberStampAnnotationIcon.forComment;
+        annot2.setAppearance(true);
+        page.annotations.add(annot2);
+        const annot3: PdfRubberStampAnnotation = new PdfRubberStampAnnotation({
+          x: 250,
+          y: 150,
+          width: 200,
+          height: 50,
+        });
+        annot3.icon = PdfRubberStampAnnotationIcon.forComment;
+        annot3.setAppearance(true);
+        annot3.flatten = true;
+        page.annotations.add(annot3);
+        const annot4: PdfRubberStampAnnotation = new PdfRubberStampAnnotation({
+          x: 20,
+          y: 300,
+          width: 200,
+          height: 50,
+        });
+        annot4.icon = PdfRubberStampAnnotationIcon.experimental;
+        annot4.setAppearance(true);
+        page.annotations.add(annot4);
+        const annot5: PdfRubberStampAnnotation = new PdfRubberStampAnnotation({
+          x: 250,
+          y: 300,
+          width: 200,
+          height: 50,
+        });
+        annot5.icon = PdfRubberStampAnnotationIcon.experimental;
+        annot5.setAppearance(true);
+        annot5.flatten = true;
+        page.annotations.add(annot5);
+        const annot6: PdfRubberStampAnnotation = new PdfRubberStampAnnotation({
+          x: 20,
+          y: 450,
+          width: 200,
+          height: 50,
+        });
+        annot6.icon = PdfRubberStampAnnotationIcon.forPublicRelease;
+        annot6.setAppearance(true);
+        page.annotations.add(annot6);
+        const annot7: PdfRubberStampAnnotation = new PdfRubberStampAnnotation({
+          x: 250,
+          y: 450,
+          width: 200,
+          height: 50,
+        });
+        annot7.icon = PdfRubberStampAnnotationIcon.forPublicRelease;
+        annot7.setAppearance(true);
+        annot7.flatten = true;
+        page.annotations.add(annot7);
+        const annot8: PdfRubberStampAnnotation = new PdfRubberStampAnnotation({
+          x: 20,
+          y: 650,
+          width: 200,
+          height: 50,
+        });
+        annot8.icon = PdfRubberStampAnnotationIcon.confidential;
+        annot8.setAppearance(true);
+        page.annotations.add(annot8);
+        const annot9: PdfRubberStampAnnotation = new PdfRubberStampAnnotation({
+          x: 250,
+          y: 650,
+          width: 200,
+          height: 50,
+        });
+        annot9.icon = PdfRubberStampAnnotationIcon.confidential;
+        annot9.setAppearance(true);
+        annot9.flatten = true;
+        page.annotations.add(annot9);
+        const output = document.save();
+        document.destroy();
+        document = new PdfDocument(output);
+        page = document.getPage(0) as PdfPage;
+        let loadedStamp = page.annotations.at(0);
+        let appearance = loadedStamp._dictionary.get('AP').get('N')
+        let parser: _ContentParser = new _ContentParser(appearance.getBytes());
+        let result: _PdfRecord[] = parser._readContent();
+        expect(result[0]._operator).toEqual('cm');
+        expect(result[0]._operands).toEqual(['1.00', '.00', '.00', '1.00', '.00', '50.00']);
+        expect(result[1]._operator).toEqual('q');
+        expect(result[1]._operands.length).toBe(0);
+        expect(result[2]._operator).toEqual('cm');
+        expect(result[2]._operands).toEqual(['1.54', '.00', '.00', '1.79', '.00', '.00']);
+        expect(result[3]._operator).toEqual('CS');
+        expect(result[3]._operands).toEqual(['/DeviceRGB']);
+        expect(result[4]._operator).toEqual('cs');
+        expect(result[4]._operands).toEqual(['/DeviceRGB']);
+        expect(result[5]._operator).toEqual('d');
+        expect(result[5]._operands).toEqual(['[]', '0']);
+        expect(result[6]._operator).toEqual('w');
+        expect(result[6]._operands).toEqual(['1.000']);
+        expect(result[7]._operator).toEqual('j');
+        expect(result[7]._operands).toEqual(['0']);
+        expect(result[8]._operator).toEqual('J');
+        expect(result[8]._operands).toEqual(['0']);
+        expect(result[9]._operator).toEqual('RG');
+        expect(result[9]._operands).toEqual(['0.286', '0.431', '0.149']);
+        expect(result[10]._operator).toEqual('rg');
+        expect(result[10]._operands).toEqual(['0.898', '0.933', '0.871']);
+        expect(result[11]._operator).toEqual('m');
+        expect(result[11]._operands).toEqual(['2.000', '-4.000']);
+        expect(result[12]._operator).toEqual('c');
+        expect(result[12]._operands).toEqual(['2.000', '-2.343', '3.343', '-1.000', '5.000', '-1.000']);
+        expect(result[13]._operator).toEqual('l');
+        expect(result[13]._operands).toEqual(['125.000', '-1.000']);
+        expect(result[14]._operator).toEqual('c');
+        expect(result[14]._operands).toEqual(['126.657', '-1.000', '128.000', '-2.343', '128.000', '-4.000']);
+        expect(result[15]._operator).toEqual('l');
+        expect(result[15]._operands).toEqual(['128.000', '-24.000']);
+        expect(result[16]._operator).toEqual('c');
+        expect(result[16]._operands).toEqual(['128.000', '-25.657', '126.657', '-27.000', '125.000', '-27.000']);
+        expect(result[17]._operator).toEqual('l');
+        expect(result[17]._operands).toEqual(['5.000', '-27.000']);
+        expect(result[18]._operator).toEqual('c');
+        expect(result[18]._operands).toEqual(['3.343', '-27.000', '2.000', '-25.657', '2.000', '-24.000']);
+        expect(result[19]._operator).toEqual('h');
+        expect(result[19]._operands.length).toBe(0);
+        expect(result[20]._operator).toEqual('B');
+        expect(result[20]._operands.length).toBe(0);
+        expect(result[21]._operator).toEqual('BT');
+        expect(result[21]._operands.length).toBe(0);
+        expect(result[22]._operator).toEqual('rg');
+        expect(result[22]._operands).toEqual(['0.286', '0.431', '0.149']);
+        expect(result[23]._operator).toEqual('Tf');
+        expect(result[24]._operator).toEqual('Tr');
+        expect(result[24]._operands).toEqual(['0']);
+        expect(result[25]._operator).toEqual('Tc');
+        expect(result[25]._operands).toEqual(['0.000']);
+        expect(result[26]._operator).toEqual('Tw');
+        expect(result[26]._operands).toEqual(['0.000']);
+        expect(result[27]._operator).toEqual('Tz');
+        expect(result[27]._operands).toEqual(['100.000']);
+        expect(result[28]._operator).toEqual('Tm');
+        expect(result[28]._operands).toEqual(['1.00', '.00', '.00', '1.00', '2.00', '-21.34']);
+        expect(result[29]._operator).toEqual('Td');
+        expect(result[29]._operands).toEqual(['6.880', '0.000']);
+        expect(result[30]._operator).toEqual("'");
+        expect(result[30]._operands).toEqual(['(APPROVED)']);
+        expect(result[31]._operator).toEqual('Td');
+        expect(result[31]._operands).toEqual(['0.000', '-22.700']);
+        expect(result[32]._operator).toEqual('ET');
+        expect(result[32]._operands.length).toBe(0);
+        expect(result[33]._operator).toEqual('Q');
+        expect(result[33]._operands.length).toBe(0);
+        loadedStamp = page.annotations.at(1);
+        appearance = loadedStamp._dictionary.get('AP').get('N')
+        parser = new _ContentParser(appearance.getBytes());
+        result = parser._readContent();
+        expect(result[0]._operator).toEqual('cm');
+        expect(result[0]._operands).toEqual(['1.00', '.00', '.00', '1.00', '.00', '50.00']);
+        expect(result[1]._operator).toEqual('q');
+        expect(result[1]._operands.length).toBe(0);
+        expect(result[2]._operator).toEqual('cm');
+        expect(result[2]._operands).toEqual(['1.18', '.00', '.00', '1.79', '.00', '.00']);
+        expect(result[3]._operator).toEqual('CS');
+        expect(result[3]._operands).toEqual(['/DeviceRGB']);
+        expect(result[4]._operator).toEqual('cs');
+        expect(result[4]._operands).toEqual(['/DeviceRGB']);
+        expect(result[5]._operator).toEqual('d');
+        expect(result[5]._operands).toEqual(['[]', '0']);
+        expect(result[6]._operator).toEqual('w');
+        expect(result[6]._operands).toEqual(['1.000']);
+        expect(result[7]._operator).toEqual('j');
+        expect(result[7]._operands).toEqual(['0']);
+        expect(result[8]._operator).toEqual('J');
+        expect(result[8]._operands).toEqual(['0']);
+        expect(result[9]._operator).toEqual('RG');
+        expect(result[9]._operands).toEqual(['0.094', '0.145', '0.392']);
+        expect(result[10]._operator).toEqual('rg');
+        expect(result[10]._operands).toEqual(['0.859', '0.890', '0.941']);
+        expect(result[11]._operator).toEqual('m');
+        expect(result[11]._operands).toEqual(['2.000', '-4.000']);
+        expect(result[12]._operator).toEqual('c');
+        expect(result[12]._operands).toEqual([
+            '2.000', '-2.343', '3.343', '-1.000', '5.000', '-1.000'
+        ]);
+        expect(result[13]._operator).toEqual('l');
+        expect(result[13]._operands).toEqual(['165.000', '-1.000']);
+        expect(result[14]._operator).toEqual('c');
+        expect(result[14]._operands).toEqual([
+            '166.657', '-1.000', '168.000', '-2.343', '168.000', '-4.000'
+        ]);
+        expect(result[15]._operator).toEqual('l');
+        expect(result[15]._operands).toEqual(['168.000', '-24.000']);
+        expect(result[16]._operator).toEqual('c');
+        expect(result[16]._operands).toEqual([
+            '168.000', '-25.657', '166.657', '-27.000', '165.000', '-27.000'
+        ]);
+        expect(result[17]._operator).toEqual('l');
+        expect(result[17]._operands).toEqual(['5.000', '-27.000']);
+        expect(result[18]._operator).toEqual('c');
+        expect(result[18]._operands).toEqual([
+            '3.343', '-27.000', '2.000', '-25.657', '2.000', '-24.000'
+        ]);
+        expect(result[19]._operator).toEqual('h');
+        expect(result[19]._operands.length).toBe(0);
+        expect(result[20]._operator).toEqual('B');
+        expect(result[20]._operands.length).toBe(0);
+        expect(result[21]._operator).toEqual('BT');
+        expect(result[21]._operands.length).toBe(0);
+        expect(result[22]._operator).toEqual('rg');
+        expect(result[22]._operands).toEqual(['0.094', '0.145', '0.392']);
+        expect(result[23]._operator).toEqual('Tf');
+        expect(result[24]._operator).toEqual('Tr');
+        expect(result[24]._operands).toEqual(['0']);
+        expect(result[25]._operator).toEqual('Tc');
+        expect(result[25]._operands).toEqual(['0.000']);
+        expect(result[26]._operator).toEqual('Tw');
+        expect(result[26]._operands).toEqual(['0.000']);
+        expect(result[27]._operator).toEqual('Tz');
+        expect(result[27]._operands).toEqual(['100.000']);
+        expect(result[28]._operator).toEqual('Tm');
+        expect(result[28]._operands).toEqual([
+            '1.00', '.00', '.00', '1.00', '2.00', '-21.34'
+        ]);
+        expect(result[29]._operator).toEqual('Td');
+        expect(result[29]._operands).toEqual(['7.450', '0.000']);
+        expect(result[30]._operator).toEqual("'");
+        expect(result[30]._operands).toEqual(['(FOR COMMENT)']);
+        expect(result[31]._operator).toEqual('Td');
+        expect(result[31]._operands).toEqual(['0.000', '-22.700']);
+        expect(result[32]._operator).toEqual('ET');
+        expect(result[32]._operands.length).toBe(0);
+        expect(result[33]._operator).toEqual('Q');
+        expect(result[33]._operands.length).toBe(0);
+        loadedStamp = page.annotations.at(2);
+        appearance = loadedStamp._dictionary.get('AP').get('N')
+        parser = new _ContentParser(appearance.getBytes());
+        result = parser._readContent();
+        expect(result[0]._operator).toEqual('cm');
+        expect(result[0]._operands).toEqual(['1.00', '.00', '.00', '1.00', '.00', '50.00']);
+        expect(result[1]._operator).toEqual('q');
+        expect(result[1]._operands.length).toBe(0);
+        expect(result[2]._operator).toEqual('cm');
+        expect(result[2]._operands).toEqual(['1.11', '.00', '.00', '1.79', '.00', '.00']);
+        expect(result[3]._operator).toEqual('CS');
+        expect(result[3]._operands).toEqual(['/DeviceRGB']);
+        expect(result[4]._operator).toEqual('cs');
+        expect(result[4]._operands).toEqual(['/DeviceRGB']);
+        expect(result[5]._operator).toEqual('d');
+        expect(result[5]._operands).toEqual(['[]', '0']);
+        expect(result[6]._operator).toEqual('w');
+        expect(result[6]._operands).toEqual(['1.000']);
+        expect(result[7]._operator).toEqual('j');
+        expect(result[7]._operands).toEqual(['0']);
+        expect(result[8]._operator).toEqual('J');
+        expect(result[8]._operands).toEqual(['0']);
+        expect(result[9]._operator).toEqual('RG');
+        expect(result[9]._operands).toEqual(['0.094', '0.145', '0.392']);
+        expect(result[10]._operator).toEqual('rg');
+        expect(result[10]._operands).toEqual(['0.859', '0.890', '0.941']);
+        expect(result[11]._operator).toEqual('m');
+        expect(result[11]._operands).toEqual(['2.000', '-4.000']);
+        expect(result[12]._operator).toEqual('c');
+        expect(result[12]._operands).toEqual([
+            '2.000', '-2.343', '3.343', '-1.000', '5.000', '-1.000'
+        ]);
+        expect(result[13]._operator).toEqual('l');
+        expect(result[13]._operands).toEqual(['175.000', '-1.000']);
+        expect(result[14]._operator).toEqual('c');
+        expect(result[14]._operands).toEqual([
+            '176.657', '-1.000', '178.000', '-2.343', '178.000', '-4.000'
+        ]);
+        expect(result[15]._operator).toEqual('l');
+        expect(result[15]._operands).toEqual(['178.000', '-24.000']);
+        expect(result[16]._operator).toEqual('c');
+        expect(result[16]._operands).toEqual([
+            '178.000', '-25.657', '176.657', '-27.000', '175.000', '-27.000'
+        ]);
+        expect(result[17]._operator).toEqual('l');
+        expect(result[17]._operands).toEqual(['5.000', '-27.000']);
+        expect(result[18]._operator).toEqual('c');
+        expect(result[18]._operands).toEqual([
+            '3.343', '-27.000', '2.000', '-25.657', '2.000', '-24.000'
+        ]);
+        expect(result[19]._operator).toEqual('h');
+        expect(result[19]._operands.length).toBe(0);
+        expect(result[20]._operator).toEqual('B');
+        expect(result[20]._operands.length).toBe(0);
+        expect(result[21]._operator).toEqual('BT');
+        expect(result[21]._operands.length).toBe(0);
+        expect(result[22]._operator).toEqual('rg');
+        expect(result[22]._operands).toEqual(['0.094', '0.145', '0.392']);
+        expect(result[23]._operator).toEqual('Tf');
+        expect(result[24]._operator).toEqual('Tr');
+        expect(result[24]._operands).toEqual(['0']);
+        expect(result[25]._operator).toEqual('Tc');
+        expect(result[25]._operands).toEqual(['0.000']);
+        expect(result[26]._operator).toEqual('Tw');
+        expect(result[26]._operands).toEqual(['0.000']);
+        expect(result[27]._operator).toEqual('Tz');
+        expect(result[27]._operands).toEqual(['100.000']);
+        expect(result[28]._operator).toEqual('Tm');
+        expect(result[28]._operands).toEqual([
+            '1.00', '.00', '.00', '1.00', '2.00', '-21.34'
+        ]);
+        expect(result[29]._operator).toEqual('Td');
+        expect(result[29]._operands).toEqual(['9.660', '0.000']);
+        expect(result[30]._operator).toEqual("'");
+        expect(result[30]._operands).toEqual(['(EXPERIMENTAL)']);
+        expect(result[31]._operator).toEqual('Td');
+        expect(result[31]._operands).toEqual(['0.000', '-22.700']);
+        expect(result[32]._operator).toEqual('ET');
+        expect(result[32]._operands.length).toBe(0);
+        expect(result[33]._operator).toEqual('Q');
+        expect(result[33]._operands.length).toBe(0);
+        loadedStamp = page.annotations.at(3);
+        appearance = loadedStamp._dictionary.get('AP').get('N')
+        parser = new _ContentParser(appearance.getBytes());
+        result = parser._readContent();
+        expect(result[0]._operator).toEqual('cm');
+        expect(result[0]._operands).toEqual(['1.00', '.00', '.00', '1.00', '.00', '50.00']);
+        expect(result[1]._operator).toEqual('q');
+        expect(result[1]._operands.length).toBe(0);
+        expect(result[2]._operator).toEqual('cm');
+        expect(result[2]._operands).toEqual(['0.82', '.00', '.00', '1.79', '.00', '.00']);
+        expect(result[3]._operator).toEqual('CS');
+        expect(result[3]._operands).toEqual(['/DeviceRGB']);
+        expect(result[4]._operator).toEqual('cs');
+        expect(result[4]._operands).toEqual(['/DeviceRGB']);
+        expect(result[5]._operator).toEqual('d');
+        expect(result[5]._operands).toEqual(['[]', '0']);
+        expect(result[6]._operator).toEqual('w');
+        expect(result[6]._operands).toEqual(['1.000']);
+        expect(result[7]._operator).toEqual('j');
+        expect(result[7]._operands).toEqual(['0']);
+        expect(result[8]._operator).toEqual('J');
+        expect(result[8]._operands).toEqual(['0']);
+        expect(result[9]._operator).toEqual('RG');
+        expect(result[9]._operands).toEqual(['0.094', '0.145', '0.392']);
+        expect(result[10]._operator).toEqual('rg');
+        expect(result[10]._operands).toEqual(['0.859', '0.890', '0.941']);
+        expect(result[11]._operator).toEqual('m');
+        expect(result[11]._operands).toEqual(['2.000', '-4.000']);
+        expect(result[12]._operator).toEqual('c');
+        expect(result[12]._operands).toEqual([
+            '2.000', '-2.343', '3.343', '-1.000', '5.000', '-1.000'
+        ]);
+        expect(result[13]._operator).toEqual('l');
+        expect(result[13]._operands).toEqual(['239.000', '-1.000']);
+        expect(result[14]._operator).toEqual('c');
+        expect(result[14]._operands).toEqual([
+            '240.657', '-1.000', '242.000', '-2.343', '242.000', '-4.000'
+        ]);
+        expect(result[15]._operator).toEqual('l');
+        expect(result[15]._operands).toEqual(['242.000', '-24.000']);
+        expect(result[16]._operator).toEqual('c');
+        expect(result[16]._operands).toEqual([
+            '242.000', '-25.657', '240.657', '-27.000', '239.000', '-27.000'
+        ]);
+        expect(result[17]._operator).toEqual('l');
+        expect(result[17]._operands).toEqual(['5.000', '-27.000']);
+        expect(result[18]._operator).toEqual('c');
+        expect(result[18]._operands).toEqual([
+            '3.343', '-27.000', '2.000', '-25.657', '2.000', '-24.000'
+        ]);
+        expect(result[19]._operator).toEqual('h');
+        expect(result[19]._operands.length).toBe(0);
+        expect(result[20]._operator).toEqual('B');
+        expect(result[20]._operands.length).toBe(0);
+        expect(result[21]._operator).toEqual('BT');
+        expect(result[21]._operands.length).toBe(0);
+        expect(result[22]._operator).toEqual('rg');
+        expect(result[22]._operands).toEqual(['0.094', '0.145', '0.392']);
+        expect(result[23]._operator).toEqual('Tf');
+        expect(result[24]._operator).toEqual('Tr');
+        expect(result[24]._operands).toEqual(['0']);
+        expect(result[25]._operator).toEqual('Tc');
+        expect(result[25]._operands).toEqual(['0.000']);
+        expect(result[26]._operator).toEqual('Tw');
+        expect(result[26]._operands).toEqual(['0.000']);
+        expect(result[27]._operator).toEqual('Tz');
+        expect(result[27]._operands).toEqual(['100.000']);
+        expect(result[28]._operator).toEqual('Tm');
+        expect(result[28]._operands).toEqual([
+            '1.00', '.00', '.00', '1.00', '2.00', '-21.34'
+        ]);
+        expect(result[29]._operator).toEqual('Td');
+        expect(result[29]._operands).toEqual(['8.880', '0.000']);
+        expect(result[30]._operator).toEqual("'");
+        expect(result[30]._operands).toEqual(['(FOR PUBLIC RELEASE)']);
+        expect(result[31]._operator).toEqual('Td');
+        expect(result[31]._operands).toEqual(['0.000', '-22.700']);
+        expect(result[32]._operator).toEqual('ET');
+        expect(result[32]._operands.length).toBe(0);
+        expect(result[33]._operator).toEqual('Q');
+        expect(result[33]._operands.length).toBe(0);
+        loadedStamp = page.annotations.at(4);
+        appearance = loadedStamp._dictionary.get('AP').get('N')
+        parser = new _ContentParser(appearance.getBytes());
+        result = parser._readContent();
+        expect(result[0]._operator).toEqual('cm');
+        expect(result[0]._operands).toEqual(['1.00', '.00', '.00', '1.00', '.00', '50.00']);
+        expect(result[1]._operator).toEqual('q');
+        expect(result[1]._operands.length).toBe(0);
+        expect(result[2]._operator).toEqual('cm');
+        expect(result[2]._operands).toEqual(['1.18', '.00', '.00', '1.79', '.00', '.00']);
+        expect(result[3]._operator).toEqual('CS');
+        expect(result[3]._operands).toEqual(['/DeviceRGB']);
+        expect(result[4]._operator).toEqual('cs');
+        expect(result[4]._operands).toEqual(['/DeviceRGB']);
+        expect(result[5]._operator).toEqual('d');
+        expect(result[5]._operands).toEqual(['[]', '0']);
+        expect(result[6]._operator).toEqual('w');
+        expect(result[6]._operands).toEqual(['1.000']);
+        expect(result[7]._operator).toEqual('j');
+        expect(result[7]._operands).toEqual(['0']);
+        expect(result[8]._operator).toEqual('J');
+        expect(result[8]._operands).toEqual(['0']);
+        expect(result[9]._operator).toEqual('RG');
+        expect(result[9]._operands).toEqual(['0.094', '0.145', '0.392']);
+        expect(result[10]._operator).toEqual('rg');
+        expect(result[10]._operands).toEqual(['0.859', '0.890', '0.941']);
+        expect(result[11]._operator).toEqual('m');
+        expect(result[11]._operands).toEqual(['2.000', '-4.000']);
+        expect(result[12]._operator).toEqual('c');
+        expect(result[12]._operands).toEqual([
+            '2.000', '-2.343', '3.343', '-1.000', '5.000', '-1.000'
+        ]);
+        expect(result[13]._operator).toEqual('l');
+        expect(result[13]._operands).toEqual(['165.000', '-1.000']);
+        expect(result[14]._operator).toEqual('c');
+        expect(result[14]._operands).toEqual([
+            '166.657', '-1.000', '168.000', '-2.343', '168.000', '-4.000'
+        ]);
+        expect(result[15]._operator).toEqual('l');
+        expect(result[15]._operands).toEqual(['168.000', '-24.000']);
+        expect(result[16]._operator).toEqual('c');
+        expect(result[16]._operands).toEqual([
+            '168.000', '-25.657', '166.657', '-27.000', '165.000', '-27.000'
+        ]);
+        expect(result[17]._operator).toEqual('l');
+        expect(result[17]._operands).toEqual(['5.000', '-27.000']);
+        expect(result[18]._operator).toEqual('c');
+        expect(result[18]._operands).toEqual([
+            '3.343', '-27.000', '2.000', '-25.657', '2.000', '-24.000'
+        ]);
+        expect(result[19]._operator).toEqual('h');
+        expect(result[19]._operands.length).toBe(0);
+        expect(result[20]._operator).toEqual('B');
+        expect(result[20]._operands.length).toBe(0);
+        expect(result[21]._operator).toEqual('BT');
+        expect(result[21]._operands.length).toBe(0);
+        expect(result[22]._operator).toEqual('rg');
+        expect(result[22]._operands).toEqual(['0.094', '0.145', '0.392']);
+        expect(result[23]._operator).toEqual('Tf');
+        expect(result[24]._operator).toEqual('Tr');
+        expect(result[24]._operands).toEqual(['0']);
+        expect(result[25]._operator).toEqual('Tc');
+        expect(result[25]._operands).toEqual(['0.000']);
+        expect(result[26]._operator).toEqual('Tw');
+        expect(result[26]._operands).toEqual(['0.000']);
+        expect(result[27]._operator).toEqual('Tz');
+        expect(result[27]._operands).toEqual(['100.000']);
+        expect(result[28]._operator).toEqual('Tm');
+        expect(result[28]._operands).toEqual([
+            '1.00', '.00', '.00', '1.00', '2.00', '-21.34'
+        ]);
+        expect(result[29]._operator).toEqual('Td');
+        expect(result[29]._operands).toEqual(['8.560', '0.000']);
+        expect(result[30]._operator).toEqual("'");
+        expect(result[30]._operands).toEqual(['(CONFIDENTIAL)']);
+        expect(result[31]._operator).toEqual('Td');
+        expect(result[31]._operands).toEqual(['0.000', '-22.700']);
+        expect(result[32]._operator).toEqual('ET');
+        expect(result[32]._operands.length).toBe(0);
+        expect(result[33]._operator).toEqual('Q');
+        expect(result[33]._operands.length).toBe(0);
         document.destroy();
     });
 });

@@ -5,6 +5,8 @@ import { isNullOrUndefined, Browser, removeClass, closest, createElement, detach
 import { IToolbarStatus, OffsetPosition } from './interface';
 import { CLS_AUD_FOCUS, CLS_IMG_FOCUS, CLS_RESIZE, CLS_RTE_DRAG_IMAGE, CLS_TABLE_MULTI_CELL, CLS_TABLE_SEL, CLS_TABLE_SEL_END, CLS_VID_FOCUS } from './constant';
 import { IsFormatted } from '../editor-manager/plugin/isformatted';
+import { BLOCK_TAGS } from '../editor-manager/base/constant';
+import * as CONSTANT from './constant';
 
 /**
  * @returns {boolean} - returns boolean value
@@ -730,12 +732,6 @@ export function wrapTextAndInlineNodes(node: Node, parentElement: string): void 
         'DIV', 'TH', 'TD', 'LI', 'BLOCKQUOTE', 'OL', 'UL',
         'TABLE', 'TBODY', 'TR', 'THEAD', 'TFOOT'
     ]);
-    const blockTags: Set<string> = new Set([
-        'DIV', 'P', 'SECTION', 'ARTICLE', 'HEADER', 'FOOTER', 'ASIDE', 'NAV',
-        'MAIN', 'FIGURE', 'FIGCAPTION', 'BLOCKQUOTE', 'OL', 'UL', 'LI', 'TABLE',
-        'TBODY', 'TR', 'TD', 'TH', 'THEAD', 'TFOOT', 'H1', 'H2', 'H3', 'H4',
-        'H5', 'H6', 'SVG', 'PRE', 'COLGROUP'
-    ]);
     const inlineBlockTags: Set<string> = new Set([
         'BUTTON', 'INPUT', 'SELECT', 'TEXTAREA', 'IMG', 'LABEL', 'IFRAME', 'VIDEO',
         'AUDIO', 'OBJECT', 'EMBED', 'CANVAS', 'METER', 'PROGRESS', 'OBJECT'
@@ -746,7 +742,7 @@ export function wrapTextAndInlineNodes(node: Node, parentElement: string): void 
     for (const child of nodes) {
         let needTowrap: boolean = true;
         if (child.parentElement && child.parentElement.nodeName === 'LI') {
-            needTowrap = needToWrapLiChild(child.parentElement, blockTags);
+            needTowrap = needToWrapLiChild(child.parentElement);
         }
         // Process text nodes
         if (child.nodeType === Node.TEXT_NODE) {
@@ -763,14 +759,13 @@ export function wrapTextAndInlineNodes(node: Node, parentElement: string): void 
             const childElement: HTMLElement = child as HTMLElement;
             const tagName: string = childElement.tagName.toUpperCase();
             // Handle block elements
-            if (isInSet(blockTags, tagName) && !isInSet(inlineBlockTags, tagName)) {
+            if (isBlockNode(childElement) && !isInSet(inlineBlockTags, tagName)) {
                 currentWrapper = null;
                 const childElements: Element[] = Array.from(childElement.childNodes) as Element[];
                 // Check if has block children (safe alternative to Array.some())
                 let hasBlock: boolean = false;
                 childElements.forEach((node: Element) => {
-                    const nodeName: string = node.tagName;
-                    if (node.nodeType === Node.ELEMENT_NODE && isInSet(blockTags, nodeName)) {
+                    if (node.nodeType === Node.ELEMENT_NODE && isBlockNode(node as HTMLElement)) {
                         hasBlock = true;
                         // Can't break from forEach, but we can use other patterns
                     }
@@ -780,7 +775,7 @@ export function wrapTextAndInlineNodes(node: Node, parentElement: string): void 
                 }
             }
             // Handle inline elements
-            else if (!isInSet(blockTags, tagName) && !isInSet(inlineBlockTags, tagName) && !nonWrappableTags.has(tagName) && tagName !== 'HR') {
+            else if (!isBlockNode(childElement) && !isInSet(inlineBlockTags, tagName) && !nonWrappableTags.has(tagName) && tagName !== 'HR') {
                 if (child.parentNode && needTowrap && child.parentNode.childNodes.length > 1) {
                     if (!currentWrapper) {
                         currentWrapper = document.createElement(parentElement);
@@ -796,15 +791,7 @@ export function wrapTextAndInlineNodes(node: Node, parentElement: string): void 
             const tagName: string = childElement.tagName.toUpperCase();
             // Check if tag is in blockTags
             let isBlockTag: boolean = false;
-            const blockIterator: Iterator<string> = blockTags.values();
-            let current: IteratorResult<string> = blockIterator.next();
-            while (!current.done) {
-                if (current.value === tagName) {
-                    isBlockTag = true;
-                    break;
-                }
-                current = blockIterator.next();
-            }
+            isBlockTag = isBlockNode(childElement);
             if (isBlockTag) {
                 if (childElement.childNodes.length === 1 &&
                     childElement.firstChild &&
@@ -879,7 +866,7 @@ export function getPreviousMeaningfulSibling (node: Node | null): Node | null {
  * @param {Set<string>} blockTags - The set of block tags.
  * @returns {boolean} - Returns a boolean value.
  */
-export function needToWrapLiChild(node: Node, blockTags: Set<string>): boolean {
+export function needToWrapLiChild(node: Node): boolean {
     let hasBlockElement: boolean = false;
     let hasNonBlockContent: boolean = false;
     const liElement: HTMLElement = node as HTMLElement;
@@ -888,7 +875,7 @@ export function needToWrapLiChild(node: Node, blockTags: Set<string>): boolean {
         if (child.nodeType === Node.ELEMENT_NODE) {
             const tag: string = child.nodeName;
 
-            if (blockTags.has(tag) && tag !== 'OL' && tag !== 'UL') {
+            if (isBlockNode(child as HTMLElement) && tag !== 'OL' && tag !== 'UL') {
                 const next: Node = child.nextSibling;
                 const isFollowedByList: boolean = next && ['UL', 'OL'].indexOf(next.nodeName) !== -1;
                 if (!isFollowedByList) {
@@ -897,12 +884,13 @@ export function needToWrapLiChild(node: Node, blockTags: Set<string>): boolean {
             } else if (['OL', 'UL'].indexOf(tag) !== -1) {
                 const prev: Node = child.previousSibling;
                 const next: Node = child.nextSibling;
-                const isSurroundedByContent: boolean = prev && blockTags.has(prev.nodeName) && next && next.nodeType === Node.TEXT_NODE &&
+                const isSurroundedByContent: boolean = prev && isBlockNode(prev as HTMLElement)
+                && next && next.nodeType === Node.TEXT_NODE &&
                 next.textContent.trim().length > 0;
                 if (isSurroundedByContent) {
                     hasBlockElement = true;
                 }
-            } else if (!blockTags.has(tag) && tag !== 'LI') {
+            } else if (!isBlockNode(child as HTMLElement) && tag !== 'LI') {
                 const next: Node = child.nextSibling;
                 const isFollowedByList: boolean = next && ['UL', 'OL'].indexOf(next.nodeName) !== -1;
                 if (!isFollowedByList) {
@@ -1043,6 +1031,16 @@ export function alignmentHtml(htmlString: string): string {
 }
 
 /**
+ * Checks if the given HTML element is a block-level element.
+ *
+ * @param {Element} element - The HTML element to check.
+ * @returns {boolean} - True if the element is a block-level element, false otherwise.
+ */
+function isBlockNode(element: Element): boolean {
+    return (!!element && (element.nodeType === Node.ELEMENT_NODE && BLOCK_TAGS.indexOf(element.tagName.toLowerCase()) >= 0));
+}
+
+/**
  * Formats a DOM node with proper indentation for improved readability.
  *
  * @param {Node} node - The DOM node to format.
@@ -1050,13 +1048,6 @@ export function alignmentHtml(htmlString: string): string {
  * @returns {string} The formatted node as a string with proper indentation.
  */
 export function formatNode(node: Node, indentLevel: number): string {
-    // Block-level HTML tags
-    const blockTags: Set<string> = new Set([
-        'address', 'article', 'aside', 'blockquote', 'canvas', 'dd', 'div', 'dl', 'dt',
-        'fieldset', 'figcaption', 'figure', 'footer', 'form', 'h1', 'h2', 'h3', 'h4',
-        'h5', 'h6', 'header', 'hr', 'li', 'main', 'nav', 'noscript', 'ol', 'p', 'pre',
-        'section', 'table', 'tfoot', 'ul', 'thead', 'tbody', 'tr', 'th', 'td', 'colgroup'
-    ]);
     // Self-closing HTML tags
     const selfClosingTags: Set<string> = new Set([
         'area', 'base', 'br', 'col', 'embed', 'hr', 'img', 'input', 'link', 'meta', 'source', 'track', 'wbr'
@@ -1084,8 +1075,7 @@ export function formatNode(node: Node, indentLevel: number): string {
             const attrString: string = attrs ? ` ${attrs}` : '';
             const openTag: string = attrs ? `<${tagName} ${attrs}>` : `<${tagName}>`;
             const closeTag: string = `</${tagName}>`;
-
-            const isBlock: boolean = blockTags.has(tagName);
+            const isBlock: boolean = isBlockNode(element);
             const isSelfClosing: boolean = selfClosingTags.has(tagName);
             if (isSelfClosing) {
                 if (tagName === 'col') {
@@ -1215,4 +1205,20 @@ export function getMediaResizeBarValue(mediaElement: HTMLElement, rootEle: HTMLT
         top: (elemRect.top + pageY) - (rootRect.top + pageY) + rootScrollY,
         left: (elemRect.left + pageX) - (rootRect.left + pageX) + rootScrollX
     };
+}
+
+/**
+ * Converts font size from one unit to another.
+ *
+ * @param {number} value - The font size value to convert.
+ * @param {string} originalUnit - The original unit of the font size.
+ * @param {string} targetUnit - The target unit to convert the font size to.
+ * @returns {number} - The converted font size value.
+ */
+export function convertFontSize(value: number, originalUnit: string, targetUnit: string): number {
+    if (CONSTANT.supportedUnits.indexOf(originalUnit) !== -1 || CONSTANT.supportedUnits.indexOf(targetUnit) !== -1) {
+        originalUnit = 'px';
+    }
+    const convertedValue: number = value * CONSTANT.conversionFactors[originalUnit as string][targetUnit as string];
+    return convertedValue;
 }

@@ -224,8 +224,9 @@ export class TreeViewRenderer implements IAction {
                         this.parent.localeObj.getConstant('drag') : '' : this.parent.localeObj.getConstant('drag')),
                     'aria-disabled': 'false'
                 },
-                className: cls.ICON + ' ' + cls.DRAG_CLASS + ' ' +
-                    (field.fieldItem ? field.fieldItem.allowDragAndDrop ? '' : cls.DRAG_DISABLE_CLASS : '')
+                className: cls.ICON + ' ' + cls.DRAG_CLASS + ' ' + (field.fieldItem && (
+                    isNullOrUndefined(field.fieldItem.allowDragAndDrop) || field.fieldItem.allowDragAndDrop
+                ) ? '' : cls.DRAG_DISABLE_CLASS)
             });
             if (args.node.querySelector('.' + cls.CHECKBOX_CONTAINER) &&
                 !args.node.querySelector('.cls.DRAG_CLASS') && liTextElement) {

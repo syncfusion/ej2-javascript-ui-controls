@@ -1,5 +1,4 @@
 @use 'ej2-base/styles/common/mixin' as *;
-@use './theme-variables' as *;
 @mixin wrap-styles {
   height: Auto;
   line-height: $grid-rowcell-wrap-height;
@@ -559,7 +558,7 @@
     }
 
     .e-frozenrow-border {
-      @include grid-height-position-index($frozen-border-color, relative);
+      @include grid-height-position-index($frozen-border-color, absolute);
     }
 
     .e-frozenrow-border.e-frozenrow-empty {

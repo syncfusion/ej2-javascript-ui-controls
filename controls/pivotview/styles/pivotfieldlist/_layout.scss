@@ -1,5 +1,4 @@
 @use 'ej2-base/styles/common/mixin' as *;
-@use './theme-variables' as *;
 @mixin active-wrap-styles {
   @if ($field-list-skin =='bootstrap4') {
     background-color: $field-list-sort-select-background-color;

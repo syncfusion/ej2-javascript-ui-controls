@@ -1,3 +1,5 @@
+[![coverage](http://ej2.syncfusion.com/badges/ej2-richtexteditor/coverage.svg)](http://ej2.syncfusion.com/badges/ej2-richtexteditor)
+
 # JavaScript Rich Text Editor | JavaScript Markdown Editor
 
 The [JavaScript RichTextEditor](https://www.syncfusion.com/javascript-ui-controls/js-wysiwyg-rich-text-editor?utm_source=npm&utm_medium=listing&utm_campaign=javascript-richtexteditor-npm) is a feature-rich WYSIWYG HTML editor and Markdown editor. The Rich Text Editor is widely used to create blogs, forum posts, notes sections, comment sections, messaging applications, and more. The control provides an efficient user interface for a better editing experience with mobile support. It has a variety of tools to edit and format rich content, and it return a valid HTML markup or Markdown (MD) content. It allows users to insert images, links, tables, media files and lists with modular architectures.

@@ -594,7 +594,8 @@ export class TextMarkupAnnotation {
                             customData: this.pdfViewer.annotation.getCustomData(annotation), annotationAddMode:
                              annotation.annotationAddMode, annotationSettings: annotation.AnnotationSettings,
                             isLocked: annotation.IsLocked, isPrint: annotation.IsPrint, isCommentLock: annotation.IsCommentLock,
-                            isAnnotationRotated: isAnnotationRotated, annotationRotation: annotation.AnnotationRotation
+                            isAnnotationRotated: isAnnotationRotated, annotationRotation: annotation.AnnotationRotation,
+                            originalName: annotation.OriginalName ? annotation.OriginalName : null
                         };
                         if (annotation.IsMultiSelect) {
                             annotationObject.annotNameCollection = annotation.AnnotNameCollection;
@@ -1242,7 +1243,7 @@ export class TextMarkupAnnotation {
         this.highlightColor = this.highlightColor ? this.highlightColor : this.pdfViewer.highlightSettings.color ? this.pdfViewer.highlightSettings.color : '#FFDF56';
         this.underlineColor = this.underlineColor ? this.underlineColor : this.pdfViewer.underlineSettings.color ? this.pdfViewer.underlineSettings.color : '#00ff00';
         this.strikethroughColor = this.strikethroughColor ? this.strikethroughColor : this.pdfViewer.strikethroughSettings.color ? this.pdfViewer.strikethroughSettings.color : '#ff0000';
-        this.squigglyColor = this.squigglyColor ? this.squigglyColor : (this.pdfViewer.squigglySettings.color ? this.pdfViewer.squigglySettings.color : '#00ff00');
+        this.squigglyColor = this.squigglyColor ? this.squigglyColor : (this.pdfViewer.squigglySettings.color ? this.pdfViewer.squigglySettings.color : '#ff0000');
         this.highlightOpacity = this.highlightOpacity ? this.highlightOpacity : this.pdfViewer.highlightSettings.opacity;
         this.underlineOpacity = this.underlineOpacity ? this.underlineOpacity : this.pdfViewer.underlineSettings.opacity;
         this.strikethroughOpacity = this.strikethroughOpacity ? this.strikethroughOpacity : this.pdfViewer.strikethroughSettings.opacity;
@@ -2618,6 +2619,7 @@ export class TextMarkupAnnotation {
                                 pageNumber: number): void {
         let isLock: boolean = false;
         let isSelection: boolean = false;
+        let isDelete: boolean = false;
         if (currentAnnot.annotationSettings && currentAnnot.annotationSettings.isLock) {
             isLock = currentAnnot.annotationSettings.isLock;
             if (isLock && this.pdfViewer.annotationModule.checkAllowedInteractions('Select', currentAnnot)) {
@@ -2626,6 +2628,11 @@ export class TextMarkupAnnotation {
                     isSelection = false;
                 } else {
                     isSelection = true;
+                }
+                if (this.pdfViewer.annotationModule.checkAllowedInteractions('Delete', currentAnnot)) {
+                    isDelete = false;
+                } else {
+                    isDelete = true;
                 }
             }
         }
@@ -2644,6 +2651,11 @@ export class TextMarkupAnnotation {
             this.selectTextMarkupCurrentPage = pageNumber;
             if (!isSelection) {
                 this.enableAnnotationPropertiesTool(true);
+            }
+            if (!isDelete) {
+                if (!isNullOrUndefined(this.pdfViewer.toolbar) && !isNullOrUndefined(this.pdfViewer.toolbar.annotationToolbarModule)) {
+                    this.pdfViewer.toolbar.annotationToolbarModule.selectAnnotationDeleteItem(true);
+                }
             }
             const commentPanelDiv: HTMLElement = document.getElementById(this.pdfViewer.element.id + '_commantPanel');
             if (commentPanelDiv && commentPanelDiv.style.display === 'block') {

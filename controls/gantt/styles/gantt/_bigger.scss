@@ -1,6 +1,4 @@
 @use 'ej2-base/styles/common/mixin' as *;
-@use './theme-variables' as *;
-@use './theme' as *;
 @mixin resizer-styles($display, $position, $top, $width, $index) {
   display: $display;
   position: $position;

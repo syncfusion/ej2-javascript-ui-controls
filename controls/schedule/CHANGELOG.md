@@ -2,7 +2,15 @@
 
 ## [Unreleased]
 
-## 32.1.24 (2026-01-20)
+## 32.1.25 (2026-01-27)
+
+### Schedule
+
+#### Bug fixes
+
+- `#I799572` - Fixed an issue where the wrong date range was shown in the quick info popup for a recurrence appointment in Agenda view.
+
+## 32.1.22 (2026-01-06)
 
 ### Schedule
 
@@ -10,6 +18,7 @@
 
 - `#I786056` - Fixed an issue in which enabling `byDate` with an empty resource collection prevented the Schedule from rendering.
 - `#I786762` - Resolved an issue where default popup elements were retained in the DOM in the Scheduler.
+- `#I793274` - An issue where the selected cell details are getting incorrectly in the `getSelectedCells` method has been resolved.
 
 ## 32.1.20 (2025-12-23)
 

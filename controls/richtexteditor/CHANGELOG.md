@@ -2,6 +2,18 @@
 
 ## [Unreleased]
 
+## 32.1.25 (2026-01-27)
+
+### RichTextEditor
+
+#### Bug Fixes
+
+- `#I802471` - Now, the extra blank lines appearing when switching between Preview and Source View after inserting block elements has now been resolved.
+
+- `#I803837` - Now, the Font Size toolbar option displays the correct value that corresponds to the current cursor position in the Rich Text Editor.
+
+- `#I803207` - Now, pressing the Enter key when the cursor is placed immediately after an image with a caption functions properly without causing any errors.
+
 ## 32.1.24 (2026-01-20)
 
 ### RichTextEditor

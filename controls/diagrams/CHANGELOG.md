@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 32.1.25 (2026-01-27)
+
+### Diagram
+
+#### Bug Fixes
+
+- `#I786872` - Resolved an issue where connectors drawn from ports could get stuck and display a blocked cursor.
+
 ## 32.1.24 (2026-01-20)
 
 ### Diagram

@@ -1706,7 +1706,8 @@ export class FormDesigner {
                     objIndicatorSettings.opacity = indicatorSettings.opacity;
                 }
                 if (indicatorSettings.width || options.width || indicatorSettings.text){
-                    const width : number = this.setHeightWidth(fieldBounds.width, indicatorSettings.width, bounds.width, zoomValue);
+                    const width: number = this.setHeightWidth(fieldBounds.width, indicatorSettings.width, bounds.width
+                        + formFieldObject.signatureIndicatorSettings.fontSize, zoomValue);
                     spanElement.style.width = width + 'px';
                     objIndicatorSettings.width = width;
                 }
@@ -7076,6 +7077,11 @@ export class FormDesigner {
             this.pdfViewer.selectedItems.formFields[0] : null;
         const fontFamilyItems: string[] = ['Helvetica', 'Courier', 'Times New Roman', 'Symbol', 'ZapfDingbats'];
         const fontSizeItems: string[] = ['6px', '8px', '10px', '12px', '14px', '16px', '18px', '20px', '24px', '28px', '32px', '36px', '40px'];
+        const selectedFontSize: string = selectedItem.fontSize + 'px';
+        if (fontSizeItems.indexOf(selectedFontSize) === -1) {
+            fontSizeItems.push(selectedFontSize);
+            fontSizeItems.sort((a: string, b: string) => parseInt(a, 10) - parseInt(b, 10));
+        }
         const elementID: string = this.pdfViewer.element.id;
         const appearancePropertiesDiv: HTMLElement = createElement('div', { id: elementID + '_formatting_text_prop_appearance' });
         const formatTextStyleContainer: HTMLElement = createElement('div', { className: 'e-pv-properties-format-text-style-prop' });

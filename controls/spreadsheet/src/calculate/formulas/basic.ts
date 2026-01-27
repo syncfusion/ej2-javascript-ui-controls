@@ -1961,11 +1961,8 @@ export class BasicFormulas {
         }
         if (value1 === value2) {
             result = true;
-            if (nestedFormula) {
-                result = this.parent.tic + result + this.parent.tic;
-            }
         }
-        return result;
+        return nestedFormula ? (result ? '1' : '0') : result;
     }
 
     /**
@@ -4726,6 +4723,11 @@ export class BasicFormulas {
      */
     public ComputeISNUMBER(...logValue: string[]): boolean | string {
         const argArr: string[] = logValue;
+        let isNestedFormula: boolean;
+        if (argArr && argArr[argArr.length - 1] === 'nestedFormulaTrue') {
+            isNestedFormula = true;
+            argArr.pop();
+        }
         if (logValue.length === 1 && logValue[0] === '') {
             return this.parent.formulaErrorStrings[FormulasErrorsStrings.InvalidArguments];
         } else if (logValue.length !== 1) {
@@ -4733,9 +4735,9 @@ export class BasicFormulas {
         }
         const orgValue: number | string = (this.parent.isCellReference(argArr[0])) ? this.parent.getValueFromArg(argArr[0]) :
             this.parent.getValueFromArg(argArr[0].split(this.parent.tic).join(''));
-        if (orgValue.toString() === '' || logValue.toString().startsWith(this.parent.tic)) { return false; }
-        const logVal: number = this.parent.parseFloat(orgValue);
-        return !isNaN(logVal) ? true : false;
+        if (orgValue.toString() === '' || logValue.toString().startsWith(this.parent.tic)) { return isNestedFormula ? '0' : false; }
+        const isLogVal: boolean = !isNaN(this.parent.parseFloat(orgValue));
+        return isNestedFormula ? (isLogVal ? '1' : '0') : isLogVal;
     }
 
     /**

@@ -1,0 +1,9 @@
+@use 'sass:color';
+@use 'ej2-base/styles/common/mixin' as *;
+@import '../spreadsheet-ribbon/theme-variables.material-dark';
+@import 'ej2-navigations/styles/toolbar/theme-variables.material-dark';
+@import 'ej2-navigations/styles/context-menu/theme-variables.material-dark';
+@import 'ej2-navigations/styles/tab/theme-variables.material-dark';
+@import 'ej2-buttons/styles/button/theme-variables.material-dark';
+@import './theme-variables.material-dark';
+@import './_theme';

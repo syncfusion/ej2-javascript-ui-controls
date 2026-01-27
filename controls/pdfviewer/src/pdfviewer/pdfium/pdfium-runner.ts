@@ -643,7 +643,7 @@ export function PdfiumRunner(): void {
             if (isTextNeed) {
                 // eslint-disable-next-line
                 let [pageWidth, pageHeight] = this.getPageSize(pageIndex);
-                if (mediaBoxRect && cropBoxRect && mediaBoxRect.y && cropBoxRect.y && mediaBoxRect.y !== cropBoxRect.y) {
+                if (mediaBoxRect && cropBoxRect && mediaBoxRect.y !== cropBoxRect.y) {
                     pageHeight = pageHeight + this.pointerToPixelConverter(mediaBoxRect && mediaBoxRect.y ? mediaBoxRect.y : 0);
                 }
                 const textPage: any = (FPDF as any).LoadTextPage(pagePointer);
@@ -680,7 +680,7 @@ export function PdfiumRunner(): void {
                         const character: string = String.fromCharCode(result);
                         let [charLeft, charRight, charBottom, charTop] = this.getCharBounds(textPage, charCount);
                         let X: number = this.pointerToPixelConverter(charLeft) -
-                        this.pointerToPixelConverter(cropBoxRect && cropBoxRect.x ? cropBoxRect.x : 0);
+                        this.pointerToPixelConverter(mediaBoxRect ? mediaBoxRect.x : (cropBoxRect ? cropBoxRect.x : 0));
                         let Y: number = (pageHeight + this.pointerToPixelConverter(cropBoxRect && cropBoxRect.y ? cropBoxRect.y : 0)) -
                         this.pointerToPixelConverter(charTop);
                         let Width: number = this.pointerToPixelConverter(charRight - charLeft);

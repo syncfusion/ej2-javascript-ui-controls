@@ -1,4 +1,3 @@
-@use './theme-variables' as *;
 @mixin tab-header-layout {
   height: $spreadsheet-ribbon-tab-text-wrap-height;
   min-height: $spreadsheet-ribbon-tab-text-wrap-height;

@@ -2,7 +2,7 @@ import { IsFormatted } from './isformatted';
 import * as CONSTANT from './../base/constant';
 import { NodeSelection } from './../../selection/index';
 import { IToolbarStatus } from './../../common/interface';
-import { getDefaultHtmlTbStatus } from './../../common/util';
+import { getDefaultHtmlTbStatus, convertFontSize } from './../../common/util';
 import { closest, isNullOrUndefined } from '@syncfusion/ej2-base';
 /**
  * Update Toolbar Status
@@ -308,6 +308,8 @@ export class ToolbarStatus {
         if ((size === null || size === undefined || size === '') && node.nodeType !== 3 &&
             (node as HTMLElement).parentElement.classList.contains('e-content')) {
             size = this.getComputedStyle(docElement, (node as HTMLElement), 'font-size');
+            const isfontSizeInPt: boolean = (node as HTMLElement).style.fontSize !== '' && (node as HTMLElement).style.fontSize.indexOf('px') === -1;
+            size = !isNullOrUndefined(size) && isfontSizeInPt ? Math.round(convertFontSize(parseFloat(size), 'px', 'pt')) + 'pt' : size;
         }
         if ((size !== null && size !== '' && size !== undefined)
             && (fontSize === null || fontSize === undefined || (fontSize.indexOf(size) > -1))) {

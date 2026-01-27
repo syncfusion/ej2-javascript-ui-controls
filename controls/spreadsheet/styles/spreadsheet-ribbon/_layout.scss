@@ -1,6 +1,4 @@
 @use 'ej2-base/styles/common/mixin' as *;
-@use './theme-variables' as *;
-@use 'mixin' as *;
 @include export-module('spreadsheet-ribbon-layout') {
   .e-spreadsheet .e-ribbon {
     border: $spreadsheet-ribbon-border;

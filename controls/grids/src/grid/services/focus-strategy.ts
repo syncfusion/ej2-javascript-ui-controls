@@ -830,7 +830,9 @@ export class FocusStrategy {
                 (!isNullOrUndefined(parentsUntil(target, 'e-addedrow')) && !isNullOrUndefined(closest((e.target as HTMLElement), 'input')) && !isNullOrUndefined(document.querySelector('.e-popup-open'))) ||
                 (!isNullOrUndefined(parentsUntil(target, 'e-addedrow')) && (target && !target.querySelector('.e-cancel-icon')) &&
                 !isNullOrUndefined(parentsUntil(target, 'e-unboundcell')))))))) || ['insert', 'f2'].indexOf(e.action) > -1))
-            || ((addNewRow && e.action !== 'tab' && e.action !== 'shiftTab') ||
+            || ((closest(document.activeElement, '.e-filterbarcell') !== null && this.parent.enableHeaderFocus && e.action === 'ctrlPlusA')
+            || ((closest(document.activeElement, '.e-filterbarcell') !== null || addNewRow) &&
+            e.action !== 'tab' && e.action !== 'shiftTab') ||
                 closest(document.activeElement, '#' + this.parent.element.id + '_searchbar') !== null
                 && ['enter', 'leftArrow', 'rightArrow',
                     'shiftLeft', 'shiftRight', 'ctrlPlusA'].indexOf(e.action) > -1)
@@ -1408,8 +1410,9 @@ export class Matrix {
     }
 
     public getRowsFromIndex(rowIndex: number, active: IFocus): HTMLTableRowElement | HTMLCollectionOf<HTMLTableRowElement> {
-        return active.getTable().rows[parseInt(rowIndex.toString(), 10)].classList.contains('e-addedrow') ?
-            active.getTable().rows[parseInt(rowIndex.toString(), 10)].querySelector('table').rows : active.getTable().rows;
+        const row: HTMLTableRowElement = active.getTable().rows[parseInt(rowIndex.toString(), 10)];
+        return row.classList.contains('e-addedrow') && row.querySelector('table') ?
+            row.querySelector('table').rows : active.getTable().rows;
     }
 
     public nextVisibleCellFocus(rowIndex: number, columnIndex: number, action: string, navigator: number[],

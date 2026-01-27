@@ -1,5 +1,4 @@
 @use 'ej2-base/styles/common/mixin' as *;
-@use './theme-variables' as *;
 @mixin bigger-tab-header-layout {
   & .e-tab .e-tab-header {
     height: $bigger-spread-ribbon-tab-text-wrap-height;

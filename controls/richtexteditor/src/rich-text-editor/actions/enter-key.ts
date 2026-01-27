@@ -382,6 +382,11 @@ export class EnterKeyAction {
                                                     lastNode.textContent.length);
                                             }
                                             detach(audioVideoElem);
+                                        } else if (!isNOU(newElem) && !newElem.hasChildNodes()) {
+                                            const brElm: HTMLElement = this.parent.createElement('br');
+                                            newElem.appendChild(brElm);
+                                            this.parent.formatter.editorManager.nodeSelection.setCursorPoint(
+                                                this.parent.contentModule.getDocument(), newElem as Element, 0);
                                         }
                                     } else {
                                         const newElem: Node = this.parent.formatter.editorManager.nodeCutter.SplitNode(
@@ -569,11 +574,12 @@ export class EnterKeyAction {
                             const isImageElement: boolean = (this.range.startContainer.nodeName === 'IMG' || (this.range.startContainer.childNodes.length > 0
                                 && !isNOU(this.range.startContainer.childNodes[this.range.startOffset]) && this.range.startContainer.childNodes[this.range.startOffset].nodeName === 'IMG') || (this.range.startContainer.nodeType === 1 &&
                                     (this.range.startContainer as HTMLElement).querySelector('img') !== null));
+                            const isImageWithWhiteSpace: boolean = this.range.startContainer.nodeName === '#text' && this.range.startContainer.textContent.trim() === '' && this.range.startContainer.textContent.length === 1 && this.range.startContainer.previousSibling && this.range.startContainer.previousSibling.nodeName === 'IMG';
                             if (currentParent !== this.parent.inputElement &&
                                 this.parent.formatter.editorManager.domNode.isBlockNode(currentParent) &&
                                 this.range.startOffset === this.range.endOffset &&
                                 (this.range.startOffset === isLastNodeLength ||
-                                (currentParent.textContent.trim().length === 0 && isImageElement))) {
+                                (currentParent.textContent.trim().length === 0 && (isImageElement || isImageWithWhiteSpace)))) {
                                 const focusBRElem: HTMLElement = this.parent.createElement('br');
                                 if (this.range.startOffset === 0 && this.range.startContainer.nodeName === 'TABLE') {
                                     this.range.startContainer.parentElement.insertBefore(focusBRElem, this.range.startContainer);
@@ -590,10 +596,15 @@ export class EnterKeyAction {
                                     } else {
                                         const lineBreakBRElem: HTMLElement = this.parent.createElement('br');
                                         const parentElement: HTMLElement = this.range.startContainer.parentElement;
+                                        const startContainer: Node = this.range.startContainer;
+                                        const isImageInBlock: boolean = isImageElement && startContainer.nodeName !== 'IMG' && startContainer.childNodes[this.range.startOffset - 1] &&
+                                            startContainer.childNodes[this.range.startOffset - 1].nodeName === 'IMG';
                                         let anchorElement: Node;
                                         if (parentElement && parentElement.nodeName === 'A' &&
                                             parentElement.textContent.length === this.range.startOffset) {
                                             anchorElement = parentElement;
+                                        } else if (isImageInBlock) {
+                                            anchorElement = startContainer.childNodes[this.range.startOffset - 1];
                                         } else if (parentElement) {
                                             const closestAnchor: Element | null = parentElement.closest('a');
                                             anchorElement = closestAnchor ? closestAnchor : this.range.startContainer;

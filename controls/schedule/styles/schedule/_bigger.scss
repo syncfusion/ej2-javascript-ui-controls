@@ -1,5 +1,4 @@
 @use 'ej2-base/styles/common/mixin' as *;
-@use './theme-variables' as *;
 @mixin schedule-inline-appointment-styles {
   background: transparent;
   border: $schedule-border-0;

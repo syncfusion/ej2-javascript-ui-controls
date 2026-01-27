@@ -5000,4 +5000,314 @@ describe('EJ2-984491 Dialog and Nested Dialog Z-Index Verification', () => {
         document.body.innerHTML = '';
     });
 });
+describe('EJ2-Tab Navigation with Hidden/Disabled Footer Buttons in Modal Dialog - Alternative', () => {
+    let dialog: Dialog;
+    let ele: HTMLElement;
 
+    afterEach(() => {
+        if (dialog) {
+            destroyDialog(dialog);
+        }
+        if (ele && ele.parentElement) {
+            detach(ele);
+        }
+    });
+
+    it('Case 1 - Verify second hidden button is skipped in focus cycle', (done) => {
+        ele = createElement('div', { id: 'testDialog1' });
+        document.body.appendChild(ele);
+        const footerTemplate: string = '<button class="e-btn btn1">Button 1</button><button class="e-btn btn2" style="display:none;">Button 2</button>';
+        dialog = new Dialog({
+            header: 'Test Dialog',
+            isModal: true,
+            animationSettings: { effect: 'None' },
+            content: '<input id="testInput1"/><input id="testInput2"/>',
+            footerTemplate: footerTemplate
+        });
+        dialog.appendTo(ele);
+        dialog.show();
+        setTimeout(() => {
+            const input1 = document.getElementById('testInput1') as HTMLInputElement;
+            const input2 = document.getElementById('testInput2') as HTMLInputElement;
+            const button1 = dialog.element.querySelector('.btn1') as HTMLButtonElement;
+            const button2 = dialog.element.querySelector('.btn2') as HTMLButtonElement;
+            const computedStyle = window.getComputedStyle(button2);
+            expect(computedStyle.display).toBe('none');
+            const focusableSelector = 'input,select,textarea,button:not([disabled]),a,[contenteditable="true"]';
+            const focusableElements = Array.from(dialog.element.querySelectorAll(focusableSelector)) as HTMLElement[];
+            const visibleFocusable = focusableElements.filter(el => {
+                return window.getComputedStyle(el).display !== 'none' && el.offsetParent !== null;
+            });
+            expect(visibleFocusable).toContain(input1);
+            expect(visibleFocusable).toContain(input2);
+            expect(visibleFocusable).toContain(button1);
+            expect(visibleFocusable).not.toContain(button2);
+            done();
+        }, 200);
+    });
+
+    it('Case 2 - Verify second disabled button is skipped in focus cycle', (done) => {
+        ele = createElement('div', { id: 'testDialog2' });
+        document.body.appendChild(ele);
+        dialog = new Dialog({
+            header: 'Test Dialog',
+            isModal: true,
+            animationSettings: { effect: 'None' },
+            content: '<input id="testInput1"/><input id="testInput2"/>',
+            buttons: [
+                { buttonModel: { content: 'Button 1', isPrimary: true } },
+                { buttonModel: { content: 'Button 2' } }
+            ]
+        });
+        dialog.appendTo(ele);
+        dialog.show();
+        setTimeout(() => {
+            const buttons = Array.from(dialog.element.querySelectorAll('button')) as HTMLButtonElement[];
+            const enabledButtons = buttons.filter(btn => !btn.disabled && btn.className.includes('e-btn'));
+            const disabledButtons = buttons.filter(btn => btn.disabled && btn.className.includes('e-btn'));
+            if (buttons.length > 1) {
+                buttons[buttons.length - 1].disabled = true;
+            }
+            const focusableSelector = 'input,select,textarea,button:not([disabled]),a,[contenteditable="true"]';
+            const focusableElements = Array.from(dialog.element.querySelectorAll(focusableSelector)) as HTMLElement[];
+            const disabledBtn = buttons.find(btn => btn.disabled && btn.className.includes('e-btn'));
+            expect(focusableElements).not.toContain(disabledBtn);
+            done();
+        }, 200);
+    });
+
+    it('Case 3 - Verify all disabled buttons are skipped in focus cycle', (done) => {
+        ele = createElement('div', { id: 'testDialog3' });
+        document.body.appendChild(ele);
+        dialog = new Dialog({
+            header: 'Test Dialog',
+            isModal: true,
+            animationSettings: { effect: 'None' },
+            content: '<input id="testInput1"/><input id="testInput2"/>',
+            buttons: [
+                { buttonModel: { content: 'Button 1', isPrimary: true } },
+                { buttonModel: { content: 'Button 2' } },
+                { buttonModel: { content: 'Button 3' } }
+            ]
+        });
+        dialog.appendTo(ele);
+        dialog.show();
+        setTimeout(() => {
+            const buttons = Array.from(dialog.element.querySelectorAll('button')) as HTMLButtonElement[];
+            buttons.forEach(btn => {
+                if (btn.className.includes('e-btn')) {
+                    btn.disabled = true;
+                }
+            });
+            const input1 = document.getElementById('testInput1') as HTMLInputElement;
+            const input2 = document.getElementById('testInput2') as HTMLInputElement;
+            const focusableSelector = 'input,select,textarea,button:not([disabled]),a,[contenteditable="true"]';
+            const focusableElements = Array.from(dialog.element.querySelectorAll(focusableSelector)) as HTMLElement[];
+            expect(focusableElements).toContain(input1);
+            expect(focusableElements).toContain(input2);
+            const disabledButtons = buttons.filter(btn => btn.className.includes('e-btn'));
+            disabledButtons.forEach(btn => {
+                expect(focusableElements).not.toContain(btn);
+            });
+            done();
+        }, 200);
+    });
+
+    it('Case 4 - Verify all hidden buttons are skipped in focus cycle', (done) => {
+        ele = createElement('div', { id: 'testDialog4' });
+        document.body.appendChild(ele);
+        const footerTemplate: string = `
+      <button class="e-btn btn1">Button 1</button>
+      <button class="e-btn btn2" style="display:none;">Button 2</button>
+      <button class="e-btn btn3" style="display:none;">Button 3</button>
+    `;
+        dialog = new Dialog({
+            header: 'Test Dialog',
+            isModal: true,
+            animationSettings: { effect: 'None' },
+            content: '<input id="testInput1"/><input id="testInput2"/>',
+            footerTemplate: footerTemplate
+        });
+        dialog.appendTo(ele);
+        dialog.show();
+        setTimeout(() => {
+            const input1 = document.getElementById('testInput1') as HTMLInputElement;
+            const input2 = document.getElementById('testInput2') as HTMLInputElement;
+            const button1 = dialog.element.querySelector('.btn1') as HTMLButtonElement;
+            const button2 = dialog.element.querySelector('.btn2') as HTMLButtonElement;
+            const button3 = dialog.element.querySelector('.btn3') as HTMLButtonElement;
+
+            const focusableSelector = 'input,select,textarea,button:not([disabled]),a,[contenteditable="true"]';
+            const focusableElements = Array.from(dialog.element.querySelectorAll(focusableSelector)) as HTMLElement[];
+            const visibleFocusable = focusableElements.filter(el => {
+                return window.getComputedStyle(el).display !== 'none' && el.offsetParent !== null;
+            });
+
+            expect(visibleFocusable).toContain(input1);
+            expect(visibleFocusable).toContain(input2);
+            expect(visibleFocusable).toContain(button1);
+            expect(visibleFocusable).not.toContain(button2);
+            expect(visibleFocusable).not.toContain(button3);
+            done();
+        }, 200);
+    });
+
+    it('Case 5 - Verify visibility:hidden buttons are skipped in focus cycle', (done) => {
+        ele = createElement('div', { id: 'testDialog5' });
+        document.body.appendChild(ele);
+        const footerTemplate: string = `
+      <button class="e-btn btn1">Button 1</button>
+      <button class="e-btn btn2" style="visibility:hidden;">Button 2</button>
+    `;
+        dialog = new Dialog({
+            header: 'Test Dialog',
+            isModal: true,
+            animationSettings: { effect: 'None' },
+            content: '<input id="testInput1"/>',
+            footerTemplate: footerTemplate
+        });
+        dialog.appendTo(ele);
+        dialog.show();
+        setTimeout(() => {
+            const input1 = document.getElementById('testInput1') as HTMLInputElement;
+            const button1 = dialog.element.querySelector('.btn1') as HTMLButtonElement;
+            const button2 = dialog.element.querySelector('.btn2') as HTMLButtonElement;
+            const computedStyle = window.getComputedStyle(button2);
+
+            const focusableSelector = 'input,select,textarea,button:not([disabled]),a,[contenteditable="true"]';
+            const focusableElements = Array.from(dialog.element.querySelectorAll(focusableSelector)) as HTMLElement[];
+            const visibleFocusable = focusableElements.filter(el => {
+                const style = window.getComputedStyle(el);
+                return style.display !== 'none' && style.visibility !== 'hidden' && el.offsetParent !== null;
+            });
+
+            expect(computedStyle.visibility).toBe('hidden');
+            expect(visibleFocusable).toContain(input1);
+            expect(visibleFocusable).toContain(button1);
+            expect(visibleFocusable).not.toContain(button2);
+            done();
+        }, 200);
+    });
+
+    it('Case 6 - Verify mix of hidden and disabled buttons are skipped in focus cycle', (done) => {
+        ele = createElement('div', { id: 'testDialog6' });
+        document.body.appendChild(ele);
+        const footerTemplate: string = `
+      <button class="e-btn btn1">Button 1</button>
+      <button class="e-btn btn2" style="display:none;">Button 2 (Hidden)</button>
+    `;
+        dialog = new Dialog({
+            header: 'Test Dialog',
+            isModal: true,
+            animationSettings: { effect: 'None' },
+            content: '<input id="testInput1"/><input id="testInput2"/>',
+            buttons: [
+                { buttonModel: { content: 'Button 3', isPrimary: true } }
+            ],
+            footerTemplate: footerTemplate
+        });
+        dialog.appendTo(ele);
+        dialog.show();
+        setTimeout(() => {
+            const buttons = Array.from(dialog.element.querySelectorAll('button')) as HTMLButtonElement[];
+
+            // Disable the last button
+            if (buttons.length > 0) {
+                buttons[buttons.length - 1].disabled = true;
+            }
+
+            const input1 = document.getElementById('testInput1') as HTMLInputElement;
+            const input2 = document.getElementById('testInput2') as HTMLInputElement;
+            const button1 = dialog.element.querySelector('.btn1') as HTMLButtonElement;
+            const button2 = dialog.element.querySelector('.btn2') as HTMLButtonElement;
+
+            const focusableSelector = 'input,select,textarea,button:not([disabled]),a,[contenteditable="true"]';
+            const focusableElements = Array.from(dialog.element.querySelectorAll(focusableSelector)) as HTMLElement[];
+            const visibleFocusable = focusableElements.filter(el => {
+                return window.getComputedStyle(el).display !== 'none' && el.offsetParent !== null;
+            });
+
+            expect(visibleFocusable).toContain(input1);
+            expect(visibleFocusable).toContain(input2);
+            expect(visibleFocusable).toContain(button1);
+            expect(visibleFocusable).not.toContain(button2); // Hidden button
+
+            const disabledBtn = buttons.find(btn => btn.disabled);
+            expect(focusableElements).not.toContain(disabledBtn); // Disabled button
+
+            done();
+        }, 200);
+    });
+
+    it('Case 7 - Verify hidden buttons dynamically shown are included in focus cycle', (done) => {
+        ele = createElement('div', { id: 'testDialog7' });
+        document.body.appendChild(ele);
+        const footerTemplate: string = `
+      <button class="e-btn btn1">Button 1</button>
+      <button class="e-btn btn2" style="display:none;" id="hiddenBtn">Button 2</button>
+    `;
+        dialog = new Dialog({
+            header: 'Test Dialog',
+            isModal: true,
+            animationSettings: { effect: 'None' },
+            content: '<input id="testInput1"/>',
+            footerTemplate: footerTemplate
+        });
+        dialog.appendTo(ele);
+        dialog.show();
+        setTimeout(() => {
+            const hiddenBtn = document.getElementById('hiddenBtn') as HTMLButtonElement;
+
+            // Verify button is hidden initially
+            const focusableSelector = 'input,select,textarea,button:not([disabled]),a,[contenteditable="true"]';
+            let focusableElements = Array.from(dialog.element.querySelectorAll(focusableSelector)) as HTMLElement[];
+            let visibleFocusable = focusableElements.filter(el => {
+                return window.getComputedStyle(el).display !== 'none' && el.offsetParent !== null;
+            });
+            expect(visibleFocusable).not.toContain(hiddenBtn);
+
+            // Show the button
+            hiddenBtn.style.display = 'block';
+
+            // Verify button is now included in focusable elements
+            focusableElements = Array.from(dialog.element.querySelectorAll(focusableSelector)) as HTMLElement[];
+            visibleFocusable = focusableElements.filter(el => {
+                return window.getComputedStyle(el).display !== 'none' && el.offsetParent !== null;
+            });
+            expect(visibleFocusable).toContain(hiddenBtn);
+
+            done();
+        }, 200);
+    });
+
+    it('Case 8 - Verify opacity:0 hidden buttons are treated as visible in focus cycle', (done) => {
+        ele = createElement('div', { id: 'testDialog8' });
+        document.body.appendChild(ele);
+        const footerTemplate: string = `
+      <button class="e-btn btn1">Button 1</button>
+      <button class="e-btn btn2" style="opacity:0;">Button 2</button>
+    `;
+        dialog = new Dialog({
+            header: 'Test Dialog',
+            isModal: true,
+            animationSettings: { effect: 'None' },
+            content: '<input id="testInput1"/>',
+            footerTemplate: footerTemplate
+        });
+        dialog.appendTo(ele);
+        dialog.show();
+        setTimeout(() => {
+            const button2 = dialog.element.querySelector('.btn2') as HTMLButtonElement;
+
+            const focusableSelector = 'input,select,textarea,button:not([disabled]),a,[contenteditable="true"]';
+            const focusableElements = Array.from(dialog.element.querySelectorAll(focusableSelector)) as HTMLElement[];
+            const visibleFocusable = focusableElements.filter(el => {
+                return window.getComputedStyle(el).display !== 'none' && el.offsetParent !== null;
+            });
+
+            // opacity:0 is still focusable (different from display:none)
+            expect(visibleFocusable).toContain(button2);
+            done();
+        }, 200);
+    });
+});

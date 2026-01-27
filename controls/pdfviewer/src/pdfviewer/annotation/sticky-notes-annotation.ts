@@ -184,7 +184,8 @@ export class StickyNotesAnnotation {
                             annotationSelectorSettings: this.getSettings(annotation),
                             customData: this.pdfViewer.annotation.getCustomData(annotation),
                             annotationSettings: annotation.AnnotationSettings, allowedInteractions: annotation.allowedInteractions,
-                            isPrint: isPrint, isCommentLock: annotation.IsCommentLock, id: annotation.AnnotName
+                            isPrint: isPrint, isCommentLock: annotation.IsCommentLock, id: annotation.AnnotName,
+                            originalName: annotation.OriginalName ? annotation.OriginalName : null
                         };
                         annotation.AnnotationSelectorSettings = annotation.AnnotationSelectorSettings ?
                             annotation.AnnotationSelectorSettings : this.pdfViewer.annotationSelectorSettings;
@@ -986,8 +987,28 @@ export class StickyNotesAnnotation {
             for (let j: number = 0; j < textBox.length; j++) {
                 textBox[parseInt(j.toString(), 10)].style.display = 'none';
             }
+            let lockState: boolean = false;
+            if (!isNullOrUndefined(this.pdfViewer.annotationModule)) {
+                if (type === 'textMarkup') {
+                    if (annotationSubType === 'Highlight') {
+                        lockState = this.pdfViewer.annotationModule.checkLockSettings(this.pdfViewer.highlightSettings.isLock);
+                    } else if (annotationSubType === 'Underline') {
+                        lockState = this.pdfViewer.annotationModule.checkLockSettings(this.pdfViewer.underlineSettings.isLock);
+                    } else if (annotationSubType === 'Strikethrough') {
+                        lockState = this.pdfViewer.annotationModule.checkLockSettings(this.pdfViewer.strikethroughSettings.isLock);
+                    } else if (annotationSubType === 'Squiggly') {
+                        lockState = this.pdfViewer.annotationModule.checkLockSettings(this.pdfViewer.squigglySettings.isLock);
+                    }
+                } else {
+                    if (!isNullOrUndefined(this.pdfViewer.selectedItems.annotations) &&
+                        this.pdfViewer.selectedItems.annotations.length === 1) {
+                        const annotation: any = this.pdfViewer.selectedItems.annotations[0];
+                        lockState = this.pdfViewer.annotationModule.checkIsLockSettings(annotation);
+                    }
+                }
+            }
             const commentPanel: HTMLElement = document.getElementById(this.pdfViewer.element.id + '_commantPanel');
-            if (!data && type !== 'freeText' && !(type === 'shape_measure' && commentPanel.style.display === 'block')) {
+            if (!data && type !== 'freeText' && !(type === 'shape_measure' && commentPanel.style.display === 'block') && !lockState) {
                 editObj.enableEditMode = true;
             }
             if (editObj.enableEditMode && type === 'ink') {
@@ -2543,10 +2564,17 @@ export class StickyNotesAnnotation {
         if (annotationCollection) {
             const annot: any = annotationCollection.find((annotation: { annotationId: any; }) => annotation.annotationId === annotId);
             if (annot && annot.annotationSettings && annot.annotationSettings.isLock) {
+                const getType: string = this.pdfViewer.annotation.measureAnnotationModule.getMeasureType(annot);
                 if (!annot.isCommentLock && annot.comments.length === 0 && (isNullOrUndefined(annot.note) || annot.note === '') && annot.shapeAnnotationType !== 'FreeText')
                 {return true; }
                 else if ((!isNullOrUndefined(annot.comments) && annot.comments.length > 0 &&
                  annot.comments[0].isLock) || annot.isCommentLock) {
+                    return true;
+                }
+                else if (annot.shapeAnnotationType === 'FreeText' && annot.dynamicText !== '') {
+                    return true;
+                }
+                else if (getType === 'Perimeter' || getType === 'Area' || getType === 'Radius' || getType === 'Volume' || getType === 'Distance') {
                     return true;
                 }
                 else {
@@ -2616,7 +2644,25 @@ export class StickyNotesAnnotation {
                             this.pdfViewer.annotation.textMarkupAnnotationModule.currentTextMarkupAnnotation =
                              pageCollections[parseInt(i.toString(), 10)];
                             this.pdfViewer.annotation.textMarkupAnnotationModule.selectTextMarkupCurrentPage = pageNumber - 1;
-                            this.pdfViewer.annotation.textMarkupAnnotationModule.enableAnnotationPropertiesTool(true);
+                            const currentAnnot: any = this.pdfViewer.annotation.textMarkupAnnotationModule.currentTextMarkupAnnotation;
+                            let isLock: boolean = false;
+                            let canPropertyChange: boolean = false;
+                            let canDelete: boolean = false;
+                            if (!isNullOrUndefined(currentAnnot) && currentAnnot.annotationSettings &&
+                                currentAnnot.annotationSettings.isLock) {
+                                isLock = currentAnnot.annotationSettings.isLock;
+                                if (!isNullOrUndefined(this.pdfViewer.annotationModule)) {
+                                    canPropertyChange = this.pdfViewer.annotationModule.checkAllowedInteractions('PropertyChange', currentAnnot);
+                                    canDelete = this.pdfViewer.annotationModule.checkAllowedInteractions('Delete', currentAnnot);
+                                }
+                            }
+                            if (!isLock || (isLock && canPropertyChange)) {
+                                this.pdfViewer.annotation.textMarkupAnnotationModule.enableAnnotationPropertiesTool(true);
+                            }
+                            if (isLock && canDelete && !isNullOrUndefined(this.pdfViewer.toolbar) &&
+                                !isNullOrUndefined(this.pdfViewer.toolbar.annotationToolbarModule)) {
+                                this.pdfViewer.toolbar.annotationToolbarModule.selectAnnotationDeleteItem(true);
+                            }
                             if (this.pdfViewer.toolbarModule && this.pdfViewer.enableAnnotationToolbar) {
                                 this.pdfViewer.toolbarModule.annotationToolbarModule.isToolbarHidden = true;
                                 this.pdfViewer.toolbarModule.annotationToolbarModule.
@@ -2637,9 +2683,18 @@ export class StickyNotesAnnotation {
                         }
                         if (type === 'textMarkup') {
                             if (pageCollections[parseInt(i.toString(), 10)].rect || pageCollections[parseInt(i.toString(), 10)].bounds) {
-                                const scrollValue: number = this.pdfViewerBase.pageSize[pageNumber - 1].top *
+                                let scrollValue: number = this.pdfViewerBase.pageSize[pageNumber - 1].top *
                                  this.pdfViewerBase.getZoomFactor() + (this.pdfViewer.annotationModule.
                                     getAnnotationTop(pageCollections[parseInt(i.toString(), 10)]) * this.pdfViewerBase.getZoomFactor());
+                                const currentAnnotation: any = pageCollections[parseInt(i.toString(), 10)];
+                                const zoomFactor: number = this.pdfViewerBase.getZoomFactor();
+                                if (zoomFactor >= 2) {
+                                    const boundingBox: any = this.pdfViewer.annotationModule.getTextMarkupBounds(currentAnnotation);
+                                    if (boundingBox) {
+                                        scrollValue = this.pdfViewerBase.pageSize[pageNumber - 1].top *
+                                            zoomFactor + (boundingBox.top * zoomFactor);
+                                    }
+                                }
                                 if (scrollValue) {
                                     const scroll: string = (scrollValue - 20).toString();
                                     this.pdfViewerBase.viewerContainer.scrollTop = parseInt(scroll, 10);

@@ -1091,6 +1091,9 @@ export class OptionsPane {
             let selectionEnd: TextPosition = this.documentHelper.owner.selectionModule.end;
             let nextResult: TextSearchResult;
             let currentIndex: number = 0;
+            if (isNullOrUndefined(this.results.currentSearchResult)) {
+                this.searchOptionChange();
+            }
             if (selectionEnd.isExistAfter(this.results.currentSearchResult.start)) {
                 currentIndex = this.results.currentIndex;
             }
@@ -1137,6 +1140,9 @@ export class OptionsPane {
             let previousResult: TextSearchResult;
             let selectionStart: TextPosition = this.documentHelper.owner.selectionModule.start;
             let currentIndex: number = this.results.currentIndex;
+            if (isNullOrUndefined(this.results.currentSearchResult)) {
+                this.searchOptionChange();
+            }
             if (selectionStart.isExistAfter(this.results.currentSearchResult.start)) {
                 currentIndex = this.results.length - 1;
             }

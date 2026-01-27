@@ -534,7 +534,8 @@ export class StampAnnotation {
                 customData: this.pdfViewer.annotation.getCustomData(annotation),
                 allowedInteractions: annotation.allowedInteractions, fontSize: annotation.fontSize,
                 isPrint: annotation.isPrint, isCommentLock: annotation.IsCommentLock,
-                isMaskedImage: annotation.IsMaskedImage, customStampName: '', template: annotation ? annotation.template : null, templateSize: annotation ? annotation.templateSize : 0
+                isMaskedImage: annotation.IsMaskedImage, customStampName: '', template: annotation ? annotation.template : null, templateSize: annotation ? annotation.templateSize : 0,
+                originalName: annotation.OriginalName ? annotation.OriginalName : null
             };
             this.storeStampInSession(pageIndex, annotationObject);
             this.pdfViewer.add(annot as PdfAnnotationBase);
@@ -619,12 +620,14 @@ export class StampAnnotation {
         }
         const annotationSelectorSettings: any = this.pdfViewer.annotationSelectorSettings;
         this.updateStampSelectorSettings(annotationSelectorSettings);
-        const allowedInteractions: any = this.pdfViewer.stampSettings.allowedInteractions ?
+        let allowedInteractions: any = this.pdfViewer.stampSettings.allowedInteractions ?
             this.pdfViewer.stampSettings.allowedInteractions : this.pdfViewer.annotationSettings.allowedInteractions;
         if (annotation.shapeAnnotationType === 'Image') {
             annotation.Author = (this.pdfViewer.annotationSettings.author !== 'Guest') ? this.pdfViewer.annotationSettings.author : this.pdfViewer.customStampSettings.author ? this.pdfViewer.customStampSettings.author : 'Guest';
             annotation.Subject = (this.pdfViewer.annotationSettings.subject !== '' && !isNullOrUndefined(this.pdfViewer.annotationSettings.subject)) ? this.pdfViewer.annotationSettings.subject : this.pdfViewer.customStampSettings.subject ? this.pdfViewer.customStampSettings.subject : '';
             annotation.isPrint = this.pdfViewer.customStampSettings.isPrint;
+            allowedInteractions = this.pdfViewer.customStampSettings.allowedInteractions ?
+                this.pdfViewer.customStampSettings.allowedInteractions : this.pdfViewer.annotationSettings.allowedInteractions;
             this.customStampName = this.customStampName ? this.customStampName : (this.currentStampAnnotation &&
                  this.currentStampAnnotation.signatureName) ? this.currentStampAnnotation.signatureName : annotation.id;
             annotationObject = {
@@ -829,7 +832,8 @@ export class StampAnnotation {
                 annotationSelectorSettings: annotationSelectorSettings, annotationSettings: annotationSettings,
                 customData: this.pdfViewer.annotation.getCustomData(annotation), isPrint: isPrint, isCommentLock: isCommentsLock,
                 isMaskedImage: annotation.IsMaskedImage, customStampName: annotation.CustomStampName,
-                template: isTemplate ? annotation.template : null, templateSize: annotation ? annotation.templateSize : 0
+                template: isTemplate ? annotation.template : null, templateSize: annotation ? annotation.templateSize : 0,
+                originalName: annotation.OriginalName ? annotation.OriginalName : null
             };
             this.storeStampInSession(pageIndex, annotationObject, isNeedToReorderCollection, orderNumber);
             annot.comments = this.pdfViewer.annotationModule.getAnnotationComments(annotation.Comments, annotation, annotation.Author);

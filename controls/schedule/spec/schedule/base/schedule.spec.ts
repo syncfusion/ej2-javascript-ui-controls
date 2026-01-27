@@ -3462,6 +3462,89 @@ describe('Schedule base module', () => {
         });
     });
 
+    describe('Selected cells chronological order', () => {
+        it('single-day selection orders cells chronologically', (done: DoneFn) => {
+            const schObj = util.createSchedule({ selectedDate: new Date(2018, 5, 11), currentView: 'Day' }, []);
+            const startDate = new Date(2018, 5, 11, 11, 30);
+            const endDate = new Date(2018, 5, 11, 13, 0);
+            const start = +startDate;
+            const end = +endDate;
+            const startCell = schObj.element.querySelector('[data-date="' + start + '"]') as HTMLElement;
+            const endCell = schObj.element.querySelector('[data-date="' + end + '"]') as HTMLElement;
+            util.triggerMouseEvent(startCell, 'mousedown');
+            util.triggerMouseEvent(endCell, 'mousemove');
+            util.triggerMouseEvent(endCell, 'mouseup');
+            const newEndDate = new Date(2018, 5, 11, 13, 30);
+            const selected = schObj.getSelectedCells();
+            const cellDetails = schObj.getCellDetails(selected as any);
+            const startTimeDate = new Date(cellDetails.startTime);
+            const endTimeDate = new Date(cellDetails.endTime);
+            expect(startTimeDate).toEqual(startDate);
+            expect(endTimeDate).toEqual(newEndDate);
+            util.destroy(schObj);
+            done();
+        });
+        it('multi-day selection across days is chronological', (done: DoneFn) => {
+            const schObj = util.createSchedule({ selectedDate: new Date(2018, 5, 11), currentView: 'Week' }, []);
+            const day1Date = new Date(2018, 5, 11, 11, 30);
+            const day2Date = new Date(2018, 5, 12, 11, 0);
+            const day1 = +day1Date;
+            const day2 = +day2Date;
+            const startCell = schObj.element.querySelector('[data-date="' + day1 + '"]') as HTMLElement;
+            const endCell = schObj.element.querySelector('[data-date="' + day2 + '"]') as HTMLElement;
+            util.triggerMouseEvent(startCell, 'mousedown');
+            util.triggerMouseEvent(endCell, 'mousemove');
+            util.triggerMouseEvent(endCell, 'mouseup');
+            const newDay2Date = new Date(2018, 5, 12, 11, 30);
+            const selected = schObj.getSelectedCells();
+            const cellDetails = schObj.getCellDetails(selected as any);
+            const startTimeDate = new Date(cellDetails.startTime);
+            const endTimeDate = new Date(cellDetails.endTime);
+            expect(startTimeDate).toEqual(day1Date);
+            expect(endTimeDate).toEqual(newDay2Date);
+            util.destroy(schObj);
+            done();
+        });
+        it('reverse drag selection returns chronological order', (done: DoneFn) => {
+            const schObj = util.createSchedule({ selectedDate: new Date(2018, 5, 12), currentView: 'Week' }, []);
+            const laterDate = new Date(2018, 5, 12, 15, 0);
+            const earlierDate = new Date(2018, 5, 12, 9, 0);
+            const later = +laterDate;
+            const earlier = +earlierDate;
+            const startCell = schObj.element.querySelector('[data-date="' + later + '"]') as HTMLElement;
+            const endCell = schObj.element.querySelector('[data-date="' + earlier + '"]') as HTMLElement;
+            util.triggerMouseEvent(startCell, 'mousedown');
+            util.triggerMouseEvent(endCell, 'mousemove');
+            util.triggerMouseEvent(endCell, 'mouseup');
+            const newDay2Date = new Date(2018, 5, 12, 15, 30);
+            const selected = schObj.getSelectedCells();
+            const cellDetails = schObj.getCellDetails(selected as any);
+            const startTimeDate = new Date(cellDetails.startTime);
+            const endTimeDate = new Date(cellDetails.endTime);
+            expect(startTimeDate).toEqual(earlierDate);
+            expect(endTimeDate).toEqual(newDay2Date);
+            util.destroy(schObj);
+            done();
+        });
+        it('full-day selection returns cells ordered by time', (done: DoneFn) => {
+            const schObj = util.createSchedule({ selectedDate: new Date(2018, 5, 11), currentView: 'Day' }, []);
+            const first = +new Date(2018, 5, 11, 9, 0);
+            const last = +new Date(2018, 5, 11, 16, 0);
+            const startCell = schObj.element.querySelector('[data-date="' + first + '"]') as HTMLElement;
+            const endCell = schObj.element.querySelector('[data-date="' + last + '"]') as HTMLElement;
+            util.triggerMouseEvent(startCell, 'mousedown');
+            util.triggerMouseEvent(endCell, 'mousemove');
+            util.triggerMouseEvent(endCell, 'mouseup');
+            const newLast = +new Date(2018, 5, 11, 16, 30);
+            const selected = schObj.getSelectedCells();
+            const cellDetails = schObj.getCellDetails(selected as any);
+            expect(+cellDetails.startTime).toEqual(first);
+            expect(+cellDetails.endTime).toEqual(newLast);
+            util.destroy(schObj);
+            done();
+        });
+    });
+
     it('memory leak', () => {
         profile.sample();
         const average: number = inMB(profile.averageChange);

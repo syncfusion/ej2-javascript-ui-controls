@@ -18,5 +18,5 @@
 @use 'ej2-layouts/styles/splitter/bootstrap-dark-definition' as *;
 @use 'gantt/bootstrap-dark-definition' as *;
 @use 'gantt/icons/bootstrap-dark' as *;
-@use 'gantt/all' as *;
-@use 'gantt/bigger' as *;
+@use 'gantt/all.bootstrap-dark' as *;
+@use 'gantt/bigger.bootstrap-dark' as *;

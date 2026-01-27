@@ -1,7 +1,5 @@
 @use 'ej2-base/styles/common/mixin' as *;
-@use './theme-variables' as *;
-@use 'ej2-buttons/styles/button/mixin' as *;
-@use 'group-button-mixin' as *;
+
 @include export-module('button-group-theme') {
 /* stylelint-disable */
   .e-btn-group,

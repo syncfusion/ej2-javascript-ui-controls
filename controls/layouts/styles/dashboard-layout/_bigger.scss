@@ -1,5 +1,4 @@
 @use 'ej2-base/styles/common/mixin' as *;
-@use './theme-variables' as *;
 @mixin bigger-header-style {
   font-size: $panel-bigger-header-font-size;
   font-weight: $panel-bigger-header-font-weight;

@@ -6586,6 +6586,7 @@ export class MultiSelect extends DropDownBase implements IInput {
                         this.notify('popupFullScreen', { module: 'CheckBoxSelection', enable: this.mode === 'CheckBox' });
                     }
                     super.render(e);
+                    if (this.inputElement && this.mode !== 'CheckBox') { this.focusIn(); }
                     return;
                 }
                 if (this.mode === 'CheckBox' && Browser.isDevice && this.allowFiltering && this.isDeviceFullScreen) {
@@ -6648,6 +6649,7 @@ export class MultiSelect extends DropDownBase implements IInput {
                     this.setResize();
                 }
                 this.preventSetCurrentData = true;
+                if (this.inputElement && this.mode !== 'CheckBox') { this.focusIn(); }
             }
         });
     }

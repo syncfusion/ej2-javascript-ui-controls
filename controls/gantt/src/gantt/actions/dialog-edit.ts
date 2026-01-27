@@ -346,18 +346,12 @@ export class DialogEdit {
                 } else {
                     tempData[field as string] = new Date(tempData[taskSettings.endDate]);
                 }
-                if (this.parent.timezone) {
-                    tempData[field as string] = this.parent.dateValidationModule.remove(tempData[field as string], this.parent.timezone);
-                }
                 tempData.ganttProperties.startDate = new Date(tempData[field as string]);
             } else if (columns[i as number].field === taskSettings.endDate) {
                 if (isNullOrUndefined(tempData[taskSettings.startDate])) {
                     tempData[field as string] = this.getMinimumStartDate();
                 } else {
                     tempData[field as string] = new Date(tempData[taskSettings.startDate]);
-                }
-                if (this.parent.timezone) {
-                    tempData[field as string] = this.parent.dateValidationModule.remove(tempData[field as string], this.parent.timezone);
                 }
                 tempData.ganttProperties.endDate = new Date(tempData[field as string]);
             } else if (columns[i as number].field === taskSettings.duration) {

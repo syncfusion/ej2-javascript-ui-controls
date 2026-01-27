@@ -11,6 +11,7 @@ import { PdfViewerUtils } from '../base/pdfviewer-utlis';
  */
 export class AnnotationRenderer {
 
+    private annotNames: Set<string> = new Set<string>();
     private formats: string[] = ['M/d/yyyy h:mm:ss tt', 'M/d/yyyy, h:mm:ss tt', 'M/d/yyyy h:mm tt',
         'MM/dd/yyyy hh:mm:ss', 'M/d/yyyy h:mm:ss',
         'M/d/yyyy hh:mm tt', 'M/d/yyyy hh tt',
@@ -107,6 +108,9 @@ export class AnnotationRenderer {
             }
             if (shapeAnnotation.allowedInteractions && shapeAnnotation['allowedInteractions'] != null){
                 lineAnnotation.setValues('AllowedInteractions', JSON.stringify(shapeAnnotation['allowedInteractions']));
+            }
+            if (shapeAnnotation.originalName) {
+                lineAnnotation.name = shapeAnnotation.originalName;
             }
             lineAnnotation.setAppearance(true);
             page.annotations.add(lineAnnotation);
@@ -205,6 +209,9 @@ export class AnnotationRenderer {
             if (shapeAnnotation.allowedInteractions && shapeAnnotation['allowedInteractions'] != null){
                 squareAnnotation.setValues('AllowedInteractions', JSON.stringify(shapeAnnotation['allowedInteractions']));
             }
+            if (shapeAnnotation.originalName) {
+                squareAnnotation.name = shapeAnnotation.originalName;
+            }
             squareAnnotation.setAppearance(true);
             page.annotations.add(squareAnnotation);
         }
@@ -295,6 +302,9 @@ export class AnnotationRenderer {
             if (shapeAnnotation.allowedInteractions && shapeAnnotation['allowedInteractions'] != null){
                 circleAnnotation.setValues('AllowedInteractions', JSON.stringify(shapeAnnotation['allowedInteractions']));
             }
+            if (shapeAnnotation.originalName) {
+                circleAnnotation.name = shapeAnnotation.originalName;
+            }
             circleAnnotation.setAppearance(true);
             page.annotations.add(circleAnnotation);
         }
@@ -382,6 +392,9 @@ export class AnnotationRenderer {
             if (!isNullOrUndefined(shapeAnnotation.allowedInteractions)) {
                 polygonAnnotation.setValues('AllowedInteractions', JSON.stringify(shapeAnnotation.allowedInteractions));
             }
+            if (shapeAnnotation.originalName) {
+                polygonAnnotation.name = shapeAnnotation.originalName;
+            }
             polygonAnnotation.setAppearance(true);
             page.annotations.add(polygonAnnotation);
         }
@@ -460,6 +473,9 @@ export class AnnotationRenderer {
                 }
             }
             this.preserveIsLockProperty(shapeAnnotation, polylineAnnotation);
+            if (shapeAnnotation.originalName) {
+                polylineAnnotation.name = shapeAnnotation.originalName;
+            }
             polylineAnnotation.setAppearance(true);
             if (!isNullOrUndefined(shapeAnnotation.customData)) {
                 polylineAnnotation.setValues('CustomData', JSON.stringify(shapeAnnotation.customData));
@@ -707,6 +723,9 @@ export class AnnotationRenderer {
         if (!isNullOrUndefined(redactionAnnotation.annotType)) {
             redactAnnotation.setValues('RedactionType', (redactionAnnotation.annotType));
         }
+        if (redactionAnnotation.originalName) {
+            redactAnnotation.name = redactionAnnotation.originalName;
+        }
         redactAnnotation.setAppearance(true);
         page.annotations.add(redactAnnotation);
     }
@@ -902,8 +921,14 @@ export class AnnotationRenderer {
         inkAnnotation._isEnableControlPoints = false;
         inkAnnotation._dictionary.set('NM', inkSignatureAnnotation.annotName.toString());
         inkAnnotation.rotationAngle = this.getRotateAngle(inkSignatureAnnotation.rotationAngle);
+        if (inkSignatureAnnotation.allowedInteractions && inkSignatureAnnotation.allowedInteractions != null) {
+            inkAnnotation.setValues('AllowedInteractions', JSON.stringify(inkSignatureAnnotation.allowedInteractions));
+        }
         if (!isNullOrUndefined(inkSignatureAnnotation.customData)) {
             inkAnnotation.setValues('CustomData', JSON.stringify(inkSignatureAnnotation.customData));
+        }
+        if (inkSignatureAnnotation.originalName) {
+            inkAnnotation.name = inkSignatureAnnotation.originalName;
         }
         inkAnnotation.setAppearance(true);
         page.annotations.add(inkAnnotation);
@@ -1070,6 +1095,9 @@ export class AnnotationRenderer {
         }
         if (!isNullOrUndefined(markupAnnotation.textMarkupContent)) {
             annotation._dictionary.set('TextMarkupContent', markupAnnotation.textMarkupContent.toString());
+        }
+        if (markupAnnotation.originalName) {
+            annotation.name = markupAnnotation.originalName;
         }
         annotation.setAppearance(true);
         page.annotations.add(annotation);
@@ -1265,6 +1293,9 @@ export class AnnotationRenderer {
                 rubberStampAnnotation.subject = stampAnnotation.subject.toString();
             }
             this.preserveIsLockProperty(stampAnnotation, rubberStampAnnotation);
+            if (!isNullOrUndefined(stampAnnotation.allowedInteractions) && stampAnnotation.allowedInteractions !== 'null') {
+                rubberStampAnnotation.setValues('AllowedInteractions', JSON.stringify(stampAnnotation.allowedInteractions));
+            }
             if (!isNullOrUndefined(stampAnnotation.customData)) {
                 rubberStampAnnotation.setValues('CustomData', JSON.stringify(stampAnnotation.customData));
             }
@@ -1355,6 +1386,9 @@ export class AnnotationRenderer {
             rubberStampAnnotation.opacity = opacity;
             rubberStampAnnotation.author = !isNullOrUndefined(stampAnnotation.author) && stampAnnotation.author.toString() !== '' ? stampAnnotation.author.toString() : 'Guest';
             this.preserveIsLockProperty(stampAnnotation, rubberStampAnnotation);
+            if (stampAnnotation.allowedInteractions && stampAnnotation['allowedInteractions'] !== 'null') {
+                rubberStampAnnotation.setValues('AllowedInteractions', JSON.stringify(stampAnnotation.allowedInteractions));
+            }
             if (!isNullOrUndefined(stampAnnotation.customData)) {
                 rubberStampAnnotation.setValues('CustomData', JSON.stringify(stampAnnotation.customData));
             }
@@ -1363,6 +1397,9 @@ export class AnnotationRenderer {
             }
             if (!isNullOrUndefined(stampAnnotation.icon)){
                 rubberStampAnnotation.setValues('iconName', stampAnnotation.icon.toString());
+            }
+            if (stampAnnotation.originalName) {
+                rubberStampAnnotation.name = stampAnnotation.originalName;
             }
             page.annotations.add(rubberStampAnnotation);
             if (!isIconExists) {
@@ -1498,6 +1535,9 @@ export class AnnotationRenderer {
             if (measureShapeAnnotation.allowedInteractions && measureShapeAnnotation['allowedInteractions'] != null){
                 lineAnnotation.setValues('AllowedInteractions', JSON.stringify(measureShapeAnnotation['allowedInteractions']));
             }
+            if (measureShapeAnnotation.originalName) {
+                lineAnnotation.name = measureShapeAnnotation.originalName;
+            }
             lineAnnotation.setAppearance(true);
             page.annotations.add(lineAnnotation);
         }
@@ -1585,12 +1625,18 @@ export class AnnotationRenderer {
             if (measureShapeAnnotation.allowedInteractions && measureShapeAnnotation['allowedInteractions'] !== null){
                 polylineAnnotation.setValues('AllowedInteractions', JSON.stringify(measureShapeAnnotation['allowedInteractions']));
             }
+            if (measureShapeAnnotation.originalName) {
+                polylineAnnotation.name = measureShapeAnnotation.originalName;
+            }
             polylineAnnotation.setAppearance(true);
             page.annotations.add(polylineAnnotation);
 
         }
         else if (!isNullOrUndefined(measureShapeAnnotation.shapeAnnotationType) && (measureShapeAnnotation.shapeAnnotationType === 'Polyline') && (measureShapeAnnotation.shapeAnnotationType === 'PolygonRadius') || (measureShapeAnnotation.shapeAnnotationType === 'Circle')) {
             const circleMeasurementAnnotation: PdfCircleAnnotation = this.addCircleMeasurementAnnotation(measureShapeAnnotation, page);
+            if (measureShapeAnnotation.originalName) {
+                circleMeasurementAnnotation.name = measureShapeAnnotation.originalName;
+            }
             page.annotations.add(circleMeasurementAnnotation);
         } else if (!isNullOrUndefined(measureShapeAnnotation.shapeAnnotationType) && (measureShapeAnnotation.shapeAnnotationType === 'Polygon') && measureShapeAnnotation.indent !== 'PolygonRadius') {
             const points: any = JSON.parse(measureShapeAnnotation.vertexPoints);
@@ -1678,6 +1724,9 @@ export class AnnotationRenderer {
             if (measureShapeAnnotation.allowedInteractions && measureShapeAnnotation['allowedInteractions'] != null){
                 polygonAnnotation.setValues('AllowedInteractions', JSON.stringify(measureShapeAnnotation['allowedInteractions']));
             }
+            if (measureShapeAnnotation.originalName) {
+                polygonAnnotation.name = measureShapeAnnotation.originalName;
+            }
             polygonAnnotation.setAppearance(true);
             page.annotations.add(polygonAnnotation);
         }
@@ -1740,6 +1789,9 @@ export class AnnotationRenderer {
         this.preserveIsLockProperty(popUpAnnotation, annotation);
         if (!isNullOrUndefined(popUpAnnotation.customData)) {
             annotation.setValues('CustomData', JSON.stringify(popUpAnnotation.customData));
+        }
+        if (popUpAnnotation.originalName) {
+            annotation.name = popUpAnnotation.originalName;
         }
         page.annotations.add(annotation);
     }
@@ -1916,6 +1968,9 @@ export class AnnotationRenderer {
         if (Object.prototype.hasOwnProperty.call(freeTextAnnotation, 'allowedInteractions') && !isNullOrUndefined(freeTextAnnotation.allowedInteractions))
         {
             annotation.setValues('AllowedInteractions', JSON.stringify(freeTextAnnotation.allowedInteractions));
+        }
+        if (freeTextAnnotation.originalName) {
+            annotation.name = freeTextAnnotation.originalName;
         }
         page.annotations.add(annotation);
     }
@@ -2444,6 +2499,9 @@ export class AnnotationRenderer {
         this.preserveIsLockProperty(measureShapeAnnotation, circleAnnotation);
         circleAnnotation.measureType = PdfCircleMeasurementType.radius;
         const measureDetail: any = JSON.parse(measureShapeAnnotation.calibrate);
+        if (measureShapeAnnotation.allowedInteractions && measureShapeAnnotation.allowedInteractions != null) {
+            circleAnnotation.setValues('AllowedInteractions', JSON.stringify(measureShapeAnnotation.allowedInteractions));
+        }
         if (!isNullOrUndefined(measureDetail)) {
             circleAnnotation._dictionary.set('Measure', this.setMeasureDictionary(measureDetail));
         }
@@ -2750,6 +2808,7 @@ export class AnnotationRenderer {
         signature.StrokeColor = 'rgba(' + inkAnnot.color.r + ',' + inkAnnot.color.g + ',' + inkAnnot.color.b + ',' + this.getTransparentValue(inkAnnot.color) + ')';
         signature.PageNumber = pageNumber;
         signature.SignatureName = inkAnnot.name;
+        this.ensureUniqueAnnotName(signature);
         return signature;
     }
 
@@ -2835,6 +2894,16 @@ export class AnnotationRenderer {
         signature.StrokeColor = 'rgba(' + inkAnnot.color.r + ',' + inkAnnot.color.g + ',' + inkAnnot.color.b + ',' + this.getTransparentValue(inkAnnot.color) + ')';
         signature.PageNumber = pageNumber;
         signature.AnnotName = inkAnnot.name;
+        this.ensureUniqueAnnotName(signature);
+        if (inkAnnot._dictionary.has('AllowedInteractions')) {
+            const allowedInteractions: string[] = inkAnnot.getValues('AllowedInteractions');
+            const text: any = allowedInteractions[0];
+            signature.AllowedInteractions = JSON.parse(text);
+        } else if (inkAnnot._dictionary.has('allowedinteractions')) {
+            const allowedInteractions: string[] = inkAnnot.getValues('allowedinteractions');
+            const text: any = allowedInteractions[0];
+            signature.AllowedInteractions = JSON.parse(text);
+        }
         if (inkAnnot._dictionary.has('CustomData') && !isNullOrUndefined(inkAnnot._dictionary.get('CustomData'))) {
             const customData: any = inkAnnot._dictionary.get('CustomData');
             if (customData != null) {
@@ -2859,6 +2928,7 @@ export class AnnotationRenderer {
         shapeAnnotation.ShapeAnnotationType = 'Square';
         shapeAnnotation.Author = squareAnnot.author;
         shapeAnnotation.AnnotName = squareAnnot.name;
+        this.ensureUniqueAnnotName(shapeAnnotation);
         shapeAnnotation.Subject = squareAnnot.subject;
         if (!isNullOrUndefined(squareAnnot.modifiedDate)) {
             shapeAnnotation.ModifiedDate = this.formatDate(squareAnnot.modifiedDate);
@@ -2915,6 +2985,10 @@ export class AnnotationRenderer {
             const allowedInteractions: string[] = squareAnnot.getValues('AllowedInteractions');
             const text: any = allowedInteractions[0];
             shapeAnnotation.AllowedInteractions = JSON.parse(text);
+        } else if (squareAnnot._dictionary.has('allowedinteractions')) {
+            const allowedInteractions: string[] = squareAnnot.getValues('allowedinteractions');
+            const text: any = allowedInteractions[0];
+            shapeAnnotation.AllowedInteractions = JSON.parse(text);
         }
         shapeAnnotation.StrokeColor = !isNullOrUndefined(squareAnnot.color) ? 'rgba(' + squareAnnot.color.r + ',' + squareAnnot.color.g + ',' + squareAnnot.color.b + ',' + this.getTransparentValue(squareAnnot.color) + ')' : 'rgba(0,0,0,1)';
         let fillOpacity: number = this.getTransparentValue(squareAnnot.color);
@@ -2958,6 +3032,7 @@ export class AnnotationRenderer {
         redactionAnnotation.ShapeAnnotationType = 'Redaction';
         redactionAnnotation.Author = redactAnnot.author;
         redactionAnnotation.AnnotName = redactAnnot.name;
+        this.ensureUniqueAnnotName(redactionAnnotation);
         redactionAnnotation.Subject = redactAnnot.subject;
         if (!isNullOrUndefined(redactAnnot.modifiedDate)) {
             redactionAnnotation.ModifiedDate = this.formatDate(redactAnnot.modifiedDate);
@@ -3080,6 +3155,7 @@ export class AnnotationRenderer {
         shapeAnnotation.ShapeAnnotationType = 'Line';
         shapeAnnotation.Author = lineAnnot.author;
         shapeAnnotation.AnnotName = lineAnnot.name;
+        this.ensureUniqueAnnotName(shapeAnnotation);
         shapeAnnotation.Subject = lineAnnot.subject;
         if (!isNullOrUndefined(lineAnnot.modifiedDate)) {
             shapeAnnotation.ModifiedDate = this.formatDate(lineAnnot.modifiedDate);
@@ -3143,6 +3219,10 @@ export class AnnotationRenderer {
         this.updateIsLockProperty(shapeAnnotation, lineAnnot);
         if (lineAnnot._dictionary.has('AllowedInteractions')) {
             const allowedInteractions: string[] = lineAnnot.getValues('AllowedInteractions');
+            const text: any = allowedInteractions[0];
+            shapeAnnotation.AllowedInteractions = JSON.parse(text);
+        } else if (lineAnnot._dictionary.has('allowedinteractions')) {
+            const allowedInteractions: string[] = lineAnnot.getValues('allowedinteractions');
             const text: any = allowedInteractions[0];
             shapeAnnotation.AllowedInteractions = JSON.parse(text);
         }
@@ -3252,6 +3332,7 @@ export class AnnotationRenderer {
         shapeAnnotation.ShapeAnnotationType = 'Circle';
         shapeAnnotation.Author = ellipseAnnot.author;
         shapeAnnotation.AnnotName = ellipseAnnot.name;
+        this.ensureUniqueAnnotName(shapeAnnotation);
         shapeAnnotation.Subject = ellipseAnnot.subject;
         if (!isNullOrUndefined(ellipseAnnot.modifiedDate)) {
             shapeAnnotation.ModifiedDate = this.formatDate(ellipseAnnot.modifiedDate);
@@ -3305,6 +3386,10 @@ export class AnnotationRenderer {
         this.updateIsLockProperty(shapeAnnotation, ellipseAnnot);
         if (ellipseAnnot._dictionary.has('AllowedInteractions')) {
             const allowedInteractions: string[] = ellipseAnnot.getValues('AllowedInteractions');
+            const text: any = allowedInteractions[0];
+            shapeAnnotation.AllowedInteractions = JSON.parse(text);
+        } else if (ellipseAnnot._dictionary.has('allowedinteractions')) {
+            const allowedInteractions: string[] = ellipseAnnot.getValues('allowedinteractions');
             const text: any = allowedInteractions[0];
             shapeAnnotation.AllowedInteractions = JSON.parse(text);
         }
@@ -3384,6 +3469,7 @@ export class AnnotationRenderer {
         shapeAnnotation.ShapeAnnotationType = 'Polygon';
         shapeAnnotation.Author = polygonAnnot.author;
         shapeAnnotation.AnnotName = polygonAnnot.name;
+        this.ensureUniqueAnnotName(shapeAnnotation);
         shapeAnnotation.Subject = polygonAnnot.subject;
         if (!isNullOrUndefined(polygonAnnot.modifiedDate)){
             shapeAnnotation.ModifiedDate = this.formatDate(polygonAnnot.modifiedDate);
@@ -3475,6 +3561,10 @@ export class AnnotationRenderer {
             const allowedInteractions: string[] = polygonAnnot.getValues('AllowedInteractions');
             const text: any = allowedInteractions[0];
             shapeAnnotation.AllowedInteractions = JSON.parse(text);
+        } else if (polygonAnnot._dictionary.has('allowedinteractions')) {
+            const allowedInteractions: string[] = polygonAnnot.getValues('allowedinteractions');
+            const text: any = allowedInteractions[0];
+            shapeAnnotation.AllowedInteractions = JSON.parse(text);
         }
         if (polygonAnnot._dictionary.has('Measure')) {
             const measureShapeAnnotation: MeasureShapeAnnotationBase = new MeasureShapeAnnotationBase(shapeAnnotation);
@@ -3530,6 +3620,7 @@ export class AnnotationRenderer {
         shapeAnnotation.ShapeAnnotationType = 'Polyline';
         shapeAnnotation.Author = polyLineAnnot.author;
         shapeAnnotation.AnnotName = polyLineAnnot.name;
+        this.ensureUniqueAnnotName(shapeAnnotation);
         shapeAnnotation.Subject = polyLineAnnot.subject;
         if (!isNullOrUndefined(polyLineAnnot.modifiedDate)){
             shapeAnnotation.ModifiedDate = this.formatDate(polyLineAnnot.modifiedDate);
@@ -3619,6 +3710,10 @@ export class AnnotationRenderer {
         }
         if (polyLineAnnot._dictionary.has('AllowedInteractions')) {
             const allowedInteractions: string[] = polyLineAnnot.getValues('AllowedInteractions');
+            const text: any = allowedInteractions[0];
+            shapeAnnotation.AllowedInteractions = JSON.parse(text);
+        } else if (polyLineAnnot._dictionary.has('allowedinteractions')) {
+            const allowedInteractions: string[] = polyLineAnnot.getValues('allowedinteractions');
             const text: any = allowedInteractions[0];
             shapeAnnotation.AllowedInteractions = JSON.parse(text);
         }
@@ -3960,6 +4055,7 @@ export class AnnotationRenderer {
             }
         }
         popupAnnotation.AnnotName = popupAnnot.name;
+        this.ensureUniqueAnnotName(popupAnnotation);
         if (!isNullOrUndefined(popupAnnot.modifiedDate)) {
             popupAnnotation.ModifiedDate = this.formatDate(popupAnnot.modifiedDate);
         }
@@ -4015,6 +4111,7 @@ export class AnnotationRenderer {
         freeTextAnnotation.AnnotationFlags = this.getAnnotationFlagsString(freeTextAnnot.flags);
         freeTextAnnotation.Author = freeTextAnnot.author;
         freeTextAnnotation.AnnotName = freeTextAnnot.name;
+        this.ensureUniqueAnnotName(freeTextAnnotation);
         if (isNullOrUndefined(freeTextAnnotation.AnnotName) || freeTextAnnotation.AnnotName === ''){
             freeTextAnnotation.AnnotName = Math.abs(Math.random()).toString(36).substring(2);
         }
@@ -4113,6 +4210,10 @@ export class AnnotationRenderer {
         }
         if (freeTextAnnot._dictionary.has('AllowedInteractions')) {
             const allowedInteractions: string[] = freeTextAnnot.getValues('AllowedInteractions');
+            const text: any = allowedInteractions[0];
+            freeTextAnnotation.AllowedInteractions = JSON.parse(text);
+        } else if (freeTextAnnot._dictionary.has('allowedinteractions')) {
+            const allowedInteractions: string[] = freeTextAnnot.getValues('allowedinteractions');
             const text: any = allowedInteractions[0];
             freeTextAnnotation.AllowedInteractions = JSON.parse(text);
         }
@@ -4393,6 +4494,27 @@ export class AnnotationRenderer {
     }
 
     /**
+     * @private
+     * @param {any} annotation - annotation
+     * @returns {void}
+     */
+    public ensureUniqueAnnotName(annotation: any): void {
+        if (!annotation || !annotation.AnnotName) { return; }
+        const original: string = annotation.AnnotName;
+        if (this.annotNames.has(original)) {
+            annotation.OriginalName = original;
+            let suffix: number = 1;
+            let candidate: any = `${original}_${suffix}`;
+            while (this.annotNames.has(candidate)) {
+                suffix++;
+                candidate = `${original}_${suffix}`;
+            }
+            annotation.AnnotName = candidate;
+        }
+        this.annotNames.add(annotation.AnnotName);
+    }
+
+    /**
      * @param {PdfTextMarkupAnnotation} textMarkup - textMarkup
      * @param {number} height - height
      * @param {number} width - width
@@ -4411,6 +4533,7 @@ export class AnnotationRenderer {
         markupAnnotation.Author = textMarkup.author;
         markupAnnotation.Subject = textMarkup.subject;
         markupAnnotation.AnnotName = textMarkup.name;
+        this.ensureUniqueAnnotName(markupAnnotation);
         markupAnnotation.Note = textMarkup.text ? textMarkup.text : '';
         markupAnnotation.Rect = new RectangleBase(textMarkup.bounds.x, textMarkup.bounds.y,
                                                   textMarkup.bounds.width + textMarkup.bounds.x,
@@ -4470,6 +4593,10 @@ export class AnnotationRenderer {
         }
         if (textMarkup._dictionary.has('AllowedInteractions')) {
             const allowedInteractions: string[] = textMarkup.getValues('AllowedInteractions');
+            const text: any = allowedInteractions[0];
+            markupAnnotation.AllowedInteractions = JSON.parse(text);
+        } else if (textMarkup._dictionary.has('allowedinteractions')) {
+            const allowedInteractions: string[] = textMarkup.getValues('allowedinteractions');
             const text: any = allowedInteractions[0];
             markupAnnotation.AllowedInteractions = JSON.parse(text);
         }
@@ -4540,6 +4667,9 @@ export class AnnotationRenderer {
         this.defaultHeight = null;
         // eslint-disable-next-line
         this.m_renderer = null;
+        if (this.annotNames) {
+            this.annotNames.clear();
+        }
     }
 
     private getMarkupAnnotTypeString(textMarkupType: PdfTextMarkupAnnotationType): string{

@@ -1,7 +1,5 @@
 @use 'sass:list';
 @use 'ej2-base/styles/common/mixin' as *;
-@use '../spreadsheet-ribbon/mixin' as *;
-@use './theme-variables' as *;
 @mixin cf-menu-iconsets($float, $height, $width) {
   float: $float;
   height: $height;
@@ -579,6 +577,9 @@
         .e-warning-content {
           display: flex;
           gap: 10px;
+          @if $sheet-skin =='material' or $sheet-skin =='Material3' {
+            line-height: 24px;
+          }
         }
 
         .e-warning-note {
@@ -2504,9 +2505,9 @@
           padding: 4px 3px;
 
           .e-comment-edit-input {
-            border-radius: 4px;
             background-color: transparent;
             color: $spread-comment-title-color;
+            border-radius: 4px;
             padding: 6px 10px;
             font-size: 14px;
             line-height: 18px;
@@ -3823,6 +3824,10 @@
       @if $sheet-skin == 'tailwind' or $sheet-skin == 'tailwind-dark'or $sheet-skin == 'Material3' {
         font-size: $filter-icon-font-size;
       }
+      @if $skin-name == 'bootstrap5' {
+        margin-bottom: 7px;
+        width: 19px;
+      }
 
       &:hover:not(:active) {
         @if $skin-name == 'fluent2' {
@@ -3861,6 +3866,9 @@
       }
       @if $skin-name == 'fluent2' or $skin-name == 'bootstrap5.3' or $skin-name == 'tailwind3' {
         border: $spreadsheet-filter-btn-border;
+      }
+      @if $skin-name == 'fluent2' {
+        height: 17px;
       }
 
       &.e-rtl{
@@ -4263,15 +4271,19 @@
   }
 
   .e-sheets-list .e-dropdown-menu,
-  .e-font-list .e-dropdown-menu {
-    max-height: 300px;
+  .e-font-list .e-dropdown-menu,
+  .e-numformat-ddb .e-dropdown-menu,
+  .e-borders-ddb .e-border-selector .e-menu {
+    max-height: 342px;
     overflow-y: auto !important; /* stylelint-disable-line declaration-no-important */
     overflow-x: hidden !important; /* stylelint-disable-line declaration-no-important */
     scrollbar-width: thin;
   }
 
-  .sf-spreadsheet.formula-suggestions-container{
-    .formula-item .e-formula-description{
+  .sf-spreadsheet.formula-suggestions-container {
+    margin-top: 4px !important; /* stylelint-disable-line declaration-no-important */
+  
+    .formula-item .e-formula-description {
       display: none;
       font-size: $spreadsheet-formula-suggession-containter-font-size;
       white-space: normal;
@@ -4361,6 +4373,12 @@
           & .e-numformat-preview-text {
             float: right;
             padding-left: $spreadsheet-padding-20;
+          }
+
+          & .e-menu-icon {
+            @if $skin-name !='fluent2' {
+              padding: .1px;
+            }
           }
         }
       }

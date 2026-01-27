@@ -3928,9 +3928,9 @@ export class Edit {
                 eventArgs.recordIndex = cAddedRecord[i as number].index;
             }
         }
-
+        const isRecordAdded: boolean = cAddedRecord && cAddedRecord.length > 0;
         eventArgs.modifiedRecords = modifiedRecords;
-        eventArgs.modifiedTaskData = getTaskData(modifiedRecords, null, null, this.parent);
+        eventArgs.modifiedTaskData = getTaskData(modifiedRecords, null, null, this.parent, isRecordAdded);
         return eventArgs;
     }
 

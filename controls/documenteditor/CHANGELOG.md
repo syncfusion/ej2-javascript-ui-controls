@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 32.1.25 (2026-01-27)
+
+### DocumentEditor
+
+#### Bug Fixes
+
+`#798716` - Resolved the bookmark highlight color issue.
+
 ## 32.1.24 (2026-01-20)
 
 ### DocumentEditor

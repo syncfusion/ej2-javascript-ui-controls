@@ -1,5 +1,4 @@
 @use 'ej2-base/styles/common/mixin' as *;
-@use './theme-variables' as *;
 @include export-module('blockeditor-theme') {
 
   /* ======== Main Editor ======== */
@@ -63,7 +62,7 @@
               stroke: $be-checklist-marker-checked-border-color;
             }
 
-            li {
+            li.e-checked:not(:empty) {
               color: $be-checked-block-strikethrough-color;
             }
           }
@@ -154,7 +153,7 @@
         background: $be-table-body-row-bg-color;
         color: $be-table-body-color;
       }
-      tr:hover {
+      :not(:has([data-resizing = 'true'])) tr:hover {
         background: $be-table-row-hover-bg-color;
         color: $be-table-row-hover-color;
         .e-cell-focus {
@@ -215,7 +214,8 @@
     .e-block {
       .e-row-dot,
       .e-col-dot {
-        background: $be-table-dot-bg-color;
+        border: 1px solid $be-table-row-gripper-pressed-bg;
+        background: $be-bg-color;
       }
       .e-row-insert-handle,
       .e-col-insert-handle {
@@ -254,9 +254,9 @@
   }
 
   .e-table-gripper-action-popup {
-    background: $be-table-popup-bg;
-    border: $be-table-popup-border;
-    box-shadow: $be-table-popup-box-shadow;
+    background: $be-inline-toolbar-popup-bg-color;
+    border: $be-inline-toolbar-border-width solid $be-inline-toolbar-popup-border-color;
+    box-shadow: $be-inline-toolbar-popup-shadow;
     .e-icons {
       color: $be-table-popup-icon-color;
       &:hover {

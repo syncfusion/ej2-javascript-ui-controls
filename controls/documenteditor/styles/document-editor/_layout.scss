@@ -1,5 +1,4 @@
 @use 'ej2-base/styles/common/mixin' as *;
-@use './theme-variables' as *;
 @include export-module('documenteditor-layout') {
   .e-de-dlg-container {
     padding-bottom: $de-padding-full;

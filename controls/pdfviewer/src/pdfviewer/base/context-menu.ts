@@ -245,7 +245,7 @@ export class ContextMenu implements IContextMenu {
                     } else {
                         this.contextMenuObj.enableItems([this.defaultPasteId], false, true);
                     }
-                } else if ((isClickWithinSelectionBounds && this.pdfViewer.textSelectionModule) || (this.pdfViewer.textSelectionModule && this.pdfViewer.textSelectionModule.selectionRangeArray.length > 0 && this.pdfViewer.contextMenuSettings.contextMenuAction === 'MouseUp')) {
+                } else if ((isClickWithinSelectionBounds && this.pdfViewer.textSelectionModule) || (this.pdfViewer.textSelectionModule && this.pdfViewer.textSelectionModule.selectionRangeArray.length > 0 && (this.pdfViewer.contextMenuSettings.contextMenuAction === 'MouseUp' || ((this.pdfViewer.contextMenuSettings.contextMenuAction === 'None' || this.pdfViewer.contextMenuSettings.contextMenuAction === 'RightClick') && this.pdfViewer.contextMenuOption === 'MouseUp')))) {
                     if ((!(args.event.target as HTMLElement).classList.contains('e-pv-maintaincontent') && (args.event.target as HTMLElement).classList.contains('e-pv-text') || (args.event.target as HTMLElement).classList.contains('e-pv-text-layer'))) {
                         if (this.pdfViewerBase.checkIsNormalText()) {
                             args.cancel = true;
@@ -342,7 +342,8 @@ export class ContextMenu implements IContextMenu {
         } else {
             args.cancel = true;
         }
-        if (this.pdfViewer.contextMenuOption === 'None') {
+        if (this.pdfViewer.contextMenuSettings.contextMenuAction === 'None' || (this.pdfViewer.contextMenuSettings.contextMenuAction === 'RightClick' && this.pdfViewer.contextMenuOption === 'None') ||
+            (this.pdfViewer.contextMenuSettings.contextMenuItems && this.pdfViewer.contextMenuSettings.contextMenuItems.length === 0)) {
             args.cancel = true;
         } else {
             this.contextMenuItems(args);
@@ -356,7 +357,8 @@ export class ContextMenu implements IContextMenu {
         this.pdfViewerBase.isTouchDesignerMode = false;
     }
     private contextMenuItems(args: BeforeOpenCloseMenuEventArgs): void {
-        if (this.pdfViewer.contextMenuSettings.contextMenuItems.length) {
+        if (this.pdfViewer.contextMenuSettings.contextMenuItems &&
+            this.pdfViewer.contextMenuSettings.contextMenuItems.length) {
             const hideMenuItems: string[] = [];
             const contextMenuList: MenuItemModel[] = this.contextMenuCollection();
             const ul: HTMLElement = this.contextMenuObj.getRootElement();
@@ -417,6 +419,22 @@ export class ContextMenu implements IContextMenu {
                     }
                 }
             }
+            // Also include any items specified via `disableContextMenuItems` so they get hidden
+            if (this.pdfViewer.disableContextMenuItems && this.pdfViewer.disableContextMenuItems.length > 0) {
+                for (let m: number = 0; m < this.pdfViewer.disableContextMenuItems.length; m++) {
+                    const name: string = ContextMenuItem[this.pdfViewer.disableContextMenuItems[parseInt(m.toString(), 10)]];
+                    if (!isNullOrUndefined(name) && hideMenuItems.indexOf(name) === -1) {
+                        hideMenuItems.push(name);
+                    }
+                }
+            }
+            // Hide separators when Comment or Properties are being hidden
+            if (hideMenuItems.indexOf('Comment') !== -1) {
+                this.pdfViewerBase.getElement('_context_menu_comment_separator').classList.add('e-menu-hide');
+            }
+            if (hideMenuItems.indexOf('Properties') !== -1) {
+                this.pdfViewerBase.getElement('_context_menu_separator').classList.add('e-menu-hide');
+            }
             const hideLocaleItem: string[] = this.processLocaleContent(hideMenuItems);
             this.contextMenuObj.hideItems(hideLocaleItem);
             if (this.getEnabledItemCount(ul) === 0) {
@@ -443,6 +461,9 @@ export class ContextMenu implements IContextMenu {
                 case 'Squiggly':
                     menuItem = 'Squiggly context';
                     break;
+                case 'TextRedact':
+                    menuItem = 'Redact Text';
+                    break;
                 case 'Delete':
                     menuItem = 'Delete Context';
                     break;
@@ -458,7 +479,7 @@ export class ContextMenu implements IContextMenu {
 
     private contextMenuCollection(): MenuItemModel[] {
         return this.contextMenuList = [{ text: 'Cut' }, { text: 'Copy' }, { text: 'Highlight' }, { text: 'Underline' }, { text: 'Strikethrough' },
-            { text: 'Squiggly' }, { text: 'Text Redact' }, { text: 'Paste' }, { text: 'Delete' }, { text: 'ScaleRatio' }, { text: 'Comment' }, { text: 'Properties' }];
+            { text: 'Squiggly' }, { text: 'TextRedact' }, { text: 'Paste' }, { text: 'Delete' }, { text: 'ScaleRatio' }, { text: 'Comment' }, { text: 'Properties' }];
     }
     private getEnabledItemCount(ul: HTMLElement): number {
         let enabledItemCount: number = this.copyContextMenu.length;

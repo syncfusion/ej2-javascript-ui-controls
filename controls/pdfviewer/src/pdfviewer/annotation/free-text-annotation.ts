@@ -500,7 +500,8 @@ export class FreeTextAnnotation {
                             customData: this.pdfViewer.annotation.getCustomData(annotation),
                             annotationAddMode: annotation.annotationAddMode, allowedInteractions: annotation.allowedInteractions,
                             isPrint: annotation.IsPrint, isCommentLock: annotation.IsCommentLock, isReadonly: annotation.IsReadonly,
-                            isAddAnnotationProgrammatically: isAddedProgramatically, isTransparentSet: annotation.IsTransparentSet
+                            isAddAnnotationProgrammatically: isAddedProgramatically, isTransparentSet: annotation.IsTransparentSet,
+                            originalName: annotation.OriginalName ? annotation.OriginalName : null
                         };
                         if (isImportAction) {
                             annot.id = annotation.AnnotName;

@@ -1,5 +1,4 @@
 @use 'ej2-base/styles/common/mixin' as *;
-@use './theme-variables' as *;
 @mixin wrap-styles {
   background-color: $pivotgrid-focus-color;
   color: $pivotgrid-button-acitve-font-color;

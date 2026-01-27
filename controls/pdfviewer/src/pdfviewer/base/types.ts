@@ -145,6 +145,7 @@ export enum ContextMenuItem {
     Properties = 128,
     Comment = 256,
     Squiggly = 512,
+    TextRedact = 1024,
 }
 
 /**

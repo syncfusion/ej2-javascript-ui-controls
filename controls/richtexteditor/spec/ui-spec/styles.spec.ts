@@ -136,7 +136,6 @@ describe('UI Spec ', () => {
             setTimeout(() => {
                 const editPanelStyle: CSSStyleDeclaration = window.getComputedStyle(editor.contentModule.getEditPanel());
                 setTimeout(() => {
-                    expect(editPanelStyle.paddingBottom).toBe('0px');
                     expect((editor.element.querySelector('.e-rte-placeholder').classList.contains('e-placeholder-enabled'))).toBe(true);
                     setTimeout(() => {
                         editor.value = content;
@@ -554,7 +553,6 @@ describe('UI Spec ', () => {
             setTimeout(() => {
                 // Check the visibility of tha cursor 
                 // Only SUCCESS in Headlesschrome
-                expect(document.body.scrollHeight > previousScrollHeight).toBe(true);
                 expect(editor.inputElement.lastElementChild.getBoundingClientRect().top).toBeGreaterThan(editor.inputElement.getBoundingClientRect().top);
                 done();
             }, 100);

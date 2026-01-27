@@ -533,12 +533,14 @@ export class Layout {
             /* tslint:disable:align */
             setTimeout((): void => {
                 if (this.documentHelper) {
-                    this.documentHelper.isScrollHandler = true;
-                    // if (this.documentHelper.owner.isSpellCheck && this.documentHelper.owner.spellChecker.enableOptimizedSpellCheck) {
-                    //     this.documentHelper.triggerElementsOnLoading = true;
-                    // }
-                    this.viewer.updateScrollBars();
-                    this.documentHelper.isScrollHandler = false;
+                    if (!isReLayout) {
+                        this.documentHelper.isScrollHandler = true;
+                        // if (this.documentHelper.owner.isSpellCheck && this.documentHelper.owner.spellChecker.enableOptimizedSpellCheck) {
+                        // this.documentHelper.triggerElementsOnLoading = true;
+                        // }
+                        this.viewer.updateScrollBars();
+                        this.documentHelper.isScrollHandler = false;
+                    }
                     this.isInitialLoad = false;
                 }
             }, 50);
@@ -3102,6 +3104,9 @@ export class Layout {
             }
         }
         this.isXPositionUpdated = false;
+        if (!isNullOrUndefined(this.owner.editorModule) && !isNullOrUndefined(this.owner.editorModule.isPaste) && this.owner.editorModule.isPaste && (element.line.paragraph.containerWidget instanceof BodyWidget ||  element.line.paragraph.containerWidget instanceof HeaderFooterWidget) && element instanceof TextElementBox  && element.text !== "\u000b" && element.text !== '\t' &&  element.text !== '\f') {
+             this.owner.editorModule.lastElementForPasteIcon = element;
+        }
     }
 
     /**

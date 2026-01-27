@@ -683,7 +683,10 @@ export class TextSelection {
             if (this.pdfViewer.linkAnnotationModule) {
                 this.pdfViewer.linkAnnotationModule.modifyZindexForTextSelection(this.pdfViewerBase.currentPageNumber - 1, false);
             }
-            if (this.isTextSearched && this.pdfViewer.contextMenuSettings.contextMenuAction === 'MouseUp') {
+            if (this.isTextSearched && (this.pdfViewer.contextMenuSettings.contextMenuAction === 'MouseUp' ||
+                ((this.pdfViewer.contextMenuSettings.contextMenuAction === 'None' ||
+                    this.pdfViewer.contextMenuSettings.contextMenuAction === 'RightClick')
+                && this.pdfViewer.contextMenuOption === 'MouseUp'))) {
                 this.calculateContextMenuPosition(event.clientY, event.clientX);
                 this.isTextSearched = false;
             }
@@ -1574,7 +1577,7 @@ export class TextSelection {
      */
     public applySpanForSelection(): void {
         const selection: Selection = window.getSelection();
-        if (selection.anchorNode === selection.focusNode && selection.anchorOffset === selection.focusOffset && !selection.isCollapsed) {
+        if (selection.anchorNode === selection.focusNode && selection.anchorOffset === selection.focusOffset) {
             selection.removeAllRanges();
         }
         if (selection.anchorNode !== null &&

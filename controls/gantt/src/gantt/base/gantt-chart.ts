@@ -510,7 +510,7 @@ export class GanttChart {
      */
     private ganttChartMouseDown(e: PointerEvent | TouchEvent): void {
         let cancel: boolean = false;
-        if (e.type === 'touchstart' && e instanceof TouchEvent && e.touches && e.touches.length === 2) {
+        if ('touches' in e && e.type === 'touchstart' && e instanceof TouchEvent && e.touches && e.touches.length === 2) {
             // Calculate initial distance between two Pinch touch points
             this.initPinchDistance = this.calculatePinchDistance(e.touches[0], e.touches[1]);
             this.isPinching = true;
@@ -807,7 +807,7 @@ export class GanttChart {
      * @private
      */
     private ganttChartMove(e: PointerEvent | TouchEvent): void {
-        if (e.type === 'touchmove' && this.isPinching === true && e instanceof TouchEvent && e.touches && e.touches.length === 2) {
+        if ('touches' in e && e.type === 'touchmove' && this.isPinching === true && e instanceof TouchEvent && e.touches && e.touches.length === 2) {
             // Calculate current distance between two touch points
             const currentPinchDistance: number = this.calculatePinchDistance(e.touches[0], e.touches[1]);
             if (Math.abs(this.previousPinchDistance - currentPinchDistance) > 15) {
@@ -822,7 +822,7 @@ export class GanttChart {
                 this.previousPinchDistance = currentPinchDistance;
             }
         }
-        if (e instanceof TouchEvent && e.type === 'touchmove') {
+        if ('touches' in e && e instanceof TouchEvent && e.type === 'touchmove') {
             this.isTouchMoved = true;
         }
         if (this.parent.editSettings.allowTaskbarEditing && this.isPinching === false) {

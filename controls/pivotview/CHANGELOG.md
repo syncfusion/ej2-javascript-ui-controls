@@ -2,7 +2,15 @@
 
 ## [Unreleased]
 
-## 32.1.24 (2026-01-20)
+## 32.1.25 (2026-01-27)
+
+### Pivot Table
+
+#### Bug Fixes
+
+- `I801715` - The drag-and-drop icon now displays correctly for calculated fields when paging is enabled in the Pivot Table.
+
+## 32.1.22 (2026-01-06)
 
 ### Pivot Table
 

@@ -827,6 +827,7 @@ export class TextPosition {
      * @private
      */
     public moveBackward(): void {
+        const currentIndex: string = this.getHierarchicalIndexInternal();
         let indexInInline: number = 0;
         const inlineObj: ElementInfo = this.currentWidget.getInline(this.offset, indexInInline) as ElementInfo;
         const inline: ElementBox = inlineObj.element;
@@ -864,6 +865,10 @@ export class TextPosition {
             this.movePreviousPositionInternal(inline as FieldElementBox);
         }
         this.updateOffsetToPrevPosition(indexInInline, true);
+        const selectionEndIndex: string = this.getHierarchicalIndexInternal();
+        if ((!isNullOrUndefined(inline) && inline instanceof FieldElementBox && inline.fieldType !== 1) || (!isNullOrUndefined(inline) && !isNullOrUndefined(inline.previousElement) && inline.previousElement instanceof FieldElementBox && inline.previousElement.fieldType !== 1)) {
+            this.validateBackwardFieldSelection(currentIndex, selectionEndIndex);
+        }
     }
     /**
      * Move text position forward
@@ -1595,8 +1600,8 @@ export class TextPosition {
         let selectionStartIndex: string = this.selection.start.getHierarchicalIndexInternal();
         while (currentIndex !== selectionEndIndex && TextPosition.isForwardSelection(selectionEndIndex, currentIndex)) {
             let indexInInline: number = 0;
-            const inlineObj: ElementInfo = textPosition.currentWidget.getInline(textPosition.offset, indexInInline) as ElementInfo;
-            const inline: ElementBox = inlineObj.element;
+            let inlineObj: ElementInfo = textPosition.currentWidget.getInline(textPosition.offset, indexInInline) as ElementInfo;
+            let inline: ElementBox = inlineObj.element;
             indexInInline = inlineObj.index;
             if (!isNullOrUndefined(inline)) {
                 const nextInline: ElementBox = this.selection.getNextRenderedElementBox(inline, indexInInline) as ElementBox;
@@ -1625,6 +1630,19 @@ export class TextPosition {
                 textPosition.movePreviousPosition();
             }
             currentIndex = textPosition.getHierarchicalIndexInternal();
+            inlineObj = textPosition.currentWidget.getInline(textPosition.offset, 0);
+            inline = inlineObj.element;
+            if (!isNullOrUndefined(inline)) {
+                if (inline instanceof FieldElementBox && (inline.fieldType === 0)) {
+                    const paragraph: LineWidget = (inline as FieldElementBox).fieldEnd.line as LineWidget;
+                    const fieldEndOffset: number = paragraph.getOffset((inline as FieldElementBox).fieldEnd, 1);
+                    const fieldEndIndex: string = this.getHierarchicalIndex(paragraph, fieldEndOffset.toString());
+                    if (!TextPosition.isForwardSelection(fieldEndIndex, selectionStartIndex)) {
+                        this.selection.start.setPositionParagraph(paragraph, fieldEndOffset);
+                        selectionStartIndex = fieldEndIndex;
+                    }
+                }
+            }
         }
     }
     /**

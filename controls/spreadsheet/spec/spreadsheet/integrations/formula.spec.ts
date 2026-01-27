@@ -14725,11 +14725,11 @@ describe('Spreadsheet formula module ->', () => {
             helper.edit('J10', '=IF(EXACT(E2,D3)=TRUE,1,0)');
             expect(helper.invoke('getCell', [9, 9]).textContent).toBe('1');
             helper.edit('J11', '=IF(EXACT(E2,D5)=FALSE,1,0)');
-            expect(helper.invoke('getCell', [10, 9]).textContent).toBe('#VALUE!');
+            expect(helper.invoke('getCell', [10, 9]).textContent).toBe('1');
             helper.edit('J12', '=IF(EXACT()=FALSE,1,0)');
             expect(helper.invoke('getCell', [11, 9]).textContent).toBe('#VALUE!');
             helper.edit('J13', '=IF(EXACT(E2,D5)<>FALSE,0,1)');
-            expect(helper.invoke('getCell', [12, 9]).textContent).toBe('#VALUE!');
+            expect(helper.invoke('getCell', [12, 9]).textContent).toBe('1');
             done();
         });
         it('IF formula with nested PROPER formula has input having alphabet values->', (done: Function) => {
@@ -15725,14 +15725,14 @@ describe('Spreadsheet formula module ->', () => {
                 });
             });
             it('saveAsJson formula calculation for not calculated formula cell and #value error checking', (done: Function) => {
-                expect(spreadsheet.sheets[0].rows[1].cells[0].value).toEqual('0');
+                expect(spreadsheet.sheets[0].rows[1].cells[0].value).toEqual('');
                 expect(spreadsheet.sheets[1].rows[101].cells[0].value).toBeNull();
                 // saveAsJson operation codes are used to replicate the case, since CI will not compatible with Worker task so invoking getStringifyObject method directly.
                 const skipProps: string[] = ['dataSource', 'startCell', 'query', 'showFieldAsHeader'];
                 for (let i: number = 0, sheetCount: number = spreadsheet.sheets.length; i < sheetCount; i++) {
                     spreadsheet.workbookSaveModule.getStringifyObject(spreadsheet.sheets[i], skipProps, i);
                 }
-                expect(spreadsheet.sheets[0].rows[1].cells[0].value).toEqual('0');
+                expect(spreadsheet.sheets[0].rows[1].cells[0].value).toEqual('');
                 expect(spreadsheet.sheets[1].rows[101].cells[0].value).toEqual(250);
                 done();
             });
@@ -25575,7 +25575,7 @@ describe('Spreadsheet formula module ->', () => {
             });
         });
     });
-    describe('EJ2-974770,EJ2-1000521: Aggegrate formula Not displayed the values correctly ->', () => {
+    describe('EJ2-974770,EJ2-1000521,EJ2-1000020: Aggegrate formula Not displayed the values correctly ->', () => {
         beforeAll((done: Function) => {
             helper.initializeSpreadsheet({ sheets: [{ ranges: [{ dataSource: defaultData }] }] }, done);
         });
@@ -25617,6 +25617,42 @@ describe('Spreadsheet formula module ->', () => {
             expect(helper.invoke('getCell', [0, 9]).textContent).toBe('317');
             helper.edit('E2', '100');
             expect(helper.invoke('getCell', [1, 9]).textContent).toBe('245');
+            done();
+        });
+        it('EJ2-1000020: Value Error occurs when nesting ISNUMBER formula inside IF formula in Spreadsheet', (done: Function) => {
+            const sheet: SheetModel = helper.getInstance().sheets[0];
+            helper.edit('I6', '=IF(ISNUMBER(H7)=TRUE,"NUMBER", "NOT NUMBER")');
+            expect(sheet.rows[5].cells[8].value).toBe('NUMBER');
+            helper.edit('I6', '=IF(TRUE=ISNUMBER(H7),"NUMBER", "NOT NUMBER")');
+            expect(sheet.rows[5].cells[8].value).toBe('NUMBER');
+            helper.edit('I7', '=IF(ISNUMBER(H7)=FALSE,"NUMBER", "NOT NUMBER")');
+            expect(sheet.rows[6].cells[8].value).toBe('NOT NUMBER');
+            helper.edit('I7', '=IF(FALSE=ISNUMBER(H7),"NUMBER", "NOT NUMBER")');
+            expect(sheet.rows[6].cells[8].value).toBe('NOT NUMBER');
+            helper.edit('I8', '=IF(ISNUMBER(H7)<>FALSE,"NUMBER", "NOT NUMBER")');
+            expect(sheet.rows[7].cells[8].value).toBe('NUMBER');
+            helper.edit('I8', '=IF(FALSE<>ISNUMBER(H7),"NUMBER", "NOT NUMBER")');
+            expect(sheet.rows[7].cells[8].value).toBe('NUMBER');
+            helper.edit('I9', '=IF(ISNUMBER(H7)<>TRUE,"NUMBER", "NOT NUMBER")');
+            expect(sheet.rows[8].cells[8].value).toBe('NOT NUMBER');
+            helper.edit('I9', '=IF(TRUE<>ISNUMBER(H7),"NUMBER", "NOT NUMBER")');
+            expect(sheet.rows[8].cells[8].value).toBe('NOT NUMBER');
+            helper.edit('I10', '=IF(ISNUMBER(B16)=TRUE,IF(B16>250,">250",IF(B16>50,"51 to 250",IF(B16>15,"16 to 50",IF(B16>5,"6 to 15",IF(B16>1,"2 to 5",IF(B16>0,1,IF(B16=0,0,))))))))');
+            expect(sheet.rows[9].cells[8].value).toBe('FALSE');
+            helper.edit('I11', '=IF(AND($B$28="Individual",D35="Deviation",ISNUMBER($B$20)=TRUE),"Yes",IF(AND($B$28="Composite",H35>0,ISNUMBER($B$20)=TRUE),"Yes",""))');
+            expect(sheet.rows[10].cells[8].value).toBe('');
+            helper.edit('I12', '=ISNUMBER(H7)<>TRUE');
+            expect(sheet.rows[11].cells[8].value).toBe('FALSE');
+            helper.edit('I12', '=TRUE<>ISNUMBER(H7)');
+            expect(sheet.rows[11].cells[8].value).toBe('FALSE');
+            helper.edit('I13', '=INT(G34)<>G34');
+            expect(sheet.rows[12].cells[8].value).toBe('FALSE');
+            helper.edit('I14', '=G34<>INT(G34)');
+            expect(sheet.rows[13].cells[8].value).toBe('FALSE');
+            helper.edit('I13', '=IF(ISNUMBER(A2)=TRUE,"NUMBER", "NOT NUMBER")');
+            expect(sheet.rows[12].cells[8].value).toBe('NOT NUMBER');
+            helper.edit('I14', '=IF(ISNUMBER(A4)=FALSE,"NUMBER", "NOT NUMBER")');
+            expect(sheet.rows[13].cells[8].value).toBe('NUMBER');
             done();
         });
     });

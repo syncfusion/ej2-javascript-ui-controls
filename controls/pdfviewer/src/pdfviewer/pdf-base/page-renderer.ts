@@ -351,6 +351,7 @@ export class PageRenderer{
                             rubberStampAnnotation.Author = stampAnnotation.author;
                             rubberStampAnnotation.Subject = stampAnnotation.subject;
                             rubberStampAnnotation.AnnotName = stampAnnotation.name;
+                            annotRenderer.ensureUniqueAnnotName(rubberStampAnnotation);
                             if (rubberStampAnnotation.AnnotName === '' || isNullOrUndefined(rubberStampAnnotation.AnnotName)) {
                                 rubberStampAnnotation.AnnotName = this.setAnnotationName(pageNumber);
                             }
@@ -403,6 +404,15 @@ export class PageRenderer{
                                 rubberStampAnnotation.Note = '';
                             }
                             annotRenderer.updateIsLockProperty(rubberStampAnnotation, stampAnnotation);
+                            if (stampAnnotation._dictionary.has('AllowedInteractions')) {
+                                const allowedInteractions: string[] = stampAnnotation.getValues('AllowedInteractions');
+                                const text: any = allowedInteractions[0];
+                                rubberStampAnnotation.AllowedInteractions = JSON.parse(text);
+                            } else if (stampAnnotation._dictionary.has('allowedinteractions')) {
+                                const allowedInteractions: string[] = stampAnnotation.getValues('allowedinteractions');
+                                const text: any = allowedInteractions[0];
+                                rubberStampAnnotation.AllowedInteractions = JSON.parse(text);
+                            }
                             if (!isNullOrUndefined(stampAnnotation.reviewHistory)) {
                                 for (let i: number = 0; i < stampAnnotation.reviewHistory.count; i++) {
                                     rubberStampAnnotation.State =
