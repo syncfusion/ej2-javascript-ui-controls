@@ -1356,8 +1356,9 @@ private calculatePathBounds(data: string): Rect {
             let cellBottomMargin = 0;
             cellTopMargin = cellWidget.margin.top - (cellWidget.containerWidget as TableRowWidget).topBorderWidth;
             cellBottomMargin = cellWidget.margin.bottom - (cellWidget.containerWidget as TableRowWidget).bottomBorderWidth;
-            if (this.getScaledValue(cellWidget.y, 2) + cellWidget.height + cellBottomMargin * this.documentHelper.zoomFactor < 0 ||
-                (this.getScaledValue(cellWidget.y, 2) - cellTopMargin > this.documentHelper.visibleBounds.height)) {
+            if ((this.getScaledValue(cellWidget.y, 2) + cellWidget.height + cellBottomMargin * this.documentHelper.zoomFactor < 0 ||
+                (this.getScaledValue(cellWidget.y, 2) - cellTopMargin > this.documentHelper.visibleBounds.height)) &&
+                !this.documentHelper.owner.isSpellCheck) {
                 return;
             }
         }
@@ -1834,6 +1835,11 @@ private calculatePathBounds(data: string): Rect {
                                 for(let j = elementIndex; j >= 0; j --){
                                     if(this.isRenderable(line.children[j])){
                                         prevRenderableElement = line.children[j];
+                                        isRenderablePresent = true;
+                                        break;
+                                    }
+                                    if ((line.children[j] instanceof BookmarkElementBox && (line.children[j] as BookmarkElementBox).bookmarkType === 0
+                                        && (line.children[j] as BookmarkElementBox).name === (elementBox as BookmarkElementBox).name)) {
                                         isRenderablePresent = true;
                                         break;
                                     }
@@ -2664,7 +2670,7 @@ private calculatePathBounds(data: string): Rect {
                     if (this.spellChecker.ignoreAllItems.indexOf(retrievedText) === -1 && elementBox.ignoreOnceItems.indexOf(retrievedText) === -1) {
                         let indexInLine: number = elementBox.indexInOwner;
                         let indexinParagraph: number = elementBox.line.paragraph.indexInOwner;
-                        let spellInfo: WordSpellInfo = this.spellChecker.checkSpellingInPageInfo(retrievedText);
+                        let spellInfo: WordSpellInfo = this.spellChecker.checkSpellingInPageInfo(retrievedText, elementBox);
                         if (spellInfo.isElementPresent && this.spellChecker.enableOptimizedSpellCheck) {
                             let jsonObject: any = JSON.parse('{\"HasSpellingError\":' + spellInfo.hasSpellError + '}');
 

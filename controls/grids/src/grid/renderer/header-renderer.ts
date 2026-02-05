@@ -373,22 +373,23 @@ export class HeaderRender implements IRenderer {
         }
         for (let i: number = 0, len: number = this.colDepth; i < len; i++) {
             headerRow = rowRenderer.render(rows[parseInt(i.toString(), 10)], columns);
-            if (this.parent.allowResizing) {
-                const headerVisibleCell: Element[] =  Array.from(headerRow.querySelectorAll('.e-headercell:not(.e-hide)'));
-                if (headerRow.querySelector('.e-lastcell') && headerRow.querySelector('.e-lastcell').classList.contains('e-hide')) {
-                    const lastVisibleCell: Element = headerVisibleCell[headerVisibleCell.length - 1];
-                    lastVisibleCell.classList.add('e-last-visible-cell');
-                } else if (headerRow.querySelector('.e-laststackcell') &&
-                    headerRow.querySelector('.e-laststackcell').classList.contains('e-hide')) {
-                    const lastVisibleStackedCell: Element = headerVisibleCell[headerVisibleCell.length - 1];
-                    lastVisibleStackedCell.classList.add('e-last-visible-stack-cell');
-                }
-            }
             if (this.parent.rowHeight && headerRow.querySelector('.e-headercell')) {
                 (headerRow as HTMLElement).style.height = this.parent.rowHeight + 'px';
             }
             addFixedColumnBorder(headerRow);
             thead.appendChild(headerRow);
+        }
+        const headerVisibleCell: Element[] = Array.from(thead.querySelectorAll('.e-headercell:not(.e-hide)'));
+        if (this.parent.allowResizing && headerVisibleCell.length > 0) {
+            if (thead.querySelector('.e-lastcell') && thead.querySelector('.e-lastcell').classList.contains('e-hide')) {
+                const lastVisibleCell: Element = headerVisibleCell[headerVisibleCell.length - 1];
+                lastVisibleCell.classList.add('e-last-visible-cell');
+            }
+            else if (thead.querySelector('.e-laststackcell') &&
+                thead.querySelector('.e-laststackcell').classList.contains('e-hide')) {
+                const lastVisibleStackedCell: Element = headerVisibleCell[headerVisibleCell.length - 1];
+                lastVisibleStackedCell.classList.add('e-last-visible-stack-cell');
+            }
         }
         const findHeaderRow: { thead: Element, rows: Row<Column>[] } = {
             thead: thead,

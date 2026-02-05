@@ -1828,7 +1828,7 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
         };
         if (!this.isRefreshed) {
             this.trigger('drawNode', eventArgs);
-            if (e.curData[this.fields.selectable] === false && !this.showCheckBox) {
+            if (e.curData[this.fields.selectable] === false) {
                 e.item.classList.add(PREVENTSELECT);
                 const firstChild: HTMLElement = e.item.firstElementChild as HTMLElement;
                 firstChild.style.cursor = 'not-allowed';
@@ -2636,7 +2636,8 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
                 this.expandGivenNodes(eUids);
             } else {
                 for (let i: number = 0; i < eUids.length; i++) {
-                    const eNode: Element = select('[data-uid="' + eUids[parseInt(i.toString(), 10)] + '"]', this.element);
+                    const uid: string = this.escapeHashInUid(eUids[parseInt(i.toString(), 10)]);
+                    const eNode: Element = select('[data-uid="' + uid + '"]', this.element);
                     if (!isNOU(eNode)) {
                         const icon: Element = select('.' + EXPANDABLE, select('.' + TEXTWRAP, eNode));
                         if (!isNOU(icon)) {
@@ -2671,7 +2672,8 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
     }
 
     private expandCallback(eUid: string, callback: Function): void {
-        const eNode: Element = select('[data-uid="' + eUid + '"]', this.element);
+        const uid: string = this.escapeHashInUid(eUid);
+        const eNode: Element = select('[data-uid="' + uid + '"]', this.element);
         if (!isNOU(eNode)) {
             const icon: Element = select('.' + EXPANDABLE, select('.' + TEXTWRAP, eNode));
             if (!isNOU(icon)) {
@@ -2702,7 +2704,8 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
         if (sUids.length > 0) {
             this.setProperties({ selectedNodes: [] }, true);
             for (let i: number = 0; i < sUids.length; i++) {
-                const sNode: Element = select('[data-uid="' + sUids[parseInt(i.toString(), 10)] + '"]', this.element);
+                const uid: string = this.escapeHashInUid(sUids[parseInt(i.toString(), 10)]);
+                const sNode: Element = select('[data-uid="' + uid + '"]', this.element);
                 if (sNode && !(sNode.classList.contains('e-active'))) {
                     this.selectNode(sNode, null, true);
                 } else {
@@ -3670,6 +3673,10 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
     private validateCheckNode(
         checkWrap: HTMLElement | Element, isCheck: boolean, li: HTMLElement | Element, e: KeyboardEventArgs | MouseEvent): void {
         const currLi: Element = closest(checkWrap, '.' + LISTITEM);
+        if (currLi && currLi.classList.contains(PREVENTSELECT) && this.showCheckBox) {
+            if (e && e.preventDefault) { e.preventDefault(); }
+            return;
+        }
         this.checkActionNodes = [];
         const ariaState: string = !isCheck ? 'true' : 'false';
         if (!isNOU(ariaState)) {
@@ -6838,5 +6845,13 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
             firstNode.setAttribute('tabindex', '0');
             this.updateIdAttr(null, firstNode);
         }
+    }
+
+    private escapeHashInUid(uid: string): string {
+        if (isNOU(uid)) { return uid; }
+        if (typeof uid === 'string' && uid.indexOf(' #') !== -1) {
+            return uid.split(' #').join(' \\#');
+        }
+        return uid;
     }
 }

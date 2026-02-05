@@ -12201,6 +12201,23 @@ export class Layout {
         }
         return footnoteElements;
     }
+    public getFootnoteElementsOfParagraph(paragraph: ParagraphWidget): FootnoteElementBox[] {
+        const footnoteElements: FootnoteElementBox[] = [];
+        const lines: LineWidget[] = paragraph.childWidgets as LineWidget[];
+        if (isNullOrUndefined(lines) || lines.length === 0) {
+            return footnoteElements;
+        }
+        for (let i: number = 0; i < lines.length; i++) {
+            const line: LineWidget = lines[i];
+            for (let j: number = 0; j < line.children.length; j++) {
+                const element: ElementBox = line.children[j];
+                if (element instanceof FootnoteElementBox) {
+                    footnoteElements.push(element);
+                }
+            }
+        }
+        return footnoteElements;
+    }
     private getFootNotesWidgetsInLine(line: LineWidget): BodyWidget[] {
         const footnoteElements: FootnoteElementBox[] = [];
         for (let i: number = 0; i < line.children.length; i++) {

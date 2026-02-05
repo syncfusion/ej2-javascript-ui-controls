@@ -433,7 +433,7 @@ export class SpellChecker {
         this.handleErrorElements.push(errorElement);
         while (true) {
             const exactText: string = this.manageSpecialCharacters(errorElement.text, undefined, true);
-            const textIndex: number = (startInlineObj as TextElementBox).ignoreOnceItems.indexOf(exactText)
+            const textIndex: number = startInlineObj && (startInlineObj as TextElementBox).ignoreOnceItems && (startInlineObj as TextElementBox).ignoreOnceItems.indexOf(exactText);
             if (isundoing) {
                 if (textIndex !== -1) {
                     (startInlineObj as TextElementBox).ignoreOnceItems.splice(textIndex, 1);
@@ -956,7 +956,10 @@ export class SpellChecker {
                         break;
                     }
                     if (textElement instanceof TextElementBox && !isPrevField && !(textElement instanceof FootnoteElementBox)) {
-                        if (prevText.indexOf(' ') !== 0 && textElement.text.lastIndexOf(' ') !== textElement.text.length - 1) {
+                        if (prevText.indexOf(' ') !== 0 && textElement.text.lastIndexOf(' ') !== textElement.text.length - 1 &&
+                        prevText.indexOf('\t') !== 0 && textElement.text.lastIndexOf('\t') !== textElement.text.length - 1 &&
+                        prevText.indexOf('[') !== 0 && textElement.text.lastIndexOf('[') !== textElement.text.length - 1 &&
+                        prevText.indexOf(']') !== 0 && textElement.text.lastIndexOf(']') !== textElement.text.length - 1) {
                             prevCombined = !isNullOrUndefined(textToCombine) ? true : false;
                             currentText = textElement.text + currentText;
                             prevText = textElement.text;
@@ -997,7 +1000,10 @@ export class SpellChecker {
                         break;
                     }
                     if (element instanceof TextElementBox && !isPrevField && !(element instanceof FootnoteElementBox)) {
-                        if (nextText.lastIndexOf(' ') !== nextText.length - 1 && element.text.indexOf(' ') !== 0) {
+                        if (nextText.lastIndexOf(' ') !== nextText.length - 1 && element.text.indexOf(' ') !== 0 &&
+                        nextText.lastIndexOf('\t') !== nextText.length - 1 && element.text.indexOf('\t') !== 0 &&
+                        nextText.lastIndexOf('[') !== nextText.length - 1 && element.text.indexOf('[') !== 0 &&
+                        nextText.lastIndexOf(']') !== nextText.length - 1 && element.text.indexOf(']') !== 0) {
                             currentText += element.text;
                             nextText = element.text;
                             isPrevField = false;
@@ -1031,6 +1037,13 @@ export class SpellChecker {
                     }
                 }
             } else {
+                for (let i: number = 0; i < this.combinedElements.length; i++) {
+                    this.combinedElements[i].isChangeDetected = false;
+                    if (i !== 0) {
+                        this.combinedElements[i].istextCombined = true;
+                        this.combinedElements[i].errorCollection = this.combinedElements[0].errorCollection;
+                    }
+                }
                 this.combinedElements.length = 0;
             }
             this.handleCombinedElements(elementBox, currentText, underlineY);
@@ -1094,8 +1107,9 @@ export class SpellChecker {
                 for (let i: number = 0; i < splittedText.length; i++) {
                     let currentText: string = splittedText[i];
                     currentText = this.manageSpecialCharacters(currentText, undefined, true);
-
-                    this.documentHelper.render.handleUnorderedElements(currentText, elementBox, underlineY, i, 0, i === splittedText.length - 1, this.combinedElements);
+                    if (this.ignoreAllItems.indexOf(currentText) === -1 && elementBox instanceof TextElementBox && elementBox.ignoreOnceItems.indexOf(currentText) === -1) {
+                        this.documentHelper.render.handleUnorderedElements(currentText, elementBox, underlineY, i, 0, i === splittedText.length - 1, this.combinedElements);
+                    }
                 }
             } else {
                 currentText = this.manageSpecialCharacters(currentText, undefined, true);
@@ -1761,9 +1775,10 @@ export class SpellChecker {
      *
      * @private
      * @param {string} wordToCheck - Specifies wordToCheck
+     * @param {TextElementBox} elementBox - Specifies elementBox
      * @returns {WordSpellInfo} - Retruns WordSpellInfo
      */
-    public checkSpellingInPageInfo(wordToCheck: string): WordSpellInfo {
+    public checkSpellingInPageInfo(wordToCheck: string, elementBox?: TextElementBox): WordSpellInfo {
         const hasError: boolean = false;
         const elementPresent: boolean = false;
         /* eslint-disable @typescript-eslint/no-explicit-any */
@@ -1772,6 +1787,9 @@ export class SpellChecker {
             if (!isNullOrUndefined(uniqueWords[wordToCheck])) {
                 return { hasSpellError: uniqueWords[wordToCheck], isElementPresent: true };
             }
+        }
+        if (elementBox && isNullOrUndefined(uniqueWords[wordToCheck]) && elementBox.width === 0 && elementBox.height === 0) {
+            return { hasSpellError: hasError, isElementPresent: true };
         }
         return { hasSpellError: hasError, isElementPresent: elementPresent };
     }

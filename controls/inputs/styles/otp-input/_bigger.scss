@@ -1,5 +1,4 @@
 @use 'ej2-base/styles/common/mixin' as *;
-@use './theme-variables' as *;
 @include export-module('otp-input-bigger') {
   .e-bigger.e-otpinput,
   .e-bigger .e-otpinput {

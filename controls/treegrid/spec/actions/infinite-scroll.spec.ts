@@ -38,7 +38,7 @@ function dataSource(): void {
         }
         if (i % 5 !== 0) {
             const crew: string = 'Crew';
-            const num: number = isNaN((virtualData.length % parent) - 1) ?  0 : (virtualData.length % parent) - 1;
+            const num: number = isNaN((virtualData.length % parent) - 1) ? 0 : (virtualData.length % parent) - 1;
             virtualData[num][crew].push({
                 'TaskID': i + 1,
                 'FIELD1': names[Math.floor(Math.random() * names.length)],
@@ -86,7 +86,7 @@ const filterColumn: Function = (gridObj: Grid, colName: string, value: string, k
 };
 
 const checkFilterObj: Function = (obj: any, field?: string,
-                                  operator?: string, value?: string, predicate?: string, matchCase?: boolean): boolean => {
+    operator?: string, value?: string, predicate?: string, matchCase?: boolean): boolean => {
     let isEqual: boolean = true;
     if (field) {
         isEqual = isEqual && obj.field === field;
@@ -366,7 +366,7 @@ describe('TreeGrid Infinite Scroll', () => {
                 done();
             };
             treegrid.actionComplete = actionComplete;
-            treegrid.addRecord({TaskID: Math.random(), FIELD1: 'test'}, 3, 'Child');
+            treegrid.addRecord({ TaskID: Math.random(), FIELD1: 'test' }, 3, 'Child');
         });
         afterAll(() => {
             treegrid['infiniteScrollModule']['destroy']();
@@ -495,7 +495,7 @@ describe('Infinite scroll with logger', () => {
     let treegrid: TreeGrid;
     let data: Object = new DataManager({
         url: 'https://services.syncfusion.com/js/production/api/SelfReferenceData',
-        adaptor: new WebApiAdaptor ,
+        adaptor: new WebApiAdaptor,
         crossDomain: true
     });
     beforeAll((done: Function) => {
@@ -538,7 +538,7 @@ describe('Infinite scrolling with freeze feature', () => {
             {
                 dataSource: virtualData,
                 enableInfiniteScrolling: true,
-                frozenColumns:2,
+                frozenColumns: 2,
                 infiniteScrollSettings: { enableCache: true },
                 treeColumnIndex: 1,
                 childMapping: 'Crew',
@@ -686,6 +686,319 @@ describe('Add New Row with newRowPosition as Above', () => {
         (select('#' + treegrid.grid.element.id + 'FIELD1', treegrid.grid.element) as any).value = 'New Row';
         (<any>treegrid.grid.toolbarModule).toolbarClickHandler({ item: { id: treegrid.grid.element.id + '_update' } });
     });
+
+    it('Add New Row with selectedIndex and Above position', (done: Function) => {
+        actionComplete = (args?: any): void => {
+            if (args.requestType === 'save') {
+                expect((treegrid.grid.dataSource as any).length === 1002).toBe(true);
+                done();
+            }
+        };
+        treegrid.grid.actionComplete = actionComplete;
+        treegrid.grid.selectRow(2);
+        (<any>treegrid.grid.toolbarModule).toolbarClickHandler({ item: { id: treegrid.grid.element.id + '_add' } });
+        (select('#' + treegrid.grid.element.id + 'TaskID', treegrid.grid.element) as any).value = '98766';
+        (select('#' + treegrid.grid.element.id + 'FIELD1', treegrid.grid.element) as any).value = 'New Row Above';
+        (<any>treegrid.grid.toolbarModule).toolbarClickHandler({ item: { id: treegrid.grid.element.id + '_update' } });
+    });
+    afterAll(() => {
+        destroy(treegrid);
+    });
+});
+
+describe('Collapse and Refresh Action with Infinite Scroll', () => {
+    let treegrid: TreeGrid;
+    beforeAll((done: Function) => {
+        treegrid = createGrid(
+            {
+                dataSource: virtualData,
+                enableInfiniteScrolling: true,
+                childMapping: 'Crew',
+                treeColumnIndex: 1,
+                pageSettings: { pageSize: 30 },
+                height: 400,
+                columns: [
+                    { field: 'TaskID', headerText: 'Player Jersey', isPrimaryKey: true, width: 140, textAlign: 'Right' },
+                    { field: 'FIELD1', headerText: 'Player Name', width: 140 },
+                    { field: 'FIELD2', headerText: 'Year', width: 80, textAlign: 'Right' }
+                ]
+            },
+            done
+        );
+    });
+
+    it('Test collapse action triggering makeCollapseRequest', (done: Function) => {
+        const infiniteScrollModule: any = (treegrid as any).infiniteScrollModule;
+        infiniteScrollModule.treeAction = 'collapse';
+        infiniteScrollModule.collapsedData = treegrid.getCurrentViewRecords()[0];
+        infiniteScrollModule.dataBound();
+        expect(infiniteScrollModule.treeAction).toBe('refresh');
+        setTimeout(() => {
+            done();
+        }, 300);
+    });
+
+    it('Test refresh action', (done: Function) => {
+        const infiniteScrollModule: any = (treegrid as any).infiniteScrollModule;
+        infiniteScrollModule.treeAction = 'refresh';
+        infiniteScrollModule.dataBound();
+        expect(infiniteScrollModule.treeAction).toBe(null);
+        done();
+    });
+
+    afterAll(() => {
+        destroy(treegrid);
+    });
+});
+
+describe('CollapseActionComplete with enableCache disabled', () => {
+    let treegrid: TreeGrid;
+    beforeAll((done: Function) => {
+        treegrid = createGrid(
+            {
+                dataSource: virtualData,
+                enableInfiniteScrolling: true,
+                infiniteScrollSettings: { enableCache: false },
+                childMapping: 'Crew',
+                treeColumnIndex: 1,
+                pageSettings: { pageSize: 30 },
+                height: 300,
+                columns: [
+                    { field: 'TaskID', headerText: 'Player Jersey', isPrimaryKey: true, width: 140, textAlign: 'Right' },
+                    { field: 'FIELD1', headerText: 'Player Name', width: 140 },
+                    { field: 'FIELD2', headerText: 'Year', width: 80, textAlign: 'Right' }
+                ]
+            },
+            done
+        );
+    });
+
+    it('Collapse action when table bottom is within content bottom', (done: Function) => {
+        const infiniteScrollModule = treegrid['infiniteScrollModule'];
+        const rows = treegrid.getRows();
+        treegrid.collapseRow(rows[0]);
+        setTimeout(() => {
+            done();
+        }, 400);
+    });
+
+    afterAll(() => {
+        destroy(treegrid);
+    });
+});
+
+describe('MakeCollapseRequest method coverage', () => {
+    let treegrid: TreeGrid;
+    beforeAll((done: Function) => {
+        treegrid = createGrid(
+            {
+                dataSource: virtualData,
+                enableInfiniteScrolling: true,
+                infiniteScrollSettings: { enableCache: false },
+                childMapping: 'Crew',
+                treeColumnIndex: 1,
+                pageSettings: { pageSize: 50 },
+                height: 400,
+                columns: [
+                    { field: 'TaskID', headerText: 'Player Jersey', isPrimaryKey: true, width: 140, textAlign: 'Right' },
+                    { field: 'FIELD1', headerText: 'Player Name', width: 140 }
+                ]
+            },
+            done
+        );
+    });
+
+    it('Test makeCollapseRequest when prevPage >= maxPage', (done: Function) => {
+        const infiniteScrollModule: any = (treegrid as any).infiniteScrollModule;
+        infiniteScrollModule.maxPage = 1;
+        treegrid.grid.pageSettings.currentPage = 1;
+        infiniteScrollModule.makeCollapseRequest();
+        expect(treegrid.grid.pageSettings.currentPage).toBe(1);
+        done();
+    });
+
+    it('Test makeCollapseRequest normal flow', (done: Function) => {
+        const infiniteScrollModule: any = (treegrid as any).infiniteScrollModule;
+        infiniteScrollModule.maxPage = 10;
+        treegrid.grid.pageSettings.currentPage = 1;
+        infiniteScrollModule.collapsedData = { uniqueID: 'test', childRecords: [] };
+        infiniteScrollModule.makeCollapseRequest();
+        setTimeout(() => {
+            done();
+        }, 200);
+    });
+
+    afterAll(() => {
+        destroy(treegrid);
+    });
+});
+
+describe('InfinitePageAction with collapse and refresh actions', () => {
+    let treegrid: TreeGrid;
+    beforeAll((done: Function) => {
+        treegrid = createGrid(
+            {
+                dataSource: virtualData,
+                enableInfiniteScrolling: true,
+                childMapping: 'Crew',
+                treeColumnIndex: 1,
+                pageSettings: { pageSize: 30 },
+                height: 400,
+                columns: [
+                    { field: 'TaskID', headerText: 'Player Jersey', isPrimaryKey: true, width: 140, textAlign: 'Right' },
+                    { field: 'FIELD1', headerText: 'Player Name', width: 140 }
+                ]
+            },
+            done
+        );
+    });
+
+    it('Test infinitePageAction with collapse Action', (done: Function) => {
+        const infiniteScrollModule: any = (treegrid as any).infiniteScrollModule;
+        infiniteScrollModule.treeAction = 'collapse';
+        const collapsedData: any = treegrid.getCurrentViewRecords()[0];
+        collapsedData.childRecords = virtualData.slice(1, 10);
+        infiniteScrollModule.collapsedData = collapsedData;
+
+        const pageingDetails: any = {
+            result: virtualData,
+            count: virtualData.length,
+            actionArgs: { actionArgs: { requestType: 'refresh' } }
+        };
+
+        infiniteScrollModule.infinitePageAction(pageingDetails);
+        expect(pageingDetails.result.length).toBeGreaterThan(0);
+        done();
+    });
+
+    it('Test infinitePageAction with refresh treeAction', (done: Function) => {
+        const infiniteScrollModule: any = (treegrid as any).infiniteScrollModule;
+        infiniteScrollModule.treeAction = 'refresh';
+
+        const pageingDetails: any = {
+            result: virtualData,
+            count: virtualData.length,
+            actionArgs: { actionArgs: { requestType: 'refresh' } }
+        };
+
+        infiniteScrollModule.infinitePageAction(pageingDetails);
+        expect(pageingDetails.result.length).toBeGreaterThan(0);
+        infiniteScrollModule.treeAction = null;
+        done();
+    });
+
+    it('Test infinitePageAction with skip < 0 for delete', (done: Function) => {
+        const infiniteScrollModule: any = (treegrid as any).infiniteScrollModule;
+        infiniteScrollModule.treeAction = null;
+
+        const pageingDetails: any = {
+            result: virtualData,
+            count: virtualData.length,
+            actionArgs: {
+                actionArgs: {
+                    requestType: 'delete',
+                    data: [virtualData[0], virtualData[1]]
+                },
+                lastIndex: 1,
+                firstIndex: 0
+            }
+        };
+
+        infiniteScrollModule.infinitePageAction(pageingDetails);
+        expect(pageingDetails.result).toBeDefined();
+        done();
+    });
+
+    it('Test infinitePageAction with printing action', (done: Function) => {
+        const infiniteScrollModule: any = (treegrid as any).infiniteScrollModule;
+
+        const pageingDetails: any = {
+            result: virtualData,
+            count: virtualData.length,
+            actionArgs: {
+                isPrinting: true,
+                actionArgs: { requestType: 'refresh' }
+            }
+        };
+
+        infiniteScrollModule.infinitePageAction(pageingDetails);
+        expect(pageingDetails.result).toBe(infiniteScrollModule.visualData);
+        done();
+    });
+
+    it('Test infinitePageAction with initialBlocks > maxBlocks', (done: Function) => {
+        treegrid.infiniteScrollSettings.initialBlocks = 10;
+        treegrid.infiniteScrollSettings.maxBlocks = 5;
+        treegrid.infiniteScrollSettings.enableCache = true;
+
+        const infiniteScrollModule: any = (treegrid as any).infiniteScrollModule;
+        const pageingDetails: any = {
+            result: virtualData,
+            count: virtualData.length,
+            actionArgs: { actionArgs: { requestType: 'refresh' } }
+        };
+
+        infiniteScrollModule.infinitePageAction(pageingDetails);
+        expect(treegrid.infiniteScrollSettings.initialBlocks).toBe(5);
+        done();
+    });
+
+    afterAll(() => {
+        destroy(treegrid);
+    });
+});
+
+describe('InfiniteRemoteExpand method coverage', () => {
+    let treegrid: TreeGrid;
+    beforeAll((done: Function) => {
+        treegrid = createGrid(
+            {
+                dataSource: virtualData,
+                enableInfiniteScrolling: true,
+                childMapping: 'Crew',
+                treeColumnIndex: 1,
+                pageSettings: { pageSize: 30 },
+                height: 400,
+                columns: [
+                    { field: 'TaskID', headerText: 'Player Jersey', isPrimaryKey: true, width: 140, textAlign: 'Right' },
+                    { field: 'FIELD1', headerText: 'Player Name', width: 140 }
+                ]
+            },
+            done
+        );
+    });
+
+    it('Test infiniteRemoteExpand with after position', (done: Function) => {
+        const infiniteScrollModule: any = (treegrid as any).infiniteScrollModule;
+        const rows: Element[] = treegrid.getRows();
+        const childData: any = virtualData.slice(1, 3);
+
+        infiniteScrollModule.infiniteRemoteExpand({
+            index: rows.length - 1,
+            childData: childData
+        });
+
+        setTimeout(() => {
+            expect(treegrid.grid.getRowsObject().length).toBeGreaterThan(0);
+            done();
+        }, 200);
+    });
+
+    it('Test infiniteRemoteExpand with before position', (done: Function) => {
+        const infiniteScrollModule: any = (treegrid as any).infiniteScrollModule;
+        const childData: any = virtualData.slice(1, 3);
+
+        infiniteScrollModule.infiniteRemoteExpand({
+            index: 5,
+            childData: childData
+        });
+
+        setTimeout(() => {
+            expect(treegrid.grid.getRowsObject().length).toBeGreaterThan(0);
+            done();
+        }, 200);
+    });
+
     afterAll(() => {
         destroy(treegrid);
     });

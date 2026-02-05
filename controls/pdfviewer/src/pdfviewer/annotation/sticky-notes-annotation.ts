@@ -1031,6 +1031,7 @@ export class StickyNotesAnnotation {
                     const statusDiv: HTMLElement = createElement('div', { id: this.pdfViewer.element.id + 'status' + '_div', className: 'e-pv-status-div' });
                     const statusSpan: HTMLElement = createElement('span', { id: this.pdfViewer.element.id + 'status' + '_icon' });
                     statusDiv.appendChild(statusSpan);
+                    statusDiv.style.marginLeft = '22px';
                     statusContainer.appendChild(statusDiv);
                     commentDiv.appendChild(statusContainer);
                     this.updateStatusContainer(data.State, statusSpan, statusDiv, statusContainer);
@@ -1986,6 +1987,8 @@ export class StickyNotesAnnotation {
                     statusDiv.style.backgroundColor = 'rgb(24,169,85)';
                     statusDiv.appendChild(statusSpan);
                     acceptedStatusDiv.appendChild(statusDiv);
+                    const isReply: boolean = !!contextActiveDiv.closest('.e-pv-reply, .e-pv-replies-container, .e-pv-reply-div, .e-pv-reply-item');
+                    acceptedStatusDiv.style.marginLeft = isReply ? '0px' : '22px';
                     contextActiveDiv.parentElement.appendChild(acceptedStatusDiv);
                     this.modifyStatusProperty('Accepted', contextActiveDiv.parentElement);
                     break;
@@ -2000,6 +2003,8 @@ export class StickyNotesAnnotation {
                     statusElement.style.backgroundColor = 'rgb(0,122,255)';
                     statusElement.appendChild(statusOptionSpan);
                     completedStatusDiv.appendChild(statusElement);
+                    const isReply: boolean = !!contextActiveDiv.closest('.e-pv-reply, .e-pv-replies-container, .e-pv-reply-div, .e-pv-reply-item');
+                    completedStatusDiv.style.marginLeft = isReply ? '0px' : '22px';
                     contextActiveDiv.parentElement.appendChild(completedStatusDiv);
                     this.modifyStatusProperty('Completed', contextActiveDiv.parentElement);
                     break;
@@ -2014,6 +2019,8 @@ export class StickyNotesAnnotation {
                     cancelStatusElement.style.backgroundColor = 'rgb(245,103,0)';
                     cancelStatusElement.appendChild(cancelStatusSpan);
                     cancelStatusDiv.appendChild(cancelStatusElement);
+                    const isReply: boolean = !!contextActiveDiv.closest('.e-pv-reply, .e-pv-replies-container, .e-pv-reply-div, .e-pv-reply-item');
+                    cancelStatusDiv.style.marginLeft = isReply ? '0px' : '22px';
                     contextActiveDiv.parentElement.appendChild(cancelStatusDiv);
                     this.modifyStatusProperty('Cancelled', contextActiveDiv.parentElement);
                     break;
@@ -2028,6 +2035,8 @@ export class StickyNotesAnnotation {
                     rejectedStatusElement.style.backgroundColor = 'rgb(255,59,48)';
                     rejectedStatusElement.appendChild(rejectedStatusSpan);
                     rejectedStatusDiv.appendChild(rejectedStatusElement);
+                    const isReply: boolean = !!contextActiveDiv.closest('.e-pv-reply, .e-pv-replies-container, .e-pv-reply-div, .e-pv-reply-item');
+                    rejectedStatusDiv.style.marginLeft = isReply ? '0px' : '22px';
                     contextActiveDiv.parentElement.appendChild(rejectedStatusDiv);
                     this.modifyStatusProperty('Rejected', contextActiveDiv.parentElement);
                     break;

@@ -1,5 +1,5 @@
 import { RichTextEditor, SlashMenuItemSelectArgs } from "../../../src/rich-text-editor/index";
-import { SLASH_KEY_EVENT_INIT } from "../../constant.spec";
+import { ENTERKEY_EVENT_INIT, SLASH_KEY_EVENT_INIT } from "../../constant.spec";
 import { destroy, renderRTE } from "../render.spec";
 
 describe('Slash Menu ', () => {
@@ -393,6 +393,43 @@ describe('Slash Menu ', () => {
                     done();
                 }, 50);
             }, 150);
+        });
+    });
+
+    describe('1004015 Slash menu remains open after applying heading at the end of paragraph', () => {
+        let editor: RichTextEditor;
+        beforeEach(() => {
+            editor = renderRTE({
+                slashMenuSettings: {
+                    enable: true,
+                },
+                value: '<p>this is RTE /</p>'
+            });
+        });
+        afterEach(() => {
+            destroy(editor);
+        });
+        it('Should close the slash menu when selecting the item through enter key at the end of content', (done: DoneFn) => {
+            editor.focusIn();
+            const range: Range = new Range();
+            const element: HTMLElement = editor.inputElement.firstChild.firstChild as HTMLElement;
+            range.setStart(element, element.textContent.length);
+            range.setEnd(element, element.textContent.length);
+            document.getSelection().removeAllRanges();
+            document.getSelection().addRange(range);
+            const keyDownEvent: KeyboardEvent = new KeyboardEvent('keydown', SLASH_KEY_EVENT_INIT);
+            editor.inputElement.dispatchEvent(keyDownEvent);
+            const keyUpEvent: KeyboardEvent = new KeyboardEvent('keyup', SLASH_KEY_EVENT_INIT);
+            editor.inputElement.dispatchEvent(keyUpEvent);
+            setTimeout(() => {
+                document.activeElement.dispatchEvent(new KeyboardEvent('keydown', ENTERKEY_EVENT_INIT));
+                document.activeElement.dispatchEvent(new KeyboardEvent('keyup', ENTERKEY_EVENT_INIT));
+                setTimeout(() => {
+                    const popup: HTMLElement = document.querySelector('#' + editor.inputElement.id + '_slash_menu_popup');
+                    expect(popup.classList.contains('e-popup-open')).toBe(false);
+                    done();
+                }, 200);
+            }, 200);
         });
     });
 

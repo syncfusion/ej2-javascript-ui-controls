@@ -293,12 +293,26 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
      * If `enable` set to true, the list items are enabled.
      * And, we can disable the component using this property by setting its value as false.
      *
+     * Remark: This property is deprecated after the Vol 4 2025 main release. Use `enabled` instead.
+     *
+     *
      * {% codeBlock src='listview/enable/index.md' %}{% endcodeBlock %}
      *
+     * @deprecated
      * @default true
      */
     @Property(true)
     public enable: boolean;
+    /**
+     * If `enabled` set to true, the list items are enabled.
+     * And, we can disable the component using this property by setting its value as false.
+     *
+     *
+     *
+     * @default true
+     */
+    @Property(true)
+    public enabled: boolean;
     /* es-lint disable */
     /**
      * The `dataSource` provides the data to render the ListView component which is mapped with the fields of ListView.
@@ -556,6 +570,7 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
                 this.setCSSClass(oldProp.cssClass);
                 break;
             case 'enable':
+            case 'enabled':
                 this.setEnable();
                 break;
             case 'width':
@@ -654,7 +669,7 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
     }
 
     private setEnable(): void {
-        this.enableElement(this.element, this.enable);
+        this.enableElement(this.element, this.enabled && this.enable);
     }
 
     private setEnableRTL(): void {
@@ -1065,7 +1080,7 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
             let li: HTMLElement = <HTMLElement>closest(target.parentNode, '.' + classNames.listItem);
             if (li === null) { li = <HTMLElement>target; }
             this.removeFocus();
-            if (this.enable && this.showCheckBox && this.isValidLI(li)) {
+            if (this.isComponentEnabled && this.showCheckBox && this.isValidLI(li)) {
                 if ((e.target as HTMLElement).classList.contains(classNames.checkboxIcon)) {
                     li.classList.add(classNames.focused);
                     if (isNullOrUndefined(li.querySelector('.' + classNames.checked))) {
@@ -1283,7 +1298,7 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
         }
     }
     private spaceKeyHandler(e: KeyboardEventArgs): void {
-        if (this.enable && this.showCheckBox && Object.keys(this.dataSource).length && this.curUL) {
+        if (this.isComponentEnabled && this.showCheckBox && Object.keys(this.dataSource).length && this.curUL) {
             e.preventDefault();
             const li: Element = this.curUL.querySelector('.' + classNames.focused);
             let checkboxElement: Element;
@@ -1425,7 +1440,7 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
     }
 
     private setCheckboxLI(li: Element, e?: MouseEvent | KeyboardEvent | FocusEvent): void {
-        if (this.isValidLI(li) && this.enable && this.showCheckBox) {
+        if (this.isValidLI(li) && this.isComponentEnabled && this.showCheckBox) {
             if (this.curUL.querySelector('.' + classNames.focused)) {
                 this.curUL.querySelector('.' + classNames.focused).classList.remove(classNames.focused);
             }
@@ -1511,7 +1526,7 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
     }
 
     private setSelectLI(li: Element, e?: MouseEvent | KeyboardEvent | FocusEvent): void {
-        if (this.isValidLI(li) && !li.classList.contains(classNames.selected) && this.enable) {
+        if (this.isValidLI(li) && !li.classList.contains(classNames.selected) && this.isComponentEnabled) {
             if (!this.showCheckBox) {
                 this.removeSelect();
             }
@@ -1536,7 +1551,7 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
     }
 
     private setHoverLI(li: Element): void {
-        if (this.isValidLI(li) && !li.classList.contains(classNames.hover) && this.enable) {
+        if (this.isValidLI(li) && !li.classList.contains(classNames.hover) && this.isComponentEnabled) {
             const lastLi: Element[] = <NodeListOf<Element> & Element[]>this.element.querySelectorAll('.' + classNames.hover);
             if (lastLi && lastLi.length) { removeClass(lastLi, classNames.hover); }
             if (!(li as Element).classList.contains(classNames.selected) || this.showCheckBox) {
@@ -2487,8 +2502,12 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
 
     protected getPersistData(): string {
         return this.addOnPersist(['cssClass', 'enableRtl', 'htmlAttributes',
-            'enable', 'fields', 'animation', 'headerTitle',
+            'enable', 'enabled', 'fields', 'animation', 'headerTitle',
             'sortOrder', 'showIcon', 'height', 'width', 'showCheckBox', 'checkBoxPosition', 'selectedId']);
+    }
+
+    private get isComponentEnabled(): boolean {
+        return this.enabled && this.enable;
     }
 
 }

@@ -2,7 +2,25 @@
 
 ## [Unreleased]
 
+## 32.2.3 (2026-02-05)
+
+### Tree Grid
+
+#### Bug Fixes
+
+- `I806463` - Resolved an issue where the `actionFailure` event was triggered even when the checkbox column and the tree column were the same.
+
+- `#F71783` - Fixed an issue where the next set of data not rendered on collapsing records when infinite scrolling is enabled.
+
 ## 32.1.25 (2026-01-27)
+
+### Tree Grid
+
+#### Bug Fixes
+
+-`I798336` - Resolved the issue where selection was not cleared after actions when Single Selection and `persistSelection` were enabled.
+
+## 32.1.24 (2026-01-20)
 
 ### Tree Grid
 

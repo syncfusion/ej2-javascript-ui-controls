@@ -2,6 +2,18 @@
 
 ## [Unreleased]
 
+## 32.2.3 (2026-02-05)
+
+### Grid
+
+#### Bug fixes
+
+- `#I804809, #I804836` - The issue where grouping breaks in ascending order when `null/undefined` values are present in a string type column has been resolved.
+- `#I803723` - Fixed inconsistent filtered icon appearance across all themes.
+- `#I807398` - Resolved an issue where a script error occurred when `allowResizing` is enabled and the last stacked header has no visible columns.
+- `#I803667` - Fixed an issue where `getSelectedRecords` returned only the current page records in the `rowSelected` event when `isRowSelectable` is enabled.
+- `#I794358` - Provided support to update the grid properties when changing the dataSource and columns through the `changeDataSource` method.
+
 ## 32.1.25 (2026-01-27)
 
 ### Grid

@@ -241,7 +241,7 @@ export class TextSearch {
                     if (span as ElementBox === inlines) {
                         index += indexInInline;
                     }
-                    if (!(!isNullOrUndefined(this.owner.searchModule.textSearchResults) && this.owner.searchModule.textSearchResults.length !== 0) && span.text.charAt(span.text.length - 1) !== ' ' && !isNullOrUndefined(span.nextElement) && (span.nextElement instanceof BookmarkElementBox || span.nextElement instanceof CommentCharacterElementBox)) {
+                    if (!(!isNullOrUndefined(this.owner.searchModule.textSearchResults) && this.owner.searchModule.textSearchResults.length !== 0) && span.text.charAt(span.text.length - 1) !== ' ' && !isNullOrUndefined(span.nextElement) && (span.nextElement instanceof BookmarkElementBox)) {
                         let element: ElementBox = span.nextElement;
                         while (element) {
                             element = element.nextElement;
@@ -256,8 +256,7 @@ export class TextSearch {
                     }
                     if (!(!isNullOrUndefined(this.owner.searchModule.textSearchResults)
                         && this.owner.searchModule.textSearchResults.length !== 0) && span.previousElement
-                        && (span.previousElement instanceof BookmarkElementBox
-                            || span.previousElement instanceof CommentCharacterElementBox)) {
+                        && (span.previousElement instanceof BookmarkElementBox)) {
                         isContainField = true;
                     }
                     let offset: number = 0;

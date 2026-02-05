@@ -24,7 +24,7 @@ import { PageSettings, ScrollSettings } from './diagram/page-settings';
 import { PageSettingsModel, ScrollSettingsModel } from './diagram/page-settings-model';
 import { DiagramElement } from './core/elements/diagram-element';
 import { ServiceLocator } from './objects/service';
-import { IElement, IDataLoadedEventArgs, ISelectionChangeEventArgs, IElementDrawEventArgs, IMouseWheelEventArgs, ISegmentChangeEventArgs, ILoadEventArgs, ILoadedEventArgs, ILayoutUpdatedEventArgs } from './objects/interface/IElement';
+import { IElement, IDataLoadedEventArgs, ISelectionChangeEventArgs, IElementDrawEventArgs, IMouseWheelEventArgs, ISegmentChangeEventArgs, ILoadEventArgs, ILoadedEventArgs, ILayoutUpdatedEventArgs, IExportingEventArgs, IImportingEventArgs } from './objects/interface/IElement';
 import { IClickEventArgs, ScrollValues, FixedUserHandleClickEventArgs } from './objects/interface/IElement';
 import { ChangedObject, IBlazorTextEditEventArgs, DiagramEventObject, DiagramEventAnnotation } from './objects/interface/IElement';
 import { IBlazorDragLeaveEventArgs } from './objects/interface/IElement';
@@ -174,6 +174,7 @@ import { Overview } from '../overview/overview';
 import { identityMatrix, rotateMatrix, transformPointByMatrix, scaleMatrix, Matrix } from './primitives/matrix';
 import { UmlSequenceDiagram } from './diagram/sequence-diagram';
 import { UmlSequenceDiagramModel } from './diagram/sequence-diagram-model';
+import { ImportAndExportVisio, VisioImportOptions, ImportResult, VisioExportOptions } from './load-utility/visio-import-export/visio-import-export';
 
 /**
  * Represents the Diagram control
@@ -249,6 +250,13 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
      * @private
      */
     public bpmnModule: BpmnDiagrams;
+
+    /**
+     * `importAndExportVisioModule` is used to add built-in BPMN Shapes to diagrams
+     *
+     * @private
+     */
+    public importAndExportVisioModule: ImportAndExportVisio;
 
     /**
      * 'symmetricalLayoutModule' is used to render layout in symmetrical method
@@ -1593,6 +1601,22 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
     @Event()
     public layoutUpdated: EmitType<ILayoutUpdatedEventArgs>;
 
+    /**
+     * Triggers during the diagram importing lifecycle. Provides progress updates and allows user interaction (e.g., selecting items/pages).
+     *
+     *  @event
+     */
+    @Event()
+    public diagramImporting: EmitType<IImportingEventArgs>;
+
+    /**
+     * Triggers during the diagram exporting lifecycle. Provides progress updates and allows cancellation if needed.
+     *
+     *  @event
+     */
+    @Event()
+    public diagramExporting: EmitType<IExportingEventArgs>;
+
     //private variables
     /** @private */
     public preventDiagramUpdate: boolean;
@@ -2698,6 +2722,10 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
         const modules: ModuleDeclaration[] = [];
         modules.push({
             member: 'Bpmn',
+            args: []
+        });
+        modules.push({
+            member: 'ImportAndExportVisio',
             args: []
         });
         modules.push({
@@ -15894,5 +15922,38 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
             return this.contextMenuModule.hiddenItems;
         }
         return hiddenItems;
+    }
+
+    /**
+     * Imports a Visio `.vsdx` file and loads its content into the diagram.
+     * Returns human-readable warnings for unsupported or partially supported features.
+     * @param {File} file - The Visio file to imported.
+     * @param {VisioImportOptions} [options] - Optional settings to customize the loading behavior.
+     * @returns {Promise<string[]>} A promise that resolves with a list of warnings, if any.
+     */
+    public async importFromVisio(file: File, options?: VisioImportOptions): Promise<string[]> {
+        if (this.importAndExportVisioModule) {
+            const result: ImportResult = await this.importAndExportVisioModule.importVSDX(file, this, options);
+            // clear existing diagram before loading.
+            return result.warnings;
+        } else {
+            console.warn('[WARNING] :: Module "ImportAndExportVisio" is not available in Diagram component! You either misspelled the module name or forgot to load it.');
+        }
+        return null;
+    }
+
+    /**
+     * Exports the current diagram to a Visio `.vsdx` file.
+     * Uses the current diagram state from `saveDiagram()` and returns the result as a Blob.
+     * @param {VisioExportOptions} [options] - Optional settings to customize the export behavior.
+     * @returns {Promise<void>} A promise that resolves with the exported Visio file as a Blob.
+     */
+    public async exportToVisio(options?: VisioExportOptions): Promise<void> {
+        if (this.importAndExportVisioModule) {
+            return this.importAndExportVisioModule.exportVSDX(this, options);
+        } else {
+            console.warn('[WARNING] :: Module "ImportAndExportVisio" is not available in Diagram component! You either misspelled the module name or forgot to load it.');
+        }
+        return null;
     }
 }

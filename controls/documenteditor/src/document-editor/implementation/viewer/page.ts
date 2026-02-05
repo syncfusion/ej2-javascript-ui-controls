@@ -4119,9 +4119,11 @@ export class TableCellWidget extends BlockWidget {
      * @private
      */
     public getPreviousCellLeftBorder(leftBorder: WBorder, previousCell: TableCellWidget): WBorder {
+        let isLeftBorderChanged: boolean = false;
         if ((isNullOrUndefined(previousCell) || (!isNullOrUndefined(leftBorder) && (leftBorder.lineStyle === 'None' && !leftBorder.hasNoneStyle)))) {
             if (!isNullOrUndefined(leftBorder) && !((leftBorder.ownerBase as WBorders).ownerBase instanceof WTableFormat)) {
                 leftBorder = this.getLeftBorderToRenderByHierarchy(leftBorder, TableRowWidget.getRowOf(leftBorder.ownerBase).rowFormat.borders, TableWidget.getTableOf(leftBorder.ownerBase as WBorders).tableFormat.borders);
+                isLeftBorderChanged = true;
             }
         }
         if (isNullOrUndefined(previousCell)) {
@@ -4134,7 +4136,7 @@ export class TableCellWidget extends BlockWidget {
             if (!isNullOrUndefined(prevCellRightBorder) && prevCellRightBorder.lineStyle !== 'None') {
                 return this.getBorderBasedOnPriority(prevCellRightBorder, leftBorder);
             }
-            else  if (!isNullOrUndefined(leftBorder) && !((leftBorder.ownerBase as WBorders).ownerBase instanceof WTableFormat)) {
+            else  if (!isNullOrUndefined(leftBorder) && !((leftBorder.ownerBase as WBorders).ownerBase instanceof WTableFormat) && !isLeftBorderChanged) {
                 return this.getLeftBorderToRenderByHierarchy(leftBorder, TableRowWidget.getRowOf(leftBorder.ownerBase as WBorders).rowFormat.borders, TableWidget.getTableOf(leftBorder.ownerBase as WBorders).tableFormat.borders);
             }
         }
@@ -4285,9 +4287,11 @@ export class TableCellWidget extends BlockWidget {
      * @private
      */
     public getAdjacentCellRightBorder(rightBorder: WBorder, nextCell: TableCellWidget): WBorder {
+        let isRightBorderChanged: boolean = false;
         if (isNullOrUndefined(nextCell) || (!isNullOrUndefined(rightBorder) && (rightBorder.lineStyle === 'None' && !rightBorder.hasNoneStyle))) {
             if (!isNullOrUndefined(rightBorder) && !((rightBorder.ownerBase as WBorders).ownerBase instanceof WTableFormat)) {
                 rightBorder = this.getRightBorderToRenderByHierarchy(rightBorder, TableRowWidget.getRowOf(rightBorder.ownerBase).rowFormat.borders, TableWidget.getTableOf(rightBorder.ownerBase).tableFormat.borders);
+                isRightBorderChanged = true;
             }
         }
         if (isNullOrUndefined(nextCell)) {
@@ -4299,7 +4303,7 @@ export class TableCellWidget extends BlockWidget {
             }
             if (!isNullOrUndefined(nextCellLeftBorder) && nextCellLeftBorder.lineStyle !== 'None') {
                 return this.getBorderBasedOnPriority(rightBorder, nextCellLeftBorder);
-            } else if (!isNullOrUndefined(rightBorder) && !((rightBorder.ownerBase as WBorders).ownerBase instanceof WTableFormat)) {
+            } else if (!isNullOrUndefined(rightBorder) && !((rightBorder.ownerBase as WBorders).ownerBase instanceof WTableFormat) && !isRightBorderChanged) {
                 return this.getRightBorderToRenderByHierarchy(rightBorder, TableRowWidget.getRowOf(rightBorder.ownerBase as WBorders).rowFormat.borders, TableWidget.getTableOf(rightBorder.ownerBase as WBorders).tableFormat.borders);
 
             }
@@ -4384,9 +4388,11 @@ export class TableCellWidget extends BlockWidget {
      * @private
      */
     public getPreviousCellTopBorder(topBorder: WBorder, previousTopCell: TableCellWidget): WBorder {
+        let isTopBorderChanged: boolean = false;
         if (isNullOrUndefined(previousTopCell) || (!isNullOrUndefined(topBorder) && (topBorder.lineStyle === 'None' && !topBorder.hasNoneStyle))) {
             if (!isNullOrUndefined(topBorder) && !((topBorder.ownerBase as WBorders).ownerBase instanceof WTableFormat)) {
                 topBorder = this.getTopBorderToRenderByHierarchy(topBorder, TableRowWidget.getRowOf(topBorder.ownerBase as WBorders).rowFormat.borders, TableWidget.getTableOf(topBorder.ownerBase as WBorders).tableFormat.borders);
+                isTopBorderChanged = true;
             }
         }
         if (isNullOrUndefined(previousTopCell)) {
@@ -4399,7 +4405,7 @@ export class TableCellWidget extends BlockWidget {
             if (!isNullOrUndefined(prevTopCellBottomBorder) && prevTopCellBottomBorder.lineStyle !== 'None') {
                 return this.getBorderBasedOnPriority(topBorder, prevTopCellBottomBorder);
             }
-            else  if (!isNullOrUndefined(topBorder) && !((topBorder.ownerBase as WBorders).ownerBase instanceof WTableFormat)) {
+            else  if (!isNullOrUndefined(topBorder) && !((topBorder.ownerBase as WBorders).ownerBase instanceof WTableFormat) && !isTopBorderChanged) {
                 return this.getTopBorderToRenderByHierarchy(topBorder, TableRowWidget.getRowOf(topBorder.ownerBase as WBorders).rowFormat.borders, TableWidget.getTableOf(topBorder.ownerBase as WBorders).tableFormat.borders);
             }
         }
@@ -4489,9 +4495,11 @@ export class TableCellWidget extends BlockWidget {
      * @private
      */
     public getAdjacentCellBottomBorder(bottomBorder: WBorder, nextBottomCell: TableCellWidget): WBorder {
+        let isBottomBorderChanged: boolean = false;
         if (isNullOrUndefined(nextBottomCell) || (!isNullOrUndefined(bottomBorder) && (bottomBorder.lineStyle === 'None' && !bottomBorder.hasNoneStyle))) {
             if (!isNullOrUndefined(bottomBorder) && !((bottomBorder.ownerBase as WBorders).ownerBase instanceof WTableFormat)) {
                 bottomBorder = this.getBottomBorderToRenderByHierarchy(bottomBorder, TableRowWidget.getRowOf(bottomBorder.ownerBase as WBorders).rowFormat.borders, TableWidget.getTableOf(bottomBorder.ownerBase as WBorders).tableFormat.borders);
+                isBottomBorderChanged = true;
             }
         }
         if (isNullOrUndefined(nextBottomCell)) {
@@ -4503,7 +4511,7 @@ export class TableCellWidget extends BlockWidget {
             }
             if (!isNullOrUndefined(prevBottomCellTopBorder) && prevBottomCellTopBorder.lineStyle !== 'None') {
                 return this.getBorderBasedOnPriority(bottomBorder, prevBottomCellTopBorder);
-            } else if (!isNullOrUndefined(bottomBorder) && !((bottomBorder.ownerBase as WBorders).ownerBase instanceof WTableFormat)) {
+            } else if (!isNullOrUndefined(bottomBorder) && !((bottomBorder.ownerBase as WBorders).ownerBase instanceof WTableFormat) && !isBottomBorderChanged) {
                 return this.getBottomBorderToRenderByHierarchy(bottomBorder, TableRowWidget.getRowOf(bottomBorder.ownerBase as WBorders).rowFormat.borders, TableWidget.getTableOf(bottomBorder.ownerBase as WBorders).tableFormat.borders);
             }
         }

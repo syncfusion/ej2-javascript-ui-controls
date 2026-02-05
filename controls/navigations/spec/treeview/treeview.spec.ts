@@ -7,7 +7,7 @@ import { EventHandler, EmitType } from '@syncfusion/ej2-base';
 import { isNullOrUndefined, enableRipple } from '@syncfusion/ej2-base';
 import { TreeView, DragAndDropEventArgs, NodeEditEventArgs, NodeCheckEventArgs, NodeExpandEventArgs,  NodeSelectEventArgs } from "../../src/treeview/treeview";
 import { DataManager, Query,ODataV4Adaptor } from '@syncfusion/ej2-data';
-import { hierarchicalData, hierarchicalData1, hierarchicalData2, hierarchicalData3, hierarchicalData8, localData, localData1, localData2, localData3, hierarchicalData9, localData10, localData11, hierarchicalDataWithSelectable, hierarchicalData10, localDataHtmlAttributes, selectableFieldData } from '../../spec/treeview/datasource.spec';
+import { hierarchicalData, hierarchicalDataWithIDHash, hierarchicalData1, hierarchicalData2, hierarchicalData3, hierarchicalData8, localData, localData1, localData2, localData3, hierarchicalData9, localData10, localData11, hierarchicalDataWithSelectable, hierarchicalData10, localDataHtmlAttributes, selectableFieldData } from '../../spec/treeview/datasource.spec';
 import { remoteData, remoteData1, remoteData2, remoteData2_1, remoteData1_1, hierarchicalData4, localData4, localData5, localData6, data} from '../../spec/treeview/datasource.spec';
 import { hierarchicalData5, expandIconParentData, expandIconChildData, remoteData2_2, remoteData2_3 , remoteData3_1, hierarchicalData6} from '../../spec/treeview/datasource.spec';
 import { localData7, localData8, localData9, localData12, localData13, localData14, hierarchicalDataSource2, checkData, XSSData, XSSnestedData, checkboxData, updatedremoteNode_1, updatedremoteNode_2} from '../../spec/treeview/datasource.spec';
@@ -156,6 +156,19 @@ describe('TreeView control', () => {
                     expect(li.length).toBe(10);
                     expect(li[0].classList.contains('e-active')).toBe(false);
                     expect(li[9].classList.contains('e-active')).toBe(true);
+                    done();
+                }, 450);
+            });
+            it('selectedNodes property testing with id contains hash', (done: Function) => {
+                treeObj = new TreeView({ 
+                    fields: { dataSource: hierarchicalDataWithIDHash },
+                    selectedNodes: ['01 #test']
+                },'#tree1');
+                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                setTimeout(function() {
+                    let li: Element[] = <Element[] & NodeListOf<Element>>treeObj.element.querySelectorAll('li');
+                    expect(treeObj.element.getAttribute('aria-activedescendant')).toBe("tree1_active");
+                    expect(li[0].classList.contains('e-active')).toBe(true);
                     done();
                 }, 450);
             });

@@ -775,7 +775,8 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
                 tooltipContent.appendChild(this.content);
             } else if (typeof this.content === 'string') {
                 if (this.isAngular) {
-                    this.setProperties({ content: SanitizeHtmlHelper.sanitize(this.content) }, true);
+                    this.setProperties({ content: (this.enableHtmlSanitizer) ?
+                        SanitizeHtmlHelper.sanitize(this.content) : this.content }, true);
                 }
                 else {
                     this.content = (this.enableHtmlSanitizer) ? SanitizeHtmlHelper.sanitize(this.content) : this.content;

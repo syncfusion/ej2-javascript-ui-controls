@@ -173,13 +173,13 @@ let dataSourceWithComplexData: { [key: string]: Object }[] = [
         { list: { id: '01_3', text: 'subText3', iconCss: 'iconSubClass3' } }]
     },
     {
-        list: { id: '03', text: 'text3', iconCss: 'iconClass3', enable: false },
+        list: { id: '03', text: 'text3', iconCss: 'iconClass3', enabled: false },
         child: [{ list: { id: '01_1', text: 'subText1', iconCss: 'iconSubClass1' } },
         { list: { id: '01_2', text: 'subText2', iconCss: 'iconSubClass2' } },
         { list: { id: '01_3', text: 'subText3', iconCss: 'iconSubClass3' } }]
     },
     {
-        list: { id: '02', text: 'text2', iconCss: undefined, enable: undefined },
+        list: { id: '02', text: 'text2', iconCss: undefined, enabled: undefined },
         child: [{ list: { id: '02_1', text: 'subItemText1', iconCss: 'iconSubClass1' } },
         { list: { id: '02_2', text: 'subItemText2', iconCss: 'iconSubClass2' } },
         { list: { id: '02_3', text: 'subItemText3', iconCss: 'iconSubClass3' } }]
@@ -275,7 +275,7 @@ describe('ListView', () => {
                 document.body.appendChild(ele);
                 treeObj = new ListView({
                     dataSource: dataSourceWithComplexData, showIcon: true, fields:
-                        { id: 'list.id', text: 'list.text', iconCss: 'list.iconCss', enabled: 'list.enable' }
+                        { id: 'list.id', text: 'list.text', iconCss: 'list.iconCss', enabled: 'list.enabled' }
                 });
                 treeObj.appendTo(ele);
             });
@@ -3133,14 +3133,14 @@ describe('ListView', () => {
 
         it('enable property to be false', () => {
             expect(treeObj.element.classList.contains('e-disabled')).toBe(false);
-            treeObj.enable = false;
+            treeObj.enabled = false;
             treeObj.dataBind();
             expect(treeObj.element.classList.contains('e-disabled')).toBe(true);
         });
 
         it('enable property to be true', () => {
             expect(treeObj.element.classList.contains('e-disabled')).toBe(true);
-            treeObj.enable = true;
+            treeObj.enabled = true;
             treeObj.dataBind();
             expect(treeObj.element.classList.contains('e-disabled')).toBe(false);
         });

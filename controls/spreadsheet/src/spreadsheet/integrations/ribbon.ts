@@ -2627,7 +2627,7 @@ export class Ribbon {
         if (!isNullOrUndefined(cell.value) || cell.value !== '') {
             const format: string = getFormatFromType(args.item.id.split(this.parent.element.id + '_')[1] as NumberFormatType);
             const eventArgs: NumberFormatArgs = { type: args.item.text, formattedText: '', value: cell.value, format: format,
-                cell: { value: cell.value, format: format }, skipFormatCheck: isImported(this.parent) };
+                cell: { value: cell.value, format: format, formula: cell.formula }, skipFormatCheck: isImported(this.parent) };
             this.parent.notify(getFormattedCellObject, eventArgs);
             const previewElem: HTMLElement = this.parent.createElement(
                 'span', { className: 'e-numformat-preview-text', styles: `float:${this.parent.enableRtl ? 'left' : 'right'};` });

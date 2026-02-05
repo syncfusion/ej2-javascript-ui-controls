@@ -1,5 +1,4 @@
 @use 'ej2-base/styles/common/mixin' as *;
-@use './theme-variables' as *;
 @include export-module('input-bigger') {
 
   .e-input-group.e-bigger .e-input,
@@ -450,6 +449,27 @@
       font-weight: 600;
       padding-right: $input-zero-padding-margin;
       transform: translate3d(-10px, -45px, 0) scale(1);
+    }
+  }
+
+  .e-float-input.e-bigger input ~ label.e-label-top.e-float-text,
+  .e-float-input.e-bigger input[readonly] ~ label.e-label-top.e-float-text,
+  .e-float-input.e-bigger input[disabled] ~ label.e-label-top.e-float-text,
+  .e-float-input.e-bigger input label.e-float-text.e-label-top,
+  .e-bigger .e-float-input input ~ label.e-label-top.e-float-text,
+  .e-bigger .e-float-input input[readonly] ~ label.e-label-top.e-float-text,
+  .e-bigger .e-float-input input[disabled] ~ label.e-label-top.e-float-text,
+  .e-bigger .e-float-input input label.e-float-text.e-label-top,
+  .e-float-input.e-control-wrapper.e-bigger input ~ label.e-label-top.e-float-text,
+  .e-float-input.e-control-wrapper.e-bigger input[readonly] ~ label.e-label-top.e-float-text,
+  .e-float-input.e-control-wrapper.e-bigger input[disabled] ~ label.e-label-top.e-float-text,
+  .e-float-input.e-control-wrapper.e-bigger input label.e-float-text.e-label-top,
+  .e-bigger .e-float-input.e-control-wrapper input ~ label.e-label-top.e-float-text,
+  .e-bigger .e-float-input.e-control-wrapper input[readonly] ~ label.e-label-top.e-float-text,
+  .e-bigger .e-float-input.e-control-wrapper input[disabled] ~ label.e-label-top.e-float-text,
+  .e-bigger .e-float-input.e-control-wrapper input label.e-float-text.e-label-top {
+    @if ($input-skin-name == 'bootstrap5' or $input-skin-name == 'bootstrap5.3') {
+      transform: translate3d(-10px, -39px, 0) scale(1) !important; /* stylelint-disable-line declaration-no-important */
     }
   }
 
@@ -2583,11 +2603,8 @@
   .e-outline.e-input-group.e-control-wrapper.e-bigger .e-input-group-icon,
   .e-outline.e-input-group.e-control-wrapper .e-input-group-icon.e-bigger,
   .e-bigger .e-outline.e-input-group.e-control-wrapper .e-input-group-icon {
-    @if $input-skin-name == 'material' {
+    @if $input-skin-name == 'material' or $input-skin-name == 'Material3' {
       margin: $outline-bigger-input-icon-padding $outline-bigger-input-icon-margin-left  $outline-bigger-input-icon-padding $zero-value;
-    }
-    @if $input-skin-name == 'Material3' {
-      margin: 2px;
     }
   }
 

@@ -3406,6 +3406,8 @@ private hasSameContentControlProperties(props1: any, props2: any): boolean {
                 return 135;
             case 'RectangularCallout':
                 return 136;
+            case 'CloudCallout':
+                return 137;
             default:
                 return 0;
         }

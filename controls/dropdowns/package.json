@@ -1,6 +1,6 @@
 {
 	"name": "@syncfusion/ej2-dropdowns",
-	"version": "32.1.24",
+	"version": "32.1.25",
 	"description": "Essential JS 2 DropDown Components",
 	"author": "Syncfusion Inc.",
 	"license": "SEE LICENSE IN license",
@@ -14,7 +14,8 @@
 		"@syncfusion/ej2-lists": "*",
 		"@syncfusion/ej2-navigations": "*",
 		"@syncfusion/ej2-notifications": "*",
-		"@syncfusion/ej2-popups": "*"
+		"@syncfusion/ej2-popups": "*",
+		"markdown-spellcheck": "^1.3.1"
 	},
 	"devDependencies": {
 		"@syncfusion/ej2-staging": "^1.0.1",

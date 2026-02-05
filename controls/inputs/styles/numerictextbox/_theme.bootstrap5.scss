@@ -1,0 +1,5 @@
+@use 'sass:color';
+@use 'ej2-base/styles/common/mixin' as *;
+@import '../input/theme-variables.bootstrap5';
+@import './theme-variables.bootstrap5';
+@import './_theme';

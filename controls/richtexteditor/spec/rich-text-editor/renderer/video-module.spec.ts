@@ -5096,6 +5096,31 @@ describe('962339: Script error and improper video selection removal after alignm
             }, 100);
         });
     });
+    describe('Bug 1004008: After resize start Video resize gripper elements position is not refreshed after mouse move.', () => {
+        let rteObj: RichTextEditor;
+        beforeAll(() => {
+            rteObj = renderRTE({
+                value: `<p><span class="e-video-wrap" contenteditable="false" title="RichTextEditor.mp4">
+<video class="e-rte-video e-video-inline" controls="" width="auto" height="auto" style="min-width: 0px; max-width: 1193px; min-height: 0px;"><source src="blob:http://127.0.0.1:5501/2ea697f9-e9be-4437-82cd-0d0d0d59dadd" type="video/mp4"/></video>
+</span></p>`
+                ,
+                toolbarSettings: {
+                    items: ['Video']
+                }
+            });
+        });
+        afterAll(() => {
+            destroy(rteObj);
+        });
+        it('checking resize bar in Video', (done: Function) => {
+            let trg = (rteObj.inputElement.querySelector('video') as HTMLVideoElement);
+            clickVideo(trg);
+            setTimeout(() => {
+                expect(rteObj.inputElement.querySelectorAll('.e-resize').length).toBe(1);
+                done();
+            }, 100);
+        });
+    });
     describe('977306: Resize Bar for iframe embeded Video in Syncfusion Rich Text Editor with RTL enabled', () => {
         let rteObj: RichTextEditor;
         let rteEle: HTMLElement;

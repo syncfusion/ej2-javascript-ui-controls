@@ -25727,6 +25727,24 @@ describe('Spreadsheet formula module ->', () => {
             expect(JSON.stringify(helper.getInstance().sheets[0].rows[7].cells[8])).toBe('{"value":"#VALUE!","formula":"=INDEX((A2:B8,C2:E8,F2:H8),3,3,0)"}');
             done();
         });
+        it('EJ2-1002968 -> Cell values not maintained properly when applying number format', (done: Function) => {
+            const sheet: SheetModel = helper.getInstance().sheets[0];
+            helper.edit('A15', '16.994999999997');
+            helper.edit('A16', '=2583.24/152');
+            helper.edit('A17', '=2583.23/152');
+            helper.edit('A18', '=SUM(2583.24/152)');
+            helper.edit('A19', '=SUM(16.994999999997)');
+            helper.edit('A20', '=SUM(169949999999979.9999)');
+            helper.edit('A21', '=SUM(16994999999997989)');
+            helper.invoke('numberFormat', ['0.00', 'A15:A21']);
+            expect(sheet.rows[14].cells[0].formattedText).toBe('16.99');
+            expect(sheet.rows[15].cells[0].formattedText).toBe('17.00');
+            expect(sheet.rows[16].cells[0].formattedText).toBe('16.99');
+            expect(sheet.rows[17].cells[0].formattedText).toBe('17.00');
+            expect(sheet.rows[18].cells[0].formattedText).toBe('16.99');
+            expect(sheet.rows[19].cells[0].formattedText).toBe('169949999999980.00');
+            expect(sheet.rows[20].cells[0].formattedText).toBe('16994999999997988.00');
+            done();
+        });
     });
-
 });

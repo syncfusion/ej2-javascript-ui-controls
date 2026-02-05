@@ -6162,6 +6162,30 @@ client side. Customer easy to edit the contents and get the HTML content for
         });
     });
 
+    describe('Bug 1004008: After resize start Video resize gripper elements position is not refreshed after mouse move.', () => {
+        let rteObj: RichTextEditor;
+        beforeAll(() => {
+            rteObj = renderRTE({
+                value: `<p><img src="blob:http://127.0.0.1:5501/54255cf7-3095-4c27-b350-bdbcd8ad1e1e" class="e-rte-image e-imginline" alt="Sample" width="362" height="362" style="min-width: 0px; max-width: 1193px; min-height: 0px;"/></p>`
+                ,
+                toolbarSettings: {
+                    items: ['Image']
+                }
+            });
+        });
+        afterAll(() => {
+            destroy(rteObj);
+        });
+        it(('checking resize bar in Image'), (done: Function) => {
+            let imgElem: HTMLElement = rteObj.inputElement.querySelector('.e-rte-image');
+            clickImage(imgElem as HTMLImageElement);
+            setTimeout(() => {
+                expect(rteObj.inputElement.querySelectorAll('.e-resize').length).toBe(1);
+                done();
+            }, 100);
+        });
+    });
+
     describe('986631: Image in checklist causing resize icon misalignment', () => {
         let rteObj: RichTextEditor;
         beforeEach(() => {

@@ -8067,6 +8067,8 @@ export class WordExport {
             return 'curvedConnector3';
         case 136:
             return 'wedgeRectCallout';
+        case 137:
+            return 'cloudCallout';
         default:
             return value as ExportAutoShapeType;
         }
@@ -8351,6 +8353,8 @@ export class WordExport {
             return 135;
         case 'RectangularCallout':
             return 136;
+        case 'CloudCallout':
+            return 137;
         default:
             return 0;
         }

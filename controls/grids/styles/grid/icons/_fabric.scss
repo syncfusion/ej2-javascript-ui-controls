@@ -63,9 +63,12 @@
       content: '\e84f';
     }
 
-    .e-icon-filter::before,
-    .e-icon-filter.e-filtered::before {
+    .e-icon-filter::before {
       content: '\e21c';
+    }
+
+    .e-icon-filter.e-filtered::before {
+      content: '\ebac';
     }
 
     .e-excl-filter-icon::before,

@@ -1167,3 +1167,31 @@ export interface ILoadedEventArgs {
     /** Returns the diagram model properties. */
     diagram?: Diagram;
 }
+
+/**
+ * IImportingEventArgs provides details about the diagram import process.
+ */
+export interface IImportingEventArgs {
+    /** returns the current status of the import process. */
+    status: 'started' | 'completed' | 'failed';
+    /** returns the list of selectable pages available during import. */
+    pages?: { name: string }[];
+    /** allows the user to select a page to import during 'started' status. */
+    selectedPage?: { name: string };
+    /** set to true to cancel the import process. */
+    cancel?: false;
+    /** returns the errors or warnings collected during the process. */
+    logs?: string[]
+}
+
+/**
+ * IExportingEventArgs provides details about the diagram export process.
+ */
+export interface IExportingEventArgs {
+    /** returns the current status of the export process. */
+    status: 'started' | 'completed' | 'failed';
+    /** set to true to cancel the export process. */
+    cancel?: false;
+    /** returns the errors or warnings collected during the process. */
+    logs?: string[]
+}

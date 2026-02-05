@@ -1061,7 +1061,9 @@ export class Resize implements IAction {
                 removeClass([contentTable], ['e-tableborder']);
             }
             else {
-                addClass([headerTable, contentTable], ['e-tableborder']);
+                if (contentwidth < contentTable.scrollWidth) {
+                    addClass([headerTable, contentTable], ['e-tableborder']);
+                }
             }
             removeClass([gObj.element], ['e-left-shadow', 'e-right-shadow']);
         } else {
@@ -1149,16 +1151,22 @@ export class Resize implements IAction {
         this.setHelperHeight();
     }
 
-    private setHelperHeight(): void {
+    private resizeHelperHeight(rectElement: HTMLElement): number {
         let height: number = (<HTMLElement>this.parent.getContent()).offsetHeight - this.getScrollBarWidth();
-        const rect: HTMLElement = closest(this.element, resizeClassList.header) as HTMLElement;
         const tr: HTMLElement[] = [].slice.call(this.parent.getHeaderContent().querySelectorAll('tr'));
-        for (let i: number = tr.indexOf(rect.parentElement); i < tr.length && i > -1; i++) {
+        for (let i: number = tr.indexOf(rectElement.parentElement); i < tr.length && i > -1; i++) {
             height += tr[parseInt(i.toString(), 10)].offsetHeight;
         }
-        const pos: OffsetPosition = this.calcPos(rect);
-        pos.left += (this.parent.enableRtl ? 0 - 1 : rect.offsetWidth - 2);
-        this.helper.style.cssText = 'height: ' + height + 'px; top: ' + pos.top + 'px; left:' + Math.floor(pos.left) + 'px;';
+        return height;
+    }
+
+    private setHelperHeight(): void {
+        const rectElement: HTMLElement = closest(this.element, resizeClassList.header) as HTMLElement;
+        const height: number = this.resizeHelperHeight(rectElement);
+        const position: OffsetPosition = this.calcPos(rectElement);
+        const rectDetails: ClientRect = rectElement.getBoundingClientRect();
+        position.left = (position.left <= 1 ? 0 : position.left) + (this.parent.enableRtl ? 0 : Number(rectDetails.width.toFixed(1))) - 1;
+        this.helper.style.cssText = 'height: ' + height + 'px; top: ' + position.top + 'px; left:' + Math.floor(position.left) + 'px;';
         if (this.parent.enableVirtualization) {
             this.helper.classList.add('e-virtual-rhandler');
         }
@@ -1181,13 +1189,17 @@ export class Resize implements IAction {
     }
 
     private updateHelper(): void {
-        const rect: HTMLElement = closest(this.element, resizeClassList.header) as HTMLElement;
+        const rectElement: HTMLElement = closest(this.element, resizeClassList.header) as HTMLElement;
         let left: number;
-        left = Math.floor(this.calcPos(rect).left + (this.parent.enableRtl ? 0 - 1 : rect.offsetWidth - 2));
+        const position: OffsetPosition = this.calcPos(rectElement);
+        const rectDetails: ClientRect = rectElement.getBoundingClientRect();
+        left = Math.floor(Number((position.left <= 1 ? 0 : position.left).toFixed(1)) + (this.parent.enableRtl ? 0 :
+            Number(rectDetails.width.toFixed(1))) - 1);
         const borderWidth: number = 2; // to maintain the helper inside of grid element.
         if (left > this.parentElementWidth) {
             left = this.parentElementWidth - borderWidth;
         }
+        this.helper.style.height = this.resizeHelperHeight(rectElement) + 'px';
         this.helper.style.left = left + 'px';
     }
 

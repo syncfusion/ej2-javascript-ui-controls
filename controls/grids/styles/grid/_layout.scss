@@ -1177,6 +1177,9 @@
       position: absolute;
       width: $grid-resize-border-width;
     }
+    &:not(.sf-grid) .e-rhelper {
+      width: 2px;
+    }
 
     & .e-rhelper,
     & .e-virtual-rhandler {

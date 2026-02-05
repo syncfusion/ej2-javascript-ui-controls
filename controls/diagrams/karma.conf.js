@@ -37,7 +37,8 @@ module.exports = function (config) {
             { pattern: "node_modules/@syncfusion/ej2-navigations/**/*.js", included: false },
             { pattern: "node_modules/@syncfusion/ej2-splitbuttons/**/*.js", included: false },
             { pattern: "node_modules/es6-promise/dist/es6-promise.js", included: false },
-            { pattern: 'spec/**/*.json', included: false }
+            { pattern: 'spec/**/*.json', included: false },
+            { pattern: 'spec/diagram/visio/Vsdx/*.vsdx', watched: false, served: true, included: false }
             // Add dependent package's script files here              
         ],
 

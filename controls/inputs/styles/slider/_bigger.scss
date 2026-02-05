@@ -1,5 +1,4 @@
 @use 'ej2-base/styles/common/mixin' as *;
-@use './theme-variables' as *;
 @mixin size($height, $width) {
   height: $height;
   width: $width;

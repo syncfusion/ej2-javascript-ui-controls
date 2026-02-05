@@ -1,6 +1,4 @@
 @use 'ej2-base/styles/common/mixin' as *;
-@use './theme-variables' as *;
-@use 'ej2-buttons/styles/check-box/theme-variables' as check-vars;
 @mixin rowcell-container {
   overflow: hidden;
   text-overflow: ellipsis;
@@ -216,8 +214,8 @@
         width: 16px;
       }
       @else {
-        height: check-vars.$cbox-height;
-        width: check-vars.$cbox-width;
+        height: $cbox-height;
+        width: $cbox-width;
       }
     }
 

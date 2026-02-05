@@ -1,5 +1,4 @@
 @use 'ej2-base/styles/common/mixin' as *;
-@use './theme-variables' as *;
 @include export-module('input-layout') {
 
   /*! input layout */
@@ -775,6 +774,19 @@
     }
   }
 
+  .e-float-input input ~ label.e-label-top.e-float-text,
+  .e-float-input input[readonly] ~ label.e-label-top.e-float-text,
+  .e-float-input input[disabled] ~ label.e-label-top.e-float-text,
+  .e-float-input input label.e-float-text.e-label-top,
+  .e-float-input.e-control-wrapper input ~ label.e-label-top.e-float-text,
+  .e-float-input.e-control-wrapper input[readonly] ~ label.e-label-top.e-float-text,
+  .e-float-input.e-control-wrapper input[disabled] ~ label.e-label-top.e-float-text,
+  .e-float-input.e-control-wrapper input label.e-float-text.e-label-top {
+    @if ($input-skin-name == 'bootstrap5' or $input-skin-name == 'bootstrap5.3') {
+      transform: translate3d(-10px, -36px, 0) scale(1) !important; /* stylelint-disable-line declaration-no-important */
+    }
+  }
+
   .e-float-input.e-small input:focus ~ label.e-float-text,
   .e-float-input.e-small input:valid ~ label.e-float-text,
   .e-float-input.e-small input ~ label.e-label-top.e-float-text,
@@ -828,6 +840,27 @@
       font-weight: 600;
       padding-right: $input-zero-padding-margin;
       transform: translate3d(-10px, -38px, 0) scale(1);
+    }
+  }
+
+  .e-float-input.e-small input ~ label.e-label-top.e-float-text,
+  .e-float-input.e-small input[readonly] ~ label.e-label-top.e-float-text,
+  .e-float-input.e-small input[disabled] ~ label.e-label-top.e-float-text,
+  .e-float-input.e-small input label.e-float-text.e-label-top,
+  .e-small .e-float-input input ~ label.e-label-top.e-float-text,
+  .e-small .e-float-input input[readonly] ~ label.e-label-top.e-float-text,
+  .e-small .e-float-input input[disabled] ~ label.e-label-top.e-float-text,
+  .e-small .e-float-input input label.e-float-text.e-label-top,
+  .e-float-input.e-control-wrapper.e-small input ~ label.e-label-top.e-float-text,
+  .e-float-input.e-control-wrapper.e-small input[readonly] ~ label.e-label-top.e-float-text,
+  .e-float-input.e-control-wrapper.e-small input[disabled] ~ label.e-label-top.e-float-text,
+  .e-float-input.e-control-wrapper.e-small input label.e-float-text.e-label-top,
+  .e-small .e-float-input.e-control-wrapper input ~ label.e-label-top.e-float-text,
+  .e-small .e-float-input.e-control-wrapper input[readonly] ~ label.e-label-top.e-float-text,
+  .e-small .e-float-input.e-control-wrapper input[disabled] ~ label.e-label-top.e-float-text,
+  .e-small .e-float-input.e-control-wrapper input label.e-float-text.e-label-top {
+    @if ($input-skin-name == 'bootstrap5' or $input-skin-name == 'bootstrap5.3') {
+      transform: translate3d(-10px, -36px, 0) scale(1) !important; /* stylelint-disable-line declaration-no-important */
     }
   }
 

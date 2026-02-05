@@ -1,5 +1,4 @@
 @use 'ej2-base/styles/common/mixin' as *;
-@use './theme-variables' as *;
 @include export-module('textbox-bigger') {
 
   .e-bigger .e-content-placeholder.e-textbox.e-placeholder-textbox,

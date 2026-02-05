@@ -380,14 +380,14 @@ export class PopupUploader {
             if (this.parent.insertImageSettings.resize) {
                 this.parent.notify(events.resizeStart, {
                     event: (dragEvent as MouseEvent) as PointerEvent,
-                    target: mediaElement
+                    element: mediaElement
                 }); }
         } else if (args.type === 'Videos') {
             this.parent.notify(events.insertCompleted, args);
             setTimeout(() => {
                 this.parent.notify(events.resizeStart, {
                     event: (dragEvent as MouseEvent) as PointerEvent,
-                    target: mediaElement as HTMLVideoElement
+                    element: mediaElement as HTMLVideoElement
                 });
             }, 100);
         } else if (args.type === 'Audios') {

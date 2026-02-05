@@ -1,5 +1,5 @@
 import { TreeGrid } from '../base/treegrid';
-import { Grid, InfiniteScroll as GridInfiniteScroll, ActionEventArgs } from '@syncfusion/ej2-grids';
+import { Grid, InfiniteScroll as GridInfiniteScroll, ActionEventArgs, getRowIndexFromElement, NotifyArgs } from '@syncfusion/ej2-grids';
 import { InfiniteScrollArgs, Column, Row, RowRenderer, ServiceLocator, resetRowIndex } from '@syncfusion/ej2-grids';
 import { getValue, isNullOrUndefined, remove } from '@syncfusion/ej2-base';
 import * as events from '../base/constant';
@@ -15,6 +15,10 @@ import { findChildrenRecords } from '../utils';
 export class InfiniteScroll {
     private parent: TreeGrid;
     private visualData: ITreeData[];
+    private maxPage: number;
+    private treeAction: string;
+    private collapsedData: ITreeData;
+    private dataBoundFunction: Function;
 
     /**
      * Constructor for VirtualScroll module
@@ -47,6 +51,10 @@ export class InfiniteScroll {
         this.parent.grid.on('infinite-edit-handler', this.infiniteEditHandler, this);
         this.parent.grid.on('infinite-crud-cancel', this.createRows, this);
         this.parent.grid.on('content-ready', this.contentready, this);
+        this.parent.on(events.collapseActionComplete, this.collapseActionComplete, this);
+        this.parent.grid.on('data-ready', this.onDataReady, this);
+        this.dataBoundFunction = this.dataBound.bind(this);
+        this.parent.addEventListener(events.dataBound, this.dataBoundFunction);
     }
     /**
      * @hidden
@@ -60,6 +68,55 @@ export class InfiniteScroll {
         this.parent.off(events.pagingActions, this.infinitePageAction);
         this.parent.grid.off('infinite-crud-cancel', this.createRows);
         this.parent.grid.off('content-ready', this.contentready);
+        this.parent.off(events.collapseActionComplete, this.collapseActionComplete);
+        this.parent.grid.off('data-ready', this.onDataReady);
+        this.parent.removeEventListener(events.dataBound, this.dataBoundFunction);
+    }
+
+    private dataBound(): void {
+        if (this.treeAction === 'collapse') {
+            this.treeAction = 'refresh';
+            this.makeCollapseRequest();
+        } else if (this.treeAction === 'refresh') {
+            this.treeAction = null;
+        }
+    }
+    private onDataReady(e: NotifyArgs): void {
+        if (!isNullOrUndefined(e.count) && e.requestType !== 'infiniteScroll') {
+            this.maxPage = Math.ceil(e.count / this.parent.pageSettings.pageSize);
+        }
+    }
+
+    private collapseActionComplete(args: { isCollapse: boolean, data: ITreeData, row: HTMLTableRowElement }): void {
+        if (!this.parent.infiniteScrollSettings.enableCache && args.isCollapse) {
+            const contentBounds: DOMRect | ClientRect = this.parent.getContent().firstElementChild.getBoundingClientRect();
+            const tableBounds: DOMRect | ClientRect = this.parent.grid.contentModule.getTable().getBoundingClientRect();
+            if (Math.round(tableBounds.bottom - this.parent.grid.getRowHeight()) <= Math.round(contentBounds.bottom)) {
+                this.treeAction = 'collapse';
+                this.collapsedData = args.data;
+                this.makeCollapseRequest(args);
+            }
+        }
+    }
+
+    private makeCollapseRequest(args?: any): void {
+        const rows: Element[] = this.parent.getRows();
+        const index: number = getRowIndexFromElement(rows[rows.length - 1]);
+        const previousPage: number = this.parent.grid.pageSettings.currentPage;
+        const nextPage: number = Math.ceil(index / this.parent.grid.pageSettings.pageSize) + 1;
+        if ((previousPage >= this.maxPage) || (nextPage > this.maxPage)) {
+            return;
+        }
+        this.parent.grid.pageSettings.currentPage = nextPage;
+        this.parent['isInfiniteCollapse'] = true;
+        const scrollArg: InfiniteScrollArgs = {
+            requestType: 'infiniteScroll',
+            currentPage: this.parent.grid.pageSettings.currentPage,
+            prevPage: previousPage,
+            startIndex: index + 1,
+            direction: 'down'
+        };
+        this.parent.grid.notify('model-changed', scrollArg);
     }
 
     /**
@@ -151,18 +208,46 @@ export class InfiniteScroll {
                 if (!isCache && actionArgs.requestType === 'delete') {
                     const skip: number = lastIndex - (<Object[]>actionArgs.data).length + 1;
                     const take: number = (<Object[]>actionArgs.data).length;
-                    query = query.skip(skip).take(take);
+                    if (skip < 0) {
+                        query = query.take(take);
+                    }
+                    else {
+                        query = query.skip(skip).take(take);
+                    }
                 } else if (isCache && actionArgs.requestType === 'delete' ||
-          (actionArgs.requestType === 'save' && actionArgs.action === 'add')) {
+                    (actionArgs.requestType === 'save' && actionArgs.action === 'add')) {
                     query = query.skip(firstIndex);
                     query = query.take(this.parent.infiniteScrollSettings.initialBlocks * this.parent.pageSettings.pageSize);
                 } else {
-                    query = query.page(current, size);
+                    if (this.treeAction !== 'collapse' && this.treeAction !== 'refresh') {
+                        query = query.page(current, size);
+                    }
                 }
             } else {
                 query = query.page(current, size);
             }
             dm.dataSource.json = visualData;
+            if (this.treeAction === 'collapse') {
+                const rows: HTMLTableRowElement[] = this.parent.getRows();
+                const skip: number = getRowIndexFromElement(rows[rows.length - 1]) + 1;
+                query = query.skip(skip);
+                const renderedChildDataCount: number = this.parent.grid.getRowsObject().filter((record: any) => {
+                    return record.data.parentUniqueID === this.collapsedData.uniqueID;
+                }).length;
+                const remainingChildDataCount: number = this.collapsedData.childRecords.length - renderedChildDataCount;
+                if (remainingChildDataCount > 0) {
+                    query = query.take(Math.max(remainingChildDataCount, 0));
+                }
+                else {
+                    query = query.take(this.parent.pageSettings.pageSize);
+                }
+            }
+            else if (this.treeAction === 'refresh') {
+                const rows: HTMLTableRowElement[] = this.parent.getRows();
+                const skip: number = getRowIndexFromElement(rows[rows.length - 1]) + 1;
+                query = query.skip(skip);
+                query = query.take(this.parent.infiniteScrollSettings.initialBlocks * this.parent.pageSettings.pageSize);
+            }
             if (!isCache && !isNullOrUndefined(actionArgs) && actionArgs.requestType === 'save' && actionArgs.action === 'add') {
                 pageingDetails.result = [actionArgs.data];
             } else {
@@ -317,4 +402,3 @@ export class InfiniteScroll {
         this.removeEventListener();
     }
 }
-

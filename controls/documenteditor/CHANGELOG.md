@@ -2,13 +2,34 @@
 
 ## [Unreleased]
 
+## 32.2.3 (2026-02-05)
+
+### DocumentEditor
+
+#### Bug Fixes
+
+`#I772957` - Resolved an issue where bookmarks were removed when selecting and inserting text using double tap.
+`#I789749` - Fixed improper bookmark rendering when inserted after a paragraph.
+`#I790909` - Prevented duplicate content when pasting with the grouping undo feature enabled.
+`#I801740` - Fixed a script error that occurred when downloading the document as a DOCX file.
+`#I790276` - Resolved a script error that occurred after deleting a table column and the entire table.
+`#I795506` - Fixed an issue where endnotes were not preserved after performing an undo action in the Document Editor.
+
 ## 32.1.25 (2026-01-27)
 
 ### DocumentEditor
 
 #### Bug Fixes
 
-`#798716` - Resolved the bookmark highlight color issue.
+`#I794700` - Fixed an issue where spell-check wavy lines were removed after applying section formats.
+`#I795541` - Resolved a script error that occurred while typing text after using Find.
+`#I800112` - Fixed an issue where replacing a spell-check suggestion deleted an adjacent endnote.
+`#I796382` - Resolved text insertion issues in restricted editing mode after deleting a content-control placeholder.
+`#I778405` - Fixed an issue where continue numbering was not applied for level-override lists.
+`#I785665` - Resolved a script error that occurred after deleting TOC with backward selection and pressing Backspace.
+`#I798716` - Fixed incorrect highlight-color behaviour during text insertion at a highlighted bookmark.
+`#I790856` - Corrected paste-option icon position mismatch between MS Word and Document Editor.
+`#I757783` - Fixed custom context-menu height issue.
 
 ## 32.1.24 (2026-01-20)
 

@@ -935,6 +935,7 @@ export class MultiColumnComboBox extends Component<HTMLElement> implements INoti
     private isCustomFilter: boolean;
     private customFilterQuery: Query;
     private typedString: string;
+    private liveRegion: HTMLElement;
 
     /**
      * *Constructor for creating the component
@@ -969,6 +970,31 @@ export class MultiColumnComboBox extends Component<HTMLElement> implements INoti
         };
         this.matchedRowEle = this.matchedContent = this.exactMatchedContent = null;
         this.persistData();
+        this.createLiveRegion();
+    }
+
+    private createLiveRegion(): void {
+        this.liveRegion = this.createElement('div', {
+            attrs: {
+                id: this.element.id + '_live',
+                'aria-live': 'polite',
+                'aria-atomic': 'true',
+                role: 'status'
+            },
+            styles: `
+                width: 0;
+                height: 0;
+                overflow: hidden;
+            `
+        });
+        document.body.appendChild(this.liveRegion);
+        this.liveRegion.textContent = '';
+    }
+
+    private announcePosition(index: number, total: number): void {
+        if (!this.isPopupOpen) { return; }
+        const message: string = `Item ${index + 1} of ${total}`;
+        this.liveRegion.textContent = message;
     }
 
     protected getDirective(): string {
@@ -1803,6 +1829,9 @@ export class MultiColumnComboBox extends Component<HTMLElement> implements INoti
                 this.setHiddenValue();
                 if (!isKeyNav || (isKeyNav && isUpdateVal)) { this.hidePopup(e as KeyboardEventArgs); }
             }
+            if (this.gridObj) {
+                this.announcePosition(this.gridObj.selectedRowIndex, this.gridObj.getRows().length);
+            }
         });
     }
 
@@ -2249,6 +2278,12 @@ export class MultiColumnComboBox extends Component<HTMLElement> implements INoti
                     else if (firstRow) { this.inputEle.setAttribute('aria-activedescendant', firstRow.getAttribute('data-uid')); }
                 }
                 this.popupObj.show(new Animation(eventArgs.animation), this.popupEle.firstElementChild as HTMLElement);
+                this.liveRegion.textContent = '';
+                setTimeout(() => {
+                    if (this.gridObj) {
+                        this.announcePosition(this.gridObj.selectedRowIndex, this.gridObj.getRows().length);
+                    }
+                }, 300);
             }
         });
     }
@@ -2381,6 +2416,10 @@ export class MultiColumnComboBox extends Component<HTMLElement> implements INoti
         });
         detach(this.inputWrapper);
         detach(this.popupDiv);
+        if (this.liveRegion) {
+            detach(this.liveRegion);
+            this.liveRegion = null;
+        }
         this.inputEle = null;
         this.previousItemElement = null;
         this.inputWrapper.innerHTML = '';

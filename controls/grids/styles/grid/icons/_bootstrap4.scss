@@ -64,9 +64,12 @@
     .e-columnchooserdiv::before,
     .e-excl-filter-icon::before,
     .e-icon-filter::before,
-    .e-icon-filter.e-filtered::before,
     .e-resfilter-icon::before {
       content: '\e714';
+    }
+
+    .e-icon-filter.e-filtered::before {
+      content: '\e775';
     }
 
     .e-ressort-icon::before {

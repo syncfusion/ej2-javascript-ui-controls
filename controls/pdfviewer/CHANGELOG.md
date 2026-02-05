@@ -2,6 +2,15 @@
 
 ## [Unreleased]
 
+## 32.2.3 (2026-02-05)
+
+### PDF Viewer
+
+#### Bug Fixes
+
+- `#I800598` - Resolved an issue where the text selection position was not proper in the customer provided PDF document.
+- `#I802146` - Resolved an issue where the selected annotation did not appear in the viewport at higher zoom levels in the customer provided PDF document.
+
 ## 32.1.25 (2026-01-27)
 
 ### PDF Viewer

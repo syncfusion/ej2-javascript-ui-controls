@@ -6537,6 +6537,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
      *
      * @param {Object | DataManager | DataResult} dataSource -  Assign the new datasource.
      * @param {Column[] | string[] | ColumnModel[]} columns - Defines columns.
+     * @param {Object} properties - Additional grid properties to apply along with the new data source and columns.
      * @returns {void}
      *
      *
@@ -6561,7 +6562,8 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
      * ```
      *
      */
-    public changeDataSource(dataSource?: Object | DataManager | DataResult, columns?: Column[] | string[] | ColumnModel[]): void {
+    public changeDataSource(dataSource?: Object | DataManager | DataResult, columns?: Column[] | string[] | ColumnModel[],
+                            properties?: Object): void {
         this.isChangeDataSourceCall = true;
         this.setProperties({ sortSettings: { columns: [] } }, true);
         this.setProperties({ filterSettings: { columns: [] } }, true);
@@ -6577,6 +6579,13 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
                 this.setProperties({ columns: [] }, true);
             }
             this.setProperties({ dataSource: dataSource }, true);
+        }
+        if (properties) {
+            const keysToRemove: string[] = ['dataSource', 'columns'];
+            for (const key of keysToRemove) {
+                delete properties[`${key}`];
+            }
+            this.setProperties(properties, true);
         }
         this.freezeRefresh();
         this.isChangeDataSourceCall = false;

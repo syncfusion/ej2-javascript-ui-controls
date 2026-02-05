@@ -1,4 +1,4 @@
-import { getRangeIndexes, NumberFormatType, updateCell, applyCellFormat, CellFormatArgs, isReadOnly, isImported, getSwapRange, getGcd } from '../common/index';
+import { getRangeIndexes, NumberFormatType, updateCell, applyCellFormat, CellFormatArgs, isReadOnly, isImported, getSwapRange, getGcd, workbookFormulaOperation } from '../common/index';
 import { CellModel, SheetModel, getCell, getSheet, setCell, getSheetIndex, Workbook, getColorCode, getCustomColors, getRow, RowModel, isHiddenRow } from '../base/index';
 import { Internationalization, getNumberDependable, getNumericObject, isNullOrUndefined, IntlBase } from '@syncfusion/ej2-base';
 import { cldrData, defaultCurrencyCode } from '@syncfusion/ej2-base';
@@ -973,6 +973,19 @@ export class WorkbookNumberFormat {
         return custFormat;
     }
 
+    private excelLikeRounding(cellVal: string): string {
+        const val: string = cellVal.toString();
+        if (val.length > 15) {
+            const valArr: string[] = val.split('.');
+            if (valArr[1] && valArr[0].length <= 11) {
+                const num: number = Number(val);
+                const trimmed: number = Number(num.toPrecision(15)); // emulate Excel's stored double precision
+                return (Math.round(trimmed * 100) / 100).toString();
+            }
+        }
+        return cellVal;
+    }
+
     private processFormats(
         args: NumberFormatArgs, fResult: string, isRightAlign: boolean, cell: CellModel, intl: Internationalization,
         sheet: SheetModel): { fResult: string, rightAlign: boolean } {
@@ -1000,6 +1013,9 @@ export class WorkbookNumberFormat {
                                                     args.curSymbol, true, true);
                 if (numArgs.isNumber) {
                     cell.value = args.value = numArgs.value;
+                    if (args.cell && args.cell.formula) {
+                        args.value = this.excelLikeRounding(args.value);
+                    }
                     fResult = this.applyNumberFormat(args, intl);
                     isRightAlign = true;
                 }

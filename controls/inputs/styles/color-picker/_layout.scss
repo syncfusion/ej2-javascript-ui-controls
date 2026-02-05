@@ -1,5 +1,4 @@
 @use 'ej2-base/styles/common/mixin' as *;
-@use './theme-variables' as *;
 @mixin btn-icon-layout {
   @if $skin-name == 'bootstrap5' or $skin-name == 'bootstrap5.3' {
     background-color: $cpicker-tile-active-border-color;

@@ -1,6 +1,5 @@
 @use 'sass:color';
 @use 'ej2-base/styles/common/mixin' as *;
-@use './theme-variables' as *;
 
 @mixin position($position, $top, $left) {
   position: $position;

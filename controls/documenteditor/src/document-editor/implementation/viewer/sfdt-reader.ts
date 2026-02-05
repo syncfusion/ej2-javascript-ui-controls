@@ -4143,6 +4143,8 @@ export class SfdtReader {
                 return "CurvedConnector";
             case 136:
                 return "RectangularCallout";
+            case 137:
+                return 'CloudCallout';
             default:
                 return autoShapeType as AutoShapeType;
         }

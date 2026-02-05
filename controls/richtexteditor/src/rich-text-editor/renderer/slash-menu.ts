@@ -188,18 +188,25 @@ export class SlashMenu {
                         this.parent.executeCommand('formatBlock', itemModel.subCommand);
                         break;
                     }
+                    if (selectArgs.originalEvent && selectArgs.originalEvent.type === 'keydown') {
+                        this.closeOpenPopup();
+                    }
                     this.parent.notify(events.toolbarRefresh, {});
                 } else {
-                    if (this.parent.inputElement.classList.contains('e-mention')) {
-                        const slashMenuPopup: HTMLElement = this.parent.inputElement.ownerDocument.getElementById(this.parent.inputElement.id + '_slash_menu_popup');
-                        const isSlashMenuPopupOpen: boolean = slashMenuPopup && slashMenuPopup.classList.contains('e-popup-open');
-                        if (isSlashMenuPopupOpen) {
-                            this.mention.hidePopup();
-                        }
-                    }
+                    this.closeOpenPopup();
                 }
             }
         });
+    }
+
+    private closeOpenPopup(): void {
+        if (this.parent.inputElement.classList.contains('e-mention')) {
+            const slashMenuPopup: HTMLElement = this.parent.inputElement.ownerDocument.getElementById(this.parent.inputElement.id + '_slash_menu_popup');
+            const isSlashMenuPopupOpen: boolean = slashMenuPopup && slashMenuPopup.classList.contains('e-popup-open');
+            if (isSlashMenuPopupOpen) {
+                this.mention.hidePopup();
+            }
+        }
     }
 
     private getItems(): { [key: string]: Object; }[] {

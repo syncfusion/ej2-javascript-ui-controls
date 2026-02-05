@@ -167,6 +167,7 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
     private componentRefresh: Function = Component.prototype.refresh;
     private isComponentRefresh: Boolean = false;
     private isVirtualExpandCollapse: boolean = false;
+    private isInfiniteCollapse: boolean = false;
     private isExcel: boolean;
     /** @hidden */
     public initialRender: boolean;
@@ -2324,11 +2325,11 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
         const checkboxColumn: any = this.columnModel.filter((col: any) => col.showCheckbox);
         const treeColumn: any = this.columns[this.treeColumnIndex];
         if (checkboxColumn.length !== 0) {
-            if (checkboxColumn !== treeColumn) {
-                failureCases.push('ShowCheckbox column should not be defined other than the tree column.');
-            }
             if (checkboxColumn.length > 1) {
                 failureCases.push('Only one column can have the ShowCheckbox option enabled.');
+            }
+            else if (checkboxColumn[0].field !== treeColumn.field) {
+                failureCases.push('ShowCheckbox column should not be defined other than the tree column.');
             }
         }
         let alignColumn: any;
@@ -2964,6 +2965,12 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
             }
             if (args.action === 'clearFilter' && this.enableCollapseAll) {
                 this.collapseAll();
+            }
+            if (args.action === 'clearFilter' && this.enableInfiniteScrolling) {
+                this.expandAll();
+            }
+            if (args.requestType === 'sorting' && this.enableInfiniteScrolling) {
+                this.expandAll();
             }
             if (this.action === 'indenting' || this.action === 'outdenting') {
                 this.action = this.action === 'indenting' ? 'indented' : 'outdented';
@@ -4810,13 +4817,6 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
             else if (!this.isCollapseAll) {
                 this.trigger(events.collapsed, collapseArgs);
             }
-            if (this.enableInfiniteScrolling) {
-                const scrollHeight: number = this.grid.getContent().firstElementChild.scrollHeight;
-                const scrollTop: number = this.grid.getContent().firstElementChild.scrollTop;
-                if ((scrollHeight - scrollTop) < this.grid.getRowHeight() + +this.height) {
-                    this.grid.getContent().firstElementChild.scrollBy(0, this.grid.getRowHeight());
-                }
-            }
         }
     }
 
@@ -5191,10 +5191,13 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
                 if ((!isCountRequired(this) || childRecords.length) || action === 'collapse') {
                     this.localExpand(action, row, record);
                 }
+                if (this.enableInfiniteScrolling && action === 'collapse' && !this.isCollapseAll) {
+                    this.notify(events.collapseActionComplete, { isCollapse: true, data: record, row: row });
+                }
                 const lastrowIdx: number = this.getVisibleRecords()[this.getVisibleRecords().length - 1]['index'];
                 const lastRow: Element = this.getRowByIndex(lastrowIdx);
                 const borderElement: Element = lastRow ? lastRow.nextElementSibling ? lastRow.nextElementSibling.classList.contains('e-detailrow') ? lastRow.nextElementSibling : lastRow : lastRow : null;
-                if (this.grid.getContentTable().clientHeight <= this.grid.getContent().clientHeight && !isNullOrUndefined(borderElement as HTMLTableRowElement) && !(borderElement as HTMLTableRowElement).cells[0].classList.contains('e-lastrowcell')) {
+                if (!this.isInfiniteCollapse && this.grid.getContentTable().clientHeight <= this.grid.getContent().clientHeight && !isNullOrUndefined(borderElement as HTMLTableRowElement) && !(borderElement as HTMLTableRowElement).cells[0].classList.contains('e-lastrowcell')) {
                     this.lastRowBorder(borderElement as HTMLTableRowElement, true);
                 }
             }
@@ -5209,7 +5212,7 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
                 targetEle.closest('.e-treerowcell').classList.remove('e-cellselectionbackground');
                 targetEle.closest('.e-treerowcell').removeAttribute('aria-selected');
             }
-            if (this.isPixelHeight() && !row.cells[0].classList.contains('e-lastrowcell') ) {
+            if (this.isPixelHeight() && !row.cells[0].classList.contains('e-lastrowcell') && !this.isInfiniteCollapse) {
                 let totalRows: HTMLTableRowElement[] = this.getRows();
                 const rows: HTMLCollection = (this.getContentTable() as HTMLTableElement).rows;
                 totalRows = [].slice.call(rows);
@@ -5226,6 +5229,7 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
             this.notify('rowExpandCollapse', { detailrows: detailrows, action: displayAction, record: record, row: row });
             this.updateAltRow(gridRows);
         }
+        this.isInfiniteCollapse = false;
     }
     private updateChildOnDemand(expandingArgs: DataStateChangeEventArgs) : void {
         if (expandingArgs.requestType === 'collapse' && isCountRequired(this)) {
@@ -5364,9 +5368,15 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
     private localExpand(action: string, row: HTMLTableRowElement, record?: ITreeData) : void {
         let rows: HTMLTableRowElement[];
         const detailRow: HTMLTableRowElement = row.nextElementSibling ? row.nextElementSibling.classList.contains('e-detailrow') ? row.nextElementSibling as HTMLTableRowElement : null : null;
-        const childRecords: ITreeData[] = this.grid.currentViewData.filter((e: ITreeData) => {
-            return e.parentUniqueID === record.uniqueID ;
-        });
+        let childRecords: ITreeData[];
+        if (this.enableInfiniteScrolling) {
+            childRecords = this.grid.getRowsObject().filter((e: any) => { return e.data.parentUniqueID === record.uniqueID; });
+        }
+        else {
+            childRecords = this.grid.currentViewData.filter((e: ITreeData) => {
+                return e.parentUniqueID === record.uniqueID;
+            });
+        }
         if (this.isPixelHeight() && row.cells[0].classList.contains('e-lastrowcell')) {
             this.lastRowBorder(row, false);
         }
@@ -5411,9 +5421,9 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
                     ));
         }
         const gridRowsObject: Row<GridColumn>[] = this.grid.getRowsObject();
-        const currentViewData: Object[] = this.grid.currentViewData;
-        const currentRecord: ITreeData[] = currentViewData.filter((e: ITreeData) => {
-            return e.uniqueID === record.uniqueID;
+        const currentViewData: any = this.enableInfiniteScrolling ? this.grid.getRowsObject() : this.grid.currentViewData;
+        const currentRecord: ITreeData[] = currentViewData.filter((e: any) => {
+            return this.enableInfiniteScrolling ? e.data.uniqueID === record.uniqueID : e.uniqueID === record.uniqueID;
         });
         const currentIndex: number = currentViewData.indexOf(currentRecord[0]);
         if (!isNullOrUndefined(gridRowsObject[parseInt(currentIndex.toString(), 10)].visible) &&

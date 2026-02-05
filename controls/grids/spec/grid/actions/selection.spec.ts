@@ -7890,4 +7890,41 @@ describe('EJ2-985690: Partial Selection module', () => {
             gridObj = null;
         });
     });
+
+    describe('EJ2-1005194 - GetSelectedRecords returns only current page in rowSelected event when using isRowSelectable', () => {
+        let gridObj: Grid;
+        beforeAll((done: Function) => {
+            gridObj = createGrid(
+                {
+                    dataSource: partialData,
+                    selectionSettings: { persistSelection: true, type: 'Multiple' },
+                    allowPaging: true,
+                    pageSettings: { pageSize: 5},
+                    isRowSelectable: function (data: any) {
+                        return data.Freight > 20;
+                    },
+                    columns: [
+                        { type: 'checkbox', width: 50},
+                        { field: 'OrderID', isPrimaryKey: true, headerText: 'Order ID' },
+                        { field: 'CustomerID', headerText: 'CustomerID' },
+                        { field: 'EmployeeID', headerText: 'Employee ID' },
+                        { field: "ShipCity", headerText: "Ship City", width: 250 },
+                    ],
+                }, done);
+        });
+        it('get the selected records', (done: Function) => {
+            let rowSelected = (e: any) => {
+                expect(gridObj.getSelectedRecords().length).toBe(11);
+                gridObj.rowSelected = null;
+                done();
+            };
+            gridObj.rowSelected = rowSelected;
+           (gridObj.element.querySelector('.e-checkselectall') as HTMLElement).click();
+        });
+
+        afterAll(() => {
+            destroy(gridObj);
+            gridObj = null;
+        });
+    });
 });

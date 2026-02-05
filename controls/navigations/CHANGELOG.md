@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 32.2.3 (2026-02-05)
+
+### TreeView
+
+#### Bug Fixes
+
+- `#I803798` - Resolved an issue where TreeView value selection failed and console error occurred when node ID contained space or hash (#) characters.
+
 ## 32.1.19 (2025-12-16)
 
 ### Tab

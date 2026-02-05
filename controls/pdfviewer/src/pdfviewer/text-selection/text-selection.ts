@@ -1577,7 +1577,7 @@ export class TextSelection {
      */
     public applySpanForSelection(): void {
         const selection: Selection = window.getSelection();
-        if (selection.anchorNode === selection.focusNode && selection.anchorOffset === selection.focusOffset) {
+        if (selection.anchorNode === selection.focusNode && selection.anchorOffset === selection.focusOffset && !selection.isCollapsed) {
             selection.removeAllRanges();
         }
         if (selection.anchorNode !== null &&

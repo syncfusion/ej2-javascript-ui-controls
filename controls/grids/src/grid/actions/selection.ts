@@ -3227,7 +3227,8 @@ export class Selection implements IAction {
                     || (!isNullOrUndefined(this.parent.dataSource) && (<{result: object[]}>this.parent.dataSource).result))
                      && !this.isPartialSelection ?
                     this.parent.groupSettings.columns.length ? (<{ records?: Object[] }>this.getData()).records.slice() :
-                        this.getData().slice() : this.persistSelectedData;
+                        this.getData().slice() : this.isPartialSelection ? this.parent.partialSelectedRecords.slice() :
+                        this.persistSelectedData;
                 if (nonFilteredSelectedData.length > 0) {
                     for (let i: number = 0; i < nonFilteredSelectedData.length; i++) {
                         this.persistSelectedData.push(nonFilteredSelectedData[parseInt(i.toString(), 10)]);

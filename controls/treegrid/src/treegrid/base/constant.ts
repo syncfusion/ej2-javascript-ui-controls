@@ -156,3 +156,5 @@ export const ariaColIndex: string = 'aria-colindex';
 export const ariaRowIndex: string = 'aria-rowindex';
 /** @hidden */
 export const actionFailure: string = 'actionFailure';
+/** @hidden */
+export const collapseActionComplete: string = 'collapseActionComplete';

@@ -4698,7 +4698,7 @@ export class MultiSelect extends DropDownBase implements IInput {
         this.unwireListEvents();
         this.wireListEvents();
     }
-    private initialValueUpdate(listItems?: any, isInitialVirtualData?: boolean): void {
+    private initialValueUpdate(listItems?: any, isInitialVirtualData?: boolean, isInitialRender?: boolean): void {
         if (this.list) {
             let text: string;
             let element: HTMLElement;
@@ -4707,7 +4707,7 @@ export class MultiSelect extends DropDownBase implements IInput {
                 this.chipCollectionWrapper.innerHTML = '';
             }
             this.removeListSelection();
-
+            const formElement: HTMLFormElement = closest(this.inputElement, 'form') as HTMLFormElement;
             if (!isNullOrUndefined(this.value)) {
                 for (let index: number = 0; !isNullOrUndefined(this.value[index as number]); index++) {
                     value = this.allowObjectBinding ?
@@ -4758,8 +4758,8 @@ export class MultiSelect extends DropDownBase implements IInput {
                             (
                                 (!(this.dataSource instanceof DataManager)) ||
                                 (this.dataSource instanceof DataManager && isInitialVirtualData)
-                            )
-                        ) {
+                            ) && (!this.isAngular || !isInitialRender ||
+                            (isNullOrUndefined(formElement) && listItems && listItems.length > 0))) {
                             this.value.splice(index, 1);
                             index -= 1;
                         }
@@ -6866,7 +6866,7 @@ export class MultiSelect extends DropDownBase implements IInput {
         this.viewPortInfo.startIndex = this.virtualItemStartIndex = 0;
         this.viewPortInfo.endIndex = this.virtualItemEndIndex = this.viewPortInfo.startIndex > 0 ?
             this.viewPortInfo.endIndex : this.itemCount;
-        this.checkInitialValue();
+        this.checkInitialValue(true);
         if (this.element.hasAttribute('data-val')) {
             this.element.setAttribute('data-val', 'false');
         }
@@ -7045,7 +7045,7 @@ export class MultiSelect extends DropDownBase implements IInput {
         }
     }
 
-    private checkInitialValue(): void {
+    private checkInitialValue(isInitialRender?: boolean): void {
         if (this.fields.disabled) {
             this.removeDisabledItemsValue(this.value);
         }
@@ -7132,7 +7132,7 @@ export class MultiSelect extends DropDownBase implements IInput {
                 }
             }
             if (!(this.dataSource instanceof DataManager)) {
-                this.initialValueUpdate(listItems, true);
+                this.initialValueUpdate(listItems, true, isInitialRender);
                 this.initialUpdate();
             } else {
                 this.setInitialValue = () => {

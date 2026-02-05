@@ -2579,6 +2579,10 @@ export class TextMarkupAnnotation {
      * @returns {void}
      */
     public onTextMarkupAnnotationMouseUp(event: MouseEvent): void {
+        // 1004743 - Prevent users from selecting a highlight if another annotation is already selected on top of that highlight.
+        if (this.pdfViewer.selectedItems.annotations.length > 0) {
+            return;
+        }
         const pageNumber: number = this.pdfViewer.annotationModule.getEventPageNumber(event);
         if (!isNullOrUndefined(pageNumber) && !isNaN(pageNumber)) {
             const canvas: HTMLElement = this.pdfViewerBase.getElement('_annotationCanvas_' + pageNumber);

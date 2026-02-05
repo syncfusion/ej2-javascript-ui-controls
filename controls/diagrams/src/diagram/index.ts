@@ -114,3 +114,5 @@ export * from './load-utility/labelProperties';
 export * from './load-utility/modelProperties';
 export * from './load-utility/nodeProperties';
 export * from './load-utility/portProperties';
+
+export * from './load-utility/visio-import-export/visio-import-export';

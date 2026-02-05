@@ -110,11 +110,25 @@ export interface ListViewModel extends ComponentModel{
      * If `enable` set to true, the list items are enabled.
      * And, we can disable the component using this property by setting its value as false.
      *
+     * Remark: This property is deprecated after the Vol 4 2025 main release. Use `enabled` instead.
+     *
+     *
      * {% codeBlock src='listview/enable/index.md' %}{% endcodeBlock %}
      *
+     * @deprecated
      * @default true
      */
     enable?: boolean;
+
+    /**
+     * If `enabled` set to true, the list items are enabled.
+     * And, we can disable the component using this property by setting its value as false.
+     *
+     *
+     *
+     * @default true
+     */
+    enabled?: boolean;
 
     /**
      * The `dataSource` provides the data to render the ListView component which is mapped with the fields of ListView.

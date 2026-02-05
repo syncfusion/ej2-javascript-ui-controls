@@ -730,7 +730,8 @@ export class Filter implements IAction {
     private refreshFilterSettings(): void {
         if (this.filterSettings.type === 'FilterBar') {
             for (let i: number = 0; i < this.filterSettings.columns.length; i++) {
-                this.column = this.parent.grabColumnByUidFromAllCols(this.filterSettings.columns[parseInt(i.toString(), 10)].uid);
+                this.column = this.parent.grabColumnByUidFromAllCols(this.filterSettings.columns[parseInt(i.toString(), 10)].uid) ||
+                    this.parent.getColumnByField(this.filterSettings.columns[parseInt(i.toString(), 10)].field);
                 let filterValue: string | number | Date | boolean | (string | number | boolean | Date)[] =
                     this.filterSettings.columns[parseInt(i.toString(), 10)].value;
                 filterValue = !isNullOrUndefined(filterValue) && filterValue.toString();

@@ -1,7 +1,7 @@
 import { Gantt } from './gantt';
 import { TreeGrid, ColumnModel } from '@syncfusion/ej2-treegrid';
 import { createElement, isNullOrUndefined, getValue, extend, EventHandler, deleteObject, remove, initializeCSPTemplate } from '@syncfusion/ej2-base';
-import { FilterEventArgs, SortEventArgs, FailureEventArgs, Grid, ColumnMenuItem, ColumnMenuItemModel, IFilterCreate, IFilterWrite } from '@syncfusion/ej2-grids';
+import { FilterEventArgs, SortEventArgs, FailureEventArgs, Grid, ColumnMenuItem, ColumnMenuItemModel, IFilterCreate, IFilterWrite, BeforeDataBoundArgs } from '@syncfusion/ej2-grids';
 import { setValue} from '@syncfusion/ej2-base';
 import { Deferred, Query} from '@syncfusion/ej2-data';
 import { TaskFieldsModel } from '../models/models';
@@ -215,7 +215,7 @@ export class GanttTreeGrid {
         }
     }
 
-    private beforeDataBound(args: object): void {
+    private beforeDataBound(args: BeforeDataBoundArgs): void {
         if (this.parent.enableHover) {
             const columnHeader: HTMLElement = this.treeGridElement.querySelector('.e-columnheader');
             columnHeader.classList.add('e-headercell-hover');
@@ -223,7 +223,7 @@ export class GanttTreeGrid {
         if (this.parent.filterModule && this.parent.treeGrid.filterModule) {
             this.parent.filterModule.filteredResult = this.parent.treeGrid.filterModule.filteredResult;
         }
-        const arg: { result: { updatedCollection: object[] } } = { result: args['result'] };
+        const arg: BeforeDataBoundArgs = { result: args['result'] };
         this.parent.trigger('beforeDataBound', arg);
         if (!isNullOrUndefined(this.parent.selectionModule) && this.parent.selectionSettings &&
             this.parent.selectionSettings.persistSelection && this.parent.selectionModule.getSelectedRowIndexes().length > 0 &&

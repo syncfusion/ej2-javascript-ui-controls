@@ -1,5 +1,4 @@
 @use 'ej2-base/styles/common/mixin' as *;
-@use './theme-variables' as *;
 @include export-module('speechtotext-theme') {
   // Speechtotext component styles
   .e-speech-to-text {

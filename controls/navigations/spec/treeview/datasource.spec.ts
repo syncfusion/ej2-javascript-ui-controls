@@ -57,6 +57,22 @@ export let hierarchicalData: any = [
     { id: 30, text: "Games" }
 ];
 
+export let hierarchicalDataWithIDHash: any = [
+    { id: "01 #test", text: "Artwork", iconCss: 'folder', imageUrl: 'base/spec/images/Shooting.png', tooltip: 'This is Artwork node', selected: true, navigateUrl: 'http://npmci.syncfusion.com/',
+        child: [
+            { id: "02", text: "Abstract",
+                child: [
+                    { id: "03", text: "2 Acrylic Mediums" },
+                    { id: "04", text: "Creative Acrylic" },
+                    { id: "05", text: "Modern Painting" },
+                    { id: "06", text: "Canvas Art" },
+                    { id: "07", text: "Black white" },
+                ]
+            }
+        ]
+    }
+];
+
 export const hierarchicalDataWithSelectable: { [key: string]: Object }[] = [
     {
         nodeId: '01', selectable: false, nodeText: 'Music', nodeIcon: 'folder', nodeImage: 'base/spec/images/Shooting.png', nodeTooltip: 'This is Music node', nodeSelected: 'true', nodeUrl: 'http://npmci.syncfusion.com/', nodeImage1: 'base/spec/images/Shooting.png',

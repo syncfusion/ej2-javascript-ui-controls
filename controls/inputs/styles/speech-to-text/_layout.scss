@@ -1,5 +1,4 @@
 @use 'ej2-base/styles/common/mixin' as *;
-@use './theme-variables' as *;
 @include export-module('speechtotext-layout') {
   .e-speech-to-text.e-btn {
     align-items: center;

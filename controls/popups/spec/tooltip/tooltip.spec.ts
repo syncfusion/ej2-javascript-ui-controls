@@ -2911,4 +2911,94 @@ describe('Tooltip Control', () => {
         });
         
     });
+    describe('Tooltip HTML Entity Content Test Cases', () => {
+        let tooltip: Tooltip;
+        beforeEach((): void => {
+            tooltip = undefined;
+            let ele: HTMLElement = createElement('div', { id: 'tstooltip', innerHTML: 'Show Tooltip' });
+            document.body.appendChild(ele);
+        });
+        afterEach((): void => {
+            if (tooltip) {
+                tooltip.destroy();
+            }
+            document.body.innerHTML = '';
+        });
+        it('enableHtmlParse false and enableHtmlSanitizer false with HTML entity &#36', () => {
+            debugger;
+            tooltip = new Tooltip({
+                content: 'Tooltip Content &#36',
+                enableHtmlParse: false,
+                enableHtmlSanitizer: false,
+                animation: { open: { effect: 'None', duration: 0, delay: 0 }, close: { effect: 'None', duration: 0, delay: 0 } }
+            }, '#tstooltip');
+            tooltip.open(document.getElementById('tstooltip'));
+            let element: HTMLElement = document.querySelector('.e-tooltip-wrap') as HTMLElement;
+            let contentElement: HTMLElement = element.querySelector('.e-tip-content') as HTMLElement;
+            // When both are false, content should be treated as plain text (not parsed as HTML)
+            // So &#36 should display as literal text "&#36", not as "$"
+            expect(contentElement.textContent).toEqual('Tooltip Content &#36');
+            tooltip.close();
+        });
+        it('enableHtmlParse true and enableHtmlSanitizer true with HTML entity &#36', () => {
+            tooltip = new Tooltip({
+                content: 'Tooltip Content &#36',
+                enableHtmlParse: true,
+                enableHtmlSanitizer: true,
+                animation: { open: { effect: 'None', duration: 0, delay: 0 }, close: { effect: 'None', duration: 0, delay: 0 } }
+            }, '#tstooltip');
+            tooltip.open(document.getElementById('tstooltip'));
+            let element: HTMLElement = document.querySelector('.e-tooltip-wrap') as HTMLElement;
+            let contentElement: HTMLElement = element.querySelector('.e-tip-content') as HTMLElement;
+            // When both are true, HTML parsing is enabled and sanitized
+            // &#36 entity should be converted to "$" (the dollar sign)
+            expect(contentElement.innerHTML).toContain('$');
+            tooltip.close();
+        });
+        it('enableHtmlParse false and enableHtmlSanitizer false with multiple HTML entities', () => {
+            tooltip = new Tooltip({
+                content: 'Price: &#36; Amount: &#60; Count: &#62;',
+                enableHtmlParse: false,
+                enableHtmlSanitizer: false,
+                animation: { open: { effect: 'None', duration: 0, delay: 0 }, close: { effect: 'None', duration: 0, delay: 0 } }
+            }, '#tstooltip');
+            tooltip.open(document.getElementById('tstooltip'));
+            let element: HTMLElement = document.querySelector('.e-tooltip-wrap') as HTMLElement;
+            let contentElement: HTMLElement = element.querySelector('.e-tip-content') as HTMLElement;
+            // All entities should be displayed as literal text
+            expect(contentElement.textContent).toEqual('Price: &#36; Amount: &#60; Count: &#62;');
+            tooltip.close();
+        });
+        it('enableHtmlParse false and enableHtmlSanitizer false with HTML tags and entities', () => {
+            tooltip = new Tooltip({
+                content: 'Text with <b>bold</b> and &#36 entity',
+                enableHtmlParse: false,
+                enableHtmlSanitizer: false,
+                animation: { open: { effect: 'None', duration: 0, delay: 0 }, close: { effect: 'None', duration: 0, delay: 0 } }
+            }, '#tstooltip');
+            tooltip.open(document.getElementById('tstooltip'));
+            let element: HTMLElement = document.querySelector('.e-tooltip-wrap') as HTMLElement;
+            let contentElement: HTMLElement = element.querySelector('.e-tip-content') as HTMLElement;
+            // Should display raw HTML and entities as text (not parsed)
+            expect(contentElement.textContent).toContain('<b>bold</b>');
+            expect(contentElement.textContent).toContain('&#36');
+            tooltip.close();
+        });
+        it('enableHtmlParse true and enableHtmlSanitizer true with HTML tags and entities', () => {
+            tooltip = new Tooltip({
+                content: 'Text with <b>bold</b> and &#36 entity',
+                enableHtmlParse: true,
+                enableHtmlSanitizer: true,
+                animation: { open: { effect: 'None', duration: 0, delay: 0 }, close: { effect: 'None', duration: 0, delay: 0 } }
+            }, '#tstooltip');
+            tooltip.open(document.getElementById('tstooltip'));
+            let element: HTMLElement = document.querySelector('.e-tooltip-wrap') as HTMLElement;
+            let contentElement: HTMLElement = element.querySelector('.e-tip-content') as HTMLElement;
+            // HTML tags should be parsed and entity should be converted
+            // But sanitizer might remove dangerous content
+            expect(contentElement.innerHTML).toContain('<b>bold</b>');
+            expect(contentElement.textContent).toContain('$');
+            tooltip.close();
+        });
+    });
 });

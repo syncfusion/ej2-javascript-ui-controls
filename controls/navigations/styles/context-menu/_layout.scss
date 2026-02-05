@@ -146,8 +146,8 @@
     @include rtl-li-size;
   }
 
-  .e-contextmenu-wrapper .e-menu-item,
-  .e-contextmenu-container .e-menu-item {
+  .e-contextmenu-wrapper .e-menu-item:not(.e-control),
+  .e-contextmenu-container .e-menu-item:not(.e-control) {
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;

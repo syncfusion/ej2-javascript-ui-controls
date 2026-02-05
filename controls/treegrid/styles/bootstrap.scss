@@ -14,5 +14,5 @@
 @use 'ej2-navigations/styles/context-menu/bootstrap-definition' as *;
 @use 'treegrid/bootstrap-definition' as *;
 @use 'treegrid/icons/bootstrap' as *;
-@use 'treegrid/all' as *;
-@use 'treegrid/bigger' as *;
+@use 'treegrid/all.bootstrap' as *;
+@use 'treegrid/bigger.bootstrap' as *;

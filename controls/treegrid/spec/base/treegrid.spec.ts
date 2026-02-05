@@ -5734,3 +5734,31 @@ describe('Bug 1001204: e-lastrowcell class getting added for more than one row w
         destroy(gridObj);
     });
 });
+
+describe('Bug 1006073: Unexpected failure logged even when showCheckbox and treeColumn are same', () => {
+    let gridObj: TreeGrid;
+    let actionFailedFunction: () => void = jasmine.createSpy('actionFailure');
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: sampleData,
+                childMapping: 'subtasks',
+                treeColumnIndex: 2,
+                frozenColumns: 1,
+                columns: [
+                { field: 'taskID', headerText: 'Task ID', textAlign: 'Right', width: 100},
+                { field: 'taskName', headerText: 'Task Name', width: 260 },
+                { field: 'startDate', headerText: 'Start Date', width: 150, showCheckbox: true },
+                ],
+                actionFailure: actionFailedFunction
+            },
+            done
+        );
+    });
+    it('actionFailure testing', () => {
+        expect(actionFailedFunction).not.toHaveBeenCalled();
+    });
+    afterAll(() => {
+        destroy(gridObj);
+    });
+});

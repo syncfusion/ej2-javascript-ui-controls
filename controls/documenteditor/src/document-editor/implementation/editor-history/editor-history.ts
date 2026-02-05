@@ -24,13 +24,19 @@ export class EditorHistory {
     private undoLimitIn: number;
     private redoLimitIn: number;
     //Fields
-    private undoStackIn: BaseHistoryInfo[] = [];
+    /**
+     * @private
+     */
+    public undoStackIn: BaseHistoryInfo[] = [];
     private redoStackIn: BaseHistoryInfo[] = [];
     /**
      * @private
      */
     public historyInfoStack: HistoryInfo[] = [];
-    private isUndoGroupingEnded: boolean = true;
+    /**
+     * @private
+     */
+    public isUndoGroupingEnded: boolean = true;
     private owner: DocumentEditor;
     /**
      * @private

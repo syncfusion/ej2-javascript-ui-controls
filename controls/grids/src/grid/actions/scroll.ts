@@ -577,7 +577,7 @@ export class Scroll implements IAction {
      * @hidden
      */
     public makeStickyHeader(): void {
-        if (this.parent.enableStickyHeader && this.parent.element && this.parent.getContent()) {
+        if (this.parent.enableStickyHeader && this.parent.element && this.parent.getContent() && this.parentElement) {
             const contentRect: ClientRect = this.parent.getContent().getClientRects()[0];
             if (contentRect) {
                 const windowScale: number = window.devicePixelRatio;

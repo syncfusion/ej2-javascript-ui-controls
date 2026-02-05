@@ -63,9 +63,12 @@
     }
 
     .e-icon-filter::before,
-    .e-icon-filter.e-filtered::before,
     .e-resfilter-icon::before {
       content: '\e946';
+    }
+
+    .e-icon-filter.e-filtered::before {
+      content: '\ebb2';
     }
 
     .e-ressort-icon::before {

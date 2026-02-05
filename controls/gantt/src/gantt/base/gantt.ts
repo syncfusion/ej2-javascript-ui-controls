@@ -41,7 +41,7 @@ import { ColumnMenuItemModel, ExcelQueryCellInfoEventArgs } from '@syncfusion/ej
 import { ExcelExportProperties, ExcelExportCompleteArgs, ExcelHeaderQueryCellInfoEventArgs } from '@syncfusion/ej2-grids';
 import { RowDD } from '../actions/rowdragdrop';
 import { Filter } from '../actions/filter';
-import { PageEventArgs, FilterEventArgs, SortEventArgs, ResizeArgs, ColumnDragEventArgs, getActualProperties } from '@syncfusion/ej2-grids';
+import { PageEventArgs, FilterEventArgs, SortEventArgs, ResizeArgs, ColumnDragEventArgs, getActualProperties, BeforeDataBoundArgs } from '@syncfusion/ej2-grids';
 import { RenderDayCellEventArgs } from '@syncfusion/ej2-calendars';
 import { ConnectorLine } from '../renderer/connector-line';
 import { ConnectorLineEdit } from '../actions/connector-line-edit';
@@ -1549,7 +1549,7 @@ export class Gantt extends Component<HTMLElement>
      * @event beforeDataBound
      */
     @Event()
-    public beforeDataBound: EmitType<Object>;
+    public beforeDataBound: EmitType<BeforeDataBoundArgs>;
 
     /**
      * Triggers when column resize starts.

@@ -7157,9 +7157,14 @@ export class Editor {
         let currentFormat: WParagraphFormat = start.paragraph.paragraphFormat;
         let copiedContent: any = this.copiedContent;
         let copiedTextContent: string = this.copiedTextContent;
-        if (this.editorHistory && this.editorHistory.canUndo()) {
+        if (this.editorHistory && this.editorHistory.canUndo() && this.editorHistory.isUndoGroupingEnded) {
             this.editorHistory.undo();
             this.editorHistory.redoStack.pop();
+        }
+        else if (!isNullOrUndefined(this.editorHistory) && !this.editorHistory.isUndoGroupingEnded && this.editorHistory.historyInfoStack.length > 0) {
+            this.editorHistory.undoStackIn = isNullOrUndefined(this.editorHistory.undoStackIn) ? [] : this.editorHistory.undoStackIn;
+            this.editorHistory.undoStackIn.push(this.editorHistory.historyInfoStack[this.editorHistory.historyInfoStack.length - 1].modifiedActions.pop());
+            this.editorHistory.undo();
         }
         this.copiedContent = copiedContent;
         this.copiedTextContent = copiedTextContent;
@@ -8996,6 +9001,7 @@ export class Editor {
         let selection: Selection = this.selection;
         let startPara: ParagraphWidget = this.selection.start.paragraph;
         let paraStart: boolean = this.selection.start.isAtParagraphStart;
+        let isUndoing: boolean = this.skipTracking();
         //Checking the selection is exist after para mark. Then updating the offset.
         if (this.selection.getLineLength(this.selection.start.currentWidget) + 1 === this.selection.start.offset) {
             this.selection.start.offset -= 1;
@@ -9101,6 +9107,23 @@ export class Editor {
             if (this.isPaste && !isNullOrUndefined(block.previousWidget) && block.previousWidget instanceof ParagraphWidget
                 && block instanceof ParagraphWidget && block.paragraphFormat.contextualSpacing && !isSelectionInsideTable) {
                 this.documentHelper.layout.reLayoutParagraph(block.previousWidget, 0, 0);
+            }
+            if (isUndoing && block instanceof ParagraphWidget) {
+                const footnotes: FootnoteElementBox[] = this.documentHelper.layout.getFootnoteElementsOfParagraph(block);
+                for (let i: number = 0; i < footnotes.length; i++) {
+                    let element: ElementBox = footnotes[i];
+                    if (element instanceof FootnoteElementBox) {
+                        element.isLayout = false;
+                        if (element.footnoteType === 'Footnote') {
+                            this.updateFootnoteCollection(element);
+                            this.updateFootNoteIndex();
+                        }
+                        if (element.footnoteType === 'Endnote') {
+                            this.updateEndnoteCollection(element);
+                            this.updateEndNoteIndex();
+                        }
+                    }
+                }
             }
             this.documentHelper.layout.layoutBodyWidgetCollection(blockIndex, bodyWidget, block, false, undefined, isSelectionInsideTable);
         }
@@ -15427,6 +15450,7 @@ export class Editor {
             let row: TableRowWidget = table.childWidgets[i] as TableRowWidget;
             if (row.childWidgets.length === 1) {
                 if (deleteCells.indexOf(row.childWidgets[0] as TableCellWidget) >= 0) {
+                    this.removeFieldInWidget(row.childWidgets[0] as Widget);
                     this.removeFieldInWidget(row.childWidgets[0] as Widget, true);
                     table.childWidgets.splice(table.childWidgets.indexOf(row), 1);
                     row.destroy();
@@ -15437,6 +15461,7 @@ export class Editor {
                 for (let j: number = 0; j < row.childWidgets.length; j++) {
                     let tableCell: TableCellWidget = row.childWidgets[j] as TableCellWidget;
                     if (deleteCells.indexOf(tableCell) >= 0) {
+                        this.removeFieldInWidget(tableCell as Widget);
                         this.removeFieldInWidget(tableCell as Widget, true);
                         this.removeDeletedCellRevision(row, false, tableCell.columnIndex, tableCell.columnIndex + tableCell.cellFormat.columnSpan - 1);
                         row.childWidgets.splice(j, 1);
@@ -15567,15 +15592,6 @@ export class Editor {
                                 }
                             }
                         }
-                        if (table.childWidgets.length === 0) {
-                            this.removeBlock(table);
-                            if (this.editorHistory && this.editorHistory.currentBaseHistoryInfo) {
-                                this.editorHistory.currentBaseHistoryInfo.action = 'DeleteTable';
-                            }
-                            table.destroy();
-                        } else {
-                            this.updateTable(table);
-                        }
                     }
                 }
             } else {
@@ -15584,6 +15600,15 @@ export class Editor {
                 } else {
                     this.removeRow(row);
                 }
+            }
+            if (table.childWidgets.length === 0) {
+                this.removeBlock(table);
+                if (this.editorHistory && this.editorHistory.currentBaseHistoryInfo) {
+                    this.editorHistory.currentBaseHistoryInfo.action = 'DeleteTable';
+                }
+                table.destroy();
+            } else {
+                this.updateTable(table);
             }
             if (!this.owner.enableTrackChanges || isNullOrUndefined(table.childWidgets)) {
                 this.selection.selectParagraphInternal(paragraph, true);
