@@ -241,6 +241,15 @@ export class SfdtExport {
                             (startCell.ownerTable.associatedCell.childWidgets.indexOf(startCell.ownerTable) === 0)) {
                             startCell = startCell.ownerTable.associatedCell;
                         }
+                        else if (!startCell.equals(endCell) && startCell.ownerTable != endCell.ownerTable && startCell.ownerRow != endCell.ownerRow && !isNullOrUndefined(endCell.ownerTable.associatedCell) && startCell.ownerTable.associatedCell.ownerTable.tableFormat === endCell.ownerTable.associatedCell.ownerTable.tableFormat) {
+                            // check if the parent start and end cells are selected
+                            let start: TextPosition = this.owner.selection.start;
+                            let end:TextPosition = this.owner.selection.end;
+                            if (this.owner.selection.isCellSelected(selectionStartCell, start, end) && this.owner.selection.isCellSelected(selectionEndCell, start, end)) {
+                                startCell = startCell.ownerTable.associatedCell;
+                                this.endCell = endCell.ownerTable.associatedCell;
+                            }
+                        }
                         this.endColumnIndex = this.endCell.columnIndex + this.endCell.cellFormat.columnSpan;
                         this.startColumnIndex = startCell.columnIndex;
                     }

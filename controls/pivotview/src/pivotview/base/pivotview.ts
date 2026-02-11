@@ -2456,6 +2456,7 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
             reportList: 'Report list',
             removeConfirm: 'Are you sure you want to delete this report?',
             emptyReport: 'No reports found!!',
+            columnChart: 'Column',
             bar: 'Bar',
             pie: 'Pie',
             funnel: 'Funnel',
@@ -3222,6 +3223,7 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
             exportAllPages: this.exportAllPages,
             isGroupingUpdated: (this.currentAction === 'onRefresh' && this.dataSourceSettings.groupSettings.length > 0) ? true : (this.groupingModule ? this.groupingModule.isUpdate : false)
         };
+        this.updateClonedReport();
         this.trigger(events.beforeServiceInvoke, params, (observedArgs: BeforeServiceInvokeEventArgs) => {
             this.request = observedArgs.request;
             params.internalProperties = observedArgs.internalProperties;
@@ -6407,15 +6409,8 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
                 isTabularLayout: this.isTabular
             };
             if (this.dataType === 'pivot') {
-                if (this.dataSourceSettings.groupSettings && this.dataSourceSettings.groupSettings.length > 0) {
-                    const dataSet: IDataSet[] | string[][] = this.engineModule.data as IDataSet[] | string[][];
-                    this.clonedDataSet = (this.clonedDataSet ? this.clonedDataSet : this.dataSourceSettings.type === 'CSV' ? PivotUtil.getClonedCSVData(dataSet as string[][]) as string[][]
-                        : PivotUtil.getClonedData(dataSet as IDataSet[])) as IDataSet[];
-                    const dataSourceSettings: IDataOptions = JSON.parse(this.getPersistData()).dataSourceSettings as IDataOptions;
-                    dataSourceSettings.dataSource = [];
-                    this.clonedReport = this.clonedReport ? this.clonedReport : dataSourceSettings;
-                }
                 if (this.dataSourceSettings.mode !== 'Server') {
+                    this.updateClonedReport();
                     this.engineModule.renderEngine(this.dataSourceSettings as IDataOptions, customProperties, this.aggregateCellInfo
                         ? this.getValueCellInfo.bind(this) : undefined, this.onHeadersSort ? this.getHeaderSortInfo.bind(this) : undefined);
                 }
@@ -6809,6 +6804,9 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
             dataSourceSettings.dataSource = [];
             this.clonedReport = this.clonedReport ? this.clonedReport : dataSourceSettings;
         }
+        if (this.dataSourceSettings.mode === 'Server' && !isNullOrUndefined(this.groupingModule)) {
+            this.groupingModule.isUpdate = true;
+        }
         const dateGroup: RegExp = /_date_group_years|_date_group_quarters|_date_group_quarterYear|_date_group_months|_date_group_days|_date_group_hours|_date_group_minutes|_date_group_seconds/g;
         const data: IDataSet[] | string[][] = this.dataSourceSettings.type === 'CSV' ? PivotUtil.getClonedCSVData(this.clonedDataSet as string[][]) as string[][] : PivotUtil.getClonedData(this.clonedDataSet as IDataSet[]) as IDataSet[];
         const dataSource: IDataOptions = this.dataSourceSettings;
@@ -6843,7 +6841,7 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
                         fieldName = fieldName.split('_')[0];
                         let isSameField: boolean = false;
                         for (let i: number = 0; i < axisFields.length; i++) {
-                            isSameField = axisFields[i as number].filter((x: IFieldOptions) => x.name === fieldName).length > 0 ?
+                            isSameField = axisFields[i as number].filter((x: IFieldOptions) => x && x.name === fieldName).length > 0 ?
                                 true : false;
                             if (isSameField) {
                                 break;
@@ -6852,13 +6850,23 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
                         if (!isSameField) {
                             newFieldName = fieldName.split('_')[0];
                             const fieldObj: IFieldOptions = PivotUtil.getFieldByName(newFieldName, clonedAxisFields) as IFieldOptions;
-                            clonedAxisFields = clonedAxisFields.filter((x: IFieldOptions) => x.name !== newFieldName);
+                            clonedAxisFields = clonedAxisFields.filter((x: IFieldOptions) => x && x.name !== newFieldName);
                             fields.push(newFieldName);
                             if (fieldObj) {
                                 if (!isSameField) {
                                     axisFields[i as number].splice(++j, 0, fieldObj);
                                 } else {
                                     axisFields[i as number].splice(j, 1, fieldObj);
+                                }
+                            } else {
+                                let isBoundByDefault: boolean = false;
+                                axisFields[i as number].filter((x: IFieldOptions) => {
+                                    if (x && x.name === newFieldName) {
+                                        isBoundByDefault = true;
+                                    }
+                                });
+                                if (!isSameField && !isBoundByDefault) {
+                                    axisFields[i as number].push({ name: newFieldName });
                                 }
                             }
                         }
@@ -6868,6 +6876,9 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
                             axisFields[i as number].splice(j, 1, fieldObj);
                         } else if (newFieldName === fieldName) {
                             axisFields[i as number].splice(j, 1);
+                        } else if (axisFields[i as number][j as number] && axisFields[i as number][j as number]['caption'] &&
+                                   axisFields[i as number][j as number]['caption'].indexOf(fieldName) !== -1) {
+                            axisFields[i as number][j as number]['caption'] = undefined;
                         }
                     }
                 }
@@ -7381,6 +7392,23 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
             } else {
                 column.minWidth = width;
             }
+        }
+    }
+
+    private updateClonedReport(): void {
+        if (this.dataSourceSettings.groupSettings && this.dataSourceSettings.groupSettings.length > 0) {
+            if (this.dataSourceSettings.mode === 'Server' && !isNullOrUndefined(this.groupingModule)) {
+                this.groupingModule.isUpdate = true;
+            }
+            const dataSet: IDataSet[] | string[][] = this.engineModule.data as IDataSet[] | string[][];
+            this.clonedDataSet = (this.clonedDataSet
+                ? this.clonedDataSet
+                : this.dataSourceSettings.type === 'CSV'
+                    ? PivotUtil.getClonedCSVData(dataSet as string[][]) as string[][]
+                    : PivotUtil.getClonedData(dataSet as IDataSet[])) as IDataSet[];
+            const dataSourceSettings: IDataOptions = JSON.parse(this.getPersistData()).dataSourceSettings as IDataOptions;
+            dataSourceSettings.dataSource = [];
+            this.clonedReport = this.clonedReport ? this.clonedReport : dataSourceSettings;
         }
     }
 }

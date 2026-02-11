@@ -610,9 +610,9 @@ export class OlapEngine {
         const framedValCollection: { [key: string]: Element } = {};
         for (let colPos: number = 0; colPos < valCollection.length; colPos++) {
             if (!isNullOrUndefined(valCollection[colPos as number])) {
-                framedValCollection[
-                    this.olapVirtualization ? colPos as number : Number(valCollection[colPos as number].getAttribute('CellOrdinal'))
-                ] = valCollection[colPos as number];
+                const vIndex: number = this.olapVirtualization && this.pageSettings ?
+                    colPos as number : Number(valCollection[colPos as number].getAttribute('CellOrdinal'));
+                framedValCollection[vIndex as number] = valCollection[colPos as number];
             }
         }
         let valueSortData: ValueSortInfo;

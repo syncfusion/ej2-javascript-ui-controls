@@ -3260,7 +3260,7 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
         return result;
     }
 
-    private getCellValueFn(
+    public getCellValueFn(
         grid: Object, actCell: string, sheetId: number, updateDependentCell?: boolean, refresh?: boolean, isUnique?: boolean,
         isSubtotal?: boolean): (row: number, col: number, curCell: string) => string {
         let fromCell: string = actCell;

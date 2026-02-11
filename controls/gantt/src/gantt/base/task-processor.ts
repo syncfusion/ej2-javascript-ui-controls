@@ -1440,6 +1440,10 @@ export class TaskProcessor extends DateProcessor {
                 if (!isNullOrUndefined(this.parent.taskFields) && !isNullOrUndefined(this.parent.taskFields.milestone)) {
                     ganttData[this.parent.taskFields.milestone] = true;
                 }
+                // To update the mapping task data duration
+                if (!isNullOrUndefined(this.parent.taskFields) && !isNullOrUndefined(this.parent.taskFields.duration)) {
+                    ganttData[this.parent.taskFields.duration] = ganttProperties.duration;
+                }
                 ganttProperties.endDate = ganttProperties.startDate;
             } else {
                 this.parent.setRecordValue('duration', 0, ganttProperties, true);

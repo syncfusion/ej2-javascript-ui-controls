@@ -144,6 +144,7 @@ export abstract class Component<ElementType extends HTMLElement> extends Base<El
     /**
      * Returns the persistence data for component
      *
+     * @private
      * @returns {any} ?
      */
     public getLocalData(): any {
@@ -157,6 +158,7 @@ export abstract class Component<ElementType extends HTMLElement> extends Base<El
     /**
      * Adding unload event to persist data when enable persistence true
      *
+     * @private
      * @returns {void}
      */
     public attachUnloadEvent(): void {
@@ -166,6 +168,7 @@ export abstract class Component<ElementType extends HTMLElement> extends Base<El
     /**
      * Handling unload event to persist data when enable persistence true
      *
+     * @private
      * @returns {void}
      */
     public handleUnload(): void {
@@ -174,6 +177,7 @@ export abstract class Component<ElementType extends HTMLElement> extends Base<El
     /**
      * Removing unload event to persist data when enable persistence true
      *
+     * @private
      * @returns {void}
      */
     public detachUnloadEvent(): void {

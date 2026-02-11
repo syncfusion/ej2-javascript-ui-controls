@@ -12,6 +12,8 @@
 
 - `#F71783` - Fixed an issue where the next set of data not rendered on collapsing records when infinite scrolling is enabled.
 
+- `I805487` - Resolved an issue where data was not added correctly using the `addRecord` method when batch editing, persistence, and multiple selection were enabled.  
+
 ## 32.1.25 (2026-01-27)
 
 ### Tree Grid

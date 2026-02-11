@@ -1,6 +1,4 @@
 @use 'ej2-base/styles/common/mixin' as *;
-@use './theme-variables' as *;
-@use './layout' as *;
 @include export-module('querybuilder-bigger') {
   .e-query-builder.e-device,
   .e-bigger.e-query-builder,

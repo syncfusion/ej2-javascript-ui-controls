@@ -1255,7 +1255,8 @@ export class TextPosition {
                 return;
             }
         }
-        if (!isNullOrUndefined(fieldEnd.nextNode)) {
+        if (!isNullOrUndefined(fieldEnd.nextNode) && ((fieldEnd.nextNode instanceof TextElementBox && (HelperMethods.wordSplitCharacters.indexOf(fieldEnd.nextNode.text[0]) === 0
+            || HelperMethods.wordSplitCharacters.indexOf(fieldEnd.nextNode.text[0]) === -1)) || !(fieldEnd.nextNode instanceof TextElementBox))) {
             this.getNextWordOffset(fieldEnd.nextNode, 0, type, false, endSelection, endPosition, excludeSpace);
             startOffset = fieldEnd.line.getOffset(fieldEnd.nextNode, 0);
             if (endPosition.offset === endOffset) {

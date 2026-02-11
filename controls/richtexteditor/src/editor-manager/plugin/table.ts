@@ -121,22 +121,13 @@ export class TableCommand {
      * @public
      * @hidden
      */
-    public copy(isCut: boolean): void {
+    public copy(isCut: boolean): string  {
         const copyTable: HTMLTableElement = this.extractSelectedTable(this.curTable, isCut);
         if (copyTable) {
             const tableHtml: string = cleanupInternalElements(copyTable.outerHTML, this.tableModel.editorMode);
-            try {
-                const htmlBlob: Blob = new Blob([tableHtml], { type: 'text/html' });
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                const clipboardItem: any = new (window as any).ClipboardItem({
-                    'text/html': htmlBlob
-                });
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                (navigator as any).clipboard.write([clipboardItem as any]);
-            } catch (e) {
-                console.error('Clipboard API not supported in this browser');
-            }
+            return tableHtml;
         }
+        return null;
     }
 
     /**
@@ -166,10 +157,7 @@ export class TableCommand {
         }
         const clonedTable: HTMLTableElement = originalTable.cloneNode(true) as HTMLTableElement;
         const rowsWithSelection: Map<number, Set<number>> = this.buildSelectionMap(originalTable, selectedCells, isCut);
-
         this.cleanTableToSelection(clonedTable, rowsWithSelection);
-        this.removeColGroup(clonedTable);
-
         return clonedTable;
     }
 

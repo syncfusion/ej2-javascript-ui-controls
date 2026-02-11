@@ -397,10 +397,16 @@ export class PDFExport {
                             }
                             const stringFormat: PdfStringFormat = new PdfStringFormat();
                             if (this.parent.dataType === 'olap') {
-                                const indent: number = (!isColHeader && localCnt === 0 &&
-                                    (pivotValues[rCnt as number][cCnt as number] as IAxisSet)) ?
-                                    (this.parent.renderModule.indentCollection[(pivotValues[rCnt as number][cCnt as number] as IAxisSet)
-                                        .rowIndex]) : 0;
+                                let indent: number = 0;
+                                if (!isColHeader && localCnt === 0) {
+                                    const cell: IAxisSet = pivotValues[rCnt as number][cCnt as number] as IAxisSet | undefined;
+                                    if (cell) {
+                                        const levelName: string = cell.valueSort.levelName.toString();
+                                        indent = levelName.split(
+                                            this.parent.dataSourceSettings.valueSortSettings.headerDelimiter
+                                        ).length - 1;
+                                    }
+                                }
                                 stringFormat.paragraphIndent = indent * 15;
                                 maxLevel = maxLevel > indent ? maxLevel : indent;
                             } else {

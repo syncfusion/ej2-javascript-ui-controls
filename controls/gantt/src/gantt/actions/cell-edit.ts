@@ -650,7 +650,12 @@ export class CellEdit {
                 this.parent.setRecordValue('segments', this.parent.dataOperation.setSegmentsInfo(args.data, false), ganttProb, true);
                 this.parent.dataOperation.updateMappingData(args.data, 'segments');
             }
-            this.parent.setRecordValue('isMilestone', (ganttProb.duration === 0 ? true : false), ganttProb, true);
+            const isMilestone: boolean = ganttProb.duration === 0 ? true : false;
+            this.parent.setRecordValue('isMilestone', isMilestone, ganttProb, true);
+            // To update the isMilestone mapping property based on ganttProperties, while cell-edit
+            if (!isNullOrUndefined(this.parent.taskFields.milestone)) {
+                args.data[this.parent.taskFields.milestone] = isMilestone;
+            }
             this.parent.dateValidationModule.calculateEndDate(args.data);
         }
         this.parent.dataOperation.updateWidthLeft(args.data);

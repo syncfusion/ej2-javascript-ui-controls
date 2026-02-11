@@ -353,6 +353,7 @@ export interface CellFormatArgs {
     rowHeight?: number;
     mergeBorderRows?: number[];
     prevCell?: HTMLElement;
+    viewportTopIdx?: number;
 }
 
 /** @hidden */

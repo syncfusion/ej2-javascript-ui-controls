@@ -1,7 +1,7 @@
 import { Spreadsheet } from '../base/index';
 import { ICellRenderer, CellRenderEventArgs, inView, CellRenderArgs, renderFilterCell, deleteNote, showNote, PreviousCellDetails, createCommentIndicator, deleteComment } from '../common/index';
 import { createHyperlinkElement, checkPrevMerge, createImageElement, IRenderer, createNoteIndicator } from '../common/index';
-import { removeAllChildren, setRowEleHeight } from '../common/index';
+import { removeAllChildren, setRowEleHeight, getDefaultHeight } from '../common/index';
 import { getColumnHeaderText, CellStyleModel, CellFormatArgs, getRangeIndexes, getRangeAddress, ExtendedImageModel, NoteModel, ExtendedNoteModel } from '../../workbook/common/index';
 import { CellStyleExtendedModel, setChart, refreshChart, getCellAddress, ValidationModel, MergeArgs, updateMergeBorder } from '../../workbook/common/index';
 import { CellModel, SheetModel, skipDefaultValue, isHiddenRow, RangeModel, isHiddenCol, isImported } from '../../workbook/index';
@@ -307,10 +307,12 @@ export class CellRenderer implements ICellRenderer {
             }
         }
         if (args.cell && !isNullOrUndefined(args.cell.wrap)) {
+            /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
+            const rowMaxHgts: any = sheet.maxHgts[args.rowIdx as number];
             this.parent.notify(wrapEvent, {
                 range: [args.rowIdx, args.colIdx, args.rowIdx, args.colIdx], wrap: args.cell.wrap, sheet: sheet, initial: true, td: args.td,
-                row: args.row, hRow: args.hRow, isCustomHgt: !args.isRefresh &&
-                    getRowHeight(sheet, args.rowIdx) > (sheet && sheet.standardHeight ? sheet.standardHeight : 20)
+                row: args.row, hRow: args.hRow, isRender: !args.isRefresh, isCustomHgt: !args.isRefresh && rowMaxHgts &&
+                    (rowMaxHgts[args.colIdx as number] > getDefaultHeight(sheet))
             });
         }
         let validation: ValidationModel; let col: ColumnModel;
@@ -797,7 +799,8 @@ export class CellRenderer implements ICellRenderer {
 
     public refresh(
         rowIdx: number, colIdx: number, lastCell?: boolean, element?: Element, checkCF?: boolean, checkWrap?: boolean,
-        skipFormatCheck?: boolean, isRandomFormula?: boolean, fillType?: string, prevCell?: HTMLTableCellElement): void {
+        skipFormatCheck?: boolean, isRandomFormula?: boolean, fillType?: string, prevCell?: HTMLTableCellElement,
+        viewportTopIdx?: number): void {
         const sheet: SheetModel = this.parent.getActiveSheet();
         if (!element && (isHiddenRow(sheet, rowIdx) || isHiddenCol(sheet, colIdx))) {
             return;
@@ -809,7 +812,7 @@ export class CellRenderer implements ICellRenderer {
             }
             const args: CellRenderArgs = { rowIdx: rowIdx, colIdx: colIdx, td: cell, cell: getCell(rowIdx, colIdx, sheet), isRefresh: true,
                 lastCell: lastCell, isHeightCheckNeeded: true, manualUpdate: true, first: '', skipFormatCheck: skipFormatCheck,
-                isRandomFormula: isRandomFormula, fillType: fillType, prevCell: prevCell };
+                isRandomFormula: isRandomFormula, fillType: fillType, prevCell: prevCell, viewportTopIdx: viewportTopIdx };
             this.update(args);
             if (checkCF && sheet.conditionalFormats && sheet.conditionalFormats.length) {
                 this.parent.notify(applyCF, <ApplyCFArgs>{ indexes: [rowIdx, colIdx], isAction: true });

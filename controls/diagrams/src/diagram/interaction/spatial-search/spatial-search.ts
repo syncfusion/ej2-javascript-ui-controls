@@ -79,7 +79,10 @@ export class SpatialSearch {
             }
             this.update(quad.parent);
         } else {
-            if (quad === this.parentQuad && !quad.first && !quad.second && !quad.third && !quad.fourth) {
+            // 1007140: Selection Tool is not activated for nodes that exceed the pageSettings bounds.
+            // Prevented incorrect quad resets when a node partially exceeds pageSettings and intersects with another node.
+            // Now the quad is reset only when it contains no child quads and no objects.
+            if (quad === this.parentQuad && !quad.first && !quad.second && !quad.third && !quad.fourth && quad.objects.length === 0) {
                 quad.left = 0;
                 quad.width = 1000;
                 quad.top = 0;

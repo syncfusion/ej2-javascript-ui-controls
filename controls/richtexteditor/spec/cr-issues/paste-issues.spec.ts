@@ -155,6 +155,35 @@ describe('Paste CR issues ', ()=> {
         });
     });
 
+    describe('Bug 1006461: Copy and Pasting lists from Word(web version) not working in RichTextEditor.', () => {
+        let editor: RichTextEditor;
+        beforeAll(() => {
+            editor = renderRTE({
+                pasteCleanupSettings: {
+                    prompt: false
+                }
+            });
+        });
+        afterAll(() => {
+            destroy(editor);
+        });
+        it('list items should not display block in its inline style', (done: DoneFn) => {
+            editor.focusIn();
+            const clipBoardData: string = `<html>\r\n<body>\r\n\x3C!--StartFragment--><div class="ListContainerWrapper SCXW74154912 BCX8" style="-webkit-user-drag: none; -webkit-tap-highlight-color: transparent; margin: 0px; padding: 0px; user-select: text; position: relative; color: rgb(0, 0, 0); font-family: &quot;Segoe UI&quot;, &quot;Segoe UI Web&quot;, Arial, Verdana, sans-serif; font-size: 12px; font-style: normal; font-variant-ligatures: normal; font-variant-caps: normal; font-weight: 400; letter-spacing: normal; orphans: 2; text-align: start; text-indent: 0px; text-transform: none; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; white-space: normal; background-color: rgb(255, 255, 255); text-decoration-thickness: initial; text-decoration-style: initial; text-decoration-color: initial;"><ol class="NumberListStyle1 SCXW74154912 BCX8" role="list" start="1" style="-webkit-user-drag: none; -webkit-tap-highlight-color: transparent; margin: 0px; padding: 0px; user-select: text; cursor: text; list-style-type: decimal; overflow: visible;"><li aria-setsize="-1" data-leveltext="%1." data-font="" data-listid="1" data-list-defn-props="{&quot;335552541&quot;:0,&quot;335559685&quot;:720,&quot;335559991&quot;:360,&quot;469769242&quot;:[65533,0],&quot;469777803&quot;:&quot;left&quot;,&quot;469777804&quot;:&quot;%1.&quot;,&quot;469777815&quot;:&quot;hybridMultilevel&quot;}" data-aria-posinset="1" data-aria-level="1" role="listitem" class="OutlineElement Ltr SCXW74154912 BCX8" style="-webkit-user-drag: none; -webkit-tap-highlight-color: transparent; margin: 0px 0px 0px 24px; padding: 0px; user-select: text; clear: both; cursor: text; overflow: visible; position: relative; direction: ltr; display: block; font-size: 12pt; font-family: Aptos, Aptos_MSFontService, sans-serif; vertical-align: baseline;"><p class="Paragraph SCXW74154912 BCX8" paraid="738692707" paraeid="{b8d0c777-da4b-4fa9-b715-a32bf2b99b9e}{4}" style="-webkit-user-drag: none; -webkit-tap-highlight-color: transparent; margin: 0px; padding: 0px; user-select: text; overflow-wrap: break-word; font-weight: normal; font-style: normal; vertical-align: baseline; font-kerning: none; background-color: transparent; color: windowtext; text-align: left; text-indent: 0px;"><span data-contrast="auto" xml:lang="EN-US" lang="EN-US" class="TextRun SCXW74154912 BCX8" style="-webkit-user-drag: none; -webkit-tap-highlight-color: transparent; margin: 0px; padding: 0px; user-select: text; font-variant-ligatures: none !important; font-size: 12pt; line-height: 20.925px; font-family: Aptos, Aptos_EmbeddedFont, Aptos_MSFontService, sans-serif;"><span class="NormalTextRun SCXW74154912 BCX8" style="-webkit-user-drag: none; -webkit-tap-highlight-color: transparent; margin: 0px; padding: 0px; user-select: text;">List 1</span></span><span class="EOP SCXW74154912 BCX8" data-ccp-props="{}" style="-webkit-user-drag: none; -webkit-tap-highlight-color: transparent; margin: 0px; padding: 0px; user-select: text; font-size: 12pt; line-height: 20.925px; font-family: Aptos, Aptos_EmbeddedFont, Aptos_MSFontService, sans-serif;"> </span></p></li></ol></div><div class="ListContainerWrapper SCXW74154912 BCX8" style="-webkit-user-drag: none; -webkit-tap-highlight-color: transparent; margin: 0px; padding: 0px; user-select: text; position: relative; color: rgb(0, 0, 0); font-family: &quot;Segoe UI&quot;, &quot;Segoe UI Web&quot;, Arial, Verdana, sans-serif; font-size: 12px; font-style: normal; font-variant-ligatures: normal; font-variant-caps: normal; font-weight: 400; letter-spacing: normal; orphans: 2; text-align: start; text-indent: 0px; text-transform: none; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; white-space: normal; background-color: rgb(255, 255, 255); text-decoration-thickness: initial; text-decoration-style: initial; text-decoration-color: initial;"><ol class="NumberListStyle1 SCXW74154912 BCX8" role="list" start="2" style="-webkit-user-drag: none; -webkit-tap-highlight-color: transparent; margin: 0px; padding: 0px; user-select: text; cursor: text; list-style-type: decimal; overflow: visible;"><li aria-setsize="-1" data-leveltext="%1." data-font="" data-listid="1" data-list-defn-props="{&quot;335552541&quot;:0,&quot;335559685&quot;:720,&quot;335559991&quot;:360,&quot;469769242&quot;:[65533,0],&quot;469777803&quot;:&quot;left&quot;,&quot;469777804&quot;:&quot;%1.&quot;,&quot;469777815&quot;:&quot;hybridMultilevel&quot;}" data-aria-posinset="2" data-aria-level="1" role="listitem" class="OutlineElement Ltr SCXW74154912 BCX8" style="-webkit-user-drag: none; -webkit-tap-highlight-color: transparent; margin: 0px 0px 0px 24px; padding: 0px; user-select: text; clear: both; cursor: text; overflow: visible; position: relative; direction: ltr; display: block; font-size: 12pt; font-family: Aptos, Aptos_MSFontService, sans-serif; vertical-align: baseline;"><p class="Paragraph SCXW74154912 BCX8" paraid="1461715" paraeid="{7f67e015-3135-45f5-bdc3-e06d8d7f73a4}{41}" style="-webkit-user-drag: none; -webkit-tap-highlight-color: transparent; margin: 0px; padding: 0px; user-select: text; overflow-wrap: break-word; font-weight: normal; font-style: normal; vertical-align: baseline; font-kerning: none; background-color: transparent; color: windowtext; text-align: left; text-indent: 0px;"><span data-contrast="auto" xml:lang="EN-US" lang="EN-US" class="TextRun SCXW74154912 BCX8" style="-webkit-user-drag: none; -webkit-tap-highlight-color: transparent; margin: 0px; padding: 0px; user-select: text; font-variant-ligatures: none !important; font-size: 12pt; line-height: 20.925px; font-family: Aptos, Aptos_EmbeddedFont, Aptos_MSFontService, sans-serif;"><span class="NormalTextRun SCXW74154912 BCX8" style="-webkit-user-drag: none; -webkit-tap-highlight-color: transparent; margin: 0px; padding: 0px; user-select: text;">List 2</span></span><span class="EOP SCXW74154912 BCX8" data-ccp-props="{}" style="-webkit-user-drag: none; -webkit-tap-highlight-color: transparent; margin: 0px; padding: 0px; user-select: text; font-size: 12pt; line-height: 20.925px; font-family: Aptos, Aptos_EmbeddedFont, Aptos_MSFontService, sans-serif;"> </span></p></li></ol></div><div class="ListContainerWrapper SCXW74154912 BCX8" style="-webkit-user-drag: none; -webkit-tap-highlight-color: transparent; margin: 0px; padding: 0px; user-select: text; position: relative; color: rgb(0, 0, 0); font-family: &quot;Segoe UI&quot;, &quot;Segoe UI Web&quot;, Arial, Verdana, sans-serif; font-size: 12px; font-style: normal; font-variant-ligatures: normal; font-variant-caps: normal; font-weight: 400; letter-spacing: normal; orphans: 2; text-align: start; text-indent: 0px; text-transform: none; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; white-space: normal; background-color: rgb(255, 255, 255); text-decoration-thickness: initial; text-decoration-style: initial; text-decoration-color: initial;"><ol class="NumberListStyle1 SCXW74154912 BCX8" role="list" start="3" style="-webkit-user-drag: none; -webkit-tap-highlight-color: transparent; margin: 0px; padding: 0px; user-select: text; cursor: text; list-style-type: decimal; overflow: visible;"><li aria-setsize="-1" data-leveltext="%1." data-font="" data-listid="1" data-list-defn-props="{&quot;335552541&quot;:0,&quot;335559685&quot;:720,&quot;335559991&quot;:360,&quot;469769242&quot;:[65533,0],&quot;469777803&quot;:&quot;left&quot;,&quot;469777804&quot;:&quot;%1.&quot;,&quot;469777815&quot;:&quot;hybridMultilevel&quot;}" data-aria-posinset="3" data-aria-level="1" role="listitem" class="OutlineElement Ltr SCXW74154912 BCX8" style="-webkit-user-drag: none; -webkit-tap-highlight-color: transparent; margin: 0px 0px 0px 24px; padding: 0px; user-select: text; clear: both; cursor: text; overflow: visible; position: relative; direction: ltr; display: block; font-size: 12pt; font-family: Aptos, Aptos_MSFontService, sans-serif; vertical-align: baseline;"><p class="Paragraph SCXW74154912 BCX8" paraid="1024131504" paraeid="{7f67e015-3135-45f5-bdc3-e06d8d7f73a4}{78}" style="-webkit-user-drag: none; -webkit-tap-highlight-color: transparent; margin: 0px; padding: 0px; user-select: text; overflow-wrap: break-word; font-weight: normal; font-style: normal; vertical-align: baseline; font-kerning: none; background-color: transparent; color: windowtext; text-align: left; text-indent: 0px;"><span data-contrast="auto" xml:lang="EN-US" lang="EN-US" class="TextRun SCXW74154912 BCX8" style="-webkit-user-drag: none; -webkit-tap-highlight-color: transparent; margin: 0px; padding: 0px; user-select: text; font-variant-ligatures: none !important; font-size: 12pt; line-height: 20.925px; font-family: Aptos, Aptos_EmbeddedFont, Aptos_MSFontService, sans-serif;"><span class="NormalTextRun SCXW74154912 BCX8" style="-webkit-user-drag: none; -webkit-tap-highlight-color: transparent; margin: 0px; padding: 0px; user-select: text;">List 3</span></span><span class="EOP SCXW74154912 BCX8" data-ccp-props="{}" style="-webkit-user-drag: none; -webkit-tap-highlight-color: transparent; margin: 0px; padding: 0px; user-select: text; font-size: 12pt; line-height: 20.925px; font-family: Aptos, Aptos_EmbeddedFont, Aptos_MSFontService, sans-serif;"> </span></p></li></ol></div>\x3C!--EndFragment-->\r\n</body>\r\n</html>`;
+            const dataTransfer: DataTransfer = new DataTransfer();
+            dataTransfer.setData('text/html', clipBoardData);
+            const pasteEvent: ClipboardEvent = new ClipboardEvent('paste', { clipboardData: dataTransfer } as ClipboardEventInit);
+            editor.onPaste(pasteEvent);
+            setTimeout(() => {
+                const liElems: NodeListOf<HTMLLIElement> = editor.inputElement.querySelectorAll('li');
+                for (let i: number = 0; i < liElems.length; i++) {
+                    expect(liElems[i].style.display).toBe('');
+                }
+                done();
+            }, 100);
+        });
+    });
+
     describe('Bug 1003319: Support for Remote URL Images in Rich Text Editor.', () => {
         let editor: RichTextEditor;
         const hostUrl: string = 'https://services.syncfusion.com/js/production/';
@@ -486,6 +515,38 @@ describe('Paste CR issues ', ()=> {
                 expect(rteObj.inputElement.innerHTML).toBe(expectedElem);
                 done();
             }, 100);
+        });
+        afterAll(() => {
+            destroy(rteObj);
+        });
+    });
+
+    describe('Bug 1006495: Change event not triggered when pasting texts in IFrame mode in RichTextEditor', () => {
+        let rteObj: RichTextEditor;
+        let isTriggered: boolean = false;
+        beforeAll(() => {
+            rteObj = renderRTE({
+                iframeSettings: {
+                    enable: true,
+                },
+                saveInterval: 100,
+                placeholder: 'Type something',
+                change: () => {
+                    isTriggered = true;
+                },
+            }, true);
+        });
+        it('change event should trigger while pasting content in iframe mode', (done: DoneFn) => {
+            rteObj.focusIn();
+            const clipBoardData: string = 'Hello World.\n\nRich Text Editor';
+            const dataTransfer: DataTransfer = new DataTransfer();
+            dataTransfer.setData('text/html', clipBoardData);
+            const pasteEvent: ClipboardEvent = new ClipboardEvent('paste', { clipboardData: dataTransfer } as ClipboardEventInit);
+            rteObj.onPaste(pasteEvent);
+            setTimeout(() => {
+                expect(isTriggered).toBe(true);
+                done();
+            }, 200);
         });
         afterAll(() => {
             destroy(rteObj);

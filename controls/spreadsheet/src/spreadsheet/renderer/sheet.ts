@@ -857,7 +857,7 @@ export class SheetRender implements IRenderer {
             if (indexes[0] === viewportTopIdx) {
                 if (model.rowSpan < 0) {
                     const args: CellRenderArgs = { td: cell as HTMLTableCellElement, rowIdx: indexes[0], colIdx: indexes[1], isRow: true,
-                        isFreezePane: true
+                        isFreezePane: true, viewportTopIdx: indexes[0]
                     };
                     this.parent.notify(checkMerge, args);
                     if (args.insideFreezePane) { return; }

@@ -2,6 +2,32 @@
 
 ## [Unreleased]
 
+### DocumentEditor
+
+#### Bug Fixes
+
+`#I798162` - Fixed an issue where the Document Editor became stuck while loading a document containing wrapping images.
+`#I803889` - Resolved a problem where text exited from the content control after exporting the document as SFDT.
+`#I798303` - Corrected an issue where the scrollbar did not start at the top when the document loaded with a zoom value greater than 100%.
+`#I798257` - Fixed an issue where comments were deleted when the comment end marker was edited or removed.
+`#I794700` - Addressed an issue where Spell Check wavy underlines were removed when applying section formatting.
+`#F70874` - Resolved inconsistencies in page layout between the Word DOCX document and the Document Editor.
+`#I792082` - Fixed an RTL issue where bracket direction appeared incorrectly.
+`#I808586` - Resolved a script error thrown by Spell Check when ignoring an element containing a bookmark.
+`#I794067` - Fixed a browser freeze that occurred while loading the document.
+`#I790138` - Corrected a layout issue where a paragraph after a section break did not shift properly when pressing the Enter key.
+`#I785695` - Fixed an issue where sub menu items were not accessible via the `customContextMenuBeforeOpen` event.
+`#I792516` - Resolved an issue with the normal web paragraph style when pasting content.
+`#I802084` - Fixed a problem where the Spell Check dialog became stuck after ignoring certain words.
+`#I787804` - Resolved missing Spell Check underline for words such as Seller(s) and ')' inside the dialog.
+`#I793341` - Fixed an issue where Spell Check options remained visible in the context menu even after selecting ignore once.
+`#I805207` - Corrected a problem where Spell Check underlines did not update properly during initial render and text insertion.
+`#I787988` - Fixed incorrect table resizing behaviour in RTL mode.
+`#I790222` - Resolved an issue where the editor became unresponsive when updating the Table of Contents with Track Changes enabled.
+`#I772957` - Fixed a problem where a bookmark was removed when selecting and inserting text using double tap.
+`#I793846` - Corrected improper text reinsertion due to bookmark offset when the heading pane was open.
+`#I803920` - Resolved an issue where the document layout shifted unexpectedly during editing.
+
 ## 32.2.3 (2026-02-05)
 
 ### DocumentEditor

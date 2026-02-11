@@ -2,7 +2,21 @@
 
 ## [Unreleased]
 
+### Pivot Table
+
+#### Bug Fixes
+
+- PDF exports now preserve indentation, values, subtotals, and visual formatting consistent with the Pivot Table UI, ensuring exported documents match on‑screen presentation for review and distribution.
+
 ## 32.2.3 (2026-02-05)
+
+### Pivot Table
+
+#### Bug Fixes
+
+- `I198038` - The localization text for the column chart and column axis label now renders properly in the pivot table.
+
+## 32.1.25 (2026-01-27)
 
 ### Pivot Table
 

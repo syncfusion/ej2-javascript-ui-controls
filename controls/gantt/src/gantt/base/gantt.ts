@@ -3364,11 +3364,17 @@ export class Gantt extends Component<HTMLElement>
                 }
             }
             else if (!isVisible) {
-                let parent: IGanttData;
-                if (record.parentItem) {
-                    parent = this.getParentTask(record.parentItem, recordMap);
+                let parentVisible: boolean = true;
+                let current: IGanttData = record;
+                while (current.parentItem) {
+                    const parent: IGanttData = this.getParentTask(current.parentItem, recordMap);
+                    if (!parent || parent.expanded === false) {
+                        parentVisible = false;
+                        break;
+                    }
+                    current = parent;
                 }
-                isVisible = (!record.parentItem || parent && parent.expanded) ? true : false;
+                isVisible = parentVisible;
             }
             // Cache visibility
             visibilityMap.set(uniqueID, isVisible);

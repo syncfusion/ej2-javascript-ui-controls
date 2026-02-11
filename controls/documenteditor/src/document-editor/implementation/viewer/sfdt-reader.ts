@@ -924,7 +924,7 @@ export class SfdtReader {
         if (!isNullOrUndefined(data[stylesProperty[this.keywordIndex]])) {
             for (let i: number = 0; i < data[stylesProperty[this.keywordIndex]].length; i++) {
                 const style: any = this.documentHelper.styles.findByName(data[stylesProperty[this.keywordIndex]][i][nameProperty[this.keywordIndex]]);
-                if (style === undefined) {
+                if (style === undefined  && !(this.isPaste && data[stylesProperty[this.keywordIndex]][i][nameProperty[this.keywordIndex]] === 'Normal (Web)')) {
                     this.parseStyle(data, data[stylesProperty[this.keywordIndex]][i], this.documentHelper.styles);
                 }
             }

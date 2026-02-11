@@ -398,6 +398,7 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
     private isPropChange: boolean = false;
     private isRuleClicked: boolean = false;
     private groupCloned: boolean = false;
+    private isRequestSent: boolean = false;
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     private ddTree: any;
 
@@ -1801,7 +1802,7 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
 
     private renderToolTip(element: HTMLElement): void {
         const tooltip: Tooltip = new Tooltip({
-            content: this.l10n.getConstant('ValidationMessage'), isSticky: true,
+            content: this.l10n.getConstant('ValidationMessage'),
             position: 'BottomCenter', cssClass: 'e-querybuilder-error', afterClose: (): void => {
                 tooltip.destroy();
             }, beforeOpen: (args: TooltipEventArgs): void => {
@@ -3303,8 +3304,8 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
     private renderMultiSelect(rule: ColumnsModel, parentId: string, i: number, selectedValue: string[] | number[], values:
     string[] | number[] | boolean[]): void {
         let isFetched: boolean = false; let ds: object[]; let isValues: boolean = false; this.isGetNestedData = false;
-        if (this.dataColl[1]) {
-            if (Object.keys(this.dataColl[1] as { [key: string]: any }).indexOf(rule.field) > -1) {
+        if (this.dataColl[0]) {
+            if (Object.keys(this.dataColl[0] as { [key: string]: any }).indexOf(rule.field) > -1) {
                 isFetched = true;
                 ds = this.getDistinctValues(this.dataColl, rule.field);
             }
@@ -3359,8 +3360,8 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
                 this.selectedColumn = dropDownObj.getDataByValue(dropDownObj.value as string) as ColumnsModel;
             }
             const value: string = this.selectedColumn.field; let isFetched: boolean = false;
-            if (this.dataColl[1]) {
-                if (Object.keys(this.dataColl[1]).indexOf(value) > -1) {
+            if (this.dataColl[0]) {
+                if (Object.keys(this.dataColl[0]).indexOf(value) > -1) {
                     isFetched = true;
                 }
                 const isNest: number = value.indexOf(this.separator);
@@ -3379,31 +3380,39 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
     }
     private getMultiSelectData(element: Element, value: string): void {
         let dummyData: Object[]; const deferred: Deferred = new Deferred();
-        const userQuery: Query | null = (this.valueModel && this.valueModel.multiSelectModel && this.valueModel.multiSelectModel.query)
-            ? (this.valueModel.multiSelectModel.query as Query)
-            : null;
+        const multiselectObj: MultiSelect = (getComponent(element as HTMLElement, 'multiselect') as MultiSelect);
+        const userQuery: Query | null = multiselectObj.query ? multiselectObj.query : null;
         const dataQuery: Query = (userQuery && typeof (userQuery as any).clone === 'function')
             ? (userQuery.clone() as Query)
             : new Query();
         dataQuery.select([value]);
-        const data: Promise<Object> = this.dataManager.executeQuery(dataQuery) as Promise<Object>;
-        const multiselectObj: MultiSelect = (getComponent(element as HTMLElement, 'multiselect') as MultiSelect);
-        multiselectObj.hideSpinner();
-        this.createSpinner(closest(element, '.e-multi-select-wrapper').parentElement);
-        showSpinner(closest(element, '.e-multi-select-wrapper').parentElement as HTMLElement);
-        data.then((e: { actual: { result: Object[], count: number }, result: Object[] }) => {
-            if (e.actual && e.actual.result) {
-                dummyData = e.actual.result;
-            } else {
-                dummyData = e.result;
-            }
-            this.dataColl = extend(this.dataColl, dummyData, [], true) as object[];
-            multiselectObj.dataSource = this.getDistinctValues(this.dataColl, value) as { [key: string]: object }[];
-            this.isGetNestedData = true;
-            hideSpinner(closest(element, '.e-multi-select-wrapper').parentElement as HTMLElement);
-        }).catch((e: ReturnType) => {
-            deferred.reject(e);
-        });
+        if (!this.isRequestSent) {
+            const data: Promise<Object> = this.dataManager.executeQuery(dataQuery) as Promise<Object>;
+            this.isRequestSent = true;
+            multiselectObj.hideSpinner();
+            this.createSpinner(closest(element, '.e-multi-select-wrapper').parentElement);
+            showSpinner(closest(element, '.e-multi-select-wrapper').parentElement as HTMLElement);
+            data.then((e: { actual: { result: Object[], count: number }, result: Object[] }) => {
+                this.isRequestSent = false;
+                if (e.actual && e.actual.result) {
+                    dummyData = e.actual.result;
+                } else {
+                    dummyData = e.result;
+                }
+                this.dataColl = extend(this.dataColl, dummyData, [], true) as object[];
+                const newData: { [key: string]: object }[] = this.getDistinctValues(this.dataColl, value) as { [key: string]: object }[];
+                const current: any = multiselectObj.dataSource;
+                if ((current.length !== newData.length &&
+                    (JSON.stringify(current) !== JSON.stringify(newData)))) {
+                    multiselectObj.dataSource = newData;
+                }
+                this.isGetNestedData = true;
+                hideSpinner(closest(element, '.e-multi-select-wrapper').parentElement as HTMLElement);
+            }).catch((e: ReturnType) => {
+                this.isRequestSent = false;
+                deferred.reject(e);
+            });
+        }
     }
     private createSpinner(element: Element): void {
         const spinnerElem: HTMLElement = this.createElement('span', { attrs: { class: 'e-qb-spinner' } });
@@ -4432,10 +4441,13 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
                     not = this.updatedRule.not;
                     isLocked = this.updatedRule.isLocked;
                 }
-                if (this.groupCloned) {
+                if (this.groupCloned && this.target instanceof HTMLElement &&
+                    this.getGroup(this.target).rules.length > 1) {
                     const parent: HTMLElement = this.element.querySelector('#' + groupID);
                     const topLevelGroups: NodeListOf<HTMLElement> = parent.querySelectorAll(':scope > .e-group-body > .e-rule-list > .e-group-container');
-                    this.groupIndex = topLevelGroups.length > 1 ? topLevelGroups.length - 1 : 0;
+                    if (groupID !== 'querybuilder_group0' && !(this.isAngular && groupID === 'ej2-querybuilder_0_group0')) {
+                        this.groupIndex = topLevelGroups.length > 1 ? topLevelGroups.length - 1 : 0;
+                    }
                 }
                 if (this.groupIndex < 0) {
                     if (this.enableNotCondition) {

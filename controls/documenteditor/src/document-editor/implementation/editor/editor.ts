@@ -126,6 +126,10 @@ export class Editor {
      * @private
      */
     public isInsertingText: boolean = false;
+    /**
+     * @private
+     */
+    public isRTLBracket: boolean = false;
     private isInternalPaste: boolean = false;
     private guid: string;
     private type: string = null;
@@ -3679,6 +3683,7 @@ export class Editor {
         this.isInsertingText = true;
         this.insertTextInternal(text, false);
         this.isInsertingText = false;
+        this.isRTLBracket = false;
     }
     /**
      * @private
@@ -3863,7 +3868,7 @@ export class Editor {
                 }
                 span.characterFormat.copyFormat(insertFormat);
                 span.text = text;
-                let isBidi: boolean = this.documentHelper.textHelper.getRtlLanguage(text).isRtl || this.selection.characterFormat.bidi;
+                let isBidi: boolean = this.documentHelper.textHelper.getRtlLanguage(text).isRtl || this.selection.characterFormat.bidi || this.isRTLBracket;
                 span.characterFormat.bidi = isBidi;
                 insertFormat.bidi = isBidi;
                 span.isRightToLeft = isBidi;
@@ -3918,7 +3923,7 @@ export class Editor {
                 if (insertFormat.hidden) {
                     insertFormat.hidden = false;
                 }
-                let isBidi: boolean = this.documentHelper.textHelper.getRtlLanguage(text).isRtl || this.selection.characterFormat.bidi;
+                let isBidi: boolean = this.documentHelper.textHelper.getRtlLanguage(text).isRtl || this.selection.characterFormat.bidi || this.isRTLBracket;
                 //let insertLangId: number = this.documentHelper.textHelper.getRtlLanguage(text).id;
                 let inlineLangId: number = 0;
                 let isRtl: boolean = false;
@@ -3933,12 +3938,13 @@ export class Editor {
                     || (text === ' ' && this.selection.characterFormat.bidi)) {
                     isBidi = true;
                 }
-                if (isBidi || !this.documentHelper.owner.isSpellCheck) {
+                if (isBidi || !this.documentHelper.owner.isSpellCheck || this.isRTLBracket) {
                     insertFormat.bidi = isBidi;
                 }
                 this.setCharFormatForCollaborativeEditing(insertFormat);
 
-                if ((!this.documentHelper.owner.isSpellCheck || (text !== ' ' && (<TextElementBox>inline).text !== ' ')) && text !== String.fromCharCode(14) && !(inline instanceof ContentControl) && !(inline instanceof CommentCharacterElementBox) && insertFormat.isSameFormat(inline.characterFormat) && inline.revisionLength <= 1 && this.canInsertRevision(inline, revisionType)
+                if ((!this.documentHelper.owner.isSpellCheck || (text !== ' ' && (<TextElementBox>inline).text !== ' ' && !HelperMethods.endsWith((<TextElementBox>inline).text))) && text !== String.fromCharCode(14) &&
+                !(inline instanceof ContentControl) && !(inline instanceof CommentCharacterElementBox) && insertFormat.isSameFormat(inline.characterFormat) && inline.revisionLength <= 1 && this.canInsertRevision(inline, revisionType)
                     || (text.trim() === '' && !isBidi && inline.characterFormat.bidi) || isRtl && insertFormat.isSameFormat(inline.characterFormat) && isSpecialChars) {
                     this.insertTextInline(inline, selection, text, indexInInline, undefined, revisionType, isBidi);
                     this.setCharFormatForCollaborativeEditing(inline.characterFormat);
@@ -6940,7 +6946,7 @@ export class Editor {
                     for (var j = 0; j < pasteContent[stylesProperty[this.keywordIndex]].length; j++) {
                         let styleName: string = pasteContent[stylesProperty[this.keywordIndex]][j][nameProperty[this.keywordIndex]];
                         let style: WStyle = this.documentHelper.styles.findByName(styleName) as WStyle;
-                        if (isNullOrUndefined(style)) {
+                        if (isNullOrUndefined(style) && styleName !== 'Normal (Web)') {
                             parser.parseStyle(pasteContent, pasteContent[stylesProperty[this.keywordIndex]][j], this.documentHelper.styles)
                         }
                     }
@@ -16268,6 +16274,9 @@ export class Editor {
         paragraphAdv.containerWidget.childWidgets.splice(insertIndex, 0, paragraph);
         paragraph.index = blockIndex;
         paragraph.containerWidget = paragraphAdv.containerWidget;
+        if (paragraphAdv.contentControlProperties) {
+            paragraph.contentControlProperties = paragraphAdv.contentControlProperties;
+        }
         this.updateNextBlocksIndex(paragraph, true);
         this.updateRevisionForSplittedPara(paragraph, paragraphAdv);
         if (removeBlock) {

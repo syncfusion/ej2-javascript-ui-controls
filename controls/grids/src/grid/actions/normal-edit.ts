@@ -759,9 +759,9 @@ export class NormalEdit {
 
     protected deleteRecord(fieldname?: string, data?: Object): void {
         this.editRowIndex = this.parent.selectedRowIndex;
+        const gObj: IGrid = this.parent;
         if (data) {
             data = (data instanceof Array) ? data : [data];
-            const gObj: IGrid = this.parent;
             const dataLen: number = Object.keys(data).length;
             fieldname = fieldname || this.parent.getPrimaryKeyFieldNames()[0];
             for (let i: number = 0; i < dataLen; i++) {
@@ -794,6 +794,10 @@ export class NormalEdit {
             }
         }
         this.parent.notify(events.modelChanged, args);
+        if (gObj.editSettings.showAddNewRow) {
+            gObj.editModule.destroyWidgets();
+            gObj.editModule.destroyForm();
+        }
     }
 
     private stopEditStatus(): void {

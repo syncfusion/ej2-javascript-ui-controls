@@ -854,7 +854,7 @@ export class Toolbar {
             for (let i: number = 0; (i < types.length && i < 7); i++) {
                 const type: ChartSeriesType = types[i as number];
                 menuItems.push({
-                    text: this.parent.localeObj.getConstant(type.toLowerCase()),
+                    text: this.parent.localeObj.getConstant(type === 'Column' ? 'columnChart' : type.toLowerCase()),
                     id: this.parent.element.id + '_' + type
                 });
             }

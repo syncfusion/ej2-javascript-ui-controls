@@ -1993,7 +1993,8 @@ export class SymbolPalette extends Component<HTMLElement> implements INotifyProp
         const palette: SymbolPalette = this;
         const helperElement: string = 'helperElement';
         const intDestroy: string = 'intDestroy';
-        if (evt && (evt.key === 'Escape')) {
+        //1006752: Exception when pressing Escape key in palette when allowDrag set to false
+        if (evt && (evt.key === 'Escape') && this.allowDrag) {
             const element: HTMLElement = palette.draggable[`${helperElement}`];
             if (element && element.parentNode) {
                 element.parentNode.removeChild(element);

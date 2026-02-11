@@ -104,6 +104,7 @@ export class Video {
         this.parent.on(events.destroy, this.destroy, this);
         this.parent.on(events.bindOnEnd, this.bindOnEnd, this);
         this.parent.on(events.modelChanged, this.onPropertyChanged, this);
+        this.parent.on(events.resizeStart, this.resizeStart, this);
     }
 
     protected removeEventListener(): void {
@@ -126,6 +127,7 @@ export class Video {
         this.parent.off(events.destroy, this.destroy);
         this.parent.off(events.bindOnEnd, this.bindOnEnd);
         this.parent.off(events.modelChanged, this.onPropertyChanged);
+        this.parent.off(events.resizeStart, this.resizeStart);
         this.parent.off(EVENTS.touchEnd, this.videoClick);
         this.parent.off(EVENTS.dropEvent, this.dragDrop);
         this.parent.off(EVENTS.dragEnter, this.dragEnter);
@@ -1184,6 +1186,16 @@ export class Video {
             }
         });
         if (target.tagName === 'VIDEO' || this.isEmbedVidElem(target)) {
+            const focusedVideos: HTMLElement[] = Array.from(this.parent.element.querySelectorAll('.e-rte-video'));
+            if (focusedVideos.length > 0) {
+                for (let i: number = 0; i < focusedVideos.length; i++) {
+                    if (focusedVideos[i as number] !== target) {
+                        removeClass([focusedVideos[i as number]], [CLS_VID_FOCUS]);
+                        removeClass([focusedVideos[i as number]], ['e-resize']);
+                        focusedVideos[i as number].style.outline = '';
+                    }
+                }
+            }
             addClass([(!this.isEmbedVidElem(target) || target.tagName === 'IFRAME') ? target : target.querySelector('iframe')], [CLS_VID_FOCUS]);
         }
         if (this.parent.quickToolbarModule.videoQTBar) {

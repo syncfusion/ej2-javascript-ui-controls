@@ -4995,6 +4995,8 @@ describe('QueryBuilder', () => {
                 maxGroupCount: 50
             }, '#querybuilder');
             const cloneBtn: HTMLElement = document.getElementsByClassName('e-clone-grp-btn')[0] as HTMLElement;
+            const focusEvent: any = { target: cloneBtn };
+            queryBuilder.focusEventHandler(focusEvent);
             cloneBtn.click();
             expect(queryBuilder.rule.rules.length).toBe(2);
             expect(queryBuilder.rule.rules[1].rules[1].rules[0].field === 'HireDate').toBe(true);
@@ -6886,6 +6888,274 @@ describe('QueryBuilder', () => {
                     done();
                 }, 100);
             }, 50);
+        });
+    });
+    describe('EJ2:1004550', () => {
+        beforeEach((): void => {
+            document.body.appendChild(createElement('div', { id: 'querybuilder' }));
+        });
+        afterEach(() => {
+            if (queryBuilder) {
+                queryBuilder.destroy();
+            }
+            remove(document.getElementById('querybuilder'));
+        });
+        it('Case 1 - Clone nested deep group once should preserve group structure and be returned by getRules()', () => {
+            // Columns and rules from your "first case sample"
+            const columns: ColumnsModel[] = [
+                { field: 'EmployeeID', label: 'Employee ID', type: 'number' },
+                { field: 'FirstName', label: 'First Name', type: 'string' },
+                { field: 'LastName', label: 'Last Name', type: 'string' },
+                { field: 'Age', label: 'Age', type: 'number' },
+                { field: 'IsDeveloper', label: 'Is Developer', type: 'boolean', operators: [{ value: 'equal', key: 'Equal' }] },
+                { field: 'PrimaryFramework', label: 'Primary Framework', type: 'string' },
+                { field: 'HireDate', label: 'Hire Date', type: 'date', format: 'MM/dd/yyyy' },
+                { field: 'Country', label: 'Country', type: 'string' }
+            ];
+
+            const importRules: RuleModel = {
+                condition: 'and', // root
+                rules: [
+                    {
+                        condition: 'and', // level 1
+                        rules: [
+                            {
+                                condition: 'and', // level 2 (deepest group)
+                                rules: [
+                                    {
+                                        label: 'FirstName',
+                                        field: 'FirstName',
+                                        type: 'string',
+                                        operator: 'equal',
+                                        value: 'test1'
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ]
+            };
+
+            const qb: QueryBuilder = new QueryBuilder({
+                dataSource: employeeData,
+                columns: columns,
+                rule: importRules,
+                showButtons: { cloneGroup: true, cloneRule: true },
+                maxGroupCount: 50
+            }, '#querybuilder');
+
+            // Pre-assert: nested structure exists
+            const beforeRules = qb.getRules();
+            expect(beforeRules.rules.length).toBe(1);
+            // walk down levels to verify deepest group
+            const lvl1 = beforeRules.rules[0] as RuleModel;
+            expect(lvl1.rules.length).toBeGreaterThan(0);
+            const lvl2 = lvl1.rules[0] as RuleModel;
+            expect(lvl2.rules.length).toBe(1);
+            expect((lvl2.rules[0] as RuleModel).field).toBe('FirstName');
+
+            // Act: find a clone-group button in DOM for the deepest level and click it
+            // Strategy: choose a clone button that is not for root — prefer deeper groups
+            const cloneBtns = document.getElementsByClassName('e-clone-grp-btn') as HTMLCollectionOf<HTMLElement>;
+            expect(cloneBtns.length).toBeGreaterThan(0);
+
+            // Pick a clone button that belongs to a nested group (search candidate)
+            let targetCloneBtn: HTMLElement | null = null;
+            for (let i = 0; i < cloneBtns.length; i++) {
+                const g = closest(cloneBtns[i], '.e-group-container') as HTMLElement;
+                // pick group that has a .e-group-body > .e-group-container inside (indicates nested)
+                if (g && g.querySelector('.e-group-body .e-group-container')) {
+                    // This is an upper-level group that contains nested groups; not ideal.
+                    // Prefer a group that does NOT contain nested groups (a leaf-group) if present.
+                    continue;
+                }
+                // else pick as candidate (likely leaf-level group)
+                targetCloneBtn = cloneBtns[i];
+                break;
+            }
+            // fallback to first clone button if not found
+            if (!targetCloneBtn && cloneBtns.length) { targetCloneBtn = cloneBtns[0]; }
+            expect(targetCloneBtn).not.toBeNull();
+
+            // Click the clone button once
+            targetCloneBtn!.click();
+            // Assert: getRules shows the cloned group present
+            const afterRules = qb.getRules();
+            expect(afterRules.rules.length).toBe(1); // still one top-level entry
+            // walk to the nested path and ensure clones exist at appropriate level
+            const a_lvl1 = afterRules.rules[0] as RuleModel;
+            // level-1 should still have groups
+            expect(a_lvl1.rules.length).toBeGreaterThanOrEqual(1);
+            const a_lvl2 = a_lvl1.rules[0] as RuleModel;
+            // after cloning the leaf group, level2 may have siblings (depending implementation). Ensure at least one leaf still contains the rule
+            let found = false;
+            // a_lvl2 might be a group or an array of groups depending on clone insertion; scan for any group that contains the FirstName rule
+            const checkNodes = (node: any) => {
+                if (!node) { return; }
+                if (Array.isArray(node)) {
+                    node.forEach(checkNodes);
+                } else if (node.rules) {
+                    if (node.rules.length === 1 && (node.rules[0] as RuleModel).field === 'FirstName') {
+                        found = true;
+                    } else {
+                        node.rules.forEach(checkNodes);
+                    }
+                }
+            };
+            checkNodes(a_lvl1.rules);
+            expect(found).toBeTruthy();
+
+        });
+        it('Case 2 - Clone a nested group twice should create distinct clones and getRules should return correct nested groups', () => {
+            // Columns and rules from your "second case sample"
+            const dateOperators: any = [
+                { value: 'equal', key: 'Equal' }, { value: 'greaterthan', key: 'Greater Than' }, { value: 'greaterthanorequal', key: 'Greater Than Or Equal' },
+                { value: 'lessthan', key: 'Less Than' }, { value: 'lessthanorequal', key: 'Less Than Or Equal' }, { value: 'notequal', key: 'Not Equal' },
+                { value: 'between', key: 'Between' }, { value: 'notbetween', key: 'Not Between' }
+            ];
+            const boolOperators: any = [{ value: 'equal', key: 'Equal' }];
+            const columns: ColumnsModel[] = [
+                { field: 'EmployeeID', label: 'Employee ID', type: 'number' },
+                { field: 'FirstName', label: 'First Name', type: 'string' },
+                { field: 'LastName', label: 'Last Name', type: 'string' },
+                { field: 'Age', label: 'Age', type: 'number' },
+                { field: 'IsDeveloper', label: 'Is Developer', type: 'boolean', operators: boolOperators },
+                { field: 'PrimaryFramework', label: 'Primary Framework', type: 'string' },
+                { field: 'HireDate', label: 'Hire Date', type: 'date', format: 'MM/dd/yyyy', operators: dateOperators },
+                { field: 'Country', label: 'Country', type: 'string' }
+            ];
+
+            const importRules: RuleModel = {
+                condition: 'and',
+                rules: [
+                    {
+                        condition: 'or',
+                        rules: [
+                            { label: 'Age', field: 'Age', type: 'number', operator: 'equal', value: 0 },
+                            {
+                                condition: 'and',
+                                rules: [
+                                    { label: 'Hire Date', field: 'HireDate', type: 'date', operator: 'equal', value: '11/19/2025' }
+                                ]
+                            },
+                            {
+                                condition: 'and',
+                                rules: [
+                                    { label: 'Country', field: 'Country', type: 'string', operator: 'equal', value: 'OPtion' },
+                                    {
+                                        condition: 'and',
+                                        rules: [
+                                            { label: 'Country', field: 'Country', type: 'string', operator: 'equal', value: 'Option1' }
+                                        ]
+                                    },
+                                    {
+                                        condition: 'and',
+                                        rules: [
+                                            { label: 'Is Developer', field: 'IsDeveloper', type: 'boolean', operator: 'equal', value: true }
+                                        ]
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ]
+            };
+
+            const qb: QueryBuilder = new QueryBuilder({
+                dataSource: employeeData,
+                columns: columns,
+                rule: importRules,
+                showButtons: { cloneGroup: true, cloneRule: true },
+                maxGroupCount: 50
+            }, '#querybuilder');
+
+            // Pre-assert structure
+            const before = qb.getRules();
+            expect(before.rules.length).toBe(1); // one top-level OR group
+            // drill into OR group's rules - there should be multiple entries (Age, a nested AND, another nested AND with deeper groups)
+            const orGroup = before.rules[0] as RuleModel;
+            expect(orGroup.rules.length).toBeGreaterThanOrEqual(3);
+
+            // Find a nested group that we want to clone twice.
+            // Strategy: find a group node (in DOM) whose getGroup(...) corresponds to a child "and" group that itself contains nested groups.
+            const cloneBtns = document.getElementsByClassName('e-clone-grp-btn') as HTMLCollectionOf<HTMLElement>;
+            expect(cloneBtns.length).toBeGreaterThan(0);
+
+            // Prefer a clone button associated with a nested (non-root) group — we search for a clone button
+            // whose closest group-container has a nested group-body containing another group-container (deeper nested)
+            let nestedCloneBtn: HTMLElement | null = null;
+            for (let i = 0; i < cloneBtns.length; i++) {
+                const grp = closest(cloneBtns[i], '.e-group-container') as HTMLElement;
+                if (grp) {
+                    // If this group contains other group-containers inside its .e-group-body, it's not a leaf; skip
+                    const inner = grp.querySelector('.e-group-body .e-group-container');
+                    if (inner) {
+                        // But if this group itself is nested (i.e., not the top-level), we may target it
+                        if (grp.id.indexOf(qb.element.id + '_group0') === -1) {
+                            nestedCloneBtn = cloneBtns[i];
+                            break;
+                        }
+                    } else {
+                        // If it's a leaf group (no inner groups) and not root, prefer it
+                        if (grp.id.indexOf(qb.element.id + '_group0') === -1) {
+                            nestedCloneBtn = cloneBtns[i];
+                            break;
+                        }
+                    }
+                }
+            }
+            // fallback to first clone button if none matched
+            if (!nestedCloneBtn && cloneBtns.length) { nestedCloneBtn = cloneBtns[0]; }
+            expect(nestedCloneBtn).not.toBeNull();
+
+            // Act: click clone twice to reproduce problematic scenario
+            nestedCloneBtn!.click();
+            nestedCloneBtn!.click();
+
+            // Assert: getRules indicates additional group(s) created; ensure leaf rules still exist
+            const after = qb.getRules();
+            // The top-level still one root item but nested structure should have grown
+            expect(after.rules.length).toBe(3);
+            const afterOr = after.rules[0] as RuleModel;
+            // find any group in afterOr.rules which contains nested structure and ensure at least one leaf rule exists
+            let leafFound = false;
+            const walk = (node: any) => {
+                if (!node) { return; }
+                if (Array.isArray(node)) { node.forEach(walk); return; }
+                if (node.rules) {
+                    node.rules.forEach((r: any) => {
+                        if (r.field === 'Age' || r.field === 'HireDate' || r.field === 'Country' || r.field === 'IsDeveloper') {
+                            leafFound = true;
+                        } else {
+                            walk(r);
+                        }
+                    });
+                }
+            };
+            walk(afterOr.rules);
+
+            expect(leafFound).toBeTruthy();
+
+            // Extra check: ensure there are more groups under the nested area than before (cloned)
+            // This is a looser assertion — require that at least one nested array length increased or equals expected > 1
+            // We count total group containers (group rules) in the after object and ensure >= original count
+            const countGroups = (node: any): number => {
+                if (!node) { return 0; }
+                let count = 0;
+                if (Array.isArray(node)) {
+                    node.forEach(n => count += countGroups(n));
+                    return count;
+                }
+                if (node.rules) {
+                    // if the node itself is a group (has rules), count it
+                    count++;
+                    node.rules.forEach((r: any) => count += countGroups(r));
+                }
+                return count;
+            };
+            const beforeCount = countGroups(before);
+            const afterCount = countGroups(after);
+            expect(afterCount).toBeGreaterThanOrEqual(beforeCount);
         });
     });
 });

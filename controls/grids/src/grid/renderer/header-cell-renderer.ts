@@ -165,7 +165,9 @@ export class HeaderCellRenderer extends CellRenderer implements ICellRenderer<Co
             const headerElement: Element = node.querySelector('.e-headercelldiv');
             if (isReactCompiler || isReactChild || isReactPrintGrid) {
                 const copied: Object = { 'index': colIndex };
-                node.querySelector('.e-headertext').remove();
+                if (node.querySelector('.e-headertext')) {
+                    node.querySelector('.e-headertext').remove();
+                }
                 headerElement.appendChild(templateHeaderText);
                 column.getHeaderTemplate()(
                     extend(copied, col), gridObj, 'headerTemplate', headerTempID, this.parent[`${str}`], null, headerElement.querySelector('.e-headertext'));

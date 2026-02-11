@@ -150,7 +150,8 @@ export interface ICellRenderer {
         mergeBorderRows?: number[]): void;
     refresh(
         rowIdx: number, colIdx: number, lastCell?: boolean, element?: Element, checkCF?: boolean, checkWrap?: boolean,
-        skipFormatCheck?: boolean, isRandomFormula?: boolean, fillType?: string, prevCell?: HTMLTableCellElement): void;
+        skipFormatCheck?: boolean, isRandomFormula?: boolean, fillType?: string, prevCell?: HTMLTableCellElement,
+        viewportTopIdx?: number): void;
 }
 
 /**
@@ -334,6 +335,7 @@ export interface CellRenderArgs {
     mergeBorderRows?: number[];
     visibleNotes?: ExtendedNoteModel[];
     prevCell?: HTMLTableCellElement;
+    viewportTopIdx?: number;
 }
 /** @hidden */
 export interface IAriaOptions<T> {

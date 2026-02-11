@@ -2,6 +2,18 @@
 
 ## [Unreleased]
 
+### RichTextEditor
+
+#### Bug Fixes
+
+- `#I807353` - Now, lists are correctly inserted into the editor when copied from an online Word document.
+
+- `#I801773` - Now, the change event is properly triggered when the Rich Text Editor is rendered in `iframe` mode when `saveInterval` is configured.
+
+- `#I806375` - Now, applying the clear format option to table cells in the Rich Text Editor will eliminate all formatting from the selected cells properly.
+
+- `#I806936` - Now, table column widths are preserved when copying and pasting a table within the Rich Text Editor.
+
 ## 32.1.25 (2026-01-27)
 
 ### RichTextEditor

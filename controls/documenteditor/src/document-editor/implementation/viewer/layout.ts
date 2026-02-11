@@ -535,12 +535,13 @@ export class Layout {
                 if (this.documentHelper) {
                     if (!isReLayout) {
                         this.documentHelper.isScrollHandler = true;
-                        // if (this.documentHelper.owner.isSpellCheck && this.documentHelper.owner.spellChecker.enableOptimizedSpellCheck) {
-                        // this.documentHelper.triggerElementsOnLoading = true;
-                        // }
-                        this.viewer.updateScrollBars();
-                        this.documentHelper.isScrollHandler = false;
                     }
+                    // if (this.documentHelper.owner.isSpellCheck && this.documentHelper.owner.spellChecker.enableOptimizedSpellCheck) {
+                    // this.documentHelper.triggerElementsOnLoading = true;
+                    // }
+                    this.viewer.updateScrollBars();
+                    this.documentHelper.isScrollHandler = false;
+                    
                     this.isInitialLoad = false;
                 }
             }, 50);
@@ -2327,6 +2328,9 @@ export class Layout {
         if (element instanceof ShapeElementBox && element.isHorizontalRule) {
             return;
         }
+        if (element instanceof GroupShapeElementBox && element.childWidgets && element.childWidgets.length <=0) {
+            return;
+        }
         if (element.textWrappingStyle !== 'Inline') {
             if (!isPaste) {
                 const position: Point = this.getFloatingItemPoints(element);
@@ -2484,7 +2488,7 @@ export class Layout {
             }
         }
     }
-    private layoutLine(line: LineWidget, count: number): LineWidget {
+    private layoutLine(line: LineWidget, count: number, canSkipIsChangeDetected?: boolean): LineWidget {
         const paragraph: ParagraphWidget = line.paragraph;
         if (line.children.length === 0) {
             this.moveElementFromNextLine(line);
@@ -2515,7 +2519,7 @@ export class Layout {
             line = element.line;
             if (element instanceof TextElementBox) {
                 const textElement: TextElementBox = element as TextElementBox;
-                if (!isNullOrUndefined(textElement.errorCollection) && textElement.errorCollection.length > 0) {
+                if (!canSkipIsChangeDetected && !isNullOrUndefined(textElement.errorCollection) && textElement.errorCollection.length > 0) {
                     textElement.isChangeDetected = true;
                 }
             }
@@ -3528,7 +3532,7 @@ export class Layout {
                         if (elementBox.line.paragraph) {
                             //Right indent is considered only if the rect.X greater than the floating item's X position and
                             //Text wrapping style should not be left
-                            if (rect.x >= textWrappingBounds.x && textWrappingType !== 'Left') {
+                            if (rect.x >= textWrappingBounds.x && textWrappingType !== 'Left' && paragarphRightIndent > 0) {
                                 rightIndent = paragarphRightIndent;
                             }
                             //Left indent is considered only if the rect.X less than the floating item's X position and
@@ -5204,7 +5208,7 @@ export class Layout {
         }
         //Updates before spacing at the top of Paragraph first line.
         if (isParagraphStart) {
-            beforeSpacing = this.getBeforeSpacing(paragraph, pageIndex);
+            beforeSpacing = this.getBeforeSpacing(paragraph, true);
             firstLineIndent = HelperMethods.convertPointToPixel(paraFormat.firstLineIndent);
         }
         //Updates after spacing at the bottom of Paragraph last line.
@@ -5356,7 +5360,7 @@ export class Layout {
         }
         //Updates before spacing at the top of Paragraph first line.
         if (isParagraphStart) {
-            beforeSpacing = this.getBeforeSpacing(paragraph, pageIndex);
+            beforeSpacing = this.getBeforeSpacing(paragraph, true);
             firstLineIndent = HelperMethods.convertPointToPixel(paraFormat.firstLineIndent);
         }
         //Updates after spacing at the bottom of Paragraph last line.
@@ -5951,6 +5955,7 @@ export class Layout {
             if (paragraphWidget.indexInOwner === 0 && paragraphWidget.bodyWidget.indexInOwner === 0 && index === 0 && isNullOrUndefined(paragraphWidget.previousRenderedWidget)) {
                 isMove = false;
             }
+            let isAddBeforeSpacing: boolean = false;
             if (index > 0) {
                 if (line.isLastLine() && isPageBreak) {
                     return;
@@ -5976,6 +5981,22 @@ export class Layout {
                 paragraphWidget = nextParagraph;
                 this.viewer.clientActiveArea.height -= this.getFootNoteHeight(footWidget);
             } else if (!isPageBreak && isMove) {
+                if (paragraphWidget.containerWidget instanceof BodyWidget && paragraphWidget instanceof ParagraphWidget && !this.isImagePresent(paragraphWidget) && isNullOrUndefined(paragraphWidget.bodyWidget.containerWidget) &&
+                    paragraphWidget === paragraphWidget.containerWidget.lastChild && paragraphWidget.bodyWidget.getSplitWidgets()[0].previousRenderedWidget &&
+                    (paragraphWidget.bodyWidget.getSplitWidgets()[0] as BodyWidget).sectionIndex !== (paragraphWidget.bodyWidget.getSplitWidgets()[0].previousRenderedWidget as BodyWidget).sectionIndex
+                ) {
+                    let beforeSpacing: number = this.getBeforeSpacing(paragraphWidget, true);
+                    (paragraphWidget.childWidgets[0] as LineWidget).height -= beforeSpacing;
+                    if ((paragraphWidget.childWidgets[0] as LineWidget).margin) {
+                        (paragraphWidget.childWidgets[0] as LineWidget).margin.top -= beforeSpacing;
+                    }
+                    let val: ElementBox[] = (paragraphWidget.childWidgets[0] as LineWidget).children;
+                    for (let i: number = 0; i < val.length; i++) {
+                        let element: ElementBox = val[i];
+                        element.margin.top -= beforeSpacing;
+                    }
+                    isAddBeforeSpacing = true;
+                }
                 paragraphWidget.containerWidget.removeChild(paragraphWidget.indexInOwner);
                 if (paragraphWidget instanceof ParagraphWidget && paragraphWidget.floatingElements.length > 0) {
                     this.addRemoveFloatElementsFromBody(paragraphWidget, paragraphWidget.containerWidget as BodyWidget, false);
@@ -5997,6 +6018,19 @@ export class Layout {
                     }
                 }
                 paragraphWidget.containerWidget = nextBody;
+                // After the paragraph moves to the next page, we need to re-update its height and margins based on the beforeSpacing value. The beforeSpacing should be recalculated according to the previous page.
+                if (isAddBeforeSpacing) {
+                    let beforeSpacing: number = this.getBeforeSpacing(paragraphWidget, true);
+                    (paragraphWidget.childWidgets[0] as LineWidget).height += beforeSpacing;
+                    if ((paragraphWidget.childWidgets[0] as LineWidget).margin) {
+                        (paragraphWidget.childWidgets[0] as LineWidget).margin.top += beforeSpacing;
+                    }
+                    let val: ElementBox[] = (paragraphWidget.childWidgets[0] as LineWidget).children;
+                    for (let i: number = 0; i < val.length; i++) {
+                        let element: ElementBox = val[i];
+                        element.margin.top += beforeSpacing;
+                    }
+                }
                 this.viewer.updateClientAreaLocation(paragraphWidget, this.viewer.clientActiveArea);
                 if (keepLinesTogether || keepWithNext) {
                     if (paragraphWidget.bodyWidget.page.footnoteWidget) {
@@ -7793,7 +7827,7 @@ export class Layout {
         return undefined;
     }
 
-    public getBeforeSpacing(paragraph: ParagraphWidget, pageIndex?: number): number {
+    public getBeforeSpacing(paragraph: ParagraphWidget, isFromMoveToNextPage?: boolean): number {
         let beforeSpacing: number = 0;
 
         if (!this.documentHelper.dontUseHtmlParagraphAutoSpacing) {
@@ -7814,15 +7848,41 @@ export class Layout {
                     beforeSpacing = paragraph.paragraphFormat.beforeSpacing;
                 }
             } else {
-                if (pageIndex > 0 && paragraph === paragraph.bodyWidget.childWidgets[0]) {
-                    if (this.documentHelper.pages[pageIndex].sectionIndex !== this.documentHelper.pages[pageIndex - 1].sectionIndex) {
+                if (isFromMoveToNextPage && paragraph.bodyWidget instanceof BodyWidget && isNullOrUndefined(paragraph.bodyWidget.containerWidget) && paragraph === paragraph.bodyWidget.childWidgets[0] && isNullOrUndefined((paragraph.bodyWidget.childWidgets[0] as ParagraphWidget).previousSplitWidget)) {
+                    let bodyWidget: BodyWidget = paragraph.bodyWidget;
+                    let previousRenderedWidget: Widget = bodyWidget.previousRenderedWidget;
+                    if (!isNullOrUndefined(previousRenderedWidget) && !isNullOrUndefined(previousRenderedWidget.lastChild)) {
+                        let isMultiColumnSplit: boolean = bodyWidget.sectionIndex === (previousRenderedWidget as BodyWidget).sectionIndex && bodyWidget.columnIndex !== (previousRenderedWidget as BodyWidget).columnIndex && bodyWidget.getSplitWidgets()[0].previousRenderedWidget &&
+                            bodyWidget.sectionIndex !== (bodyWidget.getSplitWidgets()[0].previousRenderedWidget as BodyWidget).sectionIndex && this.documentHelper.pages.indexOf(bodyWidget.page) === this.documentHelper.pages.indexOf((bodyWidget.getSplitWidgets()[0].previousRenderedWidget as BodyWidget).page);
+                        if (bodyWidget.sectionIndex !== (previousRenderedWidget as BodyWidget).sectionIndex || isMultiColumnSplit) {
+                            let previousBlock: BlockWidget = previousRenderedWidget.lastChild as BlockWidget;
+                            if (previousBlock instanceof ParagraphWidget) {
+                                let afterSpacing: number = this.getAfterSpacing(previousBlock);
+                                let before: number = paragraph.paragraphFormat.beforeSpacing;
+                                if (paragraph.paragraphFormat.spaceBeforeAuto) {
+                                    before = 14;
+                                }
+                                if (afterSpacing < before) {
+                                    beforeSpacing = before - afterSpacing;
+                                }
+                            } else if (previousBlock instanceof TableWidget) {
+                                if (paragraph.paragraphFormat.spaceBeforeAuto) {
+                                    beforeSpacing = 14;
+                                } else {
+                                    beforeSpacing = paragraph.paragraphFormat.beforeSpacing;
+                                }
+                            }
+                        }
+                    }
+                    else {
                         if (paragraph.paragraphFormat.spaceBeforeAuto) {
-                            beforeSpacing = 14;
+                            beforeSpacing = 0;
                         } else {
                             beforeSpacing = paragraph.paragraphFormat.beforeSpacing;
                         }
                     }
-                } else {
+                }
+                else {
                     if (paragraph.paragraphFormat.spaceBeforeAuto) {
                         beforeSpacing = 0;
                     } else {
@@ -10325,7 +10385,7 @@ export class Layout {
     }
 
     /* eslint-disable-next-line max-len */
-    public reLayoutParagraph(paragraphWidget: ParagraphWidget, lineIndex: number, elementBoxIndex: number, isBidi?: boolean, isSkip?: boolean): void {
+    public reLayoutParagraph(paragraphWidget: ParagraphWidget, lineIndex: number, elementBoxIndex: number, isBidi?: boolean, isSkip?: boolean, canSkipIsChangeDetected?: boolean): void {
         if (this.isReplaceAll || (this.viewer.owner.editorModule && this.viewer.owner.editorModule.restrictLayout) || !this.viewer.owner.enableLayout) {
             return;
         }
@@ -10444,7 +10504,7 @@ export class Layout {
                 this.isBidiReLayout = false;
             } else {
                 // this.isRelayout = true;
-                this.reLayoutLine(paragraphWidget, lineIndex, isBidi, isSkip, undefined);
+                this.reLayoutLine(paragraphWidget, lineIndex, isBidi, isSkip, undefined, canSkipIsChangeDetected);
             }
         }
         if (paragraphWidget.bodyWidget instanceof HeaderFooterWidget &&
@@ -11853,7 +11913,7 @@ export class Layout {
                 block = block.combineWidget(this.viewer) as TableWidget;
                 this.clearTableWidget(block as TableWidget, true, true, true);
             }
-            viewer.updateClientAreaForBlock(block, true);
+            viewer.updateClientAreaForBlock(block, true, undefined, false, true);
             if ((block as TableWidget).wrapTextAround) {
                 block.isLayouted = false;
             }
@@ -13273,7 +13333,7 @@ export class Layout {
     //#region Relayout Parargaph
 
     /* eslint-disable  */
-    public reLayoutLine(paragraph: ParagraphWidget, lineIndex: number, isBidi: boolean, isSkip?: boolean, isSkipList?: boolean): void {
+    public reLayoutLine(paragraph: ParagraphWidget, lineIndex: number, isBidi: boolean, isSkip?: boolean, isSkipList?: boolean, canSkipIsChangeDetected?: boolean): void {
         if (!this.documentHelper.owner.editorModule.isFootnoteElementRemoved) {
             this.isFootnoteContentChanged = false;
         }
@@ -13340,7 +13400,7 @@ export class Layout {
                 this.viewer.updateClientWidth(firstLineIndent);
             }
             do {
-                lineToLayout = this.layoutLine(lineToLayout, 0);
+                lineToLayout = this.layoutLine(lineToLayout, 0, canSkipIsChangeDetected);
                 paragraph = lineToLayout.paragraph;
                 lineToLayout = lineToLayout.nextLine;
             } while (lineToLayout);

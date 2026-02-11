@@ -46,10 +46,9 @@ export class WrapText {
     }
 
     private wrapTextHandler(
-        args: {
-            range: number[], wrap: boolean, sheet: SheetModel, initial: boolean, td: Element, row: HTMLElement,
-            hRow: HTMLElement, isCustomHgt?: boolean, isPublic?: boolean, outsideViewport?: boolean, isOtherAction?: boolean
-        }): void {
+        args: { range: number[], wrap: boolean, sheet: SheetModel, initial: boolean, td: Element, row: HTMLElement,
+            hRow: HTMLElement, isRender?: boolean, isCustomHgt?: boolean, isPublic?: boolean, outsideViewport?: boolean,
+            isOtherAction?: boolean }): void {
         if (args.initial || inView(this.parent, args.range, true)) {
             if (args.isPublic && isReadOnlyCells(this.parent, args.range)) { return; }
             if (args.initial && !args.td && !args.outsideViewport && inView(this.parent, args.range, true)) {
@@ -165,7 +164,7 @@ export class WrapText {
                             const prevHgt: number = getRowHeight(args.sheet, i);
                             if ((args.wrap && (args.isOtherAction ? maxHgt >= 20 : maxHgt > 20) && getMaxHgt(args.sheet, i) <= maxHgt) ||
                                 ((!args.wrap || !displayText) && getMaxHgt(args.sheet, i) < prevHgt && prevHgt > 20)) {
-                                if (prevHgt !== maxHgt) {
+                                if (args.isRender ? prevHgt < maxHgt : prevHgt !== maxHgt) {
                                     if (ele) {
                                         setRowEleHeight(this.parent, args.sheet, maxHgt, i, args.row, args.hRow, visibleRow);
                                         if (ele && args.sheet.conditionalFormats && args.sheet.conditionalFormats.length) {

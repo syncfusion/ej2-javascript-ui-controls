@@ -2698,3 +2698,53 @@ describe('Batch Editing - Frozen Rows with new row', () => {
         destroy(gridObj);
     });
 });
+
+describe('1006333-AddRecord method not working when adding as child in checkbox multiple selection and persistselection in ej2 treegrid batch edit sample', () => {
+    let gridObj: TreeGrid;
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: sampleData,     
+                childMapping: 'subtasks',
+                editSettings: {
+                    allowAdding: true,
+                    allowEditing: true,
+                    mode: 'Batch',
+                    newRowPosition: 'Child',
+                },
+                selectionSettings: { persistSelection: true, type: 'Multiple', checkboxOnly: true },
+                toolbar: ['Add', 'Delete', 'Update', 'Cancel'],
+                treeColumnIndex: 1,
+                columns: [
+                    { field: 'taskID', headerText: 'Task ID', isPrimaryKey: true, showCheckbox: true},
+                    { field: 'taskName', headerText: 'Task Name' },
+                    { field: 'progress', headerText: 'Progress' }
+
+                ]
+            },
+            done
+        );
+    })
+    it('checking if the record is correctly added to parent ', (done: Function) => {
+        const child = {
+        TaskID:1001,
+        TaskName: 'New Task',
+        StartDate: new Date(),
+        Duration: 1,
+      };
+
+    gridObj.actionComplete = (args)=> {
+        if (args.requestType === 'batchsave') {
+            let rows: any = args.rows;
+            expect(rows[2].data.hasChildRecords).toBe(true);
+            done();
+        }
+    }
+    gridObj.addRecord(child, 2,"Child");
+    (<any>gridObj.grid.toolbarModule).toolbarClickHandler({ item: { id: gridObj.grid.element.id + '_update' } });
+    select('#' + gridObj.element.id + '_gridcontrol' + 'EditConfirm', gridObj.element).querySelectorAll('button')[0].click();
+    });
+    afterAll(() => {
+        destroy(gridObj);
+    });
+});

@@ -1,6 +1,6 @@
 import { SpreadsheetHelper } from '../util/spreadsheethelper.spec';
 import { defaultData } from '../util/datasource.spec';
-import { getCell, getRowHeight, RowModel, SheetModel, Spreadsheet } from '../../../src/index';
+import { getCell, getRowHeight, RowModel, CellModel, SheetModel, Spreadsheet } from '../../../src/index';
 
 describe('Wrap ->', () => {
     let helper: SpreadsheetHelper = new SpreadsheetHelper('spreadsheet');
@@ -635,6 +635,167 @@ describe('Wrap ->', () => {
             expect(helper.invoke('getCell', [1, 0]).classList).not.toContain('e-wraptext');
             const wrapBtn = document.getElementById('spreadsheet_wrap');
             expect(wrapBtn.parentElement.classList).toContain('e-overlay');
+            done();
+        });
+    });
+    describe('EJ2-1003204: Wrap not calculated correctly for cells in the same row during initial rendering', () => {
+        beforeAll((done: Function) => {
+            helper.initializeSpreadsheet({
+                height: '720px',
+                width: '1530px',
+                showRibbon: false,
+                showFormulaBar: false,
+                scrollSettings: { isFinite: true },
+                allowInsert: false,
+                allowDelete: false,
+                sheets: [
+                    {
+                        isProtected: true,
+                        protectSettings: { selectCells: true },
+                        colCount: 7,
+                        rowCount: 22,
+                        name: 'Property Values',
+                        columns: [
+                            { width: 400 },
+                            { width: 120 },
+                            { width: 120 },
+                            { width: 120 },
+                            { width: 120 },
+                            { width: 300 },
+                            { width: 300 }
+                        ],
+                        rows: [
+                            {
+                                cells: [
+                                    { value: 'Machinery & Equipment Value (enter Replacement Cost value not Book Value)', isLocked: true, wrap: true, style: { textAlign: 'left' } },
+                                    { value: '', isLocked: false, format: '#,##0;(#,##0)', style: { textAlign: 'right', backgroundColor: '#FFFFC8' } },
+                                    { value: '5000.00', isLocked: true, format: '#,##0;(#,##0)', style: { textAlign: 'right' } },
+                                    { isLocked: true, format: '#,##0;(#,##0)', style: { textAlign: 'right' } },
+                                    { isLocked: true, format: '#,##0.0%;(#,##0.0%)', style: { textAlign: 'right' } },
+                                    { value: '', isLocked: false, style: { textAlign: 'left', backgroundColor: '#FFFFC8' } },
+                                    { value: '' }
+                                ]
+                            }
+                            ,
+                            {
+                                cells: [
+                                    { value: 'Inventory Value (included Raw Materials and Work in Process at replacement cost and Finished Goods at selling price)', isLocked: true, wrap: true, style: { textAlign: 'left' } },
+                                    { value: '', isLocked: false, format: '#,##0;(#,##0)', style: { textAlign: 'right', backgroundColor: '#FFFFC8' } },
+                                    { value: '4000.00', isLocked: true, format: '#,##0;(#,##0)', style: { textAlign: 'right' } },
+                                    { isLocked: true, format: '#,##0;(#,##0)', style: { textAlign: 'right' } },
+                                    { isLocked: true, format: '#,##0.0%;(#,##0.0%)', style: { textAlign: 'right' } },
+                                    { value: '', isLocked: false, style: { textAlign: 'left', backgroundColor: '#FFFFC8' } },
+                                    { value: 'If 3PL, enter value of Danaher Opco\'s inventory at site. Do not include inventory that belongs to others (non-Danaher/Opco companies)', isLocked: true, wrap: true, style: { textAlign: 'left', color: '#FF0000' } }
+                                ]
+                            }
+                            ,
+                            {
+                                cells: [
+                                    { value: 'Inventory Value (included Raw Materials and Work in Process at replacement cost and Finished Goods at selling price)', isLocked: true, wrap: true, style: { textAlign: 'left' } },
+                                    { isLocked: true, format: '#,##0;(#,##0)', style: { textAlign: 'right', fontWeight: 'bold' } },
+                                    { value: '15112.00', isLocked: true, format: '#,##0;(#,##0)', style: { textAlign: 'right', fontWeight: 'bold' } },
+                                    { isLocked: true, format: '#,##0;(#,##0)', style: { textAlign: 'right', fontWeight: 'bold' } },
+                                    { isLocked: true, format: '#,##0.0%;(#,##0.0%)', style: { textAlign: 'right', fontWeight: 'bold' } },
+                                    { value: '', isLocked: false, style: { textAlign: 'left', backgroundColor: '#FFFFC8' } },
+                                    { value: '' }
+                                ]
+                            }
+                            ,
+                            {
+                                cells: [
+                                    { value: 'If 3PL, enter value of Danaher Opco\'s inventory at site. Do not include inventory that belongs to others (non-Danaher/Opco companies)', isLocked: true, wrap: true, style: { textAlign: 'left', color: '#FF0000' } },
+                                    { value: '' },
+                                    { value: '' },
+                                    { value: '' },
+                                    { value: '' },
+                                    { value: '' },
+                                    { value: 'Inventory Value (included Raw Materials and Work in Process at replacement cost and Finished Goods at selling price)', isLocked: true, wrap: true, style: { textAlign: 'left' } }
+                                ]
+                            }
+                        ]
+                    }
+                ]
+            }, done);
+        });
+        afterAll(() => {
+            helper.invoke('destroy');
+        });
+        it('Wrap should calculate properly for every cell in a row', (done: Function) => {
+            const sheet: SheetModel = helper.getInstance().sheets[0];
+            expect(sheet.rows[1].cells[0].wrap).toBe(true);
+            expect(sheet.rows[1].cells[6].wrap).toBe(true);
+            expect(sheet.rows[2].cells[0].wrap).toBe(true);
+            expect(sheet.rows[3].cells[0].wrap).toBe(true);
+            expect(sheet.rows[3].cells[6].wrap).toBe(true);
+            const rowHeight1: number = sheet.rows[2].height;
+            expect(rowHeight1).not.toBe(20);
+            const rowHeight2: number = sheet.rows[1].height;
+            expect(rowHeight2).not.toBe(rowHeight1);
+            done();
+        });
+    });
+    describe('EJ2-1004314: Row height is not updated correctly when the sheet contains merged cells with wrap enabled', () => {
+        beforeAll((done: Function) => {
+            helper.initializeSpreadsheet({
+                sheets: [
+                    {
+                        topLeftCell: 'A20',
+                        rows: [
+                            { cells: [{ value: 'sheet - A1' }, { value: 'sheet - B1' }] },
+                            { cells: [{ value: 'sheet - A2' }, { value: 'sheet - B2' }] },
+                            { cells: [{ value: 'sheet - A3' }, { value: 'sheet - B3' }] },
+                            {
+                                customHeight: true, height: 31,
+                                cells: [{ value: '埼玉県さいたま市北区吉野町2-177-5', style: { textAlign: 'left', fontSize: '18pt' }, rowSpan: 2, colSpan: 3 }]
+                            },
+                            {
+                                customHeight: true, height: 21,
+                                cells: [{ style: { textAlign: 'left', fontSize: '18pt' }, rowSpan: -1 }]
+                            },
+                            { cells: [{ value: 'sheet - A4' }, { value: 'sheet - B4' }] },
+                            { cells: [{ value: 'sheet - A5' }, { value: 'sheet - B5' }] },
+                            { cells: [{ value: 'sheet - A6' }, { value: 'sheet - B6' }] },
+                            { cells: [{ value: 'sheet - A7' }, { value: 'sheet - B7' }] },
+                            { cells: [{ value: 'sheet - A8' }, { value: 'sheet - B8' }] },
+                            { cells: [{ value: 'sheet - A9' }, { value: 'sheet - B9' }] },
+                            { cells: [{ value: 'sheet - A10' }, { value: 'sheet - B10' }] },
+                            { cells: [{ value: 'sheet - A11' }, { value: 'sheet - B11' }] },
+                            { cells: [{ value: 'sheet - A12' }, { value: 'sheet - B12' }] },
+                            { cells: [{ value: 'sheet - A13' }, { value: 'sheet - B13' }] },
+                            { cells: [{ value: 'sheet - A14' }, { value: 'sheet - B14' }] },
+                            { cells: [{ value: 'sheet - A15' }, { value: 'sheet - B15' }] },
+                            { cells: [{ value: 'sheet - A16' }, { value: 'sheet - B16' }] },
+                            { cells: [{ value: 'Spreadsheet test', style: { textAlign: 'left' } }, { value: '2-1-223-4' }] },
+                            { cells: [{ value: 'Inventory Value', style: { textAlign: 'left' } }, { value: '1-4-566' }] },
+                            { cells: [{ value: 'Sheet', style: { textAlign: 'left' } }, { value: 'Sync' }] },
+                            {
+                                height: 25,
+                                cells: [{ value: 'Inventory Value', style: { textAlign: 'left' } }, { value: 'hello', rowSpan: 2, colSpan: 4, wrap: true }]
+                            }
+                        ]
+                    },
+                    {
+                        name: 'Sheet2',
+                        rows: [
+                            { cells: [{ value: 'Second sheet - A1' }, { value: 'Second sheet - B1' }] },
+                            { cells: [{ value: 'Second sheet - A2 (wrap)', wrap: true }, { value: 'Some Sheet2' }] }
+                        ]
+                    }
+                ]
+            }, done);
+        });
+        afterAll(() => {
+            helper.invoke('destroy');
+        });
+        it('Row height should update correctly on importing merge cell with wrap enabled', (done: Function) => {
+            const spreadsheet: Spreadsheet = helper.getInstance();
+            expect(spreadsheet.viewport.topIndex).toBe(4);
+            const cell: CellModel = spreadsheet.sheets[0].rows[21].cells[1];
+            expect(cell.rowSpan).toBe(2);
+            expect(cell.colSpan).toBe(4);
+            expect(cell.wrap).toBeTruthy();
+            let rowHdr: HTMLElement = helper.invoke('getRowHeaderTable').rows[17];
+            expect(rowHdr.offsetHeight).toBe(spreadsheet.sheets[0].rows[21].height);
             done();
         });
     });

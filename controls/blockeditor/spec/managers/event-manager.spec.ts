@@ -106,6 +106,7 @@ describe('Event Manager - keyboard, mouse, selection, and block change behaviors
             const contentElement2 = blockElement2.querySelector('.e-block-content') as HTMLElement;
             editor.blockManager.setFocusToBlock(blockElement1);
 
+            setCursorPosition(getBlockContentElement(blockElement2), 0);
             blockElement2.dispatchEvent(new MouseEvent('mouseup', { bubbles: true }));
             expect(editor.blockManager.currentFocusedBlock.id).toBe(blockElement2.id);
             // DOM neighbors around focused block

@@ -1863,6 +1863,7 @@ export class Edit {
      * @private
      */
     public initiateSaveAction(args: ITaskbarEditedEventArgs): void {
+        this.parent.editModule['updateParentRecords'] = [];
         const eventArgs: IActionBeginEventArgs = {};
         eventArgs.requestType = 'beforeSave';
         eventArgs.data = args.data;
@@ -1889,27 +1890,35 @@ export class Edit {
         const currentBaselineStart: Date = { ...eventArgs.data.ganttProperties.baselineStartDate };
         const currentBaselineEnd: Date = { ...eventArgs.data.ganttProperties.baselineEndDate };
         const currentProgress: number = eventArgs.data.ganttProperties.progress;
+        const currentDuration: number = eventArgs.data.ganttProperties.duration;
+        const currentTaskName: string = eventArgs.data.ganttProperties.taskName;
+        const currentStartDate: Date = eventArgs.data.ganttProperties.startDate;
+        const currentEndDate: Date = eventArgs.data.ganttProperties.endDate;
+        const currentWork: number = eventArgs.data.ganttProperties.work;
+        const currentMilestone: boolean = eventArgs.data.ganttProperties.isMilestone;
+        let isDateValidationOccurs: boolean = false;
         /* eslint-disable-next-line */
         const unModifiedData: any = extend({}, eventArgs.data.ganttProperties, undefined, true);
         this.parent.trigger('actionBegin', eventArgs, (eventArg: IActionBeginEventArgs) => {
             this.parent.treeGridModule.setCancelArgs = eventArg.cancel;
-            if (currentBaselineStart !== eventArg.data['ganttProperties'].baselineStartDate
-            || currentBaselineEnd !== eventArg.data['ganttProperties'].baselineEndDate) {
+            const ganttProps: ITaskData = eventArg.data['ganttProperties'];
+            const taskFields: TaskFieldsModel = this.parent.taskFields;
+            if (currentBaselineStart !== ganttProps.baselineStartDate
+            || currentBaselineEnd !== ganttProps.baselineEndDate) {
                 ganttObj.setRecordValue(
                     'baselineLeft', ganttObj.dataOperation.calculateBaselineLeft(
-                        eventArg.data['ganttProperties']),
-                    eventArg.data['ganttProperties'], true);
+                        ganttProps),
+                    ganttProps, true);
                 ganttObj.setRecordValue(
                     'baselineWidth', ganttObj.dataOperation.calculateBaselineWidth(
-                        eventArg.data['ganttProperties']),
-                    eventArg.data['ganttProperties'], true);
+                        ganttProps),
+                    ganttProps, true);
             }
-            if (this.parent.autoCalculateDateScheduling && unModifiedData !== eventArg.data['ganttProperties'] &&
+            if (this.parent.autoCalculateDateScheduling && unModifiedData !== ganttProps &&
                 !isNullOrUndefined(eventArg.data['parentItem'])) {
                 this.updateParentItemOnEditing();
                 this.parent.dataOperation.updateParentItems(eventArg.data as IGanttData, true);
             }
-            const ganttProps: ITaskData = eventArg.data['ganttProperties'];
             const { startDate, endDate, segments, durationUnit, isAutoSchedule, isMilestone } = ganttProps;
             const prevStart: Date = this.parent.treeGridModule['perviousStartDate'];
             const prevEnd: Date = this.parent.treeGridModule['perviousEndDate'];
@@ -1930,18 +1939,103 @@ export class Edit {
                     ganttProps.duration = duration;
                 }
             }
+            if (!isNullOrUndefined(taskFields.milestone) && !isNullOrUndefined(currentMilestone) &&
+            !isNullOrUndefined(eventArg.data[taskFields.milestone]) &&
+            currentMilestone !== eventArg.data[taskFields.milestone]) {
+                // To handle actionBegin true set for milestone property case
+                if (eventArg.data[taskFields.milestone]) {
+                    ganttProps.isMilestone = eventArg.data[taskFields.milestone];
+                    ganttProps.duration = 0;
+                    ganttProps.width = 0;
+                    isDateValidationOccurs = true;
+                }
+                else {
+                    ganttProps.isMilestone = eventArg.data[taskFields.milestone];
+                    const prevData: IGanttData = this.parent.previousRecords &&
+                    this.parent.previousRecords[(eventArg.data as IGanttData).uniqueID];
+                    ganttProps.duration = prevData.ganttProperties.duration;
+                }
+                const endDate: Date = this.parent.dataOperation.getEndDate(ganttProps.startDate,
+                                                                           ganttProps.duration,
+                                                                           ganttProps.durationUnit,
+                                                                           ganttProps, false);
+                ganttProps.endDate = endDate;
+            }
+            if (!isNullOrUndefined(taskFields.duration) && !isNullOrUndefined(eventArg.data[taskFields.duration]) &&
+            currentDuration !== eventArg.data[taskFields.duration]) {
+                ganttProps.duration = eventArg.data[taskFields.duration];
+                if (eventArg.data[taskFields.duration] !== 0) {
+                    ganttProps.isMilestone = false;
+                    if (!isNullOrUndefined(taskFields.milestone)) {
+                        eventArg.data[taskFields.milestone] = false;
+                    }
+                }
+                if (!isNullOrUndefined(taskFields.work) && !isNullOrUndefined(eventArg.data[taskFields.work])) {
+                    this.parent.editModule.updateResourceRelatedFields(eventArg.data as IGanttData, 'duration');
+                }
+                const endDate: Date = this.parent.dataOperation.getEndDate(ganttProps.startDate,
+                                                                           ganttProps.duration,
+                                                                           ganttProps.durationUnit,
+                                                                           ganttProps, false);
+                ganttProps.endDate = endDate;
+                isDateValidationOccurs = true;
+            }
+            if (!isNullOrUndefined(taskFields.name) && currentTaskName !== eventArg.data[taskFields.name]) {
+                ganttProps.taskName = eventArg.data[taskFields.name];
+            }
+            if (!isNullOrUndefined(taskFields.startDate) && !isNullOrUndefined(currentStartDate) &&
+            !isNullOrUndefined(eventArg.data[taskFields.startDate]) &&
+            currentStartDate.getTime() !== eventArg.data[taskFields.startDate].getTime()) {
+                const startDate: Date = this.parent.dateValidationModule.checkStartDate(eventArg.data[taskFields.startDate], ganttProps);
+                ganttProps.startDate = startDate;
+                isDateValidationOccurs = true;
+            }
+            if (!isNullOrUndefined(taskFields.endDate) && !isNullOrUndefined(currentEndDate) &&
+            !isNullOrUndefined(eventArg.data[taskFields.endDate]) &&
+            currentEndDate.getTime() !== eventArg.data[taskFields.endDate].getTime()) {
+                const endDate: Date = this.parent.dateValidationModule.checkEndDate(eventArg.data[taskFields.endDate], ganttProps);
+                ganttProps.endDate = endDate;
+                const duration: number = this.parent.dataOperation.getDuration(ganttProps.startDate, endDate, ganttProps.durationUnit,
+                                                                               true, false, true, ganttProps.calendarContext);
+                ganttProps.duration = duration;
+                if (ganttProps.duration !== 0) {
+                    ganttProps.isMilestone = false;
+                }
+                isDateValidationOccurs = true;
+            }
+            if (!isNullOrUndefined(taskFields.work) && !isNullOrUndefined(currentWork) &&
+            !isNullOrUndefined(eventArg.data[taskFields.work]) &&
+            currentWork !== eventArg.data[taskFields.work]) {
+                ganttProps.work = eventArg.data[taskFields.work];
+                this.parent.editModule.updateResourceRelatedFields(eventArg.data as IGanttData, 'work');
+                const endDate: Date = this.parent.dataOperation.getEndDate(ganttProps.startDate,
+                                                                           ganttProps.duration,
+                                                                           ganttProps.durationUnit,
+                                                                           ganttProps, false);
+                ganttProps.endDate = endDate;
+                isDateValidationOccurs = true;
+            }
+            if (isDateValidationOccurs) {
+                this.parent.predecessorModule.validatePredecessor(eventArg.data as IGanttData, [], '');
+                isDateValidationOccurs = false;
+            }
             this.parent.dataOperation.updateWidthLeft(eventArg.data as IGanttData);
-            if (!isNullOrUndefined(this.parent.taskFields.progress) && currentProgress !== eventArg.data['ganttProperties'].progress) {
-                const width: number = eventArg.data['ganttProperties'].isAutoSchedule ? eventArg.data['ganttProperties'].width :
-                    eventArg.data['ganttProperties'].autoWidth;
+            if (!isNullOrUndefined(taskFields.progress) && !isNullOrUndefined(eventArg.data[taskFields.progress]) &&
+            currentProgress !== eventArg.data[taskFields.progress]) {
+                const width: number = ganttProps.isAutoSchedule ? ganttProps.width :
+                    ganttProps.autoWidth;
                 this.parent.setRecordValue(
                     'progressWidth',
-                    this.parent.dataOperation.getProgressWidth(width, eventArg.data['ganttProperties'].progress),
-                    eventArg.data['ganttProperties'],
+                    this.parent.dataOperation.getProgressWidth(width, eventArg.data[taskFields.progress]),
+                    ganttProps,
                     true
                 );
+                if (eventArg.data[taskFields.progress] > 100) {
+                    eventArg.data[taskFields.progress] = 100;
+                }
+                ganttProps.progress = eventArg.data[taskFields.progress];
             }
-            this.parent.chartRowsModule.updateSegment(eventArg.data['ganttProperties'].segments, eventArg.data['ganttProperties'].taskId);
+            this.parent.chartRowsModule.updateSegment(ganttProps.segments, ganttProps.taskId);
             if (eventArg.cancel) {
                 this.reUpdatePreviousRecords();
                 this.parent.chartRowsModule.refreshRecords([args.data]);
@@ -2168,14 +2262,14 @@ export class Edit {
                     this.updateSharedTask(args.data);
                 }
             }
-            // method to update the edited parent records
-            for (let k: number = 0; k < this.updateParentRecords.length; k++) {
-                this.parent.dataOperation.updateParentItems(this.updateParentRecords[k as number]);
-            }
-            this.updateParentRecords = [];
             this.parent.editModule.dialogModule.isResourceUpdate = false;
             this.parent.editModule.dialogModule.previousResource = [];
         }
+        // method to update the edited parent records
+        for (let k: number = 0; k < this.updateParentRecords.length; k++) {
+            this.parent.dataOperation.updateParentItems(this.updateParentRecords[k as number]);
+        }
+        this.updateParentRecords = [];
         const criticalModule: CriticalPath = this.parent.criticalPathModule;
         if (this.parent.enableCriticalPath && criticalModule && criticalModule.criticalPathCollection) {
             criticalModule.showCriticalPath(true);

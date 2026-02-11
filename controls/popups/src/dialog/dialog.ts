@@ -2117,6 +2117,9 @@ export class Dialog extends Component<HTMLElement> implements INotifyPropertyCha
         if (!this.element.classList.contains(ROOT)) {
             return;
         }
+        if (this.enableResize && this.isModal) {
+            this.isModelResize = true;
+        }
         if (!this.element.classList.contains(DLG_SHOW) || (!isNullOrUndefined(isFullScreen))) {
             if (!isNullOrUndefined(isFullScreen)) {
                 this.fullScreen(isFullScreen);

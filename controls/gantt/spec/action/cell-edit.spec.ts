@@ -5964,7 +5964,7 @@ describe('CR-898960: Milestone endDate not properly validating when convert to t
         }
         ganttObj.actionComplete = (args: any): void => {
             if (args.type === 'save' && !isNullOrUndefined(ganttObj.currentViewData[0].ganttProperties.endDate)) {
-                expect(ganttObj.getFormatedDate(ganttObj.currentViewData[0].ganttProperties.endDate, 'M/d/yyyy')).toBe('4/5/2019');
+                expect(ganttObj.getFormatedDate(ganttObj.currentViewData[0].ganttProperties.endDate, 'M/d/yyyy')).toBe('4/4/2019');
                 expect(ganttObj.currentViewData[0].ganttProperties.isMilestone).toBe(false);
                 done();
             }
@@ -6384,6 +6384,9 @@ describe('CR-924980:Work calculation not working properly while changing endDate
                     { field: 'taskType', headerText: 'Task Type', width: '110' },
                 ],
             }, done);
+    });
+    beforeEach((done: Function) => {
+        setTimeout(done, 50);
     });
     it('Checking the work value, after enddate celledit action', () => {
         let endDate: HTMLElement = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table > tbody > tr:nth-child(1) > td:nth-child(4)') as HTMLElement;
@@ -7507,6 +7510,105 @@ describe('The behavior for editing parent tasks differs between cell edit and di
         let endDate: HTMLElement = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table > tbody > tr:nth-child(1) > td:nth-child(4)') as HTMLElement;
         triggerMouseEvent(endDate, 'dblclick');
         expect(endDate.classList.contains('e-editedbatchcell')).toBe(false)
+    });
+    afterAll(() => {
+        if (ganttObj) {
+            destroyGantt(ganttObj);
+        }
+    });
+});
+describe('CR: 805439 Gantt editing action', () => {
+    let ganttObj: Gantt;
+    let WBSData: object[]= [
+        {
+            TaskID: 1,
+            TaskName: 'Product concept',
+            StartDate: new Date('02/01/2026'),
+            EndDate: new Date('02/10/2026')
+        },
+        {
+            TaskID: 2,
+            TaskName: 'Defining the product and its usage',
+            StartDate: new Date('04/02/2025'),
+            Duration: 3,
+            Progress: 30,
+            ParentId: 1
+        },
+        {
+            TaskID: 3,
+            TaskName: 'Defining target audience',
+            StartDate: new Date('04/02/2025'),
+            Duration: 3,
+            ParentId: 1
+        },
+        {
+            TaskID: 8,
+            TaskName: 'Market research',
+            StartDate: new Date('04/02/2025'),
+            EndDate: new Date('04/21/2025'),
+            Predecessor: '1',
+        },
+        {
+            TaskID: 9,
+            TaskName: 'Demand analysis',
+            StartDate: new Date('04/04/2025'),
+            EndDate: new Date('04/06/2025'),
+            ParentId: 8
+        },
+        {
+            TaskID: 10,
+            TaskName: 'Customer strength',
+            StartDate: new Date('04/04/2025'),
+            Duration: 3,
+            Progress: 30,
+            Predecessor: '9',
+            ParentId: 8
+        },
+    ];
+    let preventDefault: Function = new Function();
+    beforeAll((done: Function) => {
+        ganttObj = createGantt(
+            {
+                dataSource: WBSData,
+                taskFields: {
+                    id: "TaskID",
+                    name: "TaskName",
+                    startDate: "StartDate",
+                    endDate: "EndDate",
+                    duration: "Duration",
+                    progress: "Progress",
+                    dependency: "Predecessor",
+                    parentID: 'ParentId'
+                },
+                editSettings: {
+                    allowAdding: true,
+                    allowEditing: true,
+                    allowDeleting: true,
+                    allowNextRowEdit: true
+                },
+                allowUnscheduledTasks: true,
+                toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel'],
+                columns: [
+                    { field: 'TaskID', headerText: 'Task ID' },
+                    { field: 'TaskName', headerText: 'Task Name', allowReordering: false },
+                    { field: 'StartDate', headerText: 'Start Date', allowSorting: false },
+                    { field: 'Duration', headerText: 'Duration'},
+                    { field: 'Progress', headerText: 'Progress', allowFiltering: false },
+                    { field: 'Predecessor', headerText: 'Predecessor' }
+                ],
+                splitterSettings: {
+                    position: "50%",
+                },
+            }, done);
+    });
+    it('Editing start date column', () => {
+        let startDate: HTMLElement = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table > tbody > tr:nth-child(5) > td:nth-child(3)') as HTMLElement;
+        triggerMouseEvent(startDate, 'dblclick');
+        let input: any = (document.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrolStartDate') as any).ej2_instances[0];
+        input.value = new Date('04/08/2025');
+        let element: HTMLElement = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table > tbody > tr:nth-child(3) > td:nth-child(2)') as HTMLElement;
+        triggerMouseEvent(element, 'click');
+        expect(ganttObj.getFormatedDate(ganttObj.currentViewData[4].ganttProperties.startDate, 'M/d/yyyy')).toBe('4/8/2025');
     });
     afterAll(() => {
         if (ganttObj) {

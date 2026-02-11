@@ -13,5 +13,5 @@
 @use 'ej2-popups/styles/tooltip/tailwind-definition' as *;
 @use 'kanban/tailwind-definition' as *;
 @use 'kanban/icons/tailwind' as *;
-@use 'kanban/all' as *;
-@use 'kanban/bigger' as *;
+@use 'kanban/all.tailwind' as *;
+@use 'kanban/bigger.tailwind' as *;

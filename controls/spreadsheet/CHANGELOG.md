@@ -2,6 +2,12 @@
 
 ## [Unreleased]
 
+### Spreadsheet
+
+#### Bug fixes
+
+- `#I801058` - Issue with "wrap not calculated correctly for cells in the same row during initial rendering" has been resolved.
+
 ## 32.2.3 (2026-02-05)
 
 ### Spreadsheet

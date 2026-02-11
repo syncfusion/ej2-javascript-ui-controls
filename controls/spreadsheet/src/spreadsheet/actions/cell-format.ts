@@ -1,4 +1,4 @@
-import { Spreadsheet, ICellRenderer, clearViewer, getTextHeightWithBorder } from '../../spreadsheet/index';
+import { Spreadsheet, ICellRenderer, clearViewer, getTextHeightWithBorder, getDefaultHeight } from '../../spreadsheet/index';
 import { getExcludedColumnWidth, selectRange, getLineHeight, getBorderHeight, completeAction, readonlyAlert, CellRenderArgs } from '../common/index';
 import { setRowEleHeight, setMaxHgt, getTextHeight, getMaxHgt, getLines, IRowRenderer } from '../common/index';
 import { CellFormatArgs, getRowHeight, applyCellFormat, CellStyleModel, Workbook, clearFormulaDependentCells, isReadOnlyCells, addListValidationDropdown } from '../../workbook/index';
@@ -32,7 +32,7 @@ export class CellFormat {
         }
         const keys: string[] = Object.keys(args.style);
         const sheet: SheetModel = this.parent.getActiveSheet();
-        if (args.lastCell && !keys.length && (getMaxHgt(sheet, args.rowIdx) <= (sheet.standardHeight || 20))) {
+        if (args.lastCell && !keys.length && (getMaxHgt(sheet, args.rowIdx) <= getDefaultHeight(sheet))) {
             this.updateBorderLineHeight();
             return;
         }
@@ -125,7 +125,7 @@ export class CellFormat {
                         }
                         if (args.lastCell) {
                             const height: number = getMaxHgt(sheet, args.rowIdx);
-                            const defaultHeight: number = sheet.standardHeight || 20;
+                            const defaultHeight: number = getDefaultHeight(sheet);
                             if (height > defaultHeight && height > getRowHeight(sheet, args.rowIdx)) {
                                 setRowEleHeight(this.parent, sheet, height, args.rowIdx, args.row, args.hRow);
                             }
@@ -148,9 +148,10 @@ export class CellFormat {
                     }
                 }
             } else if (!cellModel.wrap && (args.style.fontSize || args.style.fontFamily)) {
-                const size: number = getBorderHeight(args.rowIdx, args.colIdx, sheet);
-                const hgt: number = getRowHeight(sheet, args.rowIdx, true) - size;
-                if (hgt < getTextHeight(this.parent, cellModel.style) || (size > 1 && getRowHeight(sheet, args.rowIdx) < 20)) {
+                const rowIdx: number = args.viewportTopIdx === undefined ? args.rowIdx : args.viewportTopIdx;
+                const size: number = getBorderHeight(rowIdx, args.colIdx, sheet);
+                const hgt: number = getRowHeight(sheet, rowIdx, true) - size;
+                if (hgt < getTextHeight(this.parent, cellModel.style) || (size > 1 && getRowHeight(sheet, rowIdx) < 20)) {
                     cell.style.lineHeight = `${hgt}px`;
                 } else if (cell.style.lineHeight) {
                     cell.style.lineHeight = '';
@@ -220,7 +221,7 @@ export class CellFormat {
                     }
                     hgt = getTextHeightWithBorder(this.parent, rowIdx, colIdx, sheet, cell.style || this.parent.cellStyle, n);
                 }
-                const defaultHeight: number = sheet && sheet.standardHeight ? sheet.standardHeight : 20;
+                const defaultHeight: number = getDefaultHeight(sheet);
                 if (hgt < defaultHeight) {
                     hgt = defaultHeight; // default height
                 }

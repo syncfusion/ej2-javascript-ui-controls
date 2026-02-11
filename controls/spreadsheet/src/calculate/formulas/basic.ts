@@ -2,7 +2,7 @@ import { FormulasErrorsStrings, CommonErrors, IBasicFormula, getSkeletonVal } fr
 import { Calculate, getAlphalabel, CalcSheetFamilyItem } from '../base/index';
 import { isNullOrUndefined, getValue, Internationalization } from '@syncfusion/ej2-base';
 import { DataUtil } from '@syncfusion/ej2-data';
-import { DateFormatCheckArgs, checkDateFormat, dateToInt, isNumber, isCellReference, isValidCellReference } from '../../workbook/index';
+import { DateFormatCheckArgs, checkDateFormat, dateToInt, isNumber, isCellReference, isValidCellReference, getSheetIndexByName, workbookFormulaOperation, getRangeIndexes, getCellAddress } from '../../workbook/index';
 
 /**
  * Represents the basic formulas module.
@@ -4225,20 +4225,73 @@ export class BasicFormulas {
         }
 
         // args[1] codes
-        const valueCollection: string[] = []; let cellCollection: string[] | string; let isStringCollection: boolean = false;
+        const valueCollection: string[] = []; let isStringCollection: boolean = false; let grid: Object = this.parent.grid;
+        const curGrid: Object = this.parent.grid;
+        let isWildCardVal: boolean;
         if (argArr[1].indexOf(':') > -1 || this.parent.isCellReference(argArr[1])) {
-            cellCollection = this.parent.getCellCollection(argArr[1]);
-            if (cellCollection[0] === '#REF!') {
-                return this.parent.getErrorStrings()[CommonErrors.Name];
+            const cellIdxs: number[] = getRangeIndexes(argArr[1]);
+            const startRow: number = cellIdxs[0]; const startCol: number = cellIdxs[1];
+            let endRow: number = cellIdxs[2]; let endCol: number = cellIdxs[3];
+            if (startRow >= 1048576 || endRow >= 1048576 || startCol >= 16384 || endCol >= 16384) {
+                return errCollection[CommonErrors.Name];
             }
-            for (let j: number = 0; j < cellCollection.length; j++) {
-                const cellValue: number | string = this.parent.getValueFromArg(cellCollection[j as number]);
-                if (cellValue.indexOf(this.parent.tic) > -1 || isNaN(Number(cellValue))) {
-                    isStringCollection = true;
+            if (startRow !== endRow && startCol !== endCol) {
+                return errCollection[CommonErrors.NA];
+            }
+            let sheetToken: string = '';
+            const family: CalcSheetFamilyItem = this.parent.getSheetFamilyItem(grid);
+            if (argArr[1].startsWith('!')) {
+                sheetToken = argArr[1].substring(0, argArr[1].replace('!', '').indexOf('!') + 2);
+                if (family.tokenToParentObject !== null) {
+                    grid = family.tokenToParentObject.get(sheetToken);
                 }
-                valueCollection[j as number] = cellValue.split(this.parent.tic).join('');
+            } else if (family.parentObjectToToken !== null) {
+                sheetToken = family.parentObjectToToken.get(grid);
             }
-            if ((isStringValue && !isStringCollection) || (!isStringValue && isStringCollection)) {
+            const sheetId: number = this.parent.getSheetId(grid);
+            const sheetInfoArgs: { action: string, sheetInfo: { visibleName: string, sheet: string, index: number }[] } = {
+                action: 'getSheetInfo', sheetInfo: []
+            };
+            (this.parent.parentObject as { notify?: Function }).notify(workbookFormulaOperation, sheetInfoArgs);
+            const getCellValue: (row: number, col: number, curCell: string) => string =
+                this.parent.getCellValueFn(grid, this.parent.cell, sheetId, true);
+            let j: number = 0; let cellValue: string;
+            let performAction: Function; let result: number;
+            if (matchType === 0) {
+                isWildCardVal = argArr[0].indexOf('*') > -1 || argArr[0].indexOf('?') > -1;
+                performAction = (): void => {
+                    if (isWildCardVal) {
+                        cellValue = this.parent.findWildCardValue(argArr[0], cellValue);
+                    }
+                    if (argArr[0] === cellValue) {
+                        endCol = -2;
+                        endRow = -2;
+                        result = j + 1;
+                        return;
+                    }
+                    j++;
+                };
+            } else {
+                performAction = (): void => {
+                    valueCollection[j as number] = cellValue;
+                    j++;
+                };
+            }
+            for (let r: number = startRow; r <= endRow; r++) {
+                for (let c: number = startCol; c <= endCol; c++) {
+                    cellValue = getCellValue(r + 1, c + 1, getCellAddress(r, c));
+                    if (!isStringCollection && isNaN(Number(cellValue))) {
+                        isStringCollection = true;
+                    }
+                    performAction();
+                }
+            }
+            if (result) {
+                this.parent.grid = curGrid;
+                return result;
+            }
+            if (isStringValue !== isStringCollection) {
+                this.parent.grid = curGrid;
                 return errCollection[CommonErrors.NA];
             }
         } else if (!isNullOrUndefined(argArr[1]) && argArr[1].includes(this.parent.tic + this.parent.tic)) {
@@ -4279,7 +4332,7 @@ export class BasicFormulas {
                     }
                 }
             } else if (matchType === 0) {
-                if (argArr[0].indexOf('*') > -1 || argArr[0].indexOf('?') > -1) {
+                if (isWildCardVal) {
                     valueCollection[i as number] = this.parent.findWildCardValue(argArr[0], valueCollection[i as number]);
                 }
                 if (argArr[0] === valueCollection[i as number]) {
@@ -4298,13 +4351,15 @@ export class BasicFormulas {
                         }
                     }
                 } else {
+                    this.parent.grid = curGrid;
                     return errCollection[CommonErrors.NA];
                 }
             }
         }
         if (isStringValue && isStringCollection && matchType === 1) {
-            return valueCollection.length;
+            index = valueCollection.length;
         }
+        this.parent.grid = curGrid;
         return index ? index : errCollection[CommonErrors.NA];
     }
 

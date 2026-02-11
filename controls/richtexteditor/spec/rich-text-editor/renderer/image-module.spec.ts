@@ -6295,4 +6295,43 @@ client side. Customer easy to edit the contents and get the HTML content for
         });
     });
 
+    describe('997311: Editor gets broken when we continuously drag and drop the images and delete them in the RichTextEditor', () => {
+        let editor: RichTextEditor;
+        beforeAll(() => {
+            editor = renderRTE({
+                value: `<p>This is a text content.</p>`,
+            });
+        });
+        afterAll(() => {
+            destroy(editor);
+        });
+        it(' - should check the resize gripper size change after the image is resized', (done: DoneFn) => {
+            const file: File = getImageUniqueFIle();
+            const dataTransfer: DataTransfer = new DataTransfer();
+            dataTransfer.items.add(file);
+            const eventInit: DragEventInit = {
+                dataTransfer: dataTransfer,
+                bubbles: true,
+                clientX: 40,
+                clientY: 294,
+            };
+            const dropEvent: DragEvent = new DragEvent('drop', eventInit);
+            editor.inputElement.querySelector('p').dispatchEvent(dropEvent);
+            setTimeout(() => {
+                const image = editor.inputElement.querySelectorAll('img');
+                expect(image.length).toBe(1);
+                const gripper: ImageResizeGripper = 'e-rte-topRight';
+                const gripperElement: HTMLElement = document.querySelector(`.${gripper}`);
+                clickGripper(gripperElement);
+                const gripperElementLeftSize = gripperElement.style.left;
+                moveGripper(gripperElement, 300, 100);
+                leaveGripper(gripperElement);
+                setTimeout(() => {
+                    expect(gripperElement.style.left > gripperElementLeftSize).toBe(true);
+                    done();
+                }, 150);
+            }, 100);
+        });
+    });
+
 });

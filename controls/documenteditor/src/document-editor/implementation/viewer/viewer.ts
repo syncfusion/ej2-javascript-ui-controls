@@ -1774,6 +1774,9 @@ export class DocumentHelper {
             } else if (event.key) {
                 char = event.key;
             }
+            if ((char === ')' || char === '(') && !((event.code === 'Digit0' && char === ')') || (event.code === 'Digit9' && char === '('))) {
+                this.owner.editorModule.isRTLBracket = true;
+            }
             if (char !== ' ' && char !== '\r' && char !== '\b' && char !== String.fromCharCode(27) && !ctrl) {
                 this.triggerSpellCheck = false;
                 this.isSpellCheckPending = true;
@@ -6652,8 +6655,9 @@ export abstract class LayoutViewer {
                     zoomY = this.documentHelper.visibleBounds.height / 2;
                 }
                 let prevY: number = value + zoomY;
+                let pageIndex: number = page.index + 1;
                 while (prevY > prevPageTop + (page.boundingRectangle.height * prevScaleFactor)) {
-                    let pageIndex: number = page.index + 1;
+                    pageIndex = page.index + 1;
                     if (pageIndex === this.documentHelper.pages.length) {
                         break;
                     }
@@ -6662,7 +6666,7 @@ export abstract class LayoutViewer {
                 }
                 let currentY: number = (page.boundingRectangle.y - (page.index + 1) * this.pageGap) * this.documentHelper.zoomFactor + (page.index + 1) * this.pageGap
                     + ((prevY - prevPageTop) < 0 ? prevY - prevPageTop : (prevY - prevPageTop) * (this.documentHelper.zoomFactor / prevScaleFactor));
-                value = currentY - zoomY;
+                value = currentY - zoomY - (this.documentHelper.zoomFactor * this.pageGap * pageIndex);
                 zoomY = this.documentHelper.visibleBounds.height / 2;
             }
             this.documentHelper.viewerContainer.scrollTop = value;

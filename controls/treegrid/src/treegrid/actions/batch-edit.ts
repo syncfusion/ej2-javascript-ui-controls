@@ -228,7 +228,7 @@ export class BatchEdit {
             return;
         }
         if (this.parent.editModule['isAddedRowByMethod'] && !isNullOrUndefined(this.parent.editModule['addRowIndex']) &&
-        !this.parent.editModule['isAddedRowByContextMenu'] && (this.parent.grid.selectedRowIndex === -1 || this.parent.editModule['batchEditModule'].isAdd)) {
+        !this.parent.editModule['isAddedRowByContextMenu'] && (this.parent.editModule['selectedIndex'] >= 0 || this.parent.editModule['batchEditModule'].isAdd)) {
             this.selectedIndex = this.parent.editModule['selectedIndex'];
             this.addRowIndex = this.parent.editModule['addRowIndex'];
             this.addRowRecord = this.batchRecords.length ? this.batchRecords[this.selectedIndex]
@@ -569,6 +569,9 @@ export class BatchEdit {
         this.batchAddRowRecord = this.batchAddedRecords = this.batchRecords = this.batchDeletedRecords = this.currentViewRecords = [];
         if (this.parent.editModule['isAddedRowByContextMenu']) {
             this.parent.editModule['isAddedRowByContextMenu'] = false;
+        }
+        if (this.parent.editModule['isAddedRowByMethod']) {
+            this.parent.editModule['isAddedRowByMethod'] = false;
         }
     }
 

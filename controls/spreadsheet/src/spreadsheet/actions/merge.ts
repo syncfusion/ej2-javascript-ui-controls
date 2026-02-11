@@ -20,9 +20,10 @@ export class Merge {
         this.addEventListener();
     }
     private merge(args: { rowIdx?: number, colIdx?: number, lastCell?: boolean, element?: Element, mergeCel?: boolean,
-        prevCell?: HTMLTableCellElement }): void {
+        prevCell?: HTMLTableCellElement, viewportTopIdx?: number; }): void {
         (this.parent.serviceLocator.getService('cell') as ICellRenderer).refresh(
-            args.rowIdx, args.colIdx, args.lastCell, args.element, false, false, isImported(this.parent), false, undefined, args.prevCell);
+            args.rowIdx, args.colIdx, args.lastCell, args.element, false, false, isImported(this.parent), false, undefined, args.prevCell,
+            args.viewportTopIdx);
     }
     private hideHandler(args: { rowIdx: number, colIdx: number, model: string, start: number, end: number, isEnd?: boolean,
         hide: boolean }): void {
@@ -183,8 +184,9 @@ export class Merge {
                 const mergeCount: number = (mergeArgs.range[2] - args.rowIdx) + 1 -
                     this.parent.hiddenCount(args.rowIdx, mergeArgs.range[2]);
                 if (mergeCount >= 1) {
-                    this.merge({ rowIdx: mergeArgs.range[0], colIdx: mergeArgs.range[1], element: args.td,
-                        prevCell: args.td.previousElementSibling as HTMLTableCellElement });
+                    this.merge({ rowIdx: mergeArgs.range[0], colIdx: mergeArgs.range[1],
+                        element: args.td, prevCell: args.td.previousElementSibling as HTMLTableCellElement,
+                        viewportTopIdx: args.viewportTopIdx });
                     if (mergeCount === 1) {
                         args.td.removeAttribute('rowspan');
                     } else {

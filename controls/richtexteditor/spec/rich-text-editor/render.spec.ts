@@ -13,11 +13,13 @@ export let androidUA: string = 'Mozilla/5.0 (Linux; <Android Version>; <Build Ta
 export let iPhoneUA: string = 'Mozilla/5.0 (iPhone; CPU iPhone OS 7_0 like Mac OS X) AppleWebKit/537.51.1 (KHTML, like Gecko) Mobile/11A465 Twitter for iPhone';
 export const hostURL: string = 'https://ej2services.syncfusion.com/js/development/';
 
-export function renderRTE(options: RichTextEditorModel): RichTextEditor {
+export function renderRTE(options: RichTextEditorModel, skipTimeOut?: boolean): RichTextEditor {
     let element: HTMLElement = createElement('div', { id: getUniqueID('rte-test') });
     element.dataset.rteUnitTesting = 'true';
     document.body.appendChild(element);
-    extend(options, options, { saveInterval: 0 })
+    if (!skipTimeOut) {
+        extend(options, options, { saveInterval: 0 })
+    }
     let rteObj: RichTextEditor = new RichTextEditor(options);
     rteObj.appendTo(element);
     (rteObj as any).userAgentData = new CustomUserAgentData(Browser.userAgent, true);

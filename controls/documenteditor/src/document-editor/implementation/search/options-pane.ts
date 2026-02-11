@@ -384,6 +384,11 @@ export class OptionsPane {
                 this.documentHelper.owner.editorHistory.undoStack.pop();
             }
         }
+        if (!(this.documentHelper.selection.start.isAtSamePosition(startPosition) && this.documentHelper.selection.end.isAtSamePosition(endPosition)))		
+        {
+            startPosition.offset = startPosition.offset + 1;
+            endPosition.offset = endPosition.offset + 1;
+        }
         this.documentHelper.selection.selectPosition(startPosition,endPosition);
         return widgets;
     }

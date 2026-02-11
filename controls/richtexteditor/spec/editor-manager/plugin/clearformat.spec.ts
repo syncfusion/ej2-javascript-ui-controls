@@ -4,6 +4,7 @@
 import { detach } from '@syncfusion/ej2-base';
 import { NodeSelection } from '../../../src/selection/selection';
 import { ClearFormat } from '../../../src/editor-manager/plugin/clearformat';
+import { selectTableCell, drawCellSelection } from "../../rich-text-editor/render.spec";
 
 // describe('Clear multiple formats', () => {
 //     let innervalue: string = '<p>Th<strong><em><span style="text-decoration: underline;"><span style="text-decoration: line-through;"><span style="color: rgb(255, 0, 0); text-decoration: inherit;"><span id="selectId" style="background-color: rgb(255, 255, 0);">is is a rich text editor content with style formats to be cleare</span></span></span></span></em></strong>d</p>'
@@ -236,6 +237,82 @@ describe('905773 - Error When Selecting Table and Clicking Clear Format Toolbar 
         domSelection.setSelectionText(document, node1, node2, 0, 1);
         ClearFormat.clear(document, divElement, 'P');
         expect(document.querySelectorAll('table').length === 1).toBe(true);
+    });
+});
+
+describe('Bug 1006407: Clear Format not working properly on a table cells in RichTextEditor', () => {
+    let innervalue: string = '<table class="e-rte-table" style="width: 100%; min-width: 0px;"><tbody><tr><td class="" style="width: 14.2857%;">egrege</td><td style="width: 14.2857%;"><br></td><td style="width: 14.2857%;" class="">ergerg</td><td style="width: 14.2857%;"><br></td><td style="width: 14.2857%;"><br></td><td style="width: 14.2857%;" class="">ergeg</td><td style="width: 14.2857%; background-color: rgb(0, 0, 128);" class=""><br></td></tr><tr><td style="width: 14.2857%;"><br></td><td style="width: 14.2857%; background-color: rgb(255, 255, 0);" class="">erg</td><td style="width: 14.2857%;"><br></td><td style="width: 14.2857%;" class="">ergeg</td><td style="width: 14.2857%; background-color: rgb(255, 0, 0);" class="">ergege</td><td style="width: 14.2857%;"><br></td><td style="width: 14.2857%;"><br></td></tr><tr><td style="width: 14.2857%; background-color: rgb(255, 51, 51);" class="">ergeg</td><td style="width: 14.2857%;"><br></td><td style="width: 14.2857%; background-color: rgb(0, 255, 0);" class="">ergre</td><td style="width: 14.2857%;" class=""><br></td><td style="width: 14.2857%;"><br></td><td style="width: 14.2857%;"><br></td><td style="width: 14.2857%;" class="last">erge</td></tr></tbody></table><p><br></p>'
+    let domSelection: NodeSelection = new NodeSelection();
+    let divElement: HTMLDivElement = document.createElement('div');
+    divElement.id = 'divElement';
+    divElement.contentEditable = 'true';
+    divElement.innerHTML = innervalue;
+
+    beforeAll(() => {
+        document.body.appendChild(divElement);
+    });
+    afterAll(() => {
+        detach(divElement);
+    });
+
+    it('When selecting table, inline style for table element also should be cleared', () => {
+        new ClearFormat();
+        let node1: Node = document.getElementsByClassName('e-rte-table')[0];
+        let node2: HTMLElement = document.getElementsByClassName('last')[0] as HTMLElement;
+        domSelection.setSelectionText(document, node1, node2, 0, 1);
+        ClearFormat.clear(document, divElement, 'P');
+        expect(document.querySelector('table').getAttribute('style')).toBe(null);
+    });
+});
+
+describe('Bug 1006407: Clear Format not working properly on a table cells in RichTextEditor', () => {
+    let innervalue: string = '<table class="e-rte-table" style="width: 100%; min-width: 0px;"><tbody><tr style="background-color: blue;"><td style="width: 14.2857%;" class="e-cell-select e-multi-cells-select">egrege</td><td style="width: 14.2857%;" class="e-cell-select e-multi-cells-select"><br></td><td style="width: 14.2857%;" class="e-cell-select e-multi-cells-select">ergerg</td><td style="width: 14.2857%;" class="e-cell-select e-multi-cells-select"><br></td><td style="width: 14.2857%;" class="e-cell-select e-multi-cells-select"><br></td><td style="width: 14.2857%;" class="e-cell-select e-multi-cells-select">ergeg</td><td style="width: 14.2857%; background-color: rgb(0, 0, 128);" class="e-cell-select e-multi-cells-select"><br></td></tr><tr style="background-color: blue;"><td style="width: 14.2857%;" class="e-cell-select e-multi-cells-select"><br></td><td style="width: 14.2857%; background-color: rgb(255, 255, 0);" class="e-cell-select e-multi-cells-select">erg</td><td style="width: 14.2857%;" class="e-cell-select e-multi-cells-select"><br></td><td style="width: 14.2857%;" class="e-cell-select e-multi-cells-select">ergeg</td><td style="width: 14.2857%; background-color: rgb(255, 0, 0);" class="e-cell-select e-multi-cells-select">ergege</td><td style="width: 14.2857%;" class="e-cell-select e-multi-cells-select"><br></td><td style="width: 14.2857%;" class="last e-cell-select e-multi-cells-select"><br></td></tr><tr style="background-color: blue;"><td style="width: 14.2857%; background-color: rgb(255, 51, 51);" class="e-cell-select e-multi-cells-select">ergeg</td><td style="width: 14.2857%;" class="e-cell-select e-multi-cells-select"><br></td><td style="width: 14.2857%; background-color: rgb(0, 255, 0);" class="e-cell-select e-multi-cells-select">ergre</td><td style="width: 14.2857%;" class="e-cell-select e-multi-cells-select"><br></td><td style="width: 14.2857%;" class="e-cell-select e-multi-cells-select"><br></td><td style="width: 14.2857%;" class="e-cell-select e-multi-cells-select"><br></td><td style="width: 14.2857%;" class="lastNode e-cell-select e-multi-cells-select e-cell-select-end">erge</td></tr></tbody></table><p><br></p>'
+    let domSelection: NodeSelection = new NodeSelection();
+    let divElement: HTMLDivElement = document.createElement('div');
+    divElement.id = 'divElement';
+    divElement.contentEditable = 'true';
+    divElement.innerHTML = innervalue;
+
+    beforeEach(() => {
+        document.body.appendChild(divElement);
+    });
+    afterEach(() => {
+        detach(divElement);
+    });
+
+    it('When selecting few cells in table, inline style for table element also should not be cleared', () => {
+        new ClearFormat();
+        let node1: Node = document.getElementsByClassName('e-rte-table')[0];
+        let node2: HTMLElement = document.getElementsByClassName('last')[0] as HTMLElement;
+        domSelection.setSelectionText(document, node1, node2, 0, 1);
+        ClearFormat.clear(document, divElement, 'P');
+        expect(document.querySelector('table').getAttribute('style')).not.toBe(null);
+        expect(document.querySelectorAll('tr[style]').length).toBe(1);
+    });
+
+    it('When selecting few cells in table using multi select, inline style for table element also should not be cleared', () => {
+        new ClearFormat();
+        divElement.innerHTML = `<table class="e-rte-table" style="width: 100%; min-width: 0px;"><tbody><tr style="background-color: blue;"><td style="width: 14.2857%;">egrege</td><td style="width: 14.2857%;"><br></td><td style="width: 14.2857%;">ergerg</td><td style="width: 14.2857%;"><br></td><td style="width: 14.2857%;"><br></td><td style="width: 14.2857%;">ergeg</td><td style="width: 14.2857%; background-color: rgb(0, 0, 128);"><br></td></tr><tr style="background-color: blue;"><td style="width: 14.2857%;"><br></td><td style="width: 14.2857%; background-color: rgb(255, 255, 0);">erg</td><td style="width: 14.2857%;"><br></td><td style="width: 14.2857%;">ergeg</td><td style="width: 14.2857%; background-color: rgb(255, 0, 0);">ergege</td><td style="width: 14.2857%;"><br></td><td style="width: 14.2857%;" class="last"><br></td></tr><tr style="background-color: blue;"><td style="width: 14.2857%; background-color: rgb(255, 51, 51);">ergeg</td><td style="width: 14.2857%;"><br></td><td style="width: 14.2857%; background-color: rgb(0, 255, 0);">ergre</td><td style="width: 14.2857%;"><br></td><td style="width: 14.2857%;"><br></td><td style="width: 14.2857%;"><br></td><td style="width: 14.2857%;" class="lastNode e-cell-select-end">erge</td></tr></tbody></table>`;
+        const table: HTMLTableElement = document.querySelector('table');
+        selectTableCell(table, 0, 0);
+        drawCellSelection(table, 0, 1);
+        let node: HTMLElement = document.getElementsByClassName('last')[0] as HTMLElement;
+        domSelection.setSelectionText(document, node, node, 0, 1);
+        ClearFormat.clear(document, divElement, 'P', null, 'ClearFormat');
+        expect(document.querySelector('table').getAttribute('style')).not.toBe(null);
+        expect(document.querySelectorAll('tr[style]').length).toBe(3);
+    });
+
+    it('When selecting all cells in table using multi select, inline style for table element also should be cleared', () => {
+        new ClearFormat();
+        divElement.innerHTML = `<table class="e-rte-table" style="width: 100%; min-width: 0px;"><tbody><tr style="background-color: blue;"><td style="width: 14.2857%;" class="e-cell-select e-multi-cells-select">egrege</td><td style="width: 14.2857%;" class="e-cell-select e-multi-cells-select"><br></td><td style="width: 14.2857%;" class="e-cell-select e-multi-cells-select">ergerg</td><td style="width: 14.2857%;" class="e-cell-select e-multi-cells-select"><br></td><td style="width: 14.2857%;" class="e-cell-select e-multi-cells-select"><br></td><td style="width: 14.2857%;" class="e-cell-select e-multi-cells-select">ergeg</td><td style="width: 14.2857%; background-color: rgb(0, 0, 128);" class="e-cell-select e-multi-cells-select"><br></td></tr><tr style="background-color: blue;"><td style="width: 14.2857%;" class="e-cell-select e-multi-cells-select"><br></td><td style="width: 14.2857%; background-color: rgb(255, 255, 0);" class="e-cell-select e-multi-cells-select">erg</td><td style="width: 14.2857%;" class="e-cell-select e-multi-cells-select"><br></td><td style="width: 14.2857%;" class="e-cell-select e-multi-cells-select">ergeg</td><td style="width: 14.2857%; background-color: rgb(255, 0, 0);" class="e-cell-select e-multi-cells-select">ergege</td><td style="width: 14.2857%;" class="e-cell-select e-multi-cells-select"><br></td><td style="width: 14.2857%;" class="last e-cell-select e-multi-cells-select"><br></td></tr><tr style="background-color: blue;"><td style="width: 14.2857%; background-color: rgb(255, 51, 51);" class="e-cell-select e-multi-cells-select">ergeg</td><td style="width: 14.2857%;" class="e-cell-select e-multi-cells-select"><br></td><td style="width: 14.2857%; background-color: rgb(0, 255, 0);" class="e-cell-select e-multi-cells-select">ergre</td><td style="width: 14.2857%;" class="e-cell-select e-multi-cells-select"><br></td><td style="width: 14.2857%;" class="e-cell-select e-multi-cells-select"><br></td><td style="width: 14.2857%;" class="e-cell-select e-multi-cells-select"><br></td><td style="width: 14.2857%;" class="lastNode e-cell-select e-multi-cells-select e-cell-select-end">erge</td></tr></tbody></table>`;
+        const table: HTMLTableElement = document.querySelector('table');
+        selectTableCell(table, 0, 0);
+        drawCellSelection(table, 2, 6);
+        let node: HTMLElement = document.getElementsByClassName('last')[0] as HTMLElement;
+        domSelection.setSelectionText(document, node, node, 0, 0);
+        ClearFormat.clear(document, divElement, 'P', null, 'ClearFormat');
+        expect(document.querySelector('table').getAttribute('style')).toBe(null);
     });
 });
 

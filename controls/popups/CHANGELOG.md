@@ -2,6 +2,12 @@
 
 ## [Unreleased]
 
+### Dialog
+
+#### Bug Fixes
+
+- `#I802885` - The issue related to abnormal dialog behaviour during resize and drag operations has been resolved.
+
 ## 32.1.25 (2026-01-27)
 
 ### Dialog

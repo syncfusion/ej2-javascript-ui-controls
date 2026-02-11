@@ -165,8 +165,18 @@ export class Tooltip {
                         args.cancel = true;
                     }
                 } else if (args.target.classList.contains('e-gantt-manualparent-milestone')) {
-                    argsData.content = this.toolTipObj.content = parent.tooltipModule.getTooltipContent(
-                        'manualmilestone', data, parent, args) as string | HTMLElement;
+                    let milestoneTemplate: NodeList;
+                    if (parent.tooltipSettings.taskbar) {
+                        milestoneTemplate = parent.tooltipModule.templateCompiler(
+                            parent.tooltipSettings.taskbar, parent, data, 'TooltipTaskbarTemplate');
+                    }
+                    const tooltipTemplate: Element = document.createElement('div');
+                    if (milestoneTemplate) {
+                        append(milestoneTemplate, tooltipTemplate);
+                    }
+                    argsData.content = this.toolTipObj.content = milestoneTemplate ? (tooltipTemplate as HTMLElement) : data ?
+                        parent.tooltipModule.getTooltipContent(
+                            'manualmilestone', data, parent, args) as string | HTMLElement : '';
                     if (isNullOrUndefined(argsData.content)) {
                         args.cancel = true;
                     }

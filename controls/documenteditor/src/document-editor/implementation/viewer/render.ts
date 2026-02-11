@@ -1973,7 +1973,7 @@ private calculatePathBounds(data: string): Rect {
                 pageIndex = this.documentHelper.pages.indexOf(lineWidget.paragraph.bodyWidget.page);
             }
             if ((children.length == 0 && !lineWidget.isEndsWithLineBreak && !isNullOrUndefined(lineWidget.paragraph)) || (lineWidget.paragraph.childWidgets.length === 1)) {
-                y = lineWidget.paragraph.y + (this.documentHelper.textHelper.getHeight(currentCharFormat)).BaselineOffset + lineWidget.margin.top;
+                y = lineWidget.paragraph.y + (this.documentHelper.textHelper.getHeight(currentCharFormat)).BaselineOffset + (!isNullOrUndefined(lineWidget.margin) ? lineWidget.margin.top : 0);
                 //Paragraph with empty linewidgets with mutiple line breaks
                 if (!lineWidget.isEndsWithLineBreak && lineWidget.indexInOwner > 0 && children.length == 0) {
                     y = top + lineWidget.previousLine.maxBaseLine;
@@ -2650,7 +2650,7 @@ private calculatePathBounds(data: string): Rect {
         }
         if (!this.spellChecker.checkElementCanBeCombined(elementBox, underlineY, beforeIndex, true)) {
             /* eslint-disable @typescript-eslint/no-explicit-any */
-            let splittedText: any[] = checkText.split(/[\s]+/);
+            let splittedText: any[] = checkText.split(/[()\s{}\[\]]+/);
             let markindex: number = elementBox.line.getOffset(elementBox, 0);
             let spaceValue: number = 1;
             if (splittedText.length > 1) {
@@ -2665,6 +2665,8 @@ private calculatePathBounds(data: string): Rect {
                 elementBox.isChangeDetected = false;
             } else {
                 let retrievedText: string = this.spellChecker.manageSpecialCharacters(checkText, undefined, true);
+                let text: any = retrievedText.split(/[()\s{}\[\]]+/);
+                retrievedText  = text[0];
                 if (checkText.length > 0) {
 
                     if (this.spellChecker.ignoreAllItems.indexOf(retrievedText) === -1 && elementBox.ignoreOnceItems.indexOf(retrievedText) === -1) {

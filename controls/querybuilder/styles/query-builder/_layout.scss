@@ -1,5 +1,4 @@
 @use 'ej2-base/styles/common/mixin' as *;
-@use './theme-variables' as *;
 @mixin fluent2-small-round-btn {
   @if $theme-name == 'fluent2' {
     height: $qrybldr-small-round-btn-height;

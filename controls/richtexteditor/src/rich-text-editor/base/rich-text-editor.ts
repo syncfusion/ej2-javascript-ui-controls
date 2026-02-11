@@ -51,7 +51,7 @@ import { ImportExport } from '../actions/import-export';
 import { EnterKeyAction } from '../actions/enter-key';
 import * as CONSTANT from '../../common/constant';
 import { IHtmlKeyboardEvent, IHtmlUndoRedoData, BeforeInputEvent, ILineHeightProperties } from '../../editor-manager/base/interface';
-import { dispatchEvent, getEditValue, decode, isEditableValueEmpty, getDefaultValue } from '../base/util';
+import { dispatchEvent, getEditValue, decode, isEditableValueEmpty, getDefaultValue, sanitizeHelper } from '../base/util';
 import { cleanHTMLString, scrollToCursor, getStructuredHtml, isIDevice, alignmentHtml, openPrintWindow } from '../../common/util';
 import { DialogRenderer } from '../renderer/dialog-renderer';
 import { SelectedEventArgs, RemovingEventArgs, UploadingEventArgs, BeforeUploadEventArgs } from '@syncfusion/ej2-inputs';
@@ -2891,7 +2891,8 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
      */
     public clipBoardHandler(e: ClipboardEvent | KeyboardEvent): void {
         if (!isNullOrUndefined(e) && this.editorMode === 'HTML') {
-            if (e && this.handleTableCellCopy()) {
+            if ((e.type === 'copy' && this.handleTableCellCopy(e as ClipboardEvent)) ||
+                (e.type === 'cut' && this.handleTableCellCopy(e as ClipboardEvent, true))) {
                 // Copy and cut was handled by table module
                 e.preventDefault();
                 return;
@@ -2938,11 +2939,6 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
      * @deprecated
      */
     public onCopy(e: MouseEvent | KeyboardEvent | ClipboardEvent = null): void {
-        if (e && this.editorMode === 'HTML' && this.handleTableCellCopy()) {
-            // Copy was handled by table module
-            e.preventDefault();
-            return;
-        }
         this.isToolbarClipboardAction = true;
         this.contentModule.getDocument().execCommand('copy', false, null);
     }
@@ -2954,11 +2950,6 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
      * @deprecated
      */
     public onCut(e: MouseEvent | KeyboardEvent | ClipboardEvent = null): void {
-        if (e && this.editorMode === 'HTML' && this.handleTableCellCopy(true)) {
-            // Cut was handled by table module
-            e.preventDefault();
-            return;
-        }
         const range: Range = this.contentModule.getDocument().getSelection().getRangeAt(0);
         const div: HTMLElement = document.createElement('div');
         div.appendChild(range.cloneContents());
@@ -3188,7 +3179,7 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
     /*
      * Handles table cell copy operation when cells are selected.
      */
-    private handleTableCellCopy(isCut: boolean = false): boolean {
+    private handleTableCellCopy(e: ClipboardEvent, isCut: boolean = false): boolean {
         const range: Range = this.getRange();
         if (range &&
             range.startContainer &&
@@ -3198,6 +3189,11 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
             this.tableModule.tableObj.curTable.contains(range.startContainer) &&
             this.tableModule.tableObj.curTable.querySelectorAll('.e-cell-select.e-multi-cells-select').length > 0) {
             this.tableModule.tableObj.copy(isCut);
+            let processedTableContent: string = this.tableModule.tableObj.copy(isCut);
+            if (!isNOU(processedTableContent)) {
+                processedTableContent = sanitizeHelper(processedTableContent, this);
+                (e as ClipboardEvent).clipboardData.setData('text/html', processedTableContent);
+            }
             return true;
         }
         return false;
@@ -4710,7 +4706,7 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
                         }
                     } else {
                         // If no changes detected and there's an active interval, clear it
-                        if (!this.autoSaveOnIdle && !isNOU(this.timeInterval)) {
+                        if (!this.autoSaveOnIdle && !isNOU(this.timeInterval) && !this.hasContentChanged) {
                             clearInterval(this.timeInterval);
                             this.timeInterval = null;
                         }

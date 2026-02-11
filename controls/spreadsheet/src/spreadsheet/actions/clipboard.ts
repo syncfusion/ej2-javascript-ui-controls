@@ -8,7 +8,7 @@ import { ExtendedSheet, Cell, setMerge, MergeArgs, getCellIndexes, ChartModel } 
 import { ribbonClick, ICellRenderer, copy, paste, PasteSpecialType, initiateFilterUI, setPosition, isLockedCells, focus, readonlyAlert, BeforeActionData, isValidUrl, refreshCommentsPane } from '../common/index';
 import { BeforePasteEventArgs, hasTemplate, getTextHeightWithBorder, getLines, getExcludedColumnWidth, editAlert } from '../common/index';
 import { enableToolbarItems, rowHeightChanged, completeAction, DialogBeforeOpenEventArgs, insertImage } from '../common/index';
-import { clearCopy, selectRange, dialog, contentLoaded, tabSwitch, cMenuBeforeOpen, createImageElement, setMaxHgt } from '../common/index';
+import { clearCopy, selectRange, dialog, contentLoaded, tabSwitch, cMenuBeforeOpen, createImageElement, setMaxHgt, getDefaultHeight } from '../common/index';
 import { getMaxHgt, setRowEleHeight, locale, deleteImage, getRowIdxFromClientY, getColIdxFromClientX, cut } from '../common/index';
 import { colWidthChanged, PasteModelArgs, getFilterRange, FilterInfoArgs } from '../common/index';
 import { Dialog } from '../services/index';
@@ -711,7 +711,7 @@ export class Clipboard {
                         setRowEleHeight(this.parent, this.parent.getActiveSheet(), hgt, i);
                     }
                     if (isCut) {
-                        const defaultHeight: number = copySheet && copySheet.standardHeight ? copySheet.standardHeight : 20;
+                        const defaultHeight: number = getDefaultHeight(copySheet);
                         setRowEleHeight(this.parent, copySheet, defaultHeight, cIdx[0]);
                     }
                 }

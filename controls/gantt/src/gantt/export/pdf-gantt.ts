@@ -75,12 +75,13 @@ export class PdfGantt extends PdfTreeGrid {
         let endDays1: number;
         const headerWidth: number = pixelToPoint(this.chartHeader.width);
         const timelineSettings: Timeline = this.parent.timelineModule;
+        const isFitToFullGrid: boolean = this.parent.pdfExportModule.helper['shouldProcessChart']();
 
         for (let index: number = lastColumnRange[0]; index <= lastColumnRange[1]; index++) {
             totalColumnWidth += this.layouter.treegrid.columns.getColumn(index).width;
         }
         totalColumnWidth += 0.5;
-        if (totalColumnWidth + 100 < this.result.page.getClientSize().width) {
+        if (totalColumnWidth + 100 < this.result.page.getClientSize().width || !isFitToFullGrid) {
             remainWidth = this.result.page.getClientSize().width - totalColumnWidth;
             this.chartPageIndex = this.startPageIndex = this.totalPages - this.perColumnPages;
             isPageFinished = false;

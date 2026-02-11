@@ -47,6 +47,23 @@ export class ExportHelper {
     public constructor(parent: Gantt) {
         this.parent = parent;
     }
+    private shouldProcessChart(): boolean {
+        let chartWidth: number;
+        let gridWidth: number;
+        if (this.exportProps && this.exportProps.fitToWidthSettings && this.exportProps.fitToWidthSettings.isFitToWidth) {
+            if (this.exportProps.fitToWidthSettings.chartWidth) {
+                chartWidth = parseInt(this.exportProps.fitToWidthSettings.chartWidth.split('%')[0], 10);
+                chartWidth = chartWidth > 100 ? 100 : chartWidth;
+            }
+            if (this.exportProps.fitToWidthSettings.gridWidth) {
+                gridWidth = parseInt(this.exportProps.fitToWidthSettings.gridWidth.split('%')[0], 10);
+                gridWidth = gridWidth > 100 ? 100 : gridWidth;
+            }
+        }
+        const isFitToWidth: boolean = this.exportProps.fitToWidthSettings && this.exportProps.fitToWidthSettings.isFitToWidth;
+        const shouldSkipProcessing: boolean = isFitToWidth && (chartWidth === 0 || gridWidth === 100);
+        return !shouldSkipProcessing;
+    }
 
     public processToFit(): void {
         this.beforeSinglePageExport['zoomingProjectStartDate'] = this.parent.zoomingProjectStartDate;
@@ -171,9 +188,11 @@ export class ExportHelper {
         }
         this.processHeaderContent();
         this.processGanttContent();
-        this.processTimeline();
-        this.processTaskbar();
-        this.processPredecessor();
+        if (this.shouldProcessChart()) {
+            this.processTimeline();
+            this.processTaskbar();
+            this.processPredecessor();
+        }
         this.parent.pdfExportModule.isPdfExport = false;
     }
 

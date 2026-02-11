@@ -258,14 +258,9 @@ export class FreeTextAnnotation {
             }
         }
         if (this.pdfViewer.freeTextSettings.fontFamily) {
-            const fontName: string = this.pdfViewer.freeTextSettings.fontFamily;
-            if (fontName === 'Helvetica' || fontName === 'Times New Roman' || fontName === 'Courier' || fontName === 'Symbol' || fontName === 'ZapfDingbats') {
-                this.fontFamily = fontName;
-            }
-            else {
-                this.fontFamily = 'Helvetica';
-            }
-        } else {
+            this.fontFamily = this.pdfViewer.freeTextSettings.fontFamily;
+        }
+        else {
             this.fontFamily = 'Helvetica';
         }
         this.textAlign = this.pdfViewer.freeTextSettings.textAlignment ? this.pdfViewer.freeTextSettings.textAlignment : 'Left';
@@ -510,6 +505,27 @@ export class FreeTextAnnotation {
                             annotObject.previousFontSize = annotation.FontSize ? annotation.FontSize : this.fontSize;
                         }
                         const addedAnnot: PdfAnnotationBaseModel = this.pdfViewer.add(annot as PdfAnnotationBase);
+                        if (annotObject.textAlign !== null) {
+                            if (annotObject.textAlign === 'Justify') {
+                                addedAnnot.wrapper.children[1].horizontalAlignment = 'Left';
+                                addedAnnot.wrapper.children[1].setOffsetWithRespectToBounds(0, 0, null);
+                            }
+                            else if (annotObject.textAlign === 'Right') {
+                                addedAnnot.wrapper.children[1].horizontalAlignment = 'Right';
+                                addedAnnot.wrapper.children[1].setOffsetWithRespectToBounds(1, 0, null);
+                            }
+                            else if (annotObject.textAlign === 'Left') {
+                                addedAnnot.wrapper.children[1].horizontalAlignment = 'Left';
+                                addedAnnot.wrapper.children[1].setOffsetWithRespectToBounds(0, 0, null);
+                            }
+                            else if (annotObject.textAlign === 'Center') {
+                                addedAnnot.wrapper.children[1].horizontalAlignment = 'Center';
+                                addedAnnot.wrapper.children[1].setOffsetWithRespectToBounds(0.51, 0, null);
+                            }
+                        }
+                        else {
+                            addedAnnot.wrapper.children[1].horizontalAlignment = 'Auto';
+                        }
                         this.pdfViewer.annotationModule.storeAnnotations(pageNumber, annotObject, '_annotations_freetext');
                         if (this.isAddAnnotationProgramatically) {
                             const settings: AnnotationBaseSettings = {
@@ -928,6 +944,27 @@ export class FreeTextAnnotation {
                     annotObject.textAlign = 'Right';
                 }
                 const annotation: PdfAnnotationBaseModel = this.pdfViewer.add(annot as PdfAnnotationBase);
+                if (annotObject.textAlign !== null) {
+                    if (annotObject.textAlign === 'Justify') {
+                        annotation.wrapper.children[1].horizontalAlignment = 'Left';
+                        annotation.wrapper.children[1].setOffsetWithRespectToBounds(0, 0, null);
+                    }
+                    else if (annotObject.textAlign === 'Right') {
+                        annotation.wrapper.children[1].horizontalAlignment = 'Right';
+                        annotation.wrapper.children[1].setOffsetWithRespectToBounds(1, 0, null);
+                    }
+                    else if (annotObject.textAlign === 'Left') {
+                        annotation.wrapper.children[1].horizontalAlignment = 'Left';
+                        annotation.wrapper.children[1].setOffsetWithRespectToBounds(0, 0, null);
+                    }
+                    else if (annotObject.textAlign === 'Center') {
+                        annotation.wrapper.children[1].horizontalAlignment = 'Center';
+                        annotation.wrapper.children[1].setOffsetWithRespectToBounds(0.51, 0, null);
+                    }
+                }
+                else {
+                    annotation.wrapper.children[1].horizontalAlignment = 'Auto';
+                }
                 const bounds: AnnotBoundsRect = { left: annot.bounds.x, top: annot.bounds.y, width: annot.bounds.width,
                     height: annot.bounds.height };
                 const settings: any = {
@@ -971,6 +1008,8 @@ export class FreeTextAnnotation {
                 isFontSizeEqual = false;
             }
             this.prevFontsize = this.selectedAnnotation.fontSize;
+            const borderColor: any = this.inputBoxElement.style.borderColor;
+            const background: any = this.inputBoxElement.style.background;
             if (this.selectedAnnotation && this.pdfViewer.selectedItems.annotations &&
                 (!isFontSizeEqual || !isFreetextValueEqual || isNewlyAdded)) {
                 const isRotated: boolean = (Math.abs(this.selectedAnnotation.rotateAngle) !== 0 &&
@@ -1011,6 +1050,8 @@ export class FreeTextAnnotation {
                  ((parseFloat(this.inputBoxElement.style.paddingTop) / Math.max(1, zoomFactor))) + lineSpace - 1;
                 this.pdfViewer.annotation.modifyDynamicTextValue(inputValue, this.selectedAnnotation.annotName, this.previousText);
                 this.selectedAnnotation.dynamicText = inputValue;
+                this.selectedAnnotation.wrapper.children[0].style.strokeColor = borderColor;
+                this.selectedAnnotation.wrapper.children[0].style.fill = background;
                 this.modifyInCollection('dynamicText', pageIndex, this.selectedAnnotation, isNewlyAdded);
                 this.modifyInCollection('bounds', pageIndex, this.selectedAnnotation, isNewlyAdded);
                 this.pdfViewer.nodePropertyChange(this.selectedAnnotation, { bounds: { width: this.selectedAnnotation.bounds.width,
@@ -1064,6 +1105,8 @@ export class FreeTextAnnotation {
                  ((parseFloat(this.inputBoxElement.style.paddingTop) / zoomFactor)) + lineSpace - 1;
                 this.pdfViewer.annotation.modifyDynamicTextValue(inputValue, this.selectedAnnotation.annotName, this.previousText);
                 this.selectedAnnotation.dynamicText = inputValue;
+                this.selectedAnnotation.wrapper.children[0].style.strokeColor = borderColor;
+                this.selectedAnnotation.wrapper.children[0].style.fill = background;
                 this.modifyInCollection('dynamicText', pageIndex, this.selectedAnnotation, isNewlyAdded);
                 this.modifyInCollection('bounds', pageIndex, this.selectedAnnotation, isNewlyAdded);
                 this.selectedAnnotation.wrapper.offsetX = this.wrapperOffsetX;
@@ -1379,6 +1422,8 @@ export class FreeTextAnnotation {
         this.inputBoxElement.style.background = this.fillColor;
         if (annotation && annotation.wrapper && annotation.wrapper.children[0]) {
             this.inputBoxElement.style.opacity = annotation.wrapper.children[0].style.opacity;
+        } else {
+            this.inputBoxElement.style.opacity = this.opacity;
         }
         if (this.isNewFreeTextAnnot === true) {
             this.initialStrokeWidth = 0;

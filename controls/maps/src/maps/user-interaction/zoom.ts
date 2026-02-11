@@ -1295,7 +1295,7 @@ export class Zoom {
         const layerX: number = event.type.indexOf('mouse') > -1 || event.type.indexOf('key') > -1 ? event['layerX'] : (event as TouchEvent).touches[0].pageX;
         const layerY: number = event.type.indexOf('mouse') > -1 || event.type.indexOf('key') > -1 ? event['layerY'] : (event as TouchEvent).touches[0].pageY;
         this.maps.mergeCluster();
-        if (!map.isTileMap) {
+        if (!map.isTileMap && map.mapScaleValue > 1) {
             const marginTop: number = getProcessedMarginValue(map.margin.top);
             const legendElement: HTMLElement = document.getElementById(map.element.id + '_Legend_Group');
             const legendHeight: number = !isNullOrUndefined(legendElement) ? legendElement.getClientRects()[0].height : 0;

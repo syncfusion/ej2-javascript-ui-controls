@@ -656,6 +656,7 @@ export class InsertHtml {
             docElement, isCollapsed, closestParentNode, editNode
         );
         range = rangeInfo.range;
+        this.listStyleCleanup(insertedNode);
         // Process based on content structure
         const containsBlockNode: boolean = this.containsBlockElements(insertedNode);
         const lastSelectionNode: Node = containsBlockNode
@@ -682,6 +683,22 @@ export class InsertHtml {
             tempBr.remove();
         }
     }
+
+    // Cleans up inline styles applied to list items within the inserted content.
+    private static listStyleCleanup(node: Node): void {
+        if (node.nodeType === Node.ELEMENT_NODE) {
+            const listItems: NodeListOf<HTMLLIElement> = (node as HTMLElement).querySelectorAll('li');
+            listItems.forEach((li: HTMLLIElement) => {
+                if (li.style.display === 'block') {
+                    li.style.removeProperty('display');
+                    if (li.getAttribute('style') === '') {
+                        li.removeAttribute('style');
+                    }
+                }
+            });
+        }
+    }
+
 
     // Adjusts range settings when the editor is empty, covering cursor initialization aspects.
     private static adjustRangeForEmptyEditor(

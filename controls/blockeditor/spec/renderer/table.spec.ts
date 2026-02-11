@@ -686,7 +686,7 @@ describe('Table Block', () => {
             const lastBlock = domHelpers.query(editorElement, 'tbody tr:last-child td[role="gridcell"] .e-block');
             editor.blockManager.setFocusToBlock(lastBlock);
             const cellBlock = domHelpers.query(editorElement, 'tbody tr:first-child td[role="gridcell"] .e-block');
-            cellBlock.dispatchEvent(new MouseEvent('mouseup', { bubbles: true }));
+            cellBlock.dispatchEvent(new MouseEvent('mousedown', { bubbles: true }));
             // Expect editor to consider this block focused
             expect(editor.blockManager.currentFocusedBlock.id === cellBlock.id).toBe(true);
             done();

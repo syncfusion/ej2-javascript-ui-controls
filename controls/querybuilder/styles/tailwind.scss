@@ -12,5 +12,5 @@
 @use 'ej2-popups/styles/spinner/tailwind-definition' as *;
 @use 'query-builder/tailwind-definition' as *;
 @use 'query-builder/icons/tailwind' as *;
-@use 'query-builder/all' as *;
-@use 'query-builder/bigger' as *;
+@use 'query-builder/all.tailwind' as *;
+@use 'query-builder/bigger.tailwind' as *;

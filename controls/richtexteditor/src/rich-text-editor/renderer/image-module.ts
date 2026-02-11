@@ -118,6 +118,7 @@ export class Image {
         this.parent.on(events.destroy, this.destroy, this);
         this.parent.on(events.bindOnEnd, this.bindOnEnd, this);
         this.parent.on(events.modelChanged, this.onPropertyChanged, this);
+        this.parent.on(events.resizeStart, this.resizeStart, this);
     }
 
     protected removeEventListener(): void {
@@ -148,6 +149,7 @@ export class Image {
         this.parent.off(events.destroy, this.destroy);
         this.parent.off(events.bindOnEnd, this.bindOnEnd);
         this.parent.off(events.modelChanged, this.onPropertyChanged);
+        this.parent.off(events.resizeStart, this.resizeStart);
         const dropElement: HTMLElement | Document = this.parent.iframeSettings.enable ? this.parent.inputElement.ownerDocument
             : this.parent.inputElement;
         this.parent.off(EVENTS.dropEvent, this.dragDrop);
@@ -1007,6 +1009,16 @@ export class Image {
             }
         }
         if (target.nodeName === 'IMG') {
+            const focusedImages: HTMLElement[] = Array.from(this.parent.element.querySelectorAll('.e-rte-image'));
+            if (focusedImages.length > 0) {
+                for (let i: number = 0; i < focusedImages.length; i++) {
+                    if (focusedImages[i as number] !== target) {
+                        removeClass([focusedImages[i as number]], ['e-img-focus']);
+                        removeClass([focusedImages[i as number]], ['e-resize']);
+                        focusedImages[i as number].style.outline = '';
+                    }
+                }
+            }
             addClass([target], ['e-img-focus']);
         }
         if (this.parent.quickToolbarModule.imageQTBar) {

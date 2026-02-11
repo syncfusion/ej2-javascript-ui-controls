@@ -48,6 +48,7 @@ const CONTEXTMENU_RESTART_AT: string = '_contextmenu_restart_at';
 const CONTEXTMENU_SPELLING_DIALOG: string = '_contextmenu_spelling_dialog';
 const CONTEXTMENU_SPELLCHECK_OTHERSUGGESTIONS: string = '_contextmenu_otherSuggestions_spellcheck_';
 const CONTEXTMENU_NO_SUGGESTION: string = '_contextmenu_no_suggestion';
+const CONTEXTMENU_MORE_SUGGESTION: string = '_contextmenu_more_suggestion';
 const CONTEXTMENU_ACCEPT_CHANGES: string = '_contextmenu_accept_changes';
 const CONTEXTMENU_REJECT_CHANGES: string = '_contextmenu_reject_changes';
 const CONTEXTMENU_NOTE_OPTIONS: string = '_contextmenu_note_options';
@@ -824,7 +825,7 @@ export class ContextMenu {
             }
             contextMenuItems.push({ separator: true, id: '_contextmenu_suggestion_separator' });
             if (!isNullOrUndefined(splittedSuggestion) && splittedSuggestion.length > 1) {
-                contextMenuItems.push({ text: this.locale.getConstant('More Suggestion'), items: splittedSuggestion });
+                contextMenuItems.push({ text: this.locale.getConstant('More Suggestion'), id: '_contextmenu_more_suggestion', items: splittedSuggestion });
                 contextMenuItems.push({ separator: true, id: '_contextmenu_moreSuggestion_separator' });
             } else {
                 contextMenuItems.push({ text: this.locale.getConstant('Add to Dictionary'), id: '_contextmenu_otherSuggestions_spellcheck_Add to Dictionary', iconCss: '' });

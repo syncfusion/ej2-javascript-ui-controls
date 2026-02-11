@@ -3,7 +3,7 @@
  */
 import { Gantt, ITaskbarEditedEventArgs, Edit, RowDD, ContextMenu } from '../../src/index';
 import { DataManager } from '@syncfusion/ej2-data';
-import { baselineData, scheduleModeData, splitTasksData, editingData, scheduleModeData1, dragSelfReferenceData, multiTaskbarData, resources, projectData, resourcesData, resourceCollection, multiResources, predecessorOffSetValidation, customCRData, customCrIssue, crDialogEditData, projectSplitTask, MT887459, MT877459, predecessorMT877459, parentPredecessorMT877459, parentMT877459, sengmentData, sengmentCollection, cR893051, dateFormateData, editingResources3, normalResourceData, CR929550, MT915273, segmentResourcesData, SegmentResourceCollection, projectNewData1 } from '../base/data-source.spec';
+import { baselineData, scheduleModeData, splitTasksData, editingData, scheduleModeData1, dragSelfReferenceData, multiTaskbarData, resources, projectData, resourcesData, resourceCollection, multiResources, predecessorOffSetValidation, customCRData, customCrIssue, crDialogEditData, projectSplitTask, MT887459, MT877459, predecessorMT877459, parentPredecessorMT877459, parentMT877459, sengmentData, sengmentCollection, cR893051, dateFormateData, editingResources3, normalResourceData, CR929550, MT915273, segmentResourcesData, SegmentResourceCollection, projectNewData1, CR1005919, CRres1005919 } from '../base/data-source.spec';
 import { createGantt, destroyGantt, triggerMouseEvent } from '../base/gantt-util.spec';
 import { isNullOrUndefined } from '@syncfusion/ej2-base';
 import { falseLine } from '../../src/gantt/base/css-constants';
@@ -9726,6 +9726,88 @@ describe('Dragging task after connecting predecessor SS', () => {
         triggerMouseEvent(dragElement, 'mousemove', dragElement.offsetLeft + 200, 0);
         triggerMouseEvent(dragElement, 'mouseup');
         expect(ganttObj.getFormatedDate(ganttObj.flatData[2].ganttProperties.startDate, 'M/dd/yyyy')).toBe('4/22/2019');
+    });
+    afterAll(() => {
+        if (ganttObj) {
+            destroyGantt(ganttObj);
+        }
+    });
+});
+describe('CR-1005919: Dynamically changing values are not reflected in actionBegin event', () => {
+    let ganttObj: Gantt;
+    beforeAll((done: Function) => {
+        ganttObj = createGantt(
+            {
+                dataSource: CR1005919,
+                resources: CRres1005919,
+                taskFields: {
+                    id: 'TaskID',
+                    name: 'TaskName',
+                    startDate: 'StartDate',
+                    endDate: 'EndDate',
+                    duration: 'Duration',
+                    progress: 'Progress',
+                    dependency: 'Predecessor',
+                    parentID: 'ParentId',
+                    notes: 'info',
+                    resourceInfo: 'resources'
+                },
+                resourceFields : {
+                    id: 'resourceId',
+                    name: 'resourceName',
+                },
+                actionBegin(args) {
+                    if (args.requestType == 'beforeSave' && args.data.Duration < 1) {
+                        // dynamic changing values here
+                        args.data.Duration = 1;
+                    }
+                },
+                editSettings: {
+                    allowEditing: true,
+                    allowDeleting: true,
+                    allowTaskbarEditing: true,
+                    showDeleteConfirmDialog: true
+                },
+                toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll', 'Search',
+                    'PrevTimeSpan', 'NextTimeSpan'],
+                allowSelection: true,
+                gridLines: "Both",
+                showColumnMenu: false,
+                highlightWeekends: true,
+                timelineSettings: {
+                    topTier: {
+                        unit: 'Week',
+                        format: 'dd/MM/yyyy'
+                    },
+                    bottomTier: {
+                        unit: 'Day',
+                        count: 1
+                    }
+                },
+                columns: [
+                    { field: 'TaskID', headerText: 'Task ID' },
+                    { field: 'TaskName', headerText: 'Task Name', allowReordering: false  },
+                    { field: 'StartDate', headerText: 'Start Date', allowSorting: false },
+                    { field: 'EndDate', headerText: 'End Date', allowSorting: false },
+                    { field: 'Duration', headerText: 'Duration' },
+                    { field: 'Progress', headerText: 'Progress', allowFiltering: false }
+                ],
+                labelSettings: {
+                    leftLabel: 'TaskName',
+                    taskLabel: 'Progress'
+                },
+                height: '550px',
+                allowUnscheduledTasks: true
+            }, done);
+    });
+    it('check if task left resize, will updates actionBegins duration value', () => {
+        let dragElement: HTMLElement = ganttObj.element.querySelector('#' + ganttObj.element.id + 'GanttTaskTableBody > tr:nth-child(2) > td > div.e-taskbar-main-container > div.e-taskbar-right-resizer.e-icon') as HTMLElement;
+        triggerMouseEvent(dragElement, 'mousedown', dragElement.offsetLeft, dragElement.offsetTop);
+        triggerMouseEvent(dragElement, 'mousemove', -400, 0);
+        triggerMouseEvent(dragElement, 'mouseup');
+        expect(ganttObj.getFormatedDate(ganttObj.flatData[1].ganttProperties.endDate, 'M/dd/yyyy HH:mm')).toBe('4/02/2025 17:00');
+        expect(ganttObj.flatData[1].ganttProperties.duration).toBe(1);
+        expect(ganttObj.flatData[1].ganttProperties.isMilestone).toBe(false);
     });
     afterAll(() => {
         if (ganttObj) {

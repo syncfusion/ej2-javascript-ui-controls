@@ -2131,7 +2131,7 @@ export class AnnotationToolbar {
             }
         }
         if (this.pdfViewer.selectedItems.annotations.length === 1) {
-            this.colorPalette.value = this.pdfViewer.selectedItems.annotations[0].wrapper.children[0].style.fill;
+            this.colorPalette.value = this.getColorHexValue(this.pdfViewer.selectedItems.annotations[0].wrapper.children[0].style.fill, 'fillColor');
             this.colorPalette.noColor = true;
         } else {
             this.setCurrentColorInPicker();
@@ -2197,7 +2197,7 @@ export class AnnotationToolbar {
 
     private strokeDropDownBeforeOpen(args: BeforeOpenCloseMenuEventArgs): void {
         if (this.pdfViewer.selectedItems.annotations.length === 1) {
-            this.strokeColorPicker.value = this.pdfViewer.selectedItems.annotations[0].wrapper.children[0].style.strokeColor;
+            this.strokeColorPicker.value = this.getColorHexValue(this.pdfViewer.selectedItems.annotations[0].wrapper.children[0].style.strokeColor, 'strokeColor');
         } else {
             this.setCurrentStrokeColorInPicker();
         }

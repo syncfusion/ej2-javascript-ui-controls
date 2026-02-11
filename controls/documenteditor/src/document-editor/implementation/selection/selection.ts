@@ -93,6 +93,7 @@ export class Selection {
     private cellFormatIn: SelectionCellFormat;
     private rowFormatIn: SelectionRowFormat;
     private imageFormatInternal: SelectionImageFormat;
+    private previousHighlightedComment: CommentElementBox;
     /**
      * @private
      */
@@ -1259,6 +1260,78 @@ export class Selection {
         this.documentHelper.updateTouchMarkPosition();
         if (isSelectionChanged) {
             this.documentHelper.scrollToPosition(this.start, this.end, undefined, isBookmark);
+        }
+        if (this.documentHelper.comments.length > 0) {
+            this.highlightCommentMarkIcon();
+        }
+    }
+
+    private addCommentMarkhighlight(comment: CommentElementBox): void {
+        if (!isNullOrUndefined(comment.commentStart.commentMark) && !isNullOrUndefined(comment.commentStart.commentMark.classList)) {
+            comment.commentStart.commentMark.classList.add('e-de-cmt-mark-hover');
+        }
+    }
+
+    private removeCommentMarkHighlight(comment: CommentElementBox): void {
+        if (!isNullOrUndefined(comment.commentStart.commentMark) && !isNullOrUndefined(comment.commentStart.commentMark.classList)) {
+            comment.commentStart.commentMark.classList.remove('e-de-cmt-mark-hover');
+        }
+    }
+
+    private highlightCommentMarkIcon(): void {
+        let selectionStartPosition;
+        let selectionEndPosition;
+        if (this.isForward) {
+            selectionStartPosition = this.start;
+            selectionEndPosition = this.end;
+        } else {
+            selectionStartPosition = this.end;
+            selectionEndPosition = this.start;
+        }
+        const comments = this.documentHelper.comments as CommentElementBox[];
+        let low = 0;
+        let high = comments.length - 1;
+        let currentMatch: CommentElementBox | null = null;
+        while (low <= high) {
+            const mid = (low + high) >> 1;
+            const comment = comments[mid];
+            const commentStartPosition = this.getElementPosition(comment.commentStart).startPosition;
+            const commentEndPosition = this.getElementPosition(comment.commentEnd).startPosition;
+            const insideComment =
+                (selectionStartPosition.isExistAfter(commentStartPosition) || selectionStartPosition.isAtSamePosition(commentStartPosition)) &&
+                (selectionStartPosition.isExistBefore(commentEndPosition) || selectionStartPosition.isAtSamePosition(commentEndPosition));
+            if (insideComment) {
+                const startInsideTable = selectionStartPosition.paragraph.isInsideTable;
+                const endInsideTable = selectionEndPosition.paragraph.isInsideTable;
+                let shouldHighlight = false;
+                if (!startInsideTable) {
+                    shouldHighlight = true;
+                } else if (startInsideTable && endInsideTable) {
+                    const sameTable =
+                        selectionStartPosition.paragraph.associatedCell.ownerTable.tableFormat ===
+                        selectionEndPosition.paragraph.associatedCell.ownerTable.tableFormat;
+
+                    shouldHighlight = sameTable;
+                }
+                currentMatch = shouldHighlight ? comment : null;
+                break;
+            }
+            if (selectionStartPosition.isExistBefore(commentStartPosition)) {
+                high = mid - 1;
+            } else {
+                low = mid + 1;
+            }
+        }
+        const previousComment = this.previousHighlightedComment;
+        const nextComment = currentMatch;
+        if (previousComment !== nextComment) {
+            if (previousComment) {
+                this.removeCommentMarkHighlight(previousComment);
+            }
+            if (nextComment) {
+                this.addCommentMarkhighlight(nextComment);
+            }
+            this.previousHighlightedComment = nextComment;
         }
     }
 
@@ -7593,7 +7666,7 @@ export class Selection {
                         index = 0;
                     }
                 } else {
-                    isRtlText = element.characterFormat.bidi;
+                    isRtlText = element.characterFormat.bidi || element.isRightToLeft;
                     isParaBidi = element.line.paragraph.paragraphFormat.bidi;
                     if (element instanceof TextElementBox && (isParaBidi || isRtlText) && caretPosition.x < left + element.margin.left + element.width + element.padding.left) {
                         index = this.getTextLength(element.line, element) + (element as TextElementBox).length;
@@ -7607,8 +7680,8 @@ export class Selection {
                 }
                 if (element instanceof TextElementBox) {
                     top += element.margin.top > 0 ? element.margin.top : 0;
-                } else if (!((element instanceof BookmarkElementBox && element.indexInOwner === 0) || element instanceof EditRangeStartElementBox || element instanceof EditRangeEndElementBox)
-                    && this.lineHasOnlyBookmarksAndEditRanges(element.line)) {
+                } else if (!((element instanceof BookmarkElementBox && element.indexInOwner === 0 && this.lineHasOnlyBookmarksAndEditRanges(element.line)) || element instanceof EditRangeStartElementBox
+                    || element instanceof EditRangeEndElementBox || element instanceof ImageElementBox)) {
                     let textMetrics: TextSizeInfo = this.documentHelper.textHelper.getHeight(element.characterFormat);     //for ascent and descent
                     let height: number = element.height;
                     if (element instanceof BookmarkElementBox && !this.documentHelper.layout.hasValidElement(element.line.paragraph)) {

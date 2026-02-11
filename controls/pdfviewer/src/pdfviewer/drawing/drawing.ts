@@ -35,6 +35,7 @@ export class Drawing {
     private stampOriginalHeight: number;
     private stampPreviousWidth: number;
     private stampPerviousHeight: number;
+    private isDragAnnotation: boolean = false;
     /**
      * @private
      */
@@ -2552,10 +2553,12 @@ export class Drawing {
             }
             this.dragControlPoint(obj, tx, ty, true);
         }
+        this.isDragAnnotation = true;
         this.nodePropertyChange(obj, { bounds: { x: obj.wrapper.offsetX, y: obj.wrapper.offsetY } } as PdfAnnotationBaseModel);
         obj.wrapper.measureChildren = false;
         const canvas: HTMLElement = this.pdfViewer.viewerBase.getAnnotationCanvas('_annotationCanvas_', (obj as any).pageIndex);
         this.pdfViewer.renderDrawing(canvas as HTMLCanvasElement, (obj as any).pageIndex);
+        this.isDragAnnotation = false;
     }
 
     /**
@@ -3161,6 +3164,12 @@ export class Drawing {
                             actualObject.notes = children[parseInt(i.toString(), 10)].content;
                         }
                         children[parseInt(i.toString(), 10)].isDirt = true;
+                    } else if (actualObject.shapeAnnotationType === 'FreeText') {
+                        if (actualObject.dynamicText === '' && !this.isDragAnnotation) {
+                            children[parseInt(i.toString(), 10)].style.fill = 'transparent';
+                            children[parseInt(i.toString(), 10)].style.color = 'transparent';
+                            children[parseInt(i.toString(), 10)].style.strokeColor = 'transparent';
+                        }
                     }
                     /** set text node width less than the parent */
                 }
@@ -3245,11 +3254,7 @@ export class Drawing {
         if (actualObject && actualObject.shapeAnnotationType === 'FreeText') {
             if (actualObject.wrapper && actualObject.wrapper.children && actualObject.wrapper.children.length) {
                 const children: any[] = actualObject.wrapper.children;
-                if (children[1].childNodes.length === 1 && actualObject.textAlign === 'Justify') {
-                    children[1].horizontalAlignment = 'Center';
-                    children[1].setOffsetWithRespectToBounds(0.5, 0, null);
-                }
-                else if (children[1].childNodes.length > 1 && actualObject.textAlign === 'Justify') {
+                if (children[1].childNodes.length >= 1 && actualObject.textAlign === 'Justify') {
                     children[1].horizontalAlignment = 'Left';
                     children[1].setOffsetWithRespectToBounds(0, 0, null);
                 }

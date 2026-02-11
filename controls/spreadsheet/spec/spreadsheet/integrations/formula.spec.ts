@@ -5742,8 +5742,8 @@ describe('Spreadsheet formula module ->', () => {
         });
         it('MATCH formula with cell Reference - 6->', (done: Function) => {
             helper.edit('N6', '=MATCH("TRUE",B24:B25,0)');
-            expect(helper.invoke('getCell', [5, 13]).textContent).toBe('1');
-            expect(JSON.stringify(helper.getInstance().sheets[0].rows[5].cells[13])).toBe('{"value":1,"formula":"=MATCH(\\"TRUE\\",B24:B25,0)"}');
+            expect(helper.invoke('getCell', [5, 13]).textContent).toBe('#N/A');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[5].cells[13])).toBe('{"value":"#N/A","formula":"=MATCH(\\"TRUE\\",B24:B25,0)"}');
             done();
         });
         it('MATCH formula with cell Reference - 7->', (done: Function) => {
@@ -5772,6 +5772,53 @@ describe('Spreadsheet formula module ->', () => {
             helper.edit('N9', '=MATCH(E16,D34:D37,1)');
             expect(helper.invoke('getCell', [8, 13]).textContent).toBe('#DIV/0!');
             expect(JSON.stringify(helper.getInstance().sheets[0].rows[6].cells[13])).toBe('{"value":"#DIV/0!","formula":"=MATCH(E16,D34:D37,1)"}');
+            done();
+        });
+    });
+
+    describe('MATCH formula checking ->', () => {
+        beforeAll((done: Function) => {
+            helper.initializeSpreadsheet({ sheets: [{ ranges: [{ dataSource: defaultData }] }] }, done);
+        });
+        afterAll(() => {
+            helper.invoke('destroy');
+        });
+        it('MATCH formula with lookup range includes more than one col or row>', (done: Function) => {
+            helper.edit('I2', '=MATCH(D2,D2:G11,0)');
+            expect(helper.invoke('getCell', [1, 8]).textContent).toBe('#N/A');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[1].cells[8])).toBe('{"value":"#N/A","formula":"=MATCH(D2,D2:G11,0)"}');
+            helper.edit('I3', '=MATCH(D2,D2:G11,1)');
+            expect(helper.invoke('getCell', [2, 8]).textContent).toBe('#N/A');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[2].cells[8])).toBe('{"value":"#N/A","formula":"=MATCH(D2,D2:G11,1)"}');
+            done();
+        });
+        it('MATCH formula with string boolean values', (done: Function) => {
+            helper.edit('I4', '"TRUE"');
+            helper.edit('I5', '"FALSE"');
+            helper.edit('I6', '=MATCH("TRUE",I4:I5,0)');
+            expect(helper.invoke('getCell', [5, 8]).textContent).toBe('#N/A');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[5].cells[8])).toBe('{"value":"#N/A","formula":"=MATCH(\\"TRUE\\",I4:I5,0)"}');
+            done();
+        });
+        it('MATCH formula with invalid reference', (done: Function) => {
+            helper.edit('I7', '=MATCH(2,XYZA2:XYZA10,0)');
+            expect(helper.invoke('getCell', [6, 8]).textContent).toBe('#NAME?');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[6].cells[8])).toBe('{"value":"#NAME?","formula":"=MATCH(2,XYZA2:XYZA10,0)"}');
+            done();
+        });
+        it('MATCH formula with sheet reference', (done: Function) => {
+            helper.edit('I8', '=MATCH(A1,Sheet1!A1:A10,0)');
+            expect(helper.invoke('getCell', [7, 8]).textContent).toBe('1');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[7].cells[8])).toBe('{"value":1,"formula":"=MATCH(A1,Sheet1!A1:A10,0)"}');
+            done();
+        });
+         it('MATCH formula with wildcard lookup value', (done: Function) => {
+            helper.edit('I9', '=MATCH("Item*",A1:A10,0)');
+            expect(helper.invoke('getCell', [8, 8]).textContent).toBe('1');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[8].cells[8])).toBe('{"value":1,"formula":"=MATCH(\\"Item*\\",A1:A10,0)"}');
+            helper.edit('I10', '=MATCH("Sn?akers",A1:A10,0)');
+            expect(helper.invoke('getCell', [9, 8]).textContent).toBe('7');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[9].cells[8])).toBe('{"value":7,"formula":"=MATCH(\\"Sn?akers\\",A1:A10,0)"}');
             done();
         });
     });

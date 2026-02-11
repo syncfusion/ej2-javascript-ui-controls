@@ -13,5 +13,5 @@
 @use 'ej2-grids/styles/grid/highcontrast-definition' as *;
 @use 'file-manager/highcontrast-definition' as *;
 @use 'file-manager/icons/highcontrast' as *;
-@use 'file-manager/all' as *;
-@use 'file-manager/bigger' as *;
+@use 'file-manager/all.highcontrast' as *;
+@use 'file-manager/bigger.highcontrast' as *;

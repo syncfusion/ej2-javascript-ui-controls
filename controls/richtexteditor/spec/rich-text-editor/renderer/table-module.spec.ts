@@ -10164,39 +10164,22 @@ the tool bar support, it�s also customiza</p><table class="e-rte-table" style=
         let editor: RichTextEditor;
         beforeAll(() => {
             editor = renderRTE({
-                quickToolbarSettings: {
-                    table: ['BackgroundColor']
-                },
                 value: `<table class="e-rte-table" style="width: 100%; min-width: 0px;"><colgroup><col style="width: 12.5%;"><col style="width: 12.5%;"><col style="width: 12.5%;"><col style="width: 12.5%;"><col style="width: 12.5%;"><col style="width: 12.5%;"><col style="width: 12.5%;"><col style="width: 12.5%;"></colgroup><tbody><tr><td class="e-cell-select e-multi-cells-select">1</td><td class="e-cell-select e-multi-cells-select">2</td><td class="e-cell-select e-multi-cells-select">3</td><td><br></td><td><br></td><td><br></td><td><br></td><td><br></td></tr><tr><td class="e-cell-select e-multi-cells-select">4</td><td class="e-cell-select e-multi-cells-select" rowspan="2" style="height: 51px;">5<br>8</td><td class="e-cell-select e-multi-cells-select">6</td><td><br></td><td><br></td><td><br></td><td><br></td><td><br></td></tr><tr><td class="e-cell-select e-multi-cells-select">7</td><td class="e-cell-select e-multi-cells-select e-cell-select-end">9</td><td><br></td><td><br></td><td><br></td><td><br></td><td><br></td></tr></tbody></table>`
             })
         });
         afterAll(() => {
             destroy(editor);
         });
-        it('The Clipboard cut Function for the Rich Text Editor table support.', (done: DoneFn) => {
-            const mockEvent: object = {
-                action: 'copy',
-                isTrusted: true,
-                altKey: false,
-                bubbles: true,
-                cancelBubble: false,
-                cancelable: true,
-                charCode: 0,
-                code: 'KeyC',
-                composed: true,
-                ctrlKey: true,
-                preventDefault: function (): void {
-                    this.defaultPrevented = true;
-                }
-            };
+        it('The Clipboard cut Function for the Rich Text Editor table support.', () => {
             const range = new Range();
             range.setStart(editor.inputElement.querySelector('td'), 1);
             range.setEnd(editor.inputElement.querySelectorAll('td')[1], 0);
             editor.selectRange(range);
             editor.tableModule.tableObj.curTable = editor.inputElement.querySelector('table');
-            editor.onCut(mockEvent as any);
+            const dataTransfer = new DataTransfer();
+            const cutEvent: ClipboardEvent = new ClipboardEvent('cut', { clipboardData: dataTransfer } as ClipboardEventInit);
+            editor.clipBoardHandler(cutEvent);
             expect(editor.inputElement.querySelectorAll('table')[0].rows[0].cells[0].innerHTML).toBe('<br>');
-            done();
         });
     });
 
@@ -13434,6 +13417,46 @@ the tool bar support, it�s also customiza</p><table class="e-rte-table" style=
                 expect(rteObj.inputElement.querySelector('strong').nextSibling.nodeName === 'TABLE').toBe(true);
                 done();
             }, 100);
+        });
+    });
+
+    describe('1006432 - Table column widths not retained after copy paste', () => {
+        let editor: RichTextEditor;
+        beforeEach(() => {
+            editor = renderRTE({
+                value: `<table class="e-rte-table" style="width: 100%; min-width: 0px;"><colgroup><col style="width: 33.3333%;"><col style="width: 33.3333%;"><col style="width: 33.3333%;"></colgroup><tbody><tr><td class="e-cell-select e-multi-cells-select"><br/></td><td class="e-cell-select e-multi-cells-select"><br/></td><td class="e-cell-select e-multi-cells-select"><br/></td></tr><tr><td class="e-cell-select e-multi-cells-select"><br/></td><td class="e-cell-select e-multi-cells-select"><br/></td><td class="e-cell-select e-multi-cells-select"><br/></td></tr></tbody></table><p><br/></p>`
+            })
+        });
+        afterEach(() => {
+            destroy(editor);
+        });
+        it(' - should retain the colgroup element after copy the table.', () => {
+            const range = new Range();
+            range.setStart(editor.inputElement.querySelector('td'), 1);
+            range.setEnd(editor.inputElement.querySelectorAll('td')[1], 0);
+            editor.selectRange(range);
+            editor.tableModule.tableObj.curTable = editor.inputElement.querySelector('table');
+            const dataTransfer = new DataTransfer();
+            const copyEvent: ClipboardEvent = new ClipboardEvent('copy', { clipboardData: dataTransfer } as ClipboardEventInit);
+            editor.clipBoardHandler(copyEvent);
+            const htmlText: string = dataTransfer.getData('text/html');
+            const divContainer = document.createElement('div');
+            divContainer.innerHTML = htmlText;
+            expect(!isNullOrUndefined(divContainer.querySelector('colgroup'))).toBe(true);
+        });
+        it(' - should retain the colgroup element after cut the table.', () => {
+            const range = new Range();
+            range.setStart(editor.inputElement.querySelector('td'), 1);
+            range.setEnd(editor.inputElement.querySelectorAll('td')[1], 0);
+            editor.selectRange(range);
+            editor.tableModule.tableObj.curTable = editor.inputElement.querySelector('table');
+            const dataTransfer = new DataTransfer();
+            const cutEvent: ClipboardEvent = new ClipboardEvent('cut', { clipboardData: dataTransfer } as ClipboardEventInit);
+            editor.clipBoardHandler(cutEvent);
+            const htmlText: string = dataTransfer.getData('text/html');
+            const divContainer = document.createElement('div');
+            divContainer.innerHTML = htmlText;
+            expect(!isNullOrUndefined(divContainer.querySelector('colgroup'))).toBe(true);
         });
     });
     

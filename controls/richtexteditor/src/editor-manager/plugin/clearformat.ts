@@ -8,6 +8,7 @@ import { DOMNode } from './dom-node';
 import { InsertMethods } from './insert-methods';
 import { IsFormatted } from './isformatted';
 import { isIDevice, setEditFrameFocus } from '../../common/util';
+import { TableSelection } from './table-selection';
 
 export class ClearFormat {
     private static BLOCK_TAGS: string[] = ['address', 'article', 'aside', 'blockquote',
@@ -46,6 +47,15 @@ export class ClearFormat {
             range = nodeCutter.GetCursorRange(docElement, range, nodes[0]);
         }
         const isCollapsed: boolean = range.collapsed;
+        let selectedCells: Node[] ;
+        if (isCollapsed && command === 'ClearFormat') {
+            const start: HTMLElement = range.startContainer.nodeType === 3 ?
+                range.startContainer.parentNode as HTMLElement : range.startContainer as HTMLElement;
+            const curTable: HTMLTableElement = start.closest('table') as HTMLTableElement;
+            selectedCells = !isNOU(curTable) ? Array.from(
+                curTable.querySelectorAll<HTMLElement>('.e-cell-select')
+            ) : null;
+        }
         if (!isCollapsed) {
             let preNode: Node;
             if (nodes.length > 0 && nodes[0].nodeName === 'BR' && closest(nodes[0], 'table')) {
@@ -87,10 +97,23 @@ export class ClearFormat {
                 setEditFrameFocus(endNode as Element, selector);
             }
             this.reSelection(docElement, save, exactNodes);
+        } else if (!isNOU(selectedCells) && selectedCells.length > 0) {
+            const tableSelection: TableSelection = new TableSelection(docElement.body, docElement);
+            const textNodes: Node[] = tableSelection.getTextNodes();
+            this.clearInlines(
+                textNodes,
+                textNodes,
+                nodeSelection.getRange(docElement),
+                nodeCutter,
+                endNode, true);
+            this.unWrap(docElement, selectedCells, nodeCutter, nodeSelection);
         }
         if (cursorRange) {
             nodeSelection.setCursorPoint(docElement, range.endContainer as Element, range.endOffset);
         }
+        docElement.querySelectorAll('.e-rte-table-processed').forEach((table: Element) => {
+            table.classList.remove('e-rte-table-processed');
+        });
     }
 
     private static reSelection(
@@ -243,6 +266,9 @@ export class ClearFormat {
                                 target.removeAttribute('class');
                             }
                         }
+                        if (!target.closest('table').classList.contains('e-rte-table-processed')) {
+                            this.addEligibleParentsUpToTable(target, parentNodes);
+                        }
                     }
                     else {
                         InsertMethods.Wrap(parentNodes[index1 as number] as HTMLElement, docElement.createElement(this.defaultTag));
@@ -287,13 +313,37 @@ export class ClearFormat {
         }
     }
 
+    private static addEligibleParentsUpToTable(target: Node, parentNodes: Node[]): void {
+        const includedNodes: Set<Node> = new Set<Node>(parentNodes);
+        let currentNode: Node | null = target;
+        while (currentNode && currentNode.parentNode) {
+            if ((currentNode as Element).nodeName === 'TABLE') {
+                (currentNode as Element).classList.add('e-rte-table-processed');
+                break;
+            }
+            const parentNodeRef: Node = currentNode.parentNode;
+            const childElements: Node[] = Array.from((parentNodeRef as HTMLElement).children);
+            const hasSingleChild: boolean = childElements.length <= 1;
+            const areAllChildrenIncluded: boolean =
+                childElements.length > 0 && childElements.every((child: Node) => includedNodes.has(child));
+            if (!(hasSingleChild || areAllChildrenIncluded)) {
+                break;
+            }
+            if (!includedNodes.has(parentNodeRef)) {
+                parentNodes.push(parentNodeRef);
+                includedNodes.add(parentNodeRef);
+            }
+            currentNode = parentNodeRef;
+        }
+    }
+
     private static clearInlines(
         textNodes: Node[],
         nodes: Node[],
         range: Range,
         nodeCutter: NodeCutter,
         // eslint-disable-next-line
-        endNode: Node): void {
+        endNode: Node, isTableSelected?: boolean): void {
         for (let index: number = 0; index < textNodes.length; index++) {
             let currentInlineNode: Node = textNodes[index as number];
             let currentNode: Node;
@@ -304,7 +354,9 @@ export class ClearFormat {
             }
             if (currentNode &&
                 IsFormatted.inlineTags.indexOf(currentNode.nodeName.toLocaleLowerCase()) > -1 ) {
-                nodeCutter.GetSpliceNode(range, currentNode as HTMLElement );
+                if (!isTableSelected) {
+                    nodeCutter.GetSpliceNode(range, currentNode as HTMLElement);
+                }
                 this.removeInlineParent(currentNode);
             }
         }

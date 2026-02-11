@@ -6,7 +6,7 @@ import { DataManager, RemoteSaveAdaptor } from '@syncfusion/ej2-data';
 import { Gantt, Selection, Toolbar, DayMarkers, Edit, Filter,  ContextMenu, Sort, ColumnMenu, ITaskbarClickEventArgs, RecordDoubleClickEventArgs,ExcelExport ,PdfExport ,Reorder, Resize, CriticalPath, VirtualScroll} from '../../src/index';
 import { unscheduledData, projectResources, resourceGanttData, dragSelfReferenceData, selfReference, projectData1,baselineDatas, projectNewData2, totalDurationData, filterdata, projectNewData9, projectNewData10, projectNewData11, projectNewData12, selfData1, splitTasksData1, projectNewData13, publicProperty, cellEditData, resourcesData, cr884998,treeData,invalidPrdcessor, dataSource2, dataSource1, cR893051, undoDataSource, editingData3,editingResources3, exportData1,resourceCollection10,projectNewDatas1, cr940492,
     autoValidateTaskData, autoValidateTaskModeData, autoValidateUnScheduleData, 
-    autoValidatedTaskResrcmode, autovaldateResourceCollection, autovalidateDatasource
+    autoValidatedTaskResrcmode, autovaldateResourceCollection, autovalidateDatasource, projectData
 } from '../base/data-source.spec';
 import { createGantt, destroyGantt, triggerMouseEvent } from './gantt-util.spec';
 import { getValue, setValue } from '@syncfusion/ej2-base';
@@ -7757,6 +7757,67 @@ describe('Coverage issue date-processor', () => {
     });
     it('checking start date', () => {
         expect(ganttObj.flatData.length).toBe(1);
+    });
+    afterAll(() => {
+        if (ganttObj) {
+            destroyGantt(ganttObj);
+        }
+    });
+});
+describe('Expanded tasks', () => {
+    let ganttObj: Gantt;
+    beforeAll((done: Function) => {
+        ganttObj = createGantt(
+            {
+                dataSource: projectData,
+                allowSorting: true,
+                taskFields: {
+                    id: 'TaskID',
+                    name: 'TaskName',
+                    startDate: 'StartDate',
+                    duration: 'Duration',
+                    progress: 'Progress',
+                    dependency:'Predecessor',
+                    child: 'subtasks'
+                },
+
+                editSettings: {
+                    allowEditing: true,
+                    allowDeleting: true,
+                    allowTaskbarEditing: true,
+                    showDeleteConfirmDialog: true
+                },
+                toolbar:['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll', 'Search',
+                'PrevTimeSpan', 'NextTimeSpan'],
+                allowSelection: true,
+                gridLines: "Both",
+                showColumnMenu: false,
+                highlightWeekends: true,
+                timelineSettings: {
+                    topTier: {
+                        unit: 'Week',
+                        format: 'dd/MM/yyyy'
+                    },
+                    bottomTier: {
+                        unit: 'Day',
+                        count: 1
+                    }
+                },
+                labelSettings: {
+                    leftLabel: 'TaskName',
+                    taskLabel: 'Progress'
+                },
+                height: '550px',
+                allowUnscheduledTasks: true,
+                projectStartDate: new Date('03/25/2019'),
+                projectEndDate: new Date('05/30/2019'),
+            }, done);
+    });
+    it('Expanded records', () => {
+        ganttObj.collapseByID(7);
+        let expandedRecords = ganttObj.getExpandedRecords(ganttObj.flatData);
+        expect(expandedRecords.length).toBe(37);
+
     });
     afterAll(() => {
         if (ganttObj) {

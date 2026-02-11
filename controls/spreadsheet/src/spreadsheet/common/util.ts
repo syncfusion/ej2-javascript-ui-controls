@@ -2526,6 +2526,17 @@ export function getStandardHeight(context: Spreadsheet, sheetIndex: number): num
 }
 
 /**
+ * Retrieves the standard row height of the given sheet.
+ *
+ * @param {SheetModel} sheet - The sheet model instance.
+ * @returns {number} - The standard height of the specified sheet or the default height if not defined.
+ * @hidden
+ */
+export function getDefaultHeight(sheet: SheetModel): number {
+    return sheet && sheet.standardHeight ? sheet.standardHeight : 20;
+}
+
+/**
  * Removes the specified elements from the DOM.
  *
  * @param {HTMLElement[]} elements - An array of HTML elements that need to be removed from the DOM.

@@ -3916,10 +3916,11 @@ export class DialogEdit {
         if (!isNullOrUndefined(this.parent.taskFields.duration)) {
             this.parent.dataOperation.updateMappingData(toRecord, 'duration');
             this.parent.setRecordValue('durationUnit', fromRecord.ganttProperties.durationUnit, this.rowData, true);
-            if (this.rowData.ganttProperties.duration === 0) {
-                this.parent.setRecordValue('isMilestone', true, toRecord.ganttProperties, true);
-            } else {
-                this.parent.setRecordValue('isMilestone', false, this.rowData.ganttProperties, true);
+            const isMilestone: boolean = this.rowData.ganttProperties.duration === 0 ? true : false;
+            this.parent.setRecordValue('isMilestone', isMilestone, toRecord.ganttProperties, true);
+            // To update the isMilestone mapping property based on ganttProperties, while dialog-edit
+            if (!isNullOrUndefined(this.parent.taskFields.milestone)) {
+                toRecord[this.parent.taskFields.milestone] = true;
             }
         }
         if (!isNullOrUndefined(this.parent.taskFields.baselineDuration)) {

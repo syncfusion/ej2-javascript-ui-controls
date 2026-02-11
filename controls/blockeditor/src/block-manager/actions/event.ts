@@ -121,8 +121,8 @@ export class EventAction {
         if (this.parent.readOnly || ((mouseEvent.target as HTMLElement).tagName === 'TD')) { return; }
         const range: Range = getSelectedRange();
         const startContainerParent: HTMLElement = range ? getParentElement(range.startContainer) : null;
-        const blockElement: HTMLElement = (((startContainerParent.closest('.' + constants.BLOCK_CLS)) as HTMLElement) ||
-            (mouseEvent.target as HTMLElement).closest('.' + constants.BLOCK_CLS) as HTMLElement);
+        const target: HTMLElement = (startContainerParent || mouseEvent.target) as HTMLElement;
+        const blockElement: HTMLElement = target.closest('.' + constants.BLOCK_CLS) as HTMLElement;
         if (blockElement && (this.parent.currentFocusedBlock !== blockElement)) {
             this.parent.togglePlaceholder(this.parent.currentFocusedBlock, false);
             this.parent.setFocusToBlock(blockElement);
