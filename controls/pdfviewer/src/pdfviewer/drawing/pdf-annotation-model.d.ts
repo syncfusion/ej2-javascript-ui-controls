@@ -656,6 +656,14 @@ export interface PdfAnnotationBaseModel {
     isAddAnnotationProgrammatically?: boolean;
 
     /**
+     * Represents the type signature.
+     *
+     * @private
+     *
+     */
+    isSignatureText?: boolean;
+
+    /**
      * Represents the annotation is transparent.
      *
      * @private

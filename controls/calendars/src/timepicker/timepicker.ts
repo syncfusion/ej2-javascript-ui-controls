@@ -1550,8 +1550,8 @@ export class TimePicker extends Component<HTMLElement> implements IInput {
                 cancel: false,
                 name: 'open'
             };
-
-            removeClass([document.body], OVERFLOW);
+            const appendToElement: HTMLElement = this.getAppendToElement();
+            removeClass([appendToElement], OVERFLOW);
             this.trigger('close', args, (args: PopupEventArgs) => {
                 if (!args.cancel) {
                     const animModel: AnimationModel = {
@@ -2632,22 +2632,23 @@ export class TimePicker extends Component<HTMLElement> implements IInput {
             return;
         } else {
             this.popupCreation();
+            const appendToElement: HTMLElement = this.getAppendToElement();
             if (Browser.isDevice && this.listWrapper) {
                 this.modal = this.createElement('div');
                 this.modal.className = '' + ROOT + ' e-time-modal';
-                document.body.className += ' ' + OVERFLOW;
-                document.body.appendChild(this.modal);
+                appendToElement.className += ' ' + OVERFLOW;
+                appendToElement.appendChild(this.modal);
             }
             if (Browser.isDevice) {
                 this.mobileTimePopupWrap = this.createElement('div', { className: 'e-timepicker-mob-popup-wrap'});
-                document.body.appendChild(this.mobileTimePopupWrap);
+                appendToElement.appendChild(this.mobileTimePopupWrap);
             }
             this.openPopupEventArgs = {
                 popup: this.popupObj || null,
                 cancel: false,
                 event: event || null,
                 name: 'open',
-                appendTo: Browser.isDevice ? this.mobileTimePopupWrap : document.body
+                appendTo: Browser.isDevice ? this.mobileTimePopupWrap : appendToElement
             };
             const eventArgs: PopupEventArgs = this.openPopupEventArgs;
             this.trigger('open', eventArgs, (eventArgs: PopupEventArgs) => {
@@ -2774,6 +2775,16 @@ export class TimePicker extends Component<HTMLElement> implements IInput {
      */
     protected getModuleName(): string {
         return 'timepicker';
+    }
+    protected getAppendToElement(): HTMLElement {
+        if (this.isAngular) {
+            const cdkPane: HTMLElement = this.element.closest('.cdk-overlay-pane') as HTMLElement;
+            const popoverEl: HTMLElement = this.element.closest('[popover]') as HTMLElement;
+            if (cdkPane && popoverEl) {
+                return cdkPane;
+            }
+        }
+        return document.body;
     }
     private updateFloatLabelOverflowWidth(): void {
         const container: HTMLElement = this.inputWrapper.container;

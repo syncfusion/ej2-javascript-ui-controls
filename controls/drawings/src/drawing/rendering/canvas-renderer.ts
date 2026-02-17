@@ -45,6 +45,32 @@ export class CanvasRenderer {
         ctx.fillStyle = style.fill;
     }
 
+    private setStyleFreetextEJ2(canvas: HTMLCanvasElement, style: StyleAttributes): void {
+        let ctx: CanvasRenderingContext2D = CanvasRenderer.getContext(canvas);
+        if (style.fill === 'none') { style.fill = 'transparent'; }
+        if (style.stroke === 'none') { style.stroke = 'transparent'; }
+        ctx.strokeStyle = style.stroke;
+        if (style.thickness !== undefined) {
+            ctx.lineWidth = style.thickness  * (96 / 72);
+        }
+        else {
+            ctx.lineWidth = style.strokeWidth * (96 / 72);
+        }
+        if (style.strokeWidth === 0) {
+            ctx.strokeStyle = 'transparent';
+        }
+        ctx.lineJoin = 'miter';
+        ctx.miterLimit = 10;
+        ctx.lineCap = 'butt';
+        ctx.globalAlpha = style.opacity;
+        let dashArray: number[] = [];
+        if (style.dashArray) {
+            dashArray = this.parseDashArray(style.dashArray);
+        }
+        ctx.setLineDash(dashArray);
+        ctx.fillStyle = style.fill;
+    }
+
     private rotateContext(canvas: HTMLCanvasElement, angle: number, x: number, y: number): void {
         let ctx: CanvasRenderingContext2D = CanvasRenderer.getContext(canvas);
         ctx.translate(x, y);
@@ -114,6 +140,50 @@ export class CanvasRenderer {
                 ctx.fill();
                 ctx.stroke();
                 ctx.closePath();
+                ctx.restore();
+            }
+        }
+    }
+
+    /**   @private  */
+    public drawRectangleFreetextEJ2(canvas: HTMLCanvasElement, options: RectAttributes): void {
+        if((options as any).childNodes === undefined) {
+            this.rectWidth = options.width;
+        }
+        if (options.visible === true) {
+            if (options.cornerRadius) {
+                (options as PathAttributes).data = getRectanglePath(options.cornerRadius, options.height, options.width);
+                this.drawPath(canvas, options as PathAttributes);
+            } else {
+                let ctx: CanvasRenderingContext2D = CanvasRenderer.getContext(canvas);
+                ctx.save();
+                ctx.beginPath();
+                let cornerRadius: number = options.cornerRadius;
+                let pivotX: number = options.x + options.width * options.pivotX;
+                let pivotY: number = options.y + options.height * options.pivotY;
+                this.rotateContext(canvas, options.angle, pivotX, pivotY);
+                this.setStyleFreetextEJ2(canvas, options as StyleAttributes);
+                const strokeWidth = ctx.lineWidth || 1;
+                const halfStroke = strokeWidth / 2;
+                const strokeX = options.x + halfStroke;
+                const strokeY = options.y + halfStroke;
+                const strokeW = Math.max(0, options.width - strokeWidth);
+                const strokeH = Math.max(0, options.height - strokeWidth);
+                if (ctx.fillStyle !== 'transparent') {
+                    const fillX = options.x + (strokeWidth > 0 ? strokeWidth : 0);
+                    const fillY = options.y + (strokeWidth > 0 ? strokeWidth : 0);
+                    const fillW = Math.max(0, options.width - (strokeWidth > 0 ? 2 * strokeWidth : 0));
+                    const fillH = Math.max(0, options.height - (strokeWidth > 0 ? 2 * strokeWidth : 0));
+                    if (fillW > 0 && fillH > 0) {
+                        ctx.fillRect(fillX, fillY, fillW, fillH);
+                    }
+                }
+                if (ctx.strokeStyle !== 'transparent' && strokeW > 0 && strokeH > 0) {
+                    ctx.beginPath();
+                    ctx.rect(strokeX, strokeY, strokeW, strokeH);
+                    ctx.stroke();
+                    ctx.closePath();
+                }
                 ctx.restore();
             }
         }
@@ -245,7 +315,7 @@ export class CanvasRenderer {
     }
 
     /**   @private  */
-    public drawTextEJ2(canvas: HTMLCanvasElement, options: TextAttributes): void {
+    public drawTextFreetextEJ2(canvas: HTMLCanvasElement, options: TextAttributes, isFreeTextAnnotation: boolean, rectHeight: number): void {
         if (options.content && options.visible === true) {
             let ctx: CanvasRenderingContext2D = CanvasRenderer.getContext(canvas);
             ctx.save();
@@ -276,6 +346,34 @@ export class CanvasRenderer {
             ctx.fillStyle = options.color;
             if (wrapBounds) {
                 let position: PointModel = this.labelAlign(options, wrapBounds, childNodes, lineHeight);
+                let padding: number = 0;
+                let paddingY: number = 0;
+                const heightDiff: number = rectHeight - (options.height + options.strokeWidth * 2);
+                const stroke: number = Math.ceil(options.strokeWidth || 0);
+                if (isFreeTextAnnotation && heightDiff >= 3.5) {
+                    if (options.strokeWidth <= 4 && options.childNodes.length <= 1) {
+                        padding = stroke * 1.5 * 1.65;
+                        paddingY = stroke * 1.5 * 3;
+                    } else {
+                        padding = stroke * 1.5 * 1.65;
+                        if (options.strokeWidth <= 3) {
+                            paddingY = stroke * 1.5 * 2;
+                        } else {
+                            paddingY = stroke * 1.5 * 1.5;
+                        }
+                    }
+                } else if (isFreeTextAnnotation) {
+                    if (options.strokeWidth <= 4 && options.childNodes.length <= 1) {
+                        padding = stroke * 1.5;
+                        paddingY = stroke * 1.5;
+                    } else {
+                        padding = stroke;
+                        paddingY = stroke / 2;
+                    }
+                } else {
+                    padding = options.strokeWidth / 2;
+                    paddingY = options.strokeWidth / 2;
+                }
                 for (i = 0; i < childNodes.length; i++) {
                     let child: SubTextElement = childNodes[parseInt(i.toString(), 10)];
                     let offsetX: number;
@@ -284,12 +382,12 @@ export class CanvasRenderer {
                     if (options.textAlign === 'justify') {
                         if (child.text === '\n') continue;
                         let baseSpaceWidth: number = ctx.measureText(' ').width;
-                        let targetWidth: number = this.rectWidth - options.strokeWidth - 2;
-                        offsetX = position.x + child.x - wrapBounds.x + options.strokeWidth / 2;
-                        offsetY = position.y + child.dy * i + ((options.fontSize) * 0.8) + options.strokeWidth / 2;
+                        let targetWidth: number = this.rectWidth - (Math.ceil(options.strokeWidth) * 3 * 1.5);
+                        offsetX = position.x + child.x - wrapBounds.x + padding;
+                        offsetY = position.y + child.dy * i + ((options.fontSize) * 0.8) + paddingY;
                         let isLastLine: boolean = i === childNodes.length - 1;
                         if (!isLastLine && targetWidth > 0) {
-                            let leftEdge: number = position.x + child.x - wrapBounds.x + options.strokeWidth / 2;
+                            let leftEdge: number =  position.x + child.x - wrapBounds.x + padding;
                             const words: string[] = child.text.trim().split(/\s+/);
                             if (words.length <= 1) {
                                 ctx.fillText(child.text, leftEdge, offsetY);
@@ -343,7 +441,182 @@ export class CanvasRenderer {
                     }
                     else if (child.text !== '\n') {
                         if (options.textAlign == "right") {
-                            offsetX = position.x + child.x - wrapBounds.x - options.strokeWidth / 2 - 2;
+                            offsetX = position.x + child.x - wrapBounds.x - padding;
+                        }
+                        else if (options.textAlign == "center") {
+                            offsetX = position.x + child.x - wrapBounds.x;
+                        }
+                        else {
+                            offsetX = position.x + child.x - wrapBounds.x + padding;
+                        }
+                        if (options.relativeMode === 'Point') {
+                            if(isFreeTextAnnotation && options.childNodes.length <= 1 && options.strokeWidth >=5 && heightDiff <= 3.5) {
+                                offsetY = position.y + child.dy * i + ((options.fontSize) * 0.8) - paddingY;
+                            } else {
+                                offsetY = position.y + child.dy * i + ((options.fontSize) * 0.8) + paddingY;
+                            }
+                            if(options.strokeWidth == 0) {
+                                offsetY += 1;
+                            }
+                        }
+                        else {
+                            offsetY = position.y + child.dy * i + ((options.fontSize) * 0.8);
+                        }
+                        ctx.fillText(child.text, offsetX, offsetY);
+                        // if (wrapBounds.width > options.width && options.textOverflow !== 'Wrap') {
+                        //     child.text = overFlow(child.text, options);
+                        // }
+                        //ctx.fillText(child.text, offsetX, offsetY);
+                    }
+                    if (child.text !== '\n') {
+                        let decorations: any = [];
+                        if (Array.isArray(options.textDecoration)) {
+                            decorations = options.textDecoration;
+                        } else if (options.textDecoration.includes(' ')) {
+                            decorations = options.textDecoration.split(/[,\s]+/).filter(Boolean);
+                        }
+                        else {
+                            decorations = [options.textDecoration];
+                        }
+                        for (let x = 0; x < decorations.length; x++) {
+                            let textDecoration = decorations[x];
+                            if (textDecoration === 'Underline'
+                                || textDecoration === 'Overline'
+                                || textDecoration === 'LineThrough' && !isTextDecorationApplied) {
+                                let startPointX: number = offsetX;
+                                let startPointY: number;
+                                let textlength: number = ctx.measureText(child.text).width;
+                                let endPointX: number = offsetX + textlength;
+                                let endPointY: number;
+                                switch (textDecoration) {
+                                    case 'Underline':
+                                        startPointY = offsetY + 2;
+                                        endPointY = offsetY + 2;
+                                        break;
+                                    case 'Overline':
+                                        startPointY = (position.y + child.dy * i);
+                                        endPointY = (position.y + child.dy * i);
+                                        break;
+                                    case 'LineThrough':
+                                        startPointY = ((offsetY + position.y + child.dy * i) / 2) + 2;
+                                        endPointY = ((offsetY + position.y + child.dy * i) / 2) + 2;
+                                }
+                                ctx.beginPath();
+                                ctx.moveTo(startPointX, startPointY);
+                                ctx.lineTo(endPointX, endPointY);
+                                ctx.strokeStyle = options.color;
+                                ctx.lineWidth = options.fontSize * .08;
+                                ctx.globalAlpha = options.opacity;
+                                ctx.stroke();
+                            }
+                        }
+                    }
+                }
+            }
+            ctx.restore();
+        }
+    }
+
+     /**   @private  */
+    public drawTextEJ2(canvas: HTMLCanvasElement, options: TextAttributes): void {
+        if (options.content && options.visible === true) {
+            let ctx: CanvasRenderingContext2D = CanvasRenderer.getContext(canvas);
+            ctx.save();
+            this.setStyle(canvas, options as StyleAttributes);
+
+            this.setFontStyle(canvas, options);
+            let ascent: number = 0;
+            let lineHeight: number = 0;
+            if (options.thickness !== undefined) {
+                // Used this to get the exact text height for Freetext annotation according to the font size and font family.
+                const metrics: TextMetrics = ctx.measureText(options.content);
+                ascent = metrics.actualBoundingBoxAscent as number;
+                if (ascent == null) ascent = options.fontSize * 0.8;
+                let descent: number = metrics.actualBoundingBoxDescent;
+                if (descent == null) descent = options.fontSize * 0.2;
+                lineHeight = (ascent + descent);
+                options.height = lineHeight * options.childNodes.length;
+            }
+
+            let pivotX: number = options.x + options.width * options.pivotX;
+            let pivotY: number = options.y + options.height * options.pivotY;
+            this.rotateContext(canvas, options.angle, pivotX, pivotY);
+
+            let i: number = 0;
+            let childNodes: SubTextElement[] = [];
+            childNodes = options.childNodes;
+            let wrapBounds: TextBounds = options.wrapBounds;
+            ctx.fillStyle = options.color;
+            if (wrapBounds) {
+                let position: PointModel = this.labelAlign(options, wrapBounds, childNodes, lineHeight);
+                for (i = 0; i < childNodes.length; i++) {
+                    let child: SubTextElement = childNodes[parseInt(i.toString(), 10)];
+                    let offsetX: number;
+                    let offsetY: number;
+                    let isTextDecorationApplied: boolean = false;
+                    if (options.textAlign === 'justify') {
+                        if (child.text === '\n') continue;
+                        let baseSpaceWidth: number = ctx.measureText(' ').width;
+                        let targetWidth: number = wrapBounds.width;
+                        offsetX = position.x + child.x - wrapBounds.x + options.strokeWidth / 2;
+                        offsetY = position.y + child.dy * i + ((options.fontSize) * 0.8) + options.strokeWidth / 2;
+                        let isLastLine: boolean = i === childNodes.length - 1;
+                        if (!isLastLine && targetWidth > 0) {
+                            let leftEdge: number = position.x + child.x + options.strokeWidth / 2;
+                            const words: string[] = child.text.trim().split(/\s+/);
+                            if (words.length <= 1) {
+                                ctx.fillText(child.text, leftEdge, offsetY);
+                                continue;
+                            }
+                            const widths: number[] = words.map((w: any) => ctx.measureText(w).width);
+                            const wordsTotal: any = widths.reduce((a: any, b: any) => a + b, 0);
+                            const gaps: number = words.length - 1;
+                            const naturalWidth: any = wordsTotal + baseSpaceWidth * gaps;
+                            const extra: number = Math.max(0, targetWidth - naturalWidth);
+                            const extraPerGap: number = extra / gaps;
+                            let pen: number = leftEdge;
+                            for (let i: number = 0; i < words.length; i++) {
+                                ctx.fillText(words[i], pen, offsetY);
+                                if (i < gaps) {
+                                    pen += widths[i] + baseSpaceWidth + extraPerGap;
+                                }
+                            }
+                            if (options.textDecoration === 'Underline'
+                                || options.textDecoration === 'Overline'
+                                || options.textDecoration === 'LineThrough') {
+                                let startX: number = leftEdge;
+                                let startY: number;
+                                let endX: number = leftEdge + targetWidth;
+                                let endY: number;
+                                switch (options.textDecoration) {
+                                    case 'Underline':
+                                        startY = offsetY + 2;
+                                        endY = offsetY + 2;
+                                        break;
+                                    case 'Overline':
+                                        startY = (position.y + child.dy * i);
+                                        endY = (position.y + child.dy * i);
+                                        break;
+                                    case 'LineThrough':
+                                        startY = ((offsetY + position.y + child.dy * i) / 2) + 2;
+                                        endY = ((offsetY + position.y + child.dy * i) / 2) + 2;
+                                }
+                                ctx.beginPath();
+                                ctx.moveTo(startX, startY);
+                                ctx.lineTo(endX, endY);
+                                ctx.strokeStyle = options.color;
+                                ctx.lineWidth = options.fontSize * .08;
+                                ctx.globalAlpha = options.opacity;
+                                ctx.stroke();
+                                isTextDecorationApplied = true;
+                            }
+                        } else {
+                            ctx.fillText(child.text, offsetX, offsetY);
+                        }
+                    }
+                    else if (child.text !== '\n') {
+                        if (options.textAlign == "right") {
+                            offsetX = position.x + child.x - wrapBounds.x - options.strokeWidth / 2;
                         } else if (options.textAlign == "center") {
                             offsetX = position.x + child.x - wrapBounds.x;
                         } else {

@@ -47,3 +47,15 @@ export function createNumberFormat(numberFormatList: any) {
     }
     return numberFormats;
 }
+export function _makeLocalDate(spec: any): Date {
+  const d = {
+    getFullYear: () => spec.year,
+    getMonth: () => spec.month - 1,
+    getDate: () => spec.day,
+    getHours: () => spec.hours,
+    getMinutes: () => spec.minutes,
+    getSeconds: () => spec.seconds,
+    getTimezoneOffset: () => -spec.tzOffsetMinutes,
+  } as unknown as Date;
+  return d;
+}

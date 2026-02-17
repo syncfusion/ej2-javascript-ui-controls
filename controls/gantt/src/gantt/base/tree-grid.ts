@@ -147,8 +147,12 @@ export class GanttTreeGrid {
         }
         const isJsComponent: string = 'isJsComponent';
         this.parent.treeGrid[isJsComponent as string] = true;
-        this.parent.treeGrid.height =
-        this.parent.element.getElementsByClassName('e-chart-scroll-container e-content')[0]['offsetHeight'] - (this.parent.flatData.length === 0 ? 0 : 19);
+        if (!isNullOrUndefined(this.parent.toolbarModule) && !isNullOrUndefined(this.parent.toolbarModule.element)) {
+            this.parent.splitterElement.style.height = 'calc(100% - ' + this.parent.toolbarModule.element.offsetHeight + 'px)';
+        } else {
+            this.parent.splitterElement.style.height = '100%';
+        }
+        this.parent.treeGrid.height = '100%';
         this.parent.treeGrid.emptyRecordTemplate = this.parent.emptyRecordTemplate;
     }
     private getContentDiv(): HTMLElement {

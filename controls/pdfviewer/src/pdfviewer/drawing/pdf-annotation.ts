@@ -755,6 +755,15 @@ export class PdfAnnotationBase extends ChildProperty<PdfAnnotationBase> {
     public isAddAnnotationProgrammatically: boolean;
 
     /**
+     * Represents the type signature.
+     *
+     * @private
+     *
+     */
+    @Property(false)
+    public isSignatureText: boolean;
+
+    /**
      * Represents the annotation is transparent.
      *
      * @private

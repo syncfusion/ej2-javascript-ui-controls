@@ -339,6 +339,38 @@ describe('AI Assistant Module', ()=> {
         });
     });
 
+    describe('Bug 1008166: Uncaught TypeError in AI Assistant Settings', () => {
+        let editor: RichTextEditor;
+        beforeAll(() => {
+            editor = renderRTE({
+                toolbarSettings: {
+                    items: ['aiquery']
+                },
+                aiAssistantSettings: {
+                    headerToolbarSettings: ['Close']
+                }
+            });
+        });
+        afterAll(() => {
+            destroy(editor);
+        });
+        it('Should close the popup on the header close button click.', (done: DoneFn) => {
+            const errorSpy: jasmine.Spy = jasmine.createSpy('error');
+            editor.focusIn();
+            const button: HTMLButtonElement = editor.getToolbarElement().querySelector('.e-tbar-btn');
+            button.click();
+            setTimeout(() => {
+                const closeButton: HTMLElement = document.querySelector('.e-rte-aiquery-popup .e-view-header button .e-close').parentElement;
+                closeButton.click();
+                setTimeout(() => {
+                    expect(editor.aiAssistantModule.queryPopup.element.classList.contains('e-popup-close')).toBe(true);
+                    expect(errorSpy).not.toHaveBeenCalled();
+                    done();
+                }, 100);
+            }, 100);
+        });
+    });
+
     describe('Menu CSS Class property changes testing', ()=> {
         let editor: RichTextEditor;
         beforeAll(()=> {

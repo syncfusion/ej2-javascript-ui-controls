@@ -4013,7 +4013,7 @@ describe('964856 - When selecting two list items and pressing the Backspace key,
         keyBoardEvent.code = 'Backspace';
         (editorObj as any).keyDown(keyBoardEvent);
         setTimeout(() => {
-            expect(editorObj.inputElement.innerHTML === '<ul> <li>The toolbar has multi-row, expandable, and scrollable modes. The Editor supports an inline toolbar, a floating toolbar, and custom toolbar items.</li> <li>Integration with Syncfusion<sup>®</sup> Mention control lets users tag other users. To learn more, check out the <a class="e-rte-anchor" href="https://ej2.syncfusion.com/documentation/rich-text-editor/mention-integration" title="Mention Documentation" aria-label="Open in new window">documentation</a> and <a class="e-rte-anchor" href="https://ej2.syncfusion.com/demos/#/material/rich-text-editor/mention-integration.html" title="Mention Demos" aria-label="Open in new window">demos</a>.</li> </ul><p><br></p>').toBe(true);
+            expect(editorObj.inputElement.innerHTML === '<ul><li>The toolbar has multi-row, expandable, and scrollable modes. The Editor supports an inline toolbar, a floating toolbar, and custom toolbar items.</li><li>Integration with Syncfusion<sup>®</sup> Mention control lets users tag other users. To learn more, check out the <a class="e-rte-anchor" href="https://ej2.syncfusion.com/documentation/rich-text-editor/mention-integration" title="Mention Documentation" aria-label="Open in new window">documentation</a> and <a class="e-rte-anchor" href="https://ej2.syncfusion.com/demos/#/material/rich-text-editor/mention-integration.html" title="Mention Demos" aria-label="Open in new window">demos</a>.</li></ul><p><br></p>').toBe(true);
             done();
         }, 100);
     });
@@ -4825,7 +4825,7 @@ describe('978845 - List formatting fails when applied to indented checklist item
         let endNode = editorObj.inputElement.querySelector('.end');
         editorObj.formatter.editorManager.nodeSelection.setSelectionText(document, startNode.firstChild, endNode.lastChild, 0, 3);
         (editorObj.element.querySelectorAll(".e-toolbar .e-toolbar-item")[0] as HTMLElement).click();
-        expect(editorObj.inputElement.innerHTML === `<ul><li>text1 <ol><li class="start">text2</li></ol> </li></ul><ol><li class="end">text3</li></ol>`).toBe(true);
+        expect(editorObj.inputElement.innerHTML === `<ul><li>text1<ol><li class="start">text2</li></ol></li></ul><ol><li class="end">text3</li></ol>`).toBe(true);
         done();
     });
     it('Should convert the UnorderedList into an ordered list', (done) => {

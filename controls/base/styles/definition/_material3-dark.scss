@@ -814,3 +814,20 @@ $information-font-color: $info !default;
 
 $frozen-shadow: rgba(0, 0, 0, .25) !default;
 $frozen-shadow-2: rgba(0, 0, 0, .25) !default;
+
+// grid components
+$table-bg-color: $content-bg-color !default;
+$table-header-bg-color:$surface !default;
+$table-content-bg-color:$transparent !default;
+$content-header-bg-color: $surface !default;
+$table-header-text-color: $content-text-color !default;
+$table-header-icon-color: $icon-color !default;
+$content-header-text-color: $content-text-color !default;
+$content-header-icon-color: $icon-color !default;
+$table-header-border: $border-light !default;
+$table-border: $border-light !default;
+
+//Dropdown list
+$flyout-header-bg-color: $flyout-bg-color !default;
+$flyout-header-text-color: rgba($content-text-color) !default;
+$flyout-header-icon-color: rgba($icon-color) !default;

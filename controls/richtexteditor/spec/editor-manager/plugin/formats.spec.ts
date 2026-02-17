@@ -1015,7 +1015,7 @@ describe('Formats plugin', () => {
             rteEle = rteObj.element;
             rteObj.formatter.editorManager.nodeSelection.setCursorPoint(document, rteEle.querySelector('p'), 0);
             (<HTMLElement>rteEle.querySelectorAll(".e-toolbar-item")[0] as HTMLElement).click();
-            let expectContent = `<div><blockquote><p>The Rich Text Editor component is a WYSIWYG ('what you see is what you get') editor that provides the best user experience to create and update the content. Users can format their content using standard toolbar commands.</p></blockquote><p><b> Key features:</b></p></div>`
+            let expectContent = `<div><blockquote><p>The Rich Text Editor component is a WYSIWYG ('what you see is what you get') editor that provides the best user experience to create and update the content. Users can format their content using standard toolbar commands.</p></blockquote><p><b>Key features:</b></p></div>`
             expect(rteObj.contentModule.getEditPanel().innerHTML === expectContent).toBe(true);
             done();
         });

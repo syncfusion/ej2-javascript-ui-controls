@@ -147,6 +147,8 @@ export class Selection {
             removeClass([previousSelection], 'e-focus');
         }
         this.parent.trigger('rowSelected', args);
+        // To reset the target element after trigger action complete-T1009443
+        this.actualTarget = undefined;
     }
     private rowDeselecting(args: RowDeselectEventArgs): void {
         if (this.parent.chartRowsModule['isGridRowRefreshed']) {

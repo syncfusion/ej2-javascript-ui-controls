@@ -207,7 +207,7 @@ describe('RTE Base module ', () => {
             keyBoardEvent.code = 'Backspace';
             (rteObj as any).keyDown(keyBoardEvent);
             setTimeout(() => {
-                expect((rteObj as any).inputElement.innerHTML).toBe(`<p> The Rich Text Editor is a WYSIWYG ('what you see is what you get') editor useful to create and edit content and return the valid <a href="https://blazor.syncfusion.com/documentation/rich-text-editor/editor-modes/#html-editor">HTML markup</a> or <a href="https://blazor.syncfusion.com/documentation/rich-text-editor/editor-modes/#markdown-editor">markdown</a> of the content <b class="focusNode">Toolbar</b></p>`);
+                expect((rteObj as any).inputElement.innerHTML).toBe(`<p>The Rich Text Editor is a WYSIWYG ('what you see is what you get') editor useful to create and edit content and return the valid <a href="https://blazor.syncfusion.com/documentation/rich-text-editor/editor-modes/#html-editor">HTML markup</a> or <a href="https://blazor.syncfusion.com/documentation/rich-text-editor/editor-modes/#markdown-editor">markdown</a> of the content<b class="focusNode">Toolbar</b></p>`);
                 done();
             }, 100);
         });
@@ -748,7 +748,7 @@ describe('RTE Base module ', () => {
             let sel = new NodeSelection().setSelectionText(document, node, node2, 0, node2.textContent.length);
             keyBoardEvent.keyCode = 8;
             keyBoardEvent.code = 'Backspace';
-            expect(rteObj.inputElement.textContent.length).toBe(725);
+            expect(rteObj.inputElement.textContent.length).toBe(706);
             (rteObj as any).keyDown(keyBoardEvent);
             setTimeout(() => {
                 expect(rteObj.inputElement.textContent.length).toBe(0);
@@ -3085,11 +3085,11 @@ describe('RTE Base module ', () => {
                 expect(document.activeElement.classList.contains('e-content')).toBe(false);
             });
             it('getHtml method', () => {
-                expect(rteObj.getHtml()).toBe('<p> adsafasdfsd <span> fdsfds </span></p>');
+                expect(rteObj.getHtml()).toBe('<p>adsafasdfsd <span> fdsfds </span></p>');
             });
             it('refresh method', () => {
                 rteObj.refresh();
-                expect(rteObj.value).toBe('<p> adsafasdfsd <span> fdsfds </span></p>');
+                expect(rteObj.getHtml()).toBe('<p>adsafasdfsd <span> fdsfds </span></p>');
             });
             it('showFullScreen method', () => {
                 rteObj.showFullScreen();
@@ -3098,7 +3098,7 @@ describe('RTE Base module ', () => {
             it('showSourceCode method', () => {
                 rteObj.showSourceCode();
                 let ele: HTMLTextAreaElement = rteObj.element.querySelector('.e-rte-srctextarea');
-                expect(ele.value).toBe('<p> adsafasdfsd <span> fdsfds </span></p>');
+                expect(ele.value).toBe('<p>adsafasdfsd <span> fdsfds </span></p>');
             });
             afterAll(() => {
                 destroy(rteObj);
@@ -6057,23 +6057,23 @@ describe('RTE Base module ', () => {
             expect(rteObj.inputElement.innerHTML).toBe("<div><p>adasd</p></div><div><p>adasd</p></div>");
         });
         it("ImageTags", function () {
-            rteObj.value = ' <img src="image.jpg"><p> dfg<img src="image.jpg"> ds</p> ';
+            rteObj.value = ' <img src="image.jpg"><p>dfg<img src="image.jpg"> ds</p> ';
             rteObj.enableXhtml = false;
             rteObj.enableXhtml = true;
             rteObj.dataBind();
-            expect(rteObj.inputElement.innerHTML).toBe('<p><img src="image.jpg" class="e-rte-image e-imginline" alt=""></p><p> dfg<img src="image.jpg" class="e-rte-image e-imginline" alt=""> ds</p>');
+            expect(rteObj.inputElement.innerHTML).toBe('<p><img src="image.jpg" class="e-rte-image e-imginline" alt=""></p><p>dfg<img src="image.jpg" class="e-rte-image e-imginline" alt=""> ds</p>');
         });
         it("removeTags", function () {
             rteObj.value = "<ul> <li>Coffee</li> <br>   <li>Tea</li> <br>   <li>Milk</li> <br>  </ul> <ol>   <li>Coffee</li>    <li>Tea</li>    <li>Milk</li>  </ol>   ";
             rteObj.enableXhtml = false;
             rteObj.enableXhtml = true;
             rteObj.dataBind();
-            expect(rteObj.inputElement.innerHTML).toBe('<ul> <li>Coffee</li> <li>Tea</li> <li>Milk</li> </ul><ol> <li>Coffee</li> <li>Tea</li> <li>Milk</li> </ol>');
+            expect(rteObj.inputElement.innerHTML).toBe('<ul><li>Coffee</li><li>Tea</li><li>Milk</li></ul><ol><li>Coffee</li><li>Tea</li><li>Milk</li></ol>');
             rteObj.value = "<span><p>dfsddfsdf</p> <table></table></span>   <span><p>asdasdsd </p></span>";
             rteObj.enableXhtml = false;
             rteObj.enableXhtml = true;
             rteObj.dataBind();
-            expect(rteObj.inputElement.innerHTML).toBe('<p><span></span></p><p>dfsddfsdf</p> <table class="e-rte-table"></table> <p><span></span></p><p></p>');
+            expect(rteObj.inputElement.innerHTML).toBe('<p><span></span></p><p>dfsddfsdf</p><table class="e-rte-table"></table><p><span></span></p><p></p>');
             rteObj.value = '<div><div contenteditable="true"><p contenteditable="true">text</p><div><p>text</p></div></div></div>';
             rteObj.enableXhtml = false;
             rteObj.enableXhtml = true;
@@ -6141,23 +6141,23 @@ describe('RTE Base module ', () => {
             expect(rteObj.inputElement.innerHTML).toBe("<div><p>adasd</p></div><div><p>adasd</p></div>");
         });
         it("ImageTags", function () {
-            rteObj.value = ' <img src="image.jpg"><p> dfg<img src="image.jpg"> ds</p> ';
+            rteObj.value = ' <img src="image.jpg"><p>dfg<img src="image.jpg"> ds</p> ';
             rteObj.enableXhtml = false;
             rteObj.enableXhtml = true;
             rteObj.dataBind();
-            expect(rteObj.inputElement.innerHTML).toBe('<p><img src="image.jpg" class="e-rte-image e-imginline" alt=""></p><p> dfg<img src="image.jpg" class="e-rte-image e-imginline" alt=""> ds</p>');
+            expect(rteObj.inputElement.innerHTML).toBe('<p><img src="image.jpg" class="e-rte-image e-imginline" alt=""></p><p>dfg<img src="image.jpg" class="e-rte-image e-imginline" alt=""> ds</p>');
         });
         it("removeTags", function () {
             rteObj.value = "<ul> <li>Coffee</li> <br>   <li>Tea</li> <br>   <li>Milk</li> <br>  </ul> <ol>   <li>Coffee</li>    <li>Tea</li>    <li>Milk</li>  </ol>   ";
             rteObj.enableXhtml = false;
             rteObj.enableXhtml = true;
             rteObj.dataBind();
-            expect(rteObj.inputElement.innerHTML).toBe('<ul> <li>Coffee</li> <li>Tea</li> <li>Milk</li> </ul><ol> <li>Coffee</li> <li>Tea</li> <li>Milk</li> </ol>');
+            expect(rteObj.inputElement.innerHTML).toBe('<ul><li>Coffee</li><li>Tea</li><li>Milk</li></ul><ol><li>Coffee</li><li>Tea</li><li>Milk</li></ol>');
             rteObj.value = "<span><p>dfsddfsdf</p> <table></table></span>   <span><p>asdasdsd </p></span>";
             rteObj.enableXhtml = false;
             rteObj.enableXhtml = true;
             rteObj.dataBind();
-            expect(rteObj.inputElement.innerHTML).toBe('<p><span></span></p><p>dfsddfsdf</p> <table class="e-rte-table"></table> <p><span></span></p><p></p>');
+            expect(rteObj.inputElement.innerHTML).toBe('<p><span></span></p><p>dfsddfsdf</p><table class="e-rte-table"></table><p><span></span></p><p></p>');
             rteObj.value = '<div><div contenteditable="true"><p contenteditable="true">text</p><div><p>text</p></div></div></div>';
             rteObj.enableXhtml = false;
             rteObj.enableXhtml = true;
@@ -9473,7 +9473,7 @@ Rich Text Editor 3`,
         });
         it('Should properly structure the content', (done: Function) => {
             const result = rteObj.inputElement.innerHTML;
-            const expected = `<ol><li>text </li></ol>`;
+            const expected = `<ol><li>text</li></ol>`;
             expect(result === expected).toBe(true);
             rteObj.value = `<ol><li>aaa <em>ssss</em><p>xxx</p></li></ol>`;
             rteObj.dataBind();
@@ -9488,17 +9488,17 @@ Rich Text Editor 3`,
             rteObj.value = `<ol><li><p>text </p><ol><li><p>case</p></li></ol></li></ol>`;
             rteObj.dataBind();
             const result3 = rteObj.inputElement.innerHTML;
-            const expected3 = `<ol><li>text <ol><li>case</li></ol></li></ol>`;
+            const expected3 = `<ol><li>text<ol><li>case</li></ol></li></ol>`;
             expect(result3 === expected3).toBe(true);
             rteObj.value = `<ol><li><p>text </p><ol><li><p>case</p></li></ol>outside</li></ol>`;
             rteObj.dataBind();
             const result4 = rteObj.inputElement.innerHTML;
-            const expected4 = `<ol><li><p>text </p><ol><li>case</li></ol><p>outside</p></li></ol>`;
+            const expected4 = `<ol><li><p>text</p><ol><li>case</li></ol><p>outside</p></li></ol>`;
             expect(result4 === expected4).toBe(true);
             rteObj.value = `<ol><li>text <ol><li>case</li></ol><p>outside</p></li></ol>`;
             rteObj.dataBind();
             const result5 = rteObj.inputElement.innerHTML;
-            const expected5 = `<ol><li><p>text </p><ol><li>case</li></ol><p>outside</p></li></ol>`;
+            const expected5 = `<ol><li><p>text</p><ol><li>case</li></ol><p>outside</p></li></ol>`;
             expect(result5 === expected5).toBe(true);
             rteObj.value = ``;
             done();
@@ -9888,7 +9888,7 @@ Rich Text Editor 3`
         });
         it('Formatting while initial rendering, should wrap the text with block element', (done: Function) => {
             const result = rteObj.inputElement.innerHTML;
-            const expected = `<div><p>hello </p><p>World</p></div>`;
+            const expected = `<div><p>hello</p><p>World</p></div>`;
             expect(result === expected).toBe(true);
             done();
         });
@@ -9911,6 +9911,65 @@ Rich Text Editor 3`
             rteObj.value = ``;
             done();
         });
+        afterAll(() => {
+            destroy(rteObj);
+        });
+    });
+
+    describe('992607: Remove the unwanted text nodes', () => {
+        let rteObj: RichTextEditor;
+        beforeAll(() => {
+            rteObj = renderRTE({
+                value: `<p>Text 1</p> <p>text 2</p>`,
+            });
+        });
+        it('Empty text node between block elements should be removed', (done: Function) => {
+            const result = rteObj.inputElement.innerHTML;
+            const expected = `<p>Text 1</p><p>text 2</p>`;
+            expect(result === expected).toBe(true);
+            rteObj.value = ``;
+            done();
+        });
+        it('Empty text node between inline elements should not be removed', (done: Function) => {
+            rteObj.value = `<p><span>Text 1</span> <span>text 2</span></p>`;
+            rteObj.dataBind();
+            const result = rteObj.inputElement.innerHTML;
+            const expected = `<p><span>Text 1</span> <span>text 2</span></p>`;
+            expect(result === expected).toBe(true);
+            rteObj.value = ``;
+            done();
+        });
+        it('Empty text node between list elements should be removed', (done: Function) => {
+            rteObj.value = `<ul>
+   <li>one</li>
+   <li>two</li>
+   <li>three</li>
+</ul>`;
+            rteObj.dataBind();
+            const result = rteObj.inputElement.innerHTML;
+            const expected = `<ul><li>one</li><li>two</li><li>three</li></ul>`
+            expect(result === expected).toBe(true);
+            rteObj.value = ``;
+            done();
+        })
+        it('Should trim the text content for block elements', (done: Function) => {
+            rteObj.value = `<p>   Text 1   </p> <p>   text 2   </p>`;
+            rteObj.dataBind();
+            const result = rteObj.inputElement.innerHTML;
+            const expected = `<p>Text 1</p><p>text 2</p>`;
+            expect(result === expected).toBe(true);
+            rteObj.value = ``;
+            done();
+        })
+        it('Should not completely trim the text content for inline elements', (done: Function) => {
+            rteObj.value = `<p><span>   Text 1   </span> <span>   text 2   </span></p>`;
+            rteObj.dataBind();
+            const result = rteObj.inputElement.innerHTML;
+            const expected = `<p><span>Text 1 </span> <span> text 2 </span></p>`;
+            expect(result === expected).toBe(true);
+            rteObj.value = ``;
+            done();
+        })
         afterAll(() => {
             destroy(rteObj);
         });

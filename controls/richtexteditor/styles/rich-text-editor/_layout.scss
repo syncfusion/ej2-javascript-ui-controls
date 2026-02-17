@@ -783,6 +783,40 @@
     }
   }
 
+  .e-rte-toolbar.e-rte-quick-toolbar .e-toolbar-item {
+
+    .e-colorpicker-wrapper,
+    .e-colorpicker-container {
+
+      &.e-rte-font-colorpicker .e-split-colorpicker.e-icons::before,
+      &.e-rte-background-colorpicker .e-split-colorpicker.e-icons::before {
+        display: block;
+        font-family: 'e-icons';
+        font-weight: $rte-color-picker-font-weight;
+        line-height: $rte-color-picker-line-height;
+        text-transform: none;
+      }
+
+      .e-split-btn-wrapper {
+        .e-split-colorpicker {
+          .e-selected-color {
+            background: none;
+            display: block;
+            margin-top: $rte-color-picker-margin-top;
+            width: $rte-color-picker-width;
+            height: $rte-color-picker-height;
+
+            .e-split-preview {
+              height: 3px;
+              bottom: 0;
+              top: unset;
+            }
+          }
+        }
+      }
+    }
+  }
+
   .e-colorpicker-popup.e-rte-dropdown .e-container.e-color-palette .e-clr-pal-rec-wpr .e-recent-clr-span {
     font-family: $rte-font-family;
   }

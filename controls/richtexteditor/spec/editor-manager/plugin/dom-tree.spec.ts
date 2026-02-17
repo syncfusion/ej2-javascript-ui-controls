@@ -118,7 +118,7 @@ describe('DOM Tree testing', ()=>{
             dataTransfer.setData('text/html', clipboardData);
             const pasteEvent: ClipboardEvent = new ClipboardEvent('paste', { clipboardData: dataTransfer } as ClipboardEventInit);
             editorObj.onPaste(pasteEvent);
-            expect(editorObj.inputElement.innerHTML).toContain('<ol> <li>List 1 <ol> <li id="nested-list-item"><a class="e-rte-anchor" href="https://example.com/" title="https://example.com/" target="" aria-label="">Nested Syncfusion</a></li> </ol> </li> </ol>');
+            expect(editorObj.inputElement.innerHTML).toContain('<ol><li>List 1<ol><li id="nested-list-item"><a class="e-rte-anchor" href="https://example.com/" title="https://example.com/" target="" aria-label="">Nested Syncfusion</a></li></ol></li></ol>');
             done();
         });
     });

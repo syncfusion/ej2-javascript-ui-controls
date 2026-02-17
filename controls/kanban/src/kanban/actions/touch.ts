@@ -32,13 +32,13 @@ export class KanbanTouch {
     }
 
     private tapHoldHandler(e: TapEventArgs): void {
-        this.tabHold = true;
         const target: Element = closest((e.originalEvent.target as Element), '.' + cls.CARD_CLASS);
         if (target && this.parent.cardSettings.selectionType === 'Multiple') {
             this.parent.actionModule.cardSelection(target, true, false);
             if (!this.mobilePopup) {
                 this.renderMobilePopup();
                 this.mobilePopup.show();
+                this.tabHold = true;
             }
             this.updatePopupContent();
         }

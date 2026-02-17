@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+## 32.2.5 (2026-02-17)
+
 ### Chat UI
 
 #### Bug Fixes

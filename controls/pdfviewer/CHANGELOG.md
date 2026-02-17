@@ -2,6 +2,16 @@
 
 ## [Unreleased]
 
+## 32.2.5 (2026-02-17)
+
+### PDF Viewer
+
+#### Bug Fixes
+
+- `#I809604` - Resolved an issue where measurement settings were not being applied to calibration annotations added programmatically.
+
+## 32.2.4 (2026-02-11)
+
 ### PDF Viewer
 
 #### Bug Fixes

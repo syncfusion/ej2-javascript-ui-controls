@@ -659,6 +659,24 @@ export class InsertHtml {
         this.listStyleCleanup(insertedNode);
         // Process based on content structure
         const containsBlockNode: boolean = this.containsBlockElements(insertedNode);
+        let processBlockElement: HTMLElement = (blockElement && blockElement.parentElement && blockElement.parentElement.nodeName === 'LI') ? blockElement.parentElement : blockElement;
+        if (!isNOU(processBlockElement) && processBlockElement.nodeName === 'LI') {
+            while (processBlockElement.parentElement && (processBlockElement.parentElement.nodeName === 'LI' || processBlockElement.parentElement.nodeName === 'OL' || processBlockElement.parentElement.nodeName === 'UL')) {
+                processBlockElement = processBlockElement.parentElement;
+            }
+            if (processBlockElement && (processBlockElement.nodeName === 'OL' || processBlockElement.nodeName === 'UL')) {
+                processBlockElement.classList.add('e-rte-copy-list');
+            }
+        } else {
+            insertedNode.childNodes.forEach((node: Node) => {
+                if (node.nodeType === Node.ELEMENT_NODE) {
+                    const childElement: Element = node as Element;
+                    if (childElement.tagName === 'OL' || childElement.tagName === 'UL') {
+                        childElement.classList.add('e-rte-copy-list');
+                    }
+                }
+            });
+        }
         const lastSelectionNode: Node = containsBlockNode
             ? this.handleBlockNodeContent(nodes, insertedNode, range, nodeCutter, editNode, enterAction, isCollapsed)
             : this.handleInlineContent(
@@ -1278,19 +1296,21 @@ export class InsertHtml {
         const range: Range = nodeSelection.getRange(docElement);
         const startContainer: Node = range.startContainer;
         const startOffset: number = range.startOffset;
-        const startParentElement: HTMLElement = range.startContainer.parentElement;
-        const endParentElement: HTMLElement = range.endContainer.parentElement;
-        if (!isNOU(startParentElement) && !isNOU(endParentElement)) {
-            const startClosestList: HTMLElement = startParentElement.closest('ol, ul') as HTMLElement;
-            const endClosestList: HTMLElement = endParentElement.closest('ol, ul') as HTMLElement;
-            if (!isNOU(startClosestList) && !isNOU(endClosestList)) {
-                const hasListCleanUp: boolean = this.cleanUpListItems(startClosestList);
-                const hasListContainerCleanUp: boolean = this.cleanUpListContainer(startClosestList);
-                if (hasListCleanUp || hasListContainerCleanUp) {
-                    range.setStart(startContainer, startOffset);
-                    range.setEnd(startContainer, startOffset);
-                }
+        let hasListCleanUp: boolean = false;
+        let hasListContainerCleanUp: boolean = false;
+        const copiedLists: NodeListOf<HTMLElement> = docElement.querySelectorAll('.e-rte-copy-list');
+        for (let i: number = 0; i < copiedLists.length; i++) {
+            const listItem: HTMLElement = copiedLists[i as number];
+            hasListCleanUp = this.cleanUpListItems(listItem);
+            hasListContainerCleanUp = this.cleanUpListContainer(listItem);
+            listItem.classList.remove('e-rte-copy-list');
+            if (listItem.getAttribute('class').length === 0) {
+                listItem.removeAttribute('class');
             }
+        }
+        if (hasListCleanUp || hasListContainerCleanUp) {
+            range.setStart(startContainer, startOffset);
+            range.setEnd(startContainer, startOffset);
         }
     }
 
@@ -1385,10 +1405,11 @@ export class InsertHtml {
                     childNode.previousSibling.textContent.trim() === '');
                 const prevElement: Element = (childNode as HTMLElement).previousElementSibling;
                 const isPrevLi: boolean = prevElement && prevElement.nodeName.toUpperCase() === 'LI';
-                if (isListNode && hasEmptyTextSibling && isPrevLi) {
+                if (isListNode && (hasEmptyTextSibling || isPrevLi)) {
                     prevElement.appendChild(childNode);
                     this.cleanUpListContainer(childNode as HTMLElement);
                     i--;
+                    hasListContainerCleanUp = true;
                 } else if ((childNode as HTMLElement).nodeName.toLocaleUpperCase() !== 'LI') {
                     nonLiElementCollection.push(childNode);
                 }

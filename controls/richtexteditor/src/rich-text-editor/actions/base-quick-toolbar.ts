@@ -1,4 +1,4 @@
-import { detach, append, selectAll, select, isNullOrUndefined as isNOU, closest } from '@syncfusion/ej2-base';
+import { detach, append, selectAll, select, isNullOrUndefined as isNOU, closest, remove } from '@syncfusion/ej2-base';
 import { addClass, removeClass, Browser, setStyleAttribute } from '@syncfusion/ej2-base';
 import { CollisionType, Popup, PopupModel, Tooltip, TooltipEventArgs } from '@syncfusion/ej2-popups';
 import { OverflowMode } from '@syncfusion/ej2-navigations';
@@ -291,9 +291,10 @@ export class BaseQuickToolbar implements IBaseQuickToolbar {
                 e.dispatchEvent(event);
             });
         }
-        if (!isNOU(document.querySelector('.e-tooltip-wrap'))) {
-            if (!isNOU(document.querySelector('#' + this.element.id + ' [data-tooltip-id]'))) {
-                const tooltipTargetEle: HTMLElement = <HTMLElement>document.querySelector('#' + this.element.id + ' [data-tooltip-id]');
+        const tooltipElement: HTMLElement = document.querySelector('.e-tooltip-wrap');
+        if (!isNOU(tooltipElement)) {
+            const tooltipTargetEle: HTMLElement = <HTMLElement>document.querySelector('#' + this.element.id + ' [data-tooltip-id]');
+            if (!isNOU(tooltipTargetEle)) {
                 const dataContent: string = tooltipTargetEle.getAttribute('data-content');
                 tooltipTargetEle.removeAttribute('data-content');
                 tooltipTargetEle.setAttribute('title', dataContent);
@@ -301,6 +302,9 @@ export class BaseQuickToolbar implements IBaseQuickToolbar {
             }
             if (!isNOU(this.tooltip)) {
                 this.tooltip.destroy();
+                if (!isNOU(tooltipTargetEle) && !isNOU(tooltipElement) && tooltipElement.isConnected) {
+                    remove(tooltipElement);
+                }
             }
         }
         else {

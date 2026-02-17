@@ -3520,13 +3520,14 @@ export class DateRangePicker extends CalendarBase {
         this.popupObj.hide();
         this.popupWrapper = this.createElement('div', { id: this.element.id + '_popup', className: ROOT + ' ' + POPUP });
         this.renderControl();
+        const appendToElement: HTMLElement = this.getAppendToElement();
         this.openEventArgs = {
             popup: this.popupObj || null,
             cancel: false,
             date: this.inputElement.value,
             model: this,
             event: event ? event : null,
-            appendTo: this.isMobile || Browser.isDevice ? this.mobileRangePopupWrap : document.body
+            appendTo: this.isMobile || Browser.isDevice ? this.mobileRangePopupWrap : appendToElement
         };
         const eventArgs: RangePopupEventArgs = this.openEventArgs;
         this.trigger('open', eventArgs, (eventArgs: RangePopupEventArgs) => {
@@ -3607,9 +3608,10 @@ export class DateRangePicker extends CalendarBase {
         if (!isNullOrUndefined(this.cssClass) && this.cssClass.trim() !== '') {
             this.popupWrapper.className += ' ' + this.cssClass;
         }
+        const appendToElement: HTMLElement = this.getAppendToElement();
         if (this.isMobile && this.isCustomWindow) {
             this.modal = this.createElement('div');
-            document.body.appendChild(this.modal);
+            appendToElement.appendChild(this.modal);
         }
         this.popupObj = new Popup(this.popupWrapper as HTMLElement, {
             relateTo: this.isMobile && this.isCustomWindow ? document.body :
@@ -3742,7 +3744,7 @@ export class DateRangePicker extends CalendarBase {
         }
         if (this.isMobile && this.isCustomWindow) {
             addClass([this.modal], [DEVICE, ROOT, 'e-range-modal']);
-            document.body.className += ' ' + OVERFLOW;
+            appendToElement.className += ' ' + OVERFLOW;
             this.modal.style.display = 'block';
         }
         EventHandler.add(document, 'mousedown touchstart', this.documentHandler, this);
@@ -4577,6 +4579,16 @@ export class DateRangePicker extends CalendarBase {
     protected getModuleName(): string {
         return 'daterangepicker';
     }
+    protected getAppendToElement(): HTMLElement {
+        if (this.isAngular) {
+            const cdkPane: HTMLElement = this.element.closest('.cdk-overlay-pane') as HTMLElement;
+            const popoverEl: HTMLElement = this.element.closest('[popover]') as HTMLElement;
+            if (cdkPane && popoverEl) {
+                return cdkPane;
+            }
+        }
+        return document.body;
+    }
     private updateFloatLabelOverflowWidth(): void {
         const container: HTMLElement = this.inputWrapper.container;
         const label: HTMLElement = container.querySelector('.e-float-text.e-label-bottom');
@@ -4652,9 +4664,10 @@ export class DateRangePicker extends CalendarBase {
                     this.targetElement = element;
                 }
                 this.createPopup();
+                const appendToElement: HTMLElement = this.getAppendToElement();
                 if (this.isMobile || Browser.isDevice) {
                     this.mobileRangePopupWrap = this.createElement('div', { className: 'e-daterangepick-mob-popup-wrap'});
-                    document.body.appendChild(this.mobileRangePopupWrap);
+                    appendToElement.appendChild(this.mobileRangePopupWrap);
                 }
                 this.openEventArgs = {
                     popup: this.popupObj || null,
@@ -4662,7 +4675,7 @@ export class DateRangePicker extends CalendarBase {
                     date: this.inputElement.value,
                     model: this,
                     event: event ? event : null,
-                    appendTo: this.isMobile || Browser.isDevice ? this.mobileRangePopupWrap : document.body
+                    appendTo: this.isMobile || Browser.isDevice ? this.mobileRangePopupWrap : appendToElement
                 };
                 const eventArgs: RangePopupEventArgs = this.openEventArgs;
                 this.trigger('open', eventArgs, (eventArgs: RangePopupEventArgs) => {
@@ -4769,7 +4782,8 @@ export class DateRangePicker extends CalendarBase {
                             }
                         }
                         this.targetElement = null;
-                        removeClass([document.body], OVERFLOW);
+                        const appendToElement: HTMLElement = this.getAppendToElement();
+                        removeClass([appendToElement], OVERFLOW);
                         EventHandler.remove(document, 'mousedown touchstart', this.documentHandler);
                         if (this.isMobile && this.modal) {
                             this.modal.style.display = 'none';

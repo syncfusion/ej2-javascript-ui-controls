@@ -373,8 +373,12 @@ export class AIAssistant {
             };
             this.triggerBeforePopupOpenCloseEvent('beforePopupClose', eventArgs, eventArgs, () => {
                 this.historyDropDownButton.destroy();
-                this.menu.destroy();
-                this.menuDropDown.destroy();
+                if (!isNOU(this.menu)) {
+                    this.menu.destroy();
+                }
+                if (!isNOU(this.menuDropDown)) {
+                    this.menuDropDown.destroy();
+                }
                 this.addEditorPromptCollection(this.assistView.prompts);
                 this.assistView.prompts = [];
                 this.assistView.dataBind();
@@ -448,8 +452,12 @@ export class AIAssistant {
             if (!isNOU(this.historyDropDownButton)) {// Only history drop down button is rendered after the show method
                 this.historyDropDownButton.destroy(); // Edge case where the cancel argument of beforePopupOpen is set to false does not render the dropdown.
             }
-            this.menu.destroy();
-            this.menuDropDown.destroy();
+            if (!isNOU(this.menu)) {
+                this.menu.destroy();
+            }
+            if (!isNOU(this.menuDropDown)) {
+                this.menuDropDown.destroy();
+            }
             this.queryPopup.destroy();
             this.toolTip.destroy();
             this.assistView.destroy();
@@ -550,28 +558,30 @@ export class AIAssistant {
         const toolbar: HTMLElement = this.assistView.element.querySelector('.e-view-header .e-toolbar');
         const menuName: string = 'aicommands';
         const rootElement: HTMLButtonElement = select('#' + this.parent.getID() + '_QueryPopupCommandsDropDown', toolbar);
-        const ulElement: HTMLUListElement = this.parent.createElement('ul', { id: this.parent.getID() + '_QueryPopupCommandsMenu'});
-        rootElement.parentElement.appendChild(ulElement);
-        const argument: IMenuRenderArgs = {
-            dropDownItems: {
-                content: 'AI Commands',
-                cssClass: classes.CLS_DROPDOWN_POPUP + ' ' + classes.CLS_DROPDOWN_ITEMS + ' ' + classes.CLS_AI_COMMANDS_TBAR_BTN + ' ' +  classes.CLS_DROPDOWN_MENU,
-                target: ulElement
-            },
-            menuItems: {
-                items: this.parent.aiAssistantSettings.commands
-            },
-            name: menuName,
-            containerType: 'Toolbar',
-            toolbarElement: toolbar,
-            dropDownRoot: rootElement,
-            menuRoot: ulElement
-        };
-        const { menu, dropDownButton } = this.rendererFactory.getRenderer(RenderType.Toolbar).renderMenu(argument);
-        this.menu = menu;
-        this.menuDropDown = dropDownButton;
-        dropDownButton.iconCss = 'e-settings e-icons';
-        dropDownButton.setProperties({ iconCss : 'e-settings e-icons', content: '' });
+        if (!isNOU(rootElement)) {
+            const ulElement: HTMLUListElement = this.parent.createElement('ul', { id: this.parent.getID() + '_QueryPopupCommandsMenu'});
+            rootElement.parentElement.appendChild(ulElement);
+            const argument: IMenuRenderArgs = {
+                dropDownItems: {
+                    content: 'AI Commands',
+                    cssClass: classes.CLS_DROPDOWN_POPUP + ' ' + classes.CLS_DROPDOWN_ITEMS + ' ' + classes.CLS_AI_COMMANDS_TBAR_BTN + ' ' +  classes.CLS_DROPDOWN_MENU,
+                    target: ulElement
+                },
+                menuItems: {
+                    items: this.parent.aiAssistantSettings.commands
+                },
+                name: menuName,
+                containerType: 'Toolbar',
+                toolbarElement: toolbar,
+                dropDownRoot: rootElement,
+                menuRoot: ulElement
+            };
+            const { menu, dropDownButton } = this.rendererFactory.getRenderer(RenderType.Toolbar).renderMenu(argument);
+            this.menu = menu;
+            this.menuDropDown = dropDownButton;
+            dropDownButton.iconCss = 'e-settings e-icons';
+            dropDownButton.setProperties({ iconCss : 'e-settings e-icons', content: '' });
+        }
     }
 
     private renderHistoryDropDownButton() : void {

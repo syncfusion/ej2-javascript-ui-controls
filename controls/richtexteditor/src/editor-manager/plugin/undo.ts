@@ -1,4 +1,4 @@
-import { debounce, isNullOrUndefined, detach, KeyboardEventArgs, removeClass } from '@syncfusion/ej2-base';
+import { debounce, isNullOrUndefined, detach, KeyboardEventArgs, removeClass, closest } from '@syncfusion/ej2-base';
 import { EditorManager } from './../base/editor-manager';
 import { IHtmlSubCommands, IHtmlUndoRedoData } from './../base/interface';
 import { NodeSelection } from './../../selection/selection';
@@ -154,7 +154,12 @@ export class UndoRedoManager {
             return;
         }
         let range: Range = new NodeSelection(this.parent.editableElement as HTMLElement).getRange(this.parent.currentDocument);
-        if (!this.parent.editableElement.contains(range.commonAncestorContainer)) {
+        const rteRootElement: Element = closest(this.parent.editableElement, '.e-richtexteditor');
+        const isSelectionInPopup: boolean = closest(range.commonAncestorContainer, '.e-rte-elements') !== null;
+        if (!this.parent.editableElement.contains(range.commonAncestorContainer) && ((!isNullOrUndefined(rteRootElement) &&
+            rteRootElement.contains(range.commonAncestorContainer)) || isSelectionInPopup)) {
+            // If the selection is outside the editable element but within the RTE container or a popup, focus the editable element
+            // This places the cursor at the start of the editable element
             (this.parent.editableElement as HTMLElement).focus();
             range = new NodeSelection(this.parent.editableElement as HTMLElement).getRange(this.parent.currentDocument);
         }

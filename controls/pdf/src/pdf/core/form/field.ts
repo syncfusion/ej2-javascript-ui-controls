@@ -4826,6 +4826,7 @@ export class PdfCheckBoxField extends PdfField {
 export class PdfRadioButtonListField extends PdfField {
     _parsedItems: Map<number, PdfRadioButtonListItem>;
     _selectedIndex: number = -1;
+    _isUserRequired: boolean;
     _allowUnisonSelection: boolean = false;
     _hasDuplicates: boolean = false;
     /**
@@ -5073,12 +5074,27 @@ export class PdfRadioButtonListField extends PdfField {
      */
     set selectedIndex(value: number) {
         if (this.selectedIndex !== value) {
-            this._selectedIndex = value;
             const selectedItem: PdfRadioButtonListItem = this.itemAt(value);
             this._hasDuplicates = this._hasDuplicateItems();
+            let isAllowUnison: boolean = false;
+            let isUpdatedWithValue: boolean = false;
+            if (!this._isLoaded) {
+                isAllowUnison = (this.allowUnisonSelection && this._isUserRequired) ? true : false;
+            } else {
+                isAllowUnison = this.allowUnisonSelection;
+                if (this.selectedIndex >= 0) {
+                    const selectedIndexItem: PdfStateItem = this.itemAt(this.selectedIndex);
+                    if (selectedIndexItem && selectedIndexItem._dictionary && selectedIndexItem._dictionary.has('AS')) {
+                        const selectedVal: string = selectedIndexItem._dictionary.get('AS').name;
+                        if (selectedVal === (selectedIndexItem as PdfRadioButtonListItem).value) {
+                            isUpdatedWithValue = true;
+                        }
+                    }
+                }
+            }
             for (let i: number = 0; i < this._kidsCount; i++) {
                 const item: PdfRadioButtonListItem = this.itemAt(i);
-                if (this.allowUnisonSelection) {
+                if ((isAllowUnison && !this._isLoaded) || (isAllowUnison && isUpdatedWithValue && this._isLoaded)) {
                     if (item.value === selectedItem.value) {
                         item._dictionary.update('AS', _PdfName.get(item.value));
                         this._dictionary.update('V', _PdfName.get(item.value));
@@ -5102,6 +5118,7 @@ export class PdfRadioButtonListField extends PdfField {
                     }
                 }
             }
+            this._selectedIndex = value;
         }
     }
     _hasDuplicateItems(): boolean {
@@ -5140,6 +5157,9 @@ export class PdfRadioButtonListField extends PdfField {
      * ```
      */
     get allowUnisonSelection(): boolean {
+        if ((this._fieldFlags & _FieldFlag.radiosInUnison) !== 0) {
+            this._allowUnisonSelection = true;
+        }
         return this._allowUnisonSelection;
     }
     /**
@@ -5160,6 +5180,10 @@ export class PdfRadioButtonListField extends PdfField {
      * ```
      */
     set allowUnisonSelection(value: boolean) {
+        if (value) {
+            this._fieldFlags |= _FieldFlag.radiosInUnison;
+        }
+        this._isUserRequired = value;
         this._allowUnisonSelection = value;
     }
     /**
@@ -5472,7 +5496,7 @@ export class PdfRadioButtonListField extends PdfField {
                             }
                             this._drawTemplate(template, item._getPage(), item.bounds);
                         } else if (this._setAppearance || this._form._setAppearance || !item._isLoaded) {
-                            item._postProcess(this.allowUnisonSelection ? item.value === this.itemAt(this.selectedIndex).value ? item.value : 'Off' :
+                            item._postProcess(this.allowUnisonSelection ? (this.selectedIndex >= 0 && item.value === this.itemAt(this.selectedIndex).value ? item.value : 'Off') :
                                 this._hasDuplicates ? (this.selectedIndex === i ? i.toString() : 'Off') : (this.selectedIndex === i ? item.value : 'Off'));
                             this._drawAppearance(item);
                         }
@@ -5496,7 +5520,7 @@ export class PdfRadioButtonListField extends PdfField {
                     const template: PdfTemplate = this._createAppearance(item, state);
                     this._drawTemplate(template, item._getPage(), item.bounds);
                 } else if (!this._isDuplicatePage) {
-                    item._postProcess(this.allowUnisonSelection ? item.value === this.itemAt(this.selectedIndex).value ? item.value : 'Off' :
+                    item._postProcess((this.allowUnisonSelection && this._isUserRequired) ? (this.selectedIndex >= 0 && item.value === this.itemAt(this.selectedIndex).value ? item.value : 'Off') :
                         this._hasDuplicates ? (this.selectedIndex === i ? i.toString() : 'Off') : (this.selectedIndex === i ? item.value : 'Off'));
                     this._drawAppearance(item);
                 }
@@ -5565,9 +5589,16 @@ export class PdfRadioButtonListField extends PdfField {
         this._crossReference._cacheMap.set(normalUncheckedReference, normalUnchecked._content);
         const normalDictionary: _PdfDictionary = new _PdfDictionary(this._crossReference);
         const itemField : PdfRadioButtonListField = item._field as PdfRadioButtonListField;
-        let actualValue: string = itemField.allowUnisonSelection
-            ? item.value
-            : (this._hasDuplicates ? (item._index).toString() : item.value);
+        let actualValue: string;
+        if (!this._isLoaded) {
+            actualValue = (this.allowUnisonSelection && this._isUserRequired && itemField.allowUnisonSelection) ?
+                item.value
+                : (this._hasDuplicates ? (item._index).toString() : item.value);
+        } else {
+            actualValue = itemField.allowUnisonSelection
+                ? item.value
+                : (this._hasDuplicates ? (item._index).toString() : item.value);
+        }
         if (!actualValue && item._enableGrouping) {
             actualValue = 'check' + item._index;
         }

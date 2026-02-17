@@ -2,6 +2,18 @@
 
 ## [Unreleased]
 
+## 32.2.4 (2026-02-11)
+
+### GanttChart
+
+#### Bug fixes
+
+- `#I806117` - Resolved an issue where the tooltip template for manual milestone parent tasks was not displaying correctly.
+- `#I807765` - Fixed an issue where the `chartWidth` property in `fitToWidthSettings` was not being applied accurately during PDF export of the Gantt chart.
+- `#I805439` - Fixed incorrect task validations when editing a child task with dependencies.
+- `#I804804` - Resolved the issue for dynamically modifying the edited record values in the `actionBegin` event by using the field mapping names defined in the `taskFields` for that respective record.
+- `#I805685` - Resolved an issue where unnecessary white space appeared at the bottom of the chart during vertical scrolling after tasks were collapsed.
+
 ## 32.1.25 (2026-01-27)
 
 ### GanttChart

@@ -4,7 +4,7 @@ import { PasteCleanupArgs } from '../base/interface';
 import { Dialog, DialogModel, Popup } from '@syncfusion/ej2-popups';
 import { RadioButton } from '@syncfusion/ej2-buttons';
 import { RendererFactory } from '../services/renderer-factory';
-import { isNullOrUndefined as isNOU, L10n, isNullOrUndefined, detach, extend, addClass, removeClass, getComponent } from '@syncfusion/ej2-base';
+import { isNullOrUndefined as isNOU, L10n, isNullOrUndefined, detach, extend, addClass, removeClass, getComponent, createElement } from '@syncfusion/ej2-base';
 import { getUniqueID, Browser, closest} from '@syncfusion/ej2-base';
 import { CLS_RTE_PASTE_KEEP_FORMAT, CLS_RTE_PASTE_REMOVE_FORMAT, CLS_RTE_PASTE_PLAIN_FORMAT } from '../base/classes';
 import { CLS_RTE_PASTE_OK, CLS_RTE_PASTE_CANCEL, CLS_RTE_DIALOG_MIN_HEIGHT } from '../base/classes';
@@ -24,6 +24,7 @@ import { PasteCleanupSettingsModel } from '../../models/models';
 import { PasteCleanupAction } from '../../editor-manager/plugin/paste-clean-up-action';
 import { PopupRootBound } from '../../rich-text-editor/base/interface';
 import { PopupUploader } from '../renderer/popup-uploader-renderer';
+import { PASTE_SOURCE } from './../../editor-manager/base';
 /**
  * PasteCleanup module called when pasting content in RichTextEditor
  */
@@ -218,8 +219,11 @@ export class PasteCleanup {
         let processedValue: string = value;
         let shouldContinue: boolean = true;
         const files: FileList = (e.args as ClipboardEvent).clipboardData.files;
+        const elm: HTMLElement = createElement('p') as HTMLElement;
+        elm.innerHTML = value;
+        const source: string = this.findSource(elm);
         // Handle empty HTML content (plain text or image)
-        if (value.length === 0 || (!isNOU(files) && files.length > 0)) {
+        if (value.length === 0 || (!isNOU(files) && files.length > 0 && source === 'html')) {
             const result: { value: string, shouldContinue: boolean } =
                 this.handleEmptyHtmlValue(e, value, args, allowedTypes, imageproperties);
             processedValue = result.value;
@@ -236,6 +240,23 @@ export class PasteCleanup {
         }
         this.prepareAndInsertContent(e, processedValue, args);
         return true;
+    }
+
+    private findSource(element: HTMLElement): string {
+        const metaNodes: NodeListOf<Element> = element.querySelectorAll('meta');
+        for (let i: number = 0; i < metaNodes.length; i++) {
+            const metaNode: Element = metaNodes[i as number];
+            const content: string = metaNode.getAttribute('content');
+            const name: string = metaNode.getAttribute('name');
+            if (name && name.toLowerCase().indexOf('generator') >= 0 && content && content.toLowerCase().indexOf('microsoft') >= 0) {
+                for (let j: number = 0; j < PASTE_SOURCE.length; j++) {
+                    if (content.toLowerCase().indexOf(PASTE_SOURCE[j as number]) >= 0) {
+                        return PASTE_SOURCE[j as number];
+                    }
+                }
+            }
+        }
+        return 'html';
     }
 
     /* Handles case when HTML value is empty but may contain plain text or images */

@@ -186,6 +186,7 @@ export class AnnotationToolbar {
     private fontColorDropDown: DropDownButton;
     private textAlignDropDown: DropDownButton;
     private textPropertiesDropDown: DropDownButton;
+    private fontStyleItem: any;
     /**
      * @private
      */
@@ -2421,18 +2422,29 @@ export class AnnotationToolbar {
                     this.pdfViewer.annotationModule.freeTextAnnotationModule.isUnderline = false;
                 } else {
                     this.pdfViewer.freeTextSettings.fontStyle = 4;
-                    this.pdfViewer.annotationModule.freeTextAnnotationModule.isStrikethrough = false;
-                    this.pdfViewer.annotationModule.freeTextAnnotationModule.updateTextProperties();
+                    if (this.pdfViewer.annotationModule.freeTextAnnotationModule.isStrikethrough) {
+                        this.fontStyleItem = [4, 8];
+                    }
+                    else {
+                        this.fontStyleItem = [4];
+                    }
+                    this.pdfViewer.annotationModule.freeTextAnnotationModule.updateTextProperties(this.fontStyleItem);
                 }
             } else if (currentValue === 'strikeout') {
                 if (this.pdfViewer.annotationModule.freeTextAnnotationModule.isStrikethrough) {
                     this.pdfViewer.annotationModule.freeTextAnnotationModule.isStrikethrough = false;
                 } else {
                     this.pdfViewer.freeTextSettings.fontStyle = 8;
-                    this.pdfViewer.annotationModule.freeTextAnnotationModule.isUnderline = false;
-                    this.pdfViewer.annotationModule.freeTextAnnotationModule.updateTextProperties();
+                    if (this.pdfViewer.annotationModule.freeTextAnnotationModule.isUnderline) {
+                        this.fontStyleItem = [8, 4];
+                    }
+                    else {
+                        this.fontStyleItem = [8];
+                    }
+                    this.pdfViewer.annotationModule.freeTextAnnotationModule.updateTextProperties(this.fontStyleItem);
                 }
             }
+            this.fontStyleItem = [];
         }
         this.updateTextPropertySelection(currentValue);
     }
@@ -3570,10 +3582,8 @@ export class AnnotationToolbar {
             document.getElementById(this.pdfViewer.element.id + '_italic').classList.toggle('textprop-option-active');
         } else if (currentOption === 'underline') {
             document.getElementById(this.pdfViewer.element.id + '_underline_textinput').classList.toggle('textprop-option-active');
-            document.getElementById(this.pdfViewer.element.id + '_strikeout').classList.remove('textprop-option-active');
         } else if (currentOption === 'strikeout') {
             document.getElementById(this.pdfViewer.element.id + '_strikeout').classList.toggle('textprop-option-active');
-            document.getElementById(this.pdfViewer.element.id + '_underline_textinput').classList.remove('textprop-option-active');
         }
     }
 
@@ -4104,6 +4114,7 @@ export class AnnotationToolbar {
         this.primaryToolbar.deSelectItem(this.strikethroughItem);
         this.primaryToolbar.deSelectItem(this.squigglyItem);
         this.primaryToolbar.selectItem(this.freeTextEditItem);
+        this.primaryToolbar.deSelectItem(this.inkAnnotationItem);
         this.updateColorInIcon(this.colorDropDownElement, this.pdfViewer.annotationModule.freeTextAnnotationModule.fillColor);
         this.updateColorInIcon(this.strokeDropDownElement, this.pdfViewer.annotationModule.freeTextAnnotationModule.borderColor);
         this.updateColorInIcon(this.fontColorElement, this.pdfViewer.annotationModule.freeTextAnnotationModule.fontColor);

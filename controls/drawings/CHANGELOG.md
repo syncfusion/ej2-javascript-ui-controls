@@ -2,6 +2,15 @@
 
 ## [Unreleased]
 
+## 32.2.5 (2026-02-17)
+
+### Drawings
+
+#### Bug Fixes
+
+- `#I802786` - Resolved an issue where the free text annotation was not rendering similar to Adobe PDF Viewer.
+- `#I809631` - Fixed an issue where both strikethrough and underline were not applied to free text annotations.
+
 ## 32.1.23 (2026-01-13)
 
 ### Drawings

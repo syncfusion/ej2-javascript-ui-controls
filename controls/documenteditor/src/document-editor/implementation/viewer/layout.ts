@@ -11969,20 +11969,6 @@ export class Layout {
     private shiftWidgetsForPara(paragraph: ParagraphWidget, viewer: LayoutViewer, footnoteCollection?: BodyWidget[]): void {
         if (paragraph.height > (viewer.clientArea.height + viewer.clientArea.y) && !this.documentHelper.owner.enableHeaderAndFooter) {
             return;
-        } else if (paragraph.isEmpty()) {
-            //Handled sections last paragraph need to be layouted in previous paragraph if the paragraph is empty. Similar to Ms word
-            const previousWidget: Widget = paragraph.previousRenderedWidget;
-            if (paragraph.isSectionBreak && paragraph.index > 0) {
-                if (previousWidget instanceof ParagraphWidget) {
-                    this.layoutSectionBreakParagraph(paragraph, previousWidget);
-                    if (!previousWidget.isEndsWithPageBreak && this.viewer.clientActiveArea.y <= paragraph.y) {
-                        this.viewer.cutFromTop(paragraph.y + paragraph.height);
-                    }
-                    return;
-                } else if (previousWidget instanceof TableWidget && this.documentHelper.compatibilityMode !== 'Word2013') {
-                    return;
-                }
-            }
         }
         const bodywid: BodyWidget = paragraph.bodyWidget;
         const prevBodyObj: BodyWidgetInfo = this.getBodyWidgetOfPreviousBlock(paragraph, 0);
@@ -11993,6 +11979,7 @@ export class Layout {
         let isSkip: boolean = true;
         for (let i: number = 0; i < paragraph.getSplitWidgets().length; i++) {
             const widget: ParagraphWidget = paragraph.getSplitWidgets()[i] as ParagraphWidget;
+            const isEmptySectionBreak: boolean = (widget instanceof ParagraphWidget) && widget.isEmpty() && widget.isSectionBreak === true;
             let firstBody: BodyWidget = this.getBodyWidget(widget.bodyWidget, true);
             if (this.isMultiColumnSplit && widget !== paragraph) {
                 continue;
@@ -12052,7 +12039,11 @@ export class Layout {
                 viewer.updateClientAreaForBlock(widget, false);
                 widget.y = viewer.clientActiveArea.y;
                 this.updateFloatingElementPosition(widget);
-                viewer.cutFromTop(viewer.clientActiveArea.y + widget.height);
+                if(isEmptySectionBreak && !isNullOrUndefined(widget.previousRenderedWidget) &&!(widget.previousRenderedWidget instanceof TableWidget)){
+                    viewer.cutFromTop(viewer.clientActiveArea.y);
+                } else {
+                    viewer.cutFromTop(viewer.clientActiveArea.y + widget.height);
+                }
                 //Moves the paragraph widget to previous body widget.
                 if (!isNullOrUndefined(prevBodyWidget) && prevBodyWidget !== widget.containerWidget && !this.isMultiColumnSplit) {
                     index++;
@@ -12120,7 +12111,10 @@ export class Layout {
                     this.viewer instanceof PageLayoutViewer) {
                     isColumnBreak = true;
                 }
-                const isSplittedToNewPage: boolean = this.splitWidget(widget, viewer, prevBodyWidget, index + 1, isPageBreak, footWidget, isColumnBreak, isSplit ? footHeight : 0);
+                let isSplittedToNewPage: boolean = false;
+                if(!isEmptySectionBreak){
+                    isSplittedToNewPage = this.splitWidget(widget, viewer, prevBodyWidget, index + 1, isPageBreak, footWidget, isColumnBreak, isSplit ? footHeight : 0);
+                }
                 if (widget.containerWidget instanceof BodyWidget && widget.containerWidget.firstChild === widget && widget.previousRenderedWidget
                     && widget.previousRenderedWidget instanceof ParagraphWidget && widget.previousRenderedWidget.containerWidget instanceof BodyWidget
                     && widget.previousRenderedWidget.containerWidget.sectionFormat.breakCode === 'NewPage'
@@ -12148,6 +12142,21 @@ export class Layout {
             }
         }
         this.skipUpdateContainerWidget = false;
+        if (paragraph.isEmpty()) {
+            //Handled sections last paragraph need to be layouted in previous paragraph if the paragraph is empty. Similar to Ms word
+            const previousWidget: Widget = paragraph.previousRenderedWidget;
+            if (paragraph.isSectionBreak && paragraph.index > 0) {
+                if (previousWidget instanceof ParagraphWidget) {
+                    this.layoutSectionBreakParagraph(paragraph, previousWidget);
+                    if (!previousWidget.isEndsWithPageBreak && this.viewer.clientActiveArea.y <= paragraph.y) {
+                        this.viewer.cutFromTop(paragraph.y + paragraph.height);
+                    }
+                    return;
+                } else if (previousWidget instanceof TableWidget && this.documentHelper.compatibilityMode !== 'Word2013') {
+                    return;
+                }
+            }
+        }
     }
 
     private shiftBodyWidget(widget: ParagraphWidget | TableWidget, bottom: number, breakCode: string) {

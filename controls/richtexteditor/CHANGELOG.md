@@ -2,6 +2,22 @@
 
 ## [Unreleased]
 
+## 32.2.5 (2026-02-17)
+
+### RichTextEditor
+
+#### Bug Fixes
+
+- `#I807301` - Now, tooltips for link quick toolbar icons are hidden when the Print Screen key is pressed.
+
+- `#I811708` - Now, focus is maintained in the input element during typing and does not transfer to the editor.
+
+- `#I809024` - Now, when configuring the `headerToolbarSettings` property within the `aiAssistantSettings` option to include the `Close` item, will function correctly without throwing any console errors.
+
+- `#I807359` - Now, when images are deleted in mobile mode using the quick toolbar, the focus will stay inside the editor.
+
+## 32.2.4 (2026-02-11)
+
 ### RichTextEditor
 
 #### Bug Fixes

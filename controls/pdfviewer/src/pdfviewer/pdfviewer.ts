@@ -4085,7 +4085,7 @@ export class FreeTextSettings extends ChildProperty<FreeTextSettings> {
     /**
      * specifies the border with of the annotation.
      */
-    @Property(1)
+    @Property(0)
     public borderWidth: number;
 
     /**

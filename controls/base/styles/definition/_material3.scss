@@ -302,6 +302,23 @@ $tooltip-bg-color: $inverse-surface !default;
 $tooltip-border: $inverse-surface !default;
 $tooltip-text-color: $inverse-on-surface !default;
 
+// grid components
+$table-bg-color: $content-bg-color !default;
+$table-header-bg-color:$surface !default;
+$table-content-bg-color:$transparent !default;
+$content-header-bg-color: $surface !default;
+$table-header-text-color: $content-text-color !default;
+$table-header-icon-color: $icon-color !default;
+$content-header-text-color: $content-text-color !default;
+$content-header-icon-color: $icon-color !default;
+$table-header-border: $border-light !default;
+$table-border: $border-light !default;
+
+//Dropdown list
+$flyout-header-bg-color: $flyout-bg-color !default;
+$flyout-header-text-color: rgba($content-text-color) !default;
+$flyout-header-icon-color: rgba($icon-color) !default;
+
 $shadow: 0 .8px 16px rgba($black, .15) !default;
 $shadow-sm: $level1 !default;
 $shadow-md: $level2 !default;

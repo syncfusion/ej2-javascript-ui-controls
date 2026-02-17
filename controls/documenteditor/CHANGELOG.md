@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+## 32.2.4 (2026-02-11)
+
 ### DocumentEditor
 
 #### Bug Fixes

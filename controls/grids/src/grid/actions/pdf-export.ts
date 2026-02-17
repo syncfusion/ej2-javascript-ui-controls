@@ -609,7 +609,9 @@ export class PdfExport {
                 if ((cols[parseInt(i.toString(), 10)] as Column).columns && (cols[parseInt(i.toString(), 10)] as Column).columns.length) {
                     const newSpanCnt: number = recuHeader((cols[parseInt(i.toString(), 10)] as Column)
                         .columns, depth - 1, 0, i + colIndex, rowIndex + 1, false);
-                    applyTextAndSpan(rowIndex, i + colIndex + index, cols[parseInt(i.toString(), 10)] as Column, 0, newSpanCnt);
+                    if (newSpanCnt > 0) {
+                        applyTextAndSpan(rowIndex, i + colIndex + index, cols[parseInt(i.toString(), 10)] as Column, 0, newSpanCnt);
+                    }
                     spanCnt = spanCnt + newSpanCnt;
                     colIndex = colIndex + newSpanCnt - 1;
                 } else if (cols[parseInt(i.toString(), 10)].visible || this.hideColumnInclude) {

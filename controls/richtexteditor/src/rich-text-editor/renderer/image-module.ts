@@ -349,12 +349,10 @@ export class Image {
             if (((e.target as HTMLElement).tagName === 'IMG' &&
                 (e.target as HTMLElement).parentElement.tagName === 'A') ||
                 ((e.target as Element).tagName === 'IMG')) {
-                this.contentModule.getEditPanel().setAttribute('contenteditable', 'false');
                 (e.target as HTMLElement).focus();
                 this.isImageClicked = true;
             } else {
                 if (!this.parent.readonly && !this.parent.videoModule.isVideoClicked && !this.parent.audioModule.isAudioClicked) {
-                    this.contentModule.getEditPanel().setAttribute('contenteditable', 'true');
                     this.isImageClicked = false;
                 }
             }

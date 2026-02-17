@@ -593,7 +593,7 @@ client side. Customer easy to edit the contents and get the HTML content for
                 let eventsArgs: any = { target: (rteObj.element.querySelector('.e-rte-image') as HTMLElement), preventDefault: function () { } };
                 (<any>rteObj).imageModule.imageClick(eventsArgs);
                 setTimeout(() => {
-                    expect(rteObj.contentModule.getEditPanel().getAttribute('contenteditable') === 'false').toBe(true);
+                    expect(rteObj.contentModule.getEditPanel().getAttribute('contenteditable') === 'true').toBe(true);
                     (rteObj.element.querySelector('.testNode') as HTMLElement).click();
                     (<any>rteObj).clickPoints = { clientY: 0, clientX: 0 };
                     dispatchEvent((rteObj.element.querySelector('.testNode') as HTMLElement), 'mouseup');
@@ -620,7 +620,7 @@ client side. Customer easy to edit the contents and get the HTML content for
                 let eventsArgs: any = { target: (rteObj.element.querySelector('.e-rte-image') as HTMLElement), preventDefault: function () { } };
                 (<any>rteObj).imageModule.imageClick(eventsArgs);
                 setTimeout(() => {
-                    expect(rteObj.contentModule.getEditPanel().getAttribute('contenteditable') === 'false').toBe(true);
+                    expect(rteObj.contentModule.getEditPanel().getAttribute('contenteditable') === 'true').toBe(true);
                     rteObj.readonly = true;
                     rteObj.dataBind();
                     (rteObj.element.querySelector('.testNode') as HTMLElement).click();

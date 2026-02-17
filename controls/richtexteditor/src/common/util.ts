@@ -967,6 +967,51 @@ export function cleanHTMLString(htmlString: string, editNode: Element): string {
                     child.nodeValue = child.nodeValue.replace(/[\n\r\t]/g, ' ');
                     child.nodeValue = child.nodeValue.replace(/[ ]{2,}/g, ' ');
                 }
+                if ((child.nodeValue === ' ' || child.textContent.indexOf(' ') === 0 || child.textContent.lastIndexOf(' ') === child.textContent.length - 1) && child.parentElement.innerHTML !== ' ') {
+                    const isEmptyText: boolean = child.nodeValue === ' ';
+                    const isTrimStart: boolean = child.textContent.indexOf(' ') === 0;
+                    const isTrimend: boolean = child.textContent.lastIndexOf(' ') === child.textContent.length - 1;
+                    if (child.nextSibling && isBlockNode(child.nextSibling as Element) && isEmptyText) {
+                        child.nodeValue = child.nodeValue.replace(/[ ]/g, '');
+                    } else if (child.previousSibling && isBlockNode(child.previousSibling as Element) && isEmptyText) {
+                        child.nodeValue = child.nodeValue.replace(/[ ]/g, '');
+                    } else {
+                        let element: HTMLElement = child as HTMLElement;
+                        let hasNextSibling: boolean = false;
+                        let hasPreviousSibling: boolean = false;
+                        let nextElement: HTMLElement;
+                        while (!isBlockNode(element)) {
+                            if (element.previousSibling && !hasPreviousSibling) {
+                                hasPreviousSibling = true;
+                            }
+                            if (element.nextSibling && !hasNextSibling) {
+                                hasNextSibling = true;
+                                nextElement = element.nextSibling as HTMLElement;
+                            }
+                            element = element.parentElement as HTMLElement;
+                        }
+                        if (isEmptyText) {
+                            if (!hasPreviousSibling && hasNextSibling) {
+                                child.nodeValue = child.nodeValue.replace(/[ ]/g, '');
+                            } else if (hasPreviousSibling && !hasNextSibling) {
+                                child.nodeValue = child.nodeValue.replace(/[ ]/g, '');
+                            } else if (hasPreviousSibling && hasNextSibling && nextElement.nodeType === 3 && nextElement.textContent.trim() === '') {
+                                child.nodeValue = child.nodeValue.replace(/[ ]/g, '');
+                            }
+                        }
+                        if (isTrimStart || isTrimend) {
+                            if (!hasPreviousSibling && child.textContent.indexOf(' ') === 0) {
+                                child.textContent = child.textContent.substring(child.textContent.indexOf(' ') + 1);
+                            }
+                            if (!hasNextSibling && child.textContent.lastIndexOf(' ') === child.textContent.length - 1 && isBlockNode(child.parentElement)) {
+                                child.textContent = child.textContent.substring(0, child.textContent.lastIndexOf(' '));
+                            }
+                            if (hasNextSibling && isBlockNode(nextElement) && child.textContent.lastIndexOf(' ') === child.textContent.length - 1) {
+                                child.textContent = child.textContent.substring(0, child.textContent.lastIndexOf(' '));
+                            }
+                        }
+                    }
+                }
             } else if (child.nodeType === 1) {
                 if (!hasPre(child as HTMLElement) && !hasPreLineStyle(child as HTMLElement)) {
                     cleanTextContent(child, hasPreLine);
@@ -1058,9 +1103,6 @@ export function formatNode(node: Node, indentLevel: number): string {
     node.childNodes.forEach((child: Node) => {
         if (child.nodeType === Node.TEXT_NODE) {
             let text: string = child.textContent;
-            if (text.trim().length === 0) {
-                text = text.trim();
-            }
             if (text) {
                 text = text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
                 result += text;

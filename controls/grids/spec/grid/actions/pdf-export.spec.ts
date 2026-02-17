@@ -1084,6 +1084,40 @@ describe('pdf Export =>', () => {
             gridObj = null;
         });
     });
+
+    describe('EJ2-1006451: Script error throws on pdfExport when last stacked header has no visible columns =>', () => {
+        let gridObj: Grid;
+        beforeAll((done: Function) => {
+            gridObj = createGrid(
+                {
+                    dataSource: data,
+                    allowPdfExport: true,
+                    allowPaging: true,
+                    columns: [
+                        { field: 'OrderID', headerText: 'Order ID', textAlign: 'Right', width: 100 },
+                        { field: 'CustomerID', headerText: 'Customer ID', width: 100 },
+                        {
+                            headerText: 'Order Details', textAlign: 'Center', columns: [
+                                { field: 'OrderDate', headerText: 'Order Date', format: 'yMd', width: 100, visible: false },
+                                { field: 'Freight', headerText: 'Freight ($)', format: 'C1', width: 100, visible: false }
+                            ]
+                        }
+                    ],
+                }, done);
+        });
+
+        it('should export PDF without script error when stacked header has no visible columns', (done: Function) => {
+            gridObj.pdfExport().then((pdfDoc: PdfDocument) => {
+                expect(pdfDoc).not.toBeUndefined();
+                done();
+            });
+        });
+
+        afterAll(() => {
+            destroy(gridObj);
+            gridObj = null;
+        });
+    });
 });
 
 

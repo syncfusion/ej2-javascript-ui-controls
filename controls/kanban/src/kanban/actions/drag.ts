@@ -44,6 +44,7 @@ export class DragAndDrop {
         this.dragObj.instance = new Draggable(element, {
             clone: true,
             enableTapHold: this.parent.isAdaptive as boolean,
+            tapHoldThreshold: 400,
             enableTailMode: true,
             cursorAt: { top: -10, left: -10 },
             dragArea: dragContainment,

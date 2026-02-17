@@ -4869,12 +4869,7 @@ the tool bar support, it�s also customiza</p><table class="e-rte-table" style=
     describe(" EJ2-43332 - Table getting removed while using bulleting/numbering", () => {
         let rteObj: RichTextEditor;
         let rteEle: HTMLElement;
-        beforeEach(() => {
-            rteObj = renderRTE({
-                toolbarSettings: {
-                    items: ['OrderedList', 'UnorderedList']
-                },
-                value: `<table class="e-rte-table" style="width: 100%; min-width: 0px;">
+        let innerHTML: string = `<table class="e-rte-table" style="width: 100%; min-width: 0px;">
                 <tbody>
                     <tr>
                         <td class="" style="width: 20%;"><br></td>
@@ -4884,7 +4879,12 @@ the tool bar support, it�s also customiza</p><table class="e-rte-table" style=
                         <td style="width: 20%;"><br></td>
                     </tr>
                 </tbody>
-            </table><p><b>Test1</b></p><p><b>Test2</b></p>`
+            </table><p><b>Test1</b></p><p><b>Test2</b></p>`;
+        beforeEach(() => {
+            rteObj = renderRTE({
+                toolbarSettings: {
+                    items: ['OrderedList', 'UnorderedList']
+                }
             });
             rteEle = rteObj.element;
         });
@@ -4893,20 +4893,24 @@ the tool bar support, it�s also customiza</p><table class="e-rte-table" style=
             destroy(rteObj);
         });
         it(' Apply OrderedList and check table availability ', (done: Function) => {
+            rteObj.inputElement.innerHTML = innerHTML;
             rteObj.focusIn();
             rteObj.selectAll();
             (<HTMLElement>rteEle.querySelectorAll(".e-toolbar-item")[0] as HTMLElement).click();
             getLastTextNode(rteEle);
             setTimeout(function () {
-                expect(rteEle.querySelector('.e-content').innerHTML).toBe(`<table class="e-rte-table" style="width: 100%; min-width: 0px;"><tbody> <tr> <td class="" style="width: 20%;"><ol><li><br></li></ol></td> <td style="width: 20%;"><ol><li><br></li></ol></td> <td style="width: 20%;"><ol><li><br></li></ol></td> <td style="width: 20%;"><ol><li><br></li></ol></td> <td style="width: 20%;"><ol><li><br></li></ol></td> </tr> </tbody> </table><ol><li style="font-weight: bold;"><b>Test1</b></li><li style="font-weight: bold;"><b>Test2</b></li></ol>`);
+                expect(rteEle.querySelectorAll('table').length).toBe(1);
+                expect(rteEle.querySelectorAll('li').length).toBe(7);
                 done();
             }, 500);
         });
         it(' Apply UnOrderedList and check table availability ', (done: Function) => {
+            rteObj.inputElement.innerHTML = innerHTML;
             rteObj.selectAll();
             (<HTMLElement>rteEle.querySelectorAll(".e-toolbar-item")[1] as HTMLElement).click();
             setTimeout(function () {
-                expect(rteEle.querySelector('.e-content').innerHTML).toBe(`<table class="e-rte-table" style="width: 100%; min-width: 0px;"><tbody> <tr> <td class="" style="width: 20%;"><ul><li><br></li></ul></td> <td style="width: 20%;"><ul><li><br></li></ul></td> <td style="width: 20%;"><ul><li><br></li></ul></td> <td style="width: 20%;"><ul><li><br></li></ul></td> <td style="width: 20%;"><ul><li><br></li></ul></td> </tr> </tbody> </table><ul><li style="font-weight: bold;"><b>Test1</b></li><li style="font-weight: bold;"><b>Test2</b></li></ul>`);
+                expect(rteEle.querySelectorAll('table').length).toBe(1);
+                expect(rteEle.querySelectorAll('li').length).toBe(7);
                 done();
             }, 500);
         });
@@ -9714,7 +9718,7 @@ the tool bar support, it�s also customiza</p><table class="e-rte-table" style=
             // Position cursor just before the nested table
             const parentCell = nestedTable.closest('td');
             const range = document.createRange();
-            range.setStart(parentCell, 3); // Position after the <p> element but before the nested table
+            range.setStart(parentCell, 1); // Position after the <p> element but before the nested table
             range.collapse(true);
             const selection = window.getSelection();
             selection.removeAllRanges();

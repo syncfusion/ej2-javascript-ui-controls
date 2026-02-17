@@ -78,6 +78,10 @@ export class PdfTimeline {
         this.topTierPoint.y = startPoint.y;
         this.prevTopTierIndex = this.topTierIndex;
         this.prevBottomTierIndex = this.bottomTierIndex;
+        const startDate: Date = this.parent.cloneProjectStartDate;
+        const hours: number = startDate.getHours();
+        const minutes: number = startDate.getMinutes();
+        const seconds: number = startDate.getSeconds();
         while (remainWidth > 0) {
             const pHeader: TimelineFormat = this.topTier[this.topTierIndex];
             if (this.topTier.length > this.topTierIndex) {
@@ -111,6 +115,8 @@ export class PdfTimeline {
                 remainWidth = 0;
             }
         }
+        const hasTimeComponent: boolean = hours !== 0 || minutes !== 0 || seconds !== 0;
+        remainWidth = hasTimeComponent ? detail.totalWidth : Math.round(detail.totalWidth);
         remainWidth = Math.round(detail.totalWidth);
         const height: number = this.parent.timelineModule.isSingleTier ? 0 : this.topTierHeight;
         this.bottomTierPoint = new PointF(startPoint.x, pixelToPoint(startPoint.y + height));

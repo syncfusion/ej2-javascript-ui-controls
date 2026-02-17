@@ -16260,3 +16260,128 @@ describe('Coverage for getIndexByTaskBar method', () => {
         triggerMouseEvent(taskbarElement, 'mouseover', 50);
     });
 });
+
+describe('CR:810428: Misalignment timeline while using project start date with time', () => {
+    let ganttObj: Gantt;
+    beforeAll((done: Function) => {
+    ganttObj = createGantt({
+        dataSource: [
+            {
+                TaskID: 1,
+                TaskName: 'First task (first page)',
+                StartDate: new Date('2026-01-02'),
+                Duration: 4,
+            },
+            {
+                TaskID: 2,
+                TaskName: 'Second task (second page)',
+                StartDate: new Date('2026-01-12'),
+                Duration: 5,
+                Progress: 30,
+                resources: [1],
+                info: 'Measure the total property area alloted for construction',
+            },
+        ],
+        taskFields: {
+            id: 'TaskID',
+            name: 'TaskName',
+            startDate: 'StartDate',
+            duration: 'Duration',
+            progress: 'Progress',
+            child: 'subtasks'
+        },
+        toolbar: ['PdfExport'],
+        height: '550px',
+        allowPdfExport: true,
+        projectStartDate: new Date('2026-01-01'),
+        projectEndDate: new Date('2026-04-01')
+                }, done);
+    });
+    afterAll(() => {
+        if (ganttObj) {
+            destroyGantt(ganttObj);
+        }
+    });
+    it('coverage', () => {
+        const exportProperties: PdfExportProperties = {
+            fileName: 'new.pdf',
+            pageSize: 'A4',
+            pageOrientation: 'Landscape',
+            includeHiddenColumn: false,
+            fitToWidthSettings: {
+                isFitToWidth: false
+            },
+            //pageSize: 'A0',
+            enableFooter: false,
+            theme: 'Fabric'
+        };
+        ganttObj.pdfExport(exportProperties);
+    });
+});
+
+describe('CR:810428: Misalignment timeline while using project start date with time coverage', () => {
+    let ganttObj: Gantt;
+    beforeAll((done: Function) => {
+    ganttObj = createGantt({
+        dataSource: [
+            {
+                TaskID: 1,
+                TaskName: 'First task (first page)',
+                StartDate: new Date('2026-01-02'),
+                Duration: 4,
+            },
+            {
+                TaskID: 2,
+                TaskName: 'Second task (second page)',
+                StartDate: new Date('2026-01-12'),
+                Duration: 5,
+                Progress: 30,
+                resources: [1],
+                info: 'Measure the total property area alloted for construction',
+            },
+        ],
+        taskFields: {
+            id: 'TaskID',
+            name: 'TaskName',
+            startDate: 'StartDate',
+            duration: 'Duration',
+            progress: 'Progress',
+            child: 'subtasks'
+        },
+        timelineSettings: {
+            showTooltip: true,
+            topTier: {
+                unit: 'Hour',
+            },
+            bottomTier: {
+                unit: 'Minutes',
+            }
+        },
+        toolbar: ['PdfExport'],
+        height: '550px',
+        allowPdfExport: true,
+        projectStartDate: new Date('2026-01-01'),
+        projectEndDate: new Date('2026-02-07')
+                }, done);
+    });
+    afterAll(() => {
+        if (ganttObj) {
+            destroyGantt(ganttObj);
+        }
+    });
+    it('coverage', () => {
+        const exportProperties: PdfExportProperties = {
+            fileName: 'new.pdf',
+            pageSize: 'A4',
+            pageOrientation: 'Landscape',
+            includeHiddenColumn: false,
+            fitToWidthSettings: {
+                isFitToWidth: false
+            },
+            //pageSize: 'A0',
+            enableFooter: false,
+            theme: 'Fabric'
+        };
+        ganttObj.pdfExport(exportProperties);
+    });
+});

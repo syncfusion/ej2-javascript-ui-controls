@@ -816,4 +816,63 @@ describe('Image ->', () => {
             expect(parent.classList.contains('e-overlay')).toBe(true);
         });
     });
+    describe('EJ2:1005932 Image position not preserved after drag-and-drop when saving and reloading JSON with preservePos', () => {
+        beforeAll((done: Function) => {
+            helper.initializeSpreadsheet({ sheets: [{ ranges: [{ dataSource: defaultData }] }] }, done);
+        });
+        afterAll(() => {
+            helper.invoke('destroy');
+        });
+        it('Model should be updated properly based on the image position in the sheet', (done: Function) => {
+            const json: object = {
+                Workbook: {
+                    sheets: [
+                        {
+                            rows: [
+                                null, null,
+                                {
+                                    cells: [
+                                        {
+                                            image: [<ExtendedImageModel>{ src: 'https://www.w3schools.com/images/w3schools_green.jpg', height: 300, width: 400, top: 40, left: 64, id: "sf-designer-container_overlay_picture__4" }]
+                                        }
+                                    ]
+                                }
+                            ],
+                            selectedRange: "H13:H13", usedRange: { colIndex: 22, rowIndex: 9 }
+                        }
+                    ]
+                }
+            };
+            const spreadsheet: Spreadsheet = helper.getInstance();
+            spreadsheet.openFromJson({ file: json });
+            setTimeout(() => {
+                expect(spreadsheet.sheets[0].rows[2].cells[0].image).toBeDefined();
+                expect(spreadsheet.sheets[0].rows[2].cells[1].image.length).toBe(1);
+                done();
+            });
+        });
+        it('Drag and drop Image from B3 to E12 cell', (done: Function) => {
+            const spreadsheet: Spreadsheet = helper.getInstance();
+            const image: HTMLElement = helper.getElement().querySelector('.e-ss-overlay');
+            helper.triggerMouseAction('mousedown', { x: image.getBoundingClientRect().left + 1, y: image.getBoundingClientRect().top + 1 }, image, image);
+            const targetCell = helper.invoke('getCell', [11, 4]);
+            const targetRect = targetCell.getBoundingClientRect();
+            helper.triggerMouseAction('mousemove', { x: targetRect.left + 10, y: targetRect.top + 10 }, image, image);
+            helper.triggerMouseAction('mouseup', { x: targetRect.left + 10, y: targetRect.top + 10 }, document, image);
+            setTimeout(() => {
+                let cell: CellModel = spreadsheet.sheets[0].rows[11].cells[4];
+                expect(cell.image.length).toBe(1);
+                expect(spreadsheet.sheets[0].rows[11].cells[4].image.length).toBe(1);
+                expect(cell.image.length).toBe(1);
+                const imageArr: ImageModel = cell.image[0];
+                expect(imageArr.height).toBe(300);
+                expect(imageArr.width).toBe(400);
+                expect(imageArr.top).toBe(229);
+                expect(imageArr.left).toBe(265);
+                cell = spreadsheet.sheets[0].rows[2].cells[0];
+                expect(cell.image).toBeDefined();
+                done();
+            });
+        });
+    });
 });

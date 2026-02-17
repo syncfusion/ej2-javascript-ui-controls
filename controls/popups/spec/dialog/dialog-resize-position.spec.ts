@@ -68,6 +68,9 @@ describe('Dialog Resize Position Bug - Modal Dialog with Center Position', () =>
         // Step 1: Open the dialog
         setTimeout(() => {
             dialog.show();
+            var elem = document.getElementById('testDialog');
+            expect(elem.style.top).not.toBe('0px');
+            expect(elem.style.left).not.toBe('0px');
         }, 100);
 
         // Step 2: Trigger resize

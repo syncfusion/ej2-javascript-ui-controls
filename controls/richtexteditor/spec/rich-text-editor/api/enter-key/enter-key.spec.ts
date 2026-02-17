@@ -195,7 +195,7 @@ describe('Bug 998779: Multiple dividers added when pressing Enter after pasting 
             document, startNode, startNode, 0, 0);
         (<any>rteObj).keyDown(keyboardEventArgs);
         (<any>rteObj).keyDown(keyboardEventArgs);
-        expect(rteObj.inputElement.innerHTML === `<div style="border-top: none; border-right: none; border-left: none; border-bottom: 1.5pt solid rgb(204, 204, 204); padding: 0in 0in 1pt;"> <p style="margin: 0in 0in 8pt; line-height: 115%; font-size: 12pt; font-family: Aptos, sans-serif; border: none; padding: 0in;">&nbsp;</p> </div><p><br></p><p><br></p><p><br></p><p><br></p>`).toBe(true);
+        expect(rteObj.inputElement.innerHTML === `<div style="border-top: none; border-right: none; border-left: none; border-bottom: 1.5pt solid rgb(204, 204, 204); padding: 0in 0in 1pt;"><p style="margin: 0in 0in 8pt; line-height: 115%; font-size: 12pt; font-family: Aptos, sans-serif; border: none; padding: 0in;">&nbsp;</p></div><p><br></p><p><br></p><p><br></p><p><br></p>`).toBe(true);
     });
 
     afterAll(() => {
@@ -480,6 +480,7 @@ describe('Bug 917790: Link disappears on pressing "Enter" with CSS "white-space:
     it('Check the link availability after pressing enter key at the end after space', () => {
         const whiteSpace: HTMLElement = rteObj.element.querySelector('.e-content') as HTMLElement;
         whiteSpace.style.whiteSpace = 'pre-wrap';
+        rteObj.inputElement.innerHTML = '<p> <a class="e-rte-anchor" href="http://www.google.com" title="http://www.google.com" target="_blank">www.google.com</a> </p>';
         const nodetext: any = rteObj.inputElement.childNodes[0];
         const sel: void = new NodeSelection().setCursorPoint(
             document, nodetext.childNodes[2], nodetext.childNodes[2].textContent.length);
@@ -490,7 +491,7 @@ describe('Bug 917790: Link disappears on pressing "Enter" with CSS "white-space:
     it('Check the link availability after pressing enter key at the end before space', () => {
         const whiteSpace: HTMLElement = rteObj.element.querySelector('.e-content') as HTMLElement;
         whiteSpace.style.whiteSpace = 'pre-wrap';
-        rteObj.value = '<p> <a class="e-rte-anchor" href="http://www.google.com" title="http://www.google.com" target="_blank">www.google.com</a> </p>';
+        rteObj.inputElement.innerHTML = '<p> <a class="e-rte-anchor" href="http://www.google.com" title="http://www.google.com" target="_blank">www.google.com</a> </p>';
         const nodetext: any = rteObj.inputElement.childNodes[0];
         const sel: void = new NodeSelection().setCursorPoint(
             document, nodetext.childNodes[2], nodetext.childNodes[2].textContent.length-1);
@@ -501,7 +502,7 @@ describe('Bug 917790: Link disappears on pressing "Enter" with CSS "white-space:
     it('Check the link availability after pressing enter key at the start after space', () => {
         const whiteSpace: HTMLElement = rteObj.element.querySelector('.e-content') as HTMLElement;
         whiteSpace.style.whiteSpace = 'pre-wrap';
-        rteObj.value = '<p> <a class="e-rte-anchor" href="http://www.google.com" title="http://www.google.com" target="_blank">www.google.com</a> </p>';
+        rteObj.inputElement.innerHTML = '<p> <a class="e-rte-anchor" href="http://www.google.com" title="http://www.google.com" target="_blank">www.google.com</a> </p>';
         const nodetext: any = rteObj.inputElement.childNodes[0];
         const sel: void = new NodeSelection().setCursorPoint(
             document, nodetext.childNodes[0], 1);
@@ -512,7 +513,7 @@ describe('Bug 917790: Link disappears on pressing "Enter" with CSS "white-space:
     it('Check the link availability after pressing enter key at the start before space', () => {
         const whiteSpace: HTMLElement = rteObj.element.querySelector('.e-content') as HTMLElement;
         whiteSpace.style.whiteSpace = 'pre-wrap';
-        rteObj.value = '<p> <a class="e-rte-anchor" href="http://www.google.com" title="http://www.google.com" target="_blank">www.google.com</a> </p>';
+        rteObj.inputElement.innerHTML = '<p> <a class="e-rte-anchor" href="http://www.google.com" title="http://www.google.com" target="_blank">www.google.com</a> </p>';
         const nodetext: any = rteObj.inputElement.childNodes[0];
         const sel: void = new NodeSelection().setCursorPoint(
             document, nodetext.childNodes[0], 0);
@@ -548,6 +549,7 @@ describe('Bug 925863: When pressing Enter key after the link when text-wrap is a
         style.remove();
     });
     it('Check the link availability after pressing enter key at the end after space', () => {
+        rteObj.inputElement.innerHTML = '<p> <a class="e-rte-anchor" href="http://www.google.com" title="http://www.google.com" target="_blank">www.google.com</a> </p>';
         const nodetext: any = rteObj.inputElement.childNodes[0];
         const sel: void = new NodeSelection().setCursorPoint(
             document, nodetext.childNodes[2], nodetext.childNodes[2].textContent.length);
@@ -556,7 +558,7 @@ describe('Bug 925863: When pressing Enter key after the link when text-wrap is a
     });
 
     it('Check the link availability after pressing enter key at the end before space', () => {
-        rteObj.value = '<p> <a class="e-rte-anchor" href="http://www.google.com" title="http://www.google.com" target="_blank">www.google.com</a> </p>';
+        rteObj.inputElement.innerHTML = '<p> <a class="e-rte-anchor" href="http://www.google.com" title="http://www.google.com" target="_blank">www.google.com</a> </p>';
         const nodetext: any = rteObj.inputElement.childNodes[0];
         const sel: void = new NodeSelection().setCursorPoint(
             document, nodetext.childNodes[2], nodetext.childNodes[2].textContent.length - 1);
@@ -565,7 +567,7 @@ describe('Bug 925863: When pressing Enter key after the link when text-wrap is a
     });
 
     it('Check the link availability after pressing enter key at the start after space', () => {
-        rteObj.value = '<p> <a class="e-rte-anchor" href="http://www.google.com" title="http://www.google.com" target="_blank">www.google.com</a> </p>';
+        rteObj.inputElement.innerHTML = '<p> <a class="e-rte-anchor" href="http://www.google.com" title="http://www.google.com" target="_blank">www.google.com</a> </p>';
         const nodetext: any = rteObj.inputElement.childNodes[0];
         const sel: void = new NodeSelection().setCursorPoint(
             document, nodetext.childNodes[0], 1);
@@ -574,7 +576,7 @@ describe('Bug 925863: When pressing Enter key after the link when text-wrap is a
     });
 
     it('Check the link availability after pressing enter key at the start before space', () => {
-        rteObj.value = '<p> <a class="e-rte-anchor" href="http://www.google.com" title="http://www.google.com" target="_blank">www.google.com</a> </p>';
+        rteObj.inputElement.innerHTML = '<p> <a class="e-rte-anchor" href="http://www.google.com" title="http://www.google.com" target="_blank">www.google.com</a> </p>';
         const nodetext: any = rteObj.inputElement.childNodes[0];
         const sel: void = new NodeSelection().setCursorPoint(
             document, nodetext.childNodes[0], 0);
@@ -1462,7 +1464,7 @@ describe('When P configured - only image in the editor content', () => {
         const sel: void = new NodeSelection().setSelectionText(
             document, startNode, startNode, 0, 0);
         (<any>rteObj).keyDown(keyboardEventArgs);
-        expect(rteObj.inputElement.innerHTML).toBe('<p><br></p><p><img src="https://ej2.syncfusion.com/demos/src/rich-text-editor/images/RTEImage-Feather.png" class="e-rte-image e-imginline e-img-focus" alt="Tiny_Image.PNG" width="auto" height="auto" style="min-width: 0px; max-width: 1199px; min-height: 0px;"> </p>');
+        expect(rteObj.inputElement.innerHTML).toBe('<p><br></p><p><img src="https://ej2.syncfusion.com/demos/src/rich-text-editor/images/RTEImage-Feather.png" class="e-rte-image e-imginline e-img-focus" alt="Tiny_Image.PNG" width="auto" height="auto" style="min-width: 0px; max-width: 1199px; min-height: 0px;"></p>');
     });
 
     it('When image is loaded as initial value and press enter after the image', function (): void {
@@ -1570,6 +1572,7 @@ describe('Bug 937059: Pressing Enter or Shift+Enter Removes Images in the Rich T
 
 describe('916641: Shift+Enter before an audio element', () => {
     let rteObj: RichTextEditor;
+    let innerHTML: string = `<p><span class="e-audio-wrap" contenteditable="false" title="RTE-Audio.wav"><span class="e-clickelem"><audio class="e-rte-audio e-audio-inline" controls="" style="outline: rgb(74, 144, 226) solid 2px;"><source src="https://cdn.syncfusion.com/ej2/richtexteditor-resources/RTE-Audio.wav" type="audio/wav"></audio></span></span> </p>`
     beforeAll((done: Function) => {
         rteObj = renderRTE({
             value: `<p><span class="e-audio-wrap" contenteditable="false" title="RTE-Audio.wav"><span class="e-clickelem"><audio class="e-rte-audio e-audio-inline" controls="" style="outline: rgb(74, 144, 226) solid 2px;"><source src="https://cdn.syncfusion.com/ej2/richtexteditor-resources/RTE-Audio.wav" type="audio/wav"></audio></span></span> </p>`
@@ -1577,7 +1580,7 @@ describe('916641: Shift+Enter before an audio element', () => {
         done();
     });
     it('should insert a <br> when Shift+Enter is pressed before an audio element', () => {
-        rteObj.dataBind();
+        rteObj.inputElement.innerHTML = innerHTML;
         rteObj.focusIn();
         const startNode: any = rteObj.inputElement.childNodes[0];
         const sel: void = new NodeSelection().setSelectionText(
@@ -2404,7 +2407,7 @@ describe('EJ2-65987 - Image duplicated when pressing enter',() => {
         (rteObj as any).inputElement.focus();
         rteObj.formatter.editorManager.nodeSelection.setSelectionText(document,(rteObj as any).inputElement.childNodes[0].firstChild,(rteObj as any).inputElement.childNodes[0].firstChild, 0, 0);
         (rteObj as any).keyDown(keyboardEventArgs);
-        expect(rteObj.inputElement.innerHTML==`<p><br></p><p><br></p><p>&nbsp;<img src="https://ej2.syncfusion.com/demos/src/rich-text-editor/images/RTEImage-Feather.png" class="e-rte-image e-imginline" alt="RTEImage-Feather.png" width="auto" height="auto" style="min-width: 0px; max-width: 1455px; min-height: 0px;"> </p>`).toBe(true);
+        expect(rteObj.inputElement.innerHTML==`<p><br></p><p><br></p><p>&nbsp;<img src="https://ej2.syncfusion.com/demos/src/rich-text-editor/images/RTEImage-Feather.png" class="e-rte-image e-imginline" alt="RTEImage-Feather.png" width="auto" height="auto" style="min-width: 0px; max-width: 1455px; min-height: 0px;"></p>`).toBe(true);
     });
 });
 
@@ -2434,7 +2437,7 @@ describe('EJ2-65633 - Enter key Press when audio and video is focused',() => {
         let startNode = (rteObj as any).inputElement.querySelector('.e-audio-wrap');
         rteObj.formatter.editorManager.nodeSelection.setSelectionText(document, startNode, startNode, 0, 1);
         (rteObj as any).keyDown(keyboardEventArgs);
-        expect(rteObj.inputElement.innerHTML==`<p><b>Get started Quick Toolbar to click on an audio</b></p><p>By using the quick toolbar, users can replace, display, and delete the selected an audio.</p><p><br></p><p><span class="e-audio-wrap" contenteditable="false"><span class="e-clickelem"><audio controls="" class="e-rte-audio e-audio-inline"> <source src="https://assets.mixkit.co/sfx/preview/mixkit-rain-and-thunder-storm-2390.mp3" type="audio/mp3"> </audio></span></span><br> </p><p>Rich Text Editor allows inserting video and audio from online sources as well as the local computers where you want to insert a video and audio in your content.</p><p><b>Get started Quick Toolbar to click on a video</b></p><p>By using the quick toolbar, users can replace, align, display, dimension, and delete the selected a video.</p><p> <span class="e-video-wrap" contenteditable="false"><video controls="" class="e-rte-video e-video-inline"> <source src="https://www.w3schools.com/tags/movie.mp4" type="video/mp4"> </video></span><br> </p>`).toBe(true);
+        expect(rteObj.inputElement.innerHTML==`<p><b>Get started Quick Toolbar to click on an audio</b></p><p>By using the quick toolbar, users can replace, display, and delete the selected an audio.</p><p><br></p><p><span class="e-audio-wrap" contenteditable="false"><span class="e-clickelem"><audio controls="" class="e-rte-audio e-audio-inline"><source src="https://assets.mixkit.co/sfx/preview/mixkit-rain-and-thunder-storm-2390.mp3" type="audio/mp3"></audio></span></span><br></p><p>Rich Text Editor allows inserting video and audio from online sources as well as the local computers where you want to insert a video and audio in your content.</p><p><b>Get started Quick Toolbar to click on a video</b></p><p>By using the quick toolbar, users can replace, align, display, dimension, and delete the selected a video.</p><p><span class="e-video-wrap" contenteditable="false"><video controls="" class="e-rte-video e-video-inline"><source src="https://www.w3schools.com/tags/movie.mp4" type="video/mp4"></video></span><br></p>`).toBe(true);
     });
 
     it('video focus and enter key press',() => {
@@ -2453,7 +2456,7 @@ describe('EJ2-65633 - Enter key Press when audio and video is focused',() => {
         let startNode = (rteObj as any).inputElement.querySelector('.e-video-wrap');
          rteObj.formatter.editorManager.nodeSelection.setSelectionText(document, startNode, startNode, 0, 1);
         (rteObj as any).keyDown(keyboardEventArgs);
-        expect(rteObj.inputElement.innerHTML == `<p><b>Get started Quick Toolbar to click on an audio</b></p><p>By using the quick toolbar, users can replace, display, and delete the selected an audio.</p><p> <span class="e-audio-wrap" contenteditable="false"><span class="e-clickelem"><audio controls="" class="e-rte-audio e-audio-inline"> <source src="https://assets.mixkit.co/sfx/preview/mixkit-rain-and-thunder-storm-2390.mp3" type="audio/mp3"> </audio></span></span><br> </p><p>Rich Text Editor allows inserting video and audio from online sources as well as the local computers where you want to insert a video and audio in your content.</p><p><b>Get started Quick Toolbar to click on a video</b></p><p>By using the quick toolbar, users can replace, align, display, dimension, and delete the selected a video.</p><p><span class="e-video-wrap" contenteditable="false"><video controls="" class="e-rte-video e-video-inline"> <source src="https://www.w3schools.com/tags/movie.mp4" type="video/mp4"> </video></span><br></p><p><br></p>`).toBe(true);
+        expect(rteObj.inputElement.innerHTML == `<p><b>Get started Quick Toolbar to click on an audio</b></p><p>By using the quick toolbar, users can replace, display, and delete the selected an audio.</p><p><span class="e-audio-wrap" contenteditable="false"><span class="e-clickelem"><audio controls="" class="e-rte-audio e-audio-inline"><source src="https://assets.mixkit.co/sfx/preview/mixkit-rain-and-thunder-storm-2390.mp3" type="audio/mp3"></audio></span></span><br></p><p>Rich Text Editor allows inserting video and audio from online sources as well as the local computers where you want to insert a video and audio in your content.</p><p><b>Get started Quick Toolbar to click on a video</b></p><p>By using the quick toolbar, users can replace, align, display, dimension, and delete the selected a video.</p><p><span class="e-video-wrap" contenteditable="false"><video controls="" class="e-rte-video e-video-inline"><source src="https://www.w3schools.com/tags/movie.mp4" type="video/mp4"></video></span><br></p><p><br></p>`).toBe(true);
     });
 
     it('audio dynamically inserted and focus and enter key press',() => {
@@ -2572,7 +2575,7 @@ describe("EJ2-67119 - List item gets removed when press the enterkey in list sec
         range.setEnd( contentElem,0 );
         rteObj.formatter.editorManager.nodeSelection.setRange(document, range);
         (rteObj as any).keyDown(keyboardEventArgs);
-        const corrrectElemString : string = `<ol><li><span class="e-video-wrap" contenteditable="false"><video controls="" class="e-rte-video e-video-inline"> <source src="https://www.w3schools.com/tags/movie.mp4" type="video/mp4"> </video></span><br></li></ol><p><br></p>`;
+        const corrrectElemString : string = `<ol><li><span class="e-video-wrap" contenteditable="false"><video controls="" class="e-rte-video e-video-inline"><source src="https://www.w3schools.com/tags/movie.mp4" type="video/mp4"></video></span><br></li></ol><p><br></p>`;
         expect(rteObj.inputElement.innerHTML === corrrectElemString ).toBe(true);
     });
     afterAll( () => {
@@ -3168,7 +3171,7 @@ describe('969195 - Script error thrown when we press the Shift Enter key before 
         (<any>rteObj).keyDown(keyboardEventArgs);
         (<any>rteObj).keyDown(shiftkeyboarArgs);
         (<any>rteObj).keyDown(shiftkeyboarArgs);
-        expect(rteObj.inputElement.innerHTML).toBe('<p style="font-family: Arial; font-size: 10pt;"> <span class="focusNode"><br></span></p><div style="font-family: Arial; font-size: 10pt"><br><br><span class="focusNode"><img alt="Sky with sun" src="https://cdn.syncfusion.com/ej2/richtexteditor-resources/RTE-Overview.png" width="309" style="min-width: 10px; min-height: 10px; width: 309px; height: 174px;" class="e-rte-image e-imginline" height="174"> </span><br> </div>');
+        expect(rteObj.inputElement.innerHTML).toBe('<p style="font-family: Arial; font-size: 10pt;"><span class="focusNode"><br></span></p><div style="font-family: Arial; font-size: 10pt"><br><br><span class="focusNode"><img alt="Sky with sun" src="https://cdn.syncfusion.com/ej2/richtexteditor-resources/RTE-Overview.png" width="309" style="min-width: 10px; min-height: 10px; width: 309px; height: 174px;" class="e-rte-image e-imginline" height="174"> </span><br></div>');
     });
 });
 

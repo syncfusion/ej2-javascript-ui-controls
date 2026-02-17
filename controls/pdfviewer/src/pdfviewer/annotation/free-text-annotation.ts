@@ -220,6 +220,7 @@ export class FreeTextAnnotation {
         this.inputBoxElement.style.borderStyle = this.borderStyle;
         this.inputBoxElement.style.borderWidth = this.borderWidth + 'px';
         this.inputBoxElement.style.padding = this.padding;
+        this.inputBoxElement.style.lineHeight = 'normal';
         this.inputBoxElement.style.paddingLeft = this.freeTextPaddingLeft + 'px';
         this.inputBoxElement.style.paddingTop = this.freeTextPaddingTop * (parseFloat(this.inputBoxElement.style.fontSize) / this.defaultFontSize) + 'px';
         this.inputBoxElement.style.borderRadius = '2px';
@@ -237,10 +238,11 @@ export class FreeTextAnnotation {
     }
 
     /**
+     * @param {any} fontStyle - Refers the font style
      * @private
      * @returns {void}
      */
-    public updateTextProperties(): void {
+    public updateTextProperties(fontStyle?: any): void {
         this.defautWidth = this.pdfViewer.freeTextSettings.width ? this.pdfViewer.freeTextSettings.width : 151;
         this.defaultHeight = this.pdfViewer.freeTextSettings.height ? this.pdfViewer.freeTextSettings.height : 24.6;
         this.borderColor = this.pdfViewer.freeTextSettings.borderColor ? this.pdfViewer.freeTextSettings.borderColor : '#ffffff00';
@@ -281,6 +283,19 @@ export class FreeTextAnnotation {
         this.isItalic = (this.pdfViewer.freeTextSettings.fontStyle & FontStyle.Italic) === FontStyle.Italic;
         this.isUnderline = (this.pdfViewer.freeTextSettings.fontStyle & FontStyle.Underline) === FontStyle.Underline;
         this.isStrikethrough = (this.pdfViewer.freeTextSettings.fontStyle & FontStyle.Strikethrough) === FontStyle.Strikethrough;
+        if (fontStyle) {
+            for (let i: number = 0; i < fontStyle.length; i++) {
+                this.pdfViewer.freeTextSettings.fontStyle = fontStyle[parseInt(i.toString(), 10)];
+                if ((this.pdfViewer.freeTextSettings.fontStyle & FontStyle.Underline)) {
+                    this.isUnderline = (this.pdfViewer.freeTextSettings.fontStyle &
+                        FontStyle.Underline) === FontStyle.Underline;
+                }
+                else if ((this.pdfViewer.freeTextSettings.fontStyle & FontStyle.Strikethrough)) {
+                    this.isStrikethrough = (this.pdfViewer.freeTextSettings.fontStyle &
+                        FontStyle.Strikethrough) === FontStyle.Strikethrough;
+                }
+            }
+        }
     }
 
     /**
@@ -504,6 +519,9 @@ export class FreeTextAnnotation {
                             annotObject.id = annotation.AnnotName;
                             annotObject.previousFontSize = annotation.FontSize ? annotation.FontSize : this.fontSize;
                         }
+                        if (annotation.AnnotationIntent && annotation.AnnotationIntent === 'None') {
+                            annot.isSignatureText = true;
+                        }
                         const addedAnnot: PdfAnnotationBaseModel = this.pdfViewer.add(annot as PdfAnnotationBase);
                         if (annotObject.textAlign !== null) {
                             if (annotObject.textAlign === 'Justify') {
@@ -541,18 +559,25 @@ export class FreeTextAnnotation {
                         this.pdfViewer.annotation.freeTextAnnotationModule.isFreeTextValueChange = true;
                         const isNeedToRender: boolean = ((isImportAction && isLastAnnot) || isNullOrUndefined(isImportAction) ||
                         !isImportAction) ? true : false;
+                        const zoomFactor: number = this.pdfViewerBase.getZoomFactor();
                         if (annotation.AnnotationIntent && annotation.AnnotationIntent !== 'None') {
-                            let lineSpace: any = 0;
+                            let computedPad: number = 0;
+                            if (addedAnnot && addedAnnot.wrapper && addedAnnot.wrapper.children[0]) {
+                                const strokeWidth: number = addedAnnot.wrapper.children[0].style.strokeWidth || 0;
+                                computedPad = Math.ceil(strokeWidth);
+                            } else if (!isNullOrUndefined(this.borderWidth)) {
+                                computedPad = Math.ceil(this.borderWidth);
+                            }
+                            const padPx: string = (computedPad * zoomFactor) + 'px';
+                            this.inputBoxElement.style.paddingTop = padPx;
+                            const align: string = (addedAnnot && addedAnnot.textAlign)
+                                ? addedAnnot.textAlign.toLowerCase()
+                                : this.textAlign ? this.textAlign.toLowerCase() : 'left';
+                            this.inputBoxElement.style.paddingLeft = (align === 'left' || align === 'justify') ? padPx : (computedPad * zoomFactor) + 'px';
+                            this.inputBoxElement.style.paddingRight = (align === 'right') ? padPx : (computedPad * zoomFactor) + 'px';
                             this.inputBoxElement.style.fontSize = (addedAnnot.fontSize * this.pdfViewerBase.getZoomFactor()) + 'px';
-                            lineSpace = ((parseFloat(this.inputBoxElement.style.fontSize) / this.pdfViewerBase.getZoomFactor()) /
-                                (this.defaultFontSize / 2));
-                            this.inputBoxElement.style.paddingTop = ((((parseFloat(this.inputBoxElement.style.fontSize) /
-                                Math.max(1, this.pdfViewerBase.getZoomFactor())) / this.defaultFontSize) / Math.max(1, this.pdfViewerBase.getZoomFactor()))) * this.freeTextPaddingTop + 'px';
-                            this.inputBoxElement.style.paddingTop = parseFloat(this.inputBoxElement.style.paddingTop) - lineSpace + 'px';
-                            addedAnnot.wrapper.children[1].margin.left = this.freeTextPaddingLeft + 1;
-                            addedAnnot.wrapper.children[1].margin.top =
-                                ((parseFloat(this.inputBoxElement.style.paddingTop) /
-                                    Math.max(1, this.pdfViewerBase.getZoomFactor()))) + lineSpace - 1;
+                            addedAnnot.wrapper.children[1].margin.left = 0;
+                            addedAnnot.wrapper.children[1].margin.top = 0;
                         }
                         this.pdfViewer.nodePropertyChange(addedAnnot, {}, isNeedToRender);
                         this.pdfViewer.annotation.freeTextAnnotationModule.isFreeTextValueChange = false;
@@ -755,7 +780,8 @@ export class FreeTextAnnotation {
                             pageAnnotationObject.annotations[parseInt(z.toString(), 10)].rectangleDifference =
                              JSON.stringify(pageAnnotationObject.annotations[parseInt(z.toString(), 10)].rectangleDifference);
                         }
-                        pageAnnotationObject.annotations[parseInt(z.toString(), 10)].padding = this.getPaddingValues(this.fontSize);
+                        const thickness: any = pageAnnotationObject.annotations[parseInt(z.toString(), 10)].thickness;
+                        pageAnnotationObject.annotations[parseInt(z.toString(), 10)].padding = this.getPaddingValues(thickness);
                     }
                     newArray = pageAnnotationObject.annotations;
                 }
@@ -920,7 +946,7 @@ export class FreeTextAnnotation {
                     review: { state: 'Unmarked', stateModel: 'None', modifiedDate: currentDateString, author: this.author },
                     annotationSelectorSettings: annotationSelectorSettings, annotationSettings: annotationSettings,
                     customData: this.pdfViewer.annotationModule.getData('FreeText'), isPrint: (this.pdfViewer.freeTextSettings && !isNullOrUndefined(this.pdfViewer.freeTextSettings.isPrint)) ? this.pdfViewer.freeTextSettings.isPrint : true,
-                    allowedInteractions: allowedInteractions, isReadonly: this.isReadonly
+                    allowedInteractions: allowedInteractions, isReadonly: this.isReadonly, isSignatureText: false
                 };
                 const annotObject: IFreeTextAnnotation = {
                     author: this.author, modifiedDate: currentDateString, subject: this.subject, id: 'free_text' + this.inputBoxCount,
@@ -943,6 +969,7 @@ export class FreeTextAnnotation {
                     annot.textAlign = 'Right';
                     annotObject.textAlign = 'Right';
                 }
+                annot.isSignatureText = false;
                 const annotation: PdfAnnotationBaseModel = this.pdfViewer.add(annot as PdfAnnotationBase);
                 if (annotObject.textAlign !== null) {
                     if (annotObject.textAlign === 'Justify') {
@@ -1033,21 +1060,10 @@ export class FreeTextAnnotation {
                 }
                 this.selectedAnnotation.bounds.width = inputEleWidth;
                 this.selectedAnnotation.bounds.height = inputEleHeight;
-                if (!isNullOrUndefined(this.pdfViewer.freeTextSettings.borderWidth) && this.pdfViewer.freeTextSettings.borderWidth !== 0) {
-                    this.initialStrokeThickness = this.pdfViewer.freeTextSettings.borderWidth;
-                }
-                if (!isNullOrUndefined(this.initialStrokeThickness) && !this.selectedAnnotation.isAddAnnotationProgrammatically &&
-                    this.initialStrokeThickness !== this.selectedAnnotation.wrapper.children[0].style.strokeWidth) {
-                    const strokeDifference: number = this.selectedAnnotation.wrapper.children[0].style.strokeWidth -
-                        this.initialStrokeThickness;
-                    this.selectedAnnotation.bounds.height = parseFloat(this.inputBoxElement.style.height) + strokeDifference;
-                }
-                this.inputBoxElement.style.height = this.selectedAnnotation.bounds.height + 'px';
                 let lineSpace: any = 0;
                 lineSpace = ((parseFloat(this.inputBoxElement.style.fontSize) / zoomFactor) / (this.defaultFontSize / 2));
-                this.selectedAnnotation.wrapper.children[1].margin.left = this.freeTextPaddingLeft + 1;
-                this.selectedAnnotation.wrapper.children[1].margin.top =
-                 ((parseFloat(this.inputBoxElement.style.paddingTop) / Math.max(1, zoomFactor))) + lineSpace - 1;
+                this.selectedAnnotation.wrapper.children[1].margin.left = 0;
+                this.selectedAnnotation.wrapper.children[1].margin.top = 0;
                 this.pdfViewer.annotation.modifyDynamicTextValue(inputValue, this.selectedAnnotation.annotName, this.previousText);
                 this.selectedAnnotation.dynamicText = inputValue;
                 this.selectedAnnotation.wrapper.children[0].style.strokeColor = borderColor;
@@ -1100,9 +1116,8 @@ export class FreeTextAnnotation {
                 this.selectedAnnotation.bounds.height = inputEleHeight;
                 let lineSpace: any = 0;
                 lineSpace = ((parseFloat(this.inputBoxElement.style.fontSize) / zoomFactor) / (this.defaultFontSize / 2));
-                this.selectedAnnotation.wrapper.children[1].margin.left = this.freeTextPaddingLeft + 1;
-                this.selectedAnnotation.wrapper.children[1].margin.top =
-                 ((parseFloat(this.inputBoxElement.style.paddingTop) / zoomFactor)) + lineSpace - 1;
+                this.selectedAnnotation.wrapper.children[1].margin.left = 0;
+                this.selectedAnnotation.wrapper.children[1].margin.top = 0;
                 this.pdfViewer.annotation.modifyDynamicTextValue(inputValue, this.selectedAnnotation.annotName, this.previousText);
                 this.selectedAnnotation.dynamicText = inputValue;
                 this.selectedAnnotation.wrapper.children[0].style.strokeColor = borderColor;
@@ -1191,15 +1206,25 @@ export class FreeTextAnnotation {
         }
         if (this.isMaximumWidthReached) {
             const previousHeight: number = inuptEleObj.inputBoxElement.getBoundingClientRect().height;
-            if (!isSize && !inuptEleObj.inputBoxElement.readOnly) {
-                inuptEleObj.inputBoxElement.style.height = inuptEleObj.defaultHeight + 'px';
+            const zoomFactor: number = inuptEleObj.pdfViewerBase.getZoomFactor();
+            const currentInputHeight: any = parseFloat(inuptEleObj.inputBoxElement.style.height) || inuptEleObj.defaultHeight;
+            if (!isSize && !inuptEleObj.inputBoxElement.readOnly && zoomFactor >= 1) {
+                inuptEleObj.inputBoxElement.style.height = Math.max(currentInputHeight, inuptEleObj.defaultHeight) + 'px';
+            } else {
+                inuptEleObj.inputBoxElement.style.height = Math.min(currentInputHeight, inuptEleObj.defaultHeight) + 'px';
             }
             const currentHeight: number = inuptEleObj.inputBoxElement.getBoundingClientRect().height;
             const difference: number = currentHeight - previousHeight;
             const fontSize: number = parseFloat(inuptEleObj.inputBoxElement.style.fontSize);
-            const zoomFactor: number = inuptEleObj.pdfViewerBase.getZoomFactor();
-            if (((inuptEleObj.defaultHeight * zoomFactor) < inuptEleObj.inputBoxElement.scrollHeight) &&
-            (Math.ceil(inuptEleObj.inputBoxElement.clientHeight) < inuptEleObj.inputBoxElement.scrollHeight)) {
+            let inuptEleObjHeight: any;
+            if (zoomFactor < 1) {
+                inuptEleObjHeight = inuptEleObj.defaultHeight - parseFloat(inuptEleObj.inputBoxElement.style.borderWidth);
+            } else {
+                inuptEleObjHeight = inuptEleObj.defaultHeight;
+            }
+            if (((inuptEleObjHeight * zoomFactor) < inuptEleObj.inputBoxElement.scrollHeight +
+                parseFloat(inuptEleObj.inputBoxElement.style.borderWidth) / 2) &&
+                (Math.ceil(inuptEleObj.inputBoxElement.clientHeight) < inuptEleObj.inputBoxElement.scrollHeight)) {
                 inuptEleObj.inputBoxElement.style.height = inuptEleObj.inputBoxElement.readOnly ? inuptEleObj.inputBoxElement.style.height : inuptEleObj.inputBoxElement.scrollHeight + (fontSize / 2) + 'px';
                 if (parseFloat(inuptEleObj.inputBoxElement.style.borderWidth) >= 1) {
                     inuptEleObj.inputBoxElement.style.height = parseFloat(inuptEleObj.inputBoxElement.style.height) + (parseFloat(inuptEleObj.inputBoxElement.style.borderWidth) * 2) + 'px';
@@ -1404,10 +1429,13 @@ export class FreeTextAnnotation {
             this.inputBoxElement.style.fontStyle = 'normal';
         }
         this.inputBoxElement.style.textDecoration = 'none';
-        if (this.isUnderline) {
+        if (this.isUnderline && this.isStrikethrough) {
+            this.inputBoxElement.style.textDecoration = 'underline line-through';
+        }
+        else if (this.isUnderline) {
             this.inputBoxElement.style.textDecoration = 'underline';
         }
-        if (this.isStrikethrough) {
+        else if (this.isStrikethrough) {
             this.inputBoxElement.style.textDecoration = 'line-through';
         }
         if (this.pdfViewer.enableRtl) {
@@ -1431,11 +1459,11 @@ export class FreeTextAnnotation {
         }
         if (annotation && annotation.wrapper && annotation.wrapper.bounds) {
             const annotationBounds: any = annotation.wrapper.bounds;
-            if (annotationBounds.left) {
-                this.inputBoxElement.style.left = ((annotationBounds.left) * zoomFactor) + 'px';
+            if (!isNullOrUndefined(annotationBounds.left)) {
+                this.inputBoxElement.style.left = (annotationBounds.left * zoomFactor) + 'px';
             }
-            if (annotationBounds.top) {
-                this.inputBoxElement.style.top = ((annotationBounds.top) * zoomFactor) + 'px';
+            if (!isNullOrUndefined(annotationBounds.top)) {
+                this.inputBoxElement.style.top = (annotationBounds.top * zoomFactor) + 'px';
             }
             this.inputBoxElement.style.height = annotationBounds.height ? (annotationBounds.height * zoomFactor) + 'px' : (this.defaultHeight * zoomFactor) + 'px';
             this.inputBoxElement.style.width = annotationBounds.width ? (annotationBounds.width * zoomFactor) + 'px' : (this.defautWidth * zoomFactor) + 'px';
@@ -1451,10 +1479,11 @@ export class FreeTextAnnotation {
             if (this.selectedAnnotation.font.isItalic === true) {
                 this.inputBoxElement.style.fontStyle = 'italic';
             }
-            if (this.selectedAnnotation.font.isUnderline === true) {
+            if (this.selectedAnnotation.font.isUnderline && this.selectedAnnotation.font.isStrikeout) {
+                this.inputBoxElement.style.textDecoration = 'underline line-through';
+            } else if (this.selectedAnnotation.font.isUnderline) {
                 this.inputBoxElement.style.textDecoration = 'underline';
-            }
-            if (this.selectedAnnotation.font.isStrikeout === true) {
+            } else if (this.selectedAnnotation.font.isStrikeout) {
                 this.inputBoxElement.style.textDecoration = 'line-through';
             }
             if (this.pdfViewer.enableRtl) {
@@ -1481,23 +1510,27 @@ export class FreeTextAnnotation {
         if (this.pdfViewer.freeTextSettings.enableAutoFit) {
             this.autoFitFreeText(currentPosition.x, currentPosition.y);
         }
-        this.inputBoxElement.style.paddingLeft = (this.freeTextPaddingLeft * zoomFactor) + 'px';
-        this.inputBoxElement.style.paddingTop = ((((parseFloat(this.inputBoxElement.style.fontSize) / Math.max(1, zoomFactor)) / this.defaultFontSize) / Math.max(1, zoomFactor))) * this.freeTextPaddingTop + 'px';
-        let lineSpace: any = 0;
-        lineSpace = ((parseFloat(this.inputBoxElement.style.fontSize) / Math.max(1, zoomFactor)) / (this.defaultFontSize / 2));
-        this.inputBoxElement.style.paddingTop = ((parseFloat(this.inputBoxElement.style.paddingTop)) - lineSpace) + 'px';
+        let computedPad: number = 0;
+        if (this.selectedAnnotation && this.selectedAnnotation.wrapper && this.selectedAnnotation.wrapper.children[0]) {
+            const strokeWidth: number = this.selectedAnnotation.wrapper.children[0].style.strokeWidth || 0;
+            computedPad = Math.ceil(strokeWidth);
+        } else if (!isNullOrUndefined(this.borderWidth)) {
+            computedPad = Math.ceil(this.borderWidth);
+        }
+        const padPx: string = (computedPad * zoomFactor) + 'px';
+        this.inputBoxElement.style.paddingTop = padPx;
+        const align: string = (this.selectedAnnotation && this.selectedAnnotation.textAlign)
+            ? this.selectedAnnotation.textAlign.toLowerCase()
+            : this.textAlign ? this.textAlign.toLowerCase() : 'left';
+        this.inputBoxElement.style.paddingLeft = (align === 'left' || align === 'justify') ? padPx : (computedPad * zoomFactor) + 'px';
+        this.inputBoxElement.style.paddingRight = (align === 'right') ? padPx : (computedPad * zoomFactor) + 'px';
         if (this.selectedAnnotation && this.selectedAnnotation.wrapper.children[0].style.strokeWidth) {
             if (!this.isNewFreeTextAnnot) {
-                this.inputBoxElement.style.borderWidth = this.selectedAnnotation.wrapper.children[0].style.strokeWidth / 2 + 'px';
-            }
-            if (!isNullOrUndefined(this.pdfViewer.freeTextSettings.borderWidth) && this.pdfViewer.freeTextSettings.borderWidth !== 0) {
-                this.initialStrokeWidth = this.pdfViewer.freeTextSettings.borderWidth;
-            }
-            if (!isNullOrUndefined(this.initialStrokeWidth) && !isNullOrUndefined(annotation) && !annotation.isAddAnnotationProgrammatically
-                && this.initialStrokeWidth !== this.selectedAnnotation.wrapper.children[0].style.strokeWidth) {
-                const strokeDifference: number = this.selectedAnnotation.wrapper.children[0].style.strokeWidth - this.initialStrokeWidth;
-                this.inputBoxElement.style.height = parseFloat(this.inputBoxElement.style.height) + strokeDifference + 'px';
-                this.initialStrokeWidth = this.selectedAnnotation.wrapper.children[0].style.strokeWidth;
+                if (zoomFactor >= 1) {
+                    this.inputBoxElement.style.borderWidth = this.selectedAnnotation.wrapper.children[0].style.strokeWidth * (96 / 72) + 'px';
+                } else {
+                    this.inputBoxElement.style.borderWidth = this.selectedAnnotation.wrapper.children[0].style.strokeWidth + 'px';
+                }
             }
         }
         pageDiv.appendChild(this.inputBoxElement);
@@ -1508,7 +1541,7 @@ export class FreeTextAnnotation {
          < this.inputBoxElement.scrollHeight && parseInt(this.inputBoxElement.style.height, 10) < this.inputBoxElement.scrollHeight) {
             this.inputBoxElement.style.height = this.inputBoxElement.scrollHeight + 'px';
             if (annotation && annotation.wrapper && annotation.wrapper.children[0]) {
-                this.inputBoxElement.style.height = parseFloat(this.inputBoxElement.style.height) + annotation.wrapper.children[0].style.strokeWidth + 'px';
+                this.inputBoxElement.style.height = parseFloat(this.inputBoxElement.style.height) + (annotation.wrapper.children[0].style.strokeWidth * 3) + 'px';
             }
         }
         if (annotation && annotation.wrapper && annotation.wrapper.bounds) {
@@ -1555,7 +1588,7 @@ export class FreeTextAnnotation {
     private applyFreetextStyles(zoomFactor: number, isReadonly?: boolean): void {
         this.inputBoxElement.style.height = (this.defaultHeight * zoomFactor) + 'px';
         this.inputBoxElement.style.width = (this.defautWidth * zoomFactor) + 'px';
-        this.inputBoxElement.style.borderWidth = (this.borderWidth * zoomFactor) + 'px';
+        this.inputBoxElement.style.borderWidth = (this.borderWidth * zoomFactor) * (96 / 72) + 'px';
         this.inputBoxElement.style.fontSize = (this.fontSize * zoomFactor) + 'px';
         this.inputBoxElement.style.fontFamily = this.fontFamily;
         this.inputBoxElement.readOnly = isNullOrUndefined(isReadonly) ? this.isReadonly : isReadonly;
@@ -1843,14 +1876,12 @@ export class FreeTextAnnotation {
     /**
      * This method used to get the padding.
      *
-     * @param {number} fontSize - This is font size
+     * @param {number} thickness - Free text annotation thickness value
      * @returns {any} - any
      */
-    private getPaddingValues(fontSize: number): any {
-        const leftPadding: number = 4; // Left padding used in the drawing.js
-        let topPadding: number = 5; // Top padding used in the drawing.js
-        const inputBoxpadding: number = 2; // we have set the input box padding for the free text.
-        topPadding = (topPadding - inputBoxpadding) * (fontSize / 16);
+    private getPaddingValues(thickness: number): any {
+        const leftPadding: number = thickness / 2;
+        const topPadding: number = thickness;
         return [leftPadding, topPadding];
     }
 
@@ -1865,7 +1896,7 @@ export class FreeTextAnnotation {
         this.inputBoxElement.style.top = (currentPosition.y * zoomFactor) + 'px';
         this.inputBoxElement.style.height = (currentPosition.height * zoomFactor) + 'px';
         this.inputBoxElement.style.width = (currentPosition.width * zoomFactor) + 'px';
-        this.inputBoxElement.style.borderWidth = (this.borderWidth * zoomFactor) + 'px';
+        this.inputBoxElement.style.borderWidth = (this.borderWidth * zoomFactor) * (96 / 72) + 'px';
         this.inputBoxElement.style.fontSize = (this.fontSize * zoomFactor) + 'px';
     }
 

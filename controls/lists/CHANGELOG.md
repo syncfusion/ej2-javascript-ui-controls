@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+## 32.2.3 (2026-02-05)
+
 ### ListView
 
 #### Feature

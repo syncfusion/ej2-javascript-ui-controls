@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 32.2.5 (2026-02-17)
+
+### Slider
+
+#### Bug Fixes
+
+- `#I806428` - Resolved the issue where the max value position was incorrectly aligned when the orientation was set to Vertical.
+
 ## 32.1.19 (2025-12-16)
 
 ### ColorPicker

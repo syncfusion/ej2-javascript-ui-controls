@@ -848,10 +848,9 @@ export class Filter implements IAction {
     private checkAlreadyColFiltered(field: string): boolean {
         const columns: PredicateModel[] = this.filterSettings.columns;
         for (const col of columns) {
-            if (col.field === field && this.parent.filterSettings.type === 'Menu' &&
-                (col.type === 'date' || col.type === 'datetime')) {
-                return (this.checkDateColumnValue(col.value, this.value) &&
-                    col.operator === this.operator && col.predicate === this.predicate);
+            if (col.field === field && col.operator === this.operator && col.predicate === this.predicate &&
+                this.parent.filterSettings.type === 'Menu' && (col.type === 'date' || col.type === 'datetime')) {
+                return this.checkDateColumnValue(col.value, this.value);
             } else if (col.field === field && col.value === this.value &&
                 col.operator === this.operator && col.predicate === this.predicate) {
                 return true;

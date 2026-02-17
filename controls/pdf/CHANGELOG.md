@@ -2,6 +2,27 @@
 
 ## [Unreleased]
 
+## 32.2.5 (2026-02-17)
+
+### PDF
+
+#### Bug Fixes
+
+- Resolved an issue where font details were incorrectly retrieved from a free text annotation.
+- Resolved an issue where the allow unison selection property of the radio button field was not retrieved properly.
+
+## 32.2.4 (2026-02-11)
+
+### PDF
+
+#### Bug Fixes
+
+- Resolved an issue causing text highlights to appear in the wrong position in a specific PDF.
+- Fixed an issue with time zone preservation during annotation import and export.
+- Resolved an issue where bookmark titles were not retrieved correctly.
+
+## 32.1.25 (2026-01-27)
+
 ### PDF
 
 #### Bug Fixes

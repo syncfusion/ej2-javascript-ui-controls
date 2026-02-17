@@ -2,6 +2,16 @@
 
 ## [Unreleased]
 
+## 32.2.5 (2026-02-17)
+
+### Spreadsheet
+
+#### Bug fixes
+
+- `#I798632` - Issue with "image position not being preserved after performing a drag and drop operation when saving and reloading the `JSON`" has been resolved.
+
+## 32.2.4 (2026-02-11)
+
 ### Spreadsheet
 
 #### Bug fixes

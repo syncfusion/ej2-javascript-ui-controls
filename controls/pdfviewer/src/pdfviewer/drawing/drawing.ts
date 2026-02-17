@@ -728,7 +728,7 @@ export class Drawing {
             const rectElement: DrawingElement = new DrawingElement();
             content = rectElement;
             canvas.children.push(content);
-            let freeTextEle: TextElement = this.textElement(obj);
+            let freeTextEle: any = this.textElement(obj);
             freeTextEle = new TextElement();
             freeTextEle.style.fontFamily = obj.fontFamily;
             freeTextEle.style.fontSize = obj.fontSize;
@@ -743,22 +743,58 @@ export class Drawing {
             freeTextEle.style.color = obj.fontColor;
             freeTextEle.style.bold = obj.font.isBold;
             freeTextEle.style.italic = obj.font.isItalic;
-            if (obj.font.isUnderline === true) {
-                freeTextEle.style.textDecoration = 'Underline';
-            } else if (obj.font.isStrikeout === true) {
-                freeTextEle.style.textDecoration = 'LineThrough';
+            if (obj.font.isUnderline !== undefined) {
+                if (obj.font.isUnderline === true) {
+                    if (obj.font.isStrikeout) {
+                        freeTextEle.style.textDecoration = 'Underline LineThrough';
+                    }
+                    else {
+                        freeTextEle.style.textDecoration = 'Underline';
+                    }
+                }
+                else {
+                    if (obj.font.isStrikeout) {
+                        if (freeTextEle.style.textDecoration === 'Underline LineThrough') {
+                            freeTextEle.style.textDecoration = 'LineThrough';
+                        }
+                        else {
+                            freeTextEle.style.textDecoration = 'None';
+                        }
+                    }
+                }
+            }
+            if (obj.font.isStrikeout !== undefined) {
+                if (obj.font.isStrikeout === true) {
+                    if (obj.font.isUnderline) {
+                        freeTextEle.style.textDecoration = 'Underline LineThrough';
+                    }
+                    else {
+                        freeTextEle.style.textDecoration = 'LineThrough';
+                    }
+                }
+                else {
+                    if (!obj.font.isUnderline) {
+                        if (freeTextEle.style.textDecoration === 'Underline LineThrough') {
+                            freeTextEle.style.textDecoration = 'Underline';
+                        }
+                        else {
+                            freeTextEle.style.textDecoration = 'None';
+                        }
+                    }
+                }
             }
             freeTextEle.rotateValue = undefined;
             freeTextEle.content = obj.dynamicText;
             freeTextEle.style.opacity = obj.opacity;
             freeTextEle.style.strokeWidth = obj.thickness;
-            freeTextEle.margin.left = 4;
-            freeTextEle.margin.right = 5;
-            freeTextEle.margin.top = 5 * (obj.fontSize / 16);
-            if (this.isPasted || this.pdfViewer.viewerBase.isImportAction || this.pdfViewer.viewerBase.isInitialLoad) {
-                const halfStroke: number = (obj.thickness || 0) / 2;
-                freeTextEle.margin.left = halfStroke >= freeTextEle.margin.left ? halfStroke : freeTextEle.margin.left;
-                freeTextEle.margin.right = halfStroke >= freeTextEle.margin.left ? halfStroke : freeTextEle.margin.right;
+            if (obj.isSignatureText) {
+                freeTextEle.margin.left = 4;
+                freeTextEle.margin.right = 5;
+                freeTextEle.margin.top = 5 * (obj.fontSize / 16);
+            } else {
+                freeTextEle.margin.left = 0;
+                freeTextEle.margin.right = 0;
+                freeTextEle.margin.top = 0;
             }
             this.isPasted = false;
             if (this.pdfViewer.freeTextSettings.enableAutoFit) {
@@ -1176,7 +1212,15 @@ export class Drawing {
                         if ((renderElement as any).children[1] instanceof TextElement) {
                             (renderElement as any).children[1].isEJ2 = true;
                         }
-                        refreshDiagramElements(diagramLayer, [renderElement], this.renderer);
+                        if (uniqueObject.shapeAnnotationType === 'FreeText' && !uniqueObject.isSignatureText) {
+                            (renderElement as any).children[0].isEJ2 = true;
+                            (renderElement as any).children[1].isEJ2 = true;
+                        }
+                        if (uniqueObject.shapeAnnotationType === 'FreeText' && !uniqueObject.isSignatureText) {
+                            refreshDiagramElements(diagramLayer, [renderElement], this.renderer, null, uniqueObject.shapeAnnotationType);
+                        } else {
+                            refreshDiagramElements(diagramLayer, [renderElement], this.renderer);
+                        }
                     }
                 }
             }
@@ -2973,32 +3017,55 @@ export class Drawing {
                     actualObject.font.isItalic = node.font.isItalic;
                 }
                 if (node.font.isUnderline !== undefined) {
-                    if (node.font.isUnderline) {
-                        actualObject.font.isStrikeout = false;
-                    }
                     if (node.font.isUnderline === true) {
-                        children[1].style.textDecoration = 'Underline';
+                        if (actualObject.font.isStrikeout) {
+                            children[1].style.textDecoration = 'Underline LineThrough';
+                        }
+                        else {
+                            children[1].style.textDecoration = 'Underline';
+                        }
                     }
                     else {
                         if (!node.font.isStrikeout) {
-                            children[1].style.textDecoration = 'None';
+                            if (children[1].style.textDecoration === 'Underline LineThrough') {
+                                children[1].style.textDecoration = 'LineThrough';
+                            }
+                            else {
+                                children[1].style.textDecoration = 'None';
+                            }
                         }
                     }
                     actualObject.font.isUnderline = node.font.isUnderline;
                 }
                 if (node.font.isStrikeout !== undefined) {
-                    if (node.font.isStrikeout) {
-                        actualObject.font.isUnderline = false;
-                    }
                     if (node.font.isStrikeout === true) {
-                        children[1].style.textDecoration = 'LineThrough';
+                        if (actualObject.font.isUnderline) {
+                            children[1].style.textDecoration = 'Underline LineThrough';
+                        }
+                        else {
+                            children[1].style.textDecoration = 'LineThrough';
+                        }
                     }
                     else {
                         if (!node.font.isUnderline) {
-                            children[1].style.textDecoration = 'None';
+                            if (children[1].style.textDecoration === 'Underline LineThrough') {
+                                children[1].style.textDecoration = 'Underline';
+                            }
+                            else {
+                                children[1].style.textDecoration = 'None';
+                            }
                         }
                     }
                     actualObject.font.isStrikeout = node.font.isStrikeout;
+                }
+                if (!isNullOrUndefined(node.font.isStrikeout) && !isNullOrUndefined(node.font.isUnderline)) {
+                    if (node.font.isStrikeout && node.font.isUnderline) {
+                        children[1].style.textDecoration = 'Underline LineThrough';
+                    } else if (node.font.isStrikeout) {
+                        children[1].style.textDecoration = 'LineThrough';
+                    } else if (node.font.isUnderline) {
+                        children[1].style.textDecoration = 'Underline';
+                    }
                 }
             }
             update = true;
@@ -4020,6 +4087,27 @@ export class Drawing {
                                     this.pdfViewer.annotation.addAction(this.pdfViewer.viewerBase.getActivePage(true), null, addedAnnot as PdfFormFieldBase, 'Addition', '', addedAnnot as PdfFormFieldBase, addedAnnot as PdfFormFieldBase);
                                 }
                                 if ((newNode.shapeAnnotationType === 'FreeText' || newNode.enableShapeLabel) && addedAnnot) {
+                                    if (newNode.textAlign !== null) {
+                                        if (newNode.textAlign === 'Justify') {
+                                            addedAnnot.wrapper.children[1].horizontalAlignment = 'Left';
+                                            addedAnnot.wrapper.children[1].setOffsetWithRespectToBounds(0, 0, null);
+                                        }
+                                        else if (newNode.textAlign === 'Right') {
+                                            addedAnnot.wrapper.children[1].horizontalAlignment = 'Right';
+                                            addedAnnot.wrapper.children[1].setOffsetWithRespectToBounds(1, 0, null);
+                                        }
+                                        else if (newNode.textAlign === 'Left') {
+                                            addedAnnot.wrapper.children[1].horizontalAlignment = 'Left';
+                                            addedAnnot.wrapper.children[1].setOffsetWithRespectToBounds(0, 0, null);
+                                        }
+                                        else if (newNode.textAlign === 'Center') {
+                                            addedAnnot.wrapper.children[1].horizontalAlignment = 'Center';
+                                            addedAnnot.wrapper.children[1].setOffsetWithRespectToBounds(0.51, 0, null);
+                                        }
+                                    }
+                                    else {
+                                        addedAnnot.wrapper.children[1].horizontalAlignment = 'Auto';
+                                    }
                                     this.nodePropertyChange(addedAnnot, {});
                                 }
                                 if (addedAnnot.formFieldAnnotationType && addedAnnot.pageIndex === index) {

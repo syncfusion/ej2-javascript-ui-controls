@@ -463,8 +463,7 @@ describe('Auto Format for BlockElement', () => {
     });
     it('Should create headings with br when space is pressed', (done: Function) => {
         rteObj.focusIn();
-        rteObj.value = '<p># </p>';
-        rteObj.dataBind();
+        rteObj.inputElement.innerHTML = '<p># </p>';
         let content: HTMLElement = rteObj.inputElement.querySelector('p').firstChild as HTMLElement;
         setCursorPoint(content, 2);
         const spaceDownEvent: KeyboardEvent = new KeyboardEvent('keydown', SPACE_EVENT_INIT);

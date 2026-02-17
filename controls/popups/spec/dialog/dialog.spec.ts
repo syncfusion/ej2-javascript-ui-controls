@@ -5310,4 +5310,77 @@ describe('EJ2-Tab Navigation with Hidden/Disabled Footer Buttons in Modal Dialog
             done();
         }, 200);
     });
+    describe('Replication: nested fullscreen modals keep body locked', () => {
+        it('should keep body/target locked until last modal closes', (done: Function) => {
+            // setup DOM similar to sample
+            const container = createElement('div', { className: 'control-section-x' });
+            const openBtn = createElement('button', { id: 'openBtn', innerHTML: 'Open' });
+            const dlgDiv = createElement('div', { id: 'dialog' });
+            const dlgDiv1 = createElement('div', { id: 'dialog1' });
+            container.appendChild(openBtn);
+            container.appendChild(dlgDiv);
+            container.appendChild(dlgDiv1);
+            document.body.appendChild(container);
+
+            const dialogObj = new Dialog({
+                header: 'First Dialog header',
+                content: 'First dialog',
+                target: '.control-section-x',
+                visible: false,
+                animationSettings: { effect: 'None', duration: 0, delay: 0 }
+            });
+            dialogObj.appendTo('#dialog');
+
+            const dialogObj1 = new Dialog({
+                header: 'Second dialog header',
+                content: 'Second dialog',
+                target: '.control-section-x',
+                visible: false,
+                animationSettings: { effect: 'None', duration: 0, delay: 0 }
+            });
+            dialogObj1.appendTo('#dialog1');
+
+            // open first (replicates Open -> show(true))
+            dialogObj.show(true);
+
+            setTimeout(() => {
+            // open second (replicates Next -> show(true))
+            dialogObj1.show(true);
+
+            setTimeout(() => {
+                // close second
+                dialogObj1.hide();
+
+                setTimeout(() => {
+                // After closing second, first is still open -> body/target should remain locked
+                const bodyLocked = document.body.classList.contains('e-scroll-disabled') ||
+                                    container.classList.contains('e-scroll-disabled');
+                expect(bodyLocked).toBe(true);
+
+                const attrAfterSecondClose = document.body.getAttribute('data-e-dlg-open-count');
+                if (attrAfterSecondClose !== null) {
+                    expect(parseInt(attrAfterSecondClose, 10)).toBe(1);
+                } else {
+                    expect(document.querySelectorAll('.e-dlg-modal').length).toBeGreaterThanOrEqual(1);
+                }
+
+                // now close first
+                dialogObj.hide();
+
+                setTimeout(() => {
+                    const unlocked = !document.body.classList.contains('e-scroll-disabled') &&
+                                    !container.classList.contains('e-scroll-disabled');
+                    expect(unlocked).toBe(true);
+
+                    // cleanup
+                    destroyDialog(dialogObj);
+                    destroyDialog(dialogObj1);
+                    detach(container);
+                    done();
+                }, 0);
+                }, 0);
+            }, 0);
+            }, 0);
+        });
+    });
 });

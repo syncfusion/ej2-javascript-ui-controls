@@ -1908,9 +1908,9 @@ export class AnnotationRenderer {
         const rotateAngle: string = 'RotateAngle' + Math.abs(freeTextAnnotation.rotateAngle);
         annotation.rotationAngle = this.getRotateAngle(rotateAngle);
         const lineBorder: PdfAnnotationBorder = new PdfAnnotationBorder();
-        lineBorder.width = !isNullOrUndefined(freeTextAnnotation.thickness) ? freeTextAnnotation.thickness : 1;
+        const pxThickness: any = !isNullOrUndefined(freeTextAnnotation.thickness) ? freeTextAnnotation.thickness : 1;
+        lineBorder.width = pxThickness * (72 / 96);
         annotation.border = lineBorder;
-        annotation.border.width = lineBorder.width;
         if (Object.prototype.hasOwnProperty.call(freeTextAnnotation, 'padding') && !isNullOrUndefined(freeTextAnnotation.padding)){
             // let padding: PdfPaddings = new PdfPaddings(); // PdfPaddings not exist in ej2-pdf
             // annotation.setPaddings(padding);  // setPaddings not exist

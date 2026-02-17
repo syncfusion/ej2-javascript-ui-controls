@@ -107,6 +107,38 @@ export class PdfGantt extends PdfTreeGrid {
                 width = (Math.floor(pageWidth / convertedWidth) * convertedWidth);
             }
             range[0] = point;
+            // Calculate time offset if project starts with a specific time (not midnight)
+            let timeOffsetWidth: number = 0;
+            if (point === 0 && this.parent.cloneProjectStartDate) {
+                const startDate: Date = this.parent.cloneProjectStartDate;
+                const hours: number = startDate.getHours();
+                const minutes: number = startDate.getMinutes();
+                const seconds: number = startDate.getSeconds();
+                // Calculate time offset ratio based on the schedule type
+                if (hours !== 0 || minutes !== 0 || seconds !== 0) {
+                    let scheduleType: TimelineViewMode = timelineSettings.customTimelineSettings.bottomTier.unit;
+                    if (scheduleType === 'None') {
+                        scheduleType = timelineSettings.customTimelineSettings.topTier.unit;
+                    }
+                    let timeOffsetRatio: number = 0;
+                    // Calculate the fractional offset based on timeline unit
+                    if (scheduleType === 'Minutes') {
+                        timeOffsetRatio = seconds / 60;
+                    } else if (scheduleType === 'Hour') {
+                        const totalMinutesInHour: number = 60;
+                        timeOffsetRatio = minutes / totalMinutesInHour;
+                    } else if (scheduleType === 'Day' || scheduleType === 'Week') {
+                        const totalSecondsInDay: number = 24 * 60 * 60;
+                        const currentSeconds: number = (hours * 60 * 60) + (minutes * 60) + seconds;
+                        timeOffsetRatio = currentSeconds / totalSecondsInDay;
+                    }
+                    // Calculate the width to subtract for the partial cell at the start
+                    if (timeOffsetRatio > 0) {
+                        timeOffsetWidth = convertedWidth * timeOffsetRatio;
+                        width = width - timeOffsetWidth;
+                    }
+                }
+            }
             if (headerWidth - point <= width) {
                 range[1] = headerWidth;
                 detail.totalWidth = pointToPixel(headerWidth - point);
@@ -122,8 +154,10 @@ export class PdfGantt extends PdfTreeGrid {
                 this.parent.cloneProjectStartDate.setHours(8);
             }
             const timelineStartDate: Date = this.parent.dataOperation.getDateFromFormat(this.parent.timelineModule.timelineStartDate);
-            const count: number = isNullOrUndefined(timelineSettings.customTimelineSettings.bottomTier.count) ?
-                timelineSettings.customTimelineSettings.topTier.count : timelineSettings.customTimelineSettings.bottomTier.count;
+            let count: number = timelineSettings.customTimelineSettings.bottomTier.count;
+            if (isNullOrUndefined(count)) {
+                count = timelineSettings.customTimelineSettings.topTier.count;
+            }
             const scheduleType: TimelineViewMode = timelineSettings.customTimelineSettings.bottomTier.unit === 'None' ?
                 timelineSettings.customTimelineSettings.topTier.unit : timelineSettings.customTimelineSettings.bottomTier.unit;
             switch (scheduleType) {
@@ -347,7 +381,7 @@ export class PdfGantt extends PdfTreeGrid {
                     pageData = {};
                     pageData.height = cumulativeHeight;
                     pageData.pageStartX = pageStartX;
-                    pageData.startPoint = { ...pagePoint };
+                    pageData.startPoint = Object.assign({}, pagePoint);
                     if (this.parent.pdfExportModule.gantt.taskbar.isAutoFit()) {
                         pageData.width = (detail.totalWidth);
                     }
@@ -382,7 +416,7 @@ export class PdfGantt extends PdfTreeGrid {
             pageData = {};
             pageData.height = cumulativeHeight;
             pageData.pageStartX = pageStartX;
-            pageData.startPoint = { ...pagePoint };
+            pageData.startPoint = Object.assign({}, pagePoint);
             if (this.parent.pdfExportModule.gantt.taskbar.isAutoFit()) {
                 pageData.width = (detail.totalWidth);
             }

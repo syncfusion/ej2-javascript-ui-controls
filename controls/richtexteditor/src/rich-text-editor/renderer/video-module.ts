@@ -457,12 +457,10 @@ export class Video {
     private videoClick(e: MouseEvent): void {
         if (Browser.isDevice) {
             if (((e.target as HTMLElement).tagName === 'VIDEO' || this.isEmbedVidElem((e.target as HTMLElement)))) {
-                this.contentModule.getEditPanel().setAttribute('contenteditable', 'false');
                 (e.target as HTMLElement).focus();
                 this.isVideoClicked = true;
             } else {
                 if (!this.parent.readonly && !this.parent.imageModule.isImageClicked && !this.parent.audioModule.isAudioClicked) {
-                    this.contentModule.getEditPanel().setAttribute('contenteditable', 'true');
                     this.isVideoClicked = false;
                 }
             }

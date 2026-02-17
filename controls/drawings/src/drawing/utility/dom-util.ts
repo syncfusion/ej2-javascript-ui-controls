@@ -563,14 +563,18 @@ export function measureText(
     let childNodes: SubTextElement[];
     let wrapBounds: TextBounds;
     let options: TextAttributes = getTextOptions(text, maxWidth) as TextAttributes;
-    if (text.isEJ2 === true && text.isFreeText === true) {
-        options.width -= options.strokeWidth;
-        options.height -= options.strokeWidth;
-        maxHeight -= options.strokeWidth;
+    if (text.isEJ2 === true && text.isFreeText === true) {        // EJ2 Free Text: use strokeWidth only, double the standard 1.5x per-side padding
+        let stroke: number = Math.ceil(options.strokeWidth || 0);
+        let totalPad: number = stroke * 3 * 1.8;
+        options.width = Math.max(0, options.width - totalPad + stroke);
+        options.height = Math.max(0, options.height - totalPad);
+        if (maxHeight != null) {
+            maxHeight = Math.max(0, maxHeight - totalPad + (stroke / 1.5));
+        }
         text.childNodes = childNodes = wrapSvgTextEJ2(options, textValue, maxHeight);
     } else {
-        text.childNodes = childNodes = wrapSvgText(options, textValue, maxHeight);
-    }
+         text.childNodes = childNodes = wrapSvgText(options, textValue, maxHeight);
+     }
     text.wrapBounds = wrapBounds = wrapSvgTextAlign(options, childNodes, text.isEJ2);
     bounds.width = wrapBounds.width;
     if (text.wrapBounds.width >= maxWidth && options.textOverflow !== 'Wrap') {

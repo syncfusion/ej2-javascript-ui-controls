@@ -1,12 +1,14 @@
-import { PdfAnnotationBorder, PdfPolyLineAnnotation, PdfPopupAnnotation, PdfRubberStampAnnotation } from "../src/pdf/core/annotations/annotation";
+import { PdfAnnotationBorder, PdfPolyLineAnnotation, PdfPopupAnnotation, PdfRubberStampAnnotation, PdfTextMarkupAnnotation, PdfSquareAnnotation, PdfFreeTextAnnotation, PdfRadioButtonListItem } from "../src/pdf/core/annotations/annotation";
 import { _ContentParser, _PdfRecord } from "../src/pdf/core/content-parser";
-import { DataFormat, PdfRubberStampAnnotationIcon } from "../src/pdf/core/enumerator";
+import { DataFormat, PdfRubberStampAnnotationIcon, PdfTextMarkupAnnotationType } from "../src/pdf/core/enumerator";
+import { PdfFontFamily, PdfFontStyle, PdfStandardFont } from "../src/pdf/core/fonts/pdf-standard-font";
+import { PdfRadioButtonListField } from "../src/pdf/core/form/field";
 import { PdfAnnotationExportSettings, PdfDocument } from "../src/pdf/core/pdf-document";
 import { PdfPage } from "../src/pdf/core/pdf-page";
 import { _PdfDictionary, _PdfName } from "../src/pdf/core/pdf-primitives";
-import { _bytesToString } from "../src/pdf/core/utils";
+import { _bytesToString, _decodeText, _decodeUtf16Bytes, _trimTailIfMatches } from "../src/pdf/core/utils";
 import { crossReferenceTable } from "./inputs.spec";
-import { createNumberFormat, setMeasureDictionary } from "./test-utility.spec";
+import { _makeLocalDate, createNumberFormat, setMeasureDictionary } from "./test-utility.spec";
 describe('Viewer Reported Issues', () => {
     it('1003272 XFDF AllowedInteractions Export Issue', () => {
         let document: PdfDocument = new PdfDocument();
@@ -1421,5 +1423,358 @@ describe('Viewer Reported Issues', () => {
         expect(result[33]._operator).toEqual('Q');
         expect(result[33]._operands.length).toBe(0);
         document.destroy();
+    });
+	it('1006029 - markup highlight coverage', () => {
+        let document: PdfDocument = new PdfDocument();
+        let page = document.addPage();
+        let page1 = document.addPage();
+        let page2 = document.addPage();
+        let page3 = document.addPage();
+        let page4 = document.addPage();
+        let annot1 = new PdfTextMarkupAnnotation('Markup', { x: 78.60, y: 194.15, width: 190.01, height: 53.50 });
+        expect(annot1._getCropOrMediaBox()).toEqual([0, 0, 0, 0]);
+        page4.annotations.add(annot1);
+        page._pageDictionary.update('CropBox', [36, 36, 631.276, 877.89]);
+        page1._pageDictionary.update('MediaBox', [36, 36, 631.276, -877.89]);
+        page2._pageDictionary.update('CropBox', [36, 36, 631.276, 877.89]);
+        page2._pageDictionary.update('MediaBox', [36, 36, 631.276, -877.89]);
+        page.annotations.add(new PdfTextMarkupAnnotation('Markup', { x: 78.60, y: 194.15, width: 190.01, height: 53.50 }, {textMarkupType: PdfTextMarkupAnnotationType.highlight}));
+        page1.annotations.add(new PdfTextMarkupAnnotation('Markup 1', { x: 78.60, y: 194.15, width: 190.01, height: 53.50 }, {textMarkupType: PdfTextMarkupAnnotationType.highlight}));
+        page2.annotations.add(new PdfTextMarkupAnnotation('Markup 2', { x: 78.60, y: 194.15, width: 190.01, height: 53.50 }, {textMarkupType: PdfTextMarkupAnnotationType.highlight}));
+        page3.annotations.add(new PdfTextMarkupAnnotation('Markup 3', { x: 78.60, y: 194.15, width: 190.01, height: 53.50 }, {textMarkupType: PdfTextMarkupAnnotationType.highlight}));
+        let annot = page.annotations.at(0);
+        let cropOrMediaBox = annot._getCropOrMediaBox();
+        expect(cropOrMediaBox).toEqual([36, 36, 631.276, 877.89]);
+        annot = page1.annotations.at(0);
+        cropOrMediaBox = annot._getCropOrMediaBox();
+        expect(cropOrMediaBox).toEqual([36, -877.89, 631.276, 36]);
+        annot = page2.annotations.at(0);
+        cropOrMediaBox = annot._getCropOrMediaBox();
+        expect(cropOrMediaBox).toEqual([36, 36, 631.276, 877.89]);
+        annot = page3.annotations.at(0);
+        cropOrMediaBox = annot._getCropOrMediaBox();
+        expect(cropOrMediaBox).toEqual([0, 0, 0, 0]);
+        document.destroy();
+    });
+	it('1006069 - formats Asia/Tokyo (+09:00) correctly', () => {
+        const d = _makeLocalDate({
+            year: 2024, month: 10, day: 5,
+            hours: 13, minutes: 45, seconds: 59,
+            tzOffsetMinutes: 9 * 60, // +540
+        });
+        let document: PdfDocument = new PdfDocument(crossReferenceTable);
+        let page: PdfPage = document.getPage(0) as PdfPage;
+        let annot1: PdfSquareAnnotation = new PdfSquareAnnotation({
+            x: 100,
+            y: 100,
+            width: 200,
+            height: 30,
+        });
+        annot1.color = { r: 0, g: 0, b: 0 };
+        annot1.text = 'Text';
+        annot1.modifiedDate = d;
+        annot1.setAppearance(true);
+        page.annotations.add(annot1);
+        let settings: PdfAnnotationExportSettings = new PdfAnnotationExportSettings();
+        settings.exportAppearance = true;
+        settings.dataFormat = DataFormat.xfdf;
+        let xfdfexportedData = document.exportAnnotations(settings);
+        let xfdfData = _bytesToString(xfdfexportedData);
+        expect(xfdfData.includes("D:20241005134559+09'00'")).toBeTruthy();
+        settings.dataFormat = DataFormat.json;
+        let jsonexportedData = document.exportAnnotations(settings);
+        let jsonData = _bytesToString(jsonexportedData);
+        expect(jsonData.includes("D:20241005134559+09'00'")).toBeTruthy();
+        settings.dataFormat = DataFormat.fdf;
+        let fdfexportedData = document.exportAnnotations(settings);
+        let fdfData = _bytesToString(fdfexportedData);
+        expect(fdfData.includes("D:20241005134559+09'00'")).toBeTruthy();
+        document.destroy();
+        document = new PdfDocument(crossReferenceTable);
+        document.importAnnotations(xfdfexportedData, DataFormat.xfdf);
+        page = document.getPage(0) as PdfPage;
+        annot1 = page.annotations.at(0) as PdfSquareAnnotation;
+        expect(annot1._dictionary.get('M')).toEqual("D:20241005134559+09'00'");
+        document.destroy();
+        document = new PdfDocument(crossReferenceTable);
+        document.importAnnotations(jsonexportedData, DataFormat.json);
+        page = document.getPage(0) as PdfPage;
+        annot1 = page.annotations.at(0) as PdfSquareAnnotation;
+        expect(annot1._dictionary.get('M')).toEqual("D:20241005134559+09'00'");
+        document.destroy();
+        document = new PdfDocument(crossReferenceTable);
+        document.importAnnotations(fdfexportedData, DataFormat.fdf);
+        page = document.getPage(0) as PdfPage;
+        annot1 = page.annotations.at(0) as PdfSquareAnnotation;
+        expect(annot1._dictionary.get('M')).toEqual("D:20241005134559+09'00'");
+        document.destroy();
+    });
+    it('1006069 - formats Asia/Kuala_Lumpur (+08:00) correctly', () => {
+        const d = _makeLocalDate({
+            year: 2024, month: 10, day: 5,
+            hours: 13, minutes: 45, seconds: 59,
+            tzOffsetMinutes: 8 * 60, // +480
+        });
+        let document: PdfDocument = new PdfDocument(crossReferenceTable);
+        let page: PdfPage = document.getPage(0) as PdfPage;
+        let annot1: PdfSquareAnnotation = new PdfSquareAnnotation({
+            x: 100,
+            y: 100,
+            width: 200,
+            height: 30,
+        });
+        annot1.color = { r: 0, g: 0, b: 0 };
+        annot1.text = 'Text';
+        annot1.modifiedDate = d;
+        annot1.setAppearance(true);
+        page.annotations.add(annot1);
+        let settings: PdfAnnotationExportSettings = new PdfAnnotationExportSettings();
+        settings.exportAppearance = true;
+        settings.dataFormat = DataFormat.xfdf;
+        let xfdfexportedData = document.exportAnnotations(settings);
+        let xfdfData = _bytesToString(xfdfexportedData);
+        expect(xfdfData.includes("D:20241005134559+08'00'")).toBeTruthy();
+        settings.dataFormat = DataFormat.json;
+        let jsonexportedData = document.exportAnnotations(settings);
+        let jsonData = _bytesToString(jsonexportedData);
+        expect(jsonData.includes("D:20241005134559+08'00'")).toBeTruthy();
+        settings.dataFormat = DataFormat.fdf;
+        let fdfexportedData = document.exportAnnotations(settings);
+        let fdfData = _bytesToString(fdfexportedData);
+        expect(fdfData.includes("D:20241005134559+08'00'")).toBeTruthy();
+        document.destroy();
+        document = new PdfDocument(crossReferenceTable);
+        document.importAnnotations(xfdfexportedData, DataFormat.xfdf);
+        page = document.getPage(0) as PdfPage;
+        annot1 = page.annotations.at(0) as PdfSquareAnnotation;
+        expect(annot1._dictionary.get('M')).toEqual("D:20241005134559+08'00'");
+        document.destroy();
+        document = new PdfDocument(crossReferenceTable);
+        document.importAnnotations(jsonexportedData, DataFormat.json);
+        page = document.getPage(0) as PdfPage;
+        annot1 = page.annotations.at(0) as PdfSquareAnnotation;
+        expect(annot1._dictionary.get('M')).toEqual("D:20241005134559+08'00'");
+        document.destroy();
+        document = new PdfDocument(crossReferenceTable);
+        document.importAnnotations(fdfexportedData, DataFormat.fdf);
+        page = document.getPage(0) as PdfPage;
+        annot1 = page.annotations.at(0) as PdfSquareAnnotation;
+        expect(annot1._dictionary.get('M')).toEqual("D:20241005134559+08'00'");
+        document.destroy();
+    });
+	it('1006069 - _stringToDate and all timezones coverage', () => {
+        const annot = new PdfSquareAnnotation({ x: 10, y: 10, width: 10, height: 10 });
+        const _std = function (v: any) {
+            return annot._stringToDate(v);
+        };
+        function expectUTC(d: any, y: any, m1: any, day: any, h: any, min: any, s: any) {
+            if (typeof h === 'undefined') h = 0;
+            if (typeof min === 'undefined') min = 0;
+            if (typeof s === 'undefined') s = 0;
+            expect(d.getUTCFullYear()).toBe(y);
+            expect(d.getUTCMonth()).toBe(m1 - 1);
+            expect(d.getUTCDate()).toBe(day);
+            expect(d.getUTCHours()).toBe(h);
+            expect(d.getUTCMinutes()).toBe(min);
+            expect(d.getUTCSeconds()).toBe(s);
+        }
+        function expectLocal(d: any, y: any, m1: any, day: any, h: any, min: any, s: any) {
+            if (typeof h === 'undefined') h = 0;
+            if (typeof min === 'undefined') min = 0;
+            if (typeof s === 'undefined') s = 0;
+            expect(d.getFullYear()).toBe(y);
+            expect(d.getMonth()).toBe(m1 - 1);
+            expect(d.getDate()).toBe(day);
+            expect(d.getHours()).toBe(h);
+            expect(d.getMinutes()).toBe(min);
+            expect(d.getSeconds()).toBe(s);
+        }
+        var d = _std(undefined);
+        expect(isNaN(d.getTime())).toBe(true);
+        var src = new Date('2024-10-05T12:34:56Z');
+        d = _std(src);
+        expect(d.getTime()).toBe(src.getTime());
+        d = _std('10/05/2024 13:45:59');
+        expectLocal(d, 2024, 10, 5, 13, 45, 59);
+        d = _std('10/05/2024');
+        expectLocal(d, 2024, 10, 5, 0, 0, 0);
+        d = _std("D:20241005134559+09:00");
+        expectUTC(d, 2024, 10, 5, 4, 45, 59);
+        d = _std("D:20241005134559+09'00'");
+        expectUTC(d, 2024, 10, 5, 4, 45, 59);
+        d = _std('2024');
+        expectLocal(d, 2024, 1, 1, 0, 0, 0);
+        d = _std('202410');
+        expectLocal(d, 2024, 10, 1, 0, 0, 0);
+        d = _std('20241005');
+        expectLocal(d, 2024, 10, 5, 0, 0, 0);
+        d = _std('2024100513');
+        expectLocal(d, 2024, 10, 5, 13, 0, 0);
+        d = _std('202410051345');
+        expectLocal(d, 2024, 10, 5, 13, 45, 0);
+        d = _std('20241005134559');
+        expectLocal(d, 2024, 10, 5, 13, 45, 59);
+        d = _std('20241005000000Z');
+        expectUTC(d, 2024, 10, 5, 0, 0, 0);
+        d = _std('20241005000000z');
+        expectUTC(d, 2024, 10, 5, 0, 0, 0);
+        d = _std('20241005134559+09:00');
+        expectUTC(d, 2024, 10, 5, 4, 45, 59);
+        d = _std('20240102120000+0530');
+        expectUTC(d, 2024, 1, 2, 6, 30, 0);
+        d = _std('20240102120000+05');
+        expectUTC(d, 2024, 1, 2, 7, 0, 0);
+        d = _std('20240102120000-07');
+        expectUTC(d, 2024, 1, 2, 19, 0, 0);
+        d = _std('20240102120000-0230');
+        expectUTC(d, 2024, 1, 2, 14, 30, 0);
+        d = _std('20241005134559ABC');
+        expectLocal(d, 2024, 10, 5, 13, 45, 59);
+    });
+    it('1005813 - Text Decode coverage', () => {
+        expect(_trimTailIfMatches('', 'x')).toBe('');
+        expect(_trimTailIfMatches('abc', '')).toBe('abc');
+        expect(_trimTailIfMatches('a', 'abcd')).toBe('a');
+        expect(_trimTailIfMatches('abcdef', 'xyz')).toBe('abcdef');
+        expect(_trimTailIfMatches('abxd', 'acd')).toBe('abxd');
+        expect(_trimTailIfMatches('abcdef', 'def')).toBe('abc');
+        expect(_decodeUtf16Bytes(new Uint8Array([0x00, 0x41]), true)).toBe('A');
+        expect(_decodeUtf16Bytes(new Uint8Array([0x41, 0x00]), false)).toBe('A');
+        const nonString: any = 123;
+        expect(_decodeText(nonString, false, false)).toBe(nonString);
+        expect(_decodeText('hello', true, false)).toBe('hello');
+        expect(_decodeText('hello', false, true)).toBe('hello');
+        expect(_decodeText('A', false, false)).toBe('A');
+        expect(_decodeText('hello', false, false)).toBe('hello');
+        const BOM_BE = '\u00FE\u00FF';
+        const BOM_LE = '\u00FF\u00FE';
+        const be = (bytes: number[]) => BOM_BE + String.fromCharCode(...bytes);
+        const le = (bytes: number[]) => BOM_LE + String.fromCharCode(...bytes);
+        expect(_decodeText(BOM_BE, false, false)).toBe('');
+        expect(_decodeText(BOM_LE, false, false)).toBe('');
+        expect(_decodeText(be([0x41]), false, false)).toBe('A');
+        expect(_decodeText(le([0x41]), false, false)).toBe('A');
+        expect(_decodeText(be([0x00, 0x41, 0xFF, 0xFD]), false, false)).toBe('A');
+        expect(_decodeText(le([0x41, 0x00, 0xFD, 0xFF]), false, false)).toBe('A');
+        expect(_decodeText(be([0x00, 0x41, 0x00]), false, false)).toBe('A');
+        expect(_decodeText(le([0x41, 0x00, 0x00]), false, false)).toBe('A');
+        expect(_decodeText(be([0x01, 0x42]), false, false)).toBe('ł');
+        expect(_decodeText(le([0x05, 0x01]), false, false)).toBe('ą');
+        expect(_decodeText(be([0x06, 0x45, 0x06, 0x42, 0x06, 0x28, 0x06, 0x48, 0x06, 0x44]), false, false)).toBe('مقبول');
+        expect(_decodeText(le([0x48, 0x00, 0x69, 0x00]), false, false)).toBe('Hi');
+    });
+    it('1007366 - FreeText Font Coverage', () => {
+        let document: PdfDocument = new PdfDocument();
+        let page = document.addPage();
+        let freeText: PdfFreeTextAnnotation = new PdfFreeTextAnnotation({ x: 309.75, y: 170.475, width: 113.25, height: 61.5 });
+        freeText.font = new PdfStandardFont(PdfFontFamily.courier, 12, PdfFontStyle.bold | PdfFontStyle.italic | PdfFontStyle.underline | PdfFontStyle.strikeout);
+        freeText.text = 'FreeText Annotation';
+        freeText.border.width = 1;
+        freeText.name = 'e2fb2bf3-9b41-4269-448c-4ee8bbf33d11';
+        freeText.textMarkUpColor = { r: 0, g: 0, b: 255 };
+        freeText.setAppearance(true);
+        page.annotations.add(freeText);
+        let updatedData = document.save();
+        document.destroy();
+        document = new PdfDocument(updatedData);
+        page = document.getPage(0) as PdfPage;
+        freeText = page.annotations.at(0) as PdfFreeTextAnnotation;
+        let font = freeText.font;
+        expect(freeText._dictionary.has('RC')).toBeTruthy();
+        expect(font.size).toEqual(12);
+        expect((font as PdfStandardFont).fontFamily).toEqual(PdfFontFamily.courier);
+        expect((font as PdfStandardFont).style).toEqual(PdfFontStyle.bold | PdfFontStyle.italic | PdfFontStyle.underline | PdfFontStyle.strikeout);
+        expect(freeText.textMarkUpColor).toEqual({ r: 0, g: 0, b: 255 });
+        expect(freeText._getFontFamily(0)).toEqual('Helvetica');
+        expect(freeText._getFontFamily(1)).toEqual('Courier');
+        expect(freeText._getFontFamily(2)).toEqual('TimesRoman');
+        expect(freeText._getFontFamily(3)).toEqual('Symbol');
+        expect(freeText._getFontFamily(4)).toEqual('ZapfDingbats');
+        expect(freeText._getFontFamily(5)).toEqual('Helvetica');
+        expect(freeText._parseTextDecoration('underline', PdfFontStyle.regular)).toEqual(PdfFontStyle.underline);
+        expect(freeText._parseFontStyle('normal', PdfFontStyle.regular)).toEqual(PdfFontStyle.regular);
+        expect(freeText._parseFontStyle('normal', PdfFontStyle.regular)).toEqual(PdfFontStyle.regular);
+        expect(freeText._parseFontStyle('regular', PdfFontStyle.regular)).toEqual(PdfFontStyle.regular);
+        expect(freeText._parseFontStyle('underline', PdfFontStyle.regular)).toEqual(PdfFontStyle.regular | PdfFontStyle.underline);
+        expect(freeText._parseFontStyle('underline', PdfFontStyle.regular)).toEqual(PdfFontStyle.underline);
+        expect(freeText._parseFontStyle('strikeout', PdfFontStyle.regular)).toEqual(PdfFontStyle.strikeout);
+        expect(freeText._parseFontStyle('strikeout', PdfFontStyle.bold)).toEqual(PdfFontStyle.bold | PdfFontStyle.strikeout);
+        expect(freeText._parseFontStyle('italic', PdfFontStyle.regular)).toEqual(PdfFontStyle.italic);
+        expect(freeText._parseFontStyle('italic', PdfFontStyle.underline)).toEqual(PdfFontStyle.underline | PdfFontStyle.italic);
+        expect(freeText._parseFontStyle('bold', PdfFontStyle.regular)).toEqual(PdfFontStyle.bold);
+        expect(freeText._parseFontStyle('bold', PdfFontStyle.italic)).toEqual(PdfFontStyle.bold | PdfFontStyle.italic);
+        expect(freeText._parseFontStyle('bold italic', PdfFontStyle.regular)).toEqual(PdfFontStyle.bold | PdfFontStyle.italic);
+        expect(freeText._parseFontStyle('underline bold', PdfFontStyle.regular)).toEqual(PdfFontStyle.underline | PdfFontStyle.bold);
+        expect(freeText._parseFontStyle('italic underline strikeout', PdfFontStyle.regular)).toEqual(PdfFontStyle.italic | PdfFontStyle.underline | PdfFontStyle.strikeout);
+        expect(freeText._parseFontStyle('bold italic underline strikeout', PdfFontStyle.regular)).toEqual(
+            PdfFontStyle.bold |
+            PdfFontStyle.italic |
+            PdfFontStyle.underline |
+            PdfFontStyle.strikeout
+        );
+        expect(freeText._getStyles(0)).toEqual(PdfFontStyle.regular);
+        document.destroy();
+    });
+    it('1009268 - Unison selection set to true', () => {
+        let document: PdfDocument = new PdfDocument();
+        let page = document.addPage();
+        let form = document.form;
+        document.form.fieldAutoNaming = false;
+        let field: PdfRadioButtonListField = new PdfRadioButtonListField(page, 'Age');
+        field.allowUnisonSelection = true;
+        let first: PdfRadioButtonListItem = new PdfRadioButtonListItem('10-20', {x: 0, y: 70, width: 20, height: 20}, page);
+        let second: PdfRadioButtonListItem = new PdfRadioButtonListItem('21-39', {x: 0, y: 100, width: 20,height: 20}, page);
+        field.add(first);
+        field.add(second);
+        form.add(field);
+        let field1: PdfRadioButtonListField = new PdfRadioButtonListField(page, 'Age');
+        let first1: PdfRadioButtonListItem = new PdfRadioButtonListItem('21-39', {x: 40, y: 140, width: 20,height: 20}, page);
+        let second1: PdfRadioButtonListItem = new PdfRadioButtonListItem('50-70', {x: 40, y: 170, width: 20, height: 20}, page);
+        field1.add(first1);
+        field1.add(second1);
+        form.add(field1);
+        let output = document.save();
+        document.destroy();
+        let loadedPdfDoc: PdfDocument = new PdfDocument(output);
+        let lform = loadedPdfDoc.form;
+        let lfield = lform.fieldAt(0) as PdfRadioButtonListField;
+        let allow = lfield.allowUnisonSelection;
+        expect(loadedPdfDoc.form.count).toEqual(1);
+        expect(loadedPdfDoc.form.fieldAt(0).itemsCount).toEqual(4);
+        expect(allow).toBe(true);
+        let radioField = (loadedPdfDoc.form.fieldAt(0) as PdfRadioButtonListField);
+        expect(radioField._dictionary.get('Ff')).toEqual(33587200);
+        loadedPdfDoc.destroy();
+    });
+    it('1009268 - Unison selection set to false', () => {
+        let document: PdfDocument = new PdfDocument();
+        let page = document.addPage();
+        let form = document.form;
+        document.form.fieldAutoNaming = false;
+        let field: PdfRadioButtonListField = new PdfRadioButtonListField(page, 'Age');
+        field.allowUnisonSelection = false;
+        let first: PdfRadioButtonListItem = new PdfRadioButtonListItem('10-20', {x: 0, y: 70, width: 20, height: 20}, page);
+        let second: PdfRadioButtonListItem = new PdfRadioButtonListItem('21-39', {x: 0, y: 100, width: 20,height: 20}, page);
+        field.add(first);
+        field.add(second);
+        form.add(field);
+        let field1: PdfRadioButtonListField = new PdfRadioButtonListField(page, 'Age');
+        let first1: PdfRadioButtonListItem = new PdfRadioButtonListItem('21-39', {x: 40, y: 140, width: 20,height: 20}, page);
+        let second1: PdfRadioButtonListItem = new PdfRadioButtonListItem('50-70', {x: 40, y: 170, width: 20, height: 20}, page);
+        field1.add(first1);
+        field1.add(second1);
+        form.add(field1);
+        let output = document.save();
+        document.destroy();
+        let loadedPdfDoc: PdfDocument = new PdfDocument(output);
+        let lform = loadedPdfDoc.form;
+        let lfield = lform.fieldAt(0) as PdfRadioButtonListField;
+        let allow = lfield.allowUnisonSelection;
+        expect(loadedPdfDoc.form.count).toEqual(1);
+        expect(loadedPdfDoc.form.fieldAt(0).itemsCount).toEqual(4);
+        expect(allow).toBe(false);
+        let radioField = (loadedPdfDoc.form.fieldAt(0) as PdfRadioButtonListField);
+        expect(radioField._dictionary.get('Ff')).toEqual(32768);
+        loadedPdfDoc.destroy();
     });
 });

@@ -2,7 +2,7 @@ import { _PdfCrossReference } from './../pdf-cross-reference';
 import { PdfPage, PdfDestination, _PdfDestinationHelper } from './../pdf-page';
 import { _PdfDictionary, _PdfName, _PdfReference } from './../pdf-primitives';
 import { PdfFormFieldVisibility, _PdfCheckFieldState, PdfAnnotationFlag, PdfBorderStyle, PdfHighlightMode, PdfLineCaptionType, PdfLineEndingStyle, PdfLineIntent, PdfRotationAngle, PdfTextAlignment , PdfBorderEffectStyle, PdfMeasurementUnit, _PdfGraphicsUnit, PdfCircleMeasurementType, PdfRubberStampAnnotationIcon, PdfCheckBoxStyle, PdfTextMarkupAnnotationType, PdfPopupIcon, PdfAnnotationState, PdfAnnotationStateModel, PdfAttachmentIcon, PdfAnnotationIntent, _PdfAnnotationType, PdfBlendMode, PdfDashStyle, PdfLineCap, PathPointType, _PdfColorSpace} from './../enumerator';
-import { _checkField, _removeDuplicateReference, _updateVisibility, _checkComment, _checkReview, _mapAnnotationStateModel, _mapAnnotationState, _decode, _setMatrix, _convertToColor, _findPage, _getItemValue, _areNotEqual, _calculateBounds, _parseColor, _mapHighlightMode, _reverseMapHighlightMode, _getUpdatedBounds, _mapBorderStyle, _mapLineEndingStyle, _reverseMapEndingStyle, _toRectangle, _mapBorderEffectStyle, _getStateTemplate, _mapMeasurementUnit, _mapGraphicsUnit, _stringToStyle, _styleToString, _mapMarkupAnnotationType, _reverseMarkupAnnotationType, _reverseMapAnnotationState, _reverseMapAnnotationStateModel, _mapPopupIcon, _mapRubberStampIcon, _mapAttachmentIcon, _mapAnnotationIntent, _reverseMapPdfFontStyle, _fromRectangle, _getNewGuidString, _getFontStyle, _mapFont, _checkInkPoints, _updateBounds, _isNullOrUndefined, _obtainFontDetails, _areArrayEqual, _arePointsNotEqual, _convertToPoints, _isPointArray, _convertPointsToNumberArrays, _convertNumberToPointArrays, _convertNumberArraysToPoints, _convertPointToNumberArray } from './../utils';
+import { _checkField, _removeDuplicateReference, _updateVisibility, _checkComment, _checkReview, _mapAnnotationStateModel, _mapAnnotationState, _decode, _setMatrix, _convertToColor, _findPage, _getItemValue, _areNotEqual, _calculateBounds, _parseColor, _mapHighlightMode, _reverseMapHighlightMode, _getUpdatedBounds, _mapBorderStyle, _mapLineEndingStyle, _reverseMapEndingStyle, _toRectangle, _mapBorderEffectStyle, _getStateTemplate, _mapMeasurementUnit, _mapGraphicsUnit, _stringToStyle, _styleToString, _mapMarkupAnnotationType, _reverseMarkupAnnotationType, _reverseMapAnnotationState, _reverseMapAnnotationStateModel, _mapPopupIcon, _mapRubberStampIcon, _mapAttachmentIcon, _mapAnnotationIntent, _reverseMapPdfFontStyle, _fromRectangle, _getNewGuidString, _getFontStyle, _mapFont, _checkInkPoints, _updateBounds, _isNullOrUndefined, _obtainFontDetails, _areArrayEqual, _arePointsNotEqual, _convertToPoints, _isPointArray, _convertPointsToNumberArrays, _convertNumberToPointArrays, _convertNumberArraysToPoints, _convertPointToNumberArray, _pad2 } from './../utils';
 import { PdfField, PdfTextBoxField, PdfRadioButtonListField, _PdfDefaultAppearance, PdfListBoxField, PdfCheckBoxField, PdfComboBoxField } from './../form/field';
 import { PdfTemplate } from './../graphics/pdf-template';
 import { _TextRenderingMode, PdfBrush, PdfGraphics, PdfPen, PdfGraphicsState, _PdfTransformationMatrix, _PdfUnitConvertor } from './../graphics/pdf-graphics';
@@ -2435,6 +2435,9 @@ export abstract class PdfAnnotation {
             fontSize = fontData.fontSize;
             style = fontData.style;
         }
+        if (this instanceof PdfFreeTextAnnotation && this._font && this._font.style !== style) {
+            style = this._font.style;
+        }
         return { name: fontFamily, size: fontSize, style: style };
     }
     _parseFontFromAppearance(source: _PdfDictionary, keys: string[]): { name: string; fontSize: number; style: PdfFontStyle } {
@@ -2863,67 +2866,82 @@ export abstract class PdfAnnotation {
         return (color.r / 255).toFixed(3) + ' ' + (color.g / 255).toFixed(3) + ' ' + (color.b / 255).toFixed(3) + ' rg ';
     }
     _dateToString(dateTime: Date): string {
-        let month: string = (dateTime.getMonth() + 1).toString();
-        if (month !== '10' && month !== '11' && month !== '12') {
-            month = '0' + month;
-        }
-        let date: string = (dateTime.getDate()).toString();
-        if (Number(date) < 10) {
-            date = '0' + date;
-        }
-        let hours: string = (dateTime.getHours()).toString();
-        if (Number(hours) < 10) {
-            hours = '0' + hours;
-        }
-        let minutes: string = (dateTime.getMinutes()).toString();
-        if (Number(minutes) < 10) {
-            minutes = '0' + minutes;
-        }
-        let seconds: string = (dateTime.getSeconds()).toString();
-        if (Number(seconds) < 10) {
-            seconds = '0' + seconds;
-        }
-        return 'D:' + dateTime.getFullYear().toString() + month + date + hours + minutes + seconds + '+05\'30\'';
+        const year: number = dateTime.getFullYear();
+        const month: string = _pad2(dateTime.getMonth() + 1);
+        const day: string = _pad2(dateTime.getDate());
+        const hours: string = _pad2(dateTime.getHours());
+        const mins: string = _pad2(dateTime.getMinutes());
+        const secs: string = _pad2(dateTime.getSeconds());
+        const utcOffsetMinutes: number = -dateTime.getTimezoneOffset();
+        const sign: any = utcOffsetMinutes >= 0 ? '+' : '-'; // eslint-disable-line
+        const absMin: number = Math.abs(utcOffsetMinutes);
+        const offH: string = _pad2(Math.floor(absMin / 60));
+        const offM: string = _pad2(absMin % 60);
+        return `D:${year}${month}${day}${hours}${mins}${secs}${sign}${offH}'${offM}'`;
     }
     _stringToDate(date: string): Date {
-        let dateFormat: Date = new Date();
-        if (date[0] === 'D' && date[1] === ':') {
-            const year: string = date.substring(2, 6);
-            const month: string = date.substring(6, 8);
-            const day: string = date.substring(8, 10);
-            const hour: string = date.substring(10, 12);
-            const minute: string = date.substring(12, 14);
-            const second: string = date.substring(14, 16);
-            let difference: number = 0;
-            if (date.length === 23) {
-                const timeZone: string = date.substring(16, 22);
-                if (timeZone !== '+05\'30\'') {
-                    const signature: string = timeZone[0];
-                    const timeZoneHour: string = timeZone.substring(1, 3);
-                    const timeZonMinute: string = timeZone.substring(4, 6);
-                    difference = 5.5 - (signature === '-' ? -1 : 1) * (parseInt(timeZoneHour, 10) + (parseInt(timeZonMinute, 10) / 60));
-                }
-            }
-            dateFormat = new Date(year + '-' + month + '-' + day + 'T' + hour + ':' + minute + ':' + second);
-            if (difference !== 0) {
-                dateFormat.setTime(dateFormat.getTime() + (difference * 60 * 60 * 1000));
-            }
-        } else if (date.indexOf('/') !== -1) {
-            const list: string[] = date.split('/');
-            const year: string = list[2].split(' ')[0];
-            let month: string = list[0];
-            if (month !== '10' && month !== '11' && month !== '12') {
-                month = '0' + month;
-            }
-            const day: string = list[1];
-            const hour: string = list[2].split(' ')[1].split(':')[0];
-            const minute: string = list[2].split(' ')[1].split(':')[1];
-            const second: string = list[2].split(' ')[1].split(':')[2];
-            dateFormat = new Date(year + '-' + month + '-' + day + 'T' + hour + ':' + minute + ':' + second);
-        } else {
-            dateFormat = new Date(date);
+        if (!date || typeof date !== 'string') {
+            return new Date(date as any); // eslint-disable-line
         }
-        return dateFormat;
+        if (date.indexOf('/') !== -1) {
+            const list: string[] = date.split('/');
+            const year: number = parseInt(list[2].split(' ')[0], 10);
+            const month: number = parseInt(list[0], 10) - 1;
+            const day: number = parseInt(list[1], 10);
+            const timePart: string[] = (list[2].split(' ')[1] || '00:00:00').split(':');
+            const hour: number = parseInt(timePart[0] || '0', 10);
+            const minute: number = parseInt(timePart[1] || '0', 10);
+            const second: number = parseInt(timePart[2] || '0', 10);
+            return new Date(year, month, day, hour, minute, second);
+        }
+        if (date.startsWith('D:')) {
+            date = date.substring(2);
+        }
+        const raw: string = date.replace(/'/g, '').trim();
+        const y: number = parseInt(raw.slice(0, 4), 10);
+        const haveM: boolean = raw.length >= 6;
+        const haveD: boolean = raw.length >= 8;
+        const haveH: boolean = raw.length >= 10;
+        const havem: boolean = raw.length >= 12;
+        const haves: boolean = raw.length >= 14;
+        const m: number = haveM ? parseInt(raw.slice(4, 6), 10) : 1;
+        const d: number = haveD ? parseInt(raw.slice(6, 8), 10) : 1;
+        const h: number = haveH ? parseInt(raw.slice(8, 10), 10) : 0;
+        const min: number = havem ? parseInt(raw.slice(10, 12), 10) : 0;
+        const s: number = haves ? parseInt(raw.slice(12, 14), 10) : 0;
+        let tzTail: string = raw.slice(14);
+        if (/^[+-]\d{2}:\d{2}$/.test(tzTail)) {
+            tzTail = tzTail.replace(':', '');
+        }
+        let hasTz: boolean = false;
+        let tzSign: number = 0;
+        let tzH: number = 0;
+        let tzM: number = 0;
+        if (tzTail) {
+            if (/^[Zz]$/.test(tzTail)) {
+                hasTz = true;
+                tzSign = +1;
+                tzH = 0;
+                tzM = 0;
+            } else if (/^[+-]\d{2}\d{2}$/.test(tzTail)) {
+                hasTz = true;
+                tzSign = tzTail[0] === '+' ? +1 : -1;
+                tzH = parseInt(tzTail.slice(1, 3), 10);
+                tzM = parseInt(tzTail.slice(3, 5), 10);
+            } else if (/^[+-]\d{2}$/.test(tzTail)) {
+                hasTz = true;
+                tzSign = tzTail[0] === '+' ? +1 : -1;
+                tzH = parseInt(tzTail.slice(1, 3), 10);
+                tzM = 0;
+            }
+        }
+        if (hasTz) {
+            const localUTCms: number = Date.UTC(y, m - 1, d, h, min, s);
+            const offsetMinutes: number = tzSign * (tzH * 60 + tzM);
+            return new Date(localUTCms - offsetMinutes * 60 * 1000);
+        } else {
+            return new Date(y, m - 1, d, h, min, s);
+        }
     }
     _obtainNativeRectangle(): number[] {
         const rect: number[] = [this._bounds.x, this._bounds.y, this.bounds.x + this._bounds.width, this.bounds.y + this._bounds.height];
@@ -2958,11 +2976,11 @@ export abstract class PdfAnnotation {
     }
     _getCropOrMediaBox(): number[] {
         let cropOrMediaBox: number[];
-        if (this._page) {
+        if (this._page && this._page._pageDictionary.has('CropBox')) {
             cropOrMediaBox = this._page.cropBox;
-            if (!cropOrMediaBox || cropOrMediaBox.length === 0) {
-                cropOrMediaBox = this._page.mediaBox;
-            }
+        }
+        if (!cropOrMediaBox && this._page && this._page._pageDictionary.has('MediaBox')) {
+            cropOrMediaBox = this._page.mediaBox;
         }
         if (cropOrMediaBox && cropOrMediaBox[3] < 0) {
             const y: number = cropOrMediaBox[1];
@@ -2970,7 +2988,7 @@ export abstract class PdfAnnotation {
             cropOrMediaBox[3] = y;
             cropOrMediaBox[1] = height;
         }
-        return cropOrMediaBox;
+        return cropOrMediaBox ? cropOrMediaBox : [0, 0, 0, 0];
     }
     private _getDocumentLayer(): PdfLayer {
         if (this._dictionary.has('OC')) {
@@ -12821,7 +12839,6 @@ export class PdfFreeTextAnnotation extends PdfComment {
                             color = color.substring(1);
                         }
                         this._textMarkUpColor = _convertToColor(color);
-                        return this._textMarkUpColor;
                     }
                 }
             }
@@ -13411,7 +13428,7 @@ export class PdfFreeTextAnnotation extends PdfComment {
     }
     _obtainFont(): PdfFont {
         const fontData: { name: string, size: number, style: PdfFontStyle } = this._obtainFontDetails();
-        if (!fontData.size && this._dictionary.has('RC')) {
+        if (this._parsedXMLData.length > 0 && this._dictionary.has('RC')) {
             let rcFont: PdfFont;
             if (this._parsedXMLData.length > 0 && this._parsedXMLData[0] as PdfFont) {
                 rcFont = this._parsedXMLData[0];
@@ -13420,7 +13437,7 @@ export class PdfFreeTextAnnotation extends PdfComment {
                 const font: PdfStandardFont = rcFont as  PdfStandardFont;
                 fontData.size = font.size;
                 fontData.style = font.style;
-                fontData.name  = font._fontFamily.toString();
+                fontData.name  = this._getFontFamily(font._fontFamily);
             } else if (rcFont instanceof PdfCjkStandardFont) {
                 const font: PdfCjkStandardFont = rcFont as  PdfCjkStandardFont;
                 fontData.size = font.size;
@@ -13429,6 +13446,23 @@ export class PdfFreeTextAnnotation extends PdfComment {
             }
         }
         return _mapFont(fontData.name, fontData.size, fontData.style, this);
+    }
+    _getFontFamily(value: number): string {
+        const index: number = Math.floor(value);
+        switch (index) {
+        case PdfFontFamily.helvetica:
+            return 'Helvetica';
+        case PdfFontFamily.courier:
+            return 'Courier';
+        case PdfFontFamily.timesRoman:
+            return 'TimesRoman';
+        case PdfFontFamily.symbol:
+            return 'Symbol';
+        case PdfFontFamily.zapfDingbats:
+            return 'ZapfDingbats';
+        default:
+            return 'Helvetica';
+        }
     }
     _updateStyle(font: PdfFont, color: PdfColor, alignment: PdfTextAlignment): void {
         let textMarkUpColor: number[];
@@ -13908,7 +13942,7 @@ export class PdfFreeTextAnnotation extends PdfComment {
         return markupText;
     }
     _parseMarkupLanguageData(rcContent: string): any[] { // eslint-disable-line
-        const fontStyle: PdfFontStyle = PdfFontStyle.regular;
+        let fontStyle: PdfFontStyle = PdfFontStyle.regular;
         let fontCollection: any[] = []; // eslint-disable-line
         const brush: PdfBrush = null;
         const fontName: string = '';
@@ -13936,10 +13970,12 @@ export class PdfFreeTextAnnotation extends PdfComment {
                         const stringValue: string = this._dictionary.get('DS');
                         input = stringValue.split(';') || [];
                     }
+                    fontStyle = this.font.style;
                     const fontDetails: Map<string, any> = this._getFontDetails(input, this.font.size, this.textAlignment, fontStyle, brush); // eslint-disable-line
                     const { fontName: updatedFontName, fontStyle: updatedFontStyle, brush: updatedBrush } =
                     this._updateFontProperties(fontDetails, fontName, fontStyle, brush);
                     const obtainFont: PdfFont = _mapFont(updatedFontName, this.font._size, updatedFontStyle, this);
+                    this._font = obtainFont;
                     fontCollection = this._fontCollection(fontCollection, obtainFont, nameSpaceURI, this._textAlignment, updatedBrush);
                 }
             }
@@ -13987,6 +14023,8 @@ export class PdfFreeTextAnnotation extends PdfComment {
     }
     _updateFontProperties(fontDetails: Map<string, any>, fontName: string, fontStyle: PdfFontStyle, brush: PdfBrush): // eslint-disable-line
     { fontName: string, fontStyle: PdfFontStyle, brush: PdfBrush } {
+        let styleValue: number;
+        let next: PdfFontStyle;
         fontDetails.forEach((value: any, property: string) => { // eslint-disable-line
             switch (property) {
             case 'font-family':
@@ -13998,7 +14036,9 @@ export class PdfFreeTextAnnotation extends PdfComment {
             case 'font-style':
             case 'font-weight':
             case 'text-decoration':
-                fontStyle = this._obtainFontStyle(value, property);
+                styleValue = parseFloat(value);
+                next = this._getStyles(styleValue);
+                fontStyle = this._maxStyle(fontStyle, next);
                 break;
             case 'text-align':
                 this._textAlignment = this._parseTextAlignment(value);
@@ -14013,23 +14053,13 @@ export class PdfFreeTextAnnotation extends PdfComment {
         });
         return { fontName, fontStyle, brush };
     }
-    _obtainFontStyle(value: string, property: string): PdfFontStyle {
-        const styleValue: number = parseFloat(value);
-        switch (property) {
-        case 'font-style':
-            return styleValue === 0 ? PdfFontStyle.regular :
-                styleValue === 1 ? PdfFontStyle.bold :
-                    styleValue === 2 ? PdfFontStyle.italic :
-                        styleValue === 8 ? PdfFontStyle.strikeout :
-                            styleValue === 4 ? PdfFontStyle.underline : PdfFontStyle.regular;
-        case 'font-weight':
-            return styleValue === 1 ? PdfFontStyle.bold : PdfFontStyle.regular;
-        case 'text-decoration':
-            return styleValue === 8 ? PdfFontStyle.strikeout :
-                styleValue === 4 ? PdfFontStyle.underline : PdfFontStyle.regular;
-        default:
-            return PdfFontStyle.regular;
-        }
+    _getStyles(value: number): PdfFontStyle {
+        const allowedMask: number = PdfFontStyle.bold | PdfFontStyle.italic | PdfFontStyle.underline | PdfFontStyle.strikeout;
+        const masked: number = value & allowedMask;
+        return (masked === 0 ? PdfFontStyle.regular : masked) as PdfFontStyle;
+    }
+    _maxStyle(a: PdfFontStyle, b: PdfFontStyle): PdfFontStyle {
+        return ((a as number) >= (b as number) ? a : b) as PdfFontStyle;
     }
     _parseTextAlignment(value: string): PdfTextAlignment {
         const alignmentValue: number = parseFloat(value);
@@ -14116,28 +14146,28 @@ export class PdfFreeTextAnnotation extends PdfComment {
     }
     _parseFontStyle(value: string, fontStyle: PdfFontStyle): PdfFontStyle {
         if (value.includes('normal') || value.includes('regular')) {
-            return PdfFontStyle.regular;
+            fontStyle |= PdfFontStyle.regular;
         }
         if (value.includes('underline')) {
-            return PdfFontStyle.underline;
+            fontStyle |= PdfFontStyle.underline;
         }
         if (value.includes('strikeout')) {
-            return PdfFontStyle.strikeout;
+            fontStyle |= PdfFontStyle.strikeout;
         }
         if (value.includes('italic')) {
-            return PdfFontStyle.italic;
+            fontStyle |= PdfFontStyle.italic;
         }
         if (value.includes('bold')) {
-            return PdfFontStyle.bold;
+            fontStyle |= PdfFontStyle.bold;
         }
         return fontStyle;
     }
     _parseTextDecoration(value: string, fontStyle: PdfFontStyle): PdfFontStyle {
-        if (value.includes('word')) {
-            return PdfFontStyle.underline;
+        if (value.includes('word') || value.includes('underline')) {
+            fontStyle |= PdfFontStyle.underline;
         }
         if (value.includes('line-through')) {
-            return PdfFontStyle.strikeout;
+            fontStyle |= PdfFontStyle.strikeout;
         }
         return fontStyle;
     }

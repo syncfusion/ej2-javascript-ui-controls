@@ -4717,6 +4717,28 @@ export function _updateBounds(annotation: PdfAnnotation, bounds?: number[]): num
     return rect;
 }
 /**
+ * Trim a specific trailing substring from the end of a string, if it matches exactly.
+ *
+ * @param {string} s - The input string.
+ * @param {string} tail - The exact tail to remove.
+ * @returns {string} The trimmed or original string.
+ */
+export function _trimTailIfMatches(s: string, tail: string): string {
+    if (!s || !tail) {
+        return s;
+    }
+    if (s.length < tail.length) {
+        return s;
+    }
+    const start: number = s.length - tail.length;
+    for (let i: number = 0; i < tail.length; i++) {
+        if (s.charCodeAt(start + i) !== tail.charCodeAt(i)) {
+            return s;
+        }
+    }
+    return s.substring(0, start);
+}
+/**
  * Decode text.
  *
  * @param {string} text Text to decode.
@@ -4725,21 +4747,70 @@ export function _updateBounds(annotation: PdfAnnotation, bounds?: number[]): num
  * @returns {string} Decoded text.
  */
 export function _decodeText(text: string, isColorSpace: boolean, isPassword: boolean): string {
-    if (text && typeof text === 'string' && !isColorSpace && !isPassword) {
-        if (text.startsWith('þÿ')) {
-            text = text.substring(2);
-            if (text.endsWith('ÿý')) {
-                text = text.substring(0, text.length - 2);
-            }
-            const bytes: Uint8Array = _stringToBytes(text, false, true) as Uint8Array;
-            const codeUnits: number[] = [];
-            for (let i: number = 0; i < bytes.length; i += 2) {
-                codeUnits.push((bytes[<number>i] << 8) | bytes[i + 1]);
-            }
-            text = String.fromCharCode(...codeUnits);
+    if (!text || typeof text !== 'string' || isColorSpace || isPassword) {
+        return text;
+    }
+    if (text.length < 2) {
+        return text;
+    }
+    const b0: number = text.charCodeAt(0) & 0xFF;
+    const b1: number = text.charCodeAt(1) & 0xFF;
+    const isBE: boolean = (b0 === 0xFE && b1 === 0xFF);
+    const isLE: boolean = (b0 === 0xFF && b1 === 0xFE);
+    if (!isBE && !isLE) {
+        return text;
+    }
+    let body: string = text.substring(2);
+    if (isBE) {
+        body = _trimTailIfMatches(body, '\u00FF\u00FD');
+    } else {
+        body = _trimTailIfMatches(body, '\u00FD\u00FF');
+    }
+    if (body.length > 0 && ((body.charCodeAt(body.length - 1) & 0xFF) === 0x00)) {
+        body = body.substring(0, body.length - 1);
+    }
+    const n: number = body.length;
+    if (n === 0) {
+        return '';
+    }
+    const bytes: Uint8Array = new Uint8Array(n);
+    for (let i: number = 0; i < n; i++) {
+        bytes[<number>i] = body.charCodeAt(i) & 0xFF;
+    }
+    if ((bytes.length & 1) !== 0) {
+        const fixed: Uint8Array = new Uint8Array(bytes.length + 1);
+        if (isLE) {
+            fixed.set(bytes, 0);
+            fixed[bytes.length] = 0x00;
+        } else {
+            fixed[0] = 0x00;
+            fixed.set(bytes, 1);
+        }
+        return _decodeUtf16Bytes(fixed, isBE);
+    }
+    return _decodeUtf16Bytes(bytes, isBE);
+}
+/**
+ * Decodes a UTF 16 byte array (big-endian or little-endian) into a string.
+ *
+ * @param {Uint8Array} bytes - Even-length UTF 16 byte sequence.
+ * @param {boolean} isBE - Whether the byte order is big-endian (`true` for UTF 16BE, `false` for UTF 16LE).
+ * @returns {string} The decoded string.
+ */
+export function _decodeUtf16Bytes(bytes: Uint8Array, isBE: boolean): string {
+    const len: number = bytes.length;
+    const unitsLen: number = len / 2;
+    const codeUnits: number[] = new Array(unitsLen);
+    if (isBE) {
+        for (let bi: number = 0, ui: number = 0; bi < len; bi += 2, ui++) {
+            codeUnits[<number>ui] = (bytes[<number>bi] << 8) | bytes[bi + 1];
+        }
+    } else {
+        for (let bi: number = 0, ui: number = 0; bi < len; bi += 2, ui++) {
+            codeUnits[<number>ui] = (bytes[bi + 1] << 8) | bytes[<number>bi];
         }
     }
-    return text;
+    return String.fromCharCode.apply(null, codeUnits as unknown as number[]);
 }
 /**
  * Number of bytes required to save the number.

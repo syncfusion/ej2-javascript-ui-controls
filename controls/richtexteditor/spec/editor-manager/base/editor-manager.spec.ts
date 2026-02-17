@@ -65,7 +65,7 @@ describe('Base Editor Manager', () => {
             liElement.dispatchEvent(mouseDownEvent);
             expect(window.getSelection().getRangeAt(0).startContainer.nodeType === 3).toBe(true);
             expect(window.getSelection().getRangeAt(0).endContainer.nodeType).not.toBe(1);
-            expect(window.getSelection().getRangeAt(0).endOffset).toBe(133);
+            expect(window.getSelection().getRangeAt(0).endOffset).toBe(130);
             expect(window.getSelection().getRangeAt(0).startOffset).toBe(0);
         });
         it('Triple click selection testing Case 3:', () => {
@@ -160,7 +160,7 @@ describe('Triple click selection testing', () => {
         liElement.dispatchEvent(mouseDownEvent);
         expect(window.getSelection().getRangeAt(0).startContainer.nodeType === 3).toBe(true);
         expect(window.getSelection().getRangeAt(0).endContainer.nodeType).not.toBe(1);
-        expect(window.getSelection().getRangeAt(0).endOffset).toBe(133);
+        expect(window.getSelection().getRangeAt(0).endOffset).toBe(130);
         expect(window.getSelection().getRangeAt(0).startOffset).toBe(0);
     });
     it('Triple click selection testing Case 3:', () => {

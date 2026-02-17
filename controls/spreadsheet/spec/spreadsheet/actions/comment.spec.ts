@@ -987,4 +987,28 @@ describe('Comments ->', () => {
             }, 10);
         });
     });
+
+    describe('EJ2:1006678 Threaded comment created time was incorrectly adjusted based on Web service Time zone while importing ->', () => {
+        beforeAll((done: Function) => {
+            helper.initializeSpreadsheet({ sheets: [{ ranges: [{ dataSource: defaultData }] }] }, done);
+        });
+        afterAll(() => {
+            helper.invoke('destroy');
+        });
+        it('Timestamp text should match createdTime when opening comment added via updateCell', (done: Function) => {
+            helper.getInstance().updateCell({
+                comment: { text: 'comment 3?', createdTime: '2026-02-13T14:46:53.218', isResolved: false, replies: [] }
+            }, 'A2');
+            const td: HTMLElement = helper.invoke('getCell', [1, 0]);
+            const indicator: HTMLElement = td.querySelector('.e-comment-indicator') as HTMLElement;
+            expect(indicator).not.toBeNull();
+            indicator.dispatchEvent(new MouseEvent('mouseover', { bubbles: true }));
+            setTimeout(() => {
+                const container: HTMLElement = document.querySelector('.e-comment-container') as HTMLElement;
+                expect(container).not.toBeNull();
+                expect((container.querySelector('.e-comment-timestamp').textContent)).toBe('February 13, 2026 at 2:46 PM');
+                done();
+            });
+        });
+    });
 });

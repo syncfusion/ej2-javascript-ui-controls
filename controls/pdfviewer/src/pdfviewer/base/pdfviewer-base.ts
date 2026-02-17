@@ -1472,22 +1472,11 @@ export class PdfViewerBase {
         }
         const toolbarModule: any = this.pdfViewer.toolbarModule;
         if (!isNullOrUndefined(this.viewerContainer) && !isNullOrUndefined(toolbarModule) &&
-        !isNullOrUndefined(toolbarModule.toolbarElement)) {
-            // eslint-disable-next-line
-            if (toolbarModule.toolbarElement.style.display == 'none') {
-                this.viewerContainer.style.height = this.updatePageHeight(this.pdfViewer.element.getBoundingClientRect().height, 0);
-            }// eslint-disable-next-line
-            else if (toolbarModule.toolbarElement.style.display == 'block') {
-                const toolbarContainer: HTMLElement = document.getElementById(this.pdfViewer.element.id + '_toolbarContainer');
-                if (toolbarContainer) {
-                    const toolbarHeight: number = toolbarContainer.getBoundingClientRect().height;
-                    this.viewerContainer.style.height =
-                    this.updatePageHeight(this.pdfViewer.element.getBoundingClientRect().height, toolbarHeight);
-                }
-            }
+            !isNullOrUndefined(toolbarModule.toolbarElement)) {
+            this.updateViewerContainerHeight();
             if (this.navigationPane.sideBarToolbar) {
                 this.navigationPane.sideBarToolbar.style.height =
-                this.updatePageHeight(this.pdfViewer.element.getBoundingClientRect().height, 0);
+                    this.updatePageHeight(this.pdfViewer.element.getBoundingClientRect().height, 0);
             }
         }
         if (toolbarModule) {
@@ -1503,7 +1492,7 @@ export class PdfViewerBase {
                 }
                 if (this.pdfViewer.enableAnnotationToolbar && toolbarModule.annotationToolbarModule) {
                     if (!isNullOrUndefined(toolbarModule.annotationToolbarModule) &&
-                    !isNullOrUndefined(toolbarModule.annotationToolbarModule.toolbar)) {
+                        !isNullOrUndefined(toolbarModule.annotationToolbarModule.toolbar)) {
                         toolbarModule.annotationToolbarModule.toolbar.refreshOverflow();
                     }
                 }
@@ -4185,6 +4174,45 @@ export class PdfViewerBase {
         }
         this.sessionStorageManager.clear();
     };
+    private updateViewerContainerHeight = (): void => {
+        let proxy: PdfViewerBase = null;
+        // eslint-disable-next-line
+        proxy = this;
+        const toolbarContainer: any = isBlazor() ? proxy.pdfViewer.element.querySelector('.e-pv-toolbar') : proxy.getElement('_toolbarContainer');
+        let toolbarHeight: number = 0;
+        let formDesignerToolbarHeight: number = 0;
+        let redactionToolbarHeight: number = 0;
+        if (toolbarContainer) {
+            toolbarHeight = toolbarContainer.getBoundingClientRect().height;
+        }
+        if (proxy.isAnnotationToolbarHidden() || (Browser.isDevice && !this.pdfViewer.enableDesktopMode)) {
+            if (toolbarHeight === 0) {
+                if (this.navigationPane.isNavigationToolbarVisible) {
+
+                    const navigationToolbar: any = proxy.getElement('_navigationToolbar');
+                    toolbarHeight = navigationToolbar.getBoundingClientRect().height;
+                }
+            }
+            if (!proxy.isFormDesignerToolbarHidded()) {
+                const formDesignerToolbar: any = proxy.getElement('_formdesigner_toolbar');
+                formDesignerToolbarHeight = formDesignerToolbar ? formDesignerToolbar.getBoundingClientRect().height : 0;
+            } else if (!proxy.isRedactionToolbarHidded()) {
+                const redactionToolbar: any = proxy.getElement('_redaction_toolbar');
+                redactionToolbarHeight = redactionToolbar ? redactionToolbar.getBoundingClientRect().height : 0;
+            }
+            proxy.viewerContainer.style.height =
+                proxy.updatePageHeight(proxy.pdfViewer.element.getBoundingClientRect().height, toolbarHeight +
+                    (formDesignerToolbarHeight ? formDesignerToolbarHeight : redactionToolbarHeight));
+        } else {
+            const annotationToolbarContainer: any = isBlazor() ? proxy.pdfViewer.element.querySelector('.e-pv-annotation-toolbar') : proxy.getElement('_annotation_toolbar');
+            let annotationToolbarHeight: number = 0;
+            if (annotationToolbarContainer) {
+                annotationToolbarHeight = annotationToolbarContainer.getBoundingClientRect().height;
+            }
+            proxy.viewerContainer.style.height =
+                proxy.updatePageHeight(proxy.pdfViewer.element.getBoundingClientRect().height, toolbarHeight + annotationToolbarHeight);
+        }
+    }
 
     /**
      * @private
@@ -4210,40 +4238,7 @@ export class PdfViewerBase {
             proxy.navigationPane.getViewerContainerRight() : 0));
         proxy.viewerContainer.style.width = viewerWidth + 'px';
         if (proxy.pdfViewer.toolbarModule) {
-            const toolbarContainer: any = isBlazor() ? proxy.pdfViewer.element.querySelector('.e-pv-toolbar') : proxy.getElement('_toolbarContainer');
-            let toolbarHeight: number = 0;
-            let formDesignerToolbarHeight: number = 0;
-            let redactionToolbarHeight: number = 0;
-            if (toolbarContainer) {
-                toolbarHeight = toolbarContainer.getBoundingClientRect().height;
-            }
-            if (proxy.isAnnotationToolbarHidden() || (Browser.isDevice && !this.pdfViewer.enableDesktopMode)) {
-                if (toolbarHeight === 0) {
-                    if (this.navigationPane.isNavigationToolbarVisible) {
-
-                        const navigationToolbar: any = proxy.getElement('_navigationToolbar');
-                        toolbarHeight = navigationToolbar.getBoundingClientRect().height;
-                    }
-                }
-                if (!proxy.isFormDesignerToolbarHidded()) {
-                    const formDesignerToolbar: any = proxy.getElement('_formdesigner_toolbar');
-                    formDesignerToolbarHeight = formDesignerToolbar ? formDesignerToolbar.getBoundingClientRect().height : 0;
-                } else if (!proxy.isRedactionToolbarHidded()) {
-                    const redactionToolbar: any = proxy.getElement('_redaction_toolbar');
-                    redactionToolbarHeight = redactionToolbar ? redactionToolbar.getBoundingClientRect().height : 0;
-                }
-                proxy.viewerContainer.style.height =
-                proxy.updatePageHeight(proxy.pdfViewer.element.getBoundingClientRect().height, toolbarHeight +
-                (formDesignerToolbarHeight ? formDesignerToolbarHeight : redactionToolbarHeight));
-            } else {
-                const annotationToolbarContainer: any = isBlazor() ? proxy.pdfViewer.element.querySelector('.e-pv-annotation-toolbar') : proxy.getElement('_annotation_toolbar');
-                let annotationToolbarHeight: number = 0;
-                if (annotationToolbarContainer) {
-                    annotationToolbarHeight = annotationToolbarContainer.getBoundingClientRect().height;
-                }
-                proxy.viewerContainer.style.height =
-                 proxy.updatePageHeight(proxy.pdfViewer.element.getBoundingClientRect().height, toolbarHeight + annotationToolbarHeight);
-            }
+            proxy.updateViewerContainerHeight();
         } else {
             proxy.viewerContainer.style.height = proxy.updatePageHeight(proxy.pdfViewer.element.getBoundingClientRect().height, 0);
         }
@@ -6248,6 +6243,11 @@ export class PdfViewerBase {
                         !this.getTextMarkupAnnotationMode() && !this.getTextRedactAnnotationMode()) {
                         if (event.detail === 1 && !this.viewerContainer.contains(event.target as HTMLElement) &&
                          !this.contextMenuModule.contextMenuElement.contains(event.target as HTMLElement)) {
+                            //1002696 - Clear collapsed selection when annotation toolbar is clicked to prevent empty-span injection
+                            const isToolbarClick: boolean = !!(event.target as HTMLElement).closest('.e-pv-annotation-freeTextEdit') || !!(event.target as HTMLElement).closest('.e-pv-highlight') || !!(event.target as HTMLElement).closest('.e-pv-underline') || !!(event.target as HTMLElement).closest('.e-pv-strikethrough') || !!(event.target as HTMLElement).closest('.e-pv-squiggly');
+                            if (isToolbarClick && window.getSelection().isCollapsed) {
+                                window.getSelection().removeAllRanges();
+                            }
                             if (window.getSelection().anchorNode !== null && !this.isSearchBoxActive(event.target)) {
                                 this.pdfViewer.textSelectionModule.textSelectionOnMouseup(event);
                             }

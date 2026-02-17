@@ -1,5 +1,7 @@
 @use 'ej2-base/styles/definition/material3' as *;
 @forward 'ej2-base/styles/definition/material3';
+$datepicker-modal-header-bg-color: $flyout-bg-color !default;
+$datepicker-modal-header-text-color: rgba($content-text-color) !default;
 $datepicker-icon-color: rgba($icon-color) !default;
 $datepicker-active-icon-color: rgba($content-text-color-alt1) !default;
 $datepicker-popup-box-shadow: $shadow-lg !default;
@@ -29,8 +31,8 @@ $datepicker-icon-border-radius: $radius-full !default;
 $datepicker-popup-border-radius: $radius-8 !default;
 $datepicker-box-sizing: border-box !default;
 $datepicker-othermonth-row: none !default;
-$datepicker-modal-header-bg: $flyout-bg-color !default;
-$datepicker-modal-header-color: rgba($content-text-color) !default;
+$datepicker-modal-header-bg: $datepicker-modal-header-bg-color !default;
+$datepicker-modal-header-color: $datepicker-modal-header-text-color !default;
 $datepicker-modal-header-display: block !default;
 $datepicker-calendar-tbody-landscape-height: 130px !default;
 $datepicker-clearicon: '\e7e7' !default;

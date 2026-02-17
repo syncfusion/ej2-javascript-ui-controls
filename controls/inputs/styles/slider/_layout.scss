@@ -1194,12 +1194,7 @@
           }
 
           &.e-first-tick {
-            @if ($skin-name == 'material' or $skin-name == 'material-dark') {
-              background-position-y: top;
-            }
-            @else {
-              background-position-y: center;
-            }
+            background-position-y: top;
           }
 
           &.e-last-tick {

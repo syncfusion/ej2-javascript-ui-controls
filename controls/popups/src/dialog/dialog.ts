@@ -181,6 +181,7 @@ const DLG_ESCAPE_CLOSED: string = 'escape';
 const DLG_OVERLAYCLICK_CLOSED: string = 'overlayClick';
 const DLG_DRAG : string = 'e-draggable';
 const FOCUSABLE_ELEMENTS_SELECTOR: string = 'input,select,textarea,button:enabled,a,[contenteditable="true"],[tabindex]';
+const MODAL_COUNT_ATTR: string = 'data-e-dlg-open-count';
 
 /**
  * Provides information about a BeforeOpen event.
@@ -854,6 +855,24 @@ export class Dialog extends Component<HTMLElement> implements INotifyPropertyCha
             this.isProtectedOnChange = true;
             this.target = document.body;
             this.isProtectedOnChange = prevOnChange;
+        }
+    }
+    private incrementModalCount(element?: HTMLElement): void {
+        const targetElement: HTMLElement = element || document.body;
+        let count: number = parseInt(targetElement.getAttribute(MODAL_COUNT_ATTR) || '0', 10);
+        count = isNaN(count) ? 1 : (count + 1);
+        targetElement.setAttribute(MODAL_COUNT_ATTR, count.toString());
+        if (count === 1) { addClass([targetElement], [DLG_TARGET , SCROLL_DISABLED ]); }
+    }
+    private decrementModalCount(element?: HTMLElement): void {
+        const targetElement: HTMLElement = element || document.body;
+        let count: number = parseInt(targetElement.getAttribute(MODAL_COUNT_ATTR) || '0', 10);
+        count = isNaN(count) ? 0 : Math.max(0, count - 1);
+        if (count === 0) {
+            targetElement.removeAttribute(MODAL_COUNT_ATTR);
+            removeClass([targetElement], [DLG_TARGET , SCROLL_DISABLED ]);
+        } else {
+            targetElement.setAttribute(MODAL_COUNT_ATTR, count.toString());
         }
     }
     private updatePersistData(): void {
@@ -1935,7 +1954,7 @@ export class Dialog extends Component<HTMLElement> implements INotifyPropertyCha
             }
         } else {
             removeClass([this.element], MODAL_DLG);
-            removeClass([document.body], [DLG_TARGET , SCROLL_DISABLED ]);
+            this.decrementModalCount(document.body);
             detach(this.dlgOverlay);
             while (this.dlgContainer.firstChild) {
                 this.dlgContainer.parentElement.insertBefore(this.dlgContainer.firstChild, this.dlgContainer);
@@ -1995,12 +2014,12 @@ export class Dialog extends Component<HTMLElement> implements INotifyPropertyCha
         }
         const classArray: string[] = [RTL, MODAL_DLG, DLG_RESIZABLE, DLG_RESTRICT_LEFT_VALUE, FULLSCREEN, DEVICE];
         const attrs: string[] = ['role', 'aria-modal', 'aria-labelledby', 'aria-describedby', 'aria-grabbed', 'tabindex', 'style'];
-        removeClass([this.targetEle], [DLG_TARGET , SCROLL_DISABLED]);
+        this.decrementModalCount(this.targetEle);
         if (!isNullOrUndefined(this.element) && this.element.classList.contains(FULLSCREEN)) {
-            removeClass([document.body], [DLG_TARGET , SCROLL_DISABLED]);
+            this.decrementModalCount(document.body);
         }
         if (this.isModal) {
-            removeClass([(!isNullOrUndefined(this.targetEle) ? this.targetEle : document.body)], SCROLL_DISABLED);
+            this.decrementModalCount((!isNullOrUndefined(this.targetEle) ? this.targetEle : document.body));
         }
         this.unWireEvents();
         this.unWireButtonEvents();
@@ -2171,9 +2190,9 @@ export class Dialog extends Component<HTMLElement> implements INotifyPropertyCha
                             } else {
                                 this.element.style.position = 'relative';
                             }
-                            addClass([this.targetEle], [DLG_TARGET , SCROLL_DISABLED ]);
+                            this.incrementModalCount(this.targetEle);
                         } else {
-                            addClass([document.body], [DLG_TARGET , SCROLL_DISABLED ]);
+                            this.incrementModalCount(document.body);
                         }
                     }
                     const openAnimation: Object = {
@@ -2206,6 +2225,10 @@ export class Dialog extends Component<HTMLElement> implements INotifyPropertyCha
                     this.visible = true;
                     this.preventVisibility = true;
                     this.isProtectedOnChange = prevOnChange;
+                    if (this.isModelResize && !isNullOrUndefined(this.dlgContainer) && this.dlgContainer.classList.contains('e-dlg-' + this.position.X + '-' + this.position.Y)) {
+                        this.setPopupPosition();
+                        this.dlgContainer.classList.remove('e-dlg-' + this.position.X + '-' + this.position.Y);
+                    }
                 }
             });
         }
@@ -2264,12 +2287,12 @@ export class Dialog extends Component<HTMLElement> implements INotifyPropertyCha
                         if (this.isModal) {
                             if (!isNullOrUndefined(this.targetEle) && this.targetEle.classList.contains(DLG_TARGET) &&
                                 this.targetEle.classList.contains(SCROLL_DISABLED)) {
-                                removeClass([this.targetEle], [DLG_TARGET, SCROLL_DISABLED]);
+                                this.decrementModalCount(this.targetEle);
                             }
                         }
                         if (document.body.classList.contains(DLG_TARGET) &&
                             document.body.classList.contains(SCROLL_DISABLED)) {
-                            removeClass([document.body], [DLG_TARGET, SCROLL_DISABLED]);
+                            this.decrementModalCount(document.body);
                         }
                     }, (this.animationSettings.duration + this.animationSettings.delay));
                     this.dialogOpen = false;
@@ -2305,13 +2328,13 @@ export class Dialog extends Component<HTMLElement> implements INotifyPropertyCha
             this.element.style.maxHeight = (!isNullOrUndefined(this.target)) ?
                 (this.targetEle.offsetHeight) + 'px' : (window.innerHeight) + 'px';
             this.element.style.display = display;
-            addClass([document.body], [DLG_TARGET , SCROLL_DISABLED ]);
+            this.incrementModalCount(document.body);
             if (this.allowDragging && !isNullOrUndefined(this.dragObj)) {
                 this.dragObj.destroy();
             }
         } else {
             removeClass([this.element], FULLSCREEN);
-            removeClass([document.body], [DLG_TARGET , SCROLL_DISABLED ]);
+            this.decrementModalCount(document.body);
             if (this.allowDragging && (!isNullOrUndefined(this.headerContent))) {
                 this.setAllowDragging();
             }

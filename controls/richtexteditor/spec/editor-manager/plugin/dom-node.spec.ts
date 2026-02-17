@@ -372,7 +372,7 @@ describe('DOMNode plugin', () => {
             let tdElem: HTMLElement = currentTable.querySelector('td');
             let range: Range = new Range();
             range.setStart(tdElem.childNodes[0].childNodes[3].firstChild, 0);
-            range.setEnd(tdElem.childNodes[4].childNodes[1], 1);
+            range.setEnd(tdElem.childNodes[2].childNodes[1], 1);
             const selectiOn: Selection = document.getSelection();
             selectiOn.removeAllRanges();
             selectiOn.addRange(range);
@@ -485,7 +485,7 @@ describe('DOMNode plugin', () => {
             numberlist.click();
             numberlist.click();
             numberlist.click();
-            expect(editor.inputElement.innerHTML === `<p class="textPtag">Provides an option to customize the quick toolbar for an image </p><p class="imgPtag"><img alt="Logo" src="https://ej2.syncfusion.com/demos/src/rich-text-editor/images/RTEImage-Feather.png" style="width: 300px;" class="e-rte-image e-imginline"></p>`).toBe( true);
+            expect(editor.inputElement.innerHTML === `<p class="textPtag">Provides an option to customize the quick toolbar for an image</p><p class="imgPtag"><img alt="Logo" src="https://ej2.syncfusion.com/demos/src/rich-text-editor/images/RTEImage-Feather.png" style="width: 300px;" class="e-rte-image e-imginline"></p>`).toBe( true);
         });
     });
 

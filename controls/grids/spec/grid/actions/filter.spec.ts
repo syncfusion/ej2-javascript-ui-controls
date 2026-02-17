@@ -28,7 +28,7 @@ Grid.Inject(Filter, Page, Selection, Group, Reorder, ColumnMenu, ForeignKey, Too
 describe('Filtering module => ', () => {
 
     let checkFilterObj: Function = (obj: PredicateModel, field?: string,
-        operator?: string, value?: string, predicate?: string, matchCase?: boolean): boolean => {
+        operator?: string, value?: string | Date, predicate?: string, matchCase?: boolean): boolean => {
         let isEqual: boolean = true;
         if (field) {
             isEqual = isEqual && obj.field === field;
@@ -37,7 +37,8 @@ describe('Filtering module => ', () => {
             isEqual = isEqual && obj.operator === operator;
         }
         if (value) {
-            isEqual = isEqual && obj.value === value;
+            isEqual = isEqual && (obj.value instanceof Date && value instanceof Date
+                ? obj.value.getTime() === value.getTime() : obj.value === value);
         }
         if (matchCase) {
             isEqual = isEqual && obj.matchCase === matchCase;
@@ -2296,6 +2297,41 @@ describe('Check for case sensitive ', ()=>{
             destroy(gridObj);
             gridObj = null;
             actionComplete = null;
+        });
+    });
+
+    describe('EJ2-1006528: filterSettings.columns shows duplicate date values instead of the different date values defined initially => ', () => {
+        let gridObj: Grid;
+        beforeAll((done: Function) => {
+            gridObj = createGrid(
+                {
+                    dataSource: filterData,
+                    allowFiltering: true,
+                    allowPaging: true,
+                    filterSettings: {
+                        type: 'Menu',
+                        columns: [
+                            { field: 'OrderDate', operator: 'greaterthanorequal', value: new Date('1996-07-08'), predicate: 'and' },
+                            { field: 'OrderDate', operator: 'lessthanorequal', value: new Date('1996-07-15'), predicate: 'and' },
+                        ],
+                    },
+                    columns: [
+                        { field: 'OrderID', headerText: 'Order ID', width: 120, textAlign: 'Right' },
+                        { field: 'CustomerID', headerText: 'Customer ID', width: 120 },
+                        { field: 'OrderDate', headerText: 'Order Date', width: 180, type: 'datetime', format: 'M/d/y HH:mm' },
+                        { field: 'ShipCountry', headerText: 'Ship Country', width: 150 }
+                    ],
+                }, done);
+        });
+
+        it('filterSettings.columns of the grid instance should display the correct values', (done: Function) => {
+            expect(checkFilterObj(gridObj.filterSettings.columns[0], 'OrderDate', 'greaterthanorequal', new Date('1996-07-08'), 'and', false)).toBeTruthy();
+            expect(checkFilterObj(gridObj.filterSettings.columns[1], 'OrderDate', 'lessthanorequal', new Date('1996-07-15'), 'and', false)).toBeTruthy();
+            done();
+        });
+        afterAll(() => {
+            destroy(gridObj);
+            gridObj = null;
         });
     });
 });

@@ -1422,13 +1422,14 @@ export class DatePicker extends Calendar implements IInput {
         if (!isNullOrUndefined(this.cssClass)) {
             this.popupWrapper.className += ' ' + this.cssClass;
         }
+        const appendToElement: HTMLElement = this.getAppendToElement();
         if (Browser.isDevice) {
             this.modelHeader();
             this.modal = this.createElement('div');
             this.modal.className = '' + ROOT + ' e-date-modal';
-            document.body.className += ' ' + OVERFLOW;
+            appendToElement.className += ' ' + OVERFLOW;
             this.modal.style.display = 'block';
-            document.body.appendChild(this.modal);
+            appendToElement.appendChild(this.modal);
         }
         //this.calendarElement represent the Calendar object from the Calendar class.
         this.calendarElement.querySelector('table tbody').className = '';
@@ -1765,9 +1766,10 @@ export class DatePicker extends Calendar implements IInput {
                 this.previousDate = outOfRange;
                 this.createCalendar();
             }
+            const appendToElement: HTMLElement = this.getAppendToElement();
             if (Browser.isDevice) {
                 this.mobilePopupWrapper = this.createElement('div', { className: 'e-datepick-mob-popup-wrap'});
-                document.body.appendChild(this.mobilePopupWrapper);
+                appendToElement.appendChild(this.mobilePopupWrapper);
             }
             this.preventArgs = {
                 preventDefault: (): void => {
@@ -1776,7 +1778,7 @@ export class DatePicker extends Calendar implements IInput {
                 popup: this.popupObj,
                 event: e || null,
                 cancel: false,
-                appendTo: Browser.isDevice ? this.mobilePopupWrapper : document.body
+                appendTo: Browser.isDevice ? this.mobilePopupWrapper : appendToElement
             };
             const eventArgs: PopupObjectArgs = this.preventArgs;
             this.trigger('open', eventArgs, (eventArgs: PopupObjectArgs) => {
@@ -1834,7 +1836,8 @@ export class DatePicker extends Calendar implements IInput {
                 cancel: false
             };
             removeClass(this.inputWrapper.buttons, ACTIVE);
-            removeClass([document.body], OVERFLOW);
+            const appendToElement: HTMLElement = this.getAppendToElement();
+            removeClass([appendToElement], OVERFLOW);
             const eventArgs: PopupObjectArgs = this.preventArgs;
             if (this.isCalendar()) {
                 this.trigger('close', eventArgs, (eventArgs: PopupObjectArgs) => {
@@ -2262,6 +2265,16 @@ export class DatePicker extends Calendar implements IInput {
      */
     protected getModuleName(): string {
         return 'datepicker';
+    }
+    protected getAppendToElement(): HTMLElement {
+        if (this.isAngular) {
+            const cdkPane: HTMLElement = this.element.closest('.cdk-overlay-pane') as HTMLElement;
+            const popoverEl: HTMLElement = this.element.closest('[popover]') as HTMLElement;
+            if (cdkPane && popoverEl) {
+                return cdkPane;
+            }
+        }
+        return document.body;
     }
     private updateFloatLabelOverflowWidth(): void {
         const container: HTMLElement = this.inputWrapper.container;

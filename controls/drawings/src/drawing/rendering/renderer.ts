@@ -27,6 +27,7 @@ export class DrawingRenderer {
     /** @private */
     private element: HTMLElement;
     public freeTextMaxHeight: number = 0;
+    public rectHeight: number = 0;
     public isFreeTextAnnotation: boolean = false;
     public zoomFactor: number = 1;
     constructor(name: string, isSvgMode: Boolean) {
@@ -58,6 +59,7 @@ export class DrawingRenderer {
         } else if (element instanceof TextElement) {
             this.renderTextElement(element, canvas, transform, parentSvg, fromPalette);
         } else {
+            this.rectHeight = element.bounds.height;
             this.renderRect(element, canvas, transform, parentSvg);
         }
     }
@@ -166,11 +168,19 @@ export class DrawingRenderer {
             (options as TextAttributes).thickness = element.thickness;
         }
         let ariaLabel: Object = element.content ? element.content : element.id;
-        this.renderer.drawRectangle(canvas as HTMLCanvasElement, options as RectAttributes);
+        if(this.isFreeTextAnnotation && options.isEJ2) {
+            this.renderer.drawRectangleFreetextEJ2(canvas as HTMLCanvasElement, options as RectAttributes);
+        } else {
+             this.renderer.drawRectangle(canvas as HTMLCanvasElement, options as RectAttributes);
+        }
         if(element.isEJ2 === true) {
             options.strokeWidth = element.style.strokeWidth;
             options.isEJ2 = element.isEJ2;
-            this.renderer.drawTextEJ2(canvas as HTMLCanvasElement, options as TextAttributes);
+            if (this.isFreeTextAnnotation && options.isEJ2) {
+                this.renderer.drawTextFreetextEJ2(canvas as HTMLCanvasElement, options as TextAttributes, this.isFreeTextAnnotation, this.rectHeight);
+            } else {
+                this.renderer.drawTextEJ2(canvas as HTMLCanvasElement, options as TextAttributes);
+            }
         } else {
             this.renderer.drawText(canvas as HTMLCanvasElement, options as TextAttributes, this.freeTextMaxHeight, this.isFreeTextAnnotation, this.zoomFactor);
         }
@@ -204,7 +214,11 @@ export class DrawingRenderer {
         let options: RectAttributes = this.getBaseAttributes(element, transform);
         options.cornerRadius = element.cornerRadius || 0;
         let ariaLabel: Object = element.id;
-        this.renderer.drawRectangle(canvas as HTMLCanvasElement, options);
+        if (this.isFreeTextAnnotation && (options.isEJ2 || element.isEJ2)) {
+            this.renderer.drawRectangleFreetextEJ2(canvas as HTMLCanvasElement, options);
+        } else {
+            this.renderer.drawRectangle(canvas as HTMLCanvasElement, options);
+        }
     }
 
     /**   @private  */
@@ -220,6 +234,9 @@ export class DrawingRenderer {
         };
         if (element.thickness !== undefined){
             options.thickness = element.thickness;
+        }
+        if((element as any).children && (element as any).children[0] && (element as any).children[0].isEJ2 === true) {
+            options.isEJ2 = true;
         }
         if (transform) {
             options.x += transform.tx;

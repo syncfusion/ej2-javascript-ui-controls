@@ -3661,11 +3661,6 @@ export class Gantt extends Component<HTMLElement>
         const scrollContainer: HTMLElement  = this.element.getElementsByClassName('e-chart-scroll-container e-content')[0] as HTMLElement;
         scrollContainer['style'].height = 'calc(100% - ' + timelineContainer +  'px)';
         scrollContainer.setAttribute('tabindex', '0');
-        if (!isNullOrUndefined(this.toolbarModule) && !isNullOrUndefined(this.toolbarModule.element)) {
-            this.splitterElement.style.height = 'calc(100% - ' + this.toolbarModule.element.offsetHeight + 'px)';
-        } else {
-            this.splitterElement.style.height = '100%';
-        }
         if (this.filterSettings && this.filterSettings['properties'] && this.filterSettings['properties'].columns) {
             this.filterSettings['properties'].columns.forEach((column: any) => {  // Arrow function to preserve `this`
                 const searchString: string = column.properties.field;

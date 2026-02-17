@@ -498,7 +498,8 @@ export class SpreadsheetComment {
                 const textEl: HTMLElement = this.parent.createElement('div', { className: 'e-comment-text' });
                 textEl.textContent = text;
                 const tsEl: HTMLElement = this.parent.createElement('span', { className: 'e-comment-timestamp' });
-                tsEl.textContent = createdTime;
+                tsEl.textContent = new Date(createdTime + 'z').toLocaleDateString(this.parent.locale, {
+                    month: 'long', day: 'numeric', year: 'numeric', hour: 'numeric', minute: '2-digit' });
                 parent.appendChild(textEl);
                 parent.appendChild(tsEl);
             };
@@ -1222,9 +1223,7 @@ export class SpreadsheetComment {
     }
 
     private timeStamp(): string {
-        return new Date().toLocaleString(this.parent.locale, {
-            month: 'long', day: 'numeric', year: 'numeric', hour: 'numeric', minute: '2-digit'
-        });
+        return new Date().toISOString().slice(0, -1);
     }
 
     private getContainer(sourceEl: HTMLElement): HTMLElement {

@@ -50,7 +50,7 @@ describe('Gantt virtual scroll', () => {
             }
         });
         it('Rendering', () => {
-            expect(ganttObj.currentViewData.length).toBe(22);
+            expect(ganttObj.currentViewData.length).toBe(28);
             expect(ganttObj.flatData.length).toBe(450);
         });
         it('Vertical scroll syncing', () => {
@@ -176,7 +176,7 @@ describe('Gantt virtual scroll', () => {
             searchbar.value = 'Task';
             let searchButton: HTMLElement = ganttObj.element.querySelector('#' + ganttObj.element.id + '_searchbutton') as HTMLElement;
             triggerMouseEvent(searchButton, 'click');
-            expect(ganttObj.ganttChartModule.getChartRows().length).toBe(22);
+            expect(ganttObj.ganttChartModule.getChartRows().length).toBe(28);
         });
     });
     describe('Collapse/Expand search actions with virtualization shimmer effect', () => {
@@ -973,7 +973,7 @@ describe('console error click fit to project in virtual mode', () => {
     it('console error click fit to project', () => {
         ganttObj.toolbarModule.zoomToFit();
         ganttObj.toolbarModule.zoomToFit();
-        expect(ganttObj.currentViewData.length).toBe(22);
+        expect(ganttObj.currentViewData.length).toBe(28);
     });
     afterAll(() => {
         if (ganttObj) {

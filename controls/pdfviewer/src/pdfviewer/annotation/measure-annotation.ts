@@ -2174,10 +2174,21 @@ export class MeasureAnnotation {
         annotationSettings.maxWidth = annotationObject.maxWidth ? annotationObject.maxWidth : annotationSettings.maxWidth;
         annotationSettings.maxHeight = annotationObject.maxHeight ? annotationObject.maxHeight : annotationSettings.maxHeight;
         //Calculating area for all the measurements
-        const values: any = {depth: 96,
-            factor: 0.013888888888888888,
-            ratio: 1,
-            unit: 'in'};
+        const convUnit: CalibrationUnit = (this.pdfViewer.measurementSettings.conversionUnit
+            ? this.pdfViewer.measurementSettings.conversionUnit.toLowerCase()
+            : 'in') as CalibrationUnit;
+        const dispUnit: string = this.pdfViewer.measurementSettings.displayUnit ?
+            this.pdfViewer.measurementSettings.displayUnit.toLowerCase() : 'in';
+        const scaleRatioVal: number = this.pdfViewer.measurementSettings.scaleRatio ?
+            this.pdfViewer.measurementSettings.scaleRatio : 1;
+        const depthVal: number = annotationObject.depth ? annotationObject.depth : this.pdfViewer.measurementSettings.depth
+            ? this.pdfViewer.measurementSettings.depth : 96;
+        const values: any = {
+            depth: depthVal,
+            factor: this.getFactor(convUnit),
+            ratio: scaleRatioVal,
+            unit: dispUnit
+        };
         let notes: string = '';
         if (vertexPoints || annotationType === 'Radius' || annotationType === 'Volume')
         {
@@ -2239,13 +2250,13 @@ export class MeasureAnnotation {
                 Left: offset.x, Top: offset.y, Location: {X: offset.x, Y: offset.y},
                 Size: {Height: annotationObject.height, IsEmpty: false, Width: annotationObject.width}},
             Calibrate: {
-                Area: [{ConversionFactor: 1, Denominator: 100, FormatDenominator: false, FractionalType: 'D', Unit: 'sq in'}],
-                Depth: annotationObject.depth ? annotationObject.depth : 96,
-                Distance: [{ConversionFactor: 1, Denominator: 100, FormatDenominator: false, FractionalType: 'D', Unit: 'in'}],
-                Ratio: '1 in = 1 in',
+                Area: [{ConversionFactor: 1, Denominator: 100, FormatDenominator: false, FractionalType: 'D', Unit: 'sq ' + dispUnit}],
+                Depth: depthVal,
+                Distance: [{ConversionFactor: 1, Denominator: 100, FormatDenominator: false, FractionalType: 'D', Unit: dispUnit}],
+                Ratio: '1 ' + convUnit + ' = ' + scaleRatioVal + ' ' + dispUnit,
                 TargetUnitConversion: 0,
                 Volume: null,
-                X : [{ConversionFactor: 0.013888889, Denominator: 100, FormatDenominator: false, FractionalType: 'D', Unit: 'in'}]
+                X : [{ConversionFactor: this.getFactor(convUnit), Denominator: 100, FormatDenominator: false, FractionalType: 'D', Unit: dispUnit}]
             },
             Caption: true,
             CaptionPosition: 'Top',
@@ -2291,7 +2302,7 @@ export class MeasureAnnotation {
         const [srcValueStr, unit] = ratioString[0].split(' ');
         const [destValueStr, displayUnit] = ratioString[1].split(' ');
         const destValue: number = parseFloat(destValueStr);
-        const depthValue: number = 96;
+        const depthValue: number = depthVal;
         const srcValue: number = parseFloat(srcValueStr);
         const scaleRatio: MeasurementScaleRatio = {
             annotName: shape.AnnotName,

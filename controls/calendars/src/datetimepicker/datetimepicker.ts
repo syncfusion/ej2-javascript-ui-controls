@@ -1133,7 +1133,8 @@ export class DateTimePicker extends DatePicker {
                     this.listCreation();
                     append([this.listWrapper], this.dateTimeWrapper);
                 }
-                document.body.appendChild(this.dateTimeWrapper);
+                const appendToElement: HTMLElement = this.getAppendToElement();
+                appendToElement.appendChild(this.dateTimeWrapper);
                 this.addTimeSelection();
                 this.renderPopup();
                 this.setTimeScrollPosition();
@@ -1209,12 +1210,13 @@ export class DateTimePicker extends DatePicker {
     }
     private renderPopup(): void {
         this.containerStyle = this.inputWrapper.container.getBoundingClientRect();
+        const appendToElement: HTMLElement = this.getAppendToElement();
         if (Browser.isDevice) {
             this.timeModal = createElement('div');
             this.timeModal.className = '' + ROOT + ' e-time-modal';
-            document.body.className += ' ' + OVERFLOW;
+            appendToElement.className += ' ' + OVERFLOW;
             this.timeModal.style.display = 'block';
-            document.body.appendChild(this.timeModal);
+            appendToElement.appendChild(this.timeModal);
         }
         if (Browser.isDevice){
             this.modelWrapper = createElement('div', { className: 'e-datetime-mob-popup-wrap' });
@@ -1222,7 +1224,7 @@ export class DateTimePicker extends DatePicker {
             const dlgOverlay: HTMLElement = createElement('div', { className: 'e-dlg-overlay'});
             dlgOverlay.style.zIndex = (this.zIndex - 1).toString();
             this.modelWrapper.appendChild(dlgOverlay);
-            document.body.appendChild(this.modelWrapper);
+            appendToElement.appendChild(this.modelWrapper);
         }
         const offset: number = 4;
         this.popupObject = new Popup(this.dateTimeWrapper as HTMLElement, {
@@ -1708,7 +1710,8 @@ export class DateTimePicker extends DatePicker {
                 super.hide(e);
             } else if (this.isTimePopupOpen()) {
                 this.closePopup(e);
-                removeClass([document.body], OVERFLOW);
+                const appendToElement: HTMLElement = this.getAppendToElement();
+                removeClass([appendToElement], OVERFLOW);
                 if (Browser.isDevice && this.timeModal) {
                     this.timeModal.style.display = 'none';
                     this.timeModal.outerHTML = '';
@@ -2228,6 +2231,16 @@ export class DateTimePicker extends DatePicker {
      */
     protected getModuleName(): string {
         return 'datetimepicker';
+    }
+    protected getAppendToElement(): HTMLElement {
+        if (this.isAngular) {
+            const cdkPane: HTMLElement = this.element.closest('.cdk-overlay-pane') as HTMLElement;
+            const popoverEl: HTMLElement = this.element.closest('[popover]') as HTMLElement;
+            if (cdkPane && popoverEl) {
+                return cdkPane;
+            }
+        }
+        return document.body;
     }
     protected restoreValue(): void {
         this.previousDateTime = this.previousDate;

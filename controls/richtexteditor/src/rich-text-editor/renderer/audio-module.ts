@@ -447,12 +447,10 @@ export class Audio {
     private audioClick(e: MouseEvent): void {
         if (Browser.isDevice) {
             if (this.isAudioElem(e.target as HTMLElement)) {
-                this.contentModule.getEditPanel().setAttribute('contenteditable', 'false');
                 (e.target as HTMLElement).focus();
                 this.isAudioClicked = true;
             } else {
                 if (!this.parent.readonly && !this.parent.videoModule.isVideoClicked && !this.parent.imageModule.isImageClicked) {
-                    this.contentModule.getEditPanel().setAttribute('contenteditable', 'true');
                     this.isAudioClicked = false;
                 }
             }

@@ -8,6 +8,8 @@
 
 ## [Unreleased]
 
+## 32.2.5 (2026-02-17)
+
 ### TreeMap
 
 #### Bug Fixes

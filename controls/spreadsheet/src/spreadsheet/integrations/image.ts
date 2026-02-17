@@ -115,7 +115,9 @@ export class SpreadsheetImage {
         const indexes: number[] = getRangeIndexes(range);
         const sheet: SheetModel = isUndefined(sheetIndex) && !args.isUndoRedo ? this.parent.getActiveSheet() :
             this.parent.sheets[sheetIndex as number];
-        if (!sheet || this.parent.element.querySelector(`#${id}`)) {
+        const panel: HTMLElement = this.parent.getMainContent() || this.parent.element;
+        if (!sheet || panel.querySelector(`#${id}`) ||
+            ((sheet.frozenRows || sheet.frozenColumns) && this.parent.element.querySelector(`#${id}`))) {
             return;
         }
         if (args.isPublic && isReadOnlyCells(this.parent, indexes)) {

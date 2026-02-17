@@ -374,4 +374,28 @@ describe('Kanban mobile testing', () => {
         //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
         expect(memory).toBeLessThan(profile.samples[0] + 0.25);
     });
+
+    describe('1009242: Page Freezes on Mobile When Kanban Drag-and-Drop Is Disabled or Conditionally Set to False', () => {
+        const uA: string = Browser.userAgent;
+        const androidUserAgent: string = 'Mozilla/5.0 (Linux; Android 9; Pixel XL Build/PPP3.180510.008) ' +
+            'AppleWebKit/537.36 (KHTML, like Gecko) Chrome/67.0.3396.81 Mobile Safari/537.36';
+        let kanbanObj: Kanban;
+        beforeAll((done: DoneFn) => {
+            Browser.userAgent = androidUserAgent;
+            const model: KanbanModel = { allowDragAndDrop: true } as KanbanModel;
+            kanbanObj = util.createKanban(model, kanbanData, done);
+        });
+        afterAll(() => {
+            util.destroy(kanbanObj);
+            Browser.userAgent = uA;
+        });
+        it('Draggable instance should have tapHoldThreshold = 100 when allowDragAndDrop is true', () => {
+            const card: HTMLElement = kanbanObj.element.querySelector('.e-card') as HTMLElement;
+            expect(card).not.toBe(null);
+            const inst: any = (card as any).ej2_instances && (card as any).ej2_instances[0];
+            expect(inst).not.toBe(null);
+            const tapHoldVal: number = inst.tapHoldThreshold;
+            expect(tapHoldVal).toBe(400);
+        });
+    });
 });
